@@ -1,0 +1,14 @@
+language: node_js
+node_js:
+  - "5.7.0"
+script:
+  - "node node_modules/pxt-core/built/pxt.js travis"
+sudo: false
+notifications:
+  email:
+    - touchdevelop-build@microsoft.com
+cache:
+  directories:
+    - node_modules
+    - built/cache
+
