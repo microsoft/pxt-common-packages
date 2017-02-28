@@ -1,0 +1,20 @@
+{
+  "name": "pxt-common-packages",
+  "version": "0.0.1",
+  "description": "",
+  "keywords": [],
+  "author": "Microsoft Corporation",
+  "repository": {
+    "url": "ssh://git@github.com:Microsoft/pxt-common-packages.git",
+    "type": "git"
+  },
+  "homepage": "https://github.com/microsoft/pxt-common-packages",
+  "license": "MIT",
+  "dependencies": {
+    
+  },
+  "targetDependencies": {},
+  "extraIncludes": [
+    "inc"
+  ]
+}

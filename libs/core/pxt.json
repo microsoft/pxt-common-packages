@@ -1,0 +1,47 @@
+{
+    "name": "core",
+    "description": "The core library",
+    "files": [
+        "README.md",
+        "dal.d.ts",
+        "pxt-core.d.ts",
+        "pxt.cpp",
+        "pxt.h",
+        "pins.h",
+        "core.cpp",
+        "pins.cpp",
+        "pins.ts",
+        "music.ts",
+        "pxt-helpers.ts",
+        "buffer.cpp",
+        "shims.d.ts",
+        "enums.d.ts",
+        "control.cpp",
+        "control.ts",
+        "serial.cpp",
+        "serial.ts",
+        "neopixel.cpp",
+        "neopixel.ts",
+        "buttons.cpp",
+        "input.cpp",
+        "input.ts",
+        "accelerometer.cpp",
+        "math.ts",
+        "hf2.cpp",
+        "hf2.h",
+        "uf2format.h",
+        "uf2hid.h"
+    ],
+    "testFiles": [
+        "test.ts"
+    ],
+    "yotta": {
+        "config": {
+            "codal": {
+                "component_count": 64
+            }
+        }
+    },
+    "public": true,
+    "dependencies": {}
+}
