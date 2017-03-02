@@ -11,7 +11,7 @@
   "homepage": "https://github.com/microsoft/pxt-common-packages",
   "license": "MIT",
   "dependencies": {
-    "pxt-core": "0.11.44"
+    "pxt-core": "1.0.3"
   },
   "targetDependencies": {},
   "extraIncludes": [
