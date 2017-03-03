@@ -1,0 +1,24 @@
+{
+    "name": "neopixel",
+    "description": "The neopixel library",
+    "files": [
+        "README.md",
+        "neopixel.cpp",
+        "neopixel.ts",
+        "input.ts"
+    ],
+    "yotta": {
+        "config": {
+            "codal": {
+                "component_count": 64
+            }
+        }
+    },
+    "testFiles": [
+        "test.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core"
+    }
+}

@@ -454,26 +454,6 @@ declare namespace serial {
     //% blockId=serial_writestring block="serial|write string %text" shim=serial::writeString
     function writeString(text: string): void;
 }
-
-
-
-    //% color=300 weight=100
-declare namespace light {
-
-    /**
-     * Gets the default pin for built in neopixels
-     */
-    //% parts="neopixel" shim=light::defaultPin
-    function defaultPin(): DigitalPin;
-
-    /**
-     * Sends a neopixel buffer to the specified digital pin
-     * @param pin The pin that the neopixels are connected to
-     * @param buf The buffer to send to the pin
-     */
-    //% parts="neopixel" shim=light::sendBuffer
-    function sendBuffer(pin: DigitalPin, buf: Buffer): void;
-}
 declare namespace input {
 
     /**
