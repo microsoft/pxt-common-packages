@@ -72,8 +72,6 @@ declare namespace control {
 }
 declare namespace serial {
 }
-declare namespace light {
-}
 
 
     declare enum SwitchDirection {
