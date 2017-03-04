@@ -14,8 +14,15 @@
 #define BOARD_ID_GEMMA 7
 #define BOARD_ID_M0 8
 
+#if YOTTA_CFG_PXT_BOARD_ID
+#define PXT_BOARD_ID YOTTA_CFG_PXT_BOARD_ID
+#endif
+
 #ifndef PXT_BOARD_ID
 #define PXT_BOARD_ID BOARD_ID_CPLAY
+#endif
+
+#if PXT_BOARD_ID == BOARD_ID_CPLAY
 #define CPLAY_REV_D 1
 #endif
 
