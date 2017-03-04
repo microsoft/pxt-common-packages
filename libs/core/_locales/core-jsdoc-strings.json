@@ -36,7 +36,7 @@
   "String.substr": "Return substring of the current string.",
   "String.substr|param|length": "number of characters to extract",
   "String.substr|param|start": "first character index; can be negative from counting from the end, eg:0",
-  "control": "Runtime and event utilities.\n\nRuntime and event utilities.",
+  "control": "Runtime and event utilities.\n\r\nRuntime and event utilities.",
   "control.assert": "Display specified error code and stop the program.",
   "control.deviceDalVersion": "Determine the version of system software currently running.",
   "control.deviceSerialNumber": "Derive a unique, consistent serial number of this device from internal data.",

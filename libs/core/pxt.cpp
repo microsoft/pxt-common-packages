@@ -649,6 +649,29 @@ int getNumGlobals() {
     return bytecode[16];
 }
 
+void initRandomSeed() {
+    int seed = 0xC0DA1;
+    auto pinTemp = lookupPin(PIN_TEMPERATURE);
+    if (pinTemp)
+        seed *= pinTemp->getAnalogValue();
+    auto pinLight = lookupPin(PIN_LIGHT);
+    if (pinLight)
+        seed *= pinLight->getAnalogValue();
+    device.seedRandom(seed);    
+}
+
+void clearNeoPixels() {
+    // clear on-board neopixels
+    auto neoPin = lookupPin(PIN_NEOPIXEL);
+    if (neoPin) {
+        uint8_t neobuf[30];
+        memset(neobuf, 0, 30);
+        neoPin->setDigitalValue(0);
+        fiber_sleep(1);
+        neopixel_send_buffer(*neoPin, neobuf, 30);
+    }
+}
+
 void exec_binary(int32_t *pc) {
     // XXX re-enable once the calibration code is fixed and [editor/embedded.ts]
     // properly prepends a call to [internal_main].
@@ -678,16 +701,8 @@ void exec_binary(int32_t *pc) {
     startptr |= 1;  // Thumb state
 
     initCodal();
-
-    // clear on-board neopixels
-    auto neoPin = lookupPin(PIN_NEOPIXEL);
-    if (neoPin) {
-        uint8_t neobuf[30];
-        memset(neobuf, 0, 30);
-        neoPin->setDigitalValue(0);
-        fiber_sleep(1);
-        neopixel_send_buffer(*neoPin, neobuf, 30);
-    }
+    initRandomSeed();
+    clearNeoPixels();
 
     ((uint32_t(*)())startptr)();
 
