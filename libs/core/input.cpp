@@ -111,9 +111,9 @@ DeviceButton *getMicrophoneButton(int id) {
         w->buttons[id] = new DeviceButton(*lookupPin(PIN_MICROPHONE), w->sensor.id);
     return w->buttons[id];
 }
+#endif
 
 }
-#endif
 
 //% color="#FB48C7" weight=99 icon="\uf192"
 namespace input {
