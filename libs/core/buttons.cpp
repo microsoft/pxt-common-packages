@@ -65,9 +65,8 @@ DeviceButton *getButton(int id) {
     return &getWButtons()->buttons[id];
 }
 
-#if PIN_TOUCH != NC
 static const int touchPins[] = {
-    PIN_A4, PIN_A5, PIN_A6, PIN_A7, PIN_A8, PIN_A9, PIN_A10, PIN_A11
+    PIN_A4, PIN_A5, PIN_A6, PIN_A7, PIN_A8, PIN_A9, PIN_A10, PIN_A11,
 };
 
 
@@ -139,11 +138,6 @@ TouchButton *getTouchButton(int id) {
         w->buttons[id] = new TouchButton(*pxt::lookupPin(touchPins[id]), w->touchSensor);
     return w->buttons[id];
 }
-#else
-TouchButton *getTouchButton(int id) {
-    return NULL;
-}
-#endif
 }
 
 //% noRefCounting fixedInstances

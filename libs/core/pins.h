@@ -280,6 +280,9 @@
 #ifndef PIN_MICROPHONE
 #define PIN_MICROPHONE NC
 #endif
+#ifndef PIN_CAPSENSE
+#define PIN_CAPSENSE NC
+#endif
 
 class DevPins {
   public:
