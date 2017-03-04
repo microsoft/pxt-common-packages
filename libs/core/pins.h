@@ -138,6 +138,9 @@
 #define PIN_D8 PIN_NEOPIXEL
 #define PIN_D13 PIN_LED
 
+// TODO: define list of pins
+#define PIN_TOUCH 1
+
 #elif PXT_BOARD_ID == BOARD_ID_FEATHER
 #define PIN_A0 PIN_PA02
 #define PIN_A1 PIN_PB08
@@ -199,6 +202,21 @@
 #ifndef PIN_A6
 #define PIN_A6 NC
 #endif
+#ifndef PIN_A7
+#define PIN_A7 NC
+#endif
+#ifndef PIN_A8
+#define PIN_A8 NC
+#endif
+#ifndef PIN_A9
+#define PIN_A9 NC
+#endif
+#ifndef PIN_A10
+#define PIN_A10 NC
+#endif
+#ifndef PIN_A11
+#define PIN_A11 NC
+#endif
 #ifndef PIN_D0
 #define PIN_D0 NC
 #endif
@@ -249,6 +267,21 @@
 #endif
 #ifndef PIN_LEDTX
 #define PIN_LEDTX NC
+#endif
+#ifndef PIN_TOUCH
+#define PIN_TOUCH NC
+#endif
+#ifndef PIN_TEMPERATURE
+#define PIN_TEMPERATURE NC
+#endif
+#ifndef PIN_LIGHT
+#define PIN_LIGHT NC
+#endif
+#ifndef PIN_MICROPHONE
+#define PIN_MICROPHONE NC
+#endif
+#ifndef PIN_CAPSENSE
+#define PIN_CAPSENSE NC
 #endif
 
 class DevPins {

@@ -25,10 +25,16 @@ enum class TemperatureCondition {
     Hot = ANALOG_THRESHOLD_HIGH
 };
 
+enum class TemperatureUnit {
+    //% block="°C"
+    Celsius,
+    //% block="°F"
+    Fahrenheit
+};
+
 namespace pxt {
 
 // Wrapper classes
-
 class WTemp {
   public:
     NonLinearAnalogSensor sensor;
@@ -40,14 +46,6 @@ class WTemp {
     }
 };
 SINGLETON(WTemp);
-
-enum TemperatureUnit {
-    //% block="°C"
-    Celsius,
-    //% block="°F"
-    Fahrenheit
-};
-
 
 class WLight {
   public:
