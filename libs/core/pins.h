@@ -271,6 +271,15 @@
 #ifndef PIN_TOUCH
 #define PIN_TOUCH NC
 #endif
+#ifndef PIN_TEMPERATURE
+#define PIN_TEMPERATURE NC
+#endif
+#ifndef PIN_LIGHT
+#define PIN_LIGHT NC
+#endif
+#ifndef PIN_MICROPHONE
+#define PIN_MICROPHONE NC
+#endif
 
 class DevPins {
   public:

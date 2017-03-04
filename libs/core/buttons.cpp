@@ -139,6 +139,10 @@ TouchButton *getTouchButton(int id) {
         w->buttons[id] = new TouchButton(*pxt::lookupPin(touchPins[id]), w->touchSensor);
     return w->buttons[id];
 }
+#else
+TouchButton *getTouchButton(int id) {
+    return NULL;
+}
 #endif
 }
 
