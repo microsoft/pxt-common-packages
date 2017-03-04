@@ -25,10 +25,17 @@ enum class TemperatureCondition {
     Hot = ANALOG_THRESHOLD_HIGH
 };
 
+enum class TemperatureUnit {
+    //% block="°C"
+    Celsius,
+    //% block="°F"
+    Fahrenheit
+};
+
 namespace pxt {
 
 // Wrapper classes
-
+#if PIN_TEMPERATURE != NC
 class WTemp {
   public:
     NonLinearAnalogSensor sensor;
@@ -41,14 +48,9 @@ class WTemp {
 };
 SINGLETON(WTemp);
 
-enum TemperatureUnit {
-    //% block="°C"
-    Celsius,
-    //% block="°F"
-    Fahrenheit
-};
+#endif
 
-
+#if PIN_LIGHT != NC
 class WLight {
   public:
     AnalogSensor sensor;
@@ -77,7 +79,9 @@ DeviceButton *getLightButton(int id) {
         w->buttons[id] = new DeviceButton(*lookupPin(PIN_LIGHT), w->sensor.id);
     return w->buttons[id];
 }
+#endif
 
+#if PIN_MICROPHONE != NC
 class WMicrophone {
   public:
     AnalogSensor sensor;
@@ -109,10 +113,12 @@ DeviceButton *getMicrophoneButton(int id) {
 }
 
 }
+#endif
 
 //% color="#FB48C7" weight=99 icon="\uf192"
 namespace input {
 
+#if PIN_LIGHT != NC
 /**
 * Registers an event that runs when particular lighting conditions (dark, bright) are encountered.
 * @param condition the condition that event triggers on
@@ -137,7 +143,9 @@ int lightLevel() {
     int value = getWLight()->sensor.getValue();
     return value / 4;
 }
+#endif
 
+#if PIN_MICROPHONE != NC
 /**
 * Registers an event that runs when particular lighting conditions (dark, bright) are encountered.
 * @param condition the condition that event triggers on
@@ -161,7 +169,9 @@ int soundLevel() {
     int value = getWMicrophone()->sensor.getValue();
     return value / 4;
 }
+#endif
 
+#if PIN_TEMPERATURE != NC
 /**
 * Registers an event raised when the temperature condition (hold, cold) changes.
 * @param condition the condition, hot or cold, the event triggers on
@@ -192,4 +202,5 @@ int temperature(TemperatureUnit unit) {
     if (unit == TemperatureUnit::Celsius) return value;
     else return (value * 18) / 10 + 32;
 }
+#endif
 }

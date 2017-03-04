@@ -65,8 +65,9 @@ DeviceButton *getButton(int id) {
     return &getWButtons()->buttons[id];
 }
 
+#if PIN_TOUCH != NC
 static const int touchPins[] = {
-    PIN_A4, PIN_A5, PIN_A6, PIN_A7, PIN_A8, PIN_A9, PIN_A10, PIN_A11,
+    PIN_A4, PIN_A5, PIN_A6, PIN_A7, PIN_A8, PIN_A9, PIN_A10, PIN_A11
 };
 
 
@@ -139,6 +140,8 @@ TouchButton *getTouchButton(int id) {
     return w->buttons[id];
 }
 }
+
+#endif
 
 //% noRefCounting fixedInstances
 namespace ButtonMethods {
