@@ -442,7 +442,7 @@ declare namespace control {
 
 
 
-    //% weight=2 color=30 icon="\uf287"
+    //% weight=2 color=#002050 icon="\uf287"
     //% advanced=true
 declare namespace serial {
 
@@ -598,7 +598,7 @@ declare namespace input {
 
 
 
-    //% color="#FB48C7" weight=99 icon="\uf192"
+    //% color="#B4009E" weight=99 icon="\uf192"
 declare namespace input {
 
     /**

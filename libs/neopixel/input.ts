@@ -1,4 +1,4 @@
-//% color="#FB48C7" weight=99 icon="\uf192"
+//% color="#B4009E" weight=99 icon="\uf192"
 namespace input {
     /**
      * Senses the ambient color using the LED pixel next to the LED sensor.

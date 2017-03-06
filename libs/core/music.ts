@@ -129,7 +129,7 @@ enum BeatFraction {
 /**
  * Generation of music tones.
  */
-//% color=#D83B01 weight=98 icon="\uf025"
+//% color=#d83b01 weight=90 icon="\uf025"
 namespace music {
     let beatsPerMinute: number = 120;
 

@@ -1,7 +1,7 @@
 #include "pxt.h"
 #include "neopixel.h"
 
-//% color=300 weight=100
+//% color="#0078d7" weight=98
 namespace light {
 
     /**

@@ -1,4 +1,3 @@
-//% color=230
 namespace Math {    
     /**
      * Re-maps a number from one range to another. That is, a value of ``from low`` would get mapped to ``to low``, a value of ``from high`` to ``to high``, values in-between to values in-between, etc.

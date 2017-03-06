@@ -108,7 +108,7 @@ DeviceButton *getMicrophoneButton(int id) {
 
 }
 
-//% color="#FB48C7" weight=99 icon="\uf192"
+//% color="#B4009E" weight=99 icon="\uf192"
 namespace input {
 
 /**
