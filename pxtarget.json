@@ -3,6 +3,7 @@
     "name": "PXT Common Packages",
     "corepkg": "core",
     "bundleddirs": [
-        "libs/core"
+        "libs/core",
+        "libs/neopixel"
     ]
 }

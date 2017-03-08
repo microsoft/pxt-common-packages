@@ -1,6 +1,6 @@
 {
     "name": "neopixel",
-    "description": "The neopixel library",
+    "description": "The NeoPixel library",
     "files": [
         "README.md",
         "neopixel.cpp",
