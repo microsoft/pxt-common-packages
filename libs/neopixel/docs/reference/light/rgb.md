@@ -20,5 +20,8 @@ light.rgb(255, 255, 255);
 
 ## See Also
 
+```package
+neopixel
+```
 
 

@@ -11,3 +11,6 @@ light.colorWheel(0);
 light.statusLED(false);
 ```
 
+```package
+neopixel
+```

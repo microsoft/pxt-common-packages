@@ -18,5 +18,6 @@ light.colors(NeoPixelColors.Red);
 
 ## See Also
 
-
-
+```package
+neopixel
+```

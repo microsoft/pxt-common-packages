@@ -17,3 +17,6 @@ light.colorWheel(0);
 light.builtin.showColor(light.colorWheel(42))
 ```
 
+```package
+neopixel
+```

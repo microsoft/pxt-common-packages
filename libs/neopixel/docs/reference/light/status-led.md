@@ -15,3 +15,7 @@ light.statusLED(false);
 ```blocks
 light.statusLED(false);
 ```
+
+```package
+neopixel
+```

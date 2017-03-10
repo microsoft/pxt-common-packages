@@ -17,5 +17,6 @@ light.defaultPin();
 
 ## See Also
 
-
-
+```package
+neopixel
+```
