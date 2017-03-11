@@ -1,6 +1,6 @@
 # default Pin
 
-Gets the default pin for built in neopixels
+Gets the default pin that the `light` library uses
 
 ```sig
 light.defaultPin();
@@ -11,9 +11,14 @@ light.defaultPin();
 
 ## Example
 
-```blocks
-light.defaultPin();
+```typescript
+let pin = light.defaultPin()
+pin.digitalWrite(0)
 ```
+
+## @boardname@ Notes #dev
+
+None.
 
 ## See Also
 
