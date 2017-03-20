@@ -657,7 +657,7 @@ void initRandomSeed() {
     auto pinLight = lookupPin(PIN_LIGHT);
     if (pinLight)
         seed *= pinLight->getAnalogValue();
-    device.seedRandom(seed);    
+    device.seedRandom(seed);
 }
 
 void clearNeoPixels() {
