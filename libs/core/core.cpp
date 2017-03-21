@@ -85,6 +85,231 @@ bool bang(int v) {
 }
 }
 
+struct BoxedNumber : RefCounted {
+    uint16_t vtable;
+    double num;
+};
+
+struct TNumberStruct {};
+typedef TNumberStruct *TNumber;
+
+#define CAN_BE_TAGGED(v) (-0x40000000 <= (v) && (v) <= 0x3fffffff)
+#define TAGGED_SPECIAL(n) (TNumber)((n << 2) | 2)
+#define TAG_FALSE TAGGED_SPECIAL(2)
+#define TAG_TRUE TAGGED_SPECIAL(16)
+#define TAG_UNDEFINED (TNumber)0
+#define TAG_NULL TAGGED_SPECIAL(1)
+#define TAG_NUMBER(n) (TNumber)((n << 1) | 1)
+;
+
+namespace langsupp {
+
+//%
+int toInt(TNumber v) {
+    int vv = (int)v;
+    if (vv & 1)
+        return vv >> 1;
+    if (vv & 2) {
+        if (vv >> 6)
+            return 1;
+        else
+            return 0;
+    }
+
+    BoxedNumber *p = (BoxedNumber *)v;
+    // TODO this probably doesn't follow JS semantics
+    return (int)p->num;
+}
+
+//%
+uint32_t toUInt(TNumber v) {
+    if (((int)v) & 3)
+        return toInt(v);
+    BoxedNumber *p = (BoxedNumber *)v;
+    // TODO this probably doesn't follow JS semantics
+    return (uint32_t)p->num;
+}
+
+//%
+float toFloat(TNumber v) {
+    if (((int)v) & 3)
+        return toInt(v);
+    BoxedNumber *p = (BoxedNumber *)v;
+    return (float)p->num;
+}
+
+//%
+double toDouble(TNumber v) {
+    if (((int)v) & 3)
+        return toInt(v);
+    BoxedNumber *p = (BoxedNumber *)v;
+    return p->num;
+}
+
+//%
+TNumber fromDouble(double r) {
+    int ri = ((int)r) << 1;
+    if ((ri >> 1) == r)
+        return (TNumber)(ri | 1);
+    BoxedNumber *p = malloc(sizeof(BoxedNumber));
+    p->refcnt = 2;
+    p->vtable = 0;
+    p->num = r;
+    return (TNumber)p;
+}
+
+//%
+TNumber fromFloat(float r) {
+    // TODO optimize
+    return fromDouble(r);
+}
+
+//%
+TNumber fromInt(int v) {
+    if (CAN_BE_TAGGED(v))
+        return TAG_NUMBER(v);
+    return fromDouble(v);
+}
+
+//%
+TNumber fromUInt(uint32_t v) {
+    if (CAN_BE_TAGGED(v))
+        return (TNumber)((v << 1) | 1);
+    return fromDouble(v);
+}
+
+TNumber eqFixup(TNumber v) {
+    if (v == TAG_NULL) return TAG_UNDEFINED;
+    if (v == TAG_TRUE) return TAG_NUMBER(1);
+    if (v == TAG_FALSE) return TAG_NUMBER(0);
+    return v;
+}
+
+bool eq_bool(TNumber a, TNumber b) {
+    a = eqFixup(a);
+    b = eqFixup(b);
+    if (a == b) return true;
+    int aa = (int)a;
+    int bb = (int)b;
+    // if at least one of the values is tagged, they are not equal
+    if ((aa | bb) & 3)
+        return false;
+    
+    return toDouble(a) == toDouble(b);
+}
+
+}
+
+#define NUMOP(op) return langsupp::fromDouble(langsupp::toDouble(a) op langsupp::toDouble(b));
+#define BITOP(op) return langsupp::fromInt(langsupp::toInt(a) op langsupp::toInt(b));
+namespace numops {
+
+//%
+TNumber adds(TNumber a, TNumber b) {
+    NUMOP(+)
+}
+
+//%
+TNumber subs(TNumber a, TNumber b) {
+    NUMOP(-)
+}
+
+//%
+TNumber muls(TNumber a, TNumber b) {
+    NUMOP(*)
+}
+
+//%
+TNumber div(TNumber a, TNumber b) {
+    NUMOP(/)
+}
+
+//%
+TNumber mod(TNumber a, TNumber b) {
+    NUMOP(%)
+}
+
+//%
+TNumber lsls(TNumber a, TNumber b) {
+    NUMOP(<<)
+}
+
+//%
+TNumber lsrs(TNumber a, TNumber b) {
+    NUMOP(>>)
+}
+
+//%
+TNumber asrs(TNumber a, TNumber b) {
+    return langsupp::fromUInt(langsupp::toUInt(a) >> langsupp::toUInt(b));
+}
+
+//%
+TNumber eors(TNumber a, TNumber b) {
+    NUMOP(^)
+}
+
+//%
+TNumber orrs(TNumber a, TNumber b) {
+    NUMOP(|)
+}
+
+//%
+TNumber ands(TNumber a, TNumber b) {
+    NUMOP(&)
+}
+
+#define CMPOP_RAW(op)                                                                              \
+    if (((int)a) & ((int)b) & 1)                                                                   \
+        return (int)a op((int)b);                                                                  \
+    return langsupp::toDouble(a) op langsupp::toDouble(b);
+
+#define CMPOP(op)                                                                                  \
+    if (((int)a) & ((int)b) & 1)                                                                   \
+        return ((int)a op((int)b)) ? TAG_TRUE : TAG_FALSE;                                         \
+    return langsupp::toDouble(a) op langsupp::toDouble(b) ? TAG_TRUE : TAG_FALSE;
+
+//%
+bool lt_bool(TNumber a, TNumber b) {
+    CMPOP_RAW(<)
+}
+
+//%
+bool eq_bool(TNumber a, TNumber b) {
+    CMPOP_RAW(==)
+}
+
+//%
+TNumber le(TNumber a, TNumber b) {
+    CMPOP(<=)
+}
+
+//%
+TNumber lt(TNumber a, TNumber b) {
+    CMPOP(<)
+}
+
+//%
+TNumber ge(TNumber a, TNumber b) {
+    CMPOP(>=)
+}
+
+//%
+TNumber gt(TNumber a, TNumber b) {
+    CMPOP(>)
+}
+
+//%
+TNumber eq(TNumber a, TNumber b) {
+    CMPOP(==)
+}
+
+//%
+TNumber neq(TNumber a, TNumber b) {
+    CMPOP(!=)
+}
+}
+
 namespace Number_ {
 //%
 StringData *toString(int n) {
