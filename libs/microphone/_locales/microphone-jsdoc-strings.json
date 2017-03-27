@@ -1,0 +1,5 @@
+{
+  "input.onSoundConditionChanged": "Registers an event that runs when particular lighting conditions (dark, bright) are encountered.",
+  "input.onSoundConditionChanged|param|condition": "the condition that event triggers on",
+  "input.soundLevel": "Reads the loudness through the microphone from 0 (silent) to 255 (very loud)"
+}
