@@ -62,13 +62,10 @@ StringData *substr(StringData *s, int start, int length) {
 }
 
 namespace Boolean_ {
-// Cache the string literals "true" and "false" when used.
 // Note that the representation of booleans stays the usual C-one.
 
-static const char sTrue[] __attribute__((aligned(4))) = "\xff\xff\x04\x00"
-                                                        "true\0";
-static const char sFalse[] __attribute__((aligned(4))) = "\xff\xff\x05\x00"
-                                                         "false\0";
+PXT_DEF_STRING(sTrue, "true")
+PXT_DEF_STRING(sFalse, "false")
 
 //%
 StringData *toString(bool v) {
@@ -85,22 +82,6 @@ bool bang(int v) {
 }
 }
 
-struct BoxedNumber : RefCounted {
-    double num;
-};
-
-struct TNumberStruct {};
-typedef TNumberStruct *TNumber;
-
-#define CAN_BE_TAGGED(v) (-0x40000000 <= (v) && (v) <= 0x3fffffff)
-#define TAGGED_SPECIAL(n) (TNumber)((n << 2) | 2)
-#define TAG_FALSE TAGGED_SPECIAL(2)
-#define TAG_TRUE TAGGED_SPECIAL(16)
-#define TAG_UNDEFINED (TNumber)0
-#define TAG_NULL TAGGED_SPECIAL(1)
-#define TAG_NUMBER(n) (TNumber)((n << 1) | 1)
-;
-
 namespace langsupp {
 
 //%
@@ -115,34 +96,44 @@ int toInt(TNumber v) {
             return 0;
     }
 
-    BoxedNumber *p = (BoxedNumber *)v;
     // TODO this probably doesn't follow JS semantics
-    return (int)p->num;
+    ValType t = valType(v);
+    if (t == ValType::Number) {
+        BoxedNumber *p = (BoxedNumber *)v;
+        return (int)p->num;
+    } else {
+        return 0;
+    }
 }
 
 //%
 uint32_t toUInt(TNumber v) {
-    if (((int)v) & 3)
+    if (((int)v) & 3 || valType(v) != ValType::Number)
         return toInt(v);
-    BoxedNumber *p = (BoxedNumber *)v;
     // TODO this probably doesn't follow JS semantics
+    BoxedNumber *p = (BoxedNumber *)v;
     return (uint32_t)p->num;
 }
 
 //%
 float toFloat(TNumber v) {
-    if (((int)v) & 3)
-        return toInt(v);
-    BoxedNumber *p = (BoxedNumber *)v;
-    return (float)p->num;
+    // TODO optimize?
+    return (float)toDouble(v);
 }
 
 //%
 double toDouble(TNumber v) {
     if (((int)v) & 3)
         return toInt(v);
-    BoxedNumber *p = (BoxedNumber *)v;
-    return p->num;
+
+    // TODO this probably doesn't follow JS semantics
+    ValType t = valType(v);
+    if (t == ValType::Number) {
+        BoxedNumber *p = (BoxedNumber *)v;
+        return p->num;
+    } else {
+        return NaN;
+    }
 }
 
 //%
@@ -151,8 +142,8 @@ TNumber fromDouble(double r) {
     if ((ri >> 1) == r)
         return (TNumber)(ri | 1);
     BoxedNumber *p = malloc(sizeof(BoxedNumber));
-    p->refcnt = 2;
-    p->vtable = 0;
+    p->init();
+    p->vtable = (int)number_vt >> vtableShift;
     p->num = r;
     return (TNumber)p;
 }
@@ -192,8 +183,17 @@ bool eq_bool(TNumber a, TNumber b) {
     b = eqFixup(b);
     if (a == b)
         return true;
+    ValType ta = valType(a);
+    ValType tb = valType(b);
+    if (ta != tb)
+        return false;
+
+    if (ta == ValType::String)
+        return String_::compare((StringData *)a, (StringData *)b) == 0;
+
     int aa = (int)a;
     int bb = (int)b;
+
     // if at least one of the values is tagged, they are not equal
     if ((aa | bb) & 3)
         return false;
@@ -205,6 +205,8 @@ bool eq_bool(TNumber a, TNumber b) {
 #define NUMOP(op) return langsupp::fromDouble(langsupp::toDouble(a) op langsupp::toDouble(b));
 #define BITOP(op) return langsupp::fromInt(langsupp::toInt(a) op langsupp::toInt(b));
 namespace numops {
+
+// The integer, non-overflow case for add/sub/bit opts is handled in assembly
 
 //%
 TNumber adds(TNumber a, TNumber b) {
@@ -277,11 +279,6 @@ bool lt_bool(TNumber a, TNumber b) {
 }
 
 //%
-bool eq_bool(TNumber a, TNumber b) {
-    CMPOP_RAW(==)
-}
-
-//%
 TNumber le(TNumber a, TNumber b) {
     CMPOP(<=)
 }
@@ -303,57 +300,12 @@ TNumber gt(TNumber a, TNumber b) {
 
 //%
 TNumber eq(TNumber a, TNumber b) {
-    CMPOP(==)
+    return eq_bool(a, b) ? TAG_TRUE : TAG_FALSE;
 }
 
 //%
 TNumber neq(TNumber a, TNumber b) {
-    CMPOP(!=)
-}
-}
-
-namespace Number_ {
-//%
-StringData *toString(int n) {
-    return ManagedString(n).leakData();
-}
-
-// +, - and friends are handled directly by assembly instructions
-// The comparisons are here as they are more code-size efficient
-
-//%
-bool lt(int x, int y) {
-    return x < y;
-}
-//%
-bool le(int x, int y) {
-    return x <= y;
-}
-//%
-bool neq(int x, int y) {
-    return x != y;
-}
-//%
-bool eq(int x, int y) {
-    return x == y;
-}
-//%
-bool gt(int x, int y) {
-    return x > y;
-}
-//%
-bool ge(int x, int y) {
-    return x >= y;
-}
-
-// These in fact call into C runtime on Cortex-M0
-//%
-int div(int x, int y) {
-    return x / y;
-}
-//%
-int mod(int x, int y) {
-    return x % y;
+    return !eq_bool(a, b) ? TAG_TRUE : TAG_FALSE;
 }
 }
 
@@ -488,41 +440,6 @@ uint32_t afterProgramPage() {
 }
 
 namespace pxtrt {
-enum class ValType {
-    Undefined,
-    Boolean,
-    Number,
-    String,
-    Object,
-};
-
-ValType valType(TValue v) {
-    if ((int)v & 3) {
-        if ((int)v & 1)
-            return ValType::Number;
-        switch ((int)v) {
-        case TAG_TRUE:
-        case TAG_FALSE:
-            return ValType::Boolean;
-        case TAG_NULL:
-            return ValType::Object;
-        default:
-            oops();
-        }
-    } else {
-        if (!v)
-            return ValType::Object;
-
-        VTable *vt = (VTable *)(((RefCounted *)v)->vtable << vtableShift);
-        if (vt == string_vt)
-            return ValType::String;
-        else if (v == number_vt)
-            return ValType::Number;
-        else
-            return ValType::Object;
-    }
-}
-
 //%
 uint32_t ldloc(RefLocal *r) {
     return r->v;
@@ -700,6 +617,63 @@ void *getGlobalsPtr() {
 void runtimeWarning(StringData *s) {
     // noop for now
 }
+}
+
+namespace pxt {
+
+//%
+ValType valType(TValue v) {
+    if ((int)v & 3) {
+        if ((int)v & 1)
+            return ValType::Number;
+        switch ((int)v) {
+        case TAG_TRUE:
+        case TAG_FALSE:
+            return ValType::Boolean;
+        case TAG_NULL:
+            return ValType::Object;
+        default:
+            oops();
+        }
+    } else {
+        if (!v)
+            return ValType::Object;
+
+        VTable *vt = (VTable *)(((RefCounted *)v)->vtable << vtableShift);
+        if (vt == string_vt)
+            return ValType::String;
+        else if (v == number_vt)
+            return ValType::Number;
+        else
+            return ValType::Object;
+    }
+}
+
+PXT_DEF_STRING(sUndefined, "undefined")
+PXT_DEF_STRING(sObject, "object")
+PXT_DEF_STRING(sBoolean, "boolean")
+PXT_DEF_STRING(sString, "string")
+PXT_DEF_STRING(sNumber, "number")
+
+//%
+StringData *typeOf(TValue v) {
+    switch (valType(v)) {
+    case ValType::Undefined:
+        return sUndefined;
+    case ValType::Boolean:
+        return sBoolean;
+    case ValType::Number:
+        return sNumber;
+    case ValType::String:
+        return sString;
+    case ValType::Object:
+        return sObject;
+    default:
+        oops();
+    }
+}
+
+// Maybe in future we will want separate print methods; for now ignore
 
 //%
 void primitivePrint(TValue v) {
