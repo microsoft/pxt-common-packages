@@ -116,12 +116,6 @@ uint32_t toUInt(TNumber v) {
 }
 
 //%
-float toFloat(TNumber v) {
-    // TODO optimize?
-    return (float)toDouble(v);
-}
-
-//%
 double toDouble(TNumber v) {
     if (((int)v) & 3)
         return toInt(v);
@@ -132,8 +126,14 @@ double toDouble(TNumber v) {
         BoxedNumber *p = (BoxedNumber *)v;
         return p->num;
     } else {
-        return NaN;
+        return 0; // TODO NaN?
     }
+}
+
+//%
+float toFloat(TNumber v) {
+    // TODO optimize?
+    return (float)toDouble(v);
 }
 
 //%
@@ -141,9 +141,9 @@ TNumber fromDouble(double r) {
     int ri = ((int)r) << 1;
     if ((ri >> 1) == r)
         return (TNumber)(ri | 1);
-    BoxedNumber *p = malloc(sizeof(BoxedNumber));
+    BoxedNumber *p = (BoxedNumber*)malloc(sizeof(BoxedNumber));
     p->init();
-    p->vtable = (int)number_vt >> vtableShift;
+    p->vtablePtr = (int)(void*)&number_vt >> vtableShift;
     p->num = r;
     return (TNumber)p;
 }
@@ -163,7 +163,7 @@ TNumber fromInt(int v) {
 
 //%
 TNumber fromUInt(uint32_t v) {
-    if (CAN_BE_TAGGED(v))
+    if (v <= 0x3fffffff)
         return (TNumber)((v << 1) | 1);
     return fromDouble(v);
 }
@@ -230,17 +230,18 @@ TNumber div(TNumber a, TNumber b) {
 
 //%
 TNumber mod(TNumber a, TNumber b) {
-    NUMOP(%)
+    // TODO this is wrong for doubles
+    BITOP(%)
 }
 
 //%
 TNumber lsls(TNumber a, TNumber b) {
-    NUMOP(<<)
+    BITOP(<<)
 }
 
 //%
 TNumber lsrs(TNumber a, TNumber b) {
-    NUMOP(>>)
+    BITOP(>>)
 }
 
 //%
@@ -250,17 +251,17 @@ TNumber asrs(TNumber a, TNumber b) {
 
 //%
 TNumber eors(TNumber a, TNumber b) {
-    NUMOP (^)
+    BITOP (^)
 }
 
 //%
 TNumber orrs(TNumber a, TNumber b) {
-    NUMOP(|)
+    BITOP(|)
 }
 
 //%
 TNumber ands(TNumber a, TNumber b) {
-    NUMOP(&)
+    BITOP(&)
 }
 
 #define CMPOP_RAW(op)                                                                              \
@@ -300,12 +301,12 @@ TNumber gt(TNumber a, TNumber b) {
 
 //%
 TNumber eq(TNumber a, TNumber b) {
-    return eq_bool(a, b) ? TAG_TRUE : TAG_FALSE;
+    return langsupp::eq_bool(a, b) ? TAG_TRUE : TAG_FALSE;
 }
 
 //%
 TNumber neq(TNumber a, TNumber b) {
-    return !eq_bool(a, b) ? TAG_TRUE : TAG_FALSE;
+    return !langsupp::eq_bool(a, b) ? TAG_TRUE : TAG_FALSE;
 }
 }
 
@@ -626,23 +627,22 @@ ValType valType(TValue v) {
     if ((int)v & 3) {
         if ((int)v & 1)
             return ValType::Number;
-        switch ((int)v) {
-        case TAG_TRUE:
-        case TAG_FALSE:
+        if (v == TAG_TRUE || v == TAG_FALSE)
             return ValType::Boolean;
-        case TAG_NULL:
+        else if (v == TAG_NULL)
             return ValType::Object;
-        default:
+        else {
             oops();
+            return ValType::Object;
         }
     } else {
         if (!v)
             return ValType::Object;
 
-        VTable *vt = (VTable *)(((RefCounted *)v)->vtable << vtableShift);
-        if (vt == string_vt)
+        VTable *vt = (VTable *)(((RefCounted *)v)->vtablePtr << vtableShift);
+        if (vt == &string_vt)
             return ValType::String;
-        else if (v == number_vt)
+        else if (vt == &number_vt)
             return ValType::Number;
         else
             return ValType::Object;
@@ -659,17 +659,18 @@ PXT_DEF_STRING(sNumber, "number")
 StringData *typeOf(TValue v) {
     switch (valType(v)) {
     case ValType::Undefined:
-        return sUndefined;
+        return (StringData *)sUndefined;
     case ValType::Boolean:
-        return sBoolean;
+        return (StringData *)sBoolean;
     case ValType::Number:
-        return sNumber;
+        return (StringData *)sNumber;
     case ValType::String:
-        return sString;
+        return (StringData *)sString;
     case ValType::Object:
-        return sObject;
+        return (StringData *)sObject;
     default:
         oops();
+        return 0;
     }
 }
 

@@ -333,7 +333,8 @@ declare interface Buffer {
      * Shift buffer left in place, with zero padding.
      * @param offset number of bytes to shift; use negative value to shift right
      * @param start start offset in buffer. Default is 0.
-     * @param length number of elements in buffer. If negative, length is set as the buffer length minus start. eg: -1
+     * @param length number of elements in buffer. If negative, length is set as the buffer length minus
+     * start. eg: -1
      */
     //% start.defl=0 length.defl=-1 shim=BufferMethods::shift
     shift(offset: number, start?: number, length?: number): void;
@@ -342,7 +343,8 @@ declare interface Buffer {
      * Rotate buffer left in place.
      * @param offset number of bytes to shift; use negative value to shift right
      * @param start start offset in buffer. Default is 0.
-     * @param length number of elements in buffer. If negative, length is set as the buffer length minus start. eg: -1
+     * @param length number of elements in buffer. If negative, length is set as the buffer length minus
+     * start. eg: -1
      */
     //% start.defl=0 length.defl=-1 shim=BufferMethods::rotate
     rotate(offset: number, start?: number, length?: number): void;

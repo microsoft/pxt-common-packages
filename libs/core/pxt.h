@@ -24,6 +24,7 @@
 #include "DeviceFiber.h"
 #include "DeviceMessageBus.h"
 #include "TouchSensor.h"
+#include "DeviceImage.h"
 
 #include "pins.h"
 #include "hf2.h"
@@ -107,6 +108,10 @@ inline bool hasVTable(uint32_t e) {
 inline void check(int cond, ERROR code, int subcode = 0) {
     if (!cond)
         error(code, subcode);
+}
+
+inline void oops() {
+    device.panic(47);
 }
 
 class RefObject;
@@ -338,12 +343,12 @@ typedef TValueStruct *TValue;
 typedef TValue TNumber;
 
 #define CAN_BE_TAGGED(v) (-0x40000000 <= (v) && (v) <= 0x3fffffff)
-#define TAGGED_SPECIAL(n) (TNumber)((n << 2) | 2)
+#define TAGGED_SPECIAL(n) (TNumber)(void *)((n << 2) | 2)
 #define TAG_FALSE TAGGED_SPECIAL(2)
 #define TAG_TRUE TAGGED_SPECIAL(16)
 #define TAG_UNDEFINED (TNumber)0
 #define TAG_NULL TAGGED_SPECIAL(1)
-#define TAG_NUMBER(n) (TNumber)((n << 1) | 1)
+#define TAG_NUMBER(n) (TNumber)(void *)((n << 1) | 1)
 
 extern const VTable string_vt;
 extern const VTable image_vt;
@@ -361,7 +366,7 @@ enum class ValType {
 ValType valType(TValue v);
 }
 
-// The initial six bytes of the strings (@PXT@:) are rewritten 
+// The initial six bytes of the strings (@PXT@:) are rewritten
 // to the proper ref-count and vtable pointer
 #define PXT_DEF_STRING(name, val)                                                                  \
     static const char name[] __attribute__((aligned(4))) = "@PXT@:" val;
@@ -381,8 +386,9 @@ typedef BufferData *Buffer;
     namespace pxt {                                                                                \
     const uint32_t functionsAndBytecode[] __attribute__((aligned(0x20))) = {                       \
         0x08010801, 0x42424242, 0x08010801, 0x8de9d83e, (uint32_t)&string_vt,                      \
-        (uint32_t)&ManagedString::emptyData, (uint32_t)&image_vt, (uint32_t)&Image::emptyData,     \
-        (uint32_t)&buffer_vt, (uint32_t)&ManagedBuffer::emptyData, 0,
+        (uint32_t)&ManagedString::emptyData, (uint32_t)&image_vt,                                  \
+        (uint32_t)&DeviceImage::emptyData, (uint32_t)&buffer_vt,                                   \
+        (uint32_t)&ManagedBuffer::emptyData, 0,
 
 #define PXT_SHIMS_END                                                                              \
     }                                                                                              \
