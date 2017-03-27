@@ -86,7 +86,6 @@ bool bang(int v) {
 }
 
 struct BoxedNumber : RefCounted {
-    uint16_t vtable;
     double num;
 };
 
@@ -179,25 +178,28 @@ TNumber fromUInt(uint32_t v) {
 }
 
 TNumber eqFixup(TNumber v) {
-    if (v == TAG_NULL) return TAG_UNDEFINED;
-    if (v == TAG_TRUE) return TAG_NUMBER(1);
-    if (v == TAG_FALSE) return TAG_NUMBER(0);
+    if (v == TAG_NULL)
+        return TAG_UNDEFINED;
+    if (v == TAG_TRUE)
+        return TAG_NUMBER(1);
+    if (v == TAG_FALSE)
+        return TAG_NUMBER(0);
     return v;
 }
 
 bool eq_bool(TNumber a, TNumber b) {
     a = eqFixup(a);
     b = eqFixup(b);
-    if (a == b) return true;
+    if (a == b)
+        return true;
     int aa = (int)a;
     int bb = (int)b;
     // if at least one of the values is tagged, they are not equal
     if ((aa | bb) & 3)
         return false;
-    
+
     return toDouble(a) == toDouble(b);
 }
-
 }
 
 #define NUMOP(op) return langsupp::fromDouble(langsupp::toDouble(a) op langsupp::toDouble(b));
@@ -246,7 +248,7 @@ TNumber asrs(TNumber a, TNumber b) {
 
 //%
 TNumber eors(TNumber a, TNumber b) {
-    NUMOP(^)
+    NUMOP (^)
 }
 
 //%
@@ -486,6 +488,41 @@ uint32_t afterProgramPage() {
 }
 
 namespace pxtrt {
+enum class ValType {
+    Undefined,
+    Boolean,
+    Number,
+    String,
+    Object,
+};
+
+ValType valType(TValue v) {
+    if ((int)v & 3) {
+        if ((int)v & 1)
+            return ValType::Number;
+        switch ((int)v) {
+        case TAG_TRUE:
+        case TAG_FALSE:
+            return ValType::Boolean;
+        case TAG_NULL:
+            return ValType::Object;
+        default:
+            oops();
+        }
+    } else {
+        if (!v)
+            return ValType::Object;
+
+        VTable *vt = (VTable *)(((RefCounted *)v)->vtable << vtableShift);
+        if (vt == string_vt)
+            return ValType::String;
+        else if (v == number_vt)
+            return ValType::Number;
+        else
+            return ValType::Object;
+    }
+}
+
 //%
 uint32_t ldloc(RefLocal *r) {
     return r->v;
@@ -663,4 +700,22 @@ void *getGlobalsPtr() {
 void runtimeWarning(StringData *s) {
     // noop for now
 }
+
+//%
+void primitivePrint(TValue v) {
+    // TODO
+}
+
+#define PRIM_VTABLE(name, sz)                                                                      \
+    const VTable name                                                                              \
+        __attribute__((aligned(1 << vtableShift))) = {sz,                                          \
+                                                      0,                                           \
+                                                      0,                                           \
+                                                      {                                            \
+                                                          (void *)&free, (void *)&primitivePrint,  \
+                                                      }};
+PRIM_VTABLE(string_vt, 0)
+PRIM_VTABLE(image_vt, 0)
+PRIM_VTABLE(buffer_vt, 0)
+PRIM_VTABLE(number_vt, 12)
 }
