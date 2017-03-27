@@ -16,3 +16,5 @@ input.lightLevel();
 input.temperature(TemperatureUnit.Celsius);
 input.setAccelerometerRange(AcceleratorRange.OneG);
 ```
+
+## #microphone

@@ -90,14 +90,6 @@ declare namespace serial {
     }
 
 
-    declare enum LoudnessCondition {
-    //% block="quiet"
-    Quiet = 1,  // ANALOG_THRESHOLD_LOW
-    //% block="loud"
-    Loud = 2,  // ANALOG_THRESHOLD_HIGH
-    }
-
-
     declare enum TemperatureCondition {
     //% block="cold"
     Cold = 1,  // ANALOG_THRESHOLD_LOW

@@ -1,0 +1,17 @@
+{
+    "name": "microphone",
+    "description": "The microphone library",
+    "files": [
+        "README.md",
+        "microphone.cpp",
+        "enums.d.ts",
+        "shims.d.ts"
+    ],
+    "testFiles": [
+        "test.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core"
+    }
+}
