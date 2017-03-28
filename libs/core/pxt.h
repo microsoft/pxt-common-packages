@@ -45,8 +45,24 @@
 // extern MicroBit uBit;
 
 namespace pxt {
-typedef uint32_t Action;
-typedef uint32_t ImageLiteral;
+//
+// Tagged values
+//
+struct TValueStruct {};
+typedef TValueStruct *TValue;
+typedef TValue TNumber;
+
+#define CAN_BE_TAGGED(v) (-0x40000000 <= (v) && (v) <= 0x3fffffff)
+#define TAGGED_SPECIAL(n) (TValue)(void *)((n << 2) | 2)
+#define TAG_FALSE TAGGED_SPECIAL(2)
+#define TAG_TRUE TAGGED_SPECIAL(16)
+#define TAG_UNDEFINED (TValue)0
+#define TAG_NULL TAGGED_SPECIAL(1)
+#define TAG_NUMBER(n) (TNumber)(void *)((n << 1) | 1)
+
+
+typedef TValue Action;
+typedef TValue ImageLiteral;
 
 extern CodalUSB usb;
 extern HF2 hf2;
@@ -59,7 +75,7 @@ typedef enum {
 } ERROR;
 
 extern const uint32_t functionsAndBytecode[];
-extern uint32_t *globals;
+extern TValue *globals;
 extern uint16_t *bytecode;
 class RefRecord;
 
@@ -69,23 +85,54 @@ extern DeviceTimer devTimer;
 extern DeviceMessageBus devMessageBus;
 void registerWithDal(int id, int event, Action a);
 void runInBackground(Action a);
-uint32_t runAction3(Action a, int arg0, int arg1, int arg2);
-uint32_t runAction2(Action a, int arg0, int arg1);
-uint32_t runAction1(Action a, int arg0);
-uint32_t runAction0(Action a);
+//%
+TValue runAction3(Action a, TValue arg0, TValue arg1, TValue arg2);
+//%
+TValue runAction2(Action a, TValue arg0, TValue arg1);
+//%
+TValue runAction1(Action a, TValue arg0);
+//%
+TValue runAction0(Action a);
+//%
 Action mkAction(int reflen, int totallen, int startptr);
+// allocate [sz] words and clear them
+//%
+uint32_t *allocate(uint16_t sz);
+//%
+int templateHash();
+//%
+int programHash();
+//%
+uint32_t programSize();
+//%
+uint32_t afterProgramPage();
+//%
+int getNumGlobals();
+//%
+RefRecord *mkClassInstance(int vtableOffset);
+//%
+void debugMemLeaks();
+
+//%
+int toInt(TNumber v);
+//%
+uint32_t toUInt(TNumber v);
+//%
+double toDouble(TNumber v);
+//%
+float toFloat(TNumber v);
+//%
+TNumber fromDouble(double r);
+//%
+TNumber fromFloat(float r);
+//%
+TNumber fromInt(int v);
+//%
+TNumber fromUInt(uint32_t v);
+
 void error(ERROR code, int subcode = 0);
 void exec_binary(uint16_t *pc);
 void start();
-void debugMemLeaks();
-// allocate [sz] words and clear them
-uint32_t *allocate(uint16_t sz);
-int templateHash();
-int programHash();
-uint32_t programSize();
-uint32_t afterProgramPage();
-int getNumGlobals();
-RefRecord *mkClassInstance(int vtableOffset);
 
 // The standard calling convention is:
 //   - when a pointer is loaded from a local/global/field etc, and incr()ed
@@ -93,15 +140,17 @@ RefRecord *mkClassInstance(int vtableOffset);
 //   - after a function call, all pointers are popped off the stack and decr()ed
 // This does not apply to the RefRecord and st/ld(ref) methods - they unref()
 // the RefRecord* this.
-int incr(uint32_t e);
-void decr(uint32_t e);
+//%
+TValue incr(TValue e);
+//%
+void decr(TValue e);
 
 inline void *ptrOfLiteral(int offset) {
     return &bytecode[offset];
 }
 
 // Checks if object has a VTable, or if its RefCounted* from the runtime.
-inline bool hasVTable(uint32_t e) {
+inline bool hasVTable(TValue e) {
     return (*((uint32_t *)e) & 1) == 0;
 }
 
@@ -179,12 +228,12 @@ class RefObject {
 
 class Segment {
   private:
-    uint32_t *data;
+    TValue *data;
     uint16_t length;
     uint16_t size;
 
-    static const uint16_t MaxSize = 0xFFFF;
-    static const uint32_t DefaultValue = 0x0;
+    static constexpr uint16_t MaxSize = 0xFFFF;
+    static constexpr TValue DefaultValue = TAG_UNDEFINED;
 
     static uint16_t growthFactor(uint16_t size);
     void growByMin(uint16_t minSize);
@@ -194,17 +243,17 @@ class Segment {
   public:
     Segment() : data(nullptr), length(0), size(0){};
 
-    uint32_t get(uint32_t i);
-    void set(uint32_t i, uint32_t value);
+    TValue get(uint32_t i);
+    void set(uint32_t i, TValue value);
 
     uint32_t getLength() { return length; };
     void setLength(uint32_t newLength);
 
-    void push(uint32_t value);
-    uint32_t pop();
+    void push(TValue value);
+    TValue pop();
 
-    uint32_t remove(uint32_t i);
-    void insert(uint32_t i, uint32_t value);
+    TValue remove(uint32_t i);
+    void insert(uint32_t i, TValue value);
 
     bool isValidIndex(uint32_t i);
 
@@ -234,22 +283,22 @@ class RefCollection : public RefObject {
     uint32_t length() { return head.getLength(); }
     void setLength(uint32_t newLength) { head.setLength(newLength); }
 
-    void push(uint32_t x);
-    uint32_t pop();
-    uint32_t getAt(int i);
-    void setAt(int i, uint32_t x);
+    void push(TValue x);
+    TValue pop();
+    TValue getAt(int i);
+    void setAt(int i, TValue x);
     // removes the element at index i and shifts the other elements left
-    uint32_t removeAt(int i);
+    TValue removeAt(int i);
     // inserts the element at index i and moves the other elements right.
-    void insertAt(int i, uint32_t x);
+    void insertAt(int i, TValue x);
 
-    int indexOf(uint32_t x, int start);
-    int removeElement(uint32_t x);
+    int indexOf(TValue x, int start);
+    bool removeElement(TValue x);
 };
 
 struct MapEntry {
     uint32_t key;
-    uint32_t val;
+    TValue val;
 };
 
 class RefMap : public RefObject {
@@ -266,22 +315,24 @@ class RefMap : public RefObject {
 class RefRecord : public RefObject {
   public:
     // The object is allocated, so that there is space at the end for the fields.
-    uint32_t fields[];
+    TValue fields[];
 
     RefRecord(uint16_t v) : RefObject(v) {}
 
-    uint32_t ld(int idx);
-    uint32_t ldref(int idx);
-    void st(int idx, uint32_t v);
-    void stref(int idx, uint32_t v);
+    TValue ld(int idx);
+    TValue ldref(int idx);
+    void st(int idx, TValue v);
+    void stref(int idx, TValue v);
 };
 
 // these are needed when constructing vtables for user-defined classes
+//%
 void RefRecord_destroy(RefRecord *r);
+//%
 void RefRecord_print(RefRecord *r);
 
 class RefAction;
-typedef uint32_t (*ActionCB)(uint32_t *captured, uint32_t arg0, uint32_t arg1, uint32_t arg2);
+typedef TValue (*ActionCB)(TValue *captured, TValue arg0, TValue arg1, TValue arg2);
 
 // Ref-counted function pointer. It's currently always a ()=>void procedure pointer.
 class RefAction : public RefObject {
@@ -291,24 +342,24 @@ class RefAction : public RefObject {
     uint8_t reflen;
     ActionCB func; // The function pointer
     // fields[] contain captured locals
-    uint32_t fields[];
+    TValue fields[];
 
     void destroy();
     void print();
 
     RefAction();
 
-    inline void stCore(int idx, uint32_t v) {
+    inline void stCore(int idx, TValue v) {
         // DMESG("ST [%d] = %d ", idx, v); this->print();
         intcheck(0 <= idx && idx < len, ERR_OUT_OF_BOUNDS, 10);
         intcheck(fields[idx] == 0, ERR_OUT_OF_BOUNDS, 11); // only one assignment permitted
         fields[idx] = v;
     }
 
-    inline uint32_t runCore(int arg0, int arg1, int arg2) // internal; use runAction*() functions
+    inline TValue runCore(TValue arg0, TValue arg1, TValue arg2) // internal; use runAction*() functions
     {
         this->ref();
-        uint32_t r = this->func(&this->fields[0], arg0, arg1, arg2);
+        TValue r = this->func(&this->fields[0], arg0, arg1, arg2);
         this->unref();
         return r;
     }
@@ -317,7 +368,7 @@ class RefAction : public RefObject {
 // These two are used to represent locals written from inside inline functions
 class RefLocal : public RefObject {
   public:
-    uint32_t v;
+    TValue v;
     void destroy();
     void print();
     RefLocal();
@@ -325,7 +376,7 @@ class RefLocal : public RefObject {
 
 class RefRefLocal : public RefObject {
   public:
-    uint32_t v;
+    TValue v;
     void destroy();
     void print();
     RefRefLocal();
@@ -334,21 +385,6 @@ class RefRefLocal : public RefObject {
 struct BoxedNumber : RefCounted {
     double num;
 };
-
-//
-// Tagged values
-//
-struct TValueStruct {};
-typedef TValueStruct *TValue;
-typedef TValue TNumber;
-
-#define CAN_BE_TAGGED(v) (-0x40000000 <= (v) && (v) <= 0x3fffffff)
-#define TAGGED_SPECIAL(n) (TNumber)(void *)((n << 2) | 2)
-#define TAG_FALSE TAGGED_SPECIAL(2)
-#define TAG_TRUE TAGGED_SPECIAL(16)
-#define TAG_UNDEFINED (TNumber)0
-#define TAG_NULL TAGGED_SPECIAL(1)
-#define TAG_NUMBER(n) (TNumber)(void *)((n << 1) | 1)
 
 extern const VTable string_vt;
 extern const VTable image_vt;

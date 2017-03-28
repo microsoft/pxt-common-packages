@@ -82,9 +82,9 @@ bool bang(int v) {
 }
 }
 
-namespace langsupp {
 
-//%
+namespace pxt {
+
 int toInt(TNumber v) {
     int vv = (int)v;
     if (vv & 1)
@@ -106,7 +106,6 @@ int toInt(TNumber v) {
     }
 }
 
-//%
 uint32_t toUInt(TNumber v) {
     if (((int)v) & 3 || valType(v) != ValType::Number)
         return toInt(v);
@@ -115,7 +114,6 @@ uint32_t toUInt(TNumber v) {
     return (uint32_t)p->num;
 }
 
-//%
 double toDouble(TNumber v) {
     if (((int)v) & 3)
         return toInt(v);
@@ -130,13 +128,11 @@ double toDouble(TNumber v) {
     }
 }
 
-//%
 float toFloat(TNumber v) {
     // TODO optimize?
     return (float)toDouble(v);
 }
 
-//%
 TNumber fromDouble(double r) {
     int ri = ((int)r) << 1;
     if ((ri >> 1) == r)
@@ -148,26 +144,26 @@ TNumber fromDouble(double r) {
     return (TNumber)p;
 }
 
-//%
 TNumber fromFloat(float r) {
     // TODO optimize
     return fromDouble(r);
 }
 
-//%
 TNumber fromInt(int v) {
     if (CAN_BE_TAGGED(v))
         return TAG_NUMBER(v);
     return fromDouble(v);
 }
 
-//%
 TNumber fromUInt(uint32_t v) {
     if (v <= 0x3fffffff)
         return (TNumber)((v << 1) | 1);
     return fromDouble(v);
 }
 
+}
+
+namespace langsupp {
 TNumber eqFixup(TNumber v) {
     if (v == TAG_NULL)
         return TAG_UNDEFINED;
@@ -202,8 +198,8 @@ bool eq_bool(TNumber a, TNumber b) {
 }
 }
 
-#define NUMOP(op) return langsupp::fromDouble(langsupp::toDouble(a) op langsupp::toDouble(b));
-#define BITOP(op) return langsupp::fromInt(langsupp::toInt(a) op langsupp::toInt(b));
+#define NUMOP(op) return fromDouble(toDouble(a) op toDouble(b));
+#define BITOP(op) return fromInt(toInt(a) op toInt(b));
 namespace numops {
 
 // The integer, non-overflow case for add/sub/bit opts is handled in assembly
@@ -246,7 +242,7 @@ TNumber lsrs(TNumber a, TNumber b) {
 
 //%
 TNumber asrs(TNumber a, TNumber b) {
-    return langsupp::fromUInt(langsupp::toUInt(a) >> langsupp::toUInt(b));
+    return fromUInt(toUInt(a) >> toUInt(b));
 }
 
 //%
@@ -267,12 +263,12 @@ TNumber ands(TNumber a, TNumber b) {
 #define CMPOP_RAW(op)                                                                              \
     if (((int)a) & ((int)b) & 1)                                                                   \
         return (int)a op((int)b);                                                                  \
-    return langsupp::toDouble(a) op langsupp::toDouble(b);
+    return toDouble(a) op toDouble(b);
 
 #define CMPOP(op)                                                                                  \
     if (((int)a) & ((int)b) & 1)                                                                   \
         return ((int)a op((int)b)) ? TAG_TRUE : TAG_FALSE;                                         \
-    return langsupp::toDouble(a) op langsupp::toDouble(b) ? TAG_TRUE : TAG_FALSE;
+    return toDouble(a) op toDouble(b) ? TAG_TRUE : TAG_FALSE;
 
 //%
 bool lt_bool(TNumber a, TNumber b) {
@@ -357,74 +353,42 @@ void setLength(RefCollection *c, int newLength) {
     c->setLength(newLength);
 }
 //%
-void push(RefCollection *c, uint32_t x) {
+void push(RefCollection *c, TValue x) {
     c->push(x);
 }
 //%
-uint32_t pop(RefCollection *c) {
+TValue pop(RefCollection *c) {
     return c->pop();
 }
 //%
-uint32_t getAt(RefCollection *c, int x) {
+TValue getAt(RefCollection *c, int x) {
     return c->getAt(x);
 }
 //%
-void setAt(RefCollection *c, int x, uint32_t y) {
+void setAt(RefCollection *c, int x, TValue y) {
     c->setAt(x, y);
 }
 //%
-uint32_t removeAt(RefCollection *c, int x) {
+TValue removeAt(RefCollection *c, int x) {
     return c->removeAt(x);
 }
 //%
-void insertAt(RefCollection *c, int x, uint32_t value) {
+void insertAt(RefCollection *c, int x, TValue value) {
     c->insertAt(x, value);
 }
 //%
-int indexOf(RefCollection *c, uint32_t x, int start) {
+int indexOf(RefCollection *c, TValue x, int start) {
     return c->indexOf(x, start);
 }
 //%
-int removeElement(RefCollection *c, uint32_t x) {
+bool removeElement(RefCollection *c, TValue x) {
     return c->removeElement(x);
 }
 }
 
-// Import some stuff directly
 namespace pxt {
-
-//%
-uint32_t runAction3(Action a, int arg0, int arg1, int arg2);
-//%
-uint32_t runAction2(Action a, int arg0, int arg1);
-//%
-uint32_t runAction1(Action a, int arg0);
-//%
-uint32_t runAction0(Action a);
-//%
-Action mkAction(int reflen, int totallen, int startptr);
-//%
-RefRecord *mkClassInstance(int offset);
-//%
-void RefRecord_destroy(RefRecord *r);
-//%
-void RefRecord_print(RefRecord *r);
-//%
-void debugMemLeaks();
-//%
-int incr(uint32_t e);
-//%
-void decr(uint32_t e);
-//%
-uint32_t *allocate(uint16_t sz);
-//%
-int templateHash();
-//%
-int programHash();
 //%
 void *ptrOfLiteral(int offset);
-//%
-int getNumGlobals();
 
 //%
 uint32_t programSize() {
@@ -442,24 +406,24 @@ uint32_t afterProgramPage() {
 
 namespace pxtrt {
 //%
-uint32_t ldloc(RefLocal *r) {
+TValue ldloc(RefLocal *r) {
     return r->v;
 }
 
 //%
-uint32_t ldlocRef(RefRefLocal *r) {
-    uint32_t tmp = r->v;
+TValue ldlocRef(RefRefLocal *r) {
+    TValue tmp = r->v;
     incr(tmp);
     return tmp;
 }
 
 //%
-void stloc(RefLocal *r, uint32_t v) {
+void stloc(RefLocal *r, TValue v) {
     r->v = v;
 }
 
 //%
-void stlocRef(RefRefLocal *r, uint32_t v) {
+void stlocRef(RefRefLocal *r, TValue v) {
     decr(r->v);
     r->v = v;
 }
@@ -478,34 +442,34 @@ RefRefLocal *mklocRef() {
 // the code emitter will not emit the unrefs for them.
 
 //%
-uint32_t ldfld(RefRecord *r, int idx) {
-    uint32_t tmp = r->ld(idx);
+TValue ldfld(RefRecord *r, int idx) {
+    TValue tmp = r->ld(idx);
     r->unref();
     return tmp;
 }
 
 //%
-uint32_t ldfldRef(RefRecord *r, int idx) {
-    uint32_t tmp = r->ldref(idx);
+TValue ldfldRef(RefRecord *r, int idx) {
+    TValue tmp = r->ldref(idx);
     r->unref();
     return tmp;
 }
 
 //%
-void stfld(RefRecord *r, int idx, uint32_t val) {
+void stfld(RefRecord *r, int idx, TValue val) {
     r->st(idx, val);
     r->unref();
 }
 
 //%
-void stfldRef(RefRecord *r, int idx, uint32_t val) {
+void stfldRef(RefRecord *r, int idx, TValue val) {
     r->stref(idx, val);
     r->unref();
 }
 
 // Store a captured local in a closure. It returns the action, so it can be chained.
 //%
-RefAction *stclo(RefAction *a, int idx, uint32_t v) {
+RefAction *stclo(RefAction *a, int idx, TValue v) {
     // DBG("STCLO "); a->print(); DBG("@%d = %p\n", idx, (void*)v);
     a->stCore(idx, v);
     return a;
@@ -536,7 +500,7 @@ StringData *emptyToNull(StringData *s) {
 }
 
 //%
-int ptrToBool(uint32_t p) {
+int ptrToBool(TValue p) {
     if (p) {
         decr(p);
         return 1;
@@ -551,31 +515,31 @@ RefMap *mkMap() {
 }
 
 //%
-uint32_t mapGet(RefMap *map, uint32_t key) {
+TValue mapGet(RefMap *map, uint32_t key) {
     int i = map->findIdx(key);
     if (i < 0) {
         map->unref();
         return 0;
     }
-    uint32_t r = map->data[i].val;
+    TValue r = map->data[i].val;
     map->unref();
     return r;
 }
 
 //%
-uint32_t mapGetRef(RefMap *map, uint32_t key) {
+TValue mapGetRef(RefMap *map, uint32_t key) {
     int i = map->findIdx(key);
     if (i < 0) {
         map->unref();
         return 0;
     }
-    uint32_t r = incr(map->data[i].val);
+    TValue r = incr(map->data[i].val);
     map->unref();
     return r;
 }
 
 //%
-void mapSet(RefMap *map, uint32_t key, uint32_t val) {
+void mapSet(RefMap *map, uint32_t key, TValue val) {
     int i = map->findIdx(key);
     if (i < 0) {
         map->data.push_back({key << 1, val});
@@ -590,7 +554,7 @@ void mapSet(RefMap *map, uint32_t key, uint32_t val) {
 }
 
 //%
-void mapSetRef(RefMap *map, uint32_t key, uint32_t val) {
+void mapSetRef(RefMap *map, uint32_t key, TValue val) {
     int i = map->findIdx(key);
     if (i < 0) {
         map->data.push_back({(key << 1) | 1, val});

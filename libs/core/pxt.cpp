@@ -14,7 +14,7 @@ __attribute__((section(".binmeta"))) __attribute__((used)) const uint32_t pxt_bi
     0x00ff00ff, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff,
 };
 
-int incr(uint32_t e) {
+TValue incr(TValue e) {
     if (e) {
         if (hasVTable(e))
             ((RefObject *)e)->ref();
@@ -24,7 +24,7 @@ int incr(uint32_t e) {
     return e;
 }
 
-void decr(uint32_t e) {
+void decr(TValue e) {
     if (e) {
         if (hasVTable(e))
             ((RefObject *)e)->unref();
@@ -42,7 +42,7 @@ Action mkAction(int reflen, int totallen, int startptr) {
     uint32_t tmp = (uint32_t)&bytecode[startptr];
 
     if (totallen == 0) {
-        return tmp; // no closure needed
+        return (TValue)tmp; // no closure needed
     }
 
     void *ptr = ::operator new(sizeof(RefAction) + totallen * sizeof(uint32_t));
@@ -55,24 +55,24 @@ Action mkAction(int reflen, int totallen, int startptr) {
     return (Action)r;
 }
 
-uint32_t runAction3(Action a, int arg0, int arg1, int arg2) {
+TValue runAction3(Action a, TValue arg0, TValue arg1, TValue arg2) {
     if (hasVTable(a))
         return ((RefAction *)a)->runCore(arg0, arg1, arg2);
     else {
         check(*(uint16_t *)a == 0xffff, ERR_INVALID_BINARY_HEADER, 4);
-        return ((ActionCB)((a + 4) | 1))(NULL, arg0, arg1, arg2);
+        return ((ActionCB)(((uint32_t)a + 4) | 1))(NULL, arg0, arg1, arg2);
     }
 }
 
-uint32_t runAction2(Action a, int arg0, int arg1) {
+TValue runAction2(Action a, TValue arg0, TValue arg1) {
     return runAction3(a, arg0, arg1, 0);
 }
 
-uint32_t runAction1(Action a, int arg0) {
+TValue runAction1(Action a, TValue arg0) {
     return runAction3(a, arg0, 0, 0);
 }
 
-uint32_t runAction0(Action a) {
+TValue runAction0(Action a) {
     return runAction3(a, 0, 0, 0);
 }
 
@@ -88,25 +88,25 @@ RefRecord *mkClassInstance(int vtableOffset) {
     return r;
 }
 
-uint32_t RefRecord::ld(int idx) {
+TValue RefRecord::ld(int idx) {
     // intcheck((reflen == 255 ? 0 : reflen) <= idx && idx < len, ERR_OUT_OF_BOUNDS, 1);
     return fields[idx];
 }
 
-uint32_t RefRecord::ldref(int idx) {
+TValue RefRecord::ldref(int idx) {
     // DMESG("LD %p len=%d reflen=%d idx=%d", this, len, reflen, idx);
     // intcheck(0 <= idx && idx < reflen, ERR_OUT_OF_BOUNDS, 2);
-    uint32_t tmp = fields[idx];
+    TValue tmp = fields[idx];
     incr(tmp);
     return tmp;
 }
 
-void RefRecord::st(int idx, uint32_t v) {
+void RefRecord::st(int idx, TValue v) {
     // intcheck((reflen == 255 ? 0 : reflen) <= idx && idx < len, ERR_OUT_OF_BOUNDS, 3);
     fields[idx] = v;
 }
 
-void RefRecord::stref(int idx, uint32_t v) {
+void RefRecord::stref(int idx, TValue v) {
     // DMESG("ST %p len=%d reflen=%d idx=%d", this, len, reflen, idx);
     // intcheck(0 <= idx && idx < reflen, ERR_OUT_OF_BOUNDS, 4);
     decr(fields[idx]);
@@ -140,7 +140,7 @@ void RefRecord_print(RefRecord *r) {
     DMESG("RefRecord %p r=%d size=%d bytes", r, r->refcnt, r->getVTable()->numbytes);
 }
 
-uint32_t Segment::get(uint32_t i) {
+TValue Segment::get(uint32_t i) {
 #ifdef DEBUG_BUILD
     printf("In Segment::get index:%u\n", i);
     this->print();
@@ -152,7 +152,7 @@ uint32_t Segment::get(uint32_t i) {
     return Segment::DefaultValue;
 }
 
-void Segment::set(uint32_t i, uint32_t value) {
+void Segment::set(uint32_t i, TValue value) {
     if (i < size) {
         data[i] = value;
     } else if (i < Segment::MaxSize) {
@@ -195,14 +195,14 @@ void Segment::growBy(uint16_t newSize) {
 #endif
     if (size < newSize) {
         // this will throw if unable to allocate
-        uint32_t *tmp = (uint32_t *)(::operator new(newSize * sizeof(uint32_t)));
+        TValue *tmp = (TValue *)(::operator new(newSize * sizeof(TValue)));
 
         // Copy existing data
         if (size) {
-            memcpy(tmp, data, size * sizeof(uint32_t));
+            memcpy(tmp, data, size * sizeof(TValue));
         }
         // fill the rest with default value
-        memset(tmp + size, Segment::DefaultValue, (newSize - size) * sizeof(uint32_t));
+        memset(tmp + size, 0, (newSize - size) * sizeof(TValue));
 
         // free older segment;
         ::operator delete(data);
@@ -234,18 +234,18 @@ void Segment::setLength(uint32_t newLength) {
     return;
 }
 
-void Segment::push(uint32_t value) {
+void Segment::push(TValue value) {
     this->set(length, value);
 }
 
-uint32_t Segment::pop() {
+TValue Segment::pop() {
 #ifdef DEBUG_BUILD
     printf("In Segment::pop\n");
     this->print();
 #endif
 
     if (length > 0) {
-        uint32_t value = data[length];
+        TValue value = data[length];
         data[length] = Segment::DefaultValue;
         --length;
         return value;
@@ -255,14 +255,14 @@ uint32_t Segment::pop() {
 
 // this function removes an element at index i and shifts the rest of the elements to
 // left to fill the gap
-uint32_t Segment::remove(uint32_t i) {
+TValue Segment::remove(uint32_t i) {
 #ifdef DEBUG_BUILD
     printf("In Segment::remove index:%u\n", i);
     this->print();
 #endif
     if (i < length) {
         // value to return
-        uint32_t ret = data[i];
+        TValue ret = data[i];
         if (i + 1 < length) {
             // Move the rest of the elements to fill in the gap.
             memmove(data + i, data + i + 1, (length - i - 1) * sizeof(uint32_t));
@@ -279,7 +279,7 @@ uint32_t Segment::remove(uint32_t i) {
 }
 
 // this function inserts element value at index i by shifting the rest of the elements right.
-void Segment::insert(uint32_t i, uint32_t value) {
+void Segment::insert(uint32_t i, TValue value) {
 #ifdef DEBUG_BUILD
     printf("In Segment::insert index:%u value:%u\n", i, value);
     this->print();
@@ -329,43 +329,43 @@ void Segment::destroy() {
     data = nullptr;
 }
 
-void RefCollection::push(uint32_t x) {
+void RefCollection::push(TValue x) {
     if (isRef())
         incr(x);
     head.push(x);
 }
 
-uint32_t RefCollection::pop() {
-    uint32_t ret = head.pop();
+TValue RefCollection::pop() {
+    TValue ret = head.pop();
     if (isRef()) {
         incr(ret);
     }
     return ret;
 }
 
-uint32_t RefCollection::getAt(int i) {
-    uint32_t tmp = head.get(i);
+TValue RefCollection::getAt(int i) {
+    TValue tmp = head.get(i);
     if (isRef()) {
         incr(tmp);
     }
     return tmp;
 }
 
-uint32_t RefCollection::removeAt(int i) {
+TValue RefCollection::removeAt(int i) {
     if (isRef()) {
         decr(head.get(i));
     }
     return head.remove(i);
 }
 
-void RefCollection::insertAt(int i, uint32_t value) {
+void RefCollection::insertAt(int i, TValue value) {
     head.insert(i, value);
     if (isRef()) {
         incr(value);
     }
 }
 
-void RefCollection::setAt(int i, uint32_t value) {
+void RefCollection::setAt(int i, TValue value) {
     if (isRef()) {
         if (head.isValidIndex((uint32_t)i)) {
             decr(head.get(i));
@@ -375,7 +375,7 @@ void RefCollection::setAt(int i, uint32_t value) {
     head.set(i, value);
 }
 
-int RefCollection::indexOf(uint32_t x, int start) {
+int RefCollection::indexOf(TValue x, int start) {
     if (isString()) {
         StringData *xx = (StringData *)x;
         uint32_t i = start;
@@ -403,7 +403,7 @@ int RefCollection::indexOf(uint32_t x, int start) {
     return -1;
 }
 
-int RefCollection::removeElement(uint32_t x) {
+bool RefCollection::removeElement(TValue x) {
     int idx = indexOf(x, 0);
     if (idx >= 0) {
         removeAt(idx);
@@ -584,11 +584,11 @@ void dispatchEvent(DeviceEvent e) {
 
     Action curr = handlersMap[{e.source, e.value}];
     if (curr)
-        runAction1(curr, e.value);
+        runAction1(curr, fromInt(e.value));
 
     curr = handlersMap[{e.source, DEVICE_EVT_ANY}];
     if (curr)
-        runAction1(curr, e.value);
+        runAction1(curr, fromInt(e.value));
 }
 
 void registerWithDal(int id, int event, Action a) {
@@ -619,7 +619,7 @@ void error(ERROR code, int subcode) {
 }
 
 uint16_t *bytecode;
-uint32_t *globals;
+TValue *globals;
 int numGlobals;
 
 uint32_t *allocate(uint16_t sz) {
@@ -690,7 +690,7 @@ void exec_binary(int32_t *pc) {
     checkStr(ver == 0x4209, ":( Bad runtime version");
 
     bytecode = *((uint16_t **)pc++); // the actual bytecode is here
-    globals = allocate(getNumGlobals());
+    globals = (TValue*)allocate(getNumGlobals());
 
     // just compare the first word
     checkStr(((uint32_t *)bytecode)[0] == 0x923B8E70 && templateHash() == *pc,
