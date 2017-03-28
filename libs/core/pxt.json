@@ -21,7 +21,6 @@
         "serial.ts",
         "buttons.cpp",
         "input.cpp",
-        "accelerometer.cpp",
         "math.ts",
         "hf2.cpp",
         "hf2.h",
