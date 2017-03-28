@@ -26,7 +26,7 @@ declare interface PwmPin {
     playTone(frequency: number, ms: number): void;
 
     /**
-     * Plays a tone through pin ``P0``.
+     * Plays a tone.
      * @param pin to ring tone
      * @param frequency pitch of the tone to play in Hertz (Hz)
      */
@@ -37,7 +37,7 @@ declare interface PwmPin {
     ringTone(frequency: number): void;
 
     /**
-     * Rests (plays nothing) for a specified time through pin ``P0``.
+     * Rests (plays nothing) for a specified time.
      * @param pin to rest
      * @param ms rest duration in milliseconds (ms)
      */

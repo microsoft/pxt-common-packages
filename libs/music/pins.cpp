@@ -41,7 +41,7 @@ void playTone(PwmPin pin, int frequency, int ms) {
 }
 
 /**
-* Plays a tone through pin ``P0``.
+* Plays a tone.
 * @param pin to ring tone
 * @param frequency pitch of the tone to play in Hertz (Hz)
 */
@@ -54,7 +54,7 @@ void ringTone(PwmPin pin, int frequency) {
 }
 
 /**
-* Rests (plays nothing) for a specified time through pin ``P0``.
+* Rests (plays nothing) for a specified time.
 * @param pin to rest
 * @param ms rest duration in milliseconds (ms)
 */
