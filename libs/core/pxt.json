@@ -35,7 +35,8 @@
     "yotta": {
         "config": {
             "codal": {
-                "component_count": 64
+                "component_count": 64,
+                "vtable": 1
             }
         }
     },
