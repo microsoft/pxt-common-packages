@@ -1,0 +1,40 @@
+# Ring Tone
+
+Play a musical tone through a pin of your choice with the pitch as high or low as you say.
+The tone will keep playing until you tell it not to.
+
+## Simulator #sim
+
+This function only works on the @boardname@ and in some browsers.
+
+```sig
+pins.A8.ringTone(0);
+```
+
+### Parameters
+
+* ``pin`` is the pin to play the tone from.
+* ``frequency`` is a [number](/types/number) that says
+how high-pitched or low-pitched the tone is.  This
+number is in **Hz** (**Hertz**), which is a measurement of frequency
+or pitch.
+
+### Example #example
+
+This program checks the **accelerometer** for the @boardname@'s
+**acceleration** (how much the @boardname@ is speeding up or slowing
+down). Then it uses that acceleration to make a tone.  If the @boardname@
+speeds up, the tone's pitch gets higher, and if it slows down, the
+tone's pitch gets lower.  It's fun -- try it!
+
+```blocks
+control.forever(() => {
+    pins.A8.ringTone(input.acceleration(Dimension.X));
+})
+```
+
+### See also
+
+[rest](/reference/music/rest), [play tone](/reference/music/play-tone),
+[tempo](/reference/music/tempo), [set tempo](/reference/music/set-tempo),
+[change tempo by](/reference/music/change-tempo-by)
