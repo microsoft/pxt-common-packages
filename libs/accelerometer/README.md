@@ -1,0 +1,4 @@
+# accelerometer
+
+The accelerometer library.
+
