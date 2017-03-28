@@ -1,0 +1,10 @@
+{
+  "TemperatureCondition.Cold|block": "cold",
+  "TemperatureCondition.Hot|block": "hot",
+  "TemperatureUnit.Celsius|block": "°C",
+  "TemperatureUnit.Fahrenheit|block": "°F",
+  "input.onTemperateConditionChanged|block": "on temperature %condition|at (°C)%temperature",
+  "input.temperature|block": "temperature in %unit",
+  "input|block": "input",
+  "{id:category}Input": "Input"
+}

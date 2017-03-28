@@ -20,12 +20,12 @@
         "serial.cpp",
         "serial.ts",
         "buttons.cpp",
-        "input.cpp",
         "math.ts",
         "hf2.cpp",
         "hf2.h",
         "uf2format.h",
-        "uf2hid.h"
+        "uf2hid.h",
+        "ns.ts"
     ],
     "testFiles": [
         "test.ts"
