@@ -60,6 +60,8 @@ typedef TValue TNumber;
 #define TAG_NULL TAGGED_SPECIAL(1)
 #define TAG_NUMBER(n) (TNumber)(void *)((n << 1) | 1)
 
+#define IS_TAGGED(n) (!(n) || ((int)(n) & 3))
+
 
 typedef TValue Action;
 typedef TValue ImageLiteral;
@@ -426,7 +428,8 @@ typedef BufferData *Buffer;
         0x08010801, 0x42424242, 0x08010801, 0x8de9d83e, (uint32_t)&string_vt,                      \
         (uint32_t)&ManagedString::emptyData, (uint32_t)&image_vt,                                  \
         (uint32_t)&DeviceImage::emptyData, (uint32_t)&buffer_vt,                                   \
-        (uint32_t)&ManagedBuffer::emptyData, 0,
+        (uint32_t)&ManagedBuffer::emptyData, 0, \
+        (uint32_t)&string_vt, (uint32_t)&number_vt, 0, \
 
 #define PXT_SHIMS_END                                                                              \
     }                                                                                              \

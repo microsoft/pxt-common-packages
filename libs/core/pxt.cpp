@@ -15,7 +15,7 @@ __attribute__((section(".binmeta"))) __attribute__((used)) const uint32_t pxt_bi
 };
 
 TValue incr(TValue e) {
-    if (e) {
+    if (!IS_TAGGED(e)) {
         if (hasVTable(e))
             ((RefObject *)e)->ref();
         else
@@ -25,7 +25,7 @@ TValue incr(TValue e) {
 }
 
 void decr(TValue e) {
-    if (e) {
+    if (!IS_TAGGED(e)) {
         if (hasVTable(e))
             ((RefObject *)e)->unref();
         else

@@ -95,6 +95,8 @@ int toInt(TNumber v) {
         else
             return 0;
     }
+    if (!v)
+        return 0;
 
     // TODO this probably doesn't follow JS semantics
     ValType t = valType(v);
@@ -115,7 +117,7 @@ uint32_t toUInt(TNumber v) {
 }
 
 double toDouble(TNumber v) {
-    if (((int)v) & 3)
+    if (IS_TAGGED(v))
         return toInt(v);
 
     // TODO this probably doesn't follow JS semantics
