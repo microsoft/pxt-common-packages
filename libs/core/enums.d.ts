@@ -68,8 +68,6 @@
      */
     CreateOnly = 0,  // CREATE_ONLY
     }
-declare namespace control {
-}
 declare namespace serial {
 }
 

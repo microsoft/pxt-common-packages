@@ -355,12 +355,6 @@ declare interface Buffer {
     //% shim=BufferMethods::write
     write(dstOffset: number, src: Buffer): void;
 }
-
-
-    /**
-     * Runtime and event utilities.
-     */
-    //% weight=70 color="#BEAA07" icon="\uf110"
 declare namespace control {
 
     /**

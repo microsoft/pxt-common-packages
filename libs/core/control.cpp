@@ -15,10 +15,6 @@ enum class EventCreationMode {
     CreateOnly = CREATE_ONLY,
 };
 
-/**
-* Runtime and event utilities.
-*/
-//% weight=70 color="#BEAA07" icon="\uf110"
 namespace control {
 
     void forever_stub(void *a) {
