@@ -1,0 +1,26 @@
+{
+    "name": "music",
+    "description": "The music library",
+    "files": [
+        "README.md",
+        "pins.cpp",
+        "shims.d.ts",
+        "melodies.ts",
+        "music.ts",
+        "ns.ts"
+    ],
+    "yotta": {
+        "config": {
+            "codal": {
+                "component_count": 64
+            }
+        }
+    },
+    "testFiles": [
+        "test.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core"
+    }
+}
