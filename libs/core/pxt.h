@@ -129,6 +129,8 @@ TNumber fromFloat(float r);
 TNumber fromInt(int v);
 //%
 TNumber fromUInt(uint32_t v);
+//%
+TValue fromBool(bool v);
 
 void error(ERROR code, int subcode = 0);
 void exec_binary(uint16_t *pc);

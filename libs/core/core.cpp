@@ -161,6 +161,11 @@ TNumber fromUInt(uint32_t v) {
     return fromDouble(v);
 }
 
+TValue fromBool(bool v) {
+    if (v) return TAG_TRUE;
+    else return TAG_FALSE;
+}
+
 }
 
 namespace langsupp {
@@ -174,9 +179,10 @@ TNumber eqFixup(TNumber v) {
     return v;
 }
 
-bool eq_bool(TNumber a, TNumber b) {
-    a = eqFixup(a);
-    b = eqFixup(b);
+//%
+bool eqq_bool(TNumber a, TNumber b) {
+    // TODO improve this
+
     if (a == b)
         return true;
     ValType ta = valType(a);
@@ -196,11 +202,69 @@ bool eq_bool(TNumber a, TNumber b) {
 
     return toDouble(a) == toDouble(b);
 }
+
+//%
+bool eq_bool(TNumber a, TNumber b) {
+    return eqq_bool(eqFixup(a), eqFixup(b));
+}
+
+//%
+TValue ptreq(TValue a, TValue b) {
+    return eq_bool(a, b) ? TAG_TRUE : TAG_FALSE;
+}
+
+//%
+TValue ptreqq(TValue a, TValue b) {
+    return eqq_bool(a, b) ? TAG_TRUE : TAG_FALSE;
+}
+
+//%
+TValue ptrneq(TValue a, TValue b) {
+    return !eq_bool(a, b) ? TAG_TRUE : TAG_FALSE;
+}
+
+//%
+TValue ptrneqq(TValue a, TValue b) {
+    return !eqq_bool(a, b) ? TAG_TRUE : TAG_FALSE;
+}
+
 }
 
 #define NUMOP(op) return fromDouble(toDouble(a) op toDouble(b));
 #define BITOP(op) return fromInt(toInt(a) op toInt(b));
 namespace numops {
+
+//%
+int toBool(TValue v) {
+    if ((int)v & 3) {
+        if (v == TAG_NULL || v == TAG_FALSE || v == TAG_NUMBER(0))
+            return 0;
+        else
+            return 1;
+    }
+
+    if (v == TAG_UNDEFINED)
+        return 0;
+    
+    ValType t = valType(v);
+    if (t == ValType::String) {
+        StringData *s = (StringData*)v;
+        if (s->len == 0)
+            return 0;
+    }
+
+    // TODO -0, NaN etc ?
+
+    return 1;
+}
+
+//%
+int toBoolDecr(TValue v) {
+    int r = toBool(v);
+    decr(v);
+    return r;
+}
+
 
 // The integer, non-overflow case for add/sub/bit opts is handled in assembly
 
@@ -304,6 +368,25 @@ TNumber eq(TNumber a, TNumber b) {
 TNumber neq(TNumber a, TNumber b) {
     return !langsupp::eq_bool(a, b) ? TAG_TRUE : TAG_FALSE;
 }
+
+//%
+TNumber eqq(TNumber a, TNumber b) {
+    return langsupp::eqq_bool(a, b) ? TAG_TRUE : TAG_FALSE;
+}
+
+//%
+TNumber neqq(TNumber a, TNumber b) {
+    return !langsupp::eqq_bool(a, b) ? TAG_TRUE : TAG_FALSE;
+}
+
+//%
+StringData *toString(TNumber v) {
+    ManagedString s(toInt(v));
+    return s.leakData();
+}
+
+
+
 }
 
 namespace Math_ {
@@ -478,18 +561,6 @@ RefAction *stclo(RefAction *a, int idx, TValue v) {
 //%
 void panic(int code) {
     device.panic(code);
-}
-
-//%
-int stringToBool(StringData *s) {
-    if (s == NULL)
-        return 0;
-    if (s->len == 0) {
-        s->decr();
-        return 0;
-    }
-    s->decr();
-    return 1;
 }
 
 //%
