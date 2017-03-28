@@ -16,7 +16,7 @@ input.setAccelerometerRange(AcceleratorRange.OneG);
   will be ignored by your @boardname@, both when you are picking a
   number of gravities, and when you are measuring acceleration.
 
-### Example
+### Example #example
 
 This program sets the highest acceleration that your @boardname@
 will measure is 4G. Then it writes to serial the acceleration from side to side

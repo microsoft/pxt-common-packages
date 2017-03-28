@@ -21,7 +21,7 @@ check how the @boardname@ is moving.
 
 * a [number](/types/number) that means how much the microbit is tilted in the direction you say, from `0` to `360` degrees
 
-### Example: @boardname@ leveler
+### Example: @boardname@ leveler #example
 
 This program helps you move the @boardname@ until it is level. When
 it is levelled, the @boardname@ shows turns blue.
