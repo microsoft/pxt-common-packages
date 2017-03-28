@@ -4,6 +4,7 @@
     "files": [
         "README.md",
         "microphone.cpp",
+        "ns.ts",
         "enums.d.ts",
         "shims.d.ts"
     ],
