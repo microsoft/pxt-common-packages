@@ -5,6 +5,10 @@
     "bundleddirs": [
         "libs/core",
         "libs/neopixel",
-        "libs/microphone"
+        "libs/music",
+        "libs/microphone",
+        "libs/accelerometer",
+        "libs/lightsensor",
+        "libs/temperature"
     ]
 }

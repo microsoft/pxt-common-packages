@@ -421,15 +421,9 @@ declare namespace input {
     const rightButton: Button;
 
     /**
-     * Slide switch.
-     */
-    //% block="slide switch" weight=90 fixedInstance shim=pxt::getButton(2)
-    const slideSwitch: Button;
-
-    /**
      * Left and Right button.
      */
-    //% block="left+right buttons" weight=93 fixedInstance shim=pxt::getButton(3)
+    //% block="left+right buttons" weight=93 fixedInstance shim=pxt::getButton(2)
     const leftAndRightButtons: Button;
 
     /**
@@ -521,67 +515,6 @@ declare interface Button {
     //% parts="buttonpair"
     //% blockNamespace=input shim=ButtonMethods::wasPressed
     wasPressed(): boolean;
-}
-declare namespace input {
-
-    /**
-     * Do something when the slide switch is moved left or right.
-     *
-     * @param direction the direction the switch must be moved to trigget the event
-     */
-    //% help=input/on-switch-moved weight=93
-    //% blockId=device_on_switch_moved block="on switch moved %direction" blockGap=8
-    //% parts="switch" shim=input::onSwitchMoved
-    function onSwitchMoved(direction: SwitchDirection, handler: () => void): void;
-}
-declare namespace input {
-
-
-    //% indexedInstanceNS=input indexedInstanceShim=pxt::getLightButton
-    //% block="light sensor" fixedInstance shim=pxt::getLightButton(0)
-    const lightSensor: Button;
-}
-
-
-
-    //% color="#B4009E" weight=99 icon="\uf192"
-declare namespace input {
-
-    /**
-     * Registers an event that runs when particular lighting conditions (dark, bright) are encountered.
-     * @param condition the condition that event triggers on
-     */
-    //% help=input/on-light-condition-changed weight=97
-    //% blockId=input_on_light_condition_changed block="on light %condition"
-    //% parts="lightsensor" blockGap=8 shim=input::onLightConditionChanged
-    function onLightConditionChanged(condition: LightCondition, handler: () => void): void;
-
-    /**
-     * Reads the light level applied to the LED screen in a range from 0 (dark) to 255 (bright).
-     */
-    //% help=input/light-level weight=76
-    //% blockId=device_get_light_level block="light level" blockGap=8
-    //% parts="lightsensor" shim=input::lightLevel
-    function lightLevel(): number;
-
-    /**
-     * Registers an event raised when the temperature condition (hold, cold) changes.
-     * @param condition the condition, hot or cold, the event triggers on
-     * @param temperature the temperature, in degree Celsius, at which this event happens, eg: 15
-     */
-    //% blockId=input_on_temperature_condition_changed block="on temperature %condition|at (°C)%temperature"
-    //% parts="thermometer" weight=95 blockGap=8
-    //% help=input/on-temperature-condition-changed shim=input::onTemperateConditionChanged
-    function onTemperateConditionChanged(condition: TemperatureCondition, temperature: number, handler: () => void): void;
-
-    /**
-     * Gets the temperature in Celsius or Fahrenheit degrees.
-     */
-    //% weight=75
-    //% help=input/temperature
-    //% blockId=device_temperature block="temperature in %unit" blockGap=8
-    //% parts="thermometer" shim=input::temperature
-    function temperature(unit: TemperatureUnit): number;
 }
 
 // Auto-generated. Do not edit. Really.

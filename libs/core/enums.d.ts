@@ -71,38 +71,4 @@
 declare namespace serial {
 }
 
-
-    declare enum SwitchDirection {
-    //% block="left"
-    Left = 2,  // DEVICE_BUTTON_EVT_UP
-    //% block="right"
-    Right = 1,  // DEVICE_BUTTON_EVT_DOWN
-    }
-
-
-    declare enum LightCondition {
-    //% block="dark"
-    Dark = 1,  // ANALOG_THRESHOLD_LOW
-    //% block="bright"
-    Bright = 2,  // ANALOG_THRESHOLD_HIGH
-    }
-
-
-    declare enum TemperatureCondition {
-    //% block="cold"
-    Cold = 1,  // ANALOG_THRESHOLD_LOW
-    //% block="hot"
-    Hot = 2,  // ANALOG_THRESHOLD_HIGH
-    }
-
-
-    declare enum TemperatureUnit {
-    //% block="°C"
-    Celsius = 0,
-    //% block="°F"
-    Fahrenheit = 1,
-    }
-declare namespace input {
-}
-
 // Auto-generated. Do not edit. Really.
