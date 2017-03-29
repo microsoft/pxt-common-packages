@@ -173,8 +173,10 @@ bool eqq_bool(TNumber a, TNumber b) {
 
     if (a == b)
         return true;
+
     ValType ta = valType(a);
     ValType tb = valType(b);
+
     if (ta != tb)
         return false;
 
@@ -188,7 +190,10 @@ bool eqq_bool(TNumber a, TNumber b) {
     if ((aa | bb) & 3)
         return false;
 
-    return toDouble(a) == toDouble(b);
+    if (ta == ValType::Number)
+        return toDouble(a) == toDouble(b);
+    else
+        return a == b;
 }
 
 //%
@@ -391,10 +396,9 @@ StringData *toString(TValue v) {
         ManagedString s(toInt(v));
         return s.leakData();
     } else {
-        return (StringData *)(void *)sObject;        
+        return (StringData *)(void *)sObject;
     }
 }
-
 }
 
 namespace Math_ {
@@ -680,7 +684,7 @@ ValType valType(TValue v) {
         }
     } else {
         if (!v)
-            return ValType::Object;
+            return ValType::Undefined;
 
         VTable *vt = (VTable *)(((RefCounted *)v)->vtablePtr << vtableShift);
         if (vt == &string_vt)
