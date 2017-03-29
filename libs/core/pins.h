@@ -287,6 +287,61 @@
 class DevPins {
   public:
     DevicePin pins[0];
+#if PXT_BOARD_ID == BOARD_ID_ZERO || PXT_BOARD_ID == BOARD_ID_METRO || PXT_BOARD_ID == BOARD_ID_M0
+#define DigitalPin DevicePin
+#define AnalogPin DevicePin
+#define PwmPin DevicePin
+    //% indexedInstanceNS=pins indexedInstanceShim=pxt::getPin
+    //%
+    AnalogPin A0;
+    //%
+    AnalogPin A1;
+    //%
+    AnalogPin A2;
+    //%
+    AnalogPin A3;
+    //%
+    AnalogPin A4;
+    //%
+    AnalogPin A5;
+    //%
+    DigitalPin D0;
+    //%
+    DigitalPin D1;
+    //%
+    PwmPin D2;
+    //%
+    PwmPin D3;
+    //%
+    PwmPin D4;
+    //%
+    PwmPin D5;
+    //%
+    PwmPin D6;
+    //%
+    DigitalPin D7;
+    //%
+    PwmPin D8;
+    //%
+    PwmPin D9;
+    //%
+    PwmPin D10;
+    //%
+    PwmPin D11;
+    //%
+    PwmPin D12;
+    //%
+    PwmPin D13;
+    //%
+    DigitalPin LED;
+    //%
+    DigitalPin LEDRX;
+    //%
+    DigitalPin LEDTX;
+#undef DigitalPin
+#undef AnalogPin
+#undef PwmPin
+#elif PXT_BOARD_ID == BOARD_ID_CPLAY
 #define DigitalPin DevicePin
 #define AnalogPin DevicePin
 #define PwmPin DevicePin
@@ -352,6 +407,7 @@ class DevPins {
 #undef DigitalPin
 #undef AnalogPin
 #undef PwmPin
+#endif
 
     I2C i2c;
 
