@@ -203,8 +203,8 @@ class RefObject {
 
     inline VTable *getVTable() { return (VTable *)(vtable << vtableShift); }
 
-    void destroy();
-    void print();
+    void destroyVT();
+    void printVT();
 
     // Call to disable pointer tracking on the current instance (in destructor or some other hack)
     inline void untrack() {
@@ -226,7 +226,7 @@ class RefObject {
         // DMESG("DECR "); this->print();
         refcnt -= 2;
         if (refcnt == 0) {
-            destroy();
+            destroyVT();
         }
     }
 };

@@ -123,12 +123,12 @@ void RefRecord::stref(int idx, TValue v) {
     fields[idx] = v;
 }
 
-void RefObject::destroy() {
+void RefObject::destroyVT() {
     ((RefObjectMethod)getVTable()->methods[0])(this);
-    delete this;
+    ::operator delete(this);
 }
 
-void RefObject::print() {
+void RefObject::printVT() {
     ((RefObjectMethod)getVTable()->methods[1])(this);
 }
 
@@ -141,9 +141,6 @@ void RefRecord_destroy(RefRecord *r) {
             decr(r->fields[i]);
         r->fields[i] = 0;
     }
-    // RefRecord is allocated using placement new
-    r->~RefRecord();
-    ::operator delete(r);
 }
 
 void RefRecord_print(RefRecord *r) {
@@ -459,7 +456,6 @@ void RefCollection::destroy() {
         }
     }
     this->head.destroy();
-    delete this;
 }
 
 void RefCollection::print() {
@@ -475,9 +471,6 @@ void RefAction::destroy() {
         decr(fields[i]);
         fields[i] = 0;
     }
-    // RefAction is allocated using placement new
-    this->~RefAction();
-    ::operator delete(this);
 }
 
 void RefAction::print() {
