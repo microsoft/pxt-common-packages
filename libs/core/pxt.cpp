@@ -690,7 +690,7 @@ void exec_binary(int32_t *pc) {
     checkStr(ver == 0x4209, ":( Bad runtime version");
 
     bytecode = *((uint16_t **)pc++); // the actual bytecode is here
-    globals = (TValue*)allocate(getNumGlobals());
+    globals = (TValue *)allocate(getNumGlobals());
 
     // just compare the first word
     checkStr(((uint32_t *)bytecode)[0] == 0x923B8E70 && templateHash() == *pc,

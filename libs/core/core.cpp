@@ -82,7 +82,6 @@ bool bang(int v) {
 }
 }
 
-
 namespace pxt {
 
 int toInt(TNumber v) {
@@ -139,9 +138,9 @@ TNumber fromDouble(double r) {
     int ri = ((int)r) << 1;
     if ((ri >> 1) == r)
         return (TNumber)(ri | 1);
-    BoxedNumber *p = (BoxedNumber*)malloc(sizeof(BoxedNumber));
+    BoxedNumber *p = (BoxedNumber *)malloc(sizeof(BoxedNumber));
     p->init();
-    p->vtablePtr = (int)(void*)&number_vt >> vtableShift;
+    p->vtablePtr = (int)(void *)&number_vt >> vtableShift;
     p->num = r;
     return (TNumber)p;
 }
@@ -164,10 +163,11 @@ TNumber fromUInt(uint32_t v) {
 }
 
 TValue fromBool(bool v) {
-    if (v) return TAG_TRUE;
-    else return TAG_FALSE;
+    if (v)
+        return TAG_TRUE;
+    else
+        return TAG_FALSE;
 }
-
 }
 
 namespace langsupp {
@@ -229,7 +229,6 @@ TValue ptrneq(TValue a, TValue b) {
 TValue ptrneqq(TValue a, TValue b) {
     return !eqq_bool(a, b) ? TAG_TRUE : TAG_FALSE;
 }
-
 }
 
 #define NUMOP(op) return fromDouble(toDouble(a) op toDouble(b));
@@ -247,10 +246,10 @@ int toBool(TValue v) {
 
     if (v == TAG_UNDEFINED)
         return 0;
-    
+
     ValType t = valType(v);
     if (t == ValType::String) {
-        StringData *s = (StringData*)v;
+        StringData *s = (StringData *)v;
         if (s->len == 0)
             return 0;
     }
@@ -266,7 +265,6 @@ int toBoolDecr(TValue v) {
     decr(v);
     return r;
 }
-
 
 // The integer, non-overflow case for add/sub/bit opts is handled in assembly
 
@@ -386,9 +384,6 @@ StringData *toString(TNumber v) {
     ManagedString s(toInt(v));
     return s.leakData();
 }
-
-
-
 }
 
 namespace Math_ {
@@ -724,7 +719,7 @@ void primitivePrint(TValue v) {
                                                       0,                                           \
                                                       0,                                           \
                                                       {                                            \
-                                                          0, (void *)&primitivePrint,  \
+                                                          0, (void *)&primitivePrint,              \
                                                       }};
 PRIM_VTABLE(string_vt, 0)
 PRIM_VTABLE(image_vt, 0)
