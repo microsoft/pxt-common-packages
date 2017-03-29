@@ -26,10 +26,20 @@ TValue incr(TValue e) {
 
 void decr(TValue e) {
     if (!IS_TAGGED(e)) {
-        if (hasVTable(e))
+#if 0
+        if (((RefCounted *)e)->refCount != 0xffff) {
+            char buf[100];
+            sprintf(buf, "DECR: %p refs=%d vt=0x%x\n", e, ((RefCounted *)e)->refCount,
+                    ((RefCounted *)e)->vtablePtr);
+            hf2.sendSerial(buf, strlen(buf));
+        }
+#endif
+
+        if (hasVTable(e)) {
             ((RefObject *)e)->unref();
-        else
+        } else {
             ((RefCounted *)e)->decr();
+        }
     }
 }
 
