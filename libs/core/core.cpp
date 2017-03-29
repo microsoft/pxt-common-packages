@@ -303,12 +303,12 @@ TNumber lsls(TNumber a, TNumber b) {
 
 //%
 TNumber lsrs(TNumber a, TNumber b) {
-    BITOP(>>)
+    return fromUInt(toUInt(a) >> toUInt(b));
 }
 
 //%
 TNumber asrs(TNumber a, TNumber b) {
-    return fromUInt(toUInt(a) >> toUInt(b));
+    BITOP(>>)
 }
 
 //%
