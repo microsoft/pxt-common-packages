@@ -724,7 +724,7 @@ void primitivePrint(TValue v) {
                                                       0,                                           \
                                                       0,                                           \
                                                       {                                            \
-                                                          (void *)&free, (void *)&primitivePrint,  \
+                                                          0, (void *)&primitivePrint,  \
                                                       }};
 PRIM_VTABLE(string_vt, 0)
 PRIM_VTABLE(image_vt, 0)

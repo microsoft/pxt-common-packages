@@ -222,6 +222,8 @@ class RefObject {
     }
 
     inline void unref() {
+        check(refcnt > 0, ERR_REF_DELETED);
+        check(!(refcnt & 1), ERR_REF_DELETED);
         // DMESG("DECR "); this->print();
         refcnt -= 2;
         if (refcnt == 0) {
