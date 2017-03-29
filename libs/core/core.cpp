@@ -62,20 +62,6 @@ StringData *substr(StringData *s, int start, int length) {
 }
 
 namespace Boolean_ {
-// Note that the representation of booleans stays the usual C-one.
-
-PXT_DEF_STRING(sTrue, "true")
-PXT_DEF_STRING(sFalse, "false")
-
-//%
-StringData *toString(bool v) {
-    if (v) {
-        return (StringData *)(void *)sTrue;
-    } else {
-        return (StringData *)(void *)sFalse;
-    }
-}
-
 //%
 bool bang(int v) {
     return v == 0;
@@ -379,11 +365,36 @@ TNumber neqq(TNumber a, TNumber b) {
     return !langsupp::eqq_bool(a, b) ? TAG_TRUE : TAG_FALSE;
 }
 
+PXT_DEF_STRING(sTrue, "true")
+PXT_DEF_STRING(sFalse, "false")
+PXT_DEF_STRING(sUndefined, "undefined")
+PXT_DEF_STRING(sNull, "null")
+PXT_DEF_STRING(sObject, "[Object]")
+
 //%
-StringData *toString(TNumber v) {
-    ManagedString s(toInt(v));
-    return s.leakData();
+StringData *toString(TValue v) {
+    if (v == TAG_UNDEFINED)
+        return (StringData *)(void *)sUndefined;
+    else if (v == TAG_FALSE)
+        return (StringData *)(void *)sFalse;
+    else if (v == TAG_TRUE)
+        return (StringData *)(void *)sTrue;
+    else if (v == TAG_NULL)
+        return (StringData *)(void *)sNull;
+
+    ValType t = valType(v);
+
+    if (t == ValType::String) {
+        return (StringData *)(void *)incr(v);
+    } else if (t == ValType::Number) {
+        // TODO double!
+        ManagedString s(toInt(v));
+        return s.leakData();
+    } else {
+        return (StringData *)(void *)sObject;        
+    }
 }
+
 }
 
 namespace Math_ {
