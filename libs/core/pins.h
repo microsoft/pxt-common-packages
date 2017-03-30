@@ -283,6 +283,9 @@
 #ifndef PIN_CAPSENSE
 #define PIN_CAPSENSE NC
 #endif
+#ifndef PIN_NEOPIXEL
+#define PIN_NEOPIXEL NC
+#endif
 
 class DevPins {
   public:
