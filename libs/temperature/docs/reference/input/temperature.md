@@ -1,15 +1,15 @@
 # Temperature
 
-Find the temperature where you are. The temperature is measured in Celsius (metric).
+Find the temperature where you are. The temperature is measured in Celsius (metric) or Fahrenheit (imperial).
 The @boardname@ can find the temperature nearby by checking how hot its computer chips are.
 
 ```sig
-input.temperature();
+input.temperature(TemperatureUnit.Celsius)
 ```
 
 ### Returns
 
-* a [Number](/types/number) that means the Celsius temperature.
+* a [Number](/types/number) that means the temperature in Celsius or Fahrenheit.
 
 ### How does it work?
 
@@ -20,26 +20,35 @@ The @boardname@ might warm up a little if you make it work hard, though!
 
 ### Example: @boardname@ thermometer
 
-The following example uses `temperature` and `show number` to show the temperature of the room.
+The following example uses `temperature` and `show color` to vary the brightness of the pixels depending on the temperature in the room. 
 
 ```blocks
-basic.forever(() => {
-    let temp = input.temperature()
-    basic.showNumber(temp)
+control.forever(() => {
+    light.pixels.setBrightness(Math.map(
+        input.temperature(TemperatureUnit.Celsius),
+        0,
+        50,
+        0,
+        255
+    ))
+    light.pixels.showColor(light.colors(NeoPixelColors.Red))
 })
 ```
+
 ### Example: Fahrenheit thermometer
 
 This program measures the temperature using Fahrenheit degrees.
-Fahrenheit is a way of measuring temperature that is commonly used in the United States.
-To make a Celsius temperature into a Fahrenheit one, multiply the Celsius temperature by
-``18``, divide by ``10`` and add ``32``.
 
 ```blocks
-basic.forever(() => {
-    let c = input.temperature()
-    let f = (c * 18) / 10 + 32
-    basic.showNumber(f)
+control.forever(() => {
+    light.pixels.setBrightness(Math.map(
+        input.temperature(TemperatureUnit.Fahrenheit),
+        30,
+        100,
+        0,
+        255
+    ))
+    light.pixels.showColor(light.colors(NeoPixelColors.Red))
 })
 ```
 
