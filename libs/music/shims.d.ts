@@ -21,7 +21,7 @@ declare interface PwmPin {
      */
     //% help=music/play-tone weight=90
     //% blockId=music_play_note block="play tone|on %pin|at %note=device_note|for %duration=device_beat" blockGap=8
-    //% parts="headphone" async
+    //% parts="headphone" async trackArgs=0
     //% blockNamespace=music shim=PwmPinMethods::playTone
     playTone(frequency: number, ms: number): void;
 
@@ -32,7 +32,7 @@ declare interface PwmPin {
      */
     //% help=music/ring-tone weight=80
     //% blockId=music_ring block="ring tone|on %pin|at %note=device_note" blockGap=8
-    //% parts="headphone" async
+    //% parts="headphone" async trackArgs=0
     //% blockNamespace=music shim=PwmPinMethods::ringTone
     ringTone(frequency: number): void;
 
@@ -43,7 +43,7 @@ declare interface PwmPin {
      */
     //% help=music/rest weight=79
     //% blockId=music_rest block="rest|on %pin|for %duration=device_beat"
-    //% parts="headphone" async
+    //% parts="headphone" async trackArgs=0
     //% blockNamespace=music shim=PwmPinMethods::rest
     rest(ms: number): void;
 }

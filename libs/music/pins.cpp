@@ -34,7 +34,7 @@ void analogPitch(PwmPin pin, int frequency, int ms) {
 */
 //% help=music/play-tone weight=90
 //% blockId=music_play_note block="play tone|on %pin|at %note=device_note|for %duration=device_beat" blockGap=8
-//% parts="headphone" async
+//% parts="headphone" async trackArgs=0
 //% blockNamespace=music
 void playTone(PwmPin pin, int frequency, int ms) {
     analogPitch(pin, frequency, ms);
@@ -47,7 +47,7 @@ void playTone(PwmPin pin, int frequency, int ms) {
 */
 //% help=music/ring-tone weight=80
 //% blockId=music_ring block="ring tone|on %pin|at %note=device_note" blockGap=8
-//% parts="headphone" async
+//% parts="headphone" async trackArgs=0
 //% blockNamespace=music
 void ringTone(PwmPin pin, int frequency) {
     analogPitch(pin, frequency, 0);
@@ -60,7 +60,7 @@ void ringTone(PwmPin pin, int frequency) {
 */
 //% help=music/rest weight=79
 //% blockId=music_rest block="rest|on %pin|for %duration=device_beat"
-//% parts="headphone" async
+//% parts="headphone" async trackArgs=0
 //% blockNamespace=music
 void rest(PwmPin pin, int ms) {
     analogPitch(pin, 0, ms);
