@@ -26,6 +26,7 @@
 #include "TouchSensor.h"
 
 #include "pins.h"
+#include "devpins.h"
 #include "hf2.h"
 
 #define intcheck(...) check(__VA_ARGS__)

@@ -10,6 +10,8 @@
         "pins.h",
         "core.cpp",
         "pins.cpp",
+        "devpins.cpp",
+        "devpins.h",
         "pins.ts",
         "pxt-helpers.ts",
         "buffer.cpp",
