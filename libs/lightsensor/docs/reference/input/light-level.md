@@ -20,14 +20,14 @@ input.lightLevel();
 
 ### Example: show light level
 
-When you press button `B` on the microbit, this
-program shows the light level
-on the [LED screen](/device/screen).
+When you press button `B` on the @boardname@, this
+program changes the brightness of the pixels accordingly.
 
 ```blocks
-input.onButtonPressed(Button.B, () => {
+input.leftButton.onEvent(ButtonEvent.Click, () => {
     let level = input.lightLevel()
-    basic.showNumber(level)
+    light.pixels.setBrightness(level)
+    light.pixels.showColor(light.colors(NeoPixelColors.Red))
 })
 ```
 
@@ -38,8 +38,11 @@ If you carry the @boardname@ around to different places with different light lev
 the bar chart will change.
 
 ```blocks
-basic.forever(() => {
-    led.plotBarGraph(input.lightLevel(), 255)
+control.forever(() => {
+    light.pixels.showBarGraph(
+        input.lightLevel(),
+        0
+    )
 })
 ```
 
