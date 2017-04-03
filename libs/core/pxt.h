@@ -331,6 +331,10 @@ class RefRefLocal : public RefObject {
 using namespace pxt;
 typedef BufferData *Buffer;
 
+namespace pins {
+Buffer createBuffer(int size);    
+}
+
 // The ARM Thumb generator in the JavaScript code is parsing
 // the hex file and looks for the magic numbers as present here.
 //

@@ -251,6 +251,20 @@ declare namespace pins {
     //% fixedInstance shim=pxt::getPin(28)
     const LEDTX: DigitalPin;
 }
+declare namespace pins {
+
+    /**
+     * Read `size` bytes from a 7-bit I2C `address`.
+     */
+    //% repeat.defl=0 shim=pins::i2cReadBuffer
+    function i2cReadBuffer(address: number, size: number, repeat?: boolean): Buffer;
+
+    /**
+     * Write bytes to a 7-bit I2C `address`.
+     */
+    //% repeat.defl=0 shim=pins::i2cWriteBuffer
+    function i2cWriteBuffer(address: number, buf: Buffer, repeat?: boolean): void;
+}
 
 
 
