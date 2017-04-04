@@ -1,10 +1,12 @@
 #ifndef __PXT_H
 #define __PXT_H
 
-//#define DEBUG_MEMLEAKS 1
+//#define PXT_MEMLEAK_DEBUG 1
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #pragma GCC diagnostic ignored "-Wformat"
+
+#include "pxtconfig.h"
 
 #include "DeviceConfig.h"
 #include "DeviceHeapAllocator.h"
@@ -38,7 +40,7 @@
 #include <vector>
 #include <stdint.h>
 
-#ifdef DEBUG_MEMLEAKS
+#ifdef PXT_MEMLEAK_DEBUG
 #include <set>
 #endif
 
@@ -52,7 +54,12 @@ struct TValueStruct {};
 typedef TValueStruct *TValue;
 typedef TValue TNumber;
 
+#ifdef PXT_BOX_DEBUG
+#define CAN_BE_TAGGED(v) (0)
+#else
 #define CAN_BE_TAGGED(v) (-0x40000000 <= (v) && (v) <= 0x3fffffff)
+#endif
+
 #define TAGGED_SPECIAL(n) (TValue)(void *)((n << 2) | 2)
 #define TAG_FALSE TAGGED_SPECIAL(2)
 #define TAG_TRUE TAGGED_SPECIAL(16)
@@ -113,6 +120,10 @@ int getNumGlobals();
 RefRecord *mkClassInstance(int vtableOffset);
 //%
 void debugMemLeaks();
+//%
+void anyPrint(TValue v);
+//%
+void dumpDmesg();
 
 //%
 int toInt(TNumber v);
@@ -167,8 +178,8 @@ inline void oops() {
 }
 
 class RefObject;
-#ifdef DEBUG_MEMLEAKS
-extern std::set<RefObject *> allptrs;
+#ifdef PXT_MEMLEAK_DEBUG
+extern std::set<TValue> allptrs;
 #endif
 
 typedef void (*RefObjectMethod)(RefObject *self);
@@ -196,8 +207,8 @@ class RefObject {
     RefObject(uint16_t vt) {
         refcnt = 2;
         vtable = vt;
-#ifdef DEBUG_MEMLEAKS
-        allptrs.insert(this);
+#ifdef PXT_MEMLEAK_DEBUG
+        allptrs.insert((TValue)this);
 #endif
     }
 
@@ -208,8 +219,8 @@ class RefObject {
 
     // Call to disable pointer tracking on the current instance (in destructor or some other hack)
     inline void untrack() {
-#ifdef DEBUG_MEMLEAKS
-        allptrs.erase(this);
+#ifdef PXT_MEMLEAK_DEBUG
+        allptrs.erase((TValue)this);
 #endif
     }
 
@@ -390,7 +401,7 @@ class RefRefLocal : public RefObject {
 
 struct BoxedNumber : RefCounted {
     double num;
-};
+} __attribute__((packed));
 
 extern const VTable string_vt;
 extern const VTable image_vt;

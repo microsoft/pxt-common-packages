@@ -87,6 +87,8 @@ int toInt(TNumber v) {
     ValType t = valType(v);
     if (t == ValType::Number) {
         BoxedNumber *p = (BoxedNumber *)v;
+        //int i = 100000000;
+        //while (i--) asm("nop");
         return (int)p->num;
     } else {
         return 0;
@@ -121,9 +123,11 @@ float toFloat(TNumber v) {
 }
 
 TNumber fromDouble(double r) {
+#ifndef PXT_BOX_DEBUG
     int ri = ((int)r) << 1;
     if ((ri >> 1) == r)
         return (TNumber)(ri | 1);
+#endif
     BoxedNumber *p = (BoxedNumber *)malloc(sizeof(BoxedNumber));
     p->init();
     p->vtablePtr = (int)(void *)&number_vt >> vtableShift;
@@ -143,8 +147,10 @@ TNumber fromInt(int v) {
 }
 
 TNumber fromUInt(uint32_t v) {
+#ifndef PXT_BOX_DEBUG
     if (v <= 0x3fffffff)
-        return (TNumber)((v << 1) | 1);
+        return TAG_NUMBER(v);
+#endif
     return fromDouble(v);
 }
 
@@ -376,6 +382,8 @@ PXT_DEF_STRING(sUndefined, "undefined")
 PXT_DEF_STRING(sNull, "null")
 PXT_DEF_STRING(sObject, "[Object]")
 
+asm(".global _printf_float");
+
 //%
 StringData *toString(TValue v) {
     if (v == TAG_UNDEFINED)
@@ -392,8 +400,12 @@ StringData *toString(TValue v) {
     if (t == ValType::String) {
         return (StringData *)(void *)incr(v);
     } else if (t == ValType::Number) {
-        // TODO double!
-        ManagedString s(toInt(v));
+        char buf[64];
+        // TODO fastpath for ints
+        unsigned len = snprintf(buf, sizeof(buf), "%g", toDouble(v));
+        if (len >= sizeof(buf))
+            return (StringData *)(void *)sObject; // overflow?
+        ManagedString s(buf);
         return s.leakData();
     } else {
         return (StringData *)(void *)sObject;
@@ -669,6 +681,12 @@ void runtimeWarning(StringData *s) {
 
 namespace pxt {
 
+void dumpDmesg() {
+    hf2.sendSerial("\nDMESG:\n", 8);
+    hf2.sendSerial(codalLogStore.buffer, codalLogStore.ptr);
+    hf2.sendSerial("\n\n", 2);
+}
+
 //%
 ValType valType(TValue v) {
     if ((int)v & 3) {
@@ -723,19 +741,33 @@ StringData *typeOf(TValue v) {
 
 // Maybe in future we will want separate print methods; for now ignore
 
-//%
-void primitivePrint(TValue v) {
-    // TODO
+void anyPrint(TValue v) {
+    if (valType(v) == ValType::Object) {
+        if (hasVTable(v)) {
+            auto o = (RefObject *)v;
+            auto meth = ((RefObjectMethod)o->getVTable()->methods[1]);
+            if ((void *)meth == (void *)&anyPrint)
+                DMESG("[RefObject refs=%d vt=%p]", o->refcnt, o->getVTable());
+            else
+                meth(o);
+        } else {
+            auto r = (RefCounted *)v;
+            DMESG("[RefCounted refs=%d vt=%p]", r->refCount, r->vtablePtr << vtableShift);
+        }
+    } else {
+        StringData *s = numops::toString(v);
+        DMESG(s->data);
+        decr((TValue)s);
+    }
 }
 
 #define PRIM_VTABLE(name, sz)                                                                      \
-    const VTable name                                                                              \
-        __attribute__((aligned(1 << vtableShift))) = {sz,                                          \
-                                                      0,                                           \
-                                                      0,                                           \
-                                                      {                                            \
-                                                          0, (void *)&primitivePrint,              \
-                                                      }};
+    const VTable name __attribute__((aligned(1 << vtableShift))) = {sz,                            \
+                                                                    0,                             \
+                                                                    0,                             \
+                                                                    {                              \
+                                                                        0, (void *)&anyPrint,      \
+                                                                    }};
 PRIM_VTABLE(string_vt, 0)
 PRIM_VTABLE(image_vt, 0)
 PRIM_VTABLE(buffer_vt, 0)

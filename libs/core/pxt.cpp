@@ -526,14 +526,15 @@ void RefMap::print() {
     DMESG("RefMap %p r=%d size=%d", this, refcnt, data.size());
 }
 
-#ifdef DEBUG_MEMLEAKS
-std::set<RefObject *> allptrs;
+#ifdef PXT_MEMLEAK_DEBUG
+std::set<TValue> allptrs;
 void debugMemLeaks() {
     DMESG("LIVE POINTERS:");
-    for (std::set<RefObject *>::iterator itr = allptrs.begin(); itr != allptrs.end(); itr++) {
-        (*itr)->print();
+    for (std::set<TValue>::iterator itr = allptrs.begin(); itr != allptrs.end(); itr++) {
+        anyPrint(*itr);
     }
     DMESG("");
+    dumpDmesg();
 }
 #else
 void debugMemLeaks() {}
@@ -709,7 +710,7 @@ void exec_binary(int32_t *pc) {
 
     ((uint32_t(*)())startptr)();
 
-#ifdef DEBUG_MEMLEAKS
+#ifdef PXT_MEMLEAK_DEBUG
     pxt::debugMemLeaks();
 #endif
 
