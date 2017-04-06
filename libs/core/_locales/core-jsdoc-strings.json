@@ -75,7 +75,7 @@
   "pins.i2cWriteBuffer": "Write bytes to a 7-bit I2C `address`.",
   "pins.i2cWriteNumber": "Write one number to a 7-bit I2C address.",
   "pins.pulseDuration": "Gets the duration of the last pulse in micro-seconds. This function should be called from a\n``onPulsed`` handler.",
-  "pins.sizeOf": "Get the size in bytes of specified number format.\n\nGet the size in bytes of specified number format.",
+  "pins.sizeOf": "Get the size in bytes of specified number format.",
   "serial": "Reading and writing data over a serial connection.",
   "serial.writeLine": "Prints a line of text to the serial",
   "serial.writeNumber": "Prints a numeric value to the serial",
