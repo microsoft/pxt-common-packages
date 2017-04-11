@@ -383,6 +383,7 @@ PXT_DEF_STRING(sNull, "null")
 PXT_DEF_STRING(sObject, "[Object]")
 
 asm(".global _printf_float");
+extern "C" char *gcvt(double d, int ndigit, char *buf);
 
 //%
 StringData *toString(TValue v) {
@@ -402,9 +403,11 @@ StringData *toString(TValue v) {
     } else if (t == ValType::Number) {
         char buf[64];
         // TODO fastpath for ints
-        unsigned len = snprintf(buf, sizeof(buf), "%g", toDouble(v));
-        if (len >= sizeof(buf))
-            return (StringData *)(void *)sObject; // overflow?
+        gcvt(toDouble(v), 10, buf);
+        // snprintf() with doubles requires 8-byte stack alignment, which we do not provide (yet)
+        //unsigned len = snprintf(buf, sizeof(buf), "%g", toDouble(v));
+        //if (len >= sizeof(buf))
+        //    return (StringData *)(void *)sObject; // overflow?
         ManagedString s(buf);
         return s.leakData();
     } else {
