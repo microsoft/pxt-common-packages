@@ -533,7 +533,7 @@ void debugMemLeaks() {
     for (std::set<TValue>::iterator itr = allptrs.begin(); itr != allptrs.end(); itr++) {
         anyPrint(*itr);
     }
-    DMESG("");
+    DMESG("LIVE POINTERS END.");
     dumpDmesg();
 }
 #else
@@ -724,3 +724,20 @@ void start() {
 }
 
 } // end namespace
+
+
+void RefCounted::free() {
+#ifdef PXT_MEMLEAK_DEBUG
+    allptrs.erase((TValue)this);
+#endif
+    ::free(this);
+}
+
+void RefCounted::init() {
+    // Initialize to one reference (lowest bit set to 1)
+    refCount = 3;
+#ifdef PXT_MEMLEAK_DEBUG
+    allptrs.insert((TValue)this);
+#endif
+}
+

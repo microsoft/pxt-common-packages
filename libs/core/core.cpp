@@ -763,7 +763,7 @@ void anyPrint(TValue v) {
         }
     } else {
         StringData *s = numops::toString(v);
-        DMESG(s->data);
+        DMESG("[%s %p = %s]", pxt::typeOf(v)->data, v, s->data);
         decr((TValue)s);
     }
 }

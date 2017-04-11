@@ -237,6 +237,7 @@ class RefObject {
         // DMESG("DECR "); this->print();
         refcnt -= 2;
         if (refcnt == 0) {
+            untrack();
             destroyVT();
         }
     }
