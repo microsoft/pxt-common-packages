@@ -249,9 +249,13 @@ int toBool(TValue v) {
         StringData *s = (StringData *)v;
         if (s->len == 0)
             return 0;
+    } else if (t == ValType::Number) {
+        // TODO NaN, etc?
+        if (toDouble(v) == 0.0)
+            return 0;
+        else
+            return 1;
     }
-
-    // TODO -0, NaN etc ?
 
     return 1;
 }
