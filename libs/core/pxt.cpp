@@ -726,11 +726,11 @@ void start() {
 } // end namespace
 
 
-void RefCounted::free() {
+void RefCounted::destroy() {
 #ifdef PXT_MEMLEAK_DEBUG
     allptrs.erase((TValue)this);
 #endif
-    ::free(this);
+    free(this);
 }
 
 void RefCounted::init() {
