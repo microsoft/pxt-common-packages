@@ -337,76 +337,48 @@ void Segment::destroy() {
 }
 
 void RefCollection::push(TValue x) {
-    if (isRef())
-        incr(x);
+    incr(x);
     head.push(x);
 }
 
 TValue RefCollection::pop() {
     TValue ret = head.pop();
-    if (isRef()) {
-        incr(ret);
-    }
+    incr(ret);
     return ret;
 }
 
 TValue RefCollection::getAt(int i) {
     TValue tmp = head.get(i);
-    if (isRef()) {
-        incr(tmp);
-    }
+    incr(tmp);
     return tmp;
 }
 
 TValue RefCollection::removeAt(int i) {
-    if (isRef()) {
-        decr(head.get(i));
-    }
+    decr(head.get(i));
     return head.remove(i);
 }
 
 void RefCollection::insertAt(int i, TValue value) {
     head.insert(i, value);
-    if (isRef()) {
-        incr(value);
-    }
+    incr(value);
 }
 
 void RefCollection::setAt(int i, TValue value) {
-    if (isRef()) {
-        if (head.isValidIndex((uint32_t)i)) {
-            decr(head.get(i));
-        }
-        incr(value);
-    }
+    if (!head.isValidIndex((uint32_t)i))
+        return;
+    decr(head.get(i));
+    incr(value);
     head.set(i, value);
 }
 
 int RefCollection::indexOf(TValue x, int start) {
-    if (isString()) {
-        StringData *xx = (StringData *)x;
-        uint32_t i = start;
-        while (head.isValidIndex(i)) {
-            StringData *ee = (StringData *)head.get(i);
-            if (ee == xx) {
-                // handles ee being null
-                return (int)i;
-            }
-            if (ee && xx->len == ee->len && memcmp(xx->data, ee->data, xx->len) == 0) {
-                return (int)i;
-            }
-            i++;
+    uint32_t i = start;
+    while (head.isValidIndex(i)) {
+        if (pxt::eq_bool(head.get(i), x)) {
+            return (int)i;
         }
-    } else {
-        uint32_t i = start;
-        while (head.isValidIndex(i)) {
-            if (head.get(i) == x) {
-                return (int)i;
-            }
-            i++;
-        }
+        i++;
     }
-
     return -1;
 }
 
@@ -423,43 +395,20 @@ namespace Coll0 {
 PXT_VTABLE_BEGIN(RefCollection, 0, 0)
 PXT_VTABLE_END
 }
-namespace Coll1 {
-PXT_VTABLE_BEGIN(RefCollection, 1, 0)
-PXT_VTABLE_END
-}
-namespace Coll3 {
-PXT_VTABLE_BEGIN(RefCollection, 3, 0)
-PXT_VTABLE_END
-}
 
-RefCollection::RefCollection(uint16_t flags) : RefObject(0) {
-    switch (flags) {
-    case 0:
-        vtable = PXT_VTABLE_TO_INT(&Coll0::RefCollection_vtable);
-        break;
-    case 1:
-        vtable = PXT_VTABLE_TO_INT(&Coll1::RefCollection_vtable);
-        break;
-    case 3:
-        vtable = PXT_VTABLE_TO_INT(&Coll3::RefCollection_vtable);
-        break;
-    default:
-        error(ERR_SIZE);
-        break;
-    }
+RefCollection::RefCollection() : RefObject(0) {
+    vtable = PXT_VTABLE_TO_INT(&Coll0::RefCollection_vtable);
 }
 
 void RefCollection::destroy() {
-    if (this->isRef()) {
-        for (uint32_t i = 0; i < this->head.getLength(); i++) {
-            decr(this->head.get(i));
-        }
+    for (uint32_t i = 0; i < this->head.getLength(); i++) {
+        decr(this->head.get(i));
     }
     this->head.destroy();
 }
 
 void RefCollection::print() {
-    printf("RefCollection %p r=%d flags=%d size=%d\n", this, refcnt, getFlags(), head.getLength());
+    printf("RefCollection %p r=%d size=%d\n", this, refcnt, head.getLength());
     head.print();
 }
 
@@ -725,7 +674,6 @@ void start() {
 
 } // end namespace
 
-
 void RefCounted::destroy() {
 #ifdef PXT_MEMLEAK_DEBUG
     allptrs.erase((TValue)this);
@@ -740,4 +688,3 @@ void RefCounted::init() {
     allptrs.insert((TValue)this);
 #endif
 }
-

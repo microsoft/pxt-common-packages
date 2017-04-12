@@ -160,9 +160,7 @@ TValue fromBool(bool v) {
     else
         return TAG_FALSE;
 }
-}
 
-namespace langsupp {
 TNumber eqFixup(TNumber v) {
     if (v == TAG_NULL)
         return TAG_UNDEFINED;
@@ -173,8 +171,7 @@ TNumber eqFixup(TNumber v) {
     return v;
 }
 
-//%
-bool eqq_bool(TNumber a, TNumber b) {
+bool eqq_bool(TValue a, TValue b) {
     // TODO improve this
 
     if (a == b)
@@ -202,11 +199,13 @@ bool eqq_bool(TNumber a, TNumber b) {
         return a == b;
 }
 
-//%
-bool eq_bool(TNumber a, TNumber b) {
+bool eq_bool(TValue a, TValue b) {
     return eqq_bool(eqFixup(a), eqFixup(b));
 }
 
+}
+
+namespace langsupp {
 //%
 TValue ptreq(TValue a, TValue b) {
     return eq_bool(a, b) ? TAG_TRUE : TAG_FALSE;
@@ -362,22 +361,22 @@ TNumber gt(TNumber a, TNumber b) {
 
 //%
 TNumber eq(TNumber a, TNumber b) {
-    return langsupp::eq_bool(a, b) ? TAG_TRUE : TAG_FALSE;
+    return pxt::eq_bool(a, b) ? TAG_TRUE : TAG_FALSE;
 }
 
 //%
 TNumber neq(TNumber a, TNumber b) {
-    return !langsupp::eq_bool(a, b) ? TAG_TRUE : TAG_FALSE;
+    return !pxt::eq_bool(a, b) ? TAG_TRUE : TAG_FALSE;
 }
 
 //%
 TNumber eqq(TNumber a, TNumber b) {
-    return langsupp::eqq_bool(a, b) ? TAG_TRUE : TAG_FALSE;
+    return pxt::eqq_bool(a, b) ? TAG_TRUE : TAG_FALSE;
 }
 
 //%
 TNumber neqq(TNumber a, TNumber b) {
-    return !langsupp::eqq_bool(a, b) ? TAG_TRUE : TAG_FALSE;
+    return !pxt::eqq_bool(a, b) ? TAG_TRUE : TAG_FALSE;
 }
 
 PXT_DEF_STRING(sTrue, "true")
@@ -456,7 +455,7 @@ int sqrt(int x) {
 namespace Array_ {
 //%
 RefCollection *mk(uint32_t flags) {
-    return new RefCollection(flags);
+    return new RefCollection();
 }
 //%
 int length(RefCollection *c) {

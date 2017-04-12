@@ -143,6 +143,10 @@ TNumber fromInt(int v);
 TNumber fromUInt(uint32_t v);
 //%
 TValue fromBool(bool v);
+//%
+bool eq_bool(TValue a, TValue b);
+//%
+bool eqq_bool(TValue a, TValue b);
 
 void error(ERROR code, int subcode = 0);
 void exec_binary(uint16_t *pc);
@@ -286,13 +290,7 @@ class RefCollection : public RefObject {
     Segment head;
 
   public:
-    // 1 - collection of refs (need decr)
-    // 2 - collection of strings (in fact we always have 3, never 2 alone)
-    inline uint32_t getFlags() { return getVTable()->userdata; }
-    inline bool isRef() { return getFlags() & 1; }
-    inline bool isString() { return getFlags() & 2; }
-
-    RefCollection(uint16_t f);
+    RefCollection();
 
     void destroy();
     void print();
