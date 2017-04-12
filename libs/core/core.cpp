@@ -203,6 +203,15 @@ bool eq_bool(TValue a, TValue b) {
     return eqq_bool(eqFixup(a), eqFixup(b));
 }
 
+//%
+bool switch_eq(TValue a, TValue b) {
+    if (eqq_bool(eqFixup(a), eqFixup(b))) {
+        decr(b);
+        return true;
+    }
+    return false;
+}
+
 }
 
 namespace langsupp {

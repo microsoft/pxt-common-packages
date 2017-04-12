@@ -364,9 +364,8 @@ void RefCollection::insertAt(int i, TValue value) {
 }
 
 void RefCollection::setAt(int i, TValue value) {
-    if (!head.isValidIndex((uint32_t)i))
-        return;
-    decr(head.get(i));
+    if (head.isValidIndex((uint32_t)i))
+        decr(head.get(i));
     incr(value);
     head.set(i, value);
 }
