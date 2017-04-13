@@ -124,16 +124,16 @@ void RefRecord::stref(int idx, TValue v) {
 }
 
 void RefObject::destroyVT() {
-    ((RefObjectMethod)getVTable()->methods[0])(this);
+    ((RefObjectMethod)getVTable(this)->methods[0])(this);
     ::operator delete(this);
 }
 
 void RefObject::printVT() {
-    ((RefObjectMethod)getVTable()->methods[1])(this);
+    ((RefObjectMethod)getVTable(this)->methods[1])(this);
 }
 
 void RefRecord_destroy(RefRecord *r) {
-    VTable *tbl = r->getVTable();
+    VTable *tbl = getVTable(r);
     uint8_t *refmask = (uint8_t *)&tbl->methods[tbl->userdata & 0xff];
     int len = (tbl->numbytes >> 2) - 1;
     for (int i = 0; i < len; ++i) {
@@ -144,7 +144,7 @@ void RefRecord_destroy(RefRecord *r) {
 }
 
 void RefRecord_print(RefRecord *r) {
-    DMESG("RefRecord %p r=%d size=%d bytes", r, r->refcnt, r->getVTable()->numbytes);
+    DMESG("RefRecord %p r=%d size=%d bytes", r, r->refcnt, getVTable(r)->numbytes);
 }
 
 TValue Segment::get(uint32_t i) {

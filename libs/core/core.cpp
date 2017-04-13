@@ -87,8 +87,8 @@ int toInt(TNumber v) {
     ValType t = valType(v);
     if (t == ValType::Number) {
         BoxedNumber *p = (BoxedNumber *)v;
-        //int i = 100000000;
-        //while (i--) asm("nop");
+        // int i = 100000000;
+        // while (i--) asm("nop");
         return (int)p->num;
     } else {
         return 0;
@@ -130,7 +130,7 @@ TNumber fromDouble(double r) {
 #endif
     BoxedNumber *p = (BoxedNumber *)malloc(sizeof(BoxedNumber));
     p->init();
-    p->vtablePtr = (int)(void *)&number_vt >> vtableShift;
+    p->tag = BoxedNumber::TAG;
     p->num = r;
     return (TNumber)p;
 }
@@ -211,7 +211,6 @@ bool switch_eq(TValue a, TValue b) {
     }
     return false;
 }
-
 }
 
 namespace langsupp {
@@ -293,11 +292,10 @@ TNumber muls(TNumber a, TNumber b) {
     int bb = (int)b;
     if (aa & bb & 1) {
         // if both operands fit 15 bits, the result will not overflow int
-        if ((aa >> 15 == 0 || aa >> 15 == -1) &&
-            (bb >> 15 == 0 || bb >> 15 == -1)) {
-                // it may overflow 31 bit int though - use fromInt to convert properly
-                return fromInt((aa >> 1) * (bb >> 1));
-            }
+        if ((aa >> 15 == 0 || aa >> 15 == -1) && (bb >> 15 == 0 || bb >> 15 == -1)) {
+            // it may overflow 31 bit int though - use fromInt to convert properly
+            return fromInt((aa >> 1) * (bb >> 1));
+        }
     }
     NUMOP(*)
 }
@@ -427,8 +425,8 @@ StringData *toString(TValue v) {
         // TODO fastpath for ints
         gcvt(toDouble(v), 10, buf);
         // snprintf() with doubles requires 8-byte stack alignment, which we do not provide (yet)
-        //unsigned len = snprintf(buf, sizeof(buf), "%g", toDouble(v));
-        //if (len >= sizeof(buf))
+        // unsigned len = snprintf(buf, sizeof(buf), "%g", toDouble(v));
+        // if (len >= sizeof(buf))
         //    return (StringData *)(void *)sObject; // overflow?
         ManagedString s(buf);
         return s.leakData();
@@ -729,13 +727,14 @@ ValType valType(TValue v) {
         if (!v)
             return ValType::Undefined;
 
-        VTable *vt = (VTable *)(((RefCounted *)v)->vtablePtr << vtableShift);
-        if (vt == &string_vt)
+        int tag = ((RefCounted *)v)->tag;
+
+        if (tag == ManagedString::TAG)
             return ValType::String;
-        else if (vt == &number_vt)
+        else if (tag == BoxedNumber::TAG)
             return ValType::Number;
-        else
-            return ValType::Object;
+
+        return ValType::Object;
     }
 }
 
@@ -770,14 +769,14 @@ void anyPrint(TValue v) {
     if (valType(v) == ValType::Object) {
         if (hasVTable(v)) {
             auto o = (RefObject *)v;
-            auto meth = ((RefObjectMethod)o->getVTable()->methods[1]);
+            auto meth = ((RefObjectMethod)getVTable(o)->methods[1]);
             if ((void *)meth == (void *)&anyPrint)
-                DMESG("[RefObject refs=%d vt=%p]", o->refcnt, o->getVTable());
+                DMESG("[RefObject refs=%d vt=%p]", o->refcnt, getVTable(o));
             else
                 meth(o);
         } else {
             auto r = (RefCounted *)v;
-            DMESG("[RefCounted refs=%d vt=%p]", r->refCount, r->vtablePtr << vtableShift);
+            DMESG("[RefCounted refs=%d tag=%d]", r->refCount, r->tag);
         }
     } else {
         StringData *s = numops::toString(v);
@@ -787,14 +786,29 @@ void anyPrint(TValue v) {
 }
 
 #define PRIM_VTABLE(name, sz)                                                                      \
-    const VTable name __attribute__((aligned(1 << vtableShift))) = {sz,                            \
-                                                                    0,                             \
-                                                                    0,                             \
-                                                                    {                              \
-                                                                        0, (void *)&anyPrint,      \
-                                                                    }};
+    const VTable name = {sz,                                                                       \
+                         0,                                                                        \
+                         0,                                                                        \
+                         {                                                                         \
+                             0, (void *)&anyPrint,                                                 \
+                         }};
 PRIM_VTABLE(string_vt, 0)
 PRIM_VTABLE(image_vt, 0)
 PRIM_VTABLE(buffer_vt, 0)
 PRIM_VTABLE(number_vt, 12)
+
+static const VTable *primVtables[] = {0,         //
+                                      &string_vt, // 1
+                                      &buffer_vt, // 2
+                                      &image_vt,  // 3
+                                      0,         0, 0, 0, 0, 0,
+                                      &number_vt, // 10
+                                      0};
+
+VTable *getVTable(RefObject *r) {
+    if (r->vtable >= 11)
+        return (VTable *)(r->vtable << vtableShift);
+    return (VTable*)primVtables[r->vtable];
+}
+
 }

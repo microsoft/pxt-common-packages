@@ -217,8 +217,6 @@ class RefObject {
 #endif
     }
 
-    inline VTable *getVTable() { return (VTable *)(vtable << vtableShift); }
-
     void destroyVT();
     void printVT();
 
@@ -341,6 +339,11 @@ class RefRecord : public RefObject {
     void stref(int idx, TValue v);
 };
 
+
+
+//%
+VTable *getVTable(RefObject *r);
+
 // these are needed when constructing vtables for user-defined classes
 //%
 void RefRecord_destroy(RefRecord *r);
@@ -401,6 +404,7 @@ class RefRefLocal : public RefObject {
 
 struct BoxedNumber : RefCounted {
     double num;
+    static constexpr int TAG = 10;
 } __attribute__((packed));
 
 extern const VTable string_vt;
@@ -428,7 +432,7 @@ using namespace pxt;
 typedef BufferData *Buffer;
 
 namespace pins {
-Buffer createBuffer(int size);    
+Buffer createBuffer(int size);
 }
 
 // The ARM Thumb generator in the JavaScript code is parsing
@@ -441,11 +445,8 @@ Buffer createBuffer(int size);
 //
 #define PXT_SHIMS_BEGIN                                                                            \
     namespace pxt {                                                                                \
-    const uint32_t functionsAndBytecode[] __attribute__((aligned(0x20))) = {                       \
-        0x08010801, 0x42424242, 0x08010801, 0x8de9d83e, (uint32_t)&string_vt,                      \
-        (uint32_t)&ManagedString::emptyData, (uint32_t)&image_vt,                                  \
-        (uint32_t)&DeviceImage::emptyData, (uint32_t)&buffer_vt,                                   \
-        (uint32_t)&ManagedBuffer::emptyData, 0, (uint32_t)&string_vt, (uint32_t)&number_vt, 0,
+    const uint32_t functionsAndBytecode[]                                                          \
+        __attribute__((aligned(0x20))) = {0x08010801, 0x42424242, 0x08010801, 0x8de9d83e,
 
 #define PXT_SHIMS_END                                                                              \
     }                                                                                              \
