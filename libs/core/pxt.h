@@ -29,6 +29,7 @@
 #include "DeviceImage.h"
 
 #include "pins.h"
+#include "devpins.h"
 #include "hf2.h"
 
 #define intcheck(...) check(__VA_ARGS__)
@@ -425,6 +426,10 @@ ValType valType(TValue v);
 
 using namespace pxt;
 typedef BufferData *Buffer;
+
+namespace pins {
+Buffer createBuffer(int size);    
+}
 
 // The ARM Thumb generator in the JavaScript code is parsing
 // the hex file and looks for the magic numbers as present here.

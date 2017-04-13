@@ -10,8 +10,11 @@
         "pins.h",
         "core.cpp",
         "pins.cpp",
+        "devpins.cpp",
+        "devpins.h",
         "pins.ts",
-        "music.ts",
+        "i2c.cpp",
+        "i2c.ts",
         "pxt-helpers.ts",
         "buffer.cpp",
         "shims.d.ts",
@@ -21,13 +24,12 @@
         "serial.cpp",
         "serial.ts",
         "buttons.cpp",
-        "input.cpp",
-        "accelerometer.cpp",
         "math.ts",
         "hf2.cpp",
         "hf2.h",
         "uf2format.h",
-        "uf2hid.h"
+        "uf2hid.h",
+        "ns.ts"
     ],
     "testFiles": [
         "test.ts"

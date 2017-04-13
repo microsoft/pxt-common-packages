@@ -1,0 +1,25 @@
+{
+    "name": "temperature",
+    "description": "The temperature library",
+    "files": [
+        "README.md",
+        "temperature.cpp",
+        "shims.d.ts",
+        "enums.d.ts",
+        "ns.ts"
+    ],
+    "yotta": {
+        "config": {
+            "codal": {
+                "component_count": 64
+            }
+        }
+    },
+    "testFiles": [
+        "test.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core"
+    }
+}

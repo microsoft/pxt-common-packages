@@ -21,6 +21,7 @@
     ],
     "public": true,
     "dependencies": {
-        "core": "file:../core"
+        "core": "file:../core",
+        "lightsensor": "file:../lightsensor"
     }
 }

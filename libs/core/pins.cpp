@@ -2,21 +2,6 @@
 
 #include "DeviceSystemTimer.h"
 
-#define DEFPIN(id, name, cap) id(DEVICE_ID_IO_P0 + (&id - pins), (PinName)(name), cap)
-#define PIN_V(id) PIN_##id
-#define PIN_AD(id) DEFPIN(id, PIN_V(id), PIN_V(id) != NC ? PIN_CAPABILITY_AD : (PinCapability)0)
-#define PIN_D(id) DEFPIN(id, PIN_V(id), PIN_V(id) != NC ? PIN_CAPABILITY_DIGITAL : (PinCapability)0)
-
-DevPins *io;
-
-DevPins::DevPins()
-    : PIN_AD(A0), PIN_AD(A1), PIN_AD(A2), PIN_AD(A3), PIN_AD(A4), PIN_AD(A5), PIN_AD(A6),
-      PIN_AD(A7), PIN_AD(A8), PIN_AD(A9), PIN_AD(A10), PIN_AD(A11), PIN_D(D0), PIN_D(D1), PIN_D(D2),
-      PIN_D(D3), PIN_D(D4), PIN_D(D5), PIN_D(D6), PIN_D(D7), PIN_D(D8), PIN_D(D9), PIN_D(D10),
-      PIN_D(D11), PIN_D(D12), PIN_D(D13), PIN_D(LED), PIN_D(LEDRX), PIN_D(LEDTX),
-      i2c((PinName)PIN_SDA, (PinName)PIN_SCL)
-      {}
-
 enum class PulseValue {
     //% block=high
     High = DEVICE_PIN_EVT_PULSE_HI,
@@ -167,70 +152,6 @@ void analogWrite(AnalogPin name, int value) {
 }
 
 namespace PwmPinMethods {
-
-/**
-* Emits a Pulse-width modulation (PWM) signal for a given duration.
-* @param name the pin that modulate
-* @param frequency frequency to modulate in Hz.
-* @param ms duration of the pitch in milli seconds.
-*/
-//% blockId=pin_analog_pitch block="analog pitch|pin %pin|at (Hz)%frequency|for (ms) %ms"
-//% help=pins/analog-pitch weight=4 async advanced=true blockGap=8
-//% blockNamespace=pins
-void analogPitch(PwmPin pin, int frequency, int ms) {
-    if (frequency <= 0) {
-        pin->setAnalogValue(0);
-    } else {
-        pin->setAnalogValue(512);
-        pin->setAnalogPeriodUs(1000000/frequency);
-    }
-
-    if (ms > 0) {
-        fiber_sleep(ms);
-        pin->setAnalogValue(0);
-        wait_ms(5);
-    }
-}
-
-/**
-* Plays a tone through the pin for the given duration.
-* @param pin to play tone through
-* @param frequency pitch of the tone to play in Hertz (Hz)
-* @param ms tone duration in milliseconds (ms)
-*/
-//% help=music/play-tone weight=90
-//% blockId=music_play_note block="play tone|on %pin|at %note=device_note|for %duration=device_beat" blockGap=8
-//% parts="headphone" async
-//% blockNamespace=music
-void playTone(PwmPin pin, int frequency, int ms) {
-    analogPitch(pin, frequency, ms);
-}
-
-/**
-* Plays a tone through pin ``P0``.
-* @param pin to ring tone
-* @param frequency pitch of the tone to play in Hertz (Hz)
-*/
-//% help=music/ring-tone weight=80
-//% blockId=music_ring block="ring tone|on %pin|at %note=device_note" blockGap=8
-//% parts="headphone" async
-//% blockNamespace=music
-void ringTone(PwmPin pin, int frequency) {
-    analogPitch(pin, frequency, 0);
-}
-
-/**
-* Rests (plays nothing) for a specified time through pin ``P0``.
-* @param pin to rest
-* @param ms rest duration in milliseconds (ms)
-*/
-//% help=music/rest weight=79
-//% blockId=music_rest block="rest|on %pin|for %duration=device_beat"
-//% parts="headphone" async
-//% blockNamespace=music
-void rest(PwmPin pin, int ms) {
-    analogPitch(pin, 0, ms);
-}
 
 /**
  * Configures the Pulse-width modulation (PWM) of the analog output to the given value in

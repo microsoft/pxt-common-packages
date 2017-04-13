@@ -283,93 +283,20 @@
 #ifndef PIN_CAPSENSE
 #define PIN_CAPSENSE NC
 #endif
-
-class DevPins {
-  public:
-    DevicePin pins[0];
-#define DigitalPin DevicePin
-#define AnalogPin DevicePin
-#define PwmPin DevicePin
-    //% indexedInstanceNS=pins indexedInstanceShim=pxt::getPin
-    //%
-    AnalogPin A0;
-    //%
-    AnalogPin A1;
-    //%
-    AnalogPin A2;
-    //%
-    AnalogPin A3;
-    //%
-    AnalogPin A4;
-    //%
-    AnalogPin A5;
-    //%
-    AnalogPin A6;
-    //%
-    AnalogPin A7;
-    //%
-    PwmPin A8;
-    //%
-    PwmPin A9;
-    //%
-    PwmPin A10;
-    //%
-    PwmPin A11;
-    //%
-    DigitalPin D0;
-    //%
-    DigitalPin D1;
-    //%
-    DigitalPin D2;
-    //%
-    DigitalPin D3;
-    //%
-    DigitalPin D4;
-    //%
-    DigitalPin D5;
-    //%
-    DigitalPin D6;
-    //%
-    DigitalPin D7;
-    //%
-    DigitalPin D8;
-    //%
-    DigitalPin D9;
-    //%
-    DigitalPin D10;
-    //%
-    DigitalPin D11;
-    //%
-    DigitalPin D12;
-    //%
-    DigitalPin D13;
-    //%
-    DigitalPin LED;
-    //%
-    DigitalPin LEDRX;
-    //%
-    DigitalPin LEDTX;
-#undef DigitalPin
-#undef AnalogPin
-#undef PwmPin
-
-    I2C i2c;
-
-    DevPins();
-};
-
-extern DevPins *io;
-
-// modify if the last field changes
-const int LastPinID = &io->LEDTX - io->pins;
-
-#define INIT_PIN(name, PIN) name((DEVICE_ID_IO_P0 + 100) + (int)PIN, (PinName)PIN, PIN_CAPABILITY_DIGITAL)
+#ifndef PIN_NEOPIXEL
+#define PIN_NEOPIXEL NC
+#endif
 
 typedef DevicePin *DigitalPin;
 typedef DevicePin *AnalogPin;
 typedef DevicePin *PwmPin;
 typedef DeviceButton *Button;
 
+#define INIT_PIN(name, PIN) name((DEVICE_ID_IO_P0 + 100) + (int)PIN, (PinName)PIN, PIN_CAPABILITY_DIGITAL)
+#define DEFPIN(id, name, cap) id(DEVICE_ID_IO_P0 + (&id - pins), (PinName)(name), cap)
+#define PIN_V(id) PIN_##id
+#define PIN_AD(id) DEFPIN(id, PIN_V(id), PIN_V(id) != NC ? PIN_CAPABILITY_AD : (PinCapability)0)
+#define PIN_D(id) DEFPIN(id, PIN_V(id), PIN_V(id) != NC ? PIN_CAPABILITY_DIGITAL : (PinCapability)0)
 
 /**
 * User interaction on buttons
