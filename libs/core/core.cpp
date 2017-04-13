@@ -289,6 +289,16 @@ TNumber subs(TNumber a, TNumber b) {
 
 //%
 TNumber muls(TNumber a, TNumber b) {
+    int aa = (int)a;
+    int bb = (int)b;
+    if (aa & bb & 1) {
+        // if both operands fit 15 bits, the result will not overflow int
+        if ((aa >> 15 == 0 || aa >> 15 == -1) &&
+            (bb >> 15 == 0 || bb >> 15 == -1)) {
+                // it may overflow 31 bit int though - use fromInt to convert properly
+                return fromInt((aa >> 1) * (bb >> 1));
+            }
+    }
     NUMOP(*)
 }
 
