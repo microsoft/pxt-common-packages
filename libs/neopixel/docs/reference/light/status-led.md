@@ -8,7 +8,7 @@ light.statusLED(false);
 
 ## Parameters
 
-* **on**: [boolean](/reference/blocks/boolean), a value indicating if the LED is on
+* **on**: [boolean](/types/boolean), a value indicating if the LED is on
 
 ## Example
 
@@ -17,5 +17,5 @@ light.statusLED(false);
 ```
 
 ```package
-neopixel
+light
 ```
