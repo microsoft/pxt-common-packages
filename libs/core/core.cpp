@@ -40,8 +40,17 @@ StringData *fromCharCode(int code) {
 }
 
 //%
-int toNumber(StringData *s) {
-    return atoi(s->data);
+double toNumber(StringData *s) {
+    // JSCHECK
+    char *endptr;
+    double v = strtod(s->data, &endptr);
+    if (endptr != s->data + s->len)
+        return NAN;
+    if (v == 0.0 || v == -0.0)
+        return v;
+    if (!isnormal(v))
+        return NAN;
+    return v;
 }
 
 //%
@@ -70,7 +79,8 @@ bool bang(int v) {
 
 namespace pxt {
 
-int toInt(TNumber v) {
+// ES5 9.5, 9.6
+uint32_t toUInt(TNumber v) {
     if (isNumber(v))
         return numValue(v);
     if (isSpecial(v)) {
@@ -82,37 +92,31 @@ int toInt(TNumber v) {
     if (!v)
         return 0;
 
-    // TODO this probably doesn't follow JS semantics
-    ValType t = valType(v);
-    if (t == ValType::Number) {
-        BoxedNumber *p = (BoxedNumber *)v;
-        // int i = 100000000;
-        // while (i--) asm("nop");
-        return (int)p->num;
-    } else {
+    double num = toDouble(v);
+    if (!isnormal(num))
         return 0;
-    }
+    double rem = fmod(trunc(num), 4294967296.0);
+    if (rem < 0.0)
+        rem += 4294967296.0;
+    return (uint32_t)rem;
 }
-
-uint32_t toUInt(TNumber v) {
-    if (isTagged(v) || valType(v) != ValType::Number)
-        return toInt(v);
-    // TODO this probably doesn't follow JS semantics
-    BoxedNumber *p = (BoxedNumber *)v;
-    return (uint32_t)p->num;
+int toInt(TNumber v) {
+    return (int)toUInt(v);
 }
 
 double toDouble(TNumber v) {
     if (isTagged(v))
         return toInt(v);
 
-    // TODO this probably doesn't follow JS semantics
+    // JSCHECK
     ValType t = valType(v);
     if (t == ValType::Number) {
         BoxedNumber *p = (BoxedNumber *)v;
         return p->num;
+    } else if (t == ValType::String) {
+        return String_::toNumber((StringData *)v);
     } else {
-        return 0; // TODO NaN?
+        return NAN;
     }
 }
 
