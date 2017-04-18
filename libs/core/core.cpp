@@ -257,8 +257,8 @@ int toBool(TValue v) {
         if (s->len == 0)
             return 0;
     } else if (t == ValType::Number) {
-        double v = toDouble(v);
-        if (isnan(v) || v == 0.0 || v == -0.0)
+        double x = toDouble(v);
+        if (isnan(x) || x == 0.0 || x == -0.0)
             return 0;
         else
             return 1;
