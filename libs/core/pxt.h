@@ -55,12 +55,6 @@ struct TValueStruct {};
 typedef TValueStruct *TValue;
 typedef TValue TNumber;
 
-#ifdef PXT_BOX_DEBUG
-#define CAN_BE_TAGGED(v) (0)
-#else
-#define CAN_BE_TAGGED(v) (-0x40000000 <= (v) && (v) <= 0x3fffffff)
-#endif
-
 #define TAGGED_SPECIAL(n) (TValue)(void *)((n << 2) | 2)
 #define TAG_FALSE TAGGED_SPECIAL(2)
 #define TAG_TRUE TAGGED_SPECIAL(16)
@@ -68,7 +62,35 @@ typedef TValue TNumber;
 #define TAG_NULL TAGGED_SPECIAL(1)
 #define TAG_NUMBER(n) (TNumber)(void *)((n << 1) | 1)
 
-#define IS_TAGGED(n) (!(n) || ((int)(n)&3))
+inline bool isTagged(TValue v) {
+    return !v || ((int)v & 3);
+}
+
+inline bool isNumber(TValue v) {
+    return (int)v & 1;
+}
+
+inline bool isSpecial(TValue v) {
+    return (int)v & 2;
+}
+
+inline bool bothNumbers(TValue a, TValue b) {
+    return (int)a & (int)b & 1;
+}
+
+inline int numValue(TValue n) {
+    return (int)n >> 1;
+}
+
+#ifdef PXT_BOX_DEBUG
+inline bool canBeTagged(int) {
+    return false;
+}
+#else
+inline bool canBeTagged(int v) {
+    return (v << 1) >> 1 == v;
+}
+#endif
 
 typedef TValue Action;
 typedef TValue ImageLiteral;
@@ -338,8 +360,6 @@ class RefRecord : public RefObject {
     void st(int idx, TValue v);
     void stref(int idx, TValue v);
 };
-
-
 
 //%
 VTable *getVTable(RefObject *r);

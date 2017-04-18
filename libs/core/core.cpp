@@ -71,11 +71,10 @@ bool bang(int v) {
 namespace pxt {
 
 int toInt(TNumber v) {
-    int vv = (int)v;
-    if (vv & 1)
-        return vv >> 1;
-    if (vv & 2) {
-        if (vv >> 6)
+    if (isNumber(v))
+        return numValue(v);
+    if (isSpecial(v)) {
+        if ((int)v >> 6)
             return 1;
         else
             return 0;
@@ -96,7 +95,7 @@ int toInt(TNumber v) {
 }
 
 uint32_t toUInt(TNumber v) {
-    if (((int)v) & 3 || valType(v) != ValType::Number)
+    if (isTagged(v) || valType(v) != ValType::Number)
         return toInt(v);
     // TODO this probably doesn't follow JS semantics
     BoxedNumber *p = (BoxedNumber *)v;
@@ -104,7 +103,7 @@ uint32_t toUInt(TNumber v) {
 }
 
 double toDouble(TNumber v) {
-    if (IS_TAGGED(v))
+    if (isTagged(v))
         return toInt(v);
 
     // TODO this probably doesn't follow JS semantics
@@ -141,7 +140,7 @@ TNumber fromFloat(float r) {
 }
 
 TNumber fromInt(int v) {
-    if (CAN_BE_TAGGED(v))
+    if (canBeTagged(v))
         return TAG_NUMBER(v);
     return fromDouble(v);
 }
@@ -288,9 +287,9 @@ TNumber subs(TNumber a, TNumber b) {
 
 //%
 TNumber muls(TNumber a, TNumber b) {
-    int aa = (int)a;
-    int bb = (int)b;
-    if (aa & bb & 1) {
+    if (bothNumbers(a, b)) {
+        int aa = (int)a;
+        int bb = (int)b;
         // if both operands fit 15 bits, the result will not overflow int
         if ((aa >> 15 == 0 || aa >> 15 == -1) && (bb >> 15 == 0 || bb >> 15 == -1)) {
             // it may overflow 31 bit int though - use fromInt to convert properly
@@ -342,12 +341,12 @@ TNumber ands(TNumber a, TNumber b) {
 }
 
 #define CMPOP_RAW(op)                                                                              \
-    if (((int)a) & ((int)b) & 1)                                                                   \
+    if (bothNumbers(a, b))                                                                         \
         return (int)a op((int)b);                                                                  \
     return toDouble(a) op toDouble(b);
 
 #define CMPOP(op)                                                                                  \
-    if (((int)a) & ((int)b) & 1)                                                                   \
+    if (bothNumbers(a, b))                                                                         \
         return ((int)a op((int)b)) ? TAG_TRUE : TAG_FALSE;                                         \
     return toDouble(a) op toDouble(b) ? TAG_TRUE : TAG_FALSE;
 
@@ -712,8 +711,11 @@ void dumpDmesg() {
 
 //%
 ValType valType(TValue v) {
-    if ((int)v & 3) {
-        if ((int)v & 1)
+    if (isTagged(v)) {
+        if (!v)
+            return ValType::Undefined;
+
+        if (isNumber(v))
             return ValType::Number;
         if (v == TAG_TRUE || v == TAG_FALSE)
             return ValType::Boolean;
@@ -724,9 +726,6 @@ ValType valType(TValue v) {
             return ValType::Object;
         }
     } else {
-        if (!v)
-            return ValType::Undefined;
-
         int tag = ((RefCounted *)v)->tag;
 
         if (tag == ManagedString::TAG)
@@ -797,18 +796,17 @@ PRIM_VTABLE(image_vt, 0)
 PRIM_VTABLE(buffer_vt, 0)
 PRIM_VTABLE(number_vt, 12)
 
-static const VTable *primVtables[] = {0,         //
+static const VTable *primVtables[] = {0,          //
                                       &string_vt, // 1
                                       &buffer_vt, // 2
                                       &image_vt,  // 3
-                                      0,         0, 0, 0, 0, 0,
+                                      0,          0, 0, 0, 0, 0,
                                       &number_vt, // 10
                                       0};
 
 VTable *getVTable(RefObject *r) {
     if (r->vtable >= 11)
         return (VTable *)(r->vtable << vtableShift);
-    return (VTable*)primVtables[r->vtable];
+    return (VTable *)primVtables[r->vtable];
 }
-
 }
