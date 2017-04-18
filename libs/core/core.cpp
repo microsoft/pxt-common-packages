@@ -401,12 +401,16 @@ PXT_DEF_STRING(sFalse, "false")
 PXT_DEF_STRING(sUndefined, "undefined")
 PXT_DEF_STRING(sNull, "null")
 PXT_DEF_STRING(sObject, "[Object]")
+PXT_DEF_STRING(sNaN, "NaN")
+PXT_DEF_STRING(sInf, "Infinity")
+PXT_DEF_STRING(sMInf, "-Infinity")
 
 asm(".global _printf_float");
 extern "C" char *gcvt(double d, int ndigit, char *buf);
 
 //%
 StringData *toString(TValue v) {
+
     if (v == TAG_UNDEFINED)
         return (StringData *)(void *)sUndefined;
     else if (v == TAG_FALSE)
@@ -415,19 +419,30 @@ StringData *toString(TValue v) {
         return (StringData *)(void *)sTrue;
     else if (v == TAG_NULL)
         return (StringData *)(void *)sNull;
-
     ValType t = valType(v);
 
     if (t == ValType::String) {
         return (StringData *)(void *)incr(v);
     } else if (t == ValType::Number) {
         char buf[64];
-        // TODO fastpath for ints
-        gcvt(toDouble(v), 10, buf);
-        // snprintf() with doubles requires 8-byte stack alignment, which we do not provide (yet)
-        // unsigned len = snprintf(buf, sizeof(buf), "%g", toDouble(v));
-        // if (len >= sizeof(buf))
-        //    return (StringData *)(void *)sObject; // overflow?
+
+        if (isNumber(v)) {
+            int x = numValue(v);
+            itoa(x, buf);
+        } else {
+            double x = toDouble(v);
+
+            if (isnan(x))
+                return (StringData *)(void *)sNaN;
+            if (isinf(x)) {
+                if (x < 0)
+                    return (StringData *)(void *)sMInf;
+                else
+                    return (StringData *)(void *)sInf;
+            }
+            gcvt(x, 21, buf);
+        }
+
         ManagedString s(buf);
         return s.leakData();
     } else {
