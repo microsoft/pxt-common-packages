@@ -260,8 +260,8 @@ int toBool(TValue v) {
         if (s->len == 0)
             return 0;
     } else if (t == ValType::Number) {
-        // TODO NaN, etc?
-        if (toDouble(v) == 0.0)
+        double v = toDouble(v);
+        if (isnan(v) || v == 0.0 || v == -0.0)
             return 0;
         else
             return 1;
