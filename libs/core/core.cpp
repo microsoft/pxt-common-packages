@@ -244,15 +244,12 @@ namespace numops {
 
 //%
 int toBool(TValue v) {
-    if ((int)v & 3) {
-        if (v == TAG_NULL || v == TAG_FALSE || v == TAG_NUMBER(0))
+    if (isTagged(v)) {
+        if (v == TAG_UNDEFINED || v == TAG_NULL || v == TAG_FALSE || v == TAG_NUMBER(0))
             return 0;
         else
             return 1;
     }
-
-    if (v == TAG_UNDEFINED)
-        return 0;
 
     ValType t = valType(v);
     if (t == ValType::String) {
