@@ -133,7 +133,7 @@ TNumber fromDouble(double r) {
 #endif
     BoxedNumber *p = (BoxedNumber *)malloc(sizeof(BoxedNumber));
     p->init();
-    p->tag = BoxedNumber::TAG;
+    p->tag = REF_TAG_NUMBER;
     p->num = r;
     return (TNumber)p;
 }
@@ -744,9 +744,9 @@ ValType valType(TValue v) {
     } else {
         int tag = ((RefCounted *)v)->tag;
 
-        if (tag == ManagedString::TAG)
+        if (tag == REF_TAG_STRING)
             return ValType::String;
-        else if (tag == BoxedNumber::TAG)
+        else if (tag == REF_TAG_NUMBER)
             return ValType::Number;
 
         return ValType::Object;
@@ -812,16 +812,18 @@ PRIM_VTABLE(image_vt, 0)
 PRIM_VTABLE(buffer_vt, 0)
 PRIM_VTABLE(number_vt, 12)
 
-static const VTable *primVtables[] = {0,          //
+static const VTable *primVtables[] = {0,          // 0
                                       &string_vt, // 1
                                       &buffer_vt, // 2
                                       &image_vt,  // 3
-                                      0,          0, 0, 0, 0, 0,
-                                      &number_vt, // 10
+                                      // filler:
+                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                      0, 0, 0, 0, 0, 0, 0,
+                                      &number_vt, // 32
                                       0};
 
 VTable *getVTable(RefObject *r) {
-    if (r->vtable >= 11)
+    if (r->vtable >= 33)
         return (VTable *)(r->vtable << vtableShift);
     return (VTable *)primVtables[r->vtable];
 }

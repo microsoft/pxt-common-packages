@@ -45,6 +45,10 @@
 #include <set>
 #endif
 
+#define CONCAT_1(a, b) a##b
+#define CONCAT_0(a, b) CONCAT_1(a, b)
+#define STATIC_ASSERT(e) enum { CONCAT_0(_static_assert_, __LINE__) = 1 / ((e) ? 1 : 0) }
+
 // extern MicroBit uBit;
 
 namespace pxt {
@@ -422,9 +426,12 @@ class RefRefLocal : public RefObject {
     RefRefLocal();
 };
 
+STATIC_ASSERT(REF_TAG_USER <= 32)
+// note: this is hardcoded in PXT (hexfile.ts)
+#define REF_TAG_NUMBER 32
+
 struct BoxedNumber : RefCounted {
     double num;
-    static constexpr int TAG = 10;
 } __attribute__((packed));
 
 extern const VTable string_vt;
