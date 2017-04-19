@@ -306,5 +306,9 @@ declare const enum DAL {
     // built/yt/yotta_modules/codal/inc/types/ManagedType.h
     // built/yt/yotta_modules/codal/inc/types/Matrix4.h
     // built/yt/yotta_modules/codal/inc/types/RefCounted.h
+    REF_TAG_STRING = 1,
+    REF_TAG_BUFFER = 2,
+    REF_TAG_IMAGE = 3,
+    REF_TAG_USER = 32,
     // built/yt/yotta_modules/codal/inc/types/list.h
 }
