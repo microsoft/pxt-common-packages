@@ -2,23 +2,23 @@
  * Well known colors for a NeoPixel strip
  */
 enum NeoPixelColors {
-    //% block=red
+    //% block=red blockIdentity=light.colors
     Red = 0xFF0000,
-    //% block=orange
+    //% block=orange blockIdentity=light.colors
     Orange = 0xFFA500,
-    //% block=yellow
+    //% block=yellow blockIdentity=light.colors
     Yellow = 0xFFFF00,
-    //% block=green
+    //% block=green blockIdentity=light.colors
     Green = 0x00FF00,
-    //% block=blue
+    //% block=blue blockIdentity=light.colors
     Blue = 0x0000FF,
-    //% block=indigo
+    //% block=indigo blockIdentity=light.colors
     Indigo = 0x4b0082,
-    //% block=violet
+    //% block=violet blockIdentity=light.colors
     Violet = 0x8a2be2,
-    //% block=purple
+    //% block=purple blockIdentity=light.colors
     Purple = 0xFF00FF,
-    //% block=white
+    //% block=white blockIdentity=light.colors
     White = 0xFFFFFF
 }
 
@@ -502,6 +502,7 @@ namespace light {
     */
     //% weight=2 blockGap=8 advanced=true
     //% blockId=neopixel_colors block="%color"
+    //% shim=TD_ID
     export function colors(color: NeoPixelColors): number {
         return color;
     }
