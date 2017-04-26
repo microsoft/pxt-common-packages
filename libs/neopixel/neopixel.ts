@@ -467,7 +467,7 @@ namespace light {
     //% parts="neopixel"
     //% trackArgs=0,2
     export function createNeoPixelStrip(
-        pin: AnalogPin = null,
+        pin: DigitalPin = null,
         numleds: number = 10,
         mode?: NeoPixelMode
     ): NeoPixelStrip {
