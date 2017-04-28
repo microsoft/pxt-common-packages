@@ -4,7 +4,7 @@ control.forever(() => {
         photon.forward(1)
         control.pause(250)
     }
-    photon.setColor(0x00f0f0)
+    photon.setColor(100)
     photon.forward(10)
     control.pause(500)
     for (let i = 0; i < 10; ++i) {

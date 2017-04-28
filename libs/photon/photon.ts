@@ -33,9 +33,19 @@ namespace photon {
         _mode = PhotonMode.On;
         if (_strip) {
             _strip.clear();
-            _strip.setPixelColor(0, NeoPixelColors.White);
+            paintTurtle();
             _strip.show();
         }
+    }
+
+    function paintTurtle() {
+        if (_show) {
+            const b = _strip.brightness();
+            _strip.setBrightness(255);
+            _strip.setPixelColor(_pos, NeoPixelColors.White);
+            _strip.setBrightness(b);
+        } else
+            _strip.setPixelColor(_pos, light.colorWheel(_stamp));
     }
 
     function initStrip(): light.NeoPixelStrip {
@@ -50,6 +60,7 @@ namespace photon {
      * Moves the photon forward a number of steps (lights).
      * @param steps number of steps to move, eg: 1
      */
+    //% help=photon/forward
     //% weight=95 blockGap=8
     //% blockId=photon_forward block="photon forward %steps"
     export function forward(steps: number) {
@@ -72,8 +83,7 @@ namespace photon {
         }
 
         // update drawing
-        strip.setPixelColor(_pos, _show ? NeoPixelColors.White : light.colorWheel(_stamp));
-
+        paintTurtle();
         strip.show();
     }
 
@@ -81,6 +91,8 @@ namespace photon {
      * Moves the photon backward a number of steps (lights).
      * @param steps number of steps to move, eg: 1
      */
+
+    //% help=photon/backward
     //% weight=94 blockGap=8
     //% blockId=photon_backward block="photon backward %steps"
     export function backward(steps: number) {
@@ -90,6 +102,7 @@ namespace photon {
     /**
      * Flips the photon's direction from clockwise to counterclokwise and vice-versa.  
      */
+    //% help=photon/flip
     //% weight=93 blockGap=8
     //% blockId=photon_flip block="photon flip"
     export function flip() {
@@ -167,7 +180,7 @@ namespace photon {
 
         strip.showColor(_color);
         if (_show) {
-            strip.setPixelColor(_pos, NeoPixelColors.White);
+            paintTurtle();
             strip.show();
         }
     }
@@ -213,10 +226,7 @@ namespace photon {
         const strip = initStrip();
         if (_show != on) {
             _show = on;
-            if (_show)
-                strip.setPixelColor(_pos, NeoPixelColors.White);
-            else
-                strip.setPixelColor(_pos, light.colorWheel(_stamp));
+            paintTurtle();
             strip.show();
         }
     }
