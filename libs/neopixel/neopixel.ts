@@ -259,7 +259,6 @@ namespace light {
         //% parts="neopixel"
         //% defaultInstance=light.pixels
         show() {
-            control.pause(1)
             sendBuffer(this.pin, this.buf);
         }
 
