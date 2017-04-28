@@ -2,7 +2,7 @@
 
 
 
-    //% color="#0078d7" weight=98
+    //% color="#0078d7" weight=97
 declare namespace light {
 
     /**

@@ -49,7 +49,7 @@ enum Easing {
 /**
  * Functions to operate NeoPixel strips.
  */
-//% weight=98 color="#0078d7" icon="\uf00a"
+//% weight=97 color="#0078d7" icon="\uf00a"
 namespace light {
     /**
      * Turns the status LED on or off.
@@ -491,7 +491,8 @@ namespace light {
      */
     //% weight=4 blockGap=8
     //% blockId="neopixel_rgb" block="red %red|green %green|blue %blue"
-    //% advanced=true
+    //% red.min=0 red.max=255 green.min=0 green.max=255 blue.min=0 blue.max=255
+    //% subcategory="Colors"
     export function rgb(red: number, green: number, blue: number): number {
         return ((red & 0xFF) << 16) | ((green & 0xFF) << 8) | (blue & 0xFF);
     }
@@ -499,9 +500,10 @@ namespace light {
     /**
      * Gets the RGB value of a known color
     */
-    //% weight=2 blockGap=8 advanced=true
+    //% weight=2 blockGap=8
     //% blockId=neopixel_colors block="%color"
     //% shim=TD_ID
+    //% subcategory="Colors"
     export function colors(color: NeoPixelColors): number {
         return color;
     }
@@ -510,8 +512,10 @@ namespace light {
      * Gets an RGB color given the value of an angle between 0 and 255. Useful
      * for performing math with colors.
     */
-    //% weight=1 blockGap=8 advanced=true
+    //% weight=1 blockGap=8
     //% blockId="neopixel_color_wheel" block="color wheel %angle"
+    //% angle.min=0 angle.max=255
+    //% subcategory="Colors"
     export function colorWheel(angle: number): number {
         return hsv(angle, 255, 255);
     }
@@ -537,7 +541,8 @@ namespace light {
      */
     //% weight=3 blockGap=8
     //% blockId="neopixel_hsv" block="hue %hue|sat %sat|val %val"
-    //% advanced=true
+    //% hue.min=0 hue.max=255 sat.min=0 sat.max=255 val.min=0 val.max=255
+    //% subcategory="Colors"
     export function hsv(hue: number, sat: number, val: number): number {
         let h = hue % 255;
         // scale down to 0..192
@@ -589,6 +594,7 @@ namespace light {
     //% blockId="neopixel_animation_rainbow" block="rainbow"
     //% weight=100 blockGap=8
     //% parts="neopixel"
+    //% subcategory="Animations"
     export function rainbowCycleAnimation(): NeoPixelAnimation {
         return NeopixelAnimatonFactory.getRainbow();
     }
@@ -599,6 +605,7 @@ namespace light {
     //% blockId="neopixel_animation_runninglights" block="running lights"
     //% weight=99 blockGap=8
     //% parts="neopixel"
+    //% subcategory="Animations"
     export function runningLightsAnimation(): NeoPixelAnimation {
         return NeopixelAnimatonFactory.getRunningLights();
     }
@@ -609,6 +616,7 @@ namespace light {
     //% blockId="neopixel_animation_theatrechase" block="theatre chase"
     //% weight=99 blockGap=8
     //% parts="neopixel"
+    //% subcategory="Animations"
     export function theatreChaseAnimation(): NeoPixelAnimation {
         return NeopixelAnimatonFactory.getTheatreChase();
     }
@@ -619,6 +627,7 @@ namespace light {
     //% blockId="neopixel_animation_comet" block="comet"
     //% weight=98 blockGap=8
     //% parts="neopixel"
+    //% subcategory="Animations"
     export function cometAnimation(): NeoPixelAnimation {
         return NeopixelAnimatonFactory.getComet();
     }
@@ -629,6 +638,7 @@ namespace light {
     //% blockId="neopixel_animation_sparkle" block="sparkle"
     //% weight=97 blockGap=8
     //% parts="neopixel"
+    //% subcategory="Animations"
     export function sparkleAnimation(): NeoPixelAnimation {
         return NeopixelAnimatonFactory.getSparkle();
     }
@@ -639,6 +649,7 @@ namespace light {
     //% blockId="neopixel_animation_colorwipe" block="%rgb=neopixel_colors| color wipe "
     //% weight=96 blockGap=8
     //% parts="neopixel"
+    //% subcategory="Animations"
     export function colorWipeAnimation(rgb: number): NeoPixelAnimation {
         return NeopixelAnimatonFactory.getColorWipe(rgb);
     }

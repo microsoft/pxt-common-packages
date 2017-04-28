@@ -13,7 +13,7 @@ enum PhotonMode {
  * Control a photon of light to paint animation on colored LEDs.
  * Inspired from MIT LightLogo.
  */
-//% color="#9933ff" icon="\uf185" weight=90
+//% color="#9933ff" icon="\uf185" weight=98
 namespace photon {
     let _strip: light.NeoPixelStrip;
     let _pos: number;
@@ -27,8 +27,8 @@ namespace photon {
     function reset() {
         _pos = 0;
         _ccw = 1;
-        _color = NeoPixelColors.Red;
-        _stamp = NeoPixelColors.Red;
+        _color = 0;
+        _stamp = 0;
         _show = true;
         _mode = PhotonMode.On;
         if (_strip) {
@@ -57,7 +57,7 @@ namespace photon {
 
         if (_show) {
             // restore previous color
-            strip.setPixelColor(_pos, _stamp);
+            strip.setPixelColor(_pos, light.colorWheel(_stamp));
         }
 
         // compute new pos
@@ -72,10 +72,9 @@ namespace photon {
         }
 
         // update drawing
-        strip.setPixelColor(_pos, _show ? NeoPixelColors.White : _stamp);
+        strip.setPixelColor(_pos, _show ? NeoPixelColors.White : light.colorWheel(_stamp));
 
         strip.show();
-        control.pause(1);
     }
 
     /**
@@ -112,8 +111,19 @@ namespace photon {
     }
 
     /**
+     * Sets the photon mode to on, off or erase.
+     * @param mode 
+     */
+    //% weight=87 blockGap=8
+    //% blockId=photon_set_mode block="photon %mode"
+    export function setMode(mode: PhotonMode) {
+        _mode = mode;
+    }    
+
+    /**
      * Sets the color of the light under the turtle to the current pen color. 
      */
+    //% weight=86 blockGap=8
     //% blockId=photon_stamp block="photon stamp"
     export function stamp() {
         const strip = initStrip();
@@ -121,48 +131,45 @@ namespace photon {
     }
 
     /**
-     * Changes the photon pen color
-     * @param color the color
+     * Sets the photon pen color
+     * @param color the color between 0 and 255
      */
     //% weight=85 blockGap=8
     //% blockId=photon_set_color block="photon set color %color"
+    //% color.min=0 color.max=255
     export function setColor(color: number) {
         const strip = initStrip();
-        _color = color;
+        _color = ((color % 255) + 255) % 255;
         if (PhotonMode.On)
             _stamp = color;
     }
 
     /**
+     * Changes the pen color by the given delta
+     * @param delta the color change, eg: 25
+     */
+    //% weight=84 blockGap=8
+    //% blockId=photon_change_color block="photon change color by %value"
+    export function changeColorBy(value: number) {
+        setColor(_color + value);
+    }
+
+    /**
      * Turns all the lights to the color specified by all's input. 
      */
+    //% weight=83
     //% blockId=photon_all block="photon all %color"
+    //% color.min=0 color.max=255
     export function all(color: number) {
         const strip = initStrip();
-        _color = color;
+        _color = ((color % 255) + 255) % 255;
         _stamp = color;
+
         strip.showColor(_color);
         if (_show) {
             strip.setPixelColor(_pos, NeoPixelColors.White);
             strip.show();
         }
-    }
-
-    /**
-     * Sets the photon mode to on, off or erase.
-     * @param mode 
-     */
-    export function setMode(mode: PhotonMode) {
-        _mode = mode;
-    }
-
-    /**
-     * Resets the light and moves the photon back to the first light
-     */
-    //% blockId=photon_clean block="photon clean"
-    export function clean() {
-        const strip = initStrip();
-        reset();
     }
 
     /**
@@ -191,6 +198,7 @@ namespace photon {
      * Sets the heading of the photon
      * @param ccw counter-clockwise heading
      */
+    //% weight=67 blockGap=8
     //% blockId=photon_set_heading block="photon set heading %direction"
     export function setHeading(direction: boolean) {
         _ccw = direction ? 1 : -1;
@@ -208,9 +216,19 @@ namespace photon {
             if (_show)
                 strip.setPixelColor(_pos, NeoPixelColors.White);
             else
-                strip.setPixelColor(_pos, _stamp);
+                strip.setPixelColor(_pos, light.colorWheel(_stamp));
             strip.show();
         }
+    }
+
+    /**
+     * Resets the light and moves the photon back to the first light
+     */
+    //% weight=20
+    //% blockId=photon_clean block="photon clean"
+    export function clean() {
+        const strip = initStrip();
+        reset();
     }
 
     /**
