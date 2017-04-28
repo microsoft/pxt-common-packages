@@ -380,6 +380,7 @@ namespace light {
         //% weight=90
         //% parts="neopixel"
         //% defaultInstance=light.pixels
+        //% subcategory="Animations"
         showAnimationFrame(animation: NeoPixelAnimation): void {
             if (!this._animation || this._animationType != animation.type) {
                 this.clear();
