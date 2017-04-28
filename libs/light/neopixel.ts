@@ -1,7 +1,7 @@
 /**
  * Well known colors for a NeoPixel strip
  */
-enum NeoPixelColors {
+enum Colors {
     //% block=red blockIdentity=light.colors
     Red = 0xFF0000,
     //% block=orange blockIdentity=light.colors
@@ -109,7 +109,7 @@ namespace light {
         /**
          * Shows a color gradient between LEDs
          * @param start RGB color to start the gradient
-         * @param end RGB color to start the gradient, eg: NeoPixelColors.Blue
+         * @param end RGB color to start the gradient, eg: Colors.Blue
          * @param easing how
          */
         //% blockId="neopixel_show_gradient" block="show gradient|from %start=neopixel_colors|to %end=neopixel_colors"
@@ -504,7 +504,7 @@ namespace light {
     //% blockId=neopixel_colors block="%color"
     //% shim=TD_ID
     //% subcategory="Colors"
-    export function colors(color: NeoPixelColors): number {
+    export function colors(color: Colors): number {
         return color;
     }
 

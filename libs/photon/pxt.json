@@ -11,6 +11,6 @@
     "public": true,
     "dependencies": {
         "core": "file:../core",
-        "neopixel": "file:../neopixel"
+        "light": "file:../light"
     }
 }

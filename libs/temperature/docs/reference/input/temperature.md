@@ -31,7 +31,7 @@ control.forever(() => {
         0,
         255
     ))
-    light.pixels.showColor(light.colors(NeoPixelColors.Red))
+    light.pixels.showColor(light.colors(Colors.Red))
 })
 ```
 
@@ -48,7 +48,7 @@ control.forever(() => {
         0,
         255
     ))
-    light.pixels.showColor(light.colors(NeoPixelColors.Red))
+    light.pixels.showColor(light.colors(Colors.Red))
 })
 ```
 

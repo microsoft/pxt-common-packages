@@ -23,5 +23,5 @@ None.
 ## See Also
 
 ```package
-neopixel
+light
 ```

@@ -14,7 +14,7 @@ light.colorWipeAnimation(0xff000)
 
 ```blocks
 control.forever(() => {
-    light.builtin.showAnimationFrame(light.colorWipeAnimation(light.colors(NeoPixelColors.Red)))
+    light.builtin.showAnimationFrame(light.colorWipeAnimation(light.colors(Colors.Red)))
 })
 ```
 
@@ -22,5 +22,5 @@ control.forever(() => {
 
 
 ```package
-neopixel
+light
 ```

@@ -20,5 +20,5 @@ control.forever(() => {
 ## See Also
 
 ```package
-neopixel
+light
 ```
