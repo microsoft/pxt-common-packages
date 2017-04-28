@@ -4,7 +4,7 @@
     "corepkg": "core",
     "bundleddirs": [
         "libs/core",
-        "libs/neopixel",
+        "libs/light",
         "libs/music",
         "libs/microphone",
         "libs/accelerometer",

@@ -37,9 +37,9 @@ control.forever(() => {
     pitch = input.rotation(Rotation.Pitch)
     roll = input.rotation(Rotation.Roll)
     if (Math.abs(pitch) < 10 && Math.abs(roll) < 10) {
-        light.pixels.showColor(light.colors(NeoPixelColors.Blue))
+        light.pixels.showColor(light.colors(Colors.Blue))
     } else {
-        light.pixels.showColor(light.colors(NeoPixelColors.Red))
+        light.pixels.showColor(light.colors(Colors.Red))
     }
 });
 ```

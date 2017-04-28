@@ -18,5 +18,5 @@ light.builtin.showColor(light.colorWheel(42))
 ```
 
 ```package
-neopixel
+light
 ```

@@ -42,7 +42,7 @@ namespace photon {
         if (_show) {
             const b = _strip.brightness();
             _strip.setBrightness(255);
-            _strip.setPixelColor(_pos, NeoPixelColors.White);
+            _strip.setPixelColor(_pos, Colors.White);
             _strip.setBrightness(b);
         } else
             _strip.setPixelColor(_pos, light.colorWheel(_stamp));

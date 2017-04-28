@@ -1,13 +1,12 @@
 {
-    "name": "neopixel",
-    "description": "The NeoPixel library",
+    "name": "light",
+    "description": "The Adafruit NeoPixel driver",
     "files": [
         "README.md",
         "neopixel.cpp",
         "neopixel.ts",
         "shims.d.ts",
-        "enums.d.ts",
-        "input.ts"
+        "enums.d.ts"
     ],
     "yotta": {
         "config": {
@@ -21,7 +20,6 @@
     ],
     "public": true,
     "dependencies": {
-        "core": "file:../core",
-        "lightsensor": "file:../lightsensor"
+        "core": "file:../core"
     }
 }

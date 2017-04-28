@@ -6,11 +6,11 @@ Functions to operate NeoPixel strips.
 light.createNeoPixelStrip();
 light.rgb(255, 255, 255);
 light.hsv(255, 255, 255);
-light.colors(NeoPixelColors.Red);
+light.colors(Colors.Red);
 light.colorWheel(0);
 light.statusLED(false);
 ```
 
 ```package
-neopixel
+light
 ```
