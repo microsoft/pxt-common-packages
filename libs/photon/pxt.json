@@ -1,0 +1,16 @@
+{
+    "name": "photon",
+    "description": "A Turtle made of light based on LightLogo",
+    "files": [
+        "README.md",
+        "photon.ts"
+    ],
+    "testFiles": [
+        "test.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core",
+        "light": "file:../light"
+    }
+}

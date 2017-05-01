@@ -1,6 +1,6 @@
 {
   "name": "pxt-common-packages",
-  "version": "0.0.21",
+  "version": "0.1.4",
   "description": "",
   "keywords": [],
   "author": "Microsoft Corporation",
@@ -11,7 +11,9 @@
   "homepage": "https://github.com/microsoft/pxt-common-packages",
   "license": "MIT",
   "dependencies": {
-    "pxt-core": "^1.1.18"
+    "pxt-core": "^1.1.18",
+    "rtlcss": "^2.1.2",
+    "autoprefixer": "^6.7.6"
   },
   "targetDependencies": {},
   "extraIncludes": [
