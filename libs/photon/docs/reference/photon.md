@@ -27,6 +27,11 @@ photon.clean()
 photon.setStrip(lights.pixels)
 ```
 
+## Photon and Logo
+
+Photon is inspired from [LightLogo](http://joshburker.blogspot.com/2015/08/lightlogo-logo-programming-microworld.html) 
+from Brian Silverman. It provides a microworld experience on top of any colored led strip.
+
 ```package
 photon
 ```
