@@ -26,7 +26,7 @@ namespace photon {
     function reset() {
         _pos = 0;
         _ccw = 1;
-        _color = 0;
+        _color = 1;
         _show = true;
         _mode = PhotonMode.PenDown;
         if (_strip) {
@@ -161,7 +161,7 @@ namespace photon {
     //% color.min=0 color.max=100
     export function setColor(color: number) {
         const strip = initStrip();
-        _color = ((color % 101) + 101) % 101;
+        _color = ((color % 101) + 101) % 101 + 1;
         if (_mode == PhotonMode.PenDown) {
             _buf[_pos] = _color;
         }
