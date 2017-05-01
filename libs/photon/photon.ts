@@ -162,9 +162,6 @@ namespace photon {
     export function setColor(color: number) {
         const strip = initStrip();
         _color = ((color % 101) + 101) % 101 + 1;
-        if (_mode == PhotonMode.PenDown) {
-            _buf[_pos] = _color;
-        }
     }
 
     /**
