@@ -2,34 +2,37 @@
 
 ```blocks
 let distance = 0;
-let n = light.pixels.length();
+let ms = 50;
+let n = photon.length()
 control.forever(() => {
+    photon.setMode(PhotonMode.PenUp);
     photon.setColor(Math.random(255));
-    photon.setMode(PhotonPenMode.Up);
     distance = n - 1;
-    for(let i = 0; i < n; ++i) {
-        for(let i = 0; i < distance; ++i) {
+    for (let i = 0; i < n; ++i) {
+        for (let i = 0; i < distance; ++i) {
             photon.forward(1);
-            control.pause(10);           
+            control.pause(ms);
         }
         photon.stamp();
-        for(let i = 0; i < distance; ++i) {
+        for (let i = 0; i < distance; ++i) {
             photon.backward(1);
-            control.pause(10);           
+            control.pause(ms);
         }
         distance -= 1;
     }
-    photon.setMode(PhotonPenMode.Erase);
+    control.pause(200)
+    photon.setMode(PhotonMode.Eraser);
     distance = 1;
-    for(let i = 0; i < n; ++i) {
-        for(let i = 0; i < distance; ++i) {
+    for (let i = 0; i < n; ++i) {
+        for (let i = 0; i < distance; ++i) {
             photon.forward(1);
-            control.pause(10);           
+            control.pause(ms);
         }
-        for(let i = 0; i < distance; ++i) {
+        for (let i = 0; i < distance; ++i) {
             photon.backward(1);
-            control.pause(10);           
-        }        
+            control.pause(ms);
+        }
+        distance += 1;
     }
 })
 ```

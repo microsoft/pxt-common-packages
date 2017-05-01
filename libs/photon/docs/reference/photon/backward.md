@@ -1,7 +1,7 @@
 # Backward
 
 Moves the photon backward by the amount of steps (lights).
-If the photon is **on**, photon colors the light with the current color.
+If the photon pen is **down**, photon colors the light with the current color.
 
 ```sig
 photon.backward(1);

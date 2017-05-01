@@ -1,7 +1,7 @@
 /**
  * A determines the mode of the photon
  */
-enum PhotonPenMode {
+enum PhotonMode {
     //% block="pen up"
     PenUp,
     //% block="pen down"
@@ -20,26 +20,27 @@ namespace photon {
     let _ccw: number;
     let _color: number;
     let _show: boolean;
-    let _posColor: number; // color under turtle
-    let _mode: PhotonPenMode;
-    let _tone: number;
+    let _buf: Buffer; // colors are encoded in a byte
+    let _mode: PhotonMode;
 
     function reset() {
         _pos = 0;
         _ccw = 1;
         _color = 0;
-        _posColor = 0;
         _show = true;
-        _mode = PhotonPenMode.PenDown;
+        _mode = PhotonMode.PenDown;
         if (_strip) {
             _strip.clear();
+            _buf.fill(0);
             paintTurtle();
             _strip.show();
         }
     }
 
-    function toColor(c: number) {
-        return c < 0 ? 0 : light.colorWheel(c);
+    function posColor(_pos: number): number {
+        let c = _buf[_pos];
+        if (c == 0) return 0;
+        return light.colorWheel(((c - 1) * 255) / 100)
     }
 
     function paintTurtle() {
@@ -49,12 +50,13 @@ namespace photon {
             _strip.setPixelColor(_pos, Colors.White);
             _strip.setBrightness(b);
         } else
-            _strip.setPixelColor(_pos, toColor(_posColor));
+            _strip.setPixelColor(_pos, posColor(_pos));
     }
 
     function initStrip(): light.NeoPixelStrip {
         if (!_strip) {
             _strip = light.pixels;
+            _buf = pins.createBuffer(_strip.length())
             reset();
         }
         return _strip;
@@ -72,7 +74,7 @@ namespace photon {
 
         if (_show) {
             // restore previous color
-            strip.setPixelColor(_pos, toColor(_posColor));
+            strip.setPixelColor(_pos, posColor(_pos));
         }
 
         // compute new pos
@@ -81,10 +83,8 @@ namespace photon {
 
         // store color      
         switch (_mode) {
-            case PhotonPenMode.PenDown: _posColor = _color; break;
-            case PhotonPenMode.PenUp: _posColor = strip.pixelColor(_pos); break;
-            default: 
-                _posColor = -1; // erased
+            case PhotonMode.PenDown: _buf[_pos] = _color; break; // apply current color
+            default: _buf[_pos] = 0; // erased
             break;
         }
 
@@ -97,7 +97,6 @@ namespace photon {
      * Moves the photon backward a number of steps (lights).
      * @param steps number of steps to move, eg: 1
      */
-
     //% help=photon/backward
     //% weight=94 blockGap=8
     //% blockId=photon_backward block="photon backward %steps"
@@ -124,8 +123,7 @@ namespace photon {
     export function testForColor(): boolean {
         const strip = initStrip();
         let ahead = (_pos + 1) % strip.length();
-        let c = strip.pixelColor(ahead);
-
+        let c = _buf[ahead];
         return c > 0;
     }
 
@@ -135,7 +133,7 @@ namespace photon {
      */
     //% weight=87 blockGap=8
     //% blockId=photon_set_mode block="photon %mode"
-    export function setMode(mode: PhotonPenMode) {
+    export function setMode(mode: PhotonMode) {
         _mode = mode;
     }
 
@@ -146,30 +144,32 @@ namespace photon {
     //% blockId=photon_stamp block="photon stamp"
     export function stamp() {
         const strip = initStrip();
-        _posColor = _color;
+        _buf[_pos] = _color;
         if (!_show) {
-            strip.setPixelColor(_pos, toColor(_posColor));
+            strip.setPixelColor(_pos, posColor(_pos));
             strip.show();
         }
     }
 
     /**
      * Sets the photon pen color
-     * @param color the color between 0 and 255
+     * @param color the color between 0 and 100.
      */
+    //% help=reference/photon/set-color
     //% weight=85 blockGap=8
     //% blockId=photon_set_color block="photon set color %color"
-    //% color.min=0 color.max=255
+    //% color.min=0 color.max=100
     export function setColor(color: number) {
         const strip = initStrip();
-        _color = ((color % 255) + 255) % 255;
-        if (PhotonPenMode.PenDown)
-            _posColor = color;
+        _color = ((color % 101) + 101) % 101;
+        if (_mode == PhotonMode.PenDown) {
+            _buf[_pos] = _color;
+        }
     }
 
     /**
      * Changes the pen color by the given delta
-     * @param delta the color change, eg: 25
+     * @param value the color change, eg: 1.
      */
     //% weight=84 blockGap=8
     //% blockId=photon_change_color block="photon change color by %value"
@@ -182,12 +182,11 @@ namespace photon {
      */
     //% weight=83
     //% blockId=photon_all block="photon all %color"
-    //% color.min=0 color.max=255
+    //% color.min=0 color.max=100
     export function all(color: number) {
         const strip = initStrip();
-        _color = ((color % 255) + 255) % 255;
-        _posColor = color;
-
+        _color = ((color % 101) + 101) % 101;
+        _buf.fill(_color);
         strip.showColor(_color);
         if (_show) {
             paintTurtle();
@@ -252,6 +251,16 @@ namespace photon {
     }
 
     /**
+     * Gets the number of lights that the photon can move on
+     */
+    //% weight=19
+    //% blockId=photon_length block="photon length"
+    export function length() : number {
+        const strip = initStrip();
+        return strip.length();
+    }
+
+    /**
      * Attaches the photon to a custom strip
      * @param strip the strip to use for the photon
      */
@@ -259,6 +268,7 @@ namespace photon {
     //% advanced=true
     export function setStrip(strip: light.NeoPixelStrip) {
         _strip = strip;
+        _buf = pins.createBuffer(_strip.length());
         clean();
     }
 }

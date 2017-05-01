@@ -1,7 +1,7 @@
 # Forward
 
 Moves the photon forward by the amount of steps (lights).
-If the photon is **on**, photon colors the light with the current color.
+If the photon is **down**, photon colors the light with the current color.
 
 ```sig
 photon.forward(1);

@@ -11,12 +11,12 @@ control.forever(() => {
         photon.backward(1)
         control.pause(100)
     }
-    photon.setMode(PhotonPenMode.PenUp);
+    photon.setMode(PhotonMode.PenUp);
     for (let i = 0; i < 10; ++i) {
         photon.forward(1)
         control.pause(100)
     }
-    photon.setMode(PhotonPenMode.Eraser);
+    photon.setMode(PhotonMode.Eraser);
     for (let i = 0; i < 10; ++i) {
         photon.forward(1)
         control.pause(100)
