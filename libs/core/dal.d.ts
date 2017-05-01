@@ -66,6 +66,7 @@ declare const enum DAL {
     DEVICE_ID_COMPONENT = 16,
     DEVICE_ID_LIGHT_SENSOR = 17,
     DEVICE_ID_TOUCH_SENSOR = 18,
+    DEVICE_ID_SYSTEM_DAC = 19,
     DEVICE_ID_IO_P0 = 100,
     DEVICE_ID_MESSAGE_BUS_LISTENER = 1021,
     DEVICE_ID_NOTIFY_ONE = 1022,
@@ -120,11 +121,15 @@ declare const enum DAL {
     DEVICE_DISPLAY_EVT_FREE = 1,
     DEVICE_SERIAL_EVT_TX_EMPTY = 2,
     DEVICE_UART_S_EVT_TX_EMPTY = 3,
+    DEVICE_NOTIFY_USER_EVENT_BASE = 1024,
     // built/yt/yotta_modules/codal/inc/core/SystemClock.h
     SYSTEM_CLOCK_INIT = 0x01,
     // built/yt/yotta_modules/codal/inc/device/SAMD21/DeviceTimer.h
     TIMER_ONE_DEFAULT_PRECISION_US = 1,
     TIMER_ONE_PRESCALER_OPTIONS = 5,
+    // built/yt/yotta_modules/codal/inc/device/SAMD21/SAMD21DAC.h
+    // built/yt/yotta_modules/codal/inc/device/SAMD21/SAMD21DMAC.h
+    DMA_DESCRIPTOR_COUNT = 2,
     // built/yt/yotta_modules/codal/inc/device/SAMD21/USB.h
     USB_MAX_PKT_SIZE = 64,
     USB_DEFAULT_PID = 0x2402,
@@ -279,6 +284,8 @@ declare const enum DAL {
     MULTI_BUTTON_SUPRESSED_2 = 0x20,
     MULTI_BUTTON_ATTACHED = 0x40,
     // built/yt/yotta_modules/codal/inc/drivers/NonLinearAnalogSensor.h
+    // built/yt/yotta_modules/codal/inc/drivers/Synthesizer.h
+    SYNTHESIZER_SAMPLE_RATE = 10000,
     // built/yt/yotta_modules/codal/inc/drivers/TimedInterruptIn.h
     // built/yt/yotta_modules/codal/inc/drivers/TouchButton.h
     TOUCH_BUTTON_CALIBRATION_PERIOD = 10,
@@ -295,6 +302,8 @@ declare const enum DAL {
     RAW = 0,
     SIMPLE_CARTESIAN = 1,
     NORTH_EAST_DOWN = 2,
+    // built/yt/yotta_modules/codal/inc/types/DataStream.h
+    DATASTREAM_MAXIMUM_BUFFERS = 1,
     // built/yt/yotta_modules/codal/inc/types/DeviceEvent.h
     DEVICE_ID_ANY = 0,
     DEVICE_EVT_ANY = 0,

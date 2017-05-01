@@ -27,7 +27,7 @@ program changes the brightness of the pixels accordingly.
 input.leftButton.onEvent(ButtonEvent.Click, () => {
     let level = input.lightLevel()
     light.pixels.setBrightness(level)
-    light.pixels.showColor(light.colors(NeoPixelColors.Red))
+    light.pixels.showColor(light.colors(Colors.Red))
 })
 ```
 

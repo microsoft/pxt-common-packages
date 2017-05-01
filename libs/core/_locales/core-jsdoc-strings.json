@@ -77,6 +77,7 @@
   "pins.pulseDuration": "Gets the duration of the last pulse in micro-seconds. This function should be called from a\n``onPulsed`` handler.",
   "pins.sizeOf": "Get the size in bytes of specified number format.",
   "serial": "Reading and writing data over a serial connection.",
+  "serial.writeBuffer": "Sends a buffer through Serial connection",
   "serial.writeLine": "Prints a line of text to the serial",
   "serial.writeNumber": "Prints a numeric value to the serial",
   "serial.writeString": "Sends a piece of text through Serial connection.",

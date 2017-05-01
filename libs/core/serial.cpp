@@ -14,4 +14,15 @@ namespace serial {
     void writeString(StringData *text) {
       hf2.sendSerial(text->data, text->len);
     }
+
+    /**
+    * Sends a buffer through Serial connection
+    */
+    //% help=serial/write-buffer advanced=true weight=6
+    void writeBuffer(Buffer buffer) {
+      if (!buffer) return;
+
+      ManagedBuffer buf(buffer);
+      hf2.sendSerial(buf.getBytes(), buf.length());
+    }
 }

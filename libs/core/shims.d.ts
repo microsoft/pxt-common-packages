@@ -418,6 +418,12 @@ declare namespace serial {
     //% weight=87
     //% blockId=serial_writestring block="serial|write string %text" shim=serial::writeString
     function writeString(text: string): void;
+
+    /**
+     * Sends a buffer through Serial connection
+     */
+    //% help=serial/write-buffer advanced=true weight=6 shim=serial::writeBuffer
+    function writeBuffer(buffer: Buffer): void;
 }
 declare namespace input {
 
