@@ -1,13 +1,13 @@
 /**
  * A determines the mode of the photon
  */
-enum PhotonMode {
-    //% block="on"
-    On,
-    //% block="off"
-    Off,
-    //% block="erase"
-    Erase
+enum PhotonPenMode {
+    //% block="pen up"
+    PenUp,
+    //% block="pen down"
+    PenDown,
+    //% block="eraser"
+    Eraser
 }
 /**
  * Control a photon of light to paint animation on colored LEDs.
@@ -20,22 +20,26 @@ namespace photon {
     let _ccw: number;
     let _color: number;
     let _show: boolean;
-    let _stamp: number; // color under turtle
-    let _mode: PhotonMode;
+    let _posColor: number; // color under turtle
+    let _mode: PhotonPenMode;
     let _tone: number;
 
     function reset() {
         _pos = 0;
         _ccw = 1;
         _color = 0;
-        _stamp = 0;
+        _posColor = 0;
         _show = true;
-        _mode = PhotonMode.On;
+        _mode = PhotonPenMode.PenDown;
         if (_strip) {
             _strip.clear();
             paintTurtle();
             _strip.show();
         }
+    }
+
+    function toColor(c: number) {
+        return c < 0 ? 0 : light.colorWheel(c);
     }
 
     function paintTurtle() {
@@ -45,7 +49,7 @@ namespace photon {
             _strip.setPixelColor(_pos, Colors.White);
             _strip.setBrightness(b);
         } else
-            _strip.setPixelColor(_pos, light.colorWheel(_stamp));
+            _strip.setPixelColor(_pos, toColor(_posColor));
     }
 
     function initStrip(): light.NeoPixelStrip {
@@ -68,7 +72,7 @@ namespace photon {
 
         if (_show) {
             // restore previous color
-            strip.setPixelColor(_pos, light.colorWheel(_stamp));
+            strip.setPixelColor(_pos, toColor(_posColor));
         }
 
         // compute new pos
@@ -77,9 +81,11 @@ namespace photon {
 
         // store color      
         switch (_mode) {
-            case PhotonMode.On: _stamp = _color; break;
-            case PhotonMode.Off: _stamp = strip.pixelColor(_pos); break;
-            default: _stamp = 0; break;
+            case PhotonPenMode.PenDown: _posColor = _color; break;
+            case PhotonPenMode.PenUp: _posColor = strip.pixelColor(_pos); break;
+            default: 
+                _posColor = -1; // erased
+            break;
         }
 
         // update drawing
@@ -124,14 +130,14 @@ namespace photon {
     }
 
     /**
-     * Sets the photon mode to on, off or erase.
+     * Sets the photon mode to on, off or eraser.
      * @param mode 
      */
     //% weight=87 blockGap=8
     //% blockId=photon_set_mode block="photon %mode"
-    export function setMode(mode: PhotonMode) {
+    export function setMode(mode: PhotonPenMode) {
         _mode = mode;
-    }    
+    }
 
     /**
      * Sets the color of the light under the turtle to the current pen color. 
@@ -140,7 +146,11 @@ namespace photon {
     //% blockId=photon_stamp block="photon stamp"
     export function stamp() {
         const strip = initStrip();
-        _color = _stamp;
+        _posColor = _color;
+        if (!_show) {
+            strip.setPixelColor(_pos, toColor(_posColor));
+            strip.show();
+        }
     }
 
     /**
@@ -153,8 +163,8 @@ namespace photon {
     export function setColor(color: number) {
         const strip = initStrip();
         _color = ((color % 255) + 255) % 255;
-        if (PhotonMode.On)
-            _stamp = color;
+        if (PhotonPenMode.PenDown)
+            _posColor = color;
     }
 
     /**
@@ -176,7 +186,7 @@ namespace photon {
     export function all(color: number) {
         const strip = initStrip();
         _color = ((color % 255) + 255) % 255;
-        _stamp = color;
+        _posColor = color;
 
         strip.showColor(_color);
         if (_show) {

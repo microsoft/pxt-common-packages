@@ -1,7 +1,7 @@
 {
-  "PhotonMode.Erase|block": "erase",
-  "PhotonMode.Off|block": "off",
-  "PhotonMode.On|block": "on",
+  "PhotonPenMode.Eraser|block": "eraser",
+  "PhotonPenMode.PenDown|block": "pen down",
+  "PhotonPenMode.PenUp|block": "pen up",
   "photon.all|block": "photon all %color",
   "photon.backward|block": "photon backward %steps",
   "photon.changeColorBy|block": "photon change color by %value",

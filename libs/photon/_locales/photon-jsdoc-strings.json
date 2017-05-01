@@ -12,7 +12,7 @@
   "photon.setColor": "Sets the photon pen color",
   "photon.setColor|param|color": "the color between 0 and 255",
   "photon.setHeading": "Sets the heading of the photon",
-  "photon.setMode": "Sets the photon mode to on, off or erase.",
+  "photon.setMode": "Sets the photon mode to on, off or eraser.",
   "photon.setPosition": "Sets the position of the photon",
   "photon.setPosition|param|pos": "position of the photon starting at 0",
   "photon.setStrip": "Attaches the photon to a custom strip",
