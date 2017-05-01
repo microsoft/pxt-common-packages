@@ -8,7 +8,7 @@ declare interface DigitalPin {
      */
     //% help=pins/digital-read-pin weight=30
     //% blockId=device_get_digital_pin block="digital read|pin %name" blockGap=8
-    //% blockNamespace=pins shim=DigitalPinMethods::digitalRead
+    //% blockNamespace=pins trackArgs=0 shim=DigitalPinMethods::digitalRead
     digitalRead(): number;
 
     /**
@@ -18,7 +18,7 @@ declare interface DigitalPin {
      */
     //% help=pins/digital-write-pin weight=29
     //% blockId=device_set_digital_pin block="digital write|pin %name|to %value"
-    //% blockNamespace=pins shim=DigitalPinMethods::digitalWrite
+    //% blockNamespace=pins trackArgs=0 shim=DigitalPinMethods::digitalWrite
     digitalWrite(value: number): void;
 
     /**

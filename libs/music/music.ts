@@ -138,8 +138,32 @@ enum MelodyOptions {
 }
 
 namespace music {
-    let beatsPerMinute: number = 120;
-    let freqTable: number[] = [];
+    let beatsPerMinute: number;
+    let freqTable: number[];
+
+    /**
+    * Plays a tone.
+    * @param frequency pitch of the tone to play in Hertz (Hz)
+    */
+    //% help=music/ring-tone weight=80
+    //% blockId=music_ring block="ring tone|at %note=device_note" blockGap=8
+    //% parts="headphone" trackArgs=0
+    //% blockNamespace=music
+    export function ringTone(frequency: number) {
+        playTone(frequency, 0);
+    }
+
+    /**
+    * Rests (plays nothing) for a specified time.
+    * @param ms rest duration in milliseconds (ms)
+    */
+    //% help=music/rest weight=79
+    //% blockId=music_rest block="rest|for %duration=device_beat"
+    //% parts="headphone" trackArgs=0
+    //% blockNamespace=music
+    export function rest(ms: number) {
+        playTone(0, ms);
+    }
 
     /**
      * Gets the frequency of a note.
@@ -156,7 +180,7 @@ namespace music {
 
     function init() {
         if (beatsPerMinute <= 0) beatsPerMinute = 120;
-        if (freqTable.length == 0) freqTable = [28, 29, 31, 33, 35, 37, 39, 41, 44, 46, 49, 52, 55, 58, 62, 65, 69, 73, 78, 82, 87, 92, 98, 104, 110, 117, 123, 131, 139, 147, 156, 165, 175, 185, 196, 208, 220, 233, 247, 262, 277, 294, 311, 330, 349, 370, 392, 415, 440, 466, 494, 523, 554, 587, 622, 659, 698, 740, 784, 831, 880, 932, 988, 1047, 1109, 1175, 1245, 1319, 1397, 1480, 1568, 1661, 1760, 1865, 1976, 2093, 2217, 2349, 2489, 2637, 2794, 2960, 3136, 3322, 3520, 3729, 3951, 4186]
+        if (!freqTable) freqTable = [28, 29, 31, 33, 35, 37, 39, 41, 44, 46, 49, 52, 55, 58, 62, 65, 69, 73, 78, 82, 87, 92, 98, 104, 110, 117, 123, 131, 139, 147, 156, 165, 175, 185, 196, 208, 220, 233, 247, 262, 277, 294, 311, 330, 349, 370, 392, 415, 440, 466, 494, 523, 554, 587, 622, 659, 698, 740, 784, 831, 880, 932, 988, 1047, 1109, 1175, 1245, 1319, 1397, 1480, 1568, 1661, 1760, 1865, 1976, 2093, 2217, 2349, 2489, 2637, 2794, 2960, 3136, 3322, 3520, 3729, 3951, 4186]
     }
 
     /**
@@ -235,9 +259,9 @@ namespace music {
      * @param options melody options, once / forever, in the foreground / background
      */
     //% help=music/begin-melody weight=60
-    //% blockId=device_start_melody block="start|melody on %pin| %melody=device_builtin_melody| repeating %options"
+    //% blockId=device_start_melody block="start|melody %melody=device_builtin_melody| repeating %options"
     //% parts="headphone"
-    export function beginMelody(pin: PwmPin, melodyArray: string[], options: MelodyOptions = MelodyOptions.Once) {
+    export function beginMelody(melodyArray: string[], options: MelodyOptions = MelodyOptions.Once) {
         init();
         if (currentMelody != undefined) {
             if (((options & MelodyOptions.OnceInBackground) == 0)
@@ -251,7 +275,7 @@ namespace music {
             // Only start the fiber once
             control.runInBackground(() => {
                 while (currentMelody.hasNextNote()) {
-                    playNextNote(pin, currentMelody);
+                    playNextNote(currentMelody);
                     if (!currentMelody.hasNextNote() && currentBackgroundMelody) {
                         // Swap the background melody back
                         currentMelody = currentBackgroundMelody;
@@ -263,7 +287,7 @@ namespace music {
         }
     }
 
-    function playNextNote(pin: PwmPin, melody: Melody): void {
+    function playNextNote(melody: Melody): void {
         // cache elements
         let currNote = melody.nextNote();
         let currentPos = melody.currentPos;
@@ -297,11 +321,11 @@ namespace music {
         }
         let beat = (60000 / beatsPerMinute) / 4;
         if (isrest) {
-            pin.rest(currentDuration * beat)
+            rest(currentDuration * beat)
         } else {
             let keyNumber = note + (12 * (currentOctave - 1));
             let frequency = keyNumber >= 0 && keyNumber < freqTable.length ? freqTable[keyNumber] : 0;
-            pin.playTone(frequency, currentDuration * beat);
+            playTone(frequency, currentDuration * beat);
         }
         melody.currentDuration = currentDuration;
         melody.currentOctave = currentOctave;

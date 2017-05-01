@@ -101,7 +101,7 @@
 #define PIN_FLASH_CS PIN_PB22
 
 // devices
-#define PIN_BTN_LEFT PIN_PA28 
+#define PIN_BTN_LEFT PIN_PA28
 #define PIN_BTN_RIGHT PIN_PA14 // right
 #define PIN_BTN_SLIDE PIN_PA15
 #define PIN_NEOPIXEL PIN_PB23
@@ -285,6 +285,9 @@
 #endif
 #ifndef PIN_NEOPIXEL
 #define PIN_NEOPIXEL NC
+#endif
+#ifndef PIN_SPEAKER
+#define PIN_SPEAKER NC
 #endif
 
 typedef DevicePin *DigitalPin;
