@@ -431,20 +431,20 @@ declare namespace input {
      * Left button.
      */
     //% indexedInstanceNS=input indexedInstanceShim=pxt::getButton
-    //% block="left button" weight=95 fixedInstance shim=pxt::getButton(0)
-    const leftButton: Button;
+    //% block="button A" weight=95 fixedInstance shim=pxt::getButton(0)
+    const buttonA: Button;
 
     /**
      * Right button.
      */
-    //% block="right button" weight=94 fixedInstance shim=pxt::getButton(1)
-    const rightButton: Button;
+    //% block="button B" weight=94 fixedInstance shim=pxt::getButton(1)
+    const buttonB: Button;
 
     /**
      * Left and Right button.
      */
-    //% block="left+right buttons" weight=93 fixedInstance shim=pxt::getButton(2)
-    const leftAndRightButtons: Button;
+    //% block="buttons A+B" weight=93 fixedInstance shim=pxt::getButton(2)
+    const buttonsAB: Button;
 
     /**
      * Capacitive pin A4
