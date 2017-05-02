@@ -5,7 +5,7 @@
 #include "DeviceConfig.h"
 
 #ifndef HAS_SPEAKER
-#define HAS_SPEAKER PIN_SPEAKER != NC
+#define HAS_SPEAKER (PIN_SPEAKER != NC)
 #endif
 
 class WSynthesizer {
@@ -74,6 +74,7 @@ void playTone(int frequency, int ms) {
         auto synth = &getWSynthesizer()->synth;
 
         if (frequency <= 0) {
+            synth->setVolume(0);
             fiber_sleep(ms);
         }
         else {
@@ -82,9 +83,11 @@ void playTone(int frequency, int ms) {
 
             synth->setFrequency((float) frequency);
 
-            fiber_sleep(ms);
-            synth->setVolume(0);
-            wait_ms(20);
+            if (ms > 0) {
+                fiber_sleep(ms);
+                synth->setVolume(0);
+                wait_ms(20);
+            }
         }
     }
     else {

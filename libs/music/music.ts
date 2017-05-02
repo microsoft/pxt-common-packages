@@ -138,7 +138,7 @@ enum MelodyOptions {
 }
 
 namespace music {
-    let beatsPerMinute: number;
+    let beatsPerMinute: number = 0;
     let freqTable: number[];
 
     /**
