@@ -27,6 +27,7 @@
         "math.ts",
         "hf2.cpp",
         "hf2.h",
+        "hf2dbg.h",
         "uf2format.h",
         "uf2hid.h",
         "ns.ts"

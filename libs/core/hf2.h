@@ -21,13 +21,13 @@ typedef struct
 
 class HF2 : public USBHID
 {
+public:
     HF2_Buffer pkt;
     int sendResponse(int size);
     int send(const void *data, int size, int flag);
     int recv();
     int sendResponseWithData(const void *data, int size);
 
-public:
     HF2();
     virtual int endpointRequest();
     int sendSerial(const void *data, int size, int isError = 0);

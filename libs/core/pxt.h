@@ -31,6 +31,7 @@
 #include "pins.h"
 #include "devpins.h"
 #include "hf2.h"
+#include "hf2dbg.h"
 
 #define intcheck(...) check(__VA_ARGS__)
 //#define intcheck(...) do {} while (0)
