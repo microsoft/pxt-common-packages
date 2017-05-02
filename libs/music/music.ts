@@ -147,7 +147,7 @@ namespace music {
     //% weight=50 help=music/note-frequency
     //% blockId=device_note block="%note"
     //% shim=TD_ID
-    //% blockFieldEditor="note_editor"
+    //% note.fieldEditor="note" note.defl="262"
     //% useEnumVal = 1
     export function noteFrequency(name: Note): number {
         return name;
