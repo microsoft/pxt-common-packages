@@ -327,23 +327,6 @@ declare interface Buffer {
 declare namespace control {
 
     /**
-     * Repeats the code forever in the background. On each iteration, allows other codes to run.
-     * @param body code to execute
-     */
-    //% help=control/forever weight=100 blockGap=8
-    //% blockId=forever block="forever" shim=control::forever
-    function forever(a: () => void): void;
-
-    /**
-     * Pause for the specified time in milliseconds
-     * @param ms how long to pause for, eg: 100, 200, 500, 1000, 2000
-     */
-    //% help=control/pause weight=99
-    //% async block="pause (ms) %pause"
-    //% blockId=device_pause shim=control::pause
-    function pause(ms: number): void;
-
-    /**
      * Gets the number of milliseconds elapsed since power on.
      */
     //% help=control/millis weight=50
@@ -403,6 +386,25 @@ declare namespace control {
      */
     //% shim=control::deviceDalVersion
     function deviceDalVersion(): string;
+}
+declare namespace loops {
+
+    /**
+     * Repeats the code forever in the background. On each iteration, allows other codes to run.
+     * @param body code to execute
+     */
+    //% help=loops/forever weight=100 blockGap=8
+    //% blockId=forever block="forever" shim=loops::forever
+    function forever(a: () => void): void;
+
+    /**
+     * Pause for the specified time in milliseconds
+     * @param ms how long to pause for, eg: 100, 200, 500, 1000, 2000
+     */
+    //% help=loops/pause weight=99
+    //% async block="pause (ms) %pause"
+    //% blockId=device_pause shim=loops::pause
+    function pause(ms: number): void;
 }
 
 
