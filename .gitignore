@@ -18,5 +18,3 @@ temp
 .piolibdeps
 lib/
 
-**/enums.d.ts
-**/shims.d.ts
