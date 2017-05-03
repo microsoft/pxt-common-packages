@@ -138,7 +138,7 @@ enum MelodyOptions {
 }
 
 namespace music {
-    let beatsPerMinute: number = 0;
+    let beatsPerMinute: number = 120;
     let freqTable: number[];
 
     /**
@@ -237,7 +237,6 @@ namespace music {
             beatsPerMinute = Math.max(1, bpm);
         }
     }
-
     let currentMelody: Melody;
     let currentBackgroundMelody: Melody;
 

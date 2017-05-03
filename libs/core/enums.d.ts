@@ -1,6 +1,15 @@
 // Auto-generated. Do not edit.
 
 
+    declare enum ValType {
+    Undefined = 0,
+    Boolean = 1,
+    Number = 2,
+    String = 3,
+    Object = 4,
+    }
+
+
     /**
      * User interaction on buttons
      */
