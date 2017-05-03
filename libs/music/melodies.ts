@@ -172,15 +172,15 @@ namespace music {
 
 
     /**
-     * Starts playing a melody through pin ``P0``.
+     * Starts playing a melody through.
      * Notes are expressed as a string of characters with this format: NOTE[octave][:duration]
      * @param melody the melody array to play, eg: ['g5:1']
      * @param options melody options, once / forever, in the foreground / background
      */
     //% help=music/begin-melody weight=60
-    //% blockId=device_start_melody block="start|melody on %pin| %melody=device_builtin_melody| repeating %options"
+    //% blockId=device_start_melody block="start|melody %melody=device_builtin_melody| repeating %options"
     //% parts="headphone"
-    export function startMelody(pin: PwmPin, melodyArray: string[], options: MelodyOptions = MelodyOptions.Once) {
+    export function startMelody(melodyArray: string[], options: MelodyOptions = MelodyOptions.Once) {
         initMelodies();
         if (currentMelody != undefined) {
             if (((options & MelodyOptions.OnceInBackground) == 0)
@@ -200,7 +200,7 @@ namespace music {
             // Only start the fiber once
             control.runInBackground(() => {
                 while (currentMelody.hasNextNote()) {
-                    playNextNote(pin, currentMelody);
+                    playNextNote(currentMelody);
                     if (!currentMelody.hasNextNote() && currentBackgroundMelody) {
                         // Swap the background melody back
                         currentMelody = currentBackgroundMelody;
@@ -209,13 +209,13 @@ namespace music {
                         control.raiseEvent(MICROBIT_MELODY_ID, MusicEvent.BackgroundMelodyResumed);
                     }
                 }
-                currentMelody = null;
                 control.raiseEvent(MICROBIT_MELODY_ID, currentMelody.background ? MusicEvent.BackgroundMelodyEnded : MusicEvent.MelodyEnded);
+                currentMelody = null;
             })
         }
     }
 
-    function playNextNote(pin: PwmPin, melody: Melody): void {
+    function playNextNote(melody: Melody): void {
         // cache elements
         let currNote = melody.nextNote();
         let currentPos = melody.currentPos;
@@ -249,11 +249,11 @@ namespace music {
         }
         let beat = (60000 / music.tempo()) / 4;
         if (isrest) {
-            pin.rest(currentDuration * beat)
+            rest(currentDuration * beat)
         } else {
             let keyNumber = note + (12 * (currentOctave - 1));
             let frequency = keyNumber >= 0 && keyNumber < freqTable.length ? freqTable[keyNumber] : 0;
-            pin.playTone(frequency, currentDuration * beat);
+            playTone(frequency, currentDuration * beat);
         }
         melody.currentDuration = currentDuration;
         melody.currentOctave = currentOctave;
