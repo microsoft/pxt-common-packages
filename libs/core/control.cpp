@@ -32,7 +32,7 @@ namespace control {
      * @param mode optional definition of how the event should be processed after construction.
      */
     //% weight=21 blockGap=12 blockId="control_raise_event" block="raise event|from %src|with value %value" blockExternalInputs=1
-    //% mode.defl=CREATE_AND_FIRE advanced=true
+    //% mode.defl=CREATE_AND_FIRE
     void raiseEvent(int src, int value, EventCreationMode mode) {
         DeviceEvent evt(src, value, (DeviceEventLaunchMode)mode);
     }
@@ -43,7 +43,7 @@ namespace control {
      * @param value the event value to match
      */
     //% weight=20 blockGap=8 blockId="control_on_event" block="on event|from %src|with value %value"
-    //% blockExternalInputs=1 advanced=true
+    //% blockExternalInputs=1
     void onEvent(int id, int value, Action handler) {
         registerWithDal(id, value, handler);
     }    
@@ -62,7 +62,7 @@ namespace control {
     * @param micros number of micro-seconds to wait. eg: 4
     */
     //% help=control/wait-micros weight=29
-    //% blockId="control_wait_us" block="wait (µs)%micros" advanced=true
+    //% blockId="control_wait_us" block="wait (µs)%micros"
     void waitMicros(int micros) {
         wait_us(micros);
     }  
@@ -70,7 +70,7 @@ namespace control {
     /**
      * Schedules code that run in the background.
      */
-    //% help=control/run-in-background blockAllowMultiple=1 advanced=true
+    //% help=control/run-in-background blockAllowMultiple=1
     //% blockId="control_run_in_background" block="run in background" blockGap=8
     void runInBackground(Action a) {
       pxt::runInBackground(a);
@@ -80,7 +80,6 @@ namespace control {
     * Derive a unique, consistent serial number of this device from internal data.
     */
     //% blockId="control_device_serial_number" block="device serial number" weight=9
-    //% advanced=true
     int deviceSerialNumber() {
         return device.getSerialNumber();
     }

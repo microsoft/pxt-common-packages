@@ -49,7 +49,7 @@ enum Easing {
 /**
  * Functions to operate NeoPixel strips.
  */
-//% weight=100 color="#0078d7" icon="\uf00a"
+//% weight=99 color="#0078d7" icon="\uf00a"
 namespace light {
     /**
      * Turns the status LED on or off.
