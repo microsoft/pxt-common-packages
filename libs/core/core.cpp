@@ -40,17 +40,17 @@ StringData *fromCharCode(int code) {
 }
 
 //%
-double toNumber(StringData *s) {
+TNumber toNumber(StringData *s) {
     // JSCHECK
     char *endptr;
     double v = strtod(s->data, &endptr);
     if (endptr != s->data + s->len)
-        return NAN;
-    if (v == 0.0 || v == -0.0)
-        return v;
-    if (!isnormal(v))
-        return NAN;
-    return v;
+        v = NAN;
+    else if (v == 0.0 || v == -0.0)
+        v = v;
+    else if (!isnormal(v))
+        v = NAN;
+    return fromDouble(v);
 }
 
 //%
@@ -114,7 +114,7 @@ double toDouble(TNumber v) {
         BoxedNumber *p = (BoxedNumber *)v;
         return p->num;
     } else if (t == ValType::String) {
-        return String_::toNumber((StringData *)v);
+        return toDouble(String_::toNumber((StringData *)v));
     } else {
         return NAN;
     }
@@ -453,17 +453,8 @@ StringData *toString(TValue v) {
 
 namespace Math_ {
 //%
-int pow(int x, int y) {
-    if (y < 0)
-        return 0;
-    int r = 1;
-    while (y) {
-        if (y & 1)
-            r *= x;
-        y >>= 1;
-        x *= x;
-    }
-    return r;
+TNumber pow(TNumber x, TNumber y) {
+    return fromDouble(::pow(toDouble(x), toDouble(y)));
 }
 
 //%
@@ -478,10 +469,38 @@ int random(int max) {
         return device.random(max);
 }
 
+#define SINGLE(op) return fromDouble(::op(toDouble(x)));
+
 //%
-int sqrt(int x) {
-    return ::sqrt(x);
+TNumber sqrt(TNumber x) {
+    SINGLE(sqrt)
 }
+
+//%
+TNumber floor(TNumber x) {
+    SINGLE(floor)
+}
+
+//%
+TNumber ceil(TNumber x) {
+    SINGLE(ceil)
+}
+
+//%
+TNumber trunc(TNumber x) {
+    SINGLE(trunc)
+}
+
+//%
+int imul(int x, int y) {
+    return x * y;
+}
+
+//%
+int idiv(int x, int y) {
+    return x / y;
+}
+
 }
 
 namespace Array_ {
