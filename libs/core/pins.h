@@ -286,6 +286,9 @@
 #ifndef PIN_NEOPIXEL
 #define PIN_NEOPIXEL NC
 #endif
+#ifndef PIN_SPEAKER
+#define PIN_SPEAKER NC
+#endif
 
 typedef DevicePin *DigitalPin;
 typedef DevicePin *AnalogPin;

@@ -138,7 +138,31 @@ enum MelodyOptions {
 }
 
 namespace music {
-    let beatsPerMinute: number;
+    let beatsPerMinute: number = 120;
+
+    /**
+    * Plays a tone.
+    * @param frequency pitch of the tone to play in Hertz (Hz)
+    */
+    //% help=music/ring-tone weight=80
+    //% blockId=music_ring block="ring tone|at %note=device_note" blockGap=8
+    //% parts="headphone" trackArgs=0
+    //% blockNamespace=music inBasicCategory=true
+    export function ringTone(frequency: number) {
+        playTone(frequency, 0);
+    }
+
+    /**
+    * Rests (plays nothing) for a specified time.
+    * @param ms rest duration in milliseconds (ms)
+    */
+    //% help=music/rest weight=79
+    //% blockId=music_rest block="rest|for %duration=device_beat"
+    //% parts="headphone" trackArgs=0
+    //% blockNamespace=music
+    export function rest(ms: number) {
+        playTone(0, ms);
+    }
 
     /**
      * Gets the frequency of a note.
