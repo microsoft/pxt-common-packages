@@ -30,7 +30,7 @@ A **g** is as much acceleration as you get from Earth's gravity.
 This example shows the acceleration of the @boardname@ with a bar graph.
 
 ```blocks
-control.forever(() => {
+loops.forever(() => {
     light.pixels.showBarGraph(input.acceleration(Dimension.X), 1023)
 })
 ```

@@ -15,7 +15,7 @@ photon.flip();
 In this example, we randomly flip (or not) the photon on every move.
 
 ```blocks
-control.forever(() => {
+loops.forever(() => {
     photon.forward(1)
     if (Math.random(100) < 30)
         photon.flip();

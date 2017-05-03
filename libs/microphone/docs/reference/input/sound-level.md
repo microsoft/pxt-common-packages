@@ -9,7 +9,7 @@ input.soundLevel()
 ## Example #example
 
 ```blocks
-control.forever(() => {
+loops.forever(() => {
     let level = input.soundLevel();
 })
 ```

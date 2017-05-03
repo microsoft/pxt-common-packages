@@ -16,7 +16,7 @@ serial.writeLine("");
 This program writes the word `BOFFO` to the serial port repeatedly.
 
 ```blocks
-control.forever(() => {
+loops.forever(() => {
     serial.writeLine("BOFFO");
     control.pause(5000);
 });
