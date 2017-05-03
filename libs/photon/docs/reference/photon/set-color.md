@@ -14,7 +14,7 @@ photon.setColor(42);
 
 
 ```blocks
-control.forever(() => {
+loops.forever(() => {
     photon.setColor(Math.random(101));
     photon.forward(1);
 })

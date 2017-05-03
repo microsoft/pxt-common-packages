@@ -24,7 +24,7 @@ When you press button `B` on the @boardname@, this
 program changes the brightness of the pixels accordingly.
 
 ```blocks
-input.leftButton.onEvent(ButtonEvent.Click, () => {
+input.buttonA.onEvent(ButtonEvent.Click, () => {
     let level = input.lightLevel()
     light.pixels.setBrightness(level)
     light.pixels.showColor(light.colors(Colors.Red))
@@ -38,7 +38,7 @@ If you carry the @boardname@ around to different places with different light lev
 the bar chart will change.
 
 ```blocks
-control.forever(() => {
+loops.forever(() => {
     light.pixels.showBarGraph(
         input.lightLevel(),
         0

@@ -66,8 +66,8 @@
 #define PIN_D4 PIN_PA14
 #endif
 
-#define PIN_BTN_LEFT PIN_D0
-#define PIN_BTN_RIGHT PIN_D1
+#define PIN_BTN_A PIN_D0
+#define PIN_BTN_B PIN_D1
 #define PIN_BTN_SLIDE PIN_D3
 #define PIN_NEOPIXEL PIN_D4
 #define PIN_TEMPERATURE PIN_A1
@@ -101,8 +101,8 @@
 #define PIN_FLASH_CS PIN_PB22
 
 // devices
-#define PIN_BTN_LEFT PIN_PA28
-#define PIN_BTN_RIGHT PIN_PA14 // right
+#define PIN_BTN_A PIN_PA28 
+#define PIN_BTN_B PIN_PA14 // right
 #define PIN_BTN_SLIDE PIN_PA15
 #define PIN_NEOPIXEL PIN_PB23
 #define PIN_SPEAKER PIN_PA02
@@ -132,8 +132,8 @@
 #define PIN_A2 PIN_TEMPERATURE
 #define PIN_A3 PIN_MICROPHONE
 
-#define PIN_D4 PIN_BTN_LEFT
-#define PIN_D5 PIN_BTN_RIGHT
+#define PIN_D4 PIN_BTN_A
+#define PIN_D5 PIN_BTN_B
 #define PIN_D7 PIN_BTN_SLIDE
 #define PIN_D8 PIN_NEOPIXEL
 #define PIN_D13 PIN_LED

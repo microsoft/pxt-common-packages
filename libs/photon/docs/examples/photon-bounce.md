@@ -4,7 +4,7 @@
 let distance = 0;
 let ms = 50;
 let n = photon.length()
-control.forever(() => {
+loops.forever(() => {
     photon.setMode(PhotonMode.PenUp);
     photon.setColor(Math.random(255));
     distance = n - 1;

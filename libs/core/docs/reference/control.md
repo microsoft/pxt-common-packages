@@ -3,7 +3,7 @@
 Runtime and event utilities.
 
 ```cards
-control.forever(() => {
+loops.forever(() => {
     
 });
 control.pause(100);

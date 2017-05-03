@@ -1,7 +1,7 @@
 # Photon Rainbow
 
 ```blocks
-control.forever(() => {
+loops.forever(() => {
     photon.changeColorBy(5)
     photon.forward(1)
     control.pause(50)

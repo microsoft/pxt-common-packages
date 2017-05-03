@@ -11,7 +11,7 @@ input.onGesture(Gesture.Shake, () => {
     }
     photon.setMode(PhotonMode.PenDown)
 })
-control.forever(() => {
+loops.forever(() => {
     photon.forward(1)
     photon.changeColorBy(1)
 })

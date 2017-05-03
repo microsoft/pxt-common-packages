@@ -28,7 +28,7 @@ speeds up, the tone's pitch gets higher, and if it slows down, the
 tone's pitch gets lower.  It's fun -- try it!
 
 ```blocks
-control.forever(() => {
+loops.forever(() => {
     pins.A8.ringTone(input.acceleration(Dimension.X));
 })
 ```
