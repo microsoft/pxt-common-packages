@@ -13,7 +13,7 @@ function flash(n: number) {
     })
 }
 
-input.leftButton.onEvent(ButtonEvent.Click, () => {
+input.buttonA.onEvent(ButtonEvent.Click, () => {
     flash(0)
 })
 
