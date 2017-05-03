@@ -24,7 +24,7 @@ SINGLETON(WSynthesizer);
 enum class SoundOutputDestination {
     //% block="speaker"
     Speaker = 0,
-    //% block="pin A10"
+    //% block="pin"
     Pin = 1
 };
 
