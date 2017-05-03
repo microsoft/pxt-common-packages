@@ -327,23 +327,6 @@ declare interface Buffer {
 declare namespace control {
 
     /**
-     * Repeats the code forever in the background. On each iteration, allows other codes to run.
-     * @param body code to execute
-     */
-    //% help=control/forever weight=100 blockGap=8
-    //% blockId=forever block="forever" shim=control::forever
-    function forever(a: () => void): void;
-
-    /**
-     * Pause for the specified time in milliseconds
-     * @param ms how long to pause for, eg: 100, 200, 500, 1000, 2000
-     */
-    //% help=control/pause weight=99
-    //% async block="pause (ms) %pause"
-    //% blockId=device_pause shim=control::pause
-    function pause(ms: number): void;
-
-    /**
      * Gets the number of milliseconds elapsed since power on.
      */
     //% help=control/millis weight=50
@@ -357,7 +340,7 @@ declare namespace control {
      * @param mode optional definition of how the event should be processed after construction.
      */
     //% weight=21 blockGap=12 blockId="control_raise_event" block="raise event|from %src|with value %value" blockExternalInputs=1
-    //% advanced=true mode.defl=1 shim=control::raiseEvent
+    //% mode.defl=1 shim=control::raiseEvent
     function raiseEvent(src: number, value: number, mode?: EventCreationMode): void;
 
     /**
@@ -366,7 +349,7 @@ declare namespace control {
      * @param value the event value to match
      */
     //% weight=20 blockGap=8 blockId="control_on_event" block="on event|from %src|with value %value"
-    //% blockExternalInputs=1 advanced=true shim=control::onEvent
+    //% blockExternalInputs=1 shim=control::onEvent
     function onEvent(id: number, value: number, handler: () => void): void;
 
     /**
@@ -381,21 +364,20 @@ declare namespace control {
      * @param micros number of micro-seconds to wait. eg: 4
      */
     //% help=control/wait-micros weight=29
-    //% blockId="control_wait_us" block="wait (µs)%micros" advanced=true shim=control::waitMicros
+    //% blockId="control_wait_us" block="wait (µs)%micros" shim=control::waitMicros
     function waitMicros(micros: number): void;
 
     /**
      * Schedules code that run in the background.
      */
-    //% help=control/run-in-background blockAllowMultiple=1 advanced=true
+    //% help=control/run-in-background blockAllowMultiple=1
     //% blockId="control_run_in_background" block="run in background" blockGap=8 shim=control::runInBackground
     function runInBackground(a: () => void): void;
 
     /**
      * Derive a unique, consistent serial number of this device from internal data.
      */
-    //% blockId="control_device_serial_number" block="device serial number" weight=9
-    //% advanced=true shim=control::deviceSerialNumber
+    //% blockId="control_device_serial_number" block="device serial number" weight=9 shim=control::deviceSerialNumber
     function deviceSerialNumber(): number;
 
     /**
@@ -403,6 +385,25 @@ declare namespace control {
      */
     //% shim=control::deviceDalVersion
     function deviceDalVersion(): string;
+}
+declare namespace loops {
+
+    /**
+     * Repeats the code forever in the background. On each iteration, allows other codes to run.
+     * @param body code to execute
+     */
+    //% help=loops/forever weight=100 blockGap=8
+    //% blockId=forever block="forever" shim=loops::forever
+    function forever(a: () => void): void;
+
+    /**
+     * Pause for the specified time in milliseconds
+     * @param ms how long to pause for, eg: 100, 200, 500, 1000, 2000
+     */
+    //% help=loops/pause weight=99
+    //% async block="pause (ms) %pause"
+    //% blockId=device_pause shim=loops::pause
+    function pause(ms: number): void;
 }
 
 
@@ -538,4 +539,3 @@ declare interface Button {
 }
 
 // Auto-generated. Do not edit. Really.
->>>>>>> master
