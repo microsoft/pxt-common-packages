@@ -21,6 +21,7 @@
         "enums.d.ts",
         "control.cpp",
         "control.ts",
+        "loops.cpp",
         "serial.cpp",
         "serial.ts",
         "buttons.cpp",

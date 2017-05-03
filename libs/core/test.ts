@@ -7,6 +7,6 @@ input.rightButton.onEvent(ButtonEvent.Click, () => {
 
 
 let i = 0
-control.forever(() => {
-    control.pause(100)
+loops.forever(() => {
+    loops.pause(100)
 })

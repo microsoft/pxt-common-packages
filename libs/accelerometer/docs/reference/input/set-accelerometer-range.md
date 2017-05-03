@@ -24,7 +24,7 @@ until you stop the program.
 
 ```blocks
 input.setAccelerometerRange(AcceleratorRange.FourG)
-control.forever(() => {
+loops.forever(() => {
     serial.writeNumber(input.acceleration(Dimension.X))
 })
 ```

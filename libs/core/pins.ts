@@ -1,7 +1,7 @@
 /**
  * Control currents in Pins for analog/digital signals, servos, i2c, ...
  */
-//% color=#A80000 weight=85 icon="\uf140"
+//% color=#A80000 weight=85 icon="\uf140" advanced=true
 namespace pins {
     /**
      * Get the size in bytes of specified number format.

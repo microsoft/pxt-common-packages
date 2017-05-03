@@ -33,7 +33,7 @@ If you are running this program in a browser, you can tilt the
 ```blocks
 let roll = 0
 let pitch = 0
-control.forever(() => {
+loops.forever(() => {
     pitch = input.rotation(Rotation.Pitch)
     roll = input.rotation(Rotation.Roll)
     if (Math.abs(pitch) < 10 && Math.abs(roll) < 10) {

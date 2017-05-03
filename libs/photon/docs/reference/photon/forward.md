@@ -17,7 +17,7 @@ In this example, we change the color then move **Photon** by one light in a loop
 This creates a fun rainbow-like animation.
 
 ```blocks
-control.forever(() => {
+loops.forever(() => {
     photon.changeColorBy(5)
     photon.forward(1)
 })

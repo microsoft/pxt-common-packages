@@ -49,7 +49,7 @@ enum Easing {
 /**
  * Functions to operate NeoPixel strips.
  */
-//% weight=97 color="#0078d7" icon="\uf00a"
+//% weight=100 color="#0078d7" icon="\uf00a"
 namespace light {
     /**
      * Turns the status LED on or off.
@@ -755,7 +755,7 @@ namespace light {
                         strip.setPixelColor(i, rgb(level * this.red / 255, level * this.green / 255, level * this.blue / 255));
                     }
                     strip.show();
-                    control.pause(this.delay);
+                    loops.pause(this.delay);
                     j++;
                 } else {
                     step = 0;
@@ -813,7 +813,7 @@ namespace light {
                 const pixel = Math.random(l);
                 strip.setPixelColor(pixel, this.rgb);
                 strip.show();
-                control.pause(this.delay);
+                loops.pause(this.delay);
                 strip.setPixelColor(pixel, 0);
             }
         }
@@ -841,7 +841,7 @@ namespace light {
                         strip.setPixelColor(i, rgb(0, 0, 0));
                     }
                     strip.show();
-                    control.pause(this.delay);
+                    loops.pause(this.delay);
                     i++;
                 } else {
                     reveal = !reveal;
@@ -872,7 +872,7 @@ namespace light {
                             strip.setPixelColor(i + q, this.rgb); // every third pixel on
                         }
                         strip.show();
-                        control.pause(this.delay);
+                        loops.pause(this.delay);
                         for (let i = 0; i < l; i = i + 3) {
                             strip.setPixelColor(i + q, 0); // every third pixel off
                         }

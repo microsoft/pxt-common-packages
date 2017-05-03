@@ -38,7 +38,7 @@ If you carry the @boardname@ around to different places with different light lev
 the bar chart will change.
 
 ```blocks
-control.forever(() => {
+loops.forever(() => {
     light.pixels.showBarGraph(
         input.lightLevel(),
         0
