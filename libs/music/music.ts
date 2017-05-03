@@ -172,7 +172,7 @@ namespace music {
     //% blockId=device_note block="%note"
     //% shim=TD_ID
     //% note.fieldEditor="note" note.defl="262"
-    //% useEnumVal = 1
+    //% useEnumVal=1 advanced=true blockGab=8
     export function noteFrequency(name: Note): number {
         return name;
     }
@@ -185,7 +185,7 @@ namespace music {
      * Returns the duration of a beat in milli-seconds
      */
     //% help=music/beat weight=49
-    //% blockId=device_beat block="%fraction|beat"
+    //% blockId=device_beat block="%fraction|beat" advanced=true
     export function beat(fraction?: BeatFraction): number {
         init();
         if (fraction == null) fraction = BeatFraction.Whole;
@@ -204,7 +204,7 @@ namespace music {
     /**
      * Returns the tempo in beats per minute. Tempo is the speed (bpm = beats per minute) at which notes play. The larger the tempo value, the faster the notes will play.
      */
-    //% help=music/tempo weight=40
+    //% help=music/tempo weight=40 advanced=true
     //% blockId=device_tempo block="tempo (bpm)" blockGap=8
     export function tempo(): number {
         init();
@@ -215,7 +215,7 @@ namespace music {
      * Change the tempo by the specified amount
      * @param bpm The change in beats per minute to the tempo, eg: 20
      */
-    //% help=music/change-tempo-by weight=39
+    //% help=music/change-tempo-by weight=39 advanced=true
     //% blockId=device_change_tempo block="change tempo by (bpm)|%value" blockGap=8
     export function changeTempoBy(bpm: number): void {
         init();
@@ -226,7 +226,7 @@ namespace music {
      * Sets the tempo to the specified amount
      * @param bpm The new tempo in beats per minute, eg: 120
      */
-    //% help=music/set-tempo weight=38
+    //% help=music/set-tempo weight=38 advanced=true
     //% blockId=device_set_tempo block="set tempo to (bpm)|%value"
     //% bpm.min=4 bpm.max=400
     export function setTempo(bpm: number): void {

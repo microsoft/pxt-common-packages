@@ -1,15 +1,12 @@
 
 let strip = light.createNeoPixelStrip()
 strip.setBrightness(20)
-strip.show()
 
 function flash(n: number) {
     control.runInBackground(() => {
-        strip.setPixelColor(n, 0x0000ff)
-        strip.show()
+        strip.setColor(n, 0x0000ff)
         loops.pause(1000)
-        strip.setPixelColor(n, 0x000000)
-        strip.show()
+        strip.setColor(n, 0x000000)
     })
 }
 

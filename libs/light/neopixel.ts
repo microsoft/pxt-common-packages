@@ -67,12 +67,14 @@ namespace light {
      */
     //% autoCreate=light.createNeoPixelStrip
     export class NeoPixelStrip {
-        pin: DigitalPin;
+        _parent: NeoPixelStrip;
+        _pin: DigitalPin;
         // TODO: encode as bytes instead of 32bit
         _brightness: number;
-        start: number; // start offset in LED strip
+        _start: number; // start offset in LED strip
         _length: number; // number of LEDs
         _mode: NeoPixelMode;
+        _buffered: boolean;
         _animation: () => void;
         _animationType: number;
         _buf: Buffer;
@@ -97,13 +99,30 @@ namespace light {
          * Shows all LEDs to a given color (range 0-255 for r, g, b).
          * @param rgb RGB color of the LED
          */
-        //% blockId="neopixel_set_strip_color" block="show color %rgb=neopixel_colors"
+        //% blockId="neopixel_set_strip_color" block="set all to %rgb=neopixel_colors"
         //% weight=85 blockGap=8
         //% parts="neopixel"
         //% defaultInstance=light.pixels
-        showColor(rgb: number) {
-            this.setAllRGB(rgb);
-            this.show();
+        setAll(rgb: number) {
+            let red = unpackR(rgb);
+            let green = unpackG(rgb);
+            let blue = unpackB(rgb);
+
+            const bfr = this.buffered();
+            this.setBuffered(true);
+            const br = this._brightness;
+            if (br < 255) {
+                red = (red * br) >> 8;
+                green = (green * br) >> 8;
+                blue = (blue * br) >> 8;
+            }
+            const end = this._start + this._length;
+            const stride = this._mode === NeoPixelMode.RGBW ? 4 : 3;
+            for (let i = this._start; i < end; ++i) {
+                this.setBufferRGB(i * stride, red, green, blue)
+            }
+            this.setBuffered(bfr);
+            this.autoShow();
         }
 
         /**
@@ -112,11 +131,11 @@ namespace light {
          * @param end RGB color to start the gradient, eg: Colors.Blue
          * @param easing how
          */
-        //% blockId="neopixel_show_gradient" block="show gradient|from %start=neopixel_colors|to %end=neopixel_colors"
-        //% weight=84 blockGap=8
+        //% blockId="neopixel_show_gradient" block="set gradient|from %start=neopixel_colors|to %end=neopixel_colors"
+        //% weight=84 blockGap=8 advanced=true
         //% parts="neopixel"
         //% defaultInstance=light.pixels
-        showGradient(start: number, end: number, easing?: Easing) {
+        setGradient(start: number, end: number, easing?: Easing) {
             const sr = unpackR(start);
             const sg = unpackG(start);
             const sb = unpackB(start);
@@ -125,13 +144,16 @@ namespace light {
             const eb = unpackB(end);
             const l = this._length;
             const l1 = l - 1;
+            const bfr = this.buffered();
+            this.setBuffered(true);
             for (let i = 0; i < l; i++) {
                 const r = (i * sr + (l1 - i) * er) / (l1);
                 const g = (i * sg + (l1 - i) * eg) / (l1);
                 const b = (i * sb + (l1 - i) * eb) / (l1);
-                this.setPixelColor(i, rgb(r, g, b))
+                this.setColor(i, rgb(r, g, b))
             }
-            this.show();
+            this.setBuffered(bfr);
+            this.autoShow();
         }
         /**
          * Displays a vertical bar graph based on the `value` and `high` value.
@@ -140,10 +162,10 @@ namespace light {
          * @param high maximum value, 0 to autoscale
          */
         //% weight=84 blockGap=8
-        //% blockId=neopixel_show_bar_graph block="show bar graph of %value |up to %high" icon="\uf080" blockExternalInputs=true
+        //% blockId=neopixel_show_bar_graph block="graph of %value |up to %high" icon="\uf080" blockExternalInputs=true
         //% parts="neopixel"
         //% defaultInstance=light.pixels
-        showBarGraph(value: number, high: number): void {
+        graph(value: number, high: number): void {
             const now = control.millis();
             serial.writeString(value + "\n"); // auto chart
             value = Math.abs(value);
@@ -154,22 +176,25 @@ namespace light {
                 this._barGraphHighLast = now;
             }
 
+            const bfr = this.buffered();
+            this.setBuffered(true);
             const n = this._length;
             const n1 = n - 1;
             const v = (value * n) / this._barGraphHigh;
             if (v == 0) {
-                this.setPixelColor(0, 0x000033);
+                this.setColor(0, 0x000033);
                 for (let i = 1; i < n; ++i)
-                    this.setPixelColor(i, 0);
+                    this.setColor(i, 0);
             } else {
                 for (let i = 0; i < n; ++i) {
                     if (i <= v) {
                         let b = i * 255 / n1;
-                        this.setPixelColor(i, light.rgb(b, 0, 255 - b));
+                        this.setColor(i, light.rgb(b, 0, 255 - b));
                     }
-                    else this.setPixelColor(i, 0);
+                    else this.setColor(i, 0);
                 }
             }
+            this.setBuffered(bfr);
             this.show();
         }
 
@@ -179,18 +204,18 @@ namespace light {
          * @param pixeloffset position of the NeoPixel in the strip
          * @param rgb RGB color of the LED
          */
-        //% blockId="neopixel_set_pixel_color" block="set pixel color at %pixeloffset|to %rgb=neopixel_colors"
+        //% blockId="neopixel_set_pixel_color" block="set color at %pixeloffset|to %rgb=neopixel_colors"
         //% blockGap=8
         //% weight=5
         //% parts="neopixel"
         //% defaultInstance=light.pixels
-        setPixelColor(pixeloffset: number, rgb: number): void {
+        setColor(pixeloffset: number, rgb: number): void {
             if (pixeloffset < 0
                 || pixeloffset >= this._length)
                 return;
 
             let stride = this._mode === NeoPixelMode.RGBW ? 4 : 3;
-            pixeloffset = (pixeloffset + this.start) * stride;
+            pixeloffset = (pixeloffset + this._start) * stride;
 
             let red = unpackR(rgb);
             let green = unpackG(rgb);
@@ -203,24 +228,25 @@ namespace light {
                 blue = (blue * br) >> 8;
             }
             this.setBufferRGB(pixeloffset, red, green, blue)
+            this.autoShow();
         }
 
         /**
          * Gets the pixel color.
          * @param pixeloffset position of the NeoPixel in the strip
          */
-        //% blockId="neopixel_get_pixel_color" block="pixel color at %pixeloffset"
+        //% blockId="neopixel_get_pixel_color" block="color at %pixeloffset"
         //% blockGap=8
         //% weight=4 advanced=true
         //% parts="neopixel"
         //% defaultInstance=light.pixels
-        pixelColor(pixeloffset: number): number {
+        color(pixeloffset: number): number {
             if (pixeloffset < 0
                 || pixeloffset >= this._length)
                 return 0;
 
             const stride = this._mode === NeoPixelMode.RGBW ? 4 : 3;
-            const offset = (pixeloffset + this.start) * stride;
+            const offset = (pixeloffset + this._start) * stride;
             const b = this.buf;
             let red = 0, green = 0, blue = 0;
             if (this._mode === NeoPixelMode.RGB_RGB) {
@@ -246,9 +272,21 @@ namespace light {
         //% parts="neopixel" advanced=true
         //% defaultInstance=light.pixels
         setPixelWhiteLED(pixeloffset: number, white: number): void {
-            if (this._mode === NeoPixelMode.RGBW) {
-                this.setPixelW(pixeloffset, white);
+            if (this._mode != NeoPixelMode.RGBW) return;
+
+            if (pixeloffset < 0
+                || pixeloffset >= this._length)
+                return;
+
+            pixeloffset = (pixeloffset + this._start) * 4;
+
+            const br = this._brightness;
+            if (br < 255) {
+                white = (white * br) >> 8;
             }
+            let buf = this.buf;
+            buf[pixeloffset + 3] = white;
+            this.autoShow();
         }
 
         /**
@@ -259,7 +297,7 @@ namespace light {
         //% parts="neopixel"
         //% defaultInstance=light.pixels
         show() {
-            sendBuffer(this.pin, this.buf);
+            sendBuffer(this._pin, this.buf);
         }
 
         /**
@@ -272,7 +310,8 @@ namespace light {
         //% defaultInstance=light.pixels
         clear(): void {
             const stride = this._mode === NeoPixelMode.RGBW ? 4 : 3;
-            this.buf.fill(0, this.start * stride, this._length * stride);
+            this.buf.fill(0, this._start * stride, this._length * stride);
+            this.autoShow();
         }
 
         /**
@@ -290,7 +329,7 @@ namespace light {
          * @param brightness a measure of LED brightness in 0-255. eg: 20
          */
         //% blockId="neopixel_set_brightness" block="set brightness %brightness" blockGap=8
-        //% weight=59
+        //% weight=59 advanced=true
         //% parts="neopixel"
         //% defaultInstance=light.pixels
         setBrightness(brightness: number): void {
@@ -319,10 +358,10 @@ namespace light {
             const stride = this._mode === NeoPixelMode.RGBW ? 4 : 3;
             const br = this._brightness;
             const buf = this.buf;
-            const end = this.start + this._length;
+            const end = this._start + this._length;
             const mid = this._length / 2;
-            for (let i = this.start; i < end; ++i) {
-                const k = i - this.start;
+            for (let i = this._start; i < end; ++i) {
+                const k = i - this._start;
                 const ledoffset = i * stride;
                 const br = k > mid ? 255 * (this._length - 1 - k) * (this._length - 1 - k) / (mid * mid) : 255 * k * k / (mid * mid);
                 serial.writeLine(k + ":" + br);
@@ -333,6 +372,7 @@ namespace light {
                     const w = (buf[ledoffset + 3] * br) >> 8; buf[ledoffset + 3] = w;
                 }
             }
+            this.autoShow();
         }
 
         /**
@@ -346,11 +386,12 @@ namespace light {
         //% defaultInstance=light.pixels
         range(start: number, length: number): NeoPixelStrip {
             let strip = new NeoPixelStrip();
+            strip._parent = this;
             strip.buf = this.buf;
-            strip.pin = this.pin;
+            strip._pin = this._pin;
             strip._brightness = this._brightness;
-            strip.start = this.start + Math.clamp(0, this._length - 1, start);
-            strip._length = Math.clamp(0, this._length - (strip.start - this.start), length);
+            strip._start = this._start + Math.clamp(0, this._length - 1, start);
+            strip._length = Math.clamp(0, this._length - (strip._start - this._start), length);
             return strip;
         }
 
@@ -366,11 +407,12 @@ namespace light {
         movePixels(kind: MoveKind, offset: number = 1): void {
             const stride = this._mode === NeoPixelMode.RGBW ? 4 : 3;
             if (kind === MoveKind.Shift) {
-                this.buf.shift(-offset * stride, this.start * stride, this._length * stride)
+                this.buf.shift(-offset * stride, this._start * stride, this._length * stride)
             }
             else {
-                this.buf.rotate(-offset * stride, this.start * stride, this._length * stride)
+                this.buf.rotate(-offset * stride, this._start * stride, this._length * stride)
             }
+            this.autoShow();
         }
 
         /**
@@ -390,6 +432,27 @@ namespace light {
             this._animation();
         }
 
+        /**
+         * Enables or disables automatically calling show when a change is made
+         * @param on call show whenever a light is modified
+         */
+        setBuffered(on: boolean) {
+            if (this._parent) this._parent.setBuffered(on);
+            else this._buffered = on;
+        }
+
+        /**
+         * Gets a value indicated if the changes are buffered
+         */
+        buffered(): boolean {
+            return this._parent ? this._parent.buffered() : this._buffered;
+        }
+
+        private autoShow() {
+            if (!this.buffered())
+                this.show();
+        }
+
         private setBufferRGB(offset: number, red: number, green: number, blue: number): void {
             if (this._mode === NeoPixelMode.RGB_RGB) {
                 this.buf[offset + 0] = red;
@@ -399,56 +462,6 @@ namespace light {
                 this.buf[offset + 1] = red;
             }
             this.buf[offset + 2] = blue;
-        }
-
-        private setAllRGB(rgb: number) {
-            let red = unpackR(rgb);
-            let green = unpackG(rgb);
-            let blue = unpackB(rgb);
-
-            const br = this._brightness;
-            if (br < 255) {
-                red = (red * br) >> 8;
-                green = (green * br) >> 8;
-                blue = (blue * br) >> 8;
-            }
-            const end = this.start + this._length;
-            const stride = this._mode === NeoPixelMode.RGBW ? 4 : 3;
-            for (let i = this.start; i < end; ++i) {
-                this.setBufferRGB(i * stride, red, green, blue)
-            }
-        }
-        private setAllW(white: number) {
-            if (this._mode !== NeoPixelMode.RGBW)
-                return;
-
-            const br = this._brightness;
-            if (br < 255) {
-                white = (white * br) >> 8;
-            }
-            let buf = this.buf;
-            let end = this.start + this._length;
-            for (let i = this.start; i < end; ++i) {
-                let ledoffset = i * 4;
-                buf[ledoffset + 3] = white;
-            }
-        }
-        private setPixelW(pixeloffset: number, white: number): void {
-            if (this._mode !== NeoPixelMode.RGBW)
-                return;
-
-            if (pixeloffset < 0
-                || pixeloffset >= this._length)
-                return;
-
-            pixeloffset = (pixeloffset + this.start) * 4;
-
-            const br = this._brightness;
-            if (br < 255) {
-                white = (white * br) >> 8;
-            }
-            let buf = this.buf;
-            buf[pixeloffset + 3] = white;
         }
 
         private reallocateBuffer(): void {
@@ -477,9 +490,9 @@ namespace light {
         const strip = new NeoPixelStrip();
         strip._mode = mode;
         strip._length = Math.max(0, numleds);
-        strip.start = 0;
-        strip.pin = pin ? pin : (defaultPin() || pins.D0);
-        strip.pin.digitalWrite(0)
+        strip._start = 0;
+        strip._pin = pin ? pin : (defaultPin() || pins.D0);
+        strip._pin.digitalWrite(0)
         strip.setBrightness(20)
         return strip;
     }
@@ -720,7 +733,7 @@ namespace light {
             return () => {
                 const offset = control.millis() / speed;
                 for (let i = 0; i < l; i++) {
-                    strip.setPixelColor(i, colorWheel(((i * 256 / l) + offset) & 255));
+                    strip.setColor(i, colorWheel(((i * 256 / l) + offset) & 255));
                 }
                 strip.show();
             }
@@ -752,7 +765,7 @@ namespace light {
                     step++;
                     for (let i = 0; i < l; i++) {
                         const level = (Math.sin(i + step) * 127) + 128;
-                        strip.setPixelColor(i, rgb(level * this.red / 255, level * this.green / 255, level * this.blue / 255));
+                        strip.setColor(i, rgb(level * this.red / 255, level * this.green / 255, level * this.blue / 255));
                     }
                     strip.show();
                     loops.pause(this.delay);
@@ -789,7 +802,7 @@ namespace light {
                 const l = strip.length();
                 for (let i = 0; i < l; i++) {
                     offsets[i] = (offsets[i] + (step * 2)) % 255
-                    strip.setPixelColor(i, rgb(255 - offsets[i], this.green, this.blue));
+                    strip.setColor(i, rgb(255 - offsets[i], this.green, this.blue));
                 }
                 step++;
                 strip.show();
@@ -811,10 +824,10 @@ namespace light {
             const l = strip.length();
             return () => {
                 const pixel = Math.random(l);
-                strip.setPixelColor(pixel, this.rgb);
+                strip.setColor(pixel, this.rgb);
                 strip.show();
                 loops.pause(this.delay);
-                strip.setPixelColor(pixel, 0);
+                strip.setColor(pixel, 0);
             }
         }
     }
@@ -836,9 +849,9 @@ namespace light {
             return () => {
                 if (i < l) {
                     if (reveal) {
-                        strip.setPixelColor(i, this.rgb);
+                        strip.setColor(i, this.rgb);
                     } else {
-                        strip.setPixelColor(i, rgb(0, 0, 0));
+                        strip.setColor(i, rgb(0, 0, 0));
                     }
                     strip.show();
                     loops.pause(this.delay);
@@ -869,12 +882,12 @@ namespace light {
                 if (j < 10) { // 10 cycles of chasing
                     if (q < 3) {
                         for (let i = 0; i < l; i = i + 3) {
-                            strip.setPixelColor(i + q, this.rgb); // every third pixel on
+                            strip.setColor(i + q, this.rgb); // every third pixel on
                         }
                         strip.show();
                         loops.pause(this.delay);
                         for (let i = 0; i < l; i = i + 3) {
-                            strip.setPixelColor(i + q, 0); // every third pixel off
+                            strip.setColor(i + q, 0); // every third pixel off
                         }
                         q++;
                     } else {
