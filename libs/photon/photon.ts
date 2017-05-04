@@ -1,15 +1,4 @@
 /**
- * A determines the mode of the photon
- */
-enum PhotonMode {
-    //% block="pen up"
-    PenUp,
-    //% block="pen down"
-    PenDown,
-    //% block="eraser"
-    Eraser
-}
-/**
  * Control a photon of light to paint animation on colored LEDs.
  * Inspired from MIT LightLogo.
  */

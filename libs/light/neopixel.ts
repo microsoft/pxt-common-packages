@@ -57,6 +57,18 @@ enum LightAnimation {
 }
 
 /**
+ * A determines the mode of the photon
+ */
+enum PhotonMode {
+    //% block="pen up"
+    PenUp,
+    //% block="pen down"
+    PenDown,
+    //% block="eraser"
+    Eraser
+}
+
+/**
  * Functions to operate colored LEDs.
  */
 //% weight=100 color="#0078d7" icon="\uf00a"
@@ -93,6 +105,7 @@ namespace light {
         // when was the current high value recorded
         _barGraphHighLast: number;
         // the current photon color, undefined = no photon
+        _photonMode: number;
         _photonPos: number;
         _photonMasked: number;
         _photonDir: number;
@@ -359,7 +372,7 @@ namespace light {
          */
         //% blockId="neopixel_move_pixels" block="%kind=MoveKind|by %offset" blockGap=8
         //% weight=30
-        //% parts="neopixel"
+        //% parts="neopixel" advanced=true
         //% defaultInstance=light.pixels
         move(kind: LightMove, offset: number = 1): void {
             const stride = this._mode === NeoPixelMode.RGBW ? 4 : 3;
@@ -374,6 +387,7 @@ namespace light {
 
         initPhoton() {
             if (this._photonPos === undefined) {
+                this._photonMode = PhotonMode.PenDown;
                 this._photonPos = 0;
                 this._photonDir = 1;
                 this._photonColor = 0;
@@ -383,7 +397,7 @@ namespace light {
 
         paintPhoton() {
             const br = this.brightness();
-            this.setBrightness(br + 50);
+            this.setBrightness(br + 64);
             this.setPixelColor(this._photonPos, 0xffffff);
             this.setBrightness(br);
         }
@@ -401,15 +415,20 @@ namespace light {
             this.initPhoton();
 
             // unpaint current pixel
-            this.setPixelColor(this._photonPos, light.colorWheel(this._photonMasked));
-            
+            this.setPixelColor(this._photonPos, this._photonMasked);
+
             // move
             this._photonPos = (this._photonPos + this._photonDir * steps) >> 0;
             this._photonPos = this._photonPos % this._length;
             if (this._photonPos < 0) this._photonPos += this._length;
 
             // paint photon
-            this._photonMasked = this._photonColor;
+            if (this._photonMode == PhotonMode.PenDown)
+                this._photonMasked = light.colorWheel(this._photonColor);
+            else if (this._photonMode == PhotonMode.Eraser)
+                this._photonMasked = 0; // erase led
+            else this._photonMasked = this.pixelColor(this._photonPos);
+
             this.paintPhoton();
         }
 
@@ -431,12 +450,28 @@ namespace light {
          */
         //% weight=39
         //% blockId=neophoton_set_color block="photon set color %color"
-        //% parts="neopixel"
+        //% parts="neopixel" blockGap=8
         //% defaultInstance=light.pixels
         //% color.min=0 color.max=255
         setPhotonColor(color: number) {
             this.initPhoton();
             this._photonColor = color & 0xff;
+        }
+
+        /**
+         * Sets the desired mode of the photon, pen up, pen down or eraser
+         * @param mode the desired mode
+         */
+        //% weight=38
+        //% blockId=neophoton_set_photon block="photon %mode"
+        //% parts="neopixel"
+        //% defaultInstance=light.pixels
+        setPhotonMode(mode: PhotonMode) {
+            this.initPhoton();
+            if (this._photonMode != mode) {
+                this._photonMode = mode;
+                this.paintPhoton();
+            }
         }
 
         /**
