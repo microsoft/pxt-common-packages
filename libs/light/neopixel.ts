@@ -89,9 +89,9 @@ namespace light {
         _animationType: number;
         _buf: Buffer;
         // what's the current high value
-        _barGraphHigh: number;
+        _barGraphHigh: number = 0;
         // when was the current high value recorded
-        _barGraphHighLast: number;
+        _barGraphHighLast: number = 0;
 
         get buf(): Buffer {
             // Lazily allocate to conserve memory
@@ -157,21 +157,17 @@ namespace light {
             }
 
             const bfr = this.buffered();
-            const bt = this.brightness();
             this.setBuffered(true);
-            this.setBrightness(20);
             const n = this._length;
             const n1 = n - 1;
             const v = ((value * n) / this._barGraphHigh) >> 0;
             if (v == 0) {
+                this.setAll(0);
                 this.setColor(0, 0x000033);
-                for (let i = 1; i < n; ++i)
-                    this.setColor(i, 0);
             } else {
                 for (let i = 0; i < n; ++i) {
                     if (i <= v) {
                         let b = (i * 255 / n1) >> 0;
-                        this.setBrightness(20 + i * 6);
                         this.setColor(i, light.rgb(b, 0, 255 - b));
                     }
                     else {
@@ -181,7 +177,6 @@ namespace light {
             }
             this.show();
             this.setBuffered(bfr);
-            this.setBrightness(bt);
         }
 
         /**
@@ -469,7 +464,6 @@ namespace light {
         strip._start = 0;
         strip._pin = pin ? pin : (defaultPin() || pins.D0);
         strip._pin.digitalWrite(0)
-        strip._barGraphHigh = 0;
         strip.setBrightness(20)
         return strip;
     }
