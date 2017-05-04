@@ -376,13 +376,12 @@ namespace light {
             if (this._cursorPos === undefined) {
                 this._cursorPos = 0;
                 this._cursorDir = 1;
-                this._cursorColor = 0xff0000;
+                this._cursorColor = 0;
                 this.paintCursor();
             }
         }
 
         paintCursor() {
-            this._cursorMasked = this.color(this._cursorPos);
             const br = this.brightness();
             this.setBrightness(255);
             this.setColor(this._cursorPos, 0xffffff);
@@ -402,7 +401,7 @@ namespace light {
             this.initCursor();
 
             // unpaint current pixel
-            this.setColor(this._cursorPos, this._cursorMasked);
+            this.setColor(this._cursorPos, light.colorWheel(this._cursorMasked));
             
             // move
             this._cursorPos = (this._cursorPos + this._cursorDir * steps) >> 0;
@@ -410,7 +409,7 @@ namespace light {
             if (this._cursorPos < 0) this._cursorPos += this._length;
 
             // paint cursor
-            this.setColor(this._cursorPos, this._cursorColor);
+            this._cursorMasked = this._cursorColor;
             this.paintCursor();
         }
 
@@ -431,12 +430,13 @@ namespace light {
          * @param color the color of the cursor
          */
         //% weight=39
-        //% blockId=neocursor_set_color block="cursor set color %color=neopixel_color_wheel"
+        //% blockId=neocursor_set_color block="cursor set color %color"
         //% parts="neopixel"
         //% defaultInstance=light.pixels
+        //% color.min=0 color.max=255
         cursorSetColor(color: number) {
             this.initCursor();
-            this._cursorColor = color;
+            this._cursorColor = color & 0xff;
         }
 
         /**
