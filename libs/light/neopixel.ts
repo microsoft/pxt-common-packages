@@ -146,10 +146,10 @@ namespace light {
         //% parts="neopixel"
         //% defaultInstance=light.pixels
         graph(value: number, high: number): void {
-            const now = control.millis();
             serial.writeString(value + "\n"); // auto chart
             value = Math.abs(value);
 
+            const now = control.millis();
             if (high > 0) this._barGraphHigh = high;
             else if (value > this._barGraphHigh || now - this._barGraphHighLast > 10000) {
                 this._barGraphHigh = value;
@@ -157,10 +157,12 @@ namespace light {
             }
 
             const bfr = this.buffered();
+            const bt = this.brightness();
             this.setBuffered(true);
+            this.setBrightness(20);
             const n = this._length;
             const n1 = n - 1;
-            const v = (value * n) / this._barGraphHigh;
+            const v = ((value * n) / this._barGraphHigh) >> 0;
             if (v == 0) {
                 this.setColor(0, 0x000033);
                 for (let i = 1; i < n; ++i)
@@ -168,14 +170,16 @@ namespace light {
             } else {
                 for (let i = 0; i < n; ++i) {
                     if (i <= v) {
-                        let b = i * 255 / n1;
+                        let b = (i * 255 / n1) >> 0;
+                        this.setBrightness(20 + i * 20);
                         this.setColor(i, light.rgb(b, 0, 255 - b));
                     }
                     else this.setColor(i, 0);
                 }
             }
-            this.setBuffered(bfr);
             this.show();
+            this.setBuffered(bfr);
+            this.setBrightness(bt);
         }
 
         /**
