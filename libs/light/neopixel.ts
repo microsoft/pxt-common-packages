@@ -204,7 +204,7 @@ namespace light {
          * @param rgb RGB color of the LED
          */
         //% blockId="neopixel_set_pixel_color" block="set pixel color at %pixeloffset|to %rgb=neopixel_colors"
-        //% weight=89
+        //% weight=89 advanced=true
         //% parts="neopixel"
         //% defaultInstance=light.pixels
         setPixelColor(pixeloffset: number, rgb: number): void {

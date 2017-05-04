@@ -1,7 +1,7 @@
 # Photon Bounce
 
 
-```cards
+```blocks
 let distance = 0;
 let ms = 30;
 let p = light.pixels;
