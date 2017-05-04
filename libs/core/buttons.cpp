@@ -137,7 +137,6 @@ namespace ButtonMethods {
 //% blockId=buttonEvent block="on %button|%event"
 //% parts="buttonpair"
 //% blockNamespace=input
-//% blockGap=8
 void onEvent(Button button, ButtonEvent ev, Action body) {
     registerWithDal(button->id, (int)ev, body);
 }
@@ -163,8 +162,8 @@ bool isPressed(Button button) {
 //% help=input/button-was-pressed weight=78
 //% block="%NAME|was pressed"
 //% blockId=buttonWasPressed
-//% parts="buttonpair"
-//% blockNamespace=input
+//% parts="buttonpair" blockGap=8
+//% blockNamespace=input advanced=true
 bool wasPressed(Button button) {
     return button->wasPressed();
 }

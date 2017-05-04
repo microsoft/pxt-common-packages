@@ -184,7 +184,7 @@ namespace music {
     /**
      * Returns the duration of a beat in milli-seconds
      */
-    //% help=music/beat weight=49
+    //% help=music/beat weight=49 blockGap=8
     //% blockId=device_beat block="%fraction|beat" advanced=true
     export function beat(fraction?: BeatFraction): number {
         init();
