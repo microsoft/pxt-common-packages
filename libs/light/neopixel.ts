@@ -161,7 +161,7 @@ namespace light {
          */
         //% weight=5 blockGap=8
         //% blockId=neopixel_show_bar_graph block="graph of %value |up to %high" icon="\uf080" blockExternalInputs=true
-        //% parts="neopixel"
+        //% parts="neopixel" advanced=true
         //% defaultInstance=light.pixels
         graph(value: number, high: number): void {
             serial.writeString(value + "\n"); // auto chart
