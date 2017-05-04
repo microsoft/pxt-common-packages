@@ -358,7 +358,7 @@ namespace light {
          * @param offset number of pixels to shift forward, eg: 1
          */
         //% blockId="neopixel_move_pixels" block="%kind=MoveKind|by %offset" blockGap=8
-        //% weight=40
+        //% weight=30
         //% parts="neopixel"
         //% defaultInstance=light.pixels
         move(kind: LightMove, offset: number = 1): void {
