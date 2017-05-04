@@ -386,7 +386,7 @@ namespace light {
          * Set the current animation
          */
         //% blockId="neopixel_animation" block="%value"
-        //% weight=91
+        //% weight=1 advanced=true
         //% defaultInstance=light.pixels
         animation(kind: LightAnimation): NeoPixelAnimation {
             switch(kind) {
