@@ -388,7 +388,6 @@ namespace light {
         //% blockId="neopixel_animation" block="%value"
         //% weight=91
         //% defaultInstance=light.pixels
-        //% subcategory="Animations"
         animation(kind: LightAnimation): NeoPixelAnimation {
             switch(kind) {
                 case LightAnimation.RunningLights: return AnimationFactory.getRunningLights();
