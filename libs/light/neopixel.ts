@@ -89,9 +89,14 @@ namespace light {
         _animationType: number;
         _buf: Buffer;
         // what's the current high value
-        _barGraphHigh: number = 0;
+        _barGraphHigh: number;
         // when was the current high value recorded
-        _barGraphHighLast: number = 0;
+        _barGraphHighLast: number;
+        // the current cursor color, undefined = no cursor
+        _cursorPos: number;
+        _cursorMasked: number;
+        _cursorDir: number;
+        _cursorColor: number;
 
         get buf(): Buffer {
             // Lazily allocate to conserve memory
@@ -367,6 +372,73 @@ namespace light {
             this.autoShow();
         }
 
+        initCursor() {
+            if (this._cursorPos === undefined) {
+                this._cursorPos = 0;
+                this._cursorDir = 1;
+                this._cursorColor = 0xff0000;
+                this.paintCursor();
+            }
+        }
+
+        paintCursor() {
+            this._cursorMasked = this.color(this._cursorPos);
+            const br = this.brightness();
+            this.setBrightness(255);
+            this.setColor(this._cursorPos, 0xffffff);
+            this.setBrightness(br);
+        }
+
+        /**
+         * Moves the light cursor and paints the leds
+         * @param action forward or backward
+         * @param steps number of steps (lights) to move, eg: 1
+         */
+        //% blockGap=8 weight=40
+        //% blockId=neocursor_fd block="cursor forward by %steps"
+        //% parts="neopixel"
+        //% defaultInstance=light.pixels
+        cursorForward(steps: number) {
+            this.initCursor();
+
+            // unpaint current pixel
+            this.setColor(this._cursorPos, this._cursorMasked);
+            
+            // move
+            this._cursorPos = (this._cursorPos + this._cursorDir * steps) >> 0;
+            this._cursorPos = this._cursorPos % this._length;
+            if (this._cursorPos < 0) this._cursorPos += this._length;
+
+            // paint cursor
+            this.setColor(this._cursorPos, this._cursorColor);
+            this.paintCursor();
+        }
+
+        /**
+         * Flips the direction of the cursor
+         */
+        //% blockGap=8 weight=40
+        //% blockId=neocursor_flip block="cursor flip"
+        //% parts="neopixel"
+        //% defaultInstance=light.pixels
+        cursorFlip() {
+            this.initCursor();
+            this._cursorDir *= -1;
+        }
+
+        /**
+         * Sets the cursor color
+         * @param color the color of the cursor
+         */
+        //% weight=39
+        //% blockId=neocursor_set_color block="cursor set color %color=neopixel_color_wheel"
+        //% parts="neopixel"
+        //% defaultInstance=light.pixels
+        cursorSetColor(color: number) {
+            this.initCursor();
+            this._cursorColor = color;
+        }
+
         /**
          * Set the current animation
          */
@@ -463,7 +535,9 @@ namespace light {
         strip._length = Math.max(0, numleds);
         strip._start = 0;
         strip._pin = pin ? pin : (defaultPin() || pins.D0);
-        strip._pin.digitalWrite(0)
+        strip._pin.digitalWrite(0);
+        strip._barGraphHigh = 0;
+        strip._barGraphHighLast = 0;
         strip.setBrightness(20)
         return strip;
     }
