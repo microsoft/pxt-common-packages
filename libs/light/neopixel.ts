@@ -639,13 +639,14 @@ namespace light {
     //% hue.min=0 hue.max=255 sat.min=0 sat.max=255 val.min=0 val.max=255
     //% subcategory="Colors"
     export function hsv(hue: number, sat: number, val: number): number {
-        let h = (hue % 256) >> 0;
+        let h = (hue % 255) >> 0;
+        if (h < 0) h += 255;
         // scale down to 0..192
-        h = (h * 192 / 256) >> 0;
+        h = (h * 192 / 255) >> 0;
 
         //reference: based on FastLED's hsv2rgb rainbow algorithm [https://github.com/FastLED/FastLED](MIT)
         let invsat = 255 - sat;
-        let brightness_floor = ((val * invsat) / 256) >> 0;
+        let brightness_floor = ((val * invsat) / 255) >> 0;
         let color_amplitude = val - brightness_floor;
         let section = (h / 0x40) >> 0; // [0..2]
         let offset = (h % 0x40) >> 0; // [0..63]
@@ -653,8 +654,8 @@ namespace light {
         let rampup = offset;
         let rampdown = (0x40 - 1) - offset;
 
-        let rampup_amp_adj = ((rampup * color_amplitude) / (256 / 4)) >> 0;
-        let rampdown_amp_adj = ((rampdown * color_amplitude) / (256 / 4)) >> 0;
+        let rampup_amp_adj = ((rampup * color_amplitude) / (255 / 4)) >> 0;
+        let rampdown_amp_adj = ((rampdown * color_amplitude) / (255 / 4)) >> 0;
 
         let rampup_adj_with_floor = (rampup_amp_adj + brightness_floor);
         let rampdown_adj_with_floor = (rampdown_amp_adj + brightness_floor);
