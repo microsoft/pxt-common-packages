@@ -422,13 +422,14 @@ namespace light {
             this._photonPos = this._photonPos % this._length;
             if (this._photonPos < 0) this._photonPos += this._length;
 
-            // paint photon
+            // store current color
             if (this._photonMode == PhotonMode.PenDown)
                 this._photonMasked = light.colorWheel(this._photonColor);
             else if (this._photonMode == PhotonMode.Eraser)
                 this._photonMasked = 0; // erase led
             else this._photonMasked = this.pixelColor(this._photonPos);
 
+            // paint photon
             this.paintPhoton();
         }
 
@@ -470,7 +471,7 @@ namespace light {
             this.initPhoton();
             if (this._photonMode != mode) {
                 this._photonMode = mode;
-                this.paintPhoton();
+                this.photonForward(0);
             }
         }
 
