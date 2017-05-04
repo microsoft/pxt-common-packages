@@ -11,7 +11,7 @@
   "homepage": "https://github.com/microsoft/pxt-common-packages",
   "license": "MIT",
   "dependencies": {
-    "pxt-core": "^1.1.18",
+    "pxt-core": "^1.3.6",
     "rtlcss": "^2.1.2",
     "autoprefixer": "^6.7.6"
   },
