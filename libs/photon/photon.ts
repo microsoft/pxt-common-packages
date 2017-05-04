@@ -47,10 +47,10 @@ namespace photon {
         if (_show) {
             const b = _strip.brightness();
             _strip.setBrightness(255);
-            _strip.setColor(_pos, Colors.White);
+            _strip.setPixelColor(_pos, Colors.White);
             _strip.setBrightness(b);
         } else
-            _strip.setColor(_pos, posColor(_pos));
+            _strip.setPixelColor(_pos, posColor(_pos));
     }
 
     function initStrip(): light.NeoPixelStrip {
@@ -74,7 +74,7 @@ namespace photon {
 
         if (_show) {
             // restore previous color
-            strip.setColor(_pos, posColor(_pos));
+            strip.setPixelColor(_pos, posColor(_pos));
         }
 
         // compute new pos
@@ -146,7 +146,7 @@ namespace photon {
         const strip = initStrip();
         _buf[_pos] = _color;
         if (!_show) {
-            strip.setColor(_pos, posColor(_pos));
+            strip.setPixelColor(_pos, posColor(_pos));
             strip.show();
         }
     }

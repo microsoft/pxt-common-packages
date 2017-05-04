@@ -92,11 +92,11 @@ namespace light {
         _barGraphHigh: number;
         // when was the current high value recorded
         _barGraphHighLast: number;
-        // the current cursor color, undefined = no cursor
-        _cursorPos: number;
-        _cursorMasked: number;
-        _cursorDir: number;
-        _cursorColor: number;
+        // the current photon color, undefined = no photon
+        _photonPos: number;
+        _photonMasked: number;
+        _photonDir: number;
+        _photonColor: number;
 
         get buf(): Buffer {
             // Lazily allocate to conserve memory
@@ -114,7 +114,7 @@ namespace light {
          * Shows all LEDs to a given color (range 0-255 for r, g, b).
          * @param rgb RGB color of the LED
          */
-        //% blockId="neopixel_set_strip_color" block="set all to %rgb=neopixel_colors"
+        //% blockId="neopixel_set_strip_color" block="set all pixels to %rgb=neopixel_colors"
         //% weight=90 blockGap=8
         //% parts="neopixel"
         //% defaultInstance=light.pixels
@@ -168,15 +168,15 @@ namespace light {
             const v = ((value * n) / this._barGraphHigh) >> 0;
             if (v == 0) {
                 this.setAll(0);
-                this.setColor(0, 0x000033);
+                this.setPixelColor(0, 0x000033);
             } else {
                 for (let i = 0; i < n; ++i) {
                     if (i <= v) {
                         let b = (i * 255 / n1) >> 0;
-                        this.setColor(i, light.rgb(b, 0, 255 - b));
+                        this.setPixelColor(i, light.rgb(b, 0, 255 - b));
                     }
                     else {
-                        this.setColor(i, 0);
+                        this.setPixelColor(i, 0);
                     }
                 }
             }
@@ -190,11 +190,11 @@ namespace light {
          * @param pixeloffset position of the NeoPixel in the strip
          * @param rgb RGB color of the LED
          */
-        //% blockId="neopixel_set_pixel_color" block="set color at %pixeloffset|to %rgb=neopixel_colors"
+        //% blockId="neopixel_set_pixel_color" block="set pixel color at %pixeloffset|to %rgb=neopixel_colors"
         //% weight=89
         //% parts="neopixel"
         //% defaultInstance=light.pixels
-        setColor(pixeloffset: number, rgb: number): void {
+        setPixelColor(pixeloffset: number, rgb: number): void {
             if (pixeloffset < 0
                 || pixeloffset >= this._length)
                 return;
@@ -220,12 +220,12 @@ namespace light {
          * Gets the pixel color.
          * @param pixeloffset position of the NeoPixel in the strip
          */
-        //% blockId="neopixel_get_pixel_color" block="color at %pixeloffset"
+        //% blockId="neopixel_get_pixel_color" block="pixel color at %pixeloffset"
         //% blockGap=8
         //% weight=4 advanced=true
         //% parts="neopixel"
         //% defaultInstance=light.pixels
-        color(pixeloffset: number): number {
+        pixelColor(pixeloffset: number): number {
             if (pixeloffset < 0
                 || pixeloffset >= this._length)
                 return 0;
@@ -318,7 +318,7 @@ namespace light {
         //% parts="neopixel"
         //% defaultInstance=light.pixels
         setBrightness(brightness: number): void {
-            this._brightness = brightness & 0xff;
+            this._brightness = Math.max(0, Math.min(0xff, brightness >> 0));
         }
 
         /**
@@ -372,71 +372,71 @@ namespace light {
             this.autoShow();
         }
 
-        initCursor() {
-            if (this._cursorPos === undefined) {
-                this._cursorPos = 0;
-                this._cursorDir = 1;
-                this._cursorColor = 0;
-                this.paintCursor();
+        initPhoton() {
+            if (this._photonPos === undefined) {
+                this._photonPos = 0;
+                this._photonDir = 1;
+                this._photonColor = 0;
+                this.paintPhoton();
             }
         }
 
-        paintCursor() {
+        paintPhoton() {
             const br = this.brightness();
-            this.setBrightness(255);
-            this.setColor(this._cursorPos, 0xffffff);
+            this.setBrightness(br + 50);
+            this.setPixelColor(this._photonPos, 0xffffff);
             this.setBrightness(br);
         }
 
         /**
-         * Moves the light cursor and paints the leds
+         * Moves the light photon and paints the leds
          * @param action forward or backward
          * @param steps number of steps (lights) to move, eg: 1
          */
         //% blockGap=8 weight=40
-        //% blockId=neocursor_fd block="cursor forward by %steps"
+        //% blockId=neophoton_fd block="photon forward by %steps"
         //% parts="neopixel"
         //% defaultInstance=light.pixels
-        cursorForward(steps: number) {
-            this.initCursor();
+        photonForward(steps: number) {
+            this.initPhoton();
 
             // unpaint current pixel
-            this.setColor(this._cursorPos, light.colorWheel(this._cursorMasked));
+            this.setPixelColor(this._photonPos, light.colorWheel(this._photonMasked));
             
             // move
-            this._cursorPos = (this._cursorPos + this._cursorDir * steps) >> 0;
-            this._cursorPos = this._cursorPos % this._length;
-            if (this._cursorPos < 0) this._cursorPos += this._length;
+            this._photonPos = (this._photonPos + this._photonDir * steps) >> 0;
+            this._photonPos = this._photonPos % this._length;
+            if (this._photonPos < 0) this._photonPos += this._length;
 
-            // paint cursor
-            this._cursorMasked = this._cursorColor;
-            this.paintCursor();
+            // paint photon
+            this._photonMasked = this._photonColor;
+            this.paintPhoton();
         }
 
         /**
-         * Flips the direction of the cursor
+         * Flips the direction of the photon
          */
         //% blockGap=8 weight=40
-        //% blockId=neocursor_flip block="cursor flip"
+        //% blockId=neophoton_flip block="photon flip"
         //% parts="neopixel"
         //% defaultInstance=light.pixels
-        cursorFlip() {
-            this.initCursor();
-            this._cursorDir *= -1;
+        photonFlip() {
+            this.initPhoton();
+            this._photonDir *= -1;
         }
 
         /**
-         * Sets the cursor color
-         * @param color the color of the cursor
+         * Sets the photon color
+         * @param color the color of the photon
          */
         //% weight=39
-        //% blockId=neocursor_set_color block="cursor set color %color"
+        //% blockId=neophoton_set_color block="photon set color %color"
         //% parts="neopixel"
         //% defaultInstance=light.pixels
         //% color.min=0 color.max=255
-        cursorSetColor(color: number) {
-            this.initCursor();
-            this._cursorColor = color & 0xff;
+        setPhotonColor(color: number) {
+            this.initPhoton();
+            this._photonColor = color & 0xff;
         }
 
         /**
@@ -712,7 +712,7 @@ namespace light {
             return () => {
                 const offset = control.millis() / speed;
                 for (let i = 0; i < l; i++) {
-                    strip.setColor(i, colorWheel(((i * 256 / l) + offset) & 0xff));
+                    strip.setPixelColor(i, colorWheel(((i * 256 / l) + offset) & 0xff));
                 }
                 strip.show();
             }
@@ -744,7 +744,7 @@ namespace light {
                     step++;
                     for (let i = 0; i < l; i++) {
                         const level = (Math.sin(i + step) * 127) + 128;
-                        strip.setColor(i, rgb(level * this.red / 255, level * this.green / 255, level * this.blue / 255));
+                        strip.setPixelColor(i, rgb(level * this.red / 255, level * this.green / 255, level * this.blue / 255));
                     }
                     strip.show();
                     loops.pause(this.delay);
@@ -781,7 +781,7 @@ namespace light {
                 const l = strip.length();
                 for (let i = 0; i < l; i++) {
                     offsets[i] = (offsets[i] + (step * 2)) % 255
-                    strip.setColor(i, rgb(255 - offsets[i], this.green, this.blue));
+                    strip.setPixelColor(i, rgb(255 - offsets[i], this.green, this.blue));
                 }
                 step++;
                 strip.show();
@@ -803,10 +803,10 @@ namespace light {
             const l = strip.length();
             return () => {
                 const pixel = Math.random(l);
-                strip.setColor(pixel, this.rgb);
+                strip.setPixelColor(pixel, this.rgb);
                 strip.show();
                 loops.pause(this.delay);
-                strip.setColor(pixel, 0);
+                strip.setPixelColor(pixel, 0);
             }
         }
     }
@@ -828,9 +828,9 @@ namespace light {
             return () => {
                 if (i < l) {
                     if (reveal) {
-                        strip.setColor(i, this.rgb);
+                        strip.setPixelColor(i, this.rgb);
                     } else {
-                        strip.setColor(i, 0);
+                        strip.setPixelColor(i, 0);
                     }
                     strip.show();
                     loops.pause(this.delay);
@@ -861,12 +861,12 @@ namespace light {
                 if (j < 10) { // 10 cycles of chasing
                     if (q < 3) {
                         for (let i = 0; i < l; i = i + 3) {
-                            strip.setColor(i + q, this.rgb); // every third pixel on
+                            strip.setPixelColor(i + q, this.rgb); // every third pixel on
                         }
                         strip.show();
                         loops.pause(this.delay);
                         for (let i = 0; i < l; i = i + 3) {
-                            strip.setColor(i + q, 0); // every third pixel off
+                            strip.setPixelColor(i + q, 0); // every third pixel off
                         }
                         strip.show();
                         q++;
