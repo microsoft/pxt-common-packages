@@ -34,16 +34,26 @@ enum NeoPixelMode {
     RGB_RGB = 3
 }
 
-enum MoveKind {
+enum LightMove {
     //% block="rotate"
     Rotate,
     //% block="shift"
     Shift
 }
 
-enum Easing {
-    //% linear
-    Linear
+enum LightAnimation {
+    //% block="rainbow"
+    Rainbow,
+    //% block="running lights"
+    RunningLights,
+    //% block="comet"
+    Comet,
+    //% block="sparkle"
+    Sparkle,
+    //% block="theater chase"
+    TheaterChase,
+    //% block="color wipe"
+    ColorWipe
 }
 
 /**
@@ -55,7 +65,7 @@ namespace light {
      * Turns the status LED on or off.
      * @param on a value indicating if the LED is on
      */
-    //% weight=1
+    //% weight=1 advanced=true
     //% blockId=light_status_led block="status led %on"
     export function statusLED(on: boolean) {
         if (on) pins.LED.digitalWrite(1);
@@ -100,7 +110,7 @@ namespace light {
          * @param rgb RGB color of the LED
          */
         //% blockId="neopixel_set_strip_color" block="set all to %rgb=neopixel_colors"
-        //% weight=85 blockGap=8
+        //% weight=90 blockGap=8
         //% parts="neopixel"
         //% defaultInstance=light.pixels
         setAll(rgb: number) {
@@ -126,42 +136,12 @@ namespace light {
         }
 
         /**
-         * Shows a color gradient between LEDs
-         * @param start RGB color to start the gradient
-         * @param end RGB color to start the gradient, eg: Colors.Blue
-         * @param easing how
-         */
-        //% blockId="neopixel_show_gradient" block="set gradient|from %start=neopixel_colors|to %end=neopixel_colors"
-        //% weight=84 blockGap=8 advanced=true
-        //% parts="neopixel"
-        //% defaultInstance=light.pixels
-        setGradient(start: number, end: number, easing?: Easing) {
-            const sr = unpackR(start);
-            const sg = unpackG(start);
-            const sb = unpackB(start);
-            const er = unpackR(end);
-            const eg = unpackG(end);
-            const eb = unpackB(end);
-            const l = this._length;
-            const l1 = l - 1;
-            const bfr = this.buffered();
-            this.setBuffered(true);
-            for (let i = 0; i < l; i++) {
-                const r = (i * sr + (l1 - i) * er) / (l1);
-                const g = (i * sg + (l1 - i) * eg) / (l1);
-                const b = (i * sb + (l1 - i) * eb) / (l1);
-                this.setColor(i, rgb(r, g, b))
-            }
-            this.setBuffered(bfr);
-            this.autoShow();
-        }
-        /**
          * Displays a vertical bar graph based on the `value` and `high` value.
          * If `high` is 0, the chart gets adjusted automatically.
          * @param value current value to plot
          * @param high maximum value, 0 to autoscale
          */
-        //% weight=84 blockGap=8
+        //% weight=5 blockGap=8
         //% blockId=neopixel_show_bar_graph block="graph of %value |up to %high" icon="\uf080" blockExternalInputs=true
         //% parts="neopixel"
         //% defaultInstance=light.pixels
@@ -205,8 +185,7 @@ namespace light {
          * @param rgb RGB color of the LED
          */
         //% blockId="neopixel_set_pixel_color" block="set color at %pixeloffset|to %rgb=neopixel_colors"
-        //% blockGap=8
-        //% weight=5
+        //% weight=89
         //% parts="neopixel"
         //% defaultInstance=light.pixels
         setColor(pixeloffset: number, rgb: number): void {
@@ -295,7 +274,7 @@ namespace light {
         //% blockId="neopixel_show" block="show" blockGap=8
         //% weight=4
         //% parts="neopixel"
-        //% defaultInstance=light.pixels
+        //% defaultInstance=light.pixels advanced=true
         show() {
             sendBuffer(this._pin, this.buf);
         }
@@ -305,8 +284,8 @@ namespace light {
          * You need to call ``show`` to make the changes visible.
          */
         //% blockId="neopixel_clear" block="clear"
-        //% weight=3
-        //% parts="neopixel"
+        //% weight=88
+        //% parts="neopixel" advanced=true
         //% defaultInstance=light.pixels
         clear(): void {
             const stride = this._mode === NeoPixelMode.RGBW ? 4 : 3;
@@ -348,34 +327,6 @@ namespace light {
         }
 
         /**
-         * Apply brightness to current colors using a quadratic easing function.
-         **/
-        //% blockId="neopixel_each_brightness" block="ease brightness" blockGap=8
-        //% weight=58
-        //% parts="neopixel" advanced=true
-        //% defaultInstance=light.pixels
-        easeBrightness(): void {
-            const stride = this._mode === NeoPixelMode.RGBW ? 4 : 3;
-            const br = this._brightness;
-            const buf = this.buf;
-            const end = this._start + this._length;
-            const mid = this._length / 2;
-            for (let i = this._start; i < end; ++i) {
-                const k = i - this._start;
-                const ledoffset = i * stride;
-                const br = k > mid ? 255 * (this._length - 1 - k) * (this._length - 1 - k) / (mid * mid) : 255 * k * k / (mid * mid);
-                serial.writeLine(k + ":" + br);
-                const r = (buf[ledoffset + 0] * br) >> 8; buf[ledoffset + 0] = r;
-                const g = (buf[ledoffset + 1] * br) >> 8; buf[ledoffset + 1] = g;
-                const b = (buf[ledoffset + 2] * br) >> 8; buf[ledoffset + 2] = b;
-                if (stride == 4) {
-                    const w = (buf[ledoffset + 3] * br) >> 8; buf[ledoffset + 3] = w;
-                }
-            }
-            this.autoShow();
-        }
-
-        /**
          * Create a range of pixels.
          * @param start offset in the NeoPixel strip to start the range
          * @param length number of pixels in the range. eg: 4
@@ -400,13 +351,13 @@ namespace light {
          * You need to call ``show`` to make the changes visible.
          * @param offset number of pixels to shift forward, eg: 1
          */
-        //% blockId="neopixel_move_pixels" block="%kind=MoveKind |pixels by %offset" blockGap=8
+        //% blockId="neopixel_move_pixels" block="%kind=MoveKind|by %offset" blockGap=8
         //% weight=40
         //% parts="neopixel"
         //% defaultInstance=light.pixels
-        movePixels(kind: MoveKind, offset: number = 1): void {
+        move(kind: LightMove, offset: number = 1): void {
             const stride = this._mode === NeoPixelMode.RGBW ? 4 : 3;
-            if (kind === MoveKind.Shift) {
+            if (kind === LightMove.Shift) {
                 this.buf.shift(-offset * stride, this._start * stride, this._length * stride)
             }
             else {
@@ -418,11 +369,10 @@ namespace light {
         /**
          * Set the current animation
          */
-        //% blockId="neopixel_draw_animation_frame" block="show frame of %animation=neopixel_animation_rainbow |animation"
-        //% weight=90
+        //% blockId="neopixel_draw_animation_frame" block="show frame of %animation=neopixel_animation|animation"
+        //% weight=70
         //% parts="neopixel"
         //% defaultInstance=light.pixels
-        //% subcategory="Animations"
         showAnimationFrame(animation: NeoPixelAnimation): void {
             if (!this._animation || this._animationType != animation.type) {
                 this.clear();
@@ -430,6 +380,23 @@ namespace light {
                 this._animation = animation.create(this);
             }
             this._animation();
+        }
+
+        /**
+         * Set the current animation
+         */
+        //% blockId="neopixel_animation" block="%value"
+        //% weight=91
+        //% defaultInstance=light.pixels
+        //% subcategory="Animations"
+        animation(kind: LightAnimation): NeoPixelAnimation {
+            switch(kind) {
+                case LightAnimation.RunningLights: return AnimationFactory.getRunningLights();
+                case LightAnimation.Comet: return AnimationFactory.getComet();
+                case LightAnimation.ColorWipe: return AnimationFactory.getColorWipe(0x0000ff);
+                case LightAnimation.TheaterChase: return AnimationFactory.getTheatreChase();
+                default: return AnimationFactory.getRainbow();
+            }
         }
 
         /**
@@ -602,110 +569,44 @@ namespace light {
         return rgb(r, g, b);
     }
 
-    /**
-     * Return a new instance of the rainbow animation
-     */
-    //% blockId="neopixel_animation_rainbow" block="rainbow"
-    //% weight=100 blockGap=8
-    //% parts="neopixel"
-    //% subcategory="Animations"
-    export function rainbowCycleAnimation(): NeoPixelAnimation {
-        return NeopixelAnimatonFactory.getRainbow();
-    }
-
-    /**
-     * Return a new instance of the running lights animation
-     */
-    //% blockId="neopixel_animation_runninglights" block="running lights"
-    //% weight=99 blockGap=8
-    //% parts="neopixel"
-    //% subcategory="Animations"
-    export function runningLightsAnimation(): NeoPixelAnimation {
-        return NeopixelAnimatonFactory.getRunningLights();
-    }
-
-    /**
-     * Return a new instance of the theatre chase animation
-     */
-    //% blockId="neopixel_animation_theatrechase" block="theatre chase"
-    //% weight=99 blockGap=8
-    //% parts="neopixel"
-    //% subcategory="Animations"
-    export function theatreChaseAnimation(): NeoPixelAnimation {
-        return NeopixelAnimatonFactory.getTheatreChase();
-    }
-
-    /**
-     * Return a new instance of the comet animation
-     */
-    //% blockId="neopixel_animation_comet" block="comet"
-    //% weight=98 blockGap=8
-    //% parts="neopixel"
-    //% subcategory="Animations"
-    export function cometAnimation(): NeoPixelAnimation {
-        return NeopixelAnimatonFactory.getComet();
-    }
-
-    /**
-     * Return a new instance of the sparkle animation
-     */
-    //% blockId="neopixel_animation_sparkle" block="sparkle"
-    //% weight=97 blockGap=8
-    //% parts="neopixel"
-    //% subcategory="Animations"
-    export function sparkleAnimation(): NeoPixelAnimation {
-        return NeopixelAnimatonFactory.getSparkle();
-    }
-
-    /**
-     * Return a new instance of the color wipe animation
-     */
-    //% blockId="neopixel_animation_colorwipe" block="%rgb=neopixel_colors| color wipe "
-    //% weight=96 blockGap=8
-    //% parts="neopixel"
-    //% subcategory="Animations"
-    export function colorWipeAnimation(rgb: number): NeoPixelAnimation {
-        return NeopixelAnimatonFactory.getColorWipe(rgb);
-    }
-
     //%
     export const pixels = light.createNeoPixelStrip();
 
-    class NeopixelAnimatonFactory {
+    class AnimationFactory {
         private static rainbowSingleton: RainbowCycleAnimation;
         static getRainbow(): RainbowCycleAnimation {
-            if (!NeopixelAnimatonFactory.rainbowSingleton) NeopixelAnimatonFactory.rainbowSingleton = new RainbowCycleAnimation();
-            return NeopixelAnimatonFactory.rainbowSingleton;
+            if (!AnimationFactory.rainbowSingleton) AnimationFactory.rainbowSingleton = new RainbowCycleAnimation();
+            return AnimationFactory.rainbowSingleton;
         }
         private static runningLightsSingleton: RunningLightsAnimation;
         static getRunningLights(): RunningLightsAnimation {
-            if (!NeopixelAnimatonFactory.runningLightsSingleton) NeopixelAnimatonFactory.runningLightsSingleton = new RunningLightsAnimation(0xff, 0xff, 0x00, 50);
-            return NeopixelAnimatonFactory.runningLightsSingleton;
+            if (!AnimationFactory.runningLightsSingleton) AnimationFactory.runningLightsSingleton = new RunningLightsAnimation(0xff, 0xff, 0x00, 50);
+            return AnimationFactory.runningLightsSingleton;
         }
 
         private static cometSingleton: CometAnimation;
         static getComet(): CometAnimation {
-            if (!NeopixelAnimatonFactory.cometSingleton) NeopixelAnimatonFactory.cometSingleton = new CometAnimation(0, 0, 40);
-            return NeopixelAnimatonFactory.cometSingleton;
+            if (!AnimationFactory.cometSingleton) AnimationFactory.cometSingleton = new CometAnimation(0, 0, 40);
+            return AnimationFactory.cometSingleton;
         }
 
         private static sparkleSingleton: SparkleAnimation;
         static getSparkle(): SparkleAnimation {
-            if (!NeopixelAnimatonFactory.sparkleSingleton) NeopixelAnimatonFactory.sparkleSingleton = new SparkleAnimation(0xff, 0xff, 0xff, 0);
-            return NeopixelAnimatonFactory.sparkleSingleton;
+            if (!AnimationFactory.sparkleSingleton) AnimationFactory.sparkleSingleton = new SparkleAnimation(0xff, 0xff, 0xff, 0);
+            return AnimationFactory.sparkleSingleton;
         }
 
         private static colorWipeSingleton: ColorWipeAnimation;
         static getColorWipe(rgb: number): ColorWipeAnimation {
-            if (!NeopixelAnimatonFactory.colorWipeSingleton) NeopixelAnimatonFactory.colorWipeSingleton = new ColorWipeAnimation(rgb, 50);
-            NeopixelAnimatonFactory.colorWipeSingleton.rgb = rgb;
-            return NeopixelAnimatonFactory.colorWipeSingleton;
+            if (!AnimationFactory.colorWipeSingleton) AnimationFactory.colorWipeSingleton = new ColorWipeAnimation(rgb, 50);
+            AnimationFactory.colorWipeSingleton.rgb = rgb;
+            return AnimationFactory.colorWipeSingleton;
         }
 
         private static theatreChaseSingleton: TheatreChaseAnimation;
         static getTheatreChase(): TheatreChaseAnimation {
-            if (!NeopixelAnimatonFactory.theatreChaseSingleton) NeopixelAnimatonFactory.theatreChaseSingleton = new TheatreChaseAnimation(0xff, 0, 0, 50);
-            return NeopixelAnimatonFactory.theatreChaseSingleton;
+            if (!AnimationFactory.theatreChaseSingleton) AnimationFactory.theatreChaseSingleton = new TheatreChaseAnimation(0xff, 0, 0, 50);
+            return AnimationFactory.theatreChaseSingleton;
         }
     }
 
