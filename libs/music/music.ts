@@ -226,7 +226,7 @@ namespace music {
      * Sets the tempo to the specified amount
      * @param bpm The new tempo in beats per minute, eg: 120
      */
-    //% help=music/set-tempo weight=38 advanced=true
+    //% help=music/set-tempo weight=38
     //% blockId=device_set_tempo block="set tempo to (bpm)|%value"
     //% bpm.min=4 bpm.max=400
     export function setTempo(bpm: number): void {
