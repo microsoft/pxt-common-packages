@@ -379,7 +379,10 @@ namespace light {
                 this._animationType = animation.type;
                 this._animation = animation.create(this);
             }
+            const brf = this.buffered();
+            this.setBuffered(true);
             this._animation();
+            this.setBuffered(brf);
         }
 
         /**
@@ -389,11 +392,12 @@ namespace light {
         //% weight=1 advanced=true
         //% defaultInstance=light.pixels
         animation(kind: LightAnimation): NeoPixelAnimation {
-            switch(kind) {
+            switch (kind) {
                 case LightAnimation.RunningLights: return AnimationFactory.getRunningLights();
                 case LightAnimation.Comet: return AnimationFactory.getComet();
                 case LightAnimation.ColorWipe: return AnimationFactory.getColorWipe(0x0000ff);
                 case LightAnimation.TheaterChase: return AnimationFactory.getTheatreChase();
+                case LightAnimation.Sparkle: return AnimationFactory.getSparkle();
                 default: return AnimationFactory.getRainbow();
             }
         }
@@ -509,7 +513,7 @@ namespace light {
         return g;
     }
     function unpackB(rgb: number): number {
-        let b = (rgb) & 0xFF;
+        let b = (rgb >> 0) & 0xFF;
         return b;
     }
 
@@ -524,22 +528,22 @@ namespace light {
     //% hue.min=0 hue.max=255 sat.min=0 sat.max=255 val.min=0 val.max=255
     //% subcategory="Colors"
     export function hsv(hue: number, sat: number, val: number): number {
-        let h = hue % 255;
+        let h = (hue % 256) >> 0;
         // scale down to 0..192
-        h = h * 192 / 255;
+        h = (h * 192 / 256) >> 0;
 
         //reference: based on FastLED's hsv2rgb rainbow algorithm [https://github.com/FastLED/FastLED](MIT)
         let invsat = 255 - sat;
-        let brightness_floor = (val * invsat) / 256;
+        let brightness_floor = ((val * invsat) / 256) >> 0;
         let color_amplitude = val - brightness_floor;
-        let section = h / 0x40; // [0..2]
-        let offset = h % 0x40; // [0..63]
+        let section = (h / 0x40) >> 0; // [0..2]
+        let offset = (h % 0x40) >> 0; // [0..63]
 
         let rampup = offset;
         let rampdown = (0x40 - 1) - offset;
 
-        let rampup_amp_adj = (rampup * color_amplitude) / (256 / 4);
-        let rampdown_amp_adj = (rampdown * color_amplitude) / (256 / 4);
+        let rampup_amp_adj = ((rampup * color_amplitude) / (256 / 4)) >> 0;
+        let rampdown_amp_adj = ((rampdown * color_amplitude) / (256 / 4)) >> 0;
 
         let rampup_adj_with_floor = (rampup_amp_adj + brightness_floor);
         let rampdown_adj_with_floor = (rampdown_amp_adj + brightness_floor);
@@ -633,7 +637,7 @@ namespace light {
             return () => {
                 const offset = control.millis() / speed;
                 for (let i = 0; i < l; i++) {
-                    strip.setColor(i, colorWheel(((i * 256 / l) + offset) & 255));
+                    strip.setColor(i, colorWheel(((i * 256 / l) + offset) & 0xff));
                 }
                 strip.show();
             }
@@ -693,7 +697,7 @@ namespace light {
         public create(strip: NeoPixelStrip): () => void {
             const offsets: number[] = [];
             const l = strip.length();
-            const spacing = 255 / l;
+            const spacing = (255 / l) >> 0;
             for (let i = 0; i < l; i++) {
                 offsets[i] = spacing * i;
             }
@@ -751,7 +755,7 @@ namespace light {
                     if (reveal) {
                         strip.setColor(i, this.rgb);
                     } else {
-                        strip.setColor(i, rgb(0, 0, 0));
+                        strip.setColor(i, 0);
                     }
                     strip.show();
                     loops.pause(this.delay);
@@ -789,6 +793,7 @@ namespace light {
                         for (let i = 0; i < l; i = i + 3) {
                             strip.setColor(i + q, 0); // every third pixel off
                         }
+                        strip.show();
                         q++;
                     } else {
                         q = 0;
