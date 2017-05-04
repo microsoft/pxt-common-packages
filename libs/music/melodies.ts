@@ -164,7 +164,7 @@ namespace music {
     /**
  * Registers code to run on various melody events
  */
-    //% blockId=melody_on_event block="music on %value"
+    //% blockId=melody_on_event block="on %value"
     //% help=music/on-event weight=59
     export function onEvent(value: MusicEvent, handler: Action) {
         control.onEvent(MICROBIT_MELODY_ID, value, handler);

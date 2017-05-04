@@ -146,7 +146,7 @@ namespace music {
     */
     //% help=music/ring-tone weight=80
     //% blockId=music_ring block="ring tone|at %note=device_note" blockGap=8
-    //% parts="headphone" trackArgs=0
+    //% parts="headphone" trackArgs=0 advanced=true
     //% blockNamespace=music inBasicCategory=true
     export function ringTone(frequency: number) {
         playTone(frequency, 0);
@@ -159,7 +159,7 @@ namespace music {
     //% help=music/rest weight=79
     //% blockId=music_rest block="rest|for %duration=device_beat"
     //% parts="headphone" trackArgs=0
-    //% blockNamespace=music
+    //% blockNamespace=music advanced=true
     export function rest(ms: number) {
         playTone(0, ms);
     }

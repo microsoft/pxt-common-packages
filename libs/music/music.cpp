@@ -78,7 +78,7 @@ void setSpeakerVolume(int volume) {
 * @param ms tone duration in milliseconds (ms)
 */
 //% help=music/play-tone weight=90
-//% blockId=music_play_note block="play tone|at %note=device_note|for %duration=device_beat" blockGap=8
+//% blockId=music_play_note block="play tone|at %note=device_note|for %duration=device_beat"
 //% parts="headphone" async
 //% blockNamespace=music
 void playTone(int frequency, int ms) {

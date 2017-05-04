@@ -57,9 +57,9 @@ enum LightAnimation {
 }
 
 /**
- * Functions to operate NeoPixel strips.
+ * Functions to operate colored LEDs.
  */
-//% weight=99 color="#0078d7" icon="\uf00a"
+//% weight=100 color="#0078d7" icon="\uf00a"
 namespace light {
     /**
      * Turns the status LED on or off.
