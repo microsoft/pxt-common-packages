@@ -171,7 +171,7 @@ namespace light {
                 for (let i = 0; i < n; ++i) {
                     if (i <= v) {
                         let b = (i * 255 / n1) >> 0;
-                        this.setBrightness(20 + i * 10);
+                        this.setBrightness(20 + i * 6);
                         this.setColor(i, light.rgb(b, 0, 255 - b));
                     }
                     else {
