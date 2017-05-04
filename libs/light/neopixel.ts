@@ -171,10 +171,12 @@ namespace light {
                 for (let i = 0; i < n; ++i) {
                     if (i <= v) {
                         let b = (i * 255 / n1) >> 0;
-                        this.setBrightness(20 + i * 20);
+                        this.setBrightness(20 + i * 10);
                         this.setColor(i, light.rgb(b, 0, 255 - b));
                     }
-                    else this.setColor(i, 0);
+                    else {
+                        this.setColor(i, 0);
+                    }
                 }
             }
             this.show();
@@ -467,6 +469,7 @@ namespace light {
         strip._start = 0;
         strip._pin = pin ? pin : (defaultPin() || pins.D0);
         strip._pin.digitalWrite(0)
+        strip._barGraphHigh = 0;
         strip.setBrightness(20)
         return strip;
     }
