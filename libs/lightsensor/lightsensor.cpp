@@ -16,31 +16,17 @@ namespace pxt {
 class WLight {
   public:
     AnalogSensor sensor;
-#define Button DeviceButton *
-    Button buttons[0];
-    //% indexedInstanceNS=input indexedInstanceShim=pxt::getLightButton
-    //% block="light sensor"
-    Button lightSensor;
     WLight()
         : sensor(*lookupPin(PIN_LIGHT), DEVICE_ID_LIGHT_SENSOR) //
     {
-        memclr(buttons, 4);
         sensor.init();
         sensor.setPeriod(50);
         sensor.setSensitivity(0.85f);
+        sensor.setLowThreshold(128);
+        sensor.setHighThreshold(896);
     }
 };
 SINGLETON(WLight);
-const int LastLightButtonID = &((WLight *)0)->lightSensor - ((WLight *)0)->buttons;
-//%
-DeviceButton *getLightButton(int id) {
-    if (id != 0)
-        device.panic(42);
-    auto w = getWLight();
-    if (!w->buttons[id])
-        w->buttons[id] = new DeviceButton(*lookupPin(PIN_LIGHT), w->sensor.id);
-    return w->buttons[id];
-}
 
 }
 
