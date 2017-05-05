@@ -1,3 +1,0 @@
-# photon
-
-The Photon library.
