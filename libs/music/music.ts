@@ -168,11 +168,11 @@ namespace music {
      * Gets the frequency of a note.
      * @param name the note name, eg: Note.C
      */
-    //% weight=50 help=music/note-frequency
+    //% weight=1 help=music/note-frequency
     //% blockId=device_note block="%note"
     //% shim=TD_ID
     //% note.fieldEditor="note" note.defl="262"
-    //% useEnumVal=1 advanced=true blockGab=8
+    //% useEnumVal=1 blockGab=8
     export function noteFrequency(name: Note): number {
         return name;
     }
