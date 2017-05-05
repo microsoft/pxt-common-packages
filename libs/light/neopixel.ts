@@ -19,7 +19,9 @@ enum Colors {
     //% block=purple blockIdentity=light.colors
     Purple = 0xFF00FF,
     //% block=white blockIdentity=light.colors
-    White = 0xFFFFFF
+    White = 0xFFFFFF,
+    //% block=black  blockIdentity=light.colors
+    Black = 0x000000
 }
 
 /**
@@ -240,8 +242,9 @@ namespace light {
         //% defaultInstance=light.pixels
         pixelColor(pixeloffset: number): number {
             if (pixeloffset < 0
-                || pixeloffset >= this._length)
+                || pixeloffset >= this._length) {
                 return 0;
+            }
 
             const stride = this._mode === NeoPixelMode.RGBW ? 4 : 3;
             const offset = (pixeloffset + this._start) * stride;
@@ -299,17 +302,17 @@ namespace light {
         }
 
         /**
-         * Turn off all LEDs.
-         * You need to call ``show`` to make the changes visible.
+         * Turn off all LEDs and clears the photon
          */
         //% blockId="neopixel_clear" block="clear"
-        //% weight=88
-        //% parts="neopixel" advanced=true
+        //% weight=70
+        //% parts="neopixel"
         //% defaultInstance=light.pixels
         clear(): void {
             const stride = this._mode === NeoPixelMode.RGBW ? 4 : 3;
             this.buf.fill(0, this._start * stride, this._length * stride);
             this.autoShow();
+            this._photonPos = undefined;
         }
 
         /**
@@ -391,13 +394,14 @@ namespace light {
                 this._photonPos = 0;
                 this._photonDir = 1;
                 this._photonColor = 0;
+                this._photonMasked = light.colorWheel(this._photonColor);
                 this.paintPhoton();
             }
         }
 
         paintPhoton() {
             const br = this.brightness();
-            this.setBrightness(br + 64);
+            this.setBrightness(br + 32);
             this.setPixelColor(this._photonPos, 0xffffff);
             this.setBrightness(br);
         }
@@ -407,7 +411,7 @@ namespace light {
          * @param action forward or backward
          * @param steps number of steps (lights) to move, eg: 1
          */
-        //% blockGap=8 weight=40
+        //% blockGap=8 weight=41
         //% blockId=neophoton_fd block="photon forward by %steps"
         //% parts="neopixel"
         //% defaultInstance=light.pixels
@@ -418,8 +422,7 @@ namespace light {
             this.setPixelColor(this._photonPos, this._photonMasked);
 
             // move
-            this._photonPos = (this._photonPos + this._photonDir * steps) >> 0;
-            this._photonPos = this._photonPos % this._length;
+            this._photonPos = ((this._photonPos + this._photonDir * steps) % this._length) >> 0;
             if (this._photonPos < 0) this._photonPos += this._length;
 
             // store current color
@@ -457,6 +460,7 @@ namespace light {
         setPhotonColor(color: number) {
             this.initPhoton();
             this._photonColor = color & 0xff;
+            this.photonForward(0);
         }
 
         /**
@@ -479,7 +483,7 @@ namespace light {
          * Set the current animation
          */
         //% blockId="neopixel_draw_animation_frame" block="show frame of %animation=neopixel_animation|animation"
-        //% weight=70
+        //% weight=71 blockGap=8
         //% parts="neopixel"
         //% defaultInstance=light.pixels
         showAnimationFrame(animation: NeoPixelAnimation): void {
