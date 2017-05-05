@@ -203,30 +203,26 @@ namespace light {
          * Set the pixel to a given color.
          * You need to call ``show`` to make the changes visible.
          * @param pixeloffset position of the NeoPixel in the strip
-         * @param rgb RGB color of the LED
+         * @param color RGB color of the LED
          */
         //% blockId="neopixel_set_pixel_color" block="set pixel color at %pixeloffset|to %rgb=neopixel_colors"
         //% weight=89 advanced=true
         //% parts="neopixel"
         //% defaultInstance=light.pixels
-        setPixelColor(pixeloffset: number, rgb: number): void {
+        setPixelColor(pixeloffset: number, color: number): void {
+            pixeloffset = pixeloffset >> 0;
             if (pixeloffset < 0
                 || pixeloffset >= this._length)
                 return;
 
             let stride = this._mode === NeoPixelMode.RGBW ? 4 : 3;
             pixeloffset = (pixeloffset + this._start) * stride;
-
-            let red = unpackR(rgb);
-            let green = unpackG(rgb);
-            let blue = unpackB(rgb);
-
             const br = this._brightness;
-            if (br < 255) {
-                red = (red * br) >> 8;
-                green = (green * br) >> 8;
-                blue = (blue * br) >> 8;
-            }
+            if (br < 255)
+                color = fade(color, br);
+            let red = unpackR(color);
+            let green = unpackG(color);
+            let blue = unpackB(color);
             this.setBufferRGB(pixeloffset, red, green, blue)
             this.autoShow();
         }
@@ -241,6 +237,7 @@ namespace light {
         //% parts="neopixel"
         //% defaultInstance=light.pixels
         pixelColor(pixeloffset: number): number {
+            pixeloffset = pixeloffset >> 0;
             if (pixeloffset < 0
                 || pixeloffset >= this._length) {
                 return 0;
@@ -280,7 +277,7 @@ namespace light {
                 return;
 
             pixeloffset = (pixeloffset + this._start) * 4;
-
+            white = white & 0xff;
             const br = this._brightness;
             if (br < 255) {
                 white = (white * br) >> 8;
@@ -418,6 +415,10 @@ namespace light {
         photonForward(steps: number) {
             this.initPhoton();
 
+            // store current brightness
+            const br = this.brightness();
+            this.setBrightness(0xff);
+
             // unpaint current pixel
             this.setPixelColor(this._photonPos, this._photonMasked);
 
@@ -426,14 +427,18 @@ namespace light {
             if (this._photonPos < 0) this._photonPos += this._length;
 
             // store current color
-            if (this._photonMode == PhotonMode.PenDown)
-                this._photonMasked = light.colorWheel(this._photonColor);
+            if (this._photonMode == PhotonMode.PenDown) {
+                this._photonMasked = light.fade(light.colorWheel(this._photonColor), this._brightness);
+            }
             else if (this._photonMode == PhotonMode.Eraser)
                 this._photonMasked = 0; // erase led
             else this._photonMasked = this.pixelColor(this._photonPos);
 
             // paint photon
             this.paintPhoton();
+
+            // restore brightness
+            this.setBrightness(br);
         }
 
         /**
@@ -686,6 +691,31 @@ namespace light {
             b = brightness_floor;
         }
         return rgb(r, g, b);
+    }
+
+    /**
+     * Fades the color by the brightness
+     * @param c color to fade
+     * @param brightness the amount of brightness to apply to the color, eg: 128
+     */
+    //% weight=3 blockGap=8
+    //% blockId="neopixel_fade" block="fade %color=neopixel_colors|by %brightness"
+    //% brightness.min=0 brightness.max=255
+    //% subcategory="Colors"
+    export function fade(color: number, brightness: number): number {
+        brightness = Math.max(0, Math.min(255, brightness >> 0));
+        if (brightness < 255) {
+            let red = unpackR(color);
+            let green = unpackG(color);
+            let blue = unpackB(color);
+
+            red = (red * brightness) >> 8;
+            green = (green * brightness) >> 8;
+            blue = (blue * brightness) >> 8;
+
+            color = rgb(red, green, blue);
+        }
+        return color;
     }
 
     //%
