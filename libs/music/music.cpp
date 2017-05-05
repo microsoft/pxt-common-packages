@@ -31,7 +31,7 @@ enum class SoundOutputDestination {
 namespace music {
 
 int synthVolume = 200;
-PwmPin pitchPin = lookupPin(PIN_A10);
+PwmPin pitchPin;
 
 #if HAS_SPEAKER
 SoundOutputDestination current = SoundOutputDestination::Speaker;
@@ -69,7 +69,7 @@ void setPitchPin(PwmPin pin) {
 //% blockId=synth_set_volume block="set speaker volume %volume"
 //% parts="speaker" blockGap=8 advanced=true
 void setSpeakerVolume(int volume) {
-    synthVolume = volume;
+    synthVolume = max(0, min(1023, volume));
 }
 
 /**
@@ -100,6 +100,8 @@ void playTone(int frequency, int ms) {
         }
     }
     else {
+        if (NULL == pitchPin)
+            pitchPin = getPin(PIN_A10);        
         if (frequency <= 0) {
             pitchPin->setAnalogValue(0);
         } else {

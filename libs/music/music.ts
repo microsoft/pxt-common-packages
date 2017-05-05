@@ -232,7 +232,7 @@ namespace music {
     export function setTempo(bpm: number): void {
         init();
         if (bpm > 0) {
-            beatsPerMinute = Math.max(1, bpm);
+            beatsPerMinute = Math.max(1, bpm >> 0);
         }
     }
 }
