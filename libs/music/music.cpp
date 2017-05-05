@@ -95,7 +95,7 @@ void playTone(int frequency, int ms) {
             if (ms > 0) {
                 fiber_sleep(ms);
                 synth->setVolume(0);
-                wait_ms(5);
+                fiber_sleep(5);
             }
         }
     }

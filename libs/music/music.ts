@@ -138,7 +138,7 @@ enum MelodyOptions {
 }
 
 namespace music {
-    let beatsPerMinute: number = 120;
+    let beatsPerMinute: number;
 
     /**
     * Plays a tone.
@@ -178,7 +178,7 @@ namespace music {
     }
 
     function init() {
-        if (beatsPerMinute <= 0) beatsPerMinute = 120;
+        if (!beatsPerMinute) beatsPerMinute = 120;
     }
 
     /**
