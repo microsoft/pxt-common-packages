@@ -391,7 +391,7 @@ namespace light {
                 this._photonPos = 0;
                 this._photonDir = 1;
                 this._photonColor = 0;
-                this._photonMasked = light.colorWheel(this._photonColor);
+                this._photonMasked = light.hsv(this._photonColor, 0xff, 0xff);
                 this.paintPhoton();
             }
         }
@@ -428,7 +428,7 @@ namespace light {
 
             // store current color
             if (this._photonMode == PhotonMode.PenDown) {
-                this._photonMasked = light.fade(light.colorWheel(this._photonColor), this._brightness);
+                this._photonMasked = light.fade(light.hsv(this._photonColor, 0xff, 0xff), this._brightness);
             }
             else if (this._photonMode == PhotonMode.Eraser)
                 this._photonMasked = 0; // erase led
@@ -612,18 +612,6 @@ namespace light {
         return color;
     }
 
-    /**
-     * Gets an RGB color given the value of an angle between 0 and 255. Useful
-     * for performing math with colors.
-    */
-    //% weight=1 blockGap=8
-    //% blockId="neopixel_color_wheel" block="color wheel %angle"
-    //% angle.min=0 angle.max=255
-    //% subcategory="Colors"
-    export function colorWheel(angle: number): number {
-        return hsv(angle, 255, 255);
-    }
-
     function unpackR(rgb: number): number {
         let r = (rgb >> 16) & 0xFF;
         return r;
@@ -783,7 +771,7 @@ namespace light {
             return () => {
                 const offset = control.millis() / speed;
                 for (let i = 0; i < l; i++) {
-                    strip.setPixelColor(i, colorWheel(((i * 256 / l) + offset) & 0xff));
+                    strip.setPixelColor(i, hsv(((i * 256 / l) + offset) & 0xff, 0xff, 0xff));
                 }
                 strip.show();
             }
