@@ -327,7 +327,7 @@ namespace light {
          * @param brightness a measure of LED brightness in 0-255. eg: 20
          */
         //% blockId="neopixel_set_brightness" block="set brightness %brightness" blockGap=8
-        //% weight=59 advanced=true
+        //% weight=1
         //% parts="neopixel"
         //% defaultInstance=light.pixels
         setBrightness(brightness: number): void {
