@@ -12,7 +12,13 @@ enum class NumberFormat {
     Int16BE,
     UInt16BE,
     Int32BE,
-    // UInt32,
+
+    UInt32LE,
+    UInt32BE,
+    Float32LE,
+    Float64LE,
+    Float32BE,
+    Float64BE,
 };
 
 //% indexerGet=BufferMethods::getByte indexerSet=BufferMethods::setByte
@@ -36,42 +42,59 @@ uint8_t *getBytes(Buffer buf) {
  * Write a number in specified format in the buffer.
  */
 //%
-void setNumber(Buffer buf, NumberFormat format, int offset, int value) {
+void setNumber(Buffer buf, NumberFormat format, int offset, TNumber value) {
     int8_t i8;
     uint8_t u8;
     int16_t i16;
     uint16_t u16;
     int32_t i32;
+    uint32_t u32;
+    float f32;
+    double f64;
 
     ManagedBuffer b(buf);
 
 // Assume little endian
-#define WRITEBYTES(isz, swap)                                                                      \
-    isz = value;                                                                                   \
+#define WRITEBYTES(isz, swap, toInt)                                                               \
+    isz = toInt(value);                                                                            \
     b.writeBytes(offset, (uint8_t *)&isz, sizeof(isz), swap);                                      \
     break
 
     switch (format) {
     case NumberFormat::Int8LE:
-        WRITEBYTES(i8, false);
+        WRITEBYTES(i8, false, toInt);
     case NumberFormat::UInt8LE:
-        WRITEBYTES(u8, false);
+        WRITEBYTES(u8, false, toInt);
     case NumberFormat::Int16LE:
-        WRITEBYTES(i16, false);
+        WRITEBYTES(i16, false, toInt);
     case NumberFormat::UInt16LE:
-        WRITEBYTES(u16, false);
+        WRITEBYTES(u16, false, toInt);
     case NumberFormat::Int32LE:
-        WRITEBYTES(i32, false);
+        WRITEBYTES(i32, false, toInt);
+    case NumberFormat::UInt32LE:
+        WRITEBYTES(u32, false, toUInt);
+
     case NumberFormat::Int8BE:
-        WRITEBYTES(i8, true);
+        WRITEBYTES(i8, true, toInt);
     case NumberFormat::UInt8BE:
-        WRITEBYTES(u8, true);
+        WRITEBYTES(u8, true, toInt);
     case NumberFormat::Int16BE:
-        WRITEBYTES(i16, true);
+        WRITEBYTES(i16, true, toInt);
     case NumberFormat::UInt16BE:
-        WRITEBYTES(u16, true);
+        WRITEBYTES(u16, true, toInt);
     case NumberFormat::Int32BE:
-        WRITEBYTES(i32, true);
+        WRITEBYTES(i32, true, toInt);
+    case NumberFormat::UInt32BE:
+        WRITEBYTES(u32, true, toUInt);
+
+    case NumberFormat::Float32LE:
+        WRITEBYTES(f32, false, toFloat);
+    case NumberFormat::Float32BE:
+        WRITEBYTES(f32, true, toFloat);
+    case NumberFormat::Float64LE:
+        WRITEBYTES(f64, false, toDouble);
+    case NumberFormat::Float64BE:
+        WRITEBYTES(f64, true, toDouble);
     }
 }
 
@@ -79,41 +102,58 @@ void setNumber(Buffer buf, NumberFormat format, int offset, int value) {
  * Read a number in specified format from the buffer.
  */
 //%
-int getNumber(Buffer buf, NumberFormat format, int offset) {
+TNumber getNumber(Buffer buf, NumberFormat format, int offset) {
     int8_t i8;
     uint8_t u8;
     int16_t i16;
     uint16_t u16;
     int32_t i32;
+    uint32_t u32;
+    float f32;
+    double f64;
 
     ManagedBuffer b(buf);
 
 // Assume little endian
-#define READBYTES(isz, swap)                                                                       \
+#define READBYTES(isz, swap, conv)                                                                 \
     b.readBytes((uint8_t *)&isz, offset, sizeof(isz), swap);                                       \
-    return isz
+    return conv(isz)
 
     switch (format) {
     case NumberFormat::Int8LE:
-        READBYTES(i8, false);
+        READBYTES(i8, false, fromInt);
     case NumberFormat::UInt8LE:
-        READBYTES(u8, false);
+        READBYTES(u8, false, fromInt);
     case NumberFormat::Int16LE:
-        READBYTES(i16, false);
+        READBYTES(i16, false, fromInt);
     case NumberFormat::UInt16LE:
-        READBYTES(u16, false);
+        READBYTES(u16, false, fromInt);
     case NumberFormat::Int32LE:
-        READBYTES(i32, false);
+        READBYTES(i32, false, fromInt);
+    case NumberFormat::UInt32LE:
+        READBYTES(u32, false, fromUInt);
+
     case NumberFormat::Int8BE:
-        READBYTES(i8, true);
+        READBYTES(i8, true, fromInt);
     case NumberFormat::UInt8BE:
-        READBYTES(u8, true);
+        READBYTES(u8, true, fromInt);
     case NumberFormat::Int16BE:
-        READBYTES(i16, true);
+        READBYTES(i16, true, fromInt);
     case NumberFormat::UInt16BE:
-        READBYTES(u16, true);
+        READBYTES(u16, true, fromInt);
     case NumberFormat::Int32BE:
-        READBYTES(i32, true);
+        READBYTES(i32, true, fromInt);
+    case NumberFormat::UInt32BE:
+        READBYTES(u32, true, fromUInt);
+
+    case NumberFormat::Float32LE:
+        READBYTES(f32, false, fromFloat);
+    case NumberFormat::Float32BE:
+        READBYTES(f32, true, fromFloat);
+    case NumberFormat::Float64LE:
+        READBYTES(f64, false, fromDouble);
+    case NumberFormat::Float64BE:
+        READBYTES(f64, true, fromDouble);
     }
 
     return 0;
