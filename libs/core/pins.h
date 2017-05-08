@@ -22,10 +22,6 @@
 #define PXT_BOARD_ID BOARD_ID_CPLAY
 #endif
 
-#if PXT_BOARD_ID == BOARD_ID_CPLAY
-#define CPLAY_REV_G 1
-#endif
-
 #if PXT_BOARD_ID == BOARD_ID_ZERO || PXT_BOARD_ID == BOARD_ID_METRO || PXT_BOARD_ID == BOARD_ID_M0
 #define PIN_A0 PIN_PA02
 #define PIN_A1 PIN_PB08
@@ -80,14 +76,15 @@
 #elif PXT_BOARD_ID == BOARD_ID_CPLAY
 
 // pin-pads
+#define PIN_A0 PIN_PA02
+#define PIN_A1 PIN_PA05
+#define PIN_A2 PIN_PA06
+#define PIN_A3 PIN_PA07
+
 #define PIN_A4 PIN_PB03 // SCL
-#define PIN_A5 PIN_PB02 // SDL
+#define PIN_A5 PIN_PB02 // SDA
 #define PIN_A6 PIN_PB09 // RX
 #define PIN_A7 PIN_PB08 // TX
-#define PIN_A8 PIN_PA05
-#define PIN_A9 PIN_PA04
-#define PIN_A10 PIN_PA07
-#define PIN_A11 PIN_PA06
 
 #define PIN_SCL PIN_A4
 #define PIN_SDA PIN_A5
@@ -95,9 +92,9 @@
 #define PIN_TX PIN_A7
 
 // flash
-#define PIN_MISO PIN_PA12
-#define PIN_MOSI PIN_PB10
-#define PIN_SCK PIN_PB11
+#define PIN_MISO PIN_PA16
+#define PIN_MOSI PIN_PA20
+#define PIN_SCK PIN_PA21
 #define PIN_FLASH_CS PIN_PB22
 
 // devices
@@ -112,37 +109,13 @@
 #define PIN_ACCELEROMETER_SCL PIN_PA01
 #define PIN_LED PIN_PA17
 
-// the board doesn't really have it, but it is reserved
-#define PIN_LEDTX PIN_PA27
 
-#ifdef CPLAY_REV_G
 #define PIN_TEMPERATURE PIN_PA09
 #define PIN_ACCELEROMETER_INT PIN_PA13
-#define PIN_CAPSENSE PIN_PA23 // really, not connected
-#elif defined(CPLAY_REV_D)
-#define PIN_TEMPERATURE PIN_PA10
-#define PIN_ACCELEROMETER_INT PIN_PA09
-#define PIN_CAPSENSE PIN_PA23
-#else
-#define PIN_TEMPERATURE PIN_PA09
-#define PIN_ACCELEROMETER_INT PIN_PA10
-#define PIN_CAPSENSE PIN_PA22
-#endif
-
-// labels on the board
-#define PIN_A0 PIN_SPEAKER
-#define PIN_A1 PIN_LIGHT
-#define PIN_A2 PIN_TEMPERATURE
-#define PIN_A3 PIN_MICROPHONE
-
-#define PIN_D4 PIN_BTN_A
-#define PIN_D5 PIN_BTN_B
-#define PIN_D7 PIN_BTN_SLIDE
-#define PIN_D8 PIN_NEOPIXEL
-#define PIN_D13 PIN_LED
+#define PIN_CAPSENSE NC
 
 // TODO: define list of pins
-#define PIN_TOUCH 1
+//#define PIN_TOUCH 1
 
 #elif PXT_BOARD_ID == BOARD_ID_FEATHER
 #define PIN_A0 PIN_PA02
