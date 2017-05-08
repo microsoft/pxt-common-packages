@@ -27,7 +27,7 @@ THE SOFTWARE.
 
 enum Melodies {
     //% block="power up" blockIdentity=music.builtInMelody
-    PowerUp,
+    PowerUp = 0,
     //% block="power down" blockIdentity=music.builtInMelody
     PowerDown,
     //% block="jump up" blockIdentity=music.builtInMelody
@@ -41,7 +41,7 @@ enum Melodies {
     //% block="nyan" blockIdentity=music.builtInMelody
     Nyan,
     //% block="dadadum" blockIdentity=music.builtInMelody
-    Dadadadum = 0,
+    Dadadadum,
     //% block="entertainer" blockIdentity=music.builtInMelody
     Entertainer,
     //% block="prelude" blockIdentity=music.builtInMelody
@@ -170,6 +170,17 @@ namespace music {
         control.onEvent(MICROBIT_MELODY_ID, value, handler);
     }
 
+    /**
+     * Starts playing a melody through.
+     * Notes are expressed as a string of characters with this format: NOTE[octave][:duration]
+     * @param melody the melody array to play, eg: ['g5:1']
+     */
+    //% help=music/begin-melody weight=60
+    //% blockId=device_play_melody block="play melody %melody=device_builtin_melody"
+    //% parts="headphone"
+    export function playMelody(melodyArray: string[]) {
+        startMelody(melodyArray, MelodyOptions.OnceInBackground);
+    }
 
     /**
      * Starts playing a melody through.
@@ -178,8 +189,8 @@ namespace music {
      * @param options melody options, once / forever, in the foreground / background
      */
     //% help=music/begin-melody weight=60
-    //% blockId=device_start_melody block="start|melody %melody=device_builtin_melody| repeating %options"
-    //% parts="headphone"
+    //% blockId=device_start_melody block="start melody %melody=device_builtin_melody| repeating %options"
+    //% parts="headphone" advanced=true
     export function startMelody(melodyArray: string[], options: MelodyOptions = MelodyOptions.Once) {
         initMelodies();
         if (currentMelody != undefined) {
