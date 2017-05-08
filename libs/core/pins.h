@@ -23,7 +23,7 @@
 #endif
 
 #if PXT_BOARD_ID == BOARD_ID_CPLAY
-#define CPLAY_REV_D 1
+#define CPLAY_REV_G 1
 #endif
 
 #if PXT_BOARD_ID == BOARD_ID_ZERO || PXT_BOARD_ID == BOARD_ID_METRO || PXT_BOARD_ID == BOARD_ID_M0
@@ -115,8 +115,11 @@
 // the board doesn't really have it, but it is reserved
 #define PIN_LEDTX PIN_PA27
 
-#ifdef CPLAY_REV_D
-// the newer one
+#ifdef CPLAY_REV_G
+#define PIN_TEMPERATURE PIN_PA09
+#define PIN_ACCELEROMETER_INT PIN_PA13
+#define PIN_CAPSENSE PIN_PA23 // really, not connected
+#elif defined(CPLAY_REV_D)
 #define PIN_TEMPERATURE PIN_PA10
 #define PIN_ACCELEROMETER_INT PIN_PA09
 #define PIN_CAPSENSE PIN_PA23
