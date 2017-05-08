@@ -114,6 +114,16 @@
 #define PIN_ACCELEROMETER_INT PIN_PA13
 #define PIN_CAPSENSE NC
 
+#define PIN_A8 PIN_LIGHT
+#define PIN_A9 PIN_TEMPERATURE
+#define PIN_A10 PIN_MICROPHONE
+
+#define PIN_D4 PIN_BTN_A
+#define PIN_D5 PIN_BTN_B
+#define PIN_D7 PIN_BTN_SLIDE
+#define PIN_D8 PIN_NEOPIXEL
+#define PIN_D13 PIN_LED
+
 // TODO: define list of pins
 //#define PIN_TOUCH 1
 
