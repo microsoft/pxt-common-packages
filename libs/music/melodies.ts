@@ -26,6 +26,20 @@ THE SOFTWARE.
 // Melodies from file microbitmusictunes.c https://github.com/bbcmicrobit/MicroPython
 
 enum Melodies {
+    //% block="power up" blockIdentity=music.builtInMelody
+    PowerUp,
+    //% block="power down" blockIdentity=music.builtInMelody
+    PowerDown,
+    //% block="jump up" blockIdentity=music.builtInMelody
+    JumpUp,
+    //% block="jump down" blockIdentity=music.builtInMelody
+    JumpDown,    
+    //% block="ba ding" blockIdentity=music.builtInMelody
+    BaDing,
+    //% block="wawawawaa" blockIdentity=music.builtInMelody
+    Wawawawaa,
+    //% block="nyan" blockIdentity=music.builtInMelody
+    Nyan,
     //% block="dadadum" blockIdentity=music.builtInMelody
     Dadadadum = 0,
     //% block="entertainer" blockIdentity=music.builtInMelody
@@ -34,8 +48,6 @@ enum Melodies {
     Prelude,
     //% block="ode" blockIdentity=music.builtInMelody
     Ode,
-    //% block="nyan" blockIdentity=music.builtInMelody
-    Nyan,
     //% block="ringtone" blockIdentity=music.builtInMelody
     Ringtone,
     //% block="funk" blockIdentity=music.builtInMelody
@@ -54,18 +66,6 @@ enum Melodies {
     Baddy,
     //% block="chase" blockIdentity=music.builtInMelody
     Chase,
-    //% block="ba ding" blockIdentity=music.builtInMelody
-    BaDing,
-    //% block="wawawawaa" blockIdentity=music.builtInMelody
-    Wawawawaa,
-    //% block="jump up" blockIdentity=music.builtInMelody
-    JumpUp,
-    //% block="jump down" blockIdentity=music.builtInMelody
-    JumpDown,
-    //% block="power up" blockIdentity=music.builtInMelody
-    PowerUp,
-    //% block="power down" blockIdentity=music.builtInMelody
-    PowerDown,
 }
 
 enum MusicEvent {
