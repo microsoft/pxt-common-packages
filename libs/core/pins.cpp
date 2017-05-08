@@ -64,6 +64,7 @@ int digitalRead(DigitalPin name) {
   */
 //% help=pins/digital-write-pin weight=29
 //% blockId=device_set_digital_pin block="digital write|pin %name|to %value"
+//% parts="led" trackArgs=0
 //% blockNamespace=pins
 void digitalWrite(DigitalPin name, int value) {
     PINOP(setDigitalValue(value));
