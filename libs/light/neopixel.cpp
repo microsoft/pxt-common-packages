@@ -12,7 +12,10 @@ namespace light {
      */
     //% parts="neopixel"
     DigitalPin defaultPin() {
-        return lookupPin(PIN_NEOPIXEL);
+        if (PIN_NEOPIXEL == NC)
+            return lookupPin(PIN_PA11);
+        else
+            return lookupPin(PIN_NEOPIXEL);
     }
 
     /**
