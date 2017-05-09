@@ -76,17 +76,6 @@ enum PhotonMode {
 //% weight=100 color="#0078d7" icon="\uf00a"
 namespace light {
     /**
-     * Turns the status LED on or off.
-     * @param on a value indicating if the LED is on
-     */
-    //% weight=1 advanced=true
-    //% blockId=light_status_led block="status led %on"
-    export function statusLED(on: boolean) {
-        if (on) pins.LED.digitalWrite(1);
-        else pins.LED.digitalWrite(0);
-    }
-
-    /**
      * A NeoPixel strip
      */
     //% autoCreate=light.createNeoPixelStrip
