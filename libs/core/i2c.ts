@@ -26,13 +26,17 @@ namespace pins {
         constructor(address: number) {
             this.address = address
         }
-        public readInto(buf: Buffer, repeat = false) {
-            let res = i2cReadBuffer(this.address, buf.length, repeat)
+        public readInto(buf: Buffer, repeat = false, start = 0, end: number = null) {
+            if (end === null)
+                end = buf.length
+            if (start >= end)
+                return
+            let res = i2cReadBuffer(this.address, end - start, repeat)
             if (!res) {
                 this._hasError = true
                 return
             }
-            buf.write(0, res)
+            buf.write(start, res)
         }
         public write(buf: Buffer, repeat = false) {
             let res = i2cWriteBuffer(this.address, buf, repeat)
