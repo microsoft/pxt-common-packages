@@ -9,7 +9,11 @@ namespace pins {
     Buffer i2cReadBuffer(int address, int size, bool repeat = false)
     {
       Buffer buf = createBuffer(size);
-      io->i2c.read(address << 1, (char*)buf->payload, size, repeat);
+      int ok = io->i2c.read(address << 1, (char*)buf->payload, size, repeat);
+      if (!ok) {
+        free(buf);
+        buf = 0;
+      }
       return buf;
     }
 
@@ -17,8 +21,8 @@ namespace pins {
      * Write bytes to a 7-bit I2C `address`.
      */
     //%
-    void i2cWriteBuffer(int address, Buffer buf, bool repeat = false)
+    int i2cWriteBuffer(int address, Buffer buf, bool repeat = false)
     {
-      io->i2c.write(address << 1, (char*)buf->payload, buf->length, repeat);
+      return io->i2c.write(address << 1, (char*)buf->payload, buf->length, repeat);
     }
 }

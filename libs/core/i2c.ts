@@ -19,4 +19,38 @@ namespace pins {
         buf.setNumber(format, 0, value)
         pins.i2cWriteBuffer(address, buf, repeated)
     }
+
+    export class I2CDevice {
+        public address: number;
+        private _hasError: boolean;
+        constructor(address: number) {
+            this.address = address
+        }
+        public readInto(buf: Buffer, repeat = false, start = 0, end: number = null) {
+            if (end === null)
+                end = buf.length
+            if (start >= end)
+                return
+            let res = i2cReadBuffer(this.address, end - start, repeat)
+            if (!res) {
+                this._hasError = true
+                return
+            }
+            buf.write(start, res)
+        }
+        public write(buf: Buffer, repeat = false) {
+            let res = i2cWriteBuffer(this.address, buf, repeat)
+            if (res) {
+                this._hasError = true
+            }
+        }
+        public begin() {
+            this._hasError = false
+        }
+        public end() {
+        }
+        public ok() {
+            return !this._hasError
+        }
+    }
 }

@@ -15,4 +15,11 @@ namespace control {
      */
     // shim=pxtrt::assert
     export function assert(cond: boolean, code: number) { }
+
+    export function fail(message: string) {
+        serial.writeString("Fatal failure: ")
+        serial.writeString(message)
+        serial.writeString("\r\n")
+        panic(108)
+    }
 }
