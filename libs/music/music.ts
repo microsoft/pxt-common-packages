@@ -172,7 +172,7 @@ namespace music {
     //% blockId=device_note block="%note"
     //% shim=TD_ID
     //% note.fieldEditor="note" note.defl="262"
-    //% useEnumVal=1 blockGab=8
+    //% useEnumVal=1 blockGap=8 advanced=true
     export function noteFrequency(name: Note): number {
         return name;
     }
@@ -183,6 +183,7 @@ namespace music {
 
     /**
      * Returns the duration of a beat in milli-seconds
+     * @param fraction the fraction of the current whole note, eg: BeatFraction.Half
      */
     //% help=music/beat weight=49 blockGap=8
     //% blockId=device_beat block="%fraction|beat" advanced=true
@@ -215,7 +216,7 @@ namespace music {
      * Change the tempo by the specified amount
      * @param bpm The change in beats per minute to the tempo, eg: 20
      */
-    //% help=music/change-tempo-by weight=39 advanced=true
+    //% help=music/change-tempo-by weight=37
     //% blockId=device_change_tempo block="change tempo by (bpm)|%value" blockGap=8
     export function changeTempoBy(bpm: number): void {
         init();
@@ -226,7 +227,7 @@ namespace music {
      * Sets the tempo to the specified amount
      * @param bpm The new tempo in beats per minute, eg: 120
      */
-    //% help=music/set-tempo weight=38
+    //% help=music/set-tempo weight=38 blockGap=8
     //% blockId=device_set_tempo block="set tempo to (bpm)|%value"
     //% bpm.min=4 bpm.max=400
     export function setTempo(bpm: number): void {

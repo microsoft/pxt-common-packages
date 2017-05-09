@@ -330,6 +330,7 @@ namespace light {
         //% weight=1
         //% parts="neopixel"
         //% defaultInstance=light.pixels
+        //% brightness.min=0 brightness.max=255
         setBrightness(brightness: number): void {
             this._brightness = Math.max(0, Math.min(0xff, brightness >> 0));
         }
