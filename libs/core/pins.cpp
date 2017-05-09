@@ -52,6 +52,7 @@ namespace DigitalPinMethods {
  */
 //% help=pins/digital-read-pin weight=30
 //% blockId=device_get_digital_pin block="digital read|pin %name" blockGap=8
+//% parts="slideswitch" trackArgs=0
 //% blockNamespace=pins
 int digitalRead(DigitalPin name) {
     PINREAD(getDigitalValue());
