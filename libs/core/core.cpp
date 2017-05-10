@@ -492,6 +492,11 @@ TNumber trunc(TNumber x) {
 }
 
 //%
+TNumber round(TNumber x) {
+    SINGLE(round)
+}
+
+//%
 int imul(int x, int y) {
     return x * y;
 }
