@@ -31,8 +31,8 @@ namespace input {
 * Registers an event that runs when particular lighting conditions (dark, bright) are encountered.
 * @param condition the condition that event triggers on
 */
-//% help=input/on-loudness-condition-changed weight=97
-//% blockId=input_on_loudness_condition_changed block="on sound %condition"
+//% help=input/on-sound-condition-changed weight=97
+//% blockId=input_on_sound_condition_changed block="on sound %condition"
 //% parts="microphone" blockGap=8
 void onSoundConditionChanged(LoudnessCondition condition, Action handler) {
     auto sensor = &getWMicrophone()->sensor;
@@ -43,7 +43,7 @@ void onSoundConditionChanged(LoudnessCondition condition, Action handler) {
 /**
 * Reads the loudness through the microphone from 0 (silent) to 255 (very loud)
 */
-//% help=input/loudness weight=75
+//% help=input/sound-level weight=75
 //% blockId=device_get_sound_level block="sound level" blockGap=8
 //% parts="microphone"
 int soundLevel() {
