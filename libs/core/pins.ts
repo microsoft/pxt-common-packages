@@ -117,6 +117,10 @@ namespace pins {
         return buf
     }
 
+    export function packIntoBuffer(format: string, buf: Buffer, offset: number, nums: number[]) {
+        packUnpackCore(format, nums, buf, true, offset)
+    }
+
     export function unpackBuffer(format: string, buf: Buffer, offset = 0) {
         let res: number[] = []
         packUnpackCore(format, res, buf, false, offset)
