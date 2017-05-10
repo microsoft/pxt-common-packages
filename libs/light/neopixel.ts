@@ -572,7 +572,7 @@ namespace light {
         strip._length = Math.max(0, numleds);
         strip._start = 0;
         strip._pin = pin ? pin : defaultPin();
-        strip._pin.digitalWrite(0);
+        strip._pin.digitalWrite(false);
         strip._barGraphHigh = 0;
         strip._barGraphHighLast = 0;
         strip.setBrightness(20)
