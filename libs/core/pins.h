@@ -46,8 +46,8 @@
 #define PIN_D12 PIN_PA19
 #define PIN_D13 PIN_PA17
 #define PIN_LED PIN_PA17
-#define PIN_LEDRX PIN_PB03
-#define PIN_LEDTX PIN_PA27
+#define PIN_RX PIN_PB03
+#define PIN_TX PIN_PA27
 #define PIN_MISO PIN_PA12
 #define PIN_MOSI PIN_PB10
 #define PIN_SCK PIN_PB11
@@ -248,11 +248,11 @@
 #ifndef PIN_LED
 #define PIN_LED NC
 #endif
-#ifndef PIN_LEDRX
-#define PIN_LEDRX NC
+#ifndef PIN_RX
+#define PIN_RX NC
 #endif
-#ifndef PIN_LEDTX
-#define PIN_LEDTX NC
+#ifndef PIN_TX
+#define PIN_TX NC
 #endif
 #ifndef PIN_TOUCH
 #define PIN_TOUCH NC
