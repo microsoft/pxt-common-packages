@@ -70,7 +70,7 @@ void setPitchPin(PwmPin pin) {
 //% parts="speaker" blockGap=8
 //% volume.min=0 volume.max=100
 void setSpeakerVolume(int volume) {
-    synthVolume = max(0, min(1000, volume)) * 10.23;
+    synthVolume = max(0, min(100, volume)) * 10.23;
 }
 
 /**
