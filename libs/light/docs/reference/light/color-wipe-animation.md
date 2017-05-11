@@ -13,7 +13,7 @@ light.colorWipeAnimation(0xff000)
 ## Example
 
 ```blocks
-control.forever(() => {
+loops.forever(() => {
     light.builtin.showAnimationFrame(light.colorWipeAnimation(light.colors(Colors.Red)))
 })
 ```

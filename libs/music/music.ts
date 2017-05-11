@@ -141,27 +141,52 @@ namespace music {
     let beatsPerMinute: number;
 
     /**
+    * Plays a tone.
+    * @param frequency pitch of the tone to play in Hertz (Hz)
+    */
+    //% help=music/ring-tone weight=80
+    //% blockId=music_ring block="ring tone|at %note=device_note" blockGap=8
+    //% parts="headphone" trackArgs=0 advanced=true
+    //% blockNamespace=music inBasicCategory=true
+    export function ringTone(frequency: number) {
+        playTone(frequency, 0);
+    }
+
+    /**
+    * Rests (plays nothing) for a specified time.
+    * @param ms rest duration in milliseconds (ms)
+    */
+    //% help=music/rest weight=79
+    //% blockId=music_rest block="rest|for %duration=device_beat"
+    //% parts="headphone" trackArgs=0
+    //% blockNamespace=music advanced=true
+    export function rest(ms: number) {
+        playTone(0, ms);
+    }
+
+    /**
      * Gets the frequency of a note.
      * @param name the note name, eg: Note.C
      */
-    //% weight=50 help=music/note-frequency
+    //% weight=1 help=music/note-frequency
     //% blockId=device_note block="%note"
     //% shim=TD_ID
     //% note.fieldEditor="note" note.defl="262"
-    //% useEnumVal = 1
+    //% useEnumVal=1 blockGap=8 advanced=true
     export function noteFrequency(name: Note): number {
         return name;
     }
 
     function init() {
-        if (beatsPerMinute <= 0) beatsPerMinute = 120;
+        if (!beatsPerMinute) beatsPerMinute = 120;
     }
 
     /**
      * Returns the duration of a beat in milli-seconds
+     * @param fraction the fraction of the current whole note, eg: BeatFraction.Half
      */
-    //% help=music/beat weight=49
-    //% blockId=device_beat block="%fraction|beat"
+    //% help=music/beat weight=49 blockGap=8
+    //% blockId=device_beat block="%fraction|beat" advanced=true
     export function beat(fraction?: BeatFraction): number {
         init();
         if (fraction == null) fraction = BeatFraction.Whole;
@@ -180,7 +205,7 @@ namespace music {
     /**
      * Returns the tempo in beats per minute. Tempo is the speed (bpm = beats per minute) at which notes play. The larger the tempo value, the faster the notes will play.
      */
-    //% help=music/tempo weight=40
+    //% help=music/tempo weight=40 advanced=true
     //% blockId=device_tempo block="tempo (bpm)" blockGap=8
     export function tempo(): number {
         init();
@@ -191,7 +216,7 @@ namespace music {
      * Change the tempo by the specified amount
      * @param bpm The change in beats per minute to the tempo, eg: 20
      */
-    //% help=music/change-tempo-by weight=39
+    //% help=music/change-tempo-by weight=37
     //% blockId=device_change_tempo block="change tempo by (bpm)|%value" blockGap=8
     export function changeTempoBy(bpm: number): void {
         init();
@@ -202,13 +227,13 @@ namespace music {
      * Sets the tempo to the specified amount
      * @param bpm The new tempo in beats per minute, eg: 120
      */
-    //% help=music/set-tempo weight=38
+    //% help=music/set-tempo weight=38 blockGap=8
     //% blockId=device_set_tempo block="set tempo to (bpm)|%value"
     //% bpm.min=4 bpm.max=400
     export function setTempo(bpm: number): void {
         init();
         if (bpm > 0) {
-            beatsPerMinute = Math.max(1, bpm);
+            beatsPerMinute = Math.max(1, bpm >> 0);
         }
     }
 }

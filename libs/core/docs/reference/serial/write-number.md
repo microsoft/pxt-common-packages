@@ -15,7 +15,7 @@ serial.writeNumber(0);
 This program repeatedly writes a 10-digit number to the serial port.
 
 ```blocks
-control.forever(() => {
+loops.forever(() => {
     serial.writeNumber(1234567890);
     control.pause(5000);
 });

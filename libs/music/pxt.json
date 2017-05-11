@@ -3,7 +3,8 @@
     "description": "The music library",
     "files": [
         "README.md",
-        "pins.cpp",
+        "music.cpp",
+        "enums.d.ts",
         "shims.d.ts",
         "melodies.ts",
         "music.ts",

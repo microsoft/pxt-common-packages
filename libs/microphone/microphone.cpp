@@ -13,32 +13,16 @@ namespace pxt {
 class WMicrophone {
   public:
     AnalogSensor sensor;
-#define Button DeviceButton *
-    Button buttons[0];
-    //% indexedInstanceNS=input indexedInstanceShim=pxt::getMicrophoneButton
-    //% block="microphone"
-    Button microphone;
 #undef Button
     WMicrophone()
         : sensor(*lookupPin(PIN_MICROPHONE), DEVICE_ID_TOUCH_SENSOR + 1) //
     {
-        memclr(buttons, 4);
         sensor.init();
         sensor.setPeriod(50);
         sensor.setSensitivity(0.9f);
     }
 };
 SINGLETON(WMicrophone);
-const int LastMicrophoneButtonID = &((WMicrophone *)0)->microphone - ((WMicrophone *)0)->buttons;
-//%
-DeviceButton *getMicrophoneButton(int id) {
-    if (id != 0)
-        device.panic(42);
-    auto w = getWMicrophone();
-    if (!w->buttons[id])
-        w->buttons[id] = new DeviceButton(*lookupPin(PIN_MICROPHONE), w->sensor.id);
-    return w->buttons[id];
-}
 
 }
 

@@ -15,33 +15,33 @@ class WButtons {
     /**
      * Left button.
      */
-    //% block="left button" weight=95
-    Button leftButton;
+    //% block="button A" weight=95
+    Button buttonA;
     /**
      * Right button.
      */
-    //% block="right button" weight=94
-    Button rightButton;
+    //% block="button B" weight=94
+    Button buttonB;
 #undef Button
 // MultiButton has to be last, as it has different size
 #define Button MultiButton
     /**
      * Left and Right button.
      */
-    //% block="left+right buttons" weight=93
-    Button leftAndRightButtons;
+    //% block="buttons A+B" weight=93
+    Button buttonsAB;
 #undef Button
 
     WButtons()
-        : leftButton(*pxt::lookupPin(PIN_BTN_LEFT), DEVICE_ID_BUTTON_A, DEVICE_BUTTON_ALL_EVENTS,
+        : buttonA(*pxt::lookupPin(PIN_BTN_A), DEVICE_ID_BUTTON_A, DEVICE_BUTTON_ALL_EVENTS,
                      ACTIVE_HIGH, PullDown),
-          rightButton(*pxt::lookupPin(PIN_BTN_RIGHT), DEVICE_ID_BUTTON_B, DEVICE_BUTTON_ALL_EVENTS,
+          buttonB(*pxt::lookupPin(PIN_BTN_B), DEVICE_ID_BUTTON_B, DEVICE_BUTTON_ALL_EVENTS,
                       ACTIVE_HIGH, PullDown),
-          leftAndRightButtons(PIN_BTN_LEFT, PIN_BTN_RIGHT, DEVICE_ID_BUTTON_AB) {}
+          buttonsAB(PIN_BTN_A, PIN_BTN_B, DEVICE_ID_BUTTON_AB) {}
 };
 SINGLETON(WButtons);
 
-const int LastButtonID = (DeviceButton*)&((WButtons *)0)->leftAndRightButtons - ((WButtons *)0)->buttons;
+const int LastButtonID = (DeviceButton*)&((WButtons *)0)->buttonsAB - ((WButtons *)0)->buttons;
 
 //%
 DeviceButton *getButton(int id) {
@@ -137,7 +137,6 @@ namespace ButtonMethods {
 //% blockId=buttonEvent block="on %button|%event"
 //% parts="buttonpair"
 //% blockNamespace=input
-//% blockGap=8
 void onEvent(Button button, ButtonEvent ev, Action body) {
     registerWithDal(button->id, (int)ev, body);
 }
@@ -163,8 +162,8 @@ bool isPressed(Button button) {
 //% help=input/button-was-pressed weight=78
 //% block="%NAME|was pressed"
 //% blockId=buttonWasPressed
-//% parts="buttonpair"
-//% blockNamespace=input
+//% parts="buttonpair" blockGap=8
+//% blockNamespace=input advanced=true
 bool wasPressed(Button button) {
     return button->wasPressed();
 }

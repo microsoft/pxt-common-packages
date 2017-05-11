@@ -16,7 +16,7 @@ light.createNeoPixelStrip();
 
 ```blocks
 let strip = light.createNeoPixelStrip(pins.A8, 150);
-control.forever(() => {
+loops.forever(() => {
     light.builtin.showAnimationFrame(light.cometAnimation())
 })
 ```

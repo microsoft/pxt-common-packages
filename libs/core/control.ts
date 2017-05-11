@@ -1,7 +1,7 @@
 /**
 * Runtime and event utilities.
 */
-//% weight=70 color="#FFBF00" icon="\uf110"
+//% weight=10 color="#31bca3" icon="\uf110" advanced=true
 namespace control {
 
     /**
@@ -15,4 +15,11 @@ namespace control {
      */
     // shim=pxtrt::assert
     export function assert(cond: boolean, code: number) { }
+
+    export function fail(message: string) {
+        serial.writeString("Fatal failure: ")
+        serial.writeString(message)
+        serial.writeString("\r\n")
+        panic(108)
+    }
 }

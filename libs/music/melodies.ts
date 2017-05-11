@@ -26,16 +26,28 @@ THE SOFTWARE.
 // Melodies from file microbitmusictunes.c https://github.com/bbcmicrobit/MicroPython
 
 enum Melodies {
+    //% block="power up" blockIdentity=music.builtInMelody
+    PowerUp = 0,
+    //% block="power down" blockIdentity=music.builtInMelody
+    PowerDown,
+    //% block="jump up" blockIdentity=music.builtInMelody
+    JumpUp,
+    //% block="jump down" blockIdentity=music.builtInMelody
+    JumpDown,    
+    //% block="ba ding" blockIdentity=music.builtInMelody
+    BaDing,
+    //% block="wawawawaa" blockIdentity=music.builtInMelody
+    Wawawawaa,
+    //% block="nyan" blockIdentity=music.builtInMelody
+    Nyan,
     //% block="dadadum" blockIdentity=music.builtInMelody
-    Dadadadum = 0,
+    Dadadadum,
     //% block="entertainer" blockIdentity=music.builtInMelody
     Entertainer,
     //% block="prelude" blockIdentity=music.builtInMelody
     Prelude,
     //% block="ode" blockIdentity=music.builtInMelody
     Ode,
-    //% block="nyan" blockIdentity=music.builtInMelody
-    Nyan,
     //% block="ringtone" blockIdentity=music.builtInMelody
     Ringtone,
     //% block="funk" blockIdentity=music.builtInMelody
@@ -54,18 +66,6 @@ enum Melodies {
     Baddy,
     //% block="chase" blockIdentity=music.builtInMelody
     Chase,
-    //% block="ba ding" blockIdentity=music.builtInMelody
-    BaDing,
-    //% block="wawawawaa" blockIdentity=music.builtInMelody
-    Wawawawaa,
-    //% block="jump up" blockIdentity=music.builtInMelody
-    JumpUp,
-    //% block="jump down" blockIdentity=music.builtInMelody
-    JumpDown,
-    //% block="power up" blockIdentity=music.builtInMelody
-    PowerUp,
-    //% block="power down" blockIdentity=music.builtInMelody
-    PowerDown,
 }
 
 enum MusicEvent {
@@ -164,23 +164,34 @@ namespace music {
     /**
  * Registers code to run on various melody events
  */
-    //% blockId=melody_on_event block="music on %value"
-    //% help=music/on-event weight=59
+    //% blockId=melody_on_event block="on %value"
+    //% help=music/on-event weight=59 advanced=true
     export function onEvent(value: MusicEvent, handler: Action) {
         control.onEvent(MICROBIT_MELODY_ID, value, handler);
     }
 
+    /**
+     * Starts playing a melody through.
+     * Notes are expressed as a string of characters with this format: NOTE[octave][:duration]
+     * @param melody the melody array to play, eg: ['g5:1']
+     */
+    //% help=music/begin-melody weight=60
+    //% blockId=device_play_melody block="play melody %melody=device_builtin_melody"
+    //% parts="headphone"
+    export function playMelody(melodyArray: string[]) {
+        startMelody(melodyArray, MelodyOptions.OnceInBackground);
+    }
 
     /**
-     * Starts playing a melody through pin ``P0``.
+     * Starts playing a melody through.
      * Notes are expressed as a string of characters with this format: NOTE[octave][:duration]
      * @param melody the melody array to play, eg: ['g5:1']
      * @param options melody options, once / forever, in the foreground / background
      */
     //% help=music/begin-melody weight=60
-    //% blockId=device_start_melody block="start|melody on %pin| %melody=device_builtin_melody| repeating %options"
-    //% parts="headphone"
-    export function startMelody(pin: PwmPin, melodyArray: string[], options: MelodyOptions = MelodyOptions.Once) {
+    //% blockId=device_start_melody block="start melody %melody=device_builtin_melody| repeating %options"
+    //% parts="headphone" advanced=true
+    export function startMelody(melodyArray: string[], options: MelodyOptions = MelodyOptions.Once) {
         initMelodies();
         if (currentMelody != undefined) {
             if (((options & MelodyOptions.OnceInBackground) == 0)
@@ -200,7 +211,7 @@ namespace music {
             // Only start the fiber once
             control.runInBackground(() => {
                 while (currentMelody.hasNextNote()) {
-                    playNextNote(pin, currentMelody);
+                    playNextNote(currentMelody);
                     if (!currentMelody.hasNextNote() && currentBackgroundMelody) {
                         // Swap the background melody back
                         currentMelody = currentBackgroundMelody;
@@ -209,13 +220,13 @@ namespace music {
                         control.raiseEvent(MICROBIT_MELODY_ID, MusicEvent.BackgroundMelodyResumed);
                     }
                 }
-                currentMelody = null;
                 control.raiseEvent(MICROBIT_MELODY_ID, currentMelody.background ? MusicEvent.BackgroundMelodyEnded : MusicEvent.MelodyEnded);
+                currentMelody = null;
             })
         }
     }
 
-    function playNextNote(pin: PwmPin, melody: Melody): void {
+    function playNextNote(melody: Melody): void {
         // cache elements
         let currNote = melody.nextNote();
         let currentPos = melody.currentPos;
@@ -249,11 +260,11 @@ namespace music {
         }
         let beat = (60000 / music.tempo()) / 4;
         if (isrest) {
-            pin.rest(currentDuration * beat)
+            rest(currentDuration * beat)
         } else {
             let keyNumber = note + (12 * (currentOctave - 1));
             let frequency = keyNumber >= 0 && keyNumber < freqTable.length ? freqTable[keyNumber] : 0;
-            pin.playTone(frequency, currentDuration * beat);
+            playTone(frequency, currentDuration * beat);
         }
         melody.currentDuration = currentDuration;
         melody.currentOctave = currentOctave;

@@ -23,7 +23,7 @@ The @boardname@ might warm up a little if you make it work hard, though!
 The following example uses `temperature` and `show color` to vary the brightness of the pixels depending on the temperature in the room. 
 
 ```blocks
-control.forever(() => {
+loops.forever(() => {
     light.pixels.setBrightness(Math.map(
         input.temperature(TemperatureUnit.Celsius),
         0,
@@ -40,7 +40,7 @@ control.forever(() => {
 This program measures the temperature using Fahrenheit degrees.
 
 ```blocks
-control.forever(() => {
+loops.forever(() => {
     light.pixels.setBrightness(Math.map(
         input.temperature(TemperatureUnit.Fahrenheit),
         30,

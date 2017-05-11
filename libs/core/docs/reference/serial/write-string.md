@@ -16,7 +16,7 @@ This program writes the word `JUMBO` to the serial port repeatedly,
 without any new lines.
 
 ```blocks
-control.forever(() => {
+loops.forever(() => {
     serial.writeString("JUMBO");
     control.pause(1000);
 });

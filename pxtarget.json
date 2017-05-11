@@ -9,7 +9,6 @@
         "libs/microphone",
         "libs/accelerometer",
         "libs/lightsensor",
-        "libs/temperature",
-        "libs/photon"
+        "libs/temperature"
     ]
 }

@@ -12,7 +12,7 @@ light.cometAnimation();
 ## Example
 
 ```blocks
-control.forever(() => {
+loops.forever(() => {
     light.builtin.showAnimationFrame(light.cometAnimation())
 })
 ```

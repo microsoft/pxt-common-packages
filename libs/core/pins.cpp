@@ -52,6 +52,7 @@ namespace DigitalPinMethods {
  */
 //% help=pins/digital-read-pin weight=30
 //% blockId=device_get_digital_pin block="digital read|pin %name" blockGap=8
+//% parts="slideswitch" trackArgs=0
 //% blockNamespace=pins
 int digitalRead(DigitalPin name) {
     PINREAD(getDigitalValue());
@@ -64,6 +65,7 @@ int digitalRead(DigitalPin name) {
   */
 //% help=pins/digital-write-pin weight=29
 //% blockId=device_set_digital_pin block="digital write|pin %name|to %value"
+//% parts="led" trackArgs=0
 //% blockNamespace=pins
 void digitalWrite(DigitalPin name, int value) {
     PINOP(setDigitalValue(value));

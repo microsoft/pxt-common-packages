@@ -1,8 +1,4 @@
 // Auto-generated. Do not edit.
-
-
-
-    //% color="#0078d7" weight=97
 declare namespace light {
 
     /**
