@@ -122,7 +122,7 @@ namespace light {
          */
         //% blockId="neopixel_set_strip_color" block="set all pixels to %rgb=neopixel_colors"
         //% weight=90 blockGap=8
-        //% parts="neopixel"
+        //% parts="neopixel" advanced=true
         //% defaultInstance=light.pixels
         setAll(rgb: number) {
             let red = unpackR(rgb);
@@ -293,7 +293,7 @@ namespace light {
          * Turn off all LEDs and clears the photon
          */
         //% blockId="neopixel_clear" block="clear"
-        //% weight=70
+        //% weight=70 advanced=true
         //% parts="neopixel"
         //% defaultInstance=light.pixels
         clear(): void {
@@ -481,7 +481,7 @@ namespace light {
          */
         //% blockId="neopixel_draw_animation_frame" block="show frame of %animation=neopixel_animation|animation"
         //% weight=71 blockGap=8
-        //% parts="neopixel"
+        //% parts="neopixel" advanced=true
         //% defaultInstance=light.pixels
         showAnimationFrame(animation: NeoPixelAnimation): void {
             if (!this._animation || this._animationType != animation.type) {
@@ -588,7 +588,7 @@ namespace light {
     //% weight=4 blockGap=8
     //% blockId="neopixel_rgb" block="red %red|green %green|blue %blue"
     //% red.min=0 red.max=255 green.min=0 green.max=255 blue.min=0 blue.max=255
-    //% subcategory="Colors"
+    //% advanced=true
     export function rgb(red: number, green: number, blue: number): number {
         return ((red & 0xFF) << 16) | ((green & 0xFF) << 8) | (blue & 0xFF);
     }
@@ -599,7 +599,7 @@ namespace light {
     //% weight=2 blockGap=8
     //% blockId=neopixel_colors block="%color"
     //% shim=TD_ID
-    //% subcategory="Colors"
+    //% advanced=true
     export function colors(color: Colors): number {
         return color;
     }
@@ -626,7 +626,7 @@ namespace light {
     //% weight=3 blockGap=8
     //% blockId="neopixel_hsv" block="hue %hue|sat %sat|val %val"
     //% hue.min=0 hue.max=255 sat.min=0 sat.max=255 val.min=0 val.max=255
-    //% subcategory="Colors"
+    //% advanced=true
     export function hsv(hue: number, sat: number, val: number): number {
         let h = (hue % 255) >> 0;
         if (h < 0) h += 255;
@@ -681,7 +681,7 @@ namespace light {
     //% weight=3 blockGap=8
     //% blockId="neopixel_fade" block="fade %color=neopixel_colors|by %brightness"
     //% brightness.min=0 brightness.max=255
-    //% subcategory="Colors"
+    //% advanced=true
     export function fade(color: number, brightness: number): number {
         brightness = Math.max(0, Math.min(255, brightness >> 0));
         if (brightness < 255) {
