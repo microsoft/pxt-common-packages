@@ -69,6 +69,7 @@ void setPitchPin(PwmPin pin) {
 //% blockId=synth_set_volume block="set speaker volume %volume"
 //% parts="speaker" blockGap=8
 //% volume.min=0 volume.max=100
+//% weight=1
 void setSpeakerVolume(int volume) {
     synthVolume = max(0, min(100, volume)) * 10.23;
 }
