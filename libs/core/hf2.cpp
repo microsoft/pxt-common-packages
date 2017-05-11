@@ -224,10 +224,14 @@ struct Paused_Data {
 static Paused_Data pausedData;
 
 void bkptPaused() {
+    
+// waiting for https://github.com/lancaster-university/codal/pull/14
+#ifdef DEVICE_GROUP_ID_USER
     // the loop below counts as "system" task, and we don't want to pause ourselves
     fiber_set_group(DEVICE_GROUP_ID_SYSTEM);
     // pause everyone else
     fiber_pause_group(DEVICE_GROUP_ID_USER);
+#endif
 
     while (!resume) {
         // DMESG("BKPT");
@@ -246,9 +250,11 @@ void bkptPaused() {
         stackCopy = NULL;
     }
 
+#ifdef DEVICE_GROUP_ID_USER
     fiber_resume_group(DEVICE_GROUP_ID_USER);
     // go back to user mode
     fiber_set_group(DEVICE_GROUP_ID_USER);
+#endif
 
     resume = false;
 }

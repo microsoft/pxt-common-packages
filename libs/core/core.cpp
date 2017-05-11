@@ -505,7 +505,6 @@ int imul(int x, int y) {
 int idiv(int x, int y) {
     return x / y;
 }
-
 }
 
 namespace Array_ {
@@ -733,7 +732,10 @@ void mapSetRef(RefMap *map, uint32_t key, TValue val) {
 // This is only to be called once at the beginning of lambda function
 //%
 void *getGlobalsPtr() {
+#ifdef DEVICE_GROUP_ID_USER
     fiber_set_group(DEVICE_GROUP_ID_USER);
+#endif
+
     return globals;
 }
 
