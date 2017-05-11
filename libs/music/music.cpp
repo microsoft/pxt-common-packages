@@ -91,12 +91,14 @@ void playTone(int frequency, int ms) {
             fiber_sleep(ms);
         } else {
             synth->setVolume(synthVolume);
-            synth->setFrequency((float) frequency, ms);
 
             if (ms > 0) {
+                synth->setFrequency((float) frequency, ms);
                 fiber_sleep(ms);
                 synth->setVolume(0);
                 fiber_sleep(20);
+            } else {
+                synth->setFrequency((float) frequency);                
             }
         }
     }
