@@ -30,7 +30,7 @@ enum class SoundOutputDestination {
 
 namespace music {
 
-int synthVolume = 200;
+int synthVolume = 400;
 PwmPin pitchPin;
 
 #if HAS_SPEAKER
@@ -63,13 +63,15 @@ void setPitchPin(PwmPin pin) {
 
 /**
 * Sets the output volume of the on board speaker (if available)
-* @param volume the volume 0...1023
+* @param volume the volume 0...255, eg: 128
 */
 //% weight=96
 //% blockId=synth_set_volume block="set speaker volume %volume"
-//% parts="speaker" blockGap=8 advanced=true
+//% parts="speaker" blockGap=8
+//% volume.min=0 volume.max=255
+//% weight=1
 void setSpeakerVolume(int volume) {
-    synthVolume = max(0, min(1023, volume));
+    synthVolume = max(0, min(0xff, volume)) * 4;
 }
 
 /**
@@ -90,12 +92,14 @@ void playTone(int frequency, int ms) {
             fiber_sleep(ms);
         } else {
             synth->setVolume(synthVolume);
-            synth->setFrequency((float) frequency);
 
             if (ms > 0) {
+                synth->setFrequency((float) frequency, ms);
                 fiber_sleep(ms);
                 synth->setVolume(0);
-                fiber_sleep(5);
+                fiber_sleep(20);
+            } else {
+                synth->setFrequency((float) frequency);                
             }
         }
     }
