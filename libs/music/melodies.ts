@@ -100,7 +100,7 @@ namespace music {
      */
     //% help=music/play-sound-until-done weight=60
     //% blockId=music_play_sound_until_done block="play sound %melody=device_builtin_melody|until done"
-    //% parts="headphone"
+    //% parts="headphone" blockGap=8
     export function playSoundUntilDone(sound: string[]) {
         const queue = soundQueue();
         const melody = new Melody(sound);
