@@ -20,7 +20,6 @@ input.rotation(Rotation.Pitch)
 input.onLightConditionChanged(LightCondition.Dark, () => {
 
 })
-input.ambientColor()
 input.lightLevel()
 ```
 
