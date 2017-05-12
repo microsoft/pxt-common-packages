@@ -52,12 +52,12 @@ DeviceButton *getButton(int id) {
 //% noRefCounting fixedInstances
 namespace ButtonMethods {
 /**
- * Do something when a button (``A``, ``B`` or both ``A+B``) is clicked, double clicked, etc...
+ * Do something when a button (`A`, `B` or both `A` + `B`) is clicked, double clicked, etc...
  * @param button the button that needs to be clicked or used
  * @param event the kind of button gesture that needs to be detected
  * @param body code to run when the event is raised
  */
-//% help=input/on-button-event weight=99 blockGap=8
+//% help=input/button-on-event weight=99 blockGap=8
 //% blockId=buttonEvent block="on %button|%event"
 //% parts="buttonpair"
 //% blockNamespace=input
@@ -69,7 +69,7 @@ void onEvent(Button button, ButtonEvent ev, Action body) {
 }
 
 /**
- * Get the button state (pressed or not).
+ * Check if a button is pressed or not.
  * @param button the button to query the request
  */
 //% help=input/button-is-pressed weight=79
@@ -86,7 +86,7 @@ bool isPressed(Button button) {
 }
 
 /**
- * Indicates if the button was pressed since this function was last called.
+ * See if the button was pressed again since the last time you checked.
  * @param button the button to query the request
  */
 //% help=input/button-was-pressed weight=78
