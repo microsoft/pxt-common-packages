@@ -43,6 +43,7 @@ input.buttonA.onEvent(ButtonEvent.Click, () => {
 input.onSoundConditionChanged(LoudnessCondition.Quiet, () => {
 
 })
+input.soundLevel()
 ```
 
 ## Temperature #temperature
