@@ -120,6 +120,7 @@ extern DeviceTimer devTimer;
 extern DeviceMessageBus devMessageBus;
 void registerWithDal(int id, int event, Action a);
 void runInBackground(Action a);
+void waitForEvent(int id, int event);
 //%
 TValue runAction3(Action a, TValue arg0, TValue arg1, TValue arg2);
 //%
