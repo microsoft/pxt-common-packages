@@ -482,8 +482,8 @@ namespace light {
 
         /**
          * Shows an animation or queues the animation in the animation queue
-         * @param the animation to run
-         * @param the duration of the animation, eg: 2000
+         * @param anim the animation to run
+         * @param duration the duration of the animation, eg: 2000
          */
         //% blockId=neopixel_show_animation block="show animation %animation|for (ms) %duration"
         //% parts="neopixel"
