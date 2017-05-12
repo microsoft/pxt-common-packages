@@ -50,22 +50,22 @@ namespace music {
     //% weight=50 help=music/builtin-melody
     //% blockId=device_builtin_melody block="%melody"
     //% blockHidden=true
-    export function sounds(name: Sounds): string[] {
+    export function sounds(name: Sounds): string {
         switch (name) {
             case Sounds.BaDing:
-                return ['b5:1', 'e6:3'];
+                return 'b5:1 e6:3';
             case Sounds.Wawawawaa:
-                return ['e3:3', 'r:1', 'd#:3', 'r:1', 'd:4', 'r:1', 'c#:8'];
+                return 'e3:3 r:1 d#:3 r:1 d:4 r:1 c#:8';
             case Sounds.JumpUp:
-                return ['c5:1', 'd', 'e', 'f', 'g'];
+                return 'c5:1 d e f g';
             case Sounds.JumpDown:
-                return ['g5:1', 'f', 'e', 'd', 'c'];
+                return 'g5:1 f e d c';
             case Sounds.PowerUp:
-                return ['g4:1', 'c5', 'e', 'g:2', 'e:1', 'g:3'];
+                return 'g4:1 c5 e g:2 e:1 g:3';
             case Sounds.PowerDown:
-                return ['g5:1', 'd#', 'c', 'g4:2', 'b:1', 'c5:3'];
+                return 'g5:1 d# c g4:2 b:1 c5:3';
             default:
-                return [];
+                return '';
         }
     }
 
@@ -82,7 +82,7 @@ namespace music {
     //% help=music/play-sound weight=61
     //% blockId=music_play_sound block="play sound %melody=device_builtin_melody"
     //% parts="headphone" blockGap=8
-    export function playSound(sound: string[]) {
+    export function playSound(sound: string) {
         const queue = soundQueue();
         const melody = new Melody(sound);
         control.runInBackground(() => {
@@ -101,7 +101,7 @@ namespace music {
     //% help=music/play-sound-until-done weight=60
     //% blockId=music_play_sound_until_done block="play sound %melody=device_builtin_melody|until done"
     //% parts="headphone" blockGap=8
-    export function playSoundUntilDone(sound: string[]) {
+    export function playSoundUntilDone(sound: string) {
         const queue = soundQueue();
         const melody = new Melody(sound);
         queue.runUntilDone(() => melody.playNextNote());
@@ -119,35 +119,51 @@ namespace music {
     }
 
     class Melody {
-        _melodyArray: string[];
+        static freqTable: number[];
+        _notes: string;
         _currentDuration: number;
         _currentOctave: number;
         _currentPos: number;
 
-        constructor(melodyArray: string[]) {
-            this._melodyArray = melodyArray;
+        constructor(notes: string) {
+            this._notes = notes;
             this._currentDuration = 4; //Default duration (Crotchet)
             this._currentOctave = 4; //Middle octave
             this._currentPos = 0;
-        }
-
-        hasNextNote() {
-            return this._currentPos < this._melodyArray.length;
-        }
-
-        static freqTable: number[];
-        playNextNote(): boolean {
-            if (!this.hasNextNote()) return false;
-
             // TODO: use HEX literal
             if (!Melody.freqTable)
                 Melody.freqTable = [31, 33, 35, 37, 39, 41, 44, 46, 49, 52, 55, 58, 62, 65, 69, 73, 78, 82, 87, 92, 98, 104, 110, 117, 123, 131, 139, 147, 156, 165, 175, 185, 196, 208, 220, 233, 247, 262, 277, 294, 311, 330, 349, 370, 392, 415, 440, 466, 494, 523, 554, 587, 622, 659, 698, 740, 784, 831, 880, 932, 988, 1047, 1109, 1175, 1245, 1319, 1397, 1480, 1568, 1661, 1760, 1865, 1976, 2093, 2217, 2349, 2489, 2637, 2794, 2960, 3136, 3322, 3520, 3729, 3951, 4186]
+        }
 
-            // cache elements
-            let currNote = this._melodyArray[this._currentPos];
-            let currentPos = this._currentPos;
-            let currentDuration = this._currentDuration;
-            let currentOctave = this._currentOctave;
+        hasNextNote() {
+            return this._currentPos < this._notes.length;
+        }
+
+        scanNextNote(): string {
+            // eat space
+            while (this._currentPos < this._notes.length) {
+                const c = this._notes[this._currentPos];
+                if (c != ' ' && c != '\r' && c != '\n' && c != '\t')
+                    break;
+                this._currentPos++;
+            }
+
+            // read note
+            let note = "";
+            while (this._currentPos < this._notes.length) {
+                const c = this._notes[this._currentPos];
+                if (c == ' ' || c == '\r' || c == '\n' || c == '\t')
+                    break;
+                note += c;
+                this._currentPos++;
+            }
+            return note;
+        }
+
+        playNextNote(): boolean {
+            let currNote = this.scanNextNote();
+            if (currNote.length == 0)
+                return false;
 
             let note: number;
             let isrest: boolean = false;
@@ -168,24 +184,20 @@ namespace music {
                     case '#': note++; break;
                     case 'b': note--; break;
                     case ':': parsingOctave = false; beatPos = pos; break;
-                    default: if (parsingOctave) currentOctave = parseInt(noteChar);
+                    default: if (parsingOctave) this._currentOctave = parseInt(noteChar);
                 }
             }
             if (!parsingOctave) {
-                currentDuration = parseInt(currNote.substr(beatPos + 1, currNote.length - beatPos));
+                this._currentDuration = parseInt(currNote.substr(beatPos + 1, currNote.length - beatPos));
             }
             let beat = (60000 / music.tempo()) / 4;
             if (isrest) {
-                music.rest(currentDuration * beat)
+                music.rest(this._currentDuration * beat)
             } else {
-                let keyNumber = note + (12 * (currentOctave - 1));
+                let keyNumber = note + (12 * (this._currentOctave - 1));
                 let frequency = keyNumber >= 0 && keyNumber < Melody.freqTable.length ? Melody.freqTable[keyNumber] : 0;
-                music.playTone(frequency, currentDuration * beat);
+                music.playTone(frequency, this._currentDuration * beat);
             }
-            this._currentDuration = currentDuration;
-            this._currentOctave = currentOctave;
-
-            this._currentPos++;
 
             return this.hasNextNote();
         }
