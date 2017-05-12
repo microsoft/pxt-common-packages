@@ -74,7 +74,16 @@ namespace control {
     //% blockId="control_run_in_background" block="run in background" blockGap=8
     void runInBackground(Action a) {
       pxt::runInBackground(a);
-    }      
+    }   
+
+    /**
+    * Blocks the calling thread until the specified event is raised.
+    */
+    //% help=control/wait-for-event async
+    //% blockId=control_wait_for_event block="wait for event|from %src|with value %value"
+    void waitForEvent(int id, int value) {
+        pxt::waitForEvent(id, value);
+    }   
 
     /**
     * Derive a unique, consistent serial number of this device from internal data.

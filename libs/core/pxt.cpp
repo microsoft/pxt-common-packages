@@ -565,6 +565,12 @@ void runInBackground(Action a) {
     }
 }
 
+void waitForEvent(int id, int event)
+{
+    fiber_wait_for_event(id, event);
+}
+
+
 void error(ERROR code, int subcode) {
     DMESG("Error: %d [%d]", code, subcode);
     device.panic(42);
