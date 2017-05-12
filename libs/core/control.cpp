@@ -79,7 +79,7 @@ namespace control {
     /**
     * Blocks the calling thread until the specified event is raised.
     */
-    //% help=control/wait-for-event
+    //% help=control/wait-for-event async
     //% blockId=control_wait_for_event block="wait for event|from %src|with value %value"
     void waitForEvent(int id, int value) {
         pxt::waitForEvent(id, value);

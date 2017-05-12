@@ -93,10 +93,7 @@ namespace light {
         _length: number; // number of LEDs
         _mode: NeoPixelMode;
         _buffered: boolean;
-        _animationQueue: {
-            render: () => boolean;
-            done: boolean;
-        }[];
+        _animationQueue: (() => boolean)[];
         // what's the current high value
         _barGraphHigh: number;
         // when was the current high value recorded
@@ -491,7 +488,8 @@ namespace light {
         //% weight=80 blockGap=8
         showAnimation(anim: LightAnimation, duration: number) {
             if (duration < 0) return;
-            const render = animation(anim, duration).create(this);
+            const an = animation(anim, duration);
+            const render = an.create(this);
             this.queueAnimation(render);
         }
 
@@ -509,7 +507,7 @@ namespace light {
                 const bf = this.buffered();
                 this.setBuffered(true);
 
-                while(i < leds.length) {
+                while (i < leds.length) {
                     const currChar = leds.charAt(i++);
                     const isSpace = currChar == ' ' || currChar == '\n' || currChar == '\r';
                     if (!isSpace)
@@ -535,34 +533,34 @@ namespace light {
         //%
         queueAnimation(render: () => boolean) {
             const needsStart = !this._animationQueue;
-            if (!this._animationQueue) this._animationQueue = [];
+            if (needsStart) 
+                this._animationQueue = [];
 
-            const anim = {
-                render: render,
-                done: false
-            };
-            this._animationQueue.push(anim);
-
+            this._animationQueue.push(render);
             if (needsStart)
-                this.pokeAnimations();
+                control.runInBackground(() => this.runAnimations());
 
-            while (!anim.done)
+            while (this._animationQueue && this._animationQueue.indexOf(render) > -1)
                 control.waitForEvent(ANIMATION_EVT_ID, ANIMATION_COMPLETED);
         }
 
-        private pokeAnimations() {
-            control.runInBackground(() => {
-                while (this._animationQueue && this._animationQueue.length) {
-                    const anim = this._animationQueue[0];
-                    const r = anim.render();
-                    loops.pause(1);
-                    if (!r) {
-                        anim.done = true;
-                        if (this._animationQueue)
-                            this._animationQueue.shift();
-                    }
+        private runAnimations() {
+            while (this._animationQueue && this._animationQueue.length) {
+                const render = this._animationQueue[0];
+
+                const bf = this.buffered();
+                this.setBuffered(true);
+                const r = render();
+                this.setBuffered(bf);
+
+                loops.pause(1);
+                if (!r) {
+                    if (this._animationQueue)
+                        this._animationQueue.removeElement(render);
+                    control.raiseEvent(ANIMATION_EVT_ID, ANIMATION_COMPLETED);
                 }
-            })
+            }
+            this._animationQueue = undefined;
         }
 
         /**
@@ -573,10 +571,6 @@ namespace light {
         //% defaultInstance=light.pixels
         //% weight=79        
         stopAnimations() {
-            if (this._animationQueue) {
-                for (let i = 0; i < this._animationQueue.length; ++i)
-                    this._animationQueue[i].done = true;
-            }
             this._animationQueue = undefined;
         }
 
@@ -830,14 +824,15 @@ namespace light {
         }
 
         public create(strip: NeoPixelStrip): () => boolean {
-            const l = strip.length();
+            const n = strip.length();
             const speed = this._speed;
-            const start = control.millis();
+            let start = -1;
             return () => {
+                if (start < 0) start = control.millis();
                 const now = control.millis() - start;
                 const offset = now / speed;
-                for (let i = 0; i < l; i++) {
-                    strip.setPixelColor(i, hsv(((i * 256 / l) + offset) & 0xff, 0xff, 0xff));
+                for (let i = 0; i < n; i++) {
+                    strip.setPixelColor(i, hsv(((i * 256 / n) + offset) & 0xff, 0xff, 0xff));
                 }
                 strip.show();
 
@@ -866,8 +861,9 @@ namespace light {
             let j = 0;
             let step = 0;
             const l = strip.length();
-            const start = control.millis();
+            let start = -1;
             return () => {
+                if (start < 0) start = control.millis();
                 const now = control.millis() - start;
                 if (j < l * 2) {
                     step++;
@@ -907,8 +903,9 @@ namespace light {
                 offsets[i] = spacing * i;
             }
             let step = 0;
-            const start = control.millis();
+            let start = -1;
             return () => {
+                if (start < 0) start = control.millis();
                 const now = control.millis() - start;
                 const l = strip.length();
                 for (let i = 0; i < l; i++) {
@@ -934,8 +931,12 @@ namespace light {
 
         public create(strip: NeoPixelStrip): () => boolean {
             const l = strip.length();
-            const start = control.millis();
+            let start = -1;
             return () => {
+                if (start < 0) {
+                    start = control.millis();
+                    strip.clear();
+                }                
                 const now = control.millis() - start;
                 const pixel = Math.random(l);
                 strip.setPixelColor(pixel, this.rgb);
@@ -962,8 +963,9 @@ namespace light {
             const l = strip.length();
             let i = 0;
             let reveal = true;
-            const start = control.millis();
+            let start = -1;
             return () => {
+                if (start < 0) start = control.millis();
                 const now = control.millis() - start;
                 if (i < l) {
                     if (reveal) {
@@ -997,8 +999,9 @@ namespace light {
             const l = strip.length();
             let j = 0;
             let q = 0;
-            const start = control.millis();
+            let start = -1;
             return () => {
+                if (start < 0) start = control.millis();
                 const now = control.millis() - start;
                 if (j < 10) { // 10 cycles of chasing
                     if (q < 3) {
