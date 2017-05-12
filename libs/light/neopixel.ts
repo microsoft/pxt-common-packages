@@ -77,6 +77,9 @@ enum PhotonMode {
  */
 //% weight=100 color="#0078d7" icon="\uf00a"
 namespace light {
+    const ANIMATION_EVT_ID = 12000;
+    const ANIMATION_COMPLETED = 1;
+
     /**
      * A NeoPixel strip
      */
@@ -90,7 +93,10 @@ namespace light {
         _length: number; // number of LEDs
         _mode: NeoPixelMode;
         _buffered: boolean;
-        _animationQueue : (() => boolean)[];
+        _animationQueue: {
+            render: () => boolean;
+            done: boolean;
+        }[];
         // what's the current high value
         _barGraphHigh: number;
         // when was the current high value recorded
@@ -476,26 +482,87 @@ namespace light {
 
         /**
          * Shows an animation or queues the animation in the animation queue
+         * @param the animation to run
+         * @param the duration of the animation, eg: 2000
          */
-        //% blockId=neopixel_show_animation block="show animation %animation=neopixel_animation"
+        //% blockId=neopixel_show_animation block="show animation %animation|for (ms) %duration"
         //% parts="neopixel"
         //% defaultInstance=light.pixels
         //% weight=80 blockGap=8
-        showAnimation(animation: NeoPixelAnimation) {
+        showAnimation(anim: LightAnimation, duration: number) {
+            if (duration < 0) return;
+            const render = animation(anim, duration).create(this);
+            this.queueAnimation(render);
+        }
+
+        /**
+         * Renders a pattern of colors on the strip
+         */
+        //% advanced=true
+        showColors(leds: string, interval: number = 400) {
+            const n = this._length;
+            let tempColor = "";
+            let i = 0;
+            let pi = 0;
+
+            this.queueAnimation(() => {
+                const bf = this.buffered();
+                this.setBuffered(true);
+
+                while(i < leds.length) {
+                    const currChar = leds.charAt(i++);
+                    const isSpace = currChar == ' ' || currChar == '\n' || currChar == '\r';
+                    if (!isSpace)
+                        tempColor += currChar;
+
+                    if ((isSpace || i == leds.length) && tempColor) {
+                        this.setPixelColor(pi++, parseColor(tempColor))
+                        tempColor = "";
+                        if (pi == n) {
+                            this.show();
+                            loops.pause(interval);
+                            pi = 0;
+                            break;
+                        }
+                    }
+                }
+
+                this.setBuffered(bf);
+                return i < leds.length;
+            });
+        }
+
+        //%
+        queueAnimation(render: () => boolean) {
+            const needsStart = !this._animationQueue;
             if (!this._animationQueue) this._animationQueue = [];
 
-            this._animationQueue.push(animation.create(this));
+            const anim = {
+                render: render,
+                done: false
+            };
+            this._animationQueue.push(anim);
 
-            if (this._animationQueue.length == 1)
-                control.runInBackground(() => {
-                    while (this._animationQueue && this._animationQueue.length) {
-                        const anim = this._animationQueue[0];
-                        const r = anim();
-                        loops.pause(1);
-                        if (!r && this._animationQueue)
+            if (needsStart)
+                this.pokeAnimations();
+
+            while (!anim.done)
+                control.waitForEvent(ANIMATION_EVT_ID, ANIMATION_COMPLETED);
+        }
+
+        private pokeAnimations() {
+            control.runInBackground(() => {
+                while (this._animationQueue && this._animationQueue.length) {
+                    const anim = this._animationQueue[0];
+                    const r = anim.render();
+                    loops.pause(1);
+                    if (!r) {
+                        anim.done = true;
+                        if (this._animationQueue)
                             this._animationQueue.shift();
                     }
-                })
+                }
+            })
         }
 
         /**
@@ -506,6 +573,10 @@ namespace light {
         //% defaultInstance=light.pixels
         //% weight=79        
         stopAnimations() {
+            if (this._animationQueue) {
+                for (let i = 0; i < this._animationQueue.length; ++i)
+                    this._animationQueue[i].done = true;
+            }
             this._animationQueue = undefined;
         }
 
@@ -695,18 +766,41 @@ namespace light {
         return color;
     }
 
+    function parseColor(color: string) {
+        switch (color) {
+            case "RED":
+            case "red":
+                return Colors.Red;
+            case "GREEN":
+            case "green":
+                return Colors.Green;
+            case "BLUE":
+            case "blue":
+                return Colors.Blue;
+            case "WHITE":
+            case "white":
+                return Colors.White;
+            case "ORANGE":
+            case "orange":
+                return Colors.Orange;
+            case "PURPLE":
+            case "purple":
+                return Colors.Purple;
+            case "YELLOW":
+            case "yellow":
+                return Colors.Yellow;
+            case "PINK":
+            case "pink":
+                return Colors.Pink;
+            default:
+                return parseInt(color) || 0;
+        }
+    }
+
     //%
     export const pixels = light.createNeoPixelStrip();
 
-
-    /**
-     * Set the current animation
-     * @param kind the type of animation
-     * @param duration the duration of the animation in milliseconds, eg: 2000
-     */
-    //% blockId="neopixel_animation" block="%kind| for (ms) %duration"
-    //% weight=1 advanced=true
-    export function animation(kind: LightAnimation, duration: number): NeoPixelAnimation {
+    function animation(kind: LightAnimation, duration: number): NeoPixelAnimation {
         switch (kind) {
             case LightAnimation.RunningLights: return new RunningLightsAnimation(duration, 0xff, 0, 0, 50);
             case LightAnimation.Comet: return new CometAnimation(duration, 0xff, 0, 0xff);
@@ -717,7 +811,7 @@ namespace light {
         }
     }
 
-    export class NeoPixelAnimation {
+    class NeoPixelAnimation {
         duration: number;
         constructor(duration: number) {
             this.duration = duration;
