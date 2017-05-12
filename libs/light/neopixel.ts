@@ -90,8 +90,7 @@ namespace light {
         _length: number; // number of LEDs
         _mode: NeoPixelMode;
         _buffered: boolean;
-        _animationEvent: number;
-        _animationQueue: (() => boolean)[];
+        _animationQueue: control.AnimationQueue;
         // what's the current high value
         _barGraphHigh: number;
         // when was the current high value recorded
@@ -530,41 +529,15 @@ namespace light {
 
         //%
         queueAnimation(render: () => boolean) {
-            const needsStart = !this._animationQueue;
-            if (!this._animationEvent)
-                this._animationEvent = control.allocateNotifyEvent();
-            if (needsStart) 
-                this._animationQueue = [];
-
-            this._animationQueue.push(render);
-            if (needsStart)
-                control.runInBackground(() => this.runAnimations());
-            while (this.waitAnimation(render))
-                control.waitForEvent(this._animationEvent, DAL.DEVICE_ID_NOTIFY_ONE);
-        }
-
-        private waitAnimation(render: () => boolean): boolean {
-            const q = this._animationQueue;
-            return q && q.indexOf(render) > -1;
-        }
-
-        private runAnimations() {
-            while (this._animationQueue && this._animationQueue.length) {
-                const render = this._animationQueue[0];
-
+            if (!this._animationQueue)
+                this._animationQueue = new control.AnimationQueue();
+            this._animationQueue.runUntilDone(() => {
                 const bf = this.buffered();
                 this.setBuffered(true);
                 const r = render();
                 this.setBuffered(bf);
-
-                loops.pause(1);
-                if (!r) {
-                    if (this._animationQueue)
-                        this._animationQueue.removeElement(render);
-                    control.raiseEvent(this._animationEvent, DAL.DEVICE_ID_NOTIFY_ONE);
-                }
-            }
-            this._animationQueue = undefined;
+                return r;
+            });
         }
 
         /**
@@ -575,7 +548,8 @@ namespace light {
         //% defaultInstance=light.pixels
         //% weight=79        
         stopAnimations() {
-            this._animationQueue = undefined;
+            if (this._animationQueue)
+                this._animationQueue.stop();
         }
 
         /**
@@ -832,7 +806,7 @@ namespace light {
                 const now = control.millis() - start;
                 const offset = now * 255 / this.duration;
                 for (let i = 0; i < n; i++) {
-                    strip.setPixelColor(i, hsv(((i * 256 / (n-1)) + offset) % 0xff, 0xff, 0xff));
+                    strip.setPixelColor(i, hsv(((i * 256 / (n - 1)) + offset) % 0xff, 0xff, 0xff));
                 }
                 strip.show();
 
@@ -936,7 +910,7 @@ namespace light {
                 if (start < 0) {
                     start = control.millis();
                     strip.clear();
-                }                
+                }
                 const now = control.millis() - start;
                 const pixel = Math.random(l);
                 strip.setPixelColor(pixel, this.rgb);
