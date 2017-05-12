@@ -539,9 +539,13 @@ namespace light {
             this._animationQueue.push(render);
             if (needsStart)
                 control.runInBackground(() => this.runAnimations());
-
-            while (this._animationQueue && this._animationQueue.indexOf(render) > -1)
+            while (this.waitAnimation(render))
                 control.waitForEvent(ANIMATION_EVT_ID, ANIMATION_COMPLETED);
+        }
+
+        private waitAnimation(render: () => boolean): boolean {
+            const q = this._animationQueue;
+            return q && q.indexOf(render) > -1;
         }
 
         private runAnimations() {
@@ -801,7 +805,7 @@ namespace light {
             case LightAnimation.ColorWipe: return new ColorWipeAnimation(duration, 0x0000ff, 50);
             case LightAnimation.TheaterChase: return new TheatreChaseAnimation(duration, 0xff, 0, 0, 50)
             case LightAnimation.Sparkle: return new SparkleAnimation(duration, 0xff, 0xff, 0xff, 50)
-            default: return new RainbowCycleAnimation(duration, 10);
+            default: return new RainbowCycleAnimation(duration);
         }
     }
 
@@ -816,23 +820,19 @@ namespace light {
     }
 
     class RainbowCycleAnimation extends NeoPixelAnimation {
-        private _speed: number;
-
-        constructor(duration: number, speed: number) {
+        constructor(duration: number) {
             super(duration);
-            this._speed = speed;
         }
 
         public create(strip: NeoPixelStrip): () => boolean {
             const n = strip.length();
-            const speed = this._speed;
             let start = -1;
             return () => {
                 if (start < 0) start = control.millis();
                 const now = control.millis() - start;
-                const offset = now / speed;
+                const offset = now * 255 / this.duration;
                 for (let i = 0; i < n; i++) {
-                    strip.setPixelColor(i, hsv(((i * 256 / n) + offset) & 0xff, 0xff, 0xff));
+                    strip.setPixelColor(i, hsv(((i * 256 / (n-1)) + offset) % 0xff, 0xff, 0xff));
                 }
                 strip.show();
 
