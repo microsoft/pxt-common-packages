@@ -1,5 +1,8 @@
 #include "pxt.h"
-#include "AnalogSensor.h"
+#include "dmac.h"
+#include "SAMD21DAC.h"
+#include "SAMD21PDM.h"
+#include "LevelDetector.h"
 
 enum class LoudnessCondition {
     //% block="quiet"
@@ -12,14 +15,13 @@ namespace pxt {
 
 class WMicrophone {
   public:
-    AnalogSensor sensor;
-#undef Button
+    SAMD21PDM microphone;
+    LevelDetector level;
     WMicrophone()
-        : sensor(*lookupPin(PIN_MICROPHONE), DEVICE_ID_TOUCH_SENSOR + 1) //
+        : microphone(10, 10, pxt::getWDAMC()->dmac, 10000)
+        , level(microphone.output, 70, 30)
     {
-        sensor.init();
-        sensor.setPeriod(50);
-        sensor.setSensitivity(0.9f);
+        microphone.enable();
     }
 };
 SINGLETON(WMicrophone);
@@ -35,9 +37,8 @@ namespace input {
 //% blockId=input_on_sound_condition_changed block="on sound %condition"
 //% parts="microphone" blockGap=8
 void onSoundConditionChanged(LoudnessCondition condition, Action handler) {
-    auto sensor = &getWMicrophone()->sensor;
-    sensor->updateSample();
-    registerWithDal(sensor->id, (int)condition, handler);
+    auto mic = getWMicrophone();
+    registerWithDal(DEVICE_ID_SYSTEM_LEVEL_DETECTOR, (int)condition, handler);
 }
 
 /**
@@ -47,7 +48,7 @@ void onSoundConditionChanged(LoudnessCondition condition, Action handler) {
 //% blockId=device_get_sound_level block="sound level" blockGap=8
 //% parts="microphone"
 int soundLevel() {
-    int value = getWMicrophone()->sensor.getValue();
+    int value = getWMicrophone()->microphone.getValue();
     return value / 4;
 }
 }
