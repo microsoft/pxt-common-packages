@@ -77,9 +77,6 @@ enum PhotonMode {
  */
 //% weight=100 color="#0078d7" icon="\uf00a"
 namespace light {
-    const ANIMATION_EVT_ID = 12000;
-    const ANIMATION_COMPLETED = 1;
-
     /**
      * A NeoPixel strip
      */
@@ -93,6 +90,7 @@ namespace light {
         _length: number; // number of LEDs
         _mode: NeoPixelMode;
         _buffered: boolean;
+        _animationEvent: number;
         _animationQueue: (() => boolean)[];
         // what's the current high value
         _barGraphHigh: number;
@@ -533,6 +531,8 @@ namespace light {
         //%
         queueAnimation(render: () => boolean) {
             const needsStart = !this._animationQueue;
+            if (!this._animationEvent)
+                this._animationEvent = control.allocateNotifyEvent();
             if (needsStart) 
                 this._animationQueue = [];
 
@@ -540,7 +540,7 @@ namespace light {
             if (needsStart)
                 control.runInBackground(() => this.runAnimations());
             while (this.waitAnimation(render))
-                control.waitForEvent(ANIMATION_EVT_ID, ANIMATION_COMPLETED);
+                control.waitForEvent(this._animationEvent, DAL.DEVICE_ID_NOTIFY_ONE);
         }
 
         private waitAnimation(render: () => boolean): boolean {
@@ -561,7 +561,7 @@ namespace light {
                 if (!r) {
                     if (this._animationQueue)
                         this._animationQueue.removeElement(render);
-                    control.raiseEvent(ANIMATION_EVT_ID, ANIMATION_COMPLETED);
+                    control.raiseEvent(this._animationEvent, DAL.DEVICE_ID_NOTIFY_ONE);
                 }
             }
             this._animationQueue = undefined;

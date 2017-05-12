@@ -86,6 +86,15 @@ namespace control {
     }   
 
     /**
+    * Allocates the next user notification event
+    */
+    //% help=control/allocate-notify-event
+    //%
+    int allocateNotifyEvent() {
+        return ::allocateNotifyEvent();
+    }
+
+    /**
     * Derive a unique, consistent serial number of this device from internal data.
     */
     //% blockId="control_device_serial_number" block="device serial number" weight=9
