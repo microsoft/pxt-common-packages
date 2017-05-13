@@ -738,7 +738,7 @@ namespace light {
         return color;
     }
 
-    function parseColor(color: string) {
+    function parseColor(color: string) {        
         switch (color) {
             case "RED":
             case "red":
@@ -775,7 +775,7 @@ namespace light {
     function animation(kind: LightAnimation, duration: number): NeoPixelAnimation {
         switch (kind) {
             case LightAnimation.RunningLights: return new RunningLightsAnimation(duration, 0xff, 0, 0, 50);
-            case LightAnimation.Comet: return new CometAnimation(duration, 0xff, 0, 0xff);
+            case LightAnimation.Comet: return new CometAnimation(duration, 0xff, 0, 0xff, 50);
             case LightAnimation.ColorWipe: return new ColorWipeAnimation(duration, 0x0000ff, 50);
             case LightAnimation.TheaterChase: return new TheatreChaseAnimation(duration, 0xff, 0, 0, 50)
             case LightAnimation.Sparkle: return new SparkleAnimation(duration, 0xff, 0xff, 0xff, 50)
@@ -804,12 +804,12 @@ namespace light {
             return () => {
                 if (start < 0) start = control.millis();
                 const now = control.millis() - start;
-                const offset = now * 2 / n;
+                const offset = now * 255 / this.duration;
                 for (let i = 0; i < n; i++) {
                     strip.setPixelColor(i, hsv(((i * 256 / (n - 1)) + offset) % 0xff, 0xff, 0xff));
                 }
                 strip.show();
-
+                loops.pause(this.duration / (2 * n));
                 return now < this.duration;
             }
         }
@@ -861,12 +861,14 @@ namespace light {
         public red: number;
         public green: number;
         public blue: number;
+        public delay: number;
 
-        constructor(duration: number, red: number, green: number, blue: number) {
+        constructor(duration: number, red: number, green: number, blue: number, delay: number) {
             super(duration);
             this.red = red;
             this.green = green;
             this.blue = blue;
+            this.delay = delay;
         }
 
         public create(strip: NeoPixelStrip): () => boolean {
@@ -887,6 +889,7 @@ namespace light {
                 }
                 step++;
                 strip.show();
+                loops.pause(this.delay);
                 return now < this.duration;
             }
         }
