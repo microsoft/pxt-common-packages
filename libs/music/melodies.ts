@@ -26,17 +26,17 @@ THE SOFTWARE.
 // Melodies from file microbitmusictunes.c https://github.com/bbcmicrobit/MicroPython
 
 enum Sounds {
-    //% block="power up" blockIdentity=music.builtInMelody
-    PowerUp = 0,
-    //% block="power down" blockIdentity=music.builtInMelody
+    //% block="power up"
+    PowerUp,
+    //% block="power down"
     PowerDown,
-    //% block="jump up" blockIdentity=music.builtInMelody
+    //% block="jump up"
     JumpUp,
-    //% block="jump down" blockIdentity=music.builtInMelody
+    //% block="jump down"
     JumpDown,
-    //% block="ba ding" blockIdentity=music.builtInMelody
+    //% block="ba ding"
     BaDing,
-    //% block="wawawawaa" blockIdentity=music.builtInMelody
+    //% block="wawawawaa"
     Wawawawaa
 }
 
@@ -47,9 +47,12 @@ namespace music {
      * Gets the melody array of a built-in melody.
      * @param name the note name, eg: Note.C
      */
-    //% weight=50 help=music/builtin-melody
-    //% blockId=device_builtin_melody block="%melody"
+    //% weight=50 help=music/sounds
+    //% blockId=music_sounds block="%name"
     //% blockHidden=true
+    //% name.fieldEditor="gridpicker"
+    //% name.fieldOptions.width=220
+    //% name.fieldOptions.columns=3
     export function sounds(name: Sounds): string {
         switch (name) {
             case Sounds.BaDing:
@@ -80,7 +83,7 @@ namespace music {
      * @param sound the melody array to play, eg: ['g5:1']
      */
     //% help=music/play-sound weight=61
-    //% blockId=music_play_sound block="play sound %melody=device_builtin_melody"
+    //% blockId=music_play_sound block="play sound %sound=music_sounds"
     //% parts="headphone" blockGap=8
     export function playSound(sound: string) {
         const queue = soundQueue();
@@ -99,7 +102,7 @@ namespace music {
      * @param sound the melody array to play, eg: ['g5:1']
      */
     //% help=music/play-sound-until-done weight=60
-    //% blockId=music_play_sound_until_done block="play sound %melody=device_builtin_melody|until done"
+    //% blockId=music_play_sound_until_done block="play sound %sound=music_sounds|until done"
     //% parts="headphone" blockGap=8
     export function playSoundUntilDone(sound: string) {
         const queue = soundQueue();
