@@ -51,4 +51,5 @@ input.onSoundConditionChanged(LoudnessCondition.Quiet, () => {
 input.onTemperateConditionChanged(TemperatureCondition.Cold, 0, () => {
 
 })
+input.temperature(TemperatureUnit.Celsius)
 ```
