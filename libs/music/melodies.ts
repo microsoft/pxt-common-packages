@@ -80,7 +80,7 @@ namespace music {
     /**
      * Starts playing a sound without pausing.
      * Notes are expressed as a string of characters with this format: NOTE[octave][:duration]
-     * @param sound the melody array to play, eg: ['g5:1']
+     * @param sound the melody to play, eg: 'g5:1'
      */
     //% help=music/play-sound weight=61
     //% blockId=music_play_sound block="play sound %sound=music_sounds"
@@ -99,7 +99,7 @@ namespace music {
     /**
      * Plays a sound and waits until the sound is done
      * Notes are expressed as a string of characters with this format: NOTE[octave][:duration]
-     * @param sound the melody array to play, eg: ['g5:1']
+     * @param sound the melody to play, eg: 'g5:1'
      */
     //% help=music/play-sound-until-done weight=60
     //% blockId=music_play_sound_until_done block="play sound %sound=music_sounds|until done"
@@ -123,58 +123,77 @@ namespace music {
 
     class Melody {
         static freqTable: number[];
-        _notes: string;
-        _currentDuration: number;
-        _currentOctave: number;
-        _currentPos: number;
+        notes: string;
+        duration: number;
+        octave: number;
+        pos: number;
+        tempo: number;
 
         constructor(notes: string) {
-            this._notes = notes;
-            this._currentDuration = 4; //Default duration (Crotchet)
-            this._currentOctave = 4; //Middle octave
-            this._currentPos = 0;
+            this.notes = notes;
+            this.duration = 4; //Default duration (Crotchet)
+            this.octave = 4; //Middle octave
+            this.pos = 0;
+            this.tempo = 120; // default tempo
             // TODO: use HEX literal
             if (!Melody.freqTable)
                 Melody.freqTable = [31, 33, 35, 37, 39, 41, 44, 46, 49, 52, 55, 58, 62, 65, 69, 73, 78, 82, 87, 92, 98, 104, 110, 117, 123, 131, 139, 147, 156, 165, 175, 185, 196, 208, 220, 233, 247, 262, 277, 294, 311, 330, 349, 370, 392, 415, 440, 466, 494, 523, 554, 587, 622, 659, 698, 740, 784, 831, 880, 932, 988, 1047, 1109, 1175, 1245, 1319, 1397, 1480, 1568, 1661, 1760, 1865, 1976, 2093, 2217, 2349, 2489, 2637, 2794, 2960, 3136, 3322, 3520, 3729, 3951, 4186]
         }
 
         hasNextNote() {
-            return this._currentPos < this._notes.length;
+            return this.pos < this.notes.length;
         }
 
         scanNextNote(): string {
             // eat space
-            while (this._currentPos < this._notes.length) {
-                const c = this._notes[this._currentPos];
+            while (this.pos < this.notes.length) {
+                const c = this.notes[this.pos];
                 if (c != ' ' && c != '\r' && c != '\n' && c != '\t')
                     break;
-                this._currentPos++;
+                this.pos++;
             }
 
             // read note
             let note = "";
-            while (this._currentPos < this._notes.length) {
-                const c = this._notes[this._currentPos];
+            while (this.pos < this.notes.length) {
+                const c = this.notes[this.pos];
                 if (c == ' ' || c == '\r' || c == '\n' || c == '\t')
                     break;
                 note += c;
-                this._currentPos++;
+                this.pos++;
             }
             return note;
         }
 
         playNextNote(): boolean {
             let currNote = this.scanNextNote();
-            if (currNote.length == 0)
+            if (!currNote)
                 return false;
 
-            let note: number;
-            let isrest: boolean = false;
-            let beatPos: number;
-            let parsingOctave: boolean = true;
+            enum Token {
+                Note = 0,
+                Octave = 1,
+                Beat = 2,
+                Tempo = 3
+            }
 
-            for (let pos = 0; pos < currNote.length; pos++) {
-                let noteChar = currNote.charAt(pos);
+            let note: number = 0;
+            let isrest: boolean = false;
+            let token: string = "";
+            let tokenKind = Token.Note;
+            const consumeToken = () => {
+                if (token && tokenKind != Token.Note) {
+                    const d = parseInt(token);
+                    switch (tokenKind) {
+                        case Token.Octave: this.octave = d; break;
+                        case Token.Beat: this.duration = d; break;
+                        case Token.Tempo: this.tempo = Math.max(1, d); break;
+                    }
+                    token = "";
+                }
+            }
+            for (let i = 0; i < currNote.length; i++) {
+                let noteChar = currNote.charAt(i);
                 switch (noteChar) {
                     case 'c': case 'C': note = 1; break;
                     case 'd': case 'D': note = 3; break;
@@ -186,20 +205,29 @@ namespace music {
                     case 'r': case 'R': isrest = true; break;
                     case '#': note++; break;
                     case 'b': note--; break;
-                    case ':': parsingOctave = false; beatPos = pos; break;
-                    default: if (parsingOctave) this._currentOctave = parseInt(noteChar);
+                    case ':':
+                        consumeToken();
+                        tokenKind = Token.Beat;
+                        break;
+                    case '-':
+                        consumeToken();
+                        tokenKind = Token.Tempo;
+                        break;
+                    default:
+                        if(tokenKind == Token.Note)
+                            tokenKind = Token.Octave;
+                        token += noteChar;
+                        break;
                 }
             }
-            if (!parsingOctave) {
-                this._currentDuration = parseInt(currNote.substr(beatPos + 1, currNote.length - beatPos));
-            }
-            let beat = (60000 / music.tempo()) / 4;
+            consumeToken();
+            let beat = 15000 / this.tempo;
             if (isrest) {
-                music.rest(this._currentDuration * beat)
+                music.rest(this.duration * beat)
             } else {
-                let keyNumber = note + (12 * (this._currentOctave - 1));
-                let frequency = keyNumber >= 0 && keyNumber < Melody.freqTable.length ? Melody.freqTable[keyNumber] : 0;
-                music.playTone(frequency, this._currentDuration * beat);
+                const keyNumber = note + (12 * (this.octave - 1));
+                const frequency = Melody.freqTable[keyNumber] || 0;
+                music.playTone(frequency, this.duration * beat);
             }
 
             return this.hasNextNote();
