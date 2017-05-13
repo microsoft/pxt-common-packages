@@ -543,13 +543,13 @@ namespace light {
         /**
          * Stops the current animation and any pending animations
          */
-        //% blockId=neopixel_stop_animations block="stop animations"
+        //% blockId=neopixel_stop_all_animations block="stop all animations"
         //% parts="neopixel"
         //% defaultInstance=light.pixels
         //% weight=79        
-        stopAnimations() {
+        stopAllAnimations() {
             if (this._animationQueue)
-                this._animationQueue.stop();
+                this._animationQueue.cancel();
         }
 
         /**

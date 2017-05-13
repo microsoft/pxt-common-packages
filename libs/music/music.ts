@@ -217,7 +217,7 @@ namespace music {
      * @param bpm The change in beats per minute to the tempo, eg: 20
      */
     //% help=music/change-tempo-by weight=37
-    //% blockId=device_change_tempo block="change tempo by (bpm)|%value" blockGap=8
+    //% blockId=device_change_tempo block="change tempo by (bpm)|%value"
     export function changeTempoBy(bpm: number): void {
         init();
         setTempo(beatsPerMinute + bpm);
