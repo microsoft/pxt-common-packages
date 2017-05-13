@@ -804,7 +804,7 @@ namespace light {
             return () => {
                 if (start < 0) start = control.millis();
                 const now = control.millis() - start;
-                const offset = now * 255 / this.duration;
+                const offset = now * 2 / n;
                 for (let i = 0; i < n; i++) {
                     strip.setPixelColor(i, hsv(((i * 256 / (n - 1)) + offset) % 0xff, 0xff, 0xff));
                 }
@@ -881,7 +881,6 @@ namespace light {
             return () => {
                 if (start < 0) start = control.millis();
                 const now = control.millis() - start;
-                const l = strip.length();
                 for (let i = 0; i < l; i++) {
                     offsets[i] = (offsets[i] + (step * 2)) % 255
                     strip.setPixelColor(i, rgb(255 - offsets[i], this.green, this.blue));
