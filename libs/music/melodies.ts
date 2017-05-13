@@ -37,7 +37,9 @@ enum Sounds {
     //% block="ba ding"
     BaDing,
     //% block="wawawawaa"
-    Wawawawaa
+    Wawawawaa,
+    //% block="magic wand"
+    MagicWand
 }
 
 namespace music {
@@ -67,6 +69,8 @@ namespace music {
                 return 'g4:1 c5 e g:2 e:1 g:3';
             case Sounds.PowerDown:
                 return 'g5:1 d# c g4:2 b:1 c5:3';
+            case Sounds.MagicWand:
+                return 'A#7:1-200 A:1 A#7:1 A:1 A#7:2';
             default:
                 return '';
         }
@@ -186,7 +190,7 @@ namespace music {
                     const d = parseInt(token);
                     switch (tokenKind) {
                         case Token.Octave: this.octave = d; break;
-                        case Token.Beat: this.duration = d; break;
+                        case Token.Beat: this.duration = Math.max(1, Math.min(16, d)); break;
                         case Token.Tempo: this.tempo = Math.max(1, d); break;
                     }
                     token = "";

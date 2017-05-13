@@ -126,17 +126,6 @@ enum BeatFraction {
     Breve = 64
 }
 
-enum MelodyOptions {
-    //% block="once""
-    Once = 1,
-    //% block="forever"
-    Forever = 2,
-    //% block="once in background"
-    OnceInBackground = 4,
-    //% block="forever in background"
-    ForeverInBackground = 8
-}
-
 namespace music {
     let beatsPerMinute: number;
 
