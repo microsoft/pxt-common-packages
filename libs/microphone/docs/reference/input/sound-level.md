@@ -19,6 +19,7 @@ let lastLevel = 0
 loops.forever(() => {
     let level = input.soundLevel()
     if (lastLevel != level) {
+        light.pixels.clear()
         for (let i = 0; i < light.pixels.length() / 255 * level; i++) {
             light.pixels.setPixelColor(i, Colors.Green)
         }
