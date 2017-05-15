@@ -97,6 +97,10 @@
 #define PIN_SCK PIN_PA21
 #define PIN_FLASH_CS PIN_PB22
 
+// microphone
+#define PIN_MIC_DATA PA08
+#define PIN_MIC_CLOCK PA10
+
 // devices
 #define PIN_BTN_A PIN_PA28 
 #define PIN_BTN_B PIN_PA14 // right
@@ -274,6 +278,12 @@
 #endif
 #ifndef PIN_SPEAKER
 #define PIN_SPEAKER NC
+#endif
+#ifndef PIN_MIC_DATA
+#define PIN_MIC_DATA NC
+#endif
+#ifndef PIN_MIC_CLOCK
+#define PIN_MIC_CLOCK NC
 #endif
 
 typedef DevicePin *DigitalPin;

@@ -18,7 +18,7 @@ class WMicrophone {
     SAMD21PDM microphone;
     LevelDetector level;
     WMicrophone()
-        : microphone(10, 10, pxt::getWDAMC()->dmac, 10000)
+        : microphone(PIN_MIC_DATA, PIN_MIC_CLOCK, pxt::getWDMAC()->dmac, 10000)
         , level(microphone.output, 70, 30)
     {
         microphone.enable();
@@ -37,7 +37,7 @@ namespace input {
 //% blockId=input_on_sound_condition_changed block="on sound %condition"
 //% parts="microphone" blockGap=8
 void onSoundConditionChanged(LoudnessCondition condition, Action handler) {
-    auto mic = getWMicrophone();
+    getWMicrophone(); // wake up service
     registerWithDal(DEVICE_ID_SYSTEM_LEVEL_DETECTOR, (int)condition, handler);
 }
 
@@ -48,7 +48,8 @@ void onSoundConditionChanged(LoudnessCondition condition, Action handler) {
 //% blockId=device_get_sound_level block="sound level" blockGap=8
 //% parts="microphone"
 int soundLevel() {
-    int value = getWMicrophone()->microphone.getValue();
-    return value / 4;
+  //  int value = getWMicrophone()->microphone.getValue();
+//    return value / 4;
+return 0;
 }
 }
