@@ -21,12 +21,14 @@ declare namespace music {
 
     /**
      * Sets the output volume of the on board speaker (if available)
-     * @param volume the volume 0...1023
+     * @param volume the volume 0...255, eg: 128
      */
     //% weight=96
     //% blockId=synth_set_volume block="set speaker volume %volume"
-    //% parts="speaker" blockGap=8 advanced=true shim=music::setSpeakerVolume
-    function setSpeakerVolume(volume: number): void;
+    //% parts="speaker" blockGap=8
+    //% volume.min=0 volume.max=255
+    //% weight=1 shim=music::setSpeakerVolume
+    function setSpeakerVolume(volume: int32): void;
 
     /**
      * Plays a tone through the pin for the given duration.
@@ -34,10 +36,10 @@ declare namespace music {
      * @param ms tone duration in milliseconds (ms)
      */
     //% help=music/play-tone weight=90
-    //% blockId=music_play_note block="play tone|at %note=device_note|for %duration=device_beat" blockGap=8
+    //% blockId=music_play_note block="play tone|at %note=device_note|for %duration=device_beat"
     //% parts="headphone" async
     //% blockNamespace=music shim=music::playTone
-    function playTone(frequency: number, ms: number): void;
+    function playTone(frequency: int32, ms: int32): void;
 }
 
 // Auto-generated. Do not edit. Really.

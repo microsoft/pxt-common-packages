@@ -1,11 +1,6 @@
 // Auto-generated. Do not edit.
 declare namespace input {
 
-
-    //% indexedInstanceNS=input indexedInstanceShim=pxt::getMicrophoneButton
-    //% block="microphone" fixedInstance shim=pxt::getMicrophoneButton(0)
-    const microphone: Button;
-
     /**
      * Registers an event that runs when particular lighting conditions (dark, bright) are encountered.
      * @param condition the condition that event triggers on
@@ -21,7 +16,7 @@ declare namespace input {
     //% help=input/sound-level weight=75
     //% blockId=device_get_sound_level block="sound level" blockGap=8
     //% parts="microphone" shim=input::soundLevel
-    function soundLevel(): number;
+    function soundLevel(): int32;
 }
 
 // Auto-generated. Do not edit. Really.

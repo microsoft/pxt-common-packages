@@ -25,7 +25,6 @@
         "serial.cpp",
         "serial.ts",
         "buttons.cpp",
-        "touch.cpp",
         "math.ts",
         "hf2.cpp",
         "hf2.h",
