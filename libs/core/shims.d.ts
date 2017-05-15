@@ -293,16 +293,6 @@ declare namespace pins {
     //% repeat.defl=0 shim=pins::i2cWriteBuffer
     function i2cWriteBuffer(address: int32, buf: Buffer, repeat?: boolean): int32;
 }
-declare namespace pins {
-
-    /**
-     * Write to the SPI slave and return the response
-     * @param value Data to be sent to the SPI slave
-     */
-    //% help=pins/spi-write weight=5 advanced=true
-    //% blockId=spi_write block="spi write %value" shim=pins::spiWrite
-    function spiWrite(value: int32): int32;
-}
 
 
 

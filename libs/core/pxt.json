@@ -15,7 +15,6 @@
         "pins.ts",
         "i2c.cpp",
         "i2c.ts",
-        "spi.cpp",
         "pxt-helpers.ts",
         "buffer.cpp",
         "shims.d.ts",
