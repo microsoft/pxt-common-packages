@@ -301,7 +301,7 @@ declare namespace pins {
      */
     //% help=pins/spi-write weight=5 advanced=true
     //% blockId=spi_write block="spi write %value" shim=pins::spiWrite
-    function spiWrite(value: number): number;
+    function spiWrite(value: int32): int32;
 }
 
 
