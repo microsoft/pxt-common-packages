@@ -126,17 +126,6 @@ enum BeatFraction {
     Breve = 64
 }
 
-enum MelodyOptions {
-    //% block="once""
-    Once = 1,
-    //% block="forever"
-    Forever = 2,
-    //% block="once in background"
-    OnceInBackground = 4,
-    //% block="forever in background"
-    ForeverInBackground = 8
-}
-
 namespace music {
     let beatsPerMinute: number;
 
@@ -217,7 +206,7 @@ namespace music {
      * @param bpm The change in beats per minute to the tempo, eg: 20
      */
     //% help=music/change-tempo-by weight=37
-    //% blockId=device_change_tempo block="change tempo by (bpm)|%value" blockGap=8
+    //% blockId=device_change_tempo block="change tempo by (bpm)|%value"
     export function changeTempoBy(bpm: number): void {
         init();
         setTempo(beatsPerMinute + bpm);
