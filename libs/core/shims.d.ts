@@ -461,7 +461,7 @@ declare interface Button {
      * @param event the kind of button gesture that needs to be detected
      * @param body code to run when the event is raised
      */
-    //% help=input/on-button-event weight=99 blockGap=8
+    //% help=input/button/on-event weight=99 blockGap=8
     //% blockId=buttonEvent block="on %button|%event"
     //% parts="buttonpair"
     //% blockNamespace=input shim=ButtonMethods::onEvent
@@ -471,7 +471,7 @@ declare interface Button {
      * Check if a button is pressed or not.
      * @param button the button to query the request
      */
-    //% help=input/button-is-pressed weight=79
+    //% help=input/button/is-pressed weight=79
     //% block="%NAME|is pressed"
     //% blockId=buttonIsPressed
     //% blockGap=8
@@ -483,7 +483,7 @@ declare interface Button {
      * See if the button was pressed again since the last time you checked.
      * @param button the button to query the request
      */
-    //% help=input/button-was-pressed weight=78
+    //% help=input/button/was-pressed weight=78
     //% block="%NAME|was pressed"
     //% blockId=buttonWasPressed
     //% parts="buttonpair" blockGap=8
