@@ -10,6 +10,7 @@
         "libs/accelerometer",
         "libs/lightsensor",
         "libs/temperature",
-        "libs/touch"
+        "libs/touch",
+        "libs/switch"
     ]
 }

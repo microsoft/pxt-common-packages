@@ -8,13 +8,6 @@
         "shims.d.ts",
         "enums.d.ts"
     ],
-    "yotta": {
-        "config": {
-            "codal": {
-                "component_count": 64
-            }
-        }
-    },
     "testFiles": [
         "test.ts"
     ],

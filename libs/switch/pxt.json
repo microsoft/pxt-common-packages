@@ -1,0 +1,15 @@
+{
+    "name": "switch",
+    "description": "A slide switch",
+    "files": [
+        "README.md",
+        "switch.cpp",
+        "ns.ts",
+        "shims.d.ts",
+        "enums.d.ts"
+    ],
+    "dependencies": {
+        "core": "file:../core"
+    },
+    "public": true
+}
