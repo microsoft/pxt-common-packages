@@ -71,6 +71,7 @@ class DevPins {
 #undef PwmPin
 
     I2C i2c;
+    SPI spi;
 
     DevPins();
 };
