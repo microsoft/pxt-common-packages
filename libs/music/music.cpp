@@ -89,17 +89,16 @@ void playTone(int frequency, int ms) {
 
         if (frequency <= 0) {
             synth->setVolume(0);
-            fiber_sleep(ms);
+            fiber_sleep(max(1, ms));
         } else {
             synth->setVolume(synthVolume);
 
             if (ms > 0) {
-                synth->setFrequency((float) frequency, ms);
+                synth->setFrequency((float) frequency, max(1, ms - 5));
                 fiber_sleep(ms);
-                synth->setVolume(0);
-                fiber_sleep(20);
             } else {
                 synth->setFrequency((float) frequency);                
+                fiber_sleep(1);
             }
         }
     }
@@ -114,10 +113,11 @@ void playTone(int frequency, int ms) {
         }
 
         if (ms > 0) {
-            fiber_sleep(ms);
+            fiber_sleep(max(1, ms - 5));
             pitchPin->setAnalogValue(0);
             wait_ms(5);
         }
+        fiber_sleep(1);
     }
 }
 }
