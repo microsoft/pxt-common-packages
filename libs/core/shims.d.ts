@@ -9,7 +9,10 @@ declare interface DigitalPin {
     //% help=pins/digital-read-pin weight=30
     //% blockId=device_get_digital_pin block="digital read|pin %name" blockGap=8
     //% parts="slideswitch" trackArgs=0
-    //% blockNamespace=pins shim=DigitalPinMethods::digitalRead
+    //% blockNamespace=pins
+    //% name.fieldEditor="gridpicker"
+    //% name.fieldOptions.width=220
+    //% name.fieldOptions.columns=4 shim=DigitalPinMethods::digitalRead
     digitalRead(): boolean;
 
     /**
@@ -20,7 +23,10 @@ declare interface DigitalPin {
     //% help=pins/digital-write-pin weight=29
     //% blockId=device_set_digital_pin block="digital write|pin %name|to %value"
     //% parts="led" trackArgs=0
-    //% blockNamespace=pins shim=DigitalPinMethods::digitalWrite
+    //% blockNamespace=pins
+    //% name.fieldEditor="gridpicker"
+    //% name.fieldOptions.width=220 
+    //% name.fieldOptions.columns=4 shim=DigitalPinMethods::digitalWrite
     digitalWrite(value: boolean): void;
 
     /**
@@ -29,7 +35,10 @@ declare interface DigitalPin {
      */
     //% help=pins/on-pulsed weight=22 blockGap=8 advanced=true
     //% blockId=pins_on_pulsed block="on|pin %pin|pulsed %pulse"
-    //% blockNamespace=pins shim=DigitalPinMethods::onPulsed
+    //% blockNamespace=pins
+    //% pin.fieldEditor="gridpicker"
+    //% pin.fieldOptions.width=220
+    //% pin.fieldOptions.columns=4 shim=DigitalPinMethods::onPulsed
     onPulsed(pulse: PulseValue, body: () => void): void;
 
     /**
@@ -40,8 +49,11 @@ declare interface DigitalPin {
      */
     //% blockId="pins_pulse_in" block="pulse in (µs)|pin %name|pulsed %value"
     //% weight=20 advanced=true
-    //% blockNamespace=pins maxDuration.defl=2000000 shim=DigitalPinMethods::pulseIn
-    pulseIn(value: PulseValue, maxDuration?: number): number;
+    //% blockNamespace=pins
+    //% pin.fieldEditor="gridpicker"
+    //% pin.fieldOptions.width=220
+    //% pin.fieldOptions.columns=4 maxDuration.defl=2000000 shim=DigitalPinMethods::pulseIn
+    pulseIn(value: PulseValue, maxDuration?: int32): int32;
 
     /**
      * Configures the pull of this pin.
@@ -50,7 +62,10 @@ declare interface DigitalPin {
      */
     //% help=pins/set-pull weight=3 advanced=true
     //% blockId=device_set_pull block="set pull|pin %pin|to %pull"
-    //% blockNamespace=pins shim=DigitalPinMethods::setPull
+    //% blockNamespace=pins
+    //% name.fieldEditor="gridpicker"
+    //% name.fieldOptions.width=220
+    //% name.fieldOptions.columns=4 shim=DigitalPinMethods::setPull
     setPull(pull: PinPullMode): void;
 }
 
@@ -62,8 +77,11 @@ declare interface AnalogPin {
      */
     //% help=pins/analog-read-pin weight=25
     //% blockId=device_get_analog_pin block="analog read|pin %name" blockGap="8"
-    //% blockNamespace=pins shim=AnalogPinMethods::analogRead
-    analogRead(): number;
+    //% blockNamespace=pins
+    //% name.fieldEditor="gridpicker"
+    //% name.fieldOptions.width=220
+    //% name.fieldOptions.columns=4 shim=AnalogPinMethods::analogRead
+    analogRead(): int32;
 
     /**
      * Set the connector value as analog. Value must be comprised between 0 and 1023.
@@ -72,8 +90,11 @@ declare interface AnalogPin {
      */
     //% help=pins/analog-write-pin weight=24
     //% blockId=device_set_analog_pin block="analog write|pin %name|to %value" blockGap=8
-    //% blockNamespace=pins shim=AnalogPinMethods::analogWrite
-    analogWrite(value: number): void;
+    //% blockNamespace=pins
+    //% name.fieldEditor="gridpicker"
+    //% name.fieldOptions.width=220
+    //% name.fieldOptions.columns=4 shim=AnalogPinMethods::analogWrite
+    analogWrite(value: int32): void;
 }
 
 
@@ -88,8 +109,11 @@ declare interface PwmPin {
      */
     //% help=pins/analog-set-period weight=23 blockGap=8
     //% blockId=device_set_analog_period block="analog set period|pin %pin|to (µs)%micros"
-    //% blockNamespace=pins shim=PwmPinMethods::analogSetPeriod
-    analogSetPeriod(micros: number): void;
+    //% blockNamespace=pins
+    //% name.fieldEditor="gridpicker"
+    //% name.fieldOptions.width=220
+    //% name.fieldOptions.columns=4 shim=PwmPinMethods::analogSetPeriod
+    analogSetPeriod(micros: int32): void;
 
     /**
      * Writes a value to the servo, controlling the shaft accordingly. On a standard servo, this will
@@ -102,8 +126,11 @@ declare interface PwmPin {
     //% help=pins/servo-write-pin weight=20
     //% blockId=device_set_servo_pin block="servo write|pin %name|to %value" blockGap=8
     //% parts=microservo trackArgs=0
-    //% blockNamespace=pins shim=PwmPinMethods::servoWrite
-    servoWrite(value: number): void;
+    //% blockNamespace=pins
+    //% name.fieldEditor="gridpicker"
+    //% name.fieldOptions.width=220
+    //% name.fieldOptions.columns=4 shim=PwmPinMethods::servoWrite
+    servoWrite(value: int32): void;
 
     /**
      * Configures this IO pin as an analog/pwm output, configures the period to be 20 ms, and sets the
@@ -113,8 +140,11 @@ declare interface PwmPin {
      */
     //% help=pins/servo-set-pulse weight=19
     //% blockId=device_set_servo_pulse block="servo set pulse|pin %value|to (µs) %micros"
-    //% blockNamespace=pins shim=PwmPinMethods::servoSetPulse
-    servoSetPulse(micros: number): void;
+    //% blockNamespace=pins
+    //% name.fieldEditor="gridpicker"
+    //% name.fieldOptions.width=220
+    //% name.fieldOptions.columns=4 shim=PwmPinMethods::servoSetPulse
+    servoSetPulse(micros: int32): void;
 }
 declare namespace pins {
 
@@ -123,7 +153,7 @@ declare namespace pins {
      * @param size number of bytes in the buffer
      */
     //% shim=pins::createBuffer
-    function createBuffer(size: number): Buffer;
+    function createBuffer(size: int32): Buffer;
 
     /**
      * Gets the duration of the last pulse in micro-seconds. This function should be called from a
@@ -132,7 +162,7 @@ declare namespace pins {
     //% help=pins/pulse-duration advanced=true
     //% blockId=pins_pulse_duration block="pulse duration (µs)"
     //% weight=21 blockGap=8 shim=pins::pulseDuration
-    function pulseDuration(): number;
+    function pulseDuration(): int32;
 }
 declare namespace pins {
 
@@ -143,15 +173,15 @@ declare namespace pins {
 
 
     //% fixedInstance shim=pxt::getPin(1)
-    const A1: PwmPin;
+    const A1: AnalogPin;
 
 
     //% fixedInstance shim=pxt::getPin(2)
-    const A2: PwmPin;
+    const A2: AnalogPin;
 
 
     //% fixedInstance shim=pxt::getPin(3)
-    const A3: PwmPin;
+    const A3: AnalogPin;
 
 
     //% fixedInstance shim=pxt::getPin(4)
@@ -171,39 +201,83 @@ declare namespace pins {
 
 
     //% fixedInstance shim=pxt::getPin(8)
-    const A8: AnalogPin;
+    const A8: PwmPin;
 
 
     //% fixedInstance shim=pxt::getPin(9)
-    const A9: AnalogPin;
+    const A9: PwmPin;
 
 
     //% fixedInstance shim=pxt::getPin(10)
-    const A10: AnalogPin;
+    const A10: PwmPin;
 
 
     //% fixedInstance shim=pxt::getPin(11)
-    const D4: DigitalPin;
+    const A11: PwmPin;
 
 
     //% fixedInstance shim=pxt::getPin(12)
-    const D5: DigitalPin;
+    const D0: DigitalPin;
 
 
     //% fixedInstance shim=pxt::getPin(13)
-    const D6: DigitalPin;
+    const D1: DigitalPin;
 
 
     //% fixedInstance shim=pxt::getPin(14)
-    const D7: DigitalPin;
+    const D2: DigitalPin;
 
 
     //% fixedInstance shim=pxt::getPin(15)
-    const D8: DigitalPin;
+    const D3: DigitalPin;
 
 
     //% fixedInstance shim=pxt::getPin(16)
+    const D4: DigitalPin;
+
+
+    //% fixedInstance shim=pxt::getPin(17)
+    const D5: DigitalPin;
+
+
+    //% fixedInstance shim=pxt::getPin(18)
+    const D6: DigitalPin;
+
+
+    //% fixedInstance shim=pxt::getPin(19)
+    const D7: DigitalPin;
+
+
+    //% fixedInstance shim=pxt::getPin(20)
+    const D8: DigitalPin;
+
+
+    //% fixedInstance shim=pxt::getPin(21)
+    const D9: DigitalPin;
+
+
+    //% fixedInstance shim=pxt::getPin(22)
+    const D10: DigitalPin;
+
+
+    //% fixedInstance shim=pxt::getPin(23)
+    const D11: DigitalPin;
+
+
+    //% fixedInstance shim=pxt::getPin(24)
+    const D12: DigitalPin;
+
+
+    //% fixedInstance shim=pxt::getPin(25)
     const D13: DigitalPin;
+
+
+    //% fixedInstance shim=pxt::getPin(26)
+    const RX: DigitalPin;
+
+
+    //% fixedInstance shim=pxt::getPin(27)
+    const TX: DigitalPin;
 }
 declare namespace pins {
 
@@ -211,13 +285,13 @@ declare namespace pins {
      * Read `size` bytes from a 7-bit I2C `address`.
      */
     //% repeat.defl=0 shim=pins::i2cReadBuffer
-    function i2cReadBuffer(address: number, size: number, repeat?: boolean): Buffer;
+    function i2cReadBuffer(address: int32, size: int32, repeat?: boolean): Buffer;
 
     /**
      * Write bytes to a 7-bit I2C `address`.
      */
     //% repeat.defl=0 shim=pins::i2cWriteBuffer
-    function i2cWriteBuffer(address: number, buf: Buffer, repeat?: boolean): number;
+    function i2cWriteBuffer(address: int32, buf: Buffer, repeat?: boolean): int32;
 }
 
 
@@ -228,29 +302,29 @@ declare interface Buffer {
      * Write a number in specified format in the buffer.
      */
     //% shim=BufferMethods::setNumber
-    setNumber(format: NumberFormat, offset: number, value: number): void;
+    setNumber(format: NumberFormat, offset: int32, value: number): void;
 
     /**
      * Read a number in specified format from the buffer.
      */
     //% shim=BufferMethods::getNumber
-    getNumber(format: NumberFormat, offset: number): number;
+    getNumber(format: NumberFormat, offset: int32): number;
 
     /** Returns the length of a Buffer object. */
     //% property shim=BufferMethods::length
-    length: number;
+    length: int32;
 
     /**
      * Fill (a fragment) of the buffer with given value.
      */
     //% offset.defl=0 length.defl=-1 shim=BufferMethods::fill
-    fill(value: number, offset?: number, length?: number): void;
+    fill(value: int32, offset?: int32, length?: int32): void;
 
     /**
      * Return a copy of a fragment of a buffer.
      */
     //% offset.defl=0 length.defl=-1 shim=BufferMethods::slice
-    slice(offset?: number, length?: number): Buffer;
+    slice(offset?: int32, length?: int32): Buffer;
 
     /**
      * Shift buffer left in place, with zero padding.
@@ -260,7 +334,7 @@ declare interface Buffer {
      * start. eg: -1
      */
     //% start.defl=0 length.defl=-1 shim=BufferMethods::shift
-    shift(offset: number, start?: number, length?: number): void;
+    shift(offset: int32, start?: int32, length?: int32): void;
 
     /**
      * Rotate buffer left in place.
@@ -270,13 +344,13 @@ declare interface Buffer {
      * start. eg: -1
      */
     //% start.defl=0 length.defl=-1 shim=BufferMethods::rotate
-    rotate(offset: number, start?: number, length?: number): void;
+    rotate(offset: int32, start?: int32, length?: int32): void;
 
     /**
      * Write contents of `src` at `dstOffset` in current buffer.
      */
     //% shim=BufferMethods::write
-    write(dstOffset: number, src: Buffer): void;
+    write(dstOffset: int32, src: Buffer): void;
 }
 declare namespace control {
 
@@ -285,7 +359,7 @@ declare namespace control {
      */
     //% help=control/millis weight=50
     //% blockId=control_running_time block="millis (ms)" shim=control::millis
-    function millis(): number;
+    function millis(): int32;
 
     /**
      * Raises an event in the event bus.
@@ -295,7 +369,7 @@ declare namespace control {
      */
     //% weight=21 blockGap=12 blockId="control_raise_event" block="raise event|from %src|with value %value" blockExternalInputs=1
     //% mode.defl=1 shim=control::raiseEvent
-    function raiseEvent(src: number, value: number, mode?: EventCreationMode): void;
+    function raiseEvent(src: int32, value: int32, mode?: EventCreationMode): void;
 
     /**
      * Raises an event in the event bus.
@@ -304,7 +378,7 @@ declare namespace control {
      */
     //% weight=20 blockGap=8 blockId="control_on_event" block="on event|from %src|with value %value"
     //% blockExternalInputs=1 shim=control::onEvent
-    function onEvent(id: number, value: number, handler: () => void): void;
+    function onEvent(id: int32, value: int32, handler: () => void): void;
 
     /**
      * Resets the device.
@@ -319,7 +393,7 @@ declare namespace control {
      */
     //% help=control/wait-micros weight=29
     //% blockId="control_wait_us" block="wait (µs)%micros" shim=control::waitMicros
-    function waitMicros(micros: number): void;
+    function waitMicros(micros: int32): void;
 
     /**
      * Schedules code that run in the background.
@@ -329,10 +403,24 @@ declare namespace control {
     function runInBackground(a: () => void): void;
 
     /**
+     * Blocks the calling thread until the specified event is raised.
+     */
+    //% help=control/wait-for-event async
+    //% blockId=control_wait_for_event block="wait for event|from %src|with value %value" shim=control::waitForEvent
+    function waitForEvent(id: int32, value: int32): void;
+
+    /**
+     * Allocates the next user notification event
+     */
+    //% help=control/allocate-notify-event
+    //% shim=control::allocateNotifyEvent
+    function allocateNotifyEvent(): int32;
+
+    /**
      * Derive a unique, consistent serial number of this device from internal data.
      */
     //% blockId="control_device_serial_number" block="device serial number" weight=9 shim=control::deviceSerialNumber
-    function deviceSerialNumber(): number;
+    function deviceSerialNumber(): int32;
 
     /**
      * Determine the version of system software currently running.
@@ -357,7 +445,7 @@ declare namespace loops {
     //% help=loops/pause weight=99
     //% async block="pause (ms) %pause"
     //% blockId=device_pause shim=loops::pause
-    function pause(ms: number): void;
+    function pause(ms: int32): void;
 }
 
 
@@ -400,55 +488,6 @@ declare namespace input {
      */
     //% block="buttons A+B" weight=93 fixedInstance shim=pxt::getButton(2)
     const buttonsAB: Button;
-
-    /**
-     * Capacitive pin A4
-     */
-    //% indexedInstanceNS=input indexedInstanceShim=pxt::getTouchButton
-    //% block="pin A4" fixedInstance shim=pxt::getTouchButton(0)
-    const pinA4: Button;
-
-    /**
-     * Capacitive pin A5
-     */
-    //% block="pin A5" fixedInstance shim=pxt::getTouchButton(1)
-    const pinA5: Button;
-
-    /**
-     * Capacitive pin A6
-     */
-    //% block="pin A6" fixedInstance shim=pxt::getTouchButton(2)
-    const pinA6: Button;
-
-    /**
-     * Capacitive pin A7
-     */
-    //% block="pin A7" fixedInstance shim=pxt::getTouchButton(3)
-    const pinA7: Button;
-
-    /**
-     * Capacitive pin A8
-     */
-    //% block="pin A8" fixedInstance shim=pxt::getTouchButton(4)
-    const pinA8: Button;
-
-    /**
-     * Capacitive pin A9
-     */
-    //% block="pin A9" fixedInstance shim=pxt::getTouchButton(5)
-    const pinA9: Button;
-
-    /**
-     * Capacitive pin A10
-     */
-    //% block="pin A10" fixedInstance shim=pxt::getTouchButton(6)
-    const pinA10: Button;
-
-    /**
-     * Capacitive pin A11
-     */
-    //% block="pin A11" fixedInstance shim=pxt::getTouchButton(7)
-    const pinA11: Button;
 }
 
 
@@ -464,7 +503,10 @@ declare interface Button {
     //% help=input/button/on-event weight=99 blockGap=8
     //% blockId=buttonEvent block="on %button|%event"
     //% parts="buttonpair"
-    //% blockNamespace=input shim=ButtonMethods::onEvent
+    //% blockNamespace=input
+    //% button.fieldEditor="gridpicker"
+    //% button.fieldOptions.width=220
+    //% button.fieldOptions.columns=3 shim=ButtonMethods::onEvent
     onEvent(ev: ButtonEvent, body: () => void): void;
 
     /**
@@ -476,7 +518,10 @@ declare interface Button {
     //% blockId=buttonIsPressed
     //% blockGap=8
     //% parts="buttonpair"
-    //% blockNamespace=input shim=ButtonMethods::isPressed
+    //% blockNamespace=input
+    //% button.fieldEditor="gridpicker"
+    //% button.fieldOptions.width=220
+    //% button.fieldOptions.columns=3 shim=ButtonMethods::isPressed
     isPressed(): boolean;
 
     /**
@@ -487,7 +532,10 @@ declare interface Button {
     //% block="%NAME|was pressed"
     //% blockId=buttonWasPressed
     //% parts="buttonpair" blockGap=8
-    //% blockNamespace=input advanced=true shim=ButtonMethods::wasPressed
+    //% blockNamespace=input advanced=true
+    //% button.fieldEditor="gridpicker"
+    //% button.fieldOptions.width=220
+    //% button.fieldOptions.columns=3 shim=ButtonMethods::wasPressed
     wasPressed(): boolean;
 }
 

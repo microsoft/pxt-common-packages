@@ -181,14 +181,14 @@ namespace music {
         if (fraction == null) fraction = BeatFraction.Whole;
         let beat = 60000 / beatsPerMinute;
         switch (fraction) {
-            case BeatFraction.Half: return beat / 2;
-            case BeatFraction.Quarter: return beat / 4;
-            case BeatFraction.Eighth: return beat / 8;
-            case BeatFraction.Sixteenth: return beat / 16;
-            case BeatFraction.Double: return beat * 2;
-            case BeatFraction.Breve: return beat * 4;
-            default: return beat;
+            case BeatFraction.Half: beat /= 2; break;
+            case BeatFraction.Quarter: beat /= 4; break;
+            case BeatFraction.Eighth: beat /= 8; break;
+            case BeatFraction.Sixteenth: beat /= 16; break;
+            case BeatFraction.Double: beat *= 2; break;
+            case BeatFraction.Breve: beat *= 4; break;
         }
+        return beat >> 0;
     }
 
     /**

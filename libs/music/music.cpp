@@ -71,7 +71,7 @@ void setPitchPin(PwmPin pin) {
 //% volume.min=0 volume.max=255
 //% weight=1
 void setSpeakerVolume(int volume) {
-    synthVolume = max(0, min(0xff, volume)) * 4;
+    synthVolume = max(0, min(1023, volume * 4));
 }
 
 /**
@@ -89,23 +89,22 @@ void playTone(int frequency, int ms) {
 
         if (frequency <= 0) {
             synth->setVolume(0);
-            fiber_sleep(ms);
+            fiber_sleep(max(1, ms));
         } else {
             synth->setVolume(synthVolume);
 
             if (ms > 0) {
-                synth->setFrequency((float) frequency, ms);
+                synth->setFrequency((float) frequency, max(1, ms - 5));
                 fiber_sleep(ms);
-                synth->setVolume(0);
-                fiber_sleep(20);
             } else {
                 synth->setFrequency((float) frequency);                
+                fiber_sleep(1);
             }
         }
     }
     else {
         if (NULL == pitchPin)
-            pitchPin = getPin(PIN_A10);        
+            pitchPin = getPin(PIN_A0);        
         if (frequency <= 0) {
             pitchPin->setAnalogValue(0);
         } else {
@@ -114,10 +113,11 @@ void playTone(int frequency, int ms) {
         }
 
         if (ms > 0) {
-            fiber_sleep(ms);
+            fiber_sleep(max(1, ms - 5));
             pitchPin->setAnalogValue(0);
             wait_ms(5);
         }
+        fiber_sleep(1);
     }
 }
 }
