@@ -71,7 +71,7 @@ void setPitchPin(PwmPin pin) {
 //% volume.min=0 volume.max=255
 //% weight=1
 void setSpeakerVolume(int volume) {
-    synthVolume = max(0, min(0xff, volume)) * 4;
+    synthVolume = max(0, min(1023, volume * 4));
 }
 
 /**
