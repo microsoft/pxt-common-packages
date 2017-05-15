@@ -1,6 +1,6 @@
 # Rotation
 
-Find how much the @boardname@ is tilted in different directions.
+Find how much the @boardname@ is tilted in one direction.
 
 ```sig
 input.rotation(Rotation.Roll);
@@ -8,18 +8,20 @@ input.rotation(Rotation.Roll);
 
 ## ~hint
 
-The @boardname@ has a part called the **accelerometer** that can
-check how the @boardname@ is moving.
+The @boardname@ has a part on it called the **accelerometer** that can
+check the ways that the @boardname@ is moving.
 
 ## ~
 
 ### Parameters
 
-* ``kind`` means which direction you are checking: `Rotation.Pitch` (up and down) or `Rotation.Roll` (left and right)
+* ``kind`` the direction you are checking:
+> * `Pitch`: up or down
+> * `Roll`: left or right
 
 ### Returns
 
-* a [number](/types/number) that means how much the microbit is tilted in the direction you say, from `0` to `360` degrees
+* a [number](/types/number) that tells how much the @boardname@ is tilted in the direction you say, from `0` to `360` degrees
 
 ### Example: @boardname@ leveler #example
 
@@ -33,20 +35,20 @@ If you are running this program in a browser, you can tilt the
 ```blocks
 let roll = 0
 let pitch = 0
-control.forever(() => {
+loops.forever(() => {
     pitch = input.rotation(Rotation.Pitch)
     roll = input.rotation(Rotation.Roll)
     if (Math.abs(pitch) < 10 && Math.abs(roll) < 10) {
-        light.pixels.showColor(light.colors(NeoPixelColors.Blue))
+        light.pixels.showColor(light.colors(Colors.Blue))
     } else {
-        light.pixels.showColor(light.colors(NeoPixelColors.Red))
+        light.pixels.showColor(light.colors(Colors.Red))
     }
 });
 ```
 
 ### See also
 
-[acceleration](/reference/input/acceleration), [compass-heading](/reference/input/compass-heading)
+[``||acceleration||``](/reference/input/acceleration)
 
 ```package
 accelerometer

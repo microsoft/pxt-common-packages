@@ -8,18 +8,26 @@ declare interface DigitalPin {
      */
     //% help=pins/digital-read-pin weight=30
     //% blockId=device_get_digital_pin block="digital read|pin %name" blockGap=8
-    //% blockNamespace=pins shim=DigitalPinMethods::digitalRead
-    digitalRead(): number;
+    //% parts="slideswitch" trackArgs=0
+    //% blockNamespace=pins
+    //% name.fieldEditor="gridpicker"
+    //% name.fieldOptions.width=220
+    //% name.fieldOptions.columns=4 shim=DigitalPinMethods::digitalRead
+    digitalRead(): boolean;
 
     /**
      * Set a pin or connector value to either 0 or 1.
      * @param name pin to write to
-     * @param value value to set on the pin, 1 eg,0
+     * @param value value to set on the pin
      */
     //% help=pins/digital-write-pin weight=29
     //% blockId=device_set_digital_pin block="digital write|pin %name|to %value"
-    //% blockNamespace=pins shim=DigitalPinMethods::digitalWrite
-    digitalWrite(value: number): void;
+    //% parts="led" trackArgs=0
+    //% blockNamespace=pins
+    //% name.fieldEditor="gridpicker"
+    //% name.fieldOptions.width=220 
+    //% name.fieldOptions.columns=4 shim=DigitalPinMethods::digitalWrite
+    digitalWrite(value: boolean): void;
 
     /**
      * Configures this pin to a digital input, and generates events where the timestamp is the duration
@@ -27,7 +35,10 @@ declare interface DigitalPin {
      */
     //% help=pins/on-pulsed weight=22 blockGap=8 advanced=true
     //% blockId=pins_on_pulsed block="on|pin %pin|pulsed %pulse"
-    //% blockNamespace=pins shim=DigitalPinMethods::onPulsed
+    //% blockNamespace=pins
+    //% pin.fieldEditor="gridpicker"
+    //% pin.fieldOptions.width=220
+    //% pin.fieldOptions.columns=4 shim=DigitalPinMethods::onPulsed
     onPulsed(pulse: PulseValue, body: () => void): void;
 
     /**
@@ -38,8 +49,11 @@ declare interface DigitalPin {
      */
     //% blockId="pins_pulse_in" block="pulse in (µs)|pin %name|pulsed %value"
     //% weight=20 advanced=true
-    //% blockNamespace=pins maxDuration.defl=2000000 shim=DigitalPinMethods::pulseIn
-    pulseIn(value: PulseValue, maxDuration?: number): number;
+    //% blockNamespace=pins
+    //% pin.fieldEditor="gridpicker"
+    //% pin.fieldOptions.width=220
+    //% pin.fieldOptions.columns=4 maxDuration.defl=2000000 shim=DigitalPinMethods::pulseIn
+    pulseIn(value: PulseValue, maxDuration?: int32): int32;
 
     /**
      * Configures the pull of this pin.
@@ -48,7 +62,10 @@ declare interface DigitalPin {
      */
     //% help=pins/set-pull weight=3 advanced=true
     //% blockId=device_set_pull block="set pull|pin %pin|to %pull"
-    //% blockNamespace=pins shim=DigitalPinMethods::setPull
+    //% blockNamespace=pins
+    //% name.fieldEditor="gridpicker"
+    //% name.fieldOptions.width=220
+    //% name.fieldOptions.columns=4 shim=DigitalPinMethods::setPull
     setPull(pull: PinPullMode): void;
 }
 
@@ -60,8 +77,11 @@ declare interface AnalogPin {
      */
     //% help=pins/analog-read-pin weight=25
     //% blockId=device_get_analog_pin block="analog read|pin %name" blockGap="8"
-    //% blockNamespace=pins shim=AnalogPinMethods::analogRead
-    analogRead(): number;
+    //% blockNamespace=pins
+    //% name.fieldEditor="gridpicker"
+    //% name.fieldOptions.width=220
+    //% name.fieldOptions.columns=4 shim=AnalogPinMethods::analogRead
+    analogRead(): int32;
 
     /**
      * Set the connector value as analog. Value must be comprised between 0 and 1023.
@@ -70,8 +90,11 @@ declare interface AnalogPin {
      */
     //% help=pins/analog-write-pin weight=24
     //% blockId=device_set_analog_pin block="analog write|pin %name|to %value" blockGap=8
-    //% blockNamespace=pins shim=AnalogPinMethods::analogWrite
-    analogWrite(value: number): void;
+    //% blockNamespace=pins
+    //% name.fieldEditor="gridpicker"
+    //% name.fieldOptions.width=220
+    //% name.fieldOptions.columns=4 shim=AnalogPinMethods::analogWrite
+    analogWrite(value: int32): void;
 }
 
 
@@ -86,8 +109,11 @@ declare interface PwmPin {
      */
     //% help=pins/analog-set-period weight=23 blockGap=8
     //% blockId=device_set_analog_period block="analog set period|pin %pin|to (µs)%micros"
-    //% blockNamespace=pins shim=PwmPinMethods::analogSetPeriod
-    analogSetPeriod(micros: number): void;
+    //% blockNamespace=pins
+    //% name.fieldEditor="gridpicker"
+    //% name.fieldOptions.width=220
+    //% name.fieldOptions.columns=4 shim=PwmPinMethods::analogSetPeriod
+    analogSetPeriod(micros: int32): void;
 
     /**
      * Writes a value to the servo, controlling the shaft accordingly. On a standard servo, this will
@@ -100,8 +126,11 @@ declare interface PwmPin {
     //% help=pins/servo-write-pin weight=20
     //% blockId=device_set_servo_pin block="servo write|pin %name|to %value" blockGap=8
     //% parts=microservo trackArgs=0
-    //% blockNamespace=pins shim=PwmPinMethods::servoWrite
-    servoWrite(value: number): void;
+    //% blockNamespace=pins
+    //% name.fieldEditor="gridpicker"
+    //% name.fieldOptions.width=220
+    //% name.fieldOptions.columns=4 shim=PwmPinMethods::servoWrite
+    servoWrite(value: int32): void;
 
     /**
      * Configures this IO pin as an analog/pwm output, configures the period to be 20 ms, and sets the
@@ -111,8 +140,11 @@ declare interface PwmPin {
      */
     //% help=pins/servo-set-pulse weight=19
     //% blockId=device_set_servo_pulse block="servo set pulse|pin %value|to (µs) %micros"
-    //% blockNamespace=pins shim=PwmPinMethods::servoSetPulse
-    servoSetPulse(micros: number): void;
+    //% blockNamespace=pins
+    //% name.fieldEditor="gridpicker"
+    //% name.fieldOptions.width=220
+    //% name.fieldOptions.columns=4 shim=PwmPinMethods::servoSetPulse
+    servoSetPulse(micros: int32): void;
 }
 declare namespace pins {
 
@@ -121,7 +153,7 @@ declare namespace pins {
      * @param size number of bytes in the buffer
      */
     //% shim=pins::createBuffer
-    function createBuffer(size: number): Buffer;
+    function createBuffer(size: int32): Buffer;
 
     /**
      * Gets the duration of the last pulse in micro-seconds. This function should be called from a
@@ -130,7 +162,7 @@ declare namespace pins {
     //% help=pins/pulse-duration advanced=true
     //% blockId=pins_pulse_duration block="pulse duration (µs)"
     //% weight=21 blockGap=8 shim=pins::pulseDuration
-    function pulseDuration(): number;
+    function pulseDuration(): int32;
 }
 declare namespace pins {
 
@@ -241,15 +273,11 @@ declare namespace pins {
 
 
     //% fixedInstance shim=pxt::getPin(26)
-    const LED: DigitalPin;
+    const RX: DigitalPin;
 
 
     //% fixedInstance shim=pxt::getPin(27)
-    const LEDRX: DigitalPin;
-
-
-    //% fixedInstance shim=pxt::getPin(28)
-    const LEDTX: DigitalPin;
+    const TX: DigitalPin;
 }
 declare namespace pins {
 
@@ -257,13 +285,13 @@ declare namespace pins {
      * Read `size` bytes from a 7-bit I2C `address`.
      */
     //% repeat.defl=0 shim=pins::i2cReadBuffer
-    function i2cReadBuffer(address: number, size: number, repeat?: boolean): Buffer;
+    function i2cReadBuffer(address: int32, size: int32, repeat?: boolean): Buffer;
 
     /**
      * Write bytes to a 7-bit I2C `address`.
      */
     //% repeat.defl=0 shim=pins::i2cWriteBuffer
-    function i2cWriteBuffer(address: number, buf: Buffer, repeat?: boolean): void;
+    function i2cWriteBuffer(address: int32, buf: Buffer, repeat?: boolean): int32;
 }
 declare namespace pins {
 
@@ -284,29 +312,29 @@ declare interface Buffer {
      * Write a number in specified format in the buffer.
      */
     //% shim=BufferMethods::setNumber
-    setNumber(format: NumberFormat, offset: number, value: number): void;
+    setNumber(format: NumberFormat, offset: int32, value: number): void;
 
     /**
      * Read a number in specified format from the buffer.
      */
     //% shim=BufferMethods::getNumber
-    getNumber(format: NumberFormat, offset: number): number;
+    getNumber(format: NumberFormat, offset: int32): number;
 
     /** Returns the length of a Buffer object. */
     //% property shim=BufferMethods::length
-    length: number;
+    length: int32;
 
     /**
      * Fill (a fragment) of the buffer with given value.
      */
     //% offset.defl=0 length.defl=-1 shim=BufferMethods::fill
-    fill(value: number, offset?: number, length?: number): void;
+    fill(value: int32, offset?: int32, length?: int32): void;
 
     /**
      * Return a copy of a fragment of a buffer.
      */
     //% offset.defl=0 length.defl=-1 shim=BufferMethods::slice
-    slice(offset?: number, length?: number): Buffer;
+    slice(offset?: int32, length?: int32): Buffer;
 
     /**
      * Shift buffer left in place, with zero padding.
@@ -316,7 +344,7 @@ declare interface Buffer {
      * start. eg: -1
      */
     //% start.defl=0 length.defl=-1 shim=BufferMethods::shift
-    shift(offset: number, start?: number, length?: number): void;
+    shift(offset: int32, start?: int32, length?: int32): void;
 
     /**
      * Rotate buffer left in place.
@@ -326,39 +354,22 @@ declare interface Buffer {
      * start. eg: -1
      */
     //% start.defl=0 length.defl=-1 shim=BufferMethods::rotate
-    rotate(offset: number, start?: number, length?: number): void;
+    rotate(offset: int32, start?: int32, length?: int32): void;
 
     /**
      * Write contents of `src` at `dstOffset` in current buffer.
      */
     //% shim=BufferMethods::write
-    write(dstOffset: number, src: Buffer): void;
+    write(dstOffset: int32, src: Buffer): void;
 }
 declare namespace control {
-
-    /**
-     * Repeats the code forever in the background. On each iteration, allows other codes to run.
-     * @param body code to execute
-     */
-    //% help=control/forever weight=100 blockGap=8
-    //% blockId=forever block="forever" shim=control::forever
-    function forever(a: () => void): void;
-
-    /**
-     * Pause for the specified time in milliseconds
-     * @param ms how long to pause for, eg: 100, 200, 500, 1000, 2000
-     */
-    //% help=control/pause weight=99
-    //% async block="pause (ms) %pause"
-    //% blockId=device_pause shim=control::pause
-    function pause(ms: number): void;
 
     /**
      * Gets the number of milliseconds elapsed since power on.
      */
     //% help=control/millis weight=50
     //% blockId=control_running_time block="millis (ms)" shim=control::millis
-    function millis(): number;
+    function millis(): int32;
 
     /**
      * Raises an event in the event bus.
@@ -367,8 +378,8 @@ declare namespace control {
      * @param mode optional definition of how the event should be processed after construction.
      */
     //% weight=21 blockGap=12 blockId="control_raise_event" block="raise event|from %src|with value %value" blockExternalInputs=1
-    //% advanced=true mode.defl=1 shim=control::raiseEvent
-    function raiseEvent(src: number, value: number, mode?: EventCreationMode): void;
+    //% mode.defl=1 shim=control::raiseEvent
+    function raiseEvent(src: int32, value: int32, mode?: EventCreationMode): void;
 
     /**
      * Raises an event in the event bus.
@@ -376,8 +387,8 @@ declare namespace control {
      * @param value the event value to match
      */
     //% weight=20 blockGap=8 blockId="control_on_event" block="on event|from %src|with value %value"
-    //% blockExternalInputs=1 advanced=true shim=control::onEvent
-    function onEvent(id: number, value: number, handler: () => void): void;
+    //% blockExternalInputs=1 shim=control::onEvent
+    function onEvent(id: int32, value: int32, handler: () => void): void;
 
     /**
      * Resets the device.
@@ -391,28 +402,60 @@ declare namespace control {
      * @param micros number of micro-seconds to wait. eg: 4
      */
     //% help=control/wait-micros weight=29
-    //% blockId="control_wait_us" block="wait (µs)%micros" advanced=true shim=control::waitMicros
-    function waitMicros(micros: number): void;
+    //% blockId="control_wait_us" block="wait (µs)%micros" shim=control::waitMicros
+    function waitMicros(micros: int32): void;
 
     /**
      * Schedules code that run in the background.
      */
-    //% help=control/run-in-background blockAllowMultiple=1 advanced=true
+    //% help=control/run-in-background blockAllowMultiple=1
     //% blockId="control_run_in_background" block="run in background" blockGap=8 shim=control::runInBackground
     function runInBackground(a: () => void): void;
 
     /**
+     * Blocks the calling thread until the specified event is raised.
+     */
+    //% help=control/wait-for-event async
+    //% blockId=control_wait_for_event block="wait for event|from %src|with value %value" shim=control::waitForEvent
+    function waitForEvent(id: int32, value: int32): void;
+
+    /**
+     * Allocates the next user notification event
+     */
+    //% help=control/allocate-notify-event
+    //% shim=control::allocateNotifyEvent
+    function allocateNotifyEvent(): int32;
+
+    /**
      * Derive a unique, consistent serial number of this device from internal data.
      */
-    //% blockId="control_device_serial_number" block="device serial number" weight=9
-    //% advanced=true shim=control::deviceSerialNumber
-    function deviceSerialNumber(): number;
+    //% blockId="control_device_serial_number" block="device serial number" weight=9 shim=control::deviceSerialNumber
+    function deviceSerialNumber(): int32;
 
     /**
      * Determine the version of system software currently running.
      */
     //% shim=control::deviceDalVersion
     function deviceDalVersion(): string;
+}
+declare namespace loops {
+
+    /**
+     * Repeats the code forever in the background. On each iteration, allows other codes to run.
+     * @param body code to execute
+     */
+    //% help=loops/forever weight=100 blockGap=8
+    //% blockId=forever block="forever" shim=loops::forever
+    function forever(a: () => void): void;
+
+    /**
+     * Pause for the specified time in milliseconds
+     * @param ms how long to pause for, eg: 100, 200, 500, 1000, 2000
+     */
+    //% help=loops/pause weight=99
+    //% async block="pause (ms) %pause"
+    //% blockId=device_pause shim=loops::pause
+    function pause(ms: int32): void;
 }
 
 
@@ -428,6 +471,12 @@ declare namespace serial {
     //% weight=87
     //% blockId=serial_writestring block="serial|write string %text" shim=serial::writeString
     function writeString(text: string): void;
+
+    /**
+     * Sends a buffer through Serial connection
+     */
+    //% help=serial/write-buffer advanced=true weight=6 shim=serial::writeBuffer
+    function writeBuffer(buffer: Buffer): void;
 }
 declare namespace input {
 
@@ -435,69 +484,20 @@ declare namespace input {
      * Left button.
      */
     //% indexedInstanceNS=input indexedInstanceShim=pxt::getButton
-    //% block="left button" weight=95 fixedInstance shim=pxt::getButton(0)
-    const leftButton: Button;
+    //% block="button A" weight=95 fixedInstance shim=pxt::getButton(0)
+    const buttonA: Button;
 
     /**
      * Right button.
      */
-    //% block="right button" weight=94 fixedInstance shim=pxt::getButton(1)
-    const rightButton: Button;
+    //% block="button B" weight=94 fixedInstance shim=pxt::getButton(1)
+    const buttonB: Button;
 
     /**
      * Left and Right button.
      */
-    //% block="left+right buttons" weight=93 fixedInstance shim=pxt::getButton(2)
-    const leftAndRightButtons: Button;
-
-    /**
-     * Capacitive pin A4
-     */
-    //% indexedInstanceNS=input indexedInstanceShim=pxt::getTouchButton
-    //% block="pin A4" fixedInstance shim=pxt::getTouchButton(0)
-    const pinA4: Button;
-
-    /**
-     * Capacitive pin A5
-     */
-    //% block="pin A5" fixedInstance shim=pxt::getTouchButton(1)
-    const pinA5: Button;
-
-    /**
-     * Capacitive pin A6
-     */
-    //% block="pin A6" fixedInstance shim=pxt::getTouchButton(2)
-    const pinA6: Button;
-
-    /**
-     * Capacitive pin A7
-     */
-    //% block="pin A7" fixedInstance shim=pxt::getTouchButton(3)
-    const pinA7: Button;
-
-    /**
-     * Capacitive pin A8
-     */
-    //% block="pin A8" fixedInstance shim=pxt::getTouchButton(4)
-    const pinA8: Button;
-
-    /**
-     * Capacitive pin A9
-     */
-    //% block="pin A9" fixedInstance shim=pxt::getTouchButton(5)
-    const pinA9: Button;
-
-    /**
-     * Capacitive pin A10
-     */
-    //% block="pin A10" fixedInstance shim=pxt::getTouchButton(6)
-    const pinA10: Button;
-
-    /**
-     * Capacitive pin A11
-     */
-    //% block="pin A11" fixedInstance shim=pxt::getTouchButton(7)
-    const pinA11: Button;
+    //% block="buttons A+B" weight=93 fixedInstance shim=pxt::getButton(2)
+    const buttonsAB: Button;
 }
 
 
@@ -514,30 +514,38 @@ declare interface Button {
     //% blockId=buttonEvent block="on %button|%event"
     //% parts="buttonpair"
     //% blockNamespace=input
-    //% blockGap=8 shim=ButtonMethods::onEvent
+    //% button.fieldEditor="gridpicker"
+    //% button.fieldOptions.width=220
+    //% button.fieldOptions.columns=3 shim=ButtonMethods::onEvent
     onEvent(ev: ButtonEvent, body: () => void): void;
 
     /**
      * Get the button state (pressed or not).
      * @param button the button to query the request
      */
-    //% help=input/button-is-pressed weight=79
+    //% help=input/is-pressed weight=79
     //% block="%NAME|is pressed"
     //% blockId=buttonIsPressed
     //% blockGap=8
     //% parts="buttonpair"
-    //% blockNamespace=input shim=ButtonMethods::isPressed
+    //% blockNamespace=input
+    //% button.fieldEditor="gridpicker"
+    //% button.fieldOptions.width=220
+    //% button.fieldOptions.columns=3 shim=ButtonMethods::isPressed
     isPressed(): boolean;
 
     /**
      * Indicates if the button was pressed since this function was last called.
      * @param button the button to query the request
      */
-    //% help=input/button-was-pressed weight=78
+    //% help=input/was-pressed weight=78
     //% block="%NAME|was pressed"
     //% blockId=buttonWasPressed
-    //% parts="buttonpair"
-    //% blockNamespace=input shim=ButtonMethods::wasPressed
+    //% parts="buttonpair" blockGap=8
+    //% blockNamespace=input advanced=true
+    //% button.fieldEditor="gridpicker"
+    //% button.fieldOptions.width=220
+    //% button.fieldOptions.columns=3 shim=ButtonMethods::wasPressed
     wasPressed(): boolean;
 }
 

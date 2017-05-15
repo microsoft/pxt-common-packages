@@ -1,45 +1,43 @@
-# Light Level
+# light Level
 
 Find the light level (how bright or dark it is) where you are.
-The light level ``0`` means darkness and ``255`` means bright light. 
-The @boardname@ measures the light around it by using some of the
-LEDs on the [LED screen](/device/screen).
-
-The first time you use it, this function will say ``0``.
-After that, it will say the real light level.
-This is because the light sensor (the part that can find the light level)
-has to be turned on first.
+The light level ``0`` means darkness and ``255`` means bright light.
 
 ```sig
 input.lightLevel();
 ```
 
+The first time you use it, this function will say ``0``.
+After that, it will say the real light level.
+This is because the _light sensor_ (the part on the board that looks for light)
+has to be turned on first.
+
 ### Returns
 
-* a [Number](/types/number) that means a light level from ``0`` (dark) to ``255`` (bright).
+* a [Number](/types/number) that is a light level from ``0`` (dark) to ``255`` (bright).
 
 ### Example: show light level
 
-When you press button `B` on the @boardname@, this
+When you press button `A` on the @boardname@, this
 program changes the brightness of the pixels accordingly.
 
 ```blocks
-input.leftButton.onEvent(ButtonEvent.Click, () => {
+input.buttonA.onEvent(ButtonEvent.Click, () => {
     let level = input.lightLevel()
     light.pixels.setBrightness(level)
-    light.pixels.showColor(light.colors(NeoPixelColors.Red))
+    light.pixels.setAll(light.colors(Colors.Red))
 })
 ```
 
 ### Example: chart light level
 
-This program shows the light level with a [bar chart](/reference/led/plot-bar-graph) on the @boardname@ screen.
+This program shows the light level with a [graph](/reference/light/graph) on the @boardname@ with the LEDs.
 If you carry the @boardname@ around to different places with different light levels,
-the bar chart will change.
+the graph will change.
 
 ```blocks
-control.forever(() => {
-    light.pixels.showBarGraph(
+loops.forever(() => {
+    light.pixels.graph(
         input.lightLevel(),
         0
     )
@@ -48,5 +46,5 @@ control.forever(() => {
 
 ### See also
 
-[acceleration](/reference/input/acceleration), [compass-heading](/reference/input/compass-heading)
+[``||acceleration||``](/reference/input/acceleration)
 

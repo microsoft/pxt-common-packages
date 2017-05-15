@@ -1,6 +1,15 @@
 // Auto-generated. Do not edit.
 
 
+    declare enum ValType {
+    Undefined = 0,
+    Boolean = 1,
+    Number = 2,
+    String = 3,
+    Object = 4,
+    }
+
+
     /**
      * User interaction on buttons
      */
@@ -50,7 +59,13 @@
     Int16BE = 8,
     UInt16BE = 9,
     Int32BE = 10,
-    // UInt32,
+
+    UInt32LE = 11,
+    UInt32BE = 12,
+    Float32LE = 13,
+    Float64LE = 14,
+    Float32BE = 15,
+    Float64BE = 16,
     }
 
 

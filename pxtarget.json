@@ -4,11 +4,13 @@
     "corepkg": "core",
     "bundleddirs": [
         "libs/core",
-        "libs/neopixel",
+        "libs/light",
         "libs/music",
         "libs/microphone",
         "libs/accelerometer",
         "libs/lightsensor",
-        "libs/temperature"
+        "libs/temperature",
+        "libs/touch",
+        "libs/switch"
     ]
 }

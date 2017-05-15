@@ -38,12 +38,12 @@ SINGLETON(WTemp);
 namespace input {
 
 /**
-* Registers an event raised when the temperature condition (hold, cold) changes.
+* Run some code when the temperature changes from hot to cold, or from cold to hot.
 * @param condition the condition, hot or cold, the event triggers on
 * @param temperature the temperature, in degree Celsius, at which this event happens, eg: 15
 */
 //% blockId=input_on_temperature_condition_changed block="on temperature %condition|at (°C)%temperature"
-//% parts="thermometer" weight=95 blockGap=8
+//% parts="thermometer" weight=95 blockGap=8 advanced=true
 //% help=input/on-temperature-condition-changed
 void onTemperateConditionChanged(TemperatureCondition condition, int temperature, Action handler) {
     auto sensor = &getWTemp()->sensor;
@@ -56,7 +56,7 @@ void onTemperateConditionChanged(TemperatureCondition condition, int temperature
 }
 
 /**
- * Gets the temperature in Celsius or Fahrenheit degrees.
+ * Get the temperature in Celsius or Fahrenheit degrees.
  */
 //% weight=75
 //% help=input/temperature

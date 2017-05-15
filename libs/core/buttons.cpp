@@ -5,8 +5,6 @@
 
 namespace pxt {
 
-// Wrapper classes
-
 class WButtons {
   public:
 #define Button DeviceButton
@@ -15,113 +13,39 @@ class WButtons {
     /**
      * Left button.
      */
-    //% block="left button" weight=95
-    Button leftButton;
+    //% block="button A" weight=95
+    Button buttonA;
     /**
      * Right button.
      */
-    //% block="right button" weight=94
-    Button rightButton;
+    //% block="button B" weight=94
+    Button buttonB;
 #undef Button
 // MultiButton has to be last, as it has different size
 #define Button MultiButton
     /**
      * Left and Right button.
      */
-    //% block="left+right buttons" weight=93
-    Button leftAndRightButtons;
+    //% block="buttons A+B" weight=93
+    Button buttonsAB;
 #undef Button
 
     WButtons()
-        : leftButton(*pxt::lookupPin(PIN_BTN_LEFT), DEVICE_ID_BUTTON_A, DEVICE_BUTTON_ALL_EVENTS,
+        : buttonA(*pxt::lookupPin(PIN_BTN_A), DEVICE_ID_BUTTON_A, DEVICE_BUTTON_ALL_EVENTS,
                      ACTIVE_HIGH, PullDown),
-          rightButton(*pxt::lookupPin(PIN_BTN_RIGHT), DEVICE_ID_BUTTON_B, DEVICE_BUTTON_ALL_EVENTS,
+          buttonB(*pxt::lookupPin(PIN_BTN_B), DEVICE_ID_BUTTON_B, DEVICE_BUTTON_ALL_EVENTS,
                       ACTIVE_HIGH, PullDown),
-          leftAndRightButtons(PIN_BTN_LEFT, PIN_BTN_RIGHT, DEVICE_ID_BUTTON_AB) {}
+          buttonsAB(PIN_BTN_A, PIN_BTN_B, DEVICE_ID_BUTTON_AB) {}
 };
 SINGLETON(WButtons);
 
-const int LastButtonID = (DeviceButton*)&((WButtons *)0)->leftAndRightButtons - ((WButtons *)0)->buttons;
+const int LastButtonID = (DeviceButton*)&((WButtons *)0)->buttonsAB - ((WButtons *)0)->buttons;
 
 //%
 DeviceButton *getButton(int id) {
     if (!(0 <= id && id <= LastButtonID))
         device.panic(42);
     return &getWButtons()->buttons[id];
-}
-
-static const int touchPins[] = {
-    PIN_A4, PIN_A5, PIN_A6, PIN_A7, PIN_A8, PIN_A9, PIN_A10, PIN_A11,
-};
-
-
-class WTouch {
-  public:
-    DevicePin touchDrive;
-    TouchSensor touchSensor;
-
-#define Button TouchButton *
-    Button buttons[0];
-    //% indexedInstanceNS=input indexedInstanceShim=pxt::getTouchButton
-    /**
-    * Capacitive pin A4
-    */
-    //% block="pin A4"
-    Button pinA4;
-    /**
-    * Capacitive pin A5
-    */
-    //% block="pin A5"
-    Button pinA5;
-    /**
-    * Capacitive pin A6
-    */
-    //% block="pin A6"
-    Button pinA6;
-    /**
-    * Capacitive pin A7
-    */
-    //% block="pin A7"
-    Button pinA7;
-    /**
-    * Capacitive pin A8
-    */
-    //% block="pin A8"
-    Button pinA8;
-    /**
-    * Capacitive pin A9
-    */
-    //% block="pin A9"
-    Button pinA9;
-    /**
-    * Capacitive pin A10
-    */
-    //% block="pin A10"
-    Button pinA10;
-    /**
-    * Capacitive pin A11
-    */
-    //% block="pin A11"
-    Button pinA11;
-#undef Button
-
-    WTouch() : INIT_PIN(touchDrive, PIN_CAPSENSE), touchSensor(touchDrive) {
-        memclr(buttons, sizeof(touchPins));
-    }
-};
-SINGLETON(WTouch);
-const int LastTouchButtonID = &((WTouch *)0)->pinA11 - ((WTouch *)0)->buttons;
-
-//%
-TouchButton *getTouchButton(int id) {
-    if (!(0 <= id && id <= LastTouchButtonID))
-        device.panic(42);
-    if (sizeof(touchPins) / sizeof(touchPins[0]) != LastTouchButtonID + 1)
-        device.panic(42);
-    auto w = getWTouch();
-    if (!w->buttons[id])
-        w->buttons[id] = new TouchButton(*pxt::lookupPin(touchPins[id]), w->touchSensor);
-    return w->buttons[id];
 }
 }
 
@@ -137,7 +61,9 @@ namespace ButtonMethods {
 //% blockId=buttonEvent block="on %button|%event"
 //% parts="buttonpair"
 //% blockNamespace=input
-//% blockGap=8
+//% button.fieldEditor="gridpicker"
+//% button.fieldOptions.width=220
+//% button.fieldOptions.columns=3
 void onEvent(Button button, ButtonEvent ev, Action body) {
     registerWithDal(button->id, (int)ev, body);
 }
@@ -146,12 +72,15 @@ void onEvent(Button button, ButtonEvent ev, Action body) {
  * Get the button state (pressed or not).
  * @param button the button to query the request
  */
-//% help=input/button-is-pressed weight=79
+//% help=input/is-pressed weight=79
 //% block="%NAME|is pressed"
 //% blockId=buttonIsPressed
 //% blockGap=8
 //% parts="buttonpair"
 //% blockNamespace=input
+//% button.fieldEditor="gridpicker"
+//% button.fieldOptions.width=220
+//% button.fieldOptions.columns=3
 bool isPressed(Button button) {
     return button->isPressed();
 }
@@ -160,11 +89,14 @@ bool isPressed(Button button) {
  * Indicates if the button was pressed since this function was last called.
  * @param button the button to query the request
  */
-//% help=input/button-was-pressed weight=78
+//% help=input/was-pressed weight=78
 //% block="%NAME|was pressed"
 //% blockId=buttonWasPressed
-//% parts="buttonpair"
-//% blockNamespace=input
+//% parts="buttonpair" blockGap=8
+//% blockNamespace=input advanced=true
+//% button.fieldEditor="gridpicker"
+//% button.fieldOptions.width=220
+//% button.fieldOptions.columns=3
 bool wasPressed(Button button) {
     return button->wasPressed();
 }

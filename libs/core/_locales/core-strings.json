@@ -45,6 +45,8 @@
   "input.pinA9|block": "pin A9",
   "input.rightButton|block": "right button",
   "input|block": "input",
+  "pins.i2cReadNumber|block": "i2c read number|at address %address|of format %format=i2c_sizeof|repeated %repeat",
+  "pins.i2cWriteNumber|block": "i2c write number|at address %address|with value %value|of format %format=i2c_sizeof|repeated %repeat",
   "pins.pulseDuration|block": "pulse duration (µs)",
   "pins|block": "pins",
   "serial.writeLine|block": "serial|write line %text",

@@ -43,7 +43,7 @@ DevicePin *lookupPin(int pinName) {
 
 #define PINOP(op) name->op
 
-#define PINREAD(op) return name->op
+#define PINREAD(op) return (name->op != 0)
 
 namespace DigitalPinMethods {
 /**
@@ -52,20 +52,28 @@ namespace DigitalPinMethods {
  */
 //% help=pins/digital-read-pin weight=30
 //% blockId=device_get_digital_pin block="digital read|pin %name" blockGap=8
+//% parts="slideswitch" trackArgs=0
 //% blockNamespace=pins
-int digitalRead(DigitalPin name) {
+//% name.fieldEditor="gridpicker"
+//% name.fieldOptions.width=220
+//% name.fieldOptions.columns=4
+bool digitalRead(DigitalPin name) {
     PINREAD(getDigitalValue());
 }
 
 /**
   * Set a pin or connector value to either 0 or 1.
   * @param name pin to write to
-  * @param value value to set on the pin, 1 eg,0
+  * @param value value to set on the pin
   */
 //% help=pins/digital-write-pin weight=29
 //% blockId=device_set_digital_pin block="digital write|pin %name|to %value"
+//% parts="led" trackArgs=0
 //% blockNamespace=pins
-void digitalWrite(DigitalPin name, int value) {
+//% name.fieldEditor="gridpicker"
+//% name.fieldOptions.width=220 
+//% name.fieldOptions.columns=4
+void digitalWrite(DigitalPin name, bool value) {
     PINOP(setDigitalValue(value));
 }
 
@@ -76,6 +84,9 @@ void digitalWrite(DigitalPin name, int value) {
 //% help=pins/on-pulsed weight=22 blockGap=8 advanced=true
 //% blockId=pins_on_pulsed block="on|pin %pin|pulsed %pulse"
 //% blockNamespace=pins
+//% pin.fieldEditor="gridpicker"
+//% pin.fieldOptions.width=220
+//% pin.fieldOptions.columns=4
 void onPulsed(DigitalPin pin, PulseValue pulse, Action body) {
     pin->eventOn(DEVICE_PIN_EVENT_ON_PULSE);
     registerWithDal(pin->id, (int)pulse, body);
@@ -90,6 +101,9 @@ void onPulsed(DigitalPin pin, PulseValue pulse, Action body) {
 //% blockId="pins_pulse_in" block="pulse in (µs)|pin %name|pulsed %value"
 //% weight=20 advanced=true
 //% blockNamespace=pins
+//% pin.fieldEditor="gridpicker"
+//% pin.fieldOptions.width=220
+//% pin.fieldOptions.columns=4
 int pulseIn(DigitalPin pin, PulseValue value, int maxDuration = 2000000) {
     int pulse = value == PulseValue::High ? 1 : 0;
     uint64_t tick = system_timer_current_time_us();
@@ -116,6 +130,9 @@ int pulseIn(DigitalPin pin, PulseValue value, int maxDuration = 2000000) {
 //% help=pins/set-pull weight=3 advanced=true
 //% blockId=device_set_pull block="set pull|pin %pin|to %pull"
 //% blockNamespace=pins
+//% name.fieldEditor="gridpicker"
+//% name.fieldOptions.width=220
+//% name.fieldOptions.columns=4
 void setPull(DigitalPin name, PinPullMode pull) {
     PinMode m = pull == PinPullMode::PullDown ? PinMode::PullDown : pull == PinPullMode::PullUp
                                                                         ? PinMode::PullUp
@@ -134,6 +151,9 @@ namespace AnalogPinMethods {
 //% help=pins/analog-read-pin weight=25
 //% blockId=device_get_analog_pin block="analog read|pin %name" blockGap="8"
 //% blockNamespace=pins
+//% name.fieldEditor="gridpicker"
+//% name.fieldOptions.width=220
+//% name.fieldOptions.columns=4
 int analogRead(AnalogPin name) {
     PINREAD(getAnalogValue());
 }
@@ -146,6 +166,9 @@ int analogRead(AnalogPin name) {
 //% help=pins/analog-write-pin weight=24
 //% blockId=device_set_analog_pin block="analog write|pin %name|to %value" blockGap=8
 //% blockNamespace=pins
+//% name.fieldEditor="gridpicker"
+//% name.fieldOptions.width=220
+//% name.fieldOptions.columns=4
 void analogWrite(AnalogPin name, int value) {
     PINOP(setAnalogValue(value));
 }
@@ -164,6 +187,9 @@ namespace PwmPinMethods {
 //% help=pins/analog-set-period weight=23 blockGap=8
 //% blockId=device_set_analog_period block="analog set period|pin %pin|to (µs)%micros"
 //% blockNamespace=pins
+//% name.fieldEditor="gridpicker"
+//% name.fieldOptions.width=220
+//% name.fieldOptions.columns=4
 void analogSetPeriod(PwmPin name, int micros) {
     PINOP(setAnalogPeriodUs(micros));
 }
@@ -180,6 +206,9 @@ void analogSetPeriod(PwmPin name, int micros) {
 //% blockId=device_set_servo_pin block="servo write|pin %name|to %value" blockGap=8
 //% parts=microservo trackArgs=0
 //% blockNamespace=pins
+//% name.fieldEditor="gridpicker"
+//% name.fieldOptions.width=220
+//% name.fieldOptions.columns=4
 void servoWrite(PwmPin name, int value) {
     PINOP(setServoValue(value));
 }
@@ -193,6 +222,9 @@ void servoWrite(PwmPin name, int value) {
 //% help=pins/servo-set-pulse weight=19
 //% blockId=device_set_servo_pulse block="servo set pulse|pin %value|to (µs) %micros"
 //% blockNamespace=pins
+//% name.fieldEditor="gridpicker"
+//% name.fieldOptions.width=220
+//% name.fieldOptions.columns=4
 void servoSetPulse(PwmPin name, int micros) {
     PINOP(setServoPulseUs(micros));
 }

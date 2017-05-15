@@ -1,9 +1,9 @@
 # Set Accelerometer Range
 
-Set up the part of the @boardname@ that measures
-[acceleration](/reference/input/acceleration) (how much the microbit
-is speeding up or slowing down), in case you need to measure high
-or low acceleration.
+Set how the @boardname@ will measure g-force or
+[acceleration](/reference/input/acceleration) (how much the @boardname@
+is speeding up or slowing down). This block is used to set the most
+g-force you will want to measure.
 
 ```sig
 input.setAccelerometerRange(AcceleratorRange.OneG);
@@ -11,34 +11,31 @@ input.setAccelerometerRange(AcceleratorRange.OneG);
 
 ### Parameters
 
-* ``range`` means the biggest number of gravities of acceleration you
-  will be measuring (either `1g`, `2g`, `4g`, or `8g`).  Any bigger numbers
-  will be ignored by your @boardname@, both when you are picking a
-  number of gravities, and when you are measuring acceleration.
+* ``range`` the biggest g-force (acceleration) number you will measure: `1g`, `2g`, `4g`, or `8g`.
+Any bigger numbers measured by your @boardname@ are ignored. So, you won't receive
+events or measurments to your program when a bigger g-force occurs.
 
 ### Example #example
 
-This program sets the highest acceleration that your @boardname@
-will measure is 4G. Then it writes to serial the acceleration from side to side
-until you stop the program.
+Set the highest g-force that your @boardname@
+will measure up to 4 g. Then, write to **serial** the acceleration measured when you move the board side to side.
 
 ```blocks
 input.setAccelerometerRange(AcceleratorRange.FourG)
-control.forever(() => {
+loops.forever(() => {
     serial.writeNumber(input.acceleration(Dimension.X))
 })
 ```
 
 #### ~hint
 
-This program does not work in the simulator, only in a @boardname@.
+**NoSim**: This program only works when on the @boardname@. You have to download it first before trying it out.
 
 #### ~
 
 ### See Also
 
-[compass heading](/reference/input/compass-heading),
-[light level](/reference/input/light-level)
+[``||acceleration||``](/reference/input/acceleration)
 
 ```package
 accelerometer

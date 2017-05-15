@@ -20,26 +20,37 @@ namespace pins {
         pins.i2cWriteBuffer(address, buf, repeated)
     }
 
-    /**
-     * Get the size in bytes of specified number format.
-     */
-    //%
-    export function sizeOf(format: NumberFormat) {
-        switch (format) {
-            case NumberFormat.Int8LE:
-            case NumberFormat.UInt8LE:
-            case NumberFormat.Int8BE:
-            case NumberFormat.UInt8BE:
-                return 1;
-            case NumberFormat.Int16LE:
-            case NumberFormat.UInt16LE:
-            case NumberFormat.Int16BE:
-            case NumberFormat.UInt16BE:
-                return 2;
-            case NumberFormat.Int32LE:
-            case NumberFormat.Int32BE:
-                return 4;
+    export class I2CDevice {
+        public address: number;
+        private _hasError: boolean;
+        constructor(address: number) {
+            this.address = address
         }
-        return 0;
-    }    
+        public readInto(buf: Buffer, repeat = false, start = 0, end: number = null) {
+            if (end === null)
+                end = buf.length
+            if (start >= end)
+                return
+            let res = i2cReadBuffer(this.address, end - start, repeat)
+            if (!res) {
+                this._hasError = true
+                return
+            }
+            buf.write(start, res)
+        }
+        public write(buf: Buffer, repeat = false) {
+            let res = i2cWriteBuffer(this.address, buf, repeat)
+            if (res) {
+                this._hasError = true
+            }
+        }
+        public begin() {
+            this._hasError = false
+        }
+        public end() {
+        }
+        public ok() {
+            return !this._hasError
+        }
+    }
 }

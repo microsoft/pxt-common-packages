@@ -1,46 +1,45 @@
 # Acceleration
 
-Get the acceleration value (milli g-force), in one of three specified dimensions.
-
-Find the acceleration of the @boardname@ (how fast it is speeding up or slowing down).
+Get the acceleration value (milli g-force), in one of the three dimensions.
 
 ```sig
 input.acceleration(Dimension.X);
 ```
 
+Find the acceleration of the @boardname@ (how fast it is speeding up or slowing down).
+
 ## ~hint
 
 You measure acceleration with the **milli-g**, which is 1/1000 of a **g**.
-A **g** is as much acceleration as you get from Earth's gravity.
+A **g** is the same amount of acceleration as you get from Earth's gravity.
 
 ## ~
 
-
-
 ### Parameters
 
-* ``dimension`` means which direction you are checking for acceleration, either `Dimension.X` (left and right), `Dimension.Y` (forward and backward), or `Dimension.Z` (up and down)
+* ``dimension`` the direction to check for any acceleration. This is:
+> * `X`: left or right
+> * `Y`: forward or backward
+> * `Z`: up or down
 
 ### Returns
 
-* a [number](/types/number) that means the amount of acceleration. When the @boardname@ is lying flat on a surface with the screen pointing up, `x` is `0`, `y` is `0`, and `z` is `-1023`.
+* a [number](/types/number) that is the amount of acceleration. When the @boardname@ is lying flat on a surface with the screen pointing up, `x` is `0`, `y` is `0`, and `z` is `-1023`.
 
 ### Example: bar chart #example
 
-This example shows the acceleration of the @boardname@ with a bar graph.
+Show the acceleration of the @boardname@ with a bar graph.
 
 ```blocks
-control.forever(() => {
+loops.forever(() => {
     light.pixels.showBarGraph(input.acceleration(Dimension.X), 1023)
 })
 ```
 
-
 ### See also
 
-[set accelerometer range](/reference/input/set-accelerometer-range),
-[compass heading](/reference/input/compass-heading),
-[light level](/reference/input/light-level)
+[``||set accelerometer range||``](/reference/input/set-accelerometer-range),
+[``||light level||``](/reference/input/light-level)
 
 
 ```package
