@@ -1,1 +1,0 @@
-# On Temperature Condition Changed
