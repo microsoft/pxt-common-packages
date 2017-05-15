@@ -90,8 +90,7 @@ namespace light {
         _length: number; // number of LEDs
         _mode: NeoPixelMode;
         _buffered: boolean;
-        _animationEvent: number;
-        _animationQueue: (() => boolean)[];
+        _animationQueue: control.AnimationQueue;
         // what's the current high value
         _barGraphHigh: number;
         // when was the current high value recorded
@@ -478,7 +477,7 @@ namespace light {
         /**
          * Shows an animation or queues the animation in the animation queue
          * @param anim the animation to run
-         * @param duration the duration of the animation, eg: 2000
+         * @param duration the duration of the animation, eg: 500
          */
         //% blockId=neopixel_show_animation block="show animation %animation|for (ms) %duration"
         //% parts="neopixel"
@@ -530,52 +529,27 @@ namespace light {
 
         //%
         queueAnimation(render: () => boolean) {
-            const needsStart = !this._animationQueue;
-            if (!this._animationEvent)
-                this._animationEvent = control.allocateNotifyEvent();
-            if (needsStart) 
-                this._animationQueue = [];
-
-            this._animationQueue.push(render);
-            if (needsStart)
-                control.runInBackground(() => this.runAnimations());
-            while (this.waitAnimation(render))
-                control.waitForEvent(this._animationEvent, DAL.DEVICE_ID_NOTIFY_ONE);
-        }
-
-        private waitAnimation(render: () => boolean): boolean {
-            const q = this._animationQueue;
-            return q && q.indexOf(render) > -1;
-        }
-
-        private runAnimations() {
-            while (this._animationQueue && this._animationQueue.length) {
-                const render = this._animationQueue[0];
-
+            if (!this._animationQueue)
+                this._animationQueue = new control.AnimationQueue();
+            this._animationQueue.runUntilDone(() => {
                 const bf = this.buffered();
                 this.setBuffered(true);
                 const r = render();
                 this.setBuffered(bf);
-
-                loops.pause(1);
-                if (!r) {
-                    if (this._animationQueue)
-                        this._animationQueue.removeElement(render);
-                    control.raiseEvent(this._animationEvent, DAL.DEVICE_ID_NOTIFY_ONE);
-                }
-            }
-            this._animationQueue = undefined;
+                return r;
+            });
         }
 
         /**
          * Stops the current animation and any pending animations
          */
-        //% blockId=neopixel_stop_animations block="stop animations"
+        //% blockId=neopixel_stop_all_animations block="stop all animations"
         //% parts="neopixel"
         //% defaultInstance=light.pixels
         //% weight=79        
-        stopAnimations() {
-            this._animationQueue = undefined;
+        stopAllAnimations() {
+            if (this._animationQueue)
+                this._animationQueue.cancel();
         }
 
         /**
@@ -764,7 +738,7 @@ namespace light {
         return color;
     }
 
-    function parseColor(color: string) {
+    function parseColor(color: string) {        
         switch (color) {
             case "RED":
             case "red":
@@ -801,7 +775,7 @@ namespace light {
     function animation(kind: LightAnimation, duration: number): NeoPixelAnimation {
         switch (kind) {
             case LightAnimation.RunningLights: return new RunningLightsAnimation(duration, 0xff, 0, 0, 50);
-            case LightAnimation.Comet: return new CometAnimation(duration, 0xff, 0, 0xff);
+            case LightAnimation.Comet: return new CometAnimation(duration, 0xff, 0, 0xff, 50);
             case LightAnimation.ColorWipe: return new ColorWipeAnimation(duration, 0x0000ff, 50);
             case LightAnimation.TheaterChase: return new TheatreChaseAnimation(duration, 0xff, 0, 0, 50)
             case LightAnimation.Sparkle: return new SparkleAnimation(duration, 0xff, 0xff, 0xff, 50)
@@ -832,10 +806,10 @@ namespace light {
                 const now = control.millis() - start;
                 const offset = now * 255 / this.duration;
                 for (let i = 0; i < n; i++) {
-                    strip.setPixelColor(i, hsv(((i * 256 / (n-1)) + offset) % 0xff, 0xff, 0xff));
+                    strip.setPixelColor(i, hsv(((i * 256 / (n - 1)) + offset) % 0xff, 0xff, 0xff));
                 }
                 strip.show();
-
+                loops.pause(this.duration / (2 * n));
                 return now < this.duration;
             }
         }
@@ -887,12 +861,14 @@ namespace light {
         public red: number;
         public green: number;
         public blue: number;
+        public delay: number;
 
-        constructor(duration: number, red: number, green: number, blue: number) {
+        constructor(duration: number, red: number, green: number, blue: number, delay: number) {
             super(duration);
             this.red = red;
             this.green = green;
             this.blue = blue;
+            this.delay = delay;
         }
 
         public create(strip: NeoPixelStrip): () => boolean {
@@ -907,13 +883,13 @@ namespace light {
             return () => {
                 if (start < 0) start = control.millis();
                 const now = control.millis() - start;
-                const l = strip.length();
                 for (let i = 0; i < l; i++) {
                     offsets[i] = (offsets[i] + (step * 2)) % 255
                     strip.setPixelColor(i, rgb(255 - offsets[i], this.green, this.blue));
                 }
                 step++;
                 strip.show();
+                loops.pause(this.delay);
                 return now < this.duration;
             }
         }
@@ -936,7 +912,7 @@ namespace light {
                 if (start < 0) {
                     start = control.millis();
                     strip.clear();
-                }                
+                }
                 const now = control.millis() - start;
                 const pixel = Math.random(l);
                 strip.setPixelColor(pixel, this.rgb);
