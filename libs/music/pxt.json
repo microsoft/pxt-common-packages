@@ -10,13 +10,6 @@
         "music.ts",
         "ns.ts"
     ],
-    "yotta": {
-        "config": {
-            "codal": {
-                "component_count": 64
-            }
-        }
-    },
     "testFiles": [
         "test.ts"
     ],

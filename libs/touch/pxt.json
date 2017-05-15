@@ -1,12 +1,11 @@
 {
-    "name": "accelerometer",
-    "description": "The accelerometer library",
+    "name": "touch",
+    "description": "The capacitive touch library",
     "files": [
         "README.md",
-        "accelerometer.cpp",
+        "touch.cpp",
         "shims.d.ts",
-        "enums.d.ts",
-        "ns.ts"
+        "enums.d.ts"
     ],
     "testFiles": [
         "test.ts"

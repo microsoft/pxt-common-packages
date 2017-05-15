@@ -126,17 +126,6 @@ enum BeatFraction {
     Breve = 64
 }
 
-enum MelodyOptions {
-    //% block="once""
-    Once = 1,
-    //% block="forever"
-    Forever = 2,
-    //% block="once in background"
-    OnceInBackground = 4,
-    //% block="forever in background"
-    ForeverInBackground = 8
-}
-
 namespace music {
     let beatsPerMinute: number;
 
@@ -192,14 +181,14 @@ namespace music {
         if (fraction == null) fraction = BeatFraction.Whole;
         let beat = 60000 / beatsPerMinute;
         switch (fraction) {
-            case BeatFraction.Half: return beat / 2;
-            case BeatFraction.Quarter: return beat / 4;
-            case BeatFraction.Eighth: return beat / 8;
-            case BeatFraction.Sixteenth: return beat / 16;
-            case BeatFraction.Double: return beat * 2;
-            case BeatFraction.Breve: return beat * 4;
-            default: return beat;
+            case BeatFraction.Half: beat /= 2; break;
+            case BeatFraction.Quarter: beat /= 4; break;
+            case BeatFraction.Eighth: beat /= 8; break;
+            case BeatFraction.Sixteenth: beat /= 16; break;
+            case BeatFraction.Double: beat *= 2; break;
+            case BeatFraction.Breve: beat *= 4; break;
         }
+        return beat >> 0;
     }
 
     /**
@@ -217,7 +206,7 @@ namespace music {
      * @param bpm The change in beats per minute to the tempo, eg: 20
      */
     //% help=music/change-tempo-by weight=37
-    //% blockId=device_change_tempo block="change tempo by (bpm)|%value" blockGap=8
+    //% blockId=device_change_tempo block="change tempo by (bpm)|%value"
     export function changeTempoBy(bpm: number): void {
         init();
         setTempo(beatsPerMinute + bpm);

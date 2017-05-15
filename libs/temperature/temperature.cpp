@@ -38,7 +38,7 @@ SINGLETON(WTemp);
 namespace input {
 
 /**
-* Registers an event raised when the temperature condition (hold, cold) changes.
+* Run some code when the temperature changes from hot to cold, or from cold to hot.
 * @param condition the condition, hot or cold, the event triggers on
 * @param temperature the temperature, in degree Celsius, at which this event happens, eg: 15
 */
@@ -56,7 +56,7 @@ void onTemperateConditionChanged(TemperatureCondition condition, int temperature
 }
 
 /**
- * Gets the temperature in Celsius or Fahrenheit degrees.
+ * Get the temperature in Celsius or Fahrenheit degrees.
  */
 //% weight=75
 //% help=input/temperature

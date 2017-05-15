@@ -20,7 +20,6 @@ input.rotation(Rotation.Pitch)
 input.onLightConditionChanged(LightCondition.Dark, () => {
 
 })
-input.ambientColor()
 input.lightLevel()
 ```
 
@@ -43,6 +42,7 @@ input.buttonA.onEvent(ButtonEvent.Click, () => {
 input.onSoundConditionChanged(LoudnessCondition.Quiet, () => {
 
 })
+input.soundLevel()
 ```
 
 ## Temperature #temperature
@@ -51,4 +51,5 @@ input.onSoundConditionChanged(LoudnessCondition.Quiet, () => {
 input.onTemperateConditionChanged(TemperatureCondition.Cold, 0, () => {
 
 })
+input.temperature(TemperatureUnit.Celsius)
 ```

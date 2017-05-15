@@ -63,15 +63,15 @@ void setPitchPin(PwmPin pin) {
 
 /**
 * Sets the output volume of the on board speaker (if available)
-* @param volume the volume 0...100, eg: 50
+* @param volume the volume 0...255, eg: 128
 */
 //% weight=96
 //% blockId=synth_set_volume block="set speaker volume %volume"
 //% parts="speaker" blockGap=8
-//% volume.min=0 volume.max=100
+//% volume.min=0 volume.max=255
 //% weight=1
 void setSpeakerVolume(int volume) {
-    synthVolume = max(0, min(100, volume)) * 10.23;
+    synthVolume = max(0, min(1023, volume * 4));
 }
 
 /**
@@ -89,17 +89,16 @@ void playTone(int frequency, int ms) {
 
         if (frequency <= 0) {
             synth->setVolume(0);
-            fiber_sleep(ms);
+            fiber_sleep(max(1, ms));
         } else {
             synth->setVolume(synthVolume);
 
             if (ms > 0) {
-                synth->setFrequency((float) frequency, ms);
+                synth->setFrequency((float) frequency, max(1, ms - 5));
                 fiber_sleep(ms);
-                synth->setVolume(0);
-                fiber_sleep(20);
             } else {
                 synth->setFrequency((float) frequency);                
+                fiber_sleep(1);
             }
         }
     }
@@ -114,10 +113,11 @@ void playTone(int frequency, int ms) {
         }
 
         if (ms > 0) {
-            fiber_sleep(ms);
+            fiber_sleep(max(1, ms - 5));
             pitchPin->setAnalogValue(0);
             wait_ms(5);
         }
+        fiber_sleep(1);
     }
 }
 }
