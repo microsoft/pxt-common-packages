@@ -435,7 +435,7 @@ declare namespace loops {
      * @param body code to execute
      */
     //% help=loops/forever weight=100 blockGap=8
-    //% blockId=forever block="forever" shim=loops::forever
+    //% blockId=forever block="forever" blockAllowMultiple=1 shim=loops::forever
     function forever(a: () => void): void;
 
     /**
@@ -495,7 +495,7 @@ declare namespace input {
     //% noRefCounting fixedInstances
 declare interface Button {
     /**
-     * Do something when a button (`A`, `B or both `A` + `B`) is clicked, double clicked, etc...
+     * Do something when a button (`A`, `B` or both `A` + `B`) is clicked, double clicked, etc...
      * @param button the button that needs to be clicked or used
      * @param event the kind of button gesture that needs to be detected
      * @param body code to run when the event is raised
