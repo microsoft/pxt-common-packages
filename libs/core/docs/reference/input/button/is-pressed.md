@@ -25,4 +25,4 @@ loops.forever(() => {
 ```
 
 ## See Also
-[``||was pressed||``](/reference/input/was-pressed)
+[``||was pressed||``](/reference/input/button-was-pressed), [``||on event||``](/reference/input/button-on-event)
