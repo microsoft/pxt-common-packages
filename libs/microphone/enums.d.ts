@@ -3,9 +3,9 @@
 
     declare enum LoudnessCondition {
     //% block="quiet"
-    Quiet = 1,  // ANALOG_THRESHOLD_LOW
+    Quiet = 1,  // LEVEL_THRESHOLD_LOW
     //% block="loud"
-    Loud = 2,  // ANALOG_THRESHOLD_HIGH
+    Loud = 2,  // LEVEL_THRESHOLD_HIGH
     }
 
 // Auto-generated. Do not edit. Really.
