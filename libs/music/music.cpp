@@ -1,5 +1,6 @@
 #include "pxt.h"
 
+#include "dmac.h"
 #include "SAMD21DAC.h"
 #include "Synthesizer.h"
 #include "DeviceConfig.h"
@@ -10,12 +11,11 @@
 
 class WSynthesizer {
   public:
-    SAMD21DMAC dmac;
     Synthesizer synth;
     SAMD21DAC dac;
 
     WSynthesizer()
-        : dac(*lookupPin(PIN_SPEAKER), dmac, synth.output) {
+        : dac(*lookupPin(PIN_SPEAKER), pxt::getWDMAC()->dmac, synth.output) {
         synth.setVolume(0);
     }
 };

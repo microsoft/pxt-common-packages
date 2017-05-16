@@ -67,6 +67,8 @@ declare const enum DAL {
     DEVICE_ID_LIGHT_SENSOR = 17,
     DEVICE_ID_TOUCH_SENSOR = 18,
     DEVICE_ID_SYSTEM_DAC = 19,
+    DEVICE_ID_SYSTEM_MICROPHONE = 20,
+    DEVICE_ID_SYSTEM_LEVEL_DETECTOR = 21,
     DEVICE_ID_IO_P0 = 100,
     DEVICE_ID_MESSAGE_BUS_LISTENER = 1021,
     DEVICE_ID_NOTIFY_ONE = 1022,
@@ -129,7 +131,12 @@ declare const enum DAL {
     TIMER_ONE_PRESCALER_OPTIONS = 5,
     // built/yt/yotta_modules/codal/inc/device/SAMD21/SAMD21DAC.h
     // built/yt/yotta_modules/codal/inc/device/SAMD21/SAMD21DMAC.h
-    DMA_DESCRIPTOR_COUNT = 2,
+    DMA_DESCRIPTOR_ALIGNMENT = 16,
+    DMA_DESCRIPTOR_COUNT = 4,
+    // built/yt/yotta_modules/codal/inc/device/SAMD21/SAMD21PDM.h
+    SAMD21_PDM_BUFFER_SIZE = 256,
+    SAMD21_START_UP_DELAY = 3,
+    SAMD21_PDM_DATA_READY = 1,
     // built/yt/yotta_modules/codal/inc/device/SAMD21/USB.h
     USB_MAX_PKT_SIZE = 64,
     USB_DEFAULT_PID = 0x2402,
@@ -274,6 +281,13 @@ declare const enum DAL {
     ACCELEROMETER_SHAKE_DAMPING = 10,
     ACCELEROMETER_SHAKE_RTX = 30,
     ACCELEROMETER_SHAKE_COUNT_THRESHOLD = 4,
+    // built/yt/yotta_modules/codal/inc/drivers/LevelDetector.h
+    LEVEL_THRESHOLD_LOW = 1,
+    LEVEL_THRESHOLD_HIGH = 2,
+    LEVEL_DETECTOR_INITIALISED = 0x01,
+    LEVEL_DETECTOR_HIGH_THRESHOLD_PASSED = 0x02,
+    LEVEL_DETECTOR_LOW_THRESHOLD_PASSED = 0x04,
+    LEVEL_DETECTOR_DEFAULT_WINDOW_SIZE = 128,
     // built/yt/yotta_modules/codal/inc/drivers/LinearAnalogSensor.h
     // built/yt/yotta_modules/codal/inc/drivers/MultiButton.h
     MULTI_BUTTON_STATE_1 = 0x01,

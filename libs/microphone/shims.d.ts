@@ -11,7 +11,7 @@ declare namespace input {
     function onSoundConditionChanged(condition: LoudnessCondition, handler: () => void): void;
 
     /**
-     * Reads the loudness through the microphone from 0 (silent) to 255 (very loud)
+     * Reads the loudness through the microphone from 0 (silent) to 100 (very loud)
      */
     //% help=input/sound-level weight=75
     //% blockId=device_get_sound_level block="sound level" blockGap=8
