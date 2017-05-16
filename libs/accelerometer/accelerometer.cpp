@@ -112,7 +112,7 @@ class WAccel {
     WAccel()
         : i2c((PinName)PIN_ACCELEROMETER_SDA, (PinName)PIN_ACCELEROMETER_SCL),
           INIT_PIN(int1, PIN_ACCELEROMETER_INT), //
-          acc(i2c, int1)                         //
+          acc(i2c, int1, LIS3DH_DEFAULT_ADDR, DEVICE_ID_ACCELEROMETER, NORTH_EAST_UP) //
     {
         acc.init();        
     }
@@ -165,11 +165,11 @@ int getAccelerationStrength() {
 int acceleration(Dimension dimension) {
     switch (dimension) {
     case Dimension::X:
-        return getWAccel()->acc.getX(NORTH_EAST_DOWN);
+        return getWAccel()->acc.getX();
     case Dimension::Y:
-        return getWAccel()->acc.getY(NORTH_EAST_DOWN);
+        return getWAccel()->acc.getY();
     case Dimension::Z:
-        return getWAccel()->acc.getZ(NORTH_EAST_DOWN);
+        return getWAccel()->acc.getZ();
     case Dimension::Strength:
         return getAccelerationStrength();
     }
