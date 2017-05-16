@@ -1,37 +1,36 @@
-# Play Tone
+# play Tone
 
-Play a musical tone through a pin on the @boardname@ for as long as you say.
-
-## Simulator #sim
-
-This function only works on the @boardname@ and in some browsers.
+Play a musical tone on the speaker for some amount of time.
 
 ```sig
-pins.playTone(Notes.A, music.beat(BeatFraction.Whole))
+music.playTone(Note.C, 10)
 ```
+## #simnote
+#### ~hint
+**Sim**: ``||play tone||`` works on the @boardname@. It might not work in the simulator on every browser.
+#### ~
 
-### Parameters
+## Parameters
 
-* ``frequency`` is the [number](/types/number) of Hertz (how high or low the tone is).
-* ``ms`` is the [number](/types/number) of milliseconds that the tone lasts
+* ``frequency`` is the [number](/types/number) of [Hertz](https://wikipedia.org/wiki/Hertz) (how high or low the tone is, also known as _pitch_).
+* ``ms`` is the [number](/types/number) of milliseconds (one-thousandth of a second) that the tone lasts for.
 
-### Special handling of values
+## Special handling of values
 
 * If ``frequency`` is less or equal to zero, the sound is stopped.
 * If ``ms`` is negative or zero, the sound is not stopped and will keep beeping.
 
 ## Example #example
 
-This example stores the musical note C in the variable `freq`.
-Next, it plays that note for 1000 milliseconds (one second).
+Store the musical note 'C' in the variable `freq` and play that note for 1000 milliseconds (one second).
 
 ```blocks
 let freq = music.noteFrequency(Note.C);
-pins.playTone(freq, 1000)
+music.playTone(freq, 1000)
 ```
 
-### See also
+## See also
 
-[rest](/reference/music/rest), [ring tone](/reference/music/ring-tone) , [tempo](/reference/music/tempo), [set tempo](/reference/music/set-tempo), 
-[change tempo by](/reference/music/change-tempo-by)
+[``||rest||``](/reference/music/rest), [``||ring tone||``](/reference/music/ring-tone) , [``||tempo||``](/reference/music/tempo),
+[``||set tempo||``](/reference/music/set-tempo), [``||change tempo by||``](/reference/music/change-tempo-by)
 

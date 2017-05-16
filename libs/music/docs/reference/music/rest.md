@@ -1,31 +1,36 @@
-# Rest
+# rest
 
-Rest (play no sound) through a pin of your choice for the amount of time you say.
-
-## Simulator #sim
-
-This function only works on the @boardname@ and in some browsers.
+Give the speaker a period of time to not play any sound.
 
 ```sig
-pins.A8.rest(400);
+music.rest(400);
 ```
+## #simnote
+#### ~hint
+**Sim**: ``||rest||`` works on the @boardname@. It might not work in the simulator on every browser.
+#### ~
 
-### Parameters
+## Parameters
 
-* ``pin`` is the pin to play the tone from.
 * ``ms`` is a [number](/types/number) saying how many
   milliseconds the @boardname@ should rest. One second is 1000
   milliseconds.
 
 ## Example #example
 
+Play a 'C' note for one second and then rest for one second. Do it again, and again...
+
 ```blocks
 let frequency = music.noteFrequency(Note.C)
-pins.A8.playTone(frequency, 1000)
-pins.A8.rest(1000)
+loops.forever(() => {
+  music.playTone(frequency, 1000)
+  music.rest(1000)
+})
 ```
 
-### See also
+## See also
 
-[play tone](/reference/music/play-tone), [ring tone](/reference/music/ring-tone) , [tempo](/reference/music/tempo), [set tempo](/reference/music/set-tempo), [change tempo by](/reference/music/change-tempo-by)
+[``||play tone||``](/reference/music/play-tone), [``||ring tone||``](/reference/music/ring-tone),
+[``||tempo||``](/reference/music/tempo), [``||set tempo||``](/reference/music/set-tempo),
+[``||change tempo by||``](/reference/music/change-tempo-by)
 
