@@ -19,7 +19,7 @@ class WMicrophone {
     LevelDetector level;
     WMicrophone()
         : microphone(*lookupPin(PIN_MIC_DATA), *lookupPin(PIN_MIC_CLOCK), pxt::getWDMAC()->dmac, 10000)
-        , level(microphone.output, 70, 30)
+        , level(microphone.output, 75, 25, DEVICE_ID_MICROPHONE)
     {
         microphone.enable();
     }
@@ -38,7 +38,7 @@ namespace input {
 //% parts="microphone" blockGap=8
 void onSoundConditionChanged(LoudnessCondition condition, Action handler) {
     getWMicrophone(); // wake up service
-    registerWithDal(DEVICE_ID_SYSTEM_LEVEL_DETECTOR, (int)condition, handler);
+    registerWithDal(DEVICE_ID_MICROPHONE, (int)condition, handler);
 }
 
 /**
