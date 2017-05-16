@@ -382,15 +382,7 @@ namespace light {
                 this._photonDir = 1;
                 this._photonColor = 0;
                 this._photonMasked = light.hsv(this._photonColor, 0xff, 0xff);
-                this.paintPhoton();
             }
-        }
-
-        paintPhoton() {
-            const br = this.brightness();
-            this.setBrightness(br + 32);
-            this.setPixelColor(this._photonPos, 0xffffff);
-            this.setBrightness(br);
         }
 
         /**
@@ -418,14 +410,14 @@ namespace light {
 
             // store current color
             if (this._photonMode == PhotonMode.PenDown) {
-                this._photonMasked = light.fade(light.hsv(this._photonColor, 0xff, 0xff), this._brightness);
+                this._photonMasked = light.fade(light.hsv(this._photonColor, 0xff, 0xff), br);
             }
             else if (this._photonMode == PhotonMode.Eraser)
                 this._photonMasked = 0; // erase led
             else this._photonMasked = this.pixelColor(this._photonPos);
 
             // paint photon
-            this.paintPhoton();
+            this.setPixelColor(this._photonPos, light.fade(0xffffff, br + 32));
 
             // restore brightness
             this.setBrightness(br);

@@ -104,7 +104,7 @@ void playTone(int frequency, int ms) {
     }
     else {
         if (NULL == pitchPin)
-            pitchPin = getPin(PIN_A10);        
+            pitchPin = getPin(PIN_A0);        
         if (frequency <= 0) {
             pitchPin->setAnalogValue(0);
         } else {
