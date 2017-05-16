@@ -6,9 +6,9 @@
 
 enum class LoudnessCondition {
     //% block="quiet"
-    Quiet = ANALOG_THRESHOLD_LOW,
+    Quiet = LEVEL_THRESHOLD_LOW,
     //% block="loud"
-    Loud = ANALOG_THRESHOLD_HIGH
+    Loud = LEVEL_THRESHOLD_HIGH
 };
 
 namespace pxt {
@@ -18,7 +18,7 @@ class WMicrophone {
     SAMD21PDM microphone;
     LevelDetector level;
     WMicrophone()
-        : microphone(PIN_MIC_DATA, PIN_MIC_CLOCK, pxt::getWDMAC()->dmac, 10000)
+        : microphone(*lookupPin(PIN_MIC_DATA), *lookupPin(PIN_MIC_CLOCK), pxt::getWDMAC()->dmac, 10000)
         , level(microphone.output, 70, 30)
     {
         microphone.enable();
