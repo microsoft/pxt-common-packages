@@ -1,6 +1,6 @@
 # Music
 
-Generation of music tones.
+Make music and play tones.
 
 ```cards
 music.playTone(0, 0);
@@ -11,7 +11,10 @@ music.beat(BeatFraction.Whole);
 music.tempo();
 music.changeTempoBy(20);
 music.setTempo(120);
+music.playSound("")
 music.playSoundUntilDone("")
+music.setSpeakerVolume(0)
+music.stopAllSounds()
 ```
 
 ### See Also
