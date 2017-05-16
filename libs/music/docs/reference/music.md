@@ -3,15 +3,15 @@
 Generation of music tones.
 
 ```cards
-pins.A8.playTone(0, 0);
-pins.A8.ringTone(0);
-pins.A8.rest(0);
+music.playTone(0, 0);
+music.ringTone(0);
+music.rest(0);
 music.noteFrequency(Note.C);
 music.beat(BeatFraction.Whole);
 music.tempo();
 music.changeTempoBy(20);
 music.setTempo(120);
-music.onEvent(MusicEvent.MelodyNotePlayed, () => {})
+music.playSoundUntilDone("")
 ```
 
 ### See Also
