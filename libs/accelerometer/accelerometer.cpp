@@ -165,11 +165,11 @@ int getAccelerationStrength() {
 int acceleration(Dimension dimension) {
     switch (dimension) {
     case Dimension::X:
-        return getWAccel()->acc.getX();
+        return getWAccel()->acc.getX(NORTH_EAST_DOWN);
     case Dimension::Y:
-        return getWAccel()->acc.getY();
+        return getWAccel()->acc.getY(NORTH_EAST_DOWN);
     case Dimension::Z:
-        return getWAccel()->acc.getZ();
+        return getWAccel()->acc.getZ(NORTH_EAST_DOWN);
     case Dimension::Strength:
         return getAccelerationStrength();
     }

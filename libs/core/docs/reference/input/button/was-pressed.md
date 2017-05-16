@@ -1,4 +1,4 @@
- # was Pressed
+# was Pressed
 
 Check if a button was pressed earlier.
 
@@ -27,4 +27,4 @@ input.buttonB.onEvent(ButtonEvent.Click, () => {
 ```
 
 ## See Also
-[``||is pressed||``](/reference/input/is-pressed)
+[``||is pressed||``](/reference/input/button-is-pressed), [``||on event||``](/reference/input/button-on-event)
