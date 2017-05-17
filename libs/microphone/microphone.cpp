@@ -5,10 +5,10 @@
 #include "LevelDetector.h"
 
 enum class LoudnessCondition {
-    //% block="quiet"
-    Quiet = LEVEL_THRESHOLD_LOW,
     //% block="loud"
-    Loud = LEVEL_THRESHOLD_HIGH
+    Loud = LEVEL_THRESHOLD_HIGH,
+    //% block="quiet"
+    Quiet = LEVEL_THRESHOLD_LOW
 };
 
 namespace pxt {
