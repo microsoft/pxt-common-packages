@@ -17,7 +17,7 @@ class WSynthesizer {
     WSynthesizer()
         : dac(*lookupPin(PIN_SPEAKER), pxt::getWDMAC()->dmac, synth.output) {
         synth.setSampleRate(dac.getSampleRate());
-        synth.setTone(Synthesizer::SawtoothTone);
+        synth.setTone(Synthesizer::SquareWaveTone);
         synth.setVolume(0);
     }
 };
@@ -65,15 +65,15 @@ void setPitchPin(PwmPin pin) {
 
 /**
 * Sets the output volume of the on board speaker (if available)
-* @param volume the volume 0...255, eg: 128
+* @param volume the volume 0...256, eg: 128
 */
 //% weight=96
 //% blockId=synth_set_volume block="set speaker volume %volume"
 //% parts="speaker" blockGap=8
-//% volume.min=0 volume.max=255
+//% volume.min=0 volume.max=256
 //% weight=1
 void setSpeakerVolume(int volume) {
-    synthVolume = max(0, min(1023, volume * 4));
+    synthVolume = max(0, min(1024, volume * 4));
 }
 
 /**
