@@ -4,7 +4,7 @@
 
 ```cards
 input.soundLevel();
-input.onSoundConditionChanged();
+input.onLoudSound(() => {});
 ```
 
 ```package
