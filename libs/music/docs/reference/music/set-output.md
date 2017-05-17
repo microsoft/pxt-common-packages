@@ -1,4 +1,4 @@
-# set Ouput
+# set Output
 
 Set the sound output to the speaker or to a pin.
 
