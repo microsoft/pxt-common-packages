@@ -130,7 +130,7 @@ namespace music {
     let beatsPerMinute: number;
 
     /**
-    * Plays a tone.
+    * Play a tone.
     * @param frequency pitch of the tone to play in Hertz (Hz)
     */
     //% help=music/ring-tone weight=80
@@ -142,7 +142,7 @@ namespace music {
     }
 
     /**
-    * Rests (plays nothing) for a specified time.
+    * Rest, or play silence, for some time (in milleseconds).
     * @param ms rest duration in milliseconds (ms)
     */
     //% help=music/rest weight=79
@@ -154,7 +154,7 @@ namespace music {
     }
 
     /**
-     * Gets the frequency of a note.
+     * Get the frequency of a note.
      * @param name the note name, eg: Note.C
      */
     //% weight=1 help=music/note-frequency
@@ -171,7 +171,7 @@ namespace music {
     }
 
     /**
-     * Returns the duration of a beat in milli-seconds
+     * Return the duration of a beat in milliseconds (the beat fraction).
      * @param fraction the fraction of the current whole note, eg: BeatFraction.Half
      */
     //% help=music/beat weight=49 blockGap=8
@@ -192,7 +192,8 @@ namespace music {
     }
 
     /**
-     * Returns the tempo in beats per minute. Tempo is the speed (bpm = beats per minute) at which notes play. The larger the tempo value, the faster the notes will play.
+     * Return the tempo in beats per minute (bpm).
+     * Tempo is the speed (bpm = beats per minute) at which notes play. The larger the tempo value, the faster the notes will play.
      */
     //% help=music/tempo weight=40 advanced=true
     //% blockId=device_tempo block="tempo (bpm)" blockGap=8
@@ -202,7 +203,7 @@ namespace music {
     }
 
     /**
-     * Change the tempo by the specified amount
+     * Change the tempo up or down by some amount of beats per minute (bpm).
      * @param bpm The change in beats per minute to the tempo, eg: 20
      */
     //% help=music/change-tempo-by weight=37
@@ -213,7 +214,7 @@ namespace music {
     }
 
     /**
-     * Sets the tempo to the specified amount
+     * Set the tempo a number of beats per minute (bpm).
      * @param bpm The new tempo in beats per minute, eg: 120
      */
     //% help=music/set-tempo weight=38 blockGap=8

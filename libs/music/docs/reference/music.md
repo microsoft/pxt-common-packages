@@ -13,7 +13,7 @@ music.changeTempoBy(20);
 music.setTempo(120);
 music.playSound("")
 music.playSoundUntilDone("")
-music.setSpeakerVolume(0)
+music.setVolume(0)
 music.stopAllSounds()
 music.sounds(Sounds.BaDing)
 music.setTone(pins.createBuffer(0));
