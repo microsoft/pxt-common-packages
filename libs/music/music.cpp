@@ -16,6 +16,8 @@ class WSynthesizer {
 
     WSynthesizer()
         : dac(*lookupPin(PIN_SPEAKER), pxt::getWDMAC()->dmac, synth.output) {
+        synth.setSampleRate(dac.getSampleRate());
+        synth.setTone(Synthesizer::SawtoothTone);
         synth.setVolume(0);
     }
 };
@@ -86,9 +88,13 @@ void setSpeakerVolume(int volume) {
 void playTone(int frequency, int ms) {
     if (current == SoundOutputDestination::Speaker) {
         auto synth = &getWSynthesizer()->synth;
-
+        
         if (frequency <= 0) {
-            synth->setVolume(0);
+            if (ms > 0) {
+                synth->setFrequency(0, max(1, ms - 5));
+            } else {
+                synth->setVolume(0);
+            }
             fiber_sleep(max(1, ms));
         } else {
             synth->setVolume(synthVolume);
