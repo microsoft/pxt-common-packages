@@ -54,6 +54,8 @@
 #define PIN_SCL PIN_PA23
 #define PIN_SDA PIN_PA22
 
+#define PIN_SPEAKER PIN_D6
+
 #if PXT_BOARD_ID == BOARD_ID_M0
 // M0 has D2 and D4 swapped...
 #undef PIN_D2
@@ -107,6 +109,7 @@
 #define PIN_BTN_SLIDE PIN_PA15
 #define PIN_NEOPIXEL PIN_PB23
 #define PIN_SPEAKER PIN_PA02
+#define PIN_SPEAKER_AMP PIN_PA30
 #define PIN_MICROPHONE PIN_PA08
 #define PIN_LIGHT PIN_PA11
 #define PIN_ACCELEROMETER_SDA PIN_PA00
@@ -278,6 +281,9 @@
 #endif
 #ifndef PIN_SPEAKER
 #define PIN_SPEAKER NC
+#endif
+#ifndef PIN_SPEAKER_AMP
+#define PIN_SPEAKER_AMP NC
 #endif
 #ifndef PIN_MIC_DATA
 #define PIN_MIC_DATA NC
