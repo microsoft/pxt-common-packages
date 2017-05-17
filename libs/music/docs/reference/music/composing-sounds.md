@@ -35,7 +35,7 @@ When a small amount music or even a song is written down it is called [sheet mus
 
 Of course, we can't use written music in our code. We can make music another way. The way to do it is to
 put names of notes together as a [string](/reference/types/string). We make our notes using letters, symbols, and
-nubmers. Notes put together in our code look like:
+numbers. Notes put together in our code look like:
 ```block
 "E3:3 R:1 D#:3 R:1 D:4 R:1 C#:8"
 ```
