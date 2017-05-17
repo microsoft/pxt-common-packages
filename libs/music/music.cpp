@@ -33,6 +33,7 @@ namespace music {
 
 int synthVolume = 400;
 PwmPin pitchPin;
+ManagedBuffer tone; // empty buffer to hold custom tone
 #if HAS_SPEAKER
 SoundOutputDestination soundOutputDestination = SoundOutputDestination::Speaker;
 #else
@@ -46,6 +47,27 @@ void updateSpeakerAmp() {
     if (pinAmp) {
         pinAmp->setDigitalValue(SoundOutputDestination::Speaker == soundOutputDestination && synthVolume > 0);
     }
+}
+
+/**
+* Sets the PCM sample (1024 x 10bit unsigned samples) used to generate the tones.
+* A reference to the buffer is kept to avoid the memory overhead, so changes to the buffer
+* values will be reflected live in the sound output. 
+*/
+//% help=music/set-tone
+//% weight=1 advanced=true
+//% blockId=music_set_tone block="set tone %buffer"
+void setTone(Buffer buffer) {
+    if (!buffer) return;
+
+    ManagedBuffer buf(buffer);
+    if (buf.length() != TONE_WIDTH * sizeof(uint16_t))
+        return; // invalid length
+
+    tone = buf; // keep a reference to the buffer
+
+    auto synth = &getWSynthesizer()->synth;
+    synth->setTone((const uint16_t*)tone.getBytes());
 }
 
 /**
