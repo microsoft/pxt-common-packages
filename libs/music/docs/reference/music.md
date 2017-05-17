@@ -15,6 +15,7 @@ music.playSound("")
 music.playSoundUntilDone("")
 music.setSpeakerVolume(0)
 music.stopAllSounds()
+music.sounds(Sounds.BaDing)
 ```
 
 ### See Also
