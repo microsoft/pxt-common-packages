@@ -3,7 +3,6 @@
 Functions to operate NeoPixel strips.
 
 ```cards
-light.showRing('');
 light.rgb(255, 255, 255);
 light.hsv(255, 255, 255);
 light.colors(Colors.Red);
