@@ -943,11 +943,9 @@ namespace light {
                 strip.show();
                 loops.pause(this.delay);
                 strip.setPixelColor(pixel, 0);
+                strip.show();
 
-                const more =  now < this.duration;
-                if (!more)
-                    strip.clear();
-                return more;
+                return now < this.duration;
             }
         }
     }
