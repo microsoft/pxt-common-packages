@@ -30,4 +30,5 @@ loops.forever(() => {
 
 ```package
 microphone
+light
 ```

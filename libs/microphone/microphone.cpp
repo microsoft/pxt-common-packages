@@ -4,13 +4,6 @@
 #include "SAMD21PDM.h"
 #include "LevelDetector.h"
 
-enum class LoudnessCondition {
-    //% block="loud"
-    Loud = LEVEL_THRESHOLD_HIGH,
-    //% block="quiet"
-    Quiet = LEVEL_THRESHOLD_LOW
-};
-
 namespace pxt {
 
 class WMicrophone {
@@ -30,15 +23,14 @@ SINGLETON(WMicrophone);
 
 namespace input {
 /**
-* Registers an event that runs when particular lighting conditions (dark, bright) are encountered.
-* @param condition the condition that event triggers on
+* Registers an event that runs when a lound sound is detected
 */
-//% help=input/on-sound-condition-changed weight=97
-//% blockId=input_on_sound_condition_changed block="on sound %condition"
+//% help=input/on-loud-sound weight=97
+//% blockId=input_on_loud_sound block="on loud sound"
 //% parts="microphone" blockGap=8
-void onSoundConditionChanged(LoudnessCondition condition, Action handler) {
+void onLoudSound(Action handler) {
     getWMicrophone(); // wake up service
-    registerWithDal(DEVICE_ID_MICROPHONE, (int)condition, handler);
+    registerWithDal(DEVICE_ID_MICROPHONE, LEVEL_THRESHOLD_HIGH, handler);
 }
 
 /**

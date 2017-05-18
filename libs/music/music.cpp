@@ -14,7 +14,7 @@ class WSynthesizer {
     WSynthesizer()
         : dac(*getPin(PIN_SPEAKER), pxt::getWDMAC()->dmac, synth.output) {
         synth.setSampleRate(dac.getSampleRate());
-        synth.setVolume(400);
+        synth.setVolume(64);
     }
 };
 SINGLETON(WSynthesizer);
