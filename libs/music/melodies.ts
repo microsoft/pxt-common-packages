@@ -70,7 +70,7 @@ namespace music {
             case Sounds.PowerDown:
                 return 'g5:1 d# c g4:2 b:1 c5:3';
             case Sounds.MagicWand:
-                return 'A#7:1-200 A:1 A#7:1 A:1 A#7:2';
+                return 'F#6:1-300 G# A# B C7# D# F F# G# A# B:6'; //A#7:1-200 A:1 A#7:1 A:1 A#7:2
             default:
                 return '';
         }
