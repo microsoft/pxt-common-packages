@@ -2,9 +2,6 @@ loops.forever(() => {
     let level = input.soundLevel()
     serial.writeValue("sound", level)
 })
-input.onSoundConditionChanged(LoudnessCondition.Quiet, () => {
-    serial.writeLine("quiet")
-})
-input.onSoundConditionChanged(LoudnessCondition.Quiet, () => {
+input.onLoudSound(() => {
     serial.writeLine("loud")
 })

@@ -297,7 +297,7 @@ namespace light {
         }
 
         /**
-         * Turn off all LEDs and clears the photon
+         * Turn off all LEDs.
          */
         //% blockId="neopixel_clear" block="clear"
         //% advanced=true
@@ -308,7 +308,6 @@ namespace light {
             const stride = this._mode === NeoPixelMode.RGBW ? 4 : 3;
             this.buf.fill(0, this._start * stride, this._length * stride);
             this.autoShow();
-            this._photonPos = undefined;
         }
 
         /**
@@ -946,6 +945,7 @@ namespace light {
                 strip.show();
                 loops.pause(this.delay);
                 strip.setPixelColor(pixel, 0);
+                strip.show();
 
                 return now < this.duration;
             }
