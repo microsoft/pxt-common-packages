@@ -803,7 +803,7 @@ namespace light {
             case LightAnimation.ColorWipe: return new ColorWipeAnimation(duration, 0x0000ff, 50);
             case LightAnimation.TheaterChase: return new TheatreChaseAnimation(duration, 0xff, 0, 0, 50)
             case LightAnimation.Sparkle: return new SparkleAnimation(duration, 0xff, 0xff, 0xff, 50)
-            default: return new RainbowCycleAnimation(duration);
+            default: return new RainbowCycleAnimation(duration, 50);
         }
     }
 
@@ -818,8 +818,10 @@ namespace light {
     }
 
     class RainbowCycleAnimation extends NeoPixelAnimation {
-        constructor(duration: number) {
+        public delay: number;
+        constructor(duration: number, delay: number) {
             super(duration);
+            this.delay = delay;
         }
 
         public create(strip: NeoPixelStrip): () => boolean {
@@ -828,12 +830,12 @@ namespace light {
             return () => {
                 if (start < 0) start = control.millis();
                 const now = control.millis() - start;
-                const offset = now * 255 / this.duration;
+                const offset = (now / this.delay) * (256 / (n - 1));
                 for (let i = 0; i < n; i++) {
                     strip.setPixelColor(i, hsv(((i * 256 / (n - 1)) + offset) % 0xff, 0xff, 0xff));
                 }
                 strip.show();
-                loops.pause(this.duration / (2 * n));
+                loops.pause(this.delay);
                 return now < this.duration;
             }
         }
