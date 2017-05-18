@@ -115,6 +115,13 @@ namespace light {
         }
 
         /**
+         * Gets the LED data layout mode
+         */
+        get mode(): NeoPixelMode {
+            return this._mode;
+        }
+
+        /**
          * Shows all LEDs to a given color (range 0-255 for r, g, b).
          * @param rgb RGB color of the LED
          */
