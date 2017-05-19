@@ -46,7 +46,7 @@ namespace music {
     let _soundQueue: control.AnimationQueue;
 
     /**
-     * Gets the melody array of a built-in melody.
+     * Get the melody string for a built-in melody.
      * @param name the note name, eg: Note.C
      */
     //% weight=50 help=music/sounds
@@ -82,7 +82,7 @@ namespace music {
     }
 
     /**
-     * Starts playing a sound without pausing.
+     * Start playing a sound and don't wait for it to finish.
      * Notes are expressed as a string of characters with this format: NOTE[octave][:duration]
      * @param sound the melody to play, eg: 'g5:1'
      */
@@ -101,7 +101,7 @@ namespace music {
 
 
     /**
-     * Plays a sound and waits until the sound is done
+     * Play a sound and wait until the sound is done.
      * Notes are expressed as a string of characters with this format: NOTE[octave][:duration]
      * @param sound the melody to play, eg: 'g5:1'
      */
@@ -115,7 +115,7 @@ namespace music {
     }
 
     /**
-     * Stops all sounds from playing.
+     * Stop all sounds from playing.
      */
     //% help=music/stop-all-sounds weight=59
     //% blockId=music_stop_all_sounds block="stop all sounds"
