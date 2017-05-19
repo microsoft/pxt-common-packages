@@ -207,7 +207,8 @@ namespace light {
          */
         //% blockId="neopixel_set_pixel_color" block="set pixel color at %pixeloffset|to %rgb=neopixel_colors"
         //% advanced=true
-        //% weight=89        
+        //% weight=89
+        //% help="light/set-pixel-color"
         //% blockGap=8
         //% parts="neopixel"
         //% defaultInstance=light.pixels
@@ -237,6 +238,7 @@ namespace light {
         //% advanced=true
         //% weight=9
         //% blockGap=8
+        //% help="light/pixel-color"
         //% parts="neopixel"
         //% defaultInstance=light.pixels
         pixelColor(pixeloffset: number): number {
@@ -263,13 +265,15 @@ namespace light {
         }
 
         /**
-         * For NeoPixels with RGB+W LEDs, set the white LED brightness. This only works for RGB+W NeoPixels.
+         * For NeoPixels with RGB+W LEDs, set the white LED brightness.
+         * This only works for RGB+W NeoPixels.
          * @param pixeloffset position of the LED in the strip
          * @param white brightness of the white LED
          */
         //% advanced=true
         //% weight=5        
         //% blockGap=8
+        //% blockId="neopixel_set_pixel_white_led" block="set pixel color at %pixeloffset|to %rgb=neopixel_colors"
         //% parts="neopixel"
         //% defaultInstance=light.pixels
         setPixelWhiteLED(pixeloffset: number, white: number): void {
@@ -502,6 +506,7 @@ namespace light {
         //% blockId=neopixel_show_animation block="show animation %animation=light_animation|for (ms) %duration"
         //% weight=80
         //% blockGap=8
+        //% help="light/show-animation"
         //% parts="neopixel"
         //% defaultInstance=light.pixels
         showAnimation(animation: NeoPixelAnimation, duration: number) {
@@ -579,13 +584,13 @@ namespace light {
         }
 
         /**
-         * Stops the current animation and any pending animations
+         * Stop the current animation and any other animations ready to show.
          */
         //% blockId=neopixel_stop_all_animations block="stop all animations"
         //% weight=79        
         //% parts="neopixel"
         //% defaultInstance=light.pixels
-
+        //% help="light/stop-all-animations"
         stopAllAnimations() {
             if (this._animationQueue)
                 this._animationQueue.cancel();
@@ -672,6 +677,7 @@ namespace light {
     //% advanced=true    
     //% weight=19
     //% blockGap=8
+    //% help="light/rgb"
     export function rgb(red: number, green: number, blue: number): number {
         return ((red & 0xFF) << 16) | ((green & 0xFF) << 8) | (blue & 0xFF);
     }
@@ -827,6 +833,7 @@ namespace light {
     //% kind.fieldOptions.columns=3 blockGap=8
     //% blockId=light_animation block="%kind"
     //% advanced=true weight=25
+    //% help="light/animation"
     export function animation(kind: LightAnimation): NeoPixelAnimation {
         switch (kind) {
             case LightAnimation.RunningLights: return new RunningLightsAnimation(0xff, 0, 0, 50);
