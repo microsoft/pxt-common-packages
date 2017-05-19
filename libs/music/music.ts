@@ -148,7 +148,7 @@ namespace music {
     //% help=music/rest weight=79
     //% blockId=music_rest block="rest|for %duration=device_beat"
     //% parts="headphone" trackArgs=0
-    //% blockNamespace=music advanced=true
+    //% blockNamespace=music
     export function rest(ms: number) {
         playTone(0, ms);
     }

@@ -99,7 +99,7 @@ void setVolume(int volume) {
 */
 //% help=music/play-tone weight=90
 //% blockId=music_play_note block="play tone|at %note=device_note|for %duration=device_beat"
-//% parts="headphone" async
+//% parts="headphone" async blockGap=8
 //% blockNamespace=music
 void playTone(int frequency, int ms) {
     auto synth = &getWSynthesizer()->synth;
