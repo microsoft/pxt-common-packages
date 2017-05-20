@@ -27,6 +27,9 @@ loops.forever(() => {
     }
 })
 ```
+## See also
+
+[``||on loud sound||``](/reference/input/on-loud-sound)
 
 ```package
 microphone
