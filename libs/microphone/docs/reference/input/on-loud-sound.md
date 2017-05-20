@@ -1,6 +1,6 @@
 # on Loud Sound
 
-Run some code when a loud sound is detected
+Run some code when the microphone hears a loud sound.
 
 ```sig
 input.onLoudSound(() => {});
@@ -8,11 +8,11 @@ input.onLoudSound(() => {});
 
 ## Parameters
 
-* **handler**: the code to run sound conditions change
+* **handler**: the code to run when a loud sound is heard.
 
 ## Example
 
-Dim the red pixels to half their brightness when sounds are quiet.
+Flash the pixels when a loud sound is detected.
 
 ```blocks
 input.onLoudSound(() => {

@@ -308,13 +308,14 @@ namespace light {
         }
 
         /**
-         * Turn off all LEDs.
+         * Turn off all pixel LEDs.
          */
         //% blockId="neopixel_clear" block="clear"
         //% advanced=true
         //% weight=85
         //% parts="neopixel"
         //% defaultInstance=light.pixels
+        //% help="light/clear"
         clear(): void {
             const stride = this._mode === NeoPixelMode.RGBW ? 4 : 3;
             this.buf.fill(0, this._start * stride, this._length * stride);
@@ -348,7 +349,7 @@ namespace light {
         }
 
         /**
-         * Gets the brightness of the strip.
+         * Get the brightness of the pixel strip.
          */
         //% blockId="neopixel_get_brightness" block="brightness"
         //% advanced=true
@@ -356,6 +357,7 @@ namespace light {
         //% blockGap=8
         //% parts=neopixel
         //% defaultInstance=light.pixels
+        //% help="light/brightness"
         brightness(): number {
             return this._brightness;
         }
@@ -688,7 +690,8 @@ namespace light {
     //% blockId=neopixel_colors block="%color"
     //% advanced=true    
     //% weight=20
-    //% blockGap=8    
+    //% blockGap=8
+    //% help="light/colors"
     //% shim=TD_ID
     export function colors(color: Colors): number {
         return color;
@@ -718,6 +721,7 @@ namespace light {
     //% hue.min=0 hue.max=255 sat.min=0 sat.max=255 val.min=0 val.max=255
     //% advanced=true
     //% weight=17
+    //% help="light/hsv"
     export function hsv(hue: number, sat: number, val: number): number {
         let h = (hue % 255) >> 0;
         if (h < 0) h += 255;

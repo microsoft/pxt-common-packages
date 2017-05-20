@@ -39,9 +39,7 @@ input.buttonA.onEvent(ButtonEvent.Click, () => {
 ## Microphone #microphone
 
 ```cards
-input.onSoundConditionChanged(LoudnessCondition.Quiet, () => {
-
-})
+input.onLoudSound(() => {})
 input.soundLevel()
 ```
 
