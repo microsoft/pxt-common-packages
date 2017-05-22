@@ -8,7 +8,7 @@ light.fade(128, 128);
 
 The amount of brightness you fade the color to goes from 0 (totally dark, no color left) to 255
 (all of the current color, no change in brightness). Somewhere in between those two numbers is
-the shade tht you want the color faded to.
+the shade that you want the color faded to.
 
 ## Parameters
 
