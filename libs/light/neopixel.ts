@@ -122,7 +122,7 @@ namespace light {
         }
 
         /**
-         * Shows all LEDs to a given color (range 0-255 for r, g, b).
+         * Set all of the pixels on the strip to one RGB color.
          * @param rgb RGB color of the LED
          */
         //% blockId="neopixel_set_strip_color" block="set all pixels to %rgb=neopixel_colors"
@@ -131,6 +131,7 @@ namespace light {
         //% blockGap=8
         //% parts="neopixel" 
         //% defaultInstance=light.pixels
+        //% help="light/set-all"
         setAll(rgb: number) {
             let red = unpackR(rgb);
             let green = unpackG(rgb);
@@ -154,7 +155,7 @@ namespace light {
         }
 
         /**
-         * Displays a vertical bar graph based on the `value` and `high` value.
+         * Display a vertical bar graph based on the `value` and `high` value.
          * If `high` is 0, the chart gets adjusted automatically.
          * @param value current value to plot
          * @param high maximum value, 0 to autoscale
@@ -295,7 +296,7 @@ namespace light {
         }
 
         /**
-         * Send all the changes to the strip.
+         * Make the strip show all the new change for the pixels.
          */
         //% blockId="neopixel_show" block="show" blockGap=8
         //% advanced=true
@@ -303,6 +304,7 @@ namespace light {
         //% blockGap=8
         //% parts="neopixel"
         //% defaultInstance=light.pixels
+        //% help="light/show"
         show() {
             sendBuffer(this._pin, this.buf);
         }
@@ -323,13 +325,14 @@ namespace light {
         }
 
         /**
-         * Gets the number of pixels declared on the strip
+         * Get the number of pixels on the strip
          */
         //% blockId="neopixel_length" block="length" 
         //% advanced=true
         //% weight=8
         //% blockGap=8
         //% defaultInstance=light.pixels
+        //% help="light/length"
         length() {
             return this._length;
         }
@@ -395,6 +398,7 @@ namespace light {
         //% blockGap=8        
         //% parts="neopixel"
         //% defaultInstance=light.pixels
+        //% help="light/move"
         move(kind: LightMove, offset: number = 1): void {
             const stride = this._mode === NeoPixelMode.RGBW ? 4 : 3;
             if (kind === LightMove.Shift) {
@@ -685,7 +689,7 @@ namespace light {
     }
 
     /**
-     * Gets the RGB value of a known color
+     * Get the RGB value of a known color
     */
     //% blockId=neopixel_colors block="%color"
     //% advanced=true    
@@ -711,7 +715,7 @@ namespace light {
     }
 
     /**
-     * Converts an HSV (hue, saturation, value) color to RGB
+     * Convert an HSV (hue, saturation, value) color to RGB
      * @param hue value of the hue channel between 0 and 255. eg: 255
      * @param sat value of the saturation channel between 0 and 255. eg: 255
      * @param val value of the value channel between 0 and 255. eg: 255
@@ -769,8 +773,8 @@ namespace light {
     }
 
     /**
-     * Fades the color by the brightness
-     * @param c color to fade
+     * Fade the color by the brightness
+     * @param color color to fade
      * @param brightness the amount of brightness to apply to the color, eg: 128
      */
     //% blockId="neopixel_fade" block="fade %color=neopixel_colors|by %brightness"
@@ -778,6 +782,7 @@ namespace light {
     //% advanced=true
     //% weight=18
     //% blockGap=8
+    //% help="light/fade"
     export function fade(color: number, brightness: number): number {
         brightness = Math.max(0, Math.min(255, brightness >> 0));
         if (brightness < 255) {
