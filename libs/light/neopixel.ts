@@ -424,8 +424,7 @@ namespace light {
         }
 
         /**
-         * Moves the light photon and paints the leds
-         * @param action forward or backward
+         * Move a photon effect along the pixel strip by a number of steps.
          * @param steps number of steps (lights) to move, eg: 1
          */
         //% blockId=neophoton_fd block="photon forward by %steps"
@@ -433,6 +432,7 @@ namespace light {
         //% blockGap=8
         //% parts="neopixel"
         //% defaultInstance=light.pixels
+        //% help="light/photon-forward"
         photonForward(steps: number) {
             this.initPhoton();
 
@@ -463,20 +463,21 @@ namespace light {
         }
 
         /**
-         * Flips the direction of the photon
+         * Switch the direction of the photon pulse.
          */
         //% blockId=neophoton_flip block="photon flip"        
         //% weight=40
         //% blockGap=8
         //% parts="neopixel"
         //% defaultInstance=light.pixels
+        //% help="help/photon-flip"
         photonFlip() {
             this.initPhoton();
             this._photonDir *= -1;
         }
 
         /**
-         * Sets the photon color
+         * Set the photon color.
          * @param color the color of the photon
          */
         //% blockId=neophoton_set_color block="photon set color %color"
@@ -485,6 +486,7 @@ namespace light {
         //% parts="neopixel"
         //% defaultInstance=light.pixels
         //% color.min=0 color.max=255
+        //% help="light/set-photon-color"
         setPhotonColor(color: number) {
             this.initPhoton();
             this._photonColor = color & 0xff;
@@ -492,13 +494,14 @@ namespace light {
         }
 
         /**
-         * Sets the desired mode of the photon, pen up, pen down or eraser
+         * Set the photon mode to pen up, pen down, or eraser.
          * @param mode the desired mode
          */
         //% blockId=neophoton_set_photon block="photon %mode"
         //% weight=38        
         //% parts="neopixel"
         //% defaultInstance=light.pixels
+        //% help="light/set-photon-mode"
         setPhotonMode(mode: PhotonMode) {
             this.initPhoton();
             if (this._photonMode != mode) {
@@ -508,7 +511,7 @@ namespace light {
         }
 
         /**
-         * Shows an animation or queues the animation in the animation queue
+         * Show an animation or queue an animation in the animation queue
          * @param animation the animation to run
          * @param duration the duration to run in milliseconds, eg: 500
          */
@@ -530,7 +533,7 @@ namespace light {
         }
 
         /**
-         * Shows a single animation frame
+         * Show a single animation frame
          * @param animation the animation to run
          */
         //% blockId=neopixel_show_animation_frame block="show animation frame %animation"
