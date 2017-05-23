@@ -1,14 +1,14 @@
-# brightness
+# set Brightness
 
-Get the brightness of the pixels on the strip (or on the board).
+Set the brightness of all the pixels on the pixel strip.
 
 ```sig
-light.pixels.brightness()
+light.pixels.setBrightness(0)
 ```
 
-## Returns
+## Parameters
 
-* a [number](/types/number) between 0 (no light) and 255 (super bright). 
+* **brightness**: the new brightness of all the pixels in the strip. This is a [number](/types/number) between 0 (no light) and 255 (super bright). 
 
 ## Example
 
@@ -29,7 +29,8 @@ input.buttonB.onEvent(ButtonEvent.Click, () => {
 
 ## See Also
 
-[``||setBrightness||``](/reference/light/set-brightness)
+[``||brightness||``](/reference/light/brightness),
+[``||set pixel white led||``](/reference/light/set-pixel-white-led)
 
 ```package
 light
