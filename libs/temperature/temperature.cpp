@@ -5,10 +5,10 @@
 #include "DeviceButton.h"
 
 enum class TemperatureCondition {
-    //% block="cold"
-    Cold = ANALOG_THRESHOLD_LOW,
     //% block="hot"
-    Hot = ANALOG_THRESHOLD_HIGH
+    Hot = ANALOG_THRESHOLD_HIGH,
+    //% block="cold"
+    Cold = ANALOG_THRESHOLD_LOW
 };
 
 enum class TemperatureUnit {
