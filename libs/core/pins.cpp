@@ -295,13 +295,16 @@ class IrWrap {
     BufferData *outBuffer;
 
 #if IR_DEBUG
-    char dbgBuf[128];
+    char dbgBuf[512];
     int dbgPtr;
 #endif
 
 public:
 
     IrWrap() {
+#if IR_DEBUG
+        dbgPtr = 0;
+#endif
         state = IR_IDLE;
         recvState = IR_RECV_ERROR;
         data = NULL;
@@ -310,9 +313,6 @@ public:
         if (pin) {
             system_timer_event_every_us(250, IR_COMPONENT_ID, IR_TIMER_EVENT);
             devMessageBus.listen(IR_COMPONENT_ID, IR_TIMER_EVENT, this, &IrWrap::process, MESSAGE_BUS_LISTENER_IMMEDIATE);
-
-            NVIC_SetVector(TC7_IRQn, (uint32_t)TICKER_COUNTER_Handlr);
-
 
             //clock.attach_us(this, &IrWrap::process, 4*1000/38);
             pin->setAnalogPeriodUs(1000/38); // 38kHz
@@ -328,7 +328,8 @@ public:
 #if IR_DEBUG
         int len = strlen(msg);
         if (len + dbgPtr > (int)sizeof(dbgBuf) - 1) {
-            dbgPtr = 0;
+            dbgPtr = 1;
+            dbgBuf[0] = '>';
         }
         memcpy(dbgBuf + dbgPtr, msg, len + 1);
         dbgPtr += len;
@@ -341,6 +342,7 @@ public:
         itoa(n, buf);
         dbg(" ");
         dbg(buf);
+        //DMESG("D %d", n);
 #endif
     }
 
@@ -348,12 +350,12 @@ public:
         if (data)
             return; // error code?
 
-        data = d;
         incrRC(d);
         state = IR_MARK_START;
         wait = 7;
         pin->setAnalogValue(333);
         pin->setPwm(1);
+        data = d;
         while (data) {
             fiber_sleep(5);
         }
@@ -361,6 +363,9 @@ public:
     }
 
     void finish(int code) {
+        if (recvState == IR_RECV_ERROR)
+            return;
+
 #if IR_DEBUG
         if (code == 0) {
             DMESG("IR OK len=%d [%s]", recvPtr, dbgBuf);
@@ -373,14 +378,20 @@ public:
     }
 
     void pulseGap(DeviceEvent ev) {
-        if (ev.timestamp > 10000)
+        if (ev.timestamp > 10000) {
+            dbg(" BRK ");
+            finish(11);
             return;
+        }
         
         dbgNum((int)ev.timestamp);
 
         int len = (int)(ev.timestamp + 20 + 125) / 250;
 
-        if (!(1 <= len && len <= 4)) {
+        if (len == 0) len = 1;
+        if (len == 5 || len == 6) len = 4;
+
+        if (len > 4) {
             finish(1);
             return;
         }
@@ -390,6 +401,8 @@ public:
             recvPtr = 0;
             recvShift = 0;
             memset(recvBuf, 0, IR_MAX_MSG_SIZE);
+            dbg(" *** ");
+            return;
         }
 
         if (recvState == IR_WAIT_DATA) {
@@ -403,12 +416,16 @@ public:
             }
             recvBuf[recvPtr] |= (len - 1) << recvShift;
             recvShift += 2;
+            return;
         }
     }
 
     void pulseMark(DeviceEvent ev) {
-        if (ev.timestamp > 10000)
+        if (ev.timestamp > 10000) {
+            dbg(" -BRK ");
+            finish(10);
             return;
+        }
 
         dbgNum(-(int)ev.timestamp);
 
@@ -420,7 +437,7 @@ public:
         }
 
         if (recvState == IR_WAIT_DATA) {
-            if (len == 1)
+            if (len <= 2)
                 return; // just a bit
             else if (len < 6) {
                 // stop
@@ -429,6 +446,7 @@ public:
                     return;
                 }
 
+                recvPtr++;
                 decrRC(outBuffer);
                 outBuffer = pins::createBuffer(recvPtr);
                 memcpy(outBuffer->payload, recvBuf, recvPtr);
