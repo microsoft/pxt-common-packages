@@ -266,7 +266,7 @@ namespace light {
         }
 
         /**
-         * For NeoPixels with RGB+W LEDs, set the white LED brightness.
+         * Set the white brightness of a pixel in a NeoPixel strip of RGB+W LEDs.
          * This only works for RGB+W NeoPixels.
          * @param pixeloffset position of the LED in the strip
          * @param white brightness of the white LED
@@ -274,9 +274,10 @@ namespace light {
         //% advanced=true
         //% weight=5        
         //% blockGap=8
-        //% blockId="neopixel_set_pixel_white_led" block="set pixel color at %pixeloffset|to %rgb=neopixel_colors"
+        //% blockId="neopixel_set_pixel_white_led" block="set pixel white LED at %pixeloffset|to %white"
         //% parts="neopixel"
         //% defaultInstance=light.pixels
+        //% help="light/set-pixel-white-led"
         setPixelWhiteLED(pixeloffset: number, white: number): void {
             if (this._mode != NeoPixelMode.RGBW) return;
 
@@ -347,6 +348,7 @@ namespace light {
         //% parts="neopixel"
         //% defaultInstance=light.pixels
         //% brightness.min=0 brightness.max=255
+        //% help="light/set-brightness"
         setBrightness(brightness: number): void {
             this._brightness = Math.max(0, Math.min(0xff, brightness >> 0));
         }
@@ -376,6 +378,7 @@ namespace light {
         //% blockGap=8         
         //% parts="neopixel"
         //% defaultInstance=light.pixels
+        //% help="light/range"
         range(start: number, length: number): NeoPixelStrip {
             let strip = new NeoPixelStrip();
             strip._parent = this;
@@ -652,6 +655,7 @@ namespace light {
     //% blockExternalInputs=1    
     //% parts="neopixel"
     //% trackArgs=0,2
+    //% help="light/create-neo-pixel-strip"
     export function createNeoPixelStrip(
         pin: DigitalPin = null,
         numleds: number = 10,
