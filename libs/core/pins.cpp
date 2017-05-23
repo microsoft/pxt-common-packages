@@ -263,6 +263,51 @@ namespace ir {
 
 #define IR_DEBUG 1
 
+static const uint8_t hamming[16] = {
+0b0000000,
+0b1110000,
+0b1001100,
+0b0111100,
+0b0101010,
+0b1011010,
+0b1100110,
+0b0010110,
+0b1101001,
+0b0011001,
+0b0100101,
+0b1010101,
+0b1000011,
+0b0110011,
+0b0001111,
+0b1111111,
+};
+
+static const uint8_t invHamming[64] = { 
+    0x00, 0x0c, 0x0a, 0x7e, 0x09, 0x4e, 0x2e, 0xee, 0x09, 0x7d, 0x7b, 
+    0x77, 0x99, 0x59, 0x39, 0x7e, 0x0a, 0x4d, 0xaa, 0x6a, 0x48, 0x44, 
+    0x3a, 0x4e, 0x1d, 0xdd, 0x3a, 0x7d, 0x39, 0x4d, 0x33, 0x3f, 0x0c, 
+    0xcc, 0x2b, 0x6c, 0x28, 0x5c, 0x22, 0x2e, 0x1b, 0x5c, 0xbb, 0x7b,
+    0x59, 0x55, 0x2b, 0x5f, 0x18, 0x6c, 0x6a, 0x66, 0x88, 0x48, 0x28, 
+    0x6f, 0x11, 0x1d, 0x1b, 0x6f, 0x18, 0x5f, 0x3f, 0xff
+};
+
+static const int8_t waitTbl[] = { 0, 1, 3, 2 };
+static const int8_t invWaitTbl[] = { 0, 1, 3, 2 };
+
+static int lookupInvHaming(int v) {
+    int k = invHamming[v >> 1];
+    if (v & 1) return (k & 0xf);
+    else return (k >> 4);
+}
+
+static int decodeHamming(int v) {
+    return (lookupInvHaming((v >> 7)) << 4) | (lookupInvHaming(v & 0x7f));
+}
+
+static int encodeHamming(int v) {
+    return (hamming[v >> 4] << 7) | hamming[v & 0xf];
+}
+
 enum IrState : uint8_t {
     IR_IDLE,
     IR_MARK_START,
@@ -283,7 +328,8 @@ class IrWrap {
     DevicePin *pin;
     DevicePin *inpin;
     BufferData *data;
-    uint16_t dataptr;
+    int16_t dataptr;
+    uint16_t dataval; // Hamming-encoded
     int8_t wait;
     int8_t shift;
     IrState state;
@@ -292,6 +338,7 @@ class IrWrap {
     uint8_t recvBuf[IR_MAX_MSG_SIZE];
     uint8_t recvPtr;
     uint8_t recvShift;
+    uint16_t recvVal;
     BufferData *outBuffer;
 
 #if IR_DEBUG
@@ -400,22 +447,23 @@ public:
             recvState = IR_WAIT_DATA;
             recvPtr = 0;
             recvShift = 0;
-            memset(recvBuf, 0, IR_MAX_MSG_SIZE);
+            recvVal = 0;
             dbg(" *** ");
             return;
         }
 
         if (recvState == IR_WAIT_DATA) {
-            if (recvShift >= 8) {
+            recvVal |= invWaitTbl[len - 1] << recvShift;
+            recvShift += 2;
+            if (recvShift >= 14) {
+                recvBuf[recvPtr++] = decodeHamming(recvVal);
                 recvShift = 0;
-                recvPtr++;
+                recvVal = 0;
                 if (recvPtr >= IR_MAX_MSG_SIZE) {
                     finish(2);
                     return;
                 }
             }
-            recvBuf[recvPtr] |= (len - 1) << recvShift;
-            recvShift += 2;
             return;
         }
     }
@@ -441,12 +489,10 @@ public:
                 return; // just a bit
             else if (len < 6) {
                 // stop
-                if (recvShift != 8) {
+                if (recvShift != 0) {
                     finish(3);
                     return;
                 }
-
-                recvPtr++;
                 decrRC(outBuffer);
                 outBuffer = pins::createBuffer(recvPtr);
                 memcpy(outBuffer->payload, recvBuf, recvPtr);
@@ -470,6 +516,11 @@ public:
     stop: 4 marks
     */
 
+    void nextByte() {
+        shift = 0;
+        dataval = encodeHamming(data->payload[++dataptr]);
+    }
+
     void process(DeviceEvent) {
         if (!data)
             return;
@@ -489,8 +540,8 @@ public:
                 pin->setPwm(0);
                 break;
             case IR_GAP_START:
-                shift = 0;
-                dataptr = 0;
+                dataptr = -1;
+                nextByte();
             case IR_GAP_DATA:
                 pin->setPwm(1);
                 if (dataptr >= data->length) {
@@ -498,12 +549,9 @@ public:
                     wait = 3;
                 } else {
                     state = IR_MARK_DATA;
-                    wait = -((data->payload[dataptr] >> shift) & 3);
+                    wait = -(waitTbl[(dataval >> shift) & 3]);
                     shift += 2;
-                    if (shift >= 8) {
-                        shift = 0;
-                        dataptr++;
-                    }
+                    if (shift >= 14) nextByte();
                 }
                 break;
             case IR_MARK_DATA:
