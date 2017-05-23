@@ -43,8 +43,6 @@ DevicePin *lookupPin(int pinName) {
 
 #define PINOP(op) name->op
 
-#define PINREAD(op) return (name->op != 0)
-
 namespace DigitalPinMethods {
 /**
  * Read the specified pin or connector as either 0 or 1
@@ -58,7 +56,7 @@ namespace DigitalPinMethods {
 //% name.fieldOptions.width=220
 //% name.fieldOptions.columns=4
 bool digitalRead(DigitalPin name) {
-    PINREAD(getDigitalValue());
+    return PINOP(getDigitalValue()) != 0;
 }
 
 /**
@@ -155,7 +153,7 @@ namespace AnalogPinMethods {
 //% name.fieldOptions.width=220
 //% name.fieldOptions.columns=4
 int analogRead(AnalogPin name) {
-    PINREAD(getAnalogValue());
+    return PINOP(getAnalogValue());
 }
 
 /**
