@@ -191,6 +191,10 @@ TValue incr(TValue e);
 //%
 void decr(TValue e);
 
+static inline RefCounted *incrRC(RefCounted *r) { return (RefCounted*)incr((TValue)r); }
+static inline void decrRC(RefCounted *r) { decr((TValue)r); }
+
+
 inline void *ptrOfLiteral(int offset) {
     return &bytecode[offset];
 }

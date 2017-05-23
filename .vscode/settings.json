@@ -1,5 +1,8 @@
 {
     "files.associations": {
-        "*.ipp": "cpp"
+        "*.ipp": "cpp",
+        "iterator": "cpp",
+        "string": "cpp",
+        "vector": "cpp"
     }
 }

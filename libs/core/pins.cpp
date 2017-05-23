@@ -252,3 +252,286 @@ int pulseDuration() {
     return pxt::lastEvent.timestamp;
 }
 }
+
+
+namespace ir {
+
+#define IR_MAX_MSG_SIZE 64
+#define IR_COMPONENT_ID 0x2000
+#define IR_TIMER_EVENT 0x1
+#define IR_PACKET_EVENT 0x2
+
+#define IR_DEBUG 1
+
+enum IrState : uint8_t {
+    IR_IDLE,
+    IR_MARK_START,
+    IR_GAP_START,
+    IR_MARK_DATA,
+    IR_GAP_DATA,
+    IR_MARK_END,
+};
+
+enum IrRecvState : uint8_t {
+    IR_RECV_ERROR,
+    IR_WAIT_START_GAP,
+    IR_WAIT_DATA,
+};
+
+class IrWrap {
+    //Ticker clock;
+    DevicePin *pin;
+    DevicePin *inpin;
+    BufferData *data;
+    uint16_t dataptr;
+    int8_t wait;
+    int8_t shift;
+    IrState state;
+
+    IrRecvState recvState;
+    uint8_t recvBuf[IR_MAX_MSG_SIZE];
+    uint8_t recvPtr;
+    uint8_t recvShift;
+    BufferData *outBuffer;
+
+#if IR_DEBUG
+    char dbgBuf[128];
+    int dbgPtr;
+#endif
+
+public:
+
+    IrWrap() {
+        state = IR_IDLE;
+        recvState = IR_RECV_ERROR;
+        data = NULL;
+        outBuffer = NULL;
+        pin = lookupPin(PIN_IR_OUT);
+        if (pin) {
+            system_timer_event_every_us(250, IR_COMPONENT_ID, IR_TIMER_EVENT);
+            devMessageBus.listen(IR_COMPONENT_ID, IR_TIMER_EVENT, this, &IrWrap::process, MESSAGE_BUS_LISTENER_IMMEDIATE);
+
+            NVIC_SetVector(TC7_IRQn, (uint32_t)TICKER_COUNTER_Handlr);
+
+
+            //clock.attach_us(this, &IrWrap::process, 4*1000/38);
+            pin->setAnalogPeriodUs(1000/38); // 38kHz
+            
+            inpin = lookupPin(PIN_IR_IN);
+            inpin->eventOn(DEVICE_PIN_EVENT_ON_PULSE);
+            devMessageBus.listen(inpin->id, DEVICE_PIN_EVT_PULSE_HI, this, &IrWrap::pulseGap, MESSAGE_BUS_LISTENER_IMMEDIATE);
+            devMessageBus.listen(inpin->id, DEVICE_PIN_EVT_PULSE_LO, this, &IrWrap::pulseMark, MESSAGE_BUS_LISTENER_IMMEDIATE);
+        }
+    }
+
+    void dbg(const char *msg) {
+#if IR_DEBUG
+        int len = strlen(msg);
+        if (len + dbgPtr > (int)sizeof(dbgBuf) - 1) {
+            dbgPtr = 0;
+        }
+        memcpy(dbgBuf + dbgPtr, msg, len + 1);
+        dbgPtr += len;
+#endif
+    }
+
+    void dbgNum(int n) {
+#if IR_DEBUG
+        char buf[30];
+        itoa(n, buf);
+        dbg(" ");
+        dbg(buf);
+#endif
+    }
+
+    void send(BufferData *d) {
+        if (data)
+            return; // error code?
+
+        data = d;
+        incrRC(d);
+        state = IR_MARK_START;
+        wait = 7;
+        pin->setAnalogValue(333);
+        pin->setPwm(1);
+        while (data) {
+            fiber_sleep(5);
+        }
+        fiber_sleep(5);
+    }
+
+    void finish(int code) {
+#if IR_DEBUG
+        if (code == 0) {
+            DMESG("IR OK len=%d [%s]", recvPtr, dbgBuf);
+        } else {
+            DMESG("IR ERROR %d [%s]", code, dbgBuf);
+        }
+        dbgPtr = 0;
+#endif
+        recvState = IR_RECV_ERROR;        
+    }
+
+    void pulseGap(DeviceEvent ev) {
+        if (ev.timestamp > 10000)
+            return;
+        
+        dbgNum((int)ev.timestamp);
+
+        int len = (int)(ev.timestamp + 20 + 125) / 250;
+
+        if (!(1 <= len && len <= 4)) {
+            finish(1);
+            return;
+        }
+
+        if (recvState == IR_WAIT_START_GAP) {
+            recvState = IR_WAIT_DATA;
+            recvPtr = 0;
+            recvShift = 0;
+            memset(recvBuf, 0, IR_MAX_MSG_SIZE);
+        }
+
+        if (recvState == IR_WAIT_DATA) {
+            if (recvShift >= 8) {
+                recvShift = 0;
+                recvPtr++;
+                if (recvPtr >= IR_MAX_MSG_SIZE) {
+                    finish(2);
+                    return;
+                }
+            }
+            recvBuf[recvPtr] |= (len - 1) << recvShift;
+            recvShift += 2;
+        }
+    }
+
+    void pulseMark(DeviceEvent ev) {
+        if (ev.timestamp > 10000)
+            return;
+
+        dbgNum(-(int)ev.timestamp);
+
+        int len = (int)(ev.timestamp - 20 + 125) / 250;
+
+        if (len >= 7) {
+            recvState = IR_WAIT_START_GAP;
+            return;
+        }
+
+        if (recvState == IR_WAIT_DATA) {
+            if (len == 1)
+                return; // just a bit
+            else if (len < 6) {
+                // stop
+                if (recvShift != 8) {
+                    finish(3);
+                    return;
+                }
+
+                decrRC(outBuffer);
+                outBuffer = pins::createBuffer(recvPtr);
+                memcpy(outBuffer->payload, recvBuf, recvPtr);
+                finish(0);
+                DeviceEvent evt(IR_COMPONENT_ID, IR_PACKET_EVENT);
+            } else {
+                finish(4);
+            }
+        }
+    }
+
+    Buffer getBuffer() {
+        incrRC(outBuffer);
+        return outBuffer;
+    }
+
+    /*
+    Protocol:
+    start: 8 marks, 2 gaps
+    data: 1 mark, 1-4 gaps
+    stop: 4 marks
+    */
+
+    void process(DeviceEvent) {
+        if (!data)
+            return;
+
+        if (wait > 0) {
+            wait--;
+            return;
+        }
+      
+        switch (state) {
+            case IR_IDLE:
+                device.panic(100);
+                break;
+            case IR_MARK_START:
+                state = IR_GAP_START;
+                wait = 2;
+                pin->setPwm(0);
+                break;
+            case IR_GAP_START:
+                shift = 0;
+                dataptr = 0;
+            case IR_GAP_DATA:
+                pin->setPwm(1);
+                if (dataptr >= data->length) {
+                    state = IR_MARK_END;
+                    wait = 3;
+                } else {
+                    state = IR_MARK_DATA;
+                    wait = -((data->payload[dataptr] >> shift) & 3);
+                    shift += 2;
+                    if (shift >= 8) {
+                        shift = 0;
+                        dataptr++;
+                    }
+                }
+                break;
+            case IR_MARK_DATA:
+                pin->setPwm(0);
+                wait = -wait;
+                state = IR_GAP_DATA;
+                break;
+            case IR_MARK_END:
+                decrRC(data);
+                data = NULL;
+                state = IR_IDLE;
+                pin->setAnalogValue(0);
+                pin->setPwm(1);
+                break;
+        }
+    }
+};
+SINGLETON(IrWrap);
+
+/**
+ * Send data over IR.
+ */
+//%
+void send(Buffer buf) {
+    auto w = getIrWrap();
+    w->send(buf);
+}
+
+/**
+ * Get data over IR.
+ */
+//%
+Buffer currentPacket() {
+    auto w = getIrWrap();
+    return w->getBuffer();
+}
+
+
+/**
+ * Get data over IR.
+ */
+//%
+void onPacket(Action body) {
+    getIrWrap(); // attach events
+    registerWithDal(IR_COMPONENT_ID, IR_PACKET_EVENT, body);
+}
+
+
+}
