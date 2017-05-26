@@ -470,7 +470,7 @@ namespace light {
         //% blockGap=8
         //% parts="neopixel"
         //% defaultInstance=light.pixels
-        //% help="help/photon-flip"
+        //% help="light/photon-flip"
         photonFlip() {
             this.initPhoton();
             this._photonDir *= -1;
