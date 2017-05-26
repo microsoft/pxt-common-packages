@@ -300,12 +300,36 @@ static int lookupInvHaming(int v) {
     else return (k >> 4);
 }
 
+static int splitBits(int v) {
+    #define SB(n) ((v & (3 << n)) << n)
+    return SB(0) | SB(2) | SB(4) | SB(6);
+    #undef SB
+}
+
+static int joinBits(int v) {
+    #define SB(n) ((v & (3 << 2 * n)) >> n)
+    return SB(0) | SB(2) | SB(4) | SB(6);
+    #undef SB
+}
+
+static int split14(int v) {
+    int r = splitBits(v & 0x7f) | (splitBits(v >> 7) << 2);
+    r = (r << 1) & 0x3fff;
+    if (v & 0x2000) r |= 1;
+    return r;
+}
+
+static int join14(int v) {
+    return joinBits(v >> 1) | (joinBits(v >> 3) << 7) | ((v & 1) ? 0x2000 : 0);
+}
+
 static int decodeHamming(int v) {
+    v = join14(v);
     return (lookupInvHaming((v >> 7)) << 4) | (lookupInvHaming(v & 0x7f));
 }
 
 static int encodeHamming(int v) {
-    return (hamming[v >> 4] << 7) | hamming[v & 0xf];
+    return split14((hamming[v >> 4] << 7) | hamming[v & 0xf]);
 }
 
 enum IrState : uint8_t {
@@ -403,7 +427,7 @@ public:
         pin = lookupPin(PIN_IR_OUT);
         prevDataSize = 0;
         if (pin) {
-            //system_timer_event_every_us(250, IR_COMPONENT_ID, IR_TIMER_EVENT);
+            system_timer_event_every_us(250, IR_COMPONENT_ID, IR_TIMER_EVENT);
             devMessageBus.listen(IR_COMPONENT_ID, IR_TIMER_EVENT, this, &IrWrap::process, MESSAGE_BUS_LISTENER_IMMEDIATE);
 
             //clock.attach_us(this, &IrWrap::process, 4*1000/38);
@@ -445,11 +469,14 @@ public:
                 prevDataSize = 6;
                 memcpy(prevData, recvBuf, 3);
                 memcpy(prevData + 3, recvBuf, 3);
+                prevData[3] ^= 182;
+                prevData[4] ^= 182;
+                prevData[5] ^= 182;
             }
             if (prevDataSize != recvPtr || memcmp(prevData, recvBuf, recvPtr))
                 DMESG("IR DATA ERR dr=%d [%s] [%s]", drift, dbg.get(), sendDbg.get());
             else {
-                //DMESG("IR OK len=%d [%s]", recvPtr, dbg.get());
+                DMESG("IR OK len=%d [%s]", recvPtr, dbg.get());
             }
             prevDataSize = 0;
         } else {
@@ -520,6 +547,7 @@ public:
 
         if (len >= 7) {
             recvState = IR_WAIT_START_GAP;
+            prevPulse = 0;
             return;
         }
 
