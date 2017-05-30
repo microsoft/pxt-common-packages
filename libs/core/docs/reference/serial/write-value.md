@@ -1,20 +1,40 @@
-# Write Value
+# write Value
 
-Write a name/value pair and a newline character (`\r\n`) to the Serial port.
+Write a **name:value** pair as a line of text to the serial port.
 
 ```sig
 serial.writeValue("x", 0);
 ```
 
-### Parameters
+A **name:value** pair is a string that has both a name for a value and the value
+itself. If you want to send a temperature value of 32 degrees as a _name:value_ pair,
+it would go to the serial port as this: "temperature:32". This is a good way to
+connect a number value to it's meaning.
 
-* `name` is the [string](/types/string) to write to the serial port
-* `value` is the [number](/types/number) to write to the serial port
+So, ``||write value||`` does this but you give the name and the value as two parts and it
+sends it as a pair.
 
-### #examples
+## Parameters
 
-### See also
+* **name**: a [string](/types/string) that is the name part of the _name:value_ pair
+* **value**: a [number](/types/number) that is the value part of the _name:value_ pair 
 
-[serial write line](/reference/serial/write-line),
-[serial write number](/reference/serial/write-number)
+## Example
+
+Send _name:value_ pairs for odd and even numbers to the serial port.
+
+```blocks
+for (let i = 0; i < 10; i++) {
+    if (i % 2 > 0) {
+        serial.writeValue("odd", i)
+    } else {
+        serial.writeValue("even", i)
+    }
+}
+```
+
+## See also
+
+[``||write line||``](/reference/serial/write-line),
+[``||write number||``](/reference/serial/write-number)
 
