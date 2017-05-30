@@ -1,12 +1,8 @@
 # Control
 
-Runtime and event utilities.
+Program controls and events.
 
 ```cards
-loops.forever(() => {
-    
-});
-control.pause(100);
 control.millis();
 control.runInBackground(() => {
     
@@ -17,6 +13,10 @@ control.raiseEvent(0, 0);
 control.onEvent(0, 0, () => {
     
 });
+```
+## Advanced #advanced
+
+```cards
 control.deviceSerialNumber();
 control.assert(false, 0);
 control.deviceDalVersion();
