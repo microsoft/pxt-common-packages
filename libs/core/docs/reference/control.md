@@ -1,8 +1,12 @@
 # Control
 
-Program controls and events.
+Runtime and event utilities.
 
 ```cards
+loops.forever(() => {
+    
+});
+control.pause(100);
 control.millis();
 control.runInBackground(() => {
     

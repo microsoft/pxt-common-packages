@@ -1,15 +1,12 @@
 /**
-* Program controls and events.
+* Runtime and event utilities.
 */
 //% weight=10 color="#31bca3" icon="\uf110" advanced=true
 namespace control {
 
     /**
-     * Display an error code and stop the program.
-     * @param code an error number to display. eg: 5
+     * Display specified error code and stop the program.
      */
-    //% help=control/panic weight=29
-    //% blockId="control_panic" block="panic %code"
     // shim=pxtrt::panic
     export function panic(code: number) { }
 
