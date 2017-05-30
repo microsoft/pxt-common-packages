@@ -48,7 +48,7 @@ namespace DigitalPinMethods {
  * Read the specified pin or connector as either 0 or 1
  * @param name pin to read from
  */
-//% help=pins/digital-read-pin weight=30
+//% help=pins/digital-read weight=30
 //% blockId=device_get_digital_pin block="digital read|pin %name" blockGap=8
 //% parts="slideswitch" trackArgs=0
 //% blockNamespace=pins
@@ -64,7 +64,7 @@ bool digitalRead(DigitalPin name) {
   * @param name pin to write to
   * @param value value to set on the pin
   */
-//% help=pins/digital-write-pin weight=29
+//% help=pins/digital-write weight=29
 //% blockId=device_set_digital_pin block="digital write|pin %name|to %value"
 //% parts="led" trackArgs=0
 //% blockNamespace=pins
@@ -146,7 +146,7 @@ namespace AnalogPinMethods {
  * Read the connector value as analog, that is, as a value comprised between 0 and 1023.
  * @param name pin to write to
  */
-//% help=pins/analog-read-pin weight=25
+//% help=pins/analog-read weight=25
 //% blockId=device_get_analog_pin block="analog read|pin %name" blockGap="8"
 //% blockNamespace=pins
 //% name.fieldEditor="gridpicker"
@@ -161,7 +161,7 @@ int analogRead(AnalogPin name) {
  * @param name pin name to write to
  * @param value value to write to the pin between ``0`` and ``1023``. eg:1023,0
  */
-//% help=pins/analog-write-pin weight=24
+//% help=pins/analog-write weight=24
 //% blockId=device_set_analog_pin block="analog write|pin %name|to %value" blockGap=8
 //% blockNamespace=pins
 //% name.fieldEditor="gridpicker"
@@ -193,14 +193,14 @@ void analogSetPeriod(PwmPin name, int micros) {
 }
 
 /**
- * Writes a value to the servo, controlling the shaft accordingly. On a standard servo, this will
+ * Write a value to the servo, controlling the shaft accordingly. On a standard servo, this will
  * set the angle of the shaft (in degrees), moving the shaft to that orientation. On a continuous
  * rotation servo, this will set the speed of the servo (with ``0`` being full-speed in one
  * direction, ``180`` being full speed in the other, and a value near ``90`` being no movement).
  * @param name pin to write to
  * @param value angle or rotation speed, eg:180,90,0
  */
-//% help=pins/servo-write-pin weight=20
+//% help=pins/servo-write weight=20
 //% blockId=device_set_servo_pin block="servo write|pin %name|to %value" blockGap=8
 //% parts=microservo trackArgs=0
 //% blockNamespace=pins
@@ -212,7 +212,7 @@ void servoWrite(PwmPin name, int value) {
 }
 
 /**
- * Configures this IO pin as an analog/pwm output, configures the period to be 20 ms, and sets the
+ * Configure this IO pin as an analog/pwm output, configures the period to be 20 ms, and sets the
  * pulse width, based on the value it is given **microseconds** or `1/1000` milliseconds.
  * @param name pin name
  * @param micros pulse duration in micro seconds, eg:1500

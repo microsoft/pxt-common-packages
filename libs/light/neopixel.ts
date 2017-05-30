@@ -470,7 +470,7 @@ namespace light {
         //% blockGap=8
         //% parts="neopixel"
         //% defaultInstance=light.pixels
-        //% help="help/photon-flip"
+        //% help="light/photon-flip"
         photonFlip() {
             this.initPhoton();
             this._photonDir *= -1;
@@ -515,7 +515,7 @@ namespace light {
          * @param animation the animation to run
          * @param duration the duration to run in milliseconds, eg: 500
          */
-        //% blockId=neopixel_show_animation block="show animation %animation=light_animation|for (ms) %duration"
+        //% blockId=neopixel_show_animation block="show animation %animation=light_animation|for %duration| ms"
         //% weight=80
         //% blockGap=8
         //% help="light/show-animation"
