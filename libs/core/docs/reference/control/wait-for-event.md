@@ -18,8 +18,8 @@ number for the timer is `6` and the cause value is `1`. The program could wait f
 events like this:
 
 ```blocks
-let myTimer = 6;
-let timerTimeout = 1;
+const myTimer = 6;
+const timerTimeout = 1;
 
 control.runInBackground(() => {
     while (true) {
@@ -41,8 +41,8 @@ control.waitForEvent(myTimer, timerTimeout)
 Make a timeout timer to signal every 2 seconds. Wait two times and light a pixel each time.
 
 ```blocks
-let myTimer = 6;
-let timerTimeout = 1;
+const myTimer = 6;
+const timerTimeout = 1;
 
 control.runInBackground(() => {
     while (true) {

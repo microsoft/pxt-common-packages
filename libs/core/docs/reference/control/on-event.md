@@ -70,7 +70,7 @@ Register two events coming from source `22`. Make pixels light up on the pixel s
 the events of `0` and `1` are _raised_.
 
 ```blocks
-let pixelLighter = 22
+const pixelLighter = 22
 control.runInBackground(() => {
     for (let i = 0; i < 2; i++) {
         loops.pause(1000)
