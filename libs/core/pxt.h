@@ -25,7 +25,7 @@
 #include "DevicePin.h"
 #include "DeviceFiber.h"
 #include "DeviceMessageBus.h"
-#include "TouchSensor.h"
+#include "CapTouchButton.h"
 #include "DeviceImage.h"
 
 #include "pins.h"
