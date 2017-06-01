@@ -14,7 +14,7 @@ happens.
 
 ## Parameters
 
-* a [boolean](types/boolean) value that is either `false` or `true`. The meaning of the value depends on how something connected to the pin behaves when it gets the new value.
+* **value**: a [boolean](types/boolean) value that is either `false` or `true`. The meaning of the value depends on how something connected to the pin behaves when it gets the new value.
 
 ## Example #ex1
 
