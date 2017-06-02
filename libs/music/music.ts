@@ -150,7 +150,7 @@ namespace music {
     //% parts="headphone" trackArgs=0
     //% blockNamespace=music
     export function rest(ms: number) {
-        playTone(0, ms);
+        playTone(0, Math.max(ms, 20));
     }
 
     /**
