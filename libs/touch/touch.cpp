@@ -8,10 +8,8 @@ static const int touchPins[] = {
 
 class WTouch {
   public:
-    DevicePin touchDrive;
-    TouchSensor touchSensor;
 
-#define Button TouchButton *
+#define Button CapTouchButton *
     Button buttons[0];
     //% indexedInstanceNS=input indexedInstanceShim=pxt::getTouchButton
     /**
@@ -51,7 +49,7 @@ class WTouch {
     Button pinA7;
 #undef Button
 
-    WTouch() : INIT_PIN(touchDrive, PIN_CAPSENSE), touchSensor(touchDrive) {
+    WTouch() {
         memclr(buttons, sizeof(touchPins));
     }
 };
@@ -59,14 +57,14 @@ SINGLETON(WTouch);
 const int LastTouchButtonID = &((WTouch *)0)->pinA7 - ((WTouch *)0)->buttons;
 
 //%
-TouchButton *getTouchButton(int id) {
+CapTouchButton *getTouchButton(int id) {
     if (!(0 <= id && id <= LastTouchButtonID))
         device.panic(42);
     if (sizeof(touchPins) / sizeof(touchPins[0]) != LastTouchButtonID + 1)
         device.panic(42);
     auto w = getWTouch();
     if (!w->buttons[id])
-        w->buttons[id] = new TouchButton(*pxt::lookupPin(touchPins[id]), w->touchSensor);
+        w->buttons[id] = new CapTouchButton(*pxt::lookupPin(touchPins[id]));
     return w->buttons[id];
 }
 }
