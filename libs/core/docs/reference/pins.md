@@ -20,4 +20,5 @@ pins.A0.digitalWrite(false)
 pins.D4.onPulsed(PulseValue.Low, () => {})
 pins.A0.setPull(PinPullMode.PullDown)
 pins.A0.pulseIn(PulseValue.High,0)
+pins.pulseDuration()
 ```
