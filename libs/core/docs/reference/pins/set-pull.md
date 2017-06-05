@@ -51,4 +51,6 @@ pins.D4.onPulsed(PulseValue.Low, () => {
 
 ## See Also
 
-[``||digital read||``](/reference/pins/digital-read)
+[``||digital read||``](/reference/pins/digital-read),
+[``||on pulsed||``](/reference/pins/on-pulsed),
+[``||pulse in||``](/reference/pins/pulse-in)
