@@ -42,18 +42,24 @@ namespace pxsim {
             this.reading[capId] = false;
         }
     }
+
+    export class TouchButtonState {
+        buttons: CommonButton[];
+
+        constructor (pins: number[]) {
+            this.buttons = pins.map(pin => new CommonButton(pin));
+        }
+    }
 }
 
 namespace pxsim.pxtcore {
-    export function getTouchButton(buttonId: number): Button {
-        // const state = board().buttonState;
-        // if (buttonId < state.touchButtons.length && buttonId >= 0) {
-        //     const pin = board().edgeConnectorState.getPin(state.touchPins[buttonId]) as pins.CPPin;
-        //     pin.mode |= PinFlags.Analog;
-        //     pins.markUsed(pin);
-        //     return state.touchButtons[buttonId];
-        // }
-        // panic
-        return undefined;
+    export function getTouchButton(index: number): Button {
+        const state = (board() as CapTouchBoard).touchButtonState;
+        const btn = state.buttons[index];
+        if (btn) {
+            (getPin(btn.id) as pins.CommonPin).used = true;
+            runtime.queueDisplayUpdate();
+        }
+        return btn;
     }
 }
