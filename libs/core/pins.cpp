@@ -98,6 +98,7 @@ void onPulsed(DigitalPin pin, PulseValue pulse, Action body) {
 */
 //% blockId="pins_pulse_in" block="pulse in (µs)|pin %name|pulsed %value"
 //% weight=20 advanced=true
+//% help="pins/pulse-in"
 //% blockNamespace=pins
 //% pin.fieldEditor="gridpicker"
 //% pin.fieldOptions.width=220
