@@ -74,7 +74,7 @@ namespace music {
             case Sounds.MagicWand:
                 return 'F#6:1-300 G# A# B C7# D# F F# G# A# B:6'; //A#7:1-200 A:1 A#7:1 A:1 A#7:2
             case Sounds.Siren:
-                return 'a4 d5';
+                return 'a4 d5 a4 d5 a4 d5';
             default:
                 return '';
         }
