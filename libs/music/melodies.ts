@@ -39,7 +39,9 @@ enum Sounds {
     //% block="wawawawaa"
     Wawawawaa,
     //% block="magic wand"
-    MagicWand
+    MagicWand,
+    //% block="siren"
+    Siren
 }
 
 namespace music {
@@ -71,6 +73,8 @@ namespace music {
                 return 'g5:1 d# c g4:2 b:1 c5:3';
             case Sounds.MagicWand:
                 return 'F#6:1-300 G# A# B C7# D# F F# G# A# B:6'; //A#7:1-200 A:1 A#7:1 A:1 A#7:2
+            case Sounds.Siren:
+                return 'a4 d5';
             default:
                 return '';
         }
