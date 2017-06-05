@@ -32,7 +32,8 @@
         "../libs/switch/sim/switch.ts",
         "../libs/temperature/sim/state.ts",
         "../libs/temperature/sim/temperature.ts",
-        "../libs/touch/sim/touch.ts"
+        "../libs/touch/sim/touch.ts",
+        "../libs/touch/sim/state.ts"
     ]
 }
 
