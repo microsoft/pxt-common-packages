@@ -37,7 +37,6 @@ void updateSpeakerAmp() {
     auto pinAmp = lookupPin(PIN_SPEAKER_AMP);
     if (pinAmp) {
         bool on = SoundOutputDestination::Speaker == soundOutputDestination;
-        hf2.sendSerial("sa\n\n", 4);        
         pinAmp->setDigitalValue(on ? 1 : 0);
     }
 }
