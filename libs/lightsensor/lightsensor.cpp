@@ -56,4 +56,17 @@ int lightLevel() {
     int value = getWLight()->sensor.getValue();
     return value / 4;
 }
+
+/**
+* Sets the light threshold value for the event
+*/
+//% blockId=lightsensor_set_threshold block="light set threshold %condition|to %value"
+//% parts="lightsensor" advanced=true
+//% weight=2
+void setLightThreshold(LightCondition condition, int value) {
+    if (condition == LightCondition::Dark)
+        getWLight()->sensor.setLowThreshold(value * 4);
+    else
+        getWLight()->sensor.setHighThreshold(value * 4);
+}
 }
