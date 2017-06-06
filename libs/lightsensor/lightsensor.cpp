@@ -63,10 +63,12 @@ int lightLevel() {
 //% blockId=lightsensor_set_threshold block="light set threshold %condition|to %value"
 //% parts="lightsensor" advanced=true
 //% weight=2
+//% value.min=1 value.max=255
 void setLightThreshold(LightCondition condition, int value) {
+    int v = value * 4;
     if (condition == LightCondition::Dark)
-        getWLight()->sensor.setLowThreshold(value * 4);
+        getWLight()->sensor.setLowThreshold(v);
     else
-        getWLight()->sensor.setHighThreshold(value * 4);
+        getWLight()->sensor.setHighThreshold(v);
 }
 }
