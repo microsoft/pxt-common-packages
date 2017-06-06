@@ -10,4 +10,10 @@ namespace pxsim.input {
         b.setUsed();
         pxtcore.registerWithDal(b.id, DAL.LEVEL_THRESHOLD_HIGH, body);
     }
+
+    export function setLoudSoundThreshold(value: number) {
+        let b = microphoneState();
+        b.setUsed();
+        b.setHighThreshold(value);
+    }
 }
