@@ -237,7 +237,7 @@ class RefObject {
     uint16_t vtable;
 
     RefObject(uint16_t vt) {
-        refcnt = 2;
+        refcnt = 3;
         vtable = vt;
 #ifdef PXT_MEMLEAK_DEBUG
         allptrs.insert((TValue)this);
@@ -256,14 +256,14 @@ class RefObject {
 
     // Increment/decrement the ref-count. Decrementing to zero deletes the current object.
     inline void ref() {
-        check(refcnt > 0, ERR_REF_DELETED);
+        check(refcnt > 1, ERR_REF_DELETED);
         // DMESG("INCR "); this->print();
         refcnt += 2;
     }
 
     inline void unref() {
-        check(refcnt > 0, ERR_REF_DELETED);
-        check(!(refcnt & 1), ERR_REF_DELETED);
+        check(refcnt > 1, ERR_REF_DELETED);
+        check((refcnt & 1), ERR_REF_DELETED);
         // DMESG("DECR "); this->print();
         refcnt -= 2;
         if (refcnt == 0) {
@@ -378,7 +378,7 @@ void RefRecord_print(RefRecord *r);
 class RefAction;
 typedef TValue (*ActionCB)(TValue *captured, TValue arg0, TValue arg1, TValue arg2);
 
-// Ref-counted function pointer. It's currently always a ()=>void procedure pointer.
+// Ref-counted function pointer.
 class RefAction : public RefObject {
   public:
     // This is the same as for RefRecord.

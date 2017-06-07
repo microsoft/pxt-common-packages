@@ -824,17 +824,22 @@ void anyPrint(TValue v) {
     }
 }
 
+void dtorDoNothing() {
+}
+
 #define PRIM_VTABLE(name, sz)                                                                      \
     const VTable name = {sz,                                                                       \
                          0,                                                                        \
                          0,                                                                        \
                          {                                                                         \
-                             0, (void *)&anyPrint,                                                 \
+                             (void*)&dtorDoNothing, \
+                             (void *)&anyPrint,                                                 \
                          }};
 PRIM_VTABLE(string_vt, 0)
 PRIM_VTABLE(image_vt, 0)
 PRIM_VTABLE(buffer_vt, 0)
 PRIM_VTABLE(number_vt, 12)
+PRIM_VTABLE(action_vt, 0)
 
 static const VTable *primVtables[] = {0,          // 0
                                       &string_vt, // 1
@@ -844,10 +849,11 @@ static const VTable *primVtables[] = {0,          // 0
                                       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                                       0, 0, 0, 0, 0, 0, 0,
                                       &number_vt, // 32
+                                      &action_vt, // 33
                                       0};
 
 VTable *getVTable(RefObject *r) {
-    if (r->vtable >= 33)
+    if (r->vtable >= 34)
         return (VTable *)(r->vtable << vtableShift);
     return (VTable *)primVtables[r->vtable];
 }
