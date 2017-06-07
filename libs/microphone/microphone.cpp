@@ -43,4 +43,16 @@ int soundLevel() {
     int value = getWMicrophone()->level.getValue();
     return value;
 }
+
+/**
+* Sets the minimum threshold for a loud sound
+*/
+//% help=input/set-loud-sound-threshold
+//% blockId=input_set_loud_sound_threshold block="set loud sound threshold %value"
+//% parts="microphone" advanced=true
+//% weight=2
+//% value.min=1 value.max=100
+void setLoudSoundThreshold(int value) {
+    getWMicrophone()->level.setHighThreshold(value);
+}
 }

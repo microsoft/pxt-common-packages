@@ -5,6 +5,11 @@
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #pragma GCC diagnostic ignored "-Wformat"
+#pragma GCC diagnostic ignored "-Warray-bounds"
+
+// needed for gcc6; not sure why
+#undef min
+#undef max
 
 #include "pxtconfig.h"
 
