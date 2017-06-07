@@ -44,14 +44,13 @@ void onSwitchMoved(SwitchDirection direction, Action handler) {
 }
 
 /*
-* Gets the current switch button direction
+* Gets a value indicating if the switch is positioned to the right
 */
-//% blockId=device_switch_direction block="switch direction" blockGap=8
+//% blockId=device_switch_direction block="switch right" blockGap=8
 //% weight=10
-SwitchDirection switchDirection() {
+bool switchRight() {
     auto slide = getWSwitch();
-    auto currentDirection = slide->slideSwitch.isPressed() ? SwitchDirection::Right : SwitchDirection::Left;
-    return currentDirection;
+    return slide->slideSwitch.isPressed();
 }
 
 }

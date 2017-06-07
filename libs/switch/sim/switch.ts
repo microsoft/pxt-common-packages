@@ -32,9 +32,9 @@ namespace pxsim.input {
             b.bus.queue(SlideSwitchState.id, direction);
     }
 
-    export function switchDirection() : number {
+    export function switchRight() : boolean {
         const b = board() as SlideSwitchBoard;
         const sw = b.slideSwitchState;
-        return sw.isLeft() ? DAL.DEVICE_BUTTON_EVT_UP : DAL.DEVICE_BUTTON_EVT_DOWN;        
+        return !sw.isLeft();
     }
 }
