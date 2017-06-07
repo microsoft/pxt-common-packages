@@ -42,4 +42,16 @@ void onSwitchMoved(SwitchDirection direction, Action handler) {
     if (direction == currentDirection)
         DeviceEvent ev(slide->slideSwitch.id, (int)direction);
 }
+
+/*
+* Gets the current switch button direction
+*/
+//% blockId=device_switch_direction block="switch direction" blockGap=8
+//% weight=10
+SwitchDirection switchDirection() {
+    auto slide = getWSwitch();
+    auto currentDirection = slide->slideSwitch.isPressed() ? SwitchDirection::Right : SwitchDirection::Left;
+    return currentDirection;
+}
+
 }
