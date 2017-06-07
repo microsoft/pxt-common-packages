@@ -1,14 +1,14 @@
 namespace pxsim {
     export interface TemperatureBoard extends CommonBoard {
         thermometerState: AnalogSensorState;
-        thermometerUnitState: ThermometerUnit;
+        thermometerUnitState: TemperatureUnit;
     }
 
     export function thermometerState(): AnalogSensorState {
         return (board() as TemperatureBoard).thermometerState;
     }
 
-    export function setThermometerUnit(unit: ThermometerUnit) {
+    export function setThermometerUnit(unit: TemperatureUnit) {
         (board() as TemperatureBoard).thermometerUnitState = unit;
     }
 }
