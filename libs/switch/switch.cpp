@@ -42,4 +42,15 @@ void onSwitchMoved(SwitchDirection direction, Action handler) {
     if (direction == currentDirection)
         DeviceEvent ev(slide->slideSwitch.id, (int)direction);
 }
+
+/*
+* Gets a value indicating if the switch is positioned to the right
+*/
+//% blockId=device_switch_direction block="switch right" blockGap=8
+//% weight=10
+bool switchRight() {
+    auto slide = getWSwitch();
+    return slide->slideSwitch.isPressed();
+}
+
 }

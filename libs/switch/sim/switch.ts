@@ -31,4 +31,10 @@ namespace pxsim.input {
         if (sw.isLeft() == (direction == DAL.DEVICE_BUTTON_EVT_UP))
             b.bus.queue(SlideSwitchState.id, direction);
     }
+
+    export function switchRight() : boolean {
+        const b = board() as SlideSwitchBoard;
+        const sw = b.slideSwitchState;
+        return !sw.isLeft();
+    }
 }

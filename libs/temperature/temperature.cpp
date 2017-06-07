@@ -40,18 +40,22 @@ namespace input {
 /**
 * Run some code when the temperature changes from hot to cold, or from cold to hot.
 * @param condition the condition, hot or cold, the event triggers on
-* @param temperature the temperature, in degree Celsius, at which this event happens, eg: 15
+* @param temperature the temperature at which this event happens, eg: 15
+* @param unit the unit of the temperature
 */
-//% blockId=input_on_temperature_condition_changed block="on temperature %condition|at (°C)%temperature"
+//% blockId=input_on_temperature_condition_changed block="on temperature %condition|%unit|at (°C)%temperature"
 //% parts="thermometer" weight=95 blockGap=8 advanced=true
 //% help=input/on-temperature-condition-changed
-void onTemperateConditionChanged(TemperatureCondition condition, int temperature, Action handler) {
+void onTemperateConditionChanged(TemperatureCondition condition, int temperature, TemperatureUnit unit, Action handler) {
     auto sensor = &getWTemp()->sensor;
     sensor->updateSample();
+
+    int t = unit == TemperatureUnit::Celsius ? temperature : ((temperature - 32) * 10) / 18;
+
     if (condition == TemperatureCondition::Cold)
-        sensor->setLowThreshold(temperature);
+        sensor->setLowThreshold(t);
     else
-        sensor->setHighThreshold(temperature);
+        sensor->setHighThreshold(t);
     registerWithDal(sensor->id, (int)condition, handler);
 }
 
