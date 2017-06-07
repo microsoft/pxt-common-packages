@@ -9,16 +9,16 @@ serial.writeValue("x", 0);
 serial.writeString("");
 ```
 
-### Advanced
+## Advanced
 
 ```cards
-serial.writeBuffer(pins.createBuffer(0));
+serial.writeBuffer(null);
 ```
 
-### See Also
+## See Also
 
-[serial write line](/reference/serial/write-line)
-,[serial write string](/reference/serial/write-string)
-,[serial write number](/reference/serial/write-number)
-,[serial write value](/reference/serial/write-value)
-,[serial write buffer](/reference/serial/write-buffer)
+[``||write line||``](/reference/serial/write-line),
+[``||write string||``](/reference/serial/write-string),
+[``||write number||``](/reference/serial/write-number),
+[``||write value||``](/reference/serial/write-value),
+[``||write buffer||``](/reference/serial/write-buffer)

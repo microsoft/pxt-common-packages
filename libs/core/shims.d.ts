@@ -6,7 +6,7 @@ declare interface DigitalPin {
      * Read the specified pin or connector as either 0 or 1
      * @param name pin to read from
      */
-    //% help=pins/digital-read-pin weight=30
+    //% help=pins/digital-read weight=30
     //% blockId=device_get_digital_pin block="digital read|pin %name" blockGap=8
     //% parts="slideswitch" trackArgs=0
     //% blockNamespace=pins
@@ -20,7 +20,7 @@ declare interface DigitalPin {
      * @param name pin to write to
      * @param value value to set on the pin
      */
-    //% help=pins/digital-write-pin weight=29
+    //% help=pins/digital-write weight=29
     //% blockId=device_set_digital_pin block="digital write|pin %name|to %value"
     //% parts="led" trackArgs=0
     //% blockNamespace=pins
@@ -75,7 +75,7 @@ declare interface AnalogPin {
      * Read the connector value as analog, that is, as a value comprised between 0 and 1023.
      * @param name pin to write to
      */
-    //% help=pins/analog-read-pin weight=25
+    //% help=pins/analog-read weight=25
     //% blockId=device_get_analog_pin block="analog read|pin %name" blockGap="8"
     //% blockNamespace=pins
     //% name.fieldEditor="gridpicker"
@@ -88,7 +88,7 @@ declare interface AnalogPin {
      * @param name pin name to write to
      * @param value value to write to the pin between ``0`` and ``1023``. eg:1023,0
      */
-    //% help=pins/analog-write-pin weight=24
+    //% help=pins/analog-write weight=24
     //% blockId=device_set_analog_pin block="analog write|pin %name|to %value" blockGap=8
     //% blockNamespace=pins
     //% name.fieldEditor="gridpicker"
@@ -116,14 +116,14 @@ declare interface PwmPin {
     analogSetPeriod(micros: int32): void;
 
     /**
-     * Writes a value to the servo, controlling the shaft accordingly. On a standard servo, this will
+     * Write a value to the servo, controlling the shaft accordingly. On a standard servo, this will
      * set the angle of the shaft (in degrees), moving the shaft to that orientation. On a continuous
      * rotation servo, this will set the speed of the servo (with ``0`` being full-speed in one
      * direction, ``180`` being full speed in the other, and a value near ``90`` being no movement).
      * @param name pin to write to
      * @param value angle or rotation speed, eg:180,90,0
      */
-    //% help=pins/servo-write-pin weight=20
+    //% help=pins/servo-write weight=20
     //% blockId=device_set_servo_pin block="servo write|pin %name|to %value" blockGap=8
     //% parts=microservo trackArgs=0
     //% blockNamespace=pins
@@ -133,7 +133,7 @@ declare interface PwmPin {
     servoWrite(value: int32): void;
 
     /**
-     * Configures this IO pin as an analog/pwm output, configures the period to be 20 ms, and sets the
+     * Configure this IO pin as an analog/pwm output, configures the period to be 20 ms, and sets the
      * pulse width, based on the value it is given **microseconds** or `1/1000` milliseconds.
      * @param name pin name
      * @param micros pulse duration in micro seconds, eg:1500
@@ -362,7 +362,7 @@ declare namespace control {
     function millis(): int32;
 
     /**
-     * Raises an event in the event bus.
+     * Announce that an event happened to registered handlers.
      * @param src ID of the MicroBit Component that generated the event
      * @param value Component specific code indicating the cause of the event.
      * @param mode optional definition of how the event should be processed after construction.
@@ -372,23 +372,24 @@ declare namespace control {
     function raiseEvent(src: int32, value: int32, mode?: EventCreationMode): void;
 
     /**
-     * Raises an event in the event bus.
+     * Run code when a registered event happens.
      * @param id the event compoent id
      * @param value the event value to match
      */
     //% weight=20 blockGap=8 blockId="control_on_event" block="on event|from %src|with value %value"
-    //% blockExternalInputs=1 shim=control::onEvent
-    function onEvent(id: int32, value: int32, handler: () => void): void;
+    //% blockExternalInputs=1
+    //% help="control/on-event" shim=control::onEvent
+    function onEvent(src: int32, value: int32, handler: () => void): void;
 
     /**
-     * Resets the device.
+     * Reset the device.
      */
     //% weight=30 async help=control/reset blockGap=8
     //% blockId="control_reset" block="reset" shim=control::reset
     function reset(): void;
 
     /**
-     * Blocks the current fiber for the given microseconds
+     * Block the current fiber for the given microseconds
      * @param micros number of micro-seconds to wait. eg: 4
      */
     //% help=control/wait-micros weight=29
@@ -396,7 +397,7 @@ declare namespace control {
     function waitMicros(micros: int32): void;
 
     /**
-     * Schedules code that run in the background.
+     * Run other code in the background.
      */
     //% help=control/run-in-background blockAllowMultiple=1
     //% blockId="control_run_in_background" block="run in background" blockGap=8 shim=control::runInBackground
@@ -407,7 +408,7 @@ declare namespace control {
      */
     //% help=control/wait-for-event async
     //% blockId=control_wait_for_event block="wait for event|from %src|with value %value" shim=control::waitForEvent
-    function waitForEvent(id: int32, value: int32): void;
+    function waitForEvent(src: int32, value: int32): void;
 
     /**
      * Allocates the next user notification event
@@ -455,7 +456,7 @@ declare namespace loops {
 declare namespace serial {
 
     /**
-     * Sends a piece of text through Serial connection.
+     * Write some text to the serial port.
      */
     //% help=serial/write-string
     //% weight=87
@@ -463,9 +464,10 @@ declare namespace serial {
     function writeString(text: string): void;
 
     /**
-     * Sends a buffer through Serial connection
+     * Send a buffer across the serial connection.
      */
-    //% help=serial/write-buffer advanced=true weight=6 shim=serial::writeBuffer
+    //% help=serial/write-buffer advanced=true weight=6
+    //% blockId=serial_writebuffer block="serial|write buffer %buffer" shim=serial::writeBuffer
     function writeBuffer(buffer: Buffer): void;
 }
 declare namespace input {

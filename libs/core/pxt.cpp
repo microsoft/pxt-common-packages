@@ -6,12 +6,13 @@ CodalDevice device;
 
 namespace pxt {
 
-// The first word is used to tell the bootloader that a single reset should start the
+// The first two word are used to tell the bootloader that a single reset should start the
 // bootloader and the MSD device, not us.
 // The rest is reserved for partial flashing checksums.
 __attribute__((section(".binmeta"))) __attribute__((used)) const uint32_t pxt_binmeta[] = {
-    0x87eeb07c, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff,
+    0x87eeb07c, 0x87eeb07c, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff,
     0x00ff00ff, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff,
+    0x00ff00ff, 0x00ff00ff,
 };
 
 TValue incr(TValue e) {

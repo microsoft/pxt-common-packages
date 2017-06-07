@@ -68,7 +68,7 @@ namespace serial {
     // note that at least one // followed by % is needed per declaration!
 
     /**
-     * Sends a piece of text through Serial connection.
+     * Write some text to the serial port.
      */
     //% help=serial/write-string
     //% weight=87
@@ -79,9 +79,10 @@ namespace serial {
     }
 
     /**
-    * Sends a buffer through Serial connection
+    * Send a buffer across the serial connection.
     */
     //% help=serial/write-buffer advanced=true weight=6
+    //% blockId=serial_writebuffer block="serial|write buffer %buffer"
     void writeBufferHf2(Buffer buffer) {
       if (!buffer) return;
 
