@@ -22,3 +22,7 @@ music.setTone(pins.createBuffer(0));
 ### See Also
 
 [playTone](/reference/music/play-tone), [ringTone](/reference/music/ring-tone), [rest](/reference/music/rest), [beat](/reference/music/beat), [tempo](/reference/music/tempo), [changeTempoBy](/reference/music/change-tempo-by),[setTempo](/reference/music/set-tempo), [set tone](/reference/music/set-tone)
+
+```package
+music
+```

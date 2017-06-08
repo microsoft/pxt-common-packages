@@ -17,3 +17,6 @@ music.tempo()
 [``||rest||``](/reference/music/rest), [``||set tempo||``](/reference/music/set-tempo),
 [``||change tempo by||``](/reference/music/change-tempo-by)
 
+```package
+music
+```

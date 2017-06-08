@@ -28,3 +28,6 @@ music.stopAllSounds()
 
 [``||play sound||``](/reference/music/play-sound), [``||play sound until done||``](/reference/music/play-sound-until-done)
 
+```package
+music
+```

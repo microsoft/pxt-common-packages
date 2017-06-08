@@ -21,3 +21,6 @@ music.setTone(null)
 
 ### #ex1
 
+```package
+music
+```

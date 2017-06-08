@@ -41,3 +41,8 @@ loops.forever(() => {
 [``||rest||``](/reference/music/rest), [``||play tone||``](/reference/music/play-tone),
 [``||tempo||``](/reference/music/tempo), [``||set tempo||``](/reference/music/set-tempo),
 [``||change tempo by||``](/reference/music/change-tempo-by)
+
+```package
+accelerometer
+music
+```
