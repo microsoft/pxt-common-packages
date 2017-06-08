@@ -5,7 +5,7 @@ Tell how bright or dark it should be to make a light event happen.
 ```sig
 input.setLightThreshold(LightCondition.Dark, 0)
 ```
-The [``||on-light-condition-changed||``](/reference/input/on-light-condition-changed) event will start
+The [``||on light condition changed||``](/reference/input/on-light-condition-changed) event will start
 when the light condition reaches a certain brightness. You decide if you want the event to happen when
 light is getting brighter or getting darker. This is set by choosing `bright` or `dark` for **condition**
 in ``||set light threshold||``. Also, you say what level of brightness makes the event happen as

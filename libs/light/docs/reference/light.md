@@ -6,6 +6,7 @@ Light up pixels and NeoPixel strips. Show light effects and animations.
 
 ```cards
 light.pixels.showAnimation(null, 0)
+light.pixels.showAnimationFrame(null)
 light.pixels.stopAllAnimations()
 light.animation(LightAnimation.Rainbow)
 light.pixels.graph(0, 0)

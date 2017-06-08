@@ -22,7 +22,7 @@ input.buttonA.onEvent(ButtonEvent.Click, () => {
 
 ### Next light please #ex1
 
-In this example, the lighted pixel moves to the next pixel spot each time you press the `A` button. The postition of
+In this example, the lighted pixel moves to the next pixel spot each time you press the `A` button. The position of
 the light goes back to first pixel when the current position reaches the last pixel.
 
 ```blocks
