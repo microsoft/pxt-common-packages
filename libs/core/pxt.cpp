@@ -24,10 +24,8 @@ TValue incr(TValue e) {
 void decr(TValue e) {
 #if 0
         if (((RefCounted *)e)->refCount != 0xffff) {
-            char buf[100];
-            sprintf(buf, "DECR: %p refs=%d vt=0x%x\n", e, ((RefCounted *)e)->refCount,
+            DMESG("DECR: %p refs=%d vt=%p", e, ((RefCounted *)e)->refCount,
                     ((RefCounted *)e)->vtablePtr);
-            hf2.sendSerial(buf, strlen(buf));
         }
 #endif
 
@@ -143,7 +141,7 @@ void RefRecord_print(RefRecord *r) {
 
 TValue Segment::get(uint32_t i) {
 #ifdef DEBUG_BUILD
-    printf("In Segment::get index:%u\n", i);
+    DMESG("In Segment::get index:%d", i);
     this->print();
 #endif
 
@@ -165,7 +163,7 @@ void Segment::set(uint32_t i, TValue value) {
     }
 
 #ifdef DEBUG_BUILD
-    printf("In Segment::set\n");
+    DMESG("In Segment::set");
     this->print();
 #endif
 
@@ -191,7 +189,7 @@ void Segment::growByMin(uint16_t minSize) {
 
 void Segment::growBy(uint16_t newSize) {
 #ifdef DEBUG_BUILD
-    printf("growBy: %d\n", newSize);
+    DMESG("growBy: %d", newSize);
     this->print();
 #endif
     if (size < newSize) {
@@ -212,7 +210,7 @@ void Segment::growBy(uint16_t newSize) {
         size = newSize;
 
 #ifdef DEBUG_BUILD
-        printf("growBy - after reallocation\n");
+        DMESG("growBy - after reallocation");
         this->print();
 #endif
     }
@@ -241,7 +239,7 @@ void Segment::push(TValue value) {
 
 TValue Segment::pop() {
 #ifdef DEBUG_BUILD
-    printf("In Segment::pop\n");
+    DMESG("In Segment::pop");
     this->print();
 #endif
 
@@ -258,7 +256,7 @@ TValue Segment::pop() {
 // left to fill the gap
 TValue Segment::remove(uint32_t i) {
 #ifdef DEBUG_BUILD
-    printf("In Segment::remove index:%u\n", i);
+    DMESG("In Segment::remove index:%d", i);
     this->print();
 #endif
     if (i < length) {
@@ -271,7 +269,7 @@ TValue Segment::remove(uint32_t i) {
         length--;
         data[length] = Segment::DefaultValue;
 #ifdef DEBUG_BUILD
-        printf("After Segment::remove index:%u\n", i);
+        DMESG("After Segment::remove index:%d", i);
         this->print();
 #endif
         return ret;
@@ -282,7 +280,7 @@ TValue Segment::remove(uint32_t i) {
 // this function inserts element value at index i by shifting the rest of the elements right.
 void Segment::insert(uint32_t i, TValue value) {
 #ifdef DEBUG_BUILD
-    printf("In Segment::insert index:%u value:%u\n", i, value);
+    DMESG("In Segment::insert index:%d value:%d", i, value);
     this->print();
 #endif
 
@@ -300,17 +298,16 @@ void Segment::insert(uint32_t i, TValue value) {
         set(i, value);
     }
 #ifdef DEBUG_BUILD
-    printf("After Segment::insert index:%u\n", i);
+    DMESG("After Segment::insert index:%d", i);
     this->print();
 #endif
 }
 
 void Segment::print() {
-    printf("Segment: %x, length: %u, size: %u\n", data, (uint32_t)length, (uint32_t)size);
+    DMESG("Segment: %p, length: %d, size: %d", data, (uint32_t)length, (uint32_t)size);
     for (uint32_t i = 0; i < size; i++) {
-        printf("%d ", (uint32_t)data[i]);
+        DMESG("-> %d", (uint32_t)data[i]);
     }
-    printf("\n");
 }
 
 bool Segment::isValidIndex(uint32_t i) {
@@ -322,7 +319,7 @@ bool Segment::isValidIndex(uint32_t i) {
 
 void Segment::destroy() {
 #ifdef DEBUG_BUILD
-    printf("In Segment::destroy\n");
+    DMESG("In Segment::destroy");
     this->print();
 #endif
     length = size = 0;
@@ -401,7 +398,7 @@ void RefCollection::destroy() {
 }
 
 void RefCollection::print() {
-    printf("RefCollection %p r=%d size=%d\n", this, refcnt, head.getLength());
+    DMESG("RefCollection %p r=%d size=%d", this, refcnt, head.getLength());
     head.print();
 }
 
