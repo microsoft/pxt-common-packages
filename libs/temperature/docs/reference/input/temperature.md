@@ -6,10 +6,13 @@ The @boardname@ can find the temperature nearby by checking how hot its computer
 ```sig
 input.temperature(TemperatureUnit.Celsius)
 ```
+## Parameters
+
+* **unit**: the unit of temperature, either Celsius or Fahrenheit.
 
 ## Returns
 
-* a [number](/types/number) that means the temperature in Celsius or Fahrenheit.
+* a [number](/types/number) that means the temperature in degrees of Celsius or Fahrenheit.
 
 ### How does it work?
 
