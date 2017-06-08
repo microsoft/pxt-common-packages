@@ -3,8 +3,8 @@
 #include "uf2format.h"
 #include "CodalDmesg.h"
 
-#define LOG DMESG
-//#define LOG(...) ((void)0)
+//#define LOG DMESG
+#define LOG(...) ((void)0)
 
 #if CONFIG_ENABLED(DEVICE_USB)
 
