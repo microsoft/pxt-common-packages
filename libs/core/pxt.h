@@ -200,9 +200,9 @@ inline void *ptrOfLiteral(int offset) {
     return &bytecode[offset];
 }
 
-// Checks if object has a VTable, or if its RefCounted* from the runtime.
-inline bool hasVTable(TValue e) {
-    return (*((uint32_t *)e) & 1) == 0;
+// Checks if object is ref-counted, and has a custom PXT vtable in front
+inline bool isRefCounted(TValue e) {
+    return !isTagged(e) && (*((uint32_t *)e) & 1) == 1;
 }
 
 inline void check(int cond, ERROR code, int subcode = 0) {
@@ -261,12 +261,16 @@ class RefObject {
 
     // Increment/decrement the ref-count. Decrementing to zero deletes the current object.
     inline void ref() {
+        if (refcnt == 0xffff)
+            return;
         check(refcnt > 1, ERR_REF_DELETED);
         // DMESG("INCR "); this->print();
         refcnt += 2;
     }
 
     inline void unref() {
+        if (refcnt == 0xffff)
+            return;
         check(refcnt > 1, ERR_REF_DELETED);
         check((refcnt & 1), ERR_REF_DELETED);
         // DMESG("DECR "); this->print();
@@ -435,6 +439,7 @@ class RefRefLocal : public RefObject {
 STATIC_ASSERT(REF_TAG_USER <= 32)
 // note: this is hardcoded in PXT (hexfile.ts)
 #define REF_TAG_NUMBER 32
+#define REF_TAG_ACTION 33
 
 struct BoxedNumber : RefCounted {
     double num;
@@ -451,8 +456,10 @@ enum class ValType {
     Number,
     String,
     Object,
+    Function,
 };
 
+extern const VTable RefAction_vtable;
 ValType valType(TValue v);
 }
 

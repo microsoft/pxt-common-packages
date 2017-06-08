@@ -16,17 +16,12 @@ __attribute__((section(".binmeta"))) __attribute__((used)) const uint32_t pxt_bi
 };
 
 TValue incr(TValue e) {
-    if (!isTagged(e)) {
-        if (hasVTable(e))
-            ((RefObject *)e)->ref();
-        else
-            ((RefCounted *)e)->incr();
-    }
+    if (isRefCounted(e))
+        ((RefObject *)e)->ref();
     return e;
 }
 
 void decr(TValue e) {
-    if (!isTagged(e)) {
 #if 0
         if (((RefCounted *)e)->refCount != 0xffff) {
             char buf[100];
@@ -36,12 +31,8 @@ void decr(TValue e) {
         }
 #endif
 
-        if (hasVTable(e)) {
-            ((RefObject *)e)->unref();
-        } else {
-            ((RefCounted *)e)->decr();
-        }
-    }
+    if (isRefCounted(e))
+        ((RefObject *)e)->unref();
 }
 
 Action mkAction(int reflen, int totallen, int startptr) {
@@ -67,11 +58,13 @@ Action mkAction(int reflen, int totallen, int startptr) {
 }
 
 TValue runAction3(Action a, TValue arg0, TValue arg1, TValue arg2) {
-    if (hasVTable(a))
-        return ((RefAction *)a)->runCore(arg0, arg1, arg2);
-    else {
-        check(*(uint16_t *)a == 0xffff, ERR_INVALID_BINARY_HEADER, 4);
+    auto aa = (RefAction *)a;
+    if (aa->vtable == REF_TAG_ACTION) {
+        check(aa->refcnt == 0xffff, ERR_INVALID_BINARY_HEADER, 4);
         return ((ActionCB)(((uint32_t)a + 4) | 1))(NULL, arg0, arg1, arg2);
+    } else {
+        check(aa->refcnt != 0xffff, ERR_INVALID_BINARY_HEADER, 4);
+        return aa->runCore(arg0, arg1, arg2);
     }
 }
 
