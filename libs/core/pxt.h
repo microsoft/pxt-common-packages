@@ -275,7 +275,7 @@ class RefObject {
         check((refcnt & 1), ERR_REF_DELETED);
         // DMESG("DECR "); this->print();
         refcnt -= 2;
-        if (refcnt == 0) {
+        if (refcnt == 1) {
             untrack();
             destroyVT();
         }
