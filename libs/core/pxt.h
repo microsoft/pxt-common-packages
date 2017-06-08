@@ -200,9 +200,9 @@ inline void *ptrOfLiteral(int offset) {
     return &bytecode[offset];
 }
 
-// Checks if object has a VTable, or if its RefCounted* from the runtime.
-inline bool hasVTable(TValue e) {
-    return (*((uint32_t *)e) & 1) == 0;
+// Checks if object is ref-counted, and has a custom PXT vtable in front
+inline bool isRefCounted(TValue e) {
+    return !isTagged(e) && (*((uint32_t *)e) & 1) == 1;
 }
 
 inline void check(int cond, ERROR code, int subcode = 0) {
@@ -242,7 +242,7 @@ class RefObject {
     uint16_t vtable;
 
     RefObject(uint16_t vt) {
-        refcnt = 2;
+        refcnt = 3;
         vtable = vt;
 #ifdef PXT_MEMLEAK_DEBUG
         allptrs.insert((TValue)this);
@@ -261,17 +261,21 @@ class RefObject {
 
     // Increment/decrement the ref-count. Decrementing to zero deletes the current object.
     inline void ref() {
-        check(refcnt > 0, ERR_REF_DELETED);
+        if (refcnt == 0xffff)
+            return;
+        check(refcnt > 1, ERR_REF_DELETED);
         // DMESG("INCR "); this->print();
         refcnt += 2;
     }
 
     inline void unref() {
-        check(refcnt > 0, ERR_REF_DELETED);
-        check(!(refcnt & 1), ERR_REF_DELETED);
+        if (refcnt == 0xffff)
+            return;
+        check(refcnt > 1, ERR_REF_DELETED);
+        check((refcnt & 1), ERR_REF_DELETED);
         // DMESG("DECR "); this->print();
         refcnt -= 2;
-        if (refcnt == 0) {
+        if (refcnt == 1) {
             untrack();
             destroyVT();
         }
@@ -383,7 +387,7 @@ void RefRecord_print(RefRecord *r);
 class RefAction;
 typedef TValue (*ActionCB)(TValue *captured, TValue arg0, TValue arg1, TValue arg2);
 
-// Ref-counted function pointer. It's currently always a ()=>void procedure pointer.
+// Ref-counted function pointer.
 class RefAction : public RefObject {
   public:
     // This is the same as for RefRecord.
@@ -435,6 +439,7 @@ class RefRefLocal : public RefObject {
 STATIC_ASSERT(REF_TAG_USER <= 32)
 // note: this is hardcoded in PXT (hexfile.ts)
 #define REF_TAG_NUMBER 32
+#define REF_TAG_ACTION 33
 
 struct BoxedNumber : RefCounted {
     double num;
@@ -444,6 +449,7 @@ extern const VTable string_vt;
 extern const VTable image_vt;
 extern const VTable buffer_vt;
 extern const VTable number_vt;
+extern const VTable RefAction_vtable;
 
 enum class ValType {
     Undefined,
@@ -451,6 +457,7 @@ enum class ValType {
     Number,
     String,
     Object,
+    Function,
 };
 
 ValType valType(TValue v);
