@@ -171,7 +171,9 @@ namespace light {
             value = Math.abs(value);
 
             const now = control.millis();
-            if (high > 0) this._barGraphHigh = high;
+            if (high > 0) {
+                this._barGraphHigh = high;
+            }
             else if (value > this._barGraphHigh || now - this._barGraphHighLast > 10000) {
                 this._barGraphHigh = value;
                 this._barGraphHighLast = now;

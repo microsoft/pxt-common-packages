@@ -33,7 +33,7 @@ SINGLETON(WLight);
 namespace input {
 
 /**
-* Registers an event that runs when particular lighting conditions (dark, bright) are encountered.
+* Register an event that runs when light conditions (darker or brighter) change.
 * @param condition the condition that event triggers on
 */
 //% help=input/on-light-condition-changed weight=97
@@ -46,7 +46,7 @@ void onLightConditionChanged(LightCondition condition, Action handler) {
 }
 
 /**
- * Reads the light level applied to the LED screen in a range from 0 (dark) to 255 (bright).
+ * Read the light level applied to the LED screen in a range from 0 (dark) to 255 (bright).
  */
 //% help=input/light-level weight=76
 //% blockId=device_get_light_level block="light level" blockGap=8
@@ -58,8 +58,9 @@ int lightLevel() {
 }
 
 /**
-* Sets the light threshold value for the event
+* Set the threshold value for the light condition event.
 */
+//% help=input/set-light-threshold
 //% blockId=lightsensor_set_threshold block="light set threshold %condition|to %value"
 //% parts="lightsensor" advanced=true
 //% weight=2

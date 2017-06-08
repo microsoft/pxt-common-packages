@@ -9,8 +9,8 @@ input.onTemperateConditionChanged(TemperatureCondition.Cold, 10, TemperatureUnit
 ```
 
 You decide what the temperature goes to before your code starts to run. This is the temperature _threshold_.
-Your code will start when the temperature cools down to a certain number of degrees Celcius. Also, you can
-have your code start if the temperature warms to a certain number of degrees Celcius.
+Your code will start when the temperature cools down to a certain number of degrees Celcius or Fahrenheit.
+Also, you can have your code start if the temperature warms to a certain number of degrees.
 
 You pick the ``cold`` condition to run your code when it cools to your selected temperature (threshold).
 Or, you use ``warm`` to run your code when it warms to your temperature _threshold_.
@@ -20,8 +20,8 @@ Or, you use ``warm`` to run your code when it warms to your temperature _thresho
 * **condition**: the temperature condition you want code to run for
 >  * ``cold``: the code runs when the temperature cools to a certain point
 >  * ``hot``: the code runs when the temperature warms to as certain point
-* **temperature**: the temperature, in degrees Celcius, to get to before your code starts
-* **unit**: the unit of the temperature, Celcius or Fahrenheit
+* **temperature**: the temperature to get to before your code starts
+* **unit**: the unit of temperature, Celcius or Fahrenheit
 * **handler**: the code to run when the temperature changes
 
 ## Example
