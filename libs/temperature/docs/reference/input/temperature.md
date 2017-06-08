@@ -6,10 +6,13 @@ The @boardname@ can find the temperature nearby by checking how hot its computer
 ```sig
 input.temperature(TemperatureUnit.Celsius)
 ```
+## Parameters
 
-### Returns
+* **unit**: the unit of temperature, either Celsius or Fahrenheit.
 
-* a [Number](/types/number) that means the temperature in Celsius or Fahrenheit.
+## Returns
+
+* a [number](/types/number) that means the temperature in degrees of Celsius or Fahrenheit.
 
 ### How does it work?
 
@@ -18,9 +21,11 @@ Because the @boardname@ does not usually get very hot, the temperature of the CP
 is usually close to the temperature of wherever you are.
 The @boardname@ might warm up a little if you make it work hard, though!
 
-### Example: @boardname@ thermometer
+## Examples #exsection
 
-The following example uses `temperature` and `show color` to vary the brightness of the pixels depending on the temperature in the room. 
+### @boardname@ thermometer #ex1
+
+Use `temperature` and `set all` to vary the brightness of the pixels depending on the temperature in the room. 
 
 ```blocks
 loops.forever(() => {
@@ -31,13 +36,14 @@ loops.forever(() => {
         0,
         255
     ))
-    light.pixels.showColor(light.colors(Colors.Red))
+    light.pixels.setAll(light.colors(Colors.Red))
 })
 ```
 
-### Example: Fahrenheit thermometer
 
-This program measures the temperature using Fahrenheit degrees.
+### Fahrenheit thermometer #ex2
+
+Measure the temperature using degrees in Fahrenheit.
 
 ```blocks
 loops.forever(() => {
@@ -48,7 +54,7 @@ loops.forever(() => {
         0,
         255
     ))
-    light.pixels.showColor(light.colors(Colors.Red))
+    light.pixels.setAll(light.colors(Colors.Red))
 })
 ```
 
@@ -61,7 +67,7 @@ better thermometer.
 
 ### ~
 
-### See also
+## See also
 
-[compass-heading](/reference/input/compass-heading), [acceleration](/reference/input/acceleration)
+[``||on temperature condition changed||``](/reference/input/on-temperature-condition-changed)
 

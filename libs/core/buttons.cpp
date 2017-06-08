@@ -5,8 +5,6 @@
 
 namespace pxt {
 
-// Wrapper classes
-
 class WButtons {
   public:
 #define Button DeviceButton
@@ -49,121 +47,56 @@ DeviceButton *getButton(int id) {
         device.panic(42);
     return &getWButtons()->buttons[id];
 }
-
-static const int touchPins[] = {
-    PIN_A4, PIN_A5, PIN_A6, PIN_A7, PIN_A8, PIN_A9, PIN_A10, PIN_A11,
-};
-
-
-class WTouch {
-  public:
-    DevicePin touchDrive;
-    TouchSensor touchSensor;
-
-#define Button TouchButton *
-    Button buttons[0];
-    //% indexedInstanceNS=input indexedInstanceShim=pxt::getTouchButton
-    /**
-    * Capacitive pin A4
-    */
-    //% block="pin A4"
-    Button pinA4;
-    /**
-    * Capacitive pin A5
-    */
-    //% block="pin A5"
-    Button pinA5;
-    /**
-    * Capacitive pin A6
-    */
-    //% block="pin A6"
-    Button pinA6;
-    /**
-    * Capacitive pin A7
-    */
-    //% block="pin A7"
-    Button pinA7;
-    /**
-    * Capacitive pin A8
-    */
-    //% block="pin A8"
-    Button pinA8;
-    /**
-    * Capacitive pin A9
-    */
-    //% block="pin A9"
-    Button pinA9;
-    /**
-    * Capacitive pin A10
-    */
-    //% block="pin A10"
-    Button pinA10;
-    /**
-    * Capacitive pin A11
-    */
-    //% block="pin A11"
-    Button pinA11;
-#undef Button
-
-    WTouch() : INIT_PIN(touchDrive, PIN_CAPSENSE), touchSensor(touchDrive) {
-        memclr(buttons, sizeof(touchPins));
-    }
-};
-SINGLETON(WTouch);
-const int LastTouchButtonID = &((WTouch *)0)->pinA11 - ((WTouch *)0)->buttons;
-
-//%
-TouchButton *getTouchButton(int id) {
-    if (!(0 <= id && id <= LastTouchButtonID))
-        device.panic(42);
-    if (sizeof(touchPins) / sizeof(touchPins[0]) != LastTouchButtonID + 1)
-        device.panic(42);
-    auto w = getWTouch();
-    if (!w->buttons[id])
-        w->buttons[id] = new TouchButton(*pxt::lookupPin(touchPins[id]), w->touchSensor);
-    return w->buttons[id];
-}
 }
 
 //% noRefCounting fixedInstances
 namespace ButtonMethods {
 /**
- * Do something when a button (``A``, ``B`` or both ``A+B``) is clicked, double clicked, etc...
+ * Do something when a button (`A`, `B` or both `A` + `B`) is clicked, double clicked, etc...
  * @param button the button that needs to be clicked or used
  * @param event the kind of button gesture that needs to be detected
  * @param body code to run when the event is raised
  */
-//% help=input/on-button-event weight=99 blockGap=8
+//% help=input/button/on-event weight=99 blockGap=8
 //% blockId=buttonEvent block="on %button|%event"
 //% parts="buttonpair"
 //% blockNamespace=input
+//% button.fieldEditor="gridpicker"
+//% button.fieldOptions.width=220
+//% button.fieldOptions.columns=3
 void onEvent(Button button, ButtonEvent ev, Action body) {
     registerWithDal(button->id, (int)ev, body);
 }
 
 /**
- * Get the button state (pressed or not).
+ * Check if a button is pressed or not.
  * @param button the button to query the request
  */
-//% help=input/button-is-pressed weight=79
-//% block="%NAME|is pressed"
+//% help=input/button/is-pressed weight=79
+//% block="%button|is pressed"
 //% blockId=buttonIsPressed
 //% blockGap=8
 //% parts="buttonpair"
 //% blockNamespace=input
+//% button.fieldEditor="gridpicker"
+//% button.fieldOptions.width=220
+//% button.fieldOptions.columns=3
 bool isPressed(Button button) {
     return button->isPressed();
 }
 
 /**
- * Indicates if the button was pressed since this function was last called.
+ * See if the button was pressed again since the last time you checked.
  * @param button the button to query the request
  */
-//% help=input/button-was-pressed weight=78
-//% block="%NAME|was pressed"
+//% help=input/button/was-pressed weight=78
+//% block="%button|was pressed"
 //% blockId=buttonWasPressed
 //% parts="buttonpair" blockGap=8
 //% blockNamespace=input advanced=true
+//% button.fieldEditor="gridpicker"
+//% button.fieldOptions.width=220
+//% button.fieldOptions.columns=3
 bool wasPressed(Button button) {
     return button->wasPressed();
 }

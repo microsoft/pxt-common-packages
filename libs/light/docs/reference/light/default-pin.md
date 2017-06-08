@@ -13,7 +13,7 @@ light.defaultPin();
 
 ```typescript
 let pin = light.defaultPin()
-pin.digitalWrite(0)
+pin.digitalWrite(false)
 ```
 
 ## @boardname@ Notes #dev

@@ -2,10 +2,10 @@
 
 
     declare enum TemperatureCondition {
-    //% block="cold"
-    Cold = 1,  // ANALOG_THRESHOLD_LOW
     //% block="hot"
     Hot = 2,  // ANALOG_THRESHOLD_HIGH
+    //% block="cold"
+    Cold = 1,  // ANALOG_THRESHOLD_LOW
     }
 
 

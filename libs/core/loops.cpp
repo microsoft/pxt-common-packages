@@ -12,7 +12,7 @@ namespace loops {
      * @param body code to execute
      */
     //% help=loops/forever weight=100 blockGap=8
-    //% blockId=forever block="forever"
+    //% blockId=forever block="forever" blockAllowMultiple=1
     void forever(Action a) {
       if (a != 0) {
         incr(a);

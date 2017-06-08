@@ -25,284 +25,220 @@ THE SOFTWARE.
 
 // Melodies from file microbitmusictunes.c https://github.com/bbcmicrobit/MicroPython
 
-enum Melodies {
-    //% block="power up" blockIdentity=music.builtInMelody
-    PowerUp = 0,
-    //% block="power down" blockIdentity=music.builtInMelody
+enum Sounds {
+    //% block="power up"
+    PowerUp,
+    //% block="power down"
     PowerDown,
-    //% block="jump up" blockIdentity=music.builtInMelody
+    //% block="jump up"
     JumpUp,
-    //% block="jump down" blockIdentity=music.builtInMelody
-    JumpDown,    
-    //% block="ba ding" blockIdentity=music.builtInMelody
+    //% block="jump down"
+    JumpDown,
+    //% block="ba ding"
     BaDing,
-    //% block="wawawawaa" blockIdentity=music.builtInMelody
+    //% block="wawawawaa"
     Wawawawaa,
-    //% block="nyan" blockIdentity=music.builtInMelody
-    Nyan,
-    //% block="dadadum" blockIdentity=music.builtInMelody
-    Dadadadum,
-    //% block="entertainer" blockIdentity=music.builtInMelody
-    Entertainer,
-    //% block="prelude" blockIdentity=music.builtInMelody
-    Prelude,
-    //% block="ode" blockIdentity=music.builtInMelody
-    Ode,
-    //% block="ringtone" blockIdentity=music.builtInMelody
-    Ringtone,
-    //% block="funk" blockIdentity=music.builtInMelody
-    Funk,
-    //% block="blues" blockIdentity=music.builtInMelody
-    Blues,
-    //% block="birthday" blockIdentity=music.builtInMelody
-    Birthday,
-    //% block="wedding" blockIdentity=music.builtInMelody
-    Wedding,
-    //% block="funereal" blockIdentity=music.builtInMelody
-    Funeral,
-    //% block="punchline" blockIdentity=music.builtInMelody
-    Punchline,
-    //% block="baddy" blockIdentity=music.builtInMelody
-    Baddy,
-    //% block="chase" blockIdentity=music.builtInMelody
-    Chase,
-}
-
-enum MusicEvent {
-    //% block="melody note played"
-    MelodyNotePlayed = 1,
-    //% block="melody started"
-    MelodyStarted = 2,
-    //% block="melody ended"
-    MelodyEnded = 3,
-    //% block="melody repeated"
-    MelodyRepeated = 4,
-    //% block="background melody note played"
-    BackgroundMelodyNotePlayed = MelodyNotePlayed | 0xf0,
-    //% block="background melody started"
-    BackgroundMelodyStarted = MelodyStarted | 0xf0,
-    //% block="background melody ended"
-    BackgroundMelodyEnded = MelodyEnded | 0xf0,
-    //% block="background melody repeated"
-    BackgroundMelodyRepeated = MelodyRepeated | 0xf0,
-    //% block="background melody paused"
-    BackgroundMelodyPaused = 5 | 0xf0,
-    //% block="background melody resumed"
-    BackgroundMelodyResumed = 6 | 0xf0
+    //% block="magic wand"
+    MagicWand,
+    //% block="siren"
+    Siren
 }
 
 namespace music {
-    const MICROBIT_MELODY_ID = 2000;
-    let freqTable: number[];
-
-    function initMelodies() {
-        if (!freqTable)
-            freqTable = [28, 29, 31, 33, 35, 37, 39, 41, 44, 46, 49, 52, 55, 58, 62, 65, 69, 73, 78, 82, 87, 92, 98, 104, 110, 117, 123, 131, 139, 147, 156, 165, 175, 185, 196, 208, 220, 233, 247, 262, 277, 294, 311, 330, 349, 370, 392, 415, 440, 466, 494, 523, 554, 587, 622, 659, 698, 740, 784, 831, 880, 932, 988, 1047, 1109, 1175, 1245, 1319, 1397, 1480, 1568, 1661, 1760, 1865, 1976, 2093, 2217, 2349, 2489, 2637, 2794, 2960, 3136, 3322, 3520, 3729, 3951, 4186]
-    }
-
-    export function getMelody(melody: Melodies): string[] {
-        switch (melody) {
-            case Melodies.Dadadadum:
-                return ['r4:2', 'g', 'g', 'g', 'eb:8', 'r:2', 'f', 'f', 'f', 'd:8'];
-            case Melodies.Entertainer:
-                return ['d4:1', 'd#', 'e', 'c5:2', 'e4:1', 'c5:2', 'e4:1', 'c5:3', 'c:1', 'd', 'd#', 'e', 'c', 'd', 'e:2', 'b4:1', 'd5:2', 'c:4'];
-            case Melodies.Prelude:
-                return ['c4:1', 'e', 'g', 'c5', 'e', 'g4', 'c5', 'e', 'c4', 'e', 'g', 'c5', 'e', 'g4', 'c5', 'e', 'c4', 'd', 'g', 'd5', 'f', 'g4', 'd5', 'f', 'c4', 'd', 'g', 'd5', 'f', 'g4', 'd5', 'f', 'b3', 'd4', 'g', 'd5', 'f', 'g4', 'd5', 'f', 'b3', 'd4', 'g', 'd5', 'f', 'g4', 'd5', 'f', 'c4', 'e', 'g', 'c5', 'e', 'g4', 'c5', 'e', 'c4', 'e', 'g', 'c5', 'e', 'g4', 'c5', 'e'];
-            case Melodies.Ode:
-                return ['e4', 'e', 'f', 'g', 'g', 'f', 'e', 'd', 'c', 'c', 'd', 'e', 'e:6', 'd:2', 'd:8', 'e:4', 'e', 'f', 'g', 'g', 'f', 'e', 'd', 'c', 'c', 'd', 'e', 'd:6', 'c:2', 'c:8'];
-            case Melodies.Nyan:
-                return ['f#5:2', 'g#', 'c#:1', 'd#:2', 'b4:1', 'd5:1', 'c#', 'b4:2', 'b', 'c#5', 'd', 'd:1', 'c#', 'b4:1', 'c#5:1', 'd#', 'f#', 'g#', 'd#', 'f#', 'c#', 'd', 'b4', 'c#5', 'b4', 'd#5:2', 'f#', 'g#:1', 'd#', 'f#', 'c#', 'd#', 'b4', 'd5', 'd#', 'd', 'c#', 'b4', 'c#5', 'd:2', 'b4:1', 'c#5', 'd#', 'f#', 'c#', 'd', 'c#', 'b4', 'c#5:2', 'b4', 'c#5', 'b4', 'f#:1', 'g#', 'b:2', 'f#:1', 'g#', 'b', 'c#5', 'd#', 'b4', 'e5', 'd#', 'e', 'f#', 'b4:2', 'b', 'f#:1', 'g#', 'b', 'f#', 'e5', 'd#', 'c#', 'b4', 'f#', 'd#', 'e', 'f#', 'b:2', 'f#:1', 'g#', 'b:2', 'f#:1', 'g#', 'b', 'b', 'c#5', 'd#', 'b4', 'f#', 'g#', 'f#', 'b:2', 'b:1', 'a#', 'b', 'f#', 'g#', 'b', 'e5', 'd#', 'e', 'f#', 'b4:2', 'c#5'];
-            case Melodies.Ringtone:
-                return ['c4:1', 'd', 'e:2', 'g', 'd:1', 'e', 'f:2', 'a', 'e:1', 'f', 'g:2', 'b', 'c5:4'];
-            case Melodies.Funk:
-                return ['c2:2', 'c', 'd#', 'c:1', 'f:2', 'c:1', 'f:2', 'f#', 'g', 'c', 'c', 'g', 'c:1', 'f#:2', 'c:1', 'f#:2', 'f', 'd#'];
-            case Melodies.Blues:
-                return ['c2:2', 'e', 'g', 'a', 'a#', 'a', 'g', 'e', 'c2:2', 'e', 'g', 'a', 'a#', 'a', 'g', 'e', 'f', 'a', 'c3', 'd', 'd#', 'd', 'c', 'a2', 'c2:2', 'e', 'g', 'a', 'a#', 'a', 'g', 'e', 'g', 'b', 'd3', 'f', 'f2', 'a', 'c3', 'd#', 'c2:2', 'e', 'g', 'e', 'g', 'f', 'e', 'd'];
-            case Melodies.Birthday:
-                return ['c4:3', 'c:1', 'd:4', 'c:4', 'f', 'e:8', 'c:3', 'c:1', 'd:4', 'c:4', 'g', 'f:8', 'c:3', 'c:1', 'c5:4', 'a4', 'f', 'e', 'd', 'a#:3', 'a#:1', 'a:4', 'f', 'g', 'f:8'];
-            case Melodies.Wedding:
-                return ['c4:4', 'f:3', 'f:1', 'f:8', 'c:4', 'g:3', 'e:1', 'f:8', 'c:4', 'f:3', 'a:1', 'c5:4', 'a4:3', 'f:1', 'f:4', 'e:3', 'f:1', 'g:8'];
-            case Melodies.Funeral:
-                return ['c3:4', 'c:3', 'c:1', 'c:4', 'd#:3', 'd:1', 'd:3', 'c:1', 'c:3', 'b2:1', 'c3:4'];
-            case Melodies.Punchline:
-                return ['c4:3', 'g3:1', 'f#', 'g', 'g#:3', 'g', 'r', 'b', 'c4'];
-            case Melodies.Baddy:
-                return ['c3:3', 'r', 'd:2', 'd#', 'r', 'c', 'r', 'f#:8'];
-            case Melodies.Chase:
-                return ['a4:1', 'b', 'c5', 'b4', 'a:2', 'r', 'a:1', 'b', 'c5', 'b4', 'a:2', 'r', 'a:2', 'e5', 'd#', 'e', 'f', 'e', 'd#', 'e', 'b4:1', 'c5', 'd', 'c', 'b4:2', 'r', 'b:1', 'c5', 'd', 'c', 'b4:2', 'r', 'b:2', 'e5', 'd#', 'e', 'f', 'e', 'd#', 'e'];
-            case Melodies.BaDing:
-                return ['b5:1', 'e6:3'];
-            case Melodies.Wawawawaa:
-                return ['e3:3', 'r:1', 'd#:3', 'r:1', 'd:4', 'r:1', 'c#:8'];
-            case Melodies.JumpUp:
-                return ['c5:1', 'd', 'e', 'f', 'g'];
-            case Melodies.JumpDown:
-                return ['g5:1', 'f', 'e', 'd', 'c'];
-            case Melodies.PowerUp:
-                return ['g4:1', 'c5', 'e', 'g:2', 'e:1', 'g:3'];
-            case Melodies.PowerDown:
-                return ['g5:1', 'd#', 'c', 'g4:2', 'b:1', 'c5:3'];
-            default:
-                return [];
-        }
-    }
-
-    let currentMelody: Melody;
-    let currentBackgroundMelody: Melody;
+    let _soundQueue: control.AnimationQueue;
 
     /**
-     * Gets the melody array of a built-in melody.
+     * Get the melody string for a built-in melody.
      * @param name the note name, eg: Note.C
      */
-    //% weight=50 help=music/builtin-melody
-    //% blockId=device_builtin_melody block="%melody"
+    //% weight=50 help=music/sounds
+    //% blockId=music_sounds block="%name"
     //% blockHidden=true
-    export function builtInMelody(melody: Melodies): string[] {
-        return getMelody(melody);
+    //% name.fieldEditor="gridpicker"
+    //% name.fieldOptions.width=220
+    //% name.fieldOptions.columns=3
+    export function sounds(name: Sounds): string {
+        switch (name) {
+            case Sounds.BaDing:
+                return 'b5:1 e6:3';
+            case Sounds.Wawawawaa:
+                return 'e3:3 r:1 d#:3 r:1 d:4 r:1 c#:8';
+            case Sounds.JumpUp:
+                return 'c5:1 d e f g';
+            case Sounds.JumpDown:
+                return 'g5:1 f e d c';
+            case Sounds.PowerUp:
+                return 'g4:1 c5 e g:2 e:1 g:3';
+            case Sounds.PowerDown:
+                return 'g5:1 d# c g4:2 b:1 c5:3';
+            case Sounds.MagicWand:
+                return 'F#6:1-300 G# A# B C7# D# F F# G# A# B:6'; //A#7:1-200 A:1 A#7:1 A:1 A#7:2
+            case Sounds.Siren:
+                return 'a4 d5 a4 d5 a4 d5';
+            default:
+                return '';
+        }
+    }
+
+    function soundQueue(): control.AnimationQueue {
+        if (!_soundQueue) _soundQueue = new control.AnimationQueue();
+        return _soundQueue;
     }
 
     /**
- * Registers code to run on various melody events
- */
-    //% blockId=melody_on_event block="on %value"
-    //% help=music/on-event weight=59 advanced=true
-    export function onEvent(value: MusicEvent, handler: Action) {
-        control.onEvent(MICROBIT_MELODY_ID, value, handler);
-    }
-
-    /**
-     * Starts playing a melody through.
+     * Start playing a sound and don't wait for it to finish.
      * Notes are expressed as a string of characters with this format: NOTE[octave][:duration]
-     * @param melody the melody array to play, eg: ['g5:1']
+     * @param sound the melody to play, eg: 'g5:1'
      */
-    //% help=music/begin-melody weight=60
-    //% blockId=device_play_melody block="play melody %melody=device_builtin_melody"
-    //% parts="headphone"
-    export function playMelody(melodyArray: string[]) {
-        startMelody(melodyArray, MelodyOptions.OnceInBackground);
+    //% help=music/play-sound weight=61
+    //% blockId=music_play_sound block="play sound %sound=music_sounds"
+    //% parts="headphone" blockGap=8
+    export function playSound(sound: string) {
+        const queue = soundQueue();
+        const melody = new Melody(sound);
+        control.runInBackground(() => {
+            queue.cancel();
+            queue.runUntilDone(() => melody.playNextNote());
+        })
+        loops.pause(1);
+    }
+
+
+    /**
+     * Play a sound and wait until the sound is done.
+     * Notes are expressed as a string of characters with this format: NOTE[octave][:duration]
+     * @param sound the melody to play, eg: 'g5:1'
+     */
+    //% help=music/play-sound-until-done weight=60
+    //% blockId=music_play_sound_until_done block="play sound %sound=music_sounds|until done"
+    //% parts="headphone" blockGap=8
+    export function playSoundUntilDone(sound: string) {
+        const queue = soundQueue();
+        const melody = new Melody(sound);
+        queue.runUntilDone(() => melody.playNextNote());
     }
 
     /**
-     * Starts playing a melody through.
-     * Notes are expressed as a string of characters with this format: NOTE[octave][:duration]
-     * @param melody the melody array to play, eg: ['g5:1']
-     * @param options melody options, once / forever, in the foreground / background
+     * Stop all sounds from playing.
      */
-    //% help=music/begin-melody weight=60
-    //% blockId=device_start_melody block="start melody %melody=device_builtin_melody| repeating %options"
-    //% parts="headphone" advanced=true
-    export function startMelody(melodyArray: string[], options: MelodyOptions = MelodyOptions.Once) {
-        initMelodies();
-        if (currentMelody != undefined) {
-            if (((options & MelodyOptions.OnceInBackground) == 0)
-                && ((options & MelodyOptions.ForeverInBackground) == 0)
-                && currentMelody.background) {
-                currentBackgroundMelody = currentMelody;
-                currentMelody = null;
-                control.raiseEvent(MICROBIT_MELODY_ID, MusicEvent.BackgroundMelodyPaused);
-            }
-            if (currentMelody)
-                control.raiseEvent(MICROBIT_MELODY_ID, currentMelody.background ? MusicEvent.BackgroundMelodyEnded : MusicEvent.MelodyEnded);
-            currentMelody = new Melody(melodyArray, options);
-            control.raiseEvent(MICROBIT_MELODY_ID, currentMelody.background ? MusicEvent.BackgroundMelodyStarted : MusicEvent.MelodyStarted);
-        } else {
-            currentMelody = new Melody(melodyArray, options);
-            control.raiseEvent(MICROBIT_MELODY_ID, currentMelody.background ? MusicEvent.BackgroundMelodyStarted : MusicEvent.MelodyStarted);
-            // Only start the fiber once
-            control.runInBackground(() => {
-                while (currentMelody.hasNextNote()) {
-                    playNextNote(currentMelody);
-                    if (!currentMelody.hasNextNote() && currentBackgroundMelody) {
-                        // Swap the background melody back
-                        currentMelody = currentBackgroundMelody;
-                        currentBackgroundMelody = null;
-                        control.raiseEvent(MICROBIT_MELODY_ID, MusicEvent.MelodyEnded);
-                        control.raiseEvent(MICROBIT_MELODY_ID, MusicEvent.BackgroundMelodyResumed);
-                    }
-                }
-                control.raiseEvent(MICROBIT_MELODY_ID, currentMelody.background ? MusicEvent.BackgroundMelodyEnded : MusicEvent.MelodyEnded);
-                currentMelody = null;
-            })
-        }
-    }
-
-    function playNextNote(melody: Melody): void {
-        // cache elements
-        let currNote = melody.nextNote();
-        let currentPos = melody.currentPos;
-        let currentDuration = melody.currentDuration;
-        let currentOctave = melody.currentOctave;
-
-        let note: number;
-        let isrest: boolean = false;
-        let beatPos: number;
-        let parsingOctave: boolean = true;
-
-        for (let pos = 0; pos < currNote.length; pos++) {
-            let noteChar = currNote.charAt(pos);
-            switch (noteChar) {
-                case 'a': case 'A': note = 1; break;
-                case 'b': case 'B': note = 3; break;
-                case 'c': case 'C': note = 4; break;
-                case 'd': case 'D': note = 6; break;
-                case 'e': case 'E': note = 8; break;
-                case 'f': case 'F': note = 9; break;
-                case 'g': case 'G': note = 11; break;
-                case 'r': case 'R': isrest = true; break;
-                case '#': note++; break;
-                case 'b': note--; break;
-                case ':': parsingOctave = false; beatPos = pos; break;
-                default: if (parsingOctave) currentOctave = parseInt(noteChar);
-            }
-        }
-        if (!parsingOctave) {
-            currentDuration = parseInt(currNote.substr(beatPos + 1, currNote.length - beatPos));
-        }
-        let beat = (60000 / music.tempo()) / 4;
-        if (isrest) {
-            rest(currentDuration * beat)
-        } else {
-            let keyNumber = note + (12 * (currentOctave - 1));
-            let frequency = keyNumber >= 0 && keyNumber < freqTable.length ? freqTable[keyNumber] : 0;
-            playTone(frequency, currentDuration * beat);
-        }
-        melody.currentDuration = currentDuration;
-        melody.currentOctave = currentOctave;
-
-        const repeating = melody.repeating && currentPos == melody.melodyArray.length - 1;
-        melody.currentPos = repeating ? 0 : currentPos + 1;
-
-        control.raiseEvent(MICROBIT_MELODY_ID, melody.background ? MusicEvent.BackgroundMelodyNotePlayed : MusicEvent.MelodyNotePlayed);
-        if (repeating)
-            control.raiseEvent(MICROBIT_MELODY_ID, melody.background ? MusicEvent.BackgroundMelodyRepeated : MusicEvent.MelodyRepeated);
+    //% help=music/stop-all-sounds weight=59
+    //% blockId=music_stop_all_sounds block="stop all sounds"
+    export function stopAllSounds() {
+        const queue = soundQueue();
+        queue.cancel();
+        music.rest(1);
     }
 
     class Melody {
-        public melodyArray: string[];
-        public currentDuration: number;
-        public currentOctave: number;
-        public currentPos: number;
-        public repeating: boolean;
-        public background: boolean;
+        static freqTable: number[];
+        notes: string;
+        duration: number;
+        octave: number;
+        pos: number;
+        tempo: number;
 
-        constructor(melodyArray: string[], options: MelodyOptions) {
-            this.melodyArray = melodyArray;
-            this.repeating = ((options & MelodyOptions.Forever) != 0);
-            this.repeating = this.repeating ? true : ((options & MelodyOptions.ForeverInBackground) != 0)
-            this.background = ((options & MelodyOptions.OnceInBackground) != 0);
-            this.background = this.background ? true : ((options & MelodyOptions.ForeverInBackground) != 0);
-            this.currentDuration = 4; //Default duration (Crotchet)
-            this.currentOctave = 4; //Middle octave
-            this.currentPos = 0;
+        constructor(notes: string) {
+            this.notes = notes;
+            this.duration = 4; //Default duration (Crotchet)
+            this.octave = 4; //Middle octave
+            this.pos = 0;
+            this.tempo = 120; // default tempo
+            // TODO: use HEX literal
+            if (!Melody.freqTable)
+                Melody.freqTable = [31, 33, 35, 37, 39, 41, 44, 46, 49, 52, 55, 58, 62, 65, 69, 73, 78, 82, 87, 92, 98, 104, 110, 117, 123, 131, 139, 147, 156, 165, 175, 185, 196, 208, 220, 233, 247, 262, 277, 294, 311, 330, 349, 370, 392, 415, 440, 466, 494, 523, 554, 587, 622, 659, 698, 740, 784, 831, 880, 932, 988, 1047, 1109, 1175, 1245, 1319, 1397, 1480, 1568, 1661, 1760, 1865, 1976, 2093, 2217, 2349, 2489, 2637, 2794, 2960, 3136, 3322, 3520, 3729, 3951, 4186, 4435, 4699, 4978, 5274, 5588, 5920, 6272, 6645, 7040, 7459, 7902]
         }
 
         hasNextNote() {
-            return this.repeating || this.currentPos < this.melodyArray.length;
+            return this.pos < this.notes.length;
         }
 
-        nextNote(): string {
-            const currentNote = this.melodyArray[this.currentPos];
-            return currentNote;
+        scanNextNote(): string {
+            // eat space
+            while (this.pos < this.notes.length) {
+                const c = this.notes[this.pos];
+                if (c != ' ' && c != '\r' && c != '\n' && c != '\t')
+                    break;
+                this.pos++;
+            }
+
+            // read note
+            let note = "";
+            while (this.pos < this.notes.length) {
+                const c = this.notes[this.pos];
+                if (c == ' ' || c == '\r' || c == '\n' || c == '\t')
+                    break;
+                note += c;
+                this.pos++;
+            }
+            return note;
+        }
+
+        playNextNote(): boolean {
+            let currNote = this.scanNextNote();
+            if (!currNote)
+                return false;
+
+            enum Token {
+                Note = 0,
+                Octave = 1,
+                Beat = 2,
+                Tempo = 3
+            }
+
+            let note: number = 0;
+            let isrest: boolean = false;
+            let token: string = "";
+            let tokenKind = Token.Note;
+            const consumeToken = () => {
+                if (token && tokenKind != Token.Note) {
+                    const d = parseInt(token);
+                    switch (tokenKind) {
+                        case Token.Octave: this.octave = d; break;
+                        case Token.Beat: this.duration = Math.max(1, Math.min(16, d)); break;
+                        case Token.Tempo: this.tempo = Math.max(1, d); break;
+                    }
+                    token = "";
+                }
+            }
+            for (let i = 0; i < currNote.length; i++) {
+                let noteChar = currNote.charAt(i);
+                switch (noteChar) {
+                    case 'c': case 'C': note = 1; break;
+                    case 'd': case 'D': note = 3; break;
+                    case 'e': case 'E': note = 5; break;
+                    case 'f': case 'F': note = 6; break;
+                    case 'g': case 'G': note = 8; break;
+                    case 'a': case 'A': note = 10; break;
+                    case 'b': case 'B': note = 12; break;
+                    case 'r': case 'R': isrest = true; break;
+                    case '#': note++; break;
+                    case 'b': note--; break;
+                    case ':':
+                        consumeToken();
+                        tokenKind = Token.Beat;
+                        break;
+                    case '-':
+                        consumeToken();
+                        tokenKind = Token.Tempo;
+                        break;
+                    default:
+                        if(tokenKind == Token.Note)
+                            tokenKind = Token.Octave;
+                        token += noteChar;
+                        break;
+                }
+            }
+            consumeToken();
+            let beat = 15000 / this.tempo;
+            if (isrest) {
+                music.rest(this.duration * beat)
+            } else {
+                const keyNumber = note + (12 * (this.octave - 1));
+                const frequency = Melody.freqTable[keyNumber] || 0;
+                music.playTone(frequency, this.duration * beat);
+            }
+
+            return this.hasNextNote();
         }
     }
 }

@@ -13,16 +13,17 @@
 #define BOARD_ID_CPLAY 6
 #define BOARD_ID_GEMMA 7
 #define BOARD_ID_M0 8
+#define BOARD_ID_SPARKFUN 9
 
 #if YOTTA_CFG_PXT_BOARD_ID
 #define PXT_BOARD_ID YOTTA_CFG_PXT_BOARD_ID
 #endif
 
 #ifndef PXT_BOARD_ID
-#define PXT_BOARD_ID BOARD_ID_CPLAY
+#error "Board ID not defined"
 #endif
 
-#if PXT_BOARD_ID == BOARD_ID_ZERO || PXT_BOARD_ID == BOARD_ID_METRO || PXT_BOARD_ID == BOARD_ID_M0
+#if PXT_BOARD_ID == BOARD_ID_ZERO || PXT_BOARD_ID == BOARD_ID_METRO || PXT_BOARD_ID == BOARD_ID_M0 || PXT_BOARD_ID == BOARD_ID_SPARKFUN
 #define PIN_A0 PIN_PA02
 #define PIN_A1 PIN_PB08
 #define PIN_A2 PIN_PB09
@@ -46,13 +47,15 @@
 #define PIN_D12 PIN_PA19
 #define PIN_D13 PIN_PA17
 #define PIN_LED PIN_PA17
-#define PIN_LEDRX PIN_PB03
-#define PIN_LEDTX PIN_PA27
+#define PIN_RX PIN_PB03
+#define PIN_TX PIN_PA27
 #define PIN_MISO PIN_PA12
 #define PIN_MOSI PIN_PB10
 #define PIN_SCK PIN_PB11
 #define PIN_SCL PIN_PA23
 #define PIN_SDA PIN_PA22
+
+#define PIN_SPEAKER PIN_A0
 
 #if PXT_BOARD_ID == BOARD_ID_M0
 // M0 has D2 and D4 swapped...
@@ -62,10 +65,10 @@
 #define PIN_D4 PIN_PA14
 #endif
 
-#define PIN_BTN_A PIN_D0
-#define PIN_BTN_B PIN_D1
-#define PIN_BTN_SLIDE PIN_D3
-#define PIN_NEOPIXEL PIN_D4
+#define PIN_BTN_A PIN_D3
+#define PIN_BTN_B PIN_D7
+#define PIN_BTN_SLIDE PIN_D4
+#define PIN_NEOPIXEL PIN_D5
 #define PIN_TEMPERATURE PIN_A1
 #define PIN_LIGHT PIN_A2
 
@@ -97,12 +100,17 @@
 #define PIN_SCK PIN_PA21
 #define PIN_FLASH_CS PIN_PB22
 
+// microphone
+#define PIN_MIC_DATA PA08
+#define PIN_MIC_CLOCK PA10
+
 // devices
 #define PIN_BTN_A PIN_PA28 
 #define PIN_BTN_B PIN_PA14 // right
 #define PIN_BTN_SLIDE PIN_PA15
 #define PIN_NEOPIXEL PIN_PB23
-#define PIN_SPEAKER PIN_PA02
+#define PIN_SPEAKER PIN_A0
+#define PIN_SPEAKER_AMP PIN_PA30
 #define PIN_MICROPHONE PIN_PA08
 #define PIN_LIGHT PIN_PA11
 #define PIN_ACCELEROMETER_SDA PIN_PA00
@@ -248,11 +256,11 @@
 #ifndef PIN_LED
 #define PIN_LED NC
 #endif
-#ifndef PIN_LEDRX
-#define PIN_LEDRX NC
+#ifndef PIN_RX
+#define PIN_RX NC
 #endif
-#ifndef PIN_LEDTX
-#define PIN_LEDTX NC
+#ifndef PIN_TX
+#define PIN_TX NC
 #endif
 #ifndef PIN_TOUCH
 #define PIN_TOUCH NC
@@ -274,6 +282,15 @@
 #endif
 #ifndef PIN_SPEAKER
 #define PIN_SPEAKER NC
+#endif
+#ifndef PIN_SPEAKER_AMP
+#define PIN_SPEAKER_AMP NC
+#endif
+#ifndef PIN_MIC_DATA
+#define PIN_MIC_DATA NC
+#endif
+#ifndef PIN_MIC_CLOCK
+#define PIN_MIC_CLOCK NC
 #endif
 
 typedef DevicePin *DigitalPin;
@@ -309,9 +326,9 @@ namespace pxt {
 DevicePin *getPin(int id);
 DevicePin *lookupPin(int pinName);
 DeviceButton *getButton(int id);
-TouchSensor *getTouchSensor();
 }
 
-#define DEVICE_ID_BUTTON_SLIDE 3000
+#define DEVICE_ID_BUTTON_SLIDE  3000
+#define DEVICE_ID_MICROPHONE    3001
 
 #endif

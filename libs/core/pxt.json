@@ -31,7 +31,9 @@
         "hf2dbg.h",
         "uf2format.h",
         "uf2hid.h",
-        "ns.ts"
+        "ns.ts",
+        "dmac.cpp",
+        "dmac.h"
     ],
     "testFiles": [
         "test.ts"

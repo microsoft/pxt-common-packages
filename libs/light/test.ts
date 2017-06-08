@@ -14,34 +14,3 @@ input.buttonA.onEvent(ButtonEvent.Click, () => {
     flash(0)
 })
 
-input.pinA4.onEvent(ButtonEvent.Click, () => {
-    flash(1)
-})
-
-input.pinA5.onEvent(ButtonEvent.Click, () => {
-    flash(2)
-})
-
-input.pinA6.onEvent(ButtonEvent.Click, () => {
-    flash(3)
-})
-
-input.pinA7.onEvent(ButtonEvent.Click, () => {
-    flash(4)
-})
-
-input.pinA8.onEvent(ButtonEvent.Click, () => {
-    flash(5)
-})
-
-input.pinA9.onEvent(ButtonEvent.Click, () => {
-    flash(6)
-})
-
-input.pinA10.onEvent(ButtonEvent.Click, () => {
-    flash(7)
-})
-
-input.pinA11.onEvent(ButtonEvent.Click, () => {
-    flash(8)
-})

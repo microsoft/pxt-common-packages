@@ -112,7 +112,7 @@ class WAccel {
     WAccel()
         : i2c((PinName)PIN_ACCELEROMETER_SDA, (PinName)PIN_ACCELEROMETER_SCL),
           INIT_PIN(int1, PIN_ACCELEROMETER_INT), //
-          acc(i2c, int1)                         //
+          acc(i2c, int1, LIS3DH_DEFAULT_ADDR, DEVICE_ID_ACCELEROMETER, NORTH_EAST_UP) //
     {
         acc.init();        
     }
@@ -122,13 +122,16 @@ SINGLETON(WAccel);
 
 namespace input {
 /**
- * Do something when when a gesture is done (like shaking the micro:bit).
+ * Do something when when a gesture is done (like shaking the board).
  * @param gesture the type of gesture to track, eg: Gesture.Shake
  * @param body code to run when gesture is raised
  */
 //% help=input/on-gesture weight=98 blockGap=8
 //% blockId=device_gesture_event block="on |%NAME"
 //% parts="accelerometer"
+//% gesture.fieldEditor="gridpicker"
+//% gesture.fieldOptions.width=220
+//% gesture.fieldOptions.columns=3
 void onGesture(Gesture gesture, Action body) {
     auto acc = &getWAccel()->acc;
     acc->updateSample();
@@ -150,12 +153,15 @@ int getAccelerationStrength() {
 
 /**
  * Get the acceleration value in milli-gravitys (when the board is laying flat with the screen up,
- * x=0, y=0 and z=-1024)
+ * x=0, y=0 and z=-1023)
  * @param dimension TODO
  */
 //% help=input/acceleration weight=76
 //% blockId=device_acceleration block="acceleration (mg)|%NAME" blockGap=8
 //% parts="accelerometer"
+//% dimension.fieldEditor="gridpicker"
+//% dimension.fieldOptions.width=180
+//% dimension.fieldOptions.columns=2
 int acceleration(Dimension dimension) {
     switch (dimension) {
     case Dimension::X:

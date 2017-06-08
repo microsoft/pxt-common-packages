@@ -26,7 +26,7 @@ namespace control {
     }
 
     /**
-     * Raises an event in the event bus.
+     * Announce that an event happened to registered handlers.
      * @param src ID of the MicroBit Component that generated the event
      * @param value Component specific code indicating the cause of the event.
      * @param mode optional definition of how the event should be processed after construction.
@@ -38,18 +38,19 @@ namespace control {
     }
 
     /**
-     * Raises an event in the event bus.
+     * Run code when a registered event happens.
      * @param id the event compoent id
      * @param value the event value to match
      */
     //% weight=20 blockGap=8 blockId="control_on_event" block="on event|from %src|with value %value"
     //% blockExternalInputs=1
-    void onEvent(int id, int value, Action handler) {
-        registerWithDal(id, value, handler);
+    //% help="control/on-event"
+    void onEvent(int src, int value, Action handler) {
+        registerWithDal(src, value, handler);
     }    
 
     /**
-     * Resets the device.
+     * Reset the device.
      */
     //% weight=30 async help=control/reset blockGap=8
     //% blockId="control_reset" block="reset"
@@ -58,7 +59,7 @@ namespace control {
     }
 
     /**
-    * Blocks the current fiber for the given microseconds
+    * Block the current fiber for the given microseconds
     * @param micros number of micro-seconds to wait. eg: 4
     */
     //% help=control/wait-micros weight=29
@@ -68,13 +69,31 @@ namespace control {
     }  
 
     /**
-     * Schedules code that run in the background.
+     * Run other code in the background.
      */
     //% help=control/run-in-background blockAllowMultiple=1
     //% blockId="control_run_in_background" block="run in background" blockGap=8
     void runInBackground(Action a) {
       pxt::runInBackground(a);
-    }      
+    }   
+
+    /**
+    * Blocks the calling thread until the specified event is raised.
+    */
+    //% help=control/wait-for-event async
+    //% blockId=control_wait_for_event block="wait for event|from %src|with value %value"
+    void waitForEvent(int src, int value) {
+        pxt::waitForEvent(src, value);
+    }   
+
+    /**
+    * Allocates the next user notification event
+    */
+    //% help=control/allocate-notify-event
+    //%
+    int allocateNotifyEvent() {
+        return ::allocateNotifyEvent();
+    }
 
     /**
     * Derive a unique, consistent serial number of this device from internal data.

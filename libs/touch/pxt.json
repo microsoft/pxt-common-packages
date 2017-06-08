@@ -1,0 +1,17 @@
+{
+    "name": "touch",
+    "description": "The capacitive touch library",
+    "files": [
+        "README.md",
+        "touch.cpp",
+        "shims.d.ts",
+        "enums.d.ts"
+    ],
+    "testFiles": [
+        "test.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core"
+    }
+}

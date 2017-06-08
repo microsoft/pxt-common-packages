@@ -126,22 +126,11 @@ enum BeatFraction {
     Breve = 64
 }
 
-enum MelodyOptions {
-    //% block="once""
-    Once = 1,
-    //% block="forever"
-    Forever = 2,
-    //% block="once in background"
-    OnceInBackground = 4,
-    //% block="forever in background"
-    ForeverInBackground = 8
-}
-
 namespace music {
     let beatsPerMinute: number;
 
     /**
-    * Plays a tone.
+    * Play a tone.
     * @param frequency pitch of the tone to play in Hertz (Hz)
     */
     //% help=music/ring-tone weight=80
@@ -153,25 +142,25 @@ namespace music {
     }
 
     /**
-    * Rests (plays nothing) for a specified time.
+    * Rest, or play silence, for some time (in milleseconds).
     * @param ms rest duration in milliseconds (ms)
     */
     //% help=music/rest weight=79
     //% blockId=music_rest block="rest|for %duration=device_beat"
     //% parts="headphone" trackArgs=0
-    //% blockNamespace=music advanced=true
+    //% blockNamespace=music
     export function rest(ms: number) {
-        playTone(0, ms);
+        playTone(0, Math.max(ms, 20));
     }
 
     /**
-     * Gets the frequency of a note.
+     * Get the frequency of a note.
      * @param name the note name, eg: Note.C
      */
     //% weight=1 help=music/note-frequency
     //% blockId=device_note block="%note"
     //% shim=TD_ID
-    //% note.fieldEditor="note" note.defl="262"
+    //% note.fieldEditor="note" note.defl="262" note.fieldOptions.decompileLiterals=true
     //% useEnumVal=1 blockGap=8 advanced=true
     export function noteFrequency(name: Note): number {
         return name;
@@ -182,7 +171,7 @@ namespace music {
     }
 
     /**
-     * Returns the duration of a beat in milli-seconds
+     * Return the duration of a beat in milliseconds (the beat fraction).
      * @param fraction the fraction of the current whole note, eg: BeatFraction.Half
      */
     //% help=music/beat weight=49 blockGap=8
@@ -192,18 +181,19 @@ namespace music {
         if (fraction == null) fraction = BeatFraction.Whole;
         let beat = 60000 / beatsPerMinute;
         switch (fraction) {
-            case BeatFraction.Half: return beat / 2;
-            case BeatFraction.Quarter: return beat / 4;
-            case BeatFraction.Eighth: return beat / 8;
-            case BeatFraction.Sixteenth: return beat / 16;
-            case BeatFraction.Double: return beat * 2;
-            case BeatFraction.Breve: return beat * 4;
-            default: return beat;
+            case BeatFraction.Half: beat /= 2; break;
+            case BeatFraction.Quarter: beat /= 4; break;
+            case BeatFraction.Eighth: beat /= 8; break;
+            case BeatFraction.Sixteenth: beat /= 16; break;
+            case BeatFraction.Double: beat *= 2; break;
+            case BeatFraction.Breve: beat *= 4; break;
         }
+        return beat >> 0;
     }
 
     /**
-     * Returns the tempo in beats per minute. Tempo is the speed (bpm = beats per minute) at which notes play. The larger the tempo value, the faster the notes will play.
+     * Return the tempo in beats per minute (bpm).
+     * Tempo is the speed (bpm = beats per minute) at which notes play. The larger the tempo value, the faster the notes will play.
      */
     //% help=music/tempo weight=40 advanced=true
     //% blockId=device_tempo block="tempo (bpm)" blockGap=8
@@ -213,18 +203,18 @@ namespace music {
     }
 
     /**
-     * Change the tempo by the specified amount
+     * Change the tempo up or down by some amount of beats per minute (bpm).
      * @param bpm The change in beats per minute to the tempo, eg: 20
      */
     //% help=music/change-tempo-by weight=37
-    //% blockId=device_change_tempo block="change tempo by (bpm)|%value" blockGap=8
+    //% blockId=device_change_tempo block="change tempo by (bpm)|%value"
     export function changeTempoBy(bpm: number): void {
         init();
         setTempo(beatsPerMinute + bpm);
     }
 
     /**
-     * Sets the tempo to the specified amount
+     * Set the tempo a number of beats per minute (bpm).
      * @param bpm The new tempo in beats per minute, eg: 120
      */
     //% help=music/set-tempo weight=38 blockGap=8

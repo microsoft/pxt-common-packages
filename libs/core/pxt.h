@@ -5,6 +5,11 @@
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #pragma GCC diagnostic ignored "-Wformat"
+#pragma GCC diagnostic ignored "-Warray-bounds"
+
+// needed for gcc6; not sure why
+#undef min
+#undef max
 
 #include "pxtconfig.h"
 
@@ -25,7 +30,7 @@
 #include "DevicePin.h"
 #include "DeviceFiber.h"
 #include "DeviceMessageBus.h"
-#include "TouchSensor.h"
+#include "CapTouchButton.h"
 #include "DeviceImage.h"
 
 #include "pins.h"
@@ -121,6 +126,7 @@ extern DeviceTimer devTimer;
 extern DeviceMessageBus devMessageBus;
 void registerWithDal(int id, int event, Action a);
 void runInBackground(Action a);
+void waitForEvent(int id, int event);
 //%
 TValue runAction3(Action a, TValue arg0, TValue arg1, TValue arg2);
 //%
