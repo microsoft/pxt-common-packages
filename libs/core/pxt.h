@@ -449,6 +449,7 @@ extern const VTable string_vt;
 extern const VTable image_vt;
 extern const VTable buffer_vt;
 extern const VTable number_vt;
+extern const VTable RefAction_vtable;
 
 enum class ValType {
     Undefined,
@@ -459,7 +460,6 @@ enum class ValType {
     Function,
 };
 
-extern const VTable RefAction_vtable;
 ValType valType(TValue v);
 }
 
