@@ -39,7 +39,7 @@ Action mkAction(int reflen, int totallen, int startptr) {
     check(0 <= reflen && reflen <= totallen, ERR_SIZE, 1);
     check(reflen <= totallen && totallen <= 255, ERR_SIZE, 2);
     check(bytecode[startptr] == 0xffff, ERR_INVALID_BINARY_HEADER, 3);
-    check(bytecode[startptr + 1] == 0, ERR_INVALID_BINARY_HEADER, 4);
+    check(bytecode[startptr + 1] == REF_TAG_ACTION, ERR_INVALID_BINARY_HEADER, 4);
 
     uint32_t tmp = (uint32_t)&bytecode[startptr];
 
