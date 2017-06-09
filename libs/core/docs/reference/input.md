@@ -46,8 +46,12 @@ input.soundLevel()
 ## Temperature #temperature
 
 ```cards
-input.onTemperateConditionChanged(TemperatureCondition.Cold, 0, () => {
+input.onTemperateConditionChanged(TemperatureCondition.Hot, 30, TemperatureUnit.Celsius, () => {
 
 })
 input.temperature(TemperatureUnit.Celsius)
+```
+
+```package
+circuit-playground
 ```

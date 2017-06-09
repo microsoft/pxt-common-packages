@@ -1,6 +1,6 @@
 {
     "id": "common",
-    "name": "PXT Common Packages",
+    "name": "Microsoft MakeCode Common Packages",
     "corepkg": "core",
     "bundleddirs": [
         "libs/core",

@@ -73,7 +73,7 @@ void onEvent(Button button, ButtonEvent ev, Action body) {
  * @param button the button to query the request
  */
 //% help=input/button/is-pressed weight=79
-//% block="%NAME|is pressed"
+//% block="%button|is pressed"
 //% blockId=buttonIsPressed
 //% blockGap=8
 //% parts="buttonpair"
@@ -90,7 +90,7 @@ bool isPressed(Button button) {
  * @param button the button to query the request
  */
 //% help=input/button/was-pressed weight=78
-//% block="%NAME|was pressed"
+//% block="%button|was pressed"
 //% blockId=buttonWasPressed
 //% parts="buttonpair" blockGap=8
 //% blockNamespace=input advanced=true

@@ -5,7 +5,7 @@
 //% advanced=true
 namespace serial {
     /**
-     * Prints a line of text to the serial
+     * Write a line of text to the serial port.
      * @param value to send over serial
      */
     //% weight=90
@@ -16,7 +16,7 @@ namespace serial {
     }
 
     /**
-     * Prints a numeric value to the serial
+     * Write a number to the serial port.
      */
     //% help=serial/write-number
     //% weight=89 blockGap=8
@@ -26,7 +26,7 @@ namespace serial {
     }
 
     /**
-     * Writes a ``name: value`` pair line to the serial.
+     * Write a name:value pair as a line of text to the serial port.
      * @param name name of the value stream, eg: x
      * @param value to write
      */

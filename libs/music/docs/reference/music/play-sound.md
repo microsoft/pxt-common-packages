@@ -8,7 +8,7 @@ music.playSound('')
 
 Your program doesn't wait for the sound to finish. Then next part of your program starts right away.
 
-The notes of your sound go into a [string](/reference/types/string). The [**composing**](/reference/music/composing-sounds)
+The notes of your sound go into a [string](/types/string). The [**composing**](/reference/music/composing-sounds)
 sounds page tells you how to make a sound string.
 
 Also, there are built-in sounds you can use. These are part of the **Sounds** type. You use built-in sounds
@@ -58,3 +58,7 @@ music.playSound(music.sounds(Sounds.BaDing))
 
 [Composing sounds](/reference/music/composing-sounds)
 
+```package
+music
+light
+```

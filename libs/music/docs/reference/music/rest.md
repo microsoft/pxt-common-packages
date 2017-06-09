@@ -34,3 +34,6 @@ loops.forever(() => {
 [``||tempo||``](/reference/music/tempo), [``||set tempo||``](/reference/music/set-tempo),
 [``||change tempo by||``](/reference/music/change-tempo-by)
 
+```package
+music
+```

@@ -35,3 +35,6 @@ music.changeTempoBy(-12)
 
 [play tone](/reference/music/play-tone), [ring tone](/reference/music/ring-tone) 
 
+```package
+music
+```

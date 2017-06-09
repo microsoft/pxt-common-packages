@@ -31,3 +31,8 @@ input.onGesture(Gesture.Shake, () => {
 [``||play sound||``](/reference/music/play-sound)
 
 [Composing sounds](/reference/music/composing-sounds)
+
+```package
+accelerometer
+music
+```

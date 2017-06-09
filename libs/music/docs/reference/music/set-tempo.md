@@ -30,3 +30,6 @@ music.setTempo(240)
 [``||rest||``](/reference/music/rest), [``||tempo||``](/reference/music/tempo),
 [``||change tempo by||``](/reference/music/change-tempo-by)
 
+```package
+music
+```
