@@ -400,6 +400,7 @@ class IrWrap {
     IrState state;
     uint64_t lastInt;
     uint32_t prevPulse;
+    uint64_t startTime;
 
     IrRecvState recvState;
     uint8_t recvBuf[IR_MAX_MSG_SIZE];
@@ -459,10 +460,11 @@ public:
     }
 
     void finish(int code) {
-        if (recvState == IR_RECV_ERROR)
-            return;
+        //if (recvState == IR_RECV_ERROR)
+        //    return;
 
 #if IR_DEBUG
+        drift = (int)(system_timer_current_time_us() - startTime);
         if (code == 0) {
             if (prevDataSize == 0) {
                 prevDataSize = 6;
@@ -514,6 +516,7 @@ public:
             recvShift = 0;
             recvVal = 0;
             dbg.put(" *** ");
+            startTime = system_timer_current_time_us();
             return;
         }
 
@@ -543,6 +546,8 @@ public:
         dbg.putNum(-(int)ev.timestamp);
 
         int len = (int)(ev.timestamp - 20 + 125) / 250;
+
+                prevPulse = (int)ev.timestamp;
 
         if (len >= 7) {
             recvState = IR_WAIT_START_GAP;
@@ -687,6 +692,28 @@ Buffer currentPacket() {
 int drift() {
     auto w = getIrWrap();
     return w->drift;
+}
+
+/**
+ * Get data over IR.
+ */
+//%
+void beep() {
+    auto pin = lookupPin(PIN_IR_OUT);
+    pin->setDigitalValue(0);
+    pin->setAnalogPeriodUs(1000/38); // 38kHz
+    pin->setAnalogValue(200);
+
+    __disable_irq();
+    while (1) {
+        for (int i = 0; i < 30; ++i) {
+            wait_us(750);
+            pin->setPwm(1);
+            wait_us(250);
+            pin->setPwm(0);
+        }
+        wait_us(500000);
+    }
 }
 
 
