@@ -538,8 +538,9 @@ namespace light {
          * Show a single animation frame
          * @param animation the animation to run
          */
-        //% blockId=neopixel_show_animation_frame block="show animation frame %animation"
+        //% blockId=neopixel_show_animation_frame block="show animation frame %animation=light_animation"
         //% weight=24 advanced=true
+        //% help="light/show-animation-frame"
         //% parts="neopixel"
         //% defaultInstance=light.pixels
         showAnimationFrame(animation: NeoPixelAnimation) {
