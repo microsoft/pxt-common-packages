@@ -1,4 +1,4 @@
-# show Animation
+# show Animation Frame
 
 Show a single part of pixel animation on the pixel strip (or on the board).
 
