@@ -24,7 +24,6 @@
         "loops.cpp",
         "serial.cpp",
         "serial.ts",
-        "buttons.cpp",
         "math.ts",
         "hf2.cpp",
         "hf2.h",

@@ -1,4 +1,4 @@
-/// <reference path="../dal.d.ts"/>
+/// <reference path="../../core/dal.d.ts"/>
 
 namespace pxsim {
     const DOUBLE_CLICK_TIME = 500;
