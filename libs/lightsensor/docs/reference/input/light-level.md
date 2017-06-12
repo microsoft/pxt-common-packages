@@ -14,7 +14,7 @@ has to be turned on first.
 
 ### Returns
 
-* a [Number](/types/number) that is a light level from ``0`` (dark) to ``255`` (bright).
+* a [number](/types/number) that is a light level from ``0`` (dark) to ``255`` (bright).
 
 ### Example: show light level
 

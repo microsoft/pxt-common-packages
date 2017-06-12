@@ -25,7 +25,7 @@ The @boardname@ might warm up a little if you make it work hard, though!
 
 ### @boardname@ thermometer #ex1
 
-Use `temperature` and `set all` to vary the brightness of the pixels depending on the temperature in the room. 
+Use **temperature** and **set all** to vary the brightness of the pixels depending on the temperature in the room. 
 
 ```blocks
 loops.forever(() => {
@@ -59,6 +59,7 @@ loops.forever(() => {
 ```
 
 ### ~hint
+**Try this**
 
 Try comparing the temperature your @boardname@ shows to a real thermometer in the same place.
 You might be able to figure out how much to subtract from the number the @boardname@
@@ -69,5 +70,5 @@ better thermometer.
 
 ## See also
 
-[``||on temperature condition changed||``](/reference/input/on-temperature-condition-changed)
+[``||on temperate condition changed||``](/reference/input/on-temperature-condition-changed)
 
