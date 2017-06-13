@@ -19,6 +19,7 @@ if (input.pinA1.wasPressed()) {
     light.pixels.setPixelColor(1, Colors.Blue)
 }
 ```
+Read about [**touch sensors**](/reference/input/button/touch-sensors) and using the pins as touch buttons.
 ## ~
 
 ## Returns
@@ -40,4 +41,7 @@ input.buttonB.onEvent(ButtonEvent.Click, () => {
 ```
 
 ## See Also
-[``||is pressed||``](/reference/input/button/is-pressed), [``||on event||``](/reference/input/button/on-event)
+[``||is pressed||``](/reference/input/button/is-pressed),
+[``||on event||``](/reference/input/button/on-event)
+
+[Touch sensors](/reference/input/button/touch-sensors)
