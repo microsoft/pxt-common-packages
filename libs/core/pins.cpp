@@ -312,7 +312,7 @@ static uint64_t encodeHamming(uint8_t a, uint8_t b) {
         r |= (uint64_t)((b1 >> i) & 1) << p++;
 
         // if there was at least a single 1, then stop bit is zero
-        int stop = (r & 0xf) ? 0 : 1;
+        int stop = ((r >> (p - 4)) & 0xf) ? 0 : 1;
         r |= (uint64_t)stop << p++;
     }
     return r;
@@ -345,8 +345,7 @@ class BitVector {
         int off = pos & 31;
         res >>= off;
         off = 32 - off;
-        num -= off;
-        if (num > 0) {
+        if (num > off) {
             res |= get32(pos + 32) << off;
         }
         if (num < 32)
@@ -422,7 +421,7 @@ class IrWrap {
     DevicePin *inpin;
     BufferData *data;
     int16_t dataptr;
-    int8_t databits;
+    int8_t datashift;
     int8_t pwmstate;
     uint64_t dataval; // Hamming-encoded
     uint64_t lastInt;
@@ -472,9 +471,9 @@ class IrWrap {
             return; // error code?
 
         incrRC(d);
-        // 0b10111...11 - it gets transmitted from LSB, so we get a bunch of 1s followed by 0 and 1
-        dataval = 0xbffffff;
-        databits = 28;
+        // 0b11...1101 - it gets transmitted from MSB, so we get a bunch of 1s followed by 0 and 1
+        dataval = 0xffffffd;
+        datashift = 28;
         dataptr = 0;
         drift = 0;
         lastInt = 0;
@@ -549,13 +548,29 @@ class IrWrap {
             for (int j = 0; j < pulsePtr - i - 1; j++) {
                 if (nums[j] > nums[j + 1])
                     std::swap(nums[j], nums[j + 1]);
-
-                int median = nums[pulsePtr / 2];
-                pulses[0] -= median;
-
-                DMESG("shift: n=%d avg=%d med=%d p=%d %d %d ...", pulsePtr, sum / pulsePtr, median,
-                      pulses[0], pulses[1], pulses[2]);
             }
+
+        int median = nums[pulsePtr / 2];
+        pulses[0] -= median;
+
+        DMESG("shift: n=%d avg=%d med=%d p=%d %d %d ...", pulsePtr, sum / pulsePtr, median,
+              pulses[0], pulses[1], pulses[2]);
+              /*
+        char buf[1024];
+        buf[0] = 0;
+        int pos = 0;
+        for (int i = 0; i < pulsePtr; ++i) {
+            int v = 0;
+            int len = pulses[i];
+            if (len < 0) {
+                len = -len;
+                v = 1;
+            }
+            sprintf(buf + strlen(buf), "%d,%d;%d,%d;", pos, v, pos + len - 1, v);
+            pos += len;
+        }
+        DMESG("buf: %s", buf);
+        */
     }
 
     void pulseGap(DeviceEvent ev) {
@@ -589,6 +604,7 @@ class IrWrap {
         int errs = 0;
         for (int i = start; i < bits.size(); i += 5) {
             uint32_t v = bits.getBits(i, 5);
+            DMESG("v=%x @ %d", v, i);
             if (v == 0x1f)
                 stops++;
             else
@@ -606,6 +622,9 @@ class IrWrap {
 
         BitVector bits;
 
+        char bufb[1000];
+        int bufbp = 0;
+
         int pos = 125;
         for (int i = 0; i < pulsePtr; ++i) {
             int curr = pulses[i];
@@ -617,9 +636,12 @@ class IrWrap {
             pos -= curr;
             while (pos < 0) {
                 bits.push(v);
+                bufb[bufbp++] = v ? '1' : '0';
                 pos += 250;
             }
         }
+        bufb[bufbp] = 0;
+        DMESG("bits: %d %d %s", bits.get(0), bits.get(1), bufb);
 
         if (bits.size() < 70)
             return; // too short
@@ -634,7 +656,7 @@ class IrWrap {
         int minStart = start;
         for (int i = 0; i < 8; ++i) {
             int err = errorRate(start + i, bits);
-            DMESG("err at %d = %d", i, err);
+            DMESG("err at %d = %d", start + i, err);
             if (err < minErr) {
                 minStart = start + i;
                 minErr = err;
@@ -711,7 +733,7 @@ class IrWrap {
         }
         lastInt = now;
 
-        if (databits == 0) {
+        if (datashift == 0) {
             if (dataptr > data->length + 10) {
 // done
 #if IR_DEBUG
@@ -725,22 +747,21 @@ class IrWrap {
                 return;
             } else if (dataptr >= data->length) {
                 dataval = 0xfff;
-                databits = 12;
+                datashift = 12;
                 dataptr += 100;
             } else {
                 dataval = encodeHamming(data->payload[dataptr], data->payload[dataptr + 1]);
-                databits = 35;
+                datashift = 35;
                 dataptr += 2;
             }
         }
 
-        int curr = dataval & 1;
+        int curr = !!(dataval & (1 << (datashift - 1)));
         if (curr != pwmstate) {
             pwmstate = curr;
             pin->setPwm(pwmstate);
         }
-        dataval >>= 1;
-        databits--;
+        datashift--;
     }
 };
 SINGLETON(IrWrap);
