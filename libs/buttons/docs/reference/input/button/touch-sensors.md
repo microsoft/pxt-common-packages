@@ -1,7 +1,7 @@
 # Touch sensors
 
 Some boards have pins or pads that can work like buttons when you touch them. If you touch one
-of these pins, you change what's is happening electrically to the pin at that moment. The microprocessor
+of these pins, you change what's happening electrically to the pin at that moment. The microprocessor
 connected to the pin can detect this change and say that is was a button action.
 
 Just like with real buttons, all the same actions are noticed: a press down, lift your finger off, hold
