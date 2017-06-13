@@ -20,7 +20,7 @@ anywhere on it's surface.
 
 ## Capacitive touch
 
-A very popular way to detect touch is with capacitve touch sensors. Capacitive means using _capacitance_ which is about storing up a really, really small number of electrons of the surface of some material. When you touch the
+A very popular way to detect touch is with capacitive touch sensors. Capacitive means using _capacitance_ which is about storing up a really, really small number of electrons of the surface of some material. When you touch the
 sensor, your body becomes part of the storage surface for the electrons on the sensor. If you have a grounded
 sensor, the number of electrons, its _charge_, becomes less when you touch it. If you are using a non-grounded
 sensor, the charge increases when you touch it. Either way, a sensing circuit can detect a touch by the change in
