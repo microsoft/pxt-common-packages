@@ -1,9 +1,9 @@
-# on Temperate Condition Changed
+# on Temperature Condition Changed
 
 Run some code when the temperature changes from hot to cold, or from cold to hot.
 
 ```sig
-input.onTemperateConditionChanged(TemperatureCondition.Hot, 15, TemperatureUnit.Celsius, () => {
+input.onTemperatureConditionChanged(TemperatureCondition.Hot, 15, TemperatureUnit.Celsius, () => {
 	
 })
 ```
@@ -29,7 +29,7 @@ Or, you use ``warm`` to run your code when it warms to your temperature _thresho
 Make all the pixels show `blue` when the temperature gets cool. The cool setting is `10` degrees Celsius or colder.
 
 ```blocks
-input.onTemperateConditionChanged(TemperatureCondition.Cold, 10, TemperatureUnit.Celsius, () => {
+input.onTemperatureConditionChanged(TemperatureCondition.Cold, 10, TemperatureUnit.Celsius, () => {
 	light.pixels.setAll(Colors.Blue)
 })
 ```

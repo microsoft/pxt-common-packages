@@ -70,5 +70,5 @@ better thermometer.
 
 ## See also
 
-[``||on temperate condition changed||``](/reference/input/on-temperature-condition-changed)
+[``||on temperature condition changed||``](/reference/input/on-temperature-condition-changed)
 
