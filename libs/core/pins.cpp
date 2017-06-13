@@ -551,248 +551,249 @@ class IrWrap {
                 DMESG("shift: n=%d avg=%d med=%d p=%d %d %d ...", pulsePtr, sum / pulsePtr, median,
                       pulses[0], pulses[1], pulses[2]);
             }
+    }
 
-        void pulseGap(DeviceEvent ev) {
-            if (ev.timestamp > 10000) {
-                dbg.put(" BRK ");
-                finish(11);
-                return;
+    void pulseGap(DeviceEvent ev) {
+        if (ev.timestamp > 10000) {
+            dbg.put(" BRK ");
+            finish(11);
+            return;
+        }
+
+        int tm = (int)ev.timestamp;
+
+        dbg.putNum(tm);
+
+        if (recvState == IR_WAIT_START_GAP) {
+            pulsePtr = 0;
+            addPulse(tm);
+            recvState = IR_WAIT_DATA;
+            dbg.put(" *** ");
+            startTime = system_timer_current_time_us();
+            return;
+        }
+
+        if (recvState == IR_WAIT_DATA) {
+            addPulse(tm);
+            return;
+        }
+    }
+
+    int errorRate(int start, BitVector &bits) {
+        int stops = 0;
+        int errs = 0;
+        for (int i = start; i < bits.size(); i += 5) {
+            uint32_t v = bits.getBits(i, 5);
+            if (v == 0x1f)
+                stops++;
+            else
+                stops = 0;
+            if (stops >= 3)
+                break;
+            if ((v & 0x10) && (v != 0x10))
+                errs++;
+        }
+        return errs;
+    }
+
+    void decodeMsg() {
+        adjustShift();
+
+        BitVector bits;
+
+        int pos = 125;
+        for (int i = 0; i < pulsePtr; ++i) {
+            int curr = pulses[i];
+            int v = 0;
+            if (curr < 0) {
+                v = 1;
+                curr = -curr;
             }
-
-            int tm = (int)ev.timestamp;
-
-            dbg.putNum(tm);
-
-            if (recvState == IR_WAIT_START_GAP) {
-                pulsePtr = 0;
-                addPulse(tm);
-                recvState = IR_WAIT_DATA;
-                dbg.put(" *** ");
-                startTime = system_timer_current_time_us();
-                return;
-            }
-
-            if (recvState == IR_WAIT_DATA) {
-                addPulse(tm);
-                return;
+            pos -= curr;
+            while (pos < 0) {
+                bits.push(v);
+                pos += 250;
             }
         }
 
-        int errorRate(int start, BitVector &bits) {
-            int stops = 0;
-            int errs = 0;
-            for (int i = start; i < bits.size(); i += 5) {
-                uint32_t v = bits.getBits(i, 5);
-                if (v == 0x1f)
-                    stops++;
-                else
-                    stops = 0;
-                if (stops >= 3)
-                    break;
-                if ((v & 0x10) && (v != 0x10))
-                    errs++;
-            }
-            return errs;
-        }
+        if (bits.size() < 70)
+            return; // too short
 
-        void decodeMsg() {
-            adjustShift();
-
-            BitVector bits;
-
-            int pos = 125;
-            for (int i = 0; i < pulsePtr; ++i) {
-                int curr = pulses[i];
-                int v = 0;
-                if (curr < 0) {
-                    v = 1;
-                    curr = -curr;
-                }
-                pos -= curr;
-                while (pos < 0) {
-                    bits.push(v);
-                    pos += 250;
-                }
-            }
-
-            if (bits.size() < 70)
-                return; // too short
-
-            int start = 0;
-            while (start < bits.size() && !bits.get(start))
-                start++;
-            start -= 3;
-            if (start < 0)
-                start = 0;
-            int minErr = errorRate(start, bits);
-            int minStart = start;
-            for (int i = 0; i < 8; ++i) {
-                int err = errorRate(start + i, bits);
-                DMESG("err at %d = %d", i, err);
-                if (err < minErr) {
-                    minStart = start + i;
-                    minErr = err;
-                }
-            }
-
-            uint8_t buf[IR_MAX_MSG_SIZE];
-            int ptr = 0;
-            uint64_t mask = (((uint64_t)1 << 20) - 1) << 15;
-
-            while (ptr < IR_MAX_MSG_SIZE) {
-                auto p = start + 35 * (ptr / 2) uint64_t v =
-                             bits.getBits(p, 30) | ((uint64_t)bits.getBits(p + 30, 5) << 30);
-                if ((v & mask) == mask)
-                    break;
-                decodeHamming(v, buf + ptr);
-                ptr += 2;
-            }
-
-            decrRC(outBuffer);
-            outBuffer = pins::createBuffer(ptr);
-            memcpy(outBuffer->payload, buf, ptr);
-            finish(0);
-            DeviceEvent evt(IR_COMPONENT_ID, IR_PACKET_EVENT);
-        }
-
-        void pulseMark(DeviceEvent ev) {
-            if (ev.timestamp > 10000) {
-                dbg.put(" -BRK ");
-                finish(10);
-                return;
-            }
-
-            int tm = (int)ev.timestamp;
-
-            dbg.putNum(-tm);
-
-            if (tm >= 16 * 250) {
-                recvState = IR_WAIT_START_GAP;
-                return;
-            }
-
-            if (recvState == IR_WAIT_DATA) {
-                if (tm >= 10 * 250) {
-                    // finish
-                    addPulse(-(40 * 250)); // make sure we get all ones at the end
-                    decodeMsg();
-                } else {
-                    addPulse(-tm);
-                }
+        int start = 0;
+        while (start < bits.size() && !bits.get(start))
+            start++;
+        start -= 3;
+        if (start < 0)
+            start = 0;
+        int minErr = errorRate(start, bits);
+        int minStart = start;
+        for (int i = 0; i < 8; ++i) {
+            int err = errorRate(start + i, bits);
+            DMESG("err at %d = %d", i, err);
+            if (err < minErr) {
+                minStart = start + i;
+                minErr = err;
             }
         }
 
-        Buffer getBuffer() {
-            incrRC(outBuffer);
-            return outBuffer;
+        uint8_t buf[IR_MAX_MSG_SIZE];
+        int ptr = 0;
+        uint64_t mask = (((uint64_t)1 << 20) - 1) << 15;
+
+        while (ptr < IR_MAX_MSG_SIZE) {
+            auto p = start + 35 * (ptr / 2) uint64_t v =
+                         bits.getBits(p, 30) | ((uint64_t)bits.getBits(p + 30, 5) << 30);
+            if ((v & mask) == mask)
+                break;
+            decodeHamming(v, buf + ptr);
+            ptr += 2;
         }
 
-        void process(DeviceEvent) {
-            if (!data)
-                return;
+        decrRC(outBuffer);
+        outBuffer = pins::createBuffer(ptr);
+        memcpy(outBuffer->payload, buf, ptr);
+        finish(0);
+        DeviceEvent evt(IR_COMPONENT_ID, IR_PACKET_EVENT);
+    }
 
-            auto now = system_timer_current_time_us();
-            if (lastInt) {
-                auto delta = abs((int)(now - lastInt) - 250);
-                if (delta > 50)
-                    drift += delta + 100000;
-                /*
-                if (delta > 300) {
-                    drift += delta - 250;
-                }
-                */
+    void pulseMark(DeviceEvent ev) {
+        if (ev.timestamp > 10000) {
+            dbg.put(" -BRK ");
+            finish(10);
+            return;
+        }
+
+        int tm = (int)ev.timestamp;
+
+        dbg.putNum(-tm);
+
+        if (tm >= 16 * 250) {
+            recvState = IR_WAIT_START_GAP;
+            return;
+        }
+
+        if (recvState == IR_WAIT_DATA) {
+            if (tm >= 10 * 250) {
+                // finish
+                addPulse(-(40 * 250)); // make sure we get all ones at the end
+                decodeMsg();
+            } else {
+                addPulse(-tm);
             }
-            lastInt = now;
+        }
+    }
 
-            if (databits == 0) {
-                if (dataptr > data->length + 10) {
+    Buffer getBuffer() {
+        incrRC(outBuffer);
+        return outBuffer;
+    }
+
+    void process(DeviceEvent) {
+        if (!data)
+            return;
+
+        auto now = system_timer_current_time_us();
+        if (lastInt) {
+            auto delta = abs((int)(now - lastInt) - 250);
+            if (delta > 50)
+                drift += delta + 100000;
+            /*
+            if (delta > 300) {
+                drift += delta - 250;
+            }
+            */
+        }
+        lastInt = now;
+
+        if (databits == 0) {
+            if (dataptr > data->length + 10) {
 // done
 #if IR_DEBUG
-                    prevDataSize = data->length;
-                    memcpy(prevData, data->payload, prevDataSize);
+                prevDataSize = data->length;
+                memcpy(prevData, data->payload, prevDataSize);
 #endif
-                    decrRC(data);
-                    data = NULL;
-                    pin->setAnalogValue(0);
-                    pin->setPwm(1);
-                    return;
-                } else if (dataptr >= data->length) {
-                    dataval = 0xfff;
-                    databits = 12;
-                    dataptr += 100;
-                } else {
-                    dataval = encodeHamming(data->payload[dataptr], data->payload[dataptr + 1]);
-                    databits = 35;
-                    dataptr += 2;
-                }
-            }
-
-            int curr = dataval & 1;
-            if (curr != pwmstate) {
-                pwmstate = curr;
-                pin->setPwm(pwmstate);
-            }
-            dataval >>= 1;
-            databits--;
-        }
-    };
-    SINGLETON(IrWrap);
-
-    /**
-     * Send data over IR.
-     */
-    //%
-    void send(Buffer buf) {
-        auto w = getIrWrap();
-        w->send(buf);
-    }
-
-    /**
-     * Get data over IR.
-     */
-    //%
-    Buffer currentPacket() {
-        auto w = getIrWrap();
-        return w->getBuffer();
-    }
-
-    /**
-     * Get data over IR.
-     */
-    //%
-    int drift() {
-        auto w = getIrWrap();
-        return w->drift;
-    }
-
-    /**
-     * Get data over IR.
-     */
-    //%
-    void beep() {
-        auto pin = lookupPin(PIN_IR_OUT);
-        pin->setDigitalValue(0);
-        pin->setAnalogPeriodUs(1000 / 38); // 38kHz
-        pin->setAnalogValue(200);
-
-        __disable_irq();
-        while (1) {
-            for (int i = 0; i < 30; ++i) {
-                wait_us(750);
+                decrRC(data);
+                data = NULL;
+                pin->setAnalogValue(0);
                 pin->setPwm(1);
-                wait_us(250);
-                pin->setPwm(0);
+                return;
+            } else if (dataptr >= data->length) {
+                dataval = 0xfff;
+                databits = 12;
+                dataptr += 100;
+            } else {
+                dataval = encodeHamming(data->payload[dataptr], data->payload[dataptr + 1]);
+                databits = 35;
+                dataptr += 2;
             }
-            wait_us(500000);
         }
-    }
 
-    /**
-     * Get data over IR.
-     */
-    //%
-    void onPacket(Action body) {
-        getIrWrap(); // attach events
-        registerWithDal(IR_COMPONENT_ID, IR_PACKET_EVENT, body);
+        int curr = dataval & 1;
+        if (curr != pwmstate) {
+            pwmstate = curr;
+            pin->setPwm(pwmstate);
+        }
+        dataval >>= 1;
+        databits--;
     }
+};
+SINGLETON(IrWrap);
+
+/**
+ * Send data over IR.
+ */
+//%
+void send(Buffer buf) {
+    auto w = getIrWrap();
+    w->send(buf);
+}
+
+/**
+ * Get data over IR.
+ */
+//%
+Buffer currentPacket() {
+    auto w = getIrWrap();
+    return w->getBuffer();
+}
+
+/**
+ * Get data over IR.
+ */
+//%
+int drift() {
+    auto w = getIrWrap();
+    return w->drift;
+}
+
+/**
+ * Get data over IR.
+ */
+//%
+void beep() {
+    auto pin = lookupPin(PIN_IR_OUT);
+    pin->setDigitalValue(0);
+    pin->setAnalogPeriodUs(1000 / 38); // 38kHz
+    pin->setAnalogValue(200);
+
+    __disable_irq();
+    while (1) {
+        for (int i = 0; i < 30; ++i) {
+            wait_us(750);
+            pin->setPwm(1);
+            wait_us(250);
+            pin->setPwm(0);
+        }
+        wait_us(500000);
+    }
+}
+
+/**
+ * Get data over IR.
+ */
+//%
+void onPacket(Action body) {
+    getIrWrap(); // attach events
+    registerWithDal(IR_COMPONENT_ID, IR_PACKET_EVENT, body);
+}
 }
