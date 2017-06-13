@@ -46,7 +46,7 @@ namespace input {
 //% blockId=input_on_temperature_condition_changed block="on temperature %condition|at %temperature|%unit"
 //% parts="thermometer" weight=95 blockGap=8 advanced=true
 //% help=input/on-temperature-condition-changed blockExternalInputs=0
-void onTemperateConditionChanged(TemperatureCondition condition, int temperature, TemperatureUnit unit, Action handler) {
+void onTemperatureConditionChanged(TemperatureCondition condition, int temperature, TemperatureUnit unit, Action handler) {
     auto sensor = &getWTemp()->sensor;
     sensor->updateSample();
 
