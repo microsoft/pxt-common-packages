@@ -69,7 +69,7 @@ bool digitalRead(DigitalPin name) {
 //% parts="led" trackArgs=0
 //% blockNamespace=pins
 //% name.fieldEditor="gridpicker"
-//% name.fieldOptions.width=220 
+//% name.fieldOptions.width=220
 //% name.fieldOptions.columns=4
 void digitalWrite(DigitalPin name, bool value) {
     PINOP(setDigitalValue(value));
@@ -133,12 +133,11 @@ int pulseIn(DigitalPin pin, PulseValue value, int maxDuration = 2000000) {
 //% name.fieldOptions.width=220
 //% name.fieldOptions.columns=4
 void setPull(DigitalPin name, PinPullMode pull) {
-    PinMode m = pull == PinPullMode::PullDown ? PinMode::PullDown : pull == PinPullMode::PullUp
-                                                                        ? PinMode::PullUp
-                                                                        : PinMode::PullNone;
+    PinMode m = pull == PinPullMode::PullDown
+                    ? PinMode::PullDown
+                    : pull == PinPullMode::PullUp ? PinMode::PullUp : PinMode::PullNone;
     PINOP(setPull(m));
 }
-
 }
 
 namespace AnalogPinMethods {
@@ -227,7 +226,6 @@ void servoWrite(PwmPin name, int value) {
 void servoSetPulse(PwmPin name, int duration) {
     PINOP(setServoPulseUs(duration));
 }
-
 }
 
 namespace pins {
@@ -252,7 +250,6 @@ int pulseDuration() {
 }
 }
 
-
 namespace ir {
 
 #define IR_MAX_MSG_SIZE 32
@@ -264,37 +261,22 @@ namespace ir {
 #define IR_DEBUG 1
 
 static const uint8_t hamming[16] = {
-0b0000000,
-0b1110000,
-0b1001100,
-0b0111100,
-0b0101010,
-0b1011010,
-0b1100110,
-0b0010110,
-0b1101001,
-0b0011001,
-0b0100101,
-0b1010101,
-0b1000011,
-0b0110011,
-0b0001111,
-0b1111111,
+    0b0000000, 0b1110000, 0b1001100, 0b0111100, 0b0101010, 0b1011010, 0b1100110, 0b0010110,
+    0b1101001, 0b0011001, 0b0100101, 0b1010101, 0b1000011, 0b0110011, 0b0001111, 0b1111111,
 };
 
-static const uint8_t invHamming[64] = { 
-    0x00, 0x0c, 0x0a, 0x7e, 0x09, 0x4e, 0x2e, 0xee, 0x09, 0x7d, 0x7b, 
-    0x77, 0x99, 0x59, 0x39, 0x7e, 0x0a, 0x4d, 0xaa, 0x6a, 0x48, 0x44, 
-    0x3a, 0x4e, 0x1d, 0xdd, 0x3a, 0x7d, 0x39, 0x4d, 0x33, 0x3f, 0x0c, 
-    0xcc, 0x2b, 0x6c, 0x28, 0x5c, 0x22, 0x2e, 0x1b, 0x5c, 0xbb, 0x7b,
-    0x59, 0x55, 0x2b, 0x5f, 0x18, 0x6c, 0x6a, 0x66, 0x88, 0x48, 0x28, 
-    0x6f, 0x11, 0x1d, 0x1b, 0x6f, 0x18, 0x5f, 0x3f, 0xff
-};
+static const uint8_t invHamming[64] = {
+    0x00, 0x0c, 0x0a, 0x7e, 0x09, 0x4e, 0x2e, 0xee, 0x09, 0x7d, 0x7b, 0x77, 0x99, 0x59, 0x39, 0x7e,
+    0x0a, 0x4d, 0xaa, 0x6a, 0x48, 0x44, 0x3a, 0x4e, 0x1d, 0xdd, 0x3a, 0x7d, 0x39, 0x4d, 0x33, 0x3f,
+    0x0c, 0xcc, 0x2b, 0x6c, 0x28, 0x5c, 0x22, 0x2e, 0x1b, 0x5c, 0xbb, 0x7b, 0x59, 0x55, 0x2b, 0x5f,
+    0x18, 0x6c, 0x6a, 0x66, 0x88, 0x48, 0x28, 0x6f, 0x11, 0x1d, 0x1b, 0x6f, 0x18, 0x5f, 0x3f, 0xff};
 
 static int lookupInvHaming(int v) {
     int k = invHamming[v >> 1];
-    if (v & 1) return (k & 0xf);
-    else return (k >> 4);
+    if (v & 1)
+        return (k & 0xf);
+    else
+        return (k >> 4);
 }
 
 static void decodeHamming(uint64_t r, uint8_t *dst) {
@@ -346,13 +328,10 @@ class BitVector {
     Segment data;
     int len;
 
-    uint32_t get32(int idx) {
-        return (uint32_t)data.get(idx >> 5);
-    }
-public:
-    BitVector() {
-        len = 0;
-    }
+    uint32_t get32(int idx) { return (uint32_t)data.get(idx >> 5); }
+
+  public:
+    BitVector() { len = 0; }
 
     int get(int pos) {
         if (pos < 0 || pos >= len)
@@ -393,9 +372,8 @@ public:
     }
 };
 
-
 class DbgBuffer {
-    public:
+  public:
 #if IR_DEBUG
     char dbgBuf[1200];
     int dbgPtr;
@@ -404,7 +382,7 @@ class DbgBuffer {
         dbgPtr = 0;
     }
 #endif
-    
+
     void put(const char *msg) {
 #if IR_DEBUG
         int len = strlen(msg);
@@ -427,7 +405,7 @@ class DbgBuffer {
     }
 
     const char *get() {
-#if IR_DEBUG        
+#if IR_DEBUG
         dbgPtr = 0;
         return dbgBuf;
 #else
@@ -437,7 +415,7 @@ class DbgBuffer {
 };
 
 class IrWrap {
-    //Ticker clock;
+    // Ticker clock;
     DevicePin *pin;
     DevicePin *inpin;
     BufferData *data;
@@ -460,7 +438,7 @@ class IrWrap {
     DbgBuffer sendDbg;
 #endif
 
-public:
+  public:
     int drift;
 
     IrWrap() {
@@ -471,15 +449,18 @@ public:
         prevDataSize = 0;
         if (pin) {
             system_timer_event_every_us(250, IR_COMPONENT_ID, IR_TIMER_EVENT);
-            devMessageBus.listen(IR_COMPONENT_ID, IR_TIMER_EVENT, this, &IrWrap::process, MESSAGE_BUS_LISTENER_IMMEDIATE);
+            devMessageBus.listen(IR_COMPONENT_ID, IR_TIMER_EVENT, this, &IrWrap::process,
+                                 MESSAGE_BUS_LISTENER_IMMEDIATE);
 
-            //clock.attach_us(this, &IrWrap::process, 4*1000/38);
+            // clock.attach_us(this, &IrWrap::process, 4*1000/38);
             pin->setDigitalValue(0);
 
             inpin = lookupPin(PIN_IR_IN);
             inpin->eventOn(DEVICE_PIN_EVENT_ON_PULSE);
-            devMessageBus.listen(inpin->id, DEVICE_PIN_EVT_PULSE_HI, this, &IrWrap::pulseGap, MESSAGE_BUS_LISTENER_IMMEDIATE);
-            devMessageBus.listen(inpin->id, DEVICE_PIN_EVT_PULSE_LO, this, &IrWrap::pulseMark, MESSAGE_BUS_LISTENER_IMMEDIATE);
+            devMessageBus.listen(inpin->id, DEVICE_PIN_EVT_PULSE_HI, this, &IrWrap::pulseGap,
+                                 MESSAGE_BUS_LISTENER_IMMEDIATE);
+            devMessageBus.listen(inpin->id, DEVICE_PIN_EVT_PULSE_LO, this, &IrWrap::pulseMark,
+                                 MESSAGE_BUS_LISTENER_IMMEDIATE);
         }
     }
 
@@ -494,7 +475,7 @@ public:
         dataptr = 0;
         drift = 0;
         lastInt = 0;
-        pin->setAnalogPeriodUs(1000/38); // 38kHz
+        pin->setAnalogPeriodUs(1000 / 38); // 38kHz
         pin->setAnalogValue(333);
         pwmstate = 1;
         pin->setPwm(1);
@@ -506,8 +487,8 @@ public:
     }
 
     void finish(int code) {
-        //if (recvState == IR_RECV_ERROR)
-        //    return;
+// if (recvState == IR_RECV_ERROR)
+//    return;
 
 #if IR_DEBUG
         drift = (int)(system_timer_current_time_us() - startTime);
@@ -532,7 +513,7 @@ public:
         dbg.get();
         sendDbg.get();
 #endif
-        recvState = IR_RECV_ERROR;        
+        recvState = IR_RECV_ERROR;
     }
 
     void addPulse(int v) {
@@ -548,268 +529,270 @@ public:
         int v = 0;
         int sum = 0;
         for (int i = 0; i < pulsePtr; i++) {
-            if (pulses[i] < 0) v -= pulses[i];
-            else v += pulses[i];
+            if (pulses[i] < 0)
+                v -= pulses[i];
+            else
+                v += pulses[i];
             int d = v % 250;
             if (v > 125)
                 v -= 250;
             nums[i] = v;
             sum += v;
         }
-        
+
         for (int i = 0; i < pulsePtr - 1; i++)
             for (int j = 0; j < pulsePtr - i - 1; j++) {
                 if (nums[j] > nums[j + 1])
                     std::swap(nums[j], nums[j + 1]);
-        
-        int median = nums[pulsePtr / 2];
-        pulses[0] -= median;
 
-        DMESG("shift: n=%d avg=%d med=%d p=%d %d %d ...", 
-            pulsePtr, sum / pulsePtr, median, pulses[0], pulses[1], pulses[2]);
-    }
+                int median = nums[pulsePtr / 2];
+                pulses[0] -= median;
 
-    void pulseGap(DeviceEvent ev) {
-        if (ev.timestamp > 10000) {
-            dbg.put(" BRK ");
-            finish(11);
-            return;
-        }
-
-        int tm = (int)ev.timestamp;
-        
-        dbg.putNum(tm);
-
-        if (recvState == IR_WAIT_START_GAP) {
-            pulsePtr = 0;
-            addPulse(tm);
-            recvState = IR_WAIT_DATA;
-            dbg.put(" *** ");
-            startTime = system_timer_current_time_us();
-            return;
-        }
-
-        if (recvState == IR_WAIT_DATA) {
-            addPulse(tm);
-            return;
-        }
-    }
-
-    int errorRate(int start, BitVector &bits) {
-        int stops = 0;
-        int errs = 0;
-        for (int i = start; i < bits.size(); i += 5) {
-            uint32_t v = bits.getBits(i, 5);
-            if (v == 0x1f) stops++;
-            else stops = 0;
-            if (stops >= 3)
-                break;
-            if ((v & 0x10) && (v != 0x10))
-                errs++;
-        }
-        return errs;
-    }
-
-    void decodeMsg() {
-        adjustShift();
-
-        BitVector bits;
-        
-        int pos = 125;
-        for (int i = 0; i < pulsePtr; ++i) {
-            int curr = pulses[i];
-            int v = 0;
-            if (curr < 0) {
-                v = 1;
-                curr = -curr;
+                DMESG("shift: n=%d avg=%d med=%d p=%d %d %d ...", pulsePtr, sum / pulsePtr, median,
+                      pulses[0], pulses[1], pulses[2]);
             }
-            pos -= curr;
-            while (pos < 0) {
-                bits.push(v);
-                pos += 250;
-            }
-        }
 
-        if (bits.size() < 70)
-            return; // too short
-
-        int start = 0;
-        while (start < bits.size() && !bits.get(start))
-            start++;
-        start -= 3;
-        if (start < 0) start = 0;
-        int minErr = errorRate(start, bits);
-        int minStart = start;
-        for (int i = 0; i < 8; ++i) {
-            int err = errorRate(start + i, bits);
-            DMESG("err at %d = %d", i, err);
-            if (err < minErr) {
-                minStart = start + i;
-                minErr = err;
-            }
-        }
-        
-        uint8_t buf[IR_MAX_MSG_SIZE];
-        int ptr = 0;
-        uint64_t mask = (((uint64_t)1 << 20) - 1) << 15;
-
-        while (ptr < IR_MAX_MSG_SIZE) {
-            auto p = start + 35 * (ptr / 2)
-            uint64_t v = bits.getBits(p, 30) | ((uint64_t)bits.getBits(p + 30, 5) << 30);
-            if ((v & mask) == mask)
-                break;
-            decodeHamming(v, buf + ptr);
-            ptr += 2;
-        }
-
-        decrRC(outBuffer);
-        outBuffer = pins::createBuffer(ptr);
-        memcpy(outBuffer->payload, buf, ptr);
-        finish(0);
-        DeviceEvent evt(IR_COMPONENT_ID, IR_PACKET_EVENT);
-    }
-
-    void pulseMark(DeviceEvent ev) {
-        if (ev.timestamp > 10000) {
-            dbg.put(" -BRK ");
-            finish(10);
-            return;
-        }
-
-        int tm = (int)ev.timestamp;
-
-        dbg.putNum(-tm);
-
-        if (tm >= 16 * 250) {
-            recvState = IR_WAIT_START_GAP;
-            return;
-        }
-
-        if (recvState == IR_WAIT_DATA) {
-            if (tm >= 10 * 250) {
-                // finish
-                addPulse(-(40 * 250)); // make sure we get all ones at the end
-                decodeMsg();
-            } else {
-                addPulse(-tm);
-            }
-        }
-    }
-
-    Buffer getBuffer() {
-        incrRC(outBuffer);
-        return outBuffer;
-    }
-
-    void process(DeviceEvent) {
-        if (!data)
-            return;
-
-        auto now = system_timer_current_time_us();
-        if (lastInt) {
-            auto delta = abs( (int)(now - lastInt) - 250 );
-            if (delta > 50)
-                drift += delta + 100000;
-            /*
-            if (delta > 300) {
-                drift += delta - 250;
-            }
-            */
-        }
-        lastInt = now;
-
-        if (databits == 0) {
-            if (dataptr > data->length + 10) {
-                // done
-            #if IR_DEBUG
-                prevDataSize = data->length;
-                memcpy(prevData, data->payload, prevDataSize);
-            #endif
-                decrRC(data);
-                data = NULL;
-                pin->setAnalogValue(0);
-                pin->setPwm(1);
+        void pulseGap(DeviceEvent ev) {
+            if (ev.timestamp > 10000) {
+                dbg.put(" BRK ");
+                finish(11);
                 return;
-            } else if (dataptr >= data->length) {
-                dataval = 0xfff;
-                databits = 12;
-                dataptr += 100;
-            } else {
-                dataval = encodeHamming(data->payload[dataptr], data->payload[dataptr + 1]);
-                databits = 35;
-                dataptr += 2;
+            }
+
+            int tm = (int)ev.timestamp;
+
+            dbg.putNum(tm);
+
+            if (recvState == IR_WAIT_START_GAP) {
+                pulsePtr = 0;
+                addPulse(tm);
+                recvState = IR_WAIT_DATA;
+                dbg.put(" *** ");
+                startTime = system_timer_current_time_us();
+                return;
+            }
+
+            if (recvState == IR_WAIT_DATA) {
+                addPulse(tm);
+                return;
             }
         }
 
-        int curr = dataval & 1;
-        if (curr != pwmstate) {
-            pwmstate = curr;
-            pin->setPwm(pwmstate);
+        int errorRate(int start, BitVector &bits) {
+            int stops = 0;
+            int errs = 0;
+            for (int i = start; i < bits.size(); i += 5) {
+                uint32_t v = bits.getBits(i, 5);
+                if (v == 0x1f)
+                    stops++;
+                else
+                    stops = 0;
+                if (stops >= 3)
+                    break;
+                if ((v & 0x10) && (v != 0x10))
+                    errs++;
+            }
+            return errs;
         }
-        dataval >>= 1;
-        databits--;
-    }
-};
-SINGLETON(IrWrap);
 
-/**
- * Send data over IR.
- */
-//%
-void send(Buffer buf) {
-    auto w = getIrWrap();
-    w->send(buf);
-}
+        void decodeMsg() {
+            adjustShift();
 
-/**
- * Get data over IR.
- */
-//%
-Buffer currentPacket() {
-    auto w = getIrWrap();
-    return w->getBuffer();
-}
+            BitVector bits;
 
-/**
- * Get data over IR.
- */
-//%
-int drift() {
-    auto w = getIrWrap();
-    return w->drift;
-}
+            int pos = 125;
+            for (int i = 0; i < pulsePtr; ++i) {
+                int curr = pulses[i];
+                int v = 0;
+                if (curr < 0) {
+                    v = 1;
+                    curr = -curr;
+                }
+                pos -= curr;
+                while (pos < 0) {
+                    bits.push(v);
+                    pos += 250;
+                }
+            }
 
-/**
- * Get data over IR.
- */
-//%
-void beep() {
-    auto pin = lookupPin(PIN_IR_OUT);
-    pin->setDigitalValue(0);
-    pin->setAnalogPeriodUs(1000/38); // 38kHz
-    pin->setAnalogValue(200);
+            if (bits.size() < 70)
+                return; // too short
 
-    __disable_irq();
-    while (1) {
-        for (int i = 0; i < 30; ++i) {
-            wait_us(750);
-            pin->setPwm(1);
-            wait_us(250);
-            pin->setPwm(0);
+            int start = 0;
+            while (start < bits.size() && !bits.get(start))
+                start++;
+            start -= 3;
+            if (start < 0)
+                start = 0;
+            int minErr = errorRate(start, bits);
+            int minStart = start;
+            for (int i = 0; i < 8; ++i) {
+                int err = errorRate(start + i, bits);
+                DMESG("err at %d = %d", i, err);
+                if (err < minErr) {
+                    minStart = start + i;
+                    minErr = err;
+                }
+            }
+
+            uint8_t buf[IR_MAX_MSG_SIZE];
+            int ptr = 0;
+            uint64_t mask = (((uint64_t)1 << 20) - 1) << 15;
+
+            while (ptr < IR_MAX_MSG_SIZE) {
+                auto p = start + 35 * (ptr / 2) uint64_t v =
+                             bits.getBits(p, 30) | ((uint64_t)bits.getBits(p + 30, 5) << 30);
+                if ((v & mask) == mask)
+                    break;
+                decodeHamming(v, buf + ptr);
+                ptr += 2;
+            }
+
+            decrRC(outBuffer);
+            outBuffer = pins::createBuffer(ptr);
+            memcpy(outBuffer->payload, buf, ptr);
+            finish(0);
+            DeviceEvent evt(IR_COMPONENT_ID, IR_PACKET_EVENT);
         }
-        wait_us(500000);
+
+        void pulseMark(DeviceEvent ev) {
+            if (ev.timestamp > 10000) {
+                dbg.put(" -BRK ");
+                finish(10);
+                return;
+            }
+
+            int tm = (int)ev.timestamp;
+
+            dbg.putNum(-tm);
+
+            if (tm >= 16 * 250) {
+                recvState = IR_WAIT_START_GAP;
+                return;
+            }
+
+            if (recvState == IR_WAIT_DATA) {
+                if (tm >= 10 * 250) {
+                    // finish
+                    addPulse(-(40 * 250)); // make sure we get all ones at the end
+                    decodeMsg();
+                } else {
+                    addPulse(-tm);
+                }
+            }
+        }
+
+        Buffer getBuffer() {
+            incrRC(outBuffer);
+            return outBuffer;
+        }
+
+        void process(DeviceEvent) {
+            if (!data)
+                return;
+
+            auto now = system_timer_current_time_us();
+            if (lastInt) {
+                auto delta = abs((int)(now - lastInt) - 250);
+                if (delta > 50)
+                    drift += delta + 100000;
+                /*
+                if (delta > 300) {
+                    drift += delta - 250;
+                }
+                */
+            }
+            lastInt = now;
+
+            if (databits == 0) {
+                if (dataptr > data->length + 10) {
+// done
+#if IR_DEBUG
+                    prevDataSize = data->length;
+                    memcpy(prevData, data->payload, prevDataSize);
+#endif
+                    decrRC(data);
+                    data = NULL;
+                    pin->setAnalogValue(0);
+                    pin->setPwm(1);
+                    return;
+                } else if (dataptr >= data->length) {
+                    dataval = 0xfff;
+                    databits = 12;
+                    dataptr += 100;
+                } else {
+                    dataval = encodeHamming(data->payload[dataptr], data->payload[dataptr + 1]);
+                    databits = 35;
+                    dataptr += 2;
+                }
+            }
+
+            int curr = dataval & 1;
+            if (curr != pwmstate) {
+                pwmstate = curr;
+                pin->setPwm(pwmstate);
+            }
+            dataval >>= 1;
+            databits--;
+        }
+    };
+    SINGLETON(IrWrap);
+
+    /**
+     * Send data over IR.
+     */
+    //%
+    void send(Buffer buf) {
+        auto w = getIrWrap();
+        w->send(buf);
     }
-}
 
+    /**
+     * Get data over IR.
+     */
+    //%
+    Buffer currentPacket() {
+        auto w = getIrWrap();
+        return w->getBuffer();
+    }
 
-/**
- * Get data over IR.
- */
-//%
-void onPacket(Action body) {
-    getIrWrap(); // attach events
-    registerWithDal(IR_COMPONENT_ID, IR_PACKET_EVENT, body);
-}
+    /**
+     * Get data over IR.
+     */
+    //%
+    int drift() {
+        auto w = getIrWrap();
+        return w->drift;
+    }
 
+    /**
+     * Get data over IR.
+     */
+    //%
+    void beep() {
+        auto pin = lookupPin(PIN_IR_OUT);
+        pin->setDigitalValue(0);
+        pin->setAnalogPeriodUs(1000 / 38); // 38kHz
+        pin->setAnalogValue(200);
 
+        __disable_irq();
+        while (1) {
+            for (int i = 0; i < 30; ++i) {
+                wait_us(750);
+                pin->setPwm(1);
+                wait_us(250);
+                pin->setPwm(0);
+            }
+            wait_us(500000);
+        }
+    }
+
+    /**
+     * Get data over IR.
+     */
+    //%
+    void onPacket(Action body) {
+        getIrWrap(); // attach events
+        registerWithDal(IR_COMPONENT_ID, IR_PACKET_EVENT, body);
+    }
 }
