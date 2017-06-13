@@ -266,7 +266,7 @@ class BitVector {
     void print() {
         char buf[size() + 1];
         for (int i = 0; i < size(); ++i)
-            buf[i] = get(i) ? '1' : '0';
+            buf[i] = get(i) ? '#' : '.';
         buf[size()] = 0;
         DMESG("bits: %s", buf);
     }
@@ -516,21 +516,24 @@ class IrWrap {
 #if IR_DEBUG
         drift = (int)(system_timer_current_time_us() - startTime);
         if (code == 0) {
+            /*
             auto recvBuf = outBuffer->payload;
             auto recvPtr = outBuffer->length;
             if (prevDataSize == 0) {
-                prevDataSize = 6;
-                memcpy(prevData, recvBuf, 3);
-                memcpy(prevData + 3, recvBuf, 3);
-                prevData[3] ^= 182;
+                prevDataSize = 8;
+                memcpy(prevData, recvBuf, 4);
+                memcpy(prevData + 4, recvBuf, 4);
                 prevData[4] ^= 182;
                 prevData[5] ^= 182;
+                prevData[6] ^= 182;
+                prevData[7] ^= 182;
             }
             if (prevDataSize != recvPtr || memcmp(prevData, recvBuf, recvPtr))
                 DMESG("IR DATA ERR dr=%d [%s] [%s]", drift, dbg.get(), sendDbg.get());
             else {
                 DMESG("IR OK len=%d [%s]", recvPtr, dbg.get());
             }
+            */
             prevDataSize = 0;
         } else {
             DMESG("IR ERROR %d dr=%d [%s] [%s]", code, drift, dbg.get(), sendDbg.get());
@@ -574,8 +577,8 @@ class IrWrap {
         int median = nums[pulsePtr / 2];
         pulses[0] -= median;
 
-        DMESG("shift: n=%d avg=%d med=%d p=%d %d %d ...", pulsePtr, sum / pulsePtr, median,
-              pulses[0], pulses[1], pulses[2]);
+        //DMESG("shift: n=%d avg=%d med=%d p=%d %d %d ...", pulsePtr, sum / pulsePtr, median,
+        //      pulses[0], pulses[1], pulses[2]);
         /*
   char buf[1024];
   buf[0] = 0;
@@ -657,7 +660,7 @@ class IrWrap {
                 pos += 250;
             }
         }
-        bits.print();
+        //bits.print();
 
         if (bits.size() < 70)
             return; // too short
@@ -668,7 +671,7 @@ class IrWrap {
         start += 2;
 
         // adjust message start, depending on parity error rate around it
-        int err = errorRate(start, bits);
+        int err = errorRate(start, bits) - 2; // give it some boost
         int err0 = errorRate(start - 1, bits);
         int err1 = errorRate(start + 1, bits);
         if (err0 < err1 && err0 < err) {
@@ -691,6 +694,26 @@ class IrWrap {
             decodeHamming(v, buf + ptr);
             ptr += 2;
         }
+
+
+        BitVector bits2;
+        bits2.push(0);
+        bits2.push(0);
+        bits2.push(1);
+        bits2.push(1);
+        uint8_t v = buf[0];
+        for (int i = 0; i < ptr; i += 2) {
+            uint8_t v2 = v * 13;
+            encodeHamming(bits2, v, v2);
+            v = v2 * 13;
+        }
+        bits2.push(1);
+        bits2.push(1);
+        for (int i = 0; i < bits2.size(); ++i) {
+            bits2.set(i, bits.get(i) != bits2.get(i));
+        }
+        bits2.print();
+        
 
         decrRC(outBuffer);
         outBuffer = pins::createBuffer(ptr);
