@@ -333,6 +333,8 @@ class BitVector {
   public:
     BitVector() { len = 0; }
 
+    int size() { return len; }
+
     int get(int pos) {
         if (pos < 0 || pos >= len)
             return 0;
@@ -421,6 +423,7 @@ class IrWrap {
     BufferData *data;
     int16_t dataptr;
     int8_t databits;
+    int8_t pwmstate;
     uint64_t dataval; // Hamming-encoded
     uint64_t lastInt;
     uint64_t startTime;
@@ -493,6 +496,8 @@ class IrWrap {
 #if IR_DEBUG
         drift = (int)(system_timer_current_time_us() - startTime);
         if (code == 0) {
+            auto recvBuf = outBuffer->payload;
+            auto recvPtr = outBuffer->length;
             if (prevDataSize == 0) {
                 prevDataSize = 6;
                 memcpy(prevData, recvBuf, 3);
@@ -534,10 +539,10 @@ class IrWrap {
             else
                 v += pulses[i];
             int d = v % 250;
-            if (v > 125)
-                v -= 250;
-            nums[i] = v;
-            sum += v;
+            if (d > 125)
+                d -= 250;
+            nums[i] = d;
+            sum += d;
         }
 
         for (int i = 0; i < pulsePtr - 1; i++)
@@ -635,14 +640,15 @@ class IrWrap {
                 minErr = err;
             }
         }
+        start = minStart;
 
         uint8_t buf[IR_MAX_MSG_SIZE];
         int ptr = 0;
         uint64_t mask = (((uint64_t)1 << 20) - 1) << 15;
 
         while (ptr < IR_MAX_MSG_SIZE) {
-            auto p = start + 35 * (ptr / 2) uint64_t v =
-                         bits.getBits(p, 30) | ((uint64_t)bits.getBits(p + 30, 5) << 30);
+            auto p = start + 35 * (ptr / 2);
+            uint64_t v = bits.getBits(p, 30) | ((uint64_t)bits.getBits(p + 30, 5) << 30);
             if ((v & mask) == mask)
                 break;
             decodeHamming(v, buf + ptr);
