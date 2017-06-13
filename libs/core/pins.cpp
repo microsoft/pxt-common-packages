@@ -344,7 +344,7 @@ enum IrRecvState : uint8_t {
 
 class BitVector {
     Segment data;
-    uint32_t len;
+    int len;
 
     uint32_t get32(int idx) {
         return (uint32_t)data.get(idx >> 5);
@@ -443,7 +443,6 @@ class IrWrap {
     BufferData *data;
     int16_t dataptr;
     int8_t databits;
-    IrState state;
     uint64_t dataval; // Hamming-encoded
     uint64_t lastInt;
     uint64_t startTime;
@@ -465,7 +464,6 @@ public:
     int drift;
 
     IrWrap() {
-        state = IR_IDLE;
         recvState = IR_RECV_ERROR;
         data = NULL;
         outBuffer = NULL;
@@ -490,7 +488,7 @@ public:
             return; // error code?
 
         incrRC(d);
-        // 0b10111...11 - it gets transmitted from LSB, so we get a bunch of ones followed by zero and one
+        // 0b10111...11 - it gets transmitted from LSB, so we get a bunch of 1s followed by 0 and 1
         dataval = 0xbffffff;
         databits = 28;
         dataptr = 0;
