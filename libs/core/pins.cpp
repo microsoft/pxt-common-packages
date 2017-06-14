@@ -451,6 +451,11 @@ class IrWrap {
     int drift;
 
     IrWrap() {
+        DMESG("TC4=%d EIC=%d", NVIC_GetPriority(TC4_IRQn), NVIC_GetPriority(EIC_IRQn));
+        NVIC_SetPriority(EIC_IRQn, 0);
+        NVIC_SetPriority(TC4_IRQn, 1);
+        DMESG("TC4=%d EIC=%d", NVIC_GetPriority(TC4_IRQn), NVIC_GetPriority(EIC_IRQn));
+
         recvState = IR_RECV_ERROR;
         sending = false;
         outBuffer = NULL;
@@ -577,7 +582,7 @@ class IrWrap {
         int median = nums[pulsePtr / 2];
         pulses[0] -= median;
 
-        //DMESG("shift: n=%d avg=%d med=%d p=%d %d %d ...", pulsePtr, sum / pulsePtr, median,
+        // DMESG("shift: n=%d avg=%d med=%d p=%d %d %d ...", pulsePtr, sum / pulsePtr, median,
         //      pulses[0], pulses[1], pulses[2]);
         /*
   char buf[1024];
@@ -660,7 +665,7 @@ class IrWrap {
                 pos += 250;
             }
         }
-        //bits.print();
+        // bits.print();
 
         if (bits.size() < 70)
             return; // too short
@@ -695,7 +700,6 @@ class IrWrap {
             ptr += 2;
         }
 
-
         BitVector bits2;
         bits2.push(0);
         bits2.push(0);
@@ -713,7 +717,6 @@ class IrWrap {
             bits2.set(i, bits.get(i) != bits2.get(i));
         }
         bits2.print();
-        
 
         decrRC(outBuffer);
         outBuffer = pins::createBuffer(ptr);
