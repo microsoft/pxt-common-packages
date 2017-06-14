@@ -381,6 +381,9 @@ enum IrRecvState : uint8_t {
     IR_WAIT_DATA,
 };
 
+void processIr();
+
+
 class DbgBuffer {
   public:
 #if IR_DEBUG
@@ -423,6 +426,27 @@ class DbgBuffer {
     }
 };
 
+void my_NVIC_SetVector(IRQn_Type IRQn, uint32_t vector)
+{
+    uint32_t *vectors = (uint32_t*)SCB->VTOR;
+    uint32_t i;
+
+    // Copy and switch to dynamic vectors if the first time called
+    if (SCB->VTOR <= 0x1000000) {
+        uint32_t *old_vectors = vectors;
+        uint32_t tmp = (uint32_t)malloc(NVIC_NUM_VECTORS * 4 + 256);
+        while (tmp & 0xff)
+            tmp++;
+        vectors = (uint32_t*)tmp;
+        for (i=0; i<NVIC_NUM_VECTORS; i++) {
+            vectors[i] = old_vectors[i];
+        }
+        SCB->VTOR = (uint32_t)vectors;
+    }
+    vectors[IRQn + 16] = vector;
+}
+
+
 class IrWrap {
     // Ticker clock;
     DevicePin *pin;
@@ -439,6 +463,7 @@ class IrWrap {
 
     IrRecvState recvState;
     BufferData *outBuffer;
+    struct tc_module ticker_module;
 
 #if IR_DEBUG
     uint8_t prevData[IR_MAX_MSG_SIZE];
@@ -454,6 +479,7 @@ class IrWrap {
         DMESG("TC4=%d EIC=%d", NVIC_GetPriority(TC4_IRQn), NVIC_GetPriority(EIC_IRQn));
         NVIC_SetPriority(EIC_IRQn, 0);
         NVIC_SetPriority(TC4_IRQn, 1);
+        NVIC_SetPriority(TC3_IRQn, 1);
         DMESG("TC4=%d EIC=%d", NVIC_GetPriority(TC4_IRQn), NVIC_GetPriority(EIC_IRQn));
 
         recvState = IR_RECV_ERROR;
@@ -462,12 +488,31 @@ class IrWrap {
         pin = lookupPin(PIN_IR_OUT);
         prevDataSize = 0;
         if (pin) {
-            system_timer_event_every_us(250, IR_COMPONENT_ID, IR_TIMER_EVENT);
+            //system_timer_event_every_us(250, IR_COMPONENT_ID, IR_TIMER_EVENT);
             devMessageBus.listen(IR_COMPONENT_ID, IR_TIMER_EVENT, this, &IrWrap::process,
                                  MESSAGE_BUS_LISTENER_IMMEDIATE);
 
             // clock.attach_us(this, &IrWrap::process, 4*1000/38);
             pin->setDigitalValue(0);
+
+
+            NVIC_DisableIRQ(TC3_IRQn);
+
+            struct tc_config config_tc;
+            tc_get_config_defaults(&config_tc);
+            config_tc.run_in_standby = true;
+            config_tc.wave_generation = TC_WAVE_GENERATION_MATCH_FREQ;
+
+            tc_init(&ticker_module, TC3, &config_tc);
+            tc_enable(&ticker_module);
+            tc_set_compare_value(&ticker_module, TC_COMPARE_CAPTURE_CHANNEL_0, 8 * 250 - 1);
+
+            TC3->COUNT16.COUNT.reg = 0;
+            TC3->COUNT16.INTENSET.reg = TC_INTENSET_MC0;
+
+            my_NVIC_SetVector(TC3_IRQn, (uint32_t)&processIr);
+            NVIC_EnableIRQ(TC3_IRQn);
+
 
             inpin = lookupPin(PIN_IR_IN);
             inpin->eventOn(DEVICE_PIN_EVENT_ON_PULSE);
@@ -790,6 +835,18 @@ class IrWrap {
     }
 };
 SINGLETON(IrWrap);
+
+int numproc;
+void processIr() {
+    
+    TC3->COUNT16.INTFLAG.reg = TC_INTFLAG_MC(1);
+   // TC3->COUNT16.COUNT.reg = 0;
+    
+    // instIrWrap->process();
+    if (numproc++ < 90) {
+        DMESG("np %d %d", numproc, (int)system_timer_current_time_us());
+    }
+}
 
 /**
  * Send data over IR.
