@@ -307,8 +307,9 @@ TNumber div(TNumber a, TNumber b) {
 
 //%
 TNumber mod(TNumber a, TNumber b) {
-    // TODO this is wrong for doubles
-    BITOP(%)
+    if (isNumber(a) && isNumber(b) && numValue(b))
+        BITOP(%)
+    return fromDouble(fmod(toDouble(a), toDouble(b)));
 }
 
 //%
