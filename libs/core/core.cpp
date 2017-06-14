@@ -442,7 +442,7 @@ StringData *toString(TValue v) {
                 else
                     return (StringData *)(void *)sInf;
             }
-            gcvt(x, 21, buf);
+            gcvt(x, 16, buf);
         }
 
         ManagedString s(buf);
