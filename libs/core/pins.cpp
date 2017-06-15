@@ -310,7 +310,7 @@ class BitVector {
     }
 };
 
-#define IR_MAX_MSG_SIZE 32
+#define IR_MAX_MSG_SIZE 34
 #define IR_COMPONENT_ID 0x2042
 #define IR_PACKET_END_EVENT 0x1
 #define IR_PACKET_EVENT 0x2
@@ -527,6 +527,8 @@ class IrWrap {
     bool sending;
     uint64_t startTime;
     uint64_t sendStartTime;
+    uint64_t lastMarkTime;
+    uint64_t lastSendTime;
 
     int16_t pulses[IR_MAX_PULSES + 1];
     uint16_t pulsePtr;
@@ -551,6 +553,7 @@ class IrWrap {
             pin->setDigitalValue(0);
 
             inpin = lookupPin(PIN_IR_IN);
+            inpin->getDigitalValue();
             inpin->eventOn(DEVICE_PIN_EVENT_ON_PULSE);
             devMessageBus.listen(inpin->id, DEVICE_PIN_EVT_PULSE_HI, this, &IrWrap::pulseGap,
                                  MESSAGE_BUS_LISTENER_IMMEDIATE);
@@ -565,6 +568,9 @@ class IrWrap {
         if (sending)
             return; // error code?
 
+        if (d->length > IR_MAX_MSG_SIZE - 2 || (d->length & 1))
+            return; // error code?
+
         encodedMsg.setLength(0);
         for (int i = 0; i < 25; ++i)
             encodedMsg.push(1);
@@ -575,8 +581,23 @@ class IrWrap {
         for (int i = 0; i < d->length; i += 2) {
             encodeHamming(encodedMsg, d->payload[i], d->payload[i + 1]);
         }
+
+        uint16_t crc = crc16ccit(d->payload, d->length);
+        encodeHamming(encodedMsg, crc & 0xff, crc >> 8);
+
         for (int i = 0; i < 15; ++i)
             encodedMsg.push(1);
+
+        auto gap = system_timer_current_time_us() - lastSendTime;
+        // we require 200ms between sends
+        if (gap < 200000) {
+            gap = (200000 - gap) / 1000;
+            fiber_sleep(gap);
+        }
+
+        while (isReciving())
+            fiber_sleep(10);
+        lastSendTime = system_timer_current_time_us();
 
         // encodedMsg.print();
 
@@ -589,7 +610,7 @@ class IrWrap {
 
         setPeriodicCallback(IR_PULSE_LEN, this, (void (*)(void *)) & IrWrap::process);
         while (sending) {
-            fiber_sleep(5);
+            fiber_sleep(10);
         }
         fiber_sleep(5);
     }
@@ -641,11 +662,14 @@ class IrWrap {
         int median = nums[pulsePtr / 2];
         pulses[0] -= median;
 
-        IR_DMESG("shift: n=%d avg=%d med=%d p=%d %d %d ...", pulsePtr, sum / pulsePtr, median,
-                 pulses[0], pulses[1], pulses[2]);
+        // IR_DMESG("shift: n=%d avg=%d med=%d p=%d %d %d ...", pulsePtr, sum / pulsePtr, median,
+        //          pulses[0], pulses[1], pulses[2]);
     }
 
     void pulseGap(DeviceEvent ev) {
+        if (sending)
+            return;
+            
         if (ev.timestamp > 10000) {
             dbg.put(" BRK ");
             finish(11);
@@ -714,8 +738,10 @@ class IrWrap {
 
         pulsePtr = 0;
 
-        if (bits.size() < 70)
+        if (bits.size() < 70) {
+            DeviceEvent evt(IR_COMPONENT_ID, IR_PACKET_ERROR_EVENT);
             return; // too short
+        }
 
         int start = 0;
         while (start < bits.size() && !bits.get(start))
@@ -747,6 +773,10 @@ class IrWrap {
             ptr += 2;
         }
 
+        ptr -= 2;
+        uint16_t crc = crc16ccit(buf, ptr);
+        uint16_t pktCrc = (buf[ptr + 1] << 8) | buf[ptr];
+
 #if 0
         BitVector bits2;
         bits2.push(0);
@@ -770,10 +800,13 @@ class IrWrap {
         decrRC(outBuffer);
         outBuffer = pins::createBuffer(ptr);
         memcpy(outBuffer->payload, buf, ptr);
-        DeviceEvent evt(IR_COMPONENT_ID, IR_PACKET_EVENT);
+        DeviceEvent evt(IR_COMPONENT_ID, crc == pktCrc ? IR_PACKET_EVENT : IR_PACKET_ERROR_EVENT);
     }
 
     void pulseMark(DeviceEvent ev) {
+        if (sending)
+            return;
+
         if (ev.timestamp > 10000) {
             dbg.put(" -BRK ");
             finish(10);
@@ -783,6 +816,8 @@ class IrWrap {
         int tm = (int)ev.timestamp;
 
         dbg.putNum(-tm);
+
+        lastMarkTime = system_timer_current_time_us();
 
         if (tm >= 20 * IR_PULSE_LEN) {
             recvState = IR_WAIT_START_GAP;
@@ -798,6 +833,15 @@ class IrWrap {
                 addPulse(-tm);
             }
         }
+    }
+
+    bool isReciving() {
+        auto now = system_timer_current_time_us();
+        // inpin low means mark
+        if (inpin->getDigitalValue() == 0 || now - lastMarkTime < 10000) {
+            return true;
+        }
+        return false;
     }
 
     Buffer getBuffer() {
@@ -858,5 +902,14 @@ Buffer currentPacket() {
 void onPacket(Action body) {
     getIrWrap(); // attach events
     registerWithDal(IR_COMPONENT_ID, IR_PACKET_EVENT, body);
+}
+
+/**
+ * Get data over IR.
+ */
+//%
+void onError(Action body) {
+    getIrWrap();
+    registerWithDal(IR_COMPONENT_ID, IR_PACKET_ERROR_EVENT, body);
 }
 }
