@@ -928,7 +928,7 @@ namespace light {
             if (this.iteration < l * 2) {
                 this.step++;
                 for (let i = 0; i < l; i++) {
-                    const level = (Math.sin(i + this.step) * 127) + 128;
+                    const level = (Math.isin(i + this.step) * 127) + 128;
                     strip.setPixelColor(i, rgb(level * this.red / 255, level * this.green / 255, level * this.blue / 255));
                 }
                 strip.show();
