@@ -260,6 +260,7 @@ class BitVector {
 
   public:
     BitVector() { len = 0; }
+    ~BitVector() { data.destroy(); }
 
     int size() { return len; }
 
@@ -311,9 +312,10 @@ class BitVector {
 
 #define IR_MAX_MSG_SIZE 32
 #define IR_COMPONENT_ID 0x2042
-#define IR_TIMER_EVENT 0x1
+#define IR_PACKET_END_EVENT 0x1
 #define IR_PACKET_EVENT 0x2
 #define IR_MAX_PULSES (IR_MAX_MSG_SIZE * 18 + 10)
+#define IR_PULSE_LEN 250
 
 #define IR_DEBUG 1
 
@@ -383,7 +385,6 @@ enum IrRecvState : uint8_t {
 
 void processIr();
 
-
 class DbgBuffer {
   public:
 #if IR_DEBUG
@@ -426,60 +427,101 @@ class DbgBuffer {
     }
 };
 
-void my_NVIC_SetVector(IRQn_Type IRQn, uint32_t vector)
-{
-    uint32_t *vectors = (uint32_t*)SCB->VTOR;
-    uint32_t i;
-
+void NVIC_CopyToRAM() {
+    uint32_t *vectors = (uint32_t *)SCB->VTOR;
     // Copy and switch to dynamic vectors if the first time called
     if (SCB->VTOR <= 0x1000000) {
         uint32_t *old_vectors = vectors;
         uint32_t tmp = (uint32_t)malloc(NVIC_NUM_VECTORS * 4 + 256);
         while (tmp & 0xff)
             tmp++;
-        vectors = (uint32_t*)tmp;
-        for (i=0; i<NVIC_NUM_VECTORS; i++) {
+        vectors = (uint32_t *)tmp;
+        for (int i = 0; i < NVIC_NUM_VECTORS; i++) {
             vectors[i] = old_vectors[i];
         }
         SCB->VTOR = (uint32_t)vectors;
     }
-    vectors[IRQn + 16] = vector;
 }
 
+static volatile bool periodicUsed;
+static void *periodicData;
+static void (*periodicCallback)(void*);
+static void periodicIRQ() {
+    TC3->COUNT16.INTFLAG.reg = TC_INTFLAG_MC(1);
+    periodicCallback(periodicData);
+}
+
+void setPeriodicCallback(uint32_t usec, void *data, void (*callback)(void *)) {
+    while (periodicUsed) {
+        fiber_sleep(5);
+    }
+
+    if (usec > 8000)
+        device.panic(42);
+
+    periodicUsed = true;
+    periodicData = data;
+    periodicCallback = callback;
+
+    NVIC_CopyToRAM();
+    NVIC_DisableIRQ(TC3_IRQn);
+    NVIC_SetPriority(TC3_IRQn, 1);
+
+    struct tc_module ticker_module;
+    struct tc_config config_tc;
+
+    tc_get_config_defaults(&config_tc);
+    config_tc.run_in_standby = true;
+    config_tc.wave_generation = TC_WAVE_GENERATION_MATCH_FREQ;
+
+    tc_init(&ticker_module, TC3, &config_tc);
+    tc_enable(&ticker_module);
+    tc_set_compare_value(&ticker_module, TC_COMPARE_CAPTURE_CHANNEL_0, 8 * usec - 1);
+
+    TC3->COUNT16.COUNT.reg = 0;
+    TC3->COUNT16.INTENSET.reg = TC_INTENSET_MC0;
+
+    NVIC_SetVector(TC3_IRQn, (uint32_t)periodicIRQ);
+    NVIC_EnableIRQ(TC3_IRQn);
+}
+
+void clearPeriodicCallback() {
+    if (!periodicUsed) {
+        device.panic(42);
+    }
+
+    NVIC_DisableIRQ(TC3_IRQn);
+    TC3->COUNT16.INTENCLR.reg = TC_INTENCLR_MC0;
+    NVIC_SetVector(TC3_IRQn, (uint32_t)TC3_Handler);
+    periodicUsed = false;
+}
 
 class IrWrap {
-    // Ticker clock;
     DevicePin *pin;
     DevicePin *inpin;
     BitVector encodedMsg;
     int8_t pwmstate;
     bool sending;
-    int16_t encodedMsgPtr;
-    uint64_t lastInt;
     uint64_t startTime;
+    uint64_t sendStartTime;
 
     int16_t pulses[IR_MAX_PULSES + 1];
     uint16_t pulsePtr;
 
     IrRecvState recvState;
     BufferData *outBuffer;
-    struct tc_module ticker_module;
 
 #if IR_DEBUG
     uint8_t prevData[IR_MAX_MSG_SIZE];
     uint8_t prevDataSize;
     DbgBuffer dbg;
-    DbgBuffer sendDbg;
 #endif
 
   public:
-    int drift;
-
     IrWrap() {
         DMESG("TC4=%d EIC=%d", NVIC_GetPriority(TC4_IRQn), NVIC_GetPriority(EIC_IRQn));
         NVIC_SetPriority(EIC_IRQn, 0);
         NVIC_SetPriority(TC4_IRQn, 1);
-        NVIC_SetPriority(TC3_IRQn, 1);
         DMESG("TC4=%d EIC=%d", NVIC_GetPriority(TC4_IRQn), NVIC_GetPriority(EIC_IRQn));
 
         recvState = IR_RECV_ERROR;
@@ -488,31 +530,7 @@ class IrWrap {
         pin = lookupPin(PIN_IR_OUT);
         prevDataSize = 0;
         if (pin) {
-            //system_timer_event_every_us(250, IR_COMPONENT_ID, IR_TIMER_EVENT);
-            devMessageBus.listen(IR_COMPONENT_ID, IR_TIMER_EVENT, this, &IrWrap::process,
-                                 MESSAGE_BUS_LISTENER_IMMEDIATE);
-
-            // clock.attach_us(this, &IrWrap::process, 4*1000/38);
             pin->setDigitalValue(0);
-
-
-            NVIC_DisableIRQ(TC3_IRQn);
-
-            struct tc_config config_tc;
-            tc_get_config_defaults(&config_tc);
-            config_tc.run_in_standby = true;
-            config_tc.wave_generation = TC_WAVE_GENERATION_MATCH_FREQ;
-
-            tc_init(&ticker_module, TC3, &config_tc);
-            tc_enable(&ticker_module);
-            tc_set_compare_value(&ticker_module, TC_COMPARE_CAPTURE_CHANNEL_0, 8 * 250 - 1);
-
-            TC3->COUNT16.COUNT.reg = 0;
-            TC3->COUNT16.INTENSET.reg = TC_INTENSET_MC0;
-
-            my_NVIC_SetVector(TC3_IRQn, (uint32_t)&processIr);
-            NVIC_EnableIRQ(TC3_IRQn);
-
 
             inpin = lookupPin(PIN_IR_IN);
             inpin->eventOn(DEVICE_PIN_EVENT_ON_PULSE);
@@ -520,6 +538,8 @@ class IrWrap {
                                  MESSAGE_BUS_LISTENER_IMMEDIATE);
             devMessageBus.listen(inpin->id, DEVICE_PIN_EVT_PULSE_LO, this, &IrWrap::pulseMark,
                                  MESSAGE_BUS_LISTENER_IMMEDIATE);
+
+            devMessageBus.listen(IR_COMPONENT_ID, IR_PACKET_END_EVENT, this, &IrWrap::packetEnd);
         }
     }
 
@@ -528,7 +548,6 @@ class IrWrap {
             return; // error code?
 
         encodedMsg.setLength(0);
-        encodedMsgPtr = 0;
         for (int i = 0; i < 25; ++i)
             encodedMsg.push(1);
         encodedMsg.push(0);
@@ -541,18 +560,19 @@ class IrWrap {
         for (int i = 0; i < 15; ++i)
             encodedMsg.push(1);
 
-        encodedMsg.print();
+        //encodedMsg.print();
 
         prevDataSize = d->length;
         memcpy(prevData, d->payload, d->length);
 
-        drift = 0;
-        lastInt = 0;
         pin->setAnalogPeriodUs(1000 / 38); // 38kHz
         pin->setAnalogValue(333);
         pwmstate = 1;
         pin->setPwm(1);
         sending = true;
+        sendStartTime = 0;
+
+        setPeriodicCallback(IR_PULSE_LEN, this, (void (*)(void*))&IrWrap::process);
         while (sending) {
             fiber_sleep(5);
         }
@@ -564,8 +584,8 @@ class IrWrap {
             return;
 
 #if IR_DEBUG
-        drift = (int)(system_timer_current_time_us() - startTime);
         if (code == 0) {
+            DeviceEvent evt(IR_COMPONENT_ID, IR_PACKET_END_EVENT);
             /*
             auto recvBuf = outBuffer->payload;
             auto recvPtr = outBuffer->length;
@@ -586,10 +606,9 @@ class IrWrap {
             */
             prevDataSize = 0;
         } else {
-            DMESG("IR ERROR %d dr=%d [%s] [%s]", code, drift, dbg.get(), sendDbg.get());
+            DMESG("IR ERROR %d [%s]", code, dbg.get());
         }
         dbg.get();
-        sendDbg.get();
 #endif
         recvState = IR_RECV_ERROR;
     }
@@ -611,9 +630,9 @@ class IrWrap {
                 v -= pulses[i];
             else
                 v += pulses[i];
-            int d = v % 250;
-            if (d > 125)
-                d -= 250;
+            int d = v % IR_PULSE_LEN;
+            if (d > IR_PULSE_LEN / 2)
+                d -= IR_PULSE_LEN;
             nums[i] = d;
             sum += d;
         }
@@ -691,12 +710,15 @@ class IrWrap {
         return errs;
     }
 
-    void decodeMsg() {
+    void packetEnd(DeviceEvent) {
+        if (pulsePtr < 5)
+            return;
+
         adjustShift();
 
         BitVector bits;
 
-        int pos = 125;
+        int pos = IR_PULSE_LEN / 2;
         for (int i = 0; i < pulsePtr; ++i) {
             int curr = pulses[i];
             int v = 0;
@@ -707,10 +729,12 @@ class IrWrap {
             pos -= curr;
             while (pos < 0) {
                 bits.push(v);
-                pos += 250;
+                pos += IR_PULSE_LEN;
             }
         }
         // bits.print();
+
+        pulsePtr = 0;
 
         if (bits.size() < 70)
             return; // too short
@@ -766,7 +790,6 @@ class IrWrap {
         decrRC(outBuffer);
         outBuffer = pins::createBuffer(ptr);
         memcpy(outBuffer->payload, buf, ptr);
-        finish(0);
         DeviceEvent evt(IR_COMPONENT_ID, IR_PACKET_EVENT);
     }
 
@@ -781,16 +804,16 @@ class IrWrap {
 
         dbg.putNum(-tm);
 
-        if (tm >= 20 * 250) {
+        if (tm >= 20 * IR_PULSE_LEN) {
             recvState = IR_WAIT_START_GAP;
             return;
         }
 
         if (recvState == IR_WAIT_DATA) {
-            if (tm >= 12 * 250) {
+            if (tm >= 12 * IR_PULSE_LEN) {
                 // finish
-                addPulse(-(40 * 250)); // make sure we get all ones at the end
-                decodeMsg();
+                addPulse(-(40 * IR_PULSE_LEN)); // make sure we get all ones at the end
+                finish(0);
             } else {
                 addPulse(-tm);
             }
@@ -802,32 +825,26 @@ class IrWrap {
         return outBuffer;
     }
 
-    void process(DeviceEvent) {
+    void process() {
         if (!sending)
             return;
-
+        
         auto now = system_timer_current_time_us();
-        if (lastInt) {
-            auto delta = abs((int)(now - lastInt) - 250);
-            if (delta > 50)
-                drift += delta + 100000;
-            /*
-            if (delta > 300) {
-                drift += delta - 250;
-            }
-            */
-        }
-        lastInt = now;
-
+        if (sendStartTime == 0)
+            sendStartTime = now - (IR_PULSE_LEN / 2);
+        
+        auto encodedMsgPtr = (int)(now - sendStartTime) / IR_PULSE_LEN;
+        
         if (encodedMsgPtr >= encodedMsg.size()) {
-            sending = false;
             encodedMsg.setLength(0);
             pin->setAnalogValue(0);
             pin->setPwm(1);
+            clearPeriodicCallback();
+            sending = false;
             return;
         }
 
-        int curr = encodedMsg.get(encodedMsgPtr++);
+        int curr = encodedMsg.get(encodedMsgPtr);
         if (curr != pwmstate) {
             pwmstate = curr;
             pin->setPwm(pwmstate);
@@ -835,18 +852,6 @@ class IrWrap {
     }
 };
 SINGLETON(IrWrap);
-
-int numproc;
-void processIr() {
-    
-    TC3->COUNT16.INTFLAG.reg = TC_INTFLAG_MC(1);
-   // TC3->COUNT16.COUNT.reg = 0;
-    
-    // instIrWrap->process();
-    if (numproc++ < 90) {
-        DMESG("np %d %d", numproc, (int)system_timer_current_time_us());
-    }
-}
 
 /**
  * Send data over IR.
@@ -864,37 +869,6 @@ void send(Buffer buf) {
 Buffer currentPacket() {
     auto w = getIrWrap();
     return w->getBuffer();
-}
-
-/**
- * Get data over IR.
- */
-//%
-int drift() {
-    auto w = getIrWrap();
-    return w->drift;
-}
-
-/**
- * Get data over IR.
- */
-//%
-void beep() {
-    auto pin = lookupPin(PIN_IR_OUT);
-    pin->setDigitalValue(0);
-    pin->setAnalogPeriodUs(1000 / 38); // 38kHz
-    pin->setAnalogValue(200);
-
-    __disable_irq();
-    while (1) {
-        for (int i = 0; i < 30; ++i) {
-            wait_us(750);
-            pin->setPwm(1);
-            wait_us(250);
-            pin->setPwm(0);
-        }
-        wait_us(500000);
-    }
 }
 
 /**
