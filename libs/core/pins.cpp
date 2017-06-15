@@ -392,6 +392,22 @@ enum IrRecvState : uint8_t {
     IR_WAIT_DATA,
 };
 
+uint16_t crc16ccit(uint8_t *data, uint32_t len) {
+    uint16_t crc = 0xffff;
+
+    while (len--) {
+        crc ^= (*data++ << 8);
+        for (int i = 0; i < 8; ++i) {
+            if (crc & 0x8000)
+                crc = crc << 1 ^ 0x1021;
+            else
+                crc = crc << 1;
+        }
+    }
+
+    return crc;
+}
+
 class DbgBuffer {
   public:
 #if IR_DEBUG
