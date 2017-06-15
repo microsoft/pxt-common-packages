@@ -314,10 +314,19 @@ class BitVector {
 #define IR_COMPONENT_ID 0x2042
 #define IR_PACKET_END_EVENT 0x1
 #define IR_PACKET_EVENT 0x2
+#define IR_PACKET_ERROR_EVENT 0x3
 #define IR_MAX_PULSES (IR_MAX_MSG_SIZE * 18 + 10)
 #define IR_PULSE_LEN 250
 
 #define IR_DEBUG 1
+
+#if IR_DEBUG
+#define IR_DMESG DMESG
+#else
+#define IR_DMESG(...)                                                                              \
+    do {                                                                                           \
+    } while (0)
+#endif
 
 static const uint8_t hamming[16] = {
     0b0000000, 0b1110000, 0b1001100, 0b0111100, 0b0101010, 0b1011010, 0b1100110, 0b0010110,
@@ -383,8 +392,6 @@ enum IrRecvState : uint8_t {
     IR_WAIT_DATA,
 };
 
-void processIr();
-
 class DbgBuffer {
   public:
 #if IR_DEBUG
@@ -445,7 +452,7 @@ void NVIC_CopyToRAM() {
 
 static volatile bool periodicUsed;
 static void *periodicData;
-static void (*periodicCallback)(void*);
+static void (*periodicCallback)(void *);
 static void periodicIRQ() {
     TC3->COUNT16.INTFLAG.reg = TC_INTFLAG_MC(1);
     periodicCallback(periodicData);
@@ -511,24 +518,19 @@ class IrWrap {
     IrRecvState recvState;
     BufferData *outBuffer;
 
-#if IR_DEBUG
-    uint8_t prevData[IR_MAX_MSG_SIZE];
-    uint8_t prevDataSize;
     DbgBuffer dbg;
-#endif
 
   public:
     IrWrap() {
-        DMESG("TC4=%d EIC=%d", NVIC_GetPriority(TC4_IRQn), NVIC_GetPriority(EIC_IRQn));
         NVIC_SetPriority(EIC_IRQn, 0);
         NVIC_SetPriority(TC4_IRQn, 1);
-        DMESG("TC4=%d EIC=%d", NVIC_GetPriority(TC4_IRQn), NVIC_GetPriority(EIC_IRQn));
+        IR_DMESG("set interrupt priority, TC4=%d EIC=%d", NVIC_GetPriority(TC4_IRQn),
+                 NVIC_GetPriority(EIC_IRQn));
 
         recvState = IR_RECV_ERROR;
         sending = false;
         outBuffer = NULL;
         pin = lookupPin(PIN_IR_OUT);
-        prevDataSize = 0;
         if (pin) {
             pin->setDigitalValue(0);
 
@@ -560,10 +562,7 @@ class IrWrap {
         for (int i = 0; i < 15; ++i)
             encodedMsg.push(1);
 
-        //encodedMsg.print();
-
-        prevDataSize = d->length;
-        memcpy(prevData, d->payload, d->length);
+        // encodedMsg.print();
 
         pin->setAnalogPeriodUs(1000 / 38); // 38kHz
         pin->setAnalogValue(333);
@@ -572,7 +571,7 @@ class IrWrap {
         sending = true;
         sendStartTime = 0;
 
-        setPeriodicCallback(IR_PULSE_LEN, this, (void (*)(void*))&IrWrap::process);
+        setPeriodicCallback(IR_PULSE_LEN, this, (void (*)(void *)) & IrWrap::process);
         while (sending) {
             fiber_sleep(5);
         }
@@ -583,33 +582,13 @@ class IrWrap {
         if (recvState == IR_RECV_ERROR)
             return;
 
-#if IR_DEBUG
         if (code == 0) {
             DeviceEvent evt(IR_COMPONENT_ID, IR_PACKET_END_EVENT);
-            /*
-            auto recvBuf = outBuffer->payload;
-            auto recvPtr = outBuffer->length;
-            if (prevDataSize == 0) {
-                prevDataSize = 8;
-                memcpy(prevData, recvBuf, 4);
-                memcpy(prevData + 4, recvBuf, 4);
-                prevData[4] ^= 182;
-                prevData[5] ^= 182;
-                prevData[6] ^= 182;
-                prevData[7] ^= 182;
-            }
-            if (prevDataSize != recvPtr || memcmp(prevData, recvBuf, recvPtr))
-                DMESG("IR DATA ERR dr=%d [%s] [%s]", drift, dbg.get(), sendDbg.get());
-            else {
-                DMESG("IR OK len=%d [%s]", recvPtr, dbg.get());
-            }
-            */
-            prevDataSize = 0;
         } else {
-            DMESG("IR ERROR %d [%s]", code, dbg.get());
+            DeviceEvent evt(IR_COMPONENT_ID, IR_PACKET_ERROR_EVENT);
+            IR_DMESG("IR ERROR %d [%s]", code, dbg.get());
         }
         dbg.get();
-#endif
         recvState = IR_RECV_ERROR;
     }
 
@@ -646,24 +625,8 @@ class IrWrap {
         int median = nums[pulsePtr / 2];
         pulses[0] -= median;
 
-        // DMESG("shift: n=%d avg=%d med=%d p=%d %d %d ...", pulsePtr, sum / pulsePtr, median,
-        //      pulses[0], pulses[1], pulses[2]);
-        /*
-  char buf[1024];
-  buf[0] = 0;
-  int pos = 0;
-  for (int i = 0; i < pulsePtr; ++i) {
-      int v = 0;
-      int len = pulses[i];
-      if (len < 0) {
-          len = -len;
-          v = 1;
-      }
-      sprintf(buf + strlen(buf), "%d,%d;%d,%d;", pos, v, pos + len - 1, v);
-      pos += len;
-  }
-  DMESG("buf: %s", buf);
-  */
+        IR_DMESG("shift: n=%d avg=%d med=%d p=%d %d %d ...", pulsePtr, sum / pulsePtr, median,
+                 pulses[0], pulses[1], pulses[2]);
     }
 
     void pulseGap(DeviceEvent ev) {
@@ -697,7 +660,6 @@ class IrWrap {
         int errs = 0;
         for (int i = start; i < bits.size(); i += 5) {
             uint32_t v = bits.getBits(i, 5);
-            // DMESG("v=%x @ %d", v, i);
             if (v == 0x1f)
                 stops++;
             else
@@ -750,10 +712,10 @@ class IrWrap {
         int err1 = errorRate(start + 1, bits);
         if (err0 < err1 && err0 < err) {
             start--;
-            DMESG("sync back");
+            IR_DMESG("sync back");
         } else if (err1 < err) {
             start++;
-            DMESG("sync fwd");
+            IR_DMESG("sync fwd");
         }
 
         uint8_t buf[IR_MAX_MSG_SIZE];
@@ -769,6 +731,7 @@ class IrWrap {
             ptr += 2;
         }
 
+#if 0
         BitVector bits2;
         bits2.push(0);
         bits2.push(0);
@@ -786,6 +749,7 @@ class IrWrap {
             bits2.set(i, bits.get(i) != bits2.get(i));
         }
         bits2.print();
+#endif
 
         decrRC(outBuffer);
         outBuffer = pins::createBuffer(ptr);
@@ -828,13 +792,13 @@ class IrWrap {
     void process() {
         if (!sending)
             return;
-        
+
         auto now = system_timer_current_time_us();
         if (sendStartTime == 0)
             sendStartTime = now - (IR_PULSE_LEN / 2);
-        
+
         auto encodedMsgPtr = (int)(now - sendStartTime) / IR_PULSE_LEN;
-        
+
         if (encodedMsgPtr >= encodedMsg.size()) {
             encodedMsg.setLength(0);
             pin->setAnalogValue(0);
