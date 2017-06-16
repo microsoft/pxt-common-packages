@@ -6,6 +6,7 @@ built
 typings
 tmp
 temp
+.vscode
 
 *.user
 *.sw?
