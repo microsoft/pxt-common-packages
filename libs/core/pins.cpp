@@ -450,6 +450,15 @@ class DbgBuffer {
     }
 };
 
+void setTCC0(int enabled) {
+    while (TCC0->STATUS.reg & TC_STATUS_SYNCBUSY)
+        ;
+    if (enabled)
+        TCC0->CTRLA.reg |= TC_CTRLA_ENABLE;
+    else
+        TCC0->CTRLA.reg &= ~TC_CTRLA_ENABLE;
+}
+
 void NVIC_CopyToRAM() {
     uint32_t *vectors = (uint32_t *)SCB->VTOR;
     // Copy and switch to dynamic vectors if the first time called
@@ -564,6 +573,12 @@ class IrWrap {
         }
     }
 
+    void setPWM(int enabled) {
+        // pin->setPwm(enabled);
+        setTCC0(enabled);
+        pwmstate = enabled;
+    }
+
     void send(BufferData *d) {
         if (sending)
             return; // error code?
@@ -603,8 +618,7 @@ class IrWrap {
 
         pin->setAnalogPeriodUs(1000 / 38); // 38kHz
         pin->setAnalogValue(333);
-        pwmstate = 1;
-        pin->setPwm(1);
+        setPWM(1);
         sending = true;
         sendStartTime = 0;
 
@@ -669,7 +683,7 @@ class IrWrap {
     void pulseGap(DeviceEvent ev) {
         if (sending)
             return;
-            
+
         if (ev.timestamp > 10000) {
             dbg.put(" BRK ");
             finish(11);
@@ -862,17 +876,15 @@ class IrWrap {
         if (encodedMsgPtr >= encodedMsg.size()) {
             encodedMsg.setLength(0);
             pin->setAnalogValue(0);
-            pin->setPwm(1);
+            setPWM(1);
             clearPeriodicCallback();
             sending = false;
             return;
         }
 
         int curr = encodedMsg.get(encodedMsgPtr);
-        if (curr != pwmstate) {
-            pwmstate = curr;
-            pin->setPwm(pwmstate);
-        }
+        if (curr != pwmstate)
+            setPWM(curr);
     }
 };
 SINGLETON(IrWrap);
