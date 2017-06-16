@@ -185,6 +185,9 @@ static void copy_words(void *dst0, const void *src0, uint32_t n_words)
         *dst++ = *src++;
 }
 
+#define DBL_TAP_PTR ((volatile uint32_t *)(HMCRAMC0_ADDR + HMCRAMC0_SIZE - 4))
+#define DBL_TAP_MAGIC_QUICK_BOOT 0xf02669ef
+
 int HF2::endpointRequest()
 {
     int sz = recv();
@@ -225,6 +228,7 @@ int HF2::endpointRequest()
         return sendResponse(sizeof(resp->bininfo));
 
     case HF2_CMD_RESET_INTO_APP:
+        *DBL_TAP_PTR = DBL_TAP_MAGIC_QUICK_BOOT;
     case HF2_CMD_RESET_INTO_BOOTLOADER:
         device.reset();
         break;
