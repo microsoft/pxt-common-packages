@@ -69,7 +69,7 @@ bool digitalRead(DigitalPin name) {
 //% parts="led" trackArgs=0
 //% blockNamespace=pins
 //% name.fieldEditor="gridpicker"
-//% name.fieldOptions.width=220
+//% name.fieldOptions.width=220 
 //% name.fieldOptions.columns=4
 void digitalWrite(DigitalPin name, bool value) {
     PINOP(setDigitalValue(value));
@@ -133,11 +133,12 @@ int pulseIn(DigitalPin pin, PulseValue value, int maxDuration = 2000000) {
 //% name.fieldOptions.width=220
 //% name.fieldOptions.columns=4
 void setPull(DigitalPin name, PinPullMode pull) {
-    PinMode m = pull == PinPullMode::PullDown
-                    ? PinMode::PullDown
-                    : pull == PinPullMode::PullUp ? PinMode::PullUp : PinMode::PullNone;
+    PinMode m = pull == PinPullMode::PullDown ? PinMode::PullDown : pull == PinPullMode::PullUp
+                                                                        ? PinMode::PullUp
+                                                                        : PinMode::PullNone;
     PINOP(setPull(m));
 }
+
 }
 
 namespace AnalogPinMethods {
@@ -226,6 +227,7 @@ void servoWrite(PwmPin name, int value) {
 void servoSetPulse(PwmPin name, int duration) {
     PINOP(setServoPulseUs(duration));
 }
+
 }
 
 namespace pins {
@@ -249,4 +251,3 @@ int pulseDuration() {
     return pxt::lastEvent.timestamp;
 }
 }
-

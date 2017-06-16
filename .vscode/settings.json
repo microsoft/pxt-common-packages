@@ -1,15 +1,5 @@
 {
     "files.associations": {
-        "*.ipp": "cpp",
-        "iterator": "cpp",
-        "string": "cpp",
-        "vector": "cpp",
-        "__mutex_base": "cpp",
-        "__functional_base": "cpp",
-        "istream": "cpp",
-        "locale": "cpp",
-        "memory": "cpp",
-        "tuple": "cpp",
-        "utility": "cpp"
+        "*.ipp": "cpp"
     }
 }
