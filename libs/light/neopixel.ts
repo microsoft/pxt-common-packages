@@ -538,8 +538,9 @@ namespace light {
          * Show a single animation frame
          * @param animation the animation to run
          */
-        //% blockId=neopixel_show_animation_frame block="show animation frame %animation"
+        //% blockId=neopixel_show_animation_frame block="show animation frame %animation=light_animation"
         //% weight=24 advanced=true
+        //% help="light/show-animation-frame"
         //% parts="neopixel"
         //% defaultInstance=light.pixels
         showAnimationFrame(animation: NeoPixelAnimation) {
@@ -927,7 +928,7 @@ namespace light {
             if (this.iteration < l * 2) {
                 this.step++;
                 for (let i = 0; i < l; i++) {
-                    const level = (Math.sin(i + this.step) * 127) + 128;
+                    const level = (Math.isin(i + this.step) * 127) + 128;
                     strip.setPixelColor(i, rgb(level * this.red / 255, level * this.green / 255, level * this.blue / 255));
                 }
                 strip.show();

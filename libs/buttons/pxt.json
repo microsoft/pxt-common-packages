@@ -1,12 +1,11 @@
 {
-    "name": "temperature",
-    "description": "The temperature library",
+    "name": "buttons",
+    "description": "Button A and B drivers",
     "files": [
         "README.md",
-        "temperature.cpp",
+        "buttons.cpp",
         "shims.d.ts",
-        "enums.d.ts",
-        "ns.ts"
+        "enums.d.ts"
     ],
     "testFiles": [
         "test.ts"

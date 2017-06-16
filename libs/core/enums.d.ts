@@ -7,6 +7,7 @@
     Number = 2,
     String = 3,
     Object = 4,
+    Function = 5,
     }
 
 

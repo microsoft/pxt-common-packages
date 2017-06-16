@@ -7,6 +7,20 @@ input.buttonA.onEvent(ButtonEvent.Click, () => {
 
 })
 ```
+
+## ~hint
+**Touch**
+
+If your board has pins or pads that work as touch inputs, then your code can use them just like buttons.
+Instead of saying `button A` or `button B` as the input source, use a pin name like `pin A1`.
+```block
+input.pinA1.onEvent(ButtonEvent.Down, () => {
+    light.pixels.setPixelColor(1, Colors.Blue)
+})
+```
+Read about [**touch sensors**](/reference/input/button/touch-sensors) and using the pins as touch buttons.
+## ~
+
 ## Parameters
 
 * ``ev`` the button action to run some code for. The button actions (events) are:
@@ -22,7 +36,7 @@ input.buttonA.onEvent(ButtonEvent.Click, () => {
 
 ### Next light please #ex1
 
-In this example, the lighted pixel moves to the next pixel spot each time you press the `A` button. The postition of
+In this example, the lighted pixel moves to the next pixel spot each time you press the `A` button. The position of
 the light goes back to first pixel when the current position reaches the last pixel.
 
 ```blocks
@@ -52,8 +66,25 @@ input.buttonB.onEvent(ButtonEvent.Up, () => {
 })
 ```
 
+### Touch down
+
+Make a pixel turn `pink` when you touch the capacitive pin `pin A1` on the board. The pixel then turns
+`green` when you lift your finger off of the pin.
+
+```blocks
+input.pinA1.onEvent(ButtonEvent.Down, () => {
+    light.pixels.setPixelColor(5, Colors.Pink)
+})
+input.pinA1.onEvent(ButtonEvent.Up, () => {
+    light.pixels.setPixelColor(5, Colors.Green)
+})
+
+```
+
 ### See also
 
-[``||is pressed||``](/reference/input/button-is-pressed),
+[``||is pressed||``](/reference/input/button/is-pressed),
 [``||was pressed||``](/reference/input/button/was-pressed),
 [``||random||``](/blocks/math#random-value)
+
+[Touch sensors](/reference/input/button/touch-sensors)

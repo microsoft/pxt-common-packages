@@ -4,12 +4,13 @@ declare namespace input {
     /**
      * Run some code when the temperature changes from hot to cold, or from cold to hot.
      * @param condition the condition, hot or cold, the event triggers on
-     * @param temperature the temperature, in degree Celsius, at which this event happens, eg: 15
+     * @param temperature the temperature at which this event happens, eg: 15
+     * @param unit the unit of the temperature
      */
-    //% blockId=input_on_temperature_condition_changed block="on temperature %condition|at (°C)%temperature"
+    //% blockId=input_on_temperature_condition_changed block="on temperature %condition|at %temperature|%unit"
     //% parts="thermometer" weight=95 blockGap=8 advanced=true
-    //% help=input/on-temperature-condition-changed shim=input::onTemperateConditionChanged
-    function onTemperateConditionChanged(condition: TemperatureCondition, temperature: int32, handler: () => void): void;
+    //% help=input/on-temperature-condition-changed blockExternalInputs=0 shim=input::onTemperateConditionChanged
+    function onTemperateConditionChanged(condition: TemperatureCondition, temperature: int32, unit: TemperatureUnit, handler: () => void): void;
 
     /**
      * Get the temperature in Celsius or Fahrenheit degrees.

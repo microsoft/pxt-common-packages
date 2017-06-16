@@ -307,8 +307,9 @@ TNumber div(TNumber a, TNumber b) {
 
 //%
 TNumber mod(TNumber a, TNumber b) {
-    // TODO this is wrong for doubles
-    BITOP(%)
+    if (isNumber(a) && isNumber(b) && numValue(b))
+        BITOP(%)
+    return fromDouble(fmod(toDouble(a), toDouble(b)));
 }
 
 //%
@@ -441,7 +442,7 @@ StringData *toString(TValue v) {
                 else
                     return (StringData *)(void *)sInf;
             }
-            gcvt(x, 21, buf);
+            gcvt(x, 16, buf);
         }
 
         ManagedString s(buf);
@@ -461,6 +462,11 @@ TNumber pow(TNumber x, TNumber y) {
 }
 
 //%
+TNumber atan2(TNumber y, TNumber x) {
+    return fromDouble(::atan2(toDouble(y), toDouble(y)));
+}
+
+//%
 int random(int max) {
     if (max == INT_MIN)
         return -device.random(INT_MAX);
@@ -473,6 +479,46 @@ int random(int max) {
 }
 
 #define SINGLE(op) return fromDouble(::op(toDouble(x)));
+
+//%
+TNumber log(TNumber x) {
+    SINGLE(log)
+}
+
+//%
+TNumber exp(TNumber x) {
+    SINGLE(exp)
+}
+
+//%
+TNumber tan(TNumber x) {
+    SINGLE(tan)
+}
+
+//%
+TNumber sin(TNumber x) {
+    SINGLE(sin)
+}
+
+//%
+TNumber cos(TNumber x) {
+    SINGLE(cos)
+}
+
+//%
+TNumber atan(TNumber x) {
+    SINGLE(atan)
+}
+
+//%
+TNumber asin(TNumber x) {
+    SINGLE(asin)
+}
+
+//%
+TNumber acos(TNumber x) {
+    SINGLE(acos)
+}
 
 //%
 TNumber sqrt(TNumber x) {

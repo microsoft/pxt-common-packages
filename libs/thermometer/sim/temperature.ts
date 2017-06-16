@@ -17,7 +17,7 @@ namespace pxsim.input {
             : ((deg * 18) / 10 + 32) >> 0;
     }
 
-    export function onTemperateConditionChanged(condition: number, temperature: number, unit: number, body: RefAction) {
+    export function onTemperatureConditionChanged(condition: number, temperature: number, unit: number, body: RefAction) {
         let b = thermometerState();
         b.setUsed();
         setThermometerUnit(unit);

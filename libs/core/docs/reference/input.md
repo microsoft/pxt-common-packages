@@ -43,11 +43,11 @@ input.onLoudSound(() => {})
 input.soundLevel()
 ```
 
-## Temperature #temperature
+## Thermometer #thermometer
 
 ```cards
-input.onTemperateConditionChanged(TemperatureCondition.Hot, 30, TemperatureUnit.Celsius, () => {
-
+input.onTemperatureConditionChanged(TemperatureCondition.Hot, 15, TemperatureUnit.Celsius, () => {
+	
 })
 input.temperature(TemperatureUnit.Celsius)
 ```

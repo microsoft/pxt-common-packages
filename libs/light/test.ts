@@ -10,7 +10,5 @@ function flash(n: number) {
     })
 }
 
-input.buttonA.onEvent(ButtonEvent.Click, () => {
-    flash(0)
-})
+flash(0)
 
