@@ -514,8 +514,8 @@ SINGLETON(IrWrap);
 /**
  * Send data over IR.
  */
-//%
-void send(Buffer buf) {
+//% parts="ir"
+void sendBuffer(Buffer buf) {
     auto w = getIrWrap();
     w->send(buf);
 }
@@ -523,7 +523,7 @@ void send(Buffer buf) {
 /**
  * Get most recent packet received over IR.
  */
-//%
+//% parts="ir"
 Buffer currentPacket() {
     auto w = getIrWrap();
     return w->getBuffer();
@@ -532,7 +532,7 @@ Buffer currentPacket() {
 /**
  * Run action after a packet is recieved over IR.
  */
-//%
+//% parts="ir"
 void onPacket(Action body) {
     getIrWrap(); // attach events
     registerWithDal(IR_COMPONENT_ID, IR_PACKET_EVENT, body);

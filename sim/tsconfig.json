@@ -33,7 +33,9 @@
         "../libs/thermometer/sim/state.ts",
         "../libs/thermometer/sim/temperature.ts",
         "../libs/touch/sim/touch.ts",
-        "../libs/touch/sim/state.ts"
+        "../libs/touch/sim/state.ts",
+        "../libs/infrared/sim/ir.ts",
+        "../libs/infrared/sim/state.ts"        
     ]
 }
 

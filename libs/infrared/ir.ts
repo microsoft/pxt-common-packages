@@ -1,4 +1,4 @@
-export class InfraredPacket {
+class InfraredPacket {
     /**
      * The number payload if a number was sent in this packet (via ``sendNumber()`` or ``sendValue()``)
      * or 0 if this packet did not contain a number.
@@ -12,6 +12,7 @@ namespace infrared {
      * @param value number to send
      */
     //% blockId="ir_send_number" block="infrared send number %value"
+    //% parts="ir"
     export function sendNumber(value: number) {
         let b: Buffer
         if ((value | 0) == value) {
@@ -26,9 +27,10 @@ namespace infrared {
             b = pins.createBuffer(8)
             b.setNumber(NumberFormat.Float64LE, 0, value)
         }
-        send(b)
+        sendBuffer(b)
     }
 
+    //% parts="ir"
     export function currentNumber() {
         let b = currentPacket()
         if (b.length == 8)
@@ -46,6 +48,7 @@ namespace infrared {
     //% mutateText=InfraredPacket
     //% mutateDefaults="receivedNumber"
     //% blockId=ir_on_packet_received block="on infrared received" blockGap=8
+    //% parts="ir"
     export function onPacketReceived(cb: (packet: InfraredPacket) => void) {
         onPacket(() => {
             const packet = new InfraredPacket();
