@@ -179,6 +179,9 @@ namespace msgpack {
         return pins.sizeOf(fmt) + 1
     }
 
+    /**
+     * Unpacks a buffer into a number array.
+     */
     export function unpackNumberArray(buf: Buffer, offset = 0) {
         let res: number[] = []
 
@@ -199,6 +202,10 @@ namespace msgpack {
         return res
     }
 
+    /**
+     * Pack a number array into a buffer.
+     * @param nums the numbers to be packed
+     */
     export function packNumberArray(nums: number[]) {
         let off = 0
         for (let n of nums) {
@@ -210,31 +217,6 @@ namespace msgpack {
             off += packNumberCore(buf, off, n)
         }
         return buf
-    }
-
-    export function test() {
-        let t = (a: number[]) => {
-            serial.writeValue("test", a.length)
-            serial.writeLine("test2: " + a[0] + " " + a[1])
-            let pk = packNumberArray(a)
-            let b = unpackNumberArray(pk)
-            control.assert(a.length == b.length, 42)
-            for (let i = 0; i < a.length; ++i)
-                control.assert(a[i] == b[i], 43)
-        }
-        t([])
-        t([0, 1, 2, 3])
-        t([0, -1, -2, -3])
-        t([3.5])
-        t([0xffff])
-        t([0xffffffff])
-        for (let i = 0; i < 1e20; ++i) {
-            t([i])
-            t([-i])
-            if (i > 1000) {
-                i = Math.floor(i * 1.01)
-            }
-        }
     }
 }
 
