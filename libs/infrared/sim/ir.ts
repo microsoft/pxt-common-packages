@@ -10,7 +10,12 @@ namespace pxsim.infrared {
     }
 
     export function onPacket(body: RefAction) {
-        const state = getAudioState();
-        pxtcore.registerWithDal(0x2042 /*DAL.IR_COMPONENT_ID*/, 0x2 /*DAL.IR_PACKET_EVENT*/, body);
+        const state = getInfraredState();
+        state.listen(body);
     }    
+
+    export function onError(body: RefAction) {
+        const state = getInfraredState();
+        state.listenError(body);
+    }
 }
