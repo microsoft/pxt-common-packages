@@ -28,7 +28,7 @@ void clearPeriodicCallback();
 void setTCC0(int enabled);
 
 
-namespace ir {
+namespace infrared {
 
 static const uint8_t hamming[16] = {
     0b0000000, 0b1110000, 0b1001100, 0b0111100, 0b0101010, 0b1011010, 0b1100110, 0b0010110,
