@@ -1,4 +1,4 @@
-export class InfraredPacket {
+class InfraredPacket {
     /**
      * The number payload if a number was sent in this packet (via ``sendNumber()`` or ``sendValue()``)
      * or 0 if this packet did not contain a number.
@@ -26,9 +26,10 @@ namespace infrared {
             b = pins.createBuffer(8)
             b.setNumber(NumberFormat.Float64LE, 0, value)
         }
-        send(b)
+        sendBuffer(b)
     }
 
+    //%
     export function currentNumber() {
         let b = currentPacket()
         if (b.length == 8)

@@ -515,7 +515,7 @@ SINGLETON(IrWrap);
  * Send data over IR.
  */
 //%
-void send(Buffer buf) {
+void sendBuffer(Buffer buf) {
     auto w = getIrWrap();
     w->send(buf);
 }
