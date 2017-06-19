@@ -1,9 +1,5 @@
 class InfraredPacket {
     /**
-     * The raw buffer of data received
-     */
-    public receivedBuffer: Buffer;
-    /**
      * The first number in the payload.
      */
     public receivedNumber: number;
@@ -11,17 +7,21 @@ class InfraredPacket {
      * The array of numbers of received.
      */
     public receivedNumbers: number[];
+    /**
+     * The raw buffer of data received
+     */
+    public receivedBuffer: Buffer;
 }
 
-namespace infrared {
+namespace network {
     /**
      * Sends a numbers over the infrared transmitter diode
      * @param value number to send
      */
     //% blockId="ir_send_number" block="infrared send number %value"
     //% parts="ir" weight=90
-    export function sendNumber(value: number) {
-        sendNumbers([value]);
+    export function infraredSendNumber(value: number) {
+        infraredSendNumbers([value]);
     }
 
     /**
@@ -29,7 +29,7 @@ namespace infrared {
      * @param values 
      */
     //% parts="ir"
-    export function sendNumbers(values: number[]) {
+    export function infraredSendNumbers(values: number[]) {
         let buf = msgpack.packNumberArray(values);
         if (buf.length % 2) {
             const buf2 = pins.createBuffer(buf.length + 1);
@@ -37,7 +37,7 @@ namespace infrared {
             buf2[buf2.length - 1] = 0xc1;
             buf = buf2;
         }
-        sendBuffer(buf);
+        infraredSendPacket(buf);
     }
 
     /**
@@ -48,13 +48,17 @@ namespace infrared {
     //% mutateDefaults="receivedNumber"
     //% blockId=ir_on_packet_received block="on infrared received" blockGap=8
     //% parts="ir"
-    export function onPacketReceived(cb: (packet: InfraredPacket) => void) {
-        onPacket(() => {
+    export function onInfraredPacketReceived(cb: (p: InfraredPacket) => void) {
+        onInfraredPacket(() => {
+            const buf: Buffer = infraredPacket();
+            const nums: number[] = msgpack.unpackNumberArray(buf) || [];
+            const num = nums[0] || 0;
+
             const packet = new InfraredPacket();
-            packet.receivedBuffer = currentPacket();
-            packet.receivedNumbers = msgpack.unpackNumberArray(currentPacket()) || [];
-            packet.receivedNumber = packet.receivedNumbers[0] || 0;            
+            packet.receivedBuffer = buf;
+            packet.receivedNumbers = nums;
+            packet.receivedNumber = num;
             cb(packet)
         });
-    }    
+    }
 }

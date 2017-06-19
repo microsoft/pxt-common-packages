@@ -28,7 +28,7 @@ void clearPeriodicCallback();
 void setTCC0(int enabled);
 
 
-namespace infrared {
+namespace network {
 
 static const uint8_t hamming[16] = {
     0b0000000, 0b1110000, 0b1001100, 0b0111100, 0b0101010, 0b1011010, 0b1100110, 0b0010110,
@@ -515,7 +515,7 @@ SINGLETON(IrWrap);
  * Send data over IR.
  */
 //% parts="ir"
-void sendBuffer(Buffer buf) {
+void infraredSendPacket(Buffer buf) {
     auto w = getIrWrap();
     w->send(buf);
 }
@@ -524,7 +524,7 @@ void sendBuffer(Buffer buf) {
  * Get most recent packet received over IR.
  */
 //% parts="ir"
-Buffer currentPacket() {
+Buffer infraredPacket() {
     auto w = getIrWrap();
     return w->getBuffer();
 }
@@ -533,7 +533,7 @@ Buffer currentPacket() {
  * Run action after a packet is recieved over IR.
  */
 //% parts="ir"
-void onPacket(Action body) {
+void onInfraredPacket(Action body) {
     getIrWrap(); // attach events
     registerWithDal(IR_COMPONENT_ID, IR_PACKET_EVENT, body);
 }
@@ -542,7 +542,7 @@ void onPacket(Action body) {
  * Run action after there's an error reciving packet over IR.
  */
 //%
-void onError(Action body) {
+void onInfraredError(Action body) {
     getIrWrap();
     registerWithDal(IR_COMPONENT_ID, IR_PACKET_ERROR_EVENT, body);
 }
