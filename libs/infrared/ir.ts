@@ -1,9 +1,16 @@
 class InfraredPacket {
     /**
-     * The number payload if a number was sent in this packet (via ``sendNumber()`` or ``sendValue()``)
-     * or 0 if this packet did not contain a number.
+     * The raw buffer of data received
+     */
+    public receivedBuffer: Buffer;
+    /**
+     * The first number in the payload.
      */
     public receivedNumber: number;
+    /**
+     * The array of numbers of received.
+     */
+    public receivedNumbers: number[];
 }
 
 namespace infrared {
@@ -12,33 +19,25 @@ namespace infrared {
      * @param value number to send
      */
     //% blockId="ir_send_number" block="infrared send number %value"
-    //% parts="ir"
+    //% parts="ir" weight=90
     export function sendNumber(value: number) {
-        let b: Buffer
-        if ((value | 0) == value) {
-            if ((value << 16) >> 16 == value) {
-                b = pins.createBuffer(2)
-                b.setNumber(NumberFormat.Int16LE, 0, value)
-            } else {
-                b = pins.createBuffer(4)
-                b.setNumber(NumberFormat.Int32LE, 0, value)
-            }
-        } else {
-            b = pins.createBuffer(8)
-            b.setNumber(NumberFormat.Float64LE, 0, value)
-        }
-        sendBuffer(b)
+        sendNumbers([value]);
     }
 
+    /**
+     * Sends an array of numbers of infrared. The combined size of the array should be less or equal to 32 bytes.
+     * @param values 
+     */
     //% parts="ir"
-    export function currentNumber() {
-        let b = currentPacket()
-        if (b.length == 8)
-            return b.getNumber(NumberFormat.Float64LE, 0)
-        else if (b.length == 2)
-            return b.getNumber(NumberFormat.Int16LE, 0)
-        else
-            return b.getNumber(NumberFormat.Int32LE, 0)
+    export function sendNumbers(values: number[]) {
+        let buf = msgpack.packNumberArray(values);
+        if (buf.length % 2) {
+            const buf2 = pins.createBuffer(buf.length + 1);
+            buf2.write(0, buf);
+            buf2[buf2.length - 1] = 0xc1;
+            buf = buf2;
+        }
+        sendBuffer(buf);
     }
 
     /**
@@ -52,7 +51,9 @@ namespace infrared {
     export function onPacketReceived(cb: (packet: InfraredPacket) => void) {
         onPacket(() => {
             const packet = new InfraredPacket();
-            packet.receivedNumber = currentNumber();
+            packet.receivedBuffer = currentPacket();
+            packet.receivedNumbers = msgpack.unpackNumberArray(currentPacket()) || [];
+            packet.receivedNumber = packet.receivedNumbers[0] || 0;            
             cb(packet)
         });
     }    

@@ -182,7 +182,7 @@ namespace msgpack {
     /**
      * Unpacks a buffer into a number array.
      */
-    export function unpackNumberArray(buf: Buffer, offset = 0) {
+    export function unpackNumberArray(buf: Buffer, offset = 0): number[] {
         let res: number[] = []
 
         while (offset < buf.length) {
@@ -197,6 +197,8 @@ namespace msgpack {
                 res.push(buf.getNumber(fmt, offset))
                 offset += pins.sizeOf(fmt)
             }
+            // padding at the end
+            while (buf[offset] === 0xc1) offset++;
         }
 
         return res
@@ -206,7 +208,7 @@ namespace msgpack {
      * Pack a number array into a buffer.
      * @param nums the numbers to be packed
      */
-    export function packNumberArray(nums: number[]) {
+    export function packNumberArray(nums: number[]): Buffer {
         let off = 0
         for (let n of nums) {
             off += packNumberCore(null, off, n)
