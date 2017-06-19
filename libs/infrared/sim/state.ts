@@ -24,7 +24,9 @@ namespace pxsim {
         }
 
         receive(buf: RefBuffer) {
+            pxsim.decr(this.packet);
             this.packet = buf;
+            pxsim.incr(this.packet);
             this.packetReceived = true;
             board().bus.queue(this.IR_COMPONENT_ID, this.IR_PACKET_EVENT);
         }

@@ -48,15 +48,17 @@ namespace network {
     //% mutateDefaults="receivedNumber"
     //% blockId=ir_on_packet_received block="on infrared received" blockGap=8
     //% parts="ir"
-    export function onInfraredPacketReceived(cb: (packet: InfraredPacket) => void) {
+    export function onInfraredPacketReceived(cb: (p: InfraredPacket) => void) {
         onInfraredPacket(() => {
+            const buf: Buffer = infraredPacket();
+            const nums: number[] = msgpack.unpackNumberArray(buf) || [];
+            const num = nums[0] || 0;
+
             const packet = new InfraredPacket();
-            const buf = infraredPacket();
-            const nums =  msgpack.unpackNumberArray(buf) || [];
             packet.receivedBuffer = buf;
             packet.receivedNumbers = nums;
-            packet.receivedNumber = nums[0] || 0;            
+            packet.receivedNumber = num;
             cb(packet)
         });
-    }    
+    }
 }
