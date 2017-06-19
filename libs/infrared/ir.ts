@@ -6,10 +6,6 @@ export class InfraredPacket {
     public receivedNumber: number;
 }
 
-/**
- * Infrared tranmission and reception
- */
-//% color=#E3008C weight=96 icon="\uf012"
 namespace infrared {
     /**
      * Sends a numbers over the infrared transmitter diode

@@ -7,7 +7,8 @@
         "ir.ts",
         "bitvector.h",
         "samd21.cpp",
-        "shims.d.ts"
+        "shims.d.ts",
+        "ns.ts"
     ],
     "public": true,
     "dependencies": {
