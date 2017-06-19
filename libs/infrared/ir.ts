@@ -12,6 +12,7 @@ namespace infrared {
      * @param value number to send
      */
     //% blockId="ir_send_number" block="infrared send number %value"
+    //% parts="ir"
     export function sendNumber(value: number) {
         let b: Buffer
         if ((value | 0) == value) {
@@ -29,7 +30,7 @@ namespace infrared {
         sendBuffer(b)
     }
 
-    //%
+    //% parts="ir"
     export function currentNumber() {
         let b = currentPacket()
         if (b.length == 8)
@@ -47,6 +48,7 @@ namespace infrared {
     //% mutateText=InfraredPacket
     //% mutateDefaults="receivedNumber"
     //% blockId=ir_on_packet_received block="on infrared received" blockGap=8
+    //% parts="ir"
     export function onPacketReceived(cb: (packet: InfraredPacket) => void) {
         onPacket(() => {
             const packet = new InfraredPacket();
