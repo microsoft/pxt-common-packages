@@ -4,13 +4,14 @@
 
 #define IR_MAX_MSG_SIZE 34
 #define IR_COMPONENT_ID 0x2042
+#define CABLE_COMPONENT_ID 0x2043
 #define IR_PACKET_END_EVENT 0x1
 #define IR_PACKET_EVENT 0x2
 #define IR_PACKET_ERROR_EVENT 0x3
 #define IR_MAX_PULSES (IR_MAX_MSG_SIZE * 18 + 10)
 #define IR_PULSE_LEN 250
 
-#define IR_DEBUG 0
+#define IR_DEBUG 1
 
 #if IR_DEBUG
 #define IR_DMESG DMESG
@@ -20,13 +21,11 @@
     } while (0)
 #endif
 
-
 // from samd21.cpp
 void NVIC_Setup();
 void setPeriodicCallback(uint32_t usec, void *data, void (*callback)(void *));
 void clearPeriodicCallback();
 void setTCC0(int enabled);
-
 
 namespace network {
 
@@ -152,13 +151,14 @@ class DbgBuffer {
     }
 };
 
-
-class IrWrap {
+class PulseBase {
+  protected:
     DevicePin *pin;
     DevicePin *inpin;
     BitVector encodedMsg;
     int8_t pwmstate;
     bool sending;
+    uint16_t id;
     uint64_t startTime;
     uint64_t sendStartTime;
     uint64_t lastMarkTime;
@@ -173,32 +173,51 @@ class IrWrap {
     DbgBuffer dbg;
 
   public:
-    IrWrap() {
+    PulseBase(uint16_t id, int pinOut, int pinIn) {
         NVIC_Setup();
+        this->id = id;
 
         recvState = IR_RECV_ERROR;
         sending = false;
         outBuffer = NULL;
-        pin = lookupPin(PIN_IR_OUT);
+        pin = lookupPin(pinOut);
         if (pin) {
             pin->setDigitalValue(0);
 
-            inpin = lookupPin(PIN_IR_IN);
-            inpin->getDigitalValue();
-            inpin->eventOn(DEVICE_PIN_EVENT_ON_PULSE);
-            devMessageBus.listen(inpin->id, DEVICE_PIN_EVT_PULSE_HI, this, &IrWrap::pulseGap,
-                                 MESSAGE_BUS_LISTENER_IMMEDIATE);
-            devMessageBus.listen(inpin->id, DEVICE_PIN_EVT_PULSE_LO, this, &IrWrap::pulseMark,
-                                 MESSAGE_BUS_LISTENER_IMMEDIATE);
+            inpin = lookupPin(pinIn);
 
-            devMessageBus.listen(IR_COMPONENT_ID, IR_PACKET_END_EVENT, this, &IrWrap::packetEnd);
+            devMessageBus.listen(id, IR_PACKET_END_EVENT, this, &PulseBase::packetEnd);
         }
     }
 
-    void setPWM(int enabled) {
+    virtual void setupGapEvents() {
+        devMessageBus.listen(inpin->id, DEVICE_PIN_EVT_PULSE_HI, this, &PulseBase::pulseGap,
+                             MESSAGE_BUS_LISTENER_IMMEDIATE);
+        devMessageBus.listen(inpin->id, DEVICE_PIN_EVT_PULSE_LO, this, &PulseBase::pulseMark,
+                             MESSAGE_BUS_LISTENER_IMMEDIATE);
+        listen();
+    }
+
+    virtual void listen() {
+        inpin->getDigitalValue();
+        inpin->eventOn(DEVICE_PIN_EVENT_ON_PULSE);
+    }
+
+    virtual void setupPWM() {
+        pin->setAnalogPeriodUs(1000 / 38); // 38kHz
+        pin->setAnalogValue(333);
+        setPWM(1);
+    }
+
+    virtual void setPWM(int enabled) {
         // pin->setPwm(enabled);
         setTCC0(enabled);
         pwmstate = enabled;
+    }
+
+    virtual void finishPWM() {
+        pin->setAnalogValue(0);
+        setPWM(1);
     }
 
     void send(BufferData *d) {
@@ -238,13 +257,11 @@ class IrWrap {
 
         // encodedMsg.print();
 
-        pin->setAnalogPeriodUs(1000 / 38); // 38kHz
-        pin->setAnalogValue(333);
-        setPWM(1);
         sending = true;
         sendStartTime = 0;
+        setupPWM();
 
-        setPeriodicCallback(IR_PULSE_LEN, this, (void (*)(void *)) & IrWrap::process);
+        setPeriodicCallback(IR_PULSE_LEN, this, (void (*)(void *)) & PulseBase::process);
         while (sending) {
             fiber_sleep(10);
         }
@@ -256,9 +273,9 @@ class IrWrap {
             return;
 
         if (code == 0) {
-            DeviceEvent evt(IR_COMPONENT_ID, IR_PACKET_END_EVENT);
+            DeviceEvent evt(id, IR_PACKET_END_EVENT);
         } else {
-            DeviceEvent evt(IR_COMPONENT_ID, IR_PACKET_ERROR_EVENT);
+            DeviceEvent evt(id, IR_PACKET_ERROR_EVENT);
             IR_DMESG("IR ERROR %d [%s]", code, dbg.get());
         }
         dbg.get();
@@ -305,6 +322,8 @@ class IrWrap {
     void pulseGap(DeviceEvent ev) {
         if (sending)
             return;
+        
+        DMESG("GAP-- %d", (int)ev.timestamp);
 
         if (ev.timestamp > 10000) {
             dbg.put(" BRK ");
@@ -375,7 +394,7 @@ class IrWrap {
         pulsePtr = 0;
 
         if (bits.size() < 70) {
-            DeviceEvent evt(IR_COMPONENT_ID, IR_PACKET_ERROR_EVENT);
+            DeviceEvent evt(id, IR_PACKET_ERROR_EVENT);
             return; // too short
         }
 
@@ -436,12 +455,14 @@ class IrWrap {
         decrRC(outBuffer);
         outBuffer = pins::createBuffer(ptr);
         memcpy(outBuffer->payload, buf, ptr);
-        DeviceEvent evt(IR_COMPONENT_ID, crc == pktCrc ? IR_PACKET_EVENT : IR_PACKET_ERROR_EVENT);
+        DeviceEvent evt(id, crc == pktCrc ? IR_PACKET_EVENT : IR_PACKET_ERROR_EVENT);
     }
 
     void pulseMark(DeviceEvent ev) {
         if (sending)
             return;
+
+        DMESG("MARK %d", (int)ev.timestamp);
 
         if (ev.timestamp > 10000) {
             dbg.put(" -BRK ");
@@ -497,8 +518,7 @@ class IrWrap {
 
         if (encodedMsgPtr >= encodedMsg.size()) {
             encodedMsg.setLength(0);
-            pin->setAnalogValue(0);
-            setPWM(1);
+            finishPWM();
             clearPeriodicCallback();
             sending = false;
             return;
@@ -509,7 +529,68 @@ class IrWrap {
             setPWM(curr);
     }
 };
+
+class IrWrap : public PulseBase {
+  public:
+    IrWrap() : PulseBase(IR_COMPONENT_ID, PIN_IR_OUT, PIN_IR_IN) { setupGapEvents(); }
+};
 SINGLETON(IrWrap);
+
+class CableWrap : public PulseBase {
+  public:
+    virtual void setPWM(int enabled) {
+        pin->setDigitalValue(enabled);
+        pwmstate = enabled;
+    }
+
+    virtual void setupPWM() { setPWM(1); }
+
+    virtual void finishPWM() { listen(); }
+
+    virtual void listen() {
+        //inpin->setPull(PinMode::PullDown);
+        inpin->getDigitalValue();
+        inpin->eventOn(DEVICE_PIN_EVENT_ON_PULSE);
+    }
+
+    virtual void setupGapEvents() {
+        devMessageBus.listen(inpin->id, DEVICE_PIN_EVT_PULSE_HI, (PulseBase *)this,
+                             &PulseBase::pulseMark, MESSAGE_BUS_LISTENER_IMMEDIATE);
+        devMessageBus.listen(inpin->id, DEVICE_PIN_EVT_PULSE_LO, (PulseBase *)this,
+                             &PulseBase::pulseGap, MESSAGE_BUS_LISTENER_IMMEDIATE);
+        listen();
+    }
+
+    CableWrap() : PulseBase(CABLE_COMPONENT_ID, PIN_A1, PIN_A1) { setupGapEvents(); }
+};
+SINGLETON(CableWrap);
+
+/**
+ * Send data over cable.
+ */
+//% parts="cable"
+void cableSendPacket(Buffer buf) {
+    auto w = getCableWrap();
+    w->send(buf);
+}
+
+/**
+ * Get most recent packet received over cable.
+ */
+//% parts="cable"
+Buffer cablePacket() {
+    auto w = getCableWrap();
+    return w->getBuffer();
+}
+
+/**
+ * Run action after a packet is recieved over cable.
+ */
+//% parts="cable"
+void onCablePacket(Action body) {
+    getCableWrap(); // attach events
+    registerWithDal(CABLE_COMPONENT_ID, IR_PACKET_EVENT, body);
+}
 
 /**
  * Send data over IR.
