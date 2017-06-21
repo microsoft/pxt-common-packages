@@ -14,9 +14,9 @@ namespace loops {
         time = system_timer_current_time();
 
         if (using_gesture && time1 - prevTime1 >= sampleRate1 || time1 < prevTime1) {
-          int x = input.acceleration(Dimension::X);
-          int y = input.acceleration(Dimension::Y);
-          int z = input.acceleration(Dimension::Z);
+          // int x = input.acceleration(Dimension::X);
+          // int y = input.acceleration(Dimension::Y);
+          // int z = input.acceleration(Dimension::Z);
 
           // call the predict function
           // stream the raw data
@@ -26,7 +26,7 @@ namespace loops {
         }
         else if (time2 - prevTime2 >= sampleRate2 || time2 < prevTime2) {
           runAction0((Action)a);
-          
+
           prevTime2 = time2;
         }
 
