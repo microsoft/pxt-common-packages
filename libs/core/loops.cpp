@@ -1,10 +1,36 @@
 #include "pxt.h"
 
+bool using_gesture = true;
+int prevTime1 = 0
+int prevTime2 = 0
+int time1 = 0
+int time2 = 0
+int sampleRate1 = 30; //33fps
+int sampleRate2 = 20; //50fps
+
 namespace loops {    
     void forever_stub(void *a) {
       while (true) {
-        runAction0((Action)a);
-        fiber_sleep(20);
+        time = system_timer_current_time();
+
+        if (using_gesture && time1 - prevTime1 >= sampleRate1 || time1 < prevTime1) {
+          int x = input.acceleration(Dimension::X);
+          int y = input.acceleration(Dimension::Y);
+          int z = input.acceleration(Dimension::Z);
+
+          // call the predict function
+          // stream the raw data
+          // serial.writeString(numops.toString(x) + " " + numops.toString(y) + " " + numops.toString(z) + "\n");
+
+          prevTime1 = time1;
+        }
+        else if (time2 - prevTime2 >= sampleRate2 || time2 < prevTime2) {
+          runAction0((Action)a);
+          
+          prevTime2 = time2;
+        }
+
+        fiber_sleep(5);
       }
     }
     /**
