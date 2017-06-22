@@ -126,6 +126,8 @@ class RefRecord;
 extern Event lastEvent;
 extern codal::Timer devTimer;
 extern MessageBus devMessageBus;
+extern codal::CodalDevice device;
+
 void registerWithDal(int id, int event, Action a);
 void runInBackground(Action a);
 void waitForEvent(int id, int event);

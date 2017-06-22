@@ -1,5 +1,4 @@
 #include "pxt.h"
-//#include "CodalSystemTimer.h"
 
 /**
  * How to create the event.
@@ -34,7 +33,7 @@ namespace control {
     //% weight=21 blockGap=12 blockId="control_raise_event" block="raise event|from %src|with value %value" blockExternalInputs=1
     //% mode.defl=CREATE_AND_FIRE
     void raiseEvent(int src, int value, EventCreationMode mode) {
-        Event evt(src, value, (DeviceEventLaunchMode)mode);
+        Event evt(src, value, (EventLaunchMode)mode);
     }
 
     /**
@@ -108,6 +107,6 @@ namespace control {
     */
     //%
     StringData* deviceDalVersion() {
-        return ManagedString(device.device_dal_version()).leakData();
+        return ManagedString(device.getVersion()).leakData();
     }
 }

@@ -1,7 +1,5 @@
 #include "pxt.h"
 
-//#include "CodalSystemTimer.h"
-
 enum class PulseValue {
     //% block=high
     High = DEVICE_PIN_EVT_PULSE_HI,

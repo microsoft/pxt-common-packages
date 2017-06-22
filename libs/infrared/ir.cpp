@@ -1,6 +1,5 @@
 #include "pxt.h"
 #include "bitvector.h"
-#include "CodalSystemTimer.h"
 
 #define IR_MAX_MSG_SIZE 34
 #define IR_COMPONENT_ID 0x2042

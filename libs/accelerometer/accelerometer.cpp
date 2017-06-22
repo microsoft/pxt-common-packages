@@ -106,7 +106,7 @@ namespace pxt {
 
 class WAccel {
   public:
-    DeviceI2C i2c; // note that this is different pins than io->i2c
+    codal::I2C i2c; // note that this is different pins than io->i2c
     Pin int1;
     LIS3DH acc;
     WAccel()

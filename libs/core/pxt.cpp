@@ -518,6 +518,7 @@ map<pair<int, int>, Action> handlersMap;
 Event lastEvent;
 codal::Timer devTimer;
 MessageBus devMessageBus;
+codal::CodalDevice device;
 
 // We have the invariant that if [dispatchEvent] is registered against the DAL
 // for a given event, then [handlersMap] contains a valid entry for that

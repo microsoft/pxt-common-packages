@@ -1,8 +1,7 @@
 #include "pxt.h"
-#include "CodalSystemTimer.h"
 #include "AnalogSensor.h"
 #include "NonLinearAnalogSensor.h"
-#include "CodalButton.h"
+#include "Button.h"
 
 enum class TemperatureCondition {
     //% block="hot"
