@@ -27,13 +27,16 @@
 #include "Event.h"
 #include "NotifyEvents.h"
 #include "Button.h"
-#include "Pin.h"
 #include "CodalFiber.h"
 #include "MessageBus.h"
 #include "CapTouchButton.h"
 #include "Image.h"
+#include "MbedTimer.h"
+#include "MbedI2C.h"
+#include "MbedPin.h"
 
 using namespace codal;
+using namespace codal::mbed;
 
 #include "pins.h"
 #include "devpins.h"
@@ -124,7 +127,7 @@ class RefRecord;
 
 // Utility functions
 extern Event lastEvent;
-extern codal::Timer devTimer;
+extern codal::mbed::Timer devTimer;
 extern MessageBus devMessageBus;
 extern codal::CodalDevice device;
 

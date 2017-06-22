@@ -18,10 +18,10 @@ enum class PinPullMode {
 
 namespace pxt {
 //%
-Pin *getPin(int id) {
+DevicePin *getPin(int id) {
     if (!(0 <= id && id <= LastPinID))
         target_panic(42);
-    Pin *p = &io->pins[id];
+    DevicePin *p = &io->pins[id];
     // if (p->name == NC)
     //    return NULL;
     return p;
@@ -30,7 +30,7 @@ Pin *getPin(int id) {
 #pragma GCC diagnostic ignored "-Warray-bounds"
 
 //%
-Pin *lookupPin(int pinName) {
+DevicePin *lookupPin(int pinName) {
     for (int i = 0; i <= LastPinID; ++i) {
         if (io->pins[i].name == pinName)
             return &io->pins[i];

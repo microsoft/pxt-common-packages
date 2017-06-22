@@ -293,9 +293,11 @@
 #define PIN_MIC_CLOCK NC
 #endif
 
-typedef Pin *DigitalPin;
-typedef Pin *AnalogPin;
-typedef Pin *PwmPin;
+typedef codal::mbed::Pin DevicePin;
+
+typedef DevicePin *DigitalPin;
+typedef DevicePin *AnalogPin;
+typedef DevicePin *PwmPin;
 typedef Button *Button_;
 
 #define INIT_PIN(name, PIN) name((DEVICE_ID_IO_P0 + 100) + (int)PIN, (PinName)PIN, PIN_CAPABILITY_DIGITAL)
@@ -323,8 +325,8 @@ enum class ButtonEvent {
 };
 
 namespace pxt {
-Pin *getPin(int id);
-Pin *lookupPin(int pinName);
+DevicePin *getPin(int id);
+DevicePin *lookupPin(int pinName);
 Button *getButton(int id);
 }
 

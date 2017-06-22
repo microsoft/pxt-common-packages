@@ -5,10 +5,10 @@
 
 class DevPins {
   public:
-    Pin pins[0];
-#define DigitalPin Pin
-#define AnalogPin Pin
-#define PwmPin Pin
+    DevicePin pins[0];
+#define DigitalPin DevicePin
+#define AnalogPin DevicePin
+#define PwmPin DevicePin
     //% indexedInstanceNS=pins indexedInstanceShim=pxt::getPin
     //%
     AnalogPin A0;
@@ -70,7 +70,7 @@ class DevPins {
 #undef AnalogPin
 #undef PwmPin
 
-    I2C i2c;
+    codal::mbed::I2C i2c;
 
     DevPins();
 };

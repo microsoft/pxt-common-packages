@@ -516,7 +516,7 @@ static void initCodal() {
 map<pair<int, int>, Action> handlersMap;
 
 Event lastEvent;
-codal::Timer devTimer;
+codal::mbed::Timer devTimer;
 MessageBus devMessageBus;
 codal::CodalDevice device;
 

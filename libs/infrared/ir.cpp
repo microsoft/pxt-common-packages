@@ -153,8 +153,8 @@ class DbgBuffer {
 
 
 class IrWrap {
-    Pin *pin;
-    Pin *inpin;
+    DevicePin *pin;
+    DevicePin *inpin;
     BitVector encodedMsg;
     int8_t pwmstate;
     bool sending;
