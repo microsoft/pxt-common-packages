@@ -468,7 +468,9 @@ TNumber atan2(TNumber y, TNumber x) {
 
 //%
 TNumber random() {
-    return fromDouble(device.random(INT_MAX) / (double)INT_MAX);
+    double r = device.random(INT_MAX) / (double)(INT_MAX - 1);
+    double r2 = device.random(INT_MAX) / (double)(INT_MAX - 1);
+    return fromDouble(r * r2);
 }
 
 //%
@@ -483,7 +485,7 @@ TNumber randomRange(TNumber min, TNumber max) {
         }
         if (maxi == mini)
             return fromInt(mini);
-        else
+        else 
             return fromInt(mini + device.random(maxi - mini + 1));
     }
     else {
@@ -496,8 +498,11 @@ TNumber randomRange(TNumber min, TNumber max) {
         }
         if (maxd == mind)
             return fromDouble(mind);
-        else
-            return fromDouble(mind + device.random(maxd - mind));
+        else {
+            double r = device.random(INT_MAX) / (double)(INT_MAX - 1);
+            double r2 = device.random(INT_MAX) / (double)(INT_MAX - 1);
+            return fromDouble(mind + r * r2 * (maxd - mind));
+        }
     }
 }
 
