@@ -474,17 +474,30 @@ TNumber random() {
 //%
 TNumber randomRange(TNumber min, TNumber max) {
     if (isNumber(min) && isNumber(max)) {
-        int mini = toNumber(min);
-        int maxi = toNumber(max);
+        int mini = numValue(min);
+        int maxi = numValue(max);
         if (mini > maxi) {
             int temp = mini;
             mini = maxi;
-            maxi = mini;
+            maxi = temp;
         }
-        if (max == min)
-            return min;
+        if (maxi == mini)
+            return fromInt(mini);
         else
-            return min + device.random(max - min);
+            return fromInt(mini + device.random(maxi - mini));
+    }
+    else {
+        double mind = toDouble(min);
+        double maxd = toDouble(max);
+        if (mind > maxd) {
+            double temp = mind;
+            mind = maxd;
+            maxd = temp;
+        }
+        if (maxd == mind)
+            return fromDouble(mind);
+        else
+            return fromDouble(mind + device.random(maxd - mind));
     }
 }
 
