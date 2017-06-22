@@ -13,25 +13,27 @@
 
 #include "pxtconfig.h"
 
-#include "DeviceConfig.h"
-#include "DeviceHeapAllocator.h"
+#include "CodalConfig.h"
+#include "CodalHeapAllocator.h"
 #include "CodalDevice.h"
 #include "ErrorNo.h"
-#include "DeviceTimer.h"
+#include "Timer.h"
 #include "Matrix4.h"
 #include "CodalCompat.h"
-#include "DeviceComponent.h"
+#include "CodalComponent.h"
 #include "ManagedType.h"
 #include "ManagedString.h"
 #include "ManagedBuffer.h"
-#include "DeviceEvent.h"
+#include "Event.h"
 #include "NotifyEvents.h"
-#include "DeviceButton.h"
-#include "DevicePin.h"
-#include "DeviceFiber.h"
-#include "DeviceMessageBus.h"
+#include "Button.h"
+#include "Pin.h"
+#include "CodalFiber.h"
+#include "MessageBus.h"
 #include "CapTouchButton.h"
-#include "DeviceImage.h"
+#include "Image.h"
+
+using namespace codal;
 
 #include "pins.h"
 #include "devpins.h"
@@ -41,6 +43,7 @@
 //#define intcheck(...) do {} while (0)
 
 #define PAGE_SIZE 256
+
 
 #include <string.h>
 #include <vector>
@@ -120,9 +123,9 @@ extern uint16_t *bytecode;
 class RefRecord;
 
 // Utility functions
-extern DeviceEvent lastEvent;
-extern DeviceTimer devTimer;
-extern DeviceMessageBus devMessageBus;
+extern Event lastEvent;
+extern codal::Timer devTimer;
+extern MessageBus devMessageBus;
 void registerWithDal(int id, int event, Action a);
 void runInBackground(Action a);
 void waitForEvent(int id, int event);
@@ -215,7 +218,7 @@ inline void check(int cond, ERROR code, int subcode = 0) {
 }
 
 inline void oops() {
-    device.panic(47);
+    target_panic(47);
 }
 
 class RefObject;

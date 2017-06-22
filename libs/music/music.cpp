@@ -3,7 +3,7 @@
 #include "dmac.h"
 #include "SAMD21DAC.h"
 #include "Synthesizer.h"
-#include "DeviceConfig.h"
+#include "CodalConfig.h"
 
 #define NOTE_PAUSE 20
 class WSynthesizer {

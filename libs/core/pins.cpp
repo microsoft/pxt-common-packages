@@ -1,6 +1,6 @@
 #include "pxt.h"
 
-#include "DeviceSystemTimer.h"
+//#include "CodalSystemTimer.h"
 
 enum class PulseValue {
     //% block=high
@@ -20,10 +20,10 @@ enum class PinPullMode {
 
 namespace pxt {
 //%
-DevicePin *getPin(int id) {
+Pin *getPin(int id) {
     if (!(0 <= id && id <= LastPinID))
-        device.panic(42);
-    DevicePin *p = &io->pins[id];
+        target_panic(42);
+    Pin *p = &io->pins[id];
     // if (p->name == NC)
     //    return NULL;
     return p;
@@ -32,7 +32,7 @@ DevicePin *getPin(int id) {
 #pragma GCC diagnostic ignored "-Warray-bounds"
 
 //%
-DevicePin *lookupPin(int pinName) {
+Pin *lookupPin(int pinName) {
     for (int i = 0; i <= LastPinID; ++i) {
         if (io->pins[i].name == pinName)
             return &io->pins[i];

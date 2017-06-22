@@ -1,7 +1,7 @@
 #include "pxt.h"
-#include "DeviceSystemTimer.h"
+#include "CodalSystemTimer.h"
 #include "AnalogSensor.h"
-#include "DeviceButton.h"
+#include "CodalButton.h"
 
 
 enum class LightCondition {

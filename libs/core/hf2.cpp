@@ -8,6 +8,8 @@
 
 #if CONFIG_ENABLED(DEVICE_USB)
 
+using namespace codal;
+
 static const char hidDescriptor[] = {
     0x06, 0x97, 0xFF, // usage page vendor 0x97 (usage 0xff97 0x0001)
     0x09, 0x01,       // usage 1
@@ -230,7 +232,7 @@ int HF2::endpointRequest()
     case HF2_CMD_RESET_INTO_APP:
         *DBL_TAP_PTR = DBL_TAP_MAGIC_QUICK_BOOT;
     case HF2_CMD_RESET_INTO_BOOTLOADER:
-        device.reset();
+        target_reset();
         break;
 
     case HF2_CMD_START_FLASH:

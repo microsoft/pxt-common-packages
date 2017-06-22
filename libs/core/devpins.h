@@ -5,10 +5,10 @@
 
 class DevPins {
   public:
-    DevicePin pins[0];
-#define DigitalPin DevicePin
-#define AnalogPin DevicePin
-#define PwmPin DevicePin
+    Pin pins[0];
+#define DigitalPin Pin
+#define AnalogPin Pin
+#define PwmPin Pin
     //% indexedInstanceNS=pins indexedInstanceShim=pxt::getPin
     //%
     AnalogPin A0;

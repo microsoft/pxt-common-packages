@@ -695,7 +695,7 @@ RefAction *stclo(RefAction *a, int idx, TValue v) {
 
 //%
 void panic(int code) {
-    device.panic(code);
+    target_panic(code);
 }
 
 //%

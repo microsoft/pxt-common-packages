@@ -1,5 +1,5 @@
 #include "pxt.h"
-#include "DeviceSystemTimer.h"
+//#include "CodalSystemTimer.h"
 
 /**
  * How to create the event.
@@ -34,7 +34,7 @@ namespace control {
     //% weight=21 blockGap=12 blockId="control_raise_event" block="raise event|from %src|with value %value" blockExternalInputs=1
     //% mode.defl=CREATE_AND_FIRE
     void raiseEvent(int src, int value, EventCreationMode mode) {
-        DeviceEvent evt(src, value, (DeviceEventLaunchMode)mode);
+        Event evt(src, value, (DeviceEventLaunchMode)mode);
     }
 
     /**
@@ -55,7 +55,7 @@ namespace control {
     //% weight=30 async help=control/reset blockGap=8
     //% blockId="control_reset" block="reset"
     void reset() {
-      device.reset();
+        target_reset();
     }
 
     /**

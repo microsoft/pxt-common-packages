@@ -515,14 +515,14 @@ static void initCodal() {
 
 map<pair<int, int>, Action> handlersMap;
 
-DeviceEvent lastEvent;
-DeviceTimer devTimer;
-DeviceMessageBus devMessageBus;
+Event lastEvent;
+codal::Timer devTimer;
+MessageBus devMessageBus;
 
 // We have the invariant that if [dispatchEvent] is registered against the DAL
 // for a given event, then [handlersMap] contains a valid entry for that
 // event.
-void dispatchEvent(DeviceEvent e) {
+void dispatchEvent(Event e) {
     lastEvent = e;
 
     Action curr = handlersMap[{e.source, e.value}];
@@ -564,7 +564,7 @@ void waitForEvent(int id, int event)
 
 void error(ERROR code, int subcode) {
     DMESG("Error: %d [%d]", code, subcode);
-    device.panic(42);
+    target_panic(42);
 }
 
 uint16_t *bytecode;

@@ -107,7 +107,7 @@ namespace pxt {
 class WAccel {
   public:
     DeviceI2C i2c; // note that this is different pins than io->i2c
-    DevicePin int1;
+    Pin int1;
     LIS3DH acc;
     WAccel()
         : i2c((PinName)PIN_ACCELEROMETER_SDA, (PinName)PIN_ACCELEROMETER_SCL),

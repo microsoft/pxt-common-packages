@@ -126,7 +126,7 @@ declare const enum DAL {
     DEVICE_NOTIFY_USER_EVENT_BASE = 1024,
     // built/yt/yotta_modules/codal/inc/core/SystemClock.h
     SYSTEM_CLOCK_INIT = 0x01,
-    // built/yt/yotta_modules/codal/inc/device/SAMD21/DeviceTimer.h
+    // built/yt/yotta_modules/codal/inc/device/SAMD21/Timer.h
     TIMER_ONE_DEFAULT_PRECISION_US = 1,
     TIMER_ONE_PRESCALER_OPTIONS = 5,
     // built/yt/yotta_modules/codal/inc/device/SAMD21/SAMD21DAC.h
@@ -177,10 +177,10 @@ declare const enum DAL {
     ANALOG_SENSOR_LOW_THRESHOLD_PASSED = 0x04,
     ANALOG_SENSOR_LOW_THRESHOLD_ENABLED = 0x08,
     ANALOG_SENSOR_HIGH_THRESHOLD_ENABLED = 0x10,
-    // built/yt/yotta_modules/codal/inc/drivers/DeviceButton.h
+    // built/yt/yotta_modules/codal/inc/drivers/Button.h
     // built/yt/yotta_modules/codal/inc/drivers/DeviceI2C.h
-    // built/yt/yotta_modules/codal/inc/drivers/DeviceMessageBus.h
-    // built/yt/yotta_modules/codal/inc/drivers/DevicePin.h
+    // built/yt/yotta_modules/codal/inc/drivers/MessageBus.h
+    // built/yt/yotta_modules/codal/inc/drivers/Pin.h
     IO_STATUS_DIGITAL_IN = 0x01,
     IO_STATUS_DIGITAL_OUT = 0x02,
     IO_STATUS_ANALOG_IN = 0x04,
@@ -318,7 +318,7 @@ declare const enum DAL {
     NORTH_EAST_DOWN = 2,
     // built/yt/yotta_modules/codal/inc/types/DataStream.h
     DATASTREAM_MAXIMUM_BUFFERS = 1,
-    // built/yt/yotta_modules/codal/inc/types/DeviceEvent.h
+    // built/yt/yotta_modules/codal/inc/types/Event.h
     DEVICE_ID_ANY = 0,
     DEVICE_EVT_ANY = 0,
     CREATE_ONLY = 0,
