@@ -274,6 +274,7 @@ class PulseBase {
 
         if (code == 0) {
             DeviceEvent evt(id, IR_PACKET_END_EVENT);
+            IR_DMESG("IR OK %d [%s]", code, dbg.get());
         } else {
             DeviceEvent evt(id, IR_PACKET_ERROR_EVENT);
             IR_DMESG("IR ERROR %d [%s]", code, dbg.get());
@@ -323,7 +324,6 @@ class PulseBase {
         if (sending)
             return;
         
-        DMESG("GAP-- %d", (int)ev.timestamp);
 
         if (ev.timestamp > 10000) {
             dbg.put(" BRK ");
@@ -462,7 +462,6 @@ class PulseBase {
         if (sending)
             return;
 
-        DMESG("MARK %d", (int)ev.timestamp);
 
         if (ev.timestamp > 10000) {
             dbg.put(" -BRK ");
@@ -539,7 +538,7 @@ SINGLETON(IrWrap);
 class CableWrap : public PulseBase {
   public:
     virtual void setPWM(int enabled) {
-        pin->setDigitalValue(enabled);
+        pin->setDigitalValue(!enabled);
         pwmstate = enabled;
     }
 
@@ -548,20 +547,12 @@ class CableWrap : public PulseBase {
     virtual void finishPWM() { listen(); }
 
     virtual void listen() {
-        //inpin->setPull(PinMode::PullDown);
+        inpin->setPull(PinMode::PullDown);
         inpin->getDigitalValue();
         inpin->eventOn(DEVICE_PIN_EVENT_ON_PULSE);
     }
 
-    virtual void setupGapEvents() {
-        devMessageBus.listen(inpin->id, DEVICE_PIN_EVT_PULSE_HI, (PulseBase *)this,
-                             &PulseBase::pulseMark, MESSAGE_BUS_LISTENER_IMMEDIATE);
-        devMessageBus.listen(inpin->id, DEVICE_PIN_EVT_PULSE_LO, (PulseBase *)this,
-                             &PulseBase::pulseGap, MESSAGE_BUS_LISTENER_IMMEDIATE);
-        listen();
-    }
-
-    CableWrap() : PulseBase(CABLE_COMPONENT_ID, PIN_A1, PIN_A1) { setupGapEvents(); }
+    CableWrap() : PulseBase(CABLE_COMPONENT_ID, PIN_A7, PIN_A7) { setupGapEvents(); }
 };
 SINGLETON(CableWrap);
 
