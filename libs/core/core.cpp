@@ -484,7 +484,7 @@ TNumber randomRange(TNumber min, TNumber max) {
         if (maxi == mini)
             return fromInt(mini);
         else
-            return fromInt(mini + device.random(maxi - mini));
+            return fromInt(mini + device.random(maxi - mini + 1));
     }
     else {
         double mind = toDouble(min);
