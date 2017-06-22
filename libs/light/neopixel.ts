@@ -997,7 +997,7 @@ namespace light {
                 strip.clear();
             }
             const now = control.millis() - this.start;
-            const pixel = Math.random(l);
+            const pixel = Math.randomRange(0, l - 1);
             strip.setPixelColor(pixel, this.rgb);
             strip.show();
             loops.pause(this.delay);
