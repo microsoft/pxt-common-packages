@@ -36,7 +36,6 @@
 #include "MbedPin.h"
 
 using namespace codal;
-using namespace codal::mbed;
 
 #include "pins.h"
 #include "devpins.h"
