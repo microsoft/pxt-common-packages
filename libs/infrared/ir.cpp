@@ -584,6 +584,16 @@ void onCablePacket(Action body) {
 }
 
 /**
+ * Run action after there's an error reciving packet over cable.
+ */
+//%
+void onCableError(Action body) {
+    getCableWrap(); // attach events
+    registerWithDal(CABLE_COMPONENT_ID, IR_PACKET_ERROR_EVENT, body);
+}
+
+
+/**
  * Send data over IR.
  */
 //% parts="ir"
