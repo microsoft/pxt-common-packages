@@ -907,6 +907,8 @@ static const VTable *primVtables[] = {0,          // 0
 VTable *getVTable(RefObject *r) {
     if (r->vtable >= 34)
         return (VTable *)(r->vtable << vtableShift);
+    if (r->vtable == 0)
+        target_panic(100);
     return (VTable *)primVtables[r->vtable];
 }
 }

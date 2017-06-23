@@ -16,21 +16,26 @@ __attribute__((section(".binmeta"))) __attribute__((used)) const uint32_t pxt_bi
 };
 
 TValue incr(TValue e) {
-    if (isRefCounted(e))
+    if (isRefCounted(e)) {
+        getVTable((RefObject *)e);
         ((RefObject *)e)->ref();
+    }
     return e;
 }
 
 void decr(TValue e) {
-#if 0
-        if (((RefCounted *)e)->refCount != 0xffff) {
+#if 1
+        if (isRefCounted(e) && ((RefCounted *)e)->refCount != 0xffff) {
             DMESG("DECR: %p refs=%d vt=%p", e, ((RefCounted *)e)->refCount,
-                    ((RefCounted *)e)->vtablePtr);
+                    ((RefCounted *)e)->tag);
         }
 #endif
 
-    if (isRefCounted(e))
+
+    if (isRefCounted(e)) {
+        getVTable((RefObject *)e);
         ((RefObject *)e)->unref();
+    }
 }
 
 Action mkAction(int reflen, int totallen, int startptr) {
