@@ -24,7 +24,7 @@ TValue incr(TValue e) {
 }
 
 void decr(TValue e) {
-#if 1
+#if 0
         if (isRefCounted(e) && ((RefCounted *)e)->refCount != 0xffff) {
             DMESG("DECR: %p refs=%d vt=%p", e, ((RefCounted *)e)->refCount,
                     ((RefCounted *)e)->tag);
