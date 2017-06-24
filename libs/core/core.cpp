@@ -467,15 +467,43 @@ TNumber atan2(TNumber y, TNumber x) {
 }
 
 //%
-int random(int max) {
-    if (max == INT_MIN)
-        return -device.random(INT_MAX);
-    else if (max < 0)
-        return -device.random(-max);
-    else if (max == 0)
-        return 0;
-    else
-        return device.random(max);
+TNumber random() {
+    double r = device.random(INT_MAX) / (double)(INT_MAX - 1);
+    double r2 = device.random(INT_MAX) / (double)(INT_MAX - 1);
+    return fromDouble(r * r2);
+}
+
+//%
+TNumber randomRange(TNumber min, TNumber max) {
+    if (isNumber(min) && isNumber(max)) {
+        int mini = numValue(min);
+        int maxi = numValue(max);
+        if (mini > maxi) {
+            int temp = mini;
+            mini = maxi;
+            maxi = temp;
+        }
+        if (maxi == mini)
+            return fromInt(mini);
+        else 
+            return fromInt(mini + device.random(maxi - mini + 1));
+    }
+    else {
+        double mind = toDouble(min);
+        double maxd = toDouble(max);
+        if (mind > maxd) {
+            double temp = mind;
+            mind = maxd;
+            maxd = temp;
+        }
+        if (maxd == mind)
+            return fromDouble(mind);
+        else {
+            double r = device.random(INT_MAX) / (double)(INT_MAX - 1);
+            double r2 = device.random(INT_MAX) / (double)(INT_MAX - 1);
+            return fromDouble(mind + r * r2 * (maxd - mind));
+        }
+    }
 }
 
 #define SINGLE(op) return fromDouble(::op(toDouble(x)));
