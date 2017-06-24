@@ -1,5 +1,5 @@
 #include "pxt.h"
-#include "CodalButton.h"
+#include "Button.h"
 #include "pins.h"
 
 enum class SwitchDirection {
