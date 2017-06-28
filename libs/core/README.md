@@ -1,4 +1,4 @@
 # core
 
-The core library.
+The core library for Codal-based targets.
 

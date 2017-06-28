@@ -1,0 +1,28 @@
+{
+    "name": "base",
+    "description": "The base library",
+    "files": [
+        "README.md",
+        "dal.d.ts",
+        "pxt-core.d.ts",
+        "pxt.cpp",
+        "pxt.h",
+        "core.cpp",
+        "pxt-helpers.ts",
+        "buffer.cpp",
+        "shims.d.ts",
+        "enums.d.ts",
+        "control.cpp",
+        "control.ts",
+        "loops.cpp",
+        "serial.cpp",
+        "serial.ts",
+        "math.ts",
+        "ns.ts"
+    ],
+    "testFiles": [
+        "test.ts"
+    ],
+    "public": true,
+    "dependencies": {}
+}
