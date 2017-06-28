@@ -4,23 +4,23 @@
 namespace String_ {
 
 //%
-StringData *charAt(StringData *s, int pos) {
+String charAt(String s, int pos) {
     return ManagedString((char)ManagedString(s).charAt(pos)).leakData();
 }
 
 //%
-int charCodeAt(StringData *s, int index) {
+int charCodeAt(String s, int index) {
     return ManagedString(s).charAt(index);
 }
 
 //%
-StringData *concat(StringData *s, StringData *other) {
+String concat(String s, String other) {
     ManagedString a(s), b(other);
     return (a + b).leakData();
 }
 
 //%
-int compare(StringData *s, StringData *that) {
+int compare(String s, String that) {
     int compareResult = strcmp(s->data, that->data);
     if (compareResult < 0)
         return -1;
@@ -30,17 +30,17 @@ int compare(StringData *s, StringData *that) {
 }
 
 //%
-int length(StringData *s) {
+int length(String s) {
     return s->len;
 }
 
 //%
-StringData *fromCharCode(int code) {
+String fromCharCode(int code) {
     return ManagedString((char)code).leakData();
 }
 
 //%
-TNumber toNumber(StringData *s) {
+TNumber toNumber(String s) {
     // JSCHECK
     char *endptr;
     double v = strtod(s->data, &endptr);
@@ -54,12 +54,12 @@ TNumber toNumber(StringData *s) {
 }
 
 //%
-StringData *mkEmpty() {
+String mkEmpty() {
     return ManagedString::EmptyString.leakData();
 }
 
 //%
-StringData *substr(StringData *s, int start, int length) {
+String substr(String s, int start, int length) {
     if (length <= 0)
         return mkEmpty();
     if (start < 0)
@@ -114,7 +114,7 @@ double toDouble(TNumber v) {
         BoxedNumber *p = (BoxedNumber *)v;
         return p->num;
     } else if (t == ValType::String) {
-        return toDouble(String_::toNumber((StringData *)v));
+        return toDouble(String_::toNumber((String )v));
     } else {
         return NAN;
     }
@@ -187,7 +187,7 @@ bool eqq_bool(TValue a, TValue b) {
         return false;
 
     if (ta == ValType::String)
-        return String_::compare((StringData *)a, (StringData *)b) == 0;
+        return String_::compare((String )a, (String )b) == 0;
 
     int aa = (int)a;
     int bb = (int)b;
@@ -253,7 +253,7 @@ int toBool(TValue v) {
 
     ValType t = valType(v);
     if (t == ValType::String) {
-        StringData *s = (StringData *)v;
+        String s = (String )v;
         if (s->len == 0)
             return 0;
     } else if (t == ValType::Number) {
@@ -411,20 +411,20 @@ asm(".global _printf_float");
 extern "C" char *gcvt(double d, int ndigit, char *buf);
 
 //%
-StringData *toString(TValue v) {
+String toString(TValue v) {
 
     if (v == TAG_UNDEFINED)
-        return (StringData *)(void *)sUndefined;
+        return (String )(void *)sUndefined;
     else if (v == TAG_FALSE)
-        return (StringData *)(void *)sFalse;
+        return (String )(void *)sFalse;
     else if (v == TAG_TRUE)
-        return (StringData *)(void *)sTrue;
+        return (String )(void *)sTrue;
     else if (v == TAG_NULL)
-        return (StringData *)(void *)sNull;
+        return (String )(void *)sNull;
     ValType t = valType(v);
 
     if (t == ValType::String) {
-        return (StringData *)(void *)incr(v);
+        return (String )(void *)incr(v);
     } else if (t == ValType::Number) {
         char buf[64];
 
@@ -435,12 +435,12 @@ StringData *toString(TValue v) {
             double x = toDouble(v);
 
             if (isnan(x))
-                return (StringData *)(void *)sNaN;
+                return (String )(void *)sNaN;
             if (isinf(x)) {
                 if (x < 0)
-                    return (StringData *)(void *)sMInf;
+                    return (String )(void *)sMInf;
                 else
-                    return (StringData *)(void *)sInf;
+                    return (String )(void *)sInf;
             }
             gcvt(x, 16, buf);
         }
@@ -448,9 +448,9 @@ StringData *toString(TValue v) {
         ManagedString s(buf);
         return s.leakData();
     } else if (t == ValType::Function) {
-        return (StringData *)(void *)sFunction;
+        return (String )(void *)sFunction;
     } else {
-        return (StringData *)(void *)sObject;
+        return (String )(void *)sObject;
     }
 }
 }
@@ -727,7 +727,7 @@ void panic(int code) {
 }
 
 //%
-StringData *emptyToNull(StringData *s) {
+String emptyToNull(String s) {
     if (!s || s->len == 0)
         return NULL;
     return s;
@@ -813,7 +813,7 @@ void *getGlobalsPtr() {
 }
 
 //%
-void runtimeWarning(StringData *s) {
+void runtimeWarning(String s) {
     // noop for now
 }
 }
@@ -864,20 +864,20 @@ PXT_DEF_STRING(sFunctionTp, "function")
 PXT_DEF_STRING(sUndefinedTp, "undefined")
 
 //%
-StringData *typeOf(TValue v) {
+String typeOf(TValue v) {
     switch (valType(v)) {
     case ValType::Undefined:
-        return (StringData *)sUndefinedTp;
+        return (String )sUndefinedTp;
     case ValType::Boolean:
-        return (StringData *)sBooleanTp;
+        return (String )sBooleanTp;
     case ValType::Number:
-        return (StringData *)sNumberTp;
+        return (String )sNumberTp;
     case ValType::String:
-        return (StringData *)sStringTp;
+        return (String )sStringTp;
     case ValType::Object:
-        return (StringData *)sObjectTp;
+        return (String )sObjectTp;
     case ValType::Function:
-        return (StringData *)sFunctionTp;
+        return (String )sFunctionTp;
     default:
         oops();
         return 0;
@@ -898,7 +898,7 @@ void anyPrint(TValue v) {
             DMESG("[Native %p]", v);
         }
     } else {
-        StringData *s = numops::toString(v);
+        String s = numops::toString(v);
         DMESG("[%s %p = %s]", pxt::typeOf(v)->data, v, s->data);
         decr((TValue)s);
     }

@@ -13,7 +13,6 @@
 
 #include "pxtconfig.h"
 
-
 #define intcheck(...) check(__VA_ARGS__)
 //#define intcheck(...) do {} while (0)
 
@@ -170,9 +169,12 @@ void decr(TValue e);
 
 class RefObject;
 
-static inline RefObject *incrRC(RefObject *r) { return (RefObject*)incr((TValue)r); }
-static inline void decrRC(RefObject *r) { decr((TValue)r); }
-
+static inline RefObject *incrRC(RefObject *r) {
+    return (RefObject *)incr((TValue)r);
+}
+static inline void decrRC(RefObject *r) {
+    decr((TValue)r);
+}
 
 inline void *ptrOfLiteral(int offset) {
     return &bytecode[offset];
@@ -422,6 +424,16 @@ class BoxedNumber : public RefObject {
     double num;
 } __attribute__((packed));
 
+class BoxedString : public RefObject {
+    uint16_t len;
+    char data[0];
+};
+
+class BoxedBuffer : public RefObject {
+    uint16_t length;    // The length of the payload in bytes
+    uint8_t payload[0]; // ManagedBuffer data
+};
+
 extern const VTable string_vt;
 extern const VTable image_vt;
 extern const VTable buffer_vt;
@@ -446,8 +458,8 @@ ValType valType(TValue v);
     static const char name[] __attribute__((aligned(4))) = "@PXT@:" val;
 
 using namespace pxt;
-typedef BufferData *Buffer;
-typedef StringData *String;
+typedef BoxedBuffer *Buffer;
+typedef BoxedString *String;
 
 namespace pins {
 Buffer createBuffer(int size);

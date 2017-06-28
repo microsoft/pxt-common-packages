@@ -11,7 +11,7 @@ namespace serial {
     //% help=serial/write-string
     //% weight=87
     //% blockId=serial_writestring block="serial|write string %text"
-    void writeString(StringData *text) {
+    void writeString(String text) {
       hf2.sendSerial(text->data, text->len);
     }
 

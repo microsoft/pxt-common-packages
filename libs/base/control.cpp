@@ -106,7 +106,7 @@ namespace control {
     * Determine the version of system software currently running.
     */
     //%
-    StringData* deviceDalVersion() {
+    String deviceDalVersion() {
         return ManagedString(device.getVersion()).leakData();
     }
 }

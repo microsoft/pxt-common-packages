@@ -167,7 +167,7 @@ class IrWrap {
     uint16_t pulsePtr;
 
     IrRecvState recvState;
-    BufferData *outBuffer;
+    Buffer outBuffer;
 
     DbgBuffer dbg;
 
@@ -200,7 +200,7 @@ class IrWrap {
         pwmstate = enabled;
     }
 
-    void send(BufferData *d) {
+    void send(Buffer d) {
         if (sending)
             return; // error code?
 
