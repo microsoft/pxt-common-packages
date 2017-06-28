@@ -215,10 +215,10 @@ class IrWrap {
         encodedMsg.push(1);
         encodedMsg.push(1);
         for (int i = 0; i < d->length; i += 2) {
-            encodeHamming(encodedMsg, d->payload[i], d->payload[i + 1]);
+            encodeHamming(encodedMsg, d->data[i], d->data[i + 1]);
         }
 
-        uint16_t crc = crc16ccit(d->payload, d->length);
+        uint16_t crc = crc16ccit(d->data, d->length);
         encodeHamming(encodedMsg, crc & 0xff, crc >> 8);
 
         for (int i = 0; i < 15; ++i)
@@ -434,7 +434,7 @@ class IrWrap {
 
         decrRC(outBuffer);
         outBuffer = pins::createBuffer(ptr);
-        memcpy(outBuffer->payload, buf, ptr);
+        memcpy(outBuffer->data, buf, ptr);
         Event evt(IR_COMPONENT_ID, crc == pktCrc ? IR_PACKET_EVENT : IR_PACKET_ERROR_EVENT);
     }
 

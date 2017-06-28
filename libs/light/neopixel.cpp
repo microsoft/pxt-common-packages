@@ -25,7 +25,7 @@ namespace light {
      */
     //% parts="neopixel"
     void sendBuffer(DigitalPin pin, Buffer buf) {
-        neopixel_send_buffer(*pin, buf->payload, buf->length);
+        neopixel_send_buffer(*pin, buf->data, buf->length);
     }
 
 }

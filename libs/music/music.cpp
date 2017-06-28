@@ -28,7 +28,7 @@ enum class SoundOutputDestination {
 
 namespace music {
 
-ManagedBuffer tone; // empty buffer to hold custom tone
+Buffer tone; // empty buffer to hold custom tone
 SoundOutputDestination soundOutputDestination = SoundOutputDestination::Speaker;
 
 // turns on/off the speaker amp
@@ -53,14 +53,15 @@ void updateSpeakerAmp() {
 void setTone(Buffer buffer) {
     if (!buffer) return;
 
-    ManagedBuffer buf(buffer);
-    if (buf.length() != TONE_WIDTH * sizeof(uint16_t))
+    if (buffer->length != TONE_WIDTH * sizeof(uint16_t))
         return; // invalid length
 
-    tone = buf; // keep a reference to the buffer
+    decrRC(tone);
+    tone = buffer; // keep a reference to the buffer
+    incrRC(tone);
 
     auto synth = &getWSynthesizer()->synth;
-    synth->setTone((const uint16_t*)tone.getBytes());
+    synth->setTone((const uint16_t*)tone->data);
 }
 
 /**
