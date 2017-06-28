@@ -12,6 +12,7 @@
         "devpins.cpp",
         "devpins.h",
         "pins.ts",
+        "control.cpp",
         "i2c.cpp",
         "i2c.ts",
         "shims.d.ts",
