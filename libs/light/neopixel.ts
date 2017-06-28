@@ -482,7 +482,7 @@ namespace light {
          * Set the photon color.
          * @param color the color of the photon
          */
-        //% blockId=neophoton_set_color block="photon set color %color"
+        //% blockId=neophoton_set_color block="photon set pen color %color"
         //% weight=39
         //% blockGap=8
         //% parts="neopixel"
