@@ -1,4 +1,4 @@
-#include "pxt.h"
+#include "pxtbase.h"
 
 // keep in sync with github/pxt/pxtsim/libgeneric.ts
 enum class NumberFormat {

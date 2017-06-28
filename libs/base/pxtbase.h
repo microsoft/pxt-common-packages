@@ -1,5 +1,5 @@
-#ifndef __PXT_H
-#define __PXT_H
+#ifndef __PXTBASE_H
+#define __PXTBASE_H
 
 //#define PXT_MEMLEAK_DEBUG 1
 
@@ -13,33 +13,6 @@
 
 #include "pxtconfig.h"
 
-#include "CodalConfig.h"
-#include "CodalHeapAllocator.h"
-#include "CodalDevice.h"
-#include "ErrorNo.h"
-#include "Timer.h"
-#include "Matrix4.h"
-#include "CodalCompat.h"
-#include "CodalComponent.h"
-#include "ManagedType.h"
-#include "ManagedString.h"
-#include "ManagedBuffer.h"
-#include "Event.h"
-#include "NotifyEvents.h"
-#include "Button.h"
-#include "CodalFiber.h"
-#include "MessageBus.h"
-#include "CapTouchButton.h"
-#include "Image.h"
-#include "MbedTimer.h"
-#include "MbedI2C.h"
-#include "MbedPin.h"
-
-using namespace codal;
-
-#include "pins.h"
-#include "devpins.h"
-#include "hf2.h"
 
 #define intcheck(...) check(__VA_ARGS__)
 //#define intcheck(...) do {} while (0)
@@ -109,9 +82,6 @@ inline bool canBeTagged(int v) {
 typedef TValue Action;
 typedef TValue ImageLiteral;
 
-extern CodalUSB usb;
-extern HF2 hf2;
-
 typedef enum {
     ERR_INVALID_BINARY_HEADER = 5,
     ERR_OUT_OF_BOUNDS = 8,
@@ -125,10 +95,6 @@ extern uint16_t *bytecode;
 class RefRecord;
 
 // Utility functions
-extern Event lastEvent;
-extern codal::mbed::Timer devTimer;
-extern MessageBus devMessageBus;
-extern codal::CodalDevice device;
 
 void registerWithDal(int id, int event, Action a);
 void runInBackground(Action a);
