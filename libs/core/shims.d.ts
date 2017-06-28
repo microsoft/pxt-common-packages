@@ -249,7 +249,7 @@ declare namespace control {
      * Determine the version of system software currently running.
      */
     //% shim=control::deviceDalVersion
-    function deviceDalVersion(): String;
+    function deviceDalVersion(): string;
 
     /**
      * Allocates the next user notification event

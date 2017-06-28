@@ -144,7 +144,7 @@ declare namespace serial {
     //% help=serial/write-string
     //% weight=87
     //% blockId=serial_writestring block="serial|write string %text" shim=serial::writeString
-    function writeString(text: String): void;
+    function writeString(text: string): void;
 
     /**
      * Send a buffer across the serial connection.
