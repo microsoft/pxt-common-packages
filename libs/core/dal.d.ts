@@ -126,10 +126,11 @@ declare const enum DAL {
     DEVICE_NOTIFY_USER_EVENT_BASE = 1024,
     // built/yt/yotta_modules/codal/inc/core/SystemClock.h
     SYSTEM_CLOCK_INIT = 0x01,
-    // built/yt/yotta_modules/codal/inc/device/SAMD21/Timer.h
+    // built/yt/yotta_modules/codal/inc/device/SAMD21/DeviceTimer.h
     TIMER_ONE_DEFAULT_PRECISION_US = 1,
     TIMER_ONE_PRESCALER_OPTIONS = 5,
     // built/yt/yotta_modules/codal/inc/device/SAMD21/SAMD21DAC.h
+    SAMD21DAC_DEFAULT_FREQUENCY = 44100,
     // built/yt/yotta_modules/codal/inc/device/SAMD21/SAMD21DMAC.h
     DMA_DESCRIPTOR_ALIGNMENT = 16,
     DMA_DESCRIPTOR_COUNT = 4,
@@ -142,10 +143,58 @@ declare const enum DAL {
     USB_DEFAULT_PID = 0x2402,
     USB_DEFAULT_VID = 0x03EB,
     USB_EP_FLAG_NO_AUTO_ZLP = 0x01,
+    // built/yt/yotta_modules/codal/inc/device/SAMD21/adafruit_ptc.h
     // built/yt/yotta_modules/codal/inc/device/SAMD21/common_includes.h
     // built/yt/yotta_modules/codal/inc/device/SAMD21/device_fiber.h
     // built/yt/yotta_modules/codal/inc/device/SAMD21/device_types.h
     // built/yt/yotta_modules/codal/inc/device/SAMD21/neopixel.h
+    // built/yt/yotta_modules/codal/inc/device/SAMD21/samd21_ptc_component.h
+    PTC_REG_CONTROLA = 0x42004C00,
+    PTC_BIT_ENABLE = 0x02,
+    PTC_BIT_RUNINSTBY = 0x04,
+    PTC_REG_CONTROLB = 0x42004C01,
+    PTC_BIT_SYNCFLAG = 0x80,
+    PTC_REG_UNK4C04 = 0x42004C04,
+    PTC_REG_CONTROLC = 0x42004C05,
+    PTC_BIT_INIT = 0x01,
+    PTC_REG_INTDISABLE = 0x42004C08,
+    PTC_REG_INTENABLE = 0x42004C09,
+    PTC_BIT_EOCINTEN = 0x01,
+    PTC_BIT_WCOINTEN = 0x02,
+    PTC_REG_INTFLAGS = 0x42004C0A,
+    PTC_BIT_EOCINTFLAG = 0x01,
+    PTC_BIT_WCOINTFLAG = 0x02,
+    PTC_REG_FREQCONTROL = 0x42004C0C,
+    PTC_BIT_FREQSPREADEN = 0x10,
+    PTC_REG_SAMPLEDELAY_MASK = 0x0F,
+    PTC_REG_CONVCONTROL = 0x42004C0D,
+    PTC_BIT_CONVSTARTED = 0x80,
+    PTC_REG_ADCACC_MASK = 0x07,
+    PTC_REG_YSELECT_L = 0x42004C10,
+    PTC_REG_YSELECT_H = 0x42004C11,
+    PTC_REG_YENABLE_L = 0x42004C14,
+    PTC_REG_YENABLE_H = 0x42004C15,
+    PTC_REG_XSELECT_L = 0x42004C12,
+    PTC_REG_XSELECT_H = 0x42004C13,
+    PTC_REG_XENABLE_L = 0x42004C16,
+    PTC_REG_XENABLE_H = 0x42004C17,
+    PTC_REG_COMPCAPL = 0x42004C18,
+    PTC_REG_COMPCAPH = 0x42004C19,
+    PTC_REG_INTCAP = 0x42004C1A,
+    PTC_REG_SERIESRES = 0x42004C1B,
+    PTC_REG_CONVRESULT_L = 0x42004C1C,
+    PTC_REG_CONVRESULT_H = 0x42004C1D,
+    PTC_REG_BURSTMODE = 0x42004C20,
+    PTC_REG_BURSTMODE_MASK = 0xF0,
+    PTC_BIT_CTSLOWPOWER = 0x04,
+    PTC_REG_XYENABLE = 0x42004C16,
+    PTC_BIT_XYENABLE = 0x02,
+    PTC_REG_WCO_MODE = 0x42004C21,
+    PTC_REG_WCO_MODE_MASK = 0x07,
+    PTC_SET_WCO_THRESHHOLD_A_L = 0x42004C24,
+    PTC_SET_WCO_THRESHHOLD_A_H = 0x42004C25,
+    PTC_SET_WCO_THRESHHOLD_B_L = 0x42004C26,
+    PTC_SET_WCO_THRESHHOLD_B_H = 0x42004C27,
     // built/yt/yotta_modules/codal/inc/drivers/AbstractButton.h
     DEVICE_BUTTON_EVT_DOWN = 1,
     DEVICE_BUTTON_EVT_UP = 2,
@@ -177,10 +226,16 @@ declare const enum DAL {
     ANALOG_SENSOR_LOW_THRESHOLD_PASSED = 0x04,
     ANALOG_SENSOR_LOW_THRESHOLD_ENABLED = 0x08,
     ANALOG_SENSOR_HIGH_THRESHOLD_ENABLED = 0x10,
-    // built/yt/yotta_modules/codal/inc/drivers/Button.h
+    // built/yt/yotta_modules/codal/inc/drivers/CapTouchButton.h
+    CAP_TOUCH_BUTTON_CALIBRATION_PERIOD = 10,
+    CAP_TOUCH_BUTTON_CALIBRATION_LINEAR_OFFSET = 100,
+    CAP_TOUCH_BUTTON_CALIBRATION_PERCENTAGE_OFFSET = 30,
+    CAP_TOUCH_BUTTON_SAMPLE_PERIOD = 50,
+    CAP_TOUCH_BUTTON_CALIBRATING = 0x10,
+    // built/yt/yotta_modules/codal/inc/drivers/DeviceButton.h
     // built/yt/yotta_modules/codal/inc/drivers/DeviceI2C.h
-    // built/yt/yotta_modules/codal/inc/drivers/MessageBus.h
-    // built/yt/yotta_modules/codal/inc/drivers/Pin.h
+    // built/yt/yotta_modules/codal/inc/drivers/DeviceMessageBus.h
+    // built/yt/yotta_modules/codal/inc/drivers/DevicePin.h
     IO_STATUS_DIGITAL_IN = 0x01,
     IO_STATUS_DIGITAL_OUT = 0x02,
     IO_STATUS_ANALOG_IN = 0x04,
@@ -299,7 +354,8 @@ declare const enum DAL {
     MULTI_BUTTON_ATTACHED = 0x40,
     // built/yt/yotta_modules/codal/inc/drivers/NonLinearAnalogSensor.h
     // built/yt/yotta_modules/codal/inc/drivers/Synthesizer.h
-    SYNTHESIZER_SAMPLE_RATE = 10000,
+    SYNTHESIZER_SAMPLE_RATE = 44100,
+    TONE_WIDTH = 1024,
     // built/yt/yotta_modules/codal/inc/drivers/TimedInterruptIn.h
     // built/yt/yotta_modules/codal/inc/drivers/TouchButton.h
     TOUCH_BUTTON_CALIBRATION_PERIOD = 10,
@@ -316,9 +372,10 @@ declare const enum DAL {
     RAW = 0,
     SIMPLE_CARTESIAN = 1,
     NORTH_EAST_DOWN = 2,
+    NORTH_EAST_UP = 3,
     // built/yt/yotta_modules/codal/inc/types/DataStream.h
     DATASTREAM_MAXIMUM_BUFFERS = 1,
-    // built/yt/yotta_modules/codal/inc/types/Event.h
+    // built/yt/yotta_modules/codal/inc/types/DeviceEvent.h
     DEVICE_ID_ANY = 0,
     DEVICE_EVT_ANY = 0,
     CREATE_ONLY = 0,
