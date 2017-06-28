@@ -14,9 +14,9 @@ TValue incr(TValue e) {
 
 void decr(TValue e) {
 #if 0
-        if (isRefCounted(e) && ((RefCounted *)e)->refCount != 0xffff) {
-            DMESG("DECR: %p refs=%d vt=%p", e, ((RefCounted *)e)->refCount,
-                    ((RefCounted *)e)->tag);
+        if (isRefCounted(e) && ((RefObject *)e)->refcnt != 0xffff) {
+            DMESG("DECR: %p refs=%d vt=%p", e, ((RefObject *)e)->refcnt,
+                    ((RefObject *)e)->vtable);
         }
 #endif
 
@@ -31,7 +31,7 @@ Action mkAction(int reflen, int totallen, int startptr) {
     check(0 <= reflen && reflen <= totallen, ERR_SIZE, 1);
     check(reflen <= totallen && totallen <= 255, ERR_SIZE, 2);
     check(bytecode[startptr] == 0xffff, ERR_INVALID_BINARY_HEADER, 3);
-    check(bytecode[startptr + 1] == REF_TAG_ACTION, ERR_INVALID_BINARY_HEADER, 4);
+    check(bytecode[startptr + 1] == PXT_REF_TAG_ACTION, ERR_INVALID_BINARY_HEADER, 4);
 
     uint32_t tmp = (uint32_t)&bytecode[startptr];
 
@@ -51,7 +51,7 @@ Action mkAction(int reflen, int totallen, int startptr) {
 
 TValue runAction3(Action a, TValue arg0, TValue arg1, TValue arg2) {
     auto aa = (RefAction *)a;
-    if (aa->vtable == REF_TAG_ACTION) {
+    if (aa->vtable == PXT_REF_TAG_ACTION) {
         check(aa->refcnt == 0xffff, ERR_INVALID_BINARY_HEADER, 4);
         return ((ActionCB)(((uint32_t)a + 4) | 1))(NULL, arg0, arg1, arg2);
     } else {
@@ -560,18 +560,3 @@ void start() {
 }
 
 } // end namespace
-
-void RefCounted::destroy() {
-#ifdef PXT_MEMLEAK_DEBUG
-    allptrs.erase((TValue)this);
-#endif
-    free(this);
-}
-
-void RefCounted::init() {
-    // Initialize to one reference (lowest bit set to 1)
-    refCount = 3;
-#ifdef PXT_MEMLEAK_DEBUG
-    allptrs.insert((TValue)this);
-#endif
-}

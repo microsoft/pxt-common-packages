@@ -17,9 +17,6 @@
 #define intcheck(...) check(__VA_ARGS__)
 //#define intcheck(...) do {} while (0)
 
-#define PAGE_SIZE 256
-
-
 #include <string.h>
 #include <vector>
 #include <stdint.h>
@@ -27,6 +24,8 @@
 #ifdef PXT_MEMLEAK_DEBUG
 #include <set>
 #endif
+
+#include "pxtcore.h"
 
 #define CONCAT_1(a, b) a##b
 #define CONCAT_0(a, b) CONCAT_1(a, b)
@@ -169,8 +168,10 @@ TValue incr(TValue e);
 //%
 void decr(TValue e);
 
-static inline RefCounted *incrRC(RefCounted *r) { return (RefCounted*)incr((TValue)r); }
-static inline void decrRC(RefCounted *r) { decr((TValue)r); }
+class RefObject;
+
+static inline RefObject *incrRC(RefObject *r) { return (RefObject*)incr((TValue)r); }
+static inline void decrRC(RefObject *r) { decr((TValue)r); }
 
 
 inline void *ptrOfLiteral(int offset) {
@@ -413,12 +414,11 @@ class RefRefLocal : public RefObject {
     RefRefLocal();
 };
 
-STATIC_ASSERT(REF_TAG_USER <= 32)
 // note: this is hardcoded in PXT (hexfile.ts)
-#define REF_TAG_NUMBER 32
-#define REF_TAG_ACTION 33
+#define PXT_REF_TAG_NUMBER 32
+#define PXT_REF_TAG_ACTION 33
 
-struct BoxedNumber : RefCounted {
+class BoxedNumber : public RefObject {
     double num;
 } __attribute__((packed));
 
@@ -447,6 +447,7 @@ ValType valType(TValue v);
 
 using namespace pxt;
 typedef BufferData *Buffer;
+typedef StringData *String;
 
 namespace pins {
 Buffer createBuffer(int size);

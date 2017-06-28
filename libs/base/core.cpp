@@ -133,7 +133,7 @@ TNumber fromDouble(double r) {
 #endif
     BoxedNumber *p = (BoxedNumber *)malloc(sizeof(BoxedNumber));
     p->init();
-    p->tag = REF_TAG_NUMBER;
+    p->tag = PXT_REF_TAG_NUMBER;
     p->num = r;
     return (TNumber)p;
 }
@@ -843,13 +843,13 @@ ValType valType(TValue v) {
             return ValType::Object;
         }
     } else {
-        int tag = ((RefCounted *)v)->tag;
+        int tag = ((RefObject *)v)->vtable;
 
-        if (tag == REF_TAG_STRING)
+        if (tag == PXT_REF_TAG_STRING)
             return ValType::String;
-        else if (tag == REF_TAG_NUMBER)
+        else if (tag == PXT_REF_TAG_NUMBER)
             return ValType::Number;
-        else if (tag == REF_TAG_ACTION || getVTable((RefObject*)v) == &RefAction_vtable)
+        else if (tag == PXT_REF_TAG_ACTION || getVTable((RefObject*)v) == &RefAction_vtable)
             return ValType::Function;
 
         return ValType::Object;
