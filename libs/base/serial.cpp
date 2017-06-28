@@ -12,7 +12,7 @@ namespace serial {
     //% weight=87
     //% blockId=serial_writestring block="serial|write string %text"
     void writeString(String text) {
-      hf2.sendSerial(text->data, text->len);
+      sendSerial(text->data, text->length);
     }
 
     /**
@@ -22,8 +22,6 @@ namespace serial {
     //% blockId=serial_writebuffer block="serial|write buffer %buffer"
     void writeBuffer(Buffer buffer) {
       if (!buffer) return;
-
-      ManagedBuffer buf(buffer);
-      hf2.sendSerial(buf.getBytes(), buf.length());
+      sendSerial((char*)buffer->data, buffer->length);
     }
 }

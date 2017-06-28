@@ -1,19 +1,5 @@
 #include "pxtbase.h"
 
-/**
- * How to create the event.
- */
-enum class EventCreationMode {
-    /**
-     * Event is initialised, and its event handlers are immediately fired (not suitable for use in interrupts!).
-     */
-    CreateAndFire = CREATE_AND_FIRE,
-    /**
-     * Event is initialised, and no further processing takes place.
-     */
-    CreateOnly = CREATE_ONLY,
-};
-
 namespace control {
     /**
     * Gets the number of milliseconds elapsed since power on.
@@ -21,19 +7,7 @@ namespace control {
     //% help=control/millis weight=50
     //% blockId=control_running_time block="millis (ms)"
     int millis() {
-        return system_timer_current_time();
-    }
-
-    /**
-     * Announce that an event happened to registered handlers.
-     * @param src ID of the MicroBit Component that generated the event
-     * @param value Component specific code indicating the cause of the event.
-     * @param mode optional definition of how the event should be processed after construction.
-     */
-    //% weight=21 blockGap=12 blockId="control_raise_event" block="raise event|from %src|with value %value" blockExternalInputs=1
-    //% mode.defl=CREATE_AND_FIRE
-    void raiseEvent(int src, int value, EventCreationMode mode) {
-        Event evt(src, value, (EventLaunchMode)mode);
+        return current_time_ms();
     }
 
     /**
@@ -64,7 +38,7 @@ namespace control {
     //% help=control/wait-micros weight=29 async
     //% blockId="control_wait_us" block="wait (µs)%micros"
     void waitMicros(int micros) {
-        wait_us(micros);
+        sleep_us(micros);
     }  
 
     /**
@@ -86,27 +60,10 @@ namespace control {
     }   
 
     /**
-    * Allocates the next user notification event
-    */
-    //% help=control/allocate-notify-event
-    //%
-    int allocateNotifyEvent() {
-        return ::allocateNotifyEvent();
-    }
-
-    /**
     * Derive a unique, consistent serial number of this device from internal data.
     */
     //% blockId="control_device_serial_number" block="device serial number" weight=9
     int deviceSerialNumber() {
-        return device.getSerialNumber();
-    }
-
-    /**
-    * Determine the version of system software currently running.
-    */
-    //%
-    String deviceDalVersion() {
-        return mkString(device.getVersion());
+        return pxt::getSerialNumber();
     }
 }

@@ -14,9 +14,7 @@
         "enums.d.ts",
         "loops.cpp",
         "math.ts",
-        "ns.ts"
-    ],
-    "morefiles": [
+        "ns.ts",
         "control.cpp",
         "control.ts",
         "serial.cpp",

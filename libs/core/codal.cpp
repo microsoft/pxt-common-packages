@@ -2,8 +2,6 @@
 #include "neopixel.h"
 #include <map>
 
-CodalDevice device;
-
 namespace pxt {
 
 // The first two word are used to tell the bootloader that a single reset should start the
@@ -16,6 +14,10 @@ __attribute__((section(".binmeta"))) __attribute__((used)) const uint32_t pxt_bi
 
 CodalUSB usb;
 HF2 hf2;
+Event lastEvent;
+codal::mbed::Timer devTimer;
+MessageBus devMessageBus;
+codal::CodalDevice device;
 
 // TODO extract these from uf2_info()?
 static const char *string_descriptors[] = {
@@ -49,11 +51,6 @@ static void initCodal() {
 // ---------------------------------------------------------------------------
 
 map<pair<int, int>, Action> handlersMap;
-
-Event lastEvent;
-codal::mbed::Timer devTimer;
-MessageBus devMessageBus;
-codal::CodalDevice device;
 
 // We have the invariant that if [dispatchEvent] is registered against the DAL
 // for a given event, then [handlersMap] contains a valid entry for that
@@ -159,5 +156,64 @@ void dumpDmesg() {
     hf2.sendSerial("\nDMESG:\n", 8);
     hf2.sendSerial(codalLogStore.buffer, codalLogStore.ptr);
     hf2.sendSerial("\n\n", 2);
+}
+
+void sendSerial(const char *data, int len) {
+    hf2.sendSerial(data, len);
+}
+
+int getSerialNumber() {
+    return device.getSerialNumber();
+}
+
+int current_time_ms() {
+    return system_timer_current_time();
+}
+}
+
+/**
+ * How to create the event.
+ */
+enum class EventCreationMode {
+    /**
+     * Event is initialised, and its event handlers are immediately fired (not suitable for use in
+     * interrupts!).
+     */
+    CreateAndFire = CREATE_AND_FIRE,
+    /**
+     * Event is initialised, and no further processing takes place.
+     */
+    CreateOnly = CREATE_ONLY,
+};
+
+namespace control {
+
+/**
+ * Announce that an event happened to registered handlers.
+ * @param src ID of the MicroBit Component that generated the event
+ * @param value Component specific code indicating the cause of the event.
+ * @param mode optional definition of how the event should be processed after construction.
+ */
+//% weight=21 blockGap=12 blockId="control_raise_event"
+//% block="raise event|from %src|with value value" blockExternalInputs=1
+//% mode.defl=CREATE_AND_FIRE
+void raiseEvent(int src, int value, EventCreationMode mode) {
+    Event evt(src, value, (EventLaunchMode)mode);
+}
+
+/**
+* Determine the version of system software currently running.
+*/
+//%
+String deviceDalVersion() {
+    return mkString(device.getVersion());
+}
+
+/**
+* Allocates the next user notification event
+*/
+//% help=control/allocate-notify-event
+int allocateNotifyEvent() {
+    return ::allocateNotifyEvent();
 }
 }

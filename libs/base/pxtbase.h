@@ -37,9 +37,14 @@ namespace pxt {
 
 // To be implemented by the target
 extern "C" void target_panic(int error_code);
+extern "C" void target_reset();
 void sleep_ms(uint32_t ms);
 void sleep_us(uint32_t us);
+int current_time_ms();
 void initRuntime();
+void sendSerial(const char *data, int len);
+int getSerialNumber();
+
 // also defined DMESG macro
 // end
 
