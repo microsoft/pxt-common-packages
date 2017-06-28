@@ -6,6 +6,7 @@
         "dal.d.ts",
         "codal.cpp",
         "pxt.h",
+        "pxtcore.h",
         "pins.h",
         "pins.cpp",
         "devpins.cpp",

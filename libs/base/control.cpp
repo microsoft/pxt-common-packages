@@ -107,6 +107,6 @@ namespace control {
     */
     //%
     String deviceDalVersion() {
-        return ManagedString(device.getVersion()).leakData();
+        return mkString(device.getVersion());
     }
 }

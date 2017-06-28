@@ -1,6 +1,7 @@
 #include "pxtbase.h"
 #include <map>
 
+using namespace std;
 
 namespace pxt {
 
@@ -523,9 +524,6 @@ void exec_binary(int32_t *pc) {
     // repeat error 4 times and restart as needed
     // microbit_panic_timeout(4);
 
-    // TODO: fix this in CODAL
-    device.seedRandom(0xC0DA1);
-
     int32_t ver = *pc++;
     checkStr(ver == 0x4209, ":( Bad runtime version");
 
@@ -540,9 +538,7 @@ void exec_binary(int32_t *pc) {
     startptr += 48; // header
     startptr |= 1;  // Thumb state
 
-    initCodal();
-    initRandomSeed();
-    clearNeoPixels();
+    initRuntime();
 
     ((uint32_t(*)())startptr)();
 
@@ -551,7 +547,7 @@ void exec_binary(int32_t *pc) {
 #endif
 
     while (1) {
-        fiber_sleep(10000);
+        sleep_ms(10000);
     }
 }
 

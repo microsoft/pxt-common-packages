@@ -1,21 +1,18 @@
 #include "pxt.h"
 #include "neopixel.h"
+#include <map>
 
 CodalDevice device;
 
 namespace pxt {
 
-
 // The first two word are used to tell the bootloader that a single reset should start the
 // bootloader and the MSD device, not us.
 // The rest is reserved for partial flashing checksums.
 __attribute__((section(".binmeta"))) __attribute__((used)) const uint32_t pxt_binmeta[] = {
-    0x87eeb07c, 0x87eeb07c, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff,
-    0x00ff00ff, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff,
-    0x00ff00ff, 0x00ff00ff,
+    0x87eeb07c, 0x87eeb07c, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff,
+    0x00ff00ff, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff,
 };
-
-
 
 CodalUSB usb;
 HF2 hf2;
@@ -88,6 +85,28 @@ void fiberDone(void *a) {
     release_fiber();
 }
 
+void sleep_ms(uint32_t ms) {
+    fiber_sleep(ms);
+}
+
+void sleep_us(uint32_t us) {
+    wait_us(us);
+}
+
+void forever_stub(void *a) {
+    while (true) {
+        runAction0((Action)a);
+        fiber_sleep(20);
+    }
+}
+
+void runForever(Action a) {
+    if (a != 0) {
+        incr(a);
+        create_fiber(forever_stub, (void *)a);
+    }
+}
+
 void runInBackground(Action a) {
     if (a != 0) {
         incr(a);
@@ -95,8 +114,7 @@ void runInBackground(Action a) {
     }
 }
 
-void waitForEvent(int id, int event)
-{
+void waitForEvent(int id, int event) {
     fiber_wait_for_event(id, event);
 }
 
@@ -108,7 +126,7 @@ void initRandomSeed() {
     auto pinLight = lookupPin(PIN_LIGHT);
     if (pinLight)
         seed *= pinLight->getAnalogValue();
-    device.seedRandom(seed);
+    seedRandom(seed);
 }
 
 void clearNeoPixels() {
@@ -123,5 +141,23 @@ void clearNeoPixels() {
     }
 }
 
+void initRuntime() {
+    initCodal();
+    initRandomSeed();
+    clearNeoPixels();
+}
 
+//%
+uint32_t afterProgramPage() {
+    uint32_t ptr = (uint32_t)&bytecode[0];
+    ptr += programSize();
+    ptr = (ptr + (PAGE_SIZE - 1)) & ~(PAGE_SIZE - 1);
+    return ptr;
+}
+
+void dumpDmesg() {
+    hf2.sendSerial("\nDMESG:\n", 8);
+    hf2.sendSerial(codalLogStore.buffer, codalLogStore.ptr);
+    hf2.sendSerial("\n\n", 2);
+}
 }

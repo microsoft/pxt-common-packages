@@ -1,4 +1,7 @@
 #include "pxtbase.h"
+#include <limits.h>
+
+using namespace std;
 
 // keep in sync with github/pxt/pxtsim/libgeneric.ts
 enum class NumberFormat {
@@ -25,17 +28,71 @@ enum class NumberFormat {
 namespace BufferMethods {
 //%
 int getByte(Buffer buf, int off) {
-    return max(ManagedBuffer(buf).getByte(off), 0);
+    if (buf && 0 <= off && off < buf->length)
+        return buf->data[off];
+    return 0;
 }
 
 //%
 void setByte(Buffer buf, int off, int v) {
-    ManagedBuffer(buf).setByte(off, v);
+    if (buf && 0 <= off && off < buf->length)
+        buf->data[off] = v;
 }
 
 //%
 uint8_t *getBytes(Buffer buf) {
-    return buf->payload;
+    return buf->data;
+}
+
+int writeBuffer(Buffer buf, int dstOffset, Buffer src, int srcOffset = 0, int length = -1) {
+    if (length < 0)
+        length = src->length;
+
+    if (srcOffset < 0 || dstOffset < 0 || dstOffset > buf->length)
+        return -1;
+
+    length = min(src->length - srcOffset, buf->length - dstOffset);
+
+    if (length < 0)
+        return -1;
+
+    if (buf == src) {
+        memmove(buf->data + dstOffset, src->data + srcOffset, length);
+    } else {
+        memcpy(buf->data + dstOffset, src->data + srcOffset, length);
+    }
+
+    return 0;
+}
+
+int writeBytes(Buffer buf, int offset, uint8_t *src, int length, bool swapBytes) {
+    if (offset < 0 || length < 0 || offset + length > buf->length)
+        return -1;
+
+    if (swapBytes) {
+        uint8_t *p = buf->data + offset + length;
+        for (int i = 0; i < length; ++i)
+            *--p = src[i];
+    } else {
+        memcpy(buf->data + offset, src, length);
+    }
+
+    return 0;
+}
+
+int readBytes(Buffer buf, uint8_t *dst, int offset, int length, bool swapBytes) {
+    if (offset < 0 || length < 0 || offset + length > buf->length)
+        return -1;
+
+    if (swapBytes) {
+        uint8_t *p = buf->data + offset + length;
+        for (int i = 0; i < length; ++i)
+            dst[i] = *--p;
+    } else {
+        memcpy(dst, buf->data + offset, length);
+    }
+
+    return 0;
 }
 
 /**
@@ -52,12 +109,10 @@ void setNumber(Buffer buf, NumberFormat format, int offset, TNumber value) {
     float f32;
     double f64;
 
-    ManagedBuffer b(buf);
-
 // Assume little endian
 #define WRITEBYTES(isz, swap, toInt)                                                               \
     isz = toInt(value);                                                                            \
-    b.writeBytes(offset, (uint8_t *)&isz, sizeof(isz), swap);                                      \
+    writeBytes(buf, offset, (uint8_t *)&isz, sizeof(isz), swap);                                   \
     break
 
     switch (format) {
@@ -112,11 +167,9 @@ TNumber getNumber(Buffer buf, NumberFormat format, int offset) {
     float f32;
     double f64;
 
-    ManagedBuffer b(buf);
-
 // Assume little endian
 #define READBYTES(isz, swap, conv)                                                                 \
-    b.readBytes((uint8_t *)&isz, offset, sizeof(isz), swap);                                       \
+    readBytes(buf, (uint8_t *)&isz, offset, sizeof(isz), swap);                                    \
     return conv(isz)
 
     switch (format) {
@@ -170,7 +223,12 @@ int length(Buffer s) {
  */
 //%
 void fill(Buffer buf, int value, int offset = 0, int length = -1) {
-    ManagedBuffer(buf).fill(value, offset, length);
+    if (offset < 0 || offset > buf->length)
+        return; // DEVICE_INVALID_PARAMETER;
+    if (length < 0)
+        length = buf->length;
+    length = min(length, buf->length - offset);
+    memset(buf->data + offset, value, length);
 }
 
 /**
@@ -178,7 +236,11 @@ void fill(Buffer buf, int value, int offset = 0, int length = -1) {
  */
 //%
 Buffer slice(Buffer buf, int offset = 0, int length = -1) {
-    return ManagedBuffer(buf).slice(offset, length).leakData();
+    offset = min((int)buf->length, offset);
+    if (length < 0)
+        length = buf->length;
+    length = min(length, buf->length - offset);
+    return mkBuffer(buf->data + offset, length);
 }
 
 /**
@@ -190,7 +252,26 @@ Buffer slice(Buffer buf, int offset = 0, int length = -1) {
  */
 //%
 void shift(Buffer buf, int offset, int start = 0, int length = -1) {
-    ManagedBuffer(buf).shift(offset, start, length);
+    if (length < 0)
+        length = buf->length - start;
+    if (start < 0 || start + length > buf->length || start + length < start || length == 0 ||
+        offset == 0 || offset == INT_MIN)
+        return;
+    if (offset <= -length || offset >= length) {
+        fill(buf, 0);
+        return;
+    }
+
+    uint8_t *data = buf->data + start;
+    if (offset < 0) {
+        offset = -offset;
+        memmove(data + offset, data, length - offset);
+        memset(data, 0, offset);
+    } else {
+        length = length - offset;
+        memmove(data, data + offset, length);
+        memset(data + length, 0, offset);
+    }
 }
 
 /**
@@ -202,19 +283,43 @@ void shift(Buffer buf, int offset, int start = 0, int length = -1) {
  */
 //%
 void rotate(Buffer buf, int offset, int start = 0, int length = -1) {
-    ManagedBuffer(buf).rotate(offset, start, length);
-}
+    if (length < 0)
+        length = buf->length - start;
+    if (start < 0 || start + length > buf->length || start + length < start || length == 0 ||
+        offset == 0 || offset == INT_MIN)
+        return;
 
-// int readBytes(uint8_t *dst, int offset, int length, bool swapBytes = false) const;
-// int writeBytes(int dstOffset, uint8_t *src, int length, bool swapBytes = false);
+    if (offset < 0)
+        offset += length << 8; // try to make it positive
+    offset %= length;
+    if (offset < 0)
+        offset += length;
+
+    uint8_t *data = buf->data + start;
+
+    uint8_t *n_first = data + offset;
+    uint8_t *first = data;
+    uint8_t *next = n_first;
+    uint8_t *last = data + length;
+
+    while (first != next) {
+        uint8_t tmp = *first;
+        *first++ = *next;
+        *next++ = tmp;
+        if (next == last) {
+            next = n_first;
+        } else if (first == n_first) {
+            n_first = next;
+        }
+    }
+}
 
 /**
  * Write contents of `src` at `dstOffset` in current buffer.
  */
 //%
 void write(Buffer buf, int dstOffset, Buffer src) {
-    // Not supported, we only do up to 4 args :/
-    // void write(Buffer buf, int dstOffset, Buffer src, int srcOffset = 0, int length = -1)
-    ManagedBuffer(buf).writeBuffer(dstOffset, ManagedBuffer(src), 0, -1);
+    // srcOff and length not supported, we only do up to 4 args :/
+    writeBuffer(buf, dstOffset, src, 0, -1);
 }
 }

@@ -2,18 +2,18 @@
 #define __PXT_H
 
 #include "pxtbase.h"
+#undef DMESG
 
 #include "CodalConfig.h"
 #include "CodalHeapAllocator.h"
 #include "CodalDevice.h"
+#include "CodalDmesg.h"
 #include "ErrorNo.h"
 #include "Timer.h"
 #include "Matrix4.h"
 #include "CodalCompat.h"
 #include "CodalComponent.h"
 #include "ManagedType.h"
-#include "ManagedString.h"
-#include "ManagedBuffer.h"
 #include "Event.h"
 #include "NotifyEvents.h"
 #include "Button.h"
@@ -33,6 +33,7 @@ using namespace codal;
 
 #define PAGE_SIZE 256
 
+namespace pxt {
 
 extern CodalUSB usb;
 extern HF2 hf2;
@@ -42,6 +43,6 @@ extern Event lastEvent;
 extern codal::mbed::Timer devTimer;
 extern MessageBus devMessageBus;
 extern codal::CodalDevice device;
-
+}
 
 #endif

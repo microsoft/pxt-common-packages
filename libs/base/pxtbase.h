@@ -19,6 +19,7 @@
 #include <string.h>
 #include <vector>
 #include <stdint.h>
+#include <math.h>
 
 #ifdef PXT_MEMLEAK_DEBUG
 #include <set>
@@ -33,6 +34,15 @@
 // extern MicroBit uBit;
 
 namespace pxt {
+
+// To be implemented by the target
+extern "C" void target_panic(int error_code);
+void sleep_ms(uint32_t ms);
+void sleep_us(uint32_t us);
+void initRuntime();
+// also defined DMESG macro
+// end
+
 //
 // Tagged values
 //
@@ -96,6 +106,8 @@ class RefRecord;
 
 void registerWithDal(int id, int event, Action a);
 void runInBackground(Action a);
+void runForever(Action a);
+
 void waitForEvent(int id, int event);
 //%
 TValue runAction3(Action a, TValue arg0, TValue arg1, TValue arg2);
@@ -417,22 +429,44 @@ class RefRefLocal : public RefObject {
 };
 
 // note: this is hardcoded in PXT (hexfile.ts)
+
+#define PXT_REF_TAG_STRING 1
+#define PXT_REF_TAG_BUFFER 2
+#define PXT_REF_TAG_IMAGE 3
 #define PXT_REF_TAG_NUMBER 32
 #define PXT_REF_TAG_ACTION 33
 
 class BoxedNumber : public RefObject {
+  public:
     double num;
+    BoxedNumber() : RefObject(PXT_REF_TAG_NUMBER) {}
 } __attribute__((packed));
 
 class BoxedString : public RefObject {
-    uint16_t len;
+  public:
+    uint16_t length;
     char data[0];
+    BoxedString() : RefObject(PXT_REF_TAG_STRING) {}
 };
 
 class BoxedBuffer : public RefObject {
-    uint16_t length;    // The length of the payload in bytes
-    uint8_t payload[0]; // ManagedBuffer data
+  public:
+    uint16_t length;
+    uint8_t data[0];
+    BoxedBuffer() : RefObject(PXT_REF_TAG_BUFFER) {}
 };
+
+typedef BoxedBuffer *Buffer;
+typedef BoxedString *String;
+
+// data can be NULL in both cases
+String mkString(const char *data, int len = -1);
+Buffer mkBuffer(const uint8_t *data, int len);
+
+TNumber mkNaN();
+void seedRandom(uint32_t seed);
+// max is inclusive
+uint32_t getRandom(uint32_t max);
 
 extern const VTable string_vt;
 extern const VTable image_vt;
@@ -458,8 +492,6 @@ ValType valType(TValue v);
     static const char name[] __attribute__((aligned(4))) = "@PXT@:" val;
 
 using namespace pxt;
-typedef BoxedBuffer *Buffer;
-typedef BoxedString *String;
 
 namespace pins {
 Buffer createBuffer(int size);

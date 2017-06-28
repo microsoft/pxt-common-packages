@@ -235,7 +235,7 @@ namespace pins {
  */
 //%
 Buffer createBuffer(int size) {
-    return ManagedBuffer(size).leakData();
+    return mkBuffer(NULL, size);
 }
 
 /**

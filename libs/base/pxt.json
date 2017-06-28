@@ -7,19 +7,20 @@
         "pxt-core.d.ts",
         "pxt.cpp",
         "pxtbase.h",
-        "pxtcore.h",
         "core.cpp",
         "pxt-helpers.ts",
         "buffer.cpp",
         "shims.d.ts",
         "enums.d.ts",
-        "control.cpp",
-        "control.ts",
         "loops.cpp",
-        "serial.cpp",
-        "serial.ts",
         "math.ts",
         "ns.ts"
+    ],
+    "morefiles": [
+        "control.cpp",
+        "control.ts",
+        "serial.cpp",
+        "serial.ts"
     ],
     "testFiles": [
         "test.ts"
