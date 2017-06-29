@@ -40,6 +40,6 @@
     "additionalFilePath": "../../node_modules/pxt-common-packages/libs/core",
     "public": true,
     "dependencies": {
-        "core": "file:../base"
+        "base": "file:../base"
     }
 }
