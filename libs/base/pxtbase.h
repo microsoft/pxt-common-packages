@@ -35,25 +35,36 @@
 
 namespace pxt {
 
-// To be implemented by the target
-extern "C" void target_panic(int error_code);
-extern "C" void target_reset();
-void sleep_ms(uint32_t ms);
-void sleep_us(uint32_t us);
-int current_time_ms();
-void initRuntime();
-void sendSerial(const char *data, int len);
-int getSerialNumber();
-
-// also defined DMESG macro
-// end
-
 //
 // Tagged values
 //
 struct TValueStruct {};
 typedef TValueStruct *TValue;
 typedef TValue TNumber;
+typedef TValue Action;
+typedef TValue ImageLiteral;
+
+// To be implemented by the target
+extern "C" void target_panic(int error_code);
+extern "C" void target_reset();
+void sleep_ms(uint32_t ms);
+void sleep_us(uint64_t us);
+int current_time_ms();
+void initRuntime();
+void sendSerial(const char *data, int len);
+int getSerialNumber();
+void registerWithDal(int id, int event, Action a);
+void runInBackground(Action a);
+void runForever(Action a);
+void waitForEvent(int id, int event);
+//%
+uint32_t afterProgramPage();
+//%
+void dumpDmesg();
+
+// also defined DMESG macro
+// end
+
 
 #define TAGGED_SPECIAL(n) (TValue)(void *)((n << 2) | 2)
 #define TAG_FALSE TAGGED_SPECIAL(2)
@@ -92,9 +103,6 @@ inline bool canBeTagged(int v) {
 }
 #endif
 
-typedef TValue Action;
-typedef TValue ImageLiteral;
-
 typedef enum {
     ERR_INVALID_BINARY_HEADER = 5,
     ERR_OUT_OF_BOUNDS = 8,
@@ -109,11 +117,6 @@ class RefRecord;
 
 // Utility functions
 
-void registerWithDal(int id, int event, Action a);
-void runInBackground(Action a);
-void runForever(Action a);
-
-void waitForEvent(int id, int event);
 //%
 TValue runAction3(Action a, TValue arg0, TValue arg1, TValue arg2);
 //%
@@ -134,8 +137,6 @@ int programHash();
 //%
 uint32_t programSize();
 //%
-uint32_t afterProgramPage();
-//%
 int getNumGlobals();
 //%
 RefRecord *mkClassInstance(int vtableOffset);
@@ -143,8 +144,6 @@ RefRecord *mkClassInstance(int vtableOffset);
 void debugMemLeaks();
 //%
 void anyPrint(TValue v);
-//%
-void dumpDmesg();
 
 //%
 int toInt(TNumber v);

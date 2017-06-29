@@ -86,7 +86,7 @@ void sleep_ms(uint32_t ms) {
     fiber_sleep(ms);
 }
 
-void sleep_us(uint32_t us) {
+void sleep_us(uint64_t us) {
     wait_us(us);
 }
 
