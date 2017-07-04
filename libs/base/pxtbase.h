@@ -172,6 +172,15 @@ void error(ERROR code, int subcode = 0);
 void exec_binary(uint16_t *pc);
 void start();
 
+struct HandlerBinding {
+    HandlerBinding *next;
+    int source;
+    int value;
+    Action action;
+};
+HandlerBinding *findBinding(int source, int value);
+void setBinding(int source, int value, Action act);
+
 // The standard calling convention is:
 //   - when a pointer is loaded from a local/global/field etc, and incr()ed
 //     (in other words, its presence on stack counts as a reference)

@@ -50,31 +50,26 @@ static void initCodal() {
 // An adapter for the API expected by the run-time.
 // ---------------------------------------------------------------------------
 
-map<pair<int, int>, Action> handlersMap;
-
 // We have the invariant that if [dispatchEvent] is registered against the DAL
 // for a given event, then [handlersMap] contains a valid entry for that
 // event.
 void dispatchEvent(Event e) {
     lastEvent = e;
 
-    Action curr = handlersMap[{e.source, e.value}];
+    auto curr = findBinding(e.source, e.value);
     if (curr)
-        runAction1(curr, fromInt(e.value));
+        runAction1(curr->action, fromInt(e.value));
 
-    curr = handlersMap[{e.source, DEVICE_EVT_ANY}];
+    curr = findBinding(e.source, DEVICE_EVT_ANY);
     if (curr)
-        runAction1(curr, fromInt(e.value));
+        runAction1(curr->action, fromInt(e.value));
 }
 
 void registerWithDal(int id, int event, Action a) {
-    Action prev = handlersMap[{id, event}];
-    if (prev)
-        decr(prev);
-    else
+    // first time?
+    if (!findBinding(id, event))
         devMessageBus.listen(id, event, dispatchEvent);
-    incr(a);
-    handlersMap[{id, event}] = a;
+    setBinding(id, event, a);
 }
 
 void fiberDone(void *a) {

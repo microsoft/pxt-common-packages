@@ -6,6 +6,34 @@ using namespace std;
 
 namespace pxt {
 
+static HandlerBinding *handlerBindings;
+
+HandlerBinding *findBinding(int source, int value) {
+    for (auto p = handlerBindings; p; p = p->next) {
+        if (p->source == source && p->value == value) {
+            return p;
+        }
+    }
+    return 0;
+}
+
+void setBinding(int source, int value, Action act) {
+    auto curr = findBinding(source, value);
+    incr(act);
+    if (curr) {
+        decr(curr->action);
+        curr->action = act;
+        return;
+    }
+    curr = new HandlerBinding();
+    curr->next = handlerBindings;
+    curr->source = source;
+    curr->value = value;
+    curr->action = act;
+    handlerBindings = curr;
+}
+
+
 static const uint16_t emptyString[]
     __attribute__((aligned(4))) = {0xffff, PXT_REF_TAG_STRING, 0, 0};
 
