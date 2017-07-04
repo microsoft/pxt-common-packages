@@ -20,8 +20,7 @@
 #include <stdint.h>
 #include <math.h>
 
-// TODO sort out C++ new declaration and remove this
-#include <vector>
+#include <new>
 
 #ifdef PXT_MEMLEAK_DEBUG
 #include <set>
@@ -33,9 +32,28 @@
 #define CONCAT_0(a, b) CONCAT_1(a, b)
 #define STATIC_ASSERT(e) enum { CONCAT_0(_static_assert_, __LINE__) = 1 / ((e) ? 1 : 0) };
 
-// extern MicroBit uBit;
+#if 0
+inline void *operator new(size_t, void *p) {
+    return p;
+}
+inline void *operator new[](size_t, void *p) {
+    return p;
+}
+#endif
 
 namespace pxt {
+
+template <typename T> inline const T &max(const T &a, const T &b) {
+    if (a < b)
+        return b;
+    return a;
+}
+
+template <typename T> inline const T &min(const T &a, const T &b) {
+    if (a < b)
+        return a;
+    return b;
+}
 
 //
 // Tagged values
@@ -66,7 +84,6 @@ void dumpDmesg();
 
 // also defined DMESG macro
 // end
-
 
 #define TAGGED_SPECIAL(n) (TValue)(void *)((n << 2) | 2)
 #define TAG_FALSE TAGGED_SPECIAL(2)
