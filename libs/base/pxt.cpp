@@ -442,8 +442,8 @@ void RefMap::destroy() {
         decr(values.get(i));
         values.set(i, 0);
     }
-    keys.resize(0);
-    values.resize(0);
+    keys.destroy();
+    values.destroy();
 }
 
 int RefMap::findIdx(uint32_t key) {
