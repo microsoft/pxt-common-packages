@@ -842,8 +842,7 @@ void mapSet(RefMap *map, uint32_t key, TValue val) {
         map->keys.push((TValue)key);
         map->values.push(val);
     } else {
-        decr(map->values.get(i));
-        map->values.set(i, val);
+        map->values.setRef(i, val);
     }
     map->unref();
 }

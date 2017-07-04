@@ -308,6 +308,7 @@ class Segment {
 
     TValue get(uint32_t i);
     void set(uint32_t i, TValue value);
+    void setRef(uint32_t i, TValue value);
 
     uint32_t getLength() { return length; };
     void setLength(uint32_t newLength);

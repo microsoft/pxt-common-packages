@@ -145,6 +145,11 @@ TValue Segment::get(uint32_t i) {
     return Segment::DefaultValue;
 }
 
+void Segment::setRef(uint32_t i, TValue value) {
+    decr(get(i));
+    set(i, value);
+}
+
 void Segment::set(uint32_t i, TValue value) {
     if (i < size) {
         data[i] = value;
@@ -349,10 +354,8 @@ void RefCollection::insertAt(int i, TValue value) {
 }
 
 void RefCollection::setAt(int i, TValue value) {
-    if (head.isValidIndex((uint32_t)i))
-        decr(head.get(i));
     incr(value);
-    head.set(i, value);
+    head.setRef(i, value);
 }
 
 int RefCollection::indexOf(TValue x, int start) {
