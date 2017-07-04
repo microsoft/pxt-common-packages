@@ -825,52 +825,32 @@ TValue mapGet(RefMap *map, uint32_t key) {
         map->unref();
         return 0;
     }
-    TValue r = map->data[i].val;
+    TValue r = incr(map->values.get(i));
     map->unref();
     return r;
 }
 
 //%
 TValue mapGetRef(RefMap *map, uint32_t key) {
-    int i = map->findIdx(key);
-    if (i < 0) {
-        map->unref();
-        return 0;
-    }
-    TValue r = incr(map->data[i].val);
-    map->unref();
-    return r;
+    return mapGet(map, key);
 }
 
 //%
 void mapSet(RefMap *map, uint32_t key, TValue val) {
     int i = map->findIdx(key);
     if (i < 0) {
-        map->data.push_back({key << 1, val});
+        map->keys.push((TValue)key);
+        map->values.push(val);
     } else {
-        if (map->data[i].key & 1) {
-            decr(map->data[i].val);
-            map->data[i].key = key << 1;
-        }
-        map->data[i].val = val;
+        decr(map->values.get(i));
+        map->values.set(i, val);
     }
     map->unref();
 }
 
 //%
 void mapSetRef(RefMap *map, uint32_t key, TValue val) {
-    int i = map->findIdx(key);
-    if (i < 0) {
-        map->data.push_back({(key << 1) | 1, val});
-    } else {
-        if (map->data[i].key & 1) {
-            decr(map->data[i].val);
-        } else {
-            map->data[i].key = (key << 1) | 1;
-        }
-        map->data[i].val = val;
-    }
-    map->unref();
+    mapSet(map, key, val);
 }
 
 //

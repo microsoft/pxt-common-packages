@@ -17,9 +17,11 @@
 //#define intcheck(...) do {} while (0)
 
 #include <string.h>
-#include <vector>
 #include <stdint.h>
 #include <math.h>
+
+// TODO sort out C++ new declaration and remove this
+#include <vector>
 
 #ifdef PXT_MEMLEAK_DEBUG
 #include <set>
@@ -309,6 +311,7 @@ class Segment {
 
     uint32_t getLength() { return length; };
     void setLength(uint32_t newLength);
+    void resize(uint32_t newLength) { setLength(newLength); }
 
     void push(TValue value);
     TValue pop();
@@ -351,14 +354,10 @@ class RefCollection : public RefObject {
     bool removeElement(TValue x);
 };
 
-struct MapEntry {
-    uint32_t key;
-    TValue val;
-};
-
 class RefMap : public RefObject {
   public:
-    std::vector<MapEntry> data;
+    Segment keys;
+    Segment values;
 
     RefMap();
     void destroy();

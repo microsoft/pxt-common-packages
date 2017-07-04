@@ -1,5 +1,4 @@
 #include "pxtbase.h"
-#include <map>
 
 using namespace std;
 
@@ -439,25 +438,24 @@ PXT_VTABLE_END
 RefMap::RefMap() : PXT_VTABLE_INIT(RefMap) {}
 
 void RefMap::destroy() {
-    for (unsigned i = 0; i < data.size(); ++i) {
-        if (data[i].key & 1) {
-            decr(data[i].val);
-        }
-        data[i].val = 0;
+    for (unsigned i = 0; i < values.getLength(); ++i) {
+        decr(values.get(i));
+        values.set(i, 0);
     }
-    data.resize(0);
+    keys.resize(0);
+    values.resize(0);
 }
 
 int RefMap::findIdx(uint32_t key) {
-    for (unsigned i = 0; i < data.size(); ++i) {
-        if (data[i].key >> 1 == key)
+    for (unsigned i = 0; i < keys.getLength(); ++i) {
+        if ((uint32_t)keys.get(i) == key)
             return i;
     }
     return -1;
 }
 
 void RefMap::print() {
-    DMESG("RefMap %p r=%d size=%d", this, refcnt, data.size());
+    DMESG("RefMap %p r=%d size=%d", this, refcnt, keys.getLength());
 }
 
 #ifdef PXT_MEMLEAK_DEBUG

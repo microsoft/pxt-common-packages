@@ -1,6 +1,5 @@
 #include "pxt.h"
 #include "neopixel.h"
-#include <map>
 
 namespace pxt {
 
