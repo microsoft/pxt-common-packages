@@ -291,7 +291,7 @@ class IrWrap {
         for (int i = 0; i < pulsePtr - 1; i++)
             for (int j = 0; j < pulsePtr - i - 1; j++) {
                 if (nums[j] > nums[j + 1])
-                    std::swap(nums[j], nums[j + 1]);
+                    swap(nums[j], nums[j + 1]);
             }
 
         int median = nums[pulsePtr / 2];
