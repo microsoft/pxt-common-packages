@@ -3,29 +3,13 @@
 
 using namespace std;
 
-// keep in sync with github/pxt/pxtsim/libgeneric.ts
-enum class NumberFormat {
-    Int8LE = 1,
-    UInt8LE,
-    Int16LE,
-    UInt16LE,
-    Int32LE,
-    Int8BE,
-    UInt8BE,
-    Int16BE,
-    UInt16BE,
-    Int32BE,
-
-    UInt32LE,
-    UInt32BE,
-    Float32LE,
-    Float64LE,
-    Float32BE,
-    Float64BE,
-};
-
 //% indexerGet=BufferMethods::getByte indexerSet=BufferMethods::setByte
 namespace BufferMethods {
+//%
+uint8_t *getBytes(Buffer buf) {
+    return buf->data;
+}
+
 //%
 int getByte(Buffer buf, int off) {
     if (buf && 0 <= off && off < buf->length)
@@ -37,11 +21,6 @@ int getByte(Buffer buf, int off) {
 void setByte(Buffer buf, int off, int v) {
     if (buf && 0 <= off && off < buf->length)
         buf->data[off] = v;
-}
-
-//%
-uint8_t *getBytes(Buffer buf) {
-    return buf->data;
 }
 
 int writeBuffer(Buffer buf, int dstOffset, Buffer src, int srcOffset = 0, int length = -1) {
@@ -65,92 +44,14 @@ int writeBuffer(Buffer buf, int dstOffset, Buffer src, int srcOffset = 0, int le
     return 0;
 }
 
-int writeBytes(Buffer buf, int offset, uint8_t *src, int length, bool swapBytes) {
-    if (offset < 0 || length < 0 || offset + length > buf->length)
-        return -1;
-
-    if (swapBytes) {
-        uint8_t *p = buf->data + offset + length;
-        for (int i = 0; i < length; ++i)
-            *--p = src[i];
-    } else {
-        memcpy(buf->data + offset, src, length);
-    }
-
-    return 0;
-}
-
-int readBytes(Buffer buf, uint8_t *dst, int offset, int length, bool swapBytes) {
-    if (offset < 0 || length < 0 || offset + length > buf->length)
-        return -1;
-
-    if (swapBytes) {
-        uint8_t *p = buf->data + offset + length;
-        for (int i = 0; i < length; ++i)
-            dst[i] = *--p;
-    } else {
-        memcpy(dst, buf->data + offset, length);
-    }
-
-    return 0;
-}
-
 /**
  * Write a number in specified format in the buffer.
  */
 //%
 void setNumber(Buffer buf, NumberFormat format, int offset, TNumber value) {
-    int8_t i8;
-    uint8_t u8;
-    int16_t i16;
-    uint16_t u16;
-    int32_t i32;
-    uint32_t u32;
-    float f32;
-    double f64;
-
-// Assume little endian
-#define WRITEBYTES(isz, swap, toInt)                                                               \
-    isz = toInt(value);                                                                            \
-    writeBytes(buf, offset, (uint8_t *)&isz, sizeof(isz), swap);                                   \
-    break
-
-    switch (format) {
-    case NumberFormat::Int8LE:
-        WRITEBYTES(i8, false, toInt);
-    case NumberFormat::UInt8LE:
-        WRITEBYTES(u8, false, toInt);
-    case NumberFormat::Int16LE:
-        WRITEBYTES(i16, false, toInt);
-    case NumberFormat::UInt16LE:
-        WRITEBYTES(u16, false, toInt);
-    case NumberFormat::Int32LE:
-        WRITEBYTES(i32, false, toInt);
-    case NumberFormat::UInt32LE:
-        WRITEBYTES(u32, false, toUInt);
-
-    case NumberFormat::Int8BE:
-        WRITEBYTES(i8, true, toInt);
-    case NumberFormat::UInt8BE:
-        WRITEBYTES(u8, true, toInt);
-    case NumberFormat::Int16BE:
-        WRITEBYTES(i16, true, toInt);
-    case NumberFormat::UInt16BE:
-        WRITEBYTES(u16, true, toInt);
-    case NumberFormat::Int32BE:
-        WRITEBYTES(i32, true, toInt);
-    case NumberFormat::UInt32BE:
-        WRITEBYTES(u32, true, toUInt);
-
-    case NumberFormat::Float32LE:
-        WRITEBYTES(f32, false, toFloat);
-    case NumberFormat::Float32BE:
-        WRITEBYTES(f32, true, toFloat);
-    case NumberFormat::Float64LE:
-        WRITEBYTES(f64, false, toDouble);
-    case NumberFormat::Float64BE:
-        WRITEBYTES(f64, true, toDouble);
-    }
+    if (offset < 0)
+        return;
+    setNumberCore(buf->data + offset, buf->length - offset, format, value);
 }
 
 /**
@@ -158,58 +59,9 @@ void setNumber(Buffer buf, NumberFormat format, int offset, TNumber value) {
  */
 //%
 TNumber getNumber(Buffer buf, NumberFormat format, int offset) {
-    int8_t i8;
-    uint8_t u8;
-    int16_t i16;
-    uint16_t u16;
-    int32_t i32;
-    uint32_t u32;
-    float f32;
-    double f64;
-
-// Assume little endian
-#define READBYTES(isz, swap, conv)                                                                 \
-    readBytes(buf, (uint8_t *)&isz, offset, sizeof(isz), swap);                                    \
-    return conv(isz)
-
-    switch (format) {
-    case NumberFormat::Int8LE:
-        READBYTES(i8, false, fromInt);
-    case NumberFormat::UInt8LE:
-        READBYTES(u8, false, fromInt);
-    case NumberFormat::Int16LE:
-        READBYTES(i16, false, fromInt);
-    case NumberFormat::UInt16LE:
-        READBYTES(u16, false, fromInt);
-    case NumberFormat::Int32LE:
-        READBYTES(i32, false, fromInt);
-    case NumberFormat::UInt32LE:
-        READBYTES(u32, false, fromUInt);
-
-    case NumberFormat::Int8BE:
-        READBYTES(i8, true, fromInt);
-    case NumberFormat::UInt8BE:
-        READBYTES(u8, true, fromInt);
-    case NumberFormat::Int16BE:
-        READBYTES(i16, true, fromInt);
-    case NumberFormat::UInt16BE:
-        READBYTES(u16, true, fromInt);
-    case NumberFormat::Int32BE:
-        READBYTES(i32, true, fromInt);
-    case NumberFormat::UInt32BE:
-        READBYTES(u32, true, fromUInt);
-
-    case NumberFormat::Float32LE:
-        READBYTES(f32, false, fromFloat);
-    case NumberFormat::Float32BE:
-        READBYTES(f32, true, fromFloat);
-    case NumberFormat::Float64LE:
-        READBYTES(f64, false, fromDouble);
-    case NumberFormat::Float64BE:
-        READBYTES(f64, true, fromDouble);
-    }
-
-    return 0;
+    if (offset < 0)
+        return fromInt(0);
+    return getNumberCore(buf->data + offset, buf->length - offset, format);
 }
 
 /** Returns the length of a Buffer object. */
@@ -321,5 +173,159 @@ void rotate(Buffer buf, int offset, int start = 0, int length = -1) {
 void write(Buffer buf, int dstOffset, Buffer src) {
     // srcOff and length not supported, we only do up to 4 args :/
     writeBuffer(buf, dstOffset, src, 0, -1);
+}
+}
+
+namespace pxt {
+static int writeBytes(uint8_t *dst, uint8_t *src, int length, bool swapBytes, int szLeft) {
+    if (szLeft < length) {
+        return -1;
+    }
+
+    if (swapBytes) {
+        uint8_t *p = dst + length;
+        for (int i = 0; i < length; ++i)
+            *--p = src[i];
+    } else {
+        if (length == 4 && ((uint32_t)dst & 3) == 0)
+            *(uint32_t *)dst = *(uint32_t *)src;
+        else if (length == 2 && ((uint32_t)dst & 1) == 0)
+            *(uint16_t *)dst = *(uint16_t *)src;
+        else
+            memcpy(dst, src, length);
+    }
+
+    return 0;
+}
+
+static int readBytes(uint8_t *src, uint8_t *dst, int length, bool swapBytes, int szLeft) {
+    if (szLeft < length) {
+        memset(dst, 0, length);
+        return -1;
+    }
+
+    if (swapBytes) {
+        uint8_t *p = src + length;
+        for (int i = 0; i < length; ++i)
+            dst[i] = *--p;
+    } else {
+        if (length == 4 && ((uint32_t)src & 3) == 0)
+            *(uint32_t *)dst = *(uint32_t *)src;
+        else if (length == 2 && ((uint32_t)src & 1) == 0)
+            *(uint16_t *)dst = *(uint16_t *)src;
+        else
+            memcpy(dst, src, length);
+    }
+
+    return 0;
+}
+
+void setNumberCore(uint8_t *buf, int szLeft, NumberFormat format, TNumber value) {
+    int8_t i8;
+    uint8_t u8;
+    int16_t i16;
+    uint16_t u16;
+    int32_t i32;
+    uint32_t u32;
+    float f32;
+    double f64;
+
+// Assume little endian
+#define WRITEBYTES(isz, swap, toInt)                                                               \
+    isz = toInt(value);                                                                            \
+    writeBytes(buf, (uint8_t *)&isz, sizeof(isz), swap, szLeft);                                   \
+    break
+
+    switch (format) {
+    case NumberFormat::Int8LE:
+        WRITEBYTES(i8, false, toInt);
+    case NumberFormat::UInt8LE:
+        WRITEBYTES(u8, false, toInt);
+    case NumberFormat::Int16LE:
+        WRITEBYTES(i16, false, toInt);
+    case NumberFormat::UInt16LE:
+        WRITEBYTES(u16, false, toInt);
+    case NumberFormat::Int32LE:
+        WRITEBYTES(i32, false, toInt);
+    case NumberFormat::UInt32LE:
+        WRITEBYTES(u32, false, toUInt);
+
+    case NumberFormat::Int8BE:
+        WRITEBYTES(i8, true, toInt);
+    case NumberFormat::UInt8BE:
+        WRITEBYTES(u8, true, toInt);
+    case NumberFormat::Int16BE:
+        WRITEBYTES(i16, true, toInt);
+    case NumberFormat::UInt16BE:
+        WRITEBYTES(u16, true, toInt);
+    case NumberFormat::Int32BE:
+        WRITEBYTES(i32, true, toInt);
+    case NumberFormat::UInt32BE:
+        WRITEBYTES(u32, true, toUInt);
+
+    case NumberFormat::Float32LE:
+        WRITEBYTES(f32, false, toFloat);
+    case NumberFormat::Float32BE:
+        WRITEBYTES(f32, true, toFloat);
+    case NumberFormat::Float64LE:
+        WRITEBYTES(f64, false, toDouble);
+    case NumberFormat::Float64BE:
+        WRITEBYTES(f64, true, toDouble);
+    }
+}
+
+TNumber getNumberCore(uint8_t *buf, int szLeft, NumberFormat format) {
+    int8_t i8;
+    uint8_t u8;
+    int16_t i16;
+    uint16_t u16;
+    int32_t i32;
+    uint32_t u32;
+    float f32;
+    double f64;
+
+// Assume little endian
+#define READBYTES(isz, swap, conv)                                                                 \
+    readBytes(buf, (uint8_t *)&isz, sizeof(isz), swap, szLeft);                                    \
+    return conv(isz)
+
+    switch (format) {
+    case NumberFormat::Int8LE:
+        READBYTES(i8, false, fromInt);
+    case NumberFormat::UInt8LE:
+        READBYTES(u8, false, fromInt);
+    case NumberFormat::Int16LE:
+        READBYTES(i16, false, fromInt);
+    case NumberFormat::UInt16LE:
+        READBYTES(u16, false, fromInt);
+    case NumberFormat::Int32LE:
+        READBYTES(i32, false, fromInt);
+    case NumberFormat::UInt32LE:
+        READBYTES(u32, false, fromUInt);
+
+    case NumberFormat::Int8BE:
+        READBYTES(i8, true, fromInt);
+    case NumberFormat::UInt8BE:
+        READBYTES(u8, true, fromInt);
+    case NumberFormat::Int16BE:
+        READBYTES(i16, true, fromInt);
+    case NumberFormat::UInt16BE:
+        READBYTES(u16, true, fromInt);
+    case NumberFormat::Int32BE:
+        READBYTES(i32, true, fromInt);
+    case NumberFormat::UInt32BE:
+        READBYTES(u32, true, fromUInt);
+
+    case NumberFormat::Float32LE:
+        READBYTES(f32, false, fromFloat);
+    case NumberFormat::Float32BE:
+        READBYTES(f32, true, fromFloat);
+    case NumberFormat::Float64LE:
+        READBYTES(f64, false, fromDouble);
+    case NumberFormat::Float64BE:
+        READBYTES(f64, true, fromDouble);
+    }
+
+    return 0;
 }
 }

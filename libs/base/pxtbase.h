@@ -495,9 +495,33 @@ class BoxedBuffer : public RefObject {
 typedef BoxedBuffer *Buffer;
 typedef BoxedString *String;
 
+// keep in sync with github/pxt/pxtsim/libgeneric.ts
+enum class NumberFormat {
+    Int8LE = 1,
+    UInt8LE,
+    Int16LE,
+    UInt16LE,
+    Int32LE,
+    Int8BE,
+    UInt8BE,
+    Int16BE,
+    UInt16BE,
+    Int32BE,
+
+    UInt32LE,
+    UInt32BE,
+    Float32LE,
+    Float64LE,
+    Float32BE,
+    Float64BE,
+};
+
 // data can be NULL in both cases
 String mkString(const char *data, int len = -1);
 Buffer mkBuffer(const uint8_t *data, int len);
+
+TNumber getNumberCore(uint8_t *buf, int size, NumberFormat format);
+void setNumberCore(uint8_t *buf, int size, NumberFormat format, TNumber value);
 
 TNumber mkNaN();
 void seedRandom(uint32_t seed);
