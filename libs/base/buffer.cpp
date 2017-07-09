@@ -127,6 +127,20 @@ void shift(Buffer buf, int offset, int start = 0, int length = -1) {
 }
 
 /**
+ * Convert a buffer to its hexadecimal representation.
+ */
+//%
+String toHex(Buffer buf) {
+    const char *hex = "0123456789abcdef";
+    auto res = mkString(NULL, buf->length * 2);
+    for (int i = 0; i < buf->length; ++i) {
+        res->data[i << 1] = hex[buf->data[i] >> 4];
+        res->data[(i << 1) + 1] = hex[buf->data[i] & 0xf];
+    }
+    return res;
+}
+
+/**
  * Rotate buffer left in place.
  * @param offset number of bytes to shift; use negative value to shift right
  * @param start start offset in buffer. Default is 0.

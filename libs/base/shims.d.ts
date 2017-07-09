@@ -43,6 +43,12 @@ declare interface Buffer {
     shift(offset: int32, start?: int32, length?: int32): void;
 
     /**
+     * Convert a buffer to its hexadecimal representation.
+     */
+    //% shim=BufferMethods::toHex
+    toHex(): string;
+
+    /**
      * Rotate buffer left in place.
      * @param offset number of bytes to shift; use negative value to shift right
      * @param start start offset in buffer. Default is 0.
