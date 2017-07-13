@@ -1,7 +1,5 @@
 #include "pxt.h"
 
-//% weight=2 color=#002050 icon="\uf287"
-//% advanced=true
 namespace serial {
     // note that at least one // followed by % is needed per declaration!
 
