@@ -28,7 +28,7 @@ Show a random color when you shake the @boardname@.
 
 ```blocks
 input.onGesture(Gesture.Shake,() => {
-    light.pixels.setAll(light.hsv(Math.random(256), 255, 127))
+    light.pixels.setAll(light.hsv(Math.randomRange(0, 256), 255, 127))
 })
 ```
 
