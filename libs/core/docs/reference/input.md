@@ -39,17 +39,19 @@ input.buttonA.onEvent(ButtonEvent.Click, () => {
 ## Microphone #microphone
 
 ```cards
-input.onSoundConditionChanged(LoudnessCondition.Quiet, () => {
-
-})
+input.onLoudSound(() => {})
 input.soundLevel()
 ```
 
-## Temperature #temperature
+## Thermometer #thermometer
 
 ```cards
-input.onTemperateConditionChanged(TemperatureCondition.Cold, 0, () => {
-
+input.onTemperatureConditionChanged(TemperatureCondition.Hot, 15, TemperatureUnit.Celsius, () => {
+	
 })
 input.temperature(TemperatureUnit.Celsius)
+```
+
+```package
+circuit-playground
 ```

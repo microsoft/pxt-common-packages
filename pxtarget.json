@@ -1,15 +1,16 @@
 {
     "id": "common",
-    "name": "PXT Common Packages",
+    "name": "Microsoft MakeCode Common Packages",
     "corepkg": "core",
     "bundleddirs": [
         "libs/core",
+        "libs/buttons",
         "libs/light",
         "libs/music",
         "libs/microphone",
         "libs/accelerometer",
         "libs/lightsensor",
-        "libs/temperature",
+        "libs/thermometer",
         "libs/touch",
         "libs/switch"
     ]

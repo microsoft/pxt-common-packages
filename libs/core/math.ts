@@ -24,15 +24,14 @@ namespace Math {
     export function constrain(value: number, low: number, high: number): number {
         return value < low ? low : value > high ? high : value;
     }
-    
+
     const b_m16: number[] = [0, 49, 49, 41, 90, 27, 117, 10]
     /**
      * Returns the sine of an input angle. This is an 8-bit approximation.
      * @param theta input angle from 0-255
      */
-    //% help=math/sin weight=11 advanced=true blockGap=8
-    //% blockId="math_trig_sin" block="sin %theta"
-    export function sin(theta: number) {
+    //% help=math/isin weight=11 advanced=true blockGap=8
+    export function isin(theta: number) {
         //reference: based on FASTLed's sin approximation method: [https://github.com/FastLED/FastLED](MIT)
         let offset = theta;
         if( theta & 0x40 ) {
@@ -62,9 +61,8 @@ namespace Math {
      * Returns the cosine of an input angle. This is an 8-bit approximation. 
      * @param theta input angle from 0-255
      */
-    //% help=math/cos weight=10 advanced=true blockGap=8
-    //% blockId="math_trig_cos" block="cos %theta"
-    export function cos(theta: number) {
-        return sin(theta + 16384);
+    //% help=math/icos weight=10 advanced=true blockGap=8
+    export function icos(theta: number) {
+        return isin(theta + 16384);
     }
 }

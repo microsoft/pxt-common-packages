@@ -1,0 +1,17 @@
+{
+    "name": "infrared",
+    "description": "Communication over Infra Red",
+    "files": [
+        "README.md",
+        "ir.cpp",
+        "ir.ts",
+        "bitvector.h",
+        "samd21.cpp",
+        "shims.d.ts",
+        "ns.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core"
+    }
+}

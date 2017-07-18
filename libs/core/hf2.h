@@ -30,6 +30,9 @@ class HF2 : public USBHID
 public:
     HF2();
     virtual int endpointRequest();
+    virtual int stdRequest(UsbEndpointIn &ctrl, USBSetup& setup);
+    virtual const InterfaceInfo *getInterfaceInfo();
+
     int sendSerial(const void *data, int size, int isError = 0);
 };
 

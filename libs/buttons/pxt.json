@@ -1,0 +1,17 @@
+{
+    "name": "buttons",
+    "description": "Button A and B drivers",
+    "files": [
+        "README.md",
+        "buttons.cpp",
+        "shims.d.ts",
+        "enums.d.ts"
+    ],
+    "testFiles": [
+        "test.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core"
+    }
+}

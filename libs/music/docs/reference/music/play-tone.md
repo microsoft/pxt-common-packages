@@ -34,3 +34,6 @@ music.playTone(freq, 1000)
 [``||rest||``](/reference/music/rest), [``||ring tone||``](/reference/music/ring-tone) , [``||tempo||``](/reference/music/tempo),
 [``||set tempo||``](/reference/music/set-tempo), [``||change tempo by||``](/reference/music/change-tempo-by)
 
+```package
+music
+```

@@ -307,8 +307,9 @@ TNumber div(TNumber a, TNumber b) {
 
 //%
 TNumber mod(TNumber a, TNumber b) {
-    // TODO this is wrong for doubles
-    BITOP(%)
+    if (isNumber(a) && isNumber(b) && numValue(b))
+        BITOP(%)
+    return fromDouble(fmod(toDouble(a), toDouble(b)));
 }
 
 //%
@@ -401,6 +402,7 @@ PXT_DEF_STRING(sFalse, "false")
 PXT_DEF_STRING(sUndefined, "undefined")
 PXT_DEF_STRING(sNull, "null")
 PXT_DEF_STRING(sObject, "[Object]")
+PXT_DEF_STRING(sFunction, "[Function]")
 PXT_DEF_STRING(sNaN, "NaN")
 PXT_DEF_STRING(sInf, "Infinity")
 PXT_DEF_STRING(sMInf, "-Infinity")
@@ -440,11 +442,13 @@ StringData *toString(TValue v) {
                 else
                     return (StringData *)(void *)sInf;
             }
-            gcvt(x, 21, buf);
+            gcvt(x, 16, buf);
         }
 
         ManagedString s(buf);
         return s.leakData();
+    } else if (t == ValType::Function) {
+        return (StringData *)(void *)sFunction;
     } else {
         return (StringData *)(void *)sObject;
     }
@@ -458,18 +462,91 @@ TNumber pow(TNumber x, TNumber y) {
 }
 
 //%
-int random(int max) {
-    if (max == INT_MIN)
-        return -device.random(INT_MAX);
-    else if (max < 0)
-        return -device.random(-max);
-    else if (max == 0)
-        return 0;
-    else
-        return device.random(max);
+TNumber atan2(TNumber y, TNumber x) {
+    return fromDouble(::atan2(toDouble(y), toDouble(y)));
+}
+
+//%
+TNumber random() {
+    double r = device.random(INT_MAX) / (double)(INT_MAX - 1);
+    double r2 = device.random(INT_MAX) / (double)(INT_MAX - 1);
+    return fromDouble(r * r2);
+}
+
+//%
+TNumber randomRange(TNumber min, TNumber max) {
+    if (isNumber(min) && isNumber(max)) {
+        int mini = numValue(min);
+        int maxi = numValue(max);
+        if (mini > maxi) {
+            int temp = mini;
+            mini = maxi;
+            maxi = temp;
+        }
+        if (maxi == mini)
+            return fromInt(mini);
+        else 
+            return fromInt(mini + device.random(maxi - mini + 1));
+    }
+    else {
+        double mind = toDouble(min);
+        double maxd = toDouble(max);
+        if (mind > maxd) {
+            double temp = mind;
+            mind = maxd;
+            maxd = temp;
+        }
+        if (maxd == mind)
+            return fromDouble(mind);
+        else {
+            double r = device.random(INT_MAX) / (double)(INT_MAX - 1);
+            double r2 = device.random(INT_MAX) / (double)(INT_MAX - 1);
+            return fromDouble(mind + r * r2 * (maxd - mind));
+        }
+    }
 }
 
 #define SINGLE(op) return fromDouble(::op(toDouble(x)));
+
+//%
+TNumber log(TNumber x) {
+    SINGLE(log)
+}
+
+//%
+TNumber exp(TNumber x) {
+    SINGLE(exp)
+}
+
+//%
+TNumber tan(TNumber x) {
+    SINGLE(tan)
+}
+
+//%
+TNumber sin(TNumber x) {
+    SINGLE(sin)
+}
+
+//%
+TNumber cos(TNumber x) {
+    SINGLE(cos)
+}
+
+//%
+TNumber atan(TNumber x) {
+    SINGLE(atan)
+}
+
+//%
+TNumber asin(TNumber x) {
+    SINGLE(asin)
+}
+
+//%
+TNumber acos(TNumber x) {
+    SINGLE(acos)
+}
 
 //%
 TNumber sqrt(TNumber x) {
@@ -772,30 +849,35 @@ ValType valType(TValue v) {
             return ValType::String;
         else if (tag == REF_TAG_NUMBER)
             return ValType::Number;
+        else if (tag == REF_TAG_ACTION || getVTable((RefObject*)v) == &RefAction_vtable)
+            return ValType::Function;
 
         return ValType::Object;
     }
 }
 
-PXT_DEF_STRING(sUndefined, "undefined")
-PXT_DEF_STRING(sObject, "object")
-PXT_DEF_STRING(sBoolean, "boolean")
-PXT_DEF_STRING(sString, "string")
-PXT_DEF_STRING(sNumber, "number")
+PXT_DEF_STRING(sObjectTp, "object")
+PXT_DEF_STRING(sBooleanTp, "boolean")
+PXT_DEF_STRING(sStringTp, "string")
+PXT_DEF_STRING(sNumberTp, "number")
+PXT_DEF_STRING(sFunctionTp, "function")
+PXT_DEF_STRING(sUndefinedTp, "undefined")
 
 //%
 StringData *typeOf(TValue v) {
     switch (valType(v)) {
     case ValType::Undefined:
-        return (StringData *)sUndefined;
+        return (StringData *)sUndefinedTp;
     case ValType::Boolean:
-        return (StringData *)sBoolean;
+        return (StringData *)sBooleanTp;
     case ValType::Number:
-        return (StringData *)sNumber;
+        return (StringData *)sNumberTp;
     case ValType::String:
-        return (StringData *)sString;
+        return (StringData *)sStringTp;
     case ValType::Object:
-        return (StringData *)sObject;
+        return (StringData *)sObjectTp;
+    case ValType::Function:
+        return (StringData *)sFunctionTp;
     default:
         oops();
         return 0;
@@ -803,19 +885,17 @@ StringData *typeOf(TValue v) {
 }
 
 // Maybe in future we will want separate print methods; for now ignore
-
 void anyPrint(TValue v) {
     if (valType(v) == ValType::Object) {
-        if (hasVTable(v)) {
+        if (isRefCounted(v)) {
             auto o = (RefObject *)v;
             auto meth = ((RefObjectMethod)getVTable(o)->methods[1]);
             if ((void *)meth == (void *)&anyPrint)
-                DMESG("[RefObject refs=%d vt=%p]", o->refcnt, getVTable(o));
+                DMESG("[RefObject refs=%d vt=%p]", o->refcnt, o->vtable);
             else
                 meth(o);
         } else {
-            auto r = (RefCounted *)v;
-            DMESG("[RefCounted refs=%d tag=%d]", r->refCount, r->tag);
+            DMESG("[Native %p]", v);
         }
     } else {
         StringData *s = numops::toString(v);
@@ -824,17 +904,22 @@ void anyPrint(TValue v) {
     }
 }
 
+void dtorDoNothing() {
+}
+
 #define PRIM_VTABLE(name, sz)                                                                      \
     const VTable name = {sz,                                                                       \
                          0,                                                                        \
                          0,                                                                        \
                          {                                                                         \
-                             0, (void *)&anyPrint,                                                 \
+                             (void*)&dtorDoNothing, \
+                             (void *)&anyPrint,                                                 \
                          }};
 PRIM_VTABLE(string_vt, 0)
 PRIM_VTABLE(image_vt, 0)
 PRIM_VTABLE(buffer_vt, 0)
 PRIM_VTABLE(number_vt, 12)
+PRIM_VTABLE(action_vt, 0)
 
 static const VTable *primVtables[] = {0,          // 0
                                       &string_vt, // 1
@@ -844,10 +929,11 @@ static const VTable *primVtables[] = {0,          // 0
                                       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                                       0, 0, 0, 0, 0, 0, 0,
                                       &number_vt, // 32
+                                      &action_vt, // 33
                                       0};
 
 VTable *getVTable(RefObject *r) {
-    if (r->vtable >= 33)
+    if (r->vtable >= 34)
         return (VTable *)(r->vtable << vtableShift);
     return (VTable *)primVtables[r->vtable];
 }

@@ -1,4 +1,4 @@
-# Set Accelerometer Range
+# set Accelerometer Range
 
 Set how the @boardname@ will measure g-force or
 [acceleration](/reference/input/acceleration) (how much the @boardname@
@@ -28,9 +28,9 @@ loops.forever(() => {
 ```
 
 #### ~hint
+**Simulator**
 
-**NoSim**: This program only works when on the @boardname@. You have to download it first before trying it out.
-
+This program only works when on the @boardname@. You have to download it first before trying it out.
 #### ~
 
 ### See Also
