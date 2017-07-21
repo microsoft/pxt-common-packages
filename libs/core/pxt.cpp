@@ -244,9 +244,9 @@ TValue Segment::pop() {
 #endif
 
     if (length > 0) {
+        --length;
         TValue value = data[length];
         data[length] = Segment::DefaultValue;
-        --length;
         return value;
     }
     return Segment::DefaultValue;
