@@ -13,11 +13,11 @@ enum Colors {
     //% block=blue blockIdentity=light.colors
     Blue = 0x0000FF,
     //% block=indigo blockIdentity=light.colors
-    Indigo = 0x4b0082,
+    Indigo = 0x2F0159,
     //% block=violet blockIdentity=light.colors
     Violet = 0x8a2be2,
     //% block=purple blockIdentity=light.colors
-    Purple = 0xFF00FF,
+    Purple = 0x4D1482,
     //% block=pink blockIdentity=light.colors
     Pink = 0xE242F4,
     //% block=white blockIdentity=light.colors
