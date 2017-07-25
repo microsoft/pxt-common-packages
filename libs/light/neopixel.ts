@@ -19,7 +19,7 @@ enum Colors {
     //% block=purple blockIdentity=light.colors
     Purple = 0xFF00FF,
     //% block=pink blockIdentity=light.colors
-    Pink = 0xE242F4,
+    Pink = 0xFFC0CB,
     //% block=white blockIdentity=light.colors
     White = 0xFFFFFF,
     //% block=black  blockIdentity=light.colors
