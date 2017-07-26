@@ -482,12 +482,11 @@ namespace light {
          * Set the photon color.
          * @param color the color of the photon
          */
-        //% blockId=neophoton_set_color block="photon set pen color %color"
+        //% blockId=neophoton_set_color block="photon set pen color %color=neopixel_colors"
         //% weight=39
         //% blockGap=8
         //% parts="neopixel"
         //% defaultInstance=light.pixels
-        //% color.min=0 color.max=255
         //% help="light/set-photon-color"
         setPhotonColor(color: number) {
             this.initPhoton();
