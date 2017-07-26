@@ -5,7 +5,7 @@ enum Colors {
     //% block=red blockIdentity=light.colors
     Red = 0xFF0000,
     //% block=orange blockIdentity=light.colors
-    Orange = 0xFFA500,
+    Orange = 0xFF7F00,
     //% block=yellow blockIdentity=light.colors
     Yellow = 0xFFFF00,
     //% block=green blockIdentity=light.colors
