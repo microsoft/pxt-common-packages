@@ -5,7 +5,7 @@ enum Colors {
     //% block=red blockIdentity=light.colors
     Red = 0xFF0000,
     //% block=orange blockIdentity=light.colors
-    Orange = 0xFFA500,
+    Orange = 0xFF7F00,
     //% block=yellow blockIdentity=light.colors
     Yellow = 0xFFFF00,
     //% block=green blockIdentity=light.colors
@@ -17,9 +17,9 @@ enum Colors {
     //% block=violet blockIdentity=light.colors
     Violet = 0x8a2be2,
     //% block=purple blockIdentity=light.colors
-    Purple = 0xFF00FF,
+    Purple = 0xA033E5,
     //% block=pink blockIdentity=light.colors
-    Pink = 0xE242F4,
+    Pink = 0xFF007F,
     //% block=white blockIdentity=light.colors
     White = 0xFFFFFF,
     //% block=black  blockIdentity=light.colors
