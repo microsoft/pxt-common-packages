@@ -1,6 +1,7 @@
 #include "pxt.h"
 #include "neopixel.h"
 
+
 /**
  * Functions to operate colored LEDs.
  */
@@ -12,6 +13,10 @@ namespace light {
      */
     //% parts="neopixel"
     DigitalPin defaultPin() {
+        #if PXT_BOARD_ID == BOARD_ID_METRO
+        // Metro express neopixel pin is set for SWD by default
+        PORT->Group[PIN_NEOPIXEL / 32].PINCFG[PIN_NEOPIXEL % 32].reg=(uint8_t)(PORT_PINCFG_INEN) ;
+        #endif
         if (PIN_NEOPIXEL == NC)
             return lookupPin(PIN_PA11);
         else

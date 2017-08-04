@@ -73,6 +73,12 @@
 #define PIN_LIGHT PIN_A2
 
 #define PIN_ACCELEROMETER_SDA NC
+
+#if PXT_BOARD_ID == BOARD_ID_METRO
+#undef PIN_NEOPIXEL
+#define PIN_NEOPIXEL PIN_PA30
+#endif
+
 #define PIN_ACCELEROMETER_SCL NC
 #define PIN_ACCELEROMETER_INT NC
 
@@ -105,7 +111,7 @@
 #define PIN_MIC_CLOCK PA10
 
 // devices
-#define PIN_BTN_A PIN_PA28 
+#define PIN_BTN_A PIN_PA28
 #define PIN_BTN_B PIN_PA14 // right
 #define PIN_BTN_SLIDE PIN_PA15
 #define PIN_NEOPIXEL PIN_PB23
