@@ -1,7 +1,5 @@
 #include "pxt.h"
 
-#include "DeviceSystemTimer.h"
-
 enum class PulseValue {
     //% block=high
     High = DEVICE_PIN_EVT_PULSE_HI,
@@ -22,7 +20,7 @@ namespace pxt {
 //%
 DevicePin *getPin(int id) {
     if (!(0 <= id && id <= LastPinID))
-        device.panic(42);
+        target_panic(42);
     DevicePin *p = &io->pins[id];
     // if (p->name == NC)
     //    return NULL;
@@ -237,7 +235,7 @@ namespace pins {
  */
 //%
 Buffer createBuffer(int size) {
-    return ManagedBuffer(size).leakData();
+    return mkBuffer(NULL, size);
 }
 
 /**

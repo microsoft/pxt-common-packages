@@ -1,8 +1,7 @@
 #include "pxt.h"
-#include "DeviceSystemTimer.h"
 #include "AnalogSensor.h"
 #include "NonLinearAnalogSensor.h"
-#include "DeviceButton.h"
+#include "Button.h"
 
 enum class TemperatureCondition {
     //% block="hot"

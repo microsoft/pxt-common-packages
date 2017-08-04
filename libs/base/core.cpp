@@ -1,26 +1,176 @@
-#include "pxt.h"
+#include "pxtbase.h"
 #include <limits.h>
+#include <stdlib.h>
+
+using namespace std;
+
+namespace pxt {
+
+static HandlerBinding *handlerBindings;
+
+HandlerBinding *findBinding(int source, int value) {
+    for (auto p = handlerBindings; p; p = p->next) {
+        if (p->source == source && p->value == value) {
+            return p;
+        }
+    }
+    return 0;
+}
+
+void setBinding(int source, int value, Action act) {
+    auto curr = findBinding(source, value);
+    incr(act);
+    if (curr) {
+        decr(curr->action);
+        curr->action = act;
+        return;
+    }
+    curr = new HandlerBinding();
+    curr->next = handlerBindings;
+    curr->source = source;
+    curr->value = value;
+    curr->action = act;
+    handlerBindings = curr;
+}
+
+
+static const uint16_t emptyString[]
+    __attribute__((aligned(4))) = {0xffff, PXT_REF_TAG_STRING, 0, 0};
+
+static const uint16_t emptyBuffer[]
+    __attribute__((aligned(4))) = {0xffff, PXT_REF_TAG_BUFFER, 0, 0};
+
+String mkString(const char *data, int len) {
+    if (len < 0)
+        len = strlen(data);
+    if (len == 0)
+        return (String)emptyString;
+    String r = new (::operator new(sizeof(BoxedString) + len + 1)) BoxedString();
+    r->length = len;
+    if (data)
+        memcpy(r->data, data, len);
+    r->data[len] = 0;
+    return r;
+}
+
+Buffer mkBuffer(const uint8_t *data, int len) {
+    if (len <= 0)
+        return (Buffer)emptyBuffer;
+    Buffer r = new (::operator new(sizeof(BoxedBuffer) + len)) BoxedBuffer();
+    r->length = len;
+    if (data)
+        memcpy(r->data, data, len);
+    else
+        memset(r->data, 0, len);
+    return r;
+}
+
+TNumber mkNaN() {
+    // TODO optimize
+    return fromDouble(NAN);
+}
+
+static uint32_t random_value = 0xC0DA1;
+
+void seedRandom(uint32_t seed) {
+    random_value = seed;
+}
+
+uint32_t getRandom(uint32_t max) {
+    uint32_t m, result;
+
+    do {
+        m = (uint32_t)max;
+        result = 0;
+        do {
+            // Cycle the LFSR (Linear Feedback Shift Register).
+            // We use an optimal sequence with a period of 2^32-1, as defined by Bruce Schneier here
+            // (a true legend in the field!),
+            // For those interested, it's documented in his paper:
+            // "Pseudo-Random Sequence Generator for 32-Bit CPUs: A fast, machine-independent
+            // generator for 32-bit Microprocessors"
+            // https://www.schneier.com/paper-pseudorandom-sequence.html
+            uint32_t r = random_value;
+
+            r = ((((r >> 31) ^ (r >> 6) ^ (r >> 4) ^ (r >> 2) ^ (r >> 1) ^ r) & 1) << 31) |
+                (r >> 1);
+
+            random_value = r;
+
+            result = ((result << 1) | (r & 0x00000001));
+        } while (m >>= 1);
+    } while (result > (uint32_t)max);
+
+    return result;
+}
+
+PXT_DEF_STRING(sTrue, "true")
+PXT_DEF_STRING(sFalse, "false")
+PXT_DEF_STRING(sUndefined, "undefined")
+PXT_DEF_STRING(sNull, "null")
+PXT_DEF_STRING(sObject, "[Object]")
+PXT_DEF_STRING(sFunction, "[Function]")
+PXT_DEF_STRING(sNaN, "NaN")
+PXT_DEF_STRING(sInf, "Infinity")
+PXT_DEF_STRING(sMInf, "-Infinity")
+}
 
 namespace String_ {
 
 //%
-StringData *charAt(StringData *s, int pos) {
-    return ManagedString((char)ManagedString(s).charAt(pos)).leakData();
+String mkEmpty() {
+    return mkString("", 0);
 }
 
 //%
-int charCodeAt(StringData *s, int index) {
-    return ManagedString(s).charAt(index);
+String fromCharCode(int code) {
+    char buf[] = {(char)code, 0};
+    return mkString(buf, 1);
 }
 
 //%
-StringData *concat(StringData *s, StringData *other) {
-    ManagedString a(s), b(other);
-    return (a + b).leakData();
+String charAt(String s, int pos) {
+    if (s && 0 <= pos && pos < s->length) {
+        return fromCharCode(s->data[pos]);
+    } else {
+        return mkEmpty();
+    }
 }
 
 //%
-int compare(StringData *s, StringData *that) {
+TNumber charCodeAt(String s, int pos) {
+    if (s && 0 <= pos && pos < s->length) {
+        return fromInt(s->data[pos]);
+    } else {
+        return mkNaN();
+    }
+}
+
+//%
+String concat(String s, String other) {
+    if (!s)
+        s = (String)sNull;
+    if (!other)
+        other = (String)sNull;
+    if (s->length == 0)
+        return (String)incrRC(other);
+    if (other->length == 0)
+        return (String)incrRC(s);
+    String r = mkString(NULL, s->length + other->length);
+    memcpy(r->data, s->data, s->length);
+    memcpy(r->data + s->length, other->data, other->length);
+    return r;
+}
+
+//%
+int compare(String s, String that) {
+    if (s == that)
+        return 0;
+    // TODO this isn't quite right, in JS both `null < "foo"` and `null > "foo"` are false
+    if (!s)
+        return -1;
+    if (!that)
+        return 1;
     int compareResult = strcmp(s->data, that->data);
     if (compareResult < 0)
         return -1;
@@ -30,21 +180,16 @@ int compare(StringData *s, StringData *that) {
 }
 
 //%
-int length(StringData *s) {
-    return s->len;
+int length(String s) {
+    return s->length;
 }
 
 //%
-StringData *fromCharCode(int code) {
-    return ManagedString((char)code).leakData();
-}
-
-//%
-TNumber toNumber(StringData *s) {
+TNumber toNumber(String s) {
     // JSCHECK
     char *endptr;
     double v = strtod(s->data, &endptr);
-    if (endptr != s->data + s->len)
+    if (endptr != s->data + s->length)
         v = NAN;
     else if (v == 0.0 || v == -0.0)
         v = v;
@@ -54,19 +199,13 @@ TNumber toNumber(StringData *s) {
 }
 
 //%
-StringData *mkEmpty() {
-    return ManagedString::EmptyString.leakData();
-}
-
-//%
-StringData *substr(StringData *s, int start, int length) {
+String substr(String s, int start, int length) {
     if (length <= 0)
         return mkEmpty();
     if (start < 0)
-        start = max(s->len + start, 0);
-    length = min(length, s->len - start);
-    ManagedString x(s);
-    return x.substring(start, length).leakData();
+        start = max(s->length + start, 0);
+    length = min(length, s->length - start);
+    return mkString(s->data + start, length);
 }
 }
 
@@ -114,7 +253,7 @@ double toDouble(TNumber v) {
         BoxedNumber *p = (BoxedNumber *)v;
         return p->num;
     } else if (t == ValType::String) {
-        return toDouble(String_::toNumber((StringData *)v));
+        return toDouble(String_::toNumber((String)v));
     } else {
         return NAN;
     }
@@ -131,9 +270,7 @@ TNumber fromDouble(double r) {
     if ((ri >> 1) == r)
         return (TNumber)(ri | 1);
 #endif
-    BoxedNumber *p = (BoxedNumber *)malloc(sizeof(BoxedNumber));
-    p->init();
-    p->tag = REF_TAG_NUMBER;
+    BoxedNumber *p = new BoxedNumber();
     p->num = r;
     return (TNumber)p;
 }
@@ -187,7 +324,7 @@ bool eqq_bool(TValue a, TValue b) {
         return false;
 
     if (ta == ValType::String)
-        return String_::compare((StringData *)a, (StringData *)b) == 0;
+        return String_::compare((String)a, (String)b) == 0;
 
     int aa = (int)a;
     int bb = (int)b;
@@ -253,8 +390,8 @@ int toBool(TValue v) {
 
     ValType t = valType(v);
     if (t == ValType::String) {
-        StringData *s = (StringData *)v;
-        if (s->len == 0)
+        String s = (String)v;
+        if (s->length == 0)
             return 0;
     } else if (t == ValType::Number) {
         double x = toDouble(v);
@@ -277,14 +414,10 @@ int toBoolDecr(TValue v) {
 // The integer, non-overflow case for add/sub/bit opts is handled in assembly
 
 //%
-TNumber adds(TNumber a, TNumber b) {
-    NUMOP(+)
-}
+TNumber adds(TNumber a, TNumber b){NUMOP(+)}
 
 //%
-TNumber subs(TNumber a, TNumber b) {
-    NUMOP(-)
-}
+TNumber subs(TNumber a, TNumber b){NUMOP(-)}
 
 //%
 TNumber muls(TNumber a, TNumber b) {
@@ -301,9 +434,7 @@ TNumber muls(TNumber a, TNumber b) {
 }
 
 //%
-TNumber div(TNumber a, TNumber b) {
-    NUMOP(/)
-}
+TNumber div(TNumber a, TNumber b){NUMOP(/)}
 
 //%
 TNumber mod(TNumber a, TNumber b) {
@@ -313,9 +444,7 @@ TNumber mod(TNumber a, TNumber b) {
 }
 
 //%
-TNumber lsls(TNumber a, TNumber b) {
-    BITOP(<<)
-}
+TNumber lsls(TNumber a, TNumber b){BITOP(<<)}
 
 //%
 TNumber lsrs(TNumber a, TNumber b) {
@@ -323,19 +452,13 @@ TNumber lsrs(TNumber a, TNumber b) {
 }
 
 //%
-TNumber asrs(TNumber a, TNumber b) {
-    BITOP(>>)
-}
+TNumber asrs(TNumber a, TNumber b){BITOP(>>)}
 
 //%
-TNumber eors(TNumber a, TNumber b) {
-    BITOP (^)
-}
+TNumber eors(TNumber a, TNumber b){BITOP (^)}
 
 //%
-TNumber orrs(TNumber a, TNumber b) {
-    BITOP(|)
-}
+TNumber orrs(TNumber a, TNumber b){BITOP(|)}
 
 //%
 TNumber ands(TNumber a, TNumber b) {
@@ -353,29 +476,19 @@ TNumber ands(TNumber a, TNumber b) {
     return toDouble(a) op toDouble(b) ? TAG_TRUE : TAG_FALSE;
 
 //%
-bool lt_bool(TNumber a, TNumber b) {
-    CMPOP_RAW(<)
-}
+bool lt_bool(TNumber a, TNumber b){CMPOP_RAW(<)}
 
 //%
-TNumber le(TNumber a, TNumber b) {
-    CMPOP(<=)
-}
+TNumber le(TNumber a, TNumber b){CMPOP(<=)}
 
 //%
-TNumber lt(TNumber a, TNumber b) {
-    CMPOP(<)
-}
+TNumber lt(TNumber a, TNumber b){CMPOP(<)}
 
 //%
-TNumber ge(TNumber a, TNumber b) {
-    CMPOP(>=)
-}
+TNumber ge(TNumber a, TNumber b){CMPOP(>=)}
 
 //%
-TNumber gt(TNumber a, TNumber b) {
-    CMPOP(>)
-}
+TNumber gt(TNumber a, TNumber b){CMPOP(>)}
 
 //%
 TNumber eq(TNumber a, TNumber b) {
@@ -397,60 +510,49 @@ TNumber neqq(TNumber a, TNumber b) {
     return !pxt::eqq_bool(a, b) ? TAG_TRUE : TAG_FALSE;
 }
 
-PXT_DEF_STRING(sTrue, "true")
-PXT_DEF_STRING(sFalse, "false")
-PXT_DEF_STRING(sUndefined, "undefined")
-PXT_DEF_STRING(sNull, "null")
-PXT_DEF_STRING(sObject, "[Object]")
-PXT_DEF_STRING(sFunction, "[Function]")
-PXT_DEF_STRING(sNaN, "NaN")
-PXT_DEF_STRING(sInf, "Infinity")
-PXT_DEF_STRING(sMInf, "-Infinity")
-
 asm(".global _printf_float");
 extern "C" char *gcvt(double d, int ndigit, char *buf);
 
 //%
-StringData *toString(TValue v) {
+String toString(TValue v) {
 
     if (v == TAG_UNDEFINED)
-        return (StringData *)(void *)sUndefined;
+        return (String)(void *)sUndefined;
     else if (v == TAG_FALSE)
-        return (StringData *)(void *)sFalse;
+        return (String)(void *)sFalse;
     else if (v == TAG_TRUE)
-        return (StringData *)(void *)sTrue;
+        return (String)(void *)sTrue;
     else if (v == TAG_NULL)
-        return (StringData *)(void *)sNull;
+        return (String)(void *)sNull;
     ValType t = valType(v);
 
     if (t == ValType::String) {
-        return (StringData *)(void *)incr(v);
+        return (String)(void *)incr(v);
     } else if (t == ValType::Number) {
         char buf[64];
 
-        if (isNumber(v)) {
-            int x = numValue(v);
-            itoa(x, buf);
-        } else {
-            double x = toDouble(v);
+        // if (isNumber(v)) {
+        //    int x = numValue(v);
+        //    itoa(x, buf);
+        //} else {
+        double x = toDouble(v);
 
-            if (isnan(x))
-                return (StringData *)(void *)sNaN;
-            if (isinf(x)) {
-                if (x < 0)
-                    return (StringData *)(void *)sMInf;
-                else
-                    return (StringData *)(void *)sInf;
-            }
-            gcvt(x, 16, buf);
+        if (isnan(x))
+            return (String)(void *)sNaN;
+        if (isinf(x)) {
+            if (x < 0)
+                return (String)(void *)sMInf;
+            else
+                return (String)(void *)sInf;
         }
+        gcvt(x, 16, buf);
+        //}
 
-        ManagedString s(buf);
-        return s.leakData();
+        return mkString(buf);
     } else if (t == ValType::Function) {
-        return (StringData *)(void *)sFunction;
+        return (String)(void *)sFunction;
     } else {
-        return (StringData *)(void *)sObject;
+        return (String)(void *)sObject;
     }
 }
 }
@@ -466,11 +568,14 @@ TNumber atan2(TNumber y, TNumber x) {
     return fromDouble(::atan2(toDouble(y), toDouble(y)));
 }
 
+double randomDouble() {
+    return getRandom(UINT_MAX) / ((double)UINT_MAX + 1) +
+           getRandom(0xffffff) / ((double)UINT_MAX * 0xffffff);
+}
+
 //%
 TNumber random() {
-    double r = device.random(INT_MAX) / (double)(INT_MAX - 1);
-    double r2 = device.random(INT_MAX) / (double)(INT_MAX - 1);
-    return fromDouble(r * r2);
+    return fromDouble(randomDouble());
 }
 
 //%
@@ -485,10 +590,9 @@ TNumber randomRange(TNumber min, TNumber max) {
         }
         if (maxi == mini)
             return fromInt(mini);
-        else 
-            return fromInt(mini + device.random(maxi - mini + 1));
-    }
-    else {
+        else
+            return fromInt(mini + getRandom(maxi - mini));
+    } else {
         double mind = toDouble(min);
         double maxd = toDouble(max);
         if (mind > maxd) {
@@ -499,9 +603,7 @@ TNumber randomRange(TNumber min, TNumber max) {
         if (maxd == mind)
             return fromDouble(mind);
         else {
-            double r = device.random(INT_MAX) / (double)(INT_MAX - 1);
-            double r2 = device.random(INT_MAX) / (double)(INT_MAX - 1);
-            return fromDouble(mind + r * r2 * (maxd - mind));
+            return fromDouble(mind + randomDouble() * (maxd - mind));
         }
     }
 }
@@ -509,64 +611,40 @@ TNumber randomRange(TNumber min, TNumber max) {
 #define SINGLE(op) return fromDouble(::op(toDouble(x)));
 
 //%
-TNumber log(TNumber x) {
-    SINGLE(log)
-}
+TNumber log(TNumber x){SINGLE(log)}
 
 //%
-TNumber exp(TNumber x) {
-    SINGLE(exp)
-}
+TNumber exp(TNumber x){SINGLE(exp)}
 
 //%
-TNumber tan(TNumber x) {
-    SINGLE(tan)
-}
+TNumber tan(TNumber x){SINGLE(tan)}
 
 //%
-TNumber sin(TNumber x) {
-    SINGLE(sin)
-}
+TNumber sin(TNumber x){SINGLE(sin)}
 
 //%
-TNumber cos(TNumber x) {
-    SINGLE(cos)
-}
+TNumber cos(TNumber x){SINGLE(cos)}
 
 //%
-TNumber atan(TNumber x) {
-    SINGLE(atan)
-}
+TNumber atan(TNumber x){SINGLE(atan)}
 
 //%
-TNumber asin(TNumber x) {
-    SINGLE(asin)
-}
+TNumber asin(TNumber x){SINGLE(asin)}
 
 //%
-TNumber acos(TNumber x) {
-    SINGLE(acos)
-}
+TNumber acos(TNumber x){SINGLE(acos)}
 
 //%
-TNumber sqrt(TNumber x) {
-    SINGLE(sqrt)
-}
+TNumber sqrt(TNumber x){SINGLE(sqrt)}
 
 //%
-TNumber floor(TNumber x) {
-    SINGLE(floor)
-}
+TNumber floor(TNumber x){SINGLE(floor)}
 
 //%
-TNumber ceil(TNumber x) {
-    SINGLE(ceil)
-}
+TNumber ceil(TNumber x){SINGLE(ceil)}
 
 //%
-TNumber trunc(TNumber x) {
-    SINGLE(trunc)
-}
+TNumber trunc(TNumber x){SINGLE(trunc)}
 
 //%
 TNumber round(TNumber x) {
@@ -582,7 +660,6 @@ int imul(int x, int y) {
 int idiv(int x, int y) {
     return x / y;
 }
-
 }
 
 namespace Array_ {
@@ -641,13 +718,6 @@ uint32_t programSize() {
     return bytecode[17] * 2;
 }
 
-//%
-uint32_t afterProgramPage() {
-    uint32_t ptr = (uint32_t)&bytecode[0];
-    ptr += programSize();
-    ptr = (ptr + (PAGE_SIZE - 1)) & ~(PAGE_SIZE - 1);
-    return ptr;
-}
 }
 
 namespace pxtrt {
@@ -723,12 +793,12 @@ RefAction *stclo(RefAction *a, int idx, TValue v) {
 
 //%
 void panic(int code) {
-    device.panic(code);
+    target_panic(code);
 }
 
 //%
-StringData *emptyToNull(StringData *s) {
-    if (!s || s->len == 0)
+String emptyToNull(String s) {
+    if (!s || s->length == 0)
         return NULL;
     return s;
 }
@@ -755,52 +825,31 @@ TValue mapGet(RefMap *map, uint32_t key) {
         map->unref();
         return 0;
     }
-    TValue r = map->data[i].val;
+    TValue r = incr(map->values.get(i));
     map->unref();
     return r;
 }
 
 //%
 TValue mapGetRef(RefMap *map, uint32_t key) {
-    int i = map->findIdx(key);
-    if (i < 0) {
-        map->unref();
-        return 0;
-    }
-    TValue r = incr(map->data[i].val);
-    map->unref();
-    return r;
+    return mapGet(map, key);
 }
 
 //%
 void mapSet(RefMap *map, uint32_t key, TValue val) {
     int i = map->findIdx(key);
     if (i < 0) {
-        map->data.push_back({key << 1, val});
+        map->keys.push((TValue)key);
+        map->values.push(val);
     } else {
-        if (map->data[i].key & 1) {
-            decr(map->data[i].val);
-            map->data[i].key = key << 1;
-        }
-        map->data[i].val = val;
+        map->values.setRef(i, val);
     }
     map->unref();
 }
 
 //%
 void mapSetRef(RefMap *map, uint32_t key, TValue val) {
-    int i = map->findIdx(key);
-    if (i < 0) {
-        map->data.push_back({(key << 1) | 1, val});
-    } else {
-        if (map->data[i].key & 1) {
-            decr(map->data[i].val);
-        } else {
-            map->data[i].key = (key << 1) | 1;
-        }
-        map->data[i].val = val;
-    }
-    map->unref();
+    mapSet(map, key, val);
 }
 
 //
@@ -813,18 +862,12 @@ void *getGlobalsPtr() {
 }
 
 //%
-void runtimeWarning(StringData *s) {
+void runtimeWarning(String s) {
     // noop for now
 }
 }
 
 namespace pxt {
-
-void dumpDmesg() {
-    hf2.sendSerial("\nDMESG:\n", 8);
-    hf2.sendSerial(codalLogStore.buffer, codalLogStore.ptr);
-    hf2.sendSerial("\n\n", 2);
-}
 
 //%
 ValType valType(TValue v) {
@@ -843,13 +886,13 @@ ValType valType(TValue v) {
             return ValType::Object;
         }
     } else {
-        int tag = ((RefCounted *)v)->tag;
+        int tag = ((RefObject *)v)->vtable;
 
-        if (tag == REF_TAG_STRING)
+        if (tag == PXT_REF_TAG_STRING)
             return ValType::String;
-        else if (tag == REF_TAG_NUMBER)
+        else if (tag == PXT_REF_TAG_NUMBER)
             return ValType::Number;
-        else if (tag == REF_TAG_ACTION || getVTable((RefObject*)v) == &RefAction_vtable)
+        else if (tag == PXT_REF_TAG_ACTION || getVTable((RefObject *)v) == &RefAction_vtable)
             return ValType::Function;
 
         return ValType::Object;
@@ -864,20 +907,20 @@ PXT_DEF_STRING(sFunctionTp, "function")
 PXT_DEF_STRING(sUndefinedTp, "undefined")
 
 //%
-StringData *typeOf(TValue v) {
+String typeOf(TValue v) {
     switch (valType(v)) {
     case ValType::Undefined:
-        return (StringData *)sUndefinedTp;
+        return (String)sUndefinedTp;
     case ValType::Boolean:
-        return (StringData *)sBooleanTp;
+        return (String)sBooleanTp;
     case ValType::Number:
-        return (StringData *)sNumberTp;
+        return (String)sNumberTp;
     case ValType::String:
-        return (StringData *)sStringTp;
+        return (String)sStringTp;
     case ValType::Object:
-        return (StringData *)sObjectTp;
+        return (String)sObjectTp;
     case ValType::Function:
-        return (StringData *)sFunctionTp;
+        return (String)sFunctionTp;
     default:
         oops();
         return 0;
@@ -898,22 +941,20 @@ void anyPrint(TValue v) {
             DMESG("[Native %p]", v);
         }
     } else {
-        StringData *s = numops::toString(v);
+        String s = numops::toString(v);
         DMESG("[%s %p = %s]", pxt::typeOf(v)->data, v, s->data);
         decr((TValue)s);
     }
 }
 
-void dtorDoNothing() {
-}
+void dtorDoNothing() {}
 
 #define PRIM_VTABLE(name, sz)                                                                      \
     const VTable name = {sz,                                                                       \
                          0,                                                                        \
                          0,                                                                        \
                          {                                                                         \
-                             (void*)&dtorDoNothing, \
-                             (void *)&anyPrint,                                                 \
+                             (void *)&dtorDoNothing, (void *)&anyPrint,                            \
                          }};
 PRIM_VTABLE(string_vt, 0)
 PRIM_VTABLE(image_vt, 0)
@@ -935,6 +976,8 @@ static const VTable *primVtables[] = {0,          // 0
 VTable *getVTable(RefObject *r) {
     if (r->vtable >= 34)
         return (VTable *)(r->vtable << vtableShift);
+    if (r->vtable == 0)
+        target_panic(100);
     return (VTable *)primVtables[r->vtable];
 }
 }

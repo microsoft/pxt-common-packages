@@ -1,43 +1,37 @@
-#include "pxt.h"
-#include "neopixel.h"
-#include <map>
+#include "pxtbase.h"
 
-CodalDevice device;
+using namespace std;
 
 namespace pxt {
 
-// The first two word are used to tell the bootloader that a single reset should start the
-// bootloader and the MSD device, not us.
-// The rest is reserved for partial flashing checksums.
-__attribute__((section(".binmeta"))) __attribute__((used)) const uint32_t pxt_binmeta[] = {
-    0x87eeb07c, 0x87eeb07c, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff,
-    0x00ff00ff, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff,
-    0x00ff00ff, 0x00ff00ff,
-};
-
 TValue incr(TValue e) {
-    if (isRefCounted(e))
+    if (isRefCounted(e)) {
+        getVTable((RefObject *)e);
         ((RefObject *)e)->ref();
+    }
     return e;
 }
 
 void decr(TValue e) {
 #if 0
-        if (((RefCounted *)e)->refCount != 0xffff) {
-            DMESG("DECR: %p refs=%d vt=%p", e, ((RefCounted *)e)->refCount,
-                    ((RefCounted *)e)->vtablePtr);
+        if (isRefCounted(e) && ((RefObject *)e)->refcnt != 0xffff) {
+            DMESG("DECR: %p refs=%d vt=%p", e, ((RefObject *)e)->refcnt,
+                    ((RefObject *)e)->vtable);
         }
 #endif
 
-    if (isRefCounted(e))
+
+    if (isRefCounted(e)) {
+        getVTable((RefObject *)e);
         ((RefObject *)e)->unref();
+    }
 }
 
 Action mkAction(int reflen, int totallen, int startptr) {
     check(0 <= reflen && reflen <= totallen, ERR_SIZE, 1);
     check(reflen <= totallen && totallen <= 255, ERR_SIZE, 2);
     check(bytecode[startptr] == 0xffff, ERR_INVALID_BINARY_HEADER, 3);
-    check(bytecode[startptr + 1] == REF_TAG_ACTION, ERR_INVALID_BINARY_HEADER, 4);
+    check(bytecode[startptr + 1] == PXT_REF_TAG_ACTION, ERR_INVALID_BINARY_HEADER, 4);
 
     uint32_t tmp = (uint32_t)&bytecode[startptr];
 
@@ -57,7 +51,7 @@ Action mkAction(int reflen, int totallen, int startptr) {
 
 TValue runAction3(Action a, TValue arg0, TValue arg1, TValue arg2) {
     auto aa = (RefAction *)a;
-    if (aa->vtable == REF_TAG_ACTION) {
+    if (aa->vtable == PXT_REF_TAG_ACTION) {
         check(aa->refcnt == 0xffff, ERR_INVALID_BINARY_HEADER, 4);
         return ((ActionCB)(((uint32_t)a + 4) | 1))(NULL, arg0, arg1, arg2);
     } else {
@@ -149,6 +143,11 @@ TValue Segment::get(uint32_t i) {
         return data[i];
     }
     return Segment::DefaultValue;
+}
+
+void Segment::setRef(uint32_t i, TValue value) {
+    decr(get(i));
+    set(i, value);
 }
 
 void Segment::set(uint32_t i, TValue value) {
@@ -355,10 +354,8 @@ void RefCollection::insertAt(int i, TValue value) {
 }
 
 void RefCollection::setAt(int i, TValue value) {
-    if (head.isValidIndex((uint32_t)i))
-        decr(head.get(i));
     incr(value);
-    head.set(i, value);
+    head.setRef(i, value);
 }
 
 int RefCollection::indexOf(TValue x, int start) {
@@ -444,25 +441,24 @@ PXT_VTABLE_END
 RefMap::RefMap() : PXT_VTABLE_INIT(RefMap) {}
 
 void RefMap::destroy() {
-    for (unsigned i = 0; i < data.size(); ++i) {
-        if (data[i].key & 1) {
-            decr(data[i].val);
-        }
-        data[i].val = 0;
+    for (unsigned i = 0; i < values.getLength(); ++i) {
+        decr(values.get(i));
+        values.set(i, 0);
     }
-    data.resize(0);
+    keys.destroy();
+    values.destroy();
 }
 
 int RefMap::findIdx(uint32_t key) {
-    for (unsigned i = 0; i < data.size(); ++i) {
-        if (data[i].key >> 1 == key)
+    for (unsigned i = 0; i < keys.getLength(); ++i) {
+        if ((uint32_t)keys.get(i) == key)
             return i;
     }
     return -1;
 }
 
 void RefMap::print() {
-    DMESG("RefMap %p r=%d size=%d", this, refcnt, data.size());
+    DMESG("RefMap %p r=%d size=%d", this, refcnt, keys.getLength());
 }
 
 #ifdef PXT_MEMLEAK_DEBUG
@@ -479,92 +475,12 @@ void debugMemLeaks() {
 void debugMemLeaks() {}
 #endif
 
-CodalUSB usb;
-HF2 hf2;
 
-// TODO extract these from uf2_info()?
-static const char *string_descriptors[] = {
-    "Example Corp.", "PXT Device", "42424242",
-};
-
-static void initCodal() {
-    devTimer.init();
-
-    // Bring up fiber scheduler.
-    scheduler_init(devMessageBus);
-
-    // Seed our random number generator
-    // seedRandom();
-
-    // Create an event handler to trap any handlers being created for I2C services.
-    // We do this to enable initialisation of those services only when they're used,
-    // which saves processor time, memeory and battery life.
-    // messageBus.listen(MICROBIT_ID_MESSAGE_BUS_LISTENER, MICROBIT_EVT_ANY, this,
-    // &MicroBit::onListenerRegisteredEvent);
-
-    io = new DevPins();
-
-    usb.stringDescriptors = string_descriptors;
-    usb.add(hf2);
-    usb.start();
-}
-
-// ---------------------------------------------------------------------------
-// An adapter for the API expected by the run-time.
-// ---------------------------------------------------------------------------
-
-map<pair<int, int>, Action> handlersMap;
-
-DeviceEvent lastEvent;
-DeviceTimer devTimer;
-DeviceMessageBus devMessageBus;
-
-// We have the invariant that if [dispatchEvent] is registered against the DAL
-// for a given event, then [handlersMap] contains a valid entry for that
-// event.
-void dispatchEvent(DeviceEvent e) {
-    lastEvent = e;
-
-    Action curr = handlersMap[{e.source, e.value}];
-    if (curr)
-        runAction1(curr, fromInt(e.value));
-
-    curr = handlersMap[{e.source, DEVICE_EVT_ANY}];
-    if (curr)
-        runAction1(curr, fromInt(e.value));
-}
-
-void registerWithDal(int id, int event, Action a) {
-    Action prev = handlersMap[{id, event}];
-    if (prev)
-        decr(prev);
-    else
-        devMessageBus.listen(id, event, dispatchEvent);
-    incr(a);
-    handlersMap[{id, event}] = a;
-}
-
-void fiberDone(void *a) {
-    decr((Action)a);
-    release_fiber();
-}
-
-void runInBackground(Action a) {
-    if (a != 0) {
-        incr(a);
-        create_fiber((void (*)(void *))runAction0, (void *)a, fiberDone);
-    }
-}
-
-void waitForEvent(int id, int event)
-{
-    fiber_wait_for_event(id, event);
-}
 
 
 void error(ERROR code, int subcode) {
     DMESG("Error: %d [%d]", code, subcode);
-    device.panic(42);
+    target_panic(42);
 }
 
 uint16_t *bytecode;
@@ -598,29 +514,6 @@ int getNumGlobals() {
     return bytecode[16];
 }
 
-void initRandomSeed() {
-    int seed = 0xC0DA1;
-    auto pinTemp = lookupPin(PIN_TEMPERATURE);
-    if (pinTemp)
-        seed *= pinTemp->getAnalogValue();
-    auto pinLight = lookupPin(PIN_LIGHT);
-    if (pinLight)
-        seed *= pinLight->getAnalogValue();
-    device.seedRandom(seed);
-}
-
-void clearNeoPixels() {
-    // clear on-board neopixels
-    auto neoPin = lookupPin(PIN_NEOPIXEL);
-    if (neoPin) {
-        uint8_t neobuf[30];
-        memset(neobuf, 0, 30);
-        neoPin->setDigitalValue(0);
-        fiber_sleep(1);
-        neopixel_send_buffer(*neoPin, neobuf, 30);
-    }
-}
-
 void exec_binary(int32_t *pc) {
     // XXX re-enable once the calibration code is fixed and [editor/embedded.ts]
     // properly prepends a call to [internal_main].
@@ -631,9 +524,6 @@ void exec_binary(int32_t *pc) {
 
     // repeat error 4 times and restart as needed
     // microbit_panic_timeout(4);
-
-    // TODO: fix this in CODAL
-    device.seedRandom(0xC0DA1);
 
     int32_t ver = *pc++;
     checkStr(ver == 0x4209, ":( Bad runtime version");
@@ -649,9 +539,7 @@ void exec_binary(int32_t *pc) {
     startptr += 48; // header
     startptr |= 1;  // Thumb state
 
-    initCodal();
-    initRandomSeed();
-    clearNeoPixels();
+    initRuntime();
 
     ((uint32_t(*)())startptr)();
 
@@ -660,7 +548,7 @@ void exec_binary(int32_t *pc) {
 #endif
 
     while (1) {
-        fiber_sleep(10000);
+        sleep_ms(10000);
     }
 }
 
@@ -669,18 +557,3 @@ void start() {
 }
 
 } // end namespace
-
-void RefCounted::destroy() {
-#ifdef PXT_MEMLEAK_DEBUG
-    allptrs.erase((TValue)this);
-#endif
-    free(this);
-}
-
-void RefCounted::init() {
-    // Initialize to one reference (lowest bit set to 1)
-    refCount = 3;
-#ifdef PXT_MEMLEAK_DEBUG
-    allptrs.insert((TValue)this);
-#endif
-}

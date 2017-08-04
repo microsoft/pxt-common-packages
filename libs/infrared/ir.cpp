@@ -1,6 +1,5 @@
 #include "pxt.h"
 #include "bitvector.h"
-#include "DeviceSystemTimer.h"
 
 #define IR_MAX_MSG_SIZE 34
 #define IR_COMPONENT_ID 0x2042
@@ -168,7 +167,7 @@ class IrWrap {
     uint16_t pulsePtr;
 
     IrRecvState recvState;
-    BufferData *outBuffer;
+    Buffer outBuffer;
 
     DbgBuffer dbg;
 
@@ -201,7 +200,7 @@ class IrWrap {
         pwmstate = enabled;
     }
 
-    void send(BufferData *d) {
+    void send(Buffer d) {
         if (sending)
             return; // error code?
 
@@ -216,10 +215,10 @@ class IrWrap {
         encodedMsg.push(1);
         encodedMsg.push(1);
         for (int i = 0; i < d->length; i += 2) {
-            encodeHamming(encodedMsg, d->payload[i], d->payload[i + 1]);
+            encodeHamming(encodedMsg, d->data[i], d->data[i + 1]);
         }
 
-        uint16_t crc = crc16ccit(d->payload, d->length);
+        uint16_t crc = crc16ccit(d->data, d->length);
         encodeHamming(encodedMsg, crc & 0xff, crc >> 8);
 
         for (int i = 0; i < 15; ++i)
@@ -256,9 +255,9 @@ class IrWrap {
             return;
 
         if (code == 0) {
-            DeviceEvent evt(IR_COMPONENT_ID, IR_PACKET_END_EVENT);
+            Event evt(IR_COMPONENT_ID, IR_PACKET_END_EVENT);
         } else {
-            DeviceEvent evt(IR_COMPONENT_ID, IR_PACKET_ERROR_EVENT);
+            Event evt(IR_COMPONENT_ID, IR_PACKET_ERROR_EVENT);
             IR_DMESG("IR ERROR %d [%s]", code, dbg.get());
         }
         dbg.get();
@@ -292,7 +291,7 @@ class IrWrap {
         for (int i = 0; i < pulsePtr - 1; i++)
             for (int j = 0; j < pulsePtr - i - 1; j++) {
                 if (nums[j] > nums[j + 1])
-                    std::swap(nums[j], nums[j + 1]);
+                    swap(nums[j], nums[j + 1]);
             }
 
         int median = nums[pulsePtr / 2];
@@ -302,7 +301,7 @@ class IrWrap {
         //          pulses[0], pulses[1], pulses[2]);
     }
 
-    void pulseGap(DeviceEvent ev) {
+    void pulseGap(Event ev) {
         if (sending)
             return;
 
@@ -348,7 +347,7 @@ class IrWrap {
         return errs;
     }
 
-    void packetEnd(DeviceEvent) {
+    void packetEnd(Event) {
         if (pulsePtr < 5)
             return;
 
@@ -375,7 +374,7 @@ class IrWrap {
         pulsePtr = 0;
 
         if (bits.size() < 70) {
-            DeviceEvent evt(IR_COMPONENT_ID, IR_PACKET_ERROR_EVENT);
+            Event evt(IR_COMPONENT_ID, IR_PACKET_ERROR_EVENT);
             return; // too short
         }
 
@@ -435,11 +434,11 @@ class IrWrap {
 
         decrRC(outBuffer);
         outBuffer = pins::createBuffer(ptr);
-        memcpy(outBuffer->payload, buf, ptr);
-        DeviceEvent evt(IR_COMPONENT_ID, crc == pktCrc ? IR_PACKET_EVENT : IR_PACKET_ERROR_EVENT);
+        memcpy(outBuffer->data, buf, ptr);
+        Event evt(IR_COMPONENT_ID, crc == pktCrc ? IR_PACKET_EVENT : IR_PACKET_ERROR_EVENT);
     }
 
-    void pulseMark(DeviceEvent ev) {
+    void pulseMark(Event ev) {
         if (sending)
             return;
 

@@ -1,4 +1,4 @@
-#include "pxt.h"
+#include "pxtbase.h"
 
 namespace serial {
     // note that at least one // followed by % is needed per declaration!
@@ -9,8 +9,8 @@ namespace serial {
     //% help=serial/write-string
     //% weight=87
     //% blockId=serial_writestring block="serial|write string %text"
-    void writeString(StringData *text) {
-      hf2.sendSerial(text->data, text->len);
+    void writeString(String text) {
+      sendSerial(text->data, text->length);
     }
 
     /**
@@ -20,8 +20,6 @@ namespace serial {
     //% blockId=serial_writebuffer block="serial|write buffer %buffer"
     void writeBuffer(Buffer buffer) {
       if (!buffer) return;
-
-      ManagedBuffer buf(buffer);
-      hf2.sendSerial(buf.getBytes(), buf.length());
+      sendSerial((char*)buffer->data, buffer->length);
     }
 }
