@@ -1,0 +1,3 @@
+{
+  "input.onSwitchMoved": "Do something when the slide switch is moved left or right.\n* @param direction the direction the switch must be moved to trigget the event"
+}

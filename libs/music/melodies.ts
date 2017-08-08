@@ -55,7 +55,7 @@ namespace music {
     //% blockId=music_sounds block="%name"
     //% blockHidden=true
     //% name.fieldEditor="gridpicker"
-    //% name.fieldOptions.width=220
+    //% name.fieldOptions.width=285
     //% name.fieldOptions.columns=3
     export function sounds(name: Sounds): string {
         switch (name) {
