@@ -18,5 +18,4 @@ temp
 .pioenvs
 .piolibdeps
 lib
-libs/**/_locales
 projects/
