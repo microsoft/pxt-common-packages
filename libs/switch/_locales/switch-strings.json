@@ -1,7 +1,0 @@
-{
-  "SwitchDirection.Left|block": "left",
-  "SwitchDirection.Right|block": "right",
-  "input.onSwitchMoved|block": "on switch moved %direction",
-  "input|block": "input",
-  "{id:category}Input": "Input"
-}

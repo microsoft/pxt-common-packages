@@ -17,5 +17,6 @@ temp
 *.log
 .pioenvs
 .piolibdeps
-lib/
-
+lib
+libs/**/_locales
+projects/

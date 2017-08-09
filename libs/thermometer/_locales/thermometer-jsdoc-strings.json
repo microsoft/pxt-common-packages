@@ -1,7 +1,0 @@
-{
-  "input.onTemperatureConditionChanged": "Run some code when the temperature changes from hot to cold, or from cold to hot.",
-  "input.onTemperatureConditionChanged|param|condition": "the condition, hot or cold, the event triggers on",
-  "input.onTemperatureConditionChanged|param|temperature": "the temperature at which this event happens, eg: 15",
-  "input.onTemperatureConditionChanged|param|unit": "the unit of the temperature",
-  "input.temperature": "Get the temperature in Celsius or Fahrenheit degrees."
-}
