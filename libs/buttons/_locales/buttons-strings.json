@@ -1,7 +1,0 @@
-{
-  "input.buttonA|block": "button A",
-  "input.buttonB|block": "button B",
-  "input.buttonsAB|block": "buttons A+B",
-  "input|block": "input",
-  "{id:category}Input": "Input"
-}

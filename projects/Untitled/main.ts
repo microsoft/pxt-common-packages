@@ -1,3 +1,0 @@
-loops.forever(function () {
-	
-})
