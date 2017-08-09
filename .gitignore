@@ -17,5 +17,5 @@ temp
 *.log
 .pioenvs
 .piolibdeps
-lib
+lib/
 projects/
