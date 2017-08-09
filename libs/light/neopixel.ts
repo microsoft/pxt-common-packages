@@ -848,8 +848,7 @@ namespace light {
      * @param kind the type of animation
      */
     //% kind.fieldEditor="gridpicker"
-    //% kind.fieldOptions.width=220
-    //% kind.fieldOptions.hasSearchBar=true
+    //% kind.fieldOptions.width=285
     //% kind.fieldOptions.columns=3 blockGap=8
     //% blockId=light_animation block="%kind"
     //% advanced=true weight=25
