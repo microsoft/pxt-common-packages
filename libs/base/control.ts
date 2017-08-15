@@ -16,6 +16,9 @@ namespace control {
     /**
      * Display specified error code and stop the program.
      */
+    //% help=control/assert weight=30
+    //% blockId="control_assert" block="assert %cond| with value %code"
+    //% shim=pxtrt::panic
     export function assert(cond: boolean, code: number) {
         if (!cond) {
             fail("Assertion failed, code=" + code)
