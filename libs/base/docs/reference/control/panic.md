@@ -29,3 +29,7 @@ if (pins.A0.analogRead() < 10) {
     control.panic(codeRed)
 }
 ```
+
+## See also
+
+[assert](/reference/control/assert)
