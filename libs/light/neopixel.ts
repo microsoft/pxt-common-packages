@@ -163,6 +163,7 @@ namespace light {
         //% blockId=neopixel_show_bar_graph block="graph of %value |up to %high" icon="\uf080" blockExternalInputs=true        
         //% weight=88
         //% blockGap=8
+        //% help=light/graph
         //% advanced=true 
         //% parts="neopixel" 
         //% defaultInstance=light.pixels

@@ -52,6 +52,7 @@ loops.forever(() => {
     loops.pause(500)
 })
 ```
+## See also
 
 [``||range||``](/reference/light/range)
 
