@@ -10,6 +10,10 @@ network.onInfraredPacketReceived(function ({ }) {
 	
 })
 ```
+## See also
+
+[infrared send number](/reference/network/infrared-send-number),
+[on infrared packet received](/reference/network/on-infrared-packet-received)
 
 ```package
 infrared
