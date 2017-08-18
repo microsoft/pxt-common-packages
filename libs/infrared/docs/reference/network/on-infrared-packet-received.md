@@ -38,8 +38,6 @@ network.onInfraredPacketReceived(function ({ receivedNumber }) {
 })
 ```
 
-
-
 ## Example #ex1
 
 Show the value of a number received from an infrared data message. The number is shown by lighting the same number of pixels on the pixel strip.
@@ -53,3 +51,7 @@ network.onInfraredPacketReceived(function ({ receivedNumber }) {
 ## See also
 
 [``||network:infrared send number||``](/reference/network/infrared-send-number)
+
+```package
+infrared
+```
