@@ -15,17 +15,18 @@ class InfraredPacket {
 
 namespace network {
     /**
-     * Sends a numbers over the infrared transmitter diode
+     * Send a number over the infrared transmitter.
      * @param value number to send
      */
     //% blockId="ir_send_number" block="infrared send number %value"
+    //% help=network/infrared-send-number
     //% parts="ir" weight=90
     export function infraredSendNumber(value: number) {
         infraredSendNumbers([value]);
     }
 
     /**
-     * Sends an array of numbers of infrared. The combined size of the array should be less or equal to 32 bytes.
+     * Send an array of numbers over infrared. The array size has to be 32 bytes or less.
      * @param values 
      */
     //% parts="ir"
@@ -41,12 +42,13 @@ namespace network {
     }
 
     /**
-     * Registers code to run when the infrared receives a packet.
+     * Run some code when the infrared receiver gets a packet.
      */
     //% mutate=objectdestructuring
     //% mutateText=InfraredPacket
     //% mutateDefaults="receivedNumber"
     //% blockId=ir_on_packet_received block="on infrared received" blockGap=8
+    //% help=network/on-infrared-packet-received
     //% parts="ir"
     export function onInfraredPacketReceived(cb: (p: InfraredPacket) => void) {
         onInfraredPacket(() => {
