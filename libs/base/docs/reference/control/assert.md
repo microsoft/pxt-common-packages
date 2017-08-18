@@ -15,11 +15,11 @@ You can insist that your program will stop at an assert block if a certain condi
 
 ## Example
 
-Stop the program when something connected to pin `A0` signals `false`.
+Stop the program if a sensor connected to pin `A0` sends a low (`0`) signal.
 
 ```blocks
 loops.forever(function () {
-    control.assert(pins.A0.digitalRead(), 15)
+    control.assert((pins.A0.digitalRead() == 1), 15)
     loops.pause(1000)
 })
 ```
@@ -27,3 +27,7 @@ loops.forever(function () {
 ## See also
 
 [panic](/reference/control/panic)
+
+```package
+base
+```
