@@ -11,4 +11,6 @@ network.onInfraredPacketReceived(function ({ }) {
 })
 ```
 
-
+```package
+infrared
+```
