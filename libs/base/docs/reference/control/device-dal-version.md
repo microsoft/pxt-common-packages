@@ -1,0 +1,23 @@
+# device Dal Version
+
+Get the version information for the system software on the @boardname@.
+
+```sig
+control.deviceDalVersion()
+```
+
+## Returns
+
+* a [number](/types/number) that is the version of the system software (DAL) on the board.
+
+## Example
+
+Write the system software version to the serial port.
+
+```blocks
+serial.writeLine("DAL version = " + control.deviceDalVersion());
+```
+
+# See also
+
+[device serial number](/reference/control/device-serial-number)
