@@ -63,6 +63,7 @@ namespace control {
     * Derive a unique, consistent serial number of this device from internal data.
     */
     //% blockId="control_device_serial_number" block="device serial number" weight=9
+    //% help=control/device-serial-number
     int deviceSerialNumber() {
         return pxt::getSerialNumber();
     }

@@ -14,8 +14,10 @@ namespace control {
     export function panic(code: number) { }
 
     /**
-     * Display specified error code and stop the program.
+     * Display an error code and stop the program when the assertion is `false`.
      */
+    //% help=control/assert weight=30
+    //% blockId="control_assert" block="assert %cond|with value %code"
     export function assert(cond: boolean, code: number) {
         if (!cond) {
             fail("Assertion failed, code=" + code)

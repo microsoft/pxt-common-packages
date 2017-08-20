@@ -24,7 +24,8 @@ namespace control {
  * @param mode optional definition of how the event should be processed after construction.
  */
 //% weight=21 blockGap=12 blockId="control_raise_event"
-//% block="raise event|from %src|with value value" blockExternalInputs=1
+//% help=control/raise-event
+//% block="raise event|from %src|with value %value" blockExternalInputs=1
 //% mode.defl=CREATE_AND_FIRE
 void raiseEvent(int src, int value, EventCreationMode mode) {
     Event evt(src, value, (EventLaunchMode)mode);
@@ -33,7 +34,8 @@ void raiseEvent(int src, int value, EventCreationMode mode) {
 /**
 * Determine the version of system software currently running.
 */
-//%
+//% blockId="control_device_dal_version" block="device dal version"
+//% help=control/device-dal-version
 String deviceDalVersion() {
     return mkString(device.getVersion());
 }
