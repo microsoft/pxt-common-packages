@@ -1,4 +1,5 @@
 #include "pxt.h"
+#include "axis.h"
 #include "LIS3DH.h"
 
 enum class Dimension {
@@ -165,11 +166,26 @@ int getAccelerationStrength() {
 int acceleration(Dimension dimension) {
     switch (dimension) {
     case Dimension::X:
+#if INVERT_ACC_X_AXIS
+        return getWAccel()->acc.getX() * -1;
+#else
         return getWAccel()->acc.getX();
+#endif
+
     case Dimension::Y:
+#if INVERT_ACC_Y_AXIS
         return getWAccel()->acc.getY() * -1;
+#else
+        return getWAccel()->acc.getY();
+#endif
+
     case Dimension::Z:
+#if INVERT_ACC_Z_AXIS
+        return getWAccel()->acc.getZ() * -1;
+#else
         return getWAccel()->acc.getZ();
+#endif
+
     case Dimension::Strength:
         return getAccelerationStrength();
     }
