@@ -167,7 +167,7 @@ int acceleration(Dimension dimension) {
     case Dimension::X:
         return getWAccel()->acc.getX();
     case Dimension::Y:
-        return getWAccel()->acc.getY();
+        return getWAccel()->acc.getY() * -1;
     case Dimension::Z:
         return getWAccel()->acc.getZ();
     case Dimension::Strength:

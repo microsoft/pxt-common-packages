@@ -215,10 +215,10 @@ namespace pxsim {
             if (this.getX() > (1000 - DAL.ACCELEROMETER_TILT_TOLERANCE))
                 return DAL.ACCELEROMETER_EVT_TILT_RIGHT;
 
-            if (this.getY() < (-1000 + DAL.ACCELEROMETER_TILT_TOLERANCE))
+            if (this.getY() * -1 < (-1000 + DAL.ACCELEROMETER_TILT_TOLERANCE))
                 return DAL.ACCELEROMETER_EVT_TILT_DOWN;
 
-            if (this.getY() > (1000 - DAL.ACCELEROMETER_TILT_TOLERANCE))
+            if (this.getY() * -1 > (1000 - DAL.ACCELEROMETER_TILT_TOLERANCE))
                 return DAL.ACCELEROMETER_EVT_TILT_UP;
 
             if (this.getZ() < (-1000 + DAL.ACCELEROMETER_TILT_TOLERANCE))
