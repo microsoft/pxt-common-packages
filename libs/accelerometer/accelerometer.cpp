@@ -1,5 +1,8 @@
 #include "pxt.h"
 #include "axis.h"
+#include "Pin.h"
+#include "I2C.h"
+#include "CoordinateSystem.h"
 #include "LIS3DH.h"
 
 enum class Dimension {
@@ -103,13 +106,46 @@ enum class Gesture {
 
 namespace pxt {
 
+class InvertableLIS3DH : public LIS3DH {
+public:
+    InvertableLIS3DH(codal::mbed::I2C &_i2c, Pin &_int1, uint16_t address = LIS3DH_DEFAULT_ADDR, uint16_t id = DEVICE_ID_ACCELEROMETER, CoordinateSystem coordinateSystem = SIMPLE_CARTESIAN) : LIS3DH(_i2c, _int1, address, id, coordinateSystem) {}
+    int getX();
+    int getY();
+    int getZ();
+};
+
+int InvertableLIS3DH::getX() {
+#if INVERT_ACC_X_AXIS
+    return LIS3DH::getX() * -1;
+#else
+    return LIS3DH::getX();
+#endif
+}
+
+int InvertableLIS3DH::getY() {
+#if INVERT_ACC_Y_AXIS
+    return LIS3DH::getY() * -1;
+#else
+    return LIS3DH::getY();
+#endif
+}
+
+int InvertableLIS3DH::getZ() {
+#if INVERT_ACC_Z_AXIS
+    return LIS3DH::getZ() * -1;
+#else
+    return LIS3DH::getZ();
+#endif
+}
+
+
 // Wrapper classes
 
 class WAccel {
   public:
     codal::mbed::I2C i2c; // note that this is different pins than io->i2c
     DevicePin int1;
-    LIS3DH acc;
+    InvertableLIS3DH acc;
     WAccel()
         : i2c((PinName)PIN_ACCELEROMETER_SDA, (PinName)PIN_ACCELEROMETER_SCL),
           INIT_PIN(int1, PIN_ACCELEROMETER_INT), //
@@ -166,26 +202,11 @@ int getAccelerationStrength() {
 int acceleration(Dimension dimension) {
     switch (dimension) {
     case Dimension::X:
-#if INVERT_ACC_X_AXIS
-        return getWAccel()->acc.getX() * -1;
-#else
         return getWAccel()->acc.getX();
-#endif
-
     case Dimension::Y:
-#if INVERT_ACC_Y_AXIS
-        return getWAccel()->acc.getY() * -1;
-#else
         return getWAccel()->acc.getY();
-#endif
-
     case Dimension::Z:
-#if INVERT_ACC_Z_AXIS
-        return getWAccel()->acc.getZ() * -1;
-#else
         return getWAccel()->acc.getZ();
-#endif
-
     case Dimension::Strength:
         return getAccelerationStrength();
     }
