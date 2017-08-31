@@ -216,10 +216,10 @@ namespace pxsim {
                 return DAL.ACCELEROMETER_EVT_TILT_RIGHT;
 
             if (this.getY() < (-1000 + DAL.ACCELEROMETER_TILT_TOLERANCE))
-                return DAL.ACCELEROMETER_EVT_TILT_DOWN;
+                return DAL.ACCELEROMETER_EVT_TILT_UP;
 
             if (this.getY() > (1000 - DAL.ACCELEROMETER_TILT_TOLERANCE))
-                return DAL.ACCELEROMETER_EVT_TILT_UP;
+                return DAL.ACCELEROMETER_EVT_TILT_DOWN;
 
             if (this.getZ() < (-1000 + DAL.ACCELEROMETER_TILT_TOLERANCE))
                 return DAL.ACCELEROMETER_EVT_FACE_UP;
@@ -264,16 +264,19 @@ namespace pxsim {
           */
         public getX(system: MicroBitCoordinateSystem = MicroBitCoordinateSystem.SIMPLE_CARTESIAN): number {
             this.activate();
+            let val: number;            
             switch (system) {
                 case MicroBitCoordinateSystem.SIMPLE_CARTESIAN:
-                    return -this.sample.x;
+                    val = -this.sample.x;
 
                 case MicroBitCoordinateSystem.NORTH_EAST_DOWN:
-                    return this.sample.y;
+                    val = this.sample.y;
                 //case MicroBitCoordinateSystem.SIMPLE_CARTESIAN.RAW:
                 default:
-                    return this.sample.x;
+                    val = this.sample.x;
             }
+
+            return (board() as AccelerometerBoard).invertAccelerometerXAxis ? val * -1 : val;
         }
 
         /**
@@ -289,16 +292,19 @@ namespace pxsim {
           */
         public getY(system: MicroBitCoordinateSystem = MicroBitCoordinateSystem.SIMPLE_CARTESIAN): number {
             this.activate();
+            let val: number;
             switch (system) {
                 case MicroBitCoordinateSystem.SIMPLE_CARTESIAN:
-                    return -this.sample.y;
+                    val = -this.sample.y;
 
                 case MicroBitCoordinateSystem.NORTH_EAST_DOWN:
-                    return -this.sample.x;
+                    val = -this.sample.x;
                 //case RAW:
                 default:
-                    return this.sample.y;
+                    val = this.sample.y;
             }
+
+            return (board() as AccelerometerBoard).invertAccelerometerYAxis ? val * -1 : val;
         }
 
         /**
@@ -314,14 +320,17 @@ namespace pxsim {
           */
         public getZ(system: MicroBitCoordinateSystem = MicroBitCoordinateSystem.SIMPLE_CARTESIAN): number {
             this.activate();
+            let val: number;            
             switch (system) {
                 case MicroBitCoordinateSystem.NORTH_EAST_DOWN:
-                    return -this.sample.z;
+                    val = -this.sample.z;
                 //case MicroBitCoordinateSystem.SIMPLE_CARTESIAN:
                 //case MicroBitCoordinateSystem.RAW:
                 default:
-                    return this.sample.z;
+                    val = this.sample.z;
             }
+
+            return (board() as AccelerometerBoard).invertAccelerometerZAxis ? val * -1 : val;
         }
 
         /**
