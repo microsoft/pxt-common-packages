@@ -116,7 +116,7 @@ public:
 
 int InvertableLIS3DH::getX() {
 #if INVERT_ACC_X_AXIS
-    return LIS3DH::getX() * -1;
+    return -LIS3DH::getX();
 #else
     return LIS3DH::getX();
 #endif
@@ -124,7 +124,7 @@ int InvertableLIS3DH::getX() {
 
 int InvertableLIS3DH::getY() {
 #if INVERT_ACC_Y_AXIS
-    return LIS3DH::getY() * -1;
+    return -LIS3DH::getY();
 #else
     return LIS3DH::getY();
 #endif
@@ -132,7 +132,7 @@ int InvertableLIS3DH::getY() {
 
 int InvertableLIS3DH::getZ() {
 #if INVERT_ACC_Z_AXIS
-    return LIS3DH::getZ() * -1;
+    return -LIS3DH::getZ();
 #else
     return LIS3DH::getZ();
 #endif
