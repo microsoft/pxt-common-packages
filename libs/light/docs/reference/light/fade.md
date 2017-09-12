@@ -12,8 +12,8 @@ the shade that you want the color faded to.
 
 ## Parameters
 
-* **color**: a [number](/reference/blocks/number) that is the RGB color that will get faded, like: Colors.Blue
-* **brightness**: a [number](/reference/blocks/number) between `0` (totally dark) and `255` (full brightness, no fading at all)
+* **color**: a [number](/types/number) that is the RGB color that will get faded, like: Colors.Blue
+* **brightness**: a [number](/types/number) between `0` (totally dark) and `255` (full brightness, no fading at all)
 
 ## Returns
 

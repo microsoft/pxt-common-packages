@@ -10,7 +10,7 @@ The photon normally moves in the direction from a low numbered pixels (pixel: 0,
  to higher numbered pixels. You can make the photon move in the opposite direction with
  ``||photon flip||``. Every time you use ``||photon flip||``, the photon burst changes
  direction and moves in the opposite way.
- 
+
 ## Example
 
 Move a photon forward and backward across the pixel strip for `5` bursts.
@@ -28,8 +28,8 @@ for (let i = 0; i <= 5; i++) {
 ## See also
 
 [``||photon forward||``](/reference/light/photon-forward),
-[``||photon color||``](/reference/light/photon-color),
-[``||photon mode||``](/reference/light/photon-mode)
+[``||photon color||``](/reference/light/set-photon-color),
+[``||photon mode||``](/reference/light/set-photon-mode)
 
 ```package
 light
