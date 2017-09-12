@@ -47,7 +47,7 @@ loops.forever(() => {
 
 [``||photon forward||``](/reference/light/photon-forward),
 [``||photon flip||``](/reference/light/photon-flip),
-[``||photon mode||``](/reference/light/photon-mode)
+[``||photon mode||``](/reference/light/set-photon-mode)
 
 ```package
 light
