@@ -27,8 +27,8 @@ for (let i = 0; i < light.pixels.length(); i++) {
 ## See also
 
 [``||photon flip||``](/reference/light/photon-flip)
-[``||photon color||``](/reference/light/photon-color),
-[``||photon mode||``](/reference/light/photon-mode)
+[``||photon color||``](/reference/light/set-photon-color),
+[``||photon mode||``](/reference/light/set-photon-mode)
 
 ```package
 light

@@ -8,7 +8,7 @@ light.colorWipeAnimation(0xff000)
 
 ## Parameters
 
-* **rgb**: [number](/reference/blocks/number), 
+* **rgb**: [number](/types/number),
 
 ## Example
 

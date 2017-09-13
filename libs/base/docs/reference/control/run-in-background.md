@@ -7,7 +7,7 @@ control.runInBackground(() => {})
 ```
 
 Sometimes you want your program to work on more than one thing at a time. The main part of your program is
-always put in [``||on start||``](/reference/blocks/on-start). But, you can also put some other part of your
+always put in [``||on start||``](/blocks/on-start). But, you can also put some other part of your
 program in ``||run in background||``. This is a block that runs code seperately from the code
 in ``||on start||``. This is useful when you want your program to keep doing important things
 and you don't want to wait for some other actions to happen first.
@@ -25,7 +25,7 @@ control.runInBackground(() => {
     }
 })
 ```
-Code is added to the main part of the program to turn the pixels on. It turns on one pixel, waits 
+Code is added to the main part of the program to turn the pixels on. It turns on one pixel, waits
 for `5` seconds and turns on another pixel. Then, it waits for `5` more seconds and stops the rotate
 loop in the background task.
 

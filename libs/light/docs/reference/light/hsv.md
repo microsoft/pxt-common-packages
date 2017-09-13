@@ -35,9 +35,9 @@ let mint = light.hsv(85, 128, 217)
 
 ## Parameters
 
-* **hue**: a [number](/reference/blocks/number) that is the color (between 0 and 255), like: 92 for green
-* **sat**: a [number](/reference/blocks/number) that is the amount of white in the color (between 0 and 255), like: 51
-* **val**: a [number](/reference/blocks/number) that is the darkness of the color (between 0 and 255), like: 128
+* **hue**: a [number](/types/number) that is the color (between 0 and 255), like: 92 for green
+* **sat**: a [number](/types/number) that is the amount of white in the color (between 0 and 255), like: 51
+* **val**: a [number](/types/number) that is the darkness of the color (between 0 and 255), like: 128
 
 ## Returns
 
