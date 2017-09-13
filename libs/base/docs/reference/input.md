@@ -51,7 +51,3 @@ input.onTemperatureConditionChanged(TemperatureCondition.Hot, 15, TemperatureUni
 })
 input.temperature(TemperatureUnit.Celsius)
 ```
-
-```package
-circuit-playground
-```
