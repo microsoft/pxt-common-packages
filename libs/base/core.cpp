@@ -70,17 +70,21 @@ TNumber mkNaN() {
     return fromDouble(NAN);
 }
 
-static uint32_t random_value = 0xC0DA1;
+#if PLATFORM_UINT_SIZE == 4
+static PLATFORM_UINT random_value = 0xC0DA1;
+#else
+static PLATFORM_UINT random_value = 0x0DA1;
+#endif
 
-void seedRandom(uint32_t seed) {
+void seedRandom(PLATFORM_UINT seed) {
     random_value = seed;
 }
 
-uint32_t getRandom(uint32_t max) {
-    uint32_t m, result;
+PLATFORM_UINT getRandom(PLATFORM_UINT max) {
+    PLATFORM_UINT m, result;
 
     do {
-        m = (uint32_t)max;
+        m = (PLATFORM_UINT)max;
         result = 0;
         do {
             // Cycle the LFSR (Linear Feedback Shift Register).
@@ -90,7 +94,7 @@ uint32_t getRandom(uint32_t max) {
             // "Pseudo-Random Sequence Generator for 32-Bit CPUs: A fast, machine-independent
             // generator for 32-bit Microprocessors"
             // https://www.schneier.com/paper-pseudorandom-sequence.html
-            uint32_t r = random_value;
+            PLATFORM_UINT r = random_value;
 
             r = ((((r >> 31) ^ (r >> 6) ^ (r >> 4) ^ (r >> 2) ^ (r >> 1) ^ r) & 1) << 31) |
                 (r >> 1);
@@ -99,7 +103,7 @@ uint32_t getRandom(uint32_t max) {
 
             result = ((result << 1) | (r & 0x00000001));
         } while (m >>= 1);
-    } while (result > (uint32_t)max);
+    } while (result > (PLATFORM_UINT)max);
 
     return result;
 }
@@ -219,7 +223,7 @@ bool bang(int v) {
 namespace pxt {
 
 // ES5 9.5, 9.6
-uint32_t toUInt(TNumber v) {
+PLATFORM_UINT toUInt(TNumber v) {
     if (isNumber(v))
         return numValue(v);
     if (isSpecial(v)) {
@@ -237,12 +241,14 @@ uint32_t toUInt(TNumber v) {
     double rem = fmod(trunc(num), 4294967296.0);
     if (rem < 0.0)
         rem += 4294967296.0;
-    return (uint32_t)rem;
+    return (PLATFORM_UINT)rem;
 }
 int toInt(TNumber v) {
     return (int)toUInt(v);
 }
 
+#ifndef UNTAGGED
+// only support double in tagged mode
 double toDouble(TNumber v) {
     if (isTagged(v))
         return toInt(v);
@@ -280,19 +286,30 @@ TNumber fromFloat(float r) {
     return fromDouble(r);
 }
 
-TNumber fromInt(int v) {
-    if (canBeTagged(v))
-        return TAG_NUMBER(v);
-    return fromDouble(v);
+#endif
+
+TNumber fromUInt(PLATFORM_UINT v) {
+    #if UNTAGGED
+        return (TNumber)v;
+    #else
+    #ifndef PXT_BOX_DEBUG
+        if (v <= 0x3fffffff)
+            return TAG_NUMBER(v);
+    #endif
+        return fromDouble(v);
+    #endif
 }
 
-TNumber fromUInt(uint32_t v) {
-#ifndef PXT_BOX_DEBUG
-    if (v <= 0x3fffffff)
-        return TAG_NUMBER(v);
-#endif
-    return fromDouble(v);
+TNumber fromInt(int v) {
+    #if UNTAGGED
+        return (TNumber)v;
+    #else
+        if (canBeTagged(v))
+            return TAG_NUMBER(v);
+        return fromDouble(v);
+    #endif
 }
+
 
 TValue fromBool(bool v) {
     if (v)
@@ -301,6 +318,23 @@ TValue fromBool(bool v) {
         return TAG_FALSE;
 }
 
+#ifdef UNTAGGED
+
+// TODO
+bool eqq_bool(TValue a, TValue b) {
+    return false;
+}
+
+bool eq_bool(TValue a, TValue b) {
+    return false;
+}
+
+//%
+bool switch_eq(TValue a, TValue b) {
+    return false;
+}
+
+#else
 TNumber eqFixup(TNumber v) {
     if (v == TAG_NULL)
         return TAG_UNDEFINED;
@@ -351,6 +385,7 @@ bool switch_eq(TValue a, TValue b) {
     }
     return false;
 }
+#endif
 }
 
 namespace langsupp {
@@ -714,7 +749,7 @@ namespace pxt {
 void *ptrOfLiteral(int offset);
 
 //%
-uint32_t programSize() {
+PLATFORM_UINT programSize() {
     return bytecode[17] * 2;
 }
 
@@ -819,7 +854,7 @@ RefMap *mkMap() {
 }
 
 //%
-TValue mapGet(RefMap *map, uint32_t key) {
+TValue mapGet(RefMap *map, PLATFORM_UINT key) {
     int i = map->findIdx(key);
     if (i < 0) {
         map->unref();
@@ -831,12 +866,12 @@ TValue mapGet(RefMap *map, uint32_t key) {
 }
 
 //%
-TValue mapGetRef(RefMap *map, uint32_t key) {
+TValue mapGetRef(RefMap *map, PLATFORM_UINT key) {
     return mapGet(map, key);
 }
 
 //%
-void mapSet(RefMap *map, uint32_t key, TValue val) {
+void mapSet(RefMap *map, PLATFORM_UINT key, TValue val) {
     int i = map->findIdx(key);
     if (i < 0) {
         map->keys.push((TValue)key);
@@ -848,7 +883,7 @@ void mapSet(RefMap *map, uint32_t key, TValue val) {
 }
 
 //%
-void mapSetRef(RefMap *map, uint32_t key, TValue val) {
+void mapSetRef(RefMap *map, PLATFORM_UINT key, TValue val) {
     mapSet(map, key, val);
 }
 

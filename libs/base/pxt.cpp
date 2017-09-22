@@ -27,28 +27,30 @@ void decr(TValue e) {
     }
 }
 
+// TODO
 Action mkAction(int reflen, int totallen, int startptr) {
     check(0 <= reflen && reflen <= totallen, ERR_SIZE, 1);
     check(reflen <= totallen && totallen <= 255, ERR_SIZE, 2);
     check(bytecode[startptr] == 0xffff, ERR_INVALID_BINARY_HEADER, 3);
     check(bytecode[startptr + 1] == PXT_REF_TAG_ACTION, ERR_INVALID_BINARY_HEADER, 4);
 
-    uint32_t tmp = (uint32_t)&bytecode[startptr];
+    PLATFORM_UINT tmp = (PLATFORM_UINT)&bytecode[startptr];
 
     if (totallen == 0) {
         return (TValue)tmp; // no closure needed
     }
 
-    void *ptr = ::operator new(sizeof(RefAction) + totallen * sizeof(uint32_t));
+    void *ptr = ::operator new(sizeof(RefAction) + totallen * sizeof(PLATFORM_UINT));
     RefAction *r = new (ptr) RefAction();
     r->len = totallen;
     r->reflen = reflen;
     r->func = (ActionCB)((tmp + 4) | 1);
-    memset(r->fields, 0, r->len * sizeof(uint32_t));
+    memset(r->fields, 0, r->len * sizeof(PLATFORM_UINT));
 
     return (Action)r;
 }
 
+// TODO
 TValue runAction3(Action a, TValue arg0, TValue arg1, TValue arg2) {
     auto aa = (RefAction *)a;
     if (aa->vtable == PXT_REF_TAG_ACTION) {
@@ -133,7 +135,7 @@ void RefRecord_print(RefRecord *r) {
     DMESG("RefRecord %p r=%d size=%d bytes", r, r->refcnt, getVTable(r)->numbytes);
 }
 
-TValue Segment::get(uint32_t i) {
+TValue Segment::get(PLATFORM_UINT i) {
 #ifdef DEBUG_BUILD
     DMESG("In Segment::get index:%d", i);
     this->print();
@@ -145,12 +147,12 @@ TValue Segment::get(uint32_t i) {
     return Segment::DefaultValue;
 }
 
-void Segment::setRef(uint32_t i, TValue value) {
+void Segment::setRef(PLATFORM_UINT i, TValue value) {
     decr(get(i));
     set(i, value);
 }
 
-void Segment::set(uint32_t i, TValue value) {
+void Segment::set(PLATFORM_UINT i, TValue value) {
     if (i < size) {
         data[i] = value;
     } else if (i < Segment::MaxSize) {
@@ -224,7 +226,7 @@ void Segment::ensure(uint16_t newSize) {
     growByMin(newSize);
 }
 
-void Segment::setLength(uint32_t newLength) {
+void Segment::setLength(PLATFORM_UINT newLength) {
     if (newLength > size) {
         ensure(length);
     }
@@ -253,7 +255,7 @@ TValue Segment::pop() {
 
 // this function removes an element at index i and shifts the rest of the elements to
 // left to fill the gap
-TValue Segment::remove(uint32_t i) {
+TValue Segment::remove(PLATFORM_UINT i) {
 #ifdef DEBUG_BUILD
     DMESG("In Segment::remove index:%d", i);
     this->print();
@@ -263,7 +265,7 @@ TValue Segment::remove(uint32_t i) {
         TValue ret = data[i];
         if (i + 1 < length) {
             // Move the rest of the elements to fill in the gap.
-            memmove(data + i, data + i + 1, (length - i - 1) * sizeof(uint32_t));
+            memmove(data + i, data + i + 1, (length - i - 1) * sizeof(PLATFORM_UINT));
         }
         length--;
         data[length] = Segment::DefaultValue;
@@ -277,7 +279,7 @@ TValue Segment::remove(uint32_t i) {
 }
 
 // this function inserts element value at index i by shifting the rest of the elements right.
-void Segment::insert(uint32_t i, TValue value) {
+void Segment::insert(PLATFORM_UINT i, TValue value) {
 #ifdef DEBUG_BUILD
     DMESG("In Segment::insert index:%d value:%d", i, value);
     this->print();
@@ -287,7 +289,7 @@ void Segment::insert(uint32_t i, TValue value) {
         ensure(length + 1);
         if (i + 1 < length) {
             // Move the rest of the elements to fill in the gap.
-            memmove(data + i + 1, data + i, (length - i) * sizeof(uint32_t));
+            memmove(data + i + 1, data + i, (length - i) * sizeof(PLATFORM_UINT));
         }
 
         data[i] = value;
@@ -303,13 +305,13 @@ void Segment::insert(uint32_t i, TValue value) {
 }
 
 void Segment::print() {
-    DMESG("Segment: %p, length: %d, size: %d", data, (uint32_t)length, (uint32_t)size);
-    for (uint32_t i = 0; i < size; i++) {
-        DMESG("-> %d", (uint32_t)data[i]);
+    DMESG("Segment: %p, length: %d, size: %d", data, (PLATFORM_UINT)length, (PLATFORM_UINT)size);
+    for (PLATFORM_UINT i = 0; i < size; i++) {
+        DMESG("-> %d", (PLATFORM_UINT)data[i]);
     }
 }
 
-bool Segment::isValidIndex(uint32_t i) {
+bool Segment::isValidIndex(PLATFORM_UINT i) {
     if (i > length) {
         return false;
     }
@@ -359,7 +361,7 @@ void RefCollection::setAt(int i, TValue value) {
 }
 
 int RefCollection::indexOf(TValue x, int start) {
-    uint32_t i = start;
+    PLATFORM_UINT i = start;
     while (head.isValidIndex(i)) {
         if (pxt::eq_bool(head.get(i), x)) {
             return (int)i;
@@ -388,7 +390,7 @@ RefCollection::RefCollection() : RefObject(0) {
 }
 
 void RefCollection::destroy() {
-    for (uint32_t i = 0; i < this->head.getLength(); i++) {
+    for (PLATFORM_UINT i = 0; i < this->head.getLength(); i++) {
         decr(this->head.get(i));
     }
     this->head.destroy();
@@ -449,9 +451,9 @@ void RefMap::destroy() {
     values.destroy();
 }
 
-int RefMap::findIdx(uint32_t key) {
+int RefMap::findIdx(PLATFORM_UINT key) {
     for (unsigned i = 0; i < keys.getLength(); ++i) {
-        if ((uint32_t)keys.get(i) == key)
+        if ((PLATFORM_UINT)keys.get(i) == key)
             return i;
     }
     return -1;
@@ -487,9 +489,9 @@ uint16_t *bytecode;
 TValue *globals;
 int numGlobals;
 
-uint32_t *allocate(uint16_t sz) {
-    uint32_t *arr = new uint32_t[sz];
-    memset(arr, 0, sz * 4);
+PLATFORM_UINT *allocate(uint16_t sz) {
+    PLATFORM_UINT *arr = new PLATFORM_UINT[sz];
+    memset(arr, 0, sz * sizeof(PLATFORM_UINT));
     return arr;
 }
 
@@ -514,7 +516,7 @@ int getNumGlobals() {
     return bytecode[16];
 }
 
-void exec_binary(int32_t *pc) {
+void exec_binary(PLATFORM_UINT *pc) {
     // XXX re-enable once the calibration code is fixed and [editor/embedded.ts]
     // properly prepends a call to [internal_main].
     // ::touch_develop::internal_main();
@@ -525,23 +527,27 @@ void exec_binary(int32_t *pc) {
     // repeat error 4 times and restart as needed
     // microbit_panic_timeout(4);
 
-    int32_t ver = *pc++;
+    PLATFORM_UINT ver = *pc++;
     checkStr(ver == 0x4209, ":( Bad runtime version");
 
     bytecode = *((uint16_t **)pc++); // the actual bytecode is here
     globals = (TValue *)allocate(getNumGlobals());
 
     // just compare the first word
+    // TODO
     checkStr(((uint32_t *)bytecode)[0] == 0x923B8E70 && templateHash() == *pc,
              ":( Failed partial flash");
 
-    uint32_t startptr = (uint32_t)bytecode;
+    PLATFORM_UINT startptr = (PLATFORM_UINT)bytecode;
+    
     startptr += 48; // header
+#ifdef PLATFORM_THUMB
     startptr |= 1;  // Thumb state
+#endif
 
     initRuntime();
 
-    ((uint32_t(*)())startptr)();
+    ((PLATFORM_UINT(*)())startptr)();
 
 #ifdef PXT_MEMLEAK_DEBUG
     pxt::debugMemLeaks();
@@ -553,7 +559,7 @@ void exec_binary(int32_t *pc) {
 }
 
 void start() {
-    exec_binary((int32_t *)functionsAndBytecode);
+    exec_binary((uint16_t *)functionsAndBytecode);
 }
 
 } // end namespace
