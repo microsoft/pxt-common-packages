@@ -280,6 +280,12 @@ TNumber fromFloat(float r) {
     return fromDouble(r);
 }
 
+TNumber fromInt(int v) {
+    if (canBeTagged(v))
+        return TAG_NUMBER(v);
+    return fromDouble(v);
+}
+
 TNumber fromUInt(unsigned v) {
     #ifndef PXT_BOX_DEBUG
         if (v <= 0x3fffffff)
@@ -287,13 +293,6 @@ TNumber fromUInt(unsigned v) {
     #endif
     return fromDouble(v);
 }
-
-TNumber fromInt(int v) {
-    if (canBeTagged(v))
-        return TAG_NUMBER(v);
-    return fromDouble(v);
-}
-
 
 TValue fromBool(bool v) {
     if (v)
