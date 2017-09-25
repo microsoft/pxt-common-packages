@@ -541,9 +541,7 @@ void exec_binary(unsigned *pc) {
     unsigned startptr = (unsigned)bytecode;
     
     startptr += 48; // header
-#ifdef PLATFORM_THUMB
     startptr |= 1;  // Thumb state
-#endif
 
     initRuntime();
 

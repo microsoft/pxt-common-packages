@@ -95,6 +95,7 @@ unsigned getRandom(unsigned max) {
             // generator for 32-bit Microprocessors"
             // https://www.schneier.com/paper-pseudorandom-sequence.html
             unsigned r = random_value;
+#define PLATFORM_UNSIGNED_SIZE 4
 #if PLATFORM_UNSIGNED_SIZE == 4
             r = ((((r >> 31) ^ (r >> 6) ^ (r >> 4) ^ (r >> 2) ^ (r >> 1) ^ r) & 1) << 31) |
                 (r >> 1);
@@ -387,10 +388,10 @@ TValue ptrneqq(TValue a, TValue b) {
 }
 }
 
-namespace numops {
-
 #define NUMOP(op) return fromDouble(toDouble(a) op toDouble(b));
 #define BITOP(op) return fromInt(toInt(a) op toInt(b));
+namespace numops {
+
 //%
 int toBool(TValue v) {
     if (isTagged(v)) {
