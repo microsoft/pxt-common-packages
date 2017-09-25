@@ -569,17 +569,11 @@ Buffer createBuffer(int size);
 // The vtable pointers are there, so that the ::emptyData for various types
 // can be patched with the right vtable.
 //
-#if PLATFORM_UNSIGNED_SIZE == 4   
 #define PXT_SHIMS_BEGIN                                                                            \
     namespace pxt {                                                                                \
     const unsigned functionsAndBytecode[]                                                          \
         __attribute__((aligned(0x20))) = {0x08010801, 0x42424242, 0x08010801, 0x8de9d83e,
-#else
-#define PXT_SHIMS_BEGIN                                                                            \
-    namespace pxt {                                                                                \
-    const unsigned functionsAndBytecode[]                                                          \
-        __attribute__((aligned(0x20))) = {0x0801, 0x0801, 0x4242, 0x4242, 0x0801, 0x0801, 0x8de9, 0xd83e,
-#endif
+
 #define PXT_SHIMS_END                                                                              \
     }                                                                                              \
     ;                                                                                              \

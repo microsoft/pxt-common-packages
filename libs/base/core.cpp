@@ -69,11 +69,7 @@ TNumber mkNaN() {
     return fromDouble(NAN);
 }
 
-#if unsigned_SIZE == 4
 static unsigned random_value = 0xC0DA1;
-#else
-static unsigned random_value = 0x0DA1;
-#endif
 
 void seedRandom(unsigned seed) {
     random_value = seed;
@@ -95,19 +91,12 @@ unsigned getRandom(unsigned max) {
             // generator for 32-bit Microprocessors"
             // https://www.schneier.com/paper-pseudorandom-sequence.html
             unsigned r = random_value;
-#define PLATFORM_UNSIGNED_SIZE 4
-#if PLATFORM_UNSIGNED_SIZE == 4
+
             r = ((((r >> 31) ^ (r >> 6) ^ (r >> 4) ^ (r >> 2) ^ (r >> 1) ^ r) & 1) << 31) |
                 (r >> 1);
             result = ((result << 1) | (r & 0x00000001));
             random_value = r;    
-#else
-            // adapted for 16-bit - changed 31 to 15 (probably not good enough)
-            r = ((((r >> 15) ^ (r >> 6) ^ (r >> 4) ^ (r >> 2) ^ (r >> 1) ^ r) & 1) << 15) |
-                (r >> 1);
-            random_value = r;
-            result = ((result << 1) | (r & 0x0001));
-#endif
+
         } while (m >>= 1);
     } while (result > (unsigned)max);
 
