@@ -70,22 +70,23 @@ TNumber mkNaN() {
     return fromDouble(NAN);
 }
 
-#if PLATFORM_UINT_SIZE == 4
-static PLATFORM_UINT random_value = 0xC0DA1;
+#if unsigned_SIZE == 4
+static unsigned random_value = 0xC0DA1;
 #else
-static PLATFORM_UINT random_value = 0x0DA1;
+static unsigned random_value = 0x0DA1;
 #endif
 
-void seedRandom(PLATFORM_UINT seed) {
+void seedRandom(unsigned seed) {
     random_value = seed;
 }
 
-PLATFORM_UINT getRandom(PLATFORM_UINT max) {
-    PLATFORM_UINT m, result;
+unsigned getRandom(unsigned max) {
+    unsigned m, result;
 
     do {
-        m = (PLATFORM_UINT)max;
+        m = (unsigned)max;
         result = 0;
+        // TODO: this needs to be adapted for 16-bit
         do {
             // Cycle the LFSR (Linear Feedback Shift Register).
             // We use an optimal sequence with a period of 2^32-1, as defined by Bruce Schneier here
@@ -94,7 +95,7 @@ PLATFORM_UINT getRandom(PLATFORM_UINT max) {
             // "Pseudo-Random Sequence Generator for 32-Bit CPUs: A fast, machine-independent
             // generator for 32-bit Microprocessors"
             // https://www.schneier.com/paper-pseudorandom-sequence.html
-            PLATFORM_UINT r = random_value;
+            unsigned r = random_value;
 
             r = ((((r >> 31) ^ (r >> 6) ^ (r >> 4) ^ (r >> 2) ^ (r >> 1) ^ r) & 1) << 31) |
                 (r >> 1);
@@ -103,7 +104,7 @@ PLATFORM_UINT getRandom(PLATFORM_UINT max) {
 
             result = ((result << 1) | (r & 0x00000001));
         } while (m >>= 1);
-    } while (result > (PLATFORM_UINT)max);
+    } while (result > (unsigned)max);
 
     return result;
 }
@@ -223,7 +224,7 @@ bool bang(int v) {
 namespace pxt {
 
 // ES5 9.5, 9.6
-PLATFORM_UINT toUInt(TNumber v) {
+unsigned toUInt(TNumber v) {
     if (isNumber(v))
         return numValue(v);
     if (isSpecial(v)) {
@@ -241,7 +242,7 @@ PLATFORM_UINT toUInt(TNumber v) {
     double rem = fmod(trunc(num), 4294967296.0);
     if (rem < 0.0)
         rem += 4294967296.0;
-    return (PLATFORM_UINT)rem;
+    return (unsigned)rem;
 }
 int toInt(TNumber v) {
     return (int)toUInt(v);
@@ -288,7 +289,7 @@ TNumber fromFloat(float r) {
 
 #endif
 
-TNumber fromUInt(PLATFORM_UINT v) {
+TNumber fromUInt(unsigned v) {
     #if UNTAGGED
         return (TNumber)v;
     #else
@@ -699,7 +700,7 @@ int idiv(int x, int y) {
 
 namespace Array_ {
 //%
-RefCollection *mk(uint32_t flags) {
+RefCollection *mk(unsigned flags) {
     return new RefCollection();
 }
 //%
@@ -749,7 +750,7 @@ namespace pxt {
 void *ptrOfLiteral(int offset);
 
 //%
-PLATFORM_UINT programSize() {
+unsigned programSize() {
     return bytecode[17] * 2;
 }
 
@@ -854,7 +855,7 @@ RefMap *mkMap() {
 }
 
 //%
-TValue mapGet(RefMap *map, PLATFORM_UINT key) {
+TValue mapGet(RefMap *map, unsigned key) {
     int i = map->findIdx(key);
     if (i < 0) {
         map->unref();
@@ -866,12 +867,12 @@ TValue mapGet(RefMap *map, PLATFORM_UINT key) {
 }
 
 //%
-TValue mapGetRef(RefMap *map, PLATFORM_UINT key) {
+TValue mapGetRef(RefMap *map, unsigned key) {
     return mapGet(map, key);
 }
 
 //%
-void mapSet(RefMap *map, PLATFORM_UINT key, TValue val) {
+void mapSet(RefMap *map, unsigned key, TValue val) {
     int i = map->findIdx(key);
     if (i < 0) {
         map->keys.push((TValue)key);
@@ -883,7 +884,7 @@ void mapSet(RefMap *map, PLATFORM_UINT key, TValue val) {
 }
 
 //%
-void mapSetRef(RefMap *map, PLATFORM_UINT key, TValue val) {
+void mapSetRef(RefMap *map, unsigned key, TValue val) {
     mapSet(map, key, val);
 }
 

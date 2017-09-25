@@ -11,10 +11,12 @@ __attribute__((section(".binmeta"))) __attribute__((used)) const uint32_t pxt_bi
     0x00ff00ff, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff,
 };
 
+// TODO: these make platform device assumptions - should be lifted out
 CodalUSB usb;
 HF2 hf2;
-Event lastEvent;
 codal::mbed::Timer devTimer;
+
+Event lastEvent;
 MessageBus devMessageBus;
 codal::CodalDevice device;
 

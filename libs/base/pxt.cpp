@@ -34,18 +34,18 @@ Action mkAction(int reflen, int totallen, int startptr) {
     check(bytecode[startptr] == 0xffff, ERR_INVALID_BINARY_HEADER, 3);
     check(bytecode[startptr + 1] == PXT_REF_TAG_ACTION, ERR_INVALID_BINARY_HEADER, 4);
 
-    PLATFORM_UINT tmp = (PLATFORM_UINT)&bytecode[startptr];
+    unsigned tmp = (unsigned)&bytecode[startptr];
 
     if (totallen == 0) {
         return (TValue)tmp; // no closure needed
     }
 
-    void *ptr = ::operator new(sizeof(RefAction) + totallen * sizeof(PLATFORM_UINT));
+    void *ptr = ::operator new(sizeof(RefAction) + totallen * sizeof(unsigned));
     RefAction *r = new (ptr) RefAction();
     r->len = totallen;
     r->reflen = reflen;
     r->func = (ActionCB)((tmp + 4) | 1);
-    memset(r->fields, 0, r->len * sizeof(PLATFORM_UINT));
+    memset(r->fields, 0, r->len * sizeof(unsigned));
 
     return (Action)r;
 }
@@ -135,7 +135,7 @@ void RefRecord_print(RefRecord *r) {
     DMESG("RefRecord %p r=%d size=%d bytes", r, r->refcnt, getVTable(r)->numbytes);
 }
 
-TValue Segment::get(PLATFORM_UINT i) {
+TValue Segment::get(unsigned i) {
 #ifdef DEBUG_BUILD
     DMESG("In Segment::get index:%d", i);
     this->print();
@@ -147,12 +147,12 @@ TValue Segment::get(PLATFORM_UINT i) {
     return Segment::DefaultValue;
 }
 
-void Segment::setRef(PLATFORM_UINT i, TValue value) {
+void Segment::setRef(unsigned i, TValue value) {
     decr(get(i));
     set(i, value);
 }
 
-void Segment::set(PLATFORM_UINT i, TValue value) {
+void Segment::set(unsigned i, TValue value) {
     if (i < size) {
         data[i] = value;
     } else if (i < Segment::MaxSize) {
@@ -226,7 +226,7 @@ void Segment::ensure(uint16_t newSize) {
     growByMin(newSize);
 }
 
-void Segment::setLength(PLATFORM_UINT newLength) {
+void Segment::setLength(unsigned newLength) {
     if (newLength > size) {
         ensure(length);
     }
@@ -255,7 +255,7 @@ TValue Segment::pop() {
 
 // this function removes an element at index i and shifts the rest of the elements to
 // left to fill the gap
-TValue Segment::remove(PLATFORM_UINT i) {
+TValue Segment::remove(unsigned i) {
 #ifdef DEBUG_BUILD
     DMESG("In Segment::remove index:%d", i);
     this->print();
@@ -265,7 +265,7 @@ TValue Segment::remove(PLATFORM_UINT i) {
         TValue ret = data[i];
         if (i + 1 < length) {
             // Move the rest of the elements to fill in the gap.
-            memmove(data + i, data + i + 1, (length - i - 1) * sizeof(PLATFORM_UINT));
+            memmove(data + i, data + i + 1, (length - i - 1) * sizeof(unsigned));
         }
         length--;
         data[length] = Segment::DefaultValue;
@@ -279,7 +279,7 @@ TValue Segment::remove(PLATFORM_UINT i) {
 }
 
 // this function inserts element value at index i by shifting the rest of the elements right.
-void Segment::insert(PLATFORM_UINT i, TValue value) {
+void Segment::insert(unsigned i, TValue value) {
 #ifdef DEBUG_BUILD
     DMESG("In Segment::insert index:%d value:%d", i, value);
     this->print();
@@ -289,7 +289,7 @@ void Segment::insert(PLATFORM_UINT i, TValue value) {
         ensure(length + 1);
         if (i + 1 < length) {
             // Move the rest of the elements to fill in the gap.
-            memmove(data + i + 1, data + i, (length - i) * sizeof(PLATFORM_UINT));
+            memmove(data + i + 1, data + i, (length - i) * sizeof(unsigned));
         }
 
         data[i] = value;
@@ -305,13 +305,13 @@ void Segment::insert(PLATFORM_UINT i, TValue value) {
 }
 
 void Segment::print() {
-    DMESG("Segment: %p, length: %d, size: %d", data, (PLATFORM_UINT)length, (PLATFORM_UINT)size);
-    for (PLATFORM_UINT i = 0; i < size; i++) {
-        DMESG("-> %d", (PLATFORM_UINT)data[i]);
+    DMESG("Segment: %p, length: %d, size: %d", data, (unsigned)length, (unsigned)size);
+    for (unsigned i = 0; i < size; i++) {
+        DMESG("-> %d", (unsigned)data[i]);
     }
 }
 
-bool Segment::isValidIndex(PLATFORM_UINT i) {
+bool Segment::isValidIndex(unsigned i) {
     if (i > length) {
         return false;
     }
@@ -361,7 +361,7 @@ void RefCollection::setAt(int i, TValue value) {
 }
 
 int RefCollection::indexOf(TValue x, int start) {
-    PLATFORM_UINT i = start;
+    unsigned i = start;
     while (head.isValidIndex(i)) {
         if (pxt::eq_bool(head.get(i), x)) {
             return (int)i;
@@ -390,7 +390,7 @@ RefCollection::RefCollection() : RefObject(0) {
 }
 
 void RefCollection::destroy() {
-    for (PLATFORM_UINT i = 0; i < this->head.getLength(); i++) {
+    for (unsigned i = 0; i < this->head.getLength(); i++) {
         decr(this->head.get(i));
     }
     this->head.destroy();
@@ -451,9 +451,9 @@ void RefMap::destroy() {
     values.destroy();
 }
 
-int RefMap::findIdx(PLATFORM_UINT key) {
+int RefMap::findIdx(unsigned key) {
     for (unsigned i = 0; i < keys.getLength(); ++i) {
-        if ((PLATFORM_UINT)keys.get(i) == key)
+        if ((unsigned)keys.get(i) == key)
             return i;
     }
     return -1;
@@ -489,9 +489,9 @@ uint16_t *bytecode;
 TValue *globals;
 int numGlobals;
 
-PLATFORM_UINT *allocate(uint16_t sz) {
-    PLATFORM_UINT *arr = new PLATFORM_UINT[sz];
-    memset(arr, 0, sz * sizeof(PLATFORM_UINT));
+unsigned *allocate(uint16_t sz) {
+    unsigned *arr = new unsigned[sz];
+    memset(arr, 0, sz * sizeof(unsigned));
     return arr;
 }
 
@@ -516,7 +516,7 @@ int getNumGlobals() {
     return bytecode[16];
 }
 
-void exec_binary(PLATFORM_UINT *pc) {
+void exec_binary(unsigned *pc) {
     // XXX re-enable once the calibration code is fixed and [editor/embedded.ts]
     // properly prepends a call to [internal_main].
     // ::touch_develop::internal_main();
@@ -527,7 +527,7 @@ void exec_binary(PLATFORM_UINT *pc) {
     // repeat error 4 times and restart as needed
     // microbit_panic_timeout(4);
 
-    PLATFORM_UINT ver = *pc++;
+    unsigned ver = *pc++;
     checkStr(ver == 0x4209, ":( Bad runtime version");
 
     bytecode = *((uint16_t **)pc++); // the actual bytecode is here
@@ -538,7 +538,7 @@ void exec_binary(PLATFORM_UINT *pc) {
     checkStr(((uint32_t *)bytecode)[0] == 0x923B8E70 && templateHash() == *pc,
              ":( Failed partial flash");
 
-    PLATFORM_UINT startptr = (PLATFORM_UINT)bytecode;
+    unsigned startptr = (unsigned)bytecode;
     
     startptr += 48; // header
 #ifdef PLATFORM_THUMB
@@ -547,7 +547,7 @@ void exec_binary(PLATFORM_UINT *pc) {
 
     initRuntime();
 
-    ((PLATFORM_UINT(*)())startptr)();
+    ((unsigned(*)())startptr)();
 
 #ifdef PXT_MEMLEAK_DEBUG
     pxt::debugMemLeaks();

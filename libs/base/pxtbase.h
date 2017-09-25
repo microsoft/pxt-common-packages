@@ -63,17 +63,15 @@ template <typename T> inline void swap(T &a, T &b) {
 
 #ifdef UNTAGGED
 //
-// Untagged values
+// Untagged values (assume 2 bytes for now, AVR)
 //
-#define PLATFORM_UINT_SIZE 4
-#define PLATFORM_UINT uint16_t                                                                                                                                                                                                  
-typedef PLATFORM_UINT TValue;
+#define PLATFORM_UNSIGNED_SIZE 2                                                                                                                                                                                               
+typedef unsigned TValue;
 #else 
 //
-// Tagged values
+// Tagged values (assume 4 bytes for now, Cortex-M0)
 //
-#define PLATFORM_UINT_SIZE 4
-#define PLATFORM_UINT uint32_t
+#define PLATFORM_UNSIGNED_SIZE 4
 #define PLATFORM_THUMB 1
 struct TValueStruct {};
 typedef TValueStruct *TValue;
@@ -86,7 +84,7 @@ typedef TValue ImageLiteral;
 // To be implemented by the target
 extern "C" void target_panic(int error_code);
 extern "C" void target_reset();
-void sleep_ms(PLATFORM_UINT ms);
+void sleep_ms(unsigned ms);
 void sleep_us(uint64_t us);
 int current_time_ms();
 void initRuntime();
@@ -97,7 +95,7 @@ void runInBackground(Action a);
 void runForever(Action a);
 void waitForEvent(int id, int event);
 //%
-PLATFORM_UINT afterProgramPage();
+unsigned afterProgramPage();
 //%
 void dumpDmesg();
 
@@ -156,7 +154,7 @@ typedef enum {
     ERR_SIZE = 9,
 } ERROR;
 
-extern const PLATFORM_UINT functionsAndBytecode[];
+extern const unsigned functionsAndBytecode[];
 extern TValue *globals;
 extern uint16_t *bytecode;
 class RefRecord;
@@ -175,13 +173,13 @@ TValue runAction0(Action a);
 Action mkAction(int reflen, int totallen, int startptr);
 // allocate [sz] words and clear them
 //%
-PLATFORM_UINT *allocate(uint16_t sz);
+unsigned *allocate(uint16_t sz);
 //%
 int templateHash();
 //%
 int programHash();
 //%
-PLATFORM_UINT programSize();
+unsigned programSize();
 //%
 int getNumGlobals();
 //%
@@ -194,7 +192,7 @@ void anyPrint(TValue v);
 //%
 int toInt(TNumber v);
 //%
-PLATFORM_UINT toUInt(TNumber v);
+unsigned toUInt(TNumber v);
 
 #ifndef UNTAGGED
 //%
@@ -210,7 +208,7 @@ TNumber fromFloat(float r);
 //%
 TNumber fromInt(int v);
 //%
-TNumber fromUInt(PLATFORM_UINT v);
+TNumber fromUInt(unsigned v);
 //%
 TValue fromBool(bool v);
 //%
@@ -219,7 +217,7 @@ bool eq_bool(TValue a, TValue b);
 bool eqq_bool(TValue a, TValue b);
 
 void error(ERROR code, int subcode = 0);
-void exec_binary(PLATFORM_UINT *pc);
+void exec_binary(unsigned *pc);
 void start();
 
 struct HandlerBinding {
@@ -258,7 +256,7 @@ inline void *ptrOfLiteral(int offset) {
 // Checks if object is ref-counted, and has a custom PXT vtable in front
 // TODO
 inline bool isRefCounted(TValue e) {
-    return !isTagged(e) && (*((PLATFORM_UINT *)e) & 1) == 1;
+    return !isTagged(e) && (*((unsigned *)e) & 1) == 1;
 }
 
 inline void check(int cond, ERROR code, int subcode = 0) {
@@ -355,21 +353,21 @@ class Segment {
   public:
     Segment() : data(nullptr), length(0), size(0){};
 
-    TValue get(PLATFORM_UINT i);
-    void set(PLATFORM_UINT i, TValue value);
-    void setRef(PLATFORM_UINT i, TValue value);
+    TValue get(unsigned i);
+    void set(unsigned i, TValue value);
+    void setRef(unsigned i, TValue value);
 
-    PLATFORM_UINT getLength() { return length; };
-    void setLength(PLATFORM_UINT newLength);
-    void resize(PLATFORM_UINT newLength) { setLength(newLength); }
+    unsigned getLength() { return length; };
+    void setLength(unsigned newLength);
+    void resize(unsigned newLength) { setLength(newLength); }
 
     void push(TValue value);
     TValue pop();
 
-    TValue remove(PLATFORM_UINT i);
-    void insert(PLATFORM_UINT i, TValue value);
+    TValue remove(unsigned i);
+    void insert(unsigned i, TValue value);
 
-    bool isValidIndex(PLATFORM_UINT i);
+    bool isValidIndex(unsigned i);
 
     void destroy();
 
@@ -388,8 +386,8 @@ class RefCollection : public RefObject {
     void destroy();
     void print();
 
-    PLATFORM_UINT length() { return head.getLength(); }
-    void setLength(PLATFORM_UINT newLength) { head.setLength(newLength); }
+    unsigned length() { return head.getLength(); }
+    void setLength(unsigned newLength) { head.setLength(newLength); }
 
     void push(TValue x);
     TValue pop();
@@ -412,7 +410,7 @@ class RefMap : public RefObject {
     RefMap();
     void destroy();
     void print();
-    int findIdx(PLATFORM_UINT key);
+    int findIdx(unsigned key);
 };
 
 // A ref-counted, user-defined JS object.
@@ -550,9 +548,9 @@ TNumber getNumberCore(uint8_t *buf, int size, NumberFormat format);
 void setNumberCore(uint8_t *buf, int size, NumberFormat format, TNumber value);
 
 TNumber mkNaN();
-void seedRandom(PLATFORM_UINT seed);
+void seedRandom(unsigned seed);
 // max is inclusive
-PLATFORM_UINT getRandom(PLATFORM_UINT max);
+unsigned getRandom(unsigned max);
 
 extern const VTable string_vt;
 extern const VTable image_vt;
@@ -591,15 +589,15 @@ Buffer createBuffer(int size);
 // The vtable pointers are there, so that the ::emptyData for various types
 // can be patched with the right vtable.
 //
-#if PLATFORM_UINT_SIZE == 4   
+#if PLATFORM_UNSIGNED_SIZE == 4   
 #define PXT_SHIMS_BEGIN                                                                            \
     namespace pxt {                                                                                \
-    const uint32_t functionsAndBytecode[]                                                          \
+    const unsigned functionsAndBytecode[]                                                          \
         __attribute__((aligned(0x20))) = {0x08010801, 0x42424242, 0x08010801, 0x8de9d83e,
 #else
 #define PXT_SHIMS_BEGIN                                                                            \
     namespace pxt {                                                                                \
-    const uint16_t functionsAndBytecode[]                                                          \
+    const unsigned functionsAndBytecode[]                                                          \
         __attribute__((aligned(0x20))) = {0x0801, 0x0801, 0x4242, 0x4242, 0x0801, 0x0801, 0x8de9, 0xd83e,
 #endif
 #define PXT_SHIMS_END                                                                              \
@@ -609,7 +607,7 @@ Buffer createBuffer(int size);
 
 #pragma GCC diagnostic ignored "-Wpmf-conversions"
 
-#define PXT_VTABLE_TO_INT(vt) ((PLATFORM_UINT)(vt) >> vtableShift)
+#define PXT_VTABLE_TO_INT(vt) ((unsigned)(vt) >> vtableShift)
 #define PXT_VTABLE_BEGIN(classname, flags, iface)                                                  \
 const VTable classname##_vtable __attribute__((aligned(1 << vtableShift))) = {                 \
     sizeof(classname), flags, iface, {(void *)&classname::destroy, (void *)&classname::print,
@@ -631,7 +629,7 @@ const VTable classname##_vtable __attribute__((aligned(1 << vtableShift))) = {  
         return 0;                                                                                  \
     }
 
-#define PXT_FNPTR(x) (PLATFORM_UINT)(void *)(x)
+#define PXT_FNPTR(x) (unsigned)(void *)(x)
 
 #define JOIN(a, b) a##b
 /// Defines getClassName() function to fetch the singleton
