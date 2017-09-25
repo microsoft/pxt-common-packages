@@ -559,7 +559,7 @@ void exec_binary(unsigned *pc) {
 }
 
 void start() {
-    exec_binary((uint16_t *)functionsAndBytecode);
+    exec_binary((unsigned *)functionsAndBytecode);
 }
 
 } // end namespace

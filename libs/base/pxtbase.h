@@ -61,21 +61,11 @@ template <typename T> inline void swap(T &a, T &b) {
     b = tmp;
 }
 
-#ifdef UNTAGGED
-//
-// Untagged values (assume 2 bytes for now, AVR)
-//
-#define PLATFORM_UNSIGNED_SIZE 2                                                                                                                                                                                               
-typedef unsigned TValue;
-#else 
 //
 // Tagged values (assume 4 bytes for now, Cortex-M0)
 //
-#define PLATFORM_UNSIGNED_SIZE 4
-#define PLATFORM_THUMB 1
 struct TValueStruct {};
 typedef TValueStruct *TValue;
-#endif
 
 typedef TValue TNumber;
 typedef TValue Action;
@@ -101,12 +91,6 @@ void dumpDmesg();
 
 // also defined DMESG macro
 // end
-
-#ifdef UNTAGGED
-#define TAG_UNDEFINED (TValue)0
-#define TAG_FALSE (TValue)0
-#define TAG_TRUE (TValue)1
-#else
 
 #define TAGGED_SPECIAL(n) (TValue)(void *)((n << 2) | 2)
 #define TAG_FALSE TAGGED_SPECIAL(2)
@@ -144,8 +128,6 @@ inline bool canBeTagged(int v) {
     return (v << 1) >> 1 == v;
 }
 #endif
-
-#endif 
 
 typedef enum {
     ERR_INVALID_BINARY_HEADER = 5,
@@ -193,8 +175,6 @@ void anyPrint(TValue v);
 int toInt(TNumber v);
 //%
 unsigned toUInt(TNumber v);
-
-#ifndef UNTAGGED
 //%
 double toDouble(TNumber v);
 //%
@@ -203,7 +183,6 @@ float toFloat(TNumber v);
 TNumber fromDouble(double r);
 //%
 TNumber fromFloat(float r);
-#endif
 
 //%
 TNumber fromInt(int v);
@@ -548,6 +527,7 @@ TNumber getNumberCore(uint8_t *buf, int size, NumberFormat format);
 void setNumberCore(uint8_t *buf, int size, NumberFormat format, TNumber value);
 
 TNumber mkNaN();
+
 void seedRandom(unsigned seed);
 // max is inclusive
 unsigned getRandom(unsigned max);

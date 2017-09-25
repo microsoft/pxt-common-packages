@@ -33,7 +33,6 @@ void setBinding(int source, int value, Action act) {
     handlerBindings = curr;
 }
 
-
 static const uint16_t emptyString[]
     __attribute__((aligned(4))) = {0xffff, PXT_REF_TAG_STRING, 0, 0};
 
@@ -86,7 +85,7 @@ unsigned getRandom(unsigned max) {
     do {
         m = (unsigned)max;
         result = 0;
-        // TODO: this needs to be adapted for 16-bit
+
         do {
             // Cycle the LFSR (Linear Feedback Shift Register).
             // We use an optimal sequence with a period of 2^32-1, as defined by Bruce Schneier here
@@ -96,13 +95,18 @@ unsigned getRandom(unsigned max) {
             // generator for 32-bit Microprocessors"
             // https://www.schneier.com/paper-pseudorandom-sequence.html
             unsigned r = random_value;
-
+#if PLATFORM_UNSIGNED_SIZE == 4
             r = ((((r >> 31) ^ (r >> 6) ^ (r >> 4) ^ (r >> 2) ^ (r >> 1) ^ r) & 1) << 31) |
                 (r >> 1);
-
-            random_value = r;
-
             result = ((result << 1) | (r & 0x00000001));
+            random_value = r;    
+#else
+            // adapted for 16-bit - changed 31 to 15 (probably not good enough)
+            r = ((((r >> 15) ^ (r >> 6) ^ (r >> 4) ^ (r >> 2) ^ (r >> 1) ^ r) & 1) << 15) |
+                (r >> 1);
+            random_value = r;
+            result = ((result << 1) | (r & 0x0001));
+#endif
         } while (m >>= 1);
     } while (result > (unsigned)max);
 
@@ -248,7 +252,6 @@ int toInt(TNumber v) {
     return (int)toUInt(v);
 }
 
-#ifndef UNTAGGED
 // only support double in tagged mode
 double toDouble(TNumber v) {
     if (isTagged(v))
@@ -287,28 +290,18 @@ TNumber fromFloat(float r) {
     return fromDouble(r);
 }
 
-#endif
-
 TNumber fromUInt(unsigned v) {
-    #if UNTAGGED
-        return (TNumber)v;
-    #else
     #ifndef PXT_BOX_DEBUG
         if (v <= 0x3fffffff)
             return TAG_NUMBER(v);
     #endif
-        return fromDouble(v);
-    #endif
+    return fromDouble(v);
 }
 
 TNumber fromInt(int v) {
-    #if UNTAGGED
-        return (TNumber)v;
-    #else
-        if (canBeTagged(v))
-            return TAG_NUMBER(v);
-        return fromDouble(v);
-    #endif
+    if (canBeTagged(v))
+        return TAG_NUMBER(v);
+    return fromDouble(v);
 }
 
 
@@ -319,23 +312,6 @@ TValue fromBool(bool v) {
         return TAG_FALSE;
 }
 
-#ifdef UNTAGGED
-
-// TODO
-bool eqq_bool(TValue a, TValue b) {
-    return false;
-}
-
-bool eq_bool(TValue a, TValue b) {
-    return false;
-}
-
-//%
-bool switch_eq(TValue a, TValue b) {
-    return false;
-}
-
-#else
 TNumber eqFixup(TNumber v) {
     if (v == TAG_NULL)
         return TAG_UNDEFINED;
@@ -386,7 +362,7 @@ bool switch_eq(TValue a, TValue b) {
     }
     return false;
 }
-#endif
+
 }
 
 namespace langsupp {
@@ -411,10 +387,10 @@ TValue ptrneqq(TValue a, TValue b) {
 }
 }
 
-#define NUMOP(op) return fromDouble(toDouble(a) op toDouble(b));
-#define BITOP(op) return fromInt(toInt(a) op toInt(b));
 namespace numops {
 
+#define NUMOP(op) return fromDouble(toDouble(a) op toDouble(b));
+#define BITOP(op) return fromInt(toInt(a) op toInt(b));
 //%
 int toBool(TValue v) {
     if (isTagged(v)) {
@@ -447,6 +423,7 @@ int toBoolDecr(TValue v) {
     return r;
 }
 
+// TODO
 // The integer, non-overflow case for add/sub/bit opts is handled in assembly
 
 //%
