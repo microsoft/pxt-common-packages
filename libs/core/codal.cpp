@@ -78,7 +78,7 @@ void fiberDone(void *a) {
     release_fiber();
 }
 
-void sleep_ms(uint32_t ms) {
+void sleep_ms(unsigned ms) {
     fiber_sleep(ms);
 }
 

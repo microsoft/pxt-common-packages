@@ -535,7 +535,7 @@ void exec_binary(unsigned *pc) {
 
     // just compare the first word
     // TODO
-    checkStr(((uint32_t *)bytecode)[0] == 0x923B8E70 && templateHash() == *pc,
+    checkStr(((uint32_t *)bytecode)[0] == 0x923B8E70 && (unsigned)templateHash() == *pc,
              ":( Failed partial flash");
 
     unsigned startptr = (unsigned)bytecode;
