@@ -94,9 +94,8 @@ unsigned getRandom(unsigned max) {
 
             r = ((((r >> 31) ^ (r >> 6) ^ (r >> 4) ^ (r >> 2) ^ (r >> 1) ^ r) & 1) << 31) |
                 (r >> 1);
+            random_value = r;   
             result = ((result << 1) | (r & 0x00000001));
-            random_value = r;    
-
         } while (m >>= 1);
     } while (result > (unsigned)max);
 
