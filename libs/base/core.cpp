@@ -33,7 +33,6 @@ void setBinding(int source, int value, Action act) {
     handlerBindings = curr;
 }
 
-
 static const uint16_t emptyString[]
     __attribute__((aligned(4))) = {0xffff, PXT_REF_TAG_STRING, 0, 0};
 
@@ -70,18 +69,19 @@ TNumber mkNaN() {
     return fromDouble(NAN);
 }
 
-static uint32_t random_value = 0xC0DA1;
+static unsigned random_value = 0xC0DA1;
 
-void seedRandom(uint32_t seed) {
+void seedRandom(unsigned seed) {
     random_value = seed;
 }
 
-uint32_t getRandom(uint32_t max) {
-    uint32_t m, result;
+unsigned getRandom(unsigned max) {
+    unsigned m, result;
 
     do {
-        m = (uint32_t)max;
+        m = (unsigned)max;
         result = 0;
+
         do {
             // Cycle the LFSR (Linear Feedback Shift Register).
             // We use an optimal sequence with a period of 2^32-1, as defined by Bruce Schneier here
@@ -90,16 +90,16 @@ uint32_t getRandom(uint32_t max) {
             // "Pseudo-Random Sequence Generator for 32-Bit CPUs: A fast, machine-independent
             // generator for 32-bit Microprocessors"
             // https://www.schneier.com/paper-pseudorandom-sequence.html
-            uint32_t r = random_value;
+            unsigned r = random_value;
 
             r = ((((r >> 31) ^ (r >> 6) ^ (r >> 4) ^ (r >> 2) ^ (r >> 1) ^ r) & 1) << 31) |
                 (r >> 1);
 
-            random_value = r;
-
+            random_value = r;   
+            
             result = ((result << 1) | (r & 0x00000001));
         } while (m >>= 1);
-    } while (result > (uint32_t)max);
+    } while (result > (unsigned)max);
 
     return result;
 }
@@ -219,7 +219,7 @@ bool bang(int v) {
 namespace pxt {
 
 // ES5 9.5, 9.6
-uint32_t toUInt(TNumber v) {
+unsigned toUInt(TNumber v) {
     if (isNumber(v))
         return numValue(v);
     if (isSpecial(v)) {
@@ -237,12 +237,13 @@ uint32_t toUInt(TNumber v) {
     double rem = fmod(trunc(num), 4294967296.0);
     if (rem < 0.0)
         rem += 4294967296.0;
-    return (uint32_t)rem;
+    return (unsigned)rem;
 }
 int toInt(TNumber v) {
     return (int)toUInt(v);
 }
 
+// only support double in tagged mode
 double toDouble(TNumber v) {
     if (isTagged(v))
         return toInt(v);
@@ -286,7 +287,7 @@ TNumber fromInt(int v) {
     return fromDouble(v);
 }
 
-TNumber fromUInt(uint32_t v) {
+TNumber fromUInt(unsigned v) {
 #ifndef PXT_BOX_DEBUG
     if (v <= 0x3fffffff)
         return TAG_NUMBER(v);
@@ -351,6 +352,7 @@ bool switch_eq(TValue a, TValue b) {
     }
     return false;
 }
+
 }
 
 namespace langsupp {
@@ -411,6 +413,7 @@ int toBoolDecr(TValue v) {
     return r;
 }
 
+// TODO
 // The integer, non-overflow case for add/sub/bit opts is handled in assembly
 
 //%
@@ -664,7 +667,7 @@ int idiv(int x, int y) {
 
 namespace Array_ {
 //%
-RefCollection *mk(uint32_t flags) {
+RefCollection *mk(unsigned flags) {
     return new RefCollection();
 }
 //%
@@ -714,7 +717,7 @@ namespace pxt {
 void *ptrOfLiteral(int offset);
 
 //%
-uint32_t programSize() {
+unsigned programSize() {
     return bytecode[17] * 2;
 }
 
@@ -819,7 +822,7 @@ RefMap *mkMap() {
 }
 
 //%
-TValue mapGet(RefMap *map, uint32_t key) {
+TValue mapGet(RefMap *map, unsigned key) {
     int i = map->findIdx(key);
     if (i < 0) {
         map->unref();
@@ -831,12 +834,12 @@ TValue mapGet(RefMap *map, uint32_t key) {
 }
 
 //%
-TValue mapGetRef(RefMap *map, uint32_t key) {
+TValue mapGetRef(RefMap *map, unsigned key) {
     return mapGet(map, key);
 }
 
 //%
-void mapSet(RefMap *map, uint32_t key, TValue val) {
+void mapSet(RefMap *map, unsigned key, TValue val) {
     int i = map->findIdx(key);
     if (i < 0) {
         map->keys.push((TValue)key);
@@ -848,7 +851,7 @@ void mapSet(RefMap *map, uint32_t key, TValue val) {
 }
 
 //%
-void mapSetRef(RefMap *map, uint32_t key, TValue val) {
+void mapSetRef(RefMap *map, unsigned key, TValue val) {
     mapSet(map, key, val);
 }
 

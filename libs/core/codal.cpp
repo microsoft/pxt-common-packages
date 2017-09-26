@@ -11,10 +11,12 @@ __attribute__((section(".binmeta"))) __attribute__((used)) const uint32_t pxt_bi
     0x00ff00ff, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff,
 };
 
+// TODO: these make platform device assumptions - should be lifted out
 CodalUSB usb;
 HF2 hf2;
-Event lastEvent;
 codal::mbed::Timer devTimer;
+
+Event lastEvent;
 MessageBus devMessageBus;
 codal::CodalDevice device;
 
@@ -76,7 +78,7 @@ void fiberDone(void *a) {
     release_fiber();
 }
 
-void sleep_ms(uint32_t ms) {
+void sleep_ms(unsigned ms) {
     fiber_sleep(ms);
 }
 
@@ -139,8 +141,8 @@ void initRuntime() {
 }
 
 //%
-uint32_t afterProgramPage() {
-    uint32_t ptr = (uint32_t)&bytecode[0];
+unsigned afterProgramPage() {
+    unsigned ptr = (unsigned)&bytecode[0];
     ptr += programSize();
     ptr = (ptr + (PAGE_SIZE - 1)) & ~(PAGE_SIZE - 1);
     return ptr;

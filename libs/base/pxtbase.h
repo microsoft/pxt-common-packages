@@ -62,10 +62,11 @@ template <typename T> inline void swap(T &a, T &b) {
 }
 
 //
-// Tagged values
+// Tagged values (assume 4 bytes for now, Cortex-M0)
 //
 struct TValueStruct {};
 typedef TValueStruct *TValue;
+
 typedef TValue TNumber;
 typedef TValue Action;
 typedef TValue ImageLiteral;
@@ -73,7 +74,7 @@ typedef TValue ImageLiteral;
 // To be implemented by the target
 extern "C" void target_panic(int error_code);
 extern "C" void target_reset();
-void sleep_ms(uint32_t ms);
+void sleep_ms(unsigned ms);
 void sleep_us(uint64_t us);
 int current_time_ms();
 void initRuntime();
@@ -84,7 +85,7 @@ void runInBackground(Action a);
 void runForever(Action a);
 void waitForEvent(int id, int event);
 //%
-uint32_t afterProgramPage();
+unsigned afterProgramPage();
 //%
 void dumpDmesg();
 
@@ -135,7 +136,7 @@ typedef enum {
     ERR_SIZE = 9,
 } ERROR;
 
-extern const uint32_t functionsAndBytecode[];
+extern const unsigned functionsAndBytecode[];
 extern TValue *globals;
 extern uint16_t *bytecode;
 class RefRecord;
@@ -154,13 +155,13 @@ TValue runAction0(Action a);
 Action mkAction(int reflen, int totallen, int startptr);
 // allocate [sz] words and clear them
 //%
-uint32_t *allocate(uint16_t sz);
+unsigned *allocate(uint16_t sz);
 //%
 int templateHash();
 //%
 int programHash();
 //%
-uint32_t programSize();
+unsigned programSize();
 //%
 int getNumGlobals();
 //%
@@ -173,7 +174,7 @@ void anyPrint(TValue v);
 //%
 int toInt(TNumber v);
 //%
-uint32_t toUInt(TNumber v);
+unsigned toUInt(TNumber v);
 //%
 double toDouble(TNumber v);
 //%
@@ -182,10 +183,11 @@ float toFloat(TNumber v);
 TNumber fromDouble(double r);
 //%
 TNumber fromFloat(float r);
+
 //%
 TNumber fromInt(int v);
 //%
-TNumber fromUInt(uint32_t v);
+TNumber fromUInt(unsigned v);
 //%
 TValue fromBool(bool v);
 //%
@@ -194,7 +196,7 @@ bool eq_bool(TValue a, TValue b);
 bool eqq_bool(TValue a, TValue b);
 
 void error(ERROR code, int subcode = 0);
-void exec_binary(uint16_t *pc);
+void exec_binary(unsigned *pc);
 void start();
 
 struct HandlerBinding {
@@ -231,8 +233,9 @@ inline void *ptrOfLiteral(int offset) {
 }
 
 // Checks if object is ref-counted, and has a custom PXT vtable in front
+// TODO
 inline bool isRefCounted(TValue e) {
-    return !isTagged(e) && (*((uint32_t *)e) & 1) == 1;
+    return !isTagged(e) && (*((unsigned *)e) & 1) == 1;
 }
 
 inline void check(int cond, ERROR code, int subcode = 0) {
@@ -329,21 +332,21 @@ class Segment {
   public:
     Segment() : data(nullptr), length(0), size(0){};
 
-    TValue get(uint32_t i);
-    void set(uint32_t i, TValue value);
-    void setRef(uint32_t i, TValue value);
+    TValue get(unsigned i);
+    void set(unsigned i, TValue value);
+    void setRef(unsigned i, TValue value);
 
-    uint32_t getLength() { return length; };
-    void setLength(uint32_t newLength);
-    void resize(uint32_t newLength) { setLength(newLength); }
+    unsigned getLength() { return length; };
+    void setLength(unsigned newLength);
+    void resize(unsigned newLength) { setLength(newLength); }
 
     void push(TValue value);
     TValue pop();
 
-    TValue remove(uint32_t i);
-    void insert(uint32_t i, TValue value);
+    TValue remove(unsigned i);
+    void insert(unsigned i, TValue value);
 
-    bool isValidIndex(uint32_t i);
+    bool isValidIndex(unsigned i);
 
     void destroy();
 
@@ -362,8 +365,8 @@ class RefCollection : public RefObject {
     void destroy();
     void print();
 
-    uint32_t length() { return head.getLength(); }
-    void setLength(uint32_t newLength) { head.setLength(newLength); }
+    unsigned length() { return head.getLength(); }
+    void setLength(unsigned newLength) { head.setLength(newLength); }
 
     void push(TValue x);
     TValue pop();
@@ -386,7 +389,7 @@ class RefMap : public RefObject {
     RefMap();
     void destroy();
     void print();
-    int findIdx(uint32_t key);
+    int findIdx(unsigned key);
 };
 
 // A ref-counted, user-defined JS object.
@@ -524,9 +527,10 @@ TNumber getNumberCore(uint8_t *buf, int size, NumberFormat format);
 void setNumberCore(uint8_t *buf, int size, NumberFormat format, TNumber value);
 
 TNumber mkNaN();
-void seedRandom(uint32_t seed);
+
+void seedRandom(unsigned seed);
 // max is inclusive
-uint32_t getRandom(uint32_t max);
+unsigned getRandom(unsigned max);
 
 extern const VTable string_vt;
 extern const VTable image_vt;
@@ -567,7 +571,7 @@ Buffer createBuffer(int size);
 //
 #define PXT_SHIMS_BEGIN                                                                            \
     namespace pxt {                                                                                \
-    const uint32_t functionsAndBytecode[]                                                          \
+    const unsigned functionsAndBytecode[]                                                          \
         __attribute__((aligned(0x20))) = {0x08010801, 0x42424242, 0x08010801, 0x8de9d83e,
 
 #define PXT_SHIMS_END                                                                              \
@@ -577,10 +581,10 @@ Buffer createBuffer(int size);
 
 #pragma GCC diagnostic ignored "-Wpmf-conversions"
 
-#define PXT_VTABLE_TO_INT(vt) ((uint32_t)(vt) >> vtableShift)
+#define PXT_VTABLE_TO_INT(vt) ((unsigned)(vt) >> vtableShift)
 #define PXT_VTABLE_BEGIN(classname, flags, iface)                                                  \
-    const VTable classname##_vtable __attribute__((aligned(1 << vtableShift))) = {                 \
-        sizeof(classname), flags, iface, {(void *)&classname::destroy, (void *)&classname::print,
+const VTable classname##_vtable __attribute__((aligned(1 << vtableShift))) = {                 \
+    sizeof(classname), flags, iface, {(void *)&classname::destroy, (void *)&classname::print,
 
 #define PXT_VTABLE_END                                                                             \
     }                                                                                              \
@@ -599,7 +603,7 @@ Buffer createBuffer(int size);
         return 0;                                                                                  \
     }
 
-#define PXT_FNPTR(x) (uint32_t)(void *)(x)
+#define PXT_FNPTR(x) (unsigned)(void *)(x)
 
 #define JOIN(a, b) a##b
 /// Defines getClassName() function to fetch the singleton
