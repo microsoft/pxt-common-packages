@@ -9,7 +9,7 @@ light.colorWheel(0);
 
 ## Parameters
 
-* **angle**: [number](/reference/blocks/number), 
+* **angle**: [number](/types/number),
 
 ## Example
 

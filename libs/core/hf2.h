@@ -19,7 +19,7 @@ typedef struct
     };
 } HF2_Buffer;
 
-class HF2 : public USBHID
+class HF2 : public codal::USBHID
 {
 public:
     HF2_Buffer pkt;

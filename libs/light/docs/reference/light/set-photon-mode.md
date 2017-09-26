@@ -68,7 +68,7 @@ for (let i = 1; i < light.pixels.length(); i++) {
 
 [``||photon forward||``](/reference/light/photon-forward),
 [``||photon flip||``](/reference/light/photon-flip),
-[``||photon color||``](/reference/light/photon-color)
+[``||photon color||``](/reference/light/set-photon-color)
 
 ```package
 light

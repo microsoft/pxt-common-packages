@@ -4,28 +4,19 @@
     "files": [
         "README.md",
         "dal.d.ts",
-        "pxt-core.d.ts",
-        "pxt.cpp",
+        "codal.cpp",
         "pxt.h",
+        "pxtcore.h",
         "pins.h",
-        "core.cpp",
         "pins.cpp",
         "devpins.cpp",
         "devpins.h",
         "pins.ts",
+        "control.cpp",
         "i2c.cpp",
         "i2c.ts",
-        "pxt-helpers.ts",
-        "buffer.cpp",
         "shims.d.ts",
         "enums.d.ts",
-        "control.cpp",
-        "control.ts",
-        "loops.cpp",
-        "serial.cpp",
-        "serial.ts",
-        "buttons.cpp",
-        "math.ts",
         "hf2.cpp",
         "hf2.h",
         "hf2dbg.h",
@@ -47,6 +38,9 @@
             }
         }
     },
+    "additionalFilePath": "../../node_modules/pxt-common-packages/libs/core",
     "public": true,
-    "dependencies": {}
+    "dependencies": {
+        "base": "file:../base"
+    }
 }

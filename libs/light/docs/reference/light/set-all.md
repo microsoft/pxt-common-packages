@@ -8,7 +8,7 @@ light.pixels.setAll(Colors.Red);
 
 ## Parameters
 
-* **rgb**: a [number](/reference/blocks/number) that is the RGB color for all of the pixels.
+* **rgb**: a [number](/types/number) that is the RGB color for all of the pixels.
 
 ## Example
 

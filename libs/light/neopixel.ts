@@ -5,7 +5,7 @@ enum Colors {
     //% block=red blockIdentity=light.colors
     Red = 0xFF0000,
     //% block=orange blockIdentity=light.colors
-    Orange = 0xFFA500,
+    Orange = 0xFF7F00,
     //% block=yellow blockIdentity=light.colors
     Yellow = 0xFFFF00,
     //% block=green blockIdentity=light.colors
@@ -17,9 +17,9 @@ enum Colors {
     //% block=violet blockIdentity=light.colors
     Violet = 0x8a2be2,
     //% block=purple blockIdentity=light.colors
-    Purple = 0xFF00FF,
+    Purple = 0xA033E5,
     //% block=pink blockIdentity=light.colors
-    Pink = 0xFFC0CB,
+    Pink = 0xFF007F,
     //% block=white blockIdentity=light.colors
     White = 0xFFFFFF,
     //% block=black  blockIdentity=light.colors
@@ -162,7 +162,9 @@ namespace light {
          */
         //% blockId=neopixel_show_bar_graph block="graph of %value |up to %high" icon="\uf080" blockExternalInputs=true        
         //% weight=88
+        //% help=light/graph
         //% blockGap=8
+        //% help=light/graph
         //% advanced=true 
         //% parts="neopixel" 
         //% defaultInstance=light.pixels
@@ -482,7 +484,7 @@ namespace light {
          * Set the photon color.
          * @param color the color of the photon
          */
-        //% blockId=neophoton_set_color block="photon set color %color"
+        //% blockId=neophoton_set_color block="photon set pen color %color"
         //% weight=39
         //% blockGap=8
         //% parts="neopixel"
@@ -538,8 +540,9 @@ namespace light {
          * Show a single animation frame
          * @param animation the animation to run
          */
-        //% blockId=neopixel_show_animation_frame block="show animation frame %animation"
+        //% blockId=neopixel_show_animation_frame block="show animation frame %animation=light_animation"
         //% weight=24 advanced=true
+        //% help="light/show-animation-frame"
         //% parts="neopixel"
         //% defaultInstance=light.pixels
         showAnimationFrame(animation: NeoPixelAnimation) {
@@ -847,7 +850,7 @@ namespace light {
      * @param kind the type of animation
      */
     //% kind.fieldEditor="gridpicker"
-    //% kind.fieldOptions.width=220
+    //% kind.fieldOptions.width=285
     //% kind.fieldOptions.columns=3 blockGap=8
     //% blockId=light_animation block="%kind"
     //% advanced=true weight=25
@@ -927,7 +930,7 @@ namespace light {
             if (this.iteration < l * 2) {
                 this.step++;
                 for (let i = 0; i < l; i++) {
-                    const level = (Math.sin(i + this.step) * 127) + 128;
+                    const level = (Math.isin(i + this.step) * 127) + 128;
                     strip.setPixelColor(i, rgb(level * this.red / 255, level * this.green / 255, level * this.blue / 255));
                 }
                 strip.show();
@@ -996,7 +999,7 @@ namespace light {
                 strip.clear();
             }
             const now = control.millis() - this.start;
-            const pixel = Math.random(l);
+            const pixel = Math.randomRange(0, l - 1);
             strip.setPixelColor(pixel, this.rgb);
             strip.show();
             loops.pause(this.delay);

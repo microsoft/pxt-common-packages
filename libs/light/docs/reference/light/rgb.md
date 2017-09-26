@@ -24,9 +24,9 @@ let pink = light.rgb(255, 0, 255)
 
 ## Parameters
 
-* **red**: a [number](/reference/blocks/number) that is the amount of red light (between 0 and 255), like: 128
-* **green**: a [number](/reference/blocks/number) that is the amount green light (between 0 and 255), like: 51
-* **blue**: a [number](/reference/blocks/number) that is the amount of blue light (between 0 and 255), like: 255
+* **red**: a [number](/types/number) that is the amount of red light (between 0 and 255), like: 128
+* **green**: a [number](/types/number) that is the amount green light (between 0 and 255), like: 51
+* **blue**: a [number](/types/number) that is the amount of blue light (between 0 and 255), like: 255
 
 ## Returns
 

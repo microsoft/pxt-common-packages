@@ -6,6 +6,7 @@ built
 typings
 tmp
 temp
+.vscode
 
 *.user
 *.sw?
@@ -17,4 +18,4 @@ temp
 .pioenvs
 .piolibdeps
 lib/
-
+projects/

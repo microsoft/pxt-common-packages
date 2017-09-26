@@ -28,10 +28,6 @@ check the ways that the @boardname@ is moving.
 This program helps you move the @boardname@ until it is level. When
 it is levelled, the @boardname@ shows turns blue.
 
-If you are running this program in a browser, you can tilt the
-@boardname@ with your mouse.
-
-
 ```blocks
 let roll = 0
 let pitch = 0
@@ -39,12 +35,17 @@ loops.forever(() => {
     pitch = input.rotation(Rotation.Pitch)
     roll = input.rotation(Rotation.Roll)
     if (Math.abs(pitch) < 10 && Math.abs(roll) < 10) {
-        light.pixels.showColor(light.colors(Colors.Blue))
+        light.pixels.setAll(light.colors(Colors.Blue))
     } else {
-        light.pixels.showColor(light.colors(Colors.Red))
+        light.pixels.setAll(light.colors(Colors.Red))
     }
 });
 ```
+#### ~hint
+**Simulator**
+
+If you are running this program in a browser, you can tilt the @boardname@ with your mouse.
+#### ~
 
 ### See also
 

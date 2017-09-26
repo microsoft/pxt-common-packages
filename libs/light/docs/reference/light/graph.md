@@ -20,8 +20,8 @@ current value if you haven't used ``||graph||`` in the last 10 seconds.
 
 ## Parameters
 
-* **value**: a [number](/reference/blocks/number) that is the value to show on the graph.
-* **high**: a [number](/reference/blocks/number) that is top number in the graph scale. A value of
+* **value**: a [number](/types/number) that is the value to show on the graph.
+* **high**: a [number](/types/number) that is top number in the graph scale. A value of
 `0` lets the graph auto scale.
 
 #### ~hint
@@ -52,6 +52,7 @@ loops.forever(() => {
     loops.pause(500)
 })
 ```
+## See also
 
 [``||range||``](/reference/light/range)
 

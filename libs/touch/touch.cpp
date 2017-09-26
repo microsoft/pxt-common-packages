@@ -59,9 +59,9 @@ const int LastTouchButtonID = &((WTouch *)0)->pinA7 - ((WTouch *)0)->buttons;
 //%
 CapTouchButton *getTouchButton(int id) {
     if (!(0 <= id && id <= LastTouchButtonID))
-        device.panic(42);
+        target_panic(42);
     if (sizeof(touchPins) / sizeof(touchPins[0]) != LastTouchButtonID + 1)
-        device.panic(42);
+        target_panic(42);
     auto w = getWTouch();
     if (!w->buttons[id])
         w->buttons[id] = new CapTouchButton(*pxt::lookupPin(touchPins[id]));

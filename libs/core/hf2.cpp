@@ -4,11 +4,15 @@
 
 static void *stackCopy;
 static uint32_t stackSize;
+//#define LOG DMESG
+#define LOG(...) ((void)0)
 
 //#define LOG DMESG
 #define LOG(...) ((void)0)
 
 static volatile bool resume = false;
+
+using namespace codal;
 
 static const char hidDescriptor[] = {
     0x06, 0x97, 0xFF, // usage page vendor 0x97 (usage 0xff97 0x0001)
@@ -174,7 +178,11 @@ static void copy_words(void *dst0, const void *src0, uint32_t n_words) {
         *dst++ = *src++;
 }
 
-int HF2::endpointRequest() {
+#define DBL_TAP_PTR ((volatile uint32_t *)(HMCRAMC0_ADDR + HMCRAMC0_SIZE - 4))
+#define DBL_TAP_MAGIC_QUICK_BOOT 0xf02669ef
+
+int HF2::endpointRequest()
+{
     int sz = recv();
 
     if (!sz)
@@ -212,14 +220,14 @@ int HF2::endpointRequest() {
 
     case HF2_DBG_RESTART:
         *HF2_DBG_MAGIC_PTR = HF2_DBG_MAGIC_START;
-    // fall-through
-    case HF2_CMD_RESET_INTO_APP:
-        *((uint32_t *)(DEVICE_SRAM_END - 4)) = 0xf02669ef;
-        device.reset();
+        target_reset();
         break;
 
+    case HF2_CMD_RESET_INTO_APP:
+        *DBL_TAP_PTR = DBL_TAP_MAGIC_QUICK_BOOT;
+        // fall-through
     case HF2_CMD_RESET_INTO_BOOTLOADER:
-        device.reset();
+        target_reset();
         break;
 
     case HF2_CMD_START_FLASH:

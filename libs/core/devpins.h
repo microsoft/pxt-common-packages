@@ -70,7 +70,7 @@ class DevPins {
 #undef AnalogPin
 #undef PwmPin
 
-    I2C i2c;
+    codal::mbed::I2C i2c;
 
     DevPins();
 };
