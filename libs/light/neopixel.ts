@@ -301,7 +301,7 @@ namespace light {
         }
 
         /**
-         * Make the strip show all the new change for the pixels.
+         * Make the strip show all the new changes for the pixels.
          */
         //% blockId="neopixel_show" block="show" blockGap=8
         //% advanced=true
@@ -617,6 +617,11 @@ namespace light {
          * Enables or disables automatically calling show when a change is made
          * @param on call show whenever a light is modified
          */
+        //% blockId=neopixel_set_buffered block="set buffered  %on"
+        //% weight=86 advanced=true
+        //% help="light/set-buffered"
+        //% parts="neopixel"
+        //% defaultInstance=light.pixels
         setBuffered(on: boolean) {
             if (this._parent) this._parent.setBuffered(on);
             else this._buffered = on;
