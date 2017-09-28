@@ -12,6 +12,7 @@ light.animation(LightAnimation.Rainbow)
 light.pixels.graph(0, 0)
 light.pixels.setAll(0)
 light.pixels.show()
+light.pixels.setBuffered(true)
 light.pixels.setBrightness(0)
 light.pixels.setPixelColor(0,0)
 light.pixels.clear()
@@ -48,7 +49,8 @@ light.fade(0, 0)
 [showAnimation](/reference/light/show-animation), [showAnimationFrame](/reference/light/show-animation-frame),
 [stopAllAnimations](/reference/light/stop-all-animations), [animation](/reference/light/animation),
 [graph](/reference/light/graph), [setAll](/reference/light/set-all),
-[show](/reference/light/show), [setBrightness](/reference/light/set-brightness),
+[show](/reference/light/show), [setBuffered](/reference/light/set-buffered), 
+[setBrightness](/reference/light/set-brightness),
 [setPixelColor](/reference/light/set-pixel-color), [clear](/reference/light/clear),
 [brightness](/reference/light/brightness), [pixelColor](/reference/light/pixel-color),
 [createNeoPixelStrip](/reference/light/create-neo-pixel-strip), [setPixelWhiteLED](/reference/light/set-pixel-white-led),
