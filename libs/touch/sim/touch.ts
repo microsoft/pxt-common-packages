@@ -77,3 +77,14 @@ namespace pxsim.pxtcore {
         return btn;
     }
 }
+
+namespace pxsim.TouchButtonMethods {
+    export function setThreshold(button: pxsim.TouchButton, value: number) {
+        button.setThreshold(value);
+    }
+
+    export function value(button: pxsim.TouchButton): number {
+        return button.value();
+    }
+}
+    
