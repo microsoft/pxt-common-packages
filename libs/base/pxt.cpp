@@ -22,7 +22,6 @@ void decr(TValue e) {
 
 
     if (isRefCounted(e)) {
-        getVTable((RefObject *)e);
         ((RefObject *)e)->unref();
     }
 }
@@ -346,7 +345,6 @@ TValue RefCollection::getAt(int i) {
 }
 
 TValue RefCollection::removeAt(int i) {
-    decr(head.get(i));
     return head.remove(i);
 }
 
@@ -374,7 +372,7 @@ int RefCollection::indexOf(TValue x, int start) {
 bool RefCollection::removeElement(TValue x) {
     int idx = indexOf(x, 0);
     if (idx >= 0) {
-        removeAt(idx);
+        decr(removeAt(idx));
         return 1;
     }
     return 0;
