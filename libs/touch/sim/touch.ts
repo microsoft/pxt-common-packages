@@ -43,17 +43,31 @@ namespace pxsim {
         }
     }
 
+    export class TouchButton extends CommonButton {
+        constructor(pin: number) {
+            super(pin);
+        }
+
+        setThreshold(value: number) {
+
+        }
+
+        value() : number {
+            return 0;
+        }
+    }
+
     export class TouchButtonState {
-        buttons: CommonButton[];
+        buttons: TouchButton[];
 
         constructor (pins: number[]) {
-            this.buttons = pins.map(pin => new CommonButton(pin));
+            this.buttons = pins.map(pin => new TouchButton(pin));
         }
     }
 }
 
 namespace pxsim.pxtcore {
-    export function getTouchButton(index: number): Button {
+    export function getTouchButton(index: number): TouchButton {
         const state = (board() as CapTouchBoard).touchButtonState;
         const btn = state.buttons[index];
         if (btn) {
