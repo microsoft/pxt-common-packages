@@ -57,6 +57,7 @@ namespace music {
     //% name.fieldEditor="gridpicker"
     //% name.fieldOptions.width=285
     //% name.fieldOptions.columns=3
+    //% group="Sounds"
     export function sounds(name: Sounds): string {
         switch (name) {
             case Sounds.BaDing:
@@ -93,6 +94,7 @@ namespace music {
     //% help=music/play-sound weight=61
     //% blockId=music_play_sound block="play sound %sound=music_sounds"
     //% parts="headphone" blockGap=8
+    //% group="Sounds"
     export function playSound(sound: string) {
         const queue = soundQueue();
         const melody = new Melody(sound);
@@ -112,6 +114,7 @@ namespace music {
     //% help=music/play-sound-until-done weight=60
     //% blockId=music_play_sound_until_done block="play sound %sound=music_sounds|until done"
     //% parts="headphone" blockGap=8
+    //% group="Sounds"
     export function playSoundUntilDone(sound: string) {
         const queue = soundQueue();
         const melody = new Melody(sound);
@@ -123,6 +126,7 @@ namespace music {
      */
     //% help=music/stop-all-sounds weight=59
     //% blockId=music_stop_all_sounds block="stop all sounds"
+    //% group="Sounds"
     export function stopAllSounds() {
         const queue = soundQueue();
         queue.cancel();

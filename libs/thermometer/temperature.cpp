@@ -43,8 +43,9 @@ namespace input {
 * @param unit the unit of the temperature
 */
 //% blockId=input_on_temperature_condition_changed block="on temperature %condition|at %temperature|%unit"
-//% parts="thermometer" weight=95 blockGap=8 advanced=true
+//% parts="thermometer"
 //% help=input/on-temperature-condition-changed blockExternalInputs=0
+//% group="Thermometer" weight=95 blockGap=8
 void onTemperatureConditionChanged(TemperatureCondition condition, int temperature, TemperatureUnit unit, Action handler) {
     auto sensor = &getWTemp()->sensor;
     sensor->updateSample();
@@ -61,10 +62,10 @@ void onTemperatureConditionChanged(TemperatureCondition condition, int temperatu
 /**
  * Get the temperature in Celsius or Fahrenheit degrees.
  */
-//% weight=75
 //% help=input/temperature
-//% blockId=device_temperature block="temperature in %unit" blockGap=8
+//% blockId=device_temperature block="temperature in %unit"
 //% parts="thermometer"
+//% group="Thermometer" weight=75 blockGap=8
 int temperature(TemperatureUnit unit) {
     int value = getWTemp()->sensor.getValue();
     if (unit == TemperatureUnit::Celsius) return value;

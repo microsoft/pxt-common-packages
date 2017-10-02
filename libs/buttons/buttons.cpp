@@ -56,13 +56,14 @@ namespace ButtonMethods {
  * @param event the kind of button gesture that needs to be detected
  * @param body code to run when the event is raised
  */
-//% help=input/button/on-event weight=99 blockGap=8
+//% help=input/button/on-event
 //% blockId=buttonEvent block="on %button|%event"
 //% parts="buttonpair"
 //% blockNamespace=input
 //% button.fieldEditor="gridpicker"
 //% button.fieldOptions.width=220
 //% button.fieldOptions.columns=3
+//% group="Buttons" weight=99 blockGap=8
 void onEvent(Button_ button, ButtonEvent ev, Action body) {
     if (DEVICE_ID_BUTTON_AB == button->id) {
         // A user has registered to receive events from the buttonAB multibutton.
@@ -83,15 +84,15 @@ void onEvent(Button_ button, ButtonEvent ev, Action body) {
  * Check if a button is pressed or not.
  * @param button the button to query the request
  */
-//% help=input/button/is-pressed weight=79
+//% help=input/button/is-pressed
 //% block="%button|is pressed"
 //% blockId=buttonIsPressed
-//% blockGap=8
 //% parts="buttonpair"
 //% blockNamespace=input
 //% button.fieldEditor="gridpicker"
 //% button.fieldOptions.width=220
 //% button.fieldOptions.columns=3
+//% group="Buttons" weight=79 blockGap=8
 bool isPressed(Button_ button) {
     return button->isPressed();
 }
@@ -100,14 +101,15 @@ bool isPressed(Button_ button) {
  * See if the button was pressed again since the last time you checked.
  * @param button the button to query the request
  */
-//% help=input/button/was-pressed weight=78
+//% help=input/button/was-pressed
 //% block="%button|was pressed"
 //% blockId=buttonWasPressed
-//% parts="buttonpair" blockGap=8
-//% blockNamespace=input advanced=true
+//% parts="buttonpair"
+//% blockNamespace=input
 //% button.fieldEditor="gridpicker"
 //% button.fieldOptions.width=220
 //% button.fieldOptions.columns=3
+//% group="Buttons" weight=78 blockGap=8
 bool wasPressed(Button_ button) {
     return button->wasPressed();
 }

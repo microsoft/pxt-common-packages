@@ -48,7 +48,8 @@ void updateSpeakerAmp() {
 * values are reflected immediately to the sound output. 
 */
 //% help=music/set-tone
-//% weight=1 advanced=true
+//% weight=1 group="Tones"
+//% deprecated
 //% blockId=music_set_tone block="set tone %buffer"
 void setTone(Buffer buffer) {
     if (!buffer) return;
@@ -82,12 +83,11 @@ void setOutput(SoundOutputDestination out) {
 * Set the output volume of the sound synthesizer.
 * @param volume the volume 0...256, eg: 128
 */
-//% weight=96
 //% blockId=synth_set_volume block="set volume %volume"
-//% parts="speaker" blockGap=8
+//% parts="speaker"
 //% volume.min=0 volume.max=256
 //% help=music/set-volume
-//% weight=1
+//% group="Tempo & Volume" weight=90
 void setVolume(int volume) {
     auto synth = &getWSynthesizer()->synth;
     synth->setVolume(max(0, min(1024, volume * 4)));
@@ -102,6 +102,7 @@ void setVolume(int volume) {
 //% blockId=music_play_note block="play tone|at %note=device_note|for %duration=device_beat"
 //% parts="headphone" async blockGap=8
 //% blockNamespace=music
+//% group="Tones"
 void playTone(int frequency, int ms) {
     auto synth = &getWSynthesizer()->synth;
     

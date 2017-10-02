@@ -16,7 +16,7 @@ namespace serial {
     /**
     * Send a buffer across the serial connection.
     */
-    //% help=serial/write-buffer advanced=true weight=6
+    //% help=serial/write-buffer weight=6
     //% blockId=serial_writebuffer block="serial|write buffer %buffer"
     void writeBuffer(Buffer buffer) {
       if (!buffer) return;
