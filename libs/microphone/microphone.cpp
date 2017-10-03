@@ -28,7 +28,7 @@ namespace input {
 //% help=input/on-loud-sound
 //% blockId=input_on_loud_sound block="on loud sound"
 //% parts="microphone"
-//% group="Sound" weight=97 blockGap=8
+//% weight=88 blockGap=8
 void onLoudSound(Action handler) {
     getWMicrophone(); // wake up service
     registerWithDal(DEVICE_ID_MICROPHONE, LEVEL_THRESHOLD_HIGH, handler);
@@ -40,7 +40,7 @@ void onLoudSound(Action handler) {
 //% help=input/sound-level
 //% blockId=device_get_sound_level block="sound level"
 //% parts="microphone"
-//% group="Sound" weight=75 blockGap=8
+//% weight=34 blockGap=8
 int soundLevel() {
     int value = getWMicrophone()->level.getValue();
     return value;
@@ -53,7 +53,7 @@ int soundLevel() {
 //% blockId=input_set_loud_sound_threshold block="set loud sound threshold %value"
 //% parts="microphone"
 //% value.min=1 value.max=100
-//% group="Sound" weight=2
+//% weight=14 blockGap=8
 void setLoudSoundThreshold(int value) {
     getWMicrophone()->level.setHighThreshold(value);
 }

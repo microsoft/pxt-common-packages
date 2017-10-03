@@ -51,13 +51,12 @@ namespace music {
      * Get the melody string for a built-in melody.
      * @param name the note name, eg: Note.C
      */
-    //% weight=50 help=music/sounds
+    //% help=music/sounds
     //% blockId=music_sounds block="%name"
     //% blockHidden=true
     //% name.fieldEditor="gridpicker"
     //% name.fieldOptions.width=285
     //% name.fieldOptions.columns=3
-    //% group="Sounds"
     export function sounds(name: Sounds): string {
         switch (name) {
             case Sounds.BaDing:
@@ -91,10 +90,10 @@ namespace music {
      * Notes are expressed as a string of characters with this format: NOTE[octave][:duration]
      * @param sound the melody to play, eg: 'g5:1'
      */
-    //% help=music/play-sound weight=61
+    //% help=music/play-sound
     //% blockId=music_play_sound block="play sound %sound=music_sounds"
-    //% parts="headphone" blockGap=8
-    //% group="Sounds"
+    //% parts="headphone"
+    //% weight=95 blockGap=8
     export function playSound(sound: string) {
         const queue = soundQueue();
         const melody = new Melody(sound);
@@ -111,10 +110,10 @@ namespace music {
      * Notes are expressed as a string of characters with this format: NOTE[octave][:duration]
      * @param sound the melody to play, eg: 'g5:1'
      */
-    //% help=music/play-sound-until-done weight=60
+    //% help=music/play-sound-until-done
     //% blockId=music_play_sound_until_done block="play sound %sound=music_sounds|until done"
-    //% parts="headphone" blockGap=8
-    //% group="Sounds"
+    //% parts="headphone"
+    //% weight=94 blockGap=8
     export function playSoundUntilDone(sound: string) {
         const queue = soundQueue();
         const melody = new Melody(sound);
@@ -124,9 +123,9 @@ namespace music {
     /**
      * Stop all sounds from playing.
      */
-    //% help=music/stop-all-sounds weight=59
+    //% help=music/stop-all-sounds
     //% blockId=music_stop_all_sounds block="stop all sounds"
-    //% group="Sounds"
+    //% weight=93
     export function stopAllSounds() {
         const queue = soundQueue();
         queue.cancel();

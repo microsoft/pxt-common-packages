@@ -45,7 +45,7 @@ namespace input {
 //% blockId=input_on_temperature_condition_changed block="on temperature %condition|at %temperature|%unit"
 //% parts="thermometer"
 //% help=input/on-temperature-condition-changed blockExternalInputs=0
-//% group="Thermometer" weight=95 blockGap=8
+//% weight=76
 void onTemperatureConditionChanged(TemperatureCondition condition, int temperature, TemperatureUnit unit, Action handler) {
     auto sensor = &getWTemp()->sensor;
     sensor->updateSample();
@@ -65,7 +65,7 @@ void onTemperatureConditionChanged(TemperatureCondition condition, int temperatu
 //% help=input/temperature
 //% blockId=device_temperature block="temperature in %unit"
 //% parts="thermometer"
-//% group="Thermometer" weight=75 blockGap=8
+//% weight=26
 int temperature(TemperatureUnit unit) {
     int value = getWTemp()->sensor.getValue();
     if (unit == TemperatureUnit::Celsius) return value;

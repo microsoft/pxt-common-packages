@@ -87,7 +87,7 @@ void setOutput(SoundOutputDestination out) {
 //% parts="speaker"
 //% volume.min=0 volume.max=256
 //% help=music/set-volume
-//% group="Tempo & Volume" weight=90
+//% weight=70
 void setVolume(int volume) {
     auto synth = &getWSynthesizer()->synth;
     synth->setVolume(max(0, min(1024, volume * 4)));
@@ -98,11 +98,11 @@ void setVolume(int volume) {
 * @param frequency pitch of the tone to play in Hertz (Hz)
 * @param ms tone duration in milliseconds (ms)
 */
-//% help=music/play-tone weight=90
+//% help=music/play-tone
 //% blockId=music_play_note block="play tone|at %note=device_note|for %duration=device_beat"
-//% parts="headphone" async blockGap=8
+//% parts="headphone" async
 //% blockNamespace=music
-//% group="Tones"
+//% weight=76 blockGap=8
 void playTone(int frequency, int ms) {
     auto synth = &getWSynthesizer()->synth;
     

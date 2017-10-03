@@ -37,7 +37,7 @@ namespace input {
 //% help=input/on-light-condition-changed
 //% blockId=input_on_light_condition_changed block="on light %condition"
 //% parts="lightsensor"
-//% group="Light" weight=97 blockGap=8
+//% weight=84 blockGap=8
 void onLightConditionChanged(LightCondition condition, Action handler) {
     auto sensor = &getWLight()->sensor;
     sensor->updateSample();
@@ -50,7 +50,7 @@ void onLightConditionChanged(LightCondition condition, Action handler) {
 //% help=input/light-level
 //% blockId=device_get_light_level block="light level"
 //% parts="lightsensor"
-//% group="Light" weight=76 blockGap=8
+//% weight=30 blockGap=8
 int lightLevel() {
     // 0...1023
     int value = getWLight()->sensor.getValue();
@@ -64,7 +64,7 @@ int lightLevel() {
 //% blockId=lightsensor_set_threshold block="set %condition| light threshold to %value"
 //% parts="lightsensor"
 //% value.min=1 value.max=255
-//% group="Light" weight=2
+//% weight=13 blockGap=8
 void setLightThreshold(LightCondition condition, int value) {
     int v = value * 4;
     if (condition == LightCondition::Dark)

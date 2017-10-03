@@ -169,7 +169,7 @@ namespace input {
 //% gesture.fieldEditor="gridpicker"
 //% gesture.fieldOptions.width=220
 //% gesture.fieldOptions.columns=3
-//% group="Accelerometer" weight=77 blockGap=8
+//% weight=92 blockGap=8
 void onGesture(Gesture gesture, Action body) {
     auto acc = &getWAccel()->acc;
     acc->updateSample();
@@ -200,7 +200,7 @@ int getAccelerationStrength() {
 //% dimension.fieldEditor="gridpicker"
 //% dimension.fieldOptions.width=180
 //% dimension.fieldOptions.columns=2
-//% group="Accelerometer" weight=76 blockGap=8
+//% weight=42 blockGap=8
 int acceleration(Dimension dimension) {
     switch (dimension) {
     case Dimension::X:
@@ -222,7 +222,7 @@ int acceleration(Dimension dimension) {
 //% help=input/rotation
 //% blockId=device_get_rotation block="rotation (°)|%NAME"
 //% parts="accelerometer"
-//% group="Accelerometer" weight=75 blockGap=8
+//% weight=38 blockGap=8
 int rotation(Rotation kind) {
     switch (kind) {
     case Rotation::Pitch:
@@ -241,7 +241,7 @@ int rotation(Rotation kind) {
 //% blockId=device_set_accelerometer_range block="set accelerometer|range %range"
 //% weight=5
 //% parts="accelerometer"
-//% group="Accelerometer" weight=74 blockGap=8
+//% weight=15 blockGap=8
 void setAccelerometerRange(AcceleratorRange range) {
     getWAccel()->acc.setRange((int)range);
 }

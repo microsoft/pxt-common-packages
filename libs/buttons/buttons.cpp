@@ -63,7 +63,7 @@ namespace ButtonMethods {
 //% button.fieldEditor="gridpicker"
 //% button.fieldOptions.width=220
 //% button.fieldOptions.columns=3
-//% group="Buttons" weight=99 blockGap=8
+//% weight=96 blockGap=8
 void onEvent(Button_ button, ButtonEvent ev, Action body) {
     if (DEVICE_ID_BUTTON_AB == button->id) {
         // A user has registered to receive events from the buttonAB multibutton.
@@ -92,7 +92,7 @@ void onEvent(Button_ button, ButtonEvent ev, Action body) {
 //% button.fieldEditor="gridpicker"
 //% button.fieldOptions.width=220
 //% button.fieldOptions.columns=3
-//% group="Buttons" weight=79 blockGap=8
+//% weight=50 blockGap=8
 bool isPressed(Button_ button) {
     return button->isPressed();
 }
@@ -109,7 +109,7 @@ bool isPressed(Button_ button) {
 //% button.fieldEditor="gridpicker"
 //% button.fieldOptions.width=220
 //% button.fieldOptions.columns=3
-//% group="Buttons" weight=78 blockGap=8
+//% weight=46 blockGap=8
 bool wasPressed(Button_ button) {
     return button->wasPressed();
 }
