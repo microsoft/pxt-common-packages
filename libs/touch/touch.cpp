@@ -1,7 +1,8 @@
 #include "pxt.h"
+#include "touch.h"
 
 namespace pxt {
-
+    
 static const int touchPins[] = {
     PIN_A1, PIN_A2, PIN_A3, PIN_A4, PIN_A5, PIN_A6, PIN_A7
 };
@@ -9,45 +10,43 @@ static const int touchPins[] = {
 class WTouch {
   public:
 
-#define Button CapTouchButton *
-    Button buttons[0];
+    TouchButton buttons[0];
     //% indexedInstanceNS=input indexedInstanceShim=pxt::getTouchButton
     /**
     * Capacitive pin A1
     */
     //% block="pin A1"
-    Button pinA1;
+    TouchButton pinA1;
     /**
     * Capacitive pin A2
     */
     //% block="pin A2"
-    Button pinA2;
+    TouchButton pinA2;
     /**
     * Capacitive pin A3
     */
     //% block="pin A3"
-    Button pinA3;
+    TouchButton pinA3;
     /**
     * Capacitive pin A4
     */
     //% block="pin A4"
-    Button pinA4;
+    TouchButton pinA4;
     /**
     * Capacitive pin A5
     */
     //% block="pin A5"
-    Button pinA5;
+    TouchButton pinA5;
     /**
     * Capacitive pin A6
     */
     //% block="pin A6"
-    Button pinA6;
+    TouchButton pinA6;
     /**
     * Capacitive pin A7
     */
     //% block="pin A7"
-    Button pinA7;
-#undef Button
+    TouchButton pinA7;
 
     WTouch() {
         memclr(buttons, sizeof(touchPins));
@@ -67,4 +66,38 @@ CapTouchButton *getTouchButton(int id) {
         w->buttons[id] = new CapTouchButton(*pxt::lookupPin(touchPins[id]));
     return w->buttons[id];
 }
+}
+
+
+namespace TouchButtonMethods {
+
+/**
+ * Manually define the threshold use to detect a touch event. Any sensed value equal to or greater than this value will be interpreted as a touch.
+ * @param name button name
+ * @param threshold minimum value to consider a touch eg:200
+ */
+//% advanced=true blockGap=8
+//% blockId=touch_set_threshold block="button %button|set threshold %threshold"
+//% blockNamespace=input
+//% name.fieldEditor="gridpicker"
+//% name.fieldOptions.width=220
+//% name.fieldOptions.columns=4
+void setThreshold(TouchButton button, int threshold) {
+    button->setThreshold(max(0, min(1023, threshold)));
+}
+
+/**
+ * Reads the current value registered with the button.
+ * @param name button name
+ */
+//% advanced=true blockGap=8
+//% blockId=touch_value block="button %button|value"
+//% blockNamespace=input
+//% name.fieldEditor="gridpicker"
+//% name.fieldOptions.width=220
+//% name.fieldOptions.columns=4
+int value(TouchButton button) {
+    return button->getValue();
+}
+
 }
