@@ -6,7 +6,7 @@ namespace loops {
  * Repeats the code forever in the background. On each iteration, allows other codes to run.
  * @param body code to execute
  */
-//% help=loops/forever weight=100 blockGap=8
+//% help=loops/forever weight=100
 //% blockId=forever block="forever" blockAllowMultiple=1
 void forever(Action a) {
     runForever(a);
