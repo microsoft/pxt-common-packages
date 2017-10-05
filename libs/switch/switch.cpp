@@ -33,7 +33,7 @@ namespace input {
 //% help=input/on-switch-moved
 //% blockId=device_on_switch_moved block="on switch moved %direction"
 //% parts="switch"
-//% weight=80 blockGap=8
+//% weight=80
 void onSwitchMoved(SwitchDirection direction, Action handler) {
     auto slide = getWSwitch();
     registerWithDal(slide->slideSwitch.id, (int)direction, handler);

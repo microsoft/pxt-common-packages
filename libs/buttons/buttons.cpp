@@ -109,7 +109,7 @@ bool isPressed(Button_ button) {
 //% button.fieldEditor="gridpicker"
 //% button.fieldOptions.width=220
 //% button.fieldOptions.columns=3
-//% weight=46 blockGap=8
+//% group="More" weight=46 blockGap=8
 bool wasPressed(Button_ button) {
     return button->wasPressed();
 }

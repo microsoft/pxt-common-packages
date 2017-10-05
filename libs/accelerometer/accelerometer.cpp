@@ -222,7 +222,7 @@ int acceleration(Dimension dimension) {
 //% help=input/rotation
 //% blockId=device_get_rotation block="rotation (°)|%NAME"
 //% parts="accelerometer"
-//% weight=38 blockGap=8
+//% group="More" weight=38
 int rotation(Rotation kind) {
     switch (kind) {
     case Rotation::Pitch:
@@ -241,7 +241,7 @@ int rotation(Rotation kind) {
 //% blockId=device_set_accelerometer_range block="set accelerometer|range %range"
 //% weight=5
 //% parts="accelerometer"
-//% weight=15 blockGap=8
+//% group="More" weight=15 blockGap=8
 void setAccelerometerRange(AcceleratorRange range) {
     getWAccel()->acc.setRange((int)range);
 }

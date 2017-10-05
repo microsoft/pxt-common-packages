@@ -64,7 +64,7 @@ int lightLevel() {
 //% blockId=lightsensor_set_threshold block="set %condition| light threshold to %value"
 //% parts="lightsensor"
 //% value.min=1 value.max=255
-//% weight=13 blockGap=8
+//% group="More" weight=13 blockGap=8
 void setLightThreshold(LightCondition condition, int value) {
     int v = value * 4;
     if (condition == LightCondition::Dark)
