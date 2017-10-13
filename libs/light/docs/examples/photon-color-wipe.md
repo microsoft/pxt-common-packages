@@ -2,7 +2,7 @@
 
 ```blocks
 loops.forever(() => {
-    light.pixels.setPhotonColor(Math.random(256))
+    light.pixels.setPhotonColor(Math.randomRange(0, 256))
     light.pixels.setPhotonMode(PhotonMode.PenDown)
     for (let i = 0; i < 9; i++) {
         light.pixels.photonForward(1)

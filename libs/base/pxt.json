@@ -1,0 +1,28 @@
+{
+    "name": "base",
+    "description": "The base library",
+    "files": [
+        "README.md",
+        "pxt-core.d.ts",
+        "pxt.cpp",
+        "pxtbase.h",
+        "core.cpp",
+        "pxt-helpers.ts",
+        "buffer.cpp",
+        "shims.d.ts",
+        "enums.d.ts",
+        "loops.cpp",
+        "math.ts",
+        "ns.ts",
+        "control.cpp",
+        "control.ts",
+        "serial.cpp",
+        "serial.ts"
+    ],
+    "testFiles": [
+        "test.ts"
+    ],
+    "additionalFilePath": "../../node_modules/pxt-common-packages/libs/base",
+    "public": true,
+    "dependencies": {}
+}

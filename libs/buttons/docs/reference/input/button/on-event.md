@@ -61,8 +61,8 @@ Wnen the ``B`` button is released, light up a random pixel with a random color.
 let anyPixel = 0
 input.buttonB.onEvent(ButtonEvent.Up, () => {
     light.pixels.clear()
-    anyPixel = Math.random(light.pixels.length())
-    light.pixels.setPixelColor(anyPixel, Math.random(Colors.White))
+    anyPixel = Math.randomRange(0, light.pixels.length())
+    light.pixels.setPixelColor(anyPixel, Math.randomRange(0, Colors.White))
 })
 ```
 

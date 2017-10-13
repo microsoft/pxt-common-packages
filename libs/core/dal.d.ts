@@ -1,9 +1,65 @@
 // Auto-generated. Do not edit.
 declare const enum DAL {
-    // built/yt/yotta_modules/codal/inc/core/CodalCompat.h
-    // built/yt/yotta_modules/codal/inc/core/CodalDevice.h
-    // built/yt/yotta_modules/codal/inc/core/CodalDmesg.h
-    // built/yt/yotta_modules/codal/inc/core/CodalUSB.h
+    // built/codal/build/codal_extra_definitions.h
+    DEVICE_DMESG_BUFFER_SIZE = 4096,
+    DEVICE_TAG = 1,
+    // built/codal/libraries/codal-core/inc/core/CodalCompat.h
+    // built/codal/libraries/codal-core/inc/core/CodalComponent.h
+    DEVICE_ID_BUTTON_A = 1,
+    DEVICE_ID_BUTTON_B = 2,
+    DEVICE_ID_BUTTON_AB = 3,
+    DEVICE_ID_BUTTON_RESET = 4,
+    DEVICE_ID_ACCELEROMETER = 5,
+    DEVICE_ID_COMPASS = 6,
+    DEVICE_ID_DISPLAY = 7,
+    DEVICE_ID_THERMOMETER = 8,
+    DEVICE_ID_RADIO = 9,
+    DEVICE_ID_RADIO_DATA_READY = 10,
+    DEVICE_ID_MULTIBUTTON_ATTACH = 11,
+    DEVICE_ID_SERIAL = 12,
+    DEVICE_ID_GESTURE = 13,
+    DEVICE_ID_SYSTEM_TIMER = 14,
+    DEVICE_ID_SCHEDULER = 15,
+    DEVICE_ID_COMPONENT = 16,
+    DEVICE_ID_LIGHT_SENSOR = 17,
+    DEVICE_ID_TOUCH_SENSOR = 18,
+    DEVICE_ID_SYSTEM_DAC = 19,
+    DEVICE_ID_SYSTEM_MICROPHONE = 20,
+    DEVICE_ID_SYSTEM_LEVEL_DETECTOR = 21,
+    DEVICE_ID_IO_P0 = 100,
+    DEVICE_ID_MESSAGE_BUS_LISTENER = 1021,
+    DEVICE_ID_NOTIFY_ONE = 1022,
+    DEVICE_ID_NOTIFY = 1023,
+    DEVICE_COMPONENT_RUNNING = 0x1000,
+    DEVICE_COMPONENT_STATUS_SYSTEM_TICK = 0x2000,
+    DEVICE_COMPONENT_STATUS_IDLE_TICK = 0x4000,
+    DEVICE_COMPONENT_LISTENERS_CONFIGURED = 0x01,
+    DEVICE_COMPONENT_EVT_SYSTEM_TICK = 1,
+    // built/codal/libraries/codal-core/inc/core/CodalDevice.h
+    // built/codal/libraries/codal-core/inc/core/CodalDmesg.h
+    // built/codal/libraries/codal-core/inc/core/CodalFiber.h
+    DEVICE_SCHEDULER_RUNNING = 0x01,
+    DEVICE_SCHEDULER_IDLE = 0x02,
+    DEVICE_FIBER_FLAG_FOB = 0x01,
+    DEVICE_FIBER_FLAG_PARENT = 0x02,
+    DEVICE_FIBER_FLAG_CHILD = 0x04,
+    DEVICE_FIBER_FLAG_DO_NOT_PAGE = 0x08,
+    DEVICE_SCHEDULER_EVT_TICK = 1,
+    DEVICE_SCHEDULER_EVT_IDLE = 2,
+    // built/codal/libraries/codal-core/inc/core/CodalHeapAllocator.h
+    DEVICE_MAXIMUM_HEAPS = 2,
+    DEVICE_HEAP_BLOCK_FREE = 0x80000000,
+    // built/codal/libraries/codal-core/inc/core/CodalListener.h
+    MESSAGE_BUS_LISTENER_PARAMETERISED = 0x0001,
+    MESSAGE_BUS_LISTENER_METHOD = 0x0002,
+    MESSAGE_BUS_LISTENER_BUSY = 0x0004,
+    MESSAGE_BUS_LISTENER_REENTRANT = 0x0008,
+    MESSAGE_BUS_LISTENER_QUEUE_IF_BUSY = 0x0010,
+    MESSAGE_BUS_LISTENER_DROP_IF_BUSY = 0x0020,
+    MESSAGE_BUS_LISTENER_NONBLOCKING = 0x0040,
+    MESSAGE_BUS_LISTENER_URGENT = 0x0080,
+    MESSAGE_BUS_LISTENER_DELETING = 0x8000,
+    // built/codal/libraries/codal-core/inc/core/CodalUSB.h
     GET_STATUS = 0,
     CLEAR_FEATURE = 1,
     SET_FEATURE = 3,
@@ -47,61 +103,7 @@ declare const enum DAL {
     USB_EP_TYPE_ISOCHRONOUS = 0x01,
     USB_EP_TYPE_BULK = 0x02,
     USB_EP_TYPE_INTERRUPT = 0x03,
-    // built/yt/yotta_modules/codal/inc/core/DeviceComponent.h
-    DEVICE_ID_BUTTON_A = 1,
-    DEVICE_ID_BUTTON_B = 2,
-    DEVICE_ID_BUTTON_AB = 3,
-    DEVICE_ID_BUTTON_RESET = 4,
-    DEVICE_ID_ACCELEROMETER = 5,
-    DEVICE_ID_COMPASS = 6,
-    DEVICE_ID_DISPLAY = 7,
-    DEVICE_ID_THERMOMETER = 8,
-    DEVICE_ID_RADIO = 9,
-    DEVICE_ID_RADIO_DATA_READY = 10,
-    DEVICE_ID_MULTIBUTTON_ATTACH = 11,
-    DEVICE_ID_SERIAL = 12,
-    DEVICE_ID_GESTURE = 13,
-    DEVICE_ID_SYSTEM_TIMER = 14,
-    DEVICE_ID_SCHEDULER = 15,
-    DEVICE_ID_COMPONENT = 16,
-    DEVICE_ID_LIGHT_SENSOR = 17,
-    DEVICE_ID_TOUCH_SENSOR = 18,
-    DEVICE_ID_SYSTEM_DAC = 19,
-    DEVICE_ID_SYSTEM_MICROPHONE = 20,
-    DEVICE_ID_SYSTEM_LEVEL_DETECTOR = 21,
-    DEVICE_ID_IO_P0 = 100,
-    DEVICE_ID_MESSAGE_BUS_LISTENER = 1021,
-    DEVICE_ID_NOTIFY_ONE = 1022,
-    DEVICE_ID_NOTIFY = 1023,
-    DEVICE_COMPONENT_RUNNING = 0x1000,
-    DEVICE_COMPONENT_STATUS_SYSTEM_TICK = 0x2000,
-    DEVICE_COMPONENT_STATUS_IDLE_TICK = 0x4000,
-    DEVICE_COMPONENT_LISTENERS_CONFIGURED = 0x01,
-    DEVICE_COMPONENT_EVT_SYSTEM_TICK = 1,
-    // built/yt/yotta_modules/codal/inc/core/DeviceFiber.h
-    DEVICE_SCHEDULER_RUNNING = 0x01,
-    DEVICE_SCHEDULER_IDLE = 0x02,
-    DEVICE_FIBER_FLAG_FOB = 0x01,
-    DEVICE_FIBER_FLAG_PARENT = 0x02,
-    DEVICE_FIBER_FLAG_CHILD = 0x04,
-    DEVICE_FIBER_FLAG_DO_NOT_PAGE = 0x08,
-    DEVICE_SCHEDULER_EVT_TICK = 1,
-    DEVICE_SCHEDULER_EVT_IDLE = 2,
-    // built/yt/yotta_modules/codal/inc/core/DeviceHeapAllocator.h
-    DEVICE_MAXIMUM_HEAPS = 2,
-    DEVICE_HEAP_BLOCK_FREE = 0x80000000,
-    // built/yt/yotta_modules/codal/inc/core/DeviceListener.h
-    MESSAGE_BUS_LISTENER_PARAMETERISED = 0x0001,
-    MESSAGE_BUS_LISTENER_METHOD = 0x0002,
-    MESSAGE_BUS_LISTENER_BUSY = 0x0004,
-    MESSAGE_BUS_LISTENER_REENTRANT = 0x0008,
-    MESSAGE_BUS_LISTENER_QUEUE_IF_BUSY = 0x0010,
-    MESSAGE_BUS_LISTENER_DROP_IF_BUSY = 0x0020,
-    MESSAGE_BUS_LISTENER_NONBLOCKING = 0x0040,
-    MESSAGE_BUS_LISTENER_URGENT = 0x0080,
-    MESSAGE_BUS_LISTENER_DELETING = 0x8000,
-    // built/yt/yotta_modules/codal/inc/core/DeviceSystemTimer.h
-    // built/yt/yotta_modules/codal/inc/core/ErrorNo.h
+    // built/codal/libraries/codal-core/inc/core/ErrorNo.h
     DEVICE_OK = 0,
     DEVICE_INVALID_PARAMETER = -1001,
     DEVICE_NOT_SUPPORTED = -1002,
@@ -113,40 +115,20 @@ declare const enum DAL {
     DEVICE_I2C_ERROR = -1010,
     DEVICE_SERIAL_IN_USE = -1011,
     DEVICE_NO_DATA = -1012,
+    DEVICE_NOT_IMPLEMENTED = -1013,
     DEVICE_OOM = 20,
     DEVICE_HEAP_ERROR = 30,
     DEVICE_NULL_DEREFERENCE = 40,
     DEVICE_USB_ERROR = 50,
-    // built/yt/yotta_modules/codal/inc/core/EventModel.h
-    // built/yt/yotta_modules/codal/inc/core/MemberFunctionCallback.h
-    // built/yt/yotta_modules/codal/inc/core/NotifyEvents.h
+    // built/codal/libraries/codal-core/inc/core/EventModel.h
+    // built/codal/libraries/codal-core/inc/core/MemberFunctionCallback.h
+    // built/codal/libraries/codal-core/inc/core/NotifyEvents.h
     DEVICE_DISPLAY_EVT_FREE = 1,
-    DEVICE_SERIAL_EVT_TX_EMPTY = 2,
+    CODAL_SERIAL_EVT_TX_EMPTY = 2,
     DEVICE_UART_S_EVT_TX_EMPTY = 3,
     DEVICE_NOTIFY_USER_EVENT_BASE = 1024,
-    // built/yt/yotta_modules/codal/inc/core/SystemClock.h
-    SYSTEM_CLOCK_INIT = 0x01,
-    // built/yt/yotta_modules/codal/inc/device/SAMD21/DeviceTimer.h
-    TIMER_ONE_DEFAULT_PRECISION_US = 1,
-    TIMER_ONE_PRESCALER_OPTIONS = 5,
-    // built/yt/yotta_modules/codal/inc/device/SAMD21/SAMD21DAC.h
-    // built/yt/yotta_modules/codal/inc/device/SAMD21/SAMD21DMAC.h
-    DMA_DESCRIPTOR_ALIGNMENT = 16,
-    DMA_DESCRIPTOR_COUNT = 4,
-    // built/yt/yotta_modules/codal/inc/device/SAMD21/SAMD21PDM.h
-    SAMD21_PDM_BUFFER_SIZE = 256,
-    SAMD21_START_UP_DELAY = 3,
-    SAMD21_PDM_DATA_READY = 1,
-    // built/yt/yotta_modules/codal/inc/device/SAMD21/USB.h
-    USB_MAX_PKT_SIZE = 64,
-    USB_DEFAULT_PID = 0x2402,
-    USB_DEFAULT_VID = 0x03EB,
-    USB_EP_FLAG_NO_AUTO_ZLP = 0x01,
-    // built/yt/yotta_modules/codal/inc/device/SAMD21/common_includes.h
-    // built/yt/yotta_modules/codal/inc/device/SAMD21/device_fiber.h
-    // built/yt/yotta_modules/codal/inc/device/SAMD21/device_types.h
-    // built/yt/yotta_modules/codal/inc/device/SAMD21/neopixel.h
-    // built/yt/yotta_modules/codal/inc/drivers/AbstractButton.h
+    // built/codal/libraries/codal-core/inc/core/codal_target_hal.h
+    // built/codal/libraries/codal-core/inc/drivers/AbstractButton.h
     DEVICE_BUTTON_EVT_DOWN = 1,
     DEVICE_BUTTON_EVT_UP = 2,
     DEVICE_BUTTON_EVT_CLICK = 3,
@@ -168,7 +150,7 @@ declare const enum DAL {
     DEVICE_BUTTON_ALL_EVENTS = 1,
     ACTIVE_LOW = 0,
     ACTIVE_HIGH = 1,
-    // built/yt/yotta_modules/codal/inc/drivers/AnalogSensor.h
+    // built/codal/libraries/codal-core/inc/drivers/AnalogSensor.h
     ANALOG_THRESHOLD_LOW = 1,
     ANALOG_THRESHOLD_HIGH = 2,
     ANALOG_SENSOR_UPDATE_NEEDED = 3,
@@ -177,55 +159,22 @@ declare const enum DAL {
     ANALOG_SENSOR_LOW_THRESHOLD_PASSED = 0x04,
     ANALOG_SENSOR_LOW_THRESHOLD_ENABLED = 0x08,
     ANALOG_SENSOR_HIGH_THRESHOLD_ENABLED = 0x10,
-    // built/yt/yotta_modules/codal/inc/drivers/DeviceButton.h
-    // built/yt/yotta_modules/codal/inc/drivers/DeviceI2C.h
-    // built/yt/yotta_modules/codal/inc/drivers/DeviceMessageBus.h
-    // built/yt/yotta_modules/codal/inc/drivers/DevicePin.h
-    IO_STATUS_DIGITAL_IN = 0x01,
-    IO_STATUS_DIGITAL_OUT = 0x02,
-    IO_STATUS_ANALOG_IN = 0x04,
-    IO_STATUS_ANALOG_OUT = 0x08,
-    IO_STATUS_TOUCH_IN = 0x10,
-    IO_STATUS_EVENT_ON_EDGE = 0x20,
-    IO_STATUS_EVENT_PULSE_ON_EDGE = 0x40,
-    DEVICE_PIN_MAX_OUTPUT = 1023,
-    DEVICE_PIN_MAX_SERVO_RANGE = 180,
-    DEVICE_PIN_DEFAULT_SERVO_RANGE = 2000,
-    DEVICE_PIN_DEFAULT_SERVO_CENTER = 1500,
-    DEVICE_PIN_EVENT_NONE = 0,
-    DEVICE_PIN_EVENT_ON_EDGE = 1,
-    DEVICE_PIN_EVENT_ON_PULSE = 2,
-    DEVICE_PIN_EVENT_ON_TOUCH = 3,
-    DEVICE_PIN_EVT_RISE = 2,
-    DEVICE_PIN_EVT_FALL = 3,
-    DEVICE_PIN_EVT_PULSE_HI = 4,
-    DEVICE_PIN_EVT_PULSE_LO = 5,
-    PIN_CAPABILITY_DIGITAL = 0x01,
-    PIN_CAPABILITY_ANALOG = 0x02,
-    // built/yt/yotta_modules/codal/inc/drivers/DeviceSerial.h
-    DEVICE_SERIAL_DEFAULT_BAUD_RATE = 115200,
-    DEVICE_SERIAL_DEFAULT_BUFFER_SIZE = 20,
-    DEVICE_SERIAL_EVT_DELIM_MATCH = 1,
-    DEVICE_SERIAL_EVT_HEAD_MATCH = 2,
-    DEVICE_SERIAL_EVT_RX_FULL = 3,
-    DEVICE_SERIAL_RX_IN_USE = 1,
-    DEVICE_SERIAL_TX_IN_USE = 2,
-    DEVICE_SERIAL_RX_BUFF_INIT = 4,
-    DEVICE_SERIAL_TX_BUFF_INIT = 8,
-    ASYNC = 0,
-    SYNC_SPINWAIT = 1,
-    SYNC_SLEEP = 2,
-    // built/yt/yotta_modules/codal/inc/drivers/DynamicPwm.h
-    DEVICE_DEFAULT_PWM_PERIOD = 20000,
-    // built/yt/yotta_modules/codal/inc/drivers/Glue.h
-    // built/yt/yotta_modules/codal/inc/drivers/HID.h
+    // built/codal/libraries/codal-core/inc/drivers/Button.h
+    // built/codal/libraries/codal-core/inc/drivers/CapTouchButton.h
+    CAP_TOUCH_BUTTON_CALIBRATION_PERIOD = 10,
+    CAP_TOUCH_BUTTON_CALIBRATION_LINEAR_OFFSET = 100,
+    CAP_TOUCH_BUTTON_CALIBRATION_PERCENTAGE_OFFSET = 30,
+    CAP_TOUCH_BUTTON_SAMPLE_PERIOD = 50,
+    CAP_TOUCH_BUTTON_CALIBRATING = 0x10,
+    // built/codal/libraries/codal-core/inc/drivers/HID.h
     HID_REQUEST_GET_REPORT = 0x01,
     HID_REQUEST_GET_IDLE = 0x02,
     HID_REQUEST_GET_PROTOCOL = 0x03,
     HID_REQUEST_SET_REPORT = 0x09,
     HID_REQUEST_SET_IDLE = 0x0A,
     HID_REQUEST_SET_PROTOCOL = 0x0B,
-    // built/yt/yotta_modules/codal/inc/drivers/LIS3DH.h
+    // built/codal/libraries/codal-core/inc/drivers/I2C.h
+    // built/codal/libraries/codal-core/inc/drivers/LIS3DH.h
     ACCELEROMETER_IMU_DATA_VALID = 0x02,
     LIS3DH_DEFAULT_ADDR = 0x32,
     LIS3DH_STATUS_REG = 0x27,
@@ -281,15 +230,16 @@ declare const enum DAL {
     ACCELEROMETER_SHAKE_DAMPING = 10,
     ACCELEROMETER_SHAKE_RTX = 30,
     ACCELEROMETER_SHAKE_COUNT_THRESHOLD = 4,
-    // built/yt/yotta_modules/codal/inc/drivers/LevelDetector.h
+    // built/codal/libraries/codal-core/inc/drivers/LevelDetector.h
     LEVEL_THRESHOLD_LOW = 1,
     LEVEL_THRESHOLD_HIGH = 2,
     LEVEL_DETECTOR_INITIALISED = 0x01,
     LEVEL_DETECTOR_HIGH_THRESHOLD_PASSED = 0x02,
     LEVEL_DETECTOR_LOW_THRESHOLD_PASSED = 0x04,
     LEVEL_DETECTOR_DEFAULT_WINDOW_SIZE = 128,
-    // built/yt/yotta_modules/codal/inc/drivers/LinearAnalogSensor.h
-    // built/yt/yotta_modules/codal/inc/drivers/MultiButton.h
+    // built/codal/libraries/codal-core/inc/drivers/LinearAnalogSensor.h
+    // built/codal/libraries/codal-core/inc/drivers/MessageBus.h
+    // built/codal/libraries/codal-core/inc/drivers/MultiButton.h
     MULTI_BUTTON_STATE_1 = 0x01,
     MULTI_BUTTON_STATE_2 = 0x02,
     MULTI_BUTTON_HOLD_TRIGGERED_1 = 0x04,
@@ -297,41 +247,218 @@ declare const enum DAL {
     MULTI_BUTTON_SUPRESSED_1 = 0X10,
     MULTI_BUTTON_SUPRESSED_2 = 0x20,
     MULTI_BUTTON_ATTACHED = 0x40,
-    // built/yt/yotta_modules/codal/inc/drivers/NonLinearAnalogSensor.h
-    // built/yt/yotta_modules/codal/inc/drivers/Synthesizer.h
-    SYNTHESIZER_SAMPLE_RATE = 10000,
-    // built/yt/yotta_modules/codal/inc/drivers/TimedInterruptIn.h
-    // built/yt/yotta_modules/codal/inc/drivers/TouchButton.h
+    // built/codal/libraries/codal-core/inc/drivers/NonLinearAnalogSensor.h
+    // built/codal/libraries/codal-core/inc/drivers/Pin.h
+    IO_STATUS_DIGITAL_IN = 0x01,
+    IO_STATUS_DIGITAL_OUT = 0x02,
+    IO_STATUS_ANALOG_IN = 0x04,
+    IO_STATUS_ANALOG_OUT = 0x08,
+    IO_STATUS_TOUCH_IN = 0x10,
+    IO_STATUS_EVENT_ON_EDGE = 0x20,
+    IO_STATUS_EVENT_PULSE_ON_EDGE = 0x40,
+    DEVICE_PIN_MAX_OUTPUT = 1023,
+    DEVICE_PIN_MAX_SERVO_RANGE = 180,
+    DEVICE_PIN_DEFAULT_SERVO_RANGE = 2000,
+    DEVICE_PIN_DEFAULT_SERVO_CENTER = 1500,
+    DEVICE_PIN_EVENT_NONE = 0,
+    DEVICE_PIN_EVENT_ON_EDGE = 1,
+    DEVICE_PIN_EVENT_ON_PULSE = 2,
+    DEVICE_PIN_EVENT_ON_TOUCH = 3,
+    DEVICE_PIN_EVT_RISE = 2,
+    DEVICE_PIN_EVT_FALL = 3,
+    DEVICE_PIN_EVT_PULSE_HI = 4,
+    DEVICE_PIN_EVT_PULSE_LO = 5,
+    PIN_CAPABILITY_DIGITAL = 0x01,
+    PIN_CAPABILITY_ANALOG = 0x02,
+    // built/codal/libraries/codal-core/inc/drivers/Serial.h
+    CODAL_SERIAL_DEFAULT_BAUD_RATE = 115200,
+    CODAL_SERIAL_DEFAULT_BUFFER_SIZE = 20,
+    CODAL_SERIAL_EVT_DELIM_MATCH = 1,
+    CODAL_SERIAL_EVT_HEAD_MATCH = 2,
+    CODAL_SERIAL_EVT_RX_FULL = 3,
+    CODAL_SERIAL_RX_IN_USE = 1,
+    CODAL_SERIAL_TX_IN_USE = 2,
+    CODAL_SERIAL_RX_BUFF_INIT = 4,
+    CODAL_SERIAL_TX_BUFF_INIT = 8,
+    ASYNC = 0,
+    SYNC_SPINWAIT = 1,
+    SYNC_SLEEP = 2,
+    RxInterrupt = 0,
+    TxInterrupt = 1,
+    // built/codal/libraries/codal-core/inc/drivers/Synthesizer.h
+    SYNTHESIZER_SAMPLE_RATE = 44100,
+    TONE_WIDTH = 1024,
+    // built/codal/libraries/codal-core/inc/drivers/Timer.h
+    SYSTEM_CLOCK_INIT = 0x01,
+    // built/codal/libraries/codal-core/inc/drivers/TouchButton.h
     TOUCH_BUTTON_CALIBRATION_PERIOD = 10,
     TOUCH_BUTTON_CALIBRATION_LINEAR_OFFSET = 2,
     TOUCH_BUTTON_CALIBRATION_PERCENTAGE_OFFSET = 5,
     TOUCH_BUTTON_CALIBRATING = 0x10,
-    // built/yt/yotta_modules/codal/inc/drivers/TouchSensor.h
+    // built/codal/libraries/codal-core/inc/drivers/TouchSensor.h
     TOUCH_SENSOR_MAX_BUTTONS = 10,
     TOUCH_SENSOR_SAMPLE_PERIOD = 50,
     TOUCH_SENSE_SAMPLE_MAX = 1000,
     TOUCH_SENSOR_UPDATE_NEEDED = 1,
-    // built/yt/yotta_modules/codal/inc/platform/yotta_cfg_mappings.h
-    // built/yt/yotta_modules/codal/inc/types/CoordinateSystem.h
+    // built/codal/libraries/codal-core/inc/platform/yotta_cfg_mappings.h
+    // built/codal/libraries/codal-core/inc/types/CoordinateSystem.h
     RAW = 0,
     SIMPLE_CARTESIAN = 1,
     NORTH_EAST_DOWN = 2,
-    // built/yt/yotta_modules/codal/inc/types/DataStream.h
+    NORTH_EAST_UP = 3,
+    // built/codal/libraries/codal-core/inc/types/DataStream.h
     DATASTREAM_MAXIMUM_BUFFERS = 1,
-    // built/yt/yotta_modules/codal/inc/types/DeviceEvent.h
+    // built/codal/libraries/codal-core/inc/types/Event.h
     DEVICE_ID_ANY = 0,
     DEVICE_EVT_ANY = 0,
     CREATE_ONLY = 0,
     CREATE_AND_FIRE = 1,
-    // built/yt/yotta_modules/codal/inc/types/DeviceImage.h
-    // built/yt/yotta_modules/codal/inc/types/ManagedBuffer.h
-    // built/yt/yotta_modules/codal/inc/types/ManagedString.h
-    // built/yt/yotta_modules/codal/inc/types/ManagedType.h
-    // built/yt/yotta_modules/codal/inc/types/Matrix4.h
-    // built/yt/yotta_modules/codal/inc/types/RefCounted.h
+    // built/codal/libraries/codal-core/inc/types/Image.h
+    // built/codal/libraries/codal-core/inc/types/ManagedBuffer.h
+    // built/codal/libraries/codal-core/inc/types/ManagedString.h
+    // built/codal/libraries/codal-core/inc/types/ManagedType.h
+    // built/codal/libraries/codal-core/inc/types/Matrix4.h
+    // built/codal/libraries/codal-core/inc/types/RefCounted.h
     REF_TAG_STRING = 1,
     REF_TAG_BUFFER = 2,
     REF_TAG_IMAGE = 3,
     REF_TAG_USER = 32,
-    // built/yt/yotta_modules/codal/inc/types/list.h
+    // built/codal/libraries/codal-core/inc/types/list.h
+    // built/codal/libraries/codal-mbed/inc/MbedI2C.h
+    // built/codal/libraries/codal-mbed/inc/MbedPin.h
+    // built/codal/libraries/codal-mbed/inc/MbedSerial.h
+    // built/codal/libraries/codal-mbed/inc/MbedTimedInterruptIn.h
+    // built/codal/libraries/codal-mbed/inc/MbedTimer.h
+    TIMER_ONE_DEFAULT_PRECISION_US = 1,
+    TIMER_ONE_PRESCALER_OPTIONS = 5,
+    // built/codal/libraries/codal-samd21-mbed/CIRCUIT_PLAYGROUND/inc/DynamicPwm.h
+    DEVICE_DEFAULT_PWM_PERIOD = 20000,
+    // built/codal/libraries/codal-samd21-mbed/CIRCUIT_PLAYGROUND/inc/SAMD21DAC.h
+    SAMD21DAC_DEFAULT_FREQUENCY = 44100,
+    // built/codal/libraries/codal-samd21-mbed/CIRCUIT_PLAYGROUND/inc/SAMD21DMAC.h
+    DMA_DESCRIPTOR_ALIGNMENT = 16,
+    DMA_DESCRIPTOR_COUNT = 4,
+    // built/codal/libraries/codal-samd21-mbed/CIRCUIT_PLAYGROUND/inc/SAMD21PDM.h
+    SAMD21_PDM_BUFFER_SIZE = 256,
+    SAMD21_START_UP_DELAY = 3,
+    SAMD21_PDM_DATA_READY = 1,
+    // built/codal/libraries/codal-samd21-mbed/CIRCUIT_PLAYGROUND/inc/USB.h
+    USB_MAX_PKT_SIZE = 64,
+    USB_DEFAULT_PID = 0x2402,
+    USB_DEFAULT_VID = 0x03EB,
+    USB_EP_FLAG_NO_AUTO_ZLP = 0x01,
+    // built/codal/libraries/codal-samd21-mbed/CIRCUIT_PLAYGROUND/inc/common_includes.h
+    // built/codal/libraries/codal-samd21-mbed/CIRCUIT_PLAYGROUND/inc/neopixel.h
+    // built/codal/libraries/codal-samd21-mbed/CIRCUIT_PLAYGROUND/model/CircuitPlayground.h
+    // built/codal/libraries/codal-samd21-mbed/CIRCUIT_PLAYGROUND/model/CircuitPlaygroundIO.h
+    DEVICE_ID_BUTTON_C = 1024,
+    // built/codal/libraries/codal-samd21-mbed/inc/adafruit_ptc.h
+    // built/codal/libraries/codal-samd21-mbed/inc/conf_clocks.h
+    // built/codal/libraries/codal-samd21-mbed/inc/device_fiber.h
+    // built/codal/libraries/codal-samd21-mbed/inc/device_types.h
+    // built/codal/libraries/codal-samd21-mbed/inc/samd21_ptc_component.h
+    PTC_REG_CONTROLA = 0x42004C00,
+    PTC_BIT_ENABLE = 0x02,
+    PTC_BIT_RUNINSTBY = 0x04,
+    PTC_REG_CONTROLB = 0x42004C01,
+    PTC_BIT_SYNCFLAG = 0x80,
+    PTC_REG_UNK4C04 = 0x42004C04,
+    PTC_REG_CONTROLC = 0x42004C05,
+    PTC_BIT_INIT = 0x01,
+    PTC_REG_INTDISABLE = 0x42004C08,
+    PTC_REG_INTENABLE = 0x42004C09,
+    PTC_BIT_EOCINTEN = 0x01,
+    PTC_BIT_WCOINTEN = 0x02,
+    PTC_REG_INTFLAGS = 0x42004C0A,
+    PTC_BIT_EOCINTFLAG = 0x01,
+    PTC_BIT_WCOINTFLAG = 0x02,
+    PTC_REG_FREQCONTROL = 0x42004C0C,
+    PTC_BIT_FREQSPREADEN = 0x10,
+    PTC_REG_SAMPLEDELAY_MASK = 0x0F,
+    PTC_REG_CONVCONTROL = 0x42004C0D,
+    PTC_BIT_CONVSTARTED = 0x80,
+    PTC_REG_ADCACC_MASK = 0x07,
+    PTC_REG_YSELECT_L = 0x42004C10,
+    PTC_REG_YSELECT_H = 0x42004C11,
+    PTC_REG_YENABLE_L = 0x42004C14,
+    PTC_REG_YENABLE_H = 0x42004C15,
+    PTC_REG_XSELECT_L = 0x42004C12,
+    PTC_REG_XSELECT_H = 0x42004C13,
+    PTC_REG_XENABLE_L = 0x42004C16,
+    PTC_REG_XENABLE_H = 0x42004C17,
+    PTC_REG_COMPCAPL = 0x42004C18,
+    PTC_REG_COMPCAPH = 0x42004C19,
+    PTC_REG_INTCAP = 0x42004C1A,
+    PTC_REG_SERIESRES = 0x42004C1B,
+    PTC_REG_CONVRESULT_L = 0x42004C1C,
+    PTC_REG_CONVRESULT_H = 0x42004C1D,
+    PTC_REG_BURSTMODE = 0x42004C20,
+    PTC_REG_BURSTMODE_MASK = 0xF0,
+    PTC_BIT_CTSLOWPOWER = 0x04,
+    PTC_REG_XYENABLE = 0x42004C16,
+    PTC_BIT_XYENABLE = 0x02,
+    PTC_REG_WCO_MODE = 0x42004C21,
+    PTC_REG_WCO_MODE_MASK = 0x07,
+    PTC_SET_WCO_THRESHHOLD_A_L = 0x42004C24,
+    PTC_SET_WCO_THRESHHOLD_A_H = 0x42004C25,
+    PTC_SET_WCO_THRESHHOLD_B_L = 0x42004C26,
+    PTC_SET_WCO_THRESHHOLD_B_H = 0x42004C27,
+    // built/codal/pxtapp/base/pxtbase.h
+    PXT_REF_TAG_STRING = 1,
+    PXT_REF_TAG_BUFFER = 2,
+    PXT_REF_TAG_IMAGE = 3,
+    PXT_REF_TAG_NUMBER = 32,
+    PXT_REF_TAG_ACTION = 33,
+    Undefined = 0,
+    Boolean = 1,
+    Number = 2,
+    String = 3,
+    Object = 4,
+    Function = 5,
+    // built/codal/pxtapp/devpins.h
+    // built/codal/pxtapp/dmac.h
+    // built/codal/pxtapp/hf2.h
+    HF2_BUF_SIZE = 256,
+    // built/codal/pxtapp/pins.h
+    BOARD_ID_ZERO = 1,
+    BOARD_ID_MKR1000 = 2,
+    BOARD_ID_FEATHER = 3,
+    BOARD_ID_METRO = 4,
+    BOARD_ID_TRINKET = 5,
+    BOARD_ID_CPLAY = 6,
+    BOARD_ID_GEMMA = 7,
+    BOARD_ID_M0 = 8,
+    BOARD_ID_SPARKFUN = 9,
+    DEVICE_ID_BUTTON_SLIDE = 3000,
+    DEVICE_ID_MICROPHONE = 3001,
+    // built/codal/pxtapp/pxt.h
+    PAGE_SIZE = 256,
+    // built/codal/pxtapp/pxtconfig.h
+    // built/codal/pxtapp/pxtcore.h
+    // built/codal/pxtapp/uf2format.h
+    UF2FORMAT_H = 1,
+    APP_START_ADDRESS = 0x00002000,
+    UF2_FLAG_NOFLASH = 0x00000001,
+    // built/codal/pxtapp/uf2hid.h
+    UF2_HID_H = 1,
+    HF2_CMD_BININFO = 0x0001,
+    HF2_MODE_BOOTLOADER = 0x01,
+    HF2_MODE_USERSPACE = 0x02,
+    HF2_CMD_INFO = 0x0002,
+    HF2_CMD_RESET_INTO_APP = 0x0003,
+    HF2_CMD_RESET_INTO_BOOTLOADER = 0x0004,
+    HF2_CMD_START_FLASH = 0x0005,
+    HF2_CMD_WRITE_FLASH_PAGE = 0x0006,
+    HF2_CMD_CHKSUM_PAGES = 0x0007,
+    HF2_CMD_READ_WORDS = 0x0008,
+    HF2_CMD_WRITE_WORDS = 0x0009,
+    HF2_CMD_DMESG = 0x0010,
+    HF2_FLAG_SERIAL_OUT = 0x80,
+    HF2_FLAG_SERIAL_ERR = 0xC0,
+    HF2_FLAG_CMDPKT_LAST = 0x40,
+    HF2_FLAG_CMDPKT_BODY = 0x00,
+    HF2_FLAG_MASK = 0xC0,
+    HF2_SIZE_MASK = 63,
+    HF2_STATUS_OK = 0x00,
+    HF2_STATUS_INVALID_CMD = 0x01,
 }

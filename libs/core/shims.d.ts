@@ -174,15 +174,15 @@ declare namespace pins {
 
 
     //% fixedInstance shim=pxt::getPin(1)
-    const A1: AnalogPin;
+    const A1: PwmPin;
 
 
     //% fixedInstance shim=pxt::getPin(2)
-    const A2: AnalogPin;
+    const A2: PwmPin;
 
 
     //% fixedInstance shim=pxt::getPin(3)
-    const A3: AnalogPin;
+    const A3: PwmPin;
 
 
     //% fixedInstance shim=pxt::getPin(4)
@@ -202,83 +202,60 @@ declare namespace pins {
 
 
     //% fixedInstance shim=pxt::getPin(8)
-    const A8: PwmPin;
+    const A8: AnalogPin;
 
 
     //% fixedInstance shim=pxt::getPin(9)
-    const A9: PwmPin;
+    const A9: AnalogPin;
 
 
     //% fixedInstance shim=pxt::getPin(10)
-    const A10: PwmPin;
-
-
-    //% fixedInstance shim=pxt::getPin(11)
-    const A11: PwmPin;
-
-
-    //% fixedInstance shim=pxt::getPin(12)
-    const D0: DigitalPin;
-
-
-    //% fixedInstance shim=pxt::getPin(13)
-    const D1: DigitalPin;
-
-
-    //% fixedInstance shim=pxt::getPin(14)
-    const D2: DigitalPin;
-
-
-    //% fixedInstance shim=pxt::getPin(15)
-    const D3: DigitalPin;
-
-
-    //% fixedInstance shim=pxt::getPin(16)
     const D4: DigitalPin;
 
 
-    //% fixedInstance shim=pxt::getPin(17)
+    //% fixedInstance shim=pxt::getPin(11)
     const D5: DigitalPin;
 
 
-    //% fixedInstance shim=pxt::getPin(18)
+    //% fixedInstance shim=pxt::getPin(12)
     const D6: DigitalPin;
 
 
-    //% fixedInstance shim=pxt::getPin(19)
+    //% fixedInstance shim=pxt::getPin(13)
     const D7: DigitalPin;
 
 
-    //% fixedInstance shim=pxt::getPin(20)
+    //% fixedInstance shim=pxt::getPin(14)
     const D8: DigitalPin;
 
 
-    //% fixedInstance shim=pxt::getPin(21)
-    const D9: DigitalPin;
-
-
-    //% fixedInstance shim=pxt::getPin(22)
-    const D10: DigitalPin;
-
-
-    //% fixedInstance shim=pxt::getPin(23)
-    const D11: DigitalPin;
-
-
-    //% fixedInstance shim=pxt::getPin(24)
-    const D12: DigitalPin;
-
-
-    //% fixedInstance shim=pxt::getPin(25)
+    //% fixedInstance shim=pxt::getPin(15)
     const D13: DigitalPin;
+}
+declare namespace control {
 
+    /**
+     * Announce that an event happened to registered handlers.
+     * @param src ID of the MicroBit Component that generated the event
+     * @param value Component specific code indicating the cause of the event.
+     * @param mode optional definition of how the event should be processed after construction.
+     */
+    //% weight=21 blockGap=12 blockId="control_raise_event"
+    //% block="raise event|from %src|with value value" blockExternalInputs=1
+    //% mode.defl=1 shim=control::raiseEvent
+    function raiseEvent(src: int32, value: int32, mode?: EventCreationMode): void;
 
-    //% fixedInstance shim=pxt::getPin(26)
-    const RX: DigitalPin;
+    /**
+     * Determine the version of system software currently running.
+     */
+    //% shim=control::deviceDalVersion
+    function deviceDalVersion(): string;
 
-
-    //% fixedInstance shim=pxt::getPin(27)
-    const TX: DigitalPin;
+    /**
+     * Allocates the next user notification event
+     */
+    //% help=control/allocate-notify-event shim=control::allocateNotifyEvent
+    function allocateNotifyEvent(): int32;
 }
 declare namespace pins {
 
@@ -293,183 +270,6 @@ declare namespace pins {
      */
     //% repeat.defl=0 shim=pins::i2cWriteBuffer
     function i2cWriteBuffer(address: int32, buf: Buffer, repeat?: boolean): int32;
-}
-
-
-
-    //% indexerGet=BufferMethods::getByte indexerSet=BufferMethods::setByte
-declare interface Buffer {
-    /**
-     * Write a number in specified format in the buffer.
-     */
-    //% shim=BufferMethods::setNumber
-    setNumber(format: NumberFormat, offset: int32, value: number): void;
-
-    /**
-     * Read a number in specified format from the buffer.
-     */
-    //% shim=BufferMethods::getNumber
-    getNumber(format: NumberFormat, offset: int32): number;
-
-    /** Returns the length of a Buffer object. */
-    //% property shim=BufferMethods::length
-    length: int32;
-
-    /**
-     * Fill (a fragment) of the buffer with given value.
-     */
-    //% offset.defl=0 length.defl=-1 shim=BufferMethods::fill
-    fill(value: int32, offset?: int32, length?: int32): void;
-
-    /**
-     * Return a copy of a fragment of a buffer.
-     */
-    //% offset.defl=0 length.defl=-1 shim=BufferMethods::slice
-    slice(offset?: int32, length?: int32): Buffer;
-
-    /**
-     * Shift buffer left in place, with zero padding.
-     * @param offset number of bytes to shift; use negative value to shift right
-     * @param start start offset in buffer. Default is 0.
-     * @param length number of elements in buffer. If negative, length is set as the buffer length minus
-     * start. eg: -1
-     */
-    //% start.defl=0 length.defl=-1 shim=BufferMethods::shift
-    shift(offset: int32, start?: int32, length?: int32): void;
-
-    /**
-     * Rotate buffer left in place.
-     * @param offset number of bytes to shift; use negative value to shift right
-     * @param start start offset in buffer. Default is 0.
-     * @param length number of elements in buffer. If negative, length is set as the buffer length minus
-     * start. eg: -1
-     */
-    //% start.defl=0 length.defl=-1 shim=BufferMethods::rotate
-    rotate(offset: int32, start?: int32, length?: int32): void;
-
-    /**
-     * Write contents of `src` at `dstOffset` in current buffer.
-     */
-    //% shim=BufferMethods::write
-    write(dstOffset: int32, src: Buffer): void;
-}
-declare namespace control {
-
-    /**
-     * Gets the number of milliseconds elapsed since power on.
-     */
-    //% help=control/millis weight=50
-    //% blockId=control_running_time block="millis (ms)" shim=control::millis
-    function millis(): int32;
-
-    /**
-     * Announce that an event happened to registered handlers.
-     * @param src ID of the MicroBit Component that generated the event
-     * @param value Component specific code indicating the cause of the event.
-     * @param mode optional definition of how the event should be processed after construction.
-     */
-    //% weight=21 blockGap=12 blockId="control_raise_event" block="raise event|from %src|with value %value" blockExternalInputs=1
-    //% mode.defl=1 shim=control::raiseEvent
-    function raiseEvent(src: int32, value: int32, mode?: EventCreationMode): void;
-
-    /**
-     * Run code when a registered event happens.
-     * @param id the event compoent id
-     * @param value the event value to match
-     */
-    //% weight=20 blockGap=8 blockId="control_on_event" block="on event|from %src|with value %value"
-    //% blockExternalInputs=1
-    //% help="control/on-event" shim=control::onEvent
-    function onEvent(src: int32, value: int32, handler: () => void): void;
-
-    /**
-     * Reset the device.
-     */
-    //% weight=30 async help=control/reset blockGap=8
-    //% blockId="control_reset" block="reset" shim=control::reset
-    function reset(): void;
-
-    /**
-     * Block the current fiber for the given microseconds
-     * @param micros number of micro-seconds to wait. eg: 4
-     */
-    //% help=control/wait-micros weight=29
-    //% blockId="control_wait_us" block="wait (µs)%micros" shim=control::waitMicros
-    function waitMicros(micros: int32): void;
-
-    /**
-     * Run other code in the background.
-     */
-    //% help=control/run-in-background blockAllowMultiple=1
-    //% blockId="control_run_in_background" block="run in background" blockGap=8 shim=control::runInBackground
-    function runInBackground(a: () => void): void;
-
-    /**
-     * Blocks the calling thread until the specified event is raised.
-     */
-    //% help=control/wait-for-event async
-    //% blockId=control_wait_for_event block="wait for event|from %src|with value %value" shim=control::waitForEvent
-    function waitForEvent(src: int32, value: int32): void;
-
-    /**
-     * Allocates the next user notification event
-     */
-    //% help=control/allocate-notify-event
-    //% shim=control::allocateNotifyEvent
-    function allocateNotifyEvent(): int32;
-
-    /**
-     * Derive a unique, consistent serial number of this device from internal data.
-     */
-    //% blockId="control_device_serial_number" block="device serial number" weight=9 shim=control::deviceSerialNumber
-    function deviceSerialNumber(): int32;
-
-    /**
-     * Determine the version of system software currently running.
-     */
-    //% shim=control::deviceDalVersion
-    function deviceDalVersion(): string;
-}
-declare namespace loops {
-
-    /**
-     * Repeats the code forever in the background. On each iteration, allows other codes to run.
-     * @param body code to execute
-     */
-    //% help=loops/forever weight=100 blockGap=8
-    //% blockId=forever block="forever" blockAllowMultiple=1 shim=loops::forever
-    function forever(a: () => void): void;
-
-    /**
-     * Pause for the specified time in milliseconds
-     * @param ms how long to pause for, eg: 100, 200, 500, 1000, 2000
-     */
-    //% help=loops/pause weight=99
-    //% async block="pause (ms) %pause"
-    //% blockId=device_pause shim=loops::pause
-    function pause(ms: int32): void;
-}
-
-
-
-    //% weight=2 color=#002050 icon="\uf287"
-    //% advanced=true
-declare namespace serial {
-
-    /**
-     * Write some text to the serial port.
-     */
-    //% help=serial/write-string
-    //% weight=87
-    //% blockId=serial_writestring block="serial|write string %text" shim=serial::writeString
-    function writeString(text: string): void;
-
-    /**
-     * Send a buffer across the serial connection.
-     */
-    //% help=serial/write-buffer advanced=true weight=6
-    //% blockId=serial_writebuffer block="serial|write buffer %buffer" shim=serial::writeBuffer
-    function writeBuffer(buffer: Buffer): void;
 }
 
 // Auto-generated. Do not edit. Really.

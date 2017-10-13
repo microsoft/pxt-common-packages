@@ -27,7 +27,7 @@ light.pixels.showAnimationFrame(light.animation(LightAnimation.Comet))
 ```
 ## See Also
 
-[``||show animation||``](/reference/light/show-animations),
+[``||show animation||``](/reference/light/show-animation),
 [``||animation||``](/reference/light/animation)
 
 ```package

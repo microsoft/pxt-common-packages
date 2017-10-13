@@ -5,7 +5,7 @@ enum Colors {
     //% block=red blockIdentity=light.colors
     Red = 0xFF0000,
     //% block=orange blockIdentity=light.colors
-    Orange = 0xFFA500,
+    Orange = 0xFF7F00,
     //% block=yellow blockIdentity=light.colors
     Yellow = 0xFFFF00,
     //% block=green blockIdentity=light.colors
@@ -17,9 +17,9 @@ enum Colors {
     //% block=violet blockIdentity=light.colors
     Violet = 0x8a2be2,
     //% block=purple blockIdentity=light.colors
-    Purple = 0xFF00FF,
+    Purple = 0xA033E5,
     //% block=pink blockIdentity=light.colors
-    Pink = 0xFFC0CB,
+    Pink = 0xFF007F,
     //% block=white blockIdentity=light.colors
     White = 0xFFFFFF,
     //% block=black  blockIdentity=light.colors
@@ -160,9 +160,11 @@ namespace light {
          * @param value current value to plot
          * @param high maximum value, 0 to autoscale
          */
-        //% blockId=neopixel_show_bar_graph block="graph of %value |up to %high" icon="\uf080" blockExternalInputs=true        
+        //% blockId=neopixel_show_bar_graph block="graph of %value |up to %high" icon="\uf080"       
         //% weight=88
+        //% help=light/graph
         //% blockGap=8
+        //% help=light/graph
         //% advanced=true 
         //% parts="neopixel" 
         //% defaultInstance=light.pixels
@@ -299,7 +301,7 @@ namespace light {
         }
 
         /**
-         * Make the strip show all the new change for the pixels.
+         * Make the strip show all the new changes for the pixels.
          */
         //% blockId="neopixel_show" block="show" blockGap=8
         //% advanced=true
@@ -482,7 +484,7 @@ namespace light {
          * Set the photon color.
          * @param color the color of the photon
          */
-        //% blockId=neophoton_set_color block="photon set color %color"
+        //% blockId=neophoton_set_color block="photon set pen color %color"
         //% weight=39
         //% blockGap=8
         //% parts="neopixel"
@@ -615,6 +617,11 @@ namespace light {
          * Enables or disables automatically calling show when a change is made
          * @param on call show whenever a light is modified
          */
+        //% blockId=neopixel_set_buffered block="set buffered  %on"
+        //% weight=86 advanced=true
+        //% help="light/set-buffered"
+        //% parts="neopixel"
+        //% defaultInstance=light.pixels
         setBuffered(on: boolean) {
             if (this._parent) this._parent.setBuffered(on);
             else this._buffered = on;
@@ -848,7 +855,7 @@ namespace light {
      * @param kind the type of animation
      */
     //% kind.fieldEditor="gridpicker"
-    //% kind.fieldOptions.width=220
+    //% kind.fieldOptions.width=285
     //% kind.fieldOptions.columns=3 blockGap=8
     //% blockId=light_animation block="%kind"
     //% advanced=true weight=25
@@ -997,7 +1004,7 @@ namespace light {
                 strip.clear();
             }
             const now = control.millis() - this.start;
-            const pixel = Math.random(l);
+            const pixel = Math.randomRange(0, l - 1);
             strip.setPixelColor(pixel, this.rgb);
             strip.show();
             loops.pause(this.delay);

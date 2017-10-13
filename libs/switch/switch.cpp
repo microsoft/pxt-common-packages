@@ -1,5 +1,5 @@
 #include "pxt.h"
-#include "DeviceButton.h"
+#include "Button.h"
 #include "pins.h"
 
 enum class SwitchDirection {
@@ -14,7 +14,7 @@ namespace pxt {
 // Wrapper classes
 class WSwitch {
   public:
-    DeviceButton slideSwitch;
+    Button slideSwitch;
 
     WSwitch()
         : slideSwitch(*pxt::lookupPin(PIN_BTN_SLIDE), DEVICE_ID_BUTTON_SLIDE,
@@ -40,7 +40,7 @@ void onSwitchMoved(SwitchDirection direction, Action handler) {
     // trigger event if the switch position matches the handler direction
     auto currentDirection = slide->slideSwitch.isPressed() ? SwitchDirection::Right : SwitchDirection::Left;
     if (direction == currentDirection)
-        DeviceEvent ev(slide->slideSwitch.id, (int)direction);
+        Event ev(slide->slideSwitch.id, (int)direction);
 }
 
 /*
