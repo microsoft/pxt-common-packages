@@ -7,7 +7,7 @@ namespace Math {
      * @param toLow the lower bound of the value's target range
      * @param toHigh the upper bound of the value's target range, eg: 4
      */
-    //% help=math/map weight=23 blockGap=8 advanced=true
+    //% help=math/map weight=10 blockGap=8
     //% blockId=math_map block="map %value|from low %fromLow|from high %fromHigh|to low %toLow|to high %toHigh"
     export function map(value: number, fromLow: number, fromHigh: number, toLow: number, toHigh: number): number {
         return ((value - fromLow) * (toHigh - toLow)) / (fromHigh - fromLow) + toLow;
@@ -19,7 +19,7 @@ namespace Math {
      * @param y the lower end of the range, all data types
      * @param z the upper end of the range, all data types
      */
-    //% help=math/constrain weight=22 advanced=true blockGap=8
+    //% help=math/constrain weight=11 blockGap=8
     //% blockId="math_constrain_value" block="constrain %value|between %low|and %high"
     export function constrain(value: number, low: number, high: number): number {
         return value < low ? low : value > high ? high : value;

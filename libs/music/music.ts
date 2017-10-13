@@ -133,10 +133,11 @@ namespace music {
     * Play a tone.
     * @param frequency pitch of the tone to play in Hertz (Hz)
     */
-    //% help=music/ring-tone weight=80
-    //% blockId=music_ring block="ring tone|at %note=device_note" blockGap=8
-    //% parts="headphone" trackArgs=0 advanced=true
+    //% help=music/ring-tone
+    //% blockId=music_ring block="ring tone|at %note=device_note"
+    //% parts="headphone" trackArgs=0
     //% blockNamespace=music inBasicCategory=true
+    //% weight=75 blockGap=8
     export function ringTone(frequency: number) {
         playTone(frequency, 0);
     }
@@ -145,10 +146,11 @@ namespace music {
     * Rest, or play silence, for some time (in milleseconds).
     * @param ms rest duration in milliseconds (ms)
     */
-    //% help=music/rest weight=79
+    //% help=music/rest
     //% blockId=music_rest block="rest|for %duration=device_beat"
     //% parts="headphone" trackArgs=0
     //% blockNamespace=music
+    //% weight=74
     export function rest(ms: number) {
         playTone(0, Math.max(ms, 20));
     }
@@ -159,9 +161,11 @@ namespace music {
      */
     //% weight=1 help=music/note-frequency
     //% blockId=device_note block="%note"
-    //% shim=TD_ID colorSecondary="#FFFFFF"
-    //% note.fieldEditor="note" note.defl="262" note.fieldOptions.decompileLiterals=true
-    //% useEnumVal=1 blockGap=8 advanced=true
+    //% shim=TD_ID color="#FFFFFF" colorSecondary="#FFFFFF"
+    //% note.fieldEditor="note" note.defl="262"
+    //% note.fieldOptions.editorColour="#D83B01" note.fieldOptions.decompileLiterals=true
+    //% useEnumVal=1
+    //% weight=10 blockGap=8
     export function noteFrequency(name: Note): number {
         return name;
     }
@@ -174,8 +178,9 @@ namespace music {
      * Return the duration of a beat in milliseconds (the beat fraction).
      * @param fraction the fraction of the current whole note, eg: BeatFraction.Half
      */
-    //% help=music/beat weight=49 blockGap=8
-    //% blockId=device_beat block="%fraction|beat" advanced=true
+    //% help=music/beat
+    //% blockId=device_beat block="%fraction|beat"
+    //% weight=9 blockGap=8
     export function beat(fraction?: BeatFraction): number {
         init();
         if (fraction == null) fraction = BeatFraction.Whole;
@@ -195,8 +200,9 @@ namespace music {
      * Return the tempo in beats per minute (bpm).
      * Tempo is the speed (bpm = beats per minute) at which notes play. The larger the tempo value, the faster the notes will play.
      */
-    //% help=music/tempo weight=40 advanced=true
-    //% blockId=device_tempo block="tempo (bpm)" blockGap=8
+    //% help=music/tempo
+    //% blockId=device_tempo block="tempo (bpm)"
+    //% weight=64
     export function tempo(): number {
         init();
         return beatsPerMinute;
@@ -207,7 +213,8 @@ namespace music {
      * @param bpm The change in beats per minute to the tempo, eg: 20
      */
     //% help=music/change-tempo-by weight=37
-    //% blockId=device_change_tempo block="change tempo by (bpm)|%value"
+    //% blockId=device_change_tempo block="change tempo by %value|(bpm)"
+    //% weight=66 blockGap=8
     export function changeTempoBy(bpm: number): void {
         init();
         setTempo(beatsPerMinute + bpm);
@@ -217,9 +224,10 @@ namespace music {
      * Set the tempo a number of beats per minute (bpm).
      * @param bpm The new tempo in beats per minute, eg: 120
      */
-    //% help=music/set-tempo weight=38 blockGap=8
-    //% blockId=device_set_tempo block="set tempo to (bpm)|%value"
+    //% help=music/set-tempo
+    //% blockId=device_set_tempo block="set tempo to %value|(bpm)"
     //% bpm.min=4 bpm.max=400
+    //% weight=65 blockGap=8
     export function setTempo(bpm: number): void {
         init();
         if (bpm > 0) {

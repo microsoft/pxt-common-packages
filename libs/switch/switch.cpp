@@ -30,9 +30,10 @@ namespace input {
 *
 * @param direction the direction the switch must be moved to trigget the event
 */
-//% help=input/on-switch-moved weight=93
-//% blockId=device_on_switch_moved block="on switch moved %direction" blockGap=8
+//% help=input/on-switch-moved
+//% blockId=device_on_switch_moved block="on switch moved %direction"
 //% parts="switch"
+//% weight=80
 void onSwitchMoved(SwitchDirection direction, Action handler) {
     auto slide = getWSwitch();
     registerWithDal(slide->slideSwitch.id, (int)direction, handler);
@@ -46,8 +47,9 @@ void onSwitchMoved(SwitchDirection direction, Action handler) {
 /*
 * Gets a value indicating if the switch is positioned to the right
 */
-//% blockId=device_switch_direction block="switch right" blockGap=8
-//% weight=10
+//% blockId=device_switch_direction block="switch right"
+//% parts="switch"
+//% group="Switch" weight=10 blockGap=8
 bool switchRight() {
     auto slide = getWSwitch();
     return slide->slideSwitch.isPressed();
