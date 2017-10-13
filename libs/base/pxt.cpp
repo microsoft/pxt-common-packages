@@ -485,7 +485,6 @@ void error(ERROR code, int subcode) {
 
 uint16_t *bytecode;
 TValue *globals;
-int numGlobals;
 
 unsigned *allocate(uint16_t sz) {
     unsigned *arr = new unsigned[sz];
@@ -530,6 +529,9 @@ void exec_binary(unsigned *pc) {
 
     bytecode = *((uint16_t **)pc++); // the actual bytecode is here
     globals = (TValue *)allocate(getNumGlobals());
+
+    // can be any valid address, best in RAM for speed
+    globals[0] = (TValue)&globals;
 
     // just compare the first word
     // TODO

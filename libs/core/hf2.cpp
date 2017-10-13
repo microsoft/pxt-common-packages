@@ -1,12 +1,16 @@
 #define UF2_DEFINE_HANDOVER 1
-#include "hf2.h"
+#include "pxt.h"
 #include "uf2format.h"
-#include "CodalDmesg.h"
+
+static void *stackCopy;
+static uint32_t stackSize;
+//#define LOG DMESG
+#define LOG(...) ((void)0)
 
 //#define LOG DMESG
 #define LOG(...) ((void)0)
 
-#if CONFIG_ENABLED(DEVICE_USB)
+static volatile bool resume = false;
 
 using namespace codal;
 
@@ -86,8 +90,7 @@ int HF2::sendSerial(const void *data, int size, int isError)
 // Recieve HF2 message
 // Does not block. Will store intermediate data in pkt.
 // `serial` flag is cleared if we got a command message.
-int HF2::recv()
-{
+int HF2::recv() {
     uint8_t buf[64];
     int len = out->read(buf, sizeof(buf));
     if (len <= 0)
@@ -101,8 +104,7 @@ int HF2::recv()
     memcpy(pkt.buf + pkt.size, buf + 1, size);
     pkt.size += size;
     tag &= HF2_FLAG_MASK;
-    if (tag != HF2_FLAG_CMDPKT_BODY)
-    {
+    if (tag != HF2_FLAG_CMDPKT_BODY) {
         if (tag == HF2_FLAG_CMDPKT_LAST)
             pkt.serial = 0;
         else if (tag == HF2_FLAG_SERIAL_OUT)
@@ -119,24 +121,19 @@ int HF2::recv()
 // Send HF2 message.
 // Use command message when flag == HF2_FLAG_CMDPKT_LAST
 // Use serial stdout for HF2_FLAG_SERIAL_OUT and stderr for HF2_FLAG_SERIAL_ERR.
-int HF2::send(const void *data, int size, int flag0)
-{
+int HF2::send(const void *data, int size, int flag0) {
     uint8_t buf[64];
     const uint8_t *ptr = (const uint8_t *)data;
 
     if (!CodalUSB::usbInstance->isInitialised())
         return -1;
 
-    for (;;)
-    {
+    for (;;) {
         int s = 63;
         int flag = flag0;
-        if (size <= 63)
-        {
+        if (size <= 63) {
             s = size;
-        }
-        else
-        {
+        } else {
             if (flag == HF2_FLAG_CMDPKT_LAST)
                 flag = HF2_FLAG_CMDPKT_BODY;
         }
@@ -152,24 +149,19 @@ int HF2::send(const void *data, int size, int flag0)
     return 0;
 }
 
-int HF2::sendResponse(int size)
-{
+int HF2::sendResponse(int size) {
     return send(pkt.buf, 4 + size, HF2_FLAG_CMDPKT_LAST);
 }
 
-int HF2::sendResponseWithData(const void *data, int size)
-{
+int HF2::sendResponseWithData(const void *data, int size) {
     int res;
 
-    if (size <= (int)sizeof(pkt.buf) - 4)
-    {
+    if (size <= (int)sizeof(pkt.buf) - 4) {
         __disable_irq();
         memcpy(pkt.resp.data8, data, size);
         __enable_irq();
         res = sendResponse(size);
-    }
-    else
-    {
+    } else {
         __disable_irq();
         send(pkt.buf, 4, HF2_FLAG_CMDPKT_BODY);
         res = send(data, size, HF2_FLAG_CMDPKT_LAST);
@@ -179,8 +171,7 @@ int HF2::sendResponseWithData(const void *data, int size)
     return res;
 }
 
-static void copy_words(void *dst0, const void *src0, uint32_t n_words)
-{
+static void copy_words(void *dst0, const void *src0, uint32_t n_words) {
     uint32_t *dst = (uint32_t *)dst0;
     const uint32_t *src = (const uint32_t *)src0;
     while (n_words--)
@@ -199,8 +190,7 @@ int HF2::endpointRequest()
 
     uint32_t tmp;
 
-    if (pkt.serial)
-    {
+    if (pkt.serial) {
         // TODO raise some event?
         return 0;
     }
@@ -217,8 +207,7 @@ int HF2::endpointRequest()
 
 #define checkDataSize(str, add) usb_assert(sz == 8 + (int)sizeof(cmd->str) + (int)(add))
 
-    switch (cmdId)
-    {
+    switch (cmdId) {
     case HF2_CMD_INFO:
         return sendResponseWithData(uf2_info(), strlen(uf2_info()));
 
@@ -229,8 +218,14 @@ int HF2::endpointRequest()
         resp->bininfo.max_message_size = sizeof(pkt.buf);
         return sendResponse(sizeof(resp->bininfo));
 
+    case HF2_DBG_RESTART:
+        *HF2_DBG_MAGIC_PTR = HF2_DBG_MAGIC_START;
+        target_reset();
+        break;
+
     case HF2_CMD_RESET_INTO_APP:
         *DBL_TAP_PTR = DBL_TAP_MAGIC_QUICK_BOOT;
+        // fall-through
     case HF2_CMD_RESET_INTO_BOOTLOADER:
         target_reset();
         break;
@@ -261,6 +256,22 @@ int HF2::endpointRequest()
         break;
 #endif
 
+    case HF2_DBG_GET_GLOBAL_STATE: {
+        HF2_GLOBAL_STATE_Result gstate = {
+            .num_globals = (uint32_t)getNumGlobals(), //
+            .globals_addr = (uint32_t)globals,
+        };
+        return sendResponseWithData(&gstate, sizeof(gstate));
+    }
+
+    case HF2_DBG_RESUME:
+        globals[0] = (TValue)cmd->data32[0];
+        resume = true;
+        return sendResponse(0);
+
+    case HF2_DBG_GET_STACK:
+        return sendResponseWithData(stackCopy, stackSize);
+
     default:
         // command not understood
         resp->status16 = HF2_STATUS_INVALID_CMD;
@@ -270,8 +281,105 @@ int HF2::endpointRequest()
     return sendResponse(0);
 }
 
-HF2::HF2() : USBHID()
-{
+HF2::HF2() : USBHID() {}
+
+struct ExceptionContext {
+    uint32_t excReturn; // 0xFFFFFFF9
+    uint32_t r0;
+    uint32_t r1;
+    uint32_t r2;
+    uint32_t r3;
+    uint32_t r12;
+    uint32_t lr;
+    uint32_t faultInstrAddr;
+    uint32_t psr;
+};
+
+struct Paused_Data {
+    uint32_t pc;
+};
+static Paused_Data pausedData;
+
+void bkptPaused() {
+    
+// waiting for https://github.com/lancaster-university/codal/pull/14
+#ifdef DEVICE_GROUP_ID_USER
+    // the loop below counts as "system" task, and we don't want to pause ourselves
+    fiber_set_group(DEVICE_GROUP_ID_SYSTEM);
+    // pause everyone else
+    fiber_pause_group(DEVICE_GROUP_ID_USER);
+#endif
+
+    while (!resume) {
+        // DMESG("BKPT");
+        hf2.pkt.resp.eventId = HF2_EV_DBG_PAUSED;
+        hf2.sendResponseWithData(&pausedData, sizeof(pausedData));
+        // TODO use an event
+        for (int i = 0; i < 20; ++i) {
+            if (resume)
+                break;
+            fiber_sleep(50);
+        }
+    }
+
+    if (stackCopy) {
+        free(stackCopy);
+        stackCopy = NULL;
+    }
+
+#ifdef DEVICE_GROUP_ID_USER
+    fiber_resume_group(DEVICE_GROUP_ID_USER);
+    // go back to user mode
+    fiber_set_group(DEVICE_GROUP_ID_USER);
+#endif
+
+    resume = false;
 }
 
-#endif
+extern "C" void handleHardFault(ExceptionContext *ectx) {
+    auto instr = (uint16_t *)ectx->faultInstrAddr;
+
+    DMESG("FLT %p", instr);
+
+    if (ectx->faultInstrAddr & 0x80000000) {
+        ectx->faultInstrAddr &= ~0x80000000;
+        // switch to step-over mode
+        globals[0] = (TValue)3;
+        return;
+    }
+
+    DMESG("BB %p %p %p lr=%p r0=%p", instr[-1], instr[0], instr[1], ectx->lr, ectx->r0);
+
+    if (instr[0] == 0x6840) {
+        // ldr r0, [r0, #4] -- entry breakpoint
+        ectx->faultInstrAddr += 2;
+        // we're being ask for step-over mode
+        if (ectx->r0 == 3) {
+            // switch to debugger-attached-no-stepping mode
+            globals[0] = (TValue)0;
+            ectx->lr |= 0x80000000;
+        }
+        return;
+    }
+
+    if (instr[0] == 0x6800) {
+        // ldr r0, [r0, #0]
+        ectx->lr = ectx->faultInstrAddr + 3; // next instruction + thumb mode
+        pausedData.pc = ectx->faultInstrAddr + 2;
+        void *ssp = (void *)(ectx + 1);
+        stackSize = CORTEX_M0_STACK_BASE - (uint32_t)ssp;
+        if (stackCopy)
+            free(stackCopy);
+        stackCopy = malloc(stackSize);
+        memcpy(stackCopy, ssp, stackSize);
+        ectx->faultInstrAddr = ((uint32_t)(&bkptPaused) & (~1U));
+        return;
+    }
+
+    while (1) {
+    }
+}
+
+extern "C" void HardFault_Handler(void) {
+    asm("push {lr}; mov r0, sp; bl handleHardFault; pop {pc}");
+}

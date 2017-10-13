@@ -138,6 +138,12 @@ void initRuntime() {
     initCodal();
     initRandomSeed();
     clearNeoPixels();
+
+    if (*HF2_DBG_MAGIC_PTR == HF2_DBG_MAGIC_START) {
+        *HF2_DBG_MAGIC_PTR = 0;
+        // this will cause alignment fault at the first breakpoint
+        globals[0] = (TValue)1;
+    }
 }
 
 //%

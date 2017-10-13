@@ -163,12 +163,13 @@ namespace input {
  * @param gesture the type of gesture to track, eg: Gesture.Shake
  * @param body code to run when gesture is raised
  */
-//% help=input/on-gesture weight=98 blockGap=8
+//% help=input/on-gesture
 //% blockId=device_gesture_event block="on |%NAME"
 //% parts="accelerometer"
 //% gesture.fieldEditor="gridpicker"
 //% gesture.fieldOptions.width=220
 //% gesture.fieldOptions.columns=3
+//% weight=92 blockGap=8
 void onGesture(Gesture gesture, Action body) {
     auto acc = &getWAccel()->acc;
     acc->updateSample();
@@ -193,12 +194,13 @@ int getAccelerationStrength() {
  * x=0, y=0 and z=-1023)
  * @param dimension TODO
  */
-//% help=input/acceleration weight=76
-//% blockId=device_acceleration block="acceleration (mg)|%NAME" blockGap=8
+//% help=input/acceleration
+//% blockId=device_acceleration block="acceleration (mg)|%NAME"
 //% parts="accelerometer"
 //% dimension.fieldEditor="gridpicker"
 //% dimension.fieldOptions.width=180
 //% dimension.fieldOptions.columns=2
+//% weight=42 blockGap=8
 int acceleration(Dimension dimension) {
     switch (dimension) {
     case Dimension::X:
@@ -217,9 +219,10 @@ int acceleration(Dimension dimension) {
  * The pitch or roll of the device, rotation along the ``x-axis`` or ``y-axis``, in degrees.
  * @param kind TODO
  */
-//% help=input/rotation weight=87
-//% blockId=device_get_rotation block="rotation (°)|%NAME" blockGap=8
-//% parts="accelerometer" advanced=true
+//% help=input/rotation
+//% blockId=device_get_rotation block="rotation (°)|%NAME"
+//% parts="accelerometer"
+//% group="More" weight=38
 int rotation(Rotation kind) {
     switch (kind) {
     case Rotation::Pitch:
@@ -238,7 +241,7 @@ int rotation(Rotation kind) {
 //% blockId=device_set_accelerometer_range block="set accelerometer|range %range"
 //% weight=5
 //% parts="accelerometer"
-//% advanced=true
+//% group="More" weight=15 blockGap=8
 void setAccelerometerRange(AcceleratorRange range) {
     getWAccel()->acc.setRange((int)range);
 }
