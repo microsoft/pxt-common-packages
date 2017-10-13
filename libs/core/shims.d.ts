@@ -6,7 +6,7 @@ declare interface DigitalPin {
      * Read a pin or connector as either 0 or 1
      * @param name pin to read from
      */
-    //% help=pins/digital-read weight=30
+    //% help=pins/digital-read weight=61
     //% blockId=device_get_digital_pin block="digital read|pin %name" blockGap=8
     //% parts="slideswitch" trackArgs=0
     //% blockNamespace=pins
@@ -20,7 +20,7 @@ declare interface DigitalPin {
      * @param name pin to write to
      * @param value value to set on the pin
      */
-    //% help=pins/digital-write weight=29
+    //% help=pins/digital-write weight=60
     //% blockId=device_set_digital_pin block="digital write|pin %name|to %value"
     //% parts="led" trackArgs=0
     //% blockNamespace=pins
@@ -33,7 +33,7 @@ declare interface DigitalPin {
      * Make this pin a digital input, and create events where the timestamp is the duration
      * that this pin was either ``high`` or ``low``.
      */
-    //% help=pins/on-pulsed weight=22 blockGap=8 advanced=true
+    //% help=pins/on-pulsed weight=16 blockGap=8
     //% blockId=pins_on_pulsed block="on|pin %pin|pulsed %pulse"
     //% blockNamespace=pins
     //% pin.fieldEditor="gridpicker"
@@ -48,7 +48,7 @@ declare interface DigitalPin {
      * @param maximum duration in micro-seconds
      */
     //% blockId="pins_pulse_in" block="pulse in (µs)|pin %name|pulsed %value"
-    //% weight=20 advanced=true
+    //% weight=18 blockGap=8
     //% help="pins/pulse-in"
     //% blockNamespace=pins
     //% pin.fieldEditor="gridpicker"
@@ -61,7 +61,7 @@ declare interface DigitalPin {
      * @param name pin to set the pull mode on
      * @param pull one of the mbed pull configurations: PullUp, PullDown, PullNone
      */
-    //% help=pins/set-pull weight=3 advanced=true
+    //% help=pins/set-pull weight=17 blockGap=8
     //% blockId=device_set_pull block="set pull|pin %pin|to %pull"
     //% blockNamespace=pins
     //% name.fieldEditor="gridpicker"
@@ -76,7 +76,7 @@ declare interface AnalogPin {
      * Read the connector value as analog, that is, as a value comprised between 0 and 1023.
      * @param name pin to write to
      */
-    //% help=pins/analog-read weight=25
+    //% help=pins/analog-read weight=53
     //% blockId=device_get_analog_pin block="analog read|pin %name" blockGap="8"
     //% blockNamespace=pins
     //% name.fieldEditor="gridpicker"
@@ -89,7 +89,7 @@ declare interface AnalogPin {
      * @param name pin name to write to
      * @param value value to write to the pin between ``0`` and ``1023``. eg:1023,0
      */
-    //% help=pins/analog-write weight=24
+    //% help=pins/analog-write weight=52
     //% blockId=device_set_analog_pin block="analog write|pin %name|to %value" blockGap=8
     //% blockNamespace=pins
     //% name.fieldEditor="gridpicker"
@@ -108,7 +108,7 @@ declare interface PwmPin {
      * @param name analog pin to set period to
      * @param micros period in micro seconds. eg:20000
      */
-    //% help=pins/analog-set-period weight=23 blockGap=8
+    //% help=pins/analog-set-period weight=51
     //% blockId=device_set_analog_period block="analog set period|pin %pin|to (µs)%period"
     //% blockNamespace=pins
     //% name.fieldEditor="gridpicker"
@@ -124,7 +124,7 @@ declare interface PwmPin {
      * @param name pin to write to
      * @param value angle or rotation speed, eg:180,90,0
      */
-    //% help=pins/servo-write weight=20
+    //% help=pins/servo-write weight=41 group="Servo"
     //% blockId=device_set_servo_pin block="servo write|pin %name|to %value" blockGap=8
     //% parts=microservo trackArgs=0
     //% blockNamespace=pins
@@ -139,7 +139,7 @@ declare interface PwmPin {
      * @param name pin name
      * @param duration pulse duration in micro seconds, eg:1500
      */
-    //% help=pins/servo-set-pulse weight=19
+    //% help=pins/servo-set-pulse weight=40 group="Servo" blockGap=8
     //% blockId=device_set_servo_pulse block="servo set pulse|pin %value|to (µs) %duration"
     //% blockNamespace=pins
     //% name.fieldEditor="gridpicker"
@@ -160,9 +160,9 @@ declare namespace pins {
      * Get the duration of the last pulse in microseconds. This function should be called from a
      * ``onPulsed`` handler.
      */
-    //% help=pins/pulse-duration advanced=true
+    //% help=pins/pulse-duration blockGap=8
     //% blockId=pins_pulse_duration block="pulse duration (µs)"
-    //% weight=21 blockGap=8 shim=pins::pulseDuration
+    //% weight=19 shim=pins::pulseDuration
     function pulseDuration(): int32;
 }
 declare namespace pins {

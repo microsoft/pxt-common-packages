@@ -52,24 +52,24 @@ declare interface TouchButton {
      * @param name button name
      * @param threshold minimum value to consider a touch eg:200
      */
-    //% advanced=true blockGap=8
     //% blockId=touch_set_threshold block="button %button|set threshold %threshold"
     //% blockNamespace=input
     //% name.fieldEditor="gridpicker"
     //% name.fieldOptions.width=220
-    //% name.fieldOptions.columns=4 shim=TouchButtonMethods::setThreshold
+    //% name.fieldOptions.columns=4
+    //% group="More" weight=16 blockGap=8 shim=TouchButtonMethods::setThreshold
     setThreshold(threshold: int32): void;
 
     /**
      * Reads the current value registered with the button.
      * @param name button name
      */
-    //% advanced=true blockGap=8
     //% blockId=touch_value block="button %button|value"
     //% blockNamespace=input
     //% name.fieldEditor="gridpicker"
     //% name.fieldOptions.width=220
-    //% name.fieldOptions.columns=4 shim=TouchButtonMethods::value
+    //% name.fieldOptions.columns=4
+    //% group="More" weight=49 blockGap=8 shim=TouchButtonMethods::value
     value(): int32;
 }
 

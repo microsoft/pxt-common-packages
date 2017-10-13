@@ -31,42 +31,44 @@ declare interface Button {
      * @param event the kind of button gesture that needs to be detected
      * @param body code to run when the event is raised
      */
-    //% help=input/button/on-event weight=99 blockGap=8
+    //% help=input/button/on-event
     //% blockId=buttonEvent block="on %button|%event"
     //% parts="buttonpair"
     //% blockNamespace=input
     //% button.fieldEditor="gridpicker"
     //% button.fieldOptions.width=220
-    //% button.fieldOptions.columns=3 shim=ButtonMethods::onEvent
+    //% button.fieldOptions.columns=3
+    //% weight=96 blockGap=8 shim=ButtonMethods::onEvent
     onEvent(ev: ButtonEvent, body: () => void): void;
 
     /**
      * Check if a button is pressed or not.
      * @param button the button to query the request
      */
-    //% help=input/button/is-pressed weight=79
+    //% help=input/button/is-pressed
     //% block="%button|is pressed"
     //% blockId=buttonIsPressed
-    //% blockGap=8
     //% parts="buttonpair"
     //% blockNamespace=input
     //% button.fieldEditor="gridpicker"
     //% button.fieldOptions.width=220
-    //% button.fieldOptions.columns=3 shim=ButtonMethods::isPressed
+    //% button.fieldOptions.columns=3
+    //% weight=50 blockGap=8 shim=ButtonMethods::isPressed
     isPressed(): boolean;
 
     /**
      * See if the button was pressed again since the last time you checked.
      * @param button the button to query the request
      */
-    //% help=input/button/was-pressed weight=78
+    //% help=input/button/was-pressed
     //% block="%button|was pressed"
     //% blockId=buttonWasPressed
-    //% parts="buttonpair" blockGap=8
-    //% blockNamespace=input advanced=true
+    //% parts="buttonpair"
+    //% blockNamespace=input
     //% button.fieldEditor="gridpicker"
     //% button.fieldOptions.width=220
-    //% button.fieldOptions.columns=3 shim=ButtonMethods::wasPressed
+    //% button.fieldOptions.columns=3
+    //% group="More" weight=46 blockGap=8 shim=ButtonMethods::wasPressed
     wasPressed(): boolean;
 }
 
