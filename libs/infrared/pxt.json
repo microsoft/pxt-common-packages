@@ -12,6 +12,7 @@
     ],
     "public": true,
     "dependencies": {
-        "core": "file:../core"
+        "core": "file:../core",
+        "cable": "file:../cable"
     }
 }

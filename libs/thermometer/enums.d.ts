@@ -1,7 +1,7 @@
 // Auto-generated. Do not edit.
 
 
-    declare enum TemperatureCondition {
+    declare const enum TemperatureCondition {
     //% block="hot"
     Hot = 2,  // ANALOG_THRESHOLD_HIGH
     //% block="cold"
@@ -9,7 +9,7 @@
     }
 
 
-    declare enum TemperatureUnit {
+    declare const enum TemperatureUnit {
     //% block="°C"
     Celsius = 0,
     //% block="°F"

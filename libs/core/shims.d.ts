@@ -174,15 +174,15 @@ declare namespace pins {
 
 
     //% fixedInstance shim=pxt::getPin(1)
-    const A1: PwmPin;
+    const A1: AnalogPin;
 
 
     //% fixedInstance shim=pxt::getPin(2)
-    const A2: PwmPin;
+    const A2: AnalogPin;
 
 
     //% fixedInstance shim=pxt::getPin(3)
-    const A3: PwmPin;
+    const A3: AnalogPin;
 
 
     //% fixedInstance shim=pxt::getPin(4)
@@ -202,35 +202,83 @@ declare namespace pins {
 
 
     //% fixedInstance shim=pxt::getPin(8)
-    const A8: AnalogPin;
+    const A8: PwmPin;
 
 
     //% fixedInstance shim=pxt::getPin(9)
-    const A9: AnalogPin;
+    const A9: PwmPin;
 
 
     //% fixedInstance shim=pxt::getPin(10)
-    const D4: DigitalPin;
+    const A10: PwmPin;
 
 
     //% fixedInstance shim=pxt::getPin(11)
-    const D5: DigitalPin;
+    const A11: PwmPin;
 
 
     //% fixedInstance shim=pxt::getPin(12)
-    const D6: DigitalPin;
+    const D0: DigitalPin;
 
 
     //% fixedInstance shim=pxt::getPin(13)
-    const D7: DigitalPin;
+    const D1: DigitalPin;
 
 
     //% fixedInstance shim=pxt::getPin(14)
-    const D8: DigitalPin;
+    const D2: DigitalPin;
 
 
     //% fixedInstance shim=pxt::getPin(15)
+    const D3: DigitalPin;
+
+
+    //% fixedInstance shim=pxt::getPin(16)
+    const D4: DigitalPin;
+
+
+    //% fixedInstance shim=pxt::getPin(17)
+    const D5: DigitalPin;
+
+
+    //% fixedInstance shim=pxt::getPin(18)
+    const D6: DigitalPin;
+
+
+    //% fixedInstance shim=pxt::getPin(19)
+    const D7: DigitalPin;
+
+
+    //% fixedInstance shim=pxt::getPin(20)
+    const D8: DigitalPin;
+
+
+    //% fixedInstance shim=pxt::getPin(21)
+    const D9: DigitalPin;
+
+
+    //% fixedInstance shim=pxt::getPin(22)
+    const D10: DigitalPin;
+
+
+    //% fixedInstance shim=pxt::getPin(23)
+    const D11: DigitalPin;
+
+
+    //% fixedInstance shim=pxt::getPin(24)
+    const D12: DigitalPin;
+
+
+    //% fixedInstance shim=pxt::getPin(25)
     const D13: DigitalPin;
+
+
+    //% fixedInstance shim=pxt::getPin(26)
+    const RX: DigitalPin;
+
+
+    //% fixedInstance shim=pxt::getPin(27)
+    const TX: DigitalPin;
 }
 declare namespace control {
 
@@ -241,14 +289,16 @@ declare namespace control {
      * @param mode optional definition of how the event should be processed after construction.
      */
     //% weight=21 blockGap=12 blockId="control_raise_event"
-    //% block="raise event|from %src|with value value" blockExternalInputs=1
+    //% help=control/raise-event
+    //% block="raise event|from %src|with value %value" blockExternalInputs=1
     //% mode.defl=1 shim=control::raiseEvent
     function raiseEvent(src: int32, value: int32, mode?: EventCreationMode): void;
 
     /**
      * Determine the version of system software currently running.
      */
-    //% shim=control::deviceDalVersion
+    //% blockId="control_device_dal_version" block="device dal version"
+    //% help=control/device-dal-version shim=control::deviceDalVersion
     function deviceDalVersion(): string;
 
     /**
