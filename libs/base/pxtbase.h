@@ -12,6 +12,9 @@
 #undef max
 
 #include "pxtconfig.h"
+#ifdef HF2_DBG
+#include "hf2dbg.h"
+#endif
 
 #define intcheck(...) check(__VA_ARGS__)
 //#define intcheck(...) do {} while (0)
