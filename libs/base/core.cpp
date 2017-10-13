@@ -859,8 +859,13 @@ void mapSetRef(RefMap *map, unsigned key, TValue val) {
 // Debugger
 //
 
+// This is only to be called once at the beginning of lambda function
 //%
 void *getGlobalsPtr() {
+#ifdef DEVICE_GROUP_ID_USER
+    fiber_set_group(DEVICE_GROUP_ID_USER);
+#endif
+
     return globals;
 }
 

@@ -160,7 +160,7 @@ namespace light {
          * @param value current value to plot
          * @param high maximum value, 0 to autoscale
          */
-        //% blockId=neopixel_show_bar_graph block="graph of %value |up to %high" icon="\uf080" blockExternalInputs=true        
+        //% blockId=neopixel_show_bar_graph block="graph of %value |up to %high" icon="\uf080"       
         //% weight=88
         //% help=light/graph
         //% blockGap=8

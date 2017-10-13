@@ -73,17 +73,25 @@ typedef struct {
         struct HF2_WRITE_WORDS_Command write_words;
         struct HF2_READ_WORDS_Command read_words;
         struct HF2_CHKSUM_PAGES_Command chksum_pages;
+        uint8_t data8[0];
+        uint16_t data16[0];
+        uint32_t data32[0];
     };
 } HF2_Command;
 
 typedef struct {
-    uint16_t tag;
     union {
+        uint32_t eventId;
         struct {
-            uint8_t status;
-            uint8_t status_info;
+            uint16_t tag;
+            union {
+                struct {
+                    uint8_t status;
+                    uint8_t status_info;
+                };
+                uint16_t status16;
+            };
         };
-        uint16_t status16;
     };
     union {
         struct HF2_BININFO_Result bininfo;
