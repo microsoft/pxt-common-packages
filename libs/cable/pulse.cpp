@@ -87,7 +87,7 @@ PulseBase::PulseBase(uint16_t id, int pinOut, int pinIn) {
     NVIC_Setup();
     this->id = id;
 
-    recvState = IR_RECV_ERROR;
+    recvState = PULSE_RECV_ERROR;
     sending = false;
     outBuffer = NULL;
     pin = lookupPin(pinOut);
@@ -96,7 +96,7 @@ PulseBase::PulseBase(uint16_t id, int pinOut, int pinIn) {
 
         inpin = lookupPin(pinIn);
 
-        devMessageBus.listen(id, IR_PACKET_END_EVENT, this, &PulseBase::packetEnd);
+        devMessageBus.listen(id, PULSE_PACKET_END_EVENT, this, &PulseBase::packetEnd);
     }
 }
 
@@ -134,7 +134,7 @@ void  PulseBase::send(Buffer d) {
     if (sending)
         return; // error code?
 
-    if (d->length > IR_MAX_MSG_SIZE - 2 || (d->length & 1))
+    if (d->length > PULSE_MAX_MSG_SIZE - 2 || (d->length & 1))
         return; // error code?
 
     encodedMsg.setLength(0);
@@ -171,7 +171,7 @@ void  PulseBase::send(Buffer d) {
     sendStartTime = 0;
     setupPWM();
 
-    setPeriodicCallback(IR_PULSE_LEN, this, (void (*)(void *)) & PulseBase::process);
+    setPeriodicCallback(PULSE_PULSE_LEN, this, (void (*)(void *)) & PulseBase::process);
     while (sending) {
         fiber_sleep(10);
     }
@@ -179,21 +179,21 @@ void  PulseBase::send(Buffer d) {
 }
 
 void  PulseBase::finish(int code) {
-    if (recvState == IR_RECV_ERROR)
+    if (recvState == PULSE_RECV_ERROR)
         return;
 
     if (code == 0) {
-        Event evt(id, IR_PACKET_END_EVENT);
+        Event evt(id, PULSE_PACKET_END_EVENT);
     } else {
-        Event evt(id, IR_PACKET_ERROR_EVENT);
-        IR_DMESG("IR ERROR %d [%s]", code, dbg.get());
+        Event evt(id, PULSE_PACKET_ERROR_EVENT);
+        PULSE_DMESG("IR ERROR %d [%s]", code, dbg.get());
     }
     dbg.get();
-    recvState = IR_RECV_ERROR;
+    recvState = PULSE_RECV_ERROR;
 }
 
 void PulseBase::addPulse(int v) {
-    if (this->pulsePtr < IR_MAX_PULSES - 1) {
+    if (this->pulsePtr < PULSE_MAX_PULSES - 1) {
         pulses[this->pulsePtr++] = (int16_t)v;
     } else {
         finish(2);
@@ -201,7 +201,7 @@ void PulseBase::addPulse(int v) {
 }
 
 void  PulseBase::adjustShift() {
-    int16_t nums[IR_MAX_PULSES];
+    int16_t nums[PULSE_MAX_PULSES];
     int v = 0;
     int sum = 0;
     for (int i = 0; i < pulsePtr; i++) {
@@ -209,9 +209,9 @@ void  PulseBase::adjustShift() {
             v -= pulses[i];
         else
             v += pulses[i];
-        int d = v % IR_PULSE_LEN;
-        if (d > IR_PULSE_LEN / 2)
-            d -= IR_PULSE_LEN;
+        int d = v % PULSE_PULSE_LEN;
+        if (d > PULSE_PULSE_LEN / 2)
+            d -= PULSE_PULSE_LEN;
         nums[i] = d;
         sum += d;
     }
@@ -225,7 +225,7 @@ void  PulseBase::adjustShift() {
     int median = nums[pulsePtr / 2];
     pulses[0] -= median;
 
-    // IR_DMESG("shift: n=%d avg=%d med=%d p=%d %d %d ...", pulsePtr, sum / pulsePtr, median,
+    // PULSE_DMESG("shift: n=%d avg=%d med=%d p=%d %d %d ...", pulsePtr, sum / pulsePtr, median,
     //          pulses[0], pulses[1], pulses[2]);
 }
 
@@ -244,16 +244,16 @@ void  PulseBase::pulseGap(Event ev) {
 
     dbg.putNum(tm);
 
-    if (recvState == IR_WAIT_START_GAP) {
+    if (recvState == PULSE_WAIT_START_GAP) {
         pulsePtr = 0;
         addPulse(tm);
-        recvState = IR_WAIT_DATA;
+        recvState = PULSE_WAIT_DATA;
         dbg.put(" *** ");
         startTime = system_timer_current_time_us();
         return;
     }
 
-    if (recvState == IR_WAIT_DATA) {
+    if (recvState == PULSE_WAIT_DATA) {
         addPulse(tm);
         return;
     }
@@ -284,7 +284,7 @@ void PulseBase::packetEnd(Event) {
 
     BitVector bits;
 
-    int pos = IR_PULSE_LEN / 2;
+    int pos = PULSE_PULSE_LEN / 2;
     for (int i = 0; i < pulsePtr; ++i) {
         int curr = pulses[i];
         int v = 0;
@@ -295,7 +295,7 @@ void PulseBase::packetEnd(Event) {
         pos -= curr;
         while (pos < 0) {
             bits.push(v);
-            pos += IR_PULSE_LEN;
+            pos += PULSE_PULSE_LEN;
         }
     }
     // bits.print();
@@ -303,7 +303,7 @@ void PulseBase::packetEnd(Event) {
     pulsePtr = 0;
 
     if (bits.size() < 70) {
-        Event evt(id, IR_PACKET_ERROR_EVENT);
+        Event evt(id, PULSE_PACKET_ERROR_EVENT);
         return; // too short
     }
 
@@ -318,17 +318,17 @@ void PulseBase::packetEnd(Event) {
     int err1 = errorRate(start + 1, bits);
     if (err0 < err1 && err0 < err) {
         start--;
-        IR_DMESG("sync back");
+        PULSE_DMESG("sync back");
     } else if (err1 < err) {
         start++;
-        IR_DMESG("sync fwd");
+        PULSE_DMESG("sync fwd");
     }
 
-    uint8_t buf[IR_MAX_MSG_SIZE];
+    uint8_t buf[PULSE_MAX_MSG_SIZE];
     int ptr = 0;
     uint64_t mask = (((uint64_t)1 << 20) - 1) << 15;
 
-    while (ptr < IR_MAX_MSG_SIZE) {
+    while (ptr < PULSE_MAX_MSG_SIZE) {
         auto p = start + 35 * (ptr / 2);
         uint64_t v = bits.getBits(p, 30) | ((uint64_t)bits.getBits(p + 30, 5) << 30);
         if ((v & mask) == mask)
@@ -364,7 +364,7 @@ void PulseBase::packetEnd(Event) {
     decrRC(outBuffer);
     outBuffer = pins::createBuffer(ptr);
     memcpy(outBuffer->data, buf, ptr);
-    Event evt(id, crc == pktCrc ? IR_PACKET_EVENT : IR_PACKET_ERROR_EVENT);
+    Event evt(id, crc == pktCrc ? PULSE_PACKET_EVENT : PULSE_PACKET_ERROR_EVENT);
 }
 
 void PulseBase::pulseMark(Event ev) {
@@ -384,15 +384,15 @@ void PulseBase::pulseMark(Event ev) {
 
     lastMarkTime = system_timer_current_time_us();
 
-    if (tm >= 20 * IR_PULSE_LEN) {
-        recvState = IR_WAIT_START_GAP;
+    if (tm >= 20 * PULSE_PULSE_LEN) {
+        recvState = PULSE_WAIT_START_GAP;
         return;
     }
 
-    if (recvState == IR_WAIT_DATA) {
-        if (tm >= 12 * IR_PULSE_LEN) {
+    if (recvState == PULSE_WAIT_DATA) {
+        if (tm >= 12 * PULSE_PULSE_LEN) {
             // finish
-            addPulse(-(40 * IR_PULSE_LEN)); // make sure we get all ones at the end
+            addPulse(-(40 * PULSE_PULSE_LEN)); // make sure we get all ones at the end
             finish(0);
         } else {
             addPulse(-tm);
@@ -420,9 +420,9 @@ void PulseBase::process() {
 
     auto now = system_timer_current_time_us();
     if (sendStartTime == 0)
-        sendStartTime = now - (IR_PULSE_LEN / 2);
+        sendStartTime = now - (PULSE_PULSE_LEN / 2);
 
-    auto encodedMsgPtr = (int)(now - sendStartTime) / IR_PULSE_LEN;
+    auto encodedMsgPtr = (int)(now - sendStartTime) / PULSE_PULSE_LEN;
 
     if (encodedMsgPtr >= encodedMsg.size()) {
         encodedMsg.setLength(0);

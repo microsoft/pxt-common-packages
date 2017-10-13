@@ -5,7 +5,7 @@ namespace network {
 
 class IrWrap : public PulseBase {
 public:
-    IrWrap() : PulseBase(IR_COMPONENT_ID, PIN_IR_OUT, PIN_IR_IN) { setupGapEvents(); }
+    IrWrap() : PulseBase(PULSE_IR_COMPONENT_ID, PIN_IR_OUT, PIN_IR_IN) { setupGapEvents(); }
 };
 SINGLETON(IrWrap);
 /**
@@ -32,7 +32,7 @@ Buffer infraredPacket() {
 //% parts="ir"
 void onInfraredPacket(Action body) {
     getIrWrap(); // attach events
-    registerWithDal(IR_COMPONENT_ID, IR_PACKET_EVENT, body);
+    registerWithDal(PULSE_IR_COMPONENT_ID, PULSE_PACKET_EVENT, body);
 }
 
 /**
@@ -41,6 +41,6 @@ void onInfraredPacket(Action body) {
 //%
 void onInfraredError(Action body) {
     getIrWrap();
-    registerWithDal(IR_COMPONENT_ID, IR_PACKET_ERROR_EVENT, body);
+    registerWithDal(PULSE_IR_COMPONENT_ID, PULSE_PACKET_ERROR_EVENT, body);
 }
 }

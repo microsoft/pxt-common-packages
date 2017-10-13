@@ -4,21 +4,22 @@
 #include "pxt.h"
 #include "bitvector.h"
 
-#define IR_MAX_MSG_SIZE 34
-#define IR_COMPONENT_ID 0x2042
-#define CABLE_COMPONENT_ID 0x2043
-#define IR_PACKET_END_EVENT 0x1
-#define IR_PACKET_EVENT 0x2
-#define IR_PACKET_ERROR_EVENT 0x3
-#define IR_MAX_PULSES (IR_MAX_MSG_SIZE * 18 + 10)
-#define IR_PULSE_LEN 250
+#define PULSE_MAX_MSG_SIZE 34
+#define PULSE_PACKET_END_EVENT 0x1
+#define PULSE_PACKET_EVENT 0x2
+#define PULSE_PACKET_ERROR_EVENT 0x3
+#define PULSE_MAX_PULSES (PULSE_MAX_MSG_SIZE * 18 + 10)
+#define PULSE_PULSE_LEN 250
 
-#define IR_DEBUG 0
+#define PULSE_IR_COMPONENT_ID 0x2042
+#define PULSE_CABLE_COMPONENT_ID 0x2043
 
-#if IR_DEBUG
-#define IR_DMESG DMESG
+#define PULSE_DEBUG 0
+
+#if PULSE_DEBUG
+#define PULSE_DMESG DMESG
 #else
-#define IR_DMESG(...)                                                                              \
+#define PULSE_DMESG(...)                                                                              \
     do {                                                                                           \
     } while (0)
 #endif
@@ -27,7 +28,7 @@ namespace network {
 
 class DbgBuffer {
 public:
-#if IR_DEBUG
+#if PULSE_DEBUG
     char dbgBuf[1200];
     int dbgPtr;
     DbgBuffer() {
@@ -67,10 +68,10 @@ public:
     }
 };      
 
-enum IrRecvState : uint8_t {
-    IR_RECV_ERROR,
-    IR_WAIT_START_GAP,
-    IR_WAIT_DATA,
+enum PulseRecvState : uint8_t {
+    PULSE_RECV_ERROR,
+    PULSE_WAIT_START_GAP,
+    PULSE_WAIT_DATA,
 };
 
 class PulseBase {
@@ -86,10 +87,10 @@ protected:
   uint64_t lastMarkTime;
   uint64_t lastSendTime;
 
-  int16_t pulses[IR_MAX_PULSES + 1];
+  int16_t pulses[PULSE_MAX_PULSES + 1];
   uint16_t pulsePtr;
 
-  IrRecvState recvState;
+  PulseRecvState recvState;
   Buffer outBuffer;
 
   DbgBuffer dbg;
