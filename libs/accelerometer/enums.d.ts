@@ -1,7 +1,7 @@
 // Auto-generated. Do not edit.
 
 
-    declare enum Dimension {
+    declare const enum Dimension {
     //% block=x
     X = 0,
     //% block=y
@@ -13,7 +13,7 @@
     }
 
 
-    declare enum Rotation {
+    declare const enum Rotation {
     //% block=pitch
     Pitch = 0,
     //% block=roll
@@ -21,7 +21,7 @@
     }
 
 
-    declare enum AcceleratorRange {
+    declare const enum AcceleratorRange {
     /**
      * The accelerator measures forces up to 1 gravity
      */
@@ -45,7 +45,7 @@
     }
 
 
-    declare enum Gesture {
+    declare const enum Gesture {
     /**
      * Raised when shaken
      */

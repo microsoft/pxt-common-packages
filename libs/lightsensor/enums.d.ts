@@ -1,7 +1,7 @@
 // Auto-generated. Do not edit.
 
 
-    declare enum LightCondition {
+    declare const enum LightCondition {
     //% block="dark"
     Dark = 1,  // ANALOG_THRESHOLD_LOW
     //% block="bright"

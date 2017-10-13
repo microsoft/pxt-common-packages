@@ -8,7 +8,8 @@ declare namespace music {
      * values are reflected immediately to the sound output. 
      */
     //% help=music/set-tone
-    //% weight=1 advanced=true
+    //% weight=1 group="Tones"
+    //% deprecated
     //% blockId=music_set_tone block="set tone %buffer" shim=music::setTone
     function setTone(buffer: Buffer): void;
 
@@ -16,12 +17,11 @@ declare namespace music {
      * Set the output volume of the sound synthesizer.
      * @param volume the volume 0...256, eg: 128
      */
-    //% weight=96
     //% blockId=synth_set_volume block="set volume %volume"
-    //% parts="speaker" blockGap=8
+    //% parts="speaker"
     //% volume.min=0 volume.max=256
     //% help=music/set-volume
-    //% weight=1 shim=music::setVolume
+    //% weight=70 shim=music::setVolume
     function setVolume(volume: int32): void;
 
     /**
@@ -29,10 +29,11 @@ declare namespace music {
      * @param frequency pitch of the tone to play in Hertz (Hz)
      * @param ms tone duration in milliseconds (ms)
      */
-    //% help=music/play-tone weight=90
+    //% help=music/play-tone
     //% blockId=music_play_note block="play tone|at %note=device_note|for %duration=device_beat"
-    //% parts="headphone" async blockGap=8
-    //% blockNamespace=music shim=music::playTone
+    //% parts="headphone" async
+    //% blockNamespace=music
+    //% weight=76 blockGap=8 shim=music::playTone
     function playTone(frequency: int32, ms: int32): void;
 }
 

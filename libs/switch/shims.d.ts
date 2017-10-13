@@ -6,9 +6,10 @@ declare namespace input {
      *
      * @param direction the direction the switch must be moved to trigget the event
      */
-    //% help=input/on-switch-moved weight=93
-    //% blockId=device_on_switch_moved block="on switch moved %direction" blockGap=8
-    //% parts="switch" shim=input::onSwitchMoved
+    //% help=input/on-switch-moved
+    //% blockId=device_on_switch_moved block="on switch moved %direction"
+    //% parts="switch"
+    //% weight=80 shim=input::onSwitchMoved
     function onSwitchMoved(direction: SwitchDirection, handler: () => void): void;
 }
 
