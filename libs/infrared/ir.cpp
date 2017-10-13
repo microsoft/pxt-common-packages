@@ -10,7 +10,7 @@
 #define IR_MAX_PULSES (IR_MAX_MSG_SIZE * 18 + 10)
 #define IR_PULSE_LEN 250
 
-#define IR_DEBUG 1
+#define IR_DEBUG 0
 
 #if IR_DEBUG
 #define IR_DMESG DMESG
