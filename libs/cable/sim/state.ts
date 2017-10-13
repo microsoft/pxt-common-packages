@@ -4,9 +4,10 @@ namespace pxsim {
         // notify view that a packet was received
         packetReceived = false;
 
-        IR_COMPONENT_ID = 0x2042;
-        IR_PACKET_EVENT = 0x2;
-        IR_PACKET_ERROR_EVENT = 0x3;
+        // PULSE_IR_COMPONENT_ID = 0x2042;
+        PULSE_CABLE_COMPONENT_ID = 0x2043;
+        PULSE_PACKET_EVENT = 0x2;
+        PULSE_PACKET_ERROR_EVENT = 0x3;
 
         send(buf: RefBuffer) {
             Runtime.postMessage(<SimulatorInfraredPacketMessage>{
@@ -16,11 +17,11 @@ namespace pxsim {
         }
 
         listen(body: RefAction) {
-            pxtcore.registerWithDal(this.IR_COMPONENT_ID, this.IR_PACKET_EVENT, body);            
+            pxtcore.registerWithDal(this.PULSE_CABLE_COMPONENT_ID, this.PULSE_PACKET_EVENT, body);            
         }
 
         listenError(body: RefAction) {
-            pxtcore.registerWithDal(this.IR_COMPONENT_ID, this.IR_PACKET_ERROR_EVENT, body);            
+            pxtcore.registerWithDal(this.PULSE_CABLE_COMPONENT_ID, this.PULSE_PACKET_ERROR_EVENT, body);            
         }
 
         receive(buf: RefBuffer) {
@@ -28,7 +29,7 @@ namespace pxsim {
             this.packet = buf;
             pxsim.incr(this.packet);
             this.packetReceived = true;
-            board().bus.queue(this.IR_COMPONENT_ID, this.IR_PACKET_EVENT);
+            board().bus.queue(this.PULSE_CABLE_COMPONENT_ID, this.PULSE_PACKET_EVENT);
         }
     }
     
