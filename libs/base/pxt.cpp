@@ -530,19 +530,9 @@ void exec_binary(unsigned *pc) {
     bytecode = *((uint16_t **)pc++); // the actual bytecode is here
     globals = (TValue *)allocate(getNumGlobals());
 
-#ifdef HF2_DBG    
-    if (*HF2_DBG_MAGIC_PTR == HF2_DBG_MAGIC_START) {
-        *HF2_DBG_MAGIC_PTR = 0;
-        // this will cause alignment fault at the first breakpoint
-        globals[0] = (TValue)1;
-    } else {
-        // can be any valid address, best in RAM for speed
-        globals[0] = (TValue)&globals;
-    }
-#else        
+    // can be any valid address, best in RAM for speed
     globals[0] = (TValue)&globals;
-#endif
-    
+
     // just compare the first word
     // TODO
     checkStr(((uint32_t *)bytecode)[0] == 0x923B8E70 && (unsigned)templateHash() == *pc,
