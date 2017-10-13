@@ -5,7 +5,7 @@
      * User interaction on buttons
      */
 
-    declare enum ButtonEvent {
+    declare const enum ButtonEvent {
     //% block="click"
     Click = 3,  // DEVICE_BUTTON_EVT_CLICK
     //% block="double click"
@@ -21,7 +21,7 @@
     }
 
 
-    declare enum PulseValue {
+    declare const enum PulseValue {
     //% block=high
     High = 4,  // DEVICE_PIN_EVT_PULSE_HI
     //% block=low
@@ -29,7 +29,7 @@
     }
 
 
-    declare enum PinPullMode {
+    declare const enum PinPullMode {
     //% block="down"
     PullDown = 0,
     //% block="up"
@@ -43,7 +43,7 @@
      * How to create the event.
      */
 
-    declare enum EventCreationMode {
+    declare const enum EventCreationMode {
     /**
      * Event is initialised, and its event handlers are immediately fired (not suitable for use in
      * interrupts!).

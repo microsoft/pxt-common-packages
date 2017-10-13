@@ -1,3 +1,6 @@
+#ifndef CABLE_BITVECTOR_H
+#define CABLE_BITVECTOR_H
+
 class BitVector {
     Segment data;
     int len;
@@ -56,3 +59,4 @@ class BitVector {
     }
 };
 
+#endif

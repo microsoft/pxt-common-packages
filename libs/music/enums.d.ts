@@ -1,7 +1,7 @@
 // Auto-generated. Do not edit.
 
 
-    declare enum SoundOutputDestination {
+    declare const enum SoundOutputDestination {
     //% block="pin"
     Pin = 1,
     //% block="speaker"

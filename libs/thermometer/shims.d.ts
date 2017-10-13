@@ -9,8 +9,8 @@ declare namespace input {
      */
     //% blockId=input_on_temperature_condition_changed block="on temperature %condition|at %temperature|%unit"
     //% parts="thermometer" weight=95 blockGap=8 advanced=true
-    //% help=input/on-temperature-condition-changed blockExternalInputs=0 shim=input::onTemperateConditionChanged
-    function onTemperateConditionChanged(condition: TemperatureCondition, temperature: int32, unit: TemperatureUnit, handler: () => void): void;
+    //% help=input/on-temperature-condition-changed blockExternalInputs=0 shim=input::onTemperatureConditionChanged
+    function onTemperatureConditionChanged(condition: TemperatureCondition, temperature: int32, unit: TemperatureUnit, handler: () => void): void;
 
     /**
      * Get the temperature in Celsius or Fahrenheit degrees.
