@@ -15,12 +15,12 @@ class CablePacket {
 
 namespace network {
     /**
-     * Send a number over the infrared transmitter.
+     * Send a number over the cable.
      * @param value number to send
      */
-    //% blockId="ir_send_number" block="infrared send number %value"
-    //% help=network/infrared-send-number
-    //% parts="ir" weight=90
+    //% blockId="cable_send_number" block="cable send number %value"
+    //% help=network/cable-send-number
+    //% parts="cable" weight=90
     export function cableSendNumber(value: number) {
         cableSendNumbers([value]);
     }
@@ -29,7 +29,7 @@ namespace network {
      * Send an array of numbers over infrared. The array size has to be 32 bytes or less.
      * @param values 
      */
-    //% parts="ir"
+    //% parts="cable"
     export function cableSendNumbers(values: number[]) {
         let buf = msgpack.packNumberArray(values);
         if (buf.length % 2) {
@@ -42,14 +42,14 @@ namespace network {
     }
 
     /**
-     * Run some code when the infrared receiver gets a packet.
+     * Run some code when the cable receiver gets a packet.
      */
     //% mutate=objectdestructuring
     //% mutateText=CablePacket
     //% mutateDefaults="receivedNumber"
     //% blockId=cable_on_packet_received block="on cable received" blockGap=8
     //% help=network/on-cable-packet-received
-    //% parts="ir"
+    //% parts="cable"
     export function onCablePacketReceived(cb: (p: CablePacket) => void) {
         onCablePacket(() => {
             const buf: Buffer = cablePacket();

@@ -1,9 +1,9 @@
-# infrared Send Number
+# Cable Send Number
 
-Send a number value to another @boardname@ using the infrared transmitter.
+Send a number value to another @boardname@ using a cable.
 
 ```sig
-network.infraredSendNumber(0);
+network.cableSendNumber(0);
 ```
 
 The infrared transmitter on your board will send a number as part of a data message signaled by infrared light pulses. If another @boardname@ is waiting to receive an infrared signal, it will get this number in the data message it receives.
@@ -18,16 +18,16 @@ Send the numbers `0` to `9` to another @boardname@. Wait a little bit between ea
 receiving board think about the number it just got.
 
 ```blocks
-for (let irDataNumber = 0; irDataNumber <= 9; irDataNumber++) {
-    network.infraredSendNumber(irDataNumber);
+for (let i = 0; i <= 9; i++) {
+    network.cableSendNumber(i);
     loops.pause(500);
 }
 ```
 
 ## See also
 
-[``||network:on infrared packet received||``](/reference/network/on-infrared-packet-received)
+[``||network:on cable packet received||``](/reference/network/on-cable-packet-received)
 
 ```package
-infrared
+cable
 ```

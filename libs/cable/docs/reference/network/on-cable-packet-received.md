@@ -1,9 +1,9 @@
-# on Infrared Packet Received
+# on Cable Packet Received
 
-Run some code when a data message comes into the infrared receiver.
+Run some code when a data message comes into the cable.
 
 ```sig
-network.onInfraredPacketReceived(function ({ receivedNumber }) {
+network.onCablePacketReceived(function ({ receivedNumber }) {
 	
 })
 ```
@@ -31,7 +31,7 @@ The packet **p** is really a parameter of **cb**. In code, be sure to put the da
 the **cb** [function](/types/function). It's done in code like this:
 
 ```typescript
-network.onInfraredPacketReceived(function ({ receivedNumber }) {
+network.onCablePacketReceived(function ({ receivedNumber }) {
     if (receivedNumber > 0) {
         light.pixels.setPixelColor(0, Colors.Red);
     }
