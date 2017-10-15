@@ -6,7 +6,8 @@
         "neopixel.cpp",
         "neopixel.ts",
         "shims.d.ts",
-        "enums.d.ts"
+        "enums.d.ts",
+        "ns.ts"
     ],
     "testFiles": [
         "test.ts"

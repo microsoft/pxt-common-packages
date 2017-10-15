@@ -1,0 +1,16 @@
+{
+    "name": "advancedlight",
+    "description": "The Adafruit NeoPixel advanced driver",
+    "files": [
+        "README.md",
+        "neopixel.ts"
+    ],
+    "testFiles": [
+        "test.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core",
+        "light": "file:../light"
+    }
+}
