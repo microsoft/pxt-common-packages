@@ -1,4 +1,0 @@
-# servo
-
-The servo library.
-
