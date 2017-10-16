@@ -339,4 +339,6 @@ Button *getButton(int id);
 #define DEVICE_ID_BUTTON_SLIDE  3000
 #define DEVICE_ID_MICROPHONE    3001
 
+#define PINOP(op) name->op
+
 #endif

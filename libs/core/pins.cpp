@@ -39,7 +39,6 @@ DevicePin *lookupPin(int pinName) {
 }
 }
 
-#define PINOP(op) name->op
 
 namespace DigitalPinMethods {
 /**
