@@ -422,8 +422,8 @@ namespace light {
                 this._photonMode = PhotonMode.PenDown;
                 this._photonPos = 0;
                 this._photonDir = 1;
-                this._photonColor = 0;
-                this._photonMasked = light.hsv(this._photonColor, 0xff, 0xff);
+                this._photonColor = Colors.Red;
+                this._photonMasked = this._photonColor;
             }
         }
 
@@ -453,7 +453,7 @@ namespace light {
 
             // store current color
             if (this._photonMode == PhotonMode.PenDown) {
-                this._photonMasked = light.fade(light.hsv(this._photonColor, 0xff, 0xff), br);
+                this._photonMasked = light.fade(this._photonColor, br);
             }
             else if (this._photonMode == PhotonMode.Eraser)
                 this._photonMasked = 0; // erase led
@@ -484,16 +484,15 @@ namespace light {
          * Set the photon color.
          * @param color the color of the photon
          */
-        //% blockId=neophoton_set_color block="photon set pen color %color"
+        //% blockId=neophoton_set_color block="photon set pen color %color=neopixel_colors"
         //% weight=39
         //% blockGap=8
         //% parts="neopixel"
         //% defaultInstance=light.pixels
-        //% color.min=0 color.max=255
         //% help="light/set-photon-color"
         setPhotonColor(color: number) {
             this.initPhoton();
-            this._photonColor = color & 0xff;
+            this._photonColor = color;
             this.photonForward(0);
         }
 
