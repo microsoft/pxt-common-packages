@@ -1,3 +1,0 @@
-# advancedlight
-
-More light blocks.
