@@ -286,13 +286,11 @@ declare namespace control {
      * Announce that an event happened to registered handlers.
      * @param src ID of the MicroBit Component that generated the event
      * @param value Component specific code indicating the cause of the event.
-     * @param mode optional definition of how the event should be processed after construction.
      */
     //% weight=21 blockGap=12 blockId="control_raise_event"
     //% help=control/raise-event
-    //% block="raise event|from %src|with value %value" blockExternalInputs=1
-    //% mode.defl=1 shim=control::raiseEvent
-    function raiseEvent(src: int32, value: int32, mode?: EventCreationMode): void;
+    //% block="raise event|from %src|with value %value" blockExternalInputs=1 shim=control::raiseEvent
+    function raiseEvent(src: int32, value: int32): void;
 
     /**
      * Determine the version of system software currently running.
