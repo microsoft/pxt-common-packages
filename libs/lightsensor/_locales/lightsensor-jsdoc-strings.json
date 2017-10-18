@@ -1,5 +1,0 @@
-{
-  "input.lightLevel": "Reads the light level applied to the LED screen in a range from 0 (dark) to 255 (bright).",
-  "input.onLightConditionChanged": "Registers an event that runs when particular lighting conditions (dark, bright) are encountered.",
-  "input.onLightConditionChanged|param|condition": "the condition that event triggers on"
-}

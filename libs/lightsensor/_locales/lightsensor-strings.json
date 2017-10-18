@@ -1,8 +1,0 @@
-{
-  "LightCondition.Bright|block": "bright",
-  "LightCondition.Dark|block": "dark",
-  "input.lightLevel|block": "light level",
-  "input.onLightConditionChanged|block": "on light %condition",
-  "input|block": "input",
-  "{id:category}Input": "Input"
-}
