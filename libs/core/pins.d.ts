@@ -70,22 +70,6 @@ declare namespace pins {
     //% fixedInstance shim=pxt::getPin(30)
     const NEOPIXEL: DigitalPin;
 }
-/*
-{
-    "PIN_NEOPIXEL": 30, // Metro only
-    "PIN_LED": 17,
-    "PIN_RX": 35,
-    "PIN_TX": 27,
-    "PIN_MISO": 12,
-    "PIN_MOSI": 42,
-    "PIN_SCK": 43,
-    "PIN_SCL": 23,
-    "PIN_SDA": 22,
-    "PIN_RXLED": 31,
-    "PIN_TXLED": 27
-}
-*/
-
 
 
 // CPX
@@ -137,33 +121,29 @@ declare namespace pins {
     //% fixedInstance shim=pxt::getPin(9)
     const A9: PwmPin;
 }
-/* {
-    "PIN_SCL": 35,
-    "PIN_SDA": 34,
-    "PIN_RX": 41,
-    "PIN_TX": 40,
-    "PIN_FLASH_MISO": 16,
-    "PIN_FLASH_MOSI": 20,
-    "PIN_FLASH_SCK": 21,
-    "PIN_FLASH_CS": 54,
-    "PIN_MIC_DATA": 8,
-    "PIN_MIC_CLOCK": 10,
-    "PIN_BTN_A": 28,
-    "PIN_BTN_B": 14,
-    "PIN_BTN_SLIDE": 15,
-    "PIN_NEOPIXEL": 55,
-    "PIN_SPEAKER_AMP": 30,
-    "PIN_MICROPHONE": 8,
-    "PIN_LIGHT": 11,
-    "PIN_ACCELEROMETER_SDA": 0,
-    "PIN_ACCELEROMETER_SCL": 1,
-    "PIN_ACCELEROMETER_INT": 13,
-    "PIN_LED": 17,
-    "PIN_TEMPERATURE": 9,
-    "PIN_IR_OUT": 23,
-    "PIN_IR_IN": 12,
+namespace config {
+    export const PIN_FLASH_MISO = 16;
+    export const PIN_FLASH_MOSI = 20;
+    export const PIN_FLASH_SCK = 21;
+    export const PIN_FLASH_CS = 54;
+    export const PIN_MIC_DATA = 8;
+    export const PIN_MIC_CLOCK = 10;
+    export const PIN_BTN_A = 28;
+    export const PIN_BTN_B = 14;
+    export const PIN_BTN_SLIDE = 15;
+    export const PIN_NEOPIXEL = 55;
+    export const PIN_SPEAKER_AMP = 30;
+    export const PIN_MICROPHONE = 8;
+    export const PIN_LIGHT = 11;
+    export const PIN_ACCELEROMETER_SDA = 0;
+    export const PIN_ACCELEROMETER_SCL = 1;
+    export const PIN_ACCELEROMETER_INT = 13;
+    export const PIN_LED = 17;
+    export const PIN_TEMPERATURE = 9;
+    export const PIN_IR_OUT = 23;
+    export const PIN_IR_IN = 12;
+    export const NUM_NEOPIXELS = 10;
 }
-*/
 
 
 // Feather
@@ -216,16 +196,6 @@ declare namespace pins {
     //% fixedInstance shim=pxt::getPin(22)
     const SDA: DigitalPin;
 }
-/*{
-    "PIN_RX": 11,
-    "PIN_TX": 10,
-    "PIN_LED": 17,
-    "PIN_MISO": 12,
-    "PIN_MOSI": 42,
-    "PIN_SCK": 43,
-    "PIN_SCL": 23,
-    "PIN_SDA": 22
-}*/
 
 
 // Gemma
@@ -260,15 +230,11 @@ declare namespace pins {
     const RX: DigitalPin;
 
 }
-/* {
-    "PIN_DOTSTAR_DATA": 0,
-    "PIN_DOTSTAR_CLOCK": 1,
-    "PIN_LED": 17,
-    "PIN_SDA": 4,
-    "PIN_SCL": 5,
-    "PIN_TX": 4,
-    "PIN_RX": 5
-} */
+namespace config {
+    export const PIN_DOTSTAR_DATA = 0;
+    export const PIN_DOTSTAR_CLOCK = 1;
+    export const NUM_DOTSTAR = 1;
+}
 
 
 // Trinket
@@ -317,16 +283,9 @@ declare namespace pins {
     //% fixedInstance shim=pxt::getPin(6)
     const TX: DigitalPin;
 }
-/* {
-    "PIN_DOTSTAR_DATA": 0,
-    "PIN_DOTSTAR_CLOCK": 1,
-    "PIN_LED": 17,
-    "PIN_SDA": 8,
-    "PIN_SCL": 9,
-    "PIN_SCK": 7,
-    "PIN_MISO": 9,
-    "PIN_MOSI": 6,
-    "PIN_RX": 7,
-    "PIN_TX": 6
+namespace config {
+    export const PIN_DOTSTAR_DATA = 0;
+    export const PIN_DOTSTAR_CLOCK = 1;
+    export const NUM_DOTSTAR = 1;
 }
-*/
+
