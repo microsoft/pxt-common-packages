@@ -634,6 +634,24 @@ namespace light {
             return this._parent ? this._parent.buffered() : this._buffered;
         }
 
+
+        /**
+         * Estimates the electrical current (mA) consumed by the current LED light configuration.
+         */
+        //% weight=9 blockId=neopixel_power block="%strip|power (mA)"
+        //% advanced=true
+        power(): number {
+            const stride = this._mode === NeoPixelMode.RGBW ? 4 : 3;
+            const start = this._start * stride;
+            const end = start + this._length * stride;
+            let p = 0;
+            for (let i = start; i < end; ++i) {
+                p += this.buf[i];
+            }
+            return this.length() * 0.47 /* static energy cost per neopixel */
+                + p * 0.001593007; /*  */
+        }        
+
         private autoShow() {
             if (!this.buffered())
                 this.show();
