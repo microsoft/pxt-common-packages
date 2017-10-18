@@ -144,12 +144,10 @@ int InvertableLIS3DH::getZ() {
 class WAccel {
   public:
     codal::mbed::I2C i2c; // note that this is different pins than io->i2c
-    DevicePin int1;
     InvertableLIS3DH acc;
     WAccel()
         : i2c(PIN(ACCELEROMETER_SDA), PIN(ACCELEROMETER_SCL)),
-          INIT_PIN(int1, PIN(ACCELEROMETER_INT)), //
-          acc(i2c, int1, LIS3DH_DEFAULT_ADDR, DEVICE_ID_ACCELEROMETER, NORTH_EAST_UP) //
+          acc(i2c, *LOOKUP_PIN(ACCELEROMETER_INT), LIS3DH_DEFAULT_ADDR, DEVICE_ID_ACCELEROMETER, NORTH_EAST_UP) //
     {
         acc.init();        
     }

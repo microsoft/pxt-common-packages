@@ -1,6 +1,7 @@
 #ifndef __PXT_PINS_H
 #define __PXT_PINS_H
 
+// these define keys for getConfig() function
 #define CFG_PIN_ACCELEROMETER_INT 1
 #define CFG_PIN_ACCELEROMETER_SCL 2
 #define CFG_PIN_ACCELEROMETER_SDA 3
@@ -33,6 +34,46 @@
 #define CFG_PIN_IR_OUT 30
 #define CFG_PIN_IR_IN 31
 
+#define CFG_BOARD_LAYOUT 100
+#define CFG_BOARD_MODEL 101
+#define CFG_BOARD_VERSION 102
+
+#define BOARD_LAYOUT_ZERO 1
+#define BOARD_LAYOUT_MKR 2
+#define BOARD_LAYOUT_FEATHER 3
+#define BOARD_LAYOUT_GEMMA 4
+#define BOARD_LAYOUT_TRINKET 5
+#define BOARD_LAYOUT_MINI_BREAKOUT 6
+#define BOARD_LAYOUT_CIRCUIT_PLAYGROUND 7
+
+// Zero layout
+#define BOARD_MODEL_ADAFRUIT_METRO_M0_EXPRESS 1
+#define BOARD_MODEL_ARDUINO_ZERO 2
+#define BOARD_MODEL_ARDUINO_M0 3
+#define BOARD_MODEL_SPARKFUN_SAMD21_DEV 3
+
+// MKR
+#define BOARD_MODEL_ARDUINO_MKR_ZERO 100
+#define BOARD_MODEL_ARDUINO_MKR_WIFI_1000 101
+#define BOARD_MODEL_ARDUINO_MKR_FOX_1200 102
+#define BOARD_MODEL_ARDUINO_MKR_WAN_1300 103
+#define BOARD_MODEL_ARDUINO_MKR_GSM_1400 104
+
+// Feather
+#define BOARD_MODEL_ADAFRUIT_FEATHER_M0_BASIC 200
+#define BOARD_MODEL_ADAFRUIT_FEATHER_M0_WIFI 201
+#define BOARD_MODEL_ADAFRUIT_FEATHER_M0_ADALOGGER 202
+#define BOARD_MODEL_ADAFRUIT_FEATHER_M0_BLE 203
+#define BOARD_MODEL_ADAFRUIT_FEATHER_M0_900MHZ 204
+#define BOARD_MODEL_ADAFRUIT_FEATHER_M0_PYTHON 205
+
+// Single boards
+#define BOARD_MODEL_ADAFRUIT_GEMMA_M0 900
+#define BOARD_MODEL_ADAFRUIT_TRINKET_M0 901
+#define BOARD_MODEL_SPARKFUN_SAMD21_MINI 902
+
+
+#define CFG_NUM_NEOPIXELS 200
 
 #define PIN(name) ((PinName)pxt::getConfig(CFG_PIN_##name, -1))
 #define LOOKUP_PIN(name) pxt::lookupPin(PIN(name))
@@ -49,12 +90,6 @@ typedef DevicePin *DigitalPin;
 typedef DevicePin *AnalogPin;
 typedef DevicePin *PwmPin;
 typedef Button *Button_;
-
-#define INIT_PIN(name, PIN) name((DEVICE_ID_IO_P0 + 100) + (int)PIN, (PinName)PIN, PIN_CAPABILITY_DIGITAL)
-#define DEFPIN(id, name, cap) id(DEVICE_ID_IO_P0 + (&id - pins), (PinName)(name), cap)
-#define PIN_V(id) PIN_##id
-#define PIN_AD(id) DEFPIN(id, PIN_V(id), PIN_V(id) != NC ? PIN_CAPABILITY_AD : (PinCapability)0)
-#define PIN_D(id) DEFPIN(id, PIN_V(id), PIN_V(id) != NC ? PIN_CAPABILITY_DIGITAL : (PinCapability)0)
 
 /**
 * User interaction on buttons
