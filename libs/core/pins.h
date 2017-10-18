@@ -35,6 +35,7 @@
 #define CFG_PIN_IR_IN 31
 
 #define CFG_NUM_NEOPIXELS 200
+#define CFG_NUM_DOTSTARS 201
 
 #define PIN(name) ((PinName)pxt::getConfig(CFG_PIN_##name, -1))
 #define LOOKUP_PIN(name) pxt::lookupPin(PIN(name))

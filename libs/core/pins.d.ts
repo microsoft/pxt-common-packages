@@ -1,76 +1,5 @@
 // This file here only temporarily - to be split into board packages
 
-// Zero
-// Arduino M0 (but not Zero) has D2 and D4 swapped
-declare namespace pins {
-    //% fixedInstance shim=pxt::getPin(2)
-    const A0: PwmPin;
-    //% fixedInstance shim=pxt::getPin(40)
-    const A1: PwmPin;
-    //% fixedInstance shim=pxt::getPin(41)
-    const A2: PwmPin;
-    //% fixedInstance shim=pxt::getPin(4)
-    const A3: PwmPin;
-    //% fixedInstance shim=pxt::getPin(5)
-    const A4: PwmPin;
-    //% fixedInstance shim=pxt::getPin(34)
-    const A5: PwmPin;
-
-    //% fixedInstance shim=pxt::getPin(11)
-    const D0: PwmPin;
-    //% fixedInstance shim=pxt::getPin(10)
-    const D1: PwmPin;
-    //% fixedInstance shim=pxt::getPin(14)
-    const D2: DigitalPin;
-    //% fixedInstance shim=pxt::getPin(9)
-    const D3: PwmPin;
-    //% fixedInstance shim=pxt::getPin(8)
-    const D4: PwmPin;
-    //% fixedInstance shim=pxt::getPin(15)
-    const D5: DigitalPin;
-    //% fixedInstance shim=pxt::getPin(20)
-    const D6: DigitalPin;
-    //% fixedInstance shim=pxt::getPin(21)
-    const D7: DigitalPin;
-
-    //% fixedInstance shim=pxt::getPin(6)
-    const D8: PwmPin;
-    //% fixedInstance shim=pxt::getPin(7)
-    const D9: PwmPin;
-    //% fixedInstance shim=pxt::getPin(18)
-    const D10: DigitalPin;
-    //% fixedInstance shim=pxt::getPin(16)
-    const D11: DigitalPin;
-    //% fixedInstance shim=pxt::getPin(19)
-    const D12: DigitalPin;
-    //% fixedInstance shim=pxt::getPin(17)
-    const D13: DigitalPin;
-    //% fixedInstance shim=pxt::getPin(17)
-    const LED: DigitalPin;
-    //% fixedInstance shim=pxt::getPin(35)
-    const RX: PwmPin;
-    //% fixedInstance shim=pxt::getPin(27)
-    const TX: DigitalPin;
-    //% fixedInstance shim=pxt::getPin(12)
-    const MISO: DigitalPin;
-    //% fixedInstance shim=pxt::getPin(42)
-    const MOSI: DigitalPin;
-    //% fixedInstance shim=pxt::getPin(43)
-    const SCK: DigitalPin;
-    //% fixedInstance shim=pxt::getPin(23)
-    const SCL: DigitalPin;
-    //% fixedInstance shim=pxt::getPin(22)
-    const SDA: DigitalPin;
-
-    // TODO only checked the following two for Metro M0
-    //% fixedInstance shim=pxt::getPin(31)
-    const RXLED: DigitalPin;
-    //% fixedInstance shim=pxt::getPin(27)
-    const TXLED: DigitalPin;
-    //% fixedInstance shim=pxt::getPin(30)
-    const NEOPIXEL: DigitalPin;
-}
-
 
 // CPX
 declare namespace pins {
@@ -233,7 +162,7 @@ declare namespace pins {
 namespace config {
     export const PIN_DOTSTAR_DATA = 0;
     export const PIN_DOTSTAR_CLOCK = 1;
-    export const NUM_DOTSTAR = 1;
+    export const NUM_DOTSTARS = 1;
 }
 
 
@@ -286,6 +215,6 @@ declare namespace pins {
 namespace config {
     export const PIN_DOTSTAR_DATA = 0;
     export const PIN_DOTSTAR_CLOCK = 1;
-    export const NUM_DOTSTAR = 1;
+    export const NUM_DOTSTARS = 1;
 }
 
