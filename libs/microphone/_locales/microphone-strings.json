@@ -1,8 +1,0 @@
-{
-  "LoudnessCondition.Loud|block": "loud",
-  "LoudnessCondition.Quiet|block": "quiet",
-  "input.onSoundConditionChanged|block": "on sound %condition",
-  "input.soundLevel|block": "sound level",
-  "input|block": "input",
-  "{id:category}Input": "Input"
-}
