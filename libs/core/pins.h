@@ -75,10 +75,8 @@ namespace pxt {
 DevicePin *getPin(int id);
 DevicePin *lookupPin(int pinName);
 Button *getButton(int id);
+CodalComponent *lookupComponent(int id);
 }
-
-#define DEVICE_ID_BUTTON_SLIDE  3000
-#define DEVICE_ID_MICROPHONE    3001
 
 #define PINOP(op) name->op
 

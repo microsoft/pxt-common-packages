@@ -45,4 +45,10 @@ extern MessageBus devMessageBus;
 extern codal::CodalDevice device;
 }
 
+#define DEVICE_ID_BUTTON_SLIDE  3000
+#define DEVICE_ID_MICROPHONE    3001
+#define DEVICE_ID_FIRST_BUTTON 4000
+#define DEVICE_ID_FIRST_TOUCHBUTTON 4100
+
+
 #endif

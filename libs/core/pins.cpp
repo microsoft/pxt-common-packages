@@ -26,6 +26,8 @@ DevicePin *getPin(int id) {
     if (id < 0 || id >= DEV_NUM_PINS)
         target_panic(42);
     
+    // we could use lookupComponent() here - it would be slightly slower
+    
     int ptr = pinPos[id];
     if (ptr == 0) {
         pinPtrs = (DevicePin **)realloc(pinPtrs, (numPinPtrs + 1) * sizeof(void*));
@@ -45,6 +47,16 @@ DevicePin *lookupPin(int pinName) {
     if (pinName < 0) return NULL;
     return getPin(pinName);
 }
+
+//%
+CodalComponent *lookupComponent(int id) {
+    for (int i = 0; i < DEVICE_COMPONENT_COUNT; ++i) {
+        if (CodalComponent::components[i] && CodalComponent::components[i]->id == id)
+            return CodalComponent::components[i];
+    }
+    return NULL;
+}
+
 }
 
 
