@@ -5,6 +5,7 @@
         "README.md",
         "neopixel.cpp",
         "neopixel.ts",
+        "create.ts",
         "shims.d.ts",
         "enums.d.ts",
         "ns.ts"
