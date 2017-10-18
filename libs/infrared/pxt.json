@@ -5,10 +5,7 @@
         "README.md",
         "ir.cpp",
         "ir.ts",
-        "bitvector.h",
-        "samd21.cpp",
-        "shims.d.ts",
-        "ns.ts"
+        "shims.d.ts"
     ],
     "public": true,
     "dependencies": {

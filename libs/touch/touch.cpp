@@ -3,8 +3,9 @@
 
 namespace pxt {
     
-static const int touchPins[] = {
-    PIN_A1, PIN_A2, PIN_A3, PIN_A4, PIN_A5, PIN_A6, PIN_A7
+// TODO this is CPX-specific; elsewhere I think we want something hanging off the PwmPin
+static const int8_t touchPins[] = {
+    5, 6, 7, 35, 34, 41, 40
 };
 
 class WTouch {
