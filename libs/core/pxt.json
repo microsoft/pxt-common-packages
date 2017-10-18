@@ -9,8 +9,6 @@
         "pxtcore.h",
         "pins.h",
         "pins.cpp",
-        "devpins.cpp",
-        "devpins.h",
         "pins.ts",
         "control.cpp",
         "i2c.cpp",

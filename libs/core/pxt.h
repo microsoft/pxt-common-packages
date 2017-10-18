@@ -28,7 +28,6 @@
 using namespace codal;
 
 #include "pins.h"
-#include "devpins.h"
 #include "hf2.h"
 #include "hf2dbg.h"
 

@@ -30,9 +30,9 @@ class WButtons {
 #undef Button
 
     WButtons()
-        : buttonA(*pxt::lookupPin(PIN_BTN_A), DEVICE_ID_BUTTON_A, DEVICE_BUTTON_ALL_EVENTS,
+        : buttonA(*LOOKUP_PIN(BTN_A), DEVICE_ID_BUTTON_A, DEVICE_BUTTON_ALL_EVENTS,
                      ACTIVE_HIGH, PullDown),
-          buttonB(*pxt::lookupPin(PIN_BTN_B), DEVICE_ID_BUTTON_B, DEVICE_BUTTON_ALL_EVENTS,
+          buttonB(*LOOKUP_PIN(BTN_B), DEVICE_ID_BUTTON_B, DEVICE_BUTTON_ALL_EVENTS,
                       ACTIVE_HIGH, PullDown),
           buttonsAB(DEVICE_ID_BUTTON_A, DEVICE_ID_BUTTON_B, DEVICE_ID_BUTTON_AB) {}
 };

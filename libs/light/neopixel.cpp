@@ -13,14 +13,17 @@ namespace light {
      */
     //% parts="neopixel"
     DigitalPin defaultPin() {
-        #if PXT_BOARD_ID == BOARD_ID_METRO
-        // Metro express neopixel pin is set for SWD by default
-        PORT->Group[PIN_NEOPIXEL / 32].PINCFG[PIN_NEOPIXEL % 32].reg=(uint8_t)(PORT_PINCFG_INEN) ;
-        #endif
-        if (PIN_NEOPIXEL == NC)
-            return lookupPin(PIN_PA11);
-        else
-            return lookupPin(PIN_NEOPIXEL);
+        int pinName = PIN(NEOPIXEL);
+        if (pinName < 0) {
+            pinName = 11; // default to PA11
+        }
+
+        if (pinName == 30) {
+            // Metro express neopixel pin is set for SWD by default
+            PORT->Group[pinName / 32].PINCFG[pinName % 32].reg=(uint8_t)(PORT_PINCFG_INEN) ;
+        }
+        
+        return lookupPin(pinName);
     }
 
     /**

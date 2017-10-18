@@ -15,7 +15,6 @@ __attribute__((section(".binmeta"))) __attribute__((used)) const uint32_t pxt_bi
 CodalUSB usb;
 HF2 hf2;
 codal::mbed::Timer devTimer;
-
 Event lastEvent;
 MessageBus devMessageBus;
 codal::CodalDevice device;
@@ -39,8 +38,6 @@ static void initCodal() {
     // which saves processor time, memeory and battery life.
     // messageBus.listen(MICROBIT_ID_MESSAGE_BUS_LISTENER, MICROBIT_EVT_ANY, this,
     // &MicroBit::onListenerRegisteredEvent);
-
-    io = new DevPins();
 
     usb.stringDescriptors = string_descriptors;
     usb.add(hf2);
@@ -113,10 +110,10 @@ void waitForEvent(int id, int event) {
 
 void initRandomSeed() {
     int seed = 0xC0DA1;
-    auto pinTemp = lookupPin(PIN_TEMPERATURE);
+    auto pinTemp = LOOKUP_PIN(TEMPERATURE);
     if (pinTemp)
         seed *= pinTemp->getAnalogValue();
-    auto pinLight = lookupPin(PIN_LIGHT);
+    auto pinLight = LOOKUP_PIN(LIGHT);
     if (pinLight)
         seed *= pinLight->getAnalogValue();
     seedRandom(seed);
@@ -124,7 +121,7 @@ void initRandomSeed() {
 
 void clearNeoPixels() {
     // clear on-board neopixels
-    auto neoPin = lookupPin(PIN_NEOPIXEL);
+    auto neoPin = LOOKUP_PIN(NEOPIXEL);
     if (neoPin) {
         uint8_t neobuf[30];
         memset(neobuf, 0, 30);

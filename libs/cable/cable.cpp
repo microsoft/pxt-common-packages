@@ -20,7 +20,7 @@ class CableWrap : public PulseBase {
         inpin->eventOn(DEVICE_PIN_EVENT_ON_PULSE);
     }
 
-    CableWrap() : PulseBase(PULSE_CABLE_COMPONENT_ID, PIN_A7, PIN_A7) { setupGapEvents(); }
+    CableWrap() : PulseBase(PULSE_CABLE_COMPONENT_ID, PIN(TX), PIN(TX)) { setupGapEvents(); }
 };
 SINGLETON(CableWrap);
 

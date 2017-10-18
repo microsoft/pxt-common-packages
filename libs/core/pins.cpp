@@ -42,6 +42,7 @@ DevicePin *getPin(int id) {
 
 //%
 DevicePin *lookupPin(int pinName) {
+    if (pinName < 0) return NULL;
     return getPin(pinName);
 }
 }

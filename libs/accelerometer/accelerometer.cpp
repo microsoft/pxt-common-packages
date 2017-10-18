@@ -147,8 +147,8 @@ class WAccel {
     DevicePin int1;
     InvertableLIS3DH acc;
     WAccel()
-        : i2c((PinName)PIN_ACCELEROMETER_SDA, (PinName)PIN_ACCELEROMETER_SCL),
-          INIT_PIN(int1, PIN_ACCELEROMETER_INT), //
+        : i2c(PIN(ACCELEROMETER_SDA), PIN(ACCELEROMETER_SCL)),
+          INIT_PIN(int1, PIN(ACCELEROMETER_INT)), //
           acc(i2c, int1, LIS3DH_DEFAULT_ADDR, DEVICE_ID_ACCELEROMETER, NORTH_EAST_UP) //
     {
         acc.init();        

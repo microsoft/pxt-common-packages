@@ -67,6 +67,8 @@ declare namespace pins {
     const RXLED: DigitalPin;
     //% fixedInstance shim=pxt::getPin(27)
     const TXLED: DigitalPin;
+    //% fixedInstance shim=pxt::getPin(30)
+    const NEOPIXEL: DigitalPin;
 }
 /*
 {
@@ -128,8 +130,6 @@ declare namespace pins {
     const D7: DigitalPin; // Slide
     //% fixedInstance shim=pxt::getPin(55)
     const D8: DigitalPin; // Neopixel
-    //% fixedInstance shim=pxt::getPin(30)
-    const SPEAKER_AMP: DigitalPin; // remove it?
     //% fixedInstance shim=pxt::getPin(8)
     const A10: PwmPin; // mic
     //% fixedInstance shim=pxt::getPin(11)
@@ -160,6 +160,8 @@ declare namespace pins {
     "PIN_ACCELEROMETER_INT": 13,
     "PIN_LED": 17,
     "PIN_TEMPERATURE": 9,
+    "PIN_IR_OUT": 23,
+    "PIN_IR_IN": 12,
 }
 */
 
