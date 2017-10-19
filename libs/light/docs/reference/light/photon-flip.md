@@ -28,7 +28,7 @@ for (let i = 0; i <= 5; i++) {
 ## See also
 
 [``||photon forward||``](/reference/light/photon-forward),
-[``||photon color||``](/reference/light/set-photon-color),
+[``||set photon pen color||``](/reference/light/set-photon-pen-color),
 [``||photon mode||``](/reference/light/set-photon-mode)
 
 ```package
