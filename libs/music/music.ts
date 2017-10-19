@@ -131,7 +131,7 @@ namespace music {
 
     /**
     * Play a tone.
-    * @param frequency pitch of the tone to play in Hertz (Hz)
+    * @param frequency pitch of the tone to play in Hertz (Hz), eg: Note.C
     */
     //% help=music/ring-tone
     //% blockId=music_ring block="ring tone|at %note=device_note"
@@ -144,7 +144,7 @@ namespace music {
 
     /**
     * Rest, or play silence, for some time (in milleseconds).
-    * @param ms rest duration in milliseconds (ms)
+    * @param ms rest duration in milliseconds (ms), eg: 100
     */
     //% help=music/rest
     //% blockId=music_rest block="rest|for %duration=device_beat"
