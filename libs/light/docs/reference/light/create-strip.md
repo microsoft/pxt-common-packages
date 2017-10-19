@@ -23,7 +23,7 @@ If you know the exact type, you can set it in the pixel mode.
 Connect a pixel strip to the pin `D4`. Make all pixels light up `green`.
 
 ```typescript
-const strip = light.createNeoPixelStrip(pins.D4, 10);
+const strip = light.createStrip(pins.D4, 10);
 strip.setAll(Colors.Green)
 ```
 
