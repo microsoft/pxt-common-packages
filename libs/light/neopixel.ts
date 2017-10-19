@@ -594,9 +594,10 @@ namespace light {
         }
 
         /**
-         * Estimates the electrical current (mA) consumed by the current LED light configuration.
+         * Estimates the electrical power (mW) by the current LED light configuration
+         * assuming a 5v source.
          */
-        //% weight=9 blockId=neopixel_power block="%strip|power (mA)"
+        //% weight=9 blockId=neopixel_power block="%strip|power (mW)"
         //% advanced=true
         power(): number {
             const stride = this._mode === NeoPixelMode.RGBW ? 4 : 3;
@@ -606,8 +607,9 @@ namespace light {
             for (let i = start; i < end; ++i) {
                 p += this.buf[i];
             }
-            return this.length() * 0.47 /* static energy cost per neopixel */
+            const mA = this.length() * 0.47 /* static energy cost per neopixel */
                 + p * 0.040621679; /*  */
+            return mA * 5;
         }        
 
         /**
@@ -670,6 +672,7 @@ namespace light {
             strip._pin.digitalWrite(false);
         strip._barGraphHigh = 0;
         strip._barGraphHighLast = 0;
+        strip._buffered = false;
         strip.setBrightness(20)
         return strip;
     }
