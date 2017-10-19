@@ -607,7 +607,7 @@ namespace light {
                 p += this.buf[i];
             }
             return this.length() * 0.47 /* static energy cost per neopixel */
-                + p * 0.001593007; /*  */
+                + p * 0.040621679; /*  */
         }        
 
         /**

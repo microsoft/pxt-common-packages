@@ -42,12 +42,13 @@ namespace pxsim {
             let p = 0;
             this.neopixels.forEach(pixel => p += pixel[0] + pixel[1] + pixel[2]);
             return this.neopixels.length * 0.47 /* static energy cost per neopixel */
-                + p * 0.001593007; /* mA per bit */
+                + p * 0.040621679; /* mA per bit */
         }
     }
 }
 
 namespace pxsim.light {
+    const MIN_POWER_LOG = 25;
     // Currently only modifies the builtin pixels
     export function sendBuffer(pin: pins.DigitalPin, b: RefBuffer) {
         const state = neopixelState(pin.id);
@@ -65,6 +66,9 @@ namespace pxsim.light {
         }
 
         runtime.queueDisplayUpdate();
+        const power = state.power();
+        if (power > MIN_POWER_LOG) // auto-chart anything more than 20 mA
+            runtime.board.writeSerial(`${pin.id}: ${power}\r\n`)
     }
 
     export function defaultPin() {
