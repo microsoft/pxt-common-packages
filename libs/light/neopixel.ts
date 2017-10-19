@@ -110,16 +110,21 @@ namespace light {
         _photonDir: number;
         _photonColor: number;
 
+        /**
+         * Gets the underlying color buffer for the entire strip
+         */
         get buf(): Buffer {
-            // Lazily allocate to conserve memory
-            if (!this._buf) {
+            if (this._parent) return this._parent.buf;
+            if (!this._buf)
                 this.reallocateBuffer();
-            }
             return this._buf;
         }
 
-        set buf(b: Buffer) {
-            this._buf = b;
+        get brightnessBuf(): Buffer {
+            if (this._parent) return this._parent.brightnessBuf;
+            if (!this._brightnessBuf)
+                this.reallocateBuffer();
+            return this._brightnessBuf;
         }
 
         /**
@@ -138,18 +143,15 @@ namespace light {
         //% help="light/set-all"
         //% weight=80 blockGap=8
         setAll(rgb: number) {
-            let red = unpackR(rgb);
-            let green = unpackG(rgb);
-            let blue = unpackB(rgb);
+            const red = unpackR(rgb);
+            const green = unpackG(rgb);
+            const blue = unpackB(rgb);
 
-            const bfr = this.buffered();
-            this.setBuffered(true);
             const end = this._start + this._length;
             const stride = this.stride();
             for (let i = this._start; i < end; ++i) {
                 this.setBufferRGB(i * stride, red, green, blue)
             }
-            this.setBuffered(bfr);
             this.autoShow();
         }
 
@@ -287,19 +289,20 @@ namespace light {
         //% parts="neopixel"
         //% group="More" weight=86 blockGap=8
         show(): void {
-            if (this._pin) {
+            if (this._parent) this._parent.show();
+            else if (this._pin) {
                 const b = this.buf;
+                const bb = this.brightnessBuf;
                 if (!this._sendBuf) this._sendBuf = pins.createBuffer(b.length);
                 const sb = this._sendBuf;
-                const bb = this._brightnessBuf;
                 const stride = this.stride();
                 for (let i = 0; i < this._length; ++i) {
                     const offset = (this._start + i) * stride;
                     // apply brightness
-                    for (let j = 0; j < stride; ++i)
+                    for (let j = 0; j < stride; ++j)
                         sb[offset + j] = (b[offset + j] * bb[i]) >> 8;                    
                 }
-                sendBuffer(this._pin, this.buf);
+                light.sendBuffer(this._pin, sb);
             }
         }
 
@@ -336,10 +339,9 @@ namespace light {
         //% parts="neopixel"
         //% weight=2 blockGap=8
         setBrightness(brightness: number): void {
-            if (this._brightness != brightness) {
-                this._brightness = Math.max(0, Math.min(0xff, brightness >> 0));
-                this._brightnessBuf.fill(this._brightness, this._start, this._length);
-            }
+            this._brightness = Math.max(0, Math.min(0xff, brightness >> 0));
+            this.brightnessBuf.fill(this._brightness, this._start, this._length);
+            this.autoShow();
         }
 
         /**
@@ -365,7 +367,6 @@ namespace light {
         range(start: number, length: number): NeoPixelStrip {
             let strip = new NeoPixelStrip();
             strip._parent = this;
-            strip.buf = this.buf;
             strip._pin = this._pin;
             strip._brightness = this._brightness;
             strip._start = this._start + Math.clamp(0, this._length - 1, start);
@@ -656,15 +657,17 @@ namespace light {
             mode = NeoPixelMode.RGB
 
         const strip = new NeoPixelStrip();
+        strip._buffered = false;
         strip._mode = mode;
         strip._length = Math.max(0, numleds);
+        strip._brightness = 20;
         strip._start = 0;
         strip._pin = pin ? pin : defaultPin();
         if (strip._pin) // board with no-board LEDs won't have a default pin
             strip._pin.digitalWrite(false);
         strip._barGraphHigh = 0;
         strip._barGraphHighLast = 0;
-        strip.setBrightness(20)
+
         return strip;
     }
 
