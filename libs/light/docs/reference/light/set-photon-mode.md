@@ -26,7 +26,7 @@ so it erases when it moves backward.
 
 ```blocks
 let forward = true
-light.pixels.setPhotonColor(191)
+light.pixels.setPhotonPenHue(191)
 loops.forever(() => {
     if (forward) {
         light.pixels.setPhotonMode(PhotonMode.PenDown)
@@ -49,14 +49,14 @@ Flash a purple photon across the pixel strip using `pen down` mode. Switch the m
 color stays purple.
 
 ```blocks
-light.pixels.setPhotonColor(191)
+light.pixels.setPhotonPenHue(191)
 light.pixels.setPhotonMode(PhotonMode.PenDown)
 for (let i = 1; i < light.pixels.length(); i++) {
     light.pixels.photonForward(1)
     loops.pause(500)
 }
 
-light.pixels.setPhotonColor(86)
+light.pixels.setPhotonPenHue(86)
 light.pixels.setPhotonMode(PhotonMode.PenUp)
 for (let i = 1; i < light.pixels.length(); i++) {
     light.pixels.photonForward(1)

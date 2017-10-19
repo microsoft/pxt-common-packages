@@ -34,6 +34,7 @@ light.pixels.setMode(NeoPixelMode.RGB)
 ```cards
 light.pixels.photonForward(0)
 light.pixels.photonFlip()
+light.pixels.setPhotonPenHue(0)
 light.pixels.setPhotonPenColor(0)
 light.pixels.setPhotonMode(PhotonMode.PenUp)
 ```
@@ -58,6 +59,7 @@ light.fade(0, 0)
 [range](/reference/light/range), [length](/reference/light/length),
 [move](/reference/light/move), [photonForward](/reference/light/photon-forward),
 [photonFlip](/reference/light/photon-flip), [setPhotonPenColor](/reference/light/set-photon-pen-color),
+[setPhotonPenHue](/reference/light/set-photon-pen-hue),
 [setPhotonMode](/reference/light/set-photon-mode), [rgb](/reference/light/rgb),
 [hsv](/reference/light/hsv), [colors](/reference/light/colors),
 [fade](/reference/light/fade)

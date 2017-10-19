@@ -3,7 +3,7 @@
 ```blocks
 let c = 0;
 loops.forever(() => {
-    light.pixels.setPhotonColor(c)
+    light.pixels.setPhotonPenHue(c)
     light.pixels.photonForward(1)
     c += 16;
 })
