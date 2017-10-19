@@ -149,7 +149,7 @@ namespace light {
                 blue = (blue * br) >> 8;
             }
             const end = this._start + this._length;
-            const stride = this._mode === NeoPixelMode.RGBW ? 4 : 3;
+            const stride = this.stride();
             for (let i = this._start; i < end; ++i) {
                 this.setBufferRGB(i * stride, red, green, blue)
             }
@@ -219,7 +219,7 @@ namespace light {
                 || pixeloffset >= this._length)
                 return;
 
-            let stride = this._mode === NeoPixelMode.RGBW ? 4 : 3;
+            const stride = this.stride();
             pixeloffset = (pixeloffset + this._start) * stride;
             const br = this._brightness;
             if (br < 255)
@@ -246,7 +246,7 @@ namespace light {
                 return 0;
             }
 
-            const stride = this._mode === NeoPixelMode.RGBW ? 4 : 3;
+            const stride = this.stride();
             const offset = (pixeloffset + this._start) * stride;
             const b = this.buf;
             let red = 0, green = 0, blue = 0;
@@ -310,7 +310,7 @@ namespace light {
         //% help="light/clear"
         //% group="More" weight=85
         clear(): void {
-            const stride = this._mode === NeoPixelMode.RGBW ? 4 : 3;
+            const stride = this.stride();
             this.buf.fill(0, this._start * stride, this._length * stride);
             this.autoShow();
         }
@@ -379,7 +379,7 @@ namespace light {
         //% parts="neopixel"
         //% group="More" weight=87 blockGap=8
         move(kind: LightMove, offset: number = 1): void {
-            const stride = this._mode === NeoPixelMode.RGBW ? 4 : 3;
+            const stride = this.stride();
             if (kind === LightMove.Shift) {
                 this.buf.shift(-offset * stride, this._start * stride, this._length * stride)
             }
@@ -387,6 +387,10 @@ namespace light {
                 this.buf.rotate(-offset * stride, this._start * stride, this._length * stride)
             }
             this.autoShow();
+        }
+
+        private stride(): number {
+            return this._mode === NeoPixelMode.RGBW ? 4 : 3;
         }
 
         initPhoton() {
@@ -623,7 +627,7 @@ namespace light {
         }
 
         private reallocateBuffer(): void {
-            let stride = this._mode === NeoPixelMode.RGBW ? 4 : 3;
+            const stride = this.stride();
             this._buf = pins.createBuffer(this._length * stride);
         }
     }
@@ -656,7 +660,7 @@ namespace light {
         strip.setBrightness(20)
         return strip;
     }
-    
+
     /**
      * Converts red, green, blue channels into a RGB color
      * @param red value of the red channel between 0 and 255. eg: 255
