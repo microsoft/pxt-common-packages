@@ -90,8 +90,10 @@ namespace light {
     export class NeoPixelStrip {
         _parent: NeoPixelStrip;
         _pin: DigitalPin;
-        _buf: Buffer;
-        _brightness: number;
+        _buf: Buffer; // unscaled color buffer
+        _brightnessBuf: Buffer; // per pixel scaling
+        _sendBuf: Buffer; // scaled color buffer
+        _brightness: number; // global brightness for this strip
         _start: number; // start offset in LED strip
         _length: number; // number of LEDs
         _mode: NeoPixelMode;
@@ -142,12 +144,6 @@ namespace light {
 
             const bfr = this.buffered();
             this.setBuffered(true);
-            const br = this._brightness;
-            if (br < 255) {
-                red = (red * br) >> 8;
-                green = (green * br) >> 8;
-                blue = (blue * br) >> 8;
-            }
             const end = this._start + this._length;
             const stride = this.stride();
             for (let i = this._start; i < end; ++i) {
@@ -221,12 +217,9 @@ namespace light {
 
             const stride = this.stride();
             pixeloffset = (pixeloffset + this._start) * stride;
-            const br = this._brightness;
-            if (br < 255)
-                color = fade(color, br);
-            let red = unpackR(color);
-            let green = unpackG(color);
-            let blue = unpackB(color);
+            const red = unpackR(color);
+            const green = unpackG(color);
+            const blue = unpackB(color);
             this.setBufferRGB(pixeloffset, red, green, blue)
             this.autoShow();
         }
@@ -281,11 +274,7 @@ namespace light {
 
             pixeloffset = (pixeloffset + this._start) * 4;
             white = white & 0xff;
-            const br = this._brightness;
-            if (br < 255) {
-                white = (white * br) >> 8;
-            }
-            let buf = this.buf;
+            const buf = this.buf;
             buf[pixeloffset + 3] = white;
             this.autoShow();
         }
@@ -298,8 +287,20 @@ namespace light {
         //% parts="neopixel"
         //% group="More" weight=86 blockGap=8
         show(): void {
-            if (this._pin)
+            if (this._pin) {
+                const b = this.buf;
+                if (!this._sendBuf) this._sendBuf = pins.createBuffer(b.length);
+                const sb = this._sendBuf;
+                const bb = this._brightnessBuf;
+                const stride = this.stride();
+                for (let i = 0; i < this._length; ++i) {
+                    const offset = (this._start + i) * stride;
+                    // apply brightness
+                    for (let j = 0; j < stride; ++i)
+                        sb[offset + j] = (b[offset + j] * bb[i]) >> 8;                    
+                }
                 sendBuffer(this._pin, this.buf);
+            }
         }
 
         /**
@@ -335,7 +336,10 @@ namespace light {
         //% parts="neopixel"
         //% weight=2 blockGap=8
         setBrightness(brightness: number): void {
-            this._brightness = Math.max(0, Math.min(0xff, brightness >> 0));
+            if (this._brightness != brightness) {
+                this._brightness = Math.max(0, Math.min(0xff, brightness >> 0));
+                this._brightnessBuf.fill(this._brightness, this._start, this._length);
+            }
         }
 
         /**
@@ -616,19 +620,22 @@ namespace light {
         }
 
         private setBufferRGB(offset: number, red: number, green: number, blue: number): void {
+            const b = this.buf;
             if (this._mode === NeoPixelMode.RGB_RGB) {
-                this.buf[offset + 0] = red;
-                this.buf[offset + 1] = green;
+                b[offset + 0] = red;
+                b[offset + 1] = green;
             } else {
-                this.buf[offset + 0] = green;
-                this.buf[offset + 1] = red;
+                b[offset + 0] = green;
+                b[offset + 1] = red;
             }
-            this.buf[offset + 2] = blue;
+            b[offset + 2] = blue;
         }
 
         private reallocateBuffer(): void {
             const stride = this.stride();
             this._buf = pins.createBuffer(this._length * stride);
+            this._brightnessBuf = pins.createBuffer(this._length);
+            this._brightnessBuf.fill(this._brightness, 0, this._brightnessBuf.length);
         }
     }
 
