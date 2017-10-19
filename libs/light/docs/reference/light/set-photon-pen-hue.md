@@ -1,4 +1,4 @@
-# set Photon Color
+# set Photon Hue
 
 Change the color **hue** of the photon on the pixel strip.
 
@@ -34,14 +34,14 @@ Pulse an rainbow photon forward and backward across the pixel strip.
 
 ```blocks
 let hue = 0;
-light.pixels.setPhotonPenHue(hue)
 loops.forever(() => {
+    light.pixels.setPhotonPenHue(hue)
     for (let i = 0; i < light.pixels.length(); i++) {
         light.pixels.photonForward(1)
         loops.pause(100)
-        hue = hue + 1;
     }
     light.pixels.photonFlip()
+    hue = hue + 1;
 })
 ```
 ## See also
