@@ -600,8 +600,8 @@ namespace light {
         //% blockId=neopixel_set_mode block="%strip|set mode %mode"
         //% help="light/set-mode"
         //% parts="neopixel"
-        //% group="More" advanced=true weight=84
-        setMode(mode: NeoPixelMode) {
+        //% group="More" weight=1
+        setMode(mode: NeoPixelMode): void {
             this._mode = mode;
             this.reallocateBuffer();
         }
