@@ -2,6 +2,12 @@
 namespace pxsim {
     export class CommonNeoPixelState {
         public length = 10;
+        public power = 0; // mA
+        public maxPower = 0; // mA
+        public totalPower = 0; // mAh
+        public forecastPower = 0; // mAh
+        private _firstPower = -1; // hours
+        private _lastPower = -1; // hours
         private neopixels: [number, number, number][] = [];
         private brightness: number = 20;
 
@@ -38,11 +44,22 @@ namespace pxsim {
             this.neopixels = [];
         }
 
-        public power(): number {
+        public updatePower() {
             let p = 0;
             this.neopixels.forEach(pixel => p += pixel[0] + pixel[1] + pixel[2]);
-            return this.neopixels.length * 0.47 /* static energy cost per neopixel */
+            this.power = this.neopixels.length * 0.47 /* static energy cost per neopixel */
                 + p * 0.040621679; /* mA per bit */
+            this.maxPower = Math.max(this.power, this.maxPower);
+            const now = U.now() / 1000 / 3600; // hours
+            if (this._lastPower < 0) {
+                this._firstPower = this._lastPower = now;
+                this.totalPower = this.power;
+                this.forecastPower = 0;
+            } else {
+                this.totalPower += this.power * (now - this._lastPower);
+                this._lastPower = now;
+                this.forecastPower = this.totalPower / (now - this._firstPower);
+            }
         }
     }
 }
@@ -66,9 +83,11 @@ namespace pxsim.light {
         }
 
         runtime.queueDisplayUpdate();
-        const power = state.power();
-        if (power > MIN_POWER_LOG) // auto-chart anything more than 20 mA
-            runtime.board.writeSerial(`${pin.id}: ${power}\r\n`)
+        state.updatePower(); // compute power
+        if (state.maxPower > MIN_POWER_LOG) { // auto-chart anything when power gets high
+            const name = pin == defaultPin() ? `lights` : `lights on ${pin.id}`;
+            runtime.board.writeSerial(`${name} (mA): ${Math.round(state.power)}\r\n`)
+        }
     }
 
     export function defaultPin() {
