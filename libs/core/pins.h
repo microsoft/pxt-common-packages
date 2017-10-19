@@ -37,6 +37,13 @@
 #define CFG_NUM_NEOPIXELS 200
 #define CFG_NUM_DOTSTARS 201
 
+#define BUTTON_ACTIVE_HIGH_PULL_DOWN (ACTIVE_HIGH | 0x10)
+#define BUTTON_ACTIVE_HIGH_PULL_UP (ACTIVE_HIGH | 0x20)
+#define BUTTON_ACTIVE_HIGH_PULL_NONE (ACTIVE_HIGH | 0x30)
+#define BUTTON_ACTIVE_LOW_PULL_DOWN (ACTIVE_LOW | 0x10)
+#define BUTTON_ACTIVE_LOW_PULL_UP (ACTIVE_LOW | 0x20)
+#define BUTTON_ACTIVE_LOW_PULL_NONE (ACTIVE_LOW | 0x30)
+
 #define PIN(name) ((PinName)pxt::getConfig(CFG_PIN_##name, -1))
 #define LOOKUP_PIN(name) pxt::lookupPin(PIN(name))
 
@@ -74,7 +81,7 @@ enum class ButtonEvent {
 namespace pxt {
 DevicePin *getPin(int id);
 DevicePin *lookupPin(int pinName);
-Button *getButton(int id);
+Button *getButton(int id, int flags);
 CodalComponent *lookupComponent(int id);
 }
 
