@@ -587,8 +587,21 @@ namespace light {
         /**
          * Gets a value indicated if the changes are buffered
          */
+        //% weight=85
         buffered(): boolean {
             return this._parent ? this._parent.buffered() : this._buffered;
+        }
+
+        /**
+         * Sets the color mode and clears the colors.
+         * @param mode the kind of color encoding required by the programmable lights
+         */
+        //% blockId=neopixel_set_mode block="%strip|set mode %mode"
+        //% help="light/set-mode"
+        //% advanced=true weight=84
+        setMode(mode: NeoPixelMode) {
+            this._mode = mode;
+            this.reallocateBuffer();
         }
 
         private autoShow() {
