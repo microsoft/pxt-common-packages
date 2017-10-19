@@ -34,6 +34,40 @@
 #define CFG_PIN_IR_OUT 30
 #define CFG_PIN_IR_IN 31
 
+#define CFG_PIN_A0 100
+#define CFG_PIN_A1 101
+#define CFG_PIN_A2 102
+#define CFG_PIN_A3 103
+#define CFG_PIN_A4 104
+#define CFG_PIN_A5 105
+#define CFG_PIN_A6 106
+#define CFG_PIN_A7 107
+#define CFG_PIN_A8 108
+#define CFG_PIN_A9 109
+#define CFG_PIN_A10 110
+#define CFG_PIN_A11 111
+#define CFG_PIN_A12 112
+#define CFG_PIN_A13 113
+#define CFG_PIN_A14 114
+#define CFG_PIN_A15 115
+
+#define CFG_PIN_D0 150
+#define CFG_PIN_D1 151
+#define CFG_PIN_D2 152
+#define CFG_PIN_D3 153
+#define CFG_PIN_D4 154
+#define CFG_PIN_D5 155
+#define CFG_PIN_D6 156
+#define CFG_PIN_D7 157
+#define CFG_PIN_D8 158
+#define CFG_PIN_D9 159
+#define CFG_PIN_D10 160
+#define CFG_PIN_D11 161
+#define CFG_PIN_D12 162
+#define CFG_PIN_D13 163
+#define CFG_PIN_D14 164
+#define CFG_PIN_D15 165
+
 #define CFG_NUM_NEOPIXELS 200
 #define CFG_NUM_DOTSTARS 201
 
