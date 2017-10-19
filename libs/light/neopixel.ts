@@ -475,7 +475,7 @@ namespace light {
         }
 
         /**
-         * This function is deprected.
+         * This function is deprecated.
          */
         //% blockId=neophoton_set_color block="%strip=variables_get|photon set pen color %color=colorWheelPicker"
         //% parts="neopixel" deprecated=1 blockHidden=true
