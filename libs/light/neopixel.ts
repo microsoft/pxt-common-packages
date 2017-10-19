@@ -106,9 +106,9 @@ namespace light {
         // the current photon color, undefined = no photon
         _photonMode: number;
         _photonPos: number;
-        _photonMasked: number;
+        _photonMasked: number; // color under photon
         _photonDir: number;
-        _photonColor: number;
+        _photonHue: number;
 
         /**
          * Gets the underlying color buffer for the entire strip
@@ -403,8 +403,8 @@ namespace light {
                 this._photonMode = PhotonMode.PenDown;
                 this._photonPos = 0;
                 this._photonDir = 1;
-                this._photonColor = 0;
-                this._photonMasked = light.hsv(this._photonColor, 0xff, 0xff);
+                this._photonHue = 0;
+                this._photonMasked = this.pixelColor(this._photonPos);
             }
         }
 
@@ -419,9 +419,9 @@ namespace light {
         photonForward(steps: number) {
             this.initPhoton();
 
-            // store current brightness
-            const br = this.brightness();
-            this.setBrightness(0xff);
+            // disable buffering
+            const buffered = this.buffered();
+            this.setBuffered(false);
 
             // unpaint current pixel
             this.setPixelColor(this._photonPos, this._photonMasked);
@@ -432,17 +432,20 @@ namespace light {
 
             // store current color
             if (this._photonMode == PhotonMode.PenDown) {
-                this._photonMasked = light.fade(light.hsv(this._photonColor, 0xff, 0xff), br);
+                this._photonMasked = light.hsv(this._photonHue, 0xff, 0xff);
             }
             else if (this._photonMode == PhotonMode.Eraser)
                 this._photonMasked = 0; // erase led
-            else this._photonMasked = this.pixelColor(this._photonPos);
+            else 
+                this._photonMasked = this.pixelColor(this._photonPos);
 
             // paint photon
-            this.setPixelColor(this._photonPos, light.fade(0xffffff, br + 32));
+            this.setPixelColor(this._photonPos, 0xffffff);            
 
-            // restore brightness
-            this.setBrightness(br);
+            // restoring buffer
+            this.setBuffered(buffered);
+
+            this.autoShow();
         }
 
         /**
@@ -467,7 +470,7 @@ namespace light {
         //% group="Photon" weight=39 blockGap=8
         setPhotonColor(color: number) {
             this.initPhoton();
-            this._photonColor = color & 0xff;
+            this._photonHue = color & 0xff;
             this.photonForward(0);
         }
 
