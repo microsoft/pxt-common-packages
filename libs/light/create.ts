@@ -10,7 +10,7 @@ namespace light {
     //% help="light/create-strip"
     //% trackArgs=0,2
     //% parts="neopixel"
-    //% subcategory="External" weight=100
+    //% weight=100
     export function createStrip(
         pin: DigitalPin = null,
         numleds: number = 10,
