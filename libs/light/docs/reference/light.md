@@ -54,7 +54,7 @@ light.fade(0, 0)
 [setBrightness](/reference/light/set-brightness),
 [setPixelColor](/reference/light/set-pixel-color), [clear](/reference/light/clear),
 [brightness](/reference/light/brightness), [pixelColor](/reference/light/pixel-color),
-[createNeoPixelStrip](/reference/light/create-neo-pixel-strip), [setPixelWhiteLED](/reference/light/set-pixel-white-led),
+[createStrip](/reference/light/create-strip), [setPixelWhiteLED](/reference/light/set-pixel-white-led),
 [range](/reference/light/range), [length](/reference/light/length),
 [move](/reference/light/move), [photonForward](/reference/light/photon-forward),
 [photonFlip](/reference/light/photon-flip), [setPhotonColor](/reference/light/set-photon-color),

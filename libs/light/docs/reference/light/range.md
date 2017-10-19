@@ -51,7 +51,7 @@ for (let i = 0; i < smallStrip.length() - 1; i++) {
 ```
 ## See also
 
-[``||create neo pixel strip||``](/reference/light/create-neo-pixel-strip)
+[``||create strip||``](/reference/light/create-strip)
 
 ```package
 light

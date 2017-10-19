@@ -26,7 +26,7 @@ rgbwStrip.setPixelWhiteLED(5, 128)
 
 ## See Also
 
-[``||create new pixel strip||``](/reference/light/create-neo-pixel-strip)
+[``||create strip||``](/reference/light/create-strip), [``||set mode||``](/reference/light/set-mode)
 
 ```package
 light
