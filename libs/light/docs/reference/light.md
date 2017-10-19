@@ -34,7 +34,7 @@ light.pixels.setMode(NeoPixelMode.RGB)
 ```cards
 light.pixels.photonForward(0)
 light.pixels.photonFlip()
-light.pixels.setPhotonColor(0)
+light.pixels.setPhotonPenColor(0)
 light.pixels.setPhotonMode(PhotonMode.PenUp)
 ```
 ## Color settings #colorset

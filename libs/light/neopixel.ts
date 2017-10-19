@@ -108,7 +108,7 @@ namespace light {
         _photonPos: number;
         _photonMasked: number; // color under photon
         _photonDir: number;
-        _photonHue: number;
+        _photonColor: number;
 
         /**
          * Gets the underlying color buffer for the entire strip
@@ -403,7 +403,7 @@ namespace light {
                 this._photonMode = PhotonMode.PenDown;
                 this._photonPos = 0;
                 this._photonDir = 1;
-                this._photonHue = 0;
+                this._photonColor = Colors.Red;
                 this._photonMasked = this.pixelColor(this._photonPos);
             }
         }
@@ -432,7 +432,7 @@ namespace light {
 
             // store current color
             if (this._photonMode == PhotonMode.PenDown) {
-                this._photonMasked = light.hsv(this._photonHue, 0xff, 0xff);
+                this._photonMasked = this._photonColor;
             }
             else if (this._photonMode == PhotonMode.Eraser)
                 this._photonMasked = 0; // erase led
@@ -464,16 +464,26 @@ namespace light {
          * Set the photon color.
          * @param color the color of the photon
          */
-        //% blockId=neophoton_set_color block="%strip=variables_get| photon set pen color %color=colorWheelPicker"
-        //% help="light/set-photon-color"
+        //% blockId=neophoton_set_pen_color block="%strip=variables_get|photon set pen color %color=colorNumberPicker"
+        //% help="light/set-photon-pen-color"
         //% parts="neopixel"
         //% group="Photon" weight=39 blockGap=8
-        setPhotonColor(color: number) {
+        setPhotonPenColor(color: number) {
             this.initPhoton();
-            this._photonHue = color & 0xff;
+            this._photonColor = color;
             this.photonForward(0);
         }
 
+        /**
+         * This function is deprected.
+         */
+        //% blockId=neophoton_set_color block="%strip=variables_get|photon set pen color %color=colorWheelPicker"
+        //% parts="neopixel" deprecated=1 blockHidden=true
+        //% group="Photon" weight=39 blockGap=8
+        setPhotonColor(color: number) {
+            this.setPhotonPenColor(hsv(color, 0xff, 0xff));
+        }
+            
         /**
          * Set the photon mode to pen up, pen down, or eraser.
          * @param mode the desired mode
