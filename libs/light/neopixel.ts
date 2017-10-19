@@ -588,7 +588,7 @@ namespace light {
         /**
          * Gets a value indicated if the changes are buffered
          */
-        //% weight=85
+        //% weight=85 group="More"
         buffered(): boolean {
             return this._parent ? this._parent.buffered() : this._buffered;
         }
@@ -599,7 +599,8 @@ namespace light {
          */
         //% blockId=neopixel_set_mode block="%strip|set mode %mode"
         //% help="light/set-mode"
-        //% advanced=true weight=84
+        //% parts="neopixel"
+        //% group="More" advanced=true weight=84
         setMode(mode: NeoPixelMode) {
             this._mode = mode;
             this.reallocateBuffer();
