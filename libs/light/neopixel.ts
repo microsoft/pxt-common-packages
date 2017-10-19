@@ -608,8 +608,8 @@ namespace light {
             }
             return this.length() * 0.47 /* static energy cost per neopixel */
                 + p * 0.001593007; /*  */
-        }  
-              
+        }        
+
         /**
          * Sets the color mode and clears the colors.
          * @param mode the kind of color encoding required by the programmable lights
