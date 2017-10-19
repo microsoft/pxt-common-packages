@@ -1,5 +1,5 @@
 
-let strip = light.createNeoPixelStrip()
+let strip = light.createStrip()
 strip.setBrightness(20)
 
 function flash(n: number) {

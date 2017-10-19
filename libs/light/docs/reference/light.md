@@ -19,14 +19,15 @@ light.pixels.clear()
 light.pixels.brightness()
 light.pixels.pixelColor(0)
 ```
-## NeoPixel #neopixel
+## External Strip #neopixel
 
 ```cards
-light.createNeoPixelStrip(null, 0)
+light.createStrip(null, 0)
 light.pixels.setPixelWhiteLED(0, 0)
 light.pixels.range(0, 0)
 light.pixels.length()
 light.pixels.move(0, 0)
+light.pixels.setMode(NeoPixelMode.RGB)
 ```
 ## Photon #photon
 

@@ -298,7 +298,8 @@ namespace light {
         //% parts="neopixel"
         //% group="More" weight=86 blockGap=8
         show(): void {
-            sendBuffer(this._pin, this.buf);
+            if (this._pin)
+                sendBuffer(this._pin, this.buf);
         }
 
         /**
@@ -587,8 +588,22 @@ namespace light {
         /**
          * Gets a value indicated if the changes are buffered
          */
+        //% weight=85 group="More"
         buffered(): boolean {
             return this._parent ? this._parent.buffered() : this._buffered;
+        }
+
+        /**
+         * Sets the color mode and clears the colors.
+         * @param mode the kind of color encoding required by the programmable lights
+         */
+        //% blockId=neopixel_set_mode block="%strip|set mode %mode"
+        //% help="light/set-mode"
+        //% parts="neopixel"
+        //% group="More" weight=1
+        setMode(mode: NeoPixelMode): void {
+            this._mode = mode;
+            this.reallocateBuffer();
         }
 
         private autoShow() {
@@ -613,6 +628,35 @@ namespace light {
         }
     }
 
+    /**
+     * This block is deprecated, use ``light.createStrip`` instead.
+     */
+    //% blockId="neopixel_create" block="create strip|pin %pin|pixels %numleds|mode %mode"
+    //% help="light/create-neo-pixel-strip"
+    //% trackArgs=0,2
+    //% parts="neopixel"
+    //% weight=100 deprecated=true blockHidden=true
+    export function createNeoPixelStrip(
+        pin: DigitalPin = null,
+        numleds: number = 10,
+        mode?: NeoPixelMode
+    ): NeoPixelStrip {
+        if (!mode)
+            mode = NeoPixelMode.RGB
+
+        const strip = new NeoPixelStrip();
+        strip._mode = mode;
+        strip._length = Math.max(0, numleds);
+        strip._start = 0;
+        strip._pin = pin ? pin : defaultPin();
+        if (strip._pin) // board with no-board LEDs won't have a default pin
+            strip._pin.digitalWrite(false);
+        strip._barGraphHigh = 0;
+        strip._barGraphHighLast = 0;
+        strip.setBrightness(20)
+        return strip;
+    }
+    
     /**
      * Converts red, green, blue channels into a RGB color
      * @param red value of the red channel between 0 and 255. eg: 255

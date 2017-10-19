@@ -20,7 +20,7 @@ between 0 (totally dark) and 255 (very bright).
 Set the white pixel at position `5` in an RGB+W NeoPixel strip to half brightness.
 
 ```blocks
-let rgbwStrip = light.createNeoPixelStrip(null, 24, NeoPixelMode.RGBW)
+let rgbwStrip = light.createStrip(null, 24, NeoPixelMode.RGBW)
 rgbwStrip.setPixelWhiteLED(5, 128)
 ```
 
