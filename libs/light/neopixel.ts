@@ -637,6 +637,7 @@ namespace light {
             this._buf = pins.createBuffer(this._length * stride);
             this._brightnessBuf = pins.createBuffer(this._length);
             this._brightnessBuf.fill(this._brightness, 0, this._brightnessBuf.length);
+            this._sendBuf = undefined;
         }
     }
 
