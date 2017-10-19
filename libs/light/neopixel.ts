@@ -506,7 +506,6 @@ namespace light {
         //% parts="neopixel" deprecated=1 blockHidden=true
         //% group="Photon" weight=39 blockGap=8
         setPhotonPenHue(hue: number) {
-            hue = (hue >> 0) % 0xff; // cycle through colors
             this.setPhotonPenColor(hsv(hue, 0xff, 0xff));            
         }
 
