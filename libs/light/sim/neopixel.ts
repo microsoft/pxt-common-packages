@@ -1,12 +1,20 @@
 
 namespace pxsim {
     export class CommonNeoPixelState {
-        public NUM_PIXELS = 10;
+        public length = 10;
         private neopixels: [number, number, number][] = [];
         private brightness: number = 20;
 
+        public pixelColor(pixel: number): [number, number, number] {
+            return this.neopixels[pixel];
+        }
+
         public setPixelColor(pixel: number, red: number, green: number, blue: number) {
-            this.neopixels[pixel] = [red, green, blue];
+            let a = this.neopixels[pixel];
+            if (!a) a = this.neopixels[pixel] = [0, 0, 0];
+            a[0] = red;
+            a[1] = green;
+            a[2] = blue;
         }
 
         public setBrightness(brightness: number) {
@@ -15,10 +23,6 @@ namespace pxsim {
 
         public getBrightness(): number {
             return this.brightness;
-        }
-
-        public getNeoPixels(): [number, number, number][] {
-            return this.neopixels;
         }
 
         public rotate(offset: number = 1, reverse?: boolean) {
