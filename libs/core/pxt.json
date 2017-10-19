@@ -1,6 +1,6 @@
 {
     "name": "core",
-    "description": "The core library",
+    "description": "The core library for Codal-based targets",
     "files": [
         "README.md",
         "dal.d.ts",
@@ -38,6 +38,19 @@
     },
     "additionalFilePath": "../../node_modules/pxt-common-packages/libs/core",
     "public": true,
+    "dalDTS": {
+        "includeDirs": [
+            "libraries/codal-core/inc",
+            "pxtapp"
+        ],
+        "excludePrefix": [
+            "USB_",
+            "REQUEST_",
+            "LIS3DH_",
+            "HF2_",
+            "PXT_REF_TAG_"
+        ]
+    },
     "dependencies": {
         "base": "file:../base"
     }
