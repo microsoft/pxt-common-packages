@@ -326,7 +326,7 @@ namespace light {
                     for (let j = 0; j < stride; ++j)
                         sb[offset + j] = (b[offset + j] * bb[i]) >> 8;
                 }
-                light.sendBuffer(this._pin, sb);
+                light.sendBuffer(this._pin, this._mode, sb);
             }
         }
 
