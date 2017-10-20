@@ -130,7 +130,6 @@ namespace light {
         // the current photon color, undefined = no photon
         _photonMode: number;
         _photonPos: number;
-        _photonMasked: number; // color under photon
         _photonDir: number;
         _photonColor: number;
 
@@ -320,11 +319,29 @@ namespace light {
                 if (!this._sendBuf) this._sendBuf = pins.createBuffer(b.length);
                 const sb = this._sendBuf;
                 const stride = this.stride();
+                // apply brightness
                 for (let i = 0; i < this._length; ++i) {
                     const offset = (this._start + i) * stride;
-                    // apply brightness
                     for (let j = 0; j < stride; ++j)
                         sb[offset + j] = (b[offset + j] * bb[i]) >> 8;
+                }
+                // apply photon
+                if (this._photonColor) {
+                    // draw head and trail
+                    const tailn = Math.min(2, Math.max(8, this._length / 10));
+                    let pi = this._photonPos * stride;
+                    let c = this._brightness;
+                    let dc = c / tailn;
+                    for (let bi = 0; bi < tailn; ++bi) {
+                        if (this._mode == NeoPixelMode.RGBW)
+                            sb[pi + 3] = c;
+                        else 
+                            sb[pi] = sb[pi + 1] = sb[pi + 2] = c;
+
+                        c -= dc;
+                        pi += (-this._photonDir * stride) % sb.length;
+                        if (pi < 0) pi += sb.length;
+                    }
                 }
                 light.sendBuffer(this._pin, this._mode, sb);
             }
@@ -428,7 +445,6 @@ namespace light {
                 this._photonPos = 0;
                 this._photonDir = 1;
                 this._photonColor = Colors.Red;
-                this._photonMasked = this.pixelColor(this._photonPos);
             }
         }
 
@@ -447,24 +463,15 @@ namespace light {
             const buffered = this.buffered();
             this.setBuffered(false);
 
-            // unpaint current pixel
-            this.setPixelColor(this._photonPos, this._photonMasked);
-
             // move
             this._photonPos = ((this._photonPos + this._photonDir * steps) % this._length) >> 0;
             if (this._photonPos < 0) this._photonPos += this._length;
 
-            // store current color
-            if (this._photonMode == PhotonMode.PenDown) {
-                this._photonMasked = this._photonColor;
-            }
+            // paint under photon
+            if (this._photonMode == PhotonMode.PenDown)
+                this.setPixelColor(this._photonPos, this._photonColor);
             else if (this._photonMode == PhotonMode.Eraser)
-                this._photonMasked = 0; // erase led
-            else
-                this._photonMasked = this.pixelColor(this._photonPos);
-
-            // paint photon
-            this.setPixelColor(this._photonPos, 0xffffff);
+                this.setPixelColor(this._photonPos, 0); // erase led
 
             // restoring buffer
             this.setBuffered(buffered);
