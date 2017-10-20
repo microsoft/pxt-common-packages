@@ -324,9 +324,9 @@ namespace light {
                     const offset = (this._start + i) * stride;
                     // apply brightness
                     for (let j = 0; j < stride; ++j)
-                        sb[offset + j] = (b[offset + j] * bb[i]) >> 8;                    
+                        sb[offset + j] = (b[offset + j] * bb[i]) >> 8;
                 }
-                light.sendBuffer(this._pin, sb);
+                light.sendBuffer(this._pin, this._mode, sb);
             }
         }
 
@@ -460,11 +460,11 @@ namespace light {
             }
             else if (this._photonMode == PhotonMode.Eraser)
                 this._photonMasked = 0; // erase led
-            else 
+            else
                 this._photonMasked = this.pixelColor(this._photonPos);
 
             // paint photon
-            this.setPixelColor(this._photonPos, 0xffffff);            
+            this.setPixelColor(this._photonPos, 0xffffff);
 
             // restoring buffer
             this.setBuffered(buffered);
@@ -507,14 +507,14 @@ namespace light {
         //% parts="neopixel"
         //% group="Photon" weight=39 blockGap=8
         setPhotonPenHue(hue: number) {
-            this.setPhotonPenColor(hsv(hue, 0xff, 0xff));            
+            this.setPhotonPenColor(hsv(hue, 0xff, 0xff));
         }
 
         //% deprecated=1 blockHidden=1
         setPhotonColor(hue: number) {
             this.setPhotonPenHue(hue);
         }
-            
+
         /**
          * Set the photon mode to pen up, pen down, or eraser.
          * @param mode the desired mode
