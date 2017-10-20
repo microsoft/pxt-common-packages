@@ -116,9 +116,6 @@ extern codal::CodalDevice device;
 #define PB29 61
 #define PB30 62
 #define PB31 63
-#define PULL_DOWN -1
-#define PULL_UP 1
-#define PULL_NONE 0
 #endif
 
 #endif

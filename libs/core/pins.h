@@ -115,7 +115,9 @@ enum class ButtonEvent {
 namespace pxt {
 DevicePin *getPin(int id);
 DevicePin *lookupPin(int pinName);
-Button *getButton(int id, int flags);
+Button *getButtonByPin(int pin, int flags);
+AbstractButton *getButton(int id, int flags);
+MultiButton *getMultiButton(int id, int pinA, int pinB, int flags);
 CodalComponent *lookupComponent(int id);
 }
 
