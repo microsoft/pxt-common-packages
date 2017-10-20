@@ -1,5 +1,5 @@
 /**
- * Well known colors for a NeoPixel strip
+ * Well known colors
  */
 enum Colors {
     //% block=red blockIdentity=light.colors
@@ -24,6 +24,30 @@ enum Colors {
     White = 0xFFFFFF,
     //% block=black  blockIdentity=light.colors
     Black = 0x000000
+}
+
+/**
+ * Well known color hues 
+ */
+enum ColorHues {
+    //% block=red
+    Red = 0,
+    //% block=orange
+    Orange = 29,
+    //% block=yellow
+    Yellow = 43,
+    //% block=green
+    Green = 86,
+    //% block=aqua
+    Aqua = 125,
+    //% block=blue
+    Blue = 170,
+    //% block=purple
+    Purple = 191,
+    //% block=magenta
+    Magenta = 213,
+    //% block=pink
+    Pink = 234
 }
 
 /**
@@ -90,8 +114,10 @@ namespace light {
     export class NeoPixelStrip {
         _parent: NeoPixelStrip;
         _pin: DigitalPin;
-        _buf: Buffer;
-        _brightness: number;
+        _buf: Buffer; // unscaled color buffer
+        _brightnessBuf: Buffer; // per pixel scaling
+        _sendBuf: Buffer; // scaled color buffer
+        _brightness: number; // global brightness for this strip
         _start: number; // start offset in LED strip
         _length: number; // number of LEDs
         _mode: NeoPixelMode;
@@ -104,20 +130,25 @@ namespace light {
         // the current photon color, undefined = no photon
         _photonMode: number;
         _photonPos: number;
-        _photonMasked: number;
+        _photonMasked: number; // color under photon
         _photonDir: number;
         _photonColor: number;
 
+        /**
+         * Gets the underlying color buffer for the entire strip
+         */
         get buf(): Buffer {
-            // Lazily allocate to conserve memory
-            if (!this._buf) {
+            if (this._parent) return this._parent.buf;
+            if (!this._buf)
                 this.reallocateBuffer();
-            }
             return this._buf;
         }
 
-        set buf(b: Buffer) {
-            this._buf = b;
+        get brightnessBuf(): Buffer {
+            if (this._parent) return this._parent.brightnessBuf;
+            if (!this._brightnessBuf)
+                this.reallocateBuffer();
+            return this._brightnessBuf;
         }
 
         /**
@@ -136,24 +167,15 @@ namespace light {
         //% help="light/set-all"
         //% weight=80 blockGap=8
         setAll(rgb: number) {
-            let red = unpackR(rgb);
-            let green = unpackG(rgb);
-            let blue = unpackB(rgb);
+            const red = unpackR(rgb);
+            const green = unpackG(rgb);
+            const blue = unpackB(rgb);
 
-            const bfr = this.buffered();
-            this.setBuffered(true);
-            const br = this._brightness;
-            if (br < 255) {
-                red = (red * br) >> 8;
-                green = (green * br) >> 8;
-                blue = (blue * br) >> 8;
-            }
             const end = this._start + this._length;
-            const stride = this._mode === NeoPixelMode.RGBW ? 4 : 3;
+            const stride = this.stride();
             for (let i = this._start; i < end; ++i) {
                 this.setBufferRGB(i * stride, red, green, blue)
             }
-            this.setBuffered(bfr);
             this.autoShow();
         }
 
@@ -219,14 +241,11 @@ namespace light {
                 || pixeloffset >= this._length)
                 return;
 
-            let stride = this._mode === NeoPixelMode.RGBW ? 4 : 3;
+            const stride = this.stride();
             pixeloffset = (pixeloffset + this._start) * stride;
-            const br = this._brightness;
-            if (br < 255)
-                color = fade(color, br);
-            let red = unpackR(color);
-            let green = unpackG(color);
-            let blue = unpackB(color);
+            const red = unpackR(color);
+            const green = unpackG(color);
+            const blue = unpackB(color);
             this.setBufferRGB(pixeloffset, red, green, blue)
             this.autoShow();
         }
@@ -246,7 +265,7 @@ namespace light {
                 return 0;
             }
 
-            const stride = this._mode === NeoPixelMode.RGBW ? 4 : 3;
+            const stride = this.stride();
             const offset = (pixeloffset + this._start) * stride;
             const b = this.buf;
             let red = 0, green = 0, blue = 0;
@@ -281,11 +300,7 @@ namespace light {
 
             pixeloffset = (pixeloffset + this._start) * 4;
             white = white & 0xff;
-            const br = this._brightness;
-            if (br < 255) {
-                white = (white * br) >> 8;
-            }
-            let buf = this.buf;
+            const buf = this.buf;
             buf[pixeloffset + 3] = white;
             this.autoShow();
         }
@@ -298,8 +313,21 @@ namespace light {
         //% parts="neopixel"
         //% group="More" weight=86 blockGap=8
         show(): void {
-            if (this._pin)
-                sendBuffer(this._pin, this.buf);
+            if (this._parent) this._parent.show();
+            else if (this._pin) {
+                const b = this.buf;
+                const bb = this.brightnessBuf;
+                if (!this._sendBuf) this._sendBuf = pins.createBuffer(b.length);
+                const sb = this._sendBuf;
+                const stride = this.stride();
+                for (let i = 0; i < this._length; ++i) {
+                    const offset = (this._start + i) * stride;
+                    // apply brightness
+                    for (let j = 0; j < stride; ++j)
+                        sb[offset + j] = (b[offset + j] * bb[i]) >> 8;                    
+                }
+                light.sendBuffer(this._pin, sb);
+            }
         }
 
         /**
@@ -310,7 +338,7 @@ namespace light {
         //% help="light/clear"
         //% group="More" weight=85
         clear(): void {
-            const stride = this._mode === NeoPixelMode.RGBW ? 4 : 3;
+            const stride = this.stride();
             this.buf.fill(0, this._start * stride, this._length * stride);
             this.autoShow();
         }
@@ -336,6 +364,8 @@ namespace light {
         //% weight=2 blockGap=8
         setBrightness(brightness: number): void {
             this._brightness = Math.max(0, Math.min(0xff, brightness >> 0));
+            this.brightnessBuf.fill(this._brightness, this._start, this._length);
+            this.autoShow();
         }
 
         /**
@@ -361,7 +391,6 @@ namespace light {
         range(start: number, length: number): NeoPixelStrip {
             let strip = new NeoPixelStrip();
             strip._parent = this;
-            strip.buf = this.buf;
             strip._pin = this._pin;
             strip._brightness = this._brightness;
             strip._start = this._start + Math.clamp(0, this._length - 1, start);
@@ -379,7 +408,7 @@ namespace light {
         //% parts="neopixel"
         //% group="More" weight=87 blockGap=8
         move(kind: LightMove, offset: number = 1): void {
-            const stride = this._mode === NeoPixelMode.RGBW ? 4 : 3;
+            const stride = this.stride();
             if (kind === LightMove.Shift) {
                 this.buf.shift(-offset * stride, this._start * stride, this._length * stride)
             }
@@ -389,13 +418,17 @@ namespace light {
             this.autoShow();
         }
 
+        private stride(): number {
+            return this._mode === NeoPixelMode.RGBW ? 4 : 3;
+        }
+
         initPhoton() {
             if (this._photonPos === undefined) {
                 this._photonMode = PhotonMode.PenDown;
                 this._photonPos = 0;
                 this._photonDir = 1;
-                this._photonColor = 0;
-                this._photonMasked = light.hsv(this._photonColor, 0xff, 0xff);
+                this._photonColor = Colors.Red;
+                this._photonMasked = this.pixelColor(this._photonPos);
             }
         }
 
@@ -410,9 +443,9 @@ namespace light {
         photonForward(steps: number) {
             this.initPhoton();
 
-            // store current brightness
-            const br = this.brightness();
-            this.setBrightness(0xff);
+            // disable buffering
+            const buffered = this.buffered();
+            this.setBuffered(false);
 
             // unpaint current pixel
             this.setPixelColor(this._photonPos, this._photonMasked);
@@ -423,17 +456,20 @@ namespace light {
 
             // store current color
             if (this._photonMode == PhotonMode.PenDown) {
-                this._photonMasked = light.fade(light.hsv(this._photonColor, 0xff, 0xff), br);
+                this._photonMasked = this._photonColor;
             }
             else if (this._photonMode == PhotonMode.Eraser)
                 this._photonMasked = 0; // erase led
-            else this._photonMasked = this.pixelColor(this._photonPos);
+            else 
+                this._photonMasked = this.pixelColor(this._photonPos);
 
             // paint photon
-            this.setPixelColor(this._photonPos, light.fade(0xffffff, br + 32));
+            this.setPixelColor(this._photonPos, 0xffffff);            
 
-            // restore brightness
-            this.setBrightness(br);
+            // restoring buffer
+            this.setBuffered(buffered);
+
+            this.autoShow();
         }
 
         /**
@@ -452,16 +488,32 @@ namespace light {
          * Set the photon color.
          * @param color the color of the photon
          */
-        //% blockId=neophoton_set_color block="%strip=variables_get| photon set pen color %color=colorWheelPicker"
-        //% help="light/set-photon-color"
+        //% blockId=neophoton_set_pen_color block="%strip=variables_get|photon set pen color %color=colorNumberPicker"
+        //% help="light/set-photon-pen-color"
         //% parts="neopixel"
         //% group="Photon" weight=39 blockGap=8
-        setPhotonColor(color: number) {
+        setPhotonPenColor(color: number) {
             this.initPhoton();
-            this._photonColor = color & 0xff;
+            this._photonColor = color;
             this.photonForward(0);
         }
 
+        /**
+         * This function is deprecated.
+         */
+        //% blockId=neophoton_set_color block="%strip=variables_get|photon set pen hue %hue=colorWheelPicker"
+        //% help="light/set-photon-pen-hue"
+        //% parts="neopixel" deprecated=1 blockHidden=true
+        //% group="Photon" weight=39 blockGap=8
+        setPhotonPenHue(hue: number) {
+            this.setPhotonPenColor(hsv(hue, 0xff, 0xff));            
+        }
+
+        //% deprecated=1 blockHidden=1
+        setPhotonColor(hue: number) {
+            this.setPhotonPenHue(hue);
+        }
+            
         /**
          * Set the photon mode to pen up, pen down, or eraser.
          * @param mode the desired mode
@@ -631,19 +683,23 @@ namespace light {
         }
 
         private setBufferRGB(offset: number, red: number, green: number, blue: number): void {
+            const b = this.buf;
             if (this._mode === NeoPixelMode.RGB_RGB) {
-                this.buf[offset + 0] = red;
-                this.buf[offset + 1] = green;
+                b[offset + 0] = red;
+                b[offset + 1] = green;
             } else {
-                this.buf[offset + 0] = green;
-                this.buf[offset + 1] = red;
+                b[offset + 0] = green;
+                b[offset + 1] = red;
             }
-            this.buf[offset + 2] = blue;
+            b[offset + 2] = blue;
         }
 
         private reallocateBuffer(): void {
-            let stride = this._mode === NeoPixelMode.RGBW ? 4 : 3;
+            const stride = this.stride();
             this._buf = pins.createBuffer(this._length * stride);
+            this._brightnessBuf = pins.createBuffer(this._length);
+            this._brightnessBuf.fill(this._brightness, 0, this._brightnessBuf.length);
+            this._sendBuf = undefined;
         }
     }
 
@@ -664,19 +720,19 @@ namespace light {
             mode = NeoPixelMode.RGB
 
         const strip = new NeoPixelStrip();
+        strip._buffered = false;
         strip._mode = mode;
         strip._length = Math.max(0, numleds);
+        strip._brightness = 20;
         strip._start = 0;
         strip._pin = pin ? pin : defaultPin();
         if (strip._pin) // board with no-board LEDs won't have a default pin
             strip._pin.digitalWrite(false);
         strip._barGraphHigh = 0;
         strip._barGraphHighLast = 0;
-        strip._buffered = false;
-        strip.setBrightness(20)
         return strip;
     }
-    
+
     /**
      * Converts red, green, blue channels into a RGB color
      * @param red value of the red channel between 0 and 255. eg: 255
@@ -729,7 +785,7 @@ namespace light {
     //% hue.min=0 hue.max=255 sat.min=0 sat.max=255 val.min=0 val.max=255
     //% help="light/hsv"
     //% group="Color" weight=17
-    export function hsv(hue: number, sat: number, val: number): number {
+    export function hsv(hue: number, sat: number = 255, val: number = 255): number {
         let h = (hue % 255) >> 0;
         if (h < 0) h += 255;
         // scale down to 0..192
