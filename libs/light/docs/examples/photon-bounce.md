@@ -9,7 +9,7 @@ let n = p.length()
 p.setBrightness(100)
 loops.forever(() => {
     p.setPhotonMode(PhotonMode.PenUp);
-    p.setPhotonColor(Math.randomRange(0, 255));
+    p.setPhotonPenColor(Math.randomRange(0, 255));
     distance = n - 1;
     for (let i = 0; i < n; ++i) {
         for (let i = 0; i < distance; ++i) {

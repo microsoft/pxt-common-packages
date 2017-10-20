@@ -1,5 +1,5 @@
 /**
- * Well known colors for a NeoPixel strip
+ * Well known colors
  */
 enum Colors {
     //% block=red blockIdentity=light.colors
@@ -24,6 +24,30 @@ enum Colors {
     White = 0xFFFFFF,
     //% block=black  blockIdentity=light.colors
     Black = 0x000000
+}
+
+/**
+ * Well known color hues 
+ */
+enum ColorHues {
+    //% block=red
+    Red = 0,
+    //% block=orange
+    Orange = 29,
+    //% block=yellow
+    Yellow = 43,
+    //% block=green
+    Green = 86,
+    //% block=aqua
+    Aqua = 125,
+    //% block=blue
+    Blue = 170,
+    //% block=purple
+    Purple = 191,
+    //% block=magenta
+    Magenta = 213,
+    //% block=pink
+    Pink = 234
 }
 
 /**
@@ -477,11 +501,17 @@ namespace light {
         /**
          * This function is deprecated.
          */
-        //% blockId=neophoton_set_color block="%strip=variables_get|photon set pen color %color=colorWheelPicker"
+        //% blockId=neophoton_set_color block="%strip=variables_get|photon set pen hue %hue=colorWheelPicker"
+        //% help="light/set-photon-pen-hue"
         //% parts="neopixel" deprecated=1 blockHidden=true
         //% group="Photon" weight=39 blockGap=8
-        setPhotonColor(color: number) {
-            this.setPhotonPenColor(hsv(color, 0xff, 0xff));
+        setPhotonPenHue(hue: number) {
+            this.setPhotonPenColor(hsv(hue, 0xff, 0xff));            
+        }
+
+        //% deprecated=1 blockHidden=1
+        setPhotonColor(hue: number) {
+            this.setPhotonPenHue(hue);
         }
             
         /**
@@ -737,7 +767,7 @@ namespace light {
     //% hue.min=0 hue.max=255 sat.min=0 sat.max=255 val.min=0 val.max=255
     //% help="light/hsv"
     //% group="Color" weight=17
-    export function hsv(hue: number, sat: number, val: number): number {
+    export function hsv(hue: number, sat: number = 255, val: number = 255): number {
         let h = (hue % 255) >> 0;
         if (h < 0) h += 255;
         // scale down to 0..192
