@@ -646,25 +646,6 @@ namespace light {
         }
 
         /**
-         * Estimates the electrical power (mW) by the current LED light configuration
-         * assuming a 5v source.
-         */
-        //% weight=9 blockId=neopixel_power block="%strip|power (mW)"
-        //% advanced=true
-        power(): number {
-            const stride = this._mode === NeoPixelMode.RGBW ? 4 : 3;
-            const start = this._start * stride;
-            const end = start + this._length * stride;
-            let p = 0;
-            for (let i = start; i < end; ++i) {
-                p += this.buf[i];
-            }
-            const mA = this.length() * 0.47 /* static energy cost per neopixel */
-                + p * 0.040621679; /*  */
-            return mA * 5;
-        }        
-
-        /**
          * Sets the color mode and clears the colors.
          * @param mode the kind of color encoding required by the programmable lights
          */
