@@ -48,3 +48,20 @@ int value(TouchButton button) {
 }
 
 }
+
+namespace AnalogPinMethods {
+    
+/**
+ * Get the cap-touch sensor for given pin (if available)
+ */
+TouchButton touchButton(AnalogPin pin) {
+    if (PA02 <= pin->name && pin->name <= PA07)
+        ;
+    else if (PB02 <= pin->name && pin->name <= PB09)
+        ;
+    else
+        return NULL;
+    return pxt::getTouchButton(pin->name);
+}
+
+}
