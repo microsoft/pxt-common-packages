@@ -70,6 +70,7 @@
 
 #define CFG_NUM_NEOPIXELS 200
 #define CFG_NUM_DOTSTARS 201
+#define CFG_DEFAULT_BUTTON_MODE 202
 
 #define BUTTON_ACTIVE_HIGH_PULL_DOWN (ACTIVE_HIGH | 0x10)
 #define BUTTON_ACTIVE_HIGH_PULL_UP (ACTIVE_HIGH | 0x20)
@@ -116,7 +117,7 @@ namespace pxt {
 DevicePin *getPin(int id);
 DevicePin *lookupPin(int pinName);
 Button *getButtonByPin(int pin, int flags);
-AbstractButton *getButton(int id, int flags);
+AbstractButton *getButton(int id);
 MultiButton *getMultiButton(int id, int pinA, int pinB, int flags);
 CodalComponent *lookupComponent(int id);
 }

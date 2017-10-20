@@ -23,9 +23,10 @@ Button *getButtonByPin(int pin, int flags) {
 
 // This is for A, B, and AB
 //%
-AbstractButton *getButton(int id, int flags) {
+AbstractButton *getButton(int id) {
     int pa = getConfig(CFG_PIN_BTN_A);
     int pb = getConfig(CFG_PIN_BTN_B);
+    int flags = getConfig(CFG_DEFAULT_BUTTON_MODE, BUTTON_ACTIVE_LOW_PULL_UP);
     if (id == 0)
         return getButtonByPin(pa, flags);
     else if (id == 1)
