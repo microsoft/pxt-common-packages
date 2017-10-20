@@ -1,0 +1,17 @@
+{
+    "name": "pulse",
+    "description": "Communication over pulses",
+    "files": [
+        "README.md",
+        "pulse.cpp",
+        "pulse.h",
+        "bitvector.h",
+        "samd21.cpp",
+        "shims.d.ts",
+        "ns.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core"
+    }
+}
