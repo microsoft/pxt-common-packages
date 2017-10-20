@@ -491,7 +491,7 @@ namespace light {
         //% blockId=light_photon_set_pen_color block="%strip=variables_get|photon set pen color %color=colorNumberPicker"
         //% help="light/set-photon-pen-color"
         //% parts="neopixel"
-        //% group="Photon" weight=39 blockGap=8
+        //% group="Photon" weight=38 blockGap=8
         setPhotonPenColor(color: number) {
             this.initPhoton();
             this._photonColor = color;
@@ -502,6 +502,10 @@ namespace light {
          * Sets the photon hue.
          * @param hue the hue of the photon color
          */
+        //% blockId=light_photon_set_pen_hue block="%strip=variables_get|photon set pen hue %color=colorWheelPicker"
+        //% help="light/set-photon-pen-hue"
+        //% parts="neopixel"
+        //% group="Photon" weight=39 blockGap=8
         setPhotonPenHue(hue: number) {
             this.setPhotonPenColor(hsv(hue, 0xff, 0xff));            
         }
