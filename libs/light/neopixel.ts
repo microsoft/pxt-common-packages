@@ -501,7 +501,7 @@ namespace light {
         /**
          * Sets the photon hue.
          */
-        //% blockId=neopixel_set_color block="%strip=variables_get|photon set pen hue %hue=colorWheelPicker"
+        //% blockId=light_photon_set_hue block="%strip=variables_get|photon set pen hue %hue=colorWheelPicker"
         //% help="light/set-photon-pen-hue"
         //% parts="neopixel"
         //% group="Photon" weight=39 blockGap=8
