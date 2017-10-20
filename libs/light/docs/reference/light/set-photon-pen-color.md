@@ -3,7 +3,7 @@
 Change the color of the photon pixels on the pixel strip.
 
 ```sig
-light.pixels.setPhotonColor(0)
+light.pixels.setPhotonPenColor(0)
 ```
 
 The photon effect is a pulse of bright light moving through a strip of colored pixels.
@@ -18,7 +18,7 @@ You can change the color of the photon to whatever you want.
 Pulse an blue photon forward and backward across the pixel strip.
 
 ```blocks
-light.pixels.setPhotonColor(Colors.Blue)
+light.pixels.setPhotonPenColor(Colors.Blue)
 loops.forever(() => {
     for (let i = 0; i < light.pixels.length(); i++) {
         light.pixels.photonForward(1)
