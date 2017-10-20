@@ -162,7 +162,7 @@ namespace light {
          * Set all of the pixels on the strip to one RGB color.
          * @param rgb RGB color of the LED
          */
-        //% blockId="neopixel_set_strip_color" block="%strip|set all pixels to %rgb=colorNumberPicker"         
+        //% blockId="light_set_strip_color" block="%strip|set all pixels to %rgb=colorNumberPicker"         
         //% parts="neopixel"
         //% help="light/set-all"
         //% weight=80 blockGap=8
@@ -185,7 +185,7 @@ namespace light {
          * @param value current value to plot
          * @param high maximum value, 0 to autoscale
          */
-        //% blockId=neopixel_show_bar_graph block="%strip|graph of %value |up to %high" icon="\uf080"       
+        //% blockId=light_show_bar_graph block="%strip|graph of %value |up to %high" icon="\uf080"
         //% help=light/graph
         //% parts="neopixel"
         //% weight=70
@@ -231,7 +231,7 @@ namespace light {
          * @param pixeloffset position of the NeoPixel in the strip
          * @param color RGB color of the LED
          */
-        //% blockId="neopixel_set_pixel_color" block="%strip|set pixel color at %pixeloffset|to %rgb=colorNumberPicker"
+        //% blockId="light_set_pixel_color" block="%strip|set pixel color at %pixeloffset|to %rgb=colorNumberPicker"
         //% help="light/set-pixel-color"
         //% parts="neopixel"
         //% weight=79
@@ -254,7 +254,7 @@ namespace light {
          * Gets the pixel color.
          * @param pixeloffset position of the NeoPixel in the strip
          */
-        //% blockId="neopixel_get_pixel_color" block="%strip|pixel color at %pixeloffset"
+        //% blockId="light_get_pixel_color" block="%strip|pixel color at %pixeloffset"
         //% help="light/pixel-color"
         //% parts="neopixel"
         //% group="More" weight=9 blockGap=8
@@ -287,7 +287,7 @@ namespace light {
          * @param pixeloffset position of the LED in the strip
          * @param white brightness of the white LED
          */
-        //% blockId="neopixel_set_pixel_white_led" block="%strip|set pixel white LED at %pixeloffset|to %white"
+        //% blockId="light_set_pixel_white_led" block="%strip|set pixel white LED at %pixeloffset|to %white"
         //% help="light/set-pixel-white-led"
         //% parts="neopixel"
         //% group="More" weight=5 blockGap=8
@@ -308,7 +308,7 @@ namespace light {
         /**
          * Make the strip show all the new changes for the pixels.
          */
-        //% blockId="neopixel_show" block="%strip|show"
+        //% blockId="light_show" block="%strip|show"
         //% help="light/show"
         //% parts="neopixel"
         //% group="More" weight=86 blockGap=8
@@ -333,7 +333,7 @@ namespace light {
         /**
          * Turn off all pixel LEDs.
          */
-        //% blockId="neopixel_clear" block="%strip|clear"
+        //% blockId="light_clear" block="%strip|clear"
         //% parts="neopixel"
         //% help="light/clear"
         //% group="More" weight=85
@@ -346,7 +346,7 @@ namespace light {
         /**
          * Get the number of pixels on the strip
          */
-        //% blockId="neopixel_length" block="%strip|length"
+        //% blockId="light_length" block="%strip|length"
         //% help="light/length"
         //% group="More" weight=8 blockGap=8
         length() {
@@ -357,7 +357,7 @@ namespace light {
          * Set the brightness of the strip. This flag only applies to future operation.
          * @param brightness a measure of LED brightness in 0-255. eg: 20
          */
-        //% blockId="neopixel_set_brightness" block="%strip|set brightness %brightness"
+        //% blockId="light_set_brightness" block="%strip|set brightness %brightness"
         //% brightness.min=0 brightness.max=255
         //% help="light/set-brightness"
         //% parts="neopixel"
@@ -371,7 +371,7 @@ namespace light {
         /**
          * Get the brightness of the pixel strip.
          */
-        //% blockId="neopixel_get_brightness" block="%strip|brightness"
+        //% blockId="light_get_brightness" block="%strip|brightness"
         //% help="light/brightness"
         //% parts=neopixel
         //% group="More" weight=7
@@ -384,7 +384,7 @@ namespace light {
          * @param start offset in the NeoPixel strip to start the range
          * @param length number of pixels in the range. eg: 4
          */
-        //% blockId="neopixel_range" block="%strip|range from %start|with %length|pixels"
+        //% blockId="light_range" block="%strip|range from %start|with %length|pixels"
         //% help="light/range"   
         //% parts="neopixel"
         //% weight=99 blockGap=30
@@ -403,7 +403,7 @@ namespace light {
          * You need to call ``show`` to make the changes visible.
          * @param offset number of pixels to shift forward, eg: 1
          */
-        //% blockId="neopixel_move_pixels" block="%strip|%kind=MoveKind|by %offset"
+        //% blockId="light_move_pixels" block="%strip|%kind=MoveKind|by %offset"
         //% help="light/move"
         //% parts="neopixel"
         //% group="More" weight=87 blockGap=8
@@ -436,7 +436,7 @@ namespace light {
          * Move a photon effect along the pixel strip by a number of steps.
          * @param steps number of steps (lights) to move, eg: 1
          */
-        //% blockId=neophoton_fd block="%strip|photon forward by %steps"
+        //% blockId=light_photon_fd block="%strip|photon forward by %steps"
         //% help="light/photon-forward"
         //% parts="neopixel"
         //% group="Photon" weight=41 blockGap=8
@@ -475,7 +475,7 @@ namespace light {
         /**
          * Switch the direction of the photon pulse.
          */
-        //% blockId=neophoton_flip block="%strip|photon flip"
+        //% blockId=light_photon_flip block="%strip|photon flip"
         //% help="light/photon-flip"
         //% parts="neopixel"
         //% group="Photon" weight=40 blockGap=8
@@ -488,10 +488,10 @@ namespace light {
          * Set the photon color.
          * @param color the color of the photon
          */
-        //% blockId=neophoton_set_pen_color block="%strip=variables_get|photon set pen color %color=colorNumberPicker"
+        //% blockId=light_photon_set_pen_color block="%strip=variables_get|photon set pen color %color=colorNumberPicker"
         //% help="light/set-photon-pen-color"
         //% parts="neopixel"
-        //% group="Photon" weight=39 blockGap=8
+        //% group="Photon" weight=38 blockGap=8
         setPhotonPenColor(color: number) {
             this.initPhoton();
             this._photonColor = color;
@@ -499,11 +499,12 @@ namespace light {
         }
 
         /**
-         * This function is deprecated.
+         * Sets the photon hue.
+         * @param hue the hue of the photon color
          */
-        //% blockId=neophoton_set_color block="%strip=variables_get|photon set pen hue %hue=colorWheelPicker"
+        //% blockId=light_photon_set_pen_hue block="%strip=variables_get|photon set pen hue %hue=colorWheelPicker"
         //% help="light/set-photon-pen-hue"
-        //% parts="neopixel" deprecated=1 blockHidden=true
+        //% parts="neopixel"
         //% group="Photon" weight=39 blockGap=8
         setPhotonPenHue(hue: number) {
             this.setPhotonPenColor(hsv(hue, 0xff, 0xff));
@@ -518,7 +519,7 @@ namespace light {
          * Set the photon mode to pen up, pen down, or eraser.
          * @param mode the desired mode
          */
-        //% blockId=neophoton_set_photon block="%strip|photon %mode"
+        //% blockId=light_photon_set_photon block="%strip|photon %mode"
         //% help="light/set-photon-mode"
         //% parts="neopixel"
         //% group="Photon" weight=38
@@ -535,7 +536,7 @@ namespace light {
          * @param animation the animation to run, eg: light.animation(LightAnimation.Rainbow)
          * @param duration the duration to run in milliseconds, eg: 500
          */
-        //% blockId=neopixel_show_animation block="%strip|show %animation=light_animation|animation for %duration=timePicker|ms"
+        //% blockId=light_show_animation block="%strip|show %animation=light_animation|animation for %duration=timePicker|ms"
         //% help="light/show-animation"
         //% parts="neopixel"
         //% weight=90 blockGap=8
@@ -554,7 +555,7 @@ namespace light {
          * Show a single animation frame
          * @param animation the animation to run, eg: light.animation(LightAnimation.Rainbow)
          */
-        //% blockId=neopixel_show_animation_frame block="%strip|show animation frame %animation=light_animation"
+        //% blockId=light_show_animation_frame block="%strip|show animation frame %animation=light_animation"
         //% help="light/show-animation-frame"
         //% parts="neopixel"
         //% weight=87 blockGap=8
@@ -615,7 +616,7 @@ namespace light {
         /**
          * Stop the current animation and any other animations ready to show.
          */
-        //% blockId=neopixel_stop_all_animations block="%strip|stop all animations"
+        //% blockId=light_stop_all_animations block="%strip|stop all animations"
         //% parts="neopixel"
         //% help="light/stop-all-animations"
         //% weight=85
@@ -628,7 +629,7 @@ namespace light {
          * Enables or disables automatically calling show when a change is made
          * @param on call show whenever a light is modified
          */
-        //% blockId=neopixel_set_buffered block="%strip|set buffered  %on"
+        //% blockId=light_set_buffered block="%strip|set buffered  %on"
         //% help="light/set-buffered"
         //% parts="neopixel"
         //% group="More" weight=86
@@ -649,7 +650,7 @@ namespace light {
          * Sets the color mode and clears the colors.
          * @param mode the kind of color encoding required by the programmable lights
          */
-        //% blockId=neopixel_set_mode block="%strip|set mode %mode"
+        //% blockId=light_set_mode block="%strip|set mode %mode"
         //% help="light/set-mode"
         //% parts="neopixel"
         //% group="More" weight=1
@@ -681,6 +682,244 @@ namespace light {
             this._brightnessBuf = pins.createBuffer(this._length);
             this._brightnessBuf.fill(this._brightness, 0, this._brightnessBuf.length);
             this._sendBuf = undefined;
+        }
+
+        // From here onwards, these block definitions are there for compatibility with old blocks
+        // (that have the default instance logic)
+
+        /**
+         * Set all of the pixels on the strip to one RGB color.
+         * @param rgb RGB color of the LED
+         */
+        //% blockId="neopixel_set_strip_color" block="set all pixels to %rgb=colorNumberPicker"
+        //% deprecated=1
+        //% defaultInstance=light.pixels
+        __setAll(rgb: number) {
+            this.setAll(rgb);
+        }
+
+        /**
+         * Display a vertical bar graph based on the `value` and `high` value.
+         * If `high` is 0, the chart gets adjusted automatically.
+         * @param value current value to plot
+         * @param high maximum value, 0 to autoscale
+         */
+        //% blockId=neopixel_show_bar_graph block="graph of %value |up to %high" icon="\uf080"
+        //% deprecated=1
+        //% defaultInstance=light.pixels
+        __graph(value: number, high: number): void {
+            this.graph(value, high);
+        }
+
+        /**
+         * Set the pixel to a given color.
+         * You need to call ``show`` to make the changes visible.
+         * @param pixeloffset position of the NeoPixel in the strip
+         * @param color RGB color of the LED
+         */
+        //% blockId="neopixel_set_pixel_color" block="set pixel color at %pixeloffset|to %rgb=colorNumberPicker"
+        //% deprecated=1
+        //% defaultInstance=light.pixels
+        __setPixelColor(pixeloffset: number, color: number): void {
+            this.setPixelColor(pixeloffset, color);
+        }
+
+        /**
+         * Gets the pixel color.
+         * @param pixeloffset position of the NeoPixel in the strip
+         */
+        //% blockId="neopixel_get_pixel_color" block="pixel color at %pixeloffset"
+        //% deprecated=1
+        //% defaultInstance=light.pixels
+        __pixelColor(pixeloffset: number): number {
+            return this.pixelColor(pixeloffset);
+        }
+
+        /**
+         * Set the white brightness of a pixel in a NeoPixel strip of RGB+W LEDs.
+         * This only works for RGB+W NeoPixels.
+         * @param pixeloffset position of the LED in the strip
+         * @param white brightness of the white LED
+         */
+        //% blockId="neopixel_set_pixel_white_led" block="set pixel white LED at %pixeloffset|to %white"
+        //% deprecated=1
+        //% defaultInstance=light.pixels
+        __setPixelWhiteLED(pixeloffset: number, white: number): void {
+            this.setPixelWhiteLED(pixeloffset, white);
+        }
+
+        /**
+         * Make the strip show all the new changes for the pixels.
+         */
+        //% blockId="neopixel_show" block="show"
+        //% deprecated=1
+        //% defaultInstance=light.pixels
+        __show(): void {
+            this.show();
+        }
+
+        /**
+         * Turn off all pixel LEDs.
+         */
+        //% blockId="neopixel_clear" block="clear"
+        //% deprecated=1
+        //% defaultInstance=light.pixels
+        __clear(): void {
+            this.clear();
+        }
+
+        /**
+         * Get the number of pixels on the strip
+         */
+        //% blockId="neopixel_length" block="length"
+        //% deprecated=1
+        //% defaultInstance=light.pixels
+        __length() {
+            return this.length();
+        }
+
+        /**
+         * Set the brightness of the strip. This flag only applies to future operation.
+         * @param brightness a measure of LED brightness in 0-255. eg: 20
+         */
+        //% blockId="neopixel_set_brightness" block="set brightness %brightness"
+        //% deprecated=1
+        //% defaultInstance=light.pixels
+        __setBrightness(brightness: number): void {
+            this.setBrightness(brightness);
+        }
+
+        /**
+         * Get the brightness of the pixel strip.
+         */
+        //% blockId="neopixel_get_brightness" block="brightness"
+        //% deprecated=1
+        //% defaultInstance=light.pixels
+        __brightness(): number {
+            return this.brightness();
+        }
+
+        /**
+         * Create a range of pixels.
+         * @param start offset in the NeoPixel strip to start the range
+         * @param length number of pixels in the range. eg: 4
+         */
+        //% blockId="neopixel_range" block="range from %start|with %length|pixels"
+        //% deprecated=1
+        //% defaultInstance=light.pixels
+        __range(start: number, length: number): NeoPixelStrip {
+            return this.range(start, length);
+        }
+
+        /**
+         * Shift LEDs forward and clear with zeros.
+         * You need to call ``show`` to make the changes visible.
+         * @param offset number of pixels to shift forward, eg: 1
+         */
+        //% blockId="neopixel_move_pixels" block="%kind=MoveKind|by %offset"
+        //% deprecated=1
+        //% defaultInstance=light.pixels
+        __move(kind: LightMove, offset: number = 1): void {
+            this.move(kind, offset);
+        }
+
+        /**
+         * Move a photon effect along the pixel strip by a number of steps.
+         * @param steps number of steps (lights) to move, eg: 1
+         */
+        //% blockId=neophoton_fd block="photon forward by %steps"
+        //% deprecated=1
+        //% defaultInstance=light.pixels
+        __photonForward(steps: number) {
+            this.photonForward(steps);
+        }
+
+        /**
+         * Switch the direction of the photon pulse.
+         */
+        //% blockId=neophoton_flip block="photon flip"
+        //% deprecated=1
+        //% defaultInstance=light.pixels
+        __photonFlip() {
+            this.photonFlip();
+        }
+
+        /**
+         * Set the photon color.
+         * @param color the color of the photon
+         */
+        //% blockId=neophoton_set_color block="photon set pen color %color"
+        //% deprecated=1
+        //% defaultInstance=light.pixels
+        __setPhotonColor(color: number) {
+            // The photon color has since changed, and we now use setPhotonPenHue to set the hue of the photon color
+            this.setPhotonPenHue(color);
+        }
+            
+        /**
+         * Set the photon mode to pen up, pen down, or eraser.
+         * @param mode the desired mode
+         */
+        //% blockId=neophoton_set_photon block="photon %mode"
+        //% deprecated=1
+        //% defaultInstance=light.pixels
+        __setPhotonMode(mode: PhotonMode) {
+            this.setPhotonMode(mode);
+        }
+
+        /**
+         * Show an animation or queue an animation in the animation queue
+         * @param animation the animation to run, eg: light.animation(LightAnimation.Rainbow)
+         * @param duration the duration to run in milliseconds, eg: 500
+         */
+        //% blockId=neopixel_show_animation block="show %animation=light_animation|animation for %duration=timePicker|ms"
+        //% deprecated=1
+        //% defaultInstance=light.pixels
+        __showAnimation(animation: NeoPixelAnimation, duration: number) {
+            this.showAnimation(animation, duration);
+        }
+
+        /**
+         * Show a single animation frame
+         * @param animation the animation to run, eg: light.animation(LightAnimation.Rainbow)
+         */
+        //% blockId=neopixel_show_animation_frame block="show animation frame %animation=light_animation"
+        //% deprecated=1
+        //% defaultInstance=light.pixels
+        __showAnimationFrame(animation: NeoPixelAnimation) {
+            this.showAnimationFrame(animation);
+        }
+
+        /**
+         * Stop the current animation and any other animations ready to show.
+         */
+        //% blockId=neopixel_stop_all_animations block="stop all animations"
+        //% deprecated=1
+        //% defaultInstance=light.pixels
+        __stopAllAnimations() {
+            this.stopAllAnimations();
+        }
+
+        /**
+         * Enables or disables automatically calling show when a change is made
+         * @param on call show whenever a light is modified
+         */
+        //% blockId=neopixel_set_buffered block="set buffered  %on"
+        //% deprecated=1
+        //% defaultInstance=light.pixels
+        __setBuffered(on: boolean): void {
+            this.setBuffered(on);
+        }
+
+        /**
+         * Sets the color mode and clears the colors.
+         * @param mode the kind of color encoding required by the programmable lights
+         */
+        //% blockId=neopixel_set_mode block="set mode %mode"
+        //% deprecated=1
+        //% defaultInstance=light.pixels
+        __setMode(mode: NeoPixelMode): void {
+            this.setMode(mode);
         }
     }
 
