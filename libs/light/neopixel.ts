@@ -500,11 +500,8 @@ namespace light {
 
         /**
          * Sets the photon hue.
+         * @param hue the hue of the photon color
          */
-        //% blockId=light_photon_set_hue block="%strip=variables_get|photon set pen hue %hue=colorWheelPicker"
-        //% help="light/set-photon-pen-hue"
-        //% parts="neopixel"
-        //% group="Photon" weight=39 blockGap=8
         setPhotonPenHue(hue: number) {
             this.setPhotonPenColor(hsv(hue, 0xff, 0xff));            
         }
@@ -847,21 +844,12 @@ namespace light {
          * Set the photon color.
          * @param color the color of the photon
          */
-        //% blockId=neophoton_set_pen_color block="photon set pen color %color=colorNumberPicker"
-        //% deprecated=1
-        //% defaultInstance=light.pixels
-        __setPhotonPenColor(color: number) {
-            this.setPhotonPenColor(color);
-        }
-
-        /**
-         * This function is deprecated.
-         */
-        //% blockId=neophoton_set_color block="photon set pen color %color=colorWheelPicker"
+        //% blockId=neophoton_set_color block="photon set pen color %color"
         //% deprecated=1
         //% defaultInstance=light.pixels
         __setPhotonColor(color: number) {
-            this.setPhotonColor(color);
+            // The photon color has since changed, and we now use setPhotonPenHue to set the hue of the photon color
+            this.setPhotonPenHue(color);
         }
             
         /**
