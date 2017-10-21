@@ -6,13 +6,13 @@ Button *getButtonByPin(int pin, int flags) {
     auto cpid = DEVICE_ID_FIRST_BUTTON + pin;
     auto btn = (Button *)lookupComponent(cpid);
     if (btn == NULL) {
-        auto pull = PullNone;
+        auto pull = PullMode::None;
         if ((flags & 0xf0) == 0x10)
-            pull = PullDown;
+            pull = PullMode::Down;
         else if ((flags & 0xf0) == 0x20)
-            pull = PullUp;
+            pull = PullMode::Up;
         else if ((flags & 0xf0) == 0x20)
-            pull = PullNone;
+            pull = PullMode::None;
         else
             target_panic(42);
         btn = new Button(*lookupPin(pin), cpid, DEVICE_BUTTON_ALL_EVENTS,
