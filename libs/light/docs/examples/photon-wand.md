@@ -14,7 +14,7 @@ input.onGesture(Gesture.Shake, () => {
 })
 loops.forever(() => {
     light.pixels.photonForward(1)
-    light.pixels.setPhotonColor(c)
+    light.pixels.setPhotonPenHue(c)
     c += 16
 })
 ```

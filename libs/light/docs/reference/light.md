@@ -19,21 +19,23 @@ light.pixels.clear()
 light.pixels.brightness()
 light.pixels.pixelColor(0)
 ```
-## NeoPixel #neopixel
+## External Strip #neopixel
 
 ```cards
-light.createNeoPixelStrip(null, 0)
+light.createStrip(null, 0)
 light.pixels.setPixelWhiteLED(0, 0)
 light.pixels.range(0, 0)
 light.pixels.length()
 light.pixels.move(0, 0)
+light.pixels.setMode(NeoPixelMode.RGB)
 ```
 ## Photon #photon
 
 ```cards
 light.pixels.photonForward(0)
 light.pixels.photonFlip()
-light.pixels.setPhotonColor(0)
+light.pixels.setPhotonPenHue(0)
+light.pixels.setPhotonPenColor(0)
 light.pixels.setPhotonMode(PhotonMode.PenUp)
 ```
 ## Color settings #colorset
@@ -53,10 +55,11 @@ light.fade(0, 0)
 [setBrightness](/reference/light/set-brightness),
 [setPixelColor](/reference/light/set-pixel-color), [clear](/reference/light/clear),
 [brightness](/reference/light/brightness), [pixelColor](/reference/light/pixel-color),
-[createNeoPixelStrip](/reference/light/create-neo-pixel-strip), [setPixelWhiteLED](/reference/light/set-pixel-white-led),
+[createStrip](/reference/light/create-strip), [setPixelWhiteLED](/reference/light/set-pixel-white-led),
 [range](/reference/light/range), [length](/reference/light/length),
 [move](/reference/light/move), [photonForward](/reference/light/photon-forward),
-[photonFlip](/reference/light/photon-flip), [setPhotonColor](/reference/light/set-photon-color),
+[photonFlip](/reference/light/photon-flip), [setPhotonPenColor](/reference/light/set-photon-pen-color),
+[setPhotonPenHue](/reference/light/set-photon-pen-hue),
 [setPhotonMode](/reference/light/set-photon-mode), [rgb](/reference/light/rgb),
 [hsv](/reference/light/hsv), [colors](/reference/light/colors),
 [fade](/reference/light/fade)

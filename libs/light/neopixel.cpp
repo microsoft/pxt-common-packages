@@ -29,10 +29,11 @@ namespace light {
     /**
      * Sends a neopixel buffer to the specified digital pin
      * @param pin The pin that the neopixels are connected to
+     * @param mode the color encoding mode
      * @param buf The buffer to send to the pin
      */
     //% parts="neopixel"
-    void sendBuffer(DigitalPin pin, Buffer buf) {
+    void sendBuffer(DigitalPin pin, int mode, Buffer buf) {
         neopixel_send_buffer(*pin, buf->data, buf->length);
     }
 

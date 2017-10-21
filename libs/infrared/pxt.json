@@ -10,6 +10,6 @@
     "public": true,
     "dependencies": {
         "core": "file:../core",
-        "cable": "file:../cable"
+        "pulse": "file:../pulse"
     }
 }

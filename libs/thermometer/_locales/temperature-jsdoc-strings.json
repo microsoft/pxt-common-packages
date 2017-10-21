@@ -1,6 +1,0 @@
-{
-  "input.onTemperateConditionChanged": "Registers an event raised when the temperature condition (hold, cold) changes.",
-  "input.onTemperateConditionChanged|param|condition": "the condition, hot or cold, the event triggers on",
-  "input.onTemperateConditionChanged|param|temperature": "the temperature, in degree Celsius, at which this event happens, eg: 15",
-  "input.temperature": "Gets the temperature in Celsius or Fahrenheit degrees."
-}

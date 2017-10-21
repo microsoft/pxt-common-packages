@@ -12,6 +12,9 @@
         "libs/lightsensor",
         "libs/thermometer",
         "libs/touch",
-        "libs/switch"
+        "libs/switch",
+        "libs/pulse",
+        "libs/cable",
+        "libs/infrared"
     ]
 }

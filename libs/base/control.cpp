@@ -20,7 +20,7 @@ namespace control {
     //% help="control/on-event"
     void onEvent(int src, int value, Action handler) {
         registerWithDal(src, value, handler);
-    }    
+    }
 
     /**
      * Reset the device.
@@ -39,16 +39,16 @@ namespace control {
     //% blockId="control_wait_us" block="wait (µs)%micros"
     void waitMicros(int micros) {
         sleep_us(micros);
-    }  
+    }
 
     /**
      * Run other code in the background.
      */
-    //% help=control/run-in-background blockAllowMultiple=1
+    //% help=control/run-in-background blockAllowMultiple=1 afterOnStart=true
     //% blockId="control_run_in_background" block="run in background" blockGap=8
     void runInBackground(Action a) {
       pxt::runInBackground(a);
-    }   
+    }
 
     /**
     * Blocks the calling thread until the specified event is raised.
@@ -57,7 +57,7 @@ namespace control {
     //% blockId=control_wait_for_event block="wait for event|from %src|with value %value"
     void waitForEvent(int src, int value) {
         pxt::waitForEvent(src, value);
-    }   
+    }
 
     /**
     * Derive a unique, consistent serial number of this device from internal data.

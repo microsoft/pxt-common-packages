@@ -1,7 +1,7 @@
 #include "pxt.h"
 
 namespace pins {
-    static ::mbed::I2C *i2c;
+    static codal::I2C *i2c;
 
     static void initI2C() {
       if (i2c == NULL) {
@@ -17,7 +17,7 @@ namespace pins {
     {
       initI2C();
       Buffer buf = createBuffer(size);
-      int ok = i2c->read(address << 1, (char*)buf->data, size, repeat);
+      int ok = i2c->read(address << 1, buf->data, size, repeat);
       if (!ok) {
         free(buf);
         buf = 0;
@@ -32,6 +32,6 @@ namespace pins {
     int i2cWriteBuffer(int address, Buffer buf, bool repeat = false)
     {
       initI2C();
-      return i2c->write(address << 1, (char*)buf->data, buf->length, repeat);
+      return i2c->write(address << 1, buf->data, buf->length, repeat);
     }
 }

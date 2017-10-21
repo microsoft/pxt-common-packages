@@ -150,9 +150,9 @@ int pulseIn(DigitalPin pin, PulseValue value, int maxDuration = 2000000) {
 //% name.fieldOptions.width=220
 //% name.fieldOptions.columns=4
 void setPull(DigitalPin name, PinPullMode pull) {
-    PinMode m = pull == PinPullMode::PullDown ? PinMode::PullDown : pull == PinPullMode::PullUp
-                                                                        ? PinMode::PullUp
-                                                                        : PinMode::PullNone;
+    PullMode m = pull == PinPullMode::PullDown ? PullMode::Down : pull == PinPullMode::PullUp
+                                                                        ? PullMode::Up
+                                                                        : PullMode::None;
     PINOP(setPull(m));
 }
 
