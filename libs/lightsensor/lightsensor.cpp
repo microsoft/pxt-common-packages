@@ -19,7 +19,7 @@ class WLight {
     {
         sensor.init();
         sensor.setPeriod(50);
-        sensor.setSensitivity(868);
+        sensor.setSensitivity(868); // codal has 912 now
         sensor.setLowThreshold(128);
         sensor.setHighThreshold(896);
     }

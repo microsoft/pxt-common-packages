@@ -1,5 +1,5 @@
 // Override in target to change inversion of axis
 
-#define INVERT_ACC_X_AXIS 0
-#define INVERT_ACC_Y_AXIS 0
-#define INVERT_ACC_Z_AXIS 0
+#define ACC_SYSTEM NORTH_EAST_UP
+#define ACC_UPSIDEDOWN false
+#define ACC_ROTATION COORDINATE_SPACE_ROTATED_0

@@ -18,7 +18,7 @@ class WSwitch {
 
     WSwitch()
         : slideSwitch(*pxt::lookupPin(PIN_BTN_SLIDE), DEVICE_ID_BUTTON_SLIDE,
-                      DEVICE_BUTTON_SIMPLE_EVENTS, ACTIVE_LOW, PullUp) {}
+                      DEVICE_BUTTON_SIMPLE_EVENTS, ACTIVE_LOW, PullMode::Up) {}
 };
 SINGLETON(WSwitch);
 

@@ -3,7 +3,7 @@
 
 // we use a location at the top of the stack to store a magic value
 // which causes us to stop at the very first break point in the program
-#define HF2_DBG_MAGIC_PTR ((uint32_t *)(CORTEX_M0_STACK_BASE - (DEVICE_STACK_SIZE - 4)))
+#define HF2_DBG_MAGIC_PTR ((uint32_t *)(DEVICE_STACK_BASE - (DEVICE_STACK_SIZE - 4)))
 #define HF2_DBG_MAGIC_START 0xf0ebac7f
 
 #define HF2_DBG_GET_GLOBAL_STATE 0x53fc66e0
