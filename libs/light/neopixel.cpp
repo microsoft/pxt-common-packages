@@ -12,6 +12,8 @@ namespace light {
      * Gets the default pin for built in neopixels
      */
     //% parts="neopixel"
+    //% blockId="light_default_pin" block="default pixel pin"
+    //% help=light/default-pin
     DigitalPin defaultPin() {
         #if PXT_BOARD_ID == BOARD_ID_METRO
         // Metro express neopixel pin is set for SWD by default
