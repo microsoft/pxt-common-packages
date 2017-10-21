@@ -367,7 +367,7 @@ extern "C" void handleHardFault(ExceptionContext *ectx) {
         ectx->lr = ectx->faultInstrAddr + 3; // next instruction + thumb mode
         pausedData.pc = ectx->faultInstrAddr + 2;
         void *ssp = (void *)(ectx + 1);
-        stackSize = CORTEX_M0_STACK_BASE - (uint32_t)ssp;
+        stackSize = DEVICE_STACK_BASE - (uint32_t)ssp;
         if (stackCopy)
             free(stackCopy);
         stackCopy = malloc(stackSize);

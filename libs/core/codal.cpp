@@ -1,6 +1,9 @@
 #include "pxt.h"
 #include "neopixel.h"
 
+void cpu_clock_init(void);
+
+
 namespace pxt {
 
 // The first two word are used to tell the bootloader that a single reset should start the
@@ -26,22 +29,22 @@ static const char *string_descriptors[] = {
 };
 
 static void initCodal() {
-    devTimer.init();
+    cpu_clock_init();
 
     // Bring up fiber scheduler.
     scheduler_init(devMessageBus);
 
-    // Seed our random number generator
-    // seedRandom();
-
-    // Create an event handler to trap any handlers being created for I2C services.
-    // We do this to enable initialisation of those services only when they're used,
-    // which saves processor time, memeory and battery life.
-    // messageBus.listen(MICROBIT_ID_MESSAGE_BUS_LISTENER, MICROBIT_EVT_ANY, this,
-    // &MicroBit::onListenerRegisteredEvent);
-
     io = new DevPins();
 
+    // We probably don't need that - components are initialized when one obtains
+    // the reference to it.
+    //devMessageBus.listen(DEVICE_ID_MESSAGE_BUS_LISTENER, DEVICE_EVT_ANY, this, &CircuitPlayground::onListenerRegisteredEvent);
+    
+    for(int i = 0; i < DEVICE_COMPONENT_COUNT; i++) {
+        if(CodalComponent::components[i])
+            CodalComponent::components[i]->init();
+    }
+    
     usb.stringDescriptors = string_descriptors;
     usb.add(hf2);
     usb.start();

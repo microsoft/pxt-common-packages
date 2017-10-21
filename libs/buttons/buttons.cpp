@@ -3,7 +3,6 @@
 #include "MultiButton.h"
 
 namespace pxt {
-
 class WButtons {
   public:
 #define Button codal::Button
@@ -31,9 +30,9 @@ class WButtons {
 
     WButtons()
         : buttonA(*pxt::lookupPin(PIN_BTN_A), DEVICE_ID_BUTTON_A, DEVICE_BUTTON_ALL_EVENTS,
-                     ACTIVE_HIGH, PullDown),
+                     ACTIVE_HIGH, PullMode::Down),
           buttonB(*pxt::lookupPin(PIN_BTN_B), DEVICE_ID_BUTTON_B, DEVICE_BUTTON_ALL_EVENTS,
-                      ACTIVE_HIGH, PullDown),
+                      ACTIVE_HIGH, PullMode::Down),
           buttonsAB(DEVICE_ID_BUTTON_A, DEVICE_ID_BUTTON_B, DEVICE_ID_BUTTON_AB) {}
 };
 SINGLETON(WButtons);
