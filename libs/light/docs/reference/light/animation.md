@@ -27,8 +27,9 @@ You have several animations to choose from. Pick the one you want to use.
 Show the ``sparkle`` aninmation for 2 seconds when the ``A`` button is pressed.
 
 ```blocks
+let strip = light.createStrip()
 input.buttonA.onEvent(ButtonEvent.Click, () => {
-    light.pixels.showAnimation(light.animation(LightAnimation.Sparkle), 2000)
+    strip.showAnimation(light.animation(LightAnimation.Sparkle), 2000)
 })
 ```
 

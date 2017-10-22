@@ -18,8 +18,9 @@ color you want to change.
 When button ``B`` is clicked, show the ``pink`` color at pixel ``0``.
 
 ```blocks
+let strip = light.createStrip()
 input.buttonB.onEvent(ButtonEvent.Click, () => {
-    light.createStrip().setPixelColor(0, Colors.Pink)
+    strip.setPixelColor(0, Colors.Pink)
 })
 ```
 

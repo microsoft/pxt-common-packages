@@ -23,9 +23,11 @@ the shade that you want the color faded to.
 
 Fade the `green` light of the the pixels to half brightness when the `A` button is pressed.
 The number `128` is just about one-half of full brightness (255).
+
 ```blocks
+let strip = light.createStrip()
 input.buttonA.onEvent(ButtonEvent.Click, () => {
-    light.pixels.setAll(light.fade(Colors.Green, 128))
+    strip.setAll(light.fade(Colors.Green, 128))
 })
 ```
 

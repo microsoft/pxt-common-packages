@@ -3,7 +3,7 @@
 Change the direction of the photon movement along the pixel strip.
 
 ```sig
-light.pixels.photonFlip()
+light.createStrip().photonFlip()
 ```
 
 The photon normally moves in the direction from a low numbered pixels (pixel: 0, 1, 2, ...)
@@ -16,12 +16,13 @@ The photon normally moves in the direction from a low numbered pixels (pixel: 0,
 Move a photon forward and backward across the pixel strip for `5` bursts.
 
 ```blocks
+let strip = light.createStrip()
 for (let i = 0; i <= 5; i++) {
-    for (let j = 0; j < light.pixels.length(); j++) {
-        light.pixels.photonForward(1)
+    for (let j = 0; j < strip.length(); j++) {
+        strip.photonForward(1)
         loops.pause(50)
     }
-    light.pixels.photonFlip()
+    strip.photonFlip()
 }
 ```
 

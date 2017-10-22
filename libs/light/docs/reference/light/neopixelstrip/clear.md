@@ -3,7 +3,7 @@
 Turn off all the pixel LEDs.
 
 ```sig
-light.pixels.clear()
+light.createStrip().clear()
 
 ```
 
@@ -12,11 +12,11 @@ light.pixels.clear()
 Turn off all the pixels when button `A` is pressed.
 
 ```blocks
-light.pixels.setAll(Colors.Green)
+let strip = light.createStrip()
+strip.setAll(Colors.Green)
 input.buttonA.onEvent(ButtonEvent.Click, () => {
-    light.pixels.clear()
+    strip.clear()
 })
-
 ```
 
 ## See Also

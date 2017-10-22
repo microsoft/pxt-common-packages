@@ -3,7 +3,7 @@
 Create a new, smaller pixel strip from part of the current pixel strip.
 
 ```sig
-light.pixels.range(0, 4)
+light.createStrip().range(0, 4)
 ```
 The new pixel strip is a smaller, _virtual_, strip with some or all of the pixels
 from the current, or original, strip. You can use **range** to make new mini strips from
@@ -13,14 +13,16 @@ If you have a pixel strip with 10 pixels, you can make 2 new _virtual_ strips by
 the new strips 5 pixels each. An example of this is something like:
 
 ```block
-let strip1 = light.pixels.range(0, 5)
-let strip2 = light.pixels.range(5, 5)
+let strip0 = light.createStrip()
+let strip1 = strip0.range(0, 5)
+let strip2 = strip0.range(5, 5)
 ```
 You can use these new pixels strips by themselves with their own light actions:
 
 ```blocks
-let strip1 = light.pixels.range(0, 5)
-let strip2 = light.pixels.range(5, 5)
+let strip0 = light.createStrip()
+let strip1 = strip0.range(0, 5)
+let strip2 = strip0.range(5, 5)
 strip1.setAll(Colors.Yellow)
 strip2.setPixelColor(0, Colors.Red)
 ```
@@ -42,7 +44,7 @@ Make a smaller strip from the current pixel strip. Shift an `orange` pixel from 
 of the new pixel strip to its end.
 
 ```blocks
-let smallStrip = light.pixels.range(0, 4)
+let smallStrip = light.createStrip().range(0, 4)
 smallStrip.setPixelColor(0, Colors.Red)
 for (let i = 0; i < smallStrip.length() - 1; i++) {
     loops.pause(500)

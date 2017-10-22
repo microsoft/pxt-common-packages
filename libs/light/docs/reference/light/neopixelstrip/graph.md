@@ -3,7 +3,7 @@
 Graph a number with the pixels on the pixel strip.
 
 ```sig
-light.pixels.graph(0, 0);
+light.createStrip().graph(0, 0);
 ```
 The ``||graph||`` block turns your pixels into a lighted graph to display number values. The total pixels in the
 strip make the range for the graph. If you have 20 pixels in your strip and you want to display a
@@ -36,8 +36,9 @@ values.
 Graph 10 values between 0 and 100 on the pixels.
 
 ```blocks
+let strip = light.createStrip()
 for (let i = 0; i <= 10; i++) {
-    light.pixels.graph(i * 10, 100)
+    strip.graph(i * 10, 100)
     loops.pause(500)
 }
 ```
@@ -46,9 +47,10 @@ for (let i = 0; i <= 10; i++) {
 Graph the value of `1000`. Graph other values but let them auto scale when displayed.
 
 ```blocks
-light.pixels.graph(1000, 0)
+let strip = light.createStrip()
+strip.graph(1000, 0)
 loops.forever(() => {
-    light.pixels.graph(Math.random(1000), 0)
+    strip.graph(Math.randomRange(0, 1000), 0)
     loops.pause(500)
 })
 ```

@@ -3,7 +3,7 @@
 Change the effect of the photon pulse.
 
 ```sig
-light.pixels.setPhotonMode(0)
+light.createStrip().setPhotonMode(0)
 ```
 
 The photon can have an effect of lighting the pixel strip to the photon color as the
@@ -25,20 +25,21 @@ Move a purple photon across the pixel strip forward and backward. The photon swi
 so it erases when it moves backward.
 
 ```blocks
+let strip = light.createStrip()
 let forward = true
-light.pixels.setPhotonPenHue(191)
+strip.setPhotonPenHue(191)
 loops.forever(() => {
     if (forward) {
-        light.pixels.setPhotonMode(PhotonMode.PenDown)
+        strip.setPhotonMode(PhotonMode.PenDown)
     } else {
-        light.pixels.setPhotonMode(PhotonMode.Eraser)
+        strip.setPhotonMode(PhotonMode.Eraser)
     }
-    for (let i = 0; i < light.pixels.length(); i++) {
-        light.pixels.photonForward(1)
+    for (let i = 0; i < strip.length(); i++) {
+        strip.photonForward(1)
         loops.pause(100)
     }
     forward = !forward
-    light.pixels.photonFlip()
+    strip.photonFlip()
 })
 ```
 
@@ -49,17 +50,18 @@ Flash a purple photon across the pixel strip using `pen down` mode. Switch the m
 color stays purple.
 
 ```blocks
-light.pixels.setPhotonPenHue(191)
-light.pixels.setPhotonMode(PhotonMode.PenDown)
-for (let i = 1; i < light.pixels.length(); i++) {
-    light.pixels.photonForward(1)
+let strip = light.createStrip()
+strip.setPhotonPenHue(191)
+strip.setPhotonMode(PhotonMode.PenDown)
+for (let i = 1; i < strip.length(); i++) {
+    strip.photonForward(1)
     loops.pause(500)
 }
 
-light.pixels.setPhotonPenHue(86)
-light.pixels.setPhotonMode(PhotonMode.PenUp)
-for (let i = 1; i < light.pixels.length(); i++) {
-    light.pixels.photonForward(1)
+strip.setPhotonPenHue(86)
+strip.setPhotonMode(PhotonMode.PenUp)
+for (let i = 1; i < strip.length(); i++) {
+    strip.photonForward(1)
     loops.pause(500)
 }
 ```

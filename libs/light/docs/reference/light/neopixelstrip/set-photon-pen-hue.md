@@ -3,7 +3,7 @@
 Change the color **hue** of the photon on the pixel strip.
 
 ```sig
-light.pixels.setPhotonPenHue(0)
+light.createStrip().setPhotonPenHue(0)
 ```
 
 The photon effect is a pulse of bright light moving through a strip of colored pixels.
@@ -34,13 +34,14 @@ Pulse an rainbow photon forward and backward across the pixel strip.
 
 ```blocks
 let hue = 0;
+let strip = light.createStrip()
 loops.forever(() => {
-    light.pixels.setPhotonPenHue(hue)
-    for (let i = 0; i < light.pixels.length(); i++) {
-        light.pixels.photonForward(1)
+    strip.setPhotonPenHue(hue)
+    for (let i = 0; i < strip.length(); i++) {
+        strip.photonForward(1)
         loops.pause(100)
     }
-    light.pixels.photonFlip()
+    strip.photonFlip()
     hue = hue + 1;
 })
 ```

@@ -15,7 +15,7 @@ light.colors(Colors.Red);
 Make all the pixels light up `red`.
 
 ```blocks
-light.pixels.setAll(light.colors(Colors.Red))
+light.createStrip().setAll(light.colors(Colors.Red))
 ```
 
 ## See Also

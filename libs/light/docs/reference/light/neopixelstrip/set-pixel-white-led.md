@@ -3,7 +3,7 @@
 Set the white brightness of a pixel in a NeoPixel strip of RGB+W LEDs.
 
 ```sig
-light.pixels.setPixelWhiteLED(0,0);
+light.createStrip().setPixelWhiteLED(0,0);
 ```
 If the pixel strip has RGB+W type LEDs, you can set the brightness of the white LED
 at a pixel position in the strip. Strips with RGB+W LEDs combine both RGB and white LEDs for

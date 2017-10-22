@@ -3,7 +3,7 @@
 Turn on or turn off saving (buffering) changes to the pixels.
 
 ```sig
-light.pixels.setBuffered(false)
+light.createStrip().setBuffered(false)
 ```
 When you set pixel buffering on, changes to the pixels are saved and not shown until a **[show](/reference/light/neopixelstrip/show)** is used in the program.
 
@@ -20,11 +20,12 @@ Pixel buffering stays on until you turn it off again by using **[setBuffered]()*
 Set buffering of pixel changes so that the new colors all show at once.
 
 ```blocks
-light.pixels.setBuffered(true)
-light.pixels.setPixelColor(0, Colors.Blue)
-light.pixels.setPixelColor(2, Colors.Red)
-light.pixels.setPixelColor(4, Colors.Yellow)
-light.pixels.show()
+let strip = light.createStrip()
+strip.setBuffered(true)
+strip.setPixelColor(0, Colors.Blue)
+strip.setPixelColor(2, Colors.Red)
+strip.setPixelColor(4, Colors.Yellow)
+strip.show()
 ```
 ## See also
 

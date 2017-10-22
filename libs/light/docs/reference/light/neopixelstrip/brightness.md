@@ -3,7 +3,7 @@
 Get the brightness of the pixels on the strip (or on the board).
 
 ```sig
-light.pixels.brightness()
+light.createStrip().brightness()
 ```
 
 ## Returns
@@ -16,14 +16,15 @@ Set all the pixels to ``white``. Dim the pixels when button `A` is pressed and
 brighten the pixels when button `B` is pressed.
 
 ```blocks
-light.pixels.setAll(Colors.White)
+let strip = light.createStrip()
+strip.setAll(Colors.White)
 
 input.buttonA.onEvent(ButtonEvent.Click, () => {
-    light.pixels.setBrightness(light.pixels.brightness() - 1)
+    strip.setBrightness(strip.brightness() - 1)
 })
 
 input.buttonB.onEvent(ButtonEvent.Click, () => {
-    light.pixels.setBrightness(light.pixels.brightness() + 1)
+    strip.setBrightness(strip.brightness() + 1)
 })
 ```
 
