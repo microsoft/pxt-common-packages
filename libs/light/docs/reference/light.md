@@ -4,7 +4,7 @@ Light up pixels and NeoPixel strips. Show light effects and animations.
 
 ## #onboard
 
-## Pixel strips #neopixel
+## NeoPixel strips #neopixel
 
 ```cards
 light.createStrip(null, 0)
