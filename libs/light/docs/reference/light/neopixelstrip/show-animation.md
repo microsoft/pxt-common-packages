@@ -54,7 +54,7 @@ input.buttonB.onEvent(ButtonEvent.Click, () => {
 
 ## See Also
 
-[``||stop all animations||``](/reference/light/stop-all-animations) [``||animation||``](/reference/light/show-animation)
+[``||stop all animations||``](/reference/light/neopixelstrip/stop-all-animations) [``||animation||``](/reference/light/neopixelstrip/show-animation)
 
 ```package
 light

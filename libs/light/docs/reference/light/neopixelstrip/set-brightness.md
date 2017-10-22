@@ -29,8 +29,8 @@ input.buttonB.onEvent(ButtonEvent.Click, () => {
 
 ## See Also
 
-[``||brightness||``](/reference/light/brightness),
-[``||set pixel white led||``](/reference/light/set-pixel-white-led)
+[``||brightness||``](/reference/light/neopixelstrip/brightness),
+[``||set pixel white led||``](/reference/light/neopixelstrip/set-pixel-white-led)
 
 ```package
 light

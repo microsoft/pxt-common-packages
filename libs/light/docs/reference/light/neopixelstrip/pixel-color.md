@@ -24,7 +24,7 @@ light.pixels.setPixelColor(4, light.pixels.pixelColor(3))
 ```
 
 ## See Also
-[``||set pixel color||``](/reference/light/set-pixel-color), [``||rgb||``](/reference/light/rgb)
+[``||set pixel color||``](/reference/light/neopixelstrip/set-pixel-color), [``||rgb||``](/reference/light/rgb)
 
 ```package
 light

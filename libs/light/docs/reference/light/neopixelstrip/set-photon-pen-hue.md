@@ -46,10 +46,10 @@ loops.forever(() => {
 ```
 ## See also
 
-[``||photon forward||``](/reference/light/photon-forward),
-[``||photon flip||``](/reference/light/photon-flip),
-[``||set photon pen color||``](/reference/light/set-photon-pen-color),
-[``||photon mode||``](/reference/light/set-photon-mode)
+[``||photon forward||``](/reference/light/neopixelstrip/photon-forward),
+[``||photon flip||``](/reference/light/neopixelstrip/photon-flip),
+[``||set photon pen color||``](/reference/light/neopixelstrip/set-photon-pen-color),
+[``||photon mode||``](/reference/light/neopixelstrip/set-photon-mode)
 
 ```package
 light

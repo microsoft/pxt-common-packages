@@ -27,7 +27,7 @@ light.pixels.showAnimationFrame(light.animation(LightAnimation.Comet))
 ```
 ## See Also
 
-[``||show animation||``](/reference/light/show-animation),
+[``||show animation||``](/reference/light/neopixelstrip/show-animation),
 [``||animation||``](/reference/light/animation)
 
 ```package

@@ -21,7 +21,7 @@ input.buttonA.onEvent(ButtonEvent.Click, () => {
 
 ## See Also
 
-[``||set All||``](/reference/light/set-all)
+[``||set All||``](/reference/light/neopixelstrip/set-all)
 
 ```package
 light

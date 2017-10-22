@@ -29,7 +29,7 @@ input.buttonB.onEvent(ButtonEvent.Click, () => {
 
 ## See Also
 
-[``||setBrightness||``](/reference/light/set-brightness)
+[``||setBrightness||``](/reference/light/neopixelstrip/set-brightness)
 
 ```package
 light

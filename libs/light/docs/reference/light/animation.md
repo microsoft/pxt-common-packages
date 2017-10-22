@@ -34,7 +34,7 @@ input.buttonA.onEvent(ButtonEvent.Click, () => {
 
 ## See Also
 
-[``||show animation||``](/reference/light/show-animation)
+[``||show animation||``](/reference/light/neopixelstrip/show-animation)
 
 ```package
 light

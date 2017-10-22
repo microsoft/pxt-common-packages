@@ -29,7 +29,7 @@ strip.setAll(Colors.Green)
 
 ## See Also
 
-[``||range||``](/reference/light/range), [``||set mode||``](/reference/light/set-mode)
+[``||range||``](/reference/light/neopixelstrip/range), [``||set mode||``](/reference/light/neopixelstrip/set-mode)
 
 ```package
 light

@@ -29,9 +29,9 @@ loops.forever(() => {
 ```
 ## See also
 
-[``||photon forward||``](/reference/light/photon-forward),
-[``||photon flip||``](/reference/light/photon-flip),
-[``||photon mode||``](/reference/light/set-photon-mode)
+[``||photon forward||``](/reference/light/neopixelstrip/photon-forward),
+[``||photon flip||``](/reference/light/neopixelstrip/photon-flip),
+[``||photon mode||``](/reference/light/neopixelstrip/set-photon-mode)
 
 ```package
 light

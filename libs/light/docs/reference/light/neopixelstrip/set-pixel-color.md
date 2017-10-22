@@ -24,7 +24,7 @@ input.buttonB.onEvent(ButtonEvent.Click, () => {
 ```
 
 ## See Also
-[``||pixel color||``](/reference/light/pixel-color), [``||rgb||``](/reference/light/rgb)
+[``||pixel color||``](/reference/light/neopixelstrip/pixel-color), [``||rgb||``](/reference/light/rgb)
 
 ```package
 light

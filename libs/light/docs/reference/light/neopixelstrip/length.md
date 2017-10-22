@@ -23,7 +23,7 @@ for (let i = 0; i < light.pixels.length() - 1; i++) {
 ```
 ## See also
 
-[``||range||``](/reference/light/range)
+[``||range||``](/reference/light/neopixelstrip/range)
 
 ```package
 light

@@ -54,7 +54,7 @@ loops.forever(() => {
 ```
 ## See also
 
-[``||range||``](/reference/light/range)
+[``||range||``](/reference/light/neopixelstrip/range)
 
 ```package
 light

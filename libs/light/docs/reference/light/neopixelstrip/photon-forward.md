@@ -26,9 +26,9 @@ for (let i = 0; i < light.pixels.length(); i++) {
 ```
 ## See also
 
-[``||photon flip||``](/reference/light/photon-flip)
-[``||set photon pen color||``](/reference/light/set-photon-pen-color),
-[``||photon mode||``](/reference/light/set-photon-mode)
+[``||photon flip||``](/reference/light/neopixelstrip/photon-flip)
+[``||set photon pen color||``](/reference/light/neopixelstrip/set-photon-pen-color),
+[``||photon mode||``](/reference/light/neopixelstrip/set-photon-mode)
 
 ```package
 light
