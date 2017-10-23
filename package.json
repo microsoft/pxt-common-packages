@@ -23,7 +23,7 @@
     "libs/**/*"
   ],
   "dependencies": {
-    "pxt-core": "^2.3.0",
+    "pxt-core": "^2.3.2",
     "rtlcss": "^2.1.2",
     "autoprefixer": "^6.7.6"
   },
