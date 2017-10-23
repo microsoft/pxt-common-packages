@@ -69,7 +69,7 @@ namespace pxsim {
 namespace pxsim.pxtcore {
     export function getTouchButton(index: number): TouchButton {
         const state = (board() as CapTouchBoard).touchButtonState;
-        const btn = state.buttons[index];
+        const btn = state.buttons.filter(b => b.id == index)[0]
         if (btn) {
             (getPin(btn.id) as pins.CommonPin).used = true;
             runtime.queueDisplayUpdate();

@@ -17,26 +17,53 @@ enum class PinPullMode {
 };
 
 namespace pxt {
+    static DevicePin **pinPtrs;
+    static uint8_t numPinPtrs;
+    static uint8_t pinPos[DEV_NUM_PINS];
+
 //%
 DevicePin *getPin(int id) {
-    if (!(0 <= id && id <= LastPinID))
+    if (id < 0 || id >= DEV_NUM_PINS)
         target_panic(42);
-    DevicePin *p = &io->pins[id];
-    // if (p->name == NC)
-    //    return NULL;
-    return p;
+    
+    // we could use lookupComponent() here - it would be slightly slower
+    
+    int ptr = pinPos[id];
+    if (ptr == 0) {
+        pinPtrs = (DevicePin **)realloc(pinPtrs, (numPinPtrs + 1) * sizeof(void*));
+        bool isAnalog = (DEV_ANALOG_PINS >> id) & 1;
+        pinPtrs[numPinPtrs++] = new DevicePin(
+            DEVICE_ID_IO_P0 + id, 
+            (PinName)id, 
+            isAnalog ? PIN_CAPABILITY_AD : PIN_CAPABILITY_DIGITAL);
+        ptr = numPinPtrs;
+        pinPos[id] = ptr;
+    }
+    return pinPtrs[ptr - 1];
 }
 
-#pragma GCC diagnostic ignored "-Warray-bounds"
+void linkPin(int from, int to) {
+    if (from < 0 || from >= DEV_NUM_PINS)
+        target_panic(42);
+    getPin(to);
+    pinPos[from] = pinPos[to];
+}
 
 //%
 DevicePin *lookupPin(int pinName) {
-    for (int i = 0; i <= LastPinID; ++i) {
-        if (io->pins[i].name == pinName)
-            return &io->pins[i];
+    if (pinName < 0) return NULL;
+    return getPin(pinName);
+}
+
+//%
+CodalComponent *lookupComponent(int id) {
+    for (int i = 0; i < DEVICE_COMPONENT_COUNT; ++i) {
+        if (CodalComponent::components[i] && CodalComponent::components[i]->id == id)
+            return CodalComponent::components[i];
     }
     return NULL;
 }
+
 }
 
 

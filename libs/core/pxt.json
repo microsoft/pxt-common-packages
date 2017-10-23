@@ -1,6 +1,6 @@
 {
     "name": "core",
-    "description": "The core library",
+    "description": "The core library for Codal-based targets",
     "files": [
         "README.md",
         "dal.d.ts",
@@ -9,8 +9,6 @@
         "pxtcore.h",
         "pins.h",
         "pins.cpp",
-        "devpins.cpp",
-        "devpins.h",
         "pins.ts",
         "control.cpp",
         "i2c.cpp",
@@ -40,6 +38,20 @@
     },
     "additionalFilePath": "../../node_modules/pxt-common-packages/libs/core",
     "public": true,
+    "dalDTS": {
+        "includeDirs": [
+            "libraries/codal-core/inc",
+            "pxtapp"
+        ],
+        "excludePrefix": [
+            "USB_",
+            "REQUEST_",
+            "LIS3DH_",
+            "FXOS8700_",
+            "HF2_",
+            "PXT_REF_TAG_"
+        ]
+    },
     "dependencies": {
         "base": "file:../base"
     }

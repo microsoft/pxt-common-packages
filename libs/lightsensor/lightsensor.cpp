@@ -15,7 +15,7 @@ class WLight {
   public:
     AnalogSensor sensor;
     WLight()
-        : sensor(*lookupPin(PIN_LIGHT), DEVICE_ID_LIGHT_SENSOR) //
+        : sensor(*LOOKUP_PIN(LIGHT), DEVICE_ID_LIGHT_SENSOR) //
     {
         sensor.init();
         sensor.setPeriod(50);
