@@ -15,12 +15,7 @@ namespace light {
     DigitalPin defaultPin() {
         int pinName = PIN(NEOPIXEL);
         if (pinName < 0) {
-            pinName = 11; // default to PA11
-        }
-
-        if (pinName == 30) {
-            // Metro express neopixel pin is set for SWD by default
-            PORT->Group[pinName / 32].PINCFG[pinName % 32].reg=(uint8_t)(PORT_PINCFG_INEN) ;
+            pinName = PA11;
         }
         
         return lookupPin(pinName);

@@ -71,6 +71,7 @@
 #define CFG_NUM_NEOPIXELS 200
 #define CFG_NUM_DOTSTARS 201
 #define CFG_DEFAULT_BUTTON_MODE 202
+#define CFG_SWD_ENABLED 203
 
 #define BUTTON_ACTIVE_HIGH_PULL_DOWN (ACTIVE_HIGH | 0x10)
 #define BUTTON_ACTIVE_HIGH_PULL_UP (ACTIVE_HIGH | 0x20)
@@ -124,6 +125,7 @@ enum class ButtonEvent {
 namespace pxt {
 DevicePin *getPin(int id);
 DevicePin *lookupPin(int pinName);
+void linkPin(int from, int to);    
 Button *getButtonByPin(int pin, int flags);
 AbstractButton *getButton(int id);
 MultiButton *getMultiButton(int id, int pinA, int pinB, int flags);

@@ -3,7 +3,6 @@
 
 void cpu_clock_init(void);
 
-
 namespace pxt {
 
 // The first two word are used to tell the bootloader that a single reset should start the
@@ -35,13 +34,14 @@ static void initCodal() {
 
     // We probably don't need that - components are initialized when one obtains
     // the reference to it.
-    //devMessageBus.listen(DEVICE_ID_MESSAGE_BUS_LISTENER, DEVICE_EVT_ANY, this, &CircuitPlayground::onListenerRegisteredEvent);
-    
-    for(int i = 0; i < DEVICE_COMPONENT_COUNT; i++) {
-        if(CodalComponent::components[i])
+    // devMessageBus.listen(DEVICE_ID_MESSAGE_BUS_LISTENER, DEVICE_EVT_ANY, this,
+    // &CircuitPlayground::onListenerRegisteredEvent);
+
+    for (int i = 0; i < DEVICE_COMPONENT_COUNT; i++) {
+        if (CodalComponent::components[i])
             CodalComponent::components[i]->init();
     }
-    
+
     usb.stringDescriptors = string_descriptors;
     usb.add(hf2);
     usb.start();
@@ -122,20 +122,41 @@ void initRandomSeed() {
     seedRandom(seed);
 }
 
+static void remapSwdPin(int pinCfg, int fallback) {
+    int pinName = getConfig(pinCfg);
+    if (pinName == PA30 || pinName == PA31) {
+        if (getConfig(CFG_SWD_ENABLED, 0)) {
+            linkPin(pinName, fallback);
+        } else {
+            PORT->Group[pinName / 32].PINCFG[pinName % 32].reg = (uint8_t)PORT_PINCFG_INEN;
+        }
+    }
+}
+
+static void initSwdPins() {
+    remapSwdPin(CFG_PIN_NEOPIXEL, PIN(D0));
+    remapSwdPin(CFG_PIN_RXLED, PIN(D1));
+}
+
 void clearNeoPixels() {
     // clear on-board neopixels
     auto neoPin = LOOKUP_PIN(NEOPIXEL);
     if (neoPin) {
-        uint8_t neobuf[30];
-        memset(neobuf, 0, 30);
-        neoPin->setDigitalValue(0);
-        fiber_sleep(1);
-        neopixel_send_buffer(*neoPin, neobuf, 30);
+        int numNeopixels = getConfig(CFG_NUM_NEOPIXELS, 0);
+        int size = numNeopixels * 3;
+        if (size) {
+            uint8_t neobuf[size];
+            memset(neobuf, 0, size);
+            neoPin->setDigitalValue(0);
+            fiber_sleep(1);
+            neopixel_send_buffer(*neoPin, neobuf, 30);
+        }
     }
 }
 
 void initRuntime() {
     initCodal();
+    initSwdPins();
     initRandomSeed();
     clearNeoPixels();
 

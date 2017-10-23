@@ -42,6 +42,13 @@ DevicePin *getPin(int id) {
     return pinPtrs[ptr - 1];
 }
 
+void linkPin(int from, int to) {
+    if (from < 0 || from >= DEV_NUM_PINS)
+        target_panic(42);
+    getPin(to);
+    pinPos[from] = pinPos[to];
+}
+
 //%
 DevicePin *lookupPin(int pinName) {
     if (pinName < 0) return NULL;

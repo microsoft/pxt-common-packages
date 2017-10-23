@@ -54,6 +54,7 @@ namespace AnalogPinMethods {
 /**
  * Get the cap-touch sensor for given pin (if available)
  */
+//%
 TouchButton touchButton(AnalogPin pin) {
     if (PA02 <= pin->name && pin->name <= PA07)
         ;
