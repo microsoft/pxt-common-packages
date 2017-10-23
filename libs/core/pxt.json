@@ -47,6 +47,7 @@
             "USB_",
             "REQUEST_",
             "LIS3DH_",
+            "FXOS8700_",
             "HF2_",
             "PXT_REF_TAG_"
         ]
