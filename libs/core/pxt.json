@@ -36,7 +36,6 @@
             }
         }
     },
-    "additionalFilePath": "../../node_modules/pxt-common-packages/libs/core",
     "public": true,
     "dalDTS": {
         "includeDirs": [
