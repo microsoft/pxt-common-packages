@@ -1,24 +1,12 @@
 // Auto-generated. Do not edit.
-declare namespace input {
 
-    /**
-     * Left button.
-     */
-    //% indexedInstanceNS=input indexedInstanceShim=pxt::getButton
-    //% block="button A" weight=95 fixedInstance shim=pxt::getButton(0)
-    const buttonA: Button;
 
+declare interface DigitalPin {
     /**
-     * Right button.
+     * Get the push button (connected to GND) for given pin
      */
-    //% block="button B" weight=94 fixedInstance shim=pxt::getButton(1)
-    const buttonB: Button;
-
-    /**
-     * Left and Right button.
-     */
-    //% block="buttons A+B" weight=93 fixedInstance shim=pxt::getButton(2)
-    const buttonsAB: Button;
+    //% shim=DigitalPinMethods::pushButton
+    pushButton(): Button;
 }
 
 

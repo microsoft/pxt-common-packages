@@ -28,4 +28,13 @@ declare interface TouchButton {
     value(): int32;
 }
 
+
+declare interface AnalogPin {
+    /**
+     * Get the cap-touch sensor for given pin (if available)
+     */
+    //% shim=AnalogPinMethods::touchButton
+    touchButton(): TouchButton;
+}
+
 // Auto-generated. Do not edit. Really.

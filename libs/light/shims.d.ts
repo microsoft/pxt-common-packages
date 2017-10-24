@@ -20,7 +20,7 @@ declare namespace light {
      * @param buf The buffer to send to the pin
      */
     //% parts="neopixel" shim=light::sendBuffer
-    function sendBuffer(pin: DigitalPin, mode: number, buf: Buffer): void;
+    function sendBuffer(pin: DigitalPin, mode: int32, buf: Buffer): void;
 }
 
 // Auto-generated. Do not edit. Really.
