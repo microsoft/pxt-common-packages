@@ -2,8 +2,7 @@ language: node_js
 node_js:
   - "5.7.0"
 script:
-  - "(cd sim && node ../node_modules/typescript/bin/tsc)"
-  - "test -z \"$TRAVIS_TAG\" || npm publish"
+  - "node node_modules/pxt-core/built/pxt.js travis"
 sudo: false
 notifications:
   email:
