@@ -2,6 +2,7 @@
     "id": "common",
     "name": "Microsoft MakeCode Common Packages",
     "corepkg": "core",
+    "appTheme": { },
     "bundleddirs": [
         "libs/core",
         "libs/buttons",
