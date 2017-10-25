@@ -47,7 +47,7 @@ namespace network {
     //% blockId=on_cable_received block="on cable received" blockGap=8
     //% help=network/on-cable-received
     //% parts="cable" group="Cable"
-    //% optionalVariableArgs
+    //% optionalVariableArgs toolboxVariableArgs="1"
     export function onCableReceived(handler: (num: number, nums?: number[], buf?: Buffer) => void) {
         onCablePacket(() => {
             const buf: Buffer = cablePacket();
