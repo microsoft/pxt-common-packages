@@ -20,7 +20,7 @@ namespace network {
      */
     //% blockId="ir_send_number" block="infrared send number %value"
     //% help=network/infrared-send-number
-    //% parts="ir" weight=90
+    //% parts="ir" weight=90 group="Infrared"
     export function infraredSendNumber(value: number) {
         infraredSendNumbers([value]);
     }
@@ -29,7 +29,7 @@ namespace network {
      * Send an array of numbers over infrared. The array size has to be 32 bytes or less.
      * @param values 
      */
-    //% parts="ir"
+    //% parts="ir" group="Infrared"
     export function infraredSendNumbers(values: number[]) {
         let buf = msgpack.packNumberArray(values);
         if (buf.length % 2) {
@@ -44,12 +44,27 @@ namespace network {
     /**
      * Run some code when the infrared receiver gets a packet.
      */
+    //% blockId=ir_on_infrared_received block="on infrared received" blockGap=8
+    //% help=network/on-infrared-received
+    //% parts="ir" group="Infrared"
+    //% optionalVariableArgs toolboxVariableArgs="1"
+    export function onInfraredReceived(handler: (num: number, nums?: number[], buf?: Buffer) => void) {
+        onInfraredPacket(() => {
+            const buf: Buffer = infraredPacket();
+            const nums: number[] = msgpack.unpackNumberArray(buf) || [];
+            const num = nums[0] || 0;
+            handler(num, nums, buf);
+        });
+    }
+    
+    /**
+     * Run some code when the infrared receiver gets a packet.
+     */
     //% mutate=objectdestructuring
     //% mutateText=InfraredPacket
     //% mutateDefaults="receivedNumber"
     //% blockId=ir_on_packet_received block="on infrared received" blockGap=8
-    //% help=network/on-infrared-packet-received
-    //% parts="ir"
+    //% parts="ir" group="Infrared" blockHidden=1 deprecated=1
     export function onInfraredPacketReceived(cb: (p: InfraredPacket) => void) {
         onInfraredPacket(() => {
             const buf: Buffer = infraredPacket();

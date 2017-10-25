@@ -15,7 +15,7 @@ class CableWrap : public PulseBase {
     virtual void finishPWM() { listen(); }
 
     virtual void listen() {
-        inpin->setPull(PinMode::PullDown);
+        inpin->setPull(codal::PullMode::Down);
         inpin->getDigitalValue();
         inpin->eventOn(DEVICE_PIN_EVENT_ON_PULSE);
     }

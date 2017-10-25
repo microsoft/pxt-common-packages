@@ -20,7 +20,7 @@ namespace network {
      */
     //% blockId="cable_send_number" block="cable send number %value"
     //% help=network/cable-send-number
-    //% parts="cable" weight=90
+    //% parts="cable" group="Cable" weight=90
     export function cableSendNumber(value: number) {
         cableSendNumbers([value]);
     }
@@ -29,7 +29,7 @@ namespace network {
      * Send an array of numbers over infrared. The array size has to be 32 bytes or less.
      * @param values 
      */
-    //% parts="cable"
+    //% parts="cable" group="Cable"
     export function cableSendNumbers(values: number[]) {
         let buf = msgpack.packNumberArray(values);
         if (buf.length % 2) {
@@ -42,14 +42,29 @@ namespace network {
     }
 
     /**
+     * Run some code when the cable receives data.
+     */
+    //% blockId=on_cable_received block="on cable received" blockGap=8
+    //% help=network/on-cable-received
+    //% parts="cable" group="Cable"
+    //% optionalVariableArgs toolboxVariableArgs="1"
+    export function onCableReceived(handler: (num: number, nums?: number[], buf?: Buffer) => void) {
+        onCablePacket(() => {
+            const buf: Buffer = cablePacket();
+            const nums: number[] = msgpack.unpackNumberArray(buf) || [];
+            const num = nums[0] || 0;
+            handler(num, nums, buf);
+        })
+    }
+
+    /**
      * Run some code when the cable receiver gets a packet.
      */
     //% mutate=objectdestructuring
     //% mutateText=CablePacket
     //% mutateDefaults="receivedNumber"
     //% blockId=cable_on_packet_received block="on cable received" blockGap=8
-    //% help=network/on-cable-packet-received
-    //% parts="cable"
+    //% parts="cable" group="Cable" blockHidden=1 deprecated=1
     export function onCablePacketReceived(cb: (p: CablePacket) => void) {
         onCablePacket(() => {
             const buf: Buffer = cablePacket();
