@@ -1,6 +1,6 @@
 {
   "name": "pxt-common-packages",
-  "version": "0.12.0",
+  "version": "0.12.1",
   "description": "Microsoft MakeCode (PXT) common packages",
   "keywords": [
     "MakeCode",
