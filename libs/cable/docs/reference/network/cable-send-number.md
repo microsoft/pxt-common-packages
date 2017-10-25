@@ -26,7 +26,7 @@ for (let i = 0; i <= 9; i++) {
 
 ## See also
 
-[``||network:on cable packet received||``](/reference/network/on-cable-packet-received)
+[``||network:on cable received||``](/reference/network/on-cable-received)
 
 ```package
 cable

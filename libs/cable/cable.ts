@@ -42,6 +42,22 @@ namespace network {
     }
 
     /**
+     * Run some code when the cable receives data.
+     */
+    //% blockId=cable_on_data_received block="on cable received" blockGap=8
+    //% help=network/on-cable-received
+    //% parts="cable"
+    //% optionalVariableArgs
+    export function onCableReceived(handler: (num: number, nums: number[], buf: Buffer) => void) {
+        onCablePacket(() => {
+            const buf: Buffer = cablePacket();
+            const nums: number[] = msgpack.unpackNumberArray(buf) || [];
+            const num = nums[0] || 0;
+            handler(num, nums, buf);
+        })
+    }
+
+    /**
      * Run some code when the cable receiver gets a packet.
      */
     //% mutate=objectdestructuring
@@ -49,7 +65,7 @@ namespace network {
     //% mutateDefaults="receivedNumber"
     //% blockId=cable_on_packet_received block="on cable received" blockGap=8
     //% help=network/on-cable-packet-received
-    //% parts="cable"
+    //% parts="cable" blockHidden=1 deprecated=1
     export function onCablePacketReceived(cb: (p: CablePacket) => void) {
         onCablePacket(() => {
             const buf: Buffer = cablePacket();
