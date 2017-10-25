@@ -44,12 +44,26 @@ namespace network {
     /**
      * Run some code when the infrared receiver gets a packet.
      */
+    //% blockId=ir_on_infrared_received block="on infrared received" blockGap=8
+    //% help=network/on-infrared-received
+    //% parts="ir"
+    export function onInfraredReceived(handler: (num: number, nums: number[], buf: Buffer) => void) {
+        onInfraredPacket(() => {
+            const buf: Buffer = infraredPacket();
+            const nums: number[] = msgpack.unpackNumberArray(buf) || [];
+            const num = nums[0] || 0;
+            handler(num, nums, buf);
+        });
+    }
+    
+    /**
+     * Run some code when the infrared receiver gets a packet.
+     */
     //% mutate=objectdestructuring
     //% mutateText=InfraredPacket
     //% mutateDefaults="receivedNumber"
     //% blockId=ir_on_packet_received block="on infrared received" blockGap=8
-    //% help=network/on-infrared-packet-received
-    //% parts="ir"
+    //% parts="ir" blockHidden=1 deprecated=1
     export function onInfraredPacketReceived(cb: (p: InfraredPacket) => void) {
         onInfraredPacket(() => {
             const buf: Buffer = infraredPacket();

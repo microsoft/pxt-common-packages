@@ -64,7 +64,6 @@ namespace network {
     //% mutateText=CablePacket
     //% mutateDefaults="receivedNumber"
     //% blockId=cable_on_packet_received block="on cable received" blockGap=8
-    //% help=network/on-cable-packet-received
     //% parts="cable" blockHidden=1 deprecated=1
     export function onCablePacketReceived(cb: (p: CablePacket) => void) {
         onCablePacket(() => {

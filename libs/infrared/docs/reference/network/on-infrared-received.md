@@ -1,9 +1,9 @@
-# on Cable Received
+# on Infrared Packet Received
 
-Run some code when a data message comes into the cable.
+Run some code when a data message comes into the infrared receiver.
 
 ```sig
-network.onCableReceived(function (num: number) {
+network.onInfraredReceived(function (num) {
 	
 })
 ```
@@ -30,15 +30,15 @@ Right now, just use ``num`` as your data part from the packet you receive over i
 Show the value of a number received from an infrared data message. The number is shown by lighting the same number of pixels on the pixel strip.
 
 ```blocks
-network.onCableReceived(function (num) {
+network.onInfraredReceived(function (num) {
     light.pixels.graph(num, 9);
 })
 ```
 
 ## See also
 
-[``||network:cable send number||``](/reference/network/cable-send-number)
+[``||network:infrared send number||``](/reference/network/infrared-send-number)
 
 ```package
-cable
+infrared
 ```
