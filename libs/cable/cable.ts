@@ -44,11 +44,11 @@ namespace network {
     /**
      * Run some code when the cable receives data.
      */
-    //% blockId=cable_on_data_received block="on cable received" blockGap=8
+    //% blockId=on_cable_received block="on cable received" blockGap=8
     //% help=network/on-cable-received
     //% parts="cable"
     //% optionalVariableArgs
-    export function onCableReceived(handler: (num: number, nums: number[], buf: Buffer) => void) {
+    export function onCableReceived(handler: (num: number, nums?: number[], buf?: Buffer) => void) {
         onCablePacket(() => {
             const buf: Buffer = cablePacket();
             const nums: number[] = msgpack.unpackNumberArray(buf) || [];

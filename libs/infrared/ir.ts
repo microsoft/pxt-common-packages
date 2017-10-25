@@ -47,7 +47,8 @@ namespace network {
     //% blockId=ir_on_infrared_received block="on infrared received" blockGap=8
     //% help=network/on-infrared-received
     //% parts="ir"
-    export function onInfraredReceived(handler: (num: number, nums: number[], buf: Buffer) => void) {
+    //% optionalVariableArgs
+    export function onInfraredReceived(handler: (num: number, nums?: number[], buf?: Buffer) => void) {
         onInfraredPacket(() => {
             const buf: Buffer = infraredPacket();
             const nums: number[] = msgpack.unpackNumberArray(buf) || [];
