@@ -86,12 +86,13 @@ namespace ButtonMethods {
  */
 //% help=input/button/on-event
 //% blockId=buttonEvent block="on %button|%event"
-//% parts="buttonpair"
+//% parts="buttons"
 //% blockNamespace=input
 //% button.fieldEditor="gridpicker"
 //% button.fieldOptions.width=220
 //% button.fieldOptions.columns=3
 //% weight=96 blockGap=8
+//% trackArgs=0
 void onEvent(Button_ button, ButtonEvent ev, Action body) {
     registerWithDal(button->id, (int)ev, body);
 }
@@ -103,12 +104,13 @@ void onEvent(Button_ button, ButtonEvent ev, Action body) {
 //% help=input/button/is-pressed
 //% block="%button|is pressed"
 //% blockId=buttonIsPressed
-//% parts="buttonpair"
+//% parts="buttons"
 //% blockNamespace=input
 //% button.fieldEditor="gridpicker"
 //% button.fieldOptions.width=220
 //% button.fieldOptions.columns=3
 //% weight=50 blockGap=8
+//% trackArgs=0
 bool isPressed(Button_ button) {
     return button->isPressed();
 }
@@ -120,12 +122,13 @@ bool isPressed(Button_ button) {
 //% help=input/button/was-pressed
 //% block="%button|was pressed"
 //% blockId=buttonWasPressed
-//% parts="buttonpair"
+//% parts="buttons"
 //% blockNamespace=input
 //% button.fieldEditor="gridpicker"
 //% button.fieldOptions.width=220
 //% button.fieldOptions.columns=3
 //% group="More" weight=46 blockGap=8
+//% trackArgs=0
 bool wasPressed(Button_ button) {
     return button->wasPressed();
 }
