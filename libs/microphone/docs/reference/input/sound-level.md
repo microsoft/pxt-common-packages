@@ -15,13 +15,14 @@ Use the pixels to make a sound meter. If loud sounds are detected, more pixels l
 
 ```blocks
 let lastLevel = 0
+let pixelStrip = light.createStrip()
 
 loops.forever(() => {
     let level = input.soundLevel()
     if (lastLevel != level) {
-        light.pixels.clear()
-        for (let i = 0; i < light.pixels.length() / 255 * level; i++) {
-            light.pixels.setPixelColor(i, Colors.Green)
+        pixelStrip.clear()
+        for (let i = 0; i < strip.length() / 255 * level; i++) {
+            pixelStrip.setPixelColor(i, Colors.Green)
         }
         lastLevel = level
     }

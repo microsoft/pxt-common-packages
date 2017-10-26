@@ -18,20 +18,21 @@ Use two ``||on switch moved||`` events for `left` and `right`. Make a photon mov
 when the switch is moves from one side to the other.
 
 ```blocks
-light.pixels.setAll(Colors.Red)
+let strip = light.createStrip()
+strip.setAll(Colors.Red)
 input.onSwitchMoved(SwitchDirection.Right, () => {
-    for (let i = 0; i < light.pixels.length(); i++) {
-        light.pixels.photonForward(1)
+    for (let i = 0; i < strip.length(); i++) {
+        strip.photonForward(1)
         loops.pause(50)
     }
-    light.pixels.photonFlip()
+    strip.photonFlip()
 })
 input.onSwitchMoved(SwitchDirection.Left, () => {
-    for (let i = 0; i < light.pixels.length(); i++) {
-        light.pixels.photonForward(1)
+    for (let i = 0; i < strip.length(); i++) {
+        strip.photonForward(1)
         loops.pause(50)
     }
-    light.pixels.photonFlip()
+    strip.photonFlip()
 })
 ```
 

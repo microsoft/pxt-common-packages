@@ -19,12 +19,13 @@ a sound level number as a _threshold_ (just the right amount of sound) to make t
 Flash the pixels to `pink` on the pixel strip when you clap or make another loud sound nearby.
 
 ```blocks
+let pixelStrip = light.createStrip()
 input.setLoudSoundThreshold(768)
 
 input.onLoudSound(() => {
-	light.pixels.setAll(Colors.Pink)
+	pixelStrip.setAll(Colors.Pink)
     loops.pause(200)
-    light.pixels.clear()
+    pixelStrip.clear()
 })
 ```
 

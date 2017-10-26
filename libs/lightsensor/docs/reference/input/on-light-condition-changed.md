@@ -4,7 +4,6 @@ Run some code when the light conditions change.
 
 ```sig
 input.onLightConditionChanged(LightCondition.Dark, () => {
-	light.pixels.setBrightness(light.fade(Colors.Red,128))
 })
 ```
 
@@ -21,6 +20,6 @@ Dim the red pixels to half intensity when light conditions turn dark.
 
 ```blocks
 input.onLightConditionChanged(LightCondition.Dark, () => {
-	light.pixels.setBrightness(light.fade(Colors.Red,128))
+	light.createStrip().setBrightness(light.fade(Colors.Red,128))
 })
 ```

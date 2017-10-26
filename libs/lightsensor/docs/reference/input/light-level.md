@@ -22,10 +22,11 @@ When you press button `A` on the @boardname@, this
 program changes the brightness of the pixels accordingly.
 
 ```blocks
+let pixelStrip = light.createStrip()
 input.buttonA.onEvent(ButtonEvent.Click, () => {
     let level = input.lightLevel()
-    light.pixels.setBrightness(level)
-    light.pixels.setAll(light.colors(Colors.Red))
+    pixelStrip.setBrightness(level)
+    pixelStrip.setAll(light.colors(Colors.Red))
 })
 ```
 
@@ -36,8 +37,9 @@ If you carry the @boardname@ around to different places with different light lev
 the graph will change.
 
 ```blocks
+let pixelStrip = light.createStrip()
 loops.forever(() => {
-    light.pixels.graph(
+    pixelStrip.graph(
         input.lightLevel(),
         0
     )
