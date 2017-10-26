@@ -576,7 +576,7 @@ namespace light {
         }
 
         /**
-         * Show a single animation frame
+         * Show a single animation frame.
          * @param animation the animation to run, eg: light.animation(LightAnimation.Rainbow)
          */
         //% blockId=light_show_animation_frame block="%strip|show animation frame %animation=light_animation"
@@ -590,7 +590,6 @@ namespace light {
             animation.renderFrame(this);
             this.setBuffered(buf);
             this.show();
-            loops.pause(50);
         }
 
         /**
