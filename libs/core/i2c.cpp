@@ -1,4 +1,5 @@
 #include "pxt.h"
+#include "ErrorNo.h"
 
 namespace pins {
     static codal::I2C *i2c;
@@ -8,7 +9,7 @@ namespace pins {
         i2c = new codal::mbed::I2C(*LOOKUP_PIN(SDA), *LOOKUP_PIN(SCL));
       }
     }
-  
+
       /**
      * Read `size` bytes from a 7-bit I2C `address`.
      */
@@ -17,8 +18,8 @@ namespace pins {
     {
       initI2C();
       Buffer buf = createBuffer(size);
-      int ok = i2c->read(address << 1, buf->data, size, repeat);
-      if (!ok) {
+      int status = i2c->read(address << 1, buf->data, size, repeat);
+      if (status != ErrorCode::DEVICE_OK) {
         free(buf);
         buf = 0;
       }
