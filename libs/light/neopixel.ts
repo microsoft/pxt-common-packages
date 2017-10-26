@@ -117,7 +117,7 @@ namespace light {
         _buf: Buffer; // unscaled color buffer
         // per pixel scaling. This buffer is allocated on-demand when per-pixel brightness is needed.
         // when rendering, if this buffer is null, use _brightness instead
-        _brightnessBuf: Buffer; 
+        _brightnessBuf: Buffer;
         _sendBuf: Buffer; // scaled color buffer
         _brightness: number; // global brightness for this strip
         _start: number; // start offset in LED strip
@@ -322,7 +322,7 @@ namespace light {
                 const b = this.buf;
                 // bb may be undefined if the brightness 
                 // is uniform over the strip and has not been allocated
-                const _bb = this._brightnessBuf; 
+                const _bb = this._brightnessBuf;
                 if (!this._sendBuf) this._sendBuf = pins.createBuffer(b.length);
                 const sb = this._sendBuf;
                 const stride = this.stride();
@@ -342,7 +342,7 @@ namespace light {
                     for (let bi = 0; bi < tailn && c > 0; ++bi) {
                         if (this._mode == NeoPixelMode.RGBW)
                             sb[pi + 3] = c;
-                        else 
+                        else
                             sb[pi] = sb[pi + 1] = sb[pi + 2] = c;
 
                         c -= dc;
@@ -388,10 +388,11 @@ namespace light {
         //% weight=2 blockGap=8
         setBrightness(brightness: number): void {
             this._brightness = Math.max(0, Math.min(0xff, brightness >> 0));
-            // do not allocate brightness buffer
-            // if this is a top-level strip (not a range) 
-            // and no brightness buff has been allocated yet,
-            if (this._parent || this._brightnessBuf)
+            // if this is a top level strip clear any existing brightness buffer
+            if (!this._parent)
+                this._brightnessBuf = undefined;
+            // if this is a NOT top-level strip or if brightness buff has been allocated,
+            else if (this._parent || this._brightnessBuf)
                 this.brightnessBuf.fill(this._brightness, this._start, this._length);
             this.autoShow();
         }
@@ -872,7 +873,7 @@ namespace light {
             // The photon color has since changed, and we now use setPhotonPenHue to set the hue of the photon color
             this.setPhotonPenHue(color);
         }
-            
+
         /**
          * Set the photon mode to pen up, pen down, or eraser.
          * @param mode the desired mode
