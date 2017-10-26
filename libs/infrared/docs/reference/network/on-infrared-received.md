@@ -3,7 +3,7 @@
 Run some code when a data message comes into the infrared receiver.
 
 ```sig
-network.onInfraredReceived(function (num) {
+network.onInfraredReceivedNumber(function (num) {
 	
 })
 ```
@@ -30,7 +30,7 @@ Right now, just use ``num`` as your data part from the packet you receive over i
 Show the value of a number received from an infrared data message. The number is shown by lighting the same number of pixels on the pixel strip.
 
 ```blocks
-network.onInfraredReceived(function (num) {
+network.onInfraredReceivedNumber(function (num) {
     light.pixels.graph(num, 9);
 })
 ```

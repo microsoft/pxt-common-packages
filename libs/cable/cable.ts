@@ -42,18 +42,38 @@ namespace network {
     }
 
     /**
-     * Run some code when the cable receives data.
+     * Run some code when the cable receives a number.
      */
     //% blockId=on_cable_received block="on cable received" blockGap=8
     //% help=network/on-cable-received
     //% parts="cable" group="Cable"
-    //% optionalVariableArgs toolboxVariableArgs="1"
-    export function onCableReceived(handler: (num: number, nums?: number[], buf?: Buffer) => void) {
+    export function onCableReceivedNumber(handler: (num: number) => void) {
         onCablePacket(() => {
             const buf: Buffer = cablePacket();
             const nums: number[] = msgpack.unpackNumberArray(buf) || [];
             const num = nums[0] || 0;
-            handler(num, nums, buf);
+            handler(num);
+        })
+    }
+
+    /**
+     * Run some code when the cable receives a list of numbers.
+     */
+    export function onCableReceivedNumbers(handler: (nums: number[]) => void) {
+        onCablePacket(() => {
+            const buf: Buffer = cablePacket();
+            const nums: number[] = msgpack.unpackNumberArray(buf) || [];
+            handler(nums);
+        })
+    }
+
+    /**
+     * Run some code when the cable receives data a buffer.
+     */
+    export function onCableReceivedBuffer(handler: (buf: Buffer) => void) {
+        onCablePacket(() => {
+            const buf: Buffer = cablePacket();
+            handler(buf);
         })
     }
 

@@ -42,18 +42,38 @@ namespace network {
     }
 
     /**
-     * Run some code when the infrared receiver gets a packet.
+     * Run some code when the infrared receiver gets a number.
      */
     //% blockId=ir_on_infrared_received block="on infrared received" blockGap=8
     //% help=network/on-infrared-received
     //% parts="ir" group="Infrared"
-    //% optionalVariableArgs toolboxVariableArgs="1"
-    export function onInfraredReceived(handler: (num: number, nums?: number[], buf?: Buffer) => void) {
+    export function onInfraredReceivedNumber(handler: (num: number) => void) {
         onInfraredPacket(() => {
             const buf: Buffer = infraredPacket();
             const nums: number[] = msgpack.unpackNumberArray(buf) || [];
             const num = nums[0] || 0;
-            handler(num, nums, buf);
+            handler(num);
+        });
+    }
+
+    /**
+     * Run some code when the infrared receiver gets a list of numbers.
+     */
+    export function onInfraredReceivedNumbers(handler: (nums: number[]) => void) {
+        onInfraredPacket(() => {
+            const buf: Buffer = infraredPacket();
+            const nums: number[] = msgpack.unpackNumberArray(buf) || [];
+            handler(nums);
+        });
+    }
+    
+    /**
+     * Run some code when the infrared receiver gets a buffer.
+     */
+    export function onInfraredReceivedBuffer(handler: (buf: Buffer) => void) {
+        onInfraredPacket(() => {
+            const buf: Buffer = infraredPacket();
+            handler(buf);
         });
     }
     
