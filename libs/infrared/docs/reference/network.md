@@ -6,7 +6,7 @@ Send and receive data between your @boardname@ and another board.
 
 ```cards
 network.infraredSendNumber(0);
-network.onInfraredReceived(function (num) {
+network.onInfraredReceivedNumber(function (num) {
 	
 })
 ```
