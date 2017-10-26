@@ -115,7 +115,9 @@ namespace light {
         _parent: NeoPixelStrip;
         _pin: DigitalPin;
         _buf: Buffer; // unscaled color buffer
-        _brightnessBuf: Buffer; // per pixel scaling
+        // per pixel scaling. This buffer is allocated on-demand when per-pixel brightness is needed.
+        // when rendering, if this buffer is null, use _brightness instead
+        _brightnessBuf: Buffer;
         _sendBuf: Buffer; // scaled color buffer
         _brightness: number; // global brightness for this strip
         _start: number; // start offset in LED strip
@@ -145,8 +147,11 @@ namespace light {
 
         get brightnessBuf(): Buffer {
             if (this._parent) return this._parent.brightnessBuf;
-            if (!this._brightnessBuf)
-                this.reallocateBuffer();
+            if (!this._brightnessBuf) {
+                const b = this.buf; // force allocate buffer
+                this._brightnessBuf = pins.createBuffer(this._length);
+                this._brightnessBuf.fill(this._brightness, 0, this._brightnessBuf.length);
+            }
             return this._brightnessBuf;
         }
 
@@ -315,7 +320,9 @@ namespace light {
             if (this._parent) this._parent.show();
             else if (this._pin) {
                 const b = this.buf;
-                const bb = this.brightnessBuf;
+                // bb may be undefined if the brightness 
+                // is uniform over the strip and has not been allocated
+                const _bb = this._brightnessBuf;
                 if (!this._sendBuf) this._sendBuf = pins.createBuffer(b.length);
                 const sb = this._sendBuf;
                 const stride = this.stride();
@@ -323,7 +330,7 @@ namespace light {
                 for (let i = 0; i < this._length; ++i) {
                     const offset = (this._start + i) * stride;
                     for (let j = 0; j < stride; ++j)
-                        sb[offset + j] = (b[offset + j] * bb[i]) >> 8;
+                        sb[offset + j] = (b[offset + j] * (_bb ? _bb[i] : this._brightness)) >> 8;
                 }
                 // apply photon
                 if (this._photonColor) {
@@ -335,7 +342,7 @@ namespace light {
                     for (let bi = 0; bi < tailn && c > 0; ++bi) {
                         if (this._mode == NeoPixelMode.RGBW)
                             sb[pi + 3] = c;
-                        else 
+                        else
                             sb[pi] = sb[pi + 1] = sb[pi + 2] = c;
 
                         c -= dc;
@@ -381,7 +388,12 @@ namespace light {
         //% weight=2 blockGap=8
         setBrightness(brightness: number): void {
             this._brightness = Math.max(0, Math.min(0xff, brightness >> 0));
-            this.brightnessBuf.fill(this._brightness, this._start, this._length);
+            // if this is a top level strip clear any existing brightness buffer
+            if (!this._parent)
+                this._brightnessBuf = undefined;
+            // if this is a NOT top-level strip or if brightness buff has been allocated,
+            else if (this._parent || this._brightnessBuf)
+                this.brightnessBuf.fill(this._brightness, this._start, this._length);
             this.autoShow();
         }
 
@@ -399,7 +411,7 @@ namespace light {
         /**
          * Create a range of pixels.
          * @param start offset in the NeoPixel strip to start the range
-         * @param length number of pixels in the range. eg: 4
+         * @param length number of pixels in the range, eg: 4
          */
         //% blockId="light_range" block="%strip|range from %start|with %length|pixels"
         //% help="light/range"   
@@ -686,8 +698,7 @@ namespace light {
         private reallocateBuffer(): void {
             const stride = this.stride();
             this._buf = pins.createBuffer(this._length * stride);
-            this._brightnessBuf = pins.createBuffer(this._length);
-            this._brightnessBuf.fill(this._brightness, 0, this._brightnessBuf.length);
+            this._brightnessBuf = undefined;
             this._sendBuf = undefined;
         }
 
@@ -862,7 +873,7 @@ namespace light {
             // The photon color has since changed, and we now use setPhotonPenHue to set the hue of the photon color
             this.setPhotonPenHue(color);
         }
-            
+
         /**
          * Set the photon mode to pen up, pen down, or eraser.
          * @param mode the desired mode
