@@ -115,7 +115,9 @@ namespace light {
         _parent: NeoPixelStrip;
         _pin: DigitalPin;
         _buf: Buffer; // unscaled color buffer
-        _brightnessBuf: Buffer; // per pixel scaling. This buffer is allocated on-demand when per-pixel brightness is needed
+        // per pixel scaling. This buffer is allocated on-demand when per-pixel brightness is needed.
+        // when rendering, if this buffer is null, use _brightness instead
+        _brightnessBuf: Buffer; 
         _sendBuf: Buffer; // scaled color buffer
         _brightness: number; // global brightness for this strip
         _start: number; // start offset in LED strip
