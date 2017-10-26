@@ -48,19 +48,19 @@ light.fade(0, 0)
 ```
 ## See also #seealso
 
-[showAnimation](/reference/light/neopixelstrip/show-animation), [showAnimationFrame](/reference/light/neopixelstrip/show-animation-frame),
-[stopAllAnimations](/reference/light/neopixelstrip/stop-all-animations), [animation](/reference/light/animation),
-[graph](/reference/light/neopixelstrip/graph), [setAll](/reference/light/neopixelstrip/set-all),
-[show](/reference/light/neopixelstrip/show), [setBuffered](/reference/light/neopixelstrip/set-buffered), 
-[setBrightness](/reference/light/neopixelstrip/set-brightness),
-[setPixelColor](/reference/light/neopixelstrip/set-pixel-color), [clear](/reference/light/neopixelstrip/clear),
-[brightness](/reference/light/neopixelstrip/brightness), [pixelColor](/reference/light/neopixelstrip/pixel-color),
-[createStrip](/reference/light/create-strip), [setPixelWhiteLED](/reference/light/neopixelstrip/set-pixel-white-led),
-[range](/reference/light/neopixelstrip/range), [length](/reference/light/neopixelstrip/length),
-[move](/reference/light/neopixelstrip/move), [photonForward](/reference/light/neopixelstrip/photon-forward),
-[photonFlip](/reference/light/neopixelstrip/photon-flip), [setPhotonPenColor](/reference/light/neopixelstrip/set-photon-pen-color),
-[setPhotonPenHue](/reference/light/neopixelstrip/set-photon-pen-hue),
-[setPhotonMode](/reference/light/neopixelstrip/set-photon-mode), [rgb](/reference/light/rgb),
+[showAnimation](/reference/light/show-animation), [showAnimationFrame](/reference/light/show-animation-frame),
+[stopAllAnimations](/reference/light/stop-all-animations), [animation](/reference/light/animation),
+[graph](/reference/light/graph), [setAll](/reference/light/set-all),
+[show](/reference/light/show), [setBuffered](/reference/light/set-buffered), 
+[setBrightness](/reference/light/set-brightness),
+[setPixelColor](/reference/light/set-pixel-color), [clear](/reference/light/clear),
+[brightness](/reference/light/brightness), [pixelColor](/reference/light/pixel-color),
+[createStrip](/reference/light/create-strip), [setPixelWhiteLED](/reference/light/set-pixel-white-led),
+[range](/reference/light/range), [length](/reference/light/length),
+[move](/reference/light/move), [photonForward](/reference/light/photon-forward),
+[photonFlip](/reference/light/photon-flip), [setPhotonPenColor](/reference/light/set-photon-pen-color),
+[setPhotonPenHue](/reference/light/set-photon-pen-hue),
+[setPhotonMode](/reference/light/set-photon-mode), [rgb](/reference/light/rgb),
 [hsv](/reference/light/hsv), [colors](/reference/light/colors),
 [fade](/reference/light/fade)
 
