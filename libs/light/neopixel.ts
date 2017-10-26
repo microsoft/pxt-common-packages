@@ -392,7 +392,7 @@ namespace light {
             // if this is a top-level strip (not a range) 
             // and no brightness buff has been allocated yet,
             if (this._parent || this._brightnessBuf)
-                this._brightnessBuf.fill(this._brightness, this._start, this._length);
+                this.brightnessBuf.fill(this._brightness, this._start, this._length);
             this.autoShow();
         }
 
@@ -410,7 +410,7 @@ namespace light {
         /**
          * Create a range of pixels.
          * @param start offset in the NeoPixel strip to start the range
-         * @param length number of pixels in the range. eg: 4
+         * @param length number of pixels in the range, eg: 4
          */
         //% blockId="light_range" block="%strip|range from %start|with %length|pixels"
         //% help="light/range"   
