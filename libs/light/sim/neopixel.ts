@@ -29,6 +29,10 @@ namespace pxsim {
             }
         }
     }
+
+    export interface CommonNeoPixelStateConstructor {
+        (pin: Pin): CommonNeoPixelState;
+    }
 }
 
 namespace pxsim.light {
@@ -37,6 +41,7 @@ namespace pxsim.light {
         const state = neopixelState(pin.id);
         state.mode = mode; // TODO RGBW support
         state.buffer = b.data;
+
         runtime.queueDisplayUpdate();
     }
 

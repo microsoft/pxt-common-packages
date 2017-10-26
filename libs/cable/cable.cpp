@@ -15,12 +15,12 @@ class CableWrap : public PulseBase {
     virtual void finishPWM() { listen(); }
 
     virtual void listen() {
-        inpin->setPull(PinMode::PullDown);
+        inpin->setPull(codal::PullMode::Down);
         inpin->getDigitalValue();
         inpin->eventOn(DEVICE_PIN_EVENT_ON_PULSE);
     }
 
-    CableWrap() : PulseBase(PULSE_CABLE_COMPONENT_ID, PIN_A7, PIN_A7) { setupGapEvents(); }
+    CableWrap() : PulseBase(PULSE_CABLE_COMPONENT_ID, PIN(TX), PIN(TX)) { setupGapEvents(); }
 };
 SINGLETON(CableWrap);
 

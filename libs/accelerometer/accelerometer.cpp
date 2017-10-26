@@ -110,19 +110,13 @@ namespace pxt {
 
 class WAccel {
   public:
-    DevicePin int1;
-    DevicePin sda;
-    DevicePin scl;
-    CoordinateSpace space;
     codal::mbed::I2C i2c; // note that this is different pins than io->i2c
+    CoordinateSpace space;
     LIS3DH acc;
     WAccel()
-        : INIT_PIN(int1, PIN_ACCELEROMETER_INT), 
-        INIT_PIN(sda, PIN_ACCELEROMETER_SDA), 
-        INIT_PIN(scl, PIN_ACCELEROMETER_SCL), 
-        space(ACC_SYSTEM, ACC_UPSIDEDOWN, ACC_ROTATION),
-        i2c(sda, scl),
-        acc(i2c, int1, space)
+        : i2c(*LOOKUP_PIN(ACCELEROMETER_SDA), *LOOKUP_PIN(ACCELEROMETER_SCL)),
+          space(ACC_SYSTEM, ACC_UPSIDEDOWN, ACC_ROTATION),
+          acc(i2c, *LOOKUP_PIN(ACCELEROMETER_INT), space) //
     {
         acc.init();        
     }

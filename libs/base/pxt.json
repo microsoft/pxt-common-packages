@@ -22,7 +22,6 @@
     "testFiles": [
         "test.ts"
     ],
-    "additionalFilePath": "../../node_modules/pxt-common-packages/libs/base",
     "public": true,
     "dependencies": {}
 }

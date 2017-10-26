@@ -24,7 +24,7 @@ class WTemp {
   public:
     NonLinearAnalogSensor sensor;
     WTemp()
-        : sensor(*lookupPin(PIN_TEMPERATURE), DEVICE_ID_THERMOMETER, 25, 10000, 3380, 10000,
+        : sensor(*LOOKUP_PIN(TEMPERATURE), DEVICE_ID_THERMOMETER, 25, 10000, 3380, 10000,
                  273.5) //
     {
         sensor.init();
