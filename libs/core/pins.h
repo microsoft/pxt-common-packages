@@ -96,36 +96,10 @@ typedef DevicePin *AnalogPin;
 typedef DevicePin *PwmPin;
 typedef Button *Button_;
 
-/*
-
-These button event needs CODAL work.
-
-    // % block="double click"
-    DoubleClick = DEVICE_BUTTON_EVT_DOUBLE_CLICK,
-
-    // % block="hold"
-    Hold = DEVICE_BUTTON_EVT_HOLD
-
-*/
-
-/**
-* User interaction on buttons
-*/
-enum class ButtonEvent {
-    //% block="click"
-    Click = DEVICE_BUTTON_EVT_CLICK,
-    //% block="long click"
-    LongClick = DEVICE_BUTTON_EVT_LONG_CLICK,
-    //% block="up"
-    Up = DEVICE_BUTTON_EVT_UP,
-    //% block="down"
-    Down = DEVICE_BUTTON_EVT_DOWN
-};
-
 namespace pxt {
 DevicePin *getPin(int id);
 DevicePin *lookupPin(int pinName);
-void linkPin(int from, int to);    
+void linkPin(int from, int to);
 Button *getButtonByPin(int pin, int flags);
 AbstractButton *getButton(int id);
 MultiButton *getMultiButton(int id, int pinA, int pinB, int flags);
