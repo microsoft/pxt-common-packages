@@ -558,13 +558,18 @@ namespace light {
          * @param animation the animation to run, eg: light.animation(LightAnimation.Rainbow)
          * @param duration the duration to run in milliseconds, eg: 500
          */
-        //% blockId=light_show_animation block="%strip|show %animation=light_animation|animation for %duration=timePicker|ms"
+        //% blockId=light_show_animation block="%strip|show %animation=light_animation|animation"
         //% help="light/show-animation"
         //% parts="neopixel"
         //% weight=90 blockGap=8
-        showAnimation(animation: NeoPixelAnimation, duration: number) {
+        showAnimation(animation: NeoPixelAnimation, duration: number = 0) {
+            if (!animation) return;
+
             const renderer = animation.createRenderer(this);
             if (!renderer) return;
+
+            if(duration <= 0) 
+                duration = animation.duration(this);
 
             let start = -1;
             const render = () => {
@@ -576,7 +581,7 @@ namespace light {
                 this.setBuffered(buf);
                 this.show();
                 loops.pause(50);
-                return now < duration;
+                return now <= duration;
             };
             this.queueAnimation(render);
         }
@@ -1178,6 +1183,14 @@ namespace light {
         constructor() { }
 
         /**
+         * Computes the duration needed to run the animation on strip
+         * @param strip neopixel strip to apply animation
+         */
+        duration(strip: NeoPixelStrip): number {
+            return 500;
+        }
+
+        /**
          * Creates an animator instance
          * @param strip the strip to execute on 
          */
@@ -1191,6 +1204,10 @@ namespace light {
         constructor(delay: number) {
             super();
             this.delay = delay;
+        }
+
+        public duration(strip: NeoPixelStrip): number {
+            return strip.length() * this.delay;
         }
 
         public createRenderer(strip: NeoPixelStrip): () => void {
@@ -1266,6 +1283,10 @@ namespace light {
             this.delay = delay;
         }
 
+        public duration(strip: NeoPixelStrip): number {
+            return 5 * strip.length() * this.delay;
+        }
+
         public createRenderer(strip: NeoPixelStrip): () => void {
             const l = strip.length();
             const spacing = (255 / l) >> 0;
@@ -1276,8 +1297,6 @@ namespace light {
                 offsets[i] = spacing * i;
             }
             return () => {
-                if (start < 0) start = control.millis();
-                const now = control.millis() - start;
                 for (let i = 0; i < l; i++) {
                     offsets[i] = (offsets[i] + (step * 2)) % 255
                     strip.setPixelColor(i, rgb(255 - offsets[i], this.green, this.blue));
@@ -1300,21 +1319,21 @@ namespace light {
             this.delay = delay;
         }
 
+        public duration(strip: NeoPixelStrip): number {
+            return 100 * this.delay;
+        }
+
         public createRenderer(strip: NeoPixelStrip): () => void {
             const l = strip.length();
-            let start = -1;
             let pixel = -1;
+            let pixelColor = 0;
             return () => {
-                if (start < 0) {
-                    start = control.millis();
-                    strip.clear();
-                }
-                const now = control.millis() - start;
                 if (pixel < 0) {
                     pixel = Math.randomRange(0, l - 1);
+                    pixelColor = strip.pixelColor(pixel);
                     strip.setPixelColor(pixel, this.rgb);
                 } else {
-                    strip.setPixelColor(pixel, 0);
+                    strip.setPixelColor(pixel, pixelColor);
                     pixel = -1;
                 }
             }
@@ -1334,14 +1353,15 @@ namespace light {
             this.delay = delay;
         }
 
+        public duration(strip: NeoPixelStrip): number {
+            return strip.length() * this.delay * 2;
+        }
+
         public createRenderer(strip: NeoPixelStrip): () => void {
             const l = strip.length();
             let i = 0;
             let reveal = true;
-            let start = -1;
             return () => {
-                if (start < 0) start = control.millis();
-                const now = control.millis() - start;
                 if (i < l) {
                     if (reveal) {
                         strip.setPixelColor(i, this.rgb);
@@ -1370,15 +1390,16 @@ namespace light {
             this.delay = delay;
         }
 
+        public duration(strip: NeoPixelStrip): number {
+            return 30 * this.delay;
+        }
+
         public createRenderer(strip: NeoPixelStrip): () => void {
             const l = strip.length();
-            let start = -1;
             let j = 0;
             let q = 0;
             let on = false;
             return () => {
-                if (start < 0) start = control.millis();
-                const now = control.millis() - start;
                 if (j < 10) { // 10 cycles of chasing
                     if (q < 3) {
                         if (on) {
