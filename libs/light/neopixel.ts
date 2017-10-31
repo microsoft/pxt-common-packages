@@ -134,6 +134,9 @@ namespace light {
         _photonPos: number;
         _photonDir: number;
         _photonColor: number;
+        // last animation used by showAnimationFrame
+        _frameAnimation: NeoPixelAnimation;
+        _frameAnimationRenderer: () => void;
 
         /**
          * Gets the underlying color buffer for the entire strip
@@ -585,17 +588,24 @@ namespace light {
         //% blockId=light_show_animation_frame block="%strip|show animation frame %animation=light_animation"
         //% help="light/show-animation-frame"
         //% parts="neopixel"
-        //% weight=87 blockGap=8 blockHidden=true deprecated=1
+        //% weight=87 blockGap=8
         showAnimationFrame(animation: NeoPixelAnimation) {
-            if (!animation) return;
+            if (!animation) {
+                this._frameAnimation = undefined;
+                this._frameAnimationRenderer = undefined;
+                return;
+            }
+            if (!this._frameAnimationRenderer || this._frameAnimation != animation) {
+                this._frameAnimation = animation;
+                this._frameAnimationRenderer = animation.createRenderer(this);
+            }
             const buf = this.buffered();
             this.setBuffered(false);
-            // todo
-            animation.createRenderer(this)();
+            this._frameAnimationRenderer();
             this.setBuffered(buf);
             this.show();
         }
-
+        
         /**
          * Renders a pattern of colors on the strip
          */
