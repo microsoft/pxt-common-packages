@@ -69,27 +69,6 @@ enum LightMove {
     Shift
 }
 
-enum LightAnimation {
-    //% blockImage=1
-    //% block="rainbow"
-    Rainbow,
-    //% blockImage=1
-    //% block="running lights"
-    RunningLights,
-    //% blockImage=1
-    //% block="comet"
-    Comet,
-    //% blockImage=1
-    //% block="sparkle"
-    Sparkle,
-    //% blockImage=1
-    //% block="theater chase"
-    TheaterChase,
-    //% blockImage=1
-    //% block="color wipe"
-    ColorWipe
-}
-
 /**
  * A determines the mode of the photon
  */
@@ -1000,15 +979,15 @@ namespace light {
         return color;
     }
 
-    function unpackR(rgb: number): number {
+    export function unpackR(rgb: number): number {
         let r = (rgb >> 16) & 0xFF;
         return r;
     }
-    function unpackG(rgb: number): number {
+    export function unpackG(rgb: number): number {
         let g = (rgb >> 8) & 0xFF;
         return g;
     }
-    function unpackB(rgb: number): number {
+    export function unpackB(rgb: number): number {
         let b = (rgb >> 0) & 0xFF;
         return b;
     }
@@ -1134,17 +1113,11 @@ namespace light {
     //% kind.fieldEditor="imagedropdown"
     //% kind.fieldOptions.columns=3 blockGap=8
     //% blockId=light_animation block="%kind"
-    //% group="More" weight=25
+    //% group="More" weight=25 blockValuesNs="LightAnimation"
     //% help="light/animation"
-    export function animation(kind: LightAnimation): NeoPixelAnimation {
-        switch (kind) {
-            case LightAnimation.RunningLights: return new RunningLightsAnimation(0xff, 0, 0, 50);
-            case LightAnimation.Comet: return new CometAnimation(0xff, 0, 0xff, 50);
-            case LightAnimation.ColorWipe: return new ColorWipeAnimation(0x0000ff, 50);
-            case LightAnimation.TheaterChase: return new TheatreChaseAnimation(0xff, 0, 0, 50)
-            case LightAnimation.Sparkle: return new SparkleAnimation(0xff, 0xff, 0xff, 50)
-            default: return new RainbowCycleAnimation(50);
-        }
+    //% shim=TD_ID
+    export function animation(kind: NeoPixelAnimation): NeoPixelAnimation {
+        return kind;
     }
 
     /**
@@ -1164,7 +1137,7 @@ namespace light {
         public showFrame(strip: NeoPixelStrip): void { }
     }
 
-    class RainbowCycleAnimation extends NeoPixelAnimation {
+    export class RainbowCycleAnimation extends NeoPixelAnimation {
         public delay: number;
         constructor(delay: number) {
             super();
@@ -1184,7 +1157,7 @@ namespace light {
         }
     }
 
-    class RunningLightsAnimation extends NeoPixelAnimation {
+    export class RunningLightsAnimation extends NeoPixelAnimation {
         public red: number;
         public green: number;
         public blue: number;
@@ -1224,7 +1197,7 @@ namespace light {
         }
     }
 
-    class CometAnimation extends NeoPixelAnimation {
+    export class CometAnimation extends NeoPixelAnimation {
         public red: number;
         public green: number;
         public blue: number;
@@ -1263,7 +1236,7 @@ namespace light {
         }
     }
 
-    class SparkleAnimation extends NeoPixelAnimation {
+    export class SparkleAnimation extends NeoPixelAnimation {
         public rgb: number;
         public delay: number;
 
@@ -1289,7 +1262,7 @@ namespace light {
         }
     }
 
-    class ColorWipeAnimation extends NeoPixelAnimation {
+    export class ColorWipeAnimation extends NeoPixelAnimation {
         public rgb: number;
         public delay: number;
 
@@ -1325,7 +1298,7 @@ namespace light {
         }
     }
 
-    class TheatreChaseAnimation extends NeoPixelAnimation {
+    export class TheatreChaseAnimation extends NeoPixelAnimation {
         public rgb: number;
         public delay: number;
         private j: number;
@@ -1364,4 +1337,25 @@ namespace light {
             }
         }
     }
+}
+
+namespace LightAnimation {
+    //% blockImage=1
+    //% block="rainbow" whenUsed
+    export const Rainbow = new light.RunningLightsAnimation(0xff, 0, 0, 50);
+    //% blockImage=1
+    //% block="running lights" whenUsed
+    export const RunningLights = new light.RunningLightsAnimation(0xff, 0, 0, 50);
+    //% blockImage=1
+    //% block="comet" whenUsed
+    export const Comet = new light.CometAnimation(0xff, 0, 0xff, 50);
+    //% blockImage=1
+    //% block="sparkle" whenUsed
+    export const Sparkle =  new light.SparkleAnimation(0xff, 0xff, 0xff, 50)
+    //% blockImage=1
+    //% block="theater chase" whenUsed
+    export const TheaterChase = new light.TheatreChaseAnimation(0xff, 0, 0, 50)
+    //% blockImage=1
+    //% block="color wipe" whenUsed
+    export const ColorWipe = new light.ColorWipeAnimation(0x0000ff, 50);
 }
