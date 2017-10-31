@@ -1241,7 +1241,7 @@ namespace light {
         }
     }
 
-    //% fixedInstance block="rainbow" blockImage=1
+    //% fixedInstance block="running lights" blockImage=1
     export const runningLightAnimation: NeoPixelAnimation = new RunningLightsAnimation(0xff, 0, 0, 50);
 
     class CometAnimation extends NeoPixelAnimation {
