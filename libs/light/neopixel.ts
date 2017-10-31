@@ -189,7 +189,7 @@ namespace light {
          * @param value current value to plot
          * @param high maximum value, 0 to autoscale
          */
-        //% blockId=light_show_bar_graph block="%strip|graph of %value |up to %high" icon="\uf080"
+        //% blockId=light_show_bar_graph block="%strip|graph %value |up to %high" icon="\uf080"
         //% help=light/graph
         //% parts="neopixel"
         //% weight=70
@@ -585,7 +585,7 @@ namespace light {
         //% blockId=light_show_animation_frame block="%strip|show animation frame %animation=light_animation"
         //% help="light/show-animation-frame"
         //% parts="neopixel"
-        //% weight=87 blockGap=8
+        //% weight=87 blockGap=8 blockHidden=true deprecated=1
         showAnimationFrame(animation: NeoPixelAnimation) {
             if (!animation) return;
             const buf = this.buffered();
@@ -735,7 +735,7 @@ namespace light {
          * @param value current value to plot
          * @param high maximum value, 0 to autoscale
          */
-        //% blockId=neopixel_show_bar_graph block="graph of %value |up to %high" icon="\uf080"
+        //% blockId=neopixel_show_bar_graph block="graph %value |up to %high" icon="\uf080"
         //% deprecated=1
         //% defaultInstance=light.pixels
         __graph(value: number, high: number): void {
