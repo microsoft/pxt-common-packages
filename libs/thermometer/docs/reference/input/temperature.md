@@ -28,15 +28,16 @@ The @boardname@ might warm up a little if you make it work hard, though!
 Use **temperature** and **set all** to vary the brightness of the pixels depending on the temperature in the room. 
 
 ```blocks
+let strip = light.createStrip()
 loops.forever(() => {
-    light.pixels.setBrightness(Math.map(
+    strip.setBrightness(Math.map(
         input.temperature(TemperatureUnit.Celsius),
         0,
         50,
         0,
         255
     ))
-    light.pixels.setAll(light.colors(Colors.Red))
+    strip.setAll(light.colors(Colors.Red))
 })
 ```
 
@@ -46,15 +47,16 @@ loops.forever(() => {
 Measure the temperature using degrees in Fahrenheit.
 
 ```blocks
+let strip = light.createStrip()
 loops.forever(() => {
-    light.pixels.setBrightness(Math.map(
+    strip.setBrightness(Math.map(
         input.temperature(TemperatureUnit.Fahrenheit),
         30,
         100,
         0,
         255
     ))
-    light.pixels.setAll(light.colors(Colors.Red))
+    strip.setAll(light.colors(Colors.Red))
 })
 ```
 

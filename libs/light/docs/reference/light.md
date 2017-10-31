@@ -5,38 +5,38 @@ Light up pixels and NeoPixel strips. Show light effects and animations.
 ## Pixel #pixel
 
 ```cards
-light.pixels.showAnimation(null, 0)
-light.pixels.showAnimationFrame(null)
-light.pixels.stopAllAnimations()
+light.createStrip().showAnimation(null, 0)
+light.createStrip().showAnimationFrame(null)
+light.createStrip().stopAllAnimations()
 light.animation(LightAnimation.Rainbow)
-light.pixels.graph(0, 0)
-light.pixels.setAll(0)
-light.pixels.show()
-light.pixels.setBuffered(true)
-light.pixels.setBrightness(0)
-light.pixels.setPixelColor(0,0)
-light.pixels.clear()
-light.pixels.brightness()
-light.pixels.pixelColor(0)
+light.createStrip().graph(0, 0)
+light.createStrip().setAll(0)
+light.createStrip().show()
+light.createStrip().setBuffered(true)
+light.createStrip().setBrightness(0)
+light.createStrip().setPixelColor(0,0)
+light.createStrip().clear()
+light.createStrip().brightness()
+light.createStrip().pixelColor(0)
 ```
 ## External Strip #neopixel
 
 ```cards
 light.createStrip(null, 0)
-light.pixels.setPixelWhiteLED(0, 0)
-light.pixels.range(0, 0)
-light.pixels.length()
-light.pixels.move(0, 0)
-light.pixels.setMode(NeoPixelMode.RGB)
+light.createStrip().setPixelWhiteLED(0, 0)
+light.createStrip().range(0, 0)
+light.createStrip().length()
+light.createStrip().move(0, 0)
+light.createStrip().setMode(NeoPixelMode.RGB)
 ```
 ## Photon #photon
 
 ```cards
-light.pixels.photonForward(0)
-light.pixels.photonFlip()
-light.pixels.setPhotonPenHue(0)
-light.pixels.setPhotonPenColor(0)
-light.pixels.setPhotonMode(PhotonMode.PenUp)
+light.createStrip().photonForward(0)
+light.createStrip().photonFlip()
+light.createStrip().setPhotonPenHue(0)
+light.createStrip().setPhotonPenColor(0)
+light.createStrip().setPhotonMode(PhotonMode.PenUp)
 ```
 ## Color settings #colorset
 

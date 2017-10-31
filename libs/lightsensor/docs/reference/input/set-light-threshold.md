@@ -23,11 +23,12 @@ that happens.
 
 ```blocks
 const halfBright = 127
+let pixelStrip = light.createStrip()
 
-light.pixels.setAll(Colors.Red)
+pixelStrip.setAll(Colors.Red)
 input.setLightThreshold(LightCondition.Dark, halfBright)
 input.onLightConditionChanged(LightCondition.Dark, () => {
-	light.pixels.setBrightness(light.fade(Colors.Red, halfBright))
+	pixelStrip.setBrightness(light.fade(Colors.Red, halfBright))
 })
 ```
 

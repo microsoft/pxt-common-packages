@@ -41,7 +41,7 @@ finishes.
 ```blocks
 let mySound = "g5:1 f e d c"
 music.playSound(mySound)
-light.pixels.setAll(Colors.Green)
+light.createStrip().setAll(Colors.Green)
 ```
 
 ### I'll play BaDing #ex2
