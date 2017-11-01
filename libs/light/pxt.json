@@ -9,7 +9,8 @@
         "shims.d.ts",
         "enums.d.ts",
         "ns.ts",
-        "neopixeloverrides.ts"
+        "neopixeloverrides.ts",
+        "animations.jres"
     ],
     "testFiles": [
         "test.ts"
