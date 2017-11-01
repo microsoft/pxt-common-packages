@@ -1213,7 +1213,7 @@ namespace light {
         }
     }
 
-    //% fixedInstance block="rainbow" blockImage=1
+    //% fixedInstance block="rainbow" whenUsed blockImage=1
     export const rainbowAnimation: NeoPixelAnimation = new RainbowCycleAnimation(50);
 
     class RunningLightsAnimation extends NeoPixelAnimation {
@@ -1253,7 +1253,7 @@ namespace light {
         }
     }
 
-    //% fixedInstance block="running lights" blockImage=1
+    //% fixedInstance block="running lights" whenUsed blockImage=1
     export const runningLightAnimation: NeoPixelAnimation = new RunningLightsAnimation(0xff, 0, 0, 50);
 
     class CometAnimation extends NeoPixelAnimation {
@@ -1294,7 +1294,7 @@ namespace light {
         }
     }
 
-    //% fixedInstance block="comet" blockImage=1
+    //% fixedInstance block="comet" whenUsed blockImage=1
     export const cometAnimation: NeoPixelAnimation = new CometAnimation(0xff, 0, 0xff, 50);
 
     class SparkleAnimation extends NeoPixelAnimation {
@@ -1333,7 +1333,7 @@ namespace light {
         }
     }
 
-    //% fixedInstance block="sparkle" blockImage=1
+    //% fixedInstance block="sparkle" whenUsed blockImage=1
     export const sparkleAnimation: NeoPixelAnimation = new SparkleAnimation(0xff, 0xff, 0xff, 50);
 
     class ColorWipeAnimation extends NeoPixelAnimation {
@@ -1369,7 +1369,7 @@ namespace light {
         }
     }
 
-    //% fixedInstance block="color wipe" blockImage=1
+    //% fixedInstance block="color wipe" whenUsed blockImage=1
     export const colorWipeAnimation: NeoPixelAnimation = new ColorWipeAnimation(0x0000ff, 50);
 
     class TheatreChaseAnimation extends NeoPixelAnimation {
@@ -1415,6 +1415,6 @@ namespace light {
         }
     }
 
-    //% fixedInstance block="theater chase" blockImage=1
+    //% fixedInstance block="theater chase" whenUsed blockImage=1
     export const theaterChaseAnimation: NeoPixelAnimation = new TheatreChaseAnimation(0xff, 0, 0, 50);
 }
