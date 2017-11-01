@@ -558,7 +558,7 @@ namespace light {
          * @param animation the animation to run, eg: light.animation(LightAnimation.Rainbow)
          * @param duration the duration to run in milliseconds, eg: 500
          */
-        //% blockId=light_show_animation block="%strip|show %animation=light_animation|animation"
+        //% blockId=light_show_animation block="%strip|show %animation|animation"
         //% help="light/show-animation"
         //% parts="neopixel"
         //% weight=90 blockGap=8
@@ -587,7 +587,7 @@ namespace light {
          * Show a single animation frame.
          * @param animation the animation to run, eg: light.animation(LightAnimation.Rainbow)
          */
-        //% blockId=light_show_animation_frame block="%strip|show animation frame %animation=light_animation"
+        //% blockId=light_show_animation_frame block="%strip|show frame of %animation animation"
         //% help="light/show-animation-frame"
         //% parts="neopixel"
         //% weight=87 blockGap=8
@@ -1160,7 +1160,7 @@ namespace light {
     //% kind.fieldOptions.columns=3 blockGap=8
     //% blockId=light_animation block="%kind"
     //% group="More" weight=25
-    //% help="light/animation" blockHidden=1 deprecated=1
+    //% help="light/animation" blockHidden=true deprecated=1
     export function animation(kind: LightAnimation): NeoPixelAnimation {
         switch (kind) {
             case LightAnimation.RunningLights: return runningLightsAnimation;
