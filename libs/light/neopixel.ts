@@ -1254,7 +1254,7 @@ namespace light {
     }
 
     //% fixedInstance block="running lights" jres
-    export const runningLightAnimation: NeoPixelAnimation = new RunningLightsAnimation(0xff, 0, 0, 50);
+    export const runningLightsAnimation: NeoPixelAnimation = new RunningLightsAnimation(0xff, 0, 0, 50);
 
     class CometAnimation extends NeoPixelAnimation {
         public red: number;
