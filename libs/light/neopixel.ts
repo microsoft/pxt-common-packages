@@ -561,7 +561,7 @@ namespace light {
         //% blockId=light_show_animation block="%strip|show %animation|animation"
         //% help="light/show-animation"
         //% parts="neopixel"
-        //% weight=90 blockGap=8
+        //% weight=90 blockGap=8 animation.fieldEditor="imagedropdown"
         showAnimation(animation: NeoPixelAnimation, duration: number = 0) {
             if (!animation) return;
 
@@ -590,7 +590,7 @@ namespace light {
         //% blockId=light_show_animation_frame block="%strip|show frame of %animation animation"
         //% help="light/show-animation-frame"
         //% parts="neopixel"
-        //% weight=87 blockGap=8
+        //% weight=87 blockGap=8 animation.fieldEditor="imagedropdown"
         showAnimationFrame(animation: NeoPixelAnimation) {
             if (!animation) {
                 this._frameAnimation = undefined;
