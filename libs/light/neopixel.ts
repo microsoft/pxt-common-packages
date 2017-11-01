@@ -1163,7 +1163,7 @@ namespace light {
     //% help="light/animation" blockHidden=1 deprecated=1
     export function animation(kind: LightAnimation): NeoPixelAnimation {
         switch (kind) {
-            case LightAnimation.RunningLights: return runningLightAnimation;
+            case LightAnimation.RunningLights: return runningLightsAnimation;
             case LightAnimation.Comet: return cometAnimation;
             case LightAnimation.ColorWipe: return colorWipeAnimation;
             case LightAnimation.TheaterChase: return theaterChaseAnimation;
