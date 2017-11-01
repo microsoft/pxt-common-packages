@@ -17,7 +17,7 @@ input.buttonA.onEvent(ButtonEvent.Click, () => {
     light.pixels.stopAllAnimations()
 })
 
-light.pixels.showAnimation(light.animation(LightAnimation.Rainbow), 10000)
+light.pixels.showAnimation(light.rainbowAnimation)
 ```
 
 ## See Also

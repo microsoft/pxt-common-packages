@@ -3,7 +3,7 @@
 Show a single part of pixel animation on the pixel strip (or on the board).
 
 ```sig
-light.pixels.showAnimationFrame(light.animation(LightAnimation.Rainbow))
+light.pixels.showAnimationFrame(light.rainbowAnimation)
 ```
 You can show the colors from a pixel animation without having to play the whole animation. Just pick
 one of the built-in animations to see its first frame.
@@ -23,12 +23,11 @@ one of the built-in animations to see its first frame.
 Show the first part of the ``comet`` aninmation.
 
 ```blocks
-light.pixels.showAnimationFrame(light.animation(LightAnimation.Comet))
+light.pixels.showAnimationFrame(light.cometAnimation)
 ```
 ## See Also
 
-[``||show animation||``](/reference/light/show-animation),
-[``||animation||``](/reference/light/animation)
+[``||show animation||``](/reference/light/show-animation)
 
 ```package
 light

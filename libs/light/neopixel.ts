@@ -534,7 +534,7 @@ namespace light {
 
         /**
          * Show an animation or queue an animation in the animation queue
-         * @param animation the animation to run, eg: light.animation(LightAnimation.Rainbow)
+         * @param animation the animation to run
          * @param duration the duration to run in milliseconds, eg: 500
          */
         //% blockId=light_show_animation block="%strip|show %animation|animation"
@@ -564,7 +564,7 @@ namespace light {
 
         /**
          * Show a single animation frame.
-         * @param animation the animation to run, eg: light.animation(LightAnimation.Rainbow)
+         * @param animation the animation to run
          */
         //% blockId=light_show_animation_frame block="%strip|show frame of %animation animation"
         //% help="light/show-animation-frame"
@@ -891,7 +891,7 @@ namespace light {
 
         /**
          * Show an animation or queue an animation in the animation queue
-         * @param animation the animation to run, eg: light.animation(LightAnimation.Rainbow)
+         * @param animation the animation to run
          * @param duration the duration to run in milliseconds, eg: 500
          */
         //% blockId=neopixel_show_animation block="show %animation=light_animation|animation for %duration=timePicker|ms"
@@ -903,7 +903,7 @@ namespace light {
 
         /**
          * Show a single animation frame
-         * @param animation the animation to run, eg: light.animation(LightAnimation.Rainbow)
+         * @param animation the animation to run
          */
         //% blockId=neopixel_show_animation_frame block="show animation frame %animation=light_animation"
         //% deprecated=1

@@ -5,10 +5,9 @@ Light up pixels and NeoPixel strips. Show light effects and animations.
 ## Pixel #pixel
 
 ```cards
-light.pixels.showAnimation(null, 0)
+light.pixels.showAnimation(null)
 light.pixels.showAnimationFrame(null)
 light.pixels.stopAllAnimations()
-light.animation(LightAnimation.Rainbow)
 light.pixels.graph(0, 0)
 light.pixels.setAll(0)
 light.pixels.show()
@@ -49,7 +48,7 @@ light.fade(0, 0)
 ## See also #seealso
 
 [showAnimation](/reference/light/show-animation), [showAnimationFrame](/reference/light/show-animation-frame),
-[stopAllAnimations](/reference/light/stop-all-animations), [animation](/reference/light/animation),
+[stopAllAnimations](/reference/light/stop-all-animations),
 [graph](/reference/light/graph), [setAll](/reference/light/set-all),
 [show](/reference/light/show), [setBuffered](/reference/light/set-buffered), 
 [setBrightness](/reference/light/set-brightness),
