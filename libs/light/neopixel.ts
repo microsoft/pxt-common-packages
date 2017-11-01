@@ -69,27 +69,6 @@ enum LightMove {
     Shift
 }
 
-enum LightAnimation {
-    //% blockImage=1
-    //% block="rainbow"
-    Rainbow,
-    //% blockImage=1
-    //% block="running lights"
-    RunningLights,
-    //% blockImage=1
-    //% block="comet"
-    Comet,
-    //% blockImage=1
-    //% block="sparkle"
-    Sparkle,
-    //% blockImage=1
-    //% block="theater chase"
-    TheaterChase,
-    //% blockImage=1
-    //% block="color wipe"
-    ColorWipe
-}
-
 /**
  * A determines the mode of the photon
  */
@@ -1149,26 +1128,6 @@ namespace light {
                 return Colors.Pink;
             default:
                 return parseInt(color) || 0;
-        }
-    }
-
-    /**
-     * Creates a builtin animation
-     * @param kind the type of animation
-     */
-    //% kind.fieldEditor="imagedropdown"
-    //% kind.fieldOptions.columns=3 blockGap=8
-    //% blockId=light_animation block="%kind"
-    //% group="More" weight=25
-    //% help="light/animation" blockHidden=true deprecated=1
-    export function animation(kind: LightAnimation): NeoPixelAnimation {
-        switch (kind) {
-            case LightAnimation.RunningLights: return runningLightsAnimation;
-            case LightAnimation.Comet: return cometAnimation;
-            case LightAnimation.ColorWipe: return colorWipeAnimation;
-            case LightAnimation.TheaterChase: return theaterChaseAnimation;
-            case LightAnimation.Sparkle: return sparkleAnimation;
-            default: return rainbowAnimation;
         }
     }
 
