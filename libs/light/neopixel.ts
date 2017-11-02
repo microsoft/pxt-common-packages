@@ -69,27 +69,6 @@ enum LightMove {
     Shift
 }
 
-enum LightAnimation {
-    //% blockImage=1
-    //% block="rainbow"
-    Rainbow,
-    //% blockImage=1
-    //% block="running lights"
-    RunningLights,
-    //% blockImage=1
-    //% block="comet"
-    Comet,
-    //% blockImage=1
-    //% block="sparkle"
-    Sparkle,
-    //% blockImage=1
-    //% block="theater chase"
-    TheaterChase,
-    //% blockImage=1
-    //% block="color wipe"
-    ColorWipe
-}
-
 /**
  * A determines the mode of the photon
  */
@@ -134,6 +113,9 @@ namespace light {
         _photonPos: number;
         _photonDir: number;
         _photonColor: number;
+        // last animation used by showAnimationFrame
+        _frameAnimation: NeoPixelAnimation;
+        _frameAnimationRenderer: () => void;
 
         /**
          * Gets the underlying color buffer for the entire strip
@@ -189,7 +171,7 @@ namespace light {
          * @param value current value to plot
          * @param high maximum value, 0 to autoscale
          */
-        //% blockId=light_show_bar_graph block="%strip|graph of %value |up to %high" icon="\uf080"
+        //% blockId=light_show_bar_graph block="%strip|graph %value |up to %high" icon="\uf080"
         //% help=light/graph
         //% parts="neopixel"
         //% weight=70
@@ -552,42 +534,55 @@ namespace light {
 
         /**
          * Show an animation or queue an animation in the animation queue
-         * @param animation the animation to run, eg: light.animation(LightAnimation.Rainbow)
+         * @param animation the animation to run
          * @param duration the duration to run in milliseconds, eg: 500
          */
-        //% blockId=light_show_animation block="%strip|show %animation=light_animation|animation for %duration=timePicker|ms"
+        //% blockId=light_show_animation block="%strip|show %animation|animation"
         //% help="light/show-animation"
         //% parts="neopixel"
-        //% weight=90 blockGap=8
-        showAnimation(animation: NeoPixelAnimation, duration: number) {
+        //% weight=90 blockGap=8 animation.fieldEditor="imagedropdown"
+        showAnimation(animation: NeoPixelAnimation, duration: number = 0) {
+            if (!animation) return;
+
+            const renderer = animation.createRenderer(this);
+            if (!renderer) return;
+
             let start = -1;
             const render = () => {
                 if (start < 0) start = control.millis();
                 const now = control.millis() - start;
                 const buf = this.buffered();
                 this.setBuffered(true);
-                animation.renderFrame(this);
+                const keepRendering = renderer();
                 this.setBuffered(buf);
                 this.show();
                 loops.pause(50);
-                return now < duration;
+                return duration > 0 ? now <= duration : keepRendering;
             };
             this.queueAnimation(render);
         }
 
         /**
          * Show a single animation frame.
-         * @param animation the animation to run, eg: light.animation(LightAnimation.Rainbow)
+         * @param animation the animation to run
          */
-        //% blockId=light_show_animation_frame block="%strip|show animation frame %animation=light_animation"
+        //% blockId=light_show_animation_frame block="%strip|show frame of %animation animation"
         //% help="light/show-animation-frame"
         //% parts="neopixel"
-        //% weight=87 blockGap=8
+        //% weight=87 blockGap=8 animation.fieldEditor="imagedropdown"
         showAnimationFrame(animation: NeoPixelAnimation) {
-            if (!animation) return;
+            if (!animation) {
+                this._frameAnimation = undefined;
+                this._frameAnimationRenderer = undefined;
+                return;
+            }
+            if (!this._frameAnimationRenderer || this._frameAnimation != animation) {
+                this._frameAnimation = animation;
+                this._frameAnimationRenderer = animation.createRenderer(this);
+            }
             const buf = this.buffered();
             this.setBuffered(false);
-            animation.renderFrame(this);
+            this._frameAnimationRenderer();
             this.setBuffered(buf);
             this.show();
         }
@@ -731,7 +726,7 @@ namespace light {
          * @param value current value to plot
          * @param high maximum value, 0 to autoscale
          */
-        //% blockId=neopixel_show_bar_graph block="graph of %value |up to %high" icon="\uf080"
+        //% blockId=neopixel_show_bar_graph block="graph %value |up to %high" icon="\uf080"
         //% deprecated=1
         //% defaultInstance=light.pixels
         __graph(value: number, high: number): void {
@@ -896,7 +891,7 @@ namespace light {
 
         /**
          * Show an animation or queue an animation in the animation queue
-         * @param animation the animation to run, eg: light.animation(LightAnimation.Rainbow)
+         * @param animation the animation to run
          * @param duration the duration to run in milliseconds, eg: 500
          */
         //% blockId=neopixel_show_animation block="show %animation=light_animation|animation for %duration=timePicker|ms"
@@ -908,7 +903,7 @@ namespace light {
 
         /**
          * Show a single animation frame
-         * @param animation the animation to run, eg: light.animation(LightAnimation.Rainbow)
+         * @param animation the animation to run
          */
         //% blockId=neopixel_show_animation_frame block="show animation frame %animation=light_animation"
         //% deprecated=1
@@ -1137,40 +1132,19 @@ namespace light {
     }
 
     /**
-     * Creates a builtin animation
-     * @param kind the type of animation
-     */
-    //% kind.fieldEditor="imagedropdown"
-    //% kind.fieldOptions.columns=3 blockGap=8
-    //% blockId=light_animation block="%kind"
-    //% group="More" weight=25
-    //% help="light/animation"
-    export function animation(kind: LightAnimation): NeoPixelAnimation {
-        switch (kind) {
-            case LightAnimation.RunningLights: return new RunningLightsAnimation(0xff, 0, 0, 50);
-            case LightAnimation.Comet: return new CometAnimation(0xff, 0, 0xff, 50);
-            case LightAnimation.ColorWipe: return new ColorWipeAnimation(0x0000ff, 50);
-            case LightAnimation.TheaterChase: return new TheatreChaseAnimation(0xff, 0, 0, 50)
-            case LightAnimation.Sparkle: return new SparkleAnimation(0xff, 0xff, 0xff, 50)
-            default: return new RainbowCycleAnimation(50);
-        }
-    }
-
-    /**
      * An animation of a NeoPixel
      */
+    //% fixedInstances
     export class NeoPixelAnimation {
-        protected start: number;
-        constructor() {
-            this.start = -1;
-        }
+        constructor() { }
 
         /**
-         * Renders a frame of the animation on the given strip. This function should not call show or have any delays.
-         * @param strip the neopixel strip to apply the render the frame
+         * Creates an animator instance
+         * @param strip the strip to execute on 
          */
-        //%
-        public renderFrame(strip: NeoPixelStrip): void { }
+        createRenderer(strip: NeoPixelStrip): () => boolean {
+            return undefined;
+        }
     }
 
     class RainbowCycleAnimation extends NeoPixelAnimation {
@@ -1180,24 +1154,32 @@ namespace light {
             this.delay = delay;
         }
 
-        public renderFrame(strip: NeoPixelStrip): void {
+        public createRenderer(strip: NeoPixelStrip): () => boolean {
             const n = strip.length();
-            if (this.start < 0) this.start = control.millis();
-            const now = control.millis() - this.start;
-            const offset = (now / this.delay) * (256 / (n - 1));
-            for (let i = 0; i < n; i++) {
-                strip.setPixelColor(i, hsv(((i * 256 / (n - 1)) + offset) % 0xff, 0xff, 0xff));
+            let offset = 0;
+            return () => {
+                for (let i = 0; i < n; i++) {
+                    strip.setPixelColor(i, hsv(((i * 256) / (n - 1) + offset) % 0xff, 0xff, 0xff));
+                }
+                offset += 128 / n;
+                if (offset >= 0xff) {
+                    offset = 0;
+                    return false;
+                } else {
+                    return true;
+                }
             }
         }
     }
+
+    //% fixedInstance block="rainbow" whenUsed jres
+    export const rainbowAnimation: NeoPixelAnimation = new RainbowCycleAnimation(50);
 
     class RunningLightsAnimation extends NeoPixelAnimation {
         public red: number;
         public green: number;
         public blue: number;
         public delay: number;
-        private iteration: number;
-        private step: number;
 
         constructor(red: number, green: number, blue: number, delay: number) {
             super();
@@ -1206,36 +1188,38 @@ namespace light {
             this.blue = blue;
 
             this.delay = delay;
-            this.iteration = 0;
-            this.step = 0;
         }
 
-
-        public renderFrame(strip: NeoPixelStrip): void {
+        public createRenderer(strip: NeoPixelStrip): () => boolean {
             const l = strip.length();
-            if (this.start < 0) this.start = control.millis();
-            const now = control.millis() - this.start;
-            if (this.iteration < l * 2) {
-                this.step++;
-                for (let i = 0; i < l; i++) {
-                    const level = (Math.isin(i + this.step) * 127) + 128;
-                    strip.setPixelColor(i, rgb(level * this.red / 255, level * this.green / 255, level * this.blue / 255));
+            let iteration = 0;
+            let step = 0;
+            return () => {
+                if (iteration < l * 2) {
+                    step++;
+                    for (let i = 0; i < l; i++) {
+                        const level = (Math.isin(i + step) * 127) + 128;
+                        strip.setPixelColor(i, rgb(level * this.red / 255, level * this.green / 255, level * this.blue / 255));
+                    }
+                    iteration++;
+                    return true;
+                } else {
+                    step = 0;
+                    iteration = 0;
+                    return false;
                 }
-                this.iteration++;
-            } else {
-                this.step = 0;
-                this.iteration = 0;
             }
         }
     }
+
+    //% fixedInstance block="running lights" jres
+    export const runningLightsAnimation: NeoPixelAnimation = new RunningLightsAnimation(0xff, 0, 0, 50);
 
     class CometAnimation extends NeoPixelAnimation {
         public red: number;
         public green: number;
         public blue: number;
         public delay: number;
-        private step: number;
-        private offsets: number[];
 
         constructor(red: number, green: number, blue: number, delay: number) {
             super();
@@ -1243,131 +1227,153 @@ namespace light {
             this.green = green;
             this.blue = blue;
             this.delay = delay;
-            this.step = 0;
         }
 
-        public renderFrame(strip: NeoPixelStrip): void {
+        public createRenderer(strip: NeoPixelStrip): () => boolean {
             const l = strip.length();
             const spacing = (255 / l) >> 0;
-            if (!this.offsets || this.offsets.length != l) {
-                this.offsets = [];
-                for (let i = 0; i < l; i++) {
-                    this.offsets[i] = spacing * i;
-                }
-
-            }
-            if (this.start < 0) this.start = control.millis();
-            const now = control.millis() - this.start;
+            let start = -1;
+            let step = 0;
+            const offsets: number[] = [];
             for (let i = 0; i < l; i++) {
-                this.offsets[i] = (this.offsets[i] + (this.step * 2)) % 255
-                strip.setPixelColor(i, rgb(255 - this.offsets[i], this.green, this.blue));
+                offsets[i] = spacing * i;
             }
-            this.step++;
+            return () => {
+                for (let i = 0; i < l; i++) {
+                    offsets[i] = (offsets[i] + (step * 2)) % 255
+                    strip.setPixelColor(i, rgb(255 - offsets[i], this.green, this.blue));
+                }
+                step++;
+                if (step * 2 > 0xff) {
+                    step = 0;
+                    return false;
+                }
+                return true;
+            }
         }
     }
+
+    //% fixedInstance block="comet" jres
+    export const cometAnimation: NeoPixelAnimation = new CometAnimation(0xff, 0, 0xff, 50);
 
     class SparkleAnimation extends NeoPixelAnimation {
         public rgb: number;
         public delay: number;
-        private pixel: number;
 
         constructor(red: number, green: number, blue: number, delay: number) {
             super();
             this.rgb = rgb(red, green, blue);
             this.delay = delay;
-            this.pixel = -1;
         }
 
-        public renderFrame(strip: NeoPixelStrip): void {
+        public createRenderer(strip: NeoPixelStrip): () => boolean {
             const l = strip.length();
-            if (this.start < 0) {
-                this.start = control.millis();
-                strip.clear();
-            }
-            const now = control.millis() - this.start;
-            if (this.pixel < 0) {
-                this.pixel = Math.randomRange(0, l - 1);
-                strip.setPixelColor(this.pixel, this.rgb);
-            } else {
-                strip.setPixelColor(this.pixel, 0);
-                this.pixel = -1;
+            let count = 0;
+            let pixel = -1;
+            let pixelColor = 0;
+            return () => {
+                if (pixel < 0) {
+                    pixel = Math.randomRange(0, l - 1);
+                    pixelColor = strip.pixelColor(pixel);
+                    strip.setPixelColor(pixel, this.rgb);
+
+                } else {
+                    strip.setPixelColor(pixel, pixelColor);
+                    pixel = -1;
+                }
+                count++;
+                if (count > 100) {
+                    count = 0;
+                    return false;
+                } else {
+                    return true;
+                }
             }
         }
     }
+
+    //% fixedInstance block="sparkle" jres
+    export const sparkleAnimation: NeoPixelAnimation = new SparkleAnimation(0xff, 0xff, 0xff, 50);
 
     class ColorWipeAnimation extends NeoPixelAnimation {
         public rgb: number;
         public delay: number;
 
-        private i: number;
-        private reveal: boolean;
-
         constructor(rgb: number, delay: number) {
             super();
             this.rgb = rgb;
             this.delay = delay;
-
-            this.i = 0;
-            this.reveal = true;
         }
 
-        public renderFrame(strip: NeoPixelStrip): void {
+        public createRenderer(strip: NeoPixelStrip): () => boolean {
             const l = strip.length();
-            if (this.start < 0) this.start = control.millis();
-            const now = control.millis() - this.start;
-            if (this.i < l) {
-                if (this.reveal) {
-                    strip.setPixelColor(this.i, this.rgb);
+            let i = 0;
+            let reveal = true;
+            return () => {
+                if (i < l) {
+                    if (reveal) {
+                        strip.setPixelColor(i, this.rgb);
+                    } else {
+                        strip.setPixelColor(i, 0);
+                    }
+                    i++;
                 } else {
-                    strip.setPixelColor(this.i, 0);
+                    reveal = !reveal;
+                    i = 0;
+                    if (reveal)
+                        return false;
                 }
-                this.i++;
-            } else {
-                this.reveal = !this.reveal;
-                this.i = 0;
+                return true;
             }
         }
     }
 
+    //% fixedInstance block="color wipe" jres
+    export const colorWipeAnimation: NeoPixelAnimation = new ColorWipeAnimation(0x0000ff, 50);
+
     class TheatreChaseAnimation extends NeoPixelAnimation {
         public rgb: number;
         public delay: number;
-        private j: number;
-        private q: number;
-        private on: boolean;
 
         constructor(red: number, green: number, blue: number, delay: number) {
             super();
             this.rgb = rgb(red, green, blue);
             this.delay = delay;
-            this.j = 0;
-            this.q = 0;
-            this.on = false;
         }
 
-        public renderFrame(strip: NeoPixelStrip): void {
+        public createRenderer(strip: NeoPixelStrip): () => boolean {
             const l = strip.length();
-            if (this.start < 0) this.start = control.millis();
-            const now = control.millis() - this.start;
-            if (this.j < 10) { // 10 cycles of chasing
-                if (this.q < 3) {
-                    if (this.on)
-                        for (let i = 0; i < l; i = i + 3) {
-                            strip.setPixelColor(i + this.q, this.rgb); // every third pixel on
+            let j = 0;
+            let q = 0;
+            let on = false;
+            return () => {
+                if (j < 10) { // 10 cycles of chasing
+                    if (q < 3) {
+                        if (on) {
+                            for (let i = 0; i < l; i = i + 3) {
+                                strip.setPixelColor(i + q, this.rgb); // every third pixel on
+                            }
                         }
-                    else 
-                        for (let i = 0; i < l; i = i + 3) {
-                            strip.setPixelColor(i + this.q, 0); // every third pixel off
+                        else {
+                            for (let i = 0; i < l; i = i + 3) {
+                                strip.setPixelColor(i + q, 0); // every third pixel off
+                            }
                         }
-                    this.on = !this.on;
-                    this.q++;
+                        on = !on;
+                        q++;
+                    } else {
+                        q = 0;
+                    }
+                    j++;
                 } else {
-                    this.q = 0;
+                    j = 0;
+                    return false;
                 }
-                this.j++;
-            } else {
-                this.j = 0;
+                return true;
             }
         }
     }
+
+    //% fixedInstance block="theater chase" jres
+    export const theaterChaseAnimation: NeoPixelAnimation = new TheatreChaseAnimation(0xff, 0, 0, 50);
 }
