@@ -1272,6 +1272,8 @@ namespace light {
             let pixel = -1;
             let pixelColor = 0;
             return () => {
+                if (count == 0)
+                    strip.clear();
                 if (pixel < 0) {
                     pixel = Math.randomRange(0, l - 1);
                     pixelColor = strip.pixelColor(pixel);
@@ -1282,7 +1284,7 @@ namespace light {
                     pixel = -1;
                 }
                 count++;
-                if (count > 100) {
+                if (count > 50) {
                     count = 0;
                     return false;
                 } else {
