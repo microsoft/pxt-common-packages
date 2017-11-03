@@ -35,13 +35,7 @@ namespace input {
 //% parts="switch"
 //% weight=80
 void onSwitchMoved(SwitchDirection direction, Action handler) {
-    auto slide = getWSwitch();
-    registerWithDal(slide->slideSwitch.id, (int)direction, handler);
-
-    // trigger event if the switch position matches the handler direction
-    auto currentDirection = slide->slideSwitch.isPressed() ? SwitchDirection::Right : SwitchDirection::Left;
-    if (direction == currentDirection)
-        Event ev(slide->slideSwitch.id, (int)direction);
+    registerWithDal(getWSlide()->slideSwitch.id, (int)direction, handler);
 }
 
 /*
