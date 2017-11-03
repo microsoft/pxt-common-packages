@@ -25,11 +25,6 @@ namespace pxsim {
 namespace pxsim.input {
     export function onSwitchMoved(direction: number, body: RefAction) {
         pxtcore.registerWithDal(SlideSwitchState.id, direction, body);
-
-        const b = board() as SlideSwitchBoard;
-        const sw = b.slideSwitchState;
-        if (sw.isLeft() == (direction == DAL.DEVICE_BUTTON_EVT_UP))
-            b.bus.queue(SlideSwitchState.id, direction);
     }
 
     export function switchRight() : boolean {
