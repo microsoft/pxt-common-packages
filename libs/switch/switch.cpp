@@ -35,7 +35,7 @@ namespace input {
 //% parts="switch"
 //% weight=80
 void onSwitchMoved(SwitchDirection direction, Action handler) {
-    registerWithDal(getWSlide()->slideSwitch.id, (int)direction, handler);
+    registerWithDal(getWSwitch()->slideSwitch.id, (int)direction, handler);
 }
 
 /*
