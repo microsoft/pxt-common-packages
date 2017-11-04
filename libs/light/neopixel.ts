@@ -27,7 +27,7 @@ enum Colors {
 }
 
 /**
- * Well known color hues 
+ * Well known color hues
  */
 enum ColorHues {
     //% block=red
@@ -148,7 +148,7 @@ namespace light {
          * Set all of the pixels on the strip to one RGB color.
          * @param rgb RGB color of the LED
          */
-        //% blockId="light_set_strip_color" block="%strip|set all pixels to %rgb=colorNumberPicker"         
+        //% blockId="light_set_strip_color" block="%strip|set all pixels to %rgb=colorNumberPicker"
         //% parts="neopixel"
         //% help="light/set-all"
         //% weight=80 blockGap=8
@@ -302,7 +302,7 @@ namespace light {
             if (this._parent) this._parent.show();
             else if (this._pin) {
                 const b = this.buf;
-                // bb may be undefined if the brightness 
+                // bb may be undefined if the brightness
                 // is uniform over the strip and has not been allocated
                 const _bb = this._brightnessBuf;
                 if (!this._sendBuf) this._sendBuf = pins.createBuffer(b.length);
@@ -396,7 +396,7 @@ namespace light {
          * @param length number of pixels in the range, eg: 4
          */
         //% blockId="light_range" block="%strip|range from %start|with %length|pixels"
-        //% help="light/range"   
+        //% help="light/range"
         //% parts="neopixel"
         //% weight=99 blockGap=30
         range(start: number, length: number): NeoPixelStrip {
@@ -537,10 +537,10 @@ namespace light {
          * @param animation the animation to run
          * @param duration the duration to run in milliseconds, eg: 500
          */
-        //% blockId=light_show_animation block="%strip|show %animation|animation"
+        //% blockId=light_show_animation block="%strip|show %animation=light_animation_picker|animation"
         //% help="light/show-animation"
         //% parts="neopixel"
-        //% weight=90 blockGap=8 animation.fieldEditor="imagedropdown"
+        //% weight=90 blockGap=8
         showAnimation(animation: NeoPixelAnimation, duration: number = 0) {
             if (!animation) return;
 
@@ -1140,7 +1140,7 @@ namespace light {
 
         /**
          * Creates an animator instance
-         * @param strip the strip to execute on 
+         * @param strip the strip to execute on
          */
         createRenderer(strip: NeoPixelStrip): () => boolean {
             return undefined;
@@ -1172,7 +1172,7 @@ namespace light {
         }
     }
 
-    //% fixedInstance block="rainbow" whenUsed jres
+    //% fixedInstance block="rainbow" whenUsed jres blockIdentity="light._animationPicker"
     export const rainbowAnimation: NeoPixelAnimation = new RainbowCycleAnimation(50);
 
     class RunningLightsAnimation extends NeoPixelAnimation {
@@ -1212,7 +1212,7 @@ namespace light {
         }
     }
 
-    //% fixedInstance block="running lights" jres
+    //% fixedInstance block="running lights" jres blockIdentity="light._animationPicker"
     export const runningLightsAnimation: NeoPixelAnimation = new RunningLightsAnimation(0xff, 0, 0, 50);
 
     class CometAnimation extends NeoPixelAnimation {
@@ -1253,7 +1253,7 @@ namespace light {
         }
     }
 
-    //% fixedInstance block="comet" jres
+    //% fixedInstance block="comet" jres blockIdentity="light._animationPicker"
     export const cometAnimation: NeoPixelAnimation = new CometAnimation(0xff, 0, 0xff, 50);
 
     class SparkleAnimation extends NeoPixelAnimation {
@@ -1294,7 +1294,7 @@ namespace light {
         }
     }
 
-    //% fixedInstance block="sparkle" jres
+    //% fixedInstance block="sparkle" jres blockIdentity="light._animationPicker"
     export const sparkleAnimation: NeoPixelAnimation = new SparkleAnimation(0xff, 0xff, 0xff, 50);
 
     class ColorWipeAnimation extends NeoPixelAnimation {
@@ -1330,7 +1330,7 @@ namespace light {
         }
     }
 
-    //% fixedInstance block="color wipe" jres
+    //% fixedInstance block="color wipe" jres blockIdentity="light._animationPicker"
     export const colorWipeAnimation: NeoPixelAnimation = new ColorWipeAnimation(0x0000ff, 50);
 
     class TheatreChaseAnimation extends NeoPixelAnimation {
@@ -1376,6 +1376,18 @@ namespace light {
         }
     }
 
-    //% fixedInstance block="theater chase" jres
+    //% fixedInstance block="theater chase" jres blockIdentity="light._animationPicker"
     export const theaterChaseAnimation: NeoPixelAnimation = new TheatreChaseAnimation(0xff, 0, 0, 50);
+
+    /**
+     * An animation that can be shown on a light strip
+     * @param animation The animation type
+     */
+    //% blockId=light_animation_picker block="%animation" shim=TD_ID
+    //% animation.fieldEditor="imagedropdown"
+    //% animation.fieldOptions.columns=3
+    //% group="More" weight=0
+    export function _animationPicker(animation: NeoPixelAnimation): NeoPixelAnimation {
+        return animation;
+    }
 }
