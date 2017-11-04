@@ -566,10 +566,10 @@ namespace light {
          * Show a single animation frame.
          * @param animation the animation to run
          */
-        //% blockId=light_show_animation_frame block="%strip|show frame of %animation animation"
+        //% blockId=light_show_animation_frame block="%strip|show frame of %animation=light_animation_picker|animation"
         //% help="light/show-animation-frame"
         //% parts="neopixel"
-        //% weight=87 blockGap=8 animation.fieldEditor="imagedropdown"
+        //% weight=87 blockGap=8
         showAnimationFrame(animation: NeoPixelAnimation) {
             if (!animation) {
                 this._frameAnimation = undefined;
