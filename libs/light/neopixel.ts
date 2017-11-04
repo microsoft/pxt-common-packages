@@ -537,7 +537,7 @@ namespace light {
          * @param animation the animation to run
          * @param duration the duration to run in milliseconds, eg: 500
          */
-        //% blockId=light_show_animation block="%strip|show %animation=light_animation_picker|animation"
+        //% blockId=light_show_animation block="%strip|show animation %animation=light_animation_picker|for %duration=timePicker|ms"
         //% help="light/show-animation"
         //% parts="neopixel"
         //% weight=90 blockGap=8
