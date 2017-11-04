@@ -2,7 +2,7 @@
 
 /*
 
-These button event needs CODAL work.
+These button events need CODAL work.
 
     // % block="double click"
     DoubleClick = DEVICE_BUTTON_EVT_DOUBLE_CLICK,

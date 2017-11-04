@@ -29,6 +29,7 @@ namespace TouchButtonMethods {
 //% name.fieldOptions.width=220
 //% name.fieldOptions.columns=4
 //% group="More" weight=16 blockGap=8
+//% help=input/touch/set-threshold
 void setThreshold(TouchButton button, int threshold) {
     button->setThreshold(max(0, min(1023, threshold)));
 }
@@ -43,6 +44,7 @@ void setThreshold(TouchButton button, int threshold) {
 //% name.fieldOptions.width=220
 //% name.fieldOptions.columns=4
 //% group="More" weight=49 blockGap=8
+//% help=input/touch/value
 int value(TouchButton button) {
     return button->getValue();
 }
