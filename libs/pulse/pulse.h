@@ -14,7 +14,7 @@
 #define PULSE_IR_COMPONENT_ID 0x2042
 #define PULSE_CABLE_COMPONENT_ID 0x2043
 
-#define PULSE_DEBUG 0
+#define PULSE_DEBUG 1
 
 #if PULSE_DEBUG
 #define PULSE_DMESG DMESG
@@ -79,6 +79,7 @@ class PulseBase {
     DevicePin *pin;
     DevicePin *inpin;
     BitVector encodedMsg;
+    uint16_t sendPtr;
     int8_t pwmstate;
     bool sending;
     uint16_t id;

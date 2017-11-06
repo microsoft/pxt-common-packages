@@ -140,10 +140,13 @@ void PulseBase::send(Buffer d) {
     encodedMsg.setLength(0);
     for (int i = 0; i < 25; ++i)
         encodedMsg.push(1);
-    encodedMsg.push(0);
-    encodedMsg.push(0);
+
+    for (int i = 0; i < 8; ++i)
+        encodedMsg.push(0);
+
     encodedMsg.push(1);
-    encodedMsg.push(1);
+    encodedMsg.push(0);
+
     for (int i = 0; i < d->length; i += 2) {
         encodeHamming(encodedMsg, d->data[i], d->data[i + 1]);
     }
@@ -170,6 +173,8 @@ void PulseBase::send(Buffer d) {
     sending = true;
     sendStartTime = 0;
     setupPWM();
+
+    sendPtr = 0;
 
     setPeriodicCallback(PULSE_PULSE_LEN, this, (void (*)(void *)) & PulseBase::process);
     while (sending) {
@@ -202,18 +207,22 @@ void PulseBase::addPulse(int v) {
 
 static int medianShift(int16_t *pulses, int len, int pulseLen) {
     int16_t nums[len];
+    int ptr = 0;
     int v = 0;
     int v2 = 0;
     for (int i = 0; i < len; i++) {
         if (pulses[i] < 0)
             v -= pulses[i];
-        else
+        else {
             v += pulses[i];
-        while (v2 < v - pulseLen / 2) {
-            v2 += pulseLen;
+            while (v2 < v - pulseLen / 2) {
+                v2 += pulseLen;
+            }
+            nums[ptr++] = v2 - v;
         }
-        nums[i] = v2 - v;
     }
+
+    len = ptr;
 
     for (int i = 0; i < len - 1; i++)
         for (int j = 0; j < len - i - 1; j++) {
@@ -235,27 +244,30 @@ static int getLength(int16_t *pulses, int len) {
     return v;
 }
 
-#define PULSE_ADJUST 10
-
 int PulseBase::adjustRound(int pulseLen) {
-    if (pulsePtr < 2 * PULSE_ADJUST)
-        target_panic(42);
-    int s0 = medianShift(pulses, PULSE_ADJUST, pulseLen);
-    int s1 = medianShift(pulses + PULSE_ADJUST, PULSE_ADJUST, pulseLen);
+    int pulseAdj = pulsePtr / 2 - 1;
+    int s0 = medianShift(pulses, pulseAdj, pulseLen);
+    int s1 = medianShift(pulses + pulseAdj, pulseAdj, pulseLen);
     int drift = s1 - s0;
-    int l0 = getLength(pulses, PULSE_ADJUST);
-    int l1 = getLength(pulses + PULSE_ADJUST, PULSE_ADJUST);
+    int l0 = getLength(pulses, pulseAdj);
+    int l1 = getLength(pulses + pulseAdj, pulseAdj);
     int numPeriodsBetweenMids = ((l0 + l1) / 2) / pulseLen;
     int newLen = pulseLen + (drift / numPeriodsBetweenMids);
-    PULSE_DMESG("IR adjust: %d -> %d", pulseLen, newLen);
+    PULSE_DMESG("IR adjust: %d -> %d s0=%d s1=%d clk=%d", pulseLen, newLen, s0, s1,
+                numPeriodsBetweenMids);
     return newLen;
 }
 
 int PulseBase::adjustShift() {
-    int pulseLen = adjustRound(PULSE_PULSE_LEN);
+    int pulseLen = (pulses[0] - pulses[1]) / 9;
     pulseLen = adjustRound(pulseLen);
     pulseLen = adjustRound(pulseLen);
-    pulses[0] -= medianShift(pulses, PULSE_ADJUST, pulseLen);
+    PULSE_DMESG("prev: %d %d %d %d %d %d %d %d %d %d", pulses[0], pulses[1], pulses[2], pulses[3],
+                pulses[4], pulses[5], pulses[6], pulses[7], pulses[8], pulses[9], pulses[10],
+                pulses[11]);
+    int len = getLength(pulses, 10);
+    pulses[0] += medianShift(pulses, pulsePtr - 2, pulseLen);
+    PULSE_DMESG("after: %d len=%d", pulses[0], len);
     return pulseLen;
 }
 
@@ -333,6 +345,7 @@ void PulseBase::packetEnd(Event) {
 
     if (bits.size() < 70) {
         Event evt(id, PULSE_PACKET_ERROR_EVENT);
+        PULSE_DMESG("too short: %d", bits.size());
         return; // too short
     }
 
@@ -393,6 +406,8 @@ void PulseBase::packetEnd(Event) {
     decrRC(outBuffer);
     outBuffer = pins::createBuffer(ptr);
     memcpy(outBuffer->data, buf, ptr);
+    if (crc != pktCrc)
+        PULSE_DMESG("crc fail");
     Event evt(id, crc == pktCrc ? PULSE_PACKET_EVENT : PULSE_PACKET_ERROR_EVENT);
 }
 
@@ -451,6 +466,8 @@ void PulseBase::process() {
         sendStartTime = now - (PULSE_PULSE_LEN / 2);
 
     auto encodedMsgPtr = (int)(now - sendStartTime) / PULSE_PULSE_LEN;
+
+    encodedMsgPtr = sendPtr++;
 
     if (encodedMsgPtr >= encodedMsg.size()) {
         encodedMsg.setLength(0);
