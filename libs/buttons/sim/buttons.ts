@@ -88,6 +88,11 @@ namespace pxsim.pxtcore {
         // panic
         return undefined;
     }
+    
+    export function getMultiButton(buttonId: number, pinA: number, pinB: number): Button {
+        // TODO: this should return a MultiButton
+        return undefined;
+    }
 }
 
 namespace pxsim.ButtonMethods {
@@ -101,5 +106,12 @@ namespace pxsim.ButtonMethods {
 
     export function wasPressed(button: pxsim.Button): boolean {
         return (<CommonButton>button).wasPressed();
+    }
+}
+
+namespace pxsim.DigitalPinMethods {
+
+    export function pushButton(pin: pins.DigitalPin): Button {
+        return pxsim.pxtcore.getButtonByPin(pin.id);
     }
 }

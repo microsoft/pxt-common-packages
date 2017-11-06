@@ -39,7 +39,6 @@ DevicePin *lookupPin(int pinName) {
     return getPin(pinName);
 }
 
-//%
 CodalComponent *lookupComponent(int id) {
     for (int i = 0; i < DEVICE_COMPONENT_COUNT; ++i) {
         if (CodalComponent::components[i] && CodalComponent::components[i]->id == id)
