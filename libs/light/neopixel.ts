@@ -114,8 +114,8 @@ namespace light {
         _photonDir: number;
         _photonColor: number;
         // last animation used by showAnimationFrame
-        _frameAnimation: NeoPixelAnimation;
-        _frameAnimationRenderer: () => void;
+        _lastAnimation: NeoPixelAnimation;
+        _lastAnimationRenderer: () => boolean;
 
         /**
          * Gets the underlying color buffer for the entire strip
@@ -544,20 +544,29 @@ namespace light {
         showAnimation(animation: NeoPixelAnimation, duration: number = 0) {
             if (!animation) return;
 
-            const renderer = animation.createRenderer(this);
-            if (!renderer) return;
+            // if a previous renderer for the same animation was used, keep using it
+            let animationRenderer = this._lastAnimationRenderer;
+            if (!animationRenderer || this._lastAnimation != animation) {
+                animationRenderer = animation.createRenderer(this);
+                if (!animationRenderer) return;
+            }
 
             let start = -1;
-            const render = () => {
+            const render: () => boolean = () => {
+                // keep track of whose running
+                this._lastAnimation = animation;
+                this._lastAnimationRenderer = animationRenderer;
+                // execute animation
                 if (start < 0) start = control.millis();
                 const now = control.millis() - start;
                 const buf = this.buffered();
                 this.setBuffered(true);
-                const keepRendering = renderer();
+                const keepRendering = animationRenderer();
                 this.setBuffered(buf);
                 this.show();
-                loops.pause(50);
-                return duration > 0 ? now <= duration : keepRendering;
+                return duration > 0 
+                    ? now <= duration 
+                    : keepRendering;
             };
             this.queueAnimation(render);
         }
@@ -572,17 +581,18 @@ namespace light {
         //% weight=87 blockGap=8
         showAnimationFrame(animation: NeoPixelAnimation) {
             if (!animation) {
-                this._frameAnimation = undefined;
-                this._frameAnimationRenderer = undefined;
+                this._lastAnimation = undefined;
+                this._lastAnimationRenderer = undefined;
                 return;
             }
-            if (!this._frameAnimationRenderer || this._frameAnimation != animation) {
-                this._frameAnimation = animation;
-                this._frameAnimationRenderer = animation.createRenderer(this);
+            let renderer = this._lastAnimationRenderer;
+            if (!renderer || this._lastAnimation != animation) {
+                this._lastAnimation = animation;
+                renderer = this._lastAnimationRenderer = animation.createRenderer(this);
             }
             const buf = this.buffered();
             this.setBuffered(false);
-            this._frameAnimationRenderer();
+            renderer();
             this.setBuffered(buf);
             this.show();
         }
@@ -625,15 +635,13 @@ namespace light {
 
         //%
         private queueAnimation(render: () => boolean) {
-            if (!this._animationQueue)
+            if (!this._animationQueue) {
                 this._animationQueue = new control.AnimationQueue();
-            this._animationQueue.runUntilDone(() => {
-                const bf = this.buffered();
-                this.setBuffered(true);
-                const r = render();
-                this.setBuffered(bf);
-                return r;
-            });
+                this._animationQueue.interval = 50;
+                this._lastAnimation = undefined;
+                this._lastAnimationRenderer = undefined;
+            }
+            this._animationQueue.runUntilDone(render);
         }
 
         /**
@@ -644,8 +652,11 @@ namespace light {
         //% help="light/stop-all-animations"
         //% weight=85
         stopAllAnimations() {
-            if (this._animationQueue)
+            if (this._animationQueue) {
                 this._animationQueue.cancel();
+                this._lastAnimation = undefined;
+                this._lastAnimationRenderer = undefined;
+            }
         }
 
         /**
@@ -1191,7 +1202,7 @@ namespace light {
         }
 
         public createRenderer(strip: NeoPixelStrip): () => boolean {
-            const l = strip.length();
+            const l = strip.length();            
             let iteration = 0;
             let step = 0;
             return () => {
