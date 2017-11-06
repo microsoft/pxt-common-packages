@@ -34,10 +34,12 @@ namespace control {
     export class AnimationQueue {
         running: boolean;
         eventID: number;
+        public interval: number;
 
         constructor() {
             this.running = false;
             this.eventID = control.allocateNotifyEvent();
+            this.interval = 1;
         }
 
         /**
@@ -59,7 +61,7 @@ namespace control {
             while (this.running
                 && !this.isCancelled(evid)
                 && render()) {
-                loops.pause(1);
+                loops.pause(this.interval);
             }
 
             // check if the animation hasn't been cancelled since we've been waiting
