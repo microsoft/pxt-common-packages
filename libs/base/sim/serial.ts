@@ -20,3 +20,11 @@ namespace pxsim.serial {
         // TODO
     }
 }
+
+namespace pxsim.BufferMethods {
+
+    export function toHex(buffer: any): string {
+        // TODO
+        return undefined;
+    }
+}
