@@ -102,9 +102,9 @@ PulseBase::PulseBase(uint16_t id, int pinOut, int pinIn) {
 
 void PulseBase::setupGapEvents() {
     devMessageBus.listen(inpin->id, DEVICE_PIN_EVT_PULSE_HI, this, &PulseBase::pulseGap,
-                            MESSAGE_BUS_LISTENER_IMMEDIATE);
+                         MESSAGE_BUS_LISTENER_IMMEDIATE);
     devMessageBus.listen(inpin->id, DEVICE_PIN_EVT_PULSE_LO, this, &PulseBase::pulseMark,
-                            MESSAGE_BUS_LISTENER_IMMEDIATE);
+                         MESSAGE_BUS_LISTENER_IMMEDIATE);
     listen();
 }
 
@@ -119,18 +119,18 @@ void PulseBase::setupPWM() {
     setPWM(1);
 }
 
-void  PulseBase::setPWM(int enabled) {
+void PulseBase::setPWM(int enabled) {
     // pin->setPwm(enabled);
     setTCC0(enabled);
     pwmstate = enabled;
 }
 
-void  PulseBase::finishPWM() {
+void PulseBase::finishPWM() {
     pin->setAnalogValue(0);
     setPWM(1);
 }
 
-void  PulseBase::send(Buffer d) {
+void PulseBase::send(Buffer d) {
     if (sending)
         return; // error code?
 
@@ -178,7 +178,7 @@ void  PulseBase::send(Buffer d) {
     fiber_sleep(5);
 }
 
-void  PulseBase::finish(int code) {
+void PulseBase::finish(int code) {
     if (recvState == PULSE_RECV_ERROR)
         return;
 
@@ -200,7 +200,7 @@ void PulseBase::addPulse(int v) {
     }
 }
 
-void  PulseBase::adjustShift() {
+void PulseBase::adjustShift() {
     int16_t nums[PULSE_MAX_PULSES];
     int v = 0;
     int sum = 0;
@@ -229,10 +229,9 @@ void  PulseBase::adjustShift() {
     //          pulses[0], pulses[1], pulses[2]);
 }
 
-void  PulseBase::pulseGap(Event ev) {
+void PulseBase::pulseGap(Event ev) {
     if (sending)
         return;
-    
 
     if (ev.timestamp > 10000) {
         dbg.put(" BRK ");
@@ -371,7 +370,6 @@ void PulseBase::pulseMark(Event ev) {
     if (sending)
         return;
 
-
     if (ev.timestamp > 10000) {
         dbg.put(" -BRK ");
         finish(10);
@@ -436,5 +434,4 @@ void PulseBase::process() {
     if (curr != pwmstate)
         setPWM(curr);
 }
-
 }
