@@ -105,7 +105,8 @@ class PulseBase {
     void send(Buffer d);
     void finish(int code);
     void addPulse(int v);
-    void adjustShift();
+    int adjustShift();
+    int adjustRound(int pulseLen);
     void pulseGap(Event ev);
     int errorRate(int start, BitVector &bits);
     void packetEnd(Event);

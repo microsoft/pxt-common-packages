@@ -200,33 +200,63 @@ void PulseBase::addPulse(int v) {
     }
 }
 
-void PulseBase::adjustShift() {
-    int16_t nums[PULSE_MAX_PULSES];
+static int medianShift(int16_t *pulses, int len, int pulseLen) {
+    int16_t nums[len];
     int v = 0;
-    int sum = 0;
-    for (int i = 0; i < pulsePtr; i++) {
+    int v2 = 0;
+    for (int i = 0; i < len; i++) {
         if (pulses[i] < 0)
             v -= pulses[i];
         else
             v += pulses[i];
-        int d = v % PULSE_PULSE_LEN;
-        if (d > PULSE_PULSE_LEN / 2)
-            d -= PULSE_PULSE_LEN;
-        nums[i] = d;
-        sum += d;
+        while (v2 < v - pulseLen / 2) {
+            v2 += pulseLen;
+        }
+        nums[i] = v2 - v;
     }
 
-    for (int i = 0; i < pulsePtr - 1; i++)
-        for (int j = 0; j < pulsePtr - i - 1; j++) {
+    for (int i = 0; i < len - 1; i++)
+        for (int j = 0; j < len - i - 1; j++) {
             if (nums[j] > nums[j + 1])
                 swap(nums[j], nums[j + 1]);
         }
 
-    int median = nums[pulsePtr / 2];
-    pulses[0] -= median;
+    return nums[len / 2];
+}
 
-    // PULSE_DMESG("shift: n=%d avg=%d med=%d p=%d %d %d ...", pulsePtr, sum / pulsePtr, median,
-    //          pulses[0], pulses[1], pulses[2]);
+static int getLength(int16_t *pulses, int len) {
+    int v = 0;
+    for (int i = 0; i < len; i++) {
+        if (pulses[i] < 0)
+            v -= pulses[i];
+        else
+            v += pulses[i];
+    }
+    return v;
+}
+
+#define PULSE_ADJUST 10
+
+int PulseBase::adjustRound(int pulseLen) {
+    if (pulsePtr < 2 * PULSE_ADJUST)
+        target_panic(42);
+    int s0 = medianShift(pulses, PULSE_ADJUST, pulseLen);
+    int s1 = medianShift(pulses + PULSE_ADJUST, PULSE_ADJUST, pulseLen);
+    int drift = s1 - s0;
+    int l0 = getLength(pulses, PULSE_ADJUST);
+    int l1 = getLength(pulses + PULSE_ADJUST, PULSE_ADJUST);
+    int numPeriodsBetweenMids = ((l0 + l1) / 2) / pulseLen;
+    int newLen = pulseLen + (drift / numPeriodsBetweenMids);
+    PULSE_DMESG("IR adjust: %d -> %d", pulseLen, newLen);
+    return newLen;
+}
+
+int PulseBase::adjustShift() {
+    int pulseLen = adjustRound(PULSE_PULSE_LEN);
+    pulseLen = adjustRound(pulseLen);
+    pulseLen = adjustRound(pulseLen);
+    pulses[0] -= medianShift(pulses, PULSE_ADJUST, pulseLen);
+    return pulseLen;
 }
 
 void PulseBase::pulseGap(Event ev) {
@@ -245,10 +275,10 @@ void PulseBase::pulseGap(Event ev) {
 
     if (recvState == PULSE_WAIT_START_GAP) {
         pulsePtr = 0;
+        startTime = system_timer_current_time_us() - tm;
         addPulse(tm);
         recvState = PULSE_WAIT_DATA;
         dbg.put(" *** ");
-        startTime = system_timer_current_time_us();
         return;
     }
 
@@ -279,11 +309,11 @@ void PulseBase::packetEnd(Event) {
     if (pulsePtr < 5)
         return;
 
-    adjustShift();
+    int pulseLen = adjustShift();
 
     BitVector bits;
 
-    int pos = PULSE_PULSE_LEN / 2;
+    int pos = pulseLen / 2;
     for (int i = 0; i < pulsePtr; ++i) {
         int curr = pulses[i];
         int v = 0;
@@ -294,7 +324,7 @@ void PulseBase::packetEnd(Event) {
         pos -= curr;
         while (pos < 0) {
             bits.push(v);
-            pos += PULSE_PULSE_LEN;
+            pos += pulseLen;
         }
     }
     // bits.print();
