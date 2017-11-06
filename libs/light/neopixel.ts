@@ -564,8 +564,8 @@ namespace light {
                 const keepRendering = animationRenderer();
                 this.setBuffered(buf);
                 this.show();
-                return duration > 0 
-                    ? now <= duration 
+                return duration > 0
+                    ? now <= duration
                     : keepRendering;
             };
             this.queueAnimation(render);
@@ -1202,7 +1202,7 @@ namespace light {
         }
 
         public createRenderer(strip: NeoPixelStrip): () => boolean {
-            const l = strip.length();            
+            const l = strip.length();
             let iteration = 0;
             let step = 0;
             return () => {
