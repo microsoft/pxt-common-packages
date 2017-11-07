@@ -1,6 +1,6 @@
-# on Infrared Packet Received
+# on Infrared Received Number
 
-Run some code when a data message comes into the infrared receiver.
+Run some code when a number from a data message comes into the infrared receiver.
 
 ```sig
 network.onInfraredReceivedNumber(function (num) {
@@ -16,22 +16,20 @@ board wants to send you so your program just receives the _data_ part of the pac
 ## Parameters
 
 * **handler**: the [function](/types/function) that has the code to run when the infrared data message is received.
-This function takes 3 optional arguments:
-* ``num``: a single [number](/types/number) value from the sender.
-* ``nums``: an array of [numbers](/types/number) from the sender.
-* ``buffer``: a group of data values with no specific [type](/types). Both the sender and receiver agree about what kind information is in this buffer.
-
-### ~hint
-Right now, just use ``num`` as your data part from the packet you receive over infrared.
-### ~
+This function has one argument:
+* ``num``: a single [number](/types/number) value received from the sender.
 
 ## Example #ex1
 
 Show the value of a number received from an infrared data message. The number is shown by lighting the same number of pixels on the pixel strip.
 
 ```blocks
+let strip = light.createStrip();
+
 network.onInfraredReceivedNumber(function (num) {
-    light.pixels.graph(num, 9);
+    if (num > 0) { 
+        strip.graph(num, 9);
+    } 
 })
 ```
 

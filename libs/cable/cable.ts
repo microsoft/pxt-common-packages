@@ -26,7 +26,7 @@ namespace network {
     }
 
     /**
-     * Send an array of numbers over infrared. The array size has to be 32 bytes or less.
+     * Send an array of numbers over the cable. The array size has to be 32 bytes or less.
      * @param values 
      */
     //% parts="cable" group="Cable"
@@ -42,10 +42,10 @@ namespace network {
     }
 
     /**
-     * Run some code when the cable receives a number.
+     * Run some code when a number value comes across the cable.
      */
     //% blockId=on_cable_received block="on cable received" blockGap=8
-    //% help=network/on-cable-received
+    //% help=network/on-cable-received-number
     //% parts="cable" group="Cable"
     export function onCableReceivedNumber(handler: (num: number) => void) {
         onCablePacket(() => {
