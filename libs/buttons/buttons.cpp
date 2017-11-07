@@ -65,7 +65,6 @@ AbstractButton *getButton(int id) {
     }
 }
 
-//%
 MultiButton *getMultiButton(int id, int pinA, int pinB, int flags) {
     auto btn = (MultiButton *)lookupComponent(id);
     if (btn == NULL) {

@@ -103,3 +103,10 @@ namespace pxsim.ButtonMethods {
         return (<CommonButton>button).wasPressed();
     }
 }
+
+namespace pxsim.DigitalPinMethods {
+
+    export function pushButton(pin: pins.DigitalPin): Button {
+        return pxsim.pxtcore.getButtonByPin(pin.id);
+    }
+}

@@ -1,6 +1,6 @@
 namespace pxsim.control {
-    export var runInBackground = thread.runInBackground;
-    export var delay = thread.pause;
+    export let runInBackground = thread.runInBackground;
+    export let delay = thread.pause;
 
     export function reset() {
         U.userError("reset not implemented in simulator yet")

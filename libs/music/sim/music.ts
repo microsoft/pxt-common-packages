@@ -43,7 +43,7 @@ namespace pxsim.music {
     }
 
     export function setTone(buffer: RefBuffer) {
-        // TODO
+        // TODO: implement set tone in the audio context
     }
 
     export function playTone(frequency: number, ms: number) {

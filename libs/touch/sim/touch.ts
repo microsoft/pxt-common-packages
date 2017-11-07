@@ -87,4 +87,10 @@ namespace pxsim.TouchButtonMethods {
         return button.value();
     }
 }
-    
+
+namespace pxsim.AnalogPinMethods {
+
+    export function touchButton(name: pins.AnalogPin): TouchButton {
+        return pxsim.pxtcore.getTouchButton(name.id);
+    }
+}

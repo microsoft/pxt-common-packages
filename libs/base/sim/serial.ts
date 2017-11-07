@@ -15,4 +15,8 @@ namespace pxsim.serial {
     export function writeValue(name: string, value: number) {
         writeString(name + ": " + value);
     }
+
+    export function writeBuffer(buffer: any) {
+        // NOP, can't simulate
+    }
 }
