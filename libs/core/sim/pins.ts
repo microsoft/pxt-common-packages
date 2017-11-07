@@ -37,7 +37,7 @@ namespace pxsim.DigitalPinMethods {
     * that this pin was either ``high`` or ``low``.
     */
     export function onPulsed(name: pins.DigitalPin, pulse: number, body: RefAction): void {
-        // TODO
+        // NOP, can't simulate
     }
 
     /**
@@ -46,7 +46,7 @@ namespace pxsim.DigitalPinMethods {
     * @param maximum duration in micro-seconds
     */
     export function pulseIn(name: pins.DigitalPin, pulse: number, maxDuration = 2000000): number {
-        // TODO
+        // Always return default value, can't simulate
         return 500;
     }
 
@@ -158,11 +158,6 @@ namespace pxsim.pins {
 
     export function createBuffer(sz: number) {
         return pxsim.BufferMethods.createBuffer(sz)
-    }
-
-    export function spiWrite(value: number): number {
-        // TODO
-        return 0;
     }
 
     export function i2cReadBuffer(address: number, size: number, repeat?: boolean): RefBuffer {

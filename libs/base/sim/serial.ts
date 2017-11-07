@@ -17,14 +17,6 @@ namespace pxsim.serial {
     }
 
     export function writeBuffer(buffer: any) {
-        // TODO
-    }
-}
-
-namespace pxsim.BufferMethods {
-
-    export function toHex(buffer: any): string {
-        // TODO
-        return undefined;
+        // NOP, can't simulate
     }
 }

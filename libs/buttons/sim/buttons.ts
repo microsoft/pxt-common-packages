@@ -88,11 +88,6 @@ namespace pxsim.pxtcore {
         // panic
         return undefined;
     }
-    
-    export function getMultiButton(buttonId: number, pinA: number, pinB: number): Button {
-        // TODO: this should return a MultiButton
-        return undefined;
-    }
 }
 
 namespace pxsim.ButtonMethods {
