@@ -45,7 +45,7 @@ namespace network {
      * Run some code when the infrared receiver gets a number.
      */
     //% blockId=ir_on_infrared_received block="on infrared received" blockGap=8
-    //% help=network/on-infrared-received
+    //% help=network/on-infrared-received-number
     //% parts="ir" group="Infrared"
     export function onInfraredReceivedNumber(handler: (num: number) => void) {
         onInfraredPacket(() => {
