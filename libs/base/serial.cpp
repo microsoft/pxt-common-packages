@@ -7,7 +7,7 @@ namespace serial {
      * Write some text to the serial port.
      */
     //% help=serial/write-string
-    //% weight=87
+    //% weight=87 blockHidden=true
     //% blockId=serial_writestring block="serial|write string %text"
     void writeString(String text) {
       sendSerial(text->data, text->length);
@@ -16,7 +16,7 @@ namespace serial {
     /**
     * Send a buffer across the serial connection.
     */
-    //% help=serial/write-buffer weight=6
+    //% help=serial/write-buffer weight=6 blockHidden=true
     //% blockId=serial_writebuffer block="serial|write buffer %buffer"
     void writeBuffer(Buffer buffer) {
       if (!buffer) return;
