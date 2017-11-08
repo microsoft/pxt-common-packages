@@ -26,7 +26,7 @@ for (let irDataNumber = 0; irDataNumber <= 9; irDataNumber++) {
 
 ## See also
 
-[``||network:on infrared packet received||``](/reference/network/on-infrared-packet-received)
+[``||network:on infrared received number||``](/reference/network/on-infrared-received-number)
 
 ```package
 infrared
