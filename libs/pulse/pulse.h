@@ -14,7 +14,7 @@
 #define PULSE_IR_COMPONENT_ID 0x2042
 #define PULSE_CABLE_COMPONENT_ID 0x2043
 
-#define PULSE_DEBUG 1
+#define PULSE_DEBUG 0
 
 #if PULSE_DEBUG
 #define PULSE_DMESG DMESG
@@ -107,7 +107,6 @@ class PulseBase {
     void finish(int code);
     void addPulse(int v);
     int adjustShift();
-    int adjustRound(int pulseLen);
     void pulseGap(Event ev);
     int errorRate(int start, BitVector &bits);
     void packetEnd(Event);
