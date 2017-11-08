@@ -34,7 +34,7 @@ let strip = light.createStrip();
 
 network.onInfraredPacketReceived(function ({ receivedNumber }) { 
     if (receivedNumber > 0) { 
-        strip.graph(num, 9);
+        strip.graph(receivedNumber, 9);
     } 
 })
 ```

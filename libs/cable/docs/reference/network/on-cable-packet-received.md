@@ -32,8 +32,10 @@ Show the value of a number received from an cable data message. The number is sh
 ```blocks
 let strip = light.createStrip();
 
-network.onCableReceivedNumber(function (num) {
-    strip.graph(num, 9);
+network.onCablePacketReceived(function ({ receivedNumber }) { 
+    if (receivedNumber > 0) { 
+        strip.graph(receivedNumber, 9);
+    } 
 })
 ```
 
