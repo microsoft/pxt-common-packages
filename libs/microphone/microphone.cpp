@@ -42,9 +42,14 @@ void onLoudSound(Action handler) {
 //% parts="microphone"
 //% weight=34 blockGap=8
 int soundLevel() {
+    // min value measured: 63.
+    const int silence = 62;
     // getValue returns a 12bit, eg 4096
-    int value = getWMicrophone()->level.getValue() >> 4;
-    return value;
+    const int value = max(silence, getWMicrophone()->level.getValue());
+    // scaling
+    const float scale = 255 / log(4096 / silence);
+    // compute dB like value by mapping logarithmic level to 0.255
+    return (int) (log(value / silence) * scale);
 }
 
 /**
