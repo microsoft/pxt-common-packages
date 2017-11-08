@@ -32,7 +32,7 @@ namespace serial {
      */
     //% weight=88 blockGap=8
     //% help=serial/write-value blockHidden=true
-    //% blockId=serial_writevalue block="serial|plot value %name|= %value"
+    //% blockId=serial_writevalue block="serial|write value %name|= %value"
     export function writeValue(name: string, value: number): void {
         writeString(name + ":" + value + "\r\n");
     }
