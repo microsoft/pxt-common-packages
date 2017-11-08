@@ -3,7 +3,7 @@
 Return a new instance of the color wipe animation.
 
 ```
-light.colorWipeAnimation(0xff000)
+light.colorWipeAnimation
 ```
 
 ## Parameters
@@ -14,7 +14,7 @@ light.colorWipeAnimation(0xff000)
 
 ```blocks
 loops.forever(() => {
-    light.builtin.showAnimationFrame(light.colorWipeAnimation(light.colors(Colors.Red)))
+    light.builtin.showAnimationFrame(light.colorWipeAnimation)
 })
 ```
 

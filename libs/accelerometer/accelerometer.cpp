@@ -106,50 +106,17 @@ enum class Gesture {
 
 namespace pxt {
 
-class InvertableLIS3DH : public LIS3DH {
-public:
-    InvertableLIS3DH(codal::mbed::I2C &_i2c, Pin &_int1, uint16_t address = LIS3DH_DEFAULT_ADDR, uint16_t id = DEVICE_ID_ACCELEROMETER, CoordinateSystem coordinateSystem = SIMPLE_CARTESIAN) : LIS3DH(_i2c, _int1, address, id, coordinateSystem) {}
-    int getX();
-    int getY();
-    int getZ();
-};
-
-int InvertableLIS3DH::getX() {
-#if INVERT_ACC_X_AXIS
-    return -LIS3DH::getX();
-#else
-    return LIS3DH::getX();
-#endif
-}
-
-int InvertableLIS3DH::getY() {
-#if INVERT_ACC_Y_AXIS
-    return -LIS3DH::getY();
-#else
-    return LIS3DH::getY();
-#endif
-}
-
-int InvertableLIS3DH::getZ() {
-#if INVERT_ACC_Z_AXIS
-    return -LIS3DH::getZ();
-#else
-    return LIS3DH::getZ();
-#endif
-}
-
-
 // Wrapper classes
 
 class WAccel {
   public:
     codal::mbed::I2C i2c; // note that this is different pins than io->i2c
-    DevicePin int1;
-    InvertableLIS3DH acc;
+    CoordinateSpace space;
+    LIS3DH acc;
     WAccel()
-        : i2c((PinName)PIN_ACCELEROMETER_SDA, (PinName)PIN_ACCELEROMETER_SCL),
-          INIT_PIN(int1, PIN_ACCELEROMETER_INT), //
-          acc(i2c, int1, LIS3DH_DEFAULT_ADDR, DEVICE_ID_ACCELEROMETER, NORTH_EAST_UP) //
+        : i2c(*LOOKUP_PIN(ACCELEROMETER_SDA), *LOOKUP_PIN(ACCELEROMETER_SCL)),
+          space(ACC_SYSTEM, ACC_UPSIDEDOWN, ACC_ROTATION),
+          acc(i2c, *LOOKUP_PIN(ACCELEROMETER_INT), space) //
     {
         acc.init();        
     }

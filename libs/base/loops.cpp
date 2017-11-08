@@ -17,7 +17,7 @@ void forever(Action a) {
  * @param ms how long to pause for, eg: 100, 200, 500, 1000, 2000
  */
 //% help=loops/pause weight=99
-//% async block="pause %ms=timePicker|ms"
+//% async block="pause %pause=timePicker|ms"
 //% blockId=device_pause
 void pause(int ms) {
     sleep_ms(ms);

@@ -15,11 +15,11 @@ class WLight {
   public:
     AnalogSensor sensor;
     WLight()
-        : sensor(*lookupPin(PIN_LIGHT), DEVICE_ID_LIGHT_SENSOR) //
+        : sensor(*LOOKUP_PIN(LIGHT), DEVICE_ID_LIGHT_SENSOR) //
     {
         sensor.init();
         sensor.setPeriod(50);
-        sensor.setSensitivity(868);
+        sensor.setSensitivity(868); // codal has 912 now
         sensor.setLowThreshold(128);
         sensor.setHighThreshold(896);
     }

@@ -26,8 +26,8 @@ declare namespace music {
 
     /**
      * Play a tone through the speaker for some amount of time.
-     * @param frequency pitch of the tone to play in Hertz (Hz)
-     * @param ms tone duration in milliseconds (ms)
+     * @param frequency pitch of the tone to play in Hertz (Hz), eg: Note.C
+     * @param ms tone duration in milliseconds (ms), eg: music.beat(BeatFraction.Half)
      */
     //% help=music/play-tone
     //% blockId=music_play_note block="play tone|at %note=device_note|for %duration=device_beat"

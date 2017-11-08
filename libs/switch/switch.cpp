@@ -17,8 +17,8 @@ class WSwitch {
     Button slideSwitch;
 
     WSwitch()
-        : slideSwitch(*pxt::lookupPin(PIN_BTN_SLIDE), DEVICE_ID_BUTTON_SLIDE,
-                      DEVICE_BUTTON_SIMPLE_EVENTS, ACTIVE_LOW, PullUp) {}
+        : slideSwitch(*LOOKUP_PIN(BTN_SLIDE), DEVICE_ID_BUTTON_SLIDE,
+                      DEVICE_BUTTON_SIMPLE_EVENTS, ACTIVE_LOW, PullMode::Up) {}
 };
 SINGLETON(WSwitch);
 
@@ -35,13 +35,7 @@ namespace input {
 //% parts="switch"
 //% weight=80
 void onSwitchMoved(SwitchDirection direction, Action handler) {
-    auto slide = getWSwitch();
-    registerWithDal(slide->slideSwitch.id, (int)direction, handler);
-
-    // trigger event if the switch position matches the handler direction
-    auto currentDirection = slide->slideSwitch.isPressed() ? SwitchDirection::Right : SwitchDirection::Left;
-    if (direction == currentDirection)
-        Event ev(slide->slideSwitch.id, (int)direction);
+    registerWithDal(getWSwitch()->slideSwitch.id, (int)direction, handler);
 }
 
 /*

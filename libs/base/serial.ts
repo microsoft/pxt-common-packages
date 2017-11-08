@@ -27,7 +27,7 @@ namespace serial {
 
     /**
      * Write a name:value pair as a line of text to the serial port.
-     * @param name name of the value stream, eg: x
+     * @param name name of the value stream, eg: "x"
      * @param value to write
      */
     //% weight=88 blockGap=8

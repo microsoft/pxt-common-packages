@@ -1,6 +1,8 @@
 #include "pxt.h"
 #include "neopixel.h"
 
+void cpu_clock_init(void);
+
 namespace pxt {
 
 // The first two word are used to tell the bootloader that a single reset should start the
@@ -15,7 +17,6 @@ __attribute__((section(".binmeta"))) __attribute__((used)) const uint32_t pxt_bi
 CodalUSB usb;
 HF2 hf2;
 codal::mbed::Timer devTimer;
-
 Event lastEvent;
 MessageBus devMessageBus;
 codal::CodalDevice device;
@@ -26,21 +27,20 @@ static const char *string_descriptors[] = {
 };
 
 static void initCodal() {
-    devTimer.init();
+    cpu_clock_init();
 
     // Bring up fiber scheduler.
     scheduler_init(devMessageBus);
 
-    // Seed our random number generator
-    // seedRandom();
+    // We probably don't need that - components are initialized when one obtains
+    // the reference to it.
+    // devMessageBus.listen(DEVICE_ID_MESSAGE_BUS_LISTENER, DEVICE_EVT_ANY, this,
+    // &CircuitPlayground::onListenerRegisteredEvent);
 
-    // Create an event handler to trap any handlers being created for I2C services.
-    // We do this to enable initialisation of those services only when they're used,
-    // which saves processor time, memeory and battery life.
-    // messageBus.listen(MICROBIT_ID_MESSAGE_BUS_LISTENER, MICROBIT_EVT_ANY, this,
-    // &MicroBit::onListenerRegisteredEvent);
-
-    io = new DevPins();
+    for (int i = 0; i < DEVICE_COMPONENT_COUNT; i++) {
+        if (CodalComponent::components[i])
+            CodalComponent::components[i]->init();
+    }
 
     usb.stringDescriptors = string_descriptors;
     usb.add(hf2);
@@ -113,29 +113,50 @@ void waitForEvent(int id, int event) {
 
 void initRandomSeed() {
     int seed = 0xC0DA1;
-    auto pinTemp = lookupPin(PIN_TEMPERATURE);
+    auto pinTemp = LOOKUP_PIN(TEMPERATURE);
     if (pinTemp)
         seed *= pinTemp->getAnalogValue();
-    auto pinLight = lookupPin(PIN_LIGHT);
+    auto pinLight = LOOKUP_PIN(LIGHT);
     if (pinLight)
         seed *= pinLight->getAnalogValue();
     seedRandom(seed);
 }
 
+static void remapSwdPin(int pinCfg, int fallback) {
+    int pinName = getConfig(pinCfg);
+    if (pinName == PA30 || pinName == PA31) {
+        if (getConfig(CFG_SWD_ENABLED, 0)) {
+            linkPin(pinName, fallback);
+        } else {
+            PORT->Group[pinName / 32].PINCFG[pinName % 32].reg = (uint8_t)PORT_PINCFG_INEN;
+        }
+    }
+}
+
+static void initSwdPins() {
+    remapSwdPin(CFG_PIN_NEOPIXEL, PIN(D0));
+    remapSwdPin(CFG_PIN_RXLED, PIN(D1));
+}
+
 void clearNeoPixels() {
     // clear on-board neopixels
-    auto neoPin = lookupPin(PIN_NEOPIXEL);
+    auto neoPin = LOOKUP_PIN(NEOPIXEL);
     if (neoPin) {
-        uint8_t neobuf[30];
-        memset(neobuf, 0, 30);
-        neoPin->setDigitalValue(0);
-        fiber_sleep(1);
-        neopixel_send_buffer(*neoPin, neobuf, 30);
+        int numNeopixels = getConfig(CFG_NUM_NEOPIXELS, 0);
+        int size = numNeopixels * 3;
+        if (size) {
+            uint8_t neobuf[size];
+            memset(neobuf, 0, size);
+            neoPin->setDigitalValue(0);
+            fiber_sleep(1);
+            neopixel_send_buffer(*neoPin, neobuf, 30);
+        }
     }
 }
 
 void initRuntime() {
     initCodal();
+    initSwdPins();
     initRandomSeed();
     clearNeoPixels();
 

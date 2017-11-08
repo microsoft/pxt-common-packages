@@ -6,11 +6,11 @@ Send a number value to another @boardname@ using a cable.
 network.cableSendNumber(0);
 ```
 
-The infrared transmitter on your board will send a number as part of a data message signaled by infrared light pulses. If another @boardname@ is waiting to receive an infrared signal, it will get this number in the data message it receives.
+The cable transmitter on your board will send a number as part of a data message signaled by pulses. If another @boardname@ is waiting to receive an cable message, it will get this number in the data message it receives.
 
 ## Parameters
 
-* **value**: the [number](types/number) to send to another @boardname@ using infrared.
+* **value**: the [number](types/number) to send to another @boardname@ using a cable.
 
 ## Example #ex1
 
@@ -26,7 +26,7 @@ for (let i = 0; i <= 9; i++) {
 
 ## See also
 
-[``||network:on cable packet received||``](/reference/network/on-cable-packet-received)
+[``||network:on cable received number||``](/reference/network/on-cable-received-number)
 
 ```package
 cable

@@ -3,7 +3,7 @@
 Run some code when a data message comes into the infrared receiver.
 
 ```sig
-network.onInfraredPacketReceived(function ({ receivedNumber }) {
+network.onInfraredPacketReceived(function ({ receivedNumber }) { 
 	
 })
 ```
@@ -15,36 +15,27 @@ board wants to send you so your program just receives the _data_ part of the pac
 
 ## Parameters
 
-* **cb**: the [function](/types/function) that has the code to run when the infrared data message is received.
-* **p**: the information sent in the infrared data message. This can have three parts:
->``receivedNumber``: a single [number](/types/number) value from the sender.<br/>
-``receivedNumbers``: an array of [numbers](/types/number) from the sender.<br/>
-``receivedBuffer``: a group of data values with no specific [type](/types). Both the sender and receiver agree about what kind information is in this buffer.
+* **handler**: the [function](/types/function) that has the code to run when the infrared data message is received.
+This function takes 3 optional arguments:
+* ``num``: a single [number](/types/number) value from the sender.
+* ``nums``: an array of [numbers](/types/number) from the sender.
+* ``buffer``: a group of data values with no specific [type](/types). Both the sender and receiver agree about what kind information is in this buffer.
 
 ### ~hint
-Right now, just use ``receivedNumber`` as your data part from the packet you receive over infrared.
+Right now, just use ``num`` as your data part from the packet you receive over infrared.
 ### ~
-
-## Using the packet data
-
-The packet **p** is really a parameter of **cb**. In code, be sure to put the data part you want in
-the **cb** [function](/types/function). It's done in code like this:
-
-```typescript
-network.onInfraredPacketReceived(function ({ receivedNumber }) {
-    if (receivedNumber > 0) {
-        light.pixels.setPixelColor(0, Colors.Red);
-    }
-})
-```
 
 ## Example #ex1
 
 Show the value of a number received from an infrared data message. The number is shown by lighting the same number of pixels on the pixel strip.
 
 ```blocks
-network.onInfraredPacketReceived(function ({ receivedNumber }) {
-    light.pixels.graph(receivedNumber, 9);
+let strip = light.createStrip();
+
+network.onInfraredPacketReceived(function ({ receivedNumber }) { 
+    if (receivedNumber > 0) { 
+        strip.graph(num, 9);
+    } 
 })
 ```
 

@@ -12,7 +12,8 @@ class WSynthesizer {
     SAMD21DAC dac;
 
     WSynthesizer()
-        : dac(*getPin(PIN_SPEAKER), pxt::getWDMAC()->dmac, synth.output) {
+        // DAC always on PA02 on SAMD21
+        : dac(*lookupPin(PA02), pxt::getWDMAC()->dmac, synth.output) {
         synth.setSampleRate(dac.getSampleRate());
         synth.setVolume(64);
     }
@@ -34,7 +35,7 @@ SoundOutputDestination soundOutputDestination = SoundOutputDestination::Speaker;
 // turns on/off the speaker amp
 void updateSpeakerAmp() {
     // turn off speaker as needed
-    //auto pinAmp = lookupPin(PIN_SPEAKER_AMP);
+    //auto pinAmp = LOOKUP_PIN(SPEAKER_AMP);
     //if (pinAmp) {
     //    bool on = SoundOutputDestination::Speaker == soundOutputDestination;
     //    pinAmp->setDigitalValue(on ? 1 : 0);

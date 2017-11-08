@@ -55,6 +55,7 @@ namespace pxsim {
     export class CommonButtonState {
         usesButtonAB: boolean = false;
         buttons: CommonButton[];
+        buttonsByPin: Map<CommonButton> = {};
 
         constructor() {
             this.buttons = [
@@ -66,6 +67,15 @@ namespace pxsim {
     }
 }
 namespace pxsim.pxtcore {
+    export function getButtonByPin(pinId: number): Button {
+        let m = board().buttonState.buttonsByPin
+        let b = m[pinId + ""]
+        if (!b) {
+            b = m[pinId + ""] = new CommonButton(pinId)
+        }
+        return b
+    }
+
     export function getButton(buttonId: number): Button {
         const buttons = board().buttonState.buttons;
         if (buttonId === 2) {
@@ -91,5 +101,12 @@ namespace pxsim.ButtonMethods {
 
     export function wasPressed(button: pxsim.Button): boolean {
         return (<CommonButton>button).wasPressed();
+    }
+}
+
+namespace pxsim.DigitalPinMethods {
+
+    export function pushButton(pin: pins.DigitalPin): Button {
+        return pxsim.pxtcore.getButtonByPin(pin.id);
     }
 }

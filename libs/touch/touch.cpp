@@ -2,69 +2,16 @@
 #include "touch.h"
 
 namespace pxt {
-    
-static const int touchPins[] = {
-    PIN_A1, PIN_A2, PIN_A3, PIN_A4, PIN_A5, PIN_A6, PIN_A7
-};
-
-class WTouch {
-  public:
-
-    TouchButton buttons[0];
-    //% indexedInstanceNS=input indexedInstanceShim=pxt::getTouchButton
-    /**
-    * Capacitive pin A1
-    */
-    //% block="pin A1"
-    TouchButton pinA1;
-    /**
-    * Capacitive pin A2
-    */
-    //% block="pin A2"
-    TouchButton pinA2;
-    /**
-    * Capacitive pin A3
-    */
-    //% block="pin A3"
-    TouchButton pinA3;
-    /**
-    * Capacitive pin A4
-    */
-    //% block="pin A4"
-    TouchButton pinA4;
-    /**
-    * Capacitive pin A5
-    */
-    //% block="pin A5"
-    TouchButton pinA5;
-    /**
-    * Capacitive pin A6
-    */
-    //% block="pin A6"
-    TouchButton pinA6;
-    /**
-    * Capacitive pin A7
-    */
-    //% block="pin A7"
-    TouchButton pinA7;
-
-    WTouch() {
-        memclr(buttons, sizeof(touchPins));
-    }
-};
-SINGLETON(WTouch);
-const int LastTouchButtonID = &((WTouch *)0)->pinA7 - ((WTouch *)0)->buttons;
-
 //%
-CapTouchButton *getTouchButton(int id) {
-    if (!(0 <= id && id <= LastTouchButtonID))
-        target_panic(42);
-    if (sizeof(touchPins) / sizeof(touchPins[0]) != LastTouchButtonID + 1)
-        target_panic(42);
-    auto w = getWTouch();
-    if (!w->buttons[id])
-        w->buttons[id] = new CapTouchButton(*pxt::lookupPin(touchPins[id]));
-    return w->buttons[id];
+TouchButton getTouchButton(int id) {
+    auto cpid = DEVICE_ID_FIRST_TOUCHBUTTON + id;
+    auto btn = (CapTouchButton*)lookupComponent(cpid);
+    if (btn == NULL) {
+        // 'new' will add it to component list
+        btn = new CapTouchButton(*pxt::getPin(id));
+        btn->id = cpid;
+    }
+    return btn;
 }
 }
 
@@ -82,6 +29,7 @@ namespace TouchButtonMethods {
 //% name.fieldOptions.width=220
 //% name.fieldOptions.columns=4
 //% group="More" weight=16 blockGap=8
+//% help=input/touch/set-threshold
 void setThreshold(TouchButton button, int threshold) {
     button->setThreshold(max(0, min(1023, threshold)));
 }
@@ -96,8 +44,27 @@ void setThreshold(TouchButton button, int threshold) {
 //% name.fieldOptions.width=220
 //% name.fieldOptions.columns=4
 //% group="More" weight=49 blockGap=8
+//% help=input/touch/value
 int value(TouchButton button) {
     return button->getValue();
+}
+
+}
+
+namespace AnalogPinMethods {
+    
+/**
+ * Get the cap-touch sensor for given pin (if available)
+ */
+//%
+TouchButton touchButton(AnalogPin pin) {
+    if (PA02 <= pin->name && pin->name <= PA07)
+        ;
+    else if (PB02 <= pin->name && pin->name <= PB09)
+        ;
+    else
+        return NULL;
+    return pxt::getTouchButton(pin->name);
 }
 
 }

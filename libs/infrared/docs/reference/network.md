@@ -6,14 +6,14 @@ Send and receive data between your @boardname@ and another board.
 
 ```cards
 network.infraredSendNumber(0);
-network.onInfraredPacketReceived(function ({ }) {
+network.onInfraredReceivedNumber(function (num) {
 	
 })
 ```
 ## See also
 
 [infrared send number](/reference/network/infrared-send-number),
-[on infrared packet received](/reference/network/on-infrared-packet-received)
+[on infrared received](/reference/network/on-infrared-received)
 
 ```package
 infrared

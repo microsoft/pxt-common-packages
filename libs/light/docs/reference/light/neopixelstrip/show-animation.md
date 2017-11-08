@@ -3,7 +3,11 @@
 Show a pixel animation on the pixel strip (or on the board) for some amount of time.
 
 ```sig
+<<<<<<< HEAD:libs/light/docs/reference/light/neopixelstrip/show-animation.md
 light.createStrip().showAnimation(light.animation(LightAnimation.Rainbow), 500)
+=======
+light.pixels.showAnimation(light.rainbowAnimation)
+>>>>>>> master:libs/light/docs/reference/light/show-animation.md
 
 ```
 You have several animations to choose from. Pick the one you want and decide
