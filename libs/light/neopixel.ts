@@ -575,13 +575,8 @@ namespace light {
          * Show a single animation frame.
          * @param animation the animation to run
          */
-<<<<<<< HEAD
-        //% blockId=light_show_animation_frame block="%strip|show animation frame %animation=light_animation"
-        //% help="light/neopixelstrip/show-animation-frame"
-=======
         //% blockId=light_show_animation_frame block="%strip|show frame of %animation=light_animation_picker|animation"
         //% help="light/show-animation-frame"
->>>>>>> master
         //% parts="neopixel"
         //% weight=87 blockGap=8
         showAnimationFrame(animation: NeoPixelAnimation) {
