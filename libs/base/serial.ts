@@ -9,7 +9,7 @@ namespace serial {
      * @param value to send over serial
      */
     //% weight=90
-    //% help=serial/write-line blockGap=8
+    //% help=serial/write-line blockGap=8 blockHidden=true
     //% blockId=serial_writeline block="serial|write line %text"
     export function writeLine(text: string): void {
         writeString(text + "\r\n");
@@ -19,7 +19,7 @@ namespace serial {
      * Write a number to the serial port.
      */
     //% help=serial/write-number
-    //% weight=89 blockGap=8 deprecated=true
+    //% weight=89 blockGap=8 blockHidden=true
     //% blockId=serial_writenumber block="serial|write number %value"
     export function writeNumber(value: number): void {
         writeString(value.toString());
@@ -31,7 +31,7 @@ namespace serial {
      * @param value to write
      */
     //% weight=88 blockGap=8
-    //% help=serial/write-value
+    //% help=serial/write-value blockHidden=true
     //% blockId=serial_writevalue block="serial|plot value %name|= %value"
     export function writeValue(name: string, value: number): void {
         writeString(name + ":" + value + "\r\n");

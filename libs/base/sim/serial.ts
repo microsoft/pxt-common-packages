@@ -5,10 +5,6 @@ namespace pxsim.serial {
         runtime.board.writeSerial(str);
     }
 
-    export function writeBuffer(b: RefBuffer) {
-        // noop
-    }
-
     export function writeBuffer(buffer: any) {
         // NOP, can't simulate
     }

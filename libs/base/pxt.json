@@ -17,7 +17,8 @@
         "control.cpp",
         "control.ts",
         "serial.cpp",
-        "serial.ts"
+        "serial.ts",
+        "console.ts"
     ],
     "testFiles": [
         "test.ts"
