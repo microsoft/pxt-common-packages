@@ -1,15 +1,15 @@
 /// <reference no-default-lib="true"/>
 
 /**
- * Reading and writing data over a serial connection.
+ * Reading and writing data to the console output.
  */
 //% weight=2 color=#002050 icon="\uf287"
 //% advanced=true
 
 namespace console {
     /**
-     * Write a line of text to the serial port.
-     * @param value to send over serial
+     * Write a line of text to the console output.
+     * @param value to send
      */
     //% weight=90
     //% help=console/log blockGap=8
@@ -19,7 +19,7 @@ namespace console {
     }
 
     /**
-     * Write a name:value pair as a line of text to the serial port.
+     * Write a name:value pair as a line of text to the console output.
      * @param name name of the value stream, eg: "x"
      * @param value to write
      */
@@ -27,6 +27,6 @@ namespace console {
     //% help=console/log-value
     //% blockId=console_log_value block="console|log value %name|= %value"
     export function logValue(name: string, value: number): void {
-        serial.writeString(name + ":" + value + "\r\n");
+        serial.writeValue(name, value);
     }
 }
