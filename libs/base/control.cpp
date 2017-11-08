@@ -1,5 +1,6 @@
 #include "pxtbase.h"
 
+
 namespace control {
     /**
     * Gets the number of milliseconds elapsed since power on.
@@ -17,9 +18,9 @@ namespace control {
      */
     //% weight=20 blockGap=8 blockId="control_on_event" block="on event|from %src|with value %value"
     //% blockExternalInputs=1
-    //% help="control/on-event"
-    void onEvent(int src, int value, Action handler) {
-        registerWithDal(src, value, handler);
+    //% help="control/on-event"          
+    void onEvent(int src, int value, Action handler, int flags = 16) { // EVENT_LISTENER_DEFAULT_FLAGS
+        registerWithDal(src, value, handler, flags);
     }
 
     /**
