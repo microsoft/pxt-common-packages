@@ -12,7 +12,7 @@ class WMicrophone {
     LevelDetector level;
     WMicrophone()
         : microphone(*LOOKUP_PIN(MIC_DATA), *LOOKUP_PIN(MIC_CLOCK), pxt::getWDMAC()->dmac, 10000)
-        , level(microphone.output, 80, 20, DEVICE_ID_MICROPHONE)
+        , level(microphone.output, 115, 20, DEVICE_ID_MICROPHONE)
     {
         microphone.enable();
     }
@@ -35,15 +35,21 @@ void onLoudSound(Action handler) {
 }
 
 /**
-* Reads the loudness through the microphone from 0 (silent) to 100 (very loud)
+* Reads the loudness through the microphone from 0 (silent) to 255 (loud)
 */
 //% help=input/sound-level
 //% blockId=device_get_sound_level block="sound level"
 //% parts="microphone"
 //% weight=34 blockGap=8
 int soundLevel() {
-    int value = getWMicrophone()->level.getValue();
-    return value;
+    // min value measured: 63.
+    const int silence = 62;
+    // getValue returns a 12bit, eg 4096
+    const int value = max(silence, getWMicrophone()->level.getValue());
+    // scaling
+    const float scale = 255 / log(4096 / silence);
+    // compute dB like value by mapping logarithmic level to 0.255
+    return (int) (log(value / silence) * scale);
 }
 
 /**
