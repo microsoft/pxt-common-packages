@@ -40,8 +40,8 @@ light.createStrip().setPhotonMode(PhotonMode.PenUp)
 light.rgb(255, 255, 255);
 light.hsv(255, 255, 255);
 light.colors(Colors.Red);
-//light.fade(0, 0)
-//light.animation(LightAnimation.Rainbow)
+light.fade(0, 0)
+light.animation(0)
 ```
 
 ## See also #seealso
