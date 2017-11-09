@@ -41,7 +41,6 @@ light.rgb(255, 255, 255);
 light.hsv(255, 255, 255);
 light.colors(Colors.Red);
 light.fade(0, 0)
-light.animation(0)
 ```
 
 ## See also #seealso
@@ -49,7 +48,7 @@ light.animation(0)
 ## #baselinks
 
 [showAnimation](/reference/light/neopixelstrip/show-animation), [showAnimationFrame](/reference/light/neopixelstrip/show-animation-frame),
-[stopAllAnimations](/reference/light/neopixelstrip/stop-all-animations), [animation](/reference/light/animation),
+[stopAllAnimations](/reference/light/neopixelstrip/stop-all-animations),
 [graph](/reference/light/neopixelstrip/graph), [setAll](/reference/light/neopixelstrip/set-all),
 [show](/reference/light/neopixelstrip/show), [setBuffered](/reference/light/neopixelstrip/set-buffered), 
 [setBrightness](/reference/light/neopixelstrip/set-brightness),
