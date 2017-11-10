@@ -34,7 +34,8 @@ namespace serial {
     //% help=serial/write-value blockHidden=true
     //% blockId=serial_writevalue block="serial|write value %name|= %value"
     export function writeValue(name: string, value: number): void {
-        writeString(name + ":" + value + "\r\n");
+        const prefix = name ? name + ":" : "";
+        serial.writeLine(prefix + value);
     }
 
 }
