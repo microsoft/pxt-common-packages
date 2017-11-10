@@ -13,7 +13,7 @@ network.onInfraredReceivedNumber(function (num) {
 ## See also
 
 [infrared send number](/reference/network/infrared-send-number),
-[on infrared received](/reference/network/on-infrared-received)
+[on infrared received number](/reference/network/on-infrared-received-number)
 
 ```package
 infrared

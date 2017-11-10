@@ -20,6 +20,9 @@ static const uint8_t invHamming[64] = {
     0x0c, 0xcc, 0x2b, 0x6c, 0x28, 0x5c, 0x22, 0x2e, 0x1b, 0x5c, 0xbb, 0x7b, 0x59, 0x55, 0x2b, 0x5f,
     0x18, 0x6c, 0x6a, 0x66, 0x88, 0x48, 0x28, 0x6f, 0x11, 0x1d, 0x1b, 0x6f, 0x18, 0x5f, 0x3f, 0xff};
 
+static const uint8_t bitsToGap[4] = {1, 2, 4, 3};
+static const uint8_t gapToBits[5] = {0b00, 0b00, 0b01, 0b11, 0b10};
+
 static int lookupInvHaming(int v) {
     int k = invHamming[v >> 1];
     if (v & 1)
@@ -28,7 +31,7 @@ static int lookupInvHaming(int v) {
         return (k >> 4);
 }
 
-static void decodeHamming(uint64_t r, uint8_t *dst) {
+static void decodeHamming(uint32_t r, uint8_t *dst) {
     int a0 = 0;
     int a1 = 0;
     int b0 = 0;
@@ -40,11 +43,17 @@ static void decodeHamming(uint64_t r, uint8_t *dst) {
         b0 |= ((r >> p++) & 1) << i;
         a1 |= ((r >> p++) & 1) << i;
         b1 |= ((r >> p++) & 1) << i;
-        p++; // stop bit
     }
 
     dst[0] = (lookupInvHaming(a0) << 4) | lookupInvHaming(a1);
     dst[1] = (lookupInvHaming(b0) << 4) | lookupInvHaming(b1);
+}
+
+static void pushTwo(BitVector &bv, uint8_t a, uint8_t b) {
+    int gap = bitsToGap[b * 2 + a];
+    bv.push(1);
+    while (gap--)
+        bv.push(0);
 }
 
 static void encodeHamming(BitVector &bv, uint8_t a, uint8_t b) {
@@ -53,17 +62,8 @@ static void encodeHamming(BitVector &bv, uint8_t a, uint8_t b) {
     int b0 = hamming[b >> 4];
     int b1 = hamming[b & 0xf];
     for (int i = 0; i < 7; ++i) {
-        bv.push((a0 >> i) & 1);
-        bv.push((b0 >> i) & 1);
-        bv.push((a1 >> i) & 1);
-        bv.push((b1 >> i) & 1);
-
-        int last = bv.getBits(bv.size() - 4, 4);
-        // if there was at least a single 1, then stop bit is zero
-        if (last == 0)
-            bv.push(1);
-        else
-            bv.push(0);
+        pushTwo(bv, (a0 >> i) & 1, (b0 >> i) & 1);
+        pushTwo(bv, (a1 >> i) & 1, (b1 >> i) & 1);
     }
 }
 
@@ -102,9 +102,9 @@ PulseBase::PulseBase(uint16_t id, int pinOut, int pinIn) {
 
 void PulseBase::setupGapEvents() {
     devMessageBus.listen(inpin->id, DEVICE_PIN_EVT_PULSE_HI, this, &PulseBase::pulseGap,
-                            MESSAGE_BUS_LISTENER_IMMEDIATE);
+                         MESSAGE_BUS_LISTENER_IMMEDIATE);
     devMessageBus.listen(inpin->id, DEVICE_PIN_EVT_PULSE_LO, this, &PulseBase::pulseMark,
-                            MESSAGE_BUS_LISTENER_IMMEDIATE);
+                         MESSAGE_BUS_LISTENER_IMMEDIATE);
     listen();
 }
 
@@ -119,18 +119,18 @@ void PulseBase::setupPWM() {
     setPWM(1);
 }
 
-void  PulseBase::setPWM(int enabled) {
+void PulseBase::setPWM(int enabled) {
     // pin->setPwm(enabled);
     setTCC0(enabled);
     pwmstate = enabled;
 }
 
-void  PulseBase::finishPWM() {
+void PulseBase::finishPWM() {
     pin->setAnalogValue(0);
     setPWM(1);
 }
 
-void  PulseBase::send(Buffer d) {
+void PulseBase::send(Buffer d) {
     if (sending)
         return; // error code?
 
@@ -140,10 +140,10 @@ void  PulseBase::send(Buffer d) {
     encodedMsg.setLength(0);
     for (int i = 0; i < 25; ++i)
         encodedMsg.push(1);
-    encodedMsg.push(0);
-    encodedMsg.push(0);
-    encodedMsg.push(1);
-    encodedMsg.push(1);
+
+    for (int i = 0; i < 8; ++i)
+        encodedMsg.push(0);
+
     for (int i = 0; i < d->length; i += 2) {
         encodeHamming(encodedMsg, d->data[i], d->data[i + 1]);
     }
@@ -171,6 +171,8 @@ void  PulseBase::send(Buffer d) {
     sendStartTime = 0;
     setupPWM();
 
+    sendPtr = 0;
+
     setPeriodicCallback(PULSE_PULSE_LEN, this, (void (*)(void *)) & PulseBase::process);
     while (sending) {
         fiber_sleep(10);
@@ -178,7 +180,7 @@ void  PulseBase::send(Buffer d) {
     fiber_sleep(5);
 }
 
-void  PulseBase::finish(int code) {
+void PulseBase::finish(int code) {
     if (recvState == PULSE_RECV_ERROR)
         return;
 
@@ -200,39 +202,17 @@ void PulseBase::addPulse(int v) {
     }
 }
 
-void  PulseBase::adjustShift() {
-    int16_t nums[PULSE_MAX_PULSES];
-    int v = 0;
-    int sum = 0;
-    for (int i = 0; i < pulsePtr; i++) {
-        if (pulses[i] < 0)
-            v -= pulses[i];
-        else
-            v += pulses[i];
-        int d = v % PULSE_PULSE_LEN;
-        if (d > PULSE_PULSE_LEN / 2)
-            d -= PULSE_PULSE_LEN;
-        nums[i] = d;
-        sum += d;
-    }
-
-    for (int i = 0; i < pulsePtr - 1; i++)
-        for (int j = 0; j < pulsePtr - i - 1; j++) {
-            if (nums[j] > nums[j + 1])
-                swap(nums[j], nums[j + 1]);
-        }
-
-    int median = nums[pulsePtr / 2];
-    pulses[0] -= median;
-
-    // PULSE_DMESG("shift: n=%d avg=%d med=%d p=%d %d %d ...", pulsePtr, sum / pulsePtr, median,
-    //          pulses[0], pulses[1], pulses[2]);
+int PulseBase::adjustShift() {
+    int pulseLen = (pulses[0] - pulses[1]) / 9;
+    PULSE_DMESG("prev: %d %d %d %d %d %d %d %d %d %d", pulses[0], pulses[1], pulses[2], pulses[3],
+                pulses[4], pulses[5], pulses[6], pulses[7], pulses[8], pulses[9], pulses[10],
+                pulses[11]);
+    return pulseLen;
 }
 
-void  PulseBase::pulseGap(Event ev) {
+void PulseBase::pulseGap(Event ev) {
     if (sending)
         return;
-    
 
     if (ev.timestamp > 10000) {
         dbg.put(" BRK ");
@@ -246,10 +226,10 @@ void  PulseBase::pulseGap(Event ev) {
 
     if (recvState == PULSE_WAIT_START_GAP) {
         pulsePtr = 0;
+        startTime = system_timer_current_time_us() - tm;
         addPulse(tm);
         recvState = PULSE_WAIT_DATA;
         dbg.put(" *** ");
-        startTime = system_timer_current_time_us();
         return;
     }
 
@@ -259,118 +239,61 @@ void  PulseBase::pulseGap(Event ev) {
     }
 }
 
-int PulseBase::errorRate(int start, BitVector &bits) {
-    int stops = 0;
-    int errs = 0;
-    for (int i = start; i < bits.size(); i += 5) {
-        uint32_t v = bits.getBits(i, 5);
-        if (v == 0x1f)
-            stops++;
-        else
-            stops = 0;
-        if (stops >= 3)
-            break;
-        if ((v & 0x10) && (v != 0x10))
-            errs++;
-    }
-    return errs;
-}
-
 void PulseBase::packetEnd(Event) {
     if (pulsePtr < 5)
         return;
 
-    adjustShift();
+    int pulseLen = adjustShift();
+    int numBits = 0;
+    uint32_t r = 0;
+    uint8_t buf[PULSE_MAX_MSG_SIZE];
+    int ptr = 0;
 
-    BitVector bits;
-
-    int pos = PULSE_PULSE_LEN / 2;
-    for (int i = 0; i < pulsePtr; ++i) {
-        int curr = pulses[i];
-        int v = 0;
-        if (curr < 0) {
-            v = 1;
-            curr = -curr;
-        }
-        pos -= curr;
-        while (pos < 0) {
-            bits.push(v);
-            pos += PULSE_PULSE_LEN;
+    for (int i = 2; i < pulsePtr; ++i) {
+        if (pulses[i] > 0) {
+            int len = (pulses[i] + pulseLen / 2) / pulseLen;
+            if (len > 4)
+                len = 4;
+            r |= (uint32_t)gapToBits[len] << numBits;
+            numBits += 2;
+            if (numBits == 28) {
+                decodeHamming(r, buf + ptr);
+                numBits = 0;
+                r = 0;
+                ptr += 2;
+            }
         }
     }
-    // bits.print();
 
     pulsePtr = 0;
 
-    if (bits.size() < 70) {
+    if (numBits != 0) {
         Event evt(id, PULSE_PACKET_ERROR_EVENT);
+        PULSE_DMESG("left over bits: %d", numBits);
+        return;
+    }
+
+    if (ptr < 4) {
+        Event evt(id, PULSE_PACKET_ERROR_EVENT);
+        PULSE_DMESG("too short: %d", ptr);
         return; // too short
-    }
-
-    int start = 0;
-    while (start < bits.size() && !bits.get(start))
-        start++;
-    start += 2;
-
-    // adjust message start, depending on parity error rate around it
-    int err = errorRate(start, bits) - 2; // give it some boost
-    int err0 = errorRate(start - 1, bits);
-    int err1 = errorRate(start + 1, bits);
-    if (err0 < err1 && err0 < err) {
-        start--;
-        PULSE_DMESG("sync back");
-    } else if (err1 < err) {
-        start++;
-        PULSE_DMESG("sync fwd");
-    }
-
-    uint8_t buf[PULSE_MAX_MSG_SIZE];
-    int ptr = 0;
-    uint64_t mask = (((uint64_t)1 << 20) - 1) << 15;
-
-    while (ptr < PULSE_MAX_MSG_SIZE) {
-        auto p = start + 35 * (ptr / 2);
-        uint64_t v = bits.getBits(p, 30) | ((uint64_t)bits.getBits(p + 30, 5) << 30);
-        if ((v & mask) == mask)
-            break;
-        decodeHamming(v, buf + ptr);
-        ptr += 2;
     }
 
     ptr -= 2;
     uint16_t crc = crc16ccit(buf, ptr);
     uint16_t pktCrc = (buf[ptr + 1] << 8) | buf[ptr];
 
-#if 0
-    BitVector bits2;
-    bits2.push(0);
-    bits2.push(0);
-    bits2.push(1);
-    bits2.push(1);
-    uint8_t v = buf[0];
-    for (int i = 0; i < ptr; i += 2) {
-        uint8_t v2 = v * 13;
-        encodeHamming(bits2, v, v2);
-        v = v2 * 13;
-    }
-    bits2.push(1);
-    bits2.push(1);
-    for (int i = 0; i < bits2.size(); ++i) {
-        bits2.set(i, bits.get(i) != bits2.get(i));
-    }
-    bits2.print();
-#endif
-
     decrRC(outBuffer);
     outBuffer = pins::createBuffer(ptr);
     memcpy(outBuffer->data, buf, ptr);
+    if (crc != pktCrc)
+        PULSE_DMESG("crc fail: %x %x len=%d", crc, pktCrc, pulseLen);
     Event evt(id, crc == pktCrc ? PULSE_PACKET_EVENT : PULSE_PACKET_ERROR_EVENT);
 }
 
 void PulseBase::pulseMark(Event ev) {
     if (sending)
         return;
-
 
     if (ev.timestamp > 10000) {
         dbg.put(" -BRK ");
@@ -424,6 +347,8 @@ void PulseBase::process() {
 
     auto encodedMsgPtr = (int)(now - sendStartTime) / PULSE_PULSE_LEN;
 
+    encodedMsgPtr = sendPtr++;
+
     if (encodedMsgPtr >= encodedMsg.size()) {
         encodedMsg.setLength(0);
         finishPWM();
@@ -436,5 +361,4 @@ void PulseBase::process() {
     if (curr != pwmstate)
         setPWM(curr);
 }
-
 }

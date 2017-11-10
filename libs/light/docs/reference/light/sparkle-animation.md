@@ -13,7 +13,7 @@ light.sparkleAnimation();
 
 ```blocks
 loops.forever(() => {
-    light.builtin.showAnimationFrame(light.sparkleAnimation())
+    light.builtin.showAnimationFrame(light.sparkleAnimation(), 500)
 })
 ```
 

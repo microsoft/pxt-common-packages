@@ -6,7 +6,7 @@ Send and receive data between your @boardname@ and another board.
 
 ```cards
 network.cableSendNumber(0);
-network.onCableReceived(function (num) {
+network.onCableReceivedNumber(function (num) {
 	
 })
 ```
@@ -16,7 +16,7 @@ network.onCableReceived(function (num) {
 ## See also
 
 [cable send number](/reference/network/cable-send-number),
-[on cable received](/reference/network/on-cable-received)
+[on cable received number](/reference/network/on-cable-received-number)
 
 ### #cableseealso
 

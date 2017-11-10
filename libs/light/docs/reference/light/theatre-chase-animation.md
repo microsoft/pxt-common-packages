@@ -13,7 +13,7 @@ light.theatreChaseAnimation();
 
 ```blocks
 loops.forever(() => {
-    light.builtin.showAnimationFrame(light.theatreChaseAnimation())
+    light.builtin.showAnimationFrame(light.theatreChaseAnimation(), 500)
 })
 ```
 

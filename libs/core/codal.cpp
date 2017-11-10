@@ -66,10 +66,10 @@ void dispatchEvent(Event e) {
         runAction1(curr->action, fromInt(e.value));
 }
 
-void registerWithDal(int id, int event, Action a) {
+void registerWithDal(int id, int event, Action a, int flags) {
     // first time?
     if (!findBinding(id, event))
-        devMessageBus.listen(id, event, dispatchEvent);
+        devMessageBus.listen(id, event, dispatchEvent, flags);
     setBinding(id, event, a);
 }
 
