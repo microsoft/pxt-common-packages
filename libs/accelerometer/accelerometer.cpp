@@ -136,7 +136,7 @@ namespace input {
 //% gesture.fieldEditor="gridpicker"
 //% gesture.fieldOptions.width=220
 //% gesture.fieldOptions.columns=3
-//% weight=92 blockGap=8
+//% weight=92 blockGap=12
 void onGesture(Gesture gesture, Action body) {
     auto acc = &getWAccel()->acc;
     acc->updateSample();

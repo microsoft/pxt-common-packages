@@ -28,7 +28,7 @@ namespace input {
 //% help=input/on-loud-sound
 //% blockId=input_on_loud_sound block="on loud sound"
 //% parts="microphone"
-//% weight=88 blockGap=8
+//% weight=88 blockGap=12
 void onLoudSound(Action handler) {
     getWMicrophone(); // wake up service
     registerWithDal(DEVICE_ID_MICROPHONE, LEVEL_THRESHOLD_HIGH, handler);

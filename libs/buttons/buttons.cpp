@@ -116,7 +116,7 @@ namespace ButtonMethods {
 //% button.fieldEditor="gridpicker"
 //% button.fieldOptions.width=220
 //% button.fieldOptions.columns=3
-//% weight=96 blockGap=8
+//% weight=96 blockGap=12
 //% trackArgs=0
 void onEvent(Button_ button, ButtonEvent ev, Action body) {
     registerWithDal(button->id, (int)ev, body);
