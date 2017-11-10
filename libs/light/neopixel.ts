@@ -176,7 +176,7 @@ namespace light {
         //% parts="neopixel"
         //% weight=70
         graph(value: number, high: number): void {
-            serial.writeString(value + "\n"); // auto chart
+            console.logValue("", value);
             value = Math.abs(value);
 
             const now = control.millis();
@@ -192,6 +192,7 @@ namespace light {
             this.setBuffered(true);
             const n = this._length;
             const n1 = n - 1;
+            const nhalf = n / 2;
             const v = ((value * n) / this._barGraphHigh) >> 0;
             if (v == 0) {
                 this.setAll(0);
@@ -199,8 +200,13 @@ namespace light {
             } else {
                 for (let i = 0; i < n; ++i) {
                     if (i <= v) {
-                        let b = (i * 255 / n1) >> 0;
-                        this.setPixelColor(i, light.rgb(b, 0, 255 - b));
+                        if (i < nhalf) {
+                            const b = (i * 255 / nhalf) >> 0;
+                            this.setPixelColor(i, light.rgb(0, b, 255 - b));
+                        } else {
+                            const b = ((i - nhalf) * 255 / nhalf) >> 0;
+                            this.setPixelColor(i, light.rgb(b, 255 - b, 0));                            
+                        }
                     }
                     else {
                         this.setPixelColor(i, 0);
