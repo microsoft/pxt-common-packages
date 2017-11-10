@@ -37,7 +37,7 @@ namespace input {
 //% help=input/on-light-condition-changed
 //% blockId=input_on_light_condition_changed block="on light %condition"
 //% parts="lightsensor"
-//% weight=84 blockGap=8
+//% weight=84 blockGap=12
 void onLightConditionChanged(LightCondition condition, Action handler) {
     auto sensor = &getWLight()->sensor;
     sensor->updateSample();
