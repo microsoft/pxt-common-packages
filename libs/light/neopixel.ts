@@ -547,7 +547,7 @@ namespace light {
         //% help="light/show-animation"
         //% parts="neopixel"
         //% weight=90 blockGap=8
-        showAnimation(animation: NeoPixelAnimation, duration: number = 0) {
+        showAnimation(animation: NeoPixelAnimation, duration: number) {
             if (!animation) return;
 
             // if a previous renderer for the same animation was used, keep using it
