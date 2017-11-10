@@ -5,7 +5,7 @@ Light up pixels and NeoPixel strips. Show light effects and animations.
 ## Pixel #pixel
 
 ```cards
-light.pixels.showAnimation(null)
+light.pixels.showAnimation(null, 0)
 light.pixels.showAnimationFrame(null)
 light.pixels.stopAllAnimations()
 light.pixels.graph(0, 0)
