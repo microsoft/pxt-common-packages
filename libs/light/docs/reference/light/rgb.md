@@ -37,9 +37,10 @@ let pink = light.rgb(255, 0, 255)
 Make a new color of yellow to use on your pixels. Try the new color when you press the ``A`` button.
 
 ```blocks
+let strip = light.createStrip()
 let myYellow = light.rgb(255, 228, 181)
 input.buttonA.onEvent(ButtonEvent.Click, () => {
-    light.pixels.setAll(myYellow)
+    strip.setAll(myYellow)
 })
 ```
 [``||hsv||``](/reference/light/hsv)

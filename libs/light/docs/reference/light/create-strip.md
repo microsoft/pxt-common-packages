@@ -18,6 +18,10 @@ If you know the exact type, you can set it in the pixel mode.
 * **pin**: [DigitalPin](/reference/pins), the pin where the neopixel strip is connected.
 * **numleds**: the [number](/types/number) of LEDs in the strip, such as: 10, 30, 60, or 64.
 
+## Returns
+
+* a new **NeoPixelStrip** controller for the neopixels on a strip connected to the board.
+
 ## Example
 
 Connect a pixel strip to the pin `D4`. Make all pixels light up `green`.
@@ -29,7 +33,7 @@ strip.setAll(Colors.Green)
 
 ## See Also
 
-[``||range||``](/reference/light/range), [``||set mode||``](/reference/light/set-mode)
+[``||range||``](/reference/light/neopixelstrip/range), [``||set mode||``](/reference/light/neopixelstrip/set-mode)
 
 ```package
 light

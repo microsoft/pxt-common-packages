@@ -9,9 +9,11 @@
 namespace light {
 
     /**
-     * Gets the default pin for built in neopixels
+     * Get the default pin for the built-in neopixels
      */
     //% parts="neopixel"
+    //% blockId="light_default_pin" block="default pixel pin"
+    //% help=light/default-pin
     DigitalPin defaultPin() {
         int pinName = PIN(NEOPIXEL);
         if (pinName < 0) {
@@ -22,7 +24,7 @@ namespace light {
     }
 
     /**
-     * Sends a neopixel buffer to the specified digital pin
+     * Send a neopixel buffer to the specified digital pin
      * @param pin The pin that the neopixels are connected to
      * @param mode the color encoding mode
      * @param buf The buffer to send to the pin

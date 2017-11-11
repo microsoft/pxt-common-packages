@@ -3,7 +3,7 @@
 Make the pixels appear to move along the pixel strip.
 
 ```sig
-light.pixels.move(LightMove.Rotate, 1)
+light.createStrip().move(LightMove.Rotate, 1)
 ```
 
 A pixel on the strip looks like it's moving when the next pixel changes to
@@ -24,10 +24,11 @@ pixels move by the number of pixel spots you want.
 Make two blue pixels rotate around the strip one pixel spot at a time.
 
 ```blocks
-light.pixels.setPixelColor(0, Colors.Blue)
-light.pixels.setPixelColor(1, Colors.Blue)
+let strip = light.createStrip()
+strip.setPixelColor(0, Colors.Blue)
+strip.setPixelColor(1, Colors.Blue)
 loops.forever(() => {
-    light.pixels.move(LightMove.Rotate, 1)
+    strip.move(LightMove.Rotate, 1)
     loops.pause(500)
 })
 ```

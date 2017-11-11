@@ -3,7 +3,7 @@
 Set the color of the pixel at this location to a new color.
 
 ```sig
-light.pixels.setPixelColor(0, 0)
+light.createStrip().setPixelColor(0, 0)
 
 ```
 
@@ -18,13 +18,14 @@ color you want to change.
 When button ``B`` is clicked, show the ``pink`` color at pixel ``0``.
 
 ```blocks
+let strip = light.createStrip()
 input.buttonB.onEvent(ButtonEvent.Click, () => {
-    light.pixels.setPixelColor(0, Colors.Pink)
+    strip.setPixelColor(0, Colors.Pink)
 })
 ```
 
 ## See Also
-[``||pixel color||``](/reference/light/pixel-color), [``||rgb||``](/reference/light/rgb)
+[``||pixel color||``](/reference/light/neopixelstrip/pixel-color), [``||rgb||``](/reference/light/rgb)
 
 ```package
 light

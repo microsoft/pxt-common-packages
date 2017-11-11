@@ -3,7 +3,7 @@
 Get the color of the pixel at the location with this number.
 
 ```sig
-light.pixels.pixelColor(0)
+light.createStrip().pixelColor(0)
 ```
 
 ## Parameters
@@ -20,11 +20,12 @@ color you want to know.
 Get the color for the pixel at position ``3`` and set the pixel at position ``4`` to the same color.
 
 ```blocks
-light.pixels.setPixelColor(4, light.pixels.pixelColor(3))
+let strip = light.createStrip()
+strip.setPixelColor(4, strip.pixelColor(3))
 ```
 
 ## See Also
-[``||set pixel color||``](/reference/light/set-pixel-color), [``||rgb||``](/reference/light/rgb)
+[``||set pixel color||``](/reference/light/neopixelstrip/set-pixel-color), [``||rgb||``](/reference/light/rgb)
 
 ```package
 light

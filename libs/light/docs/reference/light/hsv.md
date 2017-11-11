@@ -48,9 +48,10 @@ let mint = light.hsv(85, 128, 217)
 Make a new color of yellow to use on your pixels. Try the new color when you press the ``A`` button.
 
 ```blocks
+let strip = light.createStrip()
 let myYellow = light.hsv(43, 228, 217)
 input.buttonA.onEvent(ButtonEvent.Click, () => {
-    light.pixels.setAll(myYellow)
+    strip.setAll(myYellow)
 })
 ```
 ## See also

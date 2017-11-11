@@ -1,13 +1,10 @@
 # default Pin
 
-Gets the default pin that the `light` library uses
+Get the default pin that the `light` library uses.
 
 ```sig
 light.defaultPin();
 ```
-
-## Parameters
-
 
 ## Example
 
