@@ -11,7 +11,7 @@ itself. If you want to send a temperature value of 32 degrees as a _name:value_ 
 it would go to the console output as this: "temperature:32". This is a good way to
 connect a number value to its meaning.
 
-So, ``||log value||`` does this but you give the name and the value as two parts and it
+So, ``||console:log value||`` does this but you give the name and the value as two parts and it
 sends it as a pair.
 
 ## Parameters

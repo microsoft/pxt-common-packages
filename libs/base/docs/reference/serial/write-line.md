@@ -6,7 +6,7 @@ Write a line of text to the serial port.
 serial.writeLine("");
 ```
 
-A line is a text string that has two special characters added at the end: _carriage return_
+A line of text is string that has two special characters added at the end: _carriage return_
 and _line feed_. These characters are really just codes that mean start a new line.
 Sometimes they appear in code as ``"\r\n"``. 
 
