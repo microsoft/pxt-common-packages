@@ -6,18 +6,17 @@ Write a line of text to the console output.
 console.log("");
 ```
 
-A line is a text string that has two special characters added at the end: _carriage return_
+A line of text is a string that has two special characters added at the end: _carriage return_
 and _line feed_. These characters are really just codes that mean start a new line.
 Sometimes they appear in code as ``"\r\n"``. 
 
-After using a ``||log||``, any new text written to the console output will begin on a new line.
+After using ``||console:log||``, any new text written to the console output will begin on a new line.
 
-With ``||log||``, the new line characters are automatically added for you. You only need to 
-give the text you want to write.
+With ``||console:log||``, the new line characters are automatically added for you. You only need to give the text you want to write.
 
 ## Parameters
 
-* **text**: the [string](/types/string) to write to the console output
+* **text**: the [string](/types/string) to write to the console output.
 
 ## Example
 
