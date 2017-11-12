@@ -8,6 +8,8 @@ light.createStrip().showAnimationFrame(light.animation(LightAnimation.Rainbow))
 You can show the colors from a pixel animation without having to play the whole animation. Just pick
 one of the built-in animations to see its first frame.
 
+If the strip is buffered, renders the color but does not call ``show`` to allow for other animation frames to be rendered.
+
 ## Parameters
 
 * **animation**: a built-in light animation to show a frame from on the pixels.
