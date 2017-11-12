@@ -3,7 +3,7 @@
 Show a pixel animation on the pixel strip (or on the board) for some amount of time.
 
 ```sig
-light.createStrip().showAnimation(light.animation(LightAnimation.Rainbow), 500)
+light.createStrip().showAnimation(light.rainbowAnimation, 500)
 
 ```
 You have several animations to choose from. Pick the one you want and decide
@@ -33,7 +33,7 @@ Show the ``comet`` aninmation for 2 seconds when the ``A`` button is pressed.
 ```blocks
 let strip = light.createStrip()
 input.buttonA.onEvent(ButtonEvent.Click, () => {
-    strip.showAnimation(light.animation(LightAnimation.Comet), 2000)
+    strip.showAnimation(light.cometAnimation, 2000)
 })
 ```
 
@@ -46,11 +46,11 @@ notice that the ``sparkle`` animation has to wait for ``rainbow`` to finish.
 ```blocks
 let strip = light.createStrip()
 input.buttonA.onEvent(ButtonEvent.Click, () => {
-    strip.showAnimation(light.animation(LightAnimation.Rainbow), 6000)
+    strip.showAnimation(light.rainbowAnimation, 6000)
 })
 
 input.buttonB.onEvent(ButtonEvent.Click, () => {
-    strip.showAnimation(light.animation(LightAnimation.Sparkle), 2000)
+    strip.showAnimation(light.sparkleAnimation, 2000)
 })
 ```
 

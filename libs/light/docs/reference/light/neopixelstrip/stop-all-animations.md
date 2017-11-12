@@ -18,7 +18,7 @@ input.buttonA.onEvent(ButtonEvent.Click, () => {
     strip.stopAllAnimations()
 })
 
-strip.showAnimation(light.animation(LightAnimation.Rainbow), 10000)
+strip.showAnimation(light.rainbowAnimation, 10000)
 ```
 
 ## See Also
