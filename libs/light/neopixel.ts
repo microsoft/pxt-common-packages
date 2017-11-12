@@ -596,11 +596,8 @@ namespace light {
                 this._lastAnimation = animation;
                 renderer = this._lastAnimationRenderer = animation.createRenderer(this);
             }
-            const buf = this.buffered();
-            this.setBuffered(false);
             renderer();
-            this.setBuffered(buf);
-            this.show();
+            this.autoShow();
         }
 
         /**
