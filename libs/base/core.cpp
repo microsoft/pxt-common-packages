@@ -408,6 +408,10 @@ int toBool(TValue v) {
 
 //%
 int toBoolDecr(TValue v) {
+    if (v == TAG_TRUE)
+        return 1;
+    if (v == TAG_FALSE)
+        return 0;
     int r = toBool(v);
     decr(v);
     return r;

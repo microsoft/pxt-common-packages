@@ -100,7 +100,7 @@ void dumpDmesg();
 #define TAG_NUMBER(n) (TNumber)(void *)((n << 1) | 1)
 
 inline bool isTagged(TValue v) {
-    return !v || ((int)v & 3);
+    return ((int)v & 3) || !v;
 }
 
 inline bool isNumber(TValue v) {
