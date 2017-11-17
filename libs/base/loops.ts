@@ -1,11 +1,8 @@
 namespace loops {
-    interface PollEvent {
-        eid: number;
-        vid: number;
-        start: number;
-        timeOut: number;
-        condition: () => boolean;
-        once: boolean;
+    class PollEvent {
+        constructor(public eid: number, public vid: number, public start: number, public timeOut: number, public condition: () => boolean, public once: boolean) {
+
+        }
     }
 
     let pollEventQueue: PollEvent[] = [];
@@ -30,14 +27,14 @@ namespace loops {
     }
 
     function queuePollEvent(timeOut: number, condition: () => boolean, handler: () => void) {
-        const ev = {
-            eid: control.allocateNotifyEvent(),
-            vid: 1,
-            start: control.millis(),
-            timeOut: timeOut || 0,
-            condition: condition,
-            once: !handler
-        };
+        const ev = new PollEvent(
+            control.allocateNotifyEvent(),
+            1,
+            control.millis(),
+            timeOut || 0,
+            condition,
+            !handler
+        );
         // register event
         if (!!handler)
             control.onEvent(ev.eid, ev.vid, handler);
