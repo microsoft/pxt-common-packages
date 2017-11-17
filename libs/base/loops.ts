@@ -8,15 +8,15 @@ namespace loops {
         once: boolean;
     }
 
-    let pollEvents: PollEvent[] = [];
+    let pollEventQueue: PollEvent[] = [];
     let pollRunning = false;
 
     function pollEvents() {
-        while (pollEvents.length > 0) {
+        while (pollEventQueue.length > 0) {
             const now = control.millis();
             let needsCleanup = false;
-            for (let i = 0; i < pollEvents.length; ++i) {
-                const ev = pollEvents[i];
+            for (let i = 0; i < pollEventQueue.length; ++i) {
+                const ev = pollEventQueue[i];
                 if (ev.condition() || (ev.timeOut > 0 && now - ev.start > ev.timeOut)) {
                     control.raiseEvent(ev.eid, ev.vid);
                     if (ev.once) {
@@ -26,7 +26,7 @@ namespace loops {
                 }
             }
             if (needsCleanup)
-                pollEvents = pollEvents.filter(ev => !!ev.condition);
+                pollEventQueue = pollEventQueue.filter(ev => !!ev.condition);
             loops.pause(50);
         }
         pollRunning = false;
@@ -44,8 +44,9 @@ namespace loops {
         // register event
         if (handler)
             control.onEvent(ev.eid, ev.vid, handler);
-        pollEvents.push(ev)
-        // start polling fibier if needed
+        // add to the queue
+        pollEventQueue.push(ev)
+        // start polling fiber if needed
         if (!pollRunning) {
             pollRunning = true;
             control.runInBackground(pollEvents);
