@@ -19,8 +19,10 @@ namespace loops {
                 const ev = pollEvents[i];
                 if (ev.condition() || (ev.timeOut > 0 && now - ev.start > ev.timeOut)) {
                     control.raiseEvent(ev.eid, ev.vid);
-                    ev.condition = undefined;
-                    needsCleanup = true;
+                    if (ev.once) {
+                        ev.condition = undefined;
+                        needsCleanup = true;
+                    }
                 }
             }
             if (needsCleanup)
