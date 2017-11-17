@@ -14,19 +14,16 @@ namespace loops {
     function pollEvents() {
         while (pollEventQueue.length > 0) {
             const now = control.millis();
-            let needsCleanup = false;
             for (let i = 0; i < pollEventQueue.length; ++i) {
                 const ev = pollEventQueue[i];
                 if (ev.condition() || (ev.timeOut > 0 && now - ev.start > ev.timeOut)) {
                     control.raiseEvent(ev.eid, ev.vid);
                     if (ev.once) {
-                        ev.condition = undefined;
-                        needsCleanup = true;
+                        pollEventQueue.splice(i, 1);
+                        --i;
                     }
                 }
             }
-            if (needsCleanup)
-                pollEventQueue = pollEventQueue.filter(ev => !!ev.condition);
             loops.pause(50);
         }
         pollRunning = false;
@@ -42,7 +39,7 @@ namespace loops {
             once: !handler
         };
         // register event
-        if (handler)
+        if (!!handler)
             control.onEvent(ev.eid, ev.vid, handler);
         // add to the queue
         pollEventQueue.push(ev)
