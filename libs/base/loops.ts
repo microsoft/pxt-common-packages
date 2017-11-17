@@ -1,7 +1,18 @@
 namespace loops {
     class PollEvent {
-        constructor(public eid: number, public vid: number, public start: number, public timeOut: number, public condition: () => boolean, public once: boolean) {
-
+        public eid: number; 
+        public vid: number; 
+        public start: number; 
+        public timeOut: number; 
+        public condition: () => boolean; 
+        public once: boolean;
+        constructor(eid: number, vid: number, start: number, timeOut: number, condition: () => boolean, once: boolean) {
+            this.eid = eid;
+            this.vid = vid;
+            this.start = start;
+            this.timeOut = timeOut;
+            this.condition = condition;
+            this.once = once;
         }
     }
 
@@ -31,7 +42,7 @@ namespace loops {
             control.allocateNotifyEvent(),
             1,
             control.millis(),
-            timeOut || 0,
+            timeOut,
             condition,
             !handler
         );
@@ -59,6 +70,7 @@ namespace loops {
     // add block when PXT supports this signature
     export function waitUntil(condition: () => boolean, timeOut?: number): void {
         if (!condition || condition()) return; // optimistic path
+        if (!timeOut) timeOut = 0;
         queuePollEvent(timeOut, condition, undefined);
     }
 
