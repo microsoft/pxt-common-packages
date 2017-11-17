@@ -11,6 +11,14 @@
 #undef min
 #undef max
 
+#define NOLOG(...)                                                                                 \
+    do {                                                                                           \
+    } while (0)
+
+
+#define MEMDBG_ENABLED 0
+#define MEMDBG NOLOG
+
 #include "pxtconfig.h"
 
 #define intcheck(...) check(__VA_ARGS__)
@@ -550,7 +558,7 @@ enum class ValType {
 };
 
 ValType valType(TValue v);
-}
+} // namespace pxt
 
 // The initial six bytes of the strings (@PXT@:) are rewritten
 // to the proper ref-count and vtable pointer
@@ -585,8 +593,8 @@ Buffer createBuffer(int size);
 
 #define PXT_VTABLE_TO_INT(vt) ((unsigned)(vt) >> vtableShift)
 #define PXT_VTABLE_BEGIN(classname, flags, iface)                                                  \
-const VTable classname##_vtable __attribute__((aligned(1 << vtableShift))) = {                 \
-    sizeof(classname), flags, iface, {(void *)&classname::destroy, (void *)&classname::print,
+    const VTable classname##_vtable __attribute__((aligned(1 << vtableShift))) = {                 \
+        sizeof(classname), flags, iface, {(void *)&classname::destroy, (void *)&classname::print,
 
 #define PXT_VTABLE_END                                                                             \
     }                                                                                              \
