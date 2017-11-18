@@ -7,21 +7,21 @@ namespace pxt {
 TValue incr(TValue e) {
     if (isRefCounted(e)) {
         getVTable((RefObject *)e);
+#if MEMDBG_ENABLED
+        if (((RefObject *)e)->refcnt != 0xffff)
+            MEMDBG("INCR: %p refs=%d", e, ((RefObject *)e)->refcnt);
+#endif
         ((RefObject *)e)->ref();
     }
     return e;
 }
 
 void decr(TValue e) {
-#if 0
-        if (isRefCounted(e) && ((RefObject *)e)->refcnt != 0xffff) {
-            DMESG("DECR: %p refs=%d vt=%p", e, ((RefObject *)e)->refcnt,
-                    ((RefObject *)e)->vtable);
-        }
-#endif
-
-
     if (isRefCounted(e)) {
+#if MEMDBG_ENABLED
+        if (((RefObject *)e)->refcnt != 0xffff)
+            MEMDBG("DECR: %p refs=%d", e, ((RefObject *)e)->refcnt);
+#endif
         ((RefObject *)e)->unref();
     }
 }
@@ -45,6 +45,8 @@ Action mkAction(int reflen, int totallen, int startptr) {
     r->reflen = reflen;
     r->func = (ActionCB)((tmp + 4) | 1);
     memset(r->fields, 0, r->len * sizeof(unsigned));
+
+    MEMDBG("mkAction: start=%p => %p", startptr, r);
 
     return (Action)r;
 }
@@ -82,6 +84,7 @@ RefRecord *mkClassInstance(int vtableOffset) {
     void *ptr = ::operator new(vtable->numbytes);
     RefRecord *r = new (ptr) RefRecord(PXT_VTABLE_TO_INT(vtable));
     memset(r->fields, 0, vtable->numbytes - sizeof(RefRecord));
+    MEMDBG("mkClass: vt=%p => %p", vtable, r);
     return r;
 }
 
@@ -381,7 +384,7 @@ bool RefCollection::removeElement(TValue x) {
 namespace Coll0 {
 PXT_VTABLE_BEGIN(RefCollection, 0, 0)
 PXT_VTABLE_END
-}
+} // namespace Coll0
 
 RefCollection::RefCollection() : RefObject(0) {
     vtable = PXT_VTABLE_TO_INT(&Coll0::RefCollection_vtable);
@@ -475,9 +478,6 @@ void debugMemLeaks() {
 void debugMemLeaks() {}
 #endif
 
-
-
-
 void error(ERROR code, int subcode) {
     DMESG("Error: %d [%d]", code, subcode);
     target_panic(42);
@@ -539,13 +539,13 @@ void exec_binary(unsigned *pc) {
              ":( Failed partial flash");
 
     unsigned startptr = (unsigned)bytecode;
-    
+
     startptr += 48; // header
     startptr |= 1;  // Thumb state
 
     initRuntime();
 
-    ((unsigned(*)())startptr)();
+    ((unsigned (*)())startptr)();
 
 #ifdef PXT_MEMLEAK_DEBUG
     pxt::debugMemLeaks();
@@ -560,4 +560,4 @@ void start() {
     exec_binary((unsigned *)functionsAndBytecode);
 }
 
-} // end namespace
+} // namespace pxt

@@ -49,6 +49,7 @@ String mkString(const char *data, int len) {
     if (data)
         memcpy(r->data, data, len);
     r->data[len] = 0;
+    MEMDBG("mkString: len=%d => %p", len, r);
     return r;
 }
 
@@ -61,6 +62,7 @@ Buffer mkBuffer(const uint8_t *data, int len) {
         memcpy(r->data, data, len);
     else
         memset(r->data, 0, len);
+    MEMDBG("mkBuffer: len=%d => %p", len, r);
     return r;
 }
 
@@ -273,6 +275,7 @@ TNumber fromDouble(double r) {
 #endif
     BoxedNumber *p = new BoxedNumber();
     p->num = r;
+    MEMDBG("mkNum: %p", p);
     return (TNumber)p;
 }
 
@@ -668,7 +671,9 @@ int idiv(int x, int y) {
 namespace Array_ {
 //%
 RefCollection *mk(unsigned flags) {
-    return new RefCollection();
+    auto r = new RefCollection();
+    MEMDBG("mkColl: %p", r);
+    return r;
 }
 //%
 int length(RefCollection *c) {
@@ -758,12 +763,16 @@ void stlocRef(RefRefLocal *r, TValue v) {
 
 //%
 RefLocal *mkloc() {
-    return new RefLocal();
+    auto r = new RefLocal();
+    MEMDBG("mkloc: %p", r);
+    return r;
 }
 
 //%
 RefRefLocal *mklocRef() {
-    return new RefRefLocal();
+    auto r = new RefRefLocal();
+    MEMDBG("mklocRef: %p", r);
+    return r;
 }
 
 // All of the functions below unref() self. This is for performance reasons -
@@ -827,7 +836,9 @@ int ptrToBool(TValue p) {
 
 //%
 RefMap *mkMap() {
-    return new RefMap();
+    auto r = new RefMap();
+    MEMDBG("mkMap: %p", r);
+    return r;
 }
 
 //%
