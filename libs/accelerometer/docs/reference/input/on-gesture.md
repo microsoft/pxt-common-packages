@@ -27,8 +27,9 @@ input.onGesture(Gesture.Shake,() => {
 Show a random color when you shake the @boardname@.
 
 ```blocks
+let pixels = light.createStrip();
 input.onGesture(Gesture.Shake,() => {
-    light.pixels.setAll(light.hsv(Math.randomRange(0, 256), 255, 127))
+    pixels.setAll(light.hsv(Math.randomRange(0, 256), 255, 127));
 })
 ```
 

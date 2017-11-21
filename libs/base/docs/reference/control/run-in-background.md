@@ -8,20 +8,21 @@ control.runInBackground(() => {})
 
 Sometimes you want your program to work on more than one thing at a time. The main part of your program is
 always put in [``||on start||``](/blocks/on-start). But, you can also put some other part of your
-program in ``||run in background||``. This is a block that runs code seperately from the code
+program in ``||control:run in background||``. This is a block that runs code seperately from the code
 in ``||on start||``. This is useful when you want your program to keep doing important things
 and you don't want to wait for some other actions to happen first.
 
 As an example, you could have a small task to rotate the pixel lights the pixel strip. This is
-placed inside a ``||run in background||`` block:
+placed inside a ``||control:run in background||`` block:
 
 ```blocks
-let spinit = true
+let spinit = true;
+let pixels = light.createStrip();
 
 control.runInBackground(() => {
     while (spinit) {
-        light.pixels.move(LightMove.Rotate, 1)
-        loops.pause(200)
+        pixels.move(LightMove.Rotate, 1);
+        loops.pause(200);
     }
 })
 ```
@@ -30,13 +31,15 @@ for `5` seconds and turns on another pixel. Then, it waits for `5` more seconds 
 loop in the background task.
 
 ```blocks
-let spinit = true
-light.pixels.setPixelColor(0, Colors.Blue)
-loops.pause(5000)
-light.pixels.setPixelColor(0, Colors.Blue)
-loops.pause(5000)
+let spinit = true;
+let pixels = light.createStrip();
+
+pixels.setPixelColor(0, Colors.Blue);
+loops.pause(5000);
+pixels.setPixelColor(0, Colors.Blue);
+loops.pause(5000);
 spinit = false;
-light.pixels.clear()
+pixels.clear();
 ```
 
 ## Parameters
@@ -56,21 +59,23 @@ Automatically rotate lighted pixels as they are added to the pixel strip.
 **Finally**: When the `A` button is pressed, stop the rotate task and turn off all the all the pixels.
 
 ```blocks
-let spinit = false
+let spinit = false;
+let pixels = light.createStrip();
+
 input.buttonA.onEvent(ButtonEvent.Click, () => {
-    spinit = false
-    light.pixels.clear()
+    spinit = false;
+    pixels.clear();
 })
 control.runInBackground(() => {
-    light.pixels.setPixelColor(0, Colors.Blue)
+    pixels.setPixelColor(0, Colors.Blue);
     while (spinit) {
-        light.pixels.move(LightMove.Rotate, 1)
-        loops.pause(250)
+        pixels.move(LightMove.Rotate, 1);
+        loops.pause(250);
     }
 })
-spinit = true
+spinit = true;
 for (let i = 0; i < 5; i++) {
-    loops.pause(1000)
-    light.pixels.setPixelColor(0, Colors.Blue)
+    loops.pause(1000);
+    pixels.setPixelColor(0, Colors.Blue);
 }
 ```
