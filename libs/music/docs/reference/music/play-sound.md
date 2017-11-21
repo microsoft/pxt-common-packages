@@ -12,7 +12,7 @@ The notes of your sound go into a [string](/types/string). The [**composing**](/
 sounds page tells you how to make a sound string.
 
 Also, there are built-in sounds you can use. These are part of the **Sounds** type. You use built-in sounds
-instead of your own sound string with [``||sounds||``](/reference/music/sounds) like this:
+instead of your own sound string with [``||music:sounds||``](/reference/music/sounds) like this:
 
 ```blocks
 music.playSound(music.sounds(Sounds.JumpUp))
@@ -22,7 +22,7 @@ music.playSound(music.sounds(Sounds.JumpUp))
 #### ~hint
 **Simulator**
 
-``||play sound||`` works on the @boardname@. It might not work in the simulator on every browser.
+``||music:play sound||`` works on the @boardname@. It might not work in the simulator on every browser.
 #### ~
 
 ## Parameters
@@ -38,9 +38,9 @@ Play a sound made with 5 notes and show green pixels. The pixels light up before
 finishes.
 
 ```blocks
-let mySound = "g5:1 f e d c"
-music.playSound(mySound)
-light.pixels.setAll(Colors.Green)
+let mySound = "g5:1 f e d c";
+music.playSound(mySound);
+light.createStrip().setAll(Colors.Green);
 ```
 ### I'll play BaDing #ex2
 
