@@ -4,7 +4,7 @@
 ```blocks
 let distance = 0;
 let ms = 30;
-let p = light.pixels;
+let p = light.createStrip();
 let n = p.length()
 p.setBrightness(100)
 loops.forever(() => {

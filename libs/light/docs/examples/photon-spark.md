@@ -1,9 +1,11 @@
 # Photon Spark
 
 ```blocks
-light.pixels.setPhotonMode(PhotonMode.PenUp);
-loops.forever(() => {
-    light.pixels.photonForward(Math.randomRange(0, 10))
+let pixels = light.createStrip();
+
+pixels.setPhotonMode(PhotonMode.PenUp);
+loops.forever(function() {
+    pixels.photonForward(Math.randomRange(0, 10))
     loops.pause(20)
 })
 ```
