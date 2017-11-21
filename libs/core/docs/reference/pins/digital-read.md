@@ -19,14 +19,16 @@ See if a switch on your bread board is on or off. The switch is connected to pin
 the switch is on, change the pixel at position `2` on the pixel strip to `green`.
 
 ```blocks
-let mySwitchOn = pins.D4.digitalRead()
+let pixels = light.createStrip();
+let mySwitchOn = pins.D4.digitalRead();
+
 if (mySwitchOn) {
-    light.pixels.setPixelColor(2, Colors.Green)
+    pixels.setPixelColor(2, Colors.Green);
 } else {
-    light.pixels.setPixelColor(2, Colors.Red)    
+    pixels.setPixelColor(2, Colors.Red);
 }
 ```
 
-## See Also
+## See also
 
 [``||digital write||``](/reference/pins/digital-write)

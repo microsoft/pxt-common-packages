@@ -11,9 +11,10 @@ input.buttonA.isPressed()
 
 If your board has pins or pads that work as touch inputs, then your code can use them just like buttons.
 Instead of saying `button A` or `button B` as the input source, use a pin name like `pin A1`.
+
 ```block
 if (input.pinA1.isPressed()) {
-    light.pixels.setPixelColor(1, Colors.Blue)
+    console.log("Hey, I feel pressed.");
 }
 ```
 Read about [**touch sensors**](/reference/input/button/touch-sensors) and using the pins as touch buttons.
@@ -28,16 +29,19 @@ Read about [**touch sensors**](/reference/input/button/touch-sensors) and using 
 Set all the pixels to green when button `A` is pressed. When the button is not pressed, the pixels are red.
 
 ```blocks
-loops.forever(() => {
+let pixels = light.createStrip();
+
+loops.forever(function() {
     if (input.buttonA.isPressed()) {
-        light.pixels.setAll(Colors.Green)
+        pixels.setAll(Colors.Green);
     } else {
-        light.pixels.setAll(Colors.Red)
+        pixels.setAll(Colors.Red);
     }
 })
 ```
 
-## See Also
+## See also
+
 [``||was pressed||``](/reference/input/button/was-pressed),
 [``||on event||``](/reference/input/button/on-event)
 

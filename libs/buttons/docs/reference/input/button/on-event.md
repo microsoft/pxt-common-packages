@@ -13,11 +13,14 @@ input.buttonA.onEvent(ButtonEvent.Click, () => {
 
 If your board has pins or pads that work as touch inputs, then your code can use them just like buttons.
 Instead of saying `button A` or `button B` as the input source, use a pin name like `pin A1`.
+
 ```block
-input.pinA1.onEvent(ButtonEvent.Down, () => {
-    light.pixels.setPixelColor(1, Colors.Blue)
+let pixels = light.createStrip();
+input.pinA1.onEvent(ButtonEvent.Down, function() {
+    pixels.setPixelColor(1, Colors.Blue)
 })
 ```
+
 Read about [**touch sensors**](/reference/input/button/touch-sensors) and using the pins as touch buttons.
 ## ~
 
@@ -40,16 +43,18 @@ In this example, the lighted pixel moves to the next pixel spot each time you pr
 the light goes back to first pixel when the current position reaches the last pixel.
 
 ```blocks
-let position = 0
-input.buttonA.onEvent(ButtonEvent.Click, () => {
+let position = 0;
+let pixels = light.createStrip();
+
+input.buttonA.onEvent(ButtonEvent.Click, function() {
     if (position > -1) {
-        light.pixels.setPixelColor(position - 1, Colors.Black)
+        pixels.setPixelColor(position - 1, Colors.Black);
     }
-    if (position == light.pixels.length()) {
-        position = 0
+    if (position == pixels.length()) {
+        position = 0;
     }
-    light.pixels.setPixelColor(position, Colors.Red)
-    position += 1
+    pixels.setPixelColor(position, Colors.Red);
+    position += 1;
 })
 ```
 
@@ -58,11 +63,12 @@ input.buttonA.onEvent(ButtonEvent.Click, () => {
 Wnen the ``B`` button is released, light up a random pixel with a random color.
 
 ```blocks
-let anyPixel = 0
-input.buttonB.onEvent(ButtonEvent.Up, () => {
-    light.pixels.clear()
-    anyPixel = Math.randomRange(0, light.pixels.length())
-    light.pixels.setPixelColor(anyPixel, Math.randomRange(0, Colors.White))
+let anyPixel = 0;
+let pixels = light.createStrip();
+input.buttonB.onEvent(ButtonEvent.Up, function() {
+    pixels.clear();
+    anyPixel = Math.randomRange(0, pixels.length());
+    pixels.setPixelColor(anyPixel, Math.randomRange(0, Colors.White));
 })
 ```
 
@@ -72,13 +78,14 @@ Make a pixel turn `pink` when you touch the capacitive pin `pin A1` on the board
 `green` when you lift your finger off of the pin.
 
 ```blocks
+let pixels = light.createStrip();
+
 input.pinA1.onEvent(ButtonEvent.Down, () => {
-    light.pixels.setPixelColor(5, Colors.Pink)
+    pixels.setPixelColor(5, Colors.Pink);
 })
 input.pinA1.onEvent(ButtonEvent.Up, () => {
-    light.pixels.setPixelColor(5, Colors.Green)
+    pixels.setPixelColor(5, Colors.Green);
 })
-
 ```
 
 ### See also

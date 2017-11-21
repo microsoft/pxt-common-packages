@@ -24,6 +24,6 @@ Light an LED on your bread board that is connected to pin `D4`. You write the va
 pins.D4.digitalWrite(true)
 ```
 
-## See Also
+## See also
 
 [``||digital read||``](/reference/pins/digital-read)
