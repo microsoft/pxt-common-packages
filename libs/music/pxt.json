@@ -8,6 +8,7 @@
         "shims.d.ts",
         "melodies.ts",
         "music.ts",
+        "piano.ts",
         "ns.ts"
     ],
     "testFiles": [
