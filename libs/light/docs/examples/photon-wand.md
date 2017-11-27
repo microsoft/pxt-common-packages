@@ -2,21 +2,24 @@
 
 ```blocks
 let c = 0;
-input.onGesture(Gesture.Shake, () => {
-    light.pixels.clear()
-    light.pixels.setPhotonMode(PhotonMode.PenUp)
-    music.startMelody(music.builtInMelody(Melodies.JumpUp), MelodyOptions.OnceInBackground)
+let pixels = light.createStrip();
+
+input.onGesture(Gesture.Shake, function() {
+    pixels.clear();
+    pixels.setPhotonMode(PhotonMode.PenUp);
+    music.playSound(music.sounds(Sounds.JumpUp));
+
     for (let i = 0; i < 50; i++) {
-        light.pixels.photonForward(Math.randomRange(0, 51))
-        loops.pause(20)
+        pixels.photonForward(Math.randomRange(0, 51));
+        loops.pause(20);
     }
-    light.pixels.setPhotonMode(PhotonMode.PenDown)
+    pixels.setPhotonMode(PhotonMode.PenDown);
 })
-loops.forever(() => {
-    light.pixels.photonForward(1)
-    light.pixels.setPhotonPenHue(c)
-    c += 16
-})
+loops.forever(function() {
+    pixels.photonForward(1);
+    pixels.setPhotonPenHue(c);
+    c += 16;
+});
 ```
 
 ```package
