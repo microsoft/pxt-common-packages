@@ -21,14 +21,16 @@ Use the pixel strip as a signal meter. Read from pin `A2` and display the value 
 strip. Also, output the value to the serial port.
 
 ```blocks
-loops.forever(() => {
+let pixels = light.createStrip();
+
+loops.forever(function() {
     let signal = pins.A2.analogRead()
-    light.pixels.graph(signal, 1023)
+    pixels.graph(signal, 1023)
     serial.writeValue("signal", signal)
     loops.pause(1000)
 }) 
 ```
 
-## See Also
+## See also
 
 [``||analog write||``](/reference/pins/analog-write)
