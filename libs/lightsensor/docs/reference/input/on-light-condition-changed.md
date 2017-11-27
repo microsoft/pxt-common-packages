@@ -3,10 +3,10 @@
 Run some code when the light conditions change.
 
 ```sig
-input.onLightConditionChanged(LightCondition.Dark, () => {
-	light.pixels.setBrightness(light.fade(Colors.Red,128))
-})
+input.onLightConditionChanged(LightCondition.Dark, function() {
+});
 ```
+What decides that the light condition is dark or bright? A number between `0` and `1023` is chosen for the light level that will mean either dark or bright.
 
 ## Parameters
 
@@ -20,7 +20,11 @@ input.onLightConditionChanged(LightCondition.Dark, () => {
 Dim the red pixels to half intensity when light conditions turn dark.
 
 ```blocks
-input.onLightConditionChanged(LightCondition.Dark, () => {
-	light.pixels.setBrightness(light.fade(Colors.Red,128))
+input.onLightConditionChanged(LightCondition.Dark, function() {
+	light.createStrip().setBrightness(light.fade(Colors.Red, 128))
 })
 ```
+
+## See also
+
+[``||light level||``](/reference/input/light-level)

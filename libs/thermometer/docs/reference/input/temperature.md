@@ -4,7 +4,7 @@ Find the temperature where you are. The temperature is measured in Celsius (metr
 The @boardname@ can find the temperature nearby by checking how hot its computer chips are.
 
 ```sig
-input.temperature(TemperatureUnit.Celsius)
+input.temperature(TemperatureUnit.Celsius);
 ```
 ## Parameters
 
@@ -28,16 +28,18 @@ The @boardname@ might warm up a little if you make it work hard, though!
 Use **temperature** and **set all** to vary the brightness of the pixels depending on the temperature in the room. 
 
 ```blocks
+let pixels = light.createStrip();
+
 loops.forever(() => {
-    light.pixels.setBrightness(Math.map(
+    pixels.setBrightness(Math.map(
         input.temperature(TemperatureUnit.Celsius),
         0,
         50,
         0,
         255
-    ))
-    light.pixels.setAll(light.colors(Colors.Red))
-})
+    ));
+    pixels.setAll(light.colors(Colors.Red));
+});
 ```
 
 
@@ -46,15 +48,17 @@ loops.forever(() => {
 Measure the temperature using degrees in Fahrenheit.
 
 ```blocks
+let pixels = light.createStrip()
+
 loops.forever(() => {
-    light.pixels.setBrightness(Math.map(
+    pixels.setBrightness(Math.map(
         input.temperature(TemperatureUnit.Fahrenheit),
         30,
         100,
         0,
         255
-    ))
-    light.pixels.setAll(light.colors(Colors.Red))
+    ));
+    pixels.setAll(light.colors(Colors.Red));
 })
 ```
 

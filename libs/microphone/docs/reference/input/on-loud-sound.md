@@ -15,11 +15,13 @@ input.onLoudSound(() => {});
 Flash the pixels when a loud sound is detected.
 
 ```blocks
+let pixels = light.createStrip()
+
 input.onLoudSound(() => {
-	light.pixels.setAll(Colors.Red);
+	pixels.setAll(Colors.Red);
 	loops.pause(100);
-	light.pixels.setAll(Colors.Black);
-})
+	pixels.setAll(Colors.Black);
+});
 ```
 # See also
 

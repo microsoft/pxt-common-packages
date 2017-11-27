@@ -5,7 +5,7 @@ Run some code when the temperature changes from hot to cold, or from cold to hot
 ```sig
 input.onTemperatureConditionChanged(TemperatureCondition.Hot, 15, TemperatureUnit.Celsius, () => {
 	
-})
+});
 ```
 
 You decide what the temperature goes to before your code starts to run. This is the temperature _threshold_.
@@ -30,7 +30,7 @@ Make all the pixels show `blue` when the temperature gets cool. The cool setting
 
 ```blocks
 input.onTemperatureConditionChanged(TemperatureCondition.Cold, 10, TemperatureUnit.Celsius, () => {
-	light.pixels.setAll(Colors.Blue)
+	light.createStrip().setAll(Colors.Blue);
 })
 ```
 # See also

@@ -14,24 +14,26 @@ input.onSwitchMoved(SwitchDirection.Left, () => {
 
 ## Example #exsection
 
-Use two ``||on switch moved||`` events for `left` and `right`. Make a photon move in opposite directions
+Use two ``||input:on switch moved||`` events for `left` and `right`. Make a photon move in opposite directions
 when the switch is moves from one side to the other.
 
 ```blocks
-light.pixels.setAll(Colors.Red)
+let pixels = light.createStrip();
+
+pixels.setAll(Colors.Red);
 input.onSwitchMoved(SwitchDirection.Right, () => {
-    for (let i = 0; i < light.pixels.length(); i++) {
-        light.pixels.photonForward(1)
-        loops.pause(50)
+    for (let i = 0; i < pixels.length(); i++) {
+        pixels.photonForward(1);
+        loops.pause(50);
     }
-    light.pixels.photonFlip()
-})
+    pixels.photonFlip();
+});
 input.onSwitchMoved(SwitchDirection.Left, () => {
-    for (let i = 0; i < light.pixels.length(); i++) {
-        light.pixels.photonForward(1)
-        loops.pause(50)
+    for (let i = 0; i < pixels.length(); i++) {
+        pixels.photonForward(1);
+        loops.pause(50);
     }
-    light.pixels.photonFlip()
+    pixels.photonFlip();
 })
 ```
 

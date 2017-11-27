@@ -14,18 +14,19 @@ input.soundLevel()
 Use the pixels to make a sound meter. If loud sounds are detected, more pixels light up.
 
 ```blocks
-let lastLevel = 0
+let lastLevel = 0;
+let pixels = light.createStrip();
 
 loops.forever(() => {
-    let level = input.soundLevel()
+    let level = input.soundLevel();
     if (lastLevel != level) {
-        light.pixels.clear()
-        for (let i = 0; i < light.pixels.length() / 255 * level; i++) {
-            light.pixels.setPixelColor(i, Colors.Green)
+        pixels.clear();
+        for (let i = 0; i < pixels.length() / 255 * level; i++) {
+            pixels.setPixelColor(i, Colors.Green);
         }
-        lastLevel = level
+        lastLevel = level;
     }
-})
+});
 ```
 ## See also
 
