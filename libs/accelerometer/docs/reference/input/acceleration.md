@@ -31,8 +31,9 @@ A **g** is the same amount of acceleration as you get from Earth's gravity.
 Show the acceleration of the @boardname@ with a bar graph.
 
 ```blocks
+let pixels = light.createStrip();
 loops.forever(() => {
-    light.pixels.graph(input.acceleration(Dimension.X), 1023)
+    pixels.graph(input.acceleration(Dimension.X), 1023)
 })
 ```
 

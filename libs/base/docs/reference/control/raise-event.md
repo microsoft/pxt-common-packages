@@ -38,20 +38,22 @@ Register two events coming from source `22`. Make pixels light up on the pixel s
 the events of `0` and `1` are _raised_.
 
 ```blocks
-const pixelLighter = 22
+const pixelLighter = 22;
+let pixels = light.createStrip();
+
 control.runInBackground(() => {
     for (let i = 0; i < 2; i++) {
-        loops.pause(1000)
-        control.raiseEvent(pixelLighter, i)
+        loops.pause(1000);
+        control.raiseEvent(pixelLighter, i);
     }
 })
 
 control.onEvent(pixelLighter, 0, () => {
-    light.pixels.setPixelColor(0, Colors.Red)
+    pixels.setPixelColor(0, Colors.Red);
 })
 
 control.onEvent(pixelLighter, 1, () => {
-    light.pixels.setPixelColor(1, Colors.Blue)
+    pixels.setPixelColor(1, Colors.Blue);
 })
 ```
 

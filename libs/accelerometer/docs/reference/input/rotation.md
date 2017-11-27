@@ -31,13 +31,14 @@ it is levelled, the @boardname@ shows turns blue.
 ```blocks
 let roll = 0
 let pitch = 0
+let pixels = light.createStrip();
 loops.forever(() => {
     pitch = input.rotation(Rotation.Pitch)
     roll = input.rotation(Rotation.Roll)
     if (Math.abs(pitch) < 10 && Math.abs(roll) < 10) {
-        light.pixels.setAll(light.colors(Colors.Blue))
+        pixels.setAll(light.colors(Colors.Blue))
     } else {
-        light.pixels.setAll(light.colors(Colors.Red))
+        pixels.setAll(light.colors(Colors.Red))
     }
 });
 ```

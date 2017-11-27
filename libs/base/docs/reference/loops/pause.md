@@ -6,9 +6,9 @@ Pause a part of the program for some number of milliseconds.
 loops.pause(400)
 ```
 
-When code in a block comes to a ``||pause||``, it will wait the amount of time you tell it to. Code
-in blocks like ``||forever||`` and ``||run in background||`` will keep running while code in some other
-block is waiting at a ``||pause||``.
+When code in a block comes to a ``||control:pause||``, it will wait the amount of time you tell it to. Code
+in blocks like ``||forever||`` and ``||control:run in background||`` will keep running while code in some other
+block is waiting at a ``||control:pause||``.
 
 ## Parameters
 
@@ -19,8 +19,9 @@ block is waiting at a ``||pause||``.
 Light up to `5` pixels but wait one-half second before lighting each pixel.
 
 ```blocks
+let pixels = light.createStrip();
 for (let i = 0; i < 5; i++) {
-    light.pixels.setPixelColor(i, Colors.Green)
+    pixels.setPixelColor(i, Colors.Green)
     loops.pause(500)
 }
 ```

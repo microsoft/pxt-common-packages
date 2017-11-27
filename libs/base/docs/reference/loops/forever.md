@@ -9,7 +9,7 @@ loops.forever(() => {
 
 The code you have in a ``||forever||`` loop will run and keep repeating itself the whole time your
 program is active. Code in other parts of your program won't stop while your ``||forever||``
-loop is running. This includes other ``||forever||`` loops and the [``||run in background||``](/reference/control/run-in-background) block.
+loop is running. This includes other ``||forever||`` loops and the [``||control:run in background||``](/reference/control/run-in-background) block.
 
 ## Parameters
 
@@ -21,14 +21,15 @@ Rotate a blue pixel along the pixel strip (one pixel at a time) and keep it rota
 
 ```blocks
 let lightSpot = 0;
+let pixels = light.createStrip();
 loops.forever(() => {
     if (lightSpot == light.pixels.length()) {
         lightSpot = 0;
     }
-    light.pixels.setPixelColor(lightSpot, Colors.Blue)
-    loops.pause(500)
-    light.pixels.setPixelColor(lightSpot, Colors.Black)
-    lightSpot++
+    pixels.setPixelColor(lightSpot, Colors.Blue);
+    loops.pause(500);
+    pixels.setPixelColor(lightSpot, Colors.Black);
+    lightSpot++;
 })
 ```
 

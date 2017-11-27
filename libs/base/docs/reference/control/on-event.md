@@ -11,7 +11,7 @@ in your program.
 
 It works like this: some code in another part of the program decides it wants to announce
 that something special or important just happened. It does this by _raising_ an _event_.
-Some other code is placed inside an ``||on event||`` block. The ``||on event||`` block _registers_
+Some other code is placed inside an ``||control:on event||`` block. The ``||control:on event||`` block _registers_
 itself to run when a matching event is _raised_.
 
 Your program decides what an event should be and makes it official by _registering_ the event along with
@@ -36,7 +36,7 @@ while(lastStatus == nowStatus) {
     control.waitMicros(1000)
 }
 ```
-The [``||while||``](/blocks/loops/while) loop checks for a change in `nowStatus`. The problem is that your program is stuck
+The [``||loops:while||``](/blocks/loops/while) loop checks for a change in `nowStatus`. The problem is that your program is stuck
 in the loop until `nowStatus` changes and it can't do any more work until then.
 
 But, we can change the program to use an event instead of waiting in a loop. Let's register an event
@@ -71,6 +71,8 @@ the events of `0` and `1` are _raised_.
 
 ```blocks
 const pixelLighter = 22
+let pixels = light.createStrip()
+
 control.runInBackground(() => {
     for (let i = 0; i < 2; i++) {
         loops.pause(1000)
@@ -79,11 +81,11 @@ control.runInBackground(() => {
 })
 
 control.onEvent(pixelLighter, 0, () => {
-    light.pixels.setPixelColor(0, Colors.Red)
+    pixels.setPixelColor(0, Colors.Red)
 })
 
 control.onEvent(pixelLighter, 1, () => {
-    light.pixels.setPixelColor(1, Colors.Blue)
+    pixels.setPixelColor(1, Colors.Blue)
 })
 ```
 
