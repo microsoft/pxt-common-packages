@@ -1,10 +1,10 @@
 namespace loops {
     class PollEvent {
-        public eid: number; 
-        public vid: number; 
-        public start: number; 
-        public timeOut: number; 
-        public condition: () => boolean; 
+        public eid: number;
+        public vid: number;
+        public start: number;
+        public timeOut: number;
+        public condition: () => boolean;
         public once: boolean;
         constructor(eid: number, vid: number, start: number, timeOut: number, condition: () => boolean, once: boolean) {
             this.eid = eid;
@@ -49,12 +49,13 @@ namespace loops {
 
         // start polling fiber if needed
         if (!_pollEventQueue) {
-            _pollEventQueue = [];
+            _pollEventQueue = [ev];
             control.runInBackground(pollEvents);
         }
-        
-        // add to the queue
-        _pollEventQueue.push(ev)
+        else {
+            // add to the queue
+            _pollEventQueue.push(ev)
+        }
 
         // register event
         if (handler)
