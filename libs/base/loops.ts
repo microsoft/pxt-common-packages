@@ -1,10 +1,10 @@
 namespace loops {
     class PollEvent {
-        public eid: number; 
-        public vid: number; 
-        public start: number; 
-        public timeOut: number; 
-        public condition: () => boolean; 
+        public eid: number;
+        public vid: number;
+        public start: number;
+        public timeOut: number;
+        public condition: () => boolean;
         public once: boolean;
         constructor(eid: number, vid: number, start: number, timeOut: number, condition: () => boolean, once: boolean) {
             this.eid = eid;
@@ -16,25 +16,25 @@ namespace loops {
         }
     }
 
-    let pollEventQueue: PollEvent[] = [];
-    let pollRunning = false;
+    let _pollEventQueue: PollEvent[] = undefined;
 
     function pollEvents() {
-        while (pollEventQueue.length > 0) {
+        while (_pollEventQueue.length > 0) {
             const now = control.millis();
-            for (let i = 0; i < pollEventQueue.length; ++i) {
-                const ev = pollEventQueue[i];
+            for (let i = 0; i < _pollEventQueue.length; ++i) {
+                const ev = _pollEventQueue[i];
                 if (ev.condition() || (ev.timeOut > 0 && now - ev.start > ev.timeOut)) {
                     control.raiseEvent(ev.eid, ev.vid);
                     if (ev.once) {
-                        pollEventQueue.splice(i, 1);
+                        _pollEventQueue.splice(i, 1);
                         --i;
                     }
                 }
             }
             loops.pause(50);
         }
-        pollRunning = false;
+        // release fiber
+        _pollEventQueue = undefined;
     }
 
     function queuePollEvent(timeOut: number, condition: () => boolean, handler: () => void) {
@@ -46,18 +46,21 @@ namespace loops {
             condition,
             !handler
         );
-        // register event
-        if (!!handler)
-            control.onEvent(ev.eid, ev.vid, handler);
-        // add to the queue
-        pollEventQueue.push(ev)
+
         // start polling fiber if needed
-        if (!pollRunning) {
-            pollRunning = true;
+        if (!_pollEventQueue) {
+            _pollEventQueue = [ev];
             control.runInBackground(pollEvents);
         }
-        // register wait
-        if (!handler)
+        else {
+            // add to the queue
+            _pollEventQueue.push(ev)
+        }
+
+        // register event
+        if (handler)
+            control.onEvent(ev.eid, ev.vid, handler);
+        else // or wait
             control.waitForEvent(ev.eid, ev.vid);
     }
 
