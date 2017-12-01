@@ -47,7 +47,7 @@ void servoWrite(PwmPin name, int value) {
  */
 //% help=pins/servo-set-pulse weight=40 group="Servo" blockGap=8
 //% blockId=device_set_servo_pulse block="servo set pulse|pin %value|to (µs) %duration"
-//% blockNamespace=pins
+//% parts=microservo blockNamespace=pins
 //% name.fieldEditor="gridpicker"
 //% name.fieldOptions.width=220
 //% name.fieldOptions.columns=4
