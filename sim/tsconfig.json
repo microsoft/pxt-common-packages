@@ -7,37 +7,12 @@
         "rootDir": ".",
         "newLine": "LF",
         "declaration": true,
-        "sourceMap": false
+        "sourceMap": false,
+        "types": ["bluebird"],
+        "typeRoots": ["../node_modules/@types"]
     },
-    "files": [
-        "../libs/accelerometer/sim/accelerometer.ts",
-        "../libs/accelerometer/sim/state.ts",
-        "../libs/base/sim/control.ts",
-        "../libs/base/sim/core.ts",
-        "../libs/base/sim/loops.ts",
-        "../libs/base/sim/serial.ts",
-        "../libs/core/sim/analogSensor.ts",
-        "../libs/core/dal.d.ts",
-        "../libs/core/sim/pins.ts",
-        "../libs/buttons/sim/buttons.ts",
-        "../libs/light/sim/neopixel.ts",
-        "../libs/light/sim/state.ts",
-        "../libs/lightsensor/sim/lightsensor.ts",
-        "../libs/lightsensor/sim/state.ts",
-        "../libs/microphone/sim/microphone.ts",
-        "../libs/microphone/sim/state.ts",
-        "../libs/music/sim/music.ts",
-        "../libs/music/sim/state.ts",
-        "../libs/switch/sim/state.ts",
-        "../libs/switch/sim/switch.ts",
-        "../libs/thermometer/sim/state.ts",
-        "../libs/thermometer/sim/temperature.ts",
-        "../libs/touch/sim/touch.ts",
-        "../libs/touch/sim/state.ts",
-        "../libs/cable/sim/cable.ts",
-        "../libs/cable/sim/state.ts",        
-        "../libs/infrared/sim/ir.ts",
-        "../libs/infrared/sim/state.ts"        
+    "include": [
+        "../libs/*/sim/*.ts"
     ]
 }
 
