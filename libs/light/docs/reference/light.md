@@ -30,6 +30,7 @@ light.createStrip().setMode(NeoPixelMode.RGB)
 ```cards
 light.createStrip().photonForward(0)
 light.createStrip().photonFlip()
+light.createStrip().setPhotonPosition(0)
 light.createStrip().setPhotonPenHue(0)
 light.createStrip().setPhotonPenColor(0)
 light.createStrip().setPhotonMode(PhotonMode.PenUp)

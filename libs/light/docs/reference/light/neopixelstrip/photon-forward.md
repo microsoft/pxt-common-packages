@@ -27,6 +27,7 @@ for (let i = 0; i < strip.length(); i++) {
 ```
 ## See also
 
+[``||set photon position||``](/reference/light/neopixelstrip/set-photon-position),
 [``||photon flip||``](/reference/light/neopixelstrip/photon-flip)
 [``||set photon pen color||``](/reference/light/neopixelstrip/set-photon-pen-color),
 [``||photon mode||``](/reference/light/neopixelstrip/set-photon-mode)
