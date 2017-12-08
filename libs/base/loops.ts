@@ -70,21 +70,9 @@ namespace loops {
      * @param timeOut if positive, maximum duration to wait for in milliseconds
      */
     //% 
-    // add block when PXT supports this signature
     export function waitUntil(condition: () => boolean, timeOut?: number): void {
         if (!condition || condition()) return; // optimistic path
         if (!timeOut) timeOut = 0;
         queuePollEvent(timeOut, condition, undefined);
-    }
-
-    /**
-     * Runs code when the condition becomes true
-     * @param condition condition to test
-     * @param handler code to run
-     */
-    //%
-    export function when(condition: () => boolean, handler: () => void) {
-        if (!condition || !handler) return;
-        queuePollEvent(0, condition, handler);
     }
 }
