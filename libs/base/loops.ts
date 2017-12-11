@@ -37,7 +37,7 @@ namespace loops {
         _pollEventQueue = undefined;
     }
 
-    function queuePollEvent(timeOut: number, condition: () => boolean, handler: () => void) {
+    export function __queuePollEvent(timeOut: number, condition: () => boolean, handler: () => void) {
         const ev = new PollEvent(
             control.allocateNotifyEvent(),
             1,
@@ -63,16 +63,17 @@ namespace loops {
         else // or wait
             control.waitForEvent(ev.eid, ev.vid);
     }
+}
 
-    /**
-     * Busy wait for a condition to be true
-     * @param condition condition to test for
-     * @param timeOut if positive, maximum duration to wait for in milliseconds
-     */
-    //% 
-    export function waitUntil(condition: () => boolean, timeOut?: number): void {
-        if (!condition || condition()) return; // optimistic path
-        if (!timeOut) timeOut = 0;
-        queuePollEvent(timeOut, condition, undefined);
-    }
+
+/**
+ * Busy wait for a condition to be true
+ * @param condition condition to test for
+ * @param timeOut if positive, maximum duration to wait for in milliseconds
+ */
+//% blockId="pxt_pause_until"
+function pauseUntil(condition: () => boolean, timeOut?: number): void {
+    if (!condition || condition()) return; // optimistic path
+    if (!timeOut) timeOut = 0;
+    loops.__queuePollEvent(timeOut, condition, undefined);
 }
