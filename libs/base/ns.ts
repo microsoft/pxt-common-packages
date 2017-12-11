@@ -16,7 +16,7 @@ namespace loops {
     //% shim=TD_ID colorSecondary="#FFFFFF"
     //% ms.fieldEditor="numberdropdown" ms.fieldOptions.decompileLiterals=true
     //% ms.fieldOptions.data='[["100 ms", 100], ["200 ms", 200], ["500 ms", 500], ["1 second", 1000], ["2 seconds", 2000]]'
-    export function timePicker(ms: number): number{
+    export function __timePicker(ms: number): number{
         return ms;
     }
 }
