@@ -57,8 +57,8 @@ namespace pxsim {
         buttons: CommonButton[];
         buttonsByPin: Map<CommonButton> = {};
 
-        constructor() {
-            this.buttons = [
+        constructor(buttons?: CommonButton[]) {
+            this.buttons = buttons || [
                 new CommonButton(DAL.DEVICE_ID_BUTTON_A),
                 new CommonButton(DAL.DEVICE_ID_BUTTON_B),
                 new CommonButton(DAL.DEVICE_ID_BUTTON_AB)
