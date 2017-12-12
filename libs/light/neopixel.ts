@@ -205,7 +205,7 @@ namespace light {
                             this.setPixelColor(i, light.rgb(0, b, 255 - b));
                         } else {
                             const b = ((i - nhalf) * 255 / nhalf) >> 0;
-                            this.setPixelColor(i, light.rgb(b, 255 - b, 0));                            
+                            this.setPixelColor(i, light.rgb(b, 255 - b, 0));
                         }
                     }
                     else {
@@ -457,26 +457,7 @@ namespace light {
         //% parts="neopixel"
         //% group="Photon" weight=41 blockGap=8
         photonForward(steps: number) {
-            this.initPhoton();
-
-            // disable buffering
-            const buffered = this.buffered();
-            this.setBuffered(false);
-
-            // move
-            this._photonPos = ((this._photonPos + this._photonDir * steps) % this._length) >> 0;
-            if (this._photonPos < 0) this._photonPos += this._length;
-
-            // paint under photon
-            if (this._photonMode == PhotonMode.PenDown)
-                this.setPixelColor(this._photonPos, this._photonColor);
-            else if (this._photonMode == PhotonMode.Eraser)
-                this.setPixelColor(this._photonPos, 0); // erase led
-
-            // restoring buffer
-            this.setBuffered(buffered);
-
-            this.autoShow();
+            this.setPhotonPosition(this._photonPos + this._photonDir * steps);
         }
 
         /**
@@ -489,6 +470,37 @@ namespace light {
         photonFlip() {
             this.initPhoton();
             this._photonDir *= -1;
+        }
+
+        /**
+         * Sets the photon position to a given light index
+         * @param index index of the light, if out of bound, the index is wrapped
+         */
+        //% blockId=light_photon_set_position block="%strip|photon set position %index"
+        //% help="light/neopixelstrip/set-photon-position"
+        //% parts="neopixel"
+        //% group="Photon" weight=39 blockGap=8
+        setPhotonPosition(index: number) {
+            this.initPhoton();
+
+            // disable buffering
+            const buffered = this.buffered();
+            this.setBuffered(false);
+
+            // move
+            this._photonPos = (index >> 0) % this._length;
+            if (this._photonPos < 0) this._photonPos += this._length;
+
+            // paint under photon
+            if (this._photonMode == PhotonMode.PenDown)
+                this.setPixelColor(this._photonPos, this._photonColor);
+            else if (this._photonMode == PhotonMode.Eraser)
+                this.setPixelColor(this._photonPos, 0); // erase led
+
+            // restoring buffer
+            this.setBuffered(buffered);
+
+            this.autoShow();
         }
 
         /**
@@ -601,7 +613,7 @@ namespace light {
                 this.setBuffered(true);
                 renderer();
                 this.setBuffered(buf);
-                this.autoShow();    
+                this.autoShow();
             }
         }
 

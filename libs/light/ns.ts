@@ -11,7 +11,7 @@ namespace light {
     //% color.fieldEditor="colornumber" color.fieldOptions.decompileLiterals=true
     //% value.fieldOptions.colours='["#FF0000", "#ff8000", "#ffff00", "#00ff00", "#00ffff", "#007fff", "#0000ff", "#7f00ff", "#ff0080", "#ff00ff", "#ffffff", "#999999"]'
     //% value.fieldOptions.columns=3 value.fieldOptions.className='rgbColorPicker'
-    export function colorNumberPicker(color: number): number{
+    export function __colorNumberPicker(color: number): number{
         return color;
     }
 
@@ -25,7 +25,7 @@ namespace light {
     //% color.fieldEditor="colorwheel" color.fieldOptions.decompileLiterals=true
     //% color.fieldOptions.sliderWidth='200' color.fieldOptions.channel="hsvfast"
     //% color.fieldOptions.min=0 color.fieldOptions.max=255
-    export function colorWheelPicker(color: number): number {
+    export function __colorWheelPicker(color: number): number {
         return color;
     }
 }
