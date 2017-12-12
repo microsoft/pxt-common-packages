@@ -12,7 +12,6 @@
         "shims.d.ts",
         "enums.d.ts",
         "loops.cpp",
-        "loops.ts",
         "math.ts",
         "ns.ts",
         "control.cpp",
