@@ -83,12 +83,6 @@
 #define PIN(name) ((PinName)pxt::getConfig(CFG_PIN_##name, -1))
 #define LOOKUP_PIN(name) pxt::lookupPin(PIN(name))
 
-// Analog Pins, all SAMD21: PA02-PA11 PB00-PB09 (some pins not connected)
-// 2 ports times 32 pins in each
-#define DEV_NUM_PINS 64
-// pins marked with AIN and PTC in the data sheet
-#define DEV_ANALOG_PINS 0x3ff00000ffcULL
-
 typedef codal::_mbed::Pin DevicePin;
 
 typedef DevicePin *DigitalPin;

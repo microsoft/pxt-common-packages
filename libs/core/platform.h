@@ -12,6 +12,12 @@
 
 #include "SAMD21DMAC.h"
 
+// Analog Pins, all SAMD21: PA02-PA11 PB00-PB09 (some pins not connected)
+// 2 ports times 32 pins in each
+#define DEV_NUM_PINS 64
+// pins marked with AIN and PTC in the data sheet
+#define DEV_ANALOG_PINS 0x3ff00000ffcULL
+
 #define PAGE_SIZE 256
 
 #define PlatformDMAC SAMD21DMAC
