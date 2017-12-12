@@ -19,9 +19,9 @@ class WLight {
     {
         sensor.init();
         sensor.setPeriod(50);
-        sensor.setSensitivity(868); // codal has 912 now
-        sensor.setLowThreshold(128);
-        sensor.setHighThreshold(896);
+        sensor.setSensitivity(LIGHTSENSOR_SENSITIVITY); 
+        sensor.setLowThreshold(LIGHTSENSOR_LOW_THRESHOLD);
+        sensor.setHighThreshold(LIGHTSENSOR_HIGH_THRESHOLD);
     }
 };
 SINGLETON(WLight);

@@ -22,6 +22,26 @@
 
 #define PlatformDMAC SAMD21DMAC
 
+/*
+ * @param nominalValue The value (in SI units) of a nominal position.
+ * @param nominalReading The raw reading from the sensor at the nominal position.
+ * @param beta The Steinhart-Hart Beta constant for the device
+ * @param seriesResistor The value (in ohms) of the resistor in series with the sensor.
+ * @param zeroOffset Optional zero offset applied to all SI units (e.g. 273.15 for temperature
+ * sensing in C vs Kelvin).
+ */
+
+#define TEMPERATURE_NOMINAL_VALUE 25
+#define TEMPERATURE_NOMINAL_READING 10000
+#define TEMPERATURE_BETA 3380
+#define TEMPERATURE_SERIES_RESISTOR 10000
+#define TEMPERATURE_ZERO_OFFSET 273.5
+
+#define LIGHTSENSOR_SENSITIVITY 868 // codal has 912 now
+#define LIGHTSENSOR_LOW_THRESHOLD 128
+#define LIGHTSENSOR_HIGH_THRESHOLD 896
+
+
 #ifdef JUST_FOR_DAL_D_TS_CPP_WILL_IGNORE
 #define PA00 0
 #define PA01 1
@@ -88,65 +108,5 @@
 #define PB30 62
 #define PB31 63
 #endif
-
-/*
-typedef enum {
-    PA_0  = 0x00,
-    PA_1  = 0x01,
-    PA_2  = 0x02,
-    PA_3  = 0x03,
-    PA_4  = 0x04,
-    PA_5  = 0x05,
-    PA_6  = 0x06,
-    PA_7  = 0x07,
-    PA_8  = 0x08,
-    PA_9  = 0x09,
-    PA_10 = 0x0A,
-    PA_11 = 0x0B,
-    PA_12 = 0x0C,
-    PA_13 = 0x0D,
-    PA_14 = 0x0E,
-    PA_15 = 0x0F,
-
-    PB_0  = 0x10,
-    PB_1  = 0x11,
-    PB_2  = 0x12,
-    PB_3  = 0x13,
-    PB_4  = 0x14,
-    PB_5  = 0x15,
-    PB_6  = 0x16,
-    PB_7  = 0x17,
-    PB_8  = 0x18,
-    PB_9  = 0x19,
-    PB_10 = 0x1A,
-    PB_12 = 0x1C,
-    PB_13 = 0x1D,
-    PB_14 = 0x1E,
-    PB_15 = 0x1F,
-
-    PC_0  = 0x20,
-    PC_1  = 0x21,
-    PC_2  = 0x22,
-    PC_3  = 0x23,
-    PC_4  = 0x24,
-    PC_5  = 0x25,
-    PC_6  = 0x26,
-    PC_7  = 0x27,
-    PC_8  = 0x28,
-    PC_9  = 0x29,
-    PC_10 = 0x2A,
-    PC_11 = 0x2B,
-    PC_12 = 0x2C,
-    PC_13 = 0x2D,
-    PC_14 = 0x2E,
-    PC_15 = 0x2F,
-
-    PD_2  = 0x32,
-
-    PH_0  = 0x70,
-    PH_1  = 0x71,
-
-*/
-
 
 #endif
