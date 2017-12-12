@@ -167,7 +167,7 @@ namespace control {
 function pauseUntil(condition: () => boolean, timeOut?: number): void {
     if (!condition || condition()) return; // optimistic path
     if (!timeOut) timeOut = 0;
-    loops.__queuePollEvent(timeOut, condition, undefined);
+    control.__queuePollEvent(timeOut, condition, undefined);
 }
 
 /**
