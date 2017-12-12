@@ -22,6 +22,9 @@
 
 #define PlatformDMAC SAMD21DMAC
 
+// this is codal::_mbed for mbedos
+#define CODAL_MBED codal::mbed
+
 /*
  * @param nominalValue The value (in SI units) of a nominal position.
  * @param nominalReading The raw reading from the sensor at the nominal position.

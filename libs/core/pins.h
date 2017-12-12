@@ -83,7 +83,7 @@
 #define PIN(name) ((PinName)pxt::getConfig(CFG_PIN_##name, -1))
 #define LOOKUP_PIN(name) pxt::lookupPin(PIN(name))
 
-typedef codal::_mbed::Pin DevicePin;
+typedef CODAL_MBED::Pin DevicePin;
 
 typedef DevicePin *DigitalPin;
 typedef DevicePin *AnalogPin;

@@ -110,7 +110,7 @@ namespace pxt {
 
 class WAccel {
   public:
-    codal::_mbed::I2C i2c; // note that this is different pins than io->i2c
+    CODAL_MBED::I2C i2c; // note that this is different pins than io->i2c
     CoordinateSpace space;
     LIS3DH acc;
     WAccel()

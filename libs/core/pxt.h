@@ -40,7 +40,7 @@ extern HF2 hf2;
 
 // Utility functions
 extern Event lastEvent;
-extern codal::_mbed::Timer devTimer;
+extern CODAL_MBED::Timer devTimer;
 extern MessageBus devMessageBus;
 extern codal::CodalDevice device;
 }
