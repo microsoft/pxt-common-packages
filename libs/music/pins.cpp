@@ -1,7 +1,7 @@
 #include "pxt.h"
 #include "pins.h"
 
-namespace PwmPinMethods {
+namespace PwmOnlyPinMethods {
 /**
 * Emits a Pulse-width modulation (PWM) signal for a given duration.
 * @param name the pin that modulate
@@ -11,7 +11,7 @@ namespace PwmPinMethods {
 //% blockId=pin_analog_pitch block="analog pitch|pin %pin|at (Hz)%frequency|for (ms) %ms"
 //% help=pins/analog-pitch weight=4 async advanced=true blockGap=8
 //% blockNamespace=pins
-void analogPitch(PwmPin pin, int frequency, int ms) {
+void analogPitch(PwmOnlyPin pin, int frequency, int ms) {
     if (frequency <= 0) {
         pin->setAnalogValue(0);
     } else {
@@ -36,7 +36,7 @@ void analogPitch(PwmPin pin, int frequency, int ms) {
 //% blockId=music_play_note block="play tone|on %pin|at %note=device_note|for %duration=device_beat" blockGap=8
 //% parts="headphone" async trackArgs=0
 //% blockNamespace=music
-void playTone(PwmPin pin, int frequency, int ms) {
+void playTone(PwmOnlyPin pin, int frequency, int ms) {
     analogPitch(pin, frequency, ms);
 }
 
@@ -49,7 +49,7 @@ void playTone(PwmPin pin, int frequency, int ms) {
 //% blockId=music_ring block="ring tone|on %pin|at %note=device_note" blockGap=8
 //% parts="headphone" async trackArgs=0
 //% blockNamespace=music
-void ringTone(PwmPin pin, int frequency) {
+void ringTone(PwmOnlyPin pin, int frequency) {
     analogPitch(pin, frequency, 0);
 }
 
@@ -62,7 +62,7 @@ void ringTone(PwmPin pin, int frequency) {
 //% blockId=music_rest block="rest|on %pin|for %duration=device_beat"
 //% parts="headphone" async trackArgs=0
 //% blockNamespace=music
-void rest(PwmPin pin, int ms) {
+void rest(PwmOnlyPin pin, int ms) {
     analogPitch(pin, 0, ms);
 }
 }

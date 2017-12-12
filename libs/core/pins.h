@@ -94,6 +94,7 @@ typedef codal::_mbed::Pin DevicePin;
 typedef DevicePin *DigitalPin;
 typedef DevicePin *AnalogPin;
 typedef DevicePin *PwmPin;
+typedef DevicePin *PwmOnlyPin;
 typedef Button *Button_;
 
 namespace pxt {

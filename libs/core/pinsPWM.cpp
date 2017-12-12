@@ -1,6 +1,9 @@
 #include "pxt.h"
 
 namespace PwmPinMethods {
+}
+
+namespace PwmOnlyPinMethods {
 
 /**
  * Set the Pulse-width modulation (PWM) period of the analog output. The period is in
@@ -16,7 +19,7 @@ namespace PwmPinMethods {
 //% name.fieldEditor="gridpicker"
 //% name.fieldOptions.width=220
 //% name.fieldOptions.columns=4
-void analogSetPeriod(PwmPin name, int period) {
+void analogSetPeriod(PwmOnlyPin name, int period) {
     PINOP(setAnalogPeriodUs(period));
 }
 
@@ -35,7 +38,7 @@ void analogSetPeriod(PwmPin name, int period) {
 //% name.fieldEditor="gridpicker"
 //% name.fieldOptions.width=220
 //% name.fieldOptions.columns=4
-void servoWrite(PwmPin name, int value) {
+void servoWrite(PwmOnlyPin name, int value) {
     PINOP(setServoValue(value));
 }
 
@@ -51,7 +54,7 @@ void servoWrite(PwmPin name, int value) {
 //% name.fieldEditor="gridpicker"
 //% name.fieldOptions.width=220
 //% name.fieldOptions.columns=4
-void servoSetPulse(PwmPin name, int duration) {
+void servoSetPulse(PwmOnlyPin name, int duration) {
     PINOP(setServoPulseUs(duration));
 }
 
