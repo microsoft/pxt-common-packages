@@ -235,8 +235,12 @@ interface AnalogPin extends DigitalPin {
 }
 
 //% noRefCounting fixedInstances
-interface PwmPin extends AnalogPin {
+interface PwmOnlyPin extends DigitalPin {
     // methods filled from C++
+}
+
+//% noRefCounting fixedInstances
+interface PwmPin extends PwmOnlyPin, AnalogPin {
 }
 
 interface Buffer {

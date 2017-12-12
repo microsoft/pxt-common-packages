@@ -1,5 +1,7 @@
 #define UF2_DEFINE_HANDOVER 1
 #include "pxt.h"
+
+#if CONFIG_ENABLED(DEVICE_USB)
 #include "uf2format.h"
 
 static void *stackCopy;
@@ -383,3 +385,5 @@ extern "C" void handleHardFault(ExceptionContext *ectx) {
 extern "C" void HardFault_Handler(void) {
     asm("push {lr}; mov r0, sp; bl handleHardFault; pop {pc}");
 }
+
+#endif

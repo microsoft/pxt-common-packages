@@ -478,7 +478,7 @@ void debugMemLeaks() {
 void debugMemLeaks() {}
 #endif
 
-void error(ERROR code, int subcode) {
+void error(PXT_ERROR code, int subcode) {
     DMESG("Error: %d [%d]", code, subcode);
     target_panic(42);
 }
