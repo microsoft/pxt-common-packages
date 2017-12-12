@@ -2,18 +2,19 @@
 #define __DMAC_H
 
 #include "pxt.h"
-#include "SAMD21DAC.h"
 
 namespace pxt {
 
+#ifdef PlatformDMAC
 class WDMAC {
   public:
-    SAMD21DMAC dmac;
+    PlatformDMAC dmac;
 
     WDMAC() {}
 };
 
 WDMAC* getWDMAC();
+#endif
 
 }
 

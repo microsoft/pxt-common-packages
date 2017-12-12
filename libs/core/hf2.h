@@ -1,6 +1,8 @@
 #ifndef DEVICE_HF2_H
 #define DEVICE_HF2_H
 
+#if CONFIG_ENABLED(DEVICE_USB)
+
 #include "HID.h"
 #include "uf2hid.h"
 
@@ -35,5 +37,7 @@ public:
 
     int sendSerial(const void *data, int size, int isError = 0);
 };
+
+#endif
 
 #endif

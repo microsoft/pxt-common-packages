@@ -89,7 +89,7 @@
 // pins marked with AIN and PTC in the data sheet
 #define DEV_ANALOG_PINS 0x3ff00000ffcULL
 
-typedef codal::mbed::Pin DevicePin;
+typedef codal::_mbed::Pin DevicePin;
 
 typedef DevicePin *DigitalPin;
 typedef DevicePin *AnalogPin;

@@ -1,9 +1,11 @@
 #include "pxt.h"
-#include "neopixel.h"
 
 void cpu_clock_init(void);
 
 namespace pxt {
+
+void platform_init();
+void usb_init();
 
 // The first two word are used to tell the bootloader that a single reset should start the
 // bootloader and the MSD device, not us.
@@ -13,18 +15,10 @@ __attribute__((section(".binmeta"))) __attribute__((used)) const uint32_t pxt_bi
     0x00ff00ff, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff,
 };
 
-// TODO: these make platform device assumptions - should be lifted out
-CodalUSB usb;
-HF2 hf2;
-codal::mbed::Timer devTimer;
+codal::_mbed::Timer devTimer;
 Event lastEvent;
 MessageBus devMessageBus;
 codal::CodalDevice device;
-
-// TODO extract these from uf2_info()?
-static const char *string_descriptors[] = {
-    "Example Corp.", "PXT Device", "42424242",
-};
 
 static void initCodal() {
     cpu_clock_init();
@@ -42,9 +36,7 @@ static void initCodal() {
             CodalComponent::components[i]->init();
     }
 
-    usb.stringDescriptors = string_descriptors;
-    usb.add(hf2);
-    usb.start();
+    usb_init();
 }
 
 // ---------------------------------------------------------------------------
@@ -111,60 +103,9 @@ void waitForEvent(int id, int event) {
     fiber_wait_for_event(id, event);
 }
 
-void initRandomSeed() {
-    int seed = 0xC0DA1;
-    auto pinTemp = LOOKUP_PIN(TEMPERATURE);
-    if (pinTemp)
-        seed *= pinTemp->getAnalogValue();
-    auto pinLight = LOOKUP_PIN(LIGHT);
-    if (pinLight)
-        seed *= pinLight->getAnalogValue();
-    seedRandom(seed);
-}
-
-static void remapSwdPin(int pinCfg, int fallback) {
-    int pinName = getConfig(pinCfg);
-    if (pinName == PA30 || pinName == PA31) {
-        if (getConfig(CFG_SWD_ENABLED, 0)) {
-            linkPin(pinName, fallback);
-        } else {
-            PORT->Group[pinName / 32].PINCFG[pinName % 32].reg = (uint8_t)PORT_PINCFG_INEN;
-        }
-    }
-}
-
-static void initSwdPins() {
-    remapSwdPin(CFG_PIN_NEOPIXEL, PIN(D0));
-    remapSwdPin(CFG_PIN_RXLED, PIN(D1));
-}
-
-void clearNeoPixels() {
-    // clear on-board neopixels
-    auto neoPin = LOOKUP_PIN(NEOPIXEL);
-    if (neoPin) {
-        int numNeopixels = getConfig(CFG_NUM_NEOPIXELS, 0);
-        int size = numNeopixels * 3;
-        if (size) {
-            uint8_t neobuf[size];
-            memset(neobuf, 0, size);
-            neoPin->setDigitalValue(0);
-            fiber_sleep(1);
-            neopixel_send_buffer(*neoPin, neobuf, 30);
-        }
-    }
-}
-
 void initRuntime() {
     initCodal();
-    initSwdPins();
-    initRandomSeed();
-    clearNeoPixels();
-
-    if (*HF2_DBG_MAGIC_PTR == HF2_DBG_MAGIC_START) {
-        *HF2_DBG_MAGIC_PTR = 0;
-        // this will cause alignment fault at the first breakpoint
-        globals[0] = (TValue)1;
-    }
+    platform_init();
 }
 
 //%
@@ -173,16 +114,6 @@ unsigned afterProgramPage() {
     ptr += programSize();
     ptr = (ptr + (PAGE_SIZE - 1)) & ~(PAGE_SIZE - 1);
     return ptr;
-}
-
-void dumpDmesg() {
-    hf2.sendSerial("\nDMESG:\n", 8);
-    hf2.sendSerial(codalLogStore.buffer, codalLogStore.ptr);
-    hf2.sendSerial("\n\n", 2);
-}
-
-void sendSerial(const char *data, int len) {
-    hf2.sendSerial(data, len);
 }
 
 int getSerialNumber() {

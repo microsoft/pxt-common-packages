@@ -2,6 +2,8 @@
 
 namespace pxt {
 
+#ifdef PlatformDMAC
 SINGLETON(WDMAC);
+#endif
 
 }

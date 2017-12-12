@@ -142,7 +142,7 @@ typedef enum {
     ERR_OUT_OF_BOUNDS = 8,
     ERR_REF_DELETED = 7,
     ERR_SIZE = 9,
-} ERROR;
+} PXT_ERROR;
 
 extern const unsigned functionsAndBytecode[];
 extern TValue *globals;
@@ -205,7 +205,7 @@ bool eq_bool(TValue a, TValue b);
 //%
 bool eqq_bool(TValue a, TValue b);
 
-void error(ERROR code, int subcode = 0);
+void error(PXT_ERROR code, int subcode = 0);
 void exec_binary(unsigned *pc);
 void start();
 
@@ -248,7 +248,7 @@ inline bool isRefCounted(TValue e) {
     return !isTagged(e) && (*((unsigned *)e) & 1) == 1;
 }
 
-inline void check(int cond, ERROR code, int subcode = 0) {
+inline void check(int cond, PXT_ERROR code, int subcode = 0) {
     if (!cond)
         error(code, subcode);
 }
