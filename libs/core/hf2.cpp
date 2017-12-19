@@ -63,7 +63,7 @@ static const InterfaceInfo ifaceInfo = {
 
 int HF2::stdRequest(UsbEndpointIn &ctrl, USBSetup &setup)
 {
-    if (setup.bRequest == GET_DESCRIPTOR)
+    if (setup.bRequest == USB_REQ_GET_DESCRIPTOR)
     {
         if (setup.wValueH == 0x21)
         {
