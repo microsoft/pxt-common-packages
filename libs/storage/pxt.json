@@ -1,0 +1,13 @@
+{
+    "name": "storage",
+    "description": "USB Pen-drive support and flash storage",
+    "files": [
+        "storage.cpp",
+        "storage.ts",
+        "shims.d.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core"
+    }
+}

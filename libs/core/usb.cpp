@@ -13,10 +13,17 @@ static const char *string_descriptors[] = {
     "42424242",
 };
 
+static void start_usb() {
+    // start USB with a delay, so that user code can add new interfaces if needed
+    // (eg USB HID keyboard, or MSC)
+    fiber_sleep(100);
+    usb.start();
+}
+
 void usb_init() {
     usb.stringDescriptors = string_descriptors;
     usb.add(hf2);
-    usb.start();
+    create_fiber(start_usb);
 }
 
 void dumpDmesg() {
