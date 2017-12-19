@@ -26,6 +26,7 @@ SINGLETON(WStorage);
 //%
 void init() {
     usb.add(getWStorage()->msc);
+    getWStorage()->msc.addFiles();
 }
 
 snorfs::File *getFile(String filename) {
