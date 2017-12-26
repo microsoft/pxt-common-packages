@@ -8,7 +8,7 @@ control.deviceDalVersion()
 
 ## Returns
 
-* a [number](/types/number) that is the version of the system software (DAL) on the board.
+* a [string](/types/string) that represents the version of the system software (DAL) on the board.
 
 ## Example
 
