@@ -1,0 +1,15 @@
+{
+    "name": "tests",
+    "description": "A unit test library",
+    "files": [
+        "README.md",
+        "tests.ts",
+        "platformoverrides.ts"
+    ],
+    "testFiles": [
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core"
+    }
+}

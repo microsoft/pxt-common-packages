@@ -8,7 +8,7 @@ declare namespace input {
     //% help=input/on-light-condition-changed
     //% blockId=input_on_light_condition_changed block="on light %condition"
     //% parts="lightsensor"
-    //% weight=84 blockGap=8 shim=input::onLightConditionChanged
+    //% weight=84 blockGap=12 shim=input::onLightConditionChanged
     function onLightConditionChanged(condition: LightCondition, handler: () => void): void;
 
     /**

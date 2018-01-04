@@ -12,7 +12,8 @@ declare interface TouchButton {
     //% name.fieldEditor="gridpicker"
     //% name.fieldOptions.width=220
     //% name.fieldOptions.columns=4
-    //% group="More" weight=16 blockGap=8 shim=TouchButtonMethods::setThreshold
+    //% group="More" weight=16 blockGap=8
+    //% help=input/touch/set-threshold shim=TouchButtonMethods::setThreshold
     setThreshold(threshold: int32): void;
 
     /**
@@ -24,7 +25,8 @@ declare interface TouchButton {
     //% name.fieldEditor="gridpicker"
     //% name.fieldOptions.width=220
     //% name.fieldOptions.columns=4
-    //% group="More" weight=49 blockGap=8 shim=TouchButtonMethods::value
+    //% group="More" weight=49 blockGap=8
+    //% help=input/touch/value shim=TouchButtonMethods::value
     value(): int32;
 }
 
