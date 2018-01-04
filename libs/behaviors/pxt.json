@@ -1,9 +1,9 @@
 {
-    "name": "tests",
-    "description": "A unit test library",
+    "name": "behaviors",
+    "description": "Behavior Driven Robotics",
     "files": [
         "README.md",
-        "tests.ts",
+        "behaviors.ts",
         "targetoverrides.ts"
     ],
     "testFiles": [
