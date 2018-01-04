@@ -1,7 +1,7 @@
 /**
  * Behavior drive blocks
  */
-//% 
+//% color=0x000000 weight=80 icon="\uf277"
 namespace behaviors {
     /**
      * A behavior
@@ -57,7 +57,7 @@ namespace behaviors {
         //%
         start(): void {
             if (this._state == BehaviorManagerState.Running) return;
-            control.runInBackground(this.run);
+            control.runInBackground(() => this.run());
         }
 
         /**
@@ -105,7 +105,7 @@ namespace behaviors {
 
             // activate current behavior
             this._behaviors[i].active = true;
-            control.runInBackground(this._behaviors[i].run)
+            control.runInBackground(() => this._behaviors[i].run())
         }
     }
 
