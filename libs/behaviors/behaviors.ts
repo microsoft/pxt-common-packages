@@ -61,6 +61,7 @@ namespace behaviors {
         //%
         start(): void {
             if (this._state == BehaviorManagerState.Running) return;
+            this._state = BehaviorManagerState.Running;
             control.runInBackground(() => this.run());
         }
 
