@@ -1,7 +1,7 @@
 /**
  * Various test event in the execution cycle
  */
-export enum TestEvent {
+enum TestEvent {
     //% block="run setup"
     RunSetUp = 0,
     //% block="run teardown"

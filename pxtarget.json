@@ -16,6 +16,7 @@
         "libs/switch",
         "libs/pulse",
         "libs/cable",
-        "libs/infrared"
+        "libs/infrared",
+        "libs/tests"
     ]
 }
