@@ -132,6 +132,5 @@ namespace tests {
             case TestEvent.TestSetUp: _testSetUp = handler; break;
             case TestEvent.TestTearDown: _testTearDown = handler; break;
         }
-        this._events[<number>event] = handler;
     }
 }
