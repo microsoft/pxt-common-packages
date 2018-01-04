@@ -2,7 +2,7 @@
 
 While you're writing and testing your programs, you'll mostly be [running them
 in the simulator](/device/simulator), but once you've finished your program you
-can **compile** it and run it on your micro:bit.
+can **compile** it and run it on your @boardname@.
 
 The basic steps are:
 
