@@ -172,7 +172,7 @@ namespace light {
          * @param high maximum value, 0 to autoscale
          */
         //% blockId=light_show_bar_graph block="%strip|graph %value |up to %high" icon="\uf080"
-        //% help=light/graph
+        //% help=light/neopixelstrip/graph
         //% parts="neopixel"
         //% weight=70
         graph(value: number, high: number): void {
@@ -556,7 +556,7 @@ namespace light {
          * @param duration the duration to run in milliseconds, eg: 500
          */
         //% blockId=light_show_animation block="%strip|show animation %animation=light_animation_picker|for %duration=timePicker|ms"
-        //% help="light/show-animation"
+        //% help="light/neopixelstrip/show-animation"
         //% parts="neopixel"
         //% weight=90 blockGap=8
         showAnimation(animation: NeoPixelAnimation, duration: number) {
@@ -594,7 +594,7 @@ namespace light {
          * @param animation the animation to run
          */
         //% blockId=light_show_animation_frame block="%strip|show frame of %animation=light_animation_picker|animation"
-        //% help="light/show-animation-frame"
+        //% help="light/neopixelstrip/show-animation-frame"
         //% parts="neopixel"
         //% weight=87 blockGap=8
         showAnimationFrame(animation: NeoPixelAnimation) {
