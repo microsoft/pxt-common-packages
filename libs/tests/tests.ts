@@ -30,9 +30,8 @@ namespace tests {
 
         run() {
             // clear state
-            const setup = _events[TestEvent.TestSetUp];
-            if (setup)
-                setup();
+            if (_runSetup)
+                _runSetup();
 
             console.log(`> ${this.name}`)
             this.handler()
@@ -41,22 +40,23 @@ namespace tests {
                 console.log('')
 
             // ensure clean state after test
-            const teardown = _events[TestEvent.TestTearDown];
-            if (teardown)
-                teardown();
+            if (_runTearDown)
+                _runTearDown();
         }
     }
 
     let _tests: Test[] = undefined;
     let _currentTest: Test = undefined;
-    let _events: (() => void)[] = [undefined, undefined, undefined, undefined];
+    let _runSetup: () => void = undefined;
+    let _runTearDown: () => void = undefined;
+    let _testSetup: () => void = undefined;
+    let _testTearDown: () => void = undefined;
 
     function run() {
         if (!_tests) return;
 
-        const setup = _events[TestEvent.RunSetUp];
-        if (setup)
-            setup();
+        if (_testSetup)
+            _testSetup();
 
         const start = control.millis();
         console.log(`${_tests.length} tests found`)
@@ -67,9 +67,8 @@ namespace tests {
             _currentTest = undefined;
         }
 
-        const teardown = _events[TestEvent.RunTearDown];
-        if (teardown)
-            teardown();
+        if (_testTearDown)
+            _testTearDown();
 
         console.log(` `)
         console.log(`${_tests.length} tests, ${_tests.map(t => t.errors.length).reduce((p, c) => p + c, 0)} errs in ${Math.ceil((control.millis() - start) / 1000)}s`)
@@ -113,7 +112,7 @@ namespace tests {
      * @param tolerance the acceptable error margin, eg: 5
      */
     //% blockId=testAssertClose block="assert close %message|%expected|~~ %actual|within %tolerance"
-    //% blockGap=8
+    //% inlineInputMode=inline
     export function assertClose(name: string, expected: number, actual: number, tolerance: number) {
         assert(`${name} ${expected} != ${actual} +-${tolerance}`, Math.abs(expected - actual) <= tolerance);
     }
@@ -126,6 +125,12 @@ namespace tests {
     //% blockGap=8
     //% weight=10
     export function onEvent(event: TestEvent, handler: () => void) {
-        this._events[event] = handler;
+        switch(event) {
+            case TestEvent.RunSetUp: _runSetup = handler; break;
+            case TestEvent.RunTearDown: _runTearDown = handler; break;
+            case TestEvent.TestSetUp: _testSetUp = handler; break;
+            case TestEvent.TestTearDown: _testTearDown = handler; break;
+        }
+        this._events[<number>event] = handler;
     }
 }
