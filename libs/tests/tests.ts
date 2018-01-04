@@ -49,14 +49,14 @@ namespace tests {
     let _currentTest: Test = undefined;
     let _runSetup: () => void = undefined;
     let _runTearDown: () => void = undefined;
-    let _testSetup: () => void = undefined;
+    let _testSetUp: () => void = undefined;
     let _testTearDown: () => void = undefined;
 
     function run() {
         if (!_tests) return;
 
-        if (_testSetup)
-            _testSetup();
+        if (_testSetUp)
+            _testSetUp();
 
         const start = control.millis();
         console.log(`${_tests.length} tests found`)
@@ -96,6 +96,7 @@ namespace tests {
      * Checks a boolean condition
      */
     //% blockId=testAssert block="assert %message|%condition"
+    //% weight=80
     //% blockGap=8
     export function assert(message: string, condition: boolean) {
         if (!condition) {
@@ -111,7 +112,8 @@ namespace tests {
      * @param actual what the value was
      * @param tolerance the acceptable error margin, eg: 5
      */
-    //% blockId=testAssertClose block="assert close %message|%expected|~~ %actual|within %tolerance"
+    //% blockId=testAssertClose block="assert %message|%expected|close to %actual|by %tolerance"
+    //% weight=79
     //% inlineInputMode=inline
     export function assertClose(name: string, expected: number, actual: number, tolerance: number) {
         assert(`${name} ${expected} != ${actual} +-${tolerance}`, Math.abs(expected - actual) <= tolerance);
@@ -121,7 +123,6 @@ namespace tests {
      * Registers code to be called at various points in the test execution
      * @param handler 
      */
-    //% blockId=testSetup block="on %event"
     //% blockGap=8
     //% weight=10
     export function onEvent(event: TestEvent, handler: () => void) {
