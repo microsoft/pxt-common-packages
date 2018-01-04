@@ -10,6 +10,10 @@ namespace behaviors {
     export class Behavior {
         active: boolean;
 
+        constructor() {
+            this.active = false;
+        }
+
         shouldRun(): boolean {
             // needs override
             return false;
