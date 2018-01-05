@@ -79,7 +79,7 @@ namespace behaviors {
                 const bvs = this._behaviors;
                 const n = bvs.length;
 
-                // poll non-suppressed behaviors
+                // poll behaviors
                 for (let i = 0; i < n; ++i) {
                     const bv = bvs[i];
                     // behavior is already active, stop polling

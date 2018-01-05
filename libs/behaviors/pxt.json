@@ -4,6 +4,7 @@
     "files": [
         "README.md",
         "behaviors.ts",
+        "pidbehaviors.ts",
         "targetoverrides.ts"
     ],
     "testFiles": [
