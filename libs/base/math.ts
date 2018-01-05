@@ -1,4 +1,14 @@
-namespace Math {    
+namespace Math {
+
+    export let E = 2.718;
+    export let LN2 = 0.693;
+    export let LN10 = 2.303;
+    export let LOG2E = 1.443;
+    export let LOG10E = 0.434;
+    export let PI = 3.14159;
+    export let SQRT1_2 = 0.707;
+    export let SQRT2 = 1.414;
+
     /**
      * Re-maps a number from one range to another. That is, a value of ``from low`` would get mapped to ``to low``, a value of ``from high`` to ``to high``, values in-between to values in-between, etc.
      * @param value value to map in ranges
