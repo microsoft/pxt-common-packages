@@ -3,7 +3,11 @@ namespace pxsim.control {
     export let delay = thread.pause;
 
     export function reset() {
-        U.userError("reset not implemented in simulator yet")
+        pxsim.Runtime.postMessage(<pxsim.SimulatorCommandMessage>{
+            type: "simulator",
+            command: "restart"
+        })
+        const cb = getResume();
     }
     export function waitMicros(micros: number) {
         thread.pause(micros / 1000); // it prempts not much we can do here.
