@@ -7,10 +7,10 @@ namespace pxt {
  
 class WJoystick {
   public:
-    USBHIDJoystick joystick;
+    USBHIDJoystick gamepad;
   public:
     WJoystick() 
-        : joystick() 
+        : gamepad() 
     { 
     }
 };
@@ -22,34 +22,34 @@ namespace gamepad {
     /** 
     * Sets the button state to down
     */
-    //% block=joystickSetButton block="set button %index|%down"
+    //% blockId=joystickSetButton block="set button %index|%down"
     //% index.min=0 index.max=127
-    //% down.fieldeditor=toggleupdown
+    //% down.fieldEditor=toggleupdown
     void setButton(int index, bool down) {
         auto pJoystick = getWJoystick();
         if (down)
-            pJoystick->joystick.buttonDown(index);
+            pJoystick->gamepad.buttonDown(index);
         else
-            pJoystick->joystick.buttonUp(index);
+            pJoystick->gamepad.buttonUp(index);
     }
 
     /**
     * Sets the current move on the gamepad
     **/
-    //% block=joystickMove block="move %index|x %x|y %y"
+    //% blockId=joystickMove block="move %index|x %x|y %y"
     //% index.min=0 index.max=1
     void move(int index, int x, int y) {
         auto pJoystick = getWJoystick();
-        pJoystick->joystick.move(index, x, y);        
+        pJoystick->gamepad.move(index, x, y);        
     }
 
     /** 
     * Sets the throttle state
     */
-    //% block=joystickSetThrottle block="set throttle %index|%value"
+    //% blockId=joystickSetThrottle block="set throttle %index|%value"
     //% index.min=0 index.max=1
     void setThrottle(int index, int value) {
         auto pJoystick = getWJoystick();
-        pJoystick->joystick.setThrottle(index, value);
+        pJoystick->gamepad.setThrottle(index, value);
     }
 }
