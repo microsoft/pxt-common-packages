@@ -1,0 +1,14 @@
+{
+    "name": "gamepad",
+    "description": "Gamepad controller over HID",
+    "files": [
+        "README.md",
+        "gamepad.cpp",
+        "gamepad.ts",
+        "shims.d.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core"
+    }
+}
