@@ -24,7 +24,7 @@ namespace gamepad {
     //% blockId=joystickMove block="gamepad move %index|x %x|y %y"
     //% index.min=0 index.max=1
     void move(int index, int x, int y) {
-        pxt::joystick..move(index, x, y);        
+        pxt::joystick.move(index, x, y);        
     }
 
     /** 
