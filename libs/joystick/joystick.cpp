@@ -1,7 +1,7 @@
 // https://github.com/lancaster-university/codal-core/blob/master/inc/drivers/HIDJoystick.h
 
 #include "pxt.h"
-namespace gamepad {
+namespace joystick {
     /** 
     * Sets the button state to down
     */
