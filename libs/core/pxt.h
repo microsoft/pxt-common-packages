@@ -26,9 +26,13 @@ using namespace codal;
 
 #include "pins.h"
 
+#define DEVICE_JOYSTICK 1
+
 #if CONFIG_ENABLED(DEVICE_USB)
 #include "hf2.h"
 #include "hf2dbg.h"
+#if CONFIG_ENABLED(DEVICE_JOYSTICK)
+#include "HIDJoystick.h"
 #endif
 
 namespace pxt {
@@ -36,6 +40,9 @@ namespace pxt {
 #if CONFIG_ENABLED(DEVICE_USB)
 extern CodalUSB usb;
 extern HF2 hf2;
+#if CONFIG_ENABLED(DEVICE_JOYSTICK)
+extern USBHIDJoystick joystick;
+#endif
 #endif
 
 // Utility functions
