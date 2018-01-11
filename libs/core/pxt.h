@@ -26,13 +26,13 @@ using namespace codal;
 
 #include "pins.h"
 
-#define DEVICE_JOYSTICK 1
-
 #if CONFIG_ENABLED(DEVICE_USB)
+#define DEVICE_JOYSTICK 1
 #include "hf2.h"
 #include "hf2dbg.h"
 #if CONFIG_ENABLED(DEVICE_JOYSTICK)
 #include "HIDJoystick.h"
+#endif
 #endif
 
 namespace pxt {
