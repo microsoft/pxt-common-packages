@@ -1,4 +1,4 @@
-namespace pxsim.gamepad {
+namespace pxsim.joystick {
     export function setButton(index: number, up: boolean): void {
         // TODO
     }    

@@ -32,7 +32,7 @@ namespace gamepad {
     */
     //% gamepad/set-throttle
     //% blockId=joystickSetThrottle block="set gamepad throttle %index|%value"
-    //% index.min=0 index.max=1
+    //% index.min=0 index.max=31
     void setThrottle(int index, int value) {
         pxt::joystick.setThrottle(index, value);
     }
