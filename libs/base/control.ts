@@ -163,6 +163,7 @@ namespace control {
  * @param condition condition to test for
  * @param timeOut if positive, maximum duration to wait for in milliseconds
  */
+//% weight=98
 //% blockId="pxt_pause_until"
 function pauseUntil(condition: () => boolean, timeOut?: number): void {
     if (!condition || condition()) return; // optimistic path
@@ -175,3 +176,18 @@ function pauseUntil(condition: () => boolean, timeOut?: number): void {
  */
 //% shim=@hex
 function hex(lits: any, ...args: any[]): Buffer { return null }
+
+namespace loops {
+    /**
+     * Starts executing the code in parralel
+     * @param a 
+     */
+    //% weight=19
+    //% blockId=pxt_fork block="fork"
+    //% handlerStatement=1
+    //% help=loops/fork
+    export function fork(a: () => void) {
+        control.runInBackground(a);
+    }
+
+}
