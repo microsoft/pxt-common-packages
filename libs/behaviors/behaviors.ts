@@ -1,5 +1,5 @@
 /**
- * Behavior drive blocks
+ * Behavior-based blocks
  */
 //% color=0x000000 weight=80 icon="\uf277"
 namespace behaviors {
