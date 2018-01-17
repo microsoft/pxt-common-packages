@@ -14,6 +14,14 @@ namespace behaviors {
             this.active = false;
         }
 
+        /**
+         * Called on each behavior iteration even for suppresed behaviors
+         * @param elapsed milli seconds since last call
+         */
+        update(elapsed: number) {
+            // override
+        }
+
         shouldRun(): boolean {
             // needs override
             return false;
@@ -37,10 +45,15 @@ namespace behaviors {
     export class BehaviorManager {
         private _behaviors: Behavior[];
         private _state: BehaviorManagerState;
+        private _timer: control.Timer;
+
+        public timestep: number;
 
         constructor() {
             this._behaviors = [];
             this._state = BehaviorManagerState.Stopped;
+            this._timer = new control.Timer();
+            this.timestep = 20;
         }
 
         /**
@@ -74,10 +87,15 @@ namespace behaviors {
         }
         
         private run() {
+            let elapsed = 0;
             // this is the main control loop
             while (this._state == BehaviorManagerState.Running) {
                 const bvs = this._behaviors;
                 const n = bvs.length;
+
+                // update all behaviors, even supprsed
+                for (let i = 0; i < n; ++i)
+                    bvs[i].update(elapsed);                
 
                 // poll non-suppressed behaviors
                 for (let i = 0; i < n; ++i) {
@@ -92,7 +110,9 @@ namespace behaviors {
                 }
 
                 // give a breather to the events
-                loops.pause(20);
+                this._timer.pauseUntil(this.timestep);
+                elapsed = this._timer.millis();
+                this._timer.reset();
             }
 
             // tell manager that we are done

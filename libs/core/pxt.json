@@ -28,7 +28,8 @@
         "uf2hid.h",
         "ns.ts",
         "dmac.cpp",
-        "dmac.h"
+        "dmac.h",
+        "timer.ts"
     ],
     "testFiles": [
         "test.ts"
