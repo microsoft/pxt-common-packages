@@ -2,15 +2,13 @@ namespace automation {
 
     //% fixedInstances
     export class PIDController {
-        // gain
-        public K: number;
-        // integral time
-        public Ti: number;
-        // derivative time
-        public Td: number;
-        // tracking time constant
-        public Tt: number;
-        // deriviate gain limit
+        // proportional gain
+        public kp: number;
+        // integral gain
+        public ki: number;
+        // derivative gain
+        public kd: number;
+        // derivative gain limit
         public N: number;
         // proportional set point weight        
         public b: number;
@@ -28,14 +26,15 @@ namespace automation {
         private D: number;
 
         constructor() {
-            this.K = 0;
+            this.kp = 1;
+            this.ki = 0;
+            this.kd = 0;
             this.ysp = 0;
             this.y = 0;
             this.b = 0.9;
             this.ulow = -100;
             this.uhigh = 100;
             this.N = 10;
-            this.setGains(1, 0.01, 0.1, 0.2);
             this.reset();
         }
 
@@ -55,17 +54,13 @@ namespace automation {
         //% inlineInputMode=inline
         //% weight=99
         setGains(kp: number, ki: number, kd: number, b: number = 0.9) {
-            const K = kp;
-            const Ti = K / ki;
-            const Td = kd / K;
-            const Tt = Math.sqrt(Ti * Td);
-
             // Bumpless parameter changes
-            this.I += this.K * (this.b * this.ysp - this.y) - K * (b * this.ysp - this.y);
-            this.K = K;
-            this.Ti = Ti;
-            this.Td = Td;
-            this.Tt = Tt;
+            this.I += this.kp * (this.b * this.ysp - this.y) - kp * (b * this.ysp - this.y);
+
+            // update variables
+            this.kp = kp;
+            this.ki = ki;
+            this.kd = kd;
             this.b = b;
         }
 
@@ -103,21 +98,25 @@ namespace automation {
         /**
          * Computes the output based on the system state
          */
-        //% blockId=pidCompute block="%pid|compute for timestep %h|state %y"
+        //% blockId=pidCompute block="%pid|compute for timestep %timestep|(s) at state %y"
         //% group=PID
         //% weight=100
-        compute(h: number, y: number): number {
+        compute(timestep: number, y: number): number {
             // https://www.cds.caltech.edu/~murray/courses/cds101/fa02/caltech/astrom-ch6.pdf
+            const h = timestep;
+            const K = this.kp;
+            const Td = this.kd / K;
+            const Tt = this.ki == 0 ? 1 << 31 : Math.sqrt(this.kd / this.ki);
 
             // integral gain
-            const bi = this.K * h / this.Ti;
-            const ad = (2 * this.Td - this.N * h) / (2 * this.Td + this.N * h);
+            const bi = this.ki * h; // k * h / Ti
             //derivative gain
-            const bd = 2 * this.K * this.N * this.Td / (2 * this.Td + this.N * h);
-            const ao = h / this.Tt;
+            const ad = (2 * Td - this.N * h) / (2 * Td + this.N * h);
+            const bd = 2 * K * this.N * Td / (2 * Td + this.N * h);
+            const ao = h / Tt;
 
             // compute proportional part
-            const P = this.K * (this.b * this.ysp - y);
+            const P = K * (this.b * this.ysp - y);
 
             // update derivative part
             this.D = ad * this.D - bd * (y - this.y);
