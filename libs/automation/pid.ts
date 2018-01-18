@@ -54,6 +54,11 @@ namespace automation {
         //% inlineInputMode=inline
         //% weight=99
         setGains(kp: number, ki: number, kd: number, b: number = 0.9) {
+            kp = Math.max(0, kp);
+            ki = Math.max(0, ki);
+            kd = Math.max(0, kd);
+            b = Math.clamp(0, 1, b);
+            
             // Bumpless parameter changes
             this.I += this.kp * (this.b * this.ysp - this.y) - kp * (b * this.ysp - this.y);
 
