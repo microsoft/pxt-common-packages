@@ -10,7 +10,7 @@ namespace datalog {
 
     let _headers: string[] = undefined;
     let _headersWritten: boolean = false;
-    let _values: number[] = undefined;
+    let _row: number[] = undefined;
     let _start: number;
     let _filename = "datalog.csv";
     let _storage: DatalogStorage;
@@ -18,35 +18,35 @@ namespace datalog {
 
     function clear() {
         _headers = undefined;
-        _values = undefined;
+        _row = undefined;
     }
 
-    function init() {
+    function initRow() {
+        if (!_storage) return;
+
         if (!_headers) {
             _headers = [];
             _headersWritten = false;
             _start = control.millis();
-            if (_storage) _storage.init(_filename);
+            _storage.init(_filename);
         }
-        _values = [];
+        _row = [];
     }
 
-    function commit() {
+    function commitRow() {
         // write row if any data
-        if (_values && _values.length > 0) {
-            if (_storage) {
-                // write headers for the first row
-                if (!_headersWritten) {
-                    _storage.appendHeaders(_headers);
-                    _headersWritten = true;
-                }
-                // commit row data
-                _storage.appendRow(_values);
+        if (_row && _row.length > 0 && _storage) {
+            // write headers for the first row
+            if (!_headersWritten) {
+                _storage.appendHeaders(_headers);
+                _headersWritten = true;
             }
+            // commit row data
+            _storage.appendRow(_row);
         }
 
         // clear values
-        _values = undefined;
+        _row = undefined;
     }
 
     /**
@@ -55,10 +55,10 @@ namespace datalog {
     //% weight=100
     //% blockId=datalogAddRow block="datalog add row"
     export function addRow(): void {
-        if (!_enabled) return;
+        if (!_enabled && _storage) return;
 
-        commit();
-        init();
+        commitRow();
+        initRow();
         const s = (control.millis() - _start) / 1000;
         addValue("time (s)", s);
     }
@@ -71,13 +71,18 @@ namespace datalog {
     //% weight=99
     //% blockId=datalogAddValue block="datalog add %name|=%value"
     export function addValue(name: string, value: number) {
-        if (!_values) return;
-        let i = _headers.indexOf(name);
-        if (i < 0) {
-            _headers.push(name);
-            i = _headers.length - 1;
+        if (!_row) return;
+        // happy path
+        if (_headers[_row.length] === name)
+            _row.push(value);
+        else {
+            let i = _headers.indexOf(name);
+            if (i < 0) {
+                _headers.push(name);
+                i = _headers.length - 1;
+            }
+            _row[i] = value;
         }
-        _values[i] = value;
     }
 
     /**
