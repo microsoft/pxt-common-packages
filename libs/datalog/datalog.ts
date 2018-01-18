@@ -1,15 +1,16 @@
 //% weight=100 color=#0fbc11 icon=""
 namespace datalog {
-    export interface DatalogStorage {
-        reset(filename: string): void;
-        appendHeaders(filename: string, headers: string[]): number;
-        appendRow(filename: string, values: number[]): void;
-        flush(): void;
+    export class DatalogStorage {
+        constructor() { }
+        init(filename: string): void { }
+        appendHeaders(headers: string[]): void { }
+        appendRow(values: number[]): void { }
+        flush(): void { }
     }
 
     let _headers: string[] = undefined;
-    let _headersLength: number;
-    let _values: number[];
+    let _headersWritten: boolean = false;
+    let _values: number[] = undefined;
     let _start: number;
     let _filename = "datalog.csv";
     let _storage: DatalogStorage;
@@ -23,9 +24,9 @@ namespace datalog {
     function init() {
         if (!_headers) {
             _headers = [];
-            _headersLength = 0;
+            _headersWritten = false;
             _start = control.millis();
-            if (_storage) _storage.reset(_filename);
+            if (_storage) _storage.init(_filename);
         }
         _values = [];
     }
@@ -35,11 +36,12 @@ namespace datalog {
         if (_values && _values.length > 0) {
             if (_storage) {
                 // write headers for the first row
-                if (!_headersLength) {
-                    _headersLength = _storage.appendHeaders(_filename, _headers);
+                if (!_headersWritten) {
+                    _storage.appendHeaders(_headers);
+                    _headersWritten = true;
                 }
                 // commit row data
-                _storage.appendRow(_filename, _values);
+                _storage.appendRow(_values);
             }
         }
 
@@ -105,7 +107,7 @@ namespace datalog {
      */
     //%
     export function flush() {
-        if (_storage)
+        if (_headers && _storage)
             _storage.flush();
     }
 
