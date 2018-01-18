@@ -1,9 +1,10 @@
 {
-    "name": "behaviors",
-    "description": "Behavior Driven Robotics",
+    "name": "automation",
+    "description": "Automation, Process Control, Systems and Controls",
     "files": [
         "README.md",
         "behaviors.ts",
+        "pid.ts",
         "targetoverrides.ts"
     ],
     "testFiles": [

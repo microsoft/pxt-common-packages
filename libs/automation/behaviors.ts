@@ -1,8 +1,8 @@
 /**
- * Behavior-based blocks
+ * Process control, automation, robotics AI
  */
 //% color=0x000000 weight=80 icon="\uf277"
-namespace behaviors {
+namespace automation {
     /**
      * A behavior
      */
@@ -60,7 +60,7 @@ namespace behaviors {
          * Adds a new behavior to the behavior manager
          * @param behavior the behavior to add
          */
-        //%
+        //% group="Behaviors"
         add(behavior: Behavior) {
             if (!behavior) return;
 
@@ -71,7 +71,7 @@ namespace behaviors {
         /**
          * Starts the behavior control loop
          */
-        //%
+        //%  group="Behaviors"
         start(): void {
             if (this._state == BehaviorManagerState.Running) return;
             this._state = BehaviorManagerState.Running;
@@ -140,7 +140,7 @@ namespace behaviors {
      * @param behavior a behavior
      */
     //% blockId=behaviorsAddBehavior block="add behavior %behavior"
-    //% weight=100
+    //% weight=100 group="Behaviors"
     export function addBehavior(behavior: Behavior) {
         if (!_manager) {
             _manager = new BehaviorManager();
