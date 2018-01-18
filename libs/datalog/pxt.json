@@ -1,0 +1,16 @@
+{
+    "name": "datalog",
+    "description": "Tiny data logging framework",
+    "files": [
+        "README.md",
+        "datalog.ts",
+        "targetoverrides.ts"
+    ],
+    "testFiles": [
+        "test.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core"
+    }
+}
