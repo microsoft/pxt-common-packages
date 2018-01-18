@@ -16,7 +16,8 @@ namespace automation {
         public ysp: number;
         // current state value
         public y: number;
-
+        // current control value
+        public u: number;
         // minimum control value
         public ulow: number;
         // maximum control value
@@ -29,17 +30,19 @@ namespace automation {
             this.kp = 1;
             this.ki = 0;
             this.kd = 0;
+            this.b = 1;
+            this.ulow = 0;
+            this.uhigh = 0;
+            this.N = 10;
             this.ysp = 0;
             this.y = 0;
-            this.b = 0.9;
-            this.ulow = -100;
-            this.uhigh = 100;
-            this.N = 10;
+            this.u = 0;
             this.reset();
         }
 
         reset() {
-            this.I = this.D = 0;
+            this.I = 0;
+            this.D = 0;
         }
 
         /**
@@ -112,34 +115,40 @@ namespace automation {
             const K = this.kp;
             const Td = this.kd / K;
             const Tt = this.ki == 0 ? 1 << 31 : Math.sqrt(this.kd / this.ki);
-
+            const satu = this.ulow < this.uhigh;
+            
             // integral gain
-            const bi = this.ki * h; // k * h / Ti
+            const bi = this.ki * h; // K * h / Ti
             //derivative gain
             const ad = (2 * Td - this.N * h) / (2 * Td + this.N * h);
             const bd = 2 * K * this.N * Td / (2 * Td + this.N * h);
-            const ao = h / Tt;
-
+            const ao = Tt == 0 ? 0 : h / Tt;
+            
             // compute proportional part
             const P = K * (this.b * this.ysp - y);
 
             // update derivative part
             this.D = ad * this.D - bd * (y - this.y);
 
+            // anti-windup
+            this.I += bi * (this.ysp - y);
+            if (satu && this.I < this.ulow)
+                this.I = this.ulow;
+            else if (satu && this.I > this.uhigh)
+                this.I = this.uhigh;
+            
             // compute temporary output
             const v = P + this.I + this.D;
 
-            // simulate actuator saturation
+            // actuator saturation
             const u = this.ulow < this.uhigh ? Math.clamp(this.ulow, this.uhigh, v) : v;
-
-            // anti-windup update integral
-            this.I += bi * (this.ysp - y) + ao * (u - v);
 
             // update old process output
             this.y = y;
+            this.u = u;
 
             // send output to acturator
-            return u;
+            return this.u;
         }
     }
 
