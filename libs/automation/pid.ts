@@ -14,14 +14,15 @@ namespace automation {
         public N: number;
         // proportional set point weight        
         public b: number;
-        // minimum control value
-        public ulow: number;
-        // maximum control value
-        public uhigh: number;
         // set point
         public ysp: number;
         // current state value
         public y: number;
+
+        // minimum control value
+        public ulow: number;
+        // maximum control value
+        public uhigh: number;
 
         private I: number;
         private D: number;
@@ -30,7 +31,7 @@ namespace automation {
             this.K = 0;
             this.ysp = 0;
             this.y = 0;
-            this.b = 0.2;
+            this.b = 0.9;
             this.ulow = -100;
             this.uhigh = 100;
             this.N = 10;
@@ -47,13 +48,13 @@ namespace automation {
          * @param kp proportional gain
          * @param ki integral gain
          * @param kd derivative gain
-         * @param b setpoint weight
+         * @param b setpoint weight, eg: 0.9
          */
-        //% blockId=pidSetGains block="set %pid|gains kp %kp|ki %ki|kd %kd|b %b"
+        //% blockId=pidSetGains block="set %pid|gains kp %kp|ki %ki|kd %kd"
         //% group=PID
         //% inlineInputMode=inline
         //% weight=99
-        setGains(kp: number, ki: number, kd: number, b: number) {
+        setGains(kp: number, ki: number, kd: number, b: number = 0.9) {
             const K = kp;
             const Ti = K / ki;
             const Td = kd / K;
