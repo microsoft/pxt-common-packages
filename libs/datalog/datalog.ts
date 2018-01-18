@@ -1,11 +1,10 @@
 //% weight=100 color=#0fbc11 icon=""
 namespace datalog {
-    export class DatalogStorage {
-        constructor() { }
-        init(filename: string): void { }
-        appendHeaders(headers: string[]): void { }
-        appendRow(values: number[]): void { }
-        flush(): void { }
+    export interface DatalogStorage {
+        init(filename: string): void;
+        appendHeaders(headers: string[]): void;
+        appendRow(values: number[]): void;
+        flush(): void;
     }
 
     let _headers: string[] = undefined;
