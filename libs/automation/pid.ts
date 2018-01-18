@@ -110,7 +110,7 @@ namespace automation {
         //% group=PID
         //% weight=100
         compute(timestep: number, y: number): number {
-            // https://www.cds.caltech.edu/~murray/courses/cds101/fa02/caltech/astrom-ch6.pdf
+            // Control System Design, Astrom
             const h = timestep;
             const K = this.kp;
             const Td = this.kd / K;
