@@ -10,7 +10,8 @@
         "enums.d.ts",
         "ns.ts",
         "neopixeloverrides.ts",
-        "animations.jres"
+        "animations.jres",
+        "pxtparts.json"
     ],
     "testFiles": [
         "test.ts"
