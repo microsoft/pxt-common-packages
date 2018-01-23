@@ -8,12 +8,11 @@ control.runInParallel(() => {})
 
 Sometimes you want your program to work on more than one thing at a time. The main part of your program is
 always put in [``||on start||``](/blocks/on-start). But, you can also put some other part of your
-program in ``||control:run in background||``. This is a block that runs code seperately from the code
-in ``||on start||``. This is useful when you want your program to keep doing important things
+program in ``||control:run in parallel||``. This is useful when you want your program to keep doing important things
 and you don't want to wait for some other actions to happen first.
 
 As an example, you could have a small task to rotate the pixel lights the pixel strip. This is
-placed inside a ``||control:run in background||`` block:
+placed inside a ``||control:run in parallel||`` block:
 
 ```blocks
 let spinit = true;
@@ -65,13 +64,13 @@ let pixels = light.createStrip();
 input.buttonA.onEvent(ButtonEvent.Click, () => {
     spinit = false;
     pixels.clear();
-})
-control.runInParallel(() => {
-    pixels.setPixelColor(0, Colors.Blue);
-    while (spinit) {
-        pixels.move(LightMove.Rotate, 1);
-        loops.pause(250);
-    }
+    control.runInParallel(() => {
+        pixels.setPixelColor(0, Colors.Blue);
+        while (spinit) {
+            pixels.move(LightMove.Rotate, 1);
+            loops.pause(250);
+        }
+    })
 })
 spinit = true;
 for (let i = 0; i < 5; i++) {
