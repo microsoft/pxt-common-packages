@@ -21,7 +21,7 @@ events like this:
 const myTimer = 6;
 const timerTimeout = 1;
 
-control.runInBackground(() => {
+control.runInParallel(() => {
     while (true) {
         control.waitMicros(100000)
         control.raiseEvent(myTimer, timerTimeout)
@@ -45,7 +45,7 @@ const myTimer = 6;
 const timerTimeout = 1;
 let pixels = light.createStrip();
 
-control.runInBackground(() => {
+control.runInParallel(() => {
     while (true) {
         loops.pause(2000);
         control.raiseEvent(myTimer, timerTimeout);

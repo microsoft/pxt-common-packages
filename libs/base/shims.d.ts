@@ -70,7 +70,7 @@ declare namespace loops {
      * Repeats the code forever in the background. On each iteration, allows other codes to run.
      * @param body code to execute
      */
-    //% help=loops/forever weight=100 blockGap=8
+    //% help=loops/forever weight=100 afterOnStart=true
     //% blockId=forever block="forever" blockAllowMultiple=1 shim=loops::forever
     function forever(a: () => void): void;
 
@@ -79,7 +79,7 @@ declare namespace loops {
      * @param ms how long to pause for, eg: 100, 200, 500, 1000, 2000
      */
     //% help=loops/pause weight=99
-    //% async block="pause (ms) %pause"
+    //% async block="pause %pause=timePicker|ms"
     //% blockId=device_pause shim=loops::pause
     function pause(ms: int32): void;
 }
@@ -99,8 +99,8 @@ declare namespace control {
      */
     //% weight=20 blockGap=8 blockId="control_on_event" block="on event|from %src|with value %value"
     //% blockExternalInputs=1
-    //% help="control/on-event" shim=control::onEvent
-    function onEvent(src: int32, value: int32, handler: () => void): void;
+    //% help="control/on-event" flags.defl=16 shim=control::onEvent
+    function onEvent(src: int32, value: int32, handler: () => void, flags?: int32): void;
 
     /**
      * Reset the device.
@@ -118,11 +118,11 @@ declare namespace control {
     function waitMicros(micros: int32): void;
 
     /**
-     * Run other code in the background.
+     * Run other code in the parallel.
      */
-    //% help=control/run-in-background blockAllowMultiple=1
-    //% blockId="control_run_in_background" block="run in background" blockGap=8 shim=control::runInBackground
-    function runInBackground(a: () => void): void;
+    //% help=control/run-in-parallel handlerStatement=1
+    //% blockId="control_run_in_parallel" block="run in parallel" blockGap=8 shim=control::runInParallel
+    function runInParallel(a: () => void): void;
 
     /**
      * Blocks the calling thread until the specified event is raised.
@@ -134,28 +134,24 @@ declare namespace control {
     /**
      * Derive a unique, consistent serial number of this device from internal data.
      */
-    //% blockId="control_device_serial_number" block="device serial number" weight=9 shim=control::deviceSerialNumber
+    //% blockId="control_device_serial_number" block="device serial number" weight=9
+    //% help=control/device-serial-number shim=control::deviceSerialNumber
     function deviceSerialNumber(): int32;
 }
-
-
-
-    //% weight=2 color=#002050 icon="\uf287"
-    //% advanced=true
 declare namespace serial {
 
     /**
      * Write some text to the serial port.
      */
     //% help=serial/write-string
-    //% weight=87
+    //% weight=87 blockHidden=true
     //% blockId=serial_writestring block="serial|write string %text" shim=serial::writeString
     function writeString(text: string): void;
 
     /**
      * Send a buffer across the serial connection.
      */
-    //% help=serial/write-buffer advanced=true weight=6
+    //% help=serial/write-buffer weight=6 blockHidden=true
     //% blockId=serial_writebuffer block="serial|write buffer %buffer" shim=serial::writeBuffer
     function writeBuffer(buffer: Buffer): void;
 }

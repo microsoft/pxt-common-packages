@@ -26,7 +26,7 @@ in the main part of the program:
 
 ```blocks
 let nowStatus = false
-control.runInBackground(() => {
+control.runInParallel(() => {
     control.waitMicros(10000)
     nowStatus = true
 })
@@ -44,7 +44,7 @@ and give it a source identifier, or **src**, of `15` and a cause **value** of `1
 
 ```blocks
 let because = 0;
-control.runInBackground(() => {
+control.runInParallel(() => {
     control.waitMicros(100000)
     control.raiseEvent(15, 1)
 })
@@ -73,7 +73,7 @@ the events of `0` and `1` are _raised_.
 const pixelLighter = 22
 let pixels = light.createStrip()
 
-control.runInBackground(() => {
+control.runInParallel(() => {
     for (let i = 0; i < 2; i++) {
         loops.pause(1000)
     control.raiseEvent(pixelLighter, i)

@@ -96,7 +96,7 @@ void initRuntime();
 void sendSerial(const char *data, int len);
 int getSerialNumber();
 void registerWithDal(int id, int event, Action a, int flags = 16); // EVENT_LISTENER_DEFAULT_FLAGS
-void runInBackground(Action a);
+void runInParallel(Action a);
 void runForever(Action a);
 void waitForEvent(int id, int event);
 //%
