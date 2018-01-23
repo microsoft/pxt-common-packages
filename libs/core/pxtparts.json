@@ -1,4 +1,64 @@
 {
+    "buttons": {
+        "simulationBehavior": "buttons",
+        "visual": {
+            "builtIn": "buttons",
+            "width": 75,
+            "height": 45,
+            "pinDistance": 15,
+            "pinLocations": [
+                {"x": 0, "y": 0},
+                {"x": 30, "y": 45}
+            ]
+        },
+        "numberOfPins": 2,
+        "pinDefinitions": [
+            {"target": "ground", "style": "male", "orientation": "-Z"},
+            {"target": {"pinInstantiationIdx": 0}, "style": "male", "orientation": "-Z"}
+        ],
+        "instantiation": {
+            "kind": "function",
+            "fullyQualifiedName": "Button.onEvent",
+            "argumentRoles": [
+                {"pinInstantiationIdx": 0, "partParameter": "button"}
+            ]
+        },
+        "assembly": [
+            {"part": true},
+            {"pinIndices": [0, 1]}
+        ]
+    },
+   "slideswitch": {
+       "numberOfPins": 3,
+       "simulationBehavior":"slideswitch",
+       "visual": {
+           "builtIn": "slideswitch",
+           "width": 99,
+           "height": 97,
+           "pinDistance": 15,
+           "pinLocations": [
+               {"x": 30, "y": 0},
+               {"x": 45, "y": 0},
+               {"x": 90, "y": 0}
+           ]
+       },
+       "pinDefinitions": [
+           {"target": "ground", "style": "male", "orientation": "-Z"},
+           {"target": {"pinInstantiationIdx": 0}, "style": "male", "orientation": "-Z"},
+           {"target": "threeVolt", "style": "male", "orientation": "-Z"}
+       ],
+       "instantiation": {
+           "kind": "function",
+           "fullyQualifiedName": "DigitalPin.digitalRead",
+           "argumentRoles": [
+               {"pinInstantiationIdx": 0, "partParameter": "pin"}
+           ]
+       },
+       "assembly": [
+           {"part": true, "pinIndices": [0]},
+           {"pinIndices": [1]}
+       ]
+   },    
     "microservo": {
         "simulationBehavior": "microservo",
         "visual": {
