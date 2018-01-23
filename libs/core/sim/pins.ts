@@ -121,7 +121,7 @@ namespace pxsim.AnalogPinMethods {
     }
 }
 
-namespace pxsim.PwmOutPinMethods {
+namespace pxsim.PwmOnlyPinMethods {
     export function analogSetPeriod(name: pins.PwmOnlyPin, micros: number): void {
         name.analogSetPeriod(micros);
     }
