@@ -2,7 +2,7 @@
    "headphone": {
        "numberOfPins": 2,
        "visual": {
-           "image": "parts/speaker.svg",
+           "image": "speaker.svg",
            "width": 90,
            "height": 100,
            "pinDistance": 15,
