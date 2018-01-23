@@ -7,7 +7,7 @@ namespace pxsim.visuals {
     const LED_PART = `<svg xmlns="http://www.w3.org/2000/svg" width="30mm" height="100mm" viewBox="0 0 30 100" id="svg8">
     <g id="layer1" transform="translate(0 -197)" stroke="#000">
       <rect id="rect4508-3" width="6.054" height="52.917" x="19.039" y="225.563" rx="3.027" fill="#666" stroke-width=".392"/>
-      <rect id="rect4508" width="6.054" height="76.729" x="6.215" y="201.75" rx="2.744" fill="#666" stroke-width=".472"/>
+      <rect id="rect4508" width="6.054" height="81.258" x="5.157" y="197.221" rx="2.744" fill="#666" stroke-width=".486"/>
       <path d="M5.64 270.542h19.942a1.93 1.93 0 0 1 1.935 1.935v19.942a1.93 1.93 0 0 1-1.935 1.935H5.639a1.93 1.93 0 0 1-1.935-1.935v-19.942a1.93 1.93 0 0 1 1.935-1.935z" id="LED" fill="#6f0" stroke-width=".251"/>
     </g>
   </svg>
