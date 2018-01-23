@@ -1,5 +1,5 @@
 namespace pxsim.control {
-    export let runInBackground = thread.runInBackground;
+    export let runInParallel = thread.runInBackground;
     export let delay = thread.pause;
 
     export function reset() {

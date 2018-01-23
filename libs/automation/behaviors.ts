@@ -75,7 +75,7 @@ namespace automation {
         start(): void {
             if (this._state == BehaviorManagerState.Running) return;
             this._state = BehaviorManagerState.Running;
-            control.runInBackground(() => this.run());
+            control.runInParallel(() => this.run());
         }
 
         /**
@@ -130,7 +130,7 @@ namespace automation {
 
             // activate current behavior
             this._behaviors[i].active = true;
-            control.runInBackground(() => this._behaviors[i].run())
+            control.runInParallel(() => this._behaviors[i].run())
         }
     }
 

@@ -1,9 +1,9 @@
-# run In Background
+# run In Parallel
 
 Run some other code at the same time that your main program code runs.
 
 ```sig
-control.runInBackground(() => {})
+control.runInParallel(() => {})
 ```
 
 Sometimes you want your program to work on more than one thing at a time. The main part of your program is
@@ -19,7 +19,7 @@ placed inside a ``||control:run in background||`` block:
 let spinit = true;
 let pixels = light.createStrip();
 
-control.runInBackground(() => {
+control.runInParallel(() => {
     while (spinit) {
         pixels.move(LightMove.Rotate, 1);
         loops.pause(200);
@@ -66,7 +66,7 @@ input.buttonA.onEvent(ButtonEvent.Click, () => {
     spinit = false;
     pixels.clear();
 })
-control.runInBackground(() => {
+control.runInParallel(() => {
     pixels.setPixelColor(0, Colors.Blue);
     while (spinit) {
         pixels.move(LightMove.Rotate, 1);

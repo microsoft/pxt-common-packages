@@ -97,7 +97,7 @@ namespace music {
     export function playSound(sound: string) {
         const queue = soundQueue();
         const melody = new Melody(sound);
-        control.runInBackground(() => {
+        control.runInParallel(() => {
             queue.cancel();
             queue.runUntilDone(() => melody.playNextNote());
         })
