@@ -1,7 +1,7 @@
 /**
  * Automation, process control and robotic controllers
  */
-//% groups="['PID', 'Behaviors']"
+//% groups="['PID', `Filters', 'Behaviors']"
 namespace automation {
 
 }
