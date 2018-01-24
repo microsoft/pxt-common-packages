@@ -1,4 +1,4 @@
-namespace automation {
+namespace dsp {
     /**
      * A moving average filter
      */

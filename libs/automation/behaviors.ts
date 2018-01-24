@@ -1,7 +1,3 @@
-/**
- * Process control, automation, robotics AI
- */
-//% color=0x000000 weight=80 icon="\uf277"
 namespace automation {
     /**
      * A behavior

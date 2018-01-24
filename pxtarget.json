@@ -18,6 +18,7 @@
         "libs/cable",
         "libs/infrared",
         "libs/tests",
-        "libs/automation"
+        "libs/automation",
+        "libs/dsp"
     ]
 }

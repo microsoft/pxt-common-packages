@@ -6,7 +6,6 @@
         "ns.ts",
         "behaviors.ts",
         "pid.ts",
-        "filters.ts",
         "targetoverrides.ts"
     ],
     "testFiles": [
