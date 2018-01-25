@@ -3,6 +3,6 @@ namespace pxsim.mouse {
     }
     export function move(x: number, y: number): void {        
     }
-    export function wheel(w: number): void {        
+    export function turnWheel(w: number): void {        
     }
 }

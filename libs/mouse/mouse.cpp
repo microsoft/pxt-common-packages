@@ -17,7 +17,7 @@ namespace mouse {
     */
     //% help=mouse/set-button
     //% blockId=mouseSetButton block="mouse button %index=joystickStandardButton|%down"
-    //% down.fieldEditor=toggleupdown
+    //% down.fieldEditor=toggleupdown down.fieldOptions.inverted=true
     void setButton(MouseButton button, bool down) {
         if (down)
             pxt::mouse.buttonDown((codal::USBHIDMouseButton)button);
@@ -40,9 +40,9 @@ namespace mouse {
     * Moves the mouse
     **/
     //% help=mouse/wheel
-    //% blockId=mouseWheel block="mouse wheel %w"
+    //% blockId=mouseWheel block="turn wheel %w"
     //% w.min=-128 w.max=127
-    void wheel(int w) {
+    void turnWheel(int w) {
         pxt::mouse.moveWheel(w);        
     }
 }

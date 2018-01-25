@@ -7,6 +7,9 @@
         "enums.d.ts",
         "mouse.ts"
     ],
+    "tests": [
+        "test.ts"
+    ],
     "public": true,
     "dependencies": {
         "core": "file:../core"
