@@ -17,7 +17,7 @@
         "libs/pulse",
         "libs/cable",
         "libs/infrared",
-        "libs/joystick",
+        "libs/gamepad",
         "libs/tests",
         "libs/automation",
         "libs/dsp"

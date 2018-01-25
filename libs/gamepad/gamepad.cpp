@@ -3,15 +3,14 @@
 
 
 #include "pxt.h"
-namespace joystick {
+namespace gamepad {
     /** 
     * Sets the button state to down
     */
     //% help=gamepad/set-button
-    //% blockId=joystickSetButton block="gamepad button %index|%down"
+    //% blockId=joystickSetButton block="gamepad button %index=joystickStandardButton|%down"
     //% index.min=0 index.max=127
     //% down.fieldEditor=toggleupdown
-    //% 
     void setButton(int index, bool down) {
         if (down)
             pxt::joystick.buttonDown(index);
@@ -22,7 +21,7 @@ namespace joystick {
     /**
     * Sets the current move on the gamepad
     **/
-    //% help=gamepad/move
+    //% help=gamepad/move blockHidden=1
     //% blockId=joystickMove block="gamepad move stick %index|to x %x|y %y"
     //% index.min=0 index.max=1
     void move(int index, int x, int y) {
@@ -32,7 +31,7 @@ namespace joystick {
     /** 
     * Sets the throttle state
     */
-    //% gamepad/set-throttle
+    //% gamepad/set-throttle blockHidden=1
     //% blockId=joystickSetThrottle block="set gamepad throttle %index|to %value"
     //% index.min=0 index.max=1
     //% value.min=0 value.max=31

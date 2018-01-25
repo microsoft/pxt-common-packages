@@ -1,9 +1,9 @@
 {
-    "name": "joystick",
-    "description": "Joystick controller over HID",
+    "name": "gamepad",
+    "description": "Gamepad controller over HID",
     "files": [
-        "joystick.cpp",
-        "joystick.ts",
+        "gamepad.cpp",
+        "gamepad.ts",
         "shims.d.ts"
     ],
     "public": true,

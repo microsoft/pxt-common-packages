@@ -30,7 +30,6 @@ using namespace codal;
 #include "hf2.h"
 #include "hf2dbg.h"
 #if CONFIG_ENABLED(DEVICE_JOYSTICK)
-#pragma message ( "HID Joystick enabled" )
 #include "HIDJoystick.h"
 #endif
 #endif
