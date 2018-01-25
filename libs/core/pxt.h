@@ -42,11 +42,14 @@ namespace pxt {
 #if CONFIG_ENABLED(DEVICE_USB)
 extern CodalUSB usb;
 extern HF2 hf2;
-#if CONFIG_ENABLED(DEVICE_JOYSTICK)
-extern USBHIDJoystick joystick;
-#endif
 #if CONFIG_ENABLED(DEVICE_MOUSE)
 extern USBHIDMouse mouse;
+#endif
+#if CONFIG_ENABLED(DEVICE_KEYBOARD)
+extern USBHIDKeyboard keyboard;
+#endif
+#if CONFIG_ENABLED(DEVICE_JOYSTICK)
+extern USBHIDJoystick joystick;
 #endif
 #endif
 
