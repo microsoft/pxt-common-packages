@@ -10,5 +10,10 @@
     "public": true,
     "dependencies": {
         "core": "file:../core"
+    },
+    "yotta": {
+        "config": {
+            "DEVICE_JOYSTICK": 1
+        }
     }
 }
