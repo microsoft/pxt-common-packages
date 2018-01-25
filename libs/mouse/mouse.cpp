@@ -16,7 +16,7 @@ namespace mouse {
     * Sets the mouse button state to down
     */
     //% help=mouse/set-button
-    //% blockId=joystickSetButton block="mouse button %index=joystickStandardButton|%down"
+    //% blockId=mouseSetButton block="mouse button %index=joystickStandardButton|%down"
     //% down.fieldEditor=toggleupdown
     void setButton(MouseButton button, bool down) {
         if (down)
@@ -40,7 +40,7 @@ namespace mouse {
     * Moves the mouse
     **/
     //% help=mouse/wheel
-    //% blockId=mouseMove block="mouse wheel %w"
+    //% blockId=mouseWheel block="mouse wheel %w"
     //% w.min=-128 w.max=127
     void wheel(int w) {
         pxt::mouse.moveWheel(w);        
