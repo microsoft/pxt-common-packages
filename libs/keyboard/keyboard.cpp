@@ -8,7 +8,7 @@ namespace keyboard {
     */
     //% blockId=keyboardType block="keyboard type %text"
     void type(String text) {
-        ManagedString s(text)
-        pxt::keyboard.type(s);
+        if (NULL != text)
+            pxt::keyboard.type(text->data, text->length);
     }
 }

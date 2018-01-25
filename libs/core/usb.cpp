@@ -8,11 +8,11 @@ HF2 hf2;
 #if CONFIG_ENABLED(DEVICE_MOUSE)
 USBHIDMouse mouse;
 #endif
-#if CONFIG_ENABLED(DEVICE_MOUSE)
-USBHIDMouse mouse;
-#endif
 #if CONFIG_ENABLED(DEVICE_KEYBOARD)
-USBHIDJoystick keyboard;
+USBHIDKeyboard keyboard;
+#endif
+#if CONFIG_ENABLED(DEVICE_JOYSTICK)
+USBHIDJoystick joystick;
 #endif
 
 // TODO extract these from uf2_info()?
