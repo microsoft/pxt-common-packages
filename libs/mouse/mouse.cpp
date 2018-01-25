@@ -3,13 +3,13 @@
 #include "pxt.h"
 
 enum class MouseButton {
-    //% block="right"
+    //% block="right" enumval=1
     Right = 0x01,
-    //% block="middle"
+    //% block="middle" enumval=2
     Middle = 0x02,
-    //% block="left"
+    //% block="left" enumval=4
     Left = 0x04
-}
+};
 
 namespace mouse {
     /** 
