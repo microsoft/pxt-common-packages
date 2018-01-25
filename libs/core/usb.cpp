@@ -5,13 +5,14 @@ namespace pxt {
 #if CONFIG_ENABLED(DEVICE_USB)
 CodalUSB usb;
 HF2 hf2;
-
-#if CONFIG_ENABLED(DEVICE_JOYSTICK)
-USBHIDJoystick joystick;
-#endif
-
 #if CONFIG_ENABLED(DEVICE_MOUSE)
 USBHIDMouse mouse;
+#endif
+#if CONFIG_ENABLED(DEVICE_KEYBOARD)
+USBHIDKeyboard keyboard;
+#endif
+#if CONFIG_ENABLED(DEVICE_JOYSTICK)
+USBHIDJoystick joystick;
 #endif
 
 // TODO extract these from uf2_info()?
@@ -23,13 +24,16 @@ static const char *string_descriptors[] = {
 
 void usb_init() {
     usb.stringDescriptors = string_descriptors;
-    usb.add(hf2);
-#if CONFIG_ENABLED(DEVICE_JOYSTICK)
-    usb.add(joystick);
-#endif
 #if CONFIG_ENABLED(DEVICE_MOUSE)
     usb.add(mouse);
 #endif
+#if CONFIG_ENABLED(DEVICE_KEYBOARD)
+    usb.add(keyboard);
+#endif
+#if CONFIG_ENABLED(DEVICE_JOYSTICK)
+    usb.add(joystick);
+#endif
+    usb.add(hf2);
     usb.start();
 }
 
