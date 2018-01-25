@@ -11,6 +11,14 @@ namespace pxsim.pins {
 
     }
 
+    export class PwmOnlyPin extends CommonPin {
+
+    }
+
+    export class PwmPin extends CommonPin {
+
+    }
+
     export function markUsed(name: CommonPin) {
         if (!name.used) {
             name.used = true;
@@ -111,41 +119,18 @@ namespace pxsim.AnalogPinMethods {
         pins.markUsed(name);
         name.analogSetPeriod(micros);
     }
-
-    /**
-     * Writes a value to the servo, controlling the shaft accordingly. On a standard servo, this will
-     * set the angle of the shaft (in degrees), moving the shaft to that orientation. On a continuous
-     * rotation servo, this will set the speed of the servo (with ``0`` being full-speed in one
-     * direction, ``180`` being full speed in the other, and a value near ``90`` being no movement).
-     * @param value angle or rotation speed, eg:180,90,0
-     */
-    export function servoWrite(name: pins.AnalogPin, value: number): void {
-        pins.markUsed(name);
-        name.servoWritePin(value);
-    }
-
-    /**
-     * Configures this IO pin as an analog/pwm output, configures the period to be 20 ms, and sets the
-     * pulse width, based on the value it is given **microseconds** or `1/1000` milliseconds.
-     * @param micros pulse duration in micro seconds, eg:1500
-     */
-    export function servoSetPulse(name: pins.AnalogPin, micros: number): void {
-        pins.markUsed(name);
-        // TODO fix pxt
-        // name.servoSetPulse(micros);
-    }
 }
 
-namespace pxsim.PwmPinMethods {
-    export function analogSetPeriod(name: pins.AnalogPin, micros: number): void {
+namespace pxsim.PwmOnlyPinMethods {
+    export function analogSetPeriod(name: pins.PwmOnlyPin, micros: number): void {
         name.analogSetPeriod(micros);
     }
 
-    export function servoWrite(name: pins.AnalogPin, value: number): void {
+    export function servoWrite(name: pins.PwmOnlyPin, value: number): void {
         name.servoWritePin(value);
     }
 
-    export function servoSetPulse(name: pins.AnalogPin, micros: number): void {
+    export function servoSetPulse(name: pins.PwmOnlyPin, micros: number): void {
         name.servoSetPulse(name.id, micros);
     }
 }

@@ -28,7 +28,9 @@
         "uf2hid.h",
         "ns.ts",
         "dmac.cpp",
-        "dmac.h"
+        "dmac.h",
+        "timer.ts",
+        "pxtparts.json"
     ],
     "testFiles": [
         "test.ts"

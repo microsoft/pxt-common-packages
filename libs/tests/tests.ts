@@ -83,7 +83,7 @@ namespace tests {
         if (!name || !handler) return;
         if (!_tests) {
             _tests = [];
-            control.runInBackground(function () {
+            control.runInParallel(function () {
                 // should run after on start
                 loops.pause(100)
                 run()

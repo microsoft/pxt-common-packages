@@ -5,7 +5,7 @@ Make the part of the program running right now wait for some number of microseco
 ```sig
 control.waitMicros(10)
 ```
-The code inside the current block, such as a ``||on start||``, ``||run in background||``, and 
+The code inside the current block, such as a ``||on start||``, ``||run in parallel||``, and 
 ``||on event||`` , waits for some amount of time. The time number is in microseconds (one-millionth of a second).
 
 ## Parameters

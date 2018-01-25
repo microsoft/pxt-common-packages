@@ -3,7 +3,15 @@
 */
 //% weight=10 color="#31bca3" icon="\uf110" advanced=true
 namespace control {
-
+    /**
+     * Deprecated, use ``control.runInParallel`` instead.
+     */
+    //% deprecated=1 hidden=1 help=control/run-in-background blockAllowMultiple=1 afterOnStart=true
+    //% blockId="control_run_in_background" block="run in background" blockGap=8 weight=0
+    export function runInBackground(a: () => void) {
+        control.runInParallel(a);
+    }
+    
     /**
      * Display an error code and stop the program.
      * @param code an error number to display. eg: 5
@@ -143,7 +151,7 @@ namespace control {
         // start polling fiber if needed
         if (!_pollEventQueue) {
             _pollEventQueue = [ev];
-            control.runInBackground(pollEvents);
+            control.runInParallel(pollEvents);
         }
         else {
             // add to the queue

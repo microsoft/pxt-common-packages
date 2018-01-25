@@ -19,6 +19,7 @@
         "libs/infrared",
         "libs/joystick",
         "libs/tests",
-        "libs/behaviors"
+        "libs/automation",
+        "libs/dsp"
     ]
 }

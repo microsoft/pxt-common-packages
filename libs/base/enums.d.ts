@@ -1,17 +1,7 @@
 // Auto-generated. Do not edit.
 
 
-    declare enum ValType {
-    Undefined = 0,
-    Boolean = 1,
-    Number = 2,
-    String = 3,
-    Object = 4,
-    Function = 5,
-    }
-
-
-    declare enum NumberFormat {
+    declare const enum NumberFormat {
     Int8LE = 1,
     UInt8LE = 2,
     Int16LE = 3,
@@ -30,7 +20,15 @@
     Float32BE = 15,
     Float64BE = 16,
     }
-declare namespace serial {
-}
+
+
+    declare const enum ValType {
+    Undefined = 0,
+    Boolean = 1,
+    Number = 2,
+    String = 3,
+    Object = 4,
+    Function = 5,
+    }
 
 // Auto-generated. Do not edit. Really.
