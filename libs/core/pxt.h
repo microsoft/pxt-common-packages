@@ -32,6 +32,9 @@ using namespace codal;
 #if CONFIG_ENABLED(DEVICE_JOYSTICK)
 #include "HIDJoystick.h"
 #endif
+#if CONFIG_ENABLED(DEVICE_MOUSE)
+#include "HIDMouse.h"
+#endif
 #endif
 
 namespace pxt {

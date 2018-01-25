@@ -10,6 +10,10 @@ HF2 hf2;
 USBHIDJoystick joystick;
 #endif
 
+#if CONFIG_ENABLED(DEVICE_MOUSE)
+USBHIDMouse mouse;
+#endif
+
 // TODO extract these from uf2_info()?
 static const char *string_descriptors[] = {
     "Example Corp.",
@@ -22,6 +26,9 @@ void usb_init() {
     usb.add(hf2);
 #if CONFIG_ENABLED(DEVICE_JOYSTICK)
     usb.add(joystick);
+#endif
+#if CONFIG_ENABLED(DEVICE_MOUSE)
+    usb.add(mouse);
 #endif
     usb.start();
 }

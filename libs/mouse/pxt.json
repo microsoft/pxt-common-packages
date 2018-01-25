@@ -1,0 +1,19 @@
+{
+    "name": "mouse",
+    "description": "Mouse emulation over HID",
+    "files": [
+        "mouse.cpp",
+        "shims.d.ts",
+        "enums.d.ts",
+        "mouse.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core"
+    },
+    "yotta": {
+        "config": {
+            "DEVICE_MOUSE": 1
+        }
+    }
+}

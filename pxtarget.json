@@ -20,6 +20,7 @@
         "libs/gamepad",
         "libs/tests",
         "libs/automation",
-        "libs/dsp"
+        "libs/dsp",
+        "libs/mouse"
     ]
 }
