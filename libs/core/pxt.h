@@ -32,6 +32,9 @@ using namespace codal;
 #if CONFIG_ENABLED(DEVICE_JOYSTICK)
 #include "HIDJoystick.h"
 #endif
+#if CONFIG_ENABLED(DEVICE_MOUSE)
+#include "HIDMouse.h"
+#endif
 #endif
 
 namespace pxt {
@@ -41,6 +44,9 @@ extern CodalUSB usb;
 extern HF2 hf2;
 #if CONFIG_ENABLED(DEVICE_JOYSTICK)
 extern USBHIDJoystick joystick;
+#endif
+#if CONFIG_ENABLED(DEVICE_MOUSE)
+extern USBHIDMouse mouse;
 #endif
 #endif
 

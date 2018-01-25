@@ -9,7 +9,7 @@ namespace gamepad {
     */
     //% help=gamepad/set-button
     //% blockId=joystickSetButton block="gamepad button %index=joystickStandardButton|%down"
-    //% down.fieldEditor=toggleupdown
+    //% down.fieldEditor=toggleupdown down.fieldOptions.inverted=true
     void setButton(int index, bool down) {
         if (down)
             pxt::joystick.buttonDown(index);

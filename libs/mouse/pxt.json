@@ -1,10 +1,11 @@
 {
-    "name": "gamepad",
-    "description": "Gamepad controller over HID",
+    "name": "mouse",
+    "description": "Mouse emulation over HID",
     "files": [
-        "gamepad.cpp",
+        "mouse.cpp",
         "shims.d.ts",
-        "gamepad.ts"
+        "enums.d.ts",
+        "mouse.ts"
     ],
     "tests": [
         "test.ts"
@@ -15,7 +16,7 @@
     },
     "yotta": {
         "config": {
-            "DEVICE_JOYSTICK": 1
+            "DEVICE_MOUSE": 1
         }
     }
 }
