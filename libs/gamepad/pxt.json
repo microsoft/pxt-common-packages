@@ -6,6 +6,9 @@
         "shims.d.ts",
         "gamepad.ts"
     ],
+    "tests": [
+        "test.ts"
+    ],
     "public": true,
     "dependencies": {
         "core": "file:../core"
