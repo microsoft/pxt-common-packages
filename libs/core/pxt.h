@@ -45,6 +45,9 @@ extern HF2 hf2;
 #if CONFIG_ENABLED(DEVICE_JOYSTICK)
 extern USBHIDJoystick joystick;
 #endif
+#if CONFIG_ENABLED(DEVICE_MOUSE)
+extern USBHIDMouse mouse;
+#endif
 #endif
 
 // Utility functions

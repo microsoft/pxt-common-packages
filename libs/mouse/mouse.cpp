@@ -20,9 +20,9 @@ namespace mouse {
     //% down.fieldEditor=toggleupdown
     void setButton(MouseButton button, bool down) {
         if (down)
-            pxt::mouse.buttonDown(index);
+            pxt::mouse.buttonDown((codal::USBHIDMouseButton)button);
         else
-            pxt::mouse.buttonUp(index);
+            pxt::mouse.buttonUp((codal::USBHIDMouseButton)button);
     }
 
     /**
@@ -30,8 +30,10 @@ namespace mouse {
     **/
     //% help=mouse/move
     //% blockId=mouseMove block="mouse move x %x|y %y"
+    //% x.min=-128 x.max=127
+    //% y.min=-128 y.max=127
     void move(int x, int y) {
-        pxt::mouse.move(index, x, y);        
+        pxt::mouse.move(x, y);        
     }
 
     /**
@@ -39,6 +41,7 @@ namespace mouse {
     **/
     //% help=mouse/wheel
     //% blockId=mouseMove block="mouse wheel %w"
+    //% w.min=-128 w.max=127
     void wheel(int w) {
         pxt::mouse.moveWheel(w);        
     }
