@@ -3,8 +3,8 @@
     "description": "Gamepad controller over HID",
     "files": [
         "gamepad.cpp",
-        "gamepad.ts",
-        "shims.d.ts"
+        "shims.d.ts",
+        "gamepad.ts"
     ],
     "public": true,
     "dependencies": {

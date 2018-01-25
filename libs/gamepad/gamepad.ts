@@ -45,14 +45,14 @@ enum GamepadButton {
     Right = 15
 }
 
-//% icon="\uf11b" color="#777777"
+//% icon="\uf11b" color="#a7a7a7"
 namespace gamepad {
     /**
      * Maps to a standard layout button to the button index
      * @param button the name of the button
      */
     //% blockId=joystickStandardButton block="%button"
-    //% shim=TD_ID    
+    //% shim=TD_ID blockHidden=1
     export function button(button: GamepadButton): number {
         return button;
     }
