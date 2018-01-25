@@ -29,11 +29,14 @@ using namespace codal;
 #if CONFIG_ENABLED(DEVICE_USB)
 #include "hf2.h"
 #include "hf2dbg.h"
-#if CONFIG_ENABLED(DEVICE_JOYSTICK)
-#include "HIDJoystick.h"
-#endif
 #if CONFIG_ENABLED(DEVICE_MOUSE)
 #include "HIDMouse.h"
+#endif
+#if CONFIG_ENABLED(DEVICE_KEYBOARD)
+#include "HIDKeyboard.h"
+#endif
+#if CONFIG_ENABLED(DEVICE_JOYSTICK)
+#include "HIDJoystick.h"
 #endif
 #endif
 
