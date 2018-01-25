@@ -21,8 +21,7 @@ namespace gamepad {
     /**
     * Sets the current move on the gamepad
     **/
-    //% help=gamepad/move blockHidden=1
-    //% blockId=joystickMove block="gamepad move stick %index|to x %x|y %y"
+    //% help=gamepad/move
     //% index.min=0 index.max=1
     void move(int index, int x, int y) {
         pxt::joystick.move(index, x, y);        
@@ -32,7 +31,6 @@ namespace gamepad {
     * Sets the throttle state
     */
     //% gamepad/set-throttle blockHidden=1
-    //% blockId=joystickSetThrottle block="set gamepad throttle %index|to %value"
     //% index.min=0 index.max=1
     //% value.min=0 value.max=31
     void setThrottle(int index, int value) {
