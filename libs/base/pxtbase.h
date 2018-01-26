@@ -91,6 +91,7 @@ extern "C" void target_panic(int error_code);
 extern "C" void target_reset();
 void sleep_ms(unsigned ms);
 void sleep_us(uint64_t us);
+void releaseFiber();
 int current_time_ms();
 void initRuntime();
 void sendSerial(const char *data, int len);

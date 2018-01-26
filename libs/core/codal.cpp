@@ -70,6 +70,10 @@ void fiberDone(void *a) {
     release_fiber();
 }
 
+void releaseFiber() {
+    release_fiber();    
+}
+
 void sleep_ms(unsigned ms) {
     fiber_sleep(ms);
 }
