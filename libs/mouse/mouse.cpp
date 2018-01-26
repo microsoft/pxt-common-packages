@@ -5,10 +5,10 @@
 enum class MouseButton {
     //% block="right" enumval=1
     Right = 0x01,
-    //% block="middle" enumval=2
-    Middle = 0x02,
-    //% block="left" enumval=4
-    Left = 0x04
+    //% block="middle" enumval=4
+    Middle = 0x04,
+    //% block="left" enumval=2
+    Left = 0x02
 };
 
 namespace mouse {
@@ -17,7 +17,7 @@ namespace mouse {
     */
     //% help=mouse/set-button
     //% blockId=mouseSetButton block="mouse button %index=joystickStandardButton|%down"
-    //% down.fieldEditor=toggleupdown down.fieldOptions.inverted=true
+    //% down.fieldEditor=toggledownup down.fieldOptions.inverted=true
     void setButton(MouseButton button, bool down) {
         if (down)
             pxt::mouse.buttonDown((codal::USBHIDMouseButton)button);
@@ -33,7 +33,7 @@ namespace mouse {
     //% x.min=-128 x.max=127
     //% y.min=-128 y.max=127
     void move(int x, int y) {
-        pxt::mouse.move(x, y);        
+        pxt::mouse.move(x, y);
     }
 
     /**
@@ -43,6 +43,6 @@ namespace mouse {
     //% blockId=mouseWheel block="turn wheel %w"
     //% w.min=-128 w.max=127
     void turnWheel(int w) {
-        pxt::mouse.moveWheel(w);        
+        pxt::mouse.moveWheel(w);
     }
 }
