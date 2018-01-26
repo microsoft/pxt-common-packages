@@ -12,7 +12,7 @@ declare namespace input {
     //% gesture.fieldEditor="gridpicker"
     //% gesture.fieldOptions.width=220
     //% gesture.fieldOptions.columns=3
-    //% weight=92 blockGap=8 shim=input::onGesture
+    //% weight=92 blockGap=12 shim=input::onGesture
     function onGesture(gesture: Gesture, body: () => void): void;
 
     /**

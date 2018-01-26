@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="30mm"
+   height="100mm"
+   viewBox="0 0 30 100"
+   version="1.1"
+   id="svg8"
+   inkscape:version="0.92.1 r15371"
+   sodipodi:docname="led.svg">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.979899"
+     inkscape:cx="249.19846"
+     inkscape:cy="217.84306"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1137"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1">
+    <inkscape:grid
+       type="xygrid"
+       id="grid4499" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-197)">
+    <rect
+       style="fill:#666666;fill-opacity:1;stroke:#000000;stroke-width:0.39191729;stroke-opacity:1"
+       id="rect4508-3"
+       width="6.0541215"
+       height="52.916664"
+       x="19.038918"
+       y="225.5625"
+       rx="3.0270607" />
+    <rect
+       style="fill:#666666;fill-opacity:1;stroke:#000000;stroke-width:0.48565814;stroke-opacity:1"
+       id="rect4508"
+       width="6.0541215"
+       height="81.257782"
+       x="5.1565714"
+       y="197.22139"
+       rx="2.74403" />
+    <path
+       style="fill:#66ff00;fill-opacity:1;stroke:#000000;stroke-width:0.25100583;stroke-opacity:1"
+       d="M 5.6391466,270.54166 H 25.581687 c 1.071979,0 1.93498,0.863 1.93498,1.93498 v 19.94255 c 0,1.07198 -0.863001,1.93498 -1.93498,1.93498 H 5.6391466 c -1.0719789,0 -1.9349799,-0.863 -1.9349799,-1.93498 v -19.94255 c 0,-1.07198 0.863001,-1.93498 1.9349799,-1.93498 z"
+       id="LED"
+       inkscape:label="#rect5669" />
+  </g>
+</svg>

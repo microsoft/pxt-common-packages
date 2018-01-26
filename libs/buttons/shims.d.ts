@@ -21,12 +21,13 @@ declare interface Button {
      */
     //% help=input/button/on-event
     //% blockId=buttonEvent block="on %button|%event"
-    //% parts="buttonpair"
+    //% parts="buttons"
     //% blockNamespace=input
     //% button.fieldEditor="gridpicker"
     //% button.fieldOptions.width=220
     //% button.fieldOptions.columns=3
-    //% weight=96 blockGap=8 shim=ButtonMethods::onEvent
+    //% weight=96 blockGap=12
+    //% trackArgs=0 shim=ButtonMethods::onEvent
     onEvent(ev: ButtonEvent, body: () => void): void;
 
     /**
@@ -36,12 +37,13 @@ declare interface Button {
     //% help=input/button/is-pressed
     //% block="%button|is pressed"
     //% blockId=buttonIsPressed
-    //% parts="buttonpair"
+    //% parts="buttons"
     //% blockNamespace=input
     //% button.fieldEditor="gridpicker"
     //% button.fieldOptions.width=220
     //% button.fieldOptions.columns=3
-    //% weight=50 blockGap=8 shim=ButtonMethods::isPressed
+    //% weight=50 blockGap=8
+    //% trackArgs=0 shim=ButtonMethods::isPressed
     isPressed(): boolean;
 
     /**
@@ -51,12 +53,13 @@ declare interface Button {
     //% help=input/button/was-pressed
     //% block="%button|was pressed"
     //% blockId=buttonWasPressed
-    //% parts="buttonpair"
+    //% parts="buttons"
     //% blockNamespace=input
     //% button.fieldEditor="gridpicker"
     //% button.fieldOptions.width=220
     //% button.fieldOptions.columns=3
-    //% group="More" weight=46 blockGap=8 shim=ButtonMethods::wasPressed
+    //% group="More" weight=46 blockGap=8
+    //% trackArgs=0 shim=ButtonMethods::wasPressed
     wasPressed(): boolean;
 }
 

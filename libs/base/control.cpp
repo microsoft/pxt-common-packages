@@ -43,12 +43,12 @@ namespace control {
     }
 
     /**
-     * Run other code in the background.
+     * Run other code in the parallel.
      */
-    //% help=control/run-in-background blockAllowMultiple=1 afterOnStart=true
-    //% blockId="control_run_in_background" block="run in background" blockGap=8
-    void runInBackground(Action a) {
-      pxt::runInBackground(a);
+    //% help=control/run-in-parallel handlerStatement=1
+    //% blockId="control_run_in_parallel" block="run in parallel" blockGap=8
+    void runInParallel(Action a) {
+        pxt::runInParallel(a);
     }
 
     /**

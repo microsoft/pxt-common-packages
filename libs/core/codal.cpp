@@ -70,6 +70,10 @@ void fiberDone(void *a) {
     release_fiber();
 }
 
+void releaseFiber() {
+    release_fiber();    
+}
+
 void sleep_ms(unsigned ms) {
     fiber_sleep(ms);
 }
@@ -92,7 +96,7 @@ void runForever(Action a) {
     }
 }
 
-void runInBackground(Action a) {
+void runInParallel(Action a) {
     if (a != 0) {
         incr(a);
         create_fiber((void (*)(void *))runAction0, (void *)a, fiberDone);

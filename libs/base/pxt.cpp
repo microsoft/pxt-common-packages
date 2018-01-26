@@ -160,6 +160,8 @@ void Segment::set(unsigned i, TValue value) {
     } else if (i < Segment::MaxSize) {
         growByMin(i + 1);
         data[i] = value;
+    } else {
+        return;
     }
     if (length <= i) {
         length = i + 1;
@@ -173,7 +175,7 @@ void Segment::set(unsigned i, TValue value) {
     return;
 }
 
-uint16_t Segment::growthFactor(uint16_t size) {
+ramint_t Segment::growthFactor(ramint_t size) {
     if (size == 0) {
         return 4;
     }
@@ -183,14 +185,18 @@ uint16_t Segment::growthFactor(uint16_t size) {
     if (size < 512) {
         return size * 5 / 3; // Grow by 1.66 rate
     }
-    return size + 256; // Grow by constant rate
+     // Grow by constant rate
+    if ((unsigned)size + 256 < MaxSize)
+        return size + 256;
+    else
+        return MaxSize;
 }
 
-void Segment::growByMin(uint16_t minSize) {
+void Segment::growByMin(ramint_t minSize) {
     growBy(max(minSize, growthFactor(size)));
 }
 
-void Segment::growBy(uint16_t newSize) {
+void Segment::growBy(ramint_t newSize) {
 #ifdef DEBUG_BUILD
     DMESG("growBy: %d", newSize);
     this->print();
@@ -221,7 +227,7 @@ void Segment::growBy(uint16_t newSize) {
     return;
 }
 
-void Segment::ensure(uint16_t newSize) {
+void Segment::ensure(ramint_t newSize) {
     if (newSize < size) {
         return;
     }
@@ -486,7 +492,7 @@ void error(PXT_ERROR code, int subcode) {
 uint16_t *bytecode;
 TValue *globals;
 
-unsigned *allocate(uint16_t sz) {
+unsigned *allocate(ramint_t sz) {
     unsigned *arr = new unsigned[sz];
     memset(arr, 0, sz * sizeof(unsigned));
     return arr;
@@ -545,15 +551,16 @@ void exec_binary(unsigned *pc) {
 
     initRuntime();
 
+    // sleep needed for HID interfaces
+    pxt::sleep_ms(500);
+
     ((unsigned (*)())startptr)();
 
 #ifdef PXT_MEMLEAK_DEBUG
     pxt::debugMemLeaks();
 #endif
 
-    while (1) {
-        sleep_ms(10000);
-    }
+    pxt::releaseFiber();
 }
 
 void start() {

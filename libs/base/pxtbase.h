@@ -40,6 +40,13 @@
 #define CONCAT_0(a, b) CONCAT_1(a, b)
 #define STATIC_ASSERT(e) enum { CONCAT_0(_static_assert_, __LINE__) = 1 / ((e) ? 1 : 0) };
 
+// this type limits size of arrays
+#ifdef __linux__
+#define ramint_t uint32_t
+#else
+#define ramint_t uint16_t
+#endif
+
 #if 0
 inline void *operator new(size_t, void *p) {
     return p;
@@ -84,12 +91,13 @@ extern "C" void target_panic(int error_code);
 extern "C" void target_reset();
 void sleep_ms(unsigned ms);
 void sleep_us(uint64_t us);
+void releaseFiber();
 int current_time_ms();
 void initRuntime();
 void sendSerial(const char *data, int len);
 int getSerialNumber();
 void registerWithDal(int id, int event, Action a, int flags = 16); // EVENT_LISTENER_DEFAULT_FLAGS
-void runInBackground(Action a);
+void runInParallel(Action a);
 void runForever(Action a);
 void waitForEvent(int id, int event);
 //%
@@ -163,7 +171,7 @@ TValue runAction0(Action a);
 Action mkAction(int reflen, int totallen, int startptr);
 // allocate [sz] words and clear them
 //%
-unsigned *allocate(uint16_t sz);
+unsigned *allocate(ramint_t sz);
 //%
 int templateHash();
 //%
@@ -328,16 +336,17 @@ class RefObject {
 class Segment {
   private:
     TValue *data;
-    uint16_t length;
-    uint16_t size;
+    ramint_t length;
+    ramint_t size;
 
-    static constexpr uint16_t MaxSize = 0xFFFF;
+    // this just gives max value of ramint_t
+    static constexpr ramint_t MaxSize = (((1U << (8 * sizeof(ramint_t) - 1)) - 1) << 1) + 1;
     static constexpr TValue DefaultValue = TAG_UNDEFINED;
 
-    static uint16_t growthFactor(uint16_t size);
-    void growByMin(uint16_t minSize);
-    void growBy(uint16_t newSize);
-    void ensure(uint16_t newSize);
+    static ramint_t growthFactor(ramint_t size);
+    void growByMin(ramint_t minSize);
+    void growBy(ramint_t newSize);
+    void ensure(ramint_t newSize);
 
   public:
     Segment() : data(nullptr), length(0), size(0){};

@@ -20,6 +20,7 @@ void forever(Action a) {
 //% async block="pause %pause=timePicker|ms"
 //% blockId=device_pause
 void pause(int ms) {
+    if (ms < 0) return;
     sleep_ms(ms);
 }
 

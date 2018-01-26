@@ -471,6 +471,11 @@ TNumber eors(TNumber a, TNumber b){BITOP (^)}
 TNumber orrs(TNumber a, TNumber b){BITOP(|)}
 
 //%
+TNumber bnot(TNumber a){
+    return fromInt(~toInt(a));
+}
+
+//%
 TNumber ands(TNumber a, TNumber b) {
     BITOP(&)
 }
