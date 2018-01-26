@@ -106,7 +106,7 @@ namespace keyboard {
     * Sends a sequence of keystrokes to the keyboard
     */
     //% blockId=keyboardType block="keyboard type %text"
-    //% blockGap=8
+    //% blockGap=8 weight=100
     void type(String text) {
         if (NULL != text)
             pxt::keyboard.type(text->data, text->length);
