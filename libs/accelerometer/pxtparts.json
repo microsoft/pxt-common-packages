@@ -1,0 +1,36 @@
+{
+    "accelerometer": {
+        "visual": {
+            "image": "lis3dh.svg",
+            "width": 100,
+            "height": 65.7,
+            "pinDistance": 7.84,
+            "pinLocations": [
+                {"x": 11, "y": 10.2},
+                {"x": 18.2, "y": 10.2},
+                {"x": 25.4, "y": 10.2},
+                {"x": 32.6, "y": 10.2},
+                {"x": 39.8, "y": 10.2},
+                {"x": 50, "y": 10.2}
+            ]
+        },
+        "numberOfPins": 6,
+        "instantiation": {
+            "kind": "function",
+            "fullyQualifiedName": "input.acceleration",
+            "argumentRoles": []
+        },
+        "pinDefinitions": [
+            {"target": "CS", "style": "male", "orientation": "+Y" },
+            {"target": "SDO", "style": "male", "orientation": "+Y" },
+            {"target": "SCL", "style": "male", "orientation": "+Y" },
+            {"target": "SDA", "style": "male", "orientation": "+Y" },
+            {"target": "threeVolt", "style": "male", "orientation": "+Y" },
+            {"target": "ground", "style": "male", "orientation": "+Y" }
+        ],
+        "assembly": [
+            {"part": true },
+            {"pinIndices": [0, 1, 2, 3, 4, 5]}
+        ]
+    }
+}
