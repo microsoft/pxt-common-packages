@@ -45,7 +45,7 @@ enum GamepadButton {
     Right = 15
 }
 
-//% icon="\uf11b" color="#a7a7a7"
+//% icon="\uf11b" color="#303030"
 namespace gamepad {
     /**
      * Maps to a standard layout button to the button index
