@@ -44,6 +44,7 @@ bool digitalRead(DigitalPin name) {
 //% name.fieldEditor="gridpicker"
 //% name.fieldOptions.width=220
 //% name.fieldOptions.columns=4
+//% value.fieldEditor=togglehighlow
 void digitalWrite(DigitalPin name, bool value) {
     PINOP(setDigitalValue(value));
 }
