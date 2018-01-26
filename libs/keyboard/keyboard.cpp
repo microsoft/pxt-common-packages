@@ -135,7 +135,7 @@ namespace keyboard {
     /**
     *
     */
-    //% blockId=keyboardMediaKey block="keyboard function key %key|%event"
+    //% blockId=keyboardFunctionKey block="keyboard function key %key|%event"
     //% blockGap=8
     void functionKey(KeyboardFunctionKey key, KeyboardKeyEvent event) {
         codal::FunctionKey ckey = (codal::FunctionKey)((int)codal::FunctionKey::F1Key + (int)key);
