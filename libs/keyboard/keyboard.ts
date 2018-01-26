@@ -1,7 +1,7 @@
 /**
  * Keyboard emulation
  */
-//% icon="\uf11c" color="#a7a7a7"
+//% icon="\uf11c" color="#303030"
 namespace keyboard {
 
 }
