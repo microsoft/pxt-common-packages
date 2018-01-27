@@ -16,12 +16,10 @@
         },
         "numberOfPins": 6,
         "instantiation": {
-            "kind": "function",
-            "fullyQualifiedName": "input.acceleration",
-            "argumentRoles": []
+            "kind": "singleton"
         },
         "pinDefinitions": [
-            {"target": "CS", "style": "male", "orientation": "+Y" },
+            {"target": "D1", "style": "male", "orientation": "+Y" },
             {"target": "SDO", "style": "male", "orientation": "+Y" },
             {"target": "SCL", "style": "male", "orientation": "+Y" },
             {"target": "SDA", "style": "male", "orientation": "+Y" },
