@@ -1,5 +1,10 @@
 namespace automation {
 
+    /**
+     * A PID controller.
+     * 
+     * Reference: Feedback System, Karl Johan Astrom & Rickard M. Murry
+     */
     //% fixedInstances
     export class PIDController {
         // proportional gain
@@ -33,7 +38,7 @@ namespace automation {
             this.b = 1;
             this.ulow = 0;
             this.uhigh = 0;
-            this.N = 10;
+            this.N = 2;
             this.ysp = 0;
             this.y = 0;
             this.u = 0;
@@ -56,12 +61,12 @@ namespace automation {
         //% group=PID
         //% inlineInputMode=inline
         //% weight=99
-        setGains(kp: number, ki: number, kd: number, b: number = 0.9) {
+        setGains(kp: number, ki: number, kd: number, b: number = 1) {
             kp = Math.max(0, kp);
             ki = Math.max(0, ki);
             kd = Math.max(0, kd);
             b = Math.clamp(0, 1, b);
-            
+
             // Bumpless parameter changes
             this.I += this.kp * (this.b * this.ysp - this.y) - kp * (b * this.ysp - this.y);
 
@@ -88,10 +93,10 @@ namespace automation {
          * @param N the filter gain, eg:10
          */
         //% blockId=pidSetDerivativeFilter block="set %pid|derivative filter %N"
-        //% N.min=5 N.max=20
+        //% N.min=2 N.max=20
         //% group=PID
         setDerivativeFilter(N: number) {
-            this.N = Math.clamp(5, 20, N);
+            this.N = Math.clamp(2, 20, N);
         }
 
         /**
@@ -110,38 +115,33 @@ namespace automation {
         //% group=PID
         //% weight=100
         compute(timestep: number, y: number): number {
-            // Control System Design, Astrom
             const h = timestep;
             const K = this.kp;
-            const Td = this.kd / K;
-            const Tt = this.ki == 0 ? 1 << 31 : Math.sqrt(this.kd / this.ki);
-            const satu = this.ulow < this.uhigh;
-            
-            // integral gain
-            const bi = this.ki * h; // K * h / Ti
-            //derivative gain
-            const ad = (2 * Td - this.N * h) / (2 * Td + this.N * h);
-            const bd = 2 * K * this.N * Td / (2 * Td + this.N * h);
-            const ao = Tt == 0 ? 0 : h / Tt;
-            
+
             // compute proportional part
             const P = K * (this.b * this.ysp - y);
 
-            // update derivative part
-            this.D = ad * this.D - bd * (y - this.y);
+            // update derivative part if any
+            if (this.kd) {
+                const Td = this.kd / K;
+                const ad = (2 * Td - this.N * h) / (2 * Td + this.N * h);
+                const bd = 2 * K * this.N * Td / (2 * Td + this.N * h);
+                this.D = ad * this.D - bd * (y - this.y);
+            }
 
-            // anti-windup
-            this.I += bi * (this.ysp - y);
-            if (satu && this.I < this.ulow)
-                this.I = this.ulow;
-            else if (satu && this.I > this.uhigh)
-                this.I = this.uhigh;
-            
             // compute temporary output
             const v = P + this.I + this.D;
 
             // actuator saturation
             const u = this.ulow < this.uhigh ? Math.clamp(this.ulow, this.uhigh, v) : v;
+
+            // anti-windup
+            if (this.ki) {
+                const Tt = this.kd / this.ki;
+                const bi = this.ki * h; // K * h / Ti
+                const ao = h / Tt;
+                this.I += bi * (this.ysp - y) + ao * (u - v);
+            }
 
             // update old process output
             this.y = y;
