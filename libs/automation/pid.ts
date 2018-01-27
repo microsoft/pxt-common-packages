@@ -111,11 +111,11 @@ namespace automation {
         /**
          * Computes the output based on the system state
          */
-        //% blockId=pidCompute block="%pid|compute for timestep %timestep|(s) at state %y"
+        //% blockId=pidCompute block="%pid|compute for timestep %timestep|(ms) at state %y"
         //% group=PID
         //% weight=100
         compute(timestep: number, y: number): number {
-            const h = timestep;
+            const h = timestep / 1000.0;
             const K = this.kp;
 
             // compute proportional part
