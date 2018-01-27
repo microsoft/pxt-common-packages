@@ -13,6 +13,8 @@ namespace automation {
         public ki: number;
         // derivative gain
         public kd: number;
+        // anti windup recovery, 0..1
+        public kt: number;
         // derivative gain limit
         public N: number;
         // proportional set point weight        
@@ -28,6 +30,9 @@ namespace automation {
         // maximum control value
         public uhigh: number;
 
+        // assign this value to log internal data
+        public log: (name: string, value: number) => void = undefined;
+
         private I: number;
         private D: number;
 
@@ -35,6 +40,7 @@ namespace automation {
             this.kp = 1;
             this.ki = 0;
             this.kd = 0;
+            this.kt = 0.5;
             this.b = 1;
             this.ulow = 0;
             this.uhigh = 0;
@@ -117,9 +123,16 @@ namespace automation {
         compute(timestep: number, y: number): number {
             const h = timestep / 1000.0;
             const K = this.kp;
+            const e = this.ysp - y;
+
+            if (this.log) {
+                this.log("y", y);
+                this.log("e", e);
+            }
 
             // compute proportional part
             const P = K * (this.b * this.ysp - y);
+            if (this.log) this.log("P", P);
 
             // update derivative part if any
             if (this.kd) {
@@ -127,20 +140,25 @@ namespace automation {
                 const ad = (2 * Td - this.N * h) / (2 * Td + this.N * h);
                 const bd = 2 * K * this.N * Td / (2 * Td + this.N * h);
                 this.D = ad * this.D - bd * (y - this.y);
+                if (this.log) this.log("D", this.D);
             }
 
             // compute temporary output
             const v = P + this.I + this.D;
+            if (this.log) this.log("v", v);
 
             // actuator saturation
             const u = this.ulow < this.uhigh ? Math.clamp(this.ulow, this.uhigh, v) : v;
+            if (this.log) this.log("u", u);
 
             // anti-windup
             if (this.ki) {
-                const Tt = this.kd / this.ki;
-                const bi = this.ki * h; // K * h / Ti
-                const ao = h / Tt;
-                this.I += bi * (this.ysp - y) + ao * (u - v);
+                const Ti = K / this.ki;
+                const Tt = this.kt * h / Ti;
+                const bi = this.ki * h;
+                const br = h / Tt;
+                this.I += bi * (this.ysp - y) + br * (u - v);
+                if (this.log) this.log("I", this.I);
             }
 
             // update old process output
