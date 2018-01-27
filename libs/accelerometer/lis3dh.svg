@@ -1,23 +1,37 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 16.9 16.9" id="svg4493">
-  <rect rx=".2" height="16.9" width="16.9" id="rect5038" fill="#5a86c2" stroke="#8e8e8e" stroke-width="0"/>
-  <circle cy="1.9" cx="1.8" id="path5042-7-6" r="1" fill="#fff" stroke="#000" stroke-width=".1"/>
-  <circle cy="1.9" cx="6.1" id="path5042-7-3" r="1" fill="#fff" stroke="#000" stroke-width=".1"/>
-  <circle cy="1.9" cx="10.3" id="path5042-7-1" r="1" fill="#fff" stroke="#000" stroke-width=".1"/>
-  <circle cy="1.9" cx="14.5" id="path5042-7-0" r="1" fill="#fff" stroke="#000" stroke-width=".1"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="84" height="64" viewBox="0 0 22.2 16.9" id="svg4493">
+  <rect rx=".3" height="16.9" width="22.2" id="rect5038" fill="#5a86c2" stroke="#8e8e8e" stroke-width="0"/>
   <text id="text5094" y="15.5" x=".9" style="line-height:1.25;-inkscape-font-specification:consolas" font-weight="400" font-size="3.4" letter-spacing="0" word-spacing="0" transform="scale(.99014 1.00996)" font-family="consolas" fill="#fff" stroke-width=".1">
     <tspan y="15.5" x=".9" id="tspan5092">LIS3DH</tspan>
   </text>
   <rect rx=".2" y="8.1" x="11.8" height="3.3" width="3.3" id="rect5096" stroke="#000" stroke-width=".1"/>
-  <text transform="matrix(0 -1.00996 .99014 0 0 0)" id="text5100-8-5" y="2.5" x="-6.2" style="line-height:1.25;-inkscape-font-specification:consolas" font-weight="400" font-size="1.9" letter-spacing="0" word-spacing="0" font-family="consolas" fill="#fff" stroke-width=".1">
-    <tspan y="2.5" x="-6.2" id="tspan5098-2-4">SCL</tspan>
-  </text>
-  <text transform="matrix(0 -1.00996 .99014 0 0 0)" id="text5100-8-5-4" y="6.7" x="-6.4" style="line-height:1.25;-inkscape-font-specification:consolas" font-weight="400" font-size="1.9" letter-spacing="0" word-spacing="0" font-family="consolas" fill="#fff" stroke-width=".1">
-    <tspan id="tspan5156" y="6.7" x="-6.4">SDA</tspan>
-  </text>
-  <text transform="matrix(0 -1.00996 .99014 0 0 0)" id="text5100-8-5-4-9" y="10.9" x="-6.2" style="line-height:1.25;-inkscape-font-specification:consolas" font-weight="400" font-size="1.9" letter-spacing="0" word-spacing="0" font-family="consolas" fill="#fff" stroke-width=".1">
-    <tspan id="tspan5156-5" y="10.9" x="-6.2">VCC</tspan>
-  </text>
-  <text transform="matrix(0 -1.00996 .99014 0 0 0)" id="text5100-8-5-4-9-3" y="15.3" x="-6.3" style="line-height:1.25;-inkscape-font-specification:consolas" font-weight="400" font-size="1.9" letter-spacing="0" word-spacing="0" font-family="consolas" fill="#fff" stroke-width=".1">
-    <tspan id="tspan5156-5-7" y="15.3" x="-6.3">GND</tspan>
-  </text>
+  <g id="g4585" fill="#fff" stroke-width=".1">
+    <circle r="1" id="path5042-7-6" cx="1.8" cy="1.9" stroke="#000"/>
+    <text word-spacing="0" letter-spacing="0" font-size="1.9" font-weight="400" style="line-height:1.25;-inkscape-font-specification:consolas" x="-6.2" y="2.5" id="text5100-8-5" transform="matrix(0 -1.00996 .99014 0 0 0)" font-family="consolas">
+      <tspan id="tspan5098-2-4" x="-6.2" y="2.5">INT</tspan>
+    </text>
+  </g>
+  <g id="g4595" transform="translate(2.6)" fill="#fff" stroke-width=".1">
+    <circle r="1" id="path5042-7-3" cx="8.4" cy="1.9" stroke="#000"/>
+    <text word-spacing="0" letter-spacing="0" font-size="1.9" font-weight="400" style="line-height:1.25;-inkscape-font-specification:consolas" x="-6.4" y="9.2" id="text5100-8-5-4" transform="matrix(0 -1.00996 .99014 0 0 0)" font-family="consolas">
+      <tspan x="-6.4" y="9.2" id="tspan5156">SDA</tspan>
+    </text>
+  </g>
+  <g id="g4600" transform="translate(4)" fill="#fff" stroke-width=".1">
+    <circle r="1" id="path5042-7-1" cx="11.8" cy="1.9" stroke="#000"/>
+    <text word-spacing="0" letter-spacing="0" font-size="1.9" font-weight="400" style="line-height:1.25;-inkscape-font-specification:consolas" x="-6.2" y="12.5" id="text5100-8-5-4-9" transform="matrix(0 -1.00996 .99014 0 0 0)" font-family="consolas">
+      <tspan x="-6.2" y="12.5" id="tspan5156-5">VCC</tspan>
+    </text>
+  </g>
+  <g id="g4605" transform="translate(5.3)" fill="#fff" stroke-width=".1">
+    <circle r="1" id="path5042-7-0" cx="15.1" cy="1.9" stroke="#000"/>
+    <text word-spacing="0" letter-spacing="0" font-size="1.9" font-weight="400" style="line-height:1.25;-inkscape-font-specification:consolas" x="-6.3" y="15.8" id="text5100-8-5-4-9-3" transform="matrix(0 -1.00996 .99014 0 0 0)" font-family="consolas">
+      <tspan x="-6.3" y="15.8" id="tspan5156-5-7">GND</tspan>
+    </text>
+  </g>
+  <g id="g4590" transform="translate(1.3)" fill="#fff" stroke-width=".1">
+    <circle r="1" id="path5042-7-6-2" cx="5.1" cy="1.9" stroke="#000"/>
+    <text word-spacing="0" letter-spacing="0" font-size="1.9" font-weight="400" style="line-height:1.25;-inkscape-font-specification:consolas" x="-6.1" y="5.8" id="text5100-8-5-47" transform="matrix(0 -1.00996 .99014 0 0 0)" font-family="consolas">
+      <tspan id="tspan5098-2-4-5" x="-6.1" y="5.8">SCL</tspan>
+    </text>
+  </g>
 </svg>
