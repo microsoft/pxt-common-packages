@@ -8,8 +8,7 @@ namespace gamepad {
     * Sets the button state to down
     */
     //% help=gamepad/set-button
-    //% blockId=joystickSetButton block="gamepad button %index=joystickStandardButton|%down"
-    //% down.fieldEditor=toggledownup
+    //% blockId=joystickSetButton block="gamepad button %index=joystickStandardButton|%down=toggleDownUp"
     //% weight=100
     void setButton(int index, bool down) {
         if (down)
