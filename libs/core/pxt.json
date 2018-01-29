@@ -30,7 +30,6 @@
         "dmac.cpp",
         "dmac.h",
         "timer.ts",
-        "fieldeditors.ts",
         "pxtparts.json"
     ],
     "testFiles": [

@@ -18,7 +18,8 @@
         "control.ts",
         "serial.cpp",
         "serial.ts",
-        "console.ts"
+        "console.ts",
+        "fieldeditors.ts"
     ],
     "testFiles": [
         "test.ts"
