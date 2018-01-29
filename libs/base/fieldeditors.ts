@@ -26,7 +26,7 @@ namespace fieldeditors {
      */
     //% shim=TD_ID blockHidden=1
     //% blockId=toggleOnOff block="%on"
-    //% down.fieldEditor=toggleonoff
+    //% on.fieldEditor=toggleonoff
     //% on.fieldOptions.decompileLiterals=true
     export function __onOff(on: boolean): boolean {
         return on;
