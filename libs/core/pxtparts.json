@@ -103,7 +103,7 @@
         ],
         "instantiation": {
             "kind": "function",
-            "fullyQualifiedName": "PwmOutPin.servoWrite",
+            "fullyQualifiedName": "PwmOnlyPin.servoWrite",
             "argumentRoles": [
                 {
                     "pinInstantiationIdx": 0,
