@@ -1,25 +1,30 @@
-//% weight=100 color=#0fbc11 icon=""
+/**
+ * A data logging framework
+ */
+//% weight=80 color=#0fbc11 icon=""
 namespace datalog {
     /**
      * A storage for datalog data
      */
-    export interface DatalogStorage {
+    export class DatalogStorage {
+        constructor() {
+        }
         /**
          * Initializes the storage
          */
-        init(): void;
+        init(): void {}
         /**
          * Appends the headers in datalog
          */
-        appendHeaders(headers: string[]): void;
+        appendHeaders(headers: string[]): void {}
         /**
          * Appends a row of data
          */
-        appendRow(values: number[]): void;
+        appendRow(values: number[]): void {}
         /**
          * Flushes any buffered data
          */
-        flush(): void;
+        flush(): void {}
     }
 
     let _headers: string[] = undefined;
@@ -122,8 +127,7 @@ namespace datalog {
      * Turns on or off datalogging
      * @param enabled 
      */
-    //% blockId=datalogEnabled block="datalog %enabled"
-    //% enabled.fieldEditor=fieldonoff
+    //% blockId=datalogEnabled block="datalog %enabled=toggleOnOff"
     export function setEnabled(enabled: boolean) {
         flush();
         _enabled = enabled;
