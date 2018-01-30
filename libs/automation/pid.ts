@@ -31,7 +31,7 @@ namespace automation {
         public uhigh: number;
 
         // assign this value to log internal data
-        public log: (name: string, value: number) => void = undefined;
+        public log: (name: string, value: number) => void;
 
         private I: number;
         private D: number;
