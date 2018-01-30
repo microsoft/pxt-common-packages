@@ -9,7 +9,7 @@ loops.forever(() => {
 
 The code you have in a ``||forever||`` loop will run and keep repeating itself the whole time your
 program is active. Code in other parts of your program won't stop while your ``||forever||``
-loop is running. This includes other ``||forever||`` loops and the [``||control:run in background||``](/reference/control/run-in-background) block.
+loop is running. This includes other ``||forever||`` loops and the [``||control:run in parallel||``](/reference/control/run-in-parallel) block.
 
 ## Parameters
 
@@ -36,4 +36,4 @@ loops.forever(() => {
 ## See also
 
 [``||while||``](/blocks/loops/while), [``||repeat||``](/blocks/loops/repeat),
-[``||run in background||``](/reference/control/run-in-background)
+[``||run in parallel||``](/reference/control/run-in-parallel)

@@ -1,0 +1,14 @@
+{
+    "name": "dsp",
+    "description": "Digital Signal Processing",
+    "files": [
+        "ns.ts",
+        "movingaveragefilter.ts"
+    ],
+    "testFiles": [
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core"
+    }
+}

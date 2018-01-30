@@ -29,7 +29,8 @@
         "ns.ts",
         "dmac.cpp",
         "dmac.h",
-        "timer.ts"
+        "timer.ts",
+        "pxtparts.json"
     ],
     "testFiles": [
         "test.ts"

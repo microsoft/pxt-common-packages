@@ -9,7 +9,9 @@
         "melodies.ts",
         "music.ts",
         "piano.ts",
-        "ns.ts"
+        "ns.ts",
+        "speaker.svg",
+        "pxtparts.json"        
     ],
     "testFiles": [
         "test.ts"

@@ -4,7 +4,7 @@ Program controls and events.
 
 ```cards
 control.millis();
-control.runInBackground(() => {
+control.runInParallel(() => {
     
 });
 control.reset();

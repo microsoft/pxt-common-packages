@@ -551,15 +551,16 @@ void exec_binary(unsigned *pc) {
 
     initRuntime();
 
+    // sleep needed for HID interfaces
+    pxt::sleep_ms(500);
+
     ((unsigned (*)())startptr)();
 
 #ifdef PXT_MEMLEAK_DEBUG
     pxt::debugMemLeaks();
 #endif
 
-    while (1) {
-        sleep_ms(10000);
-    }
+    pxt::releaseFiber();
 }
 
 void start() {
