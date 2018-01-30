@@ -70,7 +70,7 @@ namespace datalog {
             if (_samplingInterval <= 0 || control.millis() - _lastSampleTime >= _samplingInterval) {
                 // average data
                 if (_sampleCount > 1) {
-                    for(let i = 0; i < _row.length; ++i) {
+                    for(let i = 1; i < _row.length; ++i) {
                         _row[i] /= _sampleCount;
                     }
                 }
