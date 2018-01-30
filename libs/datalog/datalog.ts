@@ -12,19 +12,19 @@ namespace datalog {
         /**
          * Initializes the storage
          */
-        init(): void {}
+        init(): void { }
         /**
          * Appends the headers in datalog
          */
-        appendHeaders(headers: string[]): void {}
+        appendHeaders(headers: string[]): void { }
         /**
          * Appends a row of data
          */
-        appendRow(values: number[]): void {}
+        appendRow(values: number[]): void { }
         /**
          * Flushes any buffered data
          */
-        flush(): void {}
+        flush(): void { }
     }
 
     let _headers: string[] = undefined;
@@ -33,6 +33,9 @@ namespace datalog {
     let _start: number;
     let _storage: DatalogStorage;
     let _enabled = true;
+    let _samplingInterval = -1;
+    let _sampleCount = 0;
+    let _lastSampleTime = -1;
 
     function clear() {
         _headers = undefined;
@@ -40,7 +43,7 @@ namespace datalog {
     }
 
     function initRow() {
-        if (!_storage) return;
+        if (!_storage || _row) return;
 
         if (!_headers) {
             _headers = [];
@@ -49,6 +52,10 @@ namespace datalog {
             _storage.init();
         }
         _row = [];
+        _sampleCount = 1;
+        _lastSampleTime = control.millis();
+        const s = (_lastSampleTime - _start) / 1000;
+        addValue("time (s)", s);
     }
 
     function commitRow() {
@@ -60,11 +67,24 @@ namespace datalog {
                 _headersWritten = true;
             }
             // commit row data
-            _storage.appendRow(_row);
+            if (_samplingInterval <= 0 || control.millis() - _lastSampleTime >= _samplingInterval) {
+                // average data
+                if (_sampleCount > 1) {
+                    for(let i = 1; i < _row.length; ++i) {
+                        _row[i] /= _sampleCount;
+                    }
+                }
+                // append row
+                _storage.appendRow(_row);
+                // clear values
+                _row = undefined;
+                _sampleCount = 1;
+                _lastSampleTime = -1;
+            } else {
+                // don't store the data yet
+                _sampleCount++;
+            }
         }
-
-        // clear values
-        _row = undefined;
     }
 
     /**
@@ -73,12 +93,10 @@ namespace datalog {
     //% weight=100
     //% blockId=datalogAddRow block="datalog add row"
     export function addRow(): void {
-        if (!_enabled && _storage) return;
+        if (!_enabled || !_storage) return;
 
         commitRow();
         initRow();
-        const s = (control.millis() - _start) / 1000;
-        addValue("time (s)", s);
     }
 
     /**
@@ -99,7 +117,7 @@ namespace datalog {
                 _headers.push(name);
                 i = _headers.length - 1;
             }
-            _row[i] = value;
+            _row[i] += value;
         }
     }
 
@@ -121,6 +139,15 @@ namespace datalog {
     export function flush() {
         if (_headers && _storage)
             _storage.flush();
+    }
+
+    /**
+     * Sets the minimum number of milli seconds between rows
+     * @param millis milliseconds between each sample, eg: 50
+     */
+    //% blockId=datalogSetSamplingInterval block="set datalog sampling interval to %millis|(ms)"
+    export function setSampleInterval(millis: number) {
+        _samplingInterval = millis >> 0;
     }
 
     /**
