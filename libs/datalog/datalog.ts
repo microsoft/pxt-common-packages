@@ -1,9 +1,24 @@
 //% weight=100 color=#0fbc11 icon=""
 namespace datalog {
+    /**
+     * A storage for datalog data
+     */
     export interface DatalogStorage {
-        init(filename: string): void;
+        /**
+         * Initializes the storage
+         */
+        init(): void;
+        /**
+         * Appends the headers in datalog
+         */
         appendHeaders(headers: string[]): void;
+        /**
+         * Appends a row of data
+         */
         appendRow(values: number[]): void;
+        /**
+         * Flushes any buffered data
+         */
         flush(): void;
     }
 
@@ -11,7 +26,6 @@ namespace datalog {
     let _headersWritten: boolean = false;
     let _row: number[] = undefined;
     let _start: number;
-    let _filename = "datalog.csv";
     let _storage: DatalogStorage;
     let _enabled = true;
 
@@ -27,7 +41,7 @@ namespace datalog {
             _headers = [];
             _headersWritten = false;
             _start = control.millis();
-            _storage.init(_filename);
+            _storage.init();
         }
         _row = [];
     }
@@ -82,17 +96,6 @@ namespace datalog {
             }
             _row[i] = value;
         }
-    }
-
-    /**
-     * Starts a new data logger for the given file
-     * @param filename the filename, eg: "datalog.csv"
-     */
-    //%
-    export function setFile(filename: string) {
-        flush();
-        _filename = filename;
-        clear();
     }
 
     /**
