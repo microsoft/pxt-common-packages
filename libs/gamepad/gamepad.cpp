@@ -8,8 +8,8 @@ namespace gamepad {
     * Sets the button state to down
     */
     //% help=gamepad/set-button
-    //% blockId=joystickSetButton block="gamepad button %index=joystickStandardButton|%down"
-    //% down.fieldEditor=toggleupdown down.fieldOptions.inverted=true
+    //% blockId=joystickSetButton block="gamepad button %index=joystickStandardButton|%down=toggleDownUp"
+    //% weight=100
     void setButton(int index, bool down) {
         if (down)
             pxt::joystick.buttonDown(index);
@@ -20,8 +20,10 @@ namespace gamepad {
     /**
     * Sets the current move on the gamepad
     **/
+    //% blockId=gamepadMove block="gamepad %index move by x %x|y %y"
     //% help=gamepad/move
     //% index.min=0 index.max=1
+    //% blockGap=8
     void move(int index, int x, int y) {
         pxt::joystick.move(index, x, y);        
     }
@@ -29,6 +31,7 @@ namespace gamepad {
     /** 
     * Sets the throttle state
     */
+    //% blockId=gamepadSetThrottle block="gamepad set throttle %index|to %value"
     //% gamepad/set-throttle blockHidden=1
     //% index.min=0 index.max=1
     //% value.min=0 value.max=31
