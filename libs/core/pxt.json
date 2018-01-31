@@ -56,7 +56,9 @@
             "LIS3DH_",
             "FXOS8700_",
             "HF2_",
-            "PXT_REF_TAG_"
+            "PXT_REF_TAG_",
+            "MS_",
+            "SCSI_"
         ]
     },
     "dependencies": {
