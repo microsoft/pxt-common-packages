@@ -2,6 +2,10 @@
     "name": "storage",
     "description": "USB Pen-drive support and flash storage",
     "files": [
+        "SNORFS.cpp",
+        "SNORFS.h",
+        "GhostSNORFS.cpp",
+        "GhostSNORFS.h",
         "storage.cpp",
         "storage.ts",
         "shims.d.ts"
