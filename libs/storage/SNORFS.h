@@ -3,6 +3,8 @@
 
 #include "SPIFlash.h"
 
+#define DEVICE_FLASH_ERROR 950
+
 namespace codal
 {
 namespace snorfs

@@ -1,6 +1,7 @@
 #include "SNORFS.h"
 #include "CodalDmesg.h"
 #include "NotifyEvents.h"
+#include "MessageBus.h"
 #include <stddef.h>
 
 #define oops() target_panic(DEVICE_FLASH_ERROR)
@@ -14,6 +15,8 @@
 #endif
 
 using namespace codal::snorfs;
+
+static uint16_t snorfs_unlocked_event;
 
 #define SNORFS_LEVELING_THRESHOLD 100
 
@@ -53,6 +56,9 @@ FS::FS(SPIFlash &f) : flash(f)
     dirptr = 0;
     files = NULL;
     locked = false;
+
+    if (!snorfs_unlocked_event)
+        snorfs_unlocked_event = codal::allocateNotifyEvent();
 }
 
 void FS::feedRandom(uint32_t v)
@@ -588,7 +594,7 @@ bool FS::exists(const char *filename)
 void FS::lock()
 {
     while (locked)
-        fiber_wait_for_event(DEVICE_ID_NOTIFY, SNORFS_UNLOCKED);
+        fiber_wait_for_event(DEVICE_ID_NOTIFY, snorfs_unlocked_event);
     locked = true;
     mount();
 }
@@ -599,7 +605,7 @@ void FS::unlock()
         oops();
     locked = false;
 #ifndef SNORFS_TEST
-    Event(DEVICE_ID_NOTIFY, SNORFS_UNLOCKED);
+    Event(DEVICE_ID_NOTIFY, snorfs_unlocked_event);
 #endif
 }
 
