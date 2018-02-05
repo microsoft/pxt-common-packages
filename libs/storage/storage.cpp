@@ -8,12 +8,18 @@
 
 namespace storage {
 
+class PXTMSC : public GhostSNORFS {
+  public:
+    virtual const char *volumeLabel() { return "MAKECODE"; }
+    PXTMSC(snorfs::FS &fs) : GhostSNORFS(fs) {}
+};
+
 class WStorage {
   public:
     CODAL_MBED::SPI flashSPI;
     StandardSPIFlash flash;
     snorfs::FS fs;
-    GhostSNORFS msc;
+    PXTMSC msc;
     bool mounted;
 
     WStorage()
