@@ -20,7 +20,7 @@ namespace gamepad {
     /**
     * Sets the current move on the gamepad
     **/
-    //% blockId=gamepadMove block="gamepad %index move by x %x|y %y"
+    //% blockId=gamepadMove block="gamepad %index|move by x %x|y %y"
     //% help=gamepad/move
     //% index.min=0 index.max=1
     //% blockGap=8
