@@ -45,6 +45,7 @@ namespace pxt {
 #if CONFIG_ENABLED(DEVICE_USB)
 extern CodalUSB usb;
 extern HF2 hf2;
+extern WebHF2 webhf2;
 #if CONFIG_ENABLED(DEVICE_MOUSE)
 extern USBHIDMouse mouse;
 #endif

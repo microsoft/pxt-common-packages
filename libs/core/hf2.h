@@ -24,18 +24,27 @@ typedef struct
 class HF2 : public codal::USBHID
 {
 public:
-    HF2_Buffer pkt;
+    HF2_Buffer &pkt;
+
     int sendResponse(int size);
     int send(const void *data, int size, int flag);
     int recv();
     int sendResponseWithData(const void *data, int size);
 
-    HF2();
+    HF2(HF2_Buffer &pkt);
     virtual int endpointRequest();
     virtual int stdRequest(UsbEndpointIn &ctrl, USBSetup& setup);
     virtual const InterfaceInfo *getInterfaceInfo();
 
     int sendSerial(const void *data, int size, int isError = 0);
+};
+
+class WebHF2 : public HF2
+{
+public:
+    WebHF2(HF2_Buffer &pkt);
+    virtual const InterfaceInfo *getInterfaceInfo();
+    virtual const char *webUSBLandingPage() { return "pxt.io"; }
 };
 
 #endif

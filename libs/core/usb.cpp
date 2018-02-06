@@ -4,7 +4,12 @@ namespace pxt {
 
 #if CONFIG_ENABLED(DEVICE_USB)
 CodalUSB usb;
-HF2 hf2;
+
+// share the buffer; we will crash anyway if someone talks to us over both at the same time
+HF2_Buffer hf2buf;
+HF2 hf2(hf2buf);
+WebHF2 webhf2(hf2buf);
+
 #if CONFIG_ENABLED(DEVICE_MOUSE)
 USBHIDMouse mouse;
 #endif
@@ -41,17 +46,20 @@ void usb_init() {
     usb.add(joystick);
 #endif
     usb.add(hf2);
+    usb.add(webhf2);
     create_fiber(start_usb);
 }
 
-void dumpDmesg() {
-    hf2.sendSerial("\nDMESG:\n", 8);
-    hf2.sendSerial(codalLogStore.buffer, codalLogStore.ptr);
-    hf2.sendSerial("\n\n", 2);
-}
 
 void sendSerial(const char *data, int len) {
     hf2.sendSerial(data, len);
+    webhf2.sendSerial(data, len);
+}
+
+void dumpDmesg() {
+    sendSerial("\nDMESG:\n", 8);
+    sendSerial(codalLogStore.buffer, codalLogStore.ptr);
+    sendSerial("\n\n", 2);
 }
 
 #else
