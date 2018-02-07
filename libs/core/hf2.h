@@ -44,7 +44,7 @@ class WebHF2 : public HF2
 public:
     WebHF2(HF2_Buffer &pkt);
     virtual const InterfaceInfo *getInterfaceInfo();
-    virtual const char *webUSBLandingPage() { return "pxt.io"; }
+    virtual bool enableWebUSB() { return true; }
 };
 
 #endif
