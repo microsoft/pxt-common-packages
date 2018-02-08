@@ -1,0 +1,15 @@
+{
+    "name": "screen",
+    "description": "The screen library",
+    "files": [
+        "README.md",
+        "screen.cpp",
+        "enums.d.ts",
+        "shims.d.ts",
+        "ns.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core"
+    }
+}
