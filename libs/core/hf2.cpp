@@ -63,7 +63,7 @@ static const InterfaceInfo ifaceInfo = {
 
 int HF2::stdRequest(UsbEndpointIn &ctrl, USBSetup &setup)
 {
-    if (setup.bRequest == GET_DESCRIPTOR)
+    if (setup.bRequest == USB_REQ_GET_DESCRIPTOR)
     {
         if (setup.wValueH == 0x21)
         {
@@ -283,7 +283,42 @@ int HF2::endpointRequest()
     return sendResponse(0);
 }
 
-HF2::HF2() : USBHID() {}
+HF2::HF2(HF2_Buffer &p) : USBHID(), pkt(p) {}
+
+//
+//
+// WebUSB
+//
+//
+
+WebHF2::WebHF2(HF2_Buffer &p) : HF2(p) {}
+
+static const InterfaceInfo ifaceInfoWeb = {
+    NULL,
+    0,
+    1,
+    {
+        2,    // numEndpoints
+        0xff, /// class code - HID
+        42, // subclass
+        0x01, // protocol
+        0x00, //
+        0x00, //
+    },
+    {USB_EP_TYPE_INTERRUPT, 1},
+    {USB_EP_TYPE_INTERRUPT, 1},
+};
+
+const InterfaceInfo *WebHF2::getInterfaceInfo()
+{
+    return &ifaceInfoWeb;
+}
+
+//
+//
+// Debugger
+//
+//
 
 struct ExceptionContext {
     uint32_t excReturn; // 0xFFFFFFF9
@@ -316,6 +351,8 @@ void bkptPaused() {
         // DMESG("BKPT");
         hf2.pkt.resp.eventId = HF2_EV_DBG_PAUSED;
         hf2.sendResponseWithData(&pausedData, sizeof(pausedData));
+        webhf2.pkt.resp.eventId = HF2_EV_DBG_PAUSED;
+        webhf2.sendResponseWithData(&pausedData, sizeof(pausedData));
         // TODO use an event
         for (int i = 0; i < 20; ++i) {
             if (resume)

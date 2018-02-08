@@ -580,6 +580,10 @@ namespace pins {
 Buffer createBuffer(int size);
 }
 
+namespace String_ {
+int compare(String s, String that);
+}
+
 // The ARM Thumb generator in the JavaScript code is parsing
 // the hex file and looks for the magic numbers as present here.
 //

@@ -551,9 +551,6 @@ void exec_binary(unsigned *pc) {
 
     initRuntime();
 
-    // sleep needed for HID interfaces
-    pxt::sleep_ms(500);
-
     ((unsigned (*)())startptr)();
 
 #ifdef PXT_MEMLEAK_DEBUG
