@@ -515,10 +515,13 @@ class BoxedBuffer : public RefObject {
     BoxedBuffer() : RefObject(PXT_REF_TAG_BUFFER) {}
 };
 
+// the first byte of data indicates the format - currently 0xF1 or 0xF4 to 1 or 4 bit bitmaps
+// second byte indicates width in pixels
+// the height is deduced from the buffer length and width
+// just like ordinary buffers, these can be layed out in flash
 class BoxedImage : public RefObject {
   public:
-    uint16_t width;
-    uint16_t height;
+    uint16_t length;
     uint8_t data[0];
     BoxedImage() : RefObject(PXT_REF_TAG_IMAGE) {}
 };
