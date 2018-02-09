@@ -1,0 +1,35 @@
+{
+    "accelerometer": {
+        "visual": {
+            "image": "lis3dh.svg",
+            "width": 96,
+            "height": 50,
+            "pinDistance": 20,
+            "pinLocations": [
+                {"x": 8, "y": 50},
+                {"x": 28, "y": 50},
+                {"x": 48, "y": 50},
+                {"x": 68, "y": 50},
+                {"x": 88, "y": 50}
+            ]
+        },
+        "numberOfPins": 5,
+        "instantiation": {
+            "kind": "singleton"
+        },
+        "pinDefinitions": [
+            {"target": "D1", "style": "male", "orientation": "+Y" },
+            {"target": "SCL", "style": "male", "orientation": "+Y" },
+            {"target": "SDA", "style": "male", "orientation": "+Y" },
+            {"target": "threeVolt", "style": "male", "orientation": "+Y" },
+            {"target": "ground", "style": "male", "orientation": "+Y" }
+        ],
+        "assembly": [
+            {"part": true },
+            {"pinIndices": [4]},
+            {"pinIndices": [0]},
+            {"pinIndices": [1, 2]},
+            {"pinIndices": [3]}
+        ]
+    }
+}

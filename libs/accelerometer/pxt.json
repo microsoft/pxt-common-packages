@@ -7,7 +7,9 @@
         "axis.h",
         "shims.d.ts",
         "enums.d.ts",
-        "ns.ts"
+        "ns.ts",
+        "pxtparts.json",
+        "lis3dh.svg"
     ],
     "testFiles": [
         "test.ts"
