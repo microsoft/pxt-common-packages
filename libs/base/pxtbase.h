@@ -493,6 +493,7 @@ class RefRefLocal : public RefObject {
 #define PXT_REF_TAG_IMAGE 3
 #define PXT_REF_TAG_NUMBER 32
 #define PXT_REF_TAG_ACTION 33
+#define PXT_REF_TAG_IMAGE 34
 
 class BoxedNumber : public RefObject {
   public:
@@ -514,8 +515,17 @@ class BoxedBuffer : public RefObject {
     BoxedBuffer() : RefObject(PXT_REF_TAG_BUFFER) {}
 };
 
+class BoxedImage : public RefObject {
+  public:
+    uint16_t width;
+    uint16_t height;
+    uint8_t data[0];
+    BoxedImage() : RefObject(PXT_REF_TAG_IMAGE) {}
+};
+
 typedef BoxedBuffer *Buffer;
 typedef BoxedString *String;
+typedef BoxedImage *Image;
 
 // keep in sync with github/pxt/pxtsim/libgeneric.ts
 enum class NumberFormat {
