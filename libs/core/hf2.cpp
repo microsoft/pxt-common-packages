@@ -86,6 +86,7 @@ const InterfaceInfo *HF2::getInterfaceInfo()
 
 int HF2::sendSerial(const void *data, int size, int isError)
 {
+    if (!gotSomePacket) return DEVICE_OK;
     return send(data, size, isError ? HF2_FLAG_SERIAL_ERR : HF2_FLAG_SERIAL_OUT);
 }
 
@@ -314,12 +315,6 @@ static const InterfaceInfo ifaceInfoWeb = {
 const InterfaceInfo *WebHF2::getInterfaceInfo()
 {
     return &ifaceInfoWeb;
-}
-
-int WebHF2::sendSerial(const void *data, int size, int isError)
-{
-    if (!gotSomePacket) return DEVICE_OK;
-    return HF2::sendSerial(data, size, isError);
 }
 
 //
