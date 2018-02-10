@@ -15,7 +15,6 @@
     do {                                                                                           \
     } while (0)
 
-
 #define MEMDBG_ENABLED 0
 #define MEMDBG NOLOG
 
@@ -310,9 +309,14 @@ class RefObject {
 #endif
     }
 
+    inline bool isReadOnly()
+    {
+        return refcnt == 0xffff;
+    }
+
     // Increment/decrement the ref-count. Decrementing to zero deletes the current object.
     inline void ref() {
-        if (refcnt == 0xffff)
+        if (isReadOnly())
             return;
         check(refcnt > 1, ERR_REF_DELETED);
         // DMESG("INCR "); this->print();
@@ -320,7 +324,7 @@ class RefObject {
     }
 
     inline void unref() {
-        if (refcnt == 0xffff)
+        if (isReadOnly())
             return;
         check(refcnt > 1, ERR_REF_DELETED);
         check((refcnt & 1), ERR_REF_DELETED);
@@ -486,6 +490,33 @@ class RefRefLocal : public RefObject {
     RefRefLocal();
 };
 
+// the first byte of data indicates the format - currently 0xF1 or 0xF4 to 1 or 4 bit bitmaps
+// second byte indicates width in pixels
+// the height is deduced from the buffer length and width
+// just like ordinary buffers, these can be layed out in flash
+class RefImage : public RefObject {
+    unsigned *_buffer;
+    uint8_t _data[0];
+  public:
+    RefImage(BoxedBuffer *buf) : RefObject(PXT_REF_TAG_IMAGE), _buffer(buf) {}
+    RefImage(uint32_t sz) : RefObject(PXT_REF_TAG_IMAGE), _buffer((BoxedBuffer*)((sz << 1) | 1)) {}
+    bool hasBuffer() { return !((uint32_t)_buffer & 1); }
+    Buffer buffer() { return hasBuffer() ? _buffer : NULL; }
+    void setBuffer(Buffer b);
+
+    uint8_t *data() { return hasBuffer() ? _buffer->data : _data; }
+    int length() { return hasBuffer() ? _buffer->length : ((uint32_t)buffer >> 1); }
+
+    int height();
+    int width();
+    int byteWidth();
+    int bpp();
+
+    void destroy();
+    void print();
+};
+
+
 // note: this is hardcoded in PXT (hexfile.ts)
 
 #define PXT_REF_TAG_STRING 1
@@ -493,7 +524,6 @@ class RefRefLocal : public RefObject {
 #define PXT_REF_TAG_IMAGE 3
 #define PXT_REF_TAG_NUMBER 32
 #define PXT_REF_TAG_ACTION 33
-#define PXT_REF_TAG_IMAGE 34
 
 class BoxedNumber : public RefObject {
   public:
@@ -515,20 +545,9 @@ class BoxedBuffer : public RefObject {
     BoxedBuffer() : RefObject(PXT_REF_TAG_BUFFER) {}
 };
 
-// the first byte of data indicates the format - currently 0xF1 or 0xF4 to 1 or 4 bit bitmaps
-// second byte indicates width in pixels
-// the height is deduced from the buffer length and width
-// just like ordinary buffers, these can be layed out in flash
-class BoxedImage : public RefObject {
-  public:
-    uint16_t length;
-    uint8_t data[0];
-    BoxedImage() : RefObject(PXT_REF_TAG_IMAGE) {}
-};
-
 typedef BoxedBuffer *Buffer;
 typedef BoxedString *String;
-typedef BoxedImage *Image;
+typedef RefImage *Image;
 
 // keep in sync with github/pxt/pxtsim/libgeneric.ts
 enum class NumberFormat {
