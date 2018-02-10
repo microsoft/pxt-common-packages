@@ -209,6 +209,8 @@ int HF2::endpointRequest()
 
 #define checkDataSize(str, add) usb_assert(sz == 8 + (int)sizeof(cmd->str) + (int)(add))
 
+    gotSomePacket = true;
+
     switch (cmdId) {
     case HF2_CMD_INFO:
         return sendResponseWithData(uf2_info(), strlen(uf2_info()));
@@ -283,7 +285,7 @@ int HF2::endpointRequest()
     return sendResponse(0);
 }
 
-HF2::HF2(HF2_Buffer &p) : USBHID(), pkt(p) {}
+HF2::HF2(HF2_Buffer &p) : USBHID(), pkt(p), gotSomePacket(false) {}
 
 //
 //
@@ -312,6 +314,12 @@ static const InterfaceInfo ifaceInfoWeb = {
 const InterfaceInfo *WebHF2::getInterfaceInfo()
 {
     return &ifaceInfoWeb;
+}
+
+int WebHF2::sendSerial(const void *data, int size, int isError)
+{
+    if (!gotSomePacket) return DEVICE_OK;
+    return HF2::sendSerial(data, size, isError);
 }
 
 //
