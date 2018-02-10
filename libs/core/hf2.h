@@ -36,7 +36,7 @@ public:
     virtual int endpointRequest();
     virtual int stdRequest(UsbEndpointIn &ctrl, USBSetup& setup);
     virtual const InterfaceInfo *getInterfaceInfo();
-    virtual int sendSerial(const void *data, int size, int isError = 0);
+    int sendSerial(const void *data, int size, int isError = 0);
 };
 
 class WebHF2 : public HF2
@@ -45,7 +45,6 @@ public:
     WebHF2(HF2_Buffer &pkt);
     virtual const InterfaceInfo *getInterfaceInfo();
     virtual bool enableWebUSB() { return true; }
-    virtual int sendSerial(const void *data, int size, int isError = 0);
 };
 
 #endif
