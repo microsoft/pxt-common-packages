@@ -309,10 +309,7 @@ class RefObject {
 #endif
     }
 
-    inline bool isReadOnly()
-    {
-        return refcnt == 0xffff;
-    }
+    inline bool isReadOnly() { return refcnt == 0xffff; }
 
     // Increment/decrement the ref-count. Decrementing to zero deletes the current object.
     inline void ref() {
@@ -497,9 +494,10 @@ class RefRefLocal : public RefObject {
 class RefImage : public RefObject {
     unsigned *_buffer;
     uint8_t _data[0];
+
   public:
     RefImage(BoxedBuffer *buf) : RefObject(PXT_REF_TAG_IMAGE), _buffer(buf) {}
-    RefImage(uint32_t sz) : RefObject(PXT_REF_TAG_IMAGE), _buffer((BoxedBuffer*)((sz << 1) | 1)) {}
+    RefImage(uint32_t sz) : RefObject(PXT_REF_TAG_IMAGE), _buffer((BoxedBuffer *)((sz << 1) | 1)) {}
     bool hasBuffer() { return !((uint32_t)_buffer & 1); }
     Buffer buffer() { return hasBuffer() ? _buffer : NULL; }
     void setBuffer(Buffer b);
@@ -512,10 +510,15 @@ class RefImage : public RefObject {
     int byteWidth();
     int bpp();
 
+    uint8_t *pix(int x, int y);
+    uint8_t fillMask(color c);
+    bool inRange(int x, int y);
+    bool clamp(int *x, int *y);
+    void makeWritable();
+
     void destroy();
     void print();
 };
-
 
 // note: this is hardcoded in PXT (hexfile.ts)
 
