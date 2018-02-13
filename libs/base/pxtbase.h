@@ -487,38 +487,7 @@ class RefRefLocal : public RefObject {
     RefRefLocal();
 };
 
-// the first byte of data indicates the format - currently 0xF1 or 0xF4 to 1 or 4 bit bitmaps
-// second byte indicates width in pixels
-// the height is deduced from the buffer length and width
-// just like ordinary buffers, these can be layed out in flash
-class RefImage : public RefObject {
-    unsigned *_buffer;
-    uint8_t _data[0];
-
-  public:
-    RefImage(BoxedBuffer *buf) : RefObject(PXT_REF_TAG_IMAGE), _buffer(buf) {}
-    RefImage(uint32_t sz) : RefObject(PXT_REF_TAG_IMAGE), _buffer((BoxedBuffer *)((sz << 1) | 1)) {}
-    bool hasBuffer() { return !((uint32_t)_buffer & 1); }
-    Buffer buffer() { return hasBuffer() ? _buffer : NULL; }
-    void setBuffer(Buffer b);
-
-    uint8_t *data() { return hasBuffer() ? _buffer->data : _data; }
-    int length() { return hasBuffer() ? _buffer->length : ((uint32_t)buffer >> 1); }
-
-    int height();
-    int width();
-    int byteWidth();
-    int bpp();
-
-    uint8_t *pix(int x, int y);
-    uint8_t fillMask(color c);
-    bool inRange(int x, int y);
-    bool clamp(int *x, int *y);
-    void makeWritable();
-
-    void destroy();
-    void print();
-};
+typedef int color;
 
 // note: this is hardcoded in PXT (hexfile.ts)
 
@@ -547,6 +516,45 @@ class BoxedBuffer : public RefObject {
     uint8_t data[0];
     BoxedBuffer() : RefObject(PXT_REF_TAG_BUFFER) {}
 };
+
+
+// the first byte of data indicates the format - currently 0xF1 or 0xF4 to 1 or 4 bit bitmaps
+// second byte indicates width in pixels
+// third byte indicates the height (which should also match the size of the buffer)
+// just like ordinary buffers, these can be layed out in flash
+class RefImage : public RefObject {
+    unsigned _buffer;
+    uint8_t _data[0];
+
+  public:
+    RefImage(BoxedBuffer *buf);
+    RefImage(uint32_t sz);
+
+    bool hasBuffer() { return !((uint32_t)_buffer & 1); }
+    BoxedBuffer *buffer() { return hasBuffer() ? (BoxedBuffer *)_buffer : NULL; }
+    void setBuffer(BoxedBuffer *b);
+
+    uint8_t *data() { return hasBuffer() ? buffer()->data : _data; }
+    int length() { return hasBuffer() ? buffer()->length : (_buffer >> 1); }
+
+    int height();
+    int width();
+    int byteWidth();
+    int bpp();
+
+    uint8_t *pix() { return data() + 3; }
+    uint8_t *pix(int x, int y);
+    uint8_t fillMask(color c);
+    bool inRange(int x, int y);
+    bool clamp(int *x, int *y);
+    void makeWritable();
+
+    void destroy();
+    void print();
+};
+
+RefImage *mkImage(int w, int h, int bpp);
+
 
 typedef BoxedBuffer *Buffer;
 typedef BoxedString *String;
