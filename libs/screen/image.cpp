@@ -41,39 +41,43 @@ int RefImage::height() {
 }
 
 void RefImage::makeWritable() {
-    if (hasBuffer() && buffer()->isReadOnly()) {
-        auto b = mkBuffer(data(), length());
-        decrRC(buffer());
-        _buffer = b;
+    if (hasBuffer()) {
+        if (buffer()->isReadOnly()) {
+            auto b = mkBuffer(data(), length());
+            decrRC(buffer());
+            _buffer = (unsigned)b;
+        }
+    } else {
+        _buffer |= 2;
     }
 }
 
 uint8_t *RefImage::pix(int x, int y) {
-    uint8_t *d = data()[3 + byteWidth() * y];
-    if (x)
+    uint8_t *d = &data()[3 + byteWidth() * y];
+    if (x) {
         if (bpp() == 1)
             d += x >> 3;
         else if (bpp() == 4)
             d += x >> 1;
+    }
     return d;
 }
 
 uint8_t RefImage::fillMask(color c) {
-    return img->bpp() == 1 ? (c & 1) * 0xff : 0x11 * (c & 0xf);
+    return this->bpp() == 1 ? (c & 1) * 0xff : 0x11 * (c & 0xf);
 }
 
 bool RefImage::inRange(int x, int y) {
     return 0 <= x && x < width() && 0 <= y && y < height();
 }
 
-bool RefImage::clamp(int *x, int *y) {
+void RefImage::clamp(int *x, int *y) {
     *x = min(max(*x, 0), width() - 1);
     *y = min(max(*y, 0), height() - 1);
 }
 
-RefImage::RefImage(BoxedBuffer *buf) : PXT_VTABLE_INIT(RefImage), _buffer(buf) {}
-RefImage::RefImage(uint32_t sz)
-    : PXT_VTABLE_INIT(RefImage), _buffer((BoxedBuffer *)((sz << 1) | 1)) {}
+RefImage::RefImage(BoxedBuffer *buf) : PXT_VTABLE_INIT(RefImage), _buffer((unsigned)buf) {}
+RefImage::RefImage(uint32_t sz) : PXT_VTABLE_INIT(RefImage), _buffer((sz << 2) | 3) {}
 
 Image mkImage(int width, int height, int bpp) {
     if (width < 0 || height < 0 || width > 255 || height > 2000)
@@ -82,9 +86,10 @@ Image mkImage(int width, int height, int bpp) {
         return NULL;
     uint32_t sz = 3 + ((width * bpp + 7) / 8) * height;
     Image r = new (::operator new(sizeof(RefImage) + sz)) RefImage(sz);
-    r->data[0] = 0xf0 | bpp;
-    r->data[1] = width;
-    r->data[2] = height;
+    auto d = r->data();
+    d[0] = 0xf0 | bpp;
+    d[1] = width;
+    d[2] = height;
     MEMDBG("mkImage: %d X %d => %p", width, height, r);
     return r;
 }
@@ -110,7 +115,7 @@ Image create(int width, int height) {
 Image ofBuffer(Buffer buf) {
     if (!buf || buf->length < 4)
         return NULL;
-    if (buf[0] != 0xf1 && buf[0] != IMAGE_TAG)
+    if (buf->data[0] != 0xf1 && buf->data[0] != IMAGE_TAG)
         return NULL;
     return new RefImage(buf);
 }
@@ -122,7 +127,7 @@ namespace ImageMethods {
 /**
  * Get the width of the image
  */
-//%
+//% property
 int width(Image img) {
     return img->width();
 }
@@ -130,7 +135,7 @@ int width(Image img) {
 /**
  * Get the height of the image
  */
-//%
+//% property
 int height(Image img) {
     return img->height();
 }
@@ -142,9 +147,10 @@ int height(Image img) {
 void set(Image img, int x, int y, color c) {
     if (!img->inRange(x, y))
         return;
+    img->makeWritable();
     auto ptr = img->pix(x, y);
     if (img->bpp() == 1) {
-        uint8_t mask = 1 << 7 - (x & 7);
+        uint8_t mask = 0x80 >> (x & 7);
         if (c)
             *ptr |= mask;
         else
@@ -166,7 +172,7 @@ int get(Image img, int x, int y) {
         return 0;
     auto ptr = img->pix(x, y);
     if (img->bpp() == 1) {
-        uint8_t mask = 1 << (x & 7);
+        uint8_t mask = 0x80 >> (x & 7);
         return (*ptr & mask) ? 1 : 0;
     } else if (img->bpp() == 4) {
         if (x & 1)
@@ -174,6 +180,7 @@ int get(Image img, int x, int y) {
         else
             return *ptr >> 4;
     }
+    return 0;
 }
 
 /**
@@ -181,7 +188,8 @@ int get(Image img, int x, int y) {
  */
 //%
 void fill(Image img, color c) {
-    memset(data() + 3, img->fillMask(c), length() - 3);
+    img->makeWritable();
+    memset(img->pix(), img->fillMask(c), img->length() - 3);
 }
 
 /**
@@ -201,7 +209,8 @@ void _fillRect(Image img, int xy, int wh, color c) {
     w = x2 - x + 1;
     h = y2 - y + 1;
 
-    int d = img->width() - w;
+    img->makeWritable();
+
     auto bw = img->byteWidth();
     uint8_t f = img->fillMask(c);
 
@@ -209,7 +218,7 @@ void _fillRect(Image img, int xy, int wh, color c) {
     while (h-- > 0) {
         if (img->bpp() == 1) {
             auto ptr = p;
-            uint8_t mask = 1 << 7 - (x & 7);
+            uint8_t mask = 0x80 >> (x & 7);
 
             for (int i = 0; i < w; ++i) {
                 if (mask == 0) {
@@ -271,6 +280,7 @@ Image clone(Image img) {
  */
 //%
 void flipX(Image img) {
+    img->makeWritable();
     // TODO
 }
 
@@ -279,6 +289,7 @@ void flipX(Image img) {
  */
 //%
 void flipY(Image img) {
+    img->makeWritable();
     // TODO
 }
 
@@ -287,20 +298,22 @@ void flipY(Image img) {
  */
 //%
 void scroll(Image img, int dx, int dy) {
+    img->makeWritable();
     auto bw = img->byteWidth();
-    auto d = img->data();
     auto h = img->height();
     if (dy < 0) {
         dy = -dy;
         if (dy < h)
-            memmove(img->pix(), img->pix(0, dy), (h - dy) * bw) else dy = h;
-        memset(img->pix(0, h - dy), 0, dy * bw)
+            memmove(img->pix(), img->pix(0, dy), (h - dy) * bw);
+        else
+            dy = h;
+        memset(img->pix(0, h - dy), 0, dy * bw);
     } else if (dy > 0) {
         if (dy < h)
             memmove(img->pix(0, dy), img->pix(), (h - dy) * bw);
         else
             dy = h;
-        memset(img->pix(0, 0), 0, dy * bw)
+        memset(img->pix(), 0, dy * bw);
     }
     // TODO implement dx
 }
@@ -314,13 +327,13 @@ const uint8_t nibdouble[] = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
  * Stretches the image horizontally by 100%
  */
 //%
-Image doubleX(Image img) {
-    Image r = create(img->width() * 2, img->height());
+Image doubledX(Image img) {
+    Image r = mkImage(img->width() * 2, img->height(), img->bpp());
     auto src = img->pix();
     auto dst = r->pix();
     auto h = img->height();
     auto w = img->width();
-    auto dbl = bpp() == 1 ? bitdouble : nibdouble;
+    auto dbl = img->bpp() == 1 ? bitdouble : nibdouble;
 
     for (int i = 0; i < h; ++i) {
         for (int j = 0; j < w; j += 2) {
@@ -339,11 +352,12 @@ Image doubleX(Image img) {
  * Stretches the image vertically by 100%
  */
 //%
-Image doubleY(Image img) {
-    Image r = create(img->width(), img->height() * 2);
+Image doubledY(Image img) {
+    Image r = mkImage(img->width(), img->height() * 2, img->bpp());
     auto src = img->pix();
     auto dst = r->pix();
     auto bw = img->byteWidth();
+    auto h = img->height();
 
     for (int i = 0; i < h; ++i) {
         memcpy(dst, src, bw);
@@ -360,9 +374,9 @@ Image doubleY(Image img) {
  * Stretches the image in both directions by 100%
  */
 //%
-Image double_(Image) {
-    Image tmp = img->doubleX();
-    Image r = tmp->doubleY();
+Image doubled(Image img) {
+    Image tmp = doubledX(img);
+    Image r = doubledY(tmp);
     decrRC(tmp);
     return r;
 }
@@ -374,13 +388,13 @@ bool drawImageCore(Image img, Image from, int x, int y, int color) {
     auto sw = img->width();
 
     if (x + w <= 0)
-        return;
+        return false;
     if (x >= sw)
-        return;
+        return false;
     if (y + h <= 0)
-        return;
+        return false;
     if (y >= sh)
-        return;
+        return false;
 
     auto len = x < 0 ? min(sw, w + x) : min(sw - x, w);
     auto tbp = img->bpp();
@@ -419,7 +433,8 @@ bool drawImageCore(Image img, Image from, int x, int y, int color) {
                 if (left > 0) {
                     int curr = *data << shift;
                     if (off0 <= off && off <= off1) {
-                        uint8_t v = ((curr >> 8) | prev) & (0xff << (8 - left)) if (color == -1) {
+                        uint8_t v = ((curr >> 8) | prev) & (0xff << (8 - left));
+                         if (color == -1) {
                             if (*off & v)
                                 return true;
                         }
@@ -483,6 +498,8 @@ bool drawImageCore(Image img, Image from, int x, int y, int color) {
             }
         }
     }
+
+    return false;
 }
 
 /**
@@ -490,6 +507,7 @@ bool drawImageCore(Image img, Image from, int x, int y, int color) {
  */
 //%
 void drawImage(Image img, Image from, int x, int y) {
+    img->makeWritable();
     drawImageCore(img, from, x, y, 0);
 }
 
@@ -512,8 +530,9 @@ bool overlapsWith(Image img, Image other, int x, int y) {
  * Draw an icon (monochromatic image) using given color
  */
 //%
-_drawIcon(Image img, Image icon, int xy, color c) {
-    drawImageCore(img, icon, XX(xy), YY(xy), c)
+void _drawIcon(Image img, Image icon, int xy, color c) {
+    img->makeWritable();
+    drawImageCore(img, icon, XX(xy), YY(xy), c);
 }
 
 } // namespace ImageMethods

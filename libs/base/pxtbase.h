@@ -530,12 +530,14 @@ class RefImage : public RefObject {
     RefImage(BoxedBuffer *buf);
     RefImage(uint32_t sz);
 
-    bool hasBuffer() { return !((uint32_t)_buffer & 1); }
+    bool hasBuffer() { return !(_buffer & 1); }
     BoxedBuffer *buffer() { return hasBuffer() ? (BoxedBuffer *)_buffer : NULL; }
     void setBuffer(BoxedBuffer *b);
+    bool isDirty() { return (_buffer & 3) == 3; }
+    void clearDirty() { if (isDirty()) _buffer &= ~2; }
 
     uint8_t *data() { return hasBuffer() ? buffer()->data : _data; }
-    int length() { return hasBuffer() ? buffer()->length : (_buffer >> 1); }
+    int length() { return hasBuffer() ? buffer()->length : (_buffer >> 2); }
 
     int height();
     int width();
@@ -546,7 +548,7 @@ class RefImage : public RefObject {
     uint8_t *pix(int x, int y);
     uint8_t fillMask(color c);
     bool inRange(int x, int y);
-    bool clamp(int *x, int *y);
+    void clamp(int *x, int *y);
     void makeWritable();
 
     void destroy();
