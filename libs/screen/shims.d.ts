@@ -32,7 +32,7 @@ declare interface Image {
      * Set pixel color
      */
     //% shim=ImageMethods::set
-    set(x: int32, y: int32, c: color): void;
+    set(x: int32, y: int32, c: int32): void;
 
     /**
      * Get a pixel color
@@ -44,7 +44,7 @@ declare interface Image {
      * Fill entire image with a given color
      */
     //% shim=ImageMethods::fill
-    fill(c: color): void;
+    fill(c: int32): void;
 
     /**
      * Return a copy of the current image
@@ -99,6 +99,12 @@ declare interface Image {
      */
     //% shim=ImageMethods::drawImage
     drawImage(from: Image, x: int32, y: int32): void;
+
+    /**
+     * Draw given image with transparent background on the current image
+     */
+    //% shim=ImageMethods::drawTransparentImage
+    drawTransparentImage(from: Image, x: int32, y: int32): void;
 
     /**
      * Check if the current image "collides" with another

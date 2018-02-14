@@ -192,13 +192,7 @@ void fill(Image img, int c) {
     memset(img->pix(), img->fillMask(c), img->length() - 3);
 }
 
-//%
-void _fillRect(Image img, int xy, int wh, int c) {
-    int x = XX(xy);
-    int y = YY(xy);
-    int w = XX(wh);
-    int h = YY(wh);
-
+void fillRectCore(Image img, int x, int y, int w, int h, int c) {
     int x2 = x + w - 1;
     int y2 = y + h - 1;
     img->clamp(&x2, &y2);
@@ -220,12 +214,12 @@ void _fillRect(Image img, int xy, int wh, int c) {
             for (int i = 0; i < w; ++i) {
                 if (mask == 0) {
                     if (w - i >= 8) {
-                        *ptr++ = f;
+                        *++ptr = f;
                         i += 7;
                         continue;
                     } else {
                         mask = 0x80;
-                        ptr++;
+                        ++ptr;
                     }
                 }
                 if (c)
@@ -258,6 +252,11 @@ void _fillRect(Image img, int xy, int wh, int c) {
         }
         p += bw;
     }
+}
+
+//%
+void _fillRect(Image img, int xy, int wh, int c) {
+    fillRectCore(img, XX(xy), YY(xy), XX(wh), YY(wh), c);
 }
 
 /**
@@ -517,6 +516,16 @@ bool drawImageCore(Image img, Image from, int x, int y, int color) {
  */
 //%
 void drawImage(Image img, Image from, int x, int y) {
+    img->makeWritable();
+    fillRectCore(img, x, y, from->width(), from->height(), 0);
+    drawImageCore(img, from, x, y, 0);
+}
+
+/**
+ * Draw given image with transparent background on the current image
+ */
+//%
+void drawTransparentImage(Image img, Image from, int x, int y) {
     img->makeWritable();
     drawImageCore(img, from, x, y, 0);
 }

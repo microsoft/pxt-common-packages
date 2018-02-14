@@ -104,7 +104,7 @@ class Sprite {
     }
 
     _draw() {
-        screen.drawImage(this.image, this.left(), this.top())
+        screen.drawTransparentImage(this.image, this.left(), this.top())
     }
 
     _update(dt: number) {
