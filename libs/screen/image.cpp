@@ -337,7 +337,7 @@ Image doubledX(Image img) {
     auto src = img->pix();
     auto dst = r->pix();
     auto h = img->height();
-    auto bw = img->byteWidth();
+    auto bw = r->byteWidth();
     auto dbl = img->bpp() == 1 ? bitdouble : nibdouble;
 
     for (int i = 0; i < h; ++i) {
@@ -422,8 +422,6 @@ bool drawImageCore(Image img, Image from, int x, int y, int color) {
                 int x1 = x + w + (x & 7);
                 int prev = 0;
 
-                //DMESG("x=%d x1=%d shift=%d off=%d", x,x1,shift,off - img->pix());
-
                 while (x < x1 - 8) {
                     int curr = *data++ << shift;
                     if (off0 <= off && off <= off1) {
@@ -440,8 +438,6 @@ bool drawImageCore(Image img, Image from, int x, int y, int color) {
                     prev = curr;
                     x += 8;
                 }
-
-                //DMESG("AFT x=%d x1=%d shift=%d off=%d", x,x1,shift,off - img->pix());
 
                 int left = x1 - x;
                 if (left > 0) {
