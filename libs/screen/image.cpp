@@ -144,7 +144,7 @@ int height(Image img) {
  * Set pixel color
  */
 //%
-void set(Image img, int x, int y, color c) {
+void set(Image img, int x, int y, int c) {
     if (!img->inRange(x, y))
         return;
     img->makeWritable();
@@ -187,13 +187,13 @@ int get(Image img, int x, int y) {
  * Fill entire image with a given color
  */
 //%
-void fill(Image img, color c) {
+void fill(Image img, int c) {
     img->makeWritable();
     memset(img->pix(), img->fillMask(c), img->length() - 3);
 }
 
 //%
-void _fillRect(Image img, int xy, int wh, color c) {
+void _fillRect(Image img, int xy, int wh, int c) {
     int x = XX(xy);
     int y = YY(xy);
     int w = XX(wh);
@@ -532,7 +532,7 @@ bool overlapsWith(Image img, Image other, int x, int y) {
 //  byte 3...N: data 1 bit per pixels, low order bit printed first, lines aligned to byte
 
 //%
-void _drawIcon(Image img, Image icon, int xy, color c) {
+void _drawIcon(Image img, Image icon, int xy, int c) {
     img->makeWritable();
     drawImageCore(img, icon, XX(xy), YY(xy), c);
 }

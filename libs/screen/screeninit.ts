@@ -1,6 +1,6 @@
 // This file would be usually overridden by the target.
 
-let screen = image.create(128, 128)
+let screen = image.create(178, 128)
 
 namespace _screen_internal {
     //% shim=pxt::updateScreen
@@ -11,4 +11,8 @@ namespace _screen_internal {
     })
 
     updateScreen(screen)
+
+    export function _stats(msg: string) {
+        // show the msg somewhere - it contains frame rate etc
+    }
 }

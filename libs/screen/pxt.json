@@ -2,7 +2,6 @@
     "name": "screen",
     "description": "The screen library",
     "files": [
-        "README.md",
         "screen.cpp",
         "image.cpp",
         "image.ts",

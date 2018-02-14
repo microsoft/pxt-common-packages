@@ -26,8 +26,8 @@ namespace control {
                 let runtime = control.millis() - loopStart
                 timeInSample += runtime
                 framesInSample++
-                if (timeInSample > 1000) {
-                    //image._stats(`render: ${Math.round(timeInSample / framesInSample * 1000)}us`)
+                if (timeInSample > 1000 || framesInSample > 30) {
+                    _screen_internal._stats(`render: ${Math.round(timeInSample / framesInSample * 1000)}us`)
                     timeInSample = 0
                     framesInSample = 0
                 }
