@@ -337,14 +337,13 @@ Image doubledX(Image img) {
     auto src = img->pix();
     auto dst = r->pix();
     auto h = img->height();
-    auto w = img->width();
+    auto bw = img->byteWidth();
     auto dbl = img->bpp() == 1 ? bitdouble : nibdouble;
 
     for (int i = 0; i < h; ++i) {
-        for (int j = 0; j < w; j += 2) {
-            if (img->bpp() == 1)
-                *dst++ = dbl[*src >> 4];
-            if (j != w - 1)
+        for (int j = 0; j < bw; j += 2) {
+            *dst++ = dbl[*src >> 4];
+            if (j != bw - 1)
                 *dst++ = dbl[*src & 0xf];
             src++;
         }
@@ -367,8 +366,9 @@ Image doubledY(Image img) {
     for (int i = 0; i < h; ++i) {
         memcpy(dst, src, bw);
         dst += bw;
-        memcpy(dst + bw, src, bw);
+        memcpy(dst, src, bw);
         dst += bw;
+
         src += bw;
     }
 

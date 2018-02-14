@@ -49,8 +49,9 @@ e0606c766666e600 3000703030307800 0c000c0c0ccccc78 e060666c786ce600 703030303030
         let img = image.ofBuffer(tmp)
         for (let i = 0; i < f.data.length; i += sz) {
             tmp.write(3, f.data.slice(i, sz))
-            data.write(dst, img.doubled().cloneAsBuffer().slice(3))
-            dst += 2 * f.charHeight * newByteWidth
+            let dbl = img.doubled().cloneAsBuffer().slice(3)
+            data.write(dst, dbl)
+            dst += dbl.length
         }
         f.doubledCache = {
             charWidth: f.charWidth * 2,
