@@ -8,8 +8,8 @@
 #error "Invalid IMAGE_BITS"
 #endif
 
-#define XX(v) ((uint32_t)(v)&0xffff)
-#define YY(v) ((uint32_t)(v) >> 16)
+#define XX(v) (int)(((int16_t)(v)))
+#define YY(v) (int)(((int16_t)(v) >> 16))
 
 namespace pxt {
 
@@ -192,9 +192,6 @@ void fill(Image img, color c) {
     memset(img->pix(), img->fillMask(c), img->length() - 3);
 }
 
-/**
- * Fill a rectangle
- */
 //%
 void _fillRect(Image img, int xy, int wh, color c) {
     int x = XX(xy);
@@ -273,6 +270,14 @@ Image clone(Image img) {
     memcpy(r->data(), img->data(), img->length());
     MEMDBG("mkImageClone: %d X %d => %p", img->width(), img->height(), r);
     return r;
+}
+
+/**
+ * Return a copy of the current image as a buffer
+ */
+//%
+Buffer cloneAsBuffer(Image img) {
+    return mkBuffer(img->data(), img->length());
 }
 
 /**
@@ -520,15 +525,12 @@ bool overlapsWith(Image img, Image other, int x, int y) {
 }
 
 // Image format:
-//  byte 0: magic 0xf4 - 4 bit color; 0xf0 is monochromatic
+//  byte 0: magic 0xf4 - 4 bit color; 0xf1 is monochromatic
 //  byte 1: width in pixels
 //  byte 2: height in pixels
 //  byte 3...N: data 4 bits per pixels, high order nibble printed first, lines aligned to byte
 //  byte 3...N: data 1 bit per pixels, low order bit printed first, lines aligned to byte
 
-/**
- * Draw an icon (monochromatic image) using given color
- */
 //%
 void _drawIcon(Image img, Image icon, int xy, color c) {
     img->makeWritable();

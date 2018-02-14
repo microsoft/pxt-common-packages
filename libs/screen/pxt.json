@@ -5,9 +5,11 @@
         "README.md",
         "screen.cpp",
         "image.cpp",
-        "enums.d.ts",
+        "image.ts",
+        "text.ts",
+        "frame.ts",
         "shims.d.ts",
-        "ns.ts"
+        "screeninit.ts"
     ],
     "public": true,
     "dependencies": {

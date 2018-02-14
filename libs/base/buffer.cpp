@@ -190,6 +190,17 @@ void write(Buffer buf, int dstOffset, Buffer src) {
 }
 }
 
+namespace control {
+/**
+ * Create a new zero-initialized buffer.
+ * @param size number of bytes in the buffer
+ */
+//%
+Buffer createBuffer(int size) {
+    return mkBuffer(NULL, size);
+}
+}
+
 namespace pxt {
 static int writeBytes(uint8_t *dst, uint8_t *src, int length, bool swapBytes, int szLeft) {
     if (szLeft < length) {
