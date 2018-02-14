@@ -1,18 +1,4 @@
 // Auto-generated. Do not edit.
-declare namespace image {
-
-    /**
-     * Create new empty (transparent) image
-     */
-    //% shim=image::create
-    function create(width: int32, height: int32): Image;
-
-    /**
-     * Create new image with given content
-     */
-    //% shim=image::ofBuffer
-    function ofBuffer(buf: Buffer): Image;
-}
 
 
 declare interface Image {
@@ -51,12 +37,6 @@ declare interface Image {
      */
     //% shim=ImageMethods::clone
     clone(): Image;
-
-    /**
-     * Return a copy of the current image as a buffer
-     */
-    //% shim=ImageMethods::cloneAsBuffer
-    cloneAsBuffer(): Buffer;
 
     /**
      * Flips (mirrors) pixels horizontally in the current image
@@ -111,6 +91,26 @@ declare interface Image {
      */
     //% shim=ImageMethods::overlapsWith
     overlapsWith(other: Image, x: int32, y: int32): boolean;
+}
+declare namespace image {
+
+    /**
+     * Create new empty (transparent) image
+     */
+    //% shim=image::create
+    function create(width: int32, height: int32): Image;
+
+    /**
+     * Create new image with given content
+     */
+    //% shim=image::ofBuffer
+    function ofBuffer(buf: Buffer): Image;
+
+    /**
+     * Double the size of an icon
+     */
+    //% shim=image::doubledIcon
+    function doubledIcon(icon: Buffer): Buffer;
 }
 
 // Auto-generated. Do not edit. Really.

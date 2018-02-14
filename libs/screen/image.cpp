@@ -76,7 +76,9 @@ void RefImage::clamp(int *x, int *y) {
     *y = min(max(*y, 0), height() - 1);
 }
 
-RefImage::RefImage(BoxedBuffer *buf) : PXT_VTABLE_INIT(RefImage), _buffer((unsigned)buf) {}
+RefImage::RefImage(BoxedBuffer *buf) : PXT_VTABLE_INIT(RefImage), _buffer((unsigned)buf) {
+    incrRC(buf);
+}
 RefImage::RefImage(uint32_t sz) : PXT_VTABLE_INIT(RefImage), _buffer((sz << 2) | 3) {}
 
 Image mkImage(int width, int height, int bpp) {
@@ -94,33 +96,22 @@ Image mkImage(int width, int height, int bpp) {
     return r;
 }
 
-} // namespace pxt
-
-namespace image {
-/**
- * Create new empty (transparent) image
- */
-//%
-Image create(int width, int height) {
-    Image r = mkImage(width, height, IMAGE_BITS);
-    if (r)
-        memset(r->data() + 3, 0, r->length() - 3);
-    return r;
-}
-
-/**
- * Create new image with given content
- */
-//%
-Image ofBuffer(Buffer buf) {
+bool isValidImage(Buffer buf) {
     if (!buf || buf->length < 4)
-        return NULL;
-    if (buf->data[0] != 0xf1 && buf->data[0] != IMAGE_TAG)
-        return NULL;
-    return new RefImage(buf);
+        return false;
+    
+    if (buf->data[0] != 0xf1 && buf->data[0] != 0xf4)
+        return false;
+    
+    int bpp = buf->data[0] & 0xf;
+    int sz = buf->data[2] * ((buf->data[1] * bpp + 7) >> 3);
+    if (3 + sz != buf->length)
+        return false;
+    
+    return true;
 }
 
-} // namespace image
+} // namespace pxt
 
 namespace ImageMethods {
 
@@ -272,14 +263,6 @@ Image clone(Image img) {
 }
 
 /**
- * Return a copy of the current image as a buffer
- */
-//%
-Buffer cloneAsBuffer(Image img) {
-    return mkBuffer(img->data(), img->length());
-}
-
-/**
  * Flips (mirrors) pixels horizontally in the current image
  */
 //%
@@ -332,6 +315,9 @@ const uint8_t nibdouble[] = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
  */
 //%
 Image doubledX(Image img) {
+    if (img->width() > 126)
+        return NULL;
+
     Image r = mkImage(img->width() * 2, img->height(), img->bpp());
     auto src = img->pix();
     auto dst = r->pix();
@@ -356,6 +342,9 @@ Image doubledX(Image img) {
  */
 //%
 Image doubledY(Image img) {
+    if (img->height() > 126)
+        return NULL;
+
     Image r = mkImage(img->width(), img->height() * 2, img->bpp());
     auto src = img->pix();
     auto dst = r->pix();
@@ -543,12 +532,59 @@ bool overlapsWith(Image img, Image other, int x, int y) {
 //  byte 1: width in pixels
 //  byte 2: height in pixels
 //  byte 3...N: data 4 bits per pixels, high order nibble printed first, lines aligned to byte
-//  byte 3...N: data 1 bit per pixels, low order bit printed first, lines aligned to byte
+//  byte 3...N: data 1 bit per pixels, high order bit printed first, lines aligned to byte
 
 //%
-void _drawIcon(Image img, Image icon, int xy, int c) {
+void _drawIcon(Image img, Buffer icon, int xy, int c) {
+    if (!isValidImage(icon) || icon->data[0] != 0xf1)
+        return;
+
     img->makeWritable();
-    drawImageCore(img, icon, XX(xy), YY(xy), c);
+    auto ii = new RefImage(icon);
+    drawImageCore(img, ii, XX(xy), YY(xy), c);
+    decrRC(ii);
 }
 
 } // namespace ImageMethods
+
+namespace image {
+/**
+ * Create new empty (transparent) image
+ */
+//%
+Image create(int width, int height) {
+    Image r = mkImage(width, height, IMAGE_BITS);
+    if (r)
+        memset(r->data() + 3, 0, r->length() - 3);
+    return r;
+}
+
+/**
+ * Create new image with given content
+ */
+//%
+Image ofBuffer(Buffer buf) {
+    if (!isValidImage(buf))
+        return NULL;
+    return new RefImage(buf);
+}
+
+/**
+ * Double the size of an icon
+ */
+//%
+Buffer doubledIcon(Buffer icon) {
+    if (!isValidImage(icon))
+        return NULL;
+    
+    auto r = new RefImage(icon);
+    auto t = ImageMethods::doubled(r);
+    auto res = mkBuffer(t->data(), t->length());
+    decrRC(r);
+    decrRC(t);
+    
+    return res;
+}
+
+} // namespace image
+

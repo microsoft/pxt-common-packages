@@ -46,10 +46,9 @@ e0606c766666e600 3000703030307800 0c000c0c0ccccc78 e060666c786ce600 703030303030
         tmp[1] = f.charWidth
         tmp[2] = f.charHeight
         let dst = 0
-        let img = image.ofBuffer(tmp)
         for (let i = 0; i < f.data.length; i += sz) {
             tmp.write(3, f.data.slice(i, sz))
-            let dbl = img.doubled().cloneAsBuffer().slice(3)
+            let dbl = image.doubledIcon(tmp).slice(3)
             data.write(dst, dbl)
             dst += dbl.length
         }
@@ -103,7 +102,6 @@ namespace helpers {
         imgBuf[0] = 0xf1
         imgBuf[1] = font.charWidth
         imgBuf[2] = font.charHeight
-        let ximg = image.ofBuffer(imgBuf)
         while (cp < text.length) {
             let ch = text.charCodeAt(cp++)
             if (ch == 10) {
@@ -116,7 +114,7 @@ namespace helpers {
                 imgBuf.fill(0, 3)
             else
                 imgBuf.write(3, font.data.slice(idx, charSize))
-            img.drawIcon(ximg, x, y, color)
+            img.drawIcon(imgBuf, x, y, color)
             x += font.charWidth
         }
     }
