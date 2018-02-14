@@ -44,7 +44,7 @@ of those types of servos, find out what pulse times move the shaft where you wan
 ### PWM
 
 The ``||set servo pulse||`` block is useful for sending other [PWM](/reference/pins/what-is-pwm) signals as
-long as you use a 20 millisecond signalling period. 
+long as you use a 20 millisecond signalling period.
 
 ## Parameters
 
@@ -60,7 +60,7 @@ Turn a standard serve to 135 degrees connected to pin `A1`. Wait for 3 seconds a
 
 ```blocks
 pins.A1.servoSetPulse(1750)
-loops.pause(3000)
+pause(3000)
 pins.A1.servoWrite(1500)
 ```
 

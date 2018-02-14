@@ -18,7 +18,7 @@ Shift an `orange` pixel from the beginning of the pixel strip to the end.
 let strip = light.createStrip()
 strip.setPixelColor(0, Colors.Orange)
 for (let i = 0; i < strip.length() - 1; i++) {
-    loops.pause(500)
+    pause(500)
     strip.move(LightMove.Shift, 1)
 }
 ```

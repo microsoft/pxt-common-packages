@@ -20,7 +20,7 @@ receiving board think about the number it just got.
 ```blocks
 for (let i = 0; i <= 9; i++) {
     network.cableSendNumber(i);
-    loops.pause(500);
+    pause(500);
 }
 ```
 

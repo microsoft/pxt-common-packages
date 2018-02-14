@@ -19,9 +19,9 @@ started when it's finished.
 Write a 10-digit number to the serial port many, many times.
 
 ```blocks
-loops.forever(() => {
+forever(() => {
     serial.writeNumber(1234567890);
-    loops.pause(5000);
+    pause(5000);
 });
 ```
 

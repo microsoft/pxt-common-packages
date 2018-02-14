@@ -47,7 +47,7 @@ let pixels = light.createStrip();
 
 control.runInParallel(() => {
     while (true) {
-        loops.pause(2000);
+        pause(2000);
         control.raiseEvent(myTimer, timerTimeout);
     }
 })

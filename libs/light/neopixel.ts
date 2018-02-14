@@ -402,7 +402,7 @@ namespace light {
          * @param length number of pixels in the range, eg: 4
          */
         //% blockId="light_range" block="%strip|range from %start|with %length|pixels"
-        //% help="light/neopixelstrip/range"   
+        //% help="light/neopixelstrip/range"
         //% parts="neopixel"
         //% weight=99 blockGap=30
         range(start: number, length: number): NeoPixelStrip {
@@ -641,7 +641,7 @@ namespace light {
                         tempColor = "";
                         if (pi == n) {
                             this.show();
-                            loops.pause(interval);
+                            pause(interval);
                             pi = 0;
                             break;
                         }

@@ -12,7 +12,7 @@ light.rainbowCycleAnimation();
 ## Example
 
 ```blocks
-loops.forever(() => {
+forever(() => {
     light.builtin.showAnimationFrame(light.rainbowCycleAnimation())
 })
 ```

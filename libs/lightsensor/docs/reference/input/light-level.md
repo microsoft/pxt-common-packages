@@ -39,7 +39,7 @@ If you carry the @boardname@ around to different places with different light lev
 ```blocks
 let pixels = light.createStrip();
 
-loops.forever(function() {
+forever(function() {
     pixels.graph(
         input.lightLevel(),
         0

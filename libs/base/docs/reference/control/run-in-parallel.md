@@ -21,7 +21,7 @@ let pixels = light.createStrip();
 control.runInParallel(() => {
     while (spinit) {
         pixels.move(LightMove.Rotate, 1);
-        loops.pause(200);
+        pause(200);
     }
 })
 ```
@@ -34,9 +34,9 @@ let spinit = true;
 let pixels = light.createStrip();
 
 pixels.setPixelColor(0, Colors.Blue);
-loops.pause(5000);
+pause(5000);
 pixels.setPixelColor(0, Colors.Blue);
-loops.pause(5000);
+pause(5000);
 spinit = false;
 pixels.clear();
 ```
@@ -68,13 +68,13 @@ input.buttonA.onEvent(ButtonEvent.Click, () => {
         pixels.setPixelColor(0, Colors.Blue);
         while (spinit) {
             pixels.move(LightMove.Rotate, 1);
-            loops.pause(250);
+            pause(250);
         }
     })
 })
 spinit = true;
 for (let i = 0; i < 5; i++) {
-    loops.pause(1000);
+    pause(1000);
     pixels.setPixelColor(0, Colors.Blue);
 }
 ```

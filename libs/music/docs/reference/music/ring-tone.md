@@ -31,7 +31,7 @@ speeds up, the pitch of the tone gets higher. If it slows down, the
 pitch gets lower. It's fun -- try it!
 
 ```blocks
-loops.forever(() => {
+forever(() => {
     music.ringTone(input.acceleration(Dimension.X));
 })
 ```

@@ -14,7 +14,7 @@ input value to keep the pin at is when it's not pulsed. You do this by giving it
 with [``||pins:set pull||``](/reference/pins/set-pull).
 
 You wait for a pulse on a pin, going from either `high` to `low`, or `low` to `high`. A pulse **value** of `high` is
-used when you are waiting for an input change from `low` to `high`. A pulse **value** of `low` is used to wait for 
+used when you are waiting for an input change from `low` to `high`. A pulse **value** of `low` is used to wait for
 a change of input going from `high` to `low`.
 
 When it notices a pulse in the direction it's waiting for, ``||pins:pulse in||`` stops waiting and tells you
@@ -36,21 +36,21 @@ is in microseconds (1 second = 1000000 microseconds).
 ## Example #ex1
 
 Check for a `low` pulse on pin `D5` every one-half of a second. Make the first pixel on the pixel strip `red`
-if there was a pulse. 
+if there was a pulse.
 
 ```blocks
 let pulseTime = 0;
 let pixels = light.createStrip();
 pins.D5.setPull(PinPullMode.PullUp)
 
-loops.forever(function() {
+forever(function() {
     pulseTime = pins.D5.pulseIn(PulseValue.Low)
     if (pulseTime > 0) {
         pixels.setPixelColor(0, Colors.Red)
     } else {
-        pixels.setPixelColor(0, Colors.Black)        
+        pixels.setPixelColor(0, Colors.Black)
     }
-    loops.pause(500)
+    pause(500)
 })
 ```
 

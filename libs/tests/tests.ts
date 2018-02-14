@@ -85,14 +85,14 @@ namespace tests {
             _tests = [];
             control.runInParallel(function () {
                 // should run after on start
-                loops.pause(100)
+                pause(100)
                 run()
             })
         }
         _tests.push(new Test(name, handler));
     }
 
-    /** 
+    /**
      * Checks a boolean condition
      */
     //% blockId=testAssert block="assert %message|%condition"
@@ -121,7 +121,7 @@ namespace tests {
 
     /**
      * Registers code to be called at various points in the test execution
-     * @param handler 
+     * @param handler
      */
     //% blockGap=8
     //% weight=10

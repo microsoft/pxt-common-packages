@@ -3,7 +3,7 @@
 Pause a part of the program for some number of milliseconds.
 
 ```sig
-loops.pause(400)
+pause(400)
 ```
 
 When code in a block comes to a ``||control:pause||``, it will wait the amount of time you tell it to. Code
@@ -22,7 +22,7 @@ Light up to `5` pixels but wait one-half second before lighting each pixel.
 let pixels = light.createStrip();
 for (let i = 0; i < 5; i++) {
     pixels.setPixelColor(i, Colors.Green)
-    loops.pause(500)
+    pause(500)
 }
 ```
 

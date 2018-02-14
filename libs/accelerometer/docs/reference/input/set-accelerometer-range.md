@@ -22,7 +22,7 @@ will measure up to 4 g. Then, write to **serial** the acceleration measured when
 
 ```blocks
 input.setAccelerometerRange(AcceleratorRange.FourG)
-loops.forever(() => {
+forever(() => {
     serial.writeNumber(input.acceleration(Dimension.X))
 })
 ```
