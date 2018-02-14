@@ -9,7 +9,7 @@
 #endif
 
 #define XX(v) (int)(((int16_t)(v)))
-#define YY(v) (int)(((int16_t)(v) >> 16))
+#define YY(v) (int)(((int16_t)(((int32_t)(v)) >> 16)))
 
 namespace pxt {
 
@@ -392,6 +392,8 @@ bool drawImageCore(Image img, Image from, int x, int y, int color) {
     auto sh = img->height();
     auto sw = img->width();
 
+    //DMESG("drawIMG at (%d,%d) w=%d bw=%d", x, y, img->width(), img->byteWidth() );
+
     if (x + w <= 0)
         return false;
     if (x >= sw)
@@ -404,18 +406,23 @@ bool drawImageCore(Image img, Image from, int x, int y, int color) {
     auto len = x < 0 ? min(sw, w + x) : min(sw - x, w);
     auto tbp = img->bpp();
     auto fbp = from->bpp();
+    auto x0 = x;
 
     for (int i = 0; i < h; ++i, ++y) {
         if (0 <= y && y < sh) {
             if (tbp == 1 && fbp == 1) {
+                x = x0;
+
                 auto data = from->pix(0, i);
-                int shift = 8 + (7 - (x & 7));
+                int shift = 8 - (x & 7);
                 auto off = img->pix(x, y);
                 auto off0 = img->pix(0, y);
                 auto off1 = img->pix(img->width() - 1, y);
 
-                int x1 = x + w + shift;
+                int x1 = x + w + (x & 7);
                 int prev = 0;
+
+                //DMESG("x=%d x1=%d shift=%d off=%d", x,x1,shift,off - img->pix());
 
                 while (x < x1 - 8) {
                     int curr = *data++ << shift;
@@ -433,6 +440,8 @@ bool drawImageCore(Image img, Image from, int x, int y, int color) {
                     prev = curr;
                     x += 8;
                 }
+
+                //DMESG("AFT x=%d x1=%d shift=%d off=%d", x,x1,shift,off - img->pix());
 
                 int left = x1 - x;
                 if (left > 0) {
