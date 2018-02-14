@@ -22,7 +22,7 @@ Move a photon across the entire length of the pixel strip.
 let strip = light.createStrip()
 for (let i = 0; i < strip.length(); i++) {
     strip.photonForward(1)
-    loops.pause(150)
+    pause(150)
 }
 ```
 ## See also

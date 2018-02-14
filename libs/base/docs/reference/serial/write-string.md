@@ -18,9 +18,9 @@ a new line.
 Writes the word `JUMBO` to the serial port a bunch of times, without any new lines.
 
 ```blocks
-loops.forever(() => {
+forever(() => {
     serial.writeString("JUMBO");
-    loops.pause(1000);
+    pause(1000);
 });
 ```
 

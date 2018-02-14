@@ -75,7 +75,7 @@ let pixels = light.createStrip()
 
 control.runInParallel(() => {
     for (let i = 0; i < 2; i++) {
-        loops.pause(1000)
+        pause(1000)
     control.raiseEvent(pixelLighter, i)
     }
 })

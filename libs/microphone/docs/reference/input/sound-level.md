@@ -17,7 +17,7 @@ Use the pixels to make a sound meter. If loud sounds are detected, more pixels l
 let lastLevel = 0;
 let pixels = light.createStrip();
 
-loops.forever(() => {
+forever(() => {
     let level = input.soundLevel();
     if (lastLevel != level) {
         pixels.clear();

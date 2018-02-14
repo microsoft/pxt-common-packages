@@ -17,7 +17,7 @@ namespace control {
         millis(): number {
             return control.millis() - this.start;
         }
-        
+
         /**
          * Gets the elapsed time in seconds since the last reset
          */
@@ -41,7 +41,7 @@ namespace control {
         //% blockId=timerPauseUntil block="%timer|pause until (ms) %ms"
         pauseUntil(ms: number) {
             const remaining = this.millis() - ms;
-            loops.pause(Math.max(0, remaining));
+            pause(Math.max(0, remaining));
         }
     }
 

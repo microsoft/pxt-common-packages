@@ -7,7 +7,7 @@ pins.A1.servoWrite(90)
 ```
 
 Servos turn a shaft in one of two of directions by an amount of angle in degrees. With a servo,
-you are using just 180 degrees to position an arm, gear, or wheel that is connected to the shaft. The position 
+you are using just 180 degrees to position an arm, gear, or wheel that is connected to the shaft. The position
 at 90 degrees is the base, or neutral position. To turn the servo shaft left (counter-clockwise) you
 write to it a number of degrees to the between 0 and 90. The `0` degree spot is all the way left and
 any other number up to `90` is somewhere between left and the neutral position. The same thing works
@@ -48,9 +48,9 @@ direction for 5 times.
 ```blocks
 for (let i = 1; i <= 5; i++) {
     pins.A1.servoWrite(135)
-    loops.pause(500)
+    pause(500)
     pins.A1.servoWrite(45)
-    loops.pause(500)
+    pause(500)
 }
 ```
 

@@ -69,7 +69,7 @@ namespace control {
             while (this.running
                 && !this.isCancelled(evid)
                 && render()) {
-                loops.pause(this.interval);
+                pause(this.interval);
             }
 
             // check if the animation hasn't been cancelled since we've been waiting
@@ -132,7 +132,7 @@ namespace control {
                     }
                 }
             }
-            loops.pause(50);
+            pause(50);
         }
         // release fiber
         _pollEventQueue = undefined;

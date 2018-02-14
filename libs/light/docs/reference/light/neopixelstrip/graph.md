@@ -39,7 +39,7 @@ Graph 10 values between 0 and 100 on the pixels.
 let strip = light.createStrip()
 for (let i = 0; i <= 10; i++) {
     strip.graph(i * 10, 100)
-    loops.pause(500)
+    pause(500)
 }
 ```
 ### Auto range graph #ex2
@@ -49,9 +49,9 @@ Graph the value of `1000`. Graph other values but let them auto scale when displ
 ```blocks
 let strip = light.createStrip()
 strip.graph(1000, 0)
-loops.forever(() => {
+forever(() => {
     strip.graph(Math.randomRange(0, 1000), 0)
-    loops.pause(500)
+    pause(500)
 })
 ```
 ## See also

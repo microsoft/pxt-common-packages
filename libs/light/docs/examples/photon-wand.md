@@ -11,11 +11,11 @@ input.onGesture(Gesture.Shake, function() {
 
     for (let i = 0; i < 50; i++) {
         pixels.photonForward(Math.randomRange(0, 51));
-        loops.pause(20);
+        pause(20);
     }
     pixels.setPhotonMode(PhotonMode.PenDown);
 })
-loops.forever(function() {
+forever(function() {
     pixels.photonForward(1);
     pixels.setPhotonPenHue(c);
     c += 16;

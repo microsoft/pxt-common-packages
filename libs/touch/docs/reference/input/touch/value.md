@@ -17,13 +17,13 @@ Measure the touch values at pin **A2**. If they are greater than `512`, then fla
 
 ```blocks
 input.pinA2.setThreshold(100)
-loops.forever(function () {
+forever(function () {
     if (input.pinA2.value() > 512) {
         light.setAll(Colors.Green)
-        loops.pause(100)
+        pause(100)
         light.setAll(Colors.Black)
     }
-    loops.pause(500)
+    pause(500)
 })
 ```
 

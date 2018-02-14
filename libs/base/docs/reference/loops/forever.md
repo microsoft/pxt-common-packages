@@ -3,7 +3,7 @@
 Run a part of the program in the background and keep running it over again.
 
 ```sig
-loops.forever(() => {
+forever(() => {
 })
 ```
 
@@ -22,12 +22,12 @@ Rotate a blue pixel along the pixel strip (one pixel at a time) and keep it rota
 ```blocks
 let lightSpot = 0;
 let pixels = light.createStrip();
-loops.forever(() => {
+forever(() => {
     if (lightSpot == light.pixels.length()) {
         lightSpot = 0;
     }
     pixels.setPixelColor(lightSpot, Colors.Blue);
-    loops.pause(500);
+    pause(500);
     pixels.setPixelColor(lightSpot, Colors.Black);
     lightSpot++;
 })

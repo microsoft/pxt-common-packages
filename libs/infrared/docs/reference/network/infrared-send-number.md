@@ -20,7 +20,7 @@ receiving board think about the number it just got.
 ```blocks
 for (let irDataNumber = 0; irDataNumber <= 9; irDataNumber++) {
     network.infraredSendNumber(irDataNumber);
-    loops.pause(500);
+    pause(500);
 }
 ```
 

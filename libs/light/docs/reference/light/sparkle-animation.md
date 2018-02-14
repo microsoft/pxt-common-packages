@@ -12,7 +12,7 @@ light.sparkleAnimation();
 ## Example
 
 ```blocks
-loops.forever(() => {
+forever(() => {
     light.builtin.showAnimationFrame(light.sparkleAnimation(), 500)
 })
 ```

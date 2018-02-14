@@ -47,7 +47,7 @@ of the new pixel strip to its end.
 let smallStrip = light.createStrip().range(0, 4)
 smallStrip.setPixelColor(0, Colors.Red)
 for (let i = 0; i < smallStrip.length() - 1; i++) {
-    loops.pause(500)
+    pause(500)
     smallStrip.move(LightMove.Shift, 1)
 }
 ```

@@ -27,9 +27,9 @@ Make two blue pixels rotate around the strip one pixel spot at a time.
 let strip = light.createStrip()
 strip.setPixelColor(0, Colors.Blue)
 strip.setPixelColor(1, Colors.Blue)
-loops.forever(() => {
+forever(() => {
     strip.move(LightMove.Rotate, 1)
-    loops.pause(500)
+    pause(500)
 })
 ```
 

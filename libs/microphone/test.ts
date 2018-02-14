@@ -1,4 +1,4 @@
-loops.forever(() => {
+forever(() => {
     let level = input.soundLevel()
     serial.writeValue("sound", level)
 })

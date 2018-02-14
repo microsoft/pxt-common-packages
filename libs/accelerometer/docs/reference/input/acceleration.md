@@ -32,7 +32,7 @@ Show the acceleration of the @boardname@ with a bar graph.
 
 ```blocks
 let pixels = light.createStrip();
-loops.forever(() => {
+forever(() => {
     pixels.graph(input.acceleration(Dimension.X), 1023)
 })
 ```

@@ -18,9 +18,9 @@ You can insist that your program will stop at an assert block if a certain condi
 Stop the program if a sensor connected to pin `A0` sends a low (`0`) signal.
 
 ```blocks
-loops.forever(function () {
+forever(function () {
     control.assert((pins.A0.digitalRead() == 1), 15)
-    loops.pause(1000)
+    pause(1000)
 })
 ```
 
