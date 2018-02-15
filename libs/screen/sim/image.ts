@@ -45,6 +45,8 @@ namespace pxsim {
 }
 
 namespace pxsim.ImageMethods {
+    function XX(x: number) { return (x << 16) >> 16 }
+    function YY(x: number) { return x >> 16 }
 
     export function width(img: RefImage) { return img._width }
 
@@ -65,7 +67,7 @@ namespace pxsim.ImageMethods {
         img.data.fill(img.color(c))
     }
 
-    export function fillRect(img: RefImage, x: number, y: number, w: number, h: number, c: color) {
+    export function fillRect(img: RefImage, x: number, y: number, w: number, h: number, c: number) {
         let [x2, y2] = img.clamp(x + w - 1, y + h - 1);
         [x, y] = img.clamp(x, y)
         let p = img.pix(x, y)
@@ -78,6 +80,10 @@ namespace pxsim.ImageMethods {
                 img.data[p++] = c
             p += d
         }
+    }
+
+    export function _fillRect(img: RefImage, xy: number, wh: number, c: number) {
+        fillRect(img, XX(xy), YY(xy), XX(wh), YY(wh), c)
     }
 
     export function clone(img: RefImage) {
@@ -303,6 +309,10 @@ namespace pxsim.ImageMethods {
             p += byteW
         }
     }
+
+    export function _drawIcon(img: RefImage, icon: RefBuffer, xy: number, color: number) {
+        drawIcon(img, icon, XX(xy), YY(xy), color)
+    }
 }
 
 
@@ -421,5 +431,11 @@ namespace pxsim.image {
             src += bw;
         }
         return out;
+    }
+}
+
+namespace pxsim.pxtcore {
+    export function updateScreen(img: RefImage) {
+        getScreenState().showImage(img)
     }
 }
