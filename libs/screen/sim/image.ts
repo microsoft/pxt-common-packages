@@ -192,7 +192,7 @@ namespace pxsim.ImageMethods {
         return doubleX(doubleY(img))
     }
 
-    export function drawImage(img: RefImage, from: RefImage, x: number, y: number) {
+    function drawImageCore(img: RefImage, from: RefImage, x: number, y: number, clear: boolean, check: boolean) {
         x |= 0
         y |= 0
 
@@ -201,12 +201,15 @@ namespace pxsim.ImageMethods {
         const sh = img._height
         const sw = img._width
 
-        if (x + w <= 0) return
-        if (x >= sw) return
-        if (y + h <= 0) return
-        if (y >= sh) return
+        if (x + w <= 0) return false
+        if (x >= sw) return false
+        if (y + h <= 0) return false
+        if (y >= sh) return false
 
-        img.makeWritable()
+        if (clear)
+            fillRect(img, x, y, from._width, from._height, 0)
+        else if (!check)
+            img.makeWritable()
 
         const len = x < 0 ? Math.min(sw, w + x) : Math.min(sw - x, w)
         const fdata = from.data
@@ -222,50 +225,32 @@ namespace pxsim.ImageMethods {
                     dst += x
                 for (let i = 0; i < len; ++i) {
                     const v = fdata[src++]
-                    if (v)
-                        tdata[dst] = v
-                    dst++
-                }
-            }
-        }
-    }
-
-    export function overlapsWith(img: RefImage, other: RefImage, x: number, y: number) {
-        x |= 0
-        y |= 0
-
-        const w = other._width
-        let h = other._height
-        const sh = img._height
-        const sw = img._width
-
-        if (x + w <= 0) return false
-        if (x >= sw) return false
-        if (y + h <= 0) return false
-        if (y >= sh) return false
-
-        const len = x < 0 ? Math.min(sw, w + x) : Math.min(sw - x, w)
-        const fdata = other.data
-        const tdata = img.data
-
-        for (let p = 0; h--; y++ , p += w) {
-            if (0 <= y && y < sh) {
-                let dst = y * sw
-                let src = p
-                if (x < 0)
-                    src += -x
-                else
-                    dst += x
-                for (let i = 0; i < len; ++i) {
-                    const v = fdata[src++]
-                    if (v && tdata[dst])
-                        return true
+                    if (v) {
+                        if (check) {
+                            if (tdata[dst])
+                                return true
+                        } else {
+                            tdata[dst] = v
+                        }
+                    }
                     dst++
                 }
             }
         }
 
         return false
+    }
+
+    export function drawImage(img: RefImage, from: RefImage, x: number, y: number) {
+        drawImageCore(img, from, x, y, true, false)
+    }
+
+    export function drawTransparentImage(img: RefImage, from: RefImage, x: number, y: number) {
+        drawImageCore(img, from, x, y, false, false)
+    }
+
+    export function overlapsWith(img: RefImage, other: RefImage, x: number, y: number) {
+        return drawImageCore(img, other, x, y, false, true)
     }
 
     export function drawIcon(img: RefImage, icon: RefBuffer, x: number, y: number, color: number) {
@@ -373,11 +358,12 @@ namespace pxsim.image {
                     let v = src[srcP++]
                     let mask = 0x80
                     let n = 8
-                    if (j == len - 1 && w & 7)
+                    if (j == len - 1 && (w & 7))
                         n = w & 7
-                    while (n-- && mask) {
+                    while (n--) {
                         if (v & mask)
-                            dst[dstP++] = 1
+                            dst[dstP] = 1
+                        dstP++
                         mask >>= 1
                     }
                 }
