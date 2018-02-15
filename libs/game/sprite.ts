@@ -34,12 +34,12 @@ namespace sprite {
         // put it at the edge of the screen so that it moves towards the middle
 
         if (vx < 0)
-            s.x = screen.width() + (s.width() >> 1) - 1
+            s.x = screen.width + (s.width() >> 1) - 1
         else if (vx > 0)
             s.x = -(s.width() >> 1) + 1
 
         if (vy < 0)
-            s.y = screen.height() + (s.height() >> 1) - 1
+            s.y = screen.height + (s.height() >> 1) - 1
         else if (vy > 0)
             s.y = -(s.height() >> 1) + 1
 
@@ -72,8 +72,8 @@ class Sprite {
     private destroyHandler: () => void
 
     constructor(img: Image) {
-        this.x = screen.width() >> 1
-        this.y = screen.height() >> 1
+        this.x = screen.width >> 1
+        this.y = screen.height >> 1
         this.z = 0
         this.vx = 0
         this.vy = 0
@@ -85,10 +85,10 @@ class Sprite {
     }
 
     width() {
-        return this.image.width()
+        return this.image.width
     }
     height() {
-        return this.image.height()
+        return this.image.height
     }
     left() {
         return this.x - (this.width() >> 1)
@@ -124,8 +124,8 @@ class Sprite {
 
         if (this.wallHandler) {
             if (
-                0 <= this.x && this.x < screen.width() &&
-                0 <= this.y && this.y < screen.height()) {
+                0 <= this.x && this.x < screen.width &&
+                0 <= this.y && this.y < screen.height) {
                 // OK
             } else {
                 this.wallHandler()
@@ -134,8 +134,8 @@ class Sprite {
 
         if (this.flags & sprite.Flag.AutoDestroy) {
             if (this.right() < 0 || this.bottom() < 0 ||
-                this.left() >= screen.width() ||
-                this.top() >= screen.height()) {
+                this.left() >= screen.width ||
+                this.top() >= screen.height) {
                 this.destroy()
             }
         }

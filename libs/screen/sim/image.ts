@@ -147,7 +147,7 @@ namespace pxsim.ImageMethods {
         // TODO implement dx
     }
 
-    export function doubleX(img: RefImage) {
+    export function doubledX(img: RefImage) {
         const w = img._width
         const h = img._height
         const d = img.data
@@ -164,7 +164,7 @@ namespace pxsim.ImageMethods {
         return r
     }
 
-    export function doubleY(img: RefImage) {
+    export function doubledY(img: RefImage) {
         const w = img._width
         const h = img._height
         const d = img.data
@@ -188,8 +188,8 @@ namespace pxsim.ImageMethods {
     }
 
 
-    export function double(img: RefImage) {
-        return doubleX(doubleY(img))
+    export function doubled(img: RefImage) {
+        return doubledX(doubledY(img))
     }
 
     function drawImageCore(img: RefImage, from: RefImage, x: number, y: number, clear: boolean, check: boolean) {

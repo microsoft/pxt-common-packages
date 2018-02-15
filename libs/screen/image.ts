@@ -12,15 +12,15 @@ namespace image {
         let w = 0
         let h = 0
         for (let img of images) {
-            w = Math.max(img.width(), w)
-            h += img.height()
+            w = Math.max(img.width, w)
+            h += img.height
         }
         let r = image.create(w, h)
         let y = 0
         for (let img of images) {
-            let x = (w - img.width()) >> 1
+            let x = (w - img.width) >> 1
             r.drawImage(img, x, y)
-            y += img.height()
+            y += img.height
         }
         return r
     }
