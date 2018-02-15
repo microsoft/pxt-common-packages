@@ -5,7 +5,7 @@ namespace pxsim {
         _width: number;
         _height: number;
         data: Uint8Array;
-
+        dirty = true
 
         constructor(w: number, h: number) {
             this.data = new Uint8Array(w * h)
@@ -41,6 +41,9 @@ namespace pxsim {
             return [x, y]
         }
 
+        makeWritable() {
+            this.dirty = true
+        }
     }
 }
 
@@ -53,6 +56,7 @@ namespace pxsim.ImageMethods {
     export function height(img: RefImage) { return img._height }
 
     export function set(img: RefImage, x: number, y: number, c: number) {
+        img.makeWritable()
         if (img.inRange(x, y))
             img.data[img.pix(x, y)] = img.color(c)
     }
@@ -64,10 +68,12 @@ namespace pxsim.ImageMethods {
     }
 
     export function fill(img: RefImage, c: number) {
+        img.makeWritable()
         img.data.fill(img.color(c))
     }
 
     export function fillRect(img: RefImage, x: number, y: number, w: number, h: number, c: number) {
+        img.makeWritable()
         let [x2, y2] = img.clamp(x + w - 1, y + h - 1);
         [x, y] = img.clamp(x, y)
         let p = img.pix(x, y)
@@ -93,6 +99,7 @@ namespace pxsim.ImageMethods {
     }
 
     export function flipX(img: RefImage) {
+        img.makeWritable()
         const w = img._width
         const h = img._height
         for (let i = 0; i < h; ++i) {
@@ -102,6 +109,7 @@ namespace pxsim.ImageMethods {
 
 
     export function flipY(img: RefImage) {
+        img.makeWritable()
         const w = img._width
         const h = img._height
         const d = img.data
@@ -119,6 +127,7 @@ namespace pxsim.ImageMethods {
     }
 
     export function scroll(img: RefImage, dx: number, dy: number) {
+        img.makeWritable()
         dx |= 0
         dy |= 0
         if (dy < 0) {
@@ -196,6 +205,8 @@ namespace pxsim.ImageMethods {
         if (x >= sw) return
         if (y + h <= 0) return
         if (y >= sh) return
+
+        img.makeWritable()
 
         const len = x < 0 ? Math.min(sw, w + x) : Math.min(sw - x, w)
         const fdata = from.data
@@ -275,7 +286,9 @@ namespace pxsim.ImageMethods {
         if (y + h <= 0) return
         if (y >= sh) return
 
-        let p = 2
+        img.makeWritable()
+
+        let p = 3
         color = img.color(color)
         const screen = img.data
 
@@ -291,15 +304,15 @@ namespace pxsim.ImageMethods {
                     xx += ((-x) >> 3) * 8
                 }
                 dst += xx
-                let mask = 0x01
+                let mask = 0x80
                 let v = img2[src++]
                 while (xx < end) {
                     if (xx >= 0 && (v & mask)) {
                         screen[dst] = color
                     }
-                    mask <<= 1
-                    if (mask & 0x100) {
-                        mask = 0x01
+                    mask >>= 1
+                    if (!mask) {
+                        mask = 0x80
                         v = img2[src++]
                     }
                     dst++
@@ -405,28 +418,29 @@ namespace pxsim.image {
         if (!isValidImage(buf))
             return null;
         const w = buf.data[1];
-        if (w > 126)
+        const h = buf.data[2]
+        if (w > 126 || h > 126)
             return null;
         const isMono = buf.data[0] == 0xf1
         const bw = bytes(w, isMono);
-        const h = buf.data[2]
         const bw2 = bytes(w * 2, isMono);
-        const out = pxsim.BufferMethods.createBuffer(2 + bw2 * h * 2)
+        const out = pxsim.BufferMethods.createBuffer(3 + bw2 * h * 2)
         out.data[0] = buf.data[0];
         out.data[1] = w * 2;
         out.data[2] = h * 2;
         let src = 3
         let dst = 3
+        let skp = bw * 2 > bw2
         const dbl = isMono ? bitdouble : nibdouble
         for (let i = 0; i < h; ++i) {
             for (let jj = 0; jj < 2; ++jj) {
                 let p = src;
                 for (let j = 0; j < bw; ++j) {
                     const v = buf.data[p++]
-                    out.data[dst++] = dbl[v & 0xf];
                     out.data[dst++] = dbl[v >> 4];
+                    out.data[dst++] = dbl[v & 0xf];
                 }
-                if (!isMono && (w & 1)) dst--
+                if (skp) dst--
             }
             src += bw;
         }
