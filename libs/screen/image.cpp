@@ -268,7 +268,20 @@ Image clone(Image img) {
 //%
 void flipX(Image img) {
     img->makeWritable();
-    // TODO
+
+    // this is quite slow - for small 16x16 sprite it will take in the order of 1ms    
+    // something faster requires quite a bit of bit tweaking, especially for mono images
+    for (int i = 0; i < img->height(); ++i) {
+        int a = 0;
+        int b = img->width() - 1;
+        while (a < b) {
+            int tmp = get(img, a, i);
+            set(img, a, i, get(img, b, i));
+            set(img, b, i, tmp);
+            a++;
+            b--;
+        }
+    }
 }
 
 /**
@@ -277,7 +290,20 @@ void flipX(Image img) {
 //%
 void flipY(Image img) {
     img->makeWritable();
-    // TODO
+
+    int bw = img->byteWidth();
+    auto a = img->pix();
+    auto b = img->pix(0, img->height() - 1);
+
+    uint8_t tmp[bw];
+
+    while (a < b) {
+        memcpy(tmp, a, bw);
+        memcpy(a, b, bw);
+        memcpy(b, tmp, bw);
+        a += bw;
+        b -= bw; 
+    }
 }
 
 /**
