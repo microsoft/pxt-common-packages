@@ -295,10 +295,9 @@ void Segment::insert(unsigned i, TValue value) {
 
     if (i < length) {
         ensure(length + 1);
-        if (i + 1 < length) {
-            // Move the rest of the elements to fill in the gap.
-            memmove(data + i + 1, data + i, (length - i) * sizeof(unsigned));
-        }
+        
+        // Move the rest of the elements to fill in the gap.
+        memmove(data + i + 1, data + i, (length - i) * sizeof(unsigned));
 
         data[i] = value;
         length++;
