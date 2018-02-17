@@ -40,8 +40,14 @@ static void commInit() {
     FreeList *head = NULL;        
     void *commBase = (void*)PXT_COMM_BASE;
     for (;;) {
-        // assume 4 byte alloc header; if we're not hitting 8 byte alignment, try allocing 8 bytes, not 4
-        void *p = malloc((unsigned)head & 4 ? 8 : 4);
+        void *p = malloc(4);
+        // assume 4 byte alloc header; if we're not hitting 8 byte alignment, try allocating 8 bytes, not 4
+        // without the volatile, gcc assumes 8 byte alignment on malloc()
+        volatile unsigned hp = (unsigned)p;
+        if (hp & 4) {
+            free(p);
+            p = malloc(8);
+        }
         if (p == commBase) {
             free(p);
             // allocate the comm section; this is never freed
