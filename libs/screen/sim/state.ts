@@ -40,6 +40,12 @@ namespace pxsim {
             return res
         }
 
+        maybeForceUpdate() {
+            if (Date.now() - this.lastImageFlushTime > 200) {
+                this.showImage(null)
+            }
+        }
+
         showImage(img: RefImage) {
             if (!img && !this.lastImage)
                 return
