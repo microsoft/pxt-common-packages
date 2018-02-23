@@ -47,7 +47,10 @@ namespace pxsim {
         }
 
         showImage(img: RefImage) {
-            if (!img && !this.lastImage)
+            if (!img)
+                img = this.lastImage
+
+            if (!img)
                 return
 
             if (this.width == 0) {
