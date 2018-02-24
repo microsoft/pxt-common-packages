@@ -18,7 +18,7 @@ With ``||console:log||``, the new line characters are automatically added for yo
 
 * **text**: the [string](/types/string) to write to the console output.
 
-## Example
+## Example #example
 
 Write two greeting messages to the console output.
 
@@ -28,6 +28,6 @@ pause(5000);
 console.log("Well that's great! I'm doing well too.");
 ```
 
-## See also
+## See also #seealso
 
-[``||log value||``](/reference/console/log-value)
+[log value](/reference/console/log-value)

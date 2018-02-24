@@ -24,7 +24,7 @@ Or, you use ``warm`` to run your code when it warms to your temperature _thresho
 * **unit**: the unit of temperature, Celcius or Fahrenheit
 * **handler**: the code to run when the temperature changes
 
-## Example
+## Example #example
 
 Make all the pixels show `blue` when the temperature gets cool. The cool setting is `10` degrees Celsius or colder.
 
@@ -33,9 +33,9 @@ input.onTemperatureConditionChanged(TemperatureCondition.Cold, 10, TemperatureUn
 	light.createStrip().setAll(Colors.Blue);
 })
 ```
-# See also
+## See also #seealso
 
-[``||temperature||``](/reference/input/temperature)
+[temperature](/reference/input/temperature)
 
 ```package
 temperature

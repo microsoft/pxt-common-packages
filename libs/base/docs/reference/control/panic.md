@@ -16,7 +16,7 @@ happened and your program can't run properly anymore.
 
 * **code**: an error [number](/types/number) you match to an error situation in your program.
 
-## Example
+## Example #example
 
 Send a 'code red' error that you created to the error display if the input from pin `A0` is
 lower than `10`.
@@ -30,6 +30,6 @@ if (pins.A0.analogRead() < 10) {
 }
 ```
 
-## See also
+## See also #seealso
 
 [assert](/reference/control/assert)

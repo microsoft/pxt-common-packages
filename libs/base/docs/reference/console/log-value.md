@@ -19,7 +19,7 @@ sends it as a pair.
 * **name**: a [string](/types/string) that is the name part of the _name:value_ pair
 * **value**: a [number](/types/number) that is the value part of the _name:value_ pair 
 
-## Example
+## Example #example
 
 Send _name:value_ pairs for odd and even numbers to the console output.
 
@@ -33,6 +33,6 @@ for (let i = 0; i < 10; i++) {
 }
 ```
 
-## See also
+## See also #seealso
 
-[``||log||``](/reference/console/log)
+[log](/reference/console/log)

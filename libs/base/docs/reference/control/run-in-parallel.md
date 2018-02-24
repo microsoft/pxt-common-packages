@@ -11,6 +11,8 @@ always put in [``||on start||``](/blocks/on-start). But, you can also put some o
 program in ``||control:run in parallel||``. This is useful when you want your program to keep doing important things
 and you don't want to wait for some other actions to happen first.
 
+## Separate tasks #tasks
+
 As an example, you could have a small task to rotate the pixel lights the pixel strip. This is
 placed inside a ``||control:run in parallel||`` block:
 
@@ -25,6 +27,7 @@ control.runInParallel(() => {
     }
 })
 ```
+
 Code is added to the main part of the program to turn the pixels on. It turns on one pixel, waits
 for `5` seconds and turns on another pixel. Then, it waits for `5` more seconds and stops the rotate
 loop in the background task.
@@ -45,9 +48,7 @@ pixels.clear();
 
 * **a**: the code to run in the background.
 
-## Example #exsection
-
-### Pixel conveyor #ex1
+## Example #example
 
 Automatically rotate lighted pixels as they are added to the pixel strip.
 
@@ -78,3 +79,5 @@ for (let i = 0; i < 5; i++) {
     pixels.setPixelColor(0, Colors.Blue);
 }
 ```
+
+## #seealso

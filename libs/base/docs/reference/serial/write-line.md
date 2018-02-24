@@ -10,16 +10,16 @@ A line of text is string that has two special characters added at the end: _carr
 and _line feed_. These characters are really just codes that mean start a new line.
 Sometimes they appear in code as ``"\r\n"``.
 
-After using a ``||write line||``, any new text written to the serial port will begin on a new line.
+After using a ``||serial:write line||``, any new text written to the serial port will begin on a new line.
 
-With ``||write line||``, the new line characters are automatically added for you. You only need to
+With ``||serial:write line||``, the new line characters are automatically added for you. You only need to
 give the text you want to write.
 
 ## Parameters
 
 * **text**: the [string](/types/string) to write to the serial port
 
-## Example
+## Example #example
 
 Write two greeting messages to the serial port.
 
@@ -29,8 +29,8 @@ pause(5000);
 serial.writeLine("Well that's great! I'm doing well too.");
 ```
 
-## See also
+## See also #seealso
 
-[``||write number||``](/reference/serial/write-number),
-[``||write string||``](/reference/serial/write-string),
-[``||write value||``](/reference/serial/write-value)
+[write number](/reference/serial/write-number),
+[write string](/reference/serial/write-string),
+[write value](/reference/serial/write-value)
