@@ -1,11 +1,26 @@
 namespace game {
     let isOver = false
-    let _score = 0
-    let scoreSprite: Sprite
+    let _score: number = null
+    let _waitAnyKey: () => void
+
+    export function setWaitAnyKey(f: () => void) {
+        _waitAnyKey = f
+    }
+
+    export function waitAnyKey() {
+        if (_waitAnyKey) _waitAnyKey()
+        else loops.pause(2000)
+    }
+
+    export function freeze() {
+        sprite.setBackgroundCallback(() => { })
+        loops.frame(() => { })
+        sprite.reset()
+    }
 
     export function meltScreen() {
-        control.clearHandlers()
-        for (let i = 0; i < 50; ++i) {
+        freeze()
+        for (let i = 0; i < 10; ++i) {
             for (let j = 0; j < 1000; ++j) {
                 let x = Math.randomRange(0, screen.width - 1)
                 let y = Math.randomRange(0, screen.height - 3)
@@ -17,16 +32,20 @@ namespace game {
         }
     }
 
-    export function over() {
+    export function over(effect?: () => void) {
         if (isOver) return
         isOver = true
         control.clearHandlers()
         control.runInBackground(() => {
-            let font = image.doubledFont(image.defaultFont)
-            for (let i = 0; i < 40; ++i) {
-                screen.print("GAME\nOVER", 30, 50, Math.randomRange(1, 15), font)
-                loops.pause(40)
-            }
+            if (effect) effect()
+            let top = 40
+            screen.fillRect(0, top, screen.width, 44, 4)
+            screen.printCenter("GAME OVER!", top + 8, 5, image.font8)
+            screen.printCenter("Score: " + game.score(), top + 23, 2, image.font5)
+            if (!effect)
+                loops.pause(1000) // wait for users to stop pressing keys
+            waitAnyKey()
+            meltScreen()
             control.reset()
         })
     }
@@ -36,26 +55,20 @@ namespace game {
     }
 
     function initScore() {
-        if (scoreSprite) return
-        let font = image.defaultFont
+        if (_score !== null) return
+        let font = image.font8
         let color = 15
         let maxW = 8
-        scoreSprite = sprite.create(image.create(font.charWidth * maxW, font.charHeight))
-        scoreSprite.x = screen.width - font.charWidth * maxW / 2 - 10
-        scoreSprite.y = font.charHeight
-        scoreSprite.makeGhost()
-        scoreSprite.z = 1000
-        control.addFrameHandler(85, () => {
+        control.addFrameHandler(95, () => {
             let s = _score + ""
             while (s.length < maxW) s = " " + s
-            scoreSprite.image.fill(0)
-            scoreSprite.image.print(s, 0, 0, color, font)
+            screen.print(s, screen.width - font.charWidth * maxW - 10, font.charHeight, color, font)
         })
     }
 
     export function setScore(score: number) {
         initScore()
-        _score = score
+        _score = score | 0
     }
 
     export function addToScore(points: number) {

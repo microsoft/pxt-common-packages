@@ -9,7 +9,7 @@ namespace image {
     }
 
     //% whenUsed
-    export const defaultFont: Font = {
+    export const font8: Font = {
         charWidth: 8,
         charHeight: 8,
         firstChar: 32,
@@ -62,7 +62,7 @@ e0606c766666e600 3000703030307800 0c000c0c0ccccc78 e060666c786ce600 703030303030
     }
 
     //% whenUsed
-    export const codalFont: Font = {
+    export const font5: Font = {
         charWidth: 6,
         charHeight: 5,
         firstChar: 32,
@@ -86,13 +86,23 @@ e0909090e0 f080e080f0 f080e08080 7080988870 9090f09090 e0404040e0 f810109060 90a
 interface Image {
     //% helper=imagePrint
     print(text: string, x: number, y: number, color?: number, font?: image.Font): void;
+
+    //% helper=imagePrintCenter
+    printCenter(text: string, y: number, color?: number, font?: image.Font): void;
 }
 
 namespace helpers {
+    export function imagePrintCenter(img: Image, text: string, y: number, color?: number, font?: image.Font) {
+        if (!font) font = image.font5
+        let w = text.length * font.charWidth
+        let x = (screen.width - w) / 2
+        imagePrint(img, text, x, y, color, font)
+    }
+
     export function imagePrint(img: Image, text: string, x: number, y: number, color?: number, font?: image.Font) {
         x |= 0
         y |= 0
-        if (!font) font = image.defaultFont
+        if (!font) font = image.font5
         if (!color) color = 15
         let x0 = x
         let cp = 0

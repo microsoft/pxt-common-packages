@@ -60,12 +60,18 @@ namespace control {
 }
 
 namespace loops {
+    let frameCb: () => void
+
     /**
      * Runs code every frame.
      * @param body the code to repeat
      */
     //% block
     export function frame(body: () => void): void {
-        control.addFrameHandler(100, body)
+        if (!frameCb)
+            control.addFrameHandler(20, () => {
+                frameCb()
+            })
+        frameCb = body
     }
 }

@@ -1,3 +1,14 @@
+/*
+Frame handlers:
+ 10 - physics and collisions
+ 20 - loops.frame()
+ 60 - screen/sprite background
+ 90 - drawing sprites
+ 95 - drawing score
+100 - loops.menu()
+200 - screen refresh
+*/
+
 namespace sprite {
     export let allSprites: Sprite[]
 
@@ -5,22 +16,47 @@ namespace sprite {
         return create(image.ofBuffer(imgbuf))
     }
 
-    export function create(img: Image) {
-        let spr = new Sprite(img)
+    export function reset() {
+        init()
+        allSprites = []
+    }
+
+    function init() {
         if (!allSprites) {
             allSprites = []
+            setBackgroundColor(0)
             control.addFrameHandler(10, () => {
                 for (let s of allSprites)
                     s._update(control.deltaTime)
                 for (let s of allSprites)
                     s._collisions()
             })
+            control.addFrameHandler(60, () => { bgFunction() })
             control.addFrameHandler(90, () => {
                 allSprites.sort((a, b) => a.z - b.z || a.id - b.id)
                 for (let s of allSprites)
                     s._draw()
             })
         }
+    }
+
+    let bgFunction = () => { }
+
+    export function setBackgroundCallback(f: () => void) {
+        init()
+        bgFunction = f
+    }
+
+    export function setBackgroundColor(c: number) {
+        init()
+        bgFunction = () => {
+            screen.fill(c)
+        }
+    }
+
+    export function create(img: Image) {
+        init()
+        let spr = new Sprite(img)
         allSprites.push(spr)
         spr.id = allSprites.length
         return spr
