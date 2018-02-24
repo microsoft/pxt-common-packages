@@ -99,15 +99,15 @@ Image mkImage(int width, int height, int bpp) {
 bool isValidImage(Buffer buf) {
     if (!buf || buf->length < 4)
         return false;
-    
+
     if (buf->data[0] != 0xf1 && buf->data[0] != 0xf4)
         return false;
-    
+
     int bpp = buf->data[0] & 0xf;
     int sz = buf->data[2] * ((buf->data[1] * bpp + 7) >> 3);
     if (3 + sz != buf->length)
         return false;
-    
+
     return true;
 }
 
@@ -144,7 +144,7 @@ static inline void setCore(Image img, int x, int y, int c) {
             *ptr = (*ptr & 0xf0) | (c & 0xf);
         else
             *ptr = (*ptr & 0x0f) | (c << 4);
-    } 
+    }
 }
 
 /**
@@ -273,7 +273,7 @@ Image clone(Image img) {
 void flipX(Image img) {
     img->makeWritable();
 
-    // this is quite slow - for small 16x16 sprite it will take in the order of 1ms    
+    // this is quite slow - for small 16x16 sprite it will take in the order of 1ms
     // something faster requires quite a bit of bit tweaking, especially for mono images
     for (int i = 0; i < img->height(); ++i) {
         int a = 0;
@@ -306,7 +306,7 @@ void flipY(Image img) {
         memcpy(a, b, bw);
         memcpy(b, tmp, bw);
         a += bw;
-        b -= bw; 
+        b -= bw;
     }
 }
 
@@ -410,7 +410,7 @@ bool drawImageCore(Image img, Image from, int x, int y, int color) {
     auto sh = img->height();
     auto sw = img->width();
 
-    //DMESG("drawIMG at (%d,%d) w=%d bw=%d", x, y, img->width(), img->byteWidth() );
+    // DMESG("drawIMG at (%d,%d) w=%d bw=%d", x, y, img->width(), img->byteWidth() );
 
     if (x + w <= 0)
         return false;
@@ -462,11 +462,10 @@ bool drawImageCore(Image img, Image from, int x, int y, int color) {
                     int curr = *data << shift;
                     if (off0 <= off && off <= off1) {
                         uint8_t v = ((curr >> 8) | prev) & (0xff << (8 - left));
-                         if (color == -1) {
+                        if (color == -1) {
                             if (*off & v)
                                 return true;
-                        }
-                        else {
+                        } else {
                             *off |= v;
                         }
                     }
@@ -575,134 +574,133 @@ void _drawIcon(Image img, Buffer icon, int xy, int c) {
     decrRC(ii);
 }
 
-    static void drawLineLow(Image img, int x0, int y0, int x1, int y1, int c) {
-        int dx = x1 - x0;
-        int dy = y1 - y0;
-        int yi = 1;
-        if (dy < 0) {
-            yi = -1;
-            dy = -dy;
+static void drawLineLow(Image img, int x0, int y0, int x1, int y1, int c) {
+    int dx = x1 - x0;
+    int dy = y1 - y0;
+    int yi = 1;
+    if (dy < 0) {
+        yi = -1;
+        dy = -dy;
+    }
+    int D = 2 * dy - dx;
+    dx <<= 1;
+    dy <<= 1;
+    int y = y0;
+    for (int x = x0; x <= x1; ++x) {
+        setCore(img, x, y, c);
+        if (D > 0) {
+            y += yi;
+            D -= dx;
         }
-        int D = 2 * dy - dx;
-        dx <<= 1;
-        dy <<= 1;
-        int y = y0;
-        for (int x = x0; x <= x1; ++x) {
-            setCore(img, x, y, c);
-            if (D > 0) {
-                y += yi;
-                D -= dx;
-            }
-            D += dy;
+        D += dy;
+    }
+}
+
+static void drawLineHigh(Image img, int x0, int y0, int x1, int y1, int c) {
+    int dx = x1 - x0;
+    int dy = y1 - y0;
+    int xi = 1;
+    if (dx < 0) {
+        xi = -1;
+        dx = -dx;
+    }
+    int D = 2 * dx - dy;
+    dx <<= 1;
+    dy <<= 1;
+    int x = x0;
+    for (int y = y0; y <= y1; ++y) {
+        setCore(img, x, y, c);
+        if (D > 0) {
+            x += xi;
+            D -= dy;
+        }
+        D += dx;
+    }
+}
+
+void drawLine(Image img, int x0, int y0, int x1, int y1, int c) {
+    if (x1 < x0) {
+        drawLine(img, x1, y1, x0, y0, c);
+        return;
+    }
+
+    int w = x1 - x0;
+    int h = y1 - y0;
+
+    if (h == 0) {
+        if (w == 0)
+            set(img, x0, y0, c);
+        else
+            fillRect(img, x0, y0, w + 1, 1, c);
+        return;
+    }
+
+    if (w == 0) {
+        if (h > 0)
+            fillRect(img, x0, y0, 1, h + 1, c);
+        else
+            fillRect(img, x0, y1, 1, -h + 1, c);
+        return;
+    }
+
+    if (x1 < 0 || x0 >= img->width())
+        return;
+    if (x0 < 0) {
+        y0 -= (h * x0 / w);
+        x0 = 0;
+    }
+    if (x1 >= img->width()) {
+        int d = (img->width() - 1) - x1;
+        y1 += (h * d / w);
+        x1 = img->width() - 1;
+    }
+
+    if (y0 < y1) {
+        if (y0 >= img->height() || y1 < 0)
+            return;
+        if (y0 < 0) {
+            x0 -= (w * y0 / h);
+            y0 = 0;
+        }
+        if (y1 >= img->height()) {
+            int d = (img->height() - 1) - y1;
+            x1 += (w * d / h);
+            y1 = img->height();
+        }
+    } else {
+        if (y1 >= img->height() || y0 < 0)
+            return;
+        if (y1 < 0) {
+            x1 -= (w * y1 / h);
+            y1 = 0;
+        }
+        if (y0 >= img->height()) {
+            int d = (img->height() - 1) - y0;
+            x0 += (w * d / h);
+            y0 = img->height();
         }
     }
 
-    static void drawLineHigh(Image img, int x0, int y0, int x1, int y1, int c) {
-        int dx = x1 - x0;
-        int dy = y1 - y0;
-        int xi = 1;
-        if (dx < 0) {
-            xi = -1;
-            dx = -dx;
-        }
-        int D = 2 * dx - dy;
-        dx <<= 1;
-        dy <<= 1;
-        int x = x0;
-        for (int y = y0; y <= y1; ++y) {
-            setCore(img, x, y, c);
-            if (D > 0) {
-                x += xi;
-                D -= dy;
-            }
-            D += dx;
-        }
+    img->makeWritable();
+
+    if (h < 0) {
+        h = -h;
+        if (h < w)
+            drawLineLow(img, x0, y0, x1, y1, c);
+        else
+            drawLineHigh(img, x1, y1, x0, y0, c);
+    } else {
+        if (h < w)
+            drawLineLow(img, x0, y0, x1, y1, c);
+        else
+            drawLineHigh(img, x0, y0, x1, y1, c);
     }
-
-    void drawLine(Image img, int x0, int y0, int x1, int y1, int c) {
-        if (x1 < x0) {
-            drawLine(img, x1, y1, x0, y0, c);
-            return;
-        }
-
-        int w = x1 - x0;
-        int h = y1 - y0;
-
-        if (h == 0) {
-            if (w == 0)
-                set(img, x0, y0, c);
-            else
-                fillRect(img, x0, y0, w + 1, 1, c);
-            return;
-        }
-
-        if (w == 0) {
-            if (h > 0)
-                fillRect(img, x0, y0, 1, h + 1, c);
-            else
-                fillRect(img, x0, y1, 1, -h + 1, c);
-            return;
-        }
-
-        if (x1 < 0 || x0 >= img->width())
-            return;
-        if (x0 < 0) {
-            y0 -= (h * x0 / w) ;
-            x0 = 0;
-        }
-        if (x1 >= img->width()) {
-            int d = (img->width() - 1) - x1;
-            y1 += (h * d / w) ;
-            x1 = img->width() - 1;
-        }
-
-        if (y0 < y1) {
-            if (y0 >= img->height() || y1 < 0)
-                return;
-            if (y0 < 0) {
-                x0 -= (w * y0 / h) ;
-                y0 = 0;
-            }
-            if (y1 >= img->height()) {
-                int d = (img->height() - 1) - y1;
-                x1 += (w * d / h) ;
-                y1 = img->height();
-            }
-        } else {
-            if (y1 >= img->height() || y0 < 0)
-                return;
-            if (y1 < 0) {
-                x1 -= (w * y1 / h) ;
-                y1 = 0;
-            }
-            if (y0 >= img->height()) {
-                int d = (img->height() - 1) - y0;
-                x0 += (w * d / h) ;
-                y0 = img->height();
-            }
-        }
-
-        img->makeWritable();
-
-        if (h < 0) {
-            h = -h;
-            if (h < w)
-                drawLineLow(img, x0, y0, x1, y1, c);
-            else
-                drawLineHigh(img, x1, y1, x0, y0, c);
-        } else {
-            if (h < w)
-                drawLineLow(img, x0, y0, x1, y1, c);
-            else
-                drawLineHigh(img, x0, y0, x1, y1, c);
-        }
-    }
+}
 
 //%
-    void _drawLine(Image img, int xy, int wh, int c) {
-        drawLine(img, XX(xy), YY(xy), XX(wh), YY(wh), c);
-    }
-
+void _drawLine(Image img, int xy, int wh, int c) {
+    drawLine(img, XX(xy), YY(xy), XX(wh), YY(wh), c);
+}
 
 } // namespace ImageMethods
 
@@ -735,15 +733,14 @@ Image ofBuffer(Buffer buf) {
 Buffer doubledIcon(Buffer icon) {
     if (!isValidImage(icon))
         return NULL;
-    
+
     auto r = new RefImage(icon);
     auto t = ImageMethods::doubled(r);
     auto res = mkBuffer(t->data(), t->length());
     decrRC(r);
     decrRC(t);
-    
+
     return res;
 }
 
 } // namespace image
-
