@@ -39,7 +39,7 @@ namespace control {
 
     export function clearHandlers() {
         init()
-        callbacks = []
+        callbacks = callbacks.filter(c => c.order >= 200)
     }
 
     export function addFrameHandler(order: number, handler: (dt: number) => void) {
