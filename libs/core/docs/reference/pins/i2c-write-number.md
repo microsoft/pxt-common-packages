@@ -6,7 +6,7 @@ Write a number to an address on the I2C bus.
 pins.i2cWriteNumber(0, NumberFormat.Int8LE, false)
 ```
 
-If your board has pins that say **SDA** and **SCL**, then you can write numbers to 
+If your board has pins that say **SDA** and **SCL**, then you can write numbers to
 other chips that are not on your board. The **SDA** and **SCL** pins connect to other chips
 ([ICs](https://wikipedia.org/wiki/Integrated_circuit)) that also have these same pins. This connection
 is called [**I2C**](https://wikipedia.org/wiki/I2C). It only needs two wires to read or write
@@ -36,8 +36,8 @@ sure that all of the chips are using a different number so they respond to their
 ## Parameters
 
 * **address**: a [number](types/number) between `8` and `123` that is the address of a chip on the I2C bus.
-* **value**: a [number](types/number) a number to write to the I2C bus. It's size (number of bytes) depends 
-on what you say in **format**. 
+* **value**: a [number](types/number) a number to write to the I2C bus. It's size (number of bytes) depends
+on what you say in **format**.
 * **format**: the type of number you will write to the bus, like: `Int8LE`.
 * **repeated**: a [boolean](/types/boolean) value, `true` or `false`, to say if you want to read
 again right away.
@@ -52,11 +52,11 @@ about every second.
 
 ```blocks
 let i = 0
-loops.forever(() => {
+forever(() => {
     i = 0
     while (i <= 4095) {
         pins.i2cWriteNumber(98, i, NumberFormat.UInt16LE, false)
-        loops.pause(6)
+        pause(6)
         if (i > 0) {
             i += 256
         } else {

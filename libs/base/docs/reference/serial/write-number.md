@@ -14,18 +14,18 @@ started when it's finished.
 
 * **value**: the [number](/types/number) to write to the serial port
 
-## Example
+## Example #example
 
 Write a 10-digit number to the serial port many, many times.
 
 ```blocks
-loops.forever(() => {
+forever(() => {
     serial.writeNumber(1234567890);
-    loops.pause(5000);
+    pause(5000);
 });
 ```
 
-## See also
+## See also #seealso
 
 [``||write line||``](/reference/serial/write-line),
 [``||write value||``](/reference/serial/write-value)

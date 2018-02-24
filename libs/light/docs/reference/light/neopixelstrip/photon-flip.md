@@ -20,7 +20,7 @@ let strip = light.createStrip()
 for (let i = 0; i <= 5; i++) {
     for (let j = 0; j < strip.length(); j++) {
         strip.photonForward(1)
-        loops.pause(50)
+        pause(50)
     }
     strip.photonFlip()
 }

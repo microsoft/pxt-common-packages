@@ -6,6 +6,6 @@ let minus = i - f
 let r = Math.random()
 let ri = Math.randomRange(5, 10)
 
-loops.forever(() => {
-    loops.pause(100)
+forever(() => {
+    pause(100)
 })

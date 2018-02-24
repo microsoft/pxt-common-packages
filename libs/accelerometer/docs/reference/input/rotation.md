@@ -13,17 +13,17 @@ check the ways that the @boardname@ is moving.
 
 ## ~
 
-### Parameters
+## Parameters
 
 * ``kind`` the direction you are checking:
 > * `Pitch`: up or down
 > * `Roll`: left or right
 
-### Returns
+## Returns
 
 * a [number](/types/number) that tells how much the @boardname@ is tilted in the direction you say, from `0` to `360` degrees
 
-### Example: @boardname@ leveler #example
+## Example: @boardname@ leveler #example
 
 This program helps you move the @boardname@ until it is level. When
 it is levelled, the @boardname@ shows turns blue.
@@ -32,7 +32,7 @@ it is levelled, the @boardname@ shows turns blue.
 let roll = 0
 let pitch = 0
 let pixels = light.createStrip();
-loops.forever(() => {
+forever(() => {
     pitch = input.rotation(Rotation.Pitch)
     roll = input.rotation(Rotation.Roll)
     if (Math.abs(pitch) < 10 && Math.abs(roll) < 10) {
@@ -42,15 +42,15 @@ loops.forever(() => {
     }
 });
 ```
-#### ~hint
+### ~hint
 **Simulator**
 
 If you are running this program in a browser, you can tilt the @boardname@ with your mouse.
-#### ~
+### ~
 
-### See also
+## See also #seealso
 
-[``||acceleration||``](/reference/input/acceleration)
+[acceleration](/reference/input/acceleration)
 
 ```package
 accelerometer

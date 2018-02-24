@@ -22,7 +22,7 @@ Play a 'C' note for one second and then rest for one second. Do it again, and ag
 
 ```blocks
 let frequency = music.noteFrequency(Note.C)
-loops.forever(() => {
+forever(() => {
   music.playTone(frequency, 1000)
   music.rest(1000)
 })

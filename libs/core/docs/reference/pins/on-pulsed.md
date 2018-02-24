@@ -32,7 +32,7 @@ pins.D4.setPull(PinPullMode.PullUp)
 
 pins.D4.onPulsed(PulseValue.Low, () => {
     pins.D13.digitalWrite(true)
-    loops.pause(250)
+    pause(250)
     pins.D13.digitalWrite(false)
 })
 ```

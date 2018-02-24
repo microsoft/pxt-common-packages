@@ -19,7 +19,7 @@ let pixels = light.createStrip()
 
 input.onLoudSound(() => {
 	pixels.setAll(Colors.Red);
-	loops.pause(100);
+	pause(100);
 	pixels.setAll(Colors.Black);
 });
 ```

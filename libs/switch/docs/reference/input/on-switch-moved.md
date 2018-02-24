@@ -24,14 +24,14 @@ pixels.setAll(Colors.Red);
 input.onSwitchMoved(SwitchDirection.Right, () => {
     for (let i = 0; i < pixels.length(); i++) {
         pixels.photonForward(1);
-        loops.pause(50);
+        pause(50);
     }
     pixels.photonFlip();
 });
 input.onSwitchMoved(SwitchDirection.Left, () => {
     for (let i = 0; i < pixels.length(); i++) {
         pixels.photonForward(1);
-        loops.pause(50);
+        pause(50);
     }
     pixels.photonFlip();
 })

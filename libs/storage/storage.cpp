@@ -79,41 +79,41 @@ snorfs::File *getFile(String filename) {
 }
 
 /** Append string data to a new or existing file. */
-//%
+//% part="storage"
 void append(String filename, String data) {
     auto f = getFile(filename);
     f->append(data->data, data->length);
 }
 
 /** Append a buffer to a new or existing file. */
-//%
+//% part="storage"
 void appendBuffer(String filename, Buffer data) {
     auto f = getFile(filename);
     f->append(data->data, data->length);
 }
 
 /** Overwrite file with string data. */
-//%
+//% part="storage"
 void overwrite(String filename, String data) {
     auto f = getFile(filename);
     f->overwrite(data->data, data->length);
 }
 
 /** Overwrite file with a buffer. */
-//%
+//% part="storage"
 void overwriteWithBuffer(String filename, Buffer data) {
     auto f = getFile(filename);
     f->overwrite(data->data, data->length);
 }
 
 /** Return true if the file already exists. */
-//%
+//% part="storage"
 bool exists(String filename) {
     return mountedStorage()->fs.exists(filename->data);
 }
 
 /** Delete a file, or do nothing if it doesn't exist. */
-//%
+//% part="storage"
 void remove(String filename) {
     if (!exists(filename))
         return;
@@ -123,7 +123,7 @@ void remove(String filename) {
 }
 
 /** Return the size of the file, or -1 if it doesn't exists. */
-//%
+//% part="storage"
 int size(String filename) {
     if (!exists(filename))
         return -1;
@@ -132,7 +132,7 @@ int size(String filename) {
 }
 
 /** Read contents of file as a string. */
-//%
+//% part="storage"
 String read(String filename) {
     auto f = getFile(filename);
     auto sz = f->size();
@@ -145,7 +145,7 @@ String read(String filename) {
 }
 
 /** Read contents of file as a buffer. */
-//%
+//% part="storage"
 Buffer readAsBuffer(String filename) {
     auto f = getFile(filename);
     auto sz = f->size();

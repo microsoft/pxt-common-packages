@@ -11,7 +11,7 @@ namespace control {
     export function runInBackground(a: () => void) {
         control.runInParallel(a);
     }
-    
+
     /**
      * Display an error code and stop the program.
      * @param code an error number to display. eg: 5
@@ -69,7 +69,7 @@ namespace control {
             while (this.running
                 && !this.isCancelled(evid)
                 && render()) {
-                loops.pause(this.interval);
+                pause(this.interval);
             }
 
             // check if the animation hasn't been cancelled since we've been waiting
@@ -132,7 +132,7 @@ namespace control {
                     }
                 }
             }
-            loops.pause(50);
+            pause(50);
         }
         // release fiber
         _pollEventQueue = undefined;
@@ -176,6 +176,27 @@ function pauseUntil(condition: () => boolean, timeOut?: number): void {
     if (!condition || condition()) return; // optimistic path
     if (!timeOut) timeOut = 0;
     control.__queuePollEvent(timeOut, condition, undefined);
+}
+
+/**
+ * Repeats the code forever in the background. On each iteration, allows other codes to run.
+ * @param body code to execute
+ */
+//% help=loops/forever weight=100 afterOnStart=true blockNamespace="loops"
+//% blockId=forever block="forever" blockAllowMultiple=1
+function forever(a: () => void): void {
+    loops.forever(a);
+}
+
+/**
+ * Pause for the specified time in milliseconds
+ * @param ms how long to pause for, eg: 100, 200, 500, 1000, 2000
+ */
+//% help=loops/pause weight=99
+//% async block="pause %pause=timePicker|ms"
+//% blockId=device_pause blockNamespace="loops"
+function pause(ms: number): void {
+    loops.pause(ms);
 }
 
 /**

@@ -11,6 +11,8 @@ always put in [``||on start||``](/blocks/on-start). But, you can also put some o
 program in ``||control:run in parallel||``. This is useful when you want your program to keep doing important things
 and you don't want to wait for some other actions to happen first.
 
+## Separate tasks #tasks
+
 As an example, you could have a small task to rotate the pixel lights the pixel strip. This is
 placed inside a ``||control:run in parallel||`` block:
 
@@ -21,10 +23,11 @@ let pixels = light.createStrip();
 control.runInParallel(() => {
     while (spinit) {
         pixels.move(LightMove.Rotate, 1);
-        loops.pause(200);
+        pause(200);
     }
 })
 ```
+
 Code is added to the main part of the program to turn the pixels on. It turns on one pixel, waits
 for `5` seconds and turns on another pixel. Then, it waits for `5` more seconds and stops the rotate
 loop in the background task.
@@ -34,9 +37,9 @@ let spinit = true;
 let pixels = light.createStrip();
 
 pixels.setPixelColor(0, Colors.Blue);
-loops.pause(5000);
+pause(5000);
 pixels.setPixelColor(0, Colors.Blue);
-loops.pause(5000);
+pause(5000);
 spinit = false;
 pixels.clear();
 ```
@@ -45,9 +48,7 @@ pixels.clear();
 
 * **a**: the code to run in the background.
 
-## Example #exsection
-
-### Pixel conveyor #ex1
+## Example #example
 
 Automatically rotate lighted pixels as they are added to the pixel strip.
 
@@ -68,13 +69,15 @@ input.buttonA.onEvent(ButtonEvent.Click, () => {
         pixels.setPixelColor(0, Colors.Blue);
         while (spinit) {
             pixels.move(LightMove.Rotate, 1);
-            loops.pause(250);
+            pause(250);
         }
     })
 })
 spinit = true;
 for (let i = 0; i < 5; i++) {
-    loops.pause(1000);
+    pause(1000);
     pixels.setPixelColor(0, Colors.Blue);
 }
 ```
+
+## #seealso

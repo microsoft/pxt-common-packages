@@ -81,7 +81,7 @@ namespace automation {
             this._state = BehaviorManagerState.StopPending;
             pauseUntil(() => this._state == BehaviorManagerState.Stopped);
         }
-        
+
         private run() {
             let elapsed = 0;
             // this is the main control loop
@@ -91,7 +91,7 @@ namespace automation {
 
                 // update all behaviors, even supprsed
                 for (let i = 0; i < n; ++i)
-                    bvs[i].update(elapsed);                
+                    bvs[i].update(elapsed);
 
                 // poll non-suppressed behaviors
                 for (let i = 0; i < n; ++i) {
@@ -122,7 +122,7 @@ namespace automation {
                 this._behaviors[j].active = false;
             }
             // allow events to percolate
-            loops.pause(1);
+            pause(1);
 
             // activate current behavior
             this._behaviors[i].active = true;

@@ -9,7 +9,7 @@ Tests are registered as event handlers. They will automatically run once ``on st
 ```blocks
 tests.test("lgB set speed 10", () => {
     motors.largeB.setSpeed(10);
-    loops.pause(100)
+    pause(100)
     tests.assertClose("speedB", 10, motors.largeB.speed(), 2)
 });
 ```

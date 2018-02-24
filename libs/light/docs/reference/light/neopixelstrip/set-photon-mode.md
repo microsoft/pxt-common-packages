@@ -28,7 +28,7 @@ so it erases when it moves backward.
 let strip = light.createStrip()
 let forward = true
 strip.setPhotonPenHue(191)
-loops.forever(() => {
+forever(() => {
     if (forward) {
         strip.setPhotonMode(PhotonMode.PenDown)
     } else {
@@ -36,7 +36,7 @@ loops.forever(() => {
     }
     for (let i = 0; i < strip.length(); i++) {
         strip.photonForward(1)
-        loops.pause(100)
+        pause(100)
     }
     forward = !forward
     strip.photonFlip()
@@ -55,14 +55,14 @@ strip.setPhotonPenHue(191)
 strip.setPhotonMode(PhotonMode.PenDown)
 for (let i = 1; i < strip.length(); i++) {
     strip.photonForward(1)
-    loops.pause(500)
+    pause(500)
 }
 
 strip.setPhotonPenHue(86)
 strip.setPhotonMode(PhotonMode.PenUp)
 for (let i = 1; i < strip.length(); i++) {
     strip.photonForward(1)
-    loops.pause(500)
+    pause(500)
 }
 ```
 

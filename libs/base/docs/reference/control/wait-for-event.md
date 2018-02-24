@@ -36,7 +36,7 @@ control.waitForEvent(myTimer, timerTimeout)
 * **id**: the identification [number](/types/number) (the source) of this event, such as: `10`.
 * **value**: a [number](/types/number) tells what the cause of the event is, like: `4`.
 
-## Example #exsection
+## Example #example
 
 Make a timeout timer to signal every 2 seconds. Wait two times and light a pixel each time.
 
@@ -47,7 +47,7 @@ let pixels = light.createStrip();
 
 control.runInParallel(() => {
     while (true) {
-        loops.pause(2000);
+        pause(2000);
         control.raiseEvent(myTimer, timerTimeout);
     }
 })
@@ -58,6 +58,6 @@ control.waitForEvent(myTimer, timerTimeout);
 pixels.setPixelColor(0, Colors.Yellow);
 ```
 
-## See also
+## See also #seealso
 
 [``||raise event||``](/reference/control/raise-event), [``||on event||``](/reference/control/on-event)

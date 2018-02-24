@@ -6,7 +6,7 @@ Read a number from an address on the I2C bus.
 pins.i2cReadNumber(0, NumberFormat.Int8LE, false)
 ```
 
-If your board has pins that say **SDA** and **SCL**, then you can read numbers from 
+If your board has pins that say **SDA** and **SCL**, then you can read numbers from
 other chips that are not on your board. The **SDA** and **SCL** pins connect to other chips
 ([ICs](https://wikipedia.org/wiki/Integrated_circuit)) that also have these same pins. This connection
 is called [**I2C**](https://wikipedia.org/wiki/I2C). It only needs two wires to read or write
@@ -50,16 +50,16 @@ bytes in size depending on what type you asked for in **format**.
 ## Example #ex1
 
 Connect a temperature sensor on a breadboard to the **SDA** and **SCL** pins on your board. Set your sensor
-to respond to address `24`. Every 30 seconds, read the temperature from the sensor and write it as Fahrenheit 
+to respond to address `24`. Every 30 seconds, read the temperature from the sensor and write it as Fahrenheit
 to the serial port.
 
 ```blocks
-loops.forever(() => {
+forever(() => {
     let celcius = pins.i2cReadNumber(24, NumberFormat.Int8LE, false)
     let fahr = Math.map(celcius, 0, 100, 32, 212)
     serial.writeValue("Degrees F", fahr)
-    loops.pause(30000)
-}) 
+    pause(30000)
+})
 ```
 
 ## See Also

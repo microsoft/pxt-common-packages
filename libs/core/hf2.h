@@ -25,6 +25,7 @@ class HF2 : public codal::USBHID
 {
 public:
     HF2_Buffer &pkt;
+    bool gotSomePacket;
 
     int sendResponse(int size);
     int send(const void *data, int size, int flag);
@@ -35,7 +36,6 @@ public:
     virtual int endpointRequest();
     virtual int stdRequest(UsbEndpointIn &ctrl, USBSetup& setup);
     virtual const InterfaceInfo *getInterfaceInfo();
-
     int sendSerial(const void *data, int size, int isError = 0);
 };
 

@@ -10,7 +10,7 @@ control.millis()
 
 * the [number](/types/number) of milliseconds of time since the board was turned on.
 
-## Example
+## Example #example
 
 Find how many days, hours, minutes, and seconds the @boardname@ has been running.
 
@@ -21,3 +21,5 @@ let mins = seconds / 60
 let hours = mins / 60
 let days = hours / 24
 ```
+
+## #seealso

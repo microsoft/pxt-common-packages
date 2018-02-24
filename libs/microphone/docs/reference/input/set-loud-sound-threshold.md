@@ -24,7 +24,7 @@ input.setLoudSoundThreshold(768);
 
 input.onLoudSound(() => {
 	pixels.setAll(Colors.Pink);
-    loops.pause(200);
+    pause(200);
     pixels.clear();
 });
 ```

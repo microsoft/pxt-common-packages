@@ -101,7 +101,7 @@ namespace music {
             queue.cancel();
             queue.runUntilDone(() => melody.playNextNote());
         })
-        loops.pause(1);
+        pause(1);
     }
 
 

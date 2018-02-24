@@ -1,3 +1,3 @@
-loops.forever(() => {
+forever(() => {
     serial.writeLine(`light=${input.lightLevel()}`);
 })

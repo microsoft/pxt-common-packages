@@ -3,7 +3,7 @@
 ```blocks
 let c = 0;
 let pixels = light.createStrip();
-loops.forever(function() {
+forever(function() {
     pixels.setPhotonPenHue(c);
     pixels.photonForward(1);
     c += 16;

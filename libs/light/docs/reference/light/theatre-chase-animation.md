@@ -12,7 +12,7 @@ light.theatreChaseAnimation();
 ## Example
 
 ```blocks
-loops.forever(() => {
+forever(() => {
     light.builtin.showAnimationFrame(light.theatreChaseAnimation(), 500)
 })
 ```

@@ -9,33 +9,33 @@ g-force you will want to measure.
 input.setAccelerometerRange(AcceleratorRange.OneG);
 ```
 
-### Parameters
+## Parameters
 
 * ``range`` the biggest g-force (acceleration) number you will measure: `1g`, `2g`, `4g`, or `8g`.
 Any bigger numbers measured by your @boardname@ are ignored. So, you won't receive
 events or measurments to your program when a bigger g-force occurs.
 
-### Example #example
+## Example #example
 
 Set the highest g-force that your @boardname@
 will measure up to 4 g. Then, write to **serial** the acceleration measured when you move the board side to side.
 
 ```blocks
 input.setAccelerometerRange(AcceleratorRange.FourG)
-loops.forever(() => {
+forever(() => {
     serial.writeNumber(input.acceleration(Dimension.X))
 })
 ```
 
-#### ~hint
+### ~hint
 **Simulator**
 
 This program only works when on the @boardname@. You have to download it first before trying it out.
-#### ~
+### ~
 
-### See Also
+## See also #seealso
 
-[``||acceleration||``](/reference/input/acceleration)
+[acceleration](/reference/input/acceleration)
 
 ```package
 accelerometer

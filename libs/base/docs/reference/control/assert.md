@@ -13,18 +13,18 @@ You can insist that your program will stop at an assert block if a certain condi
 * **cond**: a [boolean](/types/boolean) where true means everything is ok or false which means, stop the program!
 * **code**: an error [number](/types/number) you match to an error situation in your program.
 
-## Example
+## Example #example
 
 Stop the program if a sensor connected to pin `A0` sends a low (`0`) signal.
 
 ```blocks
-loops.forever(function () {
+forever(function () {
     control.assert((pins.A0.digitalRead() == 1), 15)
-    loops.pause(1000)
+    pause(1000)
 })
 ```
 
-## See also
+## See also #seealso
 
 [panic](/reference/control/panic)
 

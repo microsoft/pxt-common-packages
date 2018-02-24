@@ -12,7 +12,7 @@ light.runningLightsAnimation();
 ## Example
 
 ```blocks
-loops.forever(() => {
+forever(() => {
     light.builtin.showAnimationFrame(light.runningLightsAnimation())
 })
 ```

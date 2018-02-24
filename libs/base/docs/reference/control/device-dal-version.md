@@ -10,7 +10,7 @@ control.deviceDalVersion()
 
 * a [string](/types/string) that represents the version of the system software (DAL) on the board.
 
-## Example
+## Example #example
 
 Write the system software version to the serial port.
 
@@ -18,6 +18,6 @@ Write the system software version to the serial port.
 serial.writeLine("DAL version = " + control.deviceDalVersion());
 ```
 
-# See also
+## See also #seealso
 
 [device serial number](/reference/control/device-serial-number)

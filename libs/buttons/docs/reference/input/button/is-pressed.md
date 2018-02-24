@@ -31,7 +31,7 @@ Set all the pixels to green when button `A` is pressed. When the button is not p
 ```blocks
 let pixels = light.createStrip();
 
-loops.forever(function() {
+forever(function() {
     if (input.buttonA.isPressed()) {
         pixels.setAll(Colors.Green);
     } else {

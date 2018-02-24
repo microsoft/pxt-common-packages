@@ -5,14 +5,14 @@ Write a buffer to the serial communication port.
 ```sig
 serial.writeBuffer(pins.createBuffer(0));
 ```
-Information in a buffer is sent out the serial port with ``||write buffer||``. This is used
+Information in a buffer is sent out the serial port with ``||serial:write buffer||``. This is used
 when you want to send information that is more complex and not just simple text or a number.
 
 ## Parameters
 
 * **buffer**: the buffer to write to the serial port
 
-## Example
+## Example #example
 
 Set some special data values in a buffer and send the buffer across the serial connection.
 
@@ -25,7 +25,7 @@ sdv.setNumber(NumberFormat.Int8LE, 3, 87)
 serial.writeBuffer(sdv);
 ```
 
-## See also
+## See also #seealso
 
-[``||write line||``](/reference/serial/write-line),
-[``||write number||``](/reference/serial/write-number)
+[write line](/reference/serial/write-line),
+[write number](/reference/serial/write-number)

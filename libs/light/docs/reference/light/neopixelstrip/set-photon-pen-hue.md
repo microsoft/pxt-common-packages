@@ -35,11 +35,11 @@ Pulse an rainbow photon forward and backward across the pixel strip.
 ```blocks
 let hue = 0;
 let strip = light.createStrip()
-loops.forever(() => {
+forever(() => {
     strip.setPhotonPenHue(hue)
     for (let i = 0; i < strip.length(); i++) {
         strip.photonForward(1)
-        loops.pause(100)
+        pause(100)
     }
     strip.photonFlip()
     hue = hue + 1;

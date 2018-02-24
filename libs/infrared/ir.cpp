@@ -36,7 +36,7 @@ void onInfraredPacket(Action body) {
 }
 
 /**
- * Run action after there's an error reciving packet over IR.
+ * Run action after there's an error recieving packet over IR.
  */
 //%
 void onInfraredError(Action body) {
