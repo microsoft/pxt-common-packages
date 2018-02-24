@@ -45,6 +45,12 @@ interface Image {
      */
     //% helper=imageDrawLine
     drawLine(x0: number, y0: number, x1: number, y1: number, c: color): void;
+
+    /**
+     * Draw an empty rectangle
+     */
+    //% helper=imageDrawRect
+    drawRect(x: number, y: number, w: number, h: number, c: color): void;
 }
 
 namespace helpers {
@@ -69,6 +75,15 @@ namespace helpers {
     }
     export function imageDrawLine(img: Image, x: number, y: number, w: number, h: number, c: color): void {
         _drawLine(img, pack(x, y), pack(w, h), c)
+    }
+    export function imageDrawRect(img: Image, x: number, y: number, w: number, h: number, c: color): void {
+        if (w == 0 || h == 0) return
+        w--
+        h--
+        imageDrawLine(img, x, y, x + w, y, c)
+        imageDrawLine(img, x, y, x, y + h, c)
+        imageDrawLine(img, x + w, y + h, x + w, y, c)
+        imageDrawLine(img, x + w, y + h, x, y + h, c)
     }
 }
 
