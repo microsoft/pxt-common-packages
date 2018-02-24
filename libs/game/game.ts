@@ -19,10 +19,18 @@ namespace game {
     }
 
     export function splash(name: string, help: string) {
-        let top = 40
-        screen.fillRect(0, top, screen.width, 44, 9)
-        screen.printCenter(name, top + 8, 14, image.font8)
-        screen.printCenter(help, top + 23, 13, image.font5)
+        let lines = 1
+        if (!help) lines = 0
+        else
+            for (let i = 0; i < help.length; ++i)
+                if (help[i] == '\n') lines++
+
+        let h = 28 + lines * (image.font5.charHeight + 2)
+        let top = (screen.height - h) / 2
+        screen.fillRect(0, top, screen.width, h, 9)
+        screen.print(name, 8, top + 8, 14, image.font8)
+        screen.print(help, 8, top + 23, 13, image.font5)
+
         waitAnyKey()
     }
 
