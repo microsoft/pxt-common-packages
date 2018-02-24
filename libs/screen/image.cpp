@@ -82,7 +82,7 @@ RefImage::RefImage(BoxedBuffer *buf) : PXT_VTABLE_INIT(RefImage), _buffer((unsig
 RefImage::RefImage(uint32_t sz) : PXT_VTABLE_INIT(RefImage), _buffer((sz << 2) | 3) {}
 
 Image mkImage(int width, int height, int bpp) {
-    if (width < 0 || height < 0 || width > 255 || height > 2000)
+    if (width < 0 || height < 0 || width > 255 || height > 255)
         return NULL;
     if (bpp != 1 && bpp != 4)
         return NULL;
