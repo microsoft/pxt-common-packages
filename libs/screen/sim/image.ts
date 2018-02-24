@@ -251,6 +251,142 @@ namespace pxsim.ImageMethods {
         return drawImageCore(img, other, x, y, false, true)
     }
 
+    function drawLineLow(img: RefImage, x0: number, y0: number, x1: number, y1: number, c: number) {
+        let dx = x1 - x0;
+        let dy = y1 - y0;
+        let yi = img._width;
+        if (dy < 0) {
+            yi = -yi;
+            dy = -dy;
+        }
+        let D = 2 * dy - dx;
+        dx <<= 1;
+        dy <<= 1;
+        c = img.color(c);
+        let ptr = img.pix(x0, y0)
+        for (let x = x0; x <= x1; ++x) {
+            img.data[ptr] = c
+            if (D > 0) {
+                ptr += yi;
+                D -= dx;
+            }
+            D += dy;
+            ptr++;
+        }
+    }
+
+    function drawLineHigh(img: RefImage, x0: number, y0: number, x1: number, y1: number, c: number) {
+        let dx = x1 - x0;
+        let dy = y1 - y0;
+        let xi = 1;
+        if (dx < 0) {
+            xi = -1;
+            dx = -dx;
+        }
+        let D = 2 * dx - dy;
+        dx <<= 1;
+        dy <<= 1;
+        c = img.color(c);
+        let ptr = img.pix(x0, y0);
+        for (let y = y0; y <= y1; ++y) {
+            img.data[ptr] = c;
+            if (D > 0) {
+                ptr += xi;
+                D -= dy;
+            }
+            D += dx;
+            ptr += img._width;
+        }
+    }
+
+    export function _drawLine(img: RefImage, xy: number, wh: number, c: number) {
+        drawLine(img, XX(xy), YY(xy), XX(wh), YY(wh), c)
+    }
+
+    export function drawLine(img: RefImage, x0: number, y0: number, x1: number, y1: number, c: number) {
+        x0 |= 0
+        y0 |= 0
+        x1 |= 0
+        y1 |= 0
+
+        if (x1 < x0) {
+            drawLine(img, x1, y1, x0, y0, c);
+            return;
+        }
+
+        let w = x1 - x0;
+        let h = y1 - y0;
+
+        if (h == 0) {
+            if (w == 0)
+                set(img, x0, y0, c);
+            else
+                fillRect(img, x0, y0, w + 1, 1, c);
+            return;
+        }
+
+        if (w == 0) {
+            if (h > 0)
+                fillRect(img, x0, y0, 1, h + 1, c);
+            else
+                fillRect(img, x0, y1, 1, -h + 1, c);
+            return;
+        }
+
+        if (x1 < 0 || x0 >= img._width)
+            return;
+        if (x0 < 0) {
+            y0 -= (h * x0 / w) | 0;
+            x0 = 0;
+        }
+        if (x1 >= img._width) {
+            let d = (img._width - 1) - x1;
+            y1 += (h * d / w) | 0;
+            x1 = img._width - 1
+        }
+
+        if (y0 < y1) {
+            if (y0 >= img._height || y1 < 0)
+                return;
+            if (y0 < 0) {
+                x0 -= (w * y0 / h) | 0;
+                y0 = 0;
+            }
+            if (y1 >= img._height) {
+                let d = (img._height - 1) - y1;
+                x1 += (w * d / h) | 0;
+                y1 = img._height
+            }
+        } else {
+            if (y1 >= img._height || y0 < 0)
+                return;
+            if (y1 < 0) {
+                x1 -= (w * y1 / h) | 0;
+                y1 = 0;
+            }
+            if (y0 >= img._height) {
+                let d = (img._height - 1) - y0;
+                x0 += (w * d / h) | 0;
+                y0 = img._height
+            }
+        }
+
+        img.makeWritable()
+
+        if (h < 0) {
+            h = -h;
+            if (h < w)
+                drawLineLow(img, x0, y0, x1, y1, c);
+            else
+                drawLineHigh(img, x1, y1, x0, y0, c);
+        } else {
+            if (h < w)
+                drawLineLow(img, x0, y0, x1, y1, c);
+            else
+                drawLineHigh(img, x0, y0, x1, y1, c);
+        }
+    }
+
     export function drawIcon(img: RefImage, icon: RefBuffer, x: number, y: number, color: number) {
         const img2 = icon.data
         if (!img2 || img2.length < 4 || img2[0] != 0xf1)

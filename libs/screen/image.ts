@@ -39,9 +39,18 @@ interface Image {
      */
     //% helper=imageFillRect
     fillRect(x: number, y: number, w: number, h: number, c: color): void;
+
+    /**
+     * Draw a line
+     */
+    //% helper=imageDrawLine
+    drawLine(x0: number, y0: number, x1: number, y1: number, c: color): void;
 }
 
 namespace helpers {
+    //% shim=ImageMethods::_drawLine
+    function _drawLine(img: Image, xy: number, wh: number, c: color): void { }
+
     //% shim=ImageMethods::_fillRect
     function _fillRect(img: Image, xy: number, wh: number, c: color): void { }
 
@@ -57,6 +66,9 @@ namespace helpers {
     }
     export function imageFillRect(img: Image, x: number, y: number, w: number, h: number, c: color): void {
         _fillRect(img, pack(x, y), pack(w, h), c)
+    }
+    export function imageDrawLine(img: Image, x: number, y: number, w: number, h: number, c: color): void {
+        _drawLine(img, pack(x, y), pack(w, h), c)
     }
 }
 
