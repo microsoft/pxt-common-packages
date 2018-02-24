@@ -9,13 +9,13 @@ namespace sprite {
         let spr = new Sprite(img)
         if (!allSprites) {
             allSprites = []
-            control.addFrameHandler(10, dt => {
+            control.addFrameHandler(10, () => {
                 for (let s of allSprites)
-                    s._update(dt)
+                    s._update(control.deltaTime)
                 for (let s of allSprites)
                     s._collisions()
             })
-            control.addFrameHandler(90, dt => {
+            control.addFrameHandler(90, () => {
                 allSprites.sort((a, b) => a.z - b.z || a.id - b.id)
                 for (let s of allSprites)
                     s._draw()
