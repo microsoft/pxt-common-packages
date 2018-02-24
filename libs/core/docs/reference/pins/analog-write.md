@@ -17,7 +17,7 @@ voltage range used by your board.
 *  **value**: a [number](types/number) between `0` (no signal) and `1023` (full signal)
 
 
-## Example #ex1
+## Example #example
 
 Create a sawtooth wave signal on pin `A0`.
 
@@ -38,6 +38,6 @@ forever(() => {
 
 ```
 
-## See also
+## See also #seealso
 
-[``||analog read||``](/reference/pins/analog-read)
+[analog read](/reference/pins/analog-read)

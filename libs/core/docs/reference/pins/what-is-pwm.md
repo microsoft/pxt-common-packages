@@ -26,7 +26,7 @@ To make servos work, you have to keep sending a signal to them over and over aga
 servo gets this signal is called its period. For common servos, they have a signaling period of
 20 milliseconds. This means that they get a new command every 20 milliseconds which is 50 times
 every second. You might think that they are really busy but they can handle it. You probably don't
-have to use ``||analog set period||`` before writing to your servos. Servos don't use all of the
+have to use ``||pins:analog set period||`` before writing to your servos. Servos don't use all of the
 period to tell how much to turn the shaft. They usally get that information from a pulse that
 is between 5 percent and 10 percent of the signal period.
 
@@ -34,16 +34,16 @@ is between 5 percent and 10 percent of the signal period.
 
 You know that when you write a value to an analog pin you use a number between 0 and 1023. This
 creates a different voltage that is detected at the pin. Some boards will have a secret way to
-make it look like the voltage changes when you write a different value with ``||analog write||``.
+make it look like the voltage changes when you write a different value with ``||pins:analog write||``.
 The analog pin can actully make just two voltages: low (0 volts) and high (3.3 volts or 5 volts).
 In order to make many voltages, a pulse is sent for some amount time that is only part of the
 signal period. If your board can make 3.3 volts for the pin output, it can pretend to make half
-that voltage (1.65 volts) when you write `511` using ``||analog write||``. How? Well, to do it,
+that voltage (1.65 volts) when you write `511` using ``||pins:analog write||``. How? Well, to do it,
 it sends a pulse that lasts only half of the time of the period. If the period is short enough,
 many times per second, other circuits detect that the pin is giving 1.65 volts. Tricky, right!
 
-## See Also
+## See also
 
-[``||servo set pulse||``](/reference/pins/servo-set-pulse),
-[``||servo write||``](/reference/pins/servo-write)
-[``||analog set period||``](/reference/pins/analog-set-period)
+[servo set pulse](/reference/pins/servo-set-pulse),
+[servo write](/reference/pins/servo-write)
+[analog set period](/reference/pins/analog-set-period)

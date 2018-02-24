@@ -37,8 +37,8 @@ The capacitive touch pins on your board work as touch sensors by themselves, **W
 You can even attach wires to them to make a bigger sensor with other conductive material.
 ## ~
 
-## See Also
+## See also #seealso
 
-[``||on event||``](/reference/input/button/on-event)
-[``||is pressed||``](/reference/input/button/is-pressed),
-[``||on event||``](/reference/input/button/on-event)
+[on event](/reference/input/button/on-event)
+[is pressed](/reference/input/button/is-pressed),
+[on event](/reference/input/button/on-event)

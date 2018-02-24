@@ -33,7 +33,7 @@ is in microseconds (1 second = 1000000 microseconds).
 
 * a [number](/types/number) that is how long the pulse happened. The pulse time is a number of microseconds.
 
-## Example #ex1
+## Example #example
 
 Check for a `low` pulse on pin `D5` every one-half of a second. Make the first pixel on the pixel strip `red`
 if there was a pulse.
@@ -54,7 +54,7 @@ forever(function() {
 })
 ```
 
-## See Also
+## See also #seealso
 
-[``||digital read||``](/reference/pins/digital-read), [``||set pull||``](/reference/pins/set-pull),
-[``||on pulsed||``](/reference/pins/on-pulsed)
+[digital read](/reference/pins/digital-read), [set pull](/reference/pins/set-pull),
+[on pulsed](/reference/pins/on-pulsed)

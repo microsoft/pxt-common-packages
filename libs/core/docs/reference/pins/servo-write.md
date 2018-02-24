@@ -40,7 +40,7 @@ a speed rating in one of the directions. The number `0` is full speed rotating t
 >> * `90` to `180`, the shaft spins faster rotating to the _right_ as the number reaches `180`.
 >> * `180` full speed rotating to the _right_.
 
-## Example #ex1
+## Example #example
 
 Connect a servo to pin `A1`. Wag (rotate right and left) the arm on the servo shaft 45 degrees in each
 direction for 5 times.
@@ -54,9 +54,9 @@ for (let i = 1; i <= 5; i++) {
 }
 ```
 
-## See Also
+## See also #seealso
 
-[``||servo set pulse||``](/reference/pins/servo-set-pulse),
-[``||analog set period||``](/reference/pins/analog-set-period)
+[servo set pulse](/reference/pins/servo-set-pulse),
+[analog set period](/reference/pins/analog-set-period)
 
 [What is PWM](/reference/pins/what-is-pwm)

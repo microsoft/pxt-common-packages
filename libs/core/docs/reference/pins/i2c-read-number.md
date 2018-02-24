@@ -47,7 +47,7 @@ again right away.
 * a [number](types/number) that is read from the I2C bus. It is one or more
 bytes in size depending on what type you asked for in **format**.
 
-## Example #ex1
+## Example #example
 
 Connect a temperature sensor on a breadboard to the **SDA** and **SCL** pins on your board. Set your sensor
 to respond to address `24`. Every 30 seconds, read the temperature from the sensor and write it as Fahrenheit
@@ -62,6 +62,6 @@ forever(() => {
 })
 ```
 
-## See Also
+## See also #seealso
 
-[``||i2c write number||``](/reference/pins/i2c-write-number)
+[i2c write number](/reference/pins/i2c-write-number)

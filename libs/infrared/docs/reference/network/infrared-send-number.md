@@ -12,7 +12,7 @@ The infrared transmitter on your board will send a number as part of a data mess
 
 * **value**: the [number](types/number) to send to another @boardname@ using infrared.
 
-## Example #ex1
+## Example #example
 
 Send the numbers `0` to `9` to another @boardname@. Wait a little bit between each send to let the
 receiving board think about the number it just got.
@@ -24,9 +24,9 @@ for (let irDataNumber = 0; irDataNumber <= 9; irDataNumber++) {
 }
 ```
 
-## See also
+## See also #seealso
 
-[``||network:on infrared received number||``](/reference/network/on-infrared-received-number)
+[on infrared received number](/reference/network/on-infrared-received-number)
 
 ```package
 infrared

@@ -27,6 +27,6 @@ forever(() => {
 
 ## See also #seealso
 
-[``||write line||``](/reference/serial/write-line),
-[``||write value||``](/reference/serial/write-value)
+[write line](/reference/serial/write-line),
+[write value](/reference/serial/write-value)
 

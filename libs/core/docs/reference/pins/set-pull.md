@@ -34,7 +34,7 @@ called a _pulse_ event.
 > * `none`: the pin is not connected to either high or low voltage. An external resistor or other
 electronics will make the pull direction.
 
-## Example #ex1
+## Example #example
 
 Set the pull direction for digital pin `D4` to `up`. Flash the LED connected to pin `D13` for
 one-fourth of a second when pin `D4` is pulsed `low`.
@@ -49,8 +49,8 @@ pins.D4.onPulsed(PulseValue.Low, () => {
 })
 ```
 
-## See Also
+## See also #seealso
 
-[``||digital read||``](/reference/pins/digital-read),
-[``||on pulsed||``](/reference/pins/on-pulsed),
-[``||pulse in||``](/reference/pins/pulse-in)
+[digital read](/reference/pins/digital-read),
+[on pulsed](/reference/pins/on-pulsed),
+[pulse in](/reference/pins/pulse-in)
