@@ -48,6 +48,9 @@ namespace helpers {
     //% shim=ImageMethods::_drawIcon
     function _drawIcon(img: Image, icon: Buffer, xy: number, c: color): void { }
 
+    //% shim=ImageMethods::_drawLine
+    function _drawLine(img: Image, xy0: number, xy1: number, c: color): void {}
+
     function pack(x: number, y: number) {
         return (Math.clamp(-30000, 30000, x | 0) & 0xffff) | (Math.clamp(-30000, 30000, y | 0) << 16)
     }
@@ -57,6 +60,9 @@ namespace helpers {
     }
     export function imageFillRect(img: Image, x: number, y: number, w: number, h: number, c: color): void {
         _fillRect(img, pack(x, y), pack(w, h), c)
+    }
+    export function imageDrawLine(img: Image, x0: number, y0: number, x1: number, y1: number, c: color): void {
+        _drawLine(img, pack(x0, y0), pack(x1, y1), c);
     }
 }
 

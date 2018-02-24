@@ -571,6 +571,51 @@ void _drawIcon(Image img, Buffer icon, int xy, int c) {
     decrRC(ii);
 }
 
+// Bresenham Algorithm
+//%
+void _drawLine(Image img, int xy0, int xy1, int c) {
+    
+    int x0 = XX(xy0), y0 = YY(xy0), x1 = XX(xy1), y1 = YY(xy1);
+
+    if (!img->inRange(x0, y0) || !img->inRange(x1, y1))
+        return;
+        
+    img->makeWritable();
+
+    int dx =  abs(x1-x0), sx = x0<x1 ? 1 : -1;
+    int dy = -abs(y1-y0), sy = y0<y1 ? 1 : -1; 
+    int err = dx + dy, e2;
+ 
+    while(true) {        
+        // set
+        auto ptr = img->pix(x0, y0);
+        if (img->bpp() == 1) {
+            uint8_t mask = 0x80 >> (x & 7);
+            if (c)
+                *ptr |= mask;
+            else
+                *ptr &= ~mask;
+        } else if (img->bpp() == 4) {
+            if (x & 1)
+                *ptr = (*ptr & 0xf0) | (c & 0xf);
+            else
+                *ptr = (*ptr & 0x0f) | (c << 4);
+        }
+
+        // increment
+        if (x0==x1 && y0==y1) break;
+        e2 = 2 * err;
+        if (e2 >= dy) { 
+           err += dy; 
+           x0 += sx; 
+        }
+        if (e2 <= dx) { 
+            err += dx; 
+            y0 += sy; 
+       }
+    }
+}
+
 } // namespace ImageMethods
 
 namespace image {
