@@ -18,6 +18,14 @@ namespace game {
         sprite.reset()
     }
 
+    export function splash(name: string, help: string) {
+        let top = 40
+        screen.fillRect(0, top, screen.width, 44, 9)
+        screen.printCenter(name, top + 8, 14, image.font8)
+        screen.printCenter(help, top + 23, 13, image.font5)
+        waitAnyKey()
+    }
+
     export function meltScreen() {
         freeze()
         for (let i = 0; i < 10; ++i) {
@@ -45,7 +53,6 @@ namespace game {
             if (!effect)
                 loops.pause(1000) // wait for users to stop pressing keys
             waitAnyKey()
-            meltScreen()
             control.reset()
         })
     }
