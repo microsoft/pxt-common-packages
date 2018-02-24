@@ -13,7 +13,7 @@ a new line.
 
 * **text**: the [string](/types/string) to write to the serial port
 
-## Example
+## Example #example
 
 Writes the word `JUMBO` to the serial port a bunch of times, without any new lines.
 
@@ -24,8 +24,8 @@ forever(() => {
 });
 ```
 
-## See also
+## See also #seealso
 
-[``||write line||``](/reference/serial/write-line),
-[``||write number||``](/reference/serial/write-number),
-[``||write value||``](/reference/serial/write-value)
+[write line](/reference/serial/write-line),
+[write number](/reference/serial/write-number),
+[write value](/reference/serial/write-value)

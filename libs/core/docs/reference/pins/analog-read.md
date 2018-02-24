@@ -15,7 +15,7 @@ is something between `0` and `1023`.  A `0` is no signal and `1023` is a full si
 
 * a [number](types/number) between `0` and `1023` that is amount of signal at the pin.
 
-## Example #ex1
+## Example #example
 
 Use the pixel strip as a signal meter. Read from pin `A2` and display the value as a graph on the pixel
 strip. Also, output the value to the serial port.
@@ -31,6 +31,6 @@ forever(function() {
 })
 ```
 
-## See also
+## See also #seealso
 
-[``||analog write||``](/reference/pins/analog-write)
+[analog write](/reference/pins/analog-write)

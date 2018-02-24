@@ -14,7 +14,7 @@ started when it's finished.
 
 * **value**: the [number](/types/number) to write to the serial port
 
-## Example
+## Example #example
 
 Write a 10-digit number to the serial port many, many times.
 
@@ -25,7 +25,7 @@ forever(() => {
 });
 ```
 
-## See also
+## See also #seealso
 
 [``||write line||``](/reference/serial/write-line),
 [``||write value||``](/reference/serial/write-value)

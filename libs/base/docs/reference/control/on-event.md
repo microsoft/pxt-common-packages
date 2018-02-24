@@ -64,7 +64,7 @@ to your board. You could make it known to your program that any event that comes
 * **value**: a [number](/types/number) that tells what the cause of the event is, like: `4`.
 * **handler**: the code to run when the event happens.
 
-## Example #exsection
+## Example #example
 
 Register two events coming from source `22`. Make pixels light up on the pixel strip when
 the events of `0` and `1` are _raised_.
@@ -89,6 +89,6 @@ control.onEvent(pixelLighter, 1, () => {
 })
 ```
 
-## See also
+## See also ##seealso
 
-[``||raise event||``](/reference/control/raise-event)
+[raise event](/reference/control/raise-event)

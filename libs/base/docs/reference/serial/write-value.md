@@ -11,7 +11,7 @@ itself. If you want to send a temperature value of 32 degrees as a _name:value_ 
 it would go to the serial port as this: "temperature:32". This is a good way to
 connect a number value to it's meaning.
 
-So, ``||write value||`` does this but you give the name and the value as two parts and it
+So, ``||serial:write value||`` does this but you give the name and the value as two parts and it
 sends it as a pair.
 
 ## Parameters
@@ -19,7 +19,7 @@ sends it as a pair.
 * **name**: a [string](/types/string) that is the name part of the _name:value_ pair
 * **value**: a [number](/types/number) that is the value part of the _name:value_ pair 
 
-## Example
+## Example #example
 
 Send _name:value_ pairs for odd and even numbers to the serial port.
 
@@ -33,8 +33,8 @@ for (let i = 0; i < 10; i++) {
 }
 ```
 
-## See also
+## See also #seealso
 
-[``||write line||``](/reference/serial/write-line),
-[``||write number||``](/reference/serial/write-number)
+[write line](/reference/serial/write-line),
+[write number](/reference/serial/write-number)
 

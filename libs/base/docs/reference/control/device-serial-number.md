@@ -12,7 +12,7 @@ The system software in your board creates a unique number to identify the board.
 
 * a [number](/types/number) that is created to uniquely identify this board.
 
-## Example
+## Example #example
 
 Write the board serial number to the serial port.
 
@@ -20,6 +20,6 @@ Write the board serial number to the serial port.
 serial.writeValue("serialnumber", control.deviceSerialNumber());
 ```
 
-## See also
+## See also #seealso
 
 [device dal version](/reference/control/device-dal-version)

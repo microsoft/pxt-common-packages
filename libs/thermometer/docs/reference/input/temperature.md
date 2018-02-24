@@ -72,7 +72,7 @@ better thermometer.
 
 ### ~
 
-## See also
+## See also #seeaslo
 
-[``||on temperature condition changed||``](/reference/input/on-temperature-condition-changed)
+[on temperature condition changed](/reference/input/on-temperature-condition-changed)
 

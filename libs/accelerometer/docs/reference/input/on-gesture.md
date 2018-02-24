@@ -7,7 +7,7 @@ input.onGesture(Gesture.Shake,() => {
 })
 ```
 
-### Parameters
+## Parameters
 
 * ``gesture``: the gesture to detect. A gesture is the way you hold or move the @boardname@. Gestures are:
 > * `shake`: shake the board
@@ -22,7 +22,7 @@ input.onGesture(Gesture.Shake,() => {
 > * `6g`: acceleration force of 6 g
 * ``body``: code to run when the gesture event occurs
 
-### Example: random number #example
+## Example: random number #example
 
 Show a random color when you shake the @boardname@.
 
@@ -32,6 +32,8 @@ input.onGesture(Gesture.Shake,() => {
     pixels.setAll(light.hsv(Math.randomRange(0, 256), 255, 127));
 })
 ```
+
+## #seeaslo
 
 ```package
 accelerometer
