@@ -3,6 +3,20 @@ namespace game {
     let _score = 0
     let scoreSprite: Sprite
 
+    export function meltScreen() {
+        control.clearHandlers()
+        for (let i = 0; i < 50; ++i) {
+            for (let j = 0; j < 1000; ++j) {
+                let x = Math.randomRange(0, screen.width - 1)
+                let y = Math.randomRange(0, screen.height - 3)
+                let c = screen.get(x, y)
+                screen.set(x, y + 1, c)
+                screen.set(x, y + 2, c)
+            }
+            loops.pause(100)
+        }
+    }
+
     export function over() {
         if (isOver) return
         isOver = true
