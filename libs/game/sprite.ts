@@ -26,7 +26,10 @@ namespace sprite {
         return spr
     }
 
-    export function launchObstacle(img: Image, vx: number, vy: number) {
+    /**
+     * Create a new sprite with given speed, and place it at the edge of the screen so it moves towards the middle. The sprite auto-destroys when it leaves the screen. You can modify position after it's created.
+     */
+    export function launchParticle(img: Image, vx: number, vy: number) {
         let s = create(img)
         s.vx = vx
         s.vy = vy
@@ -34,14 +37,14 @@ namespace sprite {
         // put it at the edge of the screen so that it moves towards the middle
 
         if (vx < 0)
-            s.x = screen.width + (s.width() >> 1) - 1
+            s.x = screen.width + (s.width >> 1) - 1
         else if (vx > 0)
-            s.x = -(s.width() >> 1) + 1
+            s.x = -(s.width >> 1) + 1
 
         if (vy < 0)
-            s.y = screen.height + (s.height() >> 1) - 1
+            s.y = screen.height + (s.height >> 1) - 1
         else if (vy > 0)
-            s.y = -(s.height() >> 1) + 1
+            s.y = -(s.height >> 1) + 1
 
         s.flags |= sprite.Flag.AutoDestroy
 
@@ -84,27 +87,27 @@ class Sprite {
         this.type = 0
     }
 
-    width() {
+    get width() {
         return this.image.width
     }
-    height() {
+    get height() {
         return this.image.height
     }
-    left() {
-        return this.x - (this.width() >> 1)
+    get left() {
+        return this.x - (this.width >> 1)
     }
-    right() {
-        return this.left() + this.width()
+    get right() {
+        return this.left + this.width
     }
-    top() {
-        return this.y - (this.height() >> 1)
+    get top() {
+        return this.y - (this.height >> 1)
     }
-    bottom() {
-        return this.top() + this.height()
+    get bottom() {
+        return this.top + this.height
     }
 
     _draw() {
-        screen.drawTransparentImage(this.image, this.left(), this.top())
+        screen.drawTransparentImage(this.image, this.left, this.top)
     }
 
     _update(dt: number) {
@@ -117,8 +120,11 @@ class Sprite {
     _collisions() {
         if (this.collisionHandler) {
             for (let o of sprite.allSprites) {
-                if (this != o && this.collidesWith(o))
-                    this.collisionHandler(o)
+                if (this != o && this.collidesWith(o)) {
+                    let tmp = o
+                    control.runInBackground(() => this.collisionHandler(tmp))
+                }
+
             }
         }
 
@@ -128,14 +134,14 @@ class Sprite {
                 0 <= this.y && this.y < screen.height) {
                 // OK
             } else {
-                this.wallHandler()
+                control.runInBackground(this.wallHandler)
             }
         }
 
         if (this.flags & sprite.Flag.AutoDestroy) {
-            if (this.right() < 0 || this.bottom() < 0 ||
-                this.left() >= screen.width ||
-                this.top() >= screen.height) {
+            if (this.right < 0 || this.bottom < 0 ||
+                this.left >= screen.width ||
+                this.top >= screen.height) {
                 this.destroy()
             }
         }
@@ -150,7 +156,7 @@ class Sprite {
             return false
         if (other.flags & sprite.Flag.Ghost)
             return false
-        return other.image.overlapsWith(this.image, this.left() - other.left(), this.top() - other.top())
+        return other.image.overlapsWith(this.image, this.left - other.left, this.top - other.top)
     }
 
     onCollision(handler: (other: Sprite) => void) {
@@ -171,7 +177,7 @@ class Sprite {
         this.flags |= sprite.Flag.Destroyed
         sprite.allSprites.removeElement(this)
         if (this.destroyHandler) {
-            this.destroyHandler()
+            control.runInBackground(this.destroyHandler)
         }
     }
 }
