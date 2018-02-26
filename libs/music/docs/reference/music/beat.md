@@ -14,7 +14,7 @@ music.beat(BeatFraction.Whole)
 
 * a [number](/types/number) that is the amount of time in milliseconds (one-thousandth of a second) for the beat fraction.
 
-## Example #xample
+## Example #example
 
 ```blocks
 music.playTone(Note.C, music.beat(BeatFraction.Quarter))

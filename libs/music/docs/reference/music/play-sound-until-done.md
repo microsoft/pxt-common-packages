@@ -52,7 +52,7 @@ Play a the built-in sound called `BaDing`.
 music.playSoundUntilDone(music.sounds(Sounds.BaDing))
 ```
 
-## See also
+## See also #seealso
 
 [play sound](/reference/music/play-sound), [sounds](/reference/music/sounds),
 [tempo](/reference/music/tempo), [set tempo](/reference/music/set-tempo),
