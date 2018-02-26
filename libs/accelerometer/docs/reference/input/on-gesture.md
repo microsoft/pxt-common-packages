@@ -33,7 +33,7 @@ input.onGesture(Gesture.Shake,() => {
 })
 ```
 
-## #seeaslo
+## #seealso
 
 ```package
 accelerometer

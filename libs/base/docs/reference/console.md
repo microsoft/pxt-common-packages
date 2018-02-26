@@ -9,5 +9,5 @@ console.logValue("x", 0);
 
 ## See also
 
-[``||log||``](/reference/console/log),
-[``||log value||``](/reference/console/log-value)
+[log](/reference/console/log),
+[log value](/reference/console/log-value)

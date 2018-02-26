@@ -21,7 +21,7 @@ Because the @boardname@ does not usually get very hot, the temperature of the CP
 is usually close to the temperature of wherever you are.
 The @boardname@ might warm up a little if you make it work hard, though!
 
-## Examples #exsection
+## Examples #example
 
 ### @boardname@ thermometer #ex1
 
@@ -72,7 +72,7 @@ better thermometer.
 
 ### ~
 
-## See also #seeaslo
+## See also #seealso
 
 [on temperature condition changed](/reference/input/on-temperature-condition-changed)
 

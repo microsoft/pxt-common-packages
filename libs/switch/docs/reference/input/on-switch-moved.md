@@ -12,7 +12,7 @@ input.onSwitchMoved(SwitchDirection.Left, () => {
 * **direction**: the direction the switch was moved, either `left` or `right`.
 * **handler**: the code to run when the switch is moved.
 
-## Example #exsection
+## Example #example
 
 Use two ``||input:on switch moved||`` events for `left` and `right`. Make a photon move in opposite directions
 when the switch is moves from one side to the other.
@@ -37,9 +37,9 @@ input.onSwitchMoved(SwitchDirection.Left, () => {
 })
 ```
 
-## See also
+## See also #seealso
 
-[``||on event||``](/reference/input/button/on-event)
+[on event](/reference/input/button/on-event)
 
 ```package
 input
