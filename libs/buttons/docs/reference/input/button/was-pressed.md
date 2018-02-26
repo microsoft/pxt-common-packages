@@ -29,7 +29,7 @@ Read about [**touch sensors**](/reference/input/button/touch-sensors) and using 
 
 * a [boolean](types/boolean): `true` if the button was pressed before, `false` if the button was not pressed before
 
-## Example
+## Example #example
 
 Set all the pixels to green if button `A` was pressed before button `B`. If not, turn all pixels off when button `B`is pressed.
 
@@ -44,9 +44,9 @@ input.buttonB.onEvent(ButtonEvent.Click, function() {
 })
 ```
 
-## See also
+## See also #seealso
 
-[``||is pressed||``](/reference/input/button/is-pressed),
-[``||on event||``](/reference/input/button/on-event)
+[is pressed](/reference/input/button/is-pressed),
+[on event](/reference/input/button/on-event)
 
 [Touch sensors](/reference/input/button/touch-sensors)

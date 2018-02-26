@@ -6,7 +6,7 @@ Stop running the current code and wait for an event.
 control.waitForEvent(0, 0)
 ```
 You might want your code to stop for a while until some event you're expecting happens.
-If you want your code to pause until a known event happens, use a ``||corntrol:wait for event||`` block.
+If you want your code to pause until a known event happens, use a ``||control:wait for event||`` block.
 A known event is something you identify that happens on the board or in your program.
 An event has both a source and a cause. The source is where the event comes from, like a sensor or
 some condition in your program. The cause is what made the event happen at the source.
@@ -60,4 +60,4 @@ pixels.setPixelColor(0, Colors.Yellow);
 
 ## See also #seealso
 
-[``||raise event||``](/reference/control/raise-event), [``||on event||``](/reference/control/on-event)
+[raise event](/reference/control/raise-event), [on event](/reference/control/on-event)

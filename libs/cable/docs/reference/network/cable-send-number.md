@@ -12,7 +12,7 @@ The cable transmitter on your board will send a number as part of a data message
 
 * **value**: the [number](types/number) to send to another @boardname@ using a cable.
 
-## Example #ex1
+## Example #example
 
 Send the numbers `0` to `9` to another @boardname@. Wait a little bit between each send to let the
 receiving board think about the number it just got.
@@ -24,9 +24,9 @@ for (let i = 0; i <= 9; i++) {
 }
 ```
 
-## See also
+## See also #seealso
 
-[``||network:on cable received number||``](/reference/network/on-cable-received-number)
+[on cable received number](/reference/network/on-cable-received-number)
 
 ```package
 cable

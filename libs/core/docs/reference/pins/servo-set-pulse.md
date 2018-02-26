@@ -38,7 +38,7 @@ you send a pulse number other than `1500` milliseconds to the servo. Instead of 
 Most, but not all, hobby servos that are made use the 1 to 2 millisecond pulse time to control the shaft rotation. Some
 might have smaller amount of rotation or use different pulse times for positions and speed. If you have one
 of those types of servos, find out what pulse times move the shaft where you want and use them in
-``||servo set pulse||``.
+``||pins:servo set pulse||``.
 #### ~
 
 ### PWM
@@ -54,7 +54,7 @@ long as you use a 20 millisecond signalling period.
 > * _continuous rotation_: the speed to turn the shaft in one direction or the other.
 >> * Most often, `1000` is turn full speed to the left, `2000` is full speed to the right, and `1500` stopped.
 
-## Example #ex1
+## Example #example
 
 Turn a standard serve to 135 degrees connected to pin `A1`. Wait for 3 seconds and set it back to neutral.
 
@@ -64,8 +64,8 @@ pause(3000)
 pins.A1.servoWrite(1500)
 ```
 
-## See Also
+## See also #seealso
 
-[``||servo write||``](/reference/pins/servo-write)
+[servo write](/reference/pins/servo-write)
 
 [What is PWM](/reference/pins/what-is-pwm)

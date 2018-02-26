@@ -35,7 +35,7 @@ Read about [**touch sensors**](/reference/input/button/touch-sensors) and using 
 > * ``held``: button was pressed and is still pressed
 * ``body`` the code you want to run when something happens with a button
 
-## Examples #exsection
+## Examples #example
 
 ### Next light please #ex1
 
@@ -72,7 +72,7 @@ input.buttonB.onEvent(ButtonEvent.Up, function() {
 })
 ```
 
-### Touch down
+### Touch down #ex3
 
 Make a pixel turn `pink` when you touch the capacitive pin `pin A1` on the board. The pixel then turns
 `green` when you lift your finger off of the pin.
@@ -88,10 +88,10 @@ input.pinA1.onEvent(ButtonEvent.Up, () => {
 })
 ```
 
-### See also
+## See also #seealso
 
-[``||is pressed||``](/reference/input/button/is-pressed),
-[``||was pressed||``](/reference/input/button/was-pressed),
-[``||random||``](/blocks/math#random-value)
+[is pressed](/reference/input/button/is-pressed),
+[was pressed](/reference/input/button/was-pressed),
+[random](/blocks/math#random-value)
 
 [Touch sensors](/reference/input/button/touch-sensors)

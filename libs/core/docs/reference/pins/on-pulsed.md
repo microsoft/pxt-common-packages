@@ -11,7 +11,7 @@ to the pin is pressed or a sensor attached to the pin wants to give a signal. A 
 changing voltage from high to low, or from low to high. The input to a pin is normally made to stay
 at either a high or low voltage when it isn't pulsed (its _unsignalled state_). You can decide what
 input value to keep the pin at is when it's not pulsed. You do this by giving it a _pull_ direction
-with [``||set pull||``](/reference/pins/set-pull).
+with [``||pins:set pull||``](/reference/pins/set-pull).
 
 Your code is inside an event block that starts when the input voltage at the pin changes. You give the
 pulse direction  you want the code to run for. Make the value for **pulse** be `high` if you want
@@ -23,7 +23,7 @@ you want your code to run when the voltage at the pin goes from high to low.
 * **pulse**: the pulse value to run code for, either `high` or `low`.
 * **body**: the code to run when the pin is pulsed.
 
-## Example #ex1
+## Example #example
 
 When pin `D4` is pulsed `low`, run code that flashes an LED connected to pin `D13` .
 
@@ -37,6 +37,6 @@ pins.D4.onPulsed(PulseValue.Low, () => {
 })
 ```
 
-## See Also
+## See also #seealso
 
-[``||pulse in||``](/reference/pins/pulse-in), [``||set pull||``](/reference/pins/set-pull)
+[pulse in](/reference/pins/pulse-in), [set pull](/reference/pins/set-pull)

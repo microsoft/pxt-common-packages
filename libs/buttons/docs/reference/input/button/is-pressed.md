@@ -24,7 +24,7 @@ Read about [**touch sensors**](/reference/input/button/touch-sensors) and using 
 
 * a [boolean](types/boolean): `true` if the button is pressed, `false` if the button is not pressed
 
-## Example
+## Example #example
 
 Set all the pixels to green when button `A` is pressed. When the button is not pressed, the pixels are red.
 
@@ -40,9 +40,9 @@ forever(function() {
 })
 ```
 
-## See also
+## See also #seealso
 
-[``||was pressed||``](/reference/input/button/was-pressed),
-[``||on event||``](/reference/input/button/on-event)
+[was pressed](/reference/input/button/was-pressed),
+[on event](/reference/input/button/on-event)
 
 [Touch sensors](/reference/input/button/touch-sensors)

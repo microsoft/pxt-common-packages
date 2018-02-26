@@ -19,7 +19,7 @@ board wants to send you so your program just receives the _data_ part of the pac
 This function has one argument:
 * ``num``: a single [number](/types/number) value received from the sender.
 
-## Example #ex1
+## Example #example
 
 Show the value of a number received from an infrared data message. The number is shown by lighting the same number of pixels on the pixel strip.
 
@@ -33,9 +33,9 @@ network.onInfraredReceivedNumber(function (num) {
 })
 ```
 
-## See also
+## See also #seealso
 
-[``||network:infrared send number||``](/reference/network/infrared-send-number)
+[infrared send number](/reference/network/infrared-send-number)
 
 ```package
 infrared

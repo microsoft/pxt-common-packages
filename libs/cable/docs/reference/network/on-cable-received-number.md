@@ -19,7 +19,7 @@ board wants to send you so your program just receives the _data_ part of the pac
 This function takes 1 argument:
 * ``num``: a single [number](/types/number) value from the sender.
 
-## Example #ex1
+## Example #example
 
 Show the value of a number received from an cable data message. The number is shown by lighting the same number of pixels on the pixel strip.
 
@@ -31,9 +31,9 @@ network.onCableReceivedNumber(function (num) {
 })
 ```
 
-## See also
+## See also #seealso
 
-[``||network:cable send number||``](/reference/network/cable-send-number)
+[cable send number](/reference/network/cable-send-number)
 
 ```package
 cable

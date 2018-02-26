@@ -44,7 +44,7 @@ again right away.
 >This is usually `false` if you wait for a while before reading from, or writing to, the bus again.
 
 
-## Example #ex1
+## Example #example
 
 Connect a 12-bit digital-to-analog converter (DAC) on a breadboard to the **SDA** and **SCL** pins on your
 board. Set your DAC to respond to address `99`. Write numbers to the DAC to have it make a sawtooth wave
@@ -66,6 +66,6 @@ forever(() => {
 })
 ```
 
-## See Also
+## See also #seealso
 
-[``||i2c read number||``](/reference/pins/i2c-read-number)
+[i2c read number](/reference/pins/i2c-read-number)

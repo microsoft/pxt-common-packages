@@ -9,14 +9,14 @@ Digital pins write one of two values: `false` or `true`. Often the `false` means
 to the pin is turned **off** or its status is `false`. In a similar way, `true` means something
 connected to the pin is **on** or has a status of `true`.
 
-The value from the last ``||digital write||`` stays at the pin until another ``||digital write||``
+The value from the last ``||pins:digital write||`` stays at the pin until another ``||pins:digital write||``
 happens.
 
 ## Parameters
 
 * **value**: a [boolean](types/boolean) value that is either `false` or `true`. The meaning of the value depends on how something connected to the pin behaves when it gets the new value.
 
-## Example #ex1
+## Example #example
 
 Light an LED on your bread board that is connected to pin `D4`. You write the value `true` to the pin.
 
@@ -24,6 +24,6 @@ Light an LED on your bread board that is connected to pin `D4`. You write the va
 pins.D4.digitalWrite(true)
 ```
 
-## See also
+## See also #seealso
 
-[``||digital read||``](/reference/pins/digital-read)
+[digital read](/reference/pins/digital-read)

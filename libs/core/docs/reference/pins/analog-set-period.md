@@ -17,7 +17,7 @@ microseconds and 1 millisecond is 1000 microseconds.
 
 * **period**: a [number](types/number) that is the period for the pulse signal sent at the pin.
 
-## Example #ex1
+## Example #example
 
 Set the period for a PWM signal to 20 milliseconds.
 
@@ -25,9 +25,9 @@ Set the period for a PWM signal to 20 milliseconds.
 pins.A1.analogSetPeriod(20000)
 ```
 
-## See Also
+## See also #seealso
 
-[``||servo write||``](/reference/pins/servo-write),
-[``||servo set pulse||``](/reference/pins/servo-set-pulse)
+[servo write](/reference/pins/servo-write),
+[servo set pulse](/reference/pins/servo-set-pulse)
 
 [What is PWM?](/reference/pins/what-is-pwm)
