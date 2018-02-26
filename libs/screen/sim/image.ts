@@ -2,13 +2,15 @@ namespace pxsim {
     export class RefImage {
         _width: number;
         _height: number;
+        _bpp: number;
         data: Uint8Array;
         dirty = true
 
-        constructor(w: number, h: number) {
+        constructor(w: number, h: number, bpp: number) {
             this.data = new Uint8Array(w * h)
             this._width = w
             this._height = h
+            this._bpp = bpp
         }
 
         pix(x: number, y: number) {
@@ -53,6 +55,8 @@ namespace pxsim.ImageMethods {
 
     export function height(img: RefImage) { return img._height }
 
+    export function isMono(img: RefImage) { return img._bpp == 1 }
+
     export function set(img: RefImage, x: number, y: number, c: number) {
         img.makeWritable()
         if (img.inRange(x, y))
@@ -91,7 +95,7 @@ namespace pxsim.ImageMethods {
     }
 
     export function clone(img: RefImage) {
-        let r = new RefImage(img._width, img._height)
+        let r = new RefImage(img._width, img._height, img._bpp)
         r.data.set(img.data)
         return r
     }
@@ -145,11 +149,18 @@ namespace pxsim.ImageMethods {
         // TODO implement dx
     }
 
+    export function replace(img: RefImage, from: number, to: number) {
+        to &= 0xf;
+        const d = img.data
+        for (let i = 0; i < d.length; ++i)
+            if (d[i] == from) d[i] = to
+    }
+
     export function doubledX(img: RefImage) {
         const w = img._width
         const h = img._height
         const d = img.data
-        const r = new RefImage(w * 2, h)
+        const r = new RefImage(w * 2, h, img._bpp)
         const n = r.data
         let dst = 0
 
@@ -166,7 +177,7 @@ namespace pxsim.ImageMethods {
         const w = img._width
         const h = img._height
         const d = img.data
-        const r = new RefImage(w, h * 2)
+        const r = new RefImage(w, h * 2, img._bpp)
         const n = r.data
 
         let src = 0
@@ -466,7 +477,7 @@ namespace pxsim.image {
 
 
     export function create(w: number, h: number) {
-        return new RefImage(w, h)
+        return new RefImage(w, h, getScreenState().bpp())
     }
 
     export function ofBuffer(buf: RefBuffer): RefImage {
@@ -477,13 +488,12 @@ namespace pxsim.image {
         const h = src[2]
         if (w == 0 || h == 0)
             return null
-        const r = new RefImage(w, h)
+        const bpp = src[0] & 0xf;
+        const r = new RefImage(w, h, bpp)
         const dst = r.data
 
         let dstP = 0
         let srcP = 3
-
-        const bpp = src[0] & 0xf;
 
         if (bpp == 1) {
             const len = (w + 7) >> 3

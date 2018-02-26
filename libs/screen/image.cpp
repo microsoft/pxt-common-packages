@@ -131,6 +131,14 @@ int height(Image img) {
     return img->height();
 }
 
+/**
+ * True iff the image is monochromatic (black and white)
+ */
+//% property
+bool isMono(Image img) {
+    return img->bpp() == 1;
+}
+
 static inline void setCore(Image img, int x, int y, int c) {
     auto ptr = img->pix(x, y);
     if (img->bpp() == 1) {
@@ -391,6 +399,26 @@ Image doubledY(Image img) {
     }
 
     return r;
+}
+
+/**
+ * Replaces one color in an image with another
+ */
+//%
+void replace(Image img, int from, int to) {
+    if (img->bpp() != 4)
+        return;
+    to &= 0xf;
+    auto ptr = img->pix();
+    auto len = img->height() * img->byteWidth();
+    while (len--) {
+        auto b = *ptr;
+        if ((b >> 4) == from)
+            b = (to << 4) | (b & 0xf);
+        if ((b & 0xf) == from)
+            b = (b & 0xf0) | to;
+        *ptr++ = b;
+    } 
 }
 
 /**

@@ -62,6 +62,12 @@ namespace sprite {
         return spr
     }
 
+    export function createWithAnimation(imgs: Image[]) {
+        let s = create(imgs[0])
+        s.animation = new SpriteAnimation(imgs)
+        return s
+    }
+    
     /**
      * Create a new sprite with given speed, and place it at the edge of the screen so it moves towards the middle. The sprite auto-destroys when it leaves the screen. You can modify position after it's created.
      */
@@ -94,6 +100,37 @@ namespace sprite {
     }
 }
 
+class SpriteAnimation {
+    frames: Image[]
+    frameIdx: number
+    time: number
+    step: number
+
+    constructor(f: Image[]) {
+        this.frames = f
+        this.frameIdx = 0
+        this.time = 0
+        this.step = 0.2
+    }
+
+    reset() {
+        this.frameIdx = 0
+        this.time = 0
+    }
+
+    update(parent: Sprite) {
+        this.time += control.deltaTime
+        let f = (this.time / this.step) | 0
+        if (f != this.frameIdx) {
+            if (f >= this.frames.length)
+                this.reset()
+            else
+                this.frameIdx = f
+            parent.image = this.frames[this.frameIdx]
+        }
+    }
+}
+
 class Sprite {
     x: number
     y: number
@@ -106,6 +143,9 @@ class Sprite {
     flags: number
     id: number
     type: number
+
+    animation: SpriteAnimation
+
     private collisionHandler: (other: Sprite) => void
     private wallHandler: () => void
     private destroyHandler: () => void
@@ -151,6 +191,8 @@ class Sprite {
         this.y += this.vy * dt
         this.vx += this.ax * dt
         this.vy += this.ay * dt
+        if (this.animation)
+            this.animation.update(this)
     }
 
     _collisions() {
