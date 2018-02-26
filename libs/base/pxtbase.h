@@ -15,7 +15,6 @@
     do {                                                                                           \
     } while (0)
 
-
 #define MEMDBG_ENABLED 0
 #define MEMDBG NOLOG
 
@@ -310,9 +309,11 @@ class RefObject {
 #endif
     }
 
+    inline bool isReadOnly() { return refcnt == 0xffff; }
+
     // Increment/decrement the ref-count. Decrementing to zero deletes the current object.
     inline void ref() {
-        if (refcnt == 0xffff)
+        if (isReadOnly())
             return;
         check(refcnt > 1, ERR_REF_DELETED);
         // DMESG("INCR "); this->print();
@@ -320,7 +321,7 @@ class RefObject {
     }
 
     inline void unref() {
-        if (refcnt == 0xffff)
+        if (isReadOnly())
             return;
         check(refcnt > 1, ERR_REF_DELETED);
         check((refcnt & 1), ERR_REF_DELETED);
@@ -486,6 +487,8 @@ class RefRefLocal : public RefObject {
     RefRefLocal();
 };
 
+typedef int color;
+
 // note: this is hardcoded in PXT (hexfile.ts)
 
 #define PXT_REF_TAG_STRING 1
@@ -514,8 +517,50 @@ class BoxedBuffer : public RefObject {
     BoxedBuffer() : RefObject(PXT_REF_TAG_BUFFER) {}
 };
 
+
+// the first byte of data indicates the format - currently 0xF1 or 0xF4 to 1 or 4 bit bitmaps
+// second byte indicates width in pixels
+// third byte indicates the height (which should also match the size of the buffer)
+// just like ordinary buffers, these can be layed out in flash
+class RefImage : public RefObject {
+    unsigned _buffer;
+    uint8_t _data[0];
+
+  public:
+    RefImage(BoxedBuffer *buf);
+    RefImage(uint32_t sz);
+
+    bool hasBuffer() { return !(_buffer & 1); }
+    BoxedBuffer *buffer() { return hasBuffer() ? (BoxedBuffer *)_buffer : NULL; }
+    void setBuffer(BoxedBuffer *b);
+    bool isDirty() { return (_buffer & 3) == 3; }
+    void clearDirty() { if (isDirty()) _buffer &= ~2; }
+
+    uint8_t *data() { return hasBuffer() ? buffer()->data : _data; }
+    int length() { return hasBuffer() ? buffer()->length : (_buffer >> 2); }
+
+    int height();
+    int width();
+    int byteWidth();
+    int bpp();
+
+    uint8_t *pix() { return data() + 3; }
+    uint8_t *pix(int x, int y);
+    uint8_t fillMask(color c);
+    bool inRange(int x, int y);
+    void clamp(int *x, int *y);
+    void makeWritable();
+
+    void destroy();
+    void print();
+};
+
+RefImage *mkImage(int w, int h, int bpp);
+
+
 typedef BoxedBuffer *Buffer;
 typedef BoxedString *String;
+typedef RefImage *Image;
 
 // keep in sync with github/pxt/pxtsim/libgeneric.ts
 enum class NumberFormat {
