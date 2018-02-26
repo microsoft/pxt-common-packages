@@ -13,7 +13,7 @@ Setting a higher threshold value makes it take longer for a touch event to happe
 
 * **threshold**: a [number](/types/number) that sets the threshold (charge amount) needed to detect that a pin was touched. This is a value between `0` and `1023`.
 
-## Example
+## Example #example
 
 Set the touch threshold to `1000`. Test touch sensitivity by making all the pixels on the ring turn red when pin **A1** detects a touch.
 
@@ -24,7 +24,7 @@ input.pinA1.onEvent(ButtonEvent.Click, function () {
 })
 ```
 
-## See also
+## See also #seealso
 
 [value](/reference/input/touch/value)
 

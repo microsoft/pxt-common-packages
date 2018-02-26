@@ -11,7 +11,7 @@ A pin detects that it was touched by measuring some amount of electrical charge 
 
 * a [number](/types/number) that is between `0` (not touched) and `1023` touched for a long time.
 
-## Example
+## Example #example
 
 Measure the touch values at pin **A2**. If they are greater than `512`, then flash green light on the pixels.
 
@@ -27,7 +27,7 @@ forever(function () {
 })
 ```
 
-## See also
+## See also #seealso
 
 [set threshold](/reference/input/touch/set-threshold)
 
