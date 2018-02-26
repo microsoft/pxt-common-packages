@@ -27,6 +27,7 @@ namespace image {
 }
 
 
+//% fixedInstances
 interface Image {
     /**
      * Draw an icon (monochromatic image) using given color
