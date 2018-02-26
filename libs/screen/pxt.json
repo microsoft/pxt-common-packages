@@ -8,7 +8,7 @@
         "text.ts",
         "frame.ts",
         "shims.d.ts",
-        "screeninit.ts"
+        "targetoverrides.ts"
     ],
     "public": true,
     "dependencies": {
