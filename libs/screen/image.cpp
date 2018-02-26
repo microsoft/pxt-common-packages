@@ -131,6 +131,14 @@ int height(Image img) {
     return img->height();
 }
 
+/**
+ * True iff the image is monochromatic (black and white)
+ */
+//% property
+bool isMono(Image img) {
+    return img->bpp() == 1;
+}
+
 static inline void setCore(Image img, int x, int y, int c) {
     auto ptr = img->pix(x, y);
     if (img->bpp() == 1) {

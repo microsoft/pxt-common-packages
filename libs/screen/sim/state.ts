@@ -34,6 +34,10 @@ namespace pxsim {
             }
         }
 
+        bpp() {
+            return this.palette.length > 2 ? 4 : 1
+        }
+
         didChange() {
             let res = this.changed
             this.changed = false
