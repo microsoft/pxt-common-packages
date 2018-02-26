@@ -22,9 +22,9 @@ music.playTone(music.noteFrequency(Note.C), 1000)
 music.rest(1000)
 music.playTone(music.noteFrequency(Note.A), 1000)
 ```
-## See also
+## See also #seealso
 
-[``||play tone||``](/reference/music/play-tone), [``||ring tone||``](/reference/music/ring-tone),
-[``||rest||``](/reference/music/rest), [``||tempo||``](/reference/music/tempo),
-[``||change tempo by||``](/reference/music/change-tempo-by)
+[play tone](/reference/music/play-tone), [ring tone](/reference/music/ring-tone),
+[rest](/reference/music/rest), [tempo](/reference/music/tempo),
+[change tempo by](/reference/music/change-tempo-by)
 

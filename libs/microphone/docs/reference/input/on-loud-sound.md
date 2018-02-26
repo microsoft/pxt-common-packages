@@ -10,7 +10,7 @@ input.onLoudSound(() => {});
 
 * **handler**: the code to run when a loud sound is heard.
 
-## Example
+## Example #example
 
 Flash the pixels when a loud sound is detected.
 
@@ -23,9 +23,10 @@ input.onLoudSound(() => {
 	pixels.setAll(Colors.Black);
 });
 ```
-# See also
 
-[``||sound level||``](/reference/input/sound-level)
+# See also #seealso
+
+[sound level](/reference/input/sound-level)
 
 ```package
 microphone

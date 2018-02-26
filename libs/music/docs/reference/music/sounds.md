@@ -16,7 +16,7 @@ can use these sounds to make actions with the @boardname@ seem more interesting.
 
 * a [string](/types/string) that is the composed sound of a built-in sound.
 
-## Example #ex1
+## Example #example
 
 Play the ``magic wand`` sound when you shake the @boardname@.
 
@@ -26,9 +26,9 @@ input.onGesture(Gesture.Shake, () => {
 })
 ```
 
-## See also
+## See also #seealso
 
-[``||play sound||``](/reference/music/play-sound)
+[play sound](/reference/music/play-sound)
 
 [Composing sounds](/reference/music/composing-sounds)
 

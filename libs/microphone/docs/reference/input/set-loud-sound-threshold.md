@@ -29,9 +29,9 @@ input.onLoudSound(() => {
 });
 ```
 
-## See Also
+## See also #seealso
 
-[``||on loud sound||``](/reference/input/on-loud-sound)
+[on loud sound](/reference/input/on-loud-sound)
 
 ```package
 microphone

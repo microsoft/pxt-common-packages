@@ -15,7 +15,7 @@ sounds waiting to play with ``||stop all sounds||``.
 **Sim**: ``||stop all sounds||`` works on the @boardname@. It might not work in the simulator on every browser.
 #### ~
 
-## Example #exsection
+## Example #example
 
 Play a sound but stop it right away.
 
@@ -24,9 +24,9 @@ music.playSound(music.sounds(Sounds.Wawawawaa))
 music.stopAllSounds()
 ```
 
-## See also
+## See also #seealso
 
-[``||play sound||``](/reference/music/play-sound), [``||play sound until done||``](/reference/music/play-sound-until-done)
+[play sound](/reference/music/play-sound), [play sound until done](/reference/music/play-sound-until-done)
 
 ```package
 music

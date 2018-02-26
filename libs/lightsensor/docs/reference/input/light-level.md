@@ -16,7 +16,9 @@ has to be turned on first.
 
 * a [number](/types/number) that is a light level from ``0`` (dark) to ``255`` (bright).
 
-## Example: show light level
+## Examples #example
+
+### Show light level #ex1
 
 When you press button `A` on the @boardname@, this
 program changes the brightness of the pixels accordingly.
@@ -31,7 +33,7 @@ input.buttonA.onEvent(ButtonEvent.Click, function() {
 });
 ```
 
-## Example: chart light level
+### Chart light level #ex2
 
 This program shows the light level with a [graph](/reference/light/graph) on the @boardname@ with the LEDs.
 If you carry the @boardname@ around to different places with different light levels, the graph will change.
@@ -47,7 +49,7 @@ forever(function() {
 });
 ```
 
-## See also
+## See also #seealso
 
-[``||acceleration||``](/reference/input/acceleration)
+[acceleration](/reference/input/acceleration)
 

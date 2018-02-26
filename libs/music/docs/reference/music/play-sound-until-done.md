@@ -31,7 +31,7 @@ music.playSoundUntilDone(music.sounds(Sounds.JumpUp))
 [composing sounds](/reference/music/composing-sounds) to find out how to make the sound string.
 
 
-## Examples #exsection
+## Examples #example
 
 ### My sound string #ex1
 
@@ -54,9 +54,9 @@ music.playSoundUntilDone(music.sounds(Sounds.BaDing))
 
 ## See also
 
-[``||play sound||``](/reference/music/play-sound), [``||sounds|``](/reference/music/sounds),
-[``||tempo||``](/reference/music/tempo), [``||set tempo||``](/reference/music/set-tempo),
-[``||change tempo by||``](/reference/music/change-tempo-by)
+[play sound](/reference/music/play-sound), [sounds](/reference/music/sounds),
+[tempo](/reference/music/tempo), [set tempo](/reference/music/set-tempo),
+[change tempo by](/reference/music/change-tempo-by)
 
 [Composing sounds](/reference/music/composing-sounds)
 

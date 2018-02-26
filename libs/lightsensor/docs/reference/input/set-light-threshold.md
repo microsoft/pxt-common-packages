@@ -33,9 +33,9 @@ input.onLightConditionChanged(LightCondition.Dark, () => {
 });
 ```
 
-## See also
+## See also #seealso
 
-[``||on light condition changed||``](/reference/input/on-light-condition-changed)
+[on light condition changed](/reference/input/on-light-condition-changed)
 
 ```package
 lightsensor

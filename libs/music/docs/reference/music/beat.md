@@ -14,17 +14,17 @@ music.beat(BeatFraction.Whole)
 
 * a [number](/types/number) that is the amount of time in milliseconds (one-thousandth of a second) for the beat fraction.
 
-## Example
+## Example #xample
 
 ```blocks
 music.playTone(Note.C, music.beat(BeatFraction.Quarter))
 ```
 
-## See also
+## See also #seealso
 
-[``||play tone||``](/reference/music/play-tone), [``||ring tone||``](/reference/music/ring-tone),
-[``||rest||``](/reference/music/rest), [``||set tempo||``](/reference/music/set-tempo),
-[``||change tempo by||``](/reference/music/change-tempo-by)
+[play tone](/reference/music/play-tone), [ring tone](/reference/music/ring-tone),
+[rest](/reference/music/rest), [set tempo](/reference/music/set-tempo),
+[change tempo by](/reference/music/change-tempo-by)
 
 ```package
 music
