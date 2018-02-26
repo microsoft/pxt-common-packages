@@ -149,6 +149,13 @@ namespace pxsim.ImageMethods {
         // TODO implement dx
     }
 
+    export function replace(img: RefImage, from: number, to: number) {
+        to &= 0xf;
+        const d = img.data
+        for (let i = 0; i < d.length; ++i)
+            if (d[i] == from) d[i] = to
+    }
+
     export function doubledX(img: RefImage) {
         const w = img._width
         const h = img._height

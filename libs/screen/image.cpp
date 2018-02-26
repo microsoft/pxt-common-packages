@@ -402,6 +402,26 @@ Image doubledY(Image img) {
 }
 
 /**
+ * Replaces one color in an image with another
+ */
+//%
+void replace(Image img, int from, int to) {
+    if (img->bpp() != 4)
+        return;
+    to &= 0xf;
+    auto ptr = img->pix();
+    auto len = img->height() * img->byteWidth();
+    while (len--) {
+        auto b = *ptr;
+        if ((b >> 4) == from)
+            b = (to << 4) | (b & 0xf);
+        if ((b & 0xf) == from)
+            b = (b & 0xf0) | to;
+        *ptr++ = b;
+    } 
+}
+
+/**
  * Stretches the image in both directions by 100%
  */
 //%
