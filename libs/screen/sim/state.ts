@@ -1,0 +1,87 @@
+namespace pxsim {
+    function htmlColorToUint32(hexColor: string) {
+        const ca = new Uint8ClampedArray(4)
+        const ui = new Uint32Array(ca.buffer)
+        const v = parseInt(hexColor.replace(/#/, ""), 16)
+        ca[0] = (v >> 16) & 0xff;
+        ca[1] = (v >> 8) & 0xff;
+        ca[2] = (v >> 0) & 0xff;
+        ca[3] = 0xff; // alpha
+        // convert to uint32 using target endian
+        return new Uint32Array(ca.buffer)[0]
+    }
+
+    export class ScreenState {
+        width = 0
+        height = 0
+        screen: Uint32Array
+        palette: Uint32Array
+        lastImage: RefImage
+        lastImageFlushTime = 0
+        changed = true
+        onChange = () => {}
+
+        constructor(paletteSrc: string[], w = 0, h = 0) {
+            this.palette = new Uint32Array(paletteSrc.length)
+            for (let i = 0; i < this.palette.length; ++i) {
+                this.palette[i] = htmlColorToUint32(paletteSrc[i])
+            }
+            if (w) {
+                this.width = w
+                this.height = h
+                this.screen = new Uint32Array(this.width * this.height)
+                this.screen.fill(this.palette[0])
+            }
+        }
+
+        didChange() {
+            let res = this.changed
+            this.changed = false
+            return res
+        }
+
+        showImage(img: RefImage) {
+            if (!img && !this.lastImage)
+                return
+
+            if (this.width == 0) {
+                this.width = img._width
+                this.height = img._height
+
+                this.screen = new Uint32Array(this.width * this.height)
+            }
+
+            this.lastImageFlushTime = Date.now()
+
+            if (img == this.lastImage) {
+                if (!img.dirty)
+                    return
+            } else {
+                this.lastImage = img
+            }
+
+            this.changed = true
+            img.dirty = false
+
+            const src = img.data
+            const dst = this.screen
+            if (this.width != img._width || this.height != img._height || src.length != dst.length)
+                U.userError("wrong size")
+            const p = this.palette
+            const mask = p.length - 1
+            for (let i = 0; i < src.length; ++i) {
+                dst[i] = p[src[i] & mask]
+            }
+
+            this.onChange()
+        }
+    }
+
+    export interface ScreenBoard extends CommonBoard {
+        screenState: ScreenState;
+    }
+
+    export function getScreenState() {
+        return (board() as ScreenBoard).screenState
+    }
+}

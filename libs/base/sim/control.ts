@@ -53,4 +53,8 @@ namespace pxsim.control {
     export function delayMicroseconds(us: number) {
         delay(us / 0.001);
     }
+
+    export function createBuffer(size: number) {
+        return BufferMethods.createBuffer(size)
+    }
 }
