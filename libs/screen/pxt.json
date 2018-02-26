@@ -1,0 +1,17 @@
+{
+    "name": "screen",
+    "description": "The screen library",
+    "files": [
+        "screen.cpp",
+        "image.cpp",
+        "image.ts",
+        "text.ts",
+        "frame.ts",
+        "shims.d.ts",
+        "screeninit.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core"
+    }
+}
