@@ -1,6 +1,6 @@
 {
     "name": "storage",
-    "description": "USB Pen-drive support and flash storage",
+    "description": "USB Pen-drive support and flash storage - beta",
     "files": [
         "SNORFS.cpp",
         "SNORFS.h",
