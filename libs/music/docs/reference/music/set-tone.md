@@ -17,9 +17,9 @@ music.setTone(null)
 
 * ``buffer``: a buffer containing 1024 10bit unsigned samples.
 
-## #examples
+## #example
 
-### #ex1
+## #seealso
 
 ```package
 music

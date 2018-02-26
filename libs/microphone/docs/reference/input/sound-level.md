@@ -28,9 +28,9 @@ forever(() => {
     }
 });
 ```
-## See also
+## See also #seealso
 
-[``||on loud sound||``](/reference/input/on-loud-sound)
+[on loud sound](/reference/input/on-loud-sound)
 
 ```package
 microphone

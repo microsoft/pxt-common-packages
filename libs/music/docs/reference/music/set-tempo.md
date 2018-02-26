@@ -16,7 +16,7 @@ music.setTempo(60)
 * ``bpm`` is a [number](/types/number) that means the amount _beats per minute_ you want. This is how fast
 you want @boardname@ to play music.
 
-## Example
+## Example #example
 
 Set the music tempo to 240 beats per minute.
 
@@ -24,11 +24,11 @@ Set the music tempo to 240 beats per minute.
 music.setTempo(240)
 ```
 
-## See also
+## See also #seealso
 
-[``||play tone||``](/reference/music/play-tone), [``||ring tone||``](/reference/music/ring-tone),
-[``||rest||``](/reference/music/rest), [``||tempo||``](/reference/music/tempo),
-[``||change tempo by||``](/reference/music/change-tempo-by)
+[play tone](/reference/music/play-tone), [ring tone](/reference/music/ring-tone),
+[rest](/reference/music/rest), [tempo](/reference/music/tempo),
+[change tempo by](/reference/music/change-tempo-by)
 
 ```package
 music

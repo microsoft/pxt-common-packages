@@ -15,7 +15,7 @@ What decides that the light condition is dark or bright? A number between `0` an
 >  * ``Bright``: Light is bright enough to detect
 * **handler**: code to run when light conditions change
 
-## Example
+## Example #example
 
 Dim the red pixels to half intensity when light conditions turn dark.
 
@@ -25,6 +25,6 @@ input.onLightConditionChanged(LightCondition.Dark, function() {
 })
 ```
 
-## See also
+## See also #seealso
 
-[``||light level||``](/reference/input/light-level)
+[light level](/reference/input/light-level)

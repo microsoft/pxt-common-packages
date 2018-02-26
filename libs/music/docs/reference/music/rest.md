@@ -28,11 +28,11 @@ forever(() => {
 })
 ```
 
-## See also
+## See also #seealso
 
-[``||play tone||``](/reference/music/play-tone), [``||ring tone||``](/reference/music/ring-tone),
-[``||tempo||``](/reference/music/tempo), [``||set tempo||``](/reference/music/set-tempo),
-[``||change tempo by||``](/reference/music/change-tempo-by)
+[play tone](/reference/music/play-tone), [ring tone](/reference/music/ring-tone),
+[tempo](/reference/music/tempo), [set tempo](/reference/music/set-tempo),
+[change tempo by](/reference/music/change-tempo-by)
 
 ```package
 music

@@ -16,7 +16,7 @@ music.setSpeakerVolume(128)
 * ``volume``: the volume of of the sounds played on the speaker. The volume [number](/reference/types) can be
 between `0` for silent and `255` for the loudest sound.
 
-## Example #exsection
+## Example #example
 
 Set the speaker volume to something quieter.
 
@@ -25,7 +25,7 @@ music.setSpeakerVolume(50)
 music.playSound(music.sounds(Sounds.BaDing))
 ```
 
-## See also
+## See also #seealso
 
-[``||play sound||``](/reference/music/play-sound), [``||sounds|``](/reference/music/sounds)
+[play sound](/reference/music/play-sound), [sounds](/reference/music/sounds)
 

@@ -9,17 +9,17 @@ When your board has a speaker or analog output pins, you can play sounds on them
 to choose where you want to play your sounds.
 
 ## #simnote
-#### ~hint
+### ~hint
 **Simulator**
 
-``||set Output||`` works on the @boardname@. It might not work in the simulator on every browser.
-#### ~
+``||set output||`` works on the @boardname@. It might not work in the simulator on every browser.
+### ~
 
 ## Parameters
 
 * ``out``: this is where the sound output will go. You can choose ``speaker`` or ``pin``.
 
-## Example
+## Example #example
 
 Change the output for the sound to go to a pin on @boardname@.
 
@@ -31,6 +31,6 @@ music.playTone(
 )
 ```
 
-## See also
+## See also #seealso
 
-[``||set pitch pin||``](/reference/music/set-pitch-pin)
+[set pitch pin](/reference/music/set-pitch-pin)

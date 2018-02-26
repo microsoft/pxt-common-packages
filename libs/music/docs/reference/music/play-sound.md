@@ -30,7 +30,7 @@ music.playSound(music.sounds(Sounds.JumpUp))
 * ``sound``: a string containing the notes of a sound you want to play. Look at
 [composing sounds](/reference/music/composing-sounds) to find out how to make the sound string.
 
-## Examples #exsection
+## Examples #example
 
 ### My sound string #ex1
 
@@ -50,11 +50,11 @@ Play a the built-in sound called `BaDing`.
 music.playSound(music.sounds(Sounds.BaDing))
 ```
 
-## See also
+## See also #seealso
 
-[``||play sound until done||``](/reference/music/play-sound-until-done), [``||sounds|``](/reference/music/sounds),
-[``||tempo||``](/reference/music/tempo), [``||set tempo||``](/reference/music/set-tempo),
-[``||change tempo by||``](/reference/music/change-tempo-by)
+[play sound until done](/reference/music/play-sound-until-done), [sounds](/reference/music/sounds),
+[tempo](/reference/music/tempo), [set tempo](/reference/music/set-tempo),
+[change tempo by](/reference/music/change-tempo-by)
 
 [Composing sounds](/reference/music/composing-sounds)
 

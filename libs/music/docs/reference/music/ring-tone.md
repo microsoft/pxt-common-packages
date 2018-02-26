@@ -8,9 +8,9 @@ music.ringTone(0);
 ```
 
 ## #simnote
-#### ~hint
+### ~hint
 **Sim**: ``||ring tone||`` works on the @boardname@. It might not work in the simulator on every browser.
-#### ~
+### ~
 
 The tone will keep playing until you stop it with [``||stop all sounds||``](/reference/music/stop-all-sounds).
 
@@ -36,11 +36,11 @@ forever(() => {
 })
 ```
 
-### See also
+## See also #seealso
 
-[``||rest||``](/reference/music/rest), [``||play tone||``](/reference/music/play-tone),
-[``||tempo||``](/reference/music/tempo), [``||set tempo||``](/reference/music/set-tempo),
-[``||change tempo by||``](/reference/music/change-tempo-by)
+[rest](/reference/music/rest), [play tone](/reference/music/play-tone),
+[tempo](/reference/music/tempo), [set tempo](/reference/music/set-tempo),
+[change tempo by](/reference/music/change-tempo-by)
 
 ```package
 accelerometer
