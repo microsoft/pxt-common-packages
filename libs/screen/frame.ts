@@ -57,6 +57,38 @@ namespace control {
         }
         callbacks.push(fn)
     }
+
+    let _refresh: () => void
+
+    export function screenRefresh() {
+        if (_refresh)
+            _refresh()
+    }
+
+    export function setupScreenRefresh(refresh: () => void) {
+        let updated = true
+
+        _refresh = refresh
+
+        control.addFrameHandler(200, () => {
+            refresh()
+            updated = true
+        })
+
+        // low frequency fallback screen refresh
+        control.runInBackground(() => {
+            while (true) {
+                updated = false
+                loops.pause(200)
+                if (!updated) {
+                    refresh()
+                    updated = true
+                }
+            }
+        })
+
+        refresh()
+    }
 }
 
 namespace loops {
