@@ -98,7 +98,7 @@ namespace loops {
      * Runs code every frame.
      * @param body the code to repeat
      */
-    //% block
+    //%
     export function frame(body: () => void): void {
         if (!frameCb)
             control.addFrameHandler(20, () => {
