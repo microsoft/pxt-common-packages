@@ -86,7 +86,7 @@ namespace game {
         if (_hud) return;
         _hud = true;
 
-        let font = image.font8
+        let font = image.font5
         let color = 15
         let maxW = 8
         control.addFrameHandler(95, () => {
@@ -98,7 +98,7 @@ namespace game {
             }
             // show life
             if (_life !== null) {
-                s = _life + ""
+                let s = _life + ""
                 screen.print(s, 10, font.charHeight, color, font)
                 if (_life == 0)
                     game.over();
