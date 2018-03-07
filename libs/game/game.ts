@@ -1,6 +1,8 @@
 namespace game {
     let isOver = false
     let _score: number = null
+    let _life: number = null
+    let _hud: boolean = false;
     let _waitAnyKey: () => void
 
     export function setWaitAnyKey(f: () => void) {
@@ -64,6 +66,7 @@ namespace game {
 
     export function over(effect?: () => void) {
         if (isOver) return
+        takeScreenshot();
         isOver = true
         control.clearHandlers()
         control.runInBackground(() => {
@@ -79,34 +82,93 @@ namespace game {
         })
     }
 
-    export function score() {
-        initScore()
-        return _score
-    }
+    function initHUD() {
+        if (_hud) return;
+        _hud = true;
 
-    export function hasScore() {
-        return _score !== null
+        let font = image.font5
+        let color = 15
+        let maxW = 8
+        control.addFrameHandler(95, () => {
+            // show score
+            if (_score !== null) {
+                let s = _score + ""
+                while (s.length < maxW) s = " " + s
+                screen.print(s, screen.width - font.charWidth * maxW - 10, font.charHeight, color, font)    
+            }
+            // show life
+            if (_life !== null) {
+                let s = _life + ""
+                screen.print(s, 10, font.charHeight, color, font)
+                if (_life == 0)
+                    game.over();
+            }
+        })
     }
 
     function initScore() {
         if (_score !== null) return
         _score = 0
-        let font = image.font8
-        let color = 15
-        let maxW = 8
-        control.addFrameHandler(95, () => {
-            let s = _score + ""
-            while (s.length < maxW) s = " " + s
-            screen.print(s, screen.width - font.charWidth * maxW - 10, font.charHeight, color, font)
-        })
+        initHUD();
     }
 
+    //%
+    export function score() {
+        initScore()
+        return _score
+    }
+
+    //%
+    export function hasScore() {
+        return _score !== null
+    }
+
+    //%
     export function setScore(score: number) {
         initScore()
         _score = score | 0
     }
 
+    //%
     export function addToScore(points: number) {
+        initScore();
         setScore(_score + points)
+    }
+
+    function initLife() {
+        if (_life !== null) return
+        _life = 3;
+        initHUD();
+    }
+
+    //%
+    export function life() {
+        initLife()
+        return _life
+    }
+
+    //%
+    export function hasLife() {
+        return _life !== null
+    }
+
+    //%
+    export function setLife(life: number) {
+        initLife()
+        _life = life | 0
+    }
+
+    //%
+    export function addToLife(life: number) {
+        initLife();
+        setLife(_life + life)
+    }
+
+    /**
+     * Tells the game host to grab a screenshot
+     */
+    //% shim=game::takeScreenshot
+    export function takeScreenshot() {
+        // handled by host
     }
 }
