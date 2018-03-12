@@ -67,7 +67,7 @@ namespace game {
         takeScreenshot();
         isOver = true
         control.clearHandlers()
-        control.runInBackground(() => {
+        control.runInParallel(() => {
             if (effect) effect()
             let top = showBackground(44, 4)
             screen.printCenter("GAME OVER!", top + 8, 5, image.font8)

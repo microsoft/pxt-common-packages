@@ -16,7 +16,7 @@ namespace control {
         if (callbacks) return
         callbacks = []
         let prevTime = control.millis()
-        control.runInBackground(() => {
+        control.runInParallel(() => {
             while (true) {
                 frameNo++
                 let loopStart = control.millis()
@@ -76,7 +76,7 @@ namespace control {
         })
 
         // low frequency fallback screen refresh
-        control.runInBackground(() => {
+        control.runInParallel(() => {
             while (true) {
                 updated = false
                 loops.pause(200)

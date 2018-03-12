@@ -200,7 +200,7 @@ class Sprite {
             for (let o of sprite.allSprites) {
                 if (this != o && this.collidesWith(o)) {
                     let tmp = o
-                    control.runInBackground(() => this.collisionHandler(tmp))
+                    control.runInParallel(() => this.collisionHandler(tmp))
                 }
 
             }
@@ -212,7 +212,7 @@ class Sprite {
                 0 <= this.y && this.y < screen.height) {
                 // OK
             } else {
-                control.runInBackground(this.wallHandler)
+                control.runInParallel(this.wallHandler)
             }
         }
 
@@ -255,7 +255,7 @@ class Sprite {
         this.flags |= sprite.Flag.Destroyed
         sprite.allSprites.removeElement(this)
         if (this.destroyHandler) {
-            control.runInBackground(this.destroyHandler)
+            control.runInParallel(this.destroyHandler)
         }
     }
 }
