@@ -81,13 +81,13 @@ RefImage::RefImage(BoxedBuffer *buf) : PXT_VTABLE_INIT(RefImage), _buffer((unsig
 }
 RefImage::RefImage(uint32_t sz) : PXT_VTABLE_INIT(RefImage), _buffer((sz << 2) | 3) {}
 
-Image mkImage(int width, int height, int bpp) {
+Image_ mkImage(int width, int height, int bpp) {
     if (width < 0 || height < 0 || width > 255 || height > 255)
         return NULL;
     if (bpp != 1 && bpp != 4)
         return NULL;
     uint32_t sz = 3 + ((width * bpp + 7) / 8) * height;
-    Image r = new (::operator new(sizeof(RefImage) + sz)) RefImage(sz);
+    Image_ r = new (::operator new(sizeof(RefImage) + sz)) RefImage(sz);
     auto d = r->data();
     d[0] = 0xf0 | bpp;
     d[1] = width;
@@ -119,7 +119,7 @@ namespace ImageMethods {
  * Get the width of the image
  */
 //% property
-int width(Image img) {
+int width(Image_ img) {
     return img->width();
 }
 
@@ -127,7 +127,7 @@ int width(Image img) {
  * Get the height of the image
  */
 //% property
-int height(Image img) {
+int height(Image_ img) {
     return img->height();
 }
 
@@ -135,11 +135,11 @@ int height(Image img) {
  * True iff the image is monochromatic (black and white)
  */
 //% property
-bool isMono(Image img) {
+bool isMono(Image_ img) {
     return img->bpp() == 1;
 }
 
-static inline void setCore(Image img, int x, int y, int c) {
+static inline void setCore(Image_ img, int x, int y, int c) {
     auto ptr = img->pix(x, y);
     if (img->bpp() == 1) {
         uint8_t mask = 0x80 >> (x & 7);
@@ -159,7 +159,7 @@ static inline void setCore(Image img, int x, int y, int c) {
  * Set pixel color
  */
 //%
-void set(Image img, int x, int y, int c) {
+void set(Image_ img, int x, int y, int c) {
     if (!img->inRange(x, y))
         return;
     img->makeWritable();
@@ -170,7 +170,7 @@ void set(Image img, int x, int y, int c) {
  * Get a pixel color
  */
 //%
-int get(Image img, int x, int y) {
+int get(Image_ img, int x, int y) {
     if (!img->inRange(x, y))
         return 0;
     auto ptr = img->pix(x, y);
@@ -190,12 +190,12 @@ int get(Image img, int x, int y) {
  * Fill entire image with a given color
  */
 //%
-void fill(Image img, int c) {
+void fill(Image_ img, int c) {
     img->makeWritable();
     memset(img->pix(), img->fillMask(c), img->length() - 3);
 }
 
-void fillRect(Image img, int x, int y, int w, int h, int c) {
+void fillRect(Image_ img, int x, int y, int w, int h, int c) {
     int x2 = x + w - 1;
     int y2 = y + h - 1;
     img->clamp(&x2, &y2);
@@ -258,7 +258,7 @@ void fillRect(Image img, int x, int y, int w, int h, int c) {
 }
 
 //%
-void _fillRect(Image img, int xy, int wh, int c) {
+void _fillRect(Image_ img, int xy, int wh, int c) {
     fillRect(img, XX(xy), YY(xy), XX(wh), YY(wh), c);
 }
 
@@ -266,9 +266,9 @@ void _fillRect(Image img, int xy, int wh, int c) {
  * Return a copy of the current image
  */
 //%
-Image clone(Image img) {
+Image_ clone(Image_ img) {
     uint32_t sz = img->length();
-    Image r = new (::operator new(sizeof(RefImage) + sz)) RefImage(sz);
+    Image_ r = new (::operator new(sizeof(RefImage) + sz)) RefImage(sz);
     memcpy(r->data(), img->data(), img->length());
     MEMDBG("mkImageClone: %d X %d => %p", img->width(), img->height(), r);
     return r;
@@ -278,7 +278,7 @@ Image clone(Image img) {
  * Flips (mirrors) pixels horizontally in the current image
  */
 //%
-void flipX(Image img) {
+void flipX(Image_ img) {
     img->makeWritable();
 
     // this is quite slow - for small 16x16 sprite it will take in the order of 1ms
@@ -300,7 +300,7 @@ void flipX(Image img) {
  * Flips (mirrors) pixels vertically in the current image
  */
 //%
-void flipY(Image img) {
+void flipY(Image_ img) {
     img->makeWritable();
 
     int bw = img->byteWidth();
@@ -322,7 +322,7 @@ void flipY(Image img) {
  * Every pixel in image is moved by (dx,dy)
  */
 //%
-void scroll(Image img, int dx, int dy) {
+void scroll(Image_ img, int dx, int dy) {
     img->makeWritable();
     auto bw = img->byteWidth();
     auto h = img->height();
@@ -352,11 +352,11 @@ const uint8_t nibdouble[] = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
  * Stretches the image horizontally by 100%
  */
 //%
-Image doubledX(Image img) {
+Image_ doubledX(Image_ img) {
     if (img->width() > 126)
         return NULL;
 
-    Image r = mkImage(img->width() * 2, img->height(), img->bpp());
+    Image_ r = mkImage(img->width() * 2, img->height(), img->bpp());
     auto src = img->pix();
     auto dst = r->pix();
     auto h = img->height();
@@ -379,11 +379,11 @@ Image doubledX(Image img) {
  * Stretches the image vertically by 100%
  */
 //%
-Image doubledY(Image img) {
+Image_ doubledY(Image_ img) {
     if (img->height() > 126)
         return NULL;
 
-    Image r = mkImage(img->width(), img->height() * 2, img->bpp());
+    Image_ r = mkImage(img->width(), img->height() * 2, img->bpp());
     auto src = img->pix();
     auto dst = r->pix();
     auto bw = img->byteWidth();
@@ -405,7 +405,7 @@ Image doubledY(Image img) {
  * Replaces one color in an image with another
  */
 //%
-void replace(Image img, int from, int to) {
+void replace(Image_ img, int from, int to) {
     if (img->bpp() != 4)
         return;
     to &= 0xf;
@@ -425,14 +425,14 @@ void replace(Image img, int from, int to) {
  * Stretches the image in both directions by 100%
  */
 //%
-Image doubled(Image img) {
-    Image tmp = doubledX(img);
-    Image r = doubledY(tmp);
+Image_ doubled(Image_ img) {
+    Image_ tmp = doubledX(img);
+    Image_ r = doubledY(tmp);
     decrRC(tmp);
     return r;
 }
 
-bool drawImageCore(Image img, Image from, int x, int y, int color) {
+bool drawImageCore(Image_ img, Image_ from, int x, int y, int color) {
     auto w = from->width();
     auto h = from->height();
     auto sh = img->height();
@@ -561,7 +561,7 @@ bool drawImageCore(Image img, Image from, int x, int y, int color) {
  * Draw given image on the current image
  */
 //%
-void drawImage(Image img, Image from, int x, int y) {
+void drawImage(Image_ img, Image_ from, int x, int y) {
     img->makeWritable();
     fillRect(img, x, y, from->width(), from->height(), 0);
     drawImageCore(img, from, x, y, 0);
@@ -571,7 +571,7 @@ void drawImage(Image img, Image from, int x, int y) {
  * Draw given image with transparent background on the current image
  */
 //%
-void drawTransparentImage(Image img, Image from, int x, int y) {
+void drawTransparentImage(Image_ img, Image_ from, int x, int y) {
     img->makeWritable();
     drawImageCore(img, from, x, y, 0);
 }
@@ -580,11 +580,11 @@ void drawTransparentImage(Image img, Image from, int x, int y) {
  * Check if the current image "collides" with another
  */
 //%
-bool overlapsWith(Image img, Image other, int x, int y) {
+bool overlapsWith(Image_ img, Image_ other, int x, int y) {
     return drawImageCore(img, other, x, y, -1);
 }
 
-// Image format:
+// Image_ format:
 //  byte 0: magic 0xf4 - 4 bit color; 0xf1 is monochromatic
 //  byte 1: width in pixels
 //  byte 2: height in pixels
@@ -592,7 +592,7 @@ bool overlapsWith(Image img, Image other, int x, int y) {
 //  byte 3...N: data 1 bit per pixels, high order bit printed first, lines aligned to byte
 
 //%
-void _drawIcon(Image img, Buffer icon, int xy, int c) {
+void _drawIcon(Image_ img, Buffer icon, int xy, int c) {
     if (!isValidImage(icon) || icon->data[0] != 0xf1)
         return;
 
@@ -602,7 +602,7 @@ void _drawIcon(Image img, Buffer icon, int xy, int c) {
     decrRC(ii);
 }
 
-static void drawLineLow(Image img, int x0, int y0, int x1, int y1, int c) {
+static void drawLineLow(Image_ img, int x0, int y0, int x1, int y1, int c) {
     int dx = x1 - x0;
     int dy = y1 - y0;
     int yi = 1;
@@ -624,7 +624,7 @@ static void drawLineLow(Image img, int x0, int y0, int x1, int y1, int c) {
     }
 }
 
-static void drawLineHigh(Image img, int x0, int y0, int x1, int y1, int c) {
+static void drawLineHigh(Image_ img, int x0, int y0, int x1, int y1, int c) {
     int dx = x1 - x0;
     int dy = y1 - y0;
     int xi = 1;
@@ -646,7 +646,7 @@ static void drawLineHigh(Image img, int x0, int y0, int x1, int y1, int c) {
     }
 }
 
-void drawLine(Image img, int x0, int y0, int x1, int y1, int c) {
+void drawLine(Image_ img, int x0, int y0, int x1, int y1, int c) {
     if (x1 < x0) {
         drawLine(img, x1, y1, x0, y0, c);
         return;
@@ -726,7 +726,7 @@ void drawLine(Image img, int x0, int y0, int x1, int y1, int c) {
 }
 
 //%
-void _drawLine(Image img, int xy, int wh, int c) {
+void _drawLine(Image_ img, int xy, int wh, int c) {
     drawLine(img, XX(xy), YY(xy), XX(wh), YY(wh), c);
 }
 
@@ -737,8 +737,8 @@ namespace image {
  * Create new empty (transparent) image
  */
 //%
-Image create(int width, int height) {
-    Image r = mkImage(width, height, IMAGE_BITS);
+Image_ create(int width, int height) {
+    Image_ r = mkImage(width, height, IMAGE_BITS);
     if (r)
         memset(r->data() + 3, 0, r->length() - 3);
     return r;
@@ -748,7 +748,7 @@ Image create(int width, int height) {
  * Create new image with given content
  */
 //%
-Image ofBuffer(Buffer buf) {
+Image_ ofBuffer(Buffer buf) {
     if (!isValidImage(buf))
         return NULL;
     return new RefImage(buf);
