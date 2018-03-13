@@ -52,7 +52,7 @@ Write the acceleration of the @boardname@ to the console.
 ```blocks
 forever(() => {
     console.logValue("accel", input.acceleration(Dimension.X))
-    loops.pause(500)
+    pause(500)
 })
 ```
 

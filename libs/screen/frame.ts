@@ -34,7 +34,7 @@ namespace control {
                     framesInSample = 0
                 }
                 let delay = Math.max(1, 20 - runtime)
-                loops.pause(delay)
+                pause(delay)
             }
         })
     }
@@ -79,7 +79,7 @@ namespace control {
         control.runInParallel(() => {
             while (true) {
                 updated = false
-                loops.pause(200)
+                pause(200)
                 if (!updated) {
                     refresh()
                     updated = true
@@ -91,19 +91,18 @@ namespace control {
     }
 }
 
-namespace loops {
-    let frameCb: () => void
 
-    /**
-     * Runs code every frame.
-     * @param body the code to repeat
-     */
-    //%
-    export function frame(body: () => void): void {
-        if (!frameCb)
-            control.addFrameHandler(20, () => {
-                frameCb()
-            })
-        frameCb = body
-    }
+let __frameCb: () => void = undefined;
+/**
+ * Repeats the code in the screen rendering loop.
+ * @param body code to execute
+ */
+//% help=loops/frame weight=100 afterOnStart=true blockNamespace="loops"
+//% blockId=frame block="frame"
+function frame(a: () => void): void {
+    if (!__frameCb)
+        control.addFrameHandler(20, function() {
+            if (__frameCb) __frameCb();
+        });
+    __frameCb = a;
 }

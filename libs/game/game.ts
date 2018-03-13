@@ -9,7 +9,7 @@ namespace game {
 
     export function waitAnyKey() {
         if (_waitAnyKey) _waitAnyKey()
-        else loops.pause(2000)
+        else pause(2000)
     }
 
     export function freeze() {
@@ -58,7 +58,7 @@ namespace game {
                 screen.set(x, y + 1, c)
                 screen.set(x, y + 2, c)
             }
-            loops.pause(100)
+            pause(100)
         }
     }
 
@@ -74,7 +74,7 @@ namespace game {
             if (hasScore())
                 screen.printCenter("Score:" + game.score(), top + 23, 2, image.font5)
             if (!effect)
-                loops.pause(1000) // wait for users to stop pressing keys
+                pause(1000) // wait for users to stop pressing keys
             waitAnyKey()
             control.reset()
         })
