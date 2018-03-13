@@ -582,4 +582,7 @@ namespace pxsim.pxtcore {
     export function updateScreen(img: RefImage) {
         getScreenState().showImage(img)
     }
+    export function updateStats(s: string) {
+        getScreenState().updateStats(s);
+    }
 }

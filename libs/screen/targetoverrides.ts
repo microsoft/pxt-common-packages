@@ -1,6 +1,5 @@
 // This file would be usually overridden by the target.
-
-let screen = image.create(178, 128)
+const screen = image.create(178, 128)
 
 namespace _screen_internal {
     //% shim=pxt::updateScreen

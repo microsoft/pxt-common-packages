@@ -19,6 +19,7 @@ namespace pxsim {
         lastImage: RefImage
         lastImageFlushTime = 0
         changed = true
+        stats: string;
         onChange = () => {}
 
         constructor(paletteSrc: string[], w = 0, h = 0) {
@@ -87,6 +88,10 @@ namespace pxsim {
             }
 
             this.onChange()
+        }
+
+        updateStats(stats: string) {
+            this.stats = stats;
         }
     }
 
