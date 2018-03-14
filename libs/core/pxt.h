@@ -59,7 +59,7 @@ extern USBHIDJoystick joystick;
 
 // Utility functions
 extern Event lastEvent;
-extern CODAL_MBED::Timer devTimer;
+extern CODAL_TIMER devTimer;
 extern MessageBus devMessageBus;
 extern codal::CodalDevice device;
 }
