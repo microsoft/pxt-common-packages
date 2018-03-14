@@ -90,19 +90,3 @@ namespace control {
         refresh()
     }
 }
-
-
-let __frameCb: () => void = undefined;
-/**
- * Repeats the code in the screen rendering loop.
- * @param body code to execute
- */
-//% help=loops/frame weight=100 afterOnStart=true blockNamespace="loops"
-//% blockId=frame block="frame"
-function frame(a: () => void): void {
-    if (!__frameCb)
-        control.addFrameHandler(20, function() {
-            if (__frameCb) __frameCb();
-        });
-    __frameCb = a;
-}
