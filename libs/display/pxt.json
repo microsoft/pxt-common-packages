@@ -1,0 +1,13 @@
+{
+    "name": "display",
+    "description": "Basic display functionalitites",
+    "files": [
+        "display.ts",
+        "displayImage.ts",
+        "targetoverrides.ts"
+    ],
+    "dependencies": {
+        "screen": "file:../screen"
+    },
+    "public": true
+}

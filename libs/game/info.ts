@@ -4,7 +4,7 @@
  * 
 */
 //% color=#AA5585 weight=80 icon="\uf2bb"
-namespace player {
+namespace info {
     let _score: number = null;
     let _highScore: number = null;
     let _life: number = null;
@@ -12,7 +12,7 @@ namespace player {
     /**
      * Color of the HUD display
      */
-    let color = 15;
+    let color = 1;
 
     function initHUD() {
         if (_hud) return;
@@ -146,10 +146,10 @@ namespace player {
     }
 }
 
-declare namespace player {
+declare namespace info {
     /**
      * Sends the current score and the new high score
      */
-    //% shim=player::updateHighScore
+    //% shim=info::updateHighScore
     function updateHighScore(score: number): number;
 }

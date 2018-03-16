@@ -172,13 +172,13 @@ namespace game {
             meltScreen();
             let top = showBackground(44, 4)
             screen.printCenter("GAME OVER!", top + 8, screen.isMono ? 1 : 5, image.font8)
-            if (player.hasScore()) {
-                screen.printCenter("Score:" + player.score(), top + 23, screen.isMono ? 1 : 2, image.font5)
-                if (player.score() > player.highScore()) {
-                    player.saveHighScore();
+            if (info.hasScore()) {
+                screen.printCenter("Score:" + info.score(), top + 23, screen.isMono ? 1 : 2, image.font5)
+                if (info.score() > info.highScore()) {
+                    info.saveHighScore();
                     screen.printCenter("New High Score!", top + 32, screen.isMono ? 1 : 2, image.font5);
                 } else {
-                    screen.printCenter("HI" + player.highScore(), top + 32, screen.isMono ? 1 : 2, image.font5);
+                    screen.printCenter("HI" + info.highScore(), top + 32, screen.isMono ? 1 : 2, image.font5);
                 }
             }
             pause(2000) // wait for users to stop pressing keys
