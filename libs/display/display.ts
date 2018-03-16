@@ -33,7 +33,9 @@ namespace display {
         const nlines = lineCount();
         if (line < 0 || line >= nlines) return; // out of screen
 
-        const y = textOffset + lineHeight() * line;
+        const h = lineHeight();
+        const y = textOffset + h * line;
+        screen.fillRect(0, y, screen.width, h, 0); // clear background
         screen.print(text, textOffset, y);
     }
 
