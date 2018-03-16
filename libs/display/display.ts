@@ -26,7 +26,7 @@ namespace display {
      * @param line the line number to print the text at, eg: 1
      */
     //% blockId=displayshowstring block="show string %text|at line %line"
-    //% weight=98 group="Screen" inlineInputMode="inline" blockGap=8
+    //% weight=98 inlineInputMode="inline" blockGap=8
     //% help=display/show-string
     export function showString(text: string, line: number) {
         line = line >> 0;
@@ -43,7 +43,7 @@ namespace display {
      * @param line the line number to print the text at, eg: 1
      */
     //% blockId=displayshownumber block="show number %name|at line %line"
-    //% weight=96 group="Screen" inlineInputMode="inline" blockGap=8
+    //% weight=96 inlineInputMode="inline" blockGap=8
     //% help=display/show-number
     //% line.min=1 line.max=10
     export function showNumber(value: number, line: number) {
@@ -55,8 +55,8 @@ namespace display {
      * @param value the numeric value
      * @param line the line number to print the text at, eg: 1
      */
-    //% blockId=displayshowvalue block="show value %name|= %text|at line %line"
-    //% weight=96 group="Screen" inlineInputMode="inline" blockGap=8
+    //% blockId=displayshowvalue block="show value %name|: %text|at line %line"
+    //% weight=96 inlineInputMode="inline" blockGap=8
     //% help=display/show-value
     //% line.min=1 line.max=10
     export function showValue(name: string, value: number, line: number) {
@@ -69,7 +69,7 @@ namespace display {
      */
     //% blockId=displayclear block="clear display"
     //% weight=90
-    //% help=display/clear-screen
+    //% help=display/clear
     export function clear() {
         screen.fill(0)
     }
