@@ -9,7 +9,7 @@ namespace game {
     }
 }
 
-namespace player {
+namespace info {
     //%
     int updateHighScore(int score) {
         return score;
