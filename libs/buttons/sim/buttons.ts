@@ -102,6 +102,9 @@ namespace pxsim.ButtonMethods {
     export function wasPressed(button: pxsim.Button): boolean {
         return (<CommonButton>button).wasPressed();
     }
+    export function id(button: pxsim.Button): number {
+        return (<CommonButton>button).id;
+    }
 }
 
 namespace pxsim.DigitalPinMethods {

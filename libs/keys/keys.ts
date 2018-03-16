@@ -1,8 +1,8 @@
 enum KeyEvent {
     //% block="pressed"
-    Pressed,
+    Pressed = KEY_DOWN,
     //% block="released"
-    Released
+    Released = KEY_UP
 }
 
 /**
@@ -10,55 +10,35 @@ enum KeyEvent {
  */
 //% weight=97 color="#5B0F4D" icon="\uf11b"
 namespace keys {
-    /**
-     * Raises a key event
-     * @param event 
-     * @param id 
-     */
-    //% shim=keys::raiseKeyEvent
-    declare function raiseKeyEvent(event: KeyEvent, id: number): void;
-
-    /**
-     * Puases until a key event is raised
-     * @param event 
-     * @param id 
-     */
-    //% shim=keys::pauseUntilKeyEvent
-    declare function pauseUntilKeyEvent(event: KeyEvent, id: number): void;
-    
-    /**
-     * Register code to run for a key event
-     * @param event 
-     * @param id 
-     */
-    //% shim=keys::onKeyEvent
-    declare function onKeyEvent(event: KeyEvent, id: number, handler: () => void): void;
-
     //% fixedInstances
     export class Key {
         id: number
         private _pressed: boolean
         private checked: boolean
 
-        constructor(id: number) {
+        constructor(id: number, buttonId?: number, upid?: number, downid?: number) {
             this.id = id
             this._pressed = false
             this.checked = false
-            control.onEvent("_keyup", id, () => {
+            control.onEvent(INTERNAL_KEY_UP, id, () => {
                 if (this._pressed) {
                     this._pressed = false
-                    raiseKeyEvent(KeyEvent.Released, id)
-                    raiseKeyEvent(KeyEvent.Released, 0)
+                    control.raiseEvent(KEY_UP, id)
+                    control.raiseEvent(KEY_UP, 0)
                 }
             })
-            control.onEvent("_keydown", id, () => {
+            control.onEvent(INTERNAL_KEY_DOWN, id, () => {
                 if (!this._pressed) {
                     this._pressed = true
                     this.checked = false
-                    raiseKeyEvent(KeyEvent.Pressed, id)
-                    raiseKeyEvent(KeyEvent.Pressed, 0)
+                    control.raiseEvent(KEY_DOWN, id)
+                    control.raiseEvent(KEY_DOWN, 0)
                 }
-            })
+            })   
+            if (buttonId && upid && downid) {
+                control.onEvent(buttonId, upid, () => control.raiseEvent(INTERNAL_KEY_UP, id))
+                control.onEvent(buttonId, downid, () => control.raiseEvent(INTERNAL_KEY_DOWN, id))
+            }  
         }
 
         /**
@@ -67,7 +47,7 @@ namespace keys {
         //% weight=99 blockGap=8
         //% blockId=keyonevent block="on %key **key** %event"
         onEvent(event: KeyEvent, handler: () => void) {
-            onKeyEvent(event, this.id, handler);
+            control.onEvent(event, this.id, handler);
         }
 
         /**
@@ -76,8 +56,8 @@ namespace keys {
         //% weight=98 blockGap=8
         //% blockId=keypauseuntil block="pause until %key **key** is %event"
         pauseUntil(event: KeyEvent) {
-            pauseUntilKeyEvent(event, this.id);
-        }        
+            control.waitForEvent(event, this.id)
+        }
 
         /** 
          * Indicates if the key is currently pressed
@@ -112,10 +92,10 @@ namespace keys {
     //% weight=50 blockGap=8
     //% blockId=keysdx block="dx %step"
     export function dx(step: number) {
-        if (keys.Left.isPressed())
-            if (keys.Right.isPressed()) return 0
+        if (keys.left.isPressed())
+            if (keys.right.isPressed()) return 0
             else return -step * control.deltaTime
-        else if (keys.Right.isPressed()) return step * control.deltaTime
+        else if (keys.right.isPressed()) return step * control.deltaTime
         else return 0
     }
 
@@ -126,10 +106,10 @@ namespace keys {
     //% weight=49
     //% blockId=keysdy block="dy %step"
     export function dy(step: number) {
-        if (keys.Up.isPressed())
-            if (keys.Down.isPressed()) return 0
+        if (keys.up.isPressed())
+            if (keys.down.isPressed()) return 0
             else return -step * control.deltaTime
-        else if (keys.Down.isPressed()) return step * control.deltaTime
+        else if (keys.down.isPressed()) return step * control.deltaTime
         else return 0
     }
 
@@ -139,6 +119,6 @@ namespace keys {
     //% weight=10
     //% blockId=keypauseuntilanykey block="pause until any key"
     export function pauseUntilAnyKey() {
-        pauseUntilKeyEvent(KeyEvent.Pressed, 0)
+        control.waitForEvent(KEY_DOWN, 0)
     }
 }
