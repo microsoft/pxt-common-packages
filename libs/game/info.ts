@@ -12,7 +12,7 @@ namespace info {
     /**
      * Color of the HUD display
      */
-    let color = 15;
+    let color = 1;
 
     function initHUD() {
         if (_hud) return;
