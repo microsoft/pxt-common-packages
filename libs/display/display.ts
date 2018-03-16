@@ -1,7 +1,7 @@
 /**
  * Basic screen display functionalities
  */
-//% weight=90 icon="\uf108" color="#311557"
+//% weight=98 icon="\uf108" color="#311557"
 namespace display {
     const textOffset = 4;
     const lineOffset = 2;
