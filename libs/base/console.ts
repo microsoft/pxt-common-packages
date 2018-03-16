@@ -6,6 +6,12 @@
 //% weight=12 color=#002050 icon="\uf120"
 //% advanced=true
 namespace console {
+    type Listener = (text: string) => void;
+
+    const listeners: Listener[] = [
+        (text: string) => serial.writeLine(text)
+    ];
+    
     /**
      * Write a line of text to the console output.
      * @param value to send
@@ -14,7 +20,11 @@ namespace console {
     //% help=console/log blockGap=8
     //% blockId=console_log block="console|log %text"
     export function log(text: string): void {
-        serial.writeString(text + "\r\n");
+        // pad text on the 32byte boundar
+        text += "\r\n";
+        // send to listeners
+        for (let i = 0; i < listeners.length; ++i)
+            listeners[i](text);
     }
 
     /**
@@ -26,6 +36,16 @@ namespace console {
     //% help=console/log-value
     //% blockId=console_log_value block="console|log value %name|= %value"
     export function logValue(name: string, value: number): void {
-        serial.writeValue(name, value);
+        log(`${name}: ${value}`)
     }
+
+    /**
+     * Adds a listener for the log messages
+     * @param listener 
+     */
+    //%
+    export function addListener(listener: (text: string) => void) {
+        if (!listener) return;
+        listeners.push(listener);
+    }    
 }
