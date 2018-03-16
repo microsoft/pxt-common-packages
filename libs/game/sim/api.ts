@@ -1,4 +1,4 @@
-namespace pxsim.hud {
+namespace pxsim.player {
     export function updateHighScore(score: number): number {
         const b = board();
         const id = b.runOptions.version || "local";
