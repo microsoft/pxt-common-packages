@@ -1,3 +1,5 @@
+// Overriden in target
+
 #include "pxt.h"
 
 namespace game {

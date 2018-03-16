@@ -10,7 +10,8 @@
         "player.ts",
         "background.ts",
         "game.ts",
-        "targetoverrides.cpp"
+        "targetoverrides.cpp",
+        "targetoverrides.ts"
     ],
     "public": true,
     "dependencies": {
