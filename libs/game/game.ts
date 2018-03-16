@@ -53,11 +53,11 @@ namespace game {
                     s.__draw()
                 if (game.debug)
                     physics.engine.draw();
-            
+
                 flags = 0;
             })
         }
-    }    
+    }
 
     export function setBackgroundCallback(f: () => void) {
         init();
@@ -103,7 +103,7 @@ namespace game {
     }
 
     function showBackground(h: number, c: number) {
-        let top = (screen.height - h) / 2
+        const top = (screen.height - h) >> 1;
         if (screen.isMono) {
             screen.fillRect(0, top, screen.width, h, 0)
             screen.drawLine(0, top, screen.width, top, 1)
@@ -111,7 +111,8 @@ namespace game {
         } else {
             screen.fillRect(0, top, screen.width, h, c)
         }
-        return top
+
+        return top;
     }
 
     /**
@@ -134,16 +135,12 @@ namespace game {
     //% weight=89
     //% blockId=gameDialog block="show dialog %title %subtitle"
     export function showDialog(title: string, subtitle: string) {
-        let lines = 1
-        if (!subtitle) lines = 0
-        else 
-            for (let i = 0; i < subtitle.length; ++i)
-                if (subtitle[i] == '\n') lines++
-
-        let h = 28 + lines * (image.font5.charHeight + 2)
-        let top = showBackground(h, 9)
-        screen.print(title, 8, top + 8, screen.isMono ? 1 : 14, image.font8)
-        screen.print(subtitle, 8, top + 23, screen.isMono ? 1 : 13, image.font5)
+        const h = 8 + image.font8.charHeight + 2 + image.font5.charHeight + 8;
+        const top = showBackground(h, 9)
+        if (title)
+            screen.print(title, 8, top + 8, screen.isMono ? 1 : 14, image.font8);
+        if (subtitle)
+            screen.print(subtitle, 8, top + 8 + image.font8.charHeight + 2, screen.isMono ? 1 : 13, image.font5);
     }
 
     function meltScreen() {
@@ -194,7 +191,7 @@ namespace game {
      * Tells the game host to grab a screenshot
      */
     //% shim=game::takeScreenshot
-    declare function takeScreenshot(): void; 
+    declare function takeScreenshot(): void;
 
     let __frameCb: () => void = undefined;
     /**
@@ -205,9 +202,9 @@ namespace game {
     //% blockId=frame block="game frame"
     export function frame(a: () => void): void {
         if (!__frameCb)
-            control.addFrameHandler(20, function() {
+            control.addFrameHandler(20, function () {
                 if (__frameCb) __frameCb();
             });
         __frameCb = a;
-    }        
+    }
 }

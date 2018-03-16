@@ -94,11 +94,11 @@ namespace game {
 
             switch (this.alignX) {
                 case BackgroundAlignment.Right: rx -= (w + pw); break;
-                case BackgroundAlignment.Center: rx -= (w + pw) / 2; break;
+                case BackgroundAlignment.Center: rx -= (w + pw) >> 1; break;
             }
             switch (this.alignY) {
                 case BackgroundAlignment.Bottom: ry -= (h + ph); break;
-                case BackgroundAlignment.Center: ry -= (h + ph) / 2; break;
+                case BackgroundAlignment.Center: ry -= (h + ph) >> 1; break;
             }
 
             rx %= w; if (rx < 0) rx += w;
