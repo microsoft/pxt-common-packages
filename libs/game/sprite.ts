@@ -206,7 +206,7 @@ class Sprite {
      */
     //%
     isOutOfScreen(): boolean {
-        return this.left < 0 || this.top < 0 || this.right > screen.width || this.bottom > screen.height;
+        return this.right < 0 || this.bottom < 0 || this.left > screen.width || this.top > screen.height;
     }
 
     __draw() {
