@@ -189,9 +189,10 @@ class Sprite {
     /**
      * Display a speech bubble with the text, for the given time
      * @param text 
-     * @param time 
+     * @param time time to keep text on, eg: 2000
      */
-    //% blockId=spritesay block="say %text||for %millis ms"
+    //% blockNamespace=Sprites color="#23c47e"
+    //% blockId=spritesay block="%sprite say %text||for %millis|ms"
     say(text: string, millis?: number) {
         this._say = text;
         if (!millis || millis < 0)
