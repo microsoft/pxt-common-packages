@@ -82,7 +82,7 @@ namespace game {
      * @param img 
      */
     //% weight=24
-    //% _blockId=backgroundaddimage block="add background image|distance %distance|aligned % alignment|image %img"
+    //% _block="add background image|distance %distance|aligned % alignment|image %img"
     export function addBackgroundImage(distance: number, alignment: BackgroundAlignment, img: Image) {
         init();
         __background.addLayer(distance, alignment, img);
