@@ -57,6 +57,8 @@ class Sprite {
     id: number
     type: number
     life: number;
+    private _say: string;
+    private _sayExpires: number;
 
     animation: SpriteAnimation
 
@@ -183,8 +185,49 @@ class Sprite {
     set bottom(value: number) {
         this.y = value - (this.height >> 1);
     }
+
+    /**
+     * Display a speech bubble with the text, for the given time
+     * @param text 
+     * @param time time to keep text on, eg: 2000
+     */
+    //% blockNamespace=Sprites color="#23c47e"
+    //% blockId=spritesay block="%sprite say %text||for %millis|ms"
+    say(text: string, millis?: number) {
+        this._say = text;
+        if (!millis || millis < 0)
+            this._sayExpires = -1;
+        else
+            this._sayExpires = control.millis() + millis;
+    }
+
+    /**
+     * Indicates if the sprite is outside the screen
+     */
+    //%
+    isOutOfScreen(): boolean {
+        return this.right < 0 || this.bottom < 0 || this.left > screen.width || this.top > screen.height;
+    }
+
     __draw() {
+        if (this.isOutOfScreen()) return;
+
         screen.drawTransparentImage(this.image, this.left, this.top)
+        // say text
+        if (this._say && (this._sayExpires < 0 || this._sayExpires > control.millis())) {
+            screen.fillRect(
+                this.right,
+                this.top - image.font5.charHeight - 2,
+                this._say.length * image.font5.charWidth,
+                image.font5.charHeight + 4,
+                1);
+            screen.print(this._say,
+                this.right + 2,
+                this.top - image.font5.charHeight,
+                15,
+                image.font5);
+        }
+        // debug info
         if (game.debug)
             screen.drawRect(this.left, this.top, this.width, this.height, 3);
     }
