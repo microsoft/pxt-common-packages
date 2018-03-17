@@ -192,9 +192,9 @@ class Sprite {
      * @param time 
      */
     //% blockId=spritesay block="say %text||for %millis ms"
-    say(text: string, millis: number = -1) {
+    say(text: string, millis?: number) {
         this._say = text;
-        if (millis < 0)
+        if (!millis || millis < 0)
             this._sayExpires = -1;
         else
             this._sayExpires = control.millis() + millis;
@@ -217,7 +217,7 @@ class Sprite {
             screen.fillRect(
                 this.right,
                 this.top - image.font5.charHeight - 2,
-                this._say.length * image.font5.charWidth + 4,
+                this._say.length * image.font5.charWidth,
                 image.font5.charHeight + 4,
                 1);
             screen.print(this._say,
