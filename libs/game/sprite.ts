@@ -29,8 +29,8 @@ class Sprite {
     life: number;
     private _say: string;
     private _sayExpires: number;
+    private _image: Image
 
-    _image: Image
     flags: number
     id: number
     animation: SpriteAnimation
