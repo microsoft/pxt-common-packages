@@ -36,7 +36,7 @@ namespace console {
     //% help=console/log-value
     //% blockId=console_log_value block="console|log value %name|= %value"
     export function logValue(name: string, value: number): void {
-        log(name ? `${name}: ${value}` : `${value.toString}`)
+        log(name ? `${name}: ${value}` : `${value}`)
     }
 
     /**
