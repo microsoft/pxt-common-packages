@@ -6,7 +6,8 @@
     "MakeCode",
     "PXT",
     "Adafruit",
-    "SparkFun"
+    "SparkFun",
+    "Maker"
   ],
   "author": "Microsoft Corporation",
   "repository": {
@@ -23,7 +24,7 @@
     "libs/**/*"
   ],
   "dependencies": {
-    "pxt-core": "^3.5.3",
+    "pxt-core": "^3.5.6",
     "rtlcss": "^2.1.2",
     "autoprefixer": "^6.7.6"
   },
