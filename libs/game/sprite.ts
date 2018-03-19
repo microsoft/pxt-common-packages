@@ -30,7 +30,7 @@ class Sprite {
     private _say: string;
     private _sayExpires: number;
 
-    image: Image
+    _image: Image
     flags: number
     id: number
     animation: SpriteAnimation
@@ -47,9 +47,28 @@ class Sprite {
         this.ax = 0
         this.ay = 0
         this.flags = 0
-        this.image = img
+        this._image = img
         this.type = 0
         this.life = -1
+    }
+
+    /**
+     * Gets the current image
+     */
+    //% blockCombine block="image"
+    get image(): Image {
+        return this._image;
+    }
+
+    /**
+     * Sets the image on the sprite
+     */
+    //% blockId=spritesetimage block="set %sprite image to %img"
+    //% img.fieldEditor="sprite"
+    //% img.fieldOptions.taggedTemplate="img"
+    setImage(img: Image) {
+        if (!img) return; // don't break the sprite
+        this._image = img;
     }
 
     //% blockCombine block="z (depth)"
@@ -67,11 +86,11 @@ class Sprite {
 
     //% blockCombine block="width"
     get width() {
-        return this.image.width
+        return this._image.width
     }
     //% blockCombine block="height"
     get height() {
-        return this.image.height
+        return this._image.height
     }
     //% blockCombine block="left"
     get left() {
@@ -108,10 +127,9 @@ class Sprite {
 
     /**
      * Display a speech bubble with the text, for the given time
-     * @param text 
+     * @param text the text to say, eg: "Hi"
      * @param time time to keep text on, eg: 2000
      */
-    //% blockNamespace=Sprites color="#23c47e"
     //% blockId=spritesay block="%sprite say %text||for %millis|ms"
     say(text: string, millis?: number) {
         this._say = text;
@@ -132,7 +150,7 @@ class Sprite {
     __draw() {
         if (this.isOutOfScreen()) return;
 
-        screen.drawTransparentImage(this.image, this.left, this.top)
+        screen.drawTransparentImage(this._image, this.left, this.top)
         // say text
         if (this._say && (this._sayExpires < 0 || this._sayExpires > control.millis())) {
             screen.fillRect(
@@ -200,7 +218,7 @@ class Sprite {
             return false
         if (other.flags & sprites.Flag.Ghost)
             return false
-        return other.image.overlapsWith(this.image, this.left - other.left, this.top - other.top)
+        return other._image.overlapsWith(this._image, this.left - other.left, this.top - other.top)
     }
 
     /**
