@@ -1,38 +1,3 @@
-/**
- * A state property from the sprite
- */
-//%
-enum SpriteProperty {
-    //% block=x
-    X,
-    //% block=y
-    Y,
-    //% block="vx"
-    VX,
-    //% block="vy"
-    VY,
-    //% block="ax"
-    AX,
-    //% block="ay"
-    AY,
-    //% block=left
-    Left,
-    //% block=right
-    Right,
-    //% block=top
-    Top,
-    //% block=bottom
-    Bottom,
-    //% block=width
-    Width,
-    //% block=height
-    Height,
-    //% block=type
-    Type,
-    //% block=life
-    Life
-}
-
 enum SpriteFlag {
     //% block="ghost"
     Ghost = sprites.Flag.Ghost,
@@ -43,23 +8,31 @@ enum SpriteFlag {
 /**
  * A sprite on screem
  **/
-//%
+//% blockNamespace=Sprites color="#23c47e" blockGap=8
 class Sprite {
+    //% blockCombine block="x"
     x: number
+    //% blockCombine block="y"
     y: number
     _z: number
+    //% blockCombine block="vx"
     vx: number
+    //% blockCombine block="vy"
     vy: number
+    //% blockCombine block="ax"
     ax: number
+    //% blockCombine block="ay"
     ay: number
-    image: Image
-    flags: number
-    id: number
+    //% blockCombine block="type"
     type: number
+    //% blockCombine block="life"
     life: number;
     private _say: string;
     private _sayExpires: number;
 
+    image: Image
+    flags: number
+    id: number
     animation: SpriteAnimation
 
     overlapHandler: (other: Sprite) => void;
@@ -79,10 +52,12 @@ class Sprite {
         this.life = -1
     }
 
+    //% blockCombine block="z (depth)"
     get z(): number {
         return this._z;
     }
 
+    //% blockCombine block="z (depth)"
     set z(value: number) {
         if (value != this._z) {
             this._z = value;
@@ -90,98 +65,43 @@ class Sprite {
         }
     }
 
-    /**
-     * Sets a property of the sprite
-     * @param property the name of the property to change
-     * @param the updated value
-     */
-    //% weight=80 blockGap=8
-    //% blockNamespace=Sprites color="#23c47e"
-    //% blockId=spritesspreiteset block="set %sprite %property to %value" blockGap=8
-    public set(property: SpriteProperty, value: number) {
-        switch (property) {
-            case SpriteProperty.X: this.x = value; break;
-            case SpriteProperty.Y: this.y = value; break;
-            case SpriteProperty.VX: this.vx = value; break;
-            case SpriteProperty.VY: this.vy = value; break;
-            case SpriteProperty.AX: this.ax = value; break;
-            case SpriteProperty.AY: this.ay = value; break;
-            case SpriteProperty.Type: this.type = value; break;
-            case SpriteProperty.Life: this.life = value; break;
-            case SpriteProperty.Left: this.x = value + this.image.width / 2; break;
-            case SpriteProperty.Right: this.x = value - this.image.width / 2; break;
-            case SpriteProperty.Top: this.y = value + this.image.height / 2; break;
-            case SpriteProperty.Bottom: this.y = value - this.image.height / 2; break;
-        }
-    }
-
-    /**
-     * Changes a property of the sprite
-     * @param property the name of the property to change
-     * @param value amount of change, eg: 1
-     */
-    //% weight=79
-    //% blockNamespace=Sprites color="#23c47e"
-    //% blockId=spritespsritechange block="change %sprite %property by %value" blockGap=8
-    public changeBy(property: SpriteProperty, value: number) {
-        this.set(property, this.get(property) + value);
-    }
-
-    /**
-     * Gets a property of the sprite
-     * @param property the name of the property to change
-     */
-    //% weight=81 blockGap=8
-    //% blockNamespace=Sprites color="#23c47e"
-    //% blockId=spritespspriteget block="%sprite %property"
-    public get(property: SpriteProperty) {
-        switch (property) {
-            case SpriteProperty.X: return this.x;
-            case SpriteProperty.Y: return this.y;
-            case SpriteProperty.Left: return this.left;
-            case SpriteProperty.Right: return this.right;
-            case SpriteProperty.Top: return this.top;
-            case SpriteProperty.Bottom: return this.bottom;
-            case SpriteProperty.Width: return this.width;
-            case SpriteProperty.Height: return this.height;
-            case SpriteProperty.Y: return this.y;
-            case SpriteProperty.VX: return this.vx;
-            case SpriteProperty.VY: return this.vy;
-            case SpriteProperty.AX: return this.ax;
-            case SpriteProperty.AY: return this.ay;
-            case SpriteProperty.Type: return this.type;
-            case SpriteProperty.Life: return this.life;
-            default: return 0;
-        }
-    }
-
+    //% blockCombine block="width"
     get width() {
         return this.image.width
     }
+    //% blockCombine block="height"
     get height() {
         return this.image.height
     }
+    //% blockCombine block="left"
     get left() {
         return this.x - (this.width >> 1)
     }
+    //% blockCombine block="left"
     set left(value: number) {
         this.x = value + (this.width >> 1);
     }
+    //% blockCombine block="right"
     get right() {
         return this.left + this.width
     }
+    //% blockCombine block="right"
     set right(value: number) {
         this.x = value - (this.width >> 1);
     }
+    //% blockCombine
     get top() {
         return this.y - (this.height >> 1)
     }
+    //% blockCombine
     set top(value: number) {
         this.y = value + (this.height >> 1);
     }
+    //% blockCombine block="bottom"
     get bottom() {
         return this.top + this.height
     }
+    //% blockCombine block="bottom"
     set bottom(value: number) {
         this.y = value - (this.height >> 1);
     }
@@ -262,8 +182,6 @@ class Sprite {
     /**
      * Sets the sprite as a ghost (which does not interact with physics)
      */
-    //% blockGap=8
-    //% blockNamespace=Sprites color="#23c47e"
     //% blockId=spritesetsetflag block="set %sprite %flag %on"
     //% on.fieldEditor=toggleonoff
     setFlag(flag: SpriteFlag, on: boolean) {
@@ -275,8 +193,6 @@ class Sprite {
      * Tests if a sprite overlaps with another
      * @param other
      */
-    //% blockGap=8
-    //% blockNamespace=Sprites color="#23c47e"
     //% blockId=spriteoverlapswith block="%sprite overlaps with %other"
     overlapsWith(other: Sprite) {
         if (other == this) return false;
@@ -292,8 +208,6 @@ class Sprite {
      * @param spriteType sprite type to match
      * @param handler
      */
-    //% blockGap=8
-    //% blockNamespace=Sprites color="#23c47e"
     //% blockId=spriteonoverlap block="on %sprite overlap with"
     onOverlap(handler: (other: Sprite) => void) {
         this.overlapHandler = handler;
@@ -303,8 +217,7 @@ class Sprite {
      * Register code to run when sprite is destroyed
      * @param handler
      */
-    //% weight=9 blockGap=8
-    //% blockNamespace=Sprites color="#23c47e"
+    //% weight=9
     //% blockId=spriteondestroy block="on %sprite destroyed"
     onDestroyed(handler: () => void) {
         this.destroyHandler = handler
@@ -313,8 +226,7 @@ class Sprite {
     /**
      * Destroys the sprite
      */
-    //% weight=10 blockGap=8
-    //% blockNamespace=Sprites color="#23c47e"
+    //% weight=10
     //% blockId=spritedestroy block="destroy %sprite"
     destroy() {
         if (this.flags & sprites.Flag.Destroyed)
