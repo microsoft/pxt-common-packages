@@ -10,22 +10,22 @@ enum SpriteFlag {
  **/
 //% blockNamespace=Sprites color="#23c47e" blockGap=8
 class Sprite {
-    //% blockCombine
+    //% blockCombine block="x"
     x: number
-    //% blockCombine
+    //% blockCombine block="y"
     y: number
     _z: number
-    //% blockCombine
+    //% blockCombine block="vx"
     vx: number
-    //% blockCombine
+    //% blockCombine block="vy"
     vy: number
-    //% blockCombine
+    //% blockCombine block="ax"
     ax: number
-    //% blockCombine
+    //% blockCombine block="ay"
     ay: number
-    //% blockCombine
+    //% blockCombine block="type"
     type: number
-    //% blockCombine
+    //% blockCombine block="life"
     life: number;
 
     image: Image
@@ -50,12 +50,12 @@ class Sprite {
         this.life = -1
     }
 
-    //% blockCombine="z (depth)"
+    //% blockCombine block="z (depth)"
     get z(): number {
         return this._z;
     }
 
-    //% blockCombine="z (depth)"
+    //% blockCombine block="z (depth)"
     set z(value: number) {
         if (value != this._z) {
             this._z = value;
@@ -63,27 +63,27 @@ class Sprite {
         }
     }
 
-    //% blockCombine
+    //% blockCombine block="width"
     get width() {
         return this.image.width
     }
-    //% blockCombine
+    //% blockCombine block="height"
     get height() {
         return this.image.height
     }
-    //% blockCombine
+    //% blockCombine block="left"
     get left() {
         return this.x - (this.width >> 1)
     }
-    //% blockCombine
+    //% blockCombine block="left"
     set left(value: number) {
         this.x = value + (this.width >> 1);
     }
-    //% blockCombine
+    //% blockCombine block="right"
     get right() {
         return this.left + this.width
     }
-    //% blockCombine
+    //% blockCombine block="right"
     set right(value: number) {
         this.x = value - (this.width >> 1);
     }
@@ -95,11 +95,11 @@ class Sprite {
     set top(value: number) {
         this.y = value + (this.height >> 1);
     }
-    //% blockCombine
+    //% blockCombine block="bottom"
     get bottom() {
         return this.top + this.height
     }
-    //% blockCombine
+    //% blockCombine block="bottom"
     set bottom(value: number) {
         this.y = value - (this.height >> 1);
     }
