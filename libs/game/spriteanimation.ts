@@ -25,7 +25,7 @@ class SpriteAnimation {
                 this.reset()
             else
                 this.frameIdx = f
-            parent.image = this.frames[this.frameIdx]
+            parent.setImage(this.frames[this.frameIdx]);
         }
     }
 }

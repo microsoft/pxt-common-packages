@@ -159,8 +159,8 @@ namespace turtle {
      */
     //% _blockId=turtlestamp block="stamp %image"
     export function stamp(image: Image) {
-        init();
+        init();        
         _bkg.image.drawImage(image, _sprite.left + ((_sprite.width - image.width) >> 1), _sprite.top + ((_sprite.height - image.height) >> 1));
-        pause(_delay); // allow redraw
+        pause(_delay);
     }
 }
