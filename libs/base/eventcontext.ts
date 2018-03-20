@@ -15,6 +15,11 @@ namespace control {
             ctx.registerHandler(src, value, handler, flags);
     }
 
+    class FrameCallback {
+        order: number
+        handler: () => void
+    }
+
     class EventHandler {
         src: number;
         value: number;
@@ -42,18 +47,79 @@ namespace control {
 
     class EventContext {
         handlers: EventHandler[];
+        frameCallbacks: FrameCallback[];
+        frameWorker: number;
+        frameNo: number;
+        framesInSample: number;
+        timeInSample: number;
+        deltaTime: number;
+
         constructor() {
             this.handlers = [];
+            this.frameNo = 0;
+            this.framesInSample = 0;
+            this.timeInSample = 0;
+            this.deltaTime = 0;
+            this.frameWorker = 0;
+        }
+
+        initFrameCallbacks() {
+            this.frameNo = 0;
+            this.framesInSample = 0;
+            this.timeInSample = 0;
+            this.deltaTime = 0;
+            let prevTime = control.millis();
+            const worker = this.frameWorker;
+            control.runInParallel(() => {
+                while (worker == this.frameWorker) {
+                    this.frameNo++
+                    let loopStart = control.millis()
+                    this.deltaTime = (loopStart - prevTime) / 1000.0
+                    prevTime = loopStart;
+                    for (let f of this.frameCallbacks) {
+                        f.handler()
+                    }
+                    let runtime = control.millis() - loopStart
+                    this.timeInSample += runtime
+                    this.framesInSample++
+                    if (this.timeInSample > 1000 || this.framesInSample > 30) {
+                        _screen_internal._stats(`render: ${Math.round(this.timeInSample / this.framesInSample * 1000)}us`)
+                        this.timeInSample = 0
+                        this.framesInSample = 0
+                    }
+                    let delay = Math.max(1, 20 - runtime)
+                    pause(delay)
+                }
+            })
         }
 
         register() {
             for (const h of this.handlers)
                 h.register();
+            if (this.frameCallbacks)
+                this.initFrameCallbacks();
         }
 
         unregister() {
             for (const h of this.handlers)
                 h.unregister();
+            this.frameWorker++;
+        }
+
+        registerFrameHandler(order: number, handler: () => void) {
+            if (!this.frameCallbacks)
+                this.initFrameCallbacks();
+
+            const fn = new FrameCallback()
+            fn.order = order
+            fn.handler = handler
+            for (let i = 0; i < this.frameCallbacks.length; ++i) {
+                if (this.frameCallbacks[i].order > order) {
+                    this.frameCallbacks.insertAt(i, fn)
+                    return
+                }
+            }
+            this.frameCallbacks.push(fn)
         }
 
         registerHandler(src: number, value: number, handler: () => void, flags: number) {
@@ -90,7 +156,7 @@ namespace control {
 
         // unregister previous context
         const ctx = eventContext();
-        if(ctx) ctx.unregister();
+        if (ctx) ctx.unregister();
         // register again
         eventContexts.push(new EventContext());
     }
