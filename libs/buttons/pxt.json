@@ -4,7 +4,6 @@
     "files": [
         "README.md",
         "buttons.cpp",
-        "buttons.ts",
         "shims.d.ts",
         "enums.d.ts"
     ],
