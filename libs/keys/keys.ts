@@ -94,8 +94,8 @@ namespace keys {
     export function dx(step: number) {
         if (keys.left.isPressed())
             if (keys.right.isPressed()) return 0
-            else return -step * control.deltaTime
-        else if (keys.right.isPressed()) return step * control.deltaTime
+            else return -step * control.eventContext().deltaTime
+        else if (keys.right.isPressed()) return step * control.eventContext().deltaTime
         else return 0
     }
 
@@ -108,8 +108,8 @@ namespace keys {
     export function dy(step: number) {
         if (keys.up.isPressed())
             if (keys.down.isPressed()) return 0
-            else return -step * control.deltaTime
-        else if (keys.down.isPressed()) return step * control.deltaTime
+            else return -step * control.eventContext().deltaTime
+        else if (keys.down.isPressed()) return step * control.eventContext().deltaTime
         else return 0
     }
 

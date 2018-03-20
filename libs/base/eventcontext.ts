@@ -45,7 +45,7 @@ namespace control {
 
     function doNothing() { }
 
-    class EventContext {
+    export class EventContext {
         handlers: EventHandler[];
         frameCallbacks: FrameCallback[];
         frameWorker: number;
@@ -150,7 +150,7 @@ namespace control {
     /**
      * Pushes a new event context and clears all handlers
      */
-    export function pushEventContext() {
+    export function pushEventContext(): EventContext {
         if (!eventContexts)
             eventContexts = [];
 
@@ -158,7 +158,9 @@ namespace control {
         const ctx = eventContext();
         if (ctx) ctx.unregister();
         // register again
-        eventContexts.push(new EventContext());
+        const n = new EventContext();
+        eventContexts.push(n);
+        return n;
     }
 
     /**

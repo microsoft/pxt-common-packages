@@ -13,6 +13,7 @@ namespace game {
     export let debug = false;
     export let flags: number = 0;
     export let gameOverSound: () => void = undefined;
+    export let eventContext: control.EventContext;
 
     let __isOver = false
     let __waitAnyKey: () => void
@@ -37,17 +38,17 @@ namespace game {
     export function init() {
         if (!sprites.allSprites) {
             sprites.allSprites = []
-            control.pushEventContext();
+            eventContext = control.pushEventContext();
             __background = new Background();
             game.setBackground(0)
-            control.addFrameHandler(10, () => {
-                const dt = control.deltaTime;
+            eventContext.registerFrameHandler(10, () => {
+                const dt = eventContext.deltaTime;
                 physics.engine.update(dt);
                 for (let s of sprites.allSprites)
                     s.__update(dt);
             })
-            control.addFrameHandler(60, () => { __bgFunction() })
-            control.addFrameHandler(90, () => {
+            eventContext.registerFrameHandler(60, () => { __bgFunction() })
+            eventContext.registerFrameHandler(90, () => {
                 if (flags & Flag.NeedsSorting)
                     sprites.allSprites.sort(function (a, b) { return a.z - b.z || a.id - b.id; })
                 for (let s of sprites.allSprites)
@@ -124,6 +125,7 @@ namespace game {
     //% weight=90
     //% blockId=gameSplash block="splash %title %subtitle"
     export function splash(title: string, subtitle: string) {
+        init();
         control.pushEventContext();
         showDialog(title, subtitle)
         waitAnyKey()
@@ -165,9 +167,10 @@ namespace game {
     //% blockId=gameOver block="game over"
     //% weight=80
     export function over() {
+        init();
         if (__isOver) return
-        __isOver = true
-        control.clearHandlers()
+        __isOver = true;
+        control.pushEventContext();
         takeScreenshot();
         control.runInParallel(() => {
             if (gameOverSound) gameOverSound();
@@ -204,10 +207,12 @@ namespace game {
     //% help=loops/frame weight=100 afterOnStart=true
     //% blockId=frame block="game frame"
     export function frame(a: () => void): void {
-        if (!__frameCb)
-            control.addFrameHandler(20, function () {
+        if (!__frameCb) {
+            game.init();
+            game.eventContext.registerFrameHandler(20, function () {
                 if (__frameCb) __frameCb();
             });
-        __frameCb = a;
+            __frameCb = a;
+        }
     }
 }

@@ -17,8 +17,8 @@ class SpriteAnimation {
         this.time = 0
     }
 
-    update(parent: Sprite) {
-        this.time += control.deltaTime
+    update(parent: Sprite, dt: number) {
+        this.time += dt;
         let f = (this.time / this.step) | 0
         if (f != this.frameIdx) {
             if (f >= this.frames.length)

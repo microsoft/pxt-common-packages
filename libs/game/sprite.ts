@@ -172,8 +172,8 @@ class Sprite {
 
     __update(dt: number) {
         if (this.animation)
-            this.animation.update(this)
         if (this.life > 0) {
+            this.animation.update(this, dt)
             this.life--;
             if (this.life <= 0)
                 this.destroy();
