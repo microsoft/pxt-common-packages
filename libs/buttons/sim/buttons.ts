@@ -91,10 +91,6 @@ namespace pxsim.pxtcore {
 }
 
 namespace pxsim.ButtonMethods {
-    export function onEvent(button: pxsim.Button, ev: number, body: pxsim.RefAction): void {
-        pxsim.pxtcore.registerWithDal(button.id, ev, body);
-    }
-
     export function isPressed(button: pxsim.Button): boolean {
         return button.pressed;
     }

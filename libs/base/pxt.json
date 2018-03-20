@@ -19,6 +19,7 @@
         "serial.cpp",
         "serial.ts",
         "console.ts",
+        "eventcontext.ts",
         "fieldeditors.ts"
     ],
     "testFiles": [

@@ -123,8 +123,10 @@ namespace game {
     //% weight=90
     //% blockId=gameSplash block="splash %title %subtitle"
     export function splash(title: string, subtitle: string) {
+        control.pushEventContext();
         showDialog(title, subtitle)
         waitAnyKey()
+        control.popEventContext();
     }
 
     /**
