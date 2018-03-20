@@ -44,18 +44,17 @@ namespace game {
             eventContext.registerFrameHandler(10, () => {
                 const dt = eventContext.deltaTime;
                 physics.engine.update(dt);
-                for (let s of sprites.allSprites)
+                for (const s of sprites.allSprites)
                     s.__update(dt);
             })
             eventContext.registerFrameHandler(60, () => { __bgFunction() })
             eventContext.registerFrameHandler(90, () => {
                 if (flags & Flag.NeedsSorting)
                     sprites.allSprites.sort(function (a, b) { return a.z - b.z || a.id - b.id; })
-                for (let s of sprites.allSprites)
+                for (const s of sprites.allSprites)
                     s.__draw()
                 if (game.debug)
                     physics.engine.draw();
-
                 flags = 0;
             })
         }

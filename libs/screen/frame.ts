@@ -1,33 +1,32 @@
 namespace control {
-    let _refresh: () => void
+    let __refresh: () => void
+    let __updated = false;
 
     export function screenRefresh() {
-        if (_refresh)
-            _refresh()
+        if (__refresh)
+            __refresh()
     }
 
     export function setupScreenRefresh(refresh: () => void) {
-        let updated = true
-
-        _refresh = refresh
+        __updated = true;
+        __refresh = refresh;
 
         control.addFrameHandler(200, () => {
             refresh()
-            updated = true
+            __updated = true
         })
-
-        // low frequency fallback screen refresh
-        control.runInParallel(() => {
-            while (true) {
-                updated = false
-                pause(200)
-                if (!updated) {
-                    refresh()
-                    updated = true
-                }
-            }
-        })
-
         refresh()
     }
+
+    // low frequency fallback screen refresh
+    control.runInParallel(() => {
+        while (true) {
+            __updated = false
+            pause(200)
+            if (!__updated) {
+                screenRefresh()
+                __updated = true
+            }
+        }
+    })
 }
