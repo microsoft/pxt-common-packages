@@ -37,6 +37,7 @@ namespace game {
     export function init() {
         if (!sprites.allSprites) {
             sprites.allSprites = []
+            control.pushEventContext();
             __background = new Background();
             game.setBackground(0)
             control.addFrameHandler(10, () => {
