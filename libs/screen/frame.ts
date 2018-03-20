@@ -1,21 +1,17 @@
-namespace control {
-    let __refresh: () => void
+namespace control.__screen {
+    let __update: () => void
     let __updated = false;
 
-    export function screenRefresh() {
-        if (__refresh)
-            __refresh()
+    export function update() {
+        if (__update)
+            __update()
+        __updated = true
     }
 
-    export function setupScreenRefresh(refresh: () => void) {
+    export function setupUpdate(update: () => void) {
         __updated = true;
-        __refresh = refresh;
-
-        control.addFrameHandler(200, () => {
-            refresh()
-            __updated = true
-        })
-        refresh()
+        __update = update;
+        update()
     }
 
     // low frequency fallback screen refresh
@@ -24,7 +20,7 @@ namespace control {
             __updated = false
             pause(200)
             if (!__updated) {
-                screenRefresh()
+                __screen.update();
                 __updated = true
             }
         }

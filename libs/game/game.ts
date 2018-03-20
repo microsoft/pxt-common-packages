@@ -56,7 +56,8 @@ namespace game {
                 if (game.debug)
                     physics.engine.draw();
                 flags = 0;
-            })
+            });
+            eventContext.registerFrameHandler(200, control.__screen.update);
         }
     }
 
