@@ -78,7 +78,7 @@ namespace control {
      * Gets the current event context if any
      */
     export function eventContext(): EventContext {
-        return this.eventContexts ? this.eventContexts[0] : undefined;
+        return eventContexts ? eventContexts[0] : undefined;
     }
 
     /**
