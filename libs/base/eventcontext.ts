@@ -59,7 +59,8 @@ namespace control {
         registerHandler(src: number, value: number, handler: () => void, flags: number) {
             // already there?
             for (const h of this.handlers) {
-                if (h.src == src && h.value == value && h.flags == flags) {
+                if (h.src == src && h.value == value) {
+                    h.flags = flags;
                     h.handler = handler;
                     return;
                 }
