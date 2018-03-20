@@ -11,8 +11,11 @@ namespace control {
         return current_time_ms();
     }
 
+    /**
+    * Used internally
+    */
     //%
-    void internalOnEvent(int src, int value, Action handler, int flags = 16) { // EVENT_LISTENER_DEFAULT_FLAGS
+    void internalOnEvent(int src, int value, Action handler, int flags = 16) {
         registerWithDal(src, value, handler, flags);
     }
 
