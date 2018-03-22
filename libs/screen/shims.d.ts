@@ -15,6 +15,12 @@ declare interface Image {
     height: int32;
 
     /**
+     * True iff the image is monochromatic (black and white)
+     */
+    //% property shim=ImageMethods::isMono
+    isMono: boolean;
+
+    /**
      * Set pixel color
      */
     //% shim=ImageMethods::set
@@ -67,6 +73,12 @@ declare interface Image {
      */
     //% shim=ImageMethods::doubledY
     doubledY(): Image;
+
+    /**
+     * Replaces one color in an image with another
+     */
+    //% shim=ImageMethods::replace
+    replace(from: int32, to: int32): void;
 
     /**
      * Stretches the image in both directions by 100%
