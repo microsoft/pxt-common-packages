@@ -33,26 +33,26 @@ namespace keys {
         }
 
         register() {
-            control.onEvent(INTERNAL_KEY_UP, this.id, () => {
+            control.internalOnEvent(INTERNAL_KEY_UP, this.id, () => {
                 if (this._pressed) {
                     this._pressed = false
                     control.raiseEvent(KEY_UP, this.id)
                     control.raiseEvent(KEY_UP, 0)
                 }
-            })
-            control.onEvent(INTERNAL_KEY_DOWN, this.id, () => {
+            }, 16)
+            control.internalOnEvent(INTERNAL_KEY_DOWN, this.id, () => {
                 if (!this._pressed) {
                     this._pressed = true
                     this.checked = false
                     control.raiseEvent(KEY_DOWN, this.id)
                     control.raiseEvent(KEY_DOWN, 0)
                 }
-            })   
+            }, 16)
             if (this.buttonId && this.upid && this.downid) {
-                control.onEvent(this.buttonId, this.upid, () => control.raiseEvent(INTERNAL_KEY_UP, this.id))
-                control.onEvent(this.buttonId, this.downid, () => control.raiseEvent(INTERNAL_KEY_DOWN, this.id))
+                control.internalOnEvent(this.buttonId, this.upid, () => control.raiseEvent(INTERNAL_KEY_UP, this.id), 16)
+                control.internalOnEvent(this.buttonId, this.downid, () => control.raiseEvent(INTERNAL_KEY_DOWN, this.id), 16)
             }
-        }        
+        }
 
         /**
          * Register code for a key event
@@ -132,7 +132,7 @@ namespace keys {
     //% weight=10
     //% blockId=keypauseuntilanykey block="pause until any key"
     export function pauseUntilAnyKey() {
-        for(const k of __keys)
+        for (const k of __keys)
             k.register();
         control.waitForEvent(KEY_DOWN, 0)
     }
