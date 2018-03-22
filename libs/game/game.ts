@@ -145,9 +145,9 @@ namespace game {
             for (let j = 0; j < 1000; ++j) {
                 let x = Math.randomRange(0, screen.width - 1)
                 let y = Math.randomRange(0, screen.height - 3)
-                let c = screen.get(x, y)
-                screen.set(x, y + 1, c)
-                screen.set(x, y + 2, c)
+                let c = screen.getPixel(x, y)
+                screen.setPixel(x, y + 1, c)
+                screen.setPixel(x, y + 2, c)
             }
             pause(100)
         }
