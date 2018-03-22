@@ -210,13 +210,13 @@ namespace game {
         }
     }
 
+    let __paintCb: () => void = undefined;
     /**
      * Draw on screen before sprites
      * @param body code to execute
      */
-    //% help=game/paint weight=99 afterOnStart=true
+    //% help=game/paint weight=10 afterOnStart=true
     //% blockId=gamepaint block="game paint"
-    let __paintCb: () => void = undefined;
     export function paint(a: () => void): void {
         if (!__paintCb) {
             game.eventContext().registerFrameHandler(75, function () {
