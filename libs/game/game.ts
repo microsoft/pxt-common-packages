@@ -44,10 +44,12 @@ namespace game {
                 for (const s of sprites.allSprites)
                     s.__update(dt);
             })
+            // update 20
             // render background
             __eventContext.registerFrameHandler(60, () => {
                 __background.render();
             })
+            // paint 75
             // render sprites
             __eventContext.registerFrameHandler(90, () => {
                 if (flags & Flag.NeedsSorting)
@@ -192,19 +194,19 @@ namespace game {
     //% shim=game::takeScreenshot
     declare function takeScreenshot(): void;
 
-    let __frameCb: () => void = undefined;
+    let __updateCb: () => void = undefined;
     /**
      * Updates the position and velocities of sprites
      * @param body code to execute
      */
-    //% help=game/frame weight=100 afterOnStart=true
-    //% blockId=gameframe block="game frame"
-    export function frame(a: () => void): void {
-        if (!__frameCb) {
+    //% help=game/update weight=100 afterOnStart=true
+    //% blockId=gameupdate block="game frame"
+    export function update(a: () => void): void {
+        if (!__updateCb) {
             game.eventContext().registerFrameHandler(20, function () {
-                if (__frameCb) __frameCb();
+                if (__updateCb) __updateCb();
             });
-            __frameCb = a;
+            __updateCb = a;
         }
     }
 
