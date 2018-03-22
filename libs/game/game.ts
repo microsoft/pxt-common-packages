@@ -13,7 +13,7 @@ namespace game {
     export let debug = false;
     export let flags: number = 0;
     export let gameOverSound: () => void = undefined;
-
+    let __eventContext: control.EventContext;
     let __isOver = false
     let __waitAnyKey: () => void
     let __bgFunction = () => { }
@@ -28,6 +28,11 @@ namespace game {
         else pause(3000)
     }
 
+    export function eventContext(): control.EventContext {
+        init();
+        return __eventContext;
+    }
+
     function freeze() {
         setBackgroundCallback(() => { })
         game.frame(() => { })
@@ -37,25 +42,26 @@ namespace game {
     export function init() {
         if (!sprites.allSprites) {
             sprites.allSprites = []
+            __eventContext = control.pushEventContext();
             __background = new Background();
             game.setBackground(0)
-            control.addFrameHandler(10, () => {
-                const dt = control.deltaTime;
+            __eventContext.registerFrameHandler(10, () => {
+                const dt = __eventContext.deltaTime;
                 physics.engine.update(dt);
-                for (let s of sprites.allSprites)
+                for (const s of sprites.allSprites)
                     s.__update(dt);
             })
-            control.addFrameHandler(60, () => { __bgFunction() })
-            control.addFrameHandler(90, () => {
+            __eventContext.registerFrameHandler(60, () => { __bgFunction() })
+            __eventContext.registerFrameHandler(90, () => {
                 if (flags & Flag.NeedsSorting)
                     sprites.allSprites.sort(function (a, b) { return a.z - b.z || a.id - b.id; })
-                for (let s of sprites.allSprites)
+                for (const s of sprites.allSprites)
                     s.__draw()
                 if (game.debug)
                     physics.engine.draw();
-
                 flags = 0;
-            })
+            });
+            __eventContext.registerFrameHandler(200, control.__screen.update);
         }
     }
 
@@ -123,8 +129,11 @@ namespace game {
     //% weight=90
     //% blockId=gameSplash block="splash %title %subtitle"
     export function splash(title: string, subtitle: string) {
+        init();
+        control.pushEventContext();
         showDialog(title, subtitle)
         waitAnyKey()
+        control.popEventContext();
     }
 
     /**
@@ -162,9 +171,10 @@ namespace game {
     //% blockId=gameOver block="game over"
     //% weight=80
     export function over() {
+        init();
         if (__isOver) return
-        __isOver = true
-        control.clearHandlers()
+        __isOver = true;
+        control.pushEventContext();
         takeScreenshot();
         control.runInParallel(() => {
             if (gameOverSound) gameOverSound();
@@ -201,10 +211,11 @@ namespace game {
     //% help=loops/frame weight=100 afterOnStart=true
     //% blockId=frame block="game frame"
     export function frame(a: () => void): void {
-        if (!__frameCb)
-            control.addFrameHandler(20, function () {
+        if (!__frameCb) {
+            game.eventContext().registerFrameHandler(20, function () {
                 if (__frameCb) __frameCb();
             });
-        __frameCb = a;
+            __frameCb = a;
+        }
     }
 }

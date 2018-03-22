@@ -27,7 +27,7 @@ namespace pxsim.control {
     export function deviceDalVersion(): string {
         return "0.0.0";
     }
-    export function onEvent(id: number, evid: number, handler: RefAction) {
+    export function internalOnEvent(id: number, evid: number, handler: RefAction) {
         pxtcore.registerWithDal(id, evid, handler)
     }
 
