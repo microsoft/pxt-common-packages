@@ -6,10 +6,8 @@ namespace _screen_internal {
     function updateScreen(img: Image): void {}
     //% shim=pxt::updateStats
     function updateStats(msg: string): void {}
-
     control.setupScreenRefresh(() => updateScreen(screen))
-
-    export function _stats(msg: string) {
-        updateStats(msg)
+    control.EventContext.onStats = function(msg: string) { 
+        updateStats(msg);
     }
 }
