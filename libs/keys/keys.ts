@@ -10,29 +10,16 @@ enum KeyEvent {
  */
 //% weight=97 color="#5B0F4D" icon="\uf11b"
 namespace keys {
-    let __keys: Key[] = [];
-
     //% fixedInstances
     export class Key {
         id: number
-        buttonId: number;
-        upid: number;
-        downid: number;
         private _pressed: boolean
         private checked: boolean
 
         constructor(id: number, buttonId?: number, upid?: number, downid?: number) {
             this.id = id;
-            this.buttonId = buttonId;
-            this.upid = upid;
-            this.downid = downid;
             this._pressed = false;
             this.checked = false;
-            __keys.push(this);
-            this.register();
-        }
-
-        register() {
             control.internalOnEvent(INTERNAL_KEY_UP, this.id, () => {
                 if (this._pressed) {
                     this._pressed = false
@@ -48,9 +35,9 @@ namespace keys {
                     control.raiseEvent(KEY_DOWN, 0)
                 }
             }, 16)
-            if (this.buttonId && this.upid && this.downid) {
-                control.internalOnEvent(this.buttonId, this.upid, () => control.raiseEvent(INTERNAL_KEY_UP, this.id), 16)
-                control.internalOnEvent(this.buttonId, this.downid, () => control.raiseEvent(INTERNAL_KEY_DOWN, this.id), 16)
+            if (buttonId && upid && downid) {
+                control.internalOnEvent(buttonId, upid, () => control.raiseEvent(INTERNAL_KEY_UP, this.id), 16)
+                control.internalOnEvent(buttonId, downid, () => control.raiseEvent(INTERNAL_KEY_DOWN, this.id), 16)
             }
         }
 
@@ -132,8 +119,6 @@ namespace keys {
     //% weight=10
     //% blockId=keypauseuntilanykey block="pause until any key"
     export function pauseUntilAnyKey() {
-        for (const k of __keys)
-            k.register();
         control.waitForEvent(KEY_DOWN, 0)
     }
 }
