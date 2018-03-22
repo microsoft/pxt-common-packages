@@ -16,7 +16,7 @@ namespace control {
         if (callbacks) return
         callbacks = []
         let prevTime = control.millis()
-        control.runInBackground(() => {
+        control.runInParallel(() => {
             while (true) {
                 frameNo++
                 let loopStart = control.millis()
@@ -34,7 +34,7 @@ namespace control {
                     framesInSample = 0
                 }
                 let delay = Math.max(1, 20 - runtime)
-                loops.pause(delay)
+                pause(delay)
             }
         })
     }
@@ -76,10 +76,10 @@ namespace control {
         })
 
         // low frequency fallback screen refresh
-        control.runInBackground(() => {
+        control.runInParallel(() => {
             while (true) {
                 updated = false
-                loops.pause(200)
+                pause(200)
                 if (!updated) {
                     refresh()
                     updated = true
@@ -88,22 +88,5 @@ namespace control {
         })
 
         refresh()
-    }
-}
-
-namespace loops {
-    let frameCb: () => void
-
-    /**
-     * Runs code every frame.
-     * @param body the code to repeat
-     */
-    //%
-    export function frame(body: () => void): void {
-        if (!frameCb)
-            control.addFrameHandler(20, () => {
-                frameCb()
-            })
-        frameCb = body
     }
 }

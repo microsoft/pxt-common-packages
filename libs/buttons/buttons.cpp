@@ -157,4 +157,13 @@ bool isPressed(Button_ button) {
 bool wasPressed(Button_ button) {
     return button->wasPressed();
 }
+
+/**
+* Gets the component identifier for the buton
+*/
+//%
+int id(Button_ button) {
+    return button->id;
+}
+
 }

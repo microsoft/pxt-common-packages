@@ -193,13 +193,12 @@ namespace light {
             const n = this._length;
             const n1 = n - 1;
             const nhalf = n / 2;
-            const v = ((value * n) / this._barGraphHigh) >> 0;
+            const v = Math.round((value * n) / this._barGraphHigh);
             if (v == 0) {
                 this.setAll(0);
-                this.setPixelColor(0, 0x000033);
             } else {
                 for (let i = 0; i < n; ++i) {
-                    if (i <= v) {
+                    if (i + 1 <= v) {
                         if (i < nhalf) {
                             const b = (i * 255 / nhalf) >> 0;
                             this.setPixelColor(i, light.rgb(0, b, 255 - b));

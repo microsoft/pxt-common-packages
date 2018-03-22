@@ -1,261 +1,263 @@
-/*
-Frame handlers:
- 10 - physics and collisions
- 20 - loops.frame()
- 60 - screen/sprite background
- 90 - drawing sprites
- 95 - drawing score
-100 - loops.menu()
-200 - screen refresh
-*/
-
-namespace sprite {
-    export let allSprites: Sprite[]
-
-    export function createFromBuffer(imgbuf: Buffer) {
-        return create(image.ofBuffer(imgbuf))
-    }
-
-    export function reset() {
-        init()
-        allSprites = []
-    }
-
-    function init() {
-        if (!allSprites) {
-            allSprites = []
-            setBackgroundColor(0)
-            control.addFrameHandler(10, () => {
-                for (let s of allSprites)
-                    s._update(control.deltaTime)
-                for (let s of allSprites)
-                    s._collisions()
-            })
-            control.addFrameHandler(60, () => { bgFunction() })
-            control.addFrameHandler(90, () => {
-                allSprites.sort((a, b) => a.z - b.z || a.id - b.id)
-                for (let s of allSprites)
-                    s._draw()
-            })
-        }
-    }
-
-    let bgFunction = () => { }
-
-    export function setBackgroundCallback(f: () => void) {
-        init()
-        bgFunction = f
-    }
-
-    export function setBackgroundColor(c: number) {
-        init()
-        bgFunction = () => {
-            screen.fill(c)
-        }
-    }
-
-    export function create(img: Image) {
-        init()
-        let spr = new Sprite(img)
-        allSprites.push(spr)
-        spr.id = allSprites.length
-        return spr
-    }
-
-    export function createWithAnimation(imgs: Image[]) {
-        let s = create(imgs[0])
-        s.animation = new SpriteAnimation(imgs)
-        return s
-    }
-    
-    /**
-     * Create a new sprite with given speed, and place it at the edge of the screen so it moves towards the middle. The sprite auto-destroys when it leaves the screen. You can modify position after it's created.
-     */
-    export function launchParticle(img: Image, vx: number, vy: number) {
-        let s = create(img)
-        s.vx = vx
-        s.vy = vy
-
-        // put it at the edge of the screen so that it moves towards the middle
-
-        if (vx < 0)
-            s.x = screen.width + (s.width >> 1) - 1
-        else if (vx > 0)
-            s.x = -(s.width >> 1) + 1
-
-        if (vy < 0)
-            s.y = screen.height + (s.height >> 1) - 1
-        else if (vy > 0)
-            s.y = -(s.height >> 1) + 1
-
-        s.flags |= sprite.Flag.AutoDestroy
-
-        return s
-    }
-
-    export enum Flag {
-        Ghost = 1, // doesn't collide with other sprites
-        Destroyed = 2,
-        AutoDestroy = 4, // remove the sprite when no longer visible
-    }
+enum SpriteFlag {
+    //% block="ghost"
+    Ghost = sprites.Flag.Ghost,
+    //% block="auto destroy"
+    AutoDestroy = sprites.Flag.AutoDestroy
 }
 
-class SpriteAnimation {
-    frames: Image[]
-    frameIdx: number
-    time: number
-    step: number
-
-    constructor(f: Image[]) {
-        this.frames = f
-        this.frameIdx = 0
-        this.time = 0
-        this.step = 0.2
-    }
-
-    reset() {
-        this.frameIdx = 0
-        this.time = 0
-    }
-
-    update(parent: Sprite) {
-        this.time += control.deltaTime
-        let f = (this.time / this.step) | 0
-        if (f != this.frameIdx) {
-            if (f >= this.frames.length)
-                this.reset()
-            else
-                this.frameIdx = f
-            parent.image = this.frames[this.frameIdx]
-        }
-    }
-}
-
+/**
+ * A sprite on screem
+ **/
+//% blockNamespace=Sprites color="#23c47e" blockGap=8
 class Sprite {
+    //% blockCombine block="x"
     x: number
+    //% blockCombine block="y"
     y: number
-    z: number
+    _z: number
+    //% blockCombine block="vx"
     vx: number
+    //% blockCombine block="vy"
     vy: number
+    //% blockCombine block="ax"
     ax: number
+    //% blockCombine block="ay"
     ay: number
-    image: Image
+    //% blockCombine block="type"
+    type: number
+    //% blockCombine block="life"
+    life: number;
+    private _say: string;
+    private _sayExpires: number;
+    private _image: Image
+
     flags: number
     id: number
-    type: number
-
     animation: SpriteAnimation
 
-    private collisionHandler: (other: Sprite) => void
-    private wallHandler: () => void
-    private destroyHandler: () => void
+    overlapHandler: (other: Sprite) => void;
+    private destroyHandler: () => void;
 
     constructor(img: Image) {
         this.x = screen.width >> 1
         this.y = screen.height >> 1
-        this.z = 0
+        this._z = 0
         this.vx = 0
         this.vy = 0
         this.ax = 0
         this.ay = 0
         this.flags = 0
-        this.image = img
+        this._image = img
         this.type = 0
+        this.life = -1
     }
 
+    /**
+     * Gets the current image
+     */
+    //% blockCombine block="image"
+    get image(): Image {
+        return this._image;
+    }
+
+    /**
+     * Sets the image on the sprite
+     */
+    //% blockId=spritesetimage block="set %sprite image to %img"
+    //% img.fieldEditor="sprite"
+    //% img.fieldOptions.taggedTemplate="img"
+    setImage(img: Image) {
+        if (!img) return; // don't break the sprite
+        this._image = img;
+    }
+
+    //% blockCombine block="z (depth)"
+    get z(): number {
+        return this._z;
+    }
+
+    //% blockCombine block="z (depth)"
+    set z(value: number) {
+        if (value != this._z) {
+            this._z = value;
+            game.flags |= game.Flag.NeedsSorting;
+        }
+    }
+
+    //% blockCombine block="width"
     get width() {
-        return this.image.width
+        return this._image.width
     }
+    //% blockCombine block="height"
     get height() {
-        return this.image.height
+        return this._image.height
     }
+    //% blockCombine block="left"
     get left() {
         return this.x - (this.width >> 1)
     }
+    //% blockCombine block="left"
+    set left(value: number) {
+        this.x = value + (this.width >> 1);
+    }
+    //% blockCombine block="right"
     get right() {
         return this.left + this.width
     }
+    //% blockCombine block="right"
+    set right(value: number) {
+        this.x = value - (this.width >> 1);
+    }
+    //% blockCombine
     get top() {
         return this.y - (this.height >> 1)
     }
+    //% blockCombine
+    set top(value: number) {
+        this.y = value + (this.height >> 1);
+    }
+    //% blockCombine block="bottom"
     get bottom() {
         return this.top + this.height
     }
-
-    _draw() {
-        screen.drawTransparentImage(this.image, this.left, this.top)
+    //% blockCombine block="bottom"
+    set bottom(value: number) {
+        this.y = value - (this.height >> 1);
     }
 
-    _update(dt: number) {
-        this.x += this.vx * dt
-        this.y += this.vy * dt
-        this.vx += this.ax * dt
-        this.vy += this.ay * dt
+    /**
+     * Display a speech bubble with the text, for the given time
+     * @param text the text to say, eg: "Hi"
+     * @param time time to keep text on, eg: 2000
+     */
+    //% blockId=spritesay block="%sprite say %text||for %millis|ms"
+    say(text: string, millis?: number) {
+        this._say = text;
+        if (!millis || millis < 0)
+            this._sayExpires = -1;
+        else
+            this._sayExpires = control.millis() + millis;
+    }
+
+    /**
+     * Indicates if the sprite is outside the screen
+     */
+    //%
+    isOutOfScreen(): boolean {
+        return this.right < 0 || this.bottom < 0 || this.left > screen.width || this.top > screen.height;
+    }
+
+    __draw() {
+        if (this.isOutOfScreen()) return;
+
+        screen.drawTransparentImage(this._image, this.left, this.top)
+        // say text
+        if (this._say && (this._sayExpires < 0 || this._sayExpires > control.millis())) {
+            screen.fillRect(
+                this.right,
+                this.top - image.font5.charHeight - 2,
+                this._say.length * image.font5.charWidth,
+                image.font5.charHeight + 4,
+                1);
+            screen.print(this._say,
+                this.right + 2,
+                this.top - image.font5.charHeight,
+                15,
+                image.font5);
+        }
+        // debug info
+        if (game.debug)
+            screen.drawRect(this.left, this.top, this.width, this.height, 3);
+    }
+
+    __update(dt: number) {
         if (this.animation)
             this.animation.update(this)
-    }
-
-    _collisions() {
-        if (this.collisionHandler) {
-            for (let o of sprite.allSprites) {
-                if (this != o && this.collidesWith(o)) {
-                    let tmp = o
-                    control.runInBackground(() => this.collisionHandler(tmp))
-                }
-
-            }
+        if (this.life > 0) {
+            this.life--;
+            if (this.life <= 0)
+                this.destroy();
         }
-
-        if (this.wallHandler) {
-            if (
-                0 <= this.x && this.x < screen.width &&
-                0 <= this.y && this.y < screen.height) {
-                // OK
-            } else {
-                control.runInBackground(this.wallHandler)
-            }
-        }
-
-        if (this.flags & sprite.Flag.AutoDestroy) {
+        if (this.flags & sprites.Flag.AutoDestroy) {
             if (this.right < 0 || this.bottom < 0 ||
-                this.left >= screen.width ||
-                this.top >= screen.height) {
+                this.left > screen.width ||
+                this.top > screen.height) {
                 this.destroy()
             }
         }
     }
 
-    makeGhost() {
-        this.flags |= sprite.Flag.Ghost
+    __computeOverlaps() {
+        const oh = this.overlapHandler;
+        if (oh) {
+            for (let o of physics.engine.overlaps(this, 0)) {
+                let tmp = o
+                control.runInParallel(() => oh(tmp))
+            }
+        }
     }
 
-    collidesWith(other: Sprite) {
-        if (this.flags & sprite.Flag.Ghost)
+    /**
+     * Sets the sprite as a ghost (which does not interact with physics)
+     */
+    //% blockId=spritesetsetflag block="set %sprite %flag %on"
+    //% on.fieldEditor=toggleonoff
+    setFlag(flag: SpriteFlag, on: boolean) {
+        if (on) this.flags |= flag
+        else this.flags = ~(~this.flags | flag);
+    }
+
+    /**
+     * Tests if a sprite overlaps with another
+     * @param other
+     */
+    //% blockId=spriteoverlapswith block="%sprite overlaps with %other"
+    overlapsWith(other: Sprite) {
+        if (other == this) return false;
+        if (this.flags & sprites.Flag.Ghost)
             return false
-        if (other.flags & sprite.Flag.Ghost)
+        if (other.flags & sprites.Flag.Ghost)
             return false
-        return other.image.overlapsWith(this.image, this.left - other.left, this.top - other.top)
+        return other._image.overlapsWith(this._image, this.left - other.left, this.top - other.top)
     }
 
-    onCollision(handler: (other: Sprite) => void) {
-        this.collisionHandler = handler
+    /**
+     * Registers code when the sprite overlaps with another sprite
+     * @param spriteType sprite type to match
+     * @param handler
+     */
+    //% blockId=spriteonoverlap block="on %sprite overlap with"
+    onOverlap(handler: (other: Sprite) => void) {
+        this.overlapHandler = handler;
     }
 
-    onHitWall(handler: () => void) {
-        this.wallHandler = handler
-    }
-
-    onDestroy(handler: () => void) {
+    /**
+     * Register code to run when sprite is destroyed
+     * @param handler
+     */
+    //% weight=9
+    //% blockId=spriteondestroy block="on %sprite destroyed"
+    onDestroyed(handler: () => void) {
         this.destroyHandler = handler
     }
 
+    /**
+     * Destroys the sprite
+     */
+    //% weight=10
+    //% blockId=spritedestroy block="destroy %sprite"
     destroy() {
-        if (this.flags & sprite.Flag.Destroyed)
+        if (this.flags & sprites.Flag.Destroyed)
             return
-        this.flags |= sprite.Flag.Destroyed
-        sprite.allSprites.removeElement(this)
+        this.flags |= sprites.Flag.Destroyed
+        sprites.allSprites.removeElement(this);
+        physics.engine.removeSprite(this);
         if (this.destroyHandler) {
-            control.runInBackground(this.destroyHandler)
+            control.runInParallel(this.destroyHandler)
         }
+    }
+
+    toString() {
+        return `${this.id}(${this.x},${this.y})->(${this.vx},${this.vy})`;
     }
 }

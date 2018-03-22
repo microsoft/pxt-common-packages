@@ -2,8 +2,16 @@
     "name": "game",
     "description": "The game and sprite library - beta",
     "files": [
+        "sprites.ts",
         "sprite.ts",
-        "game.ts"
+        "spriteanimation.ts",
+        "spritemap.ts",
+        "physics.ts",
+        "info.ts",
+        "background.ts",
+        "game.ts",
+        "targetoverrides.cpp",
+        "targetoverrides.ts"
     ],
     "public": true,
     "dependencies": {

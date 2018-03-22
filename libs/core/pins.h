@@ -84,7 +84,16 @@
 #define PIN(name) ((PinName)pxt::getConfig(CFG_PIN_##name, -1))
 #define LOOKUP_PIN(name) pxt::lookupPin(PIN(name))
 
-typedef CODAL_MBED::Pin DevicePin;
+// these can be overridden in platform.h
+#ifndef CODAL_PIN
+#define CODAL_PIN CODAL_MBED::Pin
+#endif
+
+#ifndef CODAL_TIMER
+#define CODAL_TIMER CODAL_MBED::Timer
+#endif
+
+typedef CODAL_PIN DevicePin;
 
 typedef DevicePin *DigitalPin;
 typedef DevicePin *AnalogPin;

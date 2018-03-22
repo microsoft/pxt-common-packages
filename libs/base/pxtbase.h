@@ -560,7 +560,7 @@ RefImage *mkImage(int w, int h, int bpp);
 
 typedef BoxedBuffer *Buffer;
 typedef BoxedString *String;
-typedef RefImage *Image;
+typedef RefImage *Image_;
 
 // keep in sync with github/pxt/pxtsim/libgeneric.ts
 enum class NumberFormat {
