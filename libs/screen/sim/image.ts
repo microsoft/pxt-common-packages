@@ -57,13 +57,13 @@ namespace pxsim.ImageMethods {
 
     export function isMono(img: RefImage) { return img._bpp == 1 }
 
-    export function set(img: RefImage, x: number, y: number, c: number) {
+    export function setPixel(img: RefImage, x: number, y: number, c: number) {
         img.makeWritable()
         if (img.inRange(x, y))
             img.data[img.pix(x, y)] = img.color(c)
     }
 
-    export function get(img: RefImage, x: number, y: number) {
+    export function getPixel(img: RefImage, x: number, y: number) {
         if (img.inRange(x, y))
             return img.data[img.pix(x, y)]
         return 0
@@ -330,7 +330,7 @@ namespace pxsim.ImageMethods {
 
         if (h == 0) {
             if (w == 0)
-                set(img, x0, y0, c);
+                setPixel(img, x0, y0, c);
             else
                 fillRect(img, x0, y0, w + 1, 1, c);
             return;

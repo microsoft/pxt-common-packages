@@ -159,7 +159,7 @@ static inline void setCore(Image_ img, int x, int y, int c) {
  * Set pixel color
  */
 //%
-void set(Image_ img, int x, int y, int c) {
+void setPixel(Image_ img, int x, int y, int c) {
     if (!img->inRange(x, y))
         return;
     img->makeWritable();
@@ -170,7 +170,7 @@ void set(Image_ img, int x, int y, int c) {
  * Get a pixel color
  */
 //%
-int get(Image_ img, int x, int y) {
+int getPixel(Image_ img, int x, int y) {
     if (!img->inRange(x, y))
         return 0;
     auto ptr = img->pix(x, y);
@@ -287,9 +287,9 @@ void flipX(Image_ img) {
         int a = 0;
         int b = img->width() - 1;
         while (a < b) {
-            int tmp = get(img, a, i);
-            set(img, a, i, get(img, b, i));
-            set(img, b, i, tmp);
+            int tmp = getPixel(img, a, i);
+            setPixel(img, a, i, getPixel(img, b, i));
+            setPixel(img, b, i, tmp);
             a++;
             b--;
         }
@@ -657,7 +657,7 @@ void drawLine(Image_ img, int x0, int y0, int x1, int y1, int c) {
 
     if (h == 0) {
         if (w == 0)
-            set(img, x0, y0, c);
+            setPixel(img, x0, y0, c);
         else
             fillRect(img, x0, y0, w + 1, 1, c);
         return;
