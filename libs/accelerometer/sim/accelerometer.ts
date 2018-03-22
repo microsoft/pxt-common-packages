@@ -391,13 +391,13 @@ namespace pxsim {
         accelerometer: Accelerometer;
         useShake = false;
         private tiltDecayer = 0;
-        private element: HTMLElement;
+        private element: SVGElement;
 
         constructor(runtime: Runtime) {
            this.accelerometer = new Accelerometer(runtime);
         }
 
-        attachEvents(element: HTMLElement) {
+        attachEvents(element: SVGElement) {
             this.element = element;
             this.tiltDecayer = 0;
             this.element.addEventListener(pointerEvents.move, (ev: MouseEvent) => {
