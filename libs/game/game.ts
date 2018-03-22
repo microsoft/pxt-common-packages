@@ -13,8 +13,7 @@ namespace game {
     export let debug = false;
     export let flags: number = 0;
     export let gameOverSound: () => void = undefined;
-    export let eventContext: control.EventContext;
-
+    let __eventContext: control.EventContext;
     let __isOver = false
     let __waitAnyKey: () => void
     let __bgFunction = () => { }
@@ -29,6 +28,11 @@ namespace game {
         else pause(3000)
     }
 
+    export function eventContext(): control.EventContext {
+        init();
+        return __eventContext;
+    }
+
     function freeze() {
         setBackgroundCallback(() => { })
         game.frame(() => { })
@@ -38,17 +42,17 @@ namespace game {
     export function init() {
         if (!sprites.allSprites) {
             sprites.allSprites = []
-            eventContext = control.pushEventContext();
+            __eventContext = control.pushEventContext();
             __background = new Background();
             game.setBackground(0)
-            eventContext.registerFrameHandler(10, () => {
-                const dt = eventContext.deltaTime;
+            __eventContext.registerFrameHandler(10, () => {
+                const dt = __eventContext.deltaTime;
                 physics.engine.update(dt);
                 for (const s of sprites.allSprites)
                     s.__update(dt);
             })
-            eventContext.registerFrameHandler(60, () => { __bgFunction() })
-            eventContext.registerFrameHandler(90, () => {
+            __eventContext.registerFrameHandler(60, () => { __bgFunction() })
+            __eventContext.registerFrameHandler(90, () => {
                 if (flags & Flag.NeedsSorting)
                     sprites.allSprites.sort(function (a, b) { return a.z - b.z || a.id - b.id; })
                 for (const s of sprites.allSprites)
@@ -57,7 +61,7 @@ namespace game {
                     physics.engine.draw();
                 flags = 0;
             });
-            eventContext.registerFrameHandler(200, control.__screen.update);
+            __eventContext.registerFrameHandler(200, control.__screen.update);
         }
     }
 
@@ -208,8 +212,7 @@ namespace game {
     //% blockId=frame block="game frame"
     export function frame(a: () => void): void {
         if (!__frameCb) {
-            game.init();
-            game.eventContext.registerFrameHandler(20, function () {
+            game.eventContext().registerFrameHandler(20, function () {
                 if (__frameCb) __frameCb();
             });
             __frameCb = a;

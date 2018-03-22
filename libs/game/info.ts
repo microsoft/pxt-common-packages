@@ -20,7 +20,7 @@ namespace info {
 
         const font = image.font5;
         const maxW = 8;
-        game.eventContext.registerFrameHandler(95, () => {
+        game.eventContext().registerFrameHandler(95, () => {
             // show score
             if (_score !== null) {
                 let s = ""
