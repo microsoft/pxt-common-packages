@@ -394,5 +394,18 @@ namespace pxsim {
         constructor(runtime: Runtime) {
            this.accelerometer = new Accelerometer(runtime);
         }
+        
+        updateTilt(element: HTMLElement) {
+            if (!this.accelerometer.isActive) return;
+    
+            const x = this.accelerometer.getX();
+            const y = this.accelerometer.getY();
+            const af = 8 / 1023;
+            const s = 1 - Math.min(0.1, Math.pow(Math.max(Math.abs(x), Math.abs(y)) / 1023, 2) / 35);
+    
+            element.style.transform = `perspective(30em) rotateX(${y * af}deg) rotateY(${x * af}deg) scale(${s}, ${s})`
+            element.style.perspectiveOrigin = "50% 50% 50%";
+            element.style.perspective = "30em";
+        }            
     }
 }
