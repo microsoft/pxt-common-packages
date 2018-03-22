@@ -33,14 +33,16 @@ namespace game {
         }
 
         render() {
-            screen.fill(this.color);
-            this._layers.forEach(layer => {
-                // compute displacement based on distance
-                const ox = Math.round(this.viewX / (1 + layer.distance));
-                const oy = Math.round(this.viewY / (1 + layer.distance));
-
-                layer.render(ox, oy);
-            });
+            if (this.color)
+                screen.fill(this.color);
+            if (this._layers) {
+                this._layers.forEach(layer => {
+                    // compute displacement based on distance
+                    const ox = Math.round(this.viewX / (1 + layer.distance));
+                    const oy = Math.round(this.viewY / (1 + layer.distance));
+                    layer.render(ox, oy);
+                });
+            }
         }
     }
 

@@ -16,7 +16,6 @@ namespace game {
     let __eventContext: control.EventContext;
     let __isOver = false
     let __waitAnyKey: () => void
-    let __bgFunction = () => { }
     let __background: Background;
 
     export function setWaitAnyKey(f: () => void) {
@@ -33,12 +32,6 @@ namespace game {
         return __eventContext;
     }
 
-    function freeze() {
-        setBackgroundCallback(() => { })
-        game.frame(() => { })
-        sprites.allSprites = [];
-    }
-
     export function init() {
         if (!sprites.allSprites) {
             sprites.allSprites = []
@@ -51,23 +44,27 @@ namespace game {
                 for (const s of sprites.allSprites)
                     s.__update(dt);
             })
-            __eventContext.registerFrameHandler(60, () => { __bgFunction() })
+            // render background
+            __eventContext.registerFrameHandler(60, () => {
+                __background.render();
+            })
+            // render sprites
             __eventContext.registerFrameHandler(90, () => {
                 if (flags & Flag.NeedsSorting)
                     sprites.allSprites.sort(function (a, b) { return a.z - b.z || a.id - b.id; })
                 for (const s of sprites.allSprites)
-                    s.__draw()
+                    s.__draw();
+            })
+            // render diagnostics
+            __eventContext.registerFrameHandler(150, () => {
                 if (game.debug)
                     physics.engine.draw();
+                // clear flags
                 flags = 0;
             });
+            // update screen
             __eventContext.registerFrameHandler(200, control.__screen.update);
         }
-    }
-
-    export function setBackgroundCallback(f: () => void) {
-        init();
-        __bgFunction = f
     }
 
     /**
@@ -79,7 +76,6 @@ namespace game {
     export function setBackground(color: number) {
         init();
         __background.color = color;
-        __bgFunction = () => __background.render();
     }
 
     /**
@@ -92,7 +88,6 @@ namespace game {
     export function addBackgroundImage(distance: number, alignment: BackgroundAlignment, img: Image) {
         init();
         __background.addLayer(distance, alignment, img);
-        __bgFunction = () => __background.render();
     }
 
     /**
@@ -167,11 +162,12 @@ namespace game {
         init();
         if (__isOver) return
         __isOver = true;
+        // clear all handlers
         control.pushEventContext();
+        // one last screenshot
         takeScreenshot();
         control.runInParallel(() => {
             if (gameOverSound) gameOverSound();
-            freeze();
             meltScreen();
             let top = showBackground(44, 4)
             screen.printCenter("GAME OVER!", top + 8, screen.isMono ? 1 : 5, image.font8)
@@ -198,17 +194,33 @@ namespace game {
 
     let __frameCb: () => void = undefined;
     /**
-     * Repeats the code in the screen rendering loop.
+     * Updates the position and velocities of sprites
      * @param body code to execute
      */
-    //% help=loops/frame weight=100 afterOnStart=true
-    //% blockId=frame block="game frame"
+    //% help=game/frame weight=100 afterOnStart=true
+    //% blockId=gameframe block="game frame"
     export function frame(a: () => void): void {
         if (!__frameCb) {
             game.eventContext().registerFrameHandler(20, function () {
                 if (__frameCb) __frameCb();
             });
             __frameCb = a;
+        }
+    }
+
+    /**
+     * Draw on screen before sprites
+     * @param body code to execute
+     */
+    //% help=game/paint weight=99 afterOnStart=true
+    //% blockId=gamepaint block="game paint"
+    let __paintCb: () => void = undefined;
+    export function paint(a: () => void): void {
+        if (!__paintCb) {
+            game.eventContext().registerFrameHandler(75, function () {
+                if (__paintCb) __paintCb();
+            });
+            __paintCb = a;
         }
     }
 }
