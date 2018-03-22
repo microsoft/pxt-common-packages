@@ -23,13 +23,14 @@ namespace display {
     /**
      * Show text on the screen at a specific line.
      * @param text the text to print on the screen, eg: "Hello world"
-     * @param line the line number to print the text at, eg: 1
+     * @param line the line number to print the text at (starting at 1), eg: 1
      */
     //% blockId=displayshowstring block="show string %text|at line %line"
     //% weight=98 inlineInputMode="inline" blockGap=8
     //% help=display/show-string
     export function showString(text: string, line: number) {
-        line = line >> 0;
+        // line indexing starts at 1.
+        line = (line - 1) >> 0;
         const nlines = lineCount();
         if (line < 0 || line >= nlines) return; // out of screen
 
@@ -42,7 +43,7 @@ namespace display {
     /**
      * Shows a number on the screen
      * @param value the numeric value
-     * @param line the line number to print the text at, eg: 1
+     * @param line the line number to print the text at (starting at 1), eg: 1
      */
     //% blockId=displayshownumber block="show number %name|at line %line"
     //% weight=96 inlineInputMode="inline" blockGap=8
@@ -55,7 +56,7 @@ namespace display {
     /**
      * Shows a name, value pair on the screen
      * @param value the numeric value
-     * @param line the line number to print the text at, eg: 1
+     * @param line the line number to print the text at (starting at 1), eg: 1
      */
     //% blockId=displayshowvalue block="show value %name|: %text|at line %line"
     //% weight=96 inlineInputMode="inline" blockGap=8
@@ -109,7 +110,7 @@ namespace display.text {
         for (let i = 0; i < screenLines; ++i) {
             const line = lines[i + scrollPosition];
             if (line)
-                display.showString(line, i);
+                display.showString(line, i + 1);
         }
     }
 
