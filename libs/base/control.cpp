@@ -12,14 +12,10 @@ namespace control {
     }
 
     /**
-     * Run code when a registered event happens.
-     * @param id the event compoent id
-     * @param value the event value to match
-     */
-    //% weight=20 blockGap=8 blockId="control_on_event" block="on event|from %src|with value %value"
-    //% blockExternalInputs=1
-    //% help="control/on-event"          
-    void onEvent(int src, int value, Action handler, int flags = 16) { // EVENT_LISTENER_DEFAULT_FLAGS
+    * Used internally
+    */
+    //%
+    void internalOnEvent(int src, int value, Action handler, int flags = 16) {
         registerWithDal(src, value, handler, flags);
     }
 

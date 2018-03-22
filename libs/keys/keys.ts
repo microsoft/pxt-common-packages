@@ -17,28 +17,28 @@ namespace keys {
         private checked: boolean
 
         constructor(id: number, buttonId?: number, upid?: number, downid?: number) {
-            this.id = id
-            this._pressed = false
-            this.checked = false
-            control.onEvent(INTERNAL_KEY_UP, id, () => {
+            this.id = id;
+            this._pressed = false;
+            this.checked = false;
+            control.internalOnEvent(INTERNAL_KEY_UP, this.id, () => {
                 if (this._pressed) {
                     this._pressed = false
-                    control.raiseEvent(KEY_UP, id)
+                    control.raiseEvent(KEY_UP, this.id)
                     control.raiseEvent(KEY_UP, 0)
                 }
-            })
-            control.onEvent(INTERNAL_KEY_DOWN, id, () => {
+            }, 16)
+            control.internalOnEvent(INTERNAL_KEY_DOWN, this.id, () => {
                 if (!this._pressed) {
                     this._pressed = true
                     this.checked = false
-                    control.raiseEvent(KEY_DOWN, id)
+                    control.raiseEvent(KEY_DOWN, this.id)
                     control.raiseEvent(KEY_DOWN, 0)
                 }
-            })   
+            }, 16)
             if (buttonId && upid && downid) {
-                control.onEvent(buttonId, upid, () => control.raiseEvent(INTERNAL_KEY_UP, id))
-                control.onEvent(buttonId, downid, () => control.raiseEvent(INTERNAL_KEY_DOWN, id))
-            }  
+                control.internalOnEvent(buttonId, upid, () => control.raiseEvent(INTERNAL_KEY_UP, this.id), 16)
+                control.internalOnEvent(buttonId, downid, () => control.raiseEvent(INTERNAL_KEY_DOWN, this.id), 16)
+            }
         }
 
         /**
@@ -92,10 +92,14 @@ namespace keys {
     //% weight=50 blockGap=8
     //% blockId=keysdx block="dx %step"
     export function dx(step: number) {
-        if (keys.left.isPressed())
+        const ctx = control.eventContext();
+        if (!ctx) return 0;
+
+        if (keys.left.isPressed()) {
             if (keys.right.isPressed()) return 0
-            else return -step * control.deltaTime
-        else if (keys.right.isPressed()) return step * control.deltaTime
+            else return -step * ctx.deltaTime;
+        }
+        else if (keys.right.isPressed()) return step * ctx.deltaTime
         else return 0
     }
 
@@ -106,10 +110,14 @@ namespace keys {
     //% weight=49
     //% blockId=keysdy block="dy %step"
     export function dy(step: number) {
-        if (keys.up.isPressed())
+        const ctx = control.eventContext();
+        if (!ctx) return 0;
+
+        if (keys.up.isPressed()) {
             if (keys.down.isPressed()) return 0
-            else return -step * control.deltaTime
-        else if (keys.down.isPressed()) return step * control.deltaTime
+            else return -step * ctx.deltaTime;
+        }
+        else if (keys.down.isPressed()) return step * ctx.deltaTime
         else return 0
     }
 
