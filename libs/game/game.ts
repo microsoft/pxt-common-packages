@@ -136,14 +136,7 @@ namespace game {
         control.popEventContext();
     }
 
-    /**
-     * Shows a dialog on screen
-     * @param title 
-     * @param subtitle 
-     */
-    //% weight=89
-    //% blockId=gameDialog block="show dialog %title %subtitle"
-    export function showDialog(title: string, subtitle: string) {
+    function showDialog(title: string, subtitle: string) {
         const h = 8 + image.font8.charHeight + 2 + image.font5.charHeight + 8;
         const top = showBackground(h, 9)
         if (title)
