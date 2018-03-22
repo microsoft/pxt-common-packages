@@ -3,7 +3,13 @@
 #include "Pin.h"
 #include "I2C.h"
 #include "CoordinateSystem.h"
+
+#ifndef CODAL_ACCELEROMETER
+
 #include "LIS3DH.h"
+#define CODAL_ACCELEROMETER codal::LIS3DH
+
+#endif
 
 enum class Dimension {
     //% block=x
@@ -112,7 +118,7 @@ class WAccel {
   public:
     CODAL_MBED::I2C i2c; // note that this is different pins than io->i2c
     CoordinateSpace space;
-    LIS3DH acc;
+    CODAL_ACCELEROMETER acc;
     WAccel()
         : i2c(*LOOKUP_PIN(ACCELEROMETER_SDA), *LOOKUP_PIN(ACCELEROMETER_SCL)),
           space(ACC_SYSTEM, ACC_UPSIDEDOWN, ACC_ROTATION),
