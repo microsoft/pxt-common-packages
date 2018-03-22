@@ -46,13 +46,13 @@ namespace control {
     function doNothing() { }
 
     export class EventContext {
-        handlers: EventHandler[];
-        frameCallbacks: FrameCallback[];
-        frameWorker: number;
-        frameNo: number;
-        framesInSample: number;
-        timeInSample: number;
-        deltaTime: number;
+        private handlers: EventHandler[];
+        private frameCallbacks: FrameCallback[];
+        private frameWorker: number;
+        private frameNo: number;
+        private framesInSample: number;
+        private timeInSample: number;
+        public deltaTime: number;
 
         constructor() {
             this.handlers = [];
@@ -63,7 +63,9 @@ namespace control {
             this.frameWorker = 0;
         }
 
-        initFrameCallbacks() {
+        private registerFrameCallbacks() {
+            if (!this.frameCallbacks) return;
+
             this.frameNo = 0;
             this.framesInSample = 0;
             this.timeInSample = 0;
@@ -96,8 +98,7 @@ namespace control {
         register() {
             for (const h of this.handlers)
                 h.register();
-            if (this.frameCallbacks)
-                this.initFrameCallbacks();
+            this.registerFrameCallbacks();
         }
 
         unregister() {
@@ -107,8 +108,10 @@ namespace control {
         }
 
         registerFrameHandler(order: number, handler: () => void) {
-            if (!this.frameCallbacks)
-                this.initFrameCallbacks();
+            if (!this.frameCallbacks) {
+                this.frameCallbacks = [];
+                this.registerFrameCallbacks();
+            }
 
             const fn = new FrameCallback()
             fn.order = order
@@ -144,7 +147,7 @@ namespace control {
      * Gets the current event context if any
      */
     export function eventContext(): EventContext {
-        return eventContexts ? eventContexts[0] : undefined;
+        return eventContexts ? eventContexts[eventContexts.length - 1] : undefined;
     }
 
     /**
