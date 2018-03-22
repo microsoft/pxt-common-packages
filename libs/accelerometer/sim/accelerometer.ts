@@ -424,10 +424,11 @@ namespace pxsim {
 
                 if (!this.tiltDecayer) {
                     this.tiltDecayer = setInterval(() => {
-                        let accx = this.accelerometer.getX(MicroBitCoordinateSystem.RAW);
+                        let accx = this.accelerometer.getX();
                         accx = Math.floor(Math.abs(accx) * 0.85) * (accx > 0 ? 1 : -1);
-                        let accy = this.accelerometer.getY(MicroBitCoordinateSystem.RAW);
+                        let accy = this.accelerometer.getY();
                         accy = Math.floor(Math.abs(accy) * 0.85) * (accy > 0 ? 1 : -1);
+                        console.log(accy)
                         let accz = -Math.sqrt(Math.max(0, 1023 * 1023 - accx * accx - accy * accy));
                         if (Math.abs(accx) <= 24 && Math.abs(accy) <= 24) {
                             clearInterval(this.tiltDecayer);
@@ -436,7 +437,7 @@ namespace pxsim {
                             accy = 0;
                             accz = -1023;
                         }
-                        this.accelerometer.update(accx, -accy, accz);
+                        this.accelerometer.update(accx, accy, accz);
                         this.updateTilt();
                     }, 50)
                 }
