@@ -20,7 +20,7 @@ declare namespace network {
     function onInfraredPacket(body: () => void): void;
 
     /**
-     * Run action after there's an error reciving packet over IR.
+     * Run action after there's an error recieving packet over IR.
      */
     //% shim=network::onInfraredError
     function onInfraredError(body: () => void): void;
