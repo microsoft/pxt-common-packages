@@ -10,21 +10,29 @@ enum SpriteFlag {
  **/
 //% blockNamespace=Sprites color="#23c47e" blockGap=8
 class Sprite {
+    //% group="Properties"
     //% blockCombine block="x"
     x: number
+    //% group="Properties"
     //% blockCombine block="y"
     y: number
     _z: number
+    //% group="Properties"
     //% blockCombine block="vx"
     vx: number
+    //% group="Properties"
     //% blockCombine block="vy"
     vy: number
+    //% group="Properties"
     //% blockCombine block="ax"
     ax: number
+    //% group="Properties"
     //% blockCombine block="ay"
     ay: number
+    //% group="Properties"
     //% blockCombine block="type"
     type: number
+    //% group="Properties"
     //% blockCombine block="life"
     life: number;
     private _say: string;
@@ -55,6 +63,7 @@ class Sprite {
     /**
      * Gets the current image
      */
+    //% group="Properties"
     //% blockCombine block="image"
     get image(): Image {
         return this._image;
@@ -63,6 +72,7 @@ class Sprite {
     /**
      * Sets the image on the sprite
      */
+    //% group="Properties"
     //% blockId=spritesetimage block="set %sprite image to %img"
     //% img.fieldEditor="sprite"
     //% img.fieldOptions.taggedTemplate="img"
@@ -71,11 +81,13 @@ class Sprite {
         this._image = img;
     }
 
+    //% group="Properties"
     //% blockCombine block="z (depth)"
     get z(): number {
         return this._z;
     }
 
+    //% group="Properties"
     //% blockCombine block="z (depth)"
     set z(value: number) {
         if (value != this._z) {
@@ -84,42 +96,52 @@ class Sprite {
         }
     }
 
+    //% group="Properties"
     //% blockCombine block="width"
     get width() {
         return this._image.width
     }
+    //% group="Properties"
     //% blockCombine block="height"
     get height() {
         return this._image.height
     }
+    //% group="Properties"
     //% blockCombine block="left"
     get left() {
         return this.x - (this.width >> 1)
     }
+    //% group="Properties"
     //% blockCombine block="left"
     set left(value: number) {
         this.x = value + (this.width >> 1);
     }
+    //% group="Properties"
     //% blockCombine block="right"
     get right() {
         return this.left + this.width
     }
+    //% group="Properties"
     //% blockCombine block="right"
     set right(value: number) {
         this.x = value - (this.width >> 1);
     }
+    //% group="Properties"
     //% blockCombine
     get top() {
         return this.y - (this.height >> 1)
     }
+    //% group="Properties"
     //% blockCombine
     set top(value: number) {
         this.y = value + (this.height >> 1);
     }
+    //% group="Properties"
     //% blockCombine block="bottom"
     get bottom() {
         return this.top + this.height
     }
+    //% group="Properties"
     //% blockCombine block="bottom"
     set bottom(value: number) {
         this.y = value - (this.height >> 1);
@@ -130,6 +152,7 @@ class Sprite {
      * @param text the text to say, eg: "Hi"
      * @param time time to keep text on, eg: 2000
      */
+    //% group="Properties"
     //% blockId=spritesay block="%sprite say %text||for %millis|ms"
     say(text: string, millis?: number) {
         this._say = text;
@@ -197,6 +220,7 @@ class Sprite {
     /**
      * Sets the sprite as a ghost (which does not interact with physics)
      */
+    //% group="Properties"
     //% blockId=spritesetsetflag block="set %sprite %flag %on"
     //% on.fieldEditor=toggleonoff
     setFlag(flag: SpriteFlag, on: boolean) {
@@ -208,7 +232,8 @@ class Sprite {
      * Tests if a sprite overlaps with another
      * @param other
      */
-    //% blockId=spriteoverlapswith block="%sprite overlaps with %other"
+    //% group="Collisions"
+    //% blockId=spriteoverlapswith block="%sprite overlaps with %other=variables_get"
     overlapsWith(other: Sprite) {
         if (other == this) return false;
         if (this.flags & sprites.Flag.Ghost)
@@ -223,6 +248,7 @@ class Sprite {
      * @param spriteType sprite type to match
      * @param handler
      */
+    //% group="Collisions"
     //% blockId=spriteonoverlap block="on %sprite overlap with"
     onOverlap(handler: (other: Sprite) => void) {
         this.overlapHandler = handler;
@@ -232,6 +258,7 @@ class Sprite {
      * Register code to run when sprite is destroyed
      * @param handler
      */
+    //% group="Lifecycle"
     //% weight=9
     //% blockId=spriteondestroy block="on %sprite destroyed"
     onDestroyed(handler: () => void) {
@@ -241,6 +268,7 @@ class Sprite {
     /**
      * Destroys the sprite
      */
+    //% group="Lifecycle"
     //% weight=10
     //% blockId=spritedestroy block="destroy %sprite"
     destroy() {
