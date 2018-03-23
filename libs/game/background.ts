@@ -33,8 +33,7 @@ namespace game {
         }
 
         render() {
-            if (this.color)
-                screen.fill(this.color);
+            screen.fill(this.color);
             if (this._layers) {
                 this._layers.forEach(layer => {
                     // compute displacement based on distance
