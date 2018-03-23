@@ -179,7 +179,7 @@ class Sprite {
             screen.fillRect(
                 this.right,
                 this.top - image.font5.charHeight - 2,
-                this._say.length * image.font5.charWidth,
+                this._say.length * image.font5.charWidth + 2,
                 image.font5.charHeight + 4,
                 1);
             screen.print(this._say,

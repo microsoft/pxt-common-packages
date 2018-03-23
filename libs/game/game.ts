@@ -38,7 +38,7 @@ namespace game {
             sprites.allSprites = []
             __eventContext = control.pushEventContext();
             __background = new Background();
-            game.setBackground(0)
+            game.setBackgroundColor(0)
             __eventContext.registerFrameHandler(10, () => {
                 const dt = __eventContext.deltaTime;
                 physics.engine.update(dt);
@@ -76,38 +76,26 @@ namespace game {
      */
     //% group="Background"
     //% weight=25
-    //% blockId=gamesetbackgroundcolor block="set background %color"
-    export function setBackground(color: number) {
+    //% blockId=gamesetbackgroundcolor block="set background color %color"
+    export function setBackgroundColor(color: number) {
         init();
         __background.color = color;
     }
 
     /**
-     * Sets the background image
-     */
-    //% group="Background"
-    //% blockId=gamesetbackgroundimage block="set background image to %image"
-    //% image.fieldEditor="sprite"
-    //% image.fieldOptions.taggedTemplate="img"
-    export function setBackgroundImage(image: Image) {
-        init();
-        __background.image = image;
-    }
-
-    /**
      * Adds a moving background layer
-     * @param distance distance of the layer which determines how fast it moves
+     * @param distance distance of the layer which determines how fast it moves, eg: 10
      * @param img 
      */
     //% group="Background"
     //% weight=10
     //% image.fieldEditor="sprite"
     //% image.fieldOptions.taggedTemplate="img"
-    //% blockId=gameaddbackgroundimage block="add background image|distance %distance|aligned %alignment|image %img"
-    export function addBackgroundImage(distance: number, alignment: BackgroundAlignment, image: Image) {
+    //% blockId=gameaddbackgroundimage block="add background image %image||distance %distance|aligned %alignment"
+    export function addBackgroundImage(image: Image, distance?: number, alignment?: BackgroundAlignment) {
         init();
         if (image)
-            __background.addLayer(distance, alignment, image);
+            __background.addLayer(image, distance || 100, alignment || BackgroundAlignment.Bottom);
     }
 
     /**
@@ -144,8 +132,8 @@ namespace game {
      */
     //% group="Gameplay"
     //% weight=90
-    //% blockId=gameSplash block="splash %title %subtitle"
-    export function splash(title: string, subtitle: string) {
+    //% blockId=gameSplash block="splash %title||%subtitle"
+    export function splash(title: string, subtitle?: string) {
         init();
         control.pushEventContext();
         showDialog(title, subtitle)
@@ -153,13 +141,47 @@ namespace game {
         control.popEventContext();
     }
 
-    function showDialog(title: string, subtitle: string) {
-        const h = 8 + image.font8.charHeight + 2 + image.font5.charHeight + 8;
+    /**
+     * Prompts the user for a boolean question
+     * @param title 
+     * @param subtitle
+     */
+    //% group="Gameplay"
+    //% weight=89
+    //% blockId=gameask block="ask %title||%subtitle"
+    export function ask(title: string, subtitle?: string): boolean {
+        init();
+        control.pushEventContext();
+        showDialog(title, subtitle, "A = OK, B = CANCEL");
+        let answer: boolean = null;
+        keys.A.onEvent(KeyEvent.Pressed, () => answer = true );
+        keys.B.onEvent(KeyEvent.Pressed, () => answer = false);
+        pauseUntil(() => answer !== null);
+        control.popEventContext();
+        return answer;
+    }
+
+    function showDialog(title: string, subtitle: string, footer?: string) {
+        let h = 8;
+        if (title)
+            h += image.font8.charHeight;
+        if (subtitle)
+            h += 2 + image.font5.charHeight
+        h += 8;
         const top = showBackground(h, 9)
         if (title)
             screen.print(title, 8, top + 8, screen.isMono ? 1 : 14, image.font8);
         if (subtitle)
             screen.print(subtitle, 8, top + 8 + image.font8.charHeight + 2, screen.isMono ? 1 : 13, image.font5);
+        if (footer) {
+            screen.print(
+                footer, 
+                screen.width - footer.length * image.font5.charWidth - 8,
+                screen.height - image.font5.charHeight - 2, 
+                1,
+                image.font5
+            )
+        }
     }
 
     function meltScreen() {
