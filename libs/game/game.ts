@@ -1,7 +1,8 @@
 /**
  * Game transitions and dialog
  **/
-//% color=#008272 weight=99 icon="\uf1d8"
+//% color=#008272 weight=99 icon="\uf111"
+//% groups='["Gameplay", "Background"]'
 namespace game {
     export enum Flag {
         NeedsSorting = 1 << 1,
@@ -73,23 +74,40 @@ namespace game {
      * Sets the game background color
      * @param color 
      */
+    //% group="Background"
     //% weight=25
-    //% blockId=gamesetbackgroundcolor block="set background to %color"
+    //% blockId=gamesetbackgroundcolor block="set background %color"
     export function setBackground(color: number) {
         init();
         __background.color = color;
     }
 
     /**
-     * Adds a background layer
+     * Sets the background image
+     */
+    //% group="Background"
+    //% blockId=gamesetbackgroundimage block="set background image to %image"
+    //% image.fieldEditor="sprite"
+    //% image.fieldOptions.taggedTemplate="img"
+    export function setBackgroundImage(image: Image) {
+        init();
+        __background.image = image;
+    }
+
+    /**
+     * Adds a moving background layer
      * @param distance distance of the layer which determines how fast it moves
      * @param img 
      */
-    //% weight=24
-    //% _block="add background image|distance %distance|aligned % alignment|image %img"
-    export function addBackgroundImage(distance: number, alignment: BackgroundAlignment, img: Image) {
+    //% group="Background"
+    //% weight=10
+    //% image.fieldEditor="sprite"
+    //% image.fieldOptions.taggedTemplate="img"
+    //% blockId=gameaddbackgroundimage block="add background image|distance %distance|aligned %alignment|image %img"
+    export function addBackgroundImage(distance: number, alignment: BackgroundAlignment, image: Image) {
         init();
-        __background.addLayer(distance, alignment, img);
+        if (image)
+            __background.addLayer(distance, alignment, image);
     }
 
     /**
@@ -97,6 +115,7 @@ namespace game {
      * @param dx 
      * @param dy 
      */
+    //% group="Background"
     //% weight=20
     //% blockId=backgroundmove block="move background dx %dx dy %dy"
     export function moveBackground(dx: number, dy: number) {
@@ -123,6 +142,7 @@ namespace game {
      * @param title 
      * @param subtitle
      */
+    //% group="Gameplay"
     //% weight=90
     //% blockId=gameSplash block="splash %title %subtitle"
     export function splash(title: string, subtitle: string) {
@@ -158,6 +178,7 @@ namespace game {
     /**
      * Finishes the game and displays score
      */
+    //% group="Gameplay"
     //% blockId=gameOver block="game over"
     //% weight=80
     export function over() {
@@ -199,6 +220,7 @@ namespace game {
      * Updates the position and velocities of sprites
      * @param body code to execute
      */
+    //% group="Gameplay"
     //% help=game/update weight=100 afterOnStart=true
     //% blockId=gameupdate block="game frame"
     export function update(a: () => void): void {
@@ -215,6 +237,7 @@ namespace game {
      * Draw on screen before sprites
      * @param body code to execute
      */
+    //% group="Gameplay"
     //% help=game/paint weight=10 afterOnStart=true
     //% blockId=gamepaint block="game paint"
     export function paint(a: () => void): void {

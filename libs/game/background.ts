@@ -16,6 +16,7 @@ namespace game {
         color: number;
         viewX: number;
         viewY: number;
+        image: Image;
         private _layers: BackgroundLayer[];
 
         constructor() {
@@ -34,6 +35,8 @@ namespace game {
 
         render() {
             screen.fill(this.color);
+            if (this.image)
+                screen.drawImage(this.image, 0, 0);
             if (this._layers) {
                 this._layers.forEach(layer => {
                     // compute displacement based on distance

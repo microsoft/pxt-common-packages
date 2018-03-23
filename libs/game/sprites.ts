@@ -12,7 +12,7 @@ Frame handlers:
 /**
  * Sprites on screen
  */
-//% weight=98 color="#23c47e" icon="\uf111"
+//% weight=98 color="#23c47e" icon="\uf1d8"
 namespace sprites {
     export let allSprites: Sprite[]
 
