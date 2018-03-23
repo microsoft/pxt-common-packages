@@ -1,6 +1,6 @@
 enum BackgroundAlignment {
     //% block="left"
-    Left,
+    Left = 1,
     //% block="right"
     Right,
     //% block="top"
@@ -16,7 +16,6 @@ namespace game {
         color: number;
         viewX: number;
         viewY: number;
-        image: Image;
         private _layers: BackgroundLayer[];
 
         constructor() {
@@ -26,7 +25,7 @@ namespace game {
             this._layers = [];
         }
 
-        public addLayer(distance: number, alignment: BackgroundAlignment, pic: Image) {
+        public addLayer(pic: Image, distance: number, alignment: BackgroundAlignment) {
             const layer = new BackgroundLayer(distance, alignment, pic);
             this._layers.push(layer);
             this._layers.sort((a, b) => b.distance - a.distance);
@@ -35,8 +34,6 @@ namespace game {
 
         render() {
             screen.fill(this.color);
-            if (this.image)
-                screen.drawImage(this.image, 0, 0);
             if (this._layers) {
                 this._layers.forEach(layer => {
                     // compute displacement based on distance
