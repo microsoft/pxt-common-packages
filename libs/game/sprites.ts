@@ -13,6 +13,7 @@ Frame handlers:
  * Sprites on screen
  */
 //% weight=98 color="#23c47e" icon="\uf1d8"
+//% groups='["Create", "Properties", "Collisions", "Lifecycle"]'
 namespace sprites {
     export let allSprites: Sprite[]
 
@@ -20,6 +21,7 @@ namespace sprites {
      * Creates a new sprite from an image
      * @param img the image
      */
+    //% group="Create"
     //% blockId=spritescreate block="sprite %img"
     //% img.fieldEditor="sprite"
     //% img.fieldOptions.taggedTemplate="img"
@@ -48,6 +50,7 @@ namespace sprites {
      * Create a new sprite with given speed, and place it at the edge of the screen so it moves towards the middle.
      * The sprite auto-destroys when it leaves the screen. You can modify position after it's created.
      */
+    //% group="Create"
     //% blockId=spritescreateprojectile block="projectile %img vx %vx vy %vy"
     //% img.fieldEditor="sprite"
     //% img.fieldOptions.taggedTemplate="img"
