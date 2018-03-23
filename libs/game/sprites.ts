@@ -23,6 +23,8 @@ namespace sprites {
     //% blockId=spritescreate block="sprite %img"
     //% img.fieldEditor="sprite"
     //% img.fieldOptions.taggedTemplate="img"
+    //% blockSetVariable
+    //% weight=100
     export function create(img: Image): Sprite {
         game.init()
         let spr = new Sprite(img)
@@ -36,7 +38,6 @@ namespace sprites {
      * Creates a sprite from a sequence of images
      * @param imgs an array of images
      */
-    //% _blockId=spritescreateanimation block="create animated %images"
     export function createWithAnimation(imgs: Image[]) {
         let s = create(imgs[0])
         s.animation = new SpriteAnimation(imgs)
@@ -47,6 +48,11 @@ namespace sprites {
      * Create a new sprite with given speed, and place it at the edge of the screen so it moves towards the middle.
      * The sprite auto-destroys when it leaves the screen. You can modify position after it's created.
      */
+    //% blockId=spritescreateprojectile block="projectile %img vx %vx vy %vy"
+    //% img.fieldEditor="sprite"
+    //% img.fieldOptions.taggedTemplate="img"
+    //% weight=99
+    //% blockSetVariable
     export function createProjectile(img: Image, vx: number, vy: number) {
         let s = create(img)
         s.vx = vx
