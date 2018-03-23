@@ -172,18 +172,15 @@ class Sprite {
 
     __update(dt: number) {
         if (this.animation)
-        if (this.life > 0) {
             this.animation.update(this, dt)
+        if (this.life > 0) {
             this.life--;
             if (this.life <= 0)
                 this.destroy();
         }
-        if (this.flags & sprites.Flag.AutoDestroy) {
-            if (this.right < 0 || this.bottom < 0 ||
-                this.left > screen.width ||
-                this.top > screen.height) {
-                this.destroy()
-            }
+        if ((this.flags & sprites.Flag.AutoDestroy)
+            && this.isOutOfScreen()) {
+            this.destroy()
         }
     }
 
