@@ -2,7 +2,7 @@
  * Game transitions and dialog
  **/
 //% color=#008272 weight=99 icon="\uf111"
-//% groups='["Gameplay", "Background"]'
+//% groups='["Gameplay", "Background", "Tiles"]'
 namespace game {
     export enum Flag {
         NeedsSorting = 1 << 1,
@@ -18,6 +18,7 @@ namespace game {
     let __isOver = false
     let __waitAnyKey: () => void
     let __background: Background;
+    let __tileMap: tiles.TileMap;
 
     export function setWaitAnyKey(f: () => void) {
         __waitAnyKey = f
@@ -39,6 +40,11 @@ namespace game {
             __eventContext = control.pushEventContext();
             __background = new Background();
             game.setBackgroundColor(0)
+            // update sprites in tilemap
+            __eventContext.registerFrameHandler(9, () => {
+                if(__tileMap) __tileMap.update();
+            })
+            // update sprites
             __eventContext.registerFrameHandler(10, () => {
                 const dt = __eventContext.deltaTime;
                 physics.engine.update(dt);
@@ -112,7 +118,36 @@ namespace game {
         __background.viewY += dy;
     }
 
-    function showBackground(h: number, c: number) {
+    /**
+     * Sets the map for rendering tiles
+     * @param map 
+     */
+    //% blockId=gamesettilemap block="set tile map to %map"
+    //% map.fieldEditor="sprite"
+    //% map.fieldOptions.taggedTemplate="img"
+    //% group="Tiles"
+    export function setTileMap(map: Image) {
+        if (!__tileMap)
+            __tileMap = new tiles.TileMap(16, 16);
+        __tileMap.setMap(map);
+    }
+
+    /**
+     * Sets the tile image at the given index
+     * @param index 
+     * @param img 
+     */
+    //% img.fieldEditor="sprite"
+    //% img.fieldOptions.taggedTemplate="img"
+    //% blockId=gamesettile block="set tile at %index to %img||with collisions %collisions"
+    //% group="Tiles"
+    export function setTile(index: number, img: Image, collisions?: boolean) {
+        if (!__tileMap)
+            __tileMap = new tiles.TileMap(img.width, img.height);
+        __tileMap.setTile(index, img, !!collisions);
+    }
+
+    function showDialogBackground(h: number, c: number) {
         const top = (screen.height - h) >> 1;
         if (screen.isMono) {
             screen.fillRect(0, top, screen.width, h, 0)
@@ -168,7 +203,7 @@ namespace game {
         if (subtitle)
             h += 2 + image.font5.charHeight
         h += 8;
-        const top = showBackground(h, 9)
+        const top = showDialogBackground(h, 9)
         if (title)
             screen.print(title, 8, top + 8, screen.isMono ? 1 : 14, image.font8);
         if (subtitle)
@@ -214,7 +249,7 @@ namespace game {
         control.runInParallel(() => {
             if (gameOverSound) gameOverSound();
             meltScreen();
-            let top = showBackground(44, 4)
+            let top = showDialogBackground(44, 4)
             screen.printCenter("GAME OVER!", top + 8, screen.isMono ? 1 : 5, image.font8)
             if (info.hasScore()) {
                 screen.printCenter("Score:" + info.score(), top + 23, screen.isMono ? 1 : 2, image.font5)
