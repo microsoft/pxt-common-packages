@@ -1,6 +1,6 @@
 namespace pxsim.visuals {
     type SVGStylable = any;
-    
+
     const LED_PART_XOFF = -8;
     const LED_PART_YOFF = -7;
     const LED_PART_WIDTH = 68;
@@ -107,10 +107,9 @@ namespace pxsim.visuals {
         private state: ToggleState;
         private pin: Pin;
 
-        private currentlyOn: boolean = false;
         private currentValue: number;
 
-        constructor(parsePinString:(s: string) => Pin) {
+        constructor(parsePinString: (s: string) => Pin) {
             this.parsePinString = parsePinString;
         }
 
@@ -145,8 +144,18 @@ namespace pxsim.visuals {
             }
 
             this.currentValue = this.pin.value;
-            (<SVGStylable><any>this.led).style.fill = this.currentValue ? "#00ff00" : "#ffffff";
-            (<SVGStylable><any>this.led).style.opacity = "0.9";
+            const style = (<SVGStylable><any>this.led).style;
+            if (!this.currentValue) {
+                style.fill = this.currentValue ? "#00ff00" : "#ffffff";
+                style.opacity = "0.9";                
+            } else {
+                style.fill = "#00ff00";
+                if (this.pin.mode & PinFlags.Digital) {
+                    style.opacity = "0.9";
+                } else {
+                    style.opacity = (0.1 + Math.max(0, Math.min(1023, this.currentValue)) / 1023 * 0.8).toString();
+                }
+            }
         }
     }
 }
