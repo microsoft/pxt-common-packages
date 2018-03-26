@@ -85,6 +85,7 @@ namespace pxsim.visuals {
         private pin: Pin;
 
         private currentValue: number;
+        private currentMode: PinFlags;
 
         constructor(parsePinString: (s: string) => Pin) {
             this.parsePinString = parsePinString;
@@ -117,15 +118,15 @@ namespace pxsim.visuals {
         }
 
         public updateState() {
-            if (this.currentValue === this.pin.value) {
+            if (this.currentValue === this.pin.value && this.currentMode == this.pin.mode)
                 return;
-            }
 
             this.currentValue = this.pin.value;
+            this.currentMode = this.pin.mode;
             const style = (<SVGStylable><any>this.led).style;
-            if (this.pin.mode & PinFlags.Digital) {
+            if (this.currentMode & PinFlags.Digital) {
                 style.fill = this.currentValue ? "#00ff00" : "#ffffff";
-                style.opacity = "0.9";                
+                style.opacity = "0.9";
                 this.text.textContent = this.currentValue ? "1" : "0";
             } else {
                 style.fill = "#00ff00";
