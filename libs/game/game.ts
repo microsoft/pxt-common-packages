@@ -147,6 +147,18 @@ namespace game {
         __tileMap.setTile(index, img, !!collisions);
     }
 
+    /** 
+     * Changes the tilemap offset 
+    */
+    //% blockId=gamesettileoffset block="change tile offset by x %x y %y"
+    //% group="Tiles"
+    export function changeTileOffsetBy(dx: number, dy: number) {
+        if (!__tileMap)
+            __tileMap = new tiles.TileMap(16, 16);
+        __tileMap.offsetX += dx;
+        __tileMap.offsetY += dy;
+    }
+
     function showDialogBackground(h: number, c: number) {
         const top = (screen.height - h) >> 1;
         if (screen.isMono) {
