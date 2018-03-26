@@ -9,6 +9,7 @@
         "physics.ts",
         "info.ts",
         "background.ts",
+        "tilemap.ts",
         "game.ts",
         "targetoverrides.cpp",
         "targetoverrides.ts"
