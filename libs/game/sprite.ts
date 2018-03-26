@@ -221,8 +221,7 @@ class Sprite {
      * Sets the sprite as a ghost (which does not interact with physics)
      */
     //% group="Properties"
-    //% blockId=spritesetsetflag block="set %sprite %flag %on"
-    //% on.fieldEditor=toggleonoff
+    //% blockId=spritesetsetflag block="set %sprite %flag %on=toggleOnOff"
     setFlag(flag: SpriteFlag, on: boolean) {
         if (on) this.flags |= flag
         else this.flags = ~(~this.flags | flag);

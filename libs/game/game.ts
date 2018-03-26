@@ -139,7 +139,7 @@ namespace game {
      */
     //% img.fieldEditor="sprite"
     //% img.fieldOptions.taggedTemplate="img"
-    //% blockId=gamesettile block="set tile at %index to %img||with collisions %collisions"
+    //% blockId=gamesettile block="set tile at %index to %img||with collisions %collisions=toggleOnOff"
     //% group="Tiles"
     export function setTile(index: number, img: Image, collisions?: boolean) {
         if (!__tileMap)
