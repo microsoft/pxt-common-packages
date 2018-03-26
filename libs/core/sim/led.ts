@@ -1,81 +1,57 @@
 namespace pxsim.visuals {
     type SVGStylable = any;
-    
+
     const LED_PART_XOFF = -8;
     const LED_PART_YOFF = -7;
     const LED_PART_WIDTH = 68;
-    const LED_PART_HEIGHT = 160;
-    const LED_PART = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-    xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 33.6 79.1"
-    style="enable-background:new 0 0 33.6 79.1;" xml:space="preserve" inkscape:version="0.91 r13725" sodipodi:docname="led2.svg">
-    <metadata id="metadata73">
-        <rdf:RDF>
-            <cc:Work rdf:about="">
-                <dc:format>image/svg+xml</dc:format>
-                <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-            </cc:Work>
-        </rdf:RDF>
-    </metadata>
-    <defs id="defs71" />
-    <sodipodi:namedview pagecolor="#ffffff" bordercolor="#666666" borderopacity="1" objecttolerance="10" gridtolerance="10"
-        guidetolerance="10" inkscape:pageopacity="0" inkscape:pageshadow="2" inkscape:window-width="909" inkscape:window-height="593"
-        id="namedview69" showgrid="false" inkscape:zoom="5.9671303" inkscape:cx="16.632414" inkscape:cy="52.956779" inkscape:window-x="237"
-        inkscape:window-y="35" inkscape:window-maximized="0" inkscape:current-layer="g7" />
-    <title id="title3">SparkFun Parts for MS Kit</title>
-    <path class="st0" style="opacity:0.65; fill:rgb(236,236,236);" d="M1.3,66.1V72c0,3.9,3.2,7.1,7.1,7.1s7.1-3.2,7.1-7.1l0,0V58.3c-1.9-1.9-4.4-2.9-7.1-2.8         c-4.6,0-8.4,2.6-8.4,5.9v1.5C0,64.1,0.5,65.2,1.3,66.1z"
-        id="path5" />
-    <g id="g7">
-        <path class="st1" style="fill:rgb(140,140,140);" d="M12.7,61.6l1.2,1.4h-1l-2.4-1.4V27c0-0.3,0.5-0.5,1.1-0.5l0,0c0.6,0,1.1,0.2,1.1,0.5V61.6z"
-            id="path9" />
-        <path class="st1" style="fill:rgb(140,140,140);" d="M2.6,54.9c0,0.7,1.1,1.3,2.1,1.8c0.4,0.2,1.2,0.6,1.2,0.9V61l-2.5,2h0.9L8,61v-3.5c0-0.7-0.9-1.2-1.9-1.7             c-0.4-0.2-1.3-0.8-1.3-1.1c0-0.1,0-46.8,0-52.9c0-0.4-0.5-0.7-1.1-0.7l0,0l0,0c-0.6,0-1.1,0.3-1.1,0.7l0,0L2.6,54.9z"
-            id="path11" />
-        <path class="sim-led-main" style="opacity:0.3;fill:rgb(204,204,204);" d="M1.3,66.1V72c0,3.9,3.2,7.1,7.1,7.1s7.1-3.2,7.1-7.1l0,0V58.3c-1.9-1.9-4.4-2.9-7.1-2.8             c-4.6,0-8.4,2.6-8.4,5.9v1.5C0,64.1,0.5,65.2,1.3,66.1z"
-            id="LED" inkscape:label="#path13" />
-        <path class="st3" style="opacity:0.9;fill:rgb(209,209,209);" d="M1.3,66.1V63c0-2.7,3.2-5,7.1-5s7.1,2.2,7.1,5v-4.6c-1.9-1.9-4.4-2.9-7.1-2.8c-4.6,0-8.4,2.6-8.4,5.9V63             C0,64.1,0.5,65.2,1.3,66.1z"
-            id="path15" />
-        <path class="st4" style="opacity:0.7;fill:rgb(230,230,230);" d="M1.3,66.1V63c0-2.7,3.2-5,7.1-5s7.1,2.2,7.1,5v-4.6c-1.9-1.9-4.4-2.9-7.1-2.8c-4.6,0-8.4,2.6-8.4,5.9V63             C0,64.1,0.5,65.2,1.3,66.1z"
-            id="path17" />
-        <path class="st5" style="opacity:0.25;fill:rgb(230,230,230);" d="M1.3,66.1V63c0-2.7,3.2-5,7.1-5s7.1,2.2,7.1,5v-3.1c-1.9-1.9-4.4-2.9-7.1-2.8C3.8,57.1,0,59.7,0,63             C0,64.1,0.5,65.2,1.3,66.1z"
-            id="path19" />
-        <ellipse class="st5" style="opacity:0.25;fill:rgb(230,230,230);" cx="8.3" cy="63" rx="7.1" ry="5" id="ellipse21" />
-        <ellipse class="st5" style="opacity:0.25;fill:rgb(230,230,230);" cx="8.3" cy="63" rx="7.1" ry="5" id="ellipse23" />
-        <g class="st8" style="opacity:0.61;" id="g29">
-            <path class="st9" style="fill:rgb(255,255,255);" d="M8.3,57.1c4.3,0,6.1,2,6.1,2l-0.7,0.7c0,0-1.6-1.7-5.4-1.7C5.9,58,3.6,59,2,60.8l-0.8-0.6                 C3.1,58.1,5.6,57,8.3,57.1z"
-                id="path31" />
-        </g>
-        <g class="st8" style="opacity:0.61;" id="g33">
-            <path class="st9" style="fill:rgb(255,255,255);" d="M12.9,75.9c1.1-1.1,1.7-2.6,1.7-4.2V61.4l-1.9-1.5v10.4c0.9,2.8,0.3,4.2-0.7,5.2                 C12.3,75.6,12.6,75.7,12.9,75.9z"
-                id="path35" />
-            <path class="st9" style="fill:rgb(255,255,255);" d="M5.6,77.5c0.1-0.3,0.2-0.6,0.3-0.9c-1.5-0.7-2.6-2.1-2.8-3.7h-1C2.4,74.9,3.7,76.6,5.6,77.5z"
-                id="path37" />
-        </g>
+    const LED_PART_HEIGHT = 180;
+    const LED_PART = `
+    <svg xmlns="http://www.w3.org/2000/svg" id="Layer_1" viewBox="0 0 33.6 90" width="33.599998" height="90">
+    <path class="st0" d="M1.3 65.000002v5.9C1.3 74.800002 4.5 78 8.4 78c3.9 0 7.1-3.199998 7.1-7.099998v-13.7c-1.9-1.9-4.4-2.9-7.1-2.8-4.6 0-8.4 2.6-8.4 5.9v1.5c0 1.2.5 2.3 1.3 3.2z" id="path5" opacity=".65" fill="#ececec"/>
+    <g id="g7" transform="translate(0 10.900002)">
+      <path id="rect4526" fill="#fff" stroke-width="3.938615" stroke-linecap="round" stroke-linejoin="round" d="M.837924 68.709747H32.84661v9.55233H.837924z"/>
+      <path class="st1" d="M12.7 49.6l1.2 1.4h-1l-2.4-1.4V15c0-.3.5-.5 1.1-.5.6 0 1.1.2 1.1.5z" id="path9" fill="#8c8c8c"/>
+      <path class="st1" d="M2.6 42.9c0 .7 1.1 1.3 2.1 1.8.4.2 1.2.6 1.2.9V49l-2.5 2h.9L8 49v-3.5c0-.7-.9-1.2-1.9-1.7-.4-.2-1.3-.8-1.3-1.1v-52.9c0-.4-.5-.7-1.1-.7-.6 0-1.1.3-1.1.7z" id="path11" fill="#8c8c8c"/>
+      <path class="sim-led-main" d="M1.3 54.1V60c0 3.9 3.2 7.1 7.1 7.1 3.9 0 7.1-3.2 7.1-7.1V46.3c-1.9-1.9-4.4-2.9-7.1-2.8-4.6 0-8.4 2.6-8.4 5.9v1.5c0 1.2.5 2.3 1.3 3.2z" id="LED" opacity=".3" fill="#ccc"/>
+      <path class="st3" d="M1.3 54.1V51c0-2.7 3.2-5 7.1-5 3.9 0 7.1 2.2 7.1 5v-4.6c-1.9-1.9-4.4-2.9-7.1-2.8-4.6 0-8.4 2.6-8.4 5.9V51c0 1.1.5 2.2 1.3 3.1z" id="path15" opacity=".9" fill="#d1d1d1"/>
+      <path class="st4" d="M1.3 54.1V51c0-2.7 3.2-5 7.1-5 3.9 0 7.1 2.2 7.1 5v-4.6c-1.9-1.9-4.4-2.9-7.1-2.8-4.6 0-8.4 2.6-8.4 5.9V51c0 1.1.5 2.2 1.3 3.1z" id="path17" opacity=".7" fill="#e6e6e6"/>
+      <path class="st5" d="M1.3 54.1V51c0-2.7 3.2-5 7.1-5 3.9 0 7.1 2.2 7.1 5v-3.1c-1.9-1.9-4.4-2.9-7.1-2.8C3.8 45.1 0 47.7 0 51c0 1.1.5 2.2 1.3 3.1z" id="path19" opacity=".25" fill="#e6e6e6"/>
+      <ellipse class="st5" cx="8.3" cy="51" rx="7.1" ry="5" id="ellipse21" opacity=".25" fill="#e6e6e6"/>
+      <ellipse class="st5" cx="8.3" cy="51" rx="7.1" ry="5" id="ellipse23" opacity=".25" fill="#e6e6e6"/>
+      <g class="st8" id="g29" transform="translate(0 -12)" opacity=".61">
+        <path class="st9" d="M8.3 57.1c4.3 0 6.1 2 6.1 2l-.7.7s-1.6-1.7-5.4-1.7C5.9 58 3.6 59 2 60.8l-.8-.6c1.9-2.1 4.4-3.2 7.1-3.1z" id="path31" fill="#fff"/>
+      </g>
+      <g class="st8" id="g33" transform="translate(0 -12)" opacity=".61">
+        <path class="st9" d="M12.9 75.9c1.1-1.1 1.7-2.6 1.7-4.2V61.4l-1.9-1.5v10.4c.9 2.8.3 4.2-.7 5.2.3.1.6.2.9.4z" id="path35" fill="#fff"/>
+        <path class="st9" d="M5.6 77.5l.3-.9c-1.5-.7-2.6-2.1-2.8-3.7h-1c.3 2 1.6 3.7 3.5 4.6z" id="path37" fill="#fff"/>
+      </g>
+      <text style="line-height:1.25;-inkscape-font-specification:consolas" x="14.103056" y=".224915" id="text4514" font-weight="400" font-size="7.744442" font-family="consolas" letter-spacing="0" word-spacing="0" fill="#666" stroke-width=".968055">
+        <tspan id="tspan4512" x="14.103056" y=".224915">330Ω</tspan>
+      </text>
+      <text style="line-height:1.25;-inkscape-font-specification:consolas" x="1.868053" y="77.579796" id="text4524" font-weight="400" font-size="32.793365" font-family="consolas" letter-spacing="0" word-spacing="0" stroke-width=".819834">
+        <tspan id="tspan4522" x="1.868053" y="77.579796" font-size="10.931121"></tspan>
+      </text>
     </g>
-    <g id="g39">
-        <rect x="11.6" y="16.9" class="st1" style="fill:rgb(140,140,140);" width="21.7" height="1.9" id="rect41" />
-        <g id="g43">
-            <rect x="12" y="16.9" class="st10" style="fill:none;" width="3.2" height="1.9" id="rect45" />
-            <path class="st11" style="fill:rgb(214,191,144);" d="M19,15c-0.3-0.2-0.6-0.3-0.9-0.3h-1.4c-0.3,0-0.5,0.3-0.5,0.7v4.9c0,0.4,0.2,0.7,0.5,0.7h1.4                 c0.3,0,0.6-0.1,0.9-0.3l0,0c0.3-0.2,0.6-0.3,0.9-0.3h5c0.3,0,0.6,0.1,0.9,0.3l0.1,0c0.3,0.2,0.6,0.3,0.9,0.3h1.4                 c0.3,0,0.5-0.3,0.5-0.7v-4.9c0-0.4-0.2-0.7-0.5-0.7h-1.4c-0.3,0-0.6,0.1-0.9,0.3l-0.1,0c-0.3,0.2-0.6,0.3-0.9,0.3h-5                 C19.7,15.3,19.4,15.2,19,15L19,15z"
-                id="path47" />
-            <path class="st12" style="fill:rgb(170,147,107);" d="M28.4,18.5c-0.1,0.1-0.1,0.2-0.2,0.3c-0.3,0.5-0.7,0.8-1.2,0.8c-0.5,0-0.9-0.1-1.4-0.3                 c-0.6-0.1-1.1-0.1-1.7-0.1c-2,0-3.9,0-5.9,0.2c-0.4,0.1-0.8,0-1.1-0.1c-0.2-0.1-0.4-0.2-0.5-0.5v1.5c0,0.2,0.1,0.3,0.2,0.3h1.4                 c0.3,0,0.6-0.1,0.9-0.3c0.3-0.2,0.7-0.3,1.1-0.3h5c0.4,0,0.8,0.1,1.1,0.3c0.3,0.1,0.6,0.2,0.8,0.2h1.4c0.1,0,0.2-0.1,0.2-0.3v-1.9                 C28.5,18.4,28.4,18.5,28.4,18.5z"
-                id="path49" />
-            <g id="g51">
-                <rect x="27.2" y="14.7" class="st13" style="fill:rgb(173,159,78);" width="0.7" height="6.2" id="rect53" />
-                <rect x="27.2" y="17.8" class="st14" style="opacity:0.4;" width="0.7" height="2.5" id="rect55" />
-                <rect x="27.2" y="15" class="st15" style="opacity:0.5;fill:rgb(255,255,51);" width="0.7" height="1.3" id="rect57" />
-                <rect x="27.2" y="15.3" class="st16" style="opacity:0.5;fill:rgb(255,255,255);" width="0.7" height="0.7" id="rect59"
-                />
-            </g>
-            <rect x="23.1" y="15.3" class="st17" style="fill:rgb(170,69,24);" width="1.3" height="5.1" id="rect61" />
-            <rect x="20.6" y="15.3" class="st18" style="fill:rgb(255,151,0);" width="1.3" height="5.1" id="rect63" />
-            <path class="st18" style="fill:rgb(255,151,0);" d="M19.3,15.1c-0.1,0-0.1-0.1-0.2-0.1l0,0c-0.3-0.2-0.6-0.3-0.9-0.3H18V21h0.1c0.3,0,0.6-0.1,0.9-0.3l0,0                 c0.1,0,0.1-0.1,0.2-0.1V15.1z"
-                id="path65" />
-            <path class="st19" style="opacity:0.74;fill:rgb(255,253,250);" d="M18.7,15.7c0.4,0.1,0.8,0.2,1.2,0.2c0.4,0,0.7,0,1.1,0c1.2-0.1,2.4-0.1,3.6,0c0.4,0,0.9,0,1.3-0.1                 c0.3-0.1,0.6-0.2,0.8-0.3c0.6-0.2,1.2-0.3,1.8-0.2c0-0.1-0.1-0.3-0.2-0.3h-1.4c-0.3,0-0.6,0.1-0.9,0.3c-0.3,0.2-0.7,0.3-1.1,0.3                 h-5c-0.4,0-0.8-0.1-1.1-0.3c-0.3-0.1-0.6-0.2-0.8-0.2h-1.4c-0.1,0-0.2,0.1-0.2,0.3v0.2C17.2,15.5,17.9,15.6,18.7,15.7z"
-                id="path67" />
+    <g id="g39" transform="translate(0 -1.099998)">
+      <path class="st1" id="rect41" fill="#8c8c8c" d="M11.6 16.9h21.700001v1.9H11.6z"/>
+      <g id="g43">
+        <path class="st10" id="rect45" fill="none" d="M12 16.9h3.2v1.9H12z"/>
+        <path class="st11" d="M19 15c-.3-.2-.6-.3-.9-.3h-1.4c-.3 0-.5.3-.5.7v4.9c0 .4.2.7.5.7h1.4c.3 0 .6-.1.9-.3.3-.2.6-.3.9-.3h5c.3 0 .6.1.9.3h.1c.3.2.6.3.9.3h1.4c.3 0 .5-.3.5-.7v-4.9c0-.4-.2-.7-.5-.7h-1.4c-.3 0-.6.1-.9.3h-.1c-.3.2-.6.3-.9.3h-5c-.2 0-.5-.1-.9-.3z" id="path47" fill="#d6bf90"/>
+        <path class="st12" d="M28.4 18.5c-.1.1-.1.2-.2.3-.3.5-.7.8-1.2.8s-.9-.1-1.4-.3c-.6-.1-1.1-.1-1.7-.1-2 0-3.9 0-5.9.2-.4.1-.8 0-1.1-.1-.2-.1-.4-.2-.5-.5v1.5c0 .2.1.3.2.3H18c.3 0 .6-.1.9-.3.3-.2.7-.3 1.1-.3h5c.4 0 .8.1 1.1.3.3.1.6.2.8.2h1.4c.1 0 .2-.1.2-.3v-1.9c0 .1-.1.2-.1.2z" id="path49" fill="#aa936b"/>
+        <g id="g51">
+          <path class="st13" id="rect53" fill="#ad9f4e" d="M27.200001 14.7h.7v6.2h-.7z"/>
+          <path class="st14" id="rect55" opacity=".4" d="M27.200001 17.799999h.7v2.5h-.7z"/>
+          <path class="st15" id="rect57" opacity=".5" fill="#ff3" d="M27.200001 15h.7v1.3h-.7z"/>
+          <path class="st16" id="rect59" opacity=".5" fill="#fff" d="M27.200001 15.3h.7v.7h-.7z"/>
         </g>
+        <path class="st17" id="rect61" fill="#aa4518" d="M23.1 15.3h1.3v5.1h-1.3z"/>
+        <path class="st18" id="rect63" fill="#ff9700" d="M20.6 15.3h1.3v5.1h-1.3z"/>
+        <path class="st18" d="M19.3 15.1c-.1 0-.1-.1-.2-.1-.3-.2-.6-.3-.9-.3H18V21h.1c.3 0 .6-.1.9-.3.1 0 .1-.1.2-.1v-5.5z" id="path65" fill="#ff9700"/>
+        <path class="st19" d="M18.7 15.7c.4.1.8.2 1.2.2H21c1.2-.1 2.4-.1 3.6 0 .4 0 .9 0 1.3-.1.3-.1.6-.2.8-.3.6-.2 1.2-.3 1.8-.2 0-.1-.1-.3-.2-.3h-1.4c-.3 0-.6.1-.9.3-.3.2-.7.3-1.1.3h-5c-.4 0-.8-.1-1.1-.3-.3-.1-.6-.2-.8-.2h-1.4c-.1 0-.2.1-.2.3v.2c.8-.1 1.5 0 2.3.1z" id="path67" opacity=".74" fill="#fffdfa"/>
+      </g>
     </g>
-</svg>`;
+  </svg>
+      `;
 
     // For the intructions
     export function mkLedPart(xy: Coord = [0, 0]): SVGElAndSize {
@@ -97,6 +73,7 @@ namespace pxsim.visuals {
         defs: SVGElement[];
 
         private led: SVGPathElement;
+        private text: SVGTSpanElement;
         private parsePinString: (s: string) => Pin;
         private color: string = "rgb(0,255,0)"; // green color by default
 
@@ -107,10 +84,10 @@ namespace pxsim.visuals {
         private state: ToggleState;
         private pin: Pin;
 
-        private currentlyOn: boolean = false;
         private currentValue: number;
+        private currentMode: PinFlags;
 
-        constructor(parsePinString:(s: string) => Pin) {
+        constructor(parsePinString: (s: string) => Pin) {
             this.parsePinString = parsePinString;
         }
 
@@ -128,6 +105,7 @@ namespace pxsim.visuals {
                 class: "sim-led", width: LED_PART_WIDTH, height: LED_PART_HEIGHT,
             });
             this.led = image.getElementById('LED') as SVGPathElement;
+            this.text = image.getElementById('tspan4522') as SVGTSpanElement;
             this.element.appendChild(image);
 
         }
@@ -140,13 +118,21 @@ namespace pxsim.visuals {
         }
 
         public updateState() {
-            if (this.currentValue === this.pin.value) {
+            if (this.currentValue === this.pin.value && this.currentMode == this.pin.mode)
                 return;
-            }
 
             this.currentValue = this.pin.value;
-            (<SVGStylable><any>this.led).style.fill = this.currentValue ? "#00ff00" : "#ffffff";
-            (<SVGStylable><any>this.led).style.opacity = "0.9";
+            this.currentMode = this.pin.mode;
+            const style = (<SVGStylable><any>this.led).style;
+            if (this.currentMode & PinFlags.Digital) {
+                style.fill = this.currentValue ? "#00ff00" : "#ffffff";
+                style.opacity = "0.9";
+                this.text.textContent = this.currentValue ? "1" : "0";
+            } else {
+                style.fill = "#00ff00";
+                style.opacity = (0.1 + Math.max(0, Math.min(1023, this.currentValue)) / 1023 * 0.8).toString();
+                this.text.textContent = `~${this.currentValue}`
+            }
         }
     }
 }

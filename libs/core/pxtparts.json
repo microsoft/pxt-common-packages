@@ -154,5 +154,34 @@
             {"part": true, "pinIndices": [0]},
             {"pinIndices": [1]}
         ]
+    },
+    "analogled": {
+        "numberOfPins": 2,
+        "visual": {
+            "builtIn": "led",
+            "width": 68,
+            "height": 160,
+            "pinDistance": 15,
+            "pinLocations": [
+                {"x": 0, "y": 0},
+                {"x": 60, "y": 0}
+            ]
+        },
+        "simulationBehavior": "led",
+        "pinDefinitions": [
+            {"target": {"pinInstantiationIdx": 0}, "style": "male", "orientation": "-Z"},
+            {"target": "ground", "style": "male", "orientation": "-Z"}
+        ],
+        "instantiation": {
+            "kind": "function",
+            "fullyQualifiedName": "AnalogPin.analogWrite",
+            "argumentRoles": [
+                {"pinInstantiationIdx": 0, "partParameter": "name"}
+            ]
+        },
+        "assembly": [
+            {"part": true, "pinIndices": [0]},
+            {"pinIndices": [1]}
+        ]
     }
 }
