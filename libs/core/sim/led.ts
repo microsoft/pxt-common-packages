@@ -145,7 +145,7 @@ namespace pxsim.visuals {
 
             this.currentValue = this.pin.value;
             const style = (<SVGStylable><any>this.led).style;
-            if (!this.currentValue) {
+            if (this.pin.mode & PinFlags.Digital) {
                 style.fill = this.currentValue ? "#00ff00" : "#ffffff";
                 style.opacity = "0.9";                
             } else {
