@@ -101,3 +101,4 @@ namespace fieldeditors {
     export function __imagePicker(image: Image): Image {
         return image;
     }
+}
