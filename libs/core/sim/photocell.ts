@@ -7,11 +7,13 @@ namespace pxsim.visuals {
     const PHOTOCELL_PART_HEIGHT = 180;
     const PHOTOCELL_PART = `
     <svg xmlns="http://www.w3.org/2000/svg" id="Layer_1" viewBox="0 0 33.6 90" width="33.599998" height="90">
-    <path id="rect4526" fill="#fff" stroke-width="3.938615" stroke-linecap="round" stroke-linejoin="round" d="M.837924 79.609749H32.84661v9.55233H.837924z"/>
     <path id="path9" d="M12.7 60.500002l1.2 1.4h-1l-2.4-1.4v-34.6c0-.3.5-.5 1.1-.5.6 0 1.1.2 1.1.5z" class="st1" fill="#8c8c8c"/>
     <path id="path11" d="M3.4 61.900002h1.905509L4.8.700002c-.003304-.399986-.5-.7-1.1-.7-.6 0-1.1.3-1.1.7z" class="st1" fill="#8c8c8c"/>
     <text id="text4514" y="11.124916" x="14.103056" style="line-height:1.25;-inkscape-font-specification:consolas" font-weight="400" font-size="7.744442" font-family="consolas" letter-spacing="0" word-spacing="0" fill="#666" stroke-width=".968055">
       <tspan y="11.124916" x="14.103056" id="tspan4512">10kΩ</tspan>
+    </text>
+    <text style="line-height:1.25;-inkscape-font-specification:consolas" x="1.868053" y="77.579796" id="text4524" font-weight="400" font-size="32.793365" font-family="consolas" letter-spacing="0" word-spacing="0" stroke-width=".819834">
+    <tspan id="tspan4522" x="1.868053" y="77.579796" font-size="10.931121"></tspan>
     </text>
     <path id="rect41" class="st1" fill="#8c8c8c" d="M11.6 15.800001h21.700001v1.9H11.6z"/>
     <path class="st10" id="rect45" fill="none" d="M12 15.800001h3.2v1.9H12z"/>
@@ -33,7 +35,7 @@ namespace pxsim.visuals {
     <ellipse id="path4607-3" cx="12.568855" cy="65" rx=".628443" ry="1.016842" fill="#4d4d4d" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
     <path d="M5.865466 60.253708c2.521642.258451 5.042396.51681 4.411086.820414-.63131.303603-4.416986.652835-4.224443.970671.192542.317835 4.36002.604044 4.24887.991436-.111149.387393-4.504242.87629-4.482809 1.204577.021434.328287 4.454339.49583 4.535187.914613.08085.418783-4.193489 1.089267-4.318738 1.529318-.125249.44005 3.895722.649476 4.19647 1.008916.300747.359441-3.121579.869298-3.749962 1.183637-.628384.314339 1.535952.433028 3.699646.551682" id="path4630" fill="none" stroke="#9e4c34" stroke-width=".245669" stroke-linecap="round"/>
   </svg>
-        `;
+            `;
 
     // For the intructions
     export function mkPhotoCellPart(xy: Coord = [0, 0]): SVGElAndSize {
@@ -63,7 +65,6 @@ namespace pxsim.visuals {
         private bus: EventBus;
         public style: string;
 
-        private state: ToggleState;
         private pin: Pin;
 
         private currentValue: number;
@@ -89,7 +90,12 @@ namespace pxsim.visuals {
             //this.led = image.getElementById('LED') as SVGPathElement;
             this.text = image.getElementById('tspan4522') as SVGTSpanElement;
             this.element.appendChild(image);
-
+            // TODO: slider
+            this.element.onclick = () => {
+                this.pin.value += 256;
+                this.pin.value = this.pin.value % 1024;
+                runtime.queueDisplayUpdate();
+            }
         }
 
         public moveToCoord(xy: Coord) {
@@ -105,16 +111,7 @@ namespace pxsim.visuals {
 
             this.currentValue = this.pin.value;
             this.currentMode = this.pin.mode;
-            //const style = (<SVGStylable><any>this.led).style;
-            if (this.currentMode & PinFlags.Digital) {
-                //style.fill = this.currentValue ? "#00ff00" : "#ffffff";
-                //style.opacity = "0.9";
-              //  this.text.textContent = this.currentValue ? "1" : "0";
-            } else {
-                //style.fill = "#00ff00";
-                //style.opacity = (0.1 + Math.max(0, Math.min(1023, this.currentValue)) / 1023 * 0.8).toString();
-               // this.text.textContent = `~${this.currentValue}`
-            }
+            this.text.textContent = `~${this.currentValue}`
         }
     }
 }

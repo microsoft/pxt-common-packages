@@ -49,18 +49,7 @@
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
      inkscape:current-layer="Layer_1" /><title
-     id="title3">SparkFun Parts for MS Kit</title><rect
-     y="79.609749"
-     x="0.83792371"
-     height="9.55233"
-     width="32.008686"
-     id="rect4526"
-     style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:3.93861532;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" /><path
-     inkscape:connector-curvature="0"
-     id="path9"
-     d="m 12.7,60.500002 1.2,1.4 h -1 l -2.4,-1.4 v -34.6 c 0,-0.3 0.5,-0.5 1.1,-0.5 v 0 c 0.6,0 1.1,0.2 1.1,0.5 z"
-     style="fill:#8c8c8c"
-     class="st1" /><path
+     id="title3">SparkFun Parts for MS Kit</title><path
      inkscape:connector-curvature="0"
      id="path11"
      d="M 3.4,61.900002 H 5.3055085 L 4.8,0.700002 C 4.7966961,0.30001564 4.3,2e-6 3.7,2e-6 v 0 0 c -0.6,0 -1.1,0.3 -1.1,0.7 v 0 z"
@@ -78,16 +67,16 @@
        id="tspan4512"
        sodipodi:role="line">10kΩ</tspan></text>
 <text
-     id="text4524"
-     y="88.479797"
-     x="1.8680531"
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:32.79336548px;line-height:1.25;font-family:consolas;-inkscape-font-specification:consolas;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.81983411"
-     xml:space="preserve"><tspan
-       style="font-size:10.93112087px;stroke-width:0.81983411"
-       y="116.93382"
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:32.79336548px;line-height:1.25;font-family:consolas;-inkscape-font-specification:consolas;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.81983411"
        x="1.8680531"
-       id="tspan4522"
-       sodipodi:role="line" /></text>
+       y="77.579796"
+       id="text4524"><tspan
+         sodipodi:role="line"
+         id="tspan4522"
+         x="1.8680531"
+         y="106.03381"
+         style="font-size:10.93112087px;stroke-width:0.81983411" /></text>
 <rect
      id="rect41"
      height="1.9"
