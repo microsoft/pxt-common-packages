@@ -131,7 +131,7 @@
         "visual": {
             "builtIn": "led",
             "width": 68,
-            "height": 160,
+            "height": 180,
             "pinDistance": 15,
             "pinLocations": [
                 {"x": 0, "y": 0},
@@ -160,7 +160,7 @@
         "visual": {
             "builtIn": "led",
             "width": 68,
-            "height": 160,
+            "height": 180,
             "pinDistance": 15,
             "pinLocations": [
                 {"x": 0, "y": 0},
@@ -183,5 +183,36 @@
             {"part": true, "pinIndices": [0]},
             {"pinIndices": [1]}
         ]
-    }
+    },
+    "photocell": {
+        "numberOfPins": 3,
+        "visual": {
+            "builtIn": "photocell",
+            "width": 68,
+            "height": 180,
+            "pinDistance": 15,
+            "pinLocations": [
+                {"x": 0, "y": 0},
+                {"x": 15, "y": 0},
+                {"x": 60, "y": 0}
+            ]
+        },
+        "simulationBehavior": "photocell",
+        "pinDefinitions": [
+            {"target": "threeVolt", "style": "male", "orientation": "-Z"},
+            {"target": {"pinInstantiationIdx": 0}, "style": "male", "orientation": "-Z"},
+            {"target": "ground", "style": "male", "orientation": "-Z"}
+        ],
+        "instantiation": {
+            "kind": "function",
+            "fullyQualifiedName": "AnalogPin.analogRead",
+            "argumentRoles": [
+                {"pinInstantiationIdx": 0, "partParameter": "name"}
+            ]
+        },
+        "assembly": [
+            {"part": true, "pinIndices": [0]},
+            {"pinIndices": [1]}
+        ]
+    }    
 }

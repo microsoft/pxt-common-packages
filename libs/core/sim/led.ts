@@ -9,7 +9,6 @@ namespace pxsim.visuals {
     <svg xmlns="http://www.w3.org/2000/svg" id="Layer_1" viewBox="0 0 33.6 90" width="33.599998" height="90">
     <path class="st0" d="M1.3 65.000002v5.9C1.3 74.800002 4.5 78 8.4 78c3.9 0 7.1-3.199998 7.1-7.099998v-13.7c-1.9-1.9-4.4-2.9-7.1-2.8-4.6 0-8.4 2.6-8.4 5.9v1.5c0 1.2.5 2.3 1.3 3.2z" id="path5" opacity=".65" fill="#ececec"/>
     <g id="g7" transform="translate(0 10.900002)">
-      <path id="rect4526" fill="#fff" stroke-width="3.938615" stroke-linecap="round" stroke-linejoin="round" d="M.837924 68.709747H32.84661v9.55233H.837924z"/>
       <path class="st1" d="M12.7 49.6l1.2 1.4h-1l-2.4-1.4V15c0-.3.5-.5 1.1-.5.6 0 1.1.2 1.1.5z" id="path9" fill="#8c8c8c"/>
       <path class="st1" d="M2.6 42.9c0 .7 1.1 1.3 2.1 1.8.4.2 1.2.6 1.2.9V49l-2.5 2h.9L8 49v-3.5c0-.7-.9-1.2-1.9-1.7-.4-.2-1.3-.8-1.3-1.1v-52.9c0-.4-.5-.7-1.1-.7-.6 0-1.1.3-1.1.7z" id="path11" fill="#8c8c8c"/>
       <path class="sim-led-main" d="M1.3 54.1V60c0 3.9 3.2 7.1 7.1 7.1 3.9 0 7.1-3.2 7.1-7.1V46.3c-1.9-1.9-4.4-2.9-7.1-2.8-4.6 0-8.4 2.6-8.4 5.9v1.5c0 1.2.5 2.3 1.3 3.2z" id="LED" opacity=".3" fill="#ccc"/>
