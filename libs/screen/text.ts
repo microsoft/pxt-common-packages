@@ -5,6 +5,7 @@ namespace image {
         charHeight: number;
         firstChar: number;
         data: Buffer;
+        uniData?: Buffer;
         doubledCache?: Font;
     }
 
@@ -35,6 +36,7 @@ e0606c766666e600 3000703030307800 0c000c0c0ccccc78 e060666c786ce600 703030303030
     }
 
     export function doubledFont(f: Font): Font {
+        // TODO unicode
         if (f.doubledCache) return f.doubledCache
         let byteWidth = (f.charWidth + 7) >> 3
         let lines = f.data.length / byteWidth
@@ -79,7 +81,13 @@ e0909090e0 f080e080f0 f080e08080 7080988870 9090f09090 e0404040e0 f810109060 90a
 8080e09090 4000404040 1000101060 80a0c0a090 4040404030 00d8a88888 00e0909090 0060909060 00e090e080
 0070907010 0070808080 00304020c0 4040704038 0090909078 0088885020 008888a8d8 0090606090 00885020c0
 00f02040f0 3020602030 4040404040 c0406040c0 0000601800
-`
+`,
+        uniData: hex`
+d3003070888870f300306090906004016090f0901805017090907830060130788080780701307080
+80701801f0e080f03019016090e0b070410180a0c080f0420140506040b04301a8c8a89888440160
+e09090905a0130384020c05b0130304020c0790130f02040f07a0130f02040f07b0160f02040f07c
+0160f02040f0
+`,
     }
 }
 
@@ -120,9 +128,18 @@ namespace helpers {
             }
             if (ch < 32) continue
             let idx = (ch - font.firstChar) * charSize
-            if (idx < 0 || idx + imgBuf.length - 1 > font.data.length)
+            if (idx < 0 || idx + imgBuf.length - 1 > font.data.length) {
                 imgBuf.fill(0, 3)
-            else
+                if (font.uniData) {
+                    // TODO do a b-search
+                    for (let i = 0; i < font.uniData.length; i += charSize + 2) {
+                        if (font.uniData.getNumber(NumberFormat.UInt16LE, i) == ch) {
+                            imgBuf.write(3, font.uniData.slice(i + 2, charSize))
+                            break
+                        }
+                    }
+                }
+            } else
                 imgBuf.write(3, font.data.slice(idx, charSize))
             img.drawIcon(imgBuf, x, y, color)
             x += font.charWidth
