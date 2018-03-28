@@ -1,6 +1,6 @@
-# Font "editor"
+# Font compiler and decompiler
 
-The `font-editor.js` script converts between two textual representations of bitmap
+The `font-compiler.js` script converts between two textual representations of bitmap
 fonts, one of which is compact and the other one is human readable and easy to edit
 using a regular text editor.
 
@@ -34,7 +34,7 @@ e09090905a0130384020c05b0130304020c0790130f02040f07a0130f02040f07b0160f02040f07c
     }
 ```
 
-If you save it to `packed.txt` and run `node font-editor.js packed.txt > human.txt`
+If you save it to `packed.txt` and run `node font-compiler.js packed.txt > human.txt`
 you will get `human.txt` file with something like the following (the script will also complain
 about lines it can't understand):
 
@@ -78,7 +78,7 @@ You can now edit pixels in this file - use `.` and `#` only for pixels. Spaces a
 If you add new characters, you can use syntax like `* 1234` for character codes, or use the 
 character itself, quoted, like so: `* 'ś'`. If you include both, the first one will be used.
 
-After you're done editing `human.txt` run `node font-editor.js human.txt > packed-updated.txt`.
+After you're done editing `human.txt` run `node font-compiler.js human.txt > packed-updated.txt`.
 
 In packed format, the 7 bit characters are stored in the `data` field, without any headers, 
 whereas all other characters (typically non-English) are stored in `uniData` field,
