@@ -4,7 +4,6 @@
     "files": [
         "sprites.ts",
         "sprite.ts",
-        "spriteanimation.ts",
         "spritemap.ts",
         "physics.ts",
         "info.ts",

@@ -42,16 +42,6 @@ namespace sprites {
     }
 
     /**
-     * Creates a sprite from a sequence of images
-     * @param imgs an array of images
-     */
-    export function createWithAnimation(imgs: Image[]) {
-        let s = create(imgs[0])
-        s.animation = new SpriteAnimation(imgs)
-        return s
-    }
-
-    /**
      * Create a new sprite with given speed, and place it at the edge of the screen so it moves towards the middle.
      * The sprite auto-destroys when it leaves the screen. You can modify position after it's created.
      */

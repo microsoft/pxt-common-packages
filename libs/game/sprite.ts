@@ -41,7 +41,6 @@ class Sprite {
 
     flags: number
     id: number
-    animation: SpriteAnimation
 
     overlapHandler: (other: Sprite) => void;
     private destroyHandler: () => void;
@@ -194,8 +193,6 @@ class Sprite {
     }
 
     __update(dt: number) {
-        if (this.animation)
-            this.animation.update(this, dt)
         if (this.life > 0) {
             this.life--;
             if (this.life <= 0)
