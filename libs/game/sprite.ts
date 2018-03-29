@@ -210,7 +210,7 @@ class Sprite {
     __computeOverlaps() {
         const oh = this.overlapHandler;
         if (oh) {
-            for (let o of physics.engine.overlaps(this, 0)) {
+            for (let o of game.scene.physicsEngine.overlaps(this, 0)) {
                 let tmp = o
                 control.runInParallel(() => oh(tmp))
             }
@@ -274,8 +274,8 @@ class Sprite {
         if (this.flags & sprites.Flag.Destroyed)
             return
         this.flags |= sprites.Flag.Destroyed
-        sprites.allSprites.removeElement(this);
-        physics.engine.removeSprite(this);
+        game.scene.allSprites.removeElement(this);
+        game.scene.physicsEngine.removeSprite(this);
         if (this.destroyHandler) {
             control.runInParallel(this.destroyHandler)
         }

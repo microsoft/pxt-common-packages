@@ -15,7 +15,6 @@ Frame handlers:
 //% weight=98 color="#23c47e" icon="\uf1d8"
 //% groups='["Create", "Properties", "Collisions", "Lifecycle"]'
 namespace sprites {
-    export let allSprites: Sprite[]
 
     /**
      * Creates a new sprite from an image
@@ -30,9 +29,9 @@ namespace sprites {
     export function create(img: Image): Sprite {
         game.init()
         let spr = new Sprite(img)
-        allSprites.push(spr)
-        spr.id = allSprites.length
-        physics.engine.addSprite(spr);
+        game.scene.allSprites.push(spr)
+        spr.id = game.scene.allSprites.length
+        game.scene.physicsEngine.addSprite(spr);
         return spr
     }
 

@@ -4,6 +4,63 @@
 //% color=#008272 weight=99 icon="\uf111"
 //% groups='["Gameplay", "Background", "Tiles"]'
 namespace game {
+
+    export class Scene {
+        eventContext: control.EventContext;
+        background: Background;
+        tileMap: tiles.TileMap;
+        allSprites: Sprite[];
+        physicsEngine: PhysicsEngine;
+
+        paintCallback: () => void;
+        updateCallback: () => void;
+
+        constructor(eventContext: control.EventContext) {
+            this.eventContext = eventContext;
+        }
+
+        init() {
+            if (this.allSprites) return;
+
+            this.allSprites = [];
+            this.background = new Background();
+            game.setBackgroundColor(0)
+            // update sprites in tilemap
+            this.eventContext.registerFrameHandler(9, () => {
+                if(this.tileMap) this.tileMap.update();
+            })
+            // update sprites
+            this.eventContext.registerFrameHandler(10, () => {
+                const dt = this.eventContext.deltaTime;
+                this.physicsEngine.update(dt);
+                for (const s of this.allSprites)
+                    s.__update(dt);
+            })
+            // update 20
+            // render background
+            this.eventContext.registerFrameHandler(60, () => {
+                this.background.render();
+            })
+            // paint 75
+            // render sprites
+            this.eventContext.registerFrameHandler(90, () => {
+                if (flags & Flag.NeedsSorting)
+                    this.allSprites.sort(function (a, b) { return a.z - b.z || a.id - b.id; })
+                for (const s of this.allSprites)
+                    s.__draw();
+            })
+            // render diagnostics
+            this.eventContext.registerFrameHandler(150, () => {
+                if (game.debug)
+                    this.physicsEngine.draw();
+                // clear flags
+                flags = 0;
+            });
+            // update screen
+            this.eventContext.registerFrameHandler(200, control.__screen.update);
+        }
+    }
+
     export enum Flag {
         NeedsSorting = 1 << 1,
     }
@@ -14,11 +71,13 @@ namespace game {
     export let debug = false;
     export let flags: number = 0;
     export let gameOverSound: () => void = undefined;
-    let __eventContext: control.EventContext;
-    let __isOver = false
+
+    export let scene: Scene;
+    let sceneStack: Scene[];
+
+
     let __waitAnyKey: () => void
-    let __background: Background;
-    let __tileMap: tiles.TileMap;
+    let __isOver = false;
 
     export function setWaitAnyKey(f: () => void) {
         __waitAnyKey = f
@@ -31,67 +90,46 @@ namespace game {
 
     export function eventContext(): control.EventContext {
         init();
-        return __eventContext;
+        return scene.eventContext;
     }
 
     export function init() {
-        if (!sprites.allSprites) {
-            sprites.allSprites = []
-            __eventContext = control.pushEventContext();
-            __background = new Background();
-            game.setBackgroundColor(0)
-            // update sprites in tilemap
-            __eventContext.registerFrameHandler(9, () => {
-                if(__tileMap) __tileMap.update();
-            })
-            // update sprites
-            __eventContext.registerFrameHandler(10, () => {
-                const dt = __eventContext.deltaTime;
-                physics.engine.update(dt);
-                for (const s of sprites.allSprites)
-                    s.__update(dt);
-            })
-            // update 20
-            // render background
-            __eventContext.registerFrameHandler(60, () => {
-                __background.render();
-            })
-            // paint 75
-            // render sprites
-            __eventContext.registerFrameHandler(90, () => {
-                if (flags & Flag.NeedsSorting)
-                    sprites.allSprites.sort(function (a, b) { return a.z - b.z || a.id - b.id; })
-                for (const s of sprites.allSprites)
-                    s.__draw();
-            })
-            // render diagnostics
-            __eventContext.registerFrameHandler(150, () => {
-                if (game.debug)
-                    physics.engine.draw();
-                // clear flags
-                flags = 0;
-            });
-            // update screen
-            __eventContext.registerFrameHandler(200, control.__screen.update);
+        if (!scene) scene = new Scene(control.pushEventContext());
+        scene.init();
+    }
+
+    export function pushScene() {
+        init();
+        if (!sceneStack) sceneStack = [];
+        sceneStack.push(scene);
+        scene = undefined;
+        init();
+    }
+
+    export function popScene() {
+        init();
+        if (sceneStack && sceneStack.length) {
+            scene = sceneStack.pop();
+            control.popEventContext();
         }
     }
 
     /**
      * Sets the game background color
-     * @param color 
+     * @param color
      */
     //% group="Background"
     //% weight=25
     //% blockId=gamesetbackgroundcolor block="set background color %color"
     export function setBackgroundColor(color: number) {
         init();
-        __background.color = color;
+        scene.background.color = color;
     }
 
     /**
      * Adds a moving background layer
      * @param distance distance of the layer which determines how fast it moves, eg: 10
-     * @param img 
+     * @param img
      */
     //% group="Background"
     //% weight=10
@@ -101,62 +139,65 @@ namespace game {
     export function addBackgroundImage(image: Image, distance?: number, alignment?: BackgroundAlignment) {
         init();
         if (image)
-            __background.addLayer(image, distance || 100, alignment || BackgroundAlignment.Bottom);
+            scene.background.addLayer(image, distance || 100, alignment || BackgroundAlignment.Bottom);
     }
 
     /**
      * Moves the background by the given value
-     * @param dx 
-     * @param dy 
+     * @param dx
+     * @param dy
      */
     //% group="Background"
     //% weight=20
     //% blockId=backgroundmove block="move background dx %dx dy %dy"
     export function moveBackground(dx: number, dy: number) {
         init();
-        __background.viewX += dx;
-        __background.viewY += dy;
+        scene.background.viewX += dx;
+        scene.background.viewY += dy;
     }
 
     /**
      * Sets the map for rendering tiles
-     * @param map 
+     * @param map
      */
     //% blockId=gamesettilemap block="set tile map to %map"
     //% map.fieldEditor="sprite"
     //% map.fieldOptions.taggedTemplate="img"
     //% group="Tiles"
     export function setTileMap(map: Image) {
-        if (!__tileMap)
-            __tileMap = new tiles.TileMap(16, 16);
-        __tileMap.setMap(map);
+        init();
+        if (!scene.tileMap)
+            scene.tileMap = new tiles.TileMap(16, 16);
+        scene.tileMap.setMap(map);
     }
 
     /**
      * Sets the tile image at the given index
-     * @param index 
-     * @param img 
+     * @param index
+     * @param img
      */
     //% img.fieldEditor="sprite"
     //% img.fieldOptions.taggedTemplate="img"
     //% blockId=gamesettile block="set tile at %index to %img||with collisions %collisions=toggleOnOff"
     //% group="Tiles"
     export function setTile(index: number, img: Image, collisions?: boolean) {
-        if (!__tileMap)
-            __tileMap = new tiles.TileMap(img.width, img.height);
-        __tileMap.setTile(index, img, !!collisions);
+        init();
+        if (!scene.tileMap)
+            scene.tileMap = new tiles.TileMap(img.width, img.height);
+        scene.tileMap.setTile(index, img, !!collisions);
     }
 
-    /** 
-     * Changes the tilemap offset 
+    /**
+     * Changes the tilemap offset
     */
     //% blockId=gamesettileoffset block="change tile offset by x %x y %y"
     //% group="Tiles"
     export function changeTileOffsetBy(dx: number, dy: number) {
-        if (!__tileMap)
-            __tileMap = new tiles.TileMap(16, 16);
-        __tileMap.offsetX += dx;
-        __tileMap.offsetY += dy;
+        init();
+        if (!scene.tileMap)
+            scene.tileMap = new tiles.TileMap(16, 16);
+        scene.tileMap.offsetX += dx;
+        scene.tileMap.offsetY += dy;
     }
 
     function showDialogBackground(h: number, c: number) {
@@ -174,7 +215,7 @@ namespace game {
 
     /**
      * Show a title, subtitle menu
-     * @param title 
+     * @param title
      * @param subtitle
      */
     //% group="Gameplay"
@@ -190,7 +231,7 @@ namespace game {
 
     /**
      * Prompts the user for a boolean question
-     * @param title 
+     * @param title
      * @param subtitle
      */
     //% group="Gameplay"
@@ -209,6 +250,7 @@ namespace game {
     }
 
     function showDialog(title: string, subtitle: string, footer?: string) {
+        init();
         let h = 8;
         if (title)
             h += image.font8.charHeight;
@@ -222,9 +264,9 @@ namespace game {
             screen.print(subtitle, 8, top + 8 + image.font8.charHeight + 2, screen.isMono ? 1 : 13, image.font5);
         if (footer) {
             screen.print(
-                footer, 
+                footer,
                 screen.width - footer.length * image.font5.charWidth - 8,
-                screen.height - image.font5.charHeight - 2, 
+                screen.height - image.font5.charHeight - 2,
                 1,
                 image.font5
             )
@@ -284,7 +326,6 @@ namespace game {
     //% shim=game::takeScreenshot
     declare function takeScreenshot(): void;
 
-    let __updateCb: () => void = undefined;
     /**
      * Updates the position and velocities of sprites
      * @param body code to execute
@@ -293,15 +334,15 @@ namespace game {
     //% help=game/update weight=100 afterOnStart=true
     //% blockId=gameupdate block="game frame"
     export function update(a: () => void): void {
-        if (!__updateCb) {
+        init();
+        if (!scene.updateCallback) {
             game.eventContext().registerFrameHandler(20, function () {
-                if (__updateCb) __updateCb();
+                if (scene.updateCallback) scene.updateCallback();
             });
-            __updateCb = a;
+            scene.updateCallback = a;
         }
     }
 
-    let __paintCb: () => void = undefined;
     /**
      * Draw on screen before sprites
      * @param body code to execute
@@ -310,11 +351,12 @@ namespace game {
     //% help=game/paint weight=10 afterOnStart=true
     //% blockId=gamepaint block="game paint"
     export function paint(a: () => void): void {
-        if (!__paintCb) {
+        init();
+        if (!scene.paintCallback) {
             game.eventContext().registerFrameHandler(75, function () {
-                if (__paintCb) __paintCb();
+                if (scene.paintCallback) scene.paintCallback();
             });
-            __paintCb = a;
+            scene.paintCallback = a;
         }
     }
 }
