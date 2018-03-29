@@ -22,17 +22,22 @@ namespace sprites {
      * @param img the image
      */
     //% group="Create"
-    //% blockId=spritescreate block="sprite %img"
+    //% blockId=spritescreate block="sprite %img||at x %x y %y"
+    //% expandableArgumentMode=toggle
     //% img.fieldEditor="sprite"
     //% img.fieldOptions.taggedTemplate="img"
     //% blockSetVariable
     //% weight=100
-    export function create(img: Image): Sprite {
+    export function create(img: Image, x?: number, y?: number): Sprite {
         game.init()
         let spr = new Sprite(img)
         allSprites.push(spr)
         spr.id = allSprites.length
         physics.engine.addSprite(spr);
+        if (x !== null && x != undefined)
+            spr.x = x;
+        if (y !== null && y !== undefined)
+            spr.y = y;
         return spr
     }
 
@@ -51,13 +56,15 @@ namespace sprites {
      * The sprite auto-destroys when it leaves the screen. You can modify position after it's created.
      */
     //% group="Create"
-    //% blockId=spritescreateprojectile block="projectile %img vx %vx vy %vy"
+    //% blockId=spritescreateprojectile block="projectile %img vx %vx vy %vy||from %sprite=variables_get"
     //% img.fieldEditor="sprite"
     //% img.fieldOptions.taggedTemplate="img"
     //% weight=99
     //% blockSetVariable
-    export function createProjectile(img: Image, vx: number, vy: number) {
-        let s = create(img)
+    //% inlineInputMode=inline
+    //% expandableArgumentMode=toggle
+    export function createProjectile(img: Image, vx: number, vy: number, sprite?: Sprite) {
+        const s = create(img)
         s.vx = vx
         s.vy = vy
 
@@ -74,6 +81,11 @@ namespace sprites {
             s.y = -(s.height >> 1) + 1
 
         s.flags |= sprites.Flag.AutoDestroy;
+
+        if (sprite) {
+            s.x = sprite.x;
+            s.y = sprite.y;
+        }
 
         return s
     }
