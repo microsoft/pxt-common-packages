@@ -145,7 +145,7 @@ namespace music {
 
     /**
     * Rest, or play silence, for some time (in milleseconds).
-    * @param ms rest duration in milliseconds (ms), eg: 100
+    * @param ms rest duration in milliseconds (ms), eg: BeatFraction.Half
     */
     //% help=music/rest
     //% blockId=music_rest block="rest|for %duration=device_beat"
