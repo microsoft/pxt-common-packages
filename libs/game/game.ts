@@ -11,12 +11,14 @@ namespace game {
         tileMap: tiles.TileMap;
         allSprites: Sprite[];
         physicsEngine: PhysicsEngine;
+        flags: number;
 
         paintCallback: () => void;
         updateCallback: () => void;
 
         constructor(eventContext: control.EventContext) {
             this.eventContext = eventContext;
+            this.flags = 0;
         }
 
         init() {
@@ -44,7 +46,7 @@ namespace game {
             // paint 75
             // render sprites
             this.eventContext.registerFrameHandler(90, () => {
-                if (flags & Flag.NeedsSorting)
+                if (scene.flags & Flag.NeedsSorting)
                     this.allSprites.sort(function (a, b) { return a.z - b.z || a.id - b.id; })
                 for (const s of this.allSprites)
                     s.__draw();
@@ -54,7 +56,7 @@ namespace game {
                 if (game.debug)
                     this.physicsEngine.draw();
                 // clear flags
-                flags = 0;
+                scene.flags = 0;
             });
             // update screen
             this.eventContext.registerFrameHandler(200, control.__screen.update);
@@ -69,7 +71,6 @@ namespace game {
      * Determins if diagnostics are shown
      */
     export let debug = false;
-    export let flags: number = 0;
     export let gameOverSound: () => void = undefined;
 
     export let scene: Scene;

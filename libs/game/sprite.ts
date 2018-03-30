@@ -91,7 +91,7 @@ class Sprite {
     set z(value: number) {
         if (value != this._z) {
             this._z = value;
-            game.flags |= game.Flag.NeedsSorting;
+            game.scene.flags |= game.Flag.NeedsSorting;
         }
     }
 
