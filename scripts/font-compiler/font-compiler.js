@@ -10,17 +10,52 @@ let currChar = 0
 let currCharLine = 0
 let currCharBuf = null
 let glyph = {}
+let allChars = {}
+let charHash = {}
+let charHashList =""
 
 function flushGlyph() {
     if (!currChar) return
+    let g = glyph
+    glyph = {}
 
     let ch = currChar
 
-    out += `\n* '${String.fromCharCode(ch)}' ${ch}\n`
+    let k = (100000 + ch).toString(10)
+    if (allChars[k])
+        return
 
-    for (let i = 6; i >= 0; --i) {
+    // exclude https://en.wikipedia.org/wiki/Halfwidth_and_fullwidth_forms
+    if (0xff00 <= ch && ch <= 0xffef)
+        return
+
+    // exclude RTL languages - not supported in text printing
+    if (0x0590 <= ch && ch <= 0x074f)
+        return
+
+    let hd = `\n* '${String.fromCharCode(ch)}' ${ch}\n`
+    let out = ""
+
+    let off = -3
+    let p = [0, 1, 2, 3, 4]
+
+    while (off < 0) {
+        if (p.some(j => g[off + "," + j]))
+            break
+        off++
+    }
+
+    p = [0, 1, 2, 3, 4, 5, 6, 7]
+    let offx = 3
+    while (offx > 0) {
+        if (p.some(i => g[(i + off) + "," + (offx + 4)]))
+            break
+        offx--
+    }
+
+    for (let i = 7; i >= 0; --i) {
         for (let j = 0; j < 5; ++j) {
-            if (glyph[i + "," + j])
+            if (g[(i + off) + "," + (j + offx)])
                 out += "# "
             else
                 out += ". "
@@ -28,10 +63,23 @@ function flushGlyph() {
         out += "\n"
     }
 
-    glyph = {}
+
+    /*
+    // Identify characters sharing bitmaps - it turns out this only saves about 10%, so we avoid the complexity
+    if (charHash[out]) {
+        charHashList += ">" + hd.trim() + " = " + charHash[out] + "\n"
+        allChars[k] = ""
+        return
+    }
+    */
+
+    charHash[out] = ch
+    allChars[k] = hd + out
 }
 
-for (let line of fs.readFileSync(process.argv[2], "utf8").split(/\n/)) {
+let lines = process.argv.slice(2).map(s => fs.readFileSync(s, "utf8")).join("\n").split(/\n\r?/)
+
+for (let line of lines) {
     line = line.trim()
     let m = /^(\w+)([:=])\s*(\d+)/.exec(line)
     if (!mode && m && (m[1] == "charWidth" || m[1] == "charHeight")) {
@@ -83,7 +131,7 @@ for (let line of fs.readFileSync(process.argv[2], "utf8").split(/\n/)) {
                     if (currChar >= 128) {
                         unicodeBuf.push(currCharBuf = new Buffer(2 + sz))
                         currCharBuf.fill(0)
-                        currCharBuf.writeInt16LE(currChar, 0)
+                        currCharBuf.writeUInt16LE(currChar, 0)
                     } else {
                         currCharBuf = null
                     }
@@ -106,11 +154,11 @@ for (let line of fs.readFileSync(process.argv[2], "utf8").split(/\n/)) {
                 flushGlyph()
                 currChar = parseInt(m[1], 16)
             } else {
-                m = /transform = \"\{([\d.,]+)\}\"/.exec(line)
+                m = /transform = \"\{([\-\d.,]+)\}\"/.exec(line)
                 if (m) {
                     let nums = m[1].split(/,/).map(s => parseFloat(s))
-                    let y = Math.round(nums[4] / nums[0] / 1000)
-                    let x = Math.round(nums[5] / nums[3] / 1000)
+                    let y = Math.round(nums[4] / Math.abs(nums[0]) / 1000)
+                    let x = Math.round(nums[5] / Math.abs(nums[3]) / 1000)
                     let k = x + "," + y
                     glyph[k] = 1
                 }
@@ -119,7 +167,16 @@ for (let line of fs.readFileSync(process.argv[2], "utf8").split(/\n/)) {
     }
 }
 
-if (mode == 3) flushGlyph()
+if (mode == 3) {
+    flushGlyph()
+    let keys = Object.keys(allChars)
+    keys.sort()
+    out += "charWidth=5\ncharHeight=8\nfirstChar=32\n"
+    for (let k of keys) {
+        out += allChars[k]
+    }
+    out += "\n" + charHashList
+}
 
 function fmt(buf) {
     out += "hex`\n"
