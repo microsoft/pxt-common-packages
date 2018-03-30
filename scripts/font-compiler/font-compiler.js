@@ -153,7 +153,7 @@ if (mode == 3) {
     flushGlyph()
     let keys = Object.keys(allChars)
     keys.sort()
-    out += "charWidth=5\ncharHeight=8\nfirstChar=32\n"
+    out += "charWidth=5\ncharHeight=8\n"
     for (let k of keys) {
         out += allChars[k]
     }
@@ -197,18 +197,9 @@ function showChar(buf, ptr, ch) {
 }
 
 if (mode == 2) {
-    if (!baseDataBuf) {
-        baseDataBuf = dataBuf
-        dataBuf = ""
-    }
-    let buf = new Buffer(baseDataBuf, "hex")
     let w = (prop.charWidth + 7) >> 3
     let sz = w * prop.charHeight
-    let ch = prop.firstChar
-    for (let ptr = 0; ptr < buf.length; ptr += sz) {
-        showChar(buf, ptr, ch++)
-    }
-    buf = new Buffer(dataBuf, "hex")
+    let buf = new Buffer(dataBuf, "hex")
     for (let ptr = 0; ptr < buf.length; ptr += sz + 2) {
         showChar(buf, ptr + 2, buf.readUInt16LE(ptr))
     }
