@@ -4,7 +4,7 @@ class PhysicsEngine {
 
     /**
      * Adds sprite to the physics
-     * @param sprite 
+     * @param sprite
      */
     addSprite(sprite: Sprite) { }
 
@@ -78,8 +78,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
     /**
      * Returns sprites that overlap with the given sprite. If type is non-zero, also filter by type.
-     * @param sprite 
-     * @param spriteType 
+     * @param sprite
+     * @param spriteType
      */
     overlaps(sprite: Sprite, spriteType: number): Sprite[] {
         if (this.map)
@@ -94,11 +94,4 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             return r;
         }
     }
-}
-
-namespace physics {
-    /**
-     * Gets the default physics engine
-     */
-    export let engine: PhysicsEngine = new ArcadePhysicsEngine();
 }
