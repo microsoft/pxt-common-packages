@@ -46,7 +46,7 @@ void updateSpeakerAmp() {
 * Set a source of digital sound data (PCM) for making tones.
 * Samples are 1020 x 10bit unsigned PCM.
 * A reference to the buffer is kept to avoid the memory overhead, so changes to the buffer
-* values are reflected immediately to the sound output. 
+* values are reflected immediately to the sound output.
 */
 //% help=music/set-tone
 //% weight=1 group="Tones"
@@ -77,7 +77,7 @@ void setOutput(SoundOutputDestination out) {
     if (out != soundOutputDestination) {
         soundOutputDestination = out;
         updateSpeakerAmp();
-    }    
+    }
 }
 
 /**
@@ -97,7 +97,7 @@ void setVolume(int volume) {
 /**
 * Play a tone through the speaker for some amount of time.
 * @param frequency pitch of the tone to play in Hertz (Hz), eg: Note.C
-* @param ms tone duration in milliseconds (ms), eg: music.beat(BeatFraction.Half)
+* @param ms tone duration in milliseconds (ms), eg: BeatFraction.Half
 */
 //% help=music/play-tone
 //% blockId=music_play_note block="play tone|at %note=device_note|for %duration=device_beat"
@@ -106,7 +106,7 @@ void setVolume(int volume) {
 //% weight=76 blockGap=8
 void playTone(int frequency, int ms) {
     auto synth = &getWSynthesizer()->synth;
-    
+
     if (frequency <= 0) {
         synth->setFrequency(0, max(1, ms));
     } else {
@@ -117,7 +117,7 @@ void playTone(int frequency, int ms) {
             synth->setFrequency(0, r);
         } else {
             // ring
-            synth->setFrequency((float) frequency);                
+            synth->setFrequency((float) frequency);
         }
     }
     fiber_sleep(1);
