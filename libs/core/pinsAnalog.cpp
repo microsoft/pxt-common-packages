@@ -1,6 +1,6 @@
 #include "pxt.h"
 
-namespace AnalogPinMethods {
+namespace AnalogInPinMethods {
 
 /**
  * Read the connector value as analog, that is, as a value comprised between 0 and 1023.
@@ -13,9 +13,13 @@ namespace AnalogPinMethods {
 //% name.fieldEditor="gridpicker"
 //% name.fieldOptions.width=220
 //% name.fieldOptions.columns=4
-int analogRead(AnalogPin name) {
+int analogRead(AnalogInPin name) {
     return PINOP(getAnalogValue());
 }
+}
+
+namespace AnalogOutPinMethods {
+void analogWrite(AnalogPin name, int value) __attribute__ ((weak));
 
 /**
  * Set the connector value as analog. Value must be comprised between 0 and 1023.
@@ -29,7 +33,7 @@ int analogRead(AnalogPin name) {
 //% name.fieldEditor="gridpicker"
 //% name.fieldOptions.width=220
 //% name.fieldOptions.columns=4
-void analogWrite(AnalogPin name, int value) {
+void analogWrite(AnalogOutPin name, int value) {
     PINOP(setAnalogValue(value));
 }
 }

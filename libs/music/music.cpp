@@ -27,6 +27,19 @@ enum class SoundOutputDestination {
     Speaker = 0,
 };
 
+
+// override analogWrite for PA02 to use DAC
+namespace AnalogOutPinMethods {
+void analogWrite(AnalogPin name, int value) {
+    if (name->name == PA02) {
+        auto pinAmp = LOOKUP_PIN(SPEAKER_AMP);
+        if (pinAmp) pinAmp->setDigitalValue(0);
+        getWSynthesizer()->dac.setValue(value);
+    } else
+        name->setAnalogValue(value);
+}
+}
+
 namespace music {
 
 Buffer tone; // empty buffer to hold custom tone
@@ -44,7 +57,7 @@ void updateSpeakerAmp() {
 
 /**
 * Set a source of digital sound data (PCM) for making tones.
-* Samples are 1020 x 10bit unsigned PCM.
+* Samples are 1024 x 10bit unsigned PCM.
 * A reference to the buffer is kept to avoid the memory overhead, so changes to the buffer
 * values are reflected immediately to the sound output. 
 */

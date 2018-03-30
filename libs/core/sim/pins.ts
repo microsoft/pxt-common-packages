@@ -89,7 +89,7 @@ namespace pxsim.DigitalPinMethods {
     }
 }
 
-namespace pxsim.AnalogPinMethods {
+namespace pxsim.AnalogInPinMethods {
     /**
      * Read the connector value as analog, that is, as a value comprised between 0 and 1023.
      */
@@ -97,8 +97,10 @@ namespace pxsim.AnalogPinMethods {
         pins.markUsed(name);
         return name.analogReadPin();
     }
+}
 
-    /**
+namespace pxsim.AnalogOutPinMethods {
+        /**
      * Set the connector value as analog. Value must be comprised between 0 and 1023.
      * @param value value to write to the pin between ``0`` and ``1023``. eg:1023,0
      */
@@ -106,18 +108,6 @@ namespace pxsim.AnalogPinMethods {
         pins.markUsed(name);
         name.analogWritePin(value);
 
-    }
-
-    /**
-     * Configures the Pulse-width modulation (PWM) of the analog output to the given value in
-     * **microseconds** or `1/1000` milliseconds.
-     * If this pin is not configured as an analog output (using `analog write pin`), the operation has
-     * no effect.
-     * @param micros period in micro seconds. eg:20000
-     */
-    export function analogSetPeriod(name: pins.AnalogPin, micros: number): void {
-        pins.markUsed(name);
-        name.analogSetPeriod(micros);
     }
 }
 
