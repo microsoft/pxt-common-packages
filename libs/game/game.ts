@@ -19,6 +19,7 @@ namespace game {
         constructor(eventContext: control.EventContext) {
             this.eventContext = eventContext;
             this.flags = 0;
+            this.physicsEngine = new ArcadePhysicsEngine();
         }
 
         init() {
