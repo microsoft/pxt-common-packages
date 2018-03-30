@@ -9,12 +9,37 @@ let unicodeBuf = []
 let currChar = 0
 let currCharLine = 0
 let currCharBuf = null
+let glyph = {}
+
+function flushGlyph() {
+    if (!currChar) return
+
+    let ch = currChar
+
+    out += `\n* '${String.fromCharCode(ch)}' ${ch}\n`
+
+    for (let i = 6; i >= 0; --i) {
+        for (let j = 0; j < 5; ++j) {
+            if (glyph[i + "," + j])
+                out += "# "
+            else
+                out += ". "
+        }
+        out += "\n"
+    }
+
+    glyph = {}
+}
+
 for (let line of fs.readFileSync(process.argv[2], "utf8").split(/\n/)) {
     line = line.trim()
     let m = /^(\w+)([:=])\s*(\d+)/.exec(line)
     if (!mode && m && (m[1] == "charWidth" || m[1] == "charHeight")) {
         mode = m[2] == "=" ? 1 : 2
     }
+
+    if (!mode && /^copyright = /.test(line))
+        mode = 3;
 
     if (!line) continue
 
@@ -75,9 +100,26 @@ for (let line of fs.readFileSync(process.argv[2], "utf8").split(/\n/)) {
             } else {
                 console.error("Bad: " + line)
             }
+        } else if (mode == 3) {
+            m = /unicode = (....)/.exec(line)
+            if (m) {
+                flushGlyph()
+                currChar = parseInt(m[1], 16)
+            } else {
+                m = /transform = \"\{([\d.,]+)\}\"/.exec(line)
+                if (m) {
+                    let nums = m[1].split(/,/).map(s => parseFloat(s))
+                    let y = Math.round(nums[4] / nums[0] / 1000)
+                    let x = Math.round(nums[5] / nums[3] / 1000)
+                    let k = x + "," + y
+                    glyph[k] = 1
+                }
+            }
         }
     }
 }
+
+if (mode == 3) flushGlyph()
 
 function fmt(buf) {
     out += "hex`\n"
@@ -121,7 +163,7 @@ if (mode == 2) {
     for (let ptr = 0; ptr < buf.length; ptr += sz + 2) {
         showChar(buf, ptr + 2, buf.readUInt16LE(ptr))
     }
-} else {
+} else if (mode == 1) {
     out += "data: "
     fmt(fontBuf)
     unicodeBuf.sort((a, b) => a.readUInt16LE(0) - b.readUInt16LE(0))
