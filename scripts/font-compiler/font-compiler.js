@@ -2,9 +2,7 @@ let fs = require("fs")
 let mode = 0
 let out = ""
 let prop = {}
-let baseDataBuf = ""
 let dataBuf = ""
-let fontBuf = null
 let unicodeBuf = []
 let currChar = 0
 let currCharLine = 0
@@ -12,7 +10,7 @@ let currCharBuf = null
 let glyph = {}
 let allChars = {}
 let charHash = {}
-let charHashList =""
+let charHashList = ""
 
 function flushGlyph() {
     if (!currChar) return
@@ -63,7 +61,6 @@ function flushGlyph() {
         out += "\n"
     }
 
-
     /*
     // Identify characters sharing bitmaps - it turns out this only saves about 10%, so we avoid the complexity
     if (charHash[out]) {
@@ -102,10 +99,6 @@ for (let line of lines) {
         if (mode == 1) {
             let w = (prop.charWidth + 7) >> 3
             let sz = w * prop.charHeight
-            if (!fontBuf) {
-                fontBuf = new Buffer((127 - prop.firstChar) * sz)
-                fontBuf.fill(0)
-            }
             if (/^[\.# ]{2,}$/.test(line)) {
                 line = line.replace(/ /g, "").replace(/\./g, "0").replace(/#/g, "1")
                 let bytes = []
@@ -116,11 +109,7 @@ for (let line of lines) {
                     while (pref.length < 8) pref += "0"
                     bytes.push(parseInt(pref, 2))
                 }
-                if (currCharBuf) {
-                    currCharBuf.set(bytes, 2 + currCharLine * w)
-                } else {
-                    fontBuf.set(bytes, (currChar - prop.firstChar) * sz + currCharLine * w)
-                }
+                currCharBuf.set(bytes, 2 + currCharLine * w)
                 currCharLine++
             } else {
                 m = /^\* ((\d+)|'(.)')/.exec(line)
@@ -128,13 +117,9 @@ for (let line of lines) {
                     if (m[2]) currChar = parseInt(m[2])
                     else currChar = m[3].charCodeAt(0)
                     currCharLine = 0
-                    if (currChar >= 128) {
-                        unicodeBuf.push(currCharBuf = new Buffer(2 + sz))
-                        currCharBuf.fill(0)
-                        currCharBuf.writeUInt16LE(currChar, 0)
-                    } else {
-                        currCharBuf = null
-                    }
+                    unicodeBuf.push(currCharBuf = new Buffer(2 + sz))
+                    currCharBuf.fill(0)
+                    currCharBuf.writeUInt16LE(currChar, 0)
                 } else {
                     console.error("Bad#: " + line)
                 }
@@ -142,9 +127,6 @@ for (let line of lines) {
         } else if (mode == 2) {
             if (/^[a-f0-9 ]{2,}$/.test(line)) {
                 dataBuf += line.replace(/ /g, "")
-            } else if (/uniData/.test(line)) {
-                baseDataBuf = dataBuf
-                dataBuf = ""
             } else {
                 console.error("Bad: " + line)
             }
@@ -178,12 +160,22 @@ if (mode == 3) {
     out += "\n" + charHashList
 }
 
-function fmt(buf) {
+function fmt(bufs) {
     out += "hex`\n"
-    for (let p = 0; p < buf.length; p += 40) {
-        out += buf.slice(p, p + 40).toString("hex") + "\n"
+    let len = 0
+    for (let p = 0; p < bufs.length; p++) {
+        let s = bufs[p].toString("hex")
+        out += s
+        if (len + s.length > 100) {
+            out += "\n"
+            len = 0
+        } else {
+            out += " "
+            len += s.length + 1
+        }
+        
     }
-    out += "`,\n"
+    out += "\n`,\n"
 }
 
 function showChar(buf, ptr, ch) {
@@ -221,11 +213,9 @@ if (mode == 2) {
         showChar(buf, ptr + 2, buf.readUInt16LE(ptr))
     }
 } else if (mode == 1) {
-    out += "data: "
-    fmt(fontBuf)
     unicodeBuf.sort((a, b) => a.readUInt16LE(0) - b.readUInt16LE(0))
-    out += "uniData: "
-    fmt(Buffer.concat(unicodeBuf))
+    out += "data: "
+    fmt(unicodeBuf)
 }
 
 console.log(out)
