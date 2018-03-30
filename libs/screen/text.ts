@@ -134,30 +134,45 @@ namespace helpers {
             if (ch < 32)
                 continue // skip control chars
 
-            let l = 0
-            let r = lastchar
-            let off = 0 // this should be a space (0x0020)
-            let guess = (ch - 32) * dataSize
-            if (fontdata.getNumber(NumberFormat.UInt16LE, guess) == ch)
-                off = guess
-            else {                
-                while (l <= r) {
-                    let m = l + ((r - l) >> 1);
-                    let v = fontdata.getNumber(NumberFormat.UInt16LE, m * dataSize)
-                    if (v == ch) {
-                        off = m * dataSize
-                        break
-                    }
-                    if (v < ch)
-                        l = m + 1
-                    else
-                        r = m - 1
-                }
+            // decompose Korean characters
+            let arr = [ch]
+            if (44032 <= ch && ch <= 55203) {
+                ch -= 44032
+                arr = [
+                    Math.idiv(ch, 588) + 0x1100,
+                    (Math.idiv(ch, 28) % 21) + 0x1161,
+                ]
+                ch %= 28
+                if (ch)
+                    arr.push(ch % 28 + 0x11a7)
             }
 
-            imgBuf.write(3, fontdata.slice(off + 2, charSize))
-            img.drawIcon(imgBuf, x, y, color)
-            x += font.charWidth
+            for (let cc of arr) {
+                let l = 0
+                let r = lastchar
+                let off = 0 // this should be a space (0x0020)
+                let guess = (ch - 32) * dataSize
+                if (fontdata.getNumber(NumberFormat.UInt16LE, guess) == cc)
+                    off = guess
+                else {
+                    while (l <= r) {
+                        let m = l + ((r - l) >> 1);
+                        let v = fontdata.getNumber(NumberFormat.UInt16LE, m * dataSize)
+                        if (v == cc) {
+                            off = m * dataSize
+                            break
+                        }
+                        if (v < cc)
+                            l = m + 1
+                        else
+                            r = m - 1
+                    }
+                }
+
+                imgBuf.write(3, fontdata.slice(off + 2, charSize))
+                img.drawIcon(imgBuf, x, y, color)
+                x += font.charWidth
+            }
         }
     }
 }
