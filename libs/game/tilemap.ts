@@ -28,7 +28,7 @@ namespace tiles {
         private _needsUpdate: boolean;
         private _offsetX: number;
         private _offsetY: number;
-        private _spriteType: number;
+        private _layer: number;
     
         private _map: Image;
         private _tiles: Tile[];
@@ -69,13 +69,13 @@ namespace tiles {
             }
         }
     
-        get spriteType(): number {
-            return this._spriteType;
+        get layer(): number {
+            return this._layer;
         }
     
-        set spriteType(value: number) {
-            this._spriteType = value;
-            this._tileSprites.forEach(sp => sp.sprite.type = this._spriteType);
+        set layer(value: number) {
+            this._layer = value;
+            this._tileSprites.forEach(sp => sp.sprite.layer = this._layer);
         }
     
         setTile(index: number, img: Image, collisions: boolean) {
@@ -132,7 +132,7 @@ namespace tiles {
                     const tile = this._tiles[index];
                     if (tile && !this._tileSprites.some(ts => ts.x == x && ts.y == y)) {
                         const tileSprite = new TileSprite(x, y, index, sprites.create(tile.image));
-                        tileSprite.sprite.type = this._spriteType;
+                        tileSprite.sprite.layer = this._layer;
                         tileSprite.sprite.z = -1;
                         if (!tile.collisions)
                             tileSprite.sprite.setFlag(SpriteFlag.Ghost, true)

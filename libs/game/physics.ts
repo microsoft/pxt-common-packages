@@ -79,16 +79,17 @@ class ArcadePhysicsEngine extends PhysicsEngine {
     /**
      * Returns sprites that overlap with the given sprite. If type is non-zero, also filter by type.
      * @param sprite
-     * @param spriteType
+     * @param layer
      */
-    overlaps(sprite: Sprite, spriteType: number): Sprite[] {
+    overlaps(sprite: Sprite, layer: number): Sprite[] {
         if (this.map)
-            return this.map.overlaps(sprite, spriteType);
+            return this.map.overlaps(sprite, layer);
         else {
             const r: Sprite[] = [];
             const n = this.sprites.length;
             for (let i = 0; i < n; ++i) {
-                if ((!spriteType || spriteType == this.sprites[i].type) && sprite.overlapsWith(this.sprites[i]))
+                if ((!layer || !!(layer & this.sprites[i].layer)) 
+                    && sprite.overlapsWith(this.sprites[i]))
                     r.push(this.sprites[i]);
             }
             return r;
