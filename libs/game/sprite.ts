@@ -30,8 +30,8 @@ class Sprite {
     //% blockCombine block="ay"
     ay: number
     //% group="Properties"
-    //% blockCombine block="type"
-    type: number
+    //% blockCombine block="layer"
+    layer: number
     //% group="Properties"
     //% blockCombine block="life"
     life: number;
@@ -55,7 +55,7 @@ class Sprite {
         this.ay = 0
         this.flags = 0
         this._image = img
-        this.type = 0
+        this.layer = 0
         this.life = -1
     }
 

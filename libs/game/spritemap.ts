@@ -13,14 +13,14 @@ namespace sprites {
         /**
          * Returns a potential list of neighbors
          */
-        neighbors(sprite: Sprite, spriteType: number): Sprite[] {
+        neighbors(sprite: Sprite, layer: number): Sprite[] {
             if (this.isOob(sprite)) return [];
 
             const n: Sprite[] = [];
-            this.mergeAtKey(sprite.left, sprite.top, spriteType, n)
-            this.mergeAtKey(sprite.left, sprite.bottom, spriteType, n)
-            this.mergeAtKey(sprite.right, sprite.top, spriteType, n)
-            this.mergeAtKey(sprite.right, sprite.bottom, spriteType, n)
+            this.mergeAtKey(sprite.left, sprite.top, layer, n)
+            this.mergeAtKey(sprite.left, sprite.bottom, layer, n)
+            this.mergeAtKey(sprite.right, sprite.top, layer, n)
+            this.mergeAtKey(sprite.right, sprite.bottom, layer, n)
             n.removeElement(sprite);
             return n;
         }
@@ -29,15 +29,15 @@ namespace sprites {
          * Gets the overlaping sprites if any
          * @param sprite 
          */
-        overlaps(sprite: Sprite, spriteType: number): Sprite[] {
-            const n = this.neighbors(sprite, spriteType);
+        overlaps(sprite: Sprite, layer: number): Sprite[] {
+            const n = this.neighbors(sprite, layer);
             const o = n.filter(neighbor => sprite.overlapsWith(neighbor));
             return o;
         }
 
         draw() {
-            for(let x = 0; x < this.columnCount; ++x) {
-                for(let y = 0; y < this.rowCount; ++y) {
+            for (let x = 0; x < this.columnCount; ++x) {
+                for (let y = 0; y < this.rowCount; ++y) {
                     const left = x * this.cellWidth;
                     const top = y * this.cellHeight;
                     const k = this.key(left, top);
@@ -99,17 +99,18 @@ namespace sprites {
             const top = sprite.top;
             const xn = Math.ceil(sprite.width / this.cellWidth)
             const yn = Math.ceil(sprite.height / this.cellHeight);
-            for(let x = 0; x <= xn; x ++)
-                for(let y = 0; y <= yn; y ++)
+            for (let x = 0; x <= xn; x++)
+                for (let y = 0; y <= yn; y++)
                     this.insertAtKey(left + Math.min(sprite.width, x * this.cellWidth), top + Math.min(sprite.height, y * this.cellHeight), sprite)
         }
 
-        private mergeAtKey(x: number, y: number, type: number, n: Sprite[]) {
+        private mergeAtKey(x: number, y: number, layer: number, n: Sprite[]) {
             const k = this.key(x, y);
             const bucket = this.buckets[k];
             if (bucket) {
                 for (const sprite of bucket)
-                    if ((!type || sprite.type == type) && n.indexOf(sprite) < 0)
+                    if ((!layer || !!(sprite.layer & layer))
+                        && n.indexOf(sprite) < 0)
                         n.push(sprite);
             }
         }
