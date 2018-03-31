@@ -38,6 +38,8 @@ pauseUntil(() => msecs > 5000)
 
 ### Timer in a boolean function #ex2
 
+Wait on a five second timer function.
+
 ```typescript
 function waitFiveSeconds() : boolean {
     for (let i = 0; i < 5000; i++) {
