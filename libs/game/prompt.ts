@@ -118,22 +118,22 @@ namespace game {
 
         message: string;
         answerLength: number;
-
-        cursor: Sprite;
-        shiftButton: Sprite;
-        confirmButton: Sprite;
-
-        letters: Sprite[];
-        inputs: Sprite[];
-
-        confirmPressed: boolean;
-        cursorRow: number;
-        cursorColumn: number;
-        upper: boolean;
-        inputIndex: number;
         result: string;
-        blink: boolean;
-        frameCount: number;
+
+        private cursor: Sprite;
+        private shiftButton: Sprite;
+        private confirmButton: Sprite;
+
+        private letters: Sprite[];
+        private inputs: Sprite[];
+
+        private confirmPressed: boolean;
+        private cursorRow: number;
+        private cursorColumn: number;
+        private upper: boolean;
+        private inputIndex: number;
+        private blink: boolean;
+        private frameCount: number;
 
         constructor(theme?: PromptTheme) {
             if (theme) {
@@ -158,20 +158,40 @@ namespace game {
             this.inputIndex = 0;
         }
 
-        _draw() {
-            this._drawPromptText();
-            this._drawKeyboard();
-            this._drawInputarea();
-            this._drawBottomBar();
+        show(message: string, answerLength: number) {
+            this.message = message;
+            this.answerLength = answerLength;
+            this.inputIndex = 0;
+
+            keys._setUserEventsEnabled(false);
+            game.pushScene()
+
+            this.draw();
+            this.registerHandlers();
+            this.confirmPressed = false;
+
+            pauseUntil(() => this.confirmPressed);
+
+            game.popScene();
+            keys._setUserEventsEnabled(true);
+
+            return this.result;
         }
 
-        _drawPromptText() {
+        private draw() {
+            this.drawPromptText();
+            this.drawKeyboard();
+            this.drawInputarea();
+            this.drawBottomBar();
+        }
+
+        private drawPromptText() {
             const prompt = sprites.create(layoutText(this.message, CONTENT_WIDTH, PROMPT_HEIGHT, this.theme.colorPrompt));
             prompt.x = screen.width / 2
             prompt.y = CONTENT_TOP + Math.floor((PROMPT_HEIGHT - prompt.height) / 2) + Math.floor(prompt.height / 2);
         }
 
-        _drawInputarea() {
+        private drawInputarea() {
             const answerLeft = ROW_LEFT + Math.floor(
                 ((CELL_WIDTH * ALPHABET_ROW_LENGTH) -
                     CELL_WIDTH * Math.min(this.answerLength, ALPHABET_ROW_LENGTH)) / 2);
@@ -179,7 +199,7 @@ namespace game {
             this.inputs = [];
             for (let i = 0; i < this.answerLength; i++) {
                 const blank = image.create(CELL_WIDTH, CELL_HEIGHT);
-                this._drawInput(blank, "", this.theme.colorInput);
+                this.drawInput(blank, "", this.theme.colorInput);
 
                 const col = i % ALPHABET_ROW_LENGTH;
                 const row = Math.floor(i / ALPHABET_ROW_LENGTH);
@@ -191,12 +211,12 @@ namespace game {
             }
         }
 
-        _drawKeyboard() {
+        private drawKeyboard() {
             const cursorImage = image.create(CELL_WIDTH, CELL_HEIGHT);
             cursorImage.fill(this.theme.colorCursor);
             this.cursor = sprites.create(cursorImage);
             this.cursor.z = -1;
-            this._updateCursor();
+            this.updateCursor();
 
             this.letters = [];
             for (let j = 0; j < 36; j++) {
@@ -211,10 +231,10 @@ namespace game {
 
                 this.letters.push(t);
             }
-            this._updateKeyboard();
+            this.updateKeyboard();
         }
 
-        _drawBottomBar() {
+        private drawBottomBar() {
             const bg = image.create(screen.width, BOTTOM_BAR_HEIGHT);
             bg.fill(this.theme.colorBottomBackground);
 
@@ -231,10 +251,10 @@ namespace game {
             this.confirmButton.x = CONFIRM_BUTTON_LEFT + Math.floor(BOTTOM_BAR_BUTTON_WIDTH / 2);
             this.confirmButton.y = BOTTOM_BAR_TOP + Math.ceil(BOTTOM_BAR_HEIGHT / 2);
 
-            this._updateButtons();
+            this.updateButtons();
         }
 
-        _updateButtons() {
+        private updateButtons() {
             if (this.cursorRow === 3 && this.cursorColumn % 2 !== 1) {
                 this.shiftButton.image.fill(this.theme.colorCursor);
             }
@@ -260,10 +280,10 @@ namespace game {
             this.confirmButton.image.print(confirmText, BOTTOM_BAR_CONFIRM_X, BOTTOM_BAR_TEXT_Y);
         }
 
-        _updateCursor() {
+        private updateCursor() {
             if (this.cursorRow === 3) {
                 this.cursor.image.fill(0);
-                this._updateButtons();
+                this.updateButtons();
             }
             else {
                 this.cursor.x = ROW_LEFT + this.cursorColumn * CELL_WIDTH;
@@ -271,19 +291,19 @@ namespace game {
             }
         }
 
-        _updateSelectedInput() {
+        private updateSelectedInput() {
             if (this.inputIndex < this.answerLength) {
                 const u = this.inputs[this.inputIndex];
                 if (this.blink) {
-                    this._drawInput(u.image, "", this.theme.colorInput);
+                    this.drawInput(u.image, "", this.theme.colorInput);
                 }
                 else {
-                    this._drawInput(u.image, "", this.theme.colorInputHighlighted)
+                    this.drawInput(u.image, "", this.theme.colorInputHighlighted)
                 }
             }
         }
 
-        _updateKeyboard() {
+        private updateKeyboard() {
             const len = this.letters.length;
             for (let k = 0; k < len; k++) {
                 const img = this.letters[k].image;
@@ -292,7 +312,7 @@ namespace game {
             }
         }
 
-        _drawInput(img: Image, char: string, color: number) {
+        private drawInput(img: Image, char: string, color: number) {
             img.fill(0);
             img.fillRect(BLANK_PADDING, CELL_HEIGHT - 1, CELL_WIDTH - BLANK_PADDING * 2, 1, color)
 
@@ -301,29 +321,29 @@ namespace game {
             }
         }
 
-        _registerHandlers() {
+        private registerHandlers() {
             keys.up.onEvent(SYSTEM_KEY_DOWN, () => {
-                this._moveVertical(true);
+                this.moveVertical(true);
             })
 
             keys.down.onEvent(SYSTEM_KEY_DOWN, () => {
-                this._moveVertical(false);
+                this.moveVertical(false);
             })
 
             keys.right.onEvent(SYSTEM_KEY_DOWN, () => {
-                this._moveHorizontal(true);
+                this.moveHorizontal(true);
             });
 
             keys.left.onEvent(SYSTEM_KEY_DOWN, () => {
-                this._moveHorizontal(false);
+                this.moveHorizontal(false);
             });
 
             keys.A.onEvent(SYSTEM_KEY_DOWN, () => {
-                this._confirm();
+                this.confirm();
             });
 
             keys.B.onEvent(SYSTEM_KEY_DOWN, () => {
-                this._delete();
+                this.delete();
             });
 
 
@@ -336,12 +356,12 @@ namespace game {
                 if (this.frameCount === 0) {
                     this.blink = !this.blink;
 
-                    this._updateSelectedInput();
+                    this.updateSelectedInput();
                 }
             })
         }
 
-        _moveVertical(up: boolean) {
+        private moveVertical(up: boolean) {
             if (up) {
                 if (this.cursorRow === 3) {
                     this.cursor.image.fill(this.theme.colorCursor);
@@ -354,7 +374,7 @@ namespace game {
                         this.cursorColumn = 0;
                     }
 
-                    this._updateButtons();
+                    this.updateButtons();
                 }
                 else {
                     this.cursorRow = Math.max(0, this.cursorRow - 1);
@@ -369,10 +389,10 @@ namespace game {
                 }
             }
 
-            this._updateCursor();
+            this.updateCursor();
         }
 
-        _moveHorizontal(right: boolean) {
+        private moveHorizontal(right: boolean) {
             if (right) {
                 this.cursorColumn = (this.cursorColumn + 1) % ALPHABET_ROW_LENGTH;
             }
@@ -380,18 +400,18 @@ namespace game {
                 this.cursorColumn = (this.cursorColumn + (ALPHABET_ROW_LENGTH - 1)) % ALPHABET_ROW_LENGTH;
             }
 
-            this._updateCursor();
+            this.updateCursor();
         }
 
-        _confirm() {
+        private confirm() {
             if (this.cursorRow === 3) {
                 if (this.cursorColumn % 2) {
                     this.confirmPressed = true;
                 }
                 else {
                     this.upper = !this.upper;
-                    this._updateKeyboard();
-                    this._updateButtons();
+                    this.updateKeyboard();
+                    this.updateButtons();
                 }
             }
             else {
@@ -408,48 +428,28 @@ namespace game {
                 }
 
                 const sprite = this.inputs[this.inputIndex];
-                this._changeInputIndex(1);
-                this._drawInput(sprite.image, letter, this.theme.colorInput);
+                this.changeInputIndex(1);
+                this.drawInput(sprite.image, letter, this.theme.colorInput);
             }
         }
 
-        _delete() {
+        private delete() {
             if (this.inputIndex <= 0) return;
 
             if (this.inputIndex < this.answerLength) {
-                this._drawInput(this.inputs[this.inputIndex].image, "", this.theme.colorInput);
+                this.drawInput(this.inputs[this.inputIndex].image, "", this.theme.colorInput);
             }
 
             this.result = this.result.substr(0, this.result.length - 1);
 
-            this._changeInputIndex(-1);
+            this.changeInputIndex(-1);
         }
 
-        _changeInputIndex(delta: number) {
+        private changeInputIndex(delta: number) {
             this.inputIndex += delta;
             this.frameCount = 0
             this.blink = false;
-            this._updateSelectedInput();
-        }
-
-        show(message: string, answerLength: number) {
-            this.message = message;
-            this.answerLength = answerLength;
-            this.inputIndex = 0;
-
-            keys._setUserEventsEnabled(false);
-            game.pushScene()
-
-            this._draw();
-            this._registerHandlers();
-            this.confirmPressed = false;
-
-            pauseUntil(() => this.confirmPressed);
-
-            game.popScene();
-            keys._setUserEventsEnabled(true);
-
-            return this.result;
+            this.updateSelectedInput();
         }
     }
 
