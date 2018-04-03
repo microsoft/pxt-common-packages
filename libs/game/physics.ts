@@ -64,8 +64,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
     collisions() {
         // 2: refresh non-ghost collision map
         const colliders = this.sprites.filter(sprite => !(sprite.flags & sprites.Flag.Ghost));
-        // collect any sprite with a collection handler
-        const collisioners = colliders;
+        // collect any non-obstacle sprite with a collection handlee
+        const collisioners = colliders.filter(sprite => !(sprite.flags & sprites.Flag.Obstacle));
         // for low number of sprites, just iterate through them
         if (collisioners.length < Math.sqrt(colliders.length)) {
             // not enough sprite, just brute force it
