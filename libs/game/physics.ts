@@ -113,14 +113,15 @@ class ArcadePhysicsEngine extends PhysicsEngine {
      * @param sprite
      * @param layer
      */
-    overlaps(sprite: Sprite, layer: number): Sprite[] {
+    overlaps(sprite: Sprite): Sprite[] {
         if (this.map)
-            return this.map.overlaps(sprite, layer);
+            return this.map.overlaps(sprite);
         else {
+            const layer = sprite.layer;
             const r: Sprite[] = [];
             const n = this.sprites.length;
             for (let i = 0; i < n; ++i) {
-                if ((!layer || !!(layer & this.sprites[i].layer))
+                if ((layer & this.sprites[i].layer)
                     && sprite.overlapsWith(this.sprites[i]))
                     r.push(this.sprites[i]);
             }

@@ -57,7 +57,7 @@ class Sprite {
         this.ay = 0
         this.flags = 0
         this._image = img
-        this.layer = 0
+        this.layer = ~0; // member of all layers by default
         this.life = -1
     }
 
