@@ -10,6 +10,8 @@ enum KeyEvent {
  */
 //% weight=97 color="#5B0F4D" icon="\uf11b"
 namespace keys {
+    let _userEventsEnabled = true;
+
     //% fixedInstances
     export class Key {
         id: number
@@ -23,16 +25,28 @@ namespace keys {
             control.internalOnEvent(INTERNAL_KEY_UP, this.id, () => {
                 if (this._pressed) {
                     this._pressed = false
-                    control.raiseEvent(KEY_UP, this.id)
-                    control.raiseEvent(KEY_UP, 0)
+                    if (_userEventsEnabled) {
+                        control.raiseEvent(KEY_UP, this.id)
+                        control.raiseEvent(KEY_UP, 0)
+                    }
+                    else {
+                        control.raiseEvent(SYSTEM_KEY_UP, this.id)
+                        control.raiseEvent(SYSTEM_KEY_UP, 0)
+                    }
                 }
             }, 16)
             control.internalOnEvent(INTERNAL_KEY_DOWN, this.id, () => {
                 if (!this._pressed) {
                     this._pressed = true
                     this.checked = false
-                    control.raiseEvent(KEY_DOWN, this.id)
-                    control.raiseEvent(KEY_DOWN, 0)
+                    if (_userEventsEnabled) {
+                        control.raiseEvent(KEY_DOWN, this.id)
+                        control.raiseEvent(KEY_DOWN, 0)
+                    }
+                    else {
+                        control.raiseEvent(SYSTEM_KEY_DOWN, this.id)
+                        control.raiseEvent(SYSTEM_KEY_UP, 0)
+                    }
                 }
             }, 16)
             if (buttonId && upid && downid) {
@@ -59,7 +73,7 @@ namespace keys {
             control.waitForEvent(event, this.id)
         }
 
-        /** 
+        /**
          * Indicates if the key is currently pressed
         */
         //% weight=96 blockGap=8
@@ -68,7 +82,7 @@ namespace keys {
             return this._pressed
         }
 
-        /** 
+        /**
          * Indicates if the key was pressed since the last call
         */
         //% weight=95
@@ -128,5 +142,9 @@ namespace keys {
     //% blockId=keypauseuntilanykey block="pause until any key"
     export function pauseUntilAnyKey() {
         control.waitForEvent(KEY_DOWN, 0)
+    }
+
+    export function _setUserEventsEnabled(enabled: boolean) {
+        _userEventsEnabled = enabled;
     }
 }
