@@ -5,9 +5,10 @@ Give the speaker a period of time to not play any sound.
 ```sig
 music.rest(400);
 ```
+
 ## #simnote
 #### ~hint
-**Sim**: ``||rest||`` works on the @boardname@. It might not work in the simulator on every browser.
+**Simulator**: ``||music:rest||`` works on the @boardname@. It might not work in the simulator on every browser.
 #### ~
 
 ## Parameters

@@ -8,9 +8,7 @@ music.setTone(null)
 
 ## #simnote
 #### ~hint
-**Simulator**
-
-``||set Tone||`` works on the @boardname@. It might not work in the simulator on every browser.
+**Simulator**: ``||music:set tone||`` works on the @boardname@. It might not work in the simulator on every browser.
 #### ~
 
 ## Parameters

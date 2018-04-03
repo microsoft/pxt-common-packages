@@ -18,12 +18,11 @@ can use these sounds to make actions with the @boardname@ seem more interesting.
 
 ## Example #example
 
-Play the ``magic wand`` sound when you shake the @boardname@.
+Set a variable for the ``wand sound``. Play the sound set in the variable.
 
 ```blocks
-input.onGesture(Gesture.Shake, () => {
-    music.playSound(music.sounds(Sounds.MagicWand))
-})
+let wandSound = music.sounds(Sounds.MagicWand); 
+music.playSoundUntilDone(wandSound)
 ```
 
 ## See also #seealso
@@ -33,6 +32,5 @@ input.onGesture(Gesture.Shake, () => {
 [Composing sounds](/reference/music/composing-sounds)
 
 ```package
-accelerometer
 music
 ```

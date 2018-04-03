@@ -7,7 +7,7 @@ music.noteFrequency(Note.C)
 ```
 ## Parameters
 
-* ``name`` is the [note](/types/note) you want to use.
+* ``name`` is the name of the **Note** you want a frequency value for.
 
 ## Returns
 * a [number](/types/number) that is the frequency (in [Hertz](https://wikipedia.org/wiki/Hertz))

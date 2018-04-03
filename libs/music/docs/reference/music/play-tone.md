@@ -5,9 +5,10 @@ Play a musical tone on the speaker for some amount of time.
 ```sig
 music.playTone(Note.C, 10)
 ```
+
 ## #simnote
 #### ~hint
-**Sim**: ``||play tone||`` works on the @boardname@. It might not work in the simulator on every browser.
+**Simulator**: ``||music:play tone||`` works on the @boardname@. It might not work in the simulator on every browser.
 #### ~
 
 ## Parameters

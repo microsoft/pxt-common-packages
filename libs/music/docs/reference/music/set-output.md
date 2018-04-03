@@ -5,14 +5,12 @@ Set the sound output to the speaker or to a pin.
 ```sig
 music.setOutput(SoundOutputDestination.Speaker)
 ```
-When your board has a speaker or analog output pins, you can play sounds on them. Use ``||set output||``
+When your board has a speaker or analog output pins, you can play sounds on them. Use ``||music:set output||``
 to choose where you want to play your sounds.
 
 ## #simnote
 ### ~hint
-**Simulator**
-
-``||set output||`` works on the @boardname@. It might not work in the simulator on every browser.
+**Simulator**: ``||music:set output||`` works on the @boardname@. It might not work in the simulator on every browser.
 ### ~
 
 ## Parameters

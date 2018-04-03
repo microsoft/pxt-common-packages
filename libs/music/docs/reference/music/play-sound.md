@@ -20,9 +20,7 @@ music.playSound(music.sounds(Sounds.JumpUp))
 
 ## #simnote
 #### ~hint
-**Simulator**
-
-``||music:play sound||`` works on the @boardname@. It might not work in the simulator on every browser.
+**Simulator**: ``||music:play sound||`` works on the @boardname@. It might not work in the simulator on every browser.
 #### ~
 
 ## Parameters
@@ -34,13 +32,11 @@ music.playSound(music.sounds(Sounds.JumpUp))
 
 ### My sound string #ex1
 
-Play a sound made with 5 notes and show green pixels. The pixels light up before the sound
-finishes.
+Make a sound string that has 5 notes. Play the sound string and and finish the program.
 
 ```blocks
 let mySound = "g5:1 f e d c";
 music.playSound(mySound);
-light.createStrip().setAll(Colors.Green);
 ```
 ### I'll play BaDing #ex2
 
@@ -60,5 +56,4 @@ music.playSound(music.sounds(Sounds.BaDing))
 
 ```package
 music
-light
 ```

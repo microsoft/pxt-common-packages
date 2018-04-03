@@ -9,10 +9,10 @@ music.ringTone(0);
 
 ## #simnote
 ### ~hint
-**Sim**: ``||ring tone||`` works on the @boardname@. It might not work in the simulator on every browser.
+**Simulator**: ``||music:ring tone||`` works on the @boardname@. It might not work in the simulator on every browser.
 ### ~
 
-The tone will keep playing until you stop it with [``||stop all sounds||``](/reference/music/stop-all-sounds).
+The tone will keep playing until you stop it with [``||music:stop all sounds||``](/reference/music/stop-all-sounds).
 
 ## Parameters
 
@@ -22,17 +22,22 @@ number is in **Hz** (**Hertz**), which is a measurement of frequency (_pitch_).
 
 ## Example #example
 
-This program checks the **accelerometer** for the @boardname@'s
-[**acceleration**](/reference/input#acceleration) (how much the @boardname@ is speeding up or slowing
-down). Then it uses that acceleration to set the frequency of a tone.
-
-If the movement of @boardname@
-speeds up, the pitch of the tone gets higher. If it slows down, the
-pitch gets lower. It's fun -- try it!
+Play a tone with a base frequency of ``440`` but change it by ``20`` Hertz steps both up and down.
 
 ```blocks
-forever(() => {
-    music.ringTone(input.acceleration(Dimension.X));
+let offset = 0
+offset = -100
+forever(function () {
+    while (offset < 100) {
+        offset += 20
+        music.ringTone(440 + offset)
+        pause(300)
+    }
+    while (offset > -100) {
+        offset += -20
+        music.ringTone(440 + offset)
+        pause(300)
+    }
 })
 ```
 
@@ -43,6 +48,5 @@ forever(() => {
 [change tempo by](/reference/music/change-tempo-by)
 
 ```package
-accelerometer
 music
 ```

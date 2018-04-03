@@ -12,9 +12,7 @@ Not all of the pins on your board are output pins or can play sound.
 
 ## #simnote
 ### ~hint
-**Simulator**
-
-``||set Pitch Pin||`` works on the @boardname@. It might not work in the simulator on every browser.
+**Simulator**: ``||music:set pitch pin||`` works on the @boardname@. It might not work in the simulator on every browser.
 ### ~
 
 ## Parameters
@@ -38,3 +36,7 @@ music.playTone(
 ## See also #seealso
 
 [set output](/reference/music/set-output)
+
+```package
+music
+```
