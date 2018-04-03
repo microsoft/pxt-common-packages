@@ -192,20 +192,6 @@ namespace game {
     }
 
     /**
-     * Moves the background by the given value
-     * @param dx
-     * @param dy
-     */
-    //% group="Background"
-    //% weight=20
-    //% blockId=backgroundmove block="move background dx %dx dy %dy"
-    export function moveBackground(dx: number, dy: number) {
-        init();
-        scene.background.viewX += dx;
-        scene.background.viewY += dy;
-    }
-
-    /**
      * Sets the map for rendering tiles
      * @param map
      */
