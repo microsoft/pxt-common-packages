@@ -20,7 +20,7 @@ class PhysicsEngine {
      */
     collisions() { }
 
-    overlaps(sprite: Sprite, spriteType: number): Sprite[] { return []; }
+    overlaps(sprite: Sprite): Sprite[] { return []; }
 }
 
 /**
@@ -77,7 +77,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
         // 3: go through sprite and handle collisions
         for (const sprite of collisioners) {
-            const overSprites = game.scene.physicsEngine.overlaps(sprite, 0);
+            const overSprites = game.scene.physicsEngine.overlaps(sprite);
             for (const o of overSprites) {
                 // move to avoid collisions                                
                 if (o.flags & sprites.Flag.Obstacle) {
