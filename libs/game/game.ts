@@ -30,22 +30,27 @@ namespace game {
             game.setBackgroundColor(0)
             // update sprites in tilemap
             this.eventContext.registerFrameHandler(9, () => {
-                if(this.tileMap) this.tileMap.update();
+                if (this.tileMap) this.tileMap.update();
             })
-            // update sprites
+            // apply physics 10
             this.eventContext.registerFrameHandler(10, () => {
                 const dt = this.eventContext.deltaTime;
-                this.physicsEngine.update(dt);
+                this.physicsEngine.move(dt);
+            })
+            // user update 20
+            // apply collisions 30
+            this.eventContext.registerFrameHandler(30, () => {
+                const dt = this.eventContext.deltaTime;
+                this.physicsEngine.collisions();
                 for (const s of this.allSprites)
                     s.__update(dt);
             })
-            // update 20
-            // render background
+            // render background 60
             this.eventContext.registerFrameHandler(60, () => {
                 this.background.render();
             })
             // paint 75
-            // render sprites
+            // render sprites 90
             this.eventContext.registerFrameHandler(90, () => {
                 if (scene.flags & Flag.NeedsSorting)
                     this.allSprites.sort(function (a, b) { return a.z - b.z || a.id - b.id; })
@@ -244,7 +249,7 @@ namespace game {
         control.pushEventContext();
         showDialog(title, subtitle, "A = OK, B = CANCEL");
         let answer: boolean = null;
-        keys.A.onEvent(KeyEvent.Pressed, () => answer = true );
+        keys.A.onEvent(KeyEvent.Pressed, () => answer = true);
         keys.B.onEvent(KeyEvent.Pressed, () => answer = false);
         pauseUntil(() => answer !== null);
         control.popEventContext();

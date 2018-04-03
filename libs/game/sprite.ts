@@ -2,7 +2,9 @@ enum SpriteFlag {
     //% block="ghost"
     Ghost = sprites.Flag.Ghost,
     //% block="auto destroy"
-    AutoDestroy = sprites.Flag.AutoDestroy
+    AutoDestroy = sprites.Flag.AutoDestroy,
+    //% block="obstacle"
+    Obstacle = sprites.Flag.Obstacle
 }
 
 /**
@@ -16,7 +18,7 @@ class Sprite {
     //% group="Properties"
     //% blockCombine block="y"
     y: number
-    _z: number
+    private _z: number
     //% group="Properties"
     //% blockCombine block="vx"
     vx: number
@@ -55,7 +57,7 @@ class Sprite {
         this.ay = 0
         this.flags = 0
         this._image = img
-        this.layer = 0
+        this.layer = 1; // member of layer 1 by default
         this.life = -1
     }
 
@@ -201,16 +203,6 @@ class Sprite {
         if ((this.flags & sprites.Flag.AutoDestroy)
             && this.isOutOfScreen()) {
             this.destroy()
-        }
-    }
-
-    __computeOverlaps() {
-        const oh = this.overlapHandler;
-        if (oh) {
-            for (let o of game.scene.physicsEngine.overlaps(this, 0)) {
-                let tmp = o
-                control.runInParallel(() => oh(tmp))
-            }
         }
     }
 

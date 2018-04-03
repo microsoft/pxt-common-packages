@@ -1,10 +1,10 @@
 namespace tiles {
     class Tile {
         image: Image;
-        collisions: boolean;
+        obstacle: boolean;
         constructor(image: Image, collisions: boolean) {
             this.image = image;
-            this.collisions = collisions;
+            this.obstacle = collisions;
         }
     }
     
@@ -42,6 +42,7 @@ namespace tiles {
             this._tileSprites = [];
             this._offsetX = 0;
             this._offsetY = 0;
+            this._layer = 1;
             this.destroy();
         }
     
@@ -134,8 +135,10 @@ namespace tiles {
                         const tileSprite = new TileSprite(x, y, index, sprites.create(tile.image));
                         tileSprite.sprite.layer = this._layer;
                         tileSprite.sprite.z = -1;
-                        if (!tile.collisions)
+                        if (!tile.obstacle)
                             tileSprite.sprite.setFlag(SpriteFlag.Ghost, true)
+                        else    
+                            tileSprite.sprite.setFlag(SpriteFlag.Obstacle, true);
                         this._tileSprites.push(tileSprite);
                     }
                 }

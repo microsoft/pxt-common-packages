@@ -13,10 +13,11 @@ namespace sprites {
         /**
          * Returns a potential list of neighbors
          */
-        neighbors(sprite: Sprite, layer: number): Sprite[] {
+        neighbors(sprite: Sprite): Sprite[] {
             if (this.isOob(sprite)) return [];
 
             const n: Sprite[] = [];
+            const layer = sprite.layer;
             this.mergeAtKey(sprite.left, sprite.top, layer, n)
             this.mergeAtKey(sprite.left, sprite.bottom, layer, n)
             this.mergeAtKey(sprite.right, sprite.top, layer, n)
@@ -29,8 +30,8 @@ namespace sprites {
          * Gets the overlaping sprites if any
          * @param sprite 
          */
-        overlaps(sprite: Sprite, layer: number): Sprite[] {
-            const n = this.neighbors(sprite, layer);
+        overlaps(sprite: Sprite): Sprite[] {
+            const n = this.neighbors(sprite);
             const o = n.filter(neighbor => sprite.overlapsWith(neighbor));
             return o;
         }
@@ -109,7 +110,7 @@ namespace sprites {
             const bucket = this.buckets[k];
             if (bucket) {
                 for (const sprite of bucket)
-                    if ((!layer || !!(sprite.layer & layer))
+                    if ((sprite.layer & layer)
                         && n.indexOf(sprite) < 0)
                         n.push(sprite);
             }
