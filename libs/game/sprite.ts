@@ -74,9 +74,7 @@ class Sprite {
      * Sets the image on the sprite
      */
     //% group="Properties"
-    //% blockId=spritesetimage block="set %sprite image to %img"
-    //% img.fieldEditor="sprite"
-    //% img.fieldOptions.taggedTemplate="img"
+    //% blockId=spritesetimage block="set %sprite image to %img=screen_image_picker"
     setImage(img: Image) {
         if (!img) return; // don't break the sprite
         this._image = img;
