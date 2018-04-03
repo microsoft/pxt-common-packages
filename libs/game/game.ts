@@ -222,6 +222,17 @@ namespace game {
         scene.tileMap.setTile(index, img, !!collisions);
     }
 
+    /**
+     * The game camera follows a particular sprite
+     * @param sprite 
+     */
+    //% blockId=camerafollow block="camera follow %sprite=variables_get"
+    //% group="Tiles"
+    export function cameraFollowSprite(sprite: Sprite) {
+        init();
+        game.scene.camera.sprite = sprite;
+    }
+
     function showDialogBackground(h: number, c: number) {
         const top = (screen.height - h) >> 1;
         if (screen.isMono) {
