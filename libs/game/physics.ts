@@ -13,7 +13,7 @@ class PhysicsEngine {
     draw() { }
 
     /** Apply physics */
-    move(dt: number) {}
+    move(dt: number) { }
 
     /**
      * Apply collisions
@@ -60,12 +60,12 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             s.y += (ovy + s.vy) * dt2;
         }
     }
-    
+
     collisions() {
         // 2: refresh non-ghost collision map
         const colliders = this.sprites.filter(sprite => !(sprite.flags & sprites.Flag.Ghost));
         // collect any sprite with a collection handler
-        const collisioners = colliders.filter(sprite => !(sprite.flags & sprites.Flag.Obstacle));
+        const collisioners = colliders;
         // for low number of sprites, just iterate through them
         if (collisioners.length < Math.sqrt(colliders.length)) {
             // not enough sprite, just brute force it
@@ -84,19 +84,20 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     const xdiff = Math.abs(sprite.x - o.x);
                     const ydiff = Math.abs(sprite.y - o.y);
                     if (ydiff > xdiff) {
-                        if (sprite.bottom > o.top && sprite.bottom < o.bottom) {
+                        if (sprite.bottom - o.top < o.bottom - sprite.top) {
                             sprite.bottom = o.top;
                         } else {
                             sprite.top = o.bottom;
                         }
                     } else {
-                        if (sprite.right > o.left && sprite.right < o.right) {
+                        if (sprite.right - o.left < o.right - sprite.left) {
                             sprite.right = o.left;
                         } else {
                             sprite.left = o.right;
                         }
                     }
                 }
+                
                 // overlap handler
                 const oh = sprite.overlapHandler;
                 if (oh) {
