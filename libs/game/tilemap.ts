@@ -42,6 +42,7 @@ namespace tiles {
             this._tileSprites = [];
             this._offsetX = 0;
             this._offsetY = 0;
+            this._layer = 1;
             this.destroy();
         }
     
