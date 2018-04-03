@@ -26,7 +26,7 @@ namespace tiles {
         tileWidth: number;
         tileHeight: number;
 
-        private _needsUpdate: boolean;
+        needsUpdate: boolean;
         private _layer: number;
 
         private _map: Image;
@@ -45,11 +45,11 @@ namespace tiles {
         }
 
         offsetX(value: number) {
-            return Math.min(0, Math.max(this._map.width * this.tileWidth - screen.width, value));
+            return Math.max(0, Math.min(this._map.width * this.tileWidth - screen.width, value));
         }
 
         offsetY(value: number) {
-            return Math.min(0, Math.max(this._map.height * this.tileHeight - screen.height, value));
+            return Math.max(0, Math.min(this._map.height * this.tileHeight - screen.height, value));
         }
 
         get layer(): number {
@@ -57,14 +57,17 @@ namespace tiles {
         }
 
         set layer(value: number) {
-            this._layer = value;
-            this._tileSprites.forEach(sp => sp.sprite.layer = this._layer);
+            if (this._layer != value) {
+                this._layer = value;
+                this._tileSprites.forEach(sp => sp.sprite.layer = this._layer);
+                this.needsUpdate = true;
+            }
         }
 
         setTile(index: number, img: Image, collisions: boolean) {
             if (index < 0 || index > 0xf) return;
             this._tiles[index] = new Tile(img, collisions);
-            this._needsUpdate;
+            this.needsUpdate = true;
         }
 
         setMap(map: Image) {
@@ -75,25 +78,34 @@ namespace tiles {
         render(camera: game.Camera) {
             if (!this._map) return;
             if (game.debug) {
-                const offsetX = camera.offsetX;
-                const offsetY = camera.offsetY;
+                const offsetX = -camera.offsetX;
+                const offsetY = -camera.offsetY;
                 const x0 = Math.max(0, Math.floor(-offsetX / this.tileWidth));
                 const xn = Math.min(this._map.width, Math.ceil((-offsetX + screen.width) / this.tileWidth));
                 const y0 = Math.max(0, Math.floor(-offsetY / this.tileHeight));
                 const yn = Math.min(this._map.height, Math.ceil((-offsetY + screen.height) / this.tileHeight));
                 for (let x = x0; x <= xn; ++x) {
-                    screen.drawLine(x * this.tileWidth + offsetX, offsetY, x * this.tileWidth + offsetX, this._map.height * this.tileHeight + offsetY, 1)
+                    screen.drawLine(
+                        x * this.tileWidth + offsetX,
+                        offsetY,
+                        x * this.tileWidth + offsetX,
+                        this._map.height * this.tileHeight + offsetY, 1)
                 }
                 for (let y = y0; y <= yn; ++y) {
-                    screen.drawLine(offsetX, y * this.tileHeight + offsetY, this.tileWidth * this._map.width + offsetX, y * this.tileHeight + offsetY, 1)
+                    screen.drawLine(
+                        offsetX,
+                        y * this.tileHeight + offsetY,
+                        this.tileWidth * this._map.width + offsetX,
+                        y * this.tileHeight + offsetY,
+                        1)
                 }
             }
         }
 
         public update(camera: game.Camera) {
-            if (!this._map || !this._needsUpdate) return;
+            if (!this._map || !this.needsUpdate) return;
 
-            this._needsUpdate = false;
+            this.needsUpdate = false;
 
             // remove outofbounds sprites
             this._tileSprites = this._tileSprites.filter(ts => {
@@ -105,16 +117,16 @@ namespace tiles {
             });
 
             // compute visible area
-            const offsetX = camera.offsetX;
-            const offsetY = camera.offsetY;
+            const offsetX = -camera.offsetX;
+            const offsetY = -camera.offsetY;
             const x0 = Math.max(0, Math.floor(-offsetX / this.tileWidth));
             const xn = Math.min(this._map.width, Math.ceil((-offsetX + screen.width) / this.tileWidth));
             const y0 = Math.max(0, Math.floor(-offsetY / this.tileHeight));
             const yn = Math.min(this._map.height, Math.ceil((-offsetY + screen.height) / this.tileHeight));
 
             // add missing sprites
-            for (let x = x0; x < xn; ++x) {
-                for (let y = y0; y < yn; ++y) {
+            for (let x = x0; x <= xn; ++x) {
+                for (let y = y0; y <= yn; ++y) {
                     const index = this._map.getPixel(x, y);
                     const tile = this._tiles[index];
                     if (tile && !this._tileSprites.some(ts => ts.x == x && ts.y == y)) {
@@ -137,7 +149,7 @@ namespace tiles {
             // delete previous sprites
             this._tileSprites.forEach(sp => sp.sprite.destroy());
             this._tileSprites = [];
-            this._needsUpdate = true;
+            this.needsUpdate = true;
         }
     }
 }
