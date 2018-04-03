@@ -60,13 +60,13 @@ namespace game {
             this.flags = 0;
             this.physicsEngine = new ArcadePhysicsEngine();
             this.camera = new Camera();
+            this.background = new Background(this.camera);
         }
 
         init() {
             if (this.allSprites) return;
 
             this.allSprites = [];
-            this.background = new Background();
             game.setBackgroundColor(0)
             // update sprites in tilemap
             this.eventContext.registerFrameHandler(9, () => {
