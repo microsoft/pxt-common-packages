@@ -16,6 +16,10 @@ class Sprite {
     //% group="Properties"
     //% blockCombine block="y"
     y: number
+    // previous x position
+    ox: number;
+    // previous y position
+    oy: number;
     _z: number
     //% group="Properties"
     //% blockCombine block="vx"
@@ -201,16 +205,6 @@ class Sprite {
         if ((this.flags & sprites.Flag.AutoDestroy)
             && this.isOutOfScreen()) {
             this.destroy()
-        }
-    }
-
-    __computeOverlaps() {
-        const oh = this.overlapHandler;
-        if (oh) {
-            for (let o of game.scene.physicsEngine.overlaps(this, 0)) {
-                let tmp = o
-                control.runInParallel(() => oh(tmp))
-            }
         }
     }
 

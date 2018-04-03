@@ -48,8 +48,10 @@ class ArcadePhysicsEngine extends PhysicsEngine {
     update(dt: number) {
         const dt2 = dt / 2;
 
-        // update sprite positions
+        // 1: move sprites
         for (let s of this.sprites) {
+            s.ox = s.x;
+            s.oy = s.y;
             const ovx = s.vx;
             const ovy = s.vy;
             s.vx += s.ax * dt
@@ -58,7 +60,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             s.y += (ovy + s.vy) * dt2;
         }
 
-        // update physics of non-ghosts
+        // 2: refresh non-ghost collision map
         const colliders = this.sprites.filter(sprite => !(sprite.flags & sprites.Flag.Ghost));
         // collect any sprite with a collection handler
         const collisioners = colliders.filter(sprite => !!sprite.overlapHandler);
@@ -71,9 +73,17 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             this.map.update(colliders);
         }
 
-        // queue collision handlers
-        for (const sprite of collisioners)
-            sprite.__computeOverlaps();
+        // 3: go through sprite and handle collisions
+        for (const sprite of collisioners) {
+            const oh = sprite.overlapHandler;
+            if (oh) {
+                const overSprites = game.scene.physicsEngine.overlaps(sprite, 0);
+                for (let o of overSprites) {
+                    let tmp = o
+                    control.runInParallel(() => oh(tmp))
+                }
+            }                
+        }
     }
 
     /**
