@@ -81,21 +81,20 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             for (const o of overSprites) {
                 // move to avoid collisions                                
                 if (o.flags & sprites.Flag.Obstacle) {
-                    const xdiff = Math.abs(sprite.x - o.x);
-                    const ydiff = Math.abs(sprite.y - o.y);
-                    if (ydiff > xdiff) {
-                        if (sprite.bottom - o.top < o.bottom - sprite.top) {
-                            sprite.bottom = o.top;
-                        } else {
-                            sprite.top = o.bottom;
-                        }
-                    } else {
-                        if (sprite.right - o.left < o.right - sprite.left) {
-                            sprite.right = o.left;
-                        } else {
-                            sprite.left = o.right;
-                        }
-                    }
+                    // find the shortest distance into the obstacle
+                    let toperr = sprite.bottom - o.top; if (toperr < 0) toperr = 1 << 30;
+                    let bottomerr = o.bottom - sprite.top; if (bottomerr < 0) bottomerr = 1 << 30;
+                    let lefterr = sprite.right - o.left; if (lefterr < 0) lefterr = 1 << 30;
+                    let righterr = o.right - sprite.left; if (righterr < 0) righterr = 1 << 30;
+                    const min = Math.min(toperr, Math.min(bottomerr, Math.min(lefterr, righterr)));
+                    if (toperr == min)
+                        sprite.bottom = o.top;
+                    else if (bottomerr == min)
+                        sprite.top = o.bottom;
+                    else if (lefterr == min)
+                        sprite.right = o.left;
+                    else 
+                        sprite.left = o.right;
                 }
                 
                 // overlap handler
