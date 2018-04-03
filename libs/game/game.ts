@@ -7,9 +7,26 @@ namespace game {
     export class Camera {
         offsetX: number;
         offsetY: number;
+        sprite: Sprite;
+
         constructor() {
             this.offsetX = 0;
             this.offsetY = 0;
+        }
+
+        update() {
+            // if sprite, follow sprite
+            if (this.sprite) {
+                this.offsetX = this.sprite.x - (screen.width >> 1);
+                this.offsetY = this.sprite.y - (screen.height >> 1);
+            }
+            console.log(`camera x ${this.offsetX} ${this.offsetY}`)
+
+            // don't escape tile map
+            //if (game.scene.tileMap) {
+            //    this.offsetX = game.scene.tileMap.offsetX(this.offsetX);
+            //    this.offsetY = game.scene.tileMap.offsetY(this.offsetY);
+            //}
         }
     }
 
@@ -41,7 +58,8 @@ namespace game {
             game.setBackgroundColor(0)
             // update sprites in tilemap
             this.eventContext.registerFrameHandler(9, () => {
-                if (this.tileMap) this.tileMap.update(scene.camera);
+                if (this.tileMap) 
+                    this.tileMap.update(scene.camera);
             })
             // apply physics 10
             this.eventContext.registerFrameHandler(10, () => {
@@ -50,12 +68,13 @@ namespace game {
             })
             // user update 20
             // apply collisions 30
-            this.eventContext.registerFrameHandler(30, () => {
+            this.eventContext.registerFrameHandler(30, () => {                
                 const dt = this.eventContext.deltaTime;
+                this.camera.update(); 
                 this.physicsEngine.collisions();
                 for (const s of this.allSprites)
                     s.__update(this.camera, dt);
-            })
+            })            
             // render background 60
             this.eventContext.registerFrameHandler(60, () => {
                 this.background.render();
