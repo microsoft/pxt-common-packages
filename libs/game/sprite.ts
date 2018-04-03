@@ -167,41 +167,45 @@ class Sprite {
      * Indicates if the sprite is outside the screen
      */
     //%
-    isOutOfScreen(): boolean {
-        return this.right < 0 || this.bottom < 0 || this.left > screen.width || this.top > screen.height;
+    isOutOfScreen(camera: game.Camera): boolean {
+        const ox = camera.offsetX;
+        const oy = camera.offsetY;
+        return this.right - ox < 0 || this.bottom - oy < 0 || this.left - ox > screen.width || this.top - oy > screen.height;
     }
 
-    __draw() {
-        if (this.isOutOfScreen()) return;
+    __draw(camera: game.Camera) {
+        if (this.isOutOfScreen(camera)) return;
 
-        screen.drawTransparentImage(this._image, this.left, this.top)
+        const l = this.left - camera.offsetX;
+        const t = this.top - camera.offsetY;
+        screen.drawTransparentImage(this._image, l, t)
         // say text
         if (this._say && (this._sayExpires < 0 || this._sayExpires > control.millis())) {
             screen.fillRect(
-                this.right,
-                this.top - image.font5.charHeight - 2,
+                l,
+                t - image.font5.charHeight - 2,
                 this._say.length * image.font5.charWidth + 2,
                 image.font5.charHeight + 4,
                 1);
             screen.print(this._say,
-                this.right + 2,
-                this.top - image.font5.charHeight,
+                l + 2,
+                t - image.font5.charHeight,
                 15,
                 image.font5);
         }
         // debug info
         if (game.debug)
-            screen.drawRect(this.left, this.top, this.width, this.height, 3);
+            screen.drawRect(l, t, this.width, this.height, 3);
     }
 
-    __update(dt: number) {
+    __update(camera: game.Camera, dt: number) {
         if (this.life > 0) {
             this.life--;
             if (this.life <= 0)
                 this.destroy();
         }
         if ((this.flags & sprites.Flag.AutoDestroy)
-            && this.isOutOfScreen()) {
+            && this.isOutOfScreen(camera)) {
             this.destroy()
         }
     }

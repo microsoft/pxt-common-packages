@@ -4,6 +4,15 @@
 //% color=#008272 weight=99 icon="\uf111"
 //% groups='["Gameplay", "Background", "Tiles"]'
 namespace game {
+    export class Camera {
+        offsetX: number;
+        offsetY: number;
+        constructor() {
+            this.offsetX = 0;
+            this.offsetY = 0;
+        }
+    }
+
 
     export class Scene {
         eventContext: control.EventContext;
@@ -11,6 +20,7 @@ namespace game {
         tileMap: tiles.TileMap;
         allSprites: Sprite[];
         physicsEngine: PhysicsEngine;
+        camera: Camera;
         flags: number;
 
         paintCallback: () => void;
@@ -20,6 +30,7 @@ namespace game {
             this.eventContext = eventContext;
             this.flags = 0;
             this.physicsEngine = new ArcadePhysicsEngine();
+            this.camera = new Camera();
         }
 
         init() {
@@ -30,7 +41,7 @@ namespace game {
             game.setBackgroundColor(0)
             // update sprites in tilemap
             this.eventContext.registerFrameHandler(9, () => {
-                if (this.tileMap) this.tileMap.update();
+                if (this.tileMap) this.tileMap.update(scene.camera);
             })
             // apply physics 10
             this.eventContext.registerFrameHandler(10, () => {
@@ -43,7 +54,7 @@ namespace game {
                 const dt = this.eventContext.deltaTime;
                 this.physicsEngine.collisions();
                 for (const s of this.allSprites)
-                    s.__update(dt);
+                    s.__update(this.camera, dt);
             })
             // render background 60
             this.eventContext.registerFrameHandler(60, () => {
@@ -55,7 +66,7 @@ namespace game {
                 if (scene.flags & Flag.NeedsSorting)
                     this.allSprites.sort(function (a, b) { return a.z - b.z || a.id - b.id; })
                 for (const s of this.allSprites)
-                    s.__draw();
+                    s.__draw(this.camera);
             })
             // render diagnostics
             this.eventContext.registerFrameHandler(150, () => {
@@ -174,7 +185,7 @@ namespace game {
     export function setTileMap(map: Image) {
         init();
         if (!scene.tileMap)
-            scene.tileMap = new tiles.TileMap(16, 16);
+            scene.tileMap = new tiles.TileMap(scene.camera, 16, 16);
         scene.tileMap.setMap(map);
     }
 
@@ -190,21 +201,8 @@ namespace game {
     export function setTile(index: number, img: Image, collisions?: boolean) {
         init();
         if (!scene.tileMap)
-            scene.tileMap = new tiles.TileMap(img.width, img.height);
+            scene.tileMap = new tiles.TileMap(scene.camera, img.width, img.height);
         scene.tileMap.setTile(index, img, !!collisions);
-    }
-
-    /**
-     * Changes the tilemap offset
-    */
-    //% blockId=gamesettileoffset block="change tile offset by x %x y %y"
-    //% group="Tiles"
-    export function changeTileOffsetBy(dx: number, dy: number) {
-        init();
-        if (!scene.tileMap)
-            scene.tileMap = new tiles.TileMap(16, 16);
-        scene.tileMap.offsetX += dx;
-        scene.tileMap.offsetY += dy;
     }
 
     function showDialogBackground(h: number, c: number) {
