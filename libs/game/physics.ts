@@ -50,8 +50,6 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
         // 1: move sprites
         for (let s of this.sprites) {
-            s.ox = s.x;
-            s.oy = s.y;
             const ovx = s.vx;
             const ovy = s.vy;
             s.vx += s.ax * dt

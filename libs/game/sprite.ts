@@ -18,11 +18,7 @@ class Sprite {
     //% group="Properties"
     //% blockCombine block="y"
     y: number
-    // previous x position
-    ox: number;
-    // previous y position
-    oy: number;
-    _z: number
+    private _z: number
     //% group="Properties"
     //% blockCombine block="vx"
     vx: number

@@ -37,6 +37,7 @@ namespace game {
                 const dt = this.eventContext.deltaTime;
                 for (const s of this.allSprites)
                     s.__update(dt);
+                // run physics after user-moves to apply collisions
                 this.physicsEngine.update(dt);
             })
             // update 20
