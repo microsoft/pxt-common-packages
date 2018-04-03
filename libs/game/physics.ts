@@ -12,10 +12,13 @@ class PhysicsEngine {
 
     draw() { }
 
+    /** Apply physics */
+    move(dt: number) {}
+
     /**
-     * Compute physic information before rendering
+     * Apply collisions
      */
-    update(dt: number) { }
+    collisions() { }
 
     overlaps(sprite: Sprite, spriteType: number): Sprite[] { return []; }
 }
@@ -45,9 +48,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             this.map.draw();
     }
 
-    update(dt: number) {
+    move(dt: number) {
         const dt2 = dt / 2;
-
         // 1: move sprites
         for (let s of this.sprites) {
             const ovx = s.vx;
@@ -57,7 +59,9 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             s.x += (ovx + s.vx) * dt2;
             s.y += (ovy + s.vy) * dt2;
         }
-
+    }
+    
+    collisions() {
         // 2: refresh non-ghost collision map
         const colliders = this.sprites.filter(sprite => !(sprite.flags & sprites.Flag.Ghost));
         // collect any sprite with a collection handler

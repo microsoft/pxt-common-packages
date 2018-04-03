@@ -32,21 +32,25 @@ namespace game {
             this.eventContext.registerFrameHandler(9, () => {
                 if (this.tileMap) this.tileMap.update();
             })
-            // update sprites
+            // apply physics 10
             this.eventContext.registerFrameHandler(10, () => {
                 const dt = this.eventContext.deltaTime;
+                this.physicsEngine.move(dt);
+            })
+            // user update 20
+            // apply collisions 30
+            this.eventContext.registerFrameHandler(30, () => {
+                const dt = this.eventContext.deltaTime;
+                this.physicsEngine.collisions();
                 for (const s of this.allSprites)
                     s.__update(dt);
-                // run physics after user-moves to apply collisions
-                this.physicsEngine.update(dt);
             })
-            // update 20
-            // render background
+            // render background 60
             this.eventContext.registerFrameHandler(60, () => {
                 this.background.render();
             })
             // paint 75
-            // render sprites
+            // render sprites 90
             this.eventContext.registerFrameHandler(90, () => {
                 if (scene.flags & Flag.NeedsSorting)
                     this.allSprites.sort(function (a, b) { return a.z - b.z || a.id - b.id; })
