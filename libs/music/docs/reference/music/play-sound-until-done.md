@@ -35,13 +35,11 @@ music.playSoundUntilDone(music.sounds(Sounds.JumpUp))
 
 ### My sound string #ex1
 
-Play a sound made with 5 notes and show green pixels. and show green pixels. The pixels light up after the sound
-finishes.
+Make a sound string that has 5 notes. Play the sound and wait until it finishes playing.
 
 ```blocks
 let mySound = "g5:1 f e d c";
-music.playSound(mySound);
-light.createStrip().setAll(Colors.Green);
+music.playSoundUntilDone(mySound);
 ```
 
 ### I'll play BaDing #ex2
@@ -61,6 +59,5 @@ music.playSoundUntilDone(music.sounds(Sounds.BaDing))
 [Composing sounds](/reference/music/composing-sounds)
 
 ```package
-light
 music
 ```

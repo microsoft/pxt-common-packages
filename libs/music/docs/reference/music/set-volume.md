@@ -11,12 +11,12 @@ music.setVolume(128)
 
 ## #simnote
 #### ~hint
-**Sim**: ``||set volume||`` works on the @boardname@. It might not work in the simulator on every browser.
+**Simulator**: ``||music:set volume||`` works on the @boardname@. It might not work in the simulator on every browser.
 #### ~
 
 ## Parameters
 
-* ``volume``: the volume of of the sounds played to the sound output. The volume [number](/reference/types) can be between `0` for silent and `255` for the loudest sound.
+* ``volume``: the volume of of the sounds played to the sound output. The volume [number](/types/number) can be between `0` for silent and `255` for the loudest sound.
 
 ## Example #example
 
@@ -31,3 +31,6 @@ music.playSound(music.sounds(Sounds.BaDing))
 
 [play sound](/reference/music/play-sound), [sounds](/reference/music/sounds)
 
+```package
+music
+```

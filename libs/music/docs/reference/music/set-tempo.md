@@ -8,7 +8,7 @@ music.setTempo(60)
 
 ## #simnote
 #### ~hint
-**Sim**: ``||set tempo||`` works on the @boardname@. It might not work in the simulator on every browser.
+**Simulator**: ``||music:set tempo||`` works on the @boardname@. It might not work in the simulator on every browser.
 #### ~
 
 ## Parameters
