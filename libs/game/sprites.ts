@@ -43,10 +43,8 @@ namespace sprites {
      * @param img the image
      */
     //% group="Create"
-    //% blockId=spritescreateobjectsable block="obstacle %img||at x %x y %y"
+    //% blockId=spritescreateobjectsable block="obstacle %img=screen_image_picker||at x %x y %y"
     //% expandableArgumentMode=toggle
-    //% img.fieldEditor="sprite"
-    //% img.fieldOptions.taggedTemplate="img"
     //% blockSetVariable
     //% weight=100
     export function createObstacle(img: Image, x?: number, y?: number) {

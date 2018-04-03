@@ -179,7 +179,7 @@ namespace game {
      * @param index
      * @param img
      */
-    //% blockId=gamesettile block="set tile at %index=colorindexpicker to %img=screen_image_picker||with collisions %collisions=toggleOnOff"
+    //% blockId=gamesettile block="set tile color %index=colorindexpicker to %img=screen_image_picker||with collisions %collisions=toggleOnOff"
     //% group="Tiles"
     export function setTile(index: number, img: Image, collisions?: boolean) {
         init();
