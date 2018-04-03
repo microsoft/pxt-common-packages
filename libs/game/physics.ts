@@ -63,7 +63,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         // 2: refresh non-ghost collision map
         const colliders = this.sprites.filter(sprite => !(sprite.flags & sprites.Flag.Ghost));
         // collect any sprite with a collection handler
-        const collisioners = colliders.filter(sprite => !!sprite.overlapHandler);
+        const collisioners = colliders.filter(sprite => !(sprite.flags & sprites.Flag.Obstacle));
         // for low number of sprites, just iterate through them
         if (collisioners.length < Math.sqrt(colliders.length)) {
             // not enough sprite, just brute force it
@@ -75,14 +75,33 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
         // 3: go through sprite and handle collisions
         for (const sprite of collisioners) {
-            const oh = sprite.overlapHandler;
-            if (oh) {
-                const overSprites = game.scene.physicsEngine.overlaps(sprite, 0);
-                for (let o of overSprites) {
-                    let tmp = o
+            const overSprites = game.scene.physicsEngine.overlaps(sprite, 0);
+            for (const o of overSprites) {
+                // move to avoid collisions                                
+                if (o.flags & sprites.Flag.Obstacle) {
+                    const xdiff = Math.abs(sprite.x - o.x);
+                    const ydiff = Math.abs(sprite.y - o.y);
+                    if (ydiff > xdiff) {
+                        if (sprite.bottom > o.top && sprite.bottom < o.bottom) {
+                            sprite.bottom = o.top;
+                        } else {
+                            sprite.top = o.bottom;
+                        }
+                    } else {
+                        if (sprite.right > o.left && sprite.right < o.right) {
+                            sprite.right = o.left;
+                        } else {
+                            sprite.left = o.right;
+                        }
+                    }
+                }
+                // overlap handler
+                const oh = sprite.overlapHandler;
+                if (oh) {
+                    const tmp = o;
                     control.runInParallel(() => oh(tmp))
                 }
-            }                
+            }
         }
     }
 
@@ -98,7 +117,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             const r: Sprite[] = [];
             const n = this.sprites.length;
             for (let i = 0; i < n; ++i) {
-                if ((!layer || !!(layer & this.sprites[i].layer)) 
+                if ((!layer || !!(layer & this.sprites[i].layer))
                     && sprite.overlapsWith(this.sprites[i]))
                     r.push(this.sprites[i]);
             }

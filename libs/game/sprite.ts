@@ -2,7 +2,9 @@ enum SpriteFlag {
     //% block="ghost"
     Ghost = sprites.Flag.Ghost,
     //% block="auto destroy"
-    AutoDestroy = sprites.Flag.AutoDestroy
+    AutoDestroy = sprites.Flag.AutoDestroy,
+    //% block="obstacle"
+    Obstacle = sprites.Flag.Obstacle
 }
 
 /**

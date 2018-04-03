@@ -29,15 +29,32 @@ namespace sprites {
     //% weight=100
     export function create(img: Image, x?: number, y?: number): Sprite {
         game.init()
-        let spr = new Sprite(img)
-        game.scene.allSprites.push(spr)
-        spr.id = game.scene.allSprites.length
-        game.scene.physicsEngine.addSprite(spr);
+        const sprite = new Sprite(img)
+        game.scene.allSprites.push(sprite)
+        sprite.id = game.scene.allSprites.length
+        game.scene.physicsEngine.addSprite(sprite);
         if (x !== null && x != undefined)
-            spr.x = x;
+            sprite.x = x;
         if (y !== null && y !== undefined)
-            spr.y = y;
-        return spr
+            sprite.y = y;
+        return sprite
+    }
+
+    /**
+     * Creates a new object sprite from an image
+     * @param img the image
+     */
+    //% group="Create"
+    //% blockId=spritescreateobjectsable block="obstacle %img||at x %x y %y"
+    //% expandableArgumentMode=toggle
+    //% img.fieldEditor="sprite"
+    //% img.fieldOptions.taggedTemplate="img"
+    //% blockSetVariable
+    //% weight=100
+    export function createObstacle(img: Image, x?: number, y?: number) {
+        const sprite = create(img, x, y);
+        sprite.flags |= sprites.Flag.Obstacle;
+        return sprite;
     }
 
     /**
@@ -83,5 +100,6 @@ namespace sprites {
         Ghost = 1, // doesn't collide with other sprites
         Destroyed = 2,
         AutoDestroy = 4, // remove the sprite when no longer visible
+        Obstacle = 8, // generate collisions, immovable
     }
 }

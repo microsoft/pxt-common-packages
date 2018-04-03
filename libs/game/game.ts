@@ -30,14 +30,14 @@ namespace game {
             game.setBackgroundColor(0)
             // update sprites in tilemap
             this.eventContext.registerFrameHandler(9, () => {
-                if(this.tileMap) this.tileMap.update();
+                if (this.tileMap) this.tileMap.update();
             })
             // update sprites
             this.eventContext.registerFrameHandler(10, () => {
                 const dt = this.eventContext.deltaTime;
-                this.physicsEngine.update(dt);
                 for (const s of this.allSprites)
                     s.__update(dt);
+                this.physicsEngine.update(dt);
             })
             // update 20
             // render background
@@ -244,7 +244,7 @@ namespace game {
         control.pushEventContext();
         showDialog(title, subtitle, "A = OK, B = CANCEL");
         let answer: boolean = null;
-        keys.A.onEvent(KeyEvent.Pressed, () => answer = true );
+        keys.A.onEvent(KeyEvent.Pressed, () => answer = true);
         keys.B.onEvent(KeyEvent.Pressed, () => answer = false);
         pauseUntil(() => answer !== null);
         control.popEventContext();
