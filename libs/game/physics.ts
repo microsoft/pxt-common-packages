@@ -88,14 +88,22 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     let lefterr = sprite.right - o.left; if (lefterr < 0) lefterr = 1 << 30;
                     let righterr = o.right - sprite.left; if (righterr < 0) righterr = 1 << 30;
                     const min = Math.min(toperr, Math.min(bottomerr, Math.min(lefterr, righterr)));
-                    if (toperr == min)
+                    if (toperr == min) {
                         sprite.bottom = o.top;
-                    else if (bottomerr == min)
+                        if (sprite.vy > 0) sprite.vy = 0;
+                    }
+                    else if (bottomerr == min) {
                         sprite.top = o.bottom;
-                    else if (lefterr == min)
+                        if (sprite.vy < 0) sprite.vy = 0;
+                    }
+                    else if (lefterr == min) {
                         sprite.right = o.left;
-                    else 
+                        if (sprite.vx > 0) sprite.vx = 0;
+                    }
+                    else {
                         sprite.left = o.right;
+                        if (sprite.vx < 0) sprite.vx = 0;
+                    }
                 }
                 
                 // overlap handler
