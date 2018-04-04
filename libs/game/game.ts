@@ -85,6 +85,7 @@ namespace game {
     //% group="Gameplay"
     //% weight=90
     //% blockId=gameSplash block="splash %title||%subtitle"
+    //% group="Prompt"
     export function splash(title: string, subtitle?: string) {
         init();
         control.pushEventContext();
@@ -197,7 +198,7 @@ namespace game {
      */
     //% group="Gameplay"
     //% help=game/update weight=100 afterOnStart=true
-    //% blockId=gameupdate block="game frame"
+    //% blockId=gameupdate block="game update"
     export function update(a: () => void): void {
         init();
         if (!_scene.updateCallback) {
