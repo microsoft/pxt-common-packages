@@ -10,10 +10,10 @@ namespace game {
     export let debug = false;
     export let gameOverSound: () => void = undefined;
 
-    let _scene: scenes.Scene;
-    let _sceneStack: scenes.Scene[];
+    let _scene: scene.Scene;
+    let _sceneStack: scene.Scene[];
 
-    export function scene(): scenes.Scene {
+    export function currentScene(): scene.Scene {
         init();
         return _scene;
     }
@@ -36,7 +36,7 @@ namespace game {
     }
 
     function init() {
-        if (!_scene) _scene = new scenes.Scene(control.pushEventContext());
+        if (!_scene) _scene = new scene.Scene(control.pushEventContext());
         _scene.init();
     }
 
@@ -54,14 +54,6 @@ namespace game {
             _scene = _sceneStack.pop();
             control.popEventContext();
         }
-    }
-
-    //% blockId=colorindexpicker block="%index" blockHidden=true shim=TD_ID
-    //% index.fieldEditor="colornumber"
-    //% index.fieldOptions.valueMode="index"
-    //% index.fieldOptions.colours='["#dedede","#ffffff","#33e2e4","#05b3e0","#3d30ad","#b09eff","#5df51f","#6a8927","#65471f","#98294a","#f80000","#e30ec0","#ff9da5","#ff9005","#efe204","#000000"]'
-    export function _colorIndexPicker(index: number) {
-        return index;
     }
 
     function showDialogBackground(h: number, c: number) {

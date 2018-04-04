@@ -22,7 +22,7 @@ namespace tiles {
     }
 
     export class TileMap {
-        camera: scenes.Camera;
+        camera: scene.Camera;
         tileWidth: number;
         tileHeight: number;
 
@@ -33,7 +33,7 @@ namespace tiles {
         private _tiles: Tile[];
         private _tileSprites: TileSprite[];
 
-        constructor(camera: scenes.Camera, tileWidth: number, tileHeight: number) {
+        constructor(camera: scene.Camera, tileWidth: number, tileHeight: number) {
             this.camera = camera;
             this.tileWidth = tileWidth;
             this.tileHeight = tileHeight;
@@ -83,7 +83,7 @@ namespace tiles {
             return this._tiles[index] = new Tile(img, false);
         }
 
-        render(camera: scenes.Camera) {
+        render(camera: scene.Camera) {
             if (!this._map) return;
             if (game.debug) {
                 const offsetX = -camera.offsetX;
@@ -110,7 +110,7 @@ namespace tiles {
             }
         }
 
-        public update(camera: scenes.Camera) {
+        public update(camera: scene.Camera) {
             if (!this._map || !this.needsUpdate) return;
 
             this.needsUpdate = false;

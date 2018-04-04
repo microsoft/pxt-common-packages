@@ -2,7 +2,7 @@
  * Control the background, tiles and camera
  */
 //% groups='["Background", "Tiles", "Camera"]'
-namespace scenes {
+namespace scene {
     export enum Flag {
         NeedsSorting = 1 << 1,
     }
@@ -13,7 +13,7 @@ namespace scenes {
         tileMap: tiles.TileMap;
         allSprites: Sprite[];
         physicsEngine: PhysicsEngine;
-        camera: scenes.Camera;
+        camera: scene.Camera;
         flags: number;
 
         paintCallback: () => void;
@@ -23,7 +23,7 @@ namespace scenes {
             this.eventContext = eventContext;
             this.flags = 0;
             this.physicsEngine = new ArcadePhysicsEngine();
-            this.camera = new scenes.Camera();
+            this.camera = new scene.Camera();
             this.background = new Background(this.camera);
         }
 
@@ -31,7 +31,7 @@ namespace scenes {
             if (this.allSprites) return;
 
             this.allSprites = [];
-            scenes.setBackgroundColor(0)
+            scene.setBackgroundColor(0)
             // update sprites in tilemap
             this.eventContext.registerFrameHandler(9, () => {
                 if (this.tileMap)

@@ -1,4 +1,4 @@
-namespace scenes {
+namespace scene {
     export class Camera {
         offsetX: number;
         offsetY: number;
@@ -15,7 +15,7 @@ namespace scenes {
         }
 
         update() {
-            const scene = game.scene();
+            const scene = game.currentScene();
 
             // if sprite, follow sprite
             if (this.sprite) {

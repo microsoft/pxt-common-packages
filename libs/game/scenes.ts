@@ -3,7 +3,7 @@
  */
 //% weight=94 color="#401255" icon="\uf1bb"
 //% groups='["Background", "Tiles", "Camera"]'
-namespace scenes {
+namespace scene {
     /**
      * Sets the game background color
      * @param color
@@ -12,7 +12,7 @@ namespace scenes {
     //% weight=25
     //% blockId=gamesetbackgroundcolor block="set background color %color=colorindexpicker"
     export function setBackgroundColor(color: number) {
-        const scene = game.scene();
+        const scene = game.currentScene();
         scene.background.color = color;
     }
 
@@ -25,7 +25,7 @@ namespace scenes {
     //% weight=10
     //% blockId=gameaddbackgroundimage block="add background image %image=screen_image_picker||distance %distance|aligned %alignment"
     export function addBackgroundImage(image: Image, distance?: number, alignment?: BackgroundAlignment) {
-        const scene = game.scene();
+        const scene = game.currentScene();
         if (image)
             scene.background.addLayer(image, distance || 100, alignment || BackgroundAlignment.Bottom);
     }
@@ -37,7 +37,7 @@ namespace scenes {
     //% blockId=gamesettilemap block="set tile map to %map=screen_image_picker"
     //% group="Tiles"
     export function setTileMap(map: Image) {
-        const scene = game.scene();
+        const scene = game.currentScene();
         if (!scene.tileMap)
             scene.tileMap = new tiles.TileMap(scene.camera, 16, 16);
         scene.tileMap.setMap(map);
@@ -51,7 +51,7 @@ namespace scenes {
     //% blockId=gamesettile block="set tile color %index=colorindexpicker to %img=screen_image_picker||with collisions %collisions=toggleOnOff"
     //% group="Tiles"
     export function setTile(index: number, img: Image, collisions?: boolean) {
-        const scene = game.scene();
+        const scene = game.currentScene();
         if (!scene.tileMap)
             scene.tileMap = new tiles.TileMap(scene.camera, img.width, img.height);
         scene.tileMap.setTile(index, img, !!collisions);
@@ -64,7 +64,7 @@ namespace scenes {
     //% blockId=camerafollow block="camera follow %sprite=variables_get"
     //% group="Camera"
     export function cameraFollowSprite(sprite: Sprite) {
-        const scene = game.scene();
+        const scene = game.currentScene();
         scene.camera.sprite = sprite;
     }    
 }
