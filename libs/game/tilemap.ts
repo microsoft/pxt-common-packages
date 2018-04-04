@@ -80,13 +80,6 @@ namespace tiles {
 
             const img = image.create(this.tileWidth, this.tileHeight);
             img.fill(index);
-            const border = [0, 0xf, 3, 2, 3, 4, 7, 8, 7, 0xb, 0xd, 9, 9, 9, 0xd, 1][index];
-            // border
-            img.drawLine(0, 0, img.width - 1, 0, border);
-            img.drawLine(0, img.height - 1, img.width - 1, img.height - 1, border);
-            img.drawLine(0, img.height - 1, img.width - 1, img.height - 1, border);
-            img.drawLine(img.width - 1, 0, img.width - 1, img.height - 1, border);
-            img.drawLine(0, 0, 0, img.height - 1, border);
             return this._tiles[index] = new Tile(img, false);
         }
 
