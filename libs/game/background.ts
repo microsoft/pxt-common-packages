@@ -14,6 +14,7 @@ enum BackgroundAlignment {
 namespace scene {
     export class Background {
         color: number;
+        _image: Image;
         camera: Camera;
         private _layers: BackgroundLayer[];
 
@@ -30,8 +31,20 @@ namespace scene {
             return layer;
         }
 
+        get image() {
+            if (!this._image)
+                this._image = image.create(screen.width, screen.height);
+            return this._image;
+        }
+        
+        set image(image: Image) {
+            this._image = image;
+        }
+
         render() {
             screen.fill(this.color);
+            if (this._image)
+                screen.drawImage(this._image, 0, 0)
             if (this._layers) {
                 this._layers.forEach(layer => {
                     // compute displacement based on distance

@@ -11,7 +11,7 @@ enum TurtlePenMode {
  */
 //% weight=100 color=#0f9c11 icon="\uf188"
 namespace turtle {
-    let _bkg: Sprite;
+    let _bkg: Image;
     let _sprite: Sprite;
     let _color: number = 1;
     let _direction: number = 90; // degrees
@@ -19,10 +19,8 @@ namespace turtle {
     let _delay = 10;
     function init() {
         if (!_sprite) {
-            _bkg = sprites.create(image.create(screen.width, screen.height));
-            _bkg.left = 0;
-            _bkg.top = 0;
-            _bkg.image.fill(turtle.backgroundColor);
+            _bkg = scene.backgroundImage();
+            _bkg.fill(turtle.backgroundColor);
             _sprite = sprites.create(turtle.turtleImage.clone());
         }
     }
@@ -31,7 +29,7 @@ namespace turtle {
      * Moves the turtle for the given amount of pixels
      * @param steps number of steps, eg: 1
      */
-    //% blockId=turtleForward block="forward %steps|steps"
+    //% blockId=turtleForward block="forward %steps steps"
     //% weight=99 blockGap=8
     export function forward(steps: number): void {
         init();
@@ -53,7 +51,7 @@ namespace turtle {
             for (let i = 0; i < n; ++i) {
                 // paint if pen down
                 if (_penMode == TurtlePenMode.Down || _penMode == TurtlePenMode.Erase)
-                    _bkg.image.drawLine(oldX, oldY, _sprite.x, _sprite.y, c)
+                    _bkg.drawLine(oldX, oldY, _sprite.x, _sprite.y, c)
                 // paint and update
                 setPosition(_sprite.x + dx, _sprite.y + dy);
                 // and wait
@@ -69,7 +67,7 @@ namespace turtle {
         _sprite.y = Math.round(firstY + dy * steps);
         // paint if pen down
         if (_penMode == TurtlePenMode.Down || _penMode == TurtlePenMode.Erase)
-            _bkg.image.drawLine(firstX, firstY, _sprite.x, _sprite.y, c)
+            _bkg.drawLine(firstX, firstY, _sprite.x, _sprite.y, c)
         // and wait
         pause(_delay);
     }
@@ -78,7 +76,7 @@ namespace turtle {
      * Moves back by the given number of steps
      * @param steps number of steps to move, eg: 1
      */
-    //% blockId=turtleBack block="back %steps|steps"
+    //% blockId=turtleBack block="back %steps steps"
     //% weight=98 blockGap=8
     export function back(steps: number): void {
         forward(-steps);
@@ -101,7 +99,7 @@ namespace turtle {
      */
     //% x.min=0 x.max=4
     //% y.min=0 y.max=4
-    //% blockId=turtleSetPosition block="set position x: %x|y: %y"
+    //% blockId=turtleSetPosition block="set position x %x y %y"
     //% weight=87
     export function setPosition(x: number, y: number): void {
         init();
@@ -157,10 +155,10 @@ namespace turtle {
      * Stamps the image at the current turtle position
      * @param image 
      */
-    //% _blockId=turtlestamp block="stamp %image"
+    //% _blockId=turtlestamp block="stamp %image=screen_image_picker"
     export function stamp(image: Image) {
         init();        
-        _bkg.image.drawImage(image, _sprite.left + ((_sprite.width - image.width) >> 1), _sprite.top + ((_sprite.height - image.height) >> 1));
+        _bkg.drawImage(image, _sprite.left + ((_sprite.width - image.width) >> 1), _sprite.top + ((_sprite.height - image.height) >> 1));
         pause(_delay);
     }
 }

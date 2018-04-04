@@ -21,20 +21,16 @@ namespace sprites {
      * @param img the image
      */
     //% group="Create"
-    //% blockId=spritescreate block="sprite %img=screen_image_picker||at x %x y %y"
+    //% blockId=spritescreate block="sprite %img=screen_image_picker"
     //% expandableArgumentMode=toggle
     //% blockSetVariable
     //% weight=100
-    export function create(img: Image, x?: number, y?: number): Sprite {
+    export function create(img: Image): Sprite {
         const scene = game.currentScene();
         const sprite = new Sprite(img)
         scene.allSprites.push(sprite)
         sprite.id = scene.allSprites.length
         scene.physicsEngine.addSprite(sprite);
-        if (x !== null && x != undefined)
-            sprite.x = x;
-        if (y !== null && y !== undefined)
-            sprite.y = y;
         return sprite
     }
 
@@ -43,12 +39,12 @@ namespace sprites {
      * @param img the image
      */
     //% group="Create"
-    //% blockId=spritescreateobjectsable block="obstacle %img=screen_image_picker||at x %x y %y"
+    //% blockId=spritescreateobjectsable block="obstacle %img=screen_image_picker"
     //% expandableArgumentMode=toggle
     //% blockSetVariable
     //% weight=100
-    export function createObstacle(img: Image, x?: number, y?: number) {
-        const sprite = create(img, x, y);
+    export function createObstacle(img: Image) {
+        const sprite = create(img);
         sprite.flags |= sprites.Flag.Obstacle;
         return sprite;
     }
