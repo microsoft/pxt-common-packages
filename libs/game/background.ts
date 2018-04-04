@@ -14,14 +14,12 @@ enum BackgroundAlignment {
 namespace game {
     export class Background {
         color: number;
-        viewX: number;
-        viewY: number;
+        camera: Camera;
         private _layers: BackgroundLayer[];
 
-        constructor() {
+        constructor(camera: Camera) {
             this.color = 0;
-            this.viewX = 0;
-            this.viewY = 0;
+            this.camera = camera;
             this._layers = [];
         }
 
@@ -37,8 +35,8 @@ namespace game {
             if (this._layers) {
                 this._layers.forEach(layer => {
                     // compute displacement based on distance
-                    const ox = Math.round(this.viewX / (1 + layer.distance));
-                    const oy = Math.round(this.viewY / (1 + layer.distance));
+                    const ox = Math.round(this.camera.offsetX / (1 + layer.distance));
+                    const oy = Math.round(this.camera.offsetY / (1 + layer.distance));
                     layer.render(ox, oy);
                 });
             }
