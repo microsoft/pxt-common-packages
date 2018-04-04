@@ -2,6 +2,7 @@
     "name": "game",
     "description": "The game and sprite library - beta",
     "files": [
+        "fieldeditors.ts",
         "sprites.ts",
         "sprite.ts",
         "spritemap.ts",
@@ -10,6 +11,9 @@
         "info.ts",
         "background.ts",
         "tilemap.ts",
+        "camera.ts",
+        "scene.ts",
+        "scenes.ts",
         "game.ts",
         "targetoverrides.cpp",
         "targetoverrides.ts"

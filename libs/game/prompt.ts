@@ -23,6 +23,7 @@ namespace game {
     //% answerLength.defl="12"
     //% answerLength.min=1
     //% answerLength.max=24
+    //% group="Prompt"
     export function askForString(message: string, answerLength = 12) {
         let p = new game.Prompt();
         const result = p.show(message, answerLength);
