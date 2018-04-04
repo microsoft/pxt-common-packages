@@ -21,10 +21,8 @@ namespace sprites {
      * @param img the image
      */
     //% group="Create"
-    //% blockId=spritescreate block="sprite %img||at x %x y %y"
+    //% blockId=spritescreate block="sprite %img=screen_image_picker||at x %x y %y"
     //% expandableArgumentMode=toggle
-    //% img.fieldEditor="sprite"
-    //% img.fieldOptions.taggedTemplate="img"
     //% blockSetVariable
     //% weight=100
     export function create(img: Image, x?: number, y?: number): Sprite {
@@ -45,10 +43,8 @@ namespace sprites {
      * @param img the image
      */
     //% group="Create"
-    //% blockId=spritescreateobjectsable block="obstacle %img||at x %x y %y"
+    //% blockId=spritescreateobjectsable block="obstacle %img=screen_image_picker||at x %x y %y"
     //% expandableArgumentMode=toggle
-    //% img.fieldEditor="sprite"
-    //% img.fieldOptions.taggedTemplate="img"
     //% blockSetVariable
     //% weight=100
     export function createObstacle(img: Image, x?: number, y?: number) {
@@ -62,9 +58,7 @@ namespace sprites {
      * The sprite auto-destroys when it leaves the screen. You can modify position after it's created.
      */
     //% group="Create"
-    //% blockId=spritescreateprojectile block="projectile %img vx %vx vy %vy||from %sprite=variables_get"
-    //% img.fieldEditor="sprite"
-    //% img.fieldOptions.taggedTemplate="img"
+    //% blockId=spritescreateprojectile block="projectile %img=screen_image_picker vx %vx vy %vy||from %sprite=variables_get"
     //% weight=99
     //% blockSetVariable
     //% inlineInputMode=inline
@@ -95,6 +89,13 @@ namespace sprites {
 
         return s
     }
+
+    //% blockId=screen_image_picker block="%img"
+    //% shim=TD_ID
+    //% img.fieldEditor="sprite"
+    //% img.fieldOptions.taggedTemplate="img"
+    //% weight=100
+    export function _createImageShim(img: Image) { return img };
 
     export enum Flag {
         Ghost = 1, // doesn't collide with other sprites

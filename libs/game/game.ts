@@ -127,7 +127,7 @@ namespace game {
      */
     //% group="Background"
     //% weight=25
-    //% blockId=gamesetbackgroundcolor block="set background color %color"
+    //% blockId=gamesetbackgroundcolor block="set background color %color=colorindexpicker"
     export function setBackgroundColor(color: number) {
         init();
         scene.background.color = color;
@@ -140,9 +140,7 @@ namespace game {
      */
     //% group="Background"
     //% weight=10
-    //% image.fieldEditor="sprite"
-    //% image.fieldOptions.taggedTemplate="img"
-    //% blockId=gameaddbackgroundimage block="add background image %image||distance %distance|aligned %alignment"
+    //% blockId=gameaddbackgroundimage block="add background image %image=screen_image_picker||distance %distance|aligned %alignment"
     export function addBackgroundImage(image: Image, distance?: number, alignment?: BackgroundAlignment) {
         init();
         if (image)
@@ -167,9 +165,7 @@ namespace game {
      * Sets the map for rendering tiles
      * @param map
      */
-    //% blockId=gamesettilemap block="set tile map to %map"
-    //% map.fieldEditor="sprite"
-    //% map.fieldOptions.taggedTemplate="img"
+    //% blockId=gamesettilemap block="set tile map to %map=screen_image_picker"
     //% group="Tiles"
     export function setTileMap(map: Image) {
         init();
@@ -183,15 +179,21 @@ namespace game {
      * @param index
      * @param img
      */
-    //% img.fieldEditor="sprite"
-    //% img.fieldOptions.taggedTemplate="img"
-    //% blockId=gamesettile block="set tile at %index to %img||with collisions %collisions=toggleOnOff"
+    //% blockId=gamesettile block="set tile color %index=colorindexpicker to %img=screen_image_picker||with collisions %collisions=toggleOnOff"
     //% group="Tiles"
     export function setTile(index: number, img: Image, collisions?: boolean) {
         init();
         if (!scene.tileMap)
             scene.tileMap = new tiles.TileMap(img.width, img.height);
         scene.tileMap.setTile(index, img, !!collisions);
+    }
+
+    //% blockId=colorindexpicker block="%index" blockHidden=true shim=TD_ID
+    //% index.fieldEditor="colornumber"
+    //% index.fieldOptions.valueMode="index"
+    //% index.fieldOptions.colours='["#dedede","#ffffff","#33e2e4","#05b3e0","#3d30ad","#b09eff","#5df51f","#6a8927","#65471f","#98294a","#f80000","#e30ec0","#ff9da5","#ff9005","#efe204","#000000"]'
+    export function _colorIndexPicker(index: number) {
+        return index;
     }
 
     /**
