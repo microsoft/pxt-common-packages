@@ -3,6 +3,7 @@
  */
 //% weight=88 color="#401255" icon="\uf1bb"
 //% groups='["Background", "Tiles", "Camera"]'
+//% blockGap=8
 namespace scene {
     /**
      * Sets the game background color
@@ -61,10 +62,23 @@ namespace scene {
      * The game camera follows a particular sprite
      * @param sprite 
      */
-    //% blockId=camerafollow block="camera follow %sprite=variables_get"
+    //% blockId=camerafollow block="camera follow sprite %sprite=variables_get"
     //% group="Camera"
     export function cameraFollowSprite(sprite: Sprite) {
         const scene = game.currentScene();
         scene.camera.sprite = sprite;
-    }    
+    }
+
+    /**
+     * Moves the camera center to a given coordinate
+     * @param sprite 
+     */
+    //% blockId=camerapos block="center camera at x %x y %y"
+    //% group="Camera"
+    export function centerCameraAt(x: number, y: number) {
+        const scene = game.currentScene();
+        scene.camera.sprite = undefined;
+        scene.camera.offsetX = x;
+        scene.camera.offsetY = y;
+    }
 }
