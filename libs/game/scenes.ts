@@ -11,10 +11,32 @@ namespace scene {
      */
     //% group="Background"
     //% weight=25
-    //% blockId=gamesetbackgroundcolor block="set background color %color=colorindexpicker"
+    //% blockId=gamesetbackgroundcolor block="set background color to %color=colorindexpicker"
     export function setBackgroundColor(color: number) {
         const scene = game.currentScene();
         scene.background.color = color;
+    }
+
+    /**
+     * Sets the picture on the background
+     */
+    //% group="Background"
+    //% weight=24
+    //% blockId=gamesetbackgroundimage block="set background image to %img=screen_image_picker"
+    export function setBackgroundImage(img: Image) {
+        const scene = game.currentScene();
+        scene.background.image = img;
+    }
+
+    /**
+     * Returns the background image
+     */
+    //% blockId=gamebackgroundimage block="background image"
+    //% weight=23
+    //% group="Background"
+    export function backgroundImage(): Image {
+        const scene = game.currentScene();
+        return scene.background.image;
     }
 
     /**
@@ -24,8 +46,8 @@ namespace scene {
      */
     //% group="Background"
     //% weight=10
-    //% blockId=gameaddbackgroundimage block="add background image %image=screen_image_picker||distance %distance|aligned %alignment"
-    export function addBackgroundImage(image: Image, distance?: number, alignment?: BackgroundAlignment) {
+    //% blockId=gameaddbackgroundlayer block="add background layer %image=screen_image_picker||distance %distance|aligned %alignment"
+    export function addBackgroundLayer(image: Image, distance?: number, alignment?: BackgroundAlignment) {
         const scene = game.currentScene();
         if (image)
             scene.background.addLayer(image, distance || 100, alignment || BackgroundAlignment.Bottom);
