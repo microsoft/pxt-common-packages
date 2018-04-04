@@ -64,7 +64,7 @@ namespace tiles {
             }
         }
 
-        setTile(index: number, img: Image, collisions: boolean) {
+        setTile(index: number, img: Image, collisions?: boolean) {
             if (index < 0 || index > 0xf) return;
             this._tiles[index] = new Tile(img, collisions);
             this.needsUpdate = true;
@@ -73,6 +73,21 @@ namespace tiles {
         setMap(map: Image) {
             this._map = map;
             this.destroy();
+        }
+
+        private generateTile(index: number): Tile {
+            if (index == 0) return undefined;
+
+            const img = image.create(this.tileWidth, this.tileHeight);
+            img.fill(index);
+            const border = [0, 0xf, 3, 2, 3, 4, 7, 8, 7, 0xb, 0xd, 9, 9, 9, 0xd, 1][index];
+            // border
+            img.drawLine(0, 0, img.width - 1, 0, border);
+            img.drawLine(0, img.height - 1, img.width - 1, img.height - 1, border);
+            img.drawLine(0, img.height - 1, img.width - 1, img.height - 1, border);
+            img.drawLine(img.width - 1, 0, img.width - 1, img.height - 1, border);
+            img.drawLine(0, 0, 0, img.height - 1, border);
+            return this._tiles[index] = new Tile(img, false);
         }
 
         render(camera: game.Camera) {
@@ -128,7 +143,7 @@ namespace tiles {
             for (let x = x0; x <= xn; ++x) {
                 for (let y = y0; y <= yn; ++y) {
                     const index = this._map.getPixel(x, y);
-                    const tile = this._tiles[index];
+                    const tile = this._tiles[index] || this.generateTile(index);
                     if (tile && !this._tileSprites.some(ts => ts.x == x && ts.y == y)) {
                         const tileSprite = new TileSprite(x, y, index, sprites.create(tile.image));
                         tileSprite.sprite.x = tileSprite.x * this.tileWidth + this.tileWidth / 2;
