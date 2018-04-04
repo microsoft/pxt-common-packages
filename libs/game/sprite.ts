@@ -91,7 +91,7 @@ class Sprite {
     set z(value: number) {
         if (value != this._z) {
             this._z = value;
-            game.scene.flags |= game.Flag.NeedsSorting;
+            game.scene().flags |= scenes.Flag.NeedsSorting;
         }
     }
 
@@ -165,13 +165,13 @@ class Sprite {
      * Indicates if the sprite is outside the screen
      */
     //%
-    isOutOfScreen(camera: game.Camera): boolean {
+    isOutOfScreen(camera: scenes.Camera): boolean {
         const ox = camera.offsetX;
         const oy = camera.offsetY;
         return this.right - ox < 0 || this.bottom - oy < 0 || this.left - ox > screen.width || this.top - oy > screen.height;
     }
 
-    __draw(camera: game.Camera) {
+    __draw(camera: scenes.Camera) {
         if (this.isOutOfScreen(camera)) return;
 
         const l = this.left - camera.offsetX;
@@ -196,7 +196,7 @@ class Sprite {
             screen.drawRect(l, t, this.width, this.height, 3);
     }
 
-    __update(camera: game.Camera, dt: number) {
+    __update(camera: scenes.Camera, dt: number) {
         if (this.life > 0) {
             this.life--;
             if (this.life <= 0)
@@ -265,8 +265,9 @@ class Sprite {
         if (this.flags & sprites.Flag.Destroyed)
             return
         this.flags |= sprites.Flag.Destroyed
-        game.scene.allSprites.removeElement(this);
-        game.scene.physicsEngine.removeSprite(this);
+        const scene = game.scene();
+        scene.allSprites.removeElement(this);
+        scene.physicsEngine.removeSprite(this);
         if (this.destroyHandler) {
             control.runInParallel(this.destroyHandler)
         }

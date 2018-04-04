@@ -76,8 +76,9 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         }
 
         // 3: go through sprite and handle collisions
+        const scene = game.scene();
         for (const sprite of collisioners) {
-            const overSprites = game.scene.physicsEngine.overlaps(sprite);
+            const overSprites = scene.physicsEngine.overlaps(sprite);
             for (const o of overSprites) {
                 // move to avoid collisions                                
                 if (o.flags & sprites.Flag.Obstacle) {

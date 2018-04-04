@@ -2,128 +2,21 @@
  * Game transitions and dialog
  **/
 //% color=#008272 weight=99 icon="\uf111"
-//% groups='["Gameplay", "Background", "Tiles"]'
+//% groups='["Gameplay", "Prompt"]'
 namespace game {
-    export class Camera {
-        offsetX: number;
-        offsetY: number;
-        sprite: Sprite;
-        private oldOffsetX: number;
-        private oldOffsetY: number;
-
-        constructor() {
-            this.offsetX = 0;
-            this.offsetY = 0;
-
-            this.oldOffsetX = 0;
-            this.oldOffsetY = 0;
-        }
-
-        update() {
-            // if sprite, follow sprite
-            if (this.sprite) {
-                this.offsetX = this.sprite.x - (screen.width >> 1);
-                this.offsetY = this.sprite.y - (screen.height >> 1);
-            }
-
-            // don't escape tile map
-            if (game.scene.tileMap) {
-                this.offsetX = game.scene.tileMap.offsetX(this.offsetX);
-                this.offsetY = game.scene.tileMap.offsetY(this.offsetY);
-            }
-
-            if (this.oldOffsetX != this.offsetX 
-                || this.oldOffsetY != this.offsetY) {
-                this.oldOffsetX = this.offsetX;
-                this.oldOffsetY = this.offsetY;
-                if (game.scene.tileMap)
-                    game.scene.tileMap.needsUpdate = true;
-            }
-        }
-    }
-
-
-    export class Scene {
-        eventContext: control.EventContext;
-        background: Background;
-        tileMap: tiles.TileMap;
-        allSprites: Sprite[];
-        physicsEngine: PhysicsEngine;
-        camera: Camera;
-        flags: number;
-
-        paintCallback: () => void;
-        updateCallback: () => void;
-
-        constructor(eventContext: control.EventContext) {
-            this.eventContext = eventContext;
-            this.flags = 0;
-            this.physicsEngine = new ArcadePhysicsEngine();
-            this.camera = new Camera();
-            this.background = new Background(this.camera);
-        }
-
-        init() {
-            if (this.allSprites) return;
-
-            this.allSprites = [];
-            game.setBackgroundColor(0)
-            // update sprites in tilemap
-            this.eventContext.registerFrameHandler(9, () => {
-                if (this.tileMap)
-                    this.tileMap.update(scene.camera);
-            })
-            // apply physics 10
-            this.eventContext.registerFrameHandler(10, () => {
-                const dt = this.eventContext.deltaTime;
-                this.physicsEngine.move(dt);
-            })
-            // user update 20
-            // apply collisions 30
-            this.eventContext.registerFrameHandler(30, () => {
-                const dt = this.eventContext.deltaTime;
-                this.camera.update();
-                this.physicsEngine.collisions();
-                for (const s of this.allSprites)
-                    s.__update(this.camera, dt);
-            })
-            // render background 60
-            this.eventContext.registerFrameHandler(60, () => {
-                this.background.render();
-            })
-            // paint 75
-            // render sprites 90
-            this.eventContext.registerFrameHandler(90, () => {
-                if (scene.flags & Flag.NeedsSorting)
-                    this.allSprites.sort(function (a, b) { return a.z - b.z || a.id - b.id; })
-                for (const s of this.allSprites)
-                    s.__draw(this.camera);
-            })
-            // render diagnostics
-            this.eventContext.registerFrameHandler(150, () => {
-                if (game.debug)
-                    this.physicsEngine.draw();
-                // clear flags
-                scene.flags = 0;
-            });
-            // update screen
-            this.eventContext.registerFrameHandler(200, control.__screen.update);
-        }
-    }
-
-    export enum Flag {
-        NeedsSorting = 1 << 1,
-    }
-
     /**
      * Determins if diagnostics are shown
      */
     export let debug = false;
     export let gameOverSound: () => void = undefined;
 
-    export let scene: Scene;
-    let sceneStack: Scene[];
+    let _scene: scenes.Scene;
+    let _sceneStack: scenes.Scene[];
 
+    export function scene(): scenes.Scene {
+        init();
+        return _scene;
+    }
 
     let __waitAnyKey: () => void
     let __isOver = false;
@@ -139,81 +32,28 @@ namespace game {
 
     export function eventContext(): control.EventContext {
         init();
-        return scene.eventContext;
+        return _scene.eventContext;
     }
 
-    export function init() {
-        if (!scene) scene = new Scene(control.pushEventContext());
-        scene.init();
+    function init() {
+        if (!_scene) _scene = new scenes.Scene(control.pushEventContext());
+        _scene.init();
     }
 
     export function pushScene() {
         init();
-        if (!sceneStack) sceneStack = [];
-        sceneStack.push(scene);
-        scene = undefined;
+        if (!_sceneStack) _sceneStack = [];
+        _sceneStack.push(_scene);
+        _scene = undefined;
         init();
     }
 
     export function popScene() {
         init();
-        if (sceneStack && sceneStack.length) {
-            scene = sceneStack.pop();
+        if (_sceneStack && _sceneStack.length) {
+            _scene = _sceneStack.pop();
             control.popEventContext();
         }
-    }
-
-    /**
-     * Sets the game background color
-     * @param color
-     */
-    //% group="Background"
-    //% weight=25
-    //% blockId=gamesetbackgroundcolor block="set background color %color=colorindexpicker"
-    export function setBackgroundColor(color: number) {
-        init();
-        scene.background.color = color;
-    }
-
-    /**
-     * Adds a moving background layer
-     * @param distance distance of the layer which determines how fast it moves, eg: 10
-     * @param img
-     */
-    //% group="Background"
-    //% weight=10
-    //% blockId=gameaddbackgroundimage block="add background image %image=screen_image_picker||distance %distance|aligned %alignment"
-    export function addBackgroundImage(image: Image, distance?: number, alignment?: BackgroundAlignment) {
-        init();
-        if (image)
-            scene.background.addLayer(image, distance || 100, alignment || BackgroundAlignment.Bottom);
-    }
-
-    /**
-     * Sets the map for rendering tiles
-     * @param map
-     */
-    //% blockId=gamesettilemap block="set tile map to %map=screen_image_picker"
-    //% group="Tiles"
-    export function setTileMap(map: Image) {
-        init();
-        if (!scene.tileMap)
-            scene.tileMap = new tiles.TileMap(scene.camera, 16, 16);
-        scene.tileMap.setMap(map);
-    }
-
-    /**
-     * Sets the tile image at the given index
-     * @param index
-     * @param img
-     */
-    //% blockId=gamesettile block="set tile color %index=colorindexpicker to %img=screen_image_picker||with collisions %collisions=toggleOnOff"
-    //% group="Tiles"
-    export function setTile(index: number, img: Image, collisions?: boolean) {
-        init();
-        if (!scene.tileMap)
-            scene.tileMap = new tiles.TileMap(scene.camera, img.width, img.height);
-        scene.tileMap.setTile(index, img, !!collisions);
     }
 
     //% blockId=colorindexpicker block="%index" blockHidden=true shim=TD_ID
@@ -222,17 +62,6 @@ namespace game {
     //% index.fieldOptions.colours='["#dedede","#ffffff","#33e2e4","#05b3e0","#3d30ad","#b09eff","#5df51f","#6a8927","#65471f","#98294a","#f80000","#e30ec0","#ff9da5","#ff9005","#efe204","#000000"]'
     export function _colorIndexPicker(index: number) {
         return index;
-    }
-
-    /**
-     * The game camera follows a particular sprite
-     * @param sprite 
-     */
-    //% blockId=camerafollow block="camera follow %sprite=variables_get"
-    //% group="Tiles"
-    export function cameraFollowSprite(sprite: Sprite) {
-        init();
-        game.scene.camera.sprite = sprite;
     }
 
     function showDialogBackground(h: number, c: number) {
@@ -272,6 +101,7 @@ namespace game {
     //% group="Gameplay"
     //% weight=89
     //% blockId=gameask block="ask %title||%subtitle"
+    //% group="Prompt"
     export function ask(title: string, subtitle?: string): boolean {
         init();
         control.pushEventContext();
@@ -370,11 +200,11 @@ namespace game {
     //% blockId=gameupdate block="game frame"
     export function update(a: () => void): void {
         init();
-        if (!scene.updateCallback) {
+        if (!_scene.updateCallback) {
             game.eventContext().registerFrameHandler(20, function () {
-                if (scene.updateCallback) scene.updateCallback();
+                if (_scene.updateCallback) _scene.updateCallback();
             });
-            scene.updateCallback = a;
+            _scene.updateCallback = a;
         }
     }
 
@@ -387,11 +217,11 @@ namespace game {
     //% blockId=gamepaint block="game paint"
     export function paint(a: () => void): void {
         init();
-        if (!scene.paintCallback) {
+        if (!_scene.paintCallback) {
             game.eventContext().registerFrameHandler(75, function () {
-                if (scene.paintCallback) scene.paintCallback();
+                if (_scene.paintCallback) _scene.paintCallback();
             });
-            scene.paintCallback = a;
+            _scene.paintCallback = a;
         }
     }
 }

@@ -11,7 +11,7 @@ enum BackgroundAlignment {
     Center
 }
 
-namespace game {
+namespace scenes {
     export class Background {
         color: number;
         camera: Camera;

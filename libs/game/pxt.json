@@ -10,6 +10,9 @@
         "info.ts",
         "background.ts",
         "tilemap.ts",
+        "camera.ts",
+        "scene.ts",
+        "scenes.ts",
         "game.ts",
         "targetoverrides.cpp",
         "targetoverrides.ts"

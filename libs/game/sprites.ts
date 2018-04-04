@@ -26,11 +26,11 @@ namespace sprites {
     //% blockSetVariable
     //% weight=100
     export function create(img: Image, x?: number, y?: number): Sprite {
-        game.init()
+        const scene = game.scene();
         const sprite = new Sprite(img)
-        game.scene.allSprites.push(sprite)
-        sprite.id = game.scene.allSprites.length
-        game.scene.physicsEngine.addSprite(sprite);
+        scene.allSprites.push(sprite)
+        sprite.id = scene.allSprites.length
+        scene.physicsEngine.addSprite(sprite);
         if (x !== null && x != undefined)
             sprite.x = x;
         if (y !== null && y !== undefined)
