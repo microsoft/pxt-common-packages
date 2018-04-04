@@ -1,7 +1,7 @@
 /**
  * Control the background, tiles and camera
  */
-//% weight=94 color="#401255" icon="\uf1bb"
+//% weight=88 color="#401255" icon="\uf1bb"
 //% groups='["Background", "Tiles", "Camera"]'
 namespace scene {
     /**
