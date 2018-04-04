@@ -91,7 +91,7 @@ namespace sprites {
     }
 
     //% blockId=screen_image_picker block="%img"
-    //% blockNamespace=sprites shim=TD_ID
+    //% shim=TD_ID
     //% img.fieldEditor="sprite"
     //% img.fieldOptions.taggedTemplate="img"
     //% weight=100
