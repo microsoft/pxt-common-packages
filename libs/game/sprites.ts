@@ -23,7 +23,7 @@ namespace sprites {
     //% group="Create"
     //% blockId=spritescreate block="sprite %img=screen_image_picker"
     //% expandableArgumentMode=toggle
-    //% blockSetVariable
+    //% blockSetVariable=sprite
     //% weight=100
     export function create(img: Image): Sprite {
         const scene = game.currentScene();
@@ -41,7 +41,7 @@ namespace sprites {
     //% group="Create"
     //% blockId=spritescreateobjectsable block="obstacle %img=screen_image_picker"
     //% expandableArgumentMode=toggle
-    //% blockSetVariable
+    //% blockSetVariable=obstacle
     //% weight=100
     export function createObstacle(img: Image) {
         const sprite = create(img);
@@ -56,7 +56,7 @@ namespace sprites {
     //% group="Create"
     //% blockId=spritescreateprojectile block="projectile %img=screen_image_picker vx %vx vy %vy||from %sprite=variables_get"
     //% weight=99
-    //% blockSetVariable
+    //% blockSetVariable=projectile
     //% inlineInputMode=inline
     //% expandableArgumentMode=toggle
     export function createProjectile(img: Image, vx: number, vy: number, sprite?: Sprite) {
