@@ -91,18 +91,22 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     if (toperr == min) {
                         sprite.bottom = o.top;
                         if (sprite.vy > 0) sprite.vy = 0;
+                        sprite.raiseCollision(CollisionDirection.Bottom, o);
                     }
                     else if (bottomerr == min) {
                         sprite.top = o.bottom;
                         if (sprite.vy < 0) sprite.vy = 0;
+                        sprite.raiseCollision(CollisionDirection.Top, o);
                     }
                     else if (lefterr == min) {
                         sprite.right = o.left;
                         if (sprite.vx > 0) sprite.vx = 0;
+                        sprite.raiseCollision(CollisionDirection.Right, o);
                     }
                     else {
                         sprite.left = o.right;
                         if (sprite.vx < 0) sprite.vx = 0;
+                        sprite.raiseCollision(CollisionDirection.Left, o);
                     }
                 }
                 

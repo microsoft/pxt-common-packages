@@ -7,6 +7,17 @@ enum SpriteFlag {
     Obstacle = sprites.Flag.Obstacle
 }
 
+enum CollisionDirection {
+    //% block="left"
+    Left = 0,
+    //% block="top"
+    Top = 1,
+    //% block="right"
+    Right = 2,
+    //% block="bottom"
+    Bottom = 3
+}
+
 /**
  * A sprite on screem
  **/
@@ -45,6 +56,7 @@ class Sprite {
     id: number
 
     overlapHandler: (other: Sprite) => void;
+    collisionHandlers: ((other:Sprite) => void)[];
     private destroyHandler: () => void;
 
     constructor(img: Image) {
@@ -152,7 +164,7 @@ class Sprite {
      * @param time time to keep text on, eg: 2000
      */
     //% group="Properties"
-    //% blockId=spritesay block="%sprite say %text||for %millis|ms"
+    //% blockId=spritesay block="%sprite say %text||for %millis ms"
     say(text: string, millis?: number) {
         this._say = text;
         if (!millis || millis < 0)
@@ -239,9 +251,31 @@ class Sprite {
      * @param handler
      */
     //% group="Collisions"
-    //% blockId=spriteonoverlap block="on %sprite overlap with"
+    //% blockId=spriteonoverlap block="on %sprite overlaped with"
+    //% afterOnStart=true
     onOverlap(handler: (other: Sprite) => void) {
         this.overlapHandler = handler;
+    }
+
+    /**
+     * Registers code when the sprite collides with another sprite
+     * @param direction 
+     * @param handler 
+     */
+    //% group="Collisions"
+    //% blockId=spriteoncollision block="on %sprite collided %direction with"
+    //% afterOnStart=true
+    onCollision(direction: CollisionDirection, handler: (other: Sprite) => void) {
+        if (!this.collisionHandlers)
+            this.collisionHandlers = [];
+        direction = Math.max(0, Math.min(3, direction | 0));       
+        this.collisionHandlers[direction] = handler;
+    }
+
+    raiseCollision(direction: CollisionDirection, other: Sprite) {
+        const handler = this.collisionHandlers ? this.collisionHandlers[direction] : undefined;
+        if (handler)
+            handler(other);
     }
 
     /**
@@ -251,6 +285,7 @@ class Sprite {
     //% group="Lifecycle"
     //% weight=9
     //% blockId=spriteondestroy block="on %sprite destroyed"
+    //% afterOnStart=true
     onDestroyed(handler: () => void) {
         this.destroyHandler = handler
     }
