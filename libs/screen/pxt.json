@@ -8,6 +8,7 @@
         "text.ts",
         "frame.ts",
         "shims.d.ts",
+        "fieldeditors.ts",
         "targetoverrides.ts"
     ],
     "public": true,

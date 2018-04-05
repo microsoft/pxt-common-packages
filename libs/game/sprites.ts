@@ -86,13 +86,6 @@ namespace sprites {
         return s
     }
 
-    //% blockId=screen_image_picker block="%img"
-    //% shim=TD_ID
-    //% img.fieldEditor="sprite"
-    //% img.fieldOptions.taggedTemplate="img"
-    //% weight=100
-    export function _createImageShim(img: Image) { return img };
-
     export enum Flag {
         Ghost = 1, // doesn't collide with other sprites
         Destroyed = 2,
