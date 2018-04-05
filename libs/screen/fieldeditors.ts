@@ -1,3 +1,7 @@
+/**
+ * Image manipulation blocks
+ */
+//% weight=70 icon="\uf03e" color="#0E563B"
 namespace images {
     //% blockId=screen_image_picker block="%img"
     //% shim=TD_ID
