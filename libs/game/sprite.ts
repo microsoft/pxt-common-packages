@@ -50,7 +50,8 @@ class Sprite {
     life: number;
     private _say: string;
     private _sayExpires: number;
-    private _image: Image
+    private _image: Image;
+    private _obstacles: Sprite[];
 
     flags: number
     id: number
@@ -272,7 +273,35 @@ class Sprite {
         this.collisionHandlers[direction] = handler;
     }
 
-    raiseCollision(direction: CollisionDirection, other: Sprite) {
+    /**
+     * Determines if there is an obstacle in the given direction
+     * @param direction 
+     */
+    //% blockId=spritehasobstacle block="has %sprite obstacle %direction"
+    //% group="Collisions"
+    hasObstacle(direction: CollisionDirection): boolean {
+        return this._obstacles && !!this._obstacles[direction];
+    }
+
+    /**
+     * Gets the obstacle sprite in a given direction if any
+     * @param direction 
+     */
+    //% blockId=spritehasobstacle block="%sprite obstacle %direction"
+    //% group="Collisions"
+    obstacle(direction: CollisionDirection): Sprite {
+        return this._obstacles ? this._obstacles[direction] : undefined;
+    }
+
+    clearObstacles() {
+        this._obstacles = undefined;
+    }
+
+    registerObstacle(direction: CollisionDirection, other: Sprite) {
+        if (!this._obstacles)
+            this._obstacles = [];
+        this._obstacles[direction] = other;        
+
         const handler = this.collisionHandlers ? this.collisionHandlers[direction] : undefined;
         if (handler)
             handler(other);

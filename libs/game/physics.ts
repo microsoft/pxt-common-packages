@@ -62,6 +62,10 @@ class ArcadePhysicsEngine extends PhysicsEngine {
     }
 
     collisions() {
+        // 1: clear obstacles
+        for(let i = 0; i < this.sprites.length; ++i)
+            this.sprites[i].clearObstacles();
+
         // 2: refresh non-ghost collision map
         const colliders = this.sprites.filter(sprite => !(sprite.flags & sprites.Flag.Ghost));
         // collect any non-obstacle sprite with a collection handlee
@@ -91,22 +95,22 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     if (toperr == min) {
                         sprite.bottom = o.top;
                         if (sprite.vy > 0) sprite.vy = 0;
-                        sprite.raiseCollision(CollisionDirection.Bottom, o);
+                        sprite.registerObstacle(CollisionDirection.Bottom, o);
                     }
                     else if (bottomerr == min) {
                         sprite.top = o.bottom;
                         if (sprite.vy < 0) sprite.vy = 0;
-                        sprite.raiseCollision(CollisionDirection.Top, o);
+                        sprite.registerObstacle(CollisionDirection.Top, o);
                     }
                     else if (lefterr == min) {
                         sprite.right = o.left;
                         if (sprite.vx > 0) sprite.vx = 0;
-                        sprite.raiseCollision(CollisionDirection.Right, o);
+                        sprite.registerObstacle(CollisionDirection.Right, o);
                     }
                     else {
                         sprite.left = o.right;
                         if (sprite.vx < 0) sprite.vx = 0;
-                        sprite.raiseCollision(CollisionDirection.Left, o);
+                        sprite.registerObstacle(CollisionDirection.Left, o);
                     }
                 }
                 
