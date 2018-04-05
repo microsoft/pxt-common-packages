@@ -585,4 +585,7 @@ namespace pxsim.pxtcore {
     export function updateStats(s: string) {
         getScreenState().updateStats(s);
     }
+    export function setPalette(b: RefBuffer) {
+        getScreenState().setPalette(b)
+    }
 }

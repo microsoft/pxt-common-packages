@@ -20,9 +20,10 @@ namespace pxsim {
         lastImageFlushTime = 0
         changed = true
         stats: string;
-        onChange = () => {}
+        onChange = () => { }
 
         constructor(paletteSrc: string[], w = 0, h = 0) {
+            if (!paletteSrc) paletteSrc = ["#000000", "#ffffff"]
             this.palette = new Uint32Array(paletteSrc.length)
             for (let i = 0; i < this.palette.length; ++i) {
                 this.palette[i] = htmlColorToUint32(paletteSrc[i])
@@ -32,6 +33,22 @@ namespace pxsim {
                 this.height = h
                 this.screen = new Uint32Array(this.width * this.height)
                 this.screen.fill(this.palette[0])
+            }
+        }
+
+        setPalette(buf: RefBuffer) {
+            const ca = new Uint8ClampedArray(4)
+            const rd = new Uint32Array(ca.buffer)
+            const src = buf.data as Uint8Array
+            this.palette = new Uint32Array((src.length / 3) | 0)
+            for (let i = 0; i < this.palette.length; ++i) {
+                const p = i * 3
+                ca[0] = src[p + 0]
+                ca[1] = src[p + 1]
+                ca[2] = src[p + 2]
+                ca[3] = 0xff // alpha
+                // convert to uint32 using target endian
+                this.palette[i] = rd[0]
             }
         }
 
