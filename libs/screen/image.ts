@@ -87,18 +87,3 @@ namespace helpers {
         imageDrawLine(img, x + w, y + h, x, y + h, c)
     }
 }
-
-namespace fieldeditors {
-    /**
-     * An image
-     * @param image the image
-     */
-    //% blockId=imagePicker block="%image" shim=TD_ID
-    //% image.fieldEditor="images"
-    //% image.fieldOptions.columns=6
-    //% image.fieldOptions.width=600
-    //% weight=0 blockHidden=1
-    export function __imagePicker(image: Image): Image {
-        return image;
-    }
-}
