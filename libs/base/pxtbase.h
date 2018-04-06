@@ -673,6 +673,8 @@ int compare(String s, String that);
 
 #define PXT_FNPTR(x) (unsigned)(void *)(x)
 
+#define PXT_ABI(...)
+
 #define JOIN(a, b) a##b
 /// Defines getClassName() function to fetch the singleton
 #define SINGLETON(ClassName)                                                                       \
