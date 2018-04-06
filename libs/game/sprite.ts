@@ -18,11 +18,18 @@ enum CollisionDirection {
     Bottom = 3
 }
 
+interface SpriteLike {
+    z: number;
+    id: number;
+    __update(camera: scene.Camera, dt: number): void;
+    __draw(camera: scene.Camera): void;
+}
+
 /**
  * A sprite on screem
  **/
 //% blockNamespace=Sprites color="#23c47e" blockGap=8
-class Sprite {
+class Sprite implements SpriteLike {
     //% group="Properties"
     //% blockCombine block="x"
     x: number
@@ -260,8 +267,8 @@ class Sprite {
 
     /**
      * Registers code when the sprite collides with another sprite
-     * @param direction 
-     * @param handler 
+     * @param direction
+     * @param handler
      */
     //% group="Collisions"
     //% blockId=spriteoncollision block="on %sprite collided %direction with"
@@ -269,13 +276,13 @@ class Sprite {
     onCollision(direction: CollisionDirection, handler: (other: Sprite) => void) {
         if (!this.collisionHandlers)
             this.collisionHandlers = [];
-        direction = Math.max(0, Math.min(3, direction | 0));       
+        direction = Math.max(0, Math.min(3, direction | 0));
         this.collisionHandlers[direction] = handler;
     }
 
     /**
      * Determines if there is an obstacle in the given direction
-     * @param direction 
+     * @param direction
      */
     //% blockId=spritehasobstacle block="has %sprite obstacle %direction"
     //% group="Collisions"
@@ -285,7 +292,7 @@ class Sprite {
 
     /**
      * Gets the obstacle sprite in a given direction if any
-     * @param direction 
+     * @param direction
      */
     //% blockId=spritehasobstacle block="%sprite obstacle %direction"
     //% group="Collisions"
@@ -300,7 +307,7 @@ class Sprite {
     registerObstacle(direction: CollisionDirection, other: Sprite) {
         if (!this._obstacles)
             this._obstacles = [];
-        this._obstacles[direction] = other;        
+        this._obstacles[direction] = other;
 
         const handler = this.collisionHandlers ? this.collisionHandlers[direction] : undefined;
         if (handler)
