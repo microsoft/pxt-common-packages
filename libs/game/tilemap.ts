@@ -21,12 +21,16 @@ namespace tiles {
         }
     }
 
-    export class TileMap {
+    export class TileMap implements SpriteLike {
         camera: scene.Camera;
         tileWidth: number;
         tileHeight: number;
 
         needsUpdate: boolean;
+
+        id: number;
+        z: number;
+
         private _layer: number;
 
         private _map: Image;
@@ -41,6 +45,14 @@ namespace tiles {
             this._tiles = [];
             this._tileSprites = [];
             this._layer = 1;
+
+            this.z = -1;
+            this.id = game.currentScene().allSprites.length;
+
+            const scene = game.currentScene();
+            scene.allSprites.push(this);
+            this.id = scene.allSprites.length;
+
             this.destroy();
         }
 
@@ -73,6 +85,27 @@ namespace tiles {
         setMap(map: Image) {
             this._map = map;
             this.destroy();
+        }
+
+        __update(camera: scene.Camera, dt: number): void { }
+
+        __draw(camera: scene.Camera): void {
+            const offsetX = camera.offsetX % this.tileWidth;
+            const offsetY = camera.offsetY % this.tileHeight;
+            const x0 = Math.max(0, Math.floor(camera.offsetX/ this.tileWidth));
+            const xn = Math.min(this._map.width, Math.ceil((camera.offsetX + screen.width) / this.tileWidth));
+            const y0 = Math.max(0, Math.floor(camera.offsetY / this.tileHeight));
+            const yn = Math.min(this._map.height, Math.ceil((camera.offsetY + screen.height) / this.tileHeight));
+
+            for (let x = x0; x <= xn; ++x) {
+                for (let y = y0; y <= yn; ++y) {
+                    const index = this._map.getPixel(x, y);
+                    const tile = this._tiles[index] || this.generateTile(index);
+                    if (tile && !tile.obstacle) {
+                        screen.drawImage(tile.image, (x - x0) * this.tileWidth - offsetX, (y - y0) * this.tileHeight - offsetY)
+                    }
+                }
+            }
         }
 
         private generateTile(index: number): Tile {
@@ -137,7 +170,7 @@ namespace tiles {
                 for (let y = y0; y <= yn; ++y) {
                     const index = this._map.getPixel(x, y);
                     const tile = this._tiles[index] || this.generateTile(index);
-                    if (tile && !this._tileSprites.some(ts => ts.x == x && ts.y == y)) {
+                    if (tile && tile.obstacle && !this._tileSprites.some(ts => ts.x == x && ts.y == y)) {
                         const tileSprite = new TileSprite(x, y, index, sprites.create(tile.image));
                         tileSprite.sprite.x = tileSprite.x * this.tileWidth + this.tileWidth / 2;
                         tileSprite.sprite.y = tileSprite.y * this.tileHeight + this.tileHeight / 2;

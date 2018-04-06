@@ -6,12 +6,12 @@ namespace scene {
     export enum Flag {
         NeedsSorting = 1 << 1,
     }
-    
+
     export class Scene {
         eventContext: control.EventContext;
         background: Background;
         tileMap: tiles.TileMap;
-        allSprites: Sprite[];
+        allSprites: SpriteLike[];
         physicsEngine: PhysicsEngine;
         camera: scene.Camera;
         flags: number;
