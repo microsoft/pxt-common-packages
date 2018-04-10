@@ -35,6 +35,10 @@
 
 #include "pxtcore.h"
 
+#ifndef PXT_VTABLE_SHIFT
+#define PXT_VTABLE_SHIFT 2
+#endif
+
 #define CONCAT_1(a, b) a##b
 #define CONCAT_0(a, b) CONCAT_1(a, b)
 #define STATIC_ASSERT(e) enum { CONCAT_0(_static_assert_, __LINE__) = 1 / ((e) ? 1 : 0) };
@@ -285,7 +289,7 @@ struct VTable {
                       // refmask sits at &methods[nummethods]
 };
 
-const int vtableShift = 2;
+const int vtableShift = PXT_VTABLE_SHIFT;
 
 // A base abstract class for ref-counted objects.
 class RefObject {
