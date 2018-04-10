@@ -273,6 +273,8 @@ typedef void (*RefObjectMethod)(RefObject *self);
 typedef void *PVoid;
 typedef void **PPVoid;
 
+typedef void *Object_;
+
 const PPVoid RefMapMarker = (PPVoid)(void *)43;
 
 struct VTable {
