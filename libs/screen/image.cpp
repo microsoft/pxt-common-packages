@@ -16,12 +16,12 @@ namespace pxt {
 PXT_VTABLE_BEGIN(RefImage, 0, 0)
 PXT_VTABLE_END
 
-void RefImage::destroy() {
-    decrRC(buffer());
+void RefImage::destroy(RefImage *t) {
+    decrRC(t->buffer());
 }
 
-void RefImage::print() {
-    DMESG("RefImage %p r=%d size=%d x %d", this, refcnt, width(), height());
+void RefImage::print(RefImage *t) {
+    DMESG("RefImage %p r=%d size=%d x %d", t, t->refcnt, t->width(), t->height());
 }
 
 int RefImage::width() {
@@ -45,7 +45,7 @@ void RefImage::makeWritable() {
         if (buffer()->isReadOnly()) {
             auto b = mkBuffer(data(), length());
             decrRC(buffer());
-            _buffer = (unsigned)b;
+            _buffer = (uintptr_t)b;
         }
     } else {
         _buffer |= 2;
@@ -76,7 +76,7 @@ void RefImage::clamp(int *x, int *y) {
     *y = min(max(*y, 0), height() - 1);
 }
 
-RefImage::RefImage(BoxedBuffer *buf) : PXT_VTABLE_INIT(RefImage), _buffer((unsigned)buf) {
+RefImage::RefImage(BoxedBuffer *buf) : PXT_VTABLE_INIT(RefImage), _buffer((uintptr_t)buf) {
     incrRC(buf);
 }
 RefImage::RefImage(uint32_t sz) : PXT_VTABLE_INIT(RefImage), _buffer((sz << 2) | 3) {}

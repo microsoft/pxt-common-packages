@@ -43,11 +43,13 @@
 #define CONCAT_0(a, b) CONCAT_1(a, b)
 #define STATIC_ASSERT(e) enum { CONCAT_0(_static_assert_, __LINE__) = 1 / ((e) ? 1 : 0) };
 
+#ifndef ramint_t
 // this type limits size of arrays
 #ifdef __linux__
 #define ramint_t uint32_t
 #else
 #define ramint_t uint16_t
+#endif
 #endif
 
 #if 0
@@ -119,23 +121,23 @@ void dumpDmesg();
 #define TAG_NUMBER(n) (TNumber)(void *)((n << 1) | 1)
 
 inline bool isTagged(TValue v) {
-    return ((int)v & 3) || !v;
+    return ((intptr_t)v & 3) || !v;
 }
 
 inline bool isNumber(TValue v) {
-    return (int)v & 1;
+    return (intptr_t)v & 1;
 }
 
 inline bool isSpecial(TValue v) {
-    return (int)v & 2;
+    return (intptr_t)v & 2;
 }
 
 inline bool bothNumbers(TValue a, TValue b) {
-    return (int)a & (int)b & 1;
+    return (intptr_t)a & (intptr_t)b & 1;
 }
 
 inline int numValue(TValue n) {
-    return (int)n >> 1;
+    return (intptr_t)n >> 1;
 }
 
 #ifdef PXT_BOX_DEBUG
@@ -529,7 +531,7 @@ class BoxedBuffer : public RefObject {
 // third byte indicates the height (which should also match the size of the buffer)
 // just like ordinary buffers, these can be layed out in flash
 class RefImage : public RefObject {
-    unsigned _buffer;
+    uintptr_t _buffer;
     uint8_t _data[0];
 
   public:
@@ -557,8 +559,8 @@ class RefImage : public RefObject {
     void clamp(int *x, int *y);
     void makeWritable();
 
-    void destroy();
-    void print();
+    static void destroy(RefImage *t);
+    static void print(RefImage *t);
 };
 
 RefImage *mkImage(int w, int h, int bpp);
@@ -655,7 +657,7 @@ int compare(String s, String that);
 
 #pragma GCC diagnostic ignored "-Wpmf-conversions"
 
-#define PXT_VTABLE_TO_INT(vt) ((unsigned)(vt) >> vtableShift)
+#define PXT_VTABLE_TO_INT(vt) ((uintptr_t)(vt) >> vtableShift)
 #define PXT_VTABLE_BEGIN(classname, flags, iface)                                                  \
     const VTable classname##_vtable __attribute__((aligned(1 << vtableShift))) = {                 \
         sizeof(classname), flags, iface, {(void *)&classname::destroy, (void *)&classname::print,
