@@ -367,6 +367,7 @@ void RefCollection::setAt(int i, TValue value) {
 }
 
 int RefCollection::indexOf(TValue x, int start) {
+#ifndef X86_64
     unsigned i = start;
     while (head.isValidIndex(i)) {
         if (pxt::eq_bool(head.get(i), x)) {
@@ -374,6 +375,7 @@ int RefCollection::indexOf(TValue x, int start) {
         }
         i++;
     }
+#endif
     return -1;
 }
 
@@ -518,6 +520,7 @@ int getNumGlobals() {
     return bytecode[16];
 }
 
+#ifndef X86_64
 void exec_binary(unsigned *pc) {
     // XXX re-enable once the calibration code is fixed and [editor/embedded.ts]
     // properly prepends a call to [internal_main].
@@ -562,5 +565,6 @@ void exec_binary(unsigned *pc) {
 void start() {
     exec_binary((unsigned *)functionsAndBytecode);
 }
+#endif
 
 } // namespace pxt

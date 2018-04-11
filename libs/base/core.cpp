@@ -66,10 +66,12 @@ Buffer mkBuffer(const uint8_t *data, int len) {
     return r;
 }
 
+#ifndef X86_64
 TNumber mkNaN() {
     // TODO optimize
     return fromDouble(NAN);
 }
+#endif
 
 static unsigned random_value = 0xC0DA1;
 
