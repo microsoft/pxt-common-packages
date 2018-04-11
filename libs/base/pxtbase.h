@@ -390,8 +390,8 @@ class RefCollection : public RefObject {
   public:
     RefCollection();
 
-    void destroy();
-    void print();
+    static void destroy(RefCollection *coll);
+    static void print(RefCollection *coll);
 
     unsigned length() { return head.getLength(); }
     void setLength(unsigned newLength) { head.setLength(newLength); }
@@ -415,8 +415,8 @@ class RefMap : public RefObject {
     Segment values;
 
     RefMap();
-    void destroy();
-    void print();
+    static void destroy(RefMap *map);
+    static void print(RefMap *map);
     int findIdx(unsigned key);
 };
 
@@ -456,8 +456,8 @@ class RefAction : public RefObject {
     // fields[] contain captured locals
     TValue fields[];
 
-    void destroy();
-    void print();
+    static void destroy(RefAction *act);
+    static void print(RefAction *act);
 
     RefAction();
 
@@ -482,16 +482,16 @@ class RefAction : public RefObject {
 class RefLocal : public RefObject {
   public:
     TValue v;
-    void destroy();
-    void print();
+    static void destroy(RefLocal *l);
+    static void print(RefLocal *l);
     RefLocal();
 };
 
 class RefRefLocal : public RefObject {
   public:
     TValue v;
-    void destroy();
-    void print();
+    static void destroy(RefRefLocal *l);
+    static void print(RefRefLocal *l);
     RefRefLocal();
 };
 
@@ -655,7 +655,9 @@ int compare(String s, String that);
     ;                                                                                              \
     }
 
+#ifndef X86_64
 #pragma GCC diagnostic ignored "-Wpmf-conversions"
+#endif
 
 #define PXT_VTABLE_TO_INT(vt) ((uintptr_t)(vt) >> vtableShift)
 #define PXT_VTABLE_BEGIN(classname, flags, iface)                                                  \

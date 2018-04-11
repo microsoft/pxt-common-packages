@@ -33,7 +33,7 @@ Action mkAction(int reflen, int totallen, int startptr) {
     check(bytecode[startptr] == 0xffff, ERR_INVALID_BINARY_HEADER, 3);
     check(bytecode[startptr + 1] == PXT_REF_TAG_ACTION, ERR_INVALID_BINARY_HEADER, 4);
 
-    unsigned tmp = (unsigned)&bytecode[startptr];
+    uintptr_t tmp = (uintptr_t)&bytecode[startptr];
 
     if (totallen == 0) {
         return (TValue)tmp; // no closure needed
@@ -56,7 +56,7 @@ TValue runAction3(Action a, TValue arg0, TValue arg1, TValue arg2) {
     auto aa = (RefAction *)a;
     if (aa->vtable == PXT_REF_TAG_ACTION) {
         check(aa->refcnt == 0xffff, ERR_INVALID_BINARY_HEADER, 4);
-        return ((ActionCB)(((uint32_t)a + 4) | 1))(NULL, arg0, arg1, arg2);
+        return ((ActionCB)(((uintptr_t)a + 4) | 1))(NULL, arg0, arg1, arg2);
     } else {
         check(aa->refcnt != 0xffff, ERR_INVALID_BINARY_HEADER, 4);
         return aa->runCore(arg0, arg1, arg2);
@@ -314,7 +314,7 @@ void Segment::insert(unsigned i, TValue value) {
 void Segment::print() {
     DMESG("Segment: %p, length: %d, size: %d", data, (unsigned)length, (unsigned)size);
     for (unsigned i = 0; i < size; i++) {
-        DMESG("-> %d", (unsigned)data[i]);
+        DMESG("-> %d", (unsigned)(uintptr_t)data[i]);
     }
 }
 
@@ -395,38 +395,38 @@ RefCollection::RefCollection() : RefObject(0) {
     vtable = PXT_VTABLE_TO_INT(&Coll0::RefCollection_vtable);
 }
 
-void RefCollection::destroy() {
-    for (unsigned i = 0; i < this->head.getLength(); i++) {
-        decr(this->head.get(i));
+void RefCollection::destroy(RefCollection *t) {
+    for (unsigned i = 0; i < t->head.getLength(); i++) {
+        decr(t->head.get(i));
     }
-    this->head.destroy();
+    t->head.destroy();
 }
 
-void RefCollection::print() {
-    DMESG("RefCollection %p r=%d size=%d", this, refcnt, head.getLength());
-    head.print();
+void RefCollection::print(RefCollection *t) {
+    DMESG("RefCollection %p r=%d size=%d", t, t->refcnt, t->head.getLength());
+    t->head.print();
 }
 
 PXT_VTABLE_CTOR(RefAction) {}
 
 // fields[] contain captured locals
-void RefAction::destroy() {
-    for (int i = 0; i < this->reflen; ++i) {
-        decr(fields[i]);
-        fields[i] = 0;
+void RefAction::destroy(RefAction *t) {
+    for (int i = 0; i < t->reflen; ++i) {
+        decr(t->fields[i]);
+        t->fields[i] = 0;
     }
 }
 
-void RefAction::print() {
-    DMESG("RefAction %p r=%d pc=%X size=%d (%d refs)", this, refcnt,
-          (const uint8_t *)func - (const uint8_t *)bytecode, len, reflen);
+void RefAction::print(RefAction *t) {
+    DMESG("RefAction %p r=%d pc=%X size=%d (%d refs)", t, t->refcnt,
+          (const uint8_t *)t->func - (const uint8_t *)bytecode, t->len, t->reflen);
 }
 
-void RefLocal::print() {
-    DMESG("RefLocal %p r=%d v=%d", this, refcnt, v);
+void RefLocal::print(RefLocal *t) {
+    DMESG("RefLocal %p r=%d v=%d", t, t->refcnt, t->v);
 }
 
-void RefLocal::destroy() {}
+void RefLocal::destroy(RefLocal *) {}
 
 PXT_VTABLE_CTOR(RefLocal) {
     v = 0;
@@ -436,37 +436,37 @@ PXT_VTABLE_CTOR(RefRefLocal) {
     v = 0;
 }
 
-void RefRefLocal::print() {
-    DMESG("RefRefLocal %p r=%d v=%p", this, refcnt, (void *)v);
+void RefRefLocal::print(RefRefLocal *t) {
+    DMESG("RefRefLocal %p r=%d v=%p", t, t->refcnt, (void *)t->v);
 }
 
-void RefRefLocal::destroy() {
-    decr(v);
+void RefRefLocal::destroy(RefRefLocal *t) {
+    decr(t->v);
 }
 
 PXT_VTABLE_BEGIN(RefMap, 0, RefMapMarker)
 PXT_VTABLE_END
 RefMap::RefMap() : PXT_VTABLE_INIT(RefMap) {}
 
-void RefMap::destroy() {
-    for (unsigned i = 0; i < values.getLength(); ++i) {
-        decr(values.get(i));
-        values.set(i, 0);
+void RefMap::destroy(RefMap *t) {
+    for (unsigned i = 0; i < t->values.getLength(); ++i) {
+        decr(t->values.get(i));
+        t->values.set(i, 0);
     }
-    keys.destroy();
-    values.destroy();
+    t->keys.destroy();
+    t->values.destroy();
 }
 
 int RefMap::findIdx(unsigned key) {
     for (unsigned i = 0; i < keys.getLength(); ++i) {
-        if ((unsigned)keys.get(i) == key)
+        if ((uintptr_t)keys.get(i) == key)
             return i;
     }
     return -1;
 }
 
-void RefMap::print() {
-    DMESG("RefMap %p r=%d size=%d", this, refcnt, keys.getLength());
+void RefMap::print(RefMap *t) {
+    DMESG("RefMap %p r=%d size=%d", t, t->refcnt, t->keys.getLength());
 }
 
 #ifdef PXT_MEMLEAK_DEBUG
@@ -543,7 +543,7 @@ void exec_binary(unsigned *pc) {
     checkStr(((uint32_t *)bytecode)[0] == 0x923B8E70 && (unsigned)templateHash() == *pc,
              ":( Failed partial flash");
 
-    unsigned startptr = (unsigned)bytecode;
+    uintptr_t startptr = (uintptr_t)bytecode;
 
     startptr += 48; // header
     startptr |= 1;  // Thumb state
