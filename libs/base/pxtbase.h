@@ -546,6 +546,7 @@ class RefImage : public RefObject {
 
     uint8_t *data() { return hasBuffer() ? buffer()->data : _data; }
     int length() { return hasBuffer() ? buffer()->length : (_buffer >> 2); }
+    int pixLength() { return length() - 3; }
 
     int height();
     int width();

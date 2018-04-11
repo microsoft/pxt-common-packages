@@ -192,7 +192,7 @@ int getPixel(Image_ img, int x, int y) {
 //%
 void fill(Image_ img, int c) {
     img->makeWritable();
-    memset(img->pix(), img->fillMask(c), img->length() - 3);
+    memset(img->pix(), img->fillMask(c), img->pixLength());
 }
 
 void fillRect(Image_ img, int x, int y, int w, int h, int c) {
@@ -504,7 +504,8 @@ bool drawImageCore(Image_ img, Image_ from, int x, int y, int color) {
                 auto tdata = img->pix(x > 0 ? x : 0, y);
 
                 auto shift = (x & 1) ? 0 : 4;
-                for (int i = 0; i < len; ++i) {
+                auto off = x>0 && (x&1)?1:0;
+                for (int i = off; i < len+off; ++i) {
                     auto v = (*fdata >> shift) & 0xf;
                     if (v) {
                         if (color == -1) {
@@ -740,7 +741,7 @@ namespace image {
 Image_ create(int width, int height) {
     Image_ r = mkImage(width, height, IMAGE_BITS);
     if (r)
-        memset(r->data() + 3, 0, r->length() - 3);
+        memset(r->pix(), 0, r->pixLength());
     return r;
 }
 
