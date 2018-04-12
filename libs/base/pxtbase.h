@@ -527,7 +527,7 @@ class BoxedBuffer : public RefObject {
 };
 
 
-// the first byte of data indicates the format - currently 0xF1 or 0xF4 to 1 or 4 bit bitmaps
+// the first byte of data indicates the format - currently 0xE1 or 0xE4 to 1 or 4 bit bitmaps
 // second byte indicates width in pixels
 // third byte indicates the height (which should also match the size of the buffer)
 // just like ordinary buffers, these can be layed out in flash

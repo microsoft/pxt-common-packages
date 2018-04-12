@@ -97,19 +97,18 @@ for (let line of lines) {
         prop[m[1]] = parseInt(m[3])
     } else {
         if (mode == 1) {
-            let w = (prop.charWidth + 7) >> 3
-            let sz = w * prop.charHeight
+            let h = (prop.charHeight + 7) >> 3
+            let sz = h * prop.charWidth
             if (/^[\.# ]{2,}$/.test(line)) {
-                line = line.replace(/ /g, "").replace(/\./g, "0").replace(/#/g, "1")
-                let bytes = []
-                line = line.slice(0, prop.charWidth)
-                while (line.length > 0) {
-                    let pref = line.slice(0, 8)
-                    line = line.slice(8)
-                    while (pref.length < 8) pref += "0"
-                    bytes.push(parseInt(pref, 2))
+                line = line.replace(/ /g, "")
+
+                for (let i = 0; i < prop.charWidth; ++i) {
+                    if (line.charAt(i) == '#') {
+                        let idx = 2 + i * h + (currCharLine >> 3)
+                        currCharBuf[idx] |= 0x80 >> (currCharLine & 7)
+                    }
                 }
-                currCharBuf.set(bytes, 2 + currCharLine * w)
+
                 currCharLine++
             } else {
                 m = /^\* ((\d+)|'(.)')/.exec(line)
@@ -173,7 +172,7 @@ function fmt(bufs) {
             out += " "
             len += s.length + 1
         }
-        
+
     }
     out += "\n`,\n"
 }

@@ -403,8 +403,8 @@ namespace pxsim.ImageMethods {
         if (!img2 || img2.length < 5 || img2[0] != 0xe1)
             return
         let w = img2[1]
-        let byteW = (w + 7) >> 3
         let h = img2[2]
+        let byteH = (h + 7) >> 3
 
         x |= 0
         y |= 0
@@ -418,26 +418,25 @@ namespace pxsim.ImageMethods {
 
         img.makeWritable()
 
-        let p = 3
+        let p = 4
         color = img.color(color)
         const screen = img.data
 
-        for (let i = 0; i < h; ++i) {
-            let yy = y + i
-            if (0 <= yy && yy < sh) {
-                let dst = yy * sw
+        for (let i = 0; i < w; ++i) {
+            let xxx = x + i
+            if (0 <= xxx && xxx < sw) {
+                let dst = xxx + y * sw
                 let src = p
-                let xx = x
-                let end = Math.min(sw, w + x)
-                if (x < 0) {
-                    src += ((-x) >> 3)
-                    xx += ((-x) >> 3) * 8
+                let yy = y
+                let end = Math.min(sh, h + y)
+                if (y < 0) {
+                    src += ((-y) >> 3)
+                    yy += ((-y) >> 3) * 8
                 }
-                dst += xx
                 let mask = 0x80
                 let v = img2[src++]
-                while (xx < end) {
-                    if (xx >= 0 && (v & mask)) {
+                while (yy < end) {
+                    if (yy >= 0 && (v & mask)) {
                         screen[dst] = color
                     }
                     mask >>= 1
@@ -445,11 +444,11 @@ namespace pxsim.ImageMethods {
                         mask = 0x80
                         v = img2[src++]
                     }
-                    dst++
-                    xx++
+                    dst += sw
+                    yy++
                 }
             }
-            p += byteW
+            p += byteH
         }
     }
 
@@ -460,16 +459,23 @@ namespace pxsim.ImageMethods {
 
 
 namespace pxsim.image {
+    function byteWidth(h: number, bpp: number) {
+        if (bpp == 1)
+            return h * bpp + 7 >> 3
+        else
+            return ((h * bpp + 31) >> 5) << 2
+    }
+
     function isValidImage(buf: RefBuffer) {
         if (!buf || buf.data.length < 4)
             return false;
 
-        if (buf.data[0] != 0xf1 && buf.data[0] != 0xf4)
+        if (buf.data[0] != 0xe1 && buf.data[0] != 0xe4)
             return false;
 
         const bpp = buf.data[0] & 0xf;
-        const sz = buf.data[2] * ((buf.data[1] * bpp + 7) >> 3);
-        if (3 + sz != buf.data.length)
+        const sz = buf.data[1] * byteWidth(buf.data[2], bpp)
+        if (4 + sz != buf.data.length)
             return false;
 
         return true;
@@ -480,14 +486,10 @@ namespace pxsim.image {
         return new RefImage(w, h, getScreenState().bpp())
     }
 
-    function byteWidth(bits: number) {
-        return ((bits + 31) >> 5) << 2
-    }
-
     export function ofBuffer(buf: RefBuffer): RefImage {
         if (!isValidImage(buf))
             return null
-        const src = buf.data
+        const src: Uint8Array = buf.data
         const w = src[1]
         const h = src[2]
         if (w == 0 || h == 0)
@@ -510,7 +512,7 @@ namespace pxsim.image {
                     }
                     if (v & mask)
                         dst[dstP] = 1
-                    dstP += h
+                    dstP += w
                     mask >>= 1
                 }
             }
@@ -535,7 +537,7 @@ namespace pxsim.image {
 
 
     export function toBuffer(img: RefImage): RefBuffer {
-        let col = byteWidth(img._height * img._bpp)
+        let col = byteWidth(img._height, img._bpp)
         let sz = 4 + img._width * col
         let r = new Uint8Array(sz)
         r[0] = 0xe0 | img._bpp
@@ -566,6 +568,8 @@ namespace pxsim.image {
                         dstP++
                     }
                 }
+                if (mask != 0x80)
+                    dstP++
             }
         }
 
