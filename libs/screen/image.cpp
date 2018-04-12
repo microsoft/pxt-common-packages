@@ -846,3 +846,47 @@ Buffer doubledIcon(Buffer icon) {
 }
 
 } // namespace image
+
+extern "C" void *memcpy(void *dst, const void *src, size_t sz) {
+    if (sz >= 4 && !((uintptr_t)dst & 3) && !((uintptr_t)src & 3)) {
+        size_t cnt = sz >> 2;
+        uint32_t *d = (uint32_t *)dst;
+        const uint32_t *s = (const uint32_t *)src;
+        while (cnt--) {
+            *d++ = *s++;
+        }
+        sz &= 3;
+        dst = d;
+        src = s;
+    }
+
+    uint8_t *dd = (uint8_t*)dst;
+    uint8_t *ss = (uint8_t*)src;
+
+    while (sz--) {
+        *dd++ = *ss++;
+    }
+
+    return dst;
+}
+
+extern "C" void *memset(void *dst, int v, size_t sz) {
+    if (sz >= 4 && !((uintptr_t)dst & 3)) {
+        size_t cnt = sz >> 2;
+        uint32_t vv = 0x01010101 * v;
+        uint32_t *d = (uint32_t *)dst;
+        while (cnt--) {
+            *d++ = vv;
+        }
+        sz &= 3;
+        dst = d;
+    }
+
+    uint8_t *dd = (uint8_t*)dst;
+
+    while (sz--) {
+        *dd++ = v;
+    }
+
+    return dst;
+}

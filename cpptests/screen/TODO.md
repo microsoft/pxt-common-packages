@@ -1,5 +1,5 @@
 ## PXT TODO
 
-* [ ] emit buffers with 32 bit length
-* [ ] fix @f4 encoding
-* [ ] fix memcpy
+* [x] emit buffers with 32 bit length
+* [x] fix @f4 encoding
+* [x] fix memcpy
