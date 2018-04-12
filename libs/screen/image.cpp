@@ -28,8 +28,12 @@ int RefImage::width() {
     return data()[1];
 }
 
-int RefImage::byteWidth() {
-    return (data()[1] * bpp() + 7) >> 3;
+int RefImage::wordHeight() {
+    return ((data()[2] * bpp() + 31) >> 5);
+}
+
+int RefImage::byteHeight() {
+    return ((data()[2] * bpp() + 31) >> 5) << 2;
 }
 
 int RefImage::bpp() {
@@ -53,12 +57,12 @@ void RefImage::makeWritable() {
 }
 
 uint8_t *RefImage::pix(int x, int y) {
-    uint8_t *d = &data()[3 + byteWidth() * y];
-    if (x) {
+    uint8_t *d = &data()[4 + byteHeight() * x];
+    if (y) {
         if (bpp() == 1)
-            d += x >> 3;
+            d += y >> 3;
         else if (bpp() == 4)
-            d += x >> 1;
+            d += y >> 1;
     }
     return d;
 }
@@ -81,31 +85,35 @@ RefImage::RefImage(BoxedBuffer *buf) : PXT_VTABLE_INIT(RefImage), _buffer((uintp
 }
 RefImage::RefImage(uint32_t sz) : PXT_VTABLE_INIT(RefImage), _buffer((sz << 2) | 3) {}
 
+static inline int byteSize(int w, int h, int bpp) {
+    return 4 + (((h * bpp + 31) / 32) * 4) * w;
+}
+
 Image_ mkImage(int width, int height, int bpp) {
     if (width < 0 || height < 0 || width > 255 || height > 255)
         return NULL;
     if (bpp != 1 && bpp != 4)
         return NULL;
-    uint32_t sz = 3 + ((width * bpp + 7) / 8) * height;
+    uint32_t sz = byteSize(width,height,bpp);
     Image_ r = new (::operator new(sizeof(RefImage) + sz)) RefImage(sz);
     auto d = r->data();
-    d[0] = 0xf0 | bpp;
+    d[0] = 0xe0 | bpp;
     d[1] = width;
     d[2] = height;
+    d[3] = 0;
     MEMDBG("mkImage: %d X %d => %p", width, height, r);
     return r;
 }
 
 bool isValidImage(Buffer buf) {
-    if (!buf || buf->length < 4)
+    if (!buf || buf->length < 5)
         return false;
 
-    if (buf->data[0] != 0xf1 && buf->data[0] != 0xf4)
+    if (buf->data[0] != 0xe1 && buf->data[0] != 0xe4)
         return false;
 
-    int bpp = buf->data[0] & 0xf;
-    int sz = buf->data[2] * ((buf->data[1] * bpp + 7) >> 3);
-    if (3 + sz != buf->length)
+    int sz = byteSize(buf->data[1],buf->data[2],buf->data[0] & 0xf );
+    if (sz != (int)buf->length)
         return false;
 
     return true;
@@ -139,16 +147,29 @@ bool isMono(Image_ img) {
     return img->bpp() == 1;
 }
 
+/**
+ * Sets all pixels in the current image from the other image, which has to be of the same size and bpp.
+ */
+//%
+void copyFrom(Image_ img, Image_ from) {
+    if (img->width() != from->width() ||
+      img->height() != from->height() ||
+      img->bpp() != from->bpp())
+      return;
+    img->makeWritable();
+    memcpy(img->pix(), from->pix(), from->pixLength());
+}
+
 static inline void setCore(Image_ img, int x, int y, int c) {
     auto ptr = img->pix(x, y);
     if (img->bpp() == 1) {
-        uint8_t mask = 0x80 >> (x & 7);
+        uint8_t mask = 0x80 >> (y & 7);
         if (c)
             *ptr |= mask;
         else
             *ptr &= ~mask;
     } else if (img->bpp() == 4) {
-        if (x & 1)
+        if (y & 1)
             *ptr = (*ptr & 0xf0) | (c & 0xf);
         else
             *ptr = (*ptr & 0x0f) | (c << 4);
@@ -175,10 +196,10 @@ int getPixel(Image_ img, int x, int y) {
         return 0;
     auto ptr = img->pix(x, y);
     if (img->bpp() == 1) {
-        uint8_t mask = 0x80 >> (x & 7);
+        uint8_t mask = 0x80 >> (y & 7);
         return (*ptr & mask) ? 1 : 0;
     } else if (img->bpp() == 4) {
-        if (x & 1)
+        if (y & 1)
             return *ptr & 0x0f;
         else
             return *ptr >> 4;
@@ -205,18 +226,18 @@ void fillRect(Image_ img, int x, int y, int w, int h, int c) {
 
     img->makeWritable();
 
-    auto bw = img->byteWidth();
+    auto bh = img->byteHeight();
     uint8_t f = img->fillMask(c);
 
     uint8_t *p = img->pix(x, y);
-    while (h-- > 0) {
+    while (w-- > 0) {
         if (img->bpp() == 1) {
             auto ptr = p;
-            uint8_t mask = 0x80 >> (x & 7);
+            uint8_t mask = 0x80 >> (y & 7);
 
-            for (int i = 0; i < w; ++i) {
+            for (int i = 0; i < h; ++i) {
                 if (mask == 0) {
-                    if (w - i >= 8) {
+                    if (h - i >= 8) {
                         *++ptr = f;
                         i += 7;
                         continue;
@@ -235,12 +256,12 @@ void fillRect(Image_ img, int x, int y, int w, int h, int c) {
         } else if (img->bpp() == 4) {
             auto ptr = p;
             uint8_t mask = 0xf0;
-            if (x & 1)
+            if (y & 1)
                 mask >>= 4;
 
-            for (int i = 0; i < w; ++i) {
+            for (int i = 0; i < h; ++i) {
                 if (mask == 0) {
-                    if (w - i >= 2) {
+                    if (h - i >= 2) {
                         *ptr++ = f;
                         i++;
                         continue;
@@ -253,7 +274,7 @@ void fillRect(Image_ img, int x, int y, int w, int h, int c) {
                 mask >>= 4;
             }
         }
-        p += bw;
+        p += bh;
     }
 }
 
@@ -281,18 +302,18 @@ Image_ clone(Image_ img) {
 void flipX(Image_ img) {
     img->makeWritable();
 
-    // this is quite slow - for small 16x16 sprite it will take in the order of 1ms
-    // something faster requires quite a bit of bit tweaking, especially for mono images
-    for (int i = 0; i < img->height(); ++i) {
-        int a = 0;
-        int b = img->width() - 1;
-        while (a < b) {
-            int tmp = getPixel(img, a, i);
-            setPixel(img, a, i, getPixel(img, b, i));
-            setPixel(img, b, i, tmp);
-            a++;
-            b--;
-        }
+    int bh = img->byteHeight();
+    auto a = img->pix();
+    auto b = img->pix(img->width() - 1, 0);
+
+    uint8_t tmp[bh];
+
+    while (a < b) {
+        memcpy(tmp, a, bh);
+        memcpy(a, b, bh);
+        memcpy(b, tmp, bh);
+        a += bh;
+        b -= bh;
     }
 }
 
@@ -303,18 +324,18 @@ void flipX(Image_ img) {
 void flipY(Image_ img) {
     img->makeWritable();
 
-    int bw = img->byteWidth();
-    auto a = img->pix();
-    auto b = img->pix(0, img->height() - 1);
-
-    uint8_t tmp[bw];
-
-    while (a < b) {
-        memcpy(tmp, a, bw);
-        memcpy(a, b, bw);
-        memcpy(b, tmp, bw);
-        a += bw;
-        b -= bw;
+    // this is quite slow - for small 16x16 sprite it will take in the order of 1ms
+    // something faster requires quite a bit of bit tweaking, especially for mono images
+    for (int i = 0; i < img->width(); ++i) {
+        int a = 0;
+        int b = img->height() - 1;
+        while (a < b) {
+            int tmp = getPixel(img, i, a);
+            setPixel(img, i, a, getPixel(img, i, b));
+            setPixel(img, i, b, tmp);
+            a++;
+            b--;
+        }
     }
 }
 
@@ -324,23 +345,23 @@ void flipY(Image_ img) {
 //%
 void scroll(Image_ img, int dx, int dy) {
     img->makeWritable();
-    auto bw = img->byteWidth();
-    auto h = img->height();
-    if (dy < 0) {
-        dy = -dy;
-        if (dy < h)
-            memmove(img->pix(), img->pix(0, dy), (h - dy) * bw);
+    auto bh = img->byteHeight();
+    auto w = img->width();
+    if (dx < 0) {
+        dx = -dx;
+        if (dx < w)
+            memmove(img->pix(), img->pix(dx, 0), (w - dx) * bh);
         else
-            dy = h;
-        memset(img->pix(0, h - dy), 0, dy * bw);
-    } else if (dy > 0) {
-        if (dy < h)
-            memmove(img->pix(0, dy), img->pix(), (h - dy) * bw);
+            dx = w;
+        memset(img->pix(w - dx, 0), 0, dx * bh);
+    } else if (dx > 0) {
+        if (dx < w)
+            memmove(img->pix(dx, 0), img->pix(), (w - dx) * bh);
         else
-            dy = h;
-        memset(img->pix(), 0, dy * bw);
+            dx = w;
+        memset(img->pix(), 0, dx * bh);
     }
-    // TODO implement dx
+    // TODO implement dy
 }
 
 const uint8_t bitdouble[] = {0x00, 0x03, 0x0c, 0x0f, 0x30, 0x33, 0x3c, 0x3f,
@@ -359,17 +380,16 @@ Image_ doubledX(Image_ img) {
     Image_ r = mkImage(img->width() * 2, img->height(), img->bpp());
     auto src = img->pix();
     auto dst = r->pix();
-    auto h = img->height();
-    auto bw = r->byteWidth();
-    auto dbl = img->bpp() == 1 ? bitdouble : nibdouble;
+    auto w = img->width();
+    auto bh = img->byteHeight();
 
-    for (int i = 0; i < h; ++i) {
-        for (int j = 0; j < bw; j += 2) {
-            *dst++ = dbl[*src >> 4];
-            if (j != bw - 1)
-                *dst++ = dbl[*src & 0xf];
-            src++;
-        }
+    for (int i = 0; i < w; ++i) {
+        memcpy(dst, src, bh);
+        dst += bh;
+        memcpy(dst, src, bh);
+        dst += bh;
+
+        src += bh;
     }
 
     return r;
@@ -386,16 +406,18 @@ Image_ doubledY(Image_ img) {
     Image_ r = mkImage(img->width(), img->height() * 2, img->bpp());
     auto src = img->pix();
     auto dst = r->pix();
-    auto bw = img->byteWidth();
-    auto h = img->height();
 
-    for (int i = 0; i < h; ++i) {
-        memcpy(dst, src, bw);
-        dst += bw;
-        memcpy(dst, src, bw);
-        dst += bw;
+    auto w = img->width();
+    auto bh = r->byteHeight();
+    auto dbl = img->bpp() == 1 ? bitdouble : nibdouble;
 
-        src += bw;
+    for (int i = 0; i < w; ++i) {
+        for (int j = 0; j < bh; j += 2) {
+            *dst++ = dbl[*src >> 4];
+            if (j != bh - 1)
+                *dst++ = dbl[*src & 0xf];
+            src++;
+        }
     }
 
     return r;
@@ -409,8 +431,20 @@ void replace(Image_ img, int from, int to) {
     if (img->bpp() != 4)
         return;
     to &= 0xf;
+    if (from == to)
+        return;
+
+    // avoid bleeding 'to' color into the overflow areas of the picture
+    if (from == 0 && (img->height() & 0x1f)) {
+        for (int i = 0; i < img->height(); ++i)
+        for (int j = 0; j < img->width(); ++j)
+        if(getPixel(img,j,i)==from)
+        setPixel(img,j,i,to);
+        return;
+    }
+
     auto ptr = img->pix();
-    auto len = img->height() * img->byteWidth();
+    auto len = img->pixLength();
     while (len--) {
         auto b = *ptr;
         if ((b >> 4) == from)
@@ -449,26 +483,26 @@ bool drawImageCore(Image_ img, Image_ from, int x, int y, int color) {
     if (y >= sh)
         return false;
 
-    auto len = x < 0 ? min(sw, w + x) : min(sw - x, w);
+    auto len = y < 0 ? min(sh, h + y) : min(sh - y, h);
     auto tbp = img->bpp();
     auto fbp = from->bpp();
-    auto x0 = x;
+    auto y0 = y;
 
-    for (int i = 0; i < h; ++i, ++y) {
-        if (0 <= y && y < sh) {
+    for (int i = 0; i < w; ++i, ++x) {
+        if (0 <= x && x < sw) {
             if (tbp == 1 && fbp == 1) {
-                x = x0;
+                y = y0;
 
-                auto data = from->pix(0, i);
+                auto data = from->pix(i, 0);
                 int shift = 8 - (x & 7);
                 auto off = img->pix(x, y);
-                auto off0 = img->pix(0, y);
-                auto off1 = img->pix(img->width() - 1, y);
+                auto off0 = img->pix(x, 0);
+                auto off1 = img->pix(x, img->height() - 1);
 
-                int x1 = x + w + (x & 7);
+                int y1 = y + h + (y & 7);
                 int prev = 0;
 
-                while (x < x1 - 8) {
+                while (y < y1 - 8) {
                     int curr = *data++ << shift;
                     if (off0 <= off && off <= off1) {
                         uint8_t v = (curr >> 8) | prev;
@@ -485,7 +519,7 @@ bool drawImageCore(Image_ img, Image_ from, int x, int y, int color) {
                     x += 8;
                 }
 
-                int left = x1 - x;
+                int left = y1 - y;
                 if (left > 0) {
                     int curr = *data << shift;
                     if (off0 <= off && off <= off1) {
@@ -500,21 +534,20 @@ bool drawImageCore(Image_ img, Image_ from, int x, int y, int color) {
                 }
 
             } else if (tbp == 4 && fbp == 4) {
-                auto fdata = from->pix(x < 0 ? -x : 0, i);
-                auto tdata = img->pix(x > 0 ? x : 0, y);
+                auto fdata = from->pix(i, y < 0 ? -y : 0);
+                auto tdata = img->pix(x, y > 0 ? y : 0);
 
-                auto shift = (x & 1) ? 0 : 4;
-                auto off = x>0 && (x&1)?1:0;
-                for (int i = off; i < len+off; ++i) {
+                auto shift = (i & 1) ? 0 : 4;
+                for (int i = 0; i < len; ++i) {
                     auto v = (*fdata >> shift) & 0xf;
                     if (v) {
                         if (color == -1) {
-                            if ((i & 1) && (*tdata & 0x0f))
+                            if ((x & 1) && (*tdata & 0x0f))
                                 return true;
-                            if (!(i & 1) && (*tdata & 0xf0))
+                            if (!(x & 1) && (*tdata & 0xf0))
                                 return true;
                         } else {
-                            if (i & 1)
+                            if (x & 1)
                                 *tdata = (*tdata & 0xf0) | v;
                             else
                                 *tdata = (*tdata & 0x0f) | (v << 4);
@@ -526,13 +559,13 @@ bool drawImageCore(Image_ img, Image_ from, int x, int y, int color) {
                     } else {
                         shift = 0;
                     }
-                    if (i & 1)
+                    if (x & 1)
                         tdata++;
                 }
             } else if (tbp == 4 && fbp == 1) {
                 // icon mode
-                auto fdata = from->pix(x < 0 ? -x : 0, i);
-                auto tdata = img->pix(x > 0 ? x : 0, y);
+                auto fdata = from->pix(i, y < 0 ? -y : 0);
+                auto tdata = img->pix(x, y > 0 ? y : 0);
 
                 auto mask = 0x80 >> (x & 7);
                 auto v = *fdata++;
@@ -594,7 +627,7 @@ bool overlapsWith(Image_ img, Image_ other, int x, int y) {
 
 //%
 void _drawIcon(Image_ img, Buffer icon, int xy, int c) {
-    if (!isValidImage(icon) || icon->data[0] != 0xf1)
+    if (!isValidImage(icon) || icon->data[0] != 0xe1)
         return;
 
     img->makeWritable();
