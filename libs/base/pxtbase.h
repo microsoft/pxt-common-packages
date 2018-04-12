@@ -555,6 +555,8 @@ class RefImage : public RefObject {
     int wordHeight();
     int bpp();
 
+    bool hasPadding() { return (height() & 0x1f) != 0; }
+
     uint8_t *pix() { return data() + 4; }
     uint8_t *pix(int x, int y);
     uint8_t fillMask(color c);

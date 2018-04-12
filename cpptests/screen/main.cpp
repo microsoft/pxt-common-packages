@@ -107,7 +107,7 @@ extern "C" int main() {
         golden_drawTransparentImage(s2, sprite, x, y);
         assertSame(s1, s2);
 
-    printf("%d %d %d %d\n", x, y, w, h);
+        //printf("%d %d %d %d\n", x, y, w, h);
         ImageMethods::fillRect(s1, x, y, w, h, 12);
         golden_fillRect(s2, x, y, w, h, 12);
         assertSame(s1, s2);

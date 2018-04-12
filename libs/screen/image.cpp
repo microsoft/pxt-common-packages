@@ -207,22 +207,40 @@ int getPixel(Image_ img, int x, int y) {
     return 0;
 }
 
+void fillRect(Image_ img, int x, int y, int w, int h, int c);
+
 /**
  * Fill entire image with a given color
  */
 //%
 void fill(Image_ img, int c) {
+    if (c && img->hasPadding()) {
+        fillRect(img, 0, 0, img->width(), img->height(), c);
+        return;
+    }
     img->makeWritable();
     memset(img->pix(), img->fillMask(c), img->pixLength());
 }
 
 void fillRect(Image_ img, int x, int y, int w, int h, int c) {
+    if (w == 0 || h == 0 || x >= img->width() || y >= img->height())
+        return;
+
     int x2 = x + w - 1;
     int y2 = y + h - 1;
+    
+    if (x2 < 0 || y2 < 0)
+        return;
+
     img->clamp(&x2, &y2);
     img->clamp(&x, &y);
     w = x2 - x + 1;
     h = y2 - y + 1;
+
+    if (!img->hasPadding() && x == 0 && y == 0 && w == img->width() && h == img->height()) {
+        fill(img, c);
+        return;
+    }
 
     img->makeWritable();
 
@@ -262,7 +280,7 @@ void fillRect(Image_ img, int x, int y, int w, int h, int c) {
             for (int i = 0; i < h; ++i) {
                 if (mask == 0) {
                     if (h - i >= 2) {
-                        *ptr++ = f;
+                        *++ptr = f;
                         i++;
                         continue;
                     } else {
@@ -435,7 +453,7 @@ void replace(Image_ img, int from, int to) {
         return;
 
     // avoid bleeding 'to' color into the overflow areas of the picture
-    if (from == 0 && (img->height() & 0x1f)) {
+    if (from == 0 && img->hasPadding()) {
         for (int i = 0; i < img->height(); ++i)
             for (int j = 0; j < img->width(); ++j)
                 if (getPixel(img, j, i) == from)
