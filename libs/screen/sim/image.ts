@@ -522,9 +522,9 @@ namespace pxsim.image {
                 for (let j = 0; j < h >> 1; ++j) {
                     const v = src[srcP++]
                     dst[dstP] = v >> 4
-                    dstP += h
+                    dstP += w
                     dst[dstP] = v & 0xf
-                    dstP += h
+                    dstP += w
                 }
                 if (h & 1)
                     dst[dstP] = src[srcP++] >> 4
