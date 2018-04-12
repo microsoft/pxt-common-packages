@@ -96,9 +96,9 @@ RefImage::RefImage(uint32_t sz) : PXT_VTABLE_INIT(RefImage), _buffer((sz << 2) |
 
 static inline int byteSize(int w, int h, int bpp) {
     if (bpp == 1)
-    return 4 + ((h + 7) >> 3) * w;
+        return 4 + ((h + 7) >> 3) * w;
     else
-    return 4 + (((h * 4 + 31) / 32) * 4) * w;
+        return 4 + (((h * 4 + 31) / 32) * 4) * w;
 }
 
 Image_ mkImage(int width, int height, int bpp) {
@@ -240,7 +240,7 @@ void fillRect(Image_ img, int x, int y, int w, int h, int c) {
 
     int x2 = x + w - 1;
     int y2 = y + h - 1;
-    
+
     if (x2 < 0 || y2 < 0)
         return;
 
@@ -662,8 +662,8 @@ bool overlapsWith(Image_ img, Image_ other, int x, int y) {
 //  byte 1: width in pixels
 //  byte 2: height in pixels
 //  byte 3: padding (should be zero)
-//  byte 4...N: data 4 bits per pixels, high order nibble printed first, lines aligned to 32 bit words
-//  byte 4...N: data 1 bit per pixels, high order bit printed first, lines aligned to byte
+//  byte 4...N: data 4 bits per pixels, high order nibble printed first, lines aligned to 32 bit
+//  words byte 4...N: data 1 bit per pixels, high order bit printed first, lines aligned to byte
 
 //%
 void _drawIcon(Image_ img, Buffer icon, int xy, int c) {
@@ -860,8 +860,8 @@ extern "C" void *memcpy(void *dst, const void *src, size_t sz) {
         src = s;
     }
 
-    uint8_t *dd = (uint8_t*)dst;
-    uint8_t *ss = (uint8_t*)src;
+    uint8_t *dd = (uint8_t *)dst;
+    uint8_t *ss = (uint8_t *)src;
 
     while (sz--) {
         *dd++ = *ss++;
@@ -882,7 +882,7 @@ extern "C" void *memset(void *dst, int v, size_t sz) {
         dst = d;
     }
 
-    uint8_t *dd = (uint8_t*)dst;
+    uint8_t *dd = (uint8_t *)dst;
 
     while (sz--) {
         *dd++ = v;
