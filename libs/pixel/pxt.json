@@ -1,0 +1,16 @@
+{
+    "name": "pixel",
+    "description": "A single on-board light pixel",
+    "files": [
+        "pixel.cpp",
+        "pixel.ts",
+        "shims.d.ts",
+        "enums.d.ts"
+    ],
+    "testFiles": [
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core"
+    }
+}
