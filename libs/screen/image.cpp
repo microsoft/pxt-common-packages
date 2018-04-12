@@ -1,9 +1,9 @@
 #include "pxt.h"
 
 #if IMAGE_BITS == 1
-#define IMAGE_TAG 0xf1
+// OK
 #elif IMAGE_BITS == 4
-#define IMAGE_TAG 0xf4
+// OK
 #else
 #error "Invalid IMAGE_BITS"
 #endif
@@ -29,11 +29,20 @@ int RefImage::width() {
 }
 
 int RefImage::wordHeight() {
+    if (bpp() == 1)
+        target_panic(900);
     return ((data()[2] * bpp() + 31) >> 5);
 }
 
 int RefImage::byteHeight() {
-    return ((data()[2] * bpp() + 31) >> 5) << 2;
+    if (bpp() == 1)
+        return (data()[2] + 7) >> 3;
+    else if (bpp() == 4)
+        return ((data()[2] * 4 + 31) >> 5) << 2;
+    else {
+        target_panic(900);
+        return -1;
+    }
 }
 
 int RefImage::bpp() {
@@ -86,7 +95,10 @@ RefImage::RefImage(BoxedBuffer *buf) : PXT_VTABLE_INIT(RefImage), _buffer((uintp
 RefImage::RefImage(uint32_t sz) : PXT_VTABLE_INIT(RefImage), _buffer((sz << 2) | 3) {}
 
 static inline int byteSize(int w, int h, int bpp) {
-    return 4 + (((h * bpp + 31) / 32) * 4) * w;
+    if (bpp == 1)
+    return 4 + ((h + 7) >> 3) * w;
+    else
+    return 4 + (((h * 4 + 31) / 32) * 4) * w;
 }
 
 Image_ mkImage(int width, int height, int bpp) {
@@ -490,8 +502,6 @@ bool drawImageCore(Image_ img, Image_ from, int x, int y, int color) {
     auto sh = img->height();
     auto sw = img->width();
 
-    // DMESG("drawIMG at (%d,%d) w=%d bw=%d", x, y, img->width(), img->byteWidth() );
-
     if (x + w <= 0)
         return false;
     if (x >= sw)
@@ -648,11 +658,12 @@ bool overlapsWith(Image_ img, Image_ other, int x, int y) {
 }
 
 // Image_ format:
-//  byte 0: magic 0xf4 - 4 bit color; 0xf1 is monochromatic
+//  byte 0: magic 0xe4 - 4 bit color; 0xe1 is monochromatic
 //  byte 1: width in pixels
 //  byte 2: height in pixels
-//  byte 3...N: data 4 bits per pixels, high order nibble printed first, lines aligned to byte
-//  byte 3...N: data 1 bit per pixels, high order bit printed first, lines aligned to byte
+//  byte 3: padding (should be zero)
+//  byte 4...N: data 4 bits per pixels, high order nibble printed first, lines aligned to 32 bit words
+//  byte 4...N: data 1 bit per pixels, high order bit printed first, lines aligned to byte
 
 //%
 void _drawIcon(Image_ img, Buffer icon, int xy, int c) {
