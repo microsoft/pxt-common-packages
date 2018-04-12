@@ -94,7 +94,7 @@ Image_ mkImage(int width, int height, int bpp) {
         return NULL;
     if (bpp != 1 && bpp != 4)
         return NULL;
-    uint32_t sz = byteSize(width,height,bpp);
+    uint32_t sz = byteSize(width, height, bpp);
     Image_ r = new (::operator new(sizeof(RefImage) + sz)) RefImage(sz);
     auto d = r->data();
     d[0] = 0xe0 | bpp;
@@ -112,7 +112,7 @@ bool isValidImage(Buffer buf) {
     if (buf->data[0] != 0xe1 && buf->data[0] != 0xe4)
         return false;
 
-    int sz = byteSize(buf->data[1],buf->data[2],buf->data[0] & 0xf );
+    int sz = byteSize(buf->data[1], buf->data[2], buf->data[0] & 0xf);
     if (sz != (int)buf->length)
         return false;
 
@@ -148,14 +148,14 @@ bool isMono(Image_ img) {
 }
 
 /**
- * Sets all pixels in the current image from the other image, which has to be of the same size and bpp.
+ * Sets all pixels in the current image from the other image, which has to be of the same size and
+ * bpp.
  */
 //%
 void copyFrom(Image_ img, Image_ from) {
-    if (img->width() != from->width() ||
-      img->height() != from->height() ||
-      img->bpp() != from->bpp())
-      return;
+    if (img->width() != from->width() || img->height() != from->height() ||
+        img->bpp() != from->bpp())
+        return;
     img->makeWritable();
     memcpy(img->pix(), from->pix(), from->pixLength());
 }
@@ -437,9 +437,9 @@ void replace(Image_ img, int from, int to) {
     // avoid bleeding 'to' color into the overflow areas of the picture
     if (from == 0 && (img->height() & 0x1f)) {
         for (int i = 0; i < img->height(); ++i)
-        for (int j = 0; j < img->width(); ++j)
-        if(getPixel(img,j,i)==from)
-        setPixel(img,j,i,to);
+            for (int j = 0; j < img->width(); ++j)
+                if (getPixel(img, j, i) == from)
+                    setPixel(img, j, i, to);
         return;
     }
 
@@ -452,7 +452,7 @@ void replace(Image_ img, int from, int to) {
         if ((b & 0xf) == from)
             b = (b & 0xf0) | to;
         *ptr++ = b;
-    } 
+    }
 }
 
 /**
@@ -488,7 +488,7 @@ bool drawImageCore(Image_ img, Image_ from, int x, int y, int color) {
     auto fbp = from->bpp();
     auto y0 = y;
 
-    //DMESG("drawIMG at (%d,%d) w=%d bh=%d len=%d", x, y, img->width(), img->byteHeight(), len );
+    // DMESG("drawIMG at (%d,%d) w=%d bh=%d len=%d", x, y, img->width(), img->byteHeight(), len );
 
     for (int xx = 0; xx < w; ++xx, ++x) {
         if (0 <= x && x < sw) {
@@ -547,7 +547,7 @@ bool drawImageCore(Image_ img, Image_ from, int x, int y, int color) {
                     shift = 0;
                 if (y > 0 && (y & 1))
                     off = 1;
-                //DMESG("drawIMG at (%d,%d) (%d,%d) y=%d sh=%d off=%d", xx,fy,x,ty,y,shift,off);
+                // DMESG("drawIMG at (%d,%d) (%d,%d) y=%d sh=%d off=%d", xx,fy,x,ty,y,shift,off);
                 for (int i = 0; i < len; ++i) {
                     auto v = (*fdata >> shift) & 0xf;
                     auto odd = (i + off) & 1;
