@@ -6,7 +6,9 @@
 
 #define ramint_t uint32_t
 #define IMAGE_BITS 4
-#define DMESG printf
+
+#define DMESG(...) do { printf(__VA_ARGS__); printf("\n"); } while(0)
+
 
 
 #endif

@@ -488,12 +488,14 @@ bool drawImageCore(Image_ img, Image_ from, int x, int y, int color) {
     auto fbp = from->bpp();
     auto y0 = y;
 
-    for (int i = 0; i < w; ++i, ++x) {
+    //DMESG("drawIMG at (%d,%d) w=%d bh=%d len=%d", x, y, img->width(), img->byteHeight(), len );
+
+    for (int xx = 0; xx < w; ++xx, ++x) {
         if (0 <= x && x < sw) {
             if (tbp == 1 && fbp == 1) {
                 y = y0;
 
-                auto data = from->pix(i, 0);
+                auto data = from->pix(xx, 0);
                 int shift = 8 - (x & 7);
                 auto off = img->pix(x, y);
                 auto off0 = img->pix(x, 0);
@@ -534,20 +536,29 @@ bool drawImageCore(Image_ img, Image_ from, int x, int y, int color) {
                 }
 
             } else if (tbp == 4 && fbp == 4) {
-                auto fdata = from->pix(i, y < 0 ? -y : 0);
-                auto tdata = img->pix(x, y > 0 ? y : 0);
+                auto fy = y < 0 ? -y : 0;
+                auto ty = y > 0 ? y : 0;
+                auto fdata = from->pix(xx, fy);
+                auto tdata = img->pix(x, ty);
 
-                auto shift = (i & 1) ? 0 : 4;
+                auto shift = 4;
+                auto off = 0;
+                if (y < 0 && ((-y) & 1))
+                    shift = 0;
+                if (y > 0 && (y & 1))
+                    off = 1;
+                //DMESG("drawIMG at (%d,%d) (%d,%d) y=%d sh=%d off=%d", xx,fy,x,ty,y,shift,off);
                 for (int i = 0; i < len; ++i) {
                     auto v = (*fdata >> shift) & 0xf;
+                    auto odd = (i + off) & 1;
                     if (v) {
                         if (color == -1) {
-                            if ((x & 1) && (*tdata & 0x0f))
+                            if (odd && (*tdata & 0x0f))
                                 return true;
-                            if (!(x & 1) && (*tdata & 0xf0))
+                            if (!odd && (*tdata & 0xf0))
                                 return true;
                         } else {
-                            if (x & 1)
+                            if (odd)
                                 *tdata = (*tdata & 0xf0) | v;
                             else
                                 *tdata = (*tdata & 0x0f) | (v << 4);
@@ -559,12 +570,12 @@ bool drawImageCore(Image_ img, Image_ from, int x, int y, int color) {
                     } else {
                         shift = 0;
                     }
-                    if (x & 1)
+                    if (odd)
                         tdata++;
                 }
             } else if (tbp == 4 && fbp == 1) {
                 // icon mode
-                auto fdata = from->pix(i, y < 0 ? -y : 0);
+                auto fdata = from->pix(xx, y < 0 ? -y : 0);
                 auto tdata = img->pix(x, y > 0 ? y : 0);
 
                 auto mask = 0x80 >> (x & 7);

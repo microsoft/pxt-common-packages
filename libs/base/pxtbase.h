@@ -520,7 +520,8 @@ class BoxedString : public RefObject {
 
 class BoxedBuffer : public RefObject {
   public:
-    uint16_t length;
+    // data needs to be word-aligned, so we use 32 bits for length
+    uint32_t length;
     uint8_t data[0];
     BoxedBuffer() : RefObject(PXT_REF_TAG_BUFFER) {}
 };
@@ -546,14 +547,15 @@ class RefImage : public RefObject {
 
     uint8_t *data() { return hasBuffer() ? buffer()->data : _data; }
     int length() { return hasBuffer() ? buffer()->length : (_buffer >> 2); }
-    int pixLength() { return length() - 3; }
+    int pixLength() { return length() - 4; }
 
     int height();
     int width();
-    int byteWidth();
+    int byteHeight();
+    int wordHeight();
     int bpp();
 
-    uint8_t *pix() { return data() + 3; }
+    uint8_t *pix() { return data() + 4; }
     uint8_t *pix(int x, int y);
     uint8_t fillMask(color c);
     bool inRange(int x, int y);

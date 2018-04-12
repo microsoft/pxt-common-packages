@@ -8,6 +8,7 @@ bool isMono(Image_ img);
 void setPixel(Image_ img, int x, int y, int c);
 int getPixel(Image_ img, int x, int y);
 void fill(Image_ img, int c);
+void fillRect(Image_ img, int x, int y, int w, int h, int c);
 void _fillRect(Image_ img, int xy, int wh, int c);
 Image_ clone(Image_ img);
 void flipX(Image_ img);
@@ -22,6 +23,7 @@ void drawTransparentImage(Image_ img, Image_ from, int x, int y);
 bool overlapsWith(Image_ img, Image_ other, int x, int y);
 void _drawIcon(Image_ img, Buffer icon, int xy, int c);
 void _drawLine(Image_ img, int xy, int wh, int c);
+void copyFrom(Image_ img, Image_ from);
 } // namespace ImageMethods
 
 void golden_drawTransparentImage(Image_ img, Image_ from, int x, int y) {
@@ -33,11 +35,25 @@ void golden_drawTransparentImage(Image_ img, Image_ from, int x, int y) {
         }
 }
 
+void golden_fillRect(Image_ img, int x, int y, int w, int h, int c) {
+    for (int i = 0; i < w; ++i)
+        for (int j = 0; j < h; ++j) {
+            ImageMethods::setPixel(img, x + i, y + j, c);
+        }
+}
+
+void fillRand(Image_ img) {
+    auto w = img->width();
+    auto h = img->height();
+    for (int i = 0; i < w; ++i)
+        for (int j = 0; j < h; ++j) {
+            ImageMethods::setPixel(img, i, j, rand() & 0xf);
+        }
+}
+
 Image_ randomImg(int w, int h) {
     auto screen = mkImage(w, h, IMAGE_BITS);
-    auto ptr = screen->pix();
-    for (int i = 0; i < screen->pixLength(); ++i)
-        *ptr++ = rand();
+    fillRand(screen);
     return screen;
 }
 
@@ -76,16 +92,28 @@ extern "C" int main() {
     auto s1 = randomImg(160, 128);
     auto s2 = ImageMethods::clone(s1);
     assertSame(s1, s2);
-    auto sprite = randomImg(16, 16);
-    //ImageMethods::fill(sprite, 4);
+    //auto sprite = randomImg(16, 16);
+    //ImageMethods::fill(sprite, 12);
 
-    for (int i = 0; i < 100; ++i) {
+    for (int i = 0; i < 500; ++i) {
+        fillRand(s1);
+        ImageMethods::copyFrom(s2, s1);
         auto x = rr(-30, 200);
         auto y = rr(-30, 200);
-        printf("%d,%d\n", x, y);
+        auto w = rr(1, 40);
+        auto h = rr(1, 40);        
+        auto sprite = randomImg(w, h);
         ImageMethods::drawTransparentImage(s1, sprite, x, y);
         golden_drawTransparentImage(s2, sprite, x, y);
         assertSame(s1, s2);
+
+    printf("%d %d %d %d\n", x, y, w, h);
+        ImageMethods::fillRect(s1, x, y, w, h, 12);
+        golden_fillRect(s2, x, y, w, h, 12);
+        assertSame(s1, s2);
+
+        free(sprite);
+
     }
 
     printf("OK\n");
