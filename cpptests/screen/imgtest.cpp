@@ -26,6 +26,8 @@ void _drawLine(Image_ img, int xy, int wh, int c);
 void copyFrom(Image_ img, Image_ from);
 } // namespace ImageMethods
 
+int bpp = 4;
+
 void golden_drawTransparentImage(Image_ img, Image_ from, int x, int y) {
     for (int i = 0; i < ImageMethods::width(from); ++i)
         for (int j = 0; j < ImageMethods::height(from); ++j) {
@@ -42,17 +44,22 @@ void golden_fillRect(Image_ img, int x, int y, int w, int h, int c) {
         }
 }
 
+int randCol() {
+    return rand() & ((1<<bpp)-1);
+}
+
 void fillRand(Image_ img) {
     auto w = img->width();
     auto h = img->height();
     for (int i = 0; i < w; ++i)
         for (int j = 0; j < h; ++j) {
-            ImageMethods::setPixel(img, i, j, rand() & 0xf);
+            ImageMethods::setPixel(img, i, j, randCol());
         }
 }
 
-Image_ randomImg(int w, int h) {
-    auto screen = mkImage(w, h, IMAGE_BITS);
+Image_ randomImg(int w, int h, int bp = 0) {
+    if (bp == 0) bp = bpp;
+    auto screen = mkImage(w, h, bp);
     ImageMethods::fill(screen, 0);
     fillRand(screen);
     return screen;
@@ -99,7 +106,7 @@ int rr(int min, int max) {
     return rand() % (max - min) + min;
 }
 
-extern "C" int main() {
+void testBPP() {
     auto s1 = randomImg(160, 128);
     auto s2 = ImageMethods::clone(s1);
     assertSame(s1, s2);
@@ -126,16 +133,25 @@ extern "C" int main() {
         //dumpBytes("spr   ", p);
         assertSame(s1, s2);
 
-        //printf("%d %d %d %d\n", x, y, w, h);
-        ImageMethods::fillRect(s1, x, y, w, h, 12);
-        golden_fillRect(s2, x, y, w, h, 12);
+        //DMESG("%d %d %d %d", x, y, w, h);
+        int col = randCol();
+        ImageMethods::fillRect(s1, x, y, w, h, col);
+        golden_fillRect(s2, x, y, w, h, col);
         assertSame(s1, s2);
 
         free(sprite);
 
     }
 
-    printf("OK\n");
+    printf("OK bpp=%d\n", bpp);
+
+}
+
+extern "C" int main() {
+    bpp = 1;    
+    testBPP();
+    bpp = 4;    
+    testBPP();
     return 0;
 }
 

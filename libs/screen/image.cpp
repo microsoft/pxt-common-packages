@@ -525,7 +525,7 @@ bool drawImageCore(Image_ img, Image_ from, int x, int y, int color) {
                 y = y0;
 
                 auto data = from->pix(xx, 0);
-                int shift = 8 - (x & 7);
+                int shift = (y & 7);
                 auto off = img->pix(x, y);
                 auto off0 = img->pix(x, 0);
                 auto off1 = img->pix(x, img->height() - 1);
@@ -536,7 +536,7 @@ bool drawImageCore(Image_ img, Image_ from, int x, int y, int color) {
                 while (y < y1 - 8) {
                     int curr = *data++ << shift;
                     if (off0 <= off && off <= off1) {
-                        uint8_t v = (curr >> 8) | prev;
+                        uint8_t v = (curr >> 0) | (prev >> 8);
 
                         if (color == -1) {
                             if (*off & v)
@@ -547,14 +547,14 @@ bool drawImageCore(Image_ img, Image_ from, int x, int y, int color) {
                     }
                     off++;
                     prev = curr;
-                    x += 8;
+                    y += 8;
                 }
 
-                int left = y1 - y;
+                int left = y1 - y; 
                 if (left > 0) {
                     int curr = *data << shift;
                     if (off0 <= off && off <= off1) {
-                        uint8_t v = ((curr >> 8) | prev) & (0xff << (8 - left));
+                        uint8_t v = ((curr >> 0) | (prev >> 8)) & (0xff >> (8 - left));
                         if (color == -1) {
                             if (*off & v)
                                 return true;
