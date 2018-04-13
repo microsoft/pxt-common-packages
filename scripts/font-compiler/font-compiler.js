@@ -105,7 +105,7 @@ for (let line of lines) {
                 for (let i = 0; i < prop.charWidth; ++i) {
                     if (line.charAt(i) == '#') {
                         let idx = 2 + i * h + (currCharLine >> 3)
-                        currCharBuf[idx] |= 0x80 >> (currCharLine & 7)
+                        currCharBuf[idx] |= 0x01 << (currCharLine & 7)
                     }
                 }
 

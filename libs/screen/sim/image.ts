@@ -433,15 +433,15 @@ namespace pxsim.ImageMethods {
                     src += ((-y) >> 3)
                     yy += ((-y) >> 3) * 8
                 }
-                let mask = 0x80
+                let mask = 0x01
                 let v = img2[src++]
                 while (yy < end) {
                     if (yy >= 0 && (v & mask)) {
                         screen[dst] = color
                     }
-                    mask >>= 1
-                    if (!mask) {
-                        mask = 0x80
+                    mask <<= 1
+                    if (mask == 0x100) {
+                        mask = 0x01
                         v = img2[src++]
                     }
                     dst += sw
@@ -503,17 +503,17 @@ namespace pxsim.image {
         if (bpp == 1) {
             for (let i = 0; i < w; ++i) {
                 let dstP = i
-                let mask = 0x80
+                let mask = 0x01
                 let v = src[srcP++]
                 for (let j = 0; j < h; ++j) {
-                    if (!mask) {
-                        mask = 0x80
+                    if (mask == 0x100) {
+                        mask = 0x01
                         v = src[srcP++]
                     }
                     if (v & mask)
                         dst[dstP] = 1
                     dstP += w
-                    mask >>= 1
+                    mask <<= 1
                 }
             }
         } else if (bpp == 4) {
@@ -521,13 +521,13 @@ namespace pxsim.image {
                 let dstP = i
                 for (let j = 0; j < h >> 1; ++j) {
                     const v = src[srcP++]
-                    dst[dstP] = v >> 4
-                    dstP += w
                     dst[dstP] = v & 0xf
+                    dstP += w
+                    dst[dstP] = v >> 4
                     dstP += w
                 }
                 if (h & 1)
-                    dst[dstP] = src[srcP++] >> 4
+                    dst[dstP] = src[srcP++] & 0xf
                 srcP = (srcP + 3) & ~3
             }
         }
@@ -551,24 +551,24 @@ namespace pxsim.image {
             if (img._bpp == 4) {
                 let p = i
                 for (let j = 0; j < h; j += 2) {
-                    r[dstP++] = ((data[p] & 0xf) << 4) | ((data[p + 1] || 0) & 0xf)
+                    r[dstP++] = ((data[p + 1] & 0xf) << 4) | ((data[p] || 0) & 0xf)
                     p += 2 * w
                 }
                 dstP = (dstP + 3) & ~3
             } else if (img._bpp == 1) {
-                let mask = 0x80
+                let mask = 0x01
                 let p = i
                 for (let j = 0; j < h; j++) {
                     if (data[p])
                         r[dstP] |= mask
-                    mask >>= 1
+                    mask <<= 1
                     p += w
-                    if (mask == 0) {
-                        mask = 0x80
+                    if (mask == 0x100) {
+                        mask = 0x01
                         dstP++
                     }
                 }
-                if (mask != 0x80)
+                if (mask != 0x01)
                     dstP++
             }
         }
