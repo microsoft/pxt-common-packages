@@ -591,7 +591,7 @@ bool drawImageCore(Image_ img, Image_ from, int x, int y, int color) {
 
                 // TODO measure perf
                 // #define ORDER(A,B) A(4); B(0); A(12); B(8); A(20); B(16); A(28); B(24)
-                #define ORDER(A,B) for (int k = 0; k < 32; k += 8) { A(4+k); B(k); }
+                #define ORDER(A,B) for (int k = 0; k < 32; k += 8) { A(k); B(4+k); }
                 #define LOOP(A,B) while (cnt--) { \
                             auto v = *fdata++; \
                             if (0 <= y && y < sh - 8) { \
@@ -653,6 +653,7 @@ bool drawImageCore(Image_ img, Image_ from, int x, int y, int color) {
  */
 //%
 void drawImage(Image_ img, Image_ from, int x, int y) {
+    // TODO optimize
     img->makeWritable();
     fillRect(img, x, y, from->width(), from->height(), 0);
     drawImageCore(img, from, x, y, 0);

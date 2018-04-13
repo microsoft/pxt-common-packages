@@ -104,7 +104,6 @@ extern "C" int main() {
     auto s2 = ImageMethods::clone(s1);
     assertSame(s1, s2);
     //auto sprite = randomImg(16, 16);
-    //ImageMethods::fill(sprite, 12);
 
     for (int i = 0; i < 500; ++i) {
         fillRand(s1);
@@ -114,7 +113,8 @@ extern "C" int main() {
         auto w = rr(1, 40);
         auto h = rr(1, 40);        
         auto sprite = randomImg(w, h);
-        //DMESG("s %d,%d len=%d", w,h,sprite->length());
+        //ImageMethods::fill(sprite, 12);
+        //DMESG("spr sz=%d,%d pos=%d,%d len=%d", w,h,x,y,sprite->length());
         //auto p = sprite->pix();
         //dumpBytes("spr   ", p);
         //dumpBytes("spr+16", p+16);
