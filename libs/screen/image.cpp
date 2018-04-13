@@ -175,16 +175,16 @@ void copyFrom(Image_ img, Image_ from) {
 static inline void setCore(Image_ img, int x, int y, int c) {
     auto ptr = img->pix(x, y);
     if (img->bpp() == 1) {
-        uint8_t mask = 0x80 >> (y & 7);
+        uint8_t mask = 0x01 << (y & 7);
         if (c)
             *ptr |= mask;
         else
             *ptr &= ~mask;
     } else if (img->bpp() == 4) {
         if (y & 1)
-            *ptr = (*ptr & 0xf0) | (c & 0xf);
-        else
             *ptr = (*ptr & 0x0f) | (c << 4);
+        else
+            *ptr = (*ptr & 0xf0) | (c & 0xf);
     }
 }
 
@@ -208,13 +208,13 @@ int getPixel(Image_ img, int x, int y) {
         return 0;
     auto ptr = img->pix(x, y);
     if (img->bpp() == 1) {
-        uint8_t mask = 0x80 >> (y & 7);
+        uint8_t mask = 0x01 << (y & 7);
         return (*ptr & mask) ? 1 : 0;
     } else if (img->bpp() == 4) {
         if (y & 1)
-            return *ptr & 0x0f;
-        else
             return *ptr >> 4;
+        else
+            return *ptr & 0x0f;
     }
     return 0;
 }
@@ -263,16 +263,16 @@ void fillRect(Image_ img, int x, int y, int w, int h, int c) {
     while (w-- > 0) {
         if (img->bpp() == 1) {
             auto ptr = p;
-            uint8_t mask = 0x80 >> (y & 7);
+            unsigned mask = 0x01 << (y & 7);
 
             for (int i = 0; i < h; ++i) {
-                if (mask == 0) {
+                if (mask == 0x100) {
                     if (h - i >= 8) {
                         *++ptr = f;
                         i += 7;
                         continue;
                     } else {
-                        mask = 0x80;
+                        mask = 0x01;
                         ++ptr;
                     }
                 }
@@ -280,28 +280,28 @@ void fillRect(Image_ img, int x, int y, int w, int h, int c) {
                     *ptr |= mask;
                 else
                     *ptr &= ~mask;
-                mask >>= 1;
+                mask <<= 1;
             }
 
         } else if (img->bpp() == 4) {
             auto ptr = p;
-            uint8_t mask = 0xf0;
+            unsigned mask = 0x0f;
             if (y & 1)
-                mask >>= 4;
+                mask <<= 4;
 
             for (int i = 0; i < h; ++i) {
-                if (mask == 0) {
+                if (mask == 0xf00) {
                     if (h - i >= 2) {
                         *++ptr = f;
                         i++;
                         continue;
                     } else {
-                        mask = 0xf0;
+                        mask = 0x0f;
                         ptr++;
                     }
                 }
                 *ptr = (*ptr & ~mask) | (f & mask);
-                mask >>= 4;
+                mask <<= 4;
             }
         }
         p += bh;
@@ -443,9 +443,9 @@ Image_ doubledY(Image_ img) {
 
     for (int i = 0; i < w; ++i) {
         for (int j = 0; j < bh; j += 2) {
-            *dst++ = dbl[*src >> 4];
+            *dst++ = dbl[*src & 0xf];
             if (j != bh - 1)
-                *dst++ = dbl[*src & 0xf];
+                *dst++ = dbl[*src >> 4];
             src++;
         }
     }
@@ -477,10 +477,10 @@ void replace(Image_ img, int from, int to) {
     auto len = img->pixLength();
     while (len--) {
         auto b = *ptr;
-        if ((b >> 4) == from)
-            b = (to << 4) | (b & 0xf);
         if ((b & 0xf) == from)
             b = (b & 0xf0) | to;
+        if ((b >> 4) == from)
+            b = (to << 4) | (b & 0xf);
         *ptr++ = b;
     }
 }
@@ -578,15 +578,15 @@ bool drawImageCore(Image_ img, Image_ from, int x, int y, int color) {
                 #define COL(s) ((v >> (s)) & 0xf)
                 
                 #define STEPA(s)  \
-                    if (COL(s) && 0 <= y && y < sh) SETHIGH(s); \
+                    if (COL(s) && 0 <= y && y < sh) SETLOW(s); \
                     y++; 
                 #define STEPB(s)  \
-                    if (COL(s) && 0 <= y && y < sh) SETLOW(s); \
+                    if (COL(s) && 0 <= y && y < sh) SETHIGH(s); \
                     y++; tdata++;
                  #define STEPAQ(s)  \
-                    if (COL(s)) SETHIGH(s); 
+                    if (COL(s)) SETLOW(s); 
                 #define STEPBQ(s)  \
-                    if (COL(s)) SETLOW(s); \
+                    if (COL(s)) SETHIGH(s); \
                     tdata++;
 
                 // TODO measure perf
@@ -619,59 +619,23 @@ bool drawImageCore(Image_ img, Image_ from, int x, int y, int color) {
                     else
                         LOOP(STEPA, STEPB)
                 }
-
-
-        /*
-                auto shift = 4;
-                auto off = 0;
-                if (y < 0 && ((-y) & 1))
-                    shift = 0;
-                if (y > 0 && (y & 1))
-                    off = 1;
-                // DMESG("drawIMG at (%d,%d) (%d,%d) y=%d sh=%d off=%d", xx,fy,x,ty,y,shift,off);
-                for (int i = 0; i < len; ++i) {
-                    auto v = (*fdata >> shift) & 0xf;
-                    auto odd = (i + off) & 1;
-                    if (v) {
-                        if (color == -1) {
-                            if (odd && (*tdata & 0x0f))
-                                return true;
-                            if (!odd && (*tdata & 0xf0))
-                                return true;
-                        } else {
-                            if (odd)
-                                *tdata = (*tdata & 0xf0) | v;
-                            else
-                                *tdata = (*tdata & 0x0f) | (v << 4);
-                        }
-                    }
-                    if (shift == 0) {
-                        fdata++;
-                        shift = 4;
-                    } else {
-                        shift = 0;
-                    }
-                    if (odd)
-                        tdata++;
-                }
-                */
             } else if (tbp == 4 && fbp == 1) {
                 // icon mode
                 auto fdata = from->pix(xx, y < 0 ? -y : 0);
                 auto tdata = img->pix(x, y > 0 ? y : 0);
 
-                auto mask = 0x80 >> (x & 7);
+                unsigned mask = 0x01 << (x & 7);
                 auto v = *fdata++;
                 for (int i = 0; i < len; ++i) {
                     if (v & mask) {
                         if (i & 1)
-                            *tdata = (*tdata & 0xf0) | color;
-                        else
                             *tdata = (*tdata & 0x0f) | (color << 4);
+                        else
+                            *tdata = (*tdata & 0xf0) | color;
                     }
-                    mask >>= 1;
-                    if (mask == 0) {
-                        mask = 0x80;
+                    mask <<= 1;
+                    if (mask == 0x100) {
+                        mask = 0x01;
                         v = *fdata++;
                     }
                     if (i & 1)
