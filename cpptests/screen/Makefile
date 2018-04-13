@@ -17,7 +17,7 @@ build:
 	gcc $(CFLAGS) -c $(PXT_SRC)
 	ar r libpxt.a *.o
 	rm -f *.o
-	gcc $(CFLAGS) -o test main.cpp -L. -lpxt
+	gcc $(CFLAGS) -o test imgtest.cpp -L. -lpxt
 
 inner: build
 	@echo; echo Testing...; echo
