@@ -575,7 +575,7 @@ bool drawImageCore(Image_ img, Image_ from, int x, int y, int color) {
 
                 auto cnt = from->wordHeight();
 
-                #define COL(s) ((v >> s) & 0xf)
+                #define COL(s) ((v >> (s)) & 0xf)
                 
                 #define STEPA(s)  \
                     if (COL(s) && 0 <= y && y < sh) SETHIGH(s); \
@@ -589,7 +589,9 @@ bool drawImageCore(Image_ img, Image_ from, int x, int y, int color) {
                     if (COL(s)) SETLOW(s); \
                     tdata++;
 
-                #define ORDER(A,B) A(4); B(0); A(12); B(8); A(20); B(16); A(28); B(24) 
+                // TODO measure perf
+                // #define ORDER(A,B) A(4); B(0); A(12); B(8); A(20); B(16); A(28); B(24)
+                #define ORDER(A,B) for (int k = 0; k < 32; k += 8) { A(4+k); B(k); }
                 #define LOOP(A,B) while (cnt--) { \
                             auto v = *fdata++; \
                             if (0 <= y && y < sh - 8) { \
