@@ -516,7 +516,8 @@ bool drawImageCore(Image_ img, Image_ from, int x, int y, int color) {
     auto fbp = from->bpp();
     auto y0 = y;
 
-    // DMESG("drawIMG at (%d,%d) w=%d bh=%d len=%d", x, y, img->width(), img->byteHeight(), len );
+    //DMESG("drawIMG(%d,%d) at (%d,%d) w=%d bh=%d len=%d", 
+    //    w,h,x, y, img->width(), img->byteHeight(), len );
 
     for (int xx = 0; xx < w; ++xx, ++x) {
         if (0 <= x && x < sw) {
@@ -564,11 +565,61 @@ bool drawImageCore(Image_ img, Image_ from, int x, int y, int color) {
                 }
 
             } else if (tbp == 4 && fbp == 4) {
-                auto fy = y < 0 ? -y : 0;
-                auto ty = y > 0 ? y : 0;
-                auto fdata = from->pix(xx, fy);
-                auto tdata = img->pix(x, ty);
+                y = y0;
 
+                auto fdata = (uint32_t*)from->pix(xx, 0);
+                auto tdata = img->pix(x, y);
+
+                //DMESG("%d,%d xx=%d/%d - %p (%p) -- %d",x,y,xx,w,tdata,img->pix(),
+                //    (uint8_t*)fdata - from->pix());
+
+                auto cnt = from->wordHeight();
+
+                #define COL(s) ((v >> s) & 0xf)
+                
+                #define STEPA(s)  \
+                    if (COL(s) && 0 <= y && y < sh) SETHIGH(s); \
+                    y++; 
+                #define STEPB(s)  \
+                    if (COL(s) && 0 <= y && y < sh) SETLOW(s); \
+                    y++; tdata++;
+                 #define STEPAQ(s)  \
+                    if (COL(s)) SETHIGH(s); 
+                #define STEPBQ(s)  \
+                    if (COL(s)) SETLOW(s); \
+                    tdata++;
+
+                #define ORDER(A,B) A(4); B(0); A(12); B(8); A(20); B(16); A(28); B(24) 
+                #define LOOP(A,B) while (cnt--) { \
+                            auto v = *fdata++; \
+                            if (0 <= y && y < sh - 8) { \
+                                ORDER(A ## Q,  B ## Q); \
+                                y += 8; \
+                            } else { \
+                                ORDER(A, B); \
+                            } \
+                        }
+
+                if (color != -1) {
+                #define SETHIGH(s) *tdata = (*tdata & 0x0f) | ((COL(s)) << 4)
+                #define SETLOW(s) *tdata = (*tdata & 0xf0) | COL(s)
+                    if (y & 1)
+                        LOOP(STEPB, STEPA)
+                    else
+                        LOOP(STEPA, STEPB)
+                } else {
+                    #undef SETHIGH
+                    #define SETHIGH(s) if(*tdata & 0xf0) return true
+                    #undef SETLOW
+                    #define SETLOW(s) if(*tdata & 0x0f) return true
+                     if (y & 1)
+                        LOOP(STEPB, STEPA)
+                    else
+                        LOOP(STEPA, STEPB)
+                }
+
+
+        /*
                 auto shift = 4;
                 auto off = 0;
                 if (y < 0 && ((-y) & 1))
@@ -601,6 +652,7 @@ bool drawImageCore(Image_ img, Image_ from, int x, int y, int color) {
                     if (odd)
                         tdata++;
                 }
+                */
             } else if (tbp == 4 && fbp == 1) {
                 // icon mode
                 auto fdata = from->pix(xx, y < 0 ? -y : 0);

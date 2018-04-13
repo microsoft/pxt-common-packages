@@ -53,8 +53,17 @@ void fillRand(Image_ img) {
 
 Image_ randomImg(int w, int h) {
     auto screen = mkImage(w, h, IMAGE_BITS);
+    ImageMethods::fill(screen, 0);
     fillRand(screen);
     return screen;
+}
+
+void dumpBytes(const char *lbl, const uint8_t *ptr) {
+    printf("%s:", lbl);
+    for (int i = 0; i < 16; ++i) {
+        printf(" %02x", *ptr++);
+    }
+    printf("\n");
 }
 
 void assertSame(Image_ a, Image_ b) {
@@ -79,6 +88,8 @@ void assertSame(Image_ a, Image_ b) {
             auto bp = ImageMethods::getPixel(b, i, j);
             if (ap != bp) {
                 printf("Pixel mismatch at %d,%d: %d vs %d\n", i, j, ap, bp);
+                dumpBytes("A", a->pix(i, j) - 2);
+                dumpBytes("B", b->pix(i, j) - 2);
                 abort();
             }
         }
@@ -103,8 +114,16 @@ extern "C" int main() {
         auto w = rr(1, 40);
         auto h = rr(1, 40);        
         auto sprite = randomImg(w, h);
+        //DMESG("s %d,%d len=%d", w,h,sprite->length());
+        //auto p = sprite->pix();
+        //dumpBytes("spr   ", p);
+        //dumpBytes("spr+16", p+16);
+        //dumpBytes("spr+32", p+32);
+        //dumpBytes("spr+48", p+32+16);
         ImageMethods::drawTransparentImage(s1, sprite, x, y);
+        //dumpBytes("spr   ", p);
         golden_drawTransparentImage(s2, sprite, x, y);
+        //dumpBytes("spr   ", p);
         assertSame(s1, s2);
 
         //printf("%d %d %d %d\n", x, y, w, h);
