@@ -34,7 +34,7 @@ void golden_drawTransparentImage(Image_ img, Image_ from, int x, int y, int col 
         for (int j = 0; j < ImageMethods::height(from); ++j) {
             auto pix = ImageMethods::getPixel(from, i, j);
             if (pix || col == -2)
-                ImageMethods::setPixel(img, x + i, y + j, col == -1 ? pix : col);
+                ImageMethods::setPixel(img, x + i, y + j, col < 0 ? pix : col);
         }
 }
 
@@ -106,15 +106,21 @@ int rr(int min, int max) {
     return rand() % (max - min) + min;
 }
 
+Image_ s1, s2;
+
+void refill() {
+    fillRand(s1);
+    ImageMethods::copyFrom(s2, s1);
+}
+
 void testBPP() {
-    auto s1 = randomImg(160, 128);
-    auto s2 = ImageMethods::clone(s1);
+    s1 = randomImg(160, 128);
+    s2 = ImageMethods::clone(s1);
     assertSame(s1, s2);
     //auto sprite = randomImg(16, 16);
 
     for (int i = 0; i < 500; ++i) {
-        fillRand(s1);
-        ImageMethods::copyFrom(s2, s1);
+        refill();
         auto x = rr(-30, 200);
         auto y = rr(-30, 200);
         auto w = rr(1, 40);
@@ -133,6 +139,14 @@ void testBPP() {
         //dumpBytes("spr   ", p);
         assertSame(s1, s2);
 
+        refill();
+        ImageMethods::drawImage(s1, sprite, x, y);
+        //dumpBytes("spr   ", p);
+        golden_drawTransparentImage(s2, sprite, x, y, -2);
+        //DMESG("spr sz=%d,%d pos=%d,%d len=%d", w,h,x,y,sprite->length());
+        //dumpBytes("spr   ", sprite->pix());
+        assertSame(s1, s2);
+
         //DMESG("%d %d %d %d", x, y, w, h);
         int col = randCol();
         ImageMethods::fillRect(s1, x, y, w, h, col);
@@ -146,9 +160,8 @@ void testBPP() {
             sprite = randomImg(w, h);
             bpp = 4;
             int c = randCol();
-            fillRand(s1);
+            refill();
             //ImageMethods::fill(s1,0);
-            ImageMethods::copyFrom(s2, s1);
             //DMESG("%d %d %d %d c=%d", x, y, w, h, c);
             ImageMethods::drawImageCore(s1, sprite, x, y, c);
             golden_drawTransparentImage(s2, sprite, x, y, c);
