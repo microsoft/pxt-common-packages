@@ -24,16 +24,17 @@ bool overlapsWith(Image_ img, Image_ other, int x, int y);
 void _drawIcon(Image_ img, Buffer icon, int xy, int c);
 void _drawLine(Image_ img, int xy, int wh, int c);
 void copyFrom(Image_ img, Image_ from);
+bool drawImageCore(Image_ img, Image_ from, int x, int y, int color);
 } // namespace ImageMethods
 
 int bpp = 4;
 
-void golden_drawTransparentImage(Image_ img, Image_ from, int x, int y) {
+void golden_drawTransparentImage(Image_ img, Image_ from, int x, int y, int col = -1) {
     for (int i = 0; i < ImageMethods::width(from); ++i)
         for (int j = 0; j < ImageMethods::height(from); ++j) {
             auto pix = ImageMethods::getPixel(from, i, j);
-            if (pix)
-                ImageMethods::setPixel(img, x + i, y + j, pix);
+            if (pix || col == -2)
+                ImageMethods::setPixel(img, x + i, y + j, col == -1 ? pix : col);
         }
 }
 
@@ -57,9 +58,8 @@ void fillRand(Image_ img) {
         }
 }
 
-Image_ randomImg(int w, int h, int bp = 0) {
-    if (bp == 0) bp = bpp;
-    auto screen = mkImage(w, h, bp);
+Image_ randomImg(int w, int h) {
+    auto screen = mkImage(w, h, bpp);
     ImageMethods::fill(screen, 0);
     fillRand(screen);
     return screen;
@@ -141,6 +141,20 @@ void testBPP() {
 
         free(sprite);
 
+        if (bpp == 4) {
+            bpp = 1;
+            sprite = randomImg(w, h);
+            bpp = 4;
+            int c = randCol();
+            fillRand(s1);
+            //ImageMethods::fill(s1,0);
+            ImageMethods::copyFrom(s2, s1);
+            //DMESG("%d %d %d %d c=%d", x, y, w, h, c);
+            ImageMethods::drawImageCore(s1, sprite, x, y, c);
+            golden_drawTransparentImage(s2, sprite, x, y, c);
+            assertSame(s1, s2);
+            free(sprite);
+        }
     }
 
     printf("OK bpp=%d\n", bpp);

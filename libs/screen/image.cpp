@@ -624,9 +624,18 @@ bool drawImageCore(Image_ img, Image_ from, int x, int y, int color) {
                 auto fdata = from->pix(xx, y < 0 ? -y : 0);
                 auto tdata = img->pix(x, y > 0 ? y : 0);
 
-                unsigned mask = 0x01 << (x & 7);
+                unsigned mask = 0x01;
                 auto v = *fdata++;
-                for (int i = 0; i < len; ++i) {
+                int off = (y & 1) ? 1 : 0;
+                if (y < 0) {
+                    mask <<= -y & 7;
+                    off = 0;
+                }
+                for (int i = off; i < len+off; ++i) {
+                    if (mask == 0x100) {
+                        mask = 0x01;
+                        v = *fdata++;
+                    }
                     if (v & mask) {
                         if (i & 1)
                             *tdata = (*tdata & 0x0f) | (color << 4);
@@ -634,10 +643,6 @@ bool drawImageCore(Image_ img, Image_ from, int x, int y, int color) {
                             *tdata = (*tdata & 0xf0) | color;
                     }
                     mask <<= 1;
-                    if (mask == 0x100) {
-                        mask = 0x01;
-                        v = *fdata++;
-                    }
                     if (i & 1)
                         tdata++;
                 }
