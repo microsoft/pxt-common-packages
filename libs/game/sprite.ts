@@ -376,9 +376,9 @@ class Sprite implements SpriteLike {
      * @param duration The duration of the animation
      * @param flip Show the animation flipped over an axis
      */
-    //% blockId=spritefireanimation block="%sprite fire animation %animation %duration=timePicker|ms||%flip"
+    //% blockId=spritefireanimation block="%sprite start animation %animation %duration=timePicker|ms||%flip"
     //% group="Animations" weight=79
-    fireAnimation(animation: sprites.TimedAnimation, duration: number, flip = FlipOption.None) {
+    startAnimation(animation: sprites.TimedAnimation, duration: number, flip = FlipOption.None) {
         if (!animation) return;
         if (!this._animationQueue) this._animationQueue = [];
         this._animationQueue.push({
