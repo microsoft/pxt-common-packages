@@ -76,15 +76,14 @@ void sendSerial(const char *data, int len) {
     webhf2.sendSerial(data, len);
 }
 
+#else
+void usb_init() {}
+__attribute__((weak)) void sendSerial(const char *data, int len) {}
+#endif
+
 void dumpDmesg() {
     sendSerial("\nDMESG:\n", 8);
     sendSerial(codalLogStore.buffer, codalLogStore.ptr);
     sendSerial("\n\n", 2);
 }
-
-#else
-void usb_init() {}
-void dumpDmesg() {}
-void sendSerial(const char *data, int len) {}
-#endif
 }
