@@ -521,7 +521,7 @@ class BoxedString : public RefObject {
 class BoxedBuffer : public RefObject {
   public:
     // data needs to be word-aligned, so we use 32 bits for length
-    uint32_t length;
+    int length;
     uint8_t data[0];
     BoxedBuffer() : RefObject(PXT_REF_TAG_BUFFER) {}
 };
