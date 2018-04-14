@@ -338,7 +338,7 @@ class Sprite implements SpriteLike {
      * Gets the obstacle sprite in a given direction if any
      * @param direction
      */
-    //% blockId=spritehasobstacle block="%sprite obstacle %direction"
+    //% blockId=spriteobstacle block="%sprite obstacle %direction"
     //% group="Collisions"
     obstacle(direction: CollisionDirection): Sprite {
         return this._obstacles ? this._obstacles[direction] : undefined;
