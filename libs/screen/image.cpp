@@ -519,9 +519,74 @@ bool drawImageCore(Image_ img, Image_ from, int x, int y, int color) {
     //DMESG("drawIMG(%d,%d) at (%d,%d) w=%d bh=%d len=%d", 
     //    w,h,x, y, img->width(), img->byteHeight(), len );
 
-    for (int xx = 0; xx < w; ++xx, ++x) {
-        if (0 <= x && x < sw) {
-            if (tbp == 1 && fbp == 1) {
+    #define LOOPHD for (int xx = 0; xx < w; ++xx, ++x) if (0 <= x && x < sw)
+
+
+    if (tbp == 4 && fbp == 4) {
+    LOOPHD {
+                y = y0;
+
+                auto fdata = (uint32_t*)from->pix(xx, 0);
+                auto tdata = img->pix(x, y);
+
+                //DMESG("%d,%d xx=%d/%d - %p (%p) -- %d",x,y,xx,w,tdata,img->pix(),
+                //    (uint8_t*)fdata - from->pix());
+
+                auto cnt = from->wordHeight();
+                auto bot = min(sh, y + h);
+
+                #define COLS(s) ((v >> (s)) & 0xf)
+                #define COL(s) COLS(s)
+                
+                #define STEPA(s)  \
+                    if (COL(s) && 0 <= y && y < bot) SETLOW(s); \
+                    y++; 
+                #define STEPB(s)  \
+                    if (COL(s) && 0 <= y && y < bot) SETHIGH(s); \
+                    y++; tdata++;
+                 #define STEPAQ(s)  \
+                    if (COL(s)) SETLOW(s); 
+                #define STEPBQ(s)  \
+                    if (COL(s)) SETHIGH(s); \
+                    tdata++;
+
+                // perf: expanded version 5% faster
+                #define ORDER(A,B) A(0); B(4); A(8); B(12); A(16); B(20); A(24); B(28)
+                //#define ORDER(A,B) for (int k = 0; k < 32; k += 8) { A(k); B(4+k); }
+                #define LOOP(A,B,xbot) while (cnt--) { \
+                            auto v = *fdata++; \
+                            if (0 <= y && y <= xbot - 8) { \
+                                ORDER(A ## Q,  B ## Q); \
+                                y += 8; \
+                            } else { \
+                                ORDER(A, B); \
+                            } \
+                        }
+                #define LOOPS(xbot) if (y & 1) \
+                        LOOP(STEPB, STEPA, xbot) \
+                    else \
+                        LOOP(STEPA, STEPB, xbot)
+
+                if (color >= 0) {
+                #define SETHIGH(s) *tdata = (*tdata & 0x0f) | ((COLS(s)) << 4)
+                #define SETLOW(s) *tdata = (*tdata & 0xf0) | COLS(s)
+                    LOOPS(sh)
+                } else if (color == -2) {
+                    #undef COL
+                    #define COL(s) 1
+                    LOOPS(bot)
+                } else {
+                    #undef COL
+                    #define COL(s) COLS(s)
+                    #undef SETHIGH
+                    #define SETHIGH(s) if(*tdata & 0xf0) return true
+                    #undef SETLOW
+                    #define SETLOW(s) if(*tdata & 0x0f) return true
+                    LOOPS(sh)
+                }
+    } }
+    else if (tbp == 1 && fbp == 1) {
+        LOOPHD {
                 y = y0;
 
                 auto data = from->pix(xx, 0);
@@ -563,63 +628,10 @@ bool drawImageCore(Image_ img, Image_ from, int x, int y, int color) {
                         }
                     }
                 }
-
-            } else if (tbp == 4 && fbp == 4) {
-                y = y0;
-
-                auto fdata = (uint32_t*)from->pix(xx, 0);
-                auto tdata = img->pix(x, y);
-
-                //DMESG("%d,%d xx=%d/%d - %p (%p) -- %d",x,y,xx,w,tdata,img->pix(),
-                //    (uint8_t*)fdata - from->pix());
-
-                auto cnt = from->wordHeight();
-
-                #define COL(s) ((v >> (s)) & 0xf)
-                
-                #define STEPA(s)  \
-                    if (COL(s) && 0 <= y && y < sh) SETLOW(s); \
-                    y++; 
-                #define STEPB(s)  \
-                    if (COL(s) && 0 <= y && y < sh) SETHIGH(s); \
-                    y++; tdata++;
-                 #define STEPAQ(s)  \
-                    if (COL(s)) SETLOW(s); 
-                #define STEPBQ(s)  \
-                    if (COL(s)) SETHIGH(s); \
-                    tdata++;
-
-                // TODO measure perf
-                // #define ORDER(A,B) A(4); B(0); A(12); B(8); A(20); B(16); A(28); B(24)
-                #define ORDER(A,B) for (int k = 0; k < 32; k += 8) { A(k); B(4+k); }
-                #define LOOP(A,B) while (cnt--) { \
-                            auto v = *fdata++; \
-                            if (0 <= y && y < sh - 8) { \
-                                ORDER(A ## Q,  B ## Q); \
-                                y += 8; \
-                            } else { \
-                                ORDER(A, B); \
-                            } \
-                        }
-
-                if (color != -1) {
-                #define SETHIGH(s) *tdata = (*tdata & 0x0f) | ((COL(s)) << 4)
-                #define SETLOW(s) *tdata = (*tdata & 0xf0) | COL(s)
-                    if (y & 1)
-                        LOOP(STEPB, STEPA)
-                    else
-                        LOOP(STEPA, STEPB)
-                } else {
-                    #undef SETHIGH
-                    #define SETHIGH(s) if(*tdata & 0xf0) return true
-                    #undef SETLOW
-                    #define SETLOW(s) if(*tdata & 0x0f) return true
-                     if (y & 1)
-                        LOOP(STEPB, STEPA)
-                    else
-                        LOOP(STEPA, STEPB)
-                }
-            } else if (tbp == 4 && fbp == 1) {
+        }
+        }
+        else if (tbp == 4 && fbp == 1)  {
+        LOOPHD {
                 // icon mode
                 auto fdata = from->pix(xx, y < 0 ? -y : 0);
                 auto tdata = img->pix(x, y > 0 ? y : 0);
@@ -648,7 +660,6 @@ bool drawImageCore(Image_ img, Image_ from, int x, int y, int color) {
                 }
             }
         }
-    }
 
     return false;
 }
@@ -658,10 +669,13 @@ bool drawImageCore(Image_ img, Image_ from, int x, int y, int color) {
  */
 //%
 void drawImage(Image_ img, Image_ from, int x, int y) {
-    // TODO optimize
     img->makeWritable();
-    fillRect(img, x, y, from->width(), from->height(), 0);
-    drawImageCore(img, from, x, y, 0);
+    if (img->bpp() == 4 && from->bpp() == 4) {
+        drawImageCore(img, from, x, y, -2);
+    } else {
+        fillRect(img, x, y, from->width(), from->height(), 0);
+        drawImageCore(img, from, x, y, 0);
+    }
 }
 
 /**
