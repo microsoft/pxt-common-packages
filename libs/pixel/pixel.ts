@@ -77,7 +77,7 @@ namespace pixel {
     //% parts="pixel"
     //% brightness.min=0 brightness.max=255
     export function setBrightness(brightness: number): void {
-        this._brightness = Math.max(0, Math.min(0xff, brightness >> 0));
+        brightness = Math.max(0, Math.min(0xff, brightness >> 0));
     }
 
     /**
