@@ -164,6 +164,9 @@ namespace control {
         else // or wait
             control.waitForEvent(ev.eid, ev.vid);
     }
+
+    //% shim=pxt::getConfig
+    export declare function getConfigValue(key: int32, defl: int32): number;
 }
 
 /**
