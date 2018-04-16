@@ -52,6 +52,12 @@ interface Image {
      */
     //% helper=imageDrawRect
     drawRect(x: number, y: number, w: number, h: number, c: color): void;
+
+    /**
+     * Returns an image rotated by -90, 0, 90, 180, 270 deg clockwise
+     */
+    //% helper=imageRotated
+    rotated(deg: number): Image;
 }
 
 namespace helpers {
@@ -86,4 +92,27 @@ namespace helpers {
         imageDrawLine(img, x + w, y + h, x + w, y, c)
         imageDrawLine(img, x + w, y + h, x, y + h, c)
     }
+
+    /**
+     * Returns an image rotated by 90, 180, 270 deg clockwise
+     */
+    export function imageRotated(img: Image, deg: number) {
+        if (deg == -90 || deg == 270) {
+            let r = img.transposed();
+            r.flipY();
+            return r;
+        } else if (deg == 180 || deg == -180) {
+            let r = img.clone();
+            r.flipX();
+            r.flipY();
+            return r;
+        } else if (deg == 90) {
+            let r = img.transposed();
+            r.flipX();
+            return r;
+        } else {
+            return null;
+        }
+    }
+
 }

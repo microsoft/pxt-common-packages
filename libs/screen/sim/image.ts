@@ -128,6 +128,32 @@ namespace pxsim.ImageMethods {
         }
     }
 
+    export function transposed(img: RefImage) {
+        const w = img._width
+        const h = img._height
+        const d = img.data
+        const r = new RefImage(h, w, img._bpp)
+        const n = r.data
+        let src = 0
+
+        for (let i = 0; i < h; ++i) {
+            let dst = i
+            for (let j = 0; j < w; ++j) {
+                n[dst] = d[src++]
+                dst += w
+            }
+        }
+
+        return r
+    }
+
+    export function copyFrom(img: RefImage, from: RefImage) {
+        if (img._width != from._width || img._height != from._height ||
+            img._bpp != from._bpp)
+            return;
+        img.data.set(from.data)
+    }
+
     export function scroll(img: RefImage, dx: number, dy: number) {
         img.makeWritable()
         dx |= 0
@@ -400,11 +426,11 @@ namespace pxsim.ImageMethods {
 
     export function drawIcon(img: RefImage, icon: RefBuffer, x: number, y: number, color: number) {
         const img2 = icon.data
-        if (!img2 || img2.length < 4 || img2[0] != 0xf1)
+        if (!img2 || img2.length < 5 || img2[0] != 0xe1)
             return
         let w = img2[1]
-        let byteW = (w + 7) >> 3
         let h = img2[2]
+        let byteH = (h + 7) >> 3
 
         x |= 0
         y |= 0
@@ -418,38 +444,37 @@ namespace pxsim.ImageMethods {
 
         img.makeWritable()
 
-        let p = 3
+        let p = 4
         color = img.color(color)
         const screen = img.data
 
-        for (let i = 0; i < h; ++i) {
-            let yy = y + i
-            if (0 <= yy && yy < sh) {
-                let dst = yy * sw
+        for (let i = 0; i < w; ++i) {
+            let xxx = x + i
+            if (0 <= xxx && xxx < sw) {
+                let dst = xxx + y * sw
                 let src = p
-                let xx = x
-                let end = Math.min(sw, w + x)
-                if (x < 0) {
-                    src += ((-x) >> 3)
-                    xx += ((-x) >> 3) * 8
+                let yy = y
+                let end = Math.min(sh, h + y)
+                if (y < 0) {
+                    src += ((-y) >> 3)
+                    yy += ((-y) >> 3) * 8
                 }
-                dst += xx
-                let mask = 0x80
+                let mask = 0x01
                 let v = img2[src++]
-                while (xx < end) {
-                    if (xx >= 0 && (v & mask)) {
+                while (yy < end) {
+                    if (yy >= 0 && (v & mask)) {
                         screen[dst] = color
                     }
-                    mask >>= 1
-                    if (!mask) {
-                        mask = 0x80
+                    mask <<= 1
+                    if (mask == 0x100) {
+                        mask = 0x01
                         v = img2[src++]
                     }
-                    dst++
-                    xx++
+                    dst += sw
+                    yy++
                 }
             }
-            p += byteW
+            p += byteH
         }
     }
 
@@ -460,16 +485,23 @@ namespace pxsim.ImageMethods {
 
 
 namespace pxsim.image {
+    function byteWidth(h: number, bpp: number) {
+        if (bpp == 1)
+            return h * bpp + 7 >> 3
+        else
+            return ((h * bpp + 31) >> 5) << 2
+    }
+
     function isValidImage(buf: RefBuffer) {
         if (!buf || buf.data.length < 4)
             return false;
 
-        if (buf.data[0] != 0xf1 && buf.data[0] != 0xf4)
+        if (buf.data[0] != 0xe1 && buf.data[0] != 0xe4)
             return false;
 
         const bpp = buf.data[0] & 0xf;
-        const sz = buf.data[2] * ((buf.data[1] * bpp + 7) >> 3);
-        if (3 + sz != buf.data.length)
+        const sz = buf.data[1] * byteWidth(buf.data[2], bpp)
+        if (4 + sz != buf.data.length)
             return false;
 
         return true;
@@ -483,7 +515,7 @@ namespace pxsim.image {
     export function ofBuffer(buf: RefBuffer): RefImage {
         if (!isValidImage(buf))
             return null
-        const src = buf.data
+        const src: Uint8Array = buf.data
         const w = src[1]
         const h = src[2]
         if (w == 0 || h == 0)
@@ -492,35 +524,37 @@ namespace pxsim.image {
         const r = new RefImage(w, h, bpp)
         const dst = r.data
 
-        let dstP = 0
-        let srcP = 3
+        let srcP = 4
 
         if (bpp == 1) {
-            const len = (w + 7) >> 3
-            for (let i = 0; i < h; ++i) {
-                for (let j = 0; j < len; ++j) {
-                    let v = src[srcP++]
-                    let mask = 0x80
-                    let n = 8
-                    if (j == len - 1 && (w & 7))
-                        n = w & 7
-                    while (n--) {
-                        if (v & mask)
-                            dst[dstP] = 1
-                        dstP++
-                        mask >>= 1
+            for (let i = 0; i < w; ++i) {
+                let dstP = i
+                let mask = 0x01
+                let v = src[srcP++]
+                for (let j = 0; j < h; ++j) {
+                    if (mask == 0x100) {
+                        mask = 0x01
+                        v = src[srcP++]
                     }
+                    if (v & mask)
+                        dst[dstP] = 1
+                    dstP += w
+                    mask <<= 1
                 }
             }
         } else if (bpp == 4) {
-            for (let i = 0; i < h; ++i) {
-                for (let j = 0; j < w >> 1; ++j) {
+            for (let i = 0; i < w; ++i) {
+                let dstP = i
+                for (let j = 0; j < h >> 1; ++j) {
                     const v = src[srcP++]
-                    dst[dstP++] = v >> 4
-                    dst[dstP++] = v & 0xf
+                    dst[dstP] = v & 0xf
+                    dstP += w
+                    dst[dstP] = v >> 4
+                    dstP += w
                 }
-                if (w & 1)
-                    dst[dstP++] = src[srcP++] >> 4
+                if (h & 1)
+                    dst[dstP] = src[srcP++] & 0xf
+                srcP = (srcP + 3) & ~3
             }
         }
 
@@ -528,53 +562,52 @@ namespace pxsim.image {
     }
 
 
-    function bytes(x: number, isMono: boolean) {
-        if (isMono)
-            return ((x + 7) >> 3)
-        else
-            return ((x + 1) >> 1)
+    export function toBuffer(img: RefImage): RefBuffer {
+        let col = byteWidth(img._height, img._bpp)
+        let sz = 4 + img._width * col
+        let r = new Uint8Array(sz)
+        r[0] = 0xe0 | img._bpp
+        r[1] = img._width
+        r[2] = img._height
+        let dstP = 4
+        const w = img._width
+        const h = img._height
+        const data = img.data
+        for (let i = 0; i < w; ++i) {
+            if (img._bpp == 4) {
+                let p = i
+                for (let j = 0; j < h; j += 2) {
+                    r[dstP++] = ((data[p + 1] & 0xf) << 4) | ((data[p] || 0) & 0xf)
+                    p += 2 * w
+                }
+                dstP = (dstP + 3) & ~3
+            } else if (img._bpp == 1) {
+                let mask = 0x01
+                let p = i
+                for (let j = 0; j < h; j++) {
+                    if (data[p])
+                        r[dstP] |= mask
+                    mask <<= 1
+                    p += w
+                    if (mask == 0x100) {
+                        mask = 0x01
+                        dstP++
+                    }
+                }
+                if (mask != 0x01)
+                    dstP++
+            }
+        }
+
+        return new RefBuffer(r)
     }
 
-    const bitdouble = [
-        0x00, 0x03, 0x0c, 0x0f, 0x30, 0x33, 0x3c, 0x3f, 0xc0, 0xc3, 0xcc, 0xcf, 0xf0, 0xf3, 0xfc, 0xff,
-    ]
-
-    const nibdouble = [
-        0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff
-    ]
-
-
     export function doubledIcon(buf: RefBuffer): RefBuffer {
-        if (!isValidImage(buf))
-            return null;
-        const w = buf.data[1];
-        const h = buf.data[2]
-        if (w > 126 || h > 126)
-            return null;
-        const isMono = buf.data[0] == 0xf1
-        const bw = bytes(w, isMono);
-        const bw2 = bytes(w * 2, isMono);
-        const out = pxsim.BufferMethods.createBuffer(3 + bw2 * h * 2)
-        out.data[0] = buf.data[0];
-        out.data[1] = w * 2;
-        out.data[2] = h * 2;
-        let src = 3
-        let dst = 3
-        let skp = bw * 2 > bw2
-        const dbl = isMono ? bitdouble : nibdouble
-        for (let i = 0; i < h; ++i) {
-            for (let jj = 0; jj < 2; ++jj) {
-                let p = src;
-                for (let j = 0; j < bw; ++j) {
-                    const v = buf.data[p++]
-                    out.data[dst++] = dbl[v >> 4];
-                    out.data[dst++] = dbl[v & 0xf];
-                }
-                if (skp) dst--
-            }
-            src += bw;
-        }
-        return out;
+        let img = ofBuffer(buf)
+        if (!img)
+            return null
+        img = ImageMethods.doubled(img)
+        return toBuffer(img)
     }
 }
 

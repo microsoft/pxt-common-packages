@@ -43,11 +43,13 @@
 #define CONCAT_0(a, b) CONCAT_1(a, b)
 #define STATIC_ASSERT(e) enum { CONCAT_0(_static_assert_, __LINE__) = 1 / ((e) ? 1 : 0) };
 
+#ifndef ramint_t
 // this type limits size of arrays
 #ifdef __linux__
 #define ramint_t uint32_t
 #else
 #define ramint_t uint16_t
+#endif
 #endif
 
 #if 0
@@ -119,23 +121,23 @@ void dumpDmesg();
 #define TAG_NUMBER(n) (TNumber)(void *)((n << 1) | 1)
 
 inline bool isTagged(TValue v) {
-    return ((int)v & 3) || !v;
+    return ((intptr_t)v & 3) || !v;
 }
 
 inline bool isNumber(TValue v) {
-    return (int)v & 1;
+    return (intptr_t)v & 1;
 }
 
 inline bool isSpecial(TValue v) {
-    return (int)v & 2;
+    return (intptr_t)v & 2;
 }
 
 inline bool bothNumbers(TValue a, TValue b) {
-    return (int)a & (int)b & 1;
+    return (intptr_t)a & (intptr_t)b & 1;
 }
 
 inline int numValue(TValue n) {
-    return (int)n >> 1;
+    return (intptr_t)n >> 1;
 }
 
 #ifdef PXT_BOX_DEBUG
@@ -388,8 +390,8 @@ class RefCollection : public RefObject {
   public:
     RefCollection();
 
-    void destroy();
-    void print();
+    static void destroy(RefCollection *coll);
+    static void print(RefCollection *coll);
 
     unsigned length() { return head.getLength(); }
     void setLength(unsigned newLength) { head.setLength(newLength); }
@@ -413,8 +415,8 @@ class RefMap : public RefObject {
     Segment values;
 
     RefMap();
-    void destroy();
-    void print();
+    static void destroy(RefMap *map);
+    static void print(RefMap *map);
     int findIdx(unsigned key);
 };
 
@@ -454,8 +456,8 @@ class RefAction : public RefObject {
     // fields[] contain captured locals
     TValue fields[];
 
-    void destroy();
-    void print();
+    static void destroy(RefAction *act);
+    static void print(RefAction *act);
 
     RefAction();
 
@@ -480,16 +482,16 @@ class RefAction : public RefObject {
 class RefLocal : public RefObject {
   public:
     TValue v;
-    void destroy();
-    void print();
+    static void destroy(RefLocal *l);
+    static void print(RefLocal *l);
     RefLocal();
 };
 
 class RefRefLocal : public RefObject {
   public:
     TValue v;
-    void destroy();
-    void print();
+    static void destroy(RefRefLocal *l);
+    static void print(RefRefLocal *l);
     RefRefLocal();
 };
 
@@ -518,18 +520,19 @@ class BoxedString : public RefObject {
 
 class BoxedBuffer : public RefObject {
   public:
-    uint16_t length;
+    // data needs to be word-aligned, so we use 32 bits for length
+    int length;
     uint8_t data[0];
     BoxedBuffer() : RefObject(PXT_REF_TAG_BUFFER) {}
 };
 
 
-// the first byte of data indicates the format - currently 0xF1 or 0xF4 to 1 or 4 bit bitmaps
+// the first byte of data indicates the format - currently 0xE1 or 0xE4 to 1 or 4 bit bitmaps
 // second byte indicates width in pixels
 // third byte indicates the height (which should also match the size of the buffer)
 // just like ordinary buffers, these can be layed out in flash
 class RefImage : public RefObject {
-    unsigned _buffer;
+    uintptr_t _buffer;
     uint8_t _data[0];
 
   public:
@@ -544,21 +547,25 @@ class RefImage : public RefObject {
 
     uint8_t *data() { return hasBuffer() ? buffer()->data : _data; }
     int length() { return hasBuffer() ? buffer()->length : (_buffer >> 2); }
+    int pixLength() { return length() - 4; }
 
     int height();
     int width();
-    int byteWidth();
+    int byteHeight();
+    int wordHeight();
     int bpp();
 
-    uint8_t *pix() { return data() + 3; }
+    bool hasPadding() { return (height() & 0x1f) != 0; }
+
+    uint8_t *pix() { return data() + 4; }
     uint8_t *pix(int x, int y);
     uint8_t fillMask(color c);
     bool inRange(int x, int y);
     void clamp(int *x, int *y);
     void makeWritable();
 
-    void destroy();
-    void print();
+    static void destroy(RefImage *t);
+    static void print(RefImage *t);
 };
 
 RefImage *mkImage(int w, int h, int bpp);
@@ -653,9 +660,11 @@ int compare(String s, String that);
     ;                                                                                              \
     }
 
+#ifndef X86_64
 #pragma GCC diagnostic ignored "-Wpmf-conversions"
+#endif
 
-#define PXT_VTABLE_TO_INT(vt) ((unsigned)(vt) >> vtableShift)
+#define PXT_VTABLE_TO_INT(vt) ((uintptr_t)(vt) >> vtableShift)
 #define PXT_VTABLE_BEGIN(classname, flags, iface)                                                  \
     const VTable classname##_vtable __attribute__((aligned(1 << vtableShift))) = {                 \
         sizeof(classname), flags, iface, {(void *)&classname::destroy, (void *)&classname::print,

@@ -20,3 +20,5 @@ temp
 lib/
 projects/
 _locales/
+libpxt.a
+test

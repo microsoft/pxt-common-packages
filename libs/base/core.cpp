@@ -66,10 +66,12 @@ Buffer mkBuffer(const uint8_t *data, int len) {
     return r;
 }
 
+#ifndef X86_64
 TNumber mkNaN() {
     // TODO optimize
     return fromDouble(NAN);
 }
+#endif
 
 static unsigned random_value = 0xC0DA1;
 
@@ -116,6 +118,8 @@ PXT_DEF_STRING(sNaN, "NaN")
 PXT_DEF_STRING(sInf, "Infinity")
 PXT_DEF_STRING(sMInf, "-Infinity")
 }
+
+#ifndef X86_64
 
 namespace String_ {
 
@@ -225,7 +229,7 @@ unsigned toUInt(TNumber v) {
     if (isNumber(v))
         return numValue(v);
     if (isSpecial(v)) {
-        if ((int)v >> 6)
+        if ((intptr_t)v >> 6)
             return 1;
         else
             return 0;
@@ -903,6 +907,7 @@ void runtimeWarning(String s) {
     // noop for now
 }
 }
+#endif
 
 namespace pxt {
 
@@ -978,9 +983,11 @@ void anyPrint(TValue v) {
             DMESG("[Native %p]", v);
         }
     } else {
+        #ifndef X86_64
         String s = numops::toString(v);
         DMESG("[%s %p = %s]", pxt::typeOf(v)->data, v, s->data);
         decr((TValue)s);
+        #endif
     }
 }
 
@@ -1012,7 +1019,7 @@ static const VTable *primVtables[] = {0,          // 0
 
 VTable *getVTable(RefObject *r) {
     if (r->vtable >= 34)
-        return (VTable *)(r->vtable << vtableShift);
+        return (VTable *)((uintptr_t)r->vtable << vtableShift);
     if (r->vtable == 0)
         target_panic(100);
     return (VTable *)primVtables[r->vtable];

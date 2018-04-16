@@ -1,9 +1,9 @@
 #include "pxt.h"
 
 #if IMAGE_BITS == 1
-#define IMAGE_TAG 0xf1
+// OK
 #elif IMAGE_BITS == 4
-#define IMAGE_TAG 0xf4
+// OK
 #else
 #error "Invalid IMAGE_BITS"
 #endif
@@ -16,20 +16,33 @@ namespace pxt {
 PXT_VTABLE_BEGIN(RefImage, 0, 0)
 PXT_VTABLE_END
 
-void RefImage::destroy() {
-    decrRC(buffer());
+void RefImage::destroy(RefImage *t) {
+    decrRC(t->buffer());
 }
 
-void RefImage::print() {
-    DMESG("RefImage %p r=%d size=%d x %d", this, refcnt, width(), height());
+void RefImage::print(RefImage *t) {
+    DMESG("RefImage %p r=%d size=%d x %d", t, t->refcnt, t->width(), t->height());
 }
 
 int RefImage::width() {
     return data()[1];
 }
 
-int RefImage::byteWidth() {
-    return (data()[1] * bpp() + 7) >> 3;
+int RefImage::wordHeight() {
+    if (bpp() == 1)
+        target_panic(900);
+    return ((data()[2] * bpp() + 31) >> 5);
+}
+
+int RefImage::byteHeight() {
+    if (bpp() == 1)
+        return (data()[2] + 7) >> 3;
+    else if (bpp() == 4)
+        return ((data()[2] * 4 + 31) >> 5) << 2;
+    else {
+        target_panic(900);
+        return -1;
+    }
 }
 
 int RefImage::bpp() {
@@ -45,7 +58,7 @@ void RefImage::makeWritable() {
         if (buffer()->isReadOnly()) {
             auto b = mkBuffer(data(), length());
             decrRC(buffer());
-            _buffer = (unsigned)b;
+            _buffer = (uintptr_t)b;
         }
     } else {
         _buffer |= 2;
@@ -53,12 +66,12 @@ void RefImage::makeWritable() {
 }
 
 uint8_t *RefImage::pix(int x, int y) {
-    uint8_t *d = &data()[3 + byteWidth() * y];
-    if (x) {
+    uint8_t *d = &data()[4 + byteHeight() * x];
+    if (y) {
         if (bpp() == 1)
-            d += x >> 3;
+            d += y >> 3;
         else if (bpp() == 4)
-            d += x >> 1;
+            d += y >> 1;
     }
     return d;
 }
@@ -76,36 +89,43 @@ void RefImage::clamp(int *x, int *y) {
     *y = min(max(*y, 0), height() - 1);
 }
 
-RefImage::RefImage(BoxedBuffer *buf) : PXT_VTABLE_INIT(RefImage), _buffer((unsigned)buf) {
+RefImage::RefImage(BoxedBuffer *buf) : PXT_VTABLE_INIT(RefImage), _buffer((uintptr_t)buf) {
     incrRC(buf);
 }
 RefImage::RefImage(uint32_t sz) : PXT_VTABLE_INIT(RefImage), _buffer((sz << 2) | 3) {}
+
+static inline int byteSize(int w, int h, int bpp) {
+    if (bpp == 1)
+        return 4 + ((h + 7) >> 3) * w;
+    else
+        return 4 + (((h * 4 + 31) / 32) * 4) * w;
+}
 
 Image_ mkImage(int width, int height, int bpp) {
     if (width < 0 || height < 0 || width > 255 || height > 255)
         return NULL;
     if (bpp != 1 && bpp != 4)
         return NULL;
-    uint32_t sz = 3 + ((width * bpp + 7) / 8) * height;
+    uint32_t sz = byteSize(width, height, bpp);
     Image_ r = new (::operator new(sizeof(RefImage) + sz)) RefImage(sz);
     auto d = r->data();
-    d[0] = 0xf0 | bpp;
+    d[0] = 0xe0 | bpp;
     d[1] = width;
     d[2] = height;
+    d[3] = 0;
     MEMDBG("mkImage: %d X %d => %p", width, height, r);
     return r;
 }
 
 bool isValidImage(Buffer buf) {
-    if (!buf || buf->length < 4)
+    if (!buf || buf->length < 5)
         return false;
 
-    if (buf->data[0] != 0xf1 && buf->data[0] != 0xf4)
+    if (buf->data[0] != 0xe1 && buf->data[0] != 0xe4)
         return false;
 
-    int bpp = buf->data[0] & 0xf;
-    int sz = buf->data[2] * ((buf->data[1] * bpp + 7) >> 3);
-    if (3 + sz != buf->length)
+    int sz = byteSize(buf->data[1], buf->data[2], buf->data[0] & 0xf);
+    if (sz != (int)buf->length)
         return false;
 
     return true;
@@ -139,20 +159,47 @@ bool isMono(Image_ img) {
     return img->bpp() == 1;
 }
 
+/**
+ * Sets all pixels in the current image from the other image, which has to be of the same size and
+ * bpp.
+ */
+//%
+void copyFrom(Image_ img, Image_ from) {
+    if (img->width() != from->width() || img->height() != from->height() ||
+        img->bpp() != from->bpp())
+        return;
+    img->makeWritable();
+    memcpy(img->pix(), from->pix(), from->pixLength());
+}
+
 static inline void setCore(Image_ img, int x, int y, int c) {
     auto ptr = img->pix(x, y);
     if (img->bpp() == 1) {
-        uint8_t mask = 0x80 >> (x & 7);
+        uint8_t mask = 0x01 << (y & 7);
         if (c)
             *ptr |= mask;
         else
             *ptr &= ~mask;
     } else if (img->bpp() == 4) {
-        if (x & 1)
-            *ptr = (*ptr & 0xf0) | (c & 0xf);
-        else
+        if (y & 1)
             *ptr = (*ptr & 0x0f) | (c << 4);
+        else
+            *ptr = (*ptr & 0xf0) | (c & 0xf);
     }
+}
+
+static inline int getCore(Image_ img, int x, int y) {
+    auto ptr = img->pix(x, y);
+    if (img->bpp() == 1) {
+        uint8_t mask = 0x01 << (y & 7);
+        return (*ptr & mask) ? 1 : 0;
+    } else if (img->bpp() == 4) {
+        if (y & 1)
+            return *ptr >> 4;
+        else
+            return *ptr & 0x0f;
+    }
+    return 0;
 }
 
 /**
@@ -173,55 +220,63 @@ void setPixel(Image_ img, int x, int y, int c) {
 int getPixel(Image_ img, int x, int y) {
     if (!img->inRange(x, y))
         return 0;
-    auto ptr = img->pix(x, y);
-    if (img->bpp() == 1) {
-        uint8_t mask = 0x80 >> (x & 7);
-        return (*ptr & mask) ? 1 : 0;
-    } else if (img->bpp() == 4) {
-        if (x & 1)
-            return *ptr & 0x0f;
-        else
-            return *ptr >> 4;
-    }
-    return 0;
+    return getCore(img, x, y);
 }
+
+void fillRect(Image_ img, int x, int y, int w, int h, int c);
 
 /**
  * Fill entire image with a given color
  */
 //%
 void fill(Image_ img, int c) {
+    if (c && img->hasPadding()) {
+        fillRect(img, 0, 0, img->width(), img->height(), c);
+        return;
+    }
     img->makeWritable();
-    memset(img->pix(), img->fillMask(c), img->length() - 3);
+    memset(img->pix(), img->fillMask(c), img->pixLength());
 }
 
 void fillRect(Image_ img, int x, int y, int w, int h, int c) {
+    if (w == 0 || h == 0 || x >= img->width() || y >= img->height())
+        return;
+
     int x2 = x + w - 1;
     int y2 = y + h - 1;
+
+    if (x2 < 0 || y2 < 0)
+        return;
+
     img->clamp(&x2, &y2);
     img->clamp(&x, &y);
     w = x2 - x + 1;
     h = y2 - y + 1;
 
+    if (!img->hasPadding() && x == 0 && y == 0 && w == img->width() && h == img->height()) {
+        fill(img, c);
+        return;
+    }
+
     img->makeWritable();
 
-    auto bw = img->byteWidth();
+    auto bh = img->byteHeight();
     uint8_t f = img->fillMask(c);
 
     uint8_t *p = img->pix(x, y);
-    while (h-- > 0) {
+    while (w-- > 0) {
         if (img->bpp() == 1) {
             auto ptr = p;
-            uint8_t mask = 0x80 >> (x & 7);
+            unsigned mask = 0x01 << (y & 7);
 
-            for (int i = 0; i < w; ++i) {
-                if (mask == 0) {
-                    if (w - i >= 8) {
+            for (int i = 0; i < h; ++i) {
+                if (mask == 0x100) {
+                    if (h - i >= 8) {
                         *++ptr = f;
                         i += 7;
                         continue;
                     } else {
-                        mask = 0x80;
+                        mask = 0x01;
                         ++ptr;
                     }
                 }
@@ -229,31 +284,31 @@ void fillRect(Image_ img, int x, int y, int w, int h, int c) {
                     *ptr |= mask;
                 else
                     *ptr &= ~mask;
-                mask >>= 1;
+                mask <<= 1;
             }
 
         } else if (img->bpp() == 4) {
             auto ptr = p;
-            uint8_t mask = 0xf0;
-            if (x & 1)
-                mask >>= 4;
+            unsigned mask = 0x0f;
+            if (y & 1)
+                mask <<= 4;
 
-            for (int i = 0; i < w; ++i) {
-                if (mask == 0) {
-                    if (w - i >= 2) {
-                        *ptr++ = f;
+            for (int i = 0; i < h; ++i) {
+                if (mask == 0xf00) {
+                    if (h - i >= 2) {
+                        *++ptr = f;
                         i++;
                         continue;
                     } else {
-                        mask = 0xf0;
+                        mask = 0x0f;
                         ptr++;
                     }
                 }
                 *ptr = (*ptr & ~mask) | (f & mask);
-                mask >>= 4;
+                mask <<= 4;
             }
         }
-        p += bw;
+        p += bh;
     }
 }
 
@@ -281,18 +336,18 @@ Image_ clone(Image_ img) {
 void flipX(Image_ img) {
     img->makeWritable();
 
-    // this is quite slow - for small 16x16 sprite it will take in the order of 1ms
-    // something faster requires quite a bit of bit tweaking, especially for mono images
-    for (int i = 0; i < img->height(); ++i) {
-        int a = 0;
-        int b = img->width() - 1;
-        while (a < b) {
-            int tmp = getPixel(img, a, i);
-            setPixel(img, a, i, getPixel(img, b, i));
-            setPixel(img, b, i, tmp);
-            a++;
-            b--;
-        }
+    int bh = img->byteHeight();
+    auto a = img->pix();
+    auto b = img->pix(img->width() - 1, 0);
+
+    uint8_t tmp[bh];
+
+    while (a < b) {
+        memcpy(tmp, a, bh);
+        memcpy(a, b, bh);
+        memcpy(b, tmp, bh);
+        a += bh;
+        b -= bh;
     }
 }
 
@@ -303,19 +358,37 @@ void flipX(Image_ img) {
 void flipY(Image_ img) {
     img->makeWritable();
 
-    int bw = img->byteWidth();
-    auto a = img->pix();
-    auto b = img->pix(0, img->height() - 1);
-
-    uint8_t tmp[bw];
-
-    while (a < b) {
-        memcpy(tmp, a, bw);
-        memcpy(a, b, bw);
-        memcpy(b, tmp, bw);
-        a += bw;
-        b -= bw;
+    // this is quite slow - for small 16x16 sprite it will take in the order of 1ms
+    // something faster requires quite a bit of bit tweaking, especially for mono images
+    for (int i = 0; i < img->width(); ++i) {
+        int a = 0;
+        int b = img->height() - 1;
+        while (a < b) {
+            int tmp = getCore(img, i, a);
+            setCore(img, i, a, getCore(img, i, b));
+            setCore(img, i, b, tmp);
+            a++;
+            b--;
+        }
     }
+}
+
+/**
+ * Returns a transposed image (with X/Y swapped)
+ */
+//%
+Image_ transposed(Image_ img) {
+    img->makeWritable();
+    Image_ r = mkImage(img->height(), img->width(), img->bpp());
+
+    // this is quite slow
+    for (int i = 0; i < img->width(); ++i) {
+        for (int j = 0; j < img->height(); ++i) {
+            setCore(r, j, i, getCore(img, i, j));
+        }
+    }
+
+    return r;
 }
 
 /**
@@ -324,23 +397,23 @@ void flipY(Image_ img) {
 //%
 void scroll(Image_ img, int dx, int dy) {
     img->makeWritable();
-    auto bw = img->byteWidth();
-    auto h = img->height();
-    if (dy < 0) {
-        dy = -dy;
-        if (dy < h)
-            memmove(img->pix(), img->pix(0, dy), (h - dy) * bw);
+    auto bh = img->byteHeight();
+    auto w = img->width();
+    if (dx < 0) {
+        dx = -dx;
+        if (dx < w)
+            memmove(img->pix(), img->pix(dx, 0), (w - dx) * bh);
         else
-            dy = h;
-        memset(img->pix(0, h - dy), 0, dy * bw);
-    } else if (dy > 0) {
-        if (dy < h)
-            memmove(img->pix(0, dy), img->pix(), (h - dy) * bw);
+            dx = w;
+        memset(img->pix(w - dx, 0), 0, dx * bh);
+    } else if (dx > 0) {
+        if (dx < w)
+            memmove(img->pix(dx, 0), img->pix(), (w - dx) * bh);
         else
-            dy = h;
-        memset(img->pix(), 0, dy * bw);
+            dx = w;
+        memset(img->pix(), 0, dx * bh);
     }
-    // TODO implement dx
+    // TODO implement dy
 }
 
 const uint8_t bitdouble[] = {0x00, 0x03, 0x0c, 0x0f, 0x30, 0x33, 0x3c, 0x3f,
@@ -359,17 +432,16 @@ Image_ doubledX(Image_ img) {
     Image_ r = mkImage(img->width() * 2, img->height(), img->bpp());
     auto src = img->pix();
     auto dst = r->pix();
-    auto h = img->height();
-    auto bw = r->byteWidth();
-    auto dbl = img->bpp() == 1 ? bitdouble : nibdouble;
+    auto w = img->width();
+    auto bh = img->byteHeight();
 
-    for (int i = 0; i < h; ++i) {
-        for (int j = 0; j < bw; j += 2) {
-            *dst++ = dbl[*src >> 4];
-            if (j != bw - 1)
-                *dst++ = dbl[*src & 0xf];
-            src++;
-        }
+    for (int i = 0; i < w; ++i) {
+        memcpy(dst, src, bh);
+        dst += bh;
+        memcpy(dst, src, bh);
+        dst += bh;
+
+        src += bh;
     }
 
     return r;
@@ -386,16 +458,18 @@ Image_ doubledY(Image_ img) {
     Image_ r = mkImage(img->width(), img->height() * 2, img->bpp());
     auto src = img->pix();
     auto dst = r->pix();
-    auto bw = img->byteWidth();
-    auto h = img->height();
 
-    for (int i = 0; i < h; ++i) {
-        memcpy(dst, src, bw);
-        dst += bw;
-        memcpy(dst, src, bw);
-        dst += bw;
+    auto w = img->width();
+    auto bh = r->byteHeight();
+    auto dbl = img->bpp() == 1 ? bitdouble : nibdouble;
 
-        src += bw;
+    for (int i = 0; i < w; ++i) {
+        for (int j = 0; j < bh; j += 2) {
+            *dst++ = dbl[*src & 0xf];
+            if (j != bh - 1)
+                *dst++ = dbl[*src >> 4];
+            src++;
+        }
     }
 
     return r;
@@ -409,16 +483,28 @@ void replace(Image_ img, int from, int to) {
     if (img->bpp() != 4)
         return;
     to &= 0xf;
+    if (from == to)
+        return;
+
+    // avoid bleeding 'to' color into the overflow areas of the picture
+    if (from == 0 && img->hasPadding()) {
+        for (int i = 0; i < img->height(); ++i)
+            for (int j = 0; j < img->width(); ++j)
+                if (getCore(img, j, i) == from)
+                    setCore(img, j, i, to);
+        return;
+    }
+
     auto ptr = img->pix();
-    auto len = img->height() * img->byteWidth();
+    auto len = img->pixLength();
     while (len--) {
         auto b = *ptr;
-        if ((b >> 4) == from)
-            b = (to << 4) | (b & 0xf);
         if ((b & 0xf) == from)
             b = (b & 0xf0) | to;
+        if ((b >> 4) == from)
+            b = (to << 4) | (b & 0xf);
         *ptr++ = b;
-    } 
+    }
 }
 
 /**
@@ -438,8 +524,6 @@ bool drawImageCore(Image_ img, Image_ from, int x, int y, int color) {
     auto sh = img->height();
     auto sw = img->width();
 
-    // DMESG("drawIMG at (%d,%d) w=%d bw=%d", x, y, img->width(), img->byteWidth() );
-
     if (x + w <= 0)
         return false;
     if (x >= sw)
@@ -449,29 +533,112 @@ bool drawImageCore(Image_ img, Image_ from, int x, int y, int color) {
     if (y >= sh)
         return false;
 
-    auto len = x < 0 ? min(sw, w + x) : min(sw - x, w);
+    auto len = y < 0 ? min(sh, h + y) : min(sh - y, h);
     auto tbp = img->bpp();
     auto fbp = from->bpp();
-    auto x0 = x;
+    auto y0 = y;
 
-    for (int i = 0; i < h; ++i, ++y) {
-        if (0 <= y && y < sh) {
-            if (tbp == 1 && fbp == 1) {
-                x = x0;
+    if (color == -2 && x == 0 && y == 0 && tbp == fbp && w == sw && h == sh) {
+        copyFrom(img, from);
+        return false;
+    }
 
-                auto data = from->pix(0, i);
-                int shift = 8 - (x & 7);
-                auto off = img->pix(x, y);
-                auto off0 = img->pix(0, y);
-                auto off1 = img->pix(img->width() - 1, y);
+    //DMESG("drawIMG(%d,%d) at (%d,%d) w=%d bh=%d len=%d", 
+    //    w,h,x, y, img->width(), img->byteHeight(), len );
 
-                int x1 = x + w + (x & 7);
+    auto fromH = from->byteHeight();
+    auto imgH = img->byteHeight();
+    auto fromBase = from->pix();
+    auto imgBase = img->pix(0, y);
+
+    #define LOOPHD for (int xx = 0; xx < w; ++xx, ++x) if (0 <= x && x < sw)
+
+
+    if (tbp == 4 && fbp == 4) {
+        auto wordH = fromH >> 2;
+        LOOPHD {
+                y = y0;
+
+                auto fdata = (uint32_t*)fromBase + wordH * xx;
+                auto tdata = imgBase + imgH * x;
+
+                //DMESG("%d,%d xx=%d/%d - %p (%p) -- %d",x,y,xx,w,tdata,img->pix(),
+                //    (uint8_t*)fdata - from->pix());
+
+                auto cnt = wordH;
+                auto bot = min(sh, y + h);
+
+                #define COLS(s) ((v >> (s)) & 0xf)
+                #define COL(s) COLS(s)
+                
+                #define STEPA(s)  \
+                    if (COL(s) && 0 <= y && y < bot) SETLOW(s); \
+                    y++; 
+                #define STEPB(s)  \
+                    if (COL(s) && 0 <= y && y < bot) SETHIGH(s); \
+                    y++; tdata++;
+                 #define STEPAQ(s)  \
+                    if (COL(s)) SETLOW(s); 
+                #define STEPBQ(s)  \
+                    if (COL(s)) SETHIGH(s); \
+                    tdata++;
+
+                // perf: expanded version 5% faster
+                #define ORDER(A,B) A(0); B(4); A(8); B(12); A(16); B(20); A(24); B(28)
+                //#define ORDER(A,B) for (int k = 0; k < 32; k += 8) { A(k); B(4+k); }
+                #define LOOP(A,B,xbot) while (cnt--) { \
+                            auto v = *fdata++; \
+                            if (0 <= y && y <= xbot - 8) { \
+                                ORDER(A ## Q,  B ## Q); \
+                                y += 8; \
+                            } else { \
+                                ORDER(A, B); \
+                            } \
+                        }
+                #define LOOPS(xbot) if (y & 1) \
+                        LOOP(STEPB, STEPA, xbot) \
+                    else \
+                        LOOP(STEPA, STEPB, xbot)
+
+                if (color >= 0) {
+                #define SETHIGH(s) *tdata = (*tdata & 0x0f) | ((COLS(s)) << 4)
+                #define SETLOW(s) *tdata = (*tdata & 0xf0) | COLS(s)
+                    LOOPS(sh)
+                } else if (color == -2) {
+                    #undef COL
+                    #define COL(s) 1
+                    LOOPS(bot)
+                } else {
+                    #undef COL
+                    #define COL(s) COLS(s)
+                    #undef SETHIGH
+                    #define SETHIGH(s) if(*tdata & 0xf0) return true
+                    #undef SETLOW
+                    #define SETLOW(s) if(*tdata & 0x0f) return true
+                    LOOPS(sh)
+                }
+    } }
+    else if (tbp == 1 && fbp == 1) {
+        auto left = img->pix() - imgBase;
+        auto right = img->pix(0, img->height() - 1) - imgBase;
+        LOOPHD {
+                y = y0;
+
+
+                auto data = fromBase + fromH * xx;
+                auto off = imgBase + imgH * x;
+                auto off0 = off + left;
+                auto off1 = off + right;
+
+                int shift = (y & 7);
+
+                int y1 = y + h + (y & 7);
                 int prev = 0;
 
-                while (x < x1 - 8) {
+                while (y < y1 - 8) {
                     int curr = *data++ << shift;
                     if (off0 <= off && off <= off1) {
-                        uint8_t v = (curr >> 8) | prev;
+                        uint8_t v = (curr >> 0) | (prev >> 8);
 
                         if (color == -1) {
                             if (*off & v)
@@ -482,14 +649,14 @@ bool drawImageCore(Image_ img, Image_ from, int x, int y, int color) {
                     }
                     off++;
                     prev = curr;
-                    x += 8;
+                    y += 8;
                 }
 
-                int left = x1 - x;
+                int left = y1 - y; 
                 if (left > 0) {
                     int curr = *data << shift;
                     if (off0 <= off && off <= off1) {
-                        uint8_t v = ((curr >> 8) | prev) & (0xff << (8 - left));
+                        uint8_t v = ((curr >> 0) | (prev >> 8)) & (0xff >> (8 - left));
                         if (color == -1) {
                             if (*off & v)
                                 return true;
@@ -498,61 +665,42 @@ bool drawImageCore(Image_ img, Image_ from, int x, int y, int color) {
                         }
                     }
                 }
-
-            } else if (tbp == 4 && fbp == 4) {
-                auto fdata = from->pix(x < 0 ? -x : 0, i);
-                auto tdata = img->pix(x > 0 ? x : 0, y);
-
-                auto shift = (x & 1) ? 0 : 4;
-                for (int i = 0; i < len; ++i) {
-                    auto v = (*fdata >> shift) & 0xf;
-                    if (v) {
-                        if (color == -1) {
-                            if ((i & 1) && (*tdata & 0x0f))
-                                return true;
-                            if (!(i & 1) && (*tdata & 0xf0))
-                                return true;
-                        } else {
-                            if (i & 1)
-                                *tdata = (*tdata & 0xf0) | v;
-                            else
-                                *tdata = (*tdata & 0x0f) | (v << 4);
-                        }
-                    }
-                    if (shift == 0) {
-                        fdata++;
-                        shift = 4;
-                    } else {
-                        shift = 0;
-                    }
-                    if (i & 1)
-                        tdata++;
-                }
-            } else if (tbp == 4 && fbp == 1) {
+        }
+        }
+        else if (tbp == 4 && fbp == 1)  {
+            if (y < 0) {
+                fromBase = from->pix(0, -y);
+                imgBase = img->pix();
+            }
                 // icon mode
-                auto fdata = from->pix(x < 0 ? -x : 0, i);
-                auto tdata = img->pix(x > 0 ? x : 0, y);
+            LOOPHD {
+                auto fdata = fromBase + fromH * xx;
+                auto tdata = imgBase + imgH * x;
 
-                auto mask = 0x80 >> (x & 7);
+                unsigned mask = 0x01;
                 auto v = *fdata++;
-                for (int i = 0; i < len; ++i) {
-                    if (v & mask) {
-                        if (i & 1)
-                            *tdata = (*tdata & 0xf0) | color;
-                        else
-                            *tdata = (*tdata & 0x0f) | (color << 4);
-                    }
-                    mask >>= 1;
-                    if (mask == 0) {
-                        mask = 0x80;
+                int off = (y & 1) ? 1 : 0;
+                if (y < 0) {
+                    mask <<= -y & 7;
+                    off = 0;
+                }
+                for (int i = off; i < len+off; ++i) {
+                    if (mask == 0x100) {
+                        mask = 0x01;
                         v = *fdata++;
                     }
+                    if (v & mask) {
+                        if (i & 1)
+                            *tdata = (*tdata & 0x0f) | (color << 4);
+                        else
+                            *tdata = (*tdata & 0xf0) | color;
+                    }
+                    mask <<= 1;
                     if (i & 1)
                         tdata++;
                 }
             }
         }
-    }
 
     return false;
 }
@@ -563,8 +711,12 @@ bool drawImageCore(Image_ img, Image_ from, int x, int y, int color) {
 //%
 void drawImage(Image_ img, Image_ from, int x, int y) {
     img->makeWritable();
-    fillRect(img, x, y, from->width(), from->height(), 0);
-    drawImageCore(img, from, x, y, 0);
+    if (img->bpp() == 4 && from->bpp() == 4) {
+        drawImageCore(img, from, x, y, -2);
+    } else {
+        fillRect(img, x, y, from->width(), from->height(), 0);
+        drawImageCore(img, from, x, y, 0);
+    }
 }
 
 /**
@@ -585,15 +737,16 @@ bool overlapsWith(Image_ img, Image_ other, int x, int y) {
 }
 
 // Image_ format:
-//  byte 0: magic 0xf4 - 4 bit color; 0xf1 is monochromatic
+//  byte 0: magic 0xe4 - 4 bit color; 0xe1 is monochromatic
 //  byte 1: width in pixels
 //  byte 2: height in pixels
-//  byte 3...N: data 4 bits per pixels, high order nibble printed first, lines aligned to byte
-//  byte 3...N: data 1 bit per pixels, high order bit printed first, lines aligned to byte
+//  byte 3: padding (should be zero)
+//  byte 4...N: data 4 bits per pixels, high order nibble printed first, lines aligned to 32 bit
+//  words byte 4...N: data 1 bit per pixels, high order bit printed first, lines aligned to byte
 
 //%
 void _drawIcon(Image_ img, Buffer icon, int xy, int c) {
-    if (!isValidImage(icon) || icon->data[0] != 0xf1)
+    if (!isValidImage(icon) || icon->data[0] != 0xe1)
         return;
 
     img->makeWritable();
@@ -740,7 +893,7 @@ namespace image {
 Image_ create(int width, int height) {
     Image_ r = mkImage(width, height, IMAGE_BITS);
     if (r)
-        memset(r->data() + 3, 0, r->length() - 3);
+        memset(r->pix(), 0, r->pixLength());
     return r;
 }
 
@@ -772,3 +925,50 @@ Buffer doubledIcon(Buffer icon) {
 }
 
 } // namespace image
+
+// This is  6.5x faster than standard on word-aligned copy
+// probably should move to codal
+
+extern "C" void *memcpy(void *dst, const void *src, size_t sz) {
+    if (sz >= 4 && !((uintptr_t)dst & 3) && !((uintptr_t)src & 3)) {
+        size_t cnt = sz >> 2;
+        uint32_t *d = (uint32_t *)dst;
+        const uint32_t *s = (const uint32_t *)src;
+        while (cnt--) {
+            *d++ = *s++;
+        }
+        sz &= 3;
+        dst = d;
+        src = s;
+    }
+
+    uint8_t *dd = (uint8_t *)dst;
+    uint8_t *ss = (uint8_t *)src;
+
+    while (sz--) {
+        *dd++ = *ss++;
+    }
+
+    return dst;
+}
+
+extern "C" void *memset(void *dst, int v, size_t sz) {
+    if (sz >= 4 && !((uintptr_t)dst & 3)) {
+        size_t cnt = sz >> 2;
+        uint32_t vv = 0x01010101 * v;
+        uint32_t *d = (uint32_t *)dst;
+        while (cnt--) {
+            *d++ = vv;
+        }
+        sz &= 3;
+        dst = d;
+    }
+
+    uint8_t *dd = (uint8_t *)dst;
+
+    while (sz--) {
+        *dd++ = v;
+    }
+
+    return dst;
+}
