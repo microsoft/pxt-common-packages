@@ -16,7 +16,7 @@ enum Colors {
     Indigo = 0x4b0082,
     //% block=violet
     Violet = 0x8a2be2,
-    //% block=purples
+    //% block=purple
     Purple = 0xA033E5,
     //% block=pink
     Pink = 0xFF007F,
@@ -1137,25 +1137,25 @@ namespace light {
                 return Colors.Red;
             case "GREEN":
             case "green":
-                return 0x00ff00;
+                return Colors.Green;
             case "BLUE":
             case "blue":
-                return 0x0000ff;
+                return Colors.Blue;
             case "WHITE":
             case "white":
-                return 0xffffff;
+                return Colors.White;
             case "ORANGE":
             case "orange":
-                return 0xff7f00;
+                return Colors.Orange;
             case "PURPLE":
             case "purple":
                 return Colors.Purple;
             case "YELLOW":
             case "yellow":
-                return 0xffff00;
+                return Colors.Yellow;
             case "PINK":
             case "pink":
-                return 0xff007f;
+                return Colors.Pink;
             default:
                 return parseInt(color) || 0;
         }
