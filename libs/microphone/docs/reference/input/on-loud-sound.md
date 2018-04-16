@@ -18,9 +18,9 @@ Flash the pixels when a loud sound is detected.
 let pixels = light.createStrip()
 
 input.onLoudSound(() => {
-	pixels.setAll(Colors.Red);
+	pixels.setAll(0xff0000);
 	pause(100);
-	pixels.setAll(Colors.Black);
+	pixels.setAll(0x000000);
 });
 ```
 

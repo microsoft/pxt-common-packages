@@ -29,7 +29,7 @@ let pixels = light.createStrip();
 input.buttonA.onEvent(ButtonEvent.Click, function() {
     let level = input.lightLevel();
     pixels.setBrightness(level);
-    pixels.setAll(light.colors(Colors.Red));
+    pixels.setAll(0xff0000);
 });
 ```
 

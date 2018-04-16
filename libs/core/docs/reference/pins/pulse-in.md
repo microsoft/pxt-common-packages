@@ -46,9 +46,9 @@ pins.D5.setPull(PinPullMode.PullUp)
 forever(function() {
     pulseTime = pins.D5.pulseIn(PulseValue.Low)
     if (pulseTime > 0) {
-        pixels.setPixelColor(0, Colors.Red)
+        pixels.setPixelColor(0, 0xff0000)
     } else {
-        pixels.setPixelColor(0, Colors.Black)
+        pixels.setPixelColor(0, 0x000000)
     }
     pause(500)
 })

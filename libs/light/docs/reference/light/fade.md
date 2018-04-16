@@ -12,7 +12,7 @@ the shade that you want the color faded to.
 
 ## Parameters
 
-* **color**: a [number](/types/number) that is the RGB color that will get faded, like: Colors.Blue
+* **color**: a [number](/types/number) that is the RGB color that will get faded, like: 0x0000ff
 * **brightness**: a [number](/types/number) between `0` (totally dark) and `255` (full brightness, no fading at all)
 
 ## Returns
@@ -27,7 +27,7 @@ The number `128` is just about one-half of full brightness (255).
 ```blocks
 let strip = light.createStrip()
 input.buttonA.onEvent(ButtonEvent.Click, () => {
-    strip.setAll(light.fade(Colors.Green, 128))
+    strip.setAll(light.fade(0x00ff00, 128))
 })
 ```
 

@@ -13,7 +13,7 @@ Turn off all the pixels when button `A` is pressed.
 
 ```blocks
 let strip = light.createStrip()
-strip.setAll(Colors.Green)
+strip.setAll(0x00ff00)
 input.buttonA.onEvent(ButtonEvent.Click, () => {
     strip.clear()
 })

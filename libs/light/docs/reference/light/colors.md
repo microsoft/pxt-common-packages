@@ -3,7 +3,7 @@
 Get the RGB value of one of the known colors.
 
 ```sig
-light.colors(Colors.Red);
+0xff0000;
 ```
 
 ## Parameters
@@ -15,7 +15,7 @@ light.colors(Colors.Red);
 Make all the pixels light up `red`.
 
 ```blocks
-light.createStrip().setAll(light.colors(Colors.Red))
+light.createStrip().setAll(0xff0000)
 ```
 
 ## See Also

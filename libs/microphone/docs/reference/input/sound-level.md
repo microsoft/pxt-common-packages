@@ -22,7 +22,7 @@ forever(() => {
     if (lastLevel != level) {
         pixels.clear();
         for (let i = 0; i < pixels.length() / 255 * level; i++) {
-            pixels.setPixelColor(i, Colors.Green);
+            pixels.setPixelColor(i, 0x00ff00);
         }
         lastLevel = level;
     }

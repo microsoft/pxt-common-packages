@@ -30,7 +30,7 @@ Make all the pixels show `blue` when the temperature gets cool. The cool setting
 
 ```blocks
 input.onTemperatureConditionChanged(TemperatureCondition.Cold, 10, TemperatureUnit.Celsius, () => {
-	light.createStrip().setAll(Colors.Blue);
+	light.createStrip().setAll(0x0000ff);
 })
 ```
 ## See also #seealso

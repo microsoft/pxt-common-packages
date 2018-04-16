@@ -21,7 +21,7 @@ Light up to `5` pixels but wait one-half second before lighting each pixel.
 ```blocks
 let pixels = light.createStrip();
 for (let i = 0; i < 5; i++) {
-    pixels.setPixelColor(i, Colors.Green)
+    pixels.setPixelColor(i, 0x00ff00)
     pause(500)
 }
 ```

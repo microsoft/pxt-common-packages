@@ -38,7 +38,7 @@ forever(() => {
         0,
         255
     ));
-    pixels.setAll(light.colors(Colors.Red));
+    pixels.setAll(0xff0000);
 });
 ```
 
@@ -58,7 +58,7 @@ forever(() => {
         0,
         255
     ));
-    pixels.setAll(light.colors(Colors.Red));
+    pixels.setAll(0xff0000);
 })
 ```
 

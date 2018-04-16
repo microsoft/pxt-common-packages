@@ -81,11 +81,11 @@ control.runInParallel(() => {
 })
 
 control.onEvent(pixelLighter, 0, () => {
-    pixels.setPixelColor(0, Colors.Red)
+    pixels.setPixelColor(0, 0xff0000)
 })
 
 control.onEvent(pixelLighter, 1, () => {
-    pixels.setPixelColor(1, Colors.Blue)
+    pixels.setPixelColor(1, 0x0000ff)
 })
 ```
 

@@ -37,9 +37,9 @@ Set all the pixels to green if button `A` was pressed before button `B`. If not,
 let pixels = light.createStrip();
 input.buttonB.onEvent(ButtonEvent.Click, function() {
     if (input.buttonA.wasPressed()) {
-        pixels.setAll(Colors.Green)
+        pixels.setAll(0x00ff00)
     } else {
-        pixels.setAll(Colors.Black)
+        pixels.setAll(0x000000)
     }
 })
 ```

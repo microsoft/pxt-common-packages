@@ -19,9 +19,9 @@ Measure the touch values at pin **A2**. If they are greater than `512`, then fla
 input.pinA2.setThreshold(100)
 forever(function () {
     if (input.pinA2.value() > 512) {
-        light.setAll(Colors.Green)
+        light.setAll(0x00ff00)
         pause(100)
-        light.setAll(Colors.Black)
+        light.setAll(0x000000)
     }
     pause(500)
 })
