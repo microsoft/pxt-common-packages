@@ -128,6 +128,25 @@ namespace pxsim.ImageMethods {
         }
     }
 
+    export function transposed(img: RefImage) {
+        const w = img._width
+        const h = img._height
+        const d = img.data
+        const r = new RefImage(h, w, img._bpp)
+        const n = r.data
+        let src = 0
+
+        for (let i = 0; i < h; ++i) {
+            let dst = i
+            for (let j = 0; j < w; ++j) {
+                n[dst] = d[src++]
+                dst += w
+            }
+        }
+
+        return r
+    }
+
     export function scroll(img: RefImage, dx: number, dy: number) {
         img.makeWritable()
         dx |= 0

@@ -188,6 +188,20 @@ static inline void setCore(Image_ img, int x, int y, int c) {
     }
 }
 
+static inline void getCore(Image_ img, int x, int y) {
+    auto ptr = img->pix(x, y);
+    if (img->bpp() == 1) {
+        uint8_t mask = 0x01 << (y & 7);
+        return (*ptr & mask) ? 1 : 0;
+    } else if (img->bpp() == 4) {
+        if (y & 1)
+            return *ptr >> 4;
+        else
+            return *ptr & 0x0f;
+    }
+    return 0;
+}
+
 /**
  * Set pixel color
  */
@@ -206,17 +220,7 @@ void setPixel(Image_ img, int x, int y, int c) {
 int getPixel(Image_ img, int x, int y) {
     if (!img->inRange(x, y))
         return 0;
-    auto ptr = img->pix(x, y);
-    if (img->bpp() == 1) {
-        uint8_t mask = 0x01 << (y & 7);
-        return (*ptr & mask) ? 1 : 0;
-    } else if (img->bpp() == 4) {
-        if (y & 1)
-            return *ptr >> 4;
-        else
-            return *ptr & 0x0f;
-    }
-    return 0;
+    return getCore(img, x, y);
 }
 
 void fillRect(Image_ img, int x, int y, int w, int h, int c);
@@ -360,11 +364,27 @@ void flipY(Image_ img) {
         int a = 0;
         int b = img->height() - 1;
         while (a < b) {
-            int tmp = getPixel(img, i, a);
-            setPixel(img, i, a, getPixel(img, i, b));
-            setPixel(img, i, b, tmp);
+            int tmp = getCore(img, i, a);
+            setCore(img, i, a, getCore(img, i, b));
+            setCore(img, i, b, tmp);
             a++;
             b--;
+        }
+    }
+}
+
+/**
+ * Returns a transposed image (with X/Y swapped)
+ */
+//%
+Image_ transposed(Image_ img) {
+    img->makeWritable();
+    Image_ r = mkImage(img->height(), img->width(), img->bpp());
+
+    // this is quite slow
+    for (int i = 0; i < img->width(); ++i) {
+        for (int j = 0; j < img->height(); ++i) {
+            setCore(r, j, i, getCore(img, i, j));
         }
     }
 }
@@ -468,8 +488,8 @@ void replace(Image_ img, int from, int to) {
     if (from == 0 && img->hasPadding()) {
         for (int i = 0; i < img->height(); ++i)
             for (int j = 0; j < img->width(); ++j)
-                if (getPixel(img, j, i) == from)
-                    setPixel(img, j, i, to);
+                if (getCore(img, j, i) == from)
+                    setCore(img, j, i, to);
         return;
     }
 
