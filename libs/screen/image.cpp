@@ -912,6 +912,9 @@ Buffer doubledIcon(Buffer icon) {
 
 } // namespace image
 
+// This is  6.5x faster than standard on word-aligned copy
+// probably should move to codal
+
 extern "C" void *memcpy(void *dst, const void *src, size_t sz) {
     if (sz >= 4 && !((uintptr_t)dst & 3) && !((uintptr_t)src & 3)) {
         size_t cnt = sz >> 2;
