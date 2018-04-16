@@ -40,7 +40,6 @@ light.createStrip().setPhotonMode(PhotonMode.PenUp)
 ```cards
 light.rgb(255, 255, 255);
 light.hsv(255, 255, 255);
-0xff0000;
 light.fade(0, 0)
 ```
 
