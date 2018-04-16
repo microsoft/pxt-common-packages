@@ -147,6 +147,13 @@ namespace pxsim.ImageMethods {
         return r
     }
 
+    export function copyFrom(img: RefImage, from: RefImage) {
+        if (img._width != from._width || img._height != from._height ||
+            img._bpp != from._bpp)
+            return;
+        img.data.set(from.data)
+    }
+
     export function scroll(img: RefImage, dx: number, dy: number) {
         img.makeWritable()
         dx |= 0
