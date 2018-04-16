@@ -546,20 +546,26 @@ bool drawImageCore(Image_ img, Image_ from, int x, int y, int color) {
     //DMESG("drawIMG(%d,%d) at (%d,%d) w=%d bh=%d len=%d", 
     //    w,h,x, y, img->width(), img->byteHeight(), len );
 
+    auto fromH = from->byteHeight();
+    auto imgH = img->byteHeight();
+    auto fromBase = from->pix();
+    auto imgBase = img->pix(0, y);
+
     #define LOOPHD for (int xx = 0; xx < w; ++xx, ++x) if (0 <= x && x < sw)
 
 
     if (tbp == 4 && fbp == 4) {
-    LOOPHD {
+        auto wordH = fromH >> 2;
+        LOOPHD {
                 y = y0;
 
-                auto fdata = (uint32_t*)from->pix(xx, 0);
-                auto tdata = img->pix(x, y);
+                auto fdata = (uint32_t*)fromBase + wordH * xx;
+                auto tdata = imgBase + imgH * x;
 
                 //DMESG("%d,%d xx=%d/%d - %p (%p) -- %d",x,y,xx,w,tdata,img->pix(),
                 //    (uint8_t*)fdata - from->pix());
 
-                auto cnt = from->wordHeight();
+                auto cnt = wordH;
                 auto bot = min(sh, y + h);
 
                 #define COLS(s) ((v >> (s)) & 0xf)
@@ -613,14 +619,18 @@ bool drawImageCore(Image_ img, Image_ from, int x, int y, int color) {
                 }
     } }
     else if (tbp == 1 && fbp == 1) {
+        auto left = img->pix() - imgBase;
+        auto right = img->pix(0, img->height() - 1) - imgBase;
         LOOPHD {
                 y = y0;
 
-                auto data = from->pix(xx, 0);
+
+                auto data = fromBase + fromH * xx;
+                auto off = imgBase + imgH * x;
+                auto off0 = off + left;
+                auto off1 = off + right;
+
                 int shift = (y & 7);
-                auto off = img->pix(x, y);
-                auto off0 = img->pix(x, 0);
-                auto off1 = img->pix(x, img->height() - 1);
 
                 int y1 = y + h + (y & 7);
                 int prev = 0;
@@ -658,10 +668,14 @@ bool drawImageCore(Image_ img, Image_ from, int x, int y, int color) {
         }
         }
         else if (tbp == 4 && fbp == 1)  {
-        LOOPHD {
+            if (y < 0) {
+                fromBase = from->pix(0, -y);
+                imgBase = img->pix();
+            }
                 // icon mode
-                auto fdata = from->pix(xx, y < 0 ? -y : 0);
-                auto tdata = img->pix(x, y > 0 ? y : 0);
+            LOOPHD {
+                auto fdata = fromBase + fromH * xx;
+                auto tdata = imgBase + imgH * x;
 
                 unsigned mask = 0x01;
                 auto v = *fdata++;
