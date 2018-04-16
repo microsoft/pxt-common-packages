@@ -20,7 +20,7 @@ when the switch is moves from one side to the other.
 ```blocks
 let pixels = light.createStrip();
 
-pixels.setAll(Colors.Red);
+pixels.setAll(0xff0000);
 input.onSwitchMoved(SwitchDirection.Right, () => {
     for (let i = 0; i < pixels.length(); i++) {
         pixels.photonForward(1);

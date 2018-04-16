@@ -28,7 +28,7 @@ Connect a pixel strip to the pin `A1`. Make all pixels light up `green`.
 
 ```typescript
 const strip = light.createStrip(pins.A1, 10);
-strip.setAll(Colors.Green)
+strip.setAll(0x00ff00)
 ```
 
 ## See Also

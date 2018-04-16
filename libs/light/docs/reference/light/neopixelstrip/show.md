@@ -15,8 +15,8 @@ Set the color of two pixels but buffer each light change. Make all the changes a
 ```blocks
 let strip = light.createStrip()
 strip.setBuffered(true)
-strip.setPixelColor(0, Colors.Blue)
-strip.setPixelColor(2, Colors.Red)
+strip.setPixelColor(0, 0x0000ff)
+strip.setPixelColor(2, 0xff0000)
 strip.show()
 ```
 

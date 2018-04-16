@@ -24,9 +24,9 @@ let pixels = light.createStrip();
 let mySwitchOn = pins.D4.digitalRead();
 
 if (mySwitchOn) {
-    pixels.setPixelColor(2, Colors.Green);
+    pixels.setPixelColor(2, 0x00ff00);
 } else {
-    pixels.setPixelColor(2, Colors.Red);
+    pixels.setPixelColor(2, 0xff0000);
 }
 ```
 

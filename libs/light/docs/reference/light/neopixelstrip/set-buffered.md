@@ -22,9 +22,9 @@ Set buffering of pixel changes so that the new colors all show at once.
 ```blocks
 let strip = light.createStrip()
 strip.setBuffered(true)
-strip.setPixelColor(0, Colors.Blue)
-strip.setPixelColor(2, Colors.Red)
-strip.setPixelColor(4, Colors.Yellow)
+strip.setPixelColor(0, 0x0000ff)
+strip.setPixelColor(2, 0xff0000)
+strip.setPixelColor(4, 0xffff00)
 strip.show()
 ```
 ## See also

@@ -2,27 +2,27 @@
  * Well known colors
  */
 enum Colors {
-    //% block=red blockIdentity=light.colors
+    //% block=red
     Red = 0xFF0000,
-    //% block=orange blockIdentity=light.colors
+    //% block=orange
     Orange = 0xFF7F00,
-    //% block=yellow blockIdentity=light.colors
+    //% block=yellow
     Yellow = 0xFFFF00,
-    //% block=green blockIdentity=light.colors
+    //% block=green
     Green = 0x00FF00,
-    //% block=blue blockIdentity=light.colors
+    //% block=blue
     Blue = 0x0000FF,
-    //% block=indigo blockIdentity=light.colors
+    //% block=indigo
     Indigo = 0x4b0082,
-    //% block=violet blockIdentity=light.colors
+    //% block=violet
     Violet = 0x8a2be2,
-    //% block=purple blockIdentity=light.colors
+    //% block=purple
     Purple = 0xA033E5,
-    //% block=pink blockIdentity=light.colors
+    //% block=pink
     Pink = 0xFF007F,
-    //% block=white blockIdentity=light.colors
+    //% block=white
     White = 0xFFFFFF,
-    //% block=black  blockIdentity=light.colors
+    //% block=black
     Black = 0x000000
 }
 

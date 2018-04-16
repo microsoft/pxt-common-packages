@@ -36,9 +36,9 @@ loop in the background task.
 let spinit = true;
 let pixels = light.createStrip();
 
-pixels.setPixelColor(0, Colors.Blue);
+pixels.setPixelColor(0, 0x0000ff);
 pause(5000);
-pixels.setPixelColor(0, Colors.Blue);
+pixels.setPixelColor(0, 0x0000ff);
 pause(5000);
 spinit = false;
 pixels.clear();
@@ -66,7 +66,7 @@ input.buttonA.onEvent(ButtonEvent.Click, () => {
     spinit = false;
     pixels.clear();
     control.runInParallel(() => {
-        pixels.setPixelColor(0, Colors.Blue);
+        pixels.setPixelColor(0, 0x0000ff);
         while (spinit) {
             pixels.move(LightMove.Rotate, 1);
             pause(250);
@@ -76,7 +76,7 @@ input.buttonA.onEvent(ButtonEvent.Click, () => {
 spinit = true;
 for (let i = 0; i < 5; i++) {
     pause(1000);
-    pixels.setPixelColor(0, Colors.Blue);
+    pixels.setPixelColor(0, 0x0000ff);
 }
 ```
 

@@ -36,9 +36,9 @@ forever(() => {
     pitch = input.rotation(Rotation.Pitch)
     roll = input.rotation(Rotation.Roll)
     if (Math.abs(pitch) < 10 && Math.abs(roll) < 10) {
-        pixels.setAll(light.colors(Colors.Blue))
+        pixels.setAll(0x0000ff)
     } else {
-        pixels.setAll(light.colors(Colors.Red))
+        pixels.setAll(0xff0000)
     }
 });
 ```

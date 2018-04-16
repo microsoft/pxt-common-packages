@@ -23,8 +23,8 @@ You can use these new pixels strips by themselves with their own light actions:
 let strip0 = light.createStrip()
 let strip1 = strip0.range(0, 5)
 let strip2 = strip0.range(5, 5)
-strip1.setAll(Colors.Yellow)
-strip2.setPixelColor(0, Colors.Red)
+strip1.setAll(0xffff00)
+strip2.setPixelColor(0, 0xff0000)
 ```
 The original strip has a `red` pixel at pixel spot `5` but it's at pixel spot `0` for
 the new virtual strip called `strip2`.
@@ -45,7 +45,7 @@ of the new pixel strip to its end.
 
 ```blocks
 let smallStrip = light.createStrip().range(0, 4)
-smallStrip.setPixelColor(0, Colors.Red)
+smallStrip.setPixelColor(0, 0xff0000)
 for (let i = 0; i < smallStrip.length() - 1; i++) {
     pause(500)
     smallStrip.move(LightMove.Shift, 1)

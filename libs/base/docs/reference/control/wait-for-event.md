@@ -53,9 +53,9 @@ control.runInParallel(() => {
 })
 
 control.waitForEvent(myTimer, timerTimeout);
-pixels.setPixelColor(0, Colors.Red);
+pixels.setPixelColor(0, 0xff0000);
 control.waitForEvent(myTimer, timerTimeout);
-pixels.setPixelColor(0, Colors.Yellow);
+pixels.setPixelColor(0, 0xffff00);
 ```
 
 ## See also #seealso

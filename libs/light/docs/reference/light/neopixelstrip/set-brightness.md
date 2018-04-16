@@ -17,7 +17,7 @@ brighten the pixels when button `B` is pressed.
 
 ```blocks
 let strip = light.createStrip()
-strip.setAll(Colors.White)
+strip.setAll(0xffffff)
 
 input.buttonA.onEvent(ButtonEvent.Click, () => {
     strip.setBrightness(strip.brightness() - 1)

@@ -19,7 +19,7 @@ Pulse an blue photon forward and backward across the pixel strip.
 
 ```blocks
 let strip = light.createStrip()
-strip.setPhotonPenColor(Colors.Blue)
+strip.setPhotonPenColor(0x0000ff)
 forever(() => {
     for (let i = 0; i < strip.length(); i++) {
         strip.photonForward(1)

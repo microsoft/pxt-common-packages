@@ -17,7 +17,7 @@ Instead of saying `button A` or `button B` as the input source, use a pin name l
 ```block
 let pixels = light.createStrip();
 input.pinA1.onEvent(ButtonEvent.Down, function() {
-    pixels.setPixelColor(1, Colors.Blue)
+    pixels.setPixelColor(1, 0x0000ff)
 })
 ```
 
@@ -48,12 +48,12 @@ let pixels = light.createStrip();
 
 input.buttonA.onEvent(ButtonEvent.Click, function() {
     if (position > -1) {
-        pixels.setPixelColor(position - 1, Colors.Black);
+        pixels.setPixelColor(position - 1, 0x000000);
     }
     if (position == pixels.length()) {
         position = 0;
     }
-    pixels.setPixelColor(position, Colors.Red);
+    pixels.setPixelColor(position, 0xff0000);
     position += 1;
 })
 ```
@@ -68,7 +68,7 @@ let pixels = light.createStrip();
 input.buttonB.onEvent(ButtonEvent.Up, function() {
     pixels.clear();
     anyPixel = Math.randomRange(0, pixels.length());
-    pixels.setPixelColor(anyPixel, Math.randomRange(0, Colors.White));
+    pixels.setPixelColor(anyPixel, Math.randomRange(0, 0xffffff));
 })
 ```
 
@@ -81,10 +81,10 @@ Make a pixel turn `pink` when you touch the capacitive pin `pin A1` on the board
 let pixels = light.createStrip();
 
 input.pinA1.onEvent(ButtonEvent.Down, () => {
-    pixels.setPixelColor(5, Colors.Pink);
+    pixels.setPixelColor(5, 0xff007f);
 })
 input.pinA1.onEvent(ButtonEvent.Up, () => {
-    pixels.setPixelColor(5, Colors.Green);
+    pixels.setPixelColor(5, 0x00ff00);
 })
 ```
 

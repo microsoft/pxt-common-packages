@@ -33,9 +33,9 @@ let pixels = light.createStrip();
 
 forever(function() {
     if (input.buttonA.isPressed()) {
-        pixels.setAll(Colors.Green);
+        pixels.setAll(0x00ff00);
     } else {
-        pixels.setAll(Colors.Red);
+        pixels.setAll(0xff0000);
     }
 })
 ```

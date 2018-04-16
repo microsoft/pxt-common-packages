@@ -26,9 +26,9 @@ forever(() => {
     if (lightSpot == light.pixels.length()) {
         lightSpot = 0;
     }
-    pixels.setPixelColor(lightSpot, Colors.Blue);
+    pixels.setPixelColor(lightSpot, 0x0000ff);
     pause(500);
-    pixels.setPixelColor(lightSpot, Colors.Black);
+    pixels.setPixelColor(lightSpot, 0x000000);
     lightSpot++;
 })
 ```

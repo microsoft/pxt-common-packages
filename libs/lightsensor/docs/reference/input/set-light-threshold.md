@@ -26,10 +26,10 @@ that happens.
 const halfBright = 127;
 let pixels = light.createStrip();
 
-pixels.setAll(Colors.Red);
+pixels.setAll(0xff0000);
 input.setLightThreshold(LightCondition.Dark, halfBright);
 input.onLightConditionChanged(LightCondition.Dark, () => {
-	pixels.setBrightness(light.fade(Colors.Red, halfBright));
+	pixels.setBrightness(light.fade(0xff0000, halfBright));
 });
 ```
 

@@ -23,7 +23,7 @@ let pixels = light.createStrip();
 input.setLoudSoundThreshold(768);
 
 input.onLoudSound(() => {
-	pixels.setAll(Colors.Pink);
+	pixels.setAll(0xff007f);
     pause(200);
     pixels.clear();
 });

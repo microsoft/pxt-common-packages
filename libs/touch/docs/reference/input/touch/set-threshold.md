@@ -20,7 +20,7 @@ Set the touch threshold to `1000`. Test touch sensitivity by making all the pixe
 ```blocks
 input.pinA1.setThreshold(1000);
 input.pinA1.onEvent(ButtonEvent.Click, function () {
-    light.setAll(light.colors(Colors.Red));
+    light.setAll(0xff0000);
 })
 ```
 
