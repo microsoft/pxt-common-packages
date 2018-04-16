@@ -188,7 +188,7 @@ static inline void setCore(Image_ img, int x, int y, int c) {
     }
 }
 
-static inline void getCore(Image_ img, int x, int y) {
+static inline int getCore(Image_ img, int x, int y) {
     auto ptr = img->pix(x, y);
     if (img->bpp() == 1) {
         uint8_t mask = 0x01 << (y & 7);
@@ -387,6 +387,8 @@ Image_ transposed(Image_ img) {
             setCore(r, j, i, getCore(img, i, j));
         }
     }
+
+    return r;
 }
 
 /**
@@ -535,6 +537,11 @@ bool drawImageCore(Image_ img, Image_ from, int x, int y, int color) {
     auto tbp = img->bpp();
     auto fbp = from->bpp();
     auto y0 = y;
+
+    if (color == -2 && x == 0 && y == 0 && tbp == fbp && w == sw && h == sh) {
+        copyFrom(img, from);
+        return false;
+    }
 
     //DMESG("drawIMG(%d,%d) at (%d,%d) w=%d bh=%d len=%d", 
     //    w,h,x, y, img->width(), img->byteHeight(), len );
