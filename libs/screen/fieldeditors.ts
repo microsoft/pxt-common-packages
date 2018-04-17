@@ -7,6 +7,7 @@ namespace images {
     //% shim=TD_ID
     //% img.fieldEditor="sprite"
     //% img.fieldOptions.taggedTemplate="img"
+    //% img.fieldOptions.decompileIndirectFixedInstances="true"
     //% weight=100
     export function _spriteImage(img: Image) {
         return img
