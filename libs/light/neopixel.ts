@@ -175,7 +175,7 @@ namespace light {
         //% help=light/neopixelstrip/graph
         //% parts="neopixel"
         //% weight=70
-        graph(value: number, high: number): void {
+        graph(value: number, high?: number): void {
             console.logValue("", value);
             value = Math.abs(value);
 
