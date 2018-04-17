@@ -171,11 +171,11 @@ namespace light {
          * @param value current value to plot
          * @param high maximum value, 0 to autoscale
          */
-        //% blockId=light_show_bar_graph block="%strip|graph %value |up to %high" icon="\uf080"
+        //% blockId=light_show_bar_graph block="%strip|graph %value||up to %high" icon="\uf080"
         //% help=light/neopixelstrip/graph
         //% parts="neopixel"
         //% weight=70
-        graph(value: number, high: number): void {
+        graph(value: number, high?: number): void {
             console.logValue("", value);
             value = Math.abs(value);
 

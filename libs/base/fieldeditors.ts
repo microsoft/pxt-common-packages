@@ -41,8 +41,8 @@ namespace fieldeditors {
     //% shim=TD_ID colorSecondary="#FFFFFF"
     //% value.fieldEditor="colornumber" value.fieldOptions.decompileLiterals=true
     //% value.defl='#ff0000'
-    //% value.fieldOptions.colours='["#FF0000", "#ff8000", "#ffff00", "#00ff00", "#00ffff", "#007fff", "#0000ff", "#7f00ff", "#ff0080", "#ff00ff", "#ffffff", "#999999"]'
-    //% value.fieldOptions.columns=3 value.fieldOptions.className='rgbColorPicker'
+    //% value.fieldOptions.colours='["#ff0000","#ff8000","#ffff00","#ff9da5","#00ff00","#b09eff","#00ffff","#007fff","#65471f","#0000ff","#7f00ff","#ff0080","#ff00ff","#ffffff","#999999","#000000"]'
+    //% value.fieldOptions.columns=4 value.fieldOptions.className='rgbColorPicker'
     export function __colorNumberPicker(value: number) {
         return value;
     }
