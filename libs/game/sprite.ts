@@ -350,7 +350,7 @@ class Sprite implements SpriteLike {
      * @param direction The movement direction for which this frame will be shown
      * @param addReverseDirection Also add a flipped version of the sprite in the opposite direction
      */
-    //% blockId=spritemovementframe block="%sprite add movement frame %image=screen_image_picker %direction ||add reverse direction %addReverseDirection"
+    //% blockId=spritemovementframe block="add %sprite movement frame %image=screen_image_picker %direction ||reversed %addReverseDirection=toggleOnOff"
     //% group="Animations" weight=100
     addMovementFrame(frame: Image, direction: sprites.MovementDirection, addReverseDirection = false) {
         if (!this._movementAnim) {
@@ -363,7 +363,7 @@ class Sprite implements SpriteLike {
      * Determines if the movement animation is facing a given direction. Note that
      * this API will always return false if no movement frames have been added.
      */
-    //% blockId=spriteisfacing block="%sprite is facing %direction"
+    //% blockId=spriteisfacing block="is %sprite facing %direction"
     //% group="Animations" weight=99 blockGap=8
     isFacing(direction: sprites.MovementDirection) {
         if (this._movementAnim) return direction === this._movementAnim.facing;
@@ -392,7 +392,7 @@ class Sprite implements SpriteLike {
     /**
      * Determines if the sprite is currently showing a timed animation
      */
-    //% blockId=spriteisshowing block="%sprite is showing animation"
+    //% blockId=spriteisshowing block="is %sprite showing animation"
     //% group="Animations" weight=78
     isShowingAnimation() {
         return !!this._currentAnimation;
