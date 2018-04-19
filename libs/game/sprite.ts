@@ -304,7 +304,7 @@ class Sprite implements SpriteLike {
      */
     //% group="Collisions"
     //% blockId=spriteonoverlap block="on %sprite overlaped with"
-    //% afterOnStart=true
+    //% afterOnStart=true handlerStatement=1
     onOverlap(handler: (other: Sprite) => void) {
         this.overlapHandler = handler;
     }
@@ -316,7 +316,7 @@ class Sprite implements SpriteLike {
      */
     //% group="Collisions"
     //% blockId=spriteoncollision block="on %sprite collided %direction with"
-    //% afterOnStart=true
+    //% afterOnStart=true handlerStatement=1
     onCollision(direction: CollisionDirection, handler: (other: Sprite) => void) {
         if (!this.collisionHandlers)
             this.collisionHandlers = [];
@@ -419,7 +419,7 @@ class Sprite implements SpriteLike {
     //% group="Lifecycle"
     //% weight=9
     //% blockId=spriteondestroy block="on %sprite destroyed"
-    //% afterOnStart=true
+    //% afterOnStart=true handlerStatement=1
     onDestroyed(handler: () => void) {
         this.destroyHandler = handler
     }
