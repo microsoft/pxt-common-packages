@@ -57,4 +57,10 @@ namespace pxsim.control {
     export function createBuffer(size: number) {
         return BufferMethods.createBuffer(size)
     }
+    export function dmesg(msg: string) {
+        console.log(`DMESG: ${msg}`);
+    }
+    export function dmesgPtr(msg: string, ptr: any) {
+        console.log(`DMESG: ${msg} ${ptr}`);
+    }    
 }

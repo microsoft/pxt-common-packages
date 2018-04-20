@@ -174,7 +174,7 @@
         ],
         "instantiation": {
             "kind": "function",
-            "fullyQualifiedName": "AnalogPin.analogWrite",
+            "fullyQualifiedName": "AnalogOutPin.analogWrite",
             "argumentRoles": [
                 {"pinInstantiationIdx": 0, "partParameter": "name"}
             ]
@@ -205,7 +205,7 @@
         ],
         "instantiation": {
             "kind": "function",
-            "fullyQualifiedName": "AnalogPin.analogRead",
+            "fullyQualifiedName": "AnalogInPin.analogRead",
             "argumentRoles": [
                 {"pinInstantiationIdx": 0, "partParameter": "name"}
             ]

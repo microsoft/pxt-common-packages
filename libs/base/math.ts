@@ -18,7 +18,8 @@ namespace Math {
      * @param toHigh the upper bound of the value's target range, eg: 4
      */
     //% help=math/map weight=10 blockGap=8
-    //% blockId=math_map block="map %value|from low %fromLow|from high %fromHigh|to low %toLow|to high %toHigh"
+    //% blockId=math_map block="map %value|from low %fromLow|high %fromHigh|to low %toLow|high %toHigh"
+    //% inlineInputMode=inline
     export function map(value: number, fromLow: number, fromHigh: number, toLow: number, toHigh: number): number {
         return ((value - fromLow) * (toHigh - toLow)) / (fromHigh - fromLow) + toLow;
     }    
