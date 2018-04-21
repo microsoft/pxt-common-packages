@@ -115,6 +115,26 @@ namespace keyboard {
     /**
     * Sends a media key command
     */
+    //% blockId=keyboardStandardKey block="keyboard key %key|%event"
+    //% blockGap=8 weight=99
+    void key(String key, KeyboardKeyEvent event) {
+        uint16_t ckey = key[0];
+        switch(event) {
+            case KeyboardKeyEvent::Down:
+                pxt::keyboard.keyDown(ckey);
+                break;
+            case KeyboardKeyEvent::Up:
+                pxt::keyboard.keyUp(ckey);
+                break;
+            case KeyboardKeyEvent::Press:
+                pxt::keyboard.press(ckey);
+                break;
+        }
+    }
+
+    /**
+    * Sends a media key command
+    */
     //% blockId=keyboardMediaKey block="keyboard media key %key|%event"
     //% blockGap=8
     void mediaKey(KeyboardMediaKey key, KeyboardKeyEvent event) {

@@ -3,6 +3,10 @@ namespace pxsim.keyboard {
         
     }
 
+    export function key(c : string, event: number) {
+
+    }
+
     export function mediaKey(key: number, event: number): void {
 
     }
