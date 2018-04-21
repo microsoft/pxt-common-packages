@@ -118,7 +118,9 @@ namespace keyboard {
     //% blockId=keyboardStandardKey block="keyboard key %key|%event"
     //% blockGap=8 weight=99
     void key(String key, KeyboardKeyEvent event) {
-        uint16_t ckey = key[0];
+        ManagedString k(key);
+        if (!k.length) return;
+        uint16_t ckey = k[0];
         switch(event) {
             case KeyboardKeyEvent::Down:
                 pxt::keyboard.keyDown(ckey);
