@@ -120,7 +120,7 @@ namespace keyboard {
     void key(String key, KeyboardKeyEvent event) {
         ManagedString k(key);
         if (!k.length) return;
-        uint16_t ckey = k[0];
+        uint16_t ckey = k.charAt(0);
         switch(event) {
             case KeyboardKeyEvent::Down:
                 pxt::keyboard.keyDown(ckey);
