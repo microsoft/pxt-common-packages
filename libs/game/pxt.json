@@ -17,7 +17,8 @@
         "scenes.ts",
         "game.ts",
         "targetoverrides.cpp",
-        "targetoverrides.ts"
+        "targetoverrides.ts",
+        "mathUtil.ts"
     ],
     "public": true,
     "dependencies": {
