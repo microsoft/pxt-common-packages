@@ -119,7 +119,7 @@ namespace keyboard {
     //% blockGap=8 weight=99
     void key(String key, KeyboardKeyEvent event) {
         if (!key->length) return;
-        uint16_t ckey = pxt::toUInt(pxt::fromInt(key->data[0]));
+        uint16_t ckey = key->data[0];
         switch(event) {
             case KeyboardKeyEvent::Down:
                 pxt::keyboard.keyDown(ckey);
