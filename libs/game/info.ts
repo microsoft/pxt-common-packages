@@ -9,6 +9,7 @@ namespace info {
     let _highScore: number = null;
     let _life: number = null;
     let _hud: boolean = false;
+    let _gameEnd: number = undefined;
     /**
      * Color of the HUD display
      */
@@ -35,6 +36,18 @@ namespace info {
                 let s = _life + ""
                 screen.print(s, 10, font.charHeight, color, font)
                 if (_life == 0)
+                    game.over();
+            }
+            // show countdown
+            if (_gameEnd !== undefined) {
+                let t = Math.max(0, _gameEnd - control.millis()) / 1000;
+                // slow down timer
+                // turn to second
+                t = Math.ceil(t);
+                // print time
+                let s = t.toString();
+                screen.print(s, (screen.width - s.length * font.charWidth) / 2, font.charHeight, color, font);                
+                if (t <= 0)
                     game.over();
             }
         })
@@ -100,6 +113,15 @@ namespace info {
     }
 
     /**
+     * Updates the high score based on the current score
+     */
+    export function saveHighScore() {
+        if (_score) {
+            updateHighScore(_score);
+        }
+    }
+    
+    /**
      * Gets the number of lives
      */
     //% weight=85 blockGap=8
@@ -137,12 +159,13 @@ namespace info {
     }
 
     /**
-     * Updates the high score based on the current score
+     * Starts a countdown of the given duration in seconds
+     * @param duration the duration of the countdown, eg: 10
      */
-    export function saveHighScore() {
-        if (_score) {
-            updateHighScore(_score);
-        }
+    //% blockId=gamecountdown block="start countdown %duration (s)"
+    export function startCountdown(duration: number) {
+        initHUD();
+        _gameEnd = control.millis() + duration * 1000;
     }
 }
 
