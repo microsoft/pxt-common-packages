@@ -131,7 +131,7 @@ class WAccel {
     {
         acc.init();        
     }
-}
+};
 
 SINGLETON(WAccel);
 }
