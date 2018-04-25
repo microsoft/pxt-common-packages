@@ -88,7 +88,7 @@ namespace music {
     /**
      * Start playing a sound and don't wait for it to finish.
      * Notes are expressed as a string of characters with this format: NOTE[octave][:duration]
-     * @param sound the melody to play, eg: Sounds.PowerUp
+     * @param sound the melody to play, eg: music.sounds(Sounds.PowerUp)
      */
     //% help=music/play-sound
     //% blockId=music_play_sound block="play sound %sound=music_sounds"
@@ -108,7 +108,7 @@ namespace music {
     /**
      * Play a sound and wait until the sound is done.
      * Notes are expressed as a string of characters with this format: NOTE[octave][:duration]
-     * @param sound the melody to play, eg: Sounds.PowerUp
+     * @param sound the melody to play, eg: music.sounds(Sounds.PowerUp)
      */
     //% help=music/play-sound-until-done
     //% blockId=music_play_sound_until_done block="play sound %sound=music_sounds|until done"
