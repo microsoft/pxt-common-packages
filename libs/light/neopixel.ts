@@ -1015,9 +1015,6 @@ namespace light {
     //% blockId="neopixel_rgb" block="red %red|green %green|blue %blue"
     //% red.min=0 red.max=255 green.min=0 green.max=255 blue.min=0 blue.max=255
     //% help="light/rgb"
-    //% red.shadowOptions.color="#FF6680"
-    //% green.shadowOptions.color="#59C059"
-    //% blue.shadowOptions.color="#4C97FF"
     //% group="Color" weight=19 blockGap=8
     export function rgb(red: number, green: number, blue: number): number {
         return ((red & 0xFF) << 16) | ((green & 0xFF) << 8) | (blue & 0xFF);
