@@ -191,14 +191,19 @@ namespace game {
     //% group="Gameplay"
     //% help=game/update weight=100 afterOnStart=true
     //% blockId=gameupdate block="game update"
+    //% blockAllowMultiple=1
     export function update(a: () => void): void {
         init();
-        if (!_scene.updateCallback) {
+        if (!_scene.updateCallbacks) {
             game.eventContext().registerFrameHandler(20, function () {
-                if (_scene.updateCallback) _scene.updateCallback();
+                if (_scene.updateCallbacks) {
+                    for(const a of _scene.updateCallbacks)
+                        a();
+                }
             });
-            _scene.updateCallback = a;
+            _scene.updateCallbacks = [];
         }
+        _scene.updateCallbacks.push(a);
     }
 
     /**
@@ -208,13 +213,17 @@ namespace game {
     //% group="Gameplay"
     //% help=game/paint weight=10 afterOnStart=true
     //% blockId=gamepaint block="game paint"
+    //% blockAllowMultiple=1
     export function paint(a: () => void): void {
         init();
-        if (!_scene.paintCallback) {
+        if (!_scene.paintCallbacks) {
             game.eventContext().registerFrameHandler(75, function () {
-                if (_scene.paintCallback) _scene.paintCallback();
+                if (_scene.paintCallbacks) 
+                    for(const a of _scene.paintCallbacks)
+                        a();
             });
-            _scene.paintCallback = a;
+            _scene.paintCallbacks = [];
         }
+        _scene.paintCallbacks.push(a);
     }
 }

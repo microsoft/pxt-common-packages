@@ -16,8 +16,8 @@ namespace scene {
         camera: scene.Camera;
         flags: number;
 
-        paintCallback: () => void;
-        updateCallback: () => void;
+        paintCallbacks: Action[];
+        updateCallbacks: Action[];
 
         constructor(eventContext: control.EventContext) {
             this.eventContext = eventContext;

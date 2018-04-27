@@ -57,16 +57,16 @@ class Sprite implements SpriteLike {
     y: number
     private _z: number
     //% group="Properties"
-    //% blockCombine block="vx"
+    //% blockCombine block="vx (velocity x)"
     vx: number
     //% group="Properties"
-    //% blockCombine block="vy"
+    //% blockCombine block="vy (velocity y)"
     vy: number
     //% group="Properties"
-    //% blockCombine block="ax"
+    //% blockCombine block="ax (acceleration x)"
     ax: number
     //% group="Properties"
-    //% blockCombine block="ay"
+    //% blockCombine block="ay (acceleration y)"
     ay: number
     //% group="Properties"
     //% blockCombine block="layer"
