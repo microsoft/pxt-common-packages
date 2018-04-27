@@ -18,7 +18,8 @@
         "game.ts",
         "targetoverrides.cpp",
         "targetoverrides.ts",
-        "mathUtil.ts"
+        "mathUtil.ts",
+        "image.d.ts"
     ],
     "public": true,
     "dependencies": {
