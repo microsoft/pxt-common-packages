@@ -25,28 +25,20 @@ namespace keys {
             control.internalOnEvent(INTERNAL_KEY_UP, this.id, () => {
                 if (this._pressed) {
                     this._pressed = false
-                    if (_userEventsEnabled) {
+                    if (_userEventsEnabled)
                         control.raiseEvent(KEY_UP, this.id)
-                        control.raiseEvent(KEY_UP, 0)
-                    }
-                    else {
+                    else
                         control.raiseEvent(SYSTEM_KEY_UP, this.id)
-                        control.raiseEvent(SYSTEM_KEY_UP, 0)
-                    }
                 }
             }, 16)
             control.internalOnEvent(INTERNAL_KEY_DOWN, this.id, () => {
                 if (!this._pressed) {
                     this._pressed = true
                     this.checked = false
-                    if (_userEventsEnabled) {
+                    if (_userEventsEnabled)
                         control.raiseEvent(KEY_DOWN, this.id)
-                        control.raiseEvent(KEY_DOWN, 0)
-                    }
-                    else {
+                    else
                         control.raiseEvent(SYSTEM_KEY_DOWN, this.id)
-                        control.raiseEvent(SYSTEM_KEY_UP, 0)
-                    }
                 }
             }, 16)
             if (buttonId && upid && downid) {
