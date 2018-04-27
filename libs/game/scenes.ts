@@ -2,14 +2,34 @@
  * Control the background, tiles and camera
  */
 //% weight=88 color="#401255" icon="\uf1bb"
-//% groups='["Background", "Tiles", "Camera"]'
+//% groups='["Screen", "Tiles", "Camera"]'
 //% blockGap=8
 namespace scene {
+    /**
+     * Gets the width in pixel of the screen
+     */
+    //% blockId=scenescreenwidth block="screen width"
+    //% group="Screen"
+    //% weight=100 blockGap=8
+    export function screenWidth(): number {
+        return screen.width;
+    }
+
+    /**
+     * Gets the height in pixel of the screen
+     */
+    //% blockId=scenescreenheight block="screen height"
+    //% group="Screen"
+    //% weight=99
+    export function screenHeight(): number {
+        return screen.height;
+    }
+    
     /**
      * Sets the game background color
      * @param color
      */
-    //% group="Background"
+    //% group="Screen"
     //% weight=25
     //% blockId=gamesetbackgroundcolor block="set background color to %color=colorindexpicker"
     export function setBackgroundColor(color: number) {
@@ -20,7 +40,7 @@ namespace scene {
     /**
      * Sets the picture on the background
      */
-    //% group="Background"
+    //% group="Screen"
     //% weight=24
     //% blockId=gamesetbackgroundimage block="set background image to %img=screen_image_picker"
     export function setBackgroundImage(img: Image) {
@@ -33,7 +53,7 @@ namespace scene {
      */
     //% blockId=gamebackgroundimage block="background image"
     //% weight=23
-    //% group="Background"
+    //% group="Screen"
     export function backgroundImage(): Image {
         const scene = game.currentScene();
         return scene.background.image;
@@ -44,7 +64,7 @@ namespace scene {
      * @param distance distance of the layer which determines how fast it moves, eg: 10
      * @param img
      */
-    //% group="Background"
+    //% group="Screen"
     //% weight=10
     //% blockId=gameaddbackgroundlayer block="add background layer %image=screen_image_picker||distance %distance|aligned %alignment"
     export function addBackgroundLayer(image: Image, distance?: number, alignment?: BackgroundAlignment) {
