@@ -197,13 +197,34 @@ namespace game {
         if (!_scene.updateCallbacks) {
             game.eventContext().registerFrameHandler(20, function () {
                 if (_scene.updateCallbacks) {
-                    for(const a of _scene.updateCallbacks)
+                    for (const a of _scene.updateCallbacks)
                         a();
                 }
             });
             _scene.updateCallbacks = [];
         }
         _scene.updateCallbacks.push(a);
+    }
+
+    /**
+     * Execute code on an interval. Executes before game.update()
+     * @param body code to execute
+     */
+    //% group="Gameplay"
+    //% help=game/interval weight=99 afterOnStart=true
+    //% blockId=gameinterval block="game do every %period=timePicker ms"
+    //% blockAllowMultiple=1
+    export function interval(period: number, a: () => void): void {
+        if (period < 0) return;
+        init();
+        let timer = 0;
+        game.eventContext().registerFrameHandler(19, () => {
+            const time = control.millis();
+            if (timer <= time) {
+                timer = time + period;
+                a();
+            }
+        });
     }
 
     /**
@@ -218,8 +239,8 @@ namespace game {
         init();
         if (!_scene.paintCallbacks) {
             game.eventContext().registerFrameHandler(75, function () {
-                if (_scene.paintCallbacks) 
-                    for(const a of _scene.paintCallbacks)
+                if (_scene.paintCallbacks)
+                    for (const a of _scene.paintCallbacks)
                         a();
             });
             _scene.paintCallbacks = [];
