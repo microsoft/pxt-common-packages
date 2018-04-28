@@ -8,7 +8,7 @@ namespace images {
     //% img.fieldEditor="sprite"
     //% img.fieldOptions.taggedTemplate="img"
     //% img.fieldOptions.decompileIndirectFixedInstances="true"
-    //% weight=100
+    //% weight=100 group="Create"
     export function _spriteImage(img: Image) {
         return img
     }
@@ -21,7 +21,7 @@ namespace images {
     //% image.fieldEditor="images"
     //% image.fieldOptions.columns=6
     //% image.fieldOptions.width=600
-    //% weight=0
+    //% weight=0 group="Create"
     export function _image(image: Image): Image {
         return image;
     }
