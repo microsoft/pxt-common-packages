@@ -67,7 +67,7 @@ namespace info {
     }
 
     /**
-     * Gets the current score if any
+     * Ges the current score if any
      */
     //% weight=95 blockGap=8
     //% blockId=hudScore block="score"
@@ -82,31 +82,34 @@ namespace info {
     }
 
     /**
-     * Gets the last recorded high score
+     * Get the last recorded high score
      */
     //% weight=60
     //% blockId=highScore block="high score"
+    //% help=info/high-score
     export function highScore(): number {
         initScore();
         return _highScore || 0;
     }
 
     /**
-     * Sets the score
+     * Set the score
      */
     //% weight=94 blockGap=8
     //% blockId=hudsetScore block="set score to %value"
+    //% help=info/set-score
     export function setScore(value: number) {
         initScore()
         _score = value | 0
     }
 
     /**
-     * Changes the score by the given amount
+     * Change the score by the given amount
      * @param value the amount of change, eg: 1
      */
     //% weight=93
     //% blockId=hudChangeScoreBy block="change score by %value"
+    //% help=info/change-score-by
     export function changeScoreBy(value: number) {
         initScore();
         setScore(_score + value)
@@ -122,10 +125,11 @@ namespace info {
     }
     
     /**
-     * Gets the number of lives
+     * Get the number of lives
      */
     //% weight=85 blockGap=8
     //% blockId=hudLife block="life"
+    //% help=info/life
     export function life() {
         initLife()
         return _life
@@ -137,32 +141,35 @@ namespace info {
     }
 
     /**
-     * Sets the number of lives
+     * Set the number of lives
      * @param value the number of lives, eg: 3
      */
     //% weight=84 blockGap=8
     //% blockId=hudSetLife block="set life to %value"
+    //% help=info/set-life
     export function setLife(value: number) {
         initLife()
         _life = value | 0
     }
 
     /**
-     * Changes the lives by the given amount
+     * Change the lives by the given amount
      * @param value the change of lives, eg: -1
      */
     //% weight=83
     //% blockId=hudChangeLifeBy block="change life by %value"
+    //% help=info/change-life-by
     export function changeLifeBy(value: number) {
         initLife();
         setLife(_life + value)
     }
 
     /**
-     * Starts a countdown of the given duration in seconds
+     * Start a countdown of the given duration in seconds
      * @param duration the duration of the countdown, eg: 10
      */
     //% blockId=gamecountdown block="start countdown %duration (s)"
+    //% help=info/start-countdown
     export function startCountdown(duration: number) {
         initHUD();
         _gameEnd = control.millis() + duration * 1000;
