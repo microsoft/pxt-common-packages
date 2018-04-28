@@ -44,8 +44,9 @@ namespace pins {
                 this._hasError = true
             }
         }
-        public begin() {
-            this._hasError = false
+        public begin(): I2CDevice {
+            this._hasError = false;
+            return this;
         }
         public end() {
         }
