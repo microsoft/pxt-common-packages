@@ -4,35 +4,35 @@ interface Image {
      * Fill a rectangle
      */
     //% helper=imageFillRect blockNamespace="images" inlineInputMode="inline" group="Drawing"
-    //% block="%myImage=variables_get fill rectangle x %x y %y width %w height %h %c=colorindexpicker"
+    //% block="fill rectangle in %myImage=variables_get at x %x y %y width %w height %h %c=colorindexpicker"
     fillRect(x: number, y: number, w: number, h: number, c: color): void;
 
     /**
      * Draw a line
      */
     //% helper=imageDrawLine blockNamespace="images" inlineInputMode="inline" group="Drawing"
-    //% block="%myImage=variables_get draw line from x %x0 y %y0 to x %x1 y %y1 %c=colorindexpicker"
+    //% block="draw line in %myImage=variables_get from x %x0 y %y0 to x %x1 y %y1 %c=colorindexpicker"
     drawLine(x0: number, y0: number, x1: number, y1: number, c: color): void;
 
     /**
      * Draw an empty rectangle
      */
     //% helper=imageDrawRect blockNamespace="images" inlineInputMode="inline" group="Drawing"
-    //% block="%myImage=variables_get outline rectangle x %x y %y width %w height %h %c=colorindexpicker"
+    //% block="outline rectangle in %myImage=variables_get at x %x y %y width %w height %h %c=colorindexpicker"
     drawRect(x: number, y: number, w: number, h: number, c: color): void;
 
     /**
      * Set pixel color
      */
     //% shim=ImageMethods::setPixel blockNamespace="images" group="Drawing"
-    //% block="%myImage=variables_get set pixel at x %x y %y to %c=colorindexpicker"
+    //% block="set pixel of %myImage=variables_get at x %x y %y to %c=colorindexpicker"
     setPixel(x: int32, y: int32, c: int32): void;
 
     /**
      * Get a pixel color
      */
     //% shim=ImageMethods::getPixel blockNamespace="images" group="Drawing"
-    //% block="%myImage=variables_get get pixel color at x %x y %y"
+    //% block="%myImage=variables_get pixel color at x %x y %y"
     getPixel(x: int32, y: int32): int32;
 
     /**
@@ -74,7 +74,7 @@ interface Image {
      * Replaces one color in an image with another
      */
     //% shim=ImageMethods::replace blockNamespace="images" group="Transformations"
-    //% block="%myImage=variables_get change color %from=colorindexpicker to %to=colorindexpicker"
+    //% block="change color in %myImage=variables_get from %from=colorindexpicker to %to=colorindexpicker"
     replace(from: int32, to: int32): void;
 }
 
