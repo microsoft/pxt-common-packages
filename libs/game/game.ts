@@ -207,6 +207,26 @@ namespace game {
     }
 
     /**
+     * Execute code on an interval. Executes before game.update()
+     * @param body code to execute
+     */
+    //% group="Gameplay"
+    //% help=game/interval weight=99 afterOnStart=true
+    //% blockId=gameinterval block="game do every %period=timePicker ms"
+    //% blockAllowMultiple=1
+    export function interval(period: number, a: () => void): void {
+        init();
+        let timer = 0;
+        game.eventContext().registerFrameHandler(19, () => {
+            const time = control.millis();
+            if (timer <= time) {
+                timer = time + period;
+                a();
+            }
+        });
+    }
+
+    /**
      * Draw on screen before sprites
      * @param body code to execute
      */
@@ -218,7 +238,7 @@ namespace game {
         init();
         if (!_scene.paintCallbacks) {
             game.eventContext().registerFrameHandler(75, function () {
-                if (_scene.paintCallbacks) 
+                if (_scene.paintCallbacks)
                     for(const a of _scene.paintCallbacks)
                         a();
             });
