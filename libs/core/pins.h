@@ -102,6 +102,10 @@
 #define CODAL_TIMER CODAL_MBED::Timer
 #endif
 
+#ifndef CODAL_SPI
+#define CODAL_SPI CODAL_MBED::SPI
+#endif
+
 typedef CODAL_PIN DevicePin;
 
 typedef DevicePin *DigitalPin;
