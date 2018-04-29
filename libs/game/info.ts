@@ -71,6 +71,7 @@ namespace info {
      */
     //% weight=95 blockGap=8
     //% blockId=hudScore block="score"
+    //% help=info/score
     export function score() {
         initScore()
         return _score || 0;
