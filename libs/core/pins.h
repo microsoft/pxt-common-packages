@@ -42,6 +42,10 @@
 #define CFG_DISPLAY_HEIGHT 38
 #define CFG_DISPLAY_CFG0 39
 #define CFG_DISPLAY_CFG1 40
+#define CFG_DISPLAY_CFG2 41
+#define CFG_DISPLAY_CFG3 42
+#define CFG_PIN_DISPLAY_RST 43
+#define CFG_PIN_DISPLAY_BL 44
 
 #define CFG_PIN_A0 100
 #define CFG_PIN_A1 101
@@ -100,6 +104,10 @@
 
 #ifndef CODAL_TIMER
 #define CODAL_TIMER CODAL_MBED::Timer
+#endif
+
+#ifndef CODAL_SPI
+#define CODAL_SPI CODAL_MBED::SPI
 #endif
 
 typedef CODAL_PIN DevicePin;
