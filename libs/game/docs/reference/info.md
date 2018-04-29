@@ -16,10 +16,10 @@ info.startCountdown(0)
 ## See also
 
 [set score](/reference/info/set-score),
-[change score by](/reference/info/change-score-by)
+[change score by](/reference/info/change-score-by),
 [score](/reference/info/score),
 [high score](/reference/info/high-score),
 [set life](/reference/info/set-life),
-[change life by](/reference/info/change-life-by)
+[change life by](/reference/info/change-life-by),
 [life](/reference/info/life),
 [start countdown](/reference/info/start-countdown)

@@ -75,7 +75,7 @@ namespace game {
      * @param subtitle
      */
     //% group="Gameplay"
-    //% weight=90
+    //% weight=90 help=game/splash
     //% blockId=gameSplash block="splash %title||%subtitle"
     //% group="Prompt"
     export function splash(title: string, subtitle?: string) {
@@ -92,7 +92,7 @@ namespace game {
      * @param subtitle
      */
     //% group="Gameplay"
-    //% weight=89
+    //% weight=89 help=game/ask
     //% blockId=gameask block="ask %title||%subtitle"
     //% group="Prompt"
     export function ask(title: string, subtitle?: string): boolean {
@@ -145,11 +145,11 @@ namespace game {
     }
 
     /**
-     * Finishes the game and displays score
+     * Finish the game and display the score
      */
     //% group="Gameplay"
     //% blockId=gameOver block="game over"
-    //% weight=80
+    //% weight=80 help=game/over
     export function over() {
         init();
         if (__isOver) return

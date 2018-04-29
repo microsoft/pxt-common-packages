@@ -3,7 +3,7 @@
 Get the current game score value.
 
 ```sig
-info.life(0)
+info.score(0)
 ```
 
 Your program has a score counter which you can set to record the current score for your game code.
