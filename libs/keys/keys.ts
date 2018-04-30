@@ -48,9 +48,9 @@ namespace keys {
         }
 
         /**
-         * Register code for a key event
+         * Run some code when a key is pressed or released
          */
-        //% weight=99 blockGap=8
+        //% weight=99 blockGap=8 help=keys/key/on-event
         //% blockId=keyonevent block="on %key **key** %event"
         onEvent(event: KeyEvent, handler: () => void) {
             control.onEvent(event, this.id, handler);
@@ -59,7 +59,7 @@ namespace keys {
         /**
          * Pauses until a key is pressed or released
          */
-        //% weight=98 blockGap=8
+        //% weight=98 blockGap=8 help=keys/key/pause-until
         //% blockId=keypauseuntil block="pause until %key **key** is %event"
         pauseUntil(event: KeyEvent) {
             control.waitForEvent(event, this.id)
@@ -68,7 +68,7 @@ namespace keys {
         /**
          * Indicates if the key is currently pressed
         */
-        //% weight=96 blockGap=8
+        //% weight=96 blockGap=8 help=keys/key/is-pressed
         //% blockId=keyispressed block="is %key **key** pressed"
         isPressed() {
             return this._pressed
@@ -77,7 +77,7 @@ namespace keys {
         /**
          * Indicates if the key was pressed since the last call
         */
-        //% weight=95
+        //% weight=95 help=keys/key/was-pressed
         //% blockId=keywaspressed block="was %key **key** pressed"
         wasPressed() {
             if (!this.checked) {
@@ -92,10 +92,10 @@ namespace keys {
     export const any = new Key(0);
 
     /**
-     * Gets the horizontal movement, given the step and state of keys
+     * Get the horizontal movement, given the step and state of keys
      * @param step the distance, eg: 100
      */
-    //% weight=50 blockGap=8
+    //% weight=50 blockGap=8 help=keys/dx
     //% blockId=keysdx block="dx %step"
     export function dx(step: number) {
         const ctx = control.eventContext();
@@ -110,10 +110,10 @@ namespace keys {
     }
 
     /**
-     * Gets the vertical movement, given the step and state of keys
+     * Get the vertical movement, given the step and state of keys
      * @param step the distance, eg: 100
      */
-    //% weight=49
+    //% weight=49 help=keys/dy
     //% blockId=keysdy block="dy %step"
     export function dy(step: number) {
         const ctx = control.eventContext();
@@ -128,7 +128,7 @@ namespace keys {
     }
 
     /**
-     * Pauses the program until a key is pressed
+     * Pause the program until a key is pressed
      */
     //% weight=10
     //% blockId=keypauseuntilanykey block="pause until any key"
