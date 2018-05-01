@@ -133,8 +133,8 @@ namespace controller {
      * Pause the program until a button is pressed
      */
     //% weight=10
-    //% blockId=keypauseuntilanykey block="pause until any button"
-    export function pauseUntilAnyButton() {
+    //% blockId=keypauseuntilanykey block="pause until any button pressed"
+    export function pauseUntilAnyButtonPressed() {
         control.waitForEvent(KEY_DOWN, 0)
     }
 
