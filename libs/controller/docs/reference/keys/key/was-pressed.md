@@ -3,7 +3,7 @@
 Check if a key was pressed earlier.
 
 ```sig
-controller.any.wasPressed()
+controller.anyButton.wasPressed()
 ```
 
 The fact that a key was pressed earlier is remembered. Once **was pressed** is used, this fact is forgotten and the result is `false` the next time you check with **was pressed** key _state_ is reset). But, if you press the key again before you check with **was pressed**, it will tell you `true`. 

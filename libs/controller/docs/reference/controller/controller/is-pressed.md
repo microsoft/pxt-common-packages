@@ -3,7 +3,7 @@
 Check if a key is being pressed or not.
 
 ```sig
-controller.any.isPressed()
+controller.anyButton.isPressed()
 ```
 
 ## Returns
