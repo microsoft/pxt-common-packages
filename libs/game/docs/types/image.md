@@ -107,20 +107,21 @@ We can make 4 x 4 image that uses all of the colors:
 
 ```typescript
 let allColors = img`
-0123
-4567
-89ab
-cdef
+0 1 2 3
+4 5 6 7
+8 9 a b
+c d e f
 `
 ```
+
 This the same image as a block:
 
 ```block
 let allColors = img`
-0123
-4567
-89ab
-cdef
+0 1 2 3
+4 5 6 7
+8 9 a b
+c d e f
 `
 ```
 
