@@ -8,7 +8,7 @@ enum ControllerButtonEvent {
 /**
  * Access to game controls
  */
-//% weight=97 color="#5B0F4D" icon="\uf11b"
+//% weight=97 color="#FE8C4F" icon="\uf11b"
 namespace controller {
     let _userEventsEnabled = true;
 
@@ -48,37 +48,37 @@ namespace controller {
         }
 
         /**
-         * Run some code when a key is pressed or released
+         * Run some code when a button is pressed or released
          */
-        //% weight=99 blockGap=8 help=keys/key/on-event
-        //% blockId=keyonevent block="on %key **key** %event"
+        //% weight=99 blockGap=8 help=controller/button/on-event
+        //% blockId=keyonevent block="on %button **button** %event"
         onEvent(event: ControllerButtonEvent, handler: () => void) {
             control.onEvent(event, this.id, handler);
         }
 
         /**
-         * Pauses until a key is pressed or released
+         * Pauses until a button is pressed or released
          */
-        //% weight=98 blockGap=8 help=keys/key/pause-until
-        //% blockId=keypauseuntil block="pause until %key **key** is %event"
+        //% weight=98 blockGap=8 help=controller/button/pause-until
+        //% blockId=keypauseuntil block="pause until %button **button** is %event"
         pauseUntil(event: ControllerButtonEvent) {
             control.waitForEvent(event, this.id)
         }
 
         /**
-         * Indicates if the key is currently pressed
+         * Indicates if the button is currently pressed
         */
-        //% weight=96 blockGap=8 help=keys/key/is-pressed
-        //% blockId=keyispressed block="is %key **key** pressed"
+        //% weight=96 blockGap=8 help=controller/button/is-pressed
+        //% blockId=keyispressed block="is %button **button** pressed"
         isPressed() {
             return this._pressed
         }
 
         /**
-         * Indicates if the key was pressed since the last call
+         * Indicates if the button was pressed since the last call
         */
-        //% weight=95 help=keys/key/was-pressed
-        //% blockId=keywaspressed block="was %key **key** pressed"
+        //% weight=95 help=controller/button/was-pressed
+        //% blockId=keywaspressed block="was %button **button** pressed"
         wasPressed() {
             if (!this.checked) {
                 this.checked = true
@@ -92,10 +92,10 @@ namespace controller {
     export const anyButton = new Button(0);
 
     /**
-     * Get the horizontal movement, given the step and state of keys
+     * Get the horizontal movement, given the step and state of buttons
      * @param step the distance, eg: 100
      */
-    //% weight=50 blockGap=8 help=keys/dx
+    //% weight=50 blockGap=8 help=controller/dx
     //% blockId=keysdx block="x direction||scaled by %step"
     //% step.defl=100
     export function dx(step: number = 100) {
@@ -111,7 +111,7 @@ namespace controller {
     }
 
     /**
-     * Get the vertical movement, given the step and state of keys
+     * Get the vertical movement, given the step and state of buttons
      * @param step the distance, eg: 100
      */
     //% weight=49 help=keys/dy
