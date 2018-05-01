@@ -26,7 +26,7 @@
         "libs/storage",
         "libs/game",
         "libs/screen",
-        "libs/keys",
+        "libs/controller",
         "libs/turtle"
     ]
 }

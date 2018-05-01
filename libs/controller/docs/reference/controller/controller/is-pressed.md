@@ -3,7 +3,7 @@
 Check if a key is being pressed or not.
 
 ```sig
-keys.any.isPressed()
+controller.any.isPressed()
 ```
 
 ## Returns
@@ -24,7 +24,7 @@ e 1 1 1 1 e
 e e e e e e
 `)
 game.onFrameUpdate(function () {
-    if (keys.A.isPressed()) {
+    if (controller.A.isPressed()) {
         yellowBox.x = Math.randomRange(3, scene.screenWidth() - 3)
         yellowBox.y = Math.randomRange(3, scene.screenHeight() - 3)
     }

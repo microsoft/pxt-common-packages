@@ -164,7 +164,7 @@ namespace game {
             this.answerLength = answerLength;
             this.inputIndex = 0;
 
-            keys._setUserEventsEnabled(false);
+            controller._setUserEventsEnabled(false);
             game.pushScene()
 
             this.draw();
@@ -174,7 +174,7 @@ namespace game {
             pauseUntil(() => this.confirmPressed);
 
             game.popScene();
-            keys._setUserEventsEnabled(true);
+            controller._setUserEventsEnabled(true);
 
             return this.result;
         }
@@ -323,27 +323,27 @@ namespace game {
         }
 
         private registerHandlers() {
-            keys.up.onEvent(SYSTEM_KEY_DOWN, () => {
+            controller.up.onEvent(SYSTEM_KEY_DOWN, () => {
                 this.moveVertical(true);
             })
 
-            keys.down.onEvent(SYSTEM_KEY_DOWN, () => {
+            controller.down.onEvent(SYSTEM_KEY_DOWN, () => {
                 this.moveVertical(false);
             })
 
-            keys.right.onEvent(SYSTEM_KEY_DOWN, () => {
+            controller.right.onEvent(SYSTEM_KEY_DOWN, () => {
                 this.moveHorizontal(true);
             });
 
-            keys.left.onEvent(SYSTEM_KEY_DOWN, () => {
+            controller.left.onEvent(SYSTEM_KEY_DOWN, () => {
                 this.moveHorizontal(false);
             });
 
-            keys.A.onEvent(SYSTEM_KEY_DOWN, () => {
+            controller.A.onEvent(SYSTEM_KEY_DOWN, () => {
                 this.confirm();
             });
 
-            keys.B.onEvent(SYSTEM_KEY_DOWN, () => {
+            controller.B.onEvent(SYSTEM_KEY_DOWN, () => {
                 this.delete();
             });
 

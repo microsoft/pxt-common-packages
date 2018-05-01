@@ -18,15 +18,15 @@ namespace game {
         return _scene;
     }
 
-    let __waitAnyKey: () => void
+    let __waitAnyButton: () => void
     let __isOver = false;
 
-    export function setWaitAnyKey(f: () => void) {
-        __waitAnyKey = f
+    export function setWaitAnyButton(f: () => void) {
+        __waitAnyButton = f
     }
 
-    export function waitAnyKey() {
-        if (__waitAnyKey) __waitAnyKey()
+    export function waitAnyButton() {
+        if (__waitAnyButton) __waitAnyButton()
         else pause(3000)
     }
 
@@ -82,7 +82,7 @@ namespace game {
         init();
         control.pushEventContext();
         showDialog(title, subtitle)
-        waitAnyKey()
+        waitAnyButton()
         control.popEventContext();
     }
 
@@ -100,8 +100,8 @@ namespace game {
         control.pushEventContext();
         showDialog(title, subtitle, "A = OK, B = CANCEL");
         let answer: boolean = null;
-        keys.A.onEvent(KeyEvent.Pressed, () => answer = true);
-        keys.B.onEvent(KeyEvent.Pressed, () => answer = false);
+        controller.A.onEvent(ControllerButtonEvent.Pressed, () => answer = true);
+        controller.B.onEvent(ControllerButtonEvent.Pressed, () => answer = false);
         pauseUntil(() => answer !== null);
         control.popEventContext();
         return answer;
@@ -173,7 +173,7 @@ namespace game {
                 }
             }
             pause(2000) // wait for users to stop pressing keys
-            waitAnyKey()
+            waitAnyButton()
             control.reset()
         })
     }

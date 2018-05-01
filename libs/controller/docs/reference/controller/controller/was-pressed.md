@@ -3,7 +3,7 @@
 Check if a key was pressed earlier.
 
 ```sig
-keys.any.wasPressed()
+controller.any.wasPressed()
 ```
 
 The fact that a key was pressed earlier is remembered. Once **was pressed** is used, this fact is forgotten and the result is `false` the next time you check with **was pressed** key _state_ is reset). But, if you press the key again before you check with **was pressed**, it will tell you `true`. 
@@ -28,7 +28,7 @@ e e e e e e
 yellowBox.x = 3
 yellowBox.y = scene.screenHeight() / 2
 game.onFrameUpdate(function () {
-    if (keys.right.wasPressed()) {
+    if (controller.right.wasPressed()) {
         yellowBox.x += 6
     }
 })

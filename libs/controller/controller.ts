@@ -1,4 +1,4 @@
-enum KeyEvent {
+enum ControllerButtonEvent {
     //% block="pressed"
     Pressed = KEY_DOWN,
     //% block="released"
@@ -6,17 +6,17 @@ enum KeyEvent {
 }
 
 /**
- * Access to game keys
+ * Access to game controls
  */
 //% weight=97 color="#5B0F4D" icon="\uf11b"
-namespace keys {
+namespace controller {
     let _userEventsEnabled = true;
 
     //% fixedInstances
-    export class Key {
-        id: number
-        private _pressed: boolean
-        private checked: boolean
+    export class Button {
+        id: number;
+        private _pressed: boolean;
+        private checked: boolean;
 
         constructor(id: number, buttonId?: number, upid?: number, downid?: number) {
             this.id = id;
@@ -52,7 +52,7 @@ namespace keys {
          */
         //% weight=99 blockGap=8 help=keys/key/on-event
         //% blockId=keyonevent block="on %key **key** %event"
-        onEvent(event: KeyEvent, handler: () => void) {
+        onEvent(event: ControllerButtonEvent, handler: () => void) {
             control.onEvent(event, this.id, handler);
         }
 
@@ -61,7 +61,7 @@ namespace keys {
          */
         //% weight=98 blockGap=8 help=keys/key/pause-until
         //% blockId=keypauseuntil block="pause until %key **key** is %event"
-        pauseUntil(event: KeyEvent) {
+        pauseUntil(event: ControllerButtonEvent) {
             control.waitForEvent(event, this.id)
         }
 
@@ -89,23 +89,24 @@ namespace keys {
     }
 
     //% fixedInstance block="any"
-    export const any = new Key(0);
+    export const anyButton = new Button(0);
 
     /**
      * Get the horizontal movement, given the step and state of keys
      * @param step the distance, eg: 100
      */
     //% weight=50 blockGap=8 help=keys/dx
-    //% blockId=keysdx block="dx %step"
-    export function dx(step: number) {
+    //% blockId=keysdx block="x direction||scaled by %step"
+    //% step.defl=100
+    export function dx(step: number = 100) {
         const ctx = control.eventContext();
         if (!ctx) return 0;
 
-        if (keys.left.isPressed()) {
-            if (keys.right.isPressed()) return 0
+        if (controller.left.isPressed()) {
+            if (controller.right.isPressed()) return 0
             else return -step * ctx.deltaTime;
         }
-        else if (keys.right.isPressed()) return step * ctx.deltaTime
+        else if (controller.right.isPressed()) return step * ctx.deltaTime
         else return 0
     }
 
@@ -114,25 +115,26 @@ namespace keys {
      * @param step the distance, eg: 100
      */
     //% weight=49 help=keys/dy
-    //% blockId=keysdy block="dy %step"
+    //% blockId=keysdy block="y direction||scaled by %step"
+    //% step.defl=100
     export function dy(step: number) {
         const ctx = control.eventContext();
         if (!ctx) return 0;
 
-        if (keys.up.isPressed()) {
-            if (keys.down.isPressed()) return 0
+        if (controller.up.isPressed()) {
+            if (controller.down.isPressed()) return 0
             else return -step * ctx.deltaTime;
         }
-        else if (keys.down.isPressed()) return step * ctx.deltaTime
+        else if (controller.down.isPressed()) return step * ctx.deltaTime
         else return 0
     }
 
     /**
-     * Pause the program until a key is pressed
+     * Pause the program until a button is pressed
      */
     //% weight=10
-    //% blockId=keypauseuntilanykey block="pause until any key"
-    export function pauseUntilAnyKey() {
+    //% blockId=keypauseuntilanykey block="pause until any button"
+    export function pauseUntilAnyButton() {
         control.waitForEvent(KEY_DOWN, 0)
     }
 

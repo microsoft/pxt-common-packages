@@ -3,7 +3,7 @@
 Causes your program to wait until an event for a key happens.
 
 ```sig
-keys.any.pauseUntil(KeyEvent.Pressed)
+controller.any.pauseUntil(KeyEvent.Pressed)
 ```
 
 ## Parameters
@@ -25,7 +25,7 @@ e e e e e e
 e e e e e e 
 e e e e e e 
 `)
-keys.B.pauseUntil(KeyEvent.Pressed)
+controller.B.pauseUntil(KeyEvent.Pressed)
 square.x = 3
 square.y = 3
 ```

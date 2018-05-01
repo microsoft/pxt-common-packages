@@ -3,7 +3,7 @@
 Run some code when a key is pressed or released.
 
 ```sig
-keys.any.onEvent(KeyEvent.Pressed, function () {
+controller.any.onEvent(KeyEvent.Pressed, function () {
 
 });
 ```
@@ -28,7 +28,7 @@ e 1 6 6 1 e
 e 1 1 1 1 e
 e e e e e e
 `)
-keys.any.onEvent(KeyEvent.Pressed, function () {
+controller.any.onEvent(KeyEvent.Pressed, function () {
     yellowBox.x = Math.randomRange(3, scene.screenWidth() - 3)
     yellowBox.y = Math.randomRange(3, scene.screenHeight() - 3)
 })
