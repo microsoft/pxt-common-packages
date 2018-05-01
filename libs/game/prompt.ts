@@ -351,7 +351,7 @@ namespace game {
             this.frameCount = 0;
             this.blink = true;
 
-            game.update(() => {
+            game.onFrameUpdate(() => {
                 this.frameCount = (this.frameCount + 1) % 30;
 
                 if (this.frameCount === 0) {

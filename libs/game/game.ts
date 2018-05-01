@@ -190,33 +190,25 @@ namespace game {
      */
     //% group="Gameplay"
     //% help=game/update weight=100 afterOnStart=true
-    //% blockId=gameupdate block="game update"
+    //% blockId=gameupdate block="on frame update"
     //% blockAllowMultiple=1
-    export function update(a: () => void): void {
+    export function onFrameUpdate(a: () => void): void {
         init();
-        if (!_scene.updateCallbacks) {
-            game.eventContext().registerFrameHandler(20, function () {
-                if (_scene.updateCallbacks) {
-                    for (const a of _scene.updateCallbacks)
-                        a();
-                }
-            });
-            _scene.updateCallbacks = [];
-        }
-        _scene.updateCallbacks.push(a);
+        if (!a) return;
+        game.eventContext().registerFrameHandler(20, a);
     }
 
     /**
-     * Execute code on an interval. Executes before game.update()
+     * Execute code on an interval. Executes before game.onFrameUpdate()
      * @param body code to execute
      */
     //% group="Gameplay"
     //% help=game/interval weight=99 afterOnStart=true
-    //% blockId=gameinterval block="game do every %period=timePicker ms"
+    //% blockId=gameinterval block="on frame update every %period=timePicker ms"
     //% blockAllowMultiple=1
-    export function interval(period: number, a: () => void): void {
-        if (period < 0) return;
+    export function onFrameUpdateEvery(period: number, a: () => void): void {
         init();
+        if (!a || period < 0) return;
         let timer = 0;
         game.eventContext().registerFrameHandler(19, () => {
             const time = control.millis();
@@ -233,18 +225,11 @@ namespace game {
      */
     //% group="Gameplay"
     //% help=game/paint weight=10 afterOnStart=true
-    //% blockId=gamepaint block="game paint"
+    //% blockId=gamepaint block="on frame paint"
     //% blockAllowMultiple=1
-    export function paint(a: () => void): void {
+    export function onFramePaint(a: () => void): void {
         init();
-        if (!_scene.paintCallbacks) {
-            game.eventContext().registerFrameHandler(75, function () {
-                if (_scene.paintCallbacks)
-                    for (const a of _scene.paintCallbacks)
-                        a();
-            });
-            _scene.paintCallbacks = [];
-        }
-        _scene.paintCallbacks.push(a);
+        if (!a) return;
+        game.eventContext().registerFrameHandler(75, a);
     }
 }

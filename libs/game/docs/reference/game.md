@@ -4,7 +4,7 @@ Game control and player interactions.
 
 ```cards
 game.over()
-game.update(function () {
+game.onFrameUpdate(function () {
 	
 })
 game.paint(function () {

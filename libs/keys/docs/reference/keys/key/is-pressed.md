@@ -23,7 +23,7 @@ e 1 6 6 1 e
 e 1 1 1 1 e
 e e e e e e
 `)
-game.update(function () {
+game.onFrameUpdate(function () {
     if (keys.A.isPressed()) {
         yellowBox.x = Math.randomRange(3, scene.screenWidth() - 3)
         yellowBox.y = Math.randomRange(3, scene.screenHeight() - 3)

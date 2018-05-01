@@ -32,7 +32,7 @@ aaaaaaaaaaaaa
 .....a.a
 ....a...a
 `)
-game.update(function () {
+game.onFrameUpdate(function () {
     cosmo.x += keys.dx(100)
     cosmo.y += keys.dy(80)
 })
