@@ -3,7 +3,7 @@
 Gets the amount of horizontal movement to use if a left or right key is pressed.
 
 ```sig
-keys.dx(0)
+controller.dx(0)
 ```
 
 If you're controlling the location of a sprite by key pressess, you can decide how much change in position it will have when a key is pressed. This is done with _steps_. While a direction key is pressed, the movement value returned is based on if and how long the key is pressed, along with the step size you gave it. If you want fast movement, then you use a larger step size.
@@ -20,7 +20,7 @@ If the ``left`` key is pressed, then the movement value is negative. If the ``ri
 
 ## Example #example
 
-Move the ``cosmo`` object on the screen with the direction keys.
+Move the ``cosmo`` object on the screen with the direction controller.
 
 ```blocks
 const cosmo = sprites.create(img`
@@ -32,9 +32,9 @@ aaaaaaaaaaaaa
 .....a.a
 ....a...a
 `)
-game.update(function () {
-    cosmo.x += keys.dx(100)
-    cosmo.y += keys.dy(80)
+game.onFrameUpdate(function () {
+    cosmo.x += controller.dx(100)
+    cosmo.y += controller.dy(80)
 })
 ```
 

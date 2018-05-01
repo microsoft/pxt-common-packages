@@ -1,9 +1,9 @@
 {
-    "name": "keys",
-    "description": "Handling keys",
+    "name": "controller",
+    "description": "Game controller",
     "files": [
         "enums.ts",
-        "keys.ts",
+        "controller.ts",
         "targetoverrides.ts"
     ],
     "dependencies": {
