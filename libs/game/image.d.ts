@@ -1,4 +1,4 @@
-//% fixedInstances
+//% fixedInstances decompileIndirectFixedInstances
 interface Image {
     /**
      * Fill a rectangle
