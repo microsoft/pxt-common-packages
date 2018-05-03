@@ -24,9 +24,7 @@
     "libs/**/*"
   ],
   "dependencies": {
-    "pxt-core": "^3.12.4",
-    "rtlcss": "^2.1.2",
-    "autoprefixer": "^6.7.6"
+    "pxt-core": "^3.12.4"
   },
   "devDependencies": {
     "typescript": "2.6.1",
