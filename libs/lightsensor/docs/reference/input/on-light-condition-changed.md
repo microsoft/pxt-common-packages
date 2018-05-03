@@ -21,7 +21,7 @@ Dim the red pixels to half intensity when light conditions turn dark.
 
 ```blocks
 input.onLightConditionChanged(LightCondition.Dark, function() {
-	light.createStrip().setBrightness(light.fade(light.rgb(255, 0, 0), 128))
+	light.createStrip().setAll(light.fade(light.rgb(255, 0, 0), 128))
 })
 ```
 
