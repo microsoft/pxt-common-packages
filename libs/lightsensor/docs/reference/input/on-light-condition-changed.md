@@ -6,13 +6,13 @@ Run some code when the light conditions change.
 input.onLightConditionChanged(LightCondition.Dark, function() {
 });
 ```
-What decides that the light condition is dark or bright? A number between `0` and `1023` is chosen for the light level that will mean either dark or bright.
+What decides that the light condition is dark or bright? A number between `0` and `255` is set for both of these light level conditions. These light level values decide which condition means ``dark`` and which condition means ``bright``. They are set by the ``||input:set light threshold||`` function.
 
 ## Parameters
 
 * **condition**: the lighting condition to detect
->  * ``Dark``: Dark, no light detected
->  * ``Bright``: Light is bright enough to detect
+>  * ``dark``: Dark, no light detected
+>  * ``bright``: Light is bright enough to detect
 * **handler**: code to run when light conditions change
 
 ## Example #example
@@ -21,10 +21,11 @@ Dim the red pixels to half intensity when light conditions turn dark.
 
 ```blocks
 input.onLightConditionChanged(LightCondition.Dark, function() {
-	light.createStrip().setBrightness(light.fade(0xff0000, 128))
+	light.createStrip().setBrightness(light.fade(light.rgb(255, 0, 0), 128))
 })
 ```
 
 ## See also #seealso
 
-[light level](/reference/input/light-level)
+[light level](/reference/input/light-level),
+[set light threshold](/reference/input/set-light-threshold)
