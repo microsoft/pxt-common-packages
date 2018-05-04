@@ -50,10 +50,10 @@ enum FlipOption {
 //% blockNamespace=Sprites color="#23c47e" blockGap=8
 class Sprite implements SpriteLike {
     //% group="Properties"
-    //% blockCombine block="x"
+    //% blockCombine block="x (horizontal position)"
     x: number
     //% group="Properties"
-    //% blockCombine block="y"
+    //% blockCombine block="y (vertical position)"
     y: number
     private _z: number
     //% group="Properties"
@@ -72,8 +72,8 @@ class Sprite implements SpriteLike {
     //% blockCombine block="layer"
     layer: number
     //% group="Properties"
-    //% blockCombine block="life"
-    life: number;
+    //% blockCombine block="health"
+    health: number;
     private _say: string;
     private _sayExpires: number;
     private _image: Image;
@@ -100,7 +100,7 @@ class Sprite implements SpriteLike {
         this.flags = 0
         this._image = img
         this.layer = 1; // member of layer 1 by default
-        this.life = -1
+        this.health = undefined
     }
 
     /**
@@ -261,9 +261,9 @@ class Sprite implements SpriteLike {
             this._movementAnim.update(dt * 1000);
         }
 
-        if (this.life > 0) {
-            this.life--;
-            if (this.life <= 0)
+        if (this.health != undefined) {
+            this.health--;
+            if (this.health <= 0)
                 this.destroy();
         }
         if ((this.flags & sprites.Flag.AutoDestroy)
