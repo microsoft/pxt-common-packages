@@ -351,7 +351,7 @@ class Sprite implements SpriteLike {
      * @param direction The movement direction for which this frame will be shown
      * @param addReverseDirection Also add a flipped version of the sprite in the opposite direction
      */
-    //% blockId=spritemovementframe block="add %sprite movement frame %image=screen_image_picker %direction ||reversed %addReverseDirection=toggleOnOff"
+    //% blockId=spritemovementframe block="add %sprite movement frame %image=screen_image_picker %direction ||and reverse direction %addReverseDirection=toggleOnOff"
     //% group="Animations" weight=100
     addMovementFrame(frame: Image, direction: sprites.MovementDirection, addReverseDirection = false) {
         if (!this._movementAnim) {
