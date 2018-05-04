@@ -52,16 +52,16 @@ void digitalWrite(DigitalPin name, bool value) {
 * Make this pin a digital input, and create events where the timestamp is the duration
 * that this pin was either ``high`` or ``low``.
 */
-//% help=pins/on-pulsed weight=16 blockGap=8
-//% blockId=pins_on_pulsed block="on|pin %pin|pulsed %pulse"
+//% help=pins/on-pulsed weight=100 blockGap=8
+//% blockId=pins_on_pulsed block="on|pin %pin|pulsed %high=toggleHighLow"
 //% blockNamespace=pins 
 //% parts="slideswitch" trackArgs=0
 //% pin.fieldEditor="gridpicker"
 //% pin.fieldOptions.width=220
 //% pin.fieldOptions.columns=4
-void onPulsed(DigitalPin pin, PulseValue pulse, Action body) {
+void onPulsed(DigitalPin pin, bool high, Action body) {
     pin->eventOn(DEVICE_PIN_EVENT_ON_PULSE);
-    registerWithDal(pin->id, (int)pulse, body);
+    registerWithDal(pin->id, high? DEVICE_PIN_EVT_PULSE_HI : DEVICE_PIN_EVT_PULSE_LO, body);
 }
 
 /**
@@ -70,15 +70,15 @@ void onPulsed(DigitalPin pin, PulseValue pulse, Action body) {
 * @param value the value of the pulse (default high)
 * @param maximum duration in micro-seconds
 */
-//% blockId="pins_pulse_in" block="pulse in (µs)|pin %name|pulsed %value"
+//% blockId="pins_pulse_in" block="pulse in (µs)|pin %name|pulsed %high=toggleHighLow||timeout %maxDuration (us)"
 //% weight=18 blockGap=8
 //% help="pins/pulse-in"
 //% blockNamespace=pins
 //% pin.fieldEditor="gridpicker"
 //% pin.fieldOptions.width=220
 //% pin.fieldOptions.columns=4
-int pulseIn(DigitalPin pin, PulseValue value, int maxDuration = 2000000) {
-    int pulse = value == PulseValue::High ? 1 : 0;
+int pulseIn(DigitalPin pin, bool high, int maxDuration = 2000000) {
+    int pulse = high ? 1 : 0;
     uint64_t tick = system_timer_current_time_us();
     uint64_t maxd = (uint64_t)maxDuration;
     while (pin->getDigitalValue() != pulse) {

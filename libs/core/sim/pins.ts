@@ -44,9 +44,10 @@ namespace pxsim.DigitalPinMethods {
     * Configures this pin to a digital input, and generates events where the timestamp is the duration
     * that this pin was either ``high`` or ``low``.
     */
-    export function onPulsed(name: pins.DigitalPin, pulse: number, body: RefAction): void {
+    export function onPulsed(name: pins.DigitalPin, high: boolean, body: RefAction): void {
         name.used = true;
         const b = board();
+        const pulse = high ? DAL.DEVICE_PIN_EVT_PULSE_HI : DAL.DEVICE_PIN_EVT_PULSE_LO;
         b.bus.listen(name.id, pulse, body);
     }
 
@@ -55,8 +56,9 @@ namespace pxsim.DigitalPinMethods {
     * @param value the value of the pulse (default high)
     * @param maximum duration in micro-seconds
     */
-    export function pulseIn(name: pins.DigitalPin, pulse: number, maxDuration = 2000000): number {
+    export function pulseIn(name: pins.DigitalPin, high: boolean, maxDuration = 2000000): number {
         name.used = true;
+        const pulse = high ? DAL.DEVICE_PIN_EVT_PULSE_HI : DAL.DEVICE_PIN_EVT_PULSE_LO;
         // Always return default value, can't simulate
         return 500;
     }
