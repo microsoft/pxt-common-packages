@@ -54,7 +54,8 @@ void digitalWrite(DigitalPin name, bool value) {
 */
 //% help=pins/on-pulsed weight=16 blockGap=8
 //% blockId=pins_on_pulsed block="on|pin %pin|pulsed %pulse"
-//% blockNamespace=pins
+//% blockNamespace=pins 
+//% parts="slideswitch" trackArgs=0
 //% pin.fieldEditor="gridpicker"
 //% pin.fieldOptions.width=220
 //% pin.fieldOptions.columns=4

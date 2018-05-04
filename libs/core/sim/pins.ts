@@ -45,7 +45,9 @@ namespace pxsim.DigitalPinMethods {
     * that this pin was either ``high`` or ``low``.
     */
     export function onPulsed(name: pins.DigitalPin, pulse: number, body: RefAction): void {
-        // NOP, can't simulate
+        name.used = true;
+        const b = board();
+        b.bus.listen(name.id, pulse, body);
     }
 
     /**
@@ -54,6 +56,7 @@ namespace pxsim.DigitalPinMethods {
     * @param maximum duration in micro-seconds
     */
     export function pulseIn(name: pins.DigitalPin, pulse: number, maxDuration = 2000000): number {
+        name.used = true;
         // Always return default value, can't simulate
         return 500;
     }
@@ -64,20 +67,6 @@ namespace pxsim.DigitalPinMethods {
     */
     export function setPull(name: pins.DigitalPin, pull: number): void {
         name.setPull(pull);
-    }
-
-    /**
-    * Do something when a pin is pressed.
-    * @param body the code to run when the pin is pressed
-    */
-    export function onPressed(name: pins.DigitalPin, body: RefAction): void {
-    }
-
-    /**
-     * Do something when a pin is released.
-     * @param body the code to run when the pin is released
-     */
-    export function onReleased(name: pins.DigitalPin, body: RefAction): void {
     }
 
     /**
