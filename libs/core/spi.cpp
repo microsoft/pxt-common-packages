@@ -1,5 +1,4 @@
 #include "pxt.h"
-#include "SPI.h"
 #include "ErrorNo.h"
 
 namespace pins {
