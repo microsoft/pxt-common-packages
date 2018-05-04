@@ -1,9 +1,9 @@
-# SPI Format
+# SPI Mode
 
-Sets the SPI format
+Sets the SPI mode
 
 ```sig
-pins.spiMode(3, 8);
+pins.spiMode(3);
 ```
 
 ## Parameters

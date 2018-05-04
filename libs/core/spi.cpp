@@ -43,12 +43,11 @@ namespace pins {
     /**
     * Sets the SPI mode and bits
     * @param mode the mode, eg: 3
-    * @param bits the number of bits, eg: 8
     */
     //% help=pins/spi-mode weight=3 advanced=true
-    //% blockId=spi_mode block="spi mode|mode %mode|bits %bits"
-    void spiMode(int mode, int bits = 8) {
+    //% blockId=spi_mode block="spi mode %mode"
+    void spiMode(int mode) {
         initSPI();
-        spi->setMode(mode, bits);        
+        spi->setMode(mode);        
     }
 }
