@@ -286,7 +286,7 @@ class Sprite implements SpriteLike {
      * Tests if a sprite overlaps with another
      * @param other
      */
-    //% group="Collisions"
+    //% group="Overlaps"
     //% blockId=spriteoverlapswith block="%sprite overlaps with %other=variables_get"
     overlapsWith(other: Sprite) {
         if (other == this) return false;
@@ -302,7 +302,7 @@ class Sprite implements SpriteLike {
      * @param spriteType sprite type to match
      * @param handler
      */
-    //% group="Collisions"
+    //% group="Overlaps"
     //% blockId=spriteonoverlap block="on %sprite overlaped with"
     //% afterOnStart=true handlerStatement=1
     onOverlap(handler: (other: Sprite) => void) {

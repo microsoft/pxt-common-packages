@@ -13,7 +13,7 @@ Frame handlers:
  * Sprites on screen
  */
 //% weight=98 color="#23c47e" icon="\uf1d8"
-//% groups='["Create", "Properties", "Collisions", "Lifecycle"]'
+//% groups='["Create", "Properties", "Overlaps", "Collisions", "Lifecycle"]'
 namespace sprites {
 
     /**
@@ -38,7 +38,7 @@ namespace sprites {
      * Creates a new object sprite from an image
      * @param img the image
      */
-    //% group="Create"
+    //% group="Collisions"
     //% blockId=spritescreateobjectsable block="obstacle %img=screen_image_picker"
     //% expandableArgumentMode=toggle
     //% blockSetVariable=obstacle
