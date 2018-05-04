@@ -262,7 +262,7 @@ class Sprite implements SpriteLike {
             this._movementAnim.update(dt * 1000);
         }
 
-        if (this.health != undefined) {
+        if (this.health !== undefined) {
             this.health--;
             if (this.health <= 0)
                 this.destroy();
