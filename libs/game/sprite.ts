@@ -71,9 +71,13 @@ class Sprite implements SpriteLike {
     //% group="Properties"
     //% blockCombine block="layer"
     layer: number
+    /**
+     * Time to live in game ticks. The lifespan decreases by 1 on each game update
+     * and the sprite gets destroyed when it reaches 0.
+     */
     //% group="Properties"
-    //% blockCombine block="health"
-    health: number;
+    //% blockCombine block="lifespan"
+    lifespan: number;
     private _say: string;
     private _sayExpires: number;
     private _image: Image;
@@ -100,7 +104,7 @@ class Sprite implements SpriteLike {
         this.flags = 0
         this._image = img
         this.layer = 1; // member of layer 1 by default
-        this.health = undefined
+        this.lifespan = undefined
     }
 
     /**
@@ -262,9 +266,9 @@ class Sprite implements SpriteLike {
             this._movementAnim.update(dt * 1000);
         }
 
-        if (this.health !== undefined) {
-            this.health--;
-            if (this.health <= 0)
+        if (this.lifespan !== undefined) {
+            this.lifespan--;
+            if (this.lifespan <= 0)
                 this.destroy();
         }
         if ((this.flags & sprites.Flag.AutoDestroy)
