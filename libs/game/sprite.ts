@@ -190,11 +190,12 @@ class Sprite implements SpriteLike {
 
     /**
      * Display a speech bubble with the text, for the given time
-     * @param text the text to say, eg: "Hi"
+     * @param text the text to say, eg: ":)"
      * @param time time to keep text on, eg: 2000
      */
     //% group="Properties"
     //% blockId=spritesay block="%sprite say %text||for %millis ms"
+    //% time.defl=2000
     say(text: string, millis?: number) {
         this._say = text;
         if (!millis || millis < 0)
