@@ -99,22 +99,18 @@
 
 // these can be overridden in platform.h
 #ifndef CODAL_PIN
-#include "MbedPin.h"
 #define CODAL_PIN CODAL_MBED::Pin
 #endif
 
 #ifndef CODAL_TIMER
-#include "MbedTimer.h"
 #define CODAL_TIMER CODAL_MBED::Timer
 #endif
 
 #ifndef CODAL_SPI
-#include "MbedSPI.h"
 #define CODAL_SPI CODAL_MBED::SPI
 #endif
 
 #ifndef CODAL_I2C
-#include "MbedI2C.h"
 #define CODAL_I2C CODAL_MBED::I2C
 #endif
 
