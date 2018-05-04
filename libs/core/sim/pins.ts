@@ -143,5 +143,27 @@ namespace pxsim.pins {
     export function i2cWriteBuffer(address: number, buf: RefBuffer, repeat?: boolean): void {
         // fake - noop
     }
+
+    export function spiWrite(value: number): number {
+        // TODO
+        return 0;
+    }
+
+    export function spiTransfer(command: RefBuffer, response: RefBuffer): number {
+        // TODO
+        return 0;
+    }
+
+    export function spiFrequency(f: number): void {
+        // TODO
+    }
+
+    export function spiFormat(bits: number, mode: number): void {
+        // TODO
+    }
+
+    export function spiPins(mosi: number, miso: number, sck: number) {
+        // TODO
+    }
 }
 

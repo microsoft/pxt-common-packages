@@ -5,8 +5,8 @@ namespace pins {
     static codal::I2C *i2c;
 
     static void initI2C() {
-      if (i2c == NULL) {
-        i2c = new CODAL_MBED::I2C(*LOOKUP_PIN(SDA), *LOOKUP_PIN(SCL));
+      if (NULL == i2c) {
+        i2c = new CODAL_I2C(*LOOKUP_PIN(SDA), *LOOKUP_PIN(SCL));
       }
     }
 
