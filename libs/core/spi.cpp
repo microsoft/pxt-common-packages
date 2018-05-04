@@ -26,7 +26,11 @@ namespace pins {
     //% blockId=spi_transfer block="spi transfer %command into %response"
     void spiTransfer(Buffer command, Buffer response) {
         initSPI();
-        spi->transfer(command->data, command->length, response->data, response->length);
+        auto cdata = NULL == command ? NULL : command->data;
+        auto clength = NULL == command ? 0 : command->length;
+        auto rdata = NULL == response ? NULL : response->data;
+        auto rlength = NULL == response ? 0 : response->length;
+        spi->transfer(cdata, clength, rdata, rlength);
     }
 
     /**
