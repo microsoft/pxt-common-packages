@@ -190,23 +190,23 @@ namespace game {
      */
     //% group="Gameplay"
     //% help=game/update weight=100 afterOnStart=true
-    //% blockId=gameupdate block="on frame update"
+    //% blockId=gameupdate block="on game update"
     //% blockAllowMultiple=1
-    export function onFrameUpdate(a: () => void): void {
+    export function onUpdate(a: () => void): void {
         init();
         if (!a) return;
         game.eventContext().registerFrameHandler(20, a);
     }
 
     /**
-     * Execute code on an interval. Executes before game.onFrameUpdate()
+     * Execute code on an interval. Executes before game.onUpdate()
      * @param body code to execute
      */
     //% group="Gameplay"
     //% help=game/interval weight=99 afterOnStart=true
-    //% blockId=gameinterval block="on frame update every %period=timePicker ms"
+    //% blockId=gameinterval block="on game update every %period=timePicker ms"
     //% blockAllowMultiple=1
-    export function onFrameUpdateEvery(period: number, a: () => void): void {
+    export function onUpdateInterval(period: number, a: () => void): void {
         init();
         if (!a || period < 0) return;
         let timer = 0;
@@ -225,9 +225,7 @@ namespace game {
      */
     //% group="Gameplay"
     //% help=game/paint weight=10 afterOnStart=true
-    //% blockId=gamepaint block="on frame paint"
-    //% blockAllowMultiple=1
-    export function onFramePaint(a: () => void): void {
+    export function onPaint(a: () => void): void {
         init();
         if (!a) return;
         game.eventContext().registerFrameHandler(75, a);

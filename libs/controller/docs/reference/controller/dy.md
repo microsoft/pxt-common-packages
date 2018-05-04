@@ -32,7 +32,7 @@ aaaaaaaaaaaaa
 .....a.a
 ....a...a
 `)
-game.onFrameUpdate(function () {
+game.onUpdate(function () {
     cosmo.x += controller.dx(100)
     cosmo.y += controller.dy(80)
 })

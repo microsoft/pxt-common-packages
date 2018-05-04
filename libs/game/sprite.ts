@@ -50,10 +50,10 @@ enum FlipOption {
 //% blockNamespace=Sprites color="#23c47e" blockGap=8
 class Sprite implements SpriteLike {
     //% group="Properties"
-    //% blockCombine block="x"
+    //% blockCombine block="x (horizontal position)"
     x: number
     //% group="Properties"
-    //% blockCombine block="y"
+    //% blockCombine block="y (vertical position)"
     y: number
     private _z: number
     //% group="Properties"
@@ -72,8 +72,8 @@ class Sprite implements SpriteLike {
     //% blockCombine block="layer"
     layer: number
     //% group="Properties"
-    //% blockCombine block="life"
-    life: number;
+    //% blockCombine block="health"
+    health: number;
     private _say: string;
     private _sayExpires: number;
     private _image: Image;
@@ -100,7 +100,7 @@ class Sprite implements SpriteLike {
         this.flags = 0
         this._image = img
         this.layer = 1; // member of layer 1 by default
-        this.life = -1
+        this.health = undefined
     }
 
     /**
@@ -190,11 +190,12 @@ class Sprite implements SpriteLike {
 
     /**
      * Display a speech bubble with the text, for the given time
-     * @param text the text to say, eg: "Hi"
+     * @param text the text to say, eg: ":)"
      * @param time time to keep text on, eg: 2000
      */
     //% group="Properties"
     //% blockId=spritesay block="%sprite say %text||for %millis ms"
+    //% time.defl=2000
     say(text: string, millis?: number) {
         this._say = text;
         if (!millis || millis < 0)
@@ -261,9 +262,9 @@ class Sprite implements SpriteLike {
             this._movementAnim.update(dt * 1000);
         }
 
-        if (this.life > 0) {
-            this.life--;
-            if (this.life <= 0)
+        if (this.health !== undefined) {
+            this.health--;
+            if (this.health <= 0)
                 this.destroy();
         }
         if ((this.flags & sprites.Flag.AutoDestroy)
@@ -286,7 +287,7 @@ class Sprite implements SpriteLike {
      * Tests if a sprite overlaps with another
      * @param other
      */
-    //% group="Collisions"
+    //% group="Overlaps"
     //% blockId=spriteoverlapswith block="%sprite overlaps with %other=variables_get"
     overlapsWith(other: Sprite) {
         if (other == this) return false;
@@ -302,7 +303,7 @@ class Sprite implements SpriteLike {
      * @param spriteType sprite type to match
      * @param handler
      */
-    //% group="Collisions"
+    //% group="Overlaps"
     //% blockId=spriteonoverlap block="on %sprite overlaped with"
     //% afterOnStart=true handlerStatement=1
     onOverlap(handler: (other: Sprite) => void) {
@@ -350,7 +351,7 @@ class Sprite implements SpriteLike {
      * @param direction The movement direction for which this frame will be shown
      * @param addReverseDirection Also add a flipped version of the sprite in the opposite direction
      */
-    //% blockId=spritemovementframe block="add %sprite movement frame %image=screen_image_picker %direction ||reversed %addReverseDirection=toggleOnOff"
+    //% blockId=spritemovementframe block="add %sprite movement frame %image=screen_image_picker %direction ||and reverse direction %addReverseDirection=toggleOnOff"
     //% group="Animations" weight=100
     addMovementFrame(frame: Image, direction: sprites.MovementDirection, addReverseDirection = false) {
         if (!this._movementAnim) {

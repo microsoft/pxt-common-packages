@@ -3,7 +3,7 @@
 Updates the position and velocities of sprites.
 
 ```sig
-game.onFrameUpdate(function () {
+game.onUpdate(function () {
 	
 })
 ```
