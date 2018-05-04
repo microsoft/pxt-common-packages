@@ -110,6 +110,10 @@
 #define CODAL_SPI CODAL_MBED::SPI
 #endif
 
+#ifndef CODAL_I2C
+#define CODAL_I2C CODAL_MBED::I2C
+#endif
+
 typedef CODAL_PIN DevicePin;
 
 typedef DevicePin *DigitalPin;

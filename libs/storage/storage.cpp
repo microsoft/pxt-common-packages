@@ -16,7 +16,7 @@ class PXTMSC : public GhostSNORFS {
 
 class WStorage {
   public:
-    CODAL_MBED::SPI flashSPI;
+    CODAL_SPI flashSPI;
     StandardSPIFlash flash;
     snorfs::FS fs;
     PXTMSC msc;

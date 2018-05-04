@@ -8,6 +8,7 @@
 #include "MbedTimer.h"
 #include "MbedI2C.h"
 #include "MbedPin.h"
+#include "MbedSPI.h"
 #include "MultiButton.h"
 
 #include "SAMD21DMAC.h"
