@@ -27,7 +27,7 @@ e e e e e e
 `)
 yellowBox.x = 3
 yellowBox.y = scene.screenHeight() / 2
-game.onFrameUpdate(function () {
+game.onUpdate(function () {
     if (controller.right.wasPressed()) {
         yellowBox.x += 6
     }
