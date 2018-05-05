@@ -24,8 +24,12 @@ namespace pxsim {
         }
 
         digitalWritePin(value: number) {
+            const b = board();
             this.mode = PinFlags.Digital | PinFlags.Output;
-            this.value = value > 0 ? 200 : 0;
+            const v = this.value;
+            this.value = value > 0 ? 1023 : 0;
+            if (b && this.value != v)
+                b.bus.queue(this.id, this.value > 0 ? DAL.DEVICE_PIN_EVT_PULSE_HI : DAL.DEVICE_PIN_EVT_PULSE_LO);
             runtime.queueDisplayUpdate();
         }
 
@@ -39,8 +43,12 @@ namespace pxsim {
         }
 
         analogWritePin(value: number) {
+            const b = board();
             this.mode = PinFlags.Analog | PinFlags.Output;
+            const v = this.value;
             this.value = Math.max(0, Math.min(1023, value));
+            if (b && this.value != v)
+                b.bus.queue(this.id, this.value > 0 ? DAL.DEVICE_PIN_EVT_PULSE_HI : DAL.DEVICE_PIN_EVT_PULSE_LO);
             runtime.queueDisplayUpdate();
         }
 
@@ -63,6 +71,11 @@ namespace pxsim {
         isTouched(): boolean {
             this.mode = PinFlags.Touch | PinFlags.Analog | PinFlags.Input;
             return this.touched;
+        }
+
+        onPulsed(high: boolean, handler: RefAction) {
+            const b = board();
+            b.bus.listen(this.id, high ? DAL.DEVICE_PIN_EVT_PULSE_HI : DAL.DEVICE_PIN_EVT_PULSE_LO, handler);
         }
     }
 

@@ -45,10 +45,7 @@ namespace pxsim.DigitalPinMethods {
     * that this pin was either ``high`` or ``low``.
     */
     export function onPulsed(name: pins.DigitalPin, high: boolean, body: RefAction): void {
-        name.used = true;
-        const b = board();
-        const pulse = high ? DAL.DEVICE_PIN_EVT_PULSE_HI : DAL.DEVICE_PIN_EVT_PULSE_LO;
-        b.bus.listen(name.id, pulse, body);
+        name.onPulsed(high, body);
     }
 
     /**
