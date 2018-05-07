@@ -68,8 +68,10 @@ class Sprite implements SpriteLike {
     //% group="Properties"
     //% blockCombine block="ay (acceleration y)"
     ay: number
+    /**
+     * A bitset of layer. Each bit is a layer, default is 1.
+     */
     //% group="Properties"
-    //% blockCombine block="layer"
     layer: number
     /**
      * Time to live in game ticks. The lifespan decreases by 1 on each game update
@@ -369,7 +371,7 @@ class Sprite implements SpriteLike {
      * this API will always return false if no movement frames have been added.
      */
     //% blockId=spriteisfacing block="is %sprite facing %direction"
-    //% group="Properties" weight=99 blockGap=8
+    //% group="Properties" weight=10 blockGap=8
     isFacing(direction: sprites.MovementDirection) {
         if (this._movementAnim) return direction === this._movementAnim.facing;
         else return false;
