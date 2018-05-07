@@ -20,6 +20,7 @@
         "libs/gamepad",
         "libs/tests",
         "libs/mouse",
+        "libs/spi",
         "libs/keyboard",
         "libs/storage",
         "libs/game",

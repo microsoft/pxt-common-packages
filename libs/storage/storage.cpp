@@ -1,4 +1,5 @@
 #include "pxt.h"
+#include "spi.h"
 
 #if CONFIG_ENABLED(DEVICE_USB)
 
