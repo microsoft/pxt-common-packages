@@ -117,7 +117,7 @@ namespace controller {
     //% weight=49 help=keys/dy
     //% blockId=keysdy block="y direction||scaled by %step"
     //% step.defl=100
-    export function dy(step: number) {
+    export function dy(step: number = 100) {
         const ctx = control.eventContext();
         if (!ctx) return 0;
 
