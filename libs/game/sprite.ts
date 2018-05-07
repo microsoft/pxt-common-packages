@@ -110,7 +110,7 @@ class Sprite implements SpriteLike {
     /**
      * Gets the current image
      */
-    //% group="Properties"
+    //% group="Animations"
     //% blockCombine block="image"
     get image(): Image {
         return this._image;
@@ -119,7 +119,7 @@ class Sprite implements SpriteLike {
     /**
      * Sets the image on the sprite
      */
-    //% group="Properties"
+    //% group="Animations"
     //% blockId=spritesetimage block="set %sprite image to %img=screen_image_picker"
     setImage(img: Image) {
         if (!img) return; // don't break the sprite
@@ -356,7 +356,7 @@ class Sprite implements SpriteLike {
      * @param addReverseDirection Also add a flipped version of the sprite in the opposite direction
      */
     //% blockId=spritemovementframe block="add %sprite movement frame %image=screen_image_picker %direction ||and reverse direction %addReverseDirection=toggleOnOff"
-    //% group="Animations" weight=100
+    //% group="Properties" weight=10
     addMovementFrame(frame: Image, direction: sprites.MovementDirection, addReverseDirection = false) {
         if (!this._movementAnim) {
             this._movementAnim = new sprites.MovementAnimation(this);
@@ -369,7 +369,7 @@ class Sprite implements SpriteLike {
      * this API will always return false if no movement frames have been added.
      */
     //% blockId=spriteisfacing block="is %sprite facing %direction"
-    //% group="Animations" weight=99 blockGap=8
+    //% group="Properties" weight=99 blockGap=8
     isFacing(direction: sprites.MovementDirection) {
         if (this._movementAnim) return direction === this._movementAnim.facing;
         else return false;
