@@ -96,7 +96,7 @@ namespace controller {
      * @param step the distance, eg: 100
      */
     //% weight=50 blockGap=8 help=controller/dx
-    //% blockId=keysdx block="dx (left-right keys)||scaled by %step"
+    //% blockId=keysdx block="dx (left-right buttons)||scaled by %step"
     //% step.defl=100
     export function dx(step: number = 100) {
         const ctx = control.eventContext();
@@ -115,7 +115,7 @@ namespace controller {
      * @param step the distance, eg: 100
      */
     //% weight=49 help=keys/dy
-    //% blockId=keysdy block="dy (up-down keys)||scaled by %step"
+    //% blockId=keysdy block="dy (up-down buttons)||scaled by %step"
     //% step.defl=100
     export function dy(step: number = 100) {
         const ctx = control.eventContext();
