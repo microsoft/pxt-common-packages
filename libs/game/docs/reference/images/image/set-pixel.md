@@ -37,4 +37,5 @@ patch = sprites.create(hatch)
 
 ## See also #seealso
 
-[image](/types/image)
+[image](/types/image),
+[get pixel](/reference/images/image/get-pixel)
