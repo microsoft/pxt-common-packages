@@ -61,6 +61,7 @@ interface Image {
      */
     //% shim=ImageMethods::flipX blockNamespace="images" group="Transformations"
     //% block="flip %myImage=variables_get horizontally"
+    //% help=images/image/flip-x
     flipX(): void;
 
     /**
@@ -68,6 +69,7 @@ interface Image {
      */
     //% shim=ImageMethods::flipY blockNamespace="images" group="Transformations"
     //% block="flip %myImage=variables_get vertically"
+    //% help=images/image/flip-y
     flipY(): void;
 
     /**
@@ -75,6 +77,7 @@ interface Image {
      */
     //% shim=ImageMethods::scroll blockNamespace="images" group="Transformations"
     //% block="scroll %myImage=variables_get by dx %dx dy %dy"
+    //% help=images/image/scroll
     scroll(dx: int32, dy: int32): void;
 
     /**
@@ -82,6 +85,7 @@ interface Image {
      */
     //% shim=ImageMethods::replace blockNamespace="images" group="Transformations"
     //% block="change color in %myImage=variables_get from %from=colorindexpicker to %to=colorindexpicker"
+    //% help=images/image/replace
     replace(from: int32, to: int32): void;
 }
 
