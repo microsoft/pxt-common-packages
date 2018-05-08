@@ -2,7 +2,7 @@
 
 An image is some number of rows and columns of color pixels that make up rectangular picture. A _pixel_ is a single point of color inside the picture.
 
-Images are two-dimensional so they have a known height and width. When an image is declared or created, the height and width are specified either by the _layout_ of the image or as parameters to it's [create](/reference/image/create) method.
+Images are two-dimensional so they have a known height and width. When an image is declared, or created, the height and width are specified either by the _layout_ of the image or as parameters to it's [create](/reference/image/create) method.
 
 ## Image layout
 
@@ -23,7 +23,7 @@ let emptyImage1 = img``
 let emptyImage2 = image.create(0, 0)
 ```
 
-A zero size image isn't really useful so MakeCode will actually makes it have some size if you declare it without any.
+A zero size image isn't really useful so MakeCode actually makes it have some size if you declare it without any.
 
 ### Images with size
 
@@ -127,7 +127,7 @@ c d e f
 
 ## Transparency and overlap
 
-Let's see how transparency work with images. A `.` means that a pixel is is transparent. Only the pixels with a color will show in an image and any pixels with color in an image below it will show through. So, to demonstrate, let's make two images that are the same size and put one that has some transparent pixels on top of on that doesn't.
+Let's see how transparency works with images. A `.` means that a pixel is transparent. Only the pixels with a color will show in an image and any pixels with color in an image below it will show through. So, to demonstrate, let's make two images that are the same size and put one that has some transparent pixels on top of one that doesn't.
 
 Our first image is a green circle inside a 8 x 8 rectangle. All of the pixels around the circle are transparent.
 
@@ -199,9 +199,9 @@ let yellowSprite = sprites.create(yellowSquare)
 let greenSprite = sprites.create(greenBall)
 ```
 
-## Setting pixel locations
+## Setting pixels at locations
 
-You can create your images while your program is running too (dynamically). To make an image this way, you set the color of a pixel at its location with code. Pixels are addressed by their row (``x`` value) and column (``y`` value) inside the image. You could create and empty image and make some or all of the image by setting pixels colors in your code. Let's make 32 x 32 box by creating an empty image and then draw an orange border around it.
+You can create your images while your program is running too (dynamically). To make an image this way, you set the color of a pixel at its location with code. Pixels are addressed by their row (``x`` value) and column (``y`` value) inside the image. You could create and empty image and make some or all of the image by setting pixel colors in your code. Let's make a 32 x 32 box by creating an empty image and then draw an orange border around it.
 
 ```blocks
 let orangeBox = image.create(32, 32)
