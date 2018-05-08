@@ -19,7 +19,6 @@
         "control.cpp",
         "i2c.cpp",
         "i2c.ts",
-        "spi.cpp",
         "shims.d.ts",
         "enums.d.ts",
         "hf2.cpp",

@@ -1,8 +1,7 @@
-#include "pxt.h"
-#include "ErrorNo.h"
+#include "spi.h"
 
 namespace pins {
-    static codal::SPI *spi = NULL;
+    static CODAL_SPI *spi = NULL;
     static void initSPI() {
         if (NULL == spi)
             spi = new CODAL_SPI(*LOOKUP_PIN(MOSI), *LOOKUP_PIN(MISO), *LOOKUP_PIN(SCK));

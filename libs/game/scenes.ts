@@ -51,7 +51,6 @@ namespace scene {
     /**
      * Returns the background image
      */
-    //% blockId=gamebackgroundimage block="background image"
     //% weight=23
     //% group="Screen"
     export function backgroundImage(): Image {
@@ -66,7 +65,6 @@ namespace scene {
      */
     //% group="Screen"
     //% weight=10
-    //% blockId=gameaddbackgroundlayer block="add background layer %image=screen_image_picker||distance %distance|aligned %alignment"
     export function addBackgroundLayer(image: Image, distance?: number, alignment?: BackgroundAlignment) {
         const scene = game.currentScene();
         if (image)
