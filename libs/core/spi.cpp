@@ -1,4 +1,5 @@
-#include "spi.h"
+#include "pxt.h"
+#include "ErrorNo.h"
 
 namespace pins {
     static CODAL_SPI *spi = NULL;
