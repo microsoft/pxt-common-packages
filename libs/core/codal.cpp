@@ -102,12 +102,14 @@ void dispatchEvent(Event e) {
     lastEvent = e;
 
     auto curr = findBinding(e.source, e.value);
+    auto value = fromInt(e.value);
+    auto timestamp = fromUInt(lastEvent.timestamp);
     if (curr)
-        runAction2(curr->action, fromInt(e.value), (int)lastEvent.timestamp);
+        runAction2(curr->action, value, timestamp);
 
     curr = findBinding(e.source, DEVICE_EVT_ANY);
     if (curr)
-        runAction2(curr->action, fromInt(e.value), (int)lastEvent.timestamp);
+        runAction2(curr->action, value, timestamp);
 }
 
 void registerWithDal(int id, int event, Action a, int flags) {

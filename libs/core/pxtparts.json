@@ -49,7 +49,7 @@
        ],
        "instantiation": {
            "kind": "function",
-           "fullyQualifiedName": "DigitalPin.digitalRead,DigitalPin.onPulsed",
+           "fullyQualifiedName": "DigitalPin.digitalRead,DigitalPin.onPulsed,DigitalPin.onEvent",
            "argumentRoles": [
                {"pinInstantiationIdx": 0, "partParameter": "pin"}
            ]

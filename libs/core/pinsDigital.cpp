@@ -69,12 +69,23 @@ void digitalWrite(DigitalPin name, bool value) {
 //% pin.fieldEditor="gridpicker"
 //% pin.fieldOptions.width=220
 //% pin.fieldOptions.columns=4
+//% parts="slideswitch" trackArgs=0
 //% deprecated=1 hidden=1
 void onPulsed(DigitalPin pin, PulseValue pulse, Action body) {
     pin->eventOn(DEVICE_PIN_EVENT_ON_PULSE);
     registerWithDal(pin->id, (int)pulse, body);
 }
 
+/**
+* Register code to run when a pin event occurs. 
+*/
+//% help=pins/on-event weight=16 blockGap=8
+//% blockId=pins_on_pulsed block="on|pin %pin|%event"
+//% blockNamespace=pins
+//% pin.fieldEditor="gridpicker"
+//% pin.fieldOptions.width=220
+//% pin.fieldOptions.columns=4
+//% parts="slideswitch" trackArgs=0
 void onEvent(DigitalPin pin, PinEvent event, Action body) {
     switch(event) {
         case PinEvent::PulseHigh:
