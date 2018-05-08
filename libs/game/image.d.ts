@@ -53,6 +53,7 @@ interface Image {
      */
     //% shim=ImageMethods::clone blockNamespace="images" group="Create"
     //% block="clone %myImage=variables_get"
+    //% help=images/image/clone
     clone(): Image;
 
     /**
