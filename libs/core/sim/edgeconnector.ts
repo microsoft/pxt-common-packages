@@ -17,6 +17,7 @@ namespace pxsim {
         mode = PinFlags.Unused;
         pitch = false;
         pull = 0; // PullDown
+        eventMode = 0;
 
         digitalReadPin(): number {
             this.mode = PinFlags.Digital | PinFlags.Input;
@@ -73,9 +74,21 @@ namespace pxsim {
             return this.touched;
         }
 
-        onPulsed(high: boolean, handler: RefAction) {
+        onEvent(ev: number, handler: RefAction) {
             const b = board();
-            b.bus.listen(this.id, high ? DAL.DEVICE_PIN_EVT_PULSE_HI : DAL.DEVICE_PIN_EVT_PULSE_LO, handler);
+            switch(ev) {
+                case DAL.DEVICE_PIN_EVT_PULSE_HI:
+                case DAL.DEVICE_PIN_EVT_PULSE_LO:
+                    this.eventMode = DAL.DEVICE_PIN_EVENT_ON_PULSE;
+                    break;
+                case DAL.DEVICE_PIN_EVT_RISE:
+                case DAL.DEVICE_PIN_EVT_FALL:
+                    this.eventMode = DAL.DEVICE_PIN_EVENT_ON_EDGE;
+                    break;
+                default:
+                    return;
+            }
+            b.bus.listen(this.id, ev, handler);
         }
     }
 

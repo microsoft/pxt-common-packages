@@ -45,7 +45,11 @@ namespace pxsim.DigitalPinMethods {
     * that this pin was either ``high`` or ``low``.
     */
     export function onPulsed(name: pins.DigitalPin, high: boolean, body: RefAction): void {
-        name.onPulsed(high, body);
+        onEvent(name, high ? DAL.DEVICE_PIN_EVT_PULSE_HI : DAL.DEVICE_PIN_EVT_PULSE_LO, body);
+    }
+
+    export function onEvent(name: pins.DigitalPin, ev: number, body: RefAction): void {
+        name.onEvent(ev, body);
     }
 
     /**
@@ -88,10 +92,10 @@ namespace pxsim.AnalogInPinMethods {
 }
 
 namespace pxsim.AnalogOutPinMethods {
-        /**
-     * Set the connector value as analog. Value must be comprised between 0 and 1023.
-     * @param value value to write to the pin between ``0`` and ``1023``. eg:1023,0
-     */
+    /**
+ * Set the connector value as analog. Value must be comprised between 0 and 1023.
+ * @param value value to write to the pin between ``0`` and ``1023``. eg:1023,0
+ */
     export function analogWrite(name: pins.AnalogPin, value: number): void {
         pins.markUsed(name);
         name.analogWritePin(value);
