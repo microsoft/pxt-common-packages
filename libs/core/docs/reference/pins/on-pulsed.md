@@ -26,7 +26,7 @@ you want your code to run when the voltage at the pin goes from high to low.
 
 ## Parameters
 
-* **pulse**: the pulse value to run code for, either `high` (true) or `low` (false).
+* **pulse**: the pulse value to run code for.
 * **body**: the code to run when the pin is pulsed.
 
 ## Example #example
@@ -36,7 +36,7 @@ When pin `D4` is pulsed `low`, run code that flashes an LED connected to pin `D1
 ```blocks
 pins.D4.setPull(PinPullMode.PullUp)
 
-pins.D4.onPulsed(false, () => {
+pins.D4.onPulsed(PulseValue.Low, () => {
     pins.D13.digitalWrite(true)
     pause(250)
     pins.D13.digitalWrite(false)
