@@ -4,7 +4,7 @@ namespace pxsim {
         constructor (private pin: Pin) { }
         toggle() {
             const on = !!this.pin.value;
-            this.pin.digitalWritePin(on ? 0 : 1);            
+            this.pin.setValue(on ? 0 : 1023);
         }
 
         on() {

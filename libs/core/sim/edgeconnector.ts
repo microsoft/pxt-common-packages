@@ -19,6 +19,15 @@ namespace pxsim {
         pull = 0; // PullDown
         eventMode = 0;
 
+        setValue(value: number) {
+            // value set from the simulator
+            const old = this.value;
+            this.value = value;
+            const b = board();
+            if (b && this.eventMode == DAL.DEVICE_PIN_EVENT_ON_EDGE && old != this.value)
+                b.bus.queue(this.id, this.value > 0 ? DAL.DEVICE_PIN_EVT_RISE : DAL.DEVICE_PIN_EVT_FALL);
+        }
+
         digitalReadPin(): number {
             this.mode = PinFlags.Digital | PinFlags.Input;
             return this.value > 100 ? 1 : 0;
@@ -29,8 +38,6 @@ namespace pxsim {
             this.mode = PinFlags.Digital | PinFlags.Output;
             const v = this.value;
             this.value = value > 0 ? 1023 : 0;
-            if (b && this.value != v)
-                b.bus.queue(this.id, this.value > 0 ? DAL.DEVICE_PIN_EVT_PULSE_HI : DAL.DEVICE_PIN_EVT_PULSE_LO);
             runtime.queueDisplayUpdate();
         }
 
@@ -48,8 +55,6 @@ namespace pxsim {
             this.mode = PinFlags.Analog | PinFlags.Output;
             const v = this.value;
             this.value = Math.max(0, Math.min(1023, value));
-            if (b && this.value != v)
-                b.bus.queue(this.id, this.value > 0 ? DAL.DEVICE_PIN_EVT_PULSE_HI : DAL.DEVICE_PIN_EVT_PULSE_LO);
             runtime.queueDisplayUpdate();
         }
 
