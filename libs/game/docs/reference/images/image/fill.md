@@ -25,4 +25,5 @@ showBlue = sprites.create(blueRect)
 
 ## See also #seealso
 
-[fill rect](/reference/images/image/fill-rect)
+[fill rect](/reference/images/image/fill-rect),
+[replace](/reference/images/image/replace)
