@@ -5,6 +5,7 @@ interface Image {
      */
     //% helper=imageFillRect blockNamespace="images" inlineInputMode="inline" group="Drawing"
     //% block="fill rectangle in %myImage=variables_get at x %x y %y width %w height %h %c=colorindexpicker"
+    //% help=images/image/fill-rect
     fillRect(x: number, y: number, w: number, h: number, c: color): void;
 
     /**
@@ -12,6 +13,7 @@ interface Image {
      */
     //% helper=imageDrawLine blockNamespace="images" inlineInputMode="inline" group="Drawing"
     //% block="draw line in %myImage=variables_get from x %x0 y %y0 to x %x1 y %y1 %c=colorindexpicker"
+    //% help=images/image/draw-line
     drawLine(x0: number, y0: number, x1: number, y1: number, c: color): void;
 
     /**
@@ -19,6 +21,7 @@ interface Image {
      */
     //% helper=imageDrawRect blockNamespace="images" inlineInputMode="inline" group="Drawing"
     //% block="outline rectangle in %myImage=variables_get at x %x y %y width %w height %h %c=colorindexpicker"
+    //% help=images/image/draw-rect
     drawRect(x: number, y: number, w: number, h: number, c: color): void;
 
     /**
@@ -26,6 +29,7 @@ interface Image {
      */
     //% shim=ImageMethods::setPixel blockNamespace="images" group="Drawing"
     //% block="set pixel of %myImage=variables_get at x %x y %y to %c=colorindexpicker"
+    //% help=images/image/set-pixel
     setPixel(x: int32, y: int32, c: int32): void;
 
     /**
@@ -33,6 +37,7 @@ interface Image {
      */
     //% shim=ImageMethods::getPixel blockNamespace="images" group="Drawing"
     //% block="%myImage=variables_get pixel color at x %x y %y"
+    //% help=images/image/get-pixel
     getPixel(x: int32, y: int32): int32;
 
     /**
@@ -40,6 +45,7 @@ interface Image {
      */
     //% shim=ImageMethods::fill blockNamespace="images" group="Drawing"
     //% block="fill %myImage=variables_get with %c=colorindexpicker"
+    //% help=images/image/fill
     fill(c: int32): void;
 
     /**
@@ -47,6 +53,7 @@ interface Image {
      */
     //% shim=ImageMethods::clone blockNamespace="images" group="Create"
     //% block="clone %myImage=variables_get"
+    //% help=images/image/clone
     clone(): Image;
 
     /**

@@ -96,7 +96,7 @@ namespace controller {
      * @param step the distance, eg: 100
      */
     //% weight=50 blockGap=8 help=controller/dx
-    //% blockId=keysdx block="x direction||scaled by %step"
+    //% blockId=keysdx block="dx (left-right buttons)||scaled by %step"
     //% step.defl=100
     export function dx(step: number = 100) {
         const ctx = control.eventContext();
@@ -115,9 +115,9 @@ namespace controller {
      * @param step the distance, eg: 100
      */
     //% weight=49 help=keys/dy
-    //% blockId=keysdy block="y direction||scaled by %step"
+    //% blockId=keysdy block="dy (up-down buttons)||scaled by %step"
     //% step.defl=100
-    export function dy(step: number) {
+    export function dy(step: number = 100) {
         const ctx = control.eventContext();
         if (!ctx) return 0;
 
@@ -133,7 +133,6 @@ namespace controller {
      * Pause the program until a button is pressed
      */
     //% weight=10
-    //% blockId=keypauseuntilanykey block="pause until any button is pressed"
     export function pauseUntilAnyButtonIsPressed() {
         control.waitForEvent(KEY_DOWN, 0)
     }
