@@ -2,7 +2,7 @@
 #include "ErrorNo.h"
 
 namespace pins {
-    static CODAL_SPI *spi = NULL;
+    static codal::SPI *spi = NULL;
     static void initSPI() {
         if (NULL == spi)
             spi = new CODAL_SPI(*LOOKUP_PIN(MOSI), *LOOKUP_PIN(MISO), *LOOKUP_PIN(SCK));
