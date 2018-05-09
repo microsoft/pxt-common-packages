@@ -11,6 +11,7 @@ namespace scene {
     //% blockId=scenescreenwidth block="screen width"
     //% group="Screen"
     //% weight=100 blockGap=8
+    //% help=scene/screen-width
     export function screenWidth(): number {
         return screen.width;
     }
@@ -21,6 +22,7 @@ namespace scene {
     //% blockId=scenescreenheight block="screen height"
     //% group="Screen"
     //% weight=99
+    //% help=scene/screen-width
     export function screenHeight(): number {
         return screen.height;
     }
@@ -32,6 +34,7 @@ namespace scene {
     //% group="Screen"
     //% weight=25
     //% blockId=gamesetbackgroundcolor block="set background color to %color=colorindexpicker"
+    //% help=scene/set-background-color
     export function setBackgroundColor(color: number) {
         const scene = game.currentScene();
         scene.background.color = color;
@@ -43,6 +46,7 @@ namespace scene {
     //% group="Screen"
     //% weight=24
     //% blockId=gamesetbackgroundimage block="set background image to %img=screen_image_picker"
+    //% help=scene/set-background-image
     export function setBackgroundImage(img: Image) {
         const scene = game.currentScene();
         scene.background.image = img;
