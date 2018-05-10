@@ -3,7 +3,7 @@
 Get the game player's life count.
 
 ```sig
-info.life(0)
+info.life()
 ```
 
 Your program has a life counter which you can set to record the number of lives remaining for a player in your game.

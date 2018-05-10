@@ -22,4 +22,4 @@ info.setLife(9)
 
 ## See also #seealso
 
-[change life by](/reference/info/change-live-by)
+[change life by](/reference/info/change-life-by)

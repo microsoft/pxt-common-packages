@@ -24,5 +24,5 @@ showLine = sprites.create(wideLine)
 
 ## See also #seealso
 
-[screen height](/refernece/scene/height)
+[screen height](/reference/scene/screen-height)
 

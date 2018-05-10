@@ -9,7 +9,7 @@ image.create(0, 0).replace(0, 0)
 ## Parameters
 
 * **from**: the color [number](/types/number) of the pixels to change.
-* **to**: the color [number](/tupes/number) of the replacement pixels.
+* **to**: the color [number](/types/number) of the replacement pixels.
 
 ## Example #example
 
