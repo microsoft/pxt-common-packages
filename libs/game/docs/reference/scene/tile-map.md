@@ -1,6 +1,6 @@
-# Tile Maps
+# Tile Map
 
-Your game scene contains a tile map. A tile map is an arrangement (a pattern) of image tiles that fill up some of the scene. At first, the scene has an empty tile map and no tile pattern is displayed. To build up your scene, you need to make some tiles, add them to the scene, and then tell the scene where to place the tiles.
+Your game scene contains a tile map. A tile map is an arrangement (a pattern) of image tiles that fill up some or all of the scene. At first, the scene has an empty tile map and no tile pattern is displayed. To build up your scene, you need to make some tiles, add them to the scene, and then tell the scene where to place the tiles.
 
 ## Tiles
 
@@ -21,7 +21,7 @@ c 5 c 5 c 5
 `)
 ```
 
-Tiles use a color number as their identifier. To map a tile into the scene, this number is set at some location in the tile map. Here the color number `1` is used to identify a tile with solid color.
+Tiles use a color number as their identifier (index). To map a tile into the scene, this number is set at some location in the tile map. Here the color number `1` is used to identify a tile with solid color.
 
 ```typescript
 scene.setTile(1, img`
@@ -43,7 +43,7 @@ scene.setTile(6, img`8`, true)
 
 ## Scene tile map
 
-The tile map is a plan for where to put certain tiles. The map has rows and columns that contain a tile identifiers at each location. The tile map is actually an image layout where, instead of having pixels, the color numbers in the pixal locations are actually tile identifiers.
+The tile map is a plan for where to put certain tiles. The map has rows and columns that contain a tile index at each location. The tile map is actually an image layout where, instead of having pixels, the color numbers in the pixal locations are actually tile indexes.
 
 How does this work? To find out, let's make two small tiles and them to the scene.
 
@@ -105,7 +105,7 @@ scene.setTileMap(img`
 
 ### Unmatched color numbers
 
-If there are color numbers in the tile map that don't match one of the tiles added to the scene, then the color number is not used as an identifer but just as a color fill. The tiling area for the unmatched tile just fills with the color for that number.
+If there are color numbers in the tile map that don't match one of the tiles added to the scene, then the color number is not used as an index but just as a color fill. The tiling area for the unmatched tile just fills with the color for that number.
 
 ```block
 scene.setTileMap(img`
@@ -129,7 +129,7 @@ scene.setTileMap(img`
 
 ### Different tile sizes
 
-When tiles with different sizes are in the tile map, the scene might make an area for each tile that is the size of the largest tile. If necessary, bigger tiles are partially overlapped or reduced to fit along with the smaller tiles.
+When tiles with different sizes are in the tile map, the scene might adjust the size of tiles when they're shown to try and make them fit. If necessary, bigger tiles are partially overlapped or reduced to fit along with the smaller tiles.
 
 Mixing these two sizes of tiles in the map:
 
@@ -164,3 +164,8 @@ scene.setTileMap(img`
 2 1
 `)
 ```
+
+## See also #seealso
+
+[set tile](/reference/scene/set-tile),
+[set tile map](/reference/scene/set-tile-map)
