@@ -40,4 +40,4 @@ game.onUpdate(function () {
 
 ## See also #seealso
 
-[dy](/reference/keys/dy)
+[dy](/reference/controller/dy)

@@ -13,7 +13,7 @@ When you end the game, all game control stops and the player gets a message that
 Check every second to see if the player has any lives left. If not, end the game!
 
 ```blocks
-game.interval(1000, function () {
+game.onUpdateInterval(1000, function () {
 	if (info.life() < 1) {
         game.over()
     }
