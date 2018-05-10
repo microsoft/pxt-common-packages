@@ -81,6 +81,7 @@ namespace scene {
      */
     //% blockId=gamesettilemap block="set tile map to %map=screen_image_picker"
     //% group="Tiles"
+    //% help=scene/set-tile-map
     export function setTileMap(map: Image) {
         const scene = game.currentScene();
         if (!scene.tileMap)
@@ -95,6 +96,7 @@ namespace scene {
      */
     //% blockId=gamesettile block="set tile %index=colorindexpicker to %img=screen_image_picker||with collisions %collisions=toggleOnOff"
     //% group="Tiles"
+    //% help=scene/set-tile
     export function setTile(index: number, img: Image, collisions?: boolean) {
         const scene = game.currentScene();
         if (!scene.tileMap)
