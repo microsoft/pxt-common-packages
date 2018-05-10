@@ -83,9 +83,18 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         const scene = game.currentScene();
         for (const sprite of collisioners) {
             const overSprites = scene.physicsEngine.overlaps(sprite);
-            for (const o of overSprites) {
-                // move to avoid collisions                                
-                if (o.flags & sprites.Flag.Obstacle) {
+            for (const overlapper of overSprites) {
+                // overlap handler
+                const oh = sprite.overlapHandler;
+                if (oh) {
+                    const tmp = overlapper;
+                    control.runInParallel(() => oh(tmp))
+                }
+            }
+
+            if (scene.tileMap) {
+                const obstacles = scene.tileMap.obstacleMap.overlaps(sprite);
+                for (const o of obstacles) {
                     // find the shortest distance into the obstacle
                     let toperr = sprite.bottom - o.top; if (toperr < 0) toperr = 1 << 30;
                     let bottomerr = o.bottom - sprite.top; if (bottomerr < 0) bottomerr = 1 << 30;
@@ -112,13 +121,6 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                         if (sprite.vx < 0) sprite.vx = 0;
                         sprite.registerObstacle(CollisionDirection.Left, o);
                     }
-                }
-                
-                // overlap handler
-                const oh = sprite.overlapHandler;
-                if (oh) {
-                    const tmp = o;
-                    control.runInParallel(() => oh(tmp))
                 }
             }
         }

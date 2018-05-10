@@ -83,7 +83,7 @@ class Sprite implements SpriteLike {
     private _say: string;
     private _sayExpires: number;
     private _image: Image;
-    private _obstacles: Sprite[];
+    private _obstacles: sprites.Obstacle[];
     private _movementAnim: sprites.MovementAnimation;
     private _currentAnimation: sprites.TimedAnimation;
     private _animationQueue: AnimationAction[];
@@ -92,7 +92,7 @@ class Sprite implements SpriteLike {
     id: number
 
     overlapHandler: (other: Sprite) => void;
-    collisionHandlers: ((other:Sprite) => void)[];
+    collisionHandlers: ((other: sprites.Obstacle) => void)[];
     private destroyHandler: () => void;
 
     constructor(img: Image) {
@@ -304,6 +304,10 @@ class Sprite implements SpriteLike {
         return other._image.overlapsWith(this._image, this.left - other.left, this.top - other.top)
     }
 
+    overlapsWithObstacle(other: sprites.Obstacle) {
+        return other.image.overlapsWith(this._image, this.left - other.left, this.top - other.top)
+    }
+
     /**
      * Registers code when the sprite overlaps with another sprite
      * @param spriteType sprite type to match
@@ -324,7 +328,7 @@ class Sprite implements SpriteLike {
     //% group="Collisions"
     //% blockId=spriteoncollision block="on %sprite collided %direction with"
     //% afterOnStart=true handlerStatement=1
-    onCollision(direction: CollisionDirection, handler: (other: Sprite) => void) {
+    onCollision(direction: CollisionDirection, handler: (other: sprites.Obstacle) => void) {
         if (!this.collisionHandlers)
             this.collisionHandlers = [];
         direction = Math.max(0, Math.min(3, direction | 0));
@@ -347,7 +351,7 @@ class Sprite implements SpriteLike {
      */
     //% blockId=spriteobstacle block="%sprite obstacle %direction"
     //% group="Collisions"
-    obstacle(direction: CollisionDirection): Sprite {
+    obstacle(direction: CollisionDirection): sprites.Obstacle {
         return this._obstacles ? this._obstacles[direction] : undefined;
     }
 
@@ -409,7 +413,7 @@ class Sprite implements SpriteLike {
         this._obstacles = undefined;
     }
 
-    registerObstacle(direction: CollisionDirection, other: Sprite) {
+    registerObstacle(direction: CollisionDirection, other: sprites.Obstacle) {
         if (!this._obstacles)
             this._obstacles = [];
         this._obstacles[direction] = other;

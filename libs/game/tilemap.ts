@@ -12,8 +12,8 @@ namespace tiles {
         x: number;
         y: number;
         tileIndex: number;
-        sprite: Sprite;
-        constructor(x: number, y: number, tileIndex: number, sprite: Sprite) {
+        sprite: sprites.Obstacle;
+        constructor(x: number, y: number, tileIndex: number, sprite: sprites.Obstacle) {
             this.x = x;
             this.y = y;
             this.tileIndex = tileIndex;
@@ -25,7 +25,10 @@ namespace tiles {
         column: number;
         row: number;
         loaded: boolean;
+        shouldBeLoaded: boolean;
     }
+
+    let workerLoaded = false;
 
     export class TileMap implements SpriteLike {
         camera: scene.Camera;
@@ -41,6 +44,7 @@ namespace tiles {
 
         id: number;
         z: number;
+        obstacleMap: sprites.ObstacleMap;
 
         private _layer: number;
 
@@ -64,6 +68,8 @@ namespace tiles {
             const scene = game.currentScene();
             scene.allSprites.push(this);
             this.id = scene.allSprites.length;
+
+            this.obstacleMap = new sprites.ObstacleMap();
 
             this.destroy();
         }
@@ -161,27 +167,37 @@ namespace tiles {
 
         public update(camera: scene.Camera) {
             if (!this._map || !this.needsUpdate) return;
+            this.needsUpdate = false;
+
+            const sLeft = camera.offsetX;
+            const sTop = camera.offsetY;
+            const sRight = sLeft + screen.width;
+            const sBottom = sTop + screen.height;
 
             this._chunks.forEach(chunk => {
-                const minX = chunk.column * this.chunkWidth;
-                const minY = chunk.row * this.chunkHeight;
-
                 if (chunk.loaded) {
-                    if (Math.abs(camera.offsetX - minX) > this.chunkWidth || Math.abs(camera.offsetY - minY) > this.chunkHeight) {
-                        this.unloadChunk(chunk);
-                    }
+                    chunk.shouldBeLoaded = this.overlaps(chunk, sLeft, sRight, sTop, sBottom, screen.width * 2);
                 }
                 else {
-                    if (Math.abs(camera.offsetX - minX) < (this.chunkWidth >> 1) || Math.abs(camera.offsetY - minY) < (this.chunkHeight >> 1)) {
-                        this.loadChunk(chunk);
-                    }
+                    chunk.shouldBeLoaded = this.overlaps(chunk, sLeft, sRight, sTop, sBottom, screen.width * 2 - 50);
                 }
             });
+        }
+
+        private overlaps(chunk: Chunk, l: number, r: number, t: number, b: number, radius: number) {
+            const left = chunk.column * this.chunkWidth - radius;
+            const right = left + this.chunkWidth + (radius << 1);
+            const top = chunk.row * this.chunkHeight - radius;
+            const bottom = top + this.chunkHeight + (radius << 1);
+
+            return !(right < l || bottom < t || left > r || top > b);
         }
 
         private loadChunk(chunk: Chunk) {
             if (chunk.loaded) return;
             chunk.loaded = true;
+
+            console.log(`LOAD: c=${chunk.column} r=${chunk.row}`)
 
             const x0 = chunk.column * this.chunkColumns;
             const xn = Math.min(x0 + this.chunkColumns, this._map.width);
@@ -194,24 +210,24 @@ namespace tiles {
                     const index = this._map.getPixel(x, y);
                     const tile = this._tiles[index] || this.generateTile(index);
                     if (tile && tile.obstacle && !this._tileSprites.some(ts => ts.x == x && ts.y == y)) {
-                        const tileSprite = new TileSprite(x, y, index, sprites.create(tile.image));
+                        const tileSprite = new TileSprite(x, y, index, sprites.createObstacle2(tile.image));
                         tileSprite.sprite.x = tileSprite.x * this.tileWidth + this.tileWidth / 2;
                         tileSprite.sprite.y = tileSprite.y * this.tileHeight + this.tileHeight / 2;
                         tileSprite.sprite.layer = this._layer;
                         tileSprite.sprite.z = -1;
-                        if (!tile.obstacle)
-                            tileSprite.sprite.setFlag(SpriteFlag.Ghost, true)
-                        else
-                            tileSprite.sprite.setFlag(SpriteFlag.Obstacle, true);
                         this._tileSprites.push(tileSprite);
                     }
                 }
+                pause(1);
             }
+            this.updateCollisionMap();
         }
 
         private unloadChunk(chunk: Chunk) {
             if (!chunk.loaded) return;
             chunk.loaded = false;
+
+            console.log(`UNLOAD: c=${chunk.column} r=${chunk.row}`)
 
             const minX = chunk.column * this.chunkWidth;
             const maxX = minX + this.chunkWidth;
@@ -226,14 +242,40 @@ namespace tiles {
                 }
                 return true;
             });
+            this.updateCollisionMap();
+        }
+
+        private updateCollisionMap() {
+            const obstacles: sprites.Obstacle[] = [];
+            this._tileSprites.forEach(t => obstacles.push(t.sprite));
+            this.obstacleMap.update(obstacles);
         }
 
         private initChunks() {
             this._chunks = [];
 
+            if (!workerLoaded) {
+                workerLoaded = true;
+                control.runInParallel(() => {
+                    while (true) {
+                        this._chunks.forEach(c => {
+                            if (c.shouldBeLoaded != c.loaded) {
+                                if (c.loaded) {
+                                    this.unloadChunk(c);
+                                }
+                                else {
+                                    this.loadChunk(c);
+                                }
+                            }
+                        })
+                        pause(500);
+                    }
+                })
+            }
+
             // The width/height of a chunk in tiles
-            this.chunkColumns = Math.ceil((screen.width << 2) / this.tileWidth);
-            this.chunkRows = Math.ceil((screen.height << 2) / this.tileHeight);
+            this.chunkColumns = Math.ceil((screen.width << 1) / this.tileWidth);
+            this.chunkRows = Math.ceil((screen.height << 1) / this.tileHeight);
 
             // The width/height of a chunk in pixels
             this.chunkWidth = this.chunkColumns * this.tileWidth;
@@ -252,7 +294,8 @@ namespace tiles {
                     this._chunks.push({
                         column: x,
                         row: y,
-                        loaded: false
+                        loaded: false,
+                        shouldBeLoaded: false
                     });
                 }
             }

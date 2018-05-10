@@ -1,0 +1,29 @@
+declare interface Array<T> {
+    [index: number]: T;
+    length: number;
+    push(e: T): void;
+    pop(): T;
+    forEach(cb: (e: T, index: number) => void): void;
+    filter(cb: (e: T) => boolean): Array<T>;
+    removeElement(e: T): void;
+    indexOf(e: T): number;
+    sort(cb: (a: T, b: T) => number): Array<T>;
+    shift(): T;
+    some(cb: (a: T) => boolean): boolean;
+}
+
+declare interface String {
+    length: number;
+}
+
+declare namespace Math {
+    function clamp(a: number, b: number, c: number): number;
+    function ceil(n: number): number;
+    function floor(n: number): number;
+    function max(a: number, b: number): number;
+    function min(a: number, b: number): number;
+    function abs(a: number): number;
+    function sqrt(a: number): number;
+}
+
+declare const img: any;
