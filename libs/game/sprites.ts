@@ -12,7 +12,7 @@ Frame handlers:
 /**
  * Sprites on screen
  */
-//% weight=98 color="#23c47e" icon="\uf1d8"
+//% weight=98 color="#4B7BEC" icon="\uf1d8"
 //% groups='["Create", "Properties", "Overlaps", "Collisions", "Lifecycle"]'
 namespace sprites {
 
