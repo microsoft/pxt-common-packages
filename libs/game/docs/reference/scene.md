@@ -18,4 +18,6 @@ scene.centerCameraAt(0, 0)
 [screen width](/reference/scene/screen-width),
 [screen height](/reference/scene/screen-height),
 [set background color](/reference/scene/set-background-color),
-[set background image](/reference/scene/set-background-image)
+[set background image](/reference/scene/set-background-image),
+[camera follow sprite](/reference/scene/camera-follow-sprite),
+[center camera at](/reference/scene/center-camera-at)
