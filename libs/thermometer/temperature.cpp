@@ -3,6 +3,16 @@
 #include "NonLinearAnalogSensor.h"
 #include "Button.h"
 
+
+#ifndef CODAL_THERMOMETER_INCLUDE
+#include CODAL_THERMOMETERR_INCLUDE
+#endif
+
+#ifndef CODAL_THERMOMETER
+#define CODAL_THERMOMETER codal::NonLinearAnalogSensor
+#endif
+
+
 enum class TemperatureCondition {
     //% block="hot"
     Hot = ANALOG_THRESHOLD_HIGH,
@@ -22,7 +32,7 @@ namespace pxt {
 // Wrapper classes
 class WTemp {
   public:
-    NonLinearAnalogSensor sensor;
+    CODAL_THERMOMETER sensor;
     WTemp()
         : sensor(*LOOKUP_PIN(TEMPERATURE), DEVICE_ID_THERMOMETER,
                 TEMPERATURE_NOMINAL_VALUE, 
