@@ -29,13 +29,11 @@ namespace scene {
                 this.offsetY = scene.tileMap.offsetY(this.offsetY);
             }
 
-            if (this.oldOffsetX != this.offsetX 
+            if (this.oldOffsetX != this.offsetX
                 || this.oldOffsetY != this.offsetY) {
                 this.oldOffsetX = this.offsetX;
                 this.oldOffsetY = this.offsetY;
-                if (scene.tileMap)
-                    scene.tileMap.needsUpdate = true;
             }
         }
-    }    
+    }
 }

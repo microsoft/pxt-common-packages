@@ -93,13 +93,15 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             }
 
             if (scene.tileMap) {
-                const obstacles = scene.tileMap.obstacleMap.overlaps(sprite);
+                const obstacles = scene.tileMap.collisions(sprite);
                 for (const o of obstacles) {
+                    const bottom = o.top + o.image.height;
+                    const right = o.left + o.image.width;
                     // find the shortest distance into the obstacle
                     let toperr = sprite.bottom - o.top; if (toperr < 0) toperr = 1 << 30;
-                    let bottomerr = o.bottom - sprite.top; if (bottomerr < 0) bottomerr = 1 << 30;
+                    let bottomerr = bottom - sprite.top; if (bottomerr < 0) bottomerr = 1 << 30;
                     let lefterr = sprite.right - o.left; if (lefterr < 0) lefterr = 1 << 30;
-                    let righterr = o.right - sprite.left; if (righterr < 0) righterr = 1 << 30;
+                    let righterr = right - sprite.left; if (righterr < 0) righterr = 1 << 30;
                     const min = Math.min(toperr, Math.min(bottomerr, Math.min(lefterr, righterr)));
                     if (toperr == min) {
                         sprite.bottom = o.top;
@@ -107,7 +109,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                         sprite.registerObstacle(CollisionDirection.Bottom, o);
                     }
                     else if (bottomerr == min) {
-                        sprite.top = o.bottom;
+                        sprite.top = bottom;
                         if (sprite.vy < 0) sprite.vy = 0;
                         sprite.registerObstacle(CollisionDirection.Top, o);
                     }
@@ -117,7 +119,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                         sprite.registerObstacle(CollisionDirection.Right, o);
                     }
                     else {
-                        sprite.left = o.right;
+                        sprite.left = right;
                         if (sprite.vx < 0) sprite.vx = 0;
                         sprite.registerObstacle(CollisionDirection.Left, o);
                     }
