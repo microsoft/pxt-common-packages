@@ -1,6 +1,6 @@
 # is Pressed
 
-Check if a key is being pressed or not.
+Check if a button is being pressed or not.
 
 ```sig
 controller.anyButton.isPressed()
@@ -8,11 +8,11 @@ controller.anyButton.isPressed()
 
 ## Returns
 
-* a [boolean](types/boolean): `true` if the key is pressed, `false` if the key is not pressed.
+* a [boolean](types/boolean): `true` if the button is pressed, `false` if the button is not pressed.
 
 ## Example #example
 
-Ramdomly move a yellow box around the screen while the ``A`` key is pressed.
+Ramdomly move a yellow box around the screen while the ``A`` button is pressed.
 
 ```blocks
 let yellowBox = sprites.create(img`
@@ -33,5 +33,5 @@ game.onUpdate(function () {
 
 ## See also #seealso
 
-[was pressed](/reference/keys/key/was-pressed),
-[on event](/reference/keys/key/on-event)
+[was pressed](/reference/controller/button/was-pressed),
+[on event](/reference/controller/button/on-event)

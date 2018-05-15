@@ -30,4 +30,4 @@ if (info.score() > 9999) {
 ## See also #seealso
 
 [set life](/reference/info/set-life),
-[life](/refernece/info/life)
+[life](/reference/info/life)

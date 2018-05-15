@@ -7,9 +7,11 @@ music.rest(400);
 ```
 
 ## #simnote
-#### ~hint
+### ~hint
+
 **Simulator**: ``||music:rest||`` works on the @boardname@. It might not work in the simulator on every browser.
-#### ~
+
+### ~
 
 ## Parameters
 
@@ -23,10 +25,10 @@ Play a 'C' note for one second and then rest for one second. Do it again, and ag
 
 ```blocks
 let frequency = music.noteFrequency(Note.C)
-forever(() => {
+while (true) {
   music.playTone(frequency, 1000)
   music.rest(1000)
-})
+}
 ```
 
 ## See also #seealso

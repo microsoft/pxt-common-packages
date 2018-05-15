@@ -1,9 +1,9 @@
-# paint
+# on Paint
 
 Draw on screen before sprites.
 
 ```sig
-game.paint(function () {
+game.onPaint(function () {
 	
 })
 ```
@@ -19,14 +19,14 @@ Randomly change the screen background color every `2` seconds.
 ```blocks
 let bkColor = 0
 bkColor = 0
-game.paint(function () {
+game.onPaint(function () {
     scene.setBackgroundColor(bkColor)
 })
-game.interval(2000, function () {
+game.onUpdateInterval(2000, function () {
     bkColor = Math.randomRange(0, 15)
 })
 ```
 
 ## See also #seealso
 
-[update](/reference/game/update)
+[update](/reference/game/on-update)
