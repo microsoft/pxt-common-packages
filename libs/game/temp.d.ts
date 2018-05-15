@@ -1,3 +1,7 @@
+/**
+ * This file exists to make vscode not complain about typing errors. It is not
+ * included in the package and is ignored by PXT
+ */
 declare interface Array<T> {
     [index: number]: T;
     length: number;
@@ -24,6 +28,7 @@ declare namespace Math {
     function min(a: number, b: number): number;
     function abs(a: number): number;
     function sqrt(a: number): number;
+    function randomRange(a: number, b: number): number;
 }
 
 declare const img: any;

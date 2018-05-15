@@ -2,9 +2,7 @@ enum SpriteFlag {
     //% block="ghost"
     Ghost = sprites.Flag.Ghost,
     //% block="auto destroy"
-    AutoDestroy = sprites.Flag.AutoDestroy,
-    //% block="obstacle"
-    Obstacle = sprites.Flag.Obstacle
+    AutoDestroy = sprites.Flag.AutoDestroy
 }
 
 enum CollisionDirection {
@@ -304,10 +302,6 @@ class Sprite implements SpriteLike {
         return other._image.overlapsWith(this._image, this.left - other.left, this.top - other.top)
     }
 
-    overlapsWithObstacle(other: sprites.Obstacle) {
-        return other.image.overlapsWith(this._image, this.left - other.left, this.top - other.top)
-    }
-
     /**
      * Registers code when the sprite overlaps with another sprite
      * @param spriteType sprite type to match
@@ -321,7 +315,7 @@ class Sprite implements SpriteLike {
     }
 
     /**
-     * Registers code when the sprite collides with another sprite
+     * Registers code when the sprite collides with an obstacle
      * @param direction
      * @param handler
      */

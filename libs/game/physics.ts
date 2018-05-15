@@ -68,20 +68,18 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
         // 2: refresh non-ghost collision map
         const colliders = this.sprites.filter(sprite => !(sprite.flags & sprites.Flag.Ghost));
-        // collect any non-obstacle sprite with a collection handlee
-        const collisioners = colliders.filter(sprite => !(sprite.flags & sprites.Flag.Obstacle));
-        // for low number of sprites, just iterate through them
-        if (collisioners.length < Math.sqrt(colliders.length)) {
-            // not enough sprite, just brute force it
-            this.map = undefined;
-        } else {
-            if (!this.map) this.map = new sprites.SpriteMap();
-            this.map.update(colliders);
-        }
+
+        // if (collisioners.length < Math.sqrt(colliders.length)) {
+        //     // not enough sprite, just brute force it
+        //     this.map = undefined;
+        // } else {
+        //     if (!this.map) this.map = new sprites.SpriteMap();
+        //     this.map.update(colliders);
+        // }
 
         // 3: go through sprite and handle collisions
         const scene = game.currentScene();
-        for (const sprite of collisioners) {
+        for (const sprite of colliders) {
             const overSprites = scene.physicsEngine.overlaps(sprite);
             for (const overlapper of overSprites) {
                 // overlap handler
