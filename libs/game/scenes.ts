@@ -110,6 +110,7 @@ namespace scene {
      */
     //% blockId=camerafollow block="camera follow sprite %sprite=variables_get"
     //% group="Camera"
+    //% help=scene/camera-follow-sprite
     export function cameraFollowSprite(sprite: Sprite) {
         const scene = game.currentScene();
         scene.camera.sprite = sprite;
@@ -121,6 +122,7 @@ namespace scene {
      */
     //% blockId=camerapos block="center camera at x %x y %y"
     //% group="Camera"
+    //% help=scene/center-camera-at
     export function centerCameraAt(x: number, y: number) {
         const scene = game.currentScene();
         scene.camera.sprite = undefined;
