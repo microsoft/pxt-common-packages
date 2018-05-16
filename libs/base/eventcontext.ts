@@ -88,8 +88,7 @@ namespace control {
                     if (this.timeInSample > 1000 || this.framesInSample > 30) {
                         if (EventContext.onStats) {
                             const fps = Math.round(this.framesInSample / (this.timeInSample / 1000));
-                            const renderMicro = Math.round(this.timeInSample / this.framesInSample * 1000)
-                            EventContext.onStats(`FPS: ${fps} render: ${renderMicro}us`)
+                            EventContext.onStats(`${fps}fps`)
                         }
                         this.timeInSample = 0
                         this.framesInSample = 0
