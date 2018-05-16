@@ -158,7 +158,7 @@ namespace tiles {
                         if (tile && tile.obstacle) {
                             const top = y * this.tileHeight;
                             if (tile.image.overlapsWith(s.image, s.left - left, s.top - top)) {
-                                overlappers.push(new sprites.StaticObstacle(tile.image, top, left, this.layer));
+                                overlappers.push(new sprites.StaticObstacle(tile.image, top, left, this.layer, index));
                             }
                         }
                     }
