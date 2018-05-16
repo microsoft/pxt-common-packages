@@ -28,7 +28,7 @@ namespace sprites {
 
         /**
          * Gets the overlaping sprites if any
-         * @param sprite 
+         * @param sprite
          */
         overlaps(sprite: Sprite): Sprite[] {
             const n = this.neighbors(sprite);

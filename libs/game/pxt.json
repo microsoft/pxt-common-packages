@@ -7,6 +7,8 @@
         "sprites.ts",
         "sprite.ts",
         "spritemap.ts",
+        "metrics.ts",
+        "obstacle.ts",
         "physics.ts",
         "info.ts",
         "background.ts",
@@ -23,6 +25,7 @@
     ],
     "public": true,
     "dependencies": {
+        "controller": "file:../controller",
         "screen": "file:../screen"
     }
 }

@@ -35,21 +35,6 @@ namespace sprites {
     }
 
     /**
-     * Creates a new object sprite from an image
-     * @param img the image
-     */
-    //% group="Collisions"
-    //% blockId=spritescreateobjectsable block="obstacle %img=screen_image_picker"
-    //% expandableArgumentMode=toggle
-    //% blockSetVariable=obstacle
-    //% weight=100
-    export function createObstacle(img: Image) {
-        const sprite = create(img);
-        sprite.flags |= sprites.Flag.Obstacle;
-        return sprite;
-    }
-
-    /**
      * Create a new sprite with given speed, and place it at the edge of the screen so it moves towards the middle.
      * The sprite auto-destroys when it leaves the screen. You can modify position after it's created.
      */
@@ -90,6 +75,5 @@ namespace sprites {
         Ghost = 1, // doesn't collide with other sprites
         Destroyed = 2,
         AutoDestroy = 4, // remove the sprite when no longer visible
-        Obstacle = 8, // generate collisions, immovable
     }
 }

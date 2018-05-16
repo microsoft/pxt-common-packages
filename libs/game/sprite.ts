@@ -2,9 +2,7 @@ enum SpriteFlag {
     //% block="ghost"
     Ghost = sprites.Flag.Ghost,
     //% block="auto destroy"
-    AutoDestroy = sprites.Flag.AutoDestroy,
-    //% block="obstacle"
-    Obstacle = sprites.Flag.Obstacle
+    AutoDestroy = sprites.Flag.AutoDestroy
 }
 
 enum CollisionDirection {
@@ -83,7 +81,7 @@ class Sprite implements SpriteLike {
     private _say: string;
     private _sayExpires: number;
     private _image: Image;
-    private _obstacles: Sprite[];
+    private _obstacles: sprites.Obstacle[];
     private _movementAnim: sprites.MovementAnimation;
     private _currentAnimation: sprites.TimedAnimation;
     private _animationQueue: AnimationAction[];
@@ -92,7 +90,7 @@ class Sprite implements SpriteLike {
     id: number
 
     overlapHandler: (other: Sprite) => void;
-    collisionHandlers: ((other:Sprite) => void)[];
+    collisionHandlers: (() => void)[][];
     private destroyHandler: () => void;
 
     constructor(img: Image) {
@@ -317,26 +315,31 @@ class Sprite implements SpriteLike {
     }
 
     /**
-     * Registers code when the sprite collides with another sprite
+     * Registers code when the sprite collides with an obstacle
      * @param direction
      * @param handler
      */
-    //% group="Collisions"
-    //% blockId=spriteoncollision block="on %sprite collided %direction with"
+    //% blockId=spriteoncollision block="on %sprite collided %direction with tile %color=colorindexpicker"
     //% afterOnStart=true handlerStatement=1
-    onCollision(direction: CollisionDirection, handler: (other: Sprite) => void) {
+    //% blockNamespace="scene" group="Collisions"
+    onCollision(direction: CollisionDirection, tileIndex: number, handler: () => void) {
         if (!this.collisionHandlers)
             this.collisionHandlers = [];
+
         direction = Math.max(0, Math.min(3, direction | 0));
-        this.collisionHandlers[direction] = handler;
+
+        if (!this.collisionHandlers[direction])
+            this.collisionHandlers[direction] = [];
+
+        this.collisionHandlers[direction][tileIndex] = handler;
     }
 
     /**
      * Determines if there is an obstacle in the given direction
      * @param direction
      */
-    //% blockId=spritehasobstacle block="has %sprite obstacle %direction"
-    //% group="Collisions"
+    //% blockId=spritehasobstacle block="%sprite is colliding %direction"
+    //% blockNamespace="scene" group="Collisions"
     hasObstacle(direction: CollisionDirection): boolean {
         return this._obstacles && !!this._obstacles[direction];
     }
@@ -345,10 +348,10 @@ class Sprite implements SpriteLike {
      * Gets the obstacle sprite in a given direction if any
      * @param direction
      */
-    //% blockId=spriteobstacle block="%sprite obstacle %direction"
-    //% group="Collisions"
-    obstacle(direction: CollisionDirection): Sprite {
-        return this._obstacles ? this._obstacles[direction] : undefined;
+    //% blockId=spriteobstacle block="tile color colliding with %sprite %direction"
+    //% blockNamespace="scene" group="Collisions"
+    obstacle(direction: CollisionDirection): number {
+        return (this._obstacles && this._obstacles[direction]) ? this._obstacles[direction].tileIndex : -1;
     }
 
     /**
@@ -409,14 +412,14 @@ class Sprite implements SpriteLike {
         this._obstacles = undefined;
     }
 
-    registerObstacle(direction: CollisionDirection, other: Sprite) {
+    registerObstacle(direction: CollisionDirection, other: sprites.Obstacle) {
         if (!this._obstacles)
             this._obstacles = [];
         this._obstacles[direction] = other;
 
-        const handler = this.collisionHandlers ? this.collisionHandlers[direction] : undefined;
+        const handler = (this.collisionHandlers && this.collisionHandlers[direction]) ? this.collisionHandlers[direction][other.tileIndex] : undefined;
         if (handler)
-            handler(other);
+            handler();
     }
 
     /**

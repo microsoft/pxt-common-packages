@@ -8,25 +8,10 @@ namespace tiles {
         }
     }
 
-    class TileSprite {
-        x: number;
-        y: number;
-        tileIndex: number;
-        sprite: Sprite;
-        constructor(x: number, y: number, tileIndex: number, sprite: Sprite) {
-            this.x = x;
-            this.y = y;
-            this.tileIndex = tileIndex;
-            this.sprite = sprite;
-        }
-    }
-
     export class TileMap implements SpriteLike {
         camera: scene.Camera;
         tileWidth: number;
         tileHeight: number;
-
-        needsUpdate: boolean;
 
         id: number;
         z: number;
@@ -35,25 +20,21 @@ namespace tiles {
 
         private _map: Image;
         private _tiles: Tile[];
-        private _tileSprites: TileSprite[];
 
         constructor(camera: scene.Camera, tileWidth: number, tileHeight: number) {
             this.camera = camera;
             this.tileWidth = tileWidth;
             this.tileHeight = tileHeight;
+
             this._map = img`1`;
             this._tiles = [];
-            this._tileSprites = [];
             this._layer = 1;
 
             this.z = -1;
-            this.id = game.currentScene().allSprites.length;
 
             const scene = game.currentScene();
             scene.allSprites.push(this);
             this.id = scene.allSprites.length;
-
-            this.destroy();
         }
 
         offsetX(value: number) {
@@ -71,24 +52,24 @@ namespace tiles {
         set layer(value: number) {
             if (this._layer != value) {
                 this._layer = value;
-                this._tileSprites.forEach(sp => sp.sprite.layer = this._layer);
-                this.needsUpdate = true;
             }
         }
 
         setTile(index: number, img: Image, collisions?: boolean) {
             if (index < 0 || index > 0xf) return;
             this._tiles[index] = new Tile(img, collisions);
-            this.needsUpdate = true;
         }
 
         setMap(map: Image) {
             this._map = map;
-            this.destroy();
         }
 
         __update(camera: scene.Camera, dt: number): void { }
 
+        /**
+         * This draws all non-obstacle tiles so that we can reduce the number of
+         * sprites created
+         */
         __draw(camera: scene.Camera): void {
             const offsetX = camera.offsetX % this.tileWidth;
             const offsetY = camera.offsetY % this.tileHeight;
@@ -101,7 +82,7 @@ namespace tiles {
                 for (let y = y0; y <= yn; ++y) {
                     const index = this._map.getPixel(x, y);
                     const tile = this._tiles[index] || this.generateTile(index);
-                    if (tile && !tile.obstacle) {
+                    if (tile) {
                         screen.drawImage(tile.image, (x - x0) * this.tileWidth - offsetX, (y - y0) * this.tileHeight - offsetY)
                     }
                 }
@@ -144,53 +125,47 @@ namespace tiles {
         }
 
         public update(camera: scene.Camera) {
-            if (!this._map || !this.needsUpdate) return;
+        }
 
-            this.needsUpdate = false;
+        public collisions(s: Sprite): sprites.Obstacle[] {
+            let overlappers: sprites.StaticObstacle[] = [];
 
-            // remove outofbounds sprites
-            this._tileSprites = this._tileSprites.filter(ts => {
-                if (ts.sprite.isOutOfScreen(this.camera)) {
-                    ts.sprite.destroy();
-                    return false;
+            if (s.layer & this.layer) {
+                let x0: number;
+                let xn: number;
+                let y0: number;
+                let yn: number;
+
+                if (this.tileWidth === this.tileHeight && this.tileHeight === 16) {
+                    x0 = Math.max(0, s.left >> 4);
+                    xn = Math.min(this._map.width, (s.right >> 4) + 1);
+                    y0 = Math.max(0, s.top >> 4);
+                    yn = Math.min(this._map.height, (s.bottom >> 4) + 1);
                 }
-                else return true;
-            });
+                else {
+                    x0 = Math.max(0, Math.floor(s.left / this.tileWidth));
+                    xn = Math.min(this._map.width, Math.ceil(s.right / this.tileWidth));
+                    y0 = Math.max(0, Math.floor(s.top / this.tileHeight));
+                    yn = Math.min(this._map.height, Math.ceil(s.bottom / this.tileHeight));
+                }
 
-            // compute visible area
-            const offsetX = -camera.offsetX;
-            const offsetY = -camera.offsetY;
-            const x0 = Math.max(0, Math.floor(-offsetX / this.tileWidth));
-            const xn = Math.min(this._map.width, Math.ceil((-offsetX + screen.width) / this.tileWidth));
-            const y0 = Math.max(0, Math.floor(-offsetY / this.tileHeight));
-            const yn = Math.min(this._map.height, Math.ceil((-offsetY + screen.height) / this.tileHeight));
-
-            // add missing sprites
-            for (let x = x0; x <= xn; ++x) {
-                for (let y = y0; y <= yn; ++y) {
-                    const index = this._map.getPixel(x, y);
-                    const tile = this._tiles[index] || this.generateTile(index);
-                    if (tile && tile.obstacle && !this._tileSprites.some(ts => ts.x == x && ts.y == y)) {
-                        const tileSprite = new TileSprite(x, y, index, sprites.create(tile.image));
-                        tileSprite.sprite.x = tileSprite.x * this.tileWidth + this.tileWidth / 2;
-                        tileSprite.sprite.y = tileSprite.y * this.tileHeight + this.tileHeight / 2;
-                        tileSprite.sprite.layer = this._layer;
-                        tileSprite.sprite.z = -1;
-                        if (!tile.obstacle)
-                            tileSprite.sprite.setFlag(SpriteFlag.Ghost, true)
-                        else
-                            tileSprite.sprite.setFlag(SpriteFlag.Obstacle, true);
-                        this._tileSprites.push(tileSprite);
+                let res = `x: ${x0}-${xn} y: ${y0}-${yn} HIT:`;
+                for (let x = x0; x <= xn; ++x) {
+                    const left = x * this.tileWidth;
+                    for (let y = y0; y <= yn; ++y) {
+                        const index = this._map.getPixel(x, y);
+                        const tile = this._tiles[index] || this.generateTile(index);
+                        if (tile && tile.obstacle) {
+                            const top = y * this.tileHeight;
+                            if (tile.image.overlapsWith(s.image, s.left - left, s.top - top)) {
+                                overlappers.push(new sprites.StaticObstacle(tile.image, top, left, this.layer, index));
+                            }
+                        }
                     }
                 }
             }
-        }
 
-        private destroy() {
-            // delete previous sprites
-            this._tileSprites.forEach(sp => sp.sprite.destroy());
-            this._tileSprites = [];
-            this.needsUpdate = true;
+            return overlappers;
         }
     }
 }
