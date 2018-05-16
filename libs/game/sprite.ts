@@ -202,6 +202,7 @@ class Sprite implements SpriteLike {
     //% group="Properties"
     //% blockId=spritesay block="%sprite say %text||for %millis ms"
     //% time.defl=2000
+    //% help=sprites/sprite/say
     say(text: string, millis?: number) {
         this._say = text;
         if (!millis || millis < 0)

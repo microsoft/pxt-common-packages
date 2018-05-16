@@ -24,7 +24,7 @@ namespace sprites {
     //% blockId=spritescreate block="sprite %img=screen_image_picker"
     //% expandableArgumentMode=toggle
     //% blockSetVariable=sprite
-    //% weight=100
+    //% weight=100 help=sprites/create
     export function create(img: Image): Sprite {
         const scene = game.currentScene();
         const sprite = new Sprite(img)
