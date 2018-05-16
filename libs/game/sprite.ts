@@ -348,7 +348,7 @@ class Sprite implements SpriteLike {
      * Gets the obstacle sprite in a given direction if any
      * @param direction
      */
-    //% blockId=spriteobstacle block="color of tile colliding with %sprite %direction"
+    //% blockId=spriteobstacle block="tile color colliding with %sprite %direction"
     //% blockNamespace="scene" group="Collisions"
     obstacle(direction: CollisionDirection): number {
         return (this._obstacles && this._obstacles[direction]) ? this._obstacles[direction].tileIndex : -1;
