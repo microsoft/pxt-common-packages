@@ -13,9 +13,38 @@ Sometimes you may want to have a message show up for a sprite. You can have a ca
 * **text**: a [string](/types/string) that contains the text of the caption.
 * **millis**: an optional [number](/types/number) of milliseconds to display the caption for.
 
-## Example #example
+## Examples #example
 
-Send a sprite toward a barrier. When it contacts the barrier, have it bounce back to its starting position and show the `"Bounce!"` caption.
+### Smiley message #ex1
+
+Make a sprite for a smiley face image and display it on the screen with a message.
+
+```blocks
+let smiley: Sprite = null
+smiley = sprites.create(img`
+. . . . . f f f f f f f . . . . 
+. . . f f e e e e e e e f . . . 
+. . f e e e e e e e e e e f . . 
+. f e e e e e e e e e e e e f . 
+f e e e e f f e e e f f e e e f 
+f e e e e f f e e e f f e e e f 
+f e e e e e e e e e e e e e e f 
+f e e e e e e e e e e e e e e f 
+f e e e e e e e f e e e e e e f 
+f e e e e e e e e e e e e e e f 
+f e e e e f e e e e e f e e e f 
+f e e e e e f f f f f e e e e f 
+. f e e e e e e e e e e e e f . 
+. . f e e e e e e e e e e f . . 
+. . . f f e e e e e e e f . . . 
+. . . . . f f f f f f f . . . . 
+`)
+smiley.say("Hello!")
+```
+
+### Bounce message
+
+Send a sprite toward a barrier. When it contacts the barrier, have it bounce back to its starting position and briefly show the `"Bounce!"` caption.
 
 ```blocks
 let greenBoxGo: Sprite = null

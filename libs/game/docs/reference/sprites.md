@@ -1,4 +1,4 @@
-# Scene
+# Sprites
 
 Move game objects, handle collisions, and create animations.
 
