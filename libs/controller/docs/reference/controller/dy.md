@@ -40,4 +40,4 @@ game.onUpdate(function () {
 
 ## See also #seealso
 
-[dx](/reference/keys/dx)
+[dx](/reference/controller/dx)

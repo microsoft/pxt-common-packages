@@ -68,29 +68,38 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
         // 2: refresh non-ghost collision map
         const colliders = this.sprites.filter(sprite => !(sprite.flags & sprites.Flag.Ghost));
-        // collect any non-obstacle sprite with a collection handlee
-        const collisioners = colliders.filter(sprite => !(sprite.flags & sprites.Flag.Obstacle));
-        // for low number of sprites, just iterate through them
-        if (collisioners.length < Math.sqrt(colliders.length)) {
-            // not enough sprite, just brute force it
-            this.map = undefined;
-        } else {
-            if (!this.map) this.map = new sprites.SpriteMap();
-            this.map.update(colliders);
-        }
+
+        // if (collisioners.length < Math.sqrt(colliders.length)) {
+        //     // not enough sprite, just brute force it
+        //     this.map = undefined;
+        // } else {
+        //     if (!this.map) this.map = new sprites.SpriteMap();
+        //     this.map.update(colliders);
+        // }
 
         // 3: go through sprite and handle collisions
         const scene = game.currentScene();
-        for (const sprite of collisioners) {
+        for (const sprite of colliders) {
             const overSprites = scene.physicsEngine.overlaps(sprite);
-            for (const o of overSprites) {
-                // move to avoid collisions                                
-                if (o.flags & sprites.Flag.Obstacle) {
+            for (const overlapper of overSprites) {
+                // overlap handler
+                const oh = sprite.overlapHandler;
+                if (oh) {
+                    const tmp = overlapper;
+                    control.runInParallel(() => oh(tmp))
+                }
+            }
+
+            if (scene.tileMap) {
+                const obstacles = scene.tileMap.collisions(sprite);
+                for (const o of obstacles) {
+                    const bottom = o.top + o.image.height;
+                    const right = o.left + o.image.width;
                     // find the shortest distance into the obstacle
                     let toperr = sprite.bottom - o.top; if (toperr < 0) toperr = 1 << 30;
-                    let bottomerr = o.bottom - sprite.top; if (bottomerr < 0) bottomerr = 1 << 30;
+                    let bottomerr = bottom - sprite.top; if (bottomerr < 0) bottomerr = 1 << 30;
                     let lefterr = sprite.right - o.left; if (lefterr < 0) lefterr = 1 << 30;
-                    let righterr = o.right - sprite.left; if (righterr < 0) righterr = 1 << 30;
+                    let righterr = right - sprite.left; if (righterr < 0) righterr = 1 << 30;
                     const min = Math.min(toperr, Math.min(bottomerr, Math.min(lefterr, righterr)));
                     if (toperr == min) {
                         sprite.bottom = o.top;
@@ -98,7 +107,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                         sprite.registerObstacle(CollisionDirection.Bottom, o);
                     }
                     else if (bottomerr == min) {
-                        sprite.top = o.bottom;
+                        sprite.top = bottom;
                         if (sprite.vy < 0) sprite.vy = 0;
                         sprite.registerObstacle(CollisionDirection.Top, o);
                     }
@@ -108,17 +117,10 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                         sprite.registerObstacle(CollisionDirection.Right, o);
                     }
                     else {
-                        sprite.left = o.right;
+                        sprite.left = right;
                         if (sprite.vx < 0) sprite.vx = 0;
                         sprite.registerObstacle(CollisionDirection.Left, o);
                     }
-                }
-                
-                // overlap handler
-                const oh = sprite.overlapHandler;
-                if (oh) {
-                    const tmp = o;
-                    control.runInParallel(() => oh(tmp))
                 }
             }
         }

@@ -12,7 +12,7 @@ Frame handlers:
 /**
  * Sprites on screen
  */
-//% weight=98 color="#23c47e" icon="\uf1d8"
+//% weight=98 color="#4B7BEC" icon="\uf1d8"
 //% groups='["Create", "Properties", "Overlaps", "Collisions", "Lifecycle"]'
 namespace sprites {
 
@@ -32,21 +32,6 @@ namespace sprites {
         sprite.id = scene.allSprites.length
         scene.physicsEngine.addSprite(sprite);
         return sprite
-    }
-
-    /**
-     * Creates a new object sprite from an image
-     * @param img the image
-     */
-    //% group="Collisions"
-    //% blockId=spritescreateobjectsable block="obstacle %img=screen_image_picker"
-    //% expandableArgumentMode=toggle
-    //% blockSetVariable=obstacle
-    //% weight=100
-    export function createObstacle(img: Image) {
-        const sprite = create(img);
-        sprite.flags |= sprites.Flag.Obstacle;
-        return sprite;
     }
 
     /**
@@ -90,6 +75,5 @@ namespace sprites {
         Ghost = 1, // doesn't collide with other sprites
         Destroyed = 2,
         AutoDestroy = 4, // remove the sprite when no longer visible
-        Obstacle = 8, // generate collisions, immovable
     }
 }

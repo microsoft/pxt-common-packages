@@ -81,6 +81,7 @@ namespace scene {
      */
     //% blockId=gamesettilemap block="set tile map to %map=screen_image_picker"
     //% group="Tiles"
+    //% help=scene/set-tile-map
     export function setTileMap(map: Image) {
         const scene = game.currentScene();
         if (!scene.tileMap)
@@ -95,6 +96,7 @@ namespace scene {
      */
     //% blockId=gamesettile block="set tile %index=colorindexpicker to %img=screen_image_picker||with collisions %collisions=toggleOnOff"
     //% group="Tiles"
+    //% help=scene/set-tile
     export function setTile(index: number, img: Image, collisions?: boolean) {
         const scene = game.currentScene();
         if (!scene.tileMap)
@@ -108,6 +110,7 @@ namespace scene {
      */
     //% blockId=camerafollow block="camera follow sprite %sprite=variables_get"
     //% group="Camera"
+    //% help=scene/camera-follow-sprite
     export function cameraFollowSprite(sprite: Sprite) {
         const scene = game.currentScene();
         scene.camera.sprite = sprite;
@@ -119,6 +122,7 @@ namespace scene {
      */
     //% blockId=camerapos block="center camera at x %x y %y"
     //% group="Camera"
+    //% help=scene/center-camera-at
     export function centerCameraAt(x: number, y: number) {
         const scene = game.currentScene();
         scene.camera.sprite = undefined;

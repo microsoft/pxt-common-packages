@@ -27,7 +27,7 @@ Play a tone with a base frequency of ``440`` but change it by ``20`` Hertz steps
 ```blocks
 let offset = 0
 offset = -100
-forever(function () {
+while (true) {
     while (offset < 100) {
         offset += 20
         music.ringTone(440 + offset)
@@ -38,7 +38,7 @@ forever(function () {
         music.ringTone(440 + offset)
         pause(300)
     }
-})
+}
 ```
 
 ## See also #seealso

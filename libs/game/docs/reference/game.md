@@ -7,10 +7,10 @@ game.over()
 game.onUpdate(function () {
 	
 })
-game.paint(function () {
+game.onPaint(function () {
 	
 })
-game.interval(500, function () {
+game.onUpdateInterval(500, function () {
 	
 })
 game.ask("")
@@ -21,9 +21,9 @@ game.splash("")
 ## See also
 
 [over](/reference/game/over),
-[update](/reference/game/update),
-[paint](/reference/game/paint),
-[interval](/reference/game/interval),
-[ask](/reference/game/set-life),
+[on update](/reference/game/on-update),
+[on paint](/reference/game/on-paint),
+[on update interval](/reference/game/on-update-interval),
+[ask](/reference/game/ask),
 [ask for string](/reference/game/ask-for-string),
 [splash](/reference/game/splash)

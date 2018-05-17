@@ -2,7 +2,7 @@
 
 An image is some number of rows and columns of color pixels that make up rectangular picture. A _pixel_ is a single point of color inside the picture.
 
-Images are two-dimensional so they have a known height and width. When an image is declared, or created, the height and width are specified either by the _layout_ of the image or as parameters to it's [create](/reference/image/create) method.
+Images are two-dimensional so they have a known height and width. When an image is declared, or created, the height and width are specified either by the _layout_ of the image or as parameters to it's [create](/reference/images/create) method.
 
 ## Image layout
 
@@ -16,7 +16,7 @@ An zero size image has no height or width and has no pixels, so the **img** stri
 let emptyImage = img``
 ```
 
-You can also use [create](/reference/image/create) and make another zero size image with no pixels.
+You can also use [create](/reference/images/create) and make another zero size image with no pixels.
 
 ```blocks
 let emptyImage1 = img``
@@ -214,8 +214,8 @@ for (let i = 0; i < 32; i++) {
 let boxSprite = sprites.create(orangeBox)
 ```
 
-The [image](/reference/image) functions let you do more complex pixel operations like filling and drawing shapes.
+The [image](/reference/images) functions let you do more complex pixel operations like filling and drawing shapes.
 
 ## See also
 
-[image](/reference/image)
+[image](/reference/images)

@@ -1,4 +1,4 @@
-# update
+# on Update
 
 Updates the position and velocities of sprites.
 
@@ -14,4 +14,5 @@ game.onUpdate(function () {
 
 ## See also #seealso
 
-[paint](/reference/game/paint)
+[on update interval](/reference/game/on-update-interval)
+[on paint](/reference/game/on-paint)

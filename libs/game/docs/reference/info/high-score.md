@@ -3,7 +3,7 @@
 Get the highest score recored for the game.
 
 ```sig
-info.life(0)
+info.score()
 ```
 
 The highest score recorded by your game program is remembered. So, you can find out what the player's best score was for the game.

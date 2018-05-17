@@ -16,7 +16,7 @@ music.playSoundUntilDone("")
 music.setVolume(0)
 music.stopAllSounds()
 music.sounds(Sounds.BaDing)
-music.setTone(pins.createBuffer(0));
+music.setTone(null);
 ```
 
 ### See Also
