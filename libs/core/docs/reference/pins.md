@@ -17,7 +17,7 @@ pins.A1.servoSetPulse(1500)
 ```cards
 pins.A1.digitalRead()
 pins.A1.digitalWrite(false)
-pins.D4.onPulsed(PulseValue.Low, () => {})
+pins.D4.onEvent(PinEvent.PulseHigh, () => {})
 pins.A1.setPull(PinPullMode.PullDown)
 pins.A1.pulseIn(PulseValue.High,0)
 pins.pulseDuration()

@@ -7,6 +7,17 @@ enum class PulseValue {
     Low = DEVICE_PIN_EVT_PULSE_LO
 };
 
+enum class PinEvent {
+    //% block="pulse high"
+    PulseHigh = DEVICE_PIN_EVT_PULSE_HI,
+    //% block="pulse low"
+    PulseLow = DEVICE_PIN_EVT_PULSE_LO,
+    //% block="rise"
+    Rise = DEVICE_PIN_EVT_RISE,
+    //% block="fall"
+    Fall = DEVICE_PIN_EVT_FALL,
+};
+
 enum class PinPullMode {
     //% block="down"
     PullDown = 0,
@@ -58,9 +69,36 @@ void digitalWrite(DigitalPin name, bool value) {
 //% pin.fieldEditor="gridpicker"
 //% pin.fieldOptions.width=220
 //% pin.fieldOptions.columns=4
+//% parts="slideswitch" trackArgs=0
+//% deprecated=1 hidden=1
 void onPulsed(DigitalPin pin, PulseValue pulse, Action body) {
     pin->eventOn(DEVICE_PIN_EVENT_ON_PULSE);
     registerWithDal(pin->id, (int)pulse, body);
+}
+
+/**
+* Register code to run when a pin event occurs. 
+*/
+//% help=pins/on-event weight=16 blockGap=8
+//% blockId=pinsonevent block="on|pin %pin|%event"
+//% blockNamespace=pins
+//% pin.fieldEditor="gridpicker"
+//% pin.fieldOptions.width=220
+//% pin.fieldOptions.columns=4
+//% parts="slideswitch" trackArgs=0
+void onEvent(DigitalPin pin, PinEvent event, Action body) {
+    switch(event) {
+        case PinEvent::PulseHigh:
+        case PinEvent::PulseLow:
+            pin->eventOn(DEVICE_PIN_EVENT_ON_PULSE);
+            registerWithDal(pin->id, (int)event, body);
+            break;
+        case PinEvent::Rise:
+        case PinEvent::Fall:
+            pin->eventOn(DEVICE_PIN_EVENT_ON_EDGE);
+            registerWithDal(pin->id, (int)event, body);
+            break;    
+    }    
 }
 
 /**
@@ -69,7 +107,7 @@ void onPulsed(DigitalPin pin, PulseValue pulse, Action body) {
 * @param value the value of the pulse (default high)
 * @param maximum duration in micro-seconds
 */
-//% blockId="pins_pulse_in" block="pulse in (µs)|pin %name|pulsed %value"
+//% blockId="pins_pulse_in" block="pulse in (µs)|pin %name|pulsed %high||timeout %maxDuration (us)"
 //% weight=18 blockGap=8
 //% help="pins/pulse-in"
 //% blockNamespace=pins
@@ -77,7 +115,7 @@ void onPulsed(DigitalPin pin, PulseValue pulse, Action body) {
 //% pin.fieldOptions.width=220
 //% pin.fieldOptions.columns=4
 int pulseIn(DigitalPin pin, PulseValue value, int maxDuration = 2000000) {
-    int pulse = value == PulseValue::High ? 1 : 0;
+    int pulse = PulseValue::High == value ? 1 : 0;
     uint64_t tick = system_timer_current_time_us();
     uint64_t maxd = (uint64_t)maxDuration;
     while (pin->getDigitalValue() != pulse) {

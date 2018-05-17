@@ -1,15 +1,9 @@
-# on Pulsed **deprecated**
+# on Event
 
-### ~hint
-
-Use [pins.onEvent](/reference/pins/on-event) instead.
-
-### ~
-
-Run some code when a pin is pulsed `high` (true) or `low` (false).
+Run some code when a pin is pulsed `high` (true) or `low` (false) or `rising` or `falling` on the edge.
 
 ```sig
-pins.A0.onPulsed(PulseValue.High, () => {})
+pins.A0.onEvent(PinEvent.PulseHigh, () => {})
 ```
 
 A pulse is a change of voltage at the input of a digital pin. This might happen if a switch connected
@@ -26,7 +20,7 @@ you want your code to run when the voltage at the pin goes from high to low.
 
 ## Parameters
 
-* **pulse**: the pulse value to run code for.
+* **event**: the pulse value to run code for, either `high` (true) or `low` (false).
 * **body**: the code to run when the pin is pulsed.
 
 ## Example #example
@@ -36,7 +30,7 @@ When pin `D4` is pulsed `low`, run code that flashes an LED connected to pin `D1
 ```blocks
 pins.D4.setPull(PinPullMode.PullUp)
 
-pins.D4.onPulsed(PulseValue.Low, () => {
+pins.D4.onEvent(PinEvent.PulseLow, () => {
     pins.D13.digitalWrite(true)
     pause(250)
     pins.D13.digitalWrite(false)
