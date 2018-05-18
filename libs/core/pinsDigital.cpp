@@ -79,7 +79,7 @@ void onPulsed(DigitalPin pin, PulseValue pulse, Action body) {
 /**
 * Register code to run when a pin event occurs. 
 */
-//% help=pins/on-event weight=16 blockGap=8
+//% help=pins/on-event weight=65 blockGap=8
 //% blockId=pinsonevent block="on|pin %pin|%event"
 //% blockNamespace=pins
 //% pin.fieldEditor="gridpicker"
