@@ -45,7 +45,7 @@ namespace scene {
      */
     //% group="Screen"
     //% weight=24
-    //% blockId=gamesetbackgroundimage block="set background image to %img=screen_image_picker"
+    //% blockId=gamesetbackgroundimage block="set background image to %img=background_image_picker"
     //% help=scene/set-background-image
     export function setBackgroundImage(img: Image) {
         const scene = game.currentScene();
@@ -79,7 +79,7 @@ namespace scene {
      * Sets the map for rendering tiles
      * @param map
      */
-    //% blockId=gamesettilemap block="set tile map to %map=screen_image_picker"
+    //% blockId=gamesettilemap block="set tile map to %map=tilemap_image_picker"
     //% group="Tiles"
     //% help=scene/set-tile-map
     export function setTileMap(map: Image) {
