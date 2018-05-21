@@ -294,6 +294,7 @@ class Sprite implements SpriteLike {
      */
     //% group="Overlaps"
     //% blockId=spriteoverlapswith block="%sprite overlaps with %other=variables_get"
+    //% help=sprites/sprite/overlaps-with
     overlapsWith(other: Sprite) {
         if (other == this) return false;
         if (this.flags & sprites.Flag.Ghost)
@@ -311,6 +312,7 @@ class Sprite implements SpriteLike {
     //% group="Overlaps"
     //% blockId=spriteonoverlap block="on %sprite overlaped with"
     //% afterOnStart=true handlerStatement=1
+    //% help=sprites/sprite/on-overlap
     onOverlap(handler: (other: Sprite) => void) {
         this.overlapHandler = handler;
     }
