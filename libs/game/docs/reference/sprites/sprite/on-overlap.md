@@ -8,7 +8,7 @@ sprites.create(null).onOverlap(function (other: Sprite) {
 })
 ```
 
-If a sprite overlaps another sprite, you can run some code when it happens. The overlap is detected when any part of your sprite that isn't transparent overlaps some part of another sprite that als0 isn't transparent.
+If a sprite overlaps another sprite, you can run some code when it happens. The overlap is detected when any part of your sprite that isn't transparent overlaps some part of another sprite that also isn't transparent.
 
 ## Parameters
 
