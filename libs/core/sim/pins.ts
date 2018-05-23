@@ -133,7 +133,10 @@ namespace pxsim.pins {
     }
 
     export function i2cWriteBuffer(address: number, buf: RefBuffer, repeat?: boolean): void {
-        // fake - noop
+        pxsim.Runtime.postMessage(<pxsim.SimulatorI2CMessage>{
+            type: "i2c",
+            data: buf.data
+        })
     }
 
     export function spiWrite(value: number): number {
