@@ -207,7 +207,7 @@ class Sprite implements SpriteLike {
      */
     //% group="Properties"
     //% weight=100
-    //% blockId=spritesetpos block="set %sprite position x %y y %y"
+    //% blockId=spritesetpos block="set %sprite position to x %y y %y"
     setPosition(x: number, y: number): void {
         this.x = x;
         this.y = y;
