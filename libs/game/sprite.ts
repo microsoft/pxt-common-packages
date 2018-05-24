@@ -207,7 +207,7 @@ class Sprite implements SpriteLike {
      */
     //% group="Properties"
     //% weight=100
-    //% blockId=spritesetpos block="set %sprite position to x %y y %y"
+    //% blockId=spritesetpos block="set %sprite position to x %x y %y"
     setPosition(x: number, y: number): void {
         this.x = x;
         this.y = y;
@@ -441,10 +441,11 @@ class Sprite implements SpriteLike {
         const handler = (this.collisionHandlers && this.collisionHandlers[direction]) ? this.collisionHandlers[direction][other.tileIndex] : undefined;
         if (handler)
             handler();
+        console.log('register obstacle')
         const scene = game.currentScene();
         scene.collisionHandlers
             .filter(h => h.type == this.type && h.tile == other.tileIndex)
-            .forEach(h => h.handler(this));
+            .forEach(h => control.runInParallel(() => h.handler(this)));
     }
 
     /**
