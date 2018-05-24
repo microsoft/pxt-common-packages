@@ -65,12 +65,20 @@ class Sprite implements SpriteLike {
     ax: number
     //% group="Properties"
     //% blockCombine block="ay (acceleration y)"
-    ay: number
+    ay: number    
+    /**
+     * The type of sprite
+     */
+    //% group="Properties"
+    //% blockCombine block="type"
+    type: number
+
     /**
      * A bitset of layer. Each bit is a layer, default is 1.
      */
     //% group="Properties"
-    layer: number
+    layer: number;
+    
     /**
      * Time to live in game ticks. The lifespan decreases by 1 on each game update
      * and the sprite gets destroyed when it reaches 0.
@@ -94,8 +102,8 @@ class Sprite implements SpriteLike {
     private destroyHandler: () => void;
 
     constructor(img: Image) {
-        this.x = screen.width >> 1
-        this.y = screen.height >> 1
+        this.x = screen.width >> 1;
+        this.y = screen.height >> 1;
         this._z = 0
         this.vx = 0
         this.vy = 0
@@ -103,7 +111,8 @@ class Sprite implements SpriteLike {
         this.ay = 0
         this.flags = 0
         this._image = img
-        this.layer = 1; // member of layer 1 by default
+        this.type = 0; // not a member of any type by default
+        this.layer = 1; // by default, in layer 1
         this.lifespan = undefined
     }
 
@@ -190,6 +199,19 @@ class Sprite implements SpriteLike {
     //% blockCombine block="bottom"
     set bottom(value: number) {
         this.y = value - (this.height >> 1);
+    }
+
+    /**
+     * Sets the sprite position
+     * @param x horizontal position
+     * @param y vertical position
+     */
+    //% group="Properties"
+    //% weight=100
+    //% blockId=spritesetpos block="set %sprite position to x %x y %y"
+    setPosition(x: number, y: number): void {
+        this.x = x;
+        this.y = y;
     }
 
     /**
@@ -310,8 +332,7 @@ class Sprite implements SpriteLike {
      * @param handler
      */
     //% group="Overlaps"
-    //% blockId=spriteonoverlap block="on %sprite overlaped with"
-    //% afterOnStart=true handlerStatement=1
+    //% afterOnStart=true
     //% help=sprites/sprite/on-overlap
     onOverlap(handler: (other: Sprite) => void) {
         this.overlapHandler = handler;
@@ -322,8 +343,6 @@ class Sprite implements SpriteLike {
      * @param direction
      * @param handler
      */
-    //% blockId=spriteoncollision block="on %sprite collided %direction with tile %color=colorindexpicker"
-    //% afterOnStart=true handlerStatement=1
     //% blockNamespace="scene" group="Collisions"
     onCollision(direction: CollisionDirection, tileIndex: number, handler: () => void) {
         if (!this.collisionHandlers)
@@ -341,9 +360,9 @@ class Sprite implements SpriteLike {
      * Determines if there is an obstacle in the given direction
      * @param direction
      */
-    //% blockId=spritehasobstacle block="%sprite is colliding %direction"
+    //% blockId=spritehasobstacle block="is %sprite hit by tile from %direction"
     //% blockNamespace="scene" group="Collisions"
-    hasObstacle(direction: CollisionDirection): boolean {
+    isHit(direction: CollisionDirection): boolean {
         return this._obstacles && !!this._obstacles[direction];
     }
 
@@ -351,9 +370,9 @@ class Sprite implements SpriteLike {
      * Gets the obstacle sprite in a given direction if any
      * @param direction
      */
-    //% blockId=spriteobstacle block="tile color colliding with %sprite %direction"
+    //% blockId=spriteobstacle block="%sprite tile hit from %direction"
     //% blockNamespace="scene" group="Collisions"
-    obstacle(direction: CollisionDirection): number {
+    tileHitFrom(direction: CollisionDirection): number {
         return (this._obstacles && this._obstacles[direction]) ? this._obstacles[direction].tileIndex : -1;
     }
 
@@ -389,7 +408,7 @@ class Sprite implements SpriteLike {
      * @param duration The duration of the animation
      * @param flip Show the animation flipped over an axis
      */
-    //% blockId=spritefireanimation block="%sprite start animation %animation %duration=timePicker|ms||%flip"
+    //% blockId=spritefireanimation block="start %sprite animation %animation %duration=timePicker|ms||%flip"
     //% group="Animations" weight=79
     startAnimation(animation: sprites.TimedAnimation, duration: number, flip = FlipOption.None) {
         if (!animation) return;
@@ -422,7 +441,11 @@ class Sprite implements SpriteLike {
 
         const handler = (this.collisionHandlers && this.collisionHandlers[direction]) ? this.collisionHandlers[direction][other.tileIndex] : undefined;
         if (handler)
-            handler();
+            control.runInParallel(handler);
+        const scene = game.currentScene();
+        scene.collisionHandlers
+            .filter(h => h.type == this.type && h.tile == other.tileIndex)
+            .forEach(h => control.runInParallel(() => h.handler(this)));
     }
 
     /**
@@ -431,8 +454,6 @@ class Sprite implements SpriteLike {
      */
     //% group="Lifecycle"
     //% weight=9
-    //% blockId=spriteondestroy block="on %sprite destroyed"
-    //% afterOnStart=true handlerStatement=1
     onDestroyed(handler: () => void) {
         this.destroyHandler = handler
     }
@@ -450,9 +471,11 @@ class Sprite implements SpriteLike {
         const scene = game.currentScene();
         scene.allSprites.removeElement(this);
         scene.physicsEngine.removeSprite(this);
-        if (this.destroyHandler) {
-            control.runInParallel(this.destroyHandler)
-        }
+        if (this.destroyHandler)
+            this.destroyHandler();
+        scene.destroyedHandlers
+            .filter(h => h.type == this.type)
+            .forEach(h => h.handler(this));
     }
 
     toString() {

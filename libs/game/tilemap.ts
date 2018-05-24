@@ -32,9 +32,10 @@ namespace tiles {
 
             this.z = -1;
 
-            const scene = game.currentScene();
-            scene.allSprites.push(this);
-            this.id = scene.allSprites.length;
+            const sc = game.currentScene();
+            sc.allSprites.push(this);
+            sc.flags |= scene.Flag.NeedsSorting;
+            this.id = sc.allSprites.length;
         }
 
         offsetX(value: number) {
@@ -149,7 +150,7 @@ namespace tiles {
                     yn = Math.min(this._map.height, Math.ceil(s.bottom / this.tileHeight));
                 }
 
-                let res = `x: ${x0}-${xn} y: ${y0}-${yn} HIT:`;
+                // let res = `x: ${x0}-${xn} y: ${y0}-${yn} HIT:`;
                 for (let x = x0; x <= xn; ++x) {
                     const left = x * this.tileWidth;
                     for (let y = y0; y <= yn; ++y) {
