@@ -150,7 +150,7 @@ namespace tiles {
                     yn = Math.min(this._map.height, Math.ceil(s.bottom / this.tileHeight));
                 }
 
-                let res = `x: ${x0}-${xn} y: ${y0}-${yn} HIT:`;
+                // let res = `x: ${x0}-${xn} y: ${y0}-${yn} HIT:`;
                 for (let x = x0; x <= xn; ++x) {
                     const left = x * this.tileWidth;
                     for (let y = y0; y <= yn; ++y) {

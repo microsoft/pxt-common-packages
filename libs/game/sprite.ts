@@ -440,8 +440,7 @@ class Sprite implements SpriteLike {
 
         const handler = (this.collisionHandlers && this.collisionHandlers[direction]) ? this.collisionHandlers[direction][other.tileIndex] : undefined;
         if (handler)
-            handler();
-        console.log('register obstacle')
+            control.runInParallel(handler);
         const scene = game.currentScene();
         scene.collisionHandlers
             .filter(h => h.type == this.type && h.tile == other.tileIndex)
