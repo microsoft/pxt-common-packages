@@ -4,9 +4,7 @@ enum SpriteType {
     //% block="food"
     Food = 1 << 1,
     //% block="coin"
-    Coin = 1 << 2,
-    //% block="projectile"
-    Projectile = 1 << 3
+    Coin = 1 << 2
 }
 
 namespace sprites {
