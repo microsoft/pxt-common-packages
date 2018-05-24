@@ -65,13 +65,19 @@ class Sprite implements SpriteLike {
     ax: number
     //% group="Properties"
     //% blockCombine block="ay (acceleration y)"
-    ay: number
+    ay: number    
     /**
-     * A bitset of layer. Each bit is a layer, default is 1.
+     * The type of sprite
      */
     //% group="Properties"
     //% blockCombine block="type"
     type: number
+
+    /**
+     * A bitset of layer. Each bit is a layer, default is 1.
+     */
+    layer: number;
+    
     /**
      * Time to live in game ticks. The lifespan decreases by 1 on each game update
      * and the sprite gets destroyed when it reaches 0.
@@ -104,7 +110,8 @@ class Sprite implements SpriteLike {
         this.ay = 0
         this.flags = 0
         this._image = img
-        this.type = 0; // not a member of any layer by default
+        this.type = 0; // not a member of any type by default
+        this.layer = 1; // by default, in layer 1
         this.lifespan = undefined
     }
 
@@ -436,8 +443,8 @@ class Sprite implements SpriteLike {
             handler();
         const scene = game.currentScene();
         scene.collisionHandlers
-            .filter(h => !!(h.type & this.type) && h.tile == other.tileIndex)
-            .forEach(h => control.runInParallel(() => h.handler(this)));
+            .filter(h => h.type == this.type && h.tile == other.tileIndex)
+            .forEach(h => h.handler(this));
     }
 
     /**
@@ -464,9 +471,9 @@ class Sprite implements SpriteLike {
         scene.allSprites.removeElement(this);
         scene.physicsEngine.removeSprite(this);
         if (this.destroyHandler)
-            control.runInParallel(this.destroyHandler)
+            this.destroyHandler();
         scene.destroyedHandlers
-            .filter(h => !!(h.type & this.type))
+            .filter(h => h.type == this.type)
             .forEach(h => h.handler(this));
     }
 

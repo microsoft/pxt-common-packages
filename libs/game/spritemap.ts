@@ -17,11 +17,11 @@ namespace sprites {
             if (this.isOob(sprite)) return [];
 
             const n: Sprite[] = [];
-            const type = sprite.type;
-            this.mergeAtKey(sprite.left, sprite.top, type, n)
-            this.mergeAtKey(sprite.left, sprite.bottom, type, n)
-            this.mergeAtKey(sprite.right, sprite.top, type, n)
-            this.mergeAtKey(sprite.right, sprite.bottom, type, n)
+            const layer = sprite.layer;
+            this.mergeAtKey(sprite.left, sprite.top, layer, n)
+            this.mergeAtKey(sprite.left, sprite.bottom, layer, n)
+            this.mergeAtKey(sprite.right, sprite.top, layer, n)
+            this.mergeAtKey(sprite.right, sprite.bottom, layer, n)
             n.removeElement(sprite);
             return n;
         }
@@ -105,12 +105,12 @@ namespace sprites {
                     this.insertAtKey(left + Math.min(sprite.width, x * this.cellWidth), top + Math.min(sprite.height, y * this.cellHeight), sprite)
         }
 
-        private mergeAtKey(x: number, y: number, type: number, n: Sprite[]) {
+        private mergeAtKey(x: number, y: number, layer: number, n: Sprite[]) {
             const k = this.key(x, y);
             const bucket = this.buckets[k];
             if (bucket) {
                 for (const sprite of bucket)
-                    if ((sprite.type & type)
+                    if ((sprite.layer & layer)
                         && n.indexOf(sprite) < 0)
                         n.push(sprite);
             }

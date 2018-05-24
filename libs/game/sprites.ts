@@ -35,7 +35,7 @@ namespace sprites {
 
         // run on created handlers
         scene.createdHandlers
-            .filter(h => !!(h.type & type))
+            .filter(h => h.type == type)
             .forEach(h => h.handler(sprite));
 
         return sprite

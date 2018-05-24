@@ -83,11 +83,15 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             const overSprites = scene.physicsEngine.overlaps(sprite);
             for (const overlapper of overSprites) {
                 // overlap handler
+                const tmpsprite = sprite;
+                const tmp = overlapper;
                 const oh = sprite.overlapHandler;
-                if (oh) {
-                    const tmp = overlapper;
+                if (oh)
                     control.runInParallel(() => oh(tmp))
-                }
+                console.log(`overlap ${tmpsprite.id} ${overlapper.id}`)
+                scene.overlapHandlers
+                    .filter(h => h.type == sprite.type && h.otherType == overlapper.type)
+                    .forEach(h => control.runInParallel(() => h.handler(tmpsprite, tmp)));
             }
 
             if (scene.tileMap) {
@@ -135,11 +139,11 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         if (this.map)
             return this.map.overlaps(sprite);
         else {
-            const type = sprite.type;
+            const layer = sprite.layer;
             const r: Sprite[] = [];
             const n = this.sprites.length;
             for (let i = 0; i < n; ++i) {
-                if ((type & this.sprites[i].type)
+                if ((layer & this.sprites[i].layer)
                     && sprite.overlapsWith(this.sprites[i]))
                     r.push(this.sprites[i]);
             }
