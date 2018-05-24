@@ -32,9 +32,10 @@ namespace tiles {
 
             this.z = -1;
 
-            const scene = game.currentScene();
-            scene.allSprites.push(this);
-            this.id = scene.allSprites.length;
+            const sc = game.currentScene();
+            sc.allSprites.push(this);
+            sc.flags |= scene.Flag.NeedsSorting;
+            this.id = sc.allSprites.length;
         }
 
         offsetX(value: number) {
