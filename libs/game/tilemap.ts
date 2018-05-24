@@ -130,7 +130,7 @@ namespace tiles {
         public collisions(s: Sprite): sprites.Obstacle[] {
             let overlappers: sprites.StaticObstacle[] = [];
 
-            if (s.layer & this.layer) {
+            if (s.type & this.layer) {
                 let x0: number;
                 let xn: number;
                 let y0: number;

@@ -70,7 +70,8 @@ class Sprite implements SpriteLike {
      * A bitset of layer. Each bit is a layer, default is 1.
      */
     //% group="Properties"
-    layer: number
+    //% blockCombine block="type"
+    type: number
     /**
      * Time to live in game ticks. The lifespan decreases by 1 on each game update
      * and the sprite gets destroyed when it reaches 0.
@@ -94,8 +95,8 @@ class Sprite implements SpriteLike {
     private destroyHandler: () => void;
 
     constructor(img: Image) {
-        this.x = screen.width >> 1
-        this.y = screen.height >> 1
+        this.x = screen.width >> 1;
+        this.y = screen.height >> 1;
         this._z = 0
         this.vx = 0
         this.vy = 0
@@ -103,7 +104,7 @@ class Sprite implements SpriteLike {
         this.ay = 0
         this.flags = 0
         this._image = img
-        this.layer = 1; // member of layer 1 by default
+        this.type = 1; // member of layer 1 by default
         this.lifespan = undefined
     }
 
@@ -310,8 +311,7 @@ class Sprite implements SpriteLike {
      * @param handler
      */
     //% group="Overlaps"
-    //% blockId=spriteonoverlap block="on %sprite overlaped with"
-    //% afterOnStart=true handlerStatement=1
+    //% afterOnStart=true
     //% help=sprites/sprite/on-overlap
     onOverlap(handler: (other: Sprite) => void) {
         this.overlapHandler = handler;
@@ -322,8 +322,6 @@ class Sprite implements SpriteLike {
      * @param direction
      * @param handler
      */
-    //% blockId=spriteoncollision block="on %sprite collided %direction with tile %color=colorindexpicker"
-    //% afterOnStart=true handlerStatement=1
     //% blockNamespace="scene" group="Collisions"
     onCollision(direction: CollisionDirection, tileIndex: number, handler: () => void) {
         if (!this.collisionHandlers)
@@ -431,8 +429,6 @@ class Sprite implements SpriteLike {
      */
     //% group="Lifecycle"
     //% weight=9
-    //% blockId=spriteondestroy block="on %sprite destroyed"
-    //% afterOnStart=true handlerStatement=1
     onDestroyed(handler: () => void) {
         this.destroyHandler = handler
     }
