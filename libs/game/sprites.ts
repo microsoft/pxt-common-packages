@@ -32,6 +32,12 @@ namespace sprites {
         scene.allSprites.push(sprite)
         sprite.id = scene.allSprites.length
         scene.physicsEngine.addSprite(sprite);
+
+        // run on created handlers
+        scene.createdHandlers
+            .filter(h => !!(h.type & type))
+            .forEach(h => h.handler(sprite));
+
         return sprite
     }
 

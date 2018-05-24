@@ -446,9 +446,11 @@ class Sprite implements SpriteLike {
         const scene = game.currentScene();
         scene.allSprites.removeElement(this);
         scene.physicsEngine.removeSprite(this);
-        if (this.destroyHandler) {
+        if (this.destroyHandler)
             control.runInParallel(this.destroyHandler)
-        }
+        scene.destroyedHandlers
+            .filter(h => !!(h.type & this.type))
+            .forEach(h => h.handler(this));
     }
 
     toString() {

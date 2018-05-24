@@ -7,6 +7,11 @@ namespace scene {
         NeedsSorting = 1 << 1,
     }
 
+    export interface SpriteHandler {
+        type: number;
+        handler: (sprite: Sprite) => void;
+    }
+
     export class Scene {
         eventContext: control.EventContext;
         background: Background;
@@ -15,6 +20,8 @@ namespace scene {
         physicsEngine: PhysicsEngine;
         camera: scene.Camera;
         flags: number;
+        destroyedHandlers: SpriteHandler[];
+        createdHandlers: SpriteHandler[];
 
         constructor(eventContext: control.EventContext) {
             this.eventContext = eventContext;
@@ -22,6 +29,8 @@ namespace scene {
             this.physicsEngine = new ArcadePhysicsEngine();
             this.camera = new scene.Camera();
             this.background = new Background(this.camera);
+            this.destroyedHandlers = [];
+            this.createdHandlers = [];
         }
 
         init() {

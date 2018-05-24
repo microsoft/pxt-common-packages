@@ -26,7 +26,13 @@ namespace sprites {
     //% group="Lifecycle"
     //% block=spritesondestroyed block="on created %type=spritetype "
     export function onCreated(type: number, handler: (sprite: Sprite) => void): void {
+        if (!handler || !type) return;
 
+        const scene = game.currentScene();
+        scene.createdHandlers.push({
+            type: type,
+            handler: handler
+        })
     }
 
     /**
@@ -38,7 +44,13 @@ namespace sprites {
     //% weight=100
     //% block=spritesondestroyed block="on destroyed %type=spritetype "
     export function onDestroyed(type: number, handler: (sprite: Sprite) => void) {
-
+        if (!handler || !type) return;
+        
+        const scene = game.currentScene();
+        scene.destroyedHandlers.push({
+            type: type,
+            handler: handler
+        })
     }
 
     /**
