@@ -76,6 +76,7 @@ class Sprite implements SpriteLike {
     /**
      * A bitset of layer. Each bit is a layer, default is 1.
      */
+    //% group="Properties"
     layer: number;
     
     /**
