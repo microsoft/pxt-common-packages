@@ -35,6 +35,7 @@ namespace sprites {
      * @param sprite 
      */
     //% group="Lifecycle"
+    //% weight=100
     //% block=spritesondestroyed block="on destroyed %type=spritetype "
     export function onDestroyed(type: number, handler: (sprite: Sprite) => void) {
 
@@ -44,10 +45,13 @@ namespace sprites {
      * Register code to run when sprites overlap
      */
     //% group="Overlaps"
+    //% weight=100
     //% blockId=spritesoverlap block="on %type=spritetype overlap with %otherType=spritetype"
     export function onOverlap(type: number, otherType: number, handler: (sprite: Sprite, other: Sprite) => void) {
     }
+}
 
+namespace scene {
     /**
      * Register a code handler when a collision happens
      * @param direction 
@@ -55,7 +59,8 @@ namespace sprites {
      * @param handler 
      */
     //% group="Collisions"
-    //% blockId=spritesollisions block="on %type=spritetype hit tile %tileIndex from %direction"
-    export function onCollision(type: number, tileIndex: number, direction: CollisionDirection, handler: (sprite: Sprite) => void) {
-    }
+    //% weight=100
+    //% blockId=spritesollisions block="on %type=spritetype hit tile %tileIndex=colorindexpicker"
+    export function onCollision(type: number, tileIndex: number, handler: (sprite: Sprite) => void) {
+    }    
 }
