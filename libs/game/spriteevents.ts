@@ -59,7 +59,15 @@ namespace sprites {
     //% group="Overlaps"
     //% weight=100
     //% blockId=spritesoverlap block="on %type=spritetype overlap with %otherType=spritetype"
-    export function onOverlap(type: number, otherType: number, handler: (sprite: Sprite, other: Sprite) => void) {
+    export function onOverlap(type: number, otherType: number, handler: (sprite: Sprite, otherSprite: Sprite) => void) {
+        if (!type || !otherType ||!handler) return;
+
+        const scene = game.currentScene();
+        scene.overlapHandlers.push({
+            type: type,
+            otherType: otherType,
+            handler: handler
+        })        
     }
 }
 
@@ -67,12 +75,20 @@ namespace scene {
     /**
      * Register a code handler when a collision happens
      * @param direction 
-     * @param tileIndex 
+     * @param tile 
      * @param handler 
      */
     //% group="Collisions"
     //% weight=100
     //% blockId=spritesollisions block="on %type=spritetype hit tile %tileIndex=colorindexpicker"
-    export function onCollision(type: number, tileIndex: number, handler: (sprite: Sprite) => void) {
+    export function onCollision(type: number, tile: number, handler: (sprite: Sprite) => void) {
+        if (!type || !handler) return;
+
+        const scene = game.currentScene();
+        scene.collisionHandlers.push({
+            type: type,
+            tile: tile,
+            handler: handler
+        })        
     }    
 }

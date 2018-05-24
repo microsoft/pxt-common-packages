@@ -12,6 +12,18 @@ namespace scene {
         handler: (sprite: Sprite) => void;
     }
 
+    export interface OverlapHandler {
+        type: number;
+        otherType: number;
+        handler: (sprite: Sprite, otherSprite: Sprite) => void;
+    }
+
+    export interface CollisionHandler {
+        type: number;
+        tile: number;
+        handler: (sprite: Sprite) => void
+    }
+
     export class Scene {
         eventContext: control.EventContext;
         background: Background;
@@ -22,6 +34,8 @@ namespace scene {
         flags: number;
         destroyedHandlers: SpriteHandler[];
         createdHandlers: SpriteHandler[];
+        overlapHandlers: OverlapHandler[];
+        collisionHandlers: CollisionHandler[];
 
         constructor(eventContext: control.EventContext) {
             this.eventContext = eventContext;
@@ -31,6 +45,8 @@ namespace scene {
             this.background = new Background(this.camera);
             this.destroyedHandlers = [];
             this.createdHandlers = [];
+            this.overlapHandlers = [];
+            this.collisionHandlers = [];
         }
 
         init() {
