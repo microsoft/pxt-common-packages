@@ -437,7 +437,7 @@ class Sprite implements SpriteLike {
         const scene = game.currentScene();
         scene.collisionHandlers
             .filter(h => !!(h.type & this.type) && h.tile == other.tileIndex)
-            .forEach(h => h.handler(this));
+            .forEach(h => control.runInParallel(() => h.handler(this)));
     }
 
     /**
