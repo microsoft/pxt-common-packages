@@ -194,6 +194,19 @@ class Sprite implements SpriteLike {
     }
 
     /**
+     * Sets the sprite position
+     * @param x horizontal position
+     * @param y vertical position
+     */
+    //% group="Properties"
+    //% weight=100
+    //% blockId=spritesetpos block="set %sprite position x %y y %"
+    setPosition(x: number, y: number) {
+        this.x = x;
+        this.y = y;
+    }
+
+    /**
      * Display a speech bubble with the text, for the given time
      * @param text the text to say, eg: ":)"
      * @param time time to keep text on, eg: 2000
