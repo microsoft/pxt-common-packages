@@ -1,12 +1,12 @@
 enum SpriteType {
     //% block="player"
-    Player = 1 << 1,
+    Player = 1,
     //% block="food"
-    Food = 1 << 2,
+    Food = 1 << 1,
     //% block="coin"
-    Coin = 1 << 3,
+    Coin = 1 << 2,
     //% block="projectile"
-    Projectile = 1 << 4
+    Projectile = 1 << 3
 }
 
 namespace sprites {

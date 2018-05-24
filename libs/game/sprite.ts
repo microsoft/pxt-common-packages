@@ -104,7 +104,7 @@ class Sprite implements SpriteLike {
         this.ay = 0
         this.flags = 0
         this._image = img
-        this.type = 1; // member of layer 1 by default
+        this.type = 0; // not a member of any layer by default
         this.lifespan = undefined
     }
 

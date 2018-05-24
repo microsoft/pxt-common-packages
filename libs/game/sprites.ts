@@ -52,7 +52,7 @@ namespace sprites {
     //% inlineInputMode=inline
     //% expandableArgumentMode=toggle
     export function createProjectile(img: Image, vx: number, vy: number, type?: SpriteType, sprite?: Sprite) {
-        const s = sprites.create(img)
+        const s = sprites.create(img, type);
         s.vx = vx
         s.vy = vy
 
