@@ -372,7 +372,7 @@ class Sprite implements SpriteLike {
      */
     //% blockId=spriteobstacle block="%sprite tile hit from %direction"
     //% blockNamespace="scene" group="Collisions"
-    tileHit(direction: CollisionDirection): number {
+    tileHitFrom(direction: CollisionDirection): number {
         return (this._obstacles && this._obstacles[direction]) ? this._obstacles[direction].tileIndex : -1;
     }
 
