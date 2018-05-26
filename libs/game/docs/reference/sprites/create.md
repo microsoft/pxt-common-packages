@@ -5,11 +5,13 @@ Create a new sprite from a pixel image.
 ```sig
 sprites.create(null)
 ```
+
 Sprites provide all the operations to move and animate images. Your sprites can detect collisions and overlaps with other objects. Initially, sprites have a position in the middle of screen and have no motion. You set the location and movement of a sprite in your code.
 
 ## Parameters
 
 * **img**: an [image](/types/image) to create a sprite for.
+* **type**: the type of sprite to create - ``player``, ``food``, or ``coin``.
 
 ## Returns
 
@@ -74,4 +76,6 @@ game.onUpdate(function () {
 })
 ```
 
-## #seealso
+## See also #seealso
+
+[create projectile](/reference/sprites/create-projectile)

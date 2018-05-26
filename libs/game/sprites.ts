@@ -47,7 +47,7 @@ namespace sprites {
      */
     //% group="Create"
     //% blockId=spritescreateprojectile block="projectile %img=screen_image_picker vx %vx vy %vy||of type %type from %sprite=variables_get"
-    //% weight=99
+    //% weight=99 help=sprites/create-projectile
     //% blockSetVariable=projectile
     //% inlineInputMode=inline
     //% expandableArgumentMode=toggle
