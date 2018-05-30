@@ -10,7 +10,8 @@
         "shims.d.ts",
         "fieldeditors.ts",
         "targetoverrides.ts",
-        "ns.ts"
+        "ns.ts",
+        "image.d.ts"
     ],
     "public": true,
     "dependencies": {
