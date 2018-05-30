@@ -2,6 +2,7 @@
  * Basic screen display functionalities
  */
 //% weight=98 icon="\uf108" color="#311557"
+//% groups='["Screen", "Charts"]'
 namespace display {
     const textOffset = 4;
     const lineOffset = 2;

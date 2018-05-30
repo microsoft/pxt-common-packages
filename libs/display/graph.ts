@@ -265,8 +265,9 @@ namespace display {
     /**
      * Adds a new point to the trend chart and renders it to the screen.
      */
-    //% group="Charting"
+    //% group="Charts"
     //% blockId=graphadd block="graph %value"
+    //% blockGap=8
     export function graph(value: number) {
         if (!chart)
             chart = new Chart();
