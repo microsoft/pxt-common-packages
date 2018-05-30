@@ -63,19 +63,19 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
     collisions() {
         // 1: clear obstacles
-        for(let i = 0; i < this.sprites.length; ++i)
+        for (let i = 0; i < this.sprites.length; ++i)
             this.sprites[i].clearObstacles();
 
         // 2: refresh non-ghost collision map
         const colliders = this.sprites.filter(sprite => !(sprite.flags & sprites.Flag.Ghost));
 
-        // if (collisioners.length < Math.sqrt(colliders.length)) {
-        //     // not enough sprite, just brute force it
-        //     this.map = undefined;
-        // } else {
-        //     if (!this.map) this.map = new sprites.SpriteMap();
-        //     this.map.update(colliders);
-        // }
+        if (colliders.length < 10) {
+            // not enough sprite, just brute force it
+            this.map = undefined;
+        } else {
+            if (!this.map) this.map = new sprites.SpriteMap();
+            this.map.update(colliders);
+        }
 
         // 3: go through sprite and handle collisions
         const scene = game.currentScene();
@@ -138,6 +138,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         if (this.map)
             return this.map.overlaps(sprite);
         else {
+            // brute force            
             const layer = sprite.layer;
             const r: Sprite[] = [];
             const n = this.sprites.length;
