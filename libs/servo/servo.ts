@@ -1,10 +1,7 @@
-namespace servo {
+namespace motors {
     //% fixedInstances
     export class Servo {
-        public id: number;
-
-        constructor(id: number) {
-            this.id = id;
+        constructor() {
         }
 
         /**
@@ -12,17 +9,17 @@ namespace servo {
          */
         //% group="Servos"
         //% weight=100
-        //% blockId=sawservosetangle block="set %servo angle to %value °"
-        //% value.min=0 value.max=180
-        //% value.defl=90
+        //% blockId=sawservosetangle block="set %servo angle to %degrees °"
+        //% degrees.min=0 degrees.max=180
+        //% degrees.defl=90
         //% servo.fieldEditor="gridpicker"
         //% servo.fieldOptions.width=220
         //% servo.fieldOptions.columns=2
         //% blockGap=8
-        setAngle(value: number) {
-            value = value | 0;
-            value = Math.clamp(0, 180, value);
-            this.internalSetAngle(value);
+        setAngle(degrees: number) {
+            degrees = degrees | 0;
+            degrees = Math.clamp(0, 180, degrees);
+            this.internalSetAngle(degrees);
         }
 
         protected internalSetAngle(angle: number): void {
@@ -68,8 +65,8 @@ namespace servo {
     export class PinServo extends Servo {
         private _pin: PwmOnlyPin;
 
-        constructor(id: number, pin: PwmOnlyPin) {
-            super(id);
+        constructor(pin: PwmOnlyPin) {
+            super();
             this._pin = pin;
         }
 
