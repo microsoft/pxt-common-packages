@@ -4,6 +4,7 @@
     "files": [
         "display.ts",
         "displayImage.ts",
+        "graph.ts",
         "targetoverrides.ts"
     ],
     "dependencies": {

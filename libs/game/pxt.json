@@ -21,8 +21,7 @@
         "prompt.ts",
         "targetoverrides.cpp",
         "targetoverrides.ts",
-        "mathUtil.ts",
-        "image.d.ts"
+        "mathUtil.ts"
     ],
     "public": true,
     "dependencies": {

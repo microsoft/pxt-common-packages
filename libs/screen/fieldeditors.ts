@@ -21,6 +21,7 @@ namespace images {
     //% img.fieldOptions.decompileIndirectFixedInstances="true"
     //% img.fieldOptions.sizes="-1,-1"
     //% weight=100 group="Create"
+    //% blockHidden=1
     export function _screenImage(img: Image) {
         return img
     }
@@ -32,6 +33,7 @@ namespace images {
     //% img.fieldOptions.decompileIndirectFixedInstances="true"
     //% img.fieldOptions.sizes="16,16;32,32;48,48;64,64;16,32;32,48"
     //% weight=100 group="Create"
+    //% blockHidden=1
     export function _tileMapImage(img: Image) {
         return img
     }
