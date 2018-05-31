@@ -1,0 +1,13 @@
+{
+    "name": "servo",
+    "description": "A micro-servo library",
+    "files": [
+        "README.md",
+        "servo.ts",
+        "targetoverrides.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core"
+    }
+}
