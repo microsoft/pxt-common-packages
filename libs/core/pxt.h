@@ -2,7 +2,6 @@
 #define __PXT_H
 
 #include "pxtbase.h"
-#undef DMESG
 
 #include "CodalConfig.h"
 #include "CodalHeapAllocator.h"
