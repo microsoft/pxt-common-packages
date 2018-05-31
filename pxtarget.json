@@ -25,6 +25,6 @@
         "libs/game",
         "libs/screen",
         "libs/controller",
-        "libs/turtle"
+        "libs/servo"
     ]
 }
