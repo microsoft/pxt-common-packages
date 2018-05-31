@@ -246,20 +246,21 @@ class Sprite implements SpriteLike {
 
         const l = this.left - camera.offsetX;
         const t = this.top - camera.offsetY;
+        const font = image.font8;
         screen.drawTransparentImage(this._image, l, t)
         // say text
         if (this._say && (this._sayExpires < 0 || this._sayExpires > control.millis())) {
             screen.fillRect(
                 l,
-                t - image.font5.charHeight - 2,
-                this._say.length * image.font5.charWidth + 2,
-                image.font5.charHeight + 4,
+                t - font.charHeight - 2,
+                this._say.length * font.charWidth + 2,
+                font.charHeight + 4,
                 1);
             screen.print(this._say,
                 l + 2,
-                t - image.font5.charHeight,
+                t - font.charHeight,
                 15,
-                image.font5);
+                font);
         }
         // debug info
         if (game.debug)

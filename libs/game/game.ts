@@ -109,24 +109,25 @@ namespace game {
 
     function showDialog(title: string, subtitle: string, footer?: string) {
         init();
+        const font = image.font8;
         let h = 8;
         if (title)
-            h += image.font8.charHeight;
+            h += font.charHeight;
         if (subtitle)
-            h += 2 + image.font5.charHeight
+            h += 2 + font.charHeight
         h += 8;
         const top = showDialogBackground(h, 9)
         if (title)
-            screen.print(title, 8, top + 8, screen.isMono ? 1 : 14, image.font8);
+            screen.print(title, 8, top + 8, screen.isMono ? 1 : 14, font);
         if (subtitle)
-            screen.print(subtitle, 8, top + 8 + image.font8.charHeight + 2, screen.isMono ? 1 : 13, image.font5);
+            screen.print(subtitle, 8, top + 8 + font.charHeight + 2, screen.isMono ? 1 : 13, font);
         if (footer) {
             screen.print(
                 footer,
-                screen.width - footer.length * image.font5.charWidth - 8,
-                screen.height - image.font5.charHeight - 2,
+                screen.width - footer.length * font.charWidth - 8,
+                screen.height - font.charHeight - 2,
                 1,
-                image.font5
+                font
             )
         }
     }
@@ -148,9 +149,9 @@ namespace game {
      * Finish the game and display the score
      */
     //% group="Gameplay"
-    //% blockId=gameOver block="game over"
+    //% blockId=gameOver block="game over||win %win"
     //% weight=80 help=game/over
-    export function over() {
+    export function over(win: boolean = false) {
         init();
         if (__isOver) return
         __isOver = true;
@@ -162,14 +163,14 @@ namespace game {
             if (gameOverSound) gameOverSound();
             meltScreen();
             let top = showDialogBackground(44, 4)
-            screen.printCenter("GAME OVER!", top + 8, screen.isMono ? 1 : 5, image.font8)
+            screen.printCenter(win ? "YOU WIN!" : "GAME OVER!", top + 8, screen.isMono ? 1 : 5, image.font8)
             if (info.hasScore()) {
-                screen.printCenter("Score:" + info.score(), top + 23, screen.isMono ? 1 : 2, image.font5)
+                screen.printCenter("Score:" + info.score(), top + 23, screen.isMono ? 1 : 2, image.font8)
                 if (info.score() > info.highScore()) {
                     info.saveHighScore();
-                    screen.printCenter("New High Score!", top + 32, screen.isMono ? 1 : 2, image.font5);
+                    screen.printCenter("New High Score!", top + 34, screen.isMono ? 1 : 2, image.font5);
                 } else {
-                    screen.printCenter("HI" + info.highScore(), top + 32, screen.isMono ? 1 : 2, image.font5);
+                    screen.printCenter("HI" + info.highScore(), top + 34, screen.isMono ? 1 : 2, image.font8);
                 }
             }
             pause(2000) // wait for users to stop pressing keys

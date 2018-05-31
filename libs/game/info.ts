@@ -19,7 +19,7 @@ namespace info {
         if (_hud) return;
         _hud = true;
 
-        const font = image.font5;
+        const font = image.font8;
         const maxW = 8;
         game.eventContext().registerFrameHandler(95, () => {
             // show score

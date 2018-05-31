@@ -32,7 +32,7 @@ namespace game {
 
 
     //% whenUsed=true
-    const font = image.font5;
+    const font = image.font8;
     //% whenUsed=true
     const PADDING = 4;
     //% whenUsed=true
