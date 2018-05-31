@@ -9,7 +9,7 @@ namespace input {
 /**
  * Motors and servos
  */
-//% color="#03AA74" weight=97 icon="\uf021"
+//% color="#03AA74" weight=88 icon="\uf021"
 //% groups='["Servos", "DC Motors"]'
 namespace motors {
 
