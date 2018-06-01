@@ -46,6 +46,18 @@
 #define CFG_DISPLAY_CFG3 42
 #define CFG_PIN_DISPLAY_RST 43
 #define CFG_PIN_DISPLAY_BL 44
+#define CFG_PIN_BTN_LEFT 45
+#define CFG_PIN_BTN_RIGHT 46
+#define CFG_PIN_BTN_UP 47
+#define CFG_PIN_BTN_DOWN 48
+#define CFG_PIN_BTN_MENU 49
+#define CFG_PIN_LED_R 50
+#define CFG_PIN_LED_G 51
+#define CFG_PIN_LED_B 52
+#define CFG_PIN_LED1 53
+#define CFG_PIN_LED2 54
+#define CFG_PIN_LED3 55
+#define CFG_PIN_LED4 56
 
 #define CFG_PIN_A0 100
 #define CFG_PIN_A1 101
