@@ -79,13 +79,13 @@ namespace scene {
      */
     //% group="Collisions"
     //% weight=100
-    //% blockId=spritesollisions block="on %type=spritetype hit tile %tileIndex=colorindexpicker"
-    export function onCollision(type: number, tile: number, handler: (sprite: Sprite) => void) {
-        if (!type || !handler) return;
+    //% blockId=spritesollisions block="on %spriteType=spritetype $sprite hit tile %tileIndex=colorindexpicker"
+    export function onHitTile(spriteType: number, tile: number, handler: (sprite: Sprite) => void) {
+        if (!spriteType || !handler) return;
 
         const scene = game.currentScene();
         scene.collisionHandlers.push({
-            type: type,
+            type: spriteType,
             tile: tile,
             handler: handler
         })        
