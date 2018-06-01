@@ -29,7 +29,7 @@ namespace display {
         public lineColor: number;
 
         constructor() {
-            this.font = image.font8;
+            this.font = image.font5;
             this.backgroundColor = 0;
             this.axisColor = 1;
             this.lineColor = 1;
