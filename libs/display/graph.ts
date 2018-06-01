@@ -1,6 +1,7 @@
 namespace display {
     class Chart {
         // Variables used for data configuration.
+        private font: image.Font;
         private times: number[];
         private values: number[];
 
@@ -28,12 +29,13 @@ namespace display {
         public lineColor: number;
 
         constructor() {
+            this.font = image.font5;
             this.backgroundColor = 0;
             this.axisColor = 1;
             this.lineColor = 1;
 
             this.axisPaddingX = 22;
-            this.axisPaddingY = image.font5.charHeight + 8;
+            this.axisPaddingY = this.font.charHeight + 8;
             this.gridRows = 2;
             this.gridCols = 2; // computed on the fly
             this.times = [];
@@ -99,7 +101,7 @@ namespace display {
             const yUnit = yRange / this.gridRows;
             for (let i = 0; i <= this.gridRows; ++i)
                 xl = Math.max(roundWithPrecision(this.scaleYMax - (i * yUnit), 2).toString().length, xl);
-            this.axisPaddingX = xl * image.font5.charWidth + 4;
+            this.axisPaddingX = xl * this.font.charWidth + 4;
             this.chartWidth = screen.width - this.axisPaddingX;
             this.maxEntries = (this.chartWidth - 2) / 2;
 
@@ -136,19 +138,19 @@ namespace display {
             let text = '';
             for (let i = 0; i <= this.gridRows; i++) {
                 text = roundWithPrecision(this.scaleYMax - (i * yUnit), 2).toString();
-                let y = i * this.gridHeight + image.font5.charHeight / 2;
+                let y = i * this.gridHeight + this.font.charHeight / 2;
                 if (i == this.gridRows)
-                    y -= image.font5.charHeight;
+                    y -= this.font.charHeight;
                 else if (i == 0)
-                    y += image.font5.charHeight / 2;
-                screen.print(text, this.chartWidth + 5, y, c, image.font5);
+                    y += this.font.charHeight / 2;
+                screen.print(text, this.chartWidth + 5, y, c, this.font);
             }
 
             // Draw the x-axis labels
             for (let i = 0; i <= this.gridCols; i++) {
                 text = roundWithPrecision((i * xUnit), 2).toString();
                 let x = i * this.gridWidth;
-                screen.print(text, x, this.chartHeight + (this.axisPaddingY - 4 - image.font5.charHeight), c, image.font5);
+                screen.print(text, x, this.chartHeight + (this.axisPaddingY - 4 - this.font.charHeight), c, this.font);
             }
         }
 

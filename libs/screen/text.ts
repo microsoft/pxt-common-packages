@@ -103,7 +103,7 @@ interface Image {
 
 namespace helpers {
     export function imagePrintCenter(img: Image, text: string, y: number, color?: number, font?: image.Font) {
-        if (!font) font = image.font5
+        if (!font) font = image.font8
         let w = text.length * font.charWidth
         let x = (screen.width - w) / 2
         imagePrint(img, text, x, y, color, font)
@@ -112,7 +112,7 @@ namespace helpers {
     export function imagePrint(img: Image, text: string, x: number, y: number, color?: number, font?: image.Font) {
         x |= 0
         y |= 0
-        if (!font) font = image.font5
+        if (!font) font = image.font8
         if (!color) color = 1
         let x0 = x
         let cp = 0

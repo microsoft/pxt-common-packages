@@ -246,20 +246,21 @@ class Sprite implements SpriteLike {
 
         const l = this.left - camera.offsetX;
         const t = this.top - camera.offsetY;
+        const font = image.font8;
         screen.drawTransparentImage(this._image, l, t)
         // say text
         if (this._say && (this._sayExpires < 0 || this._sayExpires > control.millis())) {
             screen.fillRect(
                 l,
-                t - image.font5.charHeight - 2,
-                this._say.length * image.font5.charWidth + 2,
-                image.font5.charHeight + 4,
+                t - font.charHeight - 2,
+                this._say.length * font.charWidth + 2,
+                font.charHeight + 4,
                 1);
             screen.print(this._say,
                 l + 2,
-                t - image.font5.charHeight,
+                t - font.charHeight,
                 15,
-                image.font5);
+                font);
         }
         // debug info
         if (game.debug)
@@ -360,9 +361,9 @@ class Sprite implements SpriteLike {
      * Determines if there is an obstacle in the given direction
      * @param direction
      */
-    //% blockId=spritehasobstacle block="is %sprite hit by tile from %direction"
+    //% blockId=spritehasobstacle block="is %sprite hitting tile %direction"
     //% blockNamespace="scene" group="Collisions"
-    isHit(direction: CollisionDirection): boolean {
+    isHittingTile(direction: CollisionDirection): boolean {
         return this._obstacles && !!this._obstacles[direction];
     }
 
@@ -383,7 +384,7 @@ class Sprite implements SpriteLike {
      * @param addReverseDirection Also add a flipped version of the sprite in the opposite direction
      */
     //% blockId=spritemovementframe block="add %sprite movement frame %image=screen_image_picker %direction ||and reverse direction %addReverseDirection=toggleOnOff"
-    //% group="Properties" weight=10
+    //% group="Animations" weight=10
     addMovementFrame(frame: Image, direction: sprites.MovementDirection, addReverseDirection = false) {
         if (!this._movementAnim) {
             this._movementAnim = new sprites.MovementAnimation(this);
