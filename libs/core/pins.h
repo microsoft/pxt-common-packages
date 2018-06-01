@@ -46,6 +46,8 @@
 #define CFG_DISPLAY_CFG3 42
 #define CFG_PIN_DISPLAY_RST 43
 #define CFG_PIN_DISPLAY_BL 44
+#define CFG_PIN_SERVO_1 45
+#define CFG_PIN_SERVO_2 46
 
 #define CFG_PIN_A0 100
 #define CFG_PIN_A1 101
