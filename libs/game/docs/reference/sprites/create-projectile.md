@@ -58,7 +58,6 @@ Send photons out of a spaceship when the ``B`` button is pressed.
 
 ```blocks
 let photon: Sprite = null
-let item: Sprite = null
 
 let ship = sprites.create(img`
 . . . . . b b b b b b b b b b . . . . . . . . . . .

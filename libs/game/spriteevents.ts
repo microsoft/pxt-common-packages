@@ -23,6 +23,7 @@ namespace sprites {
      */
     //% group="Lifecycle"
     //% block=spritesondestroyed block="on created %type=spritetype "
+    //% help=sprites/on-created
     export function onCreated(type: number, handler: (sprite: Sprite) => void): void {
         if (!handler || !type) return;
 
@@ -41,6 +42,7 @@ namespace sprites {
     //% group="Lifecycle"
     //% weight=100
     //% block=spritesondestroyed block="on destroyed %type=spritetype "
+    //% help=sprites/on-destroyed
     export function onDestroyed(type: number, handler: (sprite: Sprite) => void) {
         if (!handler || !type) return;
         
