@@ -361,9 +361,9 @@ class Sprite implements SpriteLike {
      * Determines if there is an obstacle in the given direction
      * @param direction
      */
-    //% blockId=spritehasobstacle block="is %sprite hit by tile from %direction"
+    //% blockId=spritehasobstacle block="is %sprite hitting tile %direction"
     //% blockNamespace="scene" group="Collisions"
-    isHit(direction: CollisionDirection): boolean {
+    isHittingTiles(direction: CollisionDirection): boolean {
         return this._obstacles && !!this._obstacles[direction];
     }
 
