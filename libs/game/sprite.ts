@@ -363,7 +363,7 @@ class Sprite implements SpriteLike {
      */
     //% blockId=spritehasobstacle block="is %sprite hitting tile %direction"
     //% blockNamespace="scene" group="Collisions"
-    isHittingTiles(direction: CollisionDirection): boolean {
+    isHittingTile(direction: CollisionDirection): boolean {
         return this._obstacles && !!this._obstacles[direction];
     }
 
