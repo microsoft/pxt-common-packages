@@ -11,6 +11,7 @@ namespace sprites {
     /**
      * Gets the sprite type
      */
+    //% blockHidden=1
     //% shim=TD_ID blockId=spritetype block="%type"
     export function spriteType(type: SpriteType): number {
         return type;
@@ -22,7 +23,7 @@ namespace sprites {
      * @param sprite 
      */
     //% group="Lifecycle"
-    //% block=spritesondestroyed block="on created %type=spritetype "
+    //% block=spritesondestroyed block="on created %type=spritetype $sprite"
     export function onCreated(type: number, handler: (sprite: Sprite) => void): void {
         if (!handler || !type) return;
 
@@ -40,7 +41,7 @@ namespace sprites {
      */
     //% group="Lifecycle"
     //% weight=100
-    //% block=spritesondestroyed block="on destroyed %type=spritetype "
+    //% block=spritesondestroyed block="on destroyed %type=spritetype $sprite"
     export function onDestroyed(type: number, handler: (sprite: Sprite) => void) {
         if (!handler || !type) return;
         
@@ -56,7 +57,7 @@ namespace sprites {
      */
     //% group="Overlaps"
     //% weight=100
-    //% blockId=spritesoverlap block="on %type=spritetype overlap with %otherType=spritetype"
+    //% blockId=spritesoverlap block="on %type=spritetype $sprite overlaps with %otherType=spritetype $otherSprite"
     export function onOverlap(type: number, otherType: number, handler: (sprite: Sprite, otherSprite: Sprite) => void) {
         if (!type || !otherType ||!handler) return;
 
