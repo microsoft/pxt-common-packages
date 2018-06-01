@@ -361,9 +361,9 @@ class Sprite implements SpriteLike {
      * Determines if there is an obstacle in the given direction
      * @param direction
      */
-    //% blockId=spritehasobstacle block="is %sprite hit by tile from %direction"
+    //% blockId=spritehasobstacle block="is %sprite hitting tile %direction"
     //% blockNamespace="scene" group="Collisions"
-    isHit(direction: CollisionDirection): boolean {
+    isHittingTile(direction: CollisionDirection): boolean {
         return this._obstacles && !!this._obstacles[direction];
     }
 
@@ -384,7 +384,7 @@ class Sprite implements SpriteLike {
      * @param addReverseDirection Also add a flipped version of the sprite in the opposite direction
      */
     //% blockId=spritemovementframe block="add %sprite movement frame %image=screen_image_picker %direction ||and reverse direction %addReverseDirection=toggleOnOff"
-    //% group="Properties" weight=10
+    //% group="Animations" weight=10
     addMovementFrame(frame: Image, direction: sprites.MovementDirection, addReverseDirection = false) {
         if (!this._movementAnim) {
             this._movementAnim = new sprites.MovementAnimation(this);
