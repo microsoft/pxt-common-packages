@@ -11,15 +11,7 @@ sprites.onDestroyed(SpriteType.Player, function (sprite) {
 
 Sprites are destroyed by using the [destroy](/reference/sprites/sprite/destroy) function or if they are set to destroy automatically, like when a projectile leaves the screen. You can respond to a sprite destroy event and run some code when it happens.
 
-Sprites have three types: ``player``, ``food``, ``coin``. You can track the destruction of all sprites with a particular type by using the general sprite object called ``sprite``.
-
-```block
-sprites.onDestroyed(SpriteType.Food, function (sprite) {
-
-})
-```
-
-If you want to track the destruction of a just a single sprite, use the actual sprite object itself.
+Sprites have three types: ``player``, ``food``, ``coin``. You can track the destruction of any sprite with a particular type by using the sprite object parameter called ``sprite``.
 
 ```block
 let smiley: Sprite = null
@@ -41,7 +33,7 @@ f e e e e e f f f f f e e e e f
 . . . f f e e e e e e e f . . . 
 . . . . . f f f f f f f . . . . 
 `)
-sprites.onDestroyed(SpriteType.Player, function (smiley) {
+sprites.onDestroyed(SpriteType.Player, function (sprite) {
 
 })
 ```
