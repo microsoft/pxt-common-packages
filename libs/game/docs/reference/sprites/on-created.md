@@ -11,17 +11,9 @@ sprites.onCreated(SpriteType.Player, function (sprite) {
 
 Sprites are created by using the [create](/reference/sprites/sprite/destroy) and [create projectile](/reference/sprites/create-projectile) functions. You can respond to a sprite create event and run some code when it happens.
 
-Sprites have three types: ``player``, ``food``, ``coin``. You can track the creation of all sprites with a particular type by using the general sprite object called ``sprite``.
+Sprites have three types: ``player``, ``food``, ``coin``. You can track the creation of any sprite with a particular type by using the sprite object parameter called ``sprite``.
 
-```block
-sprites.onCreated(SpriteType.Food, function (sprite) {
-
-})
-```
-
-If you want to track the creation of a just a single sprite, use the actual sprite object itself.
-
-```block
+```blocks
 let smiley: Sprite = null
 smiley = sprites.create(img`
 . . . . . f f f f f f f . . . . 
@@ -41,8 +33,8 @@ f e e e e e f f f f f e e e e f
 . . . f f e e e e e e e f . . . 
 . . . . . f f f f f f f . . . . 
 `)
-sprites.onCreated(SpriteType.Player, function (smiley) {
-
+sprites.onCreated(SpriteType.Player, function (sprite) {
+    sprite.say("Hello, I'm new here")
 })
 ```
 
