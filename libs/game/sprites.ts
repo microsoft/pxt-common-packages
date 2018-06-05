@@ -21,21 +21,21 @@ namespace sprites {
      * @param img the image
      */
     //% group="Create"
-    //% blockId=spritescreate block="sprite %img=screen_image_picker||of type %type=spritetype"
+    //% blockId=spritescreate block="sprite %img=screen_image_picker of kind %type=spritetype"
     //% expandableArgumentMode=toggle
     //% blockSetVariable=sprite
     //% weight=100 help=sprites/create
-    export function create(img: Image, type?: number): Sprite {
+    export function create(img: Image, kind?: number): Sprite {
         const scene = game.currentScene();
         const sprite = new Sprite(img)
-        sprite.type = type || 0;
+        sprite.type = kind || 0;
         scene.allSprites.push(sprite)
         sprite.id = scene.allSprites.length
         scene.physicsEngine.addSprite(sprite);
 
         // run on created handlers
         scene.createdHandlers
-            .filter(h => h.type == type)
+            .filter(h => h.type == kind)
             .forEach(h => h.handler(sprite));
 
         return sprite
@@ -51,7 +51,7 @@ namespace sprites {
     //% blockSetVariable=projectile
     //% inlineInputMode=inline
     //% expandableArgumentMode=toggle
-    export function createProjectile(img: Image, vx: number, vy: number, type?: SpriteType, sprite?: Sprite) {
+    export function createProjectile(img: Image, vx: number, vy: number, type?: number, sprite?: Sprite) {
         const s = sprites.create(img, type);
         s.vx = vx
         s.vy = vy
