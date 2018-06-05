@@ -2,7 +2,9 @@ enum SpriteFlag {
     //% block="ghost"
     Ghost = sprites.Flag.Ghost,
     //% block="auto destroy"
-    AutoDestroy = sprites.Flag.AutoDestroy
+    AutoDestroy = sprites.Flag.AutoDestroy,
+    //% block="stay in screen"
+    StayInScreen = sprites.Flag.StayInScreen
 }
 
 enum CollisionDirection {
@@ -65,7 +67,7 @@ class Sprite implements SpriteLike {
     ax: number
     //% group="Properties"
     //% blockCombine block="ay (acceleration y)"
-    ay: number    
+    ay: number
     /**
      * The type of sprite
      */
@@ -78,7 +80,7 @@ class Sprite implements SpriteLike {
      */
     //% group="Properties"
     layer: number;
-    
+
     /**
      * Time to live in game ticks. The lifespan decreases by 1 on each game update
      * and the sprite gets destroyed when it reaches 0.
@@ -298,6 +300,22 @@ class Sprite implements SpriteLike {
         if ((this.flags & sprites.Flag.AutoDestroy)
             && this.isOutOfScreen(camera)) {
             this.destroy()
+        }
+
+        if (this.flags & sprites.Flag.StayInScreen) {
+            if (this.left < camera.offsetX) {
+                this.left = camera.offsetX;
+            }
+            else if (this.right > camera.offsetX + screen.width) {
+                this.right = camera.offsetX + screen.width;
+            }
+
+            if (this.top < camera.offsetY) {
+                this.top = camera.offsetY;
+            }
+            else if (this.bottom > camera.offsetY + screen.height) {
+                this.bottom = camera.offsetY + screen.height;
+            }
         }
     }
 

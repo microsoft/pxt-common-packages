@@ -82,5 +82,6 @@ namespace sprites {
         Ghost = 1, // doesn't collide with other sprites
         Destroyed = 2,
         AutoDestroy = 4, // remove the sprite when no longer visible
+        StayInScreen = 8, // sprite cannot move outside the camera region
     }
 }
