@@ -26,7 +26,7 @@ namespace scene {
     export function screenHeight(): number {
         return screen.height;
     }
-    
+
     /**
      * Sets the game background color
      * @param color
@@ -94,19 +94,19 @@ namespace scene {
      * @param index
      * @param img
      */
-    //% blockId=gamesettile block="set tile %index=colorindexpicker to %img=screen_image_picker||with collisions %collisions=toggleOnOff"
+    //% blockId=gamesettile block="set tile %index=colorindexpicker to %img=screen_image_picker||with wall %wall=toggleOnOff"
     //% group="Tiles"
     //% help=scene/set-tile
-    export function setTile(index: number, img: Image, collisions?: boolean) {
+    export function setTile(index: number, img: Image, wall?: boolean) {
         const scene = game.currentScene();
         if (!scene.tileMap)
             scene.tileMap = new tiles.TileMap(scene.camera, img.width, img.height);
-        scene.tileMap.setTile(index, img, !!collisions);
+        scene.tileMap.setTile(index, img, !!wall);
     }
 
     /**
      * The game camera follows a particular sprite
-     * @param sprite 
+     * @param sprite
      */
     //% blockId=camerafollow block="camera follow sprite %sprite=variables_get"
     //% group="Camera"
@@ -118,7 +118,7 @@ namespace scene {
 
     /**
      * Moves the camera center to a given coordinate
-     * @param sprite 
+     * @param sprite
      */
     //% blockId=camerapos block="center camera at x %x y %y"
     //% group="Camera"
