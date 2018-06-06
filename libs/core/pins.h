@@ -140,6 +140,7 @@ typedef Button *Button_;
 
 namespace pxt {
 DevicePin *getPin(int id);
+DevicePin *getPinCfg(int key);
 DevicePin *lookupPin(int pinName);
 void linkPin(int from, int to);
 Button *getButtonByPin(int pin, int flags);
