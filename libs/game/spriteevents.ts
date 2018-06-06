@@ -15,7 +15,7 @@ namespace sprites {
      * @param sprite
      */
     //% group="Lifecycle" draggableParameters
-    //% block=spritesondestroyed block="on created $sprite of kind $kind=spritetype"
+    //% blockId=spritesoncreated block="on created $sprite of kind $kind=spritetype"
     export function onCreated(kind: number, handler: (sprite: Sprite) => void): void {
         if (!handler || !kind) return;
 
@@ -33,7 +33,7 @@ namespace sprites {
      */
     //% group="Lifecycle"
     //% weight=100 draggableParameters
-    //% block=spritesondestroyed block="on destroyed $sprite of kind $kind=spritetype "
+    //% blockId=spritesondestroyed block="on destroyed $sprite of kind $kind=spritetype "
     export function onDestroyed(kind: number, handler: (sprite: Sprite) => void) {
         if (!handler || !kind) return;
 
@@ -71,7 +71,7 @@ namespace scene {
      */
     //% group="Collisions"
     //% weight=100 draggableParameters
-    //% blockId=spritesollisions block="on $sprite of kind $kind=spritetype hits tile $tile=colorindexpicker"
+    //% blockId=spritesollisions block="on $sprite of kind $kind=spritetype hits wall $tile=colorindexpicker"
     export function onHitTile(kind: number, tile: number, handler: (sprite: Sprite) => void) {
         if (!kind || !handler) return;
 
