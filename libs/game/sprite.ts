@@ -379,7 +379,7 @@ class Sprite implements SpriteLike {
      * Determines if there is an obstacle in the given direction
      * @param direction
      */
-    //% blockId=spritehasobstacle block="is %sprite hitting tile %direction"
+    //% blockId=spritehasobstacle block="is %sprite hitting wall %direction"
     //% blockNamespace="scene" group="Collisions"
     isHittingTile(direction: CollisionDirection): boolean {
         return this._obstacles && !!this._obstacles[direction];
@@ -389,7 +389,7 @@ class Sprite implements SpriteLike {
      * Gets the obstacle sprite in a given direction if any
      * @param direction
      */
-    //% blockId=spriteobstacle block="%sprite tile hit from %direction"
+    //% blockId=spriteobstacle block="%sprite wall hit on %direction"
     //% blockNamespace="scene" group="Collisions"
     tileHitFrom(direction: CollisionDirection): number {
         return (this._obstacles && this._obstacles[direction]) ? this._obstacles[direction].tileIndex : -1;
