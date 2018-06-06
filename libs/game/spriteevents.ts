@@ -1,53 +1,45 @@
-enum SpriteType {
-    //% block="player"
-    Player = 1,
-    //% block="food"
-    Food = 1 << 1,
-    //% block="coin"
-    Coin = 1 << 2
-}
-
 namespace sprites {
     /**
      * Gets the sprite type
      */
-    //% blockHidden=1
-    //% shim=TD_ID blockId=spritetype block="%type"
-    export function spriteType(type: SpriteType): number {
-        return type;
+    //% blockHidden=1 shim=ENUM_GET
+    //% blockId=spritetype block="$kind" enumInitialMembers="Player,Enemy"
+    //% enumName=SpriteKind enumMemberName=kind enumPromptHint="e.g. Coin, Fireball, Asteroid..."
+    export function _spriteType(kind: number): number {
+        return kind;
     }
 
     /**
-     * Register an event when a particular type of sprite is created
-     * @param type 
-     * @param sprite 
+     * Register an event when a particular kind of sprite is created
+     * @param kind
+     * @param sprite
      */
-    //% group="Lifecycle"
-    //% block=spritesondestroyed block="on created %type=spritetype $sprite"
-    export function onCreated(type: number, handler: (sprite: Sprite) => void): void {
-        if (!handler || !type) return;
+    //% group="Lifecycle" draggableParameters
+    //% blockId=spritesoncreated block="on created $sprite of kind $kind=spritetype"
+    export function onCreated(kind: number, handler: (sprite: Sprite) => void): void {
+        if (!handler || !kind) return;
 
         const scene = game.currentScene();
         scene.createdHandlers.push({
-            type: type,
+            type: kind,
             handler: handler
         })
     }
 
     /**
-     * Register an event when a particular type of sprite is destroyed
-     * @param type 
-     * @param sprite 
+     * Register an event when a particular kind of sprite is destroyed
+     * @param kind
+     * @param sprite
      */
     //% group="Lifecycle"
-    //% weight=100
-    //% block=spritesondestroyed block="on destroyed %type=spritetype $sprite"
-    export function onDestroyed(type: number, handler: (sprite: Sprite) => void) {
-        if (!handler || !type) return;
-        
+    //% weight=100 draggableParameters
+    //% blockId=spritesondestroyed block="on destroyed $sprite of kind $kind=spritetype "
+    export function onDestroyed(kind: number, handler: (sprite: Sprite) => void) {
+        if (!handler || !kind) return;
+
         const scene = game.currentScene();
         scene.destroyedHandlers.push({
-            type: type,
+            type: kind,
             handler: handler
         })
     }
@@ -56,38 +48,38 @@ namespace sprites {
      * Register code to run when sprites overlap
      */
     //% group="Overlaps"
-    //% weight=100
-    //% blockId=spritesoverlap block="on %type=spritetype $sprite overlaps with %otherType=spritetype $otherSprite"
-    export function onOverlap(type: number, otherType: number, handler: (sprite: Sprite, otherSprite: Sprite) => void) {
-        if (!type || !otherType ||!handler) return;
+    //% weight=100 draggableParameters
+    //% blockId=spritesoverlap block="on $sprite of kind $kind=spritetype overlaps $otherSprite of kind $otherKind=spritetype"
+    export function onOverlap(kind: number, otherKind: number, handler: (sprite: Sprite, otherSprite: Sprite) => void) {
+        if (!kind || !otherKind ||!handler) return;
 
         const scene = game.currentScene();
         scene.overlapHandlers.push({
-            type: type,
-            otherType: otherType,
+            type: kind,
+            otherType: otherKind,
             handler: handler
-        })        
+        })
     }
 }
 
 namespace scene {
     /**
      * Register a code handler when a collision happens
-     * @param direction 
-     * @param tile 
-     * @param handler 
+     * @param direction
+     * @param tile
+     * @param handler
      */
     //% group="Collisions"
-    //% weight=100
-    //% blockId=spritesollisions block="on %spriteType=spritetype $sprite hit tile %tileIndex=colorindexpicker"
-    export function onHitTile(spriteType: number, tile: number, handler: (sprite: Sprite) => void) {
-        if (!spriteType || !handler) return;
+    //% weight=100 draggableParameters
+    //% blockId=spritesollisions block="on $sprite of kind $kind=spritetype hits wall $tile=colorindexpicker"
+    export function onHitTile(kind: number, tile: number, handler: (sprite: Sprite) => void) {
+        if (!kind || !handler) return;
 
         const scene = game.currentScene();
         scene.collisionHandlers.push({
-            type: spriteType,
+            type: kind,
             tile: tile,
             handler: handler
-        })        
-    }    
+        })
+    }
 }
