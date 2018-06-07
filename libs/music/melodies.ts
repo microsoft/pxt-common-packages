@@ -88,7 +88,7 @@ namespace music {
     /**
      * Start playing a sound and don't wait for it to finish.
      * Notes are expressed as a string of characters with this format: NOTE[octave][:duration]
-     * @param sound the melody to play, eg: Sounds.PowerUp
+     * @param sound the melody to play, eg: "b5:1 e6:3"
      */
     //% help=music/play-sound
     //% blockId=music_play_sound block="play sound %sound=music_sounds"
