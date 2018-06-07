@@ -9,7 +9,7 @@ namespace motors {
          */
         //% group="Servos"
         //% weight=100
-        //% blockId=sawservosetangle block="set %servo angle to %degrees °"
+        //% blockId=servoservosetangle block="set %servo angle to %degrees °"
         //% degrees.min=0 degrees.max=180
         //% degrees.defl=90
         //% servo.fieldEditor="gridpicker"
@@ -32,7 +32,7 @@ namespace motors {
          */
         //% group="Servos"
         //% weight=99
-        //% blockId=sawservorun block="continuous %servo run at %speed=speedPicker \\%"
+        //% blockId=servoservorun block="continuous %servo run at %speed=speedPicker \\%"
         //% servo.fieldEditor="gridpicker"
         //% servo.fieldOptions.width=220
         //% servo.fieldOptions.columns=2
@@ -45,7 +45,7 @@ namespace motors {
          */
         //% group="Servos"
         //% weight=10
-        //% blockId=sawservosetpulse block="set %servo pulse to %micros μs"
+        //% blockId=servoservosetpulse block="set %servo pulse to %micros μs"
         //% micros.min=500 micros.max=2500
         //% micros.defl=1500
         //% servo.fieldEditor="gridpicker"
