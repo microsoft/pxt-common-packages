@@ -1,6 +1,14 @@
 #include "pxt.h"
-#include "AnalogSensor.h"
 
+#ifndef CODAL_LIGHT_SENSOR_HEADER
+#define CODAL_LIGHT_SENSOR_HEADER "AnalogSensor.h"
+#endif
+
+#include CODAL_LIGHT_SENSOR_HEADER
+
+#ifndef CODAL_LIGHT_SENSOR
+#define CODAL_LIGHT_SENSOR AnalogSensor
+#endif
 
 enum class LightCondition {
     //% block="dark"
@@ -13,7 +21,7 @@ namespace pxt {
 
 class WLight {
   public:
-    AnalogSensor sensor;
+    CODAL_LIGHT_SENSOR sensor;
     WLight()
         : sensor(*LOOKUP_PIN(LIGHT), DEVICE_ID_LIGHT_SENSOR) //
     {
