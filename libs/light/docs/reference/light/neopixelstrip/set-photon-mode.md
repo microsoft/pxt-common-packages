@@ -16,6 +16,7 @@ move across without adding color, or even have it erase the color when it moves.
 > * `pen down`: pulse light at each pixel and set it to the photon color.
 > * `pen up`: pulse light at each pixel and don't set the color.
 > * `eraser`: erase the photon color on the pixel when the pulse hits it.
+> * `off`: turns off the photon
 
 ## Examples #exsection
 
@@ -64,6 +65,19 @@ for (let i = 1; i < strip.length(); i++) {
     strip.photonForward(1)
     pause(500)
 }
+```
+
+### On and Off
+
+Move the photon and turn it off.
+
+```blocks
+let strip = light.createStrip()
+for (let i = 1; i < strip.length(); i++) {
+    strip.photonForward(1)
+    pause(500)
+}
+strip.setPhotonMode(PhotonMode.Off)
 ```
 
 ## See also

@@ -57,6 +57,7 @@ namespace fieldeditors {
     //% value.fieldEditor="colorwheel" value.fieldOptions.decompileLiterals=true
     //% value.fieldOptions.sliderWidth='200'
     //% value.fieldOptions.min=0 value.fieldOptions.max=255
+    //% value.fieldOptions.channel=hsvfast
     export function __colorWheelPicker(value: number) {
         return value;
     }
