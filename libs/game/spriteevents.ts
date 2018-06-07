@@ -17,7 +17,7 @@ namespace sprites {
     //% group="Lifecycle" draggableParameters
     //% blockId=spritesoncreated block="on created $sprite of kind $kind=spritetype"
     export function onCreated(kind: number, handler: (sprite: Sprite) => void): void {
-        if (!handler || !kind) return;
+        if (!handler || kind == undefined) return;
 
         const scene = game.currentScene();
         scene.createdHandlers.push({
@@ -35,7 +35,7 @@ namespace sprites {
     //% weight=100 draggableParameters
     //% blockId=spritesondestroyed block="on destroyed $sprite of kind $kind=spritetype "
     export function onDestroyed(kind: number, handler: (sprite: Sprite) => void) {
-        if (!handler || !kind) return;
+        if (!handler || kind == undefined) return;
 
         const scene = game.currentScene();
         scene.destroyedHandlers.push({
@@ -51,7 +51,7 @@ namespace sprites {
     //% weight=100 draggableParameters
     //% blockId=spritesoverlap block="on $sprite of kind $kind=spritetype overlaps $otherSprite of kind $otherKind=spritetype"
     export function onOverlap(kind: number, otherKind: number, handler: (sprite: Sprite, otherSprite: Sprite) => void) {
-        if (!kind || !otherKind ||!handler) return;
+        if (kind == undefined || otherKind == undefined ||!handler) return;
 
         const scene = game.currentScene();
         scene.overlapHandlers.push({
@@ -73,7 +73,7 @@ namespace scene {
     //% weight=100 draggableParameters
     //% blockId=spritesollisions block="on $sprite of kind $kind=spritetype hits wall $tile=colorindexpicker"
     export function onHitTile(kind: number, tile: number, handler: (sprite: Sprite) => void) {
-        if (!kind || !handler) return;
+        if (kind == undefined || !handler) return;
 
         const scene = game.currentScene();
         scene.collisionHandlers.push({
