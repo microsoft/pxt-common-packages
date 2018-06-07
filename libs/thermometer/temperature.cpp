@@ -1,7 +1,14 @@
 #include "pxt.h"
-#include "AnalogSensor.h"
-#include "NonLinearAnalogSensor.h"
-#include "Button.h"
+
+#ifndef CODAL_TEMPERATURE_SENSOR_HEADER
+#define CODAL_TEMPERATURE_SENSOR_HEADER "NonLinearAnalogSensor.h"
+#endif
+
+#include CODAL_TEMPERATURE_SENSOR_HEADER
+
+#ifndef CODAL_TEMPERATURE_SENSOR
+#define CODAL_TEMPERATURE_SENSOR NonLinearAnalogSensor
+#endif
 
 enum class TemperatureCondition {
     //% block="hot"
@@ -22,7 +29,7 @@ namespace pxt {
 // Wrapper classes
 class WTemp {
   public:
-    NonLinearAnalogSensor sensor;
+    CODAL_TEMPERATURE_SENSOR sensor;
     WTemp()
         : sensor(*LOOKUP_PIN(TEMPERATURE), DEVICE_ID_THERMOMETER,
                 TEMPERATURE_NOMINAL_VALUE, 
