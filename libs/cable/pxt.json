@@ -8,7 +8,6 @@
         "shims.d.ts"
     ],
     "public": true,
-    "icon": "./static/packages/cable/icon.png",
     "dependencies": {
         "core": "file:../core",
         "pulse": "file:../pulse"
