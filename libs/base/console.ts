@@ -9,7 +9,7 @@ namespace console {
     type Listener = (text: string) => void;
 
     const listeners: Listener[] = [
-        (text: string) => serial.writeLine(text)
+        (text: string) => serial.writeString(text)
     ];
 
     /**

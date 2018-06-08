@@ -1,4 +1,4 @@
-namespace motors {
+namespace servos {
     //% fixedInstances
     export class Servo {
         constructor() {
