@@ -10,7 +10,6 @@ namespace motors {
         //% group="Servos"
         //% weight=100
         //% blockId=servoservosetangle block="set %servo angle to %degrees=protractorPicker °"
-        //% degrees.min=0 degrees.max=180
         //% degrees.defl=90
         //% servo.fieldEditor="gridpicker"
         //% servo.fieldOptions.width=220
