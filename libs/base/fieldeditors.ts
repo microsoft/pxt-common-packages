@@ -90,8 +90,9 @@ namespace fieldeditors {
     //% blockId=protractorPicker block="%angle"
     //% shim=TD_ID
     //% angle.fieldEditor=protractor
+    //% angle.fieldOptions.decompileLiterals=1    
     //% colorSecondary="#FFFFFF"
-    //% weight=0 blockHidden=1 speed.fieldOptions.decompileLiterals=1    
+    //% blockHidden=1
     export function __protractor(angle: number) {
         return angle;
     }
