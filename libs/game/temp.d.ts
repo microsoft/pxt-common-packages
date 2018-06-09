@@ -18,6 +18,8 @@ declare interface Array<T> {
 
 declare interface String {
     length: number;
+    charAt(index: number): string;
+    substr(start: number, length?: number): string;
 }
 
 declare namespace Math {
