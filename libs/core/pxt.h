@@ -19,8 +19,6 @@
 #include "CodalFiber.h"
 #include "MessageBus.h"
 
-#include "platform.h"
-
 using namespace codal;
 
 #include "pins.h"

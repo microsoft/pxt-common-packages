@@ -60,6 +60,7 @@
 #define CFG_PIN_LED2 56
 #define CFG_PIN_LED3 57
 #define CFG_PIN_LED4 58
+#define CFG_SPEAKER_VOLUME 59
 
 #define CFG_PIN_A0 100
 #define CFG_PIN_A1 101
@@ -140,6 +141,7 @@ typedef Button *Button_;
 
 namespace pxt {
 DevicePin *getPin(int id);
+DevicePin *getPinCfg(int key);
 DevicePin *lookupPin(int pinName);
 void linkPin(int from, int to);
 Button *getButtonByPin(int pin, int flags);

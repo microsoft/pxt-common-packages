@@ -21,4 +21,7 @@ namespace pxsim.pxtcore {
     export function getPin(id: number) : pxsim.Pin {
         return board().edgeConnectorState.getPin(id);
     }
+    export function getPinCfg(key: number) : pxsim.Pin {
+        return getPin(getConfig(key, -1))
+    }
 }

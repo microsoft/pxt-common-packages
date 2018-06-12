@@ -47,6 +47,13 @@ Button *getButtonByPin(int pin, int flags) {
     return btn;
 }
 
+//%
+Button *getButtonByPinCfg(int key, int flags) {
+    int pin = getConfig(key);
+    if (pin == -1) target_panic(42);
+    return getButtonByPin(pin, flags);
+}
+
 // This is for A, B, and AB
 //%
 AbstractButton *getButton(int id) {

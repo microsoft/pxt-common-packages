@@ -76,6 +76,10 @@ namespace pxsim.pxtcore {
         return b
     }
 
+    export function getButtonByPinCfg(key: number): Button {
+        return getButtonByPin(getConfig(key, -1))
+    }
+
     export function getButton(buttonId: number): Button {
         const buttons = board().buttonState.buttons;
         if (buttonId === 2) {
