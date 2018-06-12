@@ -1,9 +1,15 @@
 enum DialogLayout {
+    //% block=bottom
     Bottom,
+    //% block=left
     Left,
+    //% block=right
     Right,
+    //% block=top
     Top,
+    //% block=center
     Center,
+    //% block="full screen"
     Full
 }
 
@@ -260,7 +266,7 @@ namespace game {
      * @param str The text to display
      * @param layout The layout to use for the dialog box
      */
-    //% blockId=game_show_long_text
+    //% blockId=game_show_long_text group="Dialogs"
     //% block="show long text %str %layout"
     export function showLongText(str: string, layout: DialogLayout) {
         // Clone the current screen so that it shows up behind the dialog
@@ -351,7 +357,7 @@ namespace game {
      *
      * @param frame A square image with a width and height divisible by three
      */
-    //% blockId=game_dialog_set_frame
+    //% blockId=game_dialog_set_frame group="Dialogs"
     //% block="set dialog frame to %frame=screen_image_picker"
     export function setDialogFrame(frame: Image) {
         dialogFrame = frame;
@@ -363,7 +369,7 @@ namespace game {
      *
      * @param cursor The image to use for the cursor
      */
-    //% blockId=game_dialog_set_cursor
+    //% blockId=game_dialog_set_cursor group="Dialogs"
     //% block="set dialog cursor to %frame=screen_image_picker"
     export function setDialogCursor(cursor: Image) {
         dialogCursor = cursor;
@@ -374,7 +380,7 @@ namespace game {
      *
      * @param color The index of the color 0-15
      */
-    //% blockId=game_dialog_set_text_color
+    //% blockId=game_dialog_set_text_color group="Dialogs"
     //% block="set dialog text color to %color=colorindexpicker"
     export function setDialogTextColor(color: number) {
         dialogTextColor = Math.floor(Math.min(15, Math.max(0, color)));
