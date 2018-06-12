@@ -8,6 +8,10 @@ enum DialogLayout {
 }
 
 namespace game {
+    let dialogFrame: Image;
+    let dialogCursor: Image;
+    let dialogFont: image.Font;
+
     export class Dialog {
         image: Image;
         frame: Image;
@@ -28,7 +32,8 @@ namespace game {
 
         constructor(width: number, height: number, frame?: Image, font?: image.Font, cursor?: Image) {
             this.image = image.create(width, height);
-            this.frame = frame || img`
+
+            this.frame = frame || dialogFrame || (dialogFrame =  img`
                 . . . . . . . . . . . .
                 . b b b b b b b b b b .
                 . b b b b b b b b b b c
@@ -41,9 +46,11 @@ namespace game {
                 . b b b b b b b b b b c
                 . b b b b b b b b b b c
                 . . c c c c c c c c c c
-                `;
-            this.font = font || image.font8;
-            this.cursor = cursor || img`
+                `);
+
+            this.font = font || dialogFont || (dialogFont = image.font8);
+
+            this.cursor = cursor || dialogCursor || (dialogCursor = img`
                 7 7 7 7 7 7 7 . . .
                 7 7 7 1 7 7 7 7 . .
                 7 7 1 7 1 7 7 7 7 .
@@ -52,7 +59,7 @@ namespace game {
                 7 7 1 7 1 7 7 7 6 .
                 7 7 7 7 7 7 7 6 . .
                 . 6 6 6 6 6 6 . . .
-                `;
+                `);
 
             this.unit = Math.floor(this.frame.width / 3);
             this.columns = Math.floor(width / this.unit);
@@ -320,6 +327,18 @@ namespace game {
 
         pauseUntil(() => done);
         controller._setUserEventsEnabled(true);
+    }
+
+    export function setDialogFrame(frame: Image) {
+        dialogFrame = frame;
+    }
+
+    export function setDialogFont(font: image.Font) {
+        dialogFont = font;
+    }
+
+    export function setDialogCursor(cursor: Image) {
+        dialogCursor = cursor;
     }
 }
 
