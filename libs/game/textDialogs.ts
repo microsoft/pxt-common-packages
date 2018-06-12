@@ -11,6 +11,7 @@ namespace game {
     let dialogFrame: Image;
     let dialogCursor: Image;
     let dialogFont: image.Font;
+    let dialogTextColor: number;
 
     export class Dialog {
         image: Image;
@@ -26,6 +27,7 @@ namespace game {
         cursorCount: number;
 
         font: image.Font;
+        textColor: number;
 
         chunks: string[];
         chunkIndex: number;
@@ -60,6 +62,8 @@ namespace game {
                 7 7 7 7 7 7 7 6 . .
                 . 6 6 6 6 6 6 . . .
                 `);
+
+            this.textColor = dialogTextColor == undefined ? dialogTextColor = 15 : dialogTextColor;
 
             this.unit = Math.floor(this.frame.width / 3);
             this.columns = Math.floor(width / this.unit);
@@ -161,7 +165,7 @@ namespace game {
                     str.substr(current, charactersPerRow),
                     textLeft,
                     textTop + row * this.rowHeight(),
-                    15, this.font
+                    this.textColor, this.font
                 )
                 current += charactersPerRow;
             }
@@ -248,7 +252,18 @@ namespace game {
         }
     }
 
+    /**
+     * Shows a long piece of text in a dialog box that can be advanced
+     * using the "A" button. This function halts execution until the
+     * last page of text is dismissed.
+     *
+     * @param str The text to display
+     * @param layout The layout to use for the dialog box
+     */
+    //% blockId=game_show_long_text
+    //% block="show long text %str %layout"
     export function showLongText(str: string, layout: DialogLayout) {
+        // Clone the current screen so that it shows up behind the dialog
         const temp = screen.clone();
         controller._setUserEventsEnabled(false);
         game.pushScene();
@@ -329,16 +344,44 @@ namespace game {
         controller._setUserEventsEnabled(true);
     }
 
+    /**
+     * Overrides the default dialog frame with a new image. Dialog frames
+     * are divided into three rows and three columns and are used to define
+     * the outer frame of the dialog box.
+     *
+     * @param frame A square image with a width and height divisible by three
+     */
+    //% blockId=game_dialog_set_frame
+    //% block="set dialog frame to %frame=screen_image_picker"
     export function setDialogFrame(frame: Image) {
         dialogFrame = frame;
     }
 
-    export function setDialogFont(font: image.Font) {
-        dialogFont = font;
-    }
-
+    /**
+     * Overrides the default image used for the cursor that appear in the
+     * bottom left of the dialog box.
+     *
+     * @param cursor The image to use for the cursor
+     */
+    //% blockId=game_dialog_set_cursor
+    //% block="set dialog cursor to %frame=screen_image_picker"
     export function setDialogCursor(cursor: Image) {
         dialogCursor = cursor;
+    }
+
+    /**
+     * Overrides the default text color for dialog boxes.
+     *
+     * @param color The index of the color 0-15
+     */
+    //% blockId=game_dialog_set_text_color
+    //% block="set dialog text color to %color=colorindexpicker"
+    export function setDialogTextColor(color: number) {
+        dialogTextColor = Math.floor(Math.min(15, Math.max(0, color)));
+    }
+
+    export function setDialogFont(font: image.Font) {
+        dialogFont = font;
     }
 }
 
