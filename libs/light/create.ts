@@ -11,6 +11,7 @@ namespace light {
     //% trackArgs=0,2
     //% parts="neopixel"
     //% weight=100
+    //% blockSetVariable=strip
     export function createStrip(
         pin: DigitalPin = null,
         numleds: number = 30,

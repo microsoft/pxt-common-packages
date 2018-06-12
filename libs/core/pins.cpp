@@ -26,6 +26,11 @@ DevicePin *getPin(int id) {
     return pinPtrs[ptr - 1];
 }
 
+//%
+DevicePin *getPinCfg(int key) {
+    return getPin(getConfig(key));;
+}
+
 void linkPin(int from, int to) {
     if (from < 0 || from >= DEV_NUM_PINS)
         target_panic(42);

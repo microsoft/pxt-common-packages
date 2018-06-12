@@ -33,6 +33,7 @@
 #include <set>
 #endif
 
+#include "platform.h"
 #include "pxtcore.h"
 
 #ifndef PXT_VTABLE_SHIFT
