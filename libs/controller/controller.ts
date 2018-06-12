@@ -10,20 +10,20 @@ enum ControllerButtonEvent {
  */
 //% weight=97 color="#e15f41" icon="\uf11b"
 namespace controller {
-    const REPEAT_DELAY = 80;
-
     let _userEventsEnabled = true;
-    let activeButtons: Button[];
+    let _activeButtons: Button[];
 
     //% fixedInstances
     export class Button {
         id: number;
         private _pressed: boolean;
         private _pressedElasped: number;
+        private _repeatInterval: number;
 
         constructor(id: number, buttonId?: number, upid?: number, downid?: number) {
             this.id = id;
             this._pressed = false;
+            this._repeatInterval = 80;
             control.internalOnEvent(INTERNAL_KEY_UP, this.id, () => {
                 if (this._pressed) {
                     this._pressed = false
@@ -43,8 +43,8 @@ namespace controller {
             }
 
             // register button in global list
-            if (!activeButtons) activeButtons = [];
-            activeButtons.push(this);
+            if (!_activeButtons) _activeButtons = [];
+            _activeButtons.push(this);
         }
 
         private raiseButtonUp() {
@@ -88,11 +88,21 @@ namespace controller {
             return this._pressed;
         }
 
-        __update(dt: number) {
+        /**
+         * Sets the time interval between pressed events when repeating
+         * @param millis numer of milliseconds
+         */
+        //% weight=10
+        //% blockId=keysetrepeatinterval block="set %button repeat interval to %millis ms"
+        setRepeatInterval(millis: number) {
+            this._repeatInterval = Math.max(0, millis | 0);
+        }
+
+        __update(dtms: number) {
             if (!this._pressed) return;
-            this._pressedElasped += dt;
+            this._pressedElasped += (dtms * 1000) | 0;
             // still holding?
-            if (this._pressedElasped > REPEAT_DELAY) {
+            if (this._pressedElasped > this._repeatInterval) {
                 this.raiseButtonDown();
                 this._pressedElasped = 0;
             }
@@ -155,8 +165,8 @@ namespace controller {
     /**
      * Called by the game engine to update and/or raise events
      */
-    export function __update(dt: number) {
-        if (!activeButtons) return;
-        activeButtons.forEach(btn => btn.__update(dt));
+    export function __update(dtms: number) {
+        if (!_activeButtons) return;
+        _activeButtons.forEach(btn => btn.__update(dtms));
     }
 }
