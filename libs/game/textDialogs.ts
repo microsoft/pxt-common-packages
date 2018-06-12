@@ -1,3 +1,12 @@
+enum DialogLayout {
+    Bottom,
+    Left,
+    Right,
+    Top,
+    Center,
+    Full
+}
+
 namespace game {
     export class Dialog {
         image: Image;
@@ -232,15 +241,60 @@ namespace game {
         }
     }
 
-    export function showLongText(str: string) {
+    export function showLongText(str: string, layout: DialogLayout) {
         const temp = screen.clone();
         controller._setUserEventsEnabled(false);
         game.pushScene();
         scene.setBackgroundImage(temp);
 
-        const dialog = new Dialog(screen.width - 4, Math.ceil(screen.height / 3) + 5);
+        let width: number;
+        let height: number;
+        let top: number;
+        let left: number;
+
+        switch (layout) {
+            case DialogLayout.Bottom:
+                width = screen.width - 4;
+                height = Math.idiv(screen.height, 3) + 5;
+                top = screen.height - height;
+                left = screen.width - width >> 1;
+                break;
+            case DialogLayout.Top:
+                width = screen.width - 4;
+                height = Math.idiv(screen.height, 3) + 5;
+                top = 0;
+                left = screen.width - width >> 1;
+                break;
+            case DialogLayout.Left:
+                width = Math.idiv(screen.width, 3) + 5;
+                height = screen.height;
+                top = 0;
+                left = 0;
+                break;
+            case DialogLayout.Right:
+                width = Math.idiv(screen.width, 3) + 5;
+                height = screen.height;
+                top = 0;
+                left = screen.width - width;
+                break;
+            case DialogLayout.Center:
+                width = Math.idiv(screen.width << 1, 3);
+                height = Math.idiv(screen.width << 1, 3);
+                top = (screen.height - height) >> 1;
+                left = (screen.width - width) >> 1;
+                break;
+            case DialogLayout.Full:
+                width = screen.width;
+                height = screen.height;
+                top = 0;
+                left = 0;
+                break;
+        }
+
+        const dialog = new Dialog(width, height);
         const s = sprites.create(dialog.image);
-        s.top = screen.height - dialog.image.height - 2;
+        s.top = top;
+        s.left = left;
 
         dialog.setText(str)
         let pressed = true;
