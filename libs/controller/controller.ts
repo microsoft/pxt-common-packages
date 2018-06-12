@@ -23,7 +23,7 @@ namespace controller {
         constructor(id: number, buttonId?: number, upid?: number, downid?: number) {
             this.id = id;
             this._pressed = false;
-            this._repeatInterval = 80;
+            this._repeatInterval = 0;
             control.internalOnEvent(INTERNAL_KEY_UP, this.id, () => {
                 if (this._pressed) {
                     this._pressed = false
