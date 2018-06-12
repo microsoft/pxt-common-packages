@@ -15,15 +15,19 @@ namespace controller {
 
     //% fixedInstances
     export class Button {
-        id: number;
+        public id: number;
+        public repeatDelay: number;
+        public repeatInterval: number;
         private _pressed: boolean;
         private _pressedElasped: number;
-        private _repeatInterval: number;
+        private _repeatCount: number;
 
         constructor(id: number, buttonId?: number, upid?: number, downid?: number) {
             this.id = id;
             this._pressed = false;
-            this._repeatInterval = 0;
+            this.repeatDelay = 500;
+            this.repeatInterval = 30;
+            this._repeatCount = 0;
             control.internalOnEvent(INTERNAL_KEY_UP, this.id, () => {
                 if (this._pressed) {
                     this._pressed = false
@@ -34,6 +38,7 @@ namespace controller {
                 if (!this._pressed) {
                     this._pressed = true;
                     this._pressedElasped = 0;
+                    this._repeatCount = 0;
                     this.raiseButtonDown();
                 }
             }, 16)
@@ -88,23 +93,18 @@ namespace controller {
             return this._pressed;
         }
 
-        /**
-         * Sets the time interval between pressed events when repeating
-         * @param millis numer of milliseconds
-         */
-        //% weight=10
-        //% blockId=keysetrepeatinterval block="set %button repeat interval to %millis ms"
-        setRepeatInterval(millis: number) {
-            this._repeatInterval = Math.max(0, millis | 0);
-        }
-
         __update(dtms: number) {
             if (!this._pressed) return;
-            this._pressedElasped += (dtms * 1000) | 0;
-            // still holding?
-            if (this._pressedElasped > this._repeatInterval) {
+            this._pressedElasped += dtms;
+            // inital delay
+            if (this._pressedElasped < this.repeatDelay) 
+                return;
+            
+            // do we have enough time to repeat
+            const count = Math.floor((this._pressedElasped - this.repeatDelay) / this.repeatInterval);
+            if (count != this._repeatCount) {
                 this.raiseButtonDown();
-                this._pressedElasped = 0;
+                this._repeatCount = count;
             }
         }
     }
@@ -165,8 +165,9 @@ namespace controller {
     /**
      * Called by the game engine to update and/or raise events
      */
-    export function __update(dtms: number) {
+    export function __update(dt: number) {
         if (!_activeButtons) return;
+        const dtms = (dt * 1000) | 0
         _activeButtons.forEach(btn => btn.__update(dtms));
     }
 }
