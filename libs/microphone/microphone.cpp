@@ -3,16 +3,17 @@
 #include "SAMD21DAC.h"
 #include "SAMD21PDM.h"
 #include "LevelDetector.h"
+#include "LevelDetectorSPL.h"
 
 namespace pxt {
 
 class WMicrophone {
   public:
     SAMD21PDM microphone;
-    LevelDetector level;
+    LevelDetectorSPL level;
     WMicrophone()
-        : microphone(*LOOKUP_PIN(MIC_DATA), *LOOKUP_PIN(MIC_CLOCK), pxt::getWDMAC()->dmac, 10000)
-        , level(microphone.output, 1024, 256, DEVICE_ID_MICROPHONE)
+        : microphone(*LOOKUP_PIN(MIC_DATA), *LOOKUP_PIN(MIC_CLOCK), pxt::getWDMAC()->dmac, 220000, 22000*16)
+        , level(microphone.output, 95.0, 75.0, DEVICE_ID_MICROPHONE)
     {
         microphone.enable();
     }
@@ -43,7 +44,7 @@ void onLoudSound(Action handler) {
 //% weight=34 blockGap=8
 int soundLevel() {
     const int silence = 8;
-    const int maxValue = 20000;
+    const int maxValue = 22000;
     const int micValue = getWMicrophone()->level.getValue();
     const int value = max(silence, min(micValue, maxValue));
     return min(0xff, value * 0xff / maxValue);
@@ -59,7 +60,7 @@ int soundLevel() {
 //% group="More" weight=14 blockGap=8
 void setLoudSoundThreshold(int value) {
     value = value & 0xff;
-    const int maxValue = 20000;
+    const int maxValue = 22000;
     getWMicrophone()->level.setHighThreshold(value / maxValue * 0xff);
 }
 }
