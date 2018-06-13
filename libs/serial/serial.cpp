@@ -51,7 +51,7 @@ namespace serial {
      * Write some text to the serial port.
      */
     //% help=serial/write-string
-    //% weight=87 blockHidden=true
+    //% weight=87
     //% blockId=serial_writestring block="serial|write string %text"
     //% blockHidden=1
     void writeString(String text) {
@@ -62,9 +62,8 @@ namespace serial {
     /**
     * Send a buffer across the serial connection.
     */
-    //% help=serial/write-buffer weight=6 blockHidden=true
+    //% help=serial/write-buffer weight=6
     //% blockId=serial_writebuffer block="serial|write buffer %buffer"
-    //% blockHidden=1
     void writeBuffer(Buffer buffer) {
       if (NULL == buffer) return;
       getWSerial()->serial.send(buffer->data, buffer->length);
@@ -74,7 +73,6 @@ namespace serial {
       Sends the console message through the TX, RX pins
       **/
     //% blockId=serialsendtoconsole block="serial attach to console"
-    //% blockHidden=1
     void attachToConsole() {
       setSendToUART(serial::send);
     }
@@ -83,7 +81,6 @@ namespace serial {
     Set the baud rate of the serial port
     */
     //% blockId=serialsetbaudrate block="serial set baud rate to %rate"
-    //% blockHidden=1
     void setBaudRate(BaudRate rate) {
       getWSerial()->serial.baud((int)rate);
     }
@@ -106,7 +103,6 @@ namespace serial {
     //% rx.fieldEditor="gridpicker" rx.fieldOptions.columns=3
     //% rx.fieldOptions.tooltips="false"
     //% blockGap=8 inlineInputMode=inline
-    //% blockHidden=1
     void redirect(DigitalPin tx, DigitalPin rx, BaudRate rate) {
       getWSerial()->serial.redirect((PinName)tx->name, (PinName)rx->name);
       getWSerial()->serial.baud((int)rate);
@@ -117,7 +113,6 @@ namespace serial {
     */
     //% weight=9 help=serial/redirect-to-usb
     //% blockId=serial_redirect_to_usb block="serial|redirect to USB"    
-    //% blockHidden=1
     void redirectToUSB() {
       getWSerial()->serial.redirect(USBTX, USBRX);
     }

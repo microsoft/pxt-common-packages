@@ -2,7 +2,10 @@
     "name": "serial",
     "description": "UART communicatoin",
     "files": [
-        "serial.d.ts"
+        "serial.cpp",
+        "serial.ts",
+        "enums.d.ts",
+        "shims.d.ts"
     ],
     "public": true,
     "dependencies": {

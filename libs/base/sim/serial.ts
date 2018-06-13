@@ -1,5 +1,7 @@
 namespace pxsim.serial {
     export function writeString(str: string) {
+        if (str)
+            control.__log(str)
     }
 
     export function writeBuffer(buffer: any) {
