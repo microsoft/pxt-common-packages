@@ -107,13 +107,4 @@ namespace serial {
       getWSerial()->serial.redirect((PinName)tx->name, (PinName)rx->name);
       getWSerial()->serial.baud((int)rate);
     }
-
-    /**
-    * Direct the serial input and output to use the USB connection.
-    */
-    //% weight=9 help=serial/redirect-to-usb
-    //% blockId=serial_redirect_to_usb block="serial|redirect to USB"    
-    void redirectToUSB() {
-      getWSerial()->serial.redirect(USBTX, USBRX);
-    }
 }
