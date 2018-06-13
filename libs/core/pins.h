@@ -131,6 +131,9 @@
 
 #ifndef CODAL_SERIAL
 #define CODAL_SERIAL CODAL_MBED::Serial
+#endif
+
+#ifndef CODAL_SERIAL_HEADER
 #define CODAL_SERIAL_HEADER "MbedSerial.h"
 #endif
 
