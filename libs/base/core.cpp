@@ -108,14 +108,6 @@ unsigned getRandom(unsigned max) {
     return result;
 }
 
-namespace console {
-    //%
-    void defaultLog(String text) {
-        if (NULL == text) return;
-        pxt::sendSerial(text->data, text->length);
-    }
-}
-
 PXT_DEF_STRING(sTrue, "true")
 PXT_DEF_STRING(sFalse, "false")
 PXT_DEF_STRING(sUndefined, "undefined")

@@ -65,3 +65,16 @@ namespace control {
         return pxt::getSerialNumber();
     }
 }
+
+namespace console {
+
+    /**
+    *
+    */
+    //%
+    void __defaultLog(String text) {
+        if (NULL == text) return;
+        pxt::sendSerial(text->data, text->length);
+    }
+
+}
