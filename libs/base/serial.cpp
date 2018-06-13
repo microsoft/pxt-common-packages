@@ -49,4 +49,14 @@ namespace serial {
         setSendToUART(serial.write)
       #endif
     }
+
+    /**
+    Set the baud rate of the serial port
+    */
+    //%
+    void setBaud(int rate) {
+      #if CODAL_SERIAL
+      getWSerial()->serial.baud(rate);
+      #endif
+    }
 }
