@@ -63,6 +63,7 @@ namespace pxsim {
                 new CommonButton(DAL.DEVICE_ID_BUTTON_B),
                 new CommonButton(DAL.DEVICE_ID_BUTTON_AB)
             ];
+            this.buttons.forEach(btn => this.buttonsByPin[btn.id] = btn);
         }
     }
 }
