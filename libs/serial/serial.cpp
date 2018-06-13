@@ -1,5 +1,4 @@
-#include "pxtbase.h"
-#include "pins.h"
+#include "pxt.h"
 #include CODAL_SERIAL_HEADER
 
 enum class BaudRate {
