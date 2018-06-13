@@ -19,6 +19,7 @@ namespace serial {
       getWSerial()->serial.write(text->data, text->length);
       #endif
     }
+
     /**
      * Write some text to the serial port.
      */
@@ -39,9 +40,6 @@ namespace serial {
       if (NULL == buffer) return;
       write((char*)buffer->data, buffer->length);
     }
-}
-
-namespace console {
     /**
       Sends the console message through the TX, RX pins
       **/
