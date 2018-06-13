@@ -27,16 +27,6 @@ void platform_init() {
 */
 }
 
-void sendSerial(const char *data, int len) {
-    /*
-    if (!serial) {
-        serial = new codal::_mbed::Serial(USBTX, NC);
-        serial->baud(9600);
-    }
-    serial->send((uint8_t*)data, len);
-    */
-}
-
 
 }
 

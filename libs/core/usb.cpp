@@ -29,8 +29,8 @@ static const DeviceDescriptor device_desc = {
     0x00, 0x00, 0x00,
 
     0x40,            // bMaxPacketSize0
-    0x03EB, // Atmel
-    0x2402, // Example device
+    USB_DEFAULT_VID, //
+    USB_DEFAULT_PID, //
     0x4202,          // bcdDevice - leave unchanged for the HF2 to work
     0x01,            // iManufacturer
     0x02,            // iProduct

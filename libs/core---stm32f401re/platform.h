@@ -10,7 +10,7 @@
 
 #include "pinmap.h"
 
-#define PXT_BOOTLOADER_CFG_ADDR 0x8003fc8
+#define PXT_BOOTLOADER_CFG_ADDR (BOOTLOADER_END_ADDR - (16 * 4) + (2 * 4))
 
 #define PAGE_SIZE 1024 // not really
 
@@ -18,7 +18,6 @@
 
 #define DEV_PWM_PINS 0b111100000011100111111110111000111111101111LL
 #define DEV_AIN_PINS 0b000011111100000000000000110000000011111111LL
-
 
 // Codal doesn't yet distinguish between PWM and AIN
 #define DEV_ANALOG_PINS (DEV_PWM_PINS | DEV_AIN_PINS)
@@ -28,8 +27,14 @@
 #define CODAL_SPI ZSPI
 #define CODAL_I2C ZI2C
 
-
 #define IMAGE_BITS 4
+
+
+#define BOOT_RTC_SIGNATURE          0x71a21877
+#define APP_RTC_SIGNATURE           0x24a22d12
+#define POWER_DOWN_RTC_SIGNATURE    0x5019684f
+
+#define QUICK_BOOT(v) (RTC->BKP0R = v ? APP_RTC_SIGNATURE : BOOT_RTC_SIGNATURE)
 
 // The parameters below needs tuning!
 

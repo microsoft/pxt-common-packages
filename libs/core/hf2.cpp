@@ -181,8 +181,11 @@ static void copy_words(void *dst0, const void *src0, uint32_t n_words) {
         *dst++ = *src++;
 }
 
+#ifndef QUICK_BOOT
 #define DBL_TAP_PTR ((volatile uint32_t *)(HMCRAMC0_ADDR + HMCRAMC0_SIZE - 4))
 #define DBL_TAP_MAGIC_QUICK_BOOT 0xf02669ef
+#define QUICK_BOOT(v) *DBL_TAP_PTR = v ? DBL_TAP_MAGIC_QUICK_BOOT : 0
+#endif
 
 int HF2::endpointRequest()
 {
@@ -229,7 +232,7 @@ int HF2::endpointRequest()
         break;
 
     case HF2_CMD_RESET_INTO_APP:
-        *DBL_TAP_PTR = DBL_TAP_MAGIC_QUICK_BOOT;
+        QUICK_BOOT(1);
         // fall-through
     case HF2_CMD_RESET_INTO_BOOTLOADER:
         target_reset();
