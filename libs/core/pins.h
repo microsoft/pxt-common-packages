@@ -130,7 +130,8 @@
 #endif
 
 #ifndef CODAL_SERIAL
-#define CODAL_SERIAL CODAL_MBED::CODAL_SERIAL
+#define CODAL_SERIAL CODAL_MBED::Serial
+#define CODAL_SERIAL_HEADER "MbedSerial.h"
 #endif
 
 typedef CODAL_PIN DevicePin;

@@ -1,4 +1,6 @@
 #include "pxtbase.h"
+#include "pins.h"
+#include CODAL_SERIAL_HEADER
 
 namespace pxt {
   class WSerial {
@@ -80,7 +82,7 @@ namespace serial {
         length = MICROBIT_SERIAL_READ_BUFFER_LENGTH;
         
       auto buf = BufferMethods::mkBuffer(NULL, length);
-      int read = uBit.serial.read(buf->data, buf->length;
+      int read = getWSerial()->serial.read(buf->data, buf->length;
       if (read != buf->length) {
         auto temp = BufferMethods::slice(buf, 0, read);
         decrRC(buf);
