@@ -7,7 +7,7 @@ namespace pxt {
     public:
       CODAL_SERIAL serial;
       WSerial()
-        : serial(LOOKUP_PIN(TX), LOOKUP_PIN(RX))
+        : serial(PIN(TX), PIN(RX))
         {}
   };
 
@@ -44,7 +44,7 @@ enum BaudRate {
 
 namespace serial {
     void send(const char* buffer, int length) {
-      getWSerial()->serial.send(text->data, text->length);
+      getWSerial()->serial.send(ManagedString(buffer, length));
     }
 
     /**
@@ -67,29 +67,7 @@ namespace serial {
     //% blockHidden=1
     void writeBuffer(Buffer buffer) {
       if (NULL == buffer) return;
-      send((char*)buffer->data, buffer->length);
-    }
-
-    /**
-    * Read multiple characters from the receive buffer. Pause until enough characters are present.
-    * @param length default buffer length, eg: 64
-    */
-    //% blockId=serial_readbuffer block="serial|read buffer %length"
-    //% help=serial/read-buffer advanced=true weight=5
-    //% blockHidden=1
-    Buffer readBuffer(int length) {
-      if (length <= 0)
-        length = MICROBIT_SERIAL_READ_BUFFER_LENGTH;
-        
-      auto buf = BufferMethods::mkBuffer(NULL, length);
-      int read = getWSerial()->serial.read(buf->data, buf->length;
-      if (read != buf->length) {
-        auto temp = BufferMethods::slice(buf, 0, read);
-        decrRC(buf);
-        buf = temp;
-      }
-
-      return buf;
+      getWSerial()->serial.send(buffer->data, buffer->length);
     }
 
     /**
@@ -98,7 +76,7 @@ namespace serial {
     //% blockId=serialsendtoconsole block="serial attach to console"
     //% blockHidden=1
     void attachToConsole() {
-      setSendToUART(serial.send)
+      setSendToUART(serial::send);
     }
 
     /**
@@ -130,7 +108,7 @@ namespace serial {
     //% blockGap=8
     //% blockHidden=1
     void redirect(DigitalPin tx, DigitalPin rx, BaudRate rate) {
-      getWSerial()->serial.redirect(LOOKUP_PIN(tx), LOOKUP_PIN(rx));
+      getWSerial()->serial.redirect((PinName)tx->name, (PinName)rx->name);
       getWSerial()->serial.baud(rate);
     }
 
