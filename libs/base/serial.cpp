@@ -43,8 +43,7 @@ namespace serial {
     /**
       Sends the console message through the TX, RX pins
       **/
-    //% weight=1
-    //% blockId=consolesendtoserial block="send console to serial"
+    //%
     void sendConsoleToSerial() {
       #if CODAL_SERIAL
         setSendToUART(serial.write)
