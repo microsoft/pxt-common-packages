@@ -8,7 +8,7 @@
 namespace console {
     type Listener = (text: string) => void;
 
-    const listeners: Listener[] = [function(text: string) { console.__defaultLog(text); }];
+    const listeners: Listener[] = [function(text: string) { control.__log(text); }];
 
     /**
      * Write a line of text to the console output.

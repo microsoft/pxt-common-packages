@@ -105,7 +105,7 @@ namespace serial {
     //% tx.fieldOptions.tooltips="false"
     //% rx.fieldEditor="gridpicker" rx.fieldOptions.columns=3
     //% rx.fieldOptions.tooltips="false"
-    //% blockGap=8
+    //% blockGap=8 inlineInputMode=inline
     //% blockHidden=1
     void redirect(DigitalPin tx, DigitalPin rx, BaudRate rate) {
       getWSerial()->serial.redirect((PinName)tx->name, (PinName)rx->name);

@@ -64,17 +64,13 @@ namespace control {
     int deviceSerialNumber() {
         return pxt::getSerialNumber();
     }
-}
-
-namespace console {
 
     /**
     *
     */
     //%
-    void __defaultLog(String text) {
+    void __log(String text) {
         if (NULL == text) return;
         pxt::sendSerial(text->data, text->length);
     }
-
 }
