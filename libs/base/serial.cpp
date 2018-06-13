@@ -2,20 +2,7 @@
 #include "pins.h"
 #include CODAL_SERIAL_HEADER
 
-namespace pxt {
-  class WSerial {
-    public:
-      CODAL_SERIAL serial;
-      WSerial()
-        : serial(PIN(TX), PIN(RX))
-        {}
-  };
-
-SINGLETON(WSerial);
-
-}
-
-enum BaudRate {
+enum class BaudRate {
   //% block=115200
   BaudRate115200 = 115200,
   //% block=57600
@@ -41,6 +28,19 @@ enum BaudRate {
   //% block=300
   BaudRate300 = 300
 };
+
+namespace pxt {
+  class WSerial {
+    public:
+      CODAL_SERIAL serial;
+      WSerial()
+        : serial(PIN(TX), PIN(RX))
+        {}
+  };
+
+SINGLETON(WSerial);
+
+}
 
 namespace serial {
     void send(const char* buffer, int length) {
@@ -85,7 +85,7 @@ namespace serial {
     //% blockId=serialsetbaudrate block="serial set baud rate to %rate"
     //% blockHidden=1
     void setBaudRate(BaudRate rate) {
-      getWSerial()->serial.baud(rate);
+      getWSerial()->serial.baud((int)rate);
     }
 
     /**
@@ -109,7 +109,7 @@ namespace serial {
     //% blockHidden=1
     void redirect(DigitalPin tx, DigitalPin rx, BaudRate rate) {
       getWSerial()->serial.redirect((PinName)tx->name, (PinName)rx->name);
-      getWSerial()->serial.baud(rate);
+      getWSerial()->serial.baud((int)rate);
     }
 
     /**
