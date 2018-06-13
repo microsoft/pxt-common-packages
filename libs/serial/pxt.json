@@ -1,0 +1,11 @@
+{
+    "name": "serial",
+    "description": "UART communicatoin",
+    "files": [
+        "serial.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core"
+    }
+}

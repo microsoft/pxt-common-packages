@@ -1,6 +1,5 @@
 #include "pxtbase.h"
 
-#ifdef CODAL_SERIAL
 namespace pxt {
   class WSerial {
     public:
@@ -8,16 +7,42 @@ namespace pxt {
       WSerial()
         : serial(LOOKUP_PIN(TX), LOOKUP_PIN(RX))
         {}
-  }
-  SINGLETON(WSerial);
+  };
+
+SINGLETON(WSerial);
+
 }
-#endif
+
+enum BaudRate {
+  //% block=115200
+  BaudRate115200 = 115200,
+  //% block=57600
+  BaudRate57600 = 57600,
+  //% block=38400
+  BaudRate38400 = 38400,
+  //% block=31250
+  BaudRate31250 = 31250,
+  //% block=28800
+  BaudRate28800 = 28800,
+  //% block=19200
+  BaudRate19200 = 19200,
+  //% block=14400
+  BaudRate14400 = 14400,
+  //% block=9600
+  BaudRate9600 = 9600,
+  //% block=4800
+  BaudRate4800 = 4800,
+  //% block=2400
+  BaudRate2400 = 2400,
+  //% block=1200
+  BaudRate1200 = 1200,
+  //% block=300
+  BaudRate300 = 300
+};
 
 namespace serial {
-    void write(const char* buffer, int length) {
-      #if CODAL_SERIAL
-      getWSerial()->serial.write(text->data, text->length);
-      #endif
+    void send(const char* buffer, int length) {
+      getWSerial()->serial.send(text->data, text->length);
     }
 
     /**
@@ -26,9 +51,10 @@ namespace serial {
     //% help=serial/write-string
     //% weight=87 blockHidden=true
     //% blockId=serial_writestring block="serial|write string %text"
+    //% blockHidden=1
     void writeString(String text) {
       if (NULL == text) return;
-      write(text->data, text->length);
+      send(text->data, text->length);
     }
 
     /**
@@ -36,27 +62,83 @@ namespace serial {
     */
     //% help=serial/write-buffer weight=6 blockHidden=true
     //% blockId=serial_writebuffer block="serial|write buffer %buffer"
+    //% blockHidden=1
     void writeBuffer(Buffer buffer) {
       if (NULL == buffer) return;
-      write((char*)buffer->data, buffer->length);
+      send((char*)buffer->data, buffer->length);
     }
+
+    /**
+    * Read multiple characters from the receive buffer. Pause until enough characters are present.
+    * @param length default buffer length, eg: 64
+    */
+    //% blockId=serial_readbuffer block="serial|read buffer %length"
+    //% help=serial/read-buffer advanced=true weight=5
+    //% blockHidden=1
+    Buffer readBuffer(int length) {
+      if (length <= 0)
+        length = MICROBIT_SERIAL_READ_BUFFER_LENGTH;
+        
+      auto buf = BufferMethods::mkBuffer(NULL, length);
+      int read = uBit.serial.read(buf->data, buf->length;
+      if (read != buf->length) {
+        auto temp = BufferMethods::slice(buf, 0, read);
+        decrRC(buf);
+        buf = temp;
+      }
+
+      return buf;
+    }
+
     /**
       Sends the console message through the TX, RX pins
       **/
-    //%
-    void sendConsoleToSerial() {
-      #if CODAL_SERIAL
-        setSendToUART(serial.write)
-      #endif
+    //% blockId=serialsendtoconsole block="serial attach to console"
+    //% blockHidden=1
+    void attachToConsole() {
+      setSendToUART(serial.send)
     }
 
     /**
     Set the baud rate of the serial port
     */
-    //%
-    void setBaud(int rate) {
-      #if CODAL_SERIAL
+    //% blockId=serialsetbaudrate block="serial set baud rate to %rate"
+    //% blockHidden=1
+    void setBaudRate(BaudRate rate) {
       getWSerial()->serial.baud(rate);
-      #endif
+    }
+
+    /**
+      Configure the pins used by the serial interface/
+    **/
+    /**
+    * Set the serial input and output to use pins instead of the USB connection.
+    * @param tx the new transmission pin, eg: SerialPin.P0
+    * @param rx the new reception pin, eg: SerialPin.P1
+    * @param rate the new baud rate. eg: 115200
+    */
+    //% weight=10
+    //% help=serial/redirect
+    //% blockId=serial_redirect block="serial|redirect to|TX %tx|RX %rx|at baud rate %rate"
+    //% blockExternalInputs=1
+    //% tx.fieldEditor="gridpicker" tx.fieldOptions.columns=3
+    //% tx.fieldOptions.tooltips="false"
+    //% rx.fieldEditor="gridpicker" rx.fieldOptions.columns=3
+    //% rx.fieldOptions.tooltips="false"
+    //% blockGap=8
+    //% blockHidden=1
+    void redirect(DigitalPin tx, DigitalPin rx, BaudRate rate) {
+      getWSerial()->serial.redirect(LOOKUP_PIN(tx), LOOKUP_PIN(rx));
+      getWSerial()->serial.baud(rate);
+    }
+
+    /**
+    * Direct the serial input and output to use the USB connection.
+    */
+    //% weight=9 help=serial/redirect-to-usb
+    //% blockId=serial_redirect_to_usb block="serial|redirect to USB"    
+    //% blockHidden=1
+    void redirectToUSB() {
+      getWSerial()->serial.redirect(USBTX, USBRX);
     }
 }

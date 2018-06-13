@@ -11,7 +11,11 @@ namespace pxsim.serial {
     export function sendConsoleToSerial() {
         // DO NO write to console.log
     }
-    export function setBaud(rate: number) {
-        
+    export function setBaudRate(rate: number) {
+        // TODO
     }
+    export function redirect(tx: pins.DigitalPin, rx: pins.DigitalPin) {
+        // TODO
+    }
+    export function redirectToUSB() {}
 }
