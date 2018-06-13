@@ -52,6 +52,8 @@ static void start_usb() {
     usb.start();
 }
 
+static void (*pSendToUART)(const char *data, int len) = NULL;
+
 void usb_init() {
     usb.stringDescriptors = string_descriptors;
     usb.deviceDescriptor = &device_desc;
@@ -74,11 +76,18 @@ void usb_init() {
 void sendSerial(const char *data, int len) {
     hf2.sendSerial(data, len);
     webhf2.sendSerial(data, len);
+    if (pSendToUART)
+        pSendToUART(data, len);
+}
+
+void setSendToUART(void (*f)(const char *, int)) {
+    pSendToUART = f;
 }
 
 #else
 void usb_init() {}
 __attribute__((weak)) void sendSerial(const char *data, int len) {}
+__attribute__((weak)) void setSendToUART(void (*f)(const char *, int)) {}
 #endif
 
 void dumpDmesg() {

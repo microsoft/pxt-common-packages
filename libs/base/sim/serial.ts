@@ -9,3 +9,9 @@ namespace pxsim.serial {
         // NOP, can't simulate
     }
 }
+
+namespace pxsim.console {
+    export function sendConsoleToSerial() {
+        // DO NO write to console.log
+    }
+}

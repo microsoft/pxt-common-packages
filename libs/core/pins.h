@@ -129,6 +129,10 @@
 #define CODAL_I2C CODAL_MBED::I2C
 #endif
 
+#ifndef CODAL_SERIAL
+#define CODAL_SERIAL CODAL_MBED::CODAL_SERIAL
+#endif
+
 typedef CODAL_PIN DevicePin;
 
 typedef DevicePin *DigitalPin;

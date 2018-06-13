@@ -1,8 +1,24 @@
 #include "pxtbase.h"
 
-namespace serial {
-    // note that at least one // followed by % is needed per declaration!
+#ifdef CODAL_SERIAL
+namespace pxt {
+  class WSerial {
+    public:
+      CODAL_SERIAL serial;
+      WSerial()
+        : serial(LOOKUP_PIN(TX), LOOKUP_PIN(RX))
+        {}
+  }
+  SINGLETON(WSerial);
+}
+#endif
 
+namespace serial {
+    void write(const char* buffer, int length) {
+      #if CODAL_SERIAL
+      getWSerial()->serial.write(text->data, text->length);
+      #endif
+    }
     /**
      * Write some text to the serial port.
      */
@@ -10,7 +26,8 @@ namespace serial {
     //% weight=87 blockHidden=true
     //% blockId=serial_writestring block="serial|write string %text"
     void writeString(String text) {
-      sendSerial(text->data, text->length);
+      if (NULL == text) return;
+      write(text->data, text->length);
     }
 
     /**
@@ -19,7 +36,20 @@ namespace serial {
     //% help=serial/write-buffer weight=6 blockHidden=true
     //% blockId=serial_writebuffer block="serial|write buffer %buffer"
     void writeBuffer(Buffer buffer) {
-      if (!buffer) return;
-      sendSerial((char*)buffer->data, buffer->length);
+      if (NULL == buffer) return;
+      write((char*)buffer->data, buffer->length);
+    }
+}
+
+namespace console {
+    /**
+      Sends the console message through the TX, RX pins
+      **/
+    //% weight=1
+    //% blockId=consolesendtoserial block="send console to serial"
+    void sendConsoleToSerial() {
+      #if CODAL_SERIAL
+        setSendToUART(serial.write)
+      #endif
     }
 }
