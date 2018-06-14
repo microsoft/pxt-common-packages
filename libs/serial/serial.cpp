@@ -33,7 +33,9 @@ namespace pxt {
       CODAL_SERIAL serial;
       WSerial()
         : serial(PIN(TX), PIN(RX))
-        {}
+        {
+          serial.baud((int)BaudRate::BaudRate115200)
+        }
   };
 
 SINGLETON(WSerial);
