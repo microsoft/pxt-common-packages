@@ -35,7 +35,7 @@ namespace display {
             this.lineColor = 1;
 
             this.axisPaddingX = 22;
-            this.axisPaddingY = this.font.charHeight + 8;
+            this.axisPaddingY = this.font.charHeight + 4;
             this.gridRows = 2;
             this.gridCols = 2; // computed on the fly
             this.times = [];
@@ -75,25 +75,21 @@ namespace display {
                 }
             }
 
+            // avoid empty interval
+            if (this.scaleXMin === this.scaleXMax)
+                this.scaleXMax = this.scaleXMin + 1; // TODO
+            if (this.scaleYMin === this.scaleYMax)
+                this.scaleYMax = this.scaleYMin + 1; // TODO
+
             // update axis to look better
-            const rx = generateSteps(0, this.times[this.times.length - 1] - this.times[0], 4);
+            let rx = generateSteps(0, this.times[this.times.length - 1] - this.times[0], 4);
             this.scaleXMin = rx[0];
             this.scaleXMax = rx[1];
             this.gridCols = rx[2];
-            const ry = generateSteps(this.scaleYMin, this.scaleYMax, 6);
+            let ry = generateSteps(this.scaleYMin, this.scaleYMax, 6);
             this.scaleYMin = ry[0];
             this.scaleYMax = ry[1];
             this.gridRows = ry[2];
-
-            // avoid empty interval
-            if (this.scaleXMin === this.scaleXMax) {
-                this.scaleXMin = 0.5;
-                this.scaleXMax = 0.5;
-            }
-            if (this.scaleYMin === this.scaleYMax) {
-                this.scaleYMin = 0.5;
-                this.scaleYMax = 0.5;
-            }
 
             // update y-axis width
             let xl = 0;
@@ -138,9 +134,9 @@ namespace display {
             let text = '';
             for (let i = 0; i <= this.gridRows; i++) {
                 text = roundWithPrecision(this.scaleYMax - (i * yUnit), 2).toString();
-                let y = i * this.gridHeight + this.font.charHeight / 2;
+                let y = i * this.gridHeight - this.font.charHeight / 2;
                 if (i == this.gridRows)
-                    y -= this.font.charHeight;
+                    y -= this.font.charHeight / 2;
                 else if (i == 0)
                     y += this.font.charHeight / 2;
                 screen.print(text, this.chartWidth + 5, y, c, this.font);
@@ -150,7 +146,9 @@ namespace display {
             for (let i = 0; i <= this.gridCols; i++) {
                 text = roundWithPrecision((i * xUnit), 2).toString();
                 let x = i * this.gridWidth;
-                screen.print(text, x, this.chartHeight + (this.axisPaddingY - 4 - this.font.charHeight), c, this.font);
+                if (i > 0)
+                    x -= this.font.charWidth / 2; // move one char to the left
+                screen.print(text, x, this.chartHeight + (this.axisPaddingY - 2 - this.font.charHeight), c, this.font);
             }
         }
 
