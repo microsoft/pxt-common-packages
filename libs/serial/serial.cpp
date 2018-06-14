@@ -34,7 +34,7 @@ namespace pxt {
       WSerial()
         : serial(PIN(TX), PIN(RX))
         {
-          serial.baud((int)BaudRate::BaudRate115200)
+          serial.baud((int)BaudRate::BaudRate115200);
         }
   };
 
@@ -44,7 +44,7 @@ SINGLETON(WSerial);
 
 namespace serial {
     void send(const char* buffer, int length) {
-      getWSerial()->serial.send(ManagedString(buffer, length));
+      getWSerial()->serial.printf("%s", buffer);
     }
 
     /**
