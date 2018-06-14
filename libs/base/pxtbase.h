@@ -101,6 +101,7 @@ void releaseFiber();
 int current_time_ms();
 void initRuntime();
 void sendSerial(const char *data, int len);
+void setSendToUART(void (*f)(const char *, int));
 int getSerialNumber();
 void registerWithDal(int id, int event, Action a, int flags = 16); // EVENT_LISTENER_DEFAULT_FLAGS
 void runInParallel(Action a);

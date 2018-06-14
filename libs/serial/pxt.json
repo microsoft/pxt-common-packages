@@ -1,0 +1,14 @@
+{
+    "name": "serial",
+    "description": "UART communicatoin",
+    "files": [
+        "serial.cpp",
+        "serial.ts",
+        "enums.d.ts",
+        "shims.d.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core"
+    }
+}

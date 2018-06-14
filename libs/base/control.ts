@@ -33,9 +33,8 @@ namespace control {
     }
 
     export function fail(message: string) {
-        serial.writeString("Fatal failure: ")
-        serial.writeString(message)
-        serial.writeString("\r\n")
+    console.log("Fatal failure: ")
+        console.log(message)
         panic(108)
     }
 

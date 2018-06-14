@@ -8,9 +8,7 @@
 namespace console {
     type Listener = (text: string) => void;
 
-    const listeners: Listener[] = [
-        (text: string) => serial.writeString(text)
-    ];
+    const listeners: Listener[] = [function(text: string) { control.__log(text); }];
 
     /**
      * Write a line of text to the console output.
