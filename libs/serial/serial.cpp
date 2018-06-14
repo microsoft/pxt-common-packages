@@ -44,6 +44,8 @@ SINGLETON(WSerial);
 
 namespace serial {
     void send(const char* buffer, int length) {
+      // TODO: fix CODAL abstraction
+      // getWSerial()->serial.send((uint8_t*)buffer, length * sizeof(char));
       getWSerial()->serial.printf("%s", buffer);
     }
 
