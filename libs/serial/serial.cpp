@@ -33,7 +33,9 @@ namespace pxt {
       CODAL_SERIAL serial;
       WSerial()
         : serial(PIN(TX), PIN(RX))
-        {}
+        {
+          serial.baud((int)BaudRate::BaudRate115200);
+        }
   };
 
 SINGLETON(WSerial);
@@ -42,7 +44,9 @@ SINGLETON(WSerial);
 
 namespace serial {
     void send(const char* buffer, int length) {
-      getWSerial()->serial.send(ManagedString(buffer, length));
+      // TODO: fix CODAL abstraction
+      // getWSerial()->serial.send((uint8_t*)buffer, length * sizeof(char));
+      getWSerial()->serial.printf("%s", buffer);
     }
 
     /**

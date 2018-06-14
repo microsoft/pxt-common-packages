@@ -141,6 +141,10 @@ namespace pxsim.pins {
         return 0;
     }
 
+    export function spiMode(mode: number): void {
+        // TODO
+    }
+
     export function spiTransfer(command: RefBuffer, response: RefBuffer): number {
         // TODO
         return 0;

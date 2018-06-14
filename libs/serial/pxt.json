@@ -7,6 +7,9 @@
         "enums.d.ts",
         "shims.d.ts"
     ],
+    "testFiles": [
+        "test.ts"
+    ],
     "public": true,
     "dependencies": {
         "core": "file:../core"
