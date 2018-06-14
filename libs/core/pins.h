@@ -133,10 +133,6 @@
 #define CODAL_SERIAL CODAL_MBED::Serial
 #endif
 
-#ifndef CODAL_SERIAL_HEADER
-#define CODAL_SERIAL_HEADER "MbedSerial.h"
-#endif
-
 typedef CODAL_PIN DevicePin;
 
 typedef DevicePin *DigitalPin;

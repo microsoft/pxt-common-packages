@@ -1,5 +1,4 @@
 #include "pxt.h"
-#include CODAL_SERIAL_HEADER
 
 enum class BaudRate {
   //% block=115200
