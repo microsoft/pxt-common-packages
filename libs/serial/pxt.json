@@ -13,8 +13,5 @@
     "public": true,
     "dependencies": {
         "core": "file:../core"
-    },
-    "testDependencies": {
-        "circuit-playground": "*"
     }
 }
