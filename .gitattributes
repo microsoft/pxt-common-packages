@@ -5,7 +5,6 @@
 *.h text eol=lf
 *.jres text eol=lf
 *.asm text eol=lf
-*.js text eol=lf
 *.md text eol=lf
 *.txt text eol=lf
 *.js text eol=lf
