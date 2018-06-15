@@ -1,9 +1,9 @@
 include Makefile.inc
 
-COMMON_FLAGS = -W -Wall -Wno-unused-parameter -Ipxtapp -fwrapv -fno-threadsafe-statics -Os -mthumb $(NPM_INCLUDES)
+COMMON_FLAGS = -W -Wall -Wno-unused-parameter -Ipxtapp -fwrapv -fno-threadsafe-statics -Os $(NPM_INCLUDES) -g
 CFLAGS = $(COMMON_FLAGS) -std=c99
 CXXFLAGS = $(COMMON_FLAGS) -std=c++11 -fno-rtti -fno-exceptions -fno-unwind-tables
-LDFLAGS = -Wl,--gc-sections -Wl,--sort-common -Wl,--sort-section=alignment
+LDFLAGS = -Wl,--gc-sections -Wl,--sort-common -Wl,--sort-section=alignment -g
 PREF = arm-linux-gnueabihf-
 CC = $(PREF)gcc
 LD = $(PREF)gcc
@@ -20,7 +20,7 @@ DEPS = $(PXT_HEADERS) package.json Makefile Makefile.inc
 all: $(EXE)
 
 $(EXE): $(PXT_OBJS)
-	$(LD) -o $(EXE) $(LDFLAGS) -Wl,-Map,$(EXE:.elf=.map) $(PXT_OBJS) $(LIBSTDCPP) -lm -lpthread -lz $(NPM_LIBS)
+	$(LD) -o $(EXE) $(LDFLAGS) -Wl,-Map,$(EXE:.elf=.map) $(PXT_OBJS) $(LIBSTDCPP) -lm -lpthread $(NPM_LIBS)
 	cp $(EXE) $(EXE:.elf=.full)
 	$(PREF)strip $(EXE)
 	node -p 'require("fs").readFileSync("$(EXE)").toString("hex")' > $(HEX)

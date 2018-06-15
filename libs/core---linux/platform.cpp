@@ -15,18 +15,6 @@ static void initRandomSeed() {
     seedRandom(seed);
 }
 
-void platform_init() {
-    initRandomSeed();
-
-/*
-    if (*HF2_DBG_MAGIC_PTR == HF2_DBG_MAGIC_START) {
-        *HF2_DBG_MAGIC_PTR = 0;
-        // this will cause alignment fault at the first breakpoint
-        globals[0] = (TValue)1;
-    }
-*/
-}
-
 void sendSerial(const char *data, int len) {
     /*
     if (!serial) {
@@ -37,9 +25,20 @@ void sendSerial(const char *data, int len) {
     */
 }
 
+extern "C" void drawPanic(int code)
+{
+    // TODO
+}
+
+
+extern "C" void target_init()
+{
+    initRandomSeed();
+}
+
+void screen_init() {
 
 }
 
-void cpu_clock_init() {
-    devTimer.init();
 }
+

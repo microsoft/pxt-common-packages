@@ -1,8 +1,6 @@
 #ifndef __PXT_PLATFORM_H
 #define __PXT_PLATFORM_H
 
-#include "Pin.h"
-
 #define PAGE_SIZE 1024 // not really
 
 #define DEV_NUM_PINS 28
@@ -18,6 +16,18 @@
 #define CODAL_TIMER ZTimer
 #define CODAL_SPI ZSPI
 #define CODAL_I2C ZI2C
+
+
+namespace pxt
+{
+
+    class ZPin;
+    class AbstractButton;
+    class MultiButton;
+    class CodalComponent;
+    
+    
+} // pxt
 
 #define IMAGE_BITS 4
 

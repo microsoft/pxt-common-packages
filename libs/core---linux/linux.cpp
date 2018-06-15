@@ -72,7 +72,6 @@ struct Thread {
 
 static struct Thread *allThreads;
 static struct Event *eventHead, *eventTail;
-static int usbFD;
 static int dmesgPtr;
 static int dmesgSerialPtr;
 static char dmesgBuf[4096];
@@ -377,8 +376,6 @@ void initRuntime() {
     // daemon(1, 1);
     startTime = currTime();
     DMESG("runtime starting...");
-    stopLMS();
-    startUsb();
     pthread_t disp;
     pthread_create(&disp, NULL, evtDispatcher, NULL);
     pthread_detach(disp);
@@ -424,4 +421,34 @@ void dmesg(const char *format, ...) {
     fflush(dmesgFile);
     fdatasync(fileno(dmesgFile));
 }
+
+int getSerialNumber() {
+    static int serial;
+
+    if (serial)
+        return serial;
+
+    char buf[1024];
+    int fd = open("/proc/cpuinfo", O_RDONLY);    
+    int len = read(fd, buf, sizeof(buf) - 1);
+    close(fd);
+
+    if (len < 0) len = 0;
+    buf[len] = 0;
+    auto p = strstr(buf, "Serial\t");
+    if (p) {
+        p += 6;
+        while (*p && strchr(" \t:", *p))
+            p++;
+        uint64_t s = 0;
+        sscanf(p, "%llu", &s);
+        serial = (s >> 32) ^ (s);        
+    }
+
+    if (!serial)
+        serial = 0xf00d0042;
+
+    return serial;
+}
+
 } // namespace pxt
