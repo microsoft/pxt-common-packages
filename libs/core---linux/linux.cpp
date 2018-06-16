@@ -368,14 +368,28 @@ void dumpDmesg() {
 }
 
 extern "C" void target_reset() {
-    exit(0);
+    kill(getpid(), SIGTERM);
 }
 
 void screen_init();
 void initRuntime() {
     // daemon(1, 1);
     startTime = currTime();
-    DMESG("runtime starting...");
+    int pid = getpid();
+    DMESG("runtime starting, pid=%d...", pid);
+    
+    FILE *pf = fopen("/tmp/pxt-pid", "r");
+    if (pf) {
+        int p2 = 0;
+        fscanf(pf, "%d", &p2);
+        if (p2)
+            kill(p2, SIGTERM);
+        fclose(pf);
+    }
+    pf = fopen("/tmp/pxt-pid", "w");
+    fprintf(pf, "%d", pid);
+    fclose(pf);
+
     pthread_t disp;
     pthread_create(&disp, NULL, evtDispatcher, NULL);
     pthread_detach(disp);
