@@ -372,6 +372,8 @@ extern "C" void target_reset() {
 }
 
 void screen_init();
+void initKeys();
+
 void initRuntime() {
     // daemon(1, 1);
     startTime = currTime();
@@ -396,6 +398,7 @@ void initRuntime() {
     setupThread(0, 0, mainThread);
     target_init();
     screen_init();
+    initKeys();
     startUser();
 }
 
