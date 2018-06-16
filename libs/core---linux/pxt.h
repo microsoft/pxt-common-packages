@@ -16,7 +16,6 @@ typedef Button *Button_;
 
 extern "C" void target_init();
 
-
 class MMap : public RefObject {
   public:
     int length;
@@ -29,17 +28,27 @@ class MMap : public RefObject {
 };
 
 extern volatile bool paniced;
+extern char **initialArgv;
+void target_exit();
 
 // Buffer, Sound, and Image share representation.
 typedef Buffer Sound;
 
-//extern Event lastEvent;
-}
+// extern Event lastEvent;
+} // namespace pxt
 
 #define DEVICE_ID_FIRST_BUTTON 4000
 
 #define DEVICE_EVT_ANY 0
 #define DEVICE_ID_NOTIFY 10000
 #define DEVICE_ID_NOTIFY_ONE 10001
+
+#undef PXT_MAIN
+#define PXT_MAIN                                                                                   \
+    int main(int argc, char **argv) {                                                        \
+        pxt::initialArgv = argv;                                                                   \
+        pxt::start();                                                                              \
+        return 0;                                                                                  \
+    }
 
 #endif

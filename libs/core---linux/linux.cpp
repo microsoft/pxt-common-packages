@@ -110,7 +110,7 @@ extern "C" void target_panic(int error_code) {
         sleep_core_us(500 * 1000);
     }
 
-    target_reset();
+    target_exit();
 }
 
 void startUser() {
@@ -367,8 +367,20 @@ void dumpDmesg() {
     dmesgSerialPtr = dmesgPtr;
 }
 
-extern "C" void target_reset() {
+void target_exit() {
     kill(getpid(), SIGTERM);
+}
+char **initialArgv;
+
+extern "C" void target_reset() {
+    for (int i = 3; i < 1000; ++i)
+        close(i);
+    if (!fork()) {
+        execv(initialArgv[0], initialArgv);
+        exit(127);
+    } else {
+        target_exit();
+    }
 }
 
 void screen_init();
@@ -379,7 +391,7 @@ void initRuntime() {
     startTime = currTime();
     int pid = getpid();
     DMESG("runtime starting, pid=%d...", pid);
-    
+
     FILE *pf = fopen("/tmp/pxt-pid", "r");
     if (pf) {
         int p2 = 0;
@@ -448,11 +460,12 @@ int getSerialNumber() {
         return serial;
 
     char buf[1024];
-    int fd = open("/proc/cpuinfo", O_RDONLY);    
+    int fd = open("/proc/cpuinfo", O_RDONLY);
     int len = read(fd, buf, sizeof(buf) - 1);
     close(fd);
 
-    if (len < 0) len = 0;
+    if (len < 0)
+        len = 0;
     buf[len] = 0;
     auto p = strstr(buf, "Serial\t");
     if (p) {
@@ -461,7 +474,7 @@ int getSerialNumber() {
             p++;
         uint64_t s = 0;
         sscanf(p, "%llu", &s);
-        serial = (s >> 32) ^ (s);        
+        serial = (s >> 32) ^ (s);
     }
 
     if (!serial)
