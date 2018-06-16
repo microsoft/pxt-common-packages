@@ -403,6 +403,8 @@ void dmesgRaw(const char *buf, uint32_t len) {
     memcpy(dmesgBuf + dmesgPtr, buf, len);
     dmesgPtr += len;
     fwrite(buf, 1, len, dmesgFile);
+
+    fwrite(buf, 1, len, stderr);
 }
 
 void dmesg(const char *format, ...) {
