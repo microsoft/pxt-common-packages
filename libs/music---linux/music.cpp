@@ -16,7 +16,17 @@ namespace music {
 static uint16_t soundBuf[BUFLEN];
 static volatile int freq;
 static int playerRunning;
+static int numBuffers = 0;
 // static volatile int timeout;
+
+void writeAll(int fd, void *dst, uint32_t length) {
+    while (length) {
+        int curr = write(fd, dst, length);
+        if (curr < 0) return;
+        length -= curr;
+        dst = (char *)dst + curr;
+    }
+}
 
 static void *musicPlayer(void *) {
     int audio_fd = open("/dev/dsp", O_WRONLY);
@@ -30,18 +40,22 @@ static void *musicPlayer(void *) {
     int speed = 44100;
     ioctl(audio_fd, SNDCTL_DSP_SPEED, &speed);
 
+    //int frag = (150 << 16) | (  5);
+    //ioctl(audio_fd, SNDCTL_DSP_SETFRAGMENT, &frag);
+
     for (;;) {
-        int numsamples = BUFLEN / 2;
+        int numsamples = BUFLEN - 10;
         if (freq == 0) {
             memset(soundBuf, 0, numsamples * 2);
         } else {
-            float period = (float)speed / freq;
+            numBuffers++;
+            double period = (double)speed / freq;
             if (period < 2)
                 period = 2;
             int numperiods = BUFLEN / period;
             numsamples = numperiods * period;
-            float step = 2 * M_PI / period;
-            float ang = 0;
+            double step = 2 * M_PI / period;
+            double ang = 0;
             for (int i = 0; i < numsamples; ++i) {
                 soundBuf[i] = 0x7fff * (1 + sinf(ang));
                 ang += step;
@@ -56,13 +70,13 @@ static void *musicPlayer(void *) {
             }
         }
 #endif
-        write(audio_fd, soundBuf, numsamples * 2);
+        writeAll(audio_fd, soundBuf, numsamples * 2);
         for (;;) {
             int delay;
             ioctl(audio_fd, SNDCTL_DSP_GETODELAY, &delay);
             if (delay < (numsamples * 2) / 2)
                 break;
-            sleep_core_us(3000);
+            sleep_core_us(1000);
         }
     }
 
