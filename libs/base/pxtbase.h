@@ -98,6 +98,7 @@ extern "C" void target_reset();
 void sleep_ms(unsigned ms);
 void sleep_us(uint64_t us);
 void releaseFiber();
+uint64_t current_time_us();
 int current_time_ms();
 void initRuntime();
 void sendSerial(const char *data, int len);

@@ -1,6 +1,6 @@
 include Makefile.inc
 
-COMMON_FLAGS = -W -Wall -Wno-unused-parameter -Ipxtapp -fwrapv -fno-threadsafe-statics -Os $(NPM_INCLUDES) -g
+COMMON_FLAGS = -W -Wall -Wno-unused-parameter -Ipxtapp -fwrapv -fno-threadsafe-statics -O3 $(NPM_INCLUDES) -g
 LIBS = -lwiringPi -lm -lpthread -lrt
 CFLAGS = $(COMMON_FLAGS) -std=c99
 CXXFLAGS = $(COMMON_FLAGS) -std=c++11 -fno-rtti -fno-exceptions -fno-unwind-tables

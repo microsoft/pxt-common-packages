@@ -17,6 +17,7 @@ class WDisplay {
     uint32_t currPalette[16];
     bool newPalette;
     volatile bool painted;
+    volatile bool dirty;
 
     uint8_t *screenBuf;
     Image_ lastImg;
@@ -46,6 +47,7 @@ static void *updateDisplay(void *wd) {
 
 void WDisplay::updateLoop() {
     int cur_page = 1;
+    int frameNo = 0;
 
     int sx = vinfo.xres / width;
     int sy = vinfo.yres / height;
@@ -54,16 +56,30 @@ void WDisplay::updateLoop() {
     else
         sy = sx;
 
+    sx &= ~1;
+
     int offx = (vinfo.xres - width * sx) / 2;
     int offy = (vinfo.yres - height * sy) / 2;
     int screensize = finfo.line_length * vinfo.yres;
+    uint32_t skip = offx;
+
+    offx &= ~1;
 
     memset(fbuf, 0x33, screensize * 2);
 
+    dirty = true;
+
     for (;;) {
+        while (!dirty)
+            sleep_core_us(2000);
+        
+        //auto start = current_time_us();
+
         pthread_mutex_lock(&mutex);
-        uint32_t *dst = fbuf + cur_page * screensize / 4 + offx + offy * finfo.line_length / 4;
-        uint32_t skip = offx * 2;
+        dirty = false;
+        uint16_t *dst =
+            (uint16_t *)fbuf + cur_page * screensize / 2 + offx + offy * finfo.line_length / 2;
+        uint32_t *d2 = (uint32_t*)dst;
         for (int yy = 0; yy < height; yy++) {
             auto shift = yy & 1 ? 4 : 0;
             for (int i = 0; i < sy; ++i) {
@@ -71,13 +87,15 @@ void WDisplay::updateLoop() {
                 for (int xx = 0; xx < width; ++xx) {
                     int c = this->currPalette[(*src >> shift) & 0xf];
                     src += height / 2;
-                    for (int j = 0; j < sx; ++j)
-                        *dst++ = c;
+                    for (int j = 0; j < sx / 2; ++j)
+                        *d2++ = c;
                 }
-                dst += skip;
+                d2 += skip;
             }
         }
         pthread_mutex_unlock(&mutex);
+
+        //auto len = current_time_us() - start;
 
         painted = true;
         raiseEvent(DEVICE_ID_NOTIFY_ONE, eventId);
@@ -86,6 +104,11 @@ void WDisplay::updateLoop() {
         ioctl(fb_fd, FBIOPAN_DISPLAY, &vinfo);
         ioctl(fb_fd, FBIO_WAITFORVSYNC, 0);
         cur_page = !cur_page;
+        frameNo++;
+
+        //auto tot = current_time_us() - start;
+        //if (frameNo % 137 == 0)
+        //    DMESG("copy %d us, tot %d us",  (int)len, (int)tot);
     }
 }
 
@@ -116,7 +139,7 @@ WDisplay::WDisplay() {
 
     vinfo.yres_virtual = vinfo.yres * 2;
     vinfo.xres_virtual = vinfo.xres;
-    vinfo.bits_per_pixel = 32;
+    vinfo.bits_per_pixel = 16;
 
     ioctl(fb_fd, FBIOPUT_VSCREENINFO, &vinfo);
     ioctl(fb_fd, FBIOGET_FSCREENINFO, &finfo);
@@ -139,8 +162,15 @@ void setPalette(Buffer buf) {
     if (48 != buf->length)
         target_panic(907);
     for (int i = 0; i < 16; ++i) {
-        display->currPalette[i] =
-            (buf->data[i * 3] << 16) | (buf->data[i * 3 + 1] << 8) | (buf->data[i * 3 + 2] << 0);
+        uint8_t r = buf->data[i * 3];
+        uint8_t g = buf->data[i * 3 + 1];
+        uint8_t b = buf->data[i * 3 + 2];
+        // display->currPalette[i] = (r << 16) | (g << 8) | (b << 0);
+        r >>= 3;
+        g >>= 2;
+        b >>= 3;
+        uint16_t cc = (r << 11) | (g << 5) | (b << 0);
+         display->currPalette[i] = (cc << 16) | cc;
     }
     display->newPalette = true;
 }
@@ -167,6 +197,7 @@ void WDisplay::update(Image_ img) {
         painted = false;
 
         pthread_mutex_lock(&mutex);
+        dirty = true;
         if (newPalette) {
             newPalette = false;
         }
@@ -182,6 +213,6 @@ void updateScreen(Image_ img) {
 
 //%
 void updateStats(String msg) {
-    // DMESG("render: %s", msg->data);
+    DMESG("render: %s", msg->data);
 }
 } // namespace pxt

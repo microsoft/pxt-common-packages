@@ -185,7 +185,7 @@ const int *getConfigInts(const char *name) {
     return buf;
 }
 
-static int startTime;
+static uint64_t startTime;
 static pthread_mutex_t execMutex;
 static pthread_mutex_t eventMutex;
 static pthread_cond_t newEventBroadcast;
@@ -277,11 +277,15 @@ void sleep_us(uint64_t us) {
 uint64_t currTime() {
     struct timeval tv;
     gettimeofday(&tv, NULL);
-    return tv.tv_sec * 1000 + tv.tv_usec / 1000;
+    return tv.tv_sec * 1000000LL + tv.tv_usec;
+}
+
+uint64_t current_time_us() {
+    return currTime() - startTime;
 }
 
 int current_time_ms() {
-    return currTime() - startTime;
+    return current_time_us() / 1000;
 }
 
 void disposeThread(Thread *t) {
