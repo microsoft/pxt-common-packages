@@ -70,6 +70,8 @@ void WDisplay::updateLoop() {
     dirty = true;
 
     for (;;) {
+        auto start0 = current_time_us();
+
         while (!dirty)
             sleep_core_us(2000);
         
@@ -106,9 +108,15 @@ void WDisplay::updateLoop() {
         cur_page = !cur_page;
         frameNo++;
 
+        auto fulllen = current_time_us() - start0;
+        // throttle it to 40fps (really 30fps)
+        if (fulllen < 25000) {
+            ioctl(fb_fd, FBIO_WAITFORVSYNC, 0);
+        }
+
         //auto tot = current_time_us() - start;
-        //if (frameNo % 137 == 0)
-        //    DMESG("copy %d us, tot %d us",  (int)len, (int)tot);
+        //if (frameNo % 37 == 0)
+        //    DMESG("copy %d us, tot %d us delay %d us",  (int)len, (int)tot, (int)(start-start0));
     }
 }
 
@@ -213,6 +221,6 @@ void updateScreen(Image_ img) {
 
 //%
 void updateStats(String msg) {
-    DMESG("render: %s", msg->data);
+    // DMESG("render: %s", msg->data);
 }
 } // namespace pxt
