@@ -1,17 +1,16 @@
 #include "pxt.h"
 
+#include <unistd.h>
+#include <stdio.h>
+#include <fcntl.h>
+
 namespace pxt {
 
 static void initRandomSeed() {
     int seed = 0xC0DA1;
-    /*
-    auto pinTemp = LOOKUP_PIN(TEMPERATURE);
-    if (pinTemp)
-        seed *= pinTemp->getAnalogValue();
-    auto pinLight = LOOKUP_PIN(LIGHT);
-    if (pinLight)
-        seed *= pinLight->getAnalogValue();
-    */
+    int fd = open("/dev/urandom", O_RDONLY);
+    read(fd, &seed, sizeof(seed));
+    close(fd);
     seedRandom(seed);
 }
 
