@@ -55,11 +55,14 @@ void WDisplay::updateLoop() {
         sy = sx;
 
     int offx = (vinfo.xres - width * sx) / 2;
+    int offy = (vinfo.yres - height * sy) / 2;
     int screensize = finfo.line_length * vinfo.yres;
+
+    memset(fbuf, 0x33, screensize * 2);
 
     for (;;) {
         pthread_mutex_lock(&mutex);
-        uint32_t *dst = fbuf + cur_page * screensize / 4 + offx;
+        uint32_t *dst = fbuf + cur_page * screensize / 4 + offx + offy * finfo.line_length / 4;
         uint32_t skip = offx * 2;
         for (int yy = 0; yy < height; yy++) {
             auto shift = yy & 1 ? 4 : 0;
