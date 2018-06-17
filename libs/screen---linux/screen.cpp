@@ -179,6 +179,6 @@ void updateScreen(Image_ img) {
 
 //%
 void updateStats(String msg) {
-    DMESG("render: %s", msg->data);
+    // DMESG("render: %s", msg->data);
 }
 } // namespace pxt
