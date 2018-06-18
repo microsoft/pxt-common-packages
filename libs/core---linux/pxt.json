@@ -1,0 +1,22 @@
+{
+    "name": "core---linux",
+    "files": [
+        "README.md",
+        "Makefile",
+        "dal.d.ts",
+        "linux.cpp",
+        "pxt.h",
+        "platform.h",
+        "platform.cpp",
+        "pxtcore.h",
+        "pins.h",
+        "control.cpp",
+        "shims.d.ts",
+        "enums.d.ts",
+        "ns.ts",
+        "timer.ts",
+        "buffer.ts",
+        "pxtparts.json"
+    ],
+    "additionalFilePath": "../core"
+}
