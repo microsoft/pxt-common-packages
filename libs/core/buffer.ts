@@ -40,7 +40,7 @@ namespace pins {
      */
     //%
     export function createBufferFromArray(bytes: number[]) {
-        let buf = createBuffer(bytes.length)
+        let buf = control.createBuffer(bytes.length)
         for (let i = 0; i < bytes.length; ++i)
             buf[i] = bytes[i]
         return buf
@@ -113,7 +113,7 @@ namespace pins {
     }
 
     export function packBuffer(format: string, nums: number[]) {
-        let buf = createBuffer(packedSize(format))
+        let buf = control.createBuffer(packedSize(format))
         packUnpackCore(format, nums, buf, true)
         return buf
     }
@@ -214,7 +214,7 @@ namespace msgpack {
         for (let n of nums) {
             off += packNumberCore(null, off, n)
         }
-        let buf = pins.createBuffer(off)
+        let buf = control.createBuffer(off)
         off = 0
         for (let n of nums) {
             off += packNumberCore(buf, off, n)
