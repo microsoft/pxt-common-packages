@@ -2,7 +2,9 @@ enum ControllerButtonEvent {
     //% block="pressed"
     Pressed = KEY_DOWN,
     //% block="released"
-    Released = KEY_UP
+    Released = KEY_UP,
+    //% block="repeat"
+    Repeated = SYSTEM_KEY_REPEAT
 }
 
 /**
@@ -16,7 +18,6 @@ namespace controller {
     //% fixedInstances
     export class Button {
         public id: number;
-        public repeat: boolean;
         public repeatDelay: number;
         public repeatInterval: number;
         private _pressed: boolean;
@@ -26,7 +27,6 @@ namespace controller {
         constructor(id: number, buttonId?: number, upid?: number, downid?: number) {
             this.id = id;
             this._pressed = false;
-            this.repeat = true;
             this.repeatDelay = 500;
             this.repeatInterval = 30;
             this._repeatCount = 0;
@@ -68,6 +68,13 @@ namespace controller {
                 control.raiseEvent(SYSTEM_KEY_DOWN, this.id)
         }
 
+        private raiseButtonRepeat() {
+            if (_userEventsEnabled)
+                control.raiseEvent(KEY_REPEAT, this.id)
+            else
+                control.raiseEvent(SYSTEM_KEY_REPEAT, this.id)
+        }
+
         /**
          * Run some code when a button is pressed or released
          */
@@ -95,18 +102,8 @@ namespace controller {
             return this._pressed;
         }
 
-        /**
-         * Turns on or off automatic repeat of button events
-         * @param repeat a boolean value indicating if repeating is enabled
-         */
-        //% bockId=keysetrepeat block="set %button repeat %repeat=toggleOnOff"
-        //% weight=90 blockGap=8 help=controller/button/set-repeat
-        setRepeat(repeat: boolean) {
-            this.repeat = repeat;
-        }
-
         __update(dtms: number) {
-            if (!this._pressed || !this.repeat) return;
+            if (!this._pressed) return;
             this._pressedElasped += dtms;
             // inital delay
             if (this._pressedElasped < this.repeatDelay) 
@@ -115,7 +112,7 @@ namespace controller {
             // do we have enough time to repeat
             const count = Math.floor((this._pressedElasped - this.repeatDelay) / this.repeatInterval);
             if (count != this._repeatCount) {
-                this.raiseButtonDown();
+                this.raiseButtonRepeat();
                 this._repeatCount = count;
             }
         }
