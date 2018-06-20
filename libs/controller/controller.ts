@@ -16,6 +16,7 @@ namespace controller {
     //% fixedInstances
     export class Button {
         public id: number;
+        public repeat: boolean;
         public repeatDelay: number;
         public repeatInterval: number;
         private _pressed: boolean;
@@ -25,6 +26,7 @@ namespace controller {
         constructor(id: number, buttonId?: number, upid?: number, downid?: number) {
             this.id = id;
             this._pressed = false;
+            this.repeat = true;
             this.repeatDelay = 500;
             this.repeatInterval = 30;
             this._repeatCount = 0;
@@ -93,8 +95,18 @@ namespace controller {
             return this._pressed;
         }
 
+        /**
+         * Turns on or off automatic repeat of button events
+         * @param repeat a boolean value indicating if repeating is enabled
+         */
+        //% bockId=keysetrepeat block="set %button repeat %repeat=toggleOnOff"
+        //% weight=90 blockGap=8 help=controller/button/set-repeat
+        setRepeat(repeat: boolean) {
+            this.repeat = repeat;
+        }
+
         __update(dtms: number) {
-            if (!this._pressed) return;
+            if (!this._pressed || !this.repeat) return;
             this._pressedElasped += dtms;
             // inital delay
             if (this._pressedElasped < this.repeatDelay) 
