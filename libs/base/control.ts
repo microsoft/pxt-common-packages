@@ -33,9 +33,8 @@ namespace control {
     }
 
     export function fail(message: string) {
-        serial.writeString("Fatal failure: ")
-        serial.writeString(message)
-        serial.writeString("\r\n")
+    console.log("Fatal failure: ")
+        console.log(message)
         panic(108)
     }
 
@@ -207,3 +206,12 @@ function pause(ms: number): void {
  */
 //% shim=@hex
 function hex(lits: any, ...args: any[]): Buffer { return null }
+
+// micro:bit compatibility
+// these functions allow some level of reuse
+// between micro:bit and other maker-style editors
+namespace basic {
+    export function pause(millis: number) {
+        loops.pause(millis);
+    }
+}

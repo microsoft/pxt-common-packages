@@ -36,5 +36,4 @@ controller.anyButton.onEvent(ControllerButtonEvent.Pressed, function () {
 
 ## See also #seealso
 
-[is pressed](/reference/controller/button/is-pressed),
-[was pressed](/reference/controller/button/was-pressed)
+[is pressed](/reference/controller/button/is-pressed)

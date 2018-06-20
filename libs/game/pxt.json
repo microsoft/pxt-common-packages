@@ -17,6 +17,7 @@
         "camera.ts",
         "scene.ts",
         "scenes.ts",
+        "textDialogs.ts",
         "game.ts",
         "prompt.ts",
         "targetoverrides.cpp",

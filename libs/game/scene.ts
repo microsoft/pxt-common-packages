@@ -54,6 +54,13 @@ namespace scene {
 
             this.allSprites = [];
             scene.setBackgroundColor(0)
+            // update controller state
+            this.eventContext.registerFrameHandler(8, () => {
+                performance.startTimer("controller_update")
+                const dt = this.eventContext.deltaTime;
+                controller.__update(dt);
+                performance.stopTimer("controller_update")
+            })
             // update sprites in tilemap
             this.eventContext.registerFrameHandler(9, () => {
                 if (this.tileMap) {

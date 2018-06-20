@@ -11,40 +11,61 @@ enum ControllerButtonEvent {
 //% weight=97 color="#e15f41" icon="\uf11b"
 namespace controller {
     let _userEventsEnabled = true;
+    let _activeButtons: Button[];
 
     //% fixedInstances
     export class Button {
-        id: number;
+        public id: number;
+        public repeat: boolean;
+        public repeatDelay: number;
+        public repeatInterval: number;
         private _pressed: boolean;
-        private checked: boolean;
+        private _pressedElasped: number;
+        private _repeatCount: number;
 
         constructor(id: number, buttonId?: number, upid?: number, downid?: number) {
             this.id = id;
             this._pressed = false;
-            this.checked = false;
+            this.repeat = true;
+            this.repeatDelay = 500;
+            this.repeatInterval = 30;
+            this._repeatCount = 0;
             control.internalOnEvent(INTERNAL_KEY_UP, this.id, () => {
                 if (this._pressed) {
                     this._pressed = false
-                    if (_userEventsEnabled)
-                        control.raiseEvent(KEY_UP, this.id)
-                    else
-                        control.raiseEvent(SYSTEM_KEY_UP, this.id)
+                    this.raiseButtonUp();
                 }
             }, 16)
             control.internalOnEvent(INTERNAL_KEY_DOWN, this.id, () => {
                 if (!this._pressed) {
-                    this._pressed = true
-                    this.checked = false
-                    if (_userEventsEnabled)
-                        control.raiseEvent(KEY_DOWN, this.id)
-                    else
-                        control.raiseEvent(SYSTEM_KEY_DOWN, this.id)
+                    this._pressed = true;
+                    this._pressedElasped = 0;
+                    this._repeatCount = 0;
+                    this.raiseButtonDown();
                 }
             }, 16)
             if (buttonId && upid && downid) {
                 control.internalOnEvent(buttonId, upid, () => control.raiseEvent(INTERNAL_KEY_UP, this.id), 16)
                 control.internalOnEvent(buttonId, downid, () => control.raiseEvent(INTERNAL_KEY_DOWN, this.id), 16)
             }
+
+            // register button in global list
+            if (!_activeButtons) _activeButtons = [];
+            _activeButtons.push(this);
+        }
+
+        private raiseButtonUp() {
+            if (_userEventsEnabled)
+                control.raiseEvent(KEY_UP, this.id)
+            else
+                control.raiseEvent(SYSTEM_KEY_UP, this.id);
+        }
+
+        private raiseButtonDown() {
+            if (_userEventsEnabled)
+                control.raiseEvent(KEY_DOWN, this.id)
+            else
+                control.raiseEvent(SYSTEM_KEY_DOWN, this.id)
         }
 
         /**
@@ -71,20 +92,32 @@ namespace controller {
         //% weight=96 blockGap=8 help=controller/button/is-pressed
         //% blockId=keyispressed block="is %button **button** pressed"
         isPressed() {
-            return this._pressed
+            return this._pressed;
         }
 
         /**
-         * Indicates if the button was pressed since the last call
-        */
-        //% weight=95 help=controller/button/was-pressed
-        //% blockId=keywaspressed block="was %button **button** pressed"
-        wasPressed() {
-            if (!this.checked) {
-                this.checked = true
-                return this._pressed
+         * Turns on or off automatic repeat of button events
+         * @param repeat a boolean value indicating if repeating is enabled
+         */
+        //% bockId=keysetrepeat block="set %button repeat %repeat=toggleOnOff"
+        //% weight=90 blockGap=8 help=controller/button/set-repeat
+        setRepeat(repeat: boolean) {
+            this.repeat = repeat;
+        }
+
+        __update(dtms: number) {
+            if (!this._pressed || !this.repeat) return;
+            this._pressedElasped += dtms;
+            // inital delay
+            if (this._pressedElasped < this.repeatDelay) 
+                return;
+            
+            // do we have enough time to repeat
+            const count = Math.floor((this._pressedElasped - this.repeatDelay) / this.repeatInterval);
+            if (count != this._repeatCount) {
+                this.raiseButtonDown();
+                this._repeatCount = count;
             }
-            return false
         }
     }
 
@@ -139,5 +172,14 @@ namespace controller {
 
     export function _setUserEventsEnabled(enabled: boolean) {
         _userEventsEnabled = enabled;
+    }
+
+    /**
+     * Called by the game engine to update and/or raise events
+     */
+    export function __update(dt: number) {
+        if (!_activeButtons) return;
+        const dtms = (dt * 1000) | 0
+        _activeButtons.forEach(btn => btn.__update(dtms));
     }
 }

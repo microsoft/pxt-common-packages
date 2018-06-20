@@ -78,7 +78,9 @@ enum PhotonMode {
     //% block="pen down"
     PenDown,
     //% block="eraser"
-    Eraser
+    Eraser,
+    //% block="off"
+    Off
 }
 
 /**
@@ -112,7 +114,7 @@ namespace light {
         _photonMode: number;
         _photonPos: number;
         _photonDir: number;
-        _photonColor: number;
+        _photonPenColor: number;
         // last animation used by showAnimationFrame
         _lastAnimation: NeoPixelAnimation;
         _lastAnimationRenderer: () => boolean;
@@ -320,7 +322,7 @@ namespace light {
                         sb[offset + j] = (b[offset + j] * (_bb ? _bb[i] : this._brightness)) >> 8;
                 }
                 // apply photon
-                if (this._photonColor) {
+                if (this._photonPenColor) {
                     // draw head and trail
                     const tailn = Math.min(2, Math.max(8, this._length / 10));
                     let pi = this._photonPos * stride;
@@ -443,7 +445,7 @@ namespace light {
                 this._photonMode = PhotonMode.PenDown;
                 this._photonPos = 0;
                 this._photonDir = 1;
-                this._photonColor = Colors.Red;
+                this._photonPenColor = Colors.Red;
             }
         }
 
@@ -492,7 +494,7 @@ namespace light {
 
             // paint under photon
             if (this._photonMode == PhotonMode.PenDown)
-                this.setPixelColor(this._photonPos, this._photonColor);
+                this.setPixelColor(this._photonPos, this._photonPenColor);
             else if (this._photonMode == PhotonMode.Eraser)
                 this.setPixelColor(this._photonPos, 0); // erase led
 
@@ -512,7 +514,7 @@ namespace light {
         //% group="Photon" weight=38 blockGap=8
         setPhotonPenColor(color: number) {
             this.initPhoton();
-            this._photonColor = color;
+            this._photonPenColor = color;
             this.photonForward(0);
         }
 
@@ -520,7 +522,7 @@ namespace light {
          * Sets the photon hue.
          * @param hue the hue of the photon color
          */
-        //% blockId=light_photon_set_pen_hue block="%strip=variables_get|photon set pen hue %hue=colorWheelPicker"
+        //% blockId=light_photon_set_pen_hue block="%strip=variables_get|photon set pen hue %hue=colorWheelHsvPicker"
         //% help="light/neopixelstrip/set-photon-pen-hue"
         //% parts="neopixel"
         //% group="Photon" weight=39 blockGap=8
@@ -542,10 +544,15 @@ namespace light {
         //% parts="neopixel"
         //% group="Photon" weight=38
         setPhotonMode(mode: PhotonMode) {
-            this.initPhoton();
-            if (this._photonMode != mode) {
-                this._photonMode = mode;
-                this.photonForward(0);
+            if (mode == PhotonMode.Off) {
+                this._photonPos = undefined;
+                this.show();
+            } else {
+                this.initPhoton();
+                if (this._photonMode != mode) {
+                    this._photonMode = mode;
+                    this.photonForward(0);
+                }    
             }
         }
 

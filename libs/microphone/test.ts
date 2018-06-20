@@ -1,7 +1,7 @@
 forever(() => {
     let level = input.soundLevel()
-    serial.writeValue("sound", level)
+    console.logValue("sound", level)
 })
 input.onLoudSound(() => {
-    serial.writeLine("loud")
+    console.log("loud")
 })

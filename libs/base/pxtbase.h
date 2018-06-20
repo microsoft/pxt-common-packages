@@ -33,6 +33,7 @@
 #include <set>
 #endif
 
+#include "platform.h"
 #include "pxtcore.h"
 
 #ifndef PXT_VTABLE_SHIFT
@@ -97,9 +98,11 @@ extern "C" void target_reset();
 void sleep_ms(unsigned ms);
 void sleep_us(uint64_t us);
 void releaseFiber();
+uint64_t current_time_us();
 int current_time_ms();
 void initRuntime();
 void sendSerial(const char *data, int len);
+void setSendToUART(void (*f)(const char *, int));
 int getSerialNumber();
 void registerWithDal(int id, int event, Action a, int flags = 16); // EVENT_LISTENER_DEFAULT_FLAGS
 void runInParallel(Action a);

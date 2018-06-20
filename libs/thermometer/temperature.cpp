@@ -1,7 +1,5 @@
 #include "pxt.h"
-#include "AnalogSensor.h"
-#include "NonLinearAnalogSensor.h"
-#include "Button.h"
+#include "target_temperature.h"
 
 enum class TemperatureCondition {
     //% block="hot"
@@ -18,24 +16,7 @@ enum class TemperatureUnit {
 };
 
 namespace pxt {
-
-// Wrapper classes
-class WTemp {
-  public:
-    NonLinearAnalogSensor sensor;
-    WTemp()
-        : sensor(*LOOKUP_PIN(TEMPERATURE), DEVICE_ID_THERMOMETER,
-                TEMPERATURE_NOMINAL_VALUE, 
-                TEMPERATURE_NOMINAL_READING, 
-                TEMPERATURE_BETA, 
-                TEMPERATURE_SERIES_RESISTOR,
-                TEMPERATURE_ZERO_OFFSET)
-    {
-        sensor.init();
-    }
-};
 SINGLETON(WTemp);
-
 }
 
 namespace input {

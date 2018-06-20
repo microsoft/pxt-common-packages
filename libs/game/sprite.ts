@@ -2,7 +2,9 @@ enum SpriteFlag {
     //% block="ghost"
     Ghost = sprites.Flag.Ghost,
     //% block="auto destroy"
-    AutoDestroy = sprites.Flag.AutoDestroy
+    AutoDestroy = sprites.Flag.AutoDestroy,
+    //% block="stay in screen"
+    StayInScreen = sprites.Flag.StayInScreen
 }
 
 enum CollisionDirection {
@@ -65,7 +67,7 @@ class Sprite implements SpriteLike {
     ax: number
     //% group="Properties"
     //% blockCombine block="ay (acceleration y)"
-    ay: number    
+    ay: number
     /**
      * The type of sprite
      */
@@ -78,7 +80,7 @@ class Sprite implements SpriteLike {
      */
     //% group="Properties"
     layer: number;
-    
+
     /**
      * Time to live in game ticks. The lifespan decreases by 1 on each game update
      * and the sprite gets destroyed when it reaches 0.
@@ -299,6 +301,22 @@ class Sprite implements SpriteLike {
             && this.isOutOfScreen(camera)) {
             this.destroy()
         }
+
+        if (this.flags & sprites.Flag.StayInScreen) {
+            if (this.left < camera.offsetX) {
+                this.left = camera.offsetX;
+            }
+            else if (this.right > camera.offsetX + screen.width) {
+                this.right = camera.offsetX + screen.width;
+            }
+
+            if (this.top < camera.offsetY) {
+                this.top = camera.offsetY;
+            }
+            else if (this.bottom > camera.offsetY + screen.height) {
+                this.bottom = camera.offsetY + screen.height;
+            }
+        }
     }
 
     /**
@@ -361,7 +379,7 @@ class Sprite implements SpriteLike {
      * Determines if there is an obstacle in the given direction
      * @param direction
      */
-    //% blockId=spritehasobstacle block="is %sprite hitting tile %direction"
+    //% blockId=spritehasobstacle block="is %sprite hitting wall %direction"
     //% blockNamespace="scene" group="Collisions"
     isHittingTile(direction: CollisionDirection): boolean {
         return this._obstacles && !!this._obstacles[direction];
@@ -371,7 +389,7 @@ class Sprite implements SpriteLike {
      * Gets the obstacle sprite in a given direction if any
      * @param direction
      */
-    //% blockId=spriteobstacle block="%sprite tile hit from %direction"
+    //% blockId=spriteobstacle block="%sprite wall hit on %direction"
     //% blockNamespace="scene" group="Collisions"
     tileHitFrom(direction: CollisionDirection): number {
         return (this._obstacles && this._obstacles[direction]) ? this._obstacles[direction].tileIndex : -1;

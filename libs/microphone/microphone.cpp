@@ -12,7 +12,7 @@ class WMicrophone {
     LevelDetector level;
     WMicrophone()
         : microphone(*LOOKUP_PIN(MIC_DATA), *LOOKUP_PIN(MIC_CLOCK), pxt::getWDMAC()->dmac, 10000)
-        , level(microphone.output, 115, 20, DEVICE_ID_MICROPHONE)
+        , level(microphone.output, 1024, 256, DEVICE_ID_MICROPHONE)
     {
         microphone.enable();
     }
@@ -42,14 +42,11 @@ void onLoudSound(Action handler) {
 //% parts="microphone"
 //% weight=34 blockGap=8
 int soundLevel() {
-    // min value measured: 9.0
-    const float silence = 8.0f;
-    // getValue returns a 12bit, eg 4096
-    const int value = max(silence, getWMicrophone()->level.getValue());
-    // scaling
-    const float scale = 255 / log(4096 / silence);
-    // compute dB like value by mapping logarithmic level to 0.255
-    return (int) (log(value / silence) * scale);
+    const int silence = 8;
+    const int maxValue = 20000;
+    const int micValue = getWMicrophone()->level.getValue();
+    const int value = max(silence, min(micValue, maxValue));
+    return min(0xff, value * 0xff / maxValue);
 }
 
 /**
@@ -61,6 +58,8 @@ int soundLevel() {
 //% value.min=1 value.max=100
 //% group="More" weight=14 blockGap=8
 void setLoudSoundThreshold(int value) {
-    getWMicrophone()->level.setHighThreshold(value);
+    value = value & 0xff;
+    const int maxValue = 20000;
+    getWMicrophone()->level.setHighThreshold(value / maxValue * 0xff);
 }
 }

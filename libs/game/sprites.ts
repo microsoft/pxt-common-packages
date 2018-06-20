@@ -21,21 +21,21 @@ namespace sprites {
      * @param img the image
      */
     //% group="Create"
-    //% blockId=spritescreate block="sprite %img=screen_image_picker||of type %type=spritetype"
+    //% blockId=spritescreate block="sprite %img=screen_image_picker of kind %kind=spritetype"
     //% expandableArgumentMode=toggle
     //% blockSetVariable=sprite
     //% weight=100 help=sprites/create
-    export function create(img: Image, type?: number): Sprite {
+    export function create(img: Image, kind?: number): Sprite {
         const scene = game.currentScene();
         const sprite = new Sprite(img)
-        sprite.type = type || 0;
+        sprite.type = kind || 0;
         scene.allSprites.push(sprite)
         sprite.id = scene.allSprites.length
         scene.physicsEngine.addSprite(sprite);
 
         // run on created handlers
         scene.createdHandlers
-            .filter(h => h.type == type)
+            .filter(h => h.type == kind)
             .forEach(h => h.handler(sprite));
 
         return sprite
@@ -46,13 +46,13 @@ namespace sprites {
      * The sprite auto-destroys when it leaves the screen. You can modify position after it's created.
      */
     //% group="Create"
-    //% blockId=spritescreateprojectile block="projectile %img=screen_image_picker vx %vx vy %vy||of type %type from %sprite=variables_get"
-    //% weight=99 help=sprites/create-projectile
+    //% blockId=spritescreateprojectile block="projectile %img=screen_image_picker vx %vx vy %vy||of kind %kind=spritetype from %sprite=variables_get"
+    //% weight=99
     //% blockSetVariable=projectile
     //% inlineInputMode=inline
     //% expandableArgumentMode=toggle
-    export function createProjectile(img: Image, vx: number, vy: number, type?: SpriteType, sprite?: Sprite) {
-        const s = sprites.create(img, type);
+    export function createProjectile(img: Image, vx: number, vy: number, kind?: number, sprite?: Sprite) {
+        const s = sprites.create(img, kind);
         s.vx = vx
         s.vy = vy
 
@@ -82,5 +82,6 @@ namespace sprites {
         Ghost = 1, // doesn't collide with other sprites
         Destroyed = 2,
         AutoDestroy = 4, // remove the sprite when no longer visible
+        StayInScreen = 8, // sprite cannot move outside the camera region
     }
 }

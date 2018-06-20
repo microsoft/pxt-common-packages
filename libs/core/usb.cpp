@@ -71,15 +71,23 @@ void usb_init() {
 }
 
 
-void sendSerial(const char *data, int len) {
-    hf2.sendSerial(data, len);
-    webhf2.sendSerial(data, len);
-}
-
 #else
 void usb_init() {}
-__attribute__((weak)) void sendSerial(const char *data, int len) {}
 #endif
+
+static void (*pSendToUART)(const char *data, int len) = NULL;
+void setSendToUART(void (*f)(const char *, int)) {
+    pSendToUART = f;
+}
+
+void sendSerial(const char *data, int len) {
+#if CONFIG_ENABLED(DEVICE_USB)
+    hf2.sendSerial(data, len);
+    webhf2.sendSerial(data, len);
+#endif    
+    if (pSendToUART)
+        pSendToUART(data, len);
+}
 
 void dumpDmesg() {
     sendSerial("\nDMESG:\n", 8);

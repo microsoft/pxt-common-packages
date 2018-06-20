@@ -58,13 +58,9 @@ namespace game {
 
     function showDialogBackground(h: number, c: number) {
         const top = (screen.height - h) >> 1;
-        if (screen.isMono) {
-            screen.fillRect(0, top, screen.width, h, 0)
-            screen.drawLine(0, top, screen.width, top, 1)
-            screen.drawLine(0, top + h - 1, screen.width, top + h - 1, 1)
-        } else {
-            screen.fillRect(0, top, screen.width, h, c)
-        }
+        screen.fillRect(0, top, screen.width, h, 0)
+        screen.drawLine(0, top, screen.width, top, 1)
+        screen.drawLine(0, top + h - 1, screen.width, top + h - 1, 1)
 
         return top;
     }
@@ -118,9 +114,9 @@ namespace game {
         h += 8;
         const top = showDialogBackground(h, 9)
         if (title)
-            screen.print(title, 8, top + 8, screen.isMono ? 1 : 14, font);
+            screen.print(title, 8, top + 8, screen.isMono ? 1 : 7, font);
         if (subtitle)
-            screen.print(subtitle, 8, top + 8 + font.charHeight + 2, screen.isMono ? 1 : 13, font);
+            screen.print(subtitle, 8, top + 8 + font.charHeight + 2, screen.isMono ? 1 : 6, font);
         if (footer) {
             screen.print(
                 footer,
