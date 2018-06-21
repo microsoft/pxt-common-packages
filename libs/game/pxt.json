@@ -19,6 +19,7 @@
         "textDialogs.ts",
         "game.ts",
         "prompt.ts",
+        "ask.ts",
         "targetoverrides.cpp",
         "targetoverrides.ts",
         "mathUtil.ts"

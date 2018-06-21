@@ -82,28 +82,7 @@ namespace game {
         control.popEventContext();
     }
 
-    /**
-     * Prompts the user for a boolean question
-     * @param title
-     * @param subtitle
-     */
-    //% group="Gameplay"
-    //% weight=89 help=game/ask
-    //% blockId=gameask block="ask %title||%subtitle"
-    //% group="Prompt"
-    export function ask(title: string, subtitle?: string): boolean {
-        init();
-        control.pushEventContext();
-        showDialog(title, subtitle, "A = OK, B = CANCEL");
-        let answer: boolean = null;
-        controller.A.onEvent(ControllerButtonEvent.Pressed, () => answer = true);
-        controller.B.onEvent(ControllerButtonEvent.Pressed, () => answer = false);
-        pauseUntil(() => answer !== null);
-        control.popEventContext();
-        return answer;
-    }
-
-    function showDialog(title: string, subtitle: string, footer?: string) {
+    export function showDialog(title: string, subtitle: string, footer?: string) {
         init();
         const font = image.font8;
         let h = 8;
