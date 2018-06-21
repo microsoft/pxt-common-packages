@@ -168,5 +168,24 @@ namespace tiles {
 
             return overlappers;
         }
+
+        public isObstacle(col: number, row: number) {
+            if (!this._map) return false;
+            if (col < 0 || col >= this._map.width || row < 0 || row >= this._map.height) return true;
+
+            return this._tiles[this._map.getPixel(col, row)].obstacle;
+        }
+
+        public getObstacle(col: number, row: number) {
+            if (!this._map) return undefined;
+            if (col < 0 || col >= this._map.width || row < 0 || row >= this._map.height) return undefined;
+
+            const index = this._map.getPixel(col, row);
+            const tile = this._tiles[index] || this.generateTile(index);
+            if (tile.obstacle) {
+                return new sprites.StaticObstacle(tile.image, row << 4, col << 4, this.layer, index);
+            }
+            return undefined;
+        }
     }
 }

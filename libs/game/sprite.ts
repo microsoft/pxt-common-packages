@@ -81,6 +81,9 @@ class Sprite implements SpriteLike {
     //% group="Properties"
     layer: number;
 
+    _lastX: number;
+    _lastY: number;
+
     /**
      * Time to live in game ticks. The lifespan decreases by 1 on each game update
      * and the sprite gets destroyed when it reaches 0.
@@ -96,6 +99,8 @@ class Sprite implements SpriteLike {
     private _currentAnimation: sprites.TimedAnimation;
     private _animationQueue: AnimationAction[];
 
+    _hitboxes: game.Hitbox[];
+
     flags: number
     id: number
 
@@ -107,12 +112,14 @@ class Sprite implements SpriteLike {
         this.x = screen.width >> 1;
         this.y = screen.height >> 1;
         this._z = 0
+        this._lastX = this.x;
+        this._lastY = this.y;
         this.vx = 0
         this.vy = 0
         this.ax = 0
         this.ay = 0
         this.flags = 0
-        this._image = img
+        this.setImage(img);
         this.type = 0; // not a member of any type by default
         this.layer = 1; // by default, in layer 1
         this.lifespan = undefined
@@ -135,6 +142,7 @@ class Sprite implements SpriteLike {
     setImage(img: Image) {
         if (!img) return; // don't break the sprite
         this._image = img;
+        this._hitboxes = game.calculateHitBoxes(this);
     }
 
     //% group="Properties"
