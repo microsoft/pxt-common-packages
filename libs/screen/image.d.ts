@@ -91,7 +91,7 @@ interface Image {
 
 declare namespace image {
     //% blockNamespace="images"
-    //% block="create empty image with width %width height %height" group="Create"
+    //% block="create image width %width height %height" group="Create"
     //% help=images/create
     function create(width: number, height: number): Image;
 }
