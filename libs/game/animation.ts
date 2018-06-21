@@ -76,7 +76,7 @@ namespace sprites {
          * @param frame The frame to add to the end of this animation
          */
         //% blockId=timedanimframe block="add %anim frame %frame=screen_image_picker"
-        //% blockNamespace="Sprites" group="Animations" weight=80 color="#23c47e"
+        //% blockNamespace="sprites" group="Animations" weight=80 color="#23c47e"
         addFrame(frame: Image) {
             this.appendFrame(frame);
         }
@@ -288,7 +288,7 @@ namespace sprites {
      * Creates a timed animation
      */
     //% blockId=createtimedanimation block="create animation"
-    //% blockNamespace="Sprites" group="Animations" blockSetVariable="anim" weight=81
+    //% blockNamespace="sprites" group="Animations" blockSetVariable="anim" weight=81
     export function createAnimation(frames?: Image[]) {
         return new TimedAnimation(frames || [])
     }
