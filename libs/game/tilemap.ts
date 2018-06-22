@@ -9,10 +9,6 @@ namespace tiles {
     }
 
     export class TileMap implements SpriteLike {
-        camera: scene.Camera;
-        tileWidth: number;
-        tileHeight: number;
-
         id: number;
         z: number;
 
@@ -21,11 +17,7 @@ namespace tiles {
         private _map: Image;
         private _tiles: Tile[];
 
-        constructor(camera: scene.Camera, tileWidth: number, tileHeight: number) {
-            this.camera = camera;
-            this.tileWidth = tileWidth;
-            this.tileHeight = tileHeight;
-
+        constructor() {
             this._map = img`1`;
             this._tiles = [];
             this._layer = 1;
@@ -39,11 +31,11 @@ namespace tiles {
         }
 
         offsetX(value: number) {
-            return Math.max(0, Math.min(this._map.width * this.tileWidth - screen.width, value));
+            return Math.max(0, Math.min((this._map.width << 4) - screen.width, value));
         }
 
         offsetY(value: number) {
-            return Math.max(0, Math.min(this._map.height * this.tileHeight - screen.height, value));
+            return Math.max(0, Math.min((this._map.height << 4) - screen.height, value));
         }
 
         get layer(): number {
@@ -68,23 +60,22 @@ namespace tiles {
         __update(camera: scene.Camera, dt: number): void { }
 
         /**
-         * This draws all non-obstacle tiles so that we can reduce the number of
-         * sprites created
+         * Draws all visible
          */
         __draw(camera: scene.Camera): void {
-            const offsetX = camera.offsetX % this.tileWidth;
-            const offsetY = camera.offsetY % this.tileHeight;
-            const x0 = Math.max(0, Math.floor(camera.offsetX/ this.tileWidth));
-            const xn = Math.min(this._map.width, Math.ceil((camera.offsetX + screen.width) / this.tileWidth));
-            const y0 = Math.max(0, Math.floor(camera.offsetY / this.tileHeight));
-            const yn = Math.min(this._map.height, Math.ceil((camera.offsetY + screen.height) / this.tileHeight));
+            const offsetX = camera.offsetX & 0xf;
+            const offsetY = camera.offsetY & 0xf;
+            const x0 = Math.max(0, camera.offsetX >> 4);
+            const xn = Math.min(this._map.width, ((camera.offsetX + screen.width) >> 4) + 1);
+            const y0 = Math.max(0, camera.offsetY >> 4);
+            const yn = Math.min(this._map.height, ((camera.offsetY + screen.height) >> 4) + 1);
 
             for (let x = x0; x <= xn; ++x) {
                 for (let y = y0; y <= yn; ++y) {
                     const index = this._map.getPixel(x, y);
                     const tile = this._tiles[index] || this.generateTile(index);
                     if (tile) {
-                        screen.drawImage(tile.image, (x - x0) * this.tileWidth - offsetX, (y - y0) * this.tileHeight - offsetY)
+                        screen.drawImage(tile.image, ((x - x0) << 4) - offsetX, ((y - y0) << 4) - offsetY)
                     }
                 }
             }
@@ -93,7 +84,7 @@ namespace tiles {
         private generateTile(index: number): Tile {
             if (index == 0) return undefined;
 
-            const img = image.create(this.tileWidth, this.tileHeight);
+            const img = image.create(16, 16);
             img.fill(index);
             return this._tiles[index] = new Tile(img, false);
         }
@@ -103,23 +94,23 @@ namespace tiles {
             if (game.debug) {
                 const offsetX = -camera.offsetX;
                 const offsetY = -camera.offsetY;
-                const x0 = Math.max(0, Math.floor(-offsetX / this.tileWidth));
-                const xn = Math.min(this._map.width, Math.ceil((-offsetX + screen.width) / this.tileWidth));
-                const y0 = Math.max(0, Math.floor(-offsetY / this.tileHeight));
-                const yn = Math.min(this._map.height, Math.ceil((-offsetY + screen.height) / this.tileHeight));
+                const x0 = Math.max(0, -(offsetX >> 4));
+                const xn = Math.min(this._map.width, (-offsetX + screen.width) >> 4);
+                const y0 = Math.max(0, -(offsetY >> 4));
+                const yn = Math.min(this._map.height, (-offsetY + screen.height) >> 4);
                 for (let x = x0; x <= xn; ++x) {
                     screen.drawLine(
-                        x * this.tileWidth + offsetX,
+                        (x << 4) + offsetX,
                         offsetY,
-                        x * this.tileWidth + offsetX,
-                        this._map.height * this.tileHeight + offsetY, 1)
+                        (x << 4) + offsetX,
+                        (this._map.height << 4) + offsetY, 1)
                 }
                 for (let y = y0; y <= yn; ++y) {
                     screen.drawLine(
                         offsetX,
-                        y * this.tileHeight + offsetY,
-                        this.tileWidth * this._map.width + offsetX,
-                        y * this.tileHeight + offsetY,
+                        (y  << 4) + offsetY,
+                        (this._map.width << 4) + offsetX,
+                        (y << 4) + offsetY,
                         1)
                 }
             }
@@ -132,32 +123,19 @@ namespace tiles {
             let overlappers: sprites.StaticObstacle[] = [];
 
             if (s.layer & this.layer) {
-                let x0: number;
-                let xn: number;
-                let y0: number;
-                let yn: number;
-
-                if (this.tileWidth === this.tileHeight && this.tileHeight === 16) {
-                    x0 = Math.max(0, s.left >> 4);
-                    xn = Math.min(this._map.width, (s.right >> 4) + 1);
-                    y0 = Math.max(0, s.top >> 4);
-                    yn = Math.min(this._map.height, (s.bottom >> 4) + 1);
-                }
-                else {
-                    x0 = Math.max(0, Math.floor(s.left / this.tileWidth));
-                    xn = Math.min(this._map.width, Math.ceil(s.right / this.tileWidth));
-                    y0 = Math.max(0, Math.floor(s.top / this.tileHeight));
-                    yn = Math.min(this._map.height, Math.ceil(s.bottom / this.tileHeight));
-                }
+                const x0 = Math.max(0, s.left >> 4);
+                const xn = Math.min(this._map.width, (s.right >> 4) + 1);
+                const y0 = Math.max(0, s.top >> 4);
+                const yn = Math.min(this._map.height, (s.bottom >> 4) + 1);
 
                 // let res = `x: ${x0}-${xn} y: ${y0}-${yn} HIT:`;
                 for (let x = x0; x <= xn; ++x) {
-                    const left = x * this.tileWidth;
+                    const left = x << 4;
                     for (let y = y0; y <= yn; ++y) {
                         const index = this._map.getPixel(x, y);
                         const tile = this._tiles[index] || this.generateTile(index);
                         if (tile && tile.obstacle) {
-                            const top = y * this.tileHeight;
+                            const top = y << 4;
                             if (tile.image.overlapsWith(s.image, s.left - left, s.top - top)) {
                                 overlappers.push(new sprites.StaticObstacle(tile.image, top, left, this.layer, index));
                             }
@@ -167,6 +145,25 @@ namespace tiles {
             }
 
             return overlappers;
+        }
+
+        public isObstacle(col: number, row: number) {
+            if (!this._map) return false;
+            if (col < 0 || col >= this._map.width || row < 0 || row >= this._map.height) return true;
+
+            return this._tiles[this._map.getPixel(col, row)].obstacle;
+        }
+
+        public getObstacle(col: number, row: number) {
+            if (!this._map) return undefined;
+            if (col < 0 || col >= this._map.width || row < 0 || row >= this._map.height) return undefined;
+
+            const index = this._map.getPixel(col, row);
+            const tile = this._tiles[index] || this.generateTile(index);
+            if (tile.obstacle) {
+                return new sprites.StaticObstacle(tile.image, row << 4, col << 4, this.layer, index);
+            }
+            return undefined;
         }
     }
 }

@@ -32,6 +32,7 @@ declare namespace Math {
     function sqrt(a: number): number;
     function randomRange(a: number, b: number): number;
     function idiv(x: number, y: number): number;
+    function sign(x: number): number;
 }
 
 declare const img: any;
