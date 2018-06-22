@@ -85,12 +85,12 @@ namespace scene {
     export function setTileMap(map: Image) {
         const scene = game.currentScene();
         if (!scene.tileMap)
-            scene.tileMap = new tiles.TileMap(scene.camera, 16, 16);
+            scene.tileMap = new tiles.TileMap();
         scene.tileMap.setMap(map);
     }
 
     /**
-     * Sets the tile image at the given index
+     * Sets the tile image at the given index. Tiles should be 16x16 images
      * @param index
      * @param img
      */
@@ -100,7 +100,7 @@ namespace scene {
     export function setTile(index: number, img: Image, wall?: boolean) {
         const scene = game.currentScene();
         if (!scene.tileMap)
-            scene.tileMap = new tiles.TileMap(scene.camera, img.width, img.height);
+            scene.tileMap = new tiles.TileMap();
         scene.tileMap.setTile(index, img, !!wall);
     }
 
