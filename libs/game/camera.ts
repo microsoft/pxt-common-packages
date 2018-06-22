@@ -29,6 +29,9 @@ namespace scene {
                 this.offsetY = scene.tileMap.offsetY(this.offsetY);
             }
 
+            this.offsetX |= 0;
+            this.offsetY |= 0;
+
             if (this.oldOffsetX != this.offsetX
                 || this.oldOffsetY != this.offsetY) {
                 this.oldOffsetX = this.offsetX;
