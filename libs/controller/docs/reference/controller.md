@@ -4,13 +4,12 @@ Respond to game controller buttons.
 
 ```cards
 controller.anyButton.onEvent(ControllerButtonEvent.Pressed, function () {
-	
+
 })
 controller.anyButton.isPressed()
 controller.anyButton.pauseUntil(ControllerButtonEvent.Pressed)
 controller.dx(100)
 controller.dy(100)
-controller.setRepeat(true)
 ```
 
 ## See also
