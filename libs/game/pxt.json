@@ -3,6 +3,7 @@
     "description": "The game and sprite library - beta",
     "files": [
         "animation.ts",
+        "controller.ts",
         "hitbox.ts",
         "sprites.ts",
         "sprite.ts",
