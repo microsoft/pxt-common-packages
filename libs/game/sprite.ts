@@ -273,8 +273,14 @@ class Sprite implements SpriteLike {
                 font);
         }
         // debug info
-        if (game.debug)
-            screen.drawRect(l, t, this.width, this.height, 3);
+        if (game.debug) {
+            let color = 1;
+            this._hitboxes.forEach(box => {
+                this._image.drawRect(box.ox, box.oy, box.width, box.height, color);
+                color++;
+                if (color >= 15) color = 1;
+            });
+        }
     }
 
     __update(camera: scene.Camera, dt: number) {
