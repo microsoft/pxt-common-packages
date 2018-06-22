@@ -81,8 +81,8 @@ namespace scene {
             this.eventContext.registerFrameHandler(30, () => {
                 performance.startTimer("collisions")
                 const dt = this.eventContext.deltaTime;
-                this.camera.update();
                 this.physicsEngine.collisions();
+                this.camera.update();
                 for (const s of this.allSprites)
                     s.__update(this.camera, dt);
                 performance.stopTimer("collisions")
