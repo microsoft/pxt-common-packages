@@ -13,6 +13,7 @@ controller.anyButton.onEvent(ControllerButtonEvent.Pressed, function () {
 * **event**: the button action to wait for. The button actions (events) are:
 > * ``pressed``: button was pressed
 > * ``released``: button is released from being pressed
+> * ``repeated``: this event keeps repeating when the button is pressed
 * **handler**: the code you want to run when something happens to a button
 
 ## Example #example
