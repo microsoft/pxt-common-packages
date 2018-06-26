@@ -19,7 +19,7 @@ namespace game {
     let dialogFont: image.Font;
     let dialogTextColor: number;
 
-    export class Dialog {
+    export class BaseDialog {
         image: Image;
         frame: Image;
         cursor: Image;
@@ -34,9 +34,6 @@ namespace game {
 
         font: image.Font;
         textColor: number;
-
-        chunks: string[];
-        chunkIndex: number;
 
         constructor(width: number, height: number, frame?: Image, font?: image.Font, cursor?: Image) {
             this.image = image.create(width, height);
@@ -79,10 +76,112 @@ namespace game {
             this.innerTop = (height - (this.rows * this.unit)) >> 1;
 
             this.cursorCount = 0;
-            this.chunkIndex = 0;
 
             this.drawBorder();
             this.clearInterior();
+        }
+
+        update() {
+            this.clearInterior();
+            this.drawTextCore();
+            this.drawCursorRow();
+        }
+
+        setText(rawString: string) {
+            // implemented by subclass
+        }
+
+        drawTextCore() {
+            // Implemented by subclass
+        }
+
+        drawCursorRow() {
+            let offset = 0;
+            if (this.cursorCount > 20) {
+                offset = 1;
+            }
+
+            this.cursorCount = (this.cursorCount + 1) % 40;
+
+            this.image.drawTransparentImage(
+                this.cursor,
+                this.innerLeft + this.textAreaWidth() + this.unit + offset - this.cursor.width,
+                this.innerTop + this.unit + this.textAreaHeight() + 1
+            )
+        }
+
+        protected drawBorder() {
+            for (let c = 0; c < this.columns; c++) {
+                if (c == 0) {
+                    this.drawPartial(0, 0, 0);
+                    this.drawPartial(6, 0, this.rows - 1);
+                }
+                else if (c === this.columns - 1) {
+                    this.drawPartial(2, c, 0);
+                    this.drawPartial(8, c, this.rows - 1);
+                }
+                else {
+                    this.drawPartial(1, c, 0);
+                    this.drawPartial(7, c, this.rows - 1);
+                }
+            }
+
+            for (let r = 1; r < this.rows - 1; r++) {
+                this.drawPartial(3, 0, r);
+                this.drawPartial(5, this.columns - 1, r);
+            }
+        }
+
+        protected clearInterior() {
+            for (let d = 1; d < this.columns - 1; d++) {
+                for (let s = 1; s < this.rows - 1; s++) {
+                    this.drawPartial(4, d, s)
+                }
+            }
+        }
+
+        protected drawPartial(index: number, colTo: number, rowTo: number) {
+            const x0 = this.innerLeft + colTo * this.unit;
+            const y0 = this.innerTop + rowTo * this.unit;
+
+            const xf = (index % 3) * this.unit;
+            const yf = Math.floor(index / 3) * this.unit;
+
+            for (let e = 0; e < this.unit; e++) {
+                for (let t = 0; t < this.unit; t++) {
+                    this.image.setPixel(
+                        x0 + e,
+                        y0 + t,
+                        this.frame.getPixel(xf + e, yf + t));
+                }
+            }
+        }
+
+        protected cursorRowHeight() {
+            return this.cursor.height + 1;
+        }
+
+        protected rowHeight() {
+            return this.font.charHeight + 1;
+        }
+
+        protected textAreaWidth() {
+            return this.image.width - ((this.innerLeft + this.unit) << 1) - 2;
+        }
+
+        protected textAreaHeight() {
+            return this.image.height - ((this.innerTop + this.unit) << 1) - 1 - this.cursorRowHeight();
+        }
+    }
+
+    export class Dialog extends BaseDialog {
+        chunks: string[];
+        chunkIndex: number;
+
+        constructor(width: number, height: number, frame?: Image, font?: image.Font, cursor?: Image) {
+            super(width, height, frame, font, cursor);
+
+            this.chunkIndex = 0;
         }
 
         hasNext() {
@@ -154,7 +253,6 @@ namespace game {
 
         drawTextCore() {
             if (!this.chunks || this.chunks.length === 0) return;
-            this.clearInterior();
             const str = this.chunks[this.chunkIndex];
             const availableWidth = this.textAreaWidth();
             const availableHeight = this.textAreaHeight();
@@ -175,86 +273,81 @@ namespace game {
                 )
                 current += charactersPerRow;
             }
+        }
+    }
 
-            this.drawCursorRow();
+    export class SplashDialog extends game.BaseDialog {
+        text: string;
+        subtext: string;
+
+        timer: number;
+        offset: number;
+        maxOffset: number;
+        maxSubOffset: number;
+
+        constructor(width: number, height: number) {
+            super(width, height, img`
+            1 1 1 1 1 1
+            f f f f f f
+            f f f f f f
+            f f f f f f
+            f f f f f f
+            1 1 1 1 1 1
+            `, image.font8)
+            this.maxOffset = -1;
+            this.maxSubOffset = -1;
+            this.textColor = 1;
         }
 
-        drawCursorRow() {
-            let offset = 0;
-            if (this.cursorCount > 20) {
-                offset = 1;
+
+        setText(text: string) {
+            this.text = text;
+            this.offset = 0;
+            this.maxOffset = text.length * this.font.charWidth - screen.width + (this.unit << 1);
+            this.timer = 2;
+        }
+
+        setSubtext(sub: string) {
+            this.subtext = sub;
+            this.maxSubOffset = sub.length * (image.font5.charWidth) - screen.width + (this.unit << 1);
+        }
+
+        drawTextCore() {
+            const scrollMax = Math.max(this.maxOffset, this.maxSubOffset);
+            if (this.timer > 0) {
+                this.timer -= game.eventContext().deltaTime;
+                if (this.timer <= 0) {
+                    if (this.offset > 0) {
+                        this.offset = 0;
+                        this.timer = 2;
+                    }
+                }
+            }
+            else {
+                this.offset++;
+                if (this.offset >= scrollMax) {
+                    this.offset = scrollMax;
+                    this.timer = 2;
+                }
+            }
+            if (this.maxOffset < 0) {
+                const left = (this.image.width >> 1) - (this.text.length * this.font.charWidth >> 1)
+                this.image.print(this.text, left, 10, this.textColor, this.font)
+            }
+            else {
+                this.image.print(this.text, this.unit - this.offset, 10, this.textColor, this.font)
             }
 
-            this.cursorCount = (this.cursorCount + 1) % 40;
-
-            this.image.drawTransparentImage(
-                this.cursor,
-                this.innerLeft + this.textAreaWidth() + this.unit + offset - this.cursor.width,
-                this.innerTop + this.unit + this.textAreaHeight() + 1
-            )
-        }
-
-        private drawBorder() {
-            for (let c = 0; c < this.columns; c++) {
-                if (c == 0) {
-                    this.drawPartial(0, 0, 0);
-                    this.drawPartial(6, 0, this.rows - 1);
-                }
-                else if (c === this.columns - 1) {
-                    this.drawPartial(2, c, 0);
-                    this.drawPartial(8, c, this.rows - 1);
+            if (this.subtext) {
+                if (this.maxSubOffset < 0) {
+                    const left = (this.image.width >> 1) - (this.subtext.length * image.font5.charWidth >> 1)
+                    this.image.print(this.subtext, left, 20, this.textColor, image.font5);
                 }
                 else {
-                    this.drawPartial(1, c, 0);
-                    this.drawPartial(7, c, this.rows - 1);
+                    this.image.print(this.subtext, this.unit - (Math.min(this.offset, this.maxSubOffset)), 20, this.textColor, image.font5);
                 }
             }
-
-            for (let r = 1; r < this.rows - 1; r++) {
-                this.drawPartial(3, 0, r);
-                this.drawPartial(5, this.columns - 1, r);
-            }
-        }
-
-        private clearInterior() {
-            for (let d = 1; d < this.columns - 1; d++) {
-                for (let s = 1; s < this.rows - 1; s++) {
-                    this.drawPartial(4, d, s)
-                }
-            }
-        }
-
-        private drawPartial(index: number, colTo: number, rowTo: number) {
-            const x0 = this.innerLeft + colTo * this.unit;
-            const y0 = this.innerTop + rowTo * this.unit;
-
-            const xf = (index % 3) * this.unit;
-            const yf = Math.floor(index / 3) * this.unit;
-
-            for (let e = 0; e < this.unit; e++) {
-                for (let t = 0; t < this.unit; t++) {
-                    this.image.setPixel(
-                        x0 + e,
-                        y0 + t,
-                        this.frame.getPixel(xf + e, yf + t));
-                }
-            }
-        }
-
-        private cursorRowHeight() {
-            return this.cursor.height + 1;
-        }
-
-        private rowHeight() {
-            return this.font.charHeight + 1;
-        }
-
-        private textAreaWidth() {
-            return this.image.width - ((this.innerLeft + this.unit) << 1) - 2;
-        }
-
-        private textAreaHeight() {
-            return this.image.height - ((this.innerTop + this.unit) << 1) - 1 - this.cursorRowHeight();
+            this.drawBorder();
         }
     }
 
@@ -329,7 +422,7 @@ namespace game {
         let done = false;
 
         game.onUpdate(() => {
-            dialog.drawTextCore();
+            dialog.update();
             const currentState = controller.A.isPressed();
             if (currentState && !pressed) {
                 pressed = true;
@@ -388,6 +481,45 @@ namespace game {
 
     export function setDialogFont(font: image.Font) {
         dialogFont = font;
+    }
+
+    /**
+     * Show a title, subtitle menu
+     * @param title
+     * @param subtitle
+     */
+    //% weight=90 help=game/splash
+    //% blockId=gameSplash block="splash %title||%subtitle"
+    //% group="Prompt"
+    export function splash(title: string, subtitle?: string) {
+        const temp = screen.clone();
+        controller._setUserEventsEnabled(false);
+        game.pushScene();
+        scene.setBackgroundImage(temp);
+
+        const dialog = new SplashDialog(screen.width, subtitle ? 42 : 35);
+        dialog.setText(title);
+        if (subtitle) dialog.setSubtext(subtitle);
+
+        const s = sprites.create(dialog.image);
+        let pressed = true;
+        let done = false;
+
+        game.onUpdate(() => {
+            dialog.update();
+            const currentState = controller.A.isPressed();
+            if (currentState && !pressed) {
+                pressed = true;
+                done = true;
+                game.popScene();
+            }
+            else if (pressed && !currentState) {
+                pressed = false;
+            }
+        })
+
+        pauseUntil(() => done);
+        controller._setUserEventsEnabled(true);
     }
 }
 

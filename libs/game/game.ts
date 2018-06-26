@@ -65,23 +65,6 @@ namespace game {
         return top;
     }
 
-    /**
-     * Show a title, subtitle menu
-     * @param title
-     * @param subtitle
-     */
-    //% group="Gameplay"
-    //% weight=90 help=game/splash
-    //% blockId=gameSplash block="splash %title||%subtitle"
-    //% group="Prompt"
-    export function splash(title: string, subtitle?: string) {
-        init();
-        control.pushEventContext();
-        showDialog(title, subtitle)
-        waitAnyButton()
-        control.popEventContext();
-    }
-
     export function showDialog(title: string, subtitle: string, footer?: string) {
         init();
         const font = image.font8;
