@@ -495,7 +495,7 @@ class Sprite implements SpriteLike {
      * Destroys the sprite
      */
     //% group="Lifecycle"
-    //% weight=10
+    //% weight=10 help=sprites/sprite/destroy
     //% blockId=spritedestroy block="destroy %sprite"
     destroy() {
         if (this.flags & sprites.Flag.Destroyed)
