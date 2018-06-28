@@ -14,7 +14,7 @@ namespace sprites {
      * @param kind
      * @param sprite
      */
-    //% group="Lifecycle" draggableParameters
+    //% group="Lifecycle" draggableParameters weight=97
     //% blockId=spritesoncreated block="on created $sprite of kind $kind=spritetype"
     export function onCreated(kind: number, handler: (sprite: Sprite) => void): void {
         if (!handler || kind == undefined) return;
@@ -32,7 +32,7 @@ namespace sprites {
      * @param sprite
      */
     //% group="Lifecycle"
-    //% weight=100 draggableParameters
+    //% weight=96 draggableParameters
     //% blockId=spritesondestroyed block="on destroyed $sprite of kind $kind=spritetype "
     export function onDestroyed(kind: number, handler: (sprite: Sprite) => void) {
         if (!handler || kind == undefined) return;

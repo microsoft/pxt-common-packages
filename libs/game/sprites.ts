@@ -23,7 +23,7 @@ namespace sprites {
     //% group="Create"
     //% blockId=spritescreate block="sprite %img=screen_image_picker of kind %kind=spritetype"
     //% expandableArgumentMode=toggle
-    //% blockSetVariable=sprite
+    //% blockSetVariable=agent
     //% weight=100 help=sprites/create
     export function create(img: Image, kind?: number): Sprite {
         const scene = game.currentScene();
@@ -46,12 +46,12 @@ namespace sprites {
      * The sprite auto-destroys when it leaves the screen. You can modify position after it's created.
      */
     //% group="Create"
-    //% blockId=spritescreateprojectile block="projectile %img=screen_image_picker vx %vx vy %vy||of kind %kind=spritetype from %sprite=variables_get"
+    //% blockId=spritescreateprojectile block="projectile %img=screen_image_picker vx %vx vy %vy of kind %kind=spritetype || from sprite %sprite=variables_get"
     //% weight=99
     //% blockSetVariable=projectile
     //% inlineInputMode=inline
     //% expandableArgumentMode=toggle
-    export function createProjectile(img: Image, vx: number, vy: number, kind?: number, sprite?: Sprite) {
+    export function createProjectile(img: Image, vx: number, vy: number, kind: number, sprite?: Sprite) {
         const s = sprites.create(img, kind);
         s.vx = vx
         s.vy = vy
@@ -76,6 +76,18 @@ namespace sprites {
         }
 
         return s
+    }
+
+    /**
+     * Creates a new sprite of the given kind and adds it to the game. Use this
+     * with the "on sprite created" event.
+     * @param kind the kind of sprite to create
+     */
+    //% group="Lifecycle"
+    //% blockId=spritecreateempty block="create empty sprite of kind %kind=spritetype"
+    //% weight=98
+    export function createEmptySprite(kind: number): void {
+        sprites.create(image.create(1, 1), kind);
     }
 
     export enum Flag {

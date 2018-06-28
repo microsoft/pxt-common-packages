@@ -16,7 +16,7 @@ namespace controller {
      * @param vx The velocity used for horizontal movement when left/right is pressed
      * @param vy The velocity used for vertical movement when up/down is pressed
      */
-    //% blockId="game_control_sprite" block="control sprite $sprite=variables_get with vx $vx vy $vy"
+    //% blockId="game_control_sprite" block="control sprite $sprite=variables_get(agent) with vx $vx vy $vy"
     //% weight=100
     //% vx.defl=100 vy.defl=100
     export function controlSprite(sprite: Sprite, vx: number, vy: number) {
