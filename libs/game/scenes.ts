@@ -108,7 +108,7 @@ namespace scene {
      * The game camera follows a particular sprite
      * @param sprite
      */
-    //% blockId=camerafollow block="camera follow sprite %sprite=variables_get"
+    //% blockId=camerafollow block="camera follow sprite %sprite=variables_get(agent)"
     //% group="Camera"
     //% help=scene/camera-follow-sprite
     export function cameraFollowSprite(sprite: Sprite) {

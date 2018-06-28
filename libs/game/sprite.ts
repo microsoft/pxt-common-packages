@@ -49,30 +49,30 @@ enum FlipOption {
  **/
 //% blockNamespace=sprites color="#4B7BEC" blockGap=8
 class Sprite implements SpriteLike {
-    //% group="Properties"
+    //% group="Properties" blockSetVariable="agent"
     //% blockCombine block="x (horizontal position)"
     x: number
-    //% group="Properties"
+    //% group="Properties" blockSetVariable="agent"
     //% blockCombine block="y (vertical position)"
     y: number
     private _z: number
-    //% group="Properties"
+    //% group="Properties" blockSetVariable="agent"
     //% blockCombine block="vx (velocity x)"
     vx: number
-    //% group="Properties"
+    //% group="Properties" blockSetVariable="agent"
     //% blockCombine block="vy (velocity y)"
     vy: number
-    //% group="Properties"
+    //% group="Properties" blockSetVariable="agent"
     //% blockCombine block="ax (acceleration x)"
     ax: number
-    //% group="Properties"
+    //% group="Properties" blockSetVariable="agent"
     //% blockCombine block="ay (acceleration y)"
     ay: number
     /**
      * The type of sprite
      */
-    //% group="Properties"
-    //% blockCombine block="type"
+    //% group="Properties" blockSetVariable="agent"
+    //% blockCombine block="kind"
     type: number
 
     /**
@@ -88,7 +88,7 @@ class Sprite implements SpriteLike {
      * Time to live in game ticks. The lifespan decreases by 1 on each game update
      * and the sprite gets destroyed when it reaches 0.
      */
-    //% group="Properties"
+    //% group="Properties" blockSetVariable="agent"
     //% blockCombine block="lifespan"
     lifespan: number;
     private _say: string;
@@ -128,7 +128,7 @@ class Sprite implements SpriteLike {
     /**
      * Gets the current image
      */
-    //% group="Animations"
+    //% group="Animations" blockSetVariable="agent"
     //% blockCombine block="image"
     get image(): Image {
         return this._image;
@@ -138,20 +138,20 @@ class Sprite implements SpriteLike {
      * Sets the image on the sprite
      */
     //% group="Animations"
-    //% blockId=spritesetimage block="set %sprite image to %img=screen_image_picker"
+    //% blockId=spritesetimage block="set %sprite(agent) image to %img=screen_image_picker"
     setImage(img: Image) {
         if (!img) return; // don't break the sprite
         this._image = img;
         this._hitboxes = game.calculateHitBoxes(this);
     }
 
-    //% group="Properties"
+    //% group="Properties" blockSetVariable="agent"
     //% blockCombine block="z (depth)"
     get z(): number {
         return this._z;
     }
 
-    //% group="Properties"
+    //% group="Properties" blockSetVariable="agent"
     //% blockCombine block="z (depth)"
     set z(value: number) {
         if (value != this._z) {
@@ -160,52 +160,52 @@ class Sprite implements SpriteLike {
         }
     }
 
-    //% group="Properties"
+    //% group="Properties" blockSetVariable="agent"
     //% blockCombine block="width"
     get width() {
         return this._image.width
     }
-    //% group="Properties"
+    //% group="Properties" blockSetVariable="agent"
     //% blockCombine block="height"
     get height() {
         return this._image.height
     }
-    //% group="Properties"
+    //% group="Properties" blockSetVariable="agent"
     //% blockCombine block="left"
     get left() {
         return this.x - (this.width >> 1)
     }
-    //% group="Properties"
+    //% group="Properties" blockSetVariable="agent"
     //% blockCombine block="left"
     set left(value: number) {
         this.x = value + (this.width >> 1);
     }
-    //% group="Properties"
+    //% group="Properties" blockSetVariable="agent"
     //% blockCombine block="right"
     get right() {
         return this.left + this.width
     }
-    //% group="Properties"
+    //% group="Properties" blockSetVariable="agent"
     //% blockCombine block="right"
     set right(value: number) {
         this.x = value - (this.width >> 1);
     }
-    //% group="Properties"
+    //% group="Properties" blockSetVariable="agent"
     //% blockCombine
     get top() {
         return this.y - (this.height >> 1)
     }
-    //% group="Properties"
+    //% group="Properties" blockSetVariable="agent"
     //% blockCombine
     set top(value: number) {
         this.y = value + (this.height >> 1);
     }
-    //% group="Properties"
+    //% group="Properties" blockSetVariable="agent"
     //% blockCombine block="bottom"
     get bottom() {
         return this.top + this.height
     }
-    //% group="Properties"
+    //% group="Properties" blockSetVariable="agent"
     //% blockCombine block="bottom"
     set bottom(value: number) {
         this.y = value - (this.height >> 1);
@@ -218,7 +218,7 @@ class Sprite implements SpriteLike {
      */
     //% group="Properties"
     //% weight=100
-    //% blockId=spritesetpos block="set %sprite position to x %x y %y"
+    //% blockId=spritesetpos block="set %sprite(agent) position to x %x y %y"
     setPosition(x: number, y: number): void {
         this.x = x;
         this.y = y;
@@ -230,7 +230,7 @@ class Sprite implements SpriteLike {
      * @param time time to keep text on, eg: 2000
      */
     //% group="Properties"
-    //% blockId=spritesay block="%sprite say %text||for %millis ms"
+    //% blockId=spritesay block="%sprite(agent) say %text||for %millis ms"
     //% time.defl=2000
     //% help=sprites/sprite/say
     say(text: string, millis?: number) {
@@ -337,7 +337,7 @@ class Sprite implements SpriteLike {
      * Sets the sprite as a ghost (which does not interact with physics)
      */
     //% group="Properties"
-    //% blockId=spritesetsetflag block="set %sprite %flag %on=toggleOnOff"
+    //% blockId=spritesetsetflag block="set %sprite(agent) %flag %on=toggleOnOff"
     setFlag(flag: SpriteFlag, on: boolean) {
         if (on) this.flags |= flag
         else this.flags = ~(~this.flags | flag);
@@ -348,7 +348,7 @@ class Sprite implements SpriteLike {
      * @param other
      */
     //% group="Overlaps"
-    //% blockId=spriteoverlapswith block="%sprite overlaps with %other=variables_get"
+    //% blockId=spriteoverlapswith block="%sprite(agent) overlaps with %other=variables_get(otherSprite)"
     //% help=sprites/sprite/overlaps-with
     overlapsWith(other: Sprite) {
         if (other == this) return false;
@@ -393,7 +393,7 @@ class Sprite implements SpriteLike {
      * Determines if there is an obstacle in the given direction
      * @param direction
      */
-    //% blockId=spritehasobstacle block="is %sprite hitting wall %direction"
+    //% blockId=spritehasobstacle block="is %sprite(agent) hitting wall %direction"
     //% blockNamespace="scene" group="Collisions"
     isHittingTile(direction: CollisionDirection): boolean {
         return this._obstacles && !!this._obstacles[direction];
@@ -403,7 +403,7 @@ class Sprite implements SpriteLike {
      * Gets the obstacle sprite in a given direction if any
      * @param direction
      */
-    //% blockId=spriteobstacle block="%sprite wall hit on %direction"
+    //% blockId=spriteobstacle block="%sprite(agent) wall hit on %direction"
     //% blockNamespace="scene" group="Collisions"
     tileHitFrom(direction: CollisionDirection): number {
         return (this._obstacles && this._obstacles[direction]) ? this._obstacles[direction].tileIndex : -1;
@@ -415,7 +415,7 @@ class Sprite implements SpriteLike {
      * @param direction The movement direction for which this frame will be shown
      * @param addReverseDirection Also add a flipped version of the sprite in the opposite direction
      */
-    //% blockId=spritemovementframe block="add %sprite movement frame %image=screen_image_picker %direction ||and reverse direction %addReverseDirection=toggleOnOff"
+    //% blockId=spritemovementframe block="add %sprite(agent) movement frame %image=screen_image_picker %direction ||and reverse direction %addReverseDirection=toggleOnOff"
     //% group="Animations" weight=10
     addMovementFrame(frame: Image, direction: sprites.MovementDirection, addReverseDirection = false) {
         if (!this._movementAnim) {
@@ -428,7 +428,7 @@ class Sprite implements SpriteLike {
      * Determines if the movement animation is facing a given direction. Note that
      * this API will always return false if no movement frames have been added.
      */
-    //% blockId=spriteisfacing block="is %sprite facing %direction"
+    //% blockId=spriteisfacing block="is %sprite(agent) facing %direction"
     //% group="Properties" weight=10 blockGap=8
     isFacing(direction: sprites.MovementDirection) {
         if (this._movementAnim) return direction === this._movementAnim.facing;
@@ -441,7 +441,7 @@ class Sprite implements SpriteLike {
      * @param duration The duration of the animation
      * @param flip Show the animation flipped over an axis
      */
-    //% blockId=spritefireanimation block="start %sprite animation %animation %duration=timePicker|ms||%flip"
+    //% blockId=spritefireanimation block="start %sprite(agent) animation %animation %duration=timePicker|ms||%flip"
     //% group="Animations" weight=79
     startAnimation(animation: sprites.TimedAnimation, duration: number, flip = FlipOption.None) {
         if (!animation) return;
@@ -457,7 +457,7 @@ class Sprite implements SpriteLike {
     /**
      * Determines if the sprite is currently showing a timed animation
      */
-    //% blockId=spriteisshowing block="is %sprite showing animation"
+    //% blockId=spriteisshowing block="is %sprite(agent) showing animation"
     //% group="Animations" weight=78
     isShowingAnimation() {
         return !!this._currentAnimation;
@@ -496,7 +496,7 @@ class Sprite implements SpriteLike {
      */
     //% group="Lifecycle"
     //% weight=10
-    //% blockId=spritedestroy block="destroy %sprite"
+    //% blockId=spritedestroy block="destroy %sprite(agent)"
     destroy() {
         if (this.flags & sprites.Flag.Destroyed)
             return
