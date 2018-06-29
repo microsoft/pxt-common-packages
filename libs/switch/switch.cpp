@@ -38,7 +38,7 @@ void onSwitchMoved(SwitchDirection direction, Action handler) {
     registerWithDal(getWSwitch()->slideSwitch.id, (int)direction, handler);
 }
 
-/*
+/**
 * Gets a value indicating if the switch is positioned to the right
 */
 //% blockId=device_switch_direction block="switch right"
