@@ -38,6 +38,15 @@ namespace tiles {
             return Math.max(0, Math.min((this._map.height << 4) - screen.height, value));
         }
 
+
+        areaWidth() {
+            return this._map ? (this._map.width << 4) : 0;
+        }
+
+        areaHeight() {
+            return this._map ? (this._map.height << 4) : 0;
+        }
+
         get layer(): number {
             return this._layer;
         }
