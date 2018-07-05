@@ -242,7 +242,7 @@ namespace game {
             }
 
             //Only pushes the last part of the message to the screen when current isn't empty 
-            if(current !== ""){
+            if (current) {
                 screens.push(current);
             }
 
