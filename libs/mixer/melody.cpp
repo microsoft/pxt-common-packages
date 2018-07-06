@@ -1,0 +1,95 @@
+enum class SoundWave {
+    Triangle = 1,
+    Sawtooth = 2,
+    Sine = 3,
+    Noise = 4,
+    Square10 = 11,
+    Square50 = 15,
+};
+
+struct SoundInstruction {
+    uint8_t soundWave;
+    uint8_t flags;
+    uint16_t frequency;
+    uint16_t duration;
+    uint16_t startVolume;
+    uint16_t endVolume;
+};
+
+namespace music {
+class SynthChannel {
+  public:
+    SynthChannel *next;
+    Synthesizer synth;
+    MixerChannel *mixch;
+    bool used;
+
+    SynthChannel() : synth(SYNTHESIZER_SAMPLE_RATE, true) {}
+};
+
+class WSynthesizer {
+  public:
+    Mixer mixer;
+    SoundOutput out;
+    SyntChannel *channels;
+
+    WSynthesizer()
+        : out(mixer) {
+        channels = NULL;
+    }
+};
+SINGLETON(WSynthesizer);
+
+SynthChannel *allocateChannel() {
+    auto snd = getWSynthesizer();
+    auto ch = snd->channels;
+    auto numCh = 0;
+
+    while (ch) {
+        if (!ch->used)
+            return ch;
+        ch = ch->next;
+        numCh++;
+    }
+
+    if (numCh > 5)
+        return NULL;
+
+    ch = new SynthChannel();
+    ch->synth.setVolume(1024);
+    ch->synth.setSampleRate(snd->out.dac.getSampleRate());
+    ch->mixch = snd->mixer.addChannel(ch->synth.output);
+    ch->used = true;
+    ch->next = snd->channels;
+    snd->channels = ch;
+
+    return ch;
+}
+
+//%
+void playInstructions(Buffer buf) {
+    auto ch = allocateChannel();
+    auto instr = (SoundInstruction *)buf.data;
+    auto wave = 0;
+    while (instr->soundWave) {
+        if (ch) {
+            if (wave != ch->soundWave) {
+                wave = ch->soundWave;
+                switch (wave) {
+                    case SoundWave::Triangle:
+                        ch->synth.setTone(Synthesizer::TriangleTone);
+                        break;
+                    TODO
+                }
+            }
+            ch->synth.setFrequency(instr->frequency, instr->duration, instr->startVolume, instr->endVolume);
+        } else {
+            fiber_sleep(instr->duration);
+        }
+        instr++;
+    }
+    if (ch)
+        ch->used = false;
+}
+
+} // namespace music
