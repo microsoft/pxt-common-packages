@@ -261,13 +261,13 @@ class Sprite implements SpriteLike {
         // say text
         if (this._say && (this._sayExpires < 0 || this._sayExpires > control.millis())) {
             screen.fillRect(
-                l,
+                l - (this._say.length * font.charWidth + 2) / 2 + this.width / 2,
                 t - font.charHeight - 2,
                 this._say.length * font.charWidth + 2,
                 font.charHeight + 4,
                 1);
             screen.print(this._say,
-                l + 2,
+                l + 2 - (this._say.length * font.charWidth + 2) / 2 + this.width / 2,
                 t - font.charHeight,
                 15,
                 font);
