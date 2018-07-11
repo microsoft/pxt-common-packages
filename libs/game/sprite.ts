@@ -99,6 +99,9 @@ class Sprite implements SpriteLike {
     private _currentAnimation: sprites.TimedAnimation;
     private _animationQueue: AnimationAction[];
 
+    private pixelsOffset: number;
+    private holdTextTimer: number;
+
     _hitboxes: game.Hitbox[];
 
     flags: number
@@ -123,6 +126,8 @@ class Sprite implements SpriteLike {
         this.type = 0; // not a member of any type by default
         this.layer = 1; // by default, in layer 1
         this.lifespan = undefined
+        this.pixelsOffset = 0;
+        this.holdTextTimer = 2;
     }
 
     /**
@@ -283,21 +288,69 @@ class Sprite implements SpriteLike {
         }
     }
 
-    bubbleDialog(currentSprite: Sprite, text: string) {
-        let fakeSprite: Sprite = null
-        let bubbleImage = image.create(54, 9)
-        bubbleImage.fill(1)
-        bubbleImage.setPixel(0, 0, 0)
-        bubbleImage.setPixel(53, 0, 0)
-        bubbleImage.setPixel(0, 8, 0)
-        bubbleImage.setPixel(53, 8, 0)
-        bubbleImage.print(text, 2, image.font5.charHeight, 1, image.font5)
-        fakeSprite = sprites.create(bubbleImage)
-        fakeSprite.y = currentSprite.y - 14
-        game.onUpdate(function () {
-            fakeSprite.y = currentSprite.y - 14
-            fakeSprite.x = currentSprite.x
+    sayBubble(text: string) {
+        let fakeSprite: Sprite = null;
+        let textWidth: number = text.length * image.font5.charWidth;
+
+        if (textWidth > 58 - 4) {
+            textWidth = 58;
+        } else {
+            textWidth += 4;
+        }
+        fakeSprite = sprites.create(image.create(textWidth, 9));
+
+        game.onUpdate(() => {
+            fakeSprite.image.fill(1);
+            fakeSprite.y = this.y - 14;
+            fakeSprite.x = this.x;
+            this.scrollText(text, fakeSprite, textWidth);
+            this.bubbleBorder(fakeSprite, textWidth);
         })
+    }
+
+    bubbleBorder(fakeSprite: Sprite, textWidth: number) {
+        for (let i = 0; i < 2; i++) {
+            for (let j = 0; j < 9; j++) {
+                fakeSprite.image.setPixel(i, j, 1);
+            }
+        }
+        for (let i = 0; i < 2; i++) {
+            for (let j = 0; j < 9; j++) {
+                fakeSprite.image.setPixel(textWidth - 1 - i, textWidth - 1 - j, 1);
+            }
+        }
+        fakeSprite.image.setPixel(0, 0, 0);
+        fakeSprite.image.setPixel(textWidth - 1, 0, 0);
+        fakeSprite.image.setPixel(0, 8, 0);
+        fakeSprite.image.setPixel(textWidth - 1, 8, 0);
+    }
+
+    scrollText(text: string, fakeSprite: Sprite, textWidth: number) {
+        let maxOffset: number = text.length * image.font5.charWidth - (textWidth);
+        console.log(textWidth + "<-textWidth");
+        let holdTextTimer: number = 1.5;
+        if (this.holdTextTimer > 0) {
+            this.holdTextTimer = this.holdTextTimer - game.eventContext().deltaTime;
+            if (this.holdTextTimer <= 0 && this.pixelsOffset > 0) {
+                this.pixelsOffset = 0;
+                this.holdTextTimer = 1.5;
+            }
+        } else {
+            this.pixelsOffset++;
+            if (this.pixelsOffset >= maxOffset) {
+                this.pixelsOffset = maxOffset;
+                this.holdTextTimer = 1.5;
+            }
+        }
+        if (maxOffset < 0) {
+            // print text to dialog box
+            // shrink dialog box
+            fakeSprite.image.print(text, 2, 2, 15, image.font5);
+        } else {
+            // scroll the text somehow
+            fakeSprite.image.print(text, 2 - this.pixelsOffset, 2, 15, image.font5)
+        }
+
     }
 
     __update(camera: scene.Camera, dt: number) {
