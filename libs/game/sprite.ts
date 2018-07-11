@@ -327,7 +327,6 @@ class Sprite implements SpriteLike {
 
     scrollText(text: string, fakeSprite: Sprite, textWidth: number) {
         let maxOffset: number = text.length * image.font5.charWidth - (textWidth);
-        console.log(textWidth + "<-textWidth");
         let holdTextTimer: number = 1.5;
         if (this.holdTextTimer > 0) {
             this.holdTextTimer = this.holdTextTimer - game.eventContext().deltaTime;
