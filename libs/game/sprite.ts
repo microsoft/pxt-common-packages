@@ -289,45 +289,50 @@ class Sprite implements SpriteLike {
     }
 
     sayBubble(text: string) {
-        let fakeSprite: Sprite = null;
-        let textWidth: number = text.length * image.font5.charWidth;
-
-        if (textWidth > 58 - 4) {
-            textWidth = 58;
-        } else {
-            textWidth += 4;
+        let bubbleBoxSprite: Sprite = null;
+        let bubblePadding: number = 4;
+        let maxWidth: number = 100 + bubblePadding / 2;
+        let font: image.Font = image.font8;
+        let bubbleWidth: number = text.length * font.charWidth + bubblePadding / 2;
+        let textBoxColor: number = Colors.White;
+        if (bubbleWidth > maxWidth) {
+            bubbleWidth = maxWidth;
         }
-        fakeSprite = sprites.create(image.create(textWidth, 9));
+        bubbleBoxSprite = sprites.create(image.create(bubbleWidth, font.charHeight + bubblePadding));
 
         game.onUpdate(() => {
-            fakeSprite.image.fill(1);
-            fakeSprite.y = this.y - 14;
-            fakeSprite.x = this.x;
-            this.scrollText(text, fakeSprite, textWidth);
-            this.bubbleBorder(fakeSprite, textWidth);
+            bubbleBoxSprite.image.fill(textBoxColor);
+            bubbleBoxSprite.y = this.y - 14;
+            bubbleBoxSprite.x = this.x;
+            this.scrollText(text, bubbleBoxSprite, bubbleWidth, font, bubblePadding);
+            this.bubbleBorder(bubbleBoxSprite, bubbleWidth, font, textBoxColor, bubblePadding);
         })
     }
 
-    bubbleBorder(fakeSprite: Sprite, textWidth: number) {
-        for (let i = 0; i < 2; i++) {
-            for (let j = 0; j < 9; j++) {
-                fakeSprite.image.setPixel(i, j, 1);
+    bubbleBorder(bubbleBoxSprite: Sprite, bubbleWidth: number, font: image.Font, textBoxColor: number, bubblePadding: number) {
+        let bubbleHeight = font.charHeight + bubblePadding;
+        for (let i = 0; i < bubblePadding / 2; i++) {
+            for (let j = 0; j < bubbleHeight; j++) {
+                bubbleBoxSprite.image.setPixel(i, j, textBoxColor);
             }
         }
-        for (let i = 0; i < 2; i++) {
-            for (let j = 0; j < 9; j++) {
-                fakeSprite.image.setPixel(textWidth - 1 - i, textWidth - 1 - j, 1);
+        for (let i = 0; i < bubblePadding / 2; i++) {
+            for (let j = 0; j < bubbleHeight; j++) {
+                bubbleBoxSprite.image.setPixel(bubbleWidth - 1 - i, bubbleHeight - 1 - j, textBoxColor);
             }
         }
-        fakeSprite.image.setPixel(0, 0, 0);
-        fakeSprite.image.setPixel(textWidth - 1, 0, 0);
-        fakeSprite.image.setPixel(0, 8, 0);
-        fakeSprite.image.setPixel(textWidth - 1, 8, 0);
+        bubbleBoxSprite.image.setPixel(0, 0, 0);
+        bubbleBoxSprite.image.setPixel(bubbleWidth - 1, 0, 0);
+        bubbleBoxSprite.image.setPixel(0, bubbleHeight - 1, 0);
+        bubbleBoxSprite.image.setPixel(bubbleWidth - 1, bubbleHeight - 1, 0);
     }
 
-    scrollText(text: string, fakeSprite: Sprite, textWidth: number) {
-        let maxOffset: number = text.length * image.font5.charWidth - (textWidth);
+    scrollText(text: string, bubbleBoxSprite: Sprite, bubbleWidth: number, font: image.Font, bubblePadding: number) {
+        let startX: number = 2;
+        let startY: number = 2;
+        let maxOffset: number = text.length * font.charWidth - (bubbleWidth) + bubblePadding / 2;
         let holdTextTimer: number = 1.5;
+        let textColor: color = Colors.Black;
         if (this.holdTextTimer > 0) {
             this.holdTextTimer = this.holdTextTimer - game.eventContext().deltaTime;
             if (this.holdTextTimer <= 0 && this.pixelsOffset > 0) {
@@ -344,10 +349,10 @@ class Sprite implements SpriteLike {
         if (maxOffset < 0) {
             // print text to dialog box
             // shrink dialog box
-            fakeSprite.image.print(text, 2, 2, 15, image.font5);
+            bubbleBoxSprite.image.print(text, startX, startY, textColor, font);
         } else {
-            // scroll the text somehow
-            fakeSprite.image.print(text, 2 - this.pixelsOffset, 2, 15, image.font5)
+            // scroll the text
+            bubbleBoxSprite.image.print(text, startX - this.pixelsOffset, startY, textColor, font);
         }
 
     }
