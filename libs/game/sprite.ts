@@ -294,7 +294,7 @@ class Sprite implements SpriteLike {
         let maxWidth: number = 100 + bubblePadding / 2;
         let font: image.Font = image.font8;
         let bubbleWidth: number = text.length * font.charWidth + bubblePadding / 2;
-        let textBoxColor: number = Colors.White;
+        let textBoxColor: number = 1; // 1 is white
         if (bubbleWidth > maxWidth) {
             bubbleWidth = maxWidth;
         }
@@ -332,7 +332,7 @@ class Sprite implements SpriteLike {
         let startY: number = 2;
         let maxOffset: number = text.length * font.charWidth - (bubbleWidth) + bubblePadding / 2;
         let holdTextTimer: number = 1.5;
-        let textColor: color = Colors.Black;
+        let textColor: color = 15; // 15 is black
         if (this.holdTextTimer > 0) {
             this.holdTextTimer = this.holdTextTimer - game.eventContext().deltaTime;
             if (this.holdTextTimer <= 0 && this.pixelsOffset > 0) {
