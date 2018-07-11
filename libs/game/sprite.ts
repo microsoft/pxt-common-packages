@@ -283,6 +283,23 @@ class Sprite implements SpriteLike {
         }
     }
 
+    bubbleDialog(currentSprite: Sprite, text: string) {
+        let fakeSprite: Sprite = null
+        let bubbleImage = image.create(54, 9)
+        bubbleImage.fill(1)
+        bubbleImage.setPixel(0, 0, 0)
+        bubbleImage.setPixel(53, 0, 0)
+        bubbleImage.setPixel(0, 8, 0)
+        bubbleImage.setPixel(53, 8, 0)
+        bubbleImage.print(text, 2, image.font5.charHeight, 1, image.font5)
+        fakeSprite = sprites.create(bubbleImage)
+        fakeSprite.y = currentSprite.y - 14
+        game.onUpdate(function () {
+            fakeSprite.y = currentSprite.y - 14
+            fakeSprite.x = currentSprite.x
+        })
+    }
+
     __update(camera: scene.Camera, dt: number) {
         if (this._currentAnimation) {
             if (this._currentAnimation.running) {
