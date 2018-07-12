@@ -76,13 +76,12 @@ namespace animation {
     //% blockSetVariable="anim" 
     //% weight=50
     export function createAnimation(action: number, interval: number) {
-        const f = new Animation(interval, action);
+        const f = new Animation(action, interval);
         let lastTime = control.millis();
         game.onUpdate(function () {
             let currentTime = control.millis();
             f.update(currentTime - lastTime);
             lastTime = currentTime;
-            console.log(lastTime);
         })
         return f;
     }
@@ -97,7 +96,6 @@ namespace animation {
         game.onUpdate(function () {
             if (sprite._action === set.action) {
                 sprite.setImage(set.getImage())
-                console.log("onUpdate");
             }
         })
     }
