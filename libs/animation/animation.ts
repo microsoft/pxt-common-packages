@@ -1,41 +1,39 @@
+/*
+    Animation library for sprites
+*/
+//% color="#03AA74" weight=88 icon="\uf021"
 namespace animation {
 
-    export enum Style {
-        Walking,
-        Idle,
-        Jumping
-    }
-
-    //% fixedInstances
     export class Animation {
 
         frames: Image[];
         index: number;
         interval: number;
-        kind: Style;
+        action: number;
         timer: number;
             
-        constructor(kind: Style, interval: number) {
+        constructor(action: number, interval: number) {
             this.interval = interval;
             this.timer = interval;
             this.index = -1;
-            this.kind = kind;
+            this.action = action;
+            this.frames = [];
         }
     
         update(dt: number) {
             this.timer -= dt;
-            if (this.timer <= 0 && this.index >= 0) {
+            if (this.timer <= 0 && this.frames.length) {
                 this.index = (this.index + 1) % this.frames.length;
                 this.timer = this.interval;
             }
         }
-        
+
         getImage() {
             return this.frames[this.index];
         }
         
-        getStyle() {
-            return this.kind;
+        getAction() {
+            return this.action;
         }
 
         getInterval() {
@@ -46,35 +44,72 @@ namespace animation {
             this.interval = interval;
         }
 
-        addFrame(frame: Image) {
+        //% blockId=addAnimationFrame
+        //% block="add frame $frame=screen_image_picker to $this=variables_get(anim)"
+        //% weight=40
+        addAnimationFrame(frame: Image) {
             this.frames[++this.index] = frame;
         }
 
     }
 
-    export function createAnimation(kind: Style, interval: number) {
-        const f = new Animation(interval, kind);
+    //% shim=ENUM_GET
+    //% blockId=action_enum_shim
+    //% block="%arg"
+    //% enumName="ActionKind"
+    //% enumMemberName="action"
+    //% enumPromptHint="e.g. Walking, Idle, Jumping, ..."
+    //% enumInitialMembers="Walking, Idle, Jumping"
+    //% weight=10
+    export function _actionEnumShim(arg: number) {
+        // This function should do nothing, but must take in a single
+        // argument of type number and return a number value.
+        return arg;
+    }
+
+    /**
+     * Creates an animation
+     */
+    //% blockId=createAnimation 
+    //% block="create animation of $action=action_enum_shim with interval $interval ms"
+    //% interval.defl=1000
+    //% blockSetVariable="anim" 
+    //% weight=50
+    export function createAnimation(action: number, interval: number) {
+        const f = new Animation(interval, action);
         let lastTime = control.millis();
         game.onUpdate(function () {
             let currentTime = control.millis();
             f.update(currentTime - lastTime);
             lastTime = currentTime;
+            console.log(lastTime);
         })
         return f;
     }
 
-    export function attachAnimation(s: Sprite, set: Animation) {
+    /**
+     * attaches an animation to a sprite
+     */
+    //% blockId=attachAnimation 
+    //% block="attach animation $set=variables_get(anim) to sprite $sprite=variables_get(agent)"
+    //% weight=30
+    export function attachAnimation(sprite: Sprite, set: Animation) {
         game.onUpdate(function () {
-            /*
-            if (s.style === set.kind) {
-                s.setImage(set.getImage())
+            if (sprite._action === set.action) {
+                sprite.setImage(set.getImage())
+                console.log("onUpdate");
             }
-            */
         })
     }
 
-    export function setStyle(s: Sprite, kind: Style) {
-            //s.style = kind;
+    /**
+     * Sets the action to Sprite
+     */
+    //% blockId=setAction
+    //% block="activate animation $action=action_enum_shim on $sprite=variables_get(agent)"
+    //% weight=20
+    export function setAction(sprite: Sprite, action: number) {
+        sprite._action = action;
     }    
   
 }

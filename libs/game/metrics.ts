@@ -1,5 +1,5 @@
 namespace performance {
-    let enabled = false;
+    export let enabled = false;
     export function track(name: string, value: number) {
         if (enabled) console.log(`<${name} val=${value}>`);
     }

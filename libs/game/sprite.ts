@@ -76,6 +76,8 @@ class Sprite implements SpriteLike {
     _lastX: number;
     _lastY: number;
 
+    _action: number; //Used with animation library
+
     /**
      * Time to live in game ticks. The lifespan decreases by 1 on each game update
      * and the sprite gets destroyed when it reaches 0.
