@@ -99,8 +99,9 @@ class Sprite implements SpriteLike {
     private _currentAnimation: sprites.TimedAnimation;
     private _animationQueue: AnimationAction[];
 
-    private pixelsOffset: number;
-    private holdTextTimer: number;
+    private updateSay: () => void;
+
+
 
     _hitboxes: game.Hitbox[];
 
@@ -126,8 +127,6 @@ class Sprite implements SpriteLike {
         this.type = 0; // not a member of any type by default
         this.layer = 1; // by default, in layer 1
         this.lifespan = undefined
-        this.pixelsOffset = 0;
-        this.holdTextTimer = 2;
     }
 
     /**
@@ -238,12 +237,10 @@ class Sprite implements SpriteLike {
     //% blockId=spritesay block="%sprite(agent) say %text||for %millis ms"
     //% time.defl=2000
     //% help=sprites/sprite/say
-    say(text: string, millis?: number) {
-        this._say = text;
-        if (!millis || millis < 0)
-            this._sayExpires = -1;
-        else
-            this._sayExpires = control.millis() + millis;
+    say(text: string) {
+
+        this.sayBubble(text, image.font8);
+
     }
 
     /**
@@ -264,6 +261,8 @@ class Sprite implements SpriteLike {
         const font = image.font8;
         screen.drawTransparentImage(this._image, l, t)
         // say text
+
+        /*
         if (this._say && (this._sayExpires < 0 || this._sayExpires > control.millis())) {
             screen.fillRect(
                 l - (this._say.length * font.charWidth + 2) / 2 + this.width / 2,
@@ -277,6 +276,12 @@ class Sprite implements SpriteLike {
                 15,
                 font);
         }
+        */
+
+        if (this.updateSay) {
+            this.updateSay();
+        }
+
         // debug info
         if (game.debug) {
             let color = 1;
@@ -288,11 +293,21 @@ class Sprite implements SpriteLike {
         }
     }
 
-    sayBubble(text: string) {
+
+
+    sayBubble(text: string, ifont: image.Font) {
+        if (!text) {
+            this.updateSay = undefined;
+            return;
+        }
+        
+    
+        let pixelsOffset = 0;
+        let holdTextTimer = 2;
         let bubbleBoxSprite: Sprite = null;
         let bubblePadding: number = 4;
         let maxWidth: number = 100 + bubblePadding / 2;
-        let font: image.Font = image.font8;
+        let font: image.Font = ifont;
         let bubbleWidth: number = text.length * font.charWidth + bubblePadding / 2;
         let textBoxColor: number = 1; // 1 is white
         if (bubbleWidth > maxWidth) {
@@ -300,13 +315,13 @@ class Sprite implements SpriteLike {
         }
         bubbleBoxSprite = sprites.create(image.create(bubbleWidth, font.charHeight + bubblePadding));
 
-        game.onUpdate(() => {
+        this.updateSay = () => {
             bubbleBoxSprite.image.fill(textBoxColor);
             bubbleBoxSprite.y = this.y - 14;
             bubbleBoxSprite.x = this.x;
             this.scrollText(text, bubbleBoxSprite, bubbleWidth, font, bubblePadding);
             this.bubbleBorder(bubbleBoxSprite, bubbleWidth, font, textBoxColor, bubblePadding);
-        })
+        }
     }
 
     bubbleBorder(bubbleBoxSprite: Sprite, bubbleWidth: number, font: image.Font, textBoxColor: number, bubblePadding: number) {
@@ -330,7 +345,7 @@ class Sprite implements SpriteLike {
     scrollText(text: string, bubbleBoxSprite: Sprite, bubbleWidth: number, font: image.Font, bubblePadding: number) {
         let startX: number = 2;
         let startY: number = 2;
-        let maxOffset: number = text.length * font.charWidth - (bubbleWidth) + bubblePadding / 2;
+        let maxOffset: number = text.length * font.charWidth - (bubbleWidth) + bubblePadding;
         let holdTextTimer: number = 1.5;
         let textColor: color = 15; // 15 is black
         if (this.holdTextTimer > 0) {
