@@ -3,6 +3,9 @@
 */
 //% color="#03AA74" weight=88 icon="\uf021"
 namespace animation {
+    //Handles all the updates
+    let _onAnimUpdate: (() => void)[] = null;
+    let _onSpriteUpdate: (() => void)[] = null;
 
     export class Animation {
 
@@ -10,21 +13,36 @@ namespace animation {
         index: number;
         interval: number;
         action: number;
-        timer: number;
-            
+        lastTime: number;
+
         constructor(action: number, interval: number) {
             this.interval = interval;
-            this.timer = interval;
             this.index = -1;
             this.action = action;
             this.frames = [];
+            this.lastTime = control.millis();
+
+            this._init();
         }
-    
-        update(dt: number) {
-            this.timer -= dt;
-            if (this.timer <= 0 && this.frames.length) {
+
+        _init() {
+            if (!_onAnimUpdate) {
+                _onAnimUpdate = [];
+                game.eventContext().registerFrameHandler(15, () => {
+                    _onAnimUpdate.forEach(element => {
+                        element();
+                    });
+                });
+            }
+            _onAnimUpdate.push(() => this.update());
+        }
+
+        update() {
+            let currentTime = control.millis();
+            let dt = currentTime - this.lastTime;
+            if (dt >= this.interval && this.frames.length) {
                 this.index = (this.index + 1) % this.frames.length;
-                this.timer = this.interval;
+                this.lastTime = currentTime;
             }
         }
 
@@ -76,14 +94,7 @@ namespace animation {
     //% blockSetVariable="anim" 
     //% weight=50
     export function createAnimation(action: number, interval: number) {
-        const f = new Animation(action, interval);
-        let lastTime = control.millis();
-        game.onUpdate(function () {
-            let currentTime = control.millis();
-            f.update(currentTime - lastTime);
-            lastTime = currentTime;
-        })
-        return f;
+        return new Animation(action, interval);
     }
 
     /**
@@ -93,7 +104,19 @@ namespace animation {
     //% block="attach animation $set=variables_get(anim) to sprite $sprite=variables_get(agent)"
     //% weight=30
     export function attachAnimation(sprite: Sprite, set: Animation) {
-        game.onUpdate(function () {
+        if (!_onSpriteUpdate) {
+            //First attach register the update call back.
+            //Priority 16 is slightly lower than 15 for animation update loop.
+            //This is allow the animation to complete, so we have the new display ready to go.
+            _onSpriteUpdate = [];
+            game.eventContext().registerFrameHandler(16, () => {
+                _onSpriteUpdate.forEach(element => {
+                    element();
+                });
+            });
+        }
+
+        _onSpriteUpdate.push(() => {
             if (sprite._action === set.action) {
                 sprite.setImage(set.getImage())
             }
