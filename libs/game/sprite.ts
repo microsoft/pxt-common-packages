@@ -91,8 +91,6 @@ class Sprite implements SpriteLike {
     //% group="Properties" blockSetVariable="agent"
     //% blockCombine block="lifespan"
     lifespan: number;
-    // private _say: string;
-    // private _sayExpires: number;
     private _image: Image;
     private _obstacles: sprites.Obstacle[];
     private _movementAnim: sprites.MovementAnimation;
@@ -240,39 +238,51 @@ class Sprite implements SpriteLike {
     //% blockId=spritesay block="%sprite(agent) say %text||for %millis ms"
     //% time.defl=2000
     //% help=sprites/sprite/say
-    say(text: string, timeOnScreen?: number) {
+    say(text: string, timeOnScreen?: number, textColor?: color, textBoxColor?: color) {
         if (!text) {
             this.updateSay = undefined;
             return;
         }
+
         if (timeOnScreen) {
             timeOnScreen = timeOnScreen + control.millis();
         }
 
+        if (!textColor) {
+            // 1 is white
+            textColor = 1;
+        }
+
+        if (!textBoxColor) {
+            // 15 is black
+            textBoxColor = 15;
+        }
+
         let bubblePadding: number = 4;
-        let maxWidth: number = 100 + bubblePadding / 2;
+        let maxTextWidth = 100;
         let font: image.Font = image.font8;
-        let textBoxColor: number = 1; // 1 is white
-        let textColor: color = 15; // 15 is black
         let startX: number = 2;
         let startY: number = 2;
-        let bubbleWidth: number = text.length * font.charWidth + bubblePadding / 2;
-        let bubbleHeight = font.charHeight + bubblePadding;
-        let maxOffset: number = text.length * font.charWidth - (bubbleWidth) + bubblePadding;
+        let bubbleWidth: number = text.length * font.charWidth + bubblePadding;
+        let maxOffset: number = text.length * font.charWidth - maxTextWidth;
 
-        if (bubbleWidth > maxWidth) {
-            bubbleWidth = maxWidth;
+        if (bubbleWidth > maxTextWidth + bubblePadding) {
+            bubbleWidth = maxTextWidth + bubblePadding;
+        } else {
             maxOffset = -1;
         }
 
-        this.bubbleBoxSprite= sprites.create(image.create(bubbleWidth, font.charHeight + bubblePadding));
+        this.bubbleBoxSprite = sprites.create(image.create(bubbleWidth, font.charHeight + bubblePadding));
 
         this.updateSay = () => {
+            // update as long as timeOnScreen doesn't exist or it can still be on the screen
             if (!timeOnScreen || timeOnScreen > control.millis()) {
+                // update sprite location
                 this.bubbleBoxSprite.image.fill(textBoxColor);
                 this.bubbleBoxSprite.y = this.y - 14;
                 this.bubbleBoxSprite.x = this.x;
 
+                // pauses at beginning of text for holdTextTimer length
                 if (this.holdTextTimer > 0) {
                     this.holdTextTimer = this.holdTextTimer - game.eventContext().deltaTime;
                     if (this.holdTextTimer <= 0 && this.pixelsOffset > 0) {
@@ -281,35 +291,39 @@ class Sprite implements SpriteLike {
                     }
                 } else {
                     this.pixelsOffset++;
+                    // pause at end of text for holdTextTimer length
                     if (this.pixelsOffset >= maxOffset) {
                         this.pixelsOffset = maxOffset;
                         this.holdTextTimer = 1.5;
                     }
                 }
+                // if maxOffset is negative it won't scroll
                 if (maxOffset < 0) {
                     this.bubbleBoxSprite.image.print(text, startX, startY, textColor, font);
                 } else {
                     this.bubbleBoxSprite.image.print(text, startX - this.pixelsOffset, startY, textColor, font);
                 }
-                
+
+                // left side padding
                 for (let i = 0; i < bubblePadding / 2; i++) {
-                    for (let j = 0; j < bubbleHeight; j++) {
+                    for (let j = 0; j < font.charHeight + bubblePadding; j++) {
                         this.bubbleBoxSprite.image.setPixel(i, j, textBoxColor);
                     }
                 }
+                // right side padding
                 for (let i = 0; i < bubblePadding / 2; i++) {
-                    for (let j = 0; j < bubbleHeight; j++) {
-                        this.bubbleBoxSprite.image.setPixel(bubbleWidth - 1 - i, bubbleHeight - 1 - j, textBoxColor);
+                    for (let j = 0; j < font.charHeight + bubblePadding; j++) {
+                        this.bubbleBoxSprite.image.setPixel(bubbleWidth - 1 - i, font.charHeight + bubblePadding - 1 - j, textBoxColor);
                     }
                 }
+                // corners removed
                 this.bubbleBoxSprite.image.setPixel(0, 0, 0);
                 this.bubbleBoxSprite.image.setPixel(bubbleWidth - 1, 0, 0);
-                this.bubbleBoxSprite.image.setPixel(0, bubbleHeight - 1, 0);
-                this.bubbleBoxSprite.image.setPixel(bubbleWidth - 1, bubbleHeight - 1, 0);
+                this.bubbleBoxSprite.image.setPixel(0, font.charHeight + bubblePadding - 1, 0);
+                this.bubbleBoxSprite.image.setPixel(bubbleWidth - 1, font.charHeight + bubblePadding - 1, 0);
             } else {
-                if (this.bubbleBoxSprite) {
-                    this.bubbleBoxSprite.destroy();
-                }
+                // if can't update because of timeOnScreen then destroy the bubbleBoxSprite and reset updateSay
+                this.bubbleBoxSprite.destroy();
                 this.updateSay = undefined;
                 return;
             }
@@ -333,24 +347,8 @@ class Sprite implements SpriteLike {
         const t = this.top - camera.offsetY;
         const font = image.font8;
         screen.drawTransparentImage(this._image, l, t)
+
         // say text
-
-        /*
-        if (this._say && (this._sayExpires < 0 || this._sayExpires > control.millis())) {
-            screen.fillRect(
-                l - (this._say.length * font.charWidth + 2) / 2 + this.width / 2,
-                t - font.charHeight - 2,
-                this._say.length * font.charWidth + 2,
-                font.charHeight + 4,
-                1);
-            screen.print(this._say,
-                l + 2 - (this._say.length * font.charWidth + 2) / 2 + this.width / 2,
-                t - font.charHeight,
-                15,
-                font);
-        }
-        */
-
         if (this.updateSay) {
             this.updateSay();
         }
@@ -586,6 +584,7 @@ class Sprite implements SpriteLike {
             return
         this.flags |= sprites.Flag.Destroyed
         const scene = game.currentScene();
+        // destroys bubbleBoxSprite if defined and this sprite is destroyed
         if (this.bubbleBoxSprite) {
             this.bubbleBoxSprite.destroy();
         }
