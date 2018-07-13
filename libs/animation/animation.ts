@@ -118,7 +118,11 @@ namespace animation {
 
         _onSpriteUpdate.push(() => {
             if (sprite._action === set.action) {
-                sprite.setImage(set.getImage())
+                let newImage = set.getImage();
+                //Update only if the image has changed
+                if (sprite.image !== newImage) {
+                    sprite.setImage(newImage)
+                }
             }
         })
     }
