@@ -87,14 +87,10 @@ class Sprite implements SpriteLike {
     lifespan: number;
     private _image: Image;
     private _obstacles: sprites.Obstacle[];
-<<<<<<< HEAD
 
     private updateSay: () => void;
     private bubbleBoxSprite: Sprite;
 
-=======
-    
->>>>>>> master
     _hitboxes: game.Hitbox[];
 
     flags: number
