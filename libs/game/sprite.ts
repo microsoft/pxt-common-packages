@@ -98,8 +98,6 @@ class Sprite implements SpriteLike {
     private _animationQueue: AnimationAction[];
 
     private updateSay: () => void;
-    private holdTextTimer: number;
-    private pixelsOffset: number;
     private bubbleBoxSprite: Sprite;
 
     _hitboxes: game.Hitbox[];
@@ -126,8 +124,6 @@ class Sprite implements SpriteLike {
         this.type = 0; // not a member of any type by default
         this.layer = 1; // by default, in layer 1
         this.lifespan = undefined
-        this.holdTextTimer = 1.5;
-        this.pixelsOffset = 0;
     }
 
     /**
@@ -232,13 +228,13 @@ class Sprite implements SpriteLike {
     /**
      * Display a speech bubble with the text, for the given time
      * @param text the text to say, eg: ":)"
-     * @param time time to keep text on, eg: 2000
+     * @param time time to keep text on
      */
     //% group="Properties"
     //% blockId=spritesay block="%sprite(agent) say %text||for %millis ms"
-    //% time.defl=2000
+    //% inlineInputMode=inline
     //% help=sprites/sprite/say
-    say(text: string, timeOnScreen?: number, textColor?: color, textBoxColor?: color) {
+    say(text: string, timeOnScreen?: number, textColor = 15, textBoxColor = 1) {
         if (!text) {
             this.updateSay = undefined;
             return;
@@ -247,24 +243,22 @@ class Sprite implements SpriteLike {
         if (timeOnScreen) {
             timeOnScreen = timeOnScreen + control.millis();
         }
-
-        if (!textColor) {
-            // 1 is white
-            textColor = 1;
-        }
-
-        if (!textBoxColor) {
-            // 15 is black
-            textBoxColor = 15;
-        }
-
-        let bubblePadding: number = 4;
+        let pixelsOffset = 0;
+        let holdTextTimer = 1.5;
+        let bubblePadding = 4;
         let maxTextWidth = 100;
-        let font: image.Font = image.font8;
-        let startX: number = 2;
-        let startY: number = 2;
-        let bubbleWidth: number = text.length * font.charWidth + bubblePadding;
-        let maxOffset: number = text.length * font.charWidth - maxTextWidth;
+        let font = image.font8;
+        let startX = 2;
+        let startY = 2;
+        let bubbleWidth = text.length * font.charWidth + bubblePadding;
+        let maxOffset = text.length * font.charWidth - maxTextWidth;
+        let spriteTop = this._hitboxes[0].top;
+
+        for (let i = 0; i < this._hitboxes.length; i++) {
+            if (this._hitboxes[i].top < spriteTop) {
+                spriteTop = this._hitboxes[i].top;
+            }
+        }
 
         if (bubbleWidth > maxTextWidth + bubblePadding) {
             bubbleWidth = maxTextWidth + bubblePadding;
@@ -274,44 +268,45 @@ class Sprite implements SpriteLike {
 
         this.bubbleBoxSprite = sprites.create(image.create(bubbleWidth, font.charHeight + bubblePadding));
 
-        this.updateSay = () => {
-            // update as long as timeOnScreen doesn't exist or it can still be on the screen
-            if (!timeOnScreen || timeOnScreen > control.millis()) {
-                // update sprite location
-                this.bubbleBoxSprite.image.fill(textBoxColor);
-                this.bubbleBoxSprite.y = this.y - 14;
-                this.bubbleBoxSprite.x = this.x;
+        this.bubbleBoxSprite.setFlag(SpriteFlag.Ghost, true);
 
+        this.updateSay = () => {
+            // update box stuff as long as timeOnScreen doesn't exist or it can still be on the screen
+            if (!timeOnScreen || timeOnScreen > control.millis()) {
+                this.bubbleBoxSprite.image.fill(textBoxColor);
+                // the minus 2 is how far the bottom of bubbleBoxSprite to sprites top is
+                this.bubbleBoxSprite.y = spriteTop - ((font.charHeight + bubblePadding) >> 1) - 2;
+                this.bubbleBoxSprite.x = this.x;
                 // pauses at beginning of text for holdTextTimer length
-                if (this.holdTextTimer > 0) {
-                    this.holdTextTimer = this.holdTextTimer - game.eventContext().deltaTime;
-                    if (this.holdTextTimer <= 0 && this.pixelsOffset > 0) {
-                        this.pixelsOffset = 0;
-                        this.holdTextTimer = 1.5;
+                if (holdTextTimer > 0) {
+                    holdTextTimer = holdTextTimer - game.eventContext().deltaTime;
+                    if (holdTextTimer <= 0 && pixelsOffset > 0) {
+                        pixelsOffset = 0;
+                        holdTextTimer = 1.5;
                     }
                 } else {
-                    this.pixelsOffset++;
+                    pixelsOffset++;
                     // pause at end of text for holdTextTimer length
-                    if (this.pixelsOffset >= maxOffset) {
-                        this.pixelsOffset = maxOffset;
-                        this.holdTextTimer = 1.5;
+                    if (pixelsOffset >= maxOffset) {
+                        pixelsOffset = maxOffset;
+                        holdTextTimer = 1.5;
                     }
                 }
                 // if maxOffset is negative it won't scroll
                 if (maxOffset < 0) {
                     this.bubbleBoxSprite.image.print(text, startX, startY, textColor, font);
                 } else {
-                    this.bubbleBoxSprite.image.print(text, startX - this.pixelsOffset, startY, textColor, font);
+                    this.bubbleBoxSprite.image.print(text, startX - pixelsOffset, startY, textColor, font);
                 }
 
                 // left side padding
-                for (let i = 0; i < bubblePadding / 2; i++) {
+                for (let i = 0; i < bubblePadding >> 1; i++) {
                     for (let j = 0; j < font.charHeight + bubblePadding; j++) {
                         this.bubbleBoxSprite.image.setPixel(i, j, textBoxColor);
                     }
                 }
                 // right side padding
-                for (let i = 0; i < bubblePadding / 2; i++) {
+                for (let i = 0; i < bubblePadding >> 2; i++) {
                     for (let j = 0; j < font.charHeight + bubblePadding; j++) {
                         this.bubbleBoxSprite.image.setPixel(bubbleWidth - 1 - i, font.charHeight + bubblePadding - 1 - j, textBoxColor);
                     }
@@ -341,17 +336,17 @@ class Sprite implements SpriteLike {
     }
 
     __draw(camera: scene.Camera) {
+        // say text
+        if (this.updateSay) {
+            this.updateSay();
+        }
+
         if (this.isOutOfScreen(camera)) return;
 
         const l = this.left - camera.offsetX;
         const t = this.top - camera.offsetY;
         const font = image.font8;
         screen.drawTransparentImage(this._image, l, t)
-
-        // say text
-        if (this.updateSay) {
-            this.updateSay();
-        }
 
         // debug info
         if (game.debug) {
