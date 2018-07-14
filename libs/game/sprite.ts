@@ -25,14 +25,6 @@ interface SpriteLike {
     __draw(camera: scene.Camera): void;
 }
 
-interface AnimationAction {
-    animation: sprites.TimedAnimation;
-    durationMs: number;
-    flipX: boolean;
-    flipY: boolean;
-}
-
-
 enum FlipOption {
     //% block=none
     None,
@@ -84,6 +76,8 @@ class Sprite implements SpriteLike {
     _lastX: number;
     _lastY: number;
 
+    _action: number; //Used with animation library
+
     /**
      * Time to live in game ticks. The lifespan decreases by 1 on each game update
      * and the sprite gets destroyed when it reaches 0.
@@ -93,9 +87,6 @@ class Sprite implements SpriteLike {
     lifespan: number;
     private _image: Image;
     private _obstacles: sprites.Obstacle[];
-    private _movementAnim: sprites.MovementAnimation;
-    private _currentAnimation: sprites.TimedAnimation;
-    private _animationQueue: AnimationAction[];
 
     private updateSay: () => void;
     private bubbleBoxSprite: Sprite;
@@ -129,8 +120,6 @@ class Sprite implements SpriteLike {
     /**
      * Gets the current image
      */
-    //% group="Animations" blockSetVariable="agent"
-    //% blockCombine block="image"
     get image(): Image {
         return this._image;
     }
@@ -138,8 +127,6 @@ class Sprite implements SpriteLike {
     /**
      * Sets the image on the sprite
      */
-    //% group="Animations"
-    //% blockId=spritesetimage block="set %sprite(agent) image to %img=screen_image_picker"
     setImage(img: Image) {
         if (!img) return; // don't break the sprite
         this._image = img;
@@ -361,30 +348,7 @@ class Sprite implements SpriteLike {
         }
     }
 
-
     __update(camera: scene.Camera, dt: number) {
-        if (this._currentAnimation) {
-            if (this._currentAnimation.running) {
-                this._currentAnimation.update(dt * 1000);
-            }
-            else {
-                this._currentAnimation = undefined;
-
-                if (this._animationQueue && this._animationQueue.length) {
-                    this.nextAnimation();
-                }
-                else if (this._movementAnim) {
-                    this._movementAnim.showFrame();
-                }
-            }
-        }
-        else if (this._animationQueue && this._animationQueue.length) {
-            this.nextAnimation();
-        }
-        else if (this._movementAnim) {
-            this._movementAnim.update(dt * 1000);
-        }
-
         if (this.lifespan !== undefined) {
             this.lifespan--;
             if (this.lifespan <= 0)
@@ -488,60 +452,6 @@ class Sprite implements SpriteLike {
         return (this._obstacles && this._obstacles[direction]) ? this._obstacles[direction].tileIndex : -1;
     }
 
-    /**
-     * Set a frame on this sprite's movement animation
-     * @param frame The image for this frame
-     * @param direction The movement direction for which this frame will be shown
-     * @param addReverseDirection Also add a flipped version of the sprite in the opposite direction
-     */
-    //% blockId=spritemovementframe block="add %sprite(agent) movement frame %image=screen_image_picker %direction ||and reverse direction %addReverseDirection=toggleOnOff"
-    //% group="Animations" weight=10
-    addMovementFrame(frame: Image, direction: sprites.MovementDirection, addReverseDirection = false) {
-        if (!this._movementAnim) {
-            this._movementAnim = new sprites.MovementAnimation(this);
-        }
-        this._movementAnim.addFrame(frame, direction, addReverseDirection);
-    }
-
-    /**
-     * Determines if the movement animation is facing a given direction. Note that
-     * this API will always return false if no movement frames have been added.
-     */
-    //% blockId=spriteisfacing block="is %sprite(agent) facing %direction"
-    //% group="Properties" weight=10 blockGap=8
-    isFacing(direction: sprites.MovementDirection) {
-        if (this._movementAnim) return direction === this._movementAnim.facing;
-        else return false;
-    }
-
-    /**
-     * Queues a timed animation on the sprite without blocking the current fiber
-     * @param animation The animation to show
-     * @param duration The duration of the animation
-     * @param flip Show the animation flipped over an axis
-     */
-    //% blockId=spritefireanimation block="start %sprite(agent) animation %animation %duration=timePicker|ms||%flip"
-    //% group="Animations" weight=79
-    startAnimation(animation: sprites.TimedAnimation, duration: number, flip = FlipOption.None) {
-        if (!animation) return;
-        if (!this._animationQueue) this._animationQueue = [];
-        this._animationQueue.push({
-            animation: animation,
-            durationMs: duration,
-            flipX: (flip === FlipOption.FlipX || flip === FlipOption.FlipXY),
-            flipY: (flip === FlipOption.FlipY || flip === FlipOption.FlipXY)
-        });
-    }
-
-    /**
-     * Determines if the sprite is currently showing a timed animation
-     */
-    //% blockId=spriteisshowing block="is %sprite(agent) showing animation"
-    //% group="Animations" weight=78
-    isShowingAnimation() {
-        return !!this._currentAnimation;
-    }
-
     clearObstacles() {
         this._obstacles = undefined;
     }
@@ -596,18 +506,5 @@ class Sprite implements SpriteLike {
 
     toString() {
         return `${this.id}(${this.x},${this.y})->(${this.vx},${this.vy})`;
-    }
-
-    private nextAnimation() {
-        const action = this._animationQueue.shift();
-        if (action.animation.sprite && action.animation.sprite != this) {
-            // clone it if necessary
-            this._currentAnimation = new sprites.TimedAnimation(action.animation.frames);
-        }
-        else {
-            this._currentAnimation = action.animation;
-        }
-        this._currentAnimation.setSprite(this);
-        this._currentAnimation.start(action.durationMs, action.flipX, action.flipY);
     }
 }
