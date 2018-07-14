@@ -260,6 +260,8 @@ class Sprite implements SpriteLike {
             }
         }
 
+        spriteTop = this.y - spriteTop;
+
         if (bubbleWidth > maxTextWidth + bubblePadding) {
             bubbleWidth = maxTextWidth + bubblePadding;
         } else {
@@ -275,7 +277,7 @@ class Sprite implements SpriteLike {
             if (!timeOnScreen || timeOnScreen > control.millis()) {
                 this.bubbleBoxSprite.image.fill(textBoxColor);
                 // the minus 2 is how far the bottom of bubbleBoxSprite to sprites top is
-                this.bubbleBoxSprite.y = spriteTop - ((font.charHeight + bubblePadding) >> 1) - 2;
+                this.bubbleBoxSprite.y = this.y - spriteTop - ((font.charHeight + bubblePadding) >> 1) - 2;
                 this.bubbleBoxSprite.x = this.x;
                 // pauses at beginning of text for holdTextTimer length
                 if (holdTextTimer > 0) {
@@ -306,7 +308,7 @@ class Sprite implements SpriteLike {
                     }
                 }
                 // right side padding
-                for (let i = 0; i < bubblePadding >> 2; i++) {
+                for (let i = 0; i < bubblePadding >> 1; i++) {
                     for (let j = 0; j < font.charHeight + bubblePadding; j++) {
                         this.bubbleBoxSprite.image.setPixel(bubbleWidth - 1 - i, font.charHeight + bubblePadding - 1 - j, textBoxColor);
                     }
