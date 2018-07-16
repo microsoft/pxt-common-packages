@@ -119,6 +119,9 @@ class Sprite implements SpriteLike {
     /**
      * Gets the current image
      */
+    //% group="Lifecycle"
+    //% blockId=spriteimage block="%sprite(agent) image"
+    //% weight=8
     get image(): Image {
         return this._image;
     }
@@ -126,6 +129,9 @@ class Sprite implements SpriteLike {
     /**
      * Sets the image on the sprite
      */
+    //% group="Lifecycle"
+    //% blockId=spritesetimage block="set %sprite(agent) image to %img=screen_image_picker"
+    //% weight=7
     setImage(img: Image) {
         if (!img) return; // don't break the sprite
         this._image = img;
@@ -303,6 +309,7 @@ class Sprite implements SpriteLike {
      */
     //% group="Properties"
     //% blockId=spritesetsetflag block="set %sprite(agent) %flag %on=toggleOnOff"
+    //% flag.defl=SpriteFlag.StayInScreen
     setFlag(flag: SpriteFlag, on: boolean) {
         if (on) this.flags |= flag
         else this.flags = ~(~this.flags | flag);
