@@ -89,7 +89,7 @@ class Sprite implements SpriteLike {
     private _obstacles: sprites.Obstacle[];
 
     private updateSay: () => void;
-    private bubbleBoxSprite: Sprite;
+    private sayBubbleSprite: Sprite;
 
     _hitboxes: game.Hitbox[];
 
@@ -222,8 +222,12 @@ class Sprite implements SpriteLike {
     //% inlineInputMode=inline
     //% help=sprites/sprite/say
     say(text: string, timeOnScreen?: number, textColor = 15, textBoxColor = 1) {
+
         if (!text) {
             this.updateSay = undefined;
+            if (this.sayBubbleSprite) {
+                this.sayBubbleSprite.destroy();
+            }
             return;
         }
 
@@ -231,7 +235,7 @@ class Sprite implements SpriteLike {
             timeOnScreen = timeOnScreen + control.millis();
         }
         let pixelsOffset = 0;
-        let holdTextTimer = 1.5;
+        let holdTextSeconds = 1.5;
         let bubblePadding = 4;
         let maxTextWidth = 100;
         let font = image.font8;
@@ -239,15 +243,14 @@ class Sprite implements SpriteLike {
         let startY = 2;
         let bubbleWidth = text.length * font.charWidth + bubblePadding;
         let maxOffset = text.length * font.charWidth - maxTextWidth;
-        let spriteTop = this._hitboxes[0].top;
+        let bubbleOffset = this._hitboxes[0].top;
 
         for (let i = 0; i < this._hitboxes.length; i++) {
-            if (this._hitboxes[i].top < spriteTop) {
-                spriteTop = this._hitboxes[i].top;
-            }
+            bubbleOffset = Math.min(bubbleOffset, this._hitboxes[i].top);
         }
 
-        spriteTop = this.y - spriteTop;
+        // Gets the length from sprites location to its highest hitbox
+        bubbleOffset = this.y - bubbleOffset;
 
         if (bubbleWidth > maxTextWidth + bubblePadding) {
             bubbleWidth = maxTextWidth + bubblePadding;
@@ -255,61 +258,56 @@ class Sprite implements SpriteLike {
             maxOffset = -1;
         }
 
-        this.bubbleBoxSprite = sprites.create(image.create(bubbleWidth, font.charHeight + bubblePadding));
+        // Destroy previous sayBubbleSprite to prevent leaking
+        if (this.sayBubbleSprite) {
+            this.sayBubbleSprite.destroy();
+        }
 
-        this.bubbleBoxSprite.setFlag(SpriteFlag.Ghost, true);
+        this.sayBubbleSprite = sprites.create(image.create(bubbleWidth, font.charHeight + bubblePadding));
+        this.sayBubbleSprite.setFlag(SpriteFlag.Ghost, true);
 
         this.updateSay = () => {
-            // update box stuff as long as timeOnScreen doesn't exist or it can still be on the screen
+            // Update box stuff as long as timeOnScreen doesn't exist or it can still be on the screen
             if (!timeOnScreen || timeOnScreen > control.millis()) {
-                this.bubbleBoxSprite.image.fill(textBoxColor);
-                // the minus 2 is how far the bottom of bubbleBoxSprite to sprites top is
-                this.bubbleBoxSprite.y = this.y - spriteTop - ((font.charHeight + bubblePadding) >> 1) - 2;
-                this.bubbleBoxSprite.x = this.x;
-                // pauses at beginning of text for holdTextTimer length
-                if (holdTextTimer > 0) {
-                    holdTextTimer = holdTextTimer - game.eventContext().deltaTime;
-                    if (holdTextTimer <= 0 && pixelsOffset > 0) {
+                this.sayBubbleSprite.image.fill(textBoxColor);
+                // The minus 2 is how much transparent padding there is under the sayBubbleSprite
+                this.sayBubbleSprite.y = this.y - bubbleOffset - ((font.charHeight + bubblePadding) >> 1) - 2;
+                this.sayBubbleSprite.x = this.x;
+                // Pauses at beginning of text for holdTextSeconds length
+                if (holdTextSeconds > 0) {
+                    holdTextSeconds -= game.eventContext().deltaTime;
+                    if (holdTextSeconds <= 0 && pixelsOffset > 0) {
                         pixelsOffset = 0;
-                        holdTextTimer = 1.5;
+                        holdTextSeconds = 1.5;
                     }
                 } else {
                     pixelsOffset++;
-                    // pause at end of text for holdTextTimer length
+                    // Pause at end of text for holdTextSeconds length
                     if (pixelsOffset >= maxOffset) {
                         pixelsOffset = maxOffset;
-                        holdTextTimer = 1.5;
+                        holdTextSeconds = 1.5;
                     }
                 }
-                // if maxOffset is negative it won't scroll
+                // If maxOffset is negative it won't scroll
                 if (maxOffset < 0) {
-                    this.bubbleBoxSprite.image.print(text, startX, startY, textColor, font);
+                    this.sayBubbleSprite.image.print(text, startX, startY, textColor, font);
                 } else {
-                    this.bubbleBoxSprite.image.print(text, startX - pixelsOffset, startY, textColor, font);
+                    this.sayBubbleSprite.image.print(text, startX - pixelsOffset, startY, textColor, font);
                 }
 
-                // left side padding
-                for (let i = 0; i < bubblePadding >> 1; i++) {
-                    for (let j = 0; j < font.charHeight + bubblePadding; j++) {
-                        this.bubbleBoxSprite.image.setPixel(i, j, textBoxColor);
-                    }
-                }
-                // right side padding
-                for (let i = 0; i < bubblePadding >> 1; i++) {
-                    for (let j = 0; j < font.charHeight + bubblePadding; j++) {
-                        this.bubbleBoxSprite.image.setPixel(bubbleWidth - 1 - i, font.charHeight + bubblePadding - 1 - j, textBoxColor);
-                    }
-                }
-                // corners removed
-                this.bubbleBoxSprite.image.setPixel(0, 0, 0);
-                this.bubbleBoxSprite.image.setPixel(bubbleWidth - 1, 0, 0);
-                this.bubbleBoxSprite.image.setPixel(0, font.charHeight + bubblePadding - 1, 0);
-                this.bubbleBoxSprite.image.setPixel(bubbleWidth - 1, font.charHeight + bubblePadding - 1, 0);
+                // Left side padding
+                this.sayBubbleSprite.image.fillRect(0, 0, bubblePadding >> 1, font.charHeight + bubblePadding, textBoxColor);
+                // Right side padding
+                this.sayBubbleSprite.image.fillRect(bubbleWidth - (bubblePadding >> 1), 0, bubblePadding >> 1, font.charHeight + bubblePadding, textBoxColor);
+                // Corners removed
+                this.sayBubbleSprite.image.setPixel(0, 0, 0);
+                this.sayBubbleSprite.image.setPixel(bubbleWidth - 1, 0, 0);
+                this.sayBubbleSprite.image.setPixel(0, font.charHeight + bubblePadding - 1, 0);
+                this.sayBubbleSprite.image.setPixel(bubbleWidth - 1, font.charHeight + bubblePadding - 1, 0);
             } else {
-                // if can't update because of timeOnScreen then destroy the bubbleBoxSprite and reset updateSay
-                this.bubbleBoxSprite.destroy();
+                // If can't update because of timeOnScreen then destroy the sayBubbleSprite and reset updateSay
+                this.sayBubbleSprite.destroy();
                 this.updateSay = undefined;
-                return;
             }
         }
     }
@@ -325,7 +323,7 @@ class Sprite implements SpriteLike {
     }
 
     __draw(camera: scene.Camera) {
-        // say text
+        // Say text
         if (this.updateSay) {
             this.updateSay();
         }
@@ -491,9 +489,9 @@ class Sprite implements SpriteLike {
             return
         this.flags |= sprites.Flag.Destroyed
         const scene = game.currentScene();
-        // destroys bubbleBoxSprite if defined and this sprite is destroyed
-        if (this.bubbleBoxSprite) {
-            this.bubbleBoxSprite.destroy();
+        // When current sprite is destroyed, destroys sayBubbleSprite if defined
+        if (this.sayBubbleSprite) {
+            this.sayBubbleSprite.destroy();
         }
         scene.allSprites.removeElement(this);
         scene.physicsEngine.removeSprite(this);
