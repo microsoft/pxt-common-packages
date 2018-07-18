@@ -41,29 +41,29 @@ enum FlipOption {
  **/
 //% blockNamespace=sprites color="#4B7BEC" blockGap=8
 class Sprite implements SpriteLike {
-    //% group="Properties" blockSetVariable="agent"
+    //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="x (horizontal position)"
     x: number
-    //% group="Properties" blockSetVariable="agent"
+    //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="y (vertical position)"
     y: number
     private _z: number
-    //% group="Properties" blockSetVariable="agent"
+    //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="vx (velocity x)"
     vx: number
-    //% group="Properties" blockSetVariable="agent"
+    //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="vy (velocity y)"
     vy: number
-    //% group="Properties" blockSetVariable="agent"
+    //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="ax (acceleration x)"
     ax: number
-    //% group="Properties" blockSetVariable="agent"
+    //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="ay (acceleration y)"
     ay: number
     /**
      * The type of sprite
      */
-    //% group="Properties" blockSetVariable="agent"
+    //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="kind"
     type: number
 
@@ -82,14 +82,14 @@ class Sprite implements SpriteLike {
      * Time to live in game ticks. The lifespan decreases by 1 on each game update
      * and the sprite gets destroyed when it reaches 0.
      */
-    //% group="Properties" blockSetVariable="agent"
+    //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="lifespan"
     lifespan: number;
     private _say: string;
     private _sayExpires: number;
     private _image: Image;
     private _obstacles: sprites.Obstacle[];
-    
+
     _hitboxes: game.Hitbox[];
 
     flags: number
@@ -120,7 +120,7 @@ class Sprite implements SpriteLike {
      * Gets the current image
      */
     //% group="Lifecycle"
-    //% blockId=spriteimage block="%sprite(agent) image"
+    //% blockId=spriteimage block="%sprite(mySprite) image"
     //% weight=8
     get image(): Image {
         return this._image;
@@ -130,7 +130,7 @@ class Sprite implements SpriteLike {
      * Sets the image on the sprite
      */
     //% group="Lifecycle"
-    //% blockId=spritesetimage block="set %sprite(agent) image to %img=screen_image_picker"
+    //% blockId=spritesetimage block="set %sprite(mySprite) image to %img=screen_image_picker"
     //% weight=7
     setImage(img: Image) {
         if (!img) return; // don't break the sprite
@@ -138,13 +138,13 @@ class Sprite implements SpriteLike {
         this._hitboxes = game.calculateHitBoxes(this);
     }
 
-    //% group="Properties" blockSetVariable="agent"
+    //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="z (depth)"
     get z(): number {
         return this._z;
     }
 
-    //% group="Properties" blockSetVariable="agent"
+    //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="z (depth)"
     set z(value: number) {
         if (value != this._z) {
@@ -153,52 +153,52 @@ class Sprite implements SpriteLike {
         }
     }
 
-    //% group="Properties" blockSetVariable="agent"
+    //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="width"
     get width() {
         return this._image.width
     }
-    //% group="Properties" blockSetVariable="agent"
+    //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="height"
     get height() {
         return this._image.height
     }
-    //% group="Properties" blockSetVariable="agent"
+    //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="left"
     get left() {
         return this.x - (this.width >> 1)
     }
-    //% group="Properties" blockSetVariable="agent"
+    //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="left"
     set left(value: number) {
         this.x = value + (this.width >> 1);
     }
-    //% group="Properties" blockSetVariable="agent"
+    //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="right"
     get right() {
         return this.left + this.width
     }
-    //% group="Properties" blockSetVariable="agent"
+    //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="right"
     set right(value: number) {
         this.x = value - (this.width >> 1);
     }
-    //% group="Properties" blockSetVariable="agent"
+    //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine
     get top() {
         return this.y - (this.height >> 1)
     }
-    //% group="Properties" blockSetVariable="agent"
+    //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine
     set top(value: number) {
         this.y = value + (this.height >> 1);
     }
-    //% group="Properties" blockSetVariable="agent"
+    //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="bottom"
     get bottom() {
         return this.top + this.height
     }
-    //% group="Properties" blockSetVariable="agent"
+    //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="bottom"
     set bottom(value: number) {
         this.y = value - (this.height >> 1);
@@ -211,7 +211,7 @@ class Sprite implements SpriteLike {
      */
     //% group="Properties"
     //% weight=100
-    //% blockId=spritesetpos block="set %sprite(agent) position to x %x y %y"
+    //% blockId=spritesetpos block="set %sprite(mySprite) position to x %x y %y"
     setPosition(x: number, y: number): void {
         this.x = x;
         this.y = y;
@@ -223,7 +223,7 @@ class Sprite implements SpriteLike {
      * @param time time to keep text on, eg: 2000
      */
     //% group="Properties"
-    //% blockId=spritesay block="%sprite(agent) say %text||for %millis ms"
+    //% blockId=spritesay block="%sprite(mySprite) say %text||for %millis ms"
     //% time.defl=2000
     //% help=sprites/sprite/say
     say(text: string, millis?: number) {
@@ -308,7 +308,7 @@ class Sprite implements SpriteLike {
      * Sets the sprite as a ghost (which does not interact with physics)
      */
     //% group="Properties"
-    //% blockId=spritesetsetflag block="set %sprite(agent) %flag %on=toggleOnOff"
+    //% blockId=spritesetsetflag block="set %sprite(mySprite) %flag %on=toggleOnOff"
     //% flag.defl=SpriteFlag.StayInScreen
     setFlag(flag: SpriteFlag, on: boolean) {
         if (on) this.flags |= flag
@@ -320,7 +320,7 @@ class Sprite implements SpriteLike {
      * @param other
      */
     //% group="Overlaps"
-    //% blockId=spriteoverlapswith block="%sprite(agent) overlaps with %other=variables_get(otherSprite)"
+    //% blockId=spriteoverlapswith block="%sprite(mySprite) overlaps with %other=variables_get(otherSprite)"
     //% help=sprites/sprite/overlaps-with
     overlapsWith(other: Sprite) {
         if (other == this) return false;
@@ -365,7 +365,7 @@ class Sprite implements SpriteLike {
      * Determines if there is an obstacle in the given direction
      * @param direction
      */
-    //% blockId=spritehasobstacle block="is %sprite(agent) hitting wall %direction"
+    //% blockId=spritehasobstacle block="is %sprite(mySprite) hitting wall %direction"
     //% blockNamespace="scene" group="Collisions"
     isHittingTile(direction: CollisionDirection): boolean {
         return this._obstacles && !!this._obstacles[direction];
@@ -375,7 +375,7 @@ class Sprite implements SpriteLike {
      * Gets the obstacle sprite in a given direction if any
      * @param direction
      */
-    //% blockId=spriteobstacle block="%sprite(agent) wall hit on %direction"
+    //% blockId=spriteobstacle block="%sprite(mySprite) wall hit on %direction"
     //% blockNamespace="scene" group="Collisions"
     tileHitFrom(direction: CollisionDirection): number {
         return (this._obstacles && this._obstacles[direction]) ? this._obstacles[direction].tileIndex : -1;
@@ -414,7 +414,7 @@ class Sprite implements SpriteLike {
      */
     //% group="Lifecycle"
     //% weight=10
-    //% blockId=spritedestroy block="destroy %sprite(agent)"
+    //% blockId=spritedestroy block="destroy %sprite(mySprite)"
     destroy() {
         if (this.flags & sprites.Flag.Destroyed)
             return
