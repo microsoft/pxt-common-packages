@@ -218,7 +218,7 @@ class Sprite implements SpriteLike {
      * @param time time to keep text on
      */
     //% group="Properties"
-    //% blockId=spritesay block="%sprite(agent) say %text||for %millis ms"
+    //% blockId=spritesay block="%sprite(mySprite) say %text||for %millis ms"
     //% inlineInputMode=inline
     //% help=sprites/sprite/say
     say(text: string, timeOnScreen?: number, textColor = 15, textBoxColor = 1) {
