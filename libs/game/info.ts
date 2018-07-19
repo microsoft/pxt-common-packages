@@ -30,15 +30,7 @@ namespace info {
         if (_hud) return;
         _hud = true;
 
-        _heartImage = _heartImage || img`
-        . c 2 2 . 2 2 .
-        c 2 2 2 2 2 4 2
-        c 2 2 2 2 4 2 2
-        c 2 2 2 2 2 2 2
-        . c 2 2 2 2 2 .
-        . . c 2 2 2 . .
-        . . . c 2 . . .
-        `;
+        _heartImage = _heartImage || defaultHeartImage();
 
         _multiplierImage = _multiplierImage || img`
         1 . . . 1
@@ -48,9 +40,9 @@ namespace info {
         1 . . . 1
         `;
 
-        _bgColor = 1;
-        _borderColor = 3;
-        _fontColor = 3;
+        _bgColor = screen.isMono ? 0 : 1;
+        _borderColor = screen.isMono ? 1 : 3;
+        _fontColor = screen.isMono ? 1 : 3;
         game.eventContext().registerFrameHandler(95, () => {
             // show score
             if (_score !== null) {
@@ -87,6 +79,29 @@ namespace info {
                 }
             }
         })
+    }
+
+    function defaultHeartImage() {
+        return screen.isMono ?
+        img`
+        . 1 1 . 1 1 . .
+        1 . . 1 . . 1 .
+        1 . . . . . 1 .
+        1 . . . . . 1 .
+        . 1 . . . 1 . .
+        . . 1 . 1 . . .
+        . . . 1 . . . .
+`         :
+        img`
+        . c 2 2 . 2 2 .
+        c 2 2 2 2 2 4 2
+        c 2 2 2 2 4 2 2
+        c 2 2 2 2 2 2 2
+        . c 2 2 2 2 2 .
+        . . c 2 2 2 . .
+        . . . c 2 . . .
+        `;
+
     }
 
     function initScore() {
@@ -289,7 +304,7 @@ namespace info {
         let color1 = _fontColor;
         let color2 = _bgColor;
 
-        if (seconds < 10 && (seconds & 1)) {
+        if (seconds < 10 && (seconds & 1) && !screen.isMono) {
             const temp = color1;
             color1 = color2;
             color2 = temp;
