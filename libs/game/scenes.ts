@@ -41,6 +41,19 @@ namespace scene {
     }
 
     /**
+     * Sets the game background color
+     * @param color
+     */
+    //% group="Screen"
+    //% weight=22
+    //% blockId=gamebackgroundcolor block="background color"
+    //% help=scene/get-background-color
+    export function backgroundColor() : number {
+        const scene = game.currentScene();
+        return scene.background.color;
+    }
+
+    /**
      * Sets the picture on the background
      */
     //% group="Screen"
@@ -55,8 +68,10 @@ namespace scene {
     /**
      * Returns the background image
      */
-    //% weight=23
+    //% weight=22
     //% group="Screen"
+    //% blockId=gamebackgroundimage block="background image"
+    //% help=scene/get-background-image
     export function backgroundImage(): Image {
         const scene = game.currentScene();
         return scene.background.image;
@@ -108,7 +123,7 @@ namespace scene {
      * The game camera follows a particular sprite
      * @param sprite
      */
-    //% blockId=camerafollow block="camera follow sprite %sprite=variables_get(agent)"
+    //% blockId=camerafollow block="camera follow sprite %sprite=variables_get(mySprite)"
     //% group="Camera"
     //% help=scene/camera-follow-sprite
     export function cameraFollowSprite(sprite: Sprite) {
