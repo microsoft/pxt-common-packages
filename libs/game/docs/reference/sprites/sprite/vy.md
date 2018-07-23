@@ -134,5 +134,5 @@ game.onUpdateInterval(1000, function () {
 
 ## See also #seealso
 
-[vy](/reference/sprites/sprite/vy),
+[vx](/reference/sprites/sprite/vx),
 [camera follow sprite](/reference/scene/camera-follow-sprite)
