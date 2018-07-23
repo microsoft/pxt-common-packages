@@ -1,4 +1,4 @@
-# y  (property)
+# y (property)
 
 Get or set the vertical center position of a sprite on the screen.
 

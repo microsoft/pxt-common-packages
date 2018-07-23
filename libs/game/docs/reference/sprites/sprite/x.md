@@ -1,4 +1,4 @@
-# x  (property)
+# x (property)
 
 Get or set the horizontal center position of a sprite on the screen.
 
