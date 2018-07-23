@@ -2,7 +2,7 @@
 
 Get or set the horizontal center position of a sprite on the screen.
 
-### Get
+## Get
 
 Get the horizontal center position of the sprite.
 
@@ -12,11 +12,11 @@ let mySprite: Sprite = null
 let horz = mySprite.x
 ```
 
-#### Returns
+### Returns
 
 * a [number](/types/number) that is the current horizontal center position of sprite on the screen.
 
-### Set
+## Set
 
 ```block
 let mySprite: Sprite = null
@@ -24,7 +24,7 @@ let mySprite: Sprite = null
 mySprite.x = 0
 ```
 
-#### Parameter
+### Parameter
 
 * **value**: the new horizontal center position for the sprite on the screen.
 
