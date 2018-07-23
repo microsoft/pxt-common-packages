@@ -2,7 +2,7 @@
 
 Get or set the vertical center position of a sprite on the screen.
 
-### Get
+## Get
 
 Get the vertical center position of the sprite.
 
@@ -16,11 +16,11 @@ let vert = mySprite.y
 let vert = mySprite.y
 ```
 
-#### Returns
+### Returns
 
 * a [number](/types/number) that is the current vertical center position of the sprite on the screen.
 
-### Set
+## Set
 
 ```block
 let mySprite: Sprite = null
@@ -32,7 +32,7 @@ mySprite.y = 0
 mySprite.y = 0
 ```
 
-#### Parameter
+### Parameter
 
 * **value**: the new vertical center position for the sprite object on the screen.
 
