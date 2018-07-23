@@ -73,3 +73,4 @@ mySprite.say("I'm centered at x:" + mySprite.x)
 [right](/reference/sprites/sprite/right),
 [top](/reference/sprites/sprite/top),
 [bottom](/reference/sprites/sprite/bottom)
+
