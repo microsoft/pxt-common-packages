@@ -48,9 +48,9 @@ namespace sprites {
      * Return a list of all sprites of the given kind.
      * @param kind the target kind
      */
-    //% group="Sprite"
-    //% blockId=allOfKind block="All sprites of kind %kind=spritetype"
-    //% weight=100
+    //% blockId=allOfKind block="get all sprites of kind %kind=spritetype"
+    //% blockNamespace="arrays"
+    //% weight=87
     export function allOfKind(kind: number): Sprite[] {
         const kindSprites = game.currentScene().kindSprites;
         return kind != undefined && kindSprites.length > kind ? kindSprites[kind] : [];
