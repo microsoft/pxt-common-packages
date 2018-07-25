@@ -29,6 +29,7 @@ namespace scene {
         background: Background;
         tileMap: tiles.TileMap;
         allSprites: SpriteLike[];
+        kindSprites: Sprite[][];
         physicsEngine: PhysicsEngine;
         camera: scene.Camera;
         flags: number;
@@ -47,6 +48,7 @@ namespace scene {
             this.createdHandlers = [];
             this.overlapHandlers = [];
             this.collisionHandlers = [];
+            this.kindSprites = [];
         }
 
         init() {
