@@ -36,7 +36,7 @@ Sprites have a depth of `0` when they are created. Sprites at the same depth lev
 
 ## Examples #example
 
-### Move over and under
+### Move over and under #ex1
 
 Make two block sprites of green and orange. Have the orange sprite move across the green one. Each time the orange sprite passes by the green one, have it change its Z-order so it will go either under or over.
 
