@@ -141,7 +141,7 @@ namespace scene {
     export function centerCameraAt(x: number, y: number) {
         const scene = game.currentScene();
         scene.camera.sprite = undefined;
-        scene.camera.offsetX = x;
-        scene.camera.offsetY = y;
+        scene.camera.offsetX = x - (screen.width >> 1);
+        scene.camera.offsetY = y - (screen.height >> 1);
     }
 }
