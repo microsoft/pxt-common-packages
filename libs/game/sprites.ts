@@ -32,9 +32,10 @@ namespace sprites {
         scene.allSprites.push(sprite)
         sprite.id = scene.allSprites.length
         scene.physicsEngine.addSprite(sprite);
-        while (sprite.type >= scene.kindSprites.length)
-            scene.kindSprites.push([]);
-        scene.kindSprites[sprite.type].push(sprite);
+        if (scene.spritesByKind[sprite.type])
+            scene.spritesByKind[sprite.type].push(sprite);
+        else
+            scene.spritesByKind[sprite.type] = [sprite];
 
         // run on created handlers
         scene.createdHandlers
@@ -52,11 +53,11 @@ namespace sprites {
     //% blockNamespace="arrays"
     //% weight=87
     export function allOfKind(kind: number): Sprite[] {
-        const kindSprites = game.currentScene().kindSprites;
-        if (kind == undefined && kindSprites.length <= kind)
+        const spritesByKind = game.currentScene().spritesByKind;
+        if (kind == undefined || spritesByKind.length <= kind || spritesByKind[kind] == null)
             return [];
         else
-            return kindSprites[kind].slice(0, kindSprites[kind].length);
+            return spritesByKind[kind].slice(0, spritesByKind[kind].length);
     }
 
     /**

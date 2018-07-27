@@ -501,7 +501,7 @@ class Sprite implements SpriteLike {
             this.sayBubbleSprite.destroy();
         }
         scene.allSprites.removeElement(this);
-        scene.kindSprites[this.type].removeElement(this);
+        scene.spritesByKind[this.type].removeElement(this);
         scene.physicsEngine.removeSprite(this);
         if (this.destroyHandler)
             this.destroyHandler();
