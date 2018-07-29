@@ -22,6 +22,8 @@ let leftPosition = mySprite.left
 
 ## Set
 
+Set the left position of the sprite.
+
 ```block
 let mySprite: Sprite = null
 
