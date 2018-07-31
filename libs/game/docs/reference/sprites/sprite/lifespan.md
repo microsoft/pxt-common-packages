@@ -38,7 +38,7 @@ mySprite.lifespan = 0
 
 ## Sprite lifespan
 
-Sprites that aren't set to auto destroy will remain in the game until they are destroyed by calling their **destroy** function or until their lifespan expires. You can set the lifespan of sprite to make it leave the game after some amount of time.
+Sprites that aren't set to auto destroy will remain in the game until they are destroyed by calling their **destroy** function or until their lifespan expires. You must set the lifespan to give a sprite a limited amount of time live. You set the lifespan of sprite to make it leave the game after some amount of time in update units.
 
 The game has it's own internal update interval similar to your program's **onUpdate** function. During this interval the lifespan of the sprite, if it was set, will decrease by `1` unit. When the lifespan becomes `0`, the sprite is destroyed.
 
