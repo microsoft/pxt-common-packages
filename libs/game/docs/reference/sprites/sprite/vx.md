@@ -21,6 +21,8 @@ horzSpeed = mySprite.vx
 
 ## Set
 
+Set the horizontal speed of the sprite.
+
 ```block
 let mySprite: Sprite = null
 
