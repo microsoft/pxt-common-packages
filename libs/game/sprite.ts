@@ -354,9 +354,11 @@ class Sprite implements SpriteLike {
 
     __update(camera: scene.Camera, dt: number) {
         if (this.lifespan !== undefined) {
-            this.lifespan--;
-            if (this.lifespan <= 0)
+            this.lifespan -= dt * 1000;
+            if (this.lifespan <= 0) {
+                this.lifespan = undefined;
                 this.destroy();
+            }
         }
         if ((this.flags & sprites.Flag.AutoDestroy)
             && this.isOutOfScreen(camera)) {
