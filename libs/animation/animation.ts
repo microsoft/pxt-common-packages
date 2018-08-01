@@ -49,7 +49,7 @@ namespace animation {
         getImage() {
             return this.frames[this.index];
         }
-        
+
         getAction() {
             return this.action;
         }
@@ -88,10 +88,10 @@ namespace animation {
     /**
      * Creates an animation
      */
-    //% blockId=createAnimation 
+    //% blockId=createAnimation
     //% block="create animation of $action=action_enum_shim with interval $interval ms"
     //% interval.defl=1000
-    //% blockSetVariable="anim" 
+    //% blockSetVariable="anim"
     //% weight=50
     export function createAnimation(action: number, interval: number) {
         return new Animation(action, interval);
@@ -100,8 +100,8 @@ namespace animation {
     /**
      * attaches an animation to a sprite
      */
-    //% blockId=attachAnimation 
-    //% block="attach animation $set=variables_get(anim) to sprite $sprite=variables_get(agent)"
+    //% blockId=attachAnimation
+    //% block="attach animation $set=variables_get(anim) to sprite $sprite=variables_get(mySprite)"
     //% weight=30
     export function attachAnimation(sprite: Sprite, set: Animation) {
         if (!_onSpriteUpdate) {
@@ -131,10 +131,10 @@ namespace animation {
      * Sets the action to Sprite
      */
     //% blockId=setAction
-    //% block="activate animation $action=action_enum_shim on $sprite=variables_get(agent)"
+    //% block="activate animation $action=action_enum_shim on $sprite=variables_get(mySprite)"
     //% weight=20
     export function setAction(sprite: Sprite, action: number) {
         sprite._action = action;
-    }    
-  
+    }
+
 }
