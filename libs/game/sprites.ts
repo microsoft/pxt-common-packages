@@ -46,10 +46,10 @@ namespace sprites {
     }
 
     /**
-     * Return a list of all sprites of the given kind.
+     * Return an array of all sprites of the given kind.
      * @param kind the target kind
      */
-    //% blockId=allOfKind block="get all sprites of kind %kind=spritetype"
+    //% blockId=allOfKind block="array of sprites of kind %kind=spritetype"
     //% blockNamespace="arrays"
     //% weight=87
     export function allOfKind(kind: number): Sprite[] {
