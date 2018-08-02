@@ -37,7 +37,7 @@ enum FlipOption {
 }
 
 /**
- * A sprite on screem
+ * A sprite on the screen
  **/
 //% blockNamespace=sprites color="#4B7BEC" blockGap=8
 class Sprite implements SpriteLike {
@@ -503,6 +503,7 @@ class Sprite implements SpriteLike {
             this.sayBubbleSprite.destroy();
         }
         scene.allSprites.removeElement(this);
+        scene.spritesByKind[this.type].removeElement(this);
         scene.physicsEngine.removeSprite(this);
         if (this.destroyHandler)
             this.destroyHandler();
