@@ -293,6 +293,7 @@ class Sprite implements SpriteLike {
                     }
                 } else {
                     pixelsOffset += dt * 45;
+
                     // Pause at end of text for holdTextSeconds length
                     if (pixelsOffset >= maxOffset) {
                         pixelsOffset = maxOffset;
@@ -334,7 +335,6 @@ class Sprite implements SpriteLike {
     }
 
     __draw(camera: scene.Camera) {
-
         if (this.isOutOfScreen(camera)) return;
 
         const l = this.left - camera.offsetX;
