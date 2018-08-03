@@ -88,7 +88,7 @@ class Sprite implements SpriteLike {
     private _image: Image;
     private _obstacles: sprites.Obstacle[];
 
-    private updateSay: () => void;
+    private updateSay: (dt: number) => void;
     private sayBubbleSprite: Sprite;
 
     _hitboxes: game.Hitbox[];
@@ -114,7 +114,7 @@ class Sprite implements SpriteLike {
         this.setImage(img);
         this.type = 0; // not a member of any type by default
         this.layer = 1; // by default, in layer 1
-        this.lifespan = undefined
+        this.lifespan = undefined;
     }
 
     /**
@@ -240,6 +240,7 @@ class Sprite implements SpriteLike {
         if (timeOnScreen) {
             timeOnScreen = timeOnScreen + control.millis();
         }
+
         let pixelsOffset = 0;
         let holdTextSeconds = 1.5;
         let bubblePadding = 4;
@@ -249,14 +250,19 @@ class Sprite implements SpriteLike {
         let startY = 2;
         let bubbleWidth = text.length * font.charWidth + bubblePadding;
         let maxOffset = text.length * font.charWidth - maxTextWidth;
-        let bubbleOffset = this._hitboxes[0].top;
+        let bubbleOffset: number;
+        if (!this._hitboxes || this._hitboxes.length == 0) {
+            bubbleOffset = 0;
+        } else {
+            bubbleOffset = this._hitboxes[0].top;
+            for (let i = 0; i < this._hitboxes.length; i++) {
+                bubbleOffset = Math.min(bubbleOffset, this._hitboxes[i].top);
+            }
 
-        for (let i = 0; i < this._hitboxes.length; i++) {
-            bubbleOffset = Math.min(bubbleOffset, this._hitboxes[i].top);
+            // Gets the length from sprites location to its highest hitbox
+            bubbleOffset = this.y - bubbleOffset;
         }
 
-        // Gets the length from sprites location to its highest hitbox
-        bubbleOffset = this.y - bubbleOffset;
 
         if (bubbleWidth > maxTextWidth + bubblePadding) {
             bubbleWidth = maxTextWidth + bubblePadding;
@@ -271,8 +277,7 @@ class Sprite implements SpriteLike {
 
         this.sayBubbleSprite = sprites.create(image.create(bubbleWidth, font.charHeight + bubblePadding));
         this.sayBubbleSprite.setFlag(SpriteFlag.Ghost, true);
-
-        this.updateSay = () => {
+        this.updateSay = dt => {
             // Update box stuff as long as timeOnScreen doesn't exist or it can still be on the screen
             if (!timeOnScreen || timeOnScreen > control.millis()) {
                 this.sayBubbleSprite.image.fill(textBoxColor);
@@ -287,7 +292,7 @@ class Sprite implements SpriteLike {
                         holdTextSeconds = 1.5;
                     }
                 } else {
-                    pixelsOffset++;
+                    pixelsOffset += dt * 45;
                     // Pause at end of text for holdTextSeconds length
                     if (pixelsOffset >= maxOffset) {
                         pixelsOffset = maxOffset;
@@ -329,10 +334,6 @@ class Sprite implements SpriteLike {
     }
 
     __draw(camera: scene.Camera) {
-        // Say text
-        if (this.updateSay) {
-            this.updateSay();
-        }
 
         if (this.isOutOfScreen(camera)) return;
 
@@ -379,6 +380,10 @@ class Sprite implements SpriteLike {
             else if (this.bottom > camera.offsetY + screen.height) {
                 this.bottom = camera.offsetY + screen.height;
             }
+        }
+        // Say text
+        if (this.updateSay) {
+            this.updateSay(dt);
         }
     }
 
