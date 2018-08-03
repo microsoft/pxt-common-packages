@@ -1,20 +1,14 @@
 #include "pxt.h"
 
 #include <stdlib.h>
-#include <stdio.h>
 #include <sys/time.h>
 #include <time.h>
-#include <cstdarg>
 #include <pthread.h>
 #include <unistd.h>
-#include <dirent.h>
 #include <signal.h>
 #include <sys/types.h>
-#include <sys/stat.h>
 #include <errno.h>
-#include <fcntl.h>
 #include <malloc.h>
-#include <ctype.h>
 
 #define THREAD_DBG(...)
 
@@ -22,6 +16,7 @@
 #define MALLOC_CHECK_PERIOD (1024 * 1024)
 
 void *xmalloc(size_t sz) {
+#ifndef POKY
     static size_t allocBytes = 0;
     allocBytes += sz;
     if (allocBytes >= MALLOC_CHECK_PERIOD) {
@@ -32,6 +27,7 @@ void *xmalloc(size_t sz) {
             target_panic(904);
         }
     }
+#endif
     auto r = malloc(sz);
     if (r == NULL)
         target_panic(905); // shouldn't happen
@@ -54,137 +50,6 @@ void operator delete[](void *p) {
 
 namespace pxt {
 
-struct EnvConfig {
-    const char *name;
-    const char *value;
-    EnvConfig *next;
-};
-
-static EnvConfig *readEnvConfig(const char *name) {
-    FILE *f = fopen(name, "r");
-    DMESG("read config: %s %s", name, !f ? "missing!" : "");
-    if (!f)
-        return NULL;
-    EnvConfig *res = NULL;
-    EnvConfig *endres = NULL;
-    for (;;) {
-        char *line = NULL;
-        size_t len = 0;
-        int llen = getline(&line, &len, f);
-        if (llen <= 0)
-            break;
-        char *p = line;
-        while (isspace(*p))
-            p++;
-        if (!*p || *p == '#') {
-            free(line);
-            continue;
-        }
-
-        auto name = p;
-        while (isalnum(*p) || strchr("-_.", *p))
-            p++;
-        auto endName = p;
-        while (isspace(*p))
-            p++;
-        if (*p == '=' || *p == ':') {
-            p++;
-        } else {
-            free(line);
-            continue;
-        }
-        *endName = 0;
-        while (isspace(*p))
-            p++;
-
-        auto e = new EnvConfig;
-        e->name = name;
-        e->value = p;
-        e->next = endres;
-
-        if (*p) {
-            auto ep = p + strlen(p) - 1;
-            while (ep > p && isspace(*ep))
-                ep--;
-            ep++;
-            *ep = 0;
-        }
-
-        DMESG("%s=%s", e->name, e->value);
-
-        if (endres == NULL) {
-            res = e;
-        } else {
-            endres->next = e;
-        }
-        e->next = NULL;
-        endres = e;
-    }
-    fclose(f);
-
-    return res;
-}
-
-static int gotConfig;
-static EnvConfig *envConfig;
-static void readConfig() {
-    if (gotConfig)
-        return;
-    gotConfig = 1;
-    envConfig = readEnvConfig("/sd/arcade.cfg");
-    DMESG("config done");
-}
-const char *getConfigString(const char *name) {
-    readConfig();
-    for (auto p = envConfig; p; p = p->next) {
-        if (strcmp(p->name, name) == 0)
-            return p->value;
-    }
-    return NULL;
-}
-int getConfigInt(const char *name, int defl) {
-    auto v = getConfigString(name);
-    if (!v)
-        return defl;
-    sscanf(v, "%d", &defl);
-    return defl;
-}
-
-const int *getConfigInts(const char *name) {
-    static int buf[30];
-
-    buf[0] = ENDMARK;
-
-    auto v = getConfigString(name);
-
-    if (!v)
-        return buf;
-
-    int bp = 0;
-
-    while (bp < 25) {
-        while (isspace(*v))
-            v++;
-        if (!*v)
-            break;
-        if (sscanf(v, "%i", &buf[bp]) != 1)
-            break;
-        while (*v && !isspace(*v) && *v != ',')
-            v++;
-        while (isspace(*v))
-            v++;
-        if (*v == ',')
-            v++;
-        bp++;
-    }
-    buf[bp] = ENDMARK;
-
-    //if (gotConfig++ < 20)
-    //    DMESG("%s - %d %d %d len=%d", name, buf[0], buf[1], buf[2], bp);
-
-    return buf;
-}
-
 static uint64_t startTime;
 static pthread_mutex_t execMutex;
 static pthread_mutex_t eventMutex;
@@ -204,9 +69,6 @@ struct Thread {
 
 static struct Thread *allThreads;
 static struct Event *eventHead, *eventTail;
-static int dmesgPtr;
-static int dmesgSerialPtr;
-static char dmesgBuf[4096];
 
 struct Event {
     struct Event *next;
@@ -495,50 +357,18 @@ void unsafePollForChanges(int ms, Action query, Action handler) {
 uint32_t afterProgramPage() {
     return 0;
 }
-void dumpDmesg() {
-    auto len = dmesgPtr - dmesgSerialPtr;
-    if (len == 0)
-        return;
-    sendSerial(dmesgBuf + dmesgSerialPtr, len);
-    dmesgSerialPtr = dmesgPtr;
-}
 
-void target_exit() {
-    kill(getpid(), SIGTERM);
-}
 char **initialArgv;
-
-extern "C" void target_reset() {
-    for (int i = 3; i < 1000; ++i)
-        close(i);
-    if (!fork()) {
-        execv(initialArgv[0], initialArgv);
-        exit(127);
-    } else {
-        target_exit();
-    }
-}
 
 void screen_init();
 void initKeys();
+void target_startup();
 
 void initRuntime() {
     // daemon(1, 1);
     startTime = currTime();
-    int pid = getpid();
-    DMESG("runtime starting, pid=%d...", pid);
 
-    FILE *pf = fopen("/tmp/pxt-pid", "r");
-    if (pf) {
-        int p2 = 0;
-        fscanf(pf, "%d", &p2);
-        if (p2)
-            kill(p2, SIGTERM);
-        fclose(pf);
-    }
-    pf = fopen("/tmp/pxt-pid", "w");
-    fprintf(pf, "%d", pid);
-    fclose(pf);
+    target_startup();
 
     pthread_t disp;
     pthread_create(&disp, NULL, evtDispatcher, NULL);
@@ -550,73 +380,5 @@ void initRuntime() {
     startUser();
 }
 
-static FILE *dmesgFile;
-
-void dmesgRaw(const char *buf, uint32_t len) {
-    if (!dmesgFile) {
-        dmesgFile = fopen("/tmp/dmesg.txt", "w");
-        if (!dmesgFile)
-            dmesgFile = stderr;
-    }
-
-    if (len > sizeof(dmesgBuf) / 2)
-        return;
-    if (dmesgPtr + len > sizeof(dmesgBuf)) {
-        dmesgPtr = 0;
-        dmesgSerialPtr = 0;
-    }
-    memcpy(dmesgBuf + dmesgPtr, buf, len);
-    dmesgPtr += len;
-    fwrite(buf, 1, len, dmesgFile);
-
-    fwrite(buf, 1, len, stderr);
-}
-
-void dmesg(const char *format, ...) {
-    char buf[500];
-
-    snprintf(buf, sizeof(buf), "[%8d] ", current_time_ms());
-    dmesgRaw(buf, strlen(buf));
-
-    va_list arg;
-    va_start(arg, format);
-    vsnprintf(buf, sizeof(buf), format, arg);
-    va_end(arg);
-    dmesgRaw(buf, strlen(buf));
-    dmesgRaw("\n", 1);
-
-    fflush(dmesgFile);
-    fdatasync(fileno(dmesgFile));
-}
-
-int getSerialNumber() {
-    static int serial;
-
-    if (serial)
-        return serial;
-
-    char buf[1024];
-    int fd = open("/proc/cpuinfo", O_RDONLY);
-    int len = read(fd, buf, sizeof(buf) - 1);
-    close(fd);
-
-    if (len < 0)
-        len = 0;
-    buf[len] = 0;
-    auto p = strstr(buf, "Serial\t");
-    if (p) {
-        p += 6;
-        while (*p && strchr(" \t:", *p))
-            p++;
-        uint64_t s = 0;
-        sscanf(p, "%llu", &s);
-        serial = (s >> 32) ^ (s);
-    }
-
-    if (!serial)
-        serial = 0xf00d0042;
-
-    return serial;
-}
 
 } // namespace pxt

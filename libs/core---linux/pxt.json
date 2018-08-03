@@ -5,6 +5,8 @@
         "Makefile",
         "dal.d.ts",
         "linux.cpp",
+        "config.cpp",
+        "target.cpp",
         "pxt.h",
         "platform.h",
         "platform.cpp",
