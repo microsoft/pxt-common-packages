@@ -8,7 +8,7 @@ sprites.create(null).setImage(null)
 
 The image currently set for the sprite is replaced by the new image. The new image is displayed for the sprite.
 
-### Parameters
+## Parameters
 
 * **img**:  [image](/types/image) that is the currently set for the sprite.
 
