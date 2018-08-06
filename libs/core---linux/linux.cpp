@@ -99,6 +99,7 @@ extern "C" void target_panic(int error_code) {
 
     drawPanic(error_code);
     DMESG("PANIC %d", error_code);
+    DMESG("errno=%d %s", errno, strerror(errno));
 
     for (int i = 0; i < 10; ++i) {
         sendSerial(buf, strlen(buf));
