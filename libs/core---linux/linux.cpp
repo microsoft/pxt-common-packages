@@ -92,6 +92,8 @@ extern "C" void drawPanic(int code);
 
 extern "C" void target_panic(int error_code) {
     char buf[50];
+    int prevErr = errno;
+
     paniced = true;
     pthread_mutex_trylock(&execMutex);
 
@@ -99,7 +101,7 @@ extern "C" void target_panic(int error_code) {
 
     drawPanic(error_code);
     DMESG("PANIC %d", error_code);
-    DMESG("errno=%d %s", errno, strerror(errno));
+    DMESG("errno=%d %s", prevErr, strerror(prevErr));
 
     for (int i = 0; i < 10; ++i) {
         sendSerial(buf, strlen(buf));
