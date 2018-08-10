@@ -27,7 +27,12 @@
 #include <stdint.h>
 #include <math.h>
 
+#ifdef POKY
+void* operator new (size_t size, void* ptr);
+void* operator new (size_t size);
+#else
 #include <new>
+#endif
 
 #ifdef PXT_MEMLEAK_DEBUG
 #include <set>
@@ -53,7 +58,7 @@
 #endif
 #endif
 
-#if 0
+#ifdef POKY
 inline void *operator new(size_t, void *p) {
     return p;
 }
