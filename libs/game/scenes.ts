@@ -124,7 +124,7 @@ namespace scene {
      * @param col
      * @param row
      */
-    //% blockId=gamegettile block="get tile col %col row %row"
+    //% blockId=gamegettile block="tile col %col row %row"
     //% group="Tiles" blockSetVariable="myTile"
     //% help=scene/get-tile
     export function getTile(col: number, row: number): tiles.Tile {
