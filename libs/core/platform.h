@@ -25,8 +25,8 @@
 
 #define PlatformDMAC SAMD21DMAC
 
-// this is codal::_mbed for mbedos
-#define CODAL_MBED codal::mbed
+// this is codal::_mbed for both mbed and mbedos now
+#define CODAL_MBED codal::_mbed
 
 #define CODAL_I2C codal::CPlayI2C
 
