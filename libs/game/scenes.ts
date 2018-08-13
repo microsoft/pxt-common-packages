@@ -120,6 +120,35 @@ namespace scene {
     }
 
     /**
+     * Gets the tile at the given column and row in current tile map
+     * @param col
+     * @param row
+     */
+    //% blockId=gamegettile block="get tile col %col row %row"
+    //% group="Tiles"
+    //% help=scene/get-tile
+    export function getTile(col: number, row: number): tiles.Tile {
+        const scene = game.currentScene();
+        if (!scene.tileMap)
+            scene.tileMap = new tiles.TileMap();
+        return scene.tileMap.getTile(col, row);
+    }
+
+    /**
+     * Gets all tiles of the given index.
+     * @param index
+     */
+    //% blockId=gamegettilestype block="array of all %index=colorindexpicker tiles"
+    //% group="Tiles"
+    //% help=scene/get-tiles-by-type
+    export function getTilesByType(index: number): tiles.Tile[] {
+        const scene = game.currentScene();
+        if (!scene.tileMap)
+            scene.tileMap = new tiles.TileMap();
+        return scene.tileMap.getTilesByType(index);
+    }
+
+    /**
      * The game camera follows a particular sprite
      * @param sprite
      */

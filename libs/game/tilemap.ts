@@ -47,7 +47,6 @@ namespace tiles {
         //% blockNamespace="scene" group="Tiles"
         //% help=scene/tile-place
         place(mySprite: Sprite): void {
-            if (!this) return;
             if (!mySprite) return;
 
             mySprite.x = this.x + 8;
