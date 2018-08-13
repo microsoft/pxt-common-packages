@@ -8,6 +8,10 @@ namespace tiles {
         }
     }
 
+    /**
+     * A tile in the tilemap
+     **/
+    //% blockNamespace=scene color="#401255" blockGap=8
     export class Tile {
         private _row: number;
         private _col: number;
@@ -19,14 +23,6 @@ namespace tiles {
             this._index = index;
         }
 
-        get row(): number {
-            return this._row;
-        }
-
-        get col(): number {
-            return this._col;
-        }
-
         get x(): number {
             return this._col << 4;
         }
@@ -35,19 +31,27 @@ namespace tiles {
             return this._row << 4;
         }
 
-        get index(): number {
-            return this._index;
-        }
-
         get tileSet(): number {
             return this._index;
         }
 
-        place(sprite: Sprite): void {
-            if (!sprite) return;
+        set tileSet(index: number) {
+            this._index = index;
+        }
 
-            sprite.x = this.x + 8;
-            sprite.y = this.y + 8;
+        /**
+         * Center the given sprite on this tile
+         * @param sprite
+         */
+        //% blockId=gameplaceontile block="on top of %tile(myTile) place %sprite=variables_get(mySprite)"
+        //% blockNamespace="scene" group="Tiles"
+        //% help=scene/tile-place
+        place(mySprite: Sprite): void {
+            if (!this) return;
+            if (!mySprite) return;
+
+            mySprite.x = this.x + 8;
+            mySprite.y = this.y + 8;
         }
     }
 
@@ -122,7 +126,7 @@ namespace tiles {
             let output: Tile[] = [];
             for (let cols of this._tiles) {
                 for (let tile of cols) {
-                    if (tile.index === index) {
+                    if (tile.tileSet === index) {
                         output.push(tile);
                     }
                 }
@@ -173,7 +177,8 @@ namespace tiles {
         }
 
         private isOutsideMap(col: number, row: number): boolean {
-            return col < 0 || col >= this._map.width || row < 0 || row >= this._map.height;
+            return col < 0 || col >= this._map.width
+                    || row < 0 || row >= this._map.height;
         }
 
         render(camera: scene.Camera) {
