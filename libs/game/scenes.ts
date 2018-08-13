@@ -125,7 +125,7 @@ namespace scene {
      * @param row
      */
     //% blockId=gamegettile block="get tile col %col row %row"
-    //% group="Tiles"
+    //% group="Tiles" blockSetVariable="myTile"
     //% help=scene/get-tile
     export function getTile(col: number, row: number): tiles.Tile {
         const scene = game.currentScene();
@@ -139,7 +139,7 @@ namespace scene {
      * @param index
      */
     //% blockId=gamegettilestype block="array of all %index=colorindexpicker tiles"
-    //% group="Tiles"
+    //% group="Tiles" blockSetVariable="list"
     //% help=scene/get-tiles-by-type
     export function getTilesByType(index: number): tiles.Tile[] {
         const scene = game.currentScene();
