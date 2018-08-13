@@ -69,16 +69,18 @@ enum class KeyboardFunctionKey
     PrintScreen,
     //% block="scroll lock"
     ScrollLock,
-    //% block="caps lock"
-    CapsLock,
-    //% block="num lock"
-    NumLock,
+    //% block="pause"
+    Pause,
     //% block="insert"
     Insert,
     //% block="home"
     Home,
     //% block="page up"
     PageUp,
+    //% block="delete"
+    DeleteForward,
+    //% block="end"
+    End,
     //% block="page down"
     PageDown,
 
