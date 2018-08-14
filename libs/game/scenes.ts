@@ -105,6 +105,23 @@ namespace scene {
     }
 
     /**
+     * Set the given tile to be of the given index
+     * @param col
+     * @param row
+     * @param index
+     */
+    //% blockId=gamesettileat block="set tile at col %col row %row to %index=colorindexpicker"
+    //% group="Tiles"
+    //% weight=30
+    //% help=scene/set-tile-at
+    export function setTileAt(col: number, row: number, index: number) {
+        const scene = game.currentScene();
+        if (!scene.tileMap)
+            scene.tileMap = new tiles.TileMap();
+        scene.tileMap.setTileAt(col, row, index);
+    }
+
+    /**
      * Sets the tile image at the given index. Tiles should be 16x16 images
      * @param index
      * @param img

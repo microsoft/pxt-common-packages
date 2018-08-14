@@ -35,10 +35,6 @@ namespace tiles {
             return this._index;
         }
 
-        set tileSet(index: number) {
-            this._index = index;
-        }
-
         /**
          * Center the given sprite on this tile
          * @param sprite
@@ -63,13 +59,11 @@ namespace tiles {
 
         private _map: Image;
         private _tileSets: TileSet[];
-        private _tiles: Tile[][];
 
         constructor() {
             this._map = img`1`;
             this._tileSets = [];
             this._layer = 1;
-            this.buildMap();
 
             this.z = -1;
 
@@ -106,28 +100,34 @@ namespace tiles {
         }
 
         setTile(index: number, img: Image, collisions?: boolean) {
-            if (index < 0 || index > 0xf) return;
+            if (this.isInvalidIndex(index)) return;
             this._tileSets[index] = new TileSet(img, collisions);
         }
 
         setMap(map: Image) {
             this._map = map;
-            this.buildMap();
         }
 
         public getTile(col: number, row: number): Tile {
             if (this.isOutsideMap(col, row)) return undefined;
 
-            return this._tiles[col][row];
+            return new Tile(col, row, this._map.getPixel(col, row));
+        }
+
+        public setTileAt(col: number, row: number, index: number): void {
+            if (!this.isOutsideMap(col, row) && !this.isInvalidIndex(index))
+                this._map.setPixel(col, row, index);
         }
 
         public getTilesByType(index: number): Tile[] {
-            if (index < 0 || index > 0xf) return undefined;
+            if (this.isInvalidIndex(index)) return undefined;
+
             let output: Tile[] = [];
-            for (let cols of this._tiles) {
-                for (let tile of cols) {
-                    if (tile.tileSet === index) {
-                        output.push(tile);
+            for (let col = 0; col < this._map.width; ++col) {
+                for (let row = 0; row < this._map.height; ++row) {
+                    let currTile = this._map.getPixel(col, row);
+                    if (currTile === index) {
+                        output.push(new Tile(col, row, currTile));
                     }
                 }
             }
@@ -166,19 +166,13 @@ namespace tiles {
             return this._tileSets[index] = new TileSet(img, false);
         }
 
-        private buildMap(): void {
-            this._tiles = [];
-            for (let col = 0; col < this._map.width; ++col) {
-                this._tiles.push([]);
-                for (let row = 0; row < this._map.height; ++row) {
-                    this._tiles[col].push(new Tile(col, row, this._map.getPixel(col, row)));
-                }
-            }
-        }
-
         private isOutsideMap(col: number, row: number): boolean {
             return col < 0 || col >= this._map.width
                     || row < 0 || row >= this._map.height;
+        }
+
+        private isInvalidIndex(index: number): boolean {
+            return index < 0 || index > 0xf;
         }
 
         render(camera: scene.Camera) {
