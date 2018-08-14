@@ -110,7 +110,6 @@ namespace tiles {
 
         public getTile(col: number, row: number): Tile {
             if (this.isOutsideMap(col, row)) return undefined;
-
             return new Tile(col, row, this._map.getPixel(col, row));
         }
 
