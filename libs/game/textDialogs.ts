@@ -387,7 +387,7 @@ namespace game {
         }
 
         const dialog = new Dialog(width, height);
-        const s = sprites.create(dialog.image);
+        const s = sprites.create(dialog.image, -1);
         s.top = top;
         s.left = left;
 
@@ -539,7 +539,7 @@ namespace game {
         dialog.setText(title);
         if (subtitle) dialog.setSubtext(subtitle);
 
-        const s = sprites.create(dialog.image);
+        const s = sprites.create(dialog.image, -1);
         let pressed = true;
         let done = false;
 

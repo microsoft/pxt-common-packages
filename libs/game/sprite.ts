@@ -60,12 +60,8 @@ class Sprite implements SpriteLike {
     //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="ay (acceleration y)"
     ay: number
-    /**
-     * The type of sprite
-     */
-    //% group="Properties" blockSetVariable="mySprite"
-    //% blockCombine block="kind"
-    type: number
+
+    _type: number;
 
     /**
      * A bitset of layer. Each bit is a layer, default is 1.
@@ -112,7 +108,7 @@ class Sprite implements SpriteLike {
         this.ay = 0
         this.flags = 0
         this.setImage(img);
-        this.type = 0; // not a member of any type by default
+        this.type = -1; // not a member of any type by default
         this.layer = 1; // by default, in layer 1
         this.lifespan = undefined;
     }
@@ -204,6 +200,33 @@ class Sprite implements SpriteLike {
     set bottom(value: number) {
         this.y = value - (this.height >> 1);
     }
+    /**
+     * The type of sprite
+     */
+    //% group="Properties" blockSetVariable="mySprite"
+    //% blockCombine block="kind"
+    get type() {
+        return this._type;
+    }
+    /**
+     * The type of sprite
+     */
+    //% group="Properties" blockSetVariable="mySprite"
+    //% blockCombine block="kind"
+    set type(value: number) {
+        if (value == undefined || this._type === value) return;
+
+        const spritesByKind = game.currentScene().spritesByKind;
+        if (this._type >= 0 && spritesByKind[this._type])
+            spritesByKind[this._type].removeElement(this);
+
+        if (value >= 0) {
+            if (!spritesByKind[value]) spritesByKind[value] = [];
+            spritesByKind[value].push(this);
+        }
+
+        this._type = value;
+    }
 
     /**
      * Sets the sprite position
@@ -275,7 +298,8 @@ class Sprite implements SpriteLike {
             this.sayBubbleSprite.destroy();
         }
 
-        this.sayBubbleSprite = sprites.create(image.create(bubbleWidth, font.charHeight + bubblePadding));
+        this.sayBubbleSprite = sprites.create(image.create(bubbleWidth, font.charHeight + bubblePadding), -1);
+
         this.sayBubbleSprite.setFlag(SpriteFlag.Ghost, true);
         this.updateSay = dt => {
             // Update box stuff as long as timeOnScreen doesn't exist or it can still be on the screen
@@ -469,6 +493,7 @@ class Sprite implements SpriteLike {
     }
 
     registerObstacle(direction: CollisionDirection, other: sprites.Obstacle) {
+        if (other == undefined) return;
         if (!this._obstacles)
             this._obstacles = [];
         this._obstacles[direction] = other;
@@ -508,7 +533,8 @@ class Sprite implements SpriteLike {
             this.sayBubbleSprite.destroy();
         }
         scene.allSprites.removeElement(this);
-        scene.spritesByKind[this.type].removeElement(this);
+        if (this.type >= 0 && scene.spritesByKind[this.type])
+            scene.spritesByKind[this.type].removeElement(this);
         scene.physicsEngine.removeSprite(this);
         if (this.destroyHandler)
             this.destroyHandler();

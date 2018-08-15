@@ -131,7 +131,7 @@ namespace tiles {
         public collisions(s: Sprite): sprites.Obstacle[] {
             let overlappers: sprites.StaticObstacle[] = [];
 
-            if (s.layer & this.layer) {
+            if ((s.layer & this.layer) && !(s.flags & sprites.Flag.Ghost)) {
                 const x0 = Math.max(0, s.left >> 4);
                 const xn = Math.min(this._map.width, (s.right >> 4) + 1);
                 const y0 = Math.max(0, s.top >> 4);

@@ -31,7 +31,7 @@ namespace images {
     //% img.fieldEditor="sprite"
     //% img.fieldOptions.taggedTemplate="img"
     //% img.fieldOptions.decompileIndirectFixedInstances="true"
-    //% img.fieldOptions.sizes="10,8;16,16;32,32;48,48;64,64;16,32;32,48"
+    //% img.fieldOptions.sizes="10,8;16,16;32,32;48,48;64,64;16,32;32,48;32,8;64,8"
     //% weight=100 group="Create"
     //% blockHidden=1
     export function _tileMapImage(img: Image) {

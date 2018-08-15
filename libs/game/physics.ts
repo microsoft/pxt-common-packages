@@ -89,6 +89,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         // 3: go through sprite and handle collisions
         const scene = game.currentScene();
         const tm = scene.tileMap;
+
         for (const sprite of colliders) {
             const overSprites = scene.physicsEngine.overlaps(sprite);
             for (const overlapper of overSprites) {
@@ -145,7 +146,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             return;
         }
 
-        if (tm) {
+        if (tm && !(s.flags & sprites.Flag.Ghost)) {
             s._hitboxes.forEach(box => {
                 const t0 = box.top >> 4;
                 const r0 = box.right >> 4;
