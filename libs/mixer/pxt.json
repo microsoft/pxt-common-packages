@@ -2,14 +2,9 @@
     "name": "mixer",
     "description": "The music library with a mixer",
     "files": [
+        "SoundOutput.h",
         "melody.cpp",
-        "enums.d.ts",
-        "shims.d.ts",
-        "melodies.ts",
-        "melody.ts",
-        "ns.ts",
-        "speaker.svg",
-        "pxtparts.json"        
+        "melody.ts"
     ],
     "public": true,
     "dependencies": {

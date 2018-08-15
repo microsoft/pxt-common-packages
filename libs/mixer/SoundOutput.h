@@ -1,4 +1,3 @@
-#include "pxt.h"
 #include "dmac.h"
 #include "SAMD21DAC.h"
 #include "Mixer.h"

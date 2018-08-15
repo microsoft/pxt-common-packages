@@ -1,11 +1,13 @@
-enum class SoundWave {
-    Triangle = 1,
-    Sawtooth = 2,
-    Sine = 3,
-    Noise = 4,
-    Square10 = 11,
-    Square50 = 15,
-};
+#include "pxt.h"
+#include "Synthesizer.h"
+#include "SoundOutput.h"
+
+#define SW_TRIANGLE 1
+#define SW_SAWTOOTH 2
+#define SW_SINE 3 // TODO remove it? it takes space
+#define SW_NOISE 4
+#define SW_SQUARE_10 11
+#define SW_SQUARE_50 15
 
 struct SoundInstruction {
     uint8_t soundWave;
@@ -31,12 +33,9 @@ class WSynthesizer {
   public:
     Mixer mixer;
     SoundOutput out;
-    SyntChannel *channels;
+    SynthChannel *channels;
 
-    WSynthesizer()
-        : out(mixer) {
-        channels = NULL;
-    }
+    WSynthesizer() : out(mixer) { channels = NULL; }
 };
 SINGLETON(WSynthesizer);
 
@@ -69,20 +68,38 @@ SynthChannel *allocateChannel() {
 //%
 void playInstructions(Buffer buf) {
     auto ch = allocateChannel();
-    auto instr = (SoundInstruction *)buf.data;
+    auto instr = (SoundInstruction *)buf->data;
     auto wave = 0;
     while (instr->soundWave) {
         if (ch) {
-            if (wave != ch->soundWave) {
-                wave = ch->soundWave;
+            if (wave != instr->soundWave) {
+                wave = instr->soundWave;
                 switch (wave) {
-                    case SoundWave::Triangle:
-                        ch->synth.setTone(Synthesizer::TriangleTone);
-                        break;
-                    TODO
+                case SW_TRIANGLE:
+                    ch->synth.setTone(Synthesizer::TriangleTone);
+                    break;
+                case SW_SAWTOOTH:
+                    ch->synth.setTone(Synthesizer::SawtoothTone);
+                    break;
+                case SW_NOISE:
+                    ch->synth.setTone(Synthesizer::NoiseTone);
+                    break;
+                case SW_SINE:
+                    ch->synth.setTone(Synthesizer::SineTone);
+                    break;
+                default:
+                    if (SW_SQUARE_10 <= wave && wave <= SW_SQUARE_50) {
+                        ch->synth.setTone(Synthesizer::SquareWaveToneExt,
+                                          (void *)(102 * (wave - SW_SQUARE_10 + 1)));
+                    } else {
+                        // silence
+                        ch->synth.setTone(Synthesizer::SquareWaveToneExt, (void *)(0));
+                    }
+                    break;
                 }
             }
-            ch->synth.setFrequency(instr->frequency, instr->duration, instr->startVolume, instr->endVolume);
+            ch->synth.setFrequency(instr->frequency, instr->duration, instr->startVolume,
+                                   instr->endVolume);
         } else {
             fiber_sleep(instr->duration);
         }

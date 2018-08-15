@@ -7,6 +7,9 @@ namespace music {
         7d06e0064907b8072d08a9082d09b9094d0aea0a900b400cfa0cc00d910e6f0f5a1053115b1272139a14d4152017
         8018f519801b231dde1e`
 
+    //% shim=music::playInstructions
+    function playInstructions(buf: Buffer) { }
+
     //% fixedInstances
     export class Melody {
         _text: string;
@@ -23,6 +26,18 @@ namespace music {
             }
         }
 
+        private playCore(volume: number, loop: boolean) {
+            this.stop()
+            const p = new MelodyPlayer(this)
+            control.runInParallel(() => {
+                while (this._player == p) {
+                    p.play(volume)
+                    if (!loop)
+                        break
+                }
+            })
+        }
+
         /**
          * Start playing a sound in a loop and don't wait for it to finish.
          * @param sound the melody to play
@@ -32,13 +47,7 @@ namespace music {
         //% parts="headphone"
         //% weight=95 blockGap=8
         loop(volume = 64) {
-            this.stop()
-            this._player = new MelodyPlayer(this)
-            control.runInParallel(() => {
-                while (true) {
-                    new MelodyPlayer(this).play(volume)
-                }
-            })
+            this.playCore(volume, true)
         }
 
         /**
@@ -50,11 +59,7 @@ namespace music {
         //% parts="headphone"
         //% weight=95 blockGap=8
         play(volume = 64) {
-            this.stop()
-            this._player = new MelodyPlayer(this)
-            control.runInParallel(() => {
-                new MelodyPlayer(this).play(volume)
-            })
+            this.playCore(volume, false)
         }
 
 
@@ -68,7 +73,6 @@ namespace music {
         //% weight=94 blockGap=8
         playUntilDone(volume = 64) {
             this.stop()
-            this._player = new MelodyPlayer(this)
             new MelodyPlayer(this).play(volume)
         }
     }
@@ -88,7 +92,7 @@ namespace music {
         play(volume: number) {
             if (!this.melody)
                 return
-            
+
             volume = Math.clamp(0, 255, volume)
 
             let notes = this.melody._text
@@ -275,9 +279,8 @@ namespace music {
                     addForm(envD, 255, envS)
                     addForm(currMs - (envA + envD), envS, envS)
                     addForm(envR, envS, 0)
-                    addForm(0, 0, 0)
 
-                    // music.playTone(hz, currMs);
+                    playInstructions(sndInstr)
                 }
             }
         }
