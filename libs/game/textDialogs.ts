@@ -38,33 +38,11 @@ namespace game {
         constructor(width: number, height: number, frame?: Image, font?: image.Font, cursor?: Image) {
             this.image = image.create(width, height);
 
-            this.frame = frame || dialogFrame || (dialogFrame =  img`
-                . . . . . . . . . . . .
-                . b b b b b b b b b b .
-                . b b b b b b b b b b c
-                . b b d 1 1 1 1 d b b c
-                . b b 1 1 1 1 1 1 b b c
-                . b b 1 1 1 1 1 1 b b c
-                . b b 1 1 1 1 1 1 b b c
-                . b b 1 1 1 1 1 1 b b c
-                . b b d 1 1 1 1 d b b c
-                . b b b b b b b b b b c
-                . b b b b b b b b b b c
-                . . c c c c c c c c c c
-                `);
+            this.frame = frame || dialogFrame || (dialogFrame = defaultFrame());
 
             this.font = font || dialogFont || (dialogFont = image.font8);
 
-            this.cursor = cursor || dialogCursor || (dialogCursor = img`
-                7 7 7 7 7 7 7 . . .
-                7 7 7 1 7 7 7 7 . .
-                7 7 1 7 1 7 7 7 7 .
-                7 7 1 1 1 7 7 7 7 7
-                7 7 1 7 1 7 7 7 7 6
-                7 7 1 7 1 7 7 7 6 .
-                7 7 7 7 7 7 7 6 . .
-                . 6 6 6 6 6 6 . . .
-                `);
+            this.cursor = cursor || dialogCursor || (dialogCursor = defaultCursorImage());
 
             this.textColor = dialogTextColor == undefined ? dialogTextColor = 15 : dialogTextColor;
 
@@ -241,7 +219,10 @@ namespace game {
                 }
             }
 
-            screens.push(current)
+            // Only pushes the last part of the message to the screen when current isn't empty
+            if (current) {
+                screens.push(current);
+            }
 
             return screens;
         }
@@ -286,14 +267,7 @@ namespace game {
         maxSubOffset: number;
 
         constructor(width: number, height: number) {
-            super(width, height, img`
-            1 1 1 1 1 1
-            f f f f f f
-            f f f f f f
-            f f f f f f
-            f f f f f f
-            1 1 1 1 1 1
-            `, image.font8)
+            super(width, height, defaultSplashFrame(), image.font8)
             this.maxOffset = -1;
             this.maxSubOffset = -1;
             this.textColor = 1;
@@ -441,6 +415,70 @@ namespace game {
 
         pauseUntil(() => done);
         controller._setUserEventsEnabled(true);
+    }
+
+    function defaultFrame() {
+        return screen.isMono ?
+        img`
+        1 1 1
+        1 . 1
+        1 1 1
+        `
+        :
+        img`
+        . . . . . . . . . . . .
+        . b b b b b b b b b b .
+        . b b b b b b b b b b c
+        . b b d 1 1 1 1 d b b c
+        . b b 1 1 1 1 1 1 b b c
+        . b b 1 1 1 1 1 1 b b c
+        . b b 1 1 1 1 1 1 b b c
+        . b b 1 1 1 1 1 1 b b c
+        . b b d 1 1 1 1 d b b c
+        . b b b b b b b b b b c
+        . b b b b b b b b b b c
+        . . c c c c c c c c c c
+        `
+    }
+
+    function defaultSplashFrame() {
+        return screen.isMono ?
+        img`
+        1 1 1
+        . . .
+        1 1 1
+        `
+        :
+        img`
+        1 1 1
+        f f f
+        1 1 1
+        `
+    }
+
+    function defaultCursorImage() {
+        return screen.isMono ?
+        img`
+        1 1 1 1 1 1 1 . . .
+        1 . . 1 . . . 1 . .
+        1 . 1 . 1 . . . 1 .
+        1 . 1 1 1 . . . . 1
+        1 . 1 . 1 . . . 1 .
+        1 . . . . . . 1 . .
+        1 1 1 1 1 1 1 . . .
+        . . . . . . . . . .
+        `
+        :
+        img`
+        7 7 7 7 7 7 7 . . .
+        7 7 7 1 7 7 7 7 . .
+        7 7 1 7 1 7 7 7 7 .
+        7 7 1 1 1 7 7 7 7 7
+        7 7 1 7 1 7 7 7 7 6
+        7 7 1 7 1 7 7 7 6 .
+        7 7 7 7 7 7 7 6 . .
+        . 6 6 6 6 6 6 . . .
+        `
     }
 
     /**
