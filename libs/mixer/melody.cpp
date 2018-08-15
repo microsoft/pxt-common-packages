@@ -45,8 +45,10 @@ SynthChannel *allocateChannel() {
     auto numCh = 0;
 
     while (ch) {
-        if (!ch->used)
+        if (!ch->used) {
+            ch->used = true;
             return ch;
+        }
         ch = ch->next;
         numCh++;
     }
