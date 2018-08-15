@@ -15,12 +15,12 @@ namespace tiles {
     export class Tile {
         private _row: number;
         private _col: number;
-        private _index: number;
+        private _map: Image;
 
-        constructor(col: number, row: number, index: number) {
+        constructor(col: number, row: number, map: Image) {
             this._col = col;
             this._row = row;
-            this._index = index;
+            this._map = map;
         }
 
         get x(): number {
@@ -32,7 +32,7 @@ namespace tiles {
         }
 
         get tileSet(): number {
-            return this._index;
+            return this._map.getPixel(this._col, this._row);
         }
 
         /**
@@ -110,7 +110,7 @@ namespace tiles {
 
         public getTile(col: number, row: number): Tile {
             if (this.isOutsideMap(col, row)) return undefined;
-            return new Tile(col, row, this._map.getPixel(col, row));
+            return new Tile(col, row, this._map);
         }
 
         public setTileAt(col: number, row: number, index: number): void {
@@ -126,7 +126,7 @@ namespace tiles {
                 for (let row = 0; row < this._map.height; ++row) {
                     let currTile = this._map.getPixel(col, row);
                     if (currTile === index) {
-                        output.push(new Tile(col, row, currTile));
+                        output.push(new Tile(col, row, this._map));
                     }
                 }
             }
