@@ -285,4 +285,29 @@ namespace music {
             }
         }
     }
+
+    //% fixedInstance whenUsed block="ba ding"
+    export const baDing = new Melody('b5:1 e6:3')
+
+    //% fixedInstance whenUsed block="wawawawaa"
+    export const wawawawaa = new Melody('e3:3 r:1 d#:3 r:1 d:4 r:1 c#:8')
+
+    //% fixedInstance whenUsed block="jump up"
+    export const jumpUp = new Melody('c5:1 d e f g')
+
+    //% fixedInstance whenUsed block="jump down"
+    export const jumpDown = new Melody('g5:1 f e d c')
+
+    //% fixedInstance whenUsed block="power up"
+    export const powerUp = new Melody('g4:1 c5 e g:2 e:1 g:3')
+
+    //% fixedInstance whenUsed block="power down"
+    export const powerDown = new Melody('g5:1 d# c g4:2 b:1 c5:3')
+
+    //% fixedInstance whenUsed block="magic wand"
+    export const magicWand = new Melody('F#6:1-300 G# A# B C7# D# F F# G# A# B:6')
+    //A#7:1-200 A:1 A#7:1 A:1 A#7:2
+
+    //% fixedInstance whenUsed block="siren"
+    export const siren = new Melody('a4 d5 a4 d5 a4 d5')
 }
