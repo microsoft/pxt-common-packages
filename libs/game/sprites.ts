@@ -28,14 +28,10 @@ namespace sprites {
     export function create(img: Image, kind?: number): Sprite {
         const scene = game.currentScene();
         const sprite = new Sprite(img)
-        sprite.type = kind || 0;
+        sprite.type = kind;
         scene.allSprites.push(sprite)
         sprite.id = scene.allSprites.length
         scene.physicsEngine.addSprite(sprite);
-        if (scene.spritesByKind[sprite.type])
-            scene.spritesByKind[sprite.type].push(sprite);
-        else
-            scene.spritesByKind[sprite.type] = [sprite];
 
         // run on created handlers
         scene.createdHandlers
@@ -50,14 +46,12 @@ namespace sprites {
      * @param kind the target kind
      */
     //% blockId=allOfKind block="array of sprites of kind %kind=spritetype"
-    //% blockNamespace="arrays"
+    //% blockNamespace="arrays" blockSetVariable="sprite list"
     //% weight=87
     export function allOfKind(kind: number): Sprite[] {
         const spritesByKind = game.currentScene().spritesByKind;
-        if (kind == undefined || spritesByKind.length <= kind || spritesByKind[kind] == null)
-            return [];
-        else
-            return spritesByKind[kind].slice(0, spritesByKind[kind].length);
+        if (!(kind >= 0) || spritesByKind[kind] == undefined) return [];
+        else return spritesByKind[kind].slice(0, spritesByKind[kind].length);
     }
 
     /**
