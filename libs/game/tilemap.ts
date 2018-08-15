@@ -1,10 +1,53 @@
 namespace tiles {
-    class Tile {
+    class TileSet {
         image: Image;
         obstacle: boolean;
         constructor(image: Image, collisions: boolean) {
             this.image = image;
             this.obstacle = collisions;
+        }
+    }
+
+    /**
+     * A tile in the tilemap
+     **/
+    //% blockNamespace=scene color="#401255" blockGap=8
+    export class Tile {
+        private _row: number;
+        private _col: number;
+        private _map: Image;
+
+        constructor(col: number, row: number, map: Image) {
+            this._col = col;
+            this._row = row;
+            this._map = map;
+        }
+
+        get x(): number {
+            return this._col << 4;
+        }
+
+        get y(): number {
+            return this._row << 4;
+        }
+
+        get tileSet(): number {
+            return this._map.getPixel(this._col, this._row);
+        }
+
+        /**
+         * Center the given sprite on this tile
+         * @param sprite
+         */
+        //% blockId=gameplaceontile block="on top of %tile(myTile) place %sprite=variables_get(mySprite)"
+        //% blockNamespace="scene" group="Tiles"
+        //% weight=25
+        //% help=scene/tile-place
+        place(mySprite: Sprite): void {
+            if (!mySprite) return;
+
+            mySprite.x = this.x + 8;
+            mySprite.y = this.y + 8;
         }
     }
 
@@ -15,11 +58,11 @@ namespace tiles {
         private _layer: number;
 
         private _map: Image;
-        private _tiles: Tile[];
+        private _tileSets: TileSet[];
 
         constructor() {
             this._map = img`1`;
-            this._tiles = [];
+            this._tileSets = [];
             this._layer = 1;
 
             this.z = -1;
@@ -31,13 +74,12 @@ namespace tiles {
         }
 
         offsetX(value: number) {
-            return Math.max(0, Math.min((this._map.width << 4) - screen.width, value));
+            return Math.clamp(0, (this._map.width << 4) - screen.width, value);
         }
 
         offsetY(value: number) {
-            return Math.max(0, Math.min((this._map.height << 4) - screen.height, value));
+            return Math.clamp(0, (this._map.height << 4) - screen.height, value);
         }
-
 
         areaWidth() {
             return this._map ? (this._map.width << 4) : 0;
@@ -58,12 +100,37 @@ namespace tiles {
         }
 
         setTile(index: number, img: Image, collisions?: boolean) {
-            if (index < 0 || index > 0xf) return;
-            this._tiles[index] = new Tile(img, collisions);
+            if (this.isInvalidIndex(index)) return;
+            this._tileSets[index] = new TileSet(img, collisions);
         }
 
         setMap(map: Image) {
             this._map = map;
+        }
+
+        public getTile(col: number, row: number): Tile {
+            if (this.isOutsideMap(col, row)) return undefined;
+            return new Tile(col, row, this._map);
+        }
+
+        public setTileAt(col: number, row: number, index: number): void {
+            if (!this.isOutsideMap(col, row) && !this.isInvalidIndex(index))
+                this._map.setPixel(col, row, index);
+        }
+
+        public getTilesByType(index: number): Tile[] {
+            if (this.isInvalidIndex(index)) return undefined;
+
+            let output: Tile[] = [];
+            for (let col = 0; col < this._map.width; ++col) {
+                for (let row = 0; row < this._map.height; ++row) {
+                    let currTile = this._map.getPixel(col, row);
+                    if (currTile === index) {
+                        output.push(new Tile(col, row, this._map));
+                    }
+                }
+            }
+            return output;
         }
 
         __update(camera: scene.Camera, dt: number): void { }
@@ -82,7 +149,7 @@ namespace tiles {
             for (let x = x0; x <= xn; ++x) {
                 for (let y = y0; y <= yn; ++y) {
                     const index = this._map.getPixel(x, y);
-                    const tile = this._tiles[index] || this.generateTile(index);
+                    const tile = this._tileSets[index] || this.generateTile(index);
                     if (tile) {
                         screen.drawImage(tile.image, ((x - x0) << 4) - offsetX, ((y - y0) << 4) - offsetY)
                     }
@@ -90,12 +157,21 @@ namespace tiles {
             }
         }
 
-        private generateTile(index: number): Tile {
+        private generateTile(index: number): TileSet {
             if (index == 0) return undefined;
 
             const img = image.create(16, 16);
             img.fill(index);
-            return this._tiles[index] = new Tile(img, false);
+            return this._tileSets[index] = new TileSet(img, false);
+        }
+
+        private isOutsideMap(col: number, row: number): boolean {
+            return col < 0 || col >= this._map.width
+                    || row < 0 || row >= this._map.height;
+        }
+
+        private isInvalidIndex(index: number): boolean {
+            return index < 0 || index > 0xf;
         }
 
         render(camera: scene.Camera) {
@@ -142,7 +218,7 @@ namespace tiles {
                     const left = x << 4;
                     for (let y = y0; y <= yn; ++y) {
                         const index = this._map.getPixel(x, y);
-                        const tile = this._tiles[index] || this.generateTile(index);
+                        const tile = this._tileSets[index] || this.generateTile(index);
                         if (tile && tile.obstacle) {
                             const top = y << 4;
                             if (tile.image.overlapsWith(s.image, s.left - left, s.top - top)) {
@@ -158,17 +234,17 @@ namespace tiles {
 
         public isObstacle(col: number, row: number) {
             if (!this._map) return false;
-            if (col < 0 || col >= this._map.width || row < 0 || row >= this._map.height) return true;
+            if (this.isOutsideMap(col, row)) return true;
 
-            return this._tiles[this._map.getPixel(col, row)].obstacle;
+            return this._tileSets[this._map.getPixel(col, row)].obstacle;
         }
 
         public getObstacle(col: number, row: number) {
             if (!this._map) return undefined;
-            if (col < 0 || col >= this._map.width || row < 0 || row >= this._map.height) return undefined;
+            if (this.isOutsideMap(col, row)) return undefined;
 
             const index = this._map.getPixel(col, row);
-            const tile = this._tiles[index] || this.generateTile(index);
+            const tile = this._tileSets[index] || this.generateTile(index);
             if (tile.obstacle) {
                 return new sprites.StaticObstacle(tile.image, row << 4, col << 4, this.layer, index);
             }

@@ -105,6 +105,23 @@ namespace scene {
     }
 
     /**
+     * Set the given tile to be of the given index
+     * @param col
+     * @param row
+     * @param index
+     */
+    //% blockId=gamesettileat block="set tile at col %col row %row to %index=colorindexpicker"
+    //% group="Tiles"
+    //% weight=30
+    //% help=scene/set-tile-at
+    export function setTileAt(col: number, row: number, index: number) {
+        const scene = game.currentScene();
+        if (!scene.tileMap)
+            scene.tileMap = new tiles.TileMap();
+        scene.tileMap.setTileAt(col, row, index);
+    }
+
+    /**
      * Sets the tile image at the given index. Tiles should be 16x16 images
      * @param index
      * @param img
@@ -117,6 +134,35 @@ namespace scene {
         if (!scene.tileMap)
             scene.tileMap = new tiles.TileMap();
         scene.tileMap.setTile(index, img, !!wall);
+    }
+
+    /**
+     * Gets the tile at the given column and row in current tile map
+     * @param col
+     * @param row
+     */
+    //% blockId=gamegettile block="tile col %col row %row"
+    //% group="Tiles" blockSetVariable="myTile"
+    //% help=scene/get-tile
+    export function getTile(col: number, row: number): tiles.Tile {
+        const scene = game.currentScene();
+        if (!scene.tileMap)
+            scene.tileMap = new tiles.TileMap();
+        return scene.tileMap.getTile(col, row);
+    }
+
+    /**
+     * Gets all tiles of the given index.
+     * @param index
+     */
+    //% blockId=gamegettilestype block="array of all %index=colorindexpicker tiles"
+    //% group="Tiles" blockSetVariable="tile list"
+    //% help=scene/get-tiles-by-type
+    export function getTilesByType(index: number): tiles.Tile[] {
+        const scene = game.currentScene();
+        if (!scene.tileMap)
+            scene.tileMap = new tiles.TileMap();
+        return scene.tileMap.getTilesByType(index);
     }
 
     /**
