@@ -493,6 +493,7 @@ class Sprite implements SpriteLike {
     }
 
     registerObstacle(direction: CollisionDirection, other: sprites.Obstacle) {
+        if (other == undefined) return;
         if (!this._obstacles)
             this._obstacles = [];
         this._obstacles[direction] = other;
