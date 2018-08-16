@@ -1,3 +1,9 @@
+enum MusicOutput {
+    AutoDetect = 0,
+    Buzzer = 1,
+    HeadPhones = 2,
+}
+
 namespace music {
     //% whenUsed
     const freqs = hex`
@@ -9,6 +15,9 @@ namespace music {
 
     //% shim=music::playInstructions
     function playInstructions(buf: Buffer) { }
+
+    //% shim=music::forceOutput
+    export function forceOutput(buf: MusicOutput) { }
 
     //% fixedInstances
     export class Melody {

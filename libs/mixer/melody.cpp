@@ -68,6 +68,12 @@ SynthChannel *allocateChannel() {
 }
 
 //%
+void forceOutput(int outp) {
+    auto snd = getWSynthesizer();
+    snd->out.setOutput(outp);
+}
+
+//%
 void playInstructions(Buffer buf) {
     auto ch = allocateChannel();
     auto instr = (SoundInstruction *)buf->data;

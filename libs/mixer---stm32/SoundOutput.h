@@ -17,4 +17,18 @@ class SoundOutput {
           pktSerial(*LOOKUP_PIN(JACK_TX), sws), //
           jackRouter(*LOOKUP_PIN(JACK_TX), *LOOKUP_PIN(JACK_SENSE), *LOOKUP_PIN(JACK_HPEN),
                      *LOOKUP_PIN(JACK_BZEN), *LOOKUP_PIN(JACK_PWREN), pktSerial) {}
+
+    void setOutput(int output) {
+        switch (output) {
+        case 0:
+            jackRouter.forceState(JackState::None);
+            break;
+        case 1:
+            jackRouter.forceState(JackState::BuzzerAndSerial);
+            break;
+        case 2:
+            jackRouter.forceState(JackState::HeadPhones);
+            break;
+        }
+    }
 };

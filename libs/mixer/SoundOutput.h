@@ -10,5 +10,6 @@ class SoundOutput {
     SAMD21DAC dac;
 
     SoundOutput(DataSource &data) : dac(*lookupPin(DAC_PIN), pxt::getWDMAC()->dmac, data) {}
-};
 
+    void setOutput(int output) { (void)output; }
+};
