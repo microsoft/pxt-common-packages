@@ -50,7 +50,7 @@ namespace sprites {
     //% weight=87
     export function allOfKind(kind: number): Sprite[] {
         const spritesByKind = game.currentScene().spritesByKind;
-        if (!(kind >= 0) || spritesByKind[kind] == undefined) return [];
+        if (!(kind >= 0) || !spritesByKind[kind]) return [];
         else return spritesByKind[kind].slice(0, spritesByKind[kind].length);
     }
 
