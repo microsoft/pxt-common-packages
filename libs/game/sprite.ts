@@ -168,7 +168,7 @@ class Sprite implements SpriteLike {
         let maxXDiff = oMaxX - nMaxX;
         let maxYDiff = oMaxY - nMaxY;
 
-        let tmap = game.currentScene().tileMap;
+        const tmap = game.currentScene().tileMap;
         if (!tmap) return;
 
         // bump image if collision with surrounding walls due to changed size
@@ -180,20 +180,21 @@ class Sprite implements SpriteLike {
             let b = nMaxY >> 4;
 
             if (tmap.isObstacle(l, t) && (minXDiff > 0 || minYDiff > 0)) {
-                this.left += minXDiff;
-                this.top += minYDiff;
+                this.x += minXDiff;
+                this.y += minYDiff;
             }
             if (tmap.isObstacle(r, t) && (maxXDiff < 0 || minYDiff > 0)) {
-                this.right += maxXDiff;
-                this.top += minYDiff;
+                this.x += maxXDiff;
+                this.y += minYDiff;
             }
             if (tmap.isObstacle(l, b) && (minXDiff > 0 || maxYDiff < 0)) {
-                this.left += minXDiff;
-                this.bottom += maxYDiff;
+                this.x += minXDiff;
+                this.y += maxYDiff;
             }
             if (tmap.isObstacle(r, b) && (maxXDiff < 0 || maxYDiff < 0)) {
-                this.right += maxXDiff;
-                this.bottom += maxYDiff;
+                this.x += maxXDiff;
+                this.y += maxYDiff;
+
             }
         }
     }
