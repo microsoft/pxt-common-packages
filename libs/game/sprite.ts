@@ -163,21 +163,20 @@ class Sprite implements SpriteLike {
             nMaxY = Math.max(nMaxY, box.oy + box.height - 1);
         }
 
-        let minXDiff = oMinX - nMinX;
-        let minYDiff = oMinY - nMinY;
-        let maxXDiff = oMaxX - nMaxX;
-        let maxYDiff = oMaxY - nMaxY;
+        const minXDiff = oMinX - nMinX;
+        const minYDiff = oMinY - nMinY;
+        const maxXDiff = oMaxX - nMaxX;
+        const maxYDiff = oMaxY - nMaxY;
 
         const tmap = game.currentScene().tileMap;
         if (!tmap) return;
 
-        // bump image if collision with surrounding walls due to changed size
-        // beyond tile size. Only attempt if new sprite fits within a single tile.
+        // Bump image if collision with surrounding walls due to changed size.
         if (this.width <= 16 && this.height <= 16 && (~this.flags & SpriteFlag.Ghost)) {
-            let l = nMinX >> 4;
-            let r = nMaxX >> 4;
-            let t = nMinY >> 4;
-            let b = nMaxY >> 4;
+            const l = nMinX >> 4;
+            const r = nMaxX >> 4;
+            const t = nMinY >> 4;
+            const b = nMaxY >> 4;
 
             if (tmap.isObstacle(l, t) && (minXDiff > 0 || minYDiff > 0)) {
                 this.x += minXDiff;
