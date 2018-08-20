@@ -131,8 +131,79 @@ class Sprite implements SpriteLike {
     //% weight=7
     setImage(img: Image) {
         if (!img) return; // don't break the sprite
+
+        // Identify bounding box for prior image
+        let oMinX = img.width;
+        let oMinY = img.height;
+        let oMaxX = 0;
+        let oMaxY = 0;
+
+        for (let i = 0; this._hitboxes && i < this._hitboxes.length; ++i) {
+            let box = this._hitboxes[i];
+            oMinX = Math.min(oMinX, box.ox);
+            oMinY = Math.min(oMinY, box.oy);
+            oMaxX = Math.max(oMaxX, box.ox + box.width - 1);
+            oMaxY = Math.max(oMaxY, box.oy + box.height - 1);
+        }
+
         this._image = img;
         this._hitboxes = game.calculateHitBoxes(this);
+
+        // Identify bounding box for new image
+        let nMinX = img.width;
+        let nMinY = img.height;
+        let nMaxX = 0;
+        let nMaxY = 0;
+
+        for (let i = 0; i < this._hitboxes.length; ++i) {
+            let box = this._hitboxes[i];
+            nMinX = Math.min(nMinX, box.ox);
+            nMinY = Math.min(nMinY, box.oy);
+            nMaxX = Math.max(nMaxX, box.ox + box.width - 1);
+            nMaxY = Math.max(nMaxY, box.oy + box.height - 1);
+        }
+
+        let minXDiff = oMinX - nMinX;
+        let minYDiff = oMinY - nMinY;
+        let maxXDiff = oMaxX - nMaxX;
+        let maxYDiff = oMaxY - nMaxY;
+
+        let tmap = game.currentScene().tileMap;
+        if (!tmap) return;
+
+        // bump image if collision with surrounding walls due to changed size
+        // beyond tile size. Only attempt if new sprite fits within a single tile.
+        if (this.width <= 16 && this.height <= 16 && (~this.flags & SpriteFlag.Ghost)) {
+            let l = this.left >> 4;
+            let r = this.right >> 4;
+            let t = this.top >> 4;
+            let b = this.bottom >> 4;
+
+            if (minXDiff > 0 || minYDiff > 0) {
+                if (tmap.isObstacle(l, t)) {
+                    this.left += minXDiff;
+                    this.top += minYDiff;
+                }
+            }
+            if (maxXDiff < 0 || minYDiff > 0) {
+                if (tmap.isObstacle(r, t)) {
+                    this.right += maxXDiff;
+                    this.top += minYDiff;
+                }
+            }
+            if (minXDiff > 0 || maxYDiff < 0) {
+                if (tmap.isObstacle(l, b)) {
+                    this.left += minXDiff;
+                    this.bottom += maxYDiff;
+                }
+            }
+            if (maxXDiff < 0 || maxYDiff < 0) {
+                if(tmap.isObstacle(r, b)) {
+                    this.right += maxXDiff;
+                    this.bottom += maxYDiff;
+                }
+            }
+        }
     }
 
     //% group="Properties" blockSetVariable="mySprite"
