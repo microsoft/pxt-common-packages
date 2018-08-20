@@ -174,34 +174,26 @@ class Sprite implements SpriteLike {
         // bump image if collision with surrounding walls due to changed size
         // beyond tile size. Only attempt if new sprite fits within a single tile.
         if (this.width <= 16 && this.height <= 16 && (~this.flags & SpriteFlag.Ghost)) {
-            let l = this.left >> 4;
-            let r = this.right >> 4;
-            let t = this.top >> 4;
-            let b = this.bottom >> 4;
+            let l = nMinX >> 4;
+            let r = nMaxX >> 4;
+            let t = nMinY >> 4;
+            let b = nMaxY >> 4;
 
-            if (minXDiff > 0 || minYDiff > 0) {
-                if (tmap.isObstacle(l, t)) {
-                    this.left += minXDiff;
-                    this.top += minYDiff;
-                }
+            if (tmap.isObstacle(l, t) && (minXDiff > 0 || minYDiff > 0)) {
+                this.left += minXDiff;
+                this.top += minYDiff;
             }
-            if (maxXDiff < 0 || minYDiff > 0) {
-                if (tmap.isObstacle(r, t)) {
-                    this.right += maxXDiff;
-                    this.top += minYDiff;
-                }
+            if (tmap.isObstacle(r, t) && (maxXDiff < 0 || minYDiff > 0)) {
+                this.right += maxXDiff;
+                this.top += minYDiff;
             }
-            if (minXDiff > 0 || maxYDiff < 0) {
-                if (tmap.isObstacle(l, b)) {
-                    this.left += minXDiff;
-                    this.bottom += maxYDiff;
-                }
+            if (tmap.isObstacle(l, b) && (minXDiff > 0 || maxYDiff < 0)) {
+                this.left += minXDiff;
+                this.bottom += maxYDiff;
             }
-            if (maxXDiff < 0 || maxYDiff < 0) {
-                if(tmap.isObstacle(r, b)) {
-                    this.right += maxXDiff;
-                    this.bottom += maxYDiff;
-                }
+            if (tmap.isObstacle(r, b) && (maxXDiff < 0 || maxYDiff < 0)) {
+                this.right += maxXDiff;
+                this.bottom += maxYDiff;
             }
         }
     }
