@@ -10,6 +10,8 @@ class PhysicsEngine {
 
     removeSprite(sprite: Sprite) { }
 
+    moveSprite(s: Sprite, tm: tiles.TileMap, dx: number, dy: number) { }
+
     draw() { }
 
     /** Apply physics */
@@ -139,7 +141,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         }
     }
 
-    protected moveSprite(s: Sprite, tm: tiles.TileMap, dx: number, dy: number) {
+    public moveSprite(s: Sprite, tm: tiles.TileMap, dx: number, dy: number) {
         if (dx === 0 && dy === 0) {
             s._lastX = s.x;
             s._lastY = s.y;
