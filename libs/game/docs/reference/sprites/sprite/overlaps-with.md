@@ -6,6 +6,8 @@ Check if this sprite is overlapping another sprite.
 sprites.create(null).overlapsWith(null)
 ```
 
+An overlap of two sprites is dectected when the first non-transparent pixel in the image of the first sprite overlaps the first non-transparent pixel of the second sprite. If a sprite has it's ``ghost`` flag set, any overlap with another sprite won't be noticed. Also, an overlap occurs even when the values of **Z** for the sprites are different.
+
 ## Parameters
 
 * **other**: the other sprite to check for overlap with this sprite.
@@ -40,4 +42,4 @@ game.onUpdateInterval(100, function () {
 
 ## See also #seealso
 
-[on overlap](/reference/sprites/sprite/on-overlap)
+[on overlap](/reference/sprites/on-overlap)
