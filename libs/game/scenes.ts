@@ -109,7 +109,7 @@ namespace scene {
      * @param tile
      * @param index
      */
-    //% blockId=gamesettileat block="set %tile=variables_get(myTile) to %index=colorindexpicker"
+    //% blockId=gamesettileat block="set %tile=gamegettile to %index=colorindexpicker"
     //% group="Tiles"
     //% weight=30
     //% help=scene/set-tile-at
