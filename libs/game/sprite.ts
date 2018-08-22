@@ -171,15 +171,21 @@ class Sprite implements SpriteLike {
         const scene = game.currentScene();
         const tmap = scene.tileMap;
 
-        if (scene.tileMap) {
-            if (minXDiff > 0 || minYDiff > 0)
+        if (scene.tileMap && this.width <= 16 && this.height <= 16) {
+            const l = (nMinX + this.left) >> 4;
+            const r = (nMaxX + this.left) >> 4;
+            const t = (nMinY + this.top) >> 4;
+            const b = (nMaxY + this.top) >> 4;
+
+            if (tmap.isObstacle(l, t) && (minXDiff > 0 || minYDiff > 0)) {
                 scene.physicsEngine.moveSprite(this, scene.tileMap, minXDiff, minYDiff);
-            if (maxXDiff < 0 || minYDiff > 0)
+            } else if (tmap.isObstacle(r, t) && (maxXDiff < 0 || minYDiff > 0)) {
                 scene.physicsEngine.moveSprite(this, scene.tileMap, maxXDiff, minYDiff);
-            if (minXDiff > 0 || maxYDiff < 0) 
+            } else if (tmap.isObstacle(l, b) && (minXDiff > 0 || maxYDiff < 0)) {
                 scene.physicsEngine.moveSprite(this, scene.tileMap, minXDiff, maxYDiff);
-            if (maxXDiff < 0 || maxYDiff < 0)
+            } else if (tmap.isObstacle(r, b) && (maxXDiff < 0 || maxYDiff < 0)) {
                 scene.physicsEngine.moveSprite(this, scene.tileMap, maxXDiff, maxYDiff);
+            }
         }
     }
 
