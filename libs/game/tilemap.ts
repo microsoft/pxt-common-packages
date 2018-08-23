@@ -151,7 +151,7 @@ namespace tiles {
                     const index = this._map.getPixel(x, y);
                     const tile = this._tileSets[index] || this.generateTile(index);
                     if (tile) {
-                        screen.drawImage(tile.image, ((x - x0) << 4) - offsetX, ((y - y0) << 4) - offsetY)
+                        screen.drawTransparentImage(tile.image, ((x - x0) << 4) - offsetX, ((y - y0) << 4) - offsetY)
                     }
                 }
             }

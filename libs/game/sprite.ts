@@ -131,8 +131,62 @@ class Sprite implements SpriteLike {
     //% weight=7
     setImage(img: Image) {
         if (!img) return; // don't break the sprite
+
+        // Identify old upper left corner
+        let oMinX = img.width;
+        let oMinY = img.height;
+        let oMaxX = 0;
+        let oMaxY = 0;
+
+        for (let i = 0; this._hitboxes && i < this._hitboxes.length; ++i) {
+            let box = this._hitboxes[i];
+            oMinX = Math.min(oMinX, box.ox);
+            oMinY = Math.min(oMinY, box.oy);
+            oMaxX = Math.max(oMaxX, box.ox + box.width - 1);
+            oMaxY = Math.max(oMaxY, box.oy + box.height - 1);
+        }
+
         this._image = img;
         this._hitboxes = game.calculateHitBoxes(this);
+
+        // Identify new upper left corner
+        let nMinX = img.width;
+        let nMinY = img.height;
+        let nMaxX = 0;
+        let nMaxY = 0;
+
+        for (let i = 0; i < this._hitboxes.length; ++i) {
+            let box = this._hitboxes[i];
+            nMinX = Math.min(nMinX, box.ox);
+            nMinY = Math.min(nMinY, box.oy);
+            nMaxX = Math.max(nMaxX, box.ox + box.width - 1);
+            nMaxY = Math.max(nMaxY, box.oy + box.height - 1);
+        }
+
+        const minXDiff = oMinX - nMinX;
+        const minYDiff = oMinY - nMinY;
+        const maxXDiff = oMaxX - nMaxX;
+        const maxYDiff = oMaxY - nMaxY;
+
+        const scene = game.currentScene();
+        const tmap = scene.tileMap;
+
+        if (scene.tileMap && this.width <= 16 && this.height <= 16) {
+            const l = (nMinX + this.left) >> 4;
+            const r = (nMaxX + this.left) >> 4;
+            const t = (nMinY + this.top) >> 4;
+            const b = (nMaxY + this.top) >> 4;
+
+            if (tmap.isObstacle(l, t) && (minXDiff > 0 || minYDiff > 0)) {
+                scene.physicsEngine.moveSprite(this, scene.tileMap, minXDiff, minYDiff);
+            } else if (tmap.isObstacle(r, t) && (maxXDiff < 0 || minYDiff > 0)) {
+                scene.physicsEngine.moveSprite(this, scene.tileMap, maxXDiff, minYDiff);
+            } else if (tmap.isObstacle(l, b) && (minXDiff > 0 || maxYDiff < 0)) {
+                scene.physicsEngine.moveSprite(this, scene.tileMap, minXDiff, maxYDiff);
+            } else if (tmap.isObstacle(r, b) && (maxXDiff < 0 || maxYDiff < 0)) {
+                scene.physicsEngine.moveSprite(this, scene.tileMap, maxXDiff, maxYDiff);
+            }
+        }
     }
 
     //% group="Properties" blockSetVariable="mySprite"
