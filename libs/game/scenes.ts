@@ -106,19 +106,18 @@ namespace scene {
 
     /**
      * Set the given tile to be of the given index
-     * @param col
-     * @param row
+     * @param tile
      * @param index
      */
-    //% blockId=gamesettileat block="set tile at col %col row %row to %index=colorindexpicker"
+    //% blockId=gamesettileat block="set %tile=gamegettile to %index=colorindexpicker"
     //% group="Tiles"
     //% weight=30
     //% help=scene/set-tile-at
-    export function setTileAt(col: number, row: number, index: number) {
+    export function setTileAt(tile: tiles.Tile, index: number) {
         const scene = game.currentScene();
         if (!scene.tileMap)
             scene.tileMap = new tiles.TileMap();
-        scene.tileMap.setTileAt(col, row, index);
+        scene.tileMap.setTileAt(tile.x >> 4, tile.y >> 4, index);
     }
 
     /**
