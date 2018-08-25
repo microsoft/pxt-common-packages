@@ -314,9 +314,7 @@ class Sprite implements SpriteLike {
             return;
         }
 
-        if (timeOnScreen) {
-            timeOnScreen = timeOnScreen + control.millis();
-        }
+        
 
         let pixelsOffset = 0;
         let holdTextSeconds = 1.5;
@@ -328,6 +326,19 @@ class Sprite implements SpriteLike {
         let bubbleWidth = text.length * font.charWidth + bubblePadding;
         let maxOffset = text.length * font.charWidth - maxTextWidth;
         let bubbleOffset: number;
+        // sets the defaut scroll speed in pixels per second
+        let speed = 45;
+
+        // Calculates the speed of the scroll if scrolling is needed and a time is specified
+        if (timeOnScreen && maxOffset > 0) {
+            speed = (maxOffset + (2 * maxTextWidth)) / (timeOnScreen / 1000);
+            holdTextSeconds = maxTextWidth / speed;
+        } 
+
+        if (timeOnScreen) {
+            timeOnScreen = timeOnScreen + control.millis();
+        }
+
         if (!this._hitboxes || this._hitboxes.length == 0) {
             bubbleOffset = 0;
         } else {
@@ -365,17 +376,19 @@ class Sprite implements SpriteLike {
                 // Pauses at beginning of text for holdTextSeconds length
                 if (holdTextSeconds > 0) {
                     holdTextSeconds -= game.eventContext().deltaTime;
-                    if (holdTextSeconds <= 0 && pixelsOffset > 0) {
+                    // If scrolling has reached the end, start back at the beginning
+                    // If a given time is specified, text will not loop back
+                    if (holdTextSeconds <= 0 && pixelsOffset > 0 && !timeOnScreen) {
                         pixelsOffset = 0;
-                        holdTextSeconds = 1.5;
+                        holdTextSeconds = maxTextWidth / speed;
                     }
                 } else {
-                    pixelsOffset += dt * 45;
+                    pixelsOffset += dt * speed;
 
                     // Pause at end of text for holdTextSeconds length
                     if (pixelsOffset >= maxOffset) {
                         pixelsOffset = maxOffset;
-                        holdTextSeconds = 1.5;
+                        holdTextSeconds = maxTextWidth / speed;
                     }
                 }
                 // If maxOffset is negative it won't scroll
