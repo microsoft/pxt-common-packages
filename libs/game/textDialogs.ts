@@ -174,8 +174,8 @@ namespace game {
         }
 
         chunkText(str: string): string[] {
-            const charactersPerRow = Math.floor(this.textAreaWidth() / this.font.charWidth);
-            const rowsOfCharacters = Math.floor(this.textAreaHeight() / this.rowHeight());
+            const charactersPerRow = Math.floor((this.textAreaWidth() - this.cursor.width) / this.font.charWidth);
+            const rowsOfCharacters = Math.floor((this.image.height - ((this.innerTop + this.unit) << 1) - 1) / this.rowHeight());
 
             const screens: string[] = [];
 
@@ -235,8 +235,8 @@ namespace game {
         drawTextCore() {
             if (!this.chunks || this.chunks.length === 0) return;
             const str = this.chunks[this.chunkIndex];
-            const availableWidth = this.textAreaWidth();
-            const availableHeight = this.textAreaHeight();
+            const availableWidth = this.textAreaWidth() - this.cursor.width;
+            const availableHeight = this.image.height - ((this.innerTop + this.unit) << 1) - 1;
 
             const charactersPerRow = Math.floor(availableWidth / this.font.charWidth);
             const rowsOfCharacters = Math.floor(availableHeight / this.rowHeight());
@@ -489,7 +489,7 @@ namespace game {
      * @param frame A square image with a width and height divisible by three
      */
     //% blockId=game_dialog_set_frame group="Dialogs"
-    //% block="set dialog frame to %frame=screen_image_picker"
+    //% block="set dialog frame to %frame=long_text_image_picker"
     export function setDialogFrame(frame: Image) {
         dialogFrame = frame;
     }
