@@ -197,9 +197,9 @@ namespace game {
             let current = "";
 
             while (strIndex < str.length) {
-                const lastIndex = strIndex + charactersPerRow - 1;
                 const currRowCharacters = rowIndex < rowsOfCharacters - rowsWithCursor - 1 ?
                                             charactersPerRow : charactersPerCursorRow;
+                const lastIndex = strIndex + currRowCharacters - 1;
 
                 if (str.charAt(lastIndex) === " " || lastIndex >= str.length - 1) {
                     current += str.substr(strIndex, currRowCharacters);
