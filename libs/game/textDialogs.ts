@@ -84,7 +84,7 @@ namespace game {
             this.image.drawTransparentImage(
                 this.cursor,
                 this.innerLeft + this.textAreaWidth() + this.unit + offset - this.cursor.width,
-                this.innerTop + this.unit + this.textAreaHeight() + 1
+                this.innerTop + this.unit + this.textAreaHeight() + 1 - this.cursorRowHeight()
             )
         }
 
@@ -148,7 +148,7 @@ namespace game {
         }
 
         protected textAreaHeight() {
-            return this.image.height - ((this.innerTop + this.unit) << 1) - 1 - this.cursorRowHeight();
+            return this.image.height - ((this.innerTop + this.unit) << 1) - 1;
         }
     }
 
@@ -185,8 +185,8 @@ namespace game {
         }
 
         chunkText(str: string): string[] {
-            const charactersPerRow = Math.floor((this.textAreaWidth()) / this.font.charWidth);
-            const rowsOfCharacters = Math.floor((this.image.height - ((this.innerTop + this.unit) << 1) - 1) / (this.rowHeight()));
+            const charactersPerRow = Math.floor(this.textAreaWidth() / this.font.charWidth);
+            const rowsOfCharacters = Math.floor(this.textAreaHeight() / this.rowHeight());
             const rowsWithCursor = Math.floor(this.cursor.height / this.rowHeight());
             const charactersPerCursorRow = Math.floor(charactersPerRow - (this.cursor.width / this.font.charWidth));
 
@@ -251,7 +251,7 @@ namespace game {
             if (!this.chunks || this.chunks.length === 0) return;
             const str = this.chunks[this.chunkIndex];
             const availableWidth = this.textAreaWidth();
-            const availableHeight = this.image.height - ((this.innerTop + this.unit) << 1) - 1;
+            const availableHeight = this.textAreaHeight();
 
             const charactersPerRow = Math.floor(availableWidth / this.font.charWidth);
             const rowsOfCharacters = Math.floor(availableHeight / this.rowHeight());
