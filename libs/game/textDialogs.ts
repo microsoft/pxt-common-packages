@@ -186,9 +186,9 @@ namespace game {
 
         chunkText(str: string): string[] {
             const charactersPerRow = Math.floor(this.textAreaWidth() / this.font.charWidth);
-            const rowsOfCharacters = Math.floor(this.textAreaHeight() / this.rowHeight());
-            const rowsWithCursor = Math.floor(this.cursor.height / this.rowHeight());
             const charactersPerCursorRow = Math.floor(charactersPerRow - (this.cursor.width / this.font.charWidth));
+            const rowsOfCharacters = Math.floor(this.textAreaHeight() / this.rowHeight());
+            const rowsWithCursor = Math.ceil(this.cursor.height / this.rowHeight());
 
             const screens: string[] = [];
 
@@ -197,8 +197,8 @@ namespace game {
             let current = "";
 
             while (strIndex < str.length) {
-                const currRowCharacters = rowIndex < rowsOfCharacters - rowsWithCursor - 1 ?
-                                            charactersPerRow : charactersPerCursorRow;
+                const currRowCharacters = rowIndex < rowsOfCharacters - rowsWithCursor ?
+                                                                    charactersPerRow : charactersPerCursorRow;
                 const lastIndex = strIndex + currRowCharacters - 1;
 
                 if (str.charAt(lastIndex) === " " || lastIndex >= str.length - 1) {
@@ -254,18 +254,17 @@ namespace game {
             const availableHeight = this.textAreaHeight();
 
             const charactersPerRow = Math.floor(availableWidth / this.font.charWidth);
-            const rowsOfCharacters = Math.floor(availableHeight / this.rowHeight());
-
-            const rowsWithCursor = Math.floor(this.cursor.height / this.rowHeight());
             const charactersPerCursorRow = Math.floor(charactersPerRow - (this.cursor.width / this.font.charWidth));
+            const rowsOfCharacters = Math.floor(availableHeight / this.rowHeight());
+            const rowsWithCursor = Math.ceil(this.cursor.height / this.rowHeight());
 
             const textLeft = 1 + this.innerLeft + this.unit + ((availableWidth - charactersPerRow * this.font.charWidth) >> 1);
             const textTop = 1 + this.innerTop + this.unit + ((availableHeight - rowsOfCharacters * this.rowHeight()) >> 1);
 
             let current = 0;
             for (let row = 0; row < rowsOfCharacters; row++) {
-                const currRowCharacters = row % rowsOfCharacters < rowsOfCharacters - rowsWithCursor - 1 ?
-                                            charactersPerRow : charactersPerCursorRow;
+                const currRowCharacters = row % rowsOfCharacters < rowsOfCharacters - rowsWithCursor ?
+                                                                    charactersPerRow : charactersPerCursorRow;
 
                 this.image.print(
                     str.substr(current, currRowCharacters),
