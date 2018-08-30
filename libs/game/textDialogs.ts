@@ -347,8 +347,9 @@ namespace game {
 
     /**
      * Shows a long piece of text in a dialog box that can be advanced
-     * using the "A" button. This function halts execution until the
-     * last page of text is dismissed.
+     * using the "A" or "down" buttons. The previous section of the
+     * text can be returned to using the "up" button. This function
+     * halts execution until the last page of text is dismissed.
      *
      * @param str The text to display
      * @param layout The layout to use for the dialog box
