@@ -99,8 +99,8 @@ unsigned getRandom(unsigned max) {
             r = ((((r >> 31) ^ (r >> 6) ^ (r >> 4) ^ (r >> 2) ^ (r >> 1) ^ r) & 1) << 31) |
                 (r >> 1);
 
-            random_value = r;   
-            
+            random_value = r;
+
             result = ((result << 1) | (r & 0x00000001));
         } while (m >>= 1);
     } while (result > (unsigned)max);
@@ -691,7 +691,9 @@ TNumber trunc(TNumber x){SINGLE(trunc)}
 
 //%
 TNumber round(TNumber x) {
-    SINGLE(round)
+    // In C++, round(-1.5) == -2, while in JS, round(-1.5) == -1. Align to the JS convention for consistency between
+    // simulator and device. The following does rounding with ties (x.5) going towards positive infinity.
+    return fromDouble(::floor(toDouble(x) + 0.5));
 }
 
 //%
