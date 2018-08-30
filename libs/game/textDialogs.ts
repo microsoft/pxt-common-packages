@@ -522,7 +522,8 @@ namespace game {
      * @param frame A square image with a width and height divisible by three
      */
     //% blockId=game_dialog_set_frame group="Dialogs"
-    //% block="set dialog frame to %frame=long_text_image_picker"
+    //% sprite.fieldEditor="long_text_image_picker"
+    //% block="set dialog frame to %frame=screen_image_picker"
     export function setDialogFrame(frame: Image) {
         dialogFrame = frame;
     }

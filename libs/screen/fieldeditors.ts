@@ -38,18 +38,6 @@ namespace images {
         return img
     }
 
-    //% blockId=long_text_image_picker block="%img"
-    //% shim=TD_ID
-    //% img.fieldEditor="sprite"
-    //% img.fieldOptions.taggedTemplate="img"
-    //% img.fieldOptions.decompileIndirectFixedInstances="true"
-    //% img.fieldOptions.sizes="9,9;12,12;15,15;18,18;3,3;6,6"
-    //% weight=100 group="Create"
-    //% blockHidden=1
-    export function _longTextImage(img: Image) {
-        return img
-    }
-
     /**
      * An image
      * @param image the image
