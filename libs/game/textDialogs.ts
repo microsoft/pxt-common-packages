@@ -84,7 +84,7 @@ namespace game {
             this.image.drawTransparentImage(
                 this.cursor,
                 this.innerLeft + this.textAreaWidth() + this.unit + offset - this.cursor.width,
-                this.innerTop + this.unit + this.textAreaHeight() + 1
+                this.innerTop + this.unit + this.textAreaHeight() + 1 - this.cursorRowHeight()
             )
         }
 
@@ -148,7 +148,7 @@ namespace game {
         }
 
         protected textAreaHeight() {
-            return this.image.height - ((this.innerTop + this.unit) << 1) - 1 - this.cursorRowHeight();
+            return this.image.height - ((this.innerTop + this.unit) << 1) - 1;
         }
     }
 
@@ -167,15 +167,28 @@ namespace game {
             return this.chunkIndex < this.chunks.length - 1;
         }
 
+        hasPrev() {
+            if (!this.chunks || this.chunks.length === 0) return false;
+            return this.chunkIndex > 0;
+        }
+
         nextPage() {
             if (this.hasNext()) {
                 this.chunkIndex++;
             }
         }
 
+        prevPage() {
+            if (this.hasPrev()) {
+                this.chunkIndex--;
+            }
+        }
+
         chunkText(str: string): string[] {
             const charactersPerRow = Math.floor(this.textAreaWidth() / this.font.charWidth);
+            const charactersPerCursorRow = Math.floor(charactersPerRow - (this.cursor.width / this.font.charWidth));
             const rowsOfCharacters = Math.floor(this.textAreaHeight() / this.rowHeight());
+            const rowsWithCursor = Math.ceil(this.cursor.height / this.rowHeight());
 
             const screens: string[] = [];
 
@@ -184,31 +197,33 @@ namespace game {
             let current = "";
 
             while (strIndex < str.length) {
-                const lastIndex = strIndex + charactersPerRow - 1;
+                const currRowCharacters = rowIndex < rowsOfCharacters - rowsWithCursor ?
+                                                                    charactersPerRow : charactersPerCursorRow;
+                const lastIndex = strIndex + currRowCharacters - 1;
 
                 if (str.charAt(lastIndex) === " " || lastIndex >= str.length - 1) {
-                    current += str.substr(strIndex, charactersPerRow);
-                    strIndex += charactersPerRow;
+                    current += str.substr(strIndex, currRowCharacters);
+                    strIndex += currRowCharacters;
                 }
                 else if (str.charAt(lastIndex + 1) === " ") {
                     // No need to break, but consume the space
-                    current += str.substr(strIndex, charactersPerRow);
-                    strIndex += charactersPerRow + 1;
+                    current += str.substr(strIndex, currRowCharacters);
+                    strIndex += currRowCharacters + 1;
                 }
                 else if (str.charAt(lastIndex - 1) === " ") {
                     // Move the whole word down to the next row
-                    current += str.substr(strIndex, charactersPerRow - 1) + " ";
-                    strIndex += charactersPerRow - 1;
+                    current += str.substr(strIndex, currRowCharacters - 1) + " ";
+                    strIndex += currRowCharacters - 1;
                 }
                 else if (str.charAt(lastIndex - 2) === " ") {
                     // Move the whole word down to the next row
-                    current += str.substr(strIndex, charactersPerRow - 2) + "  ";
-                    strIndex += charactersPerRow - 2;
+                    current += str.substr(strIndex, currRowCharacters - 2) + "  ";
+                    strIndex += currRowCharacters - 2;
                 }
                 else {
                     // Insert a break
-                    current += str.substr(strIndex, charactersPerRow - 1) + "-";
-                    strIndex += charactersPerRow - 1;
+                    current += str.substr(strIndex, currRowCharacters - 1) + "-";
+                    strIndex += currRowCharacters - 1;
                 }
 
                 rowIndex++;
@@ -239,20 +254,25 @@ namespace game {
             const availableHeight = this.textAreaHeight();
 
             const charactersPerRow = Math.floor(availableWidth / this.font.charWidth);
+            const charactersPerCursorRow = Math.floor(charactersPerRow - (this.cursor.width / this.font.charWidth));
             const rowsOfCharacters = Math.floor(availableHeight / this.rowHeight());
+            const rowsWithCursor = Math.ceil(this.cursor.height / this.rowHeight());
 
             const textLeft = 1 + this.innerLeft + this.unit + ((availableWidth - charactersPerRow * this.font.charWidth) >> 1);
             const textTop = 1 + this.innerTop + this.unit + ((availableHeight - rowsOfCharacters * this.rowHeight()) >> 1);
 
             let current = 0;
             for (let row = 0; row < rowsOfCharacters; row++) {
+                const currRowCharacters = row % rowsOfCharacters < rowsOfCharacters - rowsWithCursor ?
+                                                                    charactersPerRow : charactersPerCursorRow;
+
                 this.image.print(
-                    str.substr(current, charactersPerRow),
+                    str.substr(current, currRowCharacters),
                     textLeft,
                     textTop + row * this.rowHeight(),
                     this.textColor, this.font
                 )
-                current += charactersPerRow;
+                current += currRowCharacters;
             }
         }
     }
@@ -327,8 +347,9 @@ namespace game {
 
     /**
      * Shows a long piece of text in a dialog box that can be advanced
-     * using the "A" button. This function halts execution until the
-     * last page of text is dismissed.
+     * using the "A" or "down" buttons. The previous section of the
+     * text can be returned to using the "up" button. This function
+     * halts execution until the last page of text is dismissed.
      *
      * @param str The text to display
      * @param layout The layout to use for the dialog box
@@ -395,9 +416,11 @@ namespace game {
         let pressed = true;
         let done = false;
 
+        let upPressed = true;
+
         game.onUpdate(() => {
             dialog.update();
-            const currentState = controller.A.isPressed();
+            const currentState = controller.A.isPressed() || controller.down.isPressed();
             if (currentState && !pressed) {
                 pressed = true;
                 if (dialog.hasNext()) {
@@ -410,6 +433,17 @@ namespace game {
             }
             else if (pressed && !currentState) {
                 pressed = false;
+            }
+
+            const moveBack = controller.up.isPressed();
+            if (moveBack && !upPressed) {
+                upPressed = true;
+                if (dialog.hasPrev()) {
+                    dialog.prevPage();
+                }
+            }
+            else if (upPressed && !moveBack) {
+                upPressed = false;
             }
         })
 
