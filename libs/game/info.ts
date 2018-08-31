@@ -51,7 +51,7 @@ namespace info {
             // show life
             if (_life !== null) {
                 drawLives();
-                if (_life == 0) {
+                if (_life <= 0) {
                     if (_lifeOverHandler) {
                         _lifeOverHandler();
                     }
