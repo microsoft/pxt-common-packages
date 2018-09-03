@@ -17,7 +17,7 @@ Frame handlers:
 namespace sprites {
 
     /**
-     * Creates a new sprite from an image
+     * Create a new sprite from an image
      * @param img the image
      */
     //% group="Create"
@@ -60,7 +60,7 @@ namespace sprites {
      */
     //% group="Create"
     //% blockId=spritescreateprojectile block="projectile %img=screen_image_picker vx %vx vy %vy of kind %kind=spritetype || from sprite %sprite=variables_get"
-    //% weight=99
+    //% weight=99 help=sprites/create-projectile
     //% blockSetVariable=projectile
     //% inlineInputMode=inline
     //% expandableArgumentMode=toggle

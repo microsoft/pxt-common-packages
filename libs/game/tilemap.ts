@@ -42,7 +42,7 @@ namespace tiles {
         //% blockId=gameplaceontile block="on top of %tile(myTile) place %sprite=variables_get(mySprite)"
         //% blockNamespace="scene" group="Tiles"
         //% weight=25
-        //% help=scene/tile-place
+        //% help=scene/place
         place(mySprite: Sprite): void {
             if (!mySprite) return;
 
