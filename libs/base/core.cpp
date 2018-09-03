@@ -117,7 +117,7 @@ PXT_DEF_STRING(sFunction, "[Function]")
 PXT_DEF_STRING(sNaN, "NaN")
 PXT_DEF_STRING(sInf, "Infinity")
 PXT_DEF_STRING(sMInf, "-Infinity")
-}
+} // namespace pxt
 
 #ifndef X86_64
 
@@ -213,14 +213,14 @@ String substr(String s, int start, int length) {
     length = min(length, s->length - start);
     return mkString(s->data + start, length);
 }
-}
+} // namespace String_
 
 namespace Boolean_ {
 //%
 bool bang(int v) {
     return v == 0;
 }
-}
+} // namespace Boolean_
 
 namespace pxt {
 
@@ -360,7 +360,7 @@ bool switch_eq(TValue a, TValue b) {
     return false;
 }
 
-}
+} // namespace pxt
 
 namespace langsupp {
 //%
@@ -382,7 +382,7 @@ TValue ptrneq(TValue a, TValue b) {
 TValue ptrneqq(TValue a, TValue b) {
     return !eqq_bool(a, b) ? TAG_TRUE : TAG_FALSE;
 }
-}
+} // namespace langsupp
 
 #define NUMOP(op) return fromDouble(toDouble(a) op toDouble(b));
 #define BITOP(op) return fromInt(toInt(a) op toInt(b));
@@ -475,7 +475,7 @@ TNumber eors(TNumber a, TNumber b){BITOP (^)}
 TNumber orrs(TNumber a, TNumber b){BITOP(|)}
 
 //%
-TNumber bnot(TNumber a){
+TNumber bnot(TNumber a) {
     return fromInt(~toInt(a));
 }
 
@@ -574,7 +574,7 @@ String toString(TValue v) {
         return (String)(void *)sObject;
     }
 }
-}
+} // namespace numops
 
 namespace Math_ {
 //%
@@ -691,8 +691,9 @@ TNumber trunc(TNumber x){SINGLE(trunc)}
 
 //%
 TNumber round(TNumber x) {
-    // In C++, round(-1.5) == -2, while in JS, round(-1.5) == -1. Align to the JS convention for consistency between
-    // simulator and device. The following does rounding with ties (x.5) going towards positive infinity.
+    // In C++, round(-1.5) == -2, while in JS, round(-1.5) == -1. Align to the JS convention for
+    // consistency between simulator and device. The following does rounding with ties (x.5) going
+    // towards positive infinity.
     return fromDouble(::floor(toDouble(x) + 0.5));
 }
 
@@ -705,7 +706,7 @@ int imul(int x, int y) {
 int idiv(int x, int y) {
     return x / y;
 }
-}
+} // namespace Math_
 
 namespace Array_ {
 //%
@@ -754,7 +755,7 @@ int indexOf(RefCollection *c, TValue x, int start) {
 bool removeElement(RefCollection *c, TValue x) {
     return c->removeElement(x);
 }
-}
+} // namespace Array_
 
 namespace pxt {
 //%
@@ -770,21 +771,25 @@ int getConfig(int key, int defl) {
     int *cfgData;
 
 #ifdef PXT_BOOTLOADER_CFG_ADDR
-    cfgData = *(int**)(PXT_BOOTLOADER_CFG_ADDR);
+    cfgData = *(int **)(PXT_BOOTLOADER_CFG_ADDR);
     for (int i = 0;; i += 2) {
-        if (cfgData[i] == key) return cfgData[i + 1];
-        if (cfgData[i] == 0) break;
+        if (cfgData[i] == key)
+            return cfgData[i + 1];
+        if (cfgData[i] == 0)
+            break;
     }
 #endif
 
-    cfgData = *(int**)&bytecode[18];
+    cfgData = *(int **)&bytecode[18];
     for (int i = 0;; i += 2) {
-        if (cfgData[i] == key) return cfgData[i + 1];
-        if (cfgData[i] == 0) return defl;
+        if (cfgData[i] == key)
+            return cfgData[i + 1];
+        if (cfgData[i] == 0)
+            return defl;
     }
 }
 
-}
+} // namespace pxt
 
 namespace pxtrt {
 //%
@@ -942,7 +947,7 @@ void *getGlobalsPtr() {
 void runtimeWarning(String s) {
     // noop for now
 }
-}
+} // namespace pxtrt
 #endif
 
 namespace pxt {
@@ -1019,11 +1024,11 @@ void anyPrint(TValue v) {
             DMESG("[Native %p]", v);
         }
     } else {
-        #ifndef X86_64
+#ifndef X86_64
         String s = numops::toString(v);
         DMESG("[%s %p = %s]", pxt::typeOf(v)->data, v, s->data);
         decr((TValue)s);
-        #endif
+#endif
     }
 }
 
@@ -1034,7 +1039,8 @@ void dtorDoNothing() {}
                          0,                                                                        \
                          0,                                                                        \
                          {                                                                         \
-                             (void *)&dtorDoNothing, (void *)&anyPrint,                            \
+                             (void *)&dtorDoNothing,                                               \
+                             (void *)&anyPrint,                                                    \
                          }};
 PRIM_VTABLE(string_vt, 0)
 PRIM_VTABLE(image_vt, 0)
@@ -1060,4 +1066,4 @@ VTable *getVTable(RefObject *r) {
         target_panic(100);
     return (VTable *)primVtables[r->vtable];
 }
-}
+} // namespace pxt
