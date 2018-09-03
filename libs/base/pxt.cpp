@@ -529,9 +529,6 @@ void exec_binary(unsigned *pc) {
     // unique group for radio based on source hash
     // ::touch_develop::micro_bit::radioDefaultGroup = programHash();
 
-    // repeat error 4 times and restart as needed
-    // microbit_panic_timeout(4);
-
     unsigned ver = *pc++;
     checkStr(ver == 0x4209, ":( Bad runtime version");
 
