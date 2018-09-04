@@ -571,7 +571,25 @@ String toString(TValue v) {
     } else if (t == ValType::Function) {
         return (String)(void *)sFunction;
     } else {
+        auto vt = getVTable((RefObject*)v);
+        if (vt->methods[2]) {
+            // custom toString() method
+            return toString(runAction1((Action)vt->methods[2], v));
+        }
         return (String)(void *)sObject;
+    }
+}
+
+//%
+String stringConv(TValue v) {
+    ValType t = valType(v);
+    if (t == ValType::String) {
+        return (String)v;
+    } else {
+        // TODO optimize toString()
+        auto r = toString(v);
+        decr(v);
+        return r;
     }
 }
 }

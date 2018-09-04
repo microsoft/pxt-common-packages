@@ -295,7 +295,7 @@ struct VTable {
     uint16_t numbytes; // in the entire object, including the vtable pointer
     uint16_t userdata;
     PVoid *ifaceTable;
-    PVoid methods[2]; // we only use up to two methods here; pxt will generate more
+    PVoid methods[3]; // we only use up to three methods here; pxt will generate more
                       // refmask sits at &methods[nummethods]
 };
 
