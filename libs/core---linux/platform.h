@@ -1,8 +1,6 @@
 #ifndef __PXT_PLATFORM_H
 #define __PXT_PLATFORM_H
 
-#include <stdio.h>
-
 #define PAGE_SIZE 1024 // not really
 
 #define DEV_NUM_PINS 28
@@ -30,10 +28,6 @@ namespace pxt
     
     
 } // pxt
-
-static inline void itoa(int v, char *dst) {
-    snprintf(dst, 30, "%d", v);
-}
 
 #define IMAGE_BITS 4
 
