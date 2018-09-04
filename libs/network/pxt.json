@@ -1,0 +1,13 @@
+{
+    "name": "network",
+    "description": "Networking",
+    "files": [
+        "network.cpp",
+        "network.ts",
+        "shims.d.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core"
+    }
+}

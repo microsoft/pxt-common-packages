@@ -648,6 +648,14 @@ namespace String_ {
 int compare(String s, String that);
 }
 
+
+namespace numops {
+//%
+int toBool(TValue v);
+//%
+int toBoolDecr(TValue v);
+}
+
 // The ARM Thumb generator in the JavaScript code is parsing
 // the hex file and looks for the magic numbers as present here.
 //

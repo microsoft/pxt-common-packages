@@ -437,11 +437,11 @@ TValue ptrneqq(TValue a, TValue b) {
 }
 } // namespace langsupp
 
+
 #define NUMOP(op) return fromDouble(toDouble(a) op toDouble(b));
 #define BITOP(op) return fromInt(toInt(a) op toInt(b));
 namespace numops {
 
-//%
 int toBool(TValue v) {
     if (isTagged(v)) {
         if (v == TAG_UNDEFINED || v == TAG_NULL || v == TAG_FALSE || v == TAG_NUMBER(0))
@@ -466,7 +466,6 @@ int toBool(TValue v) {
     return 1;
 }
 
-//%
 int toBoolDecr(TValue v) {
     if (v == TAG_TRUE)
         return 1;
