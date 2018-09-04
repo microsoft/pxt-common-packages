@@ -637,15 +637,6 @@ void mycvt(double d, char *buf) {
 
 //%
 String toString(TValue v) {
-
-    if (v == TAG_UNDEFINED)
-        return (String)(void *)sUndefined;
-    else if (v == TAG_FALSE)
-        return (String)(void *)sFalse;
-    else if (v == TAG_TRUE)
-        return (String)(void *)sTrue;
-    else if (v == TAG_NULL)
-        return (String)(void *)sNull;
     ValType t = valType(v);
 
     if (t == ValType::String) {
@@ -674,7 +665,16 @@ String toString(TValue v) {
     } else if (t == ValType::Function) {
         return (String)(void *)sFunction;
     } else {
-        auto vt = getVTable((RefObject*)v);
+        if (v == TAG_UNDEFINED)
+            return (String)(void *)sUndefined;
+        else if (v == TAG_FALSE)
+            return (String)(void *)sFalse;
+        else if (v == TAG_TRUE)
+            return (String)(void *)sTrue;
+        else if (v == TAG_NULL)
+            return (String)(void *)sNull;
+
+        auto vt = getVTable((RefObject *)v);
         if (vt->methods[2]) {
             // custom toString() method
             return toString(runAction1((Action)vt->methods[2], v));
@@ -689,7 +689,6 @@ String stringConv(TValue v) {
     if (t == ValType::String) {
         return (String)v;
     } else {
-        // TODO optimize toString()
         auto r = toString(v);
         decr(v);
         return r;
