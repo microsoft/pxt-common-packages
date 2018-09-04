@@ -10,7 +10,6 @@ class WDisplay {
     uint32_t currPalette[16];
     bool newPalette;
 
-    uint8_t *screenBuf;
     Image_ lastImg;
 
     int width, height;
@@ -20,7 +19,7 @@ class WDisplay {
         : spi(*LOOKUP_PIN(DISPLAY_MOSI), *LOOKUP_PIN(DISPLAY_MISO), *LOOKUP_PIN(DISPLAY_SCK)),
           lcd(spi, *LOOKUP_PIN(DISPLAY_CS), *LOOKUP_PIN(DISPLAY_DC), *LOOKUP_PIN(DISPLAY_RST),
               *LOOKUP_PIN(DISPLAY_BL), getConfig(CFG_DISPLAY_WIDTH, 160),
-              getConfig(CFG_DISPLAY_HEIGHT, 128)) {
+              getConfig(CFG_DISPLAY_HEIGHT, 128), true) {
 
         uint32_t cfg0 = getConfig(CFG_DISPLAY_CFG0, 0x40);
         uint32_t cfg2 = getConfig(CFG_DISPLAY_CFG2, 0x0);
@@ -37,13 +36,13 @@ class WDisplay {
 
         spi.setFrequency(freq * 1000000);
         spi.setMode(0);
-        lcd.init();
+        lcd.enable();
+        lcd.setOffset(offX, offY);
+        lcd.setRotation(DISPLAY_ROTATION_90);
         lcd.configure(madctl, frmctr1);
         width = getConfig(CFG_DISPLAY_WIDTH, 160);
         height = getConfig(CFG_DISPLAY_HEIGHT, 128);
-        lcd.setAddrWindow(offX, offY, width, height);
         DMESG("screen: %d x %d, off=%d,%d", width, height, offX, offY);
-        screenBuf = new uint8_t[width * height / 2 + 20];
         lastImg = NULL;
     }
 };
@@ -80,20 +79,15 @@ void updateScreen(Image_ img) {
 
         img->clearDirty();
         // DMESG("wait for done");
-        display->lcd.waitForSendDone();
-
-        auto palette = display->currPalette;
+        display->lcd.waitForEndUpdate();
 
         if (display->newPalette) {
             display->newPalette = false;
-        } else {
-            palette = NULL;
+            display->lcd.setPalette(display->currPalette);
         }
 
-        memcpy(display->screenBuf, img->pix(), img->pixLength());
-
-        // DMESG("send");
-        display->lcd.sendIndexedImage(display->screenBuf, display->width, display->height, palette);
+        memcpy(display->lcd.image.getBitmap(), img->pix(), img->pixLength());
+        display->lcd.beginUpdate();
     }
 }
 
