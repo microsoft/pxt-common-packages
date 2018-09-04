@@ -4,6 +4,8 @@
 
 using namespace std;
 
+#define p10(v) __builtin_powi(10, v)
+
 namespace pxt {
 
 static HandlerBinding *handlerBindings;
@@ -108,16 +110,16 @@ unsigned getRandom(unsigned max) {
     return result;
 }
 
-PXT_DEF_STRING(sTrue, "true")
-PXT_DEF_STRING(sFalse, "false")
-PXT_DEF_STRING(sUndefined, "undefined")
-PXT_DEF_STRING(sNull, "null")
-PXT_DEF_STRING(sObject, "[Object]")
-PXT_DEF_STRING(sFunction, "[Function]")
-PXT_DEF_STRING(sNaN, "NaN")
-PXT_DEF_STRING(sInf, "Infinity")
-PXT_DEF_STRING(sMInf, "-Infinity")
-}
+PXT_DEF_STRING(sTrue, "\x04\x00true")
+PXT_DEF_STRING(sFalse, "\x05\x00false")
+PXT_DEF_STRING(sUndefined, "\x09\x00undefined")
+PXT_DEF_STRING(sNull, "\x04\x00null")
+PXT_DEF_STRING(sObject, "\x08\x00[Object]")
+PXT_DEF_STRING(sFunction, "\x0A\x00[Function]")
+PXT_DEF_STRING(sNaN, "\x03\x00NaN")
+PXT_DEF_STRING(sInf, "\x08\x00Infinity")
+PXT_DEF_STRING(sMInf, "\x09\x00-Infinity")
+} // namespace pxt
 
 #ifndef X86_64
 
@@ -190,11 +192,62 @@ int length(String s) {
     return s->length;
 }
 
+#define isspace(c) ((c) == ' ')
+
+double mystrtod(const char *p, char **endp) {
+    while (isspace(*p))
+        p++;
+    double m = 1;
+    double v = 0;
+    int dot = 0;
+    if (*p == '+')
+        p++;
+    if (*p == '-') {
+        m = -1;
+        p++;
+    }
+    if (*p == '0' && (p[1] | 0x20) == 'x') {
+        return m * strtol(p, endp, 16);
+    }
+    while (*p) {
+        int c = *p - '0';
+        if (0 <= c && c <= 9) {
+            v *= 10;
+            v += c;
+            if (dot)
+                m /= 10;
+        } else if (!dot && *p == '.') {
+            dot = 1;
+        } else if (*p == 'e' || *p == 'E') {
+            break;
+        } else {
+            while (isspace(*p))
+                p++;
+            if (*p)
+                return NAN;
+            break;
+        }
+        p++;
+    }
+
+    v *= m;
+
+    if (*p) {
+        p++;
+        int pw = strtol(p, endp, 10);
+        v *= p10(pw);
+    } else {
+        *endp = (char *)p;
+    }
+
+    return v;
+}
+
 //%
 TNumber toNumber(String s) {
     // JSCHECK
     char *endptr;
-    double v = strtod(s->data, &endptr);
+    double v = mystrtod(s->data, &endptr);
     if (endptr != s->data + s->length)
         v = NAN;
     else if (v == 0.0 || v == -0.0)
@@ -213,14 +266,14 @@ String substr(String s, int start, int length) {
     length = min(length, s->length - start);
     return mkString(s->data + start, length);
 }
-}
+} // namespace String_
 
 namespace Boolean_ {
 //%
 bool bang(int v) {
     return v == 0;
 }
-}
+} // namespace Boolean_
 
 namespace pxt {
 
@@ -360,7 +413,7 @@ bool switch_eq(TValue a, TValue b) {
     return false;
 }
 
-}
+} // namespace pxt
 
 namespace langsupp {
 //%
@@ -382,7 +435,7 @@ TValue ptrneq(TValue a, TValue b) {
 TValue ptrneqq(TValue a, TValue b) {
     return !eqq_bool(a, b) ? TAG_TRUE : TAG_FALSE;
 }
-}
+} // namespace langsupp
 
 #define NUMOP(op) return fromDouble(toDouble(a) op toDouble(b));
 #define BITOP(op) return fromInt(toInt(a) op toInt(b));
@@ -475,7 +528,7 @@ TNumber eors(TNumber a, TNumber b){BITOP (^)}
 TNumber orrs(TNumber a, TNumber b){BITOP(|)}
 
 //%
-TNumber bnot(TNumber a){
+TNumber bnot(TNumber a) {
     return fromInt(~toInt(a));
 }
 
@@ -529,8 +582,58 @@ TNumber neqq(TNumber a, TNumber b) {
     return !pxt::eqq_bool(a, b) ? TAG_TRUE : TAG_FALSE;
 }
 
-asm(".global _printf_float");
-extern "C" char *gcvt(double d, int ndigit, char *buf);
+void mycvt(double d, char *buf) {
+    if (d < 0) {
+        *buf++ = '-';
+        d = -d;
+    }
+
+    if (!d) {
+        *buf++ = '0';
+        *buf++ = 0;
+        return;
+    }
+
+    int pw = (int)log10(d);
+    int e = 1;
+    int beforeDot = 1;
+
+    if (0.000001 <= d && d < 1e21) {
+        if (pw > 0) {
+            d /= p10(pw);
+            beforeDot = 1 + pw;
+        }
+    } else {
+        d /= p10(pw);
+        e = pw;
+    }
+
+    int sig = 0;
+    while (sig < 17 || beforeDot > 0) {
+        // printf("%f sig=%d bd=%d\n", d, sig, beforeDot);
+        int c = (int)d;
+        *buf++ = '0' + c;
+        d = (d - c) * 10;
+        if (--beforeDot == 0)
+            *buf++ = '.';
+        if (sig || c)
+            sig++;
+    }
+
+    buf--;
+    while (*buf == '0')
+        buf--;
+    if (*buf == '.')
+        buf--;
+    buf++;
+
+    if (e != 1) {
+        *buf++ = 'e';
+        itoa(e, buf);
+    } else {
+        *buf = 0;
+    }
+}
 
 //%
 String toString(TValue v) {
@@ -550,10 +653,11 @@ String toString(TValue v) {
     } else if (t == ValType::Number) {
         char buf[64];
 
-        // if (isNumber(v)) {
-        //    int x = numValue(v);
-        //    itoa(x, buf);
-        //} else {
+        if (isNumber(v)) {
+            itoa(numValue(v), buf);
+            return mkString(buf);
+        }
+
         double x = toDouble(v);
 
         if (isnan(x))
@@ -564,8 +668,7 @@ String toString(TValue v) {
             else
                 return (String)(void *)sInf;
         }
-        gcvt(x, 16, buf);
-        //}
+        mycvt(x, buf);
 
         return mkString(buf);
     } else if (t == ValType::Function) {
@@ -574,17 +677,22 @@ String toString(TValue v) {
         return (String)(void *)sObject;
     }
 }
-}
+} // namespace numops
 
 namespace Math_ {
 //%
 TNumber pow(TNumber x, TNumber y) {
+#ifdef PXT_POWI
+    // regular pow() from math.h is 4k of code
+    return fromDouble(__builtin_powi(toDouble(x), toInt(y)));
+#else
     return fromDouble(::pow(toDouble(x), toDouble(y)));
+#endif
 }
 
 //%
 TNumber atan2(TNumber y, TNumber x) {
-    return fromDouble(::atan2(toDouble(y), toDouble(y)));
+    return fromDouble(::atan2(toDouble(y), toDouble(x)));
 }
 
 double randomDouble() {
@@ -636,46 +744,22 @@ TNumber log(TNumber x){SINGLE(log)}
 TNumber log10(TNumber x){SINGLE(log10)}
 
 //%
-TNumber log2(TNumber x){SINGLE(log2)}
-
-//%
-TNumber exp(TNumber x){SINGLE(exp)}
-
-//%
 TNumber tan(TNumber x){SINGLE(tan)}
-
-//%
-TNumber tanh(TNumber x){SINGLE(tanh)}
 
 //%
 TNumber sin(TNumber x){SINGLE(sin)}
 
 //%
-TNumber sinh(TNumber x){SINGLE(sinh)}
-
-//%
 TNumber cos(TNumber x){SINGLE(cos)}
-
-//%
-TNumber cosh(TNumber x){SINGLE(cosh)}
 
 //%
 TNumber atan(TNumber x){SINGLE(atan)}
 
 //%
-TNumber atanh(TNumber x){SINGLE(atanh)}
-
-//%
 TNumber asin(TNumber x){SINGLE(asin)}
 
 //%
-TNumber asinh(TNumber x){SINGLE(asinh)}
-
-//%
 TNumber acos(TNumber x){SINGLE(acos)}
-
-//%
-TNumber acosh(TNumber x){SINGLE(acosh)}
 
 //%
 TNumber sqrt(TNumber x){SINGLE(sqrt)}
@@ -691,8 +775,9 @@ TNumber trunc(TNumber x){SINGLE(trunc)}
 
 //%
 TNumber round(TNumber x) {
-    // In C++, round(-1.5) == -2, while in JS, round(-1.5) == -1. Align to the JS convention for consistency between
-    // simulator and device. The following does rounding with ties (x.5) going towards positive infinity.
+    // In C++, round(-1.5) == -2, while in JS, round(-1.5) == -1. Align to the JS convention for
+    // consistency between simulator and device. The following does rounding with ties (x.5) going
+    // towards positive infinity.
     return fromDouble(::floor(toDouble(x) + 0.5));
 }
 
@@ -705,7 +790,7 @@ int imul(int x, int y) {
 int idiv(int x, int y) {
     return x / y;
 }
-}
+} // namespace Math_
 
 namespace Array_ {
 //%
@@ -754,7 +839,7 @@ int indexOf(RefCollection *c, TValue x, int start) {
 bool removeElement(RefCollection *c, TValue x) {
     return c->removeElement(x);
 }
-}
+} // namespace Array_
 
 namespace pxt {
 //%
@@ -770,21 +855,25 @@ int getConfig(int key, int defl) {
     int *cfgData;
 
 #ifdef PXT_BOOTLOADER_CFG_ADDR
-    cfgData = *(int**)(PXT_BOOTLOADER_CFG_ADDR);
+    cfgData = *(int **)(PXT_BOOTLOADER_CFG_ADDR);
     for (int i = 0;; i += 2) {
-        if (cfgData[i] == key) return cfgData[i + 1];
-        if (cfgData[i] == 0) break;
+        if (cfgData[i] == key)
+            return cfgData[i + 1];
+        if (cfgData[i] == 0)
+            break;
     }
 #endif
 
-    cfgData = *(int**)&bytecode[18];
+    cfgData = *(int **)&bytecode[18];
     for (int i = 0;; i += 2) {
-        if (cfgData[i] == key) return cfgData[i + 1];
-        if (cfgData[i] == 0) return defl;
+        if (cfgData[i] == key)
+            return cfgData[i + 1];
+        if (cfgData[i] == 0)
+            return defl;
     }
 }
 
-}
+} // namespace pxt
 
 namespace pxtrt {
 //%
@@ -942,7 +1031,7 @@ void *getGlobalsPtr() {
 void runtimeWarning(String s) {
     // noop for now
 }
-}
+} // namespace pxtrt
 #endif
 
 namespace pxt {
@@ -977,12 +1066,12 @@ ValType valType(TValue v) {
     }
 }
 
-PXT_DEF_STRING(sObjectTp, "object")
-PXT_DEF_STRING(sBooleanTp, "boolean")
-PXT_DEF_STRING(sStringTp, "string")
-PXT_DEF_STRING(sNumberTp, "number")
-PXT_DEF_STRING(sFunctionTp, "function")
-PXT_DEF_STRING(sUndefinedTp, "undefined")
+PXT_DEF_STRING(sObjectTp, "\x06\x00object")
+PXT_DEF_STRING(sBooleanTp, "\x07\x00boolean")
+PXT_DEF_STRING(sStringTp, "\x06\x00string")
+PXT_DEF_STRING(sNumberTp, "\x06\x00number")
+PXT_DEF_STRING(sFunctionTp, "\x08\x00function")
+PXT_DEF_STRING(sUndefinedTp, "\x09\x00undefined")
 
 //%
 String typeOf(TValue v) {
@@ -1019,11 +1108,11 @@ void anyPrint(TValue v) {
             DMESG("[Native %p]", v);
         }
     } else {
-        #ifndef X86_64
+#ifndef X86_64
         String s = numops::toString(v);
         DMESG("[%s %p = %s]", pxt::typeOf(v)->data, v, s->data);
         decr((TValue)s);
-        #endif
+#endif
     }
 }
 
@@ -1034,7 +1123,8 @@ void dtorDoNothing() {}
                          0,                                                                        \
                          0,                                                                        \
                          {                                                                         \
-                             (void *)&dtorDoNothing, (void *)&anyPrint,                            \
+                             (void *)&dtorDoNothing,                                               \
+                             (void *)&anyPrint,                                                    \
                          }};
 PRIM_VTABLE(string_vt, 0)
 PRIM_VTABLE(image_vt, 0)
@@ -1060,4 +1150,4 @@ VTable *getVTable(RefObject *r) {
         target_panic(100);
     return (VTable *)primVtables[r->vtable];
 }
-}
+} // namespace pxt

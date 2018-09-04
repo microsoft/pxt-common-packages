@@ -8,6 +8,7 @@
 namespace console {
     type Listener = (text: string) => void;
 
+    //% whenUsed
     const listeners: Listener[] = [function(text: string) { control.__log(text); }];
 
     /**
