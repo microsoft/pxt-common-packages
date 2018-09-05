@@ -144,7 +144,7 @@ namespace game {
     declare function takeScreenshot(): void;
 
     /**
-     * Updates the position and velocities of sprites
+     * Update the position and velocities of sprites
      * @param body code to execute
      */
     //% group="Gameplay"
@@ -158,7 +158,7 @@ namespace game {
     }
 
     /**
-     * Execute code on an interval. Executes before game.onUpdate()
+     * Run code on an interval of time. This executes before game.onUpdate()
      * @param body code to execute
      */
     //% group="Gameplay"
