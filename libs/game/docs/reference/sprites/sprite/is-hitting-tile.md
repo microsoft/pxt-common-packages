@@ -1,4 +1,4 @@
-# is Hitting Wall
+# is Hitting Tile
 
 See if the sprite has contacted a wall tile or not.
 

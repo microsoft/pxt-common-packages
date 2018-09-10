@@ -47,7 +47,7 @@ namespace scene {
     //% group="Screen"
     //% weight=22
     //% blockId=gamebackgroundcolor block="background color"
-    //% help=scene/get-background-color
+    //% help=scene/background-color
     export function backgroundColor() : number {
         const scene = game.currentScene();
         return scene.background.color;

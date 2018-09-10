@@ -8,6 +8,10 @@ scene.setBackgroundColor(0)
 
 You can set the background color of the screen anytime. The background color is always behind other images shown on the screen.
 
+## Parameters
+
+* **color**: the [number](/types/number) for the color to set as the background color of the screen.
+
 ## Example #example
 
 Show a purple square on the screen. Every second, switch the background color between light and dark.
