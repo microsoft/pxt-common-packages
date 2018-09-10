@@ -13,7 +13,6 @@ image.create(0, 0).fill(0)
 image.create(0, 0).fillRect(0, 0, 0, 0, 0)
 image.create(0, 0).flipX()
 image.create(0, 0).flipY()
-image.create(0, 0).scroll(0, 0)
 image.create(0, 0).replace(0, 0)
 ```
 
@@ -29,6 +28,5 @@ image.create(0, 0).replace(0, 0)
 [fill rect](/reference/images/image/fill-rect),
 [flip x](/reference/images/image/flip-x),
 [flip y](/reference/images/image/flip-y),
-[scroll](/reference/images/image/scroll),
 [replace](/reference/images/image/replace)
 

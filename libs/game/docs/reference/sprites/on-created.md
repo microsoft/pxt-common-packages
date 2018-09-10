@@ -4,7 +4,7 @@ Run some code when a sprite is created.
 
 
 ```sig
-sprites.onCreated(SpriteType.Player, function (sprite) {
+sprites.onCreated(0, function (sprite) {
 
 })
 ```
