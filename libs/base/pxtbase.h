@@ -332,7 +332,7 @@ class RefObject {
         if (isReadOnly())
             return;
         check(refcnt > 1, ERR_REF_DELETED);
-        // DMESG("INCR "); this->print();
+        MEMDBG("INCR: %p refs=%d", this, this->refcnt);
         refcnt += 2;
     }
 
@@ -341,7 +341,7 @@ class RefObject {
             return;
         check(refcnt > 1, ERR_REF_DELETED);
         check((refcnt & 1), ERR_REF_DELETED);
-        // DMESG("DECR "); this->print();
+        MEMDBG("DECR: %p refs=%d", this, this->refcnt);
         refcnt -= 2;
         if (refcnt == 1) {
             untrack();

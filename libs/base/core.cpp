@@ -332,7 +332,7 @@ TNumber fromDouble(double r) {
 #endif
     BoxedNumber *p = new BoxedNumber();
     p->num = r;
-    MEMDBG("mkNum: %p", p);
+    MEMDBG("mkNum: %d/1000 => %p", (int)(r * 1000), p);
     return (TNumber)p;
 }
 
@@ -813,7 +813,7 @@ namespace Array_ {
 //%
 RefCollection *mk(unsigned flags) {
     auto r = new RefCollection();
-    MEMDBG("mkColl: %p", r);
+    MEMDBG("mkColl: => %p", r);
     return r;
 }
 //%
@@ -919,14 +919,14 @@ void stlocRef(RefRefLocal *r, TValue v) {
 //%
 RefLocal *mkloc() {
     auto r = new RefLocal();
-    MEMDBG("mkloc: %p", r);
+    MEMDBG("mkloc: => %p", r);
     return r;
 }
 
 //%
 RefRefLocal *mklocRef() {
     auto r = new RefRefLocal();
-    MEMDBG("mklocRef: %p", r);
+    MEMDBG("mklocRef: => %p", r);
     return r;
 }
 
@@ -992,7 +992,7 @@ int ptrToBool(TValue p) {
 //%
 RefMap *mkMap() {
     auto r = new RefMap();
-    MEMDBG("mkMap: %p", r);
+    MEMDBG("mkMap: => %p", r);
     return r;
 }
 

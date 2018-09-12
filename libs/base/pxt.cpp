@@ -7,10 +7,6 @@ namespace pxt {
 TValue incr(TValue e) {
     if (isRefCounted(e)) {
         getVTable((RefObject *)e);
-#if MEMDBG_ENABLED
-        if (((RefObject *)e)->refcnt != 0xffff)
-            MEMDBG("INCR: %p refs=%d", e, ((RefObject *)e)->refcnt);
-#endif
         ((RefObject *)e)->ref();
     }
     return e;
@@ -18,10 +14,6 @@ TValue incr(TValue e) {
 
 void decr(TValue e) {
     if (isRefCounted(e)) {
-#if MEMDBG_ENABLED
-        if (((RefObject *)e)->refcnt != 0xffff)
-            MEMDBG("DECR: %p refs=%d", e, ((RefObject *)e)->refcnt);
-#endif
         ((RefObject *)e)->unref();
     }
 }
