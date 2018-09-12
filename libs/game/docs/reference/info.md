@@ -1,6 +1,6 @@
 # Info
 
-Keep score and track life status.
+Keep score, run the countdown timer, and track life status.
 
 ```cards
 info.setScore(0)
@@ -10,7 +10,10 @@ info.highScore()
 info.setLife(0)
 info.changeLifeBy(1)
 info.life()
+info.onLifeZero(function () {})
 info.startCountdown(0)
+info.stopCountdown()
+info.onCountdownEnd(function () {})
 ```
 
 ## See also
@@ -22,4 +25,7 @@ info.startCountdown(0)
 [set life](/reference/info/set-life),
 [change life by](/reference/info/change-life-by),
 [life](/reference/info/life),
-[start countdown](/reference/info/start-countdown)
+[on life zero](/reference/info/on-life-zero),
+[start countdown](/reference/info/start-countdown),
+[stop countdown](/reference/info/stop-countdown),
+[on countdown end](/reference/info/on-countdown-end)

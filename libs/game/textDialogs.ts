@@ -346,9 +346,9 @@ namespace game {
     }
 
     /**
-     * Shows a long piece of text in a dialog box that can be advanced
+     * Show a long text string in a dialog box that will scroll
      * using the "A" or "down" buttons. The previous section of the
-     * text can be returned to using the "up" button. This function
+     * text is shown using the "up" button. This function
      * halts execution until the last page of text is dismissed.
      *
      * @param str The text to display
@@ -356,6 +356,7 @@ namespace game {
      */
     //% blockId=game_show_long_text group="Dialogs"
     //% block="show long text %str %layout"
+    //% help=game/show-long-text
     export function showLongText(str: string, layout: DialogLayout) {
         // Clone the current screen so that it shows up behind the dialog
         const temp = screen.clone();
@@ -516,7 +517,7 @@ namespace game {
     }
 
     /**
-     * Overrides the default dialog frame with a new image. Dialog frames
+     * Change the default dialog frame to a new image. Dialog frames
      * are divided into three rows and three columns and are used to define
      * the outer frame of the dialog box.
      *
@@ -524,29 +525,32 @@ namespace game {
      */
     //% blockId=game_dialog_set_frame group="Dialogs"
     //% block="set dialog frame to %frame=screen_image_picker"
+    //% game/set-dialog-frame
     export function setDialogFrame(frame: Image) {
         dialogFrame = frame;
     }
 
     /**
-     * Overrides the default image used for the cursor that appear in the
+     * Change the default image used for the cursor that appears in the
      * bottom left of the dialog box.
      *
      * @param cursor The image to use for the cursor
      */
     //% blockId=game_dialog_set_cursor group="Dialogs"
     //% block="set dialog cursor to %frame=screen_image_picker"
+    //% help=game/set-dialog-cursor
     export function setDialogCursor(cursor: Image) {
         dialogCursor = cursor;
     }
 
     /**
-     * Overrides the default text color for dialog boxes.
+     * Change the color for the text in dialog boxes.
      *
      * @param color The index of the color 0-15
      */
     //% blockId=game_dialog_set_text_color group="Dialogs"
     //% block="set dialog text color to %color=colorindexpicker"
+    //% help=game/set-dialog-text-color
     export function setDialogTextColor(color: number) {
         dialogTextColor = Math.floor(Math.min(15, Math.max(0, color)));
     }
@@ -556,7 +560,7 @@ namespace game {
     }
 
     /**
-     * Show a title, subtitle menu
+     * Show a title and an optional subtitle menu
      * @param title
      * @param subtitle
      */

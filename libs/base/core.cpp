@@ -266,6 +266,24 @@ String substr(String s, int start, int length) {
     length = min(length, s->length - start);
     return mkString(s->data + start, length);
 }
+
+//%
+int indexOf(String s, String searchString, int start) {
+    if (!s || !searchString) 
+        return -1;
+    if (start < 0 || start + searchString->length > s->length)
+        return -1;
+    const char* match = strstr(((const char*)s->data + start), searchString->data);
+    if (NULL == match)
+        return -1;    
+    return match - s->data;
+}
+
+//%
+int includes(String s, String searchString, int start) {
+    return -1 != indexOf(s, searchString, start);
+}
+
 } // namespace String_
 
 namespace Boolean_ {
