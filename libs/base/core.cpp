@@ -654,6 +654,9 @@ void mycvt(double d, char *buf) {
 }
 
 //%
+String stringConv(TValue v);
+
+//%
 String toString(TValue v) {
     ValType t = valType(v);
 
@@ -695,13 +698,13 @@ String toString(TValue v) {
         auto vt = getVTable((RefObject *)v);
         if (vt->methods[2]) {
             // custom toString() method
-            return toString(runAction1((Action)vt->methods[2], v));
+            // after running action, make sure it's actually a string
+            return stringConv(runAction1((Action)vt->methods[2], v));
         }
         return (String)(void *)sObject;
     }
 }
 
-//%
 String stringConv(TValue v) {
     ValType t = valType(v);
     if (t == ValType::String) {
