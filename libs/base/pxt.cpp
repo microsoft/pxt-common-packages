@@ -463,19 +463,7 @@ void RefMap::print(RefMap *t) {
     DMESG("RefMap %p r=%d size=%d", t, t->refcnt, t->keys.getLength());
 }
 
-#ifdef PXT_MEMLEAK_DEBUG
-std::set<TValue> allptrs;
-void debugMemLeaks() {
-    DMESG("LIVE POINTERS:");
-    for (std::set<TValue>::iterator itr = allptrs.begin(); itr != allptrs.end(); itr++) {
-        anyPrint(*itr);
-    }
-    DMESG("LIVE POINTERS END.");
-    dumpDmesg();
-}
-#else
 void debugMemLeaks() {}
-#endif
 
 void error(PXT_ERROR code, int subcode) {
     DMESG("Error: %d [%d]", code, subcode);
@@ -543,10 +531,6 @@ void exec_binary(unsigned *pc) {
     initRuntime();
 
     ((unsigned (*)())startptr)();
-
-#ifdef PXT_MEMLEAK_DEBUG
-    pxt::debugMemLeaks();
-#endif
 
     pxt::releaseFiber();
 }

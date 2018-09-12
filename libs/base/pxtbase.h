@@ -1,8 +1,6 @@
 #ifndef __PXTBASE_H
 #define __PXTBASE_H
 
-//#define PXT_MEMLEAK_DEBUG 1
-
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #pragma GCC diagnostic ignored "-Wformat"
 #pragma GCC diagnostic ignored "-Warray-bounds"
@@ -15,7 +13,6 @@
     do {                                                                                           \
     } while (0)
 
-#define MEMDBG_ENABLED 0
 #define MEMDBG NOLOG
 
 #include "pxtconfig.h"
@@ -32,10 +29,6 @@ void* operator new (size_t size, void* ptr);
 void* operator new (size_t size);
 #else
 #include <new>
-#endif
-
-#ifdef PXT_MEMLEAK_DEBUG
-#include <set>
 #endif
 
 #include "platform.h"
@@ -279,9 +272,6 @@ inline void oops() {
 }
 
 class RefObject;
-#ifdef PXT_MEMLEAK_DEBUG
-extern std::set<TValue> allptrs;
-#endif
 
 typedef void (*RefObjectMethod)(RefObject *self);
 typedef void *PVoid;
@@ -310,20 +300,10 @@ class RefObject {
     RefObject(uint16_t vt) {
         refcnt = 3;
         vtable = vt;
-#ifdef PXT_MEMLEAK_DEBUG
-        allptrs.insert((TValue)this);
-#endif
     }
 
     void destroyVT();
     void printVT();
-
-    // Call to disable pointer tracking on the current instance (in destructor or some other hack)
-    inline void untrack() {
-#ifdef PXT_MEMLEAK_DEBUG
-        allptrs.erase((TValue)this);
-#endif
-    }
 
     inline bool isReadOnly() { return refcnt == 0xffff; }
 
@@ -344,7 +324,6 @@ class RefObject {
         MEMDBG("DECR: %p refs=%d", this, this->refcnt);
         refcnt -= 2;
         if (refcnt == 1) {
-            untrack();
             destroyVT();
         }
     }
