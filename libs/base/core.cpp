@@ -423,11 +423,11 @@ bool eqq_bool(TValue a, TValue b) {
     ValType ta = valType(a);
     ValType tb = valType(b);
 
-    if (ta != tb)
-        return false;
-
     if (ta == ValType::String || tb == ValType::String)
         return String_::compare(a, b) == 0;
+
+    if (ta != tb)
+        return false;
 
 #ifndef PXT_BOX_DEBUG
     int aa = (int)a;
