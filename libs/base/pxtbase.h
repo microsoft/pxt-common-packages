@@ -311,17 +311,17 @@ class RefObject {
     inline void ref() {
         if (isReadOnly())
             return;
-        check(refcnt > 1, ERR_REF_DELETED);
         MEMDBG("INCR: %p refs=%d", this, this->refcnt);
+        check(refcnt > 1, ERR_REF_DELETED);
         refcnt += 2;
     }
 
     inline void unref() {
         if (isReadOnly())
             return;
+        MEMDBG("DECR: %p refs=%d", this, this->refcnt);
         check(refcnt > 1, ERR_REF_DELETED);
         check((refcnt & 1), ERR_REF_DELETED);
-        MEMDBG("DECR: %p refs=%d", this, this->refcnt);
         refcnt -= 2;
         if (refcnt == 1) {
             destroyVT();
@@ -619,12 +619,20 @@ ValType valType(TValue v);
 
 using namespace pxt;
 
+namespace numops {
+//%
+String stringConv(TValue v);
+//%
+String toString(TValue v);
+}
+
 namespace pins {
 Buffer createBuffer(int size);
 }
 
 namespace String_ {
-int compare(String s, String that);
+//%
+int compare(TValue a, TValue b);
 }
 
 // The ARM Thumb generator in the JavaScript code is parsing

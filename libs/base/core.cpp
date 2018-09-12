@@ -170,15 +170,39 @@ String concat(String s, String other) {
     return r;
 }
 
-//%
-int compare(String s, String that) {
-    if (s == that)
+int compare(TValue a, TValue b) {
+    if (a == b)
         return 0;
-    // TODO this isn't quite right, in JS both `null < "foo"` and `null > "foo"` are false
-    if (!s)
-        return -1;
-    if (!that)
+
+    ValType ta = valType(a);
+    ValType tb = valType(b);
+
+    // TODO we assume here that undefined, null, true, false, etc
+    // are all less than strings - this isn't quite JS semantics
+    if (ta == ValType::String && isSpecial(b))
         return 1;
+
+    if (tb == ValType::String && isSpecial(a))
+        return -1;
+
+    // conversions for numbers
+    if (ta != ValType::String) {
+        auto aa = numops::toString(a);
+        auto r = compare((TValue)aa, b);
+        decrRC(aa);
+        return r;
+    }
+
+    if (tb != ValType::String) {
+        auto bb = numops::toString(b);
+        auto r = compare(a, (TValue)bb);
+        decrRC(bb);
+        return r;
+    }
+
+    auto s = (String)a;
+    auto that = (String)b;
+
     int compareResult = strcmp(s->data, that->data);
     if (compareResult < 0)
         return -1;
@@ -269,13 +293,13 @@ String substr(String s, int start, int length) {
 
 //%
 int indexOf(String s, String searchString, int start) {
-    if (!s || !searchString) 
+    if (!s || !searchString)
         return -1;
     if (start < 0 || start + searchString->length > s->length)
         return -1;
-    const char* match = strstr(((const char*)s->data + start), searchString->data);
+    const char *match = strstr(((const char *)s->data + start), searchString->data);
     if (NULL == match)
-        return -1;    
+        return -1;
     return match - s->data;
 }
 
@@ -402,15 +426,17 @@ bool eqq_bool(TValue a, TValue b) {
     if (ta != tb)
         return false;
 
-    if (ta == ValType::String)
-        return String_::compare((String)a, (String)b) == 0;
+    if (ta == ValType::String || tb == ValType::String)
+        return String_::compare(a, b) == 0;
 
+#ifndef PXT_BOX_DEBUG
     int aa = (int)a;
     int bb = (int)b;
 
     // if at least one of the values is tagged, they are not equal
     if ((aa | bb) & 3)
         return false;
+#endif
 
     if (ta == ValType::Number)
         return toDouble(a) == toDouble(b);
@@ -653,10 +679,6 @@ void mycvt(double d, char *buf) {
     }
 }
 
-//%
-String stringConv(TValue v);
-
-//%
 String toString(TValue v) {
     ValType t = valType(v);
 
@@ -671,6 +693,13 @@ String toString(TValue v) {
         }
 
         double x = toDouble(v);
+
+#ifdef PXT_BOX_DEBUG
+        if (x == (int)x) {
+            itoa((int)x, buf);
+            return mkString(buf);
+        }
+#endif
 
         if (isnan(x))
             return (String)(void *)sNaN;
