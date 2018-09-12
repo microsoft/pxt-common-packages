@@ -43,5 +43,17 @@ void dmesgPtr(String str, Object_ ptr) {
     DMESG("# %s: %p", str->data, ptr);
 }
 
+/** The next handler to be added will be put in the background, 
+    which supports multiple handlers per event type. */
+//% 
+void nextHandlerToBackground() {
+    setBackgroundHandlerFlag();
+}
+
+/** Remove a handler from the background for all events */
+//% 
+void removeFromBackground(Action handler) {
+    unregisterFromDal(handler);
+}
 
 }
