@@ -114,7 +114,10 @@ void refill() {
 }
 
 void testBPP() {
-    s1 = randomImg(160, 128);
+    if (bpp == 1)
+        s1 = randomImg(178, 128);
+    else
+        s1 = randomImg(160, 120);
     s2 = ImageMethods::clone(s1);
     assertSame(s1, s2);
     //auto sprite = randomImg(16, 16);
@@ -147,8 +150,9 @@ void testBPP() {
         //dumpBytes("spr   ", sprite->pix());
         assertSame(s1, s2);
 
-        //DMESG("%d %d %d %d", x, y, w, h);
+        
         int col = randCol();
+        //printf("%d %d %d %d c=%d\n", x, y, w, h, col);
         ImageMethods::fillRect(s1, x, y, w, h, col);
         golden_fillRect(s2, x, y, w, h, col);
         assertSame(s1, s2);

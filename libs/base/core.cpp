@@ -111,7 +111,7 @@ unsigned getRandom(unsigned max) {
 }
 
 PXT_DEF_STRING(sTrue, "\x04\x00true")
-PXT_DEF_STRING(sFalse, "\x05\x00false")
+PXT_DEF_STRING(sFalse, "\x05\x00" "false")
 PXT_DEF_STRING(sUndefined, "\x09\x00undefined")
 PXT_DEF_STRING(sNull, "\x04\x00null")
 PXT_DEF_STRING(sObject, "\x08\x00[Object]")
