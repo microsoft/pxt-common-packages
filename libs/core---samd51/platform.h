@@ -13,6 +13,8 @@
 #undef min
 #undef max
 
+typedef uint8_t PinName;
+
 // #define PXT_BOOTLOADER_CFG_ADDR 0x8003fc8
 
 #define PAGE_SIZE 512
