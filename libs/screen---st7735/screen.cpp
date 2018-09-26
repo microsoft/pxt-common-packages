@@ -10,7 +10,6 @@ class WDisplay {
     uint32_t currPalette[16];
     bool newPalette;
 
-    uint8_t *screenBuf;
     Image_ lastImg;
 
     int width, height;
@@ -18,20 +17,9 @@ class WDisplay {
 
     WDisplay()
         : spi(*LOOKUP_PIN(DISPLAY_MOSI), *LOOKUP_PIN(DISPLAY_MISO), *LOOKUP_PIN(DISPLAY_SCK)),
-          lcd(spi, *LOOKUP_PIN(DISPLAY_CS), *LOOKUP_PIN(DISPLAY_DC)) {
-        
-        auto rst = LOOKUP_PIN(DISPLAY_RST);
-        if (rst) {
-            rst->setDigitalValue(0);
-            fiber_sleep(20);
-            rst->setDigitalValue(1);
-            fiber_sleep(20);
-        }
-
-        auto bl = LOOKUP_PIN(DISPLAY_BL);
-        if (bl) {
-            bl->setDigitalValue(1);
-        }
+          lcd(spi, *LOOKUP_PIN(DISPLAY_CS), *LOOKUP_PIN(DISPLAY_DC), *LOOKUP_PIN(DISPLAY_RST),
+              *LOOKUP_PIN(DISPLAY_BL), getConfig(CFG_DISPLAY_WIDTH, 160),
+              getConfig(CFG_DISPLAY_HEIGHT, 128), true) {
 
         uint32_t cfg0 = getConfig(CFG_DISPLAY_CFG0, 0x40);
         uint32_t cfg2 = getConfig(CFG_DISPLAY_CFG2, 0x0);
@@ -41,20 +29,20 @@ class WDisplay {
         auto offX = (cfg0 >> 8) & 0xff;
         auto offY = (cfg0 >> 16) & 0xff;
         auto freq = (cfg2 & 0xff);
-        if (!freq) freq = 15;
+        if (!freq)
+            freq = 15;
 
-        DMESG("configure screen: FRMCTR1=%p MADCTL=%p SPI at %dMHz",
-            frmctr1, madctl, freq);
+        DMESG("configure screen: FRMCTR1=%p MADCTL=%p SPI at %dMHz", frmctr1, madctl, freq);
 
         spi.setFrequency(freq * 1000000);
         spi.setMode(0);
-        lcd.init();
+        lcd.enable();
+        lcd.setOffset(offX, offY);
+        lcd.setRotation(DISPLAY_ROTATION_90);
         lcd.configure(madctl, frmctr1);
         width = getConfig(CFG_DISPLAY_WIDTH, 160);
         height = getConfig(CFG_DISPLAY_HEIGHT, 128);
-        lcd.setAddrWindow(offX, offY, width, height);
         DMESG("screen: %d x %d, off=%d,%d", width, height, offX, offY);
-        screenBuf = new uint8_t[width * height / 2 + 20];
         lastImg = NULL;
     }
 };
@@ -77,7 +65,7 @@ void setPalette(Buffer buf) {
 //%
 void updateScreen(Image_ img) {
     auto display = getWDisplay();
-    
+
     if (img && img != display->lastImg) {
         decrRC(display->lastImg);
         incrRC(img);
@@ -90,21 +78,16 @@ void updateScreen(Image_ img) {
             target_panic(906);
 
         img->clearDirty();
-        //DMESG("wait for done");
-        display->lcd.waitForSendDone();
-        
-        auto palette = display->currPalette;
+        // DMESG("wait for done");
+        display->lcd.waitForEndUpdate();
 
         if (display->newPalette) {
             display->newPalette = false;
-        } else {
-            palette = NULL;
+            display->lcd.setPalette(display->currPalette);
         }
 
-        memcpy(display->screenBuf, img->pix(), img->pixLength());
-
-        //DMESG("send");
-        display->lcd.sendIndexedImage(display->screenBuf, display->width, display->height, palette);
+        memcpy(display->lcd.image.getBitmap(), img->pix(), img->pixLength());
+        display->lcd.beginUpdate();
     }
 }
 
