@@ -133,6 +133,10 @@
 #define CODAL_SERIAL CODAL_MBED::Serial
 #endif
 
+#ifndef IS_ANALOG_PIN
+#define IS_ANALOG_PIN(id) ((DEV_ANALOG_PINS >> (id)) & 1)
+#endif
+
 typedef CODAL_PIN DevicePin;
 
 typedef DevicePin *DigitalPin;
