@@ -111,7 +111,8 @@ unsigned getRandom(unsigned max) {
 }
 
 PXT_DEF_STRING(sTrue, "\x04\x00true")
-PXT_DEF_STRING(sFalse, "\x05\x00" "false")
+PXT_DEF_STRING(sFalse, "\x05\x00"
+                       "false")
 PXT_DEF_STRING(sUndefined, "\x09\x00undefined")
 PXT_DEF_STRING(sNull, "\x04\x00null")
 PXT_DEF_STRING(sObject, "\x08\x00[Object]")
@@ -923,12 +924,17 @@ int getConfig(int key, int defl) {
 
 #ifdef PXT_BOOTLOADER_CFG_ADDR
     cfgData = *(int **)(PXT_BOOTLOADER_CFG_ADDR);
-    for (int i = 0;; i += 2) {
-        if (cfgData[i] == key)
-            return cfgData[i + 1];
-        if (cfgData[i] == 0)
-            break;
-    }
+#ifdef PXT_BOOTLOADER_CFG_MAGIC
+    cfgData++;
+    if ((void*)0x200 <= cfgData && cfgData < (void*)PXT_BOOTLOADER_CFG_ADDR &&
+        cfgData[-1] == (int)PXT_BOOTLOADER_CFG_MAGIC)
+#endif
+        for (int i = 0;; i += 2) {
+            if (cfgData[i] == key)
+                return cfgData[i + 1];
+            if (cfgData[i] == 0)
+                break;
+        }
 #endif
 
     cfgData = *(int **)&bytecode[18];

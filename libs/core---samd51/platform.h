@@ -29,6 +29,8 @@ typedef uint8_t PinName;
 #define CODAL_SPI ZSPI
 #define CODAL_I2C ZI2C
 
+#define PXT_BOOTLOADER_CFG_ADDR (0x4000 - 4*4)
+#define PXT_BOOTLOADER_CFG_MAGIC 0xbe3fd5ce
 
 #define IMAGE_BITS 4
 
