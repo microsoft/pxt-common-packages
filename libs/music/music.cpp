@@ -55,6 +55,17 @@ void updateSpeakerAmp() {
     //}
 }
 
+static uint16_t getSample(void *, int idx)
+{
+    if (!tone)
+        return 0;
+
+    if (idx < 0 || idx >= TONE_WIDTH) 
+        return 0;
+    
+    return ((uint16_t*)tone->data)[idx];
+}
+
 /**
 * Set a source of digital sound data (PCM) for making tones.
 * Samples are 1024 x 10bit unsigned PCM.
@@ -76,7 +87,7 @@ void setTone(Buffer buffer) {
     incrRC(tone);
 
     auto synth = &getWSynthesizer()->synth;
-    synth->setTone((const uint16_t*)tone->data);
+    synth->setTone(getSample, NULL);
 }
 
 /**
