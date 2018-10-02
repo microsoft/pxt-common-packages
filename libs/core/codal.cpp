@@ -132,7 +132,12 @@ void sleep_ms(unsigned ms) {
 }
 
 void sleep_us(uint64_t us) {
+#if defined(MBED_WAIT_API_H)
+    wait_us(us);
+#else
     target_wait_us(us);
+#endif
+
 }
 
 void forever_stub(void *a) {
