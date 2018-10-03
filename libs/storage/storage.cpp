@@ -1,4 +1,5 @@
 #include "pxt.h"
+#include "SPI.h"
 
 #if CONFIG_ENABLED(DEVICE_USB)
 
@@ -16,7 +17,7 @@ class PXTMSC : public GhostSNORFS {
 
 class WStorage {
   public:
-    CODAL_MBED::SPI flashSPI;
+    CODAL_SPI flashSPI;
     StandardSPIFlash flash;
     snorfs::FS fs;
     PXTMSC msc;

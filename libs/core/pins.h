@@ -40,6 +40,27 @@
 #define CFG_PIN_DISPLAY_DC 36
 #define CFG_DISPLAY_WIDTH 37
 #define CFG_DISPLAY_HEIGHT 38
+#define CFG_DISPLAY_CFG0 39
+#define CFG_DISPLAY_CFG1 40
+#define CFG_DISPLAY_CFG2 41
+#define CFG_DISPLAY_CFG3 42
+#define CFG_PIN_DISPLAY_RST 43
+#define CFG_PIN_DISPLAY_BL 44
+#define CFG_PIN_SERVO_1 45
+#define CFG_PIN_SERVO_2 46
+#define CFG_PIN_BTN_LEFT 47
+#define CFG_PIN_BTN_RIGHT 48
+#define CFG_PIN_BTN_UP 49
+#define CFG_PIN_BTN_DOWN 50
+#define CFG_PIN_BTN_MENU 51
+#define CFG_PIN_LED_R 52
+#define CFG_PIN_LED_G 53
+#define CFG_PIN_LED_B 54
+#define CFG_PIN_LED1 55
+#define CFG_PIN_LED2 56
+#define CFG_PIN_LED3 57
+#define CFG_PIN_LED4 58
+#define CFG_SPEAKER_VOLUME 59
 
 #define CFG_PIN_A0 100
 #define CFG_PIN_A1 101
@@ -100,6 +121,22 @@
 #define CODAL_TIMER CODAL_MBED::Timer
 #endif
 
+#ifndef CODAL_SPI
+#define CODAL_SPI CODAL_MBED::SPI
+#endif
+
+#ifndef CODAL_I2C
+#define CODAL_I2C CODAL_MBED::I2C
+#endif
+
+#ifndef CODAL_SERIAL
+#define CODAL_SERIAL CODAL_MBED::Serial
+#endif
+
+#ifndef IS_ANALOG_PIN
+#define IS_ANALOG_PIN(id) ((DEV_ANALOG_PINS >> (id)) & 1)
+#endif
+
 typedef CODAL_PIN DevicePin;
 
 typedef DevicePin *DigitalPin;
@@ -112,6 +149,7 @@ typedef Button *Button_;
 
 namespace pxt {
 DevicePin *getPin(int id);
+DevicePin *getPinCfg(int key);
 DevicePin *lookupPin(int pinName);
 void linkPin(int from, int to);
 Button *getButtonByPin(int pin, int flags);

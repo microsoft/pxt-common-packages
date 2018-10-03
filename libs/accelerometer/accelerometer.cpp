@@ -4,7 +4,13 @@
 #include "I2C.h"
 #include "CoordinateSystem.h"
 
-#ifndef CODAL_ACCELEROMETER
+#ifdef CODAL_ACCELEROMETER
+
+#ifdef CODAL_ACCELEROMETER_HEADER
+#include CODAL_ACCELEROMETER_HEADER
+#endif
+
+#else
 
 #include "LIS3DH.h"
 #define CODAL_ACCELEROMETER codal::LIS3DH
@@ -113,20 +119,20 @@ enum class Gesture {
 namespace pxt {
 
 // Wrapper classes
-
 class WAccel {
-  public:
     CODAL_MBED::I2C i2c; // note that this is different pins than io->i2c
     CoordinateSpace space;
+  public:
     CODAL_ACCELEROMETER acc;
     WAccel()
         : i2c(*LOOKUP_PIN(ACCELEROMETER_SDA), *LOOKUP_PIN(ACCELEROMETER_SCL)),
           space(ACC_SYSTEM, ACC_UPSIDEDOWN, ACC_ROTATION),
-          acc(i2c, *LOOKUP_PIN(ACCELEROMETER_INT), space) //
+          acc(i2c, *LOOKUP_PIN(ACCELEROMETER_INT), space)
     {
         acc.init();        
     }
 };
+
 SINGLETON(WAccel);
 }
 

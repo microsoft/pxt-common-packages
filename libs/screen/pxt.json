@@ -9,7 +9,9 @@
         "frame.ts",
         "shims.d.ts",
         "fieldeditors.ts",
-        "targetoverrides.ts"
+        "targetoverrides.ts",
+        "ns.ts",
+        "image.d.ts"
     ],
     "public": true,
     "dependencies": {

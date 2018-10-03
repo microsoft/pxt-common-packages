@@ -44,8 +44,12 @@ namespace pxsim.DigitalPinMethods {
     * Configures this pin to a digital input, and generates events where the timestamp is the duration
     * that this pin was either ``high`` or ``low``.
     */
-    export function onPulsed(name: pins.DigitalPin, pulse: number, body: RefAction): void {
-        // NOP, can't simulate
+    export function onPulsed(name: pins.DigitalPin, high: boolean, body: RefAction): void {
+        onEvent(name, high ? DAL.DEVICE_PIN_EVT_PULSE_HI : DAL.DEVICE_PIN_EVT_PULSE_LO, body);
+    }
+
+    export function onEvent(name: pins.DigitalPin, ev: number, body: RefAction): void {
+        name.onEvent(ev, body);
     }
 
     /**
@@ -53,7 +57,9 @@ namespace pxsim.DigitalPinMethods {
     * @param value the value of the pulse (default high)
     * @param maximum duration in micro-seconds
     */
-    export function pulseIn(name: pins.DigitalPin, pulse: number, maxDuration = 2000000): number {
+    export function pulseIn(name: pins.DigitalPin, high: boolean, maxDuration = 2000000): number {
+        name.used = true;
+        const pulse = high ? DAL.DEVICE_PIN_EVT_PULSE_HI : DAL.DEVICE_PIN_EVT_PULSE_LO;
         // Always return default value, can't simulate
         return 500;
     }
@@ -64,20 +70,6 @@ namespace pxsim.DigitalPinMethods {
     */
     export function setPull(name: pins.DigitalPin, pull: number): void {
         name.setPull(pull);
-    }
-
-    /**
-    * Do something when a pin is pressed.
-    * @param body the code to run when the pin is pressed
-    */
-    export function onPressed(name: pins.DigitalPin, body: RefAction): void {
-    }
-
-    /**
-     * Do something when a pin is released.
-     * @param body the code to run when the pin is released
-     */
-    export function onReleased(name: pins.DigitalPin, body: RefAction): void {
     }
 
     /**
@@ -100,10 +92,10 @@ namespace pxsim.AnalogInPinMethods {
 }
 
 namespace pxsim.AnalogOutPinMethods {
-        /**
-     * Set the connector value as analog. Value must be comprised between 0 and 1023.
-     * @param value value to write to the pin between ``0`` and ``1023``. eg:1023,0
-     */
+    /**
+ * Set the connector value as analog. Value must be comprised between 0 and 1023.
+ * @param value value to write to the pin between ``0`` and ``1023``. eg:1023,0
+ */
     export function analogWrite(name: pins.AnalogPin, value: number): void {
         pins.markUsed(name);
         name.analogWritePin(value);
@@ -142,6 +134,32 @@ namespace pxsim.pins {
 
     export function i2cWriteBuffer(address: number, buf: RefBuffer, repeat?: boolean): void {
         // fake - noop
+    }
+
+    export function spiWrite(value: number): number {
+        // TODO
+        return 0;
+    }
+
+    export function spiMode(mode: number): void {
+        // TODO
+    }
+
+    export function spiTransfer(command: RefBuffer, response: RefBuffer): number {
+        // TODO
+        return 0;
+    }
+
+    export function spiFrequency(f: number): void {
+        // TODO
+    }
+
+    export function spiFormat(bits: number, mode: number): void {
+        // TODO
+    }
+
+    export function spiPins(mosi: number, miso: number, sck: number) {
+        // TODO
     }
 }
 

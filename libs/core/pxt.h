@@ -2,7 +2,6 @@
 #define __PXT_H
 
 #include "pxtbase.h"
-#undef DMESG
 
 #include "CodalConfig.h"
 #include "CodalHeapAllocator.h"
@@ -19,8 +18,6 @@
 #include "Button.h"
 #include "CodalFiber.h"
 #include "MessageBus.h"
-
-#include "platform.h"
 
 using namespace codal;
 

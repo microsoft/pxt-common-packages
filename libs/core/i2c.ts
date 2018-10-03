@@ -3,7 +3,7 @@ namespace pins {
      * Read one number from an I2C address.
      */
     //% help=pins/i2c-read-number weight=5 group="i2c" inlineInputMode="external"
-    //% blockId=pins_i2c_readnumber block="i2c read number at address %address|of format %format=i2c_sizeof|repeated %repeat"
+    //% blockId=pins_i2c_readnumber block="i2c read number at address %address|of format %format|repeated %repeated"
     export function i2cReadNumber(address: number, format: NumberFormat, repeated?: boolean): number {
         let buf = pins.i2cReadBuffer(address, pins.sizeOf(format), repeated)
         return buf.getNumber(format, 0)
@@ -13,7 +13,7 @@ namespace pins {
      * Write one number to an I2C address.
      */
     //% help=pins/i2c-write-number weight=4 group="i2c"
-    //% blockId=i2c_writenumber block="i2c write number|at address %address|with value %value|of format %format=i2c_sizeof|repeated %repeat"
+    //% blockId=i2c_writenumber block="i2c write number|at address %address|with value %value|of format %format|repeated %repeated"
     export function i2cWriteNumber(address: number, value: number, format: NumberFormat, repeated?: boolean): void {
         let buf = createBuffer(pins.sizeOf(format))
         buf.setNumber(format, 0, value)
@@ -44,8 +44,9 @@ namespace pins {
                 this._hasError = true
             }
         }
-        public begin() {
-            this._hasError = false
+        public begin(): I2CDevice {
+            this._hasError = false;
+            return this;
         }
         public end() {
         }

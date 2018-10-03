@@ -7,10 +7,6 @@ namespace pxt {
 TValue incr(TValue e) {
     if (isRefCounted(e)) {
         getVTable((RefObject *)e);
-#if MEMDBG_ENABLED
-        if (((RefObject *)e)->refcnt != 0xffff)
-            MEMDBG("INCR: %p refs=%d", e, ((RefObject *)e)->refcnt);
-#endif
         ((RefObject *)e)->ref();
     }
     return e;
@@ -18,10 +14,6 @@ TValue incr(TValue e) {
 
 void decr(TValue e) {
     if (isRefCounted(e)) {
-#if MEMDBG_ENABLED
-        if (((RefObject *)e)->refcnt != 0xffff)
-            MEMDBG("DECR: %p refs=%d", e, ((RefObject *)e)->refcnt);
-#endif
         ((RefObject *)e)->unref();
     }
 }
@@ -471,19 +463,7 @@ void RefMap::print(RefMap *t) {
     DMESG("RefMap %p r=%d size=%d", t, t->refcnt, t->keys.getLength());
 }
 
-#ifdef PXT_MEMLEAK_DEBUG
-std::set<TValue> allptrs;
-void debugMemLeaks() {
-    DMESG("LIVE POINTERS:");
-    for (std::set<TValue>::iterator itr = allptrs.begin(); itr != allptrs.end(); itr++) {
-        anyPrint(*itr);
-    }
-    DMESG("LIVE POINTERS END.");
-    dumpDmesg();
-}
-#else
 void debugMemLeaks() {}
-#endif
 
 void error(PXT_ERROR code, int subcode) {
     DMESG("Error: %d [%d]", code, subcode);
@@ -529,9 +509,6 @@ void exec_binary(unsigned *pc) {
     // unique group for radio based on source hash
     // ::touch_develop::micro_bit::radioDefaultGroup = programHash();
 
-    // repeat error 4 times and restart as needed
-    // microbit_panic_timeout(4);
-
     unsigned ver = *pc++;
     checkStr(ver == 0x4209, ":( Bad runtime version");
 
@@ -554,10 +531,6 @@ void exec_binary(unsigned *pc) {
     initRuntime();
 
     ((unsigned (*)())startptr)();
-
-#ifdef PXT_MEMLEAK_DEBUG
-    pxt::debugMemLeaks();
-#endif
 
     pxt::releaseFiber();
 }

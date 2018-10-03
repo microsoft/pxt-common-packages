@@ -17,7 +17,7 @@ namespace game {
      * @param answerLength The maximum number of characters the user can enter (1 - 24)
      */
     //% group="Gameplay"
-    //% weight=10
+    //% weight=10 help=game/ask-for-string
     //% blockId=gameaskforstring block="ask for string with text %message || and max length %answerLength"
     //% message.defl=""
     //% answerLength.defl="12"
@@ -32,7 +32,7 @@ namespace game {
 
 
     //% whenUsed=true
-    const font = image.font5;
+    const font = image.font8;
     //% whenUsed=true
     const PADDING = 4;
     //% whenUsed=true
@@ -164,7 +164,7 @@ namespace game {
             this.answerLength = answerLength;
             this.inputIndex = 0;
 
-            keys._setUserEventsEnabled(false);
+            controller._setUserEventsEnabled(false);
             game.pushScene()
 
             this.draw();
@@ -174,7 +174,7 @@ namespace game {
             pauseUntil(() => this.confirmPressed);
 
             game.popScene();
-            keys._setUserEventsEnabled(true);
+            controller._setUserEventsEnabled(true);
 
             return this.result;
         }
@@ -187,7 +187,7 @@ namespace game {
         }
 
         private drawPromptText() {
-            const prompt = sprites.create(layoutText(this.message, CONTENT_WIDTH, PROMPT_HEIGHT, this.theme.colorPrompt));
+            const prompt = sprites.create(layoutText(this.message, CONTENT_WIDTH, PROMPT_HEIGHT, this.theme.colorPrompt), -1);
             prompt.x = screen.width / 2
             prompt.y = CONTENT_TOP + Math.floor((PROMPT_HEIGHT - prompt.height) / 2) + Math.floor(prompt.height / 2);
         }
@@ -205,7 +205,7 @@ namespace game {
                 const col = i % ALPHABET_ROW_LENGTH;
                 const row = Math.floor(i / ALPHABET_ROW_LENGTH);
 
-                const s = sprites.create(blank);
+                const s = sprites.create(blank, -1);
                 s.x = answerLeft + col * CELL_WIDTH;
                 s.y = INPUT_TOP + row * CELL_HEIGHT;
                 this.inputs.push(s);
@@ -215,7 +215,7 @@ namespace game {
         private drawKeyboard() {
             const cursorImage = image.create(CELL_WIDTH, CELL_HEIGHT);
             cursorImage.fill(this.theme.colorCursor);
-            this.cursor = sprites.create(cursorImage);
+            this.cursor = sprites.create(cursorImage, -1);
             this.cursor.z = -1;
             this.updateCursor();
 
@@ -226,7 +226,7 @@ namespace game {
                 const col2 = j % ALPHABET_ROW_LENGTH;
                 const row2 = Math.floor(j / ALPHABET_ROW_LENGTH);
 
-                const t = sprites.create(letter);
+                const t = sprites.create(letter, -1);
                 t.x = ROW_LEFT + col2 * CELL_WIDTH;
                 t.y = ALPHABET_TOP + row2 * CELL_HEIGHT;
 
@@ -239,16 +239,16 @@ namespace game {
             const bg = image.create(screen.width, BOTTOM_BAR_HEIGHT);
             bg.fill(this.theme.colorBottomBackground);
 
-            const bgSprite = sprites.create(bg);
+            const bgSprite = sprites.create(bg, -1);
             bgSprite.x = screen.width / 2;
             bgSprite.y = BOTTOM_BAR_TOP + BOTTOM_BAR_HEIGHT / 2;
             bgSprite.z = -1;
 
-            this.shiftButton = sprites.create(image.create(BOTTOM_BAR_BUTTON_WIDTH, BOTTOM_BAR_HEIGHT));
+            this.shiftButton = sprites.create(image.create(BOTTOM_BAR_BUTTON_WIDTH, BOTTOM_BAR_HEIGHT), -1);
             this.shiftButton.x = Math.floor(BOTTOM_BAR_BUTTON_WIDTH / 2);
             this.shiftButton.y = BOTTOM_BAR_TOP + Math.ceil(BOTTOM_BAR_HEIGHT / 2);
 
-            this.confirmButton = sprites.create(image.create(BOTTOM_BAR_BUTTON_WIDTH, BOTTOM_BAR_HEIGHT));
+            this.confirmButton = sprites.create(image.create(BOTTOM_BAR_BUTTON_WIDTH, BOTTOM_BAR_HEIGHT), -1);
             this.confirmButton.x = CONFIRM_BUTTON_LEFT + Math.floor(BOTTOM_BAR_BUTTON_WIDTH / 2);
             this.confirmButton.y = BOTTOM_BAR_TOP + Math.ceil(BOTTOM_BAR_HEIGHT / 2);
 
@@ -323,27 +323,27 @@ namespace game {
         }
 
         private registerHandlers() {
-            keys.up.onEvent(SYSTEM_KEY_DOWN, () => {
+            controller.up.onEvent(SYSTEM_KEY_DOWN, () => {
                 this.moveVertical(true);
             })
 
-            keys.down.onEvent(SYSTEM_KEY_DOWN, () => {
+            controller.down.onEvent(SYSTEM_KEY_DOWN, () => {
                 this.moveVertical(false);
             })
 
-            keys.right.onEvent(SYSTEM_KEY_DOWN, () => {
+            controller.right.onEvent(SYSTEM_KEY_DOWN, () => {
                 this.moveHorizontal(true);
             });
 
-            keys.left.onEvent(SYSTEM_KEY_DOWN, () => {
+            controller.left.onEvent(SYSTEM_KEY_DOWN, () => {
                 this.moveHorizontal(false);
             });
 
-            keys.A.onEvent(SYSTEM_KEY_DOWN, () => {
+            controller.A.onEvent(SYSTEM_KEY_DOWN, () => {
                 this.confirm();
             });
 
-            keys.B.onEvent(SYSTEM_KEY_DOWN, () => {
+            controller.B.onEvent(SYSTEM_KEY_DOWN, () => {
                 this.delete();
             });
 
@@ -351,7 +351,7 @@ namespace game {
             this.frameCount = 0;
             this.blink = true;
 
-            game.update(() => {
+            game.onUpdate(() => {
                 this.frameCount = (this.frameCount + 1) % 30;
 
                 if (this.frameCount === 0) {

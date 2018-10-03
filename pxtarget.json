@@ -3,6 +3,7 @@
     "name": "Microsoft MakeCode Common Packages",
     "corepkg": "core",
     "appTheme": { },
+    "ignoreDocsErrors": true,
     "bundleddirs": [
         "libs/core",
         "libs/buttons",
@@ -19,14 +20,13 @@
         "libs/infrared",
         "libs/gamepad",
         "libs/tests",
-        "libs/automation",
-        "libs/dsp",
         "libs/mouse",
         "libs/keyboard",
         "libs/storage",
         "libs/game",
         "libs/screen",
-        "libs/keys",
-        "libs/turtle"
+        "libs/controller",
+        "libs/servo",
+        "libs/serial"
     ]
 }

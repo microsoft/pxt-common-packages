@@ -102,12 +102,13 @@ void dispatchEvent(Event e) {
     lastEvent = e;
 
     auto curr = findBinding(e.source, e.value);
+    auto value = fromInt(e.value);
     if (curr)
-        runAction1(curr->action, fromInt(e.value));
+        runAction1(curr->action, value);
 
     curr = findBinding(e.source, DEVICE_EVT_ANY);
     if (curr)
-        runAction1(curr->action, fromInt(e.value));
+        runAction1(curr->action, value);
 }
 
 void registerWithDal(int id, int event, Action a, int flags) {
@@ -131,7 +132,7 @@ void sleep_ms(unsigned ms) {
 }
 
 void sleep_us(uint64_t us) {
-    wait_us(us);
+    target_wait_us(us);
 }
 
 void forever_stub(void *a) {

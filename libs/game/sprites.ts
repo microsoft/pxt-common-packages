@@ -12,41 +12,46 @@ Frame handlers:
 /**
  * Sprites on screen
  */
-//% weight=98 color="#23c47e" icon="\uf1d8"
-//% groups='["Create", "Properties", "Collisions", "Lifecycle"]'
+//% weight=98 color="#4B7BEC" icon="\uf1d8"
+//% groups='["Create", "Properties", "Overlaps", "Collisions", "Lifecycle"]'
 namespace sprites {
 
     /**
-     * Creates a new sprite from an image
+     * Create a new sprite from an image
      * @param img the image
      */
     //% group="Create"
-    //% blockId=spritescreate block="sprite %img=screen_image_picker"
+    //% blockId=spritescreate block="sprite %img=screen_image_picker of kind %kind=spritetype"
     //% expandableArgumentMode=toggle
-    //% blockSetVariable=sprite
-    //% weight=100
-    export function create(img: Image): Sprite {
+    //% blockSetVariable=mySprite
+    //% weight=100 help=sprites/create
+    export function create(img: Image, kind?: number): Sprite {
         const scene = game.currentScene();
         const sprite = new Sprite(img)
+        sprite.type = kind;
         scene.allSprites.push(sprite)
         sprite.id = scene.allSprites.length
         scene.physicsEngine.addSprite(sprite);
+
+        // run on created handlers
+        scene.createdHandlers
+            .filter(h => h.type == kind)
+            .forEach(h => h.handler(sprite));
+
         return sprite
     }
 
     /**
-     * Creates a new object sprite from an image
-     * @param img the image
+     * Return an array of all sprites of the given kind.
+     * @param kind the target kind
      */
-    //% group="Create"
-    //% blockId=spritescreateobjectsable block="obstacle %img=screen_image_picker"
-    //% expandableArgumentMode=toggle
-    //% blockSetVariable=obstacle
-    //% weight=100
-    export function createObstacle(img: Image) {
-        const sprite = create(img);
-        sprite.flags |= sprites.Flag.Obstacle;
-        return sprite;
+    //% blockId=allOfKind block="array of sprites of kind %kind=spritetype"
+    //% blockNamespace="arrays" blockSetVariable="sprite list"
+    //% weight=87
+    export function allOfKind(kind: number): Sprite[] {
+        const spritesByKind = game.currentScene().spritesByKind;
+        if (!(kind >= 0) || !spritesByKind[kind]) return [];
+        else return spritesByKind[kind].slice(0, spritesByKind[kind].length);
     }
 
     /**
@@ -54,13 +59,13 @@ namespace sprites {
      * The sprite auto-destroys when it leaves the screen. You can modify position after it's created.
      */
     //% group="Create"
-    //% blockId=spritescreateprojectile block="projectile %img=screen_image_picker vx %vx vy %vy||from %sprite=variables_get"
-    //% weight=99
+    //% blockId=spritescreateprojectile block="projectile %img=screen_image_picker vx %vx vy %vy of kind %kind=spritetype || from sprite %sprite=variables_get"
+    //% weight=99 help=sprites/create-projectile
     //% blockSetVariable=projectile
     //% inlineInputMode=inline
     //% expandableArgumentMode=toggle
-    export function createProjectile(img: Image, vx: number, vy: number, sprite?: Sprite) {
-        const s = create(img)
+    export function createProjectile(img: Image, vx: number, vy: number, kind: number, sprite?: Sprite) {
+        const s = sprites.create(img, kind);
         s.vx = vx
         s.vy = vy
 
@@ -86,10 +91,22 @@ namespace sprites {
         return s
     }
 
+    /**
+     * Creates a new sprite of the given kind and adds it to the game. Use this
+     * with the "on sprite created" event.
+     * @param kind the kind of sprite to create
+     */
+    //% group="Lifecycle"
+    //% blockId=spritecreateempty block="create empty sprite of kind %kind=spritetype"
+    //% weight=98
+    export function createEmptySprite(kind: number): void {
+        sprites.create(image.create(1, 1), kind);
+    }
+
     export enum Flag {
         Ghost = 1, // doesn't collide with other sprites
         Destroyed = 2,
         AutoDestroy = 4, // remove the sprite when no longer visible
-        Obstacle = 8, // generate collisions, immovable
+        StayInScreen = 8, // sprite cannot move outside the camera region
     }
 }

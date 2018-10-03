@@ -69,16 +69,18 @@ enum class KeyboardFunctionKey
     PrintScreen,
     //% block="scroll lock"
     ScrollLock,
-    //% block="caps lock"
-    CapsLock,
-    //% block="num lock"
-    NumLock,
+    //% block="pause"
+    Pause,
     //% block="insert"
     Insert,
     //% block="home"
     Home,
     //% block="page up"
     PageUp,
+    //% block="delete"
+    DeleteForward,
+    //% block="end"
+    End,
     //% block="page down"
     PageDown,
 
@@ -110,6 +112,27 @@ namespace keyboard {
     void type(String text) {
         if (NULL != text)
             pxt::keyboard.type(text->data, text->length);
+    }
+
+    /**
+    * Sends a media key command
+    */
+    //% blockId=keyboardStandardKey block="keyboard key %key|%event"
+    //% blockGap=8 weight=99
+    void key(String key, KeyboardKeyEvent event) {
+        if (!key->length) return;
+        uint16_t ckey = key->data[0];
+        switch(event) {
+            case KeyboardKeyEvent::Down:
+                pxt::keyboard.keyDown(ckey);
+                break;
+            case KeyboardKeyEvent::Up:
+                pxt::keyboard.keyUp(ckey);
+                break;
+            case KeyboardKeyEvent::Press:
+                pxt::keyboard.press(ckey);
+                break;
+        }
     }
 
     /**

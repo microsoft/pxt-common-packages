@@ -1,8 +1,6 @@
 #ifndef __PXTBASE_H
 #define __PXTBASE_H
 
-//#define PXT_MEMLEAK_DEBUG 1
-
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #pragma GCC diagnostic ignored "-Wformat"
 #pragma GCC diagnostic ignored "-Warray-bounds"
@@ -15,7 +13,6 @@
     do {                                                                                           \
     } while (0)
 
-#define MEMDBG_ENABLED 0
 #define MEMDBG NOLOG
 
 #include "pxtconfig.h"
@@ -27,12 +24,14 @@
 #include <stdint.h>
 #include <math.h>
 
+#ifdef POKY
+void* operator new (size_t size, void* ptr);
+void* operator new (size_t size);
+#else
 #include <new>
-
-#ifdef PXT_MEMLEAK_DEBUG
-#include <set>
 #endif
 
+#include "platform.h"
 #include "pxtcore.h"
 
 #ifndef PXT_VTABLE_SHIFT
@@ -52,7 +51,7 @@
 #endif
 #endif
 
-#if 0
+#ifdef POKY
 inline void *operator new(size_t, void *p) {
     return p;
 }
@@ -97,9 +96,11 @@ extern "C" void target_reset();
 void sleep_ms(unsigned ms);
 void sleep_us(uint64_t us);
 void releaseFiber();
+uint64_t current_time_us();
 int current_time_ms();
 void initRuntime();
 void sendSerial(const char *data, int len);
+void setSendToUART(void (*f)(const char *, int));
 int getSerialNumber();
 void registerWithDal(int id, int event, Action a, int flags = 16); // EVENT_LISTENER_DEFAULT_FLAGS
 void runInParallel(Action a);
@@ -271,9 +272,6 @@ inline void oops() {
 }
 
 class RefObject;
-#ifdef PXT_MEMLEAK_DEBUG
-extern std::set<TValue> allptrs;
-#endif
 
 typedef void (*RefObjectMethod)(RefObject *self);
 typedef void *PVoid;
@@ -287,7 +285,7 @@ struct VTable {
     uint16_t numbytes; // in the entire object, including the vtable pointer
     uint16_t userdata;
     PVoid *ifaceTable;
-    PVoid methods[2]; // we only use up to two methods here; pxt will generate more
+    PVoid methods[3]; // we only use up to three methods here; pxt will generate more
                       // refmask sits at &methods[nummethods]
 };
 
@@ -302,20 +300,10 @@ class RefObject {
     RefObject(uint16_t vt) {
         refcnt = 3;
         vtable = vt;
-#ifdef PXT_MEMLEAK_DEBUG
-        allptrs.insert((TValue)this);
-#endif
     }
 
     void destroyVT();
     void printVT();
-
-    // Call to disable pointer tracking on the current instance (in destructor or some other hack)
-    inline void untrack() {
-#ifdef PXT_MEMLEAK_DEBUG
-        allptrs.erase((TValue)this);
-#endif
-    }
 
     inline bool isReadOnly() { return refcnt == 0xffff; }
 
@@ -323,20 +311,19 @@ class RefObject {
     inline void ref() {
         if (isReadOnly())
             return;
+        MEMDBG("INCR: %p refs=%d", this, this->refcnt);
         check(refcnt > 1, ERR_REF_DELETED);
-        // DMESG("INCR "); this->print();
         refcnt += 2;
     }
 
     inline void unref() {
         if (isReadOnly())
             return;
+        MEMDBG("DECR: %p refs=%d", this, this->refcnt);
         check(refcnt > 1, ERR_REF_DELETED);
         check((refcnt & 1), ERR_REF_DELETED);
-        // DMESG("DECR "); this->print();
         refcnt -= 2;
         if (refcnt == 1) {
-            untrack();
             destroyVT();
         }
     }
@@ -627,19 +614,25 @@ enum class ValType {
 ValType valType(TValue v);
 } // namespace pxt
 
-// The initial six bytes of the strings (@PXT@:) are rewritten
-// to the proper ref-count and vtable pointer
 #define PXT_DEF_STRING(name, val)                                                                  \
-    static const char name[] __attribute__((aligned(4))) = "@PXT@:" val;
+    static const char name[] __attribute__((aligned(4))) = "\xff\xff\x01\x00" val;
 
 using namespace pxt;
+
+namespace numops {
+//%
+String stringConv(TValue v);
+//%
+String toString(TValue v);
+}
 
 namespace pins {
 Buffer createBuffer(int size);
 }
 
 namespace String_ {
-int compare(String s, String that);
+//%
+int compare(TValue a, TValue b);
 }
 
 // The ARM Thumb generator in the JavaScript code is parsing

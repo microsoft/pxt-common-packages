@@ -1,6 +1,12 @@
-# on Pulsed
+# on Pulsed **deprecated**
 
-Run some code when a pin is pulsed `high` or `low`.
+### ~hint
+
+Use [pins.onEvent](/reference/pins/on-event) instead.
+
+### ~
+
+Run some code when a pin is pulsed `high` (true) or `low` (false).
 
 ```sig
 pins.A0.onPulsed(PulseValue.High, () => {})
@@ -20,7 +26,7 @@ you want your code to run when the voltage at the pin goes from high to low.
 
 ## Parameters
 
-* **pulse**: the pulse value to run code for, either `high` or `low`.
+* **pulse**: the pulse value to run code for.
 * **body**: the code to run when the pin is pulsed.
 
 ## Example #example

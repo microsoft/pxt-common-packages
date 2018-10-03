@@ -1,6 +1,6 @@
 {
     "name": "light",
-    "description": "The Adafruit NeoPixel driver",
+    "description": "The programmable LED (WS2812b) driver.",
     "files": [
         "README.md",
         "neopixel.cpp",

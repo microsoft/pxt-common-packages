@@ -89,13 +89,13 @@ namespace pxsim.visuals {
         }
 
         updateState(): void {
-            if (this.state.on === this.currentlyOn) {
+            if (this.state.on() === this.currentlyOn) {
                 return;
             }
 
-            this.currentlyOn = this.state.on;
+            this.currentlyOn = this.state.on();
 
-            if (this.state.on) {
+            if (this.state.on()) {
                 this.element.removeChild(this.offElement);
                 this.element.appendChild(this.onElement)
             }

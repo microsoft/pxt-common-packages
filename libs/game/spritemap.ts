@@ -28,7 +28,7 @@ namespace sprites {
 
         /**
          * Gets the overlaping sprites if any
-         * @param sprite 
+         * @param sprite
          */
         overlaps(sprite: Sprite): Sprite[] {
             const n = this.neighbors(sprite);
@@ -62,10 +62,16 @@ namespace sprites {
                 if (sprite.width > maxWidth) maxWidth = sprite.width;
                 if (sprite.height > maxHeight) maxHeight = sprite.height;
             }
-            this.cellWidth = Math.clamp(8, screen.width / 4, maxWidth * 2);
-            this.cellHeight = Math.clamp(8, screen.height / 4, maxHeight * 2);
-            this.rowCount = (screen.height / this.cellHeight) >> 0
-            this.columnCount = (screen.width / this.cellWidth) >> 0;
+
+            const tMap = game.currentScene().tileMap;
+
+            const areaWidth = tMap ? tMap.areaWidth() : screen.width;
+            const areaHeight = tMap ? tMap.areaHeight() : screen.height;
+
+            this.cellWidth = Math.clamp(8, areaWidth / 4, maxWidth * 2);
+            this.cellHeight = Math.clamp(8, areaHeight / 4, maxHeight * 2);
+            this.rowCount = (areaHeight / this.cellHeight) >> 0
+            this.columnCount = (areaWidth / this.cellWidth) >> 0;
 
 
             for (const sprite of sprites)
@@ -88,7 +94,11 @@ namespace sprites {
         }
 
         private isOob(sprite: Sprite): boolean {
-            return sprite.right < 0 || sprite.left > screen.width || sprite.bottom < 0 || sprite.top > screen.height;
+            const tMap = game.currentScene().tileMap;
+
+            const areaWidth = tMap ? tMap.areaWidth() : screen.width;
+            const areaHeight = tMap ? tMap.areaHeight() : screen.height;
+            return sprite.right < 0 || sprite.left > areaWidth || sprite.bottom < 0 || sprite.top > areaHeight;
         }
 
         private insertAABB(sprite: Sprite) {
