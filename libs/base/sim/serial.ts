@@ -13,7 +13,7 @@ namespace pxsim.serial {
     export function setBaudRate(rate: number) {
         // TODO
     }
-    export function redirect(tx: pins.DigitalPin, rx: pins.DigitalPin) {
+    export function redirect(tx: pins.DigitalInOutPin, rx: pins.DigitalInOutPin) {
         // TODO
     }
     export function redirectToUSB() {}

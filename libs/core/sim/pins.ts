@@ -4,7 +4,7 @@ namespace pxsim.pins {
         used: boolean;
     }
 
-    export class DigitalPin extends CommonPin {
+    export class DigitalInOutPin extends CommonPin {
     }
 
     export class AnalogPin extends CommonPin {
@@ -27,8 +27,8 @@ namespace pxsim.pins {
     }
 }
 
-namespace pxsim.DigitalPinMethods {
-    export function digitalRead(name: pins.DigitalPin): number {
+namespace pxsim.DigitalInOutPinMethods {
+    export function digitalRead(name: pins.DigitalInOutPin): number {
         return name.digitalReadPin();
     }
 
@@ -36,7 +36,7 @@ namespace pxsim.DigitalPinMethods {
     * Set a pin or connector value to either 0 or 1.
     * @param value value to set on the pin, 1 eg,0
     */
-    export function digitalWrite(name: pins.DigitalPin, value: number): void {
+    export function digitalWrite(name: pins.DigitalInOutPin, value: number): void {
         name.digitalWritePin(value);
     }
 
@@ -44,11 +44,11 @@ namespace pxsim.DigitalPinMethods {
     * Configures this pin to a digital input, and generates events where the timestamp is the duration
     * that this pin was either ``high`` or ``low``.
     */
-    export function onPulsed(name: pins.DigitalPin, high: boolean, body: RefAction): void {
+    export function onPulsed(name: pins.DigitalInOutPin, high: boolean, body: RefAction): void {
         onEvent(name, high ? DAL.DEVICE_PIN_EVT_PULSE_HI : DAL.DEVICE_PIN_EVT_PULSE_LO, body);
     }
 
-    export function onEvent(name: pins.DigitalPin, ev: number, body: RefAction): void {
+    export function onEvent(name: pins.DigitalInOutPin, ev: number, body: RefAction): void {
         name.onEvent(ev, body);
     }
 
@@ -57,7 +57,7 @@ namespace pxsim.DigitalPinMethods {
     * @param value the value of the pulse (default high)
     * @param maximum duration in micro-seconds
     */
-    export function pulseIn(name: pins.DigitalPin, high: boolean, maxDuration = 2000000): number {
+    export function pulseIn(name: pins.DigitalInOutPin, high: boolean, maxDuration = 2000000): number {
         name.used = true;
         const pulse = high ? DAL.DEVICE_PIN_EVT_PULSE_HI : DAL.DEVICE_PIN_EVT_PULSE_LO;
         // Always return default value, can't simulate
@@ -68,7 +68,7 @@ namespace pxsim.DigitalPinMethods {
     * Configures the pull of this pin.
     * @param pull one of the mbed pull configurations: PullUp, PullDown, PullNone
     */
-    export function setPull(name: pins.DigitalPin, pull: number): void {
+    export function setPull(name: pins.DigitalInOutPin, pull: number): void {
         name.setPull(pull);
     }
 
@@ -76,7 +76,7 @@ namespace pxsim.DigitalPinMethods {
      * Get the pin state (pressed or not). Requires to hold the ground to close the circuit.
      * @param name pin used to detect the touch
      */
-    export function isPressed(name: pins.DigitalPin): boolean {
+    export function isPressed(name: pins.DigitalInOutPin): boolean {
         return name.isTouched();
     }
 }
