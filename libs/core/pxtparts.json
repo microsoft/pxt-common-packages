@@ -101,7 +101,7 @@
                 "orientation": "+Z"
             }
         ],
-        "instantiation": {
+        "instantiations": [{
             "kind": "function",
             "fullyQualifiedName": "PwmOnlyPin.servoWrite",
             "argumentRoles": [
@@ -110,7 +110,34 @@
                     "partParameter": "name"
                 }
             ]
-        },
+        }, {
+            "kind": "function",
+            "fullyQualifiedName": "servos.Servo.setAngle",
+            "argumentRoles": [
+                {
+                    "pinInstantiationIdx": 0,
+                    "partParameter": "name"
+                }
+            ]
+        }, {
+            "kind": "function",
+            "fullyQualifiedName": "servos.Servo.run",
+            "argumentRoles": [
+                {
+                    "pinInstantiationIdx": 0,
+                    "partParameter": "name"
+                }
+            ]
+        }, {
+            "kind": "function",
+            "fullyQualifiedName": "servos.Servo.setPulse",
+            "argumentRoles": [
+                {
+                    "pinInstantiationIdx": 0,
+                    "partParameter": "name"
+                }
+            ]
+        }],
         "assembly": [
             {
                 "part": true,
