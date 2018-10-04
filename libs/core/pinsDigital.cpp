@@ -27,7 +27,7 @@ enum class PinPullMode {
     PullNone = 2
 };
 
-namespace DigitalPinMethods {
+namespace DigitalInOutPinMethods {
 /**
  * Read a pin or connector as either 0 or 1
  * @param name pin to read from
@@ -39,7 +39,7 @@ namespace DigitalPinMethods {
 //% name.fieldEditor="gridpicker"
 //% name.fieldOptions.width=220
 //% name.fieldOptions.columns=4
-bool digitalRead(DigitalPin name) {
+bool digitalRead(DigitalInOutPin name) {
     return PINOP(getDigitalValue()) != 0;
 }
 
@@ -55,7 +55,7 @@ bool digitalRead(DigitalPin name) {
 //% name.fieldEditor="gridpicker"
 //% name.fieldOptions.width=220
 //% name.fieldOptions.columns=4
-void digitalWrite(DigitalPin name, bool value) {
+void digitalWrite(DigitalInOutPin name, bool value) {
     PINOP(setDigitalValue(value));
 }
 
@@ -71,7 +71,7 @@ void digitalWrite(DigitalPin name, bool value) {
 //% pin.fieldOptions.columns=4
 //% parts="slideswitch" trackArgs=0
 //% deprecated=1 hidden=1
-void onPulsed(DigitalPin pin, PulseValue pulse, Action body) {
+void onPulsed(DigitalInOutPin pin, PulseValue pulse, Action body) {
     pin->eventOn(DEVICE_PIN_EVENT_ON_PULSE);
     registerWithDal(pin->id, (int)pulse, body);
 }
@@ -86,7 +86,7 @@ void onPulsed(DigitalPin pin, PulseValue pulse, Action body) {
 //% pin.fieldOptions.width=220
 //% pin.fieldOptions.columns=4
 //% parts="slideswitch" trackArgs=0
-void onEvent(DigitalPin pin, PinEvent event, Action body) {
+void onEvent(DigitalInOutPin pin, PinEvent event, Action body) {
     switch(event) {
         case PinEvent::PulseHigh:
         case PinEvent::PulseLow:
@@ -114,7 +114,7 @@ void onEvent(DigitalPin pin, PinEvent event, Action body) {
 //% pin.fieldEditor="gridpicker"
 //% pin.fieldOptions.width=220
 //% pin.fieldOptions.columns=4
-int pulseIn(DigitalPin pin, PulseValue value, int maxDuration = 2000000) {
+int pulseIn(DigitalInOutPin pin, PulseValue value, int maxDuration = 2000000) {
     int pulse = PulseValue::High == value ? 1 : 0;
     uint64_t tick = system_timer_current_time_us();
     uint64_t maxd = (uint64_t)maxDuration;
@@ -143,7 +143,7 @@ int pulseIn(DigitalPin pin, PulseValue value, int maxDuration = 2000000) {
 //% name.fieldEditor="gridpicker"
 //% name.fieldOptions.width=220
 //% name.fieldOptions.columns=4
-void setPull(DigitalPin name, PinPullMode pull) {
+void setPull(DigitalInOutPin name, PinPullMode pull) {
     PullMode m = pull == PinPullMode::PullDown ? PullMode::Down : pull == PinPullMode::PullUp
                                                                         ? PullMode::Up
                                                                         : PullMode::None;

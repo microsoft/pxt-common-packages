@@ -95,13 +95,13 @@ MultiButton *getMultiButton(int id, int pinA, int pinB, int flags) {
 }
 
 
-namespace DigitalPinMethods {
+namespace DigitalInOutPinMethods {
 
 /**
  * Get the push button (connected to GND) for given pin
  */
 //%
-Button_ pushButton(DigitalPin pin) {
+Button_ pushButton(DigitalInOutPin pin) {
     return pxt::getButtonByPin(pin->name, BUTTON_ACTIVE_LOW_PULL_UP);
 }
 
