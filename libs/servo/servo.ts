@@ -1,3 +1,7 @@
+/**
+ * Control micro servos
+ */
+//% color="#03AA74" weight=88 icon="\uf021"
 namespace servos {
     //% fixedInstances
     export class Servo {
@@ -14,7 +18,8 @@ namespace servos {
         //% servo.fieldEditor="gridpicker"
         //% servo.fieldOptions.width=220
         //% servo.fieldOptions.columns=2
-        //% blockGap=8
+        //% blockGap=8        
+        //% parts=microservo trackArgs=0
         setAngle(degrees: number) {
             degrees = degrees | 0;
             degrees = Math.clamp(0, 180, degrees);
@@ -35,9 +40,10 @@ namespace servos {
         //% servo.fieldEditor="gridpicker"
         //% servo.fieldOptions.width=220
         //% servo.fieldOptions.columns=2
+        //% parts=microservo trackArgs=0
         run(speed: number): void {
             this.setAngle(Math.map(speed, -100, 100, 0, 180));
-        }        
+        }
 
         /*
          * set the pulse width to the servo in microseconds
@@ -50,15 +56,16 @@ namespace servos {
         //% servo.fieldEditor="gridpicker"
         //% servo.fieldOptions.width=220
         //% servo.fieldOptions.columns=2
+        //% parts=microservo trackArgs=0
         setPulse(micros: number) {
             micros = micros | 0;
             micros = Math.clamp(500, 2500, micros);
             this.internalSetPulse(micros);
-         }
+        }
 
-         protected internalSetPulse(micros: number): void {
+        protected internalSetPulse(micros: number): void {
 
-         }
+        }
     }
 
     export class PinServo extends Servo {
@@ -72,7 +79,7 @@ namespace servos {
         protected internalSetAngle(angle: number): void {
             this._pin.servoWrite(angle);
         }
-        
+
         protected internalSetPulse(micros: number): void {
             this._pin.servoSetPulse(micros);
         }
