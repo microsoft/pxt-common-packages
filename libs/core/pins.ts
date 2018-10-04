@@ -14,7 +14,7 @@ interface AnalogOutPin extends DigitalInOutPin {
 }
 
 //% noRefCounting fixedInstances
-interface AnalogPin extends AnalogInPin, AnalogOutPin {
+interface AnalogInOutPin extends AnalogInPin, AnalogOutPin {
     // methods filled from C++
 }
 
@@ -24,5 +24,5 @@ interface PwmOnlyPin extends DigitalInOutPin, AnalogOutPin {
 }
 
 //% noRefCounting fixedInstances
-interface PwmPin extends PwmOnlyPin, AnalogPin {
+interface PwmPin extends PwmOnlyPin, AnalogInOutPin {
 }

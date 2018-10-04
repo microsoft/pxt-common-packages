@@ -140,7 +140,7 @@
 typedef CODAL_PIN DevicePin;
 
 typedef DevicePin *DigitalInOutPin;
-typedef DevicePin *AnalogPin;
+typedef DevicePin *AnalogInOutPin;
 typedef DevicePin *AnalogInPin;
 typedef DevicePin *AnalogOutPin;
 typedef DevicePin *PwmPin;

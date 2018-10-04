@@ -7,7 +7,7 @@ namespace pxsim.pins {
     export class DigitalInOutPin extends CommonPin {
     }
 
-    export class AnalogPin extends CommonPin {
+    export class AnalogInOutPin extends CommonPin {
 
     }
 
@@ -85,7 +85,7 @@ namespace pxsim.AnalogInPinMethods {
     /**
      * Read the connector value as analog, that is, as a value comprised between 0 and 1023.
      */
-    export function analogRead(name: pins.AnalogPin): number {
+    export function analogRead(name: pins.AnalogInOutPin): number {
         pins.markUsed(name);
         return name.analogReadPin();
     }
@@ -96,7 +96,7 @@ namespace pxsim.AnalogOutPinMethods {
  * Set the connector value as analog. Value must be comprised between 0 and 1023.
  * @param value value to write to the pin between ``0`` and ``1023``. eg:1023,0
  */
-    export function analogWrite(name: pins.AnalogPin, value: number): void {
+    export function analogWrite(name: pins.AnalogInOutPin, value: number): void {
         pins.markUsed(name);
         name.analogWritePin(value);
 
