@@ -70,6 +70,25 @@ static void commInit() {
     }
 }
 
+
+void dispatchForeground(Event e, void* action) {
+    lastEvent = e;
+    auto value = fromInt(e.value);
+    runAction1((Action)action, value);
+}
+
+void dispatchBackground(Event e, void* action) {
+    lastEvent = e;
+    auto value = fromInt(e.value);
+    runAction1((Action)action, value);
+}
+
+void deleteListener(CodalListener *l) {
+    if (l->cb_param == (void (*)(Event, void*))dispatchBackground || 
+        l->cb_param == (void (*)(Event, void*))dispatchForeground)
+        decr((Action)(l->cb_arg));
+}
+
 static void initCodal() {
     cpu_clock_init();
 
@@ -77,6 +96,8 @@ static void initCodal() {
 
     // Bring up fiber scheduler.
     scheduler_init(devMessageBus);
+    // register listener for deletion
+    devMessageBus.setListenerDeletionCallback(deleteListener);
 
     // We probably don't need that - components are initialized when one obtains
     // the reference to it.
@@ -95,34 +116,22 @@ static void initCodal() {
 // An adapter for the API expected by the run-time.
 // ---------------------------------------------------------------------------
 
-// We have the invariant that if [dispatchEvent] is registered against the DAL
-// for a given event, then [handlersMap] contains a valid entry for that
-// event.
-
-bool backgroundHandlerFlag = false;
-
-void dispatchEvent(Event e) {
-    lastEvent = e;
-
-    auto curr = findBinding(e.source, e.value);
-    auto value = fromInt(e.value);
-    if (curr)
-        runAction1(curr->action, value);
-
-    curr = findBinding(e.source, DEVICE_EVT_ANY);
-    if (curr)
-        runAction1(curr->action, value);
+static bool backgroundHandlerFlag = false;
+void setBackgroundHandlerFlag() {
+    backgroundHandlerFlag = true;
 }
 
-void registerWithDal(int id, int event, Action a, int flags) {
-    // first time?
-    if (!findBinding(id, event))
-        devMessageBus.listen(id, event, dispatchEvent, flags);
-    setBinding(id, event, a);
+void registerWithDal(int id, int event, Action a) {
+    if (!backgroundHandlerFlag) {
+        devMessageBus.remove(id, event, dispatchForeground);
+    }
+    devMessageBus.listen(id, event, backgroundHandlerFlag ? dispatchBackground : dispatchForeground, a);
+    backgroundHandlerFlag = false;
+    incr((Action)a);
 }
 
 void unregisterFromDal(Action a) { 
-    // TODO
+    devMessageBus.remove(DEVICE_EVT_ANY, DEVICE_EVT_ANY, dispatchBackground, (void*) a);
 }
 
 void fiberDone(void *a) {
