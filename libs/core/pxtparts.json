@@ -98,7 +98,7 @@
         ],
         "instantiation": {
             "kind": "function",
-            "fullyQualifiedName": "DigitalPin.digitalRead,DigitalPin.onPulsed,DigitalPin.onEvent",
+            "fullyQualifiedName": "DigitalInOutPin.digitalRead,DigitalInOutPin.onPulsed,DigitalInOutPin.onEvent",
             "argumentRoles": [
                 {
                     "pinInstantiationIdx": 0,
@@ -162,48 +162,16 @@
                 "orientation": "+Z"
             }
         ],
-        "instantiations": [
-            {
-                "kind": "function",
-                "fullyQualifiedName": "PwmOnlyPin.servoWrite",
-                "argumentRoles": [
-                    {
-                        "pinInstantiationIdx": 0,
-                        "partParameter": "name"
-                    }
-                ]
-            },
-            {
-                "kind": "function",
-                "fullyQualifiedName": "servos.Servo.setAngle",
-                "argumentRoles": [
-                    {
-                        "pinInstantiationIdx": 0,
-                        "partParameter": "name"
-                    }
-                ]
-            },
-            {
-                "kind": "function",
-                "fullyQualifiedName": "servos.Servo.run",
-                "argumentRoles": [
-                    {
-                        "pinInstantiationIdx": 0,
-                        "partParameter": "name"
-                    }
-                ]
-            },
-            {
-                "kind": "function",
-                "fullyQualifiedName": "servos.Servo.setPulse",
-                "argumentRoles": [
-                    {
-                        "pinInstantiationIdx": 0,
-                        "partParameter": "name"
-                    }
-                ]
-            }
-        ],
+        "instantiation": {
+            "kind": "function",
+            "fullyQualifiedName": "PwmOnlyPin.servoWrite,servos.Servo.setAngle,servos.Servo.run,servos.Servo.setPulse",
+            "argumentRoles": [
+                {
+                    "pinInstantiationIdx": 0,
+                    "partParameter": "name"
+                }
+            ]
+        },
         "assembly": [
             {
                 "part": true,
@@ -254,7 +222,7 @@
         ],
         "instantiation": {
             "kind": "function",
-            "fullyQualifiedName": "DigitalPin.digitalWrite",
+            "fullyQualifiedName": "DigitalInOutPin.digitalWrite",
             "argumentRoles": [
                 {
                     "pinInstantiationIdx": 0,

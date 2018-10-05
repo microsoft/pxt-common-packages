@@ -30,7 +30,7 @@ enum class SoundOutputDestination {
 
 // override analogWrite for PA02 to use DAC
 namespace AnalogOutPinMethods {
-void analogWrite(AnalogPin name, int value) {
+void analogWrite(AnalogOutPin name, int value) {
     if (name->name == PA02) {
         auto pinAmp = LOOKUP_PIN(SPEAKER_AMP);
         if (pinAmp) pinAmp->setDigitalValue(0);

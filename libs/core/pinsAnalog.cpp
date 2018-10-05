@@ -19,7 +19,7 @@ int analogRead(AnalogInPin name) {
 }
 
 namespace AnalogOutPinMethods {
-void analogWrite(AnalogPin name, int value) __attribute__ ((weak));
+void analogWrite(AnalogOutPin name, int value) __attribute__ ((weak));
 
 /**
  * Set the connector value as analog. Value must be comprised between 0 and 1023.
