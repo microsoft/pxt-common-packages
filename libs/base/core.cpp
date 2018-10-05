@@ -111,7 +111,8 @@ unsigned getRandom(unsigned max) {
 }
 
 PXT_DEF_STRING(sTrue, "\x04\x00true")
-PXT_DEF_STRING(sFalse, "\x05\x00false")
+PXT_DEF_STRING(sFalse, "\x05\x00"
+                       "false")
 PXT_DEF_STRING(sUndefined, "\x09\x00undefined")
 PXT_DEF_STRING(sNull, "\x04\x00null")
 PXT_DEF_STRING(sObject, "\x08\x00[Object]")
@@ -170,15 +171,39 @@ String concat(String s, String other) {
     return r;
 }
 
-//%
-int compare(String s, String that) {
-    if (s == that)
+int compare(TValue a, TValue b) {
+    if (a == b)
         return 0;
-    // TODO this isn't quite right, in JS both `null < "foo"` and `null > "foo"` are false
-    if (!s)
-        return -1;
-    if (!that)
+
+    ValType ta = valType(a);
+    ValType tb = valType(b);
+
+    // TODO we assume here that undefined, null, true, false, etc
+    // are all less than strings - this isn't quite JS semantics
+    if (ta == ValType::String && isSpecial(b))
         return 1;
+
+    if (tb == ValType::String && isSpecial(a))
+        return -1;
+
+    // conversions for numbers
+    if (ta != ValType::String) {
+        auto aa = numops::toString(a);
+        auto r = compare((TValue)aa, b);
+        decrRC(aa);
+        return r;
+    }
+
+    if (tb != ValType::String) {
+        auto bb = numops::toString(b);
+        auto r = compare(a, (TValue)bb);
+        decrRC(bb);
+        return r;
+    }
+
+    auto s = (String)a;
+    auto that = (String)b;
+
     int compareResult = strcmp(s->data, that->data);
     if (compareResult < 0)
         return -1;
@@ -269,13 +294,13 @@ String substr(String s, int start, int length) {
 
 //%
 int indexOf(String s, String searchString, int start) {
-    if (!s || !searchString) 
+    if (!s || !searchString)
         return -1;
     if (start < 0 || start + searchString->length > s->length)
         return -1;
-    const char* match = strstr(((const char*)s->data + start), searchString->data);
+    const char *match = strstr(((const char *)s->data + start), searchString->data);
     if (NULL == match)
-        return -1;    
+        return -1;
     return match - s->data;
 }
 
@@ -350,7 +375,7 @@ TNumber fromDouble(double r) {
 #endif
     BoxedNumber *p = new BoxedNumber();
     p->num = r;
-    MEMDBG("mkNum: %p", p);
+    MEMDBG("mkNum: %d/1000 => %p", (int)(r * 1000), p);
     return (TNumber)p;
 }
 
@@ -399,18 +424,20 @@ bool eqq_bool(TValue a, TValue b) {
     ValType ta = valType(a);
     ValType tb = valType(b);
 
+    if (ta == ValType::String || tb == ValType::String)
+        return String_::compare(a, b) == 0;
+
     if (ta != tb)
         return false;
 
-    if (ta == ValType::String)
-        return String_::compare((String)a, (String)b) == 0;
-
+#ifndef PXT_BOX_DEBUG
     int aa = (int)a;
     int bb = (int)b;
 
     // if at least one of the values is tagged, they are not equal
     if ((aa | bb) & 3)
         return false;
+#endif
 
     if (ta == ValType::Number)
         return toDouble(a) == toDouble(b);
@@ -653,17 +680,7 @@ void mycvt(double d, char *buf) {
     }
 }
 
-//%
 String toString(TValue v) {
-
-    if (v == TAG_UNDEFINED)
-        return (String)(void *)sUndefined;
-    else if (v == TAG_FALSE)
-        return (String)(void *)sFalse;
-    else if (v == TAG_TRUE)
-        return (String)(void *)sTrue;
-    else if (v == TAG_NULL)
-        return (String)(void *)sNull;
     ValType t = valType(v);
 
     if (t == ValType::String) {
@@ -677,6 +694,13 @@ String toString(TValue v) {
         }
 
         double x = toDouble(v);
+
+#ifdef PXT_BOX_DEBUG
+        if (x == (int)x) {
+            itoa((int)x, buf);
+            return mkString(buf);
+        }
+#endif
 
         if (isnan(x))
             return (String)(void *)sNaN;
@@ -692,7 +716,33 @@ String toString(TValue v) {
     } else if (t == ValType::Function) {
         return (String)(void *)sFunction;
     } else {
+        if (v == TAG_UNDEFINED)
+            return (String)(void *)sUndefined;
+        else if (v == TAG_FALSE)
+            return (String)(void *)sFalse;
+        else if (v == TAG_TRUE)
+            return (String)(void *)sTrue;
+        else if (v == TAG_NULL)
+            return (String)(void *)sNull;
+
+        auto vt = getVTable((RefObject *)v);
+        if (vt->methods[2]) {
+            // custom toString() method
+            // after running action, make sure it's actually a string
+            return stringConv(runAction1((Action)vt->methods[2], v));
+        }
         return (String)(void *)sObject;
+    }
+}
+
+String stringConv(TValue v) {
+    ValType t = valType(v);
+    if (t == ValType::String) {
+        return (String)v;
+    } else {
+        auto r = toString(v);
+        decr(v);
+        return r;
     }
 }
 } // namespace numops
@@ -814,7 +864,7 @@ namespace Array_ {
 //%
 RefCollection *mk(unsigned flags) {
     auto r = new RefCollection();
-    MEMDBG("mkColl: %p", r);
+    MEMDBG("mkColl: => %p", r);
     return r;
 }
 //%
@@ -874,12 +924,17 @@ int getConfig(int key, int defl) {
 
 #ifdef PXT_BOOTLOADER_CFG_ADDR
     cfgData = *(int **)(PXT_BOOTLOADER_CFG_ADDR);
-    for (int i = 0;; i += 2) {
-        if (cfgData[i] == key)
-            return cfgData[i + 1];
-        if (cfgData[i] == 0)
-            break;
-    }
+#ifdef PXT_BOOTLOADER_CFG_MAGIC
+    cfgData++;
+    if ((void*)0x200 <= cfgData && cfgData < (void*)PXT_BOOTLOADER_CFG_ADDR &&
+        cfgData[-1] == (int)PXT_BOOTLOADER_CFG_MAGIC)
+#endif
+        for (int i = 0;; i += 2) {
+            if (cfgData[i] == key)
+                return cfgData[i + 1];
+            if (cfgData[i] == 0)
+                break;
+        }
 #endif
 
     cfgData = *(int **)&bytecode[18];
@@ -920,14 +975,14 @@ void stlocRef(RefRefLocal *r, TValue v) {
 //%
 RefLocal *mkloc() {
     auto r = new RefLocal();
-    MEMDBG("mkloc: %p", r);
+    MEMDBG("mkloc: => %p", r);
     return r;
 }
 
 //%
 RefRefLocal *mklocRef() {
     auto r = new RefRefLocal();
-    MEMDBG("mklocRef: %p", r);
+    MEMDBG("mklocRef: => %p", r);
     return r;
 }
 
@@ -993,7 +1048,7 @@ int ptrToBool(TValue p) {
 //%
 RefMap *mkMap() {
     auto r = new RefMap();
-    MEMDBG("mkMap: %p", r);
+    MEMDBG("mkMap: => %p", r);
     return r;
 }
 

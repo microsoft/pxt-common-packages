@@ -7,58 +7,119 @@
             "height": 45,
             "pinDistance": 15,
             "pinLocations": [
-                {"x": 0, "y": 0},
-                {"x": 30, "y": 45}
+                {
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "x": 30,
+                    "y": 45
+                }
             ]
         },
         "numberOfPins": 2,
         "pinDefinitions": [
-            {"target": "ground", "style": "male", "orientation": "-Z"},
-            {"target": {"pinInstantiationIdx": 0}, "style": "male", "orientation": "-Z"}
+            {
+                "target": "ground",
+                "style": "male",
+                "orientation": "-Z"
+            },
+            {
+                "target": {
+                    "pinInstantiationIdx": 0
+                },
+                "style": "male",
+                "orientation": "-Z"
+            }
         ],
         "instantiation": {
             "kind": "function",
             "fullyQualifiedName": "Button.onEvent",
             "argumentRoles": [
-                {"pinInstantiationIdx": 0, "partParameter": "button"}
+                {
+                    "pinInstantiationIdx": 0,
+                    "partParameter": "button"
+                }
             ]
         },
         "assembly": [
-            {"part": true},
-            {"pinIndices": [0, 1]}
+            {
+                "part": true
+            },
+            {
+                "pinIndices": [
+                    0,
+                    1
+                ]
+            }
         ]
     },
-   "slideswitch": {
-       "numberOfPins": 3,
-       "simulationBehavior":"slideswitch",
-       "visual": {
-           "builtIn": "slideswitch",
-           "width": 100,
-           "height": 100,
-           "pinDistance": 15,
-           "pinLocations": [
-               {"x": 30, "y": 0},
-               {"x": 45, "y": 0},
-               {"x": 60, "y": 0}
-           ]
-       },
-       "pinDefinitions": [
-           {"target": "ground", "style": "male", "orientation": "-Z"},
-           {"target": {"pinInstantiationIdx": 0}, "style": "male", "orientation": "-Z"},
-           {"target": "threeVolt", "style": "male", "orientation": "-Z"}
-       ],
-       "instantiation": {
-           "kind": "function",
-           "fullyQualifiedName": "DigitalPin.digitalRead,DigitalPin.onPulsed,DigitalPin.onEvent",
-           "argumentRoles": [
-               {"pinInstantiationIdx": 0, "partParameter": "pin"}
-           ]
-       },
-       "assembly": [
-           {"part": true, "pinIndices": [0]},
-           {"pinIndices": [1]}
-       ]
-   },    
+    "slideswitch": {
+        "numberOfPins": 3,
+        "simulationBehavior": "slideswitch",
+        "visual": {
+            "builtIn": "slideswitch",
+            "width": 100,
+            "height": 100,
+            "pinDistance": 15,
+            "pinLocations": [
+                {
+                    "x": 30,
+                    "y": 0
+                },
+                {
+                    "x": 45,
+                    "y": 0
+                },
+                {
+                    "x": 60,
+                    "y": 0
+                }
+            ]
+        },
+        "pinDefinitions": [
+            {
+                "target": "ground",
+                "style": "male",
+                "orientation": "-Z"
+            },
+            {
+                "target": {
+                    "pinInstantiationIdx": 0
+                },
+                "style": "male",
+                "orientation": "-Z"
+            },
+            {
+                "target": "threeVolt",
+                "style": "male",
+                "orientation": "-Z"
+            }
+        ],
+        "instantiation": {
+            "kind": "function",
+            "fullyQualifiedName": "DigitalInOutPin.digitalRead,DigitalInOutPin.onPulsed,DigitalInOutPin.onEvent",
+            "argumentRoles": [
+                {
+                    "pinInstantiationIdx": 0,
+                    "partParameter": "pin"
+                }
+            ]
+        },
+        "assembly": [
+            {
+                "part": true,
+                "pinIndices": [
+                    0
+                ]
+            },
+            {
+                "pinIndices": [
+                    1
+                ]
+            }
+        ]
+    },
     "microservo": {
         "simulationBehavior": "microservo",
         "visual": {
@@ -103,7 +164,7 @@
         ],
         "instantiation": {
             "kind": "function",
-            "fullyQualifiedName": "PwmOnlyPin.servoWrite",
+            "fullyQualifiedName": "PwmOnlyPin.servoWrite,servos.Servo.setAngle,servos.Servo.run,servos.Servo.setPulse",
             "argumentRoles": [
                 {
                     "pinInstantiationIdx": 0,
@@ -134,25 +195,53 @@
             "height": 180,
             "pinDistance": 15,
             "pinLocations": [
-                {"x": 0, "y": 0},
-                {"x": 60, "y": 0}
+                {
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "x": 60,
+                    "y": 0
+                }
             ]
         },
         "simulationBehavior": "led",
         "pinDefinitions": [
-            {"target": {"pinInstantiationIdx": 0}, "style": "male", "orientation": "-Z"},
-            {"target": "ground", "style": "male", "orientation": "-Z"}
+            {
+                "target": {
+                    "pinInstantiationIdx": 0
+                },
+                "style": "male",
+                "orientation": "-Z"
+            },
+            {
+                "target": "ground",
+                "style": "male",
+                "orientation": "-Z"
+            }
         ],
         "instantiation": {
             "kind": "function",
-            "fullyQualifiedName": "DigitalPin.digitalWrite",
+            "fullyQualifiedName": "DigitalInOutPin.digitalWrite",
             "argumentRoles": [
-                {"pinInstantiationIdx": 0, "partParameter": "name"}
+                {
+                    "pinInstantiationIdx": 0,
+                    "partParameter": "name"
+                }
             ]
         },
         "assembly": [
-            {"part": true, "pinIndices": [0]},
-            {"pinIndices": [1]}
+            {
+                "part": true,
+                "pinIndices": [
+                    0
+                ]
+            },
+            {
+                "pinIndices": [
+                    1
+                ]
+            }
         ]
     },
     "analogled": {
@@ -163,25 +252,53 @@
             "height": 180,
             "pinDistance": 15,
             "pinLocations": [
-                {"x": 0, "y": 0},
-                {"x": 60, "y": 0}
+                {
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "x": 60,
+                    "y": 0
+                }
             ]
         },
         "simulationBehavior": "led",
         "pinDefinitions": [
-            {"target": {"pinInstantiationIdx": 0}, "style": "male", "orientation": "-Z"},
-            {"target": "ground", "style": "male", "orientation": "-Z"}
+            {
+                "target": {
+                    "pinInstantiationIdx": 0
+                },
+                "style": "male",
+                "orientation": "-Z"
+            },
+            {
+                "target": "ground",
+                "style": "male",
+                "orientation": "-Z"
+            }
         ],
         "instantiation": {
             "kind": "function",
             "fullyQualifiedName": "AnalogOutPin.analogWrite",
             "argumentRoles": [
-                {"pinInstantiationIdx": 0, "partParameter": "name"}
+                {
+                    "pinInstantiationIdx": 0,
+                    "partParameter": "name"
+                }
             ]
         },
         "assembly": [
-            {"part": true, "pinIndices": [0]},
-            {"pinIndices": [1]}
+            {
+                "part": true,
+                "pinIndices": [
+                    0
+                ]
+            },
+            {
+                "pinIndices": [
+                    1
+                ]
+            }
         ]
     },
     "photocell": {
@@ -192,27 +309,62 @@
             "height": 180,
             "pinDistance": 15,
             "pinLocations": [
-                {"x": 0, "y": 0},
-                {"x": 15, "y": 0},
-                {"x": 60, "y": 0}
+                {
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "x": 15,
+                    "y": 0
+                },
+                {
+                    "x": 60,
+                    "y": 0
+                }
             ]
         },
         "simulationBehavior": "photocell",
         "pinDefinitions": [
-            {"target": "threeVolt", "style": "male", "orientation": "-Z"},
-            {"target": {"pinInstantiationIdx": 0}, "style": "male", "orientation": "-Z"},
-            {"target": "ground", "style": "male", "orientation": "-Z"}
+            {
+                "target": "threeVolt",
+                "style": "male",
+                "orientation": "-Z"
+            },
+            {
+                "target": {
+                    "pinInstantiationIdx": 0
+                },
+                "style": "male",
+                "orientation": "-Z"
+            },
+            {
+                "target": "ground",
+                "style": "male",
+                "orientation": "-Z"
+            }
         ],
         "instantiation": {
             "kind": "function",
             "fullyQualifiedName": "AnalogInPin.analogRead",
             "argumentRoles": [
-                {"pinInstantiationIdx": 0, "partParameter": "name"}
+                {
+                    "pinInstantiationIdx": 0,
+                    "partParameter": "name"
+                }
             ]
         },
         "assembly": [
-            {"part": true, "pinIndices": [0]},
-            {"pinIndices": [1]}
+            {
+                "part": true,
+                "pinIndices": [
+                    0
+                ]
+            },
+            {
+                "pinIndices": [
+                    1
+                ]
+            }
         ]
-    }    
+    }
 }

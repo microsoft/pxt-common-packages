@@ -19,7 +19,7 @@ int analogRead(AnalogInPin name) {
 }
 
 namespace AnalogOutPinMethods {
-void analogWrite(AnalogPin name, int value) __attribute__ ((weak));
+void analogWrite(AnalogOutPin name, int value) __attribute__ ((weak));
 
 /**
  * Set the connector value as analog. Value must be comprised between 0 and 1023.
@@ -33,6 +33,7 @@ void analogWrite(AnalogPin name, int value) __attribute__ ((weak));
 //% name.fieldEditor="gridpicker"
 //% name.fieldOptions.width=220
 //% name.fieldOptions.columns=4
+//% value.min=0 value.max=1023
 void analogWrite(AnalogOutPin name, int value) {
     PINOP(setAnalogValue(value));
 }

@@ -105,7 +105,7 @@ namespace serial {
     //% rx.fieldEditor="gridpicker" rx.fieldOptions.columns=3
     //% rx.fieldOptions.tooltips="false"
     //% blockGap=8 inlineInputMode=inline
-    void redirect(DigitalPin tx, DigitalPin rx, BaudRate rate) {
+    void redirect(DigitalInOutPin tx, DigitalInOutPin rx, BaudRate rate) {
       getWSerial()->serial.redirect((PinName)tx->name, (PinName)rx->name);
       getWSerial()->serial.baud((int)rate);
     }

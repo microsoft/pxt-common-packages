@@ -15,7 +15,7 @@ If you know the exact type, you can set it in the pixel mode.
 
 ## Parameters
 
-* **pin**: [DigitalPin](/reference/pins), the pin where the neopixel strip is connected.
+* **pin**: [DigitalInOutPin](/reference/pins), the pin where the neopixel strip is connected.
 * **numleds**: the [number](/types/number) of LEDs in the strip, such as: 10, 30, 60, or 64.
 
 ## Returns

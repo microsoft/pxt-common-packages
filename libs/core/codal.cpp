@@ -139,7 +139,7 @@ void sleep_ms(unsigned ms) {
 }
 
 void sleep_us(uint64_t us) {
-    wait_us(us);
+    target_wait_us(us);
 }
 
 void forever_stub(void *a) {
