@@ -45,7 +45,12 @@ namespace pxsim.control {
         // TODO mode?
         board().bus.queue(id, evid)
     }
-
+    export function nextHandlerToBackground() {
+        board().bus.setBackgroundHandlerFlag();
+    }
+    export function removeFromBackground(handler: RefAction) {
+        board().bus.removeBackgroundHandler(handler);
+    }
     export function millis(): number {
         return runtime.runningTime();
     }

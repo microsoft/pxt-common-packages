@@ -98,6 +98,9 @@ static void initCodal() {
 // We have the invariant that if [dispatchEvent] is registered against the DAL
 // for a given event, then [handlersMap] contains a valid entry for that
 // event.
+
+bool backgroundHandlerFlag = false;
+
 void dispatchEvent(Event e) {
     lastEvent = e;
 
@@ -116,6 +119,10 @@ void registerWithDal(int id, int event, Action a, int flags) {
     if (!findBinding(id, event))
         devMessageBus.listen(id, event, dispatchEvent, flags);
     setBinding(id, event, a);
+}
+
+void unregisterFromDal(Action a) { 
+    // TODO
 }
 
 void fiberDone(void *a) {
