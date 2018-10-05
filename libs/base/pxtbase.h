@@ -38,6 +38,8 @@ void* operator new (size_t size);
 #define PXT_VTABLE_SHIFT 2
 #endif
 
+#define PXT_REFCNT_FLASH 0xfffe
+
 #define CONCAT_1(a, b) a##b
 #define CONCAT_0(a, b) CONCAT_1(a, b)
 #define STATIC_ASSERT(e) enum { CONCAT_0(_static_assert_, __LINE__) = 1 / ((e) ? 1 : 0) };
@@ -259,7 +261,7 @@ inline void *ptrOfLiteral(int offset) {
 // Checks if object is ref-counted, and has a custom PXT vtable in front
 // TODO
 inline bool isRefCounted(TValue e) {
-    return !isTagged(e) && (*((unsigned *)e) & 1) == 1;
+    return !isTagged(e) && (*((uint16_t *)e) & 1) == 1;
 }
 
 inline void check(int cond, PXT_ERROR code, int subcode = 0) {
@@ -305,7 +307,7 @@ class RefObject {
     void destroyVT();
     void printVT();
 
-    inline bool isReadOnly() { return refcnt == 0xffff; }
+    inline bool isReadOnly() { return refcnt == PXT_REFCNT_FLASH; }
 
     // Increment/decrement the ref-count. Decrementing to zero deletes the current object.
     inline void ref() {
@@ -615,7 +617,7 @@ ValType valType(TValue v);
 } // namespace pxt
 
 #define PXT_DEF_STRING(name, val)                                                                  \
-    static const char name[] __attribute__((aligned(4))) = "\xff\xff\x01\x00" val;
+    static const char name[] __attribute__((aligned(4))) = "\xfe\xff\x01\x00" val;
 
 using namespace pxt;
 

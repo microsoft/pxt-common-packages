@@ -35,11 +35,12 @@ void setBinding(int source, int value, Action act) {
     handlerBindings = curr;
 }
 
+
 static const uint16_t emptyString[]
-    __attribute__((aligned(4))) = {0xffff, PXT_REF_TAG_STRING, 0, 0};
+    __attribute__((aligned(4))) = {PXT_REFCNT_FLASH, PXT_REF_TAG_STRING, 0, 0};
 
 static const uint16_t emptyBuffer[]
-    __attribute__((aligned(4))) = {0xffff, PXT_REF_TAG_BUFFER, 0, 0};
+    __attribute__((aligned(4))) = {PXT_REFCNT_FLASH, PXT_REF_TAG_BUFFER, 0, 0};
 
 String mkString(const char *data, int len) {
     if (len < 0)

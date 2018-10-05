@@ -22,7 +22,7 @@ void decr(TValue e) {
 Action mkAction(int reflen, int totallen, int startptr) {
     check(0 <= reflen && reflen <= totallen, ERR_SIZE, 1);
     check(reflen <= totallen && totallen <= 255, ERR_SIZE, 2);
-    check(bytecode[startptr] == 0xffff, ERR_INVALID_BINARY_HEADER, 3);
+    check(bytecode[startptr] == PXT_REFCNT_FLASH, ERR_INVALID_BINARY_HEADER, 3);
     check(bytecode[startptr + 1] == PXT_REF_TAG_ACTION, ERR_INVALID_BINARY_HEADER, 4);
 
     uintptr_t tmp = (uintptr_t)&bytecode[startptr];
@@ -47,10 +47,10 @@ Action mkAction(int reflen, int totallen, int startptr) {
 TValue runAction3(Action a, TValue arg0, TValue arg1, TValue arg2) {
     auto aa = (RefAction *)a;
     if (aa->vtable == PXT_REF_TAG_ACTION) {
-        check(aa->refcnt == 0xffff, ERR_INVALID_BINARY_HEADER, 4);
+        check(aa->refcnt == PXT_REFCNT_FLASH, ERR_INVALID_BINARY_HEADER, 4);
         return ((ActionCB)(((uintptr_t)a + 4) | 1))(NULL, arg0, arg1, arg2);
     } else {
-        check(aa->refcnt != 0xffff, ERR_INVALID_BINARY_HEADER, 4);
+        check(aa->refcnt != PXT_REFCNT_FLASH, ERR_INVALID_BINARY_HEADER, 4);
         return aa->runCore(arg0, arg1, arg2);
     }
 }
