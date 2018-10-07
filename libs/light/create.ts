@@ -13,7 +13,7 @@ namespace light {
     //% weight=100
     //% blockSetVariable=strip
     export function createStrip(
-        pin: DigitalPin = null,
+        pin: DigitalInOutPin = null,
         numleds: number = 30,
         mode: NeoPixelMode = NeoPixelMode.RGB
     ): NeoPixelStrip {
