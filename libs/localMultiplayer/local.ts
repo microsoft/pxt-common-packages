@@ -24,7 +24,7 @@ namespace local {
     let playerSprites: Sprite[];
 
     /**
-     * Run some code when a button is pressed or released
+     * Set the sprite for a player
      */
     //% weight=100
     //% blockId=local_setplayersprite block="set sprite for $player to $sprite"
