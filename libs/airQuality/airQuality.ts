@@ -1,16 +1,20 @@
 /**
-* Mary West @ SparkFun Electronics 
+* Andrés Sabas @ Electronic Cats
+* 8 octuber 2018 
+* https://www.electroniccats.com 
+
+* Based in the work of Mary West @ SparkFun Electronics 
 * Ryan Mortenson https://github.com/ryanjmortenson
 * August 25, 2017
 * https://github.com/ADataDate/pxt-CCS811
 
 * Development environment specifics:
 * Written in Microsoft Makecode
-* Tested with a SparkFun weather:bit, CCS811 sensor for micro:bit
+* Tested with a CatSat Zero Electronic Cats, CCS811 sensor for SAMD21
 *
 * This code is released under the [MIT License](http://opensource.org/licenses/MIT).
 * Please review the LICENSE.md file included with this example. If you have any questions 
-* or concerns with licensing, please contact techsupport@sparkfun.com.
+* or concerns with licensing, please contact support@electroniccats.com.
 * Distributed as-is; no warranty is given.
 */
 
@@ -27,7 +31,7 @@ namespace airQuality {
 	let appStarted = false;
 
     //CCS811 Addresses
-    const ccsAddr = 0x5B
+    const ccsAddr = 0x5A
     const ccsStatus = 0x00
     const ccsMeas = 0x01
     const ccsAlg = 0x02
