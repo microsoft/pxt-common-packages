@@ -13,7 +13,7 @@ namespace light {
      */
     //% parts="neopixel"
     //% help=light/default-pin
-    DigitalPin defaultPin() {
+    DigitalInOutPin defaultPin() {
         int pinName = PIN(NEOPIXEL);
         if (pinName < 0) {
             pinName = PA11;
@@ -29,7 +29,7 @@ namespace light {
      * @param buf The buffer to send to the pin
      */
     //% parts="neopixel"
-    void sendBuffer(DigitalPin pin, int mode, Buffer buf) {
+    void sendBuffer(DigitalInOutPin pin, int mode, Buffer buf) {
         neopixel_send_buffer(*pin, buf->data, buf->length);
     }
 

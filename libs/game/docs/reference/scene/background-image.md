@@ -1,12 +1,16 @@
-# get Background Image
+# background Image
 
-Gets the background image for the screen.
+Get the background image for the screen.
 
 ```sig
 scene.backgroundImage()
 ```
 
 You can get the current image for the background of the screen. The background image is always behind other images shown on the screen.
+
+## Returns
+
+* the [image](/types/image) set for the screen background.
 
 ## Example #example
 

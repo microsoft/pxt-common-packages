@@ -15,7 +15,7 @@ DevicePin *getPin(int id) {
     int ptr = pinPos[id];
     if (ptr == 0) {
         pinPtrs = (DevicePin **)realloc(pinPtrs, (numPinPtrs + 1) * sizeof(void*));
-        bool isAnalog = (DEV_ANALOG_PINS >> id) & 1;
+        bool isAnalog = IS_ANALOG_PIN(id);
         pinPtrs[numPinPtrs++] = new DevicePin(
             DEVICE_ID_IO_P0 + id,
             (PinName)id,

@@ -19,6 +19,7 @@ namespace controller {
     //% blockId="game_control_sprite" block="control sprite $sprite=variables_get(mySprite) with vx $vx vy $vy"
     //% weight=100
     //% vx.defl=100 vy.defl=100
+    //% help=controller/control-sprite
     export function controlSprite(sprite: Sprite, vx: number, vy: number) {
         if (!sprite) return;
         if (!controlledSprites) {

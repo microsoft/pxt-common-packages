@@ -51,7 +51,7 @@ namespace info {
             // show life
             if (_life !== null) {
                 drawLives();
-                if (_life == 0) {
+                if (_life <= 0) {
                     if (_lifeOverHandler) {
                         _lifeOverHandler();
                     }
@@ -118,7 +118,7 @@ namespace info {
     }
 
     /**
-     * Ges the current score if any
+     * Get the current score if any
      */
     //% weight=95 blockGap=8
     //% blockId=hudScore block="score"
@@ -217,11 +217,12 @@ namespace info {
     }
 
     /**
-     * Register code to run when the player's life reaches 0. If this function
-     * is not called then game.over() will be called instead
+     * Run code when the player's life reaches 0. If this function
+     * is not called then game.over() is called instead
      */
     //% weight=82
     //% blockId=gamelifeevent block="on life zero"
+    //% help=info/on-life-zero
     export function onLifeZero(handler: () => void) {
         _lifeOverHandler = handler;
     }
@@ -239,19 +240,21 @@ namespace info {
     }
 
     /**
-     * Stops the current countdown and hides the timer UI
+     * Stop the current countdown and hides the timer display
      */
     //% blockId=gamestopcountdown block="stop countdown" weight=78
+    //% help=info/stop-countdown
     export function stopCountdown() {
         _gameEnd = undefined;
         _countdownExpired = true;
     }
 
     /**
-     * Register code to run when the countdown reaches 0. If this function
-     * is not called then game.over() will be called instead
+     * Run code when the countdown reaches 0. If this function
+     * is not called then game.over() is called instead
      */
     //% blockId=gamecountdownevent block="on countdown end" weight=77
+    //% help=info/on-countdown-end
     export function onCountdownEnd(handler: () => void) {
         _countdownEndHandler = handler;
     }
