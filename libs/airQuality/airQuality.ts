@@ -23,7 +23,6 @@
  * Functions to operate the CCS811
  */
 
-
 //% color=#33acff icon="\u27BE"
 namespace airQuality {
 
