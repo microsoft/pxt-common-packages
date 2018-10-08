@@ -1,9 +1,9 @@
 {
-    "name": "network",
-    "description": "Networking",
+    "name": "jacdac",
+    "description": "JacDac networking",
     "files": [
-        "network.cpp",
-        "network.ts",
+        "jacdac.cpp",
+        "jacdac.ts",
         "shims.d.ts"
     ],
     "public": true,

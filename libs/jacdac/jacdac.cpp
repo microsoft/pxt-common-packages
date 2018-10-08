@@ -1,7 +1,7 @@
 #include "pxt.h"
 #include "JDProtocol.h"
 
-namespace network {
+namespace jacdac {
 
 class JDProxyDriver : public JDDriver {
   public:
@@ -63,33 +63,32 @@ JDProxyDriver *addNetworkDriver(int driverClass, RefCollection *methods) {
     return new JDProxyDriver(JDDevice(0, 0, 0, driverClass), methods, ++deviceId);
 }
 
-} // namespace network
+} // namespace jacdac
 
-
-namespace NetworkDriverStatusMethods {
+namespace JacDacDriverStatusMethods {
 
 /** Check if driver is connected. */
 //% property
-bool isConnected(NetworkDriverStatus d) {
+bool isConnected(JacDacDriverStatus d) {
     return d->isConnected();
 }
 
 /** Get device class. */
 //% property
-bool driverClass(NetworkDriverStatus d) {
+bool driverClass(JacDacDriverStatus d) {
     return d->getDevice()->driver_class;
 }
 
 /** Get device class. */
 //% property
-bool driverAddress(NetworkDriverStatus d) {
+bool driverAddress(JacDacDriverStatus d) {
     return d->getDevice()->address;
 }
 
 /** Get device id for events. */
 //% property
-bool deviceId(NetworkDriverStatus d) {
+bool deviceId(JacDacDriverStatus d) {
     return d->id;
 }
 
-} // namespace NetworkDriverStatusMethods
+} // namespace JacDacDriverStatusMethods

@@ -1,21 +1,21 @@
 // Auto-generated. Do not edit.
 
 
-declare interface NetworkDriverStatus {
+declare interface JacDacDriverStatus {
     /** Check if driver is connected. */
-    //% property shim=NetworkDriverStatusMethods::isConnected
+    //% property shim=JacDacDriverStatusMethods::isConnected
     isConnected: boolean;
 
     /** Get device class. */
-    //% property shim=NetworkDriverStatusMethods::driverClass
+    //% property shim=JacDacDriverStatusMethods::driverClass
     driverClass: boolean;
 
     /** Get device class. */
-    //% property shim=NetworkDriverStatusMethods::driverAddress
+    //% property shim=JacDacDriverStatusMethods::driverAddress
     driverAddress: boolean;
 
     /** Get device id for events. */
-    //% property shim=NetworkDriverStatusMethods::deviceId
+    //% property shim=JacDacDriverStatusMethods::deviceId
     deviceId: boolean;
 }
 

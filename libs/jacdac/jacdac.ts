@@ -1,5 +1,5 @@
-class NetworkDriver {
-    public status: NetworkDriverStatus;
+class JacDacDriver {
+    public status: JacDacDriverStatus;
 
     public deviceClass() {
         return network.programHash()
@@ -41,12 +41,12 @@ namespace network {
     //% shim=pxt::programHash
     export function programHash(): int32 { return 0 }
 
-    //% shim=network::addNetworkDriver
-    function addNetworkDriver(deviceClass: int32, methods: ((p:Buffer) => void)[]): NetworkDriverStatus { 
+    //% shim=jacdac::addNetworkDriver
+    function addNetworkDriver(deviceClass: int32, methods: ((p:Buffer) => void)[]): JacDacDriverStatus { 
         return null
     }
 
-    export function addDriver(deviceClass: int32, n: NetworkDriver) {
+    export function addDriver(deviceClass: int32, n: JacDacDriver) {
         if (n.status)
             return
         n.status = addNetworkDriver(n.deviceClass(), [

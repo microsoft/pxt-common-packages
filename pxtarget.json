@@ -27,6 +27,7 @@
         "libs/screen",
         "libs/controller",
         "libs/servo",
-        "libs/serial"
+        "libs/serial",
+        "libs/jacdac"
     ]
 }
