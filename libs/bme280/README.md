@@ -2,8 +2,11 @@
 
 makecode BME280 Digital Pressure and Humidity Sensor package for Maker MakeCode  
 
-Author: shaoziyang and Andrés Sabas 
+Author: shaoziyang  
 Date:   2018.Mar  
+
+Modified for SAMD21: Andrés Sabas  
+Date:   Octuber 2018 
 
 ## I2C Address  
 
