@@ -54,7 +54,9 @@ loop.forever(() => {
     loop.pause(1000)
 })
 ```
+## Maintainer
 
+[Electronic Cats](https://github.com/ElectronicCats)
 
 ## License
 

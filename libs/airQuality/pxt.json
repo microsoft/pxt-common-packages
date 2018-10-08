@@ -1,7 +1,7 @@
 {
     "name": "airQuality",
     "version": "0.1.0",
-    "description": "SparkFun airQuality",
+    "description": "Sensor CCS811 for airQuality",
     "license": "MIT",
     "files": [
         "README.md",
