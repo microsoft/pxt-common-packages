@@ -10,6 +10,8 @@ class PhysicsEngine {
 
     removeSprite(sprite: Sprite) { }
 
+    moveSprite(s: Sprite, tm: tiles.TileMap, dx: number, dy: number) { }
+
     draw() { }
 
     /** Apply physics */
@@ -89,6 +91,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         // 3: go through sprite and handle collisions
         const scene = game.currentScene();
         const tm = scene.tileMap;
+
         for (const sprite of colliders) {
             const overSprites = scene.physicsEngine.overlaps(sprite);
             for (const overlapper of overSprites) {
@@ -138,14 +141,14 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         }
     }
 
-    protected moveSprite(s: Sprite, tm: tiles.TileMap, dx: number, dy: number) {
+    public moveSprite(s: Sprite, tm: tiles.TileMap, dx: number, dy: number) {
         if (dx === 0 && dy === 0) {
             s._lastX = s.x;
             s._lastY = s.y;
             return;
         }
 
-        if (tm) {
+        if (tm && !(s.flags & sprites.Flag.Ghost)) {
             s._hitboxes.forEach(box => {
                 const t0 = box.top >> 4;
                 const r0 = box.right >> 4;

@@ -8,6 +8,10 @@ scene.setBackgroundImage(null)
 
 You can set an image for the background of the screen. The background image is always behind other images shown on the screen.
 
+## Parameters
+
+* **img**: the [image](/types/image) to set as the background for the screen.
+
 ## Example #example
 
 Create and empty image that's the size of the screen. Fill the image with four colored squares. Set the image as the screen background and rotate the colors every `2` seconds.
@@ -35,4 +39,5 @@ game.onUpdateInterval(2000, function () {
 
 ## See also #seealso
 
+[background image](/reference/scene/background-image),
 [set background color](/reference/scene/set-background-color)

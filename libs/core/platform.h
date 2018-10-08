@@ -11,6 +11,7 @@
 #include "MbedSPI.h"
 #include "MbedSerial.h"
 #include "MultiButton.h"
+#include "CPlayI2C.h"
 
 #include "SAMD21DMAC.h"
 
@@ -24,8 +25,10 @@
 
 #define PlatformDMAC SAMD21DMAC
 
-// this is codal::_mbed for mbedos
-#define CODAL_MBED codal::mbed
+// this is codal::_mbed for both mbed and mbedos now
+#define CODAL_MBED codal::_mbed
+
+#define CODAL_I2C codal::CPlayI2C
 
 /*
  * @param nominalValue The value (in SI units) of a nominal position.

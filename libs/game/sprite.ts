@@ -60,12 +60,8 @@ class Sprite implements SpriteLike {
     //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="ay (acceleration y)"
     ay: number
-    /**
-     * The type of sprite
-     */
-    //% group="Properties" blockSetVariable="mySprite"
-    //% blockCombine block="kind"
-    type: number
+
+    _type: number;
 
     /**
      * A bitset of layer. Each bit is a layer, default is 1.
@@ -88,7 +84,7 @@ class Sprite implements SpriteLike {
     private _image: Image;
     private _obstacles: sprites.Obstacle[];
 
-    private updateSay: () => void;
+    private updateSay: (dt: number) => void;
     private sayBubbleSprite: Sprite;
 
     _hitboxes: game.Hitbox[];
@@ -112,9 +108,9 @@ class Sprite implements SpriteLike {
         this.ay = 0
         this.flags = 0
         this.setImage(img);
-        this.type = 0; // not a member of any type by default
+        this.type = -1; // not a member of any type by default
         this.layer = 1; // by default, in layer 1
-        this.lifespan = undefined
+        this.lifespan = undefined;
     }
 
     /**
@@ -132,11 +128,65 @@ class Sprite implements SpriteLike {
      */
     //% group="Lifecycle"
     //% blockId=spritesetimage block="set %sprite(mySprite) image to %img=screen_image_picker"
-    //% weight=7
+    //% weight=7 help=sprites/sprite/set-image
     setImage(img: Image) {
         if (!img) return; // don't break the sprite
+
+        // Identify old upper left corner
+        let oMinX = img.width;
+        let oMinY = img.height;
+        let oMaxX = 0;
+        let oMaxY = 0;
+
+        for (let i = 0; this._hitboxes && i < this._hitboxes.length; ++i) {
+            let box = this._hitboxes[i];
+            oMinX = Math.min(oMinX, box.ox);
+            oMinY = Math.min(oMinY, box.oy);
+            oMaxX = Math.max(oMaxX, box.ox + box.width - 1);
+            oMaxY = Math.max(oMaxY, box.oy + box.height - 1);
+        }
+
         this._image = img;
         this._hitboxes = game.calculateHitBoxes(this);
+
+        // Identify new upper left corner
+        let nMinX = img.width;
+        let nMinY = img.height;
+        let nMaxX = 0;
+        let nMaxY = 0;
+
+        for (let i = 0; i < this._hitboxes.length; ++i) {
+            let box = this._hitboxes[i];
+            nMinX = Math.min(nMinX, box.ox);
+            nMinY = Math.min(nMinY, box.oy);
+            nMaxX = Math.max(nMaxX, box.ox + box.width - 1);
+            nMaxY = Math.max(nMaxY, box.oy + box.height - 1);
+        }
+
+        const minXDiff = oMinX - nMinX;
+        const minYDiff = oMinY - nMinY;
+        const maxXDiff = oMaxX - nMaxX;
+        const maxYDiff = oMaxY - nMaxY;
+
+        const scene = game.currentScene();
+        const tmap = scene.tileMap;
+
+        if (scene.tileMap && this.width <= 16 && this.height <= 16) {
+            const l = (nMinX + this.left) >> 4;
+            const r = (nMaxX + this.left) >> 4;
+            const t = (nMinY + this.top) >> 4;
+            const b = (nMaxY + this.top) >> 4;
+
+            if (tmap.isObstacle(l, t) && (minXDiff > 0 || minYDiff > 0)) {
+                scene.physicsEngine.moveSprite(this, scene.tileMap, minXDiff, minYDiff);
+            } else if (tmap.isObstacle(r, t) && (maxXDiff < 0 || minYDiff > 0)) {
+                scene.physicsEngine.moveSprite(this, scene.tileMap, maxXDiff, minYDiff);
+            } else if (tmap.isObstacle(l, b) && (minXDiff > 0 || maxYDiff < 0)) {
+                scene.physicsEngine.moveSprite(this, scene.tileMap, minXDiff, maxYDiff);
+            } else if (tmap.isObstacle(r, b) && (maxXDiff < 0 || maxYDiff < 0)) {
+                scene.physicsEngine.moveSprite(this, scene.tileMap, maxXDiff, maxYDiff);
+            }
+        }
     }
 
     //% group="Properties" blockSetVariable="mySprite"
@@ -204,15 +254,43 @@ class Sprite implements SpriteLike {
     set bottom(value: number) {
         this.y = value - (this.height >> 1);
     }
+    /**
+     * The type of sprite
+     */
+    //% group="Properties" blockSetVariable="mySprite"
+    //% blockCombine block="kind"
+    get type() {
+        return this._type;
+    }
+    /**
+     * The type of sprite
+     */
+    //% group="Properties" blockSetVariable="mySprite"
+    //% blockCombine block="kind"
+    set type(value: number) {
+        if (value == undefined || this._type === value) return;
+
+        const spritesByKind = game.currentScene().spritesByKind;
+        if (this._type >= 0 && spritesByKind[this._type])
+            spritesByKind[this._type].removeElement(this);
+
+        if (value >= 0) {
+            if (!spritesByKind[value]) spritesByKind[value] = [];
+            spritesByKind[value].push(this);
+        }
+
+        this._type = value;
+    }
 
     /**
-     * Sets the sprite position
+     * Set the sprite position
      * @param x horizontal position
      * @param y vertical position
      */
     //% group="Properties"
     //% weight=100
     //% blockId=spritesetpos block="set %sprite(mySprite) position to x %x y %y"
+    //% help=sprites/sprite/set-position
     setPosition(x: number, y: number): void {
         this.x = x;
         this.y = y;
@@ -240,6 +318,7 @@ class Sprite implements SpriteLike {
         if (timeOnScreen) {
             timeOnScreen = timeOnScreen + control.millis();
         }
+
         let pixelsOffset = 0;
         let holdTextSeconds = 1.5;
         let bubblePadding = 4;
@@ -249,14 +328,19 @@ class Sprite implements SpriteLike {
         let startY = 2;
         let bubbleWidth = text.length * font.charWidth + bubblePadding;
         let maxOffset = text.length * font.charWidth - maxTextWidth;
-        let bubbleOffset = this._hitboxes[0].top;
+        let bubbleOffset: number;
+        if (!this._hitboxes || this._hitboxes.length == 0) {
+            bubbleOffset = 0;
+        } else {
+            bubbleOffset = this._hitboxes[0].top;
+            for (let i = 0; i < this._hitboxes.length; i++) {
+                bubbleOffset = Math.min(bubbleOffset, this._hitboxes[i].top);
+            }
 
-        for (let i = 0; i < this._hitboxes.length; i++) {
-            bubbleOffset = Math.min(bubbleOffset, this._hitboxes[i].top);
+            // Gets the length from sprites location to its highest hitbox
+            bubbleOffset = this.y - bubbleOffset;
         }
 
-        // Gets the length from sprites location to its highest hitbox
-        bubbleOffset = this.y - bubbleOffset;
 
         if (bubbleWidth > maxTextWidth + bubblePadding) {
             bubbleWidth = maxTextWidth + bubblePadding;
@@ -269,10 +353,10 @@ class Sprite implements SpriteLike {
             this.sayBubbleSprite.destroy();
         }
 
-        this.sayBubbleSprite = sprites.create(image.create(bubbleWidth, font.charHeight + bubblePadding));
-        this.sayBubbleSprite.setFlag(SpriteFlag.Ghost, true);
+        this.sayBubbleSprite = sprites.create(image.create(bubbleWidth, font.charHeight + bubblePadding), -1);
 
-        this.updateSay = () => {
+        this.sayBubbleSprite.setFlag(SpriteFlag.Ghost, true);
+        this.updateSay = dt => {
             // Update box stuff as long as timeOnScreen doesn't exist or it can still be on the screen
             if (!timeOnScreen || timeOnScreen > control.millis()) {
                 this.sayBubbleSprite.image.fill(textBoxColor);
@@ -287,7 +371,8 @@ class Sprite implements SpriteLike {
                         holdTextSeconds = 1.5;
                     }
                 } else {
-                    pixelsOffset++;
+                    pixelsOffset += dt * 45;
+
                     // Pause at end of text for holdTextSeconds length
                     if (pixelsOffset >= maxOffset) {
                         pixelsOffset = maxOffset;
@@ -329,11 +414,6 @@ class Sprite implements SpriteLike {
     }
 
     __draw(camera: scene.Camera) {
-        // Say text
-        if (this.updateSay) {
-            this.updateSay();
-        }
-
         if (this.isOutOfScreen(camera)) return;
 
         const l = this.left - camera.offsetX;
@@ -380,21 +460,26 @@ class Sprite implements SpriteLike {
                 this.bottom = camera.offsetY + screen.height;
             }
         }
+        // Say text
+        if (this.updateSay) {
+            this.updateSay(dt);
+        }
     }
 
     /**
-     * Sets the sprite as a ghost (which does not interact with physics)
+     * Set a sprite flag
      */
     //% group="Properties"
     //% blockId=spritesetsetflag block="set %sprite(mySprite) %flag %on=toggleOnOff"
     //% flag.defl=SpriteFlag.StayInScreen
+    //% help=sprites/sprite/set-flag
     setFlag(flag: SpriteFlag, on: boolean) {
         if (on) this.flags |= flag
         else this.flags = ~(~this.flags | flag);
     }
 
     /**
-     * Tests if a sprite overlaps with another
+     * Check if this sprite overlaps another sprite
      * @param other
      */
     //% group="Overlaps"
@@ -440,21 +525,23 @@ class Sprite implements SpriteLike {
     }
 
     /**
-     * Determines if there is an obstacle in the given direction
+     * Check if there is an obstacle in the given direction
      * @param direction
      */
     //% blockId=spritehasobstacle block="is %sprite(mySprite) hitting wall %direction"
     //% blockNamespace="scene" group="Collisions"
+    //% help=sprites/sprite/is-hitting-tile
     isHittingTile(direction: CollisionDirection): boolean {
         return this._obstacles && !!this._obstacles[direction];
     }
 
     /**
-     * Gets the obstacle sprite in a given direction if any
+     * Get the obstacle sprite in a given direction if any
      * @param direction
      */
     //% blockId=spriteobstacle block="%sprite(mySprite) wall hit on %direction"
     //% blockNamespace="scene" group="Collisions"
+    //% help=sprites/sprite/tile-hit-from
     tileHitFrom(direction: CollisionDirection): number {
         return (this._obstacles && this._obstacles[direction]) ? this._obstacles[direction].tileIndex : -1;
     }
@@ -464,6 +551,7 @@ class Sprite implements SpriteLike {
     }
 
     registerObstacle(direction: CollisionDirection, other: sprites.Obstacle) {
+        if (other == undefined) return;
         if (!this._obstacles)
             this._obstacles = [];
         this._obstacles[direction] = other;
@@ -478,7 +566,7 @@ class Sprite implements SpriteLike {
     }
 
     /**
-     * Register code to run when sprite is destroyed
+     * Run code when the sprite is destroyed
      * @param handler
      */
     //% group="Lifecycle"
@@ -488,11 +576,12 @@ class Sprite implements SpriteLike {
     }
 
     /**
-     * Destroys the sprite
+     * Destroy the sprite
      */
     //% group="Lifecycle"
     //% weight=10
     //% blockId=spritedestroy block="destroy %sprite(mySprite)"
+    //% help=sprites/sprite/destroy
     destroy() {
         if (this.flags & sprites.Flag.Destroyed)
             return
@@ -503,7 +592,8 @@ class Sprite implements SpriteLike {
             this.sayBubbleSprite.destroy();
         }
         scene.allSprites.removeElement(this);
-        scene.spritesByKind[this.type].removeElement(this);
+        if (this.type >= 0 && scene.spritesByKind[this.type])
+            scene.spritesByKind[this.type].removeElement(this);
         scene.physicsEngine.removeSprite(this);
         if (this.destroyHandler)
             this.destroyHandler();

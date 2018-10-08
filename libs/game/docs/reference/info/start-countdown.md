@@ -22,4 +22,6 @@ info.startCountdown(30)
 
 ## See also #seealso
 
-[set score](/reference/info/set-score)
+[set score](/reference/info/set-score),
+[stop countdown](/reference/info/stop-countdown),
+[on countdown end](/reference/info/on-countdown-end)
