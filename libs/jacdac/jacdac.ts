@@ -1,15 +1,15 @@
 class JacDacDriver {
     public status: JacDacDriverStatus;
 
-    public deviceClass() {
-        return network.programHash()
+    public deviceClass(): number {
+        return jacdac.programHash()
     }
 
     /**
      * Called by the logic driver when a control packet is addressed to this driver.
      * Return false when the packet wasn't handled here.
      */
-    public handleControlPacket(pkt: Buffer) {
+    public handleControlPacket(pkt: Buffer): boolean {
         return false
     }
 
@@ -17,38 +17,42 @@ class JacDacDriver {
      * Called by the logic driver when a data packet is addressed to this driver
      * Return false when the packet wasn't handled here.
      */
-    public handlePacket(pkt: Buffer) {
+    public handlePacket(pkt: Buffer): boolean {
         return false
     }
 
     /**
      * Fill additional driver-specific info on the control packet for this driver.
      **/
-    public fillControlPacket(pkt: Buffer) { }
+    public fillControlPacket(pkt: Buffer): void { }
 
     /**
      * Called by the logic driver when a new device is connected to the serial bus
      */
-    public deviceConnected() { }
+    public deviceConnected(): void { }
 
     /**
      * Called by the logic driver when an existing device is disconnected from the serial bus
      **/
-    public deviceRemoved() { }
+    public deviceRemoved(): void { }
 }
 
-namespace network {
+namespace jacdac {
     //% shim=pxt::programHash
-    export function programHash(): int32 { return 0 }
+    export function programHash(): number { return 0 }
 
     //% shim=jacdac::addNetworkDriver
-    function addNetworkDriver(deviceClass: int32, methods: ((p:Buffer) => void)[]): JacDacDriverStatus { 
+    function addNetworkDriver(deviceClass: number, methods: ((p: Buffer) => void)[]): JacDacDriverStatus {
         return null
     }
 
-    export function addDriver(deviceClass: int32, n: JacDacDriver) {
-        if (n.status)
-            return
+    /**
+     * Adds a JacDac device driver
+     * @param n driver
+     */
+    export function addDriver(n: JacDacDriver) {
+        if (n.status) // don't add twice
+            return;
         n.status = addNetworkDriver(n.deviceClass(), [
             (p: Buffer) => n.handleControlPacket(p),
             (p: Buffer) => n.handlePacket(p),
