@@ -8,11 +8,11 @@ declare interface JacDacDriverStatus {
 
     /** Get device class. */
     //% property shim=JacDacDriverStatusMethods::driverClass
-    driverClass: boolean;
+    driverClass: uint32;
 
     /** Get device class. */
     //% property shim=JacDacDriverStatusMethods::driverAddress
-    driverAddress: boolean;
+    driverAddress: uint8;
 
     /** Get device id for events. */
     //% property shim=JacDacDriverStatusMethods::deviceId

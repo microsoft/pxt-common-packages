@@ -75,13 +75,13 @@ bool isConnected(JacDacDriverStatus d) {
 
 /** Get device class. */
 //% property
-bool driverClass(JacDacDriverStatus d) {
+uint32_t driverClass(JacDacDriverStatus d) {
     return d->getDevice()->driver_class;
 }
 
 /** Get device class. */
 //% property
-bool driverAddress(JacDacDriverStatus d) {
+uint8_t driverAddress(JacDacDriverStatus d) {
     return d->getDevice()->address;
 }
 
