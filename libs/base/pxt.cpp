@@ -443,19 +443,38 @@ PXT_VTABLE_END
 RefMap::RefMap() : PXT_VTABLE_INIT(RefMap) {}
 
 void RefMap::destroy(RefMap *t) {
-    for (unsigned i = 0; i < t->values.getLength(); ++i) {
-        decr(t->values.get(i));
-        t->values.set(i, 0);
+    auto len = t->values.getLength();
+    auto values = t->values.getData();
+    auto keys = t->keys.getData();
+    intcheck(t->keys.getLength() == len, ERR_SIZE, 101);
+    for (unsigned i = 0; i < len; ++i) {
+        decr(values[i]);
+        values[i] = nullptr;
+        decr(keys[i]);
+        keys[i] = nullptr;
     }
     t->keys.destroy();
     t->values.destroy();
 }
 
-int RefMap::findIdx(unsigned key) {
-    for (unsigned i = 0; i < keys.getLength(); ++i) {
-        if ((uintptr_t)keys.get(i) == key)
+int RefMap::findIdx(String key) {
+    auto len = keys.getLength();
+    auto data = (String*)keys.getData();
+
+    // fast path 
+    for (unsigned i = 0; i < len; ++i) {
+        if (data[i] == key)
             return i;
     }
+
+    // slow path
+    auto keylen = key->length;
+    for (unsigned i = 0; i < len; ++i) {
+        auto s = data[i];
+        if (s->length == keylen && memcmp(s->data, key->data, keylen) == 0)
+            return i;
+    }
+
     return -1;
 }
 

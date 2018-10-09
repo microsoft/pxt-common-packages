@@ -368,6 +368,10 @@ class Segment {
     void destroy();
 
     void print();
+
+    TValue *getData() {
+        return data;
+    }
 };
 
 // A ref-counted collection of either primitive or ref-counted objects (String, Image,
@@ -398,6 +402,7 @@ class RefCollection : public RefObject {
     bool removeElement(TValue x);
 };
 
+class BoxedString;
 class RefMap : public RefObject {
   public:
     Segment keys;
@@ -406,7 +411,7 @@ class RefMap : public RefObject {
     RefMap();
     static void destroy(RefMap *map);
     static void print(RefMap *map);
-    int findIdx(unsigned key);
+    int findIdx(BoxedString *key);
 };
 
 // A ref-counted, user-defined JS object.

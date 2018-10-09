@@ -35,7 +35,6 @@ void setBinding(int source, int value, Action act) {
     handlerBindings = curr;
 }
 
-
 static const uint16_t emptyString[]
     __attribute__((aligned(4))) = {PXT_REFCNT_FLASH, PXT_REF_TAG_STRING, 0, 0};
 
@@ -927,7 +926,7 @@ int getConfig(int key, int defl) {
     cfgData = *(int **)(PXT_BOOTLOADER_CFG_ADDR);
 #ifdef PXT_BOOTLOADER_CFG_MAGIC
     cfgData++;
-    if ((void*)0x200 <= cfgData && cfgData < (void*)PXT_BOOTLOADER_CFG_ADDR &&
+    if ((void *)0x200 <= cfgData && cfgData < (void *)PXT_BOOTLOADER_CFG_ADDR &&
         cfgData[-1] == (int)PXT_BOOTLOADER_CFG_MAGIC)
 #endif
         for (int i = 0;; i += 2) {
@@ -1054,7 +1053,7 @@ RefMap *mkMap() {
 }
 
 //%
-TValue mapGet(RefMap *map, unsigned key) {
+TValue mapGetByString(RefMap *map, String key) {
     int i = map->findIdx(key);
     if (i < 0) {
         map->unref();
@@ -1066,12 +1065,19 @@ TValue mapGet(RefMap *map, unsigned key) {
 }
 
 //%
-TValue mapGetRef(RefMap *map, unsigned key) {
-    return mapGet(map, key);
+TValue mapGetGeneric(RefMap *map, String key) {
+    map->ref();
+    return mapGetByString(map, key);
 }
 
 //%
-void mapSet(RefMap *map, unsigned key, TValue val) {
+TValue mapGet(RefMap *map, unsigned key) {
+    auto arr = *(String **)&bytecode[22];
+    return mapGetByString(map, arr[key]);
+}
+
+//%
+void mapSetByString(RefMap *map, String key, TValue val) {
     int i = map->findIdx(key);
     if (i < 0) {
         map->keys.push((TValue)key);
@@ -1083,8 +1089,16 @@ void mapSet(RefMap *map, unsigned key, TValue val) {
 }
 
 //%
-void mapSetRef(RefMap *map, unsigned key, TValue val) {
-    mapSet(map, key, val);
+void mapSetGeneric(RefMap *map, String key, TValue val) {
+    incr(val);
+    map->ref();
+    mapSetByString(map, key, val);
+}
+
+//%
+void mapSet(RefMap *map, unsigned key, TValue val) {
+    auto arr = *(String **)&bytecode[22];
+    mapSetByString(map, arr[key], val);
 }
 
 //
