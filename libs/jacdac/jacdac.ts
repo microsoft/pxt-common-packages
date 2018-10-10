@@ -97,13 +97,16 @@ namespace jacdac {
             () => n.deviceRemoved()])
     }
 
+    //% shim=jacdac::__internalSendPacket
+    function __internalSendPacket(pkt: Buffer, deviceAddress: number) {
+    }
+
     /**
      * Sends a packet
      * @param pkt jackdack data
      */
-    //% shim=jacdac::sendPacket
     export function sendPacket(pkt: Buffer, deviceAddress: number) {
-
+        __internalSendPacket(pkt, deviceAddress);
     }
 
     export class ControlPacket {

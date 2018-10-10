@@ -93,7 +93,7 @@ void __internalSendPairingPacket(int address, uint32_t flags, int serialNumber, 
 }
 
 //%
-int sendPacket(Buffer buf, int deviceAddress) {
+int __internalSendPacket(Buffer buf, int deviceAddress) {
     getWProtocol();
     return JDProtocol::send(buf->data, buf->length, deviceAddress);
 }
