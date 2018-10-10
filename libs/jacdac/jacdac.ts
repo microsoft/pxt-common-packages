@@ -38,6 +38,11 @@ class JacDacDriver {
      * Called by the logic driver when an existing device is disconnected from the serial bus
      **/
     public deviceRemoved(): void { }
+
+    /**
+     * Sends a pairing packet
+     */
+    public sendPairing(address: number, flags: number, serialNumber: number, driverClass: number) { }
 }
 
 /**
@@ -98,7 +103,7 @@ namespace jacdac {
     }
 
     //% shim=jacdac::__internalSendPacket
-    function __internalSendPacket(pkt: Buffer, deviceAddress: number) {
+    function __internalSendPacket(pkt: Buffer, deviceAddress: number): void {
     }
 
     /**

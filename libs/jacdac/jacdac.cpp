@@ -16,10 +16,9 @@ class WProtocol {
     CODAL_JACDAC jd;
     codal::JDProtocol protocol; // note that this is different pins than io->i2c
     WProtocol()
-        : jdCODAL_JACDAC_CTOR, protocol(jd)
+        : jd CODAL_JACDAC_CTOR , protocol(jd)
     {
         jd.init();
-        protocol.start();
     }
 };
 
@@ -29,7 +28,8 @@ class JDProxyDriver : public JDDriver {
   public:
     RefCollection *methods;
 
-    JDProxyDriver(JDDevice d, RefCollection *m, int id) : JDDriver(d, id) {
+    JDProxyDriver(JDDevice d, RefCollection *m) 
+        : JDDriver(d) {
         this->methods = m;
         incrRC(m);
     }
@@ -74,6 +74,10 @@ class JDProxyDriver : public JDDriver {
         return r;
     }
 
+    void sendPairing(int address, uint32_t flags, int serialNumber, uint32_t driverClass) {
+        sendPairingPacket(JDDevice(address, flags, serialNumber, driverClass));
+    }
+
     JDDevice *getDevice() { return &device; }
 
     ~JDProxyDriver() { decrRC(methods); }
@@ -81,15 +85,8 @@ class JDProxyDriver : public JDDriver {
 
 //%
 JDProxyDriver *__internalAddDriver(int driverType, int driverClass, RefCollection *methods) {
-    static int deviceId = 3030;
     getWProtocol();
-    return new JDProxyDriver(JDDevice(driverType, driverClass), methods, ++deviceId);
-}
-
-//%
-void __internalSendPairingPacket(int address, uint32_t flags, int serialNumber, uint32_t driverClass) {
-    getWProtocol();
-    sendPairingPacket(JDDevice(address, flags, serialNumber, driverClass));    
+    return new JDProxyDriver(JDDevice((DriverType)driverType, driverClass), methods);
 }
 
 //%
