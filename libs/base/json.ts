@@ -246,7 +246,7 @@ namespace JSON {
                     }
                     if (this.indent)
                         this.currIndent = this.currIndent.slice(this.indent)
-                    r += "]"
+                    r += this.currIndent + "]"
                     return r
                 }
             } else {
@@ -269,7 +269,7 @@ namespace JSON {
                 }
                 if (this.indent)
                     this.currIndent = this.currIndent.slice(this.indent)
-                r += "}"
+                r += this.currIndent + "}"
                 return r
             }
         }
