@@ -1080,6 +1080,7 @@ TValue mapGet(RefMap *map, unsigned key) {
 void mapSetByString(RefMap *map, String key, TValue val) {
     int i = map->findIdx(key);
     if (i < 0) {
+        incrRC(key);
         map->keys.push((TValue)key);
         map->values.push(val);
     } else {
