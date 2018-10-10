@@ -18,6 +18,7 @@
         "control.cpp",
         "control.ts",
         "console.ts",
+        "json.ts",
         "eventcontext.ts"
     ],
     "testFiles": [
