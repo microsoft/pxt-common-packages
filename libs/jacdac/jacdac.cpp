@@ -18,6 +18,7 @@ class WProtocol {
     WProtocol()
         : jdCODAL_JACDAC_CTOR, protocol(jd)
     {
+        jd.init();
         protocol.start();
     }
 };
@@ -95,6 +96,25 @@ void __internalSendPairingPacket(int address, uint32_t flags, int serialNumber, 
 int sendPacket(Buffer buf, int deviceAddress) {
     getWProtocol();
     return JDProtocol::send(buf->data, buf->length, deviceAddress);
+}
+
+//%
+void start() {
+    auto p = getWProtocol();
+    if (!p->jd.isRunning())
+        p->jd.start();
+}
+
+//%
+void stop() {
+    auto p = getWProtocol();
+    if (p->jd.isRunning())
+        p->jd.stop();
+}
+
+//%
+bool isRunning() {
+    return getWProtocol()->jd.isRunning();
 }
 
 } // namespace jacdac
