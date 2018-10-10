@@ -93,7 +93,6 @@ typedef TValue ImageLiteral;
 // To be implemented by the target
 extern "C" void target_panic(int error_code);
 extern "C" void target_reset();
-extern "C" uint32_t target_get_serial();
 void sleep_ms(unsigned ms);
 void sleep_us(uint64_t us);
 void releaseFiber();
