@@ -63,6 +63,11 @@ JDProxyDriver *addNetworkDriver(int driverClass, RefCollection *methods) {
     return new JDProxyDriver(JDDevice(0, 0, 0, driverClass), methods, ++deviceId);
 }
 
+//%
+void sendPacket(Buffer buf, int deviceAddress) {
+    JDProtocol::send(buf->data, buf->length, deviceAddress);
+}
+
 } // namespace jacdac
 
 namespace JacDacDriverStatusMethods {

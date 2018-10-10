@@ -60,4 +60,13 @@ namespace jacdac {
             () => n.deviceConnected(),
             () => n.deviceRemoved()])
     }
+
+    /**
+     * Sends a packet
+     * @param pkt jackdack data
+     */
+    //% shim=jacdac::sendPacket
+    export function sendPacket(pkt: Buffer, deviceAddress: number) {
+
+    }
 }

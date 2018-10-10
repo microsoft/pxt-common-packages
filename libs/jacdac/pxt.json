@@ -4,6 +4,7 @@
     "files": [
         "jacdac.cpp",
         "jacdac.ts",
+        "messagebusdriver.ts",
         "shims.d.ts"
     ],
     "public": true,
