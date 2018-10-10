@@ -5,6 +5,7 @@
         "jacdac.cpp",
         "jacdac.ts",
         "messagebusdriver.ts",
+        "pindriver.ts",
         "shims.d.ts"
     ],
     "public": true,

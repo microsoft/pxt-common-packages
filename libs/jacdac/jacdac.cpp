@@ -4,16 +4,19 @@
 #ifndef CODAL_JACDAC
 #define CODAL_JACDAC codal::JACDAC
 #endif
+#ifndef CODAL_JACDOC_CTOR
+#define CODAL_JACDAC_CTOR ()
+#endif
 
 namespace jacdac {
 
 // Wrapper classes
 class WProtocol {
+  public:
     CODAL_JACDAC jd;
     codal::JDProtocol protocol; // note that this is different pins than io->i2c
-  public:
     WProtocol()
-        : jd(), protocol(jd)
+        : jdCODAL_JACDAC_CTOR, protocol(jd)
     {
         protocol.start();
     }
