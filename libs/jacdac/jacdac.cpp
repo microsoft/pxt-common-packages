@@ -64,13 +64,36 @@ JDProxyDriver *addNetworkDriver(int driverClass, RefCollection *methods) {
 }
 
 //%
-void sendPacket(Buffer buf, int deviceAddress) {
-    JDProtocol::send(buf->data, buf->length, deviceAddress);
+void sendPairing(int controlAddress, uint32_t flags, int serialNumber, uint32_t driverClass) {
+    sendPairingPacket(JDDevice(controlAddress, flags, serialNumber, driverClass));    
+}
+
+//%
+int sendPacket(Buffer buf, int deviceAddress) {
+    return JDProtocol::send(buf->data, buf->length, deviceAddress);
 }
 
 } // namespace jacdac
 
 namespace JacDacDriverStatusMethods {
+
+/** Check if driver is a virtual driver. */
+//% property
+bool isVirtualDriver(JacDacDriverStatus d) {
+    return d->isVirtualDriver();
+}
+
+/** Check if device is paired. */
+//% property
+bool isPaired(JacDacDriverStatus d) {
+    return d->isPaired();
+}
+
+/** Check if driver is paired. */
+//% property
+bool isPairedDriver(JacDacDriverStatus d) {
+    return d->isPairedDriver();
+}
 
 /** Check if driver is connected. */
 //% property
@@ -86,13 +109,13 @@ uint32_t driverClass(JacDacDriverStatus d) {
 
 /** Get device class. */
 //% property
-uint8_t driverAddress(JacDacDriverStatus d) {
+uint8_t address(JacDacDriverStatus d) {
     return d->getDevice()->address;
 }
 
 /** Get device id for events. */
 //% property
-bool deviceId(JacDacDriverStatus d) {
+bool id(JacDacDriverStatus d) {
     return d->id;
 }
 

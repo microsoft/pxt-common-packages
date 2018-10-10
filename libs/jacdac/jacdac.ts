@@ -1,5 +1,5 @@
 class JacDacDriver {
-    public status: JacDacDriverStatus;
+    public device: JacDacDriverStatus;
 
     public deviceClass(): number {
         return jacdac.programHash()
@@ -38,6 +38,8 @@ class JacDacDriver {
 }
 
 namespace jacdac {
+    export let log: (msg: string) => void = function() { };
+
     //% shim=pxt::programHash
     export function programHash(): number { return 0 }
 
@@ -51,9 +53,9 @@ namespace jacdac {
      * @param n driver
      */
     export function addDriver(n: JacDacDriver) {
-        if (n.status) // don't add twice
+        if (n.device) // don't add twice
             return;
-        n.status = addNetworkDriver(n.deviceClass(), [
+        n.device = addNetworkDriver(n.deviceClass(), [
             (p: Buffer) => n.handleControlPacket(p),
             (p: Buffer) => n.handlePacket(p),
             (p: Buffer) => n.fillControlPacket(p),
@@ -68,5 +70,25 @@ namespace jacdac {
     //% shim=jacdac::sendPacket
     export function sendPacket(pkt: Buffer, deviceAddress: number) {
 
+    }
+
+    export class ControlPacket {
+        private buf: Buffer;
+        constructor(buf: Buffer) {
+            this.buf = buf;
+        }
+        // TODO parsing
+        get address(): number {
+            return this.buf.getNumber(NumberFormat.UInt32LE, 4);
+        }
+        get serialNumber(): number {
+            return this.buf.getNumber(NumberFormat.UInt32LE, 4);
+        }
+        get driverClass(): number {
+            return this.buf.getNumber(NumberFormat.UInt32LE, 4);
+        }
+        get flags(): number {
+            return this.buf.getNumber(NumberFormat.UInt32LE, 4);
+        }
     }
 }

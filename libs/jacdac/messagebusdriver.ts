@@ -2,9 +2,8 @@ namespace jacdac {
     /**
      * A driver that listens for message bus events
      */
-    export class JacDacMessageBusDriver extends JacDacDriver {
+    export class MessageBusDriver extends JacDacDriver {
         suppressForwarding = false;
-
 
         /**
          * Pipes matching events to JacDac bus
@@ -18,7 +17,7 @@ namespace jacdac {
                 const event = control.createBuffer(4);
                 event.setNumber(NumberFormat.UInt16LE, 0, id);
                 event.setNumber(NumberFormat.UInt16LE, 2, value);
-                jacdac.sendPacket(event, this.status.driverAddress);
+                jacdac.sendPacket(event, this.device.address);
 
             }, DAL.MESSAGE_BUS_LISTENER_IMMEDIATE)
         }
