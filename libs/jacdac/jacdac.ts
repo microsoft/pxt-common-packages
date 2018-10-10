@@ -40,6 +40,9 @@ class JacDacDriver {
     public deviceRemoved(): void { }
 }
 
+/**
+ * JACDAC protocol support
+ */
 namespace jacdac {
     // This enumeration specifies that supported configurations that drivers should utilise.
     // Many combinations of flags are supported, but only the ones listed here have been fully implemented.
@@ -129,7 +132,13 @@ namespace jacdac {
     }
 
     /**
-     * Gets the JACDAC event bus
+     * Listens for a particular event pair
      */
-    export const bus: MessageBusDriver = new MessageBusDriver();
+    //%
+    let _eventBus: MessageBusDriver = undefined;
+    export function listenEvent(src: number, value: number) {
+        if (!_eventBus)
+            _eventBus = new MessageBusDriver();
+        _eventBus.listenEvent(src, value);
+    }
 }

@@ -14,7 +14,7 @@ namespace jacdac {
          * @param id 
          * @param value 
          */
-        listen(id: number, value: number) {
+        listenEvent(id: number, value: number) {
             control.onEvent(id, value, () => {
                 if (this.suppressForwarding) return;
                 
