@@ -560,3 +560,32 @@ void start() {
 #endif
 
 } // namespace pxt
+
+namespace Array_ {
+//%
+bool isArray(TValue arr) {
+    return (getAnyVTable(arr) == &pxt::Coll0::RefCollection_vtable);
+}
+}
+
+namespace pxtrt
+{
+//%
+RefCollection *keysOf(TValue v) {
+    auto r = new RefCollection();
+    MEMDBG("mkColl[keys]: => %p", r);
+    if (getAnyVTable(v) != &RefMap_vtable)
+        return r;
+    auto rm = (RefMap*)v;
+    auto len = rm->keys.getLength();
+    if (!len)
+        return r;
+    r->setLength(len);
+    auto dst = r->getData();
+    memcpy(dst, rm->keys.getData(), len * sizeof(TValue));
+    for (unsigned i = 0; i < len; ++i)
+        incr(dst[i]);
+    return r;
+}
+} // pxtrt
+

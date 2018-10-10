@@ -14,6 +14,8 @@
     } while (0)
 
 #define MEMDBG NOLOG
+//#define MEMDBG DMESG
+#define MEMDBG2 NOLOG
 
 #include "pxtconfig.h"
 
@@ -313,7 +315,7 @@ class RefObject {
     inline void ref() {
         if (isReadOnly())
             return;
-        MEMDBG("INCR: %p refs=%d", this, this->refcnt);
+        MEMDBG2("INCR: %p refs=%d", this, this->refcnt);
         check(refcnt > 1, ERR_REF_DELETED);
         refcnt += 2;
     }
@@ -321,11 +323,12 @@ class RefObject {
     inline void unref() {
         if (isReadOnly())
             return;
-        MEMDBG("DECR: %p refs=%d", this, this->refcnt);
+        MEMDBG2("DECR: %p refs=%d", this, this->refcnt);
         check(refcnt > 1, ERR_REF_DELETED);
         check((refcnt & 1), ERR_REF_DELETED);
         refcnt -= 2;
         if (refcnt == 1) {
+            MEMDBG("DEL: %p", this);
             destroyVT();
         }
     }
@@ -400,6 +403,8 @@ class RefCollection : public RefObject {
 
     int indexOf(TValue x, int start);
     bool removeElement(TValue x);
+
+    TValue *getData() { return head.getData(); }
 };
 
 class BoxedString;
@@ -430,6 +435,10 @@ class RefRecord : public RefObject {
 
 //%
 VTable *getVTable(RefObject *r);
+
+static inline VTable *getAnyVTable(TValue v) {
+    return isRefCounted(v) ? getVTable((RefObject*)v) : NULL;
+}
 
 // these are needed when constructing vtables for user-defined classes
 //%
