@@ -1,7 +1,16 @@
 namespace jacdac {
+    /**
+     * A driver that listens for message bus events
+     */
     export class JacDacMessageBusDriver extends JacDacDriver {
         suppressForwarding = false;
 
+
+        /**
+         * Pipes matching events to JacDac bus
+         * @param id 
+         * @param value 
+         */
         listen(id: number, value: number) {
             control.onEvent(id, value, () => {
                 if (this.suppressForwarding) return;
