@@ -119,7 +119,7 @@ bool id(JacDacDriverStatus d) {
     return d->id;
 }
 
-/** If paired, paired instance address
+/** If paired, paired instance address */
 //% property
 uint32_t pairedInstanceAddress(JacDacDriverStatus d) {
     return pd->isPaired() && NULL !== d->pairedInstance 

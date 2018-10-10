@@ -61,7 +61,7 @@ namespace jacdac {
        
         public handlePacket(pkt: Buffer): boolean {
             if (this.device.isVirtualDriver
-                || (this.device.isPaired && this.pairedInstanceAddress != this.device.address))
+                || (this.device.isPaired && this.device.pairedInstanceAddress != this.device.address))
                 return true;
         
             const mode = <PinMode>pkt.getNumber(NumberFormat.UInt16LE, 0);

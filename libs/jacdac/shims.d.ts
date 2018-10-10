@@ -29,6 +29,10 @@ declare interface JacDacDriverStatus {
     /** Get device id for events. */
     //% property shim=JacDacDriverStatusMethods::id
     id: boolean;
+
+    /** If paired, paired instance address */
+    //% property shim=JacDacDriverStatusMethods::pairedInstanceAddress
+    pairedInstanceAddress: uint32;
 }
 
 // Auto-generated. Do not edit. Really.
