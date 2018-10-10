@@ -60,12 +60,13 @@ namespace jacdac {
         }
        
         public handlePacket(pkt: Buffer): boolean {
+            const packet = new JDPacket(pkt);
             if (this.device.isVirtualDriver
-                || (this.device.isPaired && this.device.pairedInstanceAddress != this.device.address))
+                || (this.device.isPaired && !this.device.isPairedInstanceAddress(packet.address)))
                 return true;
         
-            const mode = <PinMode>pkt.getNumber(NumberFormat.UInt16LE, 0);
-            const value = pkt.getNumber(NumberFormat.Int16LE, 2);
+            const mode = <PinMode>packet.getNumber(NumberFormat.UInt16LE, 0);
+            const value = packet.getNumber(NumberFormat.Int16LE, 2);
             
             switch(mode) {
                 case PinMode.SetAnalog:

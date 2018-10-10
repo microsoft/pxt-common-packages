@@ -118,11 +118,16 @@ bool isRunning() {
 
 namespace JacDacDriverStatusMethods {
 
-/** Check if driver is a virtual driver. */
+/**
+* Retrieves the serial number in use by this driver.
+*
+* @return the serial number
+**/
 //% property
-bool isVirtualDriver(JacDacDriverStatus d) {
-    return d->isVirtualDriver();
+uint32_t serialNumber(JacDacDriverStatus d) {
+    return d->getSerialNumber();
 }
+
 
 /** Check if device is paired. */
 //% property
@@ -130,10 +135,16 @@ bool isPaired(JacDacDriverStatus d) {
     return d->isPaired();
 }
 
+/** Check if device is pairable. */
+//% property
+bool isPairable(JacDacDriverStatus d) {
+    return d->isPairable();
+}
+
 /** Check if driver is paired. */
 //% property
 bool isPairedDriver(JacDacDriverStatus d) {
-    return d->isPairedDriver();
+    return d->getDevice()->isPairedDriver();
 }
 
 /** Check if driver is connected. */
@@ -145,13 +156,13 @@ bool isConnected(JacDacDriverStatus d) {
 /** Get device class. */
 //% property
 uint32_t driverClass(JacDacDriverStatus d) {
-    return d->getDevice()->driver_class;
+    return d->getClass();
 }
 
 /** Get device class. */
 //% property
-uint8_t address(JacDacDriverStatus d) {
-    return d->getDevice()->address;
+uint8_t driverAddress(JacDacDriverStatus d) {
+    return d->getAddress();
 }
 
 /** Get device id for events. */
@@ -162,10 +173,9 @@ bool id(JacDacDriverStatus d) {
 
 /** If paired, paired instance address */
 //% property
-uint32_t pairedInstanceAddress(JacDacDriverStatus d) {
-    return pd->isPaired() && NULL !== d->pairedInstance 
-        ? d->pairedInstance->getAddress() 
-        : 0;
+uint32_t isPairedInstanceAddress(JacDacDriverStatus d, uint8_t address) {
+    // TODO
+    return false;
 }
 
 } // namespace JacDacDriverStatusMethods

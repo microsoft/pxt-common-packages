@@ -17,7 +17,7 @@ namespace jacdac {
         listenEvent(id: number, value: number) {
             control.onEvent(id, value, () => {
                 if (this.suppressForwarding) return;
-                
+
                 const event = control.createBuffer(4);
                 event.setNumber(NumberFormat.UInt16LE, 0, id);
                 event.setNumber(NumberFormat.UInt16LE, 2, value);
@@ -27,8 +27,9 @@ namespace jacdac {
         }
 
         public handlePacket(pkt: Buffer): boolean {
-            const id = pkt.getNumber(NumberFormat.UInt16LE, 0);
-            const value = pkt.getNumber(NumberFormat.UInt16LE, 2);
+            const packet = new JDPacket(pkt);
+            const id = packet.getNumber(NumberFormat.UInt16LE, 0);
+            const value = packet.getNumber(NumberFormat.UInt16LE, 2);
             this.suppressForwarding = true;
             control.raiseEvent(id, value);
             this.suppressForwarding = false;

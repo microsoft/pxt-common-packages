@@ -114,6 +114,33 @@ namespace jacdac {
         __internalSendPacket(pkt, deviceAddress);
     }
 
+    export class JDPacket {
+        protected buf: Buffer;
+        constructor(buf: Buffer) {
+            this.buf = buf;
+        }
+        get crc(): number {
+            return this.buf.getNumber(NumberFormat.UInt16LE, 0);
+        }
+        get address(): number {
+            return this.buf.getNumber(NumberFormat.UInt8LE, 2);
+        }
+        get size(): number {
+            return this.buf.getNumber(NumberFormat.UInt8LE, 3);
+        }
+        get data(): Buffer {
+            return this.buf.slice(4);
+        }
+
+        getNumber(format: NumberFormat, offset: number) {
+            return this.buf.getNumber(format, offset + 4);
+        }
+
+        setNumber(format: NumberFormat, offset: number, value: number) {
+            this.buf.setNumber(format, offset + 4, value);
+        }
+    }
+
     export class ControlPacket {
         private buf: Buffer;
         constructor(buf: Buffer) {

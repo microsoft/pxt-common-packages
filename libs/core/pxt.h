@@ -61,11 +61,11 @@ extern MessageBus devMessageBus;
 extern codal::CodalDevice device;
 } // namespace pxt
 
-namespace network {
+namespace jacdac {
 class JDProxyDriver;
 } // namespace network
 
-typedef network::JDProxyDriver *NetworkDriverStatus;
+typedef jacdac::JDProxyDriver* JacDacDriverStatus;
 
 #define DEVICE_ID_BUTTON_SLIDE 3000
 #define DEVICE_ID_MICROPHONE 3001
