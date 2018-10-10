@@ -8,8 +8,11 @@ namespace jacdac {
          */
     export class PinDriver extends JacDacDriver {
         private _pin: PwmOnlyPin; // might be null
+
         constructor(pin: PwmOnlyPin = undefined) {
-            super();
+            super(
+                !!pin ? DriverType.PairableHostDriver : DriverType.PairedDriver, 
+                DAL.JD_DRIVER_CLASS_PIN);
             this._pin = pin;
         }
 
@@ -25,14 +28,17 @@ namespace jacdac {
             return true;
         }
 
+        //%
         setAnalogValue(value: number) {
             this.sendPacket(PinMode.SetAnalog, value >> 0);
         }
 
+        //%
         setDigitalValue(value: number) {
             this.sendPacket(PinMode.SetDigital, value >> 0);
         }
 
+        //%
         setServoValue(value: number) {
             this.sendPacket(PinMode.SetServo, value >> 0);
         }
@@ -42,19 +48,25 @@ namespace jacdac {
             if (this.device.isPairedDriver && !this.device.isPaired) {
                 jacdac.log("need to pair");
                 if (cp.flags & DAL.CONTROL_JD_FLAGS_PAIRABLE) {
-                    sendPairing(cp.address, DAL.JD_DEVICE_FLAGS_REMOTE | DAL.JD_DEVICE_FLAGS_INITIALIZED | DAL.JD_DEVICE_FLAGS_CP_SEEN, cp.serialNumber, cp.driverClass);
+                    jacdac.sendPairing(cp.address, 
+                        DAL.JD_DEVICE_FLAGS_REMOTE 
+                        | DAL.JD_DEVICE_FLAGS_INITIALISED 
+                        | DAL.JD_DEVICE_FLAGS_CP_SEEN, 
+                        cp.serialNumber, 
+                        cp.driverClass);
                 }
             }
             return true;
         }
        
         public handlePacket(pkt: Buffer): boolean {
-            if (this.device.isVirtualDriver) // TODO
+            if (this.device.isVirtualDriver
+                || (this.device.isPaired && this.pairedInstanceAddress != this.device.address))
                 return true;
-
+        
             const mode = <PinMode>pkt.getNumber(NumberFormat.UInt16LE, 0);
             const value = pkt.getNumber(NumberFormat.Int16LE, 2);
-
+            
             switch(mode) {
                 case PinMode.SetAnalog:
                     this._pin.analogWrite(value); break;

@@ -41,19 +41,42 @@ class JacDacDriver {
 }
 
 namespace jacdac {
-    export enum DriverType {
-        VirtualDriver = DAL.JD_DEVICE_FLAGS_REMOTE,
-        Paireddriver = DAL.JD_DEVICE_FLAGS_BROADCAST | DAL.JD_DEVICE_FLAGS_PAIR,
-        HostDriver = DAL.JD_DEVICE_FLAGS_LOCAL
-    }
+    // This enumeration specifies that supported configurations that drivers should utilise.
+    // Many combinations of flags are supported, but only the ones listed here have been fully implemented.
+    export enum DriverType
+    {
+        VirtualDriver = DAL.JD_DEVICE_FLAGS_REMOTE, // the driver is seeking the use of another device's resource
+        PairedDriver = DAL.JD_DEVICE_FLAGS_BROADCAST | DAL.JD_DEVICE_FLAGS_PAIR,
+        HostDriver = DAL.JD_DEVICE_FLAGS_LOCAL, // the driver is hosting a resource for others to use.
+        PairableHostDriver = DAL.JD_DEVICE_FLAGS_PAIRABLE | DAL.JD_DEVICE_FLAGS_LOCAL, // the driver is allowed to pair with another driver of the same class
+        BroadcastDriver = DAL.JD_DEVICE_FLAGS_LOCAL | DAL.JD_DEVICE_FLAGS_BROADCAST, // the driver is enumerated with its own address, and receives all packets of the same class (including control packets)
+        SnifferDriver = DAL.JD_DEVICE_FLAGS_REMOTE | DAL.JD_DEVICE_FLAGS_BROADCAST, // the driver is not enumerated, and receives all packets of the same class (including control packets)
+    };
 
     export let log: (msg: string) => void = function() { };
 
     //% shim=pxt::programHash
     export function programHash(): number { return 0 }
 
-    //% shim=jacdac::addNetworkDriver
-    function addNetworkDriver(driverType: number, deviceClass: number, methods: ((p: Buffer) => void)[]): JacDacDriverStatus {
+    //% shim=jacdac::__internalSendPairingPacket
+    function __internalSendPairingPacket(address: uint32, flags: uint32, serialNumber: uint32, driverClass: uint32): void {
+    }
+
+    /**
+     * Sends a pairing packet
+     * @param address 
+     * @param flags 
+     * @param serialNumber 
+     * @param driverClass 
+     */
+    //%
+    export function sendPairing(address: uint32, flags: uint32, serialNumber: uint32, driverClass: uint32): void {
+        __internalSendPairingPacket(address, flags, serialNumber, driverClass);
+    }
+
+
+    //% shim=jacdac::__internalAddDriver
+    function __internalAddDriver(driverType: number, deviceClass: number, methods: ((p: Buffer) => void)[]): JacDacDriverStatus {
         return null
     }
 
@@ -64,7 +87,7 @@ namespace jacdac {
     export function addDriver(n: JacDacDriver) {
         if (n.device) // don't add twice
             return;
-        n.device = addNetworkDriver(n.driverType, n.deviceClass, [
+        n.device = __internalAddDriver(n.driverType, n.deviceClass, [
             (p: Buffer) => n.handleControlPacket(p),
             (p: Buffer) => n.handlePacket(p),
             (p: Buffer) => n.fillControlPacket(p),

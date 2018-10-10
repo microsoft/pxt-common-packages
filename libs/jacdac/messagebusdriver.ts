@@ -5,6 +5,10 @@ namespace jacdac {
     export class MessageBusDriver extends JacDacDriver {
         suppressForwarding = false;
 
+        constructor() {
+            super(DriverType.BroadcastDriver, DAL.JD_DRIVER_CLASS_MESSAGE_BUS);
+        }
+
         /**
          * Pipes matching events to JacDac bus
          * @param id 

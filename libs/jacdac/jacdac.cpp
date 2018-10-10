@@ -58,13 +58,13 @@ class JDProxyDriver : public JDDriver {
 };
 
 //%
-JDProxyDriver *addNetworkDriver(int driverType, int driverClass, RefCollection *methods) {
+JDProxyDriver *__internalAddDriver(int driverType, int driverClass, RefCollection *methods) {
     static int deviceId = 3030;
     return new JDProxyDriver(JDDevice(driverType, driverClass), methods, ++deviceId);
 }
 
 //%
-void sendPairing(int address, uint32_t flags, int serialNumber, uint32_t driverClass) {
+void __internalSendPairingPacket(int address, uint32_t flags, int serialNumber, uint32_t driverClass) {
     sendPairingPacket(JDDevice(address, flags, serialNumber, driverClass));    
 }
 
@@ -117,6 +117,14 @@ uint8_t address(JacDacDriverStatus d) {
 //% property
 bool id(JacDacDriverStatus d) {
     return d->id;
+}
+
+/** If paired, paired instance address
+//% property
+uint32_t pairedInstanceAddress(JacDacDriverStatus d) {
+    return pd->isPaired() && NULL !== d->pairedInstance 
+        ? d->pairedInstance->getAddress() 
+        : 0;
 }
 
 } // namespace JacDacDriverStatusMethods
