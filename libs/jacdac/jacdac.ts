@@ -43,8 +43,7 @@ class JacDacDriver {
 namespace jacdac {
     // This enumeration specifies that supported configurations that drivers should utilise.
     // Many combinations of flags are supported, but only the ones listed here have been fully implemented.
-    export enum DriverType
-    {
+    export enum DriverType {
         VirtualDriver = DAL.JD_DEVICE_FLAGS_REMOTE, // the driver is seeking the use of another device's resource
         PairedDriver = DAL.JD_DEVICE_FLAGS_BROADCAST | DAL.JD_DEVICE_FLAGS_PAIR,
         HostDriver = DAL.JD_DEVICE_FLAGS_LOCAL, // the driver is hosting a resource for others to use.
@@ -53,7 +52,7 @@ namespace jacdac {
         SnifferDriver = DAL.JD_DEVICE_FLAGS_REMOTE | DAL.JD_DEVICE_FLAGS_BROADCAST, // the driver is not enumerated, and receives all packets of the same class (including control packets)
     };
 
-    export let log: (msg: string) => void = function() { };
+    export let log: (msg: string) => void = function () { };
 
     //% shim=pxt::programHash
     export function programHash(): number { return 0 }
@@ -102,6 +101,17 @@ namespace jacdac {
     //% shim=jacdac::sendPacket
     export function sendPacket(pkt: Buffer, deviceAddress: number) {
 
+    }
+
+    let bus: MessageBusDriver = undefined;
+    /**
+     * Starts JACDAC and mounts the bus driver
+     */
+    //%
+    export function start() {
+        if (!bus) {
+            bus = new MessageBusDriver();
+        }
     }
 
     export class ControlPacket {

@@ -1,7 +1,25 @@
 #include "pxt.h"
 #include "JDProtocol.h"
 
+#ifndef CODAL_JACDAC
+#define CODAL_JACDAC codal::JACDAC
+#endif
+
 namespace jacdac {
+
+// Wrapper classes
+class WProtocol {
+    CODAL_JACDAC jd;
+    codal::JDProtocol protocol; // note that this is different pins than io->i2c
+  public:
+    WProtocol()
+        : jd(), protocol(jd)
+    {
+        protocol.start();
+    }
+};
+
+SINGLETON(WProtocol);
 
 class JDProxyDriver : public JDDriver {
   public:
@@ -60,16 +78,19 @@ class JDProxyDriver : public JDDriver {
 //%
 JDProxyDriver *__internalAddDriver(int driverType, int driverClass, RefCollection *methods) {
     static int deviceId = 3030;
+    getWProtocol();
     return new JDProxyDriver(JDDevice(driverType, driverClass), methods, ++deviceId);
 }
 
 //%
 void __internalSendPairingPacket(int address, uint32_t flags, int serialNumber, uint32_t driverClass) {
+    getWProtocol();
     sendPairingPacket(JDDevice(address, flags, serialNumber, driverClass));    
 }
 
 //%
 int sendPacket(Buffer buf, int deviceAddress) {
+    getWProtocol();
     return JDProtocol::send(buf->data, buf->length, deviceAddress);
 }
 
