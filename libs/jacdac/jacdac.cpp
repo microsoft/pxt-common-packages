@@ -58,14 +58,14 @@ class JDProxyDriver : public JDDriver {
 };
 
 //%
-JDProxyDriver *addNetworkDriver(int driverClass, RefCollection *methods) {
+JDProxyDriver *addNetworkDriver(int driverType, int driverClass, RefCollection *methods) {
     static int deviceId = 3030;
-    return new JDProxyDriver(JDDevice(0, 0, 0, driverClass), methods, ++deviceId);
+    return new JDProxyDriver(JDDevice(driverType, driverClass), methods, ++deviceId);
 }
 
 //%
-void sendPairing(int controlAddress, uint32_t flags, int serialNumber, uint32_t driverClass) {
-    sendPairingPacket(JDDevice(controlAddress, flags, serialNumber, driverClass));    
+void sendPairing(int address, uint32_t flags, int serialNumber, uint32_t driverClass) {
+    sendPairingPacket(JDDevice(address, flags, serialNumber, driverClass));    
 }
 
 //%

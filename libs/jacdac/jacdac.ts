@@ -1,8 +1,11 @@
 class JacDacDriver {
     public device: JacDacDriverStatus;
+    public driverType: jacdac.DriverType;
+    public deviceClass: number;
 
-    public deviceClass(): number {
-        return jacdac.programHash()
+    constructor(driverType: jacdac.DriverType, deviceClass: number) {
+        this.driverType = driverType;
+        this.deviceClass = deviceClass || jacdac.programHash();
     }
 
     /**
@@ -38,13 +41,19 @@ class JacDacDriver {
 }
 
 namespace jacdac {
+    export enum DriverType {
+        VirtualDriver = DAL.JD_DEVICE_FLAGS_REMOTE,
+        Paireddriver = DAL.JD_DEVICE_FLAGS_BROADCAST | DAL.JD_DEVICE_FLAGS_PAIR,
+        HostDriver = DAL.JD_DEVICE_FLAGS_LOCAL
+    }
+
     export let log: (msg: string) => void = function() { };
 
     //% shim=pxt::programHash
     export function programHash(): number { return 0 }
 
     //% shim=jacdac::addNetworkDriver
-    function addNetworkDriver(deviceClass: number, methods: ((p: Buffer) => void)[]): JacDacDriverStatus {
+    function addNetworkDriver(driverType: number, deviceClass: number, methods: ((p: Buffer) => void)[]): JacDacDriverStatus {
         return null
     }
 
@@ -55,7 +64,7 @@ namespace jacdac {
     export function addDriver(n: JacDacDriver) {
         if (n.device) // don't add twice
             return;
-        n.device = addNetworkDriver(n.deviceClass(), [
+        n.device = addNetworkDriver(n.driverType, n.deviceClass, [
             (p: Buffer) => n.handleControlPacket(p),
             (p: Buffer) => n.handlePacket(p),
             (p: Buffer) => n.fillControlPacket(p),
@@ -77,18 +86,23 @@ namespace jacdac {
         constructor(buf: Buffer) {
             this.buf = buf;
         }
-        // TODO parsing
-        get address(): number {
-            return this.buf.getNumber(NumberFormat.UInt32LE, 4);
+        get packetType(): number {
+            return this.buf.getNumber(NumberFormat.UInt8LE, 0);
         }
-        get serialNumber(): number {
-            return this.buf.getNumber(NumberFormat.UInt32LE, 4);
+        get address(): number {
+            return this.buf.getNumber(NumberFormat.UInt8LE, 1);
+        }
+        get flags(): number {
+            return this.buf.getNumber(NumberFormat.UInt16LE, 2);
         }
         get driverClass(): number {
             return this.buf.getNumber(NumberFormat.UInt32LE, 4);
         }
-        get flags(): number {
-            return this.buf.getNumber(NumberFormat.UInt32LE, 4);
+        get serialNumber(): number {
+            return this.buf.getNumber(NumberFormat.UInt32LE, 8);
+        }
+        get data(): Buffer {
+            return this.buf.slice(12);
         }
     }
 }
