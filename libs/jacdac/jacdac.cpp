@@ -1,9 +1,11 @@
 #include "pxt.h"
 #include "JDProtocol.h"
-#include "DMASingleWireSerial.h"
 
 #ifndef CODAL_JACDAC_WIRE_SERIAL
-#define CODAL_JACDAC_WIRE_SERIAL DMASingleWireSerial
+
+#include "ZSingleWireSerial.h"
+#define CODAL_JACDAC_WIRE_SERIAL ZSingleWireSerial 
+
 #endif CODAL_JACDAC_WIRE_SERIAL
 
 namespace jacdac {
