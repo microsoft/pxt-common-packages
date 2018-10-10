@@ -9,3 +9,4 @@ namespace pxsim.jacdac {
     function __internalSendPacket(packet: Buffer, deviceAddress: number) {
         pxsim.Runtime.postMessage(<SimulatorJacDacMessage>{ packet, deviceAddress });
     }
+}

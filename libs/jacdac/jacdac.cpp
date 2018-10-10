@@ -1,22 +1,18 @@
 #include "pxt.h"
 #include "JDProtocol.h"
-#include "ZSingleWireSerial.h"
+#include "DMASingleWireSerial.h"
 
-#ifndef CODAL_SINGLE_WIRE_SERIAL
-#define CODAL_SINGLE_WIRE_SERIAL ZSingleWireSerial
-#endif CODAL_SINGLE_WIRE_SERIAL
-
-#ifndef CODAL_JACDAC
-#define CODAL_JACDAC codal::JACDAC
-#endif
+#ifndef CODAL_JACDAC_WIRE_SERIAL
+#define CODAL_JACDAC_WIRE_SERIAL DMASingleWireSerial
+#endif CODAL_JACDAC_WIRE_SERIAL
 
 namespace jacdac {
 
 // Wrapper classes
 class WProtocol {
   public:
-    CODAL_SINGLE_WIRE_SERIAL sws;
-    CODAL_JACDAC jd;
+    CODAL_JACDAC_WIRE_SERIAL sws;
+    codal::JACDAC jd;
     codal::JDProtocol protocol; // note that this is different pins than io->i2c
     WProtocol()
         : sws(PIN(JACDAC))
