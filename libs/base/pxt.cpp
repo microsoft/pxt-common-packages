@@ -541,8 +541,3 @@ void start() {
 #endif
 
 } // namespace pxt
-
-// TODO
-uint32_t target_get_serial() {
-    return 0;
-}

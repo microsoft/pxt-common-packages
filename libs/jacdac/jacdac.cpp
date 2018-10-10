@@ -1,6 +1,12 @@
 #include "pxt.h"
 #include "JDProtocol.h"
 
+#ifndef CODAL_JACDAC_WIRE_SERIAL
+uint32_t target_get_serial() {
+    return 0;
+}
+#endif
+
 namespace jacdac {
 
 #ifndef CODAL_JACDAC_WIRE_SERIAL
@@ -165,6 +171,13 @@ bool isPaired(JacDacDriverStatus d) {
 bool isPairable(JacDacDriverStatus d) {
     return d->isPairable();
 }
+
+/** Check if driver is virtual. */
+//% property
+bool isVirtualDriver(JacDacDriverStatus d) {
+    return d->getDevice()->isVirtualDriver();
+}
+
 
 /** Check if driver is paired. */
 //% property
