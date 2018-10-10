@@ -215,7 +215,7 @@ namespace JSON {
                 else if (c == "\t") c = "\\t"
                 else if (c == "\b") c = "\\b"
                 else if (c == "\\") c = "\\\\"
-                else if (c == "\"") c = "\""
+                else if (c == "\"") c = "\\\""
                 r += c
             }
             return r + "\""
