@@ -61,7 +61,7 @@
 #define CFG_PIN_LED3 57
 #define CFG_PIN_LED4 58
 #define CFG_SPEAKER_VOLUME 59
-#define CFG_PIN_JACKDACK 60
+#define CFG_PIN_JACDAC 60
 
 #define CFG_PIN_A0 100
 #define CFG_PIN_A1 101
