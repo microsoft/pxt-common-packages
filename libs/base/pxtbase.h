@@ -119,10 +119,10 @@ void dumpDmesg();
 // end
 
 #define TAGGED_SPECIAL(n) (TValue)(void *)((n << 2) | 2)
-#define TAG_FALSE TAGGED_SPECIAL(2)
-#define TAG_TRUE TAGGED_SPECIAL(16)
+#define TAG_FALSE TAGGED_SPECIAL(2) // 10
+#define TAG_TRUE TAGGED_SPECIAL(16) // 66
 #define TAG_UNDEFINED (TValue)0
-#define TAG_NULL TAGGED_SPECIAL(1)
+#define TAG_NULL TAGGED_SPECIAL(1) // 6
 #define TAG_NUMBER(n) (TNumber)(void *)((n << 1) | 1)
 
 inline bool isTagged(TValue v) {
