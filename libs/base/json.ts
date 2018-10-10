@@ -261,7 +261,12 @@ namespace JSON {
                 }
                 for (let i = 0; i < keys.length; ++i) {
                     const k = keys[i]
-                    r += this.currIndent + this.doString(k) + ": " + this.go(v[k])
+                    r += this.currIndent + this.doString(k)
+                    if (this.indent)
+                        r += ": "
+                    else
+                        r += ":"
+                    r += this.go(v[k])
                     if (i != keys.length - 1)
                         r += ","
                     if (this.indent)
