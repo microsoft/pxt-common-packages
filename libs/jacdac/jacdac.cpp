@@ -1,14 +1,36 @@
 #include "pxt.h"
 #include "JDProtocol.h"
 
+namespace jacdac {
+
 #ifndef CODAL_JACDAC_WIRE_SERIAL
 
-#include "ZSingleWireSerial.h"
-#define CODAL_JACDAC_WIRE_SERIAL ZSingleWireSerial 
+class DummyDmaSingleWireSerial : public DMASingleWireSerial {
+    protected:
+    virtual void configureRxInterrupt(int enable) {}
+    virtual int configureTx(int) { return DEVICE_OK; }
+    virtual int configureRx(int) { return DEVICE_OK; }
 
-#endif CODAL_JACDAC_WIRE_SERIAL
+    public:
+    DummyDmaSingleWireSerial(Pin& p): DMASingleWireSerial(p) {}
 
-namespace jacdac {
+    virtual int sendDMA(uint8_t* data, int len) { return DEVICE_OK; }
+    virtual int receiveDMA(uint8_t* data, int len) { return DEVICE_OK; }
+    virtual int abortDMA() { return DEVICE_OK; }
+
+    virtual int putc(char c) { return DEVICE_OK; }
+    virtual int getc() { return DEVICE_OK; }
+
+    virtual int send(uint8_t* buf, int len) { return DEVICE_OK; }
+    virtual int receive(uint8_t* buf, int len) { return DEVICE_OK; }
+
+    virtual int setBaud(uint32_t baud) { return DEVICE_OK; }
+    virtual uint32_t getBaud() { return 0; }
+    virtual int sendBreak() { return DEVICE_OK; }
+};
+
+#define CODAL_JACDAC_WIRE_SERIAL DummyDmaSingleWireSerial 
+#endif
 
 // Wrapper classes
 class WProtocol {
@@ -17,8 +39,8 @@ class WProtocol {
     codal::JACDAC jd;
     codal::JDProtocol protocol; // note that this is different pins than io->i2c
     WProtocol()
-        : sws(PIN(JACDAC))
-        , jd(PIN(JACDAC), sws) 
+        : sws(*LOOKUP_PIN(JACDAC))
+        , jd(*LOOKUP_PIN(JACDAC), sws) 
         , protocol(jd)
     {
         jd.init();
