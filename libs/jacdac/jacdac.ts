@@ -103,17 +103,6 @@ namespace jacdac {
 
     }
 
-    let bus: MessageBusDriver = undefined;
-    /**
-     * Starts JACDAC and mounts the bus driver
-     */
-    //%
-    export function start() {
-        if (!bus) {
-            bus = new MessageBusDriver();
-        }
-    }
-
     export class ControlPacket {
         private buf: Buffer;
         constructor(buf: Buffer) {
@@ -138,4 +127,9 @@ namespace jacdac {
             return this.buf.slice(12);
         }
     }
+
+    /**
+     * Gets the JACDAC event bus
+     */
+    export const bus: MessageBusDriver = new MessageBusDriver();
 }
