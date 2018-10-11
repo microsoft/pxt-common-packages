@@ -1,5 +1,5 @@
 {
-    "name": "local multiplayer",
+    "name": "local-multiplayer",
     "description": "Local multiplayer",
     "files": [
         "local.ts"
