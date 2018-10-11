@@ -1,0 +1,11 @@
+{
+    "name": "local-multiplayer",
+    "description": "Local multiplayer",
+    "files": [
+        "local.ts"
+    ],
+    "dependencies": {
+        "core": "file:../controller"
+    },
+    "public": true
+}
