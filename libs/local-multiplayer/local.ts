@@ -1,5 +1,5 @@
-//%
-namespace local {
+//% groups='["other","Multiplayer"]'
+namespace controller {
     export enum PlayerNumber {
         //% block="player one"
         One = 1,
@@ -26,19 +26,19 @@ namespace local {
     /**
      * Set the sprite for a player
      */
-    //% weight=100
+    //% weight=100 group="Multiplayer"
     //% blockId=local_setplayersprite block="set sprite for $player to $sprite"
     export function setPlayerSprite(player: PlayerNumber, sprite: Sprite) {
         if (!playerSprites) playerSprites = [];
         playerSprites[player] = sprite;
 
         // Set up events
-        left._initPlayer(player);
-        up._initPlayer(player);
-        right._initPlayer(player);
-        down._initPlayer(player);
-        A._initPlayer(player);
-        B._initPlayer(player);
+        multiLeft._initPlayer(player);
+        multiUp._initPlayer(player);
+        multiRight._initPlayer(player);
+        multiDown._initPlayer(player);
+        multiA._initPlayer(player);
+        multiB._initPlayer(player);
     }
 
     //% fixedInstances
@@ -65,7 +65,7 @@ namespace local {
         /**
          * Run some code when a button is pressed or released
          */
-        //% weight=99 blockGap=8 help=controller/button/on-event draggableParameters
+        //% weight=99 blockGap=8 help=controller/button/on-event draggableParameters group="Multiplayer"
         //% blockId=local_keyonevent block="on $this **button** $event $player $playerSprite"
         onEvent(event: ControllerButtonEvent, handler: (player: number, playerSprite: Sprite) => void) {
             if (!this.handlers) this.handlers = [];
@@ -75,18 +75,18 @@ namespace local {
         /**
          * Pauses until a button is pressed or released
          */
-        //% weight=98 blockGap=8 help=controller/button/pause-until
+        //% weight=98 blockGap=8 group="Multiplayer"
         //% blockId=local_keypauseuntil block="pause until $player $this **button** is $event"
         pauseUntil(player: PlayerNumber, event: ControllerButtonEvent) {
             this._initPlayer(player);
             this.buttons[player].pauseUntil(event);
         }
-        
+
 
         /**
          * Indicates if the button is currently pressed
         */
-        //% weight=96 blockGap=8 help=controller/button/is-pressed
+        //% weight=96 blockGap=8 group="Multiplayer"
         //% blockId=local_keyispressed block="is $player $this **button** pressed"
         isPressed(player: PlayerNumber) {
             this._initPlayer(player);
@@ -99,7 +99,7 @@ namespace local {
 
         private handleEvent(event: ControllerButtonEvent, player: PlayerNumber) {
             if (!this.handlers) return;
-            
+
             const s = playerSprites && playerSprites[player];
             if (!s) return;
 
@@ -111,15 +111,15 @@ namespace local {
     }
 
     //% fixedInstance block="left"
-    export const left = new MetaButton(ButtonOffset.Left)
+    export const multiLeft = new MetaButton(ButtonOffset.Left)
     //% fixedInstance block="up"
-    export const up = new MetaButton(ButtonOffset.Up)
+    export const multiUp = new MetaButton(ButtonOffset.Up)
     //% fixedInstance block="right"
-    export const right = new MetaButton(ButtonOffset.Right)
+    export const multiRight = new MetaButton(ButtonOffset.Right)
     //% fixedInstance block="down"
-    export const down = new MetaButton(ButtonOffset.Down)
+    export const multiDown = new MetaButton(ButtonOffset.Down)
     //% fixedInstance block="A"
-    export const A = new MetaButton(ButtonOffset.A)
+    export const multiA = new MetaButton(ButtonOffset.A)
     //% fixedInstance block="B"
-    export const B = new MetaButton(ButtonOffset.B)
+    export const multiB = new MetaButton(ButtonOffset.B)
 }
