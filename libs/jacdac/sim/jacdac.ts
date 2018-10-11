@@ -1,10 +1,11 @@
 namespace pxsim.jacdac {
-    function __internalSendPacket(packet: RefBuffer, address: number) {
+    export function __internalSendPacket(packet: RefBuffer, address: number): number {
         pxsim.Runtime.postMessage(<pxsim.SimulatorJacDacPacketMessage>{ 
             type: "jacdac",
             packetType: "pkt",
             packet: packet.data,
             address
         });
+        return 0;
     }
 }

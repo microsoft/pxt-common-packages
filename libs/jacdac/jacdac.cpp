@@ -120,29 +120,13 @@ JDProxyDriver *__internalAddDriver(int driverType, int driverClass, RefCollectio
     return new JDProxyDriver(JDDevice((DriverType)driverType, driverClass), methods);
 }
 
+/**
+* Internal
+*/
 //%
 int __internalSendPacket(Buffer buf, int deviceAddress) {
     getWProtocol();
     return JDProtocol::send(buf->data, buf->length, deviceAddress);
-}
-
-//%
-void start() {
-    auto p = getWProtocol();
-    if (!p->jd.isRunning())
-        p->jd.start();
-}
-
-//%
-void stop() {
-    auto p = getWProtocol();
-    if (p->jd.isRunning())
-        p->jd.stop();
-}
-
-//%
-bool isRunning() {
-    return getWProtocol()->jd.isRunning();
 }
 
 } // namespace jacdac
