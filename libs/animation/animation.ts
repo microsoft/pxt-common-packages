@@ -62,9 +62,13 @@ namespace animation {
             this.interval = interval;
         }
 
+        /**
+        * Add an image frame to an animation
+        */
         //% blockId=addAnimationFrame
         //% block="add frame $frame=screen_image_picker to $this=variables_get(anim)"
         //% weight=40
+        //% help=animation/add-animation
         addAnimationFrame(frame: Image) {
             this.frames[++this.index] = frame;
         }
@@ -86,23 +90,25 @@ namespace animation {
     }
 
     /**
-     * Creates an animation
+     * Create an animation
      */
     //% blockId=createAnimation
     //% block="create animation of $action=action_enum_shim with interval $interval ms"
     //% interval.defl=1000
     //% blockSetVariable="anim"
     //% weight=50
+    //% help=animation/create-animation
     export function createAnimation(action: number, interval: number) {
         return new Animation(action, interval);
     }
 
     /**
-     * attaches an animation to a sprite
+     * Attach an animation to a sprite
      */
     //% blockId=attachAnimation
     //% block="attach animation $set=variables_get(anim) to sprite $sprite=variables_get(mySprite)"
     //% weight=30
+    //% help=animation/attach-animation
     export function attachAnimation(sprite: Sprite, set: Animation) {
         if (!_onSpriteUpdate) {
             //First attach register the update call back.
@@ -128,11 +134,12 @@ namespace animation {
     }
 
     /**
-     * Sets the action to Sprite
+     * Set an animation action to a sprite
      */
     //% blockId=setAction
     //% block="activate animation $action=action_enum_shim on $sprite=variables_get(mySprite)"
     //% weight=20
+    //% help=animation/set-action
     export function setAction(sprite: Sprite, action: number) {
         sprite._action = action;
     }
