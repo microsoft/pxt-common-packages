@@ -25,7 +25,7 @@ namespace info {
     let _borderColor: number;
     let _fontColor: number;
     let _countdownExpired: boolean;
-    let _visibilityFlag: number;
+    let _visibilityFlag: number = Visibility.None;
 
 
     let _lifeOverHandler: () => void;

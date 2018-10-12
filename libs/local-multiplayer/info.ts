@@ -1,33 +1,34 @@
 //% groups='["other","Multiplayer"]'
 namespace info {
 
-    /** Only players one and two will have their score and lives displayed on screen
-     * others will only be stored. Only players one and two are defined in the blocks
-     * for  this reason
-     */
-    export enum PlayerNumber {
-        //% block="player one"
-        One = 1,
-        //% block="player two"
-        Two,
-        Three,
-        Four
+    enum Visibility {
+        None = 0,
+        ScoreOne = 1 << 0,
+        ScoreTwo = 1 << 1,
+        LifeOne = 1 << 2,
+        LifeTwo = 1 << 3,
+        All = ~(~0 << 4)
     }
 
     let _scores: number[] = null;
-    let _life: number = null;
-    let _hud: boolean = false;
-    let _gameEnd: number = undefined;
-    let _heartImage: Image;
-    let _multiplierImage: Image;
+    // let _life: number = null;
+    let _multiplayerHud: boolean = false;
+    let _visibilityFlag: number = Visibility.None;
+    // let _gameEnd: number = undefined;
+    // let _heartImage: Image;
+    // let _multiplierImage: Image;
     let _bgColor: number;
     let _borderColor: number;
     let _fontColor: number;
 
+    function updateFlag(flag: Visibility, on: boolean) {
+        if (on) _visibilityFlag |= flag;
+        else _visibilityFlag &= Visibility.All ^ flag;
+    }
 
-    function initHUD() {
-        if (_hud) return;
-        _hud = true;
+    function initMultiplayerHUD() {
+        if (_multiplayerHud) return;
+        _multiplayerHud = true;
 
         // suppress standard score and life display
         showScore(false);
@@ -35,51 +36,59 @@ namespace info {
 
         // _heartImage = _heartImage || defaultHeartImage();
 
-        _multiplierImage = _multiplierImage || img`
-            1 . 1
-            . 1 .
-            1 . 1
-        `;
+        // _multiplierImage = _multiplierImage || img`
+        //     1 . 1
+        //     . 1 .
+        //     1 . 1
+        // `;
 
         _bgColor = info.backgroundColor();
-        _borderColor = info.borderColor();;
+        _borderColor = info.borderColor();
         _fontColor = info.fontColor();
         game.eventContext().registerFrameHandler(95, () => {
-            for (let player = 1; player <= 2; player++) {
-                // show score
-                if (_scores && _scores[player] !== null) {
-                    drawPlayerScore(player);
-                }
-                // show life
-                // if (_life !== null) {
-                //     drawLives();
-                //     if (_life <= 0) {
-                //         if (_lifeOverHandler) {
-                //             _lifeOverHandler();
-                //         }
-                //         else {
-                //             game.over();
-                //         }
-                //         _life = null;
-                //     }
-                // }
-                // show player number
-                // TODO
+            // show score
+            if (_visibilityFlag & Visibility.ScoreOne) {
+                drawPlayerScore(controller.PlayerNumber.One);
             }
+            if (_visibilityFlag & Visibility.ScoreTwo) {
+                drawPlayerScore(controller.PlayerNumber.Two);
+            }
+            // show life
+            // if (_life !== null) {
+            //     drawLives();
+            //     if (_life <= 0) {
+            //         if (_lifeOverHandler) {
+            //             _lifeOverHandler();
+            //         }
+            //         else {
+            //             game.over();
+            //         }
+            //         _life = null;
+            //     }
+            // }
+            // show player number
+            // TODO
+            // }
         })
     }
 
-    function initPlayer(player: PlayerNumber) {
+    function initPlayer(player: controller.PlayerNumber) {
         // TODO
     }
 
-    function initPlayerScore(player: PlayerNumber) {
-        if (_scores === null) _scores = [];
-        else if (_scores[player]) return;
-        
+    function initPlayerScore(player: controller.PlayerNumber) {
+        if (player === controller.PlayerNumber.One) {
+            updateFlag(Visibility.ScoreOne, true);
+        } else if (player === controller.PlayerNumber.Two) {
+            updateFlag(Visibility.ScoreTwo, true);
+        }
+        if (_scores) return;
+
+        _scores = [];
         _scores[player] = 0;
         saveMultiplayerHighScore();
         initPlayer(player);
+        initMultiplayerHUD();
     }
 
     /**
@@ -90,7 +99,7 @@ namespace info {
             let oldScore = score();
             let maxScore = info.highScore();
             for (let i = 0; i < _scores.length; i++) {
-                if (maxScore && _scores[i]) {
+                if (maxScore && _scores[i] != null) {
                     maxScore = Math.max(maxScore, _scores[i]);
                 }
             }
@@ -104,10 +113,10 @@ namespace info {
      * Get the current score for the given player if any
      */
     //% weight=95 blockGap=8 group="Multiplayer"
-    //% blockId=local_playerScore block="score"
-    export function playerScore(player: PlayerNumber): number {
+    //% blockId=local_playerScore block="$player score"
+    export function playerScore(player: controller.PlayerNumber): number {
         initPlayerScore(player);
-        return _scores[player] || 0;
+        return _scores[player];
     }
 
     /**
@@ -117,7 +126,7 @@ namespace info {
      */
     //% weight=93 blockGap=8 group="Multiplayer"
     //% blockId=local_setPlayerScore block="set $player score to $value"
-    export function setPlayerScore(player: PlayerNumber, value: number) {
+    export function setPlayerScore(player: controller.PlayerNumber, value: number) {
         initPlayerScore(player);
         _scores[player] = value | 0;
     }
@@ -129,23 +138,28 @@ namespace info {
      */
     //% weight=92 group="Multiplayer"
     //% blockId=local_changePlayerScoreBy block="change $player score by $value"
-    export function changePlayerScoreBy(player: PlayerNumber, value: number) {
+    export function changePlayerScoreBy(player: controller.PlayerNumber, value: number) {
         initPlayerScore(player);
-        setScore(_scores[player] + value);
+        setPlayerScore(player, _scores[player] + value);
     }
 
-    function drawPlayerScore(player: PlayerNumber) {
-        const s = score() | 0;
+    // Only players one and two will have their score and lives displayed on screen.
 
-        let font: image.Font;
-        let offsetY = 2;
-        font = image.font5;
-
+    function drawPlayerScore(player: controller.PlayerNumber) {
+        const s = playerScore(player);
+        const font = image.font5;
+        const offsetY = 1;
         const num = s.toString();
         const width = num.length * font.charWidth;
 
-        screen.fillRect(screen.width - width - 2, 0, screen.width, image.font5.charHeight + 3, _borderColor)
-        screen.fillRect(screen.width - width - 1, 0, screen.width, image.font5.charHeight + 2, _bgColor)
-        screen.print(num, screen.width - width, offsetY, _fontColor, font);
+        if (player === controller.PlayerNumber.One) {
+            screen.fillRect(0, 0, width + 2, image.font5.charHeight + 3, _borderColor);
+            screen.fillRect(0, 0, width + 1, image.font5.charHeight + 2, _bgColor);
+            screen.print(num, 1, offsetY, _fontColor, font);
+        } else if (player === controller.PlayerNumber.Two) {
+            screen.fillRect(screen.width - width - 2, 0, screen.width, image.font5.charHeight + 3, _borderColor);
+            screen.fillRect(screen.width - width - 1, 0, screen.width, image.font5.charHeight + 2, _bgColor);
+            screen.print(num, screen.width - width, offsetY, _fontColor, font);
+        }
     }
 }
