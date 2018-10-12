@@ -1138,7 +1138,7 @@ ValType valType(TValue v) {
         else if (v == TAG_NULL)
             return ValType::Object;
         else {
-            oops();
+            oops(1);
             return ValType::Object;
         }
     } else {
@@ -1178,7 +1178,7 @@ String typeOf(TValue v) {
     case ValType::Function:
         return (String)sFunctionTp;
     default:
-        oops();
+        oops(2);
         return 0;
     }
 }
@@ -1238,7 +1238,20 @@ VTable *getVTable(RefObject *r) {
     if (r->vtable >= 34)
         return (VTable *)((uintptr_t)r->vtable << vtableShift);
     if (r->vtable == 0)
-        target_panic(100);
+        target_panic(PANIC_INVALID_VTABLE);
     return (VTable *)primVtables[r->vtable];
 }
+
+//%
+void failedCast(TValue v) {
+    DMESG("failed type check for %p", v);
+
+    int code;
+    if (v == TAG_NULL)
+        code = PANIC_CAST_FROM_NULL;
+    else
+        code = PANIC_CAST_FIRST + (int)valType(v);
+    target_panic(code);
+}
+
 } // namespace pxt
