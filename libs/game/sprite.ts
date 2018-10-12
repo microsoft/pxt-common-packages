@@ -84,7 +84,7 @@ class Sprite implements SpriteLike {
     private _image: Image;
     private _obstacles: sprites.Obstacle[];
 
-    private updateSay: (dt: number) => void;
+    private updateSay: (dt: number, camera: scene.Camera) => void;
     private sayBubbleSprite: Sprite;
 
     _hitboxes: game.Hitbox[];
@@ -369,13 +369,32 @@ class Sprite implements SpriteLike {
         this.sayBubbleSprite = sprites.create(image.create(bubbleWidth, font.charHeight + bubblePadding), -1);
 
         this.sayBubbleSprite.setFlag(SpriteFlag.Ghost, true);
-        this.updateSay = dt => {
+        this.updateSay = (dt, camera) => {
             // Update box stuff as long as timeOnScreen doesn't exist or it can still be on the screen
             if (!timeOnScreen || timeOnScreen > control.millis()) {
                 this.sayBubbleSprite.image.fill(textBoxColor);
                 // The minus 2 is how much transparent padding there is under the sayBubbleSprite
                 this.sayBubbleSprite.y = this.y - bubbleOffset - ((font.charHeight + bubblePadding) >> 1) - 2;
                 this.sayBubbleSprite.x = this.x;
+
+                if (!this.isOutOfScreen(camera)) {
+                    const ox = camera.offsetX;
+                    const oy = camera.offsetY;
+
+                    if (this.sayBubbleSprite.left - ox < 0) {
+                        this.sayBubbleSprite.left = 0;
+                    }
+
+                    if (this.sayBubbleSprite.right - ox > screen.width) {
+                        this.sayBubbleSprite.right = screen.width;
+                    }
+
+                    // If sprite bubble above the sprite gets cut off on top, place the bubble below the sprite
+                    if (this.sayBubbleSprite.top - oy < 0) {
+                        this.sayBubbleSprite.y = (this.sayBubbleSprite.y - 2 * this.y) * -1;
+                    }
+                }
+
                 // Pauses at beginning of text for holdTextSeconds length
                 if (holdTextSeconds > 0) {
                     holdTextSeconds -= game.eventContext().deltaTime;
@@ -476,7 +495,7 @@ class Sprite implements SpriteLike {
         }
         // Say text
         if (this.updateSay) {
-            this.updateSay(dt);
+            this.updateSay(dt, camera);
         }
     }
 
