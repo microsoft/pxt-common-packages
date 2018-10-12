@@ -94,7 +94,7 @@ namespace light {
      */
     export class NeoPixelStrip {
         _parent: NeoPixelStrip;
-        _pin: DigitalPin;
+        _pin: DigitalInOutPin;
         _buf: Buffer; // unscaled color buffer
         // per pixel scaling. This buffer is allocated on-demand when per-pixel brightness is needed.
         // when rendering, if this buffer is null, use _brightness instead
@@ -991,7 +991,7 @@ namespace light {
     //% parts="neopixel"
     //% weight=100 deprecated=true blockHidden=true
     export function createNeoPixelStrip(
-        pin: DigitalPin = null,
+        pin: DigitalInOutPin = null,
         numleds: number = 10,
         mode?: NeoPixelMode
     ): NeoPixelStrip {

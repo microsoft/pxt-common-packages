@@ -128,7 +128,7 @@ class Sprite implements SpriteLike {
      */
     //% group="Lifecycle"
     //% blockId=spritesetimage block="set %sprite(mySprite) image to %img=screen_image_picker"
-    //% weight=7
+    //% weight=7 help=sprites/sprite/set-image
     setImage(img: Image) {
         if (!img) return; // don't break the sprite
 
@@ -283,13 +283,14 @@ class Sprite implements SpriteLike {
     }
 
     /**
-     * Sets the sprite position
+     * Set the sprite position
      * @param x horizontal position
      * @param y vertical position
      */
     //% group="Properties"
     //% weight=100
     //% blockId=spritesetpos block="set %sprite(mySprite) position to x %x y %y"
+    //% help=sprites/sprite/set-position
     setPosition(x: number, y: number): void {
         this.x = x;
         this.y = y;
@@ -479,18 +480,19 @@ class Sprite implements SpriteLike {
     }
 
     /**
-     * Sets the sprite as a ghost (which does not interact with physics)
+     * Set a sprite flag
      */
     //% group="Properties"
     //% blockId=spritesetsetflag block="set %sprite(mySprite) %flag %on=toggleOnOff"
     //% flag.defl=SpriteFlag.StayInScreen
+    //% help=sprites/sprite/set-flag
     setFlag(flag: SpriteFlag, on: boolean) {
         if (on) this.flags |= flag
         else this.flags = ~(~this.flags | flag);
     }
 
     /**
-     * Tests if a sprite overlaps with another
+     * Check if this sprite overlaps another sprite
      * @param other
      */
     //% group="Overlaps"
@@ -536,21 +538,23 @@ class Sprite implements SpriteLike {
     }
 
     /**
-     * Determines if there is an obstacle in the given direction
+     * Check if there is an obstacle in the given direction
      * @param direction
      */
     //% blockId=spritehasobstacle block="is %sprite(mySprite) hitting wall %direction"
     //% blockNamespace="scene" group="Collisions"
+    //% help=sprites/sprite/is-hitting-tile
     isHittingTile(direction: CollisionDirection): boolean {
         return this._obstacles && !!this._obstacles[direction];
     }
 
     /**
-     * Gets the obstacle sprite in a given direction if any
+     * Get the obstacle sprite in a given direction if any
      * @param direction
      */
     //% blockId=spriteobstacle block="%sprite(mySprite) wall hit on %direction"
     //% blockNamespace="scene" group="Collisions"
+    //% help=sprites/sprite/tile-hit-from
     tileHitFrom(direction: CollisionDirection): number {
         return (this._obstacles && this._obstacles[direction]) ? this._obstacles[direction].tileIndex : -1;
     }
@@ -575,7 +579,7 @@ class Sprite implements SpriteLike {
     }
 
     /**
-     * Register code to run when sprite is destroyed
+     * Run code when the sprite is destroyed
      * @param handler
      */
     //% group="Lifecycle"
@@ -585,11 +589,12 @@ class Sprite implements SpriteLike {
     }
 
     /**
-     * Destroys the sprite
+     * Destroy the sprite
      */
     //% group="Lifecycle"
     //% weight=10
     //% blockId=spritedestroy block="destroy %sprite(mySprite)"
+    //% help=sprites/sprite/destroy
     destroy() {
         if (this.flags & sprites.Flag.Destroyed)
             return
