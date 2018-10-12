@@ -14,8 +14,7 @@ namespace pxsim {
 
 
 namespace pxsim.pxtcore {
-    // TODO: add in support for mode, as in CODAL
-    export function registerWithDal(id: number, evid: number, handler: RefAction, mode: number = 0) {
+    export function registerWithDal(id: number, evid: number, handler: RefAction) {
         board().bus.listen(id, evid, handler);
     }
     export function getPin(id: number) : pxsim.Pin {
