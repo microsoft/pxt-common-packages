@@ -289,6 +289,8 @@ struct VTable {
     uint16_t numbytes; // in the entire object, including the vtable pointer
     uint16_t userdata;
     PVoid *ifaceTable;
+    uint16_t classNo;
+    uint16_t reserved;
     PVoid methods[3]; // we only use up to three methods here; pxt will generate more
                       // refmask sits at &methods[nummethods]
 };
@@ -676,7 +678,7 @@ int compare(TValue a, TValue b);
 #define PXT_VTABLE_TO_INT(vt) ((uintptr_t)(vt) >> vtableShift)
 #define PXT_VTABLE_BEGIN(classname, flags, iface)                                                  \
     const VTable classname##_vtable __attribute__((aligned(1 << vtableShift))) = {                 \
-        sizeof(classname), flags, iface, {(void *)&classname::destroy, (void *)&classname::print,
+        sizeof(classname), flags, iface, 0, 0, {(void *)&classname::destroy, (void *)&classname::print,
 
 #define PXT_VTABLE_END                                                                             \
     }                                                                                              \

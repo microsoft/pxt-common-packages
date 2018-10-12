@@ -1211,6 +1211,8 @@ void dtorDoNothing() {}
     const VTable name = {sz,                                                                       \
                          0,                                                                        \
                          0,                                                                        \
+                         0,                                                                        \
+                         0,                                                                        \
                          {                                                                         \
                              (void *)&dtorDoNothing,                                               \
                              (void *)&anyPrint,                                                    \
