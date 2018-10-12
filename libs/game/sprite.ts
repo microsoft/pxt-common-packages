@@ -333,7 +333,9 @@ class Sprite implements SpriteLike {
         // Calculates the speed of the scroll if scrolling is needed and a time is specified
         if (timeOnScreen && maxOffset > 0) {
             speed = (maxOffset + (2 * maxTextWidth)) / (timeOnScreen / 1000);
+            speed = Math.max(speed, 45);
             holdTextSeconds = maxTextWidth / speed;
+            holdTextSeconds = Math.min(holdTextSeconds, 1.5);
         } 
 
         if (timeOnScreen) {
@@ -378,8 +380,7 @@ class Sprite implements SpriteLike {
                 if (holdTextSeconds > 0) {
                     holdTextSeconds -= game.eventContext().deltaTime;
                     // If scrolling has reached the end, start back at the beginning
-                    // If a given time is specified, text will not loop back
-                    if (holdTextSeconds <= 0 && pixelsOffset > 0 && !timeOnScreen) {
+                    if (holdTextSeconds <= 0 && pixelsOffset > 0) {
                         pixelsOffset = 0;
                         holdTextSeconds = maxTextWidth / speed;
                     }
