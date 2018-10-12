@@ -10,7 +10,7 @@ namespace info {
         None = 0,
         Countdown = 1 << 0,
         Score = 1 << 1,
-        Lives = 1 << 2,
+        Life = 1 << 2,
         All = ~(~0 << 3)
     }
 
@@ -59,7 +59,7 @@ namespace info {
                 drawScore();
             }
             // show life
-            if (_life !== null && _visibilityFlag & Visibility.Lives) {
+            if (_life !== null && _visibilityFlag & Visibility.Life) {
                 drawLives();
                 if (_life <= 0) {
                     if (_lifeOverHandler) {
@@ -125,7 +125,7 @@ namespace info {
     function initLife() {
         if (_life !== null) return
         _life = 3;
-        updateFlag(Visibility.Lives, true);
+        updateFlag(Visibility.Life, true);
         initHUD();
     }
 
@@ -286,8 +286,9 @@ namespace info {
      * Set whether life should be displayed
      * @param on if true, lives are shown; otherwise, lives are hidden
      */
-    export function ShowLives(on: boolean) {
-        updateFlag(Visibility.Lives, on);
+    export function ShowLife(on: boolean) {
+        initLife();
+        updateFlag(Visibility.Life, on);
     }
 
     /**
@@ -295,6 +296,7 @@ namespace info {
      * @param on if true, score is shown; otherwise, score is hidden
      */
     export function ShowScore(on: boolean) {
+        initScore();
         updateFlag(Visibility.Score, on);
     }
 
@@ -304,6 +306,12 @@ namespace info {
      */
     export function ShowCountdown(on: boolean) {
         updateFlag(Visibility.Countdown, on);
+    }
+
+
+    function updateFlag(flag: Visibility, on: boolean) {
+        if (on) _visibilityFlag |= flag;
+        else _visibilityFlag &= Visibility.All ^ flag;
     }
 
     /**
@@ -450,12 +458,6 @@ namespace info {
         }
         return val.toString();
     }
-
-    function updateFlag(flag: Visibility, on: boolean) {
-        if (on) _visibilityFlag |= flag;
-        else _visibilityFlag &= Visibility.All ^ flag;
-    }
-    
 }
 
 declare namespace info {
