@@ -36,6 +36,7 @@ namespace controller {
      */
     //% weight=100 group="Multiplayer"
     //% blockId=local_setplayersprite block="set sprite for $player to $sprite"
+    //% sprite.shadow="spritescreate"
     export function setPlayerSprite(player: PlayerNumber, sprite: Sprite) {
         if (!playerSprites) playerSprites = [];
         playerSprites[player] = sprite;
@@ -43,6 +44,7 @@ namespace controller {
         for (let i = 0; controlledPlayers && i < controlledPlayers.length; i++) {
             if (controlledPlayers[i].p === player) {
                 controlledPlayers[i].s = sprite;
+                break;
             }
         }
 
@@ -59,8 +61,8 @@ namespace controller {
      * Get the sprite for a player
      */
     //% weight=20 group="Multiplayer"
-    //% blockId=local_getplayersprite block="%player sprite"
-    export function getPlayerSprite(player: PlayerNumber): Sprite {
+    //% blockId=local_playersprite block="%player sprite"
+    export function playerSprite(player: PlayerNumber): Sprite {
         if (!playerSprites || !playerSprites[player]) return null;
         return playerSprites[player];
     }
@@ -74,7 +76,7 @@ namespace controller {
      * @param vx The velocity used for horizontal movement when left/right is pressed
      * @param vy The velocity used for vertical movement when up/down is pressed
      */
-    //% blockId="game_control_player" block="control $player with vx $vx vy $vy"
+    //% blockId="local_game_control_player" block="control $player with vx $vx vy $vy"
     //% weight=99 group="Multiplayer"
     //% vx.defl=100 vy.defl=100
     export function controlPlayer(player: PlayerNumber, vx: number, vy: number) {
@@ -119,7 +121,7 @@ namespace controller {
 
         controlledPlayers.push({
             p: player,
-            s: getPlayerSprite(player),
+            s: playerSprite(player),
             vx: vx,
             vy: vy
         });
