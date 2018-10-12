@@ -53,7 +53,7 @@ SINGLETON(WDisplay);
 void setPalette(Buffer buf) {
     auto display = getWDisplay();
     if (48 != buf->length)
-        target_panic(907);
+        target_panic(PANIC_SCREEN_ERROR);
     for (int i = 0; i < 16; ++i) {
         display->currPalette[i] =
             (buf->data[i * 3] << 16) | (buf->data[i * 3 + 1] << 8) | (buf->data[i * 3 + 2] << 0);
@@ -103,12 +103,12 @@ static void drawPanic(int code) {
 
     memset(ptr, 0, hb * dw);
 
-    drawNumber(10, ptr, 68, 20, hb);
+    drawNumber(10, ptr, 70, 20, hb);
     int x = 50;
     int y = 60;
-    drawNumber((code / 100) % 10, ptr, x, y, hb); x += 20;
-    drawNumber((code / 10) % 10, ptr, x, y, hb); x += 20;
-    drawNumber((code / 1) % 10, ptr, x, y, hb); x += 20;
+    drawNumber((code / 100) % 10, ptr, x, y, hb); x += 24;
+    drawNumber((code / 10) % 10, ptr, x, y, hb); x += 24;
+    drawNumber((code / 1) % 10, ptr, x, y, hb); x += 24;
 
     display->lcd.waitForEndUpdate();
     display->lcd.beginUpdate();
@@ -139,7 +139,7 @@ void updateScreen(Image_ img) {
 
     if (img && img->isDirty()) {
         if (img->bpp() != 4 || img->width() != display->width || img->height() != display->height)
-            target_panic(906);
+            target_panic(PANIC_SCREEN_ERROR);
 
         img->clearDirty();
         // DMESG("wait for done");

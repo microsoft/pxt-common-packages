@@ -30,7 +30,7 @@ int RefImage::width() {
 
 int RefImage::wordHeight() {
     if (bpp() == 1)
-        target_panic(900);
+        oops(20);
     return ((data()[2] * bpp() + 31) >> 5);
 }
 
@@ -40,7 +40,7 @@ int RefImage::byteHeight() {
     else if (bpp() == 4)
         return ((data()[2] * 4 + 31) >> 5) << 2;
     else {
-        target_panic(900);
+        oops(21);
         return -1;
     }
 }

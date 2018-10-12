@@ -8,7 +8,7 @@ namespace pxt {
 //%
 DevicePin *getPin(int id) {
     if (id < 0 || id >= DEV_NUM_PINS)
-        target_panic(42);
+        target_panic(PANIC_NO_SUCH_PIN);
 
     // we could use lookupComponent() here - it would be slightly slower
 
@@ -33,7 +33,7 @@ DevicePin *getPinCfg(int key) {
 
 void linkPin(int from, int to) {
     if (from < 0 || from >= DEV_NUM_PINS)
-        target_panic(42);
+        target_panic(PANIC_NO_SUCH_PIN);
     getPin(to);
     pinPos[from] = pinPos[to];
 }

@@ -25,13 +25,13 @@ void *xmalloc(size_t sz) {
         auto info = mallinfo();
         DMESG("malloc used: %d kb", info.uordblks / 1024);
         if (info.uordblks > MALLOC_LIMIT) {
-            target_panic(904);
+            target_panic(PANIC_MEMORY_LIMIT_EXCEEDED);
         }
     }
 #endif
     auto r = malloc(sz);
     if (r == NULL)
-        target_panic(905); // shouldn't happen
+        oops(50); // shouldn't happen
     return r;
 }
 
@@ -245,7 +245,7 @@ void waitForEvent(int source, int value) {
         }
     }
     DMESG("current thread not registered!");
-    target_panic(901);
+    oops(52);
 }
 
 static void dispatchEvent(Event &e) {
@@ -309,7 +309,7 @@ void raiseEvent(int id, int event) {
     pthread_mutex_lock(&eventMutex);
     if (eventTail == NULL) {
         if (eventHead != NULL)
-            target_panic(902);
+            oops(51);
         eventHead = eventTail = e;
     } else {
         eventTail->next = e;

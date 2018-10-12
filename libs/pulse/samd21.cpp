@@ -38,7 +38,7 @@ void setPeriodicCallback(uint32_t usec, void *data, void (*callback)(void *)) {
     }
 
     if (usec > 8000)
-        target_panic(42);
+        target_panic(PANIC_INVALID_ARGUMENT);
 
     periodicUsed = true;
     periodicData = data;
@@ -68,7 +68,7 @@ void setPeriodicCallback(uint32_t usec, void *data, void (*callback)(void *)) {
 
 void clearPeriodicCallback() {
     if (!periodicUsed) {
-        target_panic(42);
+        target_panic(PANIC_INVALID_ARGUMENT);
     }
 
     NVIC_DisableIRQ(TC3_IRQn);

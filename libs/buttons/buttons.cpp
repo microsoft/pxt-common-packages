@@ -40,7 +40,7 @@ Button *getButtonByPin(int pin, int flags) {
         else if ((flags & 0xf0) == 0x20)
             pull = PullMode::None;
         else
-            target_panic(42);
+            oops(3);
         btn = new Button(*lookupPin(pin), cpid, DEVICE_BUTTON_ALL_EVENTS,
                          (ButtonPolarity)(flags & 0xf), pull);
     }
@@ -50,7 +50,7 @@ Button *getButtonByPin(int pin, int flags) {
 //%
 Button *getButtonByPinCfg(int key, int flags) {
     int pin = getConfig(key);
-    if (pin == -1) target_panic(42);
+    if (pin == -1) target_panic(PANIC_NO_SUCH_CONFIG);
     return getButtonByPin(pin, flags);
 }
 
@@ -67,7 +67,7 @@ AbstractButton *getButton(int id) {
     else if (id == 2)
         return getMultiButton(DEVICE_ID_BUTTON_AB, pa, pb, flags);
     else {
-        target_panic(42);
+        target_panic(PANIC_INVALID_ARGUMENT);
         return NULL;
     }
 }

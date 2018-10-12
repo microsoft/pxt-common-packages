@@ -156,11 +156,28 @@ inline bool canBeTagged(int v) {
 #endif
 
 typedef enum {
-    ERR_INVALID_BINARY_HEADER = 5,
-    ERR_OUT_OF_BOUNDS = 8,
-    ERR_REF_DELETED = 7,
-    ERR_SIZE = 9,
-} PXT_ERROR;
+    PANIC_INVALID_BINARY_HEADER = 901,
+    PANIC_OUT_OF_BOUNDS = 902,
+    PANIC_REF_DELETED = 903,
+    PANIC_SIZE = 904,
+    PANIC_INVALID_VTABLE = 905,
+    PANIC_INTERNAL_ERROR = 906,
+    PANIC_NO_SUCH_CONFIG = 907,
+    PANIC_NO_SUCH_PIN = 908,
+    PANIC_INVALID_ARGUMENT = 909,
+    PANIC_MEMORY_LIMIT_EXCEEDED = 910,
+    PANIC_SCREEN_ERROR = 911,
+
+    PANIC_CAST_FIRST = 980,
+    PANIC_CAST_FROM_UNDEFINED = 980,
+    PANIC_CAST_FROM_BOOLEAN = 981,
+    PANIC_CAST_FROM_NUMBER = 982,
+    PANIC_CAST_FROM_STRING = 983,
+    PANIC_CAST_FROM_OBJECT = 984,
+    PANIC_CAST_FROM_FUNCTION = 985,
+    PANIC_CAST_FROM_NULL = 989,
+
+} PXT_PANIC;
 
 extern const unsigned functionsAndBytecode[];
 extern TValue *globals;
@@ -223,7 +240,7 @@ bool eq_bool(TValue a, TValue b);
 //%
 bool eqq_bool(TValue a, TValue b);
 
-void error(PXT_ERROR code, int subcode = 0);
+void error(PXT_PANIC code, int subcode = 0);
 void exec_binary(unsigned *pc);
 void start();
 
@@ -266,13 +283,13 @@ inline bool isRefCounted(TValue e) {
     return !isTagged(e) && (*((uint16_t *)e) & 1) == 1;
 }
 
-inline void check(int cond, PXT_ERROR code, int subcode = 0) {
+inline void check(int cond, PXT_PANIC code, int subcode = 0) {
     if (!cond)
         error(code, subcode);
 }
 
-inline void oops() {
-    target_panic(47);
+inline void oops(int subcode = 0) {
+    target_panic(800 + subcode);
 }
 
 class RefObject;
@@ -318,7 +335,7 @@ class RefObject {
         if (isReadOnly())
             return;
         MEMDBG2("INCR: %p refs=%d", this, this->refcnt);
-        check(refcnt > 1, ERR_REF_DELETED);
+        check(refcnt > 1, PANIC_REF_DELETED);
         refcnt += 2;
     }
 
@@ -326,8 +343,8 @@ class RefObject {
         if (isReadOnly())
             return;
         MEMDBG2("DECR: %p refs=%d", this, this->refcnt);
-        check(refcnt > 1, ERR_REF_DELETED);
-        check((refcnt & 1), ERR_REF_DELETED);
+        check(refcnt > 1, PANIC_REF_DELETED);
+        check((refcnt & 1), PANIC_REF_DELETED);
         refcnt -= 2;
         if (refcnt == 1) {
             MEMDBG("DEL: %p", this);
@@ -468,8 +485,8 @@ class RefAction : public RefObject {
 
     inline void stCore(int idx, TValue v) {
         // DMESG("ST [%d] = %d ", idx, v); this->print();
-        intcheck(0 <= idx && idx < len, ERR_OUT_OF_BOUNDS, 10);
-        intcheck(fields[idx] == 0, ERR_OUT_OF_BOUNDS, 11); // only one assignment permitted
+        intcheck(0 <= idx && idx < len, PANIC_OUT_OF_BOUNDS, 10);
+        intcheck(fields[idx] == 0, PANIC_OUT_OF_BOUNDS, 11); // only one assignment permitted
         fields[idx] = v;
     }
 

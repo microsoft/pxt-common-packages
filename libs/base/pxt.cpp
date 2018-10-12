@@ -20,10 +20,10 @@ void decr(TValue e) {
 
 // TODO
 Action mkAction(int reflen, int totallen, int startptr) {
-    check(0 <= reflen && reflen <= totallen, ERR_SIZE, 1);
-    check(reflen <= totallen && totallen <= 255, ERR_SIZE, 2);
-    check(bytecode[startptr] == PXT_REFCNT_FLASH, ERR_INVALID_BINARY_HEADER, 3);
-    check(bytecode[startptr + 1] == PXT_REF_TAG_ACTION, ERR_INVALID_BINARY_HEADER, 4);
+    check(0 <= reflen && reflen <= totallen, PANIC_SIZE, 1);
+    check(reflen <= totallen && totallen <= 255, PANIC_SIZE, 2);
+    check(bytecode[startptr] == PXT_REFCNT_FLASH, PANIC_INVALID_BINARY_HEADER, 3);
+    check(bytecode[startptr + 1] == PXT_REF_TAG_ACTION, PANIC_INVALID_BINARY_HEADER, 4);
 
     uintptr_t tmp = (uintptr_t)&bytecode[startptr];
 
@@ -47,10 +47,10 @@ Action mkAction(int reflen, int totallen, int startptr) {
 TValue runAction3(Action a, TValue arg0, TValue arg1, TValue arg2) {
     auto aa = (RefAction *)a;
     if (aa->vtable == PXT_REF_TAG_ACTION) {
-        check(aa->refcnt == PXT_REFCNT_FLASH, ERR_INVALID_BINARY_HEADER, 4);
+        check(aa->refcnt == PXT_REFCNT_FLASH, PANIC_INVALID_BINARY_HEADER, 4);
         return ((ActionCB)(((uintptr_t)a + 4) | 1))(NULL, arg0, arg1, arg2);
     } else {
-        check(aa->refcnt != PXT_REFCNT_FLASH, ERR_INVALID_BINARY_HEADER, 4);
+        check(aa->refcnt != PXT_REFCNT_FLASH, PANIC_INVALID_BINARY_HEADER, 4);
         return aa->runCore(arg0, arg1, arg2);
     }
 }
@@ -70,8 +70,8 @@ TValue runAction0(Action a) {
 RefRecord *mkClassInstance(int vtableOffset) {
     VTable *vtable = (VTable *)&bytecode[vtableOffset];
 
-    intcheck(vtable->methods[0] == &RefRecord_destroy, ERR_SIZE, 3);
-    intcheck(vtable->methods[1] == &RefRecord_print, ERR_SIZE, 4);
+    intcheck(vtable->methods[0] == &RefRecord_destroy, PANIC_SIZE, 3);
+    intcheck(vtable->methods[1] == &RefRecord_print, PANIC_SIZE, 4);
 
     void *ptr = ::operator new(vtable->numbytes);
     RefRecord *r = new (ptr) RefRecord(PXT_VTABLE_TO_INT(vtable));
@@ -81,26 +81,26 @@ RefRecord *mkClassInstance(int vtableOffset) {
 }
 
 TValue RefRecord::ld(int idx) {
-    // intcheck((reflen == 255 ? 0 : reflen) <= idx && idx < len, ERR_OUT_OF_BOUNDS, 1);
+    // intcheck((reflen == 255 ? 0 : reflen) <= idx && idx < len, PANIC_OUT_OF_BOUNDS, 1);
     return fields[idx];
 }
 
 TValue RefRecord::ldref(int idx) {
     // DMESG("LD %p len=%d reflen=%d idx=%d", this, len, reflen, idx);
-    // intcheck(0 <= idx && idx < reflen, ERR_OUT_OF_BOUNDS, 2);
+    // intcheck(0 <= idx && idx < reflen, PANIC_OUT_OF_BOUNDS, 2);
     TValue tmp = fields[idx];
     incr(tmp);
     return tmp;
 }
 
 void RefRecord::st(int idx, TValue v) {
-    // intcheck((reflen == 255 ? 0 : reflen) <= idx && idx < len, ERR_OUT_OF_BOUNDS, 3);
+    // intcheck((reflen == 255 ? 0 : reflen) <= idx && idx < len, PANIC_OUT_OF_BOUNDS, 3);
     fields[idx] = v;
 }
 
 void RefRecord::stref(int idx, TValue v) {
     // DMESG("ST %p len=%d reflen=%d idx=%d", this, len, reflen, idx);
-    // intcheck(0 <= idx && idx < reflen, ERR_OUT_OF_BOUNDS, 4);
+    // intcheck(0 <= idx && idx < reflen, PANIC_OUT_OF_BOUNDS, 4);
     decr(fields[idx]);
     fields[idx] = v;
 }
@@ -108,6 +108,12 @@ void RefRecord::stref(int idx, TValue v) {
 void RefObject::destroyVT() {
     ((RefObjectMethod)getVTable(this)->methods[0])(this);
     ::operator delete(this);
+}
+
+//%
+void deleteRefObject(RefObject *obj)
+{
+    obj->destroyVT();
 }
 
 void RefObject::printVT() {
@@ -446,7 +452,7 @@ void RefMap::destroy(RefMap *t) {
     auto len = t->values.getLength();
     auto values = t->values.getData();
     auto keys = t->keys.getData();
-    intcheck(t->keys.getLength() == len, ERR_SIZE, 101);
+    intcheck(t->keys.getLength() == len, PANIC_SIZE, 101);
     for (unsigned i = 0; i < len; ++i) {
         decr(values[i]);
         values[i] = nullptr;
@@ -484,9 +490,9 @@ void RefMap::print(RefMap *t) {
 
 void debugMemLeaks() {}
 
-void error(PXT_ERROR code, int subcode) {
+void error(PXT_PANIC code, int subcode) {
     DMESG("Error: %d [%d]", code, subcode);
-    target_panic(42);
+    target_panic(code);
 }
 
 uint16_t *bytecode;

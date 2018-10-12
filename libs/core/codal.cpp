@@ -53,11 +53,11 @@ static void commInit() {
             // allocate the comm section; this is never freed
             p = malloc(commSize);
             if (p != commBase)
-                target_panic(999);
+                oops(10);
             break;
         }
         if (p > commBase) 
-            target_panic(999);
+            oops(11);
         auto f = (FreeList*)p;
         f->next = head;
         head = f;
