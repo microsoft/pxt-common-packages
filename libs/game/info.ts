@@ -286,7 +286,7 @@ namespace info {
      * Set whether life should be displayed
      * @param on if true, lives are shown; otherwise, lives are hidden
      */
-    export function ShowLife(on: boolean) {
+    export function showLife(on: boolean) {
         initLife();
         updateFlag(Visibility.Life, on);
     }
@@ -295,7 +295,7 @@ namespace info {
      * Set whether score should be displayed
      * @param on if true, score is shown; otherwise, score is hidden
      */
-    export function ShowScore(on: boolean) {
+    export function showScore(on: boolean) {
         initScore();
         updateFlag(Visibility.Score, on);
     }
@@ -304,7 +304,7 @@ namespace info {
      * Set whether score should be displayed
      * @param on if true, score is shown; otherwise, score is hidden
      */
-    export function ShowCountdown(on: boolean) {
+    export function showCountdown(on: boolean) {
         updateFlag(Visibility.Countdown, on);
     }
 
