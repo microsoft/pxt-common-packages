@@ -21,7 +21,15 @@ namespace controller {
         Menu
     }
 
+    interface ControlledPlayer {
+        p: PlayerNumber;
+        s: Sprite;
+        vx: PlayerNumber;
+        vy: PlayerNumber;
+    }
+
     let playerSprites: Sprite[];
+    let controlledPlayers: ControlledPlayer[];
 
     /**
      * Set the sprite for a player
@@ -32,6 +40,12 @@ namespace controller {
         if (!playerSprites) playerSprites = [];
         playerSprites[player] = sprite;
 
+        for (let i = 0; controlledPlayers && i < controlledPlayers.length; i++) {
+            if (controlledPlayers[i].p === player) {
+                controlledPlayers[i].s = sprite;
+            }
+        }
+
         // Set up events
         multiLeft._initPlayer(player);
         multiUp._initPlayer(player);
@@ -39,6 +53,76 @@ namespace controller {
         multiDown._initPlayer(player);
         multiA._initPlayer(player);
         multiB._initPlayer(player);
+    }
+
+    /**
+     * Get the sprite for a player
+     */
+    //% weight=20 group="Multiplayer"
+    //% blockId=local_getplayersprite block="%player sprite"
+    export function getPlayerSprite(player: PlayerNumber): Sprite {
+        if (!playerSprites || !playerSprites[player]) return null;
+        return playerSprites[player];
+    }
+
+    /**
+     * Control a sprite using the direction buttons from the controller. Note that this
+     * control will take over the vx and vy of the sprite and overwrite any changes
+     * made unless a 0 is passed.
+     *
+     * @param player The Player to control
+     * @param vx The velocity used for horizontal movement when left/right is pressed
+     * @param vy The velocity used for vertical movement when up/down is pressed
+     */
+    //% blockId="game_control_player" block="control $player with vx $vx vy $vy"
+    //% weight=99 group="Multiplayer"
+    //% vx.defl=100 vy.defl=100
+    export function controlPlayer(player: PlayerNumber, vx: number, vy: number) {
+        if (!playerSprites || !playerSprites[player]) return;
+        
+        if (!controlledPlayers) {
+            controlledPlayers = [];
+            game.currentScene().eventContext.registerFrameHandler(19, () => {
+                controlledPlayers.forEach(controlled => {
+                    if (controlled.vx) {
+                        controlled.s.vx = 0;
+
+                        if (controller.multiRight.isPressed(controlled.p)) {
+                            controlled.s.vx = controlled.vx;
+                        }
+                        if (controller.multiLeft.isPressed(controlled.p)) {
+                            controlled.s.vx = -controlled.vx;
+                        }
+                    }
+
+                    if (controlled.vy) {
+                        controlled.s.vy = 0;
+
+                        if (controller.multiDown.isPressed(controlled.p)) {
+                            controlled.s.vy = controlled.vy;
+                        }
+                        if (controller.multiUp.isPressed(controlled.p)) {
+                            controlled.s.vy = -controlled.vy;
+                        }
+                    }
+                });
+            });
+        }
+
+        for (let i = 0; controlledPlayers && i < controlledPlayers.length; i++) {
+            if (controlledPlayers[i].p === player) {
+                controlledPlayers[i].vx = vx;
+                controlledPlayers[i].vy = vy;
+                return;
+            }
+        }
+
+        controlledPlayers.push({
+            p: player,
+            s: getPlayerSprite(player),
+            vx: vx,
+            vy: vy
+        });
     }
 
     //% fixedInstances
@@ -65,7 +149,7 @@ namespace controller {
         /**
          * Run some code when a button is pressed or released
          */
-        //% weight=99 blockGap=8 help=controller/button/on-event draggableParameters group="Multiplayer"
+        //% weight=98 blockGap=8 help=controller/button/on-event draggableParameters group="Multiplayer"
         //% blockId=local_keyonevent block="on $this **button** $event $player $playerSprite"
         onEvent(event: ControllerButtonEvent, handler: (player: number, playerSprite: Sprite) => void) {
             if (!this.handlers) this.handlers = [];
@@ -75,7 +159,7 @@ namespace controller {
         /**
          * Pauses until a button is pressed or released
          */
-        //% weight=98 blockGap=8 group="Multiplayer"
+        //% weight=97 blockGap=8 group="Multiplayer"
         //% blockId=local_keypauseuntil block="pause until $player $this **button** is $event"
         pauseUntil(player: PlayerNumber, event: ControllerButtonEvent) {
             this._initPlayer(player);
@@ -86,7 +170,7 @@ namespace controller {
         /**
          * Indicates if the button is currently pressed
         */
-        //% weight=96 blockGap=8 group="Multiplayer"
+        //% weight=95 blockGap=8 group="Multiplayer"
         //% blockId=local_keyispressed block="is $player $this **button** pressed"
         isPressed(player: PlayerNumber) {
             this._initPlayer(player);
