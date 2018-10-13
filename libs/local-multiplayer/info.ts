@@ -1,6 +1,7 @@
 //% groups='["other","Multiplayer"]'
 namespace info {
 
+    // rm w/ transition to PlayerInfo
     enum Visibility {
         None = 0,
         ScoreOne = 1 << 0,
@@ -12,18 +13,37 @@ namespace info {
         All = ~(~0 << 6)
     }
 
-    let _scores: number[] = null;
-    let _lives: number[] = null;
+    export interface PlayerInfo {
+        score: number;
+        life: number;
+        player: controller.PlayerNumber;
+        showScore?: boolean;
+        showLife?: boolean;
+        showPlayer?: boolean;
+        h?: () => void; // onPlayerLifeOver handler
+        x?: number;
+        y?: number;
+        left?: boolean; // if true banner goes from x to the left, else goes rightward
+        up?: boolean; // if true banner goes from y up, else goes downward
+        bg?: number; // background color
+        border?: number; // border color
+        fc?: number; // font color
+    }
+
+    let _scores: number[] = null; //rm
+    let _lives: number[] = null; //rm
+    let _players: PlayerInfo[];
     // let _life: number = null;
-    let _multiplayerHud: boolean = false;
-    let _visibilityFlag: number = Visibility.None;
+    let _multiplayerHud: boolean = false; 
+    let _visibilityFlag: number = Visibility.None; // rm
     // let _gameEnd: number = undefined;
     let _heartImage: Image;
     let _multiplierImage: Image;
-    let _bgColor: number;
-    let _borderColor: number;
-    let _fontColor: number;
+    let _bgColor: number; // rm
+    let _borderColor: number; // rm
+    let _fontColor: number; // rm
 
+    // rm
     function updateFlag(flag: Visibility, on: boolean) {
         if (on) _visibilityFlag |= flag;
         else _visibilityFlag &= Visibility.All ^ flag;
@@ -70,11 +90,8 @@ namespace info {
 
             // TODO: add playerLifeOverHandlers
             // * need to keep bool array of what is 'alive'; nums in array not nullable like outside of array
-            // Maybe store as interface:
-            // interface LifeOver {
-            //     h: () => void; // handler event
-            //     a: boolean; // whether player is currently alive
-            // }
+            //
+            // NO DEFAULT BEHAVIOR FOR _lifeOverHandler
             // if (_life <= 0) {
             //     if (_lifeOverHandler) {
             //         _lifeOverHandler();
@@ -111,36 +128,76 @@ namespace info {
 
 
     function initPlayer(player: controller.PlayerNumber) {
-        // TODO
-        // red (player one) and blue (player two), or maybe just border color with bkgd color for font
+        if (!_players) _players = [];
+        if (_players[player]) return;
+
+        if (player == controller.PlayerNumber.One) {
+            // Top left, and banner is white on red
+            _players[player] = {
+                score: null,
+                life: null,
+                player: player,
+                showScore: null,
+                showLife: null,
+                showPlayer: true,
+                x: -1,
+                y: -1,
+                bg: screen.isMono ? 0 : 1,
+                border: 1,
+                fc: 1
+            }
+        } else if (player == controller.PlayerNumber.Two) {
+            // Top right, and banner is white on blue
+            _players[player] = {
+                score: null,
+                life: null,
+                player: player,
+                showScore: null,
+                showLife: null,
+                showPlayer: true,
+                x: screen.width,
+                y: 0,
+                left: true,
+                bg: screen.isMono ? 0 : 8,
+                border: 1,
+                fc: 1
+            }
+        } else {
+            // Not displayed by default, standard info color
+            _players[player] = {
+                score: null,
+                life: null,
+                player: player,
+                showLife: false,
+                showScore: false,
+                showPlayer: false,
+                bg: screen.isMono ? 0 : 1,
+                border: screen.isMono ? 1 : 3,
+                fc: screen.isMono ? 1 : 3
+            }
+        }
     }
 
     function initPlayerScore(player: controller.PlayerNumber) {
-        if (player === controller.PlayerNumber.One) {
-            updateFlag(Visibility.ScoreOne, true);
-        } else if (player === controller.PlayerNumber.Two) {
-            updateFlag(Visibility.ScoreTwo, true);
-        }
-        if (!_scores) {
-            _scores = [];
-            _scores[player] = 0;
+        initPlayer(player);
+        const p = _players[player];
+        if (p.showScore === null) p.showScore = true;
+
+        if (!p.score) {
+            p.score = 0;
             saveMultiplayerHighScore();
-            initPlayer(player);
             initMultiplayerHUD();
         }
+
     }
 
     function initPlayerLife(player: controller.PlayerNumber) {
-        if (player === controller.PlayerNumber.One) {
-            updateFlag(Visibility.LifeOne, true);
-        } else if (player === controller.PlayerNumber.Two) {
-            updateFlag(Visibility.LifeTwo, true);
-        }
+        initPlayer(player);
+        const p = _players[player];
+        if (p.showScore === null) p.showScore = true;
 
-        if (!_lives) {
-            _lives = [];
-            _lives[player] = 3;
-            initPlayer(player);
+        if (!p.life) {
+            p.life = 3;
             initMultiplayerHUD();
         }
     }
@@ -149,17 +206,21 @@ namespace info {
      * Updates the high score based on the scores of all players
      */
     export function saveMultiplayerHighScore() {
-        if (_scores) {
-            let oldScore = score();
-            let maxScore = info.highScore();
-            for (let i = 0; i < _scores.length; i++) {
-                if (maxScore && _scores[i] != null) {
-                    maxScore = Math.max(maxScore, _scores[i]);
+        if (_players) {
+            const oS = score();
+            const hS = info.highScore();
+            let maxScore = hS;
+            for (let player = 0; player < _players.length; player++) {
+                const pS = _players[player].score;
+                if (pS !== null) {
+                    maxScore = Math.max(maxScore, pS);
                 }
             }
-            setScore(maxScore);
-            saveHighScore();
-            setScore(oldScore);
+            if (maxScore > hS) {
+                setScore(maxScore);
+                saveHighScore();
+                setScore(oS);
+            }
         }
     }
 
@@ -170,7 +231,7 @@ namespace info {
     //% blockId=local_playerScore block="$player score"
     export function playerScore(player: controller.PlayerNumber): number {
         initPlayerScore(player);
-        return _scores[player];
+        return _players[player].score;
     }
 
     /**
@@ -182,7 +243,7 @@ namespace info {
     //% blockId=local_setPlayerScore block="set $player score to $value"
     export function setPlayerScore(player: controller.PlayerNumber, value: number) {
         initPlayerScore(player);
-        _scores[player] = value | 0;
+        _players[player].score = value | 0;
     }
 
     /**
@@ -194,7 +255,7 @@ namespace info {
     //% blockId=local_changePlayerScoreBy block="change $player score by $value"
     export function changePlayerScoreBy(player: controller.PlayerNumber, value: number) {
         initPlayerScore(player);
-        setPlayerScore(player, _scores[player] + value);
+        setPlayerScore(player, _players[player].score + value);
     }
 
     /**
@@ -205,7 +266,7 @@ namespace info {
     //% blockId=local_life block="$player life"
     export function playerLife(player: controller.PlayerNumber) {
         initPlayerLife(player);
-        return _lives[player];
+        return _players[player].life;
     }
 
 
@@ -218,7 +279,7 @@ namespace info {
     //% blockId=local_setLife block="set $player life to %value"
     export function setPlayerLife(player: controller.PlayerNumber, value: number) {
         initPlayerLife(player);
-        _lives[player] = value | 0;
+        _players[player].life = value | 0;
     }
 
     /**
@@ -230,11 +291,11 @@ namespace info {
     //% blockId=local_changeLifeBy block="change $player life by %value"
     export function changePlayerLifeBy(player: controller.PlayerNumber, value: number) {
         initPlayerLife(player);
-        setPlayerLife(player, _lives[player] + value);
+        setPlayerLife(player, _players[player].life + value);
     }
 
     // Only players one and two will have their score and lives displayed on screen.
-
+    //rm
     function drawPlayerScore(player: controller.PlayerNumber) {
         const s = playerScore(player);
         const font = image.font5;
@@ -253,6 +314,7 @@ namespace info {
         }
     }
 
+    //rm
     function drawPlayerLives(player: controller.PlayerNumber) {
         if (_lives[player] <= 0) return;
 
@@ -280,5 +342,9 @@ namespace info {
 
         screen.drawTransparentImage(mult, _heartImage.width + 2, offsetY + font.charHeight - _multiplierImage.height + 2);
         screen.print(num, _heartImage.width + 3 + _multiplierImage.width, offsetY + 2, _fontColor, font);
+    }
+
+    function drawPlayer(player: controller.PlayerNumber) {
+        // TODO
     }
 }
