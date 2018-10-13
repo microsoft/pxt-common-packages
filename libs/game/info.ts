@@ -248,7 +248,7 @@ namespace info {
     export function startCountdown(duration: number) {
         initHUD();
         _gameEnd = control.millis() + duration * 1000;
-        updateFlag(Visibility.Countdown, false);
+        updateFlag(Visibility.Countdown, true);
         _countdownExpired = false;
     }
 
