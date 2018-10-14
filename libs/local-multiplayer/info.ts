@@ -129,11 +129,7 @@ namespace info {
             }
         } else {
             // Not displayed by default, bottom left, banner is white on green
-            _players[player + 0] = {
-                // this weird hack is needed to compile the code. Otherwise gets
-                //      non-numeric indexer on Array_::setAt
-                //      (property) player: controller.PlayerNumber
-                // Ask someone smart what this is for, seems like an internal bug?
+            _players[player] = {
                 score: null,
                 life: null,
                 player: player,
@@ -301,7 +297,7 @@ namespace info {
         const offsetX = 1;
         let offsetY = 2;
 
-        // maybe w / h should be gotten through exported functions, to making laying stuff out more reasonable?
+        // TODO maybe w / h should be gotten through exported functions, to making laying stuff out more reasonable?
         if (p.showScore) {
             s = "" + playerScore(player);
             sW = s.length * font.charWidth + 3;
@@ -348,6 +344,7 @@ namespace info {
 
         // print player
         if (p.showPlayer) {
+            // TODO make sure this renders in correct position when only showPlayer is on (w/o showLife / showScore)
             const pNum = "" + p.player;
             
             let pW = pNum.length * font.charWidth;
