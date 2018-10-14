@@ -88,7 +88,7 @@ namespace info {
                 score: null,
                 life: null,
                 player: player,
-                bg: screen.isMono ? 0 : 3,
+                bg: screen.isMono ? 0 : 2,
                 border: 1,
                 fc: 1,
                 showScore: null,
@@ -113,8 +113,24 @@ namespace info {
                 y: -1,
                 left: true
             }
+        } else if (player === controller.PlayerNumber.Three) {
+            // Not displayed by default, bottom left, banner is white on yellow
+            _players[player] = {
+                score: null,
+                life: null,
+                player: player,
+                bg: screen.isMono ? 0 : 5,
+                border: 1,
+                fc: 1,
+                showLife: false,
+                showScore: false,
+                showPlayer: false,
+                x: -1,
+                y: screen.height + 1,
+                up: true
+            }
         } else {
-            // Not displayed by default, standard info color
+            // Not displayed by default, bottom left, banner is white on green
             _players[player + 0] = {
                 // this weird hack is needed to compile the code. Otherwise gets
                 //      non-numeric indexer on Array_::setAt
@@ -123,12 +139,16 @@ namespace info {
                 score: null,
                 life: null,
                 player: player,
-                bg: screen.isMono ? 0 : 1,
-                border: screen.isMono ? 1 : 3,
-                fc: screen.isMono ? 1 : 3,
+                bg: screen.isMono ? 0 : 7,
+                border: 1,
+                fc: 1,
                 showLife: false,
                 showScore: false,
-                showPlayer: false
+                showPlayer: false,
+                x: screen.width + 1,
+                y: screen.height + 1,
+                left: true,
+                up: true
             }
         }
     }
@@ -302,6 +322,7 @@ namespace info {
         // print life
         if (p.showLife) {
             const bump = p.left ? w - lW: 0;
+            
             let mult = _multiplierImage.clone();
             mult.replace(1, p.fc);
 
@@ -313,7 +334,11 @@ namespace info {
         // print player
         if (p.showPlayer) {
             const pNum = "" + p.player;
-            const pW = pNum.length * font.charWidth;
+            
+            let pW = pNum.length * font.charWidth;
+            // characters 4-9 are 1 px wider than 0-3
+            if (player % 10 > 3) pW++;
+
             const pH = Math.max(h, font.charHeight + 2);
             const pX = p.left ? (x - pW + 1) : (x + w - 1);
 
