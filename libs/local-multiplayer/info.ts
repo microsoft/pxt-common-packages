@@ -1,22 +1,12 @@
 //% groups='["other","Multiplayer"]'
 namespace info {
-
-    // rm w/ transition to PlayerInfo
-    enum Visibility {
-        None = 0,
-        ScoreOne = 1 << 0,
-        ScoreTwo = 1 << 1,
-        LifeOne = 1 << 2,
-        LifeTwo = 1 << 3,
-        PlayerOne = 1 << 4,
-        PlayerTwo = 1 << 5,
-        All = ~(~0 << 6)
-    }
-
     export interface PlayerInfo {
         score: number;
         life: number;
         player: controller.PlayerNumber;
+        bg: number; // background color
+        border: number; // border color
+        fc: number; // font color
         showScore?: boolean;
         showLife?: boolean;
         showPlayer?: boolean;
@@ -25,29 +15,12 @@ namespace info {
         y?: number;
         left?: boolean; // if true banner goes from x to the left, else goes rightward
         up?: boolean; // if true banner goes from y up, else goes downward
-        bg?: number; // background color
-        border?: number; // border color
-        fc?: number; // font color
     }
 
-    let _scores: number[] = null; //rm
-    let _lives: number[] = null; //rm
     let _players: PlayerInfo[];
-    // let _life: number = null;
     let _multiplayerHud: boolean = false; 
-    let _visibilityFlag: number = Visibility.None; // rm
-    // let _gameEnd: number = undefined;
     let _heartImage: Image;
     let _multiplierImage: Image;
-    let _bgColor: number; // rm
-    let _borderColor: number; // rm
-    let _fontColor: number; // rm
-
-    // rm
-    function updateFlag(flag: Visibility, on: boolean) {
-        if (on) _visibilityFlag |= flag;
-        else _visibilityFlag &= Visibility.All ^ flag;
-    }
 
     function initMultiplayerHUD() {
         if (_multiplayerHud) return;
@@ -57,40 +30,22 @@ namespace info {
         showScore(false);
         showLife(false);
 
-        _heartImage = defaultHeartImage();
+        _heartImage = _heartImage || defaultHeartImage();
 
         _multiplierImage = _multiplierImage || img`
-                . . . . .
-                1 . . . 1
-                . 1 . 1 .
-                . . 1 . .
-                . 1 . 1 .
-                1 . . . 1
+                1 . 1
+                . 1 .
+                1 . 1
             `;
 
-        _bgColor = info.backgroundColor();
-        _borderColor = info.borderColor();
-        _fontColor = info.fontColor();
         game.eventContext().registerFrameHandler(95, () => {
             // show score
-            if (_visibilityFlag & Visibility.ScoreOne) {
-                drawPlayerScore(controller.PlayerNumber.One);
-            }
-            if (_visibilityFlag & Visibility.ScoreTwo) {
-                drawPlayerScore(controller.PlayerNumber.Two);
-            }
 
-            // show life
-            if (_visibilityFlag & Visibility.LifeOne) {
-                drawPlayerLives(controller.PlayerNumber.One);
-            }
-            if (_visibilityFlag & Visibility.LifeTwo) {
-                drawPlayerLives(controller.PlayerNumber.One);
+            for (let player = controller.PlayerNumber.One; player < _players.length; player++) {
+                drawPlayer(player);
             }
 
             // TODO: add playerLifeOverHandlers
-            // * need to keep bool array of what is 'alive'; nums in array not nullable like outside of array
-            //
             // NO DEFAULT BEHAVIOR FOR _lifeOverHandler
             // if (_life <= 0) {
             //     if (_lifeOverHandler) {
@@ -99,30 +54,25 @@ namespace info {
             //     _life = 0;
             //     _isAlive = false
             // }
-
-            // TODO: show player number
-            // }
         })
     }
 
     function defaultHeartImage() {
         return screen.isMono ?
                 img`
-                    . 1 1 . 1 1 .
-                    1 . . 1 . . 1
-                    1 . . . . . 1
+                    . . 1 . 1 . .
+                    . 1 . 1 . 1 .
                     . 1 . . . 1 .
                     . . 1 . 1 . .
                     . . . 1 . . .
                 `
                 :
                 img`
-                    . c 2 . 2 2 .
-                    c 2 2 2 4 2 2
-                    c 2 2 4 2 2 2
-                    . c 2 2 2 2 .
-                    . . c 2 2 . .
-                    . . . c . . .
+                    . . 1 . 1 . .
+                    . 1 2 1 4 1 .
+                    . 1 2 4 2 1 .
+                    . . 1 2 1 . .
+                    . . . 1 . . .
                 `;
     }
 
@@ -130,52 +80,63 @@ namespace info {
     function initPlayer(player: controller.PlayerNumber) {
         if (!_players) _players = [];
         if (_players[player]) return;
+        initMultiplayerHUD();
 
-        if (player == controller.PlayerNumber.One) {
+        if (player === controller.PlayerNumber.One) {
             // Top left, and banner is white on red
             _players[player] = {
                 score: null,
                 life: null,
                 player: player,
+                bg: screen.isMono ? 0 : 3,
+                border: 1,
+                fc: 1,
                 showScore: null,
                 showLife: null,
                 showPlayer: true,
                 x: -1,
-                y: -1,
-                bg: screen.isMono ? 0 : 1,
-                border: 1,
-                fc: 1
+                y: -1
             }
-        } else if (player == controller.PlayerNumber.Two) {
+        } else if (player === controller.PlayerNumber.Two) {
             // Top right, and banner is white on blue
             _players[player] = {
                 score: null,
                 life: null,
                 player: player,
+                bg: screen.isMono ? 0 : 8,
+                border: 1,
+                fc: 1,
                 showScore: null,
                 showLife: null,
                 showPlayer: true,
-                x: screen.width,
-                y: 0,
-                left: true,
-                bg: screen.isMono ? 0 : 8,
-                border: 1,
-                fc: 1
+                x: screen.width + 1,
+                y: -1,
+                left: true
             }
         } else {
             // Not displayed by default, standard info color
-            _players[player] = {
+            _players[player + 0] = {
+                // this weird hack is needed to compile the code. Otherwise gets
+                //      non-numeric indexer on Array_::setAt
+                //      (property) player: controller.PlayerNumber
+                // Ask someone smart what this is for, seems like an internal bug?
                 score: null,
                 life: null,
                 player: player,
-                showLife: false,
-                showScore: false,
-                showPlayer: false,
                 bg: screen.isMono ? 0 : 1,
                 border: screen.isMono ? 1 : 3,
-                fc: screen.isMono ? 1 : 3
+                fc: screen.isMono ? 1 : 3,
+                showLife: false,
+                showScore: false,
+                showPlayer: false
             }
         }
+    }
+
+    //todo comment
+    export function playerInfo(player: controller.PlayerNumber) {
+        initPlayer(player);
+        return _players[player];
     }
 
     function initPlayerScore(player: controller.PlayerNumber) {
@@ -186,19 +147,16 @@ namespace info {
         if (!p.score) {
             p.score = 0;
             saveMultiplayerHighScore();
-            initMultiplayerHUD();
         }
-
     }
 
     function initPlayerLife(player: controller.PlayerNumber) {
         initPlayer(player);
         const p = _players[player];
-        if (p.showScore === null) p.showScore = true;
+        if (p.showLife === null) p.showLife = true;
 
         if (!p.life) {
             p.life = 3;
-            initMultiplayerHUD();
         }
     }
 
@@ -207,13 +165,13 @@ namespace info {
      */
     export function saveMultiplayerHighScore() {
         if (_players) {
-            const oS = score();
+            const oS = info.score();
             const hS = info.highScore();
             let maxScore = hS;
-            for (let player = 0; player < _players.length; player++) {
-                const pS = _players[player].score;
-                if (pS !== null) {
-                    maxScore = Math.max(maxScore, pS);
+            for (let player = controller.PlayerNumber.One; player < _players.length; player++) {
+                const p = _players[player]
+                if (p && p.score) {
+                    maxScore = Math.max(maxScore, p.score);
                 }
             }
             if (maxScore > hS) {
@@ -294,57 +252,73 @@ namespace info {
         setPlayerLife(player, _players[player].life + value);
     }
 
-    // Only players one and two will have their score and lives displayed on screen.
-    //rm
-    function drawPlayerScore(player: controller.PlayerNumber) {
-        const s = playerScore(player);
-        const font = image.font5;
-        const offsetY = 1;
-        const num = s.toString();
-        const width = num.length * font.charWidth;
-
-        if (player === controller.PlayerNumber.One) {
-            screen.fillRect(0, 0, width + 2, font.charHeight + 3, _borderColor);
-            screen.fillRect(0, 0, width + 1, font.charHeight + 2, _bgColor);
-            screen.print(num, 1, offsetY, _fontColor, font);
-        } else if (player === controller.PlayerNumber.Two) {
-            screen.fillRect(screen.width - width - 2, 0, width + 2, font.charHeight + 3, _borderColor);
-            screen.fillRect(screen.width - width - 1, 0, width + 1, font.charHeight + 2, _bgColor);
-            screen.print(num, screen.width - width, offsetY, _fontColor, font);
-        }
-    }
-
-    //rm
-    function drawPlayerLives(player: controller.PlayerNumber) {
-        if (_lives[player] <= 0) return;
-
-        const font = image.font5;
-        const num = _lives[player].toString();
-        const textWidth = num.length * font.charWidth;
-        let offsetY: number;
-        if (player == controller.PlayerNumber.One && Visibility.ScoreOne & _visibilityFlag
-                || player == controller.PlayerNumber.Two && Visibility.ScoreTwo & _visibilityFlag) {
-            offsetY = font.charHeight + 3;
-        } else {
-            offsetY = 0;
-        }
-        let mult = _multiplierImage.clone();
-        mult.replace(1, _fontColor);
-
-        // TODOS
-        // * currently set for player one only; add shift for player two
-        // * Remove border between life and score
-        // * One larger box for score and drawPlayerLives; probably refactor drawPlayerLives
-        //      and drawPlayerScore into drawPlayerData w/ lives, score, and player icon all at once
-        screen.fillRect(0, offsetY - 1, _heartImage.width + _multiplierImage.width + textWidth + 4, _heartImage.height + 4, _borderColor)
-        screen.fillRect(0, offsetY, _heartImage.width + _multiplierImage.width + textWidth + 3, _heartImage.height + 2, _bgColor)
-        screen.drawTransparentImage(_heartImage, 1, offsetY + 1);
-
-        screen.drawTransparentImage(mult, _heartImage.width + 2, offsetY + font.charHeight - _multiplierImage.height + 2);
-        screen.print(num, _heartImage.width + 3 + _multiplierImage.width, offsetY + 2, _fontColor, font);
-    }
-
     function drawPlayer(player: controller.PlayerNumber) {
-        // TODO
+        if (!_players || !_players[player]) return;
+
+        const font = image.font5;
+        const p = _players[player];
+        
+        let s: string;
+        let l: string;
+        let h = 4;
+        let sW = 0;
+        let lW = 0;
+        const offsetX = 1;
+        let offsetY = 2;
+
+        // maybe w / h should be gotten through exported functions, to making laying stuff out more reasonable?
+        if (p.showScore) {
+            s = "" + playerScore(player);
+            sW = s.length * font.charWidth + 3;
+            h += font.charHeight;
+            offsetY += font.charHeight + 1;
+        }
+        if (p.showLife) {
+            l = "" + playerLife(player);
+            lW = _heartImage.width + _multiplierImage.width + l.length * font.charWidth + 2;
+            h += _heartImage.height;
+        }
+
+        const w = Math.max(sW, lW);
+
+        // bump size for space between lines
+        if (p.showScore && p.showLife) h++;
+
+        const x = p.x - (p.left ? w : 0);
+        const y = p.y - (p.up ? h : 0);
+
+        // Bordered Box
+        if (p.showScore || p.showLife) {
+            screen.fillRect(x, y, w, h, p.border);
+            screen.fillRect(x + 1, y + 1, w - 2, h - 2, p.bg);
+        }
+
+        // print score
+        if (p.showScore) {
+            const bump = p.left ? w - sW: 0;
+            screen.print(s, x + offsetX + bump + 1, y + 2, p.fc, font);
+        }
+
+        // print life
+        if (p.showLife) {
+            const bump = p.left ? w - lW: 0;
+            let mult = _multiplierImage.clone();
+            mult.replace(1, p.fc);
+
+            screen.drawTransparentImage(_heartImage, x + offsetX + bump, y + offsetY);
+            screen.drawTransparentImage(mult, x + _heartImage.width + offsetX + bump, y + offsetY + font.charHeight - _multiplierImage.height - 1);
+            screen.print(l, x + offsetX + _heartImage.width + _multiplierImage.width + 1 + bump, y + offsetY, p.fc, font);
+        }
+
+        // print player
+        if (p.showPlayer) {
+            const pNum = "" + p.player;
+            const pW = pNum.length * font.charWidth;
+            const pH = Math.max(h, font.charHeight + 2);
+            const pX = p.left ? (x - pW + 1) : (x + w - 1);
+
+            screen.fillRect(pX, y, pW, pH, p.border);
+            screen.print(pNum, pX + 1, y + (pH / 2) - (font.charHeight / 2), p.bg, font);
+        }
     }
 }
