@@ -1,0 +1,14 @@
+{
+    "name": "dmx",
+    "description": "DMX512 protocol support",
+    "files": [
+        "dmx.ts"
+    ],
+    "testFiles": [
+        "test.ts"
+    ],
+    "dependencies": {
+        "core": "file:../core"
+    },
+    "public": true
+}
