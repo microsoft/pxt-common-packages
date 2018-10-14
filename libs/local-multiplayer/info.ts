@@ -39,21 +39,19 @@ namespace info {
             `;
 
         game.eventContext().registerFrameHandler(95, () => {
-            // show score
-
+            // First draw players
             for (let player = controller.PlayerNumber.One; player < _players.length; player++) {
                 drawPlayer(player);
             }
 
-            // TODO: add playerLifeOverHandlers
-            // NO DEFAULT BEHAVIOR FOR _lifeOverHandler
-            // if (_life <= 0) {
-            //     if (_lifeOverHandler) {
-            //         _lifeOverHandler();
-            //     }
-            //     _life = 0;
-            //     _isAlive = false
-            // }
+            // Then run life over events
+            for (let player = controller.PlayerNumber.One; player < _players.length; player++) {
+                const p = _players[player];
+                if (p && p.h && p.life !== null && p.life <= 0) {
+                    p.life = null;
+                    p.h();
+                }
+            }
         })
     }
 
@@ -93,7 +91,7 @@ namespace info {
                 fc: 1,
                 showScore: null,
                 showLife: null,
-                showPlayer: true,
+                showPlayer: null,
                 x: -1,
                 y: -1
             }
@@ -108,7 +106,7 @@ namespace info {
                 fc: 1,
                 showScore: null,
                 showLife: null,
-                showPlayer: true,
+                showPlayer: null,
                 x: screen.width + 1,
                 y: -1,
                 left: true
@@ -153,8 +151,11 @@ namespace info {
         }
     }
 
-    //todo comment
-    export function playerInfo(player: controller.PlayerNumber) {
+    /**
+     * Get the PlayerInfo object for the given player
+     * @param player player to get representation of
+     */
+    export function playerInfo(player: controller.PlayerNumber): PlayerInfo {
         initPlayer(player);
         return _players[player];
     }
@@ -163,6 +164,7 @@ namespace info {
         initPlayer(player);
         const p = _players[player];
         if (p.showScore === null) p.showScore = true;
+        if (p.showPlayer === null) p.showPlayer = true;
 
         if (!p.score) {
             p.score = 0;
@@ -174,8 +176,9 @@ namespace info {
         initPlayer(player);
         const p = _players[player];
         if (p.showLife === null) p.showLife = true;
+        if (p.showPlayer === null) p.showPlayer = true;
 
-        if (!p.life) {
+        if (p.life === null) {
             p.life = 3;
         }
     }
@@ -272,6 +275,18 @@ namespace info {
         setPlayerLife(player, _players[player].life + value);
     }
 
+    /**
+     * Run code when the given player's life is at or below 0
+     * @param player Player for the event to apply to
+     * @param handler code to run on life over
+     */
+    //% weight=82 group="Multiplayer"
+    //% blockId=local_gamelifeevent block="on $player life zero"
+    export function onPlayerLifeZero(player: controller.PlayerNumber, handler: () => void) {
+        initPlayer(player);
+        _players[player].h = handler;
+    }
+
     function drawPlayer(player: controller.PlayerNumber) {
         if (!_players || !_players[player]) return;
 
@@ -295,7 +310,7 @@ namespace info {
         }
         if (p.showLife) {
             l = "" + playerLife(player);
-            lW = _heartImage.width + _multiplierImage.width + l.length * font.charWidth + 2;
+            lW = _heartImage.width + _multiplierImage.width + l.length * font.charWidth + 3;
             h += _heartImage.height;
         }
 
