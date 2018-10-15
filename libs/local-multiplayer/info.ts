@@ -283,6 +283,16 @@ namespace info {
         _players[player]._h = handler;
     }
 
+    /**
+     * Returns true if the given player currently has a value set for health,
+     * and false otherwise.
+     * @param player player to check life of
+     */
+    export function playerHasLife(player: PlayerNumber): boolean {
+        initPlayer(player);
+        return _players[player]._life !== null;
+    }
+
     function drawPlayer(player: PlayerNumber) {
         if (!_players || !_players[player]) return;
 
