@@ -47,9 +47,9 @@ namespace info {
             // Then run life over events
             for (let player = PlayerNumber.One; player < _players.length; player++) {
                 const p = _players[player];
-                if (p && p._h && p._life !== null && p._life <= 0) {
+                if (p && p._life !== null && p._life <= 0) {
                     p._life = null;
-                    p._h();
+                    if (p._h) p._h();
                 }
             }
         })
