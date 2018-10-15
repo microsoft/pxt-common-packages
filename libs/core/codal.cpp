@@ -9,7 +9,7 @@ PXT_ABI(__aeabi_dsub)
 PXT_ABI(__aeabi_ddiv)
 PXT_ABI(__aeabi_dmul)
 
-#define PXT_COMM_BASE 0x20001000  // 4k in
+#define PXT_COMM_BASE 0x20001000 // 4k in
 
 namespace pxt {
 
@@ -35,14 +35,15 @@ struct FreeList {
 
 static void commInit() {
     int commSize = bytecode[20];
-    if (!commSize) return;
+    if (!commSize)
+        return;
 
-    FreeList *head = NULL;        
-    void *commBase = (void*)PXT_COMM_BASE;
+    FreeList *head = NULL;
+    void *commBase = (void *)PXT_COMM_BASE;
     for (;;) {
         void *p = malloc(4);
-        // assume 4 byte alloc header; if we're not hitting 8 byte alignment, try allocating 8 bytes, not 4
-        // without the volatile, gcc assumes 8 byte alignment on malloc()
+        // assume 4 byte alloc header; if we're not hitting 8 byte alignment, try allocating 8
+        // bytes, not 4 without the volatile, gcc assumes 8 byte alignment on malloc()
         volatile unsigned hp = (unsigned)p;
         if (hp & 4) {
             free(p);
@@ -56,9 +57,9 @@ static void commInit() {
                 oops(10);
             break;
         }
-        if (p > commBase) 
+        if (p > commBase)
             oops(11);
-        auto f = (FreeList*)p;
+        auto f = (FreeList *)p;
         f->next = head;
         head = f;
     }
@@ -120,11 +121,12 @@ void registerWithDal(int id, int event, Action a, int flags) {
 
 void fiberDone(void *a) {
     decr((Action)a);
+    unregisterGCPtr((Action)a);
     release_fiber();
 }
 
 void releaseFiber() {
-    release_fiber();    
+    release_fiber();
 }
 
 void sleep_ms(unsigned ms) {
@@ -145,6 +147,7 @@ void forever_stub(void *a) {
 void runForever(Action a) {
     if (a != 0) {
         incr(a);
+        registerGCPtr(a);
         create_fiber(forever_stub, (void *)a);
     }
 }
@@ -152,6 +155,7 @@ void runForever(Action a) {
 void runInParallel(Action a) {
     if (a != 0) {
         incr(a);
+        registerGCPtr(a);
         create_fiber((void (*)(void *))runAction0, (void *)a, fiberDone);
     }
 }
@@ -180,4 +184,4 @@ int getSerialNumber() {
 int current_time_ms() {
     return system_timer_current_time();
 }
-}
+} // namespace pxt

@@ -264,6 +264,13 @@ TValue incr(TValue e);
 //%
 void decr(TValue e);
 
+#ifdef PXT_GC
+inline TValue incr(TValue e) {
+    return e;
+}
+inline void decr(TValue e) {}
+#endif
+
 class RefObject;
 
 static inline RefObject *incrRC(RefObject *r) {
@@ -314,9 +321,28 @@ struct VTable {
 
 const int vtableShift = PXT_VTABLE_SHIFT;
 
+#ifdef PXT_GC
+inline bool isReadOnly(TValue v) {
+    return isTagged(v) || ((uint32_t)v >> 26);
+}
+#endif
+
 // A base abstract class for ref-counted objects.
 class RefObject {
   public:
+#ifdef PXT_GC
+    uint32_t vtable;
+
+    // this is a getter, yay C++11!
+    class {
+        public:
+            operator uint16_t () const { return 0; }
+    } refcnt;
+
+    RefObject(uint32_t vt) {
+        vtable = vt;
+    }
+#else
     uint16_t refcnt;
     uint16_t vtable;
 
@@ -324,10 +350,16 @@ class RefObject {
         refcnt = 3;
         vtable = vt;
     }
+#endif
 
     void destroyVT();
     void printVT();
 
+#ifdef PXT_GC
+    inline void ref() {}
+    inline void unref() {}
+    inline bool isReadOnly() { return pxt::isReadOnly((TValue)this); }
+#else
     inline bool isReadOnly() { return refcnt == PXT_REFCNT_FLASH; }
 
     // Increment/decrement the ref-count. Decrementing to zero deletes the current object.
@@ -351,6 +383,7 @@ class RefObject {
             destroyVT();
         }
     }
+#endif
 };
 
 class Segment {
@@ -647,6 +680,21 @@ enum class ValType {
 };
 
 ValType valType(TValue v);
+
+
+#ifdef PXT_GC
+void registerGC(TValue *root, int numwords = 1);
+void unregisterGC(TValue *root, int numwords = 1);
+void registerGCPtr(TValue ptr);
+void unregisterGCPtr(TValue ptr);
+#else
+inline void registerGC(TValue *root, int numwords = 1) {}
+inline void unregisterGC(TValue *root, int numwords = 1) {}
+inline void registerGCPtr(TValue ptr) {}
+inline void unregisterGCPtr(TValue ptr) {}
+#endif
+
+
 } // namespace pxt
 
 #define PXT_DEF_STRING(name, val)                                                                  \

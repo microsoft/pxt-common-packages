@@ -129,6 +129,8 @@ WDisplay::WDisplay() {
     lastImg = NULL;
     newPalette = false;
 
+    registerGC((TValue*)&lastImg);
+
     eventId = allocateNotifyEvent();
 
     int tty_fd = open("/dev/tty0", O_RDWR);

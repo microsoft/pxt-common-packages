@@ -60,12 +60,12 @@ struct Thread {
     struct Thread *next;
     Action act;
     TValue arg0;
+    TValue data0;
+    TValue data1;
     pthread_t pid;
     pthread_cond_t waitCond;
     int waitSource;
     int waitValue;
-    TValue data0;
-    TValue data1;
 };
 
 static struct Thread *allThreads;
@@ -165,6 +165,7 @@ void disposeThread(Thread *t) {
             }
         }
     }
+    unregisterGC(&t->act, 4);
     decr(t->act);
     decr(t->arg0);
     decr(t->data0);
@@ -190,6 +191,7 @@ void setupThread(Action a, TValue arg = 0, void (*runner)(Thread *) = NULL, TVal
     memset(thr, 0, sizeof(Thread));
     thr->next = allThreads;
     allThreads = thr;
+    registerGC(&thr->act, 4);
     thr->act = incr(a);
     thr->arg0 = incr(arg);
     thr->data0 = incr(d0);
@@ -330,6 +332,8 @@ static void runPoller(Thread *thr) {
 
     // note that this is run without the user mutex held - it should not modify any state!
     TValue prev = pxt::runAction0(query);
+    if (!isTagged(prev))
+        oops(30);
 
     startUser();
     pxt::runAction2(thr->act, prev, prev);
@@ -340,6 +344,8 @@ static void runPoller(Thread *thr) {
         if (paniced)
             break;
         TValue curr = pxt::runAction0(query);
+        if (!isTagged(curr))
+            oops(30);
         if (curr != prev) {
             startUser();
             pxt::runAction2(thr->act, prev, curr);
@@ -383,6 +389,5 @@ void initRuntime() {
     initKeys();
     startUser();
 }
-
 
 } // namespace pxt

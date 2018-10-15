@@ -5,6 +5,7 @@
         "README.md",
         "pxt-core.d.ts",
         "pxt.cpp",
+        "gc.cpp",
         "pxtbase.h",
         "core.cpp",
         "advmath.cpp",

@@ -32,6 +32,7 @@ void setBinding(int source, int value, Action act) {
     curr->source = source;
     curr->value = value;
     curr->action = act;
+    registerGC(&curr->action);
     handlerBindings = curr;
 }
 

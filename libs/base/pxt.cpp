@@ -4,6 +4,7 @@ using namespace std;
 
 namespace pxt {
 
+#ifndef PXT_GC
 TValue incr(TValue e) {
     if (isRefCounted(e)) {
         getVTable((RefObject *)e);
@@ -17,6 +18,7 @@ void decr(TValue e) {
         ((RefObject *)e)->unref();
     }
 }
+#endif
 
 // TODO
 Action mkAction(int reflen, int totallen, int startptr) {
@@ -111,8 +113,7 @@ void RefObject::destroyVT() {
 }
 
 //%
-void deleteRefObject(RefObject *obj)
-{
+void deleteRefObject(RefObject *obj) {
     obj->destroyVT();
 }
 
@@ -121,6 +122,7 @@ void RefObject::printVT() {
 }
 
 void RefRecord_destroy(RefRecord *r) {
+#ifndef PXT_GC
     VTable *tbl = getVTable(r);
     uint8_t *refmask = (uint8_t *)&tbl->methods[tbl->userdata & 0xff];
     int len = (tbl->numbytes >> 2) - 1;
@@ -129,6 +131,7 @@ void RefRecord_destroy(RefRecord *r) {
             decr(r->fields[i]);
         r->fields[i] = 0;
     }
+#endif
 }
 
 void RefRecord_print(RefRecord *r) {
@@ -183,7 +186,7 @@ ramint_t Segment::growthFactor(ramint_t size) {
     if (size < 512) {
         return size * 5 / 3; // Grow by 1.66 rate
     }
-     // Grow by constant rate
+    // Grow by constant rate
     if ((unsigned)size + 256 < MaxSize)
         return size + 256;
     else
@@ -293,7 +296,7 @@ void Segment::insert(unsigned i, TValue value) {
 
     if (i < length) {
         ensure(length + 1);
-        
+
         // Move the rest of the elements to fill in the gap.
         memmove(data + i + 1, data + i, (length - i) * sizeof(unsigned));
 
@@ -396,9 +399,11 @@ RefCollection::RefCollection() : RefObject(0) {
 }
 
 void RefCollection::destroy(RefCollection *t) {
+#ifndef PXT_GC
     for (unsigned i = 0; i < t->head.getLength(); i++) {
         decr(t->head.get(i));
     }
+#endif
     t->head.destroy();
 }
 
@@ -465,9 +470,9 @@ void RefMap::destroy(RefMap *t) {
 
 int RefMap::findIdx(String key) {
     auto len = keys.getLength();
-    auto data = (String*)keys.getData();
+    auto data = (String *)keys.getData();
 
-    // fast path 
+    // fast path
     for (unsigned i = 0; i < len; ++i) {
         if (data[i] == key)
             return i;
@@ -572,17 +577,16 @@ namespace Array_ {
 bool isArray(TValue arr) {
     return (getAnyVTable(arr) == &pxt::Coll0::RefCollection_vtable);
 }
-}
+} // namespace Array_
 
-namespace pxtrt
-{
+namespace pxtrt {
 //%
 RefCollection *keysOf(TValue v) {
     auto r = new RefCollection();
     MEMDBG("mkColl[keys]: => %p", r);
     if (getAnyVTable(v) != &RefMap_vtable)
         return r;
-    auto rm = (RefMap*)v;
+    auto rm = (RefMap *)v;
     auto len = rm->keys.getLength();
     if (!len)
         return r;
@@ -593,5 +597,4 @@ RefCollection *keysOf(TValue v) {
         incr(dst[i]);
     return r;
 }
-} // pxtrt
-
+} // namespace pxtrt
