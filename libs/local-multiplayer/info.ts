@@ -1,16 +1,16 @@
 //% groups='["other","Multiplayer"]'
 namespace info {
     export interface PlayerInfo {
-        score: number;
-        life: number;
-        player: controller.PlayerNumber;
+        _score: number;
+        _life: number;
+        _player: controller.PlayerNumber;
         bg: number; // background color
         border: number; // border color
         fc: number; // font color
         showScore?: boolean;
         showLife?: boolean;
         showPlayer?: boolean;
-        h?: () => void; // onPlayerLifeOver handler
+        _h?: () => void; // onPlayerLifeOver handler
         x?: number;
         y?: number;
         left?: boolean; // if true banner goes from x to the left, else goes rightward
@@ -47,9 +47,9 @@ namespace info {
             // Then run life over events
             for (let player = controller.PlayerNumber.One; player < _players.length; player++) {
                 const p = _players[player];
-                if (p && p.h && p.life !== null && p.life <= 0) {
-                    p.life = null;
-                    p.h();
+                if (p && p._h && p._life !== null && p._life <= 0) {
+                    p._life = null;
+                    p._h();
                 }
             }
         })
@@ -83,64 +83,64 @@ namespace info {
         if (player === controller.PlayerNumber.One) {
             // Top left, and banner is white on red
             _players[player] = {
-                score: null,
-                life: null,
-                player: player,
+                _score: null,
+                _life: null,
+                _player: player,
                 bg: screen.isMono ? 0 : 2,
                 border: 1,
                 fc: 1,
                 showScore: null,
                 showLife: null,
                 showPlayer: null,
-                x: -1,
-                y: -1
+                x: 0,
+                y: 0
             }
         } else if (player === controller.PlayerNumber.Two) {
             // Top right, and banner is white on blue
             _players[player] = {
-                score: null,
-                life: null,
-                player: player,
+                _score: null,
+                _life: null,
+                _player: player,
                 bg: screen.isMono ? 0 : 8,
                 border: 1,
                 fc: 1,
                 showScore: null,
                 showLife: null,
                 showPlayer: null,
-                x: screen.width + 1,
-                y: -1,
+                x: screen.width,
+                y: 0,
                 left: true
             }
         } else if (player === controller.PlayerNumber.Three) {
             // Not displayed by default, bottom left, banner is white on yellow
             _players[player] = {
-                score: null,
-                life: null,
-                player: player,
-                bg: screen.isMono ? 0 : 5,
+                _score: null,
+                _life: null,
+                _player: player,
+                bg: screen.isMono ? 0 : 4,
                 border: 1,
                 fc: 1,
                 showLife: false,
                 showScore: false,
                 showPlayer: false,
-                x: -1,
-                y: screen.height + 1,
+                x: 0,
+                y: screen.height,
                 up: true
             }
         } else {
             // Not displayed by default, bottom left, banner is white on green
             _players[player] = {
-                score: null,
-                life: null,
-                player: player,
+                _score: null,
+                _life: null,
+                _player: player,
                 bg: screen.isMono ? 0 : 7,
                 border: 1,
                 fc: 1,
                 showLife: false,
                 showScore: false,
                 showPlayer: false,
-                x: screen.width + 1,
-                y: screen.height + 1,
+                x: screen.width,
+                y: screen.height,
                 left: true,
                 up: true
             }
@@ -162,8 +162,8 @@ namespace info {
         if (p.showScore === null) p.showScore = true;
         if (p.showPlayer === null) p.showPlayer = true;
 
-        if (!p.score) {
-            p.score = 0;
+        if (!p._score) {
+            p._score = 0;
             saveMultiplayerHighScore();
         }
     }
@@ -174,8 +174,8 @@ namespace info {
         if (p.showLife === null) p.showLife = true;
         if (p.showPlayer === null) p.showPlayer = true;
 
-        if (p.life === null) {
-            p.life = 3;
+        if (p._life === null) {
+            p._life = 3;
         }
     }
 
@@ -189,8 +189,8 @@ namespace info {
             let maxScore = hS;
             for (let player = controller.PlayerNumber.One; player < _players.length; player++) {
                 const p = _players[player]
-                if (p && p.score) {
-                    maxScore = Math.max(maxScore, p.score);
+                if (p && p._score) {
+                    maxScore = Math.max(maxScore, p._score);
                 }
             }
             if (maxScore > hS) {
@@ -208,7 +208,7 @@ namespace info {
     //% blockId=local_playerScore block="$player score"
     export function playerScore(player: controller.PlayerNumber): number {
         initPlayerScore(player);
-        return _players[player].score;
+        return _players[player]._score;
     }
 
     /**
@@ -220,7 +220,7 @@ namespace info {
     //% blockId=local_setPlayerScore block="set $player score to $value"
     export function setPlayerScore(player: controller.PlayerNumber, value: number) {
         initPlayerScore(player);
-        _players[player].score = value | 0;
+        _players[player]._score = value | 0;
     }
 
     /**
@@ -232,7 +232,7 @@ namespace info {
     //% blockId=local_changePlayerScoreBy block="change $player score by $value"
     export function changePlayerScoreBy(player: controller.PlayerNumber, value: number) {
         initPlayerScore(player);
-        setPlayerScore(player, _players[player].score + value);
+        setPlayerScore(player, _players[player]._score + value);
     }
 
     /**
@@ -243,7 +243,7 @@ namespace info {
     //% blockId=local_life block="$player life"
     export function playerLife(player: controller.PlayerNumber) {
         initPlayerLife(player);
-        return _players[player].life;
+        return _players[player]._life;
     }
 
 
@@ -256,7 +256,7 @@ namespace info {
     //% blockId=local_setLife block="set $player life to %value"
     export function setPlayerLife(player: controller.PlayerNumber, value: number) {
         initPlayerLife(player);
-        _players[player].life = value | 0;
+        _players[player]._life = value | 0;
     }
 
     /**
@@ -268,7 +268,7 @@ namespace info {
     //% blockId=local_changeLifeBy block="change $player life by %value"
     export function changePlayerLifeBy(player: controller.PlayerNumber, value: number) {
         initPlayerLife(player);
-        setPlayerLife(player, _players[player].life + value);
+        setPlayerLife(player, _players[player]._life + value);
     }
 
     /**
@@ -280,7 +280,7 @@ namespace info {
     //% blockId=local_gamelifeevent block="on $player life zero"
     export function onPlayerLifeZero(player: controller.PlayerNumber, handler: () => void) {
         initPlayer(player);
-        _players[player].h = handler;
+        _players[player]._h = handler;
     }
 
     function drawPlayer(player: controller.PlayerNumber) {
@@ -289,73 +289,84 @@ namespace info {
         const font = image.font5;
         const p = _players[player];
         
-        let s: string;
-        let l: string;
-        let h = 4;
-        let sW = 0;
-        let lW = 0;
+        let score: string;
+        let life: string;
+        let height = 4;
+        let scoreWidth = 0;
+        let lifeWidth = 0;
         const offsetX = 1;
         let offsetY = 2;
 
         // TODO maybe w / h should be gotten through exported functions, to making laying stuff out more reasonable?
         if (p.showScore) {
-            s = "" + playerScore(player);
-            sW = s.length * font.charWidth + 3;
-            h += font.charHeight;
+            score = "" + playerScore(player);
+            scoreWidth = score.length * font.charWidth + 3;
+            height += font.charHeight;
             offsetY += font.charHeight + 1;
         }
         if (p.showLife) {
-            l = "" + playerLife(player);
-            lW = _heartImage.width + _multiplierImage.width + l.length * font.charWidth + 3;
-            h += _heartImage.height;
+            life = "" + playerLife(player);
+            lifeWidth = _heartImage.width + _multiplierImage.width + life.length * font.charWidth + 3;
+            height += _heartImage.height;
         }
 
-        const w = Math.max(sW, lW);
+        const width = Math.max(scoreWidth, lifeWidth);
 
         // bump size for space between lines
-        if (p.showScore && p.showLife) h++;
+        if (p.showScore && p.showLife) height++;
 
-        const x = p.x - (p.left ? w : 0);
-        const y = p.y - (p.up ? h : 0);
+        const x = p.x - (p.left ? width : 0);
+        const y = p.y - (p.up ? height : 0);
 
         // Bordered Box
         if (p.showScore || p.showLife) {
-            screen.fillRect(x, y, w, h, p.border);
-            screen.fillRect(x + 1, y + 1, w - 2, h - 2, p.bg);
+            screen.fillRect(x, y, width, height, p.border);
+            screen.fillRect(x + 1, y + 1, width - 2, height - 2, p.bg);
         }
 
         // print score
         if (p.showScore) {
-            const bump = p.left ? w - sW: 0;
-            screen.print(s, x + offsetX + bump + 1, y + 2, p.fc, font);
+            const bump = p.left ? width - scoreWidth: 0;
+            screen.print(score, x + offsetX + bump + 1, y + 2, p.fc, font);
         }
 
         // print life
         if (p.showLife) {
-            const bump = p.left ? w - lW: 0;
+            const xLoc = x + offsetX + (p.left ? width - lifeWidth : 0);
             
             let mult = _multiplierImage.clone();
             mult.replace(1, p.fc);
 
-            screen.drawTransparentImage(_heartImage, x + offsetX + bump, y + offsetY);
-            screen.drawTransparentImage(mult, x + _heartImage.width + offsetX + bump, y + offsetY + font.charHeight - _multiplierImage.height - 1);
-            screen.print(l, x + offsetX + _heartImage.width + _multiplierImage.width + 1 + bump, y + offsetY, p.fc, font);
+            screen.drawTransparentImage(_heartImage,
+                            xLoc,
+                            y + offsetY);
+            screen.drawTransparentImage(mult,
+                            xLoc + _heartImage.width,
+                            y + offsetY + font.charHeight - _multiplierImage.height - 1);
+            screen.print(life,
+                            xLoc + _heartImage.width + _multiplierImage.width + 1,
+                            y + offsetY,
+                            p.fc,
+                            font);
         }
 
-        // print player
+        // print player icon
         if (p.showPlayer) {
-            // TODO make sure this renders in correct position when only showPlayer is on (w/o showLife / showScore)
-            const pNum = "" + p.player;
+            const pNum = "" + p._player;
             
-            let pW = pNum.length * font.charWidth;
-            // characters 4-9 are 1 px wider than 0-3
-            if (player % 10 > 3) pW++;
+            let iconWidth = pNum.length * font.charWidth + 1;
+            const iconHeight = Math.max(height, font.charHeight + 2);
+            let iconX = p.left ? (x - iconWidth + 1) : (x + width - 1);
+            let iconY = y;
 
-            const pH = Math.max(h, font.charHeight + 2);
-            const pX = p.left ? (x - pW + 1) : (x + w - 1);
+            // adjustments when only player icon shown
+            if (!p.showScore && !p.showLife) {
+                iconX += p.left ? -1 : 1;
+                if (p.up) iconY -= 3;
+            }
 
-            screen.fillRect(pX, y, pW, pH, p.border);
-            screen.print(pNum, pX + 1, y + (pH / 2) - (font.charHeight / 2), p.bg, font);
+            screen.fillRect(iconX, iconY, iconWidth, iconHeight, p.border);
+            screen.print(pNum, iconX + 1, iconY + (iconHeight >> 1) - (font.charHeight >> 1), p.bg, font);
         }
     }
 }
