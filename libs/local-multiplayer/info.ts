@@ -296,15 +296,17 @@ namespace info {
         let lifeWidth = 0;
         const offsetX = 1;
         let offsetY = 2;
+        let showScore = p.showScore && p._score !== null
+        let showLife = p.showLife && p._life !== null;
 
-        // TODO maybe w / h should be gotten through exported functions, to making laying stuff out more reasonable?
-        if (p.showScore) {
+        if (showScore) {
             score = "" + playerScore(player);
             scoreWidth = score.length * font.charWidth + 3;
             height += font.charHeight;
             offsetY += font.charHeight + 1;
         }
-        if (p.showLife) {
+        
+        if (showLife) {
             life = "" + playerLife(player);
             lifeWidth = _heartImage.width + _multiplierImage.width + life.length * font.charWidth + 3;
             height += _heartImage.height;
@@ -313,25 +315,25 @@ namespace info {
         const width = Math.max(scoreWidth, lifeWidth);
 
         // bump size for space between lines
-        if (p.showScore && p.showLife) height++;
+        if (showScore && showLife) height++;
 
         const x = p.x - (p.left ? width : 0);
         const y = p.y - (p.up ? height : 0);
 
         // Bordered Box
-        if (p.showScore || p.showLife) {
+        if (showScore || showLife) {
             screen.fillRect(x, y, width, height, p.border);
             screen.fillRect(x + 1, y + 1, width - 2, height - 2, p.bg);
         }
 
         // print score
-        if (p.showScore) {
+        if (showScore) {
             const bump = p.left ? width - scoreWidth: 0;
             screen.print(score, x + offsetX + bump + 1, y + 2, p.fc, font);
         }
 
         // print life
-        if (p.showLife) {
+        if (showLife) {
             const xLoc = x + offsetX + (p.left ? width - lifeWidth : 0);
             
             let mult = _multiplierImage.clone();
@@ -360,7 +362,7 @@ namespace info {
             let iconY = y;
 
             // adjustments when only player icon shown
-            if (!p.showScore && !p.showLife) {
+            if (!showScore && !showLife) {
                 iconX += p.left ? -1 : 1;
                 if (p.up) iconY -= 3;
             }
