@@ -1,15 +1,16 @@
+enum PlayerNumber {
+    //% block="player one"
+    One = 1,
+    //% block="player two"
+    Two,
+    //% block="player three"
+    Three,
+    //% block="player four"
+    Four
+}
+
 //% groups='["other","Multiplayer"]'
 namespace controller {
-    export enum PlayerNumber {
-        //% block="player one"
-        One = 1,
-        //% block="player two"
-        Two,
-        //% block="player three"
-        Three,
-        //% block="player four"
-        Four
-    }
 
     enum ButtonOffset {
         Left = 0,

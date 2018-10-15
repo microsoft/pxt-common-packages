@@ -3,7 +3,7 @@ namespace info {
     export interface PlayerInfo {
         _score: number;
         _life: number;
-        _player: controller.PlayerNumber;
+        _player: PlayerNumber;
         bg: number; // background color
         border: number; // border color
         fc: number; // font color
@@ -40,12 +40,12 @@ namespace info {
 
         game.eventContext().registerFrameHandler(95, () => {
             // First draw players
-            for (let player = controller.PlayerNumber.One; player < _players.length; player++) {
+            for (let player = PlayerNumber.One; player < _players.length; player++) {
                 drawPlayer(player);
             }
 
             // Then run life over events
-            for (let player = controller.PlayerNumber.One; player < _players.length; player++) {
+            for (let player = PlayerNumber.One; player < _players.length; player++) {
                 const p = _players[player];
                 if (p && p._h && p._life !== null && p._life <= 0) {
                     p._life = null;
@@ -75,12 +75,12 @@ namespace info {
     }
 
 
-    function initPlayer(player: controller.PlayerNumber) {
+    function initPlayer(player: PlayerNumber) {
         if (!_players) _players = [];
         if (_players[player]) return;
         initMultiplayerHUD();
 
-        if (player === controller.PlayerNumber.One) {
+        if (player === PlayerNumber.One) {
             // Top left, and banner is white on red
             _players[player] = {
                 _score: null,
@@ -94,8 +94,8 @@ namespace info {
                 showPlayer: null,
                 x: 0,
                 y: 0
-            }
-        } else if (player === controller.PlayerNumber.Two) {
+            };
+        } else if (player === PlayerNumber.Two) {
             // Top right, and banner is white on blue
             _players[player] = {
                 _score: null,
@@ -110,8 +110,8 @@ namespace info {
                 x: screen.width,
                 y: 0,
                 left: true
-            }
-        } else if (player === controller.PlayerNumber.Three) {
+            };
+        } else if (player === PlayerNumber.Three) {
             // Not displayed by default, bottom left, banner is white on yellow
             _players[player] = {
                 _score: null,
@@ -126,7 +126,7 @@ namespace info {
                 x: 0,
                 y: screen.height,
                 up: true
-            }
+            };
         } else {
             // Not displayed by default, bottom left, banner is white on green
             _players[player] = {
@@ -143,7 +143,7 @@ namespace info {
                 y: screen.height,
                 left: true,
                 up: true
-            }
+            };
         }
     }
 
@@ -151,12 +151,12 @@ namespace info {
      * Get the PlayerInfo object for the given player
      * @param player player to get representation of
      */
-    export function playerInfo(player: controller.PlayerNumber): PlayerInfo {
+    export function playerInfo(player: PlayerNumber): PlayerInfo {
         initPlayer(player);
         return _players[player];
     }
 
-    function initPlayerScore(player: controller.PlayerNumber) {
+    function initPlayerScore(player: PlayerNumber) {
         initPlayer(player);
         const p = _players[player];
         if (p.showScore === null) p.showScore = true;
@@ -168,7 +168,7 @@ namespace info {
         }
     }
 
-    function initPlayerLife(player: controller.PlayerNumber) {
+    function initPlayerLife(player: PlayerNumber) {
         initPlayer(player);
         const p = _players[player];
         if (p.showLife === null) p.showLife = true;
@@ -187,7 +187,7 @@ namespace info {
             const oS = info.score();
             const hS = info.highScore();
             let maxScore = hS;
-            for (let player = controller.PlayerNumber.One; player < _players.length; player++) {
+            for (let player = PlayerNumber.One; player < _players.length; player++) {
                 const p = _players[player]
                 if (p && p._score) {
                     maxScore = Math.max(maxScore, p._score);
@@ -206,7 +206,7 @@ namespace info {
      */
     //% weight=95 blockGap=8 group="Multiplayer"
     //% blockId=local_playerScore block="$player score"
-    export function playerScore(player: controller.PlayerNumber): number {
+    export function playerScore(player: PlayerNumber): number {
         initPlayerScore(player);
         return _players[player]._score;
     }
@@ -218,7 +218,7 @@ namespace info {
      */
     //% weight=93 blockGap=8 group="Multiplayer"
     //% blockId=local_setPlayerScore block="set $player score to $value"
-    export function setPlayerScore(player: controller.PlayerNumber, value: number) {
+    export function setPlayerScore(player: PlayerNumber, value: number) {
         initPlayerScore(player);
         _players[player]._score = value | 0;
     }
@@ -230,7 +230,7 @@ namespace info {
      */
     //% weight=92 group="Multiplayer"
     //% blockId=local_changePlayerScoreBy block="change $player score by $value"
-    export function changePlayerScoreBy(player: controller.PlayerNumber, value: number) {
+    export function changePlayerScoreBy(player: PlayerNumber, value: number) {
         initPlayerScore(player);
         setPlayerScore(player, _players[player]._score + value);
     }
@@ -241,7 +241,7 @@ namespace info {
      */
     //% weight=85 blockGap=8 group="Multiplayer"
     //% blockId=local_life block="$player life"
-    export function playerLife(player: controller.PlayerNumber) {
+    export function playerLife(player: PlayerNumber) {
         initPlayerLife(player);
         return _players[player]._life;
     }
@@ -254,7 +254,7 @@ namespace info {
      */
     //% weight=84 blockGap=8 group="Multiplayer"
     //% blockId=local_setLife block="set $player life to %value"
-    export function setPlayerLife(player: controller.PlayerNumber, value: number) {
+    export function setPlayerLife(player: PlayerNumber, value: number) {
         initPlayerLife(player);
         _players[player]._life = value | 0;
     }
@@ -266,7 +266,7 @@ namespace info {
      */
     //% weight=83 group="Multiplayer"
     //% blockId=local_changeLifeBy block="change $player life by %value"
-    export function changePlayerLifeBy(player: controller.PlayerNumber, value: number) {
+    export function changePlayerLifeBy(player: PlayerNumber, value: number) {
         initPlayerLife(player);
         setPlayerLife(player, _players[player]._life + value);
     }
@@ -278,12 +278,12 @@ namespace info {
      */
     //% weight=82 group="Multiplayer"
     //% blockId=local_gamelifeevent block="on $player life zero"
-    export function onPlayerLifeZero(player: controller.PlayerNumber, handler: () => void) {
+    export function onPlayerLifeZero(player: PlayerNumber, handler: () => void) {
         initPlayer(player);
         _players[player]._h = handler;
     }
 
-    function drawPlayer(player: controller.PlayerNumber) {
+    function drawPlayer(player: PlayerNumber) {
         if (!_players || !_players[player]) return;
 
         const font = image.font5;
