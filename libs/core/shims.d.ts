@@ -221,6 +221,15 @@ declare namespace control {
     /** Write a message and value (pointer) to DMESG debugging buffer. */
     //% shim=control::dmesgPtr
     function dmesgPtr(str: string, ptr: Object): void;
+
+    /** The next handler to be added will be put in the background, 
+    which supports multiple handlers per event type. */
+    //% shim=control::nextHandlerToBackground
+    function nextHandlerToBackground(): void;
+
+    /** Remove a handler from the background for all events */
+    //% shim=control::removeFromBackground
+    function removeFromBackground(handler: () => void): void;
 }
 declare namespace pins {
 
