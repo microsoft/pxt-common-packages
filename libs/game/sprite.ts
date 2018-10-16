@@ -84,7 +84,7 @@ class Sprite implements SpriteLike {
     private _image: Image;
     private _obstacles: sprites.Obstacle[];
 
-    private updateSay: (dt: number) => void;
+    private updateSay: (dt: number, camera: scene.Camera) => void;
     private sayBubbleSprite: Sprite;
 
     _hitboxes: game.Hitbox[];
@@ -315,9 +315,7 @@ class Sprite implements SpriteLike {
             return;
         }
 
-        if (timeOnScreen) {
-            timeOnScreen = timeOnScreen + control.millis();
-        }
+        
 
         let pixelsOffset = 0;
         let holdTextSeconds = 1.5;
@@ -329,6 +327,21 @@ class Sprite implements SpriteLike {
         let bubbleWidth = text.length * font.charWidth + bubblePadding;
         let maxOffset = text.length * font.charWidth - maxTextWidth;
         let bubbleOffset: number;
+        // sets the defaut scroll speed in pixels per second
+        let speed = 45;
+
+        // Calculates the speed of the scroll if scrolling is needed and a time is specified
+        if (timeOnScreen && maxOffset > 0) {
+            speed = (maxOffset + (2 * maxTextWidth)) / (timeOnScreen / 1000);
+            speed = Math.max(speed, 45);
+            holdTextSeconds = maxTextWidth / speed;
+            holdTextSeconds = Math.min(holdTextSeconds, 1.5);
+        } 
+
+        if (timeOnScreen) {
+            timeOnScreen = timeOnScreen + control.millis();
+        }
+
         if (!this._hitboxes || this._hitboxes.length == 0) {
             bubbleOffset = 0;
         } else {
@@ -356,27 +369,47 @@ class Sprite implements SpriteLike {
         this.sayBubbleSprite = sprites.create(image.create(bubbleWidth, font.charHeight + bubblePadding), -1);
 
         this.sayBubbleSprite.setFlag(SpriteFlag.Ghost, true);
-        this.updateSay = dt => {
+        this.updateSay = (dt, camera) => {
             // Update box stuff as long as timeOnScreen doesn't exist or it can still be on the screen
             if (!timeOnScreen || timeOnScreen > control.millis()) {
                 this.sayBubbleSprite.image.fill(textBoxColor);
                 // The minus 2 is how much transparent padding there is under the sayBubbleSprite
                 this.sayBubbleSprite.y = this.y - bubbleOffset - ((font.charHeight + bubblePadding) >> 1) - 2;
                 this.sayBubbleSprite.x = this.x;
+
+                if (!this.isOutOfScreen(camera)) {
+                    const ox = camera.offsetX;
+                    const oy = camera.offsetY;
+
+                    if (this.sayBubbleSprite.left - ox < 0) {
+                        this.sayBubbleSprite.left = 0;
+                    }
+
+                    if (this.sayBubbleSprite.right - ox > screen.width) {
+                        this.sayBubbleSprite.right = screen.width;
+                    }
+
+                    // If sprite bubble above the sprite gets cut off on top, place the bubble below the sprite
+                    if (this.sayBubbleSprite.top - oy < 0) {
+                        this.sayBubbleSprite.y = (this.sayBubbleSprite.y - 2 * this.y) * -1;
+                    }
+                }
+
                 // Pauses at beginning of text for holdTextSeconds length
                 if (holdTextSeconds > 0) {
                     holdTextSeconds -= game.eventContext().deltaTime;
+                    // If scrolling has reached the end, start back at the beginning
                     if (holdTextSeconds <= 0 && pixelsOffset > 0) {
                         pixelsOffset = 0;
-                        holdTextSeconds = 1.5;
+                        holdTextSeconds = maxTextWidth / speed;
                     }
                 } else {
-                    pixelsOffset += dt * 45;
+                    pixelsOffset += dt * speed;
 
                     // Pause at end of text for holdTextSeconds length
                     if (pixelsOffset >= maxOffset) {
                         pixelsOffset = maxOffset;
-                        holdTextSeconds = 1.5;
+                        holdTextSeconds = maxTextWidth / speed;
                     }
                 }
                 // If maxOffset is negative it won't scroll
@@ -462,7 +495,7 @@ class Sprite implements SpriteLike {
         }
         // Say text
         if (this.updateSay) {
-            this.updateSay(dt);
+            this.updateSay(dt, camera);
         }
     }
 
