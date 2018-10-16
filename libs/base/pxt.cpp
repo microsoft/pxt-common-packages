@@ -24,8 +24,12 @@ void decr(TValue e) {
 Action mkAction(int reflen, int totallen, int startptr) {
     check(0 <= reflen && reflen <= totallen, PANIC_SIZE, 1);
     check(reflen <= totallen && totallen <= 255, PANIC_SIZE, 2);
+    #ifdef PXT_GC
+    // TODO some check?
+    #else
     check(bytecode[startptr] == PXT_REFCNT_FLASH, PANIC_INVALID_BINARY_HEADER, 3);
     check(bytecode[startptr + 1] == PXT_REF_TAG_ACTION, PANIC_INVALID_BINARY_HEADER, 4);
+    #endif
 
     uintptr_t tmp = (uintptr_t)&bytecode[startptr];
 

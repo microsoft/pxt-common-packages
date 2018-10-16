@@ -111,7 +111,7 @@ static uint32_t getObjectSize(RefObject *o) {
     auto vt = o->vtable;
     if (vt & 2)
         return vt >> 2;
-    return ((VTable *)vt)->size; // TODO
+    return ((VTable *)vt)->numbytes >> 2; // TODO
 }
 
 #define GC_BLOCK_WORDS 1024

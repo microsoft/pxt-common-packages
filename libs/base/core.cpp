@@ -1206,15 +1206,16 @@ void anyPrint(TValue v) {
 void dtorDoNothing() {}
 
 #define PRIM_VTABLE(name, sz)                                                                      \
-    const VTable name = {sz,                                                                       \
-                         0,                                                                        \
-                         0,                                                                        \
-                         0,                                                                        \
-                         0,                                                                        \
-                         {                                                                         \
-                             (void *)&dtorDoNothing,                                               \
-                             (void *)&anyPrint,                                                    \
-                         }};
+    const VTable name                                                                              \
+        __attribute__((aligned(1 << PXT_VTABLE_SHIFT))) = {sz,                                     \
+                                                           0,                                      \
+                                                           0,                                      \
+                                                           0,                                      \
+                                                           0,                                      \
+                                                           {                                       \
+                                                               (void *)&dtorDoNothing,             \
+                                                               (void *)&anyPrint,                  \
+                                                           }};
 PRIM_VTABLE(string_vt, 0)
 PRIM_VTABLE(image_vt, 0)
 PRIM_VTABLE(buffer_vt, 0)
