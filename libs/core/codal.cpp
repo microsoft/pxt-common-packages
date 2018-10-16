@@ -184,4 +184,26 @@ int getSerialNumber() {
 int current_time_ms() {
     return system_timer_current_time();
 }
+
+ThreadContext *getThreadContext()
+{
+    return (ThreadContext*)currentFiber->user_data;
+}
+
+void setThreadContext(ThreadContext *ctx)
+{
+    currentFiber->user_data = ctx;
+}
+
+void *getCurrentFiber() {
+    return currentFiber;
+}
+
+void *threadAddressFor(ThreadContext *ctx, void *sp) {
+    if (ctx->fiber == currentFiber)
+        return sp;
+    return (uint8_t *)sp +
+           ((uint8_t *)currentFiber->stack_top - (uint8_t *)tcb_get_stack_base(currentFiber->tcb));
+}
+
 } // namespace pxt

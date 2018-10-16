@@ -694,6 +694,28 @@ inline void registerGCPtr(TValue ptr) {}
 inline void unregisterGCPtr(TValue ptr) {}
 #endif
 
+struct StackSegment {
+    void *top;
+    void *bottom;
+    StackSegment *next;
+};
+
+struct ThreadContext {
+    TValue *globals;
+    StackSegment stack;
+    void *fiber;
+    ThreadContext *next;
+    ThreadContext *prev;
+};
+
+void releaseThreadContext(ThreadContext *ctx);
+ThreadContext *getThreadContext();
+void setThreadContext(ThreadContext *ctx);
+void *getCurrentFiber();
+void *threadAddressFor(ThreadContext *ctx, void *sp);
+
+extern ThreadContext *threadContexts;
+
 
 } // namespace pxt
 
