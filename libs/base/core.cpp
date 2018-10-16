@@ -36,11 +36,9 @@ void setBinding(int source, int value, Action act) {
     handlerBindings = curr;
 }
 
-static const uint16_t emptyString[]
-    __attribute__((aligned(4))) = {PXT_REFCNT_FLASH, PXT_REF_TAG_STRING, 0, 0};
+PXT_DEF_STRING(emptyString, "")
 
-static const uint16_t emptyBuffer[]
-    __attribute__((aligned(4))) = {PXT_REFCNT_FLASH, PXT_REF_TAG_BUFFER, 0, 0};
+static const char emptyBuffer[] __attribute__((aligned(4))) = "@PXT#:\x00\x00\x00";
 
 String mkString(const char *data, int len) {
     if (len < 0)
@@ -111,16 +109,15 @@ unsigned getRandom(unsigned max) {
     return result;
 }
 
-PXT_DEF_STRING(sTrue, "\x04\x00true")
-PXT_DEF_STRING(sFalse, "\x05\x00"
-                       "false")
-PXT_DEF_STRING(sUndefined, "\x09\x00undefined")
-PXT_DEF_STRING(sNull, "\x04\x00null")
-PXT_DEF_STRING(sObject, "\x08\x00[Object]")
-PXT_DEF_STRING(sFunction, "\x0A\x00[Function]")
-PXT_DEF_STRING(sNaN, "\x03\x00NaN")
-PXT_DEF_STRING(sInf, "\x08\x00Infinity")
-PXT_DEF_STRING(sMInf, "\x09\x00-Infinity")
+PXT_DEF_STRING(sTrue, "true")
+PXT_DEF_STRING(sFalse, "false")
+PXT_DEF_STRING(sUndefined, "undefined")
+PXT_DEF_STRING(sNull, "null")
+PXT_DEF_STRING(sObject, "[Object]")
+PXT_DEF_STRING(sFunction, "[Function]")
+PXT_DEF_STRING(sNaN, "NaN")
+PXT_DEF_STRING(sInf, "Infinity")
+PXT_DEF_STRING(sMInf, "-Infinity")
 } // namespace pxt
 
 #ifndef X86_64
@@ -1156,12 +1153,12 @@ ValType valType(TValue v) {
     }
 }
 
-PXT_DEF_STRING(sObjectTp, "\x06\x00object")
-PXT_DEF_STRING(sBooleanTp, "\x07\x00boolean")
-PXT_DEF_STRING(sStringTp, "\x06\x00string")
-PXT_DEF_STRING(sNumberTp, "\x06\x00number")
-PXT_DEF_STRING(sFunctionTp, "\x08\x00function")
-PXT_DEF_STRING(sUndefinedTp, "\x09\x00undefined")
+PXT_DEF_STRING(sObjectTp, "object")
+PXT_DEF_STRING(sBooleanTp, "boolean")
+PXT_DEF_STRING(sStringTp, "string")
+PXT_DEF_STRING(sNumberTp, "number")
+PXT_DEF_STRING(sFunctionTp, "function")
+PXT_DEF_STRING(sUndefinedTp, "undefined")
 
 //%
 String typeOf(TValue v) {
@@ -1223,25 +1220,6 @@ PRIM_VTABLE(image_vt, 0)
 PRIM_VTABLE(buffer_vt, 0)
 PRIM_VTABLE(number_vt, 12)
 PRIM_VTABLE(action_vt, 0)
-
-static const VTable *primVtables[] = {0,          // 0
-                                      &string_vt, // 1
-                                      &buffer_vt, // 2
-                                      &image_vt,  // 3
-                                      // filler:
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0,
-                                      &number_vt, // 32
-                                      &action_vt, // 33
-                                      0};
-
-VTable *getVTable(RefObject *r) {
-    if (r->vtable >= 34)
-        return (VTable *)((uintptr_t)r->vtable << vtableShift);
-    if (r->vtable == 0)
-        target_panic(PANIC_INVALID_VTABLE);
-    return (VTable *)primVtables[r->vtable];
-}
 
 //%
 void failedCast(TValue v) {

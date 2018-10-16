@@ -319,8 +319,6 @@ struct VTable {
                       // refmask sits at &methods[nummethods]
 };
 
-const int vtableShift = PXT_VTABLE_SHIFT;
-
 #ifdef PXT_GC
 inline bool isReadOnly(TValue v) {
     return isTagged(v) || ((uint32_t)v >> 26);
@@ -485,8 +483,9 @@ class RefRecord : public RefObject {
     void stref(int idx, TValue v);
 };
 
-//%
-VTable *getVTable(RefObject *r);
+static inline VTable *getVTable(RefObject *r) {        
+    return (VTable *)((uintptr_t)r->vtable << PXT_VTABLE_SHIFT);
+}
 
 static inline VTable *getAnyVTable(TValue v) {
     return isRefCounted(v) ? getVTable((RefObject*)v) : NULL;
@@ -720,7 +719,7 @@ extern ThreadContext *threadContexts;
 } // namespace pxt
 
 #define PXT_DEF_STRING(name, val)                                                                  \
-    static const char name[] __attribute__((aligned(4))) = "\xfe\xff\x01\x00" val;
+    static const char name[] __attribute__((aligned(4))) = "@PXT@:" val;
 
 using namespace pxt;
 
@@ -762,9 +761,9 @@ int compare(TValue a, TValue b);
 #pragma GCC diagnostic ignored "-Wpmf-conversions"
 #endif
 
-#define PXT_VTABLE_TO_INT(vt) ((uintptr_t)(vt) >> vtableShift)
+#define PXT_VTABLE_TO_INT(vt) ((uintptr_t)(vt) >> PXT_VTABLE_SHIFT)
 #define PXT_VTABLE_BEGIN(classname, flags, iface)                                                  \
-    const VTable classname##_vtable __attribute__((aligned(1 << vtableShift))) = {                 \
+    const VTable classname##_vtable __attribute__((aligned(1 << PXT_VTABLE_SHIFT))) = {                 \
         sizeof(classname), flags, iface, 0, 0, {(void *)&classname::destroy, (void *)&classname::print,
 
 #define PXT_VTABLE_END                                                                             \
