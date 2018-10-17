@@ -35,7 +35,7 @@ namespace controller {
                     this._pressed = false
                     this.raiseButtonUp();
                 }
-            }, 16)
+            })
             control.internalOnEvent(INTERNAL_KEY_DOWN, this.id, () => {
                 if (!this._pressed) {
                     this._pressed = true;
@@ -43,10 +43,10 @@ namespace controller {
                     this._repeatCount = 0;
                     this.raiseButtonDown();
                 }
-            }, 16)
+            })
             if (buttonId && upid && downid) {
-                control.internalOnEvent(buttonId, upid, () => control.raiseEvent(INTERNAL_KEY_UP, this.id), 16)
-                control.internalOnEvent(buttonId, downid, () => control.raiseEvent(INTERNAL_KEY_DOWN, this.id), 16)
+                control.internalOnEvent(buttonId, upid, () => control.raiseEvent(INTERNAL_KEY_UP, this.id))
+                control.internalOnEvent(buttonId, downid, () => control.raiseEvent(INTERNAL_KEY_DOWN, this.id))
             }
 
             // register button in global list

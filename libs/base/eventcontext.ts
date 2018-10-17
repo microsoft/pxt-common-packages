@@ -7,12 +7,12 @@ namespace control {
     //% weight=20 blockGap=8 blockId="control_on_event" block="on event|from %src|with value %value"
     //% blockExternalInputs=1
     //% help="control/on-event"
-    export function onEvent(src: number, value: number, handler: () => void, flags = 16) { // EVENT_LISTENER_DEFAULT_FLAGS
+    export function onEvent(src: number, value: number, handler: () => void, flags = 16) {  // flags deprecated (internal CODAL, should not be surfaced)
         const ctx = control.eventContext();
         if (!ctx)
-            control.internalOnEvent(src, value, handler, flags);
+            control.internalOnEvent(src, value, handler);
         else
-            ctx.registerHandler(src, value, handler, flags);
+            ctx.registerHandler(src, value, handler);
     }
 
     class FrameCallback {
@@ -24,7 +24,6 @@ namespace control {
         src: number;
         value: number;
         handler: () => void;
-        flags: number;
 
         constructor(src: number, value: number, handler: () => void, flags: number) {
             this.src = src;
@@ -35,11 +34,11 @@ namespace control {
         register() {
             control.internalOnEvent(this.src, this.value, () => {
                 if (this.handler) this.handler();
-            }, this.flags)
+            })
         }
 
         unregister() {
-            control.internalOnEvent(this.src, this.value, doNothing, this.flags);
+            control.internalOnEvent(this.src, this.value, doNothing);
         }
     }
 
@@ -129,17 +128,16 @@ namespace control {
             this.frameCallbacks.push(fn)
         }
 
-        registerHandler(src: number, value: number, handler: () => void, flags: number) {
+        registerHandler(src: number, value: number, handler: () => void) {
             // already there?
             for (const h of this.handlers) {
                 if (h.src == src && h.value == value) {
-                    h.flags = flags;
                     h.handler = handler;
                     return;
                 }
             }
             // register and push
-            const hn = new EventHandler(src, value, handler, flags);
+            const hn = new EventHandler(src, value, handler);
             this.handlers.push(hn);
             hn.register();
         }
