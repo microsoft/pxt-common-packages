@@ -68,7 +68,9 @@ namespace info {
                     else {
                         game.over();
                     }
-                    _life = null;
+                    if (_life <= 0) {
+                        _life = null;
+                    }
                 }
             }
             // show countdown

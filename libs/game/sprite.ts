@@ -63,6 +63,9 @@ class Sprite implements SpriteLike {
 
     _type: number;
 
+    // for tracking state of sprite; unused internally
+    data: string;
+
     /**
      * A bitset of layer. Each bit is a layer, default is 1.
      */
