@@ -948,11 +948,6 @@ int getConfig(int key, int defl) {
 
 namespace pxtrt {
 //%
-TValue ldloc(RefLocal *r) {
-    return r->v;
-}
-
-//%
 TValue ldlocRef(RefRefLocal *r) {
     TValue tmp = r->v;
     incr(tmp);
@@ -960,21 +955,9 @@ TValue ldlocRef(RefRefLocal *r) {
 }
 
 //%
-void stloc(RefLocal *r, TValue v) {
-    r->v = v;
-}
-
-//%
 void stlocRef(RefRefLocal *r, TValue v) {
     decr(r->v);
     r->v = v;
-}
-
-//%
-RefLocal *mkloc() {
-    auto r = new RefLocal();
-    MEMDBG("mkloc: => %p", r);
-    return r;
 }
 
 //%
@@ -1140,16 +1123,11 @@ ValType valType(TValue v) {
             return ValType::Object;
         }
     } else {
-        int tag = ((RefObject *)v)->vtable;
-
-        if (tag == PXT_REF_TAG_STRING)
-            return ValType::String;
-        else if (tag == PXT_REF_TAG_NUMBER)
-            return ValType::Number;
-        else if (tag == PXT_REF_TAG_ACTION || getVTable((RefObject *)v) == &RefAction_vtable)
-            return ValType::Function;
-
-        return ValType::Object;
+        auto vt = getVTable((RefObject *)v);
+        if (vt->magic == VTABLE_MAGIC)
+            return vt->objectType;
+        else
+            return ValType::Object;
     }
 }
 
@@ -1203,24 +1181,22 @@ void anyPrint(TValue v) {
     }
 }
 
-void dtorDoNothing() {}
+static void dtorDoNothing() {}
 
-#define PRIM_VTABLE(name, sz)                                                                      \
-    const VTable name                                                                              \
-        __attribute__((aligned(1 << PXT_VTABLE_SHIFT))) = {sz,                                     \
-                                                           0,                                      \
-                                                           0,                                      \
-                                                           0,                                      \
-                                                           0,                                      \
-                                                           {                                       \
-                                                               (void *)&dtorDoNothing,             \
-                                                               (void *)&anyPrint,                  \
-                                                           }};
-PRIM_VTABLE(string_vt, 0)
-PRIM_VTABLE(image_vt, 0)
-PRIM_VTABLE(buffer_vt, 0)
-PRIM_VTABLE(number_vt, 12)
-PRIM_VTABLE(action_vt, 0)
+#ifdef PXT_GC
+#define PRIM_VTABLE(name, objectTp, tp, szexpr)                                                    \
+    static uint32_t name##_size(tp *p) { return ((sizeof(tp) + szexpr) + 3) >> 2; }                \
+    DEF_VTABLE(name##_vt, tp, objectTp, (void *)&dtorDoNothing, (void *)&anyPrint, 0,              \
+               (void *)&name##_size)
+#else
+#define PRIM_VTABLE(name, objectTp, tp, szexpr)                                                    \
+    DEF_VTABLE(name##_vt, tp, objectTp, (void *)&dtorDoNothing, (void *)&anyPrint)
+#endif
+
+PRIM_VTABLE(string, ValType::String, BoxedString, p->length + 1)
+PRIM_VTABLE(number, ValType::Number, BoxedNumber, 0)
+PRIM_VTABLE(buffer, ValType::Object, BoxedBuffer, p->length)
+// PRIM_VTABLE(action, ValType::Function, RefAction, )
 
 //%
 void failedCast(TValue v) {

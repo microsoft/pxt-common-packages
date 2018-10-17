@@ -80,7 +80,7 @@ RefRecord *mkClassInstance(int vtableOffset) {
     intcheck(vtable->methods[1] == &RefRecord_print, PANIC_SIZE, 4);
 
     void *ptr = ::operator new(vtable->numbytes);
-    RefRecord *r = new (ptr) RefRecord(PXT_VTABLE_TO_INT(vtable));
+    RefRecord *r = new (ptr) RefRecord(vtable);
     memset(r->fields, 0, vtable->numbytes - sizeof(RefRecord));
     MEMDBG("mkClass: vt=%p => %p", vtable, r);
     return r;
@@ -393,19 +393,14 @@ bool RefCollection::removeElement(TValue x) {
     return 0;
 }
 
-namespace Coll0 {
-PXT_VTABLE_BEGIN(RefCollection, 0, 0)
-PXT_VTABLE_END
-} // namespace Coll0
-
-RefCollection::RefCollection() : RefObject(0) {
-    vtable = PXT_VTABLE_TO_INT(&Coll0::RefCollection_vtable);
-}
+PXT_VTABLE_CTOR(RefCollection) {}
 
 void RefCollection::destroy(RefCollection *t) {
 #ifndef PXT_GC
-    for (unsigned i = 0; i < t->head.getLength(); i++) {
-        decr(t->head.get(i));
+    auto data = t->head.getData();
+    auto len = t->head.getLength();
+    for (unsigned i = 0; i < len; i++) {
+        decr(data[i]);
     }
 #endif
     t->head.destroy();
@@ -431,16 +426,6 @@ void RefAction::print(RefAction *t) {
           (const uint8_t *)t->func - (const uint8_t *)bytecode, t->len, t->reflen);
 }
 
-void RefLocal::print(RefLocal *t) {
-    DMESG("RefLocal %p r=%d v=%d", t, t->refcnt, t->v);
-}
-
-void RefLocal::destroy(RefLocal *) {}
-
-PXT_VTABLE_CTOR(RefLocal) {
-    v = 0;
-}
-
 PXT_VTABLE_CTOR(RefRefLocal) {
     v = 0;
 }
@@ -453,9 +438,7 @@ void RefRefLocal::destroy(RefRefLocal *t) {
     decr(t->v);
 }
 
-PXT_VTABLE_BEGIN(RefMap, 0, RefMapMarker)
-PXT_VTABLE_END
-RefMap::RefMap() : PXT_VTABLE_INIT(RefMap) {}
+PXT_VTABLE_CTOR(RefMap) {}
 
 void RefMap::destroy(RefMap *t) {
     auto len = t->values.getLength();
@@ -579,7 +562,8 @@ void start() {
 namespace Array_ {
 //%
 bool isArray(TValue arr) {
-    return (getAnyVTable(arr) == &pxt::Coll0::RefCollection_vtable);
+    auto vt = getAnyVTable(arr);
+    return vt && vt->classNo == BuiltInType::RefCollection;
 }
 } // namespace Array_
 

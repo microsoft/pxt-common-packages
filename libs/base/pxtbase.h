@@ -27,8 +27,8 @@
 #include <math.h>
 
 #ifdef POKY
-void* operator new (size_t size, void* ptr);
-void* operator new (size_t size);
+void *operator new(size_t size, void *ptr);
+void *operator new(size_t size);
 #else
 #include <new>
 #endif
@@ -302,25 +302,68 @@ inline void oops(int subcode = 0) {
 class RefObject;
 
 typedef void (*RefObjectMethod)(RefObject *self);
+typedef unsigned (*RefObjectSizeMethod)(RefObject *self);
 typedef void *PVoid;
 typedef void **PPVoid;
 
 typedef void *Object_;
 
-const PPVoid RefMapMarker = (PPVoid)(void *)43;
+#define VTABLE_MAGIC 0xF9
+
+enum class ValType : uint8_t {
+    Undefined,
+    Boolean,
+    Number,
+    String,
+    Object,
+    Function,
+};
+
+enum class BuiltInType : uint16_t {
+    BoxedString = 1,
+    BoxedNumber = 2,
+    BoxedBuffer = 3,
+    RefAction = 4,
+    RefImage = 5,
+    RefCollection = 6,
+    RefRefLocal = 7,
+    RefMap = 8,
+};
+
 
 struct VTable {
-    uint16_t numbytes; // in the entire object, including the vtable pointer
-    uint16_t userdata;
+    uint16_t numbytes;
+    ValType objectType;
+    uint8_t magic;
     PVoid *ifaceTable;
-    uint16_t classNo;
+    BuiltInType classNo;
     uint16_t reserved;
-    PVoid methods[3]; // we only use up to three methods here; pxt will generate more
-                      // refmask sits at &methods[nummethods]
+    // we only use the first few methods here; pxt will generate more
+#ifdef PXT_GC
+    PVoid methods[4];
+#else
+    PVoid methods[2];
+#endif
 };
+
+//%
+extern const VTable string_vt;
+//%
+extern const VTable buffer_vt;
+//%
+extern const VTable number_vt;
+//%
+extern const VTable RefAction_vtable;
+
+#ifdef PXT_GC
+#define PXT_VTABLE_TO_INT(vt) ((uintptr_t)(vt))
+#else
+#define PXT_VTABLE_TO_INT(vt) ((uintptr_t)(vt) >> PXT_VTABLE_SHIFT)
+#endif
 
 #ifdef PXT_GC
 inline bool isReadOnly(TValue v) {
+    // TODO linux!
     return isTagged(v) || ((uint32_t)v >> 26);
 }
 #endif
@@ -333,20 +376,18 @@ class RefObject {
 
     // this is a getter, yay C++11!
     class {
-        public:
-            operator uint16_t () const { return 0; }
+      public:
+        operator uint16_t() const { return 0; }
     } refcnt;
 
-    RefObject(uint32_t vt) {
-        vtable = vt;
-    }
+    RefObject(const VTable *vt) { vtable = PXT_VTABLE_TO_INT(vt); }
 #else
     uint16_t refcnt;
     uint16_t vtable;
 
-    RefObject(uint16_t vt) {
+    RefObject(const VTable *vt) {
         refcnt = 3;
-        vtable = vt;
+        vtable = PXT_VTABLE_TO_INT(vt);
     }
 #endif
 
@@ -422,9 +463,7 @@ class Segment {
 
     void print();
 
-    TValue *getData() {
-        return data;
-    }
+    TValue *getData() { return data; }
 };
 
 // A ref-counted collection of either primitive or ref-counted objects (String, Image,
@@ -437,6 +476,8 @@ class RefCollection : public RefObject {
     RefCollection();
 
     static void destroy(RefCollection *coll);
+    static void scan(RefCollection *coll);
+    static unsigned gcsize(RefCollection *coll);
     static void print(RefCollection *coll);
 
     unsigned length() { return head.getLength(); }
@@ -465,6 +506,8 @@ class RefMap : public RefObject {
 
     RefMap();
     static void destroy(RefMap *map);
+    static void scan(RefMap *map);
+    static unsigned gcsize(RefMap *coll);
     static void print(RefMap *map);
     int findIdx(BoxedString *key);
 };
@@ -475,7 +518,7 @@ class RefRecord : public RefObject {
     // The object is allocated, so that there is space at the end for the fields.
     TValue fields[];
 
-    RefRecord(uint16_t v) : RefObject(v) {}
+    RefRecord(VTable *v) : RefObject(v) {}
 
     TValue ld(int idx);
     TValue ldref(int idx);
@@ -483,12 +526,21 @@ class RefRecord : public RefObject {
     void stref(int idx, TValue v);
 };
 
-static inline VTable *getVTable(RefObject *r) {        
+static inline VTable *getVTable(RefObject *r) {
+#ifdef PXT_GC
+    return (VTable *)r->vtable;
+#else
     return (VTable *)((uintptr_t)r->vtable << PXT_VTABLE_SHIFT);
+#endif
 }
 
 static inline VTable *getAnyVTable(TValue v) {
-    return isRefCounted(v) ? getVTable((RefObject*)v) : NULL;
+    if (!isRefCounted(v))
+        return NULL;
+    auto vt = getVTable((RefObject *)v);
+    if (vt->magic == VTABLE_MAGIC)
+        return vt;
+    return NULL;
 }
 
 // these are needed when constructing vtables for user-defined classes
@@ -511,6 +563,8 @@ class RefAction : public RefObject {
     TValue fields[];
 
     static void destroy(RefAction *act);
+    static void scan(RefAction *act);
+    static unsigned gcsize(RefAction *coll);
     static void print(RefAction *act);
 
     RefAction();
@@ -533,18 +587,12 @@ class RefAction : public RefObject {
 };
 
 // These two are used to represent locals written from inside inline functions
-class RefLocal : public RefObject {
-  public:
-    TValue v;
-    static void destroy(RefLocal *l);
-    static void print(RefLocal *l);
-    RefLocal();
-};
-
 class RefRefLocal : public RefObject {
   public:
     TValue v;
     static void destroy(RefRefLocal *l);
+    static void scan(RefRefLocal *l);
+    static unsigned gcsize(RefRefLocal *l);
     static void print(RefRefLocal *l);
     RefRefLocal();
 };
@@ -553,23 +601,17 @@ typedef int color;
 
 // note: this is hardcoded in PXT (hexfile.ts)
 
-#define PXT_REF_TAG_STRING 1
-#define PXT_REF_TAG_BUFFER 2
-#define PXT_REF_TAG_IMAGE 3
-#define PXT_REF_TAG_NUMBER 32
-#define PXT_REF_TAG_ACTION 33
-
 class BoxedNumber : public RefObject {
   public:
     double num;
-    BoxedNumber() : RefObject(PXT_REF_TAG_NUMBER) {}
+    BoxedNumber() : RefObject(&number_vt) {}
 } __attribute__((packed));
 
 class BoxedString : public RefObject {
   public:
     uint16_t length;
     char data[0];
-    BoxedString() : RefObject(PXT_REF_TAG_STRING) {}
+    BoxedString() : RefObject(&string_vt) {}
 };
 
 class BoxedBuffer : public RefObject {
@@ -577,9 +619,8 @@ class BoxedBuffer : public RefObject {
     // data needs to be word-aligned, so we use 32 bits for length
     int length;
     uint8_t data[0];
-    BoxedBuffer() : RefObject(PXT_REF_TAG_BUFFER) {}
+    BoxedBuffer() : RefObject(&buffer_vt) {}
 };
-
 
 // the first byte of data indicates the format - currently 0xE1 or 0xE4 to 1 or 4 bit bitmaps
 // second byte indicates width in pixels
@@ -597,7 +638,10 @@ class RefImage : public RefObject {
     BoxedBuffer *buffer() { return hasBuffer() ? (BoxedBuffer *)_buffer : NULL; }
     void setBuffer(BoxedBuffer *b);
     bool isDirty() { return (_buffer & 3) == 3; }
-    void clearDirty() { if (isDirty()) _buffer &= ~2; }
+    void clearDirty() {
+        if (isDirty())
+            _buffer &= ~2;
+    }
 
     uint8_t *data() { return hasBuffer() ? buffer()->data : _data; }
     int length() { return hasBuffer() ? buffer()->length : (_buffer >> 2); }
@@ -619,11 +663,12 @@ class RefImage : public RefObject {
     void makeWritable();
 
     static void destroy(RefImage *t);
+    static void scan(RefImage *t);
+    static unsigned gcsize(RefImage *t);
     static void print(RefImage *t);
 };
 
 RefImage *mkImage(int w, int h, int bpp);
-
 
 typedef BoxedBuffer *Buffer;
 typedef BoxedString *String;
@@ -663,28 +708,7 @@ void seedRandom(unsigned seed);
 // max is inclusive
 unsigned getRandom(unsigned max);
 
-//%
-extern const VTable string_vt;
-//%
-extern const VTable image_vt;
-//%
-extern const VTable buffer_vt;
-//%
-extern const VTable number_vt;
-//%
-extern const VTable RefAction_vtable;
-
-enum class ValType {
-    Undefined,
-    Boolean,
-    Number,
-    String,
-    Object,
-    Function,
-};
-
 ValType valType(TValue v);
-
 
 #ifdef PXT_GC
 void registerGC(TValue *root, int numwords = 1);
@@ -720,7 +744,6 @@ void *threadAddressFor(ThreadContext *ctx, void *sp);
 
 extern ThreadContext *threadContexts;
 
-
 } // namespace pxt
 
 #define PXT_DEF_STRING(name, val)                                                                  \
@@ -733,7 +756,7 @@ namespace numops {
 String stringConv(TValue v);
 //%
 String toString(TValue v);
-}
+} // namespace numops
 
 namespace pins {
 Buffer createBuffer(int size);
@@ -742,7 +765,7 @@ Buffer createBuffer(int size);
 namespace String_ {
 //%
 int compare(TValue a, TValue b);
-}
+} // namespace String_
 
 // The ARM Thumb generator in the JavaScript code is parsing
 // the hex file and looks for the magic numbers as present here.
@@ -766,21 +789,26 @@ int compare(TValue a, TValue b);
 #pragma GCC diagnostic ignored "-Wpmf-conversions"
 #endif
 
-#define PXT_VTABLE_TO_INT(vt) ((uintptr_t)(vt) >> PXT_VTABLE_SHIFT)
-#define PXT_VTABLE_BEGIN(classname, flags, iface)                                                  \
-    const VTable classname##_vtable __attribute__((aligned(1 << PXT_VTABLE_SHIFT))) = {                 \
-        sizeof(classname), flags, iface, 0, 0, {(void *)&classname::destroy, (void *)&classname::print,
+   
+#define DEF_VTABLE(name, tp, valtype, ...)                                                         \
+    const VTable name __attribute__((aligned(1 << PXT_VTABLE_SHIFT))) = {                          \
+        0, valtype, VTABLE_MAGIC, 0, BuiltInType::tp, 0, {__VA_ARGS__}};
 
-#define PXT_VTABLE_END                                                                             \
-    }                                                                                              \
-    }                                                                                              \
-    ;
+#ifdef PXT_GC
+#define PXT_VTABLE(classname)                                                                      \
+    DEF_VTABLE(classname##_vtable, classname, ValType::Object, (void *)&classname::destroy,        \
+               (void *)&classname::print, (void *)&classname::scan, (void *)&classname::gcsize)
+#else
+#define PXT_VTABLE(classname)                                                                      \
+    DEF_VTABLE(classname##_vtable, classname, ValType::Object, (void *)&classname::destroy,        \
+               (void *)&classname::print)
+#endif
 
-#define PXT_VTABLE_INIT(classname) RefObject(PXT_VTABLE_TO_INT(&classname##_vtable))
+#define PXT_VTABLE_INIT(classname) RefObject(&classname##_vtable)
 
 #define PXT_VTABLE_CTOR(classname)                                                                 \
-    PXT_VTABLE_BEGIN(classname, 0, 0)                                                              \
-    PXT_VTABLE_END classname::classname() : PXT_VTABLE_INIT(classname)
+    PXT_VTABLE(classname)                                                                          \
+    classname::classname() : PXT_VTABLE_INIT(classname)
 
 #define PXT_MAIN                                                                                   \
     int main() {                                                                                   \

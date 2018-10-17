@@ -65,7 +65,8 @@ void gcScan(TValue v) {
     workQueue.push(v);
 }
 
-#define getScanMethod(vt) (RefObjectMethod)(((VTable *)(vt))->methods[3])
+#define getScanMethod(vt) ((RefObjectMethod)(((VTable *)(vt))->methods[2]))
+#define getSizeMethod(vt) ((RefObjectSizeMethod)(((VTable *)(vt))->methods[3]))
 
 static void process(TValue v) {
     if (isReadOnly(v))
@@ -111,7 +112,7 @@ static uint32_t getObjectSize(RefObject *o) {
     auto vt = o->vtable;
     if (vt & 2)
         return vt >> 2;
-    return ((VTable *)vt)->numbytes >> 2; // TODO
+    return getSizeMethod(vt)(o);
 }
 
 #define GC_BLOCK_WORDS 1024
@@ -257,6 +258,63 @@ void unregisterGCPtr(TValue ptr) {
     if (isReadOnly(ptr))
         return;
     removePtr(ptr);
+}
+
+void RefImage::scan(RefImage *t) {
+    gcScan((TValue)t->buffer());
+}
+
+void RefCollection::scan(RefCollection *t) {
+    auto data = t->head.getData();
+    auto len = t->head.getLength();
+    for (unsigned i = 0; i < len; i++) {
+        gcScan(data[i]);
+    }
+}
+
+void RefAction::scan(RefAction *t) {
+    for (int i = 0; i < t->reflen; ++i) {
+        gcScan(t->fields[i]);
+    }
+}
+
+void RefRefLocal::scan(RefRefLocal *t) {
+    gcScan(t->v);
+}
+
+void RefMap::scan(RefMap *t) {
+    auto len = t->values.getLength();
+    auto values = t->values.getData();
+    auto keys = t->keys.getData();
+    intcheck(t->keys.getLength() == len, PANIC_SIZE, 101);
+    for (unsigned i = 0; i < len; ++i) {
+        gcScan(values[i]);
+        gcScan(keys[i]);
+    }
+}
+
+#define SIZE(off) (sizeof(*t) + (off) + 3) >> 2
+
+unsigned RefImage::gcsize(RefImage *t) {
+    if (t->hasBuffer())
+        return SIZE(0);
+    return SIZE(t->length());
+}
+
+unsigned RefCollection::gcsize(RefCollection *t) {
+    return SIZE(0);
+}
+
+unsigned RefAction::gcsize(RefAction *t) {
+    return SIZE(t->reflen << 2);
+}
+
+unsigned RefRefLocal::gcsize(RefRefLocal *t) {
+    return SIZE(0);
+}
+
+unsigned RefMap::gcsize(RefMap *t) {
+    return SIZE(0);
 }
 
 #endif
