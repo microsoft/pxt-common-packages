@@ -1210,4 +1210,11 @@ void failedCast(TValue v) {
     target_panic(code);
 }
 
+//%
+void missingProperty(TValue v) {
+    DMESG("missing property on %p", v);
+    target_panic(PANIC_MISSING_PROPERTY);
+}
+
+
 } // namespace pxt

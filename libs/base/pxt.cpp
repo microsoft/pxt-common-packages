@@ -20,17 +20,9 @@ void decr(TValue e) {
 }
 #endif
 
-// TODO
 Action mkAction(int totallen, int startptr) {
-    //check(reflen <= totallen && totallen <= 255, PANIC_SIZE, 2);
-    #ifdef PXT_GC
-    // TODO some check?
-    #else
-    //check(bytecode[startptr] == PXT_REFCNT_FLASH, PANIC_INVALID_BINARY_HEADER, 3);
-    //check(bytecode[startptr + 1] == PXT_REF_TAG_ACTION, PANIC_INVALID_BINARY_HEADER, 4);
-    #endif
-
     uintptr_t tmp = (uintptr_t)&bytecode[startptr];
+    check(getVTable((RefObject*)tmp)->classNo == BuiltInType::RefAction, PANIC_INVALID_BINARY_HEADER, 1);
 
     if (totallen == 0) {
         return (TValue)tmp; // no closure needed
@@ -39,7 +31,7 @@ Action mkAction(int totallen, int startptr) {
     void *ptr = ::operator new(sizeof(RefAction) + totallen * sizeof(unsigned));
     RefAction *r = new (ptr) RefAction();
     r->len = totallen;
-    r->func = (ActionCB)((tmp + 4) | 1);
+    r->func = ((RefAction*)tmp)->func;
     memset(r->fields, 0, r->len * sizeof(unsigned));
 
     MEMDBG("mkAction: start=%p => %p", startptr, r);
