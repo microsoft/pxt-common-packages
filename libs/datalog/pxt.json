@@ -4,6 +4,7 @@
     "files": [
         "README.md",
         "datalog.ts",
+        "storagedatalog.ts",
         "targetoverrides.ts"
     ],
     "testFiles": [
@@ -11,6 +12,7 @@
     ],
     "public": true,
     "dependencies": {
-        "core": "file:../core"
+        "core": "file:../core",
+        "storage": "file:../storage"
     }
 }
