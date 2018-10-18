@@ -1,31 +1,53 @@
 #include "pxtbase.h"
 
+#define GC_BLOCK_WORDS 1024
+
 namespace pxt {
+
+//%
+void popThreadContext(ThreadContext *ctx);
+//%
+ThreadContext *pushThreadContext(void *sp);
+
+#ifndef PXT_GC
+void popThreadContext(ThreadContext *ctx) {}
+ThreadContext *pushThreadContext(void *sp) {}
+
+#else
 
 ThreadContext *threadContexts;
 
-void releaseThreadContext(ThreadContext *ctx) {
+void popThreadContext(ThreadContext *ctx) {
     if (!ctx)
         return;
 
-    if (ctx->next)
-        ctx->next->prev = ctx->prev;
-    if (ctx->prev)
-        ctx->prev->next = ctx->next;
-    else {
-        if (threadContexts != ctx)
-            oops(41);
-        threadContexts = ctx->next;
+    auto n = ctx->stack.next;
+    if (n) {
+        ctx->stack.top = n->top;
+        ctx->stack.bottom = n->bottom;
+        ctx->stack.next = n->next;
+        delete n;
+    } else {
+        if (ctx->next)
+            ctx->next->prev = ctx->prev;
+        if (ctx->prev)
+            ctx->prev->next = ctx->next;
+        else {
+            if (threadContexts != ctx)
+                oops(41);
+            threadContexts = ctx->next;
+        }
+        delete ctx;
     }
-    delete ctx;
 }
 
-//%
-ThreadContext *setupThreadContext(void *sp) {
+ThreadContext *pushThreadContext(void *sp) {
     auto curr = getThreadContext();
     if (curr) {
         auto seg = new StackSegment;
-        memcpy(seg, &curr->stack, sizeof(*seg));
+        seg->top = curr->stack.top;
+        seg->bottom = curr->stack.bottom;
+        seg->next = curr->stack.next;
         curr->stack.next = seg;
     } else {
         curr = new ThreadContext;
@@ -40,8 +62,6 @@ ThreadContext *setupThreadContext(void *sp) {
     curr->stack.top = NULL;
     return curr;
 }
-
-#ifdef PXT_GC
 
 class RefBlock : public RefObject {
   public:
@@ -114,8 +134,6 @@ static uint32_t getObjectSize(RefObject *o) {
         return vt >> 2;
     return getSizeMethod(vt)(o);
 }
-
-#define GC_BLOCK_WORDS 1024
 
 static void allocateBlock() {
     auto curr = (GCBlock *)malloc(sizeof(GCBlock) + GC_BLOCK_WORDS * 4);
@@ -273,7 +291,7 @@ void RefCollection::scan(RefCollection *t) {
 }
 
 void RefAction::scan(RefAction *t) {
-    for (int i = 0; i < t->reflen; ++i) {
+    for (int i = 0; i < t->len; ++i) {
         gcScan(t->fields[i]);
     }
 }
@@ -306,7 +324,7 @@ unsigned RefCollection::gcsize(RefCollection *t) {
 }
 
 unsigned RefAction::gcsize(RefAction *t) {
-    return SIZE(t->reflen << 2);
+    return SIZE(t->len << 2);
 }
 
 unsigned RefRefLocal::gcsize(RefRefLocal *t) {

@@ -186,16 +186,15 @@ class RefRecord;
 
 // Utility functions
 
+
+typedef TValue (*RunActionType)(Action a, TValue arg0, TValue arg1, TValue arg2);
+extern RunActionType runAction3;
+static inline TValue runAction2(Action a, TValue arg0, TValue arg1) { return runAction3(a, arg0, arg1, 0); }
+static inline TValue runAction1(Action a, TValue arg0) { return runAction3(a, arg0, 0, 0); }
+static inline TValue runAction0(Action a) { return runAction3(a, 0, 0, 0); }
+
 //%
-TValue runAction3(Action a, TValue arg0, TValue arg1, TValue arg2);
-//%
-TValue runAction2(Action a, TValue arg0, TValue arg1);
-//%
-TValue runAction1(Action a, TValue arg0);
-//%
-TValue runAction0(Action a);
-//%
-Action mkAction(int reflen, int totallen, int startptr);
+Action mkAction(int totallen, int startptr);
 // allocate [sz] words and clear them
 //%
 unsigned *allocate(ramint_t sz);
@@ -319,6 +318,7 @@ enum class ValType : uint8_t {
     Function,
 };
 
+// keep in sync with pxt-core (search for the type name)
 enum class BuiltInType : uint16_t {
     BoxedString = 1,
     BoxedNumber = 2,
@@ -555,9 +555,8 @@ typedef TValue (*ActionCB)(TValue *captured, TValue arg0, TValue arg1, TValue ar
 // Ref-counted function pointer.
 class RefAction : public RefObject {
   public:
-    // This is the same as for RefRecord.
-    uint8_t len;
-    uint8_t reflen;
+    uint16_t len;
+    uint16_t reserved;
     ActionCB func; // The function pointer
     // fields[] contain captured locals
     TValue fields[];
@@ -574,15 +573,6 @@ class RefAction : public RefObject {
         intcheck(0 <= idx && idx < len, PANIC_OUT_OF_BOUNDS, 10);
         intcheck(fields[idx] == 0, PANIC_OUT_OF_BOUNDS, 11); // only one assignment permitted
         fields[idx] = v;
-    }
-
-    inline TValue runCore(TValue arg0, TValue arg1,
-                          TValue arg2) // internal; use runAction*() functions
-    {
-        this->ref();
-        TValue r = this->func(&this->fields[0], arg0, arg1, arg2);
-        this->unref();
-        return r;
     }
 };
 

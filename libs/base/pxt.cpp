@@ -21,14 +21,13 @@ void decr(TValue e) {
 #endif
 
 // TODO
-Action mkAction(int reflen, int totallen, int startptr) {
-    check(0 <= reflen && reflen <= totallen, PANIC_SIZE, 1);
-    check(reflen <= totallen && totallen <= 255, PANIC_SIZE, 2);
+Action mkAction(int totallen, int startptr) {
+    //check(reflen <= totallen && totallen <= 255, PANIC_SIZE, 2);
     #ifdef PXT_GC
     // TODO some check?
     #else
-    check(bytecode[startptr] == PXT_REFCNT_FLASH, PANIC_INVALID_BINARY_HEADER, 3);
-    check(bytecode[startptr + 1] == PXT_REF_TAG_ACTION, PANIC_INVALID_BINARY_HEADER, 4);
+    //check(bytecode[startptr] == PXT_REFCNT_FLASH, PANIC_INVALID_BINARY_HEADER, 3);
+    //check(bytecode[startptr + 1] == PXT_REF_TAG_ACTION, PANIC_INVALID_BINARY_HEADER, 4);
     #endif
 
     uintptr_t tmp = (uintptr_t)&bytecode[startptr];
@@ -40,37 +39,12 @@ Action mkAction(int reflen, int totallen, int startptr) {
     void *ptr = ::operator new(sizeof(RefAction) + totallen * sizeof(unsigned));
     RefAction *r = new (ptr) RefAction();
     r->len = totallen;
-    r->reflen = reflen;
     r->func = (ActionCB)((tmp + 4) | 1);
     memset(r->fields, 0, r->len * sizeof(unsigned));
 
     MEMDBG("mkAction: start=%p => %p", startptr, r);
 
     return (Action)r;
-}
-
-// TODO
-TValue runAction3(Action a, TValue arg0, TValue arg1, TValue arg2) {
-    auto aa = (RefAction *)a;
-    if (aa->vtable == PXT_REF_TAG_ACTION) {
-        check(aa->refcnt == PXT_REFCNT_FLASH, PANIC_INVALID_BINARY_HEADER, 4);
-        return ((ActionCB)(((uintptr_t)a + 4) | 1))(NULL, arg0, arg1, arg2);
-    } else {
-        check(aa->refcnt != PXT_REFCNT_FLASH, PANIC_INVALID_BINARY_HEADER, 4);
-        return aa->runCore(arg0, arg1, arg2);
-    }
-}
-
-TValue runAction2(Action a, TValue arg0, TValue arg1) {
-    return runAction3(a, arg0, arg1, 0);
-}
-
-TValue runAction1(Action a, TValue arg0) {
-    return runAction3(a, arg0, 0, 0);
-}
-
-TValue runAction0(Action a) {
-    return runAction3(a, 0, 0, 0);
 }
 
 RefRecord *mkClassInstance(int vtableOffset) {
@@ -415,15 +389,15 @@ PXT_VTABLE_CTOR(RefAction) {}
 
 // fields[] contain captured locals
 void RefAction::destroy(RefAction *t) {
-    for (int i = 0; i < t->reflen; ++i) {
+    for (int i = 0; i < t->len; ++i) {
         decr(t->fields[i]);
         t->fields[i] = 0;
     }
 }
 
 void RefAction::print(RefAction *t) {
-    DMESG("RefAction %p r=%d pc=%X size=%d (%d refs)", t, t->refcnt,
-          (const uint8_t *)t->func - (const uint8_t *)bytecode, t->len, t->reflen);
+    DMESG("RefAction %p r=%d pc=%X size=%d", t, t->refcnt,
+          (const uint8_t *)t->func - (const uint8_t *)bytecode, t->len);
 }
 
 PXT_VTABLE_CTOR(RefRefLocal) {
@@ -518,6 +492,7 @@ int getNumGlobals() {
 }
 
 #ifndef X86_64
+RunActionType runAction3;
 void exec_binary(unsigned *pc) {
     // XXX re-enable once the calibration code is fixed and [editor/embedded.ts]
     // properly prepends a call to [internal_main].
@@ -527,13 +502,15 @@ void exec_binary(unsigned *pc) {
     // ::touch_develop::micro_bit::radioDefaultGroup = programHash();
 
     unsigned ver = *pc++;
-    checkStr(ver == 0x4209, ":( Bad runtime version");
+    checkStr(ver == 0x4210, ":( Bad runtime version");
 
     bytecode = *((uint16_t **)pc++); // the actual bytecode is here
     globals = (TValue *)allocate(getNumGlobals());
 
     // can be any valid address, best in RAM for speed
     globals[0] = (TValue)&globals;
+
+    runAction3 = (RunActionType)(((uintptr_t *)bytecode)[12] | 1);
 
     // just compare the first word
     // TODO
@@ -542,12 +519,11 @@ void exec_binary(unsigned *pc) {
 
     uintptr_t startptr = (uintptr_t)bytecode;
 
-    startptr += 48; // header
-    startptr |= 1;  // Thumb state
+    startptr += 64; // header
 
     initRuntime();
 
-    ((unsigned (*)())startptr)();
+    runAction0((Action)startptr);
 
     pxt::releaseFiber();
 }
