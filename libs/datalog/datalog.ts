@@ -1,7 +1,7 @@
 /**
  * A tiny data logging framework
  */
-//% weight=80 color=#0fbc11 icon=""
+//% weight=80 color=#00a0a0 icon="" blockGap=8
 namespace datalog {
     export let SEPARATOR = "\t";
     /**
@@ -89,7 +89,7 @@ namespace datalog {
     }
 
     /**
-     * Starts a row of data
+     * Starts a new row of data
      */
     //% weight=100
     //% blockId=datalogAddRow block="datalog add row"
@@ -107,6 +107,7 @@ namespace datalog {
      */
     //% weight=99
     //% blockId=datalogAddValue block="datalog add %name|=%value"
+    //% blockGap=12
     export function addValue(name: string, value: number) {
         if (!_row) return;
         // happy path
