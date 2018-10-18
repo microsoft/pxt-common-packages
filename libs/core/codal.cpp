@@ -83,7 +83,7 @@ void dispatchBackground(Event e, void* action) {
     runAction1((Action)action, value);
 }
 
-void deleteListener(CodalListener *l) {
+void deleteListener(Listener *l) {
     if (l->cb_param == (void (*)(Event, void*))dispatchBackground || 
         l->cb_param == (void (*)(Event, void*))dispatchForeground)
         decr((Action)(l->cb_arg));
@@ -123,7 +123,7 @@ void setBackgroundHandlerFlag() {
 
 void registerWithDal(int id, int event, Action a) {
     if (!backgroundHandlerFlag) {
-        devMessageBus.remove(id, event, dispatchForeground);
+        devMessageBus.ignore(id, event, dispatchForeground);
     }
     devMessageBus.listen(id, event, backgroundHandlerFlag ? dispatchBackground : dispatchForeground, a);
     backgroundHandlerFlag = false;
@@ -131,7 +131,7 @@ void registerWithDal(int id, int event, Action a) {
 }
 
 void unregisterFromDal(Action a) { 
-    devMessageBus.remove(DEVICE_EVT_ANY, DEVICE_EVT_ANY, dispatchBackground, (void*) a);
+    devMessageBus.ignore(DEVICE_EVT_ANY, DEVICE_EVT_ANY, dispatchBackground, (void*) a);
 }
 
 void fiberDone(void *a) {

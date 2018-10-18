@@ -25,7 +25,7 @@ namespace control {
         value: number;
         handler: () => void;
 
-        constructor(src: number, value: number, handler: () => void, flags: number) {
+        constructor(src: number, value: number, handler: () => void) {
             this.src = src;
             this.value = value;
             this.handler = handler;
