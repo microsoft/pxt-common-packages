@@ -1,8 +1,9 @@
 /**
- * A data logging framework
+ * A tiny data logging framework
  */
 //% weight=80 color=#0fbc11 icon=""
 namespace datalog {
+    export let SEPARATOR = "\t";
     /**
      * A storage for datalog data
      */
