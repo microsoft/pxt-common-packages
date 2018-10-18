@@ -123,6 +123,7 @@ void dumpDmesg();
 #define TAG_TRUE TAGGED_SPECIAL(16) // 66
 #define TAG_UNDEFINED (TValue)0
 #define TAG_NULL TAGGED_SPECIAL(1) // 6
+#define TAG_NAN TAGGED_SPECIAL(3) // 14
 #define TAG_NUMBER(n) (TNumber)(void *)((n << 1) | 1)
 
 inline bool isTagged(TValue v) {
@@ -329,6 +330,7 @@ enum class BuiltInType : uint16_t {
     RefCollection = 6,
     RefRefLocal = 7,
     RefMap = 8,
+    User0 = 16,
 };
 
 
@@ -692,8 +694,6 @@ Buffer mkBuffer(const uint8_t *data, int len);
 
 TNumber getNumberCore(uint8_t *buf, int size, NumberFormat format);
 void setNumberCore(uint8_t *buf, int size, NumberFormat format, TNumber value);
-
-TNumber mkNaN();
 
 void seedRandom(unsigned seed);
 // max is inclusive

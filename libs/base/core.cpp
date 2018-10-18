@@ -67,13 +67,6 @@ Buffer mkBuffer(const uint8_t *data, int len) {
     return r;
 }
 
-#ifndef X86_64
-TNumber mkNaN() {
-    // TODO optimize
-    return fromDouble(NAN);
-}
-#endif
-
 static unsigned random_value = 0xC0DA1;
 
 void seedRandom(unsigned seed) {
@@ -149,7 +142,7 @@ TNumber charCodeAt(String s, int pos) {
     if (s && 0 <= pos && pos < s->length) {
         return fromInt(s->data[pos]);
     } else {
-        return mkNaN();
+        return TAG_NAN;
     }
 }
 
@@ -345,6 +338,8 @@ int toInt(TNumber v) {
 
 // only support double in tagged mode
 double toDouble(TNumber v) {
+    if (v == TAG_NAN)
+        return NAN;
     if (isTagged(v))
         return toInt(v);
 
@@ -371,6 +366,8 @@ TNumber fromDouble(double r) {
     if ((ri >> 1) == r)
         return (TNumber)(ri | 1);
 #endif
+    if (isnan(r))
+        return TAG_NAN;
     BoxedNumber *p = new BoxedNumber();
     p->num = r;
     MEMDBG("mkNum: %d/1000 => %p", (int)(r * 1000), p);
@@ -487,7 +484,7 @@ namespace numops {
 //%
 int toBool(TValue v) {
     if (isTagged(v)) {
-        if (v == TAG_UNDEFINED || v == TAG_NULL || v == TAG_FALSE || v == TAG_NUMBER(0))
+        if (v == TAG_UNDEFINED || v == TAG_NAN || v == TAG_NULL || v == TAG_FALSE || v == TAG_NUMBER(0))
             return 0;
         else
             return 1;
@@ -700,8 +697,6 @@ String toString(TValue v) {
         }
 #endif
 
-        if (isnan(x))
-            return (String)(void *)sNaN;
         if (isinf(x)) {
             if (x < 0)
                 return (String)(void *)sMInf;
@@ -718,6 +713,8 @@ String toString(TValue v) {
             return (String)(void *)sUndefined;
         else if (v == TAG_FALSE)
             return (String)(void *)sFalse;
+        else if (v == TAG_NAN)
+            return (String)(void *)sNaN;
         else if (v == TAG_TRUE)
             return (String)(void *)sTrue;
         else if (v == TAG_NULL)
@@ -738,7 +735,7 @@ String stringConv(TValue v) {
     if (t == ValType::String) {
         return (String)v;
     } else {
-        auto r = toString(v);
+        auto r = numops::toString(v);
         decr(v);
         return r;
     }
@@ -1112,7 +1109,7 @@ ValType valType(TValue v) {
         if (!v)
             return ValType::Undefined;
 
-        if (isNumber(v))
+        if (isNumber(v) || v == TAG_NAN)
             return ValType::Number;
         if (v == TAG_TRUE || v == TAG_FALSE)
             return ValType::Boolean;
