@@ -11,7 +11,9 @@ ThreadContext *pushThreadContext(void *sp);
 
 #ifndef PXT_GC
 void popThreadContext(ThreadContext *ctx) {}
-ThreadContext *pushThreadContext(void *sp) {}
+ThreadContext *pushThreadContext(void *sp) {
+    return NULL;
+}
 
 #else
 
@@ -132,7 +134,8 @@ static uint32_t getObjectSize(RefObject *o) {
     auto vt = o->vtable;
     if (vt & 2)
         return vt >> 2;
-    return getSizeMethod(vt)(o);
+    auto sz = getSizeMethod(vt);
+    return sz(o);
 }
 
 static void allocateBlock() {

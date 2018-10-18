@@ -94,11 +94,9 @@ void RefObject::printVT() {
 void RefRecord_destroy(RefRecord *r) {
 #ifndef PXT_GC
     VTable *tbl = getVTable(r);
-    uint8_t *refmask = (uint8_t *)&tbl->methods[tbl->userdata & 0xff];
-    int len = (tbl->numbytes >> 2) - 1;
+    int len = (tbl->numbytes - sizeof(RefRecord)) >> 2;
     for (int i = 0; i < len; ++i) {
-        if (refmask[i])
-            decr(r->fields[i]);
+        decr(r->fields[i]);
         r->fields[i] = 0;
     }
 #endif

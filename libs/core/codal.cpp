@@ -185,6 +185,7 @@ int current_time_ms() {
     return system_timer_current_time();
 }
 
+#ifdef PXT_GC
 ThreadContext *getThreadContext()
 {
     return (ThreadContext*)currentFiber->user_data;
@@ -194,6 +195,7 @@ void setThreadContext(ThreadContext *ctx)
 {
     currentFiber->user_data = ctx;
 }
+#endif
 
 void *getCurrentFiber() {
     return currentFiber;
