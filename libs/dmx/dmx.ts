@@ -1,3 +1,7 @@
+/**
+ * DMX protocol functions.
+ */
+//% weight=100 color="#0078d7" icon="\uf185"
 namespace dmx {
 
     /**
