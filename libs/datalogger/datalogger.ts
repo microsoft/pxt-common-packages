@@ -38,6 +38,7 @@ namespace datalogger {
     let _samplingInterval = -1;
     let _sampleCount = 0;
     let _lastSampleTime = -1;
+    let _console = false;
 
     function clear() {
         _headers = undefined;
@@ -66,6 +67,8 @@ namespace datalogger {
             // write headers for the first row
             if (!_headersWritten) {
                 _storage.appendHeaders(_headers);
+                if (_console)
+                    console.log(_headers.slice(1, _headers.length).join(', '));
                 _headersWritten = true;
             }
             // commit row data
@@ -78,6 +81,10 @@ namespace datalogger {
                 }
                 // append row
                 _storage.appendRow(_row);
+                if (_console) {
+                    // drop time
+                    console.log(_row.slice(1, _row.length).join(','));
+                }
                 // clear values
                 _row = undefined;
                 _sampleCount = 1;
@@ -167,5 +174,16 @@ namespace datalogger {
     export function setEnabled(enabled: boolean) {
         flush();
         _enabled = enabled;
+    }
+
+    /**
+     * Send the data logger output to the console
+     * @param enabled 
+     */
+    //% group="Configuration"
+    //% blockId="datalogConsole" block="data logger to console $enabled"
+    //% enabled.shadow=toggleOnOff
+    export function sendToConsole(enabled: boolean) {
+        _console = enabled;
     }
 }
