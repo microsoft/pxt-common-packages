@@ -3,12 +3,12 @@
  */
 //% weight=80 color=#00a0a0 icon="" blockGap=8
 //% groups='["Data", "Configuration"]'
-namespace datalog {
+namespace datalogger {
     export let SEPARATOR = "\t";
     /**
      * A storage for datalog data
      */
-    export class DatalogStorage {
+    export class Storage {
         constructor() {
         }
         /**
@@ -33,7 +33,7 @@ namespace datalog {
     let _headersWritten: boolean = false;
     let _row: number[] = undefined;
     let _start: number;
-    let _storage: DatalogStorage;
+    let _storage: Storage;
     let _enabled = true;
     let _samplingInterval = -1;
     let _sampleCount = 0;
@@ -131,7 +131,7 @@ namespace datalog {
      * @param storage custom storage solution
      */
     //%
-    export function setStorage(storage: DatalogStorage) {
+    export function setStorage(storage: Storage) {
         flush();
         _storage = storage;
         clear();
