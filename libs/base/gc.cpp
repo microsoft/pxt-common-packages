@@ -9,12 +9,18 @@ void popThreadContext(ThreadContext *ctx);
 //%
 ThreadContext *pushThreadContext(void *sp);
 
+unsigned RefRecord_gcsize(RefRecord *r) {
+    VTable *tbl = getVTable(r);
+    return tbl->numbytes >> 2;
+}
+
 #ifndef PXT_GC
+// dummies, to make the linker happy
 void popThreadContext(ThreadContext *ctx) {}
 ThreadContext *pushThreadContext(void *sp) {
     return NULL;
 }
-
+void RefRecord_scan(RefRecord *r) {}
 #else
 
 ThreadContext *threadContexts;
@@ -87,6 +93,20 @@ void gcScan(TValue v) {
     workQueue.push(v);
 }
 
+void gcScanMany(TValue *data, unsigned len) {
+    for (unsigned i = 0; i < len; ++i) {
+        auto v = data[i];
+        if (isReadOnly(v) || (*(uint32_t *)v & 1))
+            return;
+        *(uint32_t *)v |= 1;
+        workQueue.push(v);
+    }
+}
+
+void gcScanSegment(Segment &seg) {
+    gcScanMany(seg.getData(), seg.getLength());
+}
+
 #define getScanMethod(vt) ((RefObjectMethod)(((VTable *)(vt))->methods[2]))
 #define getSizeMethod(vt) ((RefObjectSizeMethod)(((VTable *)(vt))->methods[3]))
 
@@ -127,6 +147,13 @@ static void mark() {
                 process(*ptr++);
             }
         }
+    }
+
+    auto nonPtrs = bytecode[21];
+    len = getNumGlobals() - nonPtrs;
+    data = globals + nonPtrs;
+    for (unsigned i = 0; i < len; ++i) {
+        process(*data++);
     }
 }
 
@@ -286,17 +313,11 @@ void RefImage::scan(RefImage *t) {
 }
 
 void RefCollection::scan(RefCollection *t) {
-    auto data = t->head.getData();
-    auto len = t->head.getLength();
-    for (unsigned i = 0; i < len; i++) {
-        gcScan(data[i]);
-    }
+    gcScanSegment(t->head);
 }
 
 void RefAction::scan(RefAction *t) {
-    for (int i = 0; i < t->len; ++i) {
-        gcScan(t->fields[i]);
-    }
+    gcScanMany(t->fields, t->len);
 }
 
 void RefRefLocal::scan(RefRefLocal *t) {
@@ -304,14 +325,13 @@ void RefRefLocal::scan(RefRefLocal *t) {
 }
 
 void RefMap::scan(RefMap *t) {
-    auto len = t->values.getLength();
-    auto values = t->values.getData();
-    auto keys = t->keys.getData();
-    intcheck(t->keys.getLength() == len, PANIC_SIZE, 101);
-    for (unsigned i = 0; i < len; ++i) {
-        gcScan(values[i]);
-        gcScan(keys[i]);
-    }
+    gcScanSegment(t->keys);
+    gcScanSegment(t->values);
+}
+
+void RefRecord_scan(RefRecord *r) {
+    VTable *tbl = getVTable(r);
+    gcScanMany(r->fields, (tbl->numbytes - sizeof(RefRecord)) >> 2);
 }
 
 #define SIZE(off) (sizeof(*t) + (off) + 3) >> 2

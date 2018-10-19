@@ -551,6 +551,10 @@ static inline VTable *getAnyVTable(TValue v) {
 void RefRecord_destroy(RefRecord *r);
 //%
 void RefRecord_print(RefRecord *r);
+//%
+void RefRecord_scan(RefRecord *r);
+//%
+unsigned RefRecord_gcsize(RefRecord *r);
 
 class RefAction;
 typedef TValue (*ActionCB)(TValue *captured, TValue arg0, TValue arg1, TValue arg2);

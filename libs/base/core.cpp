@@ -416,7 +416,7 @@ bool eqq_bool(TValue a, TValue b) {
 
     if (ta != tb)
         return false;
-    
+
     return eq_core(a, b, ta);
 }
 
@@ -464,7 +464,6 @@ bool switch_eq(TValue a, TValue b) {
 
 } // namespace pxt
 
-
 #define NUMOP(op) return fromDouble(toDouble(a) op toDouble(b));
 #define BITOP(op) return fromInt(toInt(a) op toInt(b));
 namespace numops {
@@ -472,7 +471,7 @@ namespace numops {
 //%
 int toBool(TValue v) {
     if (isTagged(v)) {
-        if (v == TAG_UNDEFINED || v == TAG_NAN || v == TAG_NULL || v == TAG_FALSE ||
+        if (v == TAG_FALSE || v == TAG_UNDEFINED || v == TAG_NAN || v == TAG_NULL ||
             v == TAG_NUMBER(0))
             return 0;
         else
