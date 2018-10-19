@@ -147,6 +147,7 @@ namespace datalog {
      * Sets the minimum number of milli seconds between rows
      * @param millis milliseconds between each sample, eg: 50
      */
+    //% group="Configuration"
     //% blockId=datalogSetSamplingInterval block="set datalog sampling interval to %millis|(ms)"
     export function setSampleInterval(millis: number) {
         _samplingInterval = millis >> 0;
@@ -156,6 +157,7 @@ namespace datalog {
      * Turns on or off datalogging
      * @param enabled 
      */
+    //% group="Configuration"
     //% blockId=datalogEnabled block="datalog %enabled=toggleOnOff"
     export function setEnabled(enabled: boolean) {
         flush();
