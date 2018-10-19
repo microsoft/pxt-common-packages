@@ -744,8 +744,6 @@ using namespace pxt;
 
 namespace numops {
 //%
-String stringConv(TValue v);
-//%
 String toString(TValue v);
 } // namespace numops
 
@@ -754,8 +752,7 @@ Buffer createBuffer(int size);
 }
 
 namespace String_ {
-//%
-int compare(TValue a, TValue b);
+int compare(String a, String b);
 } // namespace String_
 
 // The ARM Thumb generator in the JavaScript code is parsing
