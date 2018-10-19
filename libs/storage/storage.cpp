@@ -86,8 +86,8 @@ snorfs::File *getFile(String filename) {
 //% part="storage" 
 //% blockId="storage_append" block="append file $filename with $data"
 void append(String filename, String data) {
-    if (!filename || !filename->length) return;
     auto f = getFile(filename);
+    if (NULL == f) return;
     f->append(data->data, data->length);
 }
 
@@ -97,8 +97,8 @@ void append(String filename, String data) {
 */
 //% part="storage"
 void appendBuffer(String filename, Buffer data) {
-    if (!filename || !filename->length) return;
     auto f = getFile(filename);
+    if (NULL == f) return;
     f->append(data->data, data->length);
 }
 
@@ -109,8 +109,8 @@ void appendBuffer(String filename, Buffer data) {
 //% part="storage"
 //% blockId="storage_overwrite" block="overwrite file $filename with $data"
 void overwrite(String filename, String data) {
-    if (!filename || !filename->length) return;
     auto f = getFile(filename);
+    if (NULL == f) return;
     f->overwrite(data->data, data->length);
 }
 
@@ -120,8 +120,8 @@ void overwrite(String filename, String data) {
 */
 //% part="storage"
 void overwriteWithBuffer(String filename, Buffer data) {
-    if (!filename || !filename->length) return;
     auto f = getFile(filename);
+    if (NULL == f) return;
     f->overwrite(data->data, data->length);
 }
 
@@ -158,7 +158,7 @@ void remove(String filename) {
 int size(String filename) {
     if (!exists(filename))
         return -1;
-    auto f = getFile(filename);
+    auto f = getFile(filename);    
     return f->size();
 }
 
@@ -169,8 +169,9 @@ int size(String filename) {
 //% part="storage"
 //% blockId="storage_read" block="read file $filename"
 String read(String filename) {
-    if (!filename || !filename->length) return NULL;
     auto f = getFile(filename);
+    if (NULL == f) 
+        return NULL;
     auto sz = f->size();
     if (sz > 0xffff)
         return NULL;
@@ -186,8 +187,9 @@ String read(String filename) {
 */
 //% part="storage"
 Buffer readAsBuffer(String filename) {
-    if (!filename || !filename->length) return NULL;
     auto f = getFile(filename);
+    if (NULL == f) 
+        return NULL;
     auto sz = f->size();
     if (sz > 0xffff)
         return NULL;

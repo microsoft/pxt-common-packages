@@ -17,7 +17,6 @@ namespace storage {
     //% part="storage" 
     //% blockId="storage_append_line" block="append file $filename with line $data"
     export function appendLine(filename: string, data: string): void {
-        if (!filename) return;
         append(filename, data + NEW_LINE);
     }
 
