@@ -79,44 +79,66 @@ snorfs::File *getFile(String filename) {
     return currFile;
 }
 
-/** Append string data to a new or existing file. */
+/** 
+* Append string data to a new or existing file. 
+* @param filename name of the file, eg: "log.txt"
+*/
 //% part="storage" 
 //% blockId="storage_append" block="append file $filename with $data"
 void append(String filename, String data) {
+    if (!filename || !filename->length) return;
     auto f = getFile(filename);
     f->append(data->data, data->length);
 }
 
-/** Append a buffer to a new or existing file. */
+/** 
+* Append a buffer to a new or existing file. 
+* @param filename name of the file, eg: "log.txt"
+*/
 //% part="storage"
 void appendBuffer(String filename, Buffer data) {
+    if (!filename || !filename->length) return;
     auto f = getFile(filename);
     f->append(data->data, data->length);
 }
 
-/** Overwrite file with string data. */
+/** 
+* Overwrite file with string data. 
+* @param filename name of the file, eg: "log.txt"
+*/
 //% part="storage"
 //% blockId="storage_overwrite" block="overwrite file $filename with $data"
 void overwrite(String filename, String data) {
+    if (!filename || !filename->length) return;
     auto f = getFile(filename);
     f->overwrite(data->data, data->length);
 }
 
-/** Overwrite file with a buffer. */
+/** 
+* Overwrite file with a buffer. 
+* @param filename name of the file, eg: "log.txt"
+*/
 //% part="storage"
 void overwriteWithBuffer(String filename, Buffer data) {
+    if (!filename || !filename->length) return;
     auto f = getFile(filename);
     f->overwrite(data->data, data->length);
 }
 
-/** Return true if the file already exists. */
+/** 
+* Return true if the file already exists. 
+* @param filename name of the file, eg: "log.txt"
+*/
 //% part="storage"
-//% blockId="storage_exists" block="$filename exists"
+//% blockId="storage_exists" block="file $filename exists"
 bool exists(String filename) {
     return mountedStorage()->fs.exists(filename->data);
 }
 
-/** Delete a file, or do nothing if it doesn't exist. */
+/** 
+* Delete a file, or do nothing if it doesn't exist. 
+* @param filename name of the file, eg: "log.txt"
+*/
 //% part="storage"
 //% blockId="storage_remove" block="remove file $filename"
 void remove(String filename) {
@@ -127,7 +149,10 @@ void remove(String filename) {
     getFile(NULL);
 }
 
-/** Return the size of the file, or -1 if it doesn't exists. */
+/** 
+* Return the size of the file, or -1 if it doesn't exists. 
+* @param filename name of the file, eg: "log.txt"
+*/
 //% part="storage"
 //% blockId="storage_size" block="size of file $filename"
 int size(String filename) {
@@ -137,10 +162,14 @@ int size(String filename) {
     return f->size();
 }
 
-/** Read contents of file as a string. */
+/** 
+* Read contents of file as a string. 
+* @param filename name of the file, eg: "log.txt"
+*/
 //% part="storage"
 //% blockId="storage_read" block="read file $filename"
 String read(String filename) {
+    if (!filename || !filename->length) return NULL;
     auto f = getFile(filename);
     auto sz = f->size();
     if (sz > 0xffff)
@@ -151,9 +180,13 @@ String read(String filename) {
     return res;
 }
 
-/** Read contents of file as a buffer. */
+/** 
+* Read contents of file as a buffer. 
+* @param filename name of the file, eg: "log.txt"
+*/
 //% part="storage"
 Buffer readAsBuffer(String filename) {
+    if (!filename || !filename->length) return NULL;
     auto f = getFile(filename);
     auto sz = f->size();
     if (sz > 0xffff)
