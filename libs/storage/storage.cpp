@@ -145,6 +145,7 @@ void remove(String filename) {
     if (!exists(filename))
         return;
     auto f = getFile(filename);
+    f->del();
     getFile(NULL);
 }
 
@@ -157,7 +158,7 @@ void remove(String filename) {
 int size(String filename) {
     if (!exists(filename))
         return -1;
-    auto f = getFile(filename);
+    auto f = getFile(filename);    
     return f->size();
 }
 
