@@ -6,7 +6,7 @@
 namespace datalogger {
     export let SEPARATOR = "\t";
     /**
-     * A storage for datalog data
+     * A storage for log data
      */
     export class Storage {
         constructor() {
@@ -16,7 +16,7 @@ namespace datalogger {
          */
         init(): void { }
         /**
-         * Appends the headers in datalog
+         * Appends the headers in log
          */
         appendHeaders(headers: string[]): void { }
         /**
@@ -94,7 +94,7 @@ namespace datalogger {
      */
     //% group="Data"
     //% weight=100
-    //% blockId=datalogAddRow block="datalogger add row"
+    //% blockId=datalogAddRow block="data logger add row"
     export function addRow(): void {
         if (!_enabled || !_storage) return;
 
@@ -109,7 +109,7 @@ namespace datalogger {
      */
     //% group="Data"
     //% weight=99
-    //% blockId=datalogAddValue block="datalogger add %name|=%value"
+    //% blockId=datalogAddValue block="data logger add %name|=%value"
     //% blockGap=12
     export function addValue(name: string, value: number) {
         if (!_row) return;
@@ -151,7 +151,7 @@ namespace datalogger {
      * @param millis milliseconds between each sample, eg: 50
      */
     //% group="Configuration"
-    //% blockId=datalogSetSamplingInterval block="set datalogger sampling interval to $millis|(ms)"
+    //% blockId=datalogSetSamplingInterval block="set data logger sampling interval to $millis|(ms)"
     //% millis.shadow=timePicker
     export function setSampleInterval(millis: number) {
         _samplingInterval = millis >> 0;
@@ -162,7 +162,7 @@ namespace datalogger {
      * @param enabled 
      */
     //% group="Configuration"
-    //% blockId=datalogEnabled block="datalogger $enabled"
+    //% blockId=datalogEnabled block="data logger $enabled"
     //% enabled.shadow=toggleOnOff
     export function setEnabled(enabled: boolean) {
         flush();
