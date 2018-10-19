@@ -1,12 +1,14 @@
 /**
- * A data logging framework
+ * A tiny data logging framework
  */
-//% weight=80 color=#0fbc11 icon=""
-namespace datalog {
+//% weight=80 color=#00a0a0 icon="" blockGap=8
+//% groups='["Data", "Configuration"]'
+namespace datalogger {
+    export let SEPARATOR = "\t";
     /**
      * A storage for datalog data
      */
-    export class DatalogStorage {
+    export class Storage {
         constructor() {
         }
         /**
@@ -31,7 +33,7 @@ namespace datalog {
     let _headersWritten: boolean = false;
     let _row: number[] = undefined;
     let _start: number;
-    let _storage: DatalogStorage;
+    let _storage: Storage;
     let _enabled = true;
     let _samplingInterval = -1;
     let _sampleCount = 0;
@@ -88,8 +90,9 @@ namespace datalog {
     }
 
     /**
-     * Starts a row of data
+     * Starts a new row of data
      */
+    //% group="Data"
     //% weight=100
     //% blockId=datalogAddRow block="datalog add row"
     export function addRow(): void {
@@ -104,8 +107,10 @@ namespace datalog {
      * @param name name of the cell, eg: "x"
      * @param value value of the cell, eg: 0
      */
+    //% group="Data"
     //% weight=99
     //% blockId=datalogAddValue block="datalog add %name|=%value"
+    //% blockGap=12
     export function addValue(name: string, value: number) {
         if (!_row) return;
         // happy path
@@ -126,7 +131,7 @@ namespace datalog {
      * @param storage custom storage solution
      */
     //%
-    export function setStorage(storage: DatalogStorage) {
+    export function setStorage(storage: Storage) {
         flush();
         _storage = storage;
         clear();
@@ -145,7 +150,9 @@ namespace datalog {
      * Sets the minimum number of milli seconds between rows
      * @param millis milliseconds between each sample, eg: 50
      */
-    //% blockId=datalogSetSamplingInterval block="set datalog sampling interval to %millis|(ms)"
+    //% group="Configuration"
+    //% blockId=datalogSetSamplingInterval block="set datalog sampling interval to $millis|(ms)"
+    //% millis.shadow=timePicker
     export function setSampleInterval(millis: number) {
         _samplingInterval = millis >> 0;
     }
@@ -154,7 +161,9 @@ namespace datalog {
      * Turns on or off datalogging
      * @param enabled 
      */
-    //% blockId=datalogEnabled block="datalog %enabled=toggleOnOff"
+    //% group="Configuration"
+    //% blockId=datalogEnabled block="datalog $enabled"
+    //% enabled.shadow=toggleOnOff
     export function setEnabled(enabled: boolean) {
         flush();
         _enabled = enabled;
