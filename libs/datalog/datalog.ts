@@ -91,6 +91,7 @@ namespace datalog {
     /**
      * Starts a new row of data
      */
+    //% group="Logging"
     //% weight=100
     //% blockId=datalogAddRow block="datalog add row"
     export function addRow(): void {
@@ -105,6 +106,7 @@ namespace datalog {
      * @param name name of the cell, eg: "x"
      * @param value value of the cell, eg: 0
      */
+    //% group="Logging"
     //% weight=99
     //% blockId=datalogAddValue block="datalog add %name|=%value"
     //% blockGap=12
@@ -148,7 +150,8 @@ namespace datalog {
      * @param millis milliseconds between each sample, eg: 50
      */
     //% group="Configuration"
-    //% blockId=datalogSetSamplingInterval block="set datalog sampling interval to %millis|(ms)"
+    //% blockId=datalogSetSamplingInterval block="set datalog sampling interval to $millis|(ms)"
+    //% millis.shadow=timePicker
     export function setSampleInterval(millis: number) {
         _samplingInterval = millis >> 0;
     }
@@ -158,7 +161,8 @@ namespace datalog {
      * @param enabled 
      */
     //% group="Configuration"
-    //% blockId=datalogEnabled block="datalog %enabled=toggleOnOff"
+    //% blockId=datalogEnabled block="datalog $enabled"
+    //% enabled.shadow=toggleOnOff
     export function setEnabled(enabled: boolean) {
         flush();
         _enabled = enabled;
