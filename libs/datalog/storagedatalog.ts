@@ -20,15 +20,15 @@ namespace datalog {
          */
         appendHeaders(headers: string[]): void { 
             const line = headers.join(datalog.SEPARATOR);
-            storage.appendLine(FILENAME, `sep=${datalog.SEPARATOR}`);
-            storage.appendLine(FILENAME, line);
+            storage.appendLine(this.filename, `sep=${datalog.SEPARATOR}`);
+            storage.appendLine(this.filename, line);
         }
         /**
          * Appends a row of data
          */
         appendRow(values: number[]): void { 
             const line = values.join(datalog.SEPARATOR);
-            storage.appendLine(FILENAME, line);
+            storage.appendLine(this.filename, line);
         }
         /**
          * Flushes any buffered data

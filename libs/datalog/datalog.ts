@@ -2,6 +2,7 @@
  * A tiny data logging framework
  */
 //% weight=80 color=#00a0a0 icon="" blockGap=8
+//% groups='["Data", "Configuration"]'
 namespace datalog {
     export let SEPARATOR = "\t";
     /**
@@ -91,7 +92,7 @@ namespace datalog {
     /**
      * Starts a new row of data
      */
-    //% group="Logging"
+    //% group="Data"
     //% weight=100
     //% blockId=datalogAddRow block="datalog add row"
     export function addRow(): void {
@@ -106,7 +107,7 @@ namespace datalog {
      * @param name name of the cell, eg: "x"
      * @param value value of the cell, eg: 0
      */
-    //% group="Logging"
+    //% group="Data"
     //% weight=99
     //% blockId=datalogAddValue block="datalog add %name|=%value"
     //% blockGap=12
