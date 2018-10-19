@@ -1,10 +1,10 @@
 {
-    "name": "datalog",
+    "name": "datalogger",
     "description": "Tiny data logging framework",
     "files": [
         "README.md",
-        "datalog.ts",
-        "storagedatalog.ts",
+        "datalogger.ts",
+        "storagedatalogger.ts",
         "targetoverrides.ts"
     ],
     "testFiles": [
