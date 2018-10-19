@@ -1,7 +1,7 @@
 /** 
  * File storage operations
 */
-//% advanced=true color=#00c0c0
+//% advanced=true color=#00c0c0 icon="\uf07b"
 namespace storage {
     //% shim=storage::init
     function init() { }
