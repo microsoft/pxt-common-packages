@@ -108,7 +108,6 @@ void appendBuffer(String filename, Buffer data) {
 */
 //% part="storage"
 //% blockId="storage_overwrite" block="overwrite file $filename with $data"
-//% filename.defl='"log.txt"'
 void overwrite(String filename, String data) {
     if (!filename || !filename->length) return;
     auto f = getFile(filename);
