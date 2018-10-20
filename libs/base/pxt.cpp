@@ -22,16 +22,17 @@ void decr(TValue e) {
 
 Action mkAction(int totallen, int startptr) {
     uintptr_t tmp = (uintptr_t)&bytecode[startptr];
-    check(getVTable((RefObject*)tmp)->classNo == BuiltInType::RefAction, PANIC_INVALID_BINARY_HEADER, 1);
+    check(getVTable((RefObject *)tmp)->classNo == BuiltInType::RefAction,
+          PANIC_INVALID_BINARY_HEADER, 1);
 
     if (totallen == 0) {
         return (TValue)tmp; // no closure needed
     }
 
-    void *ptr = ::operator new(sizeof(RefAction) + totallen * sizeof(unsigned));
+    void *ptr = gcAllocate(sizeof(RefAction) + totallen * sizeof(unsigned));
     RefAction *r = new (ptr) RefAction();
     r->len = totallen;
-    r->func = ((RefAction*)tmp)->func;
+    r->func = ((RefAction *)tmp)->func;
     memset(r->fields, 0, r->len * sizeof(unsigned));
 
     MEMDBG("mkAction: start=%p => %p", startptr, r);
@@ -45,7 +46,7 @@ RefRecord *mkClassInstance(int vtableOffset) {
     intcheck(vtable->methods[0] == &RefRecord_destroy, PANIC_SIZE, 3);
     intcheck(vtable->methods[1] == &RefRecord_print, PANIC_SIZE, 4);
 
-    void *ptr = ::operator new(vtable->numbytes);
+    void *ptr = gcAllocate(vtable->numbytes);
     RefRecord *r = new (ptr) RefRecord(vtable);
     memset(r->fields, 0, vtable->numbytes - sizeof(RefRecord));
     MEMDBG("mkClass: vt=%p => %p", vtable, r);
@@ -79,7 +80,9 @@ void RefRecord::stref(int idx, TValue v) {
 
 void RefObject::destroyVT() {
     ((RefObjectMethod)getVTable(this)->methods[0])(this);
-    ::operator delete(this);
+#ifndef PXT_GC
+    free(this);
+#endif
 }
 
 //%
@@ -172,7 +175,7 @@ void Segment::growBy(ramint_t newSize) {
 #endif
     if (size < newSize) {
         // this will throw if unable to allocate
-        TValue *tmp = (TValue *)(::operator new(newSize * sizeof(TValue)));
+        TValue *tmp = (TValue *)(xmalloc(newSize * sizeof(TValue)));
 
         // Copy existing data
         if (size) {
@@ -182,7 +185,7 @@ void Segment::growBy(ramint_t newSize) {
         memset(tmp + size, 0, (newSize - size) * sizeof(TValue));
 
         // free older segment;
-        ::operator delete(data);
+        free(data);
 
         data = tmp;
         size = newSize;
@@ -300,7 +303,7 @@ void Segment::destroy() {
     this->print();
 #endif
     length = size = 0;
-    ::operator delete(data);
+    free(data);
     data = nullptr;
 }
 
@@ -536,7 +539,7 @@ bool isArray(TValue arr) {
 namespace pxtrt {
 //%
 RefCollection *keysOf(TValue v) {
-    auto r = new RefCollection();
+    auto r = NEW_GC(RefCollection);
     MEMDBG("mkColl[keys]: => %p", r);
     if (getAnyVTable(v) != &RefMap_vtable)
         return r;

@@ -1,6 +1,7 @@
 #include "pxtbase.h"
 
 #define GC_BLOCK_WORDS 1024
+#define LOG DMESG
 
 namespace pxt {
 
@@ -166,7 +167,7 @@ static uint32_t getObjectSize(RefObject *o) {
 }
 
 static void allocateBlock() {
-    auto curr = (GCBlock *)malloc(sizeof(GCBlock) + GC_BLOCK_WORDS * 4);
+    auto curr = (GCBlock *)xmalloc(sizeof(GCBlock) + GC_BLOCK_WORDS * 4);
     curr->data[0].vtable = (GC_BLOCK_WORDS << 2) | 2;
     curr->data[0].nextFree = firstFree;
     firstFree = curr->data;
@@ -209,13 +210,25 @@ static void sweep() {
 }
 
 void gc() {
+    LOG("GC mark");
     mark();
+    LOG("GC sweep");
     sweep();
+    LOG("GC done");
 }
 
-void *gcAllocate(int numwords) {
+void *gcAllocate(int numbytes) {
+    int numwords = (numbytes + 3) >> 2;
+
     if (numwords > GC_BLOCK_WORDS)
         oops(45);
+
+#ifdef PXT_GC_DEBUG
+    auto curr = getThreadContext();
+    if(!curr || !curr->stack.top)
+        oops(46);
+#endif
+
     for (int i = 0;; ++i) {
         RefBlock *prev = NULL;
         for (auto p = firstFree; p; p = p->nextFree) {

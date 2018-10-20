@@ -6,7 +6,7 @@ static void NVIC_CopyToRAM() {
     // Copy and switch to dynamic vectors if the first time called
     if (SCB->VTOR <= 0x1000000) {
         uint32_t *old_vectors = vectors;
-        uint32_t tmp = (uint32_t)malloc(NVIC_NUM_VECTORS * 4 + 256);
+        uint32_t tmp = (uint32_t)xmalloc(NVIC_NUM_VECTORS * 4 + 256);
         while (tmp & 0xff)
             tmp++;
         vectors = (uint32_t *)tmp;

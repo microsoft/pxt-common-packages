@@ -123,7 +123,7 @@ void dumpDmesg();
 #define TAG_TRUE TAGGED_SPECIAL(16) // 66
 #define TAG_UNDEFINED (TValue)0
 #define TAG_NULL TAGGED_SPECIAL(1) // 6
-#define TAG_NAN TAGGED_SPECIAL(3) // 14
+#define TAG_NAN TAGGED_SPECIAL(3)  // 14
 #define TAG_NUMBER(n) (TNumber)(void *)((n << 1) | 1)
 
 inline bool isTagged(TValue v) {
@@ -188,12 +188,17 @@ class RefRecord;
 
 // Utility functions
 
-
 typedef TValue (*RunActionType)(Action a, TValue arg0, TValue arg1, TValue arg2);
 extern RunActionType runAction3;
-static inline TValue runAction2(Action a, TValue arg0, TValue arg1) { return runAction3(a, arg0, arg1, 0); }
-static inline TValue runAction1(Action a, TValue arg0) { return runAction3(a, arg0, 0, 0); }
-static inline TValue runAction0(Action a) { return runAction3(a, 0, 0, 0); }
+static inline TValue runAction2(Action a, TValue arg0, TValue arg1) {
+    return runAction3(a, arg0, arg1, 0);
+}
+static inline TValue runAction1(Action a, TValue arg0) {
+    return runAction3(a, arg0, 0, 0);
+}
+static inline TValue runAction0(Action a) {
+    return runAction3(a, 0, 0, 0);
+}
 
 //%
 Action mkAction(int totallen, int startptr);
@@ -332,7 +337,6 @@ enum class BuiltInType : uint16_t {
     RefMap = 8,
     User0 = 16,
 };
-
 
 struct VTable {
     uint16_t numbytes;
@@ -737,6 +741,17 @@ void setThreadContext(ThreadContext *ctx);
 void *getCurrentFiber();
 void *threadAddressFor(ThreadContext *ctx, void *sp);
 
+#ifndef PXT_USE_XMALLOC
+#define xmalloc malloc
+#endif
+
+void *gcAllocate(int numbytes);
+#ifndef PXT_GC
+static inline void *gcAllocate(int numbytes) {
+    return xmalloc(numbytes);
+}
+#endif
+
 extern ThreadContext *threadContexts;
 
 } // namespace pxt
@@ -758,6 +773,13 @@ Buffer createBuffer(int size);
 namespace String_ {
 int compare(String a, String b);
 } // namespace String_
+
+namespace Array_ {
+//%
+RefCollection *mk();
+}
+
+#define NEW_GC(T) new (gcAllocate(sizeof(T))) T()
 
 // The ARM Thumb generator in the JavaScript code is parsing
 // the hex file and looks for the magic numbers as present here.
@@ -781,7 +803,6 @@ int compare(String a, String b);
 #pragma GCC diagnostic ignored "-Wpmf-conversions"
 #endif
 
-   
 #define DEF_VTABLE(name, tp, valtype, ...)                                                         \
     const VTable name __attribute__((aligned(1 << PXT_VTABLE_SHIFT))) = {                          \
         0, valtype, VTABLE_MAGIC, 0, BuiltInType::tp, 0, {__VA_ARGS__}};

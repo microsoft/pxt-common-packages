@@ -45,7 +45,7 @@ String mkString(const char *data, int len) {
         len = strlen(data);
     if (len == 0)
         return (String)emptyString;
-    String r = new (::operator new(sizeof(BoxedString) + len + 1)) BoxedString();
+    String r = new (gcAllocate(sizeof(BoxedString) + len + 1)) BoxedString();
     r->length = len;
     if (data)
         memcpy(r->data, data, len);
@@ -57,7 +57,7 @@ String mkString(const char *data, int len) {
 Buffer mkBuffer(const uint8_t *data, int len) {
     if (len <= 0)
         return (Buffer)emptyBuffer;
-    Buffer r = new (::operator new(sizeof(BoxedBuffer) + len)) BoxedBuffer();
+    Buffer r = new (gcAllocate(sizeof(BoxedBuffer) + len)) BoxedBuffer();
     r->length = len;
     if (data)
         memcpy(r->data, data, len);
@@ -341,7 +341,7 @@ TNumber fromDouble(double r) {
 #endif
     if (isnan(r))
         return TAG_NAN;
-    BoxedNumber *p = new BoxedNumber();
+    BoxedNumber *p = NEW_GC(BoxedNumber);
     p->num = r;
     MEMDBG("mkNum: %d/1000 => %p", (int)(r * 1000), p);
     return (TNumber)p;
@@ -853,9 +853,8 @@ int idiv(int x, int y) {
 } // namespace Math_
 
 namespace Array_ {
-//%
-RefCollection *mk(unsigned flags) {
-    auto r = new RefCollection();
+RefCollection *mk() {
+    auto r = NEW_GC(RefCollection);
     MEMDBG("mkColl: => %p", r);
     return r;
 }
@@ -956,7 +955,7 @@ void stlocRef(RefRefLocal *r, TValue v) {
 
 //%
 RefRefLocal *mklocRef() {
-    auto r = new RefRefLocal();
+    auto r = NEW_GC(RefRefLocal);
     MEMDBG("mklocRef: => %p", r);
     return r;
 }
@@ -1022,7 +1021,7 @@ int ptrToBool(TValue p) {
 
 //%
 RefMap *mkMap() {
-    auto r = new RefMap();
+    auto r = NEW_GC(RefMap);
     MEMDBG("mkMap: => %p", r);
     return r;
 }

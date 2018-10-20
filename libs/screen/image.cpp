@@ -106,7 +106,7 @@ Image_ mkImage(int width, int height, int bpp) {
     if (bpp != 1 && bpp != 4)
         return NULL;
     uint32_t sz = byteSize(width, height, bpp);
-    Image_ r = new (::operator new(sizeof(RefImage) + sz)) RefImage(sz);
+    Image_ r = new (gcAllocate(sizeof(RefImage) + sz)) RefImage(sz);
     auto d = r->data();
     d[0] = 0xe0 | bpp;
     d[1] = width;
@@ -322,7 +322,7 @@ void _fillRect(Image_ img, int xy, int wh, int c) {
 //%
 Image_ clone(Image_ img) {
     uint32_t sz = img->length();
-    Image_ r = new (::operator new(sizeof(RefImage) + sz)) RefImage(sz);
+    Image_ r = new (gcAllocate(sizeof(RefImage) + sz)) RefImage(sz);
     memcpy(r->data(), img->data(), img->length());
     MEMDBG("mkImageClone: %d X %d => %p", img->width(), img->height(), r);
     return r;
@@ -749,7 +749,7 @@ void _drawIcon(Image_ img, Buffer icon, int xy, int c) {
         return;
 
     img->makeWritable();
-    auto ii = new RefImage(icon);
+    auto ii = new (gcAllocate(sizeof(RefImage))) RefImage(icon);
     drawImageCore(img, ii, XX(xy), YY(xy), c);
     decrRC(ii);
 }
@@ -903,7 +903,7 @@ Image_ create(int width, int height) {
 Image_ ofBuffer(Buffer buf) {
     if (!isValidImage(buf))
         return NULL;
-    return new RefImage(buf);
+    return new (gcAllocate(sizeof(RefImage))) RefImage(buf);
 }
 
 /**
@@ -914,7 +914,7 @@ Buffer doubledIcon(Buffer icon) {
     if (!isValidImage(icon))
         return NULL;
 
-    auto r = new RefImage(icon);
+    auto r = new (gcAllocate(sizeof(RefImage))) RefImage(icon);
     auto t = ImageMethods::doubled(r);
     auto res = mkBuffer(t->data(), t->length());
     decrRC(r);
