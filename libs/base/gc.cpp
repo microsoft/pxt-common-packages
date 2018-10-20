@@ -64,7 +64,8 @@ ThreadContext *pushThreadContext(void *sp) {
         curr->stack.next = NULL;
         curr->next = threadContexts;
         curr->prev = NULL;
-        curr->next->prev = curr;
+        if (curr->next)
+            curr->next->prev = curr;
         curr->fiber = getCurrentFiber();
     }
     curr->stack.bottom = sp;
