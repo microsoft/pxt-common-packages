@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <sys/types.h>
+#include <sys/mman.h>
 #include <errno.h>
 #include <malloc.h>
 
@@ -23,7 +24,7 @@ void *xmalloc(size_t sz) {
     if (allocBytes >= MALLOC_CHECK_PERIOD) {
         allocBytes = 0;
         auto info = mallinfo();
-        DMESG("malloc used: %d kb", info.uordblks / 1024);
+        // DMESG("malloc used: %d kb", info.uordblks / 1024);
         if (info.uordblks > MALLOC_LIMIT) {
             target_panic(PANIC_MEMORY_LIMIT_EXCEEDED);
         }
@@ -388,6 +389,44 @@ void initRuntime() {
     screen_init();
     initKeys();
     startUser();
+}
+
+#ifdef PXT_GC
+#define GC_BASE 0x20000000
+#define GC_PAGE_SIZE 4096
+void *gcAllocBlock(size_t sz) {
+    static uint8_t *currPtr = (uint8_t *)GC_BASE;
+    sz = (sz + GC_PAGE_SIZE - 1) & ~(GC_PAGE_SIZE - 1);
+    void *r = mmap(currPtr, sz, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    if (r == MAP_FAILED) {
+        DMESG("mmap %p failed; err=%d", currPtr, errno);
+        target_panic(PANIC_INTERNAL_ERROR);
+    }
+    currPtr = (uint8_t *)r + sz;
+    if (isReadOnly((TValue)r)) {
+        DMESG("mmap returned read-only address: %p", r);
+        target_panic(PANIC_INTERNAL_ERROR);
+    }
+    return r;
+}
+#endif
+
+static __thread ThreadContext *threadCtx;
+
+ThreadContext *getThreadContext() {
+    return threadCtx;
+}
+
+void setThreadContext(ThreadContext *ctx) {
+    threadCtx = ctx;
+}
+
+void *getCurrentFiber() {
+    return (void *)pthread_self();
+}
+
+void *threadAddressFor(ThreadContext *, void *sp) {
+    return sp;
 }
 
 } // namespace pxt

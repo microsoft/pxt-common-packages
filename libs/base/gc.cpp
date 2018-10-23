@@ -1,7 +1,14 @@
 #include "pxtbase.h"
 
-#ifndef GC_BLOCK_WORDS
-#define GC_BLOCK_WORDS 3000
+#ifndef GC_BLOCK_SIZE
+#define GC_BLOCK_SIZE (1024 * 16)
+#endif
+
+#define GC_BLOCK_WORDS ((GC_BLOCK_SIZE - sizeof(GCBlock)) / sizeof(void *))
+
+
+#ifndef GC_ALLOC_BLOCK
+#define GC_ALLOC_BLOCK xmalloc
 #endif
 
 #ifdef PXT_GC_DEBUG
@@ -208,7 +215,7 @@ static uint32_t getObjectSize(RefObject *o) {
 
 static void allocateBlock() {
     LOG("GC allocate block");
-    auto curr = (GCBlock *)xmalloc(sizeof(GCBlock) + GC_BLOCK_WORDS * 4);
+    auto curr = (GCBlock *)GC_ALLOC_BLOCK(GC_BLOCK_SIZE);
     curr->data[0].vtable = (GC_BLOCK_WORDS << 2) | 2;
     ((RefBlock *)curr->data)[0].nextFree = firstFree;
     firstFree = (RefBlock *)curr->data;
@@ -271,7 +278,7 @@ void gc() {
 }
 
 void *gcAllocate(int numbytes) {
-    int numwords = (numbytes + 3) >> 2;
+    size_t numwords = (numbytes + 3) >> 2;
 
     if (numwords > GC_BLOCK_WORDS)
         oops(45);
@@ -293,6 +300,7 @@ void *gcAllocate(int numbytes) {
             int left = (vt >> 2) - numwords;
             if (left >= 0) {
                 auto nf = (RefBlock *)((void **)p + numwords);
+                VLOG("nf=%p", nf);
                 if (left)
                     nf->vtable = (left << 2) | 2;
                 if (left >= 2) {
