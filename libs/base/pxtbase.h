@@ -747,7 +747,7 @@ void *threadAddressFor(ThreadContext *ctx, void *sp);
 
 void *gcAllocate(int numbytes);
 #ifndef PXT_GC
-static inline void *gcAllocate(int numbytes) {
+inline void *gcAllocate(int numbytes) {
     return xmalloc(numbytes);
 }
 #endif
