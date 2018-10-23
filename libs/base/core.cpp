@@ -1159,7 +1159,7 @@ void anyPrint(TValue v) {
             auto o = (RefObject *)v;
             auto meth = ((RefObjectMethod)getVTable(o)->methods[1]);
             if ((void *)meth == (void *)&anyPrint)
-                DMESG("[RefObject refs=%d vt=%p]", o->refcnt, o->vtable);
+                DMESG("[RefObject refs=%d vt=%p]", REFCNT(o), o->vtable);
             else
                 meth(o);
         } else {

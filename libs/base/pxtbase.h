@@ -371,8 +371,14 @@ extern const VTable RefAction_vtable;
 #ifdef PXT_GC
 inline bool isReadOnly(TValue v) {
     // TODO linux!
-    return isTagged(v) || ((uint32_t)v >> 26);
+    return isTagged(v) || !((uint32_t)v >> 26);
 }
+#endif
+
+#ifdef PXT_GC
+#define REFCNT(x) 0
+#else
+#define REFCNT(x) ((x)->refcnt)
 #endif
 
 // A base abstract class for ref-counted objects.
@@ -380,12 +386,6 @@ class RefObject {
   public:
 #ifdef PXT_GC
     uint32_t vtable;
-
-    // this is a getter, yay C++11!
-    class {
-      public:
-        operator uint16_t() const { return 0; }
-    } refcnt;
 
     RefObject(const VTable *vt) { vtable = PXT_VTABLE_TO_INT(vt); }
 #else
@@ -535,7 +535,7 @@ class RefRecord : public RefObject {
 
 static inline VTable *getVTable(RefObject *r) {
 #ifdef PXT_GC
-    return (VTable *)r->vtable;
+    return (VTable *)(r->vtable & ~1);
 #else
     return (VTable *)((uintptr_t)r->vtable << PXT_VTABLE_SHIFT);
 #endif

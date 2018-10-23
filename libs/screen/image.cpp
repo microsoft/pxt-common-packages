@@ -20,7 +20,7 @@ void RefImage::destroy(RefImage *t) {
 }
 
 void RefImage::print(RefImage *t) {
-    DMESG("RefImage %p r=%d size=%d x %d", t, t->refcnt, t->width(), t->height());
+    DMESG("RefImage %p r=%d size=%d x %d", t, REFCNT(t), t->width(), t->height());
 }
 
 int RefImage::width() {

@@ -186,13 +186,11 @@ int current_time_ms() {
 }
 
 #ifdef PXT_GC
-ThreadContext *getThreadContext()
-{
-    return (ThreadContext*)currentFiber->user_data;
+ThreadContext *getThreadContext() {
+    return (ThreadContext *)currentFiber->user_data;
 }
 
-void setThreadContext(ThreadContext *ctx)
-{
+void setThreadContext(ThreadContext *ctx) {
     currentFiber->user_data = ctx;
 }
 #endif
@@ -202,10 +200,10 @@ void *getCurrentFiber() {
 }
 
 void *threadAddressFor(ThreadContext *ctx, void *sp) {
-    if (ctx->fiber == currentFiber)
+    auto fib = (codal::Fiber *)ctx->fiber;
+    if (fib == currentFiber)
         return sp;
-    return (uint8_t *)sp +
-           ((uint8_t *)currentFiber->stack_top - (uint8_t *)tcb_get_stack_base(currentFiber->tcb));
+    return (uint8_t *)sp + ((uint8_t *)fib->stack_top - (uint8_t *)tcb_get_stack_base(fib->tcb));
 }
 
 } // namespace pxt

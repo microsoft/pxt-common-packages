@@ -1,7 +1,26 @@
 #include "pxtbase.h"
 
-#define GC_BLOCK_WORDS 1024
+#ifndef GC_BLOCK_WORDS
+#define GC_BLOCK_WORDS 3000
+#endif
+
+#ifdef PXT_GC_DEBUG
 #define LOG DMESG
+#define VLOG DMESG
+#define VVLOG NOLOG
+#else
+#define LOG NOLOG
+#define VLOG NOLOG
+#define VVLOG NOLOG
+#endif
+
+#ifdef PXT_GC_DEBUG
+#define GC_CHECK(cond, code)                                                                       \
+    if (!(cond))                                                                                   \
+    oops(code)
+#else
+#define GC_CHECK(cond, code) ((void)0)
+#endif
 
 namespace pxt {
 
@@ -27,6 +46,8 @@ void RefRecord_scan(RefRecord *r) {}
 ThreadContext *threadContexts;
 
 void popThreadContext(ThreadContext *ctx) {
+    LOG("pop: %p %p", ctx, threadContexts);
+
     if (!ctx)
         return;
 
@@ -45,6 +66,7 @@ void popThreadContext(ThreadContext *ctx) {
             if (threadContexts != ctx)
                 oops(41);
             threadContexts = ctx->next;
+            threadContexts->prev = NULL;
         }
         delete ctx;
     }
@@ -60,13 +82,16 @@ ThreadContext *pushThreadContext(void *sp) {
         curr->stack.next = seg;
     } else {
         curr = new ThreadContext;
+        LOG("push: %p", curr);
         curr->globals = globals;
         curr->stack.next = NULL;
         curr->next = threadContexts;
         curr->prev = NULL;
         if (curr->next)
             curr->next->prev = curr;
+        threadContexts = curr;
         curr->fiber = getCurrentFiber();
+        setThreadContext(curr);
     }
     curr->stack.bottom = sp;
     curr->stack.top = NULL;
@@ -80,7 +105,7 @@ class RefBlock : public RefObject {
 
 struct GCBlock {
     GCBlock *next;
-    RefBlock data[0];
+    RefObject data[0];
 };
 
 static Segment gcRoots;
@@ -96,10 +121,12 @@ void gcScan(TValue v) {
 }
 
 void gcScanMany(TValue *data, unsigned len) {
+    // VLOG("scan: %p %d", data, len);
     for (unsigned i = 0; i < len; ++i) {
         auto v = data[i];
+        // VLOG("psh: %p %d %d", v, isReadOnly(v), (*(uint32_t *)v & 1));
         if (isReadOnly(v) || (*(uint32_t *)v & 1))
-            return;
+            continue;
         *(uint32_t *)v |= 1;
         workQueue.push(v);
     }
@@ -119,11 +146,14 @@ static void process(TValue v) {
     auto vt = p->vtable;
     if (vt & 1)
         return;
+    VVLOG("process: %p", p);
     auto scan = getScanMethod(vt);
+    p->vtable |= 1;
     if (scan)
         scan(p);
     while (workQueue.getLength()) {
         auto curr = (RefObject *)workQueue.pop();
+        VVLOG(" - %p", curr);
         scan = getScanMethod(curr->vtable & ~1);
         if (scan)
             scan(curr);
@@ -145,6 +175,7 @@ static void mark() {
         for (auto seg = &ctx->stack; seg; seg = seg->next) {
             auto ptr = (TValue *)threadAddressFor(ctx, seg->top);
             auto end = (TValue *)threadAddressFor(ctx, seg->bottom);
+            VLOG("mark: %p - %p", ptr, end);
             while (ptr < end) {
                 process(*ptr++);
             }
@@ -154,6 +185,7 @@ static void mark() {
     auto nonPtrs = bytecode[21];
     len = getNumGlobals() - nonPtrs;
     data = globals + nonPtrs;
+    VLOG("globals: %p %d", data, len);
     for (unsigned i = 0; i < len; ++i) {
         process(*data++);
     }
@@ -161,18 +193,26 @@ static void mark() {
 
 static uint32_t getObjectSize(RefObject *o) {
     auto vt = o->vtable;
-    if (vt & 2)
-        return vt >> 2;
-    auto sz = getSizeMethod(vt);
-    return sz(o);
+    uint32_t r;
+    GC_CHECK(vt != 0 && !(vt & 1), 49);
+    if (vt & 2) {
+        r = vt >> 2;
+    } else {
+        auto sz = getSizeMethod(vt);
+        GC_CHECK(0x2000 <= (intptr_t)sz && (intptr_t)sz <= 0x100000, 47);
+        r = sz(o);
+    }
+    GC_CHECK(1 <= r && r < 0x100000, 48);
+    return r;
 }
 
 static void allocateBlock() {
+    LOG("GC allocate block");
     auto curr = (GCBlock *)xmalloc(sizeof(GCBlock) + GC_BLOCK_WORDS * 4);
     curr->data[0].vtable = (GC_BLOCK_WORDS << 2) | 2;
-    curr->data[0].nextFree = firstFree;
-    firstFree = curr->data;
-    firstBlock->next = curr;
+    ((RefBlock *)curr->data)[0].nextFree = firstFree;
+    firstFree = (RefBlock *)curr->data;
+    curr->next = firstBlock;
     firstBlock = curr;
 }
 
@@ -184,17 +224,28 @@ static void sweep() {
         auto d = h->data;
         auto end = d + GC_BLOCK_WORDS;
         totalSize += GC_BLOCK_WORDS;
+        VLOG("sweep: %p - %p", d, end);
         while (d < end) {
             if (d->vtable & 1) {
+                VVLOG("Live %p", d);
                 d->vtable &= ~1;
                 d += getObjectSize(d);
             } else {
-                auto start = d;
+                auto start = (RefBlock *)d;
                 while (d < end && !(d->vtable & 1)) {
+                    if (d->vtable & 2) {
+                        VVLOG("Free %p", d);
+                    } else {
+                        VVLOG("Dead %p", d);
+                        d->destroyVT();
+                    }
                     d += getObjectSize(d);
                 }
-                auto sz = d - start;
+                auto sz = d - (RefObject *)start;
                 freeSize += sz;
+#ifdef PXT_GC_DEBUG
+                memset(start, 0xff, sz << 2);
+#endif
                 start->vtable = (sz << 2) | 2;
                 if (sz > 1) {
                     start->nextFree = freePtr;
@@ -203,19 +254,20 @@ static void sweep() {
             }
         }
     }
+    LOG("GC %d/%d free", freeSize, totalSize);
     firstFree = freePtr;
     // if the heap is 90% full, allocate a new block
-    if (freeSize * 10 >= totalSize) {
+    if (freeSize * 10 <= totalSize) {
         allocateBlock();
     }
 }
 
 void gc() {
-    LOG("GC mark");
+    VLOG("GC mark");
     mark();
-    LOG("GC sweep");
+    VLOG("GC sweep");
     sweep();
-    LOG("GC done");
+    VLOG("GC done");
 }
 
 void *gcAllocate(int numbytes) {
@@ -226,9 +278,11 @@ void *gcAllocate(int numbytes) {
 
 #ifdef PXT_GC_DEBUG
     auto curr = getThreadContext();
-    if(!curr || !curr->stack.top)
+    if (!curr || !curr->stack.top)
         oops(46);
 #endif
+
+    // gc();
 
     for (int i = 0;; ++i) {
         RefBlock *prev = NULL;
@@ -251,6 +305,7 @@ void *gcAllocate(int numbytes) {
                 else
                     firstFree = nf;
                 p->vtable = 0;
+                VLOG("GC=>%p %d", p, numwords);
                 return p;
             }
             prev = p;

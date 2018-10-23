@@ -106,7 +106,7 @@ void RefRecord_destroy(RefRecord *r) {
 }
 
 void RefRecord_print(RefRecord *r) {
-    DMESG("RefRecord %p r=%d size=%d bytes", r, r->refcnt, getVTable(r)->numbytes);
+    DMESG("RefRecord %p r=%d size=%d bytes", r, REFCNT(r), getVTable(r)->numbytes);
 }
 
 TValue Segment::get(unsigned i) {
@@ -374,7 +374,7 @@ void RefCollection::destroy(RefCollection *t) {
 }
 
 void RefCollection::print(RefCollection *t) {
-    DMESG("RefCollection %p r=%d size=%d", t, t->refcnt, t->head.getLength());
+    DMESG("RefCollection %p r=%d size=%d", t, REFCNT(t), t->head.getLength());
     t->head.print();
 }
 
@@ -382,14 +382,16 @@ PXT_VTABLE_CTOR(RefAction) {}
 
 // fields[] contain captured locals
 void RefAction::destroy(RefAction *t) {
+#ifndef PXT_GC
     for (int i = 0; i < t->len; ++i) {
         decr(t->fields[i]);
         t->fields[i] = 0;
     }
+#endif
 }
 
 void RefAction::print(RefAction *t) {
-    DMESG("RefAction %p r=%d pc=%X size=%d", t, t->refcnt,
+    DMESG("RefAction %p r=%d pc=%X size=%d", t, REFCNT(t),
           (const uint8_t *)t->func - (const uint8_t *)bytecode, t->len);
 }
 
@@ -398,7 +400,7 @@ PXT_VTABLE_CTOR(RefRefLocal) {
 }
 
 void RefRefLocal::print(RefRefLocal *t) {
-    DMESG("RefRefLocal %p r=%d v=%p", t, t->refcnt, (void *)t->v);
+    DMESG("RefRefLocal %p r=%d v=%p", t, REFCNT(t), (void *)t->v);
 }
 
 void RefRefLocal::destroy(RefRefLocal *t) {
@@ -408,6 +410,7 @@ void RefRefLocal::destroy(RefRefLocal *t) {
 PXT_VTABLE_CTOR(RefMap) {}
 
 void RefMap::destroy(RefMap *t) {
+#ifndef PXT_GC
     auto len = t->values.getLength();
     auto values = t->values.getData();
     auto keys = t->keys.getData();
@@ -418,6 +421,7 @@ void RefMap::destroy(RefMap *t) {
         decr(keys[i]);
         keys[i] = nullptr;
     }
+#endif
     t->keys.destroy();
     t->values.destroy();
 }
@@ -444,7 +448,7 @@ int RefMap::findIdx(String key) {
 }
 
 void RefMap::print(RefMap *t) {
-    DMESG("RefMap %p r=%d size=%d", t, t->refcnt, t->keys.getLength());
+    DMESG("RefMap %p r=%d size=%d", t, REFCNT(t), t->keys.getLength());
 }
 
 void debugMemLeaks() {}
