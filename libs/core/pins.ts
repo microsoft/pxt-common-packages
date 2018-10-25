@@ -26,3 +26,12 @@ interface PwmOnlyPin extends DigitalInOutPin, AnalogOutPin {
 //% noRefCounting fixedInstances
 interface PwmPin extends PwmOnlyPin, AnalogInOutPin {
 }
+
+/**
+ * Control currents in Pins for analog/digital signals, servos, i2c, ...
+ */
+//% color=#A80000 weight=85 icon="\uf140" advanced=true
+//% groups='["other", "Servo", "i2c"]'
+namespace pins {
+
+}
