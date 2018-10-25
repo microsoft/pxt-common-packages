@@ -10,6 +10,7 @@
         "advmath.cpp",
         "pxt-helpers.ts",
         "buffer.cpp",
+        "buffer.ts",
         "shims.d.ts",
         "enums.d.ts",
         "loops.cpp",
