@@ -80,13 +80,13 @@ namespace controller {
     //% blockId="local_game_control_player" block="control $player with vx $vx vy $vy"
     //% weight=99 group="Multiplayer"
     //% vx.defl=100 vy.defl=100
-    export function controlPlayer(player: PlayerNumber, vx: number, vy: number) {
-        if (!playerSprites || !playerSprites[player]) return;
-        
+    export function controlPlayer(player: PlayerNumber, vx: number, vy: number) {        
         if (!controlledPlayers) {
             controlledPlayers = [];
             game.currentScene().eventContext.registerFrameHandler(19, () => {
                 controlledPlayers.forEach(controlled => {
+                    if (!controlled.s) return;
+
                     if (controlled.vx) {
                         controlled.s.vx = 0;
 
@@ -134,7 +134,7 @@ namespace controller {
      */
     export function forEachPlayer(handler: (player: PlayerNumber) => void) {
         if (!playerSprites) return;
-        
+
         for (let player = 0; player < playerSprites.length; ++player) {
             if (playerSprites[player]) {
                 handler(player);
