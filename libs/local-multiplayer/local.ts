@@ -128,6 +128,20 @@ namespace controller {
         });
     }
 
+    /**
+     * Run code for each player that has been assigned a sprite
+     * @param handler the code to run for each player
+     */
+    export function forEachPlayer(handler: (player: PlayerNumber) => void) {
+        if (!playerSprites) return;
+        
+        for (let player = 0; player < playerSprites.length; ++player) {
+            if (playerSprites[player]) {
+                handler(player);
+            }
+        }
+    }
+
     //% fixedInstances
     export class MetaButton {
         buttonOffset: ButtonOffset;
