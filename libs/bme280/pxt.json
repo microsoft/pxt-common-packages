@@ -1,0 +1,12 @@
+{
+    "name": "bme280",
+    "description": "makecode BME280 Digital Pressure and Humidity Sensor Package for Maker Make Code",
+    "files": [
+        "README.md",
+        "bme280.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core"
+    }
+}
