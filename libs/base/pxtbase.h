@@ -345,6 +345,7 @@ struct VTable {
     PVoid *ifaceTable;
     BuiltInType classNo;
     uint16_t reserved;
+    uint32_t ifaceHashMult;
     // we only use the first few methods here; pxt will generate more
 #ifdef PXT_GC
     PVoid methods[4];
@@ -805,7 +806,7 @@ RefCollection *mk();
 
 #define DEF_VTABLE(name, tp, valtype, ...)                                                         \
     const VTable name __attribute__((aligned(1 << PXT_VTABLE_SHIFT))) = {                          \
-        0, valtype, VTABLE_MAGIC, 0, BuiltInType::tp, 0, {__VA_ARGS__}};
+        0, valtype, VTABLE_MAGIC, 0, BuiltInType::tp, 0, 0, {__VA_ARGS__}};
 
 #ifdef PXT_GC
 #define PXT_VTABLE(classname)                                                                      \
