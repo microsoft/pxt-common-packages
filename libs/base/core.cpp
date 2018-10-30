@@ -1031,18 +1031,18 @@ RefMap *mkMap() {
     return r;
 }
 
+//%
 TValue mapGetByString(RefMap *map, String key) {
     int i = map->findIdx(key);
     if (i < 0) {
-        map->unref();
         return 0;
     }
     TValue r = incr(map->values.get(i));
-    map->unref();
     return r;
 }
 
-int lookupKey(String key) {
+//%
+int lookupMapKey(String key) {
     // TODO do bsearch
     auto arr = *(String **)&bytecode[22];
     for (int i = 0; arr[i]; i++)
@@ -1052,24 +1052,14 @@ int lookupKey(String key) {
 }
 
 //%
-TValue mapGetGeneric(TValue obj, String key) {
-    auto vt = getAnyVTable(obj);
-    if (!vt || vt->objectType != ValType::Object)
-        failedCast(obj);
-    if (vt->classNo == BuiltInType::RefMap) {
-        auto map = (RefMap *)obj;
-        map->ref();
-        return mapGetByString(map, key);
-    }
-    return asmGetProperty(obj, lookupKey(key));
+TValue mapGet(RefMap *map, unsigned key) {
+    auto arr = *(String **)&bytecode[22];
+    auto r = mapGetByString(map, arr[key]);
+    map->unref();
+    return r;
 }
 
 //%
-TValue mapGet(RefMap *map, unsigned key) {
-    auto arr = *(String **)&bytecode[22];
-    return mapGetByString(map, arr[key]);
-}
-
 void mapSetByString(RefMap *map, String key, TValue val) {
     int i = map->findIdx(key);
     if (i < 0) {
@@ -1079,28 +1069,15 @@ void mapSetByString(RefMap *map, String key, TValue val) {
     } else {
         map->values.setRef(i, val);
     }
-    map->unref();
-}
-
-//%
-void mapSetGeneric(TValue obj, String key, TValue val) {
     incr(val);
-    auto vt = getAnyVTable(obj);
-    if (!vt || vt->objectType != ValType::Object)
-        failedCast(obj);
-    if (vt->classNo == BuiltInType::RefMap) {
-        auto map = (RefMap *)obj;
-        map->ref();
-        mapSetByString(map, key, val);
-        return;
-    }
-    asmSetProperty(obj, lookupKey(key), val);
 }
 
 //%
 void mapSet(RefMap *map, unsigned key, TValue val) {
     auto arr = *(String **)&bytecode[22];
     mapSetByString(map, arr[key], val);
+    decr(val);
+    map->unref();
 }
 
 //
