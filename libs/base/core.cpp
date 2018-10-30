@@ -1043,18 +1043,40 @@ TValue mapGetByString(RefMap *map, String key) {
 
 //%
 int lookupMapKey(String key) {
-    // TODO do bsearch
-    auto arr = *(String **)&bytecode[22];
-    for (int i = 0; arr[i]; i++)
-        if (String_::compare(key, arr[i]) == 0)
-            return i;
+    auto arr = *(uintptr_t **)&bytecode[22];
+    auto len = *arr++;
+    auto ikey = (uintptr_t)key;
+    auto l = 0U;
+    auto r = len - 1;
+    if (arr[0] <= ikey && ikey <= arr[len - 1]) {
+        while (l <= r) {
+            auto m = (l + r) >> 1;
+            if (arr[m] == ikey)
+                return m;
+            else if (arr[m] < ikey)
+                l = m + 1;
+            else
+                r = m - 1;
+        }
+    } else {
+        while (l <= r) {
+            auto m = (l + r) >> 1;
+            auto cmp = String_::compare((String)arr[m], key);
+            if (cmp == 0)
+                return m;
+            else if (cmp < 0)
+                l = m + 1;
+            else
+                r = m - 1;
+        }
+    }
     return 0;
 }
 
 //%
 TValue mapGet(RefMap *map, unsigned key) {
     auto arr = *(String **)&bytecode[22];
-    auto r = mapGetByString(map, arr[key]);
+    auto r = mapGetByString(map, arr[key + 1]);
     map->unref();
     return r;
 }
@@ -1075,7 +1097,7 @@ void mapSetByString(RefMap *map, String key, TValue val) {
 //%
 void mapSet(RefMap *map, unsigned key, TValue val) {
     auto arr = *(String **)&bytecode[22];
-    mapSetByString(map, arr[key], val);
+    mapSetByString(map, arr[key + 1], val);
     decr(val);
     map->unref();
 }
