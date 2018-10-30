@@ -702,6 +702,9 @@ String toString(TValue v) {
             return mkString(buf);
         }
 
+        if (v == TAG_NAN)
+            return (String)(void *)sNaN;
+
         double x = toDouble(v);
 
 #ifdef PXT_BOX_DEBUG
@@ -716,6 +719,8 @@ String toString(TValue v) {
                 return (String)(void *)sMInf;
             else
                 return (String)(void *)sInf;
+        } else if (isnan(x)) {
+            return (String)(void *)sNaN;
         }
         mycvt(x, buf);
 
@@ -1026,7 +1031,6 @@ RefMap *mkMap() {
     return r;
 }
 
-//%
 TValue mapGetByString(RefMap *map, String key) {
     int i = map->findIdx(key);
     if (i < 0) {
@@ -1038,10 +1042,26 @@ TValue mapGetByString(RefMap *map, String key) {
     return r;
 }
 
+int lookupKey(String key) {
+    // TODO do bsearch
+    auto arr = *(String **)&bytecode[22];
+    for (int i = 0; arr[i]; i++)
+        if (String_::compare(key, arr[i]) == 0)
+            return i;
+    return 0;
+}
+
 //%
-TValue mapGetGeneric(RefMap *map, String key) {
-    map->ref();
-    return mapGetByString(map, key);
+TValue mapGetGeneric(TValue obj, String key) {
+    auto vt = getAnyVTable(obj);
+    if (!vt || vt->objectType != ValType::Object)
+        failedCast(obj);
+    if (vt->classNo == BuiltInType::RefMap) {
+        auto map = (RefMap *)obj;
+        map->ref();
+        return mapGetByString(map, key);
+    }
+    return asmGetProperty(obj, lookupKey(key));
 }
 
 //%
@@ -1050,7 +1070,6 @@ TValue mapGet(RefMap *map, unsigned key) {
     return mapGetByString(map, arr[key]);
 }
 
-//%
 void mapSetByString(RefMap *map, String key, TValue val) {
     int i = map->findIdx(key);
     if (i < 0) {
@@ -1064,10 +1083,18 @@ void mapSetByString(RefMap *map, String key, TValue val) {
 }
 
 //%
-void mapSetGeneric(RefMap *map, String key, TValue val) {
+void mapSetGeneric(TValue obj, String key, TValue val) {
     incr(val);
-    map->ref();
-    mapSetByString(map, key, val);
+    auto vt = getAnyVTable(obj);
+    if (!vt || vt->objectType != ValType::Object)
+        failedCast(obj);
+    if (vt->classNo == BuiltInType::RefMap) {
+        auto map = (RefMap *)obj;
+        map->ref();
+        mapSetByString(map, key, val);
+        return;
+    }
+    asmSetProperty(obj, lookupKey(key), val);
 }
 
 //%
@@ -1191,9 +1218,12 @@ PRIM_VTABLE(number, ValType::Number, BoxedNumber, 0)
 PRIM_VTABLE(buffer, ValType::Object, BoxedBuffer, p->length)
 // PRIM_VTABLE(action, ValType::Function, RefAction, )
 
-//%
 void failedCast(TValue v) {
     DMESG("failed type check for %p", v);
+    auto vt = getAnyVTable(v);
+    if (vt) {
+        DMESG("VT %p - objtype %d classNo %d", vt, vt->objectType, vt->classNo);
+    }
 
     int code;
     if (v == TAG_NULL)
@@ -1203,7 +1233,6 @@ void failedCast(TValue v) {
     target_panic(code);
 }
 
-//%
 void missingProperty(TValue v) {
     DMESG("missing property on %p", v);
     target_panic(PANIC_MISSING_PROPERTY);

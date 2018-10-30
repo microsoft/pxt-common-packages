@@ -189,15 +189,24 @@ class RefRecord;
 // Utility functions
 
 typedef TValue (*RunActionType)(Action a, TValue arg0, TValue arg1, TValue arg2);
-extern RunActionType runAction3;
+typedef TValue (*GetPropertyType)(TValue obj, unsigned key);
+typedef TValue (*SetPropertyType)(TValue obj, unsigned key, TValue v);
+
+#define asmRunAction3 ((RunActionType)(((uintptr_t *)bytecode)[12]))
+#define asmGetProperty ((GetPropertyType)(((uintptr_t *)bytecode)[13]))
+#define asmSetProperty ((SetPropertyType)(((uintptr_t *)bytecode)[14]))
+
+static inline TValue runAction3(Action a, TValue arg0, TValue arg1, TValue arg2) {
+    return asmRunAction3(a, arg0, arg1, 0);
+}
 static inline TValue runAction2(Action a, TValue arg0, TValue arg1) {
-    return runAction3(a, arg0, arg1, 0);
+    return asmRunAction3(a, arg0, arg1, 0);
 }
 static inline TValue runAction1(Action a, TValue arg0) {
-    return runAction3(a, arg0, 0, 0);
+    return asmRunAction3(a, arg0, 0, 0);
 }
 static inline TValue runAction0(Action a) {
-    return runAction3(a, 0, 0, 0);
+    return asmRunAction3(a, 0, 0, 0);
 }
 
 //%
@@ -246,6 +255,11 @@ bool eq_bool(TValue a, TValue b);
 //%
 bool eqq_bool(TValue a, TValue b);
 
+//%
+void failedCast(TValue v);
+//%
+void missingProperty(TValue v);
+
 void error(PXT_PANIC code, int subcode = 0);
 void exec_binary(unsigned *pc);
 void start();
@@ -293,7 +307,11 @@ inline void *ptrOfLiteral(int offset) {
 // Checks if object is ref-counted, and has a custom PXT vtable in front
 // TODO
 inline bool isRefCounted(TValue e) {
+#ifdef PXT_GC
+    return !isTagged(e);
+#else
     return !isTagged(e) && (*((uint16_t *)e) & 1) == 1;
+#endif
 }
 
 inline void check(int cond, PXT_PANIC code, int subcode = 0) {

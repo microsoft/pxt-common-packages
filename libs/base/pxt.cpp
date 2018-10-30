@@ -489,7 +489,6 @@ int getNumGlobals() {
 }
 
 #ifndef X86_64
-RunActionType runAction3;
 void exec_binary(unsigned *pc) {
     // XXX re-enable once the calibration code is fixed and [editor/embedded.ts]
     // properly prepends a call to [internal_main].
@@ -506,8 +505,6 @@ void exec_binary(unsigned *pc) {
 
     // can be any valid address, best in RAM for speed
     globals[0] = (TValue)&globals;
-
-    runAction3 = (RunActionType)(((uintptr_t *)bytecode)[12] | 1);
 
     // just compare the first word
     // TODO
