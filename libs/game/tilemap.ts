@@ -61,24 +61,18 @@ namespace tiles {
         private _tileSets: TileSet[];
 
         constructor() {
-            this._map = img`1`;
             this._tileSets = [];
             this._layer = 1;
 
             this.z = -1;
-
-            const sc = game.currentScene();
-            sc.allSprites.push(this);
-            sc.flags |= scene.Flag.NeedsSorting;
-            this.id = sc.allSprites.length;
         }
 
         offsetX(value: number) {
-            return Math.clamp(0, (this._map.width << 4) - screen.width, value);
+            return Math.clamp(0, Math.max(this.areaWidth() - screen.width, 0), value);
         }
 
         offsetY(value: number) {
-            return Math.clamp(0, (this._map.height << 4) - screen.height, value);
+            return Math.clamp(0, Math.max(this.areaHeight() - screen.height, 0), value);
         }
 
         areaWidth() {
@@ -105,7 +99,15 @@ namespace tiles {
         }
 
         setMap(map: Image) {
-            this._map = map;
+            if (!this._map) {
+                const sc = game.currentScene();
+                sc.allSprites.push(this);
+                sc.flags |= scene.Flag.NeedsSorting;
+                this.id = sc.allSprites.length;
+            }
+            if (map) {
+                this._map = map;
+            }
         }
 
         public getTile(col: number, row: number): Tile {
@@ -119,7 +121,7 @@ namespace tiles {
         }
 
         public getTilesByType(index: number): Tile[] {
-            if (this.isInvalidIndex(index)) return undefined;
+            if (this.isInvalidIndex(index) || !this._map) return undefined;
 
             let output: Tile[] = [];
             for (let col = 0; col < this._map.width; ++col) {
@@ -166,7 +168,7 @@ namespace tiles {
         }
 
         private isOutsideMap(col: number, row: number): boolean {
-            return col < 0 || col >= this._map.width
+            return !this._map || col < 0 || col >= this._map.width
                     || row < 0 || row >= this._map.height;
         }
 
@@ -207,7 +209,7 @@ namespace tiles {
         public collisions(s: Sprite): sprites.Obstacle[] {
             let overlappers: sprites.StaticObstacle[] = [];
 
-            if ((s.layer & this.layer) && !(s.flags & sprites.Flag.Ghost)) {
+            if (this._map && (s.layer & this.layer) && !(s.flags & sprites.Flag.Ghost)) {
                 const x0 = Math.max(0, s.left >> 4);
                 const xn = Math.min(this._map.width, (s.right >> 4) + 1);
                 const y0 = Math.max(0, s.top >> 4);
