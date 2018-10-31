@@ -17,7 +17,6 @@
         "enums.d.ts",
         "ns.ts",
         "timer.ts",
-        "buffer.ts",
         "pxtparts.json"
     ],
     "additionalFilePath": "../core"
