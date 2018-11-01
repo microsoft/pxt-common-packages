@@ -16,5 +16,4 @@ namespace pxsim.serial {
     export function redirect(tx: pins.DigitalInOutPin, rx: pins.DigitalInOutPin) {
         // TODO
     }
-    export function redirectToUSB() {}
 }
