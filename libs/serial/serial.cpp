@@ -32,7 +32,7 @@ namespace pxt {
     public:
       CODAL_SERIAL serial;
       WSerial()
-        : serial(PIN(TX), PIN(RX))
+        : serial(*LOOKUP_PIN(TX), *LOOKUP_PIN(RX))
         {
           serial.baud((int)BaudRate::BaudRate115200);
         }
