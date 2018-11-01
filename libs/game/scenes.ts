@@ -105,6 +105,17 @@ namespace scene {
     }
 
     /**
+     * Set whether the current Tile Map should be enabled (used) or not (ignored).
+     * @param enabled
+     */
+    export function tileMapStatus(enabled: boolean) {
+        const scene = game.currentScene();
+        if (!scene.tileMap)
+            scene.tileMap = new tiles.TileMap();
+        scene.tileMap.enabled = enabled;
+    }
+
+    /**
      * Set a tile at the given index
      * @param tile
      * @param index

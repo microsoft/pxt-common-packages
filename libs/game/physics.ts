@@ -148,7 +148,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             return;
         }
 
-        if (tm && !(s.flags & sprites.Flag.Ghost)) {
+        if (tm && tm.enabled && !(s.flags & sprites.Flag.Ghost)) {
             s._hitboxes.forEach(box => {
                 const t0 = box.top >> 4;
                 const r0 = box.right >> 4;
