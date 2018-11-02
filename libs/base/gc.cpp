@@ -53,13 +53,14 @@ void RefRecord_scan(RefRecord *r) {}
 ThreadContext *threadContexts;
 
 void popThreadContext(ThreadContext *ctx) {
-    LOG("pop: %p %p", ctx, threadContexts);
+    VLOG("pop: %p %p n:%p p:%p", ctx, threadContexts, ctx->next, ctx->prev);
 
     if (!ctx)
         return;
 
     auto n = ctx->stack.next;
     if (n) {
+        VLOG("seg %p", n);
         ctx->stack.top = n->top;
         ctx->stack.bottom = n->bottom;
         ctx->stack.next = n->next;
@@ -76,13 +77,25 @@ void popThreadContext(ThreadContext *ctx) {
             threadContexts->prev = NULL;
         }
         delete ctx;
+        setThreadContext(NULL);
     }
 }
 
 ThreadContext *pushThreadContext(void *sp) {
     auto curr = getThreadContext();
     if (curr) {
+#ifdef PXT_GC_DEBUG
+        auto ok = false;
+        for (auto p = threadContexts; p; p = p->next)
+            if (p == curr) {
+                ok = true;
+                break;
+            }
+        if (!ok)
+            oops(49);
+#endif
         auto seg = new StackSegment;
+        VLOG("stack %p / %p", seg, curr);
         seg->top = curr->stack.top;
         seg->bottom = curr->stack.bottom;
         seg->next = curr->stack.next;
@@ -214,8 +227,8 @@ static uint32_t getObjectSize(RefObject *o) {
 }
 
 static void allocateBlock() {
-    LOG("GC allocate block");
     auto curr = (GCBlock *)GC_ALLOC_BLOCK(GC_BLOCK_SIZE);
+    LOG("GC alloc: %p", curr);
     curr->data[0].vtable = (GC_BLOCK_WORDS << 2) | 2;
     ((RefBlock *)curr->data)[0].nextFree = firstFree;
     firstFree = (RefBlock *)curr->data;
