@@ -82,6 +82,7 @@ namespace serial {
     /**
     Set the baud rate of the serial port
     */
+    //% help=serial/set-baud-rate
     //% blockId=serialsetbaudrate block="serial set baud rate to %rate"
     void setBaudRate(BaudRate rate) {
       getWSerial()->serial.baud((int)rate);
@@ -102,17 +103,5 @@ namespace serial {
     //% blockGap=8 inlineInputMode=inline
     void redirect(DigitalInOutPin tx, DigitalInOutPin rx) {
       getWSerial()->serial.redirect((PinName)tx->name, (PinName)rx->name);
-    }
-
-    /**
-    * Sets the transfer rate
-    * @param rate the new baud rate. eg: 115200
-    **/
-    //% weight=9
-    //% help=serial/set-baud-rate
-    //% blockId=serial_setbaud block="serial set baud rate $rate"
-    //% blockGap=8 inlineInputMode=inline
-    void setBaudRate(BaudRate rate) {
-      getWSerial()->serial.baud((int)rate);
     }
 }
