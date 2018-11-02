@@ -22,6 +22,12 @@
 #define intcheck(...) check(__VA_ARGS__)
 //#define intcheck(...) do {} while (0)
 
+#ifdef PXT_USE_FLOAT
+#define NUMBER float
+#else
+#define NUMBER double
+#endif
+
 #include <string.h>
 #include <stdint.h>
 #include <math.h>
@@ -236,11 +242,11 @@ int toInt(TNumber v);
 //%
 unsigned toUInt(TNumber v);
 //%
-double toDouble(TNumber v);
+NUMBER toDouble(TNumber v);
 //%
 float toFloat(TNumber v);
 //%
-TNumber fromDouble(double r);
+TNumber fromDouble(NUMBER r);
 //%
 TNumber fromFloat(float r);
 
@@ -623,7 +629,7 @@ typedef int color;
 
 class BoxedNumber : public RefObject {
   public:
-    double num;
+    NUMBER num;
     BoxedNumber() : RefObject(&number_vt) {}
 } __attribute__((packed));
 

@@ -181,11 +181,11 @@ int length(String s) {
 
 #define isspace(c) ((c) == ' ')
 
-double mystrtod(const char *p, char **endp) {
+NUMBER mystrtod(const char *p, char **endp) {
     while (isspace(*p))
         p++;
-    double m = 1;
-    double v = 0;
+    NUMBER m = 1;
+    NUMBER v = 0;
     int dot = 0;
     if (*p == '+')
         p++;
@@ -234,7 +234,7 @@ double mystrtod(const char *p, char **endp) {
 TNumber toNumber(String s) {
     // JSCHECK
     char *endptr;
-    double v = mystrtod(s->data, &endptr);
+    NUMBER v = mystrtod(s->data, &endptr);
     if (endptr != s->data + s->length)
         v = NAN;
     else if (v == 0.0 || v == -0.0)
@@ -295,10 +295,14 @@ unsigned toUInt(TNumber v) {
     if (!v)
         return 0;
 
-    double num = toDouble(v);
+    NUMBER num = toDouble(v);
     if (!isnormal(num))
         return 0;
+#ifdef PXT_USE_FLOAT
+    float rem = fmodf(truncf(num), 4294967296.0);
+#else
     double rem = fmod(trunc(num), 4294967296.0);
+#endif
     if (rem < 0.0)
         rem += 4294967296.0;
     return (unsigned)rem;
@@ -307,7 +311,7 @@ int toInt(TNumber v) {
     return (int)toUInt(v);
 }
 
-double toDouble(TNumber v) {
+NUMBER toDouble(TNumber v) {
     if (v == TAG_NAN || v == TAG_UNDEFINED)
         return NAN;
     if (isTagged(v))
@@ -333,7 +337,7 @@ float toFloat(TNumber v) {
     return (float)toDouble(v);
 }
 
-TNumber fromDouble(double r) {
+TNumber fromDouble(NUMBER r) {
 #ifndef PXT_BOX_DEBUG
     int ri = ((int)r) << 1;
     if ((ri >> 1) == r)
@@ -484,7 +488,7 @@ int toBool(TValue v) {
         if (s->length == 0)
             return 0;
     } else if (t == ValType::Number) {
-        double x = toDouble(v);
+        auto x = toDouble(v);
         if (isnan(x) || x == 0.0 || x == -0.0)
             return 0;
         else
@@ -636,7 +640,7 @@ TNumber neqq(TNumber a, TNumber b) {
     return !pxt::eqq_bool(a, b) ? TAG_TRUE : TAG_FALSE;
 }
 
-void mycvt(double d, char *buf) {
+void mycvt(NUMBER d, char *buf) {
     if (d < 0) {
         *buf++ = '-';
         d = -d;
@@ -705,7 +709,7 @@ String toString(TValue v) {
         if (v == TAG_NAN)
             return (String)(void *)sNaN;
 
-        double x = toDouble(v);
+        auto x = toDouble(v);
 
 #ifdef PXT_BOX_DEBUG
         if (x == (int)x) {
@@ -760,9 +764,9 @@ TNumber atan2(TNumber y, TNumber x) {
     return fromDouble(::atan2(toDouble(y), toDouble(x)));
 }
 
-double randomDouble() {
-    return getRandom(UINT_MAX) / ((double)UINT_MAX + 1) +
-           getRandom(0xffffff) / ((double)UINT_MAX * 0xffffff);
+NUMBER randomDouble() {
+    return getRandom(UINT_MAX) / ((NUMBER)UINT_MAX + 1) +
+           getRandom(0xffffff) / ((NUMBER)UINT_MAX * 0xffffff);
 }
 
 //%
@@ -785,10 +789,10 @@ TNumber randomRange(TNumber min, TNumber max) {
         else
             return fromInt(mini + getRandom(maxi - mini));
     } else {
-        double mind = toDouble(min);
-        double maxd = toDouble(max);
+        auto mind = toDouble(min);
+        auto maxd = toDouble(max);
         if (mind > maxd) {
-            double temp = mind;
+            auto temp = mind;
             mind = maxd;
             maxd = temp;
         }
