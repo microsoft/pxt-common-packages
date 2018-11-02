@@ -366,9 +366,9 @@ struct VTable {
     uint32_t ifaceHashMult;
     // we only use the first few methods here; pxt will generate more
 #ifdef PXT_GC
-    PVoid methods[4];
+    PVoid methods[5];
 #else
-    PVoid methods[2];
+    PVoid methods[3];
 #endif
 };
 
