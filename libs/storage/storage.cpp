@@ -85,6 +85,7 @@ snorfs::File *getFile(String filename) {
 */
 //% part="storage" 
 //% blockId="storage_append" block="append file $filename with $data"
+//% data.shadowOptions.toString=true
 void append(String filename, String data) {
     auto f = getFile(filename);
     if (NULL == f) return;
@@ -108,6 +109,7 @@ void appendBuffer(String filename, Buffer data) {
 */
 //% part="storage"
 //% blockId="storage_overwrite" block="overwrite file $filename with $data"
+//% data.shadowOptions.toString=true
 void overwrite(String filename, String data) {
     auto f = getFile(filename);
     if (NULL == f) return;

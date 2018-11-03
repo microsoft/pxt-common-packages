@@ -16,8 +16,22 @@ namespace storage {
      */
     //% part="storage" 
     //% blockId="storage_append_line" block="append file $filename with line $data"
+    //% data.shadowOptions.toString=true
     export function appendLine(filename: string, data: string): void {
         append(filename, data + NEW_LINE);
+    }
+
+    /**
+     * Appends a name/value pair
+    * @param filename name of the file, eg: "log.txt"
+     * @param name 
+     * @param value 
+     */
+    //% part="storage" 
+    //% blockId="storage_append_value" block="append file $filename with value $name = $value"
+    //% data.shadowOptions.toString=true
+    export function appendValue(filename: string, name: string, value: string) {
+        append(filename, name ? `${name}: ${value}`: value);
     }
 
     export let NEW_LINE = "\r\n";
