@@ -110,9 +110,9 @@ namespace scene {
      */
     export function setTileMapEnabled(enabled: boolean) {
         const scene = game.currentScene();
-        if (!scene.tileMap)
-            scene.tileMap = new tiles.TileMap();
-        scene.tileMap.enabled = enabled;
+        if (scene.tileMap) {
+            scene.tileMap.enabled = enabled;
+        }
     }
 
     /**
