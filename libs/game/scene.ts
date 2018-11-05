@@ -29,7 +29,7 @@ namespace scene {
         background: Background;
         tileMap: tiles.TileMap;
         allSprites: SpriteLike[];
-        spriteCount: number;
+        spriteNextId: number;
         spritesByKind: Sprite[][];
         physicsEngine: PhysicsEngine;
         camera: scene.Camera;
@@ -56,7 +56,7 @@ namespace scene {
             if (this.allSprites) return;
 
             this.allSprites = [];
-            this.spriteCount = 0;
+            this.spriteNextId = 0;
             scene.setBackgroundColor(0)
             // update controller state
             this.eventContext.registerFrameHandler(8, () => {
@@ -114,13 +114,6 @@ namespace scene {
             });
             // update screen
             this.eventContext.registerFrameHandler(200, control.__screen.update);
-        }
-
-        addSprite(sprite: SpriteLike) {
-            if (!this.allSprites) return;
-            
-            this.allSprites.push(sprite);
-            this.spriteCount++;
         }
     }
 }
