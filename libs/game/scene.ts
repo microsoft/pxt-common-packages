@@ -115,5 +115,10 @@ namespace scene {
             // update screen
             this.eventContext.registerFrameHandler(200, control.__screen.update);
         }
+
+        addSprite(sprite: SpriteLike) {
+            this.allSprites.push(sprite);
+            sprite.id = this.spriteNextId++;
+        }
     }
 }
