@@ -29,7 +29,7 @@ namespace scene {
         background: Background;
         tileMap: tiles.TileMap;
         allSprites: SpriteLike[];
-        spriteNextId: number;
+        private spriteNextId: number;
         spritesByKind: Sprite[][];
         physicsEngine: PhysicsEngine;
         camera: scene.Camera;
