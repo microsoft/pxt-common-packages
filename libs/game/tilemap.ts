@@ -68,9 +68,9 @@ namespace tiles {
             this.z = -1;
 
             const sc = game.currentScene();
-            sc.allSprites.push(this);
+            this.id = sc.spriteCount;
+            sc.addSprite(this);
             sc.flags |= scene.Flag.NeedsSorting;
-            this.id = sc.allSprites.length;
         }
 
         offsetX(value: number) {
