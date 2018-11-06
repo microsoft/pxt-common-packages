@@ -38,4 +38,12 @@ namespace serial {
         serial.writeLine(prefix + value);
     }
 
+    export function readUntil(del: string): string {
+        return readString();
+    }
+
+    export function readString(): string {
+        return 0
+    }
+
 }

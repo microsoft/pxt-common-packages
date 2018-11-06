@@ -27,6 +27,21 @@ enum class BaudRate {
   BaudRate300 = 300
 };
 
+enum Delimiters {
+    //% block="new line"
+    NewLine = 1,
+    //% block=","
+    Comma = 2,
+    //% block="$"
+    Dollar = 3,
+    //% block=":"
+    Colon = 4,
+    //% block="."
+    Fullstop = 5,
+    //% block="#"
+    Hash = 6,
+};
+
 namespace pxt {
   class WSerial {
     public:
@@ -43,6 +58,47 @@ SINGLETON(WSerial);
 }
 
 namespace serial {
+
+      /**
+     * Read a line of text from the serial port and return the buffer when the delimiter is met.
+     * @param delimiter text delimiter that separates each text chunk
+     */
+    //% help=serial/read-until
+    //% blockId=serial_read_until block="serial|read until %delimiter=serial_delimiter_conv"
+    //% weight=19
+    String readUntil(String delimiter) {
+      auto f = getWSerial()->serial.readUntil(delimiter->data);
+      auto res = mkString(f.toCharArray(), f.length());
+      return res;
+    }
+
+    /**
+    * Read the buffered received data as a string
+    */
+    //% help=serial/read-string
+    //% blockId=serial_read_buffer block="serial|read string"
+    //% weight=18
+    String readString() {
+      int n = getWSerial()->serial.getRxBufferSize();
+      if (n == 0) return mkString("", 0);
+      auto f = getWSerial()->serial.read(n, SerialMode::ASYNC);
+      auto res = mkString(f.toCharArray(), f.length());
+      return res;
+    }
+
+    /**
+    * Register an event to be fired when one of the delimiter is matched.
+    * @param delimiters the characters to match received characters against.
+    */
+    //% help=serial/on-data-received
+    //% weight=18 blockId=serial_on_data_received block="serial|on data received %delimiters=serial_delimiter_conv"
+    void onDataReceived(String delimiters, Action body) {
+      getWSerial()->serial.eventOn(delimiters->data);
+      registerWithDal(DEVICE_ID_SERIAL, CODAL_SERIAL_EVT_DELIM_MATCH, body);
+      // lazy initialization of serial buffers
+      getWSerial()->serial.read(SerialMode::ASYNC);
+    }
+
     void send(const char* buffer, int length) {
       // TODO: fix CODAL abstraction
       // getWSerial()->serial.send((uint8_t*)buffer, length * sizeof(char));
