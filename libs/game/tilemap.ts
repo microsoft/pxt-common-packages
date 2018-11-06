@@ -100,6 +100,7 @@ namespace tiles {
         }
 
         setMap(map: Image) {
+            if (!map) return;
             if (!this._map) {
                 const sc = game.currentScene();
                 sc.allSprites.push(this);
@@ -107,9 +108,7 @@ namespace tiles {
                 this.id = sc.allSprites.length;
                 this.enabled = true;
             }
-            if (map) {
-                this._map = map;
-            }
+            this._map = map;
         }
 
         public getTile(col: number, row: number): Tile {
