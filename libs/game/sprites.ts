@@ -81,6 +81,7 @@ namespace sprites {
             s.y = -(s.height >> 1) + 1
 
         s.flags |= sprites.Flag.AutoDestroy;
+        s.flags |= sprites.Flag.DestroyOnWall;
 
         if (sprite) {
             s.x = sprite.x;
@@ -107,5 +108,6 @@ namespace sprites {
         Destroyed = 2,
         AutoDestroy = 4, // remove the sprite when no longer visible
         StayInScreen = 8, // sprite cannot move outside the camera region
+        DestroyOnWall = 16, // destroy sprite on contact with wall
     }
 }

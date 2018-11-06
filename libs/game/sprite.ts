@@ -4,7 +4,9 @@ enum SpriteFlag {
     //% block="auto destroy"
     AutoDestroy = sprites.Flag.AutoDestroy,
     //% block="stay in screen"
-    StayInScreen = sprites.Flag.StayInScreen
+    StayInScreen = sprites.Flag.StayInScreen,
+    //% block="destroy on wall"
+    DestroyOnWall = sprites.Flag.DestroyOnWall
 }
 
 enum CollisionDirection {
