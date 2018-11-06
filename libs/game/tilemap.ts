@@ -105,7 +105,7 @@ namespace tiles {
             this._tileSets[index] = new TileSet(img, collisions);
         }
 
-        setMap(map: Image) {            
+        setMap(map: Image) {
             this._map = map;
         }
 
