@@ -23,4 +23,6 @@ extern "C" void *xmalloc(size_t sz);
 #define GC_BLOCK_SIZE (1024 * 64)
 #endif
 
+#define PXT_HARD_FLOAT 1
+
 #endif

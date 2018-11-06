@@ -337,11 +337,67 @@ float toFloat(TNumber v) {
     return (float)toDouble(v);
 }
 
-TNumber fromDouble(NUMBER r) {
-#ifndef PXT_BOX_DEBUG
+#if !defined(PXT_HARD_FLOAT) && !defined(PXT_USE_FLOAT)
+union NumberConv {
+    double v;
+    struct {
+        uint32_t word0;
+        uint32_t word1;
+    };
+};
+
+static inline TValue doubleToInt(double x) {
+    NumberConv cnv;
+    cnv.v = x;
+
+    if (cnv.word1 == 0 && cnv.word0 == 0)
+        return TAG_NUMBER(0);
+
+    auto ex = (int)((cnv.word1 << 1) >> 21) - 1023;
+
+    //DMESG("v=%d/1000 %p %p %d", (int)(x * 1000), cnv.word0, cnv.word1, ex);
+
+    if (ex < 0 || ex > 29) {
+        // the 'MININT' case
+        if (ex == 30 && cnv.word0 == 0 && cnv.word1 == 0xC1D00000)
+            return (TValue)(0x80000001);
+        return NULL;
+    }
+
+    int32_t r;
+
+    if (ex <= 20) {
+        if (cnv.word0)
+            return TAG_UNDEFINED;
+        if (cnv.word1 << (ex + 12))
+            return TAG_UNDEFINED;
+        r = ((cnv.word1 << 11) | 0x80000000) >> (20 - ex + 11);
+    } else {
+        if (cnv.word0 << (ex - 20))
+            return TAG_UNDEFINED;
+        r = ((cnv.word1 << 11) | 0x80000000) >> (20 - ex + 11);
+        r |= cnv.word0 >> (32 - (ex - 20));
+    }
+
+    if (cnv.word1 >> 31)
+        return TAG_NUMBER(-r);
+    else
+        return TAG_NUMBER(r);
+}
+#else
+static inline TValue doubleToInt(NUMBER r) {
     int ri = ((int)r) << 1;
     if ((ri >> 1) == r)
         return (TNumber)(ri | 1);
+    return TAG_UNDEFINED;
+}
+#endif
+
+TNumber fromDouble(NUMBER r) {
+#ifndef PXT_BOX_DEBUG
+    auto i = doubleToInt(r);
+    if (i)
+        return i;
 #endif
     if (isnan(r))
         return TAG_NAN;
@@ -692,6 +748,43 @@ void mycvt(NUMBER d, char *buf) {
         *buf = 0;
     }
 }
+
+#if 0
+//%
+TValue floatAsInt(TValue x) {
+    return doubleToInt(toDouble(x));
+}
+
+//% shim=numops::floatAsInt
+function floatAsInt(v: number): number { return 0 }
+
+function testInt(i: number) {
+    if (floatAsInt(i) != i)
+        control.panic(101)
+    if (floatAsInt(i + 0.5) != null)
+        control.panic(102)
+    if (floatAsInt(i + 0.00001) != null)
+        control.panic(103)
+}
+
+function testFloat(i: number) {
+    if (floatAsInt(i) != null)
+        control.panic(104)
+}
+
+function testFloatAsInt() {
+    for (let i = 0; i < 0xffff; ++i) {
+        testInt(i)
+        testInt(-i)
+        testInt(i * 10000)
+        testInt(i << 12)
+        testInt(i + 0x3fff0001)
+        testInt(-i - 0x3fff0002)
+        testFloat(i + 0x3fffffff + 1)
+        testFloat((i + 10000) * 1000000)
+    }   
+}
+#endif
 
 String toString(TValue v) {
     ValType t = valType(v);
