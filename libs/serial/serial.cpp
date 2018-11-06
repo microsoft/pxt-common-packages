@@ -59,25 +59,14 @@ SINGLETON(WSerial);
 
 namespace serial {
 
-      /**
-     * Read a line of text from the serial port and return the buffer when the delimiter is met.
-     * @param delimiter text delimiter that separates each text chunk
-     */
-    //% help=serial/read-until
-    //% blockId=serial_read_until block="serial|read until %delimiter=serial_delimiter_conv"
-    //% weight=19
+    //%
     String readUntil(String delimiter) {
       auto f = getWSerial()->serial.readUntil(delimiter->data);
       auto res = mkString(f.toCharArray(), f.length());
       return res;
     }
 
-    /**
-    * Read the buffered received data as a string
-    */
-    //% help=serial/read-string
-    //% blockId=serial_read_buffer block="serial|read string"
-    //% weight=18
+    //%
     String readString() {
       int n = getWSerial()->serial.getRxBufferSize();
       if (n == 0) return mkString("", 0);
