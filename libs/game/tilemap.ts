@@ -68,8 +68,7 @@ namespace tiles {
             this.enabled = false;
 
             const sc = game.currentScene();
-            this.id = sc.spriteNextId++;
-            sc.allSprites.push(this);
+            sc.addSprite(this);
             sc.flags |= scene.Flag.NeedsSorting;
         }
 
