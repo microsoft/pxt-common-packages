@@ -43,7 +43,7 @@ namespace serial {
      * @param delimiter text delimiter that separates each text chunk
      */
     //% help=serial/read-until
-    //% blockId=serial_read_until block="serial|read until %delimiter=serial_delimiter_conv"
+    //% blockId=serial_readUntil block="serial|read until %delimiter=serial_delimiter_conv"
     //% weight=19
     export function readUntil(del: string): string {
         return readString();
@@ -56,7 +56,7 @@ namespace serial {
     //% blockId=serial_read_buffer block="serial|read string"
     //% weight=18
     export function readString(): string {
-        return null
+        return ""
     }
 
 }
