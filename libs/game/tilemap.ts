@@ -66,6 +66,11 @@ namespace tiles {
             this._layer = 1;
             this.z = -1;
             this.enabled = false;
+
+            const sc = game.currentScene();
+            this.id = sc.spriteNextId++;
+            sc.allSprites.push(this);
+            sc.flags |= scene.Flag.NeedsSorting;
         }
 
         offsetX(value: number) {
@@ -107,10 +112,6 @@ namespace tiles {
             }
             
             if (!this._map) {
-                const sc = game.currentScene();
-                sc.allSprites.push(this);
-                sc.flags |= scene.Flag.NeedsSorting;
-                this.id = sc.allSprites.length;
                 this.enabled = true;
             }
             this._map = map;

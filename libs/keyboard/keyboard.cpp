@@ -109,6 +109,7 @@ namespace keyboard {
     */
     //% blockId=keyboardType block="keyboard type %text"
     //% blockGap=8 weight=100
+    //% text.shadowOptions.toString=true
     void type(String text) {
         if (NULL != text)
             pxt::keyboard.type(text->data, text->length);
