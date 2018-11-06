@@ -100,7 +100,12 @@ namespace tiles {
         }
 
         setMap(map: Image) {
-            if (!map) return;
+            if (!map) {
+                this._map = undefined;
+                this.enabled = false;
+                return;
+            }
+            
             if (!this._map) {
                 const sc = game.currentScene();
                 sc.allSprites.push(this);
