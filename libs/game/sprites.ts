@@ -109,5 +109,6 @@ namespace sprites {
         AutoDestroy = 4, // remove the sprite when no longer visible
         StayInScreen = 8, // sprite cannot move outside the camera region
         DestroyOnWall = 16, // destroy sprite on contact with wall
+        BounceOnWall = 32, // Bounce on walls
     }
 }

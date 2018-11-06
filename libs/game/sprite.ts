@@ -6,7 +6,9 @@ enum SpriteFlag {
     //% block="stay in screen"
     StayInScreen = sprites.Flag.StayInScreen,
     //% block="destroy on wall"
-    DestroyOnWall = sprites.Flag.DestroyOnWall
+    DestroyOnWall = sprites.Flag.DestroyOnWall,
+    //% block="bounce on wall"
+    BounceOnWall = sprites.Flag.BounceOnWall
 }
 
 enum CollisionDirection {
@@ -480,21 +482,28 @@ class Sprite implements SpriteLike {
             this.destroy()
         }
 
-        if (this.flags & sprites.Flag.StayInScreen) {
+        const bounce = this.flags & sprites.Flag.BounceOnWall;
+        const tm = game.currentScene().tileMap;
+        if (this.flags & sprites.Flag.StayInScreen || (bounce && !tm)) {
             if (this.left < camera.offsetX) {
                 this.left = camera.offsetX;
+                if (bounce) this.vx = -this.vx;
             }
             else if (this.right > camera.offsetX + screen.width) {
                 this.right = camera.offsetX + screen.width;
+                if (bounce) this.vx = -this.vx;
             }
 
             if (this.top < camera.offsetY) {
                 this.top = camera.offsetY;
+                if (bounce) this.vy = -this.vy;
             }
             else if (this.bottom > camera.offsetY + screen.height) {
                 this.bottom = camera.offsetY + screen.height;
+                if (bounce) this.vy = -this.vy;
             }
         }
+
         // Say text
         if (this.updateSay) {
             this.updateSay(dt, camera);
