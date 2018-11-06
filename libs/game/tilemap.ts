@@ -54,7 +54,6 @@ namespace tiles {
     export class TileMap implements SpriteLike {
         id: number;
         z: number;
-        enabled: boolean;
 
         private _layer: number;
 
@@ -65,7 +64,6 @@ namespace tiles {
             this._tileSets = [];
             this._layer = 1;
             this.z = -1;
-            this.enabled = false;
 
             const sc = game.currentScene();
             sc.addSprite(this);
@@ -98,21 +96,16 @@ namespace tiles {
             }
         }
 
+        enabled(): boolean {
+            return !!this._map;
+        }
+
         setTile(index: number, img: Image, collisions?: boolean) {
             if (this.isInvalidIndex(index)) return;
             this._tileSets[index] = new TileSet(img, collisions);
         }
 
-        setMap(map: Image) {
-            if (!map) {
-                this._map = undefined;
-                this.enabled = false;
-                return;
-            }
-            
-            if (!this._map) {
-                this.enabled = true;
-            }
+        setMap(map: Image) {            
             this._map = map;
         }
 
@@ -147,7 +140,7 @@ namespace tiles {
          * Draws all visible
          */
         __draw(camera: scene.Camera): void {
-            if (!this.enabled || !this._map) return;
+            if (!this._map) return;
 
             const offsetX = camera.offsetX & 0xf;
             const offsetY = camera.offsetY & 0xf;
@@ -176,8 +169,7 @@ namespace tiles {
         }
 
         private isOutsideMap(col: number, row: number): boolean {
-            return !this.enabled || !this._map
-                    || col < 0 || col >= this._map.width
+            return !this._map || col < 0 || col >= this._map.width
                     || row < 0 || row >= this._map.height;
         }
 
@@ -186,7 +178,7 @@ namespace tiles {
         }
 
         render(camera: scene.Camera) {
-            if (!this.enabled || !this._map) return;
+            if (!this._map) return;
 
             if (game.debug) {
                 const offsetX = -camera.offsetX;
@@ -219,7 +211,7 @@ namespace tiles {
         public collisions(s: Sprite): sprites.Obstacle[] {
             let overlappers: sprites.StaticObstacle[] = [];
 
-            if (this.enabled && this._map && (s.layer & this.layer) && !(s.flags & sprites.Flag.Ghost)) {
+            if (this._map && (s.layer & this.layer) && !(s.flags & sprites.Flag.Ghost)) {
                 const x0 = Math.max(0, s.left >> 4);
                 const xn = Math.min(this._map.width, (s.right >> 4) + 1);
                 const y0 = Math.max(0, s.top >> 4);
@@ -245,14 +237,14 @@ namespace tiles {
         }
 
         public isObstacle(col: number, row: number) {
-            if (!this.enabled || !this._map) return false;
+            if (!this._map) return false;
             if (this.isOutsideMap(col, row)) return true;
 
             return this._tileSets[this._map.getPixel(col, row)].obstacle;
         }
 
         public getObstacle(col: number, row: number) {
-            if (!this.enabled || !this._map) return undefined;
+            if (!this._map) return undefined;
             if (this.isOutsideMap(col, row)) return undefined;
 
             const index = this._map.getPixel(col, row);
