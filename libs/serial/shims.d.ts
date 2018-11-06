@@ -2,6 +2,31 @@
 declare namespace serial {
 
     /**
+     * Read a line of text from the serial port and return the buffer when the delimiter is met.
+     * @param delimiter text delimiter that separates each text chunk
+     */
+    //% help=serial/read-until
+    //% blockId=serial_read_until block="serial|read until %delimiter=serial_delimiter_conv"
+    //% weight=19 shim=serial::readUntil
+    function readUntil(delimiter: string): string;
+
+    /**
+     * Read the buffered received data as a string
+     */
+    //% help=serial/read-string
+    //% blockId=serial_read_buffer block="serial|read string"
+    //% weight=18 shim=serial::readString
+    function readString(): string;
+
+    /**
+     * Register an event to be fired when one of the delimiter is matched.
+     * @param delimiters the characters to match received characters against.
+     */
+    //% help=serial/on-data-received
+    //% weight=18 blockId=serial_on_data_received block="serial|on data received %delimiters=serial_delimiter_conv" shim=serial::onDataReceived
+    function onDataReceived(delimiters: string, body: () => void): void;
+
+    /**
      * Write some text to the serial port.
      */
     //% help=serial/write-string

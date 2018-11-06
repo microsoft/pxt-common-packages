@@ -1,4 +1,12 @@
 namespace pxsim.serial {
+    export function readUntil(delimiter: string) {
+
+    }
+    
+    export function readString(): {
+
+    }
+    
     export function writeString(str: string) {
         if (str)
             control.__log(str)
