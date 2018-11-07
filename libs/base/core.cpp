@@ -1008,7 +1008,7 @@ void *ptrOfLiteral(int offset);
 
 //%
 unsigned programSize() {
-    return bytecode[17] * 2;
+    return bytecode[17] * 8;
 }
 
 //%

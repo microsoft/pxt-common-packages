@@ -20,31 +20,28 @@ void decr(TValue e) {
 }
 #endif
 
-Action mkAction(int totallen, int startptr) {
-    uintptr_t tmp = (uintptr_t)&bytecode[startptr];
-    check(getVTable((RefObject *)tmp)->classNo == BuiltInType::RefAction,
+Action mkAction(int totallen, RefAction *act) {
+    check(getVTable(act)->classNo == BuiltInType::RefAction,
           PANIC_INVALID_BINARY_HEADER, 1);
 
     if (totallen == 0) {
-        return (TValue)tmp; // no closure needed
+        return (TValue)act; // no closure needed
     }
 
     void *ptr = gcAllocate(sizeof(RefAction) + totallen * sizeof(unsigned));
     RefAction *r = new (ptr) RefAction();
     r->len = totallen;
-    r->func = ((RefAction *)tmp)->func;
+    r->func = act->func;
     memset(r->fields, 0, r->len * sizeof(unsigned));
 
-    MEMDBG("mkAction: start=%p => %p", startptr, r);
+    MEMDBG("mkAction: start=%p => %p", act, r);
 
     return (Action)r;
 }
 
-RefRecord *mkClassInstance(int vtableOffset) {
-    VTable *vtable = (VTable *)&bytecode[vtableOffset];
-
+RefRecord *mkClassInstance(VTable *vtable) {
     intcheck(vtable->methods[0] == &RefRecord_destroy, PANIC_SIZE, 3);
-    intcheck(vtable->methods[1] == &RefRecord_print, PANIC_SIZE, 4);
+    //intcheck(vtable->methods[1] == &RefRecord_print, PANIC_SIZE, 4);
 
     void *ptr = gcAllocate(vtable->numbytes);
     RefRecord *r = new (ptr) RefRecord(vtable);

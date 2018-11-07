@@ -215,8 +215,11 @@ static inline TValue runAction0(Action a) {
     return asmRunAction3(a, 0, 0, 0);
 }
 
+class RefAction;
+struct VTable;
+
 //%
-Action mkAction(int totallen, int startptr);
+Action mkAction(int totallen, RefAction *act);
 // allocate [sz] words and clear them
 //%
 unsigned *allocate(ramint_t sz);
@@ -229,7 +232,7 @@ unsigned programSize();
 //%
 int getNumGlobals();
 //%
-RefRecord *mkClassInstance(int vtableOffset);
+RefRecord *mkClassInstance(VTable *vt);
 //%
 void debugMemLeaks();
 //%
@@ -585,7 +588,6 @@ void RefRecord_scan(RefRecord *r);
 //%
 unsigned RefRecord_gcsize(RefRecord *r);
 
-class RefAction;
 typedef TValue (*ActionCB)(TValue *captured, TValue arg0, TValue arg1, TValue arg2);
 
 // Ref-counted function pointer.
