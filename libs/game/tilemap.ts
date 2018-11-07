@@ -96,7 +96,7 @@ namespace tiles {
             }
         }
 
-        enabled(): boolean {
+        get enabled(): boolean {
             return !!this._map;
         }
 
@@ -120,7 +120,7 @@ namespace tiles {
         }
 
         public getTilesByType(index: number): Tile[] {
-            if (this.isInvalidIndex(index) || !this._map) return undefined;
+            if (this.isInvalidIndex(index) || !this.enabled) return undefined;
 
             let output: Tile[] = [];
             for (let col = 0; col < this._map.width; ++col) {
@@ -140,7 +140,7 @@ namespace tiles {
          * Draws all visible
          */
         __draw(camera: scene.Camera): void {
-            if (!this._map) return;
+            if (!this.enabled) return;
 
             const offsetX = camera.offsetX & 0xf;
             const offsetY = camera.offsetY & 0xf;
@@ -169,7 +169,7 @@ namespace tiles {
         }
 
         private isOutsideMap(col: number, row: number): boolean {
-            return !this._map || col < 0 || col >= this._map.width
+            return !this.enabled || col < 0 || col >= this._map.width
                     || row < 0 || row >= this._map.height;
         }
 
@@ -178,7 +178,7 @@ namespace tiles {
         }
 
         render(camera: scene.Camera) {
-            if (!this._map) return;
+            if (!this.enabled) return;
 
             if (game.debug) {
                 const offsetX = -camera.offsetX;
@@ -211,7 +211,7 @@ namespace tiles {
         public collisions(s: Sprite): sprites.Obstacle[] {
             let overlappers: sprites.StaticObstacle[] = [];
 
-            if (this._map && (s.layer & this.layer) && !(s.flags & sprites.Flag.Ghost)) {
+            if (this.enabled && (s.layer & this.layer) && !(s.flags & sprites.Flag.Ghost)) {
                 const x0 = Math.max(0, s.left >> 4);
                 const xn = Math.min(this._map.width, (s.right >> 4) + 1);
                 const y0 = Math.max(0, s.top >> 4);
@@ -237,14 +237,14 @@ namespace tiles {
         }
 
         public isObstacle(col: number, row: number) {
-            if (!this._map) return false;
+            if (!this.enabled) return false;
             if (this.isOutsideMap(col, row)) return true;
 
             return this._tileSets[this._map.getPixel(col, row)].obstacle;
         }
 
         public getObstacle(col: number, row: number) {
-            if (!this._map) return undefined;
+            if (!this.enabled) return undefined;
             if (this.isOutsideMap(col, row)) return undefined;
 
             const index = this._map.getPixel(col, row);
