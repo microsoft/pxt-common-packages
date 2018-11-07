@@ -163,8 +163,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     if (topCollide || tm.isObstacle(r0 + 1, b0)) {
                         const nextRight = box.right + dx;
                         const maxRight = ((r0 + 1) << 4) - GAP
+                        if (bounce && nextRight >= maxRight) s.vx = -s.vx;
                         if (nextRight > maxRight) {
-                            if (bounce) s.vx = -s.vx;
                             hitWall = true;
                             dx -= (nextRight - maxRight);
                             s.registerObstacle(CollisionDirection.Right, tm.getObstacle(r0 + 1, topCollide ? t0 : b0))
@@ -176,8 +176,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     if (topCollide || tm.isObstacle(l0 - 1, b0)) {
                         const nextLeft = box.left + dx;
                         const minLeft = (l0 << 4) + GAP;
+                        if (bounce && nextLeft <= minLeft) s.vx = -s.vx;
                         if (nextLeft < minLeft) {
-                            if (bounce) s.vx = -s.vx;
                             hitWall = true;
                             dx -= (nextLeft - minLeft);
                             s.registerObstacle(CollisionDirection.Left, tm.getObstacle(l0 - 1, topCollide ? t0 : b0))
@@ -190,8 +190,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     if (rightCollide || tm.isObstacle(l0, b0 + 1)) {
                         const nextBottom = box.bottom + dy;
                         const maxBottom = ((b0 + 1) << 4) - GAP;
+                        if (bounce && nextBottom >= maxBottom) s.vy = -s.vy;
                         if (nextBottom > maxBottom) {
-                            if (bounce) s.vy = -s.vy;
                             hitWall = true;
                             dy -= (nextBottom - maxBottom);
                             s.registerObstacle(CollisionDirection.Bottom, tm.getObstacle(rightCollide ? r0 : l0, b0 + 1))
@@ -203,8 +203,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     if (tm.isObstacle(r0, t0 - 1) || tm.isObstacle(l0, t0 - 1)) {
                         const nextTop = box.top + dy;
                         const minTop = (t0 << 4) + GAP;
+                        if (bounce && nextTop <= minTop) s.vy = -s.vy;
                         if (nextTop < minTop) {
-                            if (bounce) s.vy = -s.vy;
                             hitWall = true;
                             dy -= (nextTop - minTop);
                             s.registerObstacle(CollisionDirection.Top, tm.getObstacle(rightCollide ? r0 : l0, t0 - 1))
