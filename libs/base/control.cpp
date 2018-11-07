@@ -73,4 +73,12 @@ namespace control {
         if (NULL == text) return;
         pxt::sendSerial(text->data, text->length);
     }
+
+    /**
+     * Dump internal information about a value.
+     */
+    //%
+    void dmesgValue(TValue v) {
+        anyPrint(v);
+    }
 }
