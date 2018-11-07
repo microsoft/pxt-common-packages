@@ -399,7 +399,6 @@ extern const VTable RefAction_vtable;
 
 #ifdef PXT_GC
 inline bool isReadOnly(TValue v) {
-    // TODO linux!
     return isTagged(v) || !((uint32_t)v >> 26);
 }
 #endif

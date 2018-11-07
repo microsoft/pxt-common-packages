@@ -41,6 +41,7 @@ Button *getButtonByPin(int pin, int flags) {
             pull = PullMode::None;
         else
             oops(3);
+        // GCTODO
         btn = new Button(*lookupPin(pin), cpid, DEVICE_BUTTON_ALL_EVENTS,
                          (ButtonPolarity)(flags & 0xf), pull);
     }
@@ -77,6 +78,7 @@ MultiButton *getMultiButton(int id, int pinA, int pinB, int flags) {
     if (btn == NULL) {
         auto bA = getButtonByPin(pinA, flags);
         auto bB = getButtonByPin(pinB, flags);
+        // GCTODO
         btn = new codal::MultiButton(bA->id, bB->id, id);
 
         // A user has registered to receive events from the buttonAB multibutton.

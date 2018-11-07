@@ -135,8 +135,10 @@ static Segment workQueue;
 static GCBlock *firstBlock;
 static RefBlock *firstFree;
 
+#define IS_OUTSIDE_GC(v) (isReadOnly(v) || (*(uint32_t *)v & 1) || (*(VTable**)v)->magic != VTABLE_MAGIC)
+
 void gcScan(TValue v) {
-    if (isReadOnly(v) || (*(uint32_t *)v & 1))
+    if (IS_OUTSIDE_GC(v))
         return;
     *(uint32_t *)v |= 1;
     workQueue.push(v);
@@ -147,7 +149,7 @@ void gcScanMany(TValue *data, unsigned len) {
     for (unsigned i = 0; i < len; ++i) {
         auto v = data[i];
         // VLOG("psh: %p %d %d", v, isReadOnly(v), (*(uint32_t *)v & 1));
-        if (isReadOnly(v) || (*(uint32_t *)v & 1))
+        if (IS_OUTSIDE_GC(v))
             continue;
         *(uint32_t *)v |= 1;
         workQueue.push(v);
