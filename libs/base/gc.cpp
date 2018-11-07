@@ -228,6 +228,7 @@ static uint32_t getObjectSize(RefObject *o) {
     return r;
 }
 
+__attribute__((noinline))
 static void allocateBlock() {
     auto curr = (GCBlock *)GC_ALLOC_BLOCK(GC_BLOCK_SIZE);
     LOG("GC alloc: %p", curr);
@@ -284,6 +285,7 @@ static void sweep() {
     }
 }
 
+__attribute__((noinline))
 void gc() {
     VLOG("GC mark");
     mark();

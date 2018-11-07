@@ -20,7 +20,8 @@ extern "C" void *xmalloc(size_t sz);
 #define GC_ALLOC_BLOCK gcAllocBlock
 
 #ifndef POKY
-#define GC_BLOCK_SIZE (1024 * 64)
+// This seems to degrade performance - probably due to cache size
+//#define GC_BLOCK_SIZE (1024 * 64)
 #endif
 
 #define PXT_HARD_FLOAT 1
