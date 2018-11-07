@@ -893,6 +893,8 @@ Image_ create(int width, int height) {
     Image_ r = mkImage(width, height, IMAGE_BITS);
     if (r)
         memset(r->pix(), 0, r->pixLength());
+    else
+        target_panic(PANIC_INVALID_IMAGE);
     return r;
 }
 
