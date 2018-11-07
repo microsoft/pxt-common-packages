@@ -175,7 +175,7 @@ class Sprite implements SpriteLike {
         const scene = game.currentScene();
         const tmap = scene.tileMap;
 
-        if (scene.tileMap && this.width <= 16 && this.height <= 16) {
+        if (tmap && tmap.enabled && this.width <= 16 && this.height <= 16) {
             const l = (nMinX + this.left) >> 4;
             const r = (nMaxX + this.left) >> 4;
             const t = (nMinY + this.top) >> 4;

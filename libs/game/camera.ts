@@ -24,7 +24,7 @@ namespace scene {
             }
 
             // don't escape tile map
-            if (scene.tileMap) {
+            if (scene.tileMap && scene.tileMap.enabled) {
                 this.offsetX = scene.tileMap.offsetX(this.offsetX);
                 this.offsetY = scene.tileMap.offsetY(this.offsetY);
             }

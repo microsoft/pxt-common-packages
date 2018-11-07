@@ -1,6 +1,6 @@
 {
   "name": "pxt-common-packages",
-  "version": "0.25.6",
+  "version": "0.25.8",
   "description": "Microsoft MakeCode (PXT) common packages",
   "keywords": [
     "MakeCode",
@@ -24,7 +24,7 @@
     "libs/**/*"
   ],
   "dependencies": {
-    "pxt-core": "^3.19.3"
+    "pxt-core": "^4.4.1"
   },
   "devDependencies": {
     "typescript": "2.6.1",

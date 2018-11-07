@@ -147,10 +147,11 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             s._lastY = s.y;
             return;
         }
-
-        if (tm && !(s.flags & sprites.Flag.Ghost)) {
+      
+        if (tm && tm.enabled && !(s.flags & sprites.Flag.Ghost)) {
             let hitWall = false;
             const bounce = s.flags & sprites.Flag.BounceOnWall;
+          
             s._hitboxes.forEach(box => {
                 const t0 = box.top >> 4;
                 const r0 = box.right >> 4;
