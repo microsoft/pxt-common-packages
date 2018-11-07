@@ -653,9 +653,9 @@ static int valCompare(TValue a, TValue b) {
     if (isnan(da) || isnan(db))
         return -2;
 
-    if (a < b)
+    if (da < db)
         return -1;
-    else if (a > b)
+    else if (da > db)
         return 1;
     else
         return 0;
@@ -1280,9 +1280,10 @@ void anyPrint(TValue v) {
     if (valType(v) == ValType::Object) {
         if (isRefCounted(v)) {
             auto o = (RefObject *)v;
-            auto meth = ((RefObjectMethod)getVTable(o)->methods[1]);
+            auto vt = getVTable(o);
+            auto meth = ((RefObjectMethod)vt->methods[1]);
             if ((void *)meth == (void *)&anyPrint)
-                DMESG("[RefObject refs=%d vt=%p]", REFCNT(o), o->vtable);
+                DMESG("[RefObject refs=%d vt=%p cl=%d sz=%d]", REFCNT(o), o->vtable, vt->classNo, vt->numbytes);
             else
                 meth(o);
         } else {
@@ -1320,6 +1321,7 @@ void failedCast(TValue v) {
     if (vt) {
         DMESG("VT %p - objtype %d classNo %d", vt, vt->objectType, vt->classNo);
     }
+    anyPrint(v);
 
     int code;
     if (v == TAG_NULL)
