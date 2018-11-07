@@ -451,7 +451,6 @@ class Sprite implements SpriteLike {
 
         const l = this.left - camera.offsetX;
         const t = this.top - camera.offsetY;
-        const font = image.font8;
         screen.drawTransparentImage(this._image, l, t)
 
         // debug info

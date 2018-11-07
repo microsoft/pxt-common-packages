@@ -1321,7 +1321,6 @@ void failedCast(TValue v) {
     if (vt) {
         DMESG("VT %p - objtype %d classNo %d", vt, vt->objectType, vt->classNo);
     }
-    anyPrint(v);
 
     int code;
     if (v == TAG_NULL)
