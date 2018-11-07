@@ -485,6 +485,8 @@ void replace(Image_ img, int from, int to) {
     if (from == to)
         return;
 
+    img->makeWritable();
+
     // avoid bleeding 'to' color into the overflow areas of the picture
     if (from == 0 && img->hasPadding()) {
         for (int i = 0; i < img->height(); ++i)
