@@ -6,10 +6,11 @@
 
 #define GC_BLOCK_WORDS ((GC_BLOCK_SIZE - sizeof(GCBlock)) / sizeof(void *))
 
-
 #ifndef GC_ALLOC_BLOCK
 #define GC_ALLOC_BLOCK xmalloc
 #endif
+
+//#define PXT_GC_DEBUG 1
 
 #ifdef PXT_GC_DEBUG
 #define LOG DMESG
@@ -74,7 +75,8 @@ void popThreadContext(ThreadContext *ctx) {
             if (threadContexts != ctx)
                 oops(41);
             threadContexts = ctx->next;
-            threadContexts->prev = NULL;
+            if (threadContexts)
+                threadContexts->prev = NULL;
         }
         delete ctx;
         setThreadContext(NULL);
