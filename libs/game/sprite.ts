@@ -518,6 +518,7 @@ class Sprite implements SpriteLike {
     //% blockId=spriteoverlapswith block="%sprite(mySprite) overlaps with %other=variables_get(otherSprite)"
     //% help=sprites/sprite/overlaps-with
     overlapsWith(other: Sprite) {
+        control.enablePerfCounter("overlapsCPP")
         if (other == this) return false;
         if (this.flags & sprites.Flag.Ghost)
             return false

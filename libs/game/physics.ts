@@ -73,6 +73,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
     }
 
     collisions() {
+        control.enablePerfCounter("phys_collisions")
+
         // 1: clear obstacles
         for (let i = 0; i < this.sprites.length; ++i)
             this.sprites[i].clearObstacles();
@@ -237,5 +239,10 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 }
 
 function constrain(v: number) {
-    return Math.abs(v) > MAX_VELOCITY ? Math.sign(v) * MAX_VELOCITY : v;
+    if (v > MAX_VELOCITY)
+        return MAX_VELOCITY
+    if (v < -MAX_VELOCITY)
+        return -MAX_VELOCITY
+    return v
+    //return Math.abs(v) > MAX_VELOCITY ? Math.sign(v) * MAX_VELOCITY : v;
 }
