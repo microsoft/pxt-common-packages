@@ -741,11 +741,13 @@ void registerGC(TValue *root, int numwords = 1);
 void unregisterGC(TValue *root, int numwords = 1);
 void registerGCPtr(TValue ptr);
 void unregisterGCPtr(TValue ptr);
+void gc(int verbose);
 #else
 inline void registerGC(TValue *root, int numwords = 1) {}
 inline void unregisterGC(TValue *root, int numwords = 1) {}
 inline void registerGCPtr(TValue ptr) {}
 inline void unregisterGCPtr(TValue ptr) {}
+inline void gc(int) {}
 #endif
 
 struct StackSegment {

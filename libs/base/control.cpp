@@ -81,4 +81,12 @@ namespace control {
     void dmesgValue(TValue v) {
         anyPrint(v);
     }
+
+    /**
+     * Force GC and dump information about heap.
+     */
+    //%
+    void gc() {
+        pxt::gc(1);
+    }
 }

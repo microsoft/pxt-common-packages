@@ -135,7 +135,8 @@ static Segment workQueue;
 static GCBlock *firstBlock;
 static RefBlock *firstFree;
 
-#define IS_OUTSIDE_GC(v) (isReadOnly(v) || (*(uint32_t *)v & 1) || (*(VTable**)v)->magic != VTABLE_MAGIC)
+#define IS_OUTSIDE_GC(v)                                                                           \
+    (isReadOnly(v) || (*(uint32_t *)v & 1) || (*(VTable **)v)->magic != VTABLE_MAGIC)
 
 void gcScan(TValue v) {
     if (IS_OUTSIDE_GC(v))
@@ -230,8 +231,7 @@ static uint32_t getObjectSize(RefObject *o) {
     return r;
 }
 
-__attribute__((noinline))
-static void allocateBlock() {
+__attribute__((noinline)) static void allocateBlock() {
     auto curr = (GCBlock *)GC_ALLOC_BLOCK(GC_BLOCK_SIZE);
     LOG("GC alloc: %p", curr);
     curr->data[0].vtable = (GC_BLOCK_WORDS << 2) | 2;
@@ -241,7 +241,7 @@ static void allocateBlock() {
     firstBlock = curr;
 }
 
-static void sweep() {
+static void sweep(int verbose) {
     RefBlock *freePtr = NULL;
     uint32_t freeSize = 0;
     uint32_t totalSize = 0;
@@ -279,7 +279,10 @@ static void sweep() {
             }
         }
     }
-    LOG("GC %d/%d free", freeSize, totalSize);
+    if (verbose)
+        DMESG("GC %d/%d free", freeSize, totalSize);
+    else
+        LOG("GC %d/%d free", freeSize, totalSize);
     firstFree = freePtr;
     // if the heap is 90% full, allocate a new block
     if (freeSize * 10 <= totalSize) {
@@ -287,12 +290,11 @@ static void sweep() {
     }
 }
 
-__attribute__((noinline))
-void gc() {
+void gc(int verbose) {
     VLOG("GC mark");
     mark();
     VLOG("GC sweep");
-    sweep();
+    sweep(verbose);
     VLOG("GC done");
 }
 
@@ -340,7 +342,7 @@ void *gcAllocate(int numbytes) {
 
         // we didn't find anything, try GC
         if (i == 0)
-            gc();
+            gc(0);
         // GC didn't help, try new block
         else if (i == 1)
             allocateBlock();
