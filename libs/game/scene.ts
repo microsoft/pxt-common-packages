@@ -16,6 +16,7 @@ namespace scene {
         type: number;
         otherType: number;
         handler: (sprite: Sprite, otherSprite: Sprite) => void;
+        current: Sprite[];
     }
 
     export interface CollisionHandler {
