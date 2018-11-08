@@ -355,7 +355,7 @@ static inline TValue doubleToInt(double x) {
 
     auto ex = (int)((cnv.word1 << 1) >> 21) - 1023;
 
-    //DMESG("v=%d/1000 %p %p %d", (int)(x * 1000), cnv.word0, cnv.word1, ex);
+    // DMESG("v=%d/1000 %p %p %d", (int)(x * 1000), cnv.word0, cnv.word1, ex);
 
     if (ex < 0 || ex > 29) {
         // the 'MININT' case
@@ -1283,7 +1283,8 @@ void anyPrint(TValue v) {
             auto vt = getVTable(o);
             auto meth = ((RefObjectMethod)vt->methods[1]);
             if ((void *)meth == (void *)&anyPrint)
-                DMESG("[RefObject refs=%d vt=%p cl=%d sz=%d]", REFCNT(o), o->vtable, vt->classNo, vt->numbytes);
+                DMESG("[RefObject refs=%d vt=%p cl=%d sz=%d]", REFCNT(o), o->vtable, vt->classNo,
+                      vt->numbytes);
             else
                 meth(o);
         } else {
@@ -1334,5 +1335,47 @@ void missingProperty(TValue v) {
     DMESG("missing property on %p", v);
     target_panic(PANIC_MISSING_PROPERTY);
 }
+
+#ifdef PXT_PROFILE
+struct PerfCounter *perfCounters;
+
+struct PerfCounterInfo {
+    uint32_t numPerfCounters;
+    char *perfCounterNames[0];
+};
+
+#define PERF_INFO ((PerfCounterInfo *)(((uintptr_t *)bytecode)[13]))
+
+void initPerfCounters() {
+    auto n = PERF_INFO->numPerfCounters;
+    perfCounters = new PerfCounter[n];
+    memset(perfCounters, 0, n * sizeof(PerfCounter));
+}
+
+void dumpPerfCounters() {
+    auto info = PERF_INFO;
+    DMESG("calls,us,name");
+    for (uint32_t i = 0; i < info->numPerfCounters; ++i) {
+        auto c = &perfCounters[i];
+        DMESG("%d,%d,%s", c->numstops, c->value, info->perfCounterNames[i]);
+    }
+}
+
+void startPerfCounter(PerfCounters n) {
+    auto c = &perfCounters[(uint32_t)n];
+    if (c->start)
+        oops(50);
+    c->start = PERF_NOW();
+}
+
+void stopPerfCounter(PerfCounters n) {
+    auto c = &perfCounters[(uint32_t)n];
+    if (!c->start)
+        oops(51);
+    c->value += PERF_NOW() - c->start;
+    c->start = 0;
+    c->numstops++;
+}
+#endif
 
 } // namespace pxt

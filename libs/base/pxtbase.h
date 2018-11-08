@@ -200,8 +200,6 @@ typedef TValue (*GetPropertyType)(TValue obj, unsigned key);
 typedef TValue (*SetPropertyType)(TValue obj, unsigned key, TValue v);
 
 #define asmRunAction3 ((RunActionType)(((uintptr_t *)bytecode)[12]))
-#define asmGetProperty ((GetPropertyType)(((uintptr_t *)bytecode)[13]))
-#define asmSetProperty ((SetPropertyType)(((uintptr_t *)bytecode)[14]))
 
 static inline TValue runAction3(Action a, TValue arg0, TValue arg1, TValue arg2) {
     return asmRunAction3(a, arg0, arg1, 0);
@@ -782,6 +780,37 @@ inline void *gcAllocate(int numbytes) {
 #endif
 
 extern ThreadContext *threadContexts;
+
+enum class PerfCounters {
+    GC,
+};
+
+#ifdef PXT_PROFILE
+#ifndef PERF_NOW
+#error "missing platform timer support"
+#endif
+
+struct PerfCounter {
+    uint32_t value;
+    uint32_t numstops;
+    uint32_t start;
+};
+
+extern struct PerfCounter *perfCounters;
+
+void initPerfCounters();
+//%
+void dumpPerfCounters();
+//%
+void startPerfCounter(PerfCounters n);
+//%
+void stopPerfCounter(PerfCounters n);
+#else
+inline void startPerfCounter(PerfCounters n) {}
+inline void stopPerfCounter(PerfCounters n) {}
+inline void initPerfCounters() {}
+inline void dumpPerfCounters() {}
+#endif
 
 } // namespace pxt
 

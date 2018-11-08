@@ -28,6 +28,7 @@
 #define CODAL_SPI ZSPI
 #define CODAL_I2C ZI2C
 
+#define PERF_NOW() (TIM5->CNT)
 
 #define IMAGE_BITS 4
 

@@ -512,6 +512,8 @@ void exec_binary(unsigned *pc) {
 
     startptr += 64; // header
 
+    initPerfCounters();
+
     initRuntime();
 
     runAction0((Action)startptr);

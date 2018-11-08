@@ -291,11 +291,13 @@ static void sweep(int verbose) {
 }
 
 void gc(int verbose) {
+    startPerfCounter(PerfCounters::GC);
     VLOG("GC mark");
     mark();
     VLOG("GC sweep");
     sweep(verbose);
     VLOG("GC done");
+    stopPerfCounter(PerfCounters::GC);
 }
 
 void *gcAllocate(int numbytes) {
