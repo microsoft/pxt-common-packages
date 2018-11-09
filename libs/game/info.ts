@@ -63,13 +63,13 @@ namespace info {
             if (_life !== null && _visibilityFlag & Visibility.Life) {
                 drawLives();
                 if (_life <= 0) {
+                    _life = null;
                     if (_lifeOverHandler) {
                         _lifeOverHandler();
                     }
                     else {
                         game.over();
                     }
-                    _life = null;
                 }
             }
             // show countdown
