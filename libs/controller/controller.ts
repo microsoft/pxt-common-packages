@@ -31,14 +31,12 @@ namespace controller {
             this.repeatInterval = 30;
             this._repeatCount = 0;
             control.internalOnEvent(INTERNAL_KEY_UP, this.id, () => {
-                control.dmesg("UP: " + this.id + " / p=" + this._pressed)
                 if (this._pressed) {
                     this._pressed = false
                     this.raiseButtonUp();
                 }
             }, 16)
             control.internalOnEvent(INTERNAL_KEY_DOWN, this.id, () => {
-                control.dmesg("DOWN: " + this.id + " / p=" + this._pressed)
                 if (!this._pressed) {
                     this._pressed = true;
                     this._pressedElasped = 0;

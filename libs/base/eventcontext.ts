@@ -83,9 +83,11 @@ namespace control {
                 if (EventContext.onStats) {
                     EventContext.onStats(`${Math.round(fps)}fps`)
                 }
-                control.dmesg(`${(fps*100)|0}/100 fps - ${this.framesInSample} frames`)
-                control.gc()
-                control.dmesgPerfCounters()
+                if (control.profilingEnabled()) {
+                    control.dmesg(`${(fps * 100) | 0}/100 fps - ${this.framesInSample} frames`)
+                    control.gc()
+                    control.dmesgPerfCounters()
+                }
                 this.timeInSample = 0
                 this.framesInSample = 0
             }

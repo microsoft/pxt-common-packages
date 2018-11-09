@@ -89,4 +89,16 @@ namespace control {
     void gc() {
         pxt::gc(1);
     }
+
+    /**
+     * Return true if profiling is enabled in the current build.
+     */
+    //%
+    bool profilingEnabled() {
+#ifdef PXT_PROFILE
+        return true;
+#else
+        return false;
+#endif
+    }
 }

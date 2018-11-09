@@ -67,6 +67,9 @@ namespace pxsim.control {
         console.log(`DMESG: ${ptr}`);
     }
     export function gc() {}
+    export function profilingEnabled() {
+        return !!runtime.perfCounters
+    }
 
     export function __log(str: string) {
         console.log(str);
