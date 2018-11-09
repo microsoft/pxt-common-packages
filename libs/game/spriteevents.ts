@@ -60,8 +60,7 @@ namespace sprites {
         scene.overlapHandlers.push({
             type: kind,
             otherType: otherKind,
-            handler: handler,
-            current: []
+            handler: handler
         })
     }
 }

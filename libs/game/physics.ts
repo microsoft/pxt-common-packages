@@ -101,16 +101,17 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 const oh = sprite.overlapHandler;
                 if (oh)
                     control.runInParallel(() => oh(tmp))
-                scene.overlapHandlers
-                    .filter(h => h.type == sprite.type && h.otherType == overlapper.type)
-                    .filter(h => h.current.indexOf(tmpsprite) == -1 && h.current.indexOf(tmp) == -1)
-                    .forEach(h => control.runInParallel(() => {
-                        h.current.push(tmp);
-                        h.current.push(tmpsprite);
-                        h.handler(tmpsprite, tmp);
-                        h.current.removeElement(tmp);
-                        h.current.removeElement(tmpsprite);
-                    }));
+                if (tmp._overlappers.indexOf(tmpsprite) == -1) {
+                    scene.overlapHandlers
+                        .filter(h => h.type == sprite.type && h.otherType == overlapper.type)
+                        .forEach(h => control.runInParallel(() => {
+                            tmp._overlappers.push(tmpsprite);
+                            tmpsprite._overlappers.push(tmp);
+                            h.handler(tmpsprite, tmp);
+                            tmp._overlappers.removeElement(tmpsprite);
+                            tmpsprite._overlappers.removeElement(tmp);
+                        }));
+                }
             }
 
             const xDiff = sprite.x - sprite._lastX;
