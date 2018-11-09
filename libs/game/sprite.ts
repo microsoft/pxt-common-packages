@@ -88,7 +88,7 @@ class Sprite implements SpriteLike {
     private sayBubbleSprite: Sprite;
 
     _hitboxes: game.Hitbox[];
-    _overlappers: Sprite[];
+    _overlappers: number[];
 
     flags: number
     id: number
