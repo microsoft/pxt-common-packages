@@ -1062,35 +1062,6 @@ RefRefLocal *mklocRef() {
     return r;
 }
 
-// All of the functions below unref() self. This is for performance reasons -
-// the code emitter will not emit the unrefs for them.
-
-//%
-TValue ldfld(RefRecord *r, int idx) {
-    TValue tmp = r->ld(idx);
-    r->unref();
-    return tmp;
-}
-
-//%
-TValue ldfldRef(RefRecord *r, int idx) {
-    TValue tmp = r->ldref(idx);
-    r->unref();
-    return tmp;
-}
-
-//%
-void stfld(RefRecord *r, int idx, TValue val) {
-    r->st(idx, val);
-    r->unref();
-}
-
-//%
-void stfldRef(RefRecord *r, int idx, TValue val) {
-    r->stref(idx, val);
-    r->unref();
-}
-
 // Store a captured local in a closure. It returns the action, so it can be chained.
 //%
 RefAction *stclo(RefAction *a, int idx, TValue v) {
