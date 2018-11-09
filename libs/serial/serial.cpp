@@ -43,13 +43,6 @@ SINGLETON(WSerial);
 }
 
 namespace serial {
-    #define MSTR(s) codal::ManagedString((s)->data, (s)->length)
-
-    static inline String PSTR(codal::ManagedString s) {
-        return mkString(s.toCharArray(), s.length());
-    }
-
-
     /**
     * Read the buffered received data as a string
     */
@@ -60,7 +53,8 @@ namespace serial {
       auto service = getWSerial();
       int n = service->serial.getRxBufferSize();
       if (n == 0) return mkString("", 0);
-      return PSTR(service->serial.read(n, SerialMode::ASYNC));
+      auto s = service->serial.read(n, SerialMode::ASYNC);
+      return PSTR(s);
     }
 
     void send(const char* buffer, int length) {
