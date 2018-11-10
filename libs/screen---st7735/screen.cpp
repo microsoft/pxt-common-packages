@@ -10,6 +10,7 @@ class WDisplay {
     uint32_t currPalette[16];
     bool newPalette;
 
+    uint8_t *screenBuf;
     Image_ lastImg;
 
     int width, height;
@@ -17,9 +18,20 @@ class WDisplay {
 
     WDisplay()
         : spi(*LOOKUP_PIN(DISPLAY_MOSI), *LOOKUP_PIN(DISPLAY_MISO), *LOOKUP_PIN(DISPLAY_SCK)),
-          lcd(spi, *LOOKUP_PIN(DISPLAY_CS), *LOOKUP_PIN(DISPLAY_DC), *LOOKUP_PIN(DISPLAY_RST),
-              *LOOKUP_PIN(DISPLAY_BL), getConfig(CFG_DISPLAY_WIDTH, 160),
-              getConfig(CFG_DISPLAY_HEIGHT, 128), true) {
+          lcd(spi, *LOOKUP_PIN(DISPLAY_CS), *LOOKUP_PIN(DISPLAY_DC)) {
+
+        auto rst = LOOKUP_PIN(DISPLAY_RST);
+        if (rst) {
+            rst->setDigitalValue(0);
+            fiber_sleep(20);
+            rst->setDigitalValue(1);
+            fiber_sleep(20);
+        }
+
+        auto bl = LOOKUP_PIN(DISPLAY_BL);
+        if (bl) {
+            bl->setDigitalValue(1);
+        }
 
         uint32_t cfg0 = getConfig(CFG_DISPLAY_CFG0, 0x40);
         uint32_t cfg2 = getConfig(CFG_DISPLAY_CFG2, 0x0);
@@ -36,13 +48,13 @@ class WDisplay {
 
         spi.setFrequency(freq * 1000000);
         spi.setMode(0);
-        lcd.enable();
-        lcd.setOffset(offX, offY);
-        lcd.setRotation(DISPLAY_ROTATION_90);
+        lcd.init();
         lcd.configure(madctl, frmctr1);
         width = getConfig(CFG_DISPLAY_WIDTH, 160);
         height = getConfig(CFG_DISPLAY_HEIGHT, 128);
+        lcd.setAddrWindow(offX, offY, width, height);
         DMESG("screen: %d x %d, off=%d,%d", width, height, offX, offY);
+        screenBuf = new uint8_t[width * height / 2 + 20];
         lastImg = NULL;
     }
 };
@@ -74,7 +86,7 @@ static const uint8_t numbers[] = {
     0x0e, 0x11, 0x0e, 0x11, 0x0e, // 8
     0x0e, 0x11, 0x0e, 0x04, 0x02, // 9
     0x11, 0x00, 0x0e, 0x1b, 0x11, // :(
-    //0x11, 0x04, 0x04, 0x0a, 0x11, // :(
+    // 0x11, 0x04, 0x04, 0x0a, 0x11, // :(
 };
 
 static void drawNumber(int idx, uint8_t *bmp, int x, int y, int hb) {
@@ -97,32 +109,33 @@ static void drawNumber(int idx, uint8_t *bmp, int x, int y, int hb) {
 
 static void drawPanic(int code) {
     auto display = getWDisplay();
-    auto hb = display->lcd.image.getWidth() >> 1;
-    auto ptr = display->lcd.image.getBitmap();
-    auto dw = display->lcd.image.getHeight();
+    auto hb = display->width >> 1;
+    auto ptr = display->screenBuf;
+    auto dw = display->height;
 
     memset(ptr, 0, hb * dw);
 
     drawNumber(10, ptr, 70, 20, hb);
     int x = 50;
     int y = 60;
-    drawNumber((code / 100) % 10, ptr, x, y, hb); x += 24;
-    drawNumber((code / 10) % 10, ptr, x, y, hb); x += 24;
-    drawNumber((code / 1) % 10, ptr, x, y, hb); x += 24;
+    drawNumber((code / 100) % 10, ptr, x, y, hb);
+    x += 24;
+    drawNumber((code / 10) % 10, ptr, x, y, hb);
+    x += 24;
+    drawNumber((code / 1) % 10, ptr, x, y, hb);
+    x += 24;
 
-    display->lcd.waitForEndUpdate();
-    display->lcd.beginUpdate();
-    display->lcd.waitForEndUpdate();
+    display->lcd.waitForSendDone();
+    display->lcd.sendIndexedImage(display->screenBuf, display->width, display->height, NULL);
+    display->lcd.waitForSendDone();
 }
 
-extern "C" void target_panic(int statusCode)
-{
+extern "C" void target_panic(int statusCode) {
     DMESG("*** CODAL PANIC : [%d]", statusCode);
 
     drawPanic(statusCode);
-    
-    while (1)
-    {
+
+    while (1) {
     }
 }
 
@@ -143,15 +156,20 @@ void updateScreen(Image_ img) {
 
         img->clearDirty();
         // DMESG("wait for done");
-        display->lcd.waitForEndUpdate();
+        display->lcd.waitForSendDone();
+
+        auto palette = display->currPalette;
 
         if (display->newPalette) {
             display->newPalette = false;
-            display->lcd.setPalette(display->currPalette);
+        } else {
+            palette = NULL;
         }
 
-        memcpy(display->lcd.image.getBitmap(), img->pix(), img->pixLength());
-        display->lcd.beginUpdate();
+        memcpy(display->screenBuf, img->pix(), img->pixLength());
+
+        // DMESG("send");
+        display->lcd.sendIndexedImage(display->screenBuf, display->width, display->height, palette);
     }
 }
 
