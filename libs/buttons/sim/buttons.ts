@@ -63,6 +63,7 @@ namespace pxsim {
                 new CommonButton(DAL.DEVICE_ID_BUTTON_B),
                 new CommonButton(DAL.DEVICE_ID_BUTTON_AB)
             ];
+            this.buttons.forEach(btn => this.buttonsByPin[btn.id] = btn);
         }
     }
 }
@@ -74,6 +75,10 @@ namespace pxsim.pxtcore {
             b = m[pinId + ""] = new CommonButton(pinId)
         }
         return b
+    }
+
+    export function getButtonByPinCfg(key: number): Button {
+        return getButtonByPin(getConfig(key, -1))
     }
 
     export function getButton(buttonId: number): Button {
@@ -107,9 +112,9 @@ namespace pxsim.ButtonMethods {
     }
 }
 
-namespace pxsim.DigitalPinMethods {
+namespace pxsim.DigitalInOutPinMethods {
 
-    export function pushButton(pin: pins.DigitalPin): Button {
+    export function pushButton(pin: pins.DigitalInOutPin): Button {
         return pxsim.pxtcore.getButtonByPin(pin.id);
     }
 }

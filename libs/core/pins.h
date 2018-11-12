@@ -60,6 +60,7 @@
 #define CFG_PIN_LED2 56
 #define CFG_PIN_LED3 57
 #define CFG_PIN_LED4 58
+#define CFG_SPEAKER_VOLUME 59
 
 #define CFG_PIN_A0 100
 #define CFG_PIN_A1 101
@@ -128,10 +129,18 @@
 #define CODAL_I2C CODAL_MBED::I2C
 #endif
 
+#ifndef CODAL_SERIAL
+#define CODAL_SERIAL CODAL_MBED::Serial
+#endif
+
+#ifndef IS_ANALOG_PIN
+#define IS_ANALOG_PIN(id) ((DEV_ANALOG_PINS >> (id)) & 1)
+#endif
+
 typedef CODAL_PIN DevicePin;
 
-typedef DevicePin *DigitalPin;
-typedef DevicePin *AnalogPin;
+typedef DevicePin *DigitalInOutPin;
+typedef DevicePin *AnalogInOutPin;
 typedef DevicePin *AnalogInPin;
 typedef DevicePin *AnalogOutPin;
 typedef DevicePin *PwmPin;
@@ -140,6 +149,7 @@ typedef Button *Button_;
 
 namespace pxt {
 DevicePin *getPin(int id);
+DevicePin *getPinCfg(int key);
 DevicePin *lookupPin(int pinName);
 void linkPin(int from, int to);
 Button *getButtonByPin(int pin, int flags);

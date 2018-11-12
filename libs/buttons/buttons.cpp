@@ -47,6 +47,13 @@ Button *getButtonByPin(int pin, int flags) {
     return btn;
 }
 
+//%
+Button *getButtonByPinCfg(int key, int flags) {
+    int pin = getConfig(key);
+    if (pin == -1) target_panic(42);
+    return getButtonByPin(pin, flags);
+}
+
 // This is for A, B, and AB
 //%
 AbstractButton *getButton(int id) {
@@ -88,13 +95,13 @@ MultiButton *getMultiButton(int id, int pinA, int pinB, int flags) {
 }
 
 
-namespace DigitalPinMethods {
+namespace DigitalInOutPinMethods {
 
 /**
  * Get the push button (connected to GND) for given pin
  */
 //%
-Button_ pushButton(DigitalPin pin) {
+Button_ pushButton(DigitalInOutPin pin) {
     return pxt::getButtonByPin(pin->name, BUTTON_ACTIVE_LOW_PULL_UP);
 }
 

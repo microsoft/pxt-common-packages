@@ -29,6 +29,8 @@ namespace scene {
         background: Background;
         tileMap: tiles.TileMap;
         allSprites: SpriteLike[];
+        private spriteNextId: number;
+        spritesByKind: Sprite[][];
         physicsEngine: PhysicsEngine;
         camera: scene.Camera;
         flags: number;
@@ -47,12 +49,14 @@ namespace scene {
             this.createdHandlers = [];
             this.overlapHandlers = [];
             this.collisionHandlers = [];
+            this.spritesByKind = [];
         }
 
         init() {
             if (this.allSprites) return;
 
             this.allSprites = [];
+            this.spriteNextId = 0;
             scene.setBackgroundColor(0)
             // update controller state
             this.eventContext.registerFrameHandler(8, () => {
@@ -81,8 +85,8 @@ namespace scene {
             this.eventContext.registerFrameHandler(30, () => {
                 performance.startTimer("collisions")
                 const dt = this.eventContext.deltaTime;
-                this.camera.update();
                 this.physicsEngine.collisions();
+                this.camera.update();
                 for (const s of this.allSprites)
                     s.__update(this.camera, dt);
                 performance.stopTimer("collisions")
@@ -110,6 +114,11 @@ namespace scene {
             });
             // update screen
             this.eventContext.registerFrameHandler(200, control.__screen.update);
+        }
+
+        addSprite(sprite: SpriteLike) {
+            this.allSprites.push(sprite);
+            sprite.id = this.spriteNextId++;
         }
     }
 }

@@ -69,16 +69,18 @@ enum class KeyboardFunctionKey
     PrintScreen,
     //% block="scroll lock"
     ScrollLock,
-    //% block="caps lock"
-    CapsLock,
-    //% block="num lock"
-    NumLock,
+    //% block="pause"
+    Pause,
     //% block="insert"
     Insert,
     //% block="home"
     Home,
     //% block="page up"
     PageUp,
+    //% block="delete"
+    DeleteForward,
+    //% block="end"
+    End,
     //% block="page down"
     PageDown,
 
@@ -107,6 +109,7 @@ namespace keyboard {
     */
     //% blockId=keyboardType block="keyboard type %text"
     //% blockGap=8 weight=100
+    //% text.shadowOptions.toString=true
     void type(String text) {
         if (NULL != text)
             pxt::keyboard.type(text->data, text->length);

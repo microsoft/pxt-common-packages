@@ -62,5 +62,10 @@ namespace pxsim.control {
     }
     export function dmesgPtr(msg: string, ptr: any) {
         console.log(`DMESG: ${msg} ${ptr}`);
-    }    
+    }   
+
+    export function __log(str: string) {
+        console.log(str);
+        runtime.board.writeSerial(str);
+    }
 }

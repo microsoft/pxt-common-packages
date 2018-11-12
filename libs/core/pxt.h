@@ -19,9 +19,11 @@
 #include "CodalFiber.h"
 #include "MessageBus.h"
 
-#include "platform.h"
-
 using namespace codal;
+
+// codal::ManagedString compat
+#define MSTR(s) codal::ManagedString((s)->data, (s)->length)
+#define PSTR(s) mkString((s).toCharArray(), (s).length())
 
 #include "pins.h"
 

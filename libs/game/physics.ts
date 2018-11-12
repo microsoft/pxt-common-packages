@@ -10,6 +10,8 @@ class PhysicsEngine {
 
     removeSprite(sprite: Sprite) { }
 
+    moveSprite(s: Sprite, tm: tiles.TileMap, dx: number, dy: number) { }
+
     draw() { }
 
     /** Apply physics */
@@ -23,12 +25,17 @@ class PhysicsEngine {
     overlaps(sprite: Sprite): Sprite[] { return []; }
 }
 
+const MAX_DISTANCE = 15; // pixels
+const MAX_TIME_STEP = 0.1; // seconds
+const MAX_VELOCITY = MAX_DISTANCE / MAX_TIME_STEP;
+const GAP = 0.1;
+
 /**
  * A physics engine that does simple AABB bounding box check
  */
 class ArcadePhysicsEngine extends PhysicsEngine {
-    private sprites: Sprite[];
-    private map: sprites.SpriteMap;
+    protected sprites: Sprite[];
+    protected map: sprites.SpriteMap;
 
     constructor() {
         super();
@@ -49,15 +56,19 @@ class ArcadePhysicsEngine extends PhysicsEngine {
     }
 
     move(dt: number) {
+        dt = Math.min(MAX_TIME_STEP, dt);
         const dt2 = dt / 2;
-        // 1: move sprites
+
+        const tm = game.currentScene().tileMap;
+
         for (let s of this.sprites) {
-            const ovx = s.vx;
-            const ovy = s.vy;
-            s.vx += s.ax * dt
-            s.vy += s.ay * dt
-            s.x += (ovx + s.vx) * dt2;
-            s.y += (ovy + s.vy) * dt2;
+            const ovx = constrain(s.vx);
+            const ovy = constrain(s.vy);
+
+            s.vx = constrain(s.vx + s.ax * dt)
+            s.vy = constrain(s.vy + s.ay * dt)
+
+            this.moveSprite(s, tm, (s.vx + ovx) * dt2, (s.vy + ovy) * dt2);
         }
     }
 
@@ -79,6 +90,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
         // 3: go through sprite and handle collisions
         const scene = game.currentScene();
+        const tm = scene.tileMap;
+
         for (const sprite of colliders) {
             const overSprites = scene.physicsEngine.overlaps(sprite);
             for (const overlapper of overSprites) {
@@ -93,38 +106,15 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     .forEach(h => control.runInParallel(() => h.handler(tmpsprite, tmp)));
             }
 
-            if (scene.tileMap) {
-                const obstacles = scene.tileMap.collisions(sprite);
-                for (const o of obstacles) {
-                    const bottom = o.top + o.image.height;
-                    const right = o.left + o.image.width;
-                    // find the shortest distance into the obstacle
-                    let toperr = sprite.bottom - o.top; if (toperr < 0) toperr = 1 << 30;
-                    let bottomerr = bottom - sprite.top; if (bottomerr < 0) bottomerr = 1 << 30;
-                    let lefterr = sprite.right - o.left; if (lefterr < 0) lefterr = 1 << 30;
-                    let righterr = right - sprite.left; if (righterr < 0) righterr = 1 << 30;
-                    const min = Math.min(toperr, Math.min(bottomerr, Math.min(lefterr, righterr)));
-                    if (toperr == min) {
-                        sprite.bottom = o.top;
-                        if (sprite.vy > 0) sprite.vy = 0;
-                        sprite.registerObstacle(CollisionDirection.Bottom, o);
-                    }
-                    else if (bottomerr == min) {
-                        sprite.top = bottom;
-                        if (sprite.vy < 0) sprite.vy = 0;
-                        sprite.registerObstacle(CollisionDirection.Top, o);
-                    }
-                    else if (lefterr == min) {
-                        sprite.right = o.left;
-                        if (sprite.vx > 0) sprite.vx = 0;
-                        sprite.registerObstacle(CollisionDirection.Right, o);
-                    }
-                    else {
-                        sprite.left = right;
-                        if (sprite.vx < 0) sprite.vx = 0;
-                        sprite.registerObstacle(CollisionDirection.Left, o);
-                    }
-                }
+            const xDiff = sprite.x - sprite._lastX;
+            const yDiff = sprite.y - sprite._lastY;
+            if ((xDiff !== 0 || yDiff !== 0) && Math.abs(xDiff) < MAX_DISTANCE && Math.abs(yDiff) < MAX_DISTANCE) {
+                // Undo the move
+                sprite.x = sprite._lastX;
+                sprite.y = sprite._lastY;
+
+                // Now move it with the tilemap in mind
+                this.moveSprite(sprite, tm, xDiff, yDiff);
             }
         }
     }
@@ -138,7 +128,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         if (this.map)
             return this.map.overlaps(sprite);
         else {
-            // brute force            
+            // brute force
             const layer = sprite.layer;
             const r: Sprite[] = [];
             const n = this.sprites.length;
@@ -150,4 +140,102 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             return r;
         }
     }
+
+    public moveSprite(s: Sprite, tm: tiles.TileMap, dx: number, dy: number) {
+        if (dx === 0 && dy === 0) {
+            s._lastX = s.x;
+            s._lastY = s.y;
+            return;
+        }
+
+        if (tm && tm.enabled && !(s.flags & sprites.Flag.Ghost)) {
+            s._hitboxes.forEach(box => {
+                const t0 = box.top >> 4;
+                const r0 = box.right >> 4;
+                const b0 = box.bottom >> 4;
+                const l0 = box.left >> 4;
+
+                if (dx > 0) {
+                    let topCollide = tm.isObstacle(r0 + 1, t0);
+                    if (topCollide || tm.isObstacle(r0 + 1, b0)) {
+                        const nextRight = box.right + dx;
+                        const maxRight = ((r0 + 1) << 4) - GAP
+                        if (nextRight > maxRight) {
+                            dx -= (nextRight - maxRight);
+                            s.registerObstacle(CollisionDirection.Right, tm.getObstacle(r0 + 1, topCollide ? t0 : b0))
+                        }
+                    }
+                }
+                else if (dx < 0) {
+                    const topCollide = tm.isObstacle(l0 - 1, t0);
+                    if (topCollide || tm.isObstacle(l0 - 1, b0)) {
+                        const nextLeft = box.left + dx;
+                        const minLeft = (l0 << 4) + GAP;
+                        if (nextLeft < minLeft) {
+                            dx -= (nextLeft - minLeft);
+                            s.registerObstacle(CollisionDirection.Left, tm.getObstacle(l0 - 1, topCollide ? t0 : b0))
+                        }
+                    }
+                }
+
+                if (dy > 0) {
+                    const rightCollide = tm.isObstacle(r0, b0 + 1);
+                    if (rightCollide || tm.isObstacle(l0, b0 + 1)) {
+                        const nextBottom = box.bottom + dy;
+                        const maxBottom = ((b0 + 1) << 4) - GAP;
+                        if (nextBottom > maxBottom) {
+                            dy -= (nextBottom - maxBottom);
+                            s.registerObstacle(CollisionDirection.Bottom, tm.getObstacle(rightCollide ? r0 : l0, b0 + 1))
+                        }
+                    }
+                }
+                else if (dy < 0) {
+                    const rightCollide = tm.isObstacle(r0, t0 - 1);
+                    if (tm.isObstacle(r0, t0 - 1) || tm.isObstacle(l0, t0 - 1)) {
+                        const nextTop = box.top + dy;
+                        const minTop = (t0 << 4) + GAP;
+                        if (nextTop < minTop) {
+                            dy -= (nextTop - minTop);
+                            s.registerObstacle(CollisionDirection.Top, tm.getObstacle(rightCollide ? r0 : l0, t0 - 1))
+                        }
+                    }
+                }
+
+                // Now check each corner and bump out if necessary. This step is needed for
+                // the case where a hitbox goes diagonally into the corner of a tile.
+                const t1 = (box.top + dy) >> 4;
+                const r1 = (box.right + dx) >> 4;
+                const b1 = (box.bottom + dy) >> 4;
+                const l1 = (box.left + dx) >> 4;
+
+                if (tm.isObstacle(r1, t1)) {
+                    // bump left
+                    dx -= (box.right + dx - ((r1 << 4) - GAP))
+                    s.registerObstacle(CollisionDirection.Right, tm.getObstacle(r1, t1));
+                }
+                else if (tm.isObstacle(l1, t1)) {
+                    // bump right
+                    dx -= (box.left + dx - (((l1 + 1) << 4) + GAP));
+                    s.registerObstacle(CollisionDirection.Left, tm.getObstacle(l1, t1));
+                }
+                else {
+                    const rightCollide = tm.isObstacle(r1, b1);
+                    if (rightCollide || tm.isObstacle(l1, b1)) {
+                        // bump up because that is usually better for platformers
+                        dy -= (box.bottom + dy - ((b1 << 4) - GAP));
+                        s.registerObstacle(CollisionDirection.Bottom, tm.getObstacle(rightCollide ? r1 : l1, b1));
+                    }
+                }
+            });
+        }
+
+        s.x += dx;
+        s.y += dy;
+        s._lastX = s.x;
+        s._lastY = s.y;
+    }
+}
+
+function constrain(v: number) {
+    return Math.abs(v) > MAX_VELOCITY ? Math.sign(v) * MAX_VELOCITY : v;
 }
