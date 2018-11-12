@@ -71,6 +71,8 @@ void setTone(Buffer buffer) {
     if (buffer->length != TONE_WIDTH * sizeof(uint16_t))
         return; // invalid length
 
+    if (!tone)
+        registerGC((TValue*)&tone);
     decrRC(tone);
     tone = buffer; // keep a reference to the buffer
     incrRC(tone);

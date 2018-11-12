@@ -13,15 +13,14 @@
 
 namespace pxt {
 
-PXT_VTABLE_BEGIN(RefImage, 0, 0)
-PXT_VTABLE_END
+PXT_VTABLE(RefImage)
 
 void RefImage::destroy(RefImage *t) {
     decrRC(t->buffer());
 }
 
 void RefImage::print(RefImage *t) {
-    DMESG("RefImage %p r=%d size=%d x %d", t, t->refcnt, t->width(), t->height());
+    DMESG("RefImage %p r=%d size=%d x %d", t, REFCNT(t), t->width(), t->height());
 }
 
 int RefImage::width() {
@@ -30,7 +29,7 @@ int RefImage::width() {
 
 int RefImage::wordHeight() {
     if (bpp() == 1)
-        target_panic(900);
+        oops(20);
     return ((data()[2] * bpp() + 31) >> 5);
 }
 
@@ -40,7 +39,7 @@ int RefImage::byteHeight() {
     else if (bpp() == 4)
         return ((data()[2] * 4 + 31) >> 5) << 2;
     else {
-        target_panic(900);
+        oops(21);
         return -1;
     }
 }
@@ -107,7 +106,7 @@ Image_ mkImage(int width, int height, int bpp) {
     if (bpp != 1 && bpp != 4)
         return NULL;
     uint32_t sz = byteSize(width, height, bpp);
-    Image_ r = new (::operator new(sizeof(RefImage) + sz)) RefImage(sz);
+    Image_ r = new (gcAllocate(sizeof(RefImage) + sz)) RefImage(sz);
     auto d = r->data();
     d[0] = 0xe0 | bpp;
     d[1] = width;
@@ -323,7 +322,7 @@ void _fillRect(Image_ img, int xy, int wh, int c) {
 //%
 Image_ clone(Image_ img) {
     uint32_t sz = img->length();
-    Image_ r = new (::operator new(sizeof(RefImage) + sz)) RefImage(sz);
+    Image_ r = new (gcAllocate(sizeof(RefImage) + sz)) RefImage(sz);
     memcpy(r->data(), img->data(), img->length());
     MEMDBG("mkImageClone: %d X %d => %p", img->width(), img->height(), r);
     return r;
@@ -485,6 +484,8 @@ void replace(Image_ img, int from, int to) {
     to &= 0xf;
     if (from == to)
         return;
+
+    img->makeWritable();
 
     // avoid bleeding 'to' color into the overflow areas of the picture
     if (from == 0 && img->hasPadding()) {
@@ -750,7 +751,7 @@ void _drawIcon(Image_ img, Buffer icon, int xy, int c) {
         return;
 
     img->makeWritable();
-    auto ii = new RefImage(icon);
+    auto ii = new (gcAllocate(sizeof(RefImage))) RefImage(icon);
     drawImageCore(img, ii, XX(xy), YY(xy), c);
     decrRC(ii);
 }
@@ -894,6 +895,8 @@ Image_ create(int width, int height) {
     Image_ r = mkImage(width, height, IMAGE_BITS);
     if (r)
         memset(r->pix(), 0, r->pixLength());
+    else
+        target_panic(PANIC_INVALID_IMAGE);
     return r;
 }
 
@@ -904,7 +907,7 @@ Image_ create(int width, int height) {
 Image_ ofBuffer(Buffer buf) {
     if (!isValidImage(buf))
         return NULL;
-    return new RefImage(buf);
+    return new (gcAllocate(sizeof(RefImage))) RefImage(buf);
 }
 
 /**
@@ -915,7 +918,7 @@ Buffer doubledIcon(Buffer icon) {
     if (!isValidImage(icon))
         return NULL;
 
-    auto r = new RefImage(icon);
+    auto r = new (gcAllocate(sizeof(RefImage))) RefImage(icon);
     auto t = ImageMethods::doubled(r);
     auto res = mkBuffer(t->data(), t->length());
     decrRC(r);
