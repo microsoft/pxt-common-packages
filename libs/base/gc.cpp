@@ -15,7 +15,7 @@
 #ifdef PXT_GC_DEBUG
 #define LOG DMESG
 #define VLOG DMESG
-#define VVLOG NOLOG
+#define VVLOG DMESG
 #else
 #define LOG NOLOG
 #define VLOG NOLOG
@@ -224,7 +224,7 @@ static uint32_t getObjectSize(RefObject *o) {
         r = vt >> 2;
     } else {
         auto sz = getSizeMethod(vt);
-        GC_CHECK(0x2000 <= (intptr_t)sz && (intptr_t)sz <= 0x100000, 47);
+        // GC_CHECK(0x2000 <= (intptr_t)sz && (intptr_t)sz <= 0x100000, 47);
         r = sz(o);
     }
     GC_CHECK(1 <= r && r < 0x100000, 48);
@@ -317,17 +317,20 @@ void *gcAllocate(int numbytes) {
     for (int i = 0;; ++i) {
         RefBlock *prev = NULL;
         for (auto p = firstFree; p; p = p->nextFree) {
+            VVLOG("p=%p", p);
+            GC_CHECK(!isReadOnly((TValue)p), 49);
             auto vt = p->vtable;
             if (!(vt & 2))
                 oops(43);
             int left = (vt >> 2) - numwords;
             if (left >= 0) {
                 auto nf = (RefBlock *)((void **)p + numwords);
-                VLOG("nf=%p", nf);
+                //VLOG("nf=%p", nf);
+                auto nextFree = p->nextFree; // p and nf can overlap when allocating 4 bytes
                 if (left)
                     nf->vtable = (left << 2) | 2;
                 if (left >= 2) {
-                    nf->nextFree = p->nextFree;
+                    nf->nextFree = nextFree;
                 } else {
                     nf = p->nextFree;
                 }
@@ -336,7 +339,8 @@ void *gcAllocate(int numbytes) {
                 else
                     firstFree = nf;
                 p->vtable = 0;
-                VLOG("GC=>%p %d", p, numwords);
+                GC_CHECK(!nf->nextFree || ((uint32_t)nf->nextFree) >> 20, 48);
+                VVLOG("GC=>%p %d %p", p, numwords, nf->nextFree);
                 return p;
             }
             prev = p;
