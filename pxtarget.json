@@ -28,6 +28,7 @@
         "libs/controller",
         "libs/servo",
         "libs/serial",
-        "libs/jacdac"
+        "libs/jacdac",
+        "libs/datalogger"
     ]
 }
