@@ -109,9 +109,9 @@ static void drawNumber(int idx, uint8_t *bmp, int x, int y, int hb) {
 
 static void drawPanic(int code) {
     auto display = getWDisplay();
-    auto hb = display->width >> 1;
+    auto hb = display->height >> 1;
     auto ptr = display->screenBuf;
-    auto dw = display->height;
+    auto dw = display->width;
 
     memset(ptr, 0, hb * dw);
 
@@ -134,6 +134,8 @@ extern "C" void target_panic(int statusCode) {
     DMESG("*** CODAL PANIC : [%d]", statusCode);
 
     drawPanic(statusCode);
+
+    target_disable_irq();
 
     while (1) {
     }
