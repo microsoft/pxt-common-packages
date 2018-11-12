@@ -19,7 +19,9 @@
         "control.cpp",
         "control.ts",
         "console.ts",
-        "eventcontext.ts"
+        "eventcontext.ts",
+        "animationqueue.ts",
+        "pollevents.ts"
     ],
     "testFiles": [
         "test.ts"

@@ -23,14 +23,6 @@ String deviceDalVersion() {
     return mkString(device.getVersion());
 }
 
-/**
-* Allocates the next user notification event
-*/
-//% help=control/allocate-notify-event
-int allocateNotifyEvent() {
-    return ::allocateNotifyEvent();
-}
-
 /** Write a message to DMESG debugging buffer. */
 //%
 void dmesg(String s) {

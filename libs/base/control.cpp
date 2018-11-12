@@ -65,6 +65,15 @@ namespace control {
         return pxt::getSerialNumber();
     }
 
+
+    /**
+    * Allocates the next user notification event
+    */
+    //% help=control/allocate-notify-event
+    int allocateNotifyEvent() {
+        return ::allocateNotifyEvent();
+    }
+
     /**
     *
     */
