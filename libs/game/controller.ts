@@ -25,6 +25,7 @@ namespace controller {
         if (!controlledSprites) {
             controlledSprites = [];
             game.currentScene().eventContext.registerFrameHandler(19, () => {
+                control.enablePerfCounter("controller")
                 controlledSprites.forEach(controlled => {
                     if (controlled.vx) {
                         controlled.s.vx = 0;

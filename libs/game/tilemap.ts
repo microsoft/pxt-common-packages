@@ -240,7 +240,8 @@ namespace tiles {
             if (!this.enabled) return false;
             if (this.isOutsideMap(col, row)) return true;
 
-            return this._tileSets[this._map.getPixel(col, row)].obstacle;
+            let t = this._tileSets[this._map.getPixel(col, row)];
+            return t && t.obstacle;
         }
 
         public getObstacle(col: number, row: number) {

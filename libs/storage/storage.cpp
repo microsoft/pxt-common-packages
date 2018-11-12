@@ -67,8 +67,11 @@ snorfs::File *getFile(String filename) {
     // maybe we want to keep say up to 5 files open?
     static String currFilename;
     static snorfs::File *currFile;
-    if (currFilename) {
-        if (filename && strcmp(currFilename->data, filename->data) == 0)
+
+    if (!currFilename) {
+        registerGC(&currFilename);
+    } else {
+        if (filename && String_::compare(currFilename, filename) == 0)
             return currFile;
         decrRC(currFilename);
         delete currFile;
