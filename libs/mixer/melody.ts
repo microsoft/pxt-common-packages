@@ -19,6 +19,67 @@ namespace music {
     //% shim=music::forceOutput
     export function forceOutput(buf: MusicOutput) { }
 
+    let globalVolume = 128
+
+    /**
+     * Set the default output volume of the sound synthesizer.
+     * @param volume the volume 0...256, eg: 128
+     */
+    //% blockId=synth_set_volume block="set volume %volume"
+    //% parts="speaker"
+    //% volume.min=0 volume.max=256
+    //% help=music/set-volume
+    //% weight=70
+    export function setVolume(volume: number): void {
+        globalVolume = Math.clamp(0, 255, volume | 0)
+    }
+
+    let playToneFreq: number
+    let playToneEnd: number
+    let playToneSeq = 0
+
+    /**
+     * Play a tone through the speaker for some amount of time.
+     * @param frequency pitch of the tone to play in Hertz (Hz), eg: Note.C
+     * @param ms tone duration in milliseconds (ms), eg: BeatFraction.Half
+     */
+    //% help=music/play-tone
+    //% blockId=music_play_note block="play tone|at %note=device_note|for %duration=device_beat"
+    //% parts="headphone" async
+    //% blockNamespace=music
+    //% weight=76 blockGap=8
+    export function playTone(frequency: number, ms: number): void {
+        if (playToneFreq == null) {
+            let buf = control.createBuffer(10 + 1)
+            control.runInParallel(() => {
+                while (true) {
+                    if (playToneFreq && playToneEnd) {
+                        if (control.millis() > playToneEnd) {
+                            playToneFreq = 0
+                            playToneSeq++
+                        }
+                    }
+                    if (playToneFreq == 0) {
+                        pause(3)
+                    } else {
+                        addNote(buf, 0, 60, 255, 255, 1, playToneFreq, globalVolume)
+                        playInstructions(buf)
+                    }                        
+                }
+            })
+        }
+        playToneFreq = frequency
+        if (ms) {
+            let seq = ++playToneSeq
+            playToneEnd = control.millis() + ms
+            while (seq == playToneSeq)
+                pause(3)
+        } else {
+            playToneEnd = 0
+        }
+    }
+
+
     //% fixedInstances
     export class Melody {
         _text: string;
@@ -55,7 +116,7 @@ namespace music {
         //% blockId=music_loop_sound block="play sound %sound=music_sounds"
         //% parts="headphone"
         //% weight=95 blockGap=8
-        loop(volume = 64) {
+        loop(volume = 128) {
             this.playCore(volume, true)
         }
 
@@ -67,7 +128,7 @@ namespace music {
         //% blockId=music_play_sound block="play sound %sound=music_sounds"
         //% parts="headphone"
         //% weight=95 blockGap=8
-        play(volume = 64) {
+        play(volume = 128) {
             this.playCore(volume, false)
         }
 
@@ -80,11 +141,26 @@ namespace music {
         //% blockId=music_play_sound_until_done block="play sound %sound=music_sounds|until done"
         //% parts="headphone"
         //% weight=94 blockGap=8
-        playUntilDone(volume = 64) {
+        playUntilDone(volume = 128) {
             this.stop()
             new MelodyPlayer(this).play(volume)
         }
     }
+
+    function addNote(sndInstr: Buffer, sndInstrPtr: number, ms: number, beg: number, end: number, soundWave: number, hz: number, volume: number) {
+        if (ms > 0) {
+            sndInstr.setNumber(NumberFormat.UInt8LE, sndInstrPtr, soundWave)
+            sndInstr.setNumber(NumberFormat.UInt8LE, sndInstrPtr + 1, 0)
+            sndInstr.setNumber(NumberFormat.UInt16LE, sndInstrPtr + 2, hz)
+            sndInstr.setNumber(NumberFormat.UInt16LE, sndInstrPtr + 4, ms)
+            sndInstr.setNumber(NumberFormat.UInt16LE, sndInstrPtr + 6, (beg * volume) >> 6)
+            sndInstr.setNumber(NumberFormat.UInt16LE, sndInstrPtr + 8, (end * volume) >> 6)
+            sndInstrPtr += 10
+        }
+        sndInstr.setNumber(NumberFormat.UInt8LE, sndInstrPtr, 0) // terminate
+        return sndInstrPtr
+    }
+
 
     class MelodyPlayer {
         melody: Melody;
@@ -102,7 +178,7 @@ namespace music {
             if (!this.melody)
                 return
 
-            volume = Math.clamp(0, 255, volume)
+            volume = Math.clamp(0, 255, (volume * globalVolume) >> 8)
 
             let notes = this.melody._text
             let pos = 0;
@@ -122,16 +198,7 @@ namespace music {
             let sndInstrPtr = 0
 
             const addForm = (ms: number, beg: number, end: number) => {
-                if (ms > 0) {
-                    sndInstr.setNumber(NumberFormat.UInt8LE, sndInstrPtr, soundWave)
-                    sndInstr.setNumber(NumberFormat.UInt8LE, sndInstrPtr + 1, 0)
-                    sndInstr.setNumber(NumberFormat.UInt16LE, sndInstrPtr + 2, hz)
-                    sndInstr.setNumber(NumberFormat.UInt16LE, sndInstrPtr + 4, ms)
-                    sndInstr.setNumber(NumberFormat.UInt16LE, sndInstrPtr + 6, (beg * volume) >> 6)
-                    sndInstr.setNumber(NumberFormat.UInt16LE, sndInstrPtr + 8, (end * volume) >> 6)
-                    sndInstrPtr += 10
-                }
-                sndInstr.setNumber(NumberFormat.UInt8LE, sndInstrPtr, 0) // terminate
+                sndInstrPtr = addNote(sndInstr, sndInstrPtr, ms, beg, end, soundWave, hz, volume)
             }
 
             const scanNextNote = () => {

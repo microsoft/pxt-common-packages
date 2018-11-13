@@ -8,7 +8,7 @@ class SoundOutput {
   public:
     ZPWM dac;
     ZSingleWireSerial sws;
-    PktSerial pktSerial;
+    JACDAC pktSerial;
     JackRouter jackRouter;
 
     SoundOutput(DataSource &data)
