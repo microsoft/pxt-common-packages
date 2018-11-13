@@ -829,6 +829,7 @@ Buffer createBuffer(int size);
 }
 
 namespace String_ {
+//%
 int compare(String a, String b);
 } // namespace String_
 
