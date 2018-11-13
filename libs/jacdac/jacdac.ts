@@ -32,12 +32,16 @@ class JacDacDriver {
     /**
      * Called by the logic driver when a new device is connected to the serial bus
      */
-    public deviceConnected(): void { }
+    public deviceConnected(): void {
+        control.dmesg(`jd> device connected`)
+    }
 
     /**
      * Called by the logic driver when an existing device is disconnected from the serial bus
      **/
-    public deviceRemoved(): void { }
+    public deviceRemoved(): void {
+        control.dmesg(`jd> device removed`)
+    }
 
     /**
      * Sends a pairing packet
@@ -94,6 +98,7 @@ namespace jacdac {
     export function addDriver(n: JacDacDriver) {
         if (n.device) // don't add twice
             return;
+        control.dmesg(`jd> adding driver ${n.driverType} ${n.deviceClass}`)
         n.device = __internalAddDriver(n.driverType, n.deviceClass, [
             (p: Buffer) => n.handleControlPacket(p),
             (p: Buffer) => n.handlePacket(p),
@@ -107,6 +112,7 @@ namespace jacdac {
      * @param pkt jackdack data
      */
     export function sendPacket(pkt: Buffer, deviceAddress: number) {
+        control.dmesg(`jd> send pkt to ${deviceAddress}`)        
         __internalSendPacket(pkt, deviceAddress);
     }
 
@@ -163,13 +169,11 @@ namespace jacdac {
     }
 
     /**
-     * Listens for a particular event pair
+     * Pipes specific events through JACDAC
      */
     //%
-    let _eventBus: MessageBusDriver = undefined;
+    const eventBus: MessageBusDriver = new MessageBusDriver();
     export function listenEvent(src: number, value: number) {
-        if (!_eventBus)
-            _eventBus = new MessageBusDriver();
-        _eventBus.listenEvent(src, value);
+        eventBus.listenEvent(src, value);
     }
 }
