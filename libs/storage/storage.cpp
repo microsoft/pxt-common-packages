@@ -69,7 +69,7 @@ snorfs::File *getFile(String filename) {
     static snorfs::File *currFile;
 
     if (!currFilename) {
-        registerGC(&currFilename);
+        registerGC((TValue*)&currFilename);
     } else {
         if (filename && String_::compare(currFilename, filename) == 0)
             return currFile;
