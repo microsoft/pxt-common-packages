@@ -13,7 +13,7 @@ class WMicrophone {
     LevelDetectorSPL level;
     WMicrophone()
         : microphone(*LOOKUP_PIN(MIC_DATA), *LOOKUP_PIN(MIC_CLOCK), pxt::getWDMAC()->dmac, 220000, 22000*16)
-        , level(microphone.output, 95.0, 75.0, DEVICE_ID_MICROPHONE)
+        , level(microphone.output, 95.0, 75.0, 1, 52, DEVICE_ID_MICROPHONE)
     {
         microphone.enable();
     }
