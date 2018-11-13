@@ -412,7 +412,7 @@ extern "C" void handleHardFault(ExceptionContext *ectx) {
         stackSize = DEVICE_STACK_BASE - (uint32_t)ssp;
         if (stackCopy)
             free(stackCopy);
-        stackCopy = malloc(stackSize);
+        stackCopy = xmalloc(stackSize);
         memcpy(stackCopy, ssp, stackSize);
         ectx->faultInstrAddr = ((uint32_t)(&bkptPaused) & (~1U));
         return;

@@ -33,5 +33,4 @@ game.onUpdate(function () {
 
 ## See also #seealso
 
-[was pressed](/reference/controller/button/was-pressed),
 [on event](/reference/controller/button/on-event)

@@ -2,7 +2,9 @@ enum ControllerButtonEvent {
     //% block="pressed"
     Pressed = KEY_DOWN,
     //% block="released"
-    Released = KEY_UP
+    Released = KEY_UP,
+    //% block="repeat"
+    Repeated = SYSTEM_KEY_REPEAT
 }
 
 /**
@@ -66,6 +68,13 @@ namespace controller {
                 control.raiseEvent(SYSTEM_KEY_DOWN, this.id)
         }
 
+        private raiseButtonRepeat() {
+            if (_userEventsEnabled)
+                control.raiseEvent(KEY_REPEAT, this.id)
+            else
+                control.raiseEvent(SYSTEM_KEY_REPEAT, this.id)
+        }
+
         /**
          * Run some code when a button is pressed or released
          */
@@ -103,7 +112,7 @@ namespace controller {
             // do we have enough time to repeat
             const count = Math.floor((this._pressedElasped - this.repeatDelay) / this.repeatInterval);
             if (count != this._repeatCount) {
-                this.raiseButtonDown();
+                this.raiseButtonRepeat();
                 this._repeatCount = count;
             }
         }

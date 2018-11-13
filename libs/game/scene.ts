@@ -29,6 +29,8 @@ namespace scene {
         background: Background;
         tileMap: tiles.TileMap;
         allSprites: SpriteLike[];
+        private spriteNextId: number;
+        spritesByKind: Sprite[][];
         physicsEngine: PhysicsEngine;
         camera: scene.Camera;
         flags: number;
@@ -47,59 +49,57 @@ namespace scene {
             this.createdHandlers = [];
             this.overlapHandlers = [];
             this.collisionHandlers = [];
+            this.spritesByKind = [];
         }
 
         init() {
             if (this.allSprites) return;
 
             this.allSprites = [];
+            this.spriteNextId = 0;
             scene.setBackgroundColor(0)
             // update controller state
             this.eventContext.registerFrameHandler(8, () => {
-                performance.startTimer("controller_update")
+                control.enablePerfCounter("controller_update")
                 const dt = this.eventContext.deltaTime;
                 controller.__update(dt);
-                performance.stopTimer("controller_update")
             })
             // update sprites in tilemap
             this.eventContext.registerFrameHandler(9, () => {
+                control.enablePerfCounter("tilemap_update")
                 if (this.tileMap) {
-                    performance.startTimer("tilemap_update")
                     this.tileMap.update(this.camera);
-                    performance.stopTimer("tilemap_update")
                 }
             })
             // apply physics 10
             this.eventContext.registerFrameHandler(10, () => {
-                performance.startTimer("physics")
+                control.enablePerfCounter("physics")
                 const dt = this.eventContext.deltaTime;
                 this.physicsEngine.move(dt);
-                performance.stopTimer("physics")
             })
             // user update 20
             // apply collisions 30
             this.eventContext.registerFrameHandler(30, () => {
-                performance.startTimer("collisions")
+                control.enablePerfCounter("collisions")
                 const dt = this.eventContext.deltaTime;
-                this.camera.update();
                 this.physicsEngine.collisions();
+                this.camera.update();
                 for (const s of this.allSprites)
                     s.__update(this.camera, dt);
-                performance.stopTimer("collisions")
             })
             // render background 60
             this.eventContext.registerFrameHandler(60, () => {
+                control.enablePerfCounter("render background")
                 this.background.render();
             })
             // paint 75
             // render sprites 90
             this.eventContext.registerFrameHandler(90, () => {
+                control.enablePerfCounter("sprite_draw")
                 if (this.flags & Flag.NeedsSorting)
                 this.allSprites.sort(function (a, b) { return a.z - b.z || a.id - b.id; })
-                performance.startTimer("sprite_draw")
                 for (const s of this.allSprites)
                     s.__draw(this.camera);
-                performance.stopTimer("sprite_draw")
             })
             // render diagnostics
             this.eventContext.registerFrameHandler(150, () => {
@@ -110,6 +110,11 @@ namespace scene {
             });
             // update screen
             this.eventContext.registerFrameHandler(200, control.__screen.update);
+        }
+
+        addSprite(sprite: SpriteLike) {
+            this.allSprites.push(sprite);
+            sprite.id = this.spriteNextId++;
         }
     }
 }

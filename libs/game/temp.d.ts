@@ -18,6 +18,8 @@ declare interface Array<T> {
 
 declare interface String {
     length: number;
+    charAt(index: number): string;
+    substr(start: number, length?: number): string;
 }
 
 declare namespace Math {
@@ -29,6 +31,8 @@ declare namespace Math {
     function abs(a: number): number;
     function sqrt(a: number): number;
     function randomRange(a: number, b: number): number;
+    function idiv(x: number, y: number): number;
+    function sign(x: number): number;
 }
 
 declare const img: any;

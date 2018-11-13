@@ -4,6 +4,7 @@
     "files": [
         "README.md",
         "temperature.cpp",
+        "target_temperature.h",
         "shims.d.ts",
         "enums.d.ts",
         "ns.ts"

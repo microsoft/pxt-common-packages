@@ -1,10 +1,10 @@
 #include "pxt.h"
+#include "AnalogSensor.h"
 
-#ifndef CODAL_LIGHT_SENSOR_HEADER
-#define CODAL_LIGHT_SENSOR_HEADER "AnalogSensor.h"
+#ifdef CODAL_LIGHT_SENSOR_HEADER
+#include CODAL_LIGHT_SENSOR_HEADER
 #endif
 
-#include CODAL_LIGHT_SENSOR_HEADER
 
 #ifndef CODAL_LIGHT_SENSOR
 #define CODAL_LIGHT_SENSOR AnalogSensor

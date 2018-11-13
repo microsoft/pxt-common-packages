@@ -64,4 +64,41 @@ namespace control {
     int deviceSerialNumber() {
         return pxt::getSerialNumber();
     }
+
+    /**
+    *
+    */
+    //%
+    void __log(String text) {
+        if (NULL == text) return;
+        pxt::sendSerial(text->data, text->length);
+    }
+
+    /**
+     * Dump internal information about a value.
+     */
+    //%
+    void dmesgValue(TValue v) {
+        anyPrint(v);
+    }
+
+    /**
+     * Force GC and dump information about heap.
+     */
+    //%
+    void gc() {
+        pxt::gc(1);
+    }
+
+    /**
+     * Return true if profiling is enabled in the current build.
+     */
+    //%
+    bool profilingEnabled() {
+#ifdef PXT_PROFILE
+        return true;
+#else
+        return false;
+#endif
+    }
 }

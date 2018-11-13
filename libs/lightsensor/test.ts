@@ -1,3 +1,3 @@
 forever(() => {
-    serial.writeLine(`light=${input.lightLevel()}`);
+    console.log(`light=${input.lightLevel()}`);
 })
