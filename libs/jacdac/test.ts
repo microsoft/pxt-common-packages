@@ -1,4 +1,4 @@
-jacdac.listenEvent(DAL.DEVICE_ID_BUTTON_A, DAL.DEVICE_BUTTON_EVT_CLICK);
-control.onEvent(DAL.DEVICE_ID_BUTTON_A, DAL.DEVICE_BUTTON_EVT_CLICK, function () {
+jacdac.listenEvent(9008, DAL.DEVICE_BUTTON_EVT_CLICK);
+control.onEvent(9008, DAL.DEVICE_BUTTON_EVT_CLICK, function () {
     console.log('click')
 })

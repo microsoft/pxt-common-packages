@@ -39,11 +39,15 @@ class WProtocol {
     codal::JACDAC jd;
     codal::JDProtocol protocol; // note that this is different pins than io->i2c
     WProtocol()
+#ifdef CODAL_JACDAC_SUPER_UGLY_CTOR
+        : sws(*LOOKUP_PIN(JACDAC), SERCOM0, 0, PINMUX_PA04D_SERCOM0_PAD0, 0)
+#else        
         : sws(*LOOKUP_PIN(JACDAC))
+#endif       
         , jd(*LOOKUP_PIN(JACDAC), sws) 
         , protocol(jd)
     {
-        jd.init();
+        jd.start();
     }
 };
 

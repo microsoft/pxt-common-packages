@@ -8,6 +8,8 @@ namespace jacdac {
         constructor() {
             super(DriverType.BroadcastDriver, DAL.JD_DRIVER_CLASS_MESSAGE_BUS);
             this.suppressForwarding = false;
+            // alea jacta est
+            jacdac.addDriver(this);
         }
 
         /**

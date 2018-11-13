@@ -14,5 +14,12 @@
     "public": true,
     "dependencies": {
         "core": "file:../core"
+    },
+    "yotta": {
+        "config": {
+            "jd": {
+                "debug": 1
+            }
+        }
     }
 }
