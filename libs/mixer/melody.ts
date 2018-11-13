@@ -13,7 +13,7 @@ namespace music {
         7d06e0064907b8072d08a9082d09b9094d0aea0a900b400cfa0cc00d910e6f0f5a1053115b1272139a14d4152017
         8018f519801b231dde1e`
 
-    //% shim=music::playInstructions
+    //% promise shim=music::playInstructions
     function playInstructions(buf: Buffer) { }
 
     //% shim=music::forceOutput
