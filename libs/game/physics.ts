@@ -73,6 +73,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
     }
 
     collisions() {
+        control.enablePerfCounter("phys_collisions")
+
         // 1: clear obstacles
         for (let i = 0; i < this.sprites.length; ++i)
             this.sprites[i].clearObstacles();
@@ -95,21 +97,25 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         for (const sprite of colliders) {
             const overSprites = scene.physicsEngine.overlaps(sprite);
             for (const overlapper of overSprites) {
-                // overlap handler
-                const tmpsprite = sprite;
-                const tmp = overlapper;
-                const oh = sprite.overlapHandler;
-                if (oh)
-                    control.runInParallel(() => oh(tmp))
-                if (tmp._overlappers.indexOf(tmpsprite.id) == -1) {
+                // Maintaining invariant that the sprite with the higher ID has the other sprite as an overlapper
+                const higher = sprite.id > overlapper.id ? sprite : overlapper;
+                const lower = higher === sprite ? overlapper : sprite;
+
+                if (higher._overlappers.indexOf(lower.id) === -1) {
+                    if (sprite.overlapHandler) {
+                        control.runInParallel(() => {
+                            higher._overlappers.push(lower.id);
+                            sprite.overlapHandler(overlapper);
+                            higher._overlappers.removeElement(lower.id);
+                        });
+                    }
+
                     scene.overlapHandlers
                         .filter(h => h.type == sprite.type && h.otherType == overlapper.type)
                         .forEach(h => control.runInParallel(() => {
-                            tmp._overlappers.push(tmpsprite.id);
-                            tmpsprite._overlappers.push(tmp.id);
-                            h.handler(tmpsprite, tmp);
-                            tmp._overlappers.removeElement(tmpsprite.id);
-                            tmpsprite._overlappers.removeElement(tmp.id);
+                            higher._overlappers.push(lower.id);
+                            h.handler(sprite, overlapper);
+                            higher._overlappers.removeElement(lower.id);
                         }));
                 }
             }
@@ -245,5 +251,10 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 }
 
 function constrain(v: number) {
-    return Math.abs(v) > MAX_VELOCITY ? Math.sign(v) * MAX_VELOCITY : v;
+    if (v > MAX_VELOCITY)
+        return MAX_VELOCITY
+    if (v < -MAX_VELOCITY)
+        return -MAX_VELOCITY
+    return v
+    //return Math.abs(v) > MAX_VELOCITY ? Math.sign(v) * MAX_VELOCITY : v;
 }

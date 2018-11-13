@@ -7,6 +7,7 @@ TouchButton getTouchButton(int id) {
     auto cpid = DEVICE_ID_FIRST_TOUCHBUTTON + id;
     auto btn = (CapTouchButton*)lookupComponent(cpid);
     if (btn == NULL) {
+        // GCTODO
         // 'new' will add it to component list
         btn = new CapTouchButton(*pxt::getPin(id));
         btn->id = cpid;

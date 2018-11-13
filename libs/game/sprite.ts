@@ -453,7 +453,6 @@ class Sprite implements SpriteLike {
 
         const l = this.left - camera.offsetX;
         const t = this.top - camera.offsetY;
-        const font = image.font8;
         screen.drawTransparentImage(this._image, l, t)
 
         // debug info
@@ -521,6 +520,7 @@ class Sprite implements SpriteLike {
     //% blockId=spriteoverlapswith block="%sprite(mySprite) overlaps with %other=variables_get(otherSprite)"
     //% help=sprites/sprite/overlaps-with
     overlapsWith(other: Sprite) {
+        control.enablePerfCounter("overlapsCPP")
         if (other == this) return false;
         if (this.flags & sprites.Flag.Ghost)
             return false
@@ -592,12 +592,11 @@ class Sprite implements SpriteLike {
         this._obstacles[direction] = other;
 
         const handler = (this.collisionHandlers && this.collisionHandlers[direction]) ? this.collisionHandlers[direction][other.tileIndex] : undefined;
-        if (handler)
-            control.runInParallel(handler);
+        if (handler) handler();
         const scene = game.currentScene();
         scene.collisionHandlers
             .filter(h => h.type == this.type && h.tile == other.tileIndex)
-            .forEach(h => control.runInParallel(() => h.handler(this)));
+            .forEach(h => h.handler(this));
     }
 
     /**
