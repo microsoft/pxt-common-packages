@@ -1,12 +1,6 @@
 #include "pxt.h"
 #include "JDProtocol.h"
 
-#ifndef CODAL_JACDAC_WIRE_SERIAL
-uint32_t target_get_serial() {
-    return 0;
-}
-#endif
-
 namespace jacdac {
 
 #ifndef CODAL_JACDAC_WIRE_SERIAL
