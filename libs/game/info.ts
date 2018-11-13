@@ -54,6 +54,7 @@ namespace info {
         _borderColor = screen.isMono ? 1 : 3;
         _fontColor = screen.isMono ? 1 : 3;
         game.eventContext().registerFrameHandler(95, () => {
+            control.enablePerfCounter("info")
             // show score
             if (_score !== null && _visibilityFlag & Visibility.Score) {
                 drawScore();

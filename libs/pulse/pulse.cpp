@@ -283,6 +283,8 @@ void PulseBase::packetEnd(Event) {
     uint16_t crc = crc16ccit(buf, ptr);
     uint16_t pktCrc = (buf[ptr + 1] << 8) | buf[ptr];
 
+    if (!outBuffer)
+        registerGC((TValue*)&outBuffer);
     decrRC(outBuffer);
     outBuffer = pins::createBuffer(ptr);
     memcpy(outBuffer->data, buf, ptr);
