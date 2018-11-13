@@ -5,6 +5,15 @@
 */
 //% color=#AA5585 weight=80 icon="\uf2bb"
 namespace info {
+
+    enum Visibility {
+        None = 0,
+        Countdown = 1 << 0,
+        Score = 1 << 1,
+        Life = 1 << 2,
+        All = ~(~0 << 3)
+    }
+
     let _score: number = null;
     let _highScore: number = null;
     let _life: number = null;
@@ -16,6 +25,7 @@ namespace info {
     let _borderColor: number;
     let _fontColor: number;
     let _countdownExpired: boolean;
+    let _visibilityFlag: number = Visibility.None;
 
 
     let _lifeOverHandler: () => void;
@@ -44,25 +54,26 @@ namespace info {
         _borderColor = screen.isMono ? 1 : 3;
         _fontColor = screen.isMono ? 1 : 3;
         game.eventContext().registerFrameHandler(95, () => {
+            control.enablePerfCounter("info")
             // show score
-            if (_score !== null) {
+            if (_score !== null && _visibilityFlag & Visibility.Score) {
                 drawScore();
             }
             // show life
-            if (_life !== null) {
+            if (_life !== null && _visibilityFlag & Visibility.Life) {
                 drawLives();
-                if (_life == 0) {
+                if (_life <= 0) {
+                    _life = null;
                     if (_lifeOverHandler) {
                         _lifeOverHandler();
                     }
                     else {
                         game.over();
                     }
-                    _life = null;
                 }
             }
             // show countdown
-            if (_gameEnd !== undefined) {
+            if (_gameEnd !== undefined && _visibilityFlag & Visibility.Countdown) {
                 drawTimer(_gameEnd - control.millis())
                 let t = Math.max(0, _gameEnd - control.millis()) / 1000;
                 if (t <= 0) {
@@ -108,17 +119,19 @@ namespace info {
         if (_score !== null) return
         _score = 0;
         _highScore = updateHighScore(_score);
+        updateFlag(Visibility.Score, true);
         initHUD();
     }
 
     function initLife() {
         if (_life !== null) return
         _life = 3;
+        updateFlag(Visibility.Life, true);
         initHUD();
     }
 
     /**
-     * Ges the current score if any
+     * Get the current score if any
      */
     //% weight=95 blockGap=8
     //% blockId=hudScore block="score"
@@ -217,11 +230,12 @@ namespace info {
     }
 
     /**
-     * Register code to run when the player's life reaches 0. If this function
-     * is not called then game.over() will be called instead
+     * Run code when the player's life reaches 0. If this function
+     * is not called then game.over() is called instead
      */
     //% weight=82
     //% blockId=gamelifeevent block="on life zero"
+    //% help=info/on-life-zero
     export function onLifeZero(handler: () => void) {
         _lifeOverHandler = handler;
     }
@@ -235,23 +249,27 @@ namespace info {
     export function startCountdown(duration: number) {
         initHUD();
         _gameEnd = control.millis() + duration * 1000;
+        updateFlag(Visibility.Countdown, true);
         _countdownExpired = false;
     }
 
     /**
-     * Stops the current countdown and hides the timer UI
+     * Stop the current countdown and hides the timer display
      */
     //% blockId=gamestopcountdown block="stop countdown" weight=78
+    //% help=info/stop-countdown
     export function stopCountdown() {
         _gameEnd = undefined;
+        updateFlag(Visibility.Countdown, false);
         _countdownExpired = true;
     }
 
     /**
-     * Register code to run when the countdown reaches 0. If this function
-     * is not called then game.over() will be called instead
+     * Run code when the countdown reaches 0. If this function
+     * is not called then game.over() is called instead
      */
     //% blockId=gamecountdownevent block="on countdown end" weight=77
+    //% help=info/on-countdown-end
     export function onCountdownEnd(handler: () => void) {
         _countdownEndHandler = handler;
     }
@@ -263,6 +281,38 @@ namespace info {
     //%
     export function setLifeImage(image: Image) {
         _heartImage = image;
+    }
+
+    /**
+     * Set whether life should be displayed
+     * @param on if true, lives are shown; otherwise, lives are hidden
+     */
+    export function showLife(on: boolean) {
+        initLife();
+        updateFlag(Visibility.Life, on);
+    }
+
+    /**
+     * Set whether score should be displayed
+     * @param on if true, score is shown; otherwise, score is hidden
+     */
+    export function showScore(on: boolean) {
+        initScore();
+        updateFlag(Visibility.Score, on);
+    }
+
+    /**
+     * Set whether score should be displayed
+     * @param on if true, score is shown; otherwise, score is hidden
+     */
+    export function showCountdown(on: boolean) {
+        updateFlag(Visibility.Countdown, on);
+    }
+
+
+    function updateFlag(flag: Visibility, on: boolean) {
+        if (on) _visibilityFlag |= flag;
+        else _visibilityFlag &= Visibility.All ^ flag;
     }
 
     /**
@@ -292,6 +342,30 @@ namespace info {
         _fontColor = Math.min(Math.max(color, 0), 15) | 0;
     }
 
+    /**
+     * Get the current color of the borders around the score, countdown, and life
+     * elements
+     */
+    export function borderColor(): number {
+        return _borderColor ? _borderColor : 3;
+    }
+
+    /**
+     * Get the current color of the background of the score, countdown, and life
+     * elements
+     */
+    export function backgroundColor(): number {
+        return _bgColor ? _bgColor : 1;
+    }
+
+    /**
+     * Get the current color of the text usded in the score, countdown, and life
+     * elements
+     */
+    export function fontColor(): number {
+        return _fontColor ? _fontColor : 3;
+    }
+    
     function drawTimer(millis: number) {
         if (millis < 0) millis = 0;
         millis |= 0;

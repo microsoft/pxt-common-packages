@@ -1,4 +1,11 @@
 namespace pxsim.serial {
+    let rxBuffer: string = ""; // another iframe could write to this
+    export function readString(): string {
+        const r = rxBuffer;
+        rxBuffer = "";
+        return r;
+    }
+
     export function writeString(str: string) {
         if (str)
             control.__log(str)
@@ -13,8 +20,7 @@ namespace pxsim.serial {
     export function setBaudRate(rate: number) {
         // TODO
     }
-    export function redirect(tx: pins.DigitalPin, rx: pins.DigitalPin) {
+    export function redirect(tx: pins.DigitalInOutPin, rx: pins.DigitalInOutPin) {
         // TODO
     }
-    export function redirectToUSB() {}
 }

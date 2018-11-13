@@ -4,13 +4,10 @@ using namespace std;
 
 namespace pxt {
 
+#ifndef PXT_GC
 TValue incr(TValue e) {
     if (isRefCounted(e)) {
         getVTable((RefObject *)e);
-#if MEMDBG_ENABLED
-        if (((RefObject *)e)->refcnt != 0xffff)
-            MEMDBG("INCR: %p refs=%d", e, ((RefObject *)e)->refcnt);
-#endif
         ((RefObject *)e)->ref();
     }
     return e;
@@ -18,104 +15,76 @@ TValue incr(TValue e) {
 
 void decr(TValue e) {
     if (isRefCounted(e)) {
-#if MEMDBG_ENABLED
-        if (((RefObject *)e)->refcnt != 0xffff)
-            MEMDBG("DECR: %p refs=%d", e, ((RefObject *)e)->refcnt);
-#endif
         ((RefObject *)e)->unref();
     }
 }
+#endif
 
-// TODO
-Action mkAction(int reflen, int totallen, int startptr) {
-    check(0 <= reflen && reflen <= totallen, ERR_SIZE, 1);
-    check(reflen <= totallen && totallen <= 255, ERR_SIZE, 2);
-    check(bytecode[startptr] == 0xffff, ERR_INVALID_BINARY_HEADER, 3);
-    check(bytecode[startptr + 1] == PXT_REF_TAG_ACTION, ERR_INVALID_BINARY_HEADER, 4);
-
-    uintptr_t tmp = (uintptr_t)&bytecode[startptr];
+Action mkAction(int totallen, RefAction *act) {
+    check(getVTable(act)->classNo == BuiltInType::RefAction,
+          PANIC_INVALID_BINARY_HEADER, 1);
 
     if (totallen == 0) {
-        return (TValue)tmp; // no closure needed
+        return (TValue)act; // no closure needed
     }
 
-    void *ptr = ::operator new(sizeof(RefAction) + totallen * sizeof(unsigned));
+    void *ptr = gcAllocate(sizeof(RefAction) + totallen * sizeof(unsigned));
     RefAction *r = new (ptr) RefAction();
     r->len = totallen;
-    r->reflen = reflen;
-    r->func = (ActionCB)((tmp + 4) | 1);
+    r->func = act->func;
     memset(r->fields, 0, r->len * sizeof(unsigned));
 
-    MEMDBG("mkAction: start=%p => %p", startptr, r);
+    MEMDBG("mkAction: start=%p => %p", act, r);
 
     return (Action)r;
 }
 
-// TODO
-TValue runAction3(Action a, TValue arg0, TValue arg1, TValue arg2) {
-    auto aa = (RefAction *)a;
-    if (aa->vtable == PXT_REF_TAG_ACTION) {
-        check(aa->refcnt == 0xffff, ERR_INVALID_BINARY_HEADER, 4);
-        return ((ActionCB)(((uintptr_t)a + 4) | 1))(NULL, arg0, arg1, arg2);
-    } else {
-        check(aa->refcnt != 0xffff, ERR_INVALID_BINARY_HEADER, 4);
-        return aa->runCore(arg0, arg1, arg2);
-    }
-}
+RefRecord *mkClassInstance(VTable *vtable) {
+    intcheck(vtable->methods[0] == &RefRecord_destroy, PANIC_SIZE, 3);
+    //intcheck(vtable->methods[1] == &RefRecord_print, PANIC_SIZE, 4);
 
-TValue runAction2(Action a, TValue arg0, TValue arg1) {
-    return runAction3(a, arg0, arg1, 0);
-}
-
-TValue runAction1(Action a, TValue arg0) {
-    return runAction3(a, arg0, 0, 0);
-}
-
-TValue runAction0(Action a) {
-    return runAction3(a, 0, 0, 0);
-}
-
-RefRecord *mkClassInstance(int vtableOffset) {
-    VTable *vtable = (VTable *)&bytecode[vtableOffset];
-
-    intcheck(vtable->methods[0] == &RefRecord_destroy, ERR_SIZE, 3);
-    intcheck(vtable->methods[1] == &RefRecord_print, ERR_SIZE, 4);
-
-    void *ptr = ::operator new(vtable->numbytes);
-    RefRecord *r = new (ptr) RefRecord(PXT_VTABLE_TO_INT(vtable));
+    void *ptr = gcAllocate(vtable->numbytes);
+    RefRecord *r = new (ptr) RefRecord(vtable);
     memset(r->fields, 0, vtable->numbytes - sizeof(RefRecord));
     MEMDBG("mkClass: vt=%p => %p", vtable, r);
     return r;
 }
 
 TValue RefRecord::ld(int idx) {
-    // intcheck((reflen == 255 ? 0 : reflen) <= idx && idx < len, ERR_OUT_OF_BOUNDS, 1);
+    // intcheck((reflen == 255 ? 0 : reflen) <= idx && idx < len, PANIC_OUT_OF_BOUNDS, 1);
     return fields[idx];
 }
 
 TValue RefRecord::ldref(int idx) {
     // DMESG("LD %p len=%d reflen=%d idx=%d", this, len, reflen, idx);
-    // intcheck(0 <= idx && idx < reflen, ERR_OUT_OF_BOUNDS, 2);
+    // intcheck(0 <= idx && idx < reflen, PANIC_OUT_OF_BOUNDS, 2);
     TValue tmp = fields[idx];
     incr(tmp);
     return tmp;
 }
 
 void RefRecord::st(int idx, TValue v) {
-    // intcheck((reflen == 255 ? 0 : reflen) <= idx && idx < len, ERR_OUT_OF_BOUNDS, 3);
+    // intcheck((reflen == 255 ? 0 : reflen) <= idx && idx < len, PANIC_OUT_OF_BOUNDS, 3);
     fields[idx] = v;
 }
 
 void RefRecord::stref(int idx, TValue v) {
     // DMESG("ST %p len=%d reflen=%d idx=%d", this, len, reflen, idx);
-    // intcheck(0 <= idx && idx < reflen, ERR_OUT_OF_BOUNDS, 4);
+    // intcheck(0 <= idx && idx < reflen, PANIC_OUT_OF_BOUNDS, 4);
     decr(fields[idx]);
     fields[idx] = v;
 }
 
 void RefObject::destroyVT() {
     ((RefObjectMethod)getVTable(this)->methods[0])(this);
-    ::operator delete(this);
+#ifndef PXT_GC
+    free(this);
+#endif
+}
+
+//%
+void deleteRefObject(RefObject *obj) {
+    obj->destroyVT();
 }
 
 void RefObject::printVT() {
@@ -123,18 +92,18 @@ void RefObject::printVT() {
 }
 
 void RefRecord_destroy(RefRecord *r) {
+#ifndef PXT_GC
     VTable *tbl = getVTable(r);
-    uint8_t *refmask = (uint8_t *)&tbl->methods[tbl->userdata & 0xff];
-    int len = (tbl->numbytes >> 2) - 1;
+    int len = (tbl->numbytes - sizeof(RefRecord)) >> 2;
     for (int i = 0; i < len; ++i) {
-        if (refmask[i])
-            decr(r->fields[i]);
+        decr(r->fields[i]);
         r->fields[i] = 0;
     }
+#endif
 }
 
 void RefRecord_print(RefRecord *r) {
-    DMESG("RefRecord %p r=%d size=%d bytes", r, r->refcnt, getVTable(r)->numbytes);
+    DMESG("RefRecord %p r=%d size=%d bytes", r, REFCNT(r), getVTable(r)->numbytes);
 }
 
 TValue Segment::get(unsigned i) {
@@ -185,7 +154,7 @@ ramint_t Segment::growthFactor(ramint_t size) {
     if (size < 512) {
         return size * 5 / 3; // Grow by 1.66 rate
     }
-     // Grow by constant rate
+    // Grow by constant rate
     if ((unsigned)size + 256 < MaxSize)
         return size + 256;
     else
@@ -203,7 +172,7 @@ void Segment::growBy(ramint_t newSize) {
 #endif
     if (size < newSize) {
         // this will throw if unable to allocate
-        TValue *tmp = (TValue *)(::operator new(newSize * sizeof(TValue)));
+        TValue *tmp = (TValue *)(xmalloc(newSize * sizeof(TValue)));
 
         // Copy existing data
         if (size) {
@@ -213,7 +182,7 @@ void Segment::growBy(ramint_t newSize) {
         memset(tmp + size, 0, (newSize - size) * sizeof(TValue));
 
         // free older segment;
-        ::operator delete(data);
+        free(data);
 
         data = tmp;
         size = newSize;
@@ -295,7 +264,7 @@ void Segment::insert(unsigned i, TValue value) {
 
     if (i < length) {
         ensure(length + 1);
-        
+
         // Move the rest of the elements to fill in the gap.
         memmove(data + i + 1, data + i, (length - i) * sizeof(unsigned));
 
@@ -331,7 +300,7 @@ void Segment::destroy() {
     this->print();
 #endif
     length = size = 0;
-    ::operator delete(data);
+    free(data);
     data = nullptr;
 }
 
@@ -388,24 +357,21 @@ bool RefCollection::removeElement(TValue x) {
     return 0;
 }
 
-namespace Coll0 {
-PXT_VTABLE_BEGIN(RefCollection, 0, 0)
-PXT_VTABLE_END
-} // namespace Coll0
-
-RefCollection::RefCollection() : RefObject(0) {
-    vtable = PXT_VTABLE_TO_INT(&Coll0::RefCollection_vtable);
-}
+PXT_VTABLE_CTOR(RefCollection) {}
 
 void RefCollection::destroy(RefCollection *t) {
-    for (unsigned i = 0; i < t->head.getLength(); i++) {
-        decr(t->head.get(i));
+#ifndef PXT_GC
+    auto data = t->head.getData();
+    auto len = t->head.getLength();
+    for (unsigned i = 0; i < len; i++) {
+        decr(data[i]);
     }
+#endif
     t->head.destroy();
 }
 
 void RefCollection::print(RefCollection *t) {
-    DMESG("RefCollection %p r=%d size=%d", t, t->refcnt, t->head.getLength());
+    DMESG("RefCollection %p r=%d size=%d", t, REFCNT(t), t->head.getLength());
     t->head.print();
 }
 
@@ -413,25 +379,17 @@ PXT_VTABLE_CTOR(RefAction) {}
 
 // fields[] contain captured locals
 void RefAction::destroy(RefAction *t) {
-    for (int i = 0; i < t->reflen; ++i) {
+#ifndef PXT_GC
+    for (int i = 0; i < t->len; ++i) {
         decr(t->fields[i]);
         t->fields[i] = 0;
     }
+#endif
 }
 
 void RefAction::print(RefAction *t) {
-    DMESG("RefAction %p r=%d pc=%X size=%d (%d refs)", t, t->refcnt,
-          (const uint8_t *)t->func - (const uint8_t *)bytecode, t->len, t->reflen);
-}
-
-void RefLocal::print(RefLocal *t) {
-    DMESG("RefLocal %p r=%d v=%d", t, t->refcnt, t->v);
-}
-
-void RefLocal::destroy(RefLocal *) {}
-
-PXT_VTABLE_CTOR(RefLocal) {
-    v = 0;
+    DMESG("RefAction %p r=%d pc=%X size=%d", t, REFCNT(t),
+          (const uint8_t *)t->func - (const uint8_t *)bytecode, t->len);
 }
 
 PXT_VTABLE_CTOR(RefRefLocal) {
@@ -439,55 +397,62 @@ PXT_VTABLE_CTOR(RefRefLocal) {
 }
 
 void RefRefLocal::print(RefRefLocal *t) {
-    DMESG("RefRefLocal %p r=%d v=%p", t, t->refcnt, (void *)t->v);
+    DMESG("RefRefLocal %p r=%d v=%p", t, REFCNT(t), (void *)t->v);
 }
 
 void RefRefLocal::destroy(RefRefLocal *t) {
     decr(t->v);
 }
 
-PXT_VTABLE_BEGIN(RefMap, 0, RefMapMarker)
-PXT_VTABLE_END
-RefMap::RefMap() : PXT_VTABLE_INIT(RefMap) {}
+PXT_VTABLE_CTOR(RefMap) {}
 
 void RefMap::destroy(RefMap *t) {
-    for (unsigned i = 0; i < t->values.getLength(); ++i) {
-        decr(t->values.get(i));
-        t->values.set(i, 0);
+#ifndef PXT_GC
+    auto len = t->values.getLength();
+    auto values = t->values.getData();
+    auto keys = t->keys.getData();
+    intcheck(t->keys.getLength() == len, PANIC_SIZE, 101);
+    for (unsigned i = 0; i < len; ++i) {
+        decr(values[i]);
+        values[i] = nullptr;
+        decr(keys[i]);
+        keys[i] = nullptr;
     }
+#endif
     t->keys.destroy();
     t->values.destroy();
 }
 
-int RefMap::findIdx(unsigned key) {
-    for (unsigned i = 0; i < keys.getLength(); ++i) {
-        if ((uintptr_t)keys.get(i) == key)
+int RefMap::findIdx(String key) {
+    auto len = keys.getLength();
+    auto data = (String *)keys.getData();
+
+    // fast path
+    for (unsigned i = 0; i < len; ++i) {
+        if (data[i] == key)
             return i;
     }
+
+    // slow path
+    auto keylen = key->length;
+    for (unsigned i = 0; i < len; ++i) {
+        auto s = data[i];
+        if (s->length == keylen && memcmp(s->data, key->data, keylen) == 0)
+            return i;
+    }
+
     return -1;
 }
 
 void RefMap::print(RefMap *t) {
-    DMESG("RefMap %p r=%d size=%d", t, t->refcnt, t->keys.getLength());
+    DMESG("RefMap %p r=%d size=%d", t, REFCNT(t), t->keys.getLength());
 }
 
-#ifdef PXT_MEMLEAK_DEBUG
-std::set<TValue> allptrs;
-void debugMemLeaks() {
-    DMESG("LIVE POINTERS:");
-    for (std::set<TValue>::iterator itr = allptrs.begin(); itr != allptrs.end(); itr++) {
-        anyPrint(*itr);
-    }
-    DMESG("LIVE POINTERS END.");
-    dumpDmesg();
-}
-#else
 void debugMemLeaks() {}
-#endif
 
-void error(PXT_ERROR code, int subcode) {
+void error(PXT_PANIC code, int subcode) {
     DMESG("Error: %d [%d]", code, subcode);
-    target_panic(42);
+    target_panic(code);
 }
 
 uint16_t *bytecode;
@@ -529,11 +494,8 @@ void exec_binary(unsigned *pc) {
     // unique group for radio based on source hash
     // ::touch_develop::micro_bit::radioDefaultGroup = programHash();
 
-    // repeat error 4 times and restart as needed
-    // microbit_panic_timeout(4);
-
     unsigned ver = *pc++;
-    checkStr(ver == 0x4209, ":( Bad runtime version");
+    checkStr(ver == 0x4210, ":( Bad runtime version");
 
     bytecode = *((uint16_t **)pc++); // the actual bytecode is here
     globals = (TValue *)allocate(getNumGlobals());
@@ -548,16 +510,13 @@ void exec_binary(unsigned *pc) {
 
     uintptr_t startptr = (uintptr_t)bytecode;
 
-    startptr += 48; // header
-    startptr |= 1;  // Thumb state
+    startptr += 64; // header
+
+    initPerfCounters();
 
     initRuntime();
 
-    ((unsigned (*)())startptr)();
-
-#ifdef PXT_MEMLEAK_DEBUG
-    pxt::debugMemLeaks();
-#endif
+    runAction0((Action)startptr);
 
     pxt::releaseFiber();
 }
@@ -568,3 +527,31 @@ void start() {
 #endif
 
 } // namespace pxt
+
+namespace Array_ {
+//%
+bool isArray(TValue arr) {
+    auto vt = getAnyVTable(arr);
+    return vt && vt->classNo == BuiltInType::RefCollection;
+}
+} // namespace Array_
+
+namespace pxtrt {
+//%
+RefCollection *keysOf(TValue v) {
+    auto r = NEW_GC(RefCollection);
+    MEMDBG("mkColl[keys]: => %p", r);
+    if (getAnyVTable(v) != &RefMap_vtable)
+        return r;
+    auto rm = (RefMap *)v;
+    auto len = rm->keys.getLength();
+    if (!len)
+        return r;
+    r->setLength(len);
+    auto dst = r->getData();
+    memcpy(dst, rm->keys.getData(), len * sizeof(TValue));
+    for (unsigned i = 0; i < len; ++i)
+        incr(dst[i]);
+    return r;
+}
+} // namespace pxtrt

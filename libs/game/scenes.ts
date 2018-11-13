@@ -6,7 +6,7 @@
 //% blockGap=8
 namespace scene {
     /**
-     * Gets the width in pixel of the screen
+     * Get the width of the screen in pixels
      */
     //% blockId=scenescreenwidth block="screen width"
     //% group="Screen"
@@ -17,7 +17,7 @@ namespace scene {
     }
 
     /**
-     * Gets the height in pixel of the screen
+     * Gets the height of the screen in pixels
      */
     //% blockId=scenescreenheight block="screen height"
     //% group="Screen"
@@ -28,7 +28,7 @@ namespace scene {
     }
 
     /**
-     * Sets the game background color
+     * Set the game background color
      * @param color
      */
     //% group="Screen"
@@ -41,20 +41,20 @@ namespace scene {
     }
 
     /**
-     * Sets the game background color
+     * Get the game background color
      * @param color
      */
     //% group="Screen"
     //% weight=22
     //% blockId=gamebackgroundcolor block="background color"
-    //% help=scene/get-background-color
+    //% help=scene/background-color
     export function backgroundColor() : number {
         const scene = game.currentScene();
         return scene.background.color;
     }
 
     /**
-     * Sets the picture on the background
+     * Set a picture as the background
      */
     //% group="Screen"
     //% weight=24
@@ -66,12 +66,12 @@ namespace scene {
     }
 
     /**
-     * Returns the background image
+     * Get the current background image
      */
     //% weight=22
     //% group="Screen"
     //% blockId=gamebackgroundimage block="background image"
-    //% help=scene/get-background-image
+    //% help=scene/background-image
     export function backgroundImage(): Image {
         const scene = game.currentScene();
         return scene.background.image;
@@ -91,7 +91,7 @@ namespace scene {
     }
 
     /**
-     * Sets the map for rendering tiles
+     * Set the map for placing tiles in the scene
      * @param map
      */
     //% blockId=gamesettilemap block="set tile map to %map=tilemap_image_picker"
@@ -105,7 +105,23 @@ namespace scene {
     }
 
     /**
-     * Sets the tile image at the given index. Tiles should be 16x16 images
+     * Set a tile at the given index
+     * @param tile
+     * @param index
+     */
+    //% blockId=gamesettileat block="set %tile=gamegettile to %index=colorindexpicker"
+    //% group="Tiles"
+    //% weight=30
+    //% help=scene/set-tile-at
+    export function setTileAt(tile: tiles.Tile, index: number) {
+        const scene = game.currentScene();
+        if (!scene.tileMap)
+            scene.tileMap = new tiles.TileMap();
+        scene.tileMap.setTileAt(tile.x >> 4, tile.y >> 4, index);
+    }
+
+    /**
+     * Set an image as a tile at the given index. Tiles should be a 16x16 image
      * @param index
      * @param img
      */
@@ -120,7 +136,36 @@ namespace scene {
     }
 
     /**
-     * The game camera follows a particular sprite
+     * Get the tile at a position in the tile map
+     * @param col
+     * @param row
+     */
+    //% blockId=gamegettile block="tile col %col row %row"
+    //% group="Tiles" blockSetVariable="myTile"
+    //% help=scene/get-tile
+    export function getTile(col: number, row: number): tiles.Tile {
+        const scene = game.currentScene();
+        if (!scene.tileMap)
+            scene.tileMap = new tiles.TileMap();
+        return scene.tileMap.getTile(col, row);
+    }
+
+    /**
+     * Get all tiles in the tile map with the given index.
+     * @param index
+     */
+    //% blockId=gamegettilestype block="array of all %index=colorindexpicker tiles"
+    //% group="Tiles" blockSetVariable="tile list"
+    //% help=scene/get-tiles-by-type
+    export function getTilesByType(index: number): tiles.Tile[] {
+        const scene = game.currentScene();
+        if (!scene.tileMap)
+            scene.tileMap = new tiles.TileMap();
+        return scene.tileMap.getTilesByType(index);
+    }
+
+    /**
+     * Set the game camera to follow a sprite
      * @param sprite
      */
     //% blockId=camerafollow block="camera follow sprite %sprite=variables_get(mySprite)"
@@ -132,7 +177,7 @@ namespace scene {
     }
 
     /**
-     * Moves the camera center to a given coordinate
+     * Moves the camera center to a coordinate position
      * @param sprite
      */
     //% blockId=camerapos block="center camera at x %x y %y"

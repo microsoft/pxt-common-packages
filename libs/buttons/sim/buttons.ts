@@ -112,9 +112,9 @@ namespace pxsim.ButtonMethods {
     }
 }
 
-namespace pxsim.DigitalPinMethods {
+namespace pxsim.DigitalInOutPinMethods {
 
-    export function pushButton(pin: pins.DigitalPin): Button {
+    export function pushButton(pin: pins.DigitalInOutPin): Button {
         return pxsim.pxtcore.getButtonByPin(pin.id);
     }
 }

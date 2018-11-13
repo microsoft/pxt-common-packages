@@ -16,6 +16,7 @@
     },
     "yotta": {
         "config": {
+            "DEVICE_USB": 1,
             "DEVICE_KEYBOARD": 1
         }
     }

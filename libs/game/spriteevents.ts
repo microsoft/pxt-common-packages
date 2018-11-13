@@ -10,12 +10,13 @@ namespace sprites {
     }
 
     /**
-     * Register an event when a particular kind of sprite is created
+     * Run code when a certain kind of sprite is created
      * @param kind
      * @param sprite
      */
     //% group="Lifecycle" draggableParameters weight=97
     //% blockId=spritesoncreated block="on created $sprite of kind $kind=spritetype"
+    //% help=sprites/on-created
     export function onCreated(kind: number, handler: (sprite: Sprite) => void): void {
         if (!handler || kind == undefined) return;
 
@@ -27,13 +28,14 @@ namespace sprites {
     }
 
     /**
-     * Register an event when a particular kind of sprite is destroyed
+     * Run code when a certain kind of sprite is destroyed
      * @param kind
      * @param sprite
      */
     //% group="Lifecycle"
     //% weight=96 draggableParameters
     //% blockId=spritesondestroyed block="on destroyed $sprite of kind $kind=spritetype "
+    //% help=sprites/on-destroyed
     export function onDestroyed(kind: number, handler: (sprite: Sprite) => void) {
         if (!handler || kind == undefined) return;
 
@@ -45,11 +47,12 @@ namespace sprites {
     }
 
     /**
-     * Register code to run when sprites overlap
+     * Run code when two kinds of sprites overlap
      */
     //% group="Overlaps"
     //% weight=100 draggableParameters
     //% blockId=spritesoverlap block="on $sprite of kind $kind=spritetype overlaps $otherSprite of kind $otherKind=spritetype"
+    //% help=sprites/on-overlap
     export function onOverlap(kind: number, otherKind: number, handler: (sprite: Sprite, otherSprite: Sprite) => void) {
         if (kind == undefined || otherKind == undefined ||!handler) return;
 
@@ -64,7 +67,7 @@ namespace sprites {
 
 namespace scene {
     /**
-     * Register a code handler when a collision happens
+     * Run code when a certain kind of sprite hits a tile
      * @param direction
      * @param tile
      * @param handler
@@ -72,6 +75,7 @@ namespace scene {
     //% group="Collisions"
     //% weight=100 draggableParameters
     //% blockId=spritesollisions block="on $sprite of kind $kind=spritetype hits wall $tile=colorindexpicker"
+    //% help=scene/on-hit-tile
     export function onHitTile(kind: number, tile: number, handler: (sprite: Sprite) => void) {
         if (kind == undefined || !handler) return;
 

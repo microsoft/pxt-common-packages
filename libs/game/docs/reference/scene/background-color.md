@@ -1,4 +1,4 @@
-# get Background Color
+# background Color
 
 Get the background color of the screen.
 
@@ -7,6 +7,10 @@ scene.backgroundColor()
 ```
 
 You can get the background color of the screen anytime. The background color is always behind other images shown on the screen.
+
+## Returns
+
+* a [number](/types/number) which is the the color set as the screen background color.
 
 ## Example #example
 

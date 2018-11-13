@@ -35,6 +35,8 @@ The tile assigned to `3` is set in four locations in the center of the map and w
 
 ## Example #example
 
+Set two tiles in the scene and place them into the tilemap.
+
 ```blocks
 let solidTile = image.create(7, 7)
 solidTile.fill(7)

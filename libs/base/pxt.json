@@ -5,10 +5,13 @@
         "README.md",
         "pxt-core.d.ts",
         "pxt.cpp",
+        "gc.cpp",
         "pxtbase.h",
         "core.cpp",
+        "advmath.cpp",
         "pxt-helpers.ts",
         "buffer.cpp",
+        "buffer.ts",
         "shims.d.ts",
         "enums.d.ts",
         "loops.cpp",
@@ -17,6 +20,7 @@
         "control.cpp",
         "control.ts",
         "console.ts",
+        "json.ts",
         "eventcontext.ts"
     ],
     "testFiles": [

@@ -40,4 +40,5 @@ game.onUpdate(function () {
 
 ## See also #seealso
 
-[dy](/reference/controller/dy)
+[dy](/reference/controller/dy),
+[control sprite](/reference/controller/control-sprite)

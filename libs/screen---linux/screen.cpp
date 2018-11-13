@@ -129,6 +129,8 @@ WDisplay::WDisplay() {
     lastImg = NULL;
     newPalette = false;
 
+    registerGC((TValue*)&lastImg);
+
     eventId = allocateNotifyEvent();
 
     int tty_fd = open("/dev/tty0", O_RDWR);
@@ -137,7 +139,7 @@ WDisplay::WDisplay() {
     fb_fd = open("/dev/fb0", O_RDWR);
 
     if (fb_fd < 0)
-        target_panic(901);
+        target_panic(PANIC_SCREEN_ERROR);
 
     ioctl(fb_fd, FBIOGET_FSCREENINFO, &finfo);
     ioctl(fb_fd, FBIOGET_VSCREENINFO, &vinfo);
@@ -168,7 +170,7 @@ WDisplay::WDisplay() {
 void setPalette(Buffer buf) {
     auto display = getWDisplay();
     if (48 != buf->length)
-        target_panic(907);
+        target_panic(PANIC_SCREEN_ERROR);
     for (int i = 0; i < 16; ++i) {
         uint8_t r = buf->data[i * 3];
         uint8_t g = buf->data[i * 3 + 1];
@@ -193,7 +195,7 @@ void WDisplay::update(Image_ img) {
 
     if (img && img->isDirty()) {
         if (img->bpp() != 4 || img->width() != width || img->height() != height)
-            target_panic(906);
+            target_panic(PANIC_SCREEN_ERROR);
 
         img->clearDirty();
 

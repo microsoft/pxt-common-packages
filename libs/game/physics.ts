@@ -10,6 +10,8 @@ class PhysicsEngine {
 
     removeSprite(sprite: Sprite) { }
 
+    moveSprite(s: Sprite, tm: tiles.TileMap, dx: number, dy: number) { }
+
     draw() { }
 
     /** Apply physics */
@@ -71,6 +73,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
     }
 
     collisions() {
+        control.enablePerfCounter("phys_collisions")
+
         // 1: clear obstacles
         for (let i = 0; i < this.sprites.length; ++i)
             this.sprites[i].clearObstacles();
@@ -89,6 +93,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         // 3: go through sprite and handle collisions
         const scene = game.currentScene();
         const tm = scene.tileMap;
+
         for (const sprite of colliders) {
             const overSprites = scene.physicsEngine.overlaps(sprite);
             for (const overlapper of overSprites) {
@@ -97,10 +102,10 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 const tmp = overlapper;
                 const oh = sprite.overlapHandler;
                 if (oh)
-                    control.runInParallel(() => oh(tmp))
+                    oh(tmp)
                 scene.overlapHandlers
                     .filter(h => h.type == sprite.type && h.otherType == overlapper.type)
-                    .forEach(h => control.runInParallel(() => h.handler(tmpsprite, tmp)));
+                    .forEach(h => h.handler(tmpsprite, tmp));
             }
 
             const xDiff = sprite.x - sprite._lastX;
@@ -138,14 +143,14 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         }
     }
 
-    protected moveSprite(s: Sprite, tm: tiles.TileMap, dx: number, dy: number) {
+    public moveSprite(s: Sprite, tm: tiles.TileMap, dx: number, dy: number) {
         if (dx === 0 && dy === 0) {
             s._lastX = s.x;
             s._lastY = s.y;
             return;
         }
 
-        if (tm) {
+        if (tm && tm.enabled && !(s.flags & sprites.Flag.Ghost)) {
             s._hitboxes.forEach(box => {
                 const t0 = box.top >> 4;
                 const r0 = box.right >> 4;
@@ -234,5 +239,10 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 }
 
 function constrain(v: number) {
-    return Math.abs(v) > MAX_VELOCITY ? Math.sign(v) * MAX_VELOCITY : v;
+    if (v > MAX_VELOCITY)
+        return MAX_VELOCITY
+    if (v < -MAX_VELOCITY)
+        return -MAX_VELOCITY
+    return v
+    //return Math.abs(v) > MAX_VELOCITY ? Math.sign(v) * MAX_VELOCITY : v;
 }

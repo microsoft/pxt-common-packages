@@ -21,6 +21,10 @@
 
 using namespace codal;
 
+// codal::ManagedString compat
+#define MSTR(s) codal::ManagedString((s)->data, (s)->length)
+#define PSTR(s) mkString((s).toCharArray(), (s).length())
+
 #include "pins.h"
 
 #if CONFIG_ENABLED(DEVICE_USB)
