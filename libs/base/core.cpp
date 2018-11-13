@@ -528,6 +528,7 @@ bool switch_eq(TValue a, TValue b) {
 #define BITOP(op) return fromInt(toInt(a) op toInt(b));
 namespace numops {
 
+//%
 int toBool(TValue v) {
     if (isTagged(v)) {
         if (v == TAG_FALSE || v == TAG_UNDEFINED || v == TAG_NAN || v == TAG_NULL ||
@@ -553,6 +554,7 @@ int toBool(TValue v) {
     return 1;
 }
 
+//%
 int toBoolDecr(TValue v) {
     if (v == TAG_TRUE)
         return 1;
