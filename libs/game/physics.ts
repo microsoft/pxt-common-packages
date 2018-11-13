@@ -103,8 +103,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
                 if (higher._overlappers.indexOf(lower.id) === -1) {
                     if (sprite.overlapHandler) {
+                        higher._overlappers.push(lower.id);
                         control.runInParallel(() => {
-                            higher._overlappers.push(lower.id);
                             sprite.overlapHandler(overlapper);
                             higher._overlappers.removeElement(lower.id);
                         });
@@ -112,11 +112,13 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
                     scene.overlapHandlers
                         .filter(h => h.type == sprite.type && h.otherType == overlapper.type)
-                        .forEach(h => control.runInParallel(() => {
+                        .forEach(h => { 
                             higher._overlappers.push(lower.id);
-                            h.handler(sprite, overlapper);
-                            higher._overlappers.removeElement(lower.id);
-                        }));
+                            control.runInParallel(() => {
+                                h.handler(sprite, overlapper);
+                                higher._overlappers.removeElement(lower.id);
+                            });
+                        });
                 }
             }
 
