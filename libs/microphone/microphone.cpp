@@ -23,11 +23,8 @@ SINGLETON(WMicrophone);
 }
 
 namespace input {
-    const int SILENCE = 52.0f;
-    const int LOUD = 120.0f;
-
-#define MICROPHONE_SILENCE 8
-#define MICROPHONE_MAX 20000    
+#define MICROPHONE_SILENCE 52.0f
+#define MICROPHONE_LOUD 120.0f
 /**
 * Registers an event that runs when a lound sound is detected
 */
@@ -49,10 +46,8 @@ void onLoudSound(Action handler) {
 //% weight=34 blockGap=8
 int soundLevel() {
     const int micValue = getWMicrophone()->level.getValue();
-    auto value = max(SILENCE, min(micValue, LOUD)) - SILENCE;
-    return min(0xff, value * 255.0 / (LOUD - SILENCE));
-    const int value = max(MICROPHONE_SILENCE, min(micValue, MICROPHONE_MAX));
-    return min(0xff, value * 0xff / MICROPHONE_MAX);
+    const int scaled = max(MICROPHONE_SILENCE, min(micValue, MICROPHONE_LOUD)) - MICROPHONE_SILENCE;
+    return min(0xff, scaled * 0xff / (MICROPHONE_LOUD - MICROPHONE_SILENCE));
 }
 
 /**
@@ -65,10 +60,7 @@ int soundLevel() {
 //% group="More" weight=14 blockGap=8
 void setLoudSoundThreshold(int value) {
     value = max(0, min(0xff, value));
-    getWMicrophone()->level.setHighThreshold(SILENCE + value / 255.0 * (LOUD - SILENCE));
-    // map value 0..255 -> 0..20000
-    value = value & 0xff;
-    const int scaled = value * MICROPHONE_MAX / 0xff;
+    const int scaled = MICROPHONE_SILENCE + value * (MICROPHONE_LOUD - MICROPHONE_SILENCE) / 0xff;
     getWMicrophone()->level.setHighThreshold(scaled);
 }
 }
