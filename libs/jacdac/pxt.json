@@ -6,6 +6,7 @@
         "jacdac.ts",
         "messagebusdriver.ts",
         "pindriver.ts",
+        "ns.ts",
         "shims.d.ts"
     ],
     "testFiles": [
