@@ -13,6 +13,7 @@ namespace jacdac {
         constructor() {
             super(DriverType.VirtualDriver, 20); // TODO pickup type from DAL
             this.minPriority = LogPriority.Silent;
+            jacdac.addDriver(this);
         }
 
         public handlePacket(pkt: Buffer): boolean {
@@ -58,6 +59,7 @@ namespace jacdac {
         constructor(fp: (str: string) => {}) {
             super(DriverType.HostDriver, 21); // TODO pickup type from DAL
             this.minPriority = LogPriority.Log;
+            jacdac.addDriver(this);
         }
 
         public handlePacket(pkt: Buffer): boolean {

@@ -11,6 +11,7 @@ namespace jacdac {
         constructor() {
             super(DriverType.BroadcastDriver, DAL.JD_DRIVER_CLASS_MESSAGE_BUS);
             this.suppressForwarding = false;
+            jacdac.addDriver(this);
         }
 
         raiseEvent(id: number, value: number) {
@@ -58,7 +59,6 @@ namespace jacdac {
         if (!_messageBus) {
             control.dmesg("jd> starting message bus")
             _messageBus = new MessageBusDriver();
-            jacdac.addDriver(_messageBus);
         }
         return _messageBus;
     }
