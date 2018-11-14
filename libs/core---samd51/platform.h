@@ -7,6 +7,7 @@
 #include "ZTimer.h"
 #include "ZSPI.h"
 //#include "ZI2C.h"
+#include "ZSingleWireSerial.h"
 
 #include "pinmap.h"
 
@@ -28,6 +29,8 @@ typedef uint8_t PinName;
 #define CODAL_TIMER ZTimer
 #define CODAL_SPI ZSPI
 #define CODAL_I2C ZI2C
+#define CODAL_JACDAC_WIRE_SERIAL codal::ZSingleWireSerial
+#define CODAL_JACDAC_SUPER_UGLY_CTOR 1
 
 #define PXT_BOOTLOADER_CFG_ADDR (0x4000 - 4*4)
 #define PXT_BOOTLOADER_CFG_MAGIC 0xbe3fd5ce

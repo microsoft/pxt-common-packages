@@ -822,6 +822,10 @@ using namespace pxt;
 namespace numops {
 //%
 String toString(TValue v);
+//%
+int toBool(TValue v);
+//%
+int toBoolDecr(TValue v);
 } // namespace numops
 
 namespace pins {
@@ -829,6 +833,7 @@ Buffer createBuffer(int size);
 }
 
 namespace String_ {
+//%
 int compare(String a, String b);
 } // namespace String_
 
