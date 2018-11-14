@@ -30,11 +30,12 @@ namespace jacdac {
 
             let cursor = 0;
             while (cursor < str.length) {
-                const txLength = Math.min(str.length - cursor, 31); // DAL constant needed for max size
+                const txLength = Math.min(str.length - cursor, DAL.JD_SERIAL_DATA_SIZE - 1 - 4);
                 const buf = control.createBuffer(txLength + 1);
-                buf.setNumber(NumberFormat.UInt8LE, 0, priority); // priority....
+                buf.setNumber(NumberFormat.UInt8LE, 0, priority);
+                buf.setNumber(NumberFormat.UInt32LE, 1, this.device.serialNumber); 
                 for (let i = 0; i < txLength; i++) {
-                    buf.setNumber(NumberFormat.UInt8LE, i + 1, str.charCodeAt(i + cursor));
+                    buf.setNumber(NumberFormat.UInt8LE, i + 5, str.charCodeAt(i + cursor));
                 }
                 jacdac.sendPacket(buf, this.device.driverAddress);
                 cursor += txLength;
@@ -68,9 +69,12 @@ namespace jacdac {
             // shortcut
             if (priority < console.minPriority) return true;
 
+            // who sent this?            
+            const serial = packet.data.getNumber(NumberFormat.UInt32LE, 1);
+
             // send message to console
             let str = "";
-            for (let i = 1; i < packetSize; i++)
+            for (let i = 5; i < packetSize; i++)
                 str += String.fromCharCode(packet.data.getNumber(NumberFormat.UInt8LE, i));
 
             // pipe to console
