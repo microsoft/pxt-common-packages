@@ -1,29 +1,30 @@
 /// <reference no-default-lib="true"/>
 
+enum ConsolePriority {
+    Debug = 0,
+    Log = 1,
+    Warning = 2,
+    Error = 3,
+    Silent = 4
+}
+
 /**
  * Reading and writing data to the console output.
  */
 //% weight=12 color=#002050 icon="\uf120"
 //% advanced=true
 namespace console {
-    export enum LogPriority {
-        Debug = 0,
-        Log = 1,
-        Warning = 2,
-        Error = 3,
-        Silent = 4
-    }
-    type Listener = (priority: LogPriority, text: string) => void;
+    type Listener = (priority: ConsolePriority, text: string) => void;
 
     /**
      * Minimum priority to send messages to listeners
      */
-    export let minPriority = LogPriority.Log;
+    export let minPriority = ConsolePriority.Log;
 
     //% whenUsed
-    const listeners: Listener[] = [function(priority: LogPriority, text: string) { control.__log(text); }];
+    const listeners: Listener[] = [function(priority: ConsolePriority, text: string) { control.__log(text); }];
 
-    export function add(priority: LogPriority, text: string) {
+    export function add(priority: ConsolePriority, text: string) {
         if (priority < minPriority) return;
         // pad text on the 32byte boundar
         text += "\r\n";
@@ -33,15 +34,15 @@ namespace console {
     }
 
     export function debug(text: string) {
-        this.add(LogPriority.Debug, text);
+        this.add(ConsolePriority.Debug, text);
     }
 
     export function warning(text: string) {
-        this.add(LogPriority.Warning, text);
+        this.add(ConsolePriority.Warning, text);
     }
 
     export function error(text: string) {
-        this.add(LogPriority.Error, text);
+        this.add(ConsolePriority.Error, text);
     }
 
     /**
@@ -53,7 +54,7 @@ namespace console {
     //% blockId=console_log block="console|log %text"
     //% text.shadowOptions.toString=true
     export function log(text: string): void {
-        add(LogPriority.Log, text);
+        add(ConsolePriority.Log, text);
     }
 
     /**
@@ -73,7 +74,7 @@ namespace console {
      * @param listener
      */
     //%
-    export function addListener(listener: (priority: console.LogPriority, text: string) => void) {
+    export function addListener(listener: (priority: ConsolePriority, text: string) => void) {
         if (!listener) return;
         listeners.push(listener);
     }

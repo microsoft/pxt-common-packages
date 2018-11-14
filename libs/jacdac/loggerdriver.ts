@@ -24,7 +24,7 @@ namespace jacdac {
          * Sends a log message through jacdac
          * @param str
          */
-        private log(priority: console.LogPriority, str: string) {
+        private log(priority: ConsolePriority, str: string) {
             if (!this.device.isConnected || this.suppressForwading)
                 return;
 
