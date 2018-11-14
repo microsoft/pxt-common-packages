@@ -1,35 +1,31 @@
 namespace jacdac {
-    export class LoggerDriver extends JacDacDriver {
-        public minPriority: console.LogPriority;
+    let _loggerDriver: LoggerDriver;
+    /**
+     * Sends console messages over JacDac
+     */
+    //% blockId=jacdac_broadcast_console block="jacdac broadcast console"
+    export function broadcastConsole() {
+        if (!_loggerDriver)
+            _loggerDriver = new LoggerDriver();
+    }
 
+    class LoggerDriver extends JacDacDriver {
+        public suppressForwading: boolean;
         constructor() {
             super(DriverType.VirtualDriver, 20); // TODO pickup type from DAL
-            this.minPriority = console.LogPriority.Silent;
+            this.suppressForwading = false;
             jacdac.addDriver(this);
+
+            // send to other devices
             console.addListener((priority, text) => this.log(priority, text));
         }
-
-        public handlePacket(pkt: Buffer): boolean {
-            const packet = new JDPacket(pkt);
-            const packetSize = packet.size;
-            if (!packetSize) return true;
-
-            const command = packet.data.getNumber(NumberFormat.UInt8LE, 0);
-            switch(command) {
-                case 0x01: // set priority
-                    this.minPriority = packet.data.getNumber(NumberFormat.UInt8LE, 1);
-                    break;
-                default: // ignore...
-            }
-            return true;
-        }        
 
         /**
          * Sends a log message through jacdac
          * @param str
          */
-        public log(priority: console.LogPriority, str: string) {
-            if (!this.device.isConnected || !str || priority < this.minPriority)
+        private log(priority: console.LogPriority, str: string) {
+            if (!this.device.isConnected || this.suppressForwading)
                 return;
 
             let cursor = 0;
@@ -38,7 +34,7 @@ namespace jacdac {
                 const buf = control.createBuffer(txLength + 1);
                 buf.setNumber(NumberFormat.UInt8LE, 0, priority); // priority....
                 for (let i = 0; i < txLength; i++) {
-                    buf.setNumber(NumberFormat.UInt8LE, i + 1,  str.charCodeAt(i + cursor));
+                    buf.setNumber(NumberFormat.UInt8LE, i + 1, str.charCodeAt(i + cursor));
                 }
                 jacdac.sendPacket(buf, this.device.driverAddress);
                 cursor += txLength;
@@ -46,9 +42,20 @@ namespace jacdac {
         }
     }
 
-    export class LogListenerDriver extends JacDacDriver {
-        constructor(fp: (str: string) => {}) {
-            super(DriverType.HostDriver, 21); // TODO pickup type from DAL
+    let _logListenerDriver: LogListenerDriver;
+
+    /**
+     * Listens for console messages from other devices
+     */
+    //% blockId=jacdac_listen_console block="jacdac listen console"
+    export function listenConsole() {
+        if (!_logListenerDriver)
+            _logListenerDriver = new LogListenerDriver();
+    }
+
+    class LogListenerDriver extends JacDacDriver {
+        constructor() {
+            super(DriverType.VirtualDriver, 20); // TODO pickup type from DAL
             jacdac.addDriver(this);
         }
 
@@ -65,7 +72,14 @@ namespace jacdac {
             let str = "";
             for (let i = 1; i < packetSize; i++)
                 str += String.fromCharCode(packet.data.getNumber(NumberFormat.UInt8LE, i));
+
+            // pipe to console
+            if (_loggerDriver) // avoid cyclic repetition of messages
+                _loggerDriver.suppressForwading = true;
             console.add(priority, str);
+            if (_loggerDriver)
+                _loggerDriver.suppressForwading = false;
+
             return true;
         }
     }
