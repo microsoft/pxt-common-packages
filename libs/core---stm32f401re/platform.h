@@ -7,6 +7,7 @@
 #include "ZTimer.h"
 #include "ZSPI.h"
 #include "ZI2C.h"
+#include "ZSingleWireSerial.h"
 
 #include "pinmap.h"
 
@@ -27,6 +28,7 @@
 #define CODAL_TIMER ZTimer
 #define CODAL_SPI ZSPI
 #define CODAL_I2C ZI2C
+#define CODAL_JACDAC_WIRE_SERIAL codal::ZSingleWireSerial
 
 #define PERF_NOW() (TIM5->CNT)
 

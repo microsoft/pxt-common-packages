@@ -165,7 +165,7 @@ void gcScanSegment(Segment &seg) {
 #define getSizeMethod(vt) ((RefObjectSizeMethod)(((VTable *)(vt))->methods[3]))
 
 static void process(TValue v) {
-    if (isReadOnly(v))
+    if (IS_OUTSIDE_GC(v))
         return;
     auto p = (RefObject *)v;
     auto vt = p->vtable;

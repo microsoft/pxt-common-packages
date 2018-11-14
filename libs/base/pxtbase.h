@@ -822,6 +822,10 @@ using namespace pxt;
 namespace numops {
 //%
 String toString(TValue v);
+//%
+int toBool(TValue v);
+//%
+int toBoolDecr(TValue v);
 } // namespace numops
 
 namespace pins {
