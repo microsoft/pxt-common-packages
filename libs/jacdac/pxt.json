@@ -4,6 +4,7 @@
     "files": [
         "jacdac.cpp",
         "jacdac.ts",
+        "loggerdriver.ts",
         "debugger.ts",
         "messagebusdriver.ts",
         "pindriver.ts",
