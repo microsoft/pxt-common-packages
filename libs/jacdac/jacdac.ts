@@ -96,9 +96,11 @@ namespace jacdac {
      * @param n driver
      */
     export function addDriver(n: JacDacDriver) {
-        if (n.device) // don't add twice
+        if (n.device) { // don't add twice
+            control.dmesg(`jd> driver already added ${n.driverType} ${n.deviceClass}`)
             return;
-        control.dmesg(`jd> adding driver ${n.driverType} ${n.deviceClass}`)
+        }
+        control.dmesg(`jd> driver ${n.driverType} ${n.deviceClass}`)
         n.device = __internalAddDriver(n.driverType, n.deviceClass, [
             (p: Buffer) => n.handleControlPacket(p),
             (p: Buffer) => n.handlePacket(p),
@@ -172,8 +174,13 @@ namespace jacdac {
      * Pipes specific events through JACDAC
      */
     //%
-    const eventBus: MessageBusDriver = new MessageBusDriver();
+    let _eventBus: MessageBusDriver;
     export function listenEvent(src: number, value: number) {
-        eventBus.listenEvent(src, value);
+        if (!_eventBus) {
+            control.dmesg("jd> starting message bus")
+            _eventBus = new MessageBusDriver();
+            jacdac.addDriver(_eventBus);
+        }
+        _eventBus.listenEvent(src, value);
     }
 }
