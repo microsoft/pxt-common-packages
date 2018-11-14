@@ -1,10 +1,10 @@
 namespace jacdac {
     export class LoggerDriver extends JacDacDriver {
-        public minPriority: LogPriority;
+        public minPriority: console.LogPriority;
 
         constructor() {
             super(DriverType.VirtualDriver, 20); // TODO pickup type from DAL
-            this.minPriority = LogPriority.Silent;
+            this.minPriority = console.LogPriority.Silent;
             jacdac.addDriver(this);
             console.addListener((priority, text) => this.log(priority, text));
         }
@@ -47,11 +47,8 @@ namespace jacdac {
     }
 
     export class LogListenerDriver extends JacDacDriver {
-        public minPriority: LogPriority;
-
         constructor(fp: (str: string) => {}) {
             super(DriverType.HostDriver, 21); // TODO pickup type from DAL
-            this.minPriority = LogPriority.Log;
             jacdac.addDriver(this);
         }
 
@@ -61,14 +58,14 @@ namespace jacdac {
             if (!packetSize) return true;
 
             const priority = packet.data.getNumber(NumberFormat.UInt8LE, 0);
-            if (priority < this.minPriority) return true;
+            // shortcut
+            if (priority < console.minPriority) return true;
 
+            // send message to console
             let str = "";
             for (let i = 1; i < packetSize; i++)
                 str += String.fromCharCode(packet.data.getNumber(NumberFormat.UInt8LE, i));
-
-            // TODO: handle priority priority
-            console.log(str);
+            console.add(priority, str);
             return true;
         }
     }
