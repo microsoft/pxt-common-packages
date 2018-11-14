@@ -104,18 +104,20 @@ namespace serial {
 
     /**
     * Set the serial input and output to use pins instead of the USB connection.
-    * @param tx the new transmission pin, eg: SerialPin.P0
-    * @param rx the new reception pin, eg: SerialPin.P1
+    * @param tx the new transmission pin
+    * @param rx the new reception pin
+    * @param rate the new baud rate
     */
     //% weight=10
     //% help=serial/redirect
-    //% blockId=serial_redirect block="serial|redirect to|TX %tx|RX %rx"
+    //% blockId=serial_redirect block="serial|redirect to|TX %tx|RX %rx|at baud rate %rate"
     //% tx.fieldEditor="gridpicker" tx.fieldOptions.columns=3
     //% tx.fieldOptions.tooltips="false"
     //% rx.fieldEditor="gridpicker" rx.fieldOptions.columns=3
     //% rx.fieldOptions.tooltips="false"
     //% blockGap=8 inlineInputMode=inline
-    void redirect(DigitalInOutPin tx, DigitalInOutPin rx) {
+    void redirect(DigitalInOutPin tx, DigitalInOutPin rx, BaudRate rate) {
       getWSerial()->serial.redirect((PinName)tx->name, (PinName)rx->name);
+      setBaudRate(rate);
     }
 }
