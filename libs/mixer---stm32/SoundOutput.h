@@ -4,30 +4,29 @@
 #include "JackRouter.h"
 #include "ZSingleWireSerial.h"
 
+namespace jacdac {
+JackRouter *getJackRouter();
+}
+
 class SoundOutput {
   public:
     ZPWM dac;
-    ZSingleWireSerial sws;
-    JACDAC pktSerial;
-    JackRouter jackRouter;
 
-    SoundOutput(DataSource &data)
-        : dac(*LOOKUP_PIN(JACK_SND), data),     //
-          sws(*LOOKUP_PIN(JACK_TX)),            //
-          pktSerial(*LOOKUP_PIN(JACK_TX), sws), //
-          jackRouter(*LOOKUP_PIN(JACK_TX), *LOOKUP_PIN(JACK_SENSE), *LOOKUP_PIN(JACK_HPEN),
-                     *LOOKUP_PIN(JACK_BZEN), *LOOKUP_PIN(JACK_PWREN), pktSerial) {}
+    SoundOutput(DataSource &data) : dac(*LOOKUP_PIN(JACK_SND), data) { jacdac::getJackRouter(); }
 
     void setOutput(int output) {
+        auto jr = jacdac::getJackRouter();
+        if (!jr)
+            return;
         switch (output) {
         case 0:
-            jackRouter.forceState(JackState::None);
+            jr->forceState(JackState::None);
             break;
         case 1:
-            jackRouter.forceState(JackState::BuzzerAndSerial);
+            jr->forceState(JackState::BuzzerAndSerial);
             break;
         case 2:
-            jackRouter.forceState(JackState::HeadPhones);
+            jr->forceState(JackState::HeadPhones);
             break;
         }
     }
