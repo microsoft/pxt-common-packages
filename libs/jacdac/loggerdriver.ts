@@ -1,12 +1,4 @@
 namespace jacdac {
-    enum LogPriority { // TODO: add to jacdac
-        Debug = 0,
-        Log = 1,
-        Warning = 2,
-        Error = 3,
-        Silent = 4
-    }
-
     export class LoggerDriver extends JacDacDriver {
         public minPriority: LogPriority;
 
@@ -14,6 +6,7 @@ namespace jacdac {
             super(DriverType.VirtualDriver, 20); // TODO pickup type from DAL
             this.minPriority = LogPriority.Silent;
             jacdac.addDriver(this);
+            console.addListener((priority, text) => this.log(priority, text));
         }
 
         public handlePacket(pkt: Buffer): boolean {
@@ -35,7 +28,7 @@ namespace jacdac {
          * Sends a log message through jacdac
          * @param str
          */
-        public log(priority: LogPriority, str: string) {
+        public log(priority: console.LogPriority, str: string) {
             if (!this.device.isConnected || !str || priority < this.minPriority)
                 return;
 

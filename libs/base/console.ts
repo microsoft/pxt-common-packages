@@ -6,10 +6,18 @@
 //% weight=12 color=#002050 icon="\uf120"
 //% advanced=true
 namespace console {
-    type Listener = (text: string) => void;
+    export enum LogPriority {
+        Debug = 0,
+        Log = 1,
+        Warning = 2,
+        Error = 3,
+        Silent = 4
+    }
+
+    type Listener = (priority: LogPriority, text: string) => void;
 
     //% whenUsed
-    const listeners: Listener[] = [function(text: string) { control.__log(text); }];
+    const listeners: Listener[] = [function(priority: LogPriority, text: string) { control.__log(text); }];
 
     /**
      * Write a line of text to the console output.
@@ -24,7 +32,7 @@ namespace console {
         text += "\r\n";
         // send to listeners
         for (let i = 0; i < listeners.length; ++i)
-            listeners[i](text);
+            listeners[i](LogPriority.Log, text);
     }
 
     /**
@@ -44,7 +52,7 @@ namespace console {
      * @param listener
      */
     //%
-    export function addListener(listener: (text: string) => void) {
+    export function addListener(listener: (priority: console.LogPriority, text: string) => void) {
         if (!listener) return;
         listeners.push(listener);
     }
