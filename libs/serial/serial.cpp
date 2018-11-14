@@ -97,7 +97,6 @@ namespace serial {
     Set the baud rate of the serial port
     */
     //% help=serial/set-baud-rate
-    //% blockId=serialsetbaudrate block="serial set baud rate to %rate"
     void setBaudRate(BaudRate rate) {
       getWSerial()->serial.baud((int)rate);
     }
@@ -110,14 +109,14 @@ namespace serial {
     */
     //% weight=10
     //% help=serial/redirect
-    //% blockId=serial_redirect block="serial|redirect to|TX %tx|RX %rx|at baud rate %rate"
+    //% blockId=serial_redirect block="serial|redirect to|TX %tx|RX %rx"
     //% tx.fieldEditor="gridpicker" tx.fieldOptions.columns=3
     //% tx.fieldOptions.tooltips="false"
     //% rx.fieldEditor="gridpicker" rx.fieldOptions.columns=3
     //% rx.fieldOptions.tooltips="false"
     //% blockGap=8 inlineInputMode=inline
     void redirect(DigitalInOutPin tx, DigitalInOutPin rx, BaudRate rate) {
-      getWSerial()->serial.redirect((PinName)tx->name, (PinName)rx->name);
+      getWSerial()->serial.redirect( (PinName)tx->name, (PinName)rx->name);
       setBaudRate(rate);
     }
 }
