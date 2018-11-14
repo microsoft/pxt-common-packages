@@ -26,9 +26,6 @@ void platform_init() {
 
 }
 
-SAMDDMAC dmac;
-
 void cpu_clock_init() {
     devTimer.init();
-    dmac.getDescriptor(0); // make sure it's used
 }

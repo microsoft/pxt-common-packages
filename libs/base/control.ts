@@ -22,6 +22,18 @@ namespace control {
     export function panic(code: number) { }
 
     /**
+     * Enable profiling for current function.
+     */
+    //% shim=TD_NOOP shimArgument=perfCounter
+    export function enablePerfCounter(name?: string) { }
+
+    /**
+     * Dump values of profiling performance counters.
+     */
+    //% shim=pxt::dumpPerfCounters
+    export function dmesgPerfCounters() { }
+
+    /**
      * Display an error code and stop the program when the assertion is `false`.
      */
     //% help=control/assert weight=30
@@ -33,7 +45,7 @@ namespace control {
     }
 
     export function fail(message: string) {
-    console.log("Fatal failure: ")
+        console.log("Fatal failure: ")
         console.log(message)
         panic(108)
     }

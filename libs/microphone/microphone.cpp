@@ -12,7 +12,7 @@ class WMicrophone {
     LevelDetector level;
     WMicrophone()
         : microphone(*LOOKUP_PIN(MIC_DATA), *LOOKUP_PIN(MIC_CLOCK), pxt::getWDMAC()->dmac, 10000)
-        , level(microphone.output, 1024, 256, DEVICE_ID_MICROPHONE)
+        , level(microphone.output, 968, 256, DEVICE_ID_MICROPHONE)
     {
         microphone.enable();
     }
@@ -22,6 +22,8 @@ SINGLETON(WMicrophone);
 }
 
 namespace input {
+#define MICROPHONE_SILENCE 8
+#define MICROPHONE_MAX 20000    
 /**
 * Registers an event that runs when a lound sound is detected
 */
@@ -42,11 +44,9 @@ void onLoudSound(Action handler) {
 //% parts="microphone"
 //% weight=34 blockGap=8
 int soundLevel() {
-    const int silence = 8;
-    const int maxValue = 20000;
     const int micValue = getWMicrophone()->level.getValue();
-    const int value = max(silence, min(micValue, maxValue));
-    return min(0xff, value * 0xff / maxValue);
+    const int value = max(MICROPHONE_SILENCE, min(micValue, MICROPHONE_MAX));
+    return min(0xff, value * 0xff / MICROPHONE_MAX);
 }
 
 /**
@@ -58,8 +58,9 @@ int soundLevel() {
 //% value.min=1 value.max=100
 //% group="More" weight=14 blockGap=8
 void setLoudSoundThreshold(int value) {
+    // map value 0..255 -> 0..20000
     value = value & 0xff;
-    const int maxValue = 20000;
-    getWMicrophone()->level.setHighThreshold(value / maxValue * 0xff);
+    const int scaled = value * MICROPHONE_MAX / 0xff;
+    getWMicrophone()->level.setHighThreshold(scaled);
 }
 }

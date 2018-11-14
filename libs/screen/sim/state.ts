@@ -69,6 +69,7 @@ namespace pxsim {
         }
 
         showImage(img: RefImage) {
+            runtime.startPerfCounter(0)
             if (!img)
                 img = this.lastImage
 
@@ -105,6 +106,7 @@ namespace pxsim {
             }
 
             this.onChange()
+            runtime.stopPerfCounter(0)
         }
 
         updateStats(stats: string) {
