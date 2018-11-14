@@ -1,15 +1,15 @@
 namespace jacdac {
-    let _loggerDriver: LoggerDriver;
+    let _loggerDriver: LoggerVirtualDriver;
     /**
      * Sends console messages over JacDac
      */
     //% blockId=jacdac_broadcast_console block="jacdac broadcast console"
     export function broadcastConsole() {
         if (!_loggerDriver)
-            _loggerDriver = new LoggerDriver();
+            _loggerDriver = new LoggerVirtualDriver();
     }
 
-    class LoggerDriver extends JacDacDriver {
+    class LoggerVirtualDriver extends JacDacDriver {
         public suppressForwading: boolean;
         constructor() {
             super(DriverType.VirtualDriver, 20); // TODO pickup type from DAL
@@ -42,7 +42,7 @@ namespace jacdac {
         }
     }
 
-    let _logListenerDriver: LogListenerDriver;
+    let _logListenerDriver: LoggerHostDriver;
 
     /**
      * Listens for console messages from other devices
@@ -50,12 +50,12 @@ namespace jacdac {
     //% blockId=jacdac_listen_console block="jacdac listen console"
     export function listenConsole() {
         if (!_logListenerDriver)
-            _logListenerDriver = new LogListenerDriver();
+            _logListenerDriver = new LoggerHostDriver();
     }
 
-    class LogListenerDriver extends JacDacDriver {
+    class LoggerHostDriver extends JacDacDriver {
         constructor() {
-            super(DriverType.VirtualDriver, 20); // TODO pickup type from DAL
+            super(DriverType.HostDriver, 20); // TODO pickup type from DAL
             jacdac.addDriver(this);
         }
 
