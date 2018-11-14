@@ -5,29 +5,16 @@
 #include "ZSingleWireSerial.h"
 
 namespace jacdac {
-JackRouter *getJackRouter();
+void setJackRouterOutput(int output);
 }
 
 class SoundOutput {
   public:
     ZPWM dac;
 
-    SoundOutput(DataSource &data) : dac(*LOOKUP_PIN(JACK_SND), data) { jacdac::getJackRouter(); }
-
-    void setOutput(int output) {
-        auto jr = jacdac::getJackRouter();
-        if (!jr)
-            return;
-        switch (output) {
-        case 0:
-            jr->forceState(JackState::None);
-            break;
-        case 1:
-            jr->forceState(JackState::BuzzerAndSerial);
-            break;
-        case 2:
-            jr->forceState(JackState::HeadPhones);
-            break;
-        }
+    SoundOutput(DataSource &data) : dac(*LOOKUP_PIN(JACK_SND), data) {
+        jacdac::setJackRouterOutput(-1);
     }
+
+    void setOutput(int output) { jacdac::setJackRouterOutput(output); }
 };

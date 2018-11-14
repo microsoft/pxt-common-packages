@@ -60,8 +60,23 @@ class WProtocol {
 };
 SINGLETON(WProtocol);
 
-JackRouter *getJackRouter() {
-    return getWProtocol()->jr;
+void setJackRouterOutput(int output) {
+    auto jr = getWProtocol()->jr;
+    if (!jr)
+        return;
+    if (output < 0)
+        return;
+    switch (output) {
+    case 0:
+        jr->forceState(JackState::None);
+        break;
+    case 1:
+        jr->forceState(JackState::BuzzerAndSerial);
+        break;
+    case 2:
+        jr->forceState(JackState::HeadPhones);
+        break;
+    }
 }
 
 class JDProxyDriver : public JDDriver {
