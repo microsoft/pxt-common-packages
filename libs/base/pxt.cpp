@@ -360,7 +360,6 @@ bool RefCollection::removeElement(TValue x) {
 PXT_VTABLE_CTOR(RefCollection) {}
 
 void RefCollection::destroy(RefCollection *t) {
-    if ((uint32_t)t < 0x20003E00) DMESG("[]: destroy %p", t);
 #ifndef PXT_GC
     auto data = t->head.getData();
     auto len = t->head.getLength();

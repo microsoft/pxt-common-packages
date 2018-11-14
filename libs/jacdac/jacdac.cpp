@@ -65,7 +65,6 @@ class JDProxyDriver : public JDDriver {
     }
 
     virtual int handleControlPacket(JDPkt *p) {
-        dumpMethods("hc");
         auto buf = pxt::mkBuffer((const uint8_t*)&p->crc, p->size + 4);
         auto r = pxt::runAction1(methods->getAt(0), (TValue)buf);
         auto retVal = numops::toBool(r) ? DEVICE_OK : DEVICE_CANCELLED;
@@ -75,7 +74,6 @@ class JDProxyDriver : public JDDriver {
     }
 
     virtual int handlePacket(JDPkt *p) {
-        dumpMethods("hp");
         auto buf = pxt::mkBuffer((const uint8_t*)&p->crc, p->size + 4);
         auto r = pxt::runAction1(methods->getAt(1), (TValue)buf);
         auto retVal = numops::toBool(r) ? DEVICE_OK : DEVICE_CANCELLED;
@@ -85,7 +83,6 @@ class JDProxyDriver : public JDDriver {
     }
 
     virtual int fillControlPacket(JDPkt *p) {
-        dumpMethods("fc");
         auto buf = pxt::mkBuffer((const uint8_t*)&p->crc, JD_SERIAL_DATA_SIZE + 4);
         auto r = pxt::runAction1(methods->getAt(2), (TValue)buf);
         memcpy(&p->crc, buf->data, JD_SERIAL_DATA_SIZE + 4);
