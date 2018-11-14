@@ -138,7 +138,7 @@ SINGLETON(WAccel);
 
 namespace input {
 /**
- * Do something when when a gesture is done (like shaking the board).
+ * Do something when a gesture happens (like shaking the board).
  * @param gesture the type of gesture to track, eg: Gesture.Shake
  * @param body code to run when gesture is raised
  */

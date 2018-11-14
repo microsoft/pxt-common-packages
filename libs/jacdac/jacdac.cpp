@@ -53,6 +53,26 @@ class WProtocol {
 
 SINGLETON(WProtocol);
 
+/**
+* Starts the JacDac protocol
+*/
+//% 
+void start() {
+    auto p = getWProtocol();
+    if (!p->jd.isRunning())
+        p->jd.start();
+}
+
+/**
+* Starts the JacDac protocol
+*/
+//% 
+void stop() {
+    auto p = getWProtocol();
+    if (p->jd.isRunning())
+        p->jd.stop();
+}
+
 class JDProxyDriver : public JDDriver {
   public:
     RefCollection *methods;

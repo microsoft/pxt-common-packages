@@ -97,15 +97,15 @@ namespace serial {
     Set the baud rate of the serial port
     */
     //% help=serial/set-baud-rate
-    //% blockId=serialsetbaudrate block="serial set baud rate to %rate"
     void setBaudRate(BaudRate rate) {
       getWSerial()->serial.baud((int)rate);
     }
 
     /**
     * Set the serial input and output to use pins instead of the USB connection.
-    * @param tx the new transmission pin, eg: SerialPin.P0
-    * @param rx the new reception pin, eg: SerialPin.P1
+    * @param tx the new transmission pin
+    * @param rx the new reception pin
+    * @param rate the new baud rate
     */
     //% weight=10
     //% help=serial/redirect
@@ -115,7 +115,8 @@ namespace serial {
     //% rx.fieldEditor="gridpicker" rx.fieldOptions.columns=3
     //% rx.fieldOptions.tooltips="false"
     //% blockGap=8 inlineInputMode=inline
-    void redirect(DigitalInOutPin tx, DigitalInOutPin rx) {
-      getWSerial()->serial.redirect((PinName)tx->name, (PinName)rx->name);
+    void redirect(DigitalInOutPin tx, DigitalInOutPin rx, BaudRate rate) {
+      getWSerial()->serial.redirect( (PinName)tx->name, (PinName)rx->name);
+      setBaudRate(rate);
     }
 }

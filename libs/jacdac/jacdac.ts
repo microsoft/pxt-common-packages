@@ -169,18 +169,4 @@ namespace jacdac {
             return this.buf.slice(12);
         }
     }
-
-    /**
-     * Pipes specific events through JACDAC
-     */
-    //%
-    let _eventBus: MessageBusDriver;
-    export function listenEvent(src: number, value: number) {
-        if (!_eventBus) {
-            control.dmesg("jd> starting message bus")
-            _eventBus = new MessageBusDriver();
-            jacdac.addDriver(_eventBus);
-        }
-        _eventBus.listenEvent(src, value);
-    }
 }
