@@ -82,6 +82,17 @@ namespace jacdac {
     }
 
     /**
+     * Sends an event over JacDac
+     * @param id 
+     * @param value 
+     */
+    //% blockid=jacdacraisevent
+    //% block="raise event|from %src|with value %value" weight=5
+    export function raiseEvent(src: number, value: number) {
+        messageBus().raiseEvent(src, value);
+    }
+
+    /**
      * Broadcasts a message over JacDac
      * @param msg 
      */
