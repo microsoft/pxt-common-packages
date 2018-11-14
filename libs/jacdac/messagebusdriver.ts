@@ -51,7 +51,10 @@ namespace jacdac {
     }
 
     let _messageBus: MessageBusDriver;
-    function messageBus(): MessageBusDriver {
+    /**
+     * Gets the message bus driver
+     */
+    export function messageBus(): MessageBusDriver {
         if (!_messageBus) {
             control.dmesg("jd> starting message bus")
             _messageBus = new MessageBusDriver();
