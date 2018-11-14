@@ -57,20 +57,11 @@ class JDProxyDriver : public JDDriver {
   public:
     RefCollection *methods;
 
-    void dumpMethods(const char* tag) {
-        DMESG("JDProxyDriver %s %p m %p, %d methods", tag, this, this->methods, this->methods->length());
-        DMESG("method->getat0 %p", methods->getAt(0));
-        DMESG("method->getat1 %p", methods->getAt(1));
-        DMESG("method->getat2 %p", methods->getAt(2));
-        DMESG("method->getat3 %p", methods->getAt(3));
-    }
-
     JDProxyDriver(JDDevice d, RefCollection *m) 
         : JDDriver(d) {
         this->methods = m;
         incrRC(m);
-
-        dumpMethods("ctor");
+        registerGCPtr((TValue)m);
     }
 
     virtual int handleControlPacket(JDPkt *p) {
@@ -105,14 +96,12 @@ class JDProxyDriver : public JDDriver {
     }
 
     virtual int deviceConnected(JDDevice device) {
-        dumpMethods("dc");
         auto r = JDDriver::deviceConnected(device);
         pxt::runAction0(methods->getAt(3));
         return r;
     }
 
     virtual int deviceRemoved() {
-        dumpMethods("dr");
         auto r = JDDriver::deviceRemoved();
         pxt::runAction0(methods->getAt(4));
         return r;
@@ -125,8 +114,8 @@ class JDProxyDriver : public JDDriver {
     JDDevice *getDevice() { return &device; }
 
     ~JDProxyDriver() { 
-        dumpMethods("dtor");
         decrRC(methods); 
+        unregisterGCPtr((TValue)methods);
     }
 };
 
