@@ -2,10 +2,16 @@ class JacDacDriver {
     public device: JacDacDriverStatus;
     public driverType: jacdac.DriverType;
     public deviceClass: number;
+    public logPriority: ConsolePriority;
 
     constructor(driverType: jacdac.DriverType, deviceClass: number) {
         this.driverType = driverType;
         this.deviceClass = deviceClass || jacdac.programHash();
+        this.logPriority = ConsolePriority.Silent;
+    }
+
+    protected log(text: string) {
+        console.add(this.logPriority, text);
     }
 
     /**
@@ -33,14 +39,12 @@ class JacDacDriver {
      * Called by the logic driver when a new device is connected to the serial bus
      */
     public deviceConnected(): void {
-        control.dmesg(`jd> device connected`)
     }
 
     /**
      * Called by the logic driver when an existing device is disconnected from the serial bus
      **/
     public deviceRemoved(): void {
-        control.dmesg(`jd> device removed`)
     }
 
     /**
@@ -63,8 +67,6 @@ namespace jacdac {
         BroadcastDriver = DAL.JD_DEVICE_FLAGS_LOCAL | DAL.JD_DEVICE_FLAGS_BROADCAST, // the driver is enumerated with its own address, and receives all packets of the same class (including control packets)
         SnifferDriver = DAL.JD_DEVICE_FLAGS_REMOTE | DAL.JD_DEVICE_FLAGS_BROADCAST, // the driver is not enumerated, and receives all packets of the same class (including control packets)
     };
-
-    export let log: (msg: string) => void = function () { };
 
     //% shim=pxt::programHash
     export function programHash(): number { return 0 }
@@ -168,19 +170,5 @@ namespace jacdac {
         get data(): Buffer {
             return this.buf.slice(12);
         }
-    }
-
-    /**
-     * Pipes specific events through JACDAC
-     */
-    //%
-    let _eventBus: MessageBusDriver;
-    export function listenEvent(src: number, value: number) {
-        if (!_eventBus) {
-            control.dmesg("jd> starting message bus")
-            _eventBus = new MessageBusDriver();
-            jacdac.addDriver(_eventBus);
-        }
-        _eventBus.listenEvent(src, value);
     }
 }

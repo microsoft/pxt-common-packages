@@ -69,7 +69,7 @@ namespace control {
     *
     */
     //%
-    void __log(String text) {
+    void __log(int prority, String text) {
         if (NULL == text) return;
         pxt::sendSerial(text->data, text->length);
     }
