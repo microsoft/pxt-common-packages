@@ -17,14 +17,14 @@ namespace jacdac {
             jacdac.addDriver(this);
 
             // send to other devices
-            console.addListener((priority, text) => this.log(priority, text));
+            console.addListener(this.broadcastLog);
         }
 
         /**
          * Sends a log message through jacdac
          * @param str
          */
-        private log(priority: ConsolePriority, str: string) {
+        private broadcastLog(priority: ConsolePriority, str: string) {
             if (!this.device.isConnected || this.suppressForwading)
                 return;
 
