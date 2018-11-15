@@ -273,7 +273,7 @@ namespace jacdac {
      * @param driverClass 
      */
     //%
-    export function sendPairing(address: uint32, flags: uint32, serialNumber: uint32, driverClass: uint32): void {
+    export function sendPairing(address: number, flags: number, serialNumber: number, driverClass: number): void {
         __internalSendPairingPacket(address, flags, serialNumber, driverClass);
     }
 
