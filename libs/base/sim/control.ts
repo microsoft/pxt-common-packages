@@ -75,10 +75,11 @@ namespace pxsim.control {
         let prefix = "";
         switch(priority) {
             case 0: prefix = "dbg>"; break;
+            case 1: prefix = "log>"; break;
             case 2: prefix = "wrn>"; break;
             case 3: prefix = "err>"; break;
         }
-        console.log(str);
+        console.log(prefix + str);
         runtime.board.writeSerial(str);
     }
 }
