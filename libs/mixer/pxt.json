@@ -7,9 +7,8 @@
         "melody.h",
         "melody.cpp",
         "melody.ts",
-        "shims.d.ts",
-        "pins.cpp",
         "piano.ts",
+        "legacy.ts",
         "ns.ts",
         "music.ts"
     ],
