@@ -6,15 +6,6 @@ enum Alignment {
     Bottom = Right
 }
 
-enum ButtonId {
-    A,
-    B,
-    Up,
-    Right,
-    Down,
-    Left
-}
-
 namespace menu {
     export interface Updater {
         update(dt: number): void;
@@ -166,9 +157,9 @@ namespace menu {
         }
     }
 
-    function inputHandler(button: ButtonId) {
-        return () => (focus && _focus.handleInput(button));
-    }
+    //function inputHandler(button: ButtonId) {
+    //    return () => (focus && _focus.handleInput(button));
+    //}
 
 
     function disposeComponent(c: Component) {
