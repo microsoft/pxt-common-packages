@@ -11,4 +11,6 @@ namespace controller {
     export const A = new Button(5)
     //% fixedInstance block="B"
     export const B = new Button(6)
+    //% fixedInstance block="menu"
+    export const menu = new Button(7)
 }
