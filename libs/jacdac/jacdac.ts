@@ -145,8 +145,10 @@ namespace jacdac {
     export class JacDacStreamingPairableDriver extends JacDacPairableDriver {
         private _streamingState: JacDacStreamingState;
         public streamingInterval: number; // millis
-        public time: number;
-        public state: Buffer;
+        // virtual mode only
+        protected _localTime: number;
+        protected _remoteTime: number;
+        protected _remoteState: Buffer;
 
         constructor(isHost: boolean, deviceClass: number) {
             super(isHost, deviceClass);
@@ -177,8 +179,9 @@ namespace jacdac {
                     const time = packet.getNumber(NumberFormat.UInt32LE, 1);
                     const state = packet.data.slice(5);
                     const r = this.handleVirtualState(time, state);
-                    this.time = time;
-                    this.state = state;
+                    this._remoteTime = time;
+                    this._remoteState = state;
+                    this._localTime = control.millis();
                     return r;
                 default:
                     return this.handleVirtualCommand(command, packet);
