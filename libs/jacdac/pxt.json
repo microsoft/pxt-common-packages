@@ -1,6 +1,6 @@
 {
     "name": "jacdac",
-    "description": "Plug and play single wire serial protocol.",
+    "description": "Plug and play single wire serial protocol - beta",
     "files": [
         "jacdac.cpp",
         "jacdac.ts",
