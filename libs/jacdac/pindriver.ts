@@ -6,18 +6,16 @@ namespace jacdac {
     }
     /**
          */
-    export class PinDriver extends JacDacDriver {
+    export class PinDriver extends JacDacPairableDriver {
         private _pin: PwmOnlyPin; // might be null
 
         constructor(pin: PwmOnlyPin = undefined) {
-            super(
-                !!pin ? DriverType.PairableHostDriver : DriverType.PairedDriver, 
-                DAL.JD_DRIVER_CLASS_PIN);
+            super(!!pin, DAL.JD_DRIVER_CLASS_PIN);
             this._pin = pin;
         }
 
         private sendPacket(mode: PinMode, value: number): boolean {
-            if (!this.device.isPaired || !this.device.isConnected)
+            if (!this.canSendPacket())
                 return false;
 
             const pkg = control.createBuffer(4);
@@ -42,29 +40,8 @@ namespace jacdac {
         setServoValue(value: number) {
             this.sendPacket(PinMode.SetServo, value >> 0);
         }
-
-        public handleControlPacket(pkt: Buffer): boolean {
-            const cp = new ControlPacket(pkt);
-            if (this.device.isPairedDriver && !this.device.isPaired) {
-                this.log("need to pair");
-                if (cp.flags & DAL.CONTROL_JD_FLAGS_PAIRABLE) {
-                    jacdac.sendPairing(cp.address, 
-                        DAL.JD_DEVICE_FLAGS_REMOTE 
-                        | DAL.JD_DEVICE_FLAGS_INITIALISED 
-                        | DAL.JD_DEVICE_FLAGS_CP_SEEN, 
-                        cp.serialNumber, 
-                        cp.driverClass);
-                }
-            }
-            return true;
-        }
        
-        public handlePacket(pkt: Buffer): boolean {
-            const packet = new JDPacket(pkt);
-            if (this.device.isVirtualDriver
-                || (this.device.isPaired && !this.device.isPairedInstanceAddress(packet.address)))
-                return true;
-        
+        protected handleHostPacket(packet: JDPacket): boolean {        
             const mode = <PinMode>packet.getNumber(NumberFormat.UInt16LE, 0);
             const value = packet.getNumber(NumberFormat.Int16LE, 2);
             
@@ -78,9 +55,7 @@ namespace jacdac {
                 default:
                     this.log(`unknown pin mode ${mode}`); break;
             }
-
             return true;
         }
-
     }
 }

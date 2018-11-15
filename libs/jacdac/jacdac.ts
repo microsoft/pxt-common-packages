@@ -68,6 +68,52 @@ namespace jacdac {
         SnifferDriver = DAL.JD_DEVICE_FLAGS_REMOTE | DAL.JD_DEVICE_FLAGS_BROADCAST, // the driver is not enumerated, and receives all packets of the same class (including control packets)
     };
 
+    /**
+     * base class for pairable drivers
+    */
+    export class JacDacPairableDriver extends JacDacDriver {
+        constructor(isHost: boolean, deviceClass: number) {
+            super(isHost ? DriverType.PairableHostDriver : DriverType.PairedDriver,
+                deviceClass);
+        }
+
+        protected canSendPacket(): boolean {
+            return this.device.isPaired && this.device.isConnected;
+        }
+
+        public handleControlPacket(pkt: Buffer): boolean {
+            const cp = new ControlPacket(pkt);
+            if (this.device.isPairedDriver && !this.device.isPaired) {
+                this.log("pairing");
+                if (cp.flags & DAL.CONTROL_JD_FLAGS_PAIRABLE) {
+                    jacdac.sendPairing(cp.address,
+                        DAL.JD_DEVICE_FLAGS_REMOTE
+                        | DAL.JD_DEVICE_FLAGS_INITIALISED
+                        | DAL.JD_DEVICE_FLAGS_CP_SEEN,
+                        cp.serialNumber,
+                        cp.driverClass);
+                }
+            }
+            return true;
+        }
+
+        public handlePacket(pkt: Buffer): boolean {
+            const packet = new JDPacket(pkt);
+            if (this.device.isVirtualDriver
+                || (this.device.isPaired && !this.device.isPairedInstanceAddress(packet.address)))
+                return true;
+            return this.handleHostPacket(packet);
+        }
+
+        /**
+         * Processes the packet recived by the host
+         * @param packet 
+         */
+        protected handleHostPacket(packet: JDPacket): boolean {
+            return true;
+        }
+    }
+
     //% shim=pxt::programHash
     export function programHash(): number { return 0 }
 
@@ -116,7 +162,7 @@ namespace jacdac {
      * @param pkt jackdack data
      */
     export function sendPacket(pkt: Buffer, deviceAddress: number) {
-        control.dmesg(`jd> send pkt to ${deviceAddress}`)        
+        control.dmesg(`jd> send pkt to ${deviceAddress}`)
         __internalSendPacket(pkt, deviceAddress);
     }
 
