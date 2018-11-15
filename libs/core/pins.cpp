@@ -40,7 +40,7 @@ void linkPin(int from, int to) {
 
 //%
 DevicePin *lookupPin(int pinName) {
-    if (pinName < 0)
+    if (pinName < 0 || pinName == 0xff)
         return NULL;
     return getPin(pinName);
 }
