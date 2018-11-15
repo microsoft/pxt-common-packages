@@ -17,7 +17,7 @@ namespace jacdac {
             jacdac.addDriver(this);
 
             // send to other devices
-            console.addListener(this.broadcastLog);
+            console.addListener((priority, text) => this.broadcastLog(priority, text));
         }
 
         /**
