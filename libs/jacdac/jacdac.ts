@@ -165,6 +165,10 @@ namespace jacdac {
             this.streamingInterval = 20;
         }
 
+        public get state() {
+            return this._sendState;
+        }
+
         protected handleHostPacket(packet: JDPacket): boolean {
             const command = packet.getNumber(NumberFormat.UInt8LE, 0);
             switch (command) {
