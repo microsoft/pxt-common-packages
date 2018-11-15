@@ -27,5 +27,5 @@ void platform_init() {
 }
 
 void cpu_clock_init() {
-    devTimer.init();
+//    devTimer.init();
 }
