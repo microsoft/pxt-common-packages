@@ -58,10 +58,10 @@ namespace Math {
         /**
          * @param min the minimum value to generate
          * @param max the maximum value to generate
-         * @returns a random value between min and max (inclusive)
+         * @returns a random value between min and max (inclusive). If min is greater than or equal to max, returns min.
          */
         randomRange(min: number, max: number): number {
-            return min + this.next() % (max - min);
+            return min + (max > min ? this.next() % (max - min) : 0);
         }
 
         /**
