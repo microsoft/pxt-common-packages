@@ -7,7 +7,7 @@ class JacDacDriver {
     constructor(driverType: jacdac.DriverType, deviceClass: number) {
         this.driverType = driverType;
         this.deviceClass = deviceClass || jacdac.programHash();
-        this.logPriority = ConsolePriority.Silent;
+        this.logPriority = ConsolePriority.Silent;        
     }
 
     protected log(text: string) {
@@ -89,7 +89,7 @@ namespace jacdac {
             if (this.device.isPairedDriver && !this.device.isPaired) {
                 this.log("pairing");
                 if (cp.flags & DAL.CONTROL_JD_FLAGS_PAIRABLE) {
-                    jacdac.sendPairing(cp.address,
+                    this.sendPairing(cp.address,
                         DAL.JD_DEVICE_FLAGS_REMOTE
                         | DAL.JD_DEVICE_FLAGS_INITIALISED
                         | DAL.JD_DEVICE_FLAGS_CP_SEEN,
@@ -264,23 +264,6 @@ namespace jacdac {
 
     //% shim=pxt::programHash
     export function programHash(): number { return 0 }
-
-    //% shim=jacdac::__internalSendPairingPacket
-    function __internalSendPairingPacket(address: uint32, flags: uint32, serialNumber: uint32, driverClass: uint32): void {
-    }
-
-    /**
-     * Sends a pairing packet
-     * @param address 
-     * @param flags 
-     * @param serialNumber 
-     * @param driverClass 
-     */
-    //%
-    export function sendPairing(address: number, flags: number, serialNumber: number, driverClass: number): void {
-        __internalSendPairingPacket(address, flags, serialNumber, driverClass);
-    }
-
 
     //% shim=jacdac::__internalAddDriver
     function __internalAddDriver(driverType: number, deviceClass: number, methods: ((p: Buffer) => void)[]): JacDacDriverStatus {
