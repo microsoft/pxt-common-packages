@@ -142,13 +142,23 @@ namespace jacdac {
         State
     }
 
+    function bufferEqual(l: Buffer, r: Buffer): boolean {
+        if (l.length != r.length) return false;
+        for (let i = 0; i < l.length; ++i) {
+            if (l.getNumber(NumberFormat.UInt8LE, i) != r.getNumber(NumberFormat.UInt8LE, i))
+                return false;
+        }
+        return true;
+    }
+
+    const STREAMING_MAX_SILENCE = 500;
     export class JacDacStreamingPairableDriver extends JacDacPairableDriver {
         private _streamingState: JacDacStreamingState;
         public streamingInterval: number; // millis
         // virtual mode only
         protected _localTime: number;
-        protected _remoteTime: number;
-        protected _remoteState: Buffer;
+        protected _sendTime: number;
+        protected _sendState: Buffer;
 
         constructor(isHost: boolean, deviceClass: number) {
             super(isHost, deviceClass);
@@ -179,15 +189,15 @@ namespace jacdac {
                     const time = packet.getNumber(NumberFormat.UInt32LE, 1);
                     const state = packet.data.slice(5);
                     const r = this.handleVirtualState(time, state);
-                    this._remoteTime = time;
-                    this._remoteState = state;
+                    this._sendTime = time;
+                    this._sendState = state;
                     this._localTime = control.millis();
                     return r;
                 default:
                     return this.handleVirtualCommand(command, packet);
             }
             return true;
-        }        
+        }
 
         // override
         protected handleHostCommand(command: number, pkt: JDPacket) {
@@ -212,17 +222,26 @@ namespace jacdac {
 
             this._streamingState = JacDacStreamingState.Streaming;
             if (interval > 0)
-                this.streamingInterval = interval;
+                this.streamingInterval = Math.max(20, interval); // don't overstream
             control.runInBackground(() => {
                 while (this._streamingState == JacDacStreamingState.Streaming) {
                     // run callback                    
                     const state = this.serializeState();
                     if (!!state) {
-                        const pkt = control.createBuffer(state.length + 4);
-                        pkt.setNumber(NumberFormat.UInt8LE, 0, JacDacStreamingCommand.State);
-                        pkt.setNumber(NumberFormat.UInt32LE, 1, control.millis());
-                        pkt.write(5, state);
-                        this.sendPacket(pkt);
+                        // did the state change?
+                        if (!this._sendState
+                            || (control.millis() - this._sendTime > STREAMING_MAX_SILENCE)
+                            || !bufferEqual(state, this._sendState)) {
+                            
+                            // send state and record time
+                            const pkt = control.createBuffer(state.length + 4);
+                            pkt.setNumber(NumberFormat.UInt8LE, 0, JacDacStreamingCommand.State);
+                            pkt.setNumber(NumberFormat.UInt32LE, 1, control.millis());
+                            pkt.write(5, state);
+                            this.sendPacket(pkt);
+                            this._sendState = state;
+                            this._sendTime = control.millis();
+                        }
                     }
                     // check streaming interval value
                     if (this.streamingInterval < 0)

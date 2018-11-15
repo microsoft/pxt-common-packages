@@ -13,7 +13,7 @@ namespace jacdac {
          * @param index 
          */
         buttonValue(index: number) {
-            return (this._remoteState ? this._remoteState[index] : 0) || 0;
+            return (this._sendState ? this._sendState[index] : 0) || 0;
         }
 
         protected handleVirtualState(time: number, state: Buffer) {            
