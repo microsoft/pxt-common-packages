@@ -12,7 +12,7 @@ namespace pxsim.serial {
 
     export function writeString(str: string) {
         if (str)
-            control.__log(str)
+            control.__log(1, str)
     }
 
     export function writeBuffer(buffer: any) {
