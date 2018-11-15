@@ -8,22 +8,18 @@ namespace jacdac {
     }
     /**
          */
-    export class PinDriver extends JacDacPairableDriver {
+    export class PinDriver extends JacDacStreamingPairableDriver {
         private _pin: PwmPin; // might be null
         private _mode: PinMode;
-        private _interval: number;
-        private _streaming: boolean;
 
         constructor(pin: PwmPin = undefined) {
             super(!!pin, DAL.JD_DRIVER_CLASS_PIN);
             this._pin = pin;
             this._mode = PinMode.SetAnalog;
-            this._interval = -1;
-            this._streaming = false;
         }
 
         private sendPacket(mode: PinMode, value: number): boolean {
-            if (!this.canSendPacket())
+            if (!this.canSendHostPacket())
                 return false;
 
             const pkg = control.createBuffer(4);
@@ -62,7 +58,7 @@ namespace jacdac {
                 case PinMode.SetAnalog:
                 case PinMode.SetDigital:
                 case PinMode.SetServo:
-                    this._interval = -1; // this also stops streaming
+                    this.stopStreaming();
                     switch (this._mode) {
                         case PinMode.SetAnalog:
                             this._pin.analogWrite(value);
@@ -79,8 +75,7 @@ namespace jacdac {
                 case PinMode.ReadDigital:
                     // start streaming...
                     this._mode = mode;
-                    this._interval = value;
-                    this.startStreaming();
+                    this.startStreaming(value);
                     break;
                 default:
                     this.log(`unknown pin mode ${this._mode}`);
@@ -89,25 +84,20 @@ namespace jacdac {
             return true;
         }
 
-        protected startStreaming() {
-            if (this._streaming) return;
-
-            this._streaming = true;
-            control.runInBackground(() => {
-                while (this.isReadMode() && this._interval > 0) {
-                    // send state to parent
-                    switch (this._mode) {
-                        case PinMode.ReadAnalog:
-                            this.sendPacket(PinMode.ReadAnalog, this._pin.analogRead());
-                            break;
-                        case PinMode.ReadDigital:
-                            this.sendPacket(PinMode.ReadDigital, this._pin.digitalRead() ? 1 : 0);
-                            break;
-                    }
-                    pause(this._interval);
-                }
-                this._streaming = false;
-            })
+        protected streamTick() {
+            // send state to parent
+            switch (this._mode) {
+                case PinMode.ReadAnalog:
+                    this.sendPacket(PinMode.ReadAnalog, this._pin.analogRead());
+                    break;
+                case PinMode.ReadDigital:
+                    this.sendPacket(PinMode.ReadDigital, this._pin.digitalRead() ? 1 : 0);
+                    break;
+                default:
+                    // nothing to do, stop
+                    return false;
+            }
+            return true;
         }
     }
 }
