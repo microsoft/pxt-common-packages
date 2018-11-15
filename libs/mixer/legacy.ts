@@ -100,6 +100,6 @@ namespace music {
             currMelody.stop();
             currMelody = null;
         }
-        music.rest(1);
+        //music.rest(1);
     }
 }
