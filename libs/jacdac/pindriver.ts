@@ -18,7 +18,7 @@ namespace jacdac {
             this._mode = PinMode.SetAnalog;
         }
 
-        private sendPacket(mode: PinMode, value: number): boolean {
+        private sendPinPacket(mode: PinMode, value: number): boolean {
             if (!this.canSendHostPacket())
                 return false;
 
@@ -32,17 +32,17 @@ namespace jacdac {
 
         //%
         setAnalogValue(value: number) {
-            this.sendPacket(PinMode.SetAnalog, value >> 0);
+            this.sendPinPacket(PinMode.SetAnalog, value >> 0);
         }
 
         //%
         setDigitalValue(value: number) {
-            this.sendPacket(PinMode.SetDigital, value >> 0);
+            this.sendPinPacket(PinMode.SetDigital, value >> 0);
         }
 
         //%
         setServoValue(value: number) {
-            this.sendPacket(PinMode.SetServo, value >> 0);
+            this.sendPinPacket(PinMode.SetServo, value >> 0);
         }
 
         protected isReadMode() {
