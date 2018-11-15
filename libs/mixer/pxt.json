@@ -1,0 +1,19 @@
+{
+    "name": "mixer",
+    "description": "The music library with a mixer",
+    "additionalFilePath": "../music",
+    "files": [
+        "SoundOutput.h",
+        "melody.h",
+        "melody.cpp",
+        "melody.ts",
+        "piano.ts",
+        "legacy.ts",
+        "ns.ts",
+        "music.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core"
+    }
+}

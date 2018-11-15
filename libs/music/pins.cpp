@@ -22,7 +22,7 @@ void analogPitch(PwmOnlyPin pin, int frequency, int ms) {
     if (ms > 0) {
         fiber_sleep(ms);
         pin->setAnalogValue(0);
-        wait_ms(5);
+        target_wait_us(5000);
     }
 }
 
