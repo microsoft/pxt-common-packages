@@ -25,7 +25,8 @@
         "targetoverrides.ts",
         "mathUtil.ts",
         "menu.ts",
-        "systemmenu.ts"
+        "systemmenu.ts",
+        "console.ts"
     ],
     "public": true,
     "dependencies": {
