@@ -77,6 +77,10 @@ namespace jacdac {
                 deviceClass);
         }
 
+        protected sendPacket(pkt: Buffer) {
+            jacdac.sendPacket(pkt, this.device.driverAddress);
+        }
+
         protected canSendHostPacket(): boolean {
             return this.device.isPaired && this.device.isConnected;
         }
@@ -114,19 +118,19 @@ namespace jacdac {
         }
     }
 
-    enum StreamingState {
+    enum JacDacStreamingState {
         Stopped,
         Streaming,
         Stopping
     }
 
     export class JacDacStreamingPairableDriver extends JacDacPairableDriver {
-        private _streamingState: StreamingState;
+        private _streamingState: JacDacStreamingState;
         public streamingInterval: number;
 
         constructor(isHost: boolean, deviceClass: number) {
             super(isHost, deviceClass);
-            this._streamingState = StreamingState.Stopped;
+            this._streamingState = JacDacStreamingState.Stopped;
             this.streamingInterval = 20;
         }
 
@@ -136,14 +140,14 @@ namespace jacdac {
         }
 
         protected startStreaming(interval: number = -1) {
-            if (this._streamingState != StreamingState.Stopped
+            if (this._streamingState != JacDacStreamingState.Stopped
                 || !this.device.isPairedDriver) return;
 
-            this._streamingState = StreamingState.Streaming;
+            this._streamingState = JacDacStreamingState.Streaming;
             if (interval > 0)
                 this.streamingInterval = interval;
             control.runInBackground(() => {
-                while (this._streamingState == StreamingState.Streaming) {
+                while (this._streamingState == JacDacStreamingState.Streaming) {
                     // run callback
                     if (!this.streamTick())
                         break;
@@ -153,13 +157,13 @@ namespace jacdac {
                     // waiting for a bit
                     pause(this.streamingInterval);
                 }
-                this._streamingState = StreamingState.Stopped;
+                this._streamingState = JacDacStreamingState.Stopped;
             })
         }
 
         protected stopStreaming() {
-            this._streamingState = StreamingState.Stopping;
-            pauseUntil(() => this._streamingState == StreamingState.Stopped);
+            this._streamingState = JacDacStreamingState.Stopping;
+            pauseUntil(() => this._streamingState == JacDacStreamingState.Stopped);
         }
     }
 
