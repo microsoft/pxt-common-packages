@@ -26,8 +26,8 @@ namespace console {
 
     export function add(priority: ConsolePriority, text: string) {
         if (priority < minPriority) return;
-        // pad text on the 32byte boundar
-        text += "\r\n";
+        // add new line
+        text += "\n";
         // send to listeners
         for (let i = 0; i < listeners.length; ++i)
             listeners[i](priority, text);
