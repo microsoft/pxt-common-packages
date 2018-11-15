@@ -103,30 +103,50 @@ namespace jacdac {
 
         public handlePacket(pkt: Buffer): boolean {
             const packet = new JDPacket(pkt);
-            if (this.device.isVirtualDriver
-                || (this.device.isPaired && !this.device.isPairedInstanceAddress(packet.address)))
+            if (!this.device.isConnected || !this.device.isPaired || !this.device.isPairedInstanceAddress(packet.address))
                 return true;
-            return this.handleHostPacket(packet);
+
+            if (this.device.isPairedDriver)
+                return this.handleHostPacket(packet);
+            else
+                return this.handleVirtualPacket(packet);
         }
 
         /**
-         * Processes the packet recived by the host
+         * Processes the packet received by the host
          * @param packet 
          */
         protected handleHostPacket(packet: JDPacket): boolean {
             return true;
         }
+
+        /**
+         * Processes the packet received by the virtual driver
+         * @param packet 
+         */
+        protected handleVirtualPacket(packet: JDPacket): boolean {
+            return true;
+        }
     }
 
-    enum JacDacStreamingState {
+    export enum JacDacStreamingState {
         Stopped,
         Streaming,
         Stopping
     }
 
+    export enum JacDacStreamingCommand {
+        None,
+        StartStream,
+        StopStream,
+        State
+    }
+
     export class JacDacStreamingPairableDriver extends JacDacPairableDriver {
         private _streamingState: JacDacStreamingState;
-        public streamingInterval: number;
+        public streamingInterval: number; // millis
+        public time: number;
+        public state: Buffer;
 
         constructor(isHost: boolean, deviceClass: number) {
             super(isHost, deviceClass);
@@ -134,9 +154,53 @@ namespace jacdac {
             this.streamingInterval = 20;
         }
 
-        protected streamTick(): boolean {
-            // return true to continue streaming
-            return false;
+        protected handleHostPacket(packet: JDPacket): boolean {
+            const command = packet.getNumber(NumberFormat.UInt8LE, 0);
+            switch (command) {
+                case JacDacStreamingCommand.StartStream:
+                    const interval = packet.getNumber(NumberFormat.UInt32LE, 1);
+                    this.startStreaming(interval);
+                    return true;
+                case JacDacStreamingCommand.StopStream:
+                    this.stopStreaming();
+                    return true;
+                default:
+                    // let the user deal with it
+                    return this.handleHostCommand(command, packet);
+            }
+        }
+
+        protected handleVirtualPacket(packet: JDPacket): boolean {
+            const command = packet.getNumber(NumberFormat.UInt8LE, 0);
+            switch (command) {
+                case JacDacStreamingCommand.State:
+                    const time = packet.getNumber(NumberFormat.UInt32LE, 1);
+                    const state = packet.data.slice(5);
+                    const r = this.handleVirtualState(time, state);
+                    this.time = time;
+                    this.state = state;
+                    return r;
+                default:
+                    return this.handleVirtualCommand(command, packet);
+            }
+            return true;
+        }        
+
+        // override
+        protected handleHostCommand(command: number, pkt: JDPacket) {
+            return true;
+        }
+
+        protected handleVirtualCommand(command: number, pkt: JDPacket) {
+            return true;
+        }
+
+        protected handleVirtualState(time: number, state: Buffer) {
+            return true;
+        }
+
+        protected serializeState(): Buffer {
+            return undefined;
         }
 
         protected startStreaming(interval: number = -1) {
@@ -148,10 +212,16 @@ namespace jacdac {
                 this.streamingInterval = interval;
             control.runInBackground(() => {
                 while (this._streamingState == JacDacStreamingState.Streaming) {
-                    // run callback
-                    if (!this.streamTick())
-                        break;
-                    // check streaming interval
+                    // run callback                    
+                    const state = this.serializeState();
+                    if (!!state) {
+                        const pkt = control.createBuffer(state.length + 4);
+                        pkt.setNumber(NumberFormat.UInt8LE, 0, JacDacStreamingCommand.State);
+                        pkt.setNumber(NumberFormat.UInt32LE, 1, control.millis());
+                        pkt.write(5, state);
+                        this.sendPacket(pkt);
+                    }
+                    // check streaming interval value
                     if (this.streamingInterval < 0)
                         break;
                     // waiting for a bit

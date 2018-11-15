@@ -1,9 +1,6 @@
 namespace jacdac {
     const BUTTONS_DRIVER_CLASS = 42;
 
-    enum ButtonsDriverCommand {
-    }
-
     export class TouchButtonsDriver extends JacDacStreamingPairableDriver {
         private _buttons: TouchButton[];
         constructor(buttons?: TouchButton[]) {
@@ -11,22 +8,24 @@ namespace jacdac {
             this._buttons = buttons;
         }
 
-        protected handleHostPacket(packet: JDPacket): boolean {
-            const command = <ButtonsDriverCommand>packet.getNumber(NumberFormat.UInt16LE, 0);
+        /**
+         * Gets the latest button reading by index
+         * @param index 
+         */
+        buttonValue(index: number) {
+            return (this.state ? this.state[index] : 0) || 0;
+        }
 
-            this.startStreaming();
-
+        protected handleVirtualState(time: number, state: Buffer) {            
             return true;
         }
 
-        protected streamTick() {
+        protected serializeState(): Buffer {
             // read button state and send over
-            const pkt = control.createBuffer(1 + this._buttons.length);
-            pkt.setNumber(NumberFormat.UInt8LE, 0, 1);
-            for(let i = 0; i < this._buttons.length; ++i)
-                pkt.setNumber(NumberFormat.UInt8LE, i + 1, this._buttons[i].value());
-            this.sendPacket(pkt);
-            return true;
+            const state = control.createBuffer(this._buttons.length);
+            for (let i = 0; i < this._buttons.length; ++i)
+                state.setNumber(NumberFormat.UInt8LE, i, this._buttons[i].value());
+            return state;
         }
     }
 }
