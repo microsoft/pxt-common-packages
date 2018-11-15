@@ -29,6 +29,7 @@
         "libs/servo",
         "libs/serial",
         "libs/jacdac",
-        "libs/datalogger"
+        "libs/datalogger",
+        "libs/menu"
     ]
 }

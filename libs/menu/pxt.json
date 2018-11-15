@@ -1,0 +1,11 @@
+{
+    "name": "menu",
+    "description": "An arcade library for UI elements",
+    "files": [
+        "menu.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "game": "file:../game"
+    }
+}
