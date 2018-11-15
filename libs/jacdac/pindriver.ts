@@ -12,11 +12,14 @@ namespace jacdac {
         private _pin: PwmPin; // might be null
         private _mode: PinMode;
         private _interval: number;
+        private _streaming: boolean;
 
         constructor(pin: PwmPin = undefined) {
             super(!!pin, DAL.JD_DRIVER_CLASS_PIN);
             this._pin = pin;
             this._mode = PinMode.SetAnalog;
+            this._interval = -1;
+            this._streaming = false;
         }
 
         private sendPacket(mode: PinMode, value: number): boolean {
@@ -87,6 +90,9 @@ namespace jacdac {
         }
 
         protected startStreaming() {
+            if (this._streaming) return;
+
+            this._streaming = true;
             control.runInBackground(() => {
                 while (this.isReadMode() && this._interval > 0) {
                     // send state to parent
@@ -100,6 +106,7 @@ namespace jacdac {
                     }
                     pause(this._interval);
                 }
+                this._streaming = false;
             })
         }
     }
