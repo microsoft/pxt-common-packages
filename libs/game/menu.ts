@@ -15,7 +15,7 @@ enum ButtonId {
     Left
 }
 
-namespace Menu {
+namespace menu {
     export interface Updater {
         update(dt: number): void;
     }
@@ -905,11 +905,11 @@ namespace Menu {
 // Menu.setRoot(root);
 // root.show();
 
-function setWidth(node: Menu.Node, value: number) {
+function setWidth(node: menu.Node, value: number) {
     node.fixedWidth = value;
 }
 
-function setHeight(node: Menu.Node, value: number) {
+function setHeight(node: menu.Node, value: number) {
     node.fixedHeight = value;
 }
 
