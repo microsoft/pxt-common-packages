@@ -88,10 +88,10 @@ namespace jacdac {
             // send state to parent
             switch (this._mode) {
                 case PinMode.ReadAnalog:
-                    this.sendPacket(PinMode.ReadAnalog, this._pin.analogRead());
+                    this.sendPinPacket(PinMode.ReadAnalog, this._pin.analogRead());
                     break;
                 case PinMode.ReadDigital:
-                    this.sendPacket(PinMode.ReadDigital, this._pin.digitalRead() ? 1 : 0);
+                    this.sendPinPacket(PinMode.ReadDigital, this._pin.digitalRead() ? 1 : 0);
                     break;
                 default:
                     // nothing to do, stop
