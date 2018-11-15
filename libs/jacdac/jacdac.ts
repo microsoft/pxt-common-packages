@@ -73,8 +73,7 @@ namespace jacdac {
     */
     export class JacDacPairableDriver extends JacDacDriver {
         constructor(isHost: boolean, deviceClass: number) {
-            super(isHost ? DriverType.PairableHostDriver : DriverType.PairedDriver,
-                deviceClass);
+            super(isHost ? DriverType.PairableHostDriver : DriverType.PairedDriver, deviceClass);
         }
 
         protected sendPacket(pkt: Buffer) {
