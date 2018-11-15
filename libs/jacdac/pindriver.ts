@@ -46,7 +46,7 @@ namespace jacdac {
         public handleControlPacket(pkt: Buffer): boolean {
             const cp = new ControlPacket(pkt);
             if (this.device.isPairedDriver && !this.device.isPaired) {
-                jacdac.log("need to pair");
+                this.log("need to pair");
                 if (cp.flags & DAL.CONTROL_JD_FLAGS_PAIRABLE) {
                     jacdac.sendPairing(cp.address, 
                         DAL.JD_DEVICE_FLAGS_REMOTE 
@@ -76,7 +76,7 @@ namespace jacdac {
                 case PinMode.SetServo:
                     this._pin.servoWrite(value); break;
                 default:
-                    jacdac.log(`unknown pin mode ${mode}`); break;
+                    this.log(`unknown pin mode ${mode}`); break;
             }
 
             return true;

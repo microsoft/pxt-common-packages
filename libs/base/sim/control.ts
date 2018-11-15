@@ -71,8 +71,15 @@ namespace pxsim.control {
         return !!runtime.perfCounters
     }
 
-    export function __log(str: string) {
-        console.log(str);
+    export function __log(priority: number, str: string) {
+        let prefix = "";
+        switch(priority) {
+            case 0: prefix = "dbg>"; break;
+            case 1: prefix = "log>"; break;
+            case 2: prefix = "wrn>"; break;
+            case 3: prefix = "err>"; break;
+        }
+        console.log(prefix + str);
         runtime.board.writeSerial(str);
     }
 }
