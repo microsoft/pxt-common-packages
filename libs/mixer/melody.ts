@@ -44,7 +44,7 @@ namespace music {
      * @param ms tone duration in milliseconds (ms), eg: BeatFraction.Half
      */
     //% help=music/play-tone
-    //% blockId=music_play_note block="play tone|at %note=device_note|for %duration=device_beat"
+    //% blockId=mixer_play_note block="play tone|at %note=device_note|for %duration=device_beat"
     //% parts="headphone" async
     //% blockNamespace=music
     //% weight=76 blockGap=8
@@ -113,7 +113,7 @@ namespace music {
          * @param sound the melody to play
          */
         //% help=music/play-sound
-        //% blockId=music_loop_sound block="play sound %sound=music_sounds"
+        //% blockId=mixer_loop_sound block="loop sound %sound"
         //% parts="headphone"
         //% weight=95 blockGap=8
         loop(volume = 128) {
@@ -125,7 +125,7 @@ namespace music {
          * @param sound the melody to play
          */
         //% help=music/play-sound
-        //% blockId=music_play_sound block="play sound %sound=music_sounds"
+        //% blockId=mixer_play_sound block="play sound %sound"
         //% parts="headphone"
         //% weight=95 blockGap=8
         play(volume = 128) {
@@ -138,7 +138,7 @@ namespace music {
          * @param sound the melody to play
          */
         //% help=music/play-sound-until-done
-        //% blockId=music_play_sound_until_done block="play sound %sound=music_sounds|until done"
+        //% blockId=mixer_play_sound_until_done block="play sound %sound|until done"
         //% parts="headphone"
         //% weight=94 blockGap=8
         playUntilDone(volume = 128) {
