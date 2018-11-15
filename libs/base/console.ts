@@ -22,7 +22,7 @@ namespace console {
     export let minPriority = ConsolePriority.Log;
 
     //% whenUsed
-    const listeners: Listener[] = [function(priority: ConsolePriority, text: string) { control.__log(text); }];
+    const listeners: Listener[] = [function(priority: ConsolePriority, text: string) { control.__log(priority, text); }];
 
     export function add(priority: ConsolePriority, text: string) {
         if (priority < minPriority) return;
