@@ -1,4 +1,4 @@
-#include "ZPWM.h"
+#include "SAMDDAC.h"
 #include "Synthesizer.h"
 #include "Mixer.h"
 
@@ -8,11 +8,69 @@ void setJackRouterOutput(int output);
 
 class SoundOutput {
   public:
-    ZPWM dac;
+    SAMDDAC dac;
 
-    SoundOutput(DataSource &data) : dac(*LOOKUP_PIN(JACK_SND), data) {
+    SoundOutput(DataSource &data) : dac(*pxt::lookupPin(PIN_PA02), data) {
         jacdac::setJackRouterOutput(-1);
     }
 
     void setOutput(int output) { jacdac::setJackRouterOutput(output); }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
