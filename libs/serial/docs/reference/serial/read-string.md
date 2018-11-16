@@ -13,3 +13,7 @@ serial.readString();
 ## See also #seealso
 
 [write string](/reference/serial/write-string)
+
+```package
+serial
+```
