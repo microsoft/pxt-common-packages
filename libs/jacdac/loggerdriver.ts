@@ -12,12 +12,12 @@ namespace jacdac {
     class LoggerVirtualDriver extends JacDacDriver {
         public suppressForwading: boolean;
         constructor() {
-            super(DriverType.VirtualDriver, 20); // TODO pickup type from DAL
+            super("log", DriverType.VirtualDriver, 20); // TODO pickup type from DAL
             this.suppressForwading = false;
-            jacdac.addDriver(this);
-
             // send to other devices
             console.addListener((priority, text) => this.broadcastLog(priority, text));
+
+            jacdac.addDriver(this);
         }
 
         /**
