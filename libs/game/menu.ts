@@ -6,6 +6,15 @@ enum Alignment {
     Bottom = Right
 }
 
+enum ButtonId {
+    A,
+    B,
+    Up,
+    Right,
+    Down,
+    Left
+}
+
 namespace menu {
     export interface Updater {
         update(dt: number): void;
@@ -16,11 +25,20 @@ namespace menu {
     let _focusStack: Component[];
     let _updatingNodes: Updater[];
 
+    /**
+     * Sets the root node of the UI
+     *
+     * @param node The Node to make the UI root
+     */
     export function setRoot(node: Node) {
         init();
         _root = node;
     }
 
+    /**
+     * Pushes a component on top of the focus stack. The currently focused
+     * component receives all button events until it is unfocused.
+     */
     export function focus(c: Component, clearStack = false) {
         init();
         if (_focus) {
@@ -38,6 +56,10 @@ namespace menu {
         }
     }
 
+    /**
+     * Removes the currently focused component from the focus stack
+     * and returns focus to the next component.
+     */
     export function popFocus() {
         init();
         if (_focus) {
@@ -51,6 +73,10 @@ namespace menu {
         }
     }
 
+    /**
+     * An animation that periodically calls a callback with a linear
+     * timing function
+     */
     export class Animation implements Updater {
         target: Node;
         cb: (node: Node, value: number) => void;
@@ -61,41 +87,87 @@ namespace menu {
         period: number;
         next: Animation;
 
+        /**
+         * Creates a linear timed Animation
+         *
+         * @param target The node to animate
+         * @param cb The animation function
+         */
         constructor(target: Node, cb: (node: Node, value: number) => void) {
             this.target = target;
             this.elapsed = 0;
             this.cb = cb;
         }
 
+        /**
+         * Sets the start value for the linear timing function
+         *
+         * @param start The start value to animate from
+         * @return the Animation
+         */
         from(start: number) {
             this.startValue = start;
             return this;
         }
 
+        /**
+         * Sets the end value for the linear timing function
+         *
+         * @param end The end value to end the animation at
+         * @return the Animation
+         */
         to(end: number) {
             this.endValue = end;
             return this;
         }
 
+        /**
+         * Sets the duration for the linear timing function
+         *
+         * @param period The duration of the animation in milliseconds
+         * @return the Animation
+         */
         duration(period: number) {
             this.period = period;
             return this;
         }
 
+        /**
+         * Sets an animation to run after this animation completes. Only
+         * one animation can be registered to run after
+         *
+         * @param next The next animation to run
+         * @return the Animation
+         */
         chain(next: Animation) {
             this.next = next;
             return this;
         }
 
+        /**
+         * Starts the animation for a single run
+         */
         start() {
             if (this.running) return;
             this.running = true;
             subscribe(this);
         }
 
+        /**
+         * Starts the animation in a loop
+         */
         loop() {
             this.chain(this);
             this.start();
+        }
+
+        /**
+         * Stops the execution of the animation
+         */
+        stop() {
+            this.running = false;
+            this.elapsed = 0;
+            unsubscribe(this);
         }
 
         update(dt: number) {
@@ -122,12 +194,6 @@ namespace menu {
                     this.next.start();
                 }
             }
-        }
-
-        stop() {
-            this.running = false;
-            this.elapsed = 0;
-            unsubscribe(this);
         }
     }
 
@@ -157,10 +223,9 @@ namespace menu {
         }
     }
 
-    //function inputHandler(button: ButtonId) {
-    //    return () => (focus && _focus.handleInput(button));
-    //}
-
+    function inputHandler(button: ButtonId) {
+        return () => (_focus && _focus.handleInput(button));
+    }
 
     function disposeComponent(c: Component) {
         init();
@@ -182,12 +247,23 @@ namespace menu {
         _updatingNodes.removeElement(node);
     }
 
+    /**
+     * A rectangle that represents the bounds of an element
+     */
     export class BoundingBox {
         originX: number;
         originY: number;
         width: number;
         height: number;
 
+        /**
+         * Creates a BoundingBox
+         *
+         * @param ox The left edge of the bounds
+         * @param oy The top edge of the bounds
+         * @param width The width of the bounds
+         * @param height The height of the bounds
+         */
         constructor(ox: number, oy: number, width: number, height: number) {
             this.originX = ox;
             this.originY = oy;
@@ -196,6 +272,9 @@ namespace menu {
         }
     }
 
+    /**
+     * A Node in the UI tree with dimensions
+     */
     export class Node {
         protected _top: number;
         protected _left: number;
@@ -214,10 +293,16 @@ namespace menu {
             this._left = 0;
         }
 
+        /**
+         * The current width of the Node
+         */
         get width() {
             return this.fixedWidth || (this._bounds && this._bounds.width)
         }
 
+        /**
+         * The current height of the Node
+         */
         get height() {
             return this.fixedHeight || (this._bounds && this._bounds.height)
         }
@@ -270,10 +355,22 @@ namespace menu {
             this.dirty = false;
         }
 
+        /**
+         * Draws the component within the available bounds
+         *
+         * @param canvas The image to draw the component on
+         * @param available The available bounds in which the component will be drawn
+         */
         drawSelf(canvas: Image, available: BoundingBox) {
             // Subclass
         }
 
+        /**
+         * Draws the children of the component within the available bounds
+         *
+         * @param canvas The image to draw the children on
+         * @param available The available bounds in which the children will be drawn
+         */
         drawChildren(canvas: Image, available: BoundingBox) {
             if (this.children) {
                 for (let i = 0; i < this.children.length; i++) {
@@ -282,6 +379,11 @@ namespace menu {
             }
         }
 
+        /**
+         * Adds a child to this node
+         *
+         * @param n The Node to add
+         */
         appendChild(n: Node) {
             if (!this.children) this.children = [];
             n.parent = this;
@@ -289,6 +391,9 @@ namespace menu {
             this.notifyChange();
         }
 
+        /**
+         * Triggers a redraw of this Node (and possibly its parent in the tree)
+         */
         notifyChange() {
             this.dirty = true;
             if (this.parent) {
@@ -311,12 +416,21 @@ namespace menu {
             // subclasses need to subscribe
         }
 
+        /**
+         * Disposes of the Node and its children
+         */
         dispose() {
             if (_root === this) _root = undefined;
             this.children.forEach(c => c.dispose());
             this.children = undefined;
         }
 
+        /**
+         * Gets the bounds for the children of this node
+         *
+         * @param bb The bounds passed to this node (e.g. from its parent)
+         * @return The bounds available to children of this node
+         */
         getBounds(bb: BoundingBox) {
             if (this.fixedWidth || this.fixedHeight || this.left || this.top) {
                 return new BoundingBox(
@@ -328,11 +442,19 @@ namespace menu {
             return bb;
         }
 
+        /**
+         * Creates a linear timed Animation for this node
+         *
+         * @param cb The callback that the Animation will call on this node
+         */
         animate(cb: (node: Node, value: number) => void) {
             return new Animation(this, cb);
         }
     }
 
+    /**
+     * A Node that simply constrains its children
+     */
     export class Bounds extends Node {
         constructor(width: number, height: number) {
             super();
@@ -341,6 +463,10 @@ namespace menu {
         }
     }
 
+    /**
+     * A Node that caches its content to an Image. Useful for nodes that
+     * have complex (but mostly static) child trees
+     */
     export class Container extends Node {
         image: Image;
 
@@ -368,11 +494,21 @@ namespace menu {
         }
     }
 
+    /**
+     * A Node that prints text
+     */
     export class TextNode extends Node {
         protected font: image.Font;
         protected content: string;
         protected color: number;
 
+        /**
+         * Creates a TextNode
+         *
+         * @param font The font for the text
+         * @param content The text to print
+         * @param color The color index to use when printing the text
+         */
         constructor(font: image.Font, content: string, color: number) {
             super();
             this.font = font;
@@ -393,9 +529,17 @@ namespace menu {
         }
     }
 
+    /**
+     * A simple rectangle node with a single color
+     */
     export class RectNode extends Node {
         protected color: number;
 
+        /**
+         * Creates a RectNode
+         *
+         * @param color The color to draw the rectangle with
+         */
         constructor(color: number) {
             super();
             this.color = color;
@@ -411,6 +555,10 @@ namespace menu {
         }
     }
 
+    /**
+     * A Container that lays out its children in a vertical flow. Children
+     * are given bounds of equal height
+     */
     export class VerticalFlow extends Container {
         drawChildren(canvas: Image, available: BoundingBox) {
             if (this.children) {
@@ -425,6 +573,10 @@ namespace menu {
         }
     }
 
+    /**
+     * A Container that lays out its children in a horizontal flow. Children
+     * are given bounds of equal width
+     */
     export class HorizontalFlow extends Container {
         drawChildren(canvas: Image, available: BoundingBox) {
             if (this.children) {
@@ -439,10 +591,21 @@ namespace menu {
         }
     }
 
+    /**
+     * A Node that justifies its children Node within its bounds. Should
+     * only be used with Nodes that have a fixed width/height
+     */
     export class JustifiedContent extends Node {
         xAlign: Alignment;
         yAlign: Alignment;
 
+        /**
+         * Creates a JustifiedContent Node
+         *
+         * @param content The child node to justify
+         * @param xAlignment The alignment along the X-Axis
+         * @param yAlignment The alignment along the Y-Axis
+         */
         constructor(content: Node, xAlignment: Alignment, yAlignment: Alignment) {
             super();
 
@@ -457,7 +620,7 @@ namespace menu {
             super.drawChildren(canvas, bb);
         }
 
-        moveChild() {
+        protected moveChild() {
             const content = this.children[0];
 
             switch (this.xAlign) {
@@ -502,6 +665,9 @@ namespace menu {
         }
     }
 
+    /**
+     * A label that scrolls its content in a loop
+     */
     export class ScrollingLabel extends Label {
         pause: number;
         speed: number;
@@ -580,6 +746,9 @@ namespace menu {
         }
     }
 
+    /**
+     * A Node that can receive input
+     */
     export class Component extends Node {
         visible: boolean;
 
@@ -860,14 +1029,6 @@ namespace menu {
             }
         }
     }
-
-    export function setWidth(node: menu.Node, value: number) {
-        node.fixedWidth = value;
-    }
-
-    export function setHeight(node: menu.Node, value: number) {
-        node.fixedHeight = value;
-    }
 }
 
 // const container = new Menu.HorizontalFlow(100, 100);
@@ -903,8 +1064,14 @@ namespace menu {
 // })
 // Menu.setRoot(root);
 // root.show();
-//
 
+function setWidth(node: menu.Node, value: number) {
+    node.fixedWidth = value;
+}
+
+function setHeight(node: menu.Node, value: number) {
+    node.fixedHeight = value;
+}
 
 // const initHeight = 12;
 // const f = new Menu.RoundedFrame(5, 1, 3);
