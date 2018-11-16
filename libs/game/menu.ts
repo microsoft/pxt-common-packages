@@ -20,10 +20,42 @@ namespace menu {
         update(dt: number): void;
     }
 
-    let _root: Node;
-    let _focus: Component;
-    let _focusStack: Component[];
-    let _updatingNodes: Updater[];
+    export class State {
+        root: Node;
+        focus: Component;
+        focusStack: Component[];
+        updatingNodes: Updater[];
+
+        constructor(root: Node) {
+            this.root = root;
+            this.focus = undefined;
+            this.focusStack = [];
+            this.updatingNodes = [];
+
+            let lastTime = control.millis();
+            game.onUpdate(() => {
+                let time = control.millis();
+                const delta = time - lastTime;
+                this.updatingNodes.forEach(n => n.update(delta));
+                lastTime = time;
+            })
+
+            game.onPaint(() => {
+                this.root.draw(screen, new BoundingBox(0, 0, screen.width, screen.height));
+            });
+
+            // controller.A.onEvent(ControllerButtonEvent.Pressed, inputHandler(ButtonId.A))
+            // controller.B.onEvent(ControllerButtonEvent.Pressed, inputHandler(ButtonId.B))
+            // controller.up.onEvent(ControllerButtonEvent.Pressed, inputHandler(ButtonId.Up))
+            // controller.right.onEvent(ControllerButtonEvent.Pressed, inputHandler(ButtonId.Right))
+            // controller.down.onEvent(ControllerButtonEvent.Pressed, inputHandler(ButtonId.Down))
+            // controller.left.onEvent(ControllerButtonEvent.Pressed, inputHandler(ButtonId.Left))    
+            //function inputHandler(button: ButtonId) {
+            //    return () => (_focus && _focus.handleInput(button));
+            //}
+        
+        }
+    }
 
     /**
      * Sets the root node of the UI
@@ -31,8 +63,9 @@ namespace menu {
      * @param node The Node to make the UI root
      */
     export function setRoot(node: Node) {
-        init();
-        _root = node;
+        console.log('pushing menu')
+        game.pushScene();
+        game.eventContext().menuState = new menu.State(node);
     }
 
     /**
@@ -40,20 +73,18 @@ namespace menu {
      * component receives all button events until it is unfocused.
      */
     export function focus(c: Component, clearStack = false) {
-        init();
-        if (_focus) {
-            _focus.onBlur();
-        }
-
+        const state = game.eventContext().menuState;
+        if (!state) return;
+        if (state.focus)
+            state.focus.onBlur();
         if (c) {
-            _focus = c;
-            _focusStack.push(c);
+            state.focus = c;
+            state.focusStack.push(c);
             c.onFocus();
         }
 
-        if (clearStack) {
-            _focusStack = _focus ? [_focus] : [];
-        }
+        if (clearStack)
+            state.focusStack = state.focus ? [state.focus] : [];
     }
 
     /**
@@ -61,15 +92,16 @@ namespace menu {
      * and returns focus to the next component.
      */
     export function popFocus() {
-        init();
-        if (_focus) {
-            _focus.onBlur();
-            _focus = undefined;
-            _focusStack.pop();
+        const state = game.eventContext().menuState;
+        if (!state) return;
+        if (state.focus) {
+            state.focus.onBlur();
+            state.focus = undefined;
+            state.focusStack.pop();
         }
 
-        if (_focusStack.length) {
-            focus(_focusStack.pop());
+        if (state.focusStack.length) {
+            focus(state.focusStack.pop());
         }
     }
 
@@ -197,54 +229,30 @@ namespace menu {
         }
     }
 
-    function init() {
-        if (!_updatingNodes) {
-            _updatingNodes = [];
-            _focusStack = [];
-
-            let lastTime = control.millis();
-            game.onUpdate(function () {
-                let time = control.millis();
-                const delta = time - lastTime;
-                _updatingNodes.forEach(n => n.update(delta));
-                lastTime = time;
-            })
-
-            game.onPaint(function () {
-                if (_root) _root.draw(screen, new BoundingBox(0, 0, screen.width, screen.height));
-            });
-
-            // controller.A.onEvent(ControllerButtonEvent.Pressed, inputHandler(ButtonId.A))
-            // controller.B.onEvent(ControllerButtonEvent.Pressed, inputHandler(ButtonId.B))
-            // controller.up.onEvent(ControllerButtonEvent.Pressed, inputHandler(ButtonId.Up))
-            // controller.right.onEvent(ControllerButtonEvent.Pressed, inputHandler(ButtonId.Right))
-            // controller.down.onEvent(ControllerButtonEvent.Pressed, inputHandler(ButtonId.Down))
-            // controller.left.onEvent(ControllerButtonEvent.Pressed, inputHandler(ButtonId.Left))
-        }
-    }
-
-    function inputHandler(button: ButtonId) {
-        return () => (_focus && _focus.handleInput(button));
-    }
-
     function disposeComponent(c: Component) {
-        init();
-        if (_focus === c) {
-            _focus = undefined;
-            _focusStack.pop();
+        const state = game.eventContext().menuState;
+        if (!state) return;
+
+        if (state.focus === c) {
+            state.focus = undefined;
+            state.focusStack.pop();
             popFocus();
         }
-        _focusStack.removeElement(c);
+        state.focusStack.removeElement(c);
     }
 
     function subscribe(node: Updater) {
-        init();
-        _updatingNodes.push(node);
+        const state = game.eventContext().menuState;
+        if (!state) return;
+
+        state.updatingNodes.push(node);
     }
 
     function unsubscribe(node: Updater) {
-        init();
-        _updatingNodes.removeElement(node);
+        const state = game.eventContext().menuState;
+        if (!state) return;
+
+        state.updatingNodes.removeElement(node);
     }
 
     /**
@@ -420,7 +428,12 @@ namespace menu {
          * Disposes of the Node and its children
          */
         dispose() {
-            if (_root === this) _root = undefined;
+            const state = game.eventContext().menuState;
+            if (!state) return;
+    
+            if (state.root == this) {
+                game.popScene();
+            }
             this.children.forEach(c => c.dispose());
             this.children = undefined;
         }
@@ -1034,10 +1047,10 @@ namespace menu {
     export function setWidth(node: menu.Node, value: number) {
         node.fixedWidth = value;
     }
-    
+
     export function setHeight(node: menu.Node, value: number) {
         node.fixedHeight = value;
-    }    
+    }
 }
 
 // const container = new Menu.HorizontalFlow(100, 100);

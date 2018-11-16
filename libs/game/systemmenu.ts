@@ -1,37 +1,26 @@
 namespace scene {
+    let suppressMenu = false;
     export function registerSystemMenu() {
-        controller.menu.onEvent(ControllerButtonEvent.Pressed, function () {
-            console.log("menu")
-            game.pushScene();
+        if (suppressMenu) {
+            console.log('menu suppresed')
+            return;
+        }
 
+        controller.menu.onEvent(ControllerButtonEvent.Pressed, function () {
+            console.log('creating menu')
+            suppressMenu = true;
             const initHeight = 12;
             const f = new menu.RoundedFrame(5, 1, 3);
             const b = new menu.Bounds(initHeight, initHeight);
             b.left = 30;
             b.top = 30;
             b.appendChild(f)
-
-            controller.B.onEvent(ControllerButtonEvent.Pressed, () => {
-                const vert = b.animate(menu.setHeight)
-                    .from(100)
-                    .to(initHeight)
-                    .duration(200);
-
-                const hori = b.animate(menu.setWidth)
-                    .from(150)
-                    .to(initHeight)
-                    .duration(200)
-
-                hori.chain(vert);
-                hori.start();
-
-                game.popScene();
-            })
-
             const root = new menu.JustifiedContent(b, Alignment.Center, Alignment.Center);
-            const list = new menu.VerticalList(screen.width, screen.height, screen.width >> 2, screen.height >> 1);
+            const list = new menu.VerticalList(root.width - 10, root.height - 10, root.width - 20, root.height - 20);
             root.appendChild(list)
             list.addItem("console", 0);
+            list.addItem("volume up", 1);
+            list.addItem("volume down", 2);
             menu.setRoot(root);
 
             const vert = b.animate(menu.setHeight)
@@ -46,6 +35,24 @@ namespace scene {
 
             vert.chain(hori);
             vert.start();
+
+            // b handler
+            controller.B.onEvent(ControllerButtonEvent.Pressed, () => {
+                const vert = b.animate(menu.setHeight)
+                    .from(100)
+                    .to(initHeight)
+                    .duration(200);
+                const hori = b.animate(menu.setWidth)
+                    .from(150)
+                    .to(0)
+                    .duration(200)
+                hori.chain(vert);
+                hori.start();
+
+                pauseUntil(() => !hori.running);
+                root.dispose();
+                suppressMenu = false;
+            })
         })
     }
 }
