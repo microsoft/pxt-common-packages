@@ -9,6 +9,16 @@ namespace jacdac {
             _loggerDriver = new LoggerVirtualDriver();
     }
 
+    export function suppressLogBroadcast(logf: () => void) {
+        // pipe to console
+        if (_loggerDriver) // avoid cyclic repetition of messages
+            _loggerDriver.suppressForwading = true;
+        logf();
+        if (_loggerDriver)
+            _loggerDriver.suppressForwading = false;
+    }
+
+
     class LoggerVirtualDriver extends JacDacDriver {
         public suppressForwading: boolean;
         constructor() {
@@ -33,7 +43,7 @@ namespace jacdac {
                 const txLength = Math.min(str.length - cursor, DAL.JD_SERIAL_DATA_SIZE - 1 - 4);
                 const buf = control.createBuffer(txLength + 1);
                 buf.setNumber(NumberFormat.UInt8LE, 0, priority);
-                buf.setNumber(NumberFormat.UInt32LE, 1, this.device.serialNumber); 
+                buf.setNumber(NumberFormat.UInt32LE, 1, this.device.serialNumber);
                 for (let i = 0; i < txLength; i++) {
                     buf.setNumber(NumberFormat.UInt8LE, i + 5, str.charCodeAt(i + cursor));
                 }
@@ -56,7 +66,7 @@ namespace jacdac {
 
     class LoggerHostDriver extends JacDacDriver {
         constructor() {
-            super(DriverType.HostDriver, 20); // TODO pickup type from DAL
+            super("log", DriverType.HostDriver, 20); // TODO pickup type from DAL
             jacdac.addDriver(this);
         }
 
@@ -78,13 +88,51 @@ namespace jacdac {
                 str += String.fromCharCode(packet.data.getNumber(NumberFormat.UInt8LE, i));
 
             // pipe to console
-            if (_loggerDriver) // avoid cyclic repetition of messages
-                _loggerDriver.suppressForwading = true;
-            console.add(priority, str);
-            if (_loggerDriver)
-                _loggerDriver.suppressForwading = false;
+            suppressLogBroadcast(() => this.log(str));
 
             return true;
+        }
+    }
+
+    let _snifferLoggerDriver: SnifferLoggerDriver = undefined;
+    /**
+     * Logs all jacdac activity to the console
+     */
+    export function sniffAllPacketsToConsole() {
+        if (!_snifferLoggerDriver)
+            _snifferLoggerDriver = new SnifferLoggerDriver();
+    }
+
+    class SnifferLoggerDriver extends JacDacDriver {
+        public enabled: boolean;
+        constructor() {
+            super("snif", DriverType.SnifferDriver, 0);
+            this.enabled = true;
+            jacdac.addDriver(this);
+        }
+
+        public handleControlPacket(pkt: Buffer): boolean {
+            if (this.enabled) {
+                const ctrl = new ControlPacket(pkt);
+                suppressLogBroadcast(() => this.log(`ctrl>from ${ctrl.serialNumber}:${ctrl.address}>${ctrl.data.toHex()}`))
+            }
+            return super.handleControlPacket(pkt);
+        }
+
+        public handlePacket(pkt: Buffer): boolean {
+            if (this.enabled) {
+                const jd = new JDPacket(pkt);
+                suppressLogBroadcast(() => this.log(`ctrl>${jd.address}>${jd.data.toHex()}`))
+            }
+            return super.handlePacket(pkt);
+        }
+
+        public deviceConnected(): void {
+            suppressLogBroadcast(() => this.log(`dev>con`));
+        }
+
+        public deviceRemoved(): void {
+            suppressLogBroadcast(() => this.log(`dev>dis`));
         }
     }
 }
