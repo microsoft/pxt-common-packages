@@ -110,6 +110,8 @@ namespace scene {
             });
             // update screen
             this.eventContext.registerFrameHandler(200, control.__screen.update);
+            // register start menu
+            scene.registerSystemMenu();
         }
 
         addSprite(sprite: SpriteLike) {

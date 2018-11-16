@@ -45,6 +45,8 @@ namespace control {
 
     function doNothing() { }
 
+
+
     export class EventContext {
         private handlers: EventHandler[];
         private frameCallbacks: FrameCallback[];
@@ -54,6 +56,8 @@ namespace control {
         private timeInSample: number;
         public deltaTime: number;
         private prevTime: number;
+        public menuState: menu.State;
+    
         static onStats: (stats: string) => void;
 
         constructor() {

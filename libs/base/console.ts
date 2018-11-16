@@ -22,7 +22,9 @@ namespace console {
     export let minPriority = ConsolePriority.Log;
 
     //% whenUsed
-    const listeners: Listener[] = [function(priority: ConsolePriority, text: string) { control.__log(priority, text); }];
+    const listeners: Listener[] = [
+        function (priority: ConsolePriority, text: string) { control.__log(priority, text); }
+    ];
 
     export function add(priority: ConsolePriority, text: string) {
         if (priority < minPriority) return;
@@ -77,5 +79,17 @@ namespace console {
     export function addListener(listener: (priority: ConsolePriority, text: string) => void) {
         if (!listener) return;
         listeners.push(listener);
+    }
+
+    /**
+     * Removes a listener
+     * @param listener 
+     */
+    //%
+    export function removeListener(listener: (priority: ConsolePriority, text: string) => void) {
+        if (!listener) return;
+        const i = listeners.indexOf(listener);
+        if (i > -1)
+            listeners.splice(i, 1);
     }
 }
