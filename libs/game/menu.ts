@@ -1029,6 +1029,15 @@ namespace menu {
             }
         }
     }
+
+
+    export function setWidth(node: menu.Node, value: number) {
+        node.fixedWidth = value;
+    }
+    
+    export function setHeight(node: menu.Node, value: number) {
+        node.fixedHeight = value;
+    }    
 }
 
 // const container = new Menu.HorizontalFlow(100, 100);
@@ -1064,14 +1073,6 @@ namespace menu {
 // })
 // Menu.setRoot(root);
 // root.show();
-
-function setWidth(node: menu.Node, value: number) {
-    node.fixedWidth = value;
-}
-
-function setHeight(node: menu.Node, value: number) {
-    node.fixedHeight = value;
-}
 
 // const initHeight = 12;
 // const f = new Menu.RoundedFrame(5, 1, 3);
