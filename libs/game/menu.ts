@@ -49,7 +49,7 @@ namespace menu {
             controller.up.onEvent(ControllerButtonEvent.Pressed, inputHandler(ButtonId.Up))
             controller.right.onEvent(ControllerButtonEvent.Pressed, inputHandler(ButtonId.Right))
             controller.down.onEvent(ControllerButtonEvent.Pressed, inputHandler(ButtonId.Down))
-            controller.left.onEvent(ControllerButtonEvent.Pressed, inputHandler(ButtonId.Left))            
+            controller.left.onEvent(ControllerButtonEvent.Pressed, inputHandler(ButtonId.Left))
         }
     }
 
@@ -119,6 +119,7 @@ namespace menu {
         elapsed: number;
         period: number;
         next: Animation;
+        endedHandler: () => void;
 
         /**
          * Creates a linear timed Animation
@@ -178,6 +179,15 @@ namespace menu {
         }
 
         /**
+         * Registers a handler to run when the animation is completed (stoppied)
+         * @param handler 
+         */
+        onEnded(handler: () => void) {
+            this.endedHandler = handler;
+            return this;
+        }
+
+        /**
          * Starts the animation for a single run
          */
         start() {
@@ -201,6 +211,8 @@ namespace menu {
             this.running = false;
             this.elapsed = 0;
             unsubscribe(this);
+            if (this.endedHandler)
+                this.endedHandler();
         }
 
         update(dt: number) {
@@ -431,7 +443,7 @@ namespace menu {
         dispose() {
             const state = game.currentScene().menuState;
             if (!state) return;
-    
+
             if (state.root == this) {
                 game.popScene();
             }
@@ -828,7 +840,7 @@ namespace menu {
 
             this.label = new ScrollingLabel(labelWidth, image.font8, text);
             this.appendChild(new JustifiedContent(this.label, Alignment.Left, Alignment.Center));
-         
+
             this.id = id;
         }
     }
@@ -1044,13 +1056,77 @@ namespace menu {
         }
     }
 
-
     export function setWidth(node: menu.Node, value: number) {
         node.fixedWidth = value;
     }
 
     export function setHeight(node: menu.Node, value: number) {
         node.fixedHeight = value;
+    }
+
+    export class Menu extends Node {
+        list: menu.VerticalList;
+        root: menu.JustifiedContent;
+        b: menu.Bounds;
+        margin: number;
+
+        constructor() {
+            super();
+            this.margin = 10;
+
+            const initHeight = this.margin;
+            const finalHeight = screen.height - this.margin;
+            const finalWidth = screen.width - this.margin;
+
+            this.b = new menu.Bounds(initHeight, initHeight);
+            const f = new menu.RoundedFrame(5, 1, 3);
+            this.b.left = 30;
+            this.b.top = 30;
+            this.b.appendChild(f)
+
+            this.list = new menu.VerticalList(finalWidth - 8, finalHeight - 8, finalWidth - 24, finalHeight - 24);
+            f.appendChild(this.list);
+            this.root = new menu.JustifiedContent(this.b, Alignment.Center, Alignment.Center);
+            this.appendChild(this.root);
+        }
+
+        addItem(name: string, handler: () => void) {
+            this.list.addItem(name, this.list.items.length);
+            // TODO
+        }
+
+        grow(onEnded?: () => void) {
+            this.list.hide();
+            const vert = this.b.animate(menu.setHeight)
+                .from(this.margin)
+                .to(screen.height - this.margin)
+                .duration(200);
+            const hori = this.b.animate(menu.setWidth)
+                .from(this.margin)
+                .to(screen.width - this.margin)
+                .duration(200)
+                .onEnded(() => {
+                    this.list.show();
+                    if (onEnded) onEnded();
+                });
+            vert.chain(hori);
+            vert.start();
+        }
+
+        shrink(onEnded?: () => void) {
+            this.list.hide();
+            const hori = this.b.animate(menu.setWidth)
+                .from(150)
+                .to(0)
+                .duration(200)
+            const vert = this.b.animate(menu.setHeight)
+                .from(100)
+                .to(this.margin)
+                .duration(200)
+                .onEnded(onEnded);
+            hori.chain(vert);
+            hori.start();
+        }
     }
 }
 
