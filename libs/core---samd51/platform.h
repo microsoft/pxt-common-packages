@@ -9,6 +9,11 @@
 //#include "ZI2C.h"
 #include "ZSingleWireSerial.h"
 
+// cap touch not available on 51 yet
+#ifdef SAMD21
+#include "CapTouchButton.h"
+#endif
+
 #include "pinmap.h"
 
 #undef min
