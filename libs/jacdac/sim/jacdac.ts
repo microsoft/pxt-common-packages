@@ -32,7 +32,7 @@ namespace pxsim.jacdac {
 export class JacDacDriverStatus {
     constructor(private driverType: number, private deviceClass: number, private methods: ((p: Buffer) => void)[]) {
         this.serialNumber = Math.random();
-        this.id = board().bus.allocateNotifyEvent();
+        this.id = pxsim.board().bus.allocateNotifyEvent();
         this.isPaired = false;
         this.isPairable = false; // TODO
         this.isVirtualDriver = false; // TODO
