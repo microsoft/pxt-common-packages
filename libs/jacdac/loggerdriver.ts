@@ -96,7 +96,7 @@ namespace jacdac {
 
     let _snifferLoggerDriver: SnifferLoggerDriver = undefined;
     /**
-     * Logs all jacdac activity to the console
+     * Enables or disables all jacdac activity to the console
      */
     export function sniffAllPacketsToConsole(enabled = true) {
         if (!_snifferLoggerDriver)
