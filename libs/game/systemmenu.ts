@@ -25,7 +25,7 @@ namespace scene {
             list.addItem("volume down", 1);
             list.addItem("brightness up", 2);
             list.addItem("brightness down", 3);
-            list.addItem("console", 4);
+            list.addItem("jacdac console", 4);
             f.appendChild(list);
 
             const root = new menu.JustifiedContent(b, Alignment.Center, Alignment.Center);
@@ -70,7 +70,9 @@ namespace scene {
             });
             controller.A.onEvent(ControllerButtonEvent.Pressed, () => {
                 hide();
+                jacdac.sniffAllPacketsToConsole(true);
                 game.showConsole();
+                jacdac.sniffAllPacketsToConsole(false);
             });
         })
     }

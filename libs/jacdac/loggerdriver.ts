@@ -98,9 +98,10 @@ namespace jacdac {
     /**
      * Logs all jacdac activity to the console
      */
-    export function sniffAllPacketsToConsole() {
+    export function sniffAllPacketsToConsole(enabled = true) {
         if (!_snifferLoggerDriver)
             _snifferLoggerDriver = new SnifferLoggerDriver();
+        _snifferLoggerDriver.enabled = enabled;
     }
 
     class SnifferLoggerDriver extends JacDacDriver {
