@@ -46,8 +46,7 @@ namespace scene {
             pauseUntil(() => !anim.running);
             list.show();
 
-            // b handler
-            controller.B.onEvent(ControllerButtonEvent.Pressed, () => {
+            const hide = () => {
                 list.hide();
                 const vert = b.animate(menu.setHeight)
                     .from(100)
@@ -63,8 +62,14 @@ namespace scene {
                 pauseUntil(() => !anim.running);
                 root.dispose();
                 systemMenuActive = false;
+            }
+
+            // b handler
+            controller.B.onEvent(ControllerButtonEvent.Pressed, () => {
+                hide();
             });
             controller.A.onEvent(ControllerButtonEvent.Pressed, () => {
+                hide();
                 game.showConsole();
             });
         })

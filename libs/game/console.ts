@@ -50,6 +50,7 @@ namespace game {
             console.removeListener(this.listener);
             controller._setUserEventsEnabled(true);
             game.popScene();
+            this.lines = undefined;
         }
 
         lineHeight(): number {
