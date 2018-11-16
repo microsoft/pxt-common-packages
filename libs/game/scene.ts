@@ -26,6 +26,7 @@ namespace scene {
 
     export class Scene {
         eventContext: control.EventContext;
+        menuState: menu.State;
         background: Background;
         tileMap: tiles.TileMap;
         allSprites: SpriteLike[];

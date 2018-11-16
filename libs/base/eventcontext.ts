@@ -56,7 +56,6 @@ namespace control {
         private timeInSample: number;
         public deltaTime: number;
         private prevTime: number;
-        public menuState: menu.State;
     
         static onStats: (stats: string) => void;
 

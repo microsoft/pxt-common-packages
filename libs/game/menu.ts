@@ -55,7 +55,7 @@ namespace menu {
 
     function inputHandler(button: ButtonId) {
         let state: menu.State;
-        return () => ((state = game.eventContext().menuState) && state.focus && state.focus.handleInput(button));
+        return () => ((state = game.currentScene().menuState) && state.focus && state.focus.handleInput(button));
     }
 
     /**
@@ -66,7 +66,7 @@ namespace menu {
     export function setRoot(node: Node) {
         console.log('pushing menu')
         game.pushScene();
-        game.eventContext().menuState = new menu.State(node);
+        game.currentScene().menuState = new menu.State(node);
     }
 
     /**
@@ -74,7 +74,7 @@ namespace menu {
      * component receives all button events until it is unfocused.
      */
     export function focus(c: Component, clearStack = false) {
-        const state = game.eventContext().menuState;
+        const state = game.currentScene().menuState;
         if (!state) return;
         if (state.focus)
             state.focus.onBlur();
@@ -93,7 +93,7 @@ namespace menu {
      * and returns focus to the next component.
      */
     export function popFocus() {
-        const state = game.eventContext().menuState;
+        const state = game.currentScene().menuState;
         if (!state) return;
         if (state.focus) {
             state.focus.onBlur();
@@ -231,7 +231,7 @@ namespace menu {
     }
 
     function disposeComponent(c: Component) {
-        const state = game.eventContext().menuState;
+        const state = game.currentScene().menuState;
         if (!state) return;
 
         if (state.focus === c) {
@@ -243,14 +243,14 @@ namespace menu {
     }
 
     function subscribe(node: Updater) {
-        const state = game.eventContext().menuState;
+        const state = game.currentScene().menuState;
         if (!state) return;
 
         state.updatingNodes.push(node);
     }
 
     function unsubscribe(node: Updater) {
-        const state = game.eventContext().menuState;
+        const state = game.currentScene().menuState;
         if (!state) return;
 
         state.updatingNodes.removeElement(node);
@@ -429,7 +429,7 @@ namespace menu {
          * Disposes of the Node and its children
          */
         dispose() {
-            const state = game.eventContext().menuState;
+            const state = game.currentScene().menuState;
             if (!state) return;
     
             if (state.root == this) {
