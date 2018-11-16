@@ -1,9 +1,6 @@
 #include "pxt.h"
 #include "neopixel.h"
 
-#ifndef PA11
-#define PA11 11
-#endif
 
 namespace pixel {
 

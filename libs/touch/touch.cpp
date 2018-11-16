@@ -52,13 +52,6 @@ int value(TouchButton button) {
 
 }
 
-#ifndef PA02
-#define PA02 2
-#define PA07 7
-#define PB02 (32+2)
-#define PB09 (32+9)
-#endif
-
 namespace AnalogInOutPinMethods {
     
 /**

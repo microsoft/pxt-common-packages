@@ -19,7 +19,7 @@
 #undef min
 #undef max
 
-typedef uint8_t PinName;
+typedef int PinName;
 
 // #define PXT_BOOTLOADER_CFG_ADDR 0x8003fc8
 
@@ -43,7 +43,6 @@ typedef uint8_t PinName;
 
 // The parameters below needs tuning!
 
-#ifdef JUST_FOR_DAL_D_TS_CPP_WILL_IGNORE
 #define PA00 0
 #define PA01 1
 #define PA02 2
@@ -108,6 +107,5 @@ typedef uint8_t PinName;
 #define PB29 61
 #define PB30 62
 #define PB31 63
-#endif
 
 #endif
