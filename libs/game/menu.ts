@@ -44,17 +44,18 @@ namespace menu {
                 this.root.draw(screen, new BoundingBox(0, 0, screen.width, screen.height));
             });
 
-            // controller.A.onEvent(ControllerButtonEvent.Pressed, inputHandler(ButtonId.A))
-            // controller.B.onEvent(ControllerButtonEvent.Pressed, inputHandler(ButtonId.B))
-            // controller.up.onEvent(ControllerButtonEvent.Pressed, inputHandler(ButtonId.Up))
-            // controller.right.onEvent(ControllerButtonEvent.Pressed, inputHandler(ButtonId.Right))
-            // controller.down.onEvent(ControllerButtonEvent.Pressed, inputHandler(ButtonId.Down))
-            // controller.left.onEvent(ControllerButtonEvent.Pressed, inputHandler(ButtonId.Left))    
-            //function inputHandler(button: ButtonId) {
-            //    return () => (_focus && _focus.handleInput(button));
-            //}
-        
+            controller.A.onEvent(ControllerButtonEvent.Pressed, inputHandler(ButtonId.A))
+            //controller.B.onEvent(ControllerButtonEvent.Pressed, inputHandler(ButtonId.B))
+            controller.up.onEvent(ControllerButtonEvent.Pressed, inputHandler(ButtonId.Up))
+            controller.right.onEvent(ControllerButtonEvent.Pressed, inputHandler(ButtonId.Right))
+            controller.down.onEvent(ControllerButtonEvent.Pressed, inputHandler(ButtonId.Down))
+            controller.left.onEvent(ControllerButtonEvent.Pressed, inputHandler(ButtonId.Left))            
         }
+    }
+
+    function inputHandler(button: ButtonId) {
+        let state: menu.State;
+        return () => ((state = game.eventContext().menuState) && state.focus && state.focus.handleInput(button));
     }
 
     /**
@@ -822,12 +823,12 @@ namespace menu {
         constructor(labelWidth: number, text: string, id: number) {
             super();
 
-            this.background = new RectNode(7);
+            this.background = new RectNode(0);
             this.appendChild(this.background);
 
-            this.label = new ScrollingLabel(labelWidth, image.font5, text);
+            this.label = new ScrollingLabel(labelWidth, image.font8, text);
             this.appendChild(new JustifiedContent(this.label, Alignment.Left, Alignment.Center));
-
+         
             this.id = id;
         }
     }
@@ -853,7 +854,7 @@ namespace menu {
 
         addItem(item: string, id: number) {
             const n = new ListItem(this.flow.width, item, id);
-            n.fixedHeight = 10;
+            n.fixedHeight = 16;
             this.items.push(n);
             this.flow.appendChild(n);
         }

@@ -1,6 +1,7 @@
 namespace game {
     export function showConsole() {
         const csl = new Console();
+        console.log('console log')
         game.onUpdate(() => {
             if (controller.down.isPressed())
                 csl.scroll(1);

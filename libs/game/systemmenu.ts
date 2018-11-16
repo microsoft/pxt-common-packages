@@ -12,17 +12,23 @@ namespace scene {
             const initHeight = 12;
             const finalHeight = screen.height - 10;
             const finalWidth = screen.width - 10;
-            const f = new menu.RoundedFrame(5, 1, 3);
+
             const b = new menu.Bounds(initHeight, initHeight);
+
+            const f = new menu.RoundedFrame(5, 1, 3);
             b.left = 30;
             b.top = 30;
             b.appendChild(f)
-            const list = new menu.VerticalList(finalWidth - 8, finalHeight - 8);
-            list.addItem("console", 0);
-            list.addItem("volume up", 1);
-            list.addItem("volume down", 2);
+
+            const list = new menu.VerticalList(finalWidth - 8, finalHeight - 8, finalWidth - 24, finalHeight - 24);
+            list.addItem("volume up", 0);
+            list.addItem("volume down", 1);
+            list.addItem("brightness up", 2);
+            list.addItem("brightness down", 3);
+            list.addItem("console", 4);
+            f.appendChild(list);
+
             const root = new menu.JustifiedContent(b, Alignment.Center, Alignment.Center);
-            root.appendChild(list)
             menu.setRoot(root);
 
             const vert = b.animate(menu.setHeight)
@@ -35,13 +41,14 @@ namespace scene {
                 .to(finalWidth)
                 .duration(200);
 
-            vert.chain(hori);
-            vert.start();
-
+            const anim = vert.chain(hori);
+            anim.start();
+            pauseUntil(() => !anim.running);
             list.show();
 
             // b handler
             controller.B.onEvent(ControllerButtonEvent.Pressed, () => {
+                list.hide();
                 const vert = b.animate(menu.setHeight)
                     .from(100)
                     .to(initHeight)
@@ -50,13 +57,16 @@ namespace scene {
                     .from(150)
                     .to(0)
                     .duration(200)
-                hori.chain(vert);
-                hori.start();
+                const anim = hori.chain(vert);
+                anim.start();
 
-                pauseUntil(() => !hori.running);
+                pauseUntil(() => !anim.running);
                 root.dispose();
                 systemMenuActive = false;
-            })
+            });
+            controller.A.onEvent(ControllerButtonEvent.Pressed, () => {
+                game.showConsole();
+            });
         })
     }
 }
