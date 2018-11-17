@@ -29,3 +29,7 @@ forever(() => {
 [write line](/reference/serial/write-line),
 [write number](/reference/serial/write-number),
 [write value](/reference/serial/write-value)
+
+```package
+serial
+```

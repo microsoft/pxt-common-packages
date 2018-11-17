@@ -29,3 +29,7 @@ serial.writeBuffer(sdv);
 
 [write line](/reference/serial/write-line),
 [write number](/reference/serial/write-number)
+
+```package
+serial
+```
