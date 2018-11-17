@@ -8,10 +8,6 @@ class JacDacDriver {
         this.name = name;
         this.driverType = driverType;
         this.deviceClass = deviceClass || jacdac.programHash();
-<<<<<<< HEAD
-        this.logPriority = ConsolePriority.Silent;        
-=======
->>>>>>> 1178438cc113e064f9b512d899ffe4927a635e45
     }
 
     public log(text: string) {
