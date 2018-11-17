@@ -1,5 +1,7 @@
 namespace jacdac {
     let _loggerDriver: LoggerVirtualDriver;
+
+    const LOGGER_DRIVER_CLASS = 20;
     /**
      * Sends console messages over JacDac
      */
@@ -22,12 +24,11 @@ namespace jacdac {
     class LoggerVirtualDriver extends JacDacDriver {
         public suppressForwading: boolean;
         constructor() {
-            super("log", DriverType.VirtualDriver, 20); // TODO pickup type from DAL
-            this.suppressForwading = false;
+            super("log", DriverType.VirtualDriver, LOGGER_DRIVER_CLASS, true); // TODO pickup type from DAL
             // send to other devices
             console.addListener((priority, text) => this.broadcastLog(priority, text));
-
             jacdac.addDriver(this);
+            this.suppressForwading = false;
         }
 
         /**
@@ -66,11 +67,27 @@ namespace jacdac {
 
     class LoggerHostDriver extends JacDacDriver {
         constructor() {
-            super("log", DriverType.HostDriver, 20); // TODO pickup type from DAL
+            super("log", DriverType.HostDriver, LOGGER_DRIVER_CLASS); // TODO pickup type from DAL
             jacdac.addDriver(this);
         }
 
+        handleControlPacket(pkt: Buffer): boolean {
+            console.log("ctrl packet")
+            return super.handleControlPacket(pkt);
+        }
+
+        deviceConnected(): void {
+            console.log("conn")
+            super.deviceConnected();
+        }
+
+        deviceRemoved() {
+            console.log("removed");
+            super.deviceRemoved();
+        }
+
         public handlePacket(pkt: Buffer): boolean {
+            console.log("received packet")
             const packet = new JDPacket(pkt);
             const packetSize = packet.size;
             if (!packetSize) return true;
@@ -88,7 +105,7 @@ namespace jacdac {
                 str += String.fromCharCode(packet.data.getNumber(NumberFormat.UInt8LE, i));
 
             // pipe to console
-            suppressLogBroadcast(() => this.log(str));
+            console.add(priority, str);
 
             return true;
         }

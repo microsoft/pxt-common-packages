@@ -3,15 +3,18 @@ class JacDacDriver {
     public device: JacDacDriverStatus;
     public driverType: jacdac.DriverType;
     public deviceClass: number;
+    protected supressLog: boolean;
 
-    constructor(name: string, driverType: jacdac.DriverType, deviceClass: number) {
+    constructor(name: string, driverType: jacdac.DriverType, deviceClass: number, suppressLog: boolean = false) {
         this.name = name;
         this.driverType = driverType;
         this.deviceClass = deviceClass || jacdac.programHash();
+        this.supressLog = suppressLog;
     }
 
     public log(text: string) {
-        console.add(jacdac.consolePriority, `jd>${this.name}>${text}`);
+        if (!this.supressLog)
+            console.add(jacdac.consolePriority, `jd>${this.name}>${text}`);
     }
 
     /**
