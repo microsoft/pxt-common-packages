@@ -235,7 +235,7 @@ uint8_t driverAddress(JacDacDriverStatus d) {
 
 /** Get device id for events. */
 //% property
-bool id(JacDacDriverStatus d) {
+uint32_t id(JacDacDriverStatus d) {
     return d->id;
 }
 

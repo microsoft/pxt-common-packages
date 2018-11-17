@@ -1,17 +1,21 @@
 class JacDacDriver {
+    public name: string;
     public device: JacDacDriverStatus;
     public driverType: jacdac.DriverType;
     public deviceClass: number;
-    public logPriority: ConsolePriority;
 
-    constructor(driverType: jacdac.DriverType, deviceClass: number) {
+    constructor(name: string, driverType: jacdac.DriverType, deviceClass: number) {
+        this.name = name;
         this.driverType = driverType;
         this.deviceClass = deviceClass || jacdac.programHash();
+<<<<<<< HEAD
         this.logPriority = ConsolePriority.Silent;        
+=======
+>>>>>>> 1178438cc113e064f9b512d899ffe4927a635e45
     }
 
-    protected log(text: string) {
-        console.add(this.logPriority, text);
+    public log(text: string) {
+        console.add(jacdac.consolePriority, `jd>${this.name}>${text}`);
     }
 
     /**
@@ -57,6 +61,9 @@ class JacDacDriver {
  * JACDAC protocol support
  */
 namespace jacdac {
+    // common logging level for jacdac services
+    export let consolePriority = ConsolePriority.Silent;
+
     // This enumeration specifies that supported configurations that drivers should utilise.
     // Many combinations of flags are supported, but only the ones listed here have been fully implemented.
     export enum DriverType {
@@ -72,11 +79,12 @@ namespace jacdac {
      * base class for pairable drivers
     */
     export class JacDacPairableDriver extends JacDacDriver {
-        constructor(isHost: boolean, deviceClass: number) {
-            super(isHost ? DriverType.PairableHostDriver : DriverType.PairedDriver, deviceClass);
+        constructor(name: string, isHost: boolean, deviceClass: number) {
+            super(name, isHost ? DriverType.PairableHostDriver : DriverType.PairedDriver, deviceClass);
         }
 
         protected sendPacket(pkt: Buffer) {
+            this.log(`send pkt to ${this.device.driverAddress}`)
             jacdac.sendPacket(pkt, this.device.driverAddress);
         }
 
@@ -86,9 +94,11 @@ namespace jacdac {
 
         public handleControlPacket(pkt: Buffer): boolean {
             const cp = new ControlPacket(pkt);
+            this.log(`cp from ${cp.serialNumber} at ${cp.address}`)
             if (this.device.isPairedDriver && !this.device.isPaired) {
-                this.log("pairing");
+                this.log("needs pairing");
                 if (cp.flags & DAL.CONTROL_JD_FLAGS_PAIRABLE) {
+                    this.log(`send pairing`)
                     this.sendPairing(cp.address,
                         DAL.JD_DEVICE_FLAGS_REMOTE
                         | DAL.JD_DEVICE_FLAGS_INITIALISED
@@ -102,9 +112,9 @@ namespace jacdac {
 
         public handlePacket(pkt: Buffer): boolean {
             const packet = new JDPacket(pkt);
+            this.log(`received ${packet.data.length} bytes from ${packet.address}`)
             if (!this.device.isConnected || !this.device.isPaired || !this.device.isPairedInstanceAddress(packet.address))
                 return true;
-
             if (this.device.isPairedDriver)
                 return this.handleHostPacket(packet);
             else
@@ -159,8 +169,8 @@ namespace jacdac {
         protected _sendTime: number;
         protected _sendState: Buffer;
 
-        constructor(isHost: boolean, deviceClass: number) {
-            super(isHost, deviceClass);
+        constructor(name: string, isHost: boolean, deviceClass: number) {
+            super(name, isHost, deviceClass);
             this._streamingState = JacDacStreamingState.Stopped;
             this.streamingInterval = 20;
         }
@@ -171,6 +181,7 @@ namespace jacdac {
 
         protected handleHostPacket(packet: JDPacket): boolean {
             const command = packet.getNumber(NumberFormat.UInt8LE, 0);
+            this.log(`hpkt ${command}`);
             switch (command) {
                 case JacDacStreamingCommand.StartStream:
                     const interval = packet.getNumber(NumberFormat.UInt32LE, 1);
@@ -187,6 +198,7 @@ namespace jacdac {
 
         protected handleVirtualPacket(packet: JDPacket): boolean {
             const command = packet.getNumber(NumberFormat.UInt8LE, 0);
+            this.log(`vpkt ${command}`)
             switch (command) {
                 case JacDacStreamingCommand.State:
                     const time = packet.getNumber(NumberFormat.UInt32LE, 1);
@@ -221,8 +233,10 @@ namespace jacdac {
 
         protected startStreaming(interval: number = -1) {
             if (this._streamingState != JacDacStreamingState.Stopped
-                || !this.device.isPairedDriver) return;
+                || !this.device.isPairedDriver)
+                return;
 
+            this.log(`start streaming`);
             this._streamingState = JacDacStreamingState.Streaming;
             if (interval > 0)
                 this.streamingInterval = Math.max(20, interval); // don't overstream
@@ -235,7 +249,7 @@ namespace jacdac {
                         if (!this._sendState
                             || (control.millis() - this._sendTime > STREAMING_MAX_SILENCE)
                             || !bufferEqual(state, this._sendState)) {
-                            
+
                             // send state and record time
                             const pkt = control.createBuffer(state.length + 4);
                             pkt.setNumber(NumberFormat.UInt8LE, 0, JacDacStreamingCommand.State);
@@ -257,6 +271,7 @@ namespace jacdac {
         }
 
         protected stopStreaming() {
+            this.log(`stop streaming`);
             this._streamingState = JacDacStreamingState.Stopping;
             pauseUntil(() => this._streamingState == JacDacStreamingState.Stopped);
         }
@@ -276,10 +291,11 @@ namespace jacdac {
      */
     export function addDriver(n: JacDacDriver) {
         if (n.device) { // don't add twice
-            control.dmesg(`jd> driver already added ${n.driverType} ${n.deviceClass}`)
+            n.log(`already added`);
             return;
         }
-        control.dmesg(`jd> driver ${n.driverType} ${n.deviceClass}`)
+
+        n.log(`adding ${n.driverType} ${n.deviceClass}`)
         n.device = __internalAddDriver(n.driverType, n.deviceClass, [
             (p: Buffer) => n.handleControlPacket(p),
             (p: Buffer) => n.handlePacket(p),
@@ -293,7 +309,7 @@ namespace jacdac {
      * @param pkt jackdack data
      */
     export function sendPacket(pkt: Buffer, deviceAddress: number) {
-        control.dmesg(`jd> send pkt to ${deviceAddress}`)
+        control.dmesg(`jd> send ${pkt.length} bytes to ${deviceAddress}`)
         __internalSendPacket(pkt, deviceAddress);
     }
 

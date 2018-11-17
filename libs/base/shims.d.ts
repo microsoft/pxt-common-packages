@@ -79,17 +79,17 @@ declare namespace loops {
      * Repeats the code forever in the background. On each iteration, allows other codes to run.
      * @param body code to execute
      */
-    //% help=loops/forever weight=100 afterOnStart=true
-    //% blockId=forever block="forever" blockAllowMultiple=1 shim=loops::forever
+    //% help=loops/forever weight=100 afterOnStart=true deprecated=true
+    //% blockId=forever_deprecated block="forever" blockAllowMultiple=1 shim=loops::forever
     function forever(a: () => void): void;
 
     /**
      * Pause for the specified time in milliseconds
      * @param ms how long to pause for, eg: 100, 200, 500, 1000, 2000
      */
-    //% help=loops/pause weight=99
+    //% help=loops/pause weight=99 deprecated=true
     //% async block="pause %pause=timePicker|ms"
-    //% blockId=device_pause shim=loops::pause
+    //% blockId=device_pause_deprecated shim=loops::pause
     function pause(ms: int32): void;
 }
 declare namespace control {
@@ -101,7 +101,10 @@ declare namespace control {
     //% blockId=control_running_time block="millis (ms)" shim=control::millis
     function millis(): int32;
 
-    //%
+    /**
+     * Used internally
+     */
+    //% flags.defl=16 shim=control::internalOnEvent
     function internalOnEvent(src: int32, value: int32, handler: () => void, flags?: int32): void;
 
     /**
@@ -139,23 +142,30 @@ declare namespace control {
     //% blockId="control_device_serial_number" block="device serial number" weight=9
     //% help=control/device-serial-number shim=control::deviceSerialNumber
     function deviceSerialNumber(): int32;
-}
-declare namespace serial {
 
     /**
-     * Write some text to the serial port.
+     *
      */
-    //% help=serial/write-string
-    //% weight=87 blockHidden=true
-    //% blockId=serial_writestring block="serial|write string %text" shim=serial::writeString
-    function writeString(text: string): void;
+    //% shim=control::__log
+    function __log(prority: int32, text: string): void;
 
     /**
-     * Send a buffer across the serial connection.
+     * Dump internal information about a value.
      */
-    //% help=serial/write-buffer weight=6 blockHidden=true
-    //% blockId=serial_writebuffer block="serial|write buffer %buffer" shim=serial::writeBuffer
-    function writeBuffer(buffer: Buffer): void;
+    //% shim=control::dmesgValue
+    function dmesgValue(v: any): void;
+
+    /**
+     * Force GC and dump information about heap.
+     */
+    //% shim=control::gc
+    function gc(): void;
+
+    /**
+     * Return true if profiling is enabled in the current build.
+     */
+    //% shim=control::profilingEnabled
+    function profilingEnabled(): boolean;
 }
 
 // Auto-generated. Do not edit. Really.

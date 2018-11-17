@@ -23,7 +23,10 @@
         "ask.ts",
         "targetoverrides.cpp",
         "targetoverrides.ts",
-        "mathUtil.ts"
+        "mathUtil.ts",
+        "menu.ts",
+        "systemmenu.ts",
+        "console.ts"
     ],
     "public": true,
     "dependencies": {

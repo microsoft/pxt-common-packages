@@ -12,8 +12,8 @@ namespace jacdac {
         private _pin: PwmPin; // might be null
         private _mode: PinMode;
 
-        constructor(pin: PwmPin = undefined) {
-            super(!!pin, DAL.JD_DRIVER_CLASS_PIN);
+        constructor(name: string, pin: PwmPin = undefined) {
+            super("pin" + name, !!pin, DAL.JD_DRIVER_CLASS_PIN);
             this._pin = pin;
             this._mode = PinMode.SetAnalog;
         }

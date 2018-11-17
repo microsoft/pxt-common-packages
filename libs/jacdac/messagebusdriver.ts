@@ -9,7 +9,7 @@ namespace jacdac {
         suppressForwarding: boolean;
 
         constructor() {
-            super(DriverType.BroadcastDriver, DAL.JD_DRIVER_CLASS_MESSAGE_BUS);
+            super("bus", DriverType.BroadcastDriver, DAL.JD_DRIVER_CLASS_MESSAGE_BUS);
             this.suppressForwarding = false;
             jacdac.addDriver(this);
         }
