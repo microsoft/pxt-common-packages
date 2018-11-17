@@ -14,7 +14,7 @@ namespace scene {
             m.addItem("volume down", () => {});
             m.addItem("brightness up", () => {});
             m.addItem("brightness down", () =>{});
-            m.addItem("jacdac console", () => {});
+            m.addItem("console", () => {});
             menu.setRoot(m);
             m.grow();
 
@@ -31,9 +31,7 @@ namespace scene {
             });
             controller.A.onEvent(ControllerButtonEvent.Pressed, () => {
                 hide();
-                jacdac.sniffAllPacketsToConsole(true);
                 game.showConsole();
-                jacdac.sniffAllPacketsToConsole(false);
             });
         })
     }
