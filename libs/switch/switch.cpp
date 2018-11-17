@@ -27,7 +27,6 @@ SINGLETON(WSwitch);
 namespace input {
 /**
 * Do something when the slide switch is moved left or right.
-*
 * @param direction the direction the switch must be moved to trigget the event
 */
 //% help=input/on-switch-moved
