@@ -97,15 +97,29 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         for (const sprite of colliders) {
             const overSprites = scene.physicsEngine.overlaps(sprite);
             for (const overlapper of overSprites) {
-                // overlap handler
-                const tmpsprite = sprite;
-                const tmp = overlapper;
-                const oh = sprite.overlapHandler;
-                if (oh)
-                    oh(tmp)
-                scene.overlapHandlers
-                    .filter(h => h.type == sprite.type && h.otherType == overlapper.type)
-                    .forEach(h => h.handler(tmpsprite, tmp));
+                // Maintaining invariant that the sprite with the higher ID has the other sprite as an overlapper
+                const higher = sprite.id > overlapper.id ? sprite : overlapper;
+                const lower = higher === sprite ? overlapper : sprite;
+
+                if (higher._overlappers.indexOf(lower.id) === -1) {
+                    if (sprite.overlapHandler) {
+                        higher._overlappers.push(lower.id);
+                        control.runInParallel(() => {
+                            sprite.overlapHandler(overlapper);
+                            higher._overlappers.removeElement(lower.id);
+                        });
+                    }
+
+                    scene.overlapHandlers
+                        .filter(h => h.type == sprite.type && h.otherType == overlapper.type)
+                        .forEach(h => { 
+                            higher._overlappers.push(lower.id);
+                            control.runInParallel(() => {
+                                h.handler(sprite, overlapper);
+                                higher._overlappers.removeElement(lower.id);
+                            });
+                        });
+                }
             }
 
             const xDiff = sprite.x - sprite._lastX;
@@ -149,8 +163,11 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             s._lastY = s.y;
             return;
         }
-
+      
         if (tm && tm.enabled && !(s.flags & sprites.Flag.Ghost)) {
+            let hitWall = false;
+            const bounce = s.flags & sprites.Flag.BounceOnWall;
+          
             s._hitboxes.forEach(box => {
                 const t0 = box.top >> 4;
                 const r0 = box.right >> 4;
@@ -162,7 +179,9 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     if (topCollide || tm.isObstacle(r0 + 1, b0)) {
                         const nextRight = box.right + dx;
                         const maxRight = ((r0 + 1) << 4) - GAP
+                        if (bounce && nextRight >= maxRight) s.vx = -s.vx;
                         if (nextRight > maxRight) {
+                            hitWall = true;
                             dx -= (nextRight - maxRight);
                             s.registerObstacle(CollisionDirection.Right, tm.getObstacle(r0 + 1, topCollide ? t0 : b0))
                         }
@@ -173,7 +192,9 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     if (topCollide || tm.isObstacle(l0 - 1, b0)) {
                         const nextLeft = box.left + dx;
                         const minLeft = (l0 << 4) + GAP;
+                        if (bounce && nextLeft <= minLeft) s.vx = -s.vx;
                         if (nextLeft < minLeft) {
+                            hitWall = true;
                             dx -= (nextLeft - minLeft);
                             s.registerObstacle(CollisionDirection.Left, tm.getObstacle(l0 - 1, topCollide ? t0 : b0))
                         }
@@ -185,7 +206,9 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     if (rightCollide || tm.isObstacle(l0, b0 + 1)) {
                         const nextBottom = box.bottom + dy;
                         const maxBottom = ((b0 + 1) << 4) - GAP;
+                        if (bounce && nextBottom >= maxBottom) s.vy = -s.vy;
                         if (nextBottom > maxBottom) {
+                            hitWall = true;
                             dy -= (nextBottom - maxBottom);
                             s.registerObstacle(CollisionDirection.Bottom, tm.getObstacle(rightCollide ? r0 : l0, b0 + 1))
                         }
@@ -196,7 +219,9 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     if (tm.isObstacle(r0, t0 - 1) || tm.isObstacle(l0, t0 - 1)) {
                         const nextTop = box.top + dy;
                         const minTop = (t0 << 4) + GAP;
+                        if (bounce && nextTop <= minTop) s.vy = -s.vy;
                         if (nextTop < minTop) {
+                            hitWall = true;
                             dy -= (nextTop - minTop);
                             s.registerObstacle(CollisionDirection.Top, tm.getObstacle(rightCollide ? r0 : l0, t0 - 1))
                         }
@@ -211,22 +236,32 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 const l1 = (box.left + dx) >> 4;
 
                 if (tm.isObstacle(r1, t1)) {
+                    hitWall = true;
                     // bump left
+                    if (bounce) s.vx = -s.vx;
                     dx -= (box.right + dx - ((r1 << 4) - GAP))
                     s.registerObstacle(CollisionDirection.Right, tm.getObstacle(r1, t1));
                 }
                 else if (tm.isObstacle(l1, t1)) {
+                    hitWall = true;
                     // bump right
+                    if (bounce) s.vx = -s.vx;
                     dx -= (box.left + dx - (((l1 + 1) << 4) + GAP));
                     s.registerObstacle(CollisionDirection.Left, tm.getObstacle(l1, t1));
                 }
                 else {
                     const rightCollide = tm.isObstacle(r1, b1);
                     if (rightCollide || tm.isObstacle(l1, b1)) {
+                        if (bounce) s.vy = -s.vy;
+                        hitWall = true;
                         // bump up because that is usually better for platformers
                         dy -= (box.bottom + dy - ((b1 << 4) - GAP));
                         s.registerObstacle(CollisionDirection.Bottom, tm.getObstacle(rightCollide ? r1 : l1, b1));
                     }
+                }
+
+                if (hitWall && (s.flags & sprites.Flag.DestroyOnWall)) {
+                    s.destroy();
                 }
             });
         }
