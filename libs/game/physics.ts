@@ -97,15 +97,29 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         for (const sprite of colliders) {
             const overSprites = scene.physicsEngine.overlaps(sprite);
             for (const overlapper of overSprites) {
-                // overlap handler
-                const tmpsprite = sprite;
-                const tmp = overlapper;
-                const oh = sprite.overlapHandler;
-                if (oh)
-                    oh(tmp)
-                scene.overlapHandlers
-                    .filter(h => h.type == sprite.type && h.otherType == overlapper.type)
-                    .forEach(h => h.handler(tmpsprite, tmp));
+                // Maintaining invariant that the sprite with the higher ID has the other sprite as an overlapper
+                const higher = sprite.id > overlapper.id ? sprite : overlapper;
+                const lower = higher === sprite ? overlapper : sprite;
+
+                if (higher._overlappers.indexOf(lower.id) === -1) {
+                    if (sprite.overlapHandler) {
+                        higher._overlappers.push(lower.id);
+                        control.runInParallel(() => {
+                            sprite.overlapHandler(overlapper);
+                            higher._overlappers.removeElement(lower.id);
+                        });
+                    }
+
+                    scene.overlapHandlers
+                        .filter(h => h.type == sprite.type && h.otherType == overlapper.type)
+                        .forEach(h => { 
+                            higher._overlappers.push(lower.id);
+                            control.runInParallel(() => {
+                                h.handler(sprite, overlapper);
+                                higher._overlappers.removeElement(lower.id);
+                            });
+                        });
+                }
             }
 
             const xDiff = sprite.x - sprite._lastX;

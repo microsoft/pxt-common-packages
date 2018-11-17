@@ -88,6 +88,7 @@ class Sprite implements SpriteLike {
     private sayBubbleSprite: Sprite;
 
     _hitboxes: game.Hitbox[];
+    _overlappers: number[];
 
     flags: number
     id: number
@@ -111,6 +112,7 @@ class Sprite implements SpriteLike {
         this.type = -1; // not a member of any type by default
         this.layer = 1; // by default, in layer 1
         this.lifespan = undefined;
+        this._overlappers = [];
     }
 
     /**
