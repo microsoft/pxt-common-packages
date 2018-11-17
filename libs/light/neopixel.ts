@@ -118,6 +118,7 @@ namespace light {
         // last animation used by showAnimationFrame
         _lastAnimation: NeoPixelAnimation;
         _lastAnimationRenderer: () => boolean;
+        spi: boolean;
 
         /**
          * Gets the underlying color buffer for the entire strip
@@ -339,7 +340,10 @@ namespace light {
                         if (pi < 0) pi += sb.length;
                     }
                 }
-                light.sendBuffer(this._pin, this._mode, sb);
+                let mode = this._mode as number
+                if (this.spi)
+                    mode |= 0x100
+                light.sendBuffer(this._pin, mode, sb);
             }
         }
 

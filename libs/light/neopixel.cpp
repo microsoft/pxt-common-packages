@@ -1,9 +1,11 @@
 #include "pxt.h"
 #include "neopixel.h"
 
+#ifndef NEOPIXEL_SPI
 #define NEOPIXEL_SPI 1
+#endif
 
-#ifdef NEOPIXEL_SPI
+#if NEOPIXEL_SPI
 static codal::SPI *spi = NULL;
 static void initSPI(DevicePin *mosi) {
     DevicePin *noPin = NULL;
@@ -42,8 +44,15 @@ DigitalInOutPin defaultPin() {
  */
 //% parts="neopixel"
 void sendBuffer(DigitalInOutPin pin, int mode, Buffer buf) {
-#ifdef NEOPIXEL_SPI
+#if NEOPIXEL_SPI
+    if (!(mode & 0x100)) 
+#endif
+    {
+        neopixel_send_buffer(*pin, buf->data, buf->length);
+        return;
+    }
 
+#if NEOPIXEL_SPI
     int32_t iptr = 0, optr = 100;
     uint32_t len = optr + buf->length * 3 + optr;
     uint8_t *expBuf = new uint8_t[len];
@@ -74,8 +83,6 @@ void sendBuffer(DigitalInOutPin pin, int mode, Buffer buf) {
     initSPI(pin);
     spi->transfer(expBuf, len, NULL, 0);
     delete expBuf;
-#else
-    neopixel_send_buffer(*pin, buf->data, buf->length);
 #endif
 }
 
