@@ -30,5 +30,6 @@ namespace pxt
 } // pxt
 
 #define IMAGE_BITS 4
+#define PXT_GC_THREAD_LIST 1
 
 #endif
