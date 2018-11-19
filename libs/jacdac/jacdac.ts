@@ -60,6 +60,9 @@ class JacDacDriver {
  * JACDAC protocol support
  */
 namespace jacdac {
+    // TODO allocate ID in DAL
+    export const LOGGER_DRIVER_CLASS = 4220;
+
     // common logging level for jacdac services
     export let consolePriority = ConsolePriority.Silent;
 
@@ -77,7 +80,7 @@ namespace jacdac {
     /**
      * base class for pairable drivers
     */
-    export class JacDacPairableDriver extends JacDacDriver {
+    export class PairableDriver extends JacDacDriver {
         constructor(name: string, isHost: boolean, deviceClass: number) {
             super(name, isHost ? DriverType.PairableHostDriver : DriverType.PairedDriver, deviceClass);
         }

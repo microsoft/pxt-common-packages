@@ -1,11 +1,11 @@
 namespace jacdac {
-    export enum JacDacStreamingState {
+    export enum StreamingState {
         Stopped,
         Streaming,
         Stopping
     }
 
-    export enum JacDacStreamingCommand {
+    export enum StreamingCommand {
         None,
         StartStream,
         StopStream,
@@ -22,35 +22,33 @@ namespace jacdac {
     }
 
     const STREAMING_MAX_SILENCE = 500;
-    export class JacDacStreamingPairableDriver extends JacDacPairableDriver {
+    /**
+     * JacDac service running on sensor and streaming data out
+     */
+    export class StreamingHostDriver extends PairableDriver {
         private _stateSerializer: () => Buffer;
-        private _streamingState: JacDacStreamingState;
+        private _streamingState: StreamingState;
+        private _sendTime: number;
+        private _sendState: Buffer;
         public streamingInterval: number; // millis
-        // virtual mode only
-        protected _localTime: number;
-        protected _sendTime: number;
-        protected _sendState: Buffer;
 
         constructor(name: string, stateSerializer: () => Buffer, deviceClass: number) {
-            super(name, !!stateSerializer, deviceClass);
+            super(name, true, deviceClass);
             this._stateSerializer = stateSerializer;
-            this._streamingState = JacDacStreamingState.Stopped;
-            this.streamingInterval = 20;
-        }
-
-        public get state() {
-            return this._sendState;
+            this._streamingState = StreamingState.Stopped;
+            this.streamingInterval = 50;
+            jacdac.addDriver(this);
         }
 
         protected handleHostPacket(packet: JDPacket): boolean {
             const command = packet.getNumber(NumberFormat.UInt8LE, 0);
             this.log(`hpkt ${command}`);
             switch (command) {
-                case JacDacStreamingCommand.StartStream:
+                case StreamingCommand.StartStream:
                     const interval = packet.getNumber(NumberFormat.UInt32LE, 1);
                     this.startStreaming(interval);
                     return true;
-                case JacDacStreamingCommand.StopStream:
+                case StreamingCommand.StopStream:
                     this.stopStreaming();
                     return true;
                 default:
@@ -59,48 +57,22 @@ namespace jacdac {
             }
         }
 
-        protected handleVirtualPacket(packet: JDPacket): boolean {
-            const command = packet.getNumber(NumberFormat.UInt8LE, 0);
-            this.log(`vpkt ${command}`)
-            switch (command) {
-                case JacDacStreamingCommand.State:
-                    const time = packet.getNumber(NumberFormat.UInt32LE, 1);
-                    const state = packet.data.slice(5);
-                    const r = this.handleVirtualState(time, state);
-                    this._sendTime = time;
-                    this._sendState = state;
-                    this._localTime = control.millis();
-                    return r;
-                default:
-                    return this.handleVirtualCommand(command, packet);
-            }
-            return true;
-        }
-
         // override
         protected handleHostCommand(command: number, pkt: JDPacket) {
             return true;
         }
 
-        protected handleVirtualCommand(command: number, pkt: JDPacket) {
-            return true;
-        }
-
-        protected handleVirtualState(time: number, state: Buffer) {
-            return true;
-        }
-
         protected startStreaming(interval: number = -1) {
-            if (this._streamingState != JacDacStreamingState.Stopped
+            if (this._streamingState != StreamingState.Stopped
                 || !this.device.isPairedDriver)
                 return;
 
             this.log(`start streaming`);
-            this._streamingState = JacDacStreamingState.Streaming;
+            this._streamingState = StreamingState.Streaming;
             if (interval > 0)
                 this.streamingInterval = Math.max(20, interval); // don't overstream
             control.runInBackground(() => {
-                while (this._streamingState == JacDacStreamingState.Streaming) {
+                while (this._streamingState == StreamingState.Streaming) {
                     // run callback                    
                     const state = this._stateSerializer();
                     if (!!state) {
@@ -111,7 +83,7 @@ namespace jacdac {
 
                             // send state and record time
                             const pkt = control.createBuffer(state.length + 4);
-                            pkt.setNumber(NumberFormat.UInt8LE, 0, JacDacStreamingCommand.State);
+                            pkt.setNumber(NumberFormat.UInt8LE, 0, StreamingCommand.State);
                             pkt.setNumber(NumberFormat.UInt32LE, 1, control.millis());
                             pkt.write(5, state);
                             this.sendPacket(pkt);
@@ -125,14 +97,60 @@ namespace jacdac {
                     // waiting for a bit
                     pause(this.streamingInterval);
                 }
-                this._streamingState = JacDacStreamingState.Stopped;
+                this._streamingState = StreamingState.Stopped;
             })
         }
 
         protected stopStreaming() {
             this.log(`stop streaming`);
-            this._streamingState = JacDacStreamingState.Stopping;
-            pauseUntil(() => this._streamingState == JacDacStreamingState.Stopped);
+            this._streamingState = StreamingState.Stopping;
+            pauseUntil(() => this._streamingState == StreamingState.Stopped);
+        }
+    }
+
+    export class StreamingVirtualDriver extends PairableDriver {
+        // virtual mode only
+        protected _localTime: number;
+        protected _lastHostTime: number;
+        protected _lastState: Buffer;
+        onStateChanged: () => void;
+
+        constructor(name: string, deviceClass: number) {
+            super(name, false, deviceClass);
+            this._lastState = control.createBuffer(0);
+            jacdac.addDriver(this);
+        }
+
+        public get state() {
+            return this._lastState;
+        }
+
+        protected handleVirtualPacket(packet: JDPacket): boolean {
+            const command = packet.getNumber(NumberFormat.UInt8LE, 0);
+            this.log(`vpkt ${command}`)
+            switch (command) {
+                case StreamingCommand.State:
+                    const time = packet.getNumber(NumberFormat.UInt32LE, 1);
+                    const state = packet.data.slice(5);
+                    const changed = !bufferEqual(this._lastState, state);
+                    const r = this.handleVirtualState(time, state);
+                    this._lastHostTime = time;
+                    this._lastState = state;
+                    this._localTime = control.millis();
+                    if (changed && this.onStateChanged)
+                        this.onStateChanged();
+                    return r;
+                default:
+                    return this.handleVirtualCommand(command, packet);
+            }
+        }
+
+        protected handleVirtualCommand(command: number, pkt: JDPacket) {
+            return true;
+        }
+
+        protected handleVirtualState(time: number, state: Buffer) {
+            return true;
         }
     }
 }

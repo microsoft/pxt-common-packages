@@ -1,4 +1,5 @@
 namespace jacdac {
+    /*
     enum PinMode {
         SetAnalog,
         SetDigital,
@@ -6,9 +7,7 @@ namespace jacdac {
         ReadAnalog,
         ReadDigital
     }
-    /**
-         */
-    export class PinDriver extends JacDacStreamingPairableDriver {
+    export class PinDriver extends StreamingHostDriver {
         private _pin: PwmPin; // might be null
         private _mode: PinMode;
 
@@ -100,4 +99,5 @@ namespace jacdac {
             return true;
         }
     }
+    */
 }

@@ -1,7 +1,4 @@
 namespace jacdac {
-    // TODO allocate ID in DAL
-    const LOGGER_DRIVER_CLASS = 4220;
-
     let _logBroadcastDriver: LoggerBroadcastDriver;
     /**
      * Sends console messages over JacDac
@@ -12,20 +9,10 @@ namespace jacdac {
             _logBroadcastDriver = new LoggerBroadcastDriver();
     }
 
-    export function suppressLogBroadcast(logf: () => void) {
-        // pipe to console
-        if (_logBroadcastDriver) // avoid cyclic repetition of messages
-            _logBroadcastDriver.suppressForwading = true;
-        logf();
-        if (_logBroadcastDriver)
-            _logBroadcastDriver.suppressForwading = false;
-    }
-
-
     class LoggerBroadcastDriver extends JacDacDriver {
         public suppressForwading: boolean;
         constructor() {
-            super("log", DriverType.VirtualDriver, LOGGER_DRIVER_CLASS, true); // TODO pickup type from DAL
+            super("log", DriverType.VirtualDriver, jacdac.LOGGER_DRIVER_CLASS, true); // TODO pickup type from DAL
             // send to other devices
             this.suppressForwading = false;
             jacdac.addDriver(this);
@@ -66,7 +53,7 @@ namespace jacdac {
 
     class LoggerListenDriver extends JacDacDriver {
         constructor() {
-            super("log", DriverType.HostDriver, LOGGER_DRIVER_CLASS); // TODO pickup type from DAL
+            super("log", DriverType.HostDriver, jacdac.LOGGER_DRIVER_CLASS); // TODO pickup type from DAL
             jacdac.addDriver(this);
         }
 
