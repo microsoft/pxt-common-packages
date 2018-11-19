@@ -12,6 +12,25 @@ let allChars = {}
 let charHash = {}
 let charHashList = ""
 
+const fullKana =
+    'ァアィイゥウェエォオカガキギクグケゲコゴサザシジスズセゼソ' +
+    'ゾタダチヂッツヅテデトドナニヌネノハバパヒビピフブプヘベペ' +
+    'ホボポマミムメモャヤュユョヨラリルレロワヲンーヮヰヱヵヶヴ' +
+    'ヽヾ・「」。、'
+
+const halfKana = ['ｧ', 'ｱ', 'ｨ', 'ｲ', 'ｩ', 'ｳ', 'ｪ', 'ｴ', 'ｫ', 'ｵ',
+    'ｶ', 'ｶﾞ', 'ｷ', 'ｷﾞ', 'ｸ', 'ｸﾞ', 'ｹ', 'ｹﾞ', 'ｺ',
+    'ｺﾞ', 'ｻ', 'ｻﾞ', 'ｼ', 'ｼﾞ', 'ｽ', 'ｽﾞ', 'ｾ', 'ｾﾞ',
+    'ｿ', 'ｿﾞ', 'ﾀ', 'ﾀﾞ', 'ﾁ', 'ﾁﾞ', 'ｯ', 'ﾂ', 'ﾂﾞ',
+    'ﾃ', 'ﾃﾞ', 'ﾄ', 'ﾄﾞ', 'ﾅ', 'ﾆ', 'ﾇ', 'ﾈ', 'ﾉ', 'ﾊ',
+    'ﾊﾞ', 'ﾊﾟ', 'ﾋ', 'ﾋﾞ', 'ﾋﾟ', 'ﾌ', 'ﾌﾞ', 'ﾌﾟ', 'ﾍ',
+    'ﾍﾞ', 'ﾍﾟ', 'ﾎ', 'ﾎﾞ', 'ﾎﾟ', 'ﾏ', 'ﾐ', 'ﾑ', 'ﾒ',
+    'ﾓ', 'ｬ', 'ﾔ', 'ｭ', 'ﾕ', 'ｮ', 'ﾖ', 'ﾗ', 'ﾘ', 'ﾙ',
+    'ﾚ', 'ﾛ', 'ﾜ', 'ｦ', 'ﾝ', 'ｰ',
+    'ヮ', 'ヰ', 'ヱ', 'ヵ', 'ヶ', 'ｳﾞ', 'ヽ', 'ヾ', '･',
+    '｢', '｣', '｡', '､'
+]
+
 function flushGlyph() {
     if (!currChar) return
     let g = glyph
@@ -28,8 +47,8 @@ function flushGlyph() {
         return
 
     // exclude RTL languages - not supported in text printing
-    if (0x0590 <= ch && ch <= 0x074f)
-        return
+    //if (0x0590 <= ch && ch <= 0x074f)
+    //    return
 
     let hd = `\n* '${String.fromCharCode(ch)}' ${ch}\n`
     let out = ""
@@ -78,6 +97,15 @@ let lines = process.argv.slice(2).map(s => fs.readFileSync(s, "utf8")).join("\n"
 
 for (let line of lines) {
     line = line.trim()
+
+    let hexM = /^([0-9A-F]{4}):([0-9A-F]{16,})$/.exec(line)
+
+    if (!mode && hexM) {
+        mode = 4;
+        prop.charWidth = 8
+        prop.charHeight = 8
+    }
+
     let m = /^(\w+)([:=])\s*(\d+)/.exec(line)
     if (!mode && m && (m[1] == "charWidth" || m[1] == "charHeight")) {
         mode = m[2] == "=" ? 1 : 2
@@ -88,7 +116,7 @@ for (let line of lines) {
 
     if (!line) continue
 
-    if (m) {
+    if (m && mode != 4) {
         if (mode == 1) {
             out += `${m[1]}: ${m[3]},\n`
         } else {
@@ -144,6 +172,32 @@ for (let line of lines) {
                     glyph[k] = 1
                 }
             }
+        } else if (mode == 4) {
+            if (!hexM) {
+                console.log("invalid hex: " + line)
+                continue
+            }
+            let ch = parseInt(hexM[1], 16)
+            let b = new Buffer(hexM[2], "hex")
+
+            if (ch < 32)
+                continue
+            if (0xe000 <= ch && ch <= 0xf8ff)
+                continue
+            if (0x1400 <= ch && ch <= 0x1fff)
+                continue
+            if (0x2500 <= ch && ch <= 0xff00)
+                continue
+
+            /* This doesn't work so well.
+            let idx = halfKana.indexOf(String.fromCharCode(ch))
+            if (idx >= 0)
+                ch = fullKana.charCodeAt(idx)
+            */
+
+            if (128 <= ch && ch <= 159)
+                continue
+            showChar(b, 0, ch)
         }
     }
 }
@@ -178,7 +232,7 @@ function fmt(bufs) {
 }
 
 function showChar(buf, ptr, ch) {
-    out += `\n* '${String.fromCharCode(ch)}' ${ch}\n`
+    out += `\n* '${String.fromCharCode(ch)}' ${ch} U+${("000" + ch.toString(16)).slice(-4)}\n`
     let w = (prop.charWidth + 7) >> 3
     for (let line = 0; line < prop.charHeight; ++line) {
         let p = ptr + w * line
