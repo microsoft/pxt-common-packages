@@ -1,34 +1,35 @@
 namespace jacdac {
-    let _loggerDriver: LoggerVirtualDriver;
+    // TODO allocate ID in DAL
+    const LOGGER_DRIVER_CLASS = 4220;
 
-    const LOGGER_DRIVER_CLASS = 20;
+    let _logBroadcastDriver: LoggerBroadcastDriver;
     /**
      * Sends console messages over JacDac
      */
     //% blockId=jacdac_broadcast_console block="jacdac broadcast console"
     export function broadcastConsole() {
-        if (!_loggerDriver)
-            _loggerDriver = new LoggerVirtualDriver();
+        if (!_logBroadcastDriver)
+            _logBroadcastDriver = new LoggerBroadcastDriver();
     }
 
     export function suppressLogBroadcast(logf: () => void) {
         // pipe to console
-        if (_loggerDriver) // avoid cyclic repetition of messages
-            _loggerDriver.suppressForwading = true;
+        if (_logBroadcastDriver) // avoid cyclic repetition of messages
+            _logBroadcastDriver.suppressForwading = true;
         logf();
-        if (_loggerDriver)
-            _loggerDriver.suppressForwading = false;
+        if (_logBroadcastDriver)
+            _logBroadcastDriver.suppressForwading = false;
     }
 
 
-    class LoggerVirtualDriver extends JacDacDriver {
+    class LoggerBroadcastDriver extends JacDacDriver {
         public suppressForwading: boolean;
         constructor() {
             super("log", DriverType.VirtualDriver, LOGGER_DRIVER_CLASS, true); // TODO pickup type from DAL
             // send to other devices
+            this.suppressForwading = false;
             console.addListener((priority, text) => this.broadcastLog(priority, text));
             jacdac.addDriver(this);
-            this.suppressForwading = false;
         }
 
         /**
@@ -54,18 +55,17 @@ namespace jacdac {
         }
     }
 
-    let _logListenerDriver: LoggerHostDriver;
-
+    let _logListenerDriver: LoggerListenDriver;
     /**
      * Listens for console messages from other devices
      */
     //% blockId=jacdac_listen_console block="jacdac listen console"
     export function listenConsole() {
         if (!_logListenerDriver)
-            _logListenerDriver = new LoggerHostDriver();
+            _logListenerDriver = new LoggerListenDriver();
     }
 
-    class LoggerHostDriver extends JacDacDriver {
+    class LoggerListenDriver extends JacDacDriver {
         constructor() {
             super("log", DriverType.HostDriver, LOGGER_DRIVER_CLASS); // TODO pickup type from DAL
             jacdac.addDriver(this);
@@ -77,17 +77,17 @@ namespace jacdac {
         }
 
         deviceConnected(): void {
-            console.log("conn")
+            console.log("dev conn")
             super.deviceConnected();
         }
 
         deviceRemoved() {
-            console.log("removed");
+            console.log("dev rem");
             super.deviceRemoved();
         }
 
         public handlePacket(pkt: Buffer): boolean {
-            console.log("received packet")
+            console.log("rcvd packet")
             const packet = new JDPacket(pkt);
             const packetSize = packet.size;
             if (!packetSize) return true;
@@ -104,7 +104,7 @@ namespace jacdac {
             for (let i = 5; i < packetSize; i++)
                 str += String.fromCharCode(packet.data.getNumber(NumberFormat.UInt8LE, i));
 
-            // pipe to console
+            // pipe to console TODO suppress forwarding
             console.add(priority, str);
 
             return true;
