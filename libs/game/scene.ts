@@ -106,6 +106,7 @@ namespace scene {
             this.eventContext.registerFrameHandler(150, () => {
                 if (game.debug)
                     this.physicsEngine.draw();
+                game.consoleOverlay.draw();
                 // clear flags
                 this.flags = 0;
             });

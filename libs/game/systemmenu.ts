@@ -14,7 +14,7 @@ namespace scene {
             m.addItem("volume down", () => {});
             m.addItem("brightness up", () => {});
             m.addItem("brightness down", () =>{});
-            m.addItem("console", () => {});
+            m.addItem(game.consoleOverlay.isVisible() ? "hide console" : "show console", () => {});
             menu.setRoot(m);
             m.grow();
 
@@ -31,7 +31,7 @@ namespace scene {
             });
             controller.A.onEvent(ControllerButtonEvent.Pressed, () => {
                 hide();
-                game.showConsole();
+                game.consoleOverlay.setVisible(!game.consoleOverlay.isVisible())
             });
         })
     }
