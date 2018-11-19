@@ -110,47 +110,4 @@ namespace jacdac {
             return true;
         }
     }
-
-    let _snifferLoggerDriver: SnifferLoggerDriver = undefined;
-    /**
-     * Enables or disables all jacdac activity to the console
-     */
-    export function sniffAllPacketsToConsole(enabled = true) {
-        if (!_snifferLoggerDriver)
-            _snifferLoggerDriver = new SnifferLoggerDriver();
-        _snifferLoggerDriver.enabled = enabled;
-    }
-
-    class SnifferLoggerDriver extends JacDacDriver {
-        public enabled: boolean;
-        constructor() {
-            super("snif", DriverType.SnifferDriver, 0);
-            this.enabled = true;
-            jacdac.addDriver(this);
-        }
-
-        public handleControlPacket(pkt: Buffer): boolean {
-            if (this.enabled) {
-                const ctrl = new ControlPacket(pkt);
-                suppressLogBroadcast(() => this.log(`ctrl>from ${ctrl.serialNumber}:${ctrl.address}>${ctrl.data.toHex()}`))
-            }
-            return super.handleControlPacket(pkt);
-        }
-
-        public handlePacket(pkt: Buffer): boolean {
-            if (this.enabled) {
-                const jd = new JDPacket(pkt);
-                suppressLogBroadcast(() => this.log(`ctrl>${jd.address}>${jd.data.toHex()}`))
-            }
-            return super.handlePacket(pkt);
-        }
-
-        public deviceConnected(): void {
-            suppressLogBroadcast(() => this.log(`dev>con`));
-        }
-
-        public deviceRemoved(): void {
-            suppressLogBroadcast(() => this.log(`dev>dis`));
-        }
-    }
 }
