@@ -28,8 +28,8 @@ namespace jacdac {
             super("log", DriverType.VirtualDriver, LOGGER_DRIVER_CLASS, true); // TODO pickup type from DAL
             // send to other devices
             this.suppressForwading = false;
-            console.addListener((priority, text) => this.broadcastLog(priority, text));
             jacdac.addDriver(this);
+            console.addListener((priority, text) => this.broadcastLog(priority, text));
         }
 
         /**
@@ -43,7 +43,7 @@ namespace jacdac {
             let cursor = 0;
             while (cursor < str.length) {
                 const txLength = Math.min(str.length - cursor, DAL.JD_SERIAL_DATA_SIZE - 1 - 4);
-                const buf = control.createBuffer(txLength + 1);
+                const buf = control.createBuffer(txLength + 5);
                 buf.setNumber(NumberFormat.UInt8LE, 0, priority);
                 buf.setNumber(NumberFormat.UInt32LE, 1, this.device.serialNumber);
                 for (let i = 0; i < txLength; i++) {
