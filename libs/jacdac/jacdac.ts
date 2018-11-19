@@ -90,7 +90,7 @@ namespace jacdac {
             jacdac.sendPacket(pkt, this.device.driverAddress);
         }
 
-        protected canSendHostPacket(): boolean {
+        protected canSendPacket(): boolean {
             return this.device.isPaired && this.device.isConnected;
         }
 

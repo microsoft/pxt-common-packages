@@ -154,6 +154,10 @@ class JDProxyDriver : public JDDriver {
         sendPairingPacket(JDDevice(address, flags, serialNumber, driverClass));
     }
 
+    bool isPairedInstanceAddress(uint8_t address) {
+        return NULL != this->pairedInstance && this->pairedInstance->getAddress() == address;
+    }
+
     JDDevice *getDevice() { return &device; }
 
     ~JDProxyDriver() {
@@ -241,9 +245,8 @@ uint32_t id(JacDacDriverStatus d) {
 
 /** If paired, paired instance address */
 //% property
-uint32_t isPairedInstanceAddress(JacDacDriverStatus d, uint8_t address) {
-    // TODO
-    return false;
+bool isPairedInstanceAddress(JacDacDriverStatus d, uint8_t address) {
+    return d->isPairedInstanceAddress(address);
 }
 
 } // namespace JacDacDriverStatusMethods

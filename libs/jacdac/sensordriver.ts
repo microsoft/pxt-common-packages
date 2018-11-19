@@ -85,7 +85,7 @@ namespace jacdac {
                             pkt.setNumber(NumberFormat.UInt8LE, 0, StreamingCommand.State);
                             pkt.setNumber(NumberFormat.UInt32LE, 1, control.millis());
                             pkt.write(5, state);
-                            if (this.device.isPaired)
+                            if (this.canSendPacket())
                                 this.sendPacket(pkt);
                             this._sendState = state;
                             this._sendTime = control.millis();
