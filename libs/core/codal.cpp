@@ -1,5 +1,6 @@
 #include "pxt.h"
 
+
 void cpu_clock_init(void);
 
 PXT_ABI(__aeabi_dadd)
@@ -193,17 +194,34 @@ ThreadContext *getThreadContext() {
 void setThreadContext(ThreadContext *ctx) {
     currentFiber->user_data = ctx;
 }
-#endif
 
-void *getCurrentFiber() {
-    return currentFiber;
-}
-
-void *threadAddressFor(ThreadContext *ctx, void *sp) {
-    auto fib = (codal::Fiber *)ctx->fiber;
+static void *threadAddressFor(codal::Fiber *fib, void *sp) {
     if (fib == currentFiber)
         return sp;
     return (uint8_t *)sp + ((uint8_t *)fib->stack_top - (uint8_t *)tcb_get_stack_base(fib->tcb));
 }
+
+void gcProcessStacks() {
+    int numFibers = codal::list_fibers(NULL);
+    codal::Fiber **fibers = new codal::Fiber *[numFibers];
+    codal::list_fibers(fibers);
+
+    for (int i = 0; i < numFibers; ++i) {
+        auto fib = fibers[i];
+        auto ctx = (ThreadContext *)fib->user_data;
+        if (!ctx)
+            continue;
+        for (auto seg = &ctx->stack; seg; seg = seg->next) {
+            auto ptr = (TValue *)threadAddressFor(fib, seg->top);
+            auto end = (TValue *)threadAddressFor(fib, seg->bottom);
+            //VLOG("mark: %p - %p", ptr, end);
+            while (ptr < end) {
+                gcProcess(*ptr++);
+            }
+        }
+    }
+}
+#endif
+
 
 } // namespace pxt

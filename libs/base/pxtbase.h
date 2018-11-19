@@ -757,16 +757,25 @@ struct StackSegment {
 struct ThreadContext {
     TValue *globals;
     StackSegment stack;
-    void *fiber;
+#ifdef PXT_GC_THREAD_LIST
     ThreadContext *next;
     ThreadContext *prev;
+#endif
 };
+
+#ifdef PXT_GC_THREAD_LIST
+extern ThreadContext *threadContexts;
+#endif
 
 void releaseThreadContext(ThreadContext *ctx);
 ThreadContext *getThreadContext();
 void setThreadContext(ThreadContext *ctx);
-void *getCurrentFiber();
-void *threadAddressFor(ThreadContext *ctx, void *sp);
+
+#ifndef PXT_GC_THREAD_LIST
+void gcProcessStacks();
+#endif
+
+void gcProcess(TValue v);
 
 #ifndef PXT_USE_XMALLOC
 #define xmalloc malloc
@@ -778,8 +787,6 @@ inline void *gcAllocate(int numbytes) {
     return xmalloc(numbytes);
 }
 #endif
-
-extern ThreadContext *threadContexts;
 
 enum class PerfCounters {
     GC,
