@@ -20,7 +20,7 @@ namespace controller {
     //% weight=100
     //% vx.defl=100 vy.defl=100
     //% help=controller/control-sprite
-    export function controlSprite(sprite: Sprite, vx: number = 100, vy: number = 100) {
+    export function moveSprite(sprite: Sprite, vx: number = 100, vy: number = 100) {
         if (!sprite) return;
         if (!controlledSprites) {
             controlledSprites = [];

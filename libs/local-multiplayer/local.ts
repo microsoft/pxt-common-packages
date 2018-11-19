@@ -80,7 +80,7 @@ namespace controller {
     //% blockId="local_game_control_player" block="move $player with buttons||vx $vx vy $vy"
     //% weight=99 group="Multiplayer"
     //% vx.defl=100 vy.defl=100
-    export function controlPlayer(player: PlayerNumber, vx: number = 100, vy: number = 100) {        
+    export function movePlayer(player: PlayerNumber, vx: number = 100, vy: number = 100) {        
         if (!controlledPlayers) {
             controlledPlayers = [];
             game.currentScene().eventContext.registerFrameHandler(19, () => {
