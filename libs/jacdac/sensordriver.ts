@@ -46,7 +46,9 @@ namespace jacdac {
             switch (command) {
                 case StreamingCommand.StartStream:
                     const interval = packet.getNumber(NumberFormat.UInt32LE, 1);
-                    this.startStreaming(interval);
+                    if (interval)
+                        this.streamingInterval = Math.max(20, interval);
+                    this.startStreaming();
                     return true;
                 case StreamingCommand.StopStream:
                     this.stopStreaming();
@@ -62,15 +64,12 @@ namespace jacdac {
             return true;
         }
 
-        protected startStreaming(interval: number = -1) {
-            if (this._streamingState != StreamingState.Stopped
-                || !this.device.isPairedDriver)
+        public startStreaming() {
+            if (this._streamingState != StreamingState.Stopped)
                 return;
 
-            this.log(`start streaming`);
+            this.log(`start`);
             this._streamingState = StreamingState.Streaming;
-            if (interval > 0)
-                this.streamingInterval = Math.max(20, interval); // don't overstream
             control.runInBackground(() => {
                 while (this._streamingState == StreamingState.Streaming) {
                     // run callback                    
@@ -86,7 +85,8 @@ namespace jacdac {
                             pkt.setNumber(NumberFormat.UInt8LE, 0, StreamingCommand.State);
                             pkt.setNumber(NumberFormat.UInt32LE, 1, control.millis());
                             pkt.write(5, state);
-                            this.sendPacket(pkt);
+                            if (this.device.isPaired)
+                                this.sendPacket(pkt);
                             this._sendState = state;
                             this._sendTime = control.millis();
                         }
@@ -101,10 +101,12 @@ namespace jacdac {
             })
         }
 
-        protected stopStreaming() {
-            this.log(`stop streaming`);
-            this._streamingState = StreamingState.Stopping;
-            pauseUntil(() => this._streamingState == StreamingState.Stopped);
+        public stopStreaming() {
+            if (this._streamingState == StreamingState.Streaming) {
+                this.log(`stop`);
+                this._streamingState = StreamingState.Stopping;
+                pauseUntil(() => this._streamingState == StreamingState.Stopped);
+            }
         }
     }
 

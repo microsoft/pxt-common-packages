@@ -158,7 +158,7 @@ namespace jacdac {
             return;
         }
 
-        n.log(`adding ${n.driverType} ${n.deviceClass}`)
+        n.log(`add ${n.driverType} ${n.deviceClass}`)
         n.device = __internalAddDriver(n.driverType, n.deviceClass, [
             (p: Buffer) => n.handleControlPacket(p),
             (p: Buffer) => n.handlePacket(p),
