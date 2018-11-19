@@ -8,6 +8,7 @@
         "debugger.ts",
         "messagebusdriver.ts",
         "pindriver.ts",
+        "sensordriver.ts",
         "ns.ts",
         "shims.d.ts"
     ],
