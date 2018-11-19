@@ -249,4 +249,10 @@ bool isPairedInstanceAddress(JacDacDriverStatus d, uint8_t address) {
     return d->isPairedInstanceAddress(address);
 }
 
+/** Sends a pairing packet */
+//%
+void sendPairingPacket(JacDacDriverStatus d, uint8_t address, uint16_t flags, uint32_t serialNumber, uint32_t driverClass) {
+    d->sendPairing(address, flags, serialNumber, driverClass);
+}
+
 } // namespace JacDacDriverStatusMethods

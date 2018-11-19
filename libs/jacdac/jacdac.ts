@@ -42,18 +42,23 @@ class JacDacDriver {
      * Called by the logic driver when a new device is connected to the serial bus
      */
     public deviceConnected(): void {
+        this.log("dev con");
     }
 
     /**
      * Called by the logic driver when an existing device is disconnected from the serial bus
      **/
     public deviceRemoved(): void {
+        this.log("dev rem");
     }
 
     /**
      * Sends a pairing packet
      */
-    public sendPairing(address: number, flags: number, serialNumber: number, driverClass: number) { }
+    public sendPairing(address: number, flags: number, serialNumber: number, driverClass: number) { 
+        this.log("send pairing packet")
+
+    }
 }
 
 /**
@@ -91,7 +96,7 @@ namespace jacdac {
         }
 
         protected canSendPacket(): boolean {
-            return this.device.isPaired && this.device.isConnected;
+            return this.device.isConnected && this.device.isPaired;
         }
 
         public handleControlPacket(pkt: Buffer): boolean {
@@ -114,9 +119,15 @@ namespace jacdac {
 
         public handlePacket(pkt: Buffer): boolean {
             const packet = new JDPacket(pkt);
-            this.log(`received ${packet.data.length} bytes from ${packet.address}`)
-            if (!this.device.isConnected || !this.device.isPaired || !this.device.isPairedInstanceAddress(packet.address))
+            this.log(`rec ${packet.data.length}b from ${packet.address}`)
+            if (!this.device.isConnected || !this.device.isPaired) {
+                this.log("not conn")
                 return true;
+            }
+            if (!this.device.isPairedInstanceAddress(packet.address)) {
+                this.log('invalid paired address')
+                return true;
+            }
             if (this.device.isPairedDriver)
                 return this.handleHostPacket(packet);
             else
