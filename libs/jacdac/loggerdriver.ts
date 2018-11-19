@@ -70,23 +70,7 @@ namespace jacdac {
             jacdac.addDriver(this);
         }
 
-        handleControlPacket(pkt: Buffer): boolean {
-            console.log("ctrl packet")
-            return super.handleControlPacket(pkt);
-        }
-
-        deviceConnected(): void {
-            console.log("dev conn")
-            super.deviceConnected();
-        }
-
-        deviceRemoved() {
-            console.log("dev rem");
-            super.deviceRemoved();
-        }
-
         public handlePacket(pkt: Buffer): boolean {
-            console.log("rcvd packet")
             const packet = new JDPacket(pkt);
             const packetSize = packet.size;
             if (!packetSize) return true;
