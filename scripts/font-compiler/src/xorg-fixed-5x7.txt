@@ -1,3 +1,5 @@
+# This is based on XOrg misc-fixed-5x7 font.
+# https://www.cl.cam.ac.uk/~mgk25/ucs-fonts.html
 charWidth=5
 charHeight=7
 
