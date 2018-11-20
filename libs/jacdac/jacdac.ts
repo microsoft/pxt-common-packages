@@ -56,8 +56,9 @@ class JacDacDriver {
      * Sends a pairing packet
      */
     public sendPairing(address: number, flags: number, serialNumber: number, driverClass: number) { 
-        this.log("send pairing packet")
-
+        this.log("send pairing")
+        const msg = jacdac.JDDevice.mk(address, flags, serialNumber, driverClass);
+        this.device.sendPairingPacket(msg.buf);
     }
 }
 
@@ -105,7 +106,6 @@ namespace jacdac {
             if (this.device.isPairedDriver && !this.device.isPaired) {
                 this.log("needs pairing");
                 if (cp.flags & DAL.CONTROL_JD_FLAGS_PAIRABLE) {
-                    this.log(`send pairing`)
                     this.sendPairing(cp.address,
                         DAL.JD_DEVICE_FLAGS_REMOTE
                         | DAL.JD_DEVICE_FLAGS_INITIALISED
@@ -188,7 +188,7 @@ namespace jacdac {
     }
 
     export class JDPacket {
-        protected buf: Buffer;
+        buf: Buffer;
         constructor(buf: Buffer) {
             this.buf = buf;
         }
@@ -215,7 +215,7 @@ namespace jacdac {
     }
 
     export class ControlPacket {
-        private buf: Buffer;
+        buf: Buffer;
         constructor(buf: Buffer) {
             this.buf = buf;
         }
@@ -236,6 +236,48 @@ namespace jacdac {
         }
         get data(): Buffer {
             return this.buf.slice(12);
+        }
+    }
+
+    /*
+        struct JDDevice
+    {
+        uint8_t address; // the address assigned by the logic driver.
+        uint8_t rolling_counter; // used to trigger various time related events
+        uint16_t flags; // various flags indicating the state of the driver
+        uint32_t serial_number; // the serial number used to "uniquely" identify a device
+        uint32_t driver_class; // the class of the driver, created or selected from the list in JDClasses.h
+        */
+    export class JDDevice {
+        buf: Buffer;
+        constructor(buf: Buffer) {
+            this.buf = buf;
+        }
+
+        static mk(address: number, flags: number, serialNumber: number, driverClass: number) {
+            const buf = control.createBuffer(12);
+            buf.setNumber(NumberFormat.UInt8LE, 0, address);
+            buf.setNumber(NumberFormat.UInt8LE, 1, 0); // rolling counter
+            buf.setNumber(NumberFormat.UInt16LE, 2, flags);
+            buf.setNumber(NumberFormat.UInt16LE, 4, serialNumber);
+            buf.setNumber(NumberFormat.UInt16LE, 8, driverClass);
+            return new JDDevice(buf);
+        }
+
+        get address(): number {
+            return this.buf.getNumber(NumberFormat.UInt8LE, 0);
+        }
+        get rollingCounter(): number {
+            return this.buf.getNumber(NumberFormat.UInt8LE, 1);
+        }
+        get flags(): number {
+            return this.buf.getNumber(NumberFormat.UInt16LE, 2);
+        }
+        get serialNumber(): number {
+            return this.buf.getNumber(NumberFormat.UInt32LE, 4);
+        }
+        get driverClass(): number {
+            return this.buf.getNumber(NumberFormat.UInt32LE, 8);
         }
     }
 }
