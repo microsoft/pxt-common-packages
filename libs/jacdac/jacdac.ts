@@ -34,11 +34,6 @@ class JacDacDriver {
     }
 
     /**
-     * Fill additional driver-specific info on the control packet for this driver.
-     **/
-    public fillControlPacket(pkt: Buffer): void { }
-
-    /**
      * Sends a pairing packet
      */
     public sendPairing(address: number, flags: number, serialNumber: number, driverClass: number) { 
