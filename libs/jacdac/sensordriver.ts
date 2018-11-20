@@ -13,6 +13,7 @@ namespace jacdac {
     }
 
     function bufferEqual(l: Buffer, r: Buffer): boolean {
+        if (!l || !r) return !!l == !!r;
         if (l.length != r.length) return false;
         for (let i = 0; i < l.length; ++i) {
             if (l.getNumber(NumberFormat.UInt8LE, i) != r.getNumber(NumberFormat.UInt8LE, i))
@@ -26,21 +27,23 @@ namespace jacdac {
      * JacDac service running on sensor and streaming data out
      */
     export class StreamingHostDriver extends JacDacDriver {
-        private _stateSerializer: () => Buffer;
-        private _streamingState: StreamingState;
+        private stateSerializer: () => Buffer;
+        private streamingState: StreamingState;
         private _sendTime: number;
         private _sendState: Buffer;
         public streamingInterval: number; // millis
 
         constructor(name: string, stateSerializer: () => Buffer, deviceClass: number) {
             super(name, DriverType.HostDriver, deviceClass);
-            this._stateSerializer = stateSerializer;
-            this._streamingState = StreamingState.Stopped;
+            this.stateSerializer = stateSerializer;
+            this.streamingState = StreamingState.Stopped;
+            this._sendTime = 0;
             this.streamingInterval = 50;
             jacdac.addDriver(this);
         }
 
-        protected handleHostPacket(packet: JDPacket): boolean {
+        public handlePacket(pkt: Buffer): boolean {
+            const packet = new JDPacket(pkt);
             const command = packet.getNumber(NumberFormat.UInt8LE, 0);
             this.log(`hpkt ${command}`);
             switch (command) {
@@ -65,15 +68,15 @@ namespace jacdac {
         }
 
         public startStreaming() {
-            if (this._streamingState != StreamingState.Stopped)
+            if (this.streamingState != StreamingState.Stopped)
                 return;
 
             this.log(`start`);
-            this._streamingState = StreamingState.Streaming;
+            this.streamingState = StreamingState.Streaming;
             control.runInBackground(() => {
-                while (this._streamingState == StreamingState.Streaming) {
+                while (this.streamingState == StreamingState.Streaming) {
                     // run callback                    
-                    const state = this._stateSerializer();
+                    const state = this.stateSerializer();
                     if (!!state) {
                         // did the state change?
                         if (!this._sendState
@@ -96,15 +99,15 @@ namespace jacdac {
                     // waiting for a bit
                     pause(this.streamingInterval);
                 }
-                this._streamingState = StreamingState.Stopped;
+                this.streamingState = StreamingState.Stopped;
             })
         }
 
         public stopStreaming() {
-            if (this._streamingState == StreamingState.Streaming) {
+            if (this.streamingState == StreamingState.Streaming) {
                 this.log(`stop`);
-                this._streamingState = StreamingState.Stopping;
-                pauseUntil(() => this._streamingState == StreamingState.Stopped);
+                this.streamingState = StreamingState.Stopping;
+                pauseUntil(() => this.streamingState == StreamingState.Stopped);
             }
         }
     }
@@ -126,7 +129,8 @@ namespace jacdac {
             return this._lastState;
         }
 
-        protected handleVirtualPacket(packet: JDPacket): boolean {
+        public handlePacket(pkt: Buffer): boolean {
+            const packet = new JDPacket(pkt);
             const command = packet.getNumber(NumberFormat.UInt8LE, 0);
             this.log(`vpkt ${command}`)
             switch (command) {
@@ -142,11 +146,11 @@ namespace jacdac {
                         this.onStateChanged();
                     return r;
                 default:
-                    return this.handleVirtualCommand(command, packet);
+                    return this.handleCustomCommand(command, packet);
             }
         }
 
-        protected handleVirtualCommand(command: number, pkt: JDPacket) {
+        protected handleCustomCommand(command: number, pkt: JDPacket) {
             return true;
         }
 

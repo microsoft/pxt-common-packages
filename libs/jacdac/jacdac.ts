@@ -62,7 +62,7 @@ class JacDacDriver {
     }
 
     protected sendPacket(pkt: Buffer) {
-        this.log(`send pkt ${this.device.driverAddress}`)
+        // this.log(`send pkt ${this.device.driverAddress}`)
         jacdac.sendPacket(pkt, this.device.driverAddress);
     }
 }
