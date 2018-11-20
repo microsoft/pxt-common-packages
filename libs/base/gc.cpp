@@ -323,9 +323,11 @@ void *gcAllocate(int numbytes) {
         oops(45);
 
 #ifdef PXT_GC_CHECKS
+    {
     auto curr = getThreadContext();
-    if (!curr || !curr->stack.top)
+    if (curr && !curr->stack.top)
         oops(46);
+    }
 #endif
 
     // gc();
