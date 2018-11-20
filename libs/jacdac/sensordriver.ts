@@ -68,6 +68,13 @@ namespace jacdac {
             return true;
         }
 
+        protected raiseHostEvent(value: number) {
+            const pkt = control.createBuffer(3);
+            pkt.setNumber(NumberFormat.UInt8LE, 0, StreamingCommand.Event);
+            pkt.setNumber(NumberFormat.UInt16LE, 1, value);
+            this.sendPacket(pkt);
+        }
+
         public startStreaming() {
             if (this.streamingState != StreamingState.Stopped)
                 return;
