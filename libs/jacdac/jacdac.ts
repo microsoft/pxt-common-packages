@@ -1,3 +1,12 @@
+enum JacDacDriverEvent {
+    Connected = DAL.JD_DRIVER_EVT_CONNECTED,
+    Disconnected = DAL.JD_DRIVER_EVT_DISCONNECTED,
+    Paired = DAL.JD_DRIVER_EVT_PAIRED,
+    Unpaired = DAL.JD_DRIVER_EVT_UNPAIRED,
+    PairingRefused = DAL.JD_DRIVER_EVT_PAIR_REJECTED,
+    PairingResponse = DAL.JD_DRIVER_EVT_PAIRING_RESPONSE
+}
+
 class JacDacDriver {
     public name: string;
     public device: JacDacDriverStatus;
@@ -15,6 +24,15 @@ class JacDacDriver {
     public log(text: string) {
         if (!this.supressLog)
             console.add(jacdac.consolePriority, `jd>${this.name}>${text}`);
+    }
+
+    /**
+     * Registers code to run a on a particular event
+     * @param event 
+     * @param handler 
+     */
+    public onEvent(event: JacDacDriverEvent, handler: () => void) {
+        control.onEvent(this.device.id, event, handler);
     }
 
     /**
