@@ -150,8 +150,12 @@ class JDProxyDriver : public JDDriver {
         return r;
     }
 
-    void sendPairing(int address, uint32_t flags, int serialNumber, uint32_t driverClass) {
-        sendPairingPacket(JDDevice(address, flags, serialNumber, driverClass));
+    void sendPairing(JDDevice dev) {
+        this->sendPairingPacket(dev);
+    }
+
+    bool isPairedInstanceAddress(uint8_t address) {
+        return NULL != this->pairedInstance && this->pairedInstance->getAddress() == address;
     }
 
     JDDevice *getDevice() { return &device; }
@@ -241,9 +245,17 @@ uint32_t id(JacDacDriverStatus d) {
 
 /** If paired, paired instance address */
 //% property
-uint32_t isPairedInstanceAddress(JacDacDriverStatus d, uint8_t address) {
-    // TODO
-    return false;
+bool isPairedInstanceAddress(JacDacDriverStatus d, uint8_t address) {
+    return d->isPairedInstanceAddress(address);
+}
+
+/** Sends a pairing packet */
+//%
+void sendPairingPacket(JacDacDriverStatus d, Buffer buf) {
+    JDDevice dev(0);
+    memset(&dev, 0, sizeof(JDDevice));
+    memcpy(&dev, buf->data, min(buf->length, sizeof(JDDevice)));
+    d->sendPairing(dev);
 }
 
 } // namespace JacDacDriverStatusMethods
