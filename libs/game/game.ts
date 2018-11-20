@@ -1,7 +1,7 @@
 /**
  * Game transitions and dialog
  **/
-//% color=#008272 weight=99 icon="\uf111"
+//% color=#008272 weight=97 icon="\uf111"
 //% groups='["Gameplay", "Prompt"]'
 namespace game {
     /**

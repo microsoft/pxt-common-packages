@@ -77,10 +77,10 @@ namespace controller {
      * @param vx The velocity used for horizontal movement when left/right is pressed
      * @param vy The velocity used for vertical movement when up/down is pressed
      */
-    //% blockId="local_game_control_player" block="control $player with vx $vx vy $vy"
+    //% blockId="local_game_control_player" block="move $player with buttons||vx $vx vy $vy"
     //% weight=99 group="Multiplayer"
     //% vx.defl=100 vy.defl=100
-    export function controlPlayer(player: PlayerNumber, vx: number, vy: number) {        
+    export function movePlayer(player: PlayerNumber, vx: number = 100, vy: number = 100) {        
         if (!controlledPlayers) {
             controlledPlayers = [];
             game.currentScene().eventContext.registerFrameHandler(19, () => {
