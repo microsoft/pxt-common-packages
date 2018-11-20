@@ -58,12 +58,12 @@ namespace jacdac {
                     return true;
                 default:
                     // let the user deal with it
-                    return this.handleHostCommand(command, packet);
+                    return this.handleCustomCommand(command, packet);
             }
         }
 
         // override
-        protected handleHostCommand(command: number, pkt: JDPacket) {
+        protected handleCustomCommand(command: number, pkt: JDPacket) {
             return true;
         }
 
@@ -105,9 +105,9 @@ namespace jacdac {
 
         public stopStreaming() {
             if (this.streamingState == StreamingState.Streaming) {
-                this.log(`stop`);
                 this.streamingState = StreamingState.Stopping;
                 pauseUntil(() => this.streamingState == StreamingState.Stopped);
+                this.log(`stopped`);
             }
         }
     }
