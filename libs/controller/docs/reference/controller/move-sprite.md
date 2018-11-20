@@ -1,9 +1,9 @@
-# control Sprite
+# move Sprite
 
 Control the motion of a sprite with the direction buttons.
 
 ```sig
-controller.controlSprite(null, 0, 0)
+controller.moveSprite(null, 0, 0)
 ```
 
 Instead of tracking the direction buttons in a game update function and then updating a sprite's position, you can set a sprite to move automatically when the buttons are pressed. You just decide how fast the sprite will move in both the horizontal and vertical directions when the related buttons are pressed.
@@ -42,7 +42,7 @@ mySprite = sprites.create(img`
 . . . . . . . . . . . . . . . . 
 . . . . . . . . . . . . . . . . 
 `, SpriteKind.Player)
-controller.controlSprite(mySprite, 100, 100)
+controller.moveSprite(mySprite, 100, 100)
 ```
 
 ## See also #seealso
