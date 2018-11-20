@@ -41,13 +41,9 @@ class WProtocol {
     codal::JDProtocol protocol; // note that this is different pins than io->i2c
     codal::JackRouter *jr;
     WProtocol()
-#ifdef CODAL_JACDAC_SUPER_UGLY_CTOR
-        : sws(*LOOKUP_PIN(JACK_TX), SERCOM0, 0, PINMUX_PA04D_SERCOM0_PAD0, 0)
-#else
         : sws(*LOOKUP_PIN(JACK_TX))
-#endif
-          ,
-          jd(*LOOKUP_PIN(JACK_TX), sws), protocol(jd) {
+        , jd(*LOOKUP_PIN(JACK_TX), sws)
+        , protocol(jd) {
         if (LOOKUP_PIN(JACK_HPEN)) {
             jr = new codal::JackRouter(*LOOKUP_PIN(JACK_TX), *LOOKUP_PIN(JACK_SENSE),
                                        *LOOKUP_PIN(JACK_HPEN), *LOOKUP_PIN(JACK_BZEN),
@@ -110,48 +106,26 @@ class JDProxyDriver : public JDDriver {
     }
 
     virtual int handleControlPacket(JDPkt *p) {
+        ControlPacket* cp = (ControlPacket*)p->data;
+        if (this->device.isPairedDriver() && !this->device.isPaired())
+        {
+            DMESG("NEED TO PAIR!");
+            if (cp->flags & CONTROL_JD_FLAGS_PAIRABLE)
+            {
+                DMESG("PAIR!");
+                sendPairingPacket(JDDevice(cp->address, JD_DEVICE_FLAGS_REMOTE | JD_DEVICE_FLAGS_INITIALISED | JD_DEVICE_FLAGS_CP_SEEN, cp->serial_number, cp->driver_class));
+            }
+        }
+        return DEVICE_OK;
+    }
+
+    virtual int handlePacket(JDPkt *p) {
         auto buf = pxt::mkBuffer((const uint8_t *)&p->crc, p->size + 4);
         auto r = pxt::runAction1(methods->getAt(0), (TValue)buf);
         auto retVal = numops::toBool(r) ? DEVICE_OK : DEVICE_CANCELLED;
         decr(r);
         decrRC(buf);
         return retVal;
-    }
-
-    virtual int handlePacket(JDPkt *p) {
-        auto buf = pxt::mkBuffer((const uint8_t *)&p->crc, p->size + 4);
-        auto r = pxt::runAction1(methods->getAt(1), (TValue)buf);
-        auto retVal = numops::toBool(r) ? DEVICE_OK : DEVICE_CANCELLED;
-        decr(r);
-        decrRC(buf);
-        return retVal;
-    }
-
-    virtual int fillControlPacket(JDPkt *p) {
-        auto buf = pxt::mkBuffer((const uint8_t *)&p->crc, JD_SERIAL_DATA_SIZE + 4);
-        auto r = pxt::runAction1(methods->getAt(2), (TValue)buf);
-        memcpy(&p->crc, buf->data, JD_SERIAL_DATA_SIZE + 4);
-        (void)r;
-        // decr(r); // TODO compiler might return non-null on void functions, so better skip
-        // decr
-        decrRC(buf);
-        return DEVICE_OK;
-    }
-
-    virtual int deviceConnected(JDDevice device) {
-        auto r = JDDriver::deviceConnected(device);
-        pxt::runAction0(methods->getAt(3));
-        return r;
-    }
-
-    virtual int deviceRemoved() {
-        auto r = JDDriver::deviceRemoved();
-        pxt::runAction0(methods->getAt(4));
-        return r;
-    }
-
-    void sendPairing(JDDevice dev) {
-        this->sendPairingPacket(dev);
     }
 
     bool isPairedInstanceAddress(uint8_t address) {
@@ -186,55 +160,17 @@ int __internalSendPacket(Buffer buf, int deviceAddress) {
 namespace JacDacDriverStatusMethods {
 
 /**
- * Retrieves the serial number in use by this driver.
- *
- * @return the serial number
- **/
+* Returns the JDDevice instnace
+*/
 //% property
-uint32_t serialNumber(JacDacDriverStatus d) {
-    return d->getSerialNumber();
-}
-
-/** Check if device is paired. */
-//% property
-bool isPaired(JacDacDriverStatus d) {
-    return d->isPaired();
-}
-
-/** Check if device is pairable. */
-//% property
-bool isPairable(JacDacDriverStatus d) {
-    return d->isPairable();
-}
-
-/** Check if driver is virtual. */
-//% property
-bool isVirtualDriver(JacDacDriverStatus d) {
-    return d->getDevice()->isVirtualDriver();
-}
-
-/** Check if driver is paired. */
-//% property
-bool isPairedDriver(JacDacDriverStatus d) {
-    return d->getDevice()->isPairedDriver();
+Buffer device(JacDacDriverStatus d) {
+    return pxt::mkBuffer((const uint8_t *)d->getDevice(), sizeof(JDDevice));
 }
 
 /** Check if driver is connected. */
 //% property
 bool isConnected(JacDacDriverStatus d) {
     return d->isConnected();
-}
-
-/** Get device class. */
-//% property
-uint32_t driverClass(JacDacDriverStatus d) {
-    return d->getClass();
-}
-
-/** Get device class. */
-//% property
-uint8_t driverAddress(JacDacDriverStatus d) {
-    return d->getAddress();
 }
 
 /** Get device id for events. */
@@ -247,15 +183,6 @@ uint32_t id(JacDacDriverStatus d) {
 //% property
 bool isPairedInstanceAddress(JacDacDriverStatus d, uint8_t address) {
     return d->isPairedInstanceAddress(address);
-}
-
-/** Sends a pairing packet */
-//%
-void sendPairingPacket(JacDacDriverStatus d, Buffer buf) {
-    JDDevice dev(0);
-    memset(&dev, 0, sizeof(JDDevice));
-    memcpy(&dev, buf->data, min(buf->length, sizeof(JDDevice)));
-    d->sendPairing(dev);
 }
 
 } // namespace JacDacDriverStatusMethods

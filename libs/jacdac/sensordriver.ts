@@ -87,7 +87,7 @@ namespace jacdac {
                     const state = this.stateSerializer();
                     if (!!state) {
                         // did the state change?
-                        if (this.device.isConnected
+                        if (this.isConnected
                             && (!this._sendState
                             || (control.millis() - this._sendTime > STREAMING_MAX_SILENCE)
                             || !bufferEqual(state, this._sendState))) {
@@ -159,8 +159,8 @@ namespace jacdac {
                         this._stateChangedHandler();
                     return r;
                 case StreamingCommand.Event:
-                    const value = packet.data.getNumber(NumberFormat.UInt16LE, 0);
-                    control.raiseEvent(this.device.id, value);
+                    const value = packet.data.getNumber(NumberFormat.UInt16LE, 1);
+                    control.raiseEvent(this.status.id, value);
                     return true;
                 default:
                     return this.handleCustomCommand(command, packet);
