@@ -4,7 +4,7 @@ enum ControllerButtonEvent {
     //% block="released"
     Released = KEY_UP,
     //% block="repeat"
-    Repeated = SYSTEM_KEY_REPEAT
+    Repeated = KEY_REPEAT
 }
 
 /**
