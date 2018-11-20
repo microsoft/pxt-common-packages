@@ -31,7 +31,7 @@ class JacDacDriver {
      * @param event 
      * @param handler 
      */
-    public onEvent(event: JacDacDriverEvent, handler: () => void) {
+    public onDriverEvent(event: JacDacDriverEvent, handler: () => void) {
         control.onEvent(this.device.id, event, handler);
     }
 
