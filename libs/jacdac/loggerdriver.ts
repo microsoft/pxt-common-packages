@@ -35,7 +35,7 @@ namespace jacdac {
                 for (let i = 0; i < txLength; i++) {
                     buf.setNumber(NumberFormat.UInt8LE, i + 1, str.charCodeAt(i + cursor));
                 }
-                jacdac.sendPacket(buf, this.device.driverAddress);
+                this.sendPacket(buf);
                 cursor += txLength;
             }
         }

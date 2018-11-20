@@ -60,6 +60,11 @@ class JacDacDriver {
         const msg = jacdac.JDDevice.mk(address, flags, serialNumber, driverClass);
         this.device.sendPairingPacket(msg.buf);
     }
+
+    protected sendPacket(pkt: Buffer) {
+        this.log(`send pkt ${this.device.driverAddress}`)
+        jacdac.sendPacket(pkt, this.device.driverAddress);
+    }
 }
 
 /**
@@ -89,11 +94,6 @@ namespace jacdac {
     export class PairableDriver extends JacDacDriver {
         constructor(name: string, isHost: boolean, deviceClass: number) {
             super(name, isHost ? DriverType.PairableHostDriver : DriverType.PairedDriver, deviceClass);
-        }
-
-        protected sendPacket(pkt: Buffer) {
-            this.log(`send pkt to ${this.device.driverAddress}`)
-            jacdac.sendPacket(pkt, this.device.driverAddress);
         }
 
         protected canSendPacket(): boolean {

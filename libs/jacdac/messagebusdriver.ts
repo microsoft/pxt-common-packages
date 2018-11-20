@@ -18,7 +18,7 @@ namespace jacdac {
             const event = control.createBuffer(4);
             event.setNumber(NumberFormat.UInt16LE, 0, id);
             event.setNumber(NumberFormat.UInt16LE, 2, value);
-            jacdac.sendPacket(event, this.device.driverAddress);
+            this.sendPacket(event);
         }
 
         /**

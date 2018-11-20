@@ -25,7 +25,7 @@ namespace jacdac {
     /**
      * JacDac service running on sensor and streaming data out
      */
-    export class StreamingHostDriver extends PairableDriver {
+    export class StreamingHostDriver extends JacDacDriver {
         private _stateSerializer: () => Buffer;
         private _streamingState: StreamingState;
         private _sendTime: number;
@@ -33,7 +33,7 @@ namespace jacdac {
         public streamingInterval: number; // millis
 
         constructor(name: string, stateSerializer: () => Buffer, deviceClass: number) {
-            super(name, true, deviceClass);
+            super(name, DriverType.HostDriver, deviceClass);
             this._stateSerializer = stateSerializer;
             this._streamingState = StreamingState.Stopped;
             this.streamingInterval = 50;
@@ -85,8 +85,7 @@ namespace jacdac {
                             pkt.setNumber(NumberFormat.UInt8LE, 0, StreamingCommand.State);
                             pkt.setNumber(NumberFormat.UInt32LE, 1, control.millis());
                             pkt.write(5, state);
-                            if (this.canSendPacket())
-                                this.sendPacket(pkt);
+                            this.sendPacket(pkt);
                             this._sendState = state;
                             this._sendTime = control.millis();
                         }
@@ -110,7 +109,7 @@ namespace jacdac {
         }
     }
 
-    export class StreamingVirtualDriver extends PairableDriver {
+    export class StreamingVirtualDriver extends JacDacDriver {
         // virtual mode only
         protected _localTime: number;
         protected _lastHostTime: number;
@@ -118,7 +117,7 @@ namespace jacdac {
         onStateChanged: () => void;
 
         constructor(name: string, deviceClass: number) {
-            super(name, false, deviceClass);
+            super(name, DriverType.VirtualDriver, deviceClass);
             this._lastState = control.createBuffer(0);
             jacdac.addDriver(this);
         }

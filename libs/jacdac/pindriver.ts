@@ -25,7 +25,7 @@ namespace jacdac {
             pkg.setNumber(NumberFormat.UInt16LE, 0, mode);
             pkg.setNumber(NumberFormat.Int32LE, 2, value);
 
-            jacdac.sendPacket(pkg, this.device.driverAddress);
+            this.sendPacket(pkg);
             return true;
         }
 
