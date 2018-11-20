@@ -81,7 +81,7 @@ namespace jacdac {
                             || !bufferEqual(state, this._sendState)) {
 
                             // send state and record time
-                            const pkt = control.createBuffer(state.length + 4);
+                            const pkt = control.createBuffer(state.length + 5);
                             pkt.setNumber(NumberFormat.UInt8LE, 0, StreamingCommand.State);
                             pkt.setNumber(NumberFormat.UInt32LE, 1, control.millis());
                             pkt.write(5, state);
