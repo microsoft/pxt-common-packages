@@ -114,17 +114,22 @@ class JDProxyDriver : public JDDriver {
     }
 
     virtual int handleControlPacket(JDPkt *p) {
-        auto buf = pxt::mkBuffer((const uint8_t *)&p->crc, p->size + 4);
-        auto r = pxt::runAction1(methods->getAt(0), (TValue)buf);
-        auto retVal = numops::toBool(r) ? DEVICE_OK : DEVICE_CANCELLED;
-        decr(r);
-        decrRC(buf);
-        return retVal;
+        ControlPacket* cp = (ControlPacket*)p->data;
+        if (this->device.isPairedDriver() && !this->device.isPaired())
+        {
+            DMESG("NEED TO PAIR!");
+            if (cp->flags & CONTROL_JD_FLAGS_PAIRABLE)
+            {
+                DMESG("PAIR!");
+                sendPairingPacket(JDDevice(cp->address, JD_DEVICE_FLAGS_REMOTE | JD_DEVICE_FLAGS_INITIALISED | JD_DEVICE_FLAGS_CP_SEEN, cp->serial_number, cp->driver_class));
+            }
+        }
+        return DEVICE_OK;
     }
 
     virtual int handlePacket(JDPkt *p) {
         auto buf = pxt::mkBuffer((const uint8_t *)&p->crc, p->size + 4);
-        auto r = pxt::runAction1(methods->getAt(1), (TValue)buf);
+        auto r = pxt::runAction1(methods->getAt(0), (TValue)buf);
         auto retVal = numops::toBool(r) ? DEVICE_OK : DEVICE_CANCELLED;
         decr(r);
         decrRC(buf);
@@ -146,10 +151,6 @@ class JDProxyDriver : public JDDriver {
     virtual int deviceRemoved() {
         Event ev(this->id, JD_EVT_DEVICE_REMOVED);
         return JDDriver::deviceRemoved();
-    }
-
-    void sendPairing(JDDevice dev) {
-        this->sendPairingPacket(dev);
     }
 
     bool isPairedInstanceAddress(uint8_t address) {
@@ -245,15 +246,6 @@ uint32_t id(JacDacDriverStatus d) {
 //% property
 bool isPairedInstanceAddress(JacDacDriverStatus d, uint8_t address) {
     return d->isPairedInstanceAddress(address);
-}
-
-/** Sends a pairing packet */
-//%
-void sendPairingPacket(JacDacDriverStatus d, Buffer buf) {
-    JDDevice dev(0);
-    memset(&dev, 0, sizeof(JDDevice));
-    memcpy(&dev, buf->data, min(buf->length, sizeof(JDDevice)));
-    d->sendPairing(dev);
 }
 
 } // namespace JacDacDriverStatusMethods

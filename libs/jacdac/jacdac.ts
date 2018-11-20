@@ -18,28 +18,11 @@ class JacDacDriver {
     }
 
     /**
-     * Called by the logic driver when a control packet is addressed to this driver.
-     * Return false when the packet wasn't handled here.
-     */
-    public handleControlPacket(pkt: Buffer): boolean {
-        return false
-    }
-
-    /**
      * Called by the logic driver when a data packet is addressed to this driver
      * Return false when the packet wasn't handled here.
      */
     public handlePacket(pkt: Buffer): boolean {
         return false
-    }
-
-    /**
-     * Sends a pairing packet
-     */
-    public sendPairing(address: number, flags: number, serialNumber: number, driverClass: number) { 
-        this.log("send pairing")
-        const msg = jacdac.JDDevice.mk(address, flags, serialNumber, driverClass);
-        this.device.sendPairingPacket(msg.buf);
     }
 
     protected sendPacket(pkt: Buffer) {
@@ -79,23 +62,6 @@ namespace jacdac {
 
         protected canSendPacket(): boolean {
             return this.device.isConnected && this.device.isPaired;
-        }
-
-        public handleControlPacket(pkt: Buffer): boolean {
-            const cp = new ControlPacket(pkt);
-            this.log(`cp from ${cp.serialNumber} at ${cp.address}`)
-            if (this.device.isPairedDriver && !this.device.isPaired) {
-                this.log("needs pairing");
-                if (cp.flags & DAL.CONTROL_JD_FLAGS_PAIRABLE) {
-                    this.sendPairing(cp.address,
-                        DAL.JD_DEVICE_FLAGS_REMOTE
-                        | DAL.JD_DEVICE_FLAGS_INITIALISED
-                        | DAL.JD_DEVICE_FLAGS_CP_SEEN,
-                        cp.serialNumber,
-                        cp.driverClass);
-                }
-            }
-            return true;
         }
 
         public handlePacket(pkt: Buffer): boolean {
@@ -152,7 +118,6 @@ namespace jacdac {
 
         n.log(`add ${n.driverType} ${n.deviceClass}`)
         n.device = __internalAddDriver(n.driverType, n.deviceClass, [
-            (p: Buffer) => n.handleControlPacket(p),
             (p: Buffer) => n.handlePacket(p)
         ]);
     }
