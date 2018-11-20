@@ -140,9 +140,7 @@ class JDProxyDriver : public JDDriver {
 
     virtual int deviceConnected(JDDevice device) {
         auto r = JDDriver::deviceConnected(device);
-        auto buf = pxt::mkBuffer((const uint8_t *)&device, sizeof(JDDevice));
-        pxt::runAction1(methods->getAt(3), (TValue)buf);
-        decrRC(buf);
+        pxt::runAction0(methods->getAt(3));
         return r;
     }
 

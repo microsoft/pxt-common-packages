@@ -80,9 +80,10 @@ namespace jacdac {
                     const state = this.stateSerializer();
                     if (!!state) {
                         // did the state change?
-                        if (!this._sendState
+                        if (this.device.isConnected
+                            && (!this._sendState
                             || (control.millis() - this._sendTime > STREAMING_MAX_SILENCE)
-                            || !bufferEqual(state, this._sendState)) {
+                            || !bufferEqual(state, this._sendState))) {
 
                             // send state and record time
                             const pkt = control.createBuffer(state.length + 5);
@@ -118,7 +119,7 @@ namespace jacdac {
         protected _localTime: number;
         protected _lastHostTime: number;
         protected _lastState: Buffer;
-        onStateChanged: () => void;
+        private _stateChangedHandler: () => void;
 
         constructor(name: string, deviceClass: number) {
             super(name, DriverType.VirtualDriver, deviceClass);
@@ -128,6 +129,10 @@ namespace jacdac {
 
         public get state() {
             return this._lastState;
+        }
+
+        public onStateChanged(handler: () => void) {
+            this._stateChangedHandler = handler;
         }
 
         public handlePacket(pkt: Buffer): boolean {
@@ -143,8 +148,8 @@ namespace jacdac {
                     this._lastHostTime = time;
                     this._lastState = state;
                     this._localTime = control.millis();
-                    if (changed && this.onStateChanged)
-                        this.onStateChanged();
+                    if (changed && this._stateChangedHandler)
+                        this._stateChangedHandler();
                     return r;
                 case StreamingCommand.Event:
                     const value = packet.data.getNumber(NumberFormat.UInt16LE, 0);
