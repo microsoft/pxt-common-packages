@@ -39,18 +39,14 @@ class JacDacDriver {
     public fillControlPacket(pkt: Buffer): void { }
 
     /**
-     * Called by the logic driver when a new device is connected to the serial bus
+     * Called by the logic driver when the device is connected
      */
-    public deviceConnected(): void {
-        this.log("dev con");
-    }
+    public deviceConnected(): void { }
 
     /**
-     * Called by the logic driver when an existing device is disconnected from the serial bus
+     * Called by the logic driver when the device is disconnected
      **/
-    public deviceRemoved(): void {
-        this.log("dev rem");
-    }
+    public deviceRemoved(): void { }
 
     /**
      * Sends a pairing packet
