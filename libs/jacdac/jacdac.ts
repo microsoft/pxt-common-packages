@@ -41,8 +41,9 @@ class JacDacDriver {
     /**
      * Called by the logic driver when a new device is connected to the serial bus
      */
-    public deviceConnected(): void {
-        this.log("dev con");
+    public deviceConnected(pkdev: Buffer): void {
+        const dev = new jacdac.JDDevice(pkdev);
+        this.log(`dev con ${dev.serialNumber}`);
     }
 
     /**
@@ -174,7 +175,7 @@ namespace jacdac {
             (p: Buffer) => n.handleControlPacket(p),
             (p: Buffer) => n.handlePacket(p),
             (p: Buffer) => n.fillControlPacket(p),
-            () => n.deviceConnected(),
+            (p: Buffer) => n.deviceConnected(p),
             () => n.deviceRemoved()])
     }
 
