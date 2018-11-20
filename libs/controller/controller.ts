@@ -76,7 +76,7 @@ namespace controller {
         }
 
         /**
-         * Run some code when a button is pressed or released
+         * Run some code when a button is pressed, released, or held
          */
         //% weight=99 blockGap=8 help=controller/button/on-event
         //% blockId=keyonevent block="on %button **button** %event"
