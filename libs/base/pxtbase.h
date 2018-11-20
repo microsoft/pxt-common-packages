@@ -765,6 +765,7 @@ struct ThreadContext {
 
 #ifdef PXT_GC_THREAD_LIST
 extern ThreadContext *threadContexts;
+void *threadAddressFor(ThreadContext *, void *sp);
 #endif
 
 void releaseThreadContext(ThreadContext *ctx);

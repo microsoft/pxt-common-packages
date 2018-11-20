@@ -418,9 +418,6 @@ ThreadContext *getThreadContext() {
 }
 
 void setThreadContext(ThreadContext *ctx) {
-    if (ctx) {
-        ctx->fiber = (void *)pthread_self();
-    }
     threadCtx = ctx;
 }
 
