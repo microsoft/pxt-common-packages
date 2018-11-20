@@ -11,6 +11,7 @@
 #endif
 
 //#define PXT_GC_DEBUG 1
+#define PXT_GC_CHECKS 1
 
 #ifdef PXT_GC_DEBUG
 #define LOG DMESG
@@ -22,7 +23,7 @@
 #define VVLOG NOLOG
 #endif
 
-#ifdef PXT_GC_DEBUG
+#ifdef PXT_GC_CHECKS
 #define GC_CHECK(cond, code)                                                                       \
     if (!(cond))                                                                                   \
     oops(code)
@@ -88,6 +89,9 @@ void popThreadContext(ThreadContext *ctx) {
 }
 
 ThreadContext *pushThreadContext(void *sp) {
+    if (PXT_IN_ISR())
+        target_panic(PANIC_CALLED_FROM_ISR);
+    
     auto curr = getThreadContext();
     if (curr) {
 #ifdef PXT_GC_THREAD_LIST
@@ -280,7 +284,7 @@ static void sweep(int verbose) {
                 }
                 auto sz = d - (RefObject *)start;
                 freeSize += sz;
-#ifdef PXT_GC_DEBUG
+#ifdef PXT_GC_CHECKS
                 memset(start, 0xff, sz << 2);
 #endif
                 start->vtable = (sz << 2) | 2;
@@ -318,7 +322,7 @@ void *gcAllocate(int numbytes) {
     if (numwords > GC_BLOCK_WORDS)
         oops(45);
 
-#ifdef PXT_GC_DEBUG
+#ifdef PXT_GC_CHECKS
     auto curr = getThreadContext();
     if (!curr || !curr->stack.top)
         oops(46);
@@ -351,7 +355,7 @@ void *gcAllocate(int numbytes) {
                 else
                     firstFree = nf;
                 p->vtable = 0;
-                GC_CHECK(!nf->nextFree || ((uint32_t)nf->nextFree) >> 20, 48);
+                GC_CHECK(!nf || !nf->nextFree || ((uint32_t)nf->nextFree) >> 20, 48);
                 VVLOG("GC=>%p %d %p", p, numwords, nf->nextFree);
                 return p;
             }
