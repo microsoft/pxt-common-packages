@@ -9,7 +9,8 @@ namespace jacdac {
         None,
         StartStream,
         StopStream,
-        State
+        State,
+        Event
     }
 
     function bufferEqual(l: Buffer, r: Buffer): boolean {
@@ -145,6 +146,10 @@ namespace jacdac {
                     if (changed && this.onStateChanged)
                         this.onStateChanged();
                     return r;
+                case StreamingCommand.Event:
+                    const value = packet.data.getNumber(NumberFormat.UInt16LE, 0);
+                    control.raiseEvent(this.device.id, value);
+                    return true;
                 default:
                     return this.handleCustomCommand(command, packet);
             }
