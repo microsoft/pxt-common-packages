@@ -39,16 +39,6 @@ class JacDacDriver {
     public fillControlPacket(pkt: Buffer): void { }
 
     /**
-     * Called by the logic driver when the device is connected
-     */
-    public deviceConnected(): void { }
-
-    /**
-     * Called by the logic driver when the device is disconnected
-     **/
-    public deviceRemoved(): void { }
-
-    /**
      * Sends a pairing packet
      */
     public sendPairing(address: number, flags: number, serialNumber: number, driverClass: number) { 
@@ -168,10 +158,8 @@ namespace jacdac {
         n.log(`add ${n.driverType} ${n.deviceClass}`)
         n.device = __internalAddDriver(n.driverType, n.deviceClass, [
             (p: Buffer) => n.handleControlPacket(p),
-            (p: Buffer) => n.handlePacket(p),
-            (p: Buffer) => n.fillControlPacket(p),
-            () => n.deviceConnected(),
-            () => n.deviceRemoved()])
+            (p: Buffer) => n.handlePacket(p)
+        ]);
     }
 
     /**

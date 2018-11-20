@@ -2,6 +2,10 @@
 #include "JDProtocol.h"
 #include "JackRouter.h"
 
+#define JD_EVT_DEVICE_REMOVED 5
+#define JD_EVT_DEVICE_CONNECTED 6
+
+
 namespace jacdac {
 
 #ifndef CODAL_JACDAC_WIRE_SERIAL
@@ -127,27 +131,21 @@ class JDProxyDriver : public JDDriver {
         return retVal;
     }
 
+    // interrupt context
     virtual int fillControlPacket(JDPkt *p) {
-        auto buf = pxt::mkBuffer((const uint8_t *)&p->crc, JD_SERIAL_DATA_SIZE + 4);
-        auto r = pxt::runAction1(methods->getAt(2), (TValue)buf);
-        memcpy(&p->crc, buf->data, JD_SERIAL_DATA_SIZE + 4);
-        (void)r;
-        // decr(r); // TODO compiler might return non-null on void functions, so better skip
-        // decr
-        decrRC(buf);
-        return DEVICE_OK;
+        return JDDriver::fillControlPacket(p);
     }
 
+    // interrupt context
     virtual int deviceConnected(JDDevice device) {
-        auto r = JDDriver::deviceConnected(device);
-        pxt::runAction0(methods->getAt(3));
-        return r;
+        Event ev(this->id, JD_EVT_DEVICE_CONNECTED);
+        return JDDriver::deviceConnected(device);
     }
 
+    // interrupt context
     virtual int deviceRemoved() {
-        auto r = JDDriver::deviceRemoved();
-        pxt::runAction0(methods->getAt(4));
-        return r;
+        Event ev(this->id, JD_EVT_DEVICE_REMOVED);
+        return JDDriver::deviceRemoved();
     }
 
     void sendPairing(JDDevice dev) {
