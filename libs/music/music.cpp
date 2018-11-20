@@ -24,10 +24,7 @@ class WSynthesizer {
     void setAmp(bool on) {
         // turn off speaker as needed
         auto pinAmp = LOOKUP_PIN(SPEAKER_AMP);
-        if (!pinAmp)
-            DMESG("no pinamp found");
         if (pinAmp) {
-            DMESG("setting amp %d", on);
             pinAmp->setDigitalValue(on ? 1 : 0);
         }
     }
