@@ -2,10 +2,6 @@
 #include "JDProtocol.h"
 #include "JackRouter.h"
 
-#define JD_EVT_DEVICE_REMOVED 5
-#define JD_EVT_DEVICE_CONNECTED 6
-
-
 namespace jacdac {
 
 #ifndef CODAL_JACDAC_WIRE_SERIAL
@@ -134,23 +130,6 @@ class JDProxyDriver : public JDDriver {
         decr(r);
         decrRC(buf);
         return retVal;
-    }
-
-    // interrupt context
-    virtual int fillControlPacket(JDPkt *p) {
-        return JDDriver::fillControlPacket(p);
-    }
-
-    // interrupt context
-    virtual int deviceConnected(JDDevice device) {
-        Event ev(this->id, JD_EVT_DEVICE_CONNECTED);
-        return JDDriver::deviceConnected(device);
-    }
-
-    // interrupt context
-    virtual int deviceRemoved() {
-        Event ev(this->id, JD_EVT_DEVICE_REMOVED);
-        return JDDriver::deviceRemoved();
     }
 
     bool isPairedInstanceAddress(uint8_t address) {
