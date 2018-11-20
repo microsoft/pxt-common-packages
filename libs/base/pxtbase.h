@@ -61,6 +61,10 @@ void *operator new(size_t size);
 #endif
 #endif
 
+#ifndef PXT_IN_ISR
+#define PXT_IN_ISR() (SCB->ICSR & SCB_ICSR_VECTACTIVE_Msk)
+#endif
+
 #ifdef POKY
 inline void *operator new(size_t, void *p) {
     return p;
@@ -176,6 +180,7 @@ typedef enum {
     PANIC_SCREEN_ERROR = 911,
     PANIC_MISSING_PROPERTY = 912,
     PANIC_INVALID_IMAGE = 913,
+    PANIC_CALLED_FROM_ISR = 914,
 
     PANIC_CAST_FIRST = 980,
     PANIC_CAST_FROM_UNDEFINED = 980,

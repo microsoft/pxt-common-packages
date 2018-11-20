@@ -32,4 +32,6 @@ namespace pxt
 #define IMAGE_BITS 4
 #define PXT_GC_THREAD_LIST 1
 
+#define PXT_IN_ISR() false
+
 #endif
