@@ -41,13 +41,9 @@ class WProtocol {
     codal::JDProtocol protocol; // note that this is different pins than io->i2c
     codal::JackRouter *jr;
     WProtocol()
-#ifdef CODAL_JACDAC_SUPER_UGLY_CTOR
-        : sws(*LOOKUP_PIN(JACK_TX), SERCOM0, 0, PINMUX_PA04D_SERCOM0_PAD0, 0)
-#else
         : sws(*LOOKUP_PIN(JACK_TX))
-#endif
-          ,
-          jd(*LOOKUP_PIN(JACK_TX), sws), protocol(jd) {
+        , jd(*LOOKUP_PIN(JACK_TX), sws)
+        , protocol(jd) {
         if (LOOKUP_PIN(JACK_HPEN)) {
             jr = new codal::JackRouter(*LOOKUP_PIN(JACK_TX), *LOOKUP_PIN(JACK_SENSE),
                                        *LOOKUP_PIN(JACK_HPEN), *LOOKUP_PIN(JACK_BZEN),
