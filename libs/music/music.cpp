@@ -13,9 +13,23 @@ class WSynthesizer {
 
     WSynthesizer()
         // DAC always on PA02 on SAMD21
-        : dac(*lookupPin(PA02), pxt::getWDMAC()->dmac, synth.output) {
+        : dac(*lookupPin(PA02)
+        , pxt::getWDMAC()->dmac, synth.output) {
         synth.setSampleRate(dac.getSampleRate());
         synth.setVolume(64);
+        this->setAmp(true);
+    }
+
+    // turns on/off the speaker amp
+    void setAmp(bool on) {
+        // turn off speaker as needed
+        auto pinAmp = LOOKUP_PIN(SPEAKER_AMP);
+        if (!pinAmp)
+            DMESG("no pinamp found");
+        if (pinAmp) {
+            DMESG("setting amp %d", on);
+            pinAmp->setDigitalValue(on ? 1 : 0);
+        }
     }
 };
 SINGLETON(WSynthesizer);
@@ -43,17 +57,6 @@ void analogWrite(AnalogOutPin name, int value) {
 namespace music {
 
 Buffer tone; // empty buffer to hold custom tone
-SoundOutputDestination soundOutputDestination = SoundOutputDestination::Speaker;
-
-// turns on/off the speaker amp
-void updateSpeakerAmp() {
-    // turn off speaker as needed
-    //auto pinAmp = LOOKUP_PIN(SPEAKER_AMP);
-    //if (pinAmp) {
-    //    bool on = SoundOutputDestination::Speaker == soundOutputDestination;
-    //    pinAmp->setDigitalValue(on ? 1 : 0);
-    //}
-}
 
 /**
 * Set a source of digital sound data (PCM) for making tones.
@@ -89,10 +92,7 @@ void setTone(Buffer buffer) {
 // blockId=music_set_output block="set output %out"
 // parts="speaker" blockGap=8 advanced=true
 void setOutput(SoundOutputDestination out) {
-    if (out != soundOutputDestination) {
-        soundOutputDestination = out;
-        updateSpeakerAmp();
-    }
+    getWSynthesizer()->setAmp(out == SoundOutputDestination::Speaker);
 }
 
 /**
