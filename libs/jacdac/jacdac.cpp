@@ -160,55 +160,17 @@ int __internalSendPacket(Buffer buf, int deviceAddress) {
 namespace JacDacDriverStatusMethods {
 
 /**
- * Retrieves the serial number in use by this driver.
- *
- * @return the serial number
- **/
+* Returns the JDDevice instnace
+*/
 //% property
-uint32_t serialNumber(JacDacDriverStatus d) {
-    return d->getSerialNumber();
-}
-
-/** Check if device is paired. */
-//% property
-bool isPaired(JacDacDriverStatus d) {
-    return d->isPaired();
-}
-
-/** Check if device is pairable. */
-//% property
-bool isPairable(JacDacDriverStatus d) {
-    return d->isPairable();
-}
-
-/** Check if driver is virtual. */
-//% property
-bool isVirtualDriver(JacDacDriverStatus d) {
-    return d->getDevice()->isVirtualDriver();
-}
-
-/** Check if driver is paired. */
-//% property
-bool isPairedDriver(JacDacDriverStatus d) {
-    return d->getDevice()->isPairedDriver();
+Buffer device(JacDacDriverStatus d) {
+    return pxt::mkBuffer((const uint8_t *)d->getDevice(), sizeof(JDDevice));
 }
 
 /** Check if driver is connected. */
 //% property
 bool isConnected(JacDacDriverStatus d) {
     return d->isConnected();
-}
-
-/** Get device class. */
-//% property
-uint32_t driverClass(JacDacDriverStatus d) {
-    return d->getClass();
-}
-
-/** Get device class. */
-//% property
-uint8_t driverAddress(JacDacDriverStatus d) {
-    return d->getAddress();
 }
 
 /** Get device id for events. */

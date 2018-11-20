@@ -24,7 +24,7 @@ namespace jacdac {
          * @param str
          */
         private broadcastLog(priority: ConsolePriority, str: string) {
-            if (!this.device.isConnected || this.suppressForwading)
+            if (!this.isConnected || this.suppressForwading)
                 return;
 
             let cursor = 0;
