@@ -220,6 +220,8 @@ void gcProcessStacks() {
             }
         }
     }
+
+    delete fibers;
 }
 #endif
 
