@@ -61,6 +61,10 @@ void *operator new(size_t size);
 #endif
 #endif
 
+#ifndef PXT_IN_ISR
+#define PXT_IN_ISR() (SCB->ICSR & SCB_ICSR_VECTACTIVE_Msk)
+#endif
+
 #ifdef POKY
 inline void *operator new(size_t, void *p) {
     return p;
@@ -176,6 +180,7 @@ typedef enum {
     PANIC_SCREEN_ERROR = 911,
     PANIC_MISSING_PROPERTY = 912,
     PANIC_INVALID_IMAGE = 913,
+    PANIC_CALLED_FROM_ISR = 914,
 
     PANIC_CAST_FIRST = 980,
     PANIC_CAST_FROM_UNDEFINED = 980,
@@ -757,16 +762,26 @@ struct StackSegment {
 struct ThreadContext {
     TValue *globals;
     StackSegment stack;
-    void *fiber;
+#ifdef PXT_GC_THREAD_LIST
     ThreadContext *next;
     ThreadContext *prev;
+#endif
 };
+
+#ifdef PXT_GC_THREAD_LIST
+extern ThreadContext *threadContexts;
+void *threadAddressFor(ThreadContext *, void *sp);
+#endif
 
 void releaseThreadContext(ThreadContext *ctx);
 ThreadContext *getThreadContext();
 void setThreadContext(ThreadContext *ctx);
-void *getCurrentFiber();
-void *threadAddressFor(ThreadContext *ctx, void *sp);
+
+#ifndef PXT_GC_THREAD_LIST
+void gcProcessStacks();
+#endif
+
+void gcProcess(TValue v);
 
 #ifndef PXT_USE_XMALLOC
 #define xmalloc malloc
@@ -778,8 +793,6 @@ inline void *gcAllocate(int numbytes) {
     return xmalloc(numbytes);
 }
 #endif
-
-extern ThreadContext *threadContexts;
 
 enum class PerfCounters {
     GC,

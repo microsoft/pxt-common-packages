@@ -421,10 +421,6 @@ void setThreadContext(ThreadContext *ctx) {
     threadCtx = ctx;
 }
 
-void *getCurrentFiber() {
-    return (void *)pthread_self();
-}
-
 void *threadAddressFor(ThreadContext *, void *sp) {
     return sp;
 }

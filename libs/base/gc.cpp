@@ -11,6 +11,7 @@
 #endif
 
 //#define PXT_GC_DEBUG 1
+#define PXT_GC_CHECKS 1
 
 #ifdef PXT_GC_DEBUG
 #define LOG DMESG
@@ -22,7 +23,7 @@
 #define VVLOG NOLOG
 #endif
 
-#ifdef PXT_GC_DEBUG
+#ifdef PXT_GC_CHECKS
 #define GC_CHECK(cond, code)                                                                       \
     if (!(cond))                                                                                   \
     oops(code)
@@ -51,10 +52,12 @@ ThreadContext *pushThreadContext(void *sp) {
 void RefRecord_scan(RefRecord *r) {}
 #else
 
+#ifdef PXT_GC_THREAD_LIST
 ThreadContext *threadContexts;
+#endif
 
 void popThreadContext(ThreadContext *ctx) {
-    VLOG("pop: %p %p n:%p p:%p", ctx, threadContexts, ctx->next, ctx->prev);
+    VLOG("pop: %p n:%p p:%p", ctx, ctx->next, ctx->prev);
 
     if (!ctx)
         return;
@@ -67,6 +70,7 @@ void popThreadContext(ThreadContext *ctx) {
         ctx->stack.next = n->next;
         delete n;
     } else {
+#ifdef PXT_GC_THREAD_LIST
         if (ctx->next)
             ctx->next->prev = ctx->prev;
         if (ctx->prev)
@@ -78,14 +82,19 @@ void popThreadContext(ThreadContext *ctx) {
             if (threadContexts)
                 threadContexts->prev = NULL;
         }
+#endif
         delete ctx;
         setThreadContext(NULL);
     }
 }
 
 ThreadContext *pushThreadContext(void *sp) {
+    if (PXT_IN_ISR())
+        target_panic(PANIC_CALLED_FROM_ISR);
+    
     auto curr = getThreadContext();
     if (curr) {
+#ifdef PXT_GC_THREAD_LIST
 #ifdef PXT_GC_DEBUG
         auto ok = false;
         for (auto p = threadContexts; p; p = p->next)
@@ -95,6 +104,7 @@ ThreadContext *pushThreadContext(void *sp) {
             }
         if (!ok)
             oops(49);
+#endif
 #endif
         auto seg = new StackSegment;
         VLOG("stack %p / %p", seg, curr);
@@ -107,12 +117,14 @@ ThreadContext *pushThreadContext(void *sp) {
         LOG("push: %p", curr);
         curr->globals = globals;
         curr->stack.next = NULL;
+
+#ifdef PXT_GC_THREAD_LIST
         curr->next = threadContexts;
         curr->prev = NULL;
         if (curr->next)
             curr->next->prev = curr;
         threadContexts = curr;
-        curr->fiber = getCurrentFiber();
+#endif
         setThreadContext(curr);
     }
     curr->stack.bottom = sp;
@@ -164,14 +176,14 @@ void gcScanSegment(Segment &seg) {
 #define getScanMethod(vt) ((RefObjectMethod)(((VTable *)(vt))->methods[2]))
 #define getSizeMethod(vt) ((RefObjectSizeMethod)(((VTable *)(vt))->methods[3]))
 
-static void process(TValue v) {
+void gcProcess(TValue v) {
     if (IS_OUTSIDE_GC(v))
         return;
     auto p = (RefObject *)v;
     auto vt = p->vtable;
     if (vt & 1)
         return;
-    VVLOG("process: %p", p);
+    VVLOG("gcProcess: %p", p);
     auto scan = getScanMethod(vt);
     p->vtable |= 1;
     if (scan)
@@ -193,26 +205,30 @@ static void mark() {
         if ((uint32_t)d & 1) {
             d = *(TValue *)((uint32_t)d & ~1);
         }
-        process(d);
+        gcProcess(d);
     }
 
+#ifdef PXT_GC_THREAD_LIST
     for (auto ctx = threadContexts; ctx; ctx = ctx->next) {
         for (auto seg = &ctx->stack; seg; seg = seg->next) {
             auto ptr = (TValue *)threadAddressFor(ctx, seg->top);
             auto end = (TValue *)threadAddressFor(ctx, seg->bottom);
             VLOG("mark: %p - %p", ptr, end);
             while (ptr < end) {
-                process(*ptr++);
+                gcProcess(*ptr++);
             }
         }
     }
+#else
+    gcProcessStacks();
+#endif
 
     auto nonPtrs = bytecode[21];
     len = getNumGlobals() - nonPtrs;
     data = globals + nonPtrs;
     VLOG("globals: %p %d", data, len);
     for (unsigned i = 0; i < len; ++i) {
-        process(*data++);
+        gcProcess(*data++);
     }
 }
 
@@ -268,7 +284,7 @@ static void sweep(int verbose) {
                 }
                 auto sz = d - (RefObject *)start;
                 freeSize += sz;
-#ifdef PXT_GC_DEBUG
+#ifdef PXT_GC_CHECKS
                 memset(start, 0xff, sz << 2);
 #endif
                 start->vtable = (sz << 2) | 2;
@@ -306,13 +322,17 @@ void *gcAllocate(int numbytes) {
     if (numwords > GC_BLOCK_WORDS)
         oops(45);
 
-#ifdef PXT_GC_DEBUG
-    auto curr = getThreadContext();
-    if (!curr || !curr->stack.top)
-        oops(46);
+#ifdef PXT_GC_CHECKS
+    {
+        auto curr = getThreadContext();
+        if (curr && !curr->stack.top)
+            oops(46);
+    }
 #endif
 
-    // gc();
+#ifdef PXT_GC_STRESS
+    gc(0);
+#endif    
 
     for (int i = 0;; ++i) {
         RefBlock *prev = NULL;
@@ -325,7 +345,7 @@ void *gcAllocate(int numbytes) {
             int left = (vt >> 2) - numwords;
             if (left >= 0) {
                 auto nf = (RefBlock *)((void **)p + numwords);
-                //VLOG("nf=%p", nf);
+                // VLOG("nf=%p", nf);
                 auto nextFree = p->nextFree; // p and nf can overlap when allocating 4 bytes
                 if (left)
                     nf->vtable = (left << 2) | 2;
@@ -339,7 +359,7 @@ void *gcAllocate(int numbytes) {
                 else
                     firstFree = nf;
                 p->vtable = 0;
-                GC_CHECK(!nf->nextFree || ((uint32_t)nf->nextFree) >> 20, 48);
+                GC_CHECK(!nf || !nf->nextFree || ((uint32_t)nf->nextFree) >> 20, 48);
                 VVLOG("GC=>%p %d %p", p, numwords, nf->nextFree);
                 return p;
             }

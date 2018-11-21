@@ -1,22 +1,21 @@
 namespace jacdac {
-    let _loggerDriver: LoggerVirtualDriver;
+    let _logBroadcastDriver: LoggerBroadcastDriver;
     /**
      * Sends console messages over JacDac
      */
     //% blockId=jacdac_broadcast_console block="jacdac broadcast console"
     export function broadcastConsole() {
-        if (!_loggerDriver)
-            _loggerDriver = new LoggerVirtualDriver();
+        if (!_logBroadcastDriver)
+            _logBroadcastDriver = new LoggerBroadcastDriver();
     }
 
-    class LoggerVirtualDriver extends JacDacDriver {
+    class LoggerBroadcastDriver extends JacDacDriver {
         public suppressForwading: boolean;
         constructor() {
-            super(DriverType.VirtualDriver, 20); // TODO pickup type from DAL
+            super("log", DriverType.VirtualDriver, jacdac.LOGGER_DRIVER_CLASS, true); // TODO pickup type from DAL
+            // send to other devices
             this.suppressForwading = false;
             jacdac.addDriver(this);
-
-            // send to other devices
             console.addListener((priority, text) => this.broadcastLog(priority, text));
         }
 
@@ -25,38 +24,36 @@ namespace jacdac {
          * @param str
          */
         private broadcastLog(priority: ConsolePriority, str: string) {
-            if (!this.device.isConnected || this.suppressForwading)
+            if (!this.isConnected || this.suppressForwading)
                 return;
 
             let cursor = 0;
             while (cursor < str.length) {
-                const txLength = Math.min(str.length - cursor, DAL.JD_SERIAL_DATA_SIZE - 1 - 4);
+                const txLength = Math.min(str.length - cursor, DAL.JD_SERIAL_DATA_SIZE - 1);
                 const buf = control.createBuffer(txLength + 1);
                 buf.setNumber(NumberFormat.UInt8LE, 0, priority);
-                buf.setNumber(NumberFormat.UInt32LE, 1, this.device.serialNumber); 
                 for (let i = 0; i < txLength; i++) {
-                    buf.setNumber(NumberFormat.UInt8LE, i + 5, str.charCodeAt(i + cursor));
+                    buf.setNumber(NumberFormat.UInt8LE, i + 1, str.charCodeAt(i + cursor));
                 }
-                jacdac.sendPacket(buf, this.device.driverAddress);
+                this.sendPacket(buf);
                 cursor += txLength;
             }
         }
     }
 
-    let _logListenerDriver: LoggerHostDriver;
-
+    let _logListenerDriver: LoggerListenDriver;
     /**
      * Listens for console messages from other devices
      */
     //% blockId=jacdac_listen_console block="jacdac listen console"
     export function listenConsole() {
         if (!_logListenerDriver)
-            _logListenerDriver = new LoggerHostDriver();
+            _logListenerDriver = new LoggerListenDriver();
     }
 
-    class LoggerHostDriver extends JacDacDriver {
+    class LoggerListenDriver extends JacDacDriver {
         constructor() {
-            super(DriverType.HostDriver, 20); // TODO pickup type from DAL
+            super("log", DriverType.HostDriver, jacdac.LOGGER_DRIVER_CLASS); // TODO pickup type from DAL
             jacdac.addDriver(this);
         }
 
@@ -69,20 +66,13 @@ namespace jacdac {
             // shortcut
             if (priority < console.minPriority) return true;
 
-            // who sent this?            
-            const serial = packet.data.getNumber(NumberFormat.UInt32LE, 1);
-
             // send message to console
             let str = "";
-            for (let i = 5; i < packetSize; i++)
+            for (let i = 1; i < packetSize; i++)
                 str += String.fromCharCode(packet.data.getNumber(NumberFormat.UInt8LE, i));
 
-            // pipe to console
-            if (_loggerDriver) // avoid cyclic repetition of messages
-                _loggerDriver.suppressForwading = true;
+            // pipe to console TODO suppress forwarding
             console.add(priority, str);
-            if (_loggerDriver)
-                _loggerDriver.suppressForwading = false;
 
             return true;
         }

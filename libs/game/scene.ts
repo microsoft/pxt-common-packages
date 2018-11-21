@@ -26,6 +26,7 @@ namespace scene {
 
     export class Scene {
         eventContext: control.EventContext;
+        menuState: menu.State;
         background: Background;
         tileMap: tiles.TileMap;
         allSprites: SpriteLike[];
@@ -105,11 +106,14 @@ namespace scene {
             this.eventContext.registerFrameHandler(150, () => {
                 if (game.debug)
                     this.physicsEngine.draw();
+                game.consoleOverlay.draw();
                 // clear flags
                 this.flags = 0;
             });
             // update screen
             this.eventContext.registerFrameHandler(200, control.__screen.update);
+            // register start menu
+            scene.registerSystemMenu();
         }
 
         addSprite(sprite: SpriteLike) {

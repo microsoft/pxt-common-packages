@@ -34,3 +34,7 @@ serial.writeLine("Well that's great! I'm doing well too.");
 [write number](/reference/serial/write-number),
 [write string](/reference/serial/write-string),
 [write value](/reference/serial/write-value)
+
+```package
+serial
+```

@@ -38,3 +38,6 @@ for (let i = 0; i < 10; i++) {
 [write line](/reference/serial/write-line),
 [write number](/reference/serial/write-number)
 
+```package
+serial
+```

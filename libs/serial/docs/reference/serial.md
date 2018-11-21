@@ -31,3 +31,7 @@ serial.writeBuffer(null);
 [write value](/reference/serial/write-value),
 [write buffer](/reference/serial/write-buffer)
 [read string](/reference/serial/read-string),
+
+```package
+serial
+```

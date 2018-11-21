@@ -4,13 +4,13 @@ enum ControllerButtonEvent {
     //% block="released"
     Released = KEY_UP,
     //% block="repeat"
-    Repeated = SYSTEM_KEY_REPEAT
+    Repeated = KEY_REPEAT
 }
 
 /**
  * Access to game controls
  */
-//% weight=97 color="#e15f41" icon="\uf11b"
+//% weight=98 color="#e15f41" icon="\uf11b"
 namespace controller {
     let _userEventsEnabled = true;
     let _activeButtons: Button[];
@@ -76,7 +76,7 @@ namespace controller {
         }
 
         /**
-         * Run some code when a button is pressed or released
+         * Run some code when a button is pressed, released, or held
          */
         //% weight=99 blockGap=8 help=controller/button/on-event
         //% blockId=keyonevent block="on %button **button** %event"
