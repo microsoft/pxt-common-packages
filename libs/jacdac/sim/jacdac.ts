@@ -22,8 +22,8 @@ namespace pxsim.jacdac {
     export function __internalAddDriver(
         driverType: number,
         deviceClass: number,
-        methods: ((p: pxsim.RefBuffer) => void)[],
-        controlData: Buffer
+        methods: ((p: pxsim.RefBuffer) => boolean)[],
+        controlData: pxsim.RefBuffer
     ): JacDacDriverStatus {
         // TODO keep track        
         return new JacDacDriverStatus(driverType, deviceClass, methods, controlData);
@@ -31,7 +31,7 @@ namespace pxsim.jacdac {
 }
 
 class JacDacDriverStatus {
-    constructor(private driverType: number, private deviceClass: number, private methods: ((p: pxsim.RefBuffer) => void)[], private controlData: Buffer) {
+    constructor(private driverType: number, private deviceClass: number, private methods: ((p: pxsim.RefBuffer) => boolean)[], private controlData: pxsim.RefBuffer) {
         this.id = pxsim.control.allocateNotifyEvent();
     }
 
