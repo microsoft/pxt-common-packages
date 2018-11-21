@@ -139,7 +139,7 @@ class JDProxyDriver : public JDDriver {
             }
         }
 
-        auto buf = pxt::mkBuffer((const uint8_t *)&p->crc, p->size + 4);
+        auto buf = pxt::mkBuffer((const uint8_t *)cp, sizeof(ControlPacket));
         auto r = pxt::runAction1(methods->getAt(1), (TValue)buf);
         auto retVal = numops::toBool(r) ? DEVICE_OK : DEVICE_CANCELLED;
         decr(r);
