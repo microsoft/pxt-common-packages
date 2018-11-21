@@ -24,22 +24,23 @@ namespace jacdac {
     }
 
     class BatterySniffer extends Driver {
-        constructor() {
+        handler: (serialNumber: number, level: number) => void;
+        constructor(handler: (serialNumber: number, level: number) => void) {
             super("batmon", DriverType.SnifferDriver, jacdac.BATTERY_DRIVER_CLASS);
+            this.handler = handler;
             jacdac.addDriver(this);
         }
 
         public handleControlPacket(pkt: Buffer): boolean {
             const cp = new ControlPacket(pkt);
             const level = cp.data.getNumber(NumberFormat.UInt8LE, 0);
-            this.log(`${cp.serialNumber}: ${level}`)
+            this.log(`${cp.serialNumber}: ${level}`);
+            this.handler(cp.serialNumber, level);
             return true;
         }
     }
 
-    let _batterSniffer: BatterySniffer;
-    export function monitorBatteryLevels() {
-        if (!_batterSniffer)
-            _batterSniffer = new BatterySniffer();
+    export function monitorBatteryLevels(handler: (serialNumber: number, level: number) => void) {
+        new BatterySniffer(handler);
     }
 }
