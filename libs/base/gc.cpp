@@ -324,13 +324,15 @@ void *gcAllocate(int numbytes) {
 
 #ifdef PXT_GC_CHECKS
     {
-    auto curr = getThreadContext();
-    if (curr && !curr->stack.top)
-        oops(46);
+        auto curr = getThreadContext();
+        if (curr && !curr->stack.top)
+            oops(46);
     }
 #endif
 
-    // gc();
+#ifdef PXT_GC_STRESS
+    gc(0);
+#endif    
 
     for (int i = 0;; ++i) {
         RefBlock *prev = NULL;
