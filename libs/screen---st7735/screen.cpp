@@ -146,7 +146,7 @@ extern "C" void target_panic(int statusCode) {
 
 //%
 void updateScreen(Image_ img) {
-    if (panicing)
+    if (panicCode)
         return; // we're panicing already, don't draw
 
     auto display = getWDisplay();
