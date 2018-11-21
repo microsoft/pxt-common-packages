@@ -2,6 +2,8 @@
 #include "ST7735.h"
 
 namespace pxt {
+    static int panicCode = 0;
+
 class WDisplay {
   public:
     CODAL_SPI spi;
@@ -131,18 +133,22 @@ static void drawPanic(int code) {
 }
 
 extern "C" void target_panic(int statusCode) {
+    if (panicCode)
+        return; // avoid recursive panic invocation        
+    // remember first panic code
+    panicCode = statusCode;
     DMESG("*** CODAL PANIC : [%d]", statusCode);
-
     drawPanic(statusCode);
-
     target_disable_irq();
 
-    while (1) {
-    }
+    while (1) {}
 }
 
 //%
 void updateScreen(Image_ img) {
+    if (panicing)
+        return; // we're panicing already, don't draw
+
     auto display = getWDisplay();
 
     if (img && img != display->lastImg) {
