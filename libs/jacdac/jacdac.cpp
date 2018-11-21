@@ -2,7 +2,7 @@
 #include "JDProtocol.h"
 #include "JackRouter.h"
 
-# JD_DRIVER_EVT_FILL_CONTROL_PACKET 50
+#define JD_DRIVER_EVT_FILL_CONTROL_PACKET 50
 
 namespace jacdac {
 
@@ -122,7 +122,7 @@ class JDProxyDriver : public JDDriver {
             ControlPacket* cp = (ControlPacket*)p->data;
             uint8_t* controlData = cp->data;
             memcpy(controlData, this->_controlData->data, min(CONTROL_PACKET_PAYLOAD_SIZE, this->_controlData->length));
-            Event(this->device.id, JD_DRIVER_EVT_FILL_CONTROL_PACKET);
+            Event(this->id, JD_DRIVER_EVT_FILL_CONTROL_PACKET);
         }
         return DEVICE_OK;
     }

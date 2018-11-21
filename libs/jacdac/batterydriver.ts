@@ -9,7 +9,7 @@ namespace jacdac {
 
         protected updateControlPacket() {
             const batteryLevel = this.level();
-            this.log(`level ${this.level}`);
+            this.log(`level ${batteryLevel}`);
             this.controlData.setNumber(NumberFormat.UInt8LE, 0, batteryLevel);
         }
     }
@@ -25,7 +25,7 @@ namespace jacdac {
 
     class BatterySniffer extends Driver {
         constructor() {
-            super("bat", DriverType.SnifferDriver, jacdac.BATTERY_DRIVER_CLASS);
+            super("batmon", DriverType.SnifferDriver, jacdac.BATTERY_DRIVER_CLASS);
             jacdac.addDriver(this);
         }
 
