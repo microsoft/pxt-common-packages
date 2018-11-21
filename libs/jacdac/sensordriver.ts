@@ -160,7 +160,7 @@ namespace jacdac {
                     return r;
                 case StreamingCommand.Event:
                     const value = packet.data.getNumber(NumberFormat.UInt16LE, 1);
-                    control.raiseEvent(this.status.id, value);
+                    control.raiseEvent(this.id, value);
                     return true;
                 default:
                     return this.handleCustomCommand(command, packet);

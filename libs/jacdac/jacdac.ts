@@ -36,7 +36,7 @@ namespace jacdac {
 
     export class Driver {
         public name: string;
-        private _status: JacDacDriverStatus;
+        protected _proxy: JacDacDriverStatus;
         public driverType: jacdac.DriverType;
         public deviceClass: number;
         protected supressLog: boolean;
@@ -46,19 +46,21 @@ namespace jacdac {
             this.name = name;
             this.driverType = driverType;
             this.deviceClass = deviceClass || jacdac.programHash();
-            if (controlDataLength > 0) {
-                this._controlData = control.createBuffer(controlDataLength);
-            }
+            this._controlData = control.createBuffer(Math.max(0, controlDataLength));
         }
 
-        get status(): JacDacDriverStatus {
-            return this._status;
+        get id(): number {
+            return this._proxy.id;
         }
 
-        set status(value: JacDacDriverStatus) {
-            this._status = value;
-            if (this._controlData)
-                control.onEvent(this._status.id, JD_DRIVER_EVT_FILL_CONTROL_PACKET, () => this.updateControlPacket());
+        hasProxy(): boolean {
+            return !!this._proxy;
+        }
+
+        setProxy(value: JacDacDriverStatus) {
+            this._proxy = value;
+            if (this._controlData.length)
+                control.onEvent(this._proxy.id, JD_DRIVER_EVT_FILL_CONTROL_PACKET, () => this.updateControlPacket());
         }
 
         /**
@@ -72,11 +74,11 @@ namespace jacdac {
         }
 
         get isConnected(): boolean {
-            return this.status && this.status.isConnected;
+            return this._proxy && this._proxy.isConnected;
         }
 
         protected get device(): jacdac.JDDevice {
-            return new jacdac.JDDevice(this.status.device);
+            return new jacdac.JDDevice(this._proxy.device);
         }
 
         public log(text: string) {
@@ -90,7 +92,7 @@ namespace jacdac {
          * @param handler 
          */
         public onDriverEvent(event: JacDacDriverEvent, handler: () => void) {
-            control.onEvent(this.status.id, event, handler);
+            control.onEvent(this._proxy.id, event, handler);
         }
 
         /**
@@ -135,7 +137,7 @@ namespace jacdac {
                 this.log("not conn")
                 return true;
             }
-            if (!this.status.isPairedInstanceAddress(packet.address)) {
+            if (!this._proxy.isPairedInstanceAddress(packet.address)) {
                 this.log('invalid paired address')
                 return true;
             }
@@ -175,17 +177,17 @@ namespace jacdac {
      * @param n driver
      */
     export function addDriver(n: Driver) {
-        if (n.status) { // don't add twice
+        if (n.hasProxy()) { // don't add twice
             n.log(`already added`);
             return;
         }
 
         n.log(`add t${n.driverType} c${n.deviceClass}`)
-        n.status = __internalAddDriver(n.driverType, n.deviceClass, 
+        n.setProxy(__internalAddDriver(n.driverType, n.deviceClass, 
             [(p: Buffer) => n.handlePacket(p),
              (p: Buffer) => n.handleControlPacket(p)],
             n.controlData
-        );
+        ));
     }
 
     /**
