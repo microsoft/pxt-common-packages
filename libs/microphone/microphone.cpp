@@ -15,7 +15,7 @@ class WMicrophone {
     SAMD21PDM microphone;
     LevelDetectorSPL level;
     WMicrophone()
-        : microphone(*LOOKUP_PIN(MIC_DATA), *LOOKUP_PIN(MIC_CLOCK), pxt::getWDMAC()->dmac, 220000, 22000*16)
+        : microphone(*LOOKUP_PIN(MIC_DATA), *LOOKUP_PIN(MIC_CLOCK), pxt::getWDMAC()->dmac, 22000)
         , level(microphone.output, 95.0, 75.0, 9, 52, DEVICE_ID_MICROPHONE)
     {
         microphone.enable();
