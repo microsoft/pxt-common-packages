@@ -202,8 +202,9 @@ static void *threadAddressFor(codal::Fiber *fib, void *sp) {
 }
 
 void gcProcessStacks() {
+    target_disable_irq();
     int numFibers = codal::list_fibers(NULL);
-    codal::Fiber **fibers = new codal::Fiber *[numFibers];
+    codal::Fiber **fibers = new codal::Fiber*[numFibers];
     codal::list_fibers(fibers);
 
     for (int i = 0; i < numFibers; ++i) {
@@ -220,8 +221,8 @@ void gcProcessStacks() {
             }
         }
     }
-
-    delete fibers;
+    delete[] fibers;
+    target_enable_irq();
 }
 #endif
 
