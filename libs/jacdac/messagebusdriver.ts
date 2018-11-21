@@ -1,11 +1,9 @@
 namespace jacdac {
-    // move to codal
-    const JD_MESSAGE_BUS_ID = 2500;
 
     /**
      * A driver that listens for message bus events
      */
-    export class MessageBusDriver extends JacDacDriver {
+    export class MessageBusDriver extends Driver {
         suppressForwarding: boolean;
 
         constructor() {
