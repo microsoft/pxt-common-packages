@@ -2,6 +2,8 @@
 #include "JDProtocol.h"
 #include "JackRouter.h"
 
+# JD_DRIVER_EVT_FILL_CONTROL_PACKET 50
+
 namespace jacdac {
 
 #ifndef CODAL_JACDAC_WIRE_SERIAL
@@ -98,11 +100,28 @@ void stop() {
 class JDProxyDriver : public JDDriver {
   public:
     RefCollection *methods;
+    Buffer _controlData; // may be NULL
 
-    JDProxyDriver(JDDevice d, RefCollection *m) : JDDriver(d) {
-        this->methods = m;
-        incrRC(m);
-        registerGCPtr((TValue)m);
+    JDProxyDriver(JDDevice d, RefCollection *m, Buffer controlData) 
+        : JDDriver(d)
+        , methods(m)
+        , _controlData(controlData) {
+        incrRC(this->methods);
+        registerGCPtr((TValue)this->methods);
+        if (this->_controlData) {
+            incrRC(this->_controlData);
+            registerGCPtr((TValue)this->_controlData);
+        }
+    }
+
+    virtual int fillControlPacket(JDPkt* p) {
+        if (NULL != _controlData) {
+            ControlPacket* cp = (ControlPacket*)p->data;
+            uint8_t* controlData = cp->data;
+            memcpy(controlData, this->_controlData->data, min(CONTROL_PACKET_PAYLOAD_SIZE, this->_controlData->length));
+            Event(this->device.id, JD_DRIVER_EVT_FILL_CONTROL_PACKET);
+        }
+        return DEVICE_OK;
     }
 
     virtual int handleControlPacket(JDPkt *p) {
@@ -137,13 +156,17 @@ class JDProxyDriver : public JDDriver {
     ~JDProxyDriver() {
         decrRC(methods);
         unregisterGCPtr((TValue)methods);
+        if (_controlData) {
+            decrRC(_controlData);
+            unregisterGCPtr((TValue)_controlData);
+        }
     }
 };
 
 //%
-JDProxyDriver *__internalAddDriver(int driverType, int driverClass, RefCollection *methods) {
+JDProxyDriver *__internalAddDriver(int driverType, int driverClass, RefCollection *methods, Buffer controlData) {
     getWProtocol();
-    return new JDProxyDriver(JDDevice((DriverType)driverType, driverClass), methods);
+    return new JDProxyDriver(JDDevice((DriverType)driverType, driverClass), methods, controlData);
 }
 
 /**

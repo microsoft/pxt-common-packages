@@ -27,7 +27,7 @@ namespace jacdac {
     /**
      * JacDac service running on sensor and streaming data out
      */
-    export class StreamingHostDriver extends JacDacDriver {
+    export class StreamingHostDriver extends Driver {
         private stateSerializer: () => Buffer;
         private streamingState: StreamingState;
         private _sendTime: number;
@@ -121,7 +121,7 @@ namespace jacdac {
         }
     }
 
-    export class StreamingVirtualDriver extends JacDacDriver {
+    export class StreamingVirtualDriver extends Driver {
         // virtual mode only
         protected _localTime: number;
         protected _lastHostTime: number;

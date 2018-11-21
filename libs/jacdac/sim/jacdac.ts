@@ -22,7 +22,9 @@ namespace pxsim.jacdac {
     export function __internalAddDriver(
         driverType: number,
         deviceClass: number,
-        methods: ((p: pxsim.RefBuffer) => void)[]):
+        methods: ((p: pxsim.RefBuffer) => void)[],
+        controlData: Buffer
+    ):
         JacDacDriverStatus {
         // TODO keep track        
         return new JacDacDriverStatus(driverType, deviceClass, methods);

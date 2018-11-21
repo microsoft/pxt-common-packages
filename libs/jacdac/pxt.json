@@ -9,6 +9,7 @@
         "messagebusdriver.ts",
         "pindriver.ts",
         "sensordriver.ts",
+        "batterydriver.ts",
         "ns.ts",
         "shims.d.ts"
     ],
