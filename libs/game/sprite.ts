@@ -55,67 +55,67 @@ class Sprite implements SpriteLike {
 
     //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="x (horizontal position)"
-    private get x(): number {
+    get x(): number {
         return Fx.toInt(this._x)
     }
     //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="x (horizontal position)"
-    private set x(v: number) {
+    set x(v: number) {
         this._x = Fx8(v)
     }
 
     //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="y (vertical position)"
-    private get y(): number {
+    get y(): number {
         return Fx.toInt(this._y)
     }
     //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="y (vertical position)"
-    private set y(v: number) {
+    set y(v: number) {
         this._y = Fx8(v)
     }
 
     //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="vx (velocity x)"
-    private get vx(): number {
+    get vx(): number {
         return Fx.toFloat(this._vx)
     }
     //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="vx (velocity x)"
-    private set vx(v: number) {
+    set vx(v: number) {
         this._vx = Fx8(v)
     }
 
     //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="vy (velocity y)"
-    private get vy(): number {
+    get vy(): number {
         return Fx.toFloat(this._vy)
     }
     //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="vy (velocity y)"
-    private set vy(v: number) {
+    set vy(v: number) {
         this._vy = Fx8(v)
     }
 
     //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="ax (acceleration x)"
-    private get ax(): number {
+    get ax(): number {
         return Fx.toFloat(this._ax)
     }
     //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="ax (acceleration x)"
-    private set ax(v: number) {
+    set ax(v: number) {
         this._ax = Fx8(v)
     }
 
     //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="ay (acceleration y)"
-    private get ay(): number {
+    get ay(): number {
         return Fx.toFloat(this._ay)
     }
     //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="ay (acceleration y)"
-    private set ay(v: number) {
+    set ay(v: number) {
         this._ay = Fx8(v)
     }
 
