@@ -42,13 +42,13 @@ namespace Fx {
             return a
     }
     export function min(a: Fx8, b: Fx8) {
-        if ((a as any as number) < (b as any as number))
+        if (a < b)
             return a
         else
             return b
     }
     export function max(a: Fx8, b: Fx8) {
-        if ((a as any as number) > (b as any as number))
+        if (a > b)
             return a
         else
             return b
