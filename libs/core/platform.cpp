@@ -28,6 +28,7 @@ static void remapSwdPin(int pinCfg, int fallback) {
 static void initSwdPins() {
     remapSwdPin(CFG_PIN_NEOPIXEL, PIN(D0));
     remapSwdPin(CFG_PIN_RXLED, PIN(D1));
+    remapSwdPin(CFG_PIN_SPEAKER_AMP, PIN(D2));
 }
 
 static void clearNeoPixels() {
