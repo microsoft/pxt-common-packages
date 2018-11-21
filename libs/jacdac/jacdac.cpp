@@ -102,9 +102,6 @@ class JDProxyDriver : public JDDriver {
     RefCollection *methods;
     Buffer _controlData; // may be NULL
 
-    /**
-        methods = [handlePacket, handleControlPacket]
-    */
     JDProxyDriver(JDDevice d, RefCollection *m, Buffer controlData) 
         : JDDriver(d)
         , methods(m)
