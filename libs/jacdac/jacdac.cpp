@@ -102,6 +102,9 @@ class JDProxyDriver : public JDDriver {
     RefCollection *methods;
     Buffer _controlData; // may be NULL
 
+    /**
+        methods = [handlePacket, handleControlPacket]
+    */
     JDProxyDriver(JDDevice d, RefCollection *m, Buffer controlData) 
         : JDDriver(d)
         , methods(m)
@@ -135,7 +138,13 @@ class JDProxyDriver : public JDDriver {
                 sendPairingPacket(JDDevice(cp->address, JD_DEVICE_FLAGS_REMOTE | JD_DEVICE_FLAGS_INITIALISED | JD_DEVICE_FLAGS_CP_SEEN, cp->serial_number, cp->driver_class));
             }
         }
-        return DEVICE_OK;
+
+        auto buf = pxt::mkBuffer((const uint8_t *)&p->crc, p->size + 4);
+        auto r = pxt::runAction1(methods->getAt(1), (TValue)buf);
+        auto retVal = numops::toBool(r) ? DEVICE_OK : DEVICE_CANCELLED;
+        decr(r);
+        decrRC(buf);
+        return retVal;
     }
 
     virtual int handlePacket(JDPkt *p) {

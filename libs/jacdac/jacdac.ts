@@ -101,6 +101,14 @@ namespace jacdac {
             return false
         }
 
+        /**
+         * Called by the logic driver when a control packet is received
+         * @param pkt 
+         */
+        public handleControlPacket(pkt: Buffer): boolean {
+            return false;
+        }
+
         protected sendPacket(pkt: Buffer) {
             // this.log(`send pkt ${this.device.driverAddress}`)
             jacdac.sendPacket(pkt, this.device.driverAddress);
@@ -174,7 +182,8 @@ namespace jacdac {
 
         n.log(`add t${n.driverType} c${n.deviceClass}`)
         n.status = __internalAddDriver(n.driverType, n.deviceClass, 
-            [(p: Buffer) => n.handlePacket(p)],
+            [(p: Buffer) => n.handlePacket(p),
+             (p: Buffer) => n.handleControlPacket(p)],
             n.controlData
         );
     }

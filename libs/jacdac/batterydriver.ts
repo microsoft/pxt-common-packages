@@ -28,6 +28,13 @@ namespace jacdac {
             super("bat", DriverType.SnifferDriver, jacdac.BATTERY_DRIVER_CLASS);
             jacdac.addDriver(this);
         }
+
+        public handleControlPacket(pkt: Buffer): boolean {
+            const cp = new ControlPacket(pkt);
+            const level = cp.data.getNumber(NumberFormat.UInt8LE, 0);
+            this.log(`$level ${cp.serialNumber}: ${level}`)
+            return true;
+        }
     }
 
     let _batterSniffer: BatterySniffer;

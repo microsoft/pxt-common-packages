@@ -24,15 +24,14 @@ namespace pxsim.jacdac {
         deviceClass: number,
         methods: ((p: pxsim.RefBuffer) => void)[],
         controlData: Buffer
-    ):
-        JacDacDriverStatus {
+    ): JacDacDriverStatus {
         // TODO keep track        
-        return new JacDacDriverStatus(driverType, deviceClass, methods);
+        return new JacDacDriverStatus(driverType, deviceClass, methods, controlData);
     }
 }
 
 class JacDacDriverStatus {
-    constructor(private driverType: number, private deviceClass: number, private methods: ((p: pxsim.RefBuffer) => void)[]) {
+    constructor(private driverType: number, private deviceClass: number, private methods: ((p: pxsim.RefBuffer) => void)[], private controlData: Buffer) {
         this.id = pxsim.control.allocateNotifyEvent();
     }
 
