@@ -17,6 +17,7 @@ class WSynthesizer {
         , pxt::getWDMAC()->dmac, synth.output) {
         synth.setSampleRate(dac.getSampleRate());
         synth.setVolume(64);
+        synth.setTone(Synthesizer::SquareWaveTone);
         this->setAmp(true);
     }
 
