@@ -31,8 +31,9 @@ namespace jacdac {
 
         public handleControlPacket(pkt: Buffer): boolean {
             const cp = new ControlPacket(pkt);
+            console.log(pkt.toHex())
             const level = cp.data.getNumber(NumberFormat.UInt8LE, 0);
-            this.log(`$level ${cp.serialNumber}: ${level}`)
+            this.log(`lvl ${cp.serialNumber}: ${level}`)
             return true;
         }
     }

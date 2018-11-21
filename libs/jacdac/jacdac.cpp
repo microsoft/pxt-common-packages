@@ -118,10 +118,10 @@ class JDProxyDriver : public JDDriver {
     }
 
     virtual int fillControlPacket(JDPkt* p) {
-        if (NULL != _controlData) {
+        if (NULL != _controlData && _controlData->length) {
             ControlPacket* cp = (ControlPacket*)p->data;
-            uint8_t* controlData = cp->data;
-            memcpy(controlData, this->_controlData->data, min(CONTROL_PACKET_PAYLOAD_SIZE, this->_controlData->length));
+            auto n = min(CONTROL_PACKET_PAYLOAD_SIZE, this->_controlData->length);
+            memcpy(cp->data, this->_controlData->data, n);
             Event(this->id, JD_DRIVER_EVT_FILL_CONTROL_PACKET);
         }
         return DEVICE_OK;
