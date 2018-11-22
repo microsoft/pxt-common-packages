@@ -1,38 +1,28 @@
 namespace scene {
-    let systemMenuActive = false;
+    export let systemMenuActive = false;
     export function registerSystemMenu() {
         if (systemMenuActive) {
-            console.log('menu suppresed')
             return;
         }
 
         controller.menu.onEvent(ControllerButtonEvent.Pressed, function () {
-            console.log('creating menu')
             systemMenuActive = true;
             const m = new menu.Menu();
             m.addItem("volume up", () => {});
             m.addItem("volume down", () => {});
             m.addItem("brightness up", () => {});
             m.addItem("brightness down", () =>{});
-            m.addItem(game.consoleOverlay.isVisible() ? "hide console" : "show console", () => {});
-            menu.setRoot(m);
-            m.grow();
-
-            const hide = () => {
-                m.shrink(() => {
-                    m.dispose();
-                    systemMenuActive = false;
-                })
-            }
-
-            // b handler
-            controller.B.onEvent(ControllerButtonEvent.Pressed, () => {
-                hide();
+            m.addItem(game.consoleOverlay.isVisible() ? "hide console" : "show console", () => {
+                if (game.consoleOverlay.isVisible())
+                    game.consoleOverlay.setVisible(false);
+                else {
+                    game.consoleOverlay.setVisible(true);
+                    console.log("console");
+                }
+                m.hide();
             });
-            controller.A.onEvent(ControllerButtonEvent.Pressed, () => {
-                hide();
-                game.consoleOverlay.setVisible(!game.consoleOverlay.isVisible())
-            });
+            m.onHidden = () => systemMenuActive = false;
+            m.show();
         })
     }
 }
