@@ -97,6 +97,16 @@ void stop() {
         p->jd.stop();
 }
 
+/**
+* Clears any existing bridge
+*/
+//%
+void clearBridge() {
+    // TODO
+  //  auto p = getWProtocol();
+//    p->protocol.setBridge(NULL);
+}
+
 class JDProxyDriver : public JDDriver {
   public:
     RefCollection *methods;
@@ -212,6 +222,14 @@ uint32_t id(JacDacDriverStatus d) {
 //% property
 bool isPairedInstanceAddress(JacDacDriverStatus d, uint8_t address) {
     return d->isPairedInstanceAddress(address);
+}
+
+/**
+* Set driver as bridge
+*/
+//%
+void setBridge(JacDacDriverStatus d) {
+    jacdac::getWProtocol()->protocol.setBridge(*d);
 }
 
 } // namespace JacDacDriverStatusMethods

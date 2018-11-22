@@ -64,7 +64,6 @@ namespace menu {
      * @param node The Node to make the UI root
      */
     export function setRoot(node: Node) {
-        console.log('pushing menu')
         game.pushScene();
         game.currentScene().menuState = new menu.State(node);
     }
@@ -559,7 +558,7 @@ namespace menu {
      * A simple rectangle node with a single color
      */
     export class RectNode extends Node {
-        protected color: number;
+        color: number;
 
         /**
          * Creates a RectNode
@@ -831,6 +830,7 @@ namespace menu {
         label: ScrollingLabel;
         background: RectNode;
         id: number;
+        handler: () => void;
 
         constructor(labelWidth: number, text: string, id: number) {
             super();
@@ -843,11 +843,67 @@ namespace menu {
 
             this.id = id;
         }
+
+
+        get selected() {
+            return this.background.color != 0;
+        }
+
+        set selected(value: boolean) {
+            this.background.color = value ? 10 : 0;
+            this.label.color = value ? 1 : 2;
+            this.notifyChange();
+        }
     }
 
     export class VerticalList extends Component {
         flow: VerticalFlow;
         items: ListItem[];
+
+        get selectedItemIndex(): number {
+            for (let i = 0; i < this.items.length; ++i) {
+                const item = this.items[i];
+                if (item.selected)
+                    return i;
+            }
+            return -1;
+        }
+
+        get selectedItem(): ListItem {
+            for (let i = 0; i < this.items.length; ++i) {
+                const item = this.items[i];
+                if (item.selected)
+                    return item;
+            }
+            return undefined;
+        }
+
+        attachController() {
+            controller.down.onEvent(ControllerButtonEvent.Pressed, () => {
+                for (let i = 0; i < this.items.length - 1; ++i) {
+                    const item = this.items[i];
+                    if (item.selected) {
+                        item.selected = false;
+                        this.items[++i].selected = true;
+                        return;
+                    }
+                }
+            });
+            controller.up.onEvent(ControllerButtonEvent.Pressed, () => {
+                for (let i = 1; i < this.items.length; ++i) {
+                    const item = this.items[i];
+                    if (item.selected) {
+                        item.selected = false;
+                        this.items[--i].selected = true;
+                        return;
+                    }
+                }
+            });
+            controller.A.onEvent(ControllerButtonEvent.Pressed, () => {
+                const item = this.selectedItem;
+                item.handler();
+            });
+        }
 
         constructor(outerWidth: number, outerHeight: number, innerWidth?: number, innerHeight?: number) {
             super();
@@ -864,11 +920,12 @@ namespace menu {
             this.appendChild(padding);
         }
 
-        addItem(item: string, id: number) {
+        addItem(item: string, id: number): ListItem {
             const n = new ListItem(this.flow.width, item, id);
             n.fixedHeight = 16;
             this.items.push(n);
             this.flow.appendChild(n);
+            return n;
         }
     }
 
@@ -1069,6 +1126,7 @@ namespace menu {
         root: menu.JustifiedContent;
         b: menu.Bounds;
         margin: number;
+        onHidden?: () => void;
 
         constructor() {
             super();
@@ -1091,11 +1149,13 @@ namespace menu {
         }
 
         addItem(name: string, handler: () => void) {
-            this.list.addItem(name, this.list.items.length);
-            // TODO
+            const item = this.list.addItem(name, this.list.items.length);
+            if (this.list.items.length == 1)
+                this.list.items[0].selected = true;
+            item.handler = handler;
         }
 
-        grow(onEnded?: () => void) {
+        private grow() {
             this.list.hide();
             const vert = this.b.animate(menu.setHeight)
                 .from(this.margin)
@@ -1107,13 +1167,12 @@ namespace menu {
                 .duration(200)
                 .onEnded(() => {
                     this.list.show();
-                    if (onEnded) onEnded();
                 });
             vert.chain(hori);
             vert.start();
         }
 
-        shrink(onEnded?: () => void) {
+        hide() {
             this.list.hide();
             const hori = this.b.animate(menu.setWidth)
                 .from(150)
@@ -1123,9 +1182,22 @@ namespace menu {
                 .from(100)
                 .to(this.margin)
                 .duration(200)
-                .onEnded(onEnded);
+                .onEnded(() => {
+                    this.dispose();
+                    if (this.onHidden)
+                        this.onHidden();
+                });
             hori.chain(vert);
             hori.start();
+        }
+
+        show() {
+            menu.setRoot(this);
+            this.list.attachController();
+            controller.B.onEvent(ControllerButtonEvent.Pressed, () => {
+                this.hide();
+            });
+            this.grow();
         }
     }
 }
