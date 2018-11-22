@@ -64,6 +64,11 @@ class Sprite implements SpriteLike {
     //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="ay (acceleration y)"
     ay: number
+    /** 
+     * Custom data
+     */
+    //%
+    data: any;
 
     _type: number;
 

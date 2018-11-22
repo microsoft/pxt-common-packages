@@ -102,8 +102,9 @@ void stop() {
 */
 //%
 void clearBridge() {
-    auto p = getWProtocol();
-    p->protocol->setBridge(NULL);
+    // TODO
+  //  auto p = getWProtocol();
+//    p->protocol.setBridge(NULL);
 }
 
 class JDProxyDriver : public JDDriver {
