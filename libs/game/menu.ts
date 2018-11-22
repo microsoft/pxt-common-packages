@@ -878,6 +878,33 @@ namespace menu {
             return undefined;
         }
 
+        attachController() {
+            controller.down.onEvent(ControllerButtonEvent.Pressed, () => {
+                for (let i = 0; i < this.items.length - 1; ++i) {
+                    const item = this.items[i];
+                    if (item.selected) {
+                        item.selected = false;
+                        this.items[++i].selected = true;
+                        return;
+                    }
+                }
+            });
+            controller.up.onEvent(ControllerButtonEvent.Pressed, () => {
+                for (let i = 1; i < this.items.length; ++i) {
+                    const item = this.items[i];
+                    if (item.selected) {
+                        item.selected = false;
+                        this.items[--i].selected = true;
+                        return;
+                    }
+                }
+            });
+            controller.A.onEvent(ControllerButtonEvent.Pressed, () => {
+                const item = this.selectedItem;
+                item.handler();
+            });
+        }
+
         constructor(outerWidth: number, outerHeight: number, innerWidth?: number, innerHeight?: number) {
             super();
             this.fixedWidth = outerWidth;
@@ -1166,35 +1193,10 @@ namespace menu {
 
         show() {
             menu.setRoot(this);
-            // b handler
-            controller.down.onEvent(ControllerButtonEvent.Pressed, () => {
-                for (let i = 0; i < this.list.items.length - 1; ++i) {
-                    const item = this.list.items[i];
-                    if (item.selected) {
-                        item.selected = false;
-                        this.list.items[++i].selected = true;
-                        return;
-                    }
-                }
-            });
-            controller.up.onEvent(ControllerButtonEvent.Pressed, () => {
-                for (let i = 1; i < this.list.items.length; ++i) {
-                    const item = this.list.items[i];
-                    if (item.selected) {
-                        item.selected = false;
-                        this.list.items[--i].selected = true;
-                        return;
-                    }
-                }
-            });
+            this.list.attachController();
             controller.B.onEvent(ControllerButtonEvent.Pressed, () => {
                 this.hide();
             });
-            controller.A.onEvent(ControllerButtonEvent.Pressed, () => {
-                const item = this.list.selectedItem;
-                item.handler();
-            });
-
             this.grow();
         }
     }
