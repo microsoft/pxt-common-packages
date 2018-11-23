@@ -1,10 +1,9 @@
 namespace pxsim.jacdac {
+
     export function start() {
-        // TODO
     }
 
     export function stop() {
-        // TODO
     }
 
     export function __internalSendPacket(packet: pxsim.RefBuffer, address: number): number {
@@ -24,8 +23,8 @@ namespace pxsim.jacdac {
         deviceClass: number,
         methods: ((p: pxsim.RefBuffer) => boolean)[],
         controlData: pxsim.RefBuffer
-    ): JacDacDriverStatus {
-        return new JacDacDriverStatus(driverType, deviceClass, methods, controlData);
+    ): pxsim.JacDacDriverStatus {
+        return new pxsim.JacDacDriverStatus(driverType, deviceClass, methods, controlData);
     }
 
     export class JDDevice {
@@ -60,23 +59,31 @@ namespace pxsim.jacdac {
             return BufferMethods.getNumber(this.buf, BufferMethods.NumberFormat.UInt32LE, 8);
         }
     }
-}
 
-class JacDacDriverStatus {
-    device: pxsim.RefBuffer;
-    id: number;
-    constructor(
-        driverType: number,
-        deviceClass: number,
-        public methods: ((p: pxsim.RefBuffer) => boolean)[],
-        public controlData: pxsim.RefBuffer) {
-        this.id = pxsim.control.allocateNotifyEvent();
-        this.device = pxsim.jacdac.JDDevice.mk(0, driverType, 0, deviceClass).buf;
+
+}
+namespace pxsim {
+    export class JacDacDriverStatus {
+        device: pxsim.RefBuffer;
+        id: number;
+        constructor(
+            driverType: number,
+            deviceClass: number,
+            public methods: ((p: pxsim.RefBuffer) => boolean)[],
+            public controlData: pxsim.RefBuffer) {
+            this.id = pxsim.control.allocateNotifyEvent();
+            this.device = pxsim.jacdac.JDDevice.mk(0, driverType, 0, deviceClass).buf;
+        }
     }
-    isPairedInstanceAddress(address: number): number {
+}
+namespace pxsim.JacDacDriverStatusMethods {
+    export function isPairedInstanceAddress(proxy: JacDacDriverStatus, address: number): number {
         return 0;
     }
-    setBridge(): void {
+    export function setBridge(proxy: JacDacDriverStatus): void {
 
+    }
+    export function isConnected(proxy: JacDacDriverStatus): boolean {
+        return false;
     }
 }
