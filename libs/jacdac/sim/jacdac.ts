@@ -83,6 +83,12 @@ namespace pxsim.JacDacDriverStatusMethods {
     export function setBridge(proxy: JacDacDriverStatus): void {
 
     }
+    export function id(proxy: JacDacDriverStatus): number {
+        return proxy.id;
+    }
+    export function device(proxy: JacDacDriverStatus): pxsim.RefBuffer {
+        return proxy.device;
+    }
     export function isConnected(proxy: JacDacDriverStatus): boolean {
         return false;
     }
