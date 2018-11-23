@@ -179,8 +179,13 @@ class JDProxyDriver : public JDDriver {
     }
 };
 
+typedef JDProxyDriver* JacDacDriverStatus;
+typedef RefCollection* MethodCollection;
+/**
+Internal
+*/
 //%
-JDProxyDriver *__internalAddDriver(int driverType, int driverClass, RefCollection *methods, Buffer controlData) {
+JacDacDriverStatus __internalAddDriver(int driverType, int driverClass, MethodCollection methods, Buffer controlData) {
     getWProtocol();
     return new JDProxyDriver(JDDevice((DriverType)driverType, driverClass), methods, controlData);
 }

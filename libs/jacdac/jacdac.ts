@@ -11,6 +11,7 @@ enum JacDacDriverEvent {
  * JACDAC protocol support
  */
 namespace jacdac {
+    export type MethodCollection = ((p:Buffer) => void)[];
     // TODO allocate ID in DAL
     export const LOGGER_DRIVER_CLASS = 4220;
     // TODO allocate ID in DAL
@@ -166,11 +167,6 @@ namespace jacdac {
 
     //% shim=pxt::programHash
     export function programHash(): number { return 0 }
-
-    //% shim=jacdac::__internalAddDriver
-    function __internalAddDriver(driverType: number, deviceClass: number, methods: ((p: Buffer) => void)[], controlData: Buffer): JacDacDriverStatus {
-        return null
-    }
 
     /**
      * Adds a JacDac device driver
