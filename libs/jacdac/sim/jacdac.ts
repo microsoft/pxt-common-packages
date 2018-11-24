@@ -1,9 +1,15 @@
 namespace pxsim.jacdac {
 
     export function start() {
+        const state = getJacDacState();
+        if (!state) return;
+        state.start();
     }
 
     export function stop() {
+        const state = getJacDacState();
+        if (!state) return;
+        state.stop();
     }
 
     export function __internalSendPacket(packet: pxsim.RefBuffer, address: number): number {
@@ -24,7 +30,11 @@ namespace pxsim.jacdac {
         methods: ((p: pxsim.RefBuffer) => boolean)[],
         controlData: pxsim.RefBuffer
     ): pxsim.JacDacDriverStatus {
-        return new pxsim.JacDacDriverStatus(driverType, deviceClass, methods, controlData);
+        const state = getJacDacState();
+        const d = new pxsim.JacDacDriverStatus(driverType, deviceClass, methods, controlData);
+        if (state)
+            state.drivers.push(d);
+        return d;
     }
 
     export class JDDevice {
@@ -46,6 +56,9 @@ namespace pxsim.jacdac {
         get driverAddress(): number {
             return BufferMethods.getNumber(this.buf, BufferMethods.NumberFormat.UInt8LE, 0);
         }
+        set driverAddress(value: number) {
+            BufferMethods.setNumber(this.buf, BufferMethods.NumberFormat.UInt8LE, 0, value);
+        }
         get rollingCounter(): number {
             return BufferMethods.getNumber(this.buf, BufferMethods.NumberFormat.UInt8LE, 1);
         }
@@ -64,6 +77,7 @@ namespace pxsim.jacdac {
 }
 namespace pxsim {
     export class JacDacDriverStatus {
+        dev: pxsim.jacdac.JDDevice;
         device: pxsim.RefBuffer;
         id: number;
         constructor(
@@ -72,7 +86,8 @@ namespace pxsim {
             public methods: ((p: pxsim.RefBuffer) => boolean)[],
             public controlData: pxsim.RefBuffer) {
             this.id = pxsim.control.allocateNotifyEvent();
-            this.device = pxsim.jacdac.JDDevice.mk(0, driverType, 0, deviceClass).buf;
+            this.dev = pxsim.jacdac.JDDevice.mk(0, driverType, 0, deviceClass);
+            this.device = this.dev.buf;
         }
     }
 }
