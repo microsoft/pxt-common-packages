@@ -15,6 +15,15 @@ namespace pxsim {
         stop() {
             this.running = false;
         }
+
+        addDriver(d: JacDacDriverStatus) {
+            this.drivers.push(d);
+            this.start();
+        }
+
+        sendPacket(packet: pxsim.RefBuffer, address: number): number {
+            return 0;
+        }
     }
 
     export interface JacDacBoard extends CommonBoard {

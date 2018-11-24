@@ -13,14 +13,9 @@ namespace pxsim.jacdac {
     }
 
     export function __internalSendPacket(packet: pxsim.RefBuffer, address: number): number {
-        /* TODOs
-        pxsim.Runtime.postMessage(<pxsim.SimulatorJacDacPacketMessage>{ 
-            type: "jacdac",
-            packetType: "pkt",
-            packet: packet.data,
-            address
-        });
-        */
+        const state = getJacDacState();
+        if (state)
+            state.sendPacket(packet, address);
         return 0;
     }
 
@@ -33,7 +28,7 @@ namespace pxsim.jacdac {
         const state = getJacDacState();
         const d = new pxsim.JacDacDriverStatus(driverType, deviceClass, methods, controlData);
         if (state)
-            state.drivers.push(d);
+            state.addDriver(d);
         return d;
     }
 
