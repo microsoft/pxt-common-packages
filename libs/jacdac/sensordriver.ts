@@ -6,11 +6,10 @@ namespace jacdac {
     }
 
     export enum StreamingCommand {
-        None,
-        StartStream,
-        StopStream,
         State,
-        Event
+        Event,
+        StartStream,
+        StopStream
     }
 
     function bufferEqual(l: Buffer, r: Buffer): boolean {
@@ -23,11 +22,11 @@ namespace jacdac {
         return true;
     }
 
-    const STREAMING_MAX_SILENCE = 500;
     /**
      * JacDac service running on sensor and streaming data out
      */
     export class StreamingHostDriver extends Driver {
+        static MAX_SILENCE = 500;
         private stateSerializer: () => Buffer;
         private streamingState: StreamingState;
         private _sendTime: number;
@@ -89,14 +88,13 @@ namespace jacdac {
                         // did the state change?
                         if (this.isConnected
                             && (!this._sendState
-                            || (control.millis() - this._sendTime > STREAMING_MAX_SILENCE)
+                            || (control.millis() - this._sendTime > StreamingHostDriver.MAX_SILENCE)
                             || !bufferEqual(state, this._sendState))) {
 
                             // send state and record time
-                            const pkt = control.createBuffer(state.length + 5);
+                            const pkt = control.createBuffer(state.length + 1);
                             pkt.setNumber(NumberFormat.UInt8LE, 0, StreamingCommand.State);
-                            pkt.setNumber(NumberFormat.UInt32LE, 1, control.millis());
-                            pkt.write(5, state);
+                            pkt.write(1, state);
                             this.sendPacket(pkt);
                             this._sendState = state;
                             this._sendTime = control.millis();
@@ -109,6 +107,7 @@ namespace jacdac {
                     pause(this.streamingInterval);
                 }
                 this.streamingState = StreamingState.Stopped;
+                this.log(`stopped`);
             })
         }
 
@@ -116,7 +115,6 @@ namespace jacdac {
             if (this.streamingState == StreamingState.Streaming) {
                 this.streamingState = StreamingState.Stopping;
                 pauseUntil(() => this.streamingState == StreamingState.Stopped);
-                this.log(`stopped`);
             }
         }
     }
@@ -124,7 +122,6 @@ namespace jacdac {
     export class StreamingVirtualDriver extends Driver {
         // virtual mode only
         protected _localTime: number;
-        protected _lastHostTime: number;
         protected _lastState: Buffer;
         private _stateChangedHandler: () => void;
 
@@ -148,11 +145,9 @@ namespace jacdac {
             this.log(`vpkt ${command}`)
             switch (command) {
                 case StreamingCommand.State:
-                    const time = packet.getNumber(NumberFormat.UInt32LE, 1);
-                    const state = packet.data.slice(5);
+                    const state = packet.data.slice(1);
                     const changed = !bufferEqual(this._lastState, state);
-                    const r = this.handleVirtualState(time, state);
-                    this._lastHostTime = time;
+                    const r = this.handleVirtualState(state);
                     this._lastState = state;
                     this._localTime = control.millis();
                     if (changed && this._stateChangedHandler)
@@ -171,7 +166,7 @@ namespace jacdac {
             return true;
         }
 
-        protected handleVirtualState(time: number, state: Buffer) {
+        protected handleVirtualState(state: Buffer) {
             return true;
         }
     }
