@@ -127,16 +127,18 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
             const xDiff = Fx.sub(sprite._x, sprite._lastX);
             const yDiff = Fx.sub(sprite._y, sprite._lastY);
-            if ((xDiff !== Fx.zeroFx8 || yDiff !== Fx.zeroFx8) &&
-                Fx.abs(xDiff) < MAX_DISTANCE &&
-                Fx.abs(yDiff) < MAX_DISTANCE) {
-                // Undo the move
-                sprite._x = sprite._lastX;
-                sprite._y = sprite._lastY;
+            if (xDiff !== Fx.zeroFx8 || yDiff !== Fx.zeroFx8) {
+                if (Fx.abs(xDiff) < MAX_DISTANCE &&
+                    Fx.abs(yDiff) < MAX_DISTANCE) {
+                    // Undo the move
+                    sprite._x = sprite._lastX;
+                    sprite._y = sprite._lastY;
 
-                // Now move it with the tilemap in mind
-                this.moveSprite(sprite, tm, xDiff, yDiff);
+                    // Now move it with the tilemap in mind
+                    this.moveSprite(sprite, tm, xDiff, yDiff);
+                }
             }
+
         }
     }
 
@@ -244,16 +246,15 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     hitWall = true;
                     // bump left
                     if (bounce) s._vx = Fx.neg(s._vx);
-                    dx = Fx.sub(dx,
-                        Fx.sub(Fx.iadd(box.right, dx), Fx.sub(Fx8(r1 << 4), GAP)));
+
+                    dx = Fx.sub(Fx8(box.right + (r1 << 4)), GAP)
                     s.registerObstacle(CollisionDirection.Right, tm.getObstacle(r1, t1));
                 }
                 else if (tm.isObstacle(l1, t1)) {
                     hitWall = true;
                     // bump right
                     if (bounce) s._vx = Fx.neg(s._vx);
-                    dx = Fx.sub(dx,
-                        Fx.sub(Fx.iadd(box.left, dx), Fx.iadd((l1 + 1) << 4, GAP)));
+                    dx = Fx.sub(Fx.iadd((l1 + 1) << 4, GAP), Fx8(box.left))
                     s.registerObstacle(CollisionDirection.Left, tm.getObstacle(l1, t1));
                 }
                 else {
@@ -262,8 +263,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                         if (bounce) s._vy = Fx.neg(s._vy);
                         hitWall = true;
                         // bump up because that is usually better for platformers
-                        dy = Fx.sub(dy,
-                            Fx.sub(Fx.iadd(box.bottom, dy), Fx.sub(Fx8(b1 << 4), GAP)))
+                        dy = Fx.iadd(box.bottom, Fx.sub(Fx8(b1 << 4), GAP))
                         s.registerObstacle(CollisionDirection.Bottom, tm.getObstacle(rightCollide ? r1 : l1, b1));
                     }
                 }
@@ -273,6 +273,9 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 }
             });
         }
+
+        //if (Fx.add(Fx.abs(dx), Fx.abs(dy)) > Fx8(5))
+        //    control.dmesg(`fast move  ${dx}/${dy}`)
 
         s._x = Fx.add(s._x, dx);
         s._y = Fx.add(s._y, dy);

@@ -3,7 +3,7 @@ interface Fx8 {
 }
 
 function Fx8(v: number) {
-    return (v * 256) as any as Fx8
+    return ((v * 256) | 0) as any as Fx8
 }
 
 namespace Fx {
@@ -54,7 +54,7 @@ namespace Fx {
             return b
     }
     export function toInt(v: Fx8) {
-        return (v as any as number) >> 8
+        return ((v as any as number) + 128) >> 8
     }
     export function toFloat(v: Fx8) {
         return (v as any as number) / 256
