@@ -1,6 +1,7 @@
 namespace pxsim {
     export class JacDacState {
         drivers: JacDacDriverStatus[];
+        logic: jacdac.JDLogicDriver;
         running = false;
 
         constructor() {

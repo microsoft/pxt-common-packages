@@ -133,7 +133,7 @@ namespace jacdac {
             const packet = new JDPacket(pkt);
             this.log(`rec ${packet.data.length}b from ${packet.address}`)
             const dev = this.device;
-            if (!this.isConnected || !dev.isPaired) {
+            if (!this.isConnected || !dev.isPaired()) {
                 this.log("not conn")
                 return true;
             }
@@ -141,7 +141,7 @@ namespace jacdac {
                 this.log('invalid paired address')
                 return true;
             }
-            if (dev.isPairedDriver)
+            if (dev.isPairedDriver())
                 return this.handleHostPacket(packet);
             else
                 return this.handleVirtualPacket(packet);

@@ -66,86 +66,139 @@ namespace pxsim.jacdac {
         get driverClass(): number {
             return BufferMethods.getNumber(this.buf, BufferMethods.NumberFormat.UInt32LE, 8);
         }
-        /**
-         * Used to determine what mode the driver is currently in.
-         *
-         * This will check to see if the flags field resembles the VirtualDriver mode specified in the DriverType enumeration.
-         *
-         * @returns true if in VirtualDriver mode.
-         **/
         isVirtualDriver(): boolean {
             return !!(this.flags & DAL.JD_DEVICE_FLAGS_REMOTE) && !(this.flags & DAL.JD_DEVICE_FLAGS_BROADCAST);
         }
-
-        /**
-         * Used to determine what mode the driver is currently in.
-         *
-         * This will check to see if the flags field resembles the PairedDriver mode specified in the DriverType enumeration.
-         *
-         * @returns true if in PairedDriver mode.
-         **/
         isPairedDriver(): boolean {
             return !!(this.flags & DAL.JD_DEVICE_FLAGS_BROADCAST) && !!(this.flags & DAL.JD_DEVICE_FLAGS_PAIR);
         }
-
-        /**
-         * Used to determine what mode the driver is currently in.
-         *
-         * This will check to see if the flags field resembles the HostDriver mode specified in the DriverType enumeration.
-         *
-         * @returns true if in SnifferDriver mode.
-         **/
         isHostDriver(): boolean {
             return !!(this.flags & DAL.JD_DEVICE_FLAGS_LOCAL) && !(this.flags & DAL.JD_DEVICE_FLAGS_BROADCAST);
         }
-
-        /**
-         * Used to determine what mode the driver is currently in.
-         *
-         * This will check to see if the flags field resembles the BroadcastDriver mode specified in the DriverType enumeration.
-         *
-         * @returns true if in BroadcastDriver mode.
-         **/
         isBroadcastDriver(): boolean {
             return !!(this.flags & DAL.JD_DEVICE_FLAGS_LOCAL) && !!(this.flags & DAL.JD_DEVICE_FLAGS_BROADCAST);
         }
-
-        /**
-         * Used to determine what mode the driver is currently in.
-         *
-         * This will check to see if the flags field resembles the SnifferDriver mode specified in the DriverType enumeration.
-         *
-         * @returns true if in SnifferDriver mode.
-         **/
         isSnifferDriver(): boolean {
             return !!(this.flags & DAL.JD_DEVICE_FLAGS_REMOTE) && !!(this.flags & DAL.JD_DEVICE_FLAGS_BROADCAST);
         }
-
-        /**
-         * Indicates if the driver is currently paired to another.
-         *
-         * @returns true if paired
-         **/
         isPaired(): boolean {
             return !!(this.flags & DAL.JD_DEVICE_FLAGS_PAIRED);
         }
-
-        /**
-         * Indicates if the driver can be currently paired to another.
-         *
-         * @returns true if pairable
-         **/
         isPairable(): boolean {
             return !!(this.flags & DAL.JD_DEVICE_FLAGS_PAIRABLE);
         }
-
-        /**
-         * Indicates if the driver is currently in the process of pairing to another.
-         *
-         * @returns true if pairing
-         **/
         isPairing(): boolean {
             return !!(this.flags & DAL.JD_DEVICE_FLAGS_PAIRING);
+        }
+    }
+
+    export class JDPacket {
+        buf: RefBuffer;
+        constructor(buf: RefBuffer) {
+            this.buf = buf;
+        }
+        get crc(): number {
+            return BufferMethods.getNumber(this.buf, BufferMethods.NumberFormat.UInt16LE, 0);
+        }
+        get address(): number {
+            return BufferMethods.getNumber(this.buf, BufferMethods.NumberFormat.UInt8LE, 2);
+        }
+        get size(): number {
+            return BufferMethods.getNumber(this.buf, BufferMethods.NumberFormat.UInt8LE, 3);
+        }
+        getNumber(format: BufferMethods.NumberFormat, offset: number) {
+            return BufferMethods.getNumber(this.buf, format, offset + 4);
+        }
+
+        setNumber(format: BufferMethods.NumberFormat, offset: number, value: number) {
+            BufferMethods.setNumber(this.buf, format, offset + 4, value);
+        }
+    }
+
+    export class ControlPacket {
+        buf: RefBuffer;
+        constructor(buf: RefBuffer) {
+            this.buf = buf;
+        }
+        get packetType(): number {
+            return BufferMethods.getNumber(this.buf, BufferMethods.NumberFormat.UInt8LE, 0);
+        }
+        set packetType(value: number) {
+            BufferMethods.setNumber(this.buf, BufferMethods.NumberFormat.UInt8LE, 0, value);
+        }
+        get address(): number {
+            return BufferMethods.getNumber(this.buf, BufferMethods.NumberFormat.UInt8LE, 1);
+        }
+        set address(value: number) {
+            BufferMethods.setNumber(this.buf, BufferMethods.NumberFormat.UInt8LE, 1, value);
+        }
+        get flags(): number {
+            return BufferMethods.getNumber(this.buf, BufferMethods.NumberFormat.UInt16LE, 2);
+        }
+        set flags(value: number) {
+            BufferMethods.setNumber(this.buf, BufferMethods.NumberFormat.UInt16LE, 2, value);
+        }
+        get driverClass(): number {
+            return BufferMethods.getNumber(this.buf, BufferMethods.NumberFormat.UInt32LE, 4);
+        }
+        set driverClass(value: number) {
+            BufferMethods.setNumber(this.buf, BufferMethods.NumberFormat.UInt32LE, 4, value);
+        }
+        get serialNumber(): number {
+            return BufferMethods.getNumber(this.buf, BufferMethods.NumberFormat.UInt32LE, 8);
+        }
+        set serialNumber(value: number) {
+            BufferMethods.setNumber(this.buf, BufferMethods.NumberFormat.UInt32LE, 8, value);
+        }
+    }
+
+    export class JDLogicDriver {
+        device: JDDevice;
+        status: number;
+        address_filters: Map<boolean>;
+        constructor() {
+            this.device = JDDevice.mk(0, DAL.JD_DEVICE_FLAGS_LOCAL | DAL.JD_DEVICE_FLAGS_INITIALISED, 0, 0);
+            this.device.address = 0;
+            this.status = 0;
+            this.address_filters = {};
+            this.status |= (DAL.DEVICE_COMPONENT_RUNNING | DAL.DEVICE_COMPONENT_STATUS_SYSTEM_TICK);
+        }
+        populateControlPacket(driver: JacDacDriverStatus, cp: ControlPacket) {
+            cp.packetType = DAL.CONTROL_JD_TYPE_HELLO;
+            cp.address = driver.device.address;
+            cp.flags = 0;
+
+            if (driver.device.isPairing())
+                cp.flags |= DAL.CONTROL_JD_FLAGS_PAIRING_MODE;
+
+            if (driver.device.isPaired())
+                cp.flags |= DAL.CONTROL_JD_FLAGS_PAIRED;
+
+            if (driver.device.isPairable())
+                cp.flags |= DAL.CONTROL_JD_FLAGS_PAIRABLE;
+
+            cp.driverClass = driver.device.driverClass;
+            cp.serialNumber = driver.device.serialNumber;
+        }
+        handleControlPacket(p: JDPacket) {
+            return DAL.DEVICE_OK;
+        }
+
+        addToFilter(address: number): number {
+            this.address_filters[address] = true;
+            return DAL.DEVICE_OK;
+        }
+
+        removeFromFilter(address: number): number {
+            delete this.address_filters[address];
+            return DAL.DEVICE_OK;
+        }
+
+        filterPacket(address: number): boolean {
+            if (address > 0) {
+                return !!this.address_filters[address];
+            }
+            return false;
         }
     }
 }
