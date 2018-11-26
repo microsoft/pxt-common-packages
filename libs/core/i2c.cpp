@@ -2,7 +2,7 @@
 #include "ErrorNo.h"
 
 namespace pins {
-    static codal::I2C *i2c;
+    static CODAL_I2C *i2c;
 
     static void initI2C() {
       if (NULL == i2c) {
