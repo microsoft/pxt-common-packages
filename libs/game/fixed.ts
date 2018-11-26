@@ -14,6 +14,9 @@ namespace Fx {
     export function neg(a: Fx8) {
         return (-(a as any as number)) as any as Fx8
     }
+    export function toIntShifted(a: Fx8, n: number) {
+        return (a as any as number) >> (n + 8)
+    }
     export function add(a: Fx8, b: Fx8) {
         return ((a as any as number) + (b as any as number)) as any as Fx8
     }

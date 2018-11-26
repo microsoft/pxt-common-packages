@@ -176,15 +176,15 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             const bounce = s.flags & sprites.Flag.BounceOnWall;
 
             s._hitboxes.forEach(box => {
-                const t0 = box.top >> 4;
-                const r0 = box.right >> 4;
-                const b0 = box.bottom >> 4;
-                const l0 = box.left >> 4;
+                const t0 = Fx.toIntShifted(box.top, 4);
+                const r0 = Fx.toIntShifted(box.right, 4);
+                const b0 = Fx.toIntShifted(box.bottom, 4);
+                const l0 = Fx.toIntShifted(box.left, 4);
 
                 if (dx > Fx.zeroFx8) {
                     let topCollide = tm.isObstacle(r0 + 1, t0);
                     if (topCollide || tm.isObstacle(r0 + 1, b0)) {
-                        const nextRight = Fx.iadd(box.right, dx);
+                        const nextRight = Fx.add(box.right, dx);
                         const maxRight = Fx.sub(Fx8(((r0 + 1) << 4)), GAP);
                         if (bounce && nextRight >= maxRight) s._vx = Fx.neg(s._vx);
                         if (nextRight > maxRight) {
@@ -197,7 +197,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 else if (dx < Fx.zeroFx8) {
                     const topCollide = tm.isObstacle(l0 - 1, t0);
                     if (topCollide || tm.isObstacle(l0 - 1, b0)) {
-                        const nextLeft = Fx.iadd(box.left, dx);
+                        const nextLeft = Fx.add(box.left, dx);
                         const minLeft = Fx.iadd(l0 << 4, GAP);
                         if (bounce && nextLeft <= minLeft) s._vx = Fx.neg(s._vx);
                         if (nextLeft < minLeft) {
@@ -211,7 +211,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 if (dy > Fx.zeroFx8) {
                     const rightCollide = tm.isObstacle(r0, b0 + 1);
                     if (rightCollide || tm.isObstacle(l0, b0 + 1)) {
-                        const nextBottom = Fx.iadd(box.bottom, dy);
+                        const nextBottom = Fx.add(box.bottom, dy);
                         const maxBottom = Fx.sub(Fx8((b0 + 1) << 4), GAP);
                         if (bounce && nextBottom >= maxBottom) s._vy = Fx.neg(s._vy);
                         if (nextBottom > maxBottom) {
@@ -224,7 +224,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 else if (dy < Fx.zeroFx8) {
                     const rightCollide = tm.isObstacle(r0, t0 - 1);
                     if (tm.isObstacle(r0, t0 - 1) || tm.isObstacle(l0, t0 - 1)) {
-                        const nextTop = Fx.iadd(box.top, dy);
+                        const nextTop = Fx.add(box.top, dy);
                         const minTop = Fx.iadd(t0 << 4, GAP);
                         if (bounce && nextTop <= minTop) s._vy = Fx.neg(s._vy);
                         if (nextTop < minTop) {
@@ -237,24 +237,24 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
                 // Now check each corner and bump out if necessary. This step is needed for
                 // the case where a hitbox goes diagonally into the corner of a tile.
-                const t1 = (box.top + Fx.toInt(dy)) >> 4;
-                const r1 = (box.right + Fx.toInt(dx)) >> 4;
-                const b1 = (box.bottom + Fx.toInt(dy)) >> 4;
-                const l1 = (box.left + Fx.toInt(dx)) >> 4;
+                const t1 = Fx.toIntShifted(Fx.add(box.top, dy), 4);
+                const r1 = Fx.toIntShifted(Fx.add(box.right, dx), 4);
+                const b1 = Fx.toIntShifted(Fx.add(box.bottom, dy), 4);
+                const l1 = Fx.toIntShifted(Fx.add(box.left, dx), 4);
 
                 if (tm.isObstacle(r1, t1)) {
                     hitWall = true;
                     // bump left
                     if (bounce) s._vx = Fx.neg(s._vx);
 
-                    dx = Fx.sub(Fx8(box.right + (r1 << 4)), GAP)
+                    dx = Fx.sub(Fx.iadd(r1 << 4, box.right), GAP)
                     s.registerObstacle(CollisionDirection.Right, tm.getObstacle(r1, t1));
                 }
                 else if (tm.isObstacle(l1, t1)) {
                     hitWall = true;
                     // bump right
                     if (bounce) s._vx = Fx.neg(s._vx);
-                    dx = Fx.sub(Fx.iadd((l1 + 1) << 4, GAP), Fx8(box.left))
+                    dx = Fx.sub(Fx.iadd((l1 + 1) << 4, GAP), box.left)
                     s.registerObstacle(CollisionDirection.Left, tm.getObstacle(l1, t1));
                 }
                 else {
@@ -263,7 +263,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                         if (bounce) s._vy = Fx.neg(s._vy);
                         hitWall = true;
                         // bump up because that is usually better for platformers
-                        dy = Fx.iadd(box.bottom, Fx.sub(Fx8(b1 << 4), GAP))
+                        dy = Fx.add(box.bottom, Fx.sub(Fx8(b1 << 4), GAP))
                         s.registerObstacle(CollisionDirection.Bottom, tm.getObstacle(rightCollide ? r1 : l1, b1));
                     }
                 }
