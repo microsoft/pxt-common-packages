@@ -2,7 +2,7 @@
 #include "ErrorNo.h"
 
 namespace pins {
-    static codal::I2C *i2c;
+    static CODAL_I2C *i2c;
 
     static void initI2C() {
       if (NULL == i2c) {
@@ -17,7 +17,7 @@ namespace pins {
     Buffer i2cReadBuffer(int address, int size, bool repeat = false)
     {
       initI2C();
-      Buffer buf = createBuffer(size);
+      Buffer buf = mkBuffer(NULL, size);
       int status = i2c->read(address << 1, buf->data, size, repeat);
       if (status != ErrorCode::DEVICE_OK) {
         decrRC(buf);

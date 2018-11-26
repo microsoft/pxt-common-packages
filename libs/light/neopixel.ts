@@ -134,7 +134,7 @@ namespace light {
             if (this._parent) return this._parent.brightnessBuf;
             if (!this._brightnessBuf) {
                 const b = this.buf; // force allocate buffer
-                this._brightnessBuf = pins.createBuffer(this._length);
+                this._brightnessBuf = control.createBuffer(this._length);
                 this._brightnessBuf.fill(this._brightness, 0, this._brightnessBuf.length);
             }
             return this._brightnessBuf;
@@ -313,7 +313,7 @@ namespace light {
                 // bb may be undefined if the brightness
                 // is uniform over the strip and has not been allocated
                 const _bb = this._brightnessBuf;
-                if (!this._sendBuf) this._sendBuf = pins.createBuffer(b.length);
+                if (!this._sendBuf) this._sendBuf = control.createBuffer(b.length);
                 const sb = this._sendBuf;
                 const stride = this.stride();
                 // apply brightness
@@ -742,7 +742,7 @@ namespace light {
 
         private reallocateBuffer(): void {
             const stride = this.stride();
-            this._buf = pins.createBuffer(this._length * stride);
+            this._buf = control.createBuffer(this._length * stride);
             this._brightnessBuf = undefined;
             this._sendBuf = undefined;
         }
