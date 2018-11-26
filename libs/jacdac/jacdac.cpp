@@ -44,7 +44,7 @@ class WProtocol {
     codal::JackRouter *jr;
     WProtocol()
         : sws(*LOOKUP_PIN(JACK_TX))
-#if CODAL_JACDAC_NOPIN_CTOR
+#if CONFIG_ENABLED(CODAL_JACDAC_NOPIN_CTOR)
         , jd(sws)
 #else
         , jd(*LOOKUP_PIN(JACK_TX), sws)
