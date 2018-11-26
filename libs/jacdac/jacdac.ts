@@ -113,8 +113,7 @@ namespace jacdac {
         }
 
         protected sendPacket(pkt: Buffer) {
-            // this.log(`send pkt ${this.device.driverAddress}`)
-            jacdac.sendPacket(pkt, this.device.driverAddress);
+            jacdac.sendPacket(pkt, this.device.address);
         }
     }
 
@@ -127,7 +126,7 @@ namespace jacdac {
         }
 
         protected canSendPacket(): boolean {
-            return this.isConnected && this.device.isPaired;
+            return this.isConnected && this.device.isPaired();
         }
 
         public handlePacket(pkt: Buffer): boolean {
@@ -273,7 +272,7 @@ namespace jacdac {
             return new JDDevice(buf);
         }
 
-        get driverAddress(): number {
+        get address(): number {
             return this.buf.getNumber(NumberFormat.UInt8LE, 0);
         }
         get rollingCounter(): number {
@@ -296,7 +295,7 @@ namespace jacdac {
          *
          * @returns true if in VirtualDriver mode.
          **/
-        get isVirtualDriver(): boolean {
+        isVirtualDriver(): boolean {
             return !!(this.flags & DAL.JD_DEVICE_FLAGS_REMOTE) && !(this.flags & DAL.JD_DEVICE_FLAGS_BROADCAST);
         }
 
@@ -307,7 +306,7 @@ namespace jacdac {
          *
          * @returns true if in PairedDriver mode.
          **/
-        get isPairedDriver(): boolean {
+        isPairedDriver(): boolean {
             return !!(this.flags & DAL.JD_DEVICE_FLAGS_BROADCAST) && !!(this.flags & DAL.JD_DEVICE_FLAGS_PAIR);
         }
 
@@ -318,7 +317,7 @@ namespace jacdac {
          *
          * @returns true if in SnifferDriver mode.
          **/
-        get isHostDriver(): boolean {
+        isHostDriver(): boolean {
             return !!(this.flags & DAL.JD_DEVICE_FLAGS_LOCAL) && !(this.flags & DAL.JD_DEVICE_FLAGS_BROADCAST);
         }
 
@@ -329,7 +328,7 @@ namespace jacdac {
          *
          * @returns true if in BroadcastDriver mode.
          **/
-        get isBroadcastDriver(): boolean {
+        isBroadcastDriver(): boolean {
             return !!(this.flags & DAL.JD_DEVICE_FLAGS_LOCAL) && !!(this.flags & DAL.JD_DEVICE_FLAGS_BROADCAST);
         }
 
@@ -340,7 +339,7 @@ namespace jacdac {
          *
          * @returns true if in SnifferDriver mode.
          **/
-        get isSnifferDriver(): boolean {
+        isSnifferDriver(): boolean {
             return !!(this.flags & DAL.JD_DEVICE_FLAGS_REMOTE) && !!(this.flags & DAL.JD_DEVICE_FLAGS_BROADCAST);
         }
 
@@ -349,7 +348,7 @@ namespace jacdac {
          *
          * @returns true if paired
          **/
-        get isPaired(): boolean {
+        isPaired(): boolean {
             return !!(this.flags & DAL.JD_DEVICE_FLAGS_PAIRED);
         }
 
@@ -358,7 +357,7 @@ namespace jacdac {
          *
          * @returns true if pairable
          **/
-        get isPairable(): boolean {
+        isPairable(): boolean {
             return !!(this.flags & DAL.JD_DEVICE_FLAGS_PAIRABLE);
         }
 
@@ -367,7 +366,7 @@ namespace jacdac {
          *
          * @returns true if pairing
          **/
-        get isPairing(): boolean {
+        isPairing(): boolean {
             return !!(this.flags & DAL.JD_DEVICE_FLAGS_PAIRING);
         }
     }

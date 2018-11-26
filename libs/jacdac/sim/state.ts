@@ -5,7 +5,7 @@ namespace pxsim {
 
         constructor() {
             this.drivers = [new JacDacDriverStatus(0, 0, undefined, undefined)]
-            this.drivers[0].dev.driverAddress = 0; // logic driver is always at address 0
+            this.drivers[0].device.address = 0; // logic driver is always at address 0
         }
 
         start() {
