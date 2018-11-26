@@ -11,7 +11,7 @@ enum JacDacDriverEvent {
  * JACDAC protocol support
  */
 namespace jacdac {
-    export type MethodCollection = ((p:Buffer) => void)[];
+    export type MethodCollection = ((p:Buffer) => boolean)[];
     // TODO allocate ID in DAL
     export const LOGGER_DRIVER_CLASS = 4220;
     // TODO allocate ID in DAL
