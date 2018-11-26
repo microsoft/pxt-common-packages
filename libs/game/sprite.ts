@@ -56,23 +56,23 @@ class Sprite implements SpriteLike {
     //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="x (horizontal position)"
     get x(): number {
-        return Fx.toInt(this._x)
+        return Fx.toInt(this._x) + (this._image.width >> 1)
     }
     //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="x (horizontal position)"
     set x(v: number) {
-        this._x = Fx8(v)
+        this._x = Fx8(v - (this._image.width >> 1))
     }
 
     //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="y (vertical position)"
     get y(): number {
-        return Fx.toInt(this._y)
+        return Fx.toInt(this._y) + (this._image.height >> 1)
     }
     //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="y (vertical position)"
     set y(v: number) {
-        this._y = Fx8(v)
+        this._y = Fx8(v - (this._image.height >> 1))
     }
 
     //% group="Properties" blockSetVariable="mySprite"
@@ -156,8 +156,8 @@ class Sprite implements SpriteLike {
     private destroyHandler: () => void;
 
     constructor(img: Image) {
-        this.x = screen.width >> 1;
-        this.y = screen.height >> 1;
+        this._x = Fx8(screen.width - img.width >> 1);
+        this._y = Fx8(screen.height - img.height >> 1);
         this._z = 0
         this._lastX = this._x;
         this._lastY = this._y;
@@ -277,12 +277,12 @@ class Sprite implements SpriteLike {
     //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="left"
     get left() {
-        return this.x - (this.width >> 1)
+        return Fx.toInt(this._x)
     }
     //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="left"
     set left(value: number) {
-        this.x = value + (this.width >> 1);
+        this._x = Fx8(value)
     }
     //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="right"
@@ -292,27 +292,27 @@ class Sprite implements SpriteLike {
     //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="right"
     set right(value: number) {
-        this.x = value - (this.width >> 1);
+        this.left = value - this.width
     }
     //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine
     get top() {
-        return this.y - (this.height >> 1)
+        return Fx.toInt(this._y);
     }
     //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine
     set top(value: number) {
-        this.y = value + (this.height >> 1);
+        this._y = Fx8(value);
     }
     //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="bottom"
     get bottom() {
-        return this.top + this.height
+        return this.top + this.height;
     }
     //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="bottom"
     set bottom(value: number) {
-        this.y = value - (this.height >> 1);
+        this.top = value - this.height;
     }
     /**
      * The type of sprite
@@ -405,9 +405,9 @@ class Sprite implements SpriteLike {
         if (!this._hitboxes || this._hitboxes.length == 0) {
             bubbleOffset = 0;
         } else {
-            bubbleOffset = this._hitboxes[0].top;
+            bubbleOffset = Fx.toInt(this._hitboxes[0].top);
             for (let i = 0; i < this._hitboxes.length; i++) {
-                bubbleOffset = Math.min(bubbleOffset, this._hitboxes[i].top);
+                bubbleOffset = Math.min(bubbleOffset, Fx.toInt(this._hitboxes[i].top));
             }
 
             // Gets the length from sprites location to its highest hitbox
