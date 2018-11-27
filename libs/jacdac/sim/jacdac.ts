@@ -190,11 +190,21 @@ namespace pxsim.jacdac {
         constructor(buf: RefBuffer) {
             this.buf = buf;
         }
+        static mk(address: number, data: RefBuffer): JDPacket {
+            const buf = pxsim.BufferMethods.createBuffer(4 + BufferMethods.length(data));
+            const r = new JDPacket(buf);
+            r.address = address;
+            r.data = data;
+            return r;
+        }
         get crc(): number {
             return BufferMethods.getNumber(this.buf, BufferMethods.NumberFormat.UInt16LE, 0);
         }
         get address(): number {
             return BufferMethods.getNumber(this.buf, BufferMethods.NumberFormat.UInt8LE, 2);
+        }
+        set address(value: number) {
+            BufferMethods.setNumber(this.buf, BufferMethods.NumberFormat.UInt8LE, 2, value);
         }
         get size(): number {
             return BufferMethods.getNumber(this.buf, BufferMethods.NumberFormat.UInt8LE, 3);
@@ -202,6 +212,11 @@ namespace pxsim.jacdac {
         get data(): RefBuffer {
             return BufferMethods.slice(this.buf, 4, this.buf.data.length - 4);
         }
+        set data(value: RefBuffer) {
+            const n = BufferMethods.length(value);
+            for(let i = 0; i < n; ++i)
+                this.setNumber(BufferMethods.NumberFormat.UInt8BE, i, BufferMethods.getNumber(value, BufferMethods.NumberFormat.UInt8LE, i));
+        }        
         getNumber(format: BufferMethods.NumberFormat, offset: number) {
             return BufferMethods.getNumber(this.buf, format, offset + 4);
         }
@@ -214,6 +229,11 @@ namespace pxsim.jacdac {
     export class ControlPacket {
         buf: RefBuffer;
         constructor(buf: RefBuffer) {
+            if (!buf) {
+                buf = pxsim.BufferMethods.createBuffer(12);
+                for(let i = 0; i < buf.data.length; ++i)
+                    buf.data[i] = Math_.randomRange(0, 255);
+            }
             this.buf = buf;
         }
         get packetType(): number {
@@ -264,6 +284,12 @@ namespace pxsim.jacdac {
         isConnected(): boolean {
             return (this.device.flags & DAL.JD_DEVICE_FLAGS_INITIALISED) ? true : false;
         }
+        fillControlPacket(pkt: JDPacket): number
+        {
+            // by default, the logic driver will fill in the required information.
+            // any additional information should be added here.... (note: cast pkt->data to control packet and fill out data)
+            return DAL.DEVICE_OK;
+        }        
         handleControlPacket(p: JDPacket) {
             return DAL.DEVICE_OK;
         }
@@ -309,7 +335,7 @@ namespace pxsim.jacdac {
             this.address_filters = {};
             this.status |= (DAL.DEVICE_COMPONENT_RUNNING | DAL.DEVICE_COMPONENT_STATUS_SYSTEM_TICK);
         }
-        populateControlPacket(driver: JacDacDriverStatus, cp: ControlPacket) {
+        populateControlPacket(driver: JDDriver, cp: ControlPacket) {
             cp.packetType = DAL.CONTROL_JD_TYPE_HELLO;
             cp.address = driver.device.address;
             cp.flags = 0;
@@ -325,6 +351,98 @@ namespace pxsim.jacdac {
 
             cp.driverClass = driver.device.driverClass;
             cp.serialNumber = driver.device.serialNumber;
+        }
+        periodicCallback(): void {
+            // no sense continuing if we dont have a bus to transmit on...
+            const state = getJacDacState();
+            if (!state || !state.running) return;
+
+            // for each driver we maintain a rolling counter, used to trigger various timer related events.
+            // uint8_t might not be big enough in the future if the scheduler runs faster...
+            for (let i = 0; i < state.drivers.length; ++i) {
+                const current = state.drivers[i];
+                // ignore ourself
+                if (!current || current == this)
+                    continue;
+
+                if (current.device.flags & (DAL.JD_DEVICE_FLAGS_INITIALISED | DAL.JD_DEVICE_FLAGS_INITIALISING))
+                    current.device.rollingCounter++;
+
+                // if the driver is acting as a virtual driver, we don't need to perform any initialisation, just connect / disconnect events.
+                if (current.device.flags & DAL.JD_DEVICE_FLAGS_REMOTE) {
+                    if (current.device.rollingCounter == DAL.JD_LOGIC_DRIVER_TIMEOUT) {
+                        if (!(current.device.flags & DAL.JD_DEVICE_FLAGS_CP_SEEN)) {
+                            //JD_DMESG("CONTROL NOT SEEN %d %d", current.device.address, current.device.serial_number);
+                            current.deviceRemoved();
+                        }
+
+                        current.device.flags &= ~(DAL.JD_DEVICE_FLAGS_CP_SEEN);
+                        continue;
+                    }
+                }
+
+                // local drivers run on the device
+                if (current.device.flags & DAL.JD_DEVICE_FLAGS_LOCAL) {
+                    // initialise a driver by queuing a control packet with a first reasonable address
+                    if (!(current.device.flags & (DAL.JD_DEVICE_FLAGS_INITIALISED | DAL.JD_DEVICE_FLAGS_INITIALISING))) {
+                        //JD_DMESG("BEGIN INIT");
+                        current.device.address = 0;
+
+                        let allocated = true;
+
+                        // compute a reasonable first address
+                        while (allocated) {
+                            let stillAllocated = false;
+                            current.device.address = Math_.randomRange(0, 255);
+
+                            for (let j = 0; j < state.drivers.length; j++) {
+                                if (i == j)
+                                    continue;
+
+                                if (state.drivers[j] && state.drivers[j].device.flags & DAL.JD_DEVICE_FLAGS_INITIALISED) {
+                                    if (state.drivers[j].device.address == current.device.address) {
+                                        stillAllocated = true;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            allocated = stillAllocated;
+                        }
+
+                        //JD_DMESG("ALLOC: %d",current.device.address);
+
+                        // we queue the first packet, so that drivers don't send driver related packets on a yet unassigned address
+                        const cp = new ControlPacket(undefined)
+                        this.populateControlPacket(current, cp);
+                        // reset the flags after population as drivers should not receive any packets until their address is confirmed.
+                        // i.e. pairing flags may be put into the control packet on an uncertain address.
+                        cp.flags = 0;
+                        // flag our address as uncertain (i.e. not committed / finalised)
+                        cp.flags |= DAL.CONTROL_JD_FLAGS_UNCERTAIN;
+                        const pkt = JDPacket.mk(0, cp.buf);
+                        current.device.flags |= DAL.JD_DEVICE_FLAGS_INITIALISING;
+                        state.sendPacket(pkt.buf, 0);
+                    }
+                    else if (current.device.flags & DAL.JD_DEVICE_FLAGS_INITIALISING) {
+                        // if no one has complained in a second, consider our address allocated
+                        if (current.device.rollingCounter == DAL.JD_LOGIC_ADDRESS_ALLOC_TIME) {
+                            current.device.flags &= ~DAL.JD_DEVICE_FLAGS_INITIALISING;
+                            current.device.flags |= DAL.JD_DEVICE_FLAGS_INITIALISED;
+                            current.deviceConnected(current.device);
+                        }
+                    }
+                    else if (current.device.flags & DAL.JD_DEVICE_FLAGS_INITIALISED) {
+                        if (current.device.rollingCounter > 0 && (current.device.rollingCounter % DAL.JD_LOGIC_DRIVER_CTRLPACKET_TIME) == 0) {
+                            const cp = new ControlPacket(undefined)
+                            this.populateControlPacket(current, cp);
+                            const pkt = JDPacket.mk(0, cp.buf);
+                            current.fillControlPacket(pkt);
+                            state.sendPacket(pkt.buf, 0);
+                        }
+                    }
+                }
+            }
         }
         handleControlPacket(p: JDPacket) {
             return DAL.DEVICE_OK;

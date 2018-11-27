@@ -7,25 +7,39 @@ namespace pxsim {
     }
 
     export class JacDacState {
+        board: BaseBoard;
         drivers: jacdac.JDDriver[];
+        logic: jacdac.JDLogicDriver;
         running = false;
         bridge: jacdac.JDDriver;
         _nextId = jacdac.DAL.DEVICE_ID_JD_DYNAMIC_ID;
+        runtimeId: string;
+
         get nextId(): number {
             return ++this._nextId;
         }
 
         constructor(board: BaseBoard) {
-            this.drivers = [new jacdac.JDLogicDriver(this.nextId)]
+            this.board = board;
+            this.drivers = [this.logic = new jacdac.JDLogicDriver(this.nextId)]
             board.addMessageListener(msg => this.processMessage(msg));
         }
 
         start() {
+            if (this.running) return;
+
             this.running = true;
+            this.runtimeId = runtime.id;
+            const cb = () => {
+                if (!this.running || this.runtimeId != runtime.id) return;
+                this.logic.periodicCallback();
+                setTimeout(cb, 500);
+            };
+            cb();
         }
 
         stop() {
-            this.running = false;
+            this.running = false;            
         }
 
         addDriver(d: JacDacDriverStatus) {
@@ -50,36 +64,29 @@ namespace pxsim {
             if (msg && msg.type == "jacdac") {
                 const jdmsg = msg as pxsim.SimulatorJacDacMessage;
                 const buf = pxsim.BufferMethods.createBuffer(jdmsg.packet.length);
-                for(let i = 0 ; i < buf.data.length; ++i)
+                for (let i = 0; i < buf.data.length; ++i)
                     buf.data[i] = jdmsg.packet[i];
                 const pkt = new jacdac.JDPacket(buf);
-                this.drivers[0].handleLogicPacket(pkt);
+                this.onPacketReceived(pkt);
             }
         }
 
         onPacketReceived(pkt: jacdac.JDPacket) {
-            const logic = this.drivers[0] as jacdac.JDLogicDriver;
-            if (!logic.filterPacket(pkt.address)) {
+            if (!this.logic.filterPacket(pkt.address)) {
                 let driver_class = 0;
-
-                for (let i = 0; i < this.drivers.length; i++) {
-                    if (this.drivers[i]) {
-                        // could be optimised into a single if, but useful for debugging.
-                        if ((this.drivers[i].device.flags & jacdac.DAL.JD_DEVICE_FLAGS_INITIALISED) && this.drivers[i].device.address == pkt.address) {
-                            if (this.drivers[i].device.flags & jacdac.DAL.JD_DEVICE_FLAGS_BROADCAST_MAP) {
-                                driver_class = this.drivers[i].device.driverClass;
-                            }
-                            else {
-                                // DMESG("HANDLED BY LOCAL / REMOTE A: %d", this->drivers[i]->getAddress());
-                                this.drivers[i].handlePacket(pkt);
-                            }
-
-                            break; // only one address per device, lets break early
+                for (const driver of this.drivers) {
+                    if (!driver) continue;
+                    const flags = driver.device.flags;
+                    const address = driver.device.address;
+                    const initialized = flags & jacdac.DAL.JD_DEVICE_FLAGS_INITIALISED;
+                    if (initialized && address == pkt.address) {
+                        if (flags & jacdac.DAL.JD_DEVICE_FLAGS_BROADCAST_MAP) {
+                            driver_class = driver.device.driverClass;
                         }
+                        else driver.handlePacket(pkt);
+                        break; // only one address per device, lets break early
                     }
                 }
-
-                // if we've matched a broadcast map, it means we need to map a broadcast packet to any driver of the same class
                 if (driver_class > 0)
                     for (let i = 0; i < this.drivers.length; i++) {
                         if ((this.drivers[i].device.flags & jacdac.DAL.JD_DEVICE_FLAGS_BROADCAST) && this.drivers[i].device.driverClass == driver_class) {
@@ -87,7 +94,6 @@ namespace pxsim {
                         }
                     }
             }
-
             if (this.bridge)
                 this.bridge.handlePacket(pkt);
         }
