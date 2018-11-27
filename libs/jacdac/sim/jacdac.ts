@@ -58,7 +58,7 @@ namespace pxsim.jacdac {
         JD_DEVICE_FLAGS_BROADCAST_MAP = 16,
         JD_LOGIC_DRIVER_MAX_FILTERS = 20,
         JD_LOGIC_DRIVER_TIMEOUT = 254,
-        JD_LOGIC_ADDRESS_ALLOC_TIME = 254,
+        JD_LOGIC_ADDRESS_ALLOC_TIME = 64,
         JD_LOGIC_DRIVER_CTRLPACKET_TIME = 112,
         CONTROL_JD_FLAGS_RESERVED = 32768,
         CONTROL_JD_FLAGS_PAIRING_MODE = 16384,
@@ -280,6 +280,7 @@ namespace pxsim.jacdac {
             if (!state) return;
 
             // TODO
+            console.error("todo pairing")
         }
         isConnected(): boolean {
             return (this.device.flags & DAL.JD_DEVICE_FLAGS_INITIALISED) ? true : false;
@@ -309,6 +310,7 @@ namespace pxsim.jacdac {
                 this.pair();
 
             board().bus.queue(this.id, DAL.JD_DRIVER_EVT_CONNECTED);
+            console.log(`jd>dev con ${this.device.address}`);
             return DAL.DEVICE_OK;
         }
 
@@ -517,7 +519,7 @@ namespace pxsim.jacdac {
                         // ONLY ADD BROADCAST MAPS IF THE DRIVER IS INITIALISED.
                         let exists = false;
 
-                        for (let j = 0; j < DAL.JD_PROTOCOL_DRIVER_ARRAY_SIZE; j++)
+                        for (let j = 0; j < instance.drivers.length; j++)
                             if (instance.drivers[j].device.address == cp.address && instance.drivers[j].device.serialNumber == cp.serialNumber) {
                                 exists = true;
                                 break;
@@ -526,8 +528,7 @@ namespace pxsim.jacdac {
                         // only add a broadcast device if it is not already represented in the driver array.
                         if (!exists) {
                             const dev = JDDevice.mk(cp.address, cp.flags | DAL.JD_DEVICE_FLAGS_BROADCAST_MAP | DAL.JD_DEVICE_FLAGS_INITIALISED, cp.serialNumber, cp.driverClass);
-                            // TODO
-                            //new JDDriver(dev);
+                            instance.addDriver(new JDDriver(instance.nextId, dev));
                         }
                     }
 
@@ -553,7 +554,7 @@ namespace pxsim.jacdac {
                 this.removeFromFilter(cp.address);
 
             // if we reach here, there is no associated device, find a free remote instance in the drivers array
-            for (let i = 0; i < DAL.JD_PROTOCOL_DRIVER_ARRAY_SIZE; i++) {
+            for (let i = 0; i < instance.drivers.length; i++) {
                 const current = instance.drivers[i];
                 if (current && current.device.flags & DAL.JD_DEVICE_FLAGS_REMOTE && current.device.driverClass == cp.driverClass) {
                     // this driver instance is looking for a specific serial number

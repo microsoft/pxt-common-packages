@@ -33,7 +33,7 @@ namespace pxsim {
             const cb = () => {
                 if (!this.running || this.runtimeId != runtime.id) return;
                 this.logic.periodicCallback();
-                setTimeout(cb, 500);
+                setTimeout(cb, 50);
             };
             cb();
         }
@@ -42,7 +42,7 @@ namespace pxsim {
             this.running = false;            
         }
 
-        addDriver(d: JacDacDriverStatus) {
+        addDriver(d: jacdac.JDDriver) {
             this.drivers.push(d);
             this.start();
         }
