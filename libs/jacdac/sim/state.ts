@@ -13,7 +13,7 @@ namespace pxsim {
 
         constructor(board: BaseBoard) {
             this.drivers = [new jacdac.JDLogicDriver()]
-            board.addMessageListener(this.processMessage.bind(this));
+            board.addMessageListener(msg => this.processMessage(msg));
         }
 
         start() {
