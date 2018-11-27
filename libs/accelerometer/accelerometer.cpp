@@ -120,7 +120,7 @@ namespace pxt {
 
 // Wrapper classes
 class WAccel {
-    CODAL_MBED::I2C i2c; // note that this is different pins than io->i2c
+    CODAL_I2C i2c; // note that this is different pins than io->i2c
     CoordinateSpace space;
   public:
     CODAL_ACCELEROMETER acc;
