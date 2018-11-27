@@ -57,6 +57,9 @@ namespace pxsim.jacdac {
         get rollingCounter(): number {
             return BufferMethods.getNumber(this.buf, BufferMethods.NumberFormat.UInt8LE, 1);
         }
+        set rollingCounter(value: number) {
+            BufferMethods.setNumber(this.buf, BufferMethods.NumberFormat.UInt8LE, 1, value);
+        }
         get flags(): number {
             return BufferMethods.getNumber(this.buf, BufferMethods.NumberFormat.UInt16LE, 2);
         }
@@ -65,6 +68,9 @@ namespace pxsim.jacdac {
         }
         get serialNumber(): number {
             return BufferMethods.getNumber(this.buf, BufferMethods.NumberFormat.UInt32LE, 4);
+        }
+        set serialNumber(value: number) {
+            BufferMethods.setNumber(this.buf, BufferMethods.NumberFormat.UInt32LE, 4, value);
         }
         get driverClass(): number {
             return BufferMethods.getNumber(this.buf, BufferMethods.NumberFormat.UInt32LE, 8);
@@ -165,6 +171,13 @@ namespace pxsim.jacdac {
             this.device = device;
             this.id = pxsim.control.allocateNotifyEvent();
         }
+        pair(): void
+        {
+            const state = getJacDacState();
+            if (!state) return;
+
+            // TODO
+        }        
         isConnected(): boolean {
             return (this.device.flags & DAL.JD_DEVICE_FLAGS_INITIALISED) ? true : false;
         }
@@ -177,12 +190,28 @@ namespace pxsim.jacdac {
         handleLogicPacket(p: JDPacket) {
             return DAL.DEVICE_OK;
         }
-        deviceConnected(device: JDDevice): number {
+        deviceConnected(device: JDDevice ): number
+        {
+            this.device.address = device.address;
+            this.device.serialNumber = device.serialNumber;
+            this.device.flags |= DAL.JD_DEVICE_FLAGS_INITIALISED | DAL.JD_DEVICE_FLAGS_CP_SEEN;
+        
+            // if we are connecting and in pairing mode, we should invoke pair, the second stage of sendPairingPacket().
+            if (this.device.isPairing())
+                this.pair();
+        
+            board().bus.queue(this.id, DAL.JD_DRIVER_EVT_CONNECTED);
             return DAL.DEVICE_OK;
         }
-        deviceRemoved(): number {
-            return DAL.DEVICE_OK;
-        }
+        
+        deviceRemoved(): number
+        {
+            this.device.flags &= ~(DAL.JD_DEVICE_FLAGS_INITIALISED);
+            this.device.rollingCounter = 0;
+            board().bus.queue(this.id, DAL.JD_DRIVER_EVT_DISCONNECTED);
+            return DAL.DEVICE_OK
+        }        
+        
         sendPairingPacket(d: JDDevice): number {
             return DAL.DEVICE_OK;
         }
@@ -338,16 +367,6 @@ namespace pxsim.jacdac {
                 }
             }
 
-            return DAL.DEVICE_OK;
-        }
-
-        deviceRemoved() {
-            board().bus.queue(this.id, DAL.JD_DRIVER_EVT_DISCONNECTED);
-            return DAL.DEVICE_OK;
-        }
-
-        deviceConnected(device: pxsim.jacdac.JDDevice) {
-            board().bus.queue(this.id, DAL.JD_DRIVER_EVT_CONNECTED);
             return DAL.DEVICE_OK;
         }
 
