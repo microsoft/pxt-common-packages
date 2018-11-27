@@ -165,6 +165,9 @@ namespace pxsim.jacdac {
             this.device = device;
             this.id = pxsim.control.allocateNotifyEvent();
         }
+        isConnected(): boolean {
+            return (this.device.flags & DAL.JD_DEVICE_FLAGS_INITIALISED) ? true : false;
+        }
         handleControlPacket(p: JDPacket) {
             return DAL.DEVICE_OK;
         }
@@ -382,7 +385,9 @@ namespace pxsim.JacDacDriverStatusMethods {
         return 0;
     }
     export function setBridge(proxy: JacDacDriverStatus): void {
-
+        const state = pxsim.getJacDacState();
+        if (state)
+            state.bridge = proxy;
     }
     export function id(proxy: JacDacDriverStatus): number {
         return proxy.id;
@@ -391,6 +396,6 @@ namespace pxsim.JacDacDriverStatusMethods {
         return proxy.device.buf;
     }
     export function isConnected(proxy: JacDacDriverStatus): boolean {
-        return false;
+        return proxy.isConnected();
     }
 }
