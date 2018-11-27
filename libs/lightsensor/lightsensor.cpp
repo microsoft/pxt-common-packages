@@ -10,6 +10,18 @@
 #define CODAL_LIGHT_SENSOR AnalogSensor
 #endif
 
+#ifndef LIGHTSENSOR_SENSITIVITY
+#define LIGHTSENSOR_SENSITIVITY 868 // codal has 912 now
+#endif
+
+#ifndef LIGHTSENSOR_LOW_THRESHOLD
+#define LIGHTSENSOR_LOW_THRESHOLD 128
+#endif
+
+#ifndef LIGHTSENSOR_HIGH_THRESHOLD
+#define LIGHTSENSOR_HIGH_THRESHOLD 896
+#endif
+
 enum class LightCondition {
     //% block="dark"
     Dark = ANALOG_THRESHOLD_LOW,
