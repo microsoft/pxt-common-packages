@@ -60,6 +60,9 @@ namespace pxsim.jacdac {
         get flags(): number {
             return BufferMethods.getNumber(this.buf, BufferMethods.NumberFormat.UInt16LE, 2);
         }
+        set flags(value: number) {
+            BufferMethods.setNumber(this.buf, BufferMethods.NumberFormat.UInt16LE, 2, value);
+        }
         get serialNumber(): number {
             return BufferMethods.getNumber(this.buf, BufferMethods.NumberFormat.UInt32LE, 4);
         }
@@ -105,6 +108,9 @@ namespace pxsim.jacdac {
         }
         get size(): number {
             return BufferMethods.getNumber(this.buf, BufferMethods.NumberFormat.UInt8LE, 3);
+        }
+        get data(): RefBuffer {
+            return BufferMethods.slice(this.buf, 4, this.buf.data.length - 4);
         }
         getNumber(format: BufferMethods.NumberFormat, offset: number) {
             return BufferMethods.getNumber(this.buf, format, offset + 4);
@@ -152,12 +158,39 @@ namespace pxsim.jacdac {
         }
     }
 
-    export class JDLogicDriver {
+    export class JDDriver {
         device: JDDevice;
+        id: number;
+        constructor(device: JDDevice) {
+            this.device = device;
+            this.id = pxsim.control.allocateNotifyEvent();
+        }
+        handleControlPacket(p: JDPacket) {
+            return DAL.DEVICE_OK;
+        }
+        handlePacket(p: JDPacket): number {
+            return DAL.DEVICE_OK;
+        }
+        handleLogicPacket(p: JDPacket) {
+            return DAL.DEVICE_OK;
+        }
+        deviceConnected(device: JDDevice): number {
+            return DAL.DEVICE_OK;
+        }
+        deviceRemoved(): number {
+            return DAL.DEVICE_OK;
+        }
+        sendPairingPacket(d: JDDevice): number {
+            return DAL.DEVICE_OK;
+        }
+        partnerDisconnected() { }
+    }
+
+    export class JDLogicDriver extends JDDriver {
         status: number;
         address_filters: Map<boolean>;
         constructor() {
-            this.device = JDDevice.mk(0, DAL.JD_DEVICE_FLAGS_LOCAL | DAL.JD_DEVICE_FLAGS_INITIALISED, 0, 0);
+            super(JDDevice.mk(0, DAL.JD_DEVICE_FLAGS_LOCAL | DAL.JD_DEVICE_FLAGS_INITIALISED, 0, 0));
             this.device.address = 0;
             this.status = 0;
             this.address_filters = {};
@@ -183,6 +216,137 @@ namespace pxsim.jacdac {
         handleControlPacket(p: JDPacket) {
             return DAL.DEVICE_OK;
         }
+        /**
+          * Given a control packet, finds the associated driver, or if no associated device, associates a remote device with a driver.
+          **/
+        handlePacket(p: JDPacket): number {
+            const cp = new ControlPacket(p.data);
+            let handled = false; // indicates if the control packet has been handled by a driver.
+            let safe = (cp.flags & (DAL.CONTROL_JD_FLAGS_UNCERTAIN | DAL.CONTROL_JD_FLAGS_PAIRING_MODE)) == 0; // the packet it is safe
+
+            const instance = getJacDacState()
+            for (let i = 0; i < instance.drivers.length; i++) {
+                const current = instance.drivers[i];
+
+                if (!current)
+                    continue;
+
+                // We are in charge of local drivers, in this if statement we handle address assignment
+                if ((current.device.flags & DAL.JD_DEVICE_FLAGS_LOCAL) && current.device.address == cp.address) {
+                    // a different device is using our address!!
+                    if (current.device.serialNumber != cp.serialNumber && !(cp.flags & DAL.CONTROL_JD_FLAGS_CONFLICT)) {
+                        // if we're initialised, this means that someone else is about to use our address, reject.
+                        // see 2. above.
+                        if ((current.device.flags & DAL.JD_DEVICE_FLAGS_INITIALISED) && (cp.flags & DAL.CONTROL_JD_FLAGS_UNCERTAIN)) {
+                            cp.flags |= DAL.CONTROL_JD_FLAGS_CONFLICT;
+                            instance.sendPacket(cp.buf, 0);
+                        }
+                        // the other device is initialised and has transmitted the CP first, we lose.
+                        else {
+                            // new address will be assigned on next tick.
+                            current.device.address = 0;
+                            current.device.flags &= ~(DAL.JD_DEVICE_FLAGS_INITIALISING | DAL.JD_DEVICE_FLAGS_INITIALISED);
+                        }
+
+                        return DAL.DEVICE_OK;
+                    }
+                    // someone has flagged a conflict with this initialised device
+                    else if (cp.flags & DAL.CONTROL_JD_FLAGS_CONFLICT) {
+                        // new address will be assigned on next tick.
+                        current.deviceRemoved();
+                        return DAL.DEVICE_OK;
+                    }
+
+                    // if we get here it means that:
+                    // 1) address is the same as we expect
+                    // 2) the serial_number is the same as we expect
+                    // 3) we are not conflicting with another device.
+                    // so we flag as seen so we do not disconnect a device
+                    current.device.flags |= DAL.JD_DEVICE_FLAGS_CP_SEEN;
+
+                    if (safe && current.handleLogicPacket(p) == DAL.DEVICE_OK) {
+                        handled = true;
+                        continue;
+                    }
+                }
+
+                // for remote drivers, we aren't in charge, so we track the serial_number in the control packets,
+                // and silently update the driver.
+                else if (current.device.flags & DAL.JD_DEVICE_FLAGS_REMOTE && current.device.flags & DAL.JD_DEVICE_FLAGS_INITIALISED && current.device.serialNumber == cp.serialNumber) {
+                    current.device.address = cp.address;
+                    current.device.flags |= DAL.JD_DEVICE_FLAGS_CP_SEEN;
+
+                    if (safe && current.handleLogicPacket(p) == DAL.DEVICE_OK) {
+                        handled = true;
+                        continue;
+                    }
+                }
+                else if ((current.device.flags & DAL.JD_DEVICE_FLAGS_BROADCAST) && current.device.driverClass == cp.driverClass) {
+                    if (current.device.flags & DAL.JD_DEVICE_FLAGS_INITIALISED) {
+                        // ONLY ADD BROADCAST MAPS IF THE DRIVER IS INITIALISED.
+                        let exists = false;
+
+                        for (let j = 0; j < DAL.JD_PROTOCOL_DRIVER_ARRAY_SIZE; j++)
+                            if (instance.drivers[j].device.address == cp.address && instance.drivers[j].device.serialNumber == cp.serialNumber) {
+                                exists = true;
+                                break;
+                            }
+
+                        // only add a broadcast device if it is not already represented in the driver array.
+                        if (!exists) {
+                            const dev = JDDevice.mk(cp.address, cp.flags | DAL.JD_DEVICE_FLAGS_BROADCAST_MAP | DAL.JD_DEVICE_FLAGS_INITIALISED, cp.serialNumber, cp.driverClass);
+                            // TODO
+                            //new JDDriver(dev);
+                        }
+                    }
+
+                    if (safe && current.handleLogicPacket(p) == DAL.DEVICE_OK) {
+                        handled = true;
+                        continue;
+                    }
+                }
+            }
+
+            if (handled || !safe) {
+                return DAL.DEVICE_OK;
+            }
+
+            let filtered = this.filterPacket(cp.address);
+
+            // if it's paired with a driver and it's not us, we can just ignore
+            if (!filtered && cp.flags & DAL.CONTROL_JD_FLAGS_PAIRED)
+                return this.addToFilter(cp.address);
+
+            // if it was previously paired with another device, we remove the filter.
+            else if (filtered && !(cp.flags & DAL.CONTROL_JD_FLAGS_PAIRED))
+                this.removeFromFilter(cp.address);
+
+            // if we reach here, there is no associated device, find a free remote instance in the drivers array
+            for (let i = 0; i < DAL.JD_PROTOCOL_DRIVER_ARRAY_SIZE; i++) {
+                const current = instance.drivers[i];
+                if (current && current.device.flags & DAL.JD_DEVICE_FLAGS_REMOTE && current.device.driverClass == cp.driverClass) {
+                    // this driver instance is looking for a specific serial number
+                    if (current.device.serialNumber > 0 && current.device.serialNumber != cp.serialNumber)
+                        continue;
+
+                    current.handleControlPacket(p);
+                    current.deviceConnected(JDDevice.mk(cp.address, cp.flags, cp.serialNumber, cp.driverClass));
+                    return DAL.DEVICE_OK;
+                }
+            }
+
+            return DAL.DEVICE_OK;
+        }
+
+        deviceRemoved() {
+            board().bus.queue(this.id, DAL.JD_DRIVER_EVT_DISCONNECTED);
+            return DAL.DEVICE_OK;
+        }
+
+        deviceConnected(device: pxsim.jacdac.JDDevice) {
+            board().bus.queue(this.id, DAL.JD_DRIVER_EVT_CONNECTED);
+            return DAL.DEVICE_OK;
+        }
 
         addToFilter(address: number): number {
             this.address_filters[address] = true;
@@ -203,16 +367,13 @@ namespace pxsim.jacdac {
     }
 }
 namespace pxsim {
-    export class JacDacDriverStatus {
-        device: pxsim.jacdac.JDDevice;
-        id: number;
+    export class JacDacDriverStatus extends jacdac.JDDriver {
         constructor(
             driverType: number,
             deviceClass: number,
             public methods: ((p: pxsim.RefBuffer) => boolean)[],
             public controlData: pxsim.RefBuffer) {
-            this.id = pxsim.control.allocateNotifyEvent();
-            this.device = pxsim.jacdac.JDDevice.mk(0, driverType, 0, deviceClass);
+            super(pxsim.jacdac.JDDevice.mk(0, driverType, 0, deviceClass))
         }
     }
 }

@@ -7,13 +7,11 @@ namespace pxsim {
     }
 
     export class JacDacState {
-        drivers: JacDacDriverStatus[];
-        logic: jacdac.JDLogicDriver;
+        drivers: jacdac.JDDriver[];
         running = false;
 
         constructor(board: BaseBoard) {
-            this.drivers = [new JacDacDriverStatus(0, 0, undefined, undefined)]
-            this.drivers[0].dev.driverAddress = 0; // logic driver is always at address 0
+            this.drivers = [new jacdac.JDLogicDriver()]
             board.addMessageListener(this.processMessage.bind(this));
         }
 
@@ -42,9 +40,11 @@ namespace pxsim {
         }
 
         processMessage(msg: pxsim.SimulatorMessage) {
+            if (!this.running) return;
+            
             if (msg && msg.type == "jacdac") {
                 const jdmsg = msg as pxsim.SimulatorJacDacMessage;
-                // TODO
+                this.drivers[0].handleLogicPacket(new jacdac.JDPacket(jdmsg.packet));
             }
         }   
     }
