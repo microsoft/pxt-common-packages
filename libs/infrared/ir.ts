@@ -33,7 +33,7 @@ namespace network {
     export function infraredSendNumbers(values: number[]) {
         let buf = msgpack.packNumberArray(values);
         if (buf.length % 2) {
-            const buf2 = pins.createBuffer(buf.length + 1);
+            const buf2 = control.createBuffer(buf.length + 1);
             buf2.write(0, buf);
             buf2[buf2.length - 1] = 0xc1;
             buf = buf2;
