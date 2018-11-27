@@ -49,7 +49,7 @@ namespace pixel {
         let green = unpackG(color);
         let blue = unpackB(color);
 
-        const buffer: Buffer = pins.createBuffer(3);
+        const buffer: Buffer = control.createBuffer(3);
         buffer[0] = green;
         buffer[1] = red;
         buffer[2] = blue;

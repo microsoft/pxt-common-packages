@@ -7,62 +7,19 @@ enum JacDacDriverEvent {
     PairingResponse = DAL.JD_DRIVER_EVT_PAIRING_RESPONSE
 }
 
-class JacDacDriver {
-    public name: string;
-    public status: JacDacDriverStatus;
-    public driverType: jacdac.DriverType;
-    public deviceClass: number;
-    protected supressLog: boolean;
-
-    constructor(name: string, driverType: jacdac.DriverType, deviceClass: number, suppressLog: boolean = false) {
-        this.name = name;
-        this.driverType = driverType;
-        this.deviceClass = deviceClass || jacdac.programHash();
-        this.supressLog = suppressLog;
-    }
-
-    get isConnected(): boolean {
-        return this.status && this.status.isConnected;
-    }
-
-    protected get device(): jacdac.JDDevice {
-        return new jacdac.JDDevice(this.status.device);
-    }
-
-    public log(text: string) {
-        if (!this.supressLog)
-            console.add(jacdac.consolePriority, `jd>${this.name}>${text}`);
-    }
-
-    /**
-     * Registers code to run a on a particular event
-     * @param event 
-     * @param handler 
-     */
-    public onDriverEvent(event: JacDacDriverEvent, handler: () => void) {
-        control.onEvent(this.status.id, event, handler);
-    }
-
-    /**
-     * Called by the logic driver when a data packet is addressed to this driver
-     * Return false when the packet wasn't handled here.
-     */
-    public handlePacket(pkt: Buffer): boolean {
-        return false
-    }
-
-    protected sendPacket(pkt: Buffer) {
-        // this.log(`send pkt ${this.device.driverAddress}`)
-        jacdac.sendPacket(pkt, this.device.driverAddress);
-    }
-}
-
 /**
  * JACDAC protocol support
  */
 namespace jacdac {
+    export type MethodCollection = ((p:Buffer) => boolean)[];
     // TODO allocate ID in DAL
     export const LOGGER_DRIVER_CLASS = 4220;
+    // TODO allocate ID in DAL
+    export const BATTERY_DRIVER_CLASS = 4221;
+    // move to codal
+    export const JD_MESSAGE_BUS_ID = 2500;
+    export const JD_DRIVER_EVT_FILL_CONTROL_PACKET = 50;
+
 
     // common logging level for jacdac services
     export let consolePriority = ConsolePriority.Silent;
@@ -78,10 +35,93 @@ namespace jacdac {
         SnifferDriver = DAL.JD_DEVICE_FLAGS_REMOTE | DAL.JD_DEVICE_FLAGS_BROADCAST, // the driver is not enumerated, and receives all packets of the same class (including control packets)
     };
 
+    export class Driver {
+        public name: string;
+        protected _proxy: JacDacDriverStatus;
+        public driverType: jacdac.DriverType;
+        public deviceClass: number;
+        protected supressLog: boolean;
+        private _controlData: Buffer;
+
+        constructor(name: string, driverType: jacdac.DriverType, deviceClass: number, controlDataLength = 0) {
+            this.name = name;
+            this.driverType = driverType;
+            this.deviceClass = deviceClass || jacdac.programHash();
+            this._controlData = control.createBuffer(Math.max(0, controlDataLength));
+        }
+
+        get id(): number {
+            return this._proxy.id;
+        }
+
+        hasProxy(): boolean {
+            return !!this._proxy;
+        }
+
+        setProxy(value: JacDacDriverStatus) {
+            this._proxy = value;
+            if (this._controlData.length)
+                control.onEvent(this._proxy.id, JD_DRIVER_EVT_FILL_CONTROL_PACKET, () => this.updateControlPacket());
+        }
+
+        /**
+         * Update the controlData buffer
+         */
+        protected updateControlPacket() {            
+        }
+
+        get controlData(): Buffer {
+            return this._controlData;
+        }
+
+        get isConnected(): boolean {
+            return this._proxy && this._proxy.isConnected;
+        }
+
+        protected get device(): jacdac.JDDevice {
+            return new jacdac.JDDevice(this._proxy.device);
+        }
+
+        public log(text: string) {
+            if (!this.supressLog)
+                console.add(jacdac.consolePriority, `jd>${this.name}>${text}`);
+        }
+
+        /**
+         * Registers code to run a on a particular event
+         * @param event 
+         * @param handler 
+         */
+        public onDriverEvent(event: JacDacDriverEvent, handler: () => void) {
+            control.onEvent(this._proxy.id, event, handler);
+        }
+
+        /**
+         * Called by the logic driver when a data packet is addressed to this driver
+         * Return false when the packet wasn't handled here.
+         */
+        public handlePacket(pkt: Buffer): boolean {
+            return false
+        }
+
+        /**
+         * Called by the logic driver when a control packet is received
+         * @param pkt 
+         */
+        public handleControlPacket(pkt: Buffer): boolean {
+            return false;
+        }
+
+        protected sendPacket(pkt: Buffer) {
+            // this.log(`send pkt ${this.device.driverAddress}`)
+            jacdac.sendPacket(pkt, this.device.driverAddress);
+        }
+    }
+
     /**
      * base class for pairable drivers
     */
-    export class PairableDriver extends JacDacDriver {
+    export class PairableDriver extends Driver {
         constructor(name: string, isHost: boolean, deviceClass: number) {
             super(name, isHost ? DriverType.PairableHostDriver : DriverType.PairedDriver, deviceClass);
         }
@@ -98,7 +138,7 @@ namespace jacdac {
                 this.log("not conn")
                 return true;
             }
-            if (!this.status.isPairedInstanceAddress(packet.address)) {
+            if (!this._proxy.isPairedInstanceAddress(packet.address)) {
                 this.log('invalid paired address')
                 return true;
             }
@@ -128,25 +168,23 @@ namespace jacdac {
     //% shim=pxt::programHash
     export function programHash(): number { return 0 }
 
-    //% shim=jacdac::__internalAddDriver
-    function __internalAddDriver(driverType: number, deviceClass: number, methods: ((p: Buffer) => void)[]): JacDacDriverStatus {
-        return null
-    }
-
     /**
      * Adds a JacDac device driver
      * @param n driver
      */
-    export function addDriver(n: JacDacDriver) {
-        if (n.status) { // don't add twice
+    export function addDriver(n: Driver) {
+        if (n.hasProxy()) { // don't add twice
             n.log(`already added`);
             return;
         }
 
         n.log(`add t${n.driverType} c${n.deviceClass}`)
-        n.status = __internalAddDriver(n.driverType, n.deviceClass, [
-            (p: Buffer) => n.handlePacket(p)
-        ]);
+        const proxy = __internalAddDriver(n.driverType, n.deviceClass, 
+            [(p: Buffer) => n.handlePacket(p),
+             (p: Buffer) => n.handleControlPacket(p)],
+            n.controlData
+        );
+        n.setProxy(proxy);
     }
 
     /**
@@ -250,7 +288,7 @@ namespace jacdac {
         get driverClass(): number {
             return this.buf.getNumber(NumberFormat.UInt32LE, 8);
         }
-        
+
         /**
          * Used to determine what mode the driver is currently in.
          *
@@ -258,8 +296,7 @@ namespace jacdac {
          *
          * @returns true if in VirtualDriver mode.
          **/
-        get isVirtualDriver(): boolean
-        {
+        get isVirtualDriver(): boolean {
             return !!(this.flags & DAL.JD_DEVICE_FLAGS_REMOTE) && !(this.flags & DAL.JD_DEVICE_FLAGS_BROADCAST);
         }
 
@@ -270,8 +307,7 @@ namespace jacdac {
          *
          * @returns true if in PairedDriver mode.
          **/
-        get isPairedDriver(): boolean
-        {
+        get isPairedDriver(): boolean {
             return !!(this.flags & DAL.JD_DEVICE_FLAGS_BROADCAST) && !!(this.flags & DAL.JD_DEVICE_FLAGS_PAIR);
         }
 
@@ -282,8 +318,7 @@ namespace jacdac {
          *
          * @returns true if in SnifferDriver mode.
          **/
-        get isHostDriver(): boolean
-        {
+        get isHostDriver(): boolean {
             return !!(this.flags & DAL.JD_DEVICE_FLAGS_LOCAL) && !(this.flags & DAL.JD_DEVICE_FLAGS_BROADCAST);
         }
 
@@ -294,8 +329,7 @@ namespace jacdac {
          *
          * @returns true if in BroadcastDriver mode.
          **/
-        get isBroadcastDriver(): boolean
-        {
+        get isBroadcastDriver(): boolean {
             return !!(this.flags & DAL.JD_DEVICE_FLAGS_LOCAL) && !!(this.flags & DAL.JD_DEVICE_FLAGS_BROADCAST);
         }
 
@@ -306,8 +340,7 @@ namespace jacdac {
          *
          * @returns true if in SnifferDriver mode.
          **/
-        get isSnifferDriver(): boolean
-        {
+        get isSnifferDriver(): boolean {
             return !!(this.flags & DAL.JD_DEVICE_FLAGS_REMOTE) && !!(this.flags & DAL.JD_DEVICE_FLAGS_BROADCAST);
         }
 
@@ -316,8 +349,7 @@ namespace jacdac {
          *
          * @returns true if paired
          **/
-        get isPaired(): boolean
-        {
+        get isPaired(): boolean {
             return !!(this.flags & DAL.JD_DEVICE_FLAGS_PAIRED);
         }
 
@@ -326,8 +358,7 @@ namespace jacdac {
          *
          * @returns true if pairable
          **/
-        get isPairable(): boolean
-        {
+        get isPairable(): boolean {
             return !!(this.flags & DAL.JD_DEVICE_FLAGS_PAIRABLE);
         }
 
@@ -336,8 +367,7 @@ namespace jacdac {
          *
          * @returns true if pairing
          **/
-        get isPairing(): boolean
-        {
+        get isPairing(): boolean {
             return !!(this.flags & DAL.JD_DEVICE_FLAGS_PAIRING);
         }
     }

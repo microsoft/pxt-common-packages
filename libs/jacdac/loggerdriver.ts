@@ -9,11 +9,11 @@ namespace jacdac {
             _logBroadcastDriver = new LoggerBroadcastDriver();
     }
 
-    class LoggerBroadcastDriver extends JacDacDriver {
+    class LoggerBroadcastDriver extends Driver {
         public suppressForwading: boolean;
         constructor() {
-            super("log", DriverType.VirtualDriver, jacdac.LOGGER_DRIVER_CLASS, true); // TODO pickup type from DAL
-            // send to other devices
+            super("log", DriverType.VirtualDriver, jacdac.LOGGER_DRIVER_CLASS);
+            this.supressLog = true;
             this.suppressForwading = false;
             jacdac.addDriver(this);
             console.addListener((priority, text) => this.broadcastLog(priority, text));
@@ -51,7 +51,7 @@ namespace jacdac {
             _logListenerDriver = new LoggerListenDriver();
     }
 
-    class LoggerListenDriver extends JacDacDriver {
+    class LoggerListenDriver extends Driver {
         constructor() {
             super("log", DriverType.HostDriver, jacdac.LOGGER_DRIVER_CLASS); // TODO pickup type from DAL
             jacdac.addDriver(this);

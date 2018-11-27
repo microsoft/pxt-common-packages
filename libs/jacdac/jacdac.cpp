@@ -2,6 +2,8 @@
 #include "JDProtocol.h"
 #include "JackRouter.h"
 
+#define JD_DRIVER_EVT_FILL_CONTROL_PACKET 50
+
 namespace jacdac {
 
 #ifndef CODAL_JACDAC_WIRE_SERIAL
@@ -42,7 +44,11 @@ class WProtocol {
     codal::JackRouter *jr;
     WProtocol()
         : sws(*LOOKUP_PIN(JACK_TX))
+#if CONFIG_ENABLED(CODAL_JACDAC_NOPIN_CTOR)
+        , jd(sws)
+#else
         , jd(*LOOKUP_PIN(JACK_TX), sws)
+#endif       
         , protocol(jd) {
         if (LOOKUP_PIN(JACK_HPEN)) {
             jr = new codal::JackRouter(*LOOKUP_PIN(JACK_TX), *LOOKUP_PIN(JACK_SENSE),
@@ -95,14 +101,41 @@ void stop() {
         p->jd.stop();
 }
 
+/**
+* Clears any existing bridge
+*/
+//%
+void clearBridge() {
+    // TODO
+  //  auto p = getWProtocol();
+//    p->protocol.setBridge(NULL);
+}
+
 class JDProxyDriver : public JDDriver {
   public:
     RefCollection *methods;
+    Buffer _controlData; // may be NULL
 
-    JDProxyDriver(JDDevice d, RefCollection *m) : JDDriver(d) {
-        this->methods = m;
-        incrRC(m);
-        registerGCPtr((TValue)m);
+    JDProxyDriver(JDDevice d, RefCollection *m, Buffer controlData) 
+        : JDDriver(d)
+        , methods(m)
+        , _controlData(controlData) {
+        incrRC(this->methods);
+        registerGCPtr((TValue)this->methods);
+        if (this->_controlData) {
+            incrRC(this->_controlData);
+            registerGCPtr((TValue)this->_controlData);
+        }
+    }
+
+    virtual int fillControlPacket(JDPkt* p) {
+        if (NULL != _controlData && _controlData->length) {
+            ControlPacket* cp = (ControlPacket*)p->data;
+            auto n = min(CONTROL_PACKET_PAYLOAD_SIZE, this->_controlData->length);
+            memcpy(cp->data, this->_controlData->data, n);
+            Event(this->id, JD_DRIVER_EVT_FILL_CONTROL_PACKET);
+        }
+        return DEVICE_OK;
     }
 
     virtual int handleControlPacket(JDPkt *p) {
@@ -116,7 +149,13 @@ class JDProxyDriver : public JDDriver {
                 sendPairingPacket(JDDevice(cp->address, JD_DEVICE_FLAGS_REMOTE | JD_DEVICE_FLAGS_INITIALISED | JD_DEVICE_FLAGS_CP_SEEN, cp->serial_number, cp->driver_class));
             }
         }
-        return DEVICE_OK;
+
+        auto buf = pxt::mkBuffer((const uint8_t *)cp, sizeof(ControlPacket));
+        auto r = pxt::runAction1(methods->getAt(1), (TValue)buf);
+        auto retVal = numops::toBool(r) ? DEVICE_OK : DEVICE_CANCELLED;
+        decr(r);
+        decrRC(buf);
+        return retVal;
     }
 
     virtual int handlePacket(JDPkt *p) {
@@ -137,13 +176,22 @@ class JDProxyDriver : public JDDriver {
     ~JDProxyDriver() {
         decrRC(methods);
         unregisterGCPtr((TValue)methods);
+        if (_controlData) {
+            decrRC(_controlData);
+            unregisterGCPtr((TValue)_controlData);
+        }
     }
 };
 
+typedef JDProxyDriver* JacDacDriverStatus;
+typedef RefCollection* MethodCollection;
+/**
+Internal
+*/
 //%
-JDProxyDriver *__internalAddDriver(int driverType, int driverClass, RefCollection *methods) {
+JacDacDriverStatus __internalAddDriver(int driverType, int driverClass, MethodCollection methods, Buffer controlData) {
     getWProtocol();
-    return new JDProxyDriver(JDDevice((DriverType)driverType, driverClass), methods);
+    return new JDProxyDriver(JDDevice((DriverType)driverType, driverClass), methods, controlData);
 }
 
 /**
@@ -183,6 +231,14 @@ uint32_t id(JacDacDriverStatus d) {
 //% property
 bool isPairedInstanceAddress(JacDacDriverStatus d, uint8_t address) {
     return d->isPairedInstanceAddress(address);
+}
+
+/**
+* Set driver as bridge
+*/
+//%
+void setBridge(JacDacDriverStatus d) {
+    jacdac::getWProtocol()->protocol.setBridge(*d);
 }
 
 } // namespace JacDacDriverStatusMethods

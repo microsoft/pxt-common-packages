@@ -4,11 +4,13 @@
     "files": [
         "jacdac.cpp",
         "jacdac.ts",
+        "bridgedriver.ts",
         "loggerdriver.ts",
         "debugger.ts",
         "messagebusdriver.ts",
         "pindriver.ts",
         "sensordriver.ts",
+        "batterydriver.ts",
         "ns.ts",
         "shims.d.ts"
     ],

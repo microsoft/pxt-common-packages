@@ -119,6 +119,12 @@ class Sprite implements SpriteLike {
         this._ay = Fx8(v)
     }
 
+    /** 
+     * Custom data
+     */
+    //%
+    data: any;
+
     _type: number;
 
     /**

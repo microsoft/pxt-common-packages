@@ -6,7 +6,7 @@
 #include "ZPin.h"
 #include "SAMDTimer.h"
 #include "ZSPI.h"
-//#include "ZI2C.h"
+#include "ZI2C.h"
 #include "ZSingleWireSerial.h"
 
 // cap touch not available on 51 yet
