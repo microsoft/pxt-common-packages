@@ -115,7 +115,7 @@ namespace pxsim.jacdac {
     export function __internalAddDriver(
         driverType: number,
         deviceClass: number,
-        methods: ((p: pxsim.RefBuffer) => boolean)[],
+        methods: RefCollection,
         controlData: pxsim.RefBuffer
     ): JDProxyDriver {
         const state = getJacDacState();
@@ -306,11 +306,11 @@ namespace pxsim.jacdac {
             // any additional information should be added here.... (note: cast pkt->data to control packet and fill out data)
             return DAL.DEVICE_OK;
         }
-        handleControlPacket(p: JDPacket) {
-            return DAL.DEVICE_OK;
+        handleControlPacketAsync(p: JDPacket): Promise<number> {
+            return Promise.resolve(DAL.DEVICE_OK);
         }
-        handlePacket(p: JDPacket): number {
-            return DAL.DEVICE_OK;
+        handlePacketAsync(p: JDPacket): Promise<number> {
+            return Promise.resolve(DAL.DEVICE_OK);
         }
         handleLogicPacket(p: JDPacket) {
             return DAL.DEVICE_OK;
@@ -462,13 +462,11 @@ namespace pxsim.jacdac {
                 }
             }
         }
-        handleControlPacket(p: JDPacket) {
-            return DAL.DEVICE_OK;
-        }
+
         /**
           * Given a control packet, finds the associated driver, or if no associated device, associates a remote device with a driver.
           **/
-        handlePacket(p: JDPacket): number {
+        handlePacketAsync(p: JDPacket): Promise<number> {
             const instance = getJacDacState().protocol;
             const cp = new ControlPacket(p.data);
             let handled = false; // indicates if the control packet has been handled by a driver.
@@ -497,13 +495,13 @@ namespace pxsim.jacdac {
                             current.device.flags &= ~(DAL.JD_DEVICE_FLAGS_INITIALISING | DAL.JD_DEVICE_FLAGS_INITIALISED);
                         }
 
-                        return DAL.DEVICE_OK;
+                        return Promise.resolve(DAL.DEVICE_OK);
                     }
                     // someone has flagged a conflict with this initialised device
                     else if (cp.flags & DAL.CONTROL_JD_FLAGS_CONFLICT) {
                         // new address will be assigned on next tick.
                         current.deviceRemoved();
-                        return DAL.DEVICE_OK;
+                        return Promise.resolve(DAL.DEVICE_OK);
                     }
 
                     // if we get here it means that:
@@ -556,14 +554,14 @@ namespace pxsim.jacdac {
             }
 
             if (handled || !safe) {
-                return DAL.DEVICE_OK;
+                return Promise.resolve(DAL.DEVICE_OK);
             }
 
             let filtered = this.filterPacket(cp.address);
 
             // if it's paired with a driver and it's not us, we can just ignore
             if (!filtered && cp.flags & DAL.CONTROL_JD_FLAGS_PAIRED)
-                return this.addToFilter(cp.address);
+                return Promise.resolve(this.addToFilter(cp.address));
 
             // if it was previously paired with another device, we remove the filter.
             else if (filtered && !(cp.flags & DAL.CONTROL_JD_FLAGS_PAIRED))
@@ -577,13 +575,15 @@ namespace pxsim.jacdac {
                     if (current.device.serialNumber > 0 && current.device.serialNumber != cp.serialNumber)
                         continue;
 
-                    current.handleControlPacket(p);
-                    current.deviceConnected(JDDevice.mk(cp.address, cp.flags, cp.serialNumber, cp.driverClass));
-                    return DAL.DEVICE_OK;
+                    return current.handleControlPacketAsync(p)
+                        .then(() => {
+                            current.deviceConnected(JDDevice.mk(cp.address, cp.flags, cp.serialNumber, cp.driverClass));
+                            return DAL.DEVICE_OK;
+                        });
                 }
             }
 
-            return DAL.DEVICE_OK;
+            return Promise.resolve(DAL.DEVICE_OK);
         }
 
         addToFilter(address: number): number {
@@ -648,19 +648,19 @@ namespace pxsim.jacdac {
                         if (flags & jacdac.DAL.JD_DEVICE_FLAGS_BROADCAST_MAP) {
                             driver_class = driver.device.driverClass;
                         }
-                        else driver.handlePacket(pkt);
+                        else driver.handlePacketAsync(pkt).done();
                         break; // only one address per device, lets break early
                     }
                 }
                 if (driver_class > 0)
                     for (let i = 0; i < this.drivers.length; i++) {
                         if ((this.drivers[i].device.flags & jacdac.DAL.JD_DEVICE_FLAGS_BROADCAST) && this.drivers[i].device.driverClass == driver_class) {
-                            this.drivers[i].handlePacket(pkt);
+                            this.drivers[i].handlePacketAsync(pkt).done();
                         }
                     }
             }
             if (this.bridge)
-                this.bridge.handlePacket(pkt);
+                this.bridge.handlePacketAsync(pkt).done();
         }
 
         sendPacket(pkt: JDPacket): number {
@@ -683,14 +683,14 @@ namespace pxsim.jacdac {
             id: number,
             driverType: number,
             deviceClass: number,
-            public methods: ((p: pxsim.RefBuffer) => boolean)[],
+            public methods: RefCollection, // of RefAction
             public controlData: pxsim.RefBuffer) {
             super(id, pxsim.jacdac.JDDevice.mk(0, driverType, 0, deviceClass))
         }
 
         fillControlPacket(p: jacdac.JDPacket): number {
             if (this.controlData && BufferMethods.length(this.controlData) > 0) {
-                const n = Math.min(jacdac.DAL.CONTROL_PACKET_PAYLOAD_SIZE, BufferMethods.length(this.controlData);
+                const n = Math.min(jacdac.DAL.CONTROL_PACKET_PAYLOAD_SIZE, BufferMethods.length(this.controlData));
                 for (let i = 0; i < n; ++i)
                     p.setNumber(BufferMethods.NumberFormat.UInt8LE, i, BufferMethods.getNumber(this.controlData, BufferMethods.NumberFormat.UInt8LE, i));
                 board().bus.queue(this.id, jacdac.DAL.JD_DRIVER_EVT_FILL_CONTROL_PACKET);
@@ -698,7 +698,7 @@ namespace pxsim.jacdac {
             return DAL.DEVICE_OK;
         }
 
-        handleControlPacket(p: JDPacket): number {
+        handleControlPacketAsync(p: JDPacket): Promise<number> {
             const cp = new ControlPacket(p.data);
             if (this.device.isPairedDriver() && !this.device.isPaired()) {
                 //DMESG("NEED TO PAIR!");
@@ -708,11 +708,16 @@ namespace pxsim.jacdac {
                     //sendPairingPacket(JDDevice(cp -> address, JD_DEVICE_FLAGS_REMOTE | JD_DEVICE_FLAGS_INITIALISED | JD_DEVICE_FLAGS_CP_SEEN, cp -> serial_number, cp -> driver_class));
                 }
             }
-            return DAL.DEVICE_OK;
+
+            const a = this.methods.getAt(1) as RefAction;
+            return runtime.runFiberAsync(a, p.buf)
+                .then(d => d as number);
         }
 
-        handlePacket(p: jacdac.JDPacket): number {
-            return DAL.DEVICE_OK;
+        handlePacketAsync(p: jacdac.JDPacket): Promise<number> {
+            const a = this.methods.getAt(0) as RefAction;
+            return runtime.runFiberAsync(a, p.buf)
+                .then(d => DAL.DEVICE_OK);
         }
     }
 }
