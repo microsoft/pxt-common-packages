@@ -2,6 +2,7 @@ namespace pxsim.jacdac {
     export enum DAL {
         DEVICE_OK = 0,
         DEVICE_COMPONENT_RUNNING = 4096,
+        DEVICE_COMPONENT_STATUS_SYSTEM_TICK = 8192,
         // built/codal/libraries/codal-core/inc/JACDAC/JACDAC.h
         JD_SERIAL_MAX_BUFFERS = 10,
         JD_SERIAL_RECEIVING = 2,
