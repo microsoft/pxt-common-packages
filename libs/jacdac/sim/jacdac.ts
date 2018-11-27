@@ -4,6 +4,7 @@ namespace pxsim.jacdac {
         DEVICE_COMPONENT_RUNNING = 4096,
         DEVICE_COMPONENT_STATUS_SYSTEM_TICK = 8192,
         DEVICE_ID_JD_DYNAMIC_ID = 3000,
+        DEVICE_NO_RESOURCES = -1005,
         // built/codal/libraries/codal-core/inc/JACDAC/JACDAC.h
         JD_SERIAL_MAX_BUFFERS = 10,
         JD_SERIAL_RECEIVING = 2,
@@ -118,7 +119,7 @@ namespace pxsim.jacdac {
         const state = getJacDacState();
         const d = new pxsim.JacDacDriverStatus(state ? state.protocol.nextId : DAL.DEVICE_ID_JD_DYNAMIC_ID, driverType, deviceClass, methods, controlData);
         if (state)
-            state.protocol.addDriver(d);
+            state.protocol.add(d);
         return d;
     }
 
@@ -539,7 +540,7 @@ namespace pxsim.jacdac {
                         // only add a broadcast device if it is not already represented in the driver array.
                         if (!exists) {
                             const dev = JDDevice.mk(cp.address, cp.flags | DAL.JD_DEVICE_FLAGS_BROADCAST_MAP | DAL.JD_DEVICE_FLAGS_INITIALISED, cp.serialNumber, cp.driverClass);
-                            instance.addDriver(new JDDriver(instance.nextId, dev));
+                            instance.add(new JDDriver(instance.nextId, dev));
                         }
                     }
 
@@ -612,8 +613,23 @@ namespace pxsim.jacdac {
             this.drivers = [this.logic = new jacdac.JDLogicDriver(this.nextId)]
         }
 
-        addDriver(d: jacdac.JDDriver) {
+        add(d: jacdac.JDDriver) {
+            // check for duplicates first
+            for (let i = 0; i < this.drivers.length; i++)
+                if (this.drivers[i] == d)
+                    return DAL.DEVICE_OK;
+        
+            if (this.drivers.length == DAL.JD_PROTOCOL_DRIVER_ARRAY_SIZE)
+                return DAL.DEVICE_NO_RESOURCES;
             this.drivers.push(d);
+            return DAL.DEVICE_OK;
+        }
+
+        remove(d: jacdac.JDDriver) {
+            const i = this.drivers.indexOf(d);
+            if (i > -1)
+                this.drivers.splice(i, 1);
+            return DAL.DEVICE_OK;
         }
 
         onPacketReceived(pkt: jacdac.JDPacket) {
@@ -647,7 +663,7 @@ namespace pxsim.jacdac {
             Runtime.postMessage(<SimulatorJacDacMessage>{
                 type: "jacdac",
                 broadcast: true,
-                packet: BufferMethods.getBytes(pkt.data.data)
+                packet: BufferMethods.getBytes(pkt.buf)
             })
             return 0;
         }
