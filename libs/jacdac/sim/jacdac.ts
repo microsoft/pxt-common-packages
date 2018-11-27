@@ -3,6 +3,7 @@ namespace pxsim.jacdac {
         DEVICE_OK = 0,
         DEVICE_COMPONENT_RUNNING = 4096,
         DEVICE_COMPONENT_STATUS_SYSTEM_TICK = 8192,
+        DEVICE_ID_JD_DYNAMIC_ID = 3000,
         // built/codal/libraries/codal-core/inc/JACDAC/JACDAC.h
         JD_SERIAL_MAX_BUFFERS = 10,
         JD_SERIAL_RECEIVING = 2,
@@ -109,7 +110,7 @@ namespace pxsim.jacdac {
         controlData: pxsim.RefBuffer
     ): pxsim.JacDacDriverStatus {
         const state = getJacDacState();
-        const d = new pxsim.JacDacDriverStatus(driverType, deviceClass, methods, controlData);
+        const d = new pxsim.JacDacDriverStatus(state ? state.nextId : DAL.DEVICE_ID_JD_DYNAMIC_ID, driverType, deviceClass, methods, controlData);
         if (state)
             state.addDriver(d);
         return d;
@@ -248,11 +249,11 @@ namespace pxsim.jacdac {
     }
 
     export class JDDriver {
-        device: JDDevice;
         id: number;
-        constructor(device: JDDevice) {
+        device: JDDevice;
+        constructor(id: number, device: JDDevice) {
             this.device = device;
-            this.id = pxsim.control.allocateNotifyEvent();
+            this.id = id;
         }
         pair(): void {
             const state = getJacDacState();
@@ -301,8 +302,8 @@ namespace pxsim.jacdac {
     export class JDLogicDriver extends JDDriver {
         status: number;
         address_filters: Map<boolean>;
-        constructor() {
-            super(JDDevice.mk(0, DAL.JD_DEVICE_FLAGS_LOCAL | DAL.JD_DEVICE_FLAGS_INITIALISED, 0, 0));
+        constructor(id: number) {
+            super(id, JDDevice.mk(0, DAL.JD_DEVICE_FLAGS_LOCAL | DAL.JD_DEVICE_FLAGS_INITIALISED, 0, 0));
             this.device.address = 0;
             this.status = 0;
             this.address_filters = {};
@@ -471,11 +472,12 @@ namespace pxsim.jacdac {
 namespace pxsim {
     export class JacDacDriverStatus extends jacdac.JDDriver {
         constructor(
+            id: number,
             driverType: number,
             deviceClass: number,
             public methods: ((p: pxsim.RefBuffer) => boolean)[],
             public controlData: pxsim.RefBuffer) {
-            super(pxsim.jacdac.JDDevice.mk(0, driverType, 0, deviceClass))
+            super(id, pxsim.jacdac.JDDevice.mk(0, driverType, 0, deviceClass))
         }
     }
 }

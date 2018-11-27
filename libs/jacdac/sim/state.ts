@@ -10,9 +10,13 @@ namespace pxsim {
         drivers: jacdac.JDDriver[];
         running = false;
         bridge: jacdac.JDDriver;
+        _nextId = jacdac.DAL.DEVICE_ID_JD_DYNAMIC_ID;
+        get nextId(): number {
+            return ++this._nextId;
+        }
 
         constructor(board: BaseBoard) {
-            this.drivers = [new jacdac.JDLogicDriver()]
+            this.drivers = [new jacdac.JDLogicDriver(this.nextId)]
             board.addMessageListener(msg => this.processMessage(msg));
         }
 
