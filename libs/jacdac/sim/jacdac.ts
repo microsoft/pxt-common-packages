@@ -6,6 +6,7 @@ namespace pxsim.jacdac {
         DEVICE_ID_JD_DYNAMIC_ID = 3000,
         DEVICE_NO_RESOURCES = -1005,
         // built/codal/libraries/codal-core/inc/JACDAC/JACDAC.h
+        CONTROL_PACKET_PAYLOAD_SIZE = 4,
         JD_SERIAL_MAX_BUFFERS = 10,
         JD_SERIAL_RECEIVING = 2,
         JD_SERIAL_TRANSMITTING = 4,
@@ -41,6 +42,7 @@ namespace pxsim.jacdac {
         // built/codal/libraries/codal-core/inc/JACDAC/JDProtocol.h
         JD_DRIVER_EVT_CONNECTED = 1,
         JD_DRIVER_EVT_DISCONNECTED = 2,
+        JD_DRIVER_EVT_FILL_CONTROL_PACKET = 3,
         JD_DRIVER_EVT_PAIRED = 3,
         JD_DRIVER_EVT_UNPAIRED = 4,
         JD_DRIVER_EVT_PAIR_REJECTED = 5,
@@ -115,11 +117,13 @@ namespace pxsim.jacdac {
         deviceClass: number,
         methods: ((p: pxsim.RefBuffer) => boolean)[],
         controlData: pxsim.RefBuffer
-    ): pxsim.JacDacDriverStatus {
+    ): JDProxyDriver {
         const state = getJacDacState();
-        const d = new pxsim.JacDacDriverStatus(state ? state.protocol.nextId : DAL.DEVICE_ID_JD_DYNAMIC_ID, driverType, deviceClass, methods, controlData);
-        if (state)
+        const d = new JDProxyDriver(state ? state.protocol.nextId : DAL.DEVICE_ID_JD_DYNAMIC_ID, driverType, deviceClass, methods, controlData);
+        if (state) {
             state.protocol.add(d);
+            state.start();
+        }
         return d;
     }
 
@@ -618,7 +622,7 @@ namespace pxsim.jacdac {
             for (let i = 0; i < this.drivers.length; i++)
                 if (this.drivers[i] == d)
                     return DAL.DEVICE_OK;
-        
+
             if (this.drivers.length == DAL.JD_PROTOCOL_DRIVER_ARRAY_SIZE)
                 return DAL.DEVICE_NO_RESOURCES;
             this.drivers.push(d);
@@ -673,9 +677,8 @@ namespace pxsim.jacdac {
             return this.sendPacket(pkt);
         }
     }
-}
-namespace pxsim {
-    export class JacDacDriverStatus extends jacdac.JDDriver {
+
+    export class JDProxyDriver extends jacdac.JDDriver {
         constructor(
             id: number,
             driverType: number,
@@ -684,24 +687,51 @@ namespace pxsim {
             public controlData: pxsim.RefBuffer) {
             super(id, pxsim.jacdac.JDDevice.mk(0, driverType, 0, deviceClass))
         }
+
+        fillControlPacket(p: jacdac.JDPacket): number {
+            if (this.controlData && BufferMethods.length(this.controlData) > 0) {
+                const n = Math.min(jacdac.DAL.CONTROL_PACKET_PAYLOAD_SIZE, BufferMethods.length(this.controlData);
+                for (let i = 0; i < n; ++i)
+                    p.setNumber(BufferMethods.NumberFormat.UInt8LE, i, BufferMethods.getNumber(this.controlData, BufferMethods.NumberFormat.UInt8LE, i));
+                board().bus.queue(this.id, jacdac.DAL.JD_DRIVER_EVT_FILL_CONTROL_PACKET);
+            }
+            return DAL.DEVICE_OK;
+        }
+
+        handleControlPacket(p: JDPacket): number {
+            const cp = new ControlPacket(p.data);
+            if (this.device.isPairedDriver() && !this.device.isPaired()) {
+                //DMESG("NEED TO PAIR!");
+                if (cp.flags & DAL.CONTROL_JD_FLAGS_PAIRABLE) {
+                    //DMESG("PAIR!");
+                    console.error("todo pairing")
+                    //sendPairingPacket(JDDevice(cp -> address, JD_DEVICE_FLAGS_REMOTE | JD_DEVICE_FLAGS_INITIALISED | JD_DEVICE_FLAGS_CP_SEEN, cp -> serial_number, cp -> driver_class));
+                }
+            }
+            return DAL.DEVICE_OK;
+        }
+
+        handlePacket(p: jacdac.JDPacket): number {
+            return DAL.DEVICE_OK;
+        }
     }
 }
 namespace pxsim.JacDacDriverStatusMethods {
-    export function isPairedInstanceAddress(proxy: JacDacDriverStatus, address: number): number {
+    export function isPairedInstanceAddress(proxy: jacdac.JDProxyDriver, address: number): number {
         return 0;
     }
-    export function setBridge(proxy: JacDacDriverStatus): void {
+    export function setBridge(proxy: jacdac.JDProxyDriver): void {
         const state = pxsim.getJacDacState();
         if (state)
             state.protocol.bridge = proxy;
     }
-    export function id(proxy: JacDacDriverStatus): number {
+    export function id(proxy: jacdac.JDProxyDriver): number {
         return proxy.id;
     }
-    export function device(proxy: JacDacDriverStatus): pxsim.RefBuffer {
+    export function device(proxy: jacdac.JDProxyDriver): pxsim.RefBuffer {
         return proxy.device.buf;
     }
-    export function isConnected(proxy: JacDacDriverStatus): boolean {
+    export function isConnected(proxy: jacdac.JDProxyDriver): boolean {
         return proxy.isConnected();
     }
 }
