@@ -96,10 +96,16 @@ namespace pxsim.jacdac {
         state.stop();
     }
 
-    export function __internalSendPacket(packet: pxsim.RefBuffer, address: number): number {
+    export function clearBridge() {
         const state = getJacDacState();
         if (state)
-            state.sendPacket(packet, address);
+            state.protocol.bridge = undefined;
+    }
+
+    export function __internalSendPacket(data: pxsim.RefBuffer, address: number): number {
+        const state = getJacDacState();
+        if (state)
+            state.protocol.sendBuffer(data, address);
         return 0;
     }
 
@@ -110,9 +116,9 @@ namespace pxsim.jacdac {
         controlData: pxsim.RefBuffer
     ): pxsim.JacDacDriverStatus {
         const state = getJacDacState();
-        const d = new pxsim.JacDacDriverStatus(state ? state.nextId : DAL.DEVICE_ID_JD_DYNAMIC_ID, driverType, deviceClass, methods, controlData);
+        const d = new pxsim.JacDacDriverStatus(state ? state.protocol.nextId : DAL.DEVICE_ID_JD_DYNAMIC_ID, driverType, deviceClass, methods, controlData);
         if (state)
-            state.addDriver(d);
+            state.protocol.addDriver(d);
         return d;
     }
 
@@ -190,11 +196,13 @@ namespace pxsim.jacdac {
         constructor(buf: RefBuffer) {
             this.buf = buf;
         }
-        static mk(address: number, data: RefBuffer): JDPacket {
-            const buf = pxsim.BufferMethods.createBuffer(4 + BufferMethods.length(data));
+        static mk(data: RefBuffer, address: number): JDPacket {
+            const size = BufferMethods.length(data);
+            const buf = pxsim.BufferMethods.createBuffer(4 + size);
             const r = new JDPacket(buf);
             r.address = address;
             r.data = data;
+            r.size = size;
             return r;
         }
         get crc(): number {
@@ -209,14 +217,17 @@ namespace pxsim.jacdac {
         get size(): number {
             return BufferMethods.getNumber(this.buf, BufferMethods.NumberFormat.UInt8LE, 3);
         }
+        set size(value: number) {
+            BufferMethods.setNumber(this.buf, BufferMethods.NumberFormat.UInt8LE, 3, value);
+        }
         get data(): RefBuffer {
             return BufferMethods.slice(this.buf, 4, this.buf.data.length - 4);
         }
         set data(value: RefBuffer) {
             const n = BufferMethods.length(value);
-            for(let i = 0; i < n; ++i)
+            for (let i = 0; i < n; ++i)
                 this.setNumber(BufferMethods.NumberFormat.UInt8BE, i, BufferMethods.getNumber(value, BufferMethods.NumberFormat.UInt8LE, i));
-        }        
+        }
         getNumber(format: BufferMethods.NumberFormat, offset: number) {
             return BufferMethods.getNumber(this.buf, format, offset + 4);
         }
@@ -231,7 +242,7 @@ namespace pxsim.jacdac {
         constructor(buf: RefBuffer) {
             if (!buf) {
                 buf = pxsim.BufferMethods.createBuffer(12);
-                for(let i = 0; i < buf.data.length; ++i)
+                for (let i = 0; i < buf.data.length; ++i)
                     buf.data[i] = Math_.randomRange(0, 255);
             }
             this.buf = buf;
@@ -285,12 +296,11 @@ namespace pxsim.jacdac {
         isConnected(): boolean {
             return (this.device.flags & DAL.JD_DEVICE_FLAGS_INITIALISED) ? true : false;
         }
-        fillControlPacket(pkt: JDPacket): number
-        {
+        fillControlPacket(pkt: JDPacket): number {
             // by default, the logic driver will fill in the required information.
             // any additional information should be added here.... (note: cast pkt->data to control packet and fill out data)
             return DAL.DEVICE_OK;
-        }        
+        }
         handleControlPacket(p: JDPacket) {
             return DAL.DEVICE_OK;
         }
@@ -359,10 +369,11 @@ namespace pxsim.jacdac {
             const state = getJacDacState();
             if (!state || !state.running) return;
 
+            const instance = state.protocol;
             // for each driver we maintain a rolling counter, used to trigger various timer related events.
             // uint8_t might not be big enough in the future if the scheduler runs faster...
-            for (let i = 0; i < state.drivers.length; ++i) {
-                const current = state.drivers[i];
+            for (let i = 0; i < instance.drivers.length; ++i) {
+                const current = instance.drivers[i];
                 // ignore ourself
                 if (!current || current == this)
                     continue;
@@ -397,12 +408,12 @@ namespace pxsim.jacdac {
                             let stillAllocated = false;
                             current.device.address = Math_.randomRange(0, 255);
 
-                            for (let j = 0; j < state.drivers.length; j++) {
+                            for (let j = 0; j < instance.drivers.length; j++) {
                                 if (i == j)
                                     continue;
 
-                                if (state.drivers[j] && state.drivers[j].device.flags & DAL.JD_DEVICE_FLAGS_INITIALISED) {
-                                    if (state.drivers[j].device.address == current.device.address) {
+                                if (instance.drivers[j] && instance.drivers[j].device.flags & DAL.JD_DEVICE_FLAGS_INITIALISED) {
+                                    if (instance.drivers[j].device.address == current.device.address) {
                                         stillAllocated = true;
                                         break;
                                     }
@@ -422,9 +433,9 @@ namespace pxsim.jacdac {
                         cp.flags = 0;
                         // flag our address as uncertain (i.e. not committed / finalised)
                         cp.flags |= DAL.CONTROL_JD_FLAGS_UNCERTAIN;
-                        const pkt = JDPacket.mk(0, cp.buf);
+                        const pkt = JDPacket.mk(cp.buf, 0);
                         current.device.flags |= DAL.JD_DEVICE_FLAGS_INITIALISING;
-                        state.sendPacket(pkt.buf, 0);
+                        state.protocol.sendPacket(pkt);
                     }
                     else if (current.device.flags & DAL.JD_DEVICE_FLAGS_INITIALISING) {
                         // if no one has complained in a second, consider our address allocated
@@ -438,9 +449,9 @@ namespace pxsim.jacdac {
                         if (current.device.rollingCounter > 0 && (current.device.rollingCounter % DAL.JD_LOGIC_DRIVER_CTRLPACKET_TIME) == 0) {
                             const cp = new ControlPacket(undefined)
                             this.populateControlPacket(current, cp);
-                            const pkt = JDPacket.mk(0, cp.buf);
+                            const pkt = JDPacket.mk(cp.buf, 0);
                             current.fillControlPacket(pkt);
-                            state.sendPacket(pkt.buf, 0);
+                            state.protocol.sendPacket(pkt);
                         }
                     }
                 }
@@ -453,11 +464,11 @@ namespace pxsim.jacdac {
           * Given a control packet, finds the associated driver, or if no associated device, associates a remote device with a driver.
           **/
         handlePacket(p: JDPacket): number {
+            const instance = getJacDacState().protocol;
             const cp = new ControlPacket(p.data);
             let handled = false; // indicates if the control packet has been handled by a driver.
             let safe = (cp.flags & (DAL.CONTROL_JD_FLAGS_UNCERTAIN | DAL.CONTROL_JD_FLAGS_PAIRING_MODE)) == 0; // the packet it is safe
 
-            const instance = getJacDacState()
             for (let i = 0; i < instance.drivers.length; i++) {
                 const current = instance.drivers[i];
 
@@ -472,7 +483,7 @@ namespace pxsim.jacdac {
                         // see 2. above.
                         if ((current.device.flags & DAL.JD_DEVICE_FLAGS_INITIALISED) && (cp.flags & DAL.CONTROL_JD_FLAGS_UNCERTAIN)) {
                             cp.flags |= DAL.CONTROL_JD_FLAGS_CONFLICT;
-                            instance.sendPacket(cp.buf, 0);
+                            instance.sendBuffer(cp.buf, 0);
                         }
                         // the other device is initialised and has transmitted the CP first, we lose.
                         else {
@@ -587,6 +598,65 @@ namespace pxsim.jacdac {
             return false;
         }
     }
+
+    export class JDProtocol {
+        drivers: jacdac.JDDriver[];
+        logic: jacdac.JDLogicDriver;
+        bridge: jacdac.JDDriver;
+        _nextId = jacdac.DAL.DEVICE_ID_JD_DYNAMIC_ID;
+        get nextId(): number {
+            return ++this._nextId;
+        }
+
+        constructor() {
+            this.drivers = [this.logic = new jacdac.JDLogicDriver(this.nextId)]
+        }
+
+        addDriver(d: jacdac.JDDriver) {
+            this.drivers.push(d);
+        }
+
+        onPacketReceived(pkt: jacdac.JDPacket) {
+            if (!this.logic.filterPacket(pkt.address)) {
+                let driver_class = 0;
+                for (const driver of this.drivers) {
+                    if (!driver) continue;
+                    const flags = driver.device.flags;
+                    const address = driver.device.address;
+                    const initialized = flags & jacdac.DAL.JD_DEVICE_FLAGS_INITIALISED;
+                    if (initialized && address == pkt.address) {
+                        if (flags & jacdac.DAL.JD_DEVICE_FLAGS_BROADCAST_MAP) {
+                            driver_class = driver.device.driverClass;
+                        }
+                        else driver.handlePacket(pkt);
+                        break; // only one address per device, lets break early
+                    }
+                }
+                if (driver_class > 0)
+                    for (let i = 0; i < this.drivers.length; i++) {
+                        if ((this.drivers[i].device.flags & jacdac.DAL.JD_DEVICE_FLAGS_BROADCAST) && this.drivers[i].device.driverClass == driver_class) {
+                            this.drivers[i].handlePacket(pkt);
+                        }
+                    }
+            }
+            if (this.bridge)
+                this.bridge.handlePacket(pkt);
+        }
+
+        sendPacket(pkt: JDPacket): number {
+            Runtime.postMessage(<SimulatorJacDacMessage>{
+                type: "jacdac",
+                broadcast: true,
+                packet: BufferMethods.getBytes(pkt.data.data)
+            })
+            return 0;
+        }
+
+        sendBuffer(data: pxsim.RefBuffer, address: number): number {
+            const pkt = JDPacket.mk(data, address);
+            return this.sendPacket(pkt);
+        }
+    }
 }
 namespace pxsim {
     export class JacDacDriverStatus extends jacdac.JDDriver {
@@ -607,7 +677,7 @@ namespace pxsim.JacDacDriverStatusMethods {
     export function setBridge(proxy: JacDacDriverStatus): void {
         const state = pxsim.getJacDacState();
         if (state)
-            state.bridge = proxy;
+            state.protocol.bridge = proxy;
     }
     export function id(proxy: JacDacDriverStatus): number {
         return proxy.id;
