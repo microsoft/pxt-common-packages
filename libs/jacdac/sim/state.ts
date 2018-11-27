@@ -61,8 +61,8 @@ namespace pxsim {
                 for (let i = 0; i < this.drivers.length; i++) {
                     if (this.drivers[i]) {
                         // could be optimised into a single if, but useful for debugging.
-                        if ((this.drivers[i].device.flags & DAL.JD_DEVICE_FLAGS_INITIALISED) && this.drivers[i].device.address == pkt.address) {
-                            if (this.drivers[i].device.flags & DAL.JD_DEVICE_FLAGS_BROADCAST_MAP) {
+                        if ((this.drivers[i].device.flags & jacdac.DAL.JD_DEVICE_FLAGS_INITIALISED) && this.drivers[i].device.address == pkt.address) {
+                            if (this.drivers[i].device.flags & jacdac.DAL.JD_DEVICE_FLAGS_BROADCAST_MAP) {
                                 driver_class = this.drivers[i].device.driverClass;
                             }
                             else {
@@ -78,7 +78,7 @@ namespace pxsim {
                 // if we've matched a broadcast map, it means we need to map a broadcast packet to any driver of the same class
                 if (driver_class > 0)
                     for (let i = 0; i < this.drivers.length; i++) {
-                        if ((this.drivers[i].device.flags & DAL.JD_DEVICE_FLAGS_BROADCAST) && this.drivers[i].device.driverClass == driver_class) {
+                        if ((this.drivers[i].device.flags & jacdac.DAL.JD_DEVICE_FLAGS_BROADCAST) && this.drivers[i].device.driverClass == driver_class) {
                             this.drivers[i].handlePacket(pkt);
                         }
                     }
