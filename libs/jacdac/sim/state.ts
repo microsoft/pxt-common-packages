@@ -1,5 +1,5 @@
 namespace pxsim {
-    export interface SimulatorJacDacMessage extends pxsim.SimulatorBroadcastMessage {
+    export interface SimulatorJacDacMessage extends SimulatorBroadcastMessage {
         type: "jacdac";
         broadcast: true;
         address: number;
@@ -45,7 +45,11 @@ namespace pxsim {
 
             if (msg && msg.type == "jacdac") {
                 const jdmsg = msg as pxsim.SimulatorJacDacMessage;
-                this.drivers[0].handleLogicPacket(new jacdac.JDPacket(jdmsg.packet));
+                const buf = pxsim.BufferMethods.createBuffer(jdmsg.packet.length);
+                for(let i = 0 ; i < buf.data.length; ++i)
+                    buf.data[i] = jdmsg.packet[i];
+                const pkt = new jacdac.JDPacket(buf);
+                this.drivers[0].handleLogicPacket(pkt);
             }
         }
 

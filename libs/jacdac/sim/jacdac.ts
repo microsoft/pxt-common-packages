@@ -1,4 +1,86 @@
 namespace pxsim.jacdac {
+    export enum DAL {
+        DEVICE_OK = 0,
+        DEVICE_COMPONENT_RUNNING = 4096,
+        // built/codal/libraries/codal-core/inc/JACDAC/JACDAC.h
+        JD_SERIAL_MAX_BUFFERS = 10,
+        JD_SERIAL_RECEIVING = 2,
+        JD_SERIAL_TRANSMITTING = 4,
+        JD_SERIAL_TX_DRAIN_ENABLE = 8,
+        JD_SERIAL_EVT_DATA_READY = 1,
+        JD_SERIAL_EVT_BUS_ERROR = 2,
+        JD_SERIAL_EVT_DRAIN = 3,
+        JD_SERIAL_HEADER_SIZE = 4,
+        JD_SERIAL_DATA_SIZE = 32,
+        JD_SERIAL_PACKET_SIZE = 36,
+        JD_SERIAL_MAXIMUM_BUFFERS = 10,
+        JD_SERIAL_DMA_TIMEOUT = 2,
+        JD_JD_FLAGS_LOSSY = 1,
+        // built/codal/libraries/codal-core/inc/JACDAC/JDBridgeDriver.h
+        JD_BRIDGE_HISTORY_SIZE = 8,
+        // built/codal/libraries/codal-core/inc/JACDAC/JDClasses.h
+        JD_DRIVER_CLASS_CONTROL = 0,
+        JD_DRIVER_CLASS_ARCADE = 1,
+        JD_DRIVER_CLASS_JOYSTICK = 2,
+        JD_DRIVER_CLASS_MESSAGE_BUS = 3,
+        JD_DRIVER_CLASS_RADIO = 4,
+        JD_DRIVER_CLASS_BRIDGE = 5,
+        JD_DRIVER_CLASS_BUTTON = 6,
+        JD_DRIVER_CLASS_PIN = 7,
+        JD_DRIVER_CLASS_RELIABILITY_TESTER = 8,
+        // built/codal/libraries/codal-core/inc/JACDAC/JDMessageBusDriver.h
+        JD_MESSAGEBUS_TYPE_EVENT = 1,
+        JD_MESSAGEBUS_TYPE_LISTEN = 2,
+        // built/codal/libraries/codal-core/inc/JACDAC/JDPinDriver.h
+        SetDigital = 0,
+        SetAnalog = 1,
+        SetServo = 2,
+        // built/codal/libraries/codal-core/inc/JACDAC/JDProtocol.h
+        JD_DRIVER_EVT_CONNECTED = 1,
+        JD_DRIVER_EVT_DISCONNECTED = 2,
+        JD_DRIVER_EVT_PAIRED = 3,
+        JD_DRIVER_EVT_UNPAIRED = 4,
+        JD_DRIVER_EVT_PAIR_REJECTED = 5,
+        JD_DRIVER_EVT_PAIRING_RESPONSE = 6,
+        JD_DEVICE_FLAGS_LOCAL = 32768,
+        JD_DEVICE_FLAGS_REMOTE = 16384,
+        JD_DEVICE_FLAGS_BROADCAST = 8192,
+        JD_DEVICE_FLAGS_PAIR = 4096,
+        JD_DEVICE_DRIVER_MODE_MSK = 61440,
+        JD_DEVICE_FLAGS_PAIRABLE = 2048,
+        JD_DEVICE_FLAGS_PAIRED = 1024,
+        JD_DEVICE_FLAGS_PAIRING = 512,
+        JD_DEVICE_FLAGS_INITIALISED = 128,
+        JD_DEVICE_FLAGS_INITIALISING = 64,
+        JD_DEVICE_FLAGS_CP_SEEN = 32,
+        JD_DEVICE_FLAGS_BROADCAST_MAP = 16,
+        JD_LOGIC_DRIVER_MAX_FILTERS = 20,
+        JD_LOGIC_DRIVER_TIMEOUT = 254,
+        JD_LOGIC_ADDRESS_ALLOC_TIME = 254,
+        JD_LOGIC_DRIVER_CTRLPACKET_TIME = 112,
+        CONTROL_JD_FLAGS_RESERVED = 32768,
+        CONTROL_JD_FLAGS_PAIRING_MODE = 16384,
+        CONTROL_JD_FLAGS_PAIRABLE = 8192,
+        CONTROL_JD_FLAGS_PAIRED = 4096,
+        CONTROL_JD_FLAGS_CONFLICT = 2048,
+        CONTROL_JD_FLAGS_UNCERTAIN = 1024,
+        CONTROL_JD_FLAGS_NACK = 512,
+        CONTROL_JD_FLAGS_ACK = 256,
+        CONTROL_JD_TYPE_HELLO = 1,
+        CONTROL_JD_TYPE_PAIRING_REQUEST = 2,
+        JD_PROTOCOL_EVT_SEND_CONTROL = 1,
+        JD_PROTOCOL_DRIVER_ARRAY_SIZE = 20,
+        VirtualDriver = 16384,
+        PairedDriver = 12288,
+        HostDriver = 32768,
+        PairableHostDriver = 34816,
+        BroadcastDriver = 40960,
+        SnifferDriver = 24576,
+        // built/codal/libraries/codal-core/inc/JACDAC/JDRadioDriver.h
+        JD_RADIO_HISTORY_SIZE = 4,
+        JD_RADIO_MAXIMUM_BUFFERS = 10,
+        JD_RADIO_HEADER_SIZE = 4,
+    }
 
     export function start() {
         const state = getJacDacState();
@@ -171,13 +253,12 @@ namespace pxsim.jacdac {
             this.device = device;
             this.id = pxsim.control.allocateNotifyEvent();
         }
-        pair(): void
-        {
+        pair(): void {
             const state = getJacDacState();
             if (!state) return;
 
             // TODO
-        }        
+        }
         isConnected(): boolean {
             return (this.device.flags & DAL.JD_DEVICE_FLAGS_INITIALISED) ? true : false;
         }
@@ -190,28 +271,26 @@ namespace pxsim.jacdac {
         handleLogicPacket(p: JDPacket) {
             return DAL.DEVICE_OK;
         }
-        deviceConnected(device: JDDevice ): number
-        {
+        deviceConnected(device: JDDevice): number {
             this.device.address = device.address;
             this.device.serialNumber = device.serialNumber;
             this.device.flags |= DAL.JD_DEVICE_FLAGS_INITIALISED | DAL.JD_DEVICE_FLAGS_CP_SEEN;
-        
+
             // if we are connecting and in pairing mode, we should invoke pair, the second stage of sendPairingPacket().
             if (this.device.isPairing())
                 this.pair();
-        
+
             board().bus.queue(this.id, DAL.JD_DRIVER_EVT_CONNECTED);
             return DAL.DEVICE_OK;
         }
-        
-        deviceRemoved(): number
-        {
+
+        deviceRemoved(): number {
             this.device.flags &= ~(DAL.JD_DEVICE_FLAGS_INITIALISED);
             this.device.rollingCounter = 0;
             board().bus.queue(this.id, DAL.JD_DRIVER_EVT_DISCONNECTED);
             return DAL.DEVICE_OK
-        }        
-        
+        }
+
         sendPairingPacket(d: JDDevice): number {
             return DAL.DEVICE_OK;
         }
