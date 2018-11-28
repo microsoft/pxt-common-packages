@@ -1,28 +1,50 @@
 namespace pxsim {
-    export class JacDacState {
-        drivers: JacDacDriverStatus[];
-        running = false;
+    export interface SimulatorJacDacMessage extends SimulatorBroadcastMessage {
+        type: "jacdac";
+        broadcast: true;
+        packet: Uint8Array;
+    }
 
-        constructor() {
-            this.drivers = [new JacDacDriverStatus(0, 0, undefined, undefined)]
-            this.drivers[0].dev.driverAddress = 0; // logic driver is always at address 0
+    export class JacDacState {
+        board: BaseBoard;
+        protocol: jacdac.JDProtocol;
+        running = false;
+        runtimeId: string;
+
+        constructor(board: BaseBoard) {
+            this.board = board;
+            this.protocol = new jacdac.JDProtocol();
+            board.addMessageListener(msg => this.processMessage(msg));
         }
 
         start() {
+            if (this.running) return;
+
             this.running = true;
+            this.runtimeId = runtime.id;
+            const cb = () => {
+                if (!this.running || this.runtimeId != runtime.id) return;
+                this.protocol.logic.periodicCallback();
+                setTimeout(cb, 50);
+            };
+            cb();
         }
 
         stop() {
-            this.running = false;
+            this.running = false;            
         }
 
-        addDriver(d: JacDacDriverStatus) {
-            this.drivers.push(d);
-            this.start();
-        }
+        processMessage(msg: pxsim.SimulatorMessage) {
+            if (!this.running) return;
 
-        sendPacket(packet: pxsim.RefBuffer, address: number): number {
-            return 0;
+            if (msg && msg.type == "jacdac") {
+                const jdmsg = msg as pxsim.SimulatorJacDacMessage;
+                const buf = pxsim.BufferMethods.createBuffer(jdmsg.packet.length);
+                for (let i = 0; i < buf.data.length; ++i)
+                    buf.data[i] = jdmsg.packet[i];
+                const pkt = new jacdac.JDPacket(buf);
+                this.protocol.onPacketReceived(pkt);
+            }
         }
     }
 
@@ -32,5 +54,4 @@ namespace pxsim {
     export function getJacDacState() {
         return (board() as JacDacBoard).jacdacState;
     }
-
 }

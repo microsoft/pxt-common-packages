@@ -14,6 +14,18 @@ declare namespace jacdac {
     function stop(): void;
 
     /**
+     * Clears any existing bridge
+     */
+    //% shim=jacdac::clearBridge
+    function clearBridge(): void;
+
+    /**
+    Internal
+     */
+    //% shim=jacdac::__internalAddDriver
+    function __internalAddDriver(driverType: int32, driverClass: int32, methods: MethodCollection, controlData: Buffer): JacDacDriverStatus;
+
+    /**
      * Internal
      */
     //% shim=jacdac::__internalSendPacket
