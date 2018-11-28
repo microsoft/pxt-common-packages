@@ -69,6 +69,10 @@
 #define CFG_PIN_JACK_PWREN 64
 #define CFG_PIN_JACK_SND 65
 
+#define CFG_PIN_BTNMX_LATCH 66
+#define CFG_PIN_BTNMX_CLOCK 67
+#define CFG_PIN_BTNMX_DATA 68
+
 #define CFG_PIN_A0 100
 #define CFG_PIN_A1 101
 #define CFG_PIN_A2 102

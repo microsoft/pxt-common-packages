@@ -39,6 +39,8 @@ typedef int PinName;
 #define PXT_BOOTLOADER_CFG_ADDR (0x4000 - 4*4)
 #define PXT_BOOTLOADER_CFG_MAGIC 0xbe3fd5ce
 
+#define PXT_74HC165 1
+
 #define IMAGE_BITS 4
 
 // The parameters below needs tuning!
