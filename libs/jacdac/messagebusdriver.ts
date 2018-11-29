@@ -87,7 +87,7 @@ namespace jacdac {
      */
     //% blockid=jacdacraisevent
     //% block="raise event|from %src|with value %value" weight=5
-    //% group="Broadcast"
+    //% group="Control"
     export function raiseEvent(src: number, value: number) {
         messageBus().raiseEvent(src, value);
     }
