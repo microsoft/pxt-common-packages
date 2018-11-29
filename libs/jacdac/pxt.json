@@ -11,6 +11,7 @@
         "pindriver.ts",
         "sensordriver.ts",
         "batterydriver.ts",
+        "accelerometerdriver.ts",
         "ns.ts",
         "shims.d.ts"
     ],

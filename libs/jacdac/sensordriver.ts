@@ -1,11 +1,11 @@
 namespace jacdac {
-    export enum StreamingState {
-        Stopped,
-        Streaming,
-        Stopping
+    export enum SensorState {
+        Stopped = 0x01,
+        Streaming = 0x02,
+        Stopping = 0x04
     }
 
-    export enum StreamingCommand {
+    export enum SensorCommand {
         State,
         Event,
         StartStream,
@@ -25,21 +25,26 @@ namespace jacdac {
     /**
      * JacDac service running on sensor and streaming data out
      */
-    export class StreamingHostDriver extends Driver {
+    export class SensorHostDriver extends Driver {
         static MAX_SILENCE = 500;
         private stateSerializer: () => Buffer;
-        private streamingState: StreamingState;
+        private sensorState: SensorState;
         private _sendTime: number;
         private _sendState: Buffer;
         public streamingInterval: number; // millis
 
         constructor(name: string, stateSerializer: () => Buffer, deviceClass: number) {
-            super(name, DriverType.HostDriver, deviceClass);
+            super(name, DriverType.HostDriver, deviceClass, 1);
             this.stateSerializer = stateSerializer;
-            this.streamingState = StreamingState.Stopped;
+            this.sensorState = SensorState.Stopped;
             this._sendTime = 0;
             this.streamingInterval = 50;
             jacdac.addDriver(this);
+        }
+
+        public updateControlPacket() {
+            // send streaming state in control package
+            this.controlData.setNumber(NumberFormat.UInt8LE, 0, this.sensorState);
         }
 
         public handlePacket(pkt: Buffer): boolean {
@@ -47,13 +52,13 @@ namespace jacdac {
             const command = packet.getNumber(NumberFormat.UInt8LE, 0);
             this.log(`hpkt ${command}`);
             switch (command) {
-                case StreamingCommand.StartStream:
+                case SensorCommand.StartStream:
                     const interval = packet.getNumber(NumberFormat.UInt32LE, 1);
                     if (interval)
                         this.streamingInterval = Math.max(20, interval);
                     this.startStreaming();
                     return true;
-                case StreamingCommand.StopStream:
+                case SensorCommand.StopStream:
                     this.stopStreaming();
                     return true;
                 default:
@@ -69,31 +74,36 @@ namespace jacdac {
 
         protected raiseHostEvent(value: number) {
             const pkt = control.createBuffer(3);
-            pkt.setNumber(NumberFormat.UInt8LE, 0, StreamingCommand.Event);
+            pkt.setNumber(NumberFormat.UInt8LE, 0, SensorCommand.Event);
             pkt.setNumber(NumberFormat.UInt16LE, 1, value);
             this.sendPacket(pkt);
         }
 
-        public startStreaming() {
-            if (this.streamingState != StreamingState.Stopped)
+        public setStreaming(on: boolean) {
+            if (on) this.startStreaming();
+            else this.stopStreaming();
+        }
+
+        private startStreaming() {
+            if (this.sensorState != SensorState.Stopped)
                 return;
 
             this.log(`start`);
-            this.streamingState = StreamingState.Streaming;
+            this.sensorState = SensorState.Streaming;
             control.runInBackground(() => {
-                while (this.streamingState == StreamingState.Streaming) {
+                while (this.sensorState == SensorState.Streaming) {
                     // run callback                    
                     const state = this.stateSerializer();
                     if (!!state) {
                         // did the state change?
                         if (this.isConnected
                             && (!this._sendState
-                            || (control.millis() - this._sendTime > StreamingHostDriver.MAX_SILENCE)
-                            || !bufferEqual(state, this._sendState))) {
+                                || (control.millis() - this._sendTime > SensorHostDriver.MAX_SILENCE)
+                                || !bufferEqual(state, this._sendState))) {
 
                             // send state and record time
                             const pkt = control.createBuffer(state.length + 1);
-                            pkt.setNumber(NumberFormat.UInt8LE, 0, StreamingCommand.State);
+                            pkt.setNumber(NumberFormat.UInt8LE, 0, SensorCommand.State);
                             pkt.write(1, state);
                             this.sendPacket(pkt);
                             this._sendState = state;
@@ -106,20 +116,21 @@ namespace jacdac {
                     // waiting for a bit
                     pause(this.streamingInterval);
                 }
-                this.streamingState = StreamingState.Stopped;
+                this.sensorState = SensorState.Stopped;
                 this.log(`stopped`);
             })
         }
 
-        public stopStreaming() {
-            if (this.streamingState == StreamingState.Streaming) {
-                this.streamingState = StreamingState.Stopping;
-                pauseUntil(() => this.streamingState == StreamingState.Stopped);
+        private stopStreaming() {
+            if (this.sensorState == SensorState.Streaming) {
+                this.sensorState = SensorState.Stopping;
+                pauseUntil(() => this.sensorState == SensorState.Stopped);
             }
         }
     }
 
-    export class StreamingVirtualDriver extends Driver {
+    //% fixedInstances
+    export class SensorVirtualDriver extends Driver {
         // virtual mode only
         protected _localTime: number;
         protected _lastState: Buffer;
@@ -135,6 +146,18 @@ namespace jacdac {
             return this._lastState;
         }
 
+        /**
+         * Enables or disable streaming the sensor internal state
+         * @param on streaming enabled
+         */
+        //% blockid=jacdacsensorstreaming block="jacdac %sensor set streaming %on"
+        //% on.shadow=toggleOnOff weight=1
+        public setStreaming(on: boolean) {
+            const msg = control.createBuffer(1);
+            msg.setNumber(NumberFormat.UInt8LE, 0, on ? SensorCommand.StartStream : SensorCommand.StopStream);
+            this.sendPacket(msg);
+        }
+
         public onStateChanged(handler: () => void) {
             this._stateChangedHandler = handler;
         }
@@ -144,7 +167,7 @@ namespace jacdac {
             const command = packet.getNumber(NumberFormat.UInt8LE, 0);
             this.log(`vpkt ${command}`)
             switch (command) {
-                case StreamingCommand.State:
+                case SensorCommand.State:
                     const state = packet.data.slice(1);
                     const changed = !bufferEqual(this._lastState, state);
                     const r = this.handleVirtualState(state);
@@ -153,7 +176,7 @@ namespace jacdac {
                     if (changed && this._stateChangedHandler)
                         this._stateChangedHandler();
                     return r;
-                case StreamingCommand.Event:
+                case SensorCommand.Event:
                     const value = packet.data.getNumber(NumberFormat.UInt16LE, 1);
                     control.raiseEvent(this.id, value);
                     return true;
