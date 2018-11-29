@@ -1,0 +1,26 @@
+{
+   "jacdac": {
+       "numberOfPins": 2,
+       "visual": {
+           "image": "jack.svg",
+           "width": 90,
+           "height": 100,
+           "pinDistance": 15,
+           "pinLocations": [
+               {"x": 30, "y": 0},
+               {"x": 60, "y": 0}
+           ]
+       },
+       "pinDefinitions": [
+           {"target": "ground", "style": "male", "orientation": "-Z"},
+           {"target": "TX", "style": "male", "orientation": "-Z"}
+       ],
+       "instantiation": {
+           "kind": "singleton"
+       },
+       "assembly": [
+           {"part": true, "pinIndices": [0]},
+           {"pinIndices": [1]}
+       ]
+   }
+}
