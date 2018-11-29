@@ -75,6 +75,7 @@ namespace jacdac {
     //% blockHidden=1 shim=ENUM_GET
     //% blockId=jacdacMessageCode block="$msg" enumInitialMembers="message1"
     //% enumName=JacDacMessage enumMemberName=msg enumPromptHint="e.g. Start, Stop, Jump..."
+    //% group="Broadcast"
     export function __message(msg: number): number {
         return msg;
     }
@@ -86,6 +87,7 @@ namespace jacdac {
      */
     //% blockid=jacdacraisevent
     //% block="raise event|from %src|with value %value" weight=5
+    //% group="Broadcast"
     export function raiseEvent(src: number, value: number) {
         messageBus().raiseEvent(src, value);
     }
@@ -99,6 +101,7 @@ namespace jacdac {
     //% weight=200
     //% blockGap=8
     //% help=jacdac/send-message
+    //% group="Broadcast"
     export function sendMessage(msg: number): void {
         // 0 is MICROBIT_EVT_ANY, shifting by 1
         messageBus().raiseEvent(JD_MESSAGE_BUS_ID, msg + 1);
@@ -113,6 +116,7 @@ namespace jacdac {
     //% msg.shadow=jacdacMessageCode draggableParameters
     //% weight=199
     //% help=jacdac/on-received-message
+    //% group="Broadcast"
     export function onReceivedMessage(msg: number, handler: () => void) {
         messageBus(); // start message bus
         control.onEvent(JD_MESSAGE_BUS_ID, msg + 1, handler);

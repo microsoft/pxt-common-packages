@@ -107,7 +107,8 @@ namespace jacdac {
          * Reads a value of the sensor
          * @param dimension which channel to read
          */
-        //% blockId=jacdacaccget block="jacdac accelerometer %dimension"
+        //% blockId=jacdacaccget block="jacdac accelerometer %accelerometer %dimension"
+        //% group="Input" weight=5
         get(dimension: JacdacDimension): number {
             const s = this.state;
             if (!s) return 0;
@@ -132,6 +133,7 @@ namespace jacdac {
          * @param handler 
          */
         //% blockId=jacadacacconevent block="jacdac accelerometer %accelerometer on %gesture"
+        //% group="Input"
         onEvent(gesture: JacdacGesture, handler: () => void) {
             control.onEvent(this.id, gesture, handler);
         }
