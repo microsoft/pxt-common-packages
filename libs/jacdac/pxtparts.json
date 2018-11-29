@@ -23,12 +23,12 @@
         },
         "pinDefinitions": [
             {
-                "target": "TX",
+                "target": "threeVolt",
                 "style": "croc",
                 "orientation": "Y"
             },
             {
-                "target": "threeVolt",
+                "target": "TX",
                 "style": "croc",
                 "orientation": "Y"
             },
