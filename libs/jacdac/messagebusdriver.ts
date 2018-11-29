@@ -25,7 +25,7 @@ namespace jacdac {
          * @param value 
          */
         listenEvent(id: number, value: number) {
-            control.dmesg(`jd> msgbus> listen event ${id} ${value}`)        
+            //control.dmesg(`jd> msgbus> listen event ${id} ${value}`)        
             control.onEvent(id, value, () => {
                 if (this.suppressForwarding) return;
                 this.raiseEvent(id, value);
@@ -33,7 +33,7 @@ namespace jacdac {
         }
 
         public handlePacket(pkt: Buffer): boolean {
-            control.dmesg(`jd> msgbus> packet`)        
+            //control.dmesg(`jd> msgbus> packet`)        
             const packet = new JDPacket(pkt);
             const id = packet.getNumber(NumberFormat.UInt16LE, 0);
             const value = packet.getNumber(NumberFormat.UInt16LE, 2);
@@ -44,7 +44,7 @@ namespace jacdac {
         }
 
         public handleControlPacket(pkt: Buffer): boolean {
-            control.dmesg(`jd> msgbus> control packet`)        
+            //control.dmesg(`jd> msgbus> control packet`)        
             return true;
         }
     }
@@ -55,7 +55,7 @@ namespace jacdac {
      */
     export function messageBus(): MessageBusDriver {
         if (!_messageBus) {
-            control.dmesg("jd> starting message bus")
+            //control.dmesg("jd> starting message bus")
             _messageBus = new MessageBusDriver();
         }
         return _messageBus;
