@@ -11,18 +11,19 @@ enum JacDacDriverEvent {
  * JACDAC protocol support
  */
 namespace jacdac {
-    export type MethodCollection = ((p:Buffer) => boolean)[];
-    // TODO allocate ID in DAL
-    export const LOGGER_DRIVER_CLASS = 4220;
-    // TODO allocate ID in DAL
-    export const BATTERY_DRIVER_CLASS = 4221;
-    // move to codal
-    export const JD_MESSAGE_BUS_ID = 2500;
-    export const JD_DRIVER_EVT_FILL_CONTROL_PACKET = 50;
+    // drivers
+    export const JD_DRIVER_CLASS_MAKECODE_START = 2000;
+    export const LOGGER_DRIVER_CLASS = JD_DRIVER_CLASS_MAKECODE_START + 1;
+    export const BATTERY_DRIVER_CLASS = JD_DRIVER_CLASS_MAKECODE_START + 2;
+    // events
+    export const JD_MESSAGE_BUS_ID = JD_DRIVER_CLASS_MAKECODE_START;
+    export const JD_DRIVER_EVT_FILL_CONTROL_PACKET = JD_DRIVER_CLASS_MAKECODE_START + 1;
 
 
     // common logging level for jacdac services
     export let consolePriority = ConsolePriority.Silent;
+
+    export type MethodCollection = ((p:Buffer) => boolean)[];
 
     // This enumeration specifies that supported configurations that drivers should utilise.
     // Many combinations of flags are supported, but only the ones listed here have been fully implemented.
