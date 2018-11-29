@@ -192,7 +192,7 @@ namespace jacdac {
      * @param pkt jackdack data
      */
     export function sendPacket(pkt: Buffer, deviceAddress: number) {
-        control.dmesg(`jd> send ${pkt.length}b to ${deviceAddress}`)
+        // control.dmesg(`jd> send ${pkt.length}b to ${deviceAddress}`)
         __internalSendPacket(pkt, deviceAddress);
     }
 
