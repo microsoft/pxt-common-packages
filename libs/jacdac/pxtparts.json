@@ -1,26 +1,63 @@
 {
-   "jacdac": {
-       "numberOfPins": 2,
-       "visual": {
-           "image": "jack.svg",
-           "width": 90,
-           "height": 100,
-           "pinDistance": 15,
-           "pinLocations": [
-               {"x": 30, "y": 0},
-               {"x": 60, "y": 0}
-           ]
-       },
-       "pinDefinitions": [
-           {"target": "ground", "style": "male", "orientation": "-Z"},
-           {"target": "TX", "style": "male", "orientation": "-Z"}
-       ],
-       "instantiation": {
-           "kind": "singleton"
-       },
-       "assembly": [
-           {"part": true, "pinIndices": [0]},
-           {"pinIndices": [1]}
-       ]
-   }
+    "jacdac": {
+        "numberOfPins": 3,
+        "visual": {
+            "image": "jack.svg",
+            "width": 142,
+            "height": 180,
+            "pinDistance": 20,
+            "pinLocations": [
+                {
+                    "x": 17,
+                    "y": 11
+                },
+                {
+                    "x": 30,
+                    "y": 30
+                },
+                {
+                    "x": 55,
+                    "y": 50
+                }
+            ]
+        },
+        "pinDefinitions": [
+            {
+                "target": "TX",
+                "style": "croc",
+                "orientation": "Y"
+            },
+            {
+                "target": "threeVolt",
+                "style": "croc",
+                "orientation": "Y"
+            },
+            {
+                "target": "ground",
+                "style": "croc",
+                "orientation": "Y"
+            }
+        ],
+        "instantiation": {
+            "kind": "singleton"
+        },
+        "assembly": [
+            {
+                "part": true,
+                "pinIndices": [
+                    0
+                ]
+            },
+            {
+                "pinIndices": [
+                    1
+                ]
+            },
+            {
+                "pinIndices": [
+                    2
+                ]
+            }
+        ]
+    }
 }
