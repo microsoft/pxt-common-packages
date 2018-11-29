@@ -11,8 +11,11 @@
         "pindriver.ts",
         "sensordriver.ts",
         "batterydriver.ts",
+        "accelerometerdriver.ts",
         "ns.ts",
-        "shims.d.ts"
+        "shims.d.ts",
+        "pxtparts.json",
+        "jack.svg"
     ],
     "testFiles": [
         "test.ts"

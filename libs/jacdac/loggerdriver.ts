@@ -4,6 +4,7 @@ namespace jacdac {
      * Sends console messages over JacDac
      */
     //% blockId=jacdac_broadcast_console block="jacdac broadcast console"
+    //% group="Console"
     export function broadcastConsole() {
         if (!_logBroadcastDriver)
             _logBroadcastDriver = new LoggerBroadcastDriver();
@@ -46,6 +47,7 @@ namespace jacdac {
      * Listens for console messages from other devices
      */
     //% blockId=jacdac_listen_console block="jacdac listen console"
+    //% group="Console"
     export function listenConsole() {
         if (!_logListenerDriver)
             _logListenerDriver = new LoggerListenDriver();

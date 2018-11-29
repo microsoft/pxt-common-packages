@@ -80,7 +80,7 @@ void setJackRouterOutput(int output) {
 /**
  * Starts the JacDac protocol
  */
-//%
+//% parts=jacdac
 void start() {
     auto p = getWProtocol();
     if (!p->jd.isRunning())
@@ -90,7 +90,7 @@ void start() {
 /**
  * Starts the JacDac protocol
  */
-//%
+//% parts=jacdac
 void stop() {
     auto p = getWProtocol();
     if (p->jd.isRunning())
@@ -100,7 +100,7 @@ void stop() {
 /**
 * Clears any existing bridge
 */
-//%
+//% parts=jacdac
 void clearBridge() {
     // TODO
   //  auto p = getWProtocol();
@@ -184,7 +184,7 @@ typedef RefCollection* MethodCollection;
 /**
 Internal
 */
-//%
+//% parts=jacdac
 JacDacDriverStatus __internalAddDriver(int driverType, int driverClass, MethodCollection methods, Buffer controlData) {
     getWProtocol();
     return new JDProxyDriver(JDDevice((DriverType)driverType, driverClass), methods, controlData);
@@ -193,7 +193,7 @@ JacDacDriverStatus __internalAddDriver(int driverType, int driverClass, MethodCo
 /**
  * Internal
  */
-//%
+//% parts=jacdac
 int __internalSendPacket(Buffer buf, int deviceAddress) {
     getWProtocol();
     return JDProtocol::send(buf->data, buf->length, deviceAddress);
