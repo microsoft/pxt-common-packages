@@ -89,7 +89,7 @@ void popThreadContext(ThreadContext *ctx) {
 ThreadContext *pushThreadContext(void *sp) {
     if (PXT_IN_ISR())
         target_panic(PANIC_CALLED_FROM_ISR);
-    
+
     auto curr = getThreadContext();
     if (curr) {
 #ifdef PXT_GC_THREAD_LIST
@@ -141,8 +141,8 @@ struct GCBlock {
     RefObject data[0];
 };
 
-static Segment gcRoots;
-static Segment workQueue;
+Segment gcRoots;
+Segment workQueue;
 GCBlock *firstBlock;
 static RefBlock *firstFree;
 
@@ -196,9 +196,13 @@ void gcProcess(TValue v) {
     }
 }
 
-static void mark() {
+static void mark(int flags) {
     auto data = gcRoots.getData();
     auto len = gcRoots.getLength();
+    if (flags & 2) {
+        DMESG("--MARK");
+        DMESG("RP:%p/%d", data, len);
+    }
     for (unsigned i = 0; i < len; ++i) {
         auto d = data[i];
         if ((uint32_t)d & 1) {
@@ -219,12 +223,14 @@ static void mark() {
         }
     }
 #else
-    gcProcessStacks();
+    gcProcessStacks(flags);
 #endif
 
     auto nonPtrs = bytecode[21];
     len = getNumGlobals() - nonPtrs;
     data = globals + nonPtrs;
+    if (flags & 2)
+        DMESG("RG:%p/%d", data, len);
     VLOG("globals: %p %d", data, len);
     for (unsigned i = 0; i < len; ++i) {
         gcProcess(*data++);
@@ -258,7 +264,7 @@ __attribute__((noinline)) static void allocateBlock() {
     firstBlock = curr;
 }
 
-static void sweep(int verbose) {
+static void sweep(int flags) {
     RefBlock *freePtr = NULL;
     uint32_t freeSize = 0;
     uint32_t totalSize = 0;
@@ -302,23 +308,30 @@ static void sweep(int verbose) {
     freeSize <<= 2;
     totalSize <<= 2;
 
-    if (verbose)
+    if (flags & 1)
         DMESG("GC %d/%d free", freeSize, totalSize);
     else
         LOG("GC %d/%d free", freeSize, totalSize);
     firstFree = freePtr;
+
+    if (flags & 2) {
+        // wait for heap dump
+        while (1) {
+        }
+    }
+
     // if the heap is 90% full, allocate a new block
     if (freeSize * 10 <= totalSize) {
         allocateBlock();
     }
 }
 
-void gc(int verbose) {
+void gc(int flags) {
     startPerfCounter(PerfCounters::GC);
     VLOG("GC mark");
-    mark();
+    mark(flags);
     VLOG("GC sweep");
-    sweep(verbose);
+    sweep(flags);
     VLOG("GC done");
     stopPerfCounter(PerfCounters::GC);
 }
@@ -339,7 +352,7 @@ void *gcAllocate(int numbytes) {
 
 #ifdef PXT_GC_STRESS
     gc(0);
-#endif    
+#endif
 
     for (int i = 0;; ++i) {
         RefBlock *prev = NULL;

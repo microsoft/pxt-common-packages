@@ -744,7 +744,7 @@ void registerGC(TValue *root, int numwords = 1);
 void unregisterGC(TValue *root, int numwords = 1);
 void registerGCPtr(TValue ptr);
 void unregisterGCPtr(TValue ptr);
-void gc(int verbose);
+void gc(int flags);
 #else
 inline void registerGC(TValue *root, int numwords = 1) {}
 inline void unregisterGC(TValue *root, int numwords = 1) {}
@@ -778,7 +778,7 @@ ThreadContext *getThreadContext();
 void setThreadContext(ThreadContext *ctx);
 
 #ifndef PXT_GC_THREAD_LIST
-void gcProcessStacks();
+void gcProcessStacks(int flags);
 #endif
 
 void gcProcess(TValue v);
