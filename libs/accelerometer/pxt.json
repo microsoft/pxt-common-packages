@@ -17,6 +17,7 @@
     ],
     "public": true,
     "dependencies": {
-        "core": "file:../core"
+        "core": "file:../core",
+        "jacdac": "file:../jacdac"
     }
 }

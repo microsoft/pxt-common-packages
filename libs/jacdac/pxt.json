@@ -2,14 +2,14 @@
     "name": "jacdac",
     "description": "Plug and play single wire serial protocol - beta",
     "files": [
-        "bridgedriver.ts",
-        "loggerdriver.ts",
-        "messagebusdriver.ts",
-        "batterydriver.ts",
-        "accelerometerdriver.ts"
+        "jacdac.cpp",
+        "jacdac.ts",
+        "jacdac.svg",
+        "pxtparts.json",
+        "pxt.json",
+        "shims.d.ts"
     ],
     "testFiles": [
-        "test.ts"
     ],
     "public": true,
     "dependencies": {
