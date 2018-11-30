@@ -15,15 +15,24 @@ namespace jacdac {
     export const JD_DRIVER_CLASS_MAKECODE_START = 2000;
     export const LOGGER_DRIVER_CLASS = JD_DRIVER_CLASS_MAKECODE_START + 1;
     export const BATTERY_DRIVER_CLASS = JD_DRIVER_CLASS_MAKECODE_START + 2;
+    export const ACCELEROMETER_DRIVER_CLASS = JD_DRIVER_CLASS_MAKECODE_START + 3;
+    export const BUTTON_DRIVER_CLASS = JD_DRIVER_CLASS_MAKECODE_START + 4;
+    export const TOUCHBUTTON_DRIVER_CLASS = JD_DRIVER_CLASS_MAKECODE_START + 5;
     // events
     export const JD_MESSAGE_BUS_ID = JD_DRIVER_CLASS_MAKECODE_START;
     export const JD_DRIVER_EVT_FILL_CONTROL_PACKET = JD_DRIVER_CLASS_MAKECODE_START + 1;
 
+    export const BUTTON_EVENTS = [
+        DAL.DEVICE_BUTTON_EVT_CLICK,
+        DAL.DEVICE_BUTTON_EVT_DOWN,
+        DAL.DEVICE_BUTTON_EVT_UP,
+        DAL.DEVICE_BUTTON_EVT_LONG_CLICK
+    ];
 
     // common logging level for jacdac services
     export let consolePriority = ConsolePriority.Silent;
 
-    export type MethodCollection = ((p:Buffer) => boolean)[];
+    export type MethodCollection = ((p: Buffer) => boolean)[];
 
     // This enumeration specifies that supported configurations that drivers should utilise.
     // Many combinations of flags are supported, but only the ones listed here have been fully implemented.
@@ -68,7 +77,7 @@ namespace jacdac {
         /**
          * Update the controlData buffer
          */
-        protected updateControlPacket() {            
+        protected updateControlPacket() {
         }
 
         get controlData(): Buffer {
@@ -179,9 +188,9 @@ namespace jacdac {
         }
 
         n.log(`add t${n.driverType} c${n.deviceClass}`)
-        const proxy = __internalAddDriver(n.driverType, n.deviceClass, 
+        const proxy = __internalAddDriver(n.driverType, n.deviceClass,
             [(p: Buffer) => n.handlePacket(p),
-             (p: Buffer) => n.handleControlPacket(p)],
+            (p: Buffer) => n.handleControlPacket(p)],
             n.controlData
         );
         n.setProxy(proxy);
@@ -369,6 +378,147 @@ namespace jacdac {
          **/
         isPairing(): boolean {
             return !!(this.flags & DAL.JD_DEVICE_FLAGS_PAIRING);
+        }
+    }
+}
+
+namespace jacdac {
+    export enum SensorState {
+        Stopped = 0x01,
+        Stopping = 0x02,
+        Streaming = 0x04,
+    }
+
+    export enum SensorCommand {
+        State,
+        Event,
+        StartStream,
+        StopStream
+    }
+
+    export function bufferEqual(l: Buffer, r: Buffer): boolean {
+        if (!l || !r) return !!l == !!r;
+        if (l.length != r.length) return false;
+        for (let i = 0; i < l.length; ++i) {
+            if (l.getNumber(NumberFormat.UInt8LE, i) != r.getNumber(NumberFormat.UInt8LE, i))
+                return false;
+        }
+        return true;
+    }
+
+    /**
+     * JacDac service running on sensor and streaming data out
+     */
+    export class SensorHostDriver extends Driver {
+        static MAX_SILENCE = 500;
+        private sensorState: SensorState;
+        private _sendTime: number;
+        private _sendState: Buffer;
+        public streamingInterval: number; // millis
+
+        constructor(name: string, deviceClass: number, controlLength = 0) {
+            super(name, DriverType.HostDriver, deviceClass, 1 + controlLength);
+            this.sensorState = SensorState.Stopped;
+            this._sendTime = 0;
+            this.streamingInterval = 50;
+            jacdac.addDriver(this);
+        }
+
+        public updateControlPacket() {
+            // send streaming state in control package
+            this.controlData.setNumber(NumberFormat.UInt8LE, 0, this.sensorState);
+            const buf = this.sensorControlPacket();
+            if (buf)
+                this.controlData.write(1, buf);
+        }
+
+        protected sensorControlPacket(): Buffer {
+            return undefined;
+        }
+
+        public handlePacket(pkt: Buffer): boolean {
+            const packet = new JDPacket(pkt);
+            const command = packet.getNumber(NumberFormat.UInt8LE, 0);
+            this.log(`hpkt ${command}`);
+            switch (command) {
+                case SensorCommand.StartStream:
+                    const interval = packet.getNumber(NumberFormat.UInt32LE, 1);
+                    if (interval)
+                        this.streamingInterval = Math.max(20, interval);
+                    this.startStreaming();
+                    return true;
+                case SensorCommand.StopStream:
+                    this.stopStreaming();
+                    return true;
+                default:
+                    // let the user deal with it
+                    return this.handleCustomCommand(command, packet);
+            }
+        }
+
+        // override
+        protected serializeState(): Buffer {
+            return undefined;
+        }
+
+        protected handleCustomCommand(command: number, pkt: JDPacket) {
+            return true;
+        }
+
+        protected raiseHostEvent(value: number) {
+            const pkt = control.createBuffer(3);
+            pkt.setNumber(NumberFormat.UInt8LE, 0, SensorCommand.Event);
+            pkt.setNumber(NumberFormat.UInt16LE, 1, value);
+            this.sendPacket(pkt);
+        }
+
+        public setStreaming(on: boolean) {
+            if (on) this.startStreaming();
+            else this.stopStreaming();
+        }
+
+        private startStreaming() {
+            if (this.sensorState != SensorState.Stopped)
+                return;
+
+            this.log(`start`);
+            this.sensorState = SensorState.Streaming;
+            control.runInBackground(() => {
+                while (this.sensorState == SensorState.Streaming) {
+                    // run callback                    
+                    const state = this.serializeState();
+                    if (!!state) {
+                        // did the state change?
+                        if (this.isConnected
+                            && (!this._sendState
+                                || (control.millis() - this._sendTime > SensorHostDriver.MAX_SILENCE)
+                                || !jacdac.bufferEqual(state, this._sendState))) {
+
+                            // send state and record time
+                            const pkt = control.createBuffer(state.length + 1);
+                            pkt.setNumber(NumberFormat.UInt8LE, 0, SensorCommand.State);
+                            pkt.write(1, state);
+                            this.sendPacket(pkt);
+                            this._sendState = state;
+                            this._sendTime = control.millis();
+                        }
+                    }
+                    // check streaming interval value
+                    if (this.streamingInterval < 0)
+                        break;
+                    // waiting for a bit
+                    pause(this.streamingInterval);
+                }
+                this.sensorState = SensorState.Stopped;
+                this.log(`stopped`);
+            })
+        }
+
+        private stopStreaming() {
+            if (this.sensorState == SensorState.Streaming) {
+                this.sensorState = SensorState.Stopping;
+                pauseUntil(() => this.sensorState == SensorState.Stopped);
+            }
         }
     }
 }
