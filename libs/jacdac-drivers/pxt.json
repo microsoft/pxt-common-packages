@@ -1,0 +1,20 @@
+{
+    "name": "jacdac-drivers",
+    "description": "Virtual drivers for jacdac - beta",
+    "files": [
+        "sensordriver.ts",
+        "bridgedriver.ts",
+        "loggerdriver.ts",
+        "messagebusdriver.ts",
+        "batterydriver.ts",
+        "accelerometerdriver.ts"
+    ],
+    "testFiles": [
+        "test.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core",
+        "jacdac": "file:../jacdac"
+    }
+}

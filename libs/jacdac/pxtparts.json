@@ -2,7 +2,7 @@
     "jacdac": {
         "numberOfPins": 3,
         "visual": {
-            "image": "jack.svg",
+            "image": "jacdac.svg",
             "width": 142,
             "height": 180,
             "pinDistance": 20,
