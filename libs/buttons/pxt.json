@@ -4,6 +4,7 @@
     "files": [
         "README.md",
         "buttons.cpp",
+        "jacdac.ts",
         "shims.d.ts",
         "enums.d.ts"
     ],
@@ -12,6 +13,7 @@
     ],
     "public": true,
     "dependencies": {
-        "core": "file:../core"
+        "core": "file:../core",
+        "jacdac": "file:../jacdac"
     }
 }

@@ -71,7 +71,7 @@ namespace jacdac {
     //% fixedInstances
     export class AccelerometerVirtualDriver extends SensorVirtualDriver {
         constructor(name: string) {
-            super(name, DAL.JD_DRIVER_CLASS_ACCELEROMETER);
+            super(name, jacdac.ACCELEROMETER_DRIVER_CLASS);
         }
 
         /**
@@ -111,7 +111,7 @@ namespace jacdac {
         //% group="Input" weight=5
         get(dimension: JacdacDimension): number {
             const s = this.state;
-            if (!s) return 0;
+            if (!s || s.length < 6) return 0;
             switch (dimension) {
                 case JacdacDimension.X:
                 case JacdacDimension.Y:

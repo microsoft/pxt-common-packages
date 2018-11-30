@@ -16,15 +16,23 @@ namespace jacdac {
     export const LOGGER_DRIVER_CLASS = JD_DRIVER_CLASS_MAKECODE_START + 1;
     export const BATTERY_DRIVER_CLASS = JD_DRIVER_CLASS_MAKECODE_START + 2;
     export const ACCELEROMETER_DRIVER_CLASS = JD_DRIVER_CLASS_MAKECODE_START + 3;
+    export const BUTTON_DRIVER_CLASS = JD_DRIVER_CLASS_MAKECODE_START + 4;
+    export const TOUCHBUTTON_DRIVER_CLASS = JD_DRIVER_CLASS_MAKECODE_START + 5;
     // events
     export const JD_MESSAGE_BUS_ID = JD_DRIVER_CLASS_MAKECODE_START;
     export const JD_DRIVER_EVT_FILL_CONTROL_PACKET = JD_DRIVER_CLASS_MAKECODE_START + 1;
 
+    export const BUTTON_EVENTS = [
+        DAL.DEVICE_BUTTON_EVT_CLICK,
+        DAL.DEVICE_BUTTON_EVT_DOWN,
+        DAL.DEVICE_BUTTON_EVT_UP,
+        DAL.DEVICE_BUTTON_EVT_LONG_CLICK
+    ];
 
     // common logging level for jacdac services
     export let consolePriority = ConsolePriority.Silent;
 
-    export type MethodCollection = ((p:Buffer) => boolean)[];
+    export type MethodCollection = ((p: Buffer) => boolean)[];
 
     // This enumeration specifies that supported configurations that drivers should utilise.
     // Many combinations of flags are supported, but only the ones listed here have been fully implemented.
@@ -69,7 +77,7 @@ namespace jacdac {
         /**
          * Update the controlData buffer
          */
-        protected updateControlPacket() {            
+        protected updateControlPacket() {
         }
 
         get controlData(): Buffer {
@@ -180,9 +188,9 @@ namespace jacdac {
         }
 
         n.log(`add t${n.driverType} c${n.deviceClass}`)
-        const proxy = __internalAddDriver(n.driverType, n.deviceClass, 
+        const proxy = __internalAddDriver(n.driverType, n.deviceClass,
             [(p: Buffer) => n.handlePacket(p),
-             (p: Buffer) => n.handleControlPacket(p)],
+            (p: Buffer) => n.handleControlPacket(p)],
             n.controlData
         );
         n.setProxy(proxy);
@@ -408,8 +416,8 @@ namespace jacdac {
         private _sendState: Buffer;
         public streamingInterval: number; // millis
 
-        constructor(name: string, deviceClass: number) {
-            super(name, DriverType.HostDriver, deviceClass, 1);
+        constructor(name: string, deviceClass: number, controlLength = 0) {
+            super(name, DriverType.HostDriver, deviceClass, 1 + controlLength);
             this.sensorState = SensorState.Stopped;
             this._sendTime = 0;
             this.streamingInterval = 50;
@@ -419,6 +427,13 @@ namespace jacdac {
         public updateControlPacket() {
             // send streaming state in control package
             this.controlData.setNumber(NumberFormat.UInt8LE, 0, this.sensorState);
+            const buf = this.sensorControlPacket();
+            if (buf)
+                this.controlData.write(1, buf);
+        }
+
+        protected sensorControlPacket(): Buffer {
+            return undefined;
         }
 
         public handlePacket(pkt: Buffer): boolean {
