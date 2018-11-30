@@ -107,7 +107,9 @@ void clearBridge() {
 //    p->protocol.setBridge(NULL);
 }
 
-class JDProxyDriver : public JDDriver {
+#ifdef CODAL_JACDAC_WIRE_SERIAL
+class JDProxyDriver : public JDDriver 
+{
   public:
     RefCollection *methods;
     Buffer _controlData; // may be NULL
@@ -150,7 +152,7 @@ class JDProxyDriver : public JDDriver {
         auto r = pxt::runAction1(methods->getAt(1), (TValue)buf);
         auto retVal = numops::toBool(r) ? DEVICE_OK : DEVICE_CANCELLED;
         decr(r);
-        decrRC(buf);
+        decrRC(buf);        
         return retVal;
     }
 
@@ -179,6 +181,10 @@ class JDProxyDriver : public JDDriver {
     }
 };
 
+#else
+class JDProxyDriver {};
+#endif
+
 typedef JDProxyDriver* JacDacDriverStatus;
 typedef RefCollection* MethodCollection;
 /**
@@ -187,7 +193,11 @@ Internal
 //% parts=jacdac
 JacDacDriverStatus __internalAddDriver(int driverType, int driverClass, MethodCollection methods, Buffer controlData) {
     getWProtocol();
+#ifdef CODAL_JACDAC_WIRE_SERIAL
     return new JDProxyDriver(JDDevice((DriverType)driverType, driverClass), methods, controlData);
+#else
+    return new JDProxyDriver();
+#endif
 }
 
 /**
@@ -204,29 +214,45 @@ int __internalSendPacket(Buffer buf, int deviceAddress) {
 namespace JacDacDriverStatusMethods {
 
 /**
-* Returns the JDDevice instnace
+* Returns the JDDevice instance
 */
 //% property
 Buffer device(JacDacDriverStatus d) {
+#ifdef CODAL_JACDAC_WIRE_SERIAL
     return pxt::mkBuffer((const uint8_t *)d->getDevice(), sizeof(JDDevice));
+#else
+    return NULL;
+#endif
 }
 
 /** Check if driver is connected. */
 //% property
 bool isConnected(JacDacDriverStatus d) {
+#ifdef CODAL_JACDAC_WIRE_SERIAL
     return d->isConnected();
+#else
+    return false;
+#endif   
 }
 
 /** Get device id for events. */
 //% property
 uint32_t id(JacDacDriverStatus d) {
+#ifdef CODAL_JACDAC_WIRE_SERIAL
     return d->id;
+#else
+    return 999;
+#endif
 }
 
 /** If paired, paired instance address */
 //% property
 bool isPairedInstanceAddress(JacDacDriverStatus d, uint8_t address) {
+#ifdef CODAL_JACDAC_WIRE_SERIAL
     return d->isPairedInstanceAddress(address);
+#else
+    return false;
+#endif
 }
 
 /**
@@ -234,7 +260,9 @@ bool isPairedInstanceAddress(JacDacDriverStatus d, uint8_t address) {
 */
 //%
 void setBridge(JacDacDriverStatus d) {
+#ifdef CODAL_JACDAC_WIRE_SERIAL
     jacdac::getWProtocol()->setBridge(d);
+#endif    
 }
 
 } // namespace JacDacDriverStatusMethods
