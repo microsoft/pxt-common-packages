@@ -32,6 +32,9 @@
         "dmac.cpp",
         "dmac.h",
         "timer.ts",
+        "jacdac.ts",
+        "jacdac.cpp",
+        "jacdac.svg",
         "pxtparts.json"
     ],
     "testFiles": [
