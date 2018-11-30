@@ -87,6 +87,7 @@ class WJacDac {
         if (!JDProtocol::instance)
             return mkBuffer(NULL, 0);
 
+        target_disable_irq();
         // determine the number of drivers
         auto ds = JDProtocol::instance->drivers;
         int n = 0;
@@ -102,6 +103,7 @@ class WJacDac {
                 memcpy(buf->data + k, &ds[i]->device, sizeof(JDDevice));
                 k += sizeof(JDDevice);
             }
+        target_enable_irq();
         // we're done!
         return buf;
 #else
