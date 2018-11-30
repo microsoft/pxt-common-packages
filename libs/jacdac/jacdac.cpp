@@ -63,7 +63,7 @@ class WJacDac {
     }
 
     void setJackRouterOutput(int output) {
-    #ifdef CODAL_JACDAC_WIRE_SERIAL
+#ifdef CODAL_JACDAC_WIRE_SERIAL
         if (!jr)
             return;
         if (output < 0)
@@ -79,14 +79,19 @@ class WJacDac {
             jr->forceState(JackState::HeadPhones);
             break;
         }
-    #endif
+#endif
     }
 
     Buffer drivers() {
+#ifdef CODAL_JACDAC_WIRE_SERIAL
+        if (!JDProtocol::instance)
+            return mkBuffer(NULL, 0);
+
         // determine the number of drivers
+        auto ds = JDProtocol::instance->drivers;
         int n = 0;
         for(int i = 0; i < JD_PROTOCOL_DRIVER_ARRAY_SIZE; ++i)
-            if (NULL != JDProtocol::drivers[i])
+            if (NULL != ds[i])
                 n++;
         // allocate n * sizeof(JDDevice)
         auto buf = mkBuffer(NULL, n * sizeof(JDDevice));
@@ -94,11 +99,14 @@ class WJacDac {
         int k = 0;
         for(int i = 0; i < JD_PROTOCOL_DRIVER_ARRAY_SIZE; ++i)
             if (NULL != protocol.drivers[i]) {
-                memcpy(buf->data + k, &JDProtocol::drivers[i]->device, sizeof(JDDevice));
+                memcpy(buf->data + k, &ds[i]->device, sizeof(JDDevice));
                 k += sizeof(JDDevice);
             }
         // we're done!
         return buf;
+#else
+        return mkBuffer(NULL, 0);
+#endif        
     }
 };
 SINGLETON(WJacDac);
