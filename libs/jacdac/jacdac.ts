@@ -268,6 +268,15 @@ namespace jacdac {
         get data(): Buffer {
             return this.buf.slice(12);
         }
+
+        toString(): string {
+            const buf = control.createBuffer(4);
+            function toHex(n: number): string {
+                buf.setNumber(NumberFormat.UInt32LE, 4, n);
+                return buf.toHex();
+            }
+            return `${toHex(this.serialNumber & 0xffff)}> d${toHex(this.address)} c${toHex(this.driverClass)} ${this.data.toHex()}`;
+        }
     }
 
     /*
@@ -392,6 +401,15 @@ namespace jacdac {
          **/
         isPairing(): boolean {
             return !!(this.flags & DAL.JD_DEVICE_FLAGS_PAIRING);
+        }
+
+        toString(): string {
+            const buf = control.createBuffer(4);
+            function toHex(n: number): string {
+                buf.setNumber(NumberFormat.UInt32LE, 4, n);
+                return buf.toHex();
+            }
+            return `${toHex(this.serialNumber & 0xffff)}> d${toHex(this.address)} c${toHex(this.driverClass)}`;
         }
     }
 }
