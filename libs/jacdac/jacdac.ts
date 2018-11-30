@@ -403,15 +403,13 @@ namespace jacdac {
      */
     export class SensorHostDriver extends Driver {
         static MAX_SILENCE = 500;
-        private stateSerializer: () => Buffer;
         private sensorState: SensorState;
         private _sendTime: number;
         private _sendState: Buffer;
         public streamingInterval: number; // millis
 
-        constructor(name: string, stateSerializer: () => Buffer, deviceClass: number) {
+        constructor(name: string, deviceClass: number) {
             super(name, DriverType.HostDriver, deviceClass, 1);
-            this.stateSerializer = stateSerializer;
             this.sensorState = SensorState.Stopped;
             this._sendTime = 0;
             this.streamingInterval = 50;
@@ -444,6 +442,10 @@ namespace jacdac {
         }
 
         // override
+        protected serializeState(): Buffer {
+            return undefined;
+        }
+
         protected handleCustomCommand(command: number, pkt: JDPacket) {
             return true;
         }
@@ -469,7 +471,7 @@ namespace jacdac {
             control.runInBackground(() => {
                 while (this.sensorState == SensorState.Streaming) {
                     // run callback                    
-                    const state = this.stateSerializer();
+                    const state = this.serializeState();
                     if (!!state) {
                         // did the state change?
                         if (this.isConnected

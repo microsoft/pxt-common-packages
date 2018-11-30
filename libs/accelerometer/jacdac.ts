@@ -1,7 +1,7 @@
 namespace jacdac {
     export class AccelerometerHostDriver extends jacdac.SensorHostDriver {
         constructor(name: string) {
-            super(name, AccelerometerHostDriver.serializeState, jacdac.ACCELEROMETER_DRIVER_CLASS);
+            super(name, jacdac.ACCELEROMETER_DRIVER_CLASS);
             input.acceleration(Dimension.X); // turn on sensor
             control.onEvent(DAL.DEVICE_ID_GESTURE, DAL.DEVICE_EVT_ANY, v => this.handleGestureEvent(v));
         }
@@ -23,7 +23,7 @@ namespace jacdac {
             }
         }
 
-        static serializeState(): Buffer {
+        protected serializeState(): Buffer {
             const buf = control.createBuffer(6);
             buf.setNumber(NumberFormat.Int16LE, 0, input.acceleration(Dimension.X));
             buf.setNumber(NumberFormat.Int16LE, 2, input.acceleration(Dimension.Y));
