@@ -2,6 +2,7 @@
     "name": "jacdac-drivers",
     "description": "Virtual drivers for jacdac - beta",
     "files": [
+        "sensordriver.ts",
         "bridgedriver.ts",
         "loggerdriver.ts",
         "messagebusdriver.ts",
