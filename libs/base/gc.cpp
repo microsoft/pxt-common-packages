@@ -4,8 +4,6 @@
 #define GC_BLOCK_SIZE (1024 * 16)
 #endif
 
-#define GC_BLOCK_WORDS ((GC_BLOCK_SIZE - sizeof(GCBlock)) / sizeof(void *))
-
 #ifndef GC_ALLOC_BLOCK
 #define GC_ALLOC_BLOCK xmalloc
 #endif
@@ -91,7 +89,7 @@ void popThreadContext(ThreadContext *ctx) {
 ThreadContext *pushThreadContext(void *sp) {
     if (PXT_IN_ISR())
         target_panic(PANIC_CALLED_FROM_ISR);
-    
+
     auto curr = getThreadContext();
     if (curr) {
 #ifdef PXT_GC_THREAD_LIST
@@ -139,12 +137,13 @@ class RefBlock : public RefObject {
 
 struct GCBlock {
     GCBlock *next;
+    uint32_t blockSize;
     RefObject data[0];
 };
 
-static Segment gcRoots;
-static Segment workQueue;
-static GCBlock *firstBlock;
+Segment gcRoots;
+Segment workQueue;
+GCBlock *firstBlock;
 static RefBlock *firstFree;
 
 #define IS_OUTSIDE_GC(v)                                                                           \
@@ -197,9 +196,13 @@ void gcProcess(TValue v) {
     }
 }
 
-static void mark() {
+static void mark(int flags) {
     auto data = gcRoots.getData();
     auto len = gcRoots.getLength();
+    if (flags & 2) {
+        DMESG("--MARK");
+        DMESG("RP:%p/%d", data, len);
+    }
     for (unsigned i = 0; i < len; ++i) {
         auto d = data[i];
         if ((uint32_t)d & 1) {
@@ -220,12 +223,14 @@ static void mark() {
         }
     }
 #else
-    gcProcessStacks();
+    gcProcessStacks(flags);
 #endif
 
     auto nonPtrs = bytecode[21];
     len = getNumGlobals() - nonPtrs;
     data = globals + nonPtrs;
+    if (flags & 2)
+        DMESG("RG:%p/%d", data, len);
     VLOG("globals: %p %d", data, len);
     for (unsigned i = 0; i < len; ++i) {
         gcProcess(*data++);
@@ -248,23 +253,26 @@ static uint32_t getObjectSize(RefObject *o) {
 }
 
 __attribute__((noinline)) static void allocateBlock() {
-    auto curr = (GCBlock *)GC_ALLOC_BLOCK(GC_BLOCK_SIZE);
+    auto sz = GC_BLOCK_SIZE;
+    auto curr = (GCBlock *)GC_ALLOC_BLOCK(sz);
+    curr->blockSize = sz - sizeof(GCBlock);
     LOG("GC alloc: %p", curr);
-    curr->data[0].vtable = (GC_BLOCK_WORDS << 2) | 2;
+    curr->data[0].vtable = ((curr->blockSize >> 2) << 2) | 2;
     ((RefBlock *)curr->data)[0].nextFree = firstFree;
     firstFree = (RefBlock *)curr->data;
     curr->next = firstBlock;
     firstBlock = curr;
 }
 
-static void sweep(int verbose) {
+static void sweep(int flags) {
     RefBlock *freePtr = NULL;
     uint32_t freeSize = 0;
     uint32_t totalSize = 0;
     for (auto h = firstBlock; h; h = h->next) {
         auto d = h->data;
-        auto end = d + GC_BLOCK_WORDS;
-        totalSize += GC_BLOCK_WORDS;
+        auto words = h->blockSize >> 2;
+        auto end = d + words;
+        totalSize += words;
         VLOG("sweep: %p - %p", d, end);
         while (d < end) {
             if (d->vtable & 1) {
@@ -295,23 +303,35 @@ static void sweep(int verbose) {
             }
         }
     }
-    if (verbose)
+
+    // convert to bytes
+    freeSize <<= 2;
+    totalSize <<= 2;
+
+    if (flags & 1)
         DMESG("GC %d/%d free", freeSize, totalSize);
     else
         LOG("GC %d/%d free", freeSize, totalSize);
     firstFree = freePtr;
+
+    if (flags & 2) {
+        // wait for heap dump
+        while (1) {
+        }
+    }
+
     // if the heap is 90% full, allocate a new block
     if (freeSize * 10 <= totalSize) {
         allocateBlock();
     }
 }
 
-void gc(int verbose) {
+void gc(int flags) {
     startPerfCounter(PerfCounters::GC);
     VLOG("GC mark");
-    mark();
+    mark(flags);
     VLOG("GC sweep");
-    sweep(verbose);
+    sweep(flags);
     VLOG("GC done");
     stopPerfCounter(PerfCounters::GC);
 }
@@ -319,7 +339,7 @@ void gc(int verbose) {
 void *gcAllocate(int numbytes) {
     size_t numwords = (numbytes + 3) >> 2;
 
-    if (numwords > GC_BLOCK_WORDS)
+    if (numbytes > GC_BLOCK_SIZE - 16)
         oops(45);
 
 #ifdef PXT_GC_CHECKS
@@ -332,7 +352,7 @@ void *gcAllocate(int numbytes) {
 
 #ifdef PXT_GC_STRESS
     gc(0);
-#endif    
+#endif
 
     for (int i = 0;; ++i) {
         RefBlock *prev = NULL;
