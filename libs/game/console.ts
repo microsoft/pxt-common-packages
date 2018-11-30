@@ -31,10 +31,11 @@ namespace game.consoleOverlay {
 
     export function draw() {
         if (!consoleStrings || scene.systemMenuActive) return;
-        const height = consoleFont.charHeight + marginy;
+        const height = consoleFont.charHeight + marginy ;
+        const top = 2 + (game.stats ? height : 0);
         for (let i = 0; i < consoleStrings.length; ++i) {
             const t = consoleStrings[i];
-            screen.print(t, marginx, 2 + i * height, consoleColor, consoleFont);
+            screen.print(t, marginx, top + i * height, consoleColor, consoleFont);
         }
     }
 }
