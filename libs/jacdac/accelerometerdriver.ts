@@ -139,6 +139,6 @@ namespace jacdac {
         }
     }
 
-    //% fixedInstance
+    //% fixedInstance whenUsed
     export const accelerometer = new AccelerometerVirtualDriver("accelerometer");
 }
