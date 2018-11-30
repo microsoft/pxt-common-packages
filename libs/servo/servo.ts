@@ -9,10 +9,10 @@ namespace servos {
         }
 
         /**
-         * set the servo angle
+         * Set the servo angle
          */
         //% group="Servos"
-        //% weight=100
+        //% weight=100 help=servos/set-angle
         //% blockId=servoservosetangle block="set %servo angle to %degrees=protractorPicker °"
         //% degrees.defl=90
         //% servo.fieldEditor="gridpicker"
@@ -35,7 +35,7 @@ namespace servos {
          * @param speed the throttle of the motor from -100% to 100%
          */
         //% group="Servos"
-        //% weight=99
+        //% weight=99 help=servos/run
         //% blockId=servoservorun block="continuous %servo run at %speed=speedPicker \\%"
         //% servo.fieldEditor="gridpicker"
         //% servo.fieldOptions.width=220
@@ -46,10 +46,10 @@ namespace servos {
         }
 
         /*
-         * set the pulse width to the servo in microseconds
+         * Set the pulse width to the servo in microseconds
          */
         //% group="Servos"
-        //% weight=10
+        //% weight=10 help=servos/set-pulse
         //% blockId=servoservosetpulse block="set %servo pulse to %micros μs"
         //% micros.min=500 micros.max=2500
         //% micros.defl=1500
