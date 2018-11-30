@@ -21,7 +21,7 @@ namespace jacdac {
          * @param gesture 
          * @param handler 
          */
-        //% blockId=jacadacbtnonevent block="jacdac %button on %event"
+        //% blockId=jacadactouchonevent block="jacdac %button on %event"
         //% group="Input"
         onEvent(event: ButtonEvent, handler: () => void) {
             control.onEvent(this.id, event, handler);
