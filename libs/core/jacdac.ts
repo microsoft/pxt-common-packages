@@ -15,6 +15,7 @@ namespace jacdac {
     export const JD_DRIVER_CLASS_MAKECODE_START = 2000;
     export const LOGGER_DRIVER_CLASS = JD_DRIVER_CLASS_MAKECODE_START + 1;
     export const BATTERY_DRIVER_CLASS = JD_DRIVER_CLASS_MAKECODE_START + 2;
+    export const ACCELEROMETER_DRIVER_CLASS = JD_DRIVER_CLASS_MAKECODE_START + 3;
     // events
     export const JD_MESSAGE_BUS_ID = JD_DRIVER_CLASS_MAKECODE_START;
     export const JD_DRIVER_EVT_FILL_CONTROL_PACKET = JD_DRIVER_CLASS_MAKECODE_START + 1;
@@ -376,8 +377,8 @@ namespace jacdac {
 namespace jacdac {
     export enum SensorState {
         Stopped = 0x01,
-        Streaming = 0x02,
-        Stopping = 0x04
+        Stopping = 0x02,
+        Streaming = 0x04,
     }
 
     export enum SensorCommand {
