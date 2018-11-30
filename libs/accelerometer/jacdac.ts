@@ -3,10 +3,10 @@ namespace jacdac {
         constructor(name: string) {
             super(name, jacdac.ACCELEROMETER_DRIVER_CLASS);
             input.acceleration(Dimension.X); // turn on sensor
-            control.onEvent(DAL.DEVICE_ID_GESTURE, DAL.DEVICE_EVT_ANY, v => this.handleGestureEvent(v));
+            control.onEvent(DAL.DEVICE_ID_GESTURE, DAL.ACCELEROMETER_EVT_SHAKE, () => this.raiseHostEvent(DAL.ACCELEROMETER_EVT_SHAKE));
         }
 
-        handleGestureEvent(value: number): void {
+        /* handleGestureEvent(value: number): void {
             switch (value) {
                 case DAL.ACCELEROMETER_EVT_SHAKE:
                 case DAL.ACCELEROMETER_EVT_3G:
@@ -21,7 +21,7 @@ namespace jacdac {
                 case DAL.ACCELEROMETER_EVT_TILT_UP:
                     this.raiseHostEvent(value);
             }
-        }
+        }*/
 
         protected serializeState(): Buffer {
             const buf = control.createBuffer(6);

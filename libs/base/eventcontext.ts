@@ -7,7 +7,7 @@ namespace control {
     //% weight=20 blockGap=8 blockId="control_on_event" block="on event|from %src|with value %value"
     //% blockExternalInputs=1
     //% help="control/on-event"
-    export function onEvent(src: number, value: number, handler: (value?: number) => void, flags = 16) { // EVENT_LISTENER_DEFAULT_FLAGS
+    export function onEvent(src: number, value: number, handler: () => void, flags = 16) { // EVENT_LISTENER_DEFAULT_FLAGS
         const ctx = control.eventContext();
         if (!ctx)
             control.internalOnEvent(src, value, handler, flags);
@@ -145,7 +145,7 @@ namespace control {
             this.frameCallbacks.push(fn)
         }
 
-        registerHandler(src: number, value: number, handler: (value?: number) => void, flags: number) {
+        registerHandler(src: number, value: number, handler: () => void, flags: number) {
             // already there?
             for (const h of this.handlers) {
                 if (h.src == src && h.value == value) {
