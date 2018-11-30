@@ -16,10 +16,17 @@ namespace jacdac {
     export const LOGGER_DRIVER_CLASS = JD_DRIVER_CLASS_MAKECODE_START + 1;
     export const BATTERY_DRIVER_CLASS = JD_DRIVER_CLASS_MAKECODE_START + 2;
     export const ACCELEROMETER_DRIVER_CLASS = JD_DRIVER_CLASS_MAKECODE_START + 3;
+    export const BUTTON_DRIVER_CLASS = JD_DRIVER_CLASS_MAKECODE_START + 4
     // events
     export const JD_MESSAGE_BUS_ID = JD_DRIVER_CLASS_MAKECODE_START;
     export const JD_DRIVER_EVT_FILL_CONTROL_PACKET = JD_DRIVER_CLASS_MAKECODE_START + 1;
 
+    export const BUTTON_EVENTS = [
+        DAL.DEVICE_BUTTON_EVT_CLICK,
+        DAL.DEVICE_BUTTON_EVT_DOWN,
+        DAL.DEVICE_BUTTON_EVT_UP,
+        DAL.DEVICE_BUTTON_EVT_LONG_CLICK
+    ];
 
     // common logging level for jacdac services
     export let consolePriority = ConsolePriority.Silent;
