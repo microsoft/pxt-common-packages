@@ -7,7 +7,7 @@
 namespace jacdac {
 
 // Wrapper classes
-class WProtocol {
+class WJacDac {
 #ifdef CODAL_JACDAC_WIRE_SERIAL
     CODAL_JACDAC_WIRE_SERIAL sws;
     codal::JACDAC jd;
@@ -15,7 +15,7 @@ class WProtocol {
     codal::JackRouter *jr;
 #endif    
   public:
-    WProtocol()
+    WJacDac()
 #ifdef CODAL_JACDAC_WIRE_SERIAL
         : sws(*LOOKUP_PIN(JACK_TX))
         , jd(sws)
@@ -48,6 +48,14 @@ class WProtocol {
 #endif
     }
 
+    bool isRunning() {
+#ifdef CODAL_JACDAC_WIRE_SERIAL
+        return jd.isRunning();
+#else   
+        return false;
+#endif
+    }
+
     void setBridge(JDDriver* driver) {
 #ifdef CODAL_JACDAC_WIRE_SERIAL
         protocol.setBridge(*driver);
@@ -74,11 +82,29 @@ class WProtocol {
     #endif
     }
 
+    Buffer drivers() {
+        // determine the number of drivers
+        int n = 0;
+        for(int i = 0; i < JD_PROTOCOL_DRIVER_ARRAY_SIZE; ++i)
+            if (NULL != JDProtocol::drivers[i])
+                n++;
+        // allocate n * sizeof(JDDevice)
+        auto buf = mkBuffer(NULL, n * sizeof(JDDevice));
+        // fill up
+        int k = 0;
+        for(int i = 0; i < JD_PROTOCOL_DRIVER_ARRAY_SIZE; ++i)
+            if (NULL != protocol.drivers[i]) {
+                memcpy(buf->data + k, &JDProtocol::drivers[i]->device, sizeof(JDDevice));
+                k += sizeof(JDDevice);
+            }
+        // we're done!
+        return buf;
+    }
 };
-SINGLETON(WProtocol);
+SINGLETON(WJacDac);
 
 void setJackRouterOutput(int output) {
-    getWProtocol()->setJackRouterOutput(output);
+    getWJacDac()->setJackRouterOutput(output);
 }
 
 /**
@@ -86,7 +112,7 @@ void setJackRouterOutput(int output) {
  */
 //% parts=jacdac
 void start() {
-    getWProtocol()->start();
+    getWJacDac()->start();
 }
 
 /**
@@ -94,7 +120,15 @@ void start() {
  */
 //% parts=jacdac
 void stop() {
-    getWProtocol()->stop();
+    getWJacDac()->stop();
+}
+
+/**
+* Indicates if JacDac is running
+*/
+//% parts=jacdac
+bool isRunning() {
+    return getWJacDac()->isRunning();
 }
 
 /**
@@ -103,8 +137,16 @@ void stop() {
 //% parts=jacdac
 void clearBridge() {
     // TODO
-  //  auto p = getWProtocol();
+  //  auto p = getWJacDac();
 //    p->protocol.setBridge(NULL);
+}
+
+/**
+* Gets a snapshot of the drivers registered on the bus. Array of JDDevice
+*/
+//% parts=jacdac
+Buffer __internalDrivers() {
+    return getWJacDac()->drivers();
 }
 
 #ifdef CODAL_JACDAC_WIRE_SERIAL
@@ -192,7 +234,7 @@ Internal
 */
 //% parts=jacdac
 JacDacDriverStatus __internalAddDriver(int driverType, int driverClass, MethodCollection methods, Buffer controlData) {
-    getWProtocol();
+    getWJacDac();
 #ifdef CODAL_JACDAC_WIRE_SERIAL
     return new JDProxyDriver(JDDevice((DriverType)driverType, driverClass), methods, controlData);
 #else
@@ -205,7 +247,7 @@ JacDacDriverStatus __internalAddDriver(int driverType, int driverClass, MethodCo
  */
 //% parts=jacdac
 int __internalSendPacket(Buffer buf, int deviceAddress) {
-    getWProtocol();
+    getWJacDac();
     return JDProtocol::send(buf->data, buf->length, deviceAddress);
 }
 
@@ -261,7 +303,7 @@ bool isPairedInstanceAddress(JacDacDriverStatus d, uint8_t address) {
 //%
 void setBridge(JacDacDriverStatus d) {
 #ifdef CODAL_JACDAC_WIRE_SERIAL
-    jacdac::getWProtocol()->setBridge(d);
+    jacdac::getWJacDac()->setBridge(d);
 #endif    
 }
 

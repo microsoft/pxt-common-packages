@@ -205,6 +205,19 @@ namespace jacdac {
         __internalSendPacket(pkt, deviceAddress);
     }
 
+    /**
+     * Gets the list of drivers and their status in JACDAC
+     */
+    //%
+    export function drivers(): JDDevice[] {
+        const buf: Buffer = __internalDrivers();
+        const devices: JDDevice[] = [];
+        for(let k = 0; k < buf.length; k += JDDevice.SIZE) {
+            devices.push(new JDDevice(buf.slice(k, JDDevice.SIZE)));
+        }
+        return devices;
+    }
+
     export class JDPacket {
         buf: Buffer;
         constructor(buf: Buffer) {
@@ -267,13 +280,14 @@ namespace jacdac {
         uint32_t driver_class; // the class of the driver, created or selected from the list in JDClasses.h
         */
     export class JDDevice {
+        static SIZE = 12;
         buf: Buffer;
         constructor(buf: Buffer) {
             this.buf = buf;
         }
 
         static mk(address: number, flags: number, serialNumber: number, driverClass: number) {
-            const buf = control.createBuffer(12);
+            const buf = control.createBuffer(JDDevice.SIZE);
             buf.setNumber(NumberFormat.UInt8LE, 0, address);
             buf.setNumber(NumberFormat.UInt8LE, 1, 0); // rolling counter
             buf.setNumber(NumberFormat.UInt16LE, 2, flags);
