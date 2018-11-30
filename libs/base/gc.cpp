@@ -4,8 +4,6 @@
 #define GC_BLOCK_SIZE (1024 * 16)
 #endif
 
-#define GC_BLOCK_WORDS ((GC_BLOCK_SIZE - sizeof(GCBlock)) / sizeof(void *))
-
 #ifndef GC_ALLOC_BLOCK
 #define GC_ALLOC_BLOCK xmalloc
 #endif
@@ -139,12 +137,13 @@ class RefBlock : public RefObject {
 
 struct GCBlock {
     GCBlock *next;
+    uint32_t blockSize;
     RefObject data[0];
 };
 
 static Segment gcRoots;
 static Segment workQueue;
-static GCBlock *firstBlock;
+GCBlock *firstBlock;
 static RefBlock *firstFree;
 
 #define IS_OUTSIDE_GC(v)                                                                           \
@@ -248,9 +247,11 @@ static uint32_t getObjectSize(RefObject *o) {
 }
 
 __attribute__((noinline)) static void allocateBlock() {
-    auto curr = (GCBlock *)GC_ALLOC_BLOCK(GC_BLOCK_SIZE);
+    auto sz = GC_BLOCK_SIZE;
+    auto curr = (GCBlock *)GC_ALLOC_BLOCK(sz);
+    curr->blockSize = sz - sizeof(GCBlock);
     LOG("GC alloc: %p", curr);
-    curr->data[0].vtable = (GC_BLOCK_WORDS << 2) | 2;
+    curr->data[0].vtable = ((curr->blockSize >> 2) << 2) | 2;
     ((RefBlock *)curr->data)[0].nextFree = firstFree;
     firstFree = (RefBlock *)curr->data;
     curr->next = firstBlock;
@@ -263,8 +264,9 @@ static void sweep(int verbose) {
     uint32_t totalSize = 0;
     for (auto h = firstBlock; h; h = h->next) {
         auto d = h->data;
-        auto end = d + GC_BLOCK_WORDS;
-        totalSize += GC_BLOCK_WORDS;
+        auto words = h->blockSize >> 2;
+        auto end = d + words;
+        totalSize += words;
         VLOG("sweep: %p - %p", d, end);
         while (d < end) {
             if (d->vtable & 1) {
@@ -295,6 +297,11 @@ static void sweep(int verbose) {
             }
         }
     }
+
+    // convert to bytes
+    freeSize <<= 2;
+    totalSize <<= 2;
+
     if (verbose)
         DMESG("GC %d/%d free", freeSize, totalSize);
     else
@@ -319,7 +326,7 @@ void gc(int verbose) {
 void *gcAllocate(int numbytes) {
     size_t numwords = (numbytes + 3) >> 2;
 
-    if (numwords > GC_BLOCK_WORDS)
+    if (numbytes > GC_BLOCK_SIZE - 16)
         oops(45);
 
 #ifdef PXT_GC_CHECKS
