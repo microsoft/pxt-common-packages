@@ -8,6 +8,7 @@ namespace game {
      * Determins if diagnostics are shown
      */
     export let debug = false;
+    export let stats = false;
     export let gameOverSound: () => void = undefined;
 
     let _scene: scene.Scene;

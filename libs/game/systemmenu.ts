@@ -12,6 +12,10 @@ namespace scene {
             m.addItem("volume down", () => {});
             m.addItem("brightness up", () => {});
             m.addItem("brightness down", () =>{});
+            m.addItem(game.stats ? "hide stats" : "show stats", () => {
+                game.stats = !game.stats;
+                m.hide();
+            })
             m.addItem(game.consoleOverlay.isVisible() ? "hide console" : "show console", () => {
                 if (game.consoleOverlay.isVisible())
                     game.consoleOverlay.setVisible(false);
