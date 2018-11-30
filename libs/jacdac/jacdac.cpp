@@ -8,7 +8,7 @@ namespace jacdac {
 
 // Wrapper classes
 class WProtocol {
-#ifndef CODAL_JACDAC_WIRE_SERIAL
+#ifdef CODAL_JACDAC_WIRE_SERIAL
     CODAL_JACDAC_WIRE_SERIAL sws;
     codal::JACDAC jd;
     codal::JDProtocol protocol; // note that this is different pins than io->i2c
@@ -16,13 +16,13 @@ class WProtocol {
 #endif    
   public:
     WProtocol()
-#ifndef CODAL_JACDAC_WIRE_SERIAL
+#ifdef CODAL_JACDAC_WIRE_SERIAL
         : sws(*LOOKUP_PIN(JACK_TX))
         , jd(sws)
         , protocol(jd) 
 #endif
         {
-#ifndef CODAL_JACDAC_WIRE_SERIAL
+#ifdef CODAL_JACDAC_WIRE_SERIAL
         if (LOOKUP_PIN(JACK_HPEN)) {
             jr = new codal::JackRouter(*LOOKUP_PIN(JACK_TX), *LOOKUP_PIN(JACK_SENSE),
                                        *LOOKUP_PIN(JACK_HPEN), *LOOKUP_PIN(JACK_BZEN),
@@ -35,46 +35,50 @@ class WProtocol {
     }
 
     void start() {
-#ifndef CODAL_JACDAC_WIRE_SERIAL
+#ifdef CODAL_JACDAC_WIRE_SERIAL
     if (!jd.isRunning())
         jd.start();
 #endif
     }
 
     void stop() {
-#ifndef CODAL_JACDAC_WIRE_SERIAL
+#ifdef CODAL_JACDAC_WIRE_SERIAL
     if (jd.isRunning())
         jd.stop();
 #endif
     }
 
     void setBridge(JDDriver* driver) {
-#ifndef CODAL_JACDAC_WIRE_SERIAL
-        protocol.setBridge(*d);
+#ifdef CODAL_JACDAC_WIRE_SERIAL
+        protocol.setBridge(*driver);
 #endif
     }
+
+    void setJackRouterOutput(int output) {
+    #ifdef CODAL_JACDAC_WIRE_SERIAL
+        if (!jr)
+            return;
+        if (output < 0)
+            return;
+        switch (output) {
+        case 0:
+            jr->forceState(JackState::None);
+            break;
+        case 1:
+            jr->forceState(JackState::BuzzerAndSerial);
+            break;
+        case 2:
+            jr->forceState(JackState::HeadPhones);
+            break;
+        }
+    #endif
+    }
+
 };
 SINGLETON(WProtocol);
 
 void setJackRouterOutput(int output) {
-#ifndef CODAL_JACDAC_WIRE_SERIAL
-    auto jr = getWProtocol()->jr;
-    if (!jr)
-        return;
-    if (output < 0)
-        return;
-    switch (output) {
-    case 0:
-        jr->forceState(JackState::None);
-        break;
-    case 1:
-        jr->forceState(JackState::BuzzerAndSerial);
-        break;
-    case 2:
-        jr->forceState(JackState::HeadPhones);
-        break;
-    }
-#endif
+    getWProtocol()->setJackRouterOutput(output);
 }
 
 /**
