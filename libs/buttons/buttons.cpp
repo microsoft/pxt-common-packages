@@ -28,7 +28,8 @@ enum class ButtonEvent {
 
 #ifdef PXT_74HC165
 static void waitABit() {
-    target_wait_us(1);
+    for (int i = 0; i < 10; ++i)
+        asm volatile ("nop");
 }
 class MultiplexedButton;
 class ButtonMultiplexer : public CodalComponent {
@@ -92,7 +93,7 @@ Button *getButtonByPin(int pin, int flags) {
     auto btn = (Button *)lookupComponent(cpid);
     if (btn == NULL) {
 #ifdef PXT_74HC165
-        if (pin > 100) {
+        if (pin >= 100) {
             if (!buttonMultiplexer)
                 buttonMultiplexer = new ButtonMultiplexer(DEVICE_ID_FIRST_BUTTON);
             return buttonMultiplexer->createButton(cpid, pin - 100);
