@@ -51,17 +51,16 @@ namespace control {
         private handlers: EventHandler[];
         private frameCallbacks: FrameCallback[];
         private frameWorker: number;
-        private frameNo: number;
         private framesInSample: number;
         private timeInSample: number;
         public deltaTime: number;
         private prevTime: number;
     
+        static lastStats: string;
         static onStats: (stats: string) => void;
 
         constructor() {
             this.handlers = [];
-            this.frameNo = 0;
             this.framesInSample = 0;
             this.timeInSample = 0;
             this.deltaTime = 0;
@@ -71,7 +70,6 @@ namespace control {
         private runCallbacks() {
             control.enablePerfCounter("all frame callbacks")
 
-            this.frameNo++
             let loopStart = control.millis()
             this.deltaTime = (loopStart - this.prevTime) / 1000.0
             this.prevTime = loopStart;
@@ -84,7 +82,8 @@ namespace control {
             if (this.timeInSample > 1000 || this.framesInSample > 30) {
                 const fps = this.framesInSample / (this.timeInSample / 1000);
                 if (EventContext.onStats) {
-                    EventContext.onStats(`${Math.round(fps)}fps`)
+                    EventContext.lastStats = `${Math.round(fps)}fps`;
+                    EventContext.onStats(EventContext.lastStats)
                 }
                 if (control.profilingEnabled()) {
                     control.dmesg(`${(fps * 100) | 0}/100 fps - ${this.framesInSample} frames`)
@@ -101,7 +100,6 @@ namespace control {
         private registerFrameCallbacks() {
             if (!this.frameCallbacks) return;
 
-            this.frameNo = 0;
             this.framesInSample = 0;
             this.timeInSample = 0;
             this.deltaTime = 0;

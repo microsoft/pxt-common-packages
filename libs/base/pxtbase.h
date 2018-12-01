@@ -402,7 +402,7 @@ extern const VTable RefAction_vtable;
 
 #ifdef PXT_GC
 inline bool isReadOnly(TValue v) {
-    return isTagged(v) || !((uint32_t)v >> 26);
+    return isTagged(v) || !((uint32_t)v >> 28);
 }
 #endif
 
@@ -744,7 +744,7 @@ void registerGC(TValue *root, int numwords = 1);
 void unregisterGC(TValue *root, int numwords = 1);
 void registerGCPtr(TValue ptr);
 void unregisterGCPtr(TValue ptr);
-void gc(int verbose);
+void gc(int flags);
 #else
 inline void registerGC(TValue *root, int numwords = 1) {}
 inline void unregisterGC(TValue *root, int numwords = 1) {}
@@ -778,7 +778,7 @@ ThreadContext *getThreadContext();
 void setThreadContext(ThreadContext *ctx);
 
 #ifndef PXT_GC_THREAD_LIST
-void gcProcessStacks();
+void gcProcessStacks(int flags);
 #endif
 
 void gcProcess(TValue v);
@@ -881,7 +881,7 @@ RefCollection *mk();
 
 #define DEF_VTABLE(name, tp, valtype, ...)                                                         \
     const VTable name __attribute__((aligned(1 << PXT_VTABLE_SHIFT))) = {                          \
-        0, valtype, VTABLE_MAGIC, 0, BuiltInType::tp, 0, 0, {__VA_ARGS__}};
+        sizeof(tp), valtype, VTABLE_MAGIC, 0, BuiltInType::tp, 0, 0, {__VA_ARGS__}};
 
 #ifdef PXT_GC
 #define PXT_VTABLE(classname)                                                                      \

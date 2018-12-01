@@ -4,18 +4,12 @@
     "files": [
         "jacdac.cpp",
         "jacdac.ts",
-        "bridgedriver.ts",
-        "loggerdriver.ts",
-        "debugger.ts",
-        "messagebusdriver.ts",
-        "pindriver.ts",
-        "sensordriver.ts",
-        "batterydriver.ts",
-        "ns.ts",
+        "jacdac.svg",
+        "pxtparts.json",
+        "pxt.json",
         "shims.d.ts"
     ],
     "testFiles": [
-        "test.ts"
     ],
     "public": true,
     "dependencies": {
