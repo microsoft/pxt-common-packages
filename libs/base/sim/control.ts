@@ -74,12 +74,16 @@ namespace pxsim.control {
     export function __log(priority: number, str: string) {
         let prefix = "";
         switch(priority) {
-            case 0: prefix = "dbg>"; break;
-            case 1: prefix = "log>"; break;
-            case 2: prefix = "wrn>"; break;
-            case 3: prefix = "err>"; break;
+            case 0: prefix = "d>"; break;
+            case 1: prefix = "l>"; break;
+            case 2: prefix = "w>"; break;
+            case 3: prefix = "e>"; break;
         }
         console.log(prefix + str);
         runtime.board.writeSerial(str);
+    }
+
+    export function heapDump() {
+        // TODO something better
     }
 }

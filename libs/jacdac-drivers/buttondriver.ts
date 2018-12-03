@@ -1,3 +1,14 @@
+const enum JDButtonEvent {
+    //% block="click"
+    Click = 3,  // DEVICE_BUTTON_EVT_CLICK
+    //% block="long click"
+    LongClick = 4,  // DEVICE_BUTTON_EVT_LONG_CLICK
+    //% block="up"
+    Up = 2,  // DEVICE_BUTTON_EVT_UP
+    //% block="down"
+    Down = 1,  // DEVICE_BUTTON_EVT_DOWN
+}
+
 namespace jacdac {
     //% fixedInstances
     export class ButtonVirtualDriver extends SensorVirtualDriver {
@@ -23,7 +34,7 @@ namespace jacdac {
          */
         //% blockId=jacadacbtnonevent block="jacdac %button on %event"
         //% group="Input"
-        onEvent(event: ButtonEvent, handler: () => void) {
+        onEvent(event: JDButtonEvent, handler: () => void) {
             control.onEvent(this.id, event, handler);
         }
     }

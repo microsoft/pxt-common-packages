@@ -8,10 +8,12 @@ namespace scene {
         controller.menu.onEvent(ControllerButtonEvent.Pressed, function () {
             systemMenuActive = true;
             const m = new menu.Menu();
-            m.addItem("volume up", () => {});
-            m.addItem("volume down", () => {});
-            m.addItem("brightness up", () => {});
-            m.addItem("brightness down", () =>{});
+            m.addItem("volume", () => {});
+            m.addItem("brightness", () => {});
+            m.addItem(game.stats ? "hide stats" : "show stats", () => {
+                game.stats = !game.stats;
+                m.hide();
+            })
             m.addItem(game.consoleOverlay.isVisible() ? "hide console" : "show console", () => {
                 if (game.consoleOverlay.isVisible())
                     game.consoleOverlay.setVisible(false);

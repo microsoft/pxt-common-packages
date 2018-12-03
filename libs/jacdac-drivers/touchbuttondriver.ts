@@ -23,7 +23,7 @@ namespace jacdac {
          */
         //% blockId=jacadactouchonevent block="jacdac %button on %event"
         //% group="Input"
-        onEvent(event: ButtonEvent, handler: () => void) {
+        onEvent(event: JDButtonEvent, handler: () => void) {
             control.onEvent(this.id, event, handler);
         }
     }

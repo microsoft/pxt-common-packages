@@ -201,10 +201,11 @@ static void *threadAddressFor(codal::Fiber *fib, void *sp) {
     return (uint8_t *)sp + ((uint8_t *)fib->stack_top - (uint8_t *)tcb_get_stack_base(fib->tcb));
 }
 
-void gcProcessStacks() {
+void gcProcessStacks(int flags) {
     int numFibers = codal::list_fibers(NULL);
     codal::Fiber **fibers = new codal::Fiber *[numFibers];
     codal::list_fibers(fibers);
+    int cnt = 0;
 
     for (int i = 0; i < numFibers; ++i) {
         auto fib = fibers[i];
@@ -214,6 +215,8 @@ void gcProcessStacks() {
         for (auto seg = &ctx->stack; seg; seg = seg->next) {
             auto ptr = (TValue *)threadAddressFor(fib, seg->top);
             auto end = (TValue *)threadAddressFor(fib, seg->bottom);
+            if (flags & 2)
+                DMESG("RS%d:%p/%d", cnt++, ptr, end - ptr);
             //VLOG("mark: %p - %p", ptr, end);
             while (ptr < end) {
                 gcProcess(*ptr++);

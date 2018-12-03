@@ -83,11 +83,19 @@ namespace control {
     }
 
     /**
-     * Force GC and dump information about heap.
+     * Force GC and dump basic information about heap.
      */
     //%
     void gc() {
         pxt::gc(1);
+    }
+
+    /**
+     * Force GC and halt waiting for debugger to do a full heap dump.
+     */
+    //%
+    void heapDump() {
+        pxt::gc(2);
     }
 
     /**
