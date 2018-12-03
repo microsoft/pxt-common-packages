@@ -101,7 +101,7 @@ class WJacDac {
         int k = 0;
         for(int i = 0; i < JD_PROTOCOL_DRIVER_ARRAY_SIZE; ++i)
             if (NULL != protocol.drivers[i]) {
-                memcpy(buf->data + k, &ds[i]->device, sizeof(JDDevice));
+                memcpy(buf->data + k, &ds[i]->getState(), sizeof(JDDevice));
                 k += sizeof(JDDevice);
             }
         // we're done!
