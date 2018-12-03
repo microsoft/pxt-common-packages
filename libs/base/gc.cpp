@@ -254,6 +254,9 @@ static uint32_t getObjectSize(RefObject *o) {
 
 __attribute__((noinline)) static void allocateBlock() {
     auto sz = GC_BLOCK_SIZE;
+#ifdef GC_GET_HEAP_SIZE
+    sz = GC_GET_HEAP_SIZE() - 4 * 1024;
+#endif
     auto curr = (GCBlock *)GC_ALLOC_BLOCK(sz);
     curr->blockSize = sz - sizeof(GCBlock);
     LOG("GC alloc: %p", curr);
@@ -320,10 +323,12 @@ static void sweep(int flags) {
         }
     }
 
+#ifndef GC_GET_HEAP_SIZE
     // if the heap is 90% full, allocate a new block
     if (freeSize * 10 <= totalSize) {
         allocateBlock();
     }
+#endif
 }
 
 void gc(int flags) {

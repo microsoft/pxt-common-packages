@@ -958,45 +958,47 @@ RefCollection *mk() {
     MEMDBG("mkColl: => %p", r);
     return r;
 }
-//%
 int length(RefCollection *c) {
     return c->length();
 }
-//%
 void setLength(RefCollection *c, int newLength) {
     c->setLength(newLength);
 }
-//%
 void push(RefCollection *c, TValue x) {
-    c->push(x);
+    c->head.push(x);
 }
-//%
 TValue pop(RefCollection *c) {
-    return c->pop();
+    return c->head.pop();
 }
-//%
 TValue getAt(RefCollection *c, int x) {
-    return c->getAt(x);
+    return c->head.get(x);
 }
-//%
 void setAt(RefCollection *c, int x, TValue y) {
-    c->setAt(x, y);
+    c->head.set(x, y);
 }
-//%
 TValue removeAt(RefCollection *c, int x) {
-    return c->removeAt(x);
+    return c->head.remove(x);
 }
-//%
 void insertAt(RefCollection *c, int x, TValue value) {
-    c->insertAt(x, value);
+    c->head.insert(x, value);
 }
-//%
 int indexOf(RefCollection *c, TValue x, int start) {
-    return c->indexOf(x, start);
+    auto data = c->head.getData();
+    auto len = c->head.getLength();
+    for (unsigned i = 0; i < len; i++) {
+        if (pxt::eq_bool(data[i], x)) {
+            return (int)i;
+        }
+    }
+    return -1;
 }
-//%
 bool removeElement(RefCollection *c, TValue x) {
-    return c->removeElement(x);
+    int idx = indexOf(c, x, 0);
+    if (idx >= 0) {
+        decr(removeAt(c, idx));
+        return 1;
+    }
+    return 0;
 }
 } // namespace Array_
 
@@ -1155,7 +1157,7 @@ void mapSetByString(RefMap *map, String key, TValue val) {
         map->keys.push((TValue)key);
         map->values.push(val);
     } else {
-        map->values.setRef(i, val);
+        map->values.set(i, val);
     }
     incr(val);
 }

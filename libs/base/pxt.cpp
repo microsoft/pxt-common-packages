@@ -106,23 +106,6 @@ void RefRecord_print(RefRecord *r) {
     DMESG("RefRecord %p r=%d size=%d bytes", r, REFCNT(r), getVTable(r)->numbytes);
 }
 
-TValue Segment::get(unsigned i) {
-#ifdef DEBUG_BUILD
-    DMESG("In Segment::get index:%d", i);
-    this->print();
-#endif
-
-    if (i < length) {
-        return data[i];
-    }
-    return Segment::DefaultValue;
-}
-
-void Segment::setRef(unsigned i, TValue value) {
-    decr(get(i));
-    set(i, value);
-}
-
 void Segment::set(unsigned i, TValue value) {
     if (i < size) {
         data[i] = value;
@@ -144,7 +127,7 @@ void Segment::set(unsigned i, TValue value) {
     return;
 }
 
-ramint_t Segment::growthFactor(ramint_t size) {
+static inline ramint_t growthFactor(ramint_t size) {
     if (size == 0) {
         return 4;
     }
@@ -155,21 +138,15 @@ ramint_t Segment::growthFactor(ramint_t size) {
         return size * 5 / 3; // Grow by 1.66 rate
     }
     // Grow by constant rate
-    if ((unsigned)size + 256 < MaxSize)
+    if ((unsigned)size + 256 < Segment::MaxSize)
         return size + 256;
     else
-        return MaxSize;
+        return Segment::MaxSize;
 }
 
 void Segment::growByMin(ramint_t minSize) {
-    growBy(max(minSize, growthFactor(size)));
-}
+    ramint_t newSize = max(minSize, growthFactor(size));
 
-void Segment::growBy(ramint_t newSize) {
-#ifdef DEBUG_BUILD
-    DMESG("growBy: %d", newSize);
-    this->print();
-#endif
     if (size < newSize) {
         // this will throw if unable to allocate
         TValue *tmp = (TValue *)(xmalloc(newSize * sizeof(TValue)));
@@ -209,10 +186,6 @@ void Segment::setLength(unsigned newLength) {
     }
     length = newLength;
     return;
-}
-
-void Segment::push(TValue value) {
-    this->set(length, value);
 }
 
 TValue Segment::pop() {
@@ -287,13 +260,6 @@ void Segment::print() {
     }
 }
 
-bool Segment::isValidIndex(unsigned i) {
-    if (i > length) {
-        return false;
-    }
-    return true;
-}
-
 void Segment::destroy() {
 #ifdef DEBUG_BUILD
     DMESG("In Segment::destroy");
@@ -302,59 +268,6 @@ void Segment::destroy() {
     length = size = 0;
     free(data);
     data = nullptr;
-}
-
-void RefCollection::push(TValue x) {
-    incr(x);
-    head.push(x);
-}
-
-TValue RefCollection::pop() {
-    TValue ret = head.pop();
-    incr(ret);
-    return ret;
-}
-
-TValue RefCollection::getAt(int i) {
-    TValue tmp = head.get(i);
-    incr(tmp);
-    return tmp;
-}
-
-TValue RefCollection::removeAt(int i) {
-    return head.remove(i);
-}
-
-void RefCollection::insertAt(int i, TValue value) {
-    head.insert(i, value);
-    incr(value);
-}
-
-void RefCollection::setAt(int i, TValue value) {
-    incr(value);
-    head.setRef(i, value);
-}
-
-int RefCollection::indexOf(TValue x, int start) {
-#ifndef X86_64
-    unsigned i = start;
-    while (head.isValidIndex(i)) {
-        if (pxt::eq_bool(head.get(i), x)) {
-            return (int)i;
-        }
-        i++;
-    }
-#endif
-    return -1;
-}
-
-bool RefCollection::removeElement(TValue x) {
-    int idx = indexOf(x, 0);
-    if (idx >= 0) {
-        decr(removeAt(idx));
-        return 1;
-    }
-    return 0;
 }
 
 PXT_VTABLE_CTOR(RefCollection) {}

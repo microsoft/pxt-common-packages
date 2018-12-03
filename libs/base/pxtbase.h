@@ -55,6 +55,7 @@ void *operator new(size_t size);
 #ifndef ramint_t
 // this type limits size of arrays
 #ifdef __linux__
+// TODO fix the inline array accesses to take note of this!
 #define ramint_t uint32_t
 #else
 #define ramint_t uint16_t
@@ -470,32 +471,26 @@ class Segment {
     ramint_t size;
 
     // this just gives max value of ramint_t
-    static constexpr ramint_t MaxSize = (((1U << (8 * sizeof(ramint_t) - 1)) - 1) << 1) + 1;
-    static constexpr TValue DefaultValue = TAG_UNDEFINED;
-
-    static ramint_t growthFactor(ramint_t size);
     void growByMin(ramint_t minSize);
-    void growBy(ramint_t newSize);
     void ensure(ramint_t newSize);
 
   public:
+    static constexpr ramint_t MaxSize = (((1U << (8 * sizeof(ramint_t) - 1)) - 1) << 1) + 1;
+    static constexpr TValue DefaultValue = TAG_UNDEFINED; // == NULL
+
     Segment() : data(nullptr), length(0), size(0){};
 
-    TValue get(unsigned i);
+    TValue get(unsigned i) { return i < length ? data[i] : NULL; }
     void set(unsigned i, TValue value);
-    void setRef(unsigned i, TValue value);
 
     unsigned getLength() { return length; };
     void setLength(unsigned newLength);
-    void resize(unsigned newLength) { setLength(newLength); }
 
-    void push(TValue value);
+    void push(TValue value) { set(length, value); }
     TValue pop();
 
     TValue remove(unsigned i);
     void insert(unsigned i, TValue value);
-
-    bool isValidIndex(unsigned i);
 
     void destroy();
 
@@ -507,10 +502,9 @@ class Segment {
 // A ref-counted collection of either primitive or ref-counted objects (String, Image,
 // user-defined record, another collection)
 class RefCollection : public RefObject {
-  private:
+  public:
     Segment head;
 
-  public:
     RefCollection();
 
     static void destroy(RefCollection *coll);
@@ -520,19 +514,7 @@ class RefCollection : public RefObject {
 
     unsigned length() { return head.getLength(); }
     void setLength(unsigned newLength) { head.setLength(newLength); }
-
-    void push(TValue x);
-    TValue pop();
-    TValue getAt(int i);
-    void setAt(int i, TValue x);
-    // removes the element at index i and shifts the other elements left
-    TValue removeAt(int i);
-    // inserts the element at index i and moves the other elements right.
-    void insertAt(int i, TValue x);
-
-    int indexOf(TValue x, int start);
-    bool removeElement(TValue x);
-
+    TValue getAt(int i) { return head.get(i); }
     TValue *getData() { return head.getData(); }
 };
 
@@ -853,6 +835,26 @@ int compare(String a, String b);
 namespace Array_ {
 //%
 RefCollection *mk();
+//%
+int length(RefCollection *c);
+//%
+void setLength(RefCollection *c, int newLength);
+//%
+void push(RefCollection *c, TValue x);
+//%
+TValue pop(RefCollection *c);
+//%
+TValue getAt(RefCollection *c, int x);
+//%
+void setAt(RefCollection *c, int x, TValue y);
+//%
+TValue removeAt(RefCollection *c, int x);
+//%
+void insertAt(RefCollection *c, int x, TValue value);
+//%
+int indexOf(RefCollection *c, TValue x, int start);
+//%
+bool removeElement(RefCollection *c, TValue x);
 }
 
 #define NEW_GC(T) new (gcAllocate(sizeof(T))) T()
