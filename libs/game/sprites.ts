@@ -65,20 +65,25 @@ namespace sprites {
     //% expandableArgumentMode=toggle
     export function createProjectile(img: Image, vx: number, vy: number, kind: number, sprite?: Sprite) {
         const s = sprites.create(img, kind);
+        const sc = game.currentScene();
         s.vx = vx
         s.vy = vy
 
         // put it at the edge of the screen so that it moves towards the middle
+        // If the scene has a tile map, place the sprite fully on the screen
+
+        const xOff = sc.tileMap ? -(s.width >> 1) : (s.width >> 1) - 1;
+        const yOff = sc.tileMap ? -(s.height >> 1) : (s.height >> 1) - 1;
 
         if (vx < 0)
-            s.x = screen.width + (s.width >> 1) - 1
+            s.x = screen.width + xOff
         else if (vx > 0)
-            s.x = -(s.width >> 1) + 1
+            s.x = -xOff
 
         if (vy < 0)
-            s.y = screen.height + (s.height >> 1) - 1
+            s.y = screen.height + yOff
         else if (vy > 0)
-            s.y = -(s.height >> 1) + 1
+            s.y = -yOff
 
         s.flags |= sprites.Flag.AutoDestroy;
         s.flags |= sprites.Flag.DestroyOnWall;
