@@ -101,14 +101,15 @@ class WJacDac {
         int k = 0;
         for(int i = 0; i < JD_PROTOCOL_DRIVER_ARRAY_SIZE; ++i)
             if (NULL != protocol.drivers[i]) {
-                memcpy(buf->data + k, &ds[i]->getState(), sizeof(JDDevice));
+                auto device = ds[i]->getState();
+                memcpy(buf->data + k, &device, sizeof(JDDevice));
                 k += sizeof(JDDevice);
             }
         // we're done!
         return buf;
 #else
         return mkBuffer(NULL, 0);
-#endif        
+#endif
     }
 };
 SINGLETON(WJacDac);
