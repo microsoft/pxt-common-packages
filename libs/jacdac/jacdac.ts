@@ -4,9 +4,7 @@ enum JacDacDriverEvent {
     Paired = DAL.JD_DRIVER_EVT_PAIRED,
     Unpaired = DAL.JD_DRIVER_EVT_UNPAIRED,
     PairingRefused = DAL.JD_DRIVER_EVT_PAIR_REJECTED,
-    PairingResponse = DAL.JD_DRIVER_EVT_PAIRING_RESPONSE,
-    BusConnected = DAL.JD_SERIAL_EVT_BUS_CONNECTED,
-    BusDisconnected = DAL.JD_SERIAL_EVT_BUS_DISCONNECTED
+    PairingResponse = DAL.JD_DRIVER_EVT_PAIRING_RESPONSE
 }
 
 /**
