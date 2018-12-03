@@ -4,6 +4,8 @@
 
 #define JD_DRIVER_EVT_FILL_CONTROL_PACKET 50
 
+#define JD_MIN_VERSION(VERSION) (defined JACDAC_VERSION && JACDAC_VERSION >= VERSION)
+
 namespace jacdac {
 
 // Wrapper classes
@@ -83,11 +85,10 @@ class WJacDac {
     }
 
     Buffer drivers() {
-#ifdef CODAL_JACDAC_WIRE_SERIAL
+#if JD_MIN_VERSION(1)
         if (!JDProtocol::instance)
             return mkBuffer(NULL, 0);
 
-        target_disable_irq();
         // determine the number of drivers
         auto ds = JDProtocol::instance->drivers;
         int n = 0;
@@ -103,7 +104,6 @@ class WJacDac {
                 memcpy(buf->data + k, &ds[i]->device, sizeof(JDDevice));
                 k += sizeof(JDDevice);
             }
-        target_enable_irq();
         // we're done!
         return buf;
 #else
