@@ -4,7 +4,9 @@ enum JacDacDriverEvent {
     Paired = DAL.JD_DRIVER_EVT_PAIRED,
     Unpaired = DAL.JD_DRIVER_EVT_UNPAIRED,
     PairingRefused = DAL.JD_DRIVER_EVT_PAIR_REJECTED,
-    PairingResponse = DAL.JD_DRIVER_EVT_PAIRING_RESPONSE
+    PairingResponse = DAL.JD_DRIVER_EVT_PAIRING_RESPONSE,
+    BusConnected = DAL.JD_SERIAL_EVT_BUS_CONNECTED,
+    BusDisconnected = DAL.JD_SERIAL_EVT_BUS_DISCONNECTED
 }
 
 /**
@@ -205,6 +207,19 @@ namespace jacdac {
         __internalSendPacket(pkt, deviceAddress);
     }
 
+    /**
+     * Gets the list of drivers and their status in JACDAC
+     */
+    //%
+    export function drivers(): JDDevice[] {
+        const buf: Buffer = __internalDrivers();
+        const devices: JDDevice[] = [];
+        for(let k = 0; k < buf.length; k += JDDevice.SIZE) {
+            devices.push(new JDDevice(buf.slice(k, JDDevice.SIZE)));
+        }
+        return devices;
+    }
+
     export class JDPacket {
         buf: Buffer;
         constructor(buf: Buffer) {
@@ -255,6 +270,15 @@ namespace jacdac {
         get data(): Buffer {
             return this.buf.slice(12);
         }
+
+        toString(): string {
+            const buf = control.createBuffer(4);
+            function toHex(n: number): string {
+                buf.setNumber(NumberFormat.UInt32LE, 4, n);
+                return buf.toHex();
+            }
+            return `${toHex(this.serialNumber & 0xffff)}> d${toHex(this.address)} c${toHex(this.driverClass)} ${this.data.toHex()}`;
+        }
     }
 
     /*
@@ -267,13 +291,14 @@ namespace jacdac {
         uint32_t driver_class; // the class of the driver, created or selected from the list in JDClasses.h
         */
     export class JDDevice {
+        static SIZE = 12;
         buf: Buffer;
         constructor(buf: Buffer) {
             this.buf = buf;
         }
 
         static mk(address: number, flags: number, serialNumber: number, driverClass: number) {
-            const buf = control.createBuffer(12);
+            const buf = control.createBuffer(JDDevice.SIZE);
             buf.setNumber(NumberFormat.UInt8LE, 0, address);
             buf.setNumber(NumberFormat.UInt8LE, 1, 0); // rolling counter
             buf.setNumber(NumberFormat.UInt16LE, 2, flags);
@@ -378,6 +403,15 @@ namespace jacdac {
          **/
         isPairing(): boolean {
             return !!(this.flags & DAL.JD_DEVICE_FLAGS_PAIRING);
+        }
+
+        toString(): string {
+            const buf = control.createBuffer(4);
+            function toHex(n: number): string {
+                buf.setNumber(NumberFormat.UInt32LE, 4, n);
+                return buf.toHex();
+            }
+            return `${toHex(this.serialNumber & 0xffff)}> d${toHex(this.address)} c${toHex(this.driverClass)}`;
         }
     }
 }

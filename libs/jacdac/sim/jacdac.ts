@@ -99,10 +99,22 @@ namespace pxsim.jacdac {
         state.stop();
     }
 
+    export function isRunning() {
+        const state = getJacDacState();
+        return state && state.running;
+    }
+
     export function clearBridge() {
         const state = getJacDacState();
         if (state)
             state.protocol.bridge = undefined;
+    }
+
+    export function __internalDrivers(): pxsim.RefBuffer {
+        const state = getJacDacState();
+        if (!state) return BufferMethods.createBuffer(0);
+
+        return state.protocol.driverDevices();
     }
 
     export function __internalSendPacket(data: pxsim.RefBuffer, address: number): number {
@@ -128,6 +140,8 @@ namespace pxsim.jacdac {
     }
 
     export class JDDevice {
+        static SIZE = 12;
+
         buf: pxsim.RefBuffer;
         constructor(buf: pxsim.RefBuffer) {
             this.buf = buf;
@@ -675,6 +689,14 @@ namespace pxsim.jacdac {
         sendBuffer(data: pxsim.RefBuffer, address: number): number {
             const pkt = JDPacket.mk(data, address);
             return this.sendPacket(pkt);
+        }
+
+        driverDevices(): pxsim.RefBuffer { 
+            const buf = BufferMethods.createBuffer(this.drivers.length * JDDevice.SIZE);
+            let k = 0;
+            for(const driver of this.drivers)
+                BufferMethods.write(buf, k, driver.device.buf, 0);
+            return buf;
         }
     }
 
