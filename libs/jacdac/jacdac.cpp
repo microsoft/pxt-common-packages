@@ -90,21 +90,24 @@ class WJacDac {
             return mkBuffer(NULL, 0);
 
         // determine the number of drivers
-        auto ds = JDProtocol::instance->drivers;
+        auto pDrivers = JDProtocol::instance->drivers;
         int n = 0;
-        for(int i = 0; i < JD_PROTOCOL_DRIVER_ARRAY_SIZE; ++i)
-            if (NULL != ds[i])
+        for(int i = 0; i < JD_PROTOCOL_DRIVER_ARRAY_SIZE; ++i) {
+            if (NULL != pDrivers[i])
                 n++;
+        }
         // allocate n * sizeof(JDDevice)
         auto buf = mkBuffer(NULL, n * sizeof(JDDevice));
         // fill up
         int k = 0;
-        for(int i = 0; i < JD_PROTOCOL_DRIVER_ARRAY_SIZE; ++i)
-            if (NULL != protocol.drivers[i]) {
-                auto device = ds[i]->getState();
+        for(int i = 0; i < JD_PROTOCOL_DRIVER_ARRAY_SIZE; ++i) {
+            auto pDriver = pDrivers[i];
+            if (NULL != pDriver) {
+                auto device = pDriver->getState();
                 memcpy(buf->data + k, &device, sizeof(JDDevice));
                 k += sizeof(JDDevice);
             }
+        }
         // we're done!
         return buf;
 #else
