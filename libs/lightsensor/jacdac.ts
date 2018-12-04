@@ -1,8 +1,7 @@
 namespace jacdac {
     export class LightSensorHostDriver extends jacdac.SensorHostDriver {
         constructor(name: string) {
-            super(name, jacdac.LIGHT_SENSOR_DRIVER_CLASS);
-            input.lightLevel();
+            super(name, jacdac.LIGHT_SENSOR_DEVICE_CLASS);
             input.onLightConditionChanged(LightCondition.Bright, () => this.raiseHostEvent(LightCondition.Bright));
             input.onLightConditionChanged(LightCondition.Dark, () => this.raiseHostEvent(LightCondition.Dark));
         }

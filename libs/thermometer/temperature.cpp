@@ -3,9 +3,9 @@
 
 enum class TemperatureCondition {
     //% block="hot"
-    Hot = ANALOG_THRESHOLD_HIGH,
+    Hot = SENSOR_THRESHOLD_HIGH,
     //% block="cold"
-    Cold = ANALOG_THRESHOLD_LOW
+    Cold = SENSOR_THRESHOLD_LOW
 };
 
 enum class TemperatureUnit {

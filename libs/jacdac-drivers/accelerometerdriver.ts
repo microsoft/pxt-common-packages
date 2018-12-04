@@ -71,7 +71,7 @@ namespace jacdac {
     //% fixedInstances
     export class AccelerometerVirtualDriver extends SensorVirtualDriver {
         constructor(name: string) {
-            super(name, jacdac.ACCELEROMETER_DRIVER_CLASS);
+            super(name, jacdac.ACCELEROMETER_DEVICE_CLASS);
         }
 
         /**

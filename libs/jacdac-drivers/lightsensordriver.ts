@@ -1,15 +1,15 @@
 enum JacdacLightCondition {
     //% block="dark"
-    Dark = DAL.ANALOG_THRESHOLD_LOW,
+    Dark = DAL.SENSOR_THRESHOLD_LOW,
     //% block="bright"
-    Bright = DAL.ANALOG_THRESHOLD_HIGH
+    Bright = DAL.SENSOR_THRESHOLD_HIGH
 }
 
 namespace jacdac {
     //% fixedInstances
     export class LightSensorVirtualDriver extends SensorVirtualDriver {
         constructor(name: string) {
-            super(name, jacdac.LIGHT_SENSOR_DRIVER_CLASS);
+            super(name, jacdac.LIGHT_SENSOR_DEVICE_CLASS);
         }
 
         /**

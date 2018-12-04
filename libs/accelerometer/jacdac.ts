@@ -1,7 +1,7 @@
 namespace jacdac {
     export class AccelerometerHostDriver extends jacdac.SensorHostDriver {
         constructor(name: string) {
-            super(name, jacdac.ACCELEROMETER_DRIVER_CLASS);
+            super(name, jacdac.ACCELEROMETER_DEVICE_CLASS);
             input.onGesture(Gesture.Shake, () => this.raiseHostEvent(Gesture.Shake));
             input.onGesture(Gesture.TiltUp, () => this.raiseHostEvent(Gesture.TiltUp));
             input.onGesture(Gesture.TiltDown, () => this.raiseHostEvent(Gesture.TiltDown));

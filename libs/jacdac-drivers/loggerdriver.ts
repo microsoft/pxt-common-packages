@@ -13,7 +13,7 @@ namespace jacdac {
     class LoggerBroadcastDriver extends Driver {
         public suppressForwading: boolean;
         constructor() {
-            super("log", DriverType.VirtualDriver, jacdac.LOGGER_DRIVER_CLASS);
+            super("log", DriverType.VirtualDriver, jacdac.LOGGER_DEVICE_CLASS);
             this.supressLog = true;
             this.suppressForwading = false;
             jacdac.addDriver(this);
@@ -55,7 +55,7 @@ namespace jacdac {
 
     class LoggerListenDriver extends Driver {
         constructor() {
-            super("log", DriverType.HostDriver, jacdac.LOGGER_DRIVER_CLASS); // TODO pickup type from DAL
+            super("log", DriverType.HostDriver, jacdac.LOGGER_DEVICE_CLASS); // TODO pickup type from DAL
             jacdac.addDriver(this);
         }
 

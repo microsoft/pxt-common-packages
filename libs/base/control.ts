@@ -178,6 +178,9 @@ namespace control {
 
     //% shim=pxt::getConfig
     export declare function getConfigValue(key: int32, defl: int32): number;
+
+    //% shim=pxt::programHash
+    export function programHash(): number { return 0 }
 }
 
 /**
