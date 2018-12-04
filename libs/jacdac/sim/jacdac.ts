@@ -89,6 +89,7 @@ namespace pxsim.jacdac {
         DEVICE_ID_JACDAC1 = 30,
         JD_SERIAL_EVT_BUS_CONNECTED = 5,
         JD_SERIAL_EVT_BUS_DISCONNECTED = 6,
+        JD_LOGIC_DRIVER_EVT_CHANGED = 2,
     }
 
     export function start() {
@@ -121,6 +122,11 @@ namespace pxsim.jacdac {
     export function eventId() {
         const state = getJacDacState();
         return state ? state.eventId : jacdac.DAL.DEVICE_ID_JACDAC0;
+    }
+
+    export function logicEventId() {
+        const state = getJacDacState();
+        return state ? state.protocol.drivers[0].id : 0;
     }
 
     export function __internalDrivers(): pxsim.RefBuffer {
@@ -401,6 +407,7 @@ namespace pxsim.jacdac {
             const state = getJacDacState();
             if (!state || !state.running) return;
 
+            const b = board();
             const instance = state.protocol;
             // for each driver we maintain a rolling counter, used to trigger various timer related events.
             // uint8_t might not be big enough in the future if the scheduler runs faster...
@@ -419,6 +426,7 @@ namespace pxsim.jacdac {
                         if (!(current.device.flags & DAL.JD_DEVICE_FLAGS_CP_SEEN)) {
                             //JD_DMESG("CONTROL NOT SEEN %d %d", current.device.address, current.device.serial_number);
                             current.deviceRemoved();
+                            b.bus.queue(this.id, DAL.JD_LOGIC_DRIVER_EVT_CHANGED);
                         }
 
                         current.device.flags &= ~(DAL.JD_DEVICE_FLAGS_CP_SEEN);
@@ -475,6 +483,7 @@ namespace pxsim.jacdac {
                             current.device.flags &= ~DAL.JD_DEVICE_FLAGS_INITIALISING;
                             current.device.flags |= DAL.JD_DEVICE_FLAGS_INITIALISED;
                             current.deviceConnected(current.device);
+                            b.bus.queue(this.id, DAL.JD_LOGIC_DRIVER_EVT_CHANGED);
                         }
                     }
                     else if (current.device.flags & DAL.JD_DEVICE_FLAGS_INITIALISED) {
@@ -494,6 +503,7 @@ namespace pxsim.jacdac {
           * Given a control packet, finds the associated driver, or if no associated device, associates a remote device with a driver.
           **/
         handlePacketAsync(p: JDPacket): Promise<number> {
+            const b = board();
             const instance = getJacDacState().protocol;
             const cp = new ControlPacket(p.data);
             let handled = false; // indicates if the control packet has been handled by a driver.
@@ -528,6 +538,7 @@ namespace pxsim.jacdac {
                     else if (cp.flags & DAL.CONTROL_JD_FLAGS_CONFLICT) {
                         // new address will be assigned on next tick.
                         current.deviceRemoved();
+                        b.bus.queue(this.id, DAL.JD_LOGIC_DRIVER_EVT_CHANGED);
                         return Promise.resolve(DAL.DEVICE_OK);
                     }
 
@@ -570,6 +581,7 @@ namespace pxsim.jacdac {
                         if (!exists) {
                             const dev = JDDevice.mk(cp.address, cp.flags | DAL.JD_DEVICE_FLAGS_BROADCAST_MAP | DAL.JD_DEVICE_FLAGS_INITIALISED, cp.serialNumber, cp.driverClass);
                             instance.add(new JDDriver(instance.nextId, dev));
+                            b.bus.queue(this.id, DAL.JD_LOGIC_DRIVER_EVT_CHANGED);
                         }
                     }
 
@@ -605,6 +617,7 @@ namespace pxsim.jacdac {
                     return current.handleControlPacketAsync(p)
                         .then(() => {
                             current.deviceConnected(JDDevice.mk(cp.address, cp.flags, cp.serialNumber, cp.driverClass));
+                            b.bus.queue(this.id, DAL.JD_LOGIC_DRIVER_EVT_CHANGED);
                             return DAL.DEVICE_OK;
                         });
                 }

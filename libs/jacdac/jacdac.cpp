@@ -126,6 +126,11 @@ class WJacDac {
     int id() {
         return jd.id;
     }
+
+    int logicId() {
+        auto pLogic = JDProtocol::instance->drivers[0];
+        return pLogic ? pLogic->id : 0;
+    }
 };
 SINGLETON(WJacDac);
 
@@ -171,6 +176,14 @@ bool isConnected() {
 //% parts=jacdac
 int eventId() {
     return getWJacDac()->id();
+}
+
+/**
+* Gets the jacdac logic driver event id
+*/
+//% parts=jacdac
+int logicEventId() {
+    return getWJacDac()->logicId();
 }
 
 /**
