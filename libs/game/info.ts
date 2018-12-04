@@ -4,6 +4,7 @@
  *
 */
 //% color=#AA5585 weight=80 icon="\uf2bb"
+//% groups='["Score", "Life", "Countdown"]'
 namespace info {
 
     enum Visibility {
@@ -136,12 +137,14 @@ namespace info {
     //% weight=95 blockGap=8
     //% blockId=hudScore block="score"
     //% help=info/score
+    //% group="Score"
     export function score() {
         initScore()
         return _score || 0;
     }
 
     //%
+    //% group="Score"
     export function hasScore() {
         return _score !== null
     }
@@ -152,6 +155,7 @@ namespace info {
     //% weight=94
     //% blockId=highScore block="high score"
     //% help=info/high-score
+    //% group="Score"
     export function highScore(): number {
         initScore();
         return _highScore || 0;
@@ -163,6 +167,7 @@ namespace info {
     //% weight=93 blockGap=8
     //% blockId=hudsetScore block="set score to %value"
     //% help=info/set-score
+    //% group="Score"
     export function setScore(value: number) {
         initScore()
         _score = value | 0
@@ -175,6 +180,7 @@ namespace info {
     //% weight=92
     //% blockId=hudChangeScoreBy block="change score by %value"
     //% help=info/change-score-by
+    //% group="Score"
     export function changeScoreBy(value: number) {
         initScore();
         setScore(_score + value)
@@ -195,12 +201,14 @@ namespace info {
     //% weight=85 blockGap=8
     //% blockId=hudLife block="life"
     //% help=info/life
+    //% group="Life"
     export function life() {
         initLife()
         return _life
     }
 
     //%
+    //% group="Life"
     export function hasLife() {
         return _life !== null
     }
@@ -212,6 +220,7 @@ namespace info {
     //% weight=84 blockGap=8
     //% blockId=hudSetLife block="set life to %value"
     //% help=info/set-life
+    //% group="Life"
     export function setLife(value: number) {
         initLife()
         _life = value | 0
@@ -224,6 +233,7 @@ namespace info {
     //% weight=83
     //% blockId=hudChangeLifeBy block="change life by %value"
     //% help=info/change-life-by
+    //% group="Life"
     export function changeLifeBy(value: number) {
         initLife();
         setLife(_life + value)
@@ -236,6 +246,7 @@ namespace info {
     //% weight=82
     //% blockId=gamelifeevent block="on life zero"
     //% help=info/on-life-zero
+    //% group="Life"
     export function onLifeZero(handler: () => void) {
         _lifeOverHandler = handler;
     }
@@ -246,6 +257,7 @@ namespace info {
      */
     //% blockId=gamecountdown block="start countdown %duration (s)"
     //% help=info/start-countdown weight=79 blockGap=8
+    //% group="Countdown"
     export function startCountdown(duration: number) {
         initHUD();
         _gameEnd = control.millis() + duration * 1000;
@@ -258,6 +270,7 @@ namespace info {
      */
     //% blockId=gamestopcountdown block="stop countdown" weight=78
     //% help=info/stop-countdown
+    //% group="Countdown"
     export function stopCountdown() {
         _gameEnd = undefined;
         updateFlag(Visibility.Countdown, false);
@@ -270,6 +283,7 @@ namespace info {
      */
     //% blockId=gamecountdownevent block="on countdown end" weight=77
     //% help=info/on-countdown-end
+    //% group="Countdown"
     export function onCountdownEnd(handler: () => void) {
         _countdownEndHandler = handler;
     }
@@ -278,7 +292,7 @@ namespace info {
      * Replaces the image used to represent the player's lives. Images
      * should be no larger than 8x8
      */
-    //%
+    //% group="Life"
     export function setLifeImage(image: Image) {
         _heartImage = image;
     }
@@ -287,6 +301,7 @@ namespace info {
      * Set whether life should be displayed
      * @param on if true, lives are shown; otherwise, lives are hidden
      */
+    //% group="Life"
     export function showLife(on: boolean) {
         initLife();
         updateFlag(Visibility.Life, on);
@@ -296,6 +311,7 @@ namespace info {
      * Set whether score should be displayed
      * @param on if true, score is shown; otherwise, score is hidden
      */
+    //% group="Score"
     export function showScore(on: boolean) {
         initScore();
         updateFlag(Visibility.Score, on);
@@ -305,6 +321,7 @@ namespace info {
      * Set whether score should be displayed
      * @param on if true, score is shown; otherwise, score is hidden
      */
+    //% group="Countdown"
     export function showCountdown(on: boolean) {
         updateFlag(Visibility.Countdown, on);
     }
@@ -320,6 +337,7 @@ namespace info {
      * elements. Defaults to 3
      * @param color The index of the color (0-15)
      */
+    //% group="Theme"
     export function setBorderColor(color: number) {
         _borderColor = Math.min(Math.max(color, 0), 15) | 0;
     }
@@ -329,6 +347,7 @@ namespace info {
      * elements. Defaults to 1
      * @param color The index of the color (0-15)
      */
+    //% group="Theme"
     export function setBackgroundColor(color: number) {
         _bgColor = Math.min(Math.max(color, 0), 15) | 0;
     }
@@ -338,6 +357,7 @@ namespace info {
      * elements. Defaults to 3
      * @param color The index of the color (0-15)
      */
+    //% group="Theme"
     export function setFontColor(color: number) {
         _fontColor = Math.min(Math.max(color, 0), 15) | 0;
     }
@@ -346,6 +366,7 @@ namespace info {
      * Get the current color of the borders around the score, countdown, and life
      * elements
      */
+    //% group="Theme"
     export function borderColor(): number {
         return _borderColor ? _borderColor : 3;
     }
@@ -354,6 +375,7 @@ namespace info {
      * Get the current color of the background of the score, countdown, and life
      * elements
      */
+    //% group="Theme"
     export function backgroundColor(): number {
         return _bgColor ? _bgColor : 1;
     }
@@ -362,6 +384,7 @@ namespace info {
      * Get the current color of the text usded in the score, countdown, and life
      * elements
      */
+    //% group="Theme"
     export function fontColor(): number {
         return _fontColor ? _fontColor : 3;
     }
