@@ -118,8 +118,9 @@ namespace pxsim.jacdac {
             state.protocol.bridge = undefined;
     }
 
-    export function id() {
-        return DAL.DEVICE_ID_JACDAC0;
+    export function eventId() {
+        const state = getJacDacState();
+        return state ? state.eventId : jacdac.DAL.DEVICE_ID_JACDAC0;
     }
 
     export function __internalDrivers(): pxsim.RefBuffer {
