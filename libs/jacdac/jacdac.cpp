@@ -366,9 +366,7 @@ bool isPairedInstanceAddress(JacDacDriverStatus d, uint8_t address) {
 */
 //%
 void setBridge(JacDacDriverStatus d) {
-#if JD_MIN_VERSION(1)
     jacdac::getWJacDac()->setBridge(d);
-#endif    
 }
 
 } // namespace JacDacDriverStatusMethods
