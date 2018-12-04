@@ -113,7 +113,7 @@ namespace scene {
     //% group="Tiles"
     //% weight=30
     //% help=scene/set-tile-at
-    export function setTileAt(tile: tiles.Tile, index: number) {
+    export function setTileTo(tile: tiles.Tile, index: number) {
         const scene = game.currentScene();
         if (!scene.tileMap)
             scene.tileMap = new tiles.TileMap();
@@ -125,10 +125,10 @@ namespace scene {
      * @param index
      * @param img
      */
-    //% blockId=gamesettile block="set tile %index=colorindexpicker to %img=screen_image_picker||with wall %wall=toggleOnOff"
+    //% blockId=gamesettile block="set tileset %index=colorindexpicker to %img=screen_image_picker||with wall %wall=toggleOnOff"
     //% group="Tiles"
     //% help=scene/set-tile
-    export function setTile(index: number, img: Image, wall?: boolean) {
+    export function setTileset(index: number, img: Image, wall?: boolean) {
         const scene = game.currentScene();
         if (!scene.tileMap)
             scene.tileMap = new tiles.TileMap();
@@ -143,7 +143,7 @@ namespace scene {
     //% blockId=gamegettile block="tile col %col row %row"
     //% group="Tiles" blockSetVariable="myTile"
     //% help=scene/get-tile
-    export function getTile(col: number, row: number): tiles.Tile {
+    export function tileAt(col: number, row: number): tiles.Tile {
         const scene = game.currentScene();
         if (!scene.tileMap)
             scene.tileMap = new tiles.TileMap();
