@@ -273,11 +273,26 @@ static uint32_t getObjectSize(RefObject *o) {
 
 __attribute__((noinline)) static void allocateBlock() {
     auto sz = GC_BLOCK_SIZE;
+    void *dummy = NULL;
 #ifdef GC_GET_HEAP_SIZE
-    sz = GC_GET_HEAP_SIZE() - 12 * 1024;
     if (firstBlock) {
         gc(2); // dump roots
         target_panic(PANIC_GC_OOM);
+    }
+    auto lowMem = getConfig(CFG_LOW_MEM_SIMULATION_KB, 0);
+    auto sysHeapSize = getConfig(CFG_SYSTEM_HEAP_BYTES, 12 * 1024);
+    auto heapSize = GC_GET_HEAP_SIZE();
+    sz = heapSize - sysHeapSize;
+    if (lowMem) {
+        auto memIncrement = 32 * 1024;
+        // get the memory size - assume it's increment of 32k, 
+        // and we don't statically allocate more than 32k
+        auto memSize = ((heapSize + memIncrement - 1) / memIncrement) * memIncrement;
+        int fillerSize = memSize - lowMem * 1024;
+        if (fillerSize > 0) {
+            dummy = GC_ALLOC_BLOCK(fillerSize);
+            sz -= fillerSize;
+        }
     }
 #endif
     auto curr = (GCBlock *)GC_ALLOC_BLOCK(sz);
@@ -287,6 +302,9 @@ __attribute__((noinline)) static void allocateBlock() {
     ((RefBlock *)curr->data)[0].nextFree = firstFree;
     firstFree = (RefBlock *)curr->data;
     curr->next = firstBlock;
+    // make sure reference to allocated block is stored somewhere, otherwise
+    // GCC optimizes out the call to GC_ALLOC_BLOCK
+    curr->data[4].vtable = (uint32_t)dummy;
     firstBlock = curr;
 }
 
