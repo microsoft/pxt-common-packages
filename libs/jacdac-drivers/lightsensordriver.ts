@@ -26,10 +26,10 @@ namespace jacdac {
          * @param gesture 
          * @param handler 
          */
-        //% blockId=jacadaclightsensoronevent block="jacdac %lightsensor on %gesture"
+        //% blockId=jacadaclightsensoronevent block="jacdac %lightsensor on %lightCondition"
         //% group="Light sensor"
-        onEvent(gesture: JacdacLightCondition, handler: () => void) {
-            control.onEvent(this.id, gesture, handler);
+        onEvent(lightCondition: JacdacLightCondition, handler: () => void) {
+            control.onEvent(this.id, lightCondition, handler);
         }
 
         /**

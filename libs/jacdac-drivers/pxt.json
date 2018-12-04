@@ -10,7 +10,9 @@
         "messagebusdriver.ts",
         "batterydriver.ts",
         "accelerometerdriver.ts",
-        "touchbuttondriver.ts"
+        "touchbuttondriver.ts",
+        "microphonedriver.ts",
+        "thermometerdriver.ts"
     ],
     "testFiles": [
         "test.ts"
