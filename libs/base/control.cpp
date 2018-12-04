@@ -96,6 +96,7 @@ namespace control {
     //%
     void heapDump() {
         pxt::gc(2);
+        target_panic(PANIC_HEAP_DUMPED);
     }
 
     /**
