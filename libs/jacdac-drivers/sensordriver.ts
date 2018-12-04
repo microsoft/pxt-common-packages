@@ -63,5 +63,13 @@ namespace jacdac {
         protected handleVirtualState(state: Buffer) {
             return true;
         }
+
+        protected setThreshold(low: boolean, value: number) {
+            const buf = control.createBuffer(5);
+            const cmd = low ? SensorCommand.LowThreshold : SensorCommand.HighThreshold;
+            buf.setNumber(NumberFormat.UInt8LE, 0, cmd);
+            buf.setNumber(NumberFormat.Int32LE, 1, value);
+            this.sendPacket(buf);
+        }
     }
 }

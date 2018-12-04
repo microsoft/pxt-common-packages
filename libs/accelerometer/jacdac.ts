@@ -2,26 +2,15 @@ namespace jacdac {
     export class AccelerometerHostDriver extends jacdac.SensorHostDriver {
         constructor(name: string) {
             super(name, jacdac.ACCELEROMETER_DRIVER_CLASS);
-            input.acceleration(Dimension.X); // turn on sensor
-            control.onEvent(DAL.DEVICE_ID_GESTURE, DAL.ACCELEROMETER_EVT_SHAKE, () => this.raiseHostEvent(DAL.ACCELEROMETER_EVT_SHAKE));
+            input.onGesture(Gesture.Shake, () => this.raiseHostEvent(Gesture.Shake));
+            input.onGesture(Gesture.TiltUp, () => this.raiseHostEvent(Gesture.TiltUp));
+            input.onGesture(Gesture.TiltDown, () => this.raiseHostEvent(Gesture.TiltDown));
+            input.onGesture(Gesture.TiltLeft, () => this.raiseHostEvent(Gesture.TiltLeft));
+            input.onGesture(Gesture.TiltRight, () => this.raiseHostEvent(Gesture.TiltRight));
+            input.onGesture(Gesture.FaceUp, () => this.raiseHostEvent(Gesture.FaceUp));
+            input.onGesture(Gesture.FaceDown, () => this.raiseHostEvent(Gesture.FaceDown));
+            input.onGesture(Gesture.FreeFall, () => this.raiseHostEvent(Gesture.FreeFall));
         }
-
-        /* handleGestureEvent(value: number): void {
-            switch (value) {
-                case DAL.ACCELEROMETER_EVT_SHAKE:
-                case DAL.ACCELEROMETER_EVT_3G:
-                case DAL.ACCELEROMETER_EVT_6G:
-                case DAL.ACCELEROMETER_EVT_8G:
-                case DAL.ACCELEROMETER_EVT_FACE_DOWN:
-                case DAL.ACCELEROMETER_EVT_FACE_UP:
-                case DAL.ACCELEROMETER_EVT_FREEFALL:
-                case DAL.ACCELEROMETER_EVT_TILT_LEFT:
-                case DAL.ACCELEROMETER_EVT_TILT_UP:
-                case DAL.ACCELEROMETER_EVT_TILT_DOWN:
-                case DAL.ACCELEROMETER_EVT_TILT_UP:
-                    this.raiseHostEvent(value);
-            }
-        }*/
 
         protected serializeState(): Buffer {
             const buf = control.createBuffer(6);

@@ -108,7 +108,7 @@ namespace jacdac {
          * @param dimension which channel to read
          */
         //% blockId=jacdacaccget block="jacdac %accelerometer %dimension"
-        //% group="Input" weight=5
+        //% group="Accelerometer" weight=5
         get(dimension: JacdacDimension): number {
             const s = this.state;
             if (!s || s.length < 6) return 0;
@@ -133,7 +133,7 @@ namespace jacdac {
          * @param handler 
          */
         //% blockId=jacadacacconevent block="jacdac %accelerometer on %gesture"
-        //% group="Input"
+        //% group="Accelerometer"
         onEvent(gesture: JacdacGesture, handler: () => void) {
             control.onEvent(this.id, gesture, handler);
         }

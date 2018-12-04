@@ -18,6 +18,8 @@ namespace jacdac {
     export const ACCELEROMETER_DRIVER_CLASS = JD_DRIVER_CLASS_MAKECODE_START + 3;
     export const BUTTON_DRIVER_CLASS = JD_DRIVER_CLASS_MAKECODE_START + 4;
     export const TOUCHBUTTON_DRIVER_CLASS = JD_DRIVER_CLASS_MAKECODE_START + 5;
+    export const LIGHT_SENSOR_DRIVER_CLASS = JD_DRIVER_CLASS_MAKECODE_START + 6;
+
     // events
     export const JD_MESSAGE_BUS_ID = JD_DRIVER_CLASS_MAKECODE_START;
     export const JD_DRIVER_EVT_FILL_CONTROL_PACKET = JD_DRIVER_CLASS_MAKECODE_START + 1;
@@ -212,7 +214,7 @@ namespace jacdac {
     export function drivers(): JDDevice[] {
         const buf: Buffer = __internalDrivers();
         const devices: JDDevice[] = [];
-        for(let k = 0; k < buf.length; k += JDDevice.SIZE) {
+        for (let k = 0; k < buf.length; k += JDDevice.SIZE) {
             devices.push(new JDDevice(buf.slice(k, JDDevice.SIZE)));
         }
         return devices;
@@ -425,7 +427,9 @@ namespace jacdac {
         State,
         Event,
         StartStream,
-        StopStream
+        StopStream,
+        LowThreshold,
+        HighThreshold
     }
 
     export function bufferEqual(l: Buffer, r: Buffer): boolean {
@@ -482,6 +486,12 @@ namespace jacdac {
                 case SensorCommand.StopStream:
                     this.stopStreaming();
                     return true;
+                case SensorCommand.LowThreshold:                
+                    this.setThreshold(true, packet.getNumber(NumberFormat.UInt32LE, 1));
+                    return true;
+                case SensorCommand.HighThreshold:
+                    this.setThreshold(false, packet.getNumber(NumberFormat.UInt32LE, 1));
+                    return true;
                 default:
                     // let the user deal with it
                     return this.handleCustomCommand(command, packet);
@@ -491,6 +501,11 @@ namespace jacdac {
         // override
         protected serializeState(): Buffer {
             return undefined;
+        }
+
+        // override
+        protected setThreshold(low: boolean, value: number) {
+
         }
 
         protected handleCustomCommand(command: number, pkt: JDPacket) {

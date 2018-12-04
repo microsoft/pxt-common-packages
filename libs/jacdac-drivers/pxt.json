@@ -4,11 +4,12 @@
     "files": [
         "sensordriver.ts",
         "bridgedriver.ts",
+        "buttondriver.ts",
+        "lightsensordriver.ts",
         "loggerdriver.ts",
         "messagebusdriver.ts",
         "batterydriver.ts",
         "accelerometerdriver.ts",
-        "buttondriver.ts",
         "touchbuttondriver.ts"
     ],
     "testFiles": [
