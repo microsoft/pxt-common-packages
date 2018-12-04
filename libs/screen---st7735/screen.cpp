@@ -2,8 +2,6 @@
 #include "ST7735.h"
 
 namespace pxt {
-    // target_panic has been called
-    static bool panicMode = false;
 
 class WDisplay {
   public:
@@ -77,79 +75,8 @@ void setPalette(Buffer buf) {
     display->newPalette = true;
 }
 
-static const uint8_t numbers[] = {
-    0x06, 0x09, 0x09, 0x09, 0x06, // 0
-    0x04, 0x06, 0x04, 0x04, 0x0e, // 1
-    0x07, 0x08, 0x06, 0x01, 0x0f, // 2
-    0x0f, 0x08, 0x04, 0x09, 0x06, // 3
-    0x0c, 0x0a, 0x09, 0x1f, 0x08, // 4
-    0x1f, 0x01, 0x0f, 0x10, 0x0f, // 5
-    0x08, 0x04, 0x0e, 0x11, 0x0e, // 6
-    0x1f, 0x08, 0x04, 0x02, 0x01, // 7
-    0x0e, 0x11, 0x0e, 0x11, 0x0e, // 8
-    0x0e, 0x11, 0x0e, 0x04, 0x02, // 9
-    0x11, 0x00, 0x0e, 0x1b, 0x11, // :(
-    // 0x11, 0x04, 0x04, 0x0a, 0x11, // :(
-};
-
-static void drawNumber(int idx, uint8_t *bmp, int x, int y, int hb) {
-    const uint8_t *src = &numbers[idx * 5];
-    y >>= 1;
-    auto mask = idx == 10 ? 0x22 : 0x11;
-    for (int i = 0; i < 5; i++) {
-        uint8_t ch = *src++;
-        for (int j = 0; j < 5; j++) {
-            if (ch & (1 << j)) {
-                for (int k = 0; k < 4; ++k) {
-                    auto p = bmp + (x + (j * 4) + k) * hb + (y + i * 2);
-                    *p++ = mask;
-                    *p++ = mask;
-                }
-            }
-        }
-    }
-}
-
-static void drawPanic(int code) {
-    auto display = getWDisplay();
-    auto hb = display->height >> 1;
-    auto ptr = display->screenBuf;
-    auto dw = display->width;
-
-    memset(ptr, 0, hb * dw);
-
-    drawNumber(10, ptr, 70, 20, hb);
-    int x = 50;
-    int y = 60;
-    drawNumber((code / 100) % 10, ptr, x, y, hb);
-    x += 24;
-    drawNumber((code / 10) % 10, ptr, x, y, hb);
-    x += 24;
-    drawNumber((code / 1) % 10, ptr, x, y, hb);
-    x += 24;
-
-    display->lcd.waitForSendDone();
-    display->lcd.sendIndexedImage(display->screenBuf, display->width, display->height, NULL);
-    display->lcd.waitForSendDone();
-}
-
-extern "C" void target_panic(int statusCode) {
-    if (panicMode)
-        return; // avoid recursive panic invocation        
-    // remember first panic code
-    panicMode = true;
-    DMESG("*** CODAL PANIC : [%d]", statusCode);
-    drawPanic(statusCode);
-    target_disable_irq();
-
-    while (1) {}
-}
-
 //%
 void updateScreen(Image_ img) {
-    if (panicMode)
-        return; // we're panicing already, don't draw
-
     auto display = getWDisplay();
 
     if (img && img != display->lastImg) {
