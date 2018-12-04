@@ -2,7 +2,7 @@ namespace jacdac {
     export class TouchButtonHostDriver extends SensorHostDriver {
         private button: TouchButton;
         constructor(name: string, button: TouchButton) {
-            super(name, jacdac.TOUCHBUTTON_DRIVER_CLASS);
+            super(name, jacdac.TOUCHBUTTON_DEVICE_CLASS);
             this.button = button;
             jacdac.BUTTON_EVENTS.forEach((ev, j) => {
                 control.onEvent(this.button.id(), ev, () => {

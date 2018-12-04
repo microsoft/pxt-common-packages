@@ -2,7 +2,7 @@ namespace jacdac {
     class BatteryDriver extends Driver {
         private level: () => number;
         constructor(level: () => number) {
-            super("bat", DriverType.HostDriver, jacdac.BATTERY_DRIVER_CLASS, 1);
+            super("bat", DriverType.HostDriver, jacdac.BATTERY_DEVICE_CLASS, 1);
             this.level = level;
             jacdac.addDriver(this);
         }
@@ -26,7 +26,7 @@ namespace jacdac {
     class BatterySniffer extends Driver {
         handler: (serialNumber: number, level: number) => void;
         constructor(handler: (serialNumber: number, level: number) => void) {
-            super("batmon", DriverType.SnifferDriver, jacdac.BATTERY_DRIVER_CLASS);
+            super("batmon", DriverType.SnifferDriver, jacdac.BATTERY_DEVICE_CLASS);
             this.handler = handler;
             jacdac.addDriver(this);
         }

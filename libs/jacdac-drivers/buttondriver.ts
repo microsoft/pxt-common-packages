@@ -13,14 +13,14 @@ namespace jacdac {
     //% fixedInstances
     export class ButtonVirtualDriver extends SensorVirtualDriver {
         constructor(name: string) {
-            super(name, jacdac.BUTTON_DRIVER_CLASS);
+            super(name, jacdac.BUTTON_DEVICE_CLASS);
         }
 
         /**
          * Reads the current x value from the sensor
          */
         //% blockId=jacadacbtispressed block="jacdac %button is pressed"
-        //% group="Input"
+        //% group="Buttons"
         isPressed(): boolean {
             const s = this.state;
             if (!s || s.length < 1) return false;
@@ -33,7 +33,7 @@ namespace jacdac {
          * @param handler 
          */
         //% blockId=jacadacbtnonevent block="jacdac %button on %event"
-        //% group="Input"
+        //% group="Buttons"
         onEvent(event: JDButtonEvent, handler: () => void) {
             control.onEvent(this.id, event, handler);
         }

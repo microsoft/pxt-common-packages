@@ -18,7 +18,8 @@ namespace servos {
  * A Joint Asynchronous Communications, Device Agnostic Control.
  */
 //% color="#E79251" weight=1 icon="\uf185"
-//% groups='["Input", "Broadcast", "Console", "Control"]'
+//% groups='["Broadcast", "Console", "Control"]'
+//% blockGap=8
 namespace jacdac {
 
 }

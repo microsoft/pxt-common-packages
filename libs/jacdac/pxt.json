@@ -4,6 +4,9 @@
     "files": [
         "jacdac.cpp",
         "jacdac.ts",
+        "driver.ts",
+        "packet.ts",
+        "sensordriver.ts",
         "jacdac.svg",
         "pxtparts.json",
         "pxt.json",

@@ -1,5 +1,6 @@
 namespace jacdac {
     //% fixedInstances
+    //% weight=1
     export class SensorVirtualDriver extends Driver {
         // virtual mode only
         protected _localTime: number;
@@ -22,7 +23,7 @@ namespace jacdac {
          */
         //% blockid=jacdacsensorstreaming block="jacdac %sensor set streaming %on"
         //% on.shadow=toggleOnOff weight=1
-        //% group="Input"
+        //% group="Sensors"
         public setStreaming(on: boolean) {
             const msg = control.createBuffer(1);
             msg.setNumber(NumberFormat.UInt8LE, 0, on ? SensorCommand.StartStream : SensorCommand.StopStream);
@@ -62,6 +63,14 @@ namespace jacdac {
 
         protected handleVirtualState(state: Buffer) {
             return true;
+        }
+
+        protected setThreshold(low: boolean, value: number) {
+            const buf = control.createBuffer(5);
+            const cmd = low ? SensorCommand.LowThreshold : SensorCommand.HighThreshold;
+            buf.setNumber(NumberFormat.UInt8LE, 0, cmd);
+            buf.setNumber(NumberFormat.Int32LE, 1, value);
+            this.sendPacket(buf);
         }
     }
 }

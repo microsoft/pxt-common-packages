@@ -24,9 +24,9 @@
 
 enum class LightCondition {
     //% block="dark"
-    Dark = ANALOG_THRESHOLD_LOW,
+    Dark = SENSOR_THRESHOLD_LOW,
     //% block="bright"
-    Bright = ANALOG_THRESHOLD_HIGH
+    Bright = SENSOR_THRESHOLD_HIGH
 };
 
 namespace pxt {
