@@ -18,6 +18,7 @@
 #define MEMDBG2 NOLOG
 
 #include "pxtconfig.h"
+#include "configkeys.h"
 
 #define intcheck(...) check(__VA_ARGS__)
 //#define intcheck(...) do {} while (0)
