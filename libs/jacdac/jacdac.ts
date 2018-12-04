@@ -7,6 +7,15 @@ enum JacDacDriverEvent {
     PairingResponse = DAL.JD_DRIVER_EVT_PAIRING_RESPONSE
 }
 
+enum JacDacEvent {
+    //% block="bus connected"
+    BusConnected = DAL.JD_SERIAL_EVT_BUS_CONNECTED,
+    //% block="bus disconnected"
+    BusDisconnected = DAL.JD_SERIAL_EVT_BUS_DISCONNECTED,
+    //% block="driver changed"
+    DriverChanged = DAL.JD_LOGIC_DRIVER_EVT_CHANGED
+}
+
 /**
  * JACDAC protocol support
  */
@@ -38,6 +47,12 @@ namespace jacdac {
 
     export type MethodCollection = ((p: Buffer) => boolean)[];
 
+    export function onEvent(event: JacDacEvent, handler: () => void) {
+        const id = event == JacDacEvent.DriverChanged ? jacdac.logicEventId() : jacdac.eventId();
+        if (id)
+            control.onEvent(id, event, handler);
+    }
+
     /**
      * Adds a JacDac device driver
      * @param n driver
@@ -49,7 +64,7 @@ namespace jacdac {
         }
 
         n.log(`add t${n.driverType} c${n.deviceClass}`)
-        const proxy = __internalAddDriver(n.driverType, n.deviceClass,
+        const proxy = jacdac.__internalAddDriver(n.driverType, n.deviceClass,
             [(p: Buffer) => n.handlePacket(p),
             (p: Buffer) => n.handleControlPacket(p)],
             n.controlData

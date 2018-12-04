@@ -6,12 +6,14 @@ namespace pxsim {
     }
 
     export class JacDacState {
+        eventId: number;
         board: BaseBoard;
         protocol: jacdac.JDProtocol;
         running = false;
         runtimeId: string;
 
         constructor(board: BaseBoard) {
+            this.eventId = pxsim.jacdac.DAL.DEVICE_ID_JACDAC0;
             this.board = board;
             this.protocol = new jacdac.JDProtocol();
             board.addMessageListener(msg => this.processMessage(msg));
@@ -22,16 +24,24 @@ namespace pxsim {
 
             this.running = true;
             this.runtimeId = runtime.id;
+        
             const cb = () => {
                 if (!this.running || this.runtimeId != runtime.id) return;
                 this.protocol.logic.periodicCallback();
                 setTimeout(cb, 50);
             };
             cb();
+
+            const b = board();
+            if (b)
+                b.bus.queue(this.eventId, pxsim.jacdac.DAL.JD_SERIAL_EVT_BUS_CONNECTED);
         }
 
         stop() {
             this.running = false;            
+            const b = board();
+            if (b)
+                b.bus.queue(this.eventId, pxsim.jacdac.DAL.JD_SERIAL_EVT_BUS_DISCONNECTED);
         }
 
         processMessage(msg: pxsim.SimulatorMessage) {

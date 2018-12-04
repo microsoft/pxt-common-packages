@@ -4,13 +4,13 @@
 
 #define JD_DRIVER_EVT_FILL_CONTROL_PACKET 50
 
-#define JD_MIN_VERSION(VERSION) (defined JD_VERSION && JD_VERSION >= VERSION)
+#define JD_MIN_VERSION(VERSION) (defined CODAL_JACDAC_WIRE_SERIAL && defined JD_VERSION && JD_VERSION >= VERSION)
 
 namespace jacdac {
 
 // Wrapper classes
 class WJacDac {
-#ifdef CODAL_JACDAC_WIRE_SERIAL
+#if JD_MIN_VERSION(1)
     CODAL_JACDAC_WIRE_SERIAL sws;
     codal::JACDAC jd;
     codal::JDProtocol protocol; // note that this is different pins than io->i2c
@@ -18,13 +18,13 @@ class WJacDac {
 #endif    
   public:
     WJacDac()
-#ifdef CODAL_JACDAC_WIRE_SERIAL
+#if JD_MIN_VERSION(1)
         : sws(*LOOKUP_PIN(JACK_TX))
         , jd(sws)
         , protocol(jd) 
 #endif
         {
-#ifdef CODAL_JACDAC_WIRE_SERIAL
+#if JD_MIN_VERSION(1)
         if (LOOKUP_PIN(JACK_HPEN)) {
             jr = new codal::JackRouter(*LOOKUP_PIN(JACK_TX), *LOOKUP_PIN(JACK_SENSE),
                                        *LOOKUP_PIN(JACK_HPEN), *LOOKUP_PIN(JACK_BZEN),
@@ -37,29 +37,37 @@ class WJacDac {
     }
 
     void start() {
-#ifdef CODAL_JACDAC_WIRE_SERIAL
+#if JD_MIN_VERSION(1)
     if (!jd.isRunning())
         jd.start();
 #endif
     }
 
     void stop() {
-#ifdef CODAL_JACDAC_WIRE_SERIAL
+#if JD_MIN_VERSION(1)
     if (jd.isRunning())
         jd.stop();
 #endif
     }
 
     bool isRunning() {
-#ifdef CODAL_JACDAC_WIRE_SERIAL
+#if JD_MIN_VERSION(1)
         return jd.isRunning();
 #else   
         return false;
 #endif
     }
 
+    bool isConnected() {
+#if JD_MIN_VERSION(2)
+        return jd.isConnected();
+#else
+        return false;
+#endif
+    }
+
     void setBridge(JDDriver* driver) {
-#ifdef CODAL_JACDAC_WIRE_SERIAL
+#if JD_MIN_VERSION(1)
         protocol.setBridge(*driver);
 #endif
     }
@@ -114,6 +122,23 @@ class WJacDac {
         return mkBuffer(NULL, 0);
 #endif
     }
+
+    int id() {
+#if JD_MIN_VERSION(1)
+        return jd.id;
+#else
+        return 0;
+#endif
+    }
+
+    int logicId() {
+#if JD_MIN_VERSION(1)
+        auto pLogic = JDProtocol::instance->drivers[0];
+        return pLogic ? pLogic->id : 0;
+#else
+    return 0;
+#endif
+    }
 };
 SINGLETON(WJacDac);
 
@@ -143,6 +168,30 @@ void stop() {
 //% parts=jacdac
 bool isRunning() {
     return getWJacDac()->isRunning();
+}
+
+/**
+* true if connected, false if there's a bad bus condition.
+*/
+//% parts=jacdac
+bool isConnected() {
+    return getWJacDac()->isConnected();
+}
+
+/**
+* Gets the jacdac event id
+*/
+//% parts=jacdac
+int eventId() {
+    return getWJacDac()->id();
+}
+
+/**
+* Gets the jacdac logic driver event id
+*/
+//% parts=jacdac
+int logicEventId() {
+    return getWJacDac()->logicId();
 }
 
 /**
@@ -249,7 +298,7 @@ Internal
 //% parts=jacdac
 JacDacDriverStatus __internalAddDriver(int driverType, int driverClass, MethodCollection methods, Buffer controlData) {
     getWJacDac();
-#ifdef CODAL_JACDAC_WIRE_SERIAL
+#if JD_MIN_VERSION(1)
     return new JDProxyDriver(JDDevice((DriverType)driverType, driverClass), methods, controlData);
 #else
     return new JDProxyDriver();
@@ -274,7 +323,7 @@ namespace JacDacDriverStatusMethods {
 */
 //% property
 Buffer device(JacDacDriverStatus d) {
-#ifdef CODAL_JACDAC_WIRE_SERIAL
+#if JD_MIN_VERSION(1)
     return pxt::mkBuffer((const uint8_t *)d->getDevice(), sizeof(JDDevice));
 #else
     return NULL;
@@ -284,7 +333,7 @@ Buffer device(JacDacDriverStatus d) {
 /** Check if driver is connected. */
 //% property
 bool isConnected(JacDacDriverStatus d) {
-#ifdef CODAL_JACDAC_WIRE_SERIAL
+#if JD_MIN_VERSION(1)
     return d->isConnected();
 #else
     return false;
@@ -294,7 +343,7 @@ bool isConnected(JacDacDriverStatus d) {
 /** Get device id for events. */
 //% property
 uint32_t id(JacDacDriverStatus d) {
-#ifdef CODAL_JACDAC_WIRE_SERIAL
+#if JD_MIN_VERSION(1)
     return d->id;
 #else
     return 999;
@@ -304,7 +353,7 @@ uint32_t id(JacDacDriverStatus d) {
 /** If paired, paired instance address */
 //% property
 bool isPairedInstanceAddress(JacDacDriverStatus d, uint8_t address) {
-#ifdef CODAL_JACDAC_WIRE_SERIAL
+#if JD_MIN_VERSION(1)
     return d->isPairedInstanceAddress(address);
 #else
     return false;
@@ -316,7 +365,7 @@ bool isPairedInstanceAddress(JacDacDriverStatus d, uint8_t address) {
 */
 //%
 void setBridge(JacDacDriverStatus d) {
-#ifdef CODAL_JACDAC_WIRE_SERIAL
+#if JD_MIN_VERSION(1)
     jacdac::getWJacDac()->setBridge(d);
 #endif    
 }
