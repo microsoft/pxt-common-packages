@@ -46,17 +46,6 @@ namespace jacdac {
             this.setThreshold(condition == JacDacTemperatureCondition.Cold, temperature);
             control.onEvent(this.id, condition, handler);
         }
-
-        /**
-         * Sets the threshold value for the event
-         * @param level 
-         * @param value 
-         */
-        //% blockId=jacdaclightsetthrshold block="jacdac %lightsensor set threshold %level to %value"
-        //% group="Light sensor"
-        setLightConditionThreshold(level: JacdacLightCondition, value: number) {
-            this.setThreshold(level == JacdacLightCondition.Dark, value);
-        }
     }
 
     //% fixedInstance whenUsed

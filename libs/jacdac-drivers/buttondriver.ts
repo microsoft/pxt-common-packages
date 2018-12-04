@@ -20,7 +20,7 @@ namespace jacdac {
          * Reads the current x value from the sensor
          */
         //% blockId=jacadacbtispressed block="jacdac %button is pressed"
-        //% group="Input"
+        //% group="Buttons"
         isPressed(): boolean {
             const s = this.state;
             if (!s || s.length < 1) return false;
@@ -33,7 +33,7 @@ namespace jacdac {
          * @param handler 
          */
         //% blockId=jacadacbtnonevent block="jacdac %button on %event"
-        //% group="Input"
+        //% group="Buttons"
         onEvent(event: JDButtonEvent, handler: () => void) {
             control.onEvent(this.id, event, handler);
         }
