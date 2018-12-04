@@ -128,8 +128,12 @@ class WJacDac {
     }
 
     int logicId() {
+#if JD_MIN_VERSION(1)
         auto pLogic = JDProtocol::instance->drivers[0];
         return pLogic ? pLogic->id : 0;
+#else
+    return 0;
+#endif
     }
 };
 SINGLETON(WJacDac);

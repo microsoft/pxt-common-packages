@@ -49,7 +49,8 @@ namespace jacdac {
 
     export function onEvent(event: JacDacEvent, handler: () => void) {
         const id = event == JacDacEvent.DriverChanged ? jacdac.logicEventId() : jacdac.eventId();
-        control.onEvent(id, event, handler);
+        if (id)
+            control.onEvent(id, event, handler);
     }
 
     /**
