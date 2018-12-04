@@ -124,7 +124,11 @@ class WJacDac {
     }
 
     int id() {
+#if JD_MIN_VERSION(1)
         return jd.id;
+#else
+        return 0;
+#endif
     }
 
     int logicId() {
