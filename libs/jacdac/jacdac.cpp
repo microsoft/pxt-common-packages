@@ -74,7 +74,7 @@ class WJacDac {
     }
 
     void setJackRouterOutput(int output) {
-#ifdef CODAL_JACDAC_WIRE_SERIAL
+#if 0
         if (!jr)
             return;
         if (output < 0)
