@@ -8,8 +8,13 @@
 #define GC_ALLOC_BLOCK xmalloc
 #endif
 
+#define IS_FREE(vt) ((uint32_t)(vt)&2)
+#define IS_ARRAY(vt) ((uint32_t)(vt) >> 31)
+#define IS_MARKED(vt) ((uint32_t)(vt)&1)
+
 //#define PXT_GC_DEBUG 1
 #define PXT_GC_CHECKS 1
+//#define PXT_GC_STRESS 1
 
 #ifdef PXT_GC_DEBUG
 #define LOG DMESG
@@ -55,7 +60,7 @@ ThreadContext *threadContexts;
 #endif
 
 void popThreadContext(ThreadContext *ctx) {
-    VLOG("pop: %p n:%p p:%p", ctx, ctx->next, ctx->prev);
+    VLOG("pop: %p", ctx);
 
     if (!ctx)
         return;
@@ -141,16 +146,16 @@ struct GCBlock {
     RefObject data[0];
 };
 
-Segment gcRoots;
-Segment workQueue;
+LLSegment gcRoots;
+LLSegment workQueue;
 GCBlock *firstBlock;
 static RefBlock *firstFree;
 
-#define IS_OUTSIDE_GC(v)                                                                           \
-    (isReadOnly(v) || (*(uint32_t *)v & 1) || (*(VTable **)v)->magic != VTABLE_MAGIC)
+#define IS_OUTSIDE_GC(v) (isReadOnly(v) || IS_MARKED(*(uint32_t *)v))
+#define NO_MAGIC(vt) ((VTable *)vt)->magic != VTABLE_MAGIC
 
 void gcScan(TValue v) {
-    if (IS_OUTSIDE_GC(v))
+    if (IS_OUTSIDE_GC(v) || NO_MAGIC(*(uint32_t *)v))
         return;
     *(uint32_t *)v |= 1;
     workQueue.push(v);
@@ -161,7 +166,7 @@ void gcScanMany(TValue *data, unsigned len) {
     for (unsigned i = 0; i < len; ++i) {
         auto v = data[i];
         // VLOG("psh: %p %d %d", v, isReadOnly(v), (*(uint32_t *)v & 1));
-        if (IS_OUTSIDE_GC(v))
+        if (IS_OUTSIDE_GC(v) || NO_MAGIC(*(uint32_t *)v))
             continue;
         *(uint32_t *)v |= 1;
         workQueue.push(v);
@@ -169,7 +174,12 @@ void gcScanMany(TValue *data, unsigned len) {
 }
 
 void gcScanSegment(Segment &seg) {
-    gcScanMany(seg.getData(), seg.getLength());
+    auto data = seg.getData();
+    if (!data)
+        return;
+    GC_CHECK(!IS_MARKED(((uint32_t *)data)[-1]), 47);
+    ((uint32_t *)data)[-1] |= 1;
+    gcScanMany(data, seg.getLength());
 }
 
 #define getScanMethod(vt) ((RefObjectMethod)(((VTable *)(vt))->methods[2]))
@@ -180,7 +190,11 @@ void gcProcess(TValue v) {
         return;
     auto p = (RefObject *)v;
     auto vt = p->vtable;
-    if (vt & 1)
+    if (IS_ARRAY(vt)) {
+        p->vtable |= 1;
+        return;
+    }
+    if (NO_MAGIC(vt))
         return;
     VVLOG("gcProcess: %p", p);
     auto scan = getScanMethod(vt);
@@ -197,6 +211,9 @@ void gcProcess(TValue v) {
 }
 
 static void mark(int flags) {
+#ifdef PXT_GC_DEBUG
+    flags |= 2;
+#endif
     auto data = gcRoots.getData();
     auto len = gcRoots.getLength();
     if (flags & 2) {
@@ -240,9 +257,11 @@ static void mark(int flags) {
 static uint32_t getObjectSize(RefObject *o) {
     auto vt = o->vtable;
     uint32_t r;
-    GC_CHECK(vt != 0 && !(vt & 1), 49);
-    if (vt & 2) {
+    GC_CHECK(vt != 0 && !IS_MARKED(vt), 49);
+    if (IS_FREE(vt)) {
         r = vt >> 2;
+    } else if (IS_ARRAY(vt)) {
+        r = (vt << 1) >> 3;
     } else {
         auto sz = getSizeMethod(vt);
         // GC_CHECK(0x2000 <= (intptr_t)sz && (intptr_t)sz <= 0x100000, 47);
@@ -255,7 +274,11 @@ static uint32_t getObjectSize(RefObject *o) {
 __attribute__((noinline)) static void allocateBlock() {
     auto sz = GC_BLOCK_SIZE;
 #ifdef GC_GET_HEAP_SIZE
-    sz = GC_GET_HEAP_SIZE() - 4 * 1024;
+    sz = GC_GET_HEAP_SIZE() - 12 * 1024;
+    if (firstBlock) {
+        gc(2); // dump roots
+        target_panic(PANIC_GC_OOM);
+    }
 #endif
     auto curr = (GCBlock *)GC_ALLOC_BLOCK(sz);
     curr->blockSize = sz - sizeof(GCBlock);
@@ -278,17 +301,20 @@ static void sweep(int flags) {
         totalSize += words;
         VLOG("sweep: %p - %p", d, end);
         while (d < end) {
-            if (d->vtable & 1) {
+            if (IS_MARKED(d->vtable)) {
                 VVLOG("Live %p", d);
                 d->vtable &= ~1;
                 d += getObjectSize(d);
             } else {
                 auto start = (RefBlock *)d;
-                while (d < end && !(d->vtable & 1)) {
-                    if (d->vtable & 2) {
+                while (d < end && !IS_MARKED(d->vtable)) {
+                    if (IS_FREE(d->vtable)) {
                         VVLOG("Free %p", d);
+                    } else if (IS_ARRAY(d->vtable)) {
+                        VVLOG("Free* %p", d);
                     } else {
                         VVLOG("Dead %p", d);
+                        GC_CHECK(((VTable *)d->vtable)->magic == VTABLE_MAGIC, 41);
                         d->destroyVT();
                     }
                     d += getObjectSize(d);
@@ -317,12 +343,6 @@ static void sweep(int flags) {
         LOG("GC %d/%d free", freeSize, totalSize);
     firstFree = freePtr;
 
-    if (flags & 2) {
-        // wait for heap dump
-        while (1) {
-        }
-    }
-
 #ifndef GC_GET_HEAP_SIZE
     // if the heap is 90% full, allocate a new block
     if (freeSize * 10 <= totalSize) {
@@ -339,6 +359,20 @@ void gc(int flags) {
     sweep(flags);
     VLOG("GC done");
     stopPerfCounter(PerfCounters::GC);
+}
+
+void *gcAllocateArray(int numbytes) {
+    numbytes = (numbytes + 3) & ~3;
+    numbytes += 4;
+    auto r = (uint32_t *)gcAllocate(numbytes);
+    *r = 0x80000000U | numbytes;
+    return r + 1;
+}
+
+void *gcPermAllocate(int numbytes) {
+    auto r = (uint32_t *)gcAllocateArray(numbytes);
+    registerGCPtr((TValue)(r - 1));
+    return r;
 }
 
 void *gcAllocate(int numbytes) {
@@ -365,7 +399,7 @@ void *gcAllocate(int numbytes) {
             VVLOG("p=%p", p);
             GC_CHECK(!isReadOnly((TValue)p), 49);
             auto vt = p->vtable;
-            if (!(vt & 2))
+            if (!IS_FREE(vt))
                 oops(43);
             int left = (vt >> 2) - numwords;
             if (left >= 0) {

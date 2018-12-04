@@ -21,8 +21,7 @@ void decr(TValue e) {
 #endif
 
 Action mkAction(int totallen, RefAction *act) {
-    check(getVTable(act)->classNo == BuiltInType::RefAction,
-          PANIC_INVALID_BINARY_HEADER, 1);
+    check(getVTable(act)->classNo == BuiltInType::RefAction, PANIC_INVALID_BINARY_HEADER, 1);
 
     if (totallen == 0) {
         return (TValue)act; // no closure needed
@@ -41,7 +40,7 @@ Action mkAction(int totallen, RefAction *act) {
 
 RefRecord *mkClassInstance(VTable *vtable) {
     intcheck(vtable->methods[0] == &RefRecord_destroy, PANIC_SIZE, 3);
-    //intcheck(vtable->methods[1] == &RefRecord_print, PANIC_SIZE, 4);
+    // intcheck(vtable->methods[1] == &RefRecord_print, PANIC_SIZE, 4);
 
     void *ptr = gcAllocate(vtable->numbytes);
     RefRecord *r = new (ptr) RefRecord(vtable);
@@ -127,7 +126,7 @@ void Segment::set(unsigned i, TValue value) {
     return;
 }
 
-static inline ramint_t growthFactor(ramint_t size) {
+static inline int growthFactor(int size) {
     if (size == 0) {
         return 4;
     }
@@ -144,10 +143,15 @@ static inline ramint_t growthFactor(ramint_t size) {
         return Segment::MaxSize;
 }
 
-void Segment::growByMin(ramint_t minSize) {
-    ramint_t newSize = max(minSize, growthFactor(size));
+void LLSegment::setLength(unsigned newLen) {
+    if (newLen > Segment::MaxSize)
+        return;
 
-    if (size < newSize) {
+    if (newLen > size) {
+        int newSize = growthFactor(size);
+        if (newSize < (int)newLen)
+            newSize = newLen;
+
         // this will throw if unable to allocate
         TValue *tmp = (TValue *)(xmalloc(newSize * sizeof(TValue)));
 
@@ -160,6 +164,52 @@ void Segment::growByMin(ramint_t minSize) {
 
         // free older segment;
         free(data);
+
+        data = tmp;
+        size = newSize;
+    } else if (newLen < length) {
+        memset(data + newLen, 0, (length - newLen) * sizeof(TValue));
+    }
+
+    length = newLen;
+}
+
+void LLSegment::set(unsigned idx, TValue v) {
+    if (idx >= Segment::MaxSize)
+        return;
+    if (idx >= length)
+        setLength(idx + 1);
+    data[idx] = v;
+}
+
+TValue LLSegment::pop() {
+    if (length > 0) {
+        --length;
+        TValue value = data[length];
+        data[length] = 0;
+        return value;
+    }
+    return 0;
+}
+
+void LLSegment::destroy() {
+    length = size = 0;
+    free(data);
+    data = nullptr;
+}
+
+void Segment::growByMin(ramint_t minSize) {
+    ramint_t newSize = max(minSize, (ramint_t)growthFactor(size));
+
+    if (size < newSize) {
+        // this will throw if unable to allocate
+        TValue *tmp = (TValue *)(gcAllocateArray(newSize * sizeof(TValue)));
+
+        // Copy existing data
+        if (size)
+            memcpy(tmp, data, size * sizeof(TValue));
+        // fill the rest with default value
+        memset(tmp + size, 0, (newSize - size) * sizeof(TValue));
 
         data = tmp;
         size = newSize;
@@ -266,7 +316,6 @@ void Segment::destroy() {
     this->print();
 #endif
     length = size = 0;
-    free(data);
     data = nullptr;
 }
 
@@ -371,12 +420,6 @@ void error(PXT_PANIC code, int subcode) {
 uint16_t *bytecode;
 TValue *globals;
 
-unsigned *allocate(ramint_t sz) {
-    unsigned *arr = new unsigned[sz];
-    memset(arr, 0, sz * sizeof(unsigned));
-    return arr;
-}
-
 void checkStr(bool cond, const char *msg) {
     if (!cond) {
         while (true) {
@@ -411,7 +454,8 @@ void exec_binary(unsigned *pc) {
     checkStr(ver == 0x4210, ":( Bad runtime version");
 
     bytecode = *((uint16_t **)pc++); // the actual bytecode is here
-    globals = (TValue *)allocate(getNumGlobals());
+    globals = (TValue *)gcPermAllocate(sizeof(TValue) * getNumGlobals());
+    memset(globals, 0, sizeof(TValue) * getNumGlobals());
 
     // can be any valid address, best in RAM for speed
     globals[0] = (TValue)&globals;

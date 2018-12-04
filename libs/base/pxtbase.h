@@ -168,6 +168,13 @@ inline bool canBeTagged(int v) {
 #endif
 
 typedef enum {
+    PANIC_CODAL_OOM = 20,
+    PANIC_GC_OOM = 21,
+    PANIC_CODAL_HEAP_ERROR = 30,
+    PANIC_CODAL_NULL_DEREFERENCE = 40,
+    PANIC_CODAL_USB_ERROR = 50,
+    PANIC_CODAL_HARDWARE_CONFIGURATION_ERROR = 90,
+
     PANIC_INVALID_BINARY_HEADER = 901,
     PANIC_OUT_OF_BOUNDS = 902,
     PANIC_REF_DELETED = 903,
@@ -182,6 +189,7 @@ typedef enum {
     PANIC_MISSING_PROPERTY = 912,
     PANIC_INVALID_IMAGE = 913,
     PANIC_CALLED_FROM_ISR = 914,
+    PANIC_HEAP_DUMPED = 915,
 
     PANIC_CAST_FIRST = 980,
     PANIC_CAST_FROM_UNDEFINED = 980,
@@ -225,9 +233,6 @@ struct VTable;
 
 //%
 Action mkAction(int totallen, RefAction *act);
-// allocate [sz] words and clear them
-//%
-unsigned *allocate(ramint_t sz);
 //%
 int templateHash();
 //%
@@ -478,7 +483,7 @@ class Segment {
     static constexpr ramint_t MaxSize = (((1U << (8 * sizeof(ramint_t) - 1)) - 1) << 1) + 1;
     static constexpr TValue DefaultValue = TAG_UNDEFINED; // == NULL
 
-    Segment() : data(nullptr), length(0), size(0){};
+    Segment() : data(nullptr), length(0), size(0) {}
 
     TValue get(unsigned i) { return i < length ? data[i] : NULL; }
     void set(unsigned i, TValue value);
@@ -496,6 +501,27 @@ class Segment {
 
     void print();
 
+    TValue *getData() { return data; }
+};
+
+// Low-Level segment using system malloc
+class LLSegment {
+  private:
+    TValue *data;
+    ramint_t length;
+    ramint_t size;
+
+  public:
+    LLSegment() : data(nullptr), length(0), size(0) {}
+
+    void set(unsigned idx, TValue v);
+    void push(TValue value) { set(length, value); }
+    TValue pop();
+    void destroy();
+    void setLength(unsigned newLen);
+
+    TValue get(unsigned i) { return i < length ? data[i] : NULL; }
+    unsigned getLength() { return length; };
     TValue *getData() { return data; }
 };
 
@@ -770,6 +796,8 @@ void gcProcess(TValue v);
 #endif
 
 void *gcAllocate(int numbytes);
+void *gcAllocateArray(int numbytes);
+void *gcPermAllocate(int numbytes);
 #ifndef PXT_GC
 inline void *gcAllocate(int numbytes) {
     return xmalloc(numbytes);
@@ -855,7 +883,7 @@ void insertAt(RefCollection *c, int x, TValue value);
 int indexOf(RefCollection *c, TValue x, int start);
 //%
 bool removeElement(RefCollection *c, TValue x);
-}
+} // namespace Array_
 
 #define NEW_GC(T) new (gcAllocate(sizeof(T))) T()
 
