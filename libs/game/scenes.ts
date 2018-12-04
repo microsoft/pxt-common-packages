@@ -125,14 +125,14 @@ namespace scene {
      * @param index
      * @param img
      */
-    //% blockId=gamesettile block="set tileset %index=colorindexpicker to %img=screen_image_picker||with wall %wall=toggleOnOff"
+    //% blockId=gamesettile block="set all %color=colorindexpicker to %img=screen_image_picker||with wall %wall=toggleOnOff"
     //% group="Tiles"
     //% help=scene/set-tile
-    export function setTileset(index: number, img: Image, wall?: boolean) {
+    export function setAllTiles(color: number, img: Image, wall?: boolean) {
         const scene = game.currentScene();
         if (!scene.tileMap)
             scene.tileMap = new tiles.TileMap();
-        scene.tileMap.setTile(index, img, !!wall);
+        scene.tileMap.setTile(color, img, !!wall);
     }
 
     /**
