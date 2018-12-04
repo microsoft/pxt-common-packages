@@ -15,19 +15,19 @@ namespace game {
         }
 
         get left() {
-            return this.parent.left + this.ox;
+            return Fx.iadd(this.ox, this.parent._x)
         }
 
         get top() {
-            return this.parent.top + this.oy;
+            return Fx.iadd(this.oy, this.parent._y)
         }
 
         get right() {
-            return this.left + this.width - 1;
+            return Fx.iadd(this.width - 1, this.left)
         }
 
         get bottom() {
-            return this.top + this.height - 1;
+            return Fx.iadd(this.height - 1, this.top)
         }
     }
 

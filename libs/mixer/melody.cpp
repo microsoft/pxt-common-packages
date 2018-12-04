@@ -104,3 +104,7 @@ void playInstructions(Buffer buf) {
 }
 
 } // namespace music
+
+namespace jacdac {
+__attribute__((weak)) void setJackRouterOutput(int output) {}
+} // namespace jacdac

@@ -36,7 +36,7 @@ namespace pxsim.control {
         board().bus.wait(id, evid, cb);
     }
 
-    export function allocateNotifyEvent() : number {
+    export function allocateNotifyEvent(): number {
         let b = board();
         return b.bus.nextNotifyEvent++;
     }
@@ -60,13 +60,19 @@ namespace pxsim.control {
     export function dmesg(msg: string) {
         console.log(`DMESG: ${msg}`);
     }
-    export function dmesgPtr(msg: string, ptr: any) {
-        console.log(`DMESG: ${msg} ${ptr}`);
-    }   
-    export function dmesgValue(ptr: any) {
-        console.log(`DMESG: ${ptr}`);
+    function toStr(v: any) {
+        if (v instanceof RefRecord) {
+            return `${v.vtable.name}@${v.id}`
+        }
+        return v + ""
     }
-    export function gc() {}
+    export function dmesgPtr(msg: string, ptr: any) {
+        console.log(`DMESG: ${msg} ${toStr(ptr)}`);
+    }
+    export function dmesgValue(ptr: any) {
+        console.log(`DMESG: ${toStr(ptr)}`);
+    }
+    export function gc() { }
     export function profilingEnabled() {
         return !!runtime.perfCounters
     }

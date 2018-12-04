@@ -10,7 +10,7 @@ class PhysicsEngine {
 
     removeSprite(sprite: Sprite) { }
 
-    moveSprite(s: Sprite, tm: tiles.TileMap, dx: number, dy: number) { }
+    moveSprite(s: Sprite, tm: tiles.TileMap, dx: Fx8, dy: Fx8) { }
 
     draw() { }
 
@@ -25,10 +25,11 @@ class PhysicsEngine {
     overlaps(sprite: Sprite): Sprite[] { return []; }
 }
 
-const MAX_DISTANCE = 15; // pixels
-const MAX_TIME_STEP = 0.1; // seconds
-const MAX_VELOCITY = MAX_DISTANCE / MAX_TIME_STEP;
-const GAP = 0.1;
+const MAX_DISTANCE = Fx8(15); // pixels
+const MAX_TIME_STEP = Fx8(0.1); // seconds
+const MAX_VELOCITY = Fx.div(MAX_DISTANCE, MAX_TIME_STEP);
+const NEG_MAX_VELOCITY = Fx.neg(MAX_VELOCITY)
+const GAP = Fx8(0.1);
 
 /**
  * A physics engine that does simple AABB bounding box check
@@ -56,19 +57,21 @@ class ArcadePhysicsEngine extends PhysicsEngine {
     }
 
     move(dt: number) {
-        dt = Math.min(MAX_TIME_STEP, dt);
-        const dt2 = dt / 2;
+        const dtf = Fx.min(MAX_TIME_STEP, Fx8(dt))
+        const dt2 = Fx.idiv(dtf, 2)
 
         const tm = game.currentScene().tileMap;
 
         for (let s of this.sprites) {
-            const ovx = constrain(s.vx);
-            const ovy = constrain(s.vy);
+            const ovx = constrain(s._vx);
+            const ovy = constrain(s._vy);
 
-            s.vx = constrain(s.vx + s.ax * dt)
-            s.vy = constrain(s.vy + s.ay * dt)
+            s._vx = constrain(Fx.add(s._vx, Fx.mul(s._ax, dtf)))
+            s._vy = constrain(Fx.add(s._vy, Fx.mul(s._ay, dtf)))
 
-            this.moveSprite(s, tm, (s.vx + ovx) * dt2, (s.vy + ovy) * dt2);
+            this.moveSprite(s, tm,
+                Fx.mul(Fx.add(s._vx, ovx), dt2),
+                Fx.mul(Fx.add(s._vy, ovy), dt2))
         }
     }
 
@@ -112,7 +115,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
                     scene.overlapHandlers
                         .filter(h => h.type == sprite.type && h.otherType == overlapper.type)
-                        .forEach(h => { 
+                        .forEach(h => {
                             higher._overlappers.push(lower.id);
                             control.runInParallel(() => {
                                 h.handler(sprite, overlapper);
@@ -122,16 +125,20 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 }
             }
 
-            const xDiff = sprite.x - sprite._lastX;
-            const yDiff = sprite.y - sprite._lastY;
-            if ((xDiff !== 0 || yDiff !== 0) && Math.abs(xDiff) < MAX_DISTANCE && Math.abs(yDiff) < MAX_DISTANCE) {
-                // Undo the move
-                sprite.x = sprite._lastX;
-                sprite.y = sprite._lastY;
+            const xDiff = Fx.sub(sprite._x, sprite._lastX);
+            const yDiff = Fx.sub(sprite._y, sprite._lastY);
+            if (xDiff !== Fx.zeroFx8 || yDiff !== Fx.zeroFx8) {
+                if (Fx.abs(xDiff) < MAX_DISTANCE &&
+                    Fx.abs(yDiff) < MAX_DISTANCE) {
+                    // Undo the move
+                    sprite._x = sprite._lastX;
+                    sprite._y = sprite._lastY;
 
-                // Now move it with the tilemap in mind
-                this.moveSprite(sprite, tm, xDiff, yDiff);
+                    // Now move it with the tilemap in mind
+                    this.moveSprite(sprite, tm, xDiff, yDiff);
+                }
             }
+
         }
     }
 
@@ -157,72 +164,72 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         }
     }
 
-    public moveSprite(s: Sprite, tm: tiles.TileMap, dx: number, dy: number) {
-        if (dx === 0 && dy === 0) {
-            s._lastX = s.x;
-            s._lastY = s.y;
+    public moveSprite(s: Sprite, tm: tiles.TileMap, dx: Fx8, dy: Fx8) {
+        if (dx === Fx.zeroFx8 && dy === Fx.zeroFx8) {
+            s._lastX = s._x;
+            s._lastY = s._y;
             return;
         }
-      
+
         if (tm && tm.enabled && !(s.flags & sprites.Flag.Ghost)) {
             let hitWall = false;
             const bounce = s.flags & sprites.Flag.BounceOnWall;
-          
-            s._hitboxes.forEach(box => {
-                const t0 = box.top >> 4;
-                const r0 = box.right >> 4;
-                const b0 = box.bottom >> 4;
-                const l0 = box.left >> 4;
 
-                if (dx > 0) {
+            s._hitboxes.forEach(box => {
+                const t0 = Fx.toIntShifted(box.top, 4);
+                const r0 = Fx.toIntShifted(box.right, 4);
+                const b0 = Fx.toIntShifted(box.bottom, 4);
+                const l0 = Fx.toIntShifted(box.left, 4);
+
+                if (dx > Fx.zeroFx8) {
                     let topCollide = tm.isObstacle(r0 + 1, t0);
                     if (topCollide || tm.isObstacle(r0 + 1, b0)) {
-                        const nextRight = box.right + dx;
-                        const maxRight = ((r0 + 1) << 4) - GAP
-                        if (bounce && nextRight >= maxRight) s.vx = -s.vx;
+                        const nextRight = Fx.add(box.right, dx);
+                        const maxRight = Fx.sub(Fx8(((r0 + 1) << 4)), GAP);
+                        if (bounce && nextRight >= maxRight) s._vx = Fx.neg(s._vx);
                         if (nextRight > maxRight) {
                             hitWall = true;
-                            dx -= (nextRight - maxRight);
+                            dx = Fx.sub(dx, Fx.sub(nextRight, maxRight))
                             s.registerObstacle(CollisionDirection.Right, tm.getObstacle(r0 + 1, topCollide ? t0 : b0))
                         }
                     }
                 }
-                else if (dx < 0) {
+                else if (dx < Fx.zeroFx8) {
                     const topCollide = tm.isObstacle(l0 - 1, t0);
                     if (topCollide || tm.isObstacle(l0 - 1, b0)) {
-                        const nextLeft = box.left + dx;
-                        const minLeft = (l0 << 4) + GAP;
-                        if (bounce && nextLeft <= minLeft) s.vx = -s.vx;
+                        const nextLeft = Fx.add(box.left, dx);
+                        const minLeft = Fx.iadd(l0 << 4, GAP);
+                        if (bounce && nextLeft <= minLeft) s._vx = Fx.neg(s._vx);
                         if (nextLeft < minLeft) {
                             hitWall = true;
-                            dx -= (nextLeft - minLeft);
+                            dx = Fx.sub(dx, Fx.sub(nextLeft, minLeft))
                             s.registerObstacle(CollisionDirection.Left, tm.getObstacle(l0 - 1, topCollide ? t0 : b0))
                         }
                     }
                 }
 
-                if (dy > 0) {
+                if (dy > Fx.zeroFx8) {
                     const rightCollide = tm.isObstacle(r0, b0 + 1);
                     if (rightCollide || tm.isObstacle(l0, b0 + 1)) {
-                        const nextBottom = box.bottom + dy;
-                        const maxBottom = ((b0 + 1) << 4) - GAP;
-                        if (bounce && nextBottom >= maxBottom) s.vy = -s.vy;
+                        const nextBottom = Fx.add(box.bottom, dy);
+                        const maxBottom = Fx.sub(Fx8((b0 + 1) << 4), GAP);
+                        if (bounce && nextBottom >= maxBottom) s._vy = Fx.neg(s._vy);
                         if (nextBottom > maxBottom) {
                             hitWall = true;
-                            dy -= (nextBottom - maxBottom);
+                            dy = Fx.sub(dy, Fx.sub(nextBottom, maxBottom));
                             s.registerObstacle(CollisionDirection.Bottom, tm.getObstacle(rightCollide ? r0 : l0, b0 + 1))
                         }
                     }
                 }
-                else if (dy < 0) {
+                else if (dy < Fx.zeroFx8) {
                     const rightCollide = tm.isObstacle(r0, t0 - 1);
                     if (tm.isObstacle(r0, t0 - 1) || tm.isObstacle(l0, t0 - 1)) {
-                        const nextTop = box.top + dy;
-                        const minTop = (t0 << 4) + GAP;
-                        if (bounce && nextTop <= minTop) s.vy = -s.vy;
+                        const nextTop = Fx.add(box.top, dy);
+                        const minTop = Fx.iadd(t0 << 4, GAP);
+                        if (bounce && nextTop <= minTop) s._vy = Fx.neg(s._vy);
                         if (nextTop < minTop) {
                             hitWall = true;
-                            dy -= (nextTop - minTop);
+                            dy = Fx.sub(dy, Fx.sub(nextTop, minTop));
                             s.registerObstacle(CollisionDirection.Top, tm.getObstacle(rightCollide ? r0 : l0, t0 - 1))
                         }
                     }
@@ -230,32 +237,33 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
                 // Now check each corner and bump out if necessary. This step is needed for
                 // the case where a hitbox goes diagonally into the corner of a tile.
-                const t1 = (box.top + dy) >> 4;
-                const r1 = (box.right + dx) >> 4;
-                const b1 = (box.bottom + dy) >> 4;
-                const l1 = (box.left + dx) >> 4;
+                const t1 = Fx.toIntShifted(Fx.add(box.top, dy), 4);
+                const r1 = Fx.toIntShifted(Fx.add(box.right, dx), 4);
+                const b1 = Fx.toIntShifted(Fx.add(box.bottom, dy), 4);
+                const l1 = Fx.toIntShifted(Fx.add(box.left, dx), 4);
 
                 if (tm.isObstacle(r1, t1)) {
                     hitWall = true;
                     // bump left
-                    if (bounce) s.vx = -s.vx;
-                    dx -= (box.right + dx - ((r1 << 4) - GAP))
+                    if (bounce) s._vx = Fx.neg(s._vx);
+
+                    dx = Fx.sub(Fx.iadd(r1 << 4, box.right), GAP)
                     s.registerObstacle(CollisionDirection.Right, tm.getObstacle(r1, t1));
                 }
                 else if (tm.isObstacle(l1, t1)) {
                     hitWall = true;
                     // bump right
-                    if (bounce) s.vx = -s.vx;
-                    dx -= (box.left + dx - (((l1 + 1) << 4) + GAP));
+                    if (bounce) s._vx = Fx.neg(s._vx);
+                    dx = Fx.sub(Fx.iadd((l1 + 1) << 4, GAP), box.left)
                     s.registerObstacle(CollisionDirection.Left, tm.getObstacle(l1, t1));
                 }
                 else {
                     const rightCollide = tm.isObstacle(r1, b1);
                     if (rightCollide || tm.isObstacle(l1, b1)) {
-                        if (bounce) s.vy = -s.vy;
+                        if (bounce) s._vy = Fx.neg(s._vy);
                         hitWall = true;
                         // bump up because that is usually better for platformers
-                        dy -= (box.bottom + dy - ((b1 << 4) - GAP));
+                        dy = Fx.add(box.bottom, Fx.sub(Fx8(b1 << 4), GAP))
                         s.registerObstacle(CollisionDirection.Bottom, tm.getObstacle(rightCollide ? r1 : l1, b1));
                     }
                 }
@@ -266,18 +274,16 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             });
         }
 
-        s.x += dx;
-        s.y += dy;
-        s._lastX = s.x;
-        s._lastY = s.y;
+        //if (Fx.add(Fx.abs(dx), Fx.abs(dy)) > Fx8(5))
+        //    control.dmesg(`fast move  ${dx}/${dy}`)
+
+        s._x = Fx.add(s._x, dx);
+        s._y = Fx.add(s._y, dy);
+        s._lastX = s._x;
+        s._lastY = s._y;
     }
 }
 
-function constrain(v: number) {
-    if (v > MAX_VELOCITY)
-        return MAX_VELOCITY
-    if (v < -MAX_VELOCITY)
-        return -MAX_VELOCITY
-    return v
-    //return Math.abs(v) > MAX_VELOCITY ? Math.sign(v) * MAX_VELOCITY : v;
+function constrain(v: Fx8) {
+    return Fx.max(Fx.min(MAX_VELOCITY, v), NEG_MAX_VELOCITY)
 }

@@ -45,25 +45,80 @@ enum FlipOption {
  **/
 //% blockNamespace=sprites color="#4B7BEC" blockGap=8
 class Sprite implements SpriteLike {
+    _x: Fx8
+    _y: Fx8
+    private _z: number
+    _vx: Fx8
+    _vy: Fx8
+    _ax: Fx8
+    _ay: Fx8
+
     //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="x (horizontal position)"
-    x: number
+    get x(): number {
+        return Fx.toInt(this._x) + (this._image.width >> 1)
+    }
+    //% group="Properties" blockSetVariable="mySprite"
+    //% blockCombine block="x (horizontal position)"
+    set x(v: number) {
+        this._x = Fx8(v - (this._image.width >> 1))
+    }
+
     //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="y (vertical position)"
-    y: number
-    private _z: number
+    get y(): number {
+        return Fx.toInt(this._y) + (this._image.height >> 1)
+    }
+    //% group="Properties" blockSetVariable="mySprite"
+    //% blockCombine block="y (vertical position)"
+    set y(v: number) {
+        this._y = Fx8(v - (this._image.height >> 1))
+    }
+
     //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="vx (velocity x)"
-    vx: number
+    get vx(): number {
+        return Fx.toFloat(this._vx)
+    }
+    //% group="Properties" blockSetVariable="mySprite"
+    //% blockCombine block="vx (velocity x)"
+    set vx(v: number) {
+        this._vx = Fx8(v)
+    }
+
     //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="vy (velocity y)"
-    vy: number
+    get vy(): number {
+        return Fx.toFloat(this._vy)
+    }
+    //% group="Properties" blockSetVariable="mySprite"
+    //% blockCombine block="vy (velocity y)"
+    set vy(v: number) {
+        this._vy = Fx8(v)
+    }
+
     //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="ax (acceleration x)"
-    ax: number
+    get ax(): number {
+        return Fx.toFloat(this._ax)
+    }
+    //% group="Properties" blockSetVariable="mySprite"
+    //% blockCombine block="ax (acceleration x)"
+    set ax(v: number) {
+        this._ax = Fx8(v)
+    }
+
     //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="ay (acceleration y)"
-    ay: number
+    get ay(): number {
+        return Fx.toFloat(this._ay)
+    }
+    //% group="Properties" blockSetVariable="mySprite"
+    //% blockCombine block="ay (acceleration y)"
+    set ay(v: number) {
+        this._ay = Fx8(v)
+    }
+
     /** 
      * Custom data
      */
@@ -78,8 +133,8 @@ class Sprite implements SpriteLike {
     //% group="Properties"
     layer: number;
 
-    _lastX: number;
-    _lastY: number;
+    _lastX: Fx8;
+    _lastY: Fx8;
 
     _action: number; //Used with animation library
 
@@ -107,11 +162,11 @@ class Sprite implements SpriteLike {
     private destroyHandler: () => void;
 
     constructor(img: Image) {
-        this.x = screen.width >> 1;
-        this.y = screen.height >> 1;
+        this._x = Fx8(screen.width - img.width >> 1);
+        this._y = Fx8(screen.height - img.height >> 1);
         this._z = 0
-        this._lastX = this.x;
-        this._lastY = this.y;
+        this._lastX = this._x;
+        this._lastY = this._y;
         this.vx = 0
         this.vy = 0
         this.ax = 0
@@ -189,13 +244,13 @@ class Sprite implements SpriteLike {
             const b = (nMaxY + this.top) >> 4;
 
             if (tmap.isObstacle(l, t) && (minXDiff > 0 || minYDiff > 0)) {
-                scene.physicsEngine.moveSprite(this, scene.tileMap, minXDiff, minYDiff);
+                scene.physicsEngine.moveSprite(this, scene.tileMap, Fx8(minXDiff), Fx8(minYDiff));
             } else if (tmap.isObstacle(r, t) && (maxXDiff < 0 || minYDiff > 0)) {
-                scene.physicsEngine.moveSprite(this, scene.tileMap, maxXDiff, minYDiff);
+                scene.physicsEngine.moveSprite(this, scene.tileMap, Fx8(maxXDiff), Fx8(minYDiff));
             } else if (tmap.isObstacle(l, b) && (minXDiff > 0 || maxYDiff < 0)) {
-                scene.physicsEngine.moveSprite(this, scene.tileMap, minXDiff, maxYDiff);
+                scene.physicsEngine.moveSprite(this, scene.tileMap, Fx8(minXDiff), Fx8(maxYDiff));
             } else if (tmap.isObstacle(r, b) && (maxXDiff < 0 || maxYDiff < 0)) {
-                scene.physicsEngine.moveSprite(this, scene.tileMap, maxXDiff, maxYDiff);
+                scene.physicsEngine.moveSprite(this, scene.tileMap, Fx8(maxXDiff), Fx8(maxYDiff));
             }
         }
     }
@@ -228,12 +283,12 @@ class Sprite implements SpriteLike {
     //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="left"
     get left() {
-        return this.x - (this.width >> 1)
+        return Fx.toInt(this._x)
     }
     //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="left"
     set left(value: number) {
-        this.x = value + (this.width >> 1);
+        this._x = Fx8(value)
     }
     //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="right"
@@ -243,27 +298,27 @@ class Sprite implements SpriteLike {
     //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="right"
     set right(value: number) {
-        this.x = value - (this.width >> 1);
+        this.left = value - this.width
     }
     //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine
     get top() {
-        return this.y - (this.height >> 1)
+        return Fx.toInt(this._y);
     }
     //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine
     set top(value: number) {
-        this.y = value + (this.height >> 1);
+        this._y = Fx8(value);
     }
     //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="bottom"
     get bottom() {
-        return this.top + this.height
+        return this.top + this.height;
     }
     //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="bottom"
     set bottom(value: number) {
-        this.y = value - (this.height >> 1);
+        this.top = value - this.height;
     }
     /**
      * The type of sprite
@@ -326,7 +381,7 @@ class Sprite implements SpriteLike {
             return;
         }
 
-        
+
 
         let pixelsOffset = 0;
         let holdTextSeconds = 1.5;
@@ -347,7 +402,7 @@ class Sprite implements SpriteLike {
             speed = Math.max(speed, 45);
             holdTextSeconds = maxTextWidth / speed;
             holdTextSeconds = Math.min(holdTextSeconds, 1.5);
-        } 
+        }
 
         if (timeOnScreen) {
             timeOnScreen = timeOnScreen + control.millis();
@@ -356,9 +411,9 @@ class Sprite implements SpriteLike {
         if (!this._hitboxes || this._hitboxes.length == 0) {
             bubbleOffset = 0;
         } else {
-            bubbleOffset = this._hitboxes[0].top;
+            bubbleOffset = Fx.toInt(this._hitboxes[0].top);
             for (let i = 0; i < this._hitboxes.length; i++) {
-                bubbleOffset = Math.min(bubbleOffset, this._hitboxes[i].top);
+                bubbleOffset = Math.min(bubbleOffset, Fx.toInt(this._hitboxes[i].top));
             }
 
             // Gets the length from sprites location to its highest hitbox
