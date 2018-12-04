@@ -14,7 +14,7 @@ namespace storage {
      * Appends a new line to the file
     * @param filename name of the file, eg: "log.txt"
      */
-    //% part="storage" 
+    //% parts="storage" 
     //% blockId="storage_append_line" block="append file $filename with line $data"
     export function appendLine(filename: string, data: string): void {
         append(filename, data + NEW_LINE);

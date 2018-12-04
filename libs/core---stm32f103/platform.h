@@ -86,6 +86,22 @@
 #define PC_13 0x2D
 #define PC_14 0x2E
 #define PC_15 0x2F
+#define PD_0 0x30
+#define PD_1 0x31
+#define PD_2 0x32
+#define PD_3 0x33
+#define PD_4 0x34
+#define PD_5 0x35
+#define PD_6 0x36
+#define PD_7 0x37
+#define PD_8 0x38
+#define PD_9 0x39
+#define PD_10 0x3A
+#define PD_11 0x3B
+#define PD_12 0x3C
+#define PD_13 0x3D
+#define PD_14 0x3E
+#define PD_15 0x3F
 #endif
 
 #endif

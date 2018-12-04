@@ -1,16 +1,16 @@
 namespace controller {
-    //% fixedInstance block="left"
+    //% fixedInstance whenUsed block="left"
     export const left = new Button(1)
-    //% fixedInstance block="up"
+    //% fixedInstance whenUsed block="up"
     export const up = new Button(2)
-    //% fixedInstance block="right"
+    //% fixedInstance whenUsed block="right"
     export const right = new Button(3)
-    //% fixedInstance block="down"
+    //% fixedInstance whenUsed block="down"
     export const down = new Button(4)
-    //% fixedInstance block="A"
+    //% fixedInstance whenUsed block="A"
     export const A = new Button(5)
-    //% fixedInstance block="B"
+    //% fixedInstance whenUsed block="B"
     export const B = new Button(6)
-    //% fixedInstance block="menu"
+    //% fixedInstance whenUsed block="menu"
     export const menu = new Button(7)
 }

@@ -139,7 +139,7 @@ class Sprite implements SpriteLike {
     _action: number; //Used with animation library
 
     /**
-     * Time to live in game ticks. The lifespan decreases by 1 on each game update
+     * Time to live in milliseconds. The lifespan decreases by 1 on each millisecond
      * and the sprite gets destroyed when it reaches 0.
      */
     //% group="Properties" blockSetVariable="mySprite"

@@ -9,13 +9,15 @@
         "enums.d.ts",
         "ns.ts",
         "pxtparts.json",
-        "lis3dh.svg"
+        "lis3dh.svg",
+        "jacdac.ts"
     ],
     "testFiles": [
         "test.ts"
     ],
     "public": true,
     "dependencies": {
-        "core": "file:../core"
+        "core": "file:../core",
+        "jacdac": "file:../jacdac"
     }
 }

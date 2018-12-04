@@ -3,7 +3,7 @@ namespace sprites {
      * Gets the sprite type
      */
     //% blockHidden=1 shim=ENUM_GET
-    //% blockId=spritetype block="$kind" enumInitialMembers="Player,Enemy"
+    //% blockId=spritetype block="$kind" enumInitialMembers="Player,Food,Enemy"
     //% enumName=SpriteKind enumMemberName=kind enumPromptHint="e.g. Coin, Fireball, Asteroid..."
     export function _spriteType(kind: number): number {
         return kind;

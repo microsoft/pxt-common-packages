@@ -198,7 +198,7 @@ namespace game {
 
             while (strIndex < str.length) {
                 const currRowCharacters = rowIndex < rowsOfCharacters - rowsWithCursor ?
-                                                                    charactersPerRow : charactersPerCursorRow;
+                    charactersPerRow : charactersPerCursorRow;
                 const lastIndex = strIndex + currRowCharacters - 1;
 
                 if (str.charAt(lastIndex) === " " || lastIndex >= str.length - 1) {
@@ -264,7 +264,7 @@ namespace game {
             let current = 0;
             for (let row = 0; row < rowsOfCharacters; row++) {
                 const currRowCharacters = row % rowsOfCharacters < rowsOfCharacters - rowsWithCursor ?
-                                                                    charactersPerRow : charactersPerCursorRow;
+                    charactersPerRow : charactersPerCursorRow;
 
                 this.image.print(
                     str.substr(current, currRowCharacters),
@@ -428,6 +428,7 @@ namespace game {
                     dialog.nextPage();
                 }
                 else {
+                    scene.setBackgroundImage(null); // GC it
                     game.popScene();
                     done = true;
                 }
@@ -454,13 +455,13 @@ namespace game {
 
     function defaultFrame() {
         return screen.isMono ?
-        img`
+            img`
         1 1 1
         1 . 1
         1 1 1
         `
-        :
-        img`
+            :
+            img`
         . . . . . . . . . . . .
         . b b b b b b b b b b .
         . b b b b b b b b b b c
@@ -478,13 +479,13 @@ namespace game {
 
     function defaultSplashFrame() {
         return screen.isMono ?
-        img`
+            img`
         1 1 1
         . . .
         1 1 1
         `
-        :
-        img`
+            :
+            img`
         1 1 1
         f f f
         1 1 1
@@ -493,7 +494,7 @@ namespace game {
 
     function defaultCursorImage() {
         return screen.isMono ?
-        img`
+            img`
         1 1 1 1 1 1 1 . . .
         1 . . 1 . . . 1 . .
         1 . 1 . 1 . . . 1 .
@@ -503,8 +504,8 @@ namespace game {
         1 1 1 1 1 1 1 . . .
         . . . . . . . . . .
         `
-        :
-        img`
+            :
+            img`
         7 7 7 7 7 7 7 . . .
         7 7 7 1 7 7 7 7 . .
         7 7 1 7 1 7 7 7 7 .
@@ -587,6 +588,7 @@ namespace game {
             if (currentState && !pressed) {
                 pressed = true;
                 done = true;
+                scene.setBackgroundImage(null); // GC it
                 game.popScene();
             }
             else if (pressed && !currentState) {
