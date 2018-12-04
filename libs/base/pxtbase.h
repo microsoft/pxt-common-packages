@@ -18,6 +18,7 @@
 #define MEMDBG2 NOLOG
 
 #include "pxtconfig.h"
+#include "configkeys.h"
 
 #define intcheck(...) check(__VA_ARGS__)
 //#define intcheck(...) do {} while (0)
@@ -55,6 +56,7 @@ void *operator new(size_t size);
 #ifndef ramint_t
 // this type limits size of arrays
 #ifdef __linux__
+// TODO fix the inline array accesses to take note of this!
 #define ramint_t uint32_t
 #else
 #define ramint_t uint16_t
@@ -167,6 +169,13 @@ inline bool canBeTagged(int v) {
 #endif
 
 typedef enum {
+    PANIC_CODAL_OOM = 20,
+    PANIC_GC_OOM = 21,
+    PANIC_CODAL_HEAP_ERROR = 30,
+    PANIC_CODAL_NULL_DEREFERENCE = 40,
+    PANIC_CODAL_USB_ERROR = 50,
+    PANIC_CODAL_HARDWARE_CONFIGURATION_ERROR = 90,
+
     PANIC_INVALID_BINARY_HEADER = 901,
     PANIC_OUT_OF_BOUNDS = 902,
     PANIC_REF_DELETED = 903,
@@ -181,6 +190,7 @@ typedef enum {
     PANIC_MISSING_PROPERTY = 912,
     PANIC_INVALID_IMAGE = 913,
     PANIC_CALLED_FROM_ISR = 914,
+    PANIC_HEAP_DUMPED = 915,
 
     PANIC_CAST_FIRST = 980,
     PANIC_CAST_FROM_UNDEFINED = 980,
@@ -224,9 +234,6 @@ struct VTable;
 
 //%
 Action mkAction(int totallen, RefAction *act);
-// allocate [sz] words and clear them
-//%
-unsigned *allocate(ramint_t sz);
 //%
 int templateHash();
 //%
@@ -470,32 +477,26 @@ class Segment {
     ramint_t size;
 
     // this just gives max value of ramint_t
-    static constexpr ramint_t MaxSize = (((1U << (8 * sizeof(ramint_t) - 1)) - 1) << 1) + 1;
-    static constexpr TValue DefaultValue = TAG_UNDEFINED;
-
-    static ramint_t growthFactor(ramint_t size);
     void growByMin(ramint_t minSize);
-    void growBy(ramint_t newSize);
     void ensure(ramint_t newSize);
 
   public:
-    Segment() : data(nullptr), length(0), size(0){};
+    static constexpr ramint_t MaxSize = (((1U << (8 * sizeof(ramint_t) - 1)) - 1) << 1) + 1;
+    static constexpr TValue DefaultValue = TAG_UNDEFINED; // == NULL
 
-    TValue get(unsigned i);
+    Segment() : data(nullptr), length(0), size(0) {}
+
+    TValue get(unsigned i) { return i < length ? data[i] : NULL; }
     void set(unsigned i, TValue value);
-    void setRef(unsigned i, TValue value);
 
     unsigned getLength() { return length; };
     void setLength(unsigned newLength);
-    void resize(unsigned newLength) { setLength(newLength); }
 
-    void push(TValue value);
+    void push(TValue value) { set(length, value); }
     TValue pop();
 
     TValue remove(unsigned i);
     void insert(unsigned i, TValue value);
-
-    bool isValidIndex(unsigned i);
 
     void destroy();
 
@@ -504,13 +505,33 @@ class Segment {
     TValue *getData() { return data; }
 };
 
+// Low-Level segment using system malloc
+class LLSegment {
+  private:
+    TValue *data;
+    ramint_t length;
+    ramint_t size;
+
+  public:
+    LLSegment() : data(nullptr), length(0), size(0) {}
+
+    void set(unsigned idx, TValue v);
+    void push(TValue value) { set(length, value); }
+    TValue pop();
+    void destroy();
+    void setLength(unsigned newLen);
+
+    TValue get(unsigned i) { return i < length ? data[i] : NULL; }
+    unsigned getLength() { return length; };
+    TValue *getData() { return data; }
+};
+
 // A ref-counted collection of either primitive or ref-counted objects (String, Image,
 // user-defined record, another collection)
 class RefCollection : public RefObject {
-  private:
+  public:
     Segment head;
 
-  public:
     RefCollection();
 
     static void destroy(RefCollection *coll);
@@ -520,19 +541,7 @@ class RefCollection : public RefObject {
 
     unsigned length() { return head.getLength(); }
     void setLength(unsigned newLength) { head.setLength(newLength); }
-
-    void push(TValue x);
-    TValue pop();
-    TValue getAt(int i);
-    void setAt(int i, TValue x);
-    // removes the element at index i and shifts the other elements left
-    TValue removeAt(int i);
-    // inserts the element at index i and moves the other elements right.
-    void insertAt(int i, TValue x);
-
-    int indexOf(TValue x, int start);
-    bool removeElement(TValue x);
-
+    TValue getAt(int i) { return head.get(i); }
     TValue *getData() { return head.getData(); }
 };
 
@@ -788,6 +797,8 @@ void gcProcess(TValue v);
 #endif
 
 void *gcAllocate(int numbytes);
+void *gcAllocateArray(int numbytes);
+void *gcPermAllocate(int numbytes);
 #ifndef PXT_GC
 inline void *gcAllocate(int numbytes) {
     return xmalloc(numbytes);
@@ -853,7 +864,27 @@ int compare(String a, String b);
 namespace Array_ {
 //%
 RefCollection *mk();
-}
+//%
+int length(RefCollection *c);
+//%
+void setLength(RefCollection *c, int newLength);
+//%
+void push(RefCollection *c, TValue x);
+//%
+TValue pop(RefCollection *c);
+//%
+TValue getAt(RefCollection *c, int x);
+//%
+void setAt(RefCollection *c, int x, TValue y);
+//%
+TValue removeAt(RefCollection *c, int x);
+//%
+void insertAt(RefCollection *c, int x, TValue value);
+//%
+int indexOf(RefCollection *c, TValue x, int start);
+//%
+bool removeElement(RefCollection *c, TValue x);
+} // namespace Array_
 
 #define NEW_GC(T) new (gcAllocate(sizeof(T))) T()
 

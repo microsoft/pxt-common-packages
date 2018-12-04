@@ -89,6 +89,8 @@ void RefImage::clamp(int *x, int *y) {
 }
 
 RefImage::RefImage(BoxedBuffer *buf) : PXT_VTABLE_INIT(RefImage), _buffer((uintptr_t)buf) {
+    if (!buf)
+        oops(21);
     incrRC(buf);
 }
 RefImage::RefImage(uint32_t sz) : PXT_VTABLE_INIT(RefImage), _buffer((sz << 2) | 3) {}

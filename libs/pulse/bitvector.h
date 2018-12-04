@@ -2,7 +2,7 @@
 #define CABLE_BITVECTOR_H
 
 class BitVector {
-    Segment data;
+    LLSegment data;
     int len;
 
     uint32_t get32(int idx) { return (uint32_t)data.get(idx >> 5); }

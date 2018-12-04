@@ -57,7 +57,7 @@ class WDisplay {
         height = getConfig(CFG_DISPLAY_HEIGHT, 128);
         lcd.setAddrWindow(offX, offY, width, height);
         DMESG("screen: %d x %d, off=%d,%d", width, height, offX, offY);
-        screenBuf = new uint8_t[width * height / 2 + 20];
+        screenBuf = (uint8_t*)gcPermAllocate(width * height / 2 + 20);
         lastImg = NULL;
     }
 };
