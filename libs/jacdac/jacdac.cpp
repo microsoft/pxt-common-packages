@@ -59,7 +59,7 @@ class WJacDac {
     }
 
     bool isConnected() {
-#if JD_MIN_VERSION(VERSION)
+#if JD_MIN_VERSION(2)
         return jd.isConnected();
 #else
         return false;
