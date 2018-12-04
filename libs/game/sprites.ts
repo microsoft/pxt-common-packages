@@ -21,7 +21,7 @@ namespace sprites {
      * @param img the image
      */
     //% group="Create"
-    //% blockId=spritescreate block="sprite %img=screen_image_picker of kind %kind=spritetype"
+    //% blockId=spritescreate block="sprite %img=screen_image_picker||of kind %kind=spritetype"
     //% expandableArgumentMode=toggle
     //% blockSetVariable=mySprite
     //% weight=100 help=sprites/create
@@ -58,12 +58,12 @@ namespace sprites {
      * The sprite auto-destroys when it leaves the screen. You can modify position after it's created.
      */
     //% group="Create"
-    //% blockId=spritescreateprojectile block="projectile %img=screen_image_picker vx %vx vy %vy of kind %kind=spritetype || from sprite %sprite=variables_get"
+    //% blockId=spritescreateprojectile block="projectile %img=screen_image_picker vx %vx vy %vy || of kind %kind=spritetype from sprite %sprite=variables_get"
     //% weight=99 help=sprites/create-projectile
     //% blockSetVariable=projectile
     //% inlineInputMode=inline
     //% expandableArgumentMode=toggle
-    export function createProjectile(img: Image, vx: number, vy: number, kind: number, sprite?: Sprite) {
+    export function createProjectile(img: Image, vx: number, vy: number, kind?: number, sprite?: Sprite) {
         const s = sprites.create(img, kind);
         s.vx = vx
         s.vy = vy
@@ -97,9 +97,9 @@ namespace sprites {
      * @param kind the kind of sprite to create
      */
     //% group="Lifecycle"
-    //% blockId=spritecreateempty block="create empty sprite of kind %kind=spritetype"
+    //% blockId=spritecreateempty block="create empty sprite||of kind %kind=spritetype"
     //% weight=98
-    export function createEmptySprite(kind: number): void {
+    export function createEmptySprite(kind?: number): void {
         sprites.create(image.create(1, 1), kind);
     }
 
