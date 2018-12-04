@@ -85,6 +85,10 @@ namespace pxsim.jacdac {
         JD_RADIO_HISTORY_SIZE = 4,
         JD_RADIO_MAXIMUM_BUFFERS = 10,
         JD_RADIO_HEADER_SIZE = 4,
+        DEVICE_ID_JACDAC0 = 29,
+        DEVICE_ID_JACDAC1 = 30,
+        JD_SERIAL_EVT_BUS_CONNECTED = 5,
+        JD_SERIAL_EVT_BUS_DISCONNECTED = 6,
     }
 
     export function start() {
@@ -104,10 +108,18 @@ namespace pxsim.jacdac {
         return state && state.running;
     }
 
+    export function isConnected() {
+        return isRunning();
+    }
+
     export function clearBridge() {
         const state = getJacDacState();
         if (state)
             state.protocol.bridge = undefined;
+    }
+
+    export function id() {
+        return DAL.DEVICE_ID_JACDAC0;
     }
 
     export function __internalDrivers(): pxsim.RefBuffer {

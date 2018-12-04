@@ -58,6 +58,14 @@ class WJacDac {
 #endif
     }
 
+    bool isConnected() {
+#if JD_MIN_VERSION(VERSION)
+        return jd.isConnected();
+#else
+        return false;
+#endif
+    }
+
     void setBridge(JDDriver* driver) {
 #ifdef CODAL_JACDAC_WIRE_SERIAL
         protocol.setBridge(*driver);
@@ -114,6 +122,10 @@ class WJacDac {
         return mkBuffer(NULL, 0);
 #endif
     }
+
+    int id() {
+        return jd.id;
+    }
 };
 SINGLETON(WJacDac);
 
@@ -143,6 +155,22 @@ void stop() {
 //% parts=jacdac
 bool isRunning() {
     return getWJacDac()->isRunning();
+}
+
+/**
+* true if connected, false if there's a bad bus condition.
+*/
+//% parts=jacdac
+bool isConnected() {
+    return getWJacDac()->isConnected();
+}
+
+/**
+* Gets the jacdac event id
+*/
+//% parts=jacdac
+int eventId() {
+    return getWJacDac()->id();
 }
 
 /**
