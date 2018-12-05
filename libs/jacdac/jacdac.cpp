@@ -20,7 +20,11 @@ class WJacDac {
     WJacDac()
 #if JD_MIN_VERSION(1)
         : sws(*LOOKUP_PIN(JACK_TX))
+#if JD_MIN_VERSION(2)
+        , jd(sws, LOOKUP_PIN(JACK_BUSLED))
+#else
         , jd(sws)
+#endif
         , protocol(jd) 
 #endif
         {
