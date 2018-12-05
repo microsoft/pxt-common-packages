@@ -95,8 +95,22 @@ namespace jacdac {
         get flags(): number {
             return this.buf.getNumber(NumberFormat.UInt16LE, 2);
         }
+        set flags(value: number) {
+            this.buf.setNumber(NumberFormat.UInt16LE, 2, value);    
+        }
         get serialNumber(): number {
             return this.buf.getNumber(NumberFormat.UInt32LE, 4);
+        }
+        set serialNumber(value: number) {
+            this.buf.setNumber(NumberFormat.UInt32LE, 4, value);
+        }
+        setMode(m: DriverType, initialised = false) {
+            this.flags &= ~DAL.JD_DEVICE_DRIVER_MODE_MSK;
+            this.flags |= m;
+            if (initialised)
+                this.flags |= DAL.JD_DEVICE_FLAGS_INITIALISED;
+            else
+                this.flags &= ~DAL.JD_DEVICE_FLAGS_INITIALISED;
         }
         get driverClass(): number {
             return this.buf.getNumber(NumberFormat.UInt32LE, 8);

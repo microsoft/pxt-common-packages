@@ -1,12 +1,24 @@
-namespace scene {
-    export let systemMenuActive = false;
-    export function registerSystemMenu() {
-        if (systemMenuActive) {
-            return;
-        }
+namespace scene.systemMenu {
+    export let active = false;
+
+    interface MenuItem {
+        name: () => string;
+        handler: () => void;
+    }
+    let customItems: MenuItem[] = undefined;
+    export function addEntry(name: () => string, handler: () => void) {
+        if (!customItems) customItems = [];
+        customItems.push({
+            name: name,
+            handler: handler
+        });
+    }
+
+    export function register() {
+        if (active) return; // don't show system menu, while in system menu
 
         controller.menu.onEvent(ControllerButtonEvent.Pressed, function () {
-            systemMenuActive = true;
+            active = true;
             const m = new menu.Menu();
             m.addItem("volume", () => {});
             m.addItem("brightness", () => {});
@@ -23,7 +35,14 @@ namespace scene {
                 }
                 m.hide();
             });
-            m.onHidden = () => systemMenuActive = false;
+            if (customItems)
+                customItems.forEach(item => {
+                    m.addItem(item.name(), () => {
+                        m.hide();
+                        item.handler();
+                    })
+                });                
+            m.onHidden = () => active = false;
             m.show();
         })
     }

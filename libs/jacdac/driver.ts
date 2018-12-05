@@ -92,50 +92,18 @@ namespace jacdac {
         }
     }
 
-    /**
-     * base class for pairable drivers
-    */
-    export class PairableDriver extends Driver {
-        constructor(name: string, isHost: boolean, deviceClass: number) {
-            super(name, isHost ? DriverType.PairableHostDriver : DriverType.PairedDriver, deviceClass);
-        }
-
-        protected canSendPacket(): boolean {
-            return this.isConnected && this.device.isPaired();
-        }
-
-        public handlePacket(pkt: Buffer): boolean {
-            const packet = new JDPacket(pkt);
-            this.log(`rec ${packet.data.length}b from ${packet.address}`)
-            const dev = this.device;
-            if (!this.isConnected || !dev.isPaired()) {
-                this.log("not conn")
-                return true;
-            }
-            if (!this._proxy.isPairedInstanceAddress(packet.address)) {
-                this.log('invalid paired address')
-                return true;
-            }
-            if (dev.isPairedDriver())
-                return this.handleHostPacket(packet);
-            else
-                return this.handleVirtualPacket(packet);
+    export class VirtualDriver extends Driver {
+        constructor(name: string, deviceClass: number, controlDataLength?: number) {
+            super(name, DriverType.VirtualDriver, deviceClass, controlDataLength);
         }
 
         /**
-         * Processes the packet received by the host
-         * @param packet 
+         * Specifies the serial number that this virtual driver should bind to
+         * @param serialNumber 
          */
-        protected handleHostPacket(packet: JDPacket): boolean {
-            return true;
-        }
-
-        /**
-         * Processes the packet received by the virtual driver
-         * @param packet 
-         */
-        protected handleVirtualPacket(packet: JDPacket): boolean {
-            return true;
+        setSerialNumber(serialNumber: number) {
+            this.device.serialNumber = serialNumber;
+            this.device.setMode(DriverType.VirtualDriver);
         }
     }
 }
