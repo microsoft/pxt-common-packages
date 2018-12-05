@@ -865,6 +865,7 @@ namespace menu {
             this.appendChild(new JustifiedContent(this.label, Alignment.Left, Alignment.Center));
 
             this.id = id;
+            this.visible = true;
         }
 
         get selected() {
@@ -927,8 +928,8 @@ namespace menu {
                 const select = value == i;
                 if (select != item.selected) {
                     item.selected = select;
-                    if (item.selected)
-                        focus(item, true);
+                    //if (item.selected)
+                    //    focus(item, true);
                 }
             }
         }
