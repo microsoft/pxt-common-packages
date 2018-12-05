@@ -792,10 +792,6 @@ void gcProcessStacks(int flags);
 
 void gcProcess(TValue v);
 
-#ifndef PXT_USE_XMALLOC
-#define xmalloc malloc
-#endif
-
 void *gcAllocate(int numbytes);
 void *gcAllocateArray(int numbytes);
 void *gcPermAllocate(int numbytes);

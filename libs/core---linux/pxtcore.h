@@ -14,8 +14,8 @@ static inline void itoa(int v, char *dst) {
     snprintf(dst, 30, "%d", v);
 }
 
-#define PXT_USE_XMALLOC
 extern "C" void *xmalloc(size_t sz);
+#define xfree free
 
 #define GC_ALLOC_BLOCK gcAllocBlock
 

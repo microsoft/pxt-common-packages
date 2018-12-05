@@ -163,7 +163,7 @@ void LLSegment::setLength(unsigned newLen) {
         memset(tmp + size, 0, (newSize - size) * sizeof(TValue));
 
         // free older segment;
-        free(data);
+        xfree(data);
 
         data = tmp;
         size = newSize;
@@ -194,7 +194,7 @@ TValue LLSegment::pop() {
 
 void LLSegment::destroy() {
     length = size = 0;
-    free(data);
+    xfree(data);
     data = nullptr;
 }
 

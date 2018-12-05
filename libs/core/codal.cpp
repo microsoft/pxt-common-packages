@@ -47,11 +47,11 @@ static void commInit() {
         // bytes, not 4 without the volatile, gcc assumes 8 byte alignment on malloc()
         volatile unsigned hp = (unsigned)p;
         if (hp & 4) {
-            free(p);
+            xfree(p);
             p = xmalloc(8);
         }
         if (p == commBase) {
-            free(p);
+            xfree(p);
             // allocate the comm section; this is never freed
             p = xmalloc(commSize);
             if (p != commBase)
@@ -68,7 +68,7 @@ static void commInit() {
     while (head) {
         auto p = head;
         head = head->next;
-        free(p);
+        xfree(p);
     }
 }
 
