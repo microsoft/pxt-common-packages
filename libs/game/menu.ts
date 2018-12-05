@@ -16,7 +16,7 @@ enum ButtonId {
 }
 
 namespace menu {
-    let consolePriority = ConsolePrority.Debug;
+    export let consolePriority = ConsolePriority.Debug;
     function log(msg: string) {
         console.add(consolePriority, `menu> ${msg}`);
     }
@@ -867,24 +867,17 @@ namespace menu {
             this.id = id;
         }
 
-        handleInput(button: number) {
-            log(`input list item ${button}`)
-            switch (button) {
-                case ButtonId.A:
-                    if (this.handler) this.handler();
-                    break;
-            }
-            return true;
-        }
-
         get selected() {
             return this.background.color != 0;
         }
 
         set selected(value: boolean) {
-            this.background.color = value ? 10 : 0;
-            this.label.color = value ? 1 : 2;
-            this.notifyChange();
+            const sel = this.background.color != 0;
+            if (sel != value) {
+                this.background.color = value ? 10 : 0;
+                this.label.color = value ? 1 : 2;
+                this.notifyChange();
+            }
         }
     }
 
@@ -937,7 +930,7 @@ namespace menu {
                     if (item.selected)
                         focus(item, true);
                 }
-            }            
+            }
         }
 
         get selectedItem(): ListItem {
@@ -952,6 +945,11 @@ namespace menu {
         handleInput(button: ButtonId) {
             log(`list input ${button}`)
             switch (button) {
+                case ButtonId.A:
+                    const item = this.selectedItem;
+                    if (item && item.handler)
+                        item.handler();
+                    break;
                 case ButtonId.Down:
                     for (let i = 0; i < this.items.length - 1; ++i) {
                         const item = this.items[i];
@@ -1218,7 +1216,7 @@ namespace menu {
                 .duration(200)
                 .onEnded(() => {
                     console.log(`show list`)
-                    this.list.show();                    
+                    this.list.show();
                     focus(this.list.selectedItem, true);
                 });
             vert.chain(hori);
