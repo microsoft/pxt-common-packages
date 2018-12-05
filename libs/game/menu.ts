@@ -85,8 +85,10 @@ namespace menu {
     export function focus(c: Component, clearStack = false) {
         const state = game.currentScene().menuState;
         if (!state) return;
-        if (state.focus)
+        if (state.focus) {
             state.focus.onBlur();
+            state.focus = undefined;
+        }
         if (c) {
             state.focus = c;
             state.focusStack.push(c);
@@ -921,7 +923,7 @@ namespace menu {
                 if (select != item.selected) {
                     item.selected = select;
                     if (item.selected)
-                        focus(item);
+                        focus(item, true);
                 }
             }            
         }
@@ -944,7 +946,7 @@ namespace menu {
                             item.selected = false;
                             i = i + 1;
                             this.items[i].selected = true;
-                            focus(this.items[i]);
+                            focus(this.items[i], true);
                             break;
                         }
                     }
@@ -956,7 +958,7 @@ namespace menu {
                             item.selected = false;
                             i = i - 1;
                             this.items[i].selected = true;
-                            focus(this.items[i]);
+                            focus(this.items[i], true);
                             break;
                         }
                     }
@@ -1203,8 +1205,7 @@ namespace menu {
                 .duration(200)
                 .onEnded(() => {
                     this.list.show();
-                    if (this.list.selectedItem)
-                        focus(this.list.selectedItem);
+                    focus(this.list.selectedItem, true);
                 });
             vert.chain(hori);
             vert.start();
