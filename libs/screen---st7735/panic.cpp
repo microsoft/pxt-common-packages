@@ -219,7 +219,7 @@ void ST7735::configure(uint8_t madctl, uint32_t frmctr1) {
     sendCmd(cmd1, cmd1[3] == 0xff ? 3 : 4);
 }
 
-#define SIZE 5
+#define SIZE 4
 
 void ST7735::drawNumber(int idx, int x, int y, int color) {
     const uint8_t *src = &numbers[idx * 5];
