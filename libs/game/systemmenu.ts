@@ -43,7 +43,7 @@ namespace scene.systemMenu {
                         itemHandler = item.handler;
                     })
                 });                
-            m.onHidden = () => {
+            m.onDidHide = () => {
                 active = false;
                 if (itemHandler)
                     itemHandler();

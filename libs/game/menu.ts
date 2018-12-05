@@ -1174,12 +1174,12 @@ namespace menu {
         node.fixedHeight = value;
     }
 
-    export class Menu extends Node {
+    export class Menu extends Component {
         list: menu.VerticalList;
         root: menu.JustifiedContent;
         b: menu.Bounds;
         margin: number;
-        onHidden?: () => void;
+        onDidHide?: () => void;
 
         constructor() {
             super();
@@ -1221,12 +1221,15 @@ namespace menu {
                     console.log(`show list`)
                     this.list.show();
                     focus(this.list.selectedItem, true);
+                    this.onShown();
+                    this.notifyChange();
                 });
             vert.chain(hori);
             vert.start();
         }
 
         hide() {
+            if (!this.visible) return;
             this.list.hide();
             const hori = this.b.animate(menu.setWidth)
                 .from(150)
@@ -1238,14 +1241,19 @@ namespace menu {
                 .duration(200)
                 .onEnded(() => {
                     this.dispose();
-                    if (this.onHidden)
-                        this.onHidden();
+                    this.visible = false;
+                    this.onHidden();
+                    this.notifyChange();
+                    if (this.onDidHide)
+                        this.onDidHide();
                 });
             hori.chain(vert);
             hori.start();
         }
 
         show() {
+            if (this.visible) return;
+            this.visible = true;
             menu.setRoot(this);
             this.grow();
         }
