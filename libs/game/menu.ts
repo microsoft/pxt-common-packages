@@ -435,6 +435,7 @@ namespace menu {
          * Triggers a redraw of this Node (and possibly its parent in the tree)
          */
         notifyChange() {
+            if (this.dirty) return; // don't double notify
             this.dirty = true;
             if (this.parent) {
                 log(`childchanged`)
@@ -443,6 +444,7 @@ namespace menu {
         }
 
         onChildDidChange(child: Node) {
+            if (this.dirty) return; // don't double notify
             this.dirty = true;
             if (this.shouldBubbleChange(child)) {
                 this.notifyChange();
