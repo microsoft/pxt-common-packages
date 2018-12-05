@@ -795,6 +795,7 @@ void gcProcess(TValue v);
 void *gcAllocate(int numbytes);
 void *gcAllocateArray(int numbytes);
 void *gcPermAllocate(int numbytes);
+void *gcPermFree(void *ptr);
 #ifndef PXT_GC
 inline void *gcAllocate(int numbytes) {
     return xmalloc(numbytes);

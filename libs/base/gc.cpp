@@ -4,13 +4,32 @@
 #define GC_BLOCK_SIZE (1024 * 16)
 #endif
 
+#ifndef GC_MAX_ALLOC_SIZE
+#define GC_MAX_ALLOC_SIZE (GC_BLOCK_SIZE - 16)
+#endif
+
 #ifndef GC_ALLOC_BLOCK
 #define GC_ALLOC_BLOCK xmalloc
 #endif
 
-#define IS_FREE(vt) ((uint32_t)(vt)&2)
-#define IS_ARRAY(vt) ((uint32_t)(vt) >> 31)
-#define IS_MARKED(vt) ((uint32_t)(vt)&1)
+#define FREE_MASK 0x80000000
+#define ARRAY_MASK 0x40000000
+#define PERMA_MASK 0x20000000
+#define MARKED_MASK 0x00000001
+#define ANY_MARKED_MASK 0x00000003
+
+// the bit operations should be faster than loading large constants
+#define IS_FREE(vt) ((uint32_t)(vt) >> 31)
+#define IS_ARRAY(vt) (((uint32_t)(vt) >> 30) & 1)
+#define IS_PERMA(vt) (((uint32_t)(vt) >> 29) & 1)
+#define IS_MARKED(vt) ((uint32_t)(vt)&MARKED_MASK)
+#define IS_VAR_BLOCK(vt) ((uint32_t)(vt) >> 30)
+
+#define IS_LIVE(vt) ((uint32_t)(vt) & (MARKED_MASK | PERMA_MASK))
+
+#define VAR_BLOCK_WORDS(vt) (((vt) << 12) >> (12 + 2))
+
+#define MARK(v) *(uint32_t *)(v) |= MARKED_MASK
 
 //#define PXT_GC_DEBUG 1
 #define PXT_GC_CHECKS 1
@@ -146,18 +165,20 @@ struct GCBlock {
     RefObject data[0];
 };
 
-LLSegment gcRoots;
+Segment gcRoots;
 LLSegment workQueue;
 GCBlock *firstBlock;
 static RefBlock *firstFree;
 
-#define IS_OUTSIDE_GC(v) (isReadOnly(v) || IS_MARKED(*(uint32_t *)v))
 #define NO_MAGIC(vt) ((VTable *)vt)->magic != VTABLE_MAGIC
+#define VT(p) (*(uint32_t *)(p))
+#define SKIP_PROCESSING(p)                                                                         \
+    (isReadOnly(p) || (VT(p) & (ANY_MARKED_MASK | ARRAY_MASK)) || NO_MAGIC(VT(p)))
 
 void gcScan(TValue v) {
-    if (IS_OUTSIDE_GC(v) || NO_MAGIC(*(uint32_t *)v))
+    if (SKIP_PROCESSING(v))
         return;
-    *(uint32_t *)v |= 1;
+    MARK(v);
     workQueue.push(v);
 }
 
@@ -166,9 +187,9 @@ void gcScanMany(TValue *data, unsigned len) {
     for (unsigned i = 0; i < len; ++i) {
         auto v = data[i];
         // VLOG("psh: %p %d %d", v, isReadOnly(v), (*(uint32_t *)v & 1));
-        if (IS_OUTSIDE_GC(v) || NO_MAGIC(*(uint32_t *)v))
+        if (SKIP_PROCESSING(v))
             continue;
-        *(uint32_t *)v |= 1;
+        MARK(v);
         workQueue.push(v);
     }
 }
@@ -177,8 +198,9 @@ void gcScanSegment(Segment &seg) {
     auto data = seg.getData();
     if (!data)
         return;
-    GC_CHECK(!IS_MARKED(((uint32_t *)data)[-1]), 47);
-    ((uint32_t *)data)[-1] |= 1;
+    auto segBl = (uint32_t *)data - 1;
+    GC_CHECK(!IS_MARKED(VT(segBl)), 47);
+    MARK(segBl);
     gcScanMany(data, seg.getLength());
 }
 
@@ -186,25 +208,17 @@ void gcScanSegment(Segment &seg) {
 #define getSizeMethod(vt) ((RefObjectSizeMethod)(((VTable *)(vt))->methods[3]))
 
 void gcProcess(TValue v) {
-    if (IS_OUTSIDE_GC(v))
+    if (SKIP_PROCESSING(v))
         return;
-    auto p = (RefObject *)v;
-    auto vt = p->vtable;
-    if (IS_ARRAY(vt)) {
-        p->vtable |= 1;
-        return;
-    }
-    if (NO_MAGIC(vt))
-        return;
-    VVLOG("gcProcess: %p", p);
-    auto scan = getScanMethod(vt);
-    p->vtable |= 1;
+    VVLOG("gcProcess: %p", v);
+    MARK(v);
+    auto scan = getScanMethod(VT(v));
     if (scan)
-        scan(p);
+        scan((RefObject *)v);
     while (workQueue.getLength()) {
         auto curr = (RefObject *)workQueue.pop();
         VVLOG(" - %p", curr);
-        scan = getScanMethod(curr->vtable & ~1);
+        scan = getScanMethod(curr->vtable & ~ANY_MARKED_MASK);
         if (scan)
             scan(curr);
     }
@@ -255,19 +269,17 @@ static void mark(int flags) {
 }
 
 static uint32_t getObjectSize(RefObject *o) {
-    auto vt = o->vtable;
+    auto vt = o->vtable & ~ANY_MARKED_MASK;
     uint32_t r;
-    GC_CHECK(vt != 0 && !IS_MARKED(vt), 49);
-    if (IS_FREE(vt)) {
-        r = vt >> 2;
-    } else if (IS_ARRAY(vt)) {
-        r = (vt << 1) >> 3;
+    GC_CHECK(vt != 0, 49);
+    if (IS_VAR_BLOCK(vt)) {
+        r = VAR_BLOCK_WORDS(vt);
     } else {
         auto sz = getSizeMethod(vt);
         // GC_CHECK(0x2000 <= (intptr_t)sz && (intptr_t)sz <= 0x100000, 47);
         r = sz(o);
     }
-    GC_CHECK(1 <= r && r < 0x100000, 48);
+    GC_CHECK(1 <= r && r <= (GC_MAX_ALLOC_SIZE >> 2), 48);
     return r;
 }
 
@@ -285,7 +297,7 @@ __attribute__((noinline)) static void allocateBlock() {
     sz = heapSize - sysHeapSize;
     if (lowMem) {
         auto memIncrement = 32 * 1024;
-        // get the memory size - assume it's increment of 32k, 
+        // get the memory size - assume it's increment of 32k,
         // and we don't statically allocate more than 32k
         auto memSize = ((heapSize + memIncrement - 1) / memIncrement) * memIncrement;
         int fillerSize = memSize - lowMem * 1024;
@@ -298,7 +310,8 @@ __attribute__((noinline)) static void allocateBlock() {
     auto curr = (GCBlock *)GC_ALLOC_BLOCK(sz);
     curr->blockSize = sz - sizeof(GCBlock);
     LOG("GC alloc: %p", curr);
-    curr->data[0].vtable = ((curr->blockSize >> 2) << 2) | 2;
+    GC_CHECK((curr->blockSize & 3) == 0, 40);
+    curr->data[0].vtable = FREE_MASK | curr->blockSize;
     ((RefBlock *)curr->data)[0].nextFree = firstFree;
     firstFree = (RefBlock *)curr->data;
     curr->next = firstBlock;
@@ -319,19 +332,21 @@ static void sweep(int flags) {
         totalSize += words;
         VLOG("sweep: %p - %p", d, end);
         while (d < end) {
-            if (IS_MARKED(d->vtable)) {
+            if (IS_LIVE(d->vtable)) {
                 VVLOG("Live %p", d);
-                d->vtable &= ~1;
+                d->vtable &= ~MARKED_MASK;
                 d += getObjectSize(d);
             } else {
                 auto start = (RefBlock *)d;
-                while (d < end && !IS_MARKED(d->vtable)) {
+                while (d < end) {
                     if (IS_FREE(d->vtable)) {
                         VVLOG("Free %p", d);
+                    } else if (IS_LIVE(d->vtable)) {
+                        break;
                     } else if (IS_ARRAY(d->vtable)) {
-                        VVLOG("Free* %p", d);
+                        VVLOG("Dead Arr %p", d);
                     } else {
-                        VVLOG("Dead %p", d);
+                        VVLOG("Dead Obj %p", d);
                         GC_CHECK(((VTable *)d->vtable)->magic == VTABLE_MAGIC, 41);
                         d->destroyVT();
                     }
@@ -342,7 +357,7 @@ static void sweep(int flags) {
 #ifdef PXT_GC_CHECKS
                 memset(start, 0xff, sz << 2);
 #endif
-                start->vtable = (sz << 2) | 2;
+                start->vtable = (sz << 2) | FREE_MASK;
                 if (sz > 1) {
                     start->nextFree = freePtr;
                     freePtr = start;
@@ -383,21 +398,56 @@ void *gcAllocateArray(int numbytes) {
     numbytes = (numbytes + 3) & ~3;
     numbytes += 4;
     auto r = (uint32_t *)gcAllocate(numbytes);
-    *r = 0x80000000U | numbytes;
+    *r = ARRAY_MASK | numbytes;
     return r + 1;
 }
 
 void *gcPermAllocate(int numbytes) {
+    if (!numbytes)
+        return NULL;
+
     auto r = (uint32_t *)gcAllocateArray(numbytes);
-    registerGCPtr((TValue)(r - 1));
+    r[-1] |= PERMA_MASK;
     return r;
+}
+
+void *gcPermFree(void *ptr) {
+    auto r = (uint32_t *)ptr;
+    GC_CHECK((r[-1] >> 29) == 3, 41);
+    r[-1] |= FREE_MASK;
+    return r;
+}
+
+extern "C" void *malloc(size_t sz) {
+    return gcPermAllocate(sz);
+}
+
+extern "C" void free(void *mem) {
+    gcPermFree(mem);
+}
+
+extern "C" void *realloc(void *ptr, size_t size) {
+    void *mem = malloc(size);
+
+    if (ptr != NULL && mem != NULL) {
+        auto r = (uint32_t*)ptr;
+        GC_CHECK((r[-1] >> 29) == 3, 41);
+        size_t blockSize = VAR_BLOCK_WORDS(r[-1]);
+        memcpy(mem, ptr, min(blockSize * sizeof(void *), size));
+        free(ptr);
+    }
+
+    return mem;
 }
 
 void *gcAllocate(int numbytes) {
     size_t numwords = (numbytes + 3) >> 2;
 
-    if (numbytes > GC_BLOCK_SIZE - 16)
+    if (numbytes > GC_MAX_ALLOC_SIZE)
         oops(45);
+
+    if (PXT_IN_ISR())
+        target_panic(PANIC_CALLED_FROM_ISR);
 
 #ifdef PXT_GC_CHECKS
     {

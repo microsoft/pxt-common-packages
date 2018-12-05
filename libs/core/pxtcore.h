@@ -10,4 +10,6 @@
 #define xmalloc device_malloc
 #define xfree device_free
 
+#define GC_MAX_ALLOC_SIZE (16 * 1024)
+
 #endif

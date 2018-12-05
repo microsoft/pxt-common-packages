@@ -203,7 +203,7 @@ static void *threadAddressFor(codal::Fiber *fib, void *sp) {
 
 void gcProcessStacks(int flags) {
     int numFibers = codal::list_fibers(NULL);
-    codal::Fiber **fibers = new codal::Fiber *[numFibers];
+    codal::Fiber **fibers = (codal::Fiber **)xmalloc(sizeof(codal::Fiber *) * numFibers);
     codal::list_fibers(fibers);
     int cnt = 0;
 
@@ -223,7 +223,7 @@ void gcProcessStacks(int flags) {
             }
         }
     }
-    delete[] fibers;
+    xfree(fibers);
 }
 #endif
 
