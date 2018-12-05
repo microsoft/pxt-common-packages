@@ -878,6 +878,29 @@ namespace menu {
         flow: VerticalFlow;
         items: ListItem[];
 
+        constructor(outerWidth: number, outerHeight: number, innerWidth?: number, innerHeight?: number) {
+            super();
+            this.fixedWidth = outerWidth;
+            this.fixedHeight = outerHeight;
+
+            if (!innerWidth) innerWidth = outerWidth;
+            if (!innerHeight) innerHeight = outerHeight;
+
+            this.flow = new VerticalFlow(innerWidth, innerHeight);
+            this.items = [];
+
+            const padding = new JustifiedContent(this.flow, Alignment.Center, Alignment.Center);
+            this.appendChild(padding);
+        }
+
+        addItem(item: string, id: number): ListItem {
+            const n = new ListItem(this.flow.width, item, id);
+            n.fixedHeight = 16;
+            this.items.push(n);
+            this.flow.appendChild(n);
+            return n;
+        }
+
         get selectedItemIndex(): number {
             for (let i = 0; i < this.items.length; ++i) {
                 const item = this.items[i];
@@ -924,29 +947,6 @@ namespace menu {
                     break;
             }
             return true;
-        }
-
-        constructor(outerWidth: number, outerHeight: number, innerWidth?: number, innerHeight?: number) {
-            super();
-            this.fixedWidth = outerWidth;
-            this.fixedHeight = outerHeight;
-
-            if (!innerWidth) innerWidth = outerWidth;
-            if (!innerHeight) innerHeight = outerHeight;
-
-            this.flow = new VerticalFlow(innerWidth, innerHeight);
-            this.items = [];
-
-            const padding = new JustifiedContent(this.flow, Alignment.Center, Alignment.Center);
-            this.appendChild(padding);
-        }
-
-        addItem(item: string, id: number): ListItem {
-            const n = new ListItem(this.flow.width, item, id);
-            n.fixedHeight = 16;
-            this.items.push(n);
-            this.flow.appendChild(n);
-            return n;
         }
     }
 
