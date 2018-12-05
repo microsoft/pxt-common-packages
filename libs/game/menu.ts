@@ -876,7 +876,7 @@ namespace menu {
 
     export class VerticalList extends Component {
         flow: VerticalFlow;
-        items: ListItem[];
+        private items: ListItem[];
 
         constructor(outerWidth: number, outerHeight: number, innerWidth?: number, innerHeight?: number) {
             super();
@@ -891,6 +891,10 @@ namespace menu {
 
             const padding = new JustifiedContent(this.flow, Alignment.Center, Alignment.Center);
             this.appendChild(padding);
+        }
+
+        get length() {
+            return this.items.length;
         }
 
         addItem(item: string, id: number): ListItem {
@@ -908,6 +912,18 @@ namespace menu {
                     return i;
             }
             return -1;
+        }
+
+        set selectedItemIndex(value: number) {
+            for (let i = 0; i < this.items.length; ++i) {
+                const item = this.items[i];
+                const select = value == i;
+                if (select != item.selected) {
+                    item.selected = select;
+                    if (item.selected)
+                        focus(item);
+                }
+            }            
         }
 
         get selectedItem(): ListItem {
@@ -1170,9 +1186,8 @@ namespace menu {
         }
 
         addItem(name: string, handler: () => void) {
-            const item = this.list.addItem(name, this.list.items.length);
-            if (this.list.items.length == 1)
-                this.list.items[0].selected = true;
+            const item = this.list.addItem(name, this.list.length);
+            this.list.selectedItemIndex = 0;
             item.handler = handler;
         }
 
@@ -1188,8 +1203,8 @@ namespace menu {
                 .duration(200)
                 .onEnded(() => {
                     this.list.show();
-                    if (this.list.items.length)
-                        focus(this.list.items[0]);
+                    if (this.list.selectedItem)
+                        focus(this.list.selectedItem);
                 });
             vert.chain(hori);
             vert.start();
