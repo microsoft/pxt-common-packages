@@ -200,11 +200,12 @@ namespace jacdac {
 
         toString(): string {
             const buf = control.createBuffer(4);
-            function toHex(n: number): string {
-                buf.setNumber(NumberFormat.UInt32LE, 4, n);
+            function toHex(n: number, format: NumberFormat): string {
+                buf.fill(0);
+                buf.setNumber(NumberFormat.UInt32LE, 0, n);
                 return buf.toHex();
             }
-            return `${toHex(this.serialNumber & 0xffff)}> d${toHex(this.address)} c${toHex(this.driverClass)}`;
+            return `${toHex(this.serialNumber, NumberFormat.UInt32LE)} @${toHex(this.address, NumberFormat.UInt8LE)} c${toHex(this.driverClass, NumberFormat.UInt16LE)}`;
         }
     }
 }
