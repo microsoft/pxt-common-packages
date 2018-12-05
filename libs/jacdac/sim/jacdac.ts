@@ -720,8 +720,10 @@ namespace pxsim.jacdac {
         driverDevices(): pxsim.RefBuffer { 
             const buf = BufferMethods.createBuffer(this.drivers.length * JDDevice.SIZE);
             let k = 0;
-            for(const driver of this.drivers)
-                BufferMethods.write(buf, k, driver.device.buf, 0);
+            for(const driver of this.drivers) {
+                BufferMethods.write(buf, k, driver.device.buf);
+                k += JDDevice.SIZE;
+            }
             return buf;
         }
     }
