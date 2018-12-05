@@ -16,6 +16,11 @@ enum ButtonId {
 }
 
 namespace menu {
+    let consolePriority = ConsolePrority.Debug;
+    function log(msg: string) {
+        console.add(consolePriority, `menu> ${msg}`);
+    }
+
     export interface Updater {
         update(dt: number): void;
     }
@@ -74,6 +79,7 @@ namespace menu {
      * @param node The Node to make the UI root
      */
     export function setRoot(node: Node) {
+        log('set root');
         game.pushScene();
         game.currentScene().menuState = new menu.State(node);
     }
@@ -83,6 +89,7 @@ namespace menu {
      * component receives all button events until it is unfocused.
      */
     export function focus(c: Component, clearStack = false) {
+        log(`focus`)
         const state = game.currentScene().menuState;
         if (!state) return;
         if (state.focus) {
@@ -90,6 +97,7 @@ namespace menu {
             state.focus = undefined;
         }
         if (c) {
+            log(`focusing`)
             state.focus = c;
             state.focusStack.push(c);
             c.onFocus();
@@ -429,6 +437,7 @@ namespace menu {
         notifyChange() {
             this.dirty = true;
             if (this.parent) {
+                log(`childchanged`)
                 this.parent.onChildDidChange(this);
             }
         }
@@ -803,12 +812,14 @@ namespace menu {
             if (this.visible) return;
             this.visible = true;
             this.onShown();
+            this.notifyChange();
         }
 
         hide() {
             if (!this.visible) return;
             this.visible = false;
             this.onHidden();
+            this.notifyChange();
         }
 
         onShown() {
@@ -857,6 +868,7 @@ namespace menu {
         }
 
         handleInput(button: number) {
+            log(`input list item ${button}`)
             switch (button) {
                 case ButtonId.A:
                     if (this.handler) this.handler();
@@ -938,6 +950,7 @@ namespace menu {
         }
 
         handleInput(button: ButtonId) {
+            log(`list input ${button}`)
             switch (button) {
                 case ButtonId.Down:
                     for (let i = 0; i < this.items.length - 1; ++i) {
@@ -1204,7 +1217,8 @@ namespace menu {
                 .to(screen.width - this.margin)
                 .duration(200)
                 .onEnded(() => {
-                    this.list.show();
+                    console.log(`show list`)
+                    this.list.show();                    
                     focus(this.list.selectedItem, true);
                 });
             vert.chain(hori);
@@ -1236,6 +1250,7 @@ namespace menu {
         }
 
         handleInput(button: number) {
+            log(`input menu ${button}`)
             if (button == ButtonId.B)
                 this.hide();
             return true;
