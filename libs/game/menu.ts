@@ -45,7 +45,7 @@ namespace menu {
             });
 
             controller.A.onEvent(ControllerButtonEvent.Pressed, inputHandler(ButtonId.A))
-            //controller.B.onEvent(ControllerButtonEvent.Pressed, inputHandler(ButtonId.B))
+            controller.B.onEvent(ControllerButtonEvent.Pressed, inputHandler(ButtonId.B))
             controller.up.onEvent(ControllerButtonEvent.Pressed, inputHandler(ButtonId.Up))
             controller.right.onEvent(ControllerButtonEvent.Pressed, inputHandler(ButtonId.Right))
             controller.down.onEvent(ControllerButtonEvent.Pressed, inputHandler(ButtonId.Down))
@@ -53,9 +53,19 @@ namespace menu {
         }
     }
 
-    function inputHandler(button: ButtonId) {
-        let state: menu.State;
-        return () => ((state = game.currentScene().menuState) && state.focus && state.focus.handleInput(button));
+    function inputHandler(button: ButtonId): () => void {
+        return () => {
+            const state = game.currentScene();
+            if (state && state.menuState && state.menuState.focus) {
+                let node: Node = state.menuState.focus;
+                // bubble up
+                while (node) {
+                    if (node instanceof Component)
+                        (<Component>node).handleInput(button);
+                    node = node.parent;
+                }
+            }
+        }
     }
 
     /**
@@ -815,8 +825,8 @@ namespace menu {
 
         }
 
-        handleInput(button: number) {
-
+        handleInput(button: number): boolean {
+            return true;
         }
 
         dispose() {
@@ -825,7 +835,7 @@ namespace menu {
         }
     }
 
-    export class ListItem extends Node {
+    export class ListItem extends Component {
         content: JustifiedContent;
         label: ScrollingLabel;
         background: RectNode;
@@ -844,6 +854,14 @@ namespace menu {
             this.id = id;
         }
 
+        handleInput(button: number) {
+            switch (button) {
+                case ButtonId.A:
+                    if (this.handler) this.handler();
+                    break;
+            }
+            return true;
+        }
 
         get selected() {
             return this.background.color != 0;
@@ -878,31 +896,34 @@ namespace menu {
             return undefined;
         }
 
-        attachController() {
-            controller.down.onEvent(ControllerButtonEvent.Pressed, () => {
-                for (let i = 0; i < this.items.length - 1; ++i) {
-                    const item = this.items[i];
-                    if (item.selected) {
-                        item.selected = false;
-                        this.items[++i].selected = true;
-                        return;
+        handleInput(button: ButtonId) {
+            switch (button) {
+                case ButtonId.Down:
+                    for (let i = 0; i < this.items.length - 1; ++i) {
+                        const item = this.items[i];
+                        if (item.selected) {
+                            item.selected = false;
+                            i = i + 1;
+                            this.items[i].selected = true;
+                            focus(this.items[i]);
+                            break;
+                        }
                     }
-                }
-            });
-            controller.up.onEvent(ControllerButtonEvent.Pressed, () => {
-                for (let i = 1; i < this.items.length; ++i) {
-                    const item = this.items[i];
-                    if (item.selected) {
-                        item.selected = false;
-                        this.items[--i].selected = true;
-                        return;
+                    break;
+                case ButtonId.Up:
+                    for (let i = 1; i < this.items.length; ++i) {
+                        const item = this.items[i];
+                        if (item.selected) {
+                            item.selected = false;
+                            i = i - 1;
+                            this.items[i].selected = true;
+                            focus(this.items[i]);
+                            break;
+                        }
                     }
-                }
-            });
-            controller.A.onEvent(ControllerButtonEvent.Pressed, () => {
-                const item = this.selectedItem;
-                item.handler();
-            });
+                    break;
+            }
+            return true;
         }
 
         constructor(outerWidth: number, outerHeight: number, innerWidth?: number, innerHeight?: number) {
@@ -1167,6 +1188,8 @@ namespace menu {
                 .duration(200)
                 .onEnded(() => {
                     this.list.show();
+                    if (this.list.items.length)
+                        focus(this.list.items[0]);
                 });
             vert.chain(hori);
             vert.start();
@@ -1193,11 +1216,13 @@ namespace menu {
 
         show() {
             menu.setRoot(this);
-            this.list.attachController();
-            controller.B.onEvent(ControllerButtonEvent.Pressed, () => {
-                this.hide();
-            });
             this.grow();
+        }
+
+        handleInput(button: number) {
+            if (button == ButtonId.B)
+                this.hide();
+            return true;
         }
     }
 }
