@@ -165,7 +165,7 @@ struct GCBlock {
     RefObject data[0];
 };
 
-Segment gcRoots;
+LLSegment gcRoots;
 LLSegment workQueue;
 GCBlock *firstBlock;
 static RefBlock *firstFree;
@@ -402,7 +402,7 @@ void *gcAllocateArray(int numbytes) {
     return r + 1;
 }
 
-void *gcPermAllocate(int numbytes) {
+void *app_alloc(int numbytes) {
     if (!numbytes)
         return NULL;
 
@@ -411,33 +411,11 @@ void *gcPermAllocate(int numbytes) {
     return r;
 }
 
-void *gcPermFree(void *ptr) {
+void *app_free(void *ptr) {
     auto r = (uint32_t *)ptr;
     GC_CHECK((r[-1] >> 29) == 3, 41);
     r[-1] |= FREE_MASK;
     return r;
-}
-
-extern "C" void *malloc(size_t sz) {
-    return gcPermAllocate(sz);
-}
-
-extern "C" void free(void *mem) {
-    gcPermFree(mem);
-}
-
-extern "C" void *realloc(void *ptr, size_t size) {
-    void *mem = malloc(size);
-
-    if (ptr != NULL && mem != NULL) {
-        auto r = (uint32_t*)ptr;
-        GC_CHECK((r[-1] >> 29) == 3, 41);
-        size_t blockSize = VAR_BLOCK_WORDS(r[-1]);
-        memcpy(mem, ptr, min(blockSize * sizeof(void *), size));
-        free(ptr);
-    }
-
-    return mem;
 }
 
 void *gcAllocate(int numbytes) {

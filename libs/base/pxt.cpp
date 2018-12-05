@@ -454,7 +454,7 @@ void exec_binary(unsigned *pc) {
     checkStr(ver == 0x4210, ":( Bad runtime version");
 
     bytecode = *((uint16_t **)pc++); // the actual bytecode is here
-    globals = (TValue *)gcPermAllocate(sizeof(TValue) * getNumGlobals());
+    globals = (TValue *)app_alloc(sizeof(TValue) * getNumGlobals());
     memset(globals, 0, sizeof(TValue) * getNumGlobals());
 
     // can be any valid address, best in RAM for speed

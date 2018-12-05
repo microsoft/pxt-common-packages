@@ -27,7 +27,7 @@ void setBinding(int source, int value, Action act) {
         curr->action = act;
         return;
     }
-    curr = new HandlerBinding();
+    curr = NEW_GC(HandlerBinding);
     curr->next = handlerBindings;
     curr->source = source;
     curr->value = value;
