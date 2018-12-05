@@ -18,8 +18,9 @@ namespace scene.systemMenu {
         if (active) return; // don't show system menu, while in system menu
 
         controller.menu.onEvent(ControllerButtonEvent.Pressed, function () {
-            active = true;
-            const m = new menu.Menu();
+            active = true;            
+            let itemHandler: () => void = undefined;
+            const m = new menu.Menu();            
             m.addItem("volume", () => {});
             m.addItem("brightness", () => {});
             m.addItem(game.stats ? "hide stats" : "show stats", () => {
@@ -39,10 +40,14 @@ namespace scene.systemMenu {
                 customItems.forEach(item => {
                     m.addItem(item.name(), () => {
                         m.hide();
-                        item.handler();
+                        itemHandler = item.handler;
                     })
                 });                
-            m.onHidden = () => active = false;
+            m.onDidHide = () => {
+                active = false;
+                if (itemHandler)
+                    itemHandler();
+            }
             m.show();
         })
     }

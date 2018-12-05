@@ -116,6 +116,8 @@ namespace game {
         __isOver = true;
         // clear all handlers
         control.pushEventContext();
+        // register system menu again
+        scene.systemMenu.register();
         // one last screenshot
         takeScreenshot();
         control.runInParallel(() => {
