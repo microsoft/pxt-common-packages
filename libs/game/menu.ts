@@ -857,13 +857,13 @@ namespace menu {
         id: number;
         handler: () => void;
 
-        constructor(labelWidth: number, text: string, id: number) {
+        constructor(labelWidth: number, font: image.Font, text: string, id: number) {
             super();
 
             this.background = new RectNode(0);
             this.appendChild(this.background);
 
-            this.label = new ScrollingLabel(labelWidth, image.font8, text);
+            this.label = new ScrollingLabel(labelWidth, font, text);
             this.appendChild(new JustifiedContent(this.label, Alignment.Left, Alignment.Center));
 
             this.id = id;
@@ -886,12 +886,14 @@ namespace menu {
 
     export class VerticalList extends Component {
         flow: VerticalFlow;
+        font: image.Font;
         private items: ListItem[];
 
-        constructor(outerWidth: number, outerHeight: number, innerWidth?: number, innerHeight?: number) {
+        constructor(outerWidth: number, outerHeight: number, font: image.Font, innerWidth?: number, innerHeight?: number) {
             super();
             this.fixedWidth = outerWidth;
             this.fixedHeight = outerHeight;
+            this.font = font;
 
             if (!innerWidth) innerWidth = outerWidth;
             if (!innerHeight) innerHeight = outerHeight;
@@ -908,8 +910,8 @@ namespace menu {
         }
 
         addItem(item: string, id: number): ListItem {
-            const n = new ListItem(this.flow.width, item, id);
-            n.fixedHeight = 16;
+            const n = new ListItem(this.flow.width, this.font, item, id);
+            n.fixedHeight = this.font.charHeight + 6;
             this.items.push(n);
             this.flow.appendChild(n);
             return n;
@@ -1181,7 +1183,7 @@ namespace menu {
         margin: number;
         onDidHide?: () => void;
 
-        constructor() {
+        constructor(font?: image.Font) {
             super();
             this.margin = 10;
 
@@ -1195,7 +1197,7 @@ namespace menu {
             this.b.top = 30;
             this.b.appendChild(f)
 
-            this.list = new menu.VerticalList(finalWidth - 8, finalHeight - 8, finalWidth - 24, finalHeight - 24);
+            this.list = new menu.VerticalList(finalWidth - 8, finalHeight - 8, font || image.font5, finalWidth - 24, finalHeight - 24);
             f.appendChild(this.list);
             this.root = new menu.JustifiedContent(this.b, Alignment.Center, Alignment.Center);
             this.appendChild(this.root);
