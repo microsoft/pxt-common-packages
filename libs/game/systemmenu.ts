@@ -21,7 +21,16 @@ namespace scene.systemMenu {
             active = true;            
             let itemHandler: () => void = undefined;
             const m = new menu.Menu();            
-            m.addItem("volume", () => {});
+            m.addItem("volume up", () => {
+                const v = music.volume();
+                music.setVolume(v + 32);
+                music.playTone(440, 500);
+            });
+            m.addItem("volume down", () => {
+                const v = music.volume();
+                music.setVolume(v - 32);
+                music.playTone(440, 500);
+            });
             m.addItem("brightness", () => {});
             m.addItem(game.stats ? "hide stats" : "show stats", () => {
                 game.stats = !game.stats;
