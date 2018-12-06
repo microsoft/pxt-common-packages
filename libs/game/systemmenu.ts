@@ -4,13 +4,15 @@ namespace scene.systemMenu {
     interface MenuItem {
         name: () => string;
         handler: () => void;
+        repeat?: boolean;
     }
     let customItems: MenuItem[] = undefined;
-    export function addEntry(name: () => string, handler: () => void) {
+    export function addEntry(name: () => string, handler: () => void, repeat?: boolean) {
         if (!customItems) customItems = [];
         customItems.push({
             name: name,
-            handler: handler
+            handler: handler,
+            repeat: repeat
         });
     }
 
@@ -19,9 +21,8 @@ namespace scene.systemMenu {
 
         controller.menu.onEvent(ControllerButtonEvent.Pressed, function () {
             active = true;
+            let itemHandler: () => void = undefined;
             const m = new menu.Menu();
-            m.addItem("volume", () => {});
-            m.addItem("brightness", () => {});
             m.addItem(game.stats ? "hide stats" : "show stats", () => {
                 game.stats = !game.stats;
                 m.hide();
@@ -38,11 +39,18 @@ namespace scene.systemMenu {
             if (customItems)
                 customItems.forEach(item => {
                     m.addItem(item.name(), () => {
-                        m.hide();
-                        item.handler();
+                        if (item.repeat) item.handler();
+                        else {
+                            itemHandler = item.handler;
+                            m.hide();
+                        }
                     })
-                });                
-            m.onHidden = () => active = false;
+                });
+            m.onDidHide = () => {
+                active = false;
+                if (itemHandler)
+                    itemHandler();
+            }
             m.show();
         })
     }

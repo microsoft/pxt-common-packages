@@ -34,6 +34,15 @@ namespace music {
         globalVolume = Math.clamp(0, 255, volume | 0)
     }
 
+    /**
+     * Gets the current volume
+     */
+    //% parts="speaker"
+    //% weight=70
+    export function volume(): number {
+        return globalVolume;
+    }
+
     let playToneFreq: number
     let playToneEnd: number
     let playToneSeq = 0
