@@ -74,8 +74,6 @@ class WJacDac {
     void setBridge(JDDriver* driver) {
 #if JD_MIN_VERSION(3)
         protocol.setBridge(driver);
-#else if JD_MIN_VERSION(1)
-        protocol.setBridge(*driver);
 #endif
     }
 
