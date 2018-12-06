@@ -125,7 +125,7 @@ class Sprite implements SpriteLike {
     //%
     data: any;
 
-    _type: number;
+    _kind: number;
 
     /**
      * A bitset of layer. Each bit is a layer, default is 1.
@@ -173,7 +173,7 @@ class Sprite implements SpriteLike {
         this.ay = 0
         this.flags = 0
         this.setImage(img);
-        this.type = -1; // not a member of any type by default
+        this.setKind(-1); // not a member of any type by default
         this.layer = 1; // by default, in layer 1
         this.lifespan = undefined;
         this._overlappers = [];
@@ -323,29 +323,33 @@ class Sprite implements SpriteLike {
     /**
      * The type of sprite
      */
-    //% group="Properties" blockSetVariable="mySprite"
-    //% blockCombine block="kind"
-    get type() {
-        return this._type;
+    //% group="Overlaps"
+    //% blockId="spritegetkind" block="%sprite(mySprite) kind"
+    //% weight=79
+    kind() {
+        return this._kind;
     }
+
     /**
      * The type of sprite
      */
-    //% group="Properties" blockSetVariable="mySprite"
-    //% blockCombine block="kind"
-    set type(value: number) {
-        if (value == undefined || this._type === value) return;
+    //% group="Overlaps"
+    //% blockId="spritesetkind" block="set %sprite(mySprite) kind to %kind"
+    //% kind.shadow=spritetype
+    //% weight=80
+    setKind(kind: number) {
+        if (kind == undefined || this._kind === kind) return;
 
         const spritesByKind = game.currentScene().spritesByKind;
-        if (this._type >= 0 && spritesByKind[this._type])
-            spritesByKind[this._type].removeElement(this);
+        if (this._kind >= 0 && spritesByKind[this._kind])
+            spritesByKind[this._kind].removeElement(this);
 
-        if (value >= 0) {
-            if (!spritesByKind[value]) spritesByKind[value] = [];
-            spritesByKind[value].push(this);
+        if (kind >= 0) {
+            if (!spritesByKind[kind]) spritesByKind[kind] = [];
+            spritesByKind[kind].push(this);
         }
 
-        this._type = value;
+        this._kind = kind;
     }
 
     /**
@@ -590,6 +594,7 @@ class Sprite implements SpriteLike {
     //% group="Overlaps"
     //% blockId=spriteoverlapswith block="%sprite(mySprite) overlaps with %other=variables_get(otherSprite)"
     //% help=sprites/sprite/overlaps-with
+    //% weight=90
     overlapsWith(other: Sprite) {
         control.enablePerfCounter("overlapsCPP")
         if (other == this) return false;
@@ -666,7 +671,7 @@ class Sprite implements SpriteLike {
         if (handler) handler();
         const scene = game.currentScene();
         scene.collisionHandlers
-            .filter(h => h.type == this.type && h.tile == other.tileIndex)
+            .filter(h => h.kind == this.kind() && h.tile == other.tileIndex)
             .forEach(h => h.handler(this));
     }
 
@@ -697,13 +702,13 @@ class Sprite implements SpriteLike {
             this.sayBubbleSprite.destroy();
         }
         scene.allSprites.removeElement(this);
-        if (this.type >= 0 && scene.spritesByKind[this.type])
-            scene.spritesByKind[this.type].removeElement(this);
+        if (this.kind() >= 0 && scene.spritesByKind[this.kind()])
+            scene.spritesByKind[this.kind()].removeElement(this);
         scene.physicsEngine.removeSprite(this);
         if (this.destroyHandler)
             this.destroyHandler();
         scene.destroyedHandlers
-            .filter(h => h.type == this.type)
+            .filter(h => h.kind == this.kind())
             .forEach(h => h.handler(this));
     }
 

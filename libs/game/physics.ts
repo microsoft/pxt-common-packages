@@ -114,7 +114,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     }
 
                     scene.overlapHandlers
-                        .filter(h => h.type == sprite.type && h.otherType == overlapper.type)
+                        .filter(h => h.kind == sprite.kind() && h.otherKind == overlapper.kind())
                         .forEach(h => {
                             higher._overlappers.push(lower.id);
                             control.runInParallel(() => {

@@ -28,13 +28,13 @@ namespace sprites {
     export function create(img: Image, kind?: number): Sprite {
         const scene = game.currentScene();
         const sprite = new Sprite(img)
-        sprite.type = kind;
+        sprite.setKind(kind);
         scene.addSprite(sprite);
         scene.physicsEngine.addSprite(sprite);
 
         // run on created handlers
         scene.createdHandlers
-            .filter(h => h.type == kind)
+            .filter(h => h.kind == kind)
             .forEach(h => h.handler(sprite));
 
         return sprite
@@ -63,6 +63,7 @@ namespace sprites {
     //% blockSetVariable=projectile
     //% inlineInputMode=inline
     //% expandableArgumentMode=toggle
+    //% vy.defl=100
     export function createProjectile(img: Image, vx: number, vy: number, kind?: number, sprite?: Sprite) {
         const s = sprites.create(img, kind);
         s.vx = vx

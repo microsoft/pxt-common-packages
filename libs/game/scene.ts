@@ -8,18 +8,18 @@ namespace scene {
     }
 
     export interface SpriteHandler {
-        type: number;
+        kind: number;
         handler: (sprite: Sprite) => void;
     }
 
     export interface OverlapHandler {
-        type: number;
-        otherType: number;
+        kind: number;
+        otherKind: number;
         handler: (sprite: Sprite, otherSprite: Sprite) => void;
     }
 
     export interface CollisionHandler {
-        type: number;
+        kind: number;
         tile: number;
         handler: (sprite: Sprite) => void
     }
