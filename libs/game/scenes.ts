@@ -174,7 +174,8 @@ namespace scene {
     //% color.shadow=colorindexpicker
     //% help=scene/place-random
     export function placeOnRandomTile(mySprite: Sprite, color: number): void {
-        if (!mySprite) return;
+        const scene = game.currentScene();
+        if (!mySprite || !scene.tileMap) return;
         const tiles = getTilesByType(color);
         if (tiles.length > 0)
             Math.pickRandom(tiles).place(mySprite);
