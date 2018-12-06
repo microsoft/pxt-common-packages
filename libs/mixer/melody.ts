@@ -34,6 +34,15 @@ namespace music {
         globalVolume = Math.clamp(0, 255, volume | 0)
     }
 
+    /**
+     * Gets the current volume
+     */
+    //% parts="speaker"
+    //% weight=70
+    export function volume(): number {
+        return globalVolume;
+    }
+
     let playToneFreq: number
     let playToneEnd: number
     let playToneSeq = 0
@@ -366,7 +375,7 @@ namespace music {
     export const baDing = new Melody('b5:1 e6:3')
 
     //% fixedInstance whenUsed block="wawawawaa"
-    export const wawawawaa = new Melody('e3:3 r:1 d#:3 r:1 d:4 r:1 c#:8')
+    export const wawawawaa = new Melody('~15 e3:3 r:1 d#:3 r:1 d:4 r:1 c#:8')
 
     //% fixedInstance whenUsed block="jump up"
     export const jumpUp = new Melody('c5:1 d e f g')

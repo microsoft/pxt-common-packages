@@ -29,6 +29,7 @@ class WJacDac {
             jr = new codal::JackRouter(*LOOKUP_PIN(JACK_TX), *LOOKUP_PIN(JACK_SENSE),
                                        *LOOKUP_PIN(JACK_HPEN), *LOOKUP_PIN(JACK_BZEN),
                                        *LOOKUP_PIN(JACK_PWREN), jd);
+            jr->forceState(JackState::BuzzerAndSerial);
         } else {
             jr = NULL;
         }
@@ -73,7 +74,7 @@ class WJacDac {
     }
 
     void setJackRouterOutput(int output) {
-#ifdef CODAL_JACDAC_WIRE_SERIAL
+#if 0
         if (!jr)
             return;
         if (output < 0)
@@ -365,9 +366,7 @@ bool isPairedInstanceAddress(JacDacDriverStatus d, uint8_t address) {
 */
 //%
 void setBridge(JacDacDriverStatus d) {
-#if JD_MIN_VERSION(1)
     jacdac::getWJacDac()->setBridge(d);
-#endif    
 }
 
 } // namespace JacDacDriverStatusMethods

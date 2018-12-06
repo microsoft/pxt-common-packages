@@ -6,6 +6,7 @@
         "pxt-core.d.ts",
         "pxt.cpp",
         "gc.cpp",
+        "configkeys.h",
         "pxtbase.h",
         "core.cpp",
         "advmath.cpp",

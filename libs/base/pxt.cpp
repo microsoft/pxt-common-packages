@@ -21,8 +21,7 @@ void decr(TValue e) {
 #endif
 
 Action mkAction(int totallen, RefAction *act) {
-    check(getVTable(act)->classNo == BuiltInType::RefAction,
-          PANIC_INVALID_BINARY_HEADER, 1);
+    check(getVTable(act)->classNo == BuiltInType::RefAction, PANIC_INVALID_BINARY_HEADER, 1);
 
     if (totallen == 0) {
         return (TValue)act; // no closure needed
@@ -41,7 +40,7 @@ Action mkAction(int totallen, RefAction *act) {
 
 RefRecord *mkClassInstance(VTable *vtable) {
     intcheck(vtable->methods[0] == &RefRecord_destroy, PANIC_SIZE, 3);
-    //intcheck(vtable->methods[1] == &RefRecord_print, PANIC_SIZE, 4);
+    // intcheck(vtable->methods[1] == &RefRecord_print, PANIC_SIZE, 4);
 
     void *ptr = gcAllocate(vtable->numbytes);
     RefRecord *r = new (ptr) RefRecord(vtable);
@@ -106,23 +105,6 @@ void RefRecord_print(RefRecord *r) {
     DMESG("RefRecord %p r=%d size=%d bytes", r, REFCNT(r), getVTable(r)->numbytes);
 }
 
-TValue Segment::get(unsigned i) {
-#ifdef DEBUG_BUILD
-    DMESG("In Segment::get index:%d", i);
-    this->print();
-#endif
-
-    if (i < length) {
-        return data[i];
-    }
-    return Segment::DefaultValue;
-}
-
-void Segment::setRef(unsigned i, TValue value) {
-    decr(get(i));
-    set(i, value);
-}
-
 void Segment::set(unsigned i, TValue value) {
     if (i < size) {
         data[i] = value;
@@ -144,7 +126,7 @@ void Segment::set(unsigned i, TValue value) {
     return;
 }
 
-ramint_t Segment::growthFactor(ramint_t size) {
+static inline int growthFactor(int size) {
     if (size == 0) {
         return 4;
     }
@@ -155,22 +137,21 @@ ramint_t Segment::growthFactor(ramint_t size) {
         return size * 5 / 3; // Grow by 1.66 rate
     }
     // Grow by constant rate
-    if ((unsigned)size + 256 < MaxSize)
+    if ((unsigned)size + 256 < Segment::MaxSize)
         return size + 256;
     else
-        return MaxSize;
+        return Segment::MaxSize;
 }
 
-void Segment::growByMin(ramint_t minSize) {
-    growBy(max(minSize, growthFactor(size)));
-}
+void LLSegment::setLength(unsigned newLen) {
+    if (newLen > Segment::MaxSize)
+        return;
 
-void Segment::growBy(ramint_t newSize) {
-#ifdef DEBUG_BUILD
-    DMESG("growBy: %d", newSize);
-    this->print();
-#endif
-    if (size < newSize) {
+    if (newLen > size) {
+        int newSize = growthFactor(size);
+        if (newSize < (int)newLen)
+            newSize = newLen;
+
         // this will throw if unable to allocate
         TValue *tmp = (TValue *)(xmalloc(newSize * sizeof(TValue)));
 
@@ -183,6 +164,52 @@ void Segment::growBy(ramint_t newSize) {
 
         // free older segment;
         free(data);
+
+        data = tmp;
+        size = newSize;
+    } else if (newLen < length) {
+        memset(data + newLen, 0, (length - newLen) * sizeof(TValue));
+    }
+
+    length = newLen;
+}
+
+void LLSegment::set(unsigned idx, TValue v) {
+    if (idx >= Segment::MaxSize)
+        return;
+    if (idx >= length)
+        setLength(idx + 1);
+    data[idx] = v;
+}
+
+TValue LLSegment::pop() {
+    if (length > 0) {
+        --length;
+        TValue value = data[length];
+        data[length] = 0;
+        return value;
+    }
+    return 0;
+}
+
+void LLSegment::destroy() {
+    length = size = 0;
+    free(data);
+    data = nullptr;
+}
+
+void Segment::growByMin(ramint_t minSize) {
+    ramint_t newSize = max(minSize, (ramint_t)growthFactor(size));
+
+    if (size < newSize) {
+        // this will throw if unable to allocate
+        TValue *tmp = (TValue *)(gcAllocateArray(newSize * sizeof(TValue)));
+
+        // Copy existing data
+        if (size)
+            memcpy(tmp, data, size * sizeof(TValue));
+        // fill the rest with default value
+        memset(tmp + size, 0, (newSize - size) * sizeof(TValue));
 
         data = tmp;
         size = newSize;
@@ -209,10 +236,6 @@ void Segment::setLength(unsigned newLength) {
     }
     length = newLength;
     return;
-}
-
-void Segment::push(TValue value) {
-    this->set(length, value);
 }
 
 TValue Segment::pop() {
@@ -287,74 +310,13 @@ void Segment::print() {
     }
 }
 
-bool Segment::isValidIndex(unsigned i) {
-    if (i > length) {
-        return false;
-    }
-    return true;
-}
-
 void Segment::destroy() {
 #ifdef DEBUG_BUILD
     DMESG("In Segment::destroy");
     this->print();
 #endif
     length = size = 0;
-    free(data);
     data = nullptr;
-}
-
-void RefCollection::push(TValue x) {
-    incr(x);
-    head.push(x);
-}
-
-TValue RefCollection::pop() {
-    TValue ret = head.pop();
-    incr(ret);
-    return ret;
-}
-
-TValue RefCollection::getAt(int i) {
-    TValue tmp = head.get(i);
-    incr(tmp);
-    return tmp;
-}
-
-TValue RefCollection::removeAt(int i) {
-    return head.remove(i);
-}
-
-void RefCollection::insertAt(int i, TValue value) {
-    head.insert(i, value);
-    incr(value);
-}
-
-void RefCollection::setAt(int i, TValue value) {
-    incr(value);
-    head.setRef(i, value);
-}
-
-int RefCollection::indexOf(TValue x, int start) {
-#ifndef X86_64
-    unsigned i = start;
-    while (head.isValidIndex(i)) {
-        if (pxt::eq_bool(head.get(i), x)) {
-            return (int)i;
-        }
-        i++;
-    }
-#endif
-    return -1;
-}
-
-bool RefCollection::removeElement(TValue x) {
-    int idx = indexOf(x, 0);
-    if (idx >= 0) {
-        decr(removeAt(idx));
-        return 1;
-    }
-    return 0;
 }
 
 PXT_VTABLE_CTOR(RefCollection) {}
@@ -458,12 +420,6 @@ void error(PXT_PANIC code, int subcode) {
 uint16_t *bytecode;
 TValue *globals;
 
-unsigned *allocate(ramint_t sz) {
-    unsigned *arr = new unsigned[sz];
-    memset(arr, 0, sz * sizeof(unsigned));
-    return arr;
-}
-
 void checkStr(bool cond, const char *msg) {
     if (!cond) {
         while (true) {
@@ -498,7 +454,8 @@ void exec_binary(unsigned *pc) {
     checkStr(ver == 0x4210, ":( Bad runtime version");
 
     bytecode = *((uint16_t **)pc++); // the actual bytecode is here
-    globals = (TValue *)allocate(getNumGlobals());
+    globals = (TValue *)gcPermAllocate(sizeof(TValue) * getNumGlobals());
+    memset(globals, 0, sizeof(TValue) * getNumGlobals());
 
     // can be any valid address, best in RAM for speed
     globals[0] = (TValue)&globals;

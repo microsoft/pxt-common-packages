@@ -1,7 +1,7 @@
 namespace jacdac {
     //% fixedInstances
     //% weight=1
-    export class SensorVirtualDriver extends Driver {
+    export class SensorVirtualDriver extends VirtualDriver {
         // virtual mode only
         protected _localTime: number;
         protected _lastState: Buffer;

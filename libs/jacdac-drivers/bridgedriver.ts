@@ -19,15 +19,21 @@ namespace jacdac {
             super("log")
         }
 
-        handleControlPacket(pkt: Buffer): boolean {
-            const packet = new ControlPacket(pkt);
-            console.log(`jd>cp ${packet.address}=${packet.driverClass} ${packet.flags}`)
-            return true;
-        }
-
         handlePacket(pkt: Buffer): boolean {
             const packet = new JDPacket(pkt);
-            console.log(`jd>p ${packet.address} ${packet.size}b`)
+            if (packet.address == 0) {
+                const cp = new ControlPacket(packet.data);
+                console.log(`jd>cp ${cp.address}=${cp.driverClass} ${cp.flags}`)
+                const data = cp.data;
+                if (data.length)
+                    console.log(" " + cp.data.toHex());
+                return true;    
+            } else {
+                console.log(`jd>p ${packet.address} ${packet.size}b`)
+                const data = packet.data;
+                if (data.length)
+                    console.log(" " + packet.data.toHex());
+            }
             return true;
         }
     }

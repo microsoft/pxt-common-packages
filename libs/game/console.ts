@@ -30,7 +30,7 @@ namespace game.consoleOverlay {
     }
 
     export function draw() {
-        if (!consoleStrings || scene.systemMenuActive) return;
+        if (!consoleStrings || scene.systemMenu.active) return;
         const height = consoleFont.charHeight + marginy ;
         const top = 2 + (game.stats ? height : 0);
         for (let i = 0; i < consoleStrings.length; ++i) {

@@ -1,14 +1,36 @@
-namespace scene {
-    export let systemMenuActive = false;
-    export function registerSystemMenu() {
-        if (systemMenuActive) {
-            return;
-        }
+namespace scene.systemMenu {
+    export let active = false;
+
+    interface MenuItem {
+        name: () => string;
+        handler: () => void;
+    }
+    let customItems: MenuItem[] = undefined;
+    export function addEntry(name: () => string, handler: () => void) {
+        if (!customItems) customItems = [];
+        customItems.push({
+            name: name,
+            handler: handler
+        });
+    }
+
+    export function register() {
+        if (active) return; // don't show system menu, while in system menu
 
         controller.menu.onEvent(ControllerButtonEvent.Pressed, function () {
-            systemMenuActive = true;
-            const m = new menu.Menu();
-            m.addItem("volume", () => {});
+            active = true;            
+            let itemHandler: () => void = undefined;
+            const m = new menu.Menu();            
+            m.addItem("volume up", () => {
+                const v = music.volume();
+                music.setVolume(v + 32);
+                music.playTone(440, 500);
+            });
+            m.addItem("volume down", () => {
+                const v = music.volume();
+                music.setVolume(v - 32);
+                music.playTone(440, 500);
+            });
             m.addItem("brightness", () => {});
             m.addItem(game.stats ? "hide stats" : "show stats", () => {
                 game.stats = !game.stats;
@@ -23,7 +45,18 @@ namespace scene {
                 }
                 m.hide();
             });
-            m.onHidden = () => systemMenuActive = false;
+            if (customItems)
+                customItems.forEach(item => {
+                    m.addItem(item.name(), () => {
+                        m.hide();
+                        itemHandler = item.handler;
+                    })
+                });                
+            m.onDidHide = () => {
+                active = false;
+                if (itemHandler)
+                    itemHandler();
+            }
             m.show();
         })
     }
