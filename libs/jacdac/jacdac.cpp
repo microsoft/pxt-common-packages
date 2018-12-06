@@ -1,10 +1,14 @@
+
+
 #include "pxt.h"
-#include "JDProtocol.h"
-#include "JackRouter.h"
 
 #define JD_DRIVER_EVT_FILL_CONTROL_PACKET 50
-
 #define JD_MIN_VERSION(VERSION) (defined CODAL_JACDAC_WIRE_SERIAL && defined JD_VERSION && JD_VERSION >= VERSION)
+
+#if JD_MIN_VERSION(1)
+#include "JDProtocol.h"
+#include "JackRouter.h"
+#endif
 
 namespace jacdac {
 
