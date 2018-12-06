@@ -27,7 +27,7 @@ void setBinding(int source, int value, Action act) {
         curr->action = act;
         return;
     }
-    curr = (HandlerBinding *)app_alloc(sizeof(HandlerBinding));
+    curr = new HandlerBinding;
     curr->next = handlerBindings;
     curr->source = source;
     curr->value = value;

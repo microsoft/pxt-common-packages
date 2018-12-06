@@ -58,7 +58,7 @@ namespace pxt {
 //%
 void popThreadContext(ThreadContext *ctx);
 //%
-ThreadContext *pushThreadContext(void *sp);
+ThreadContext *pushThreadContext(void *sp, void *endSP);
 
 unsigned RefRecord_gcsize(RefRecord *r) {
     VTable *tbl = getVTable(r);
@@ -68,7 +68,7 @@ unsigned RefRecord_gcsize(RefRecord *r) {
 #ifndef PXT_GC
 // dummies, to make the linker happy
 void popThreadContext(ThreadContext *ctx) {}
-ThreadContext *pushThreadContext(void *sp) {
+ThreadContext *pushThreadContext(void *sp, void *endSP) {
     return NULL;
 }
 void RefRecord_scan(RefRecord *r) {}
@@ -77,6 +77,14 @@ void RefRecord_scan(RefRecord *r) {}
 #ifdef PXT_GC_THREAD_LIST
 ThreadContext *threadContexts;
 #endif
+
+#define IN_GC_ALLOC 1
+#define IN_GC_COLLECT 2
+#define IN_GC_FREEZE 4
+
+static TValue *tempRoot;
+static uint8_t tempRootLen;
+uint8_t inGC;
 
 void popThreadContext(ThreadContext *ctx) {
     VLOG("pop: %p", ctx);
@@ -90,7 +98,7 @@ void popThreadContext(ThreadContext *ctx) {
         ctx->stack.top = n->top;
         ctx->stack.bottom = n->bottom;
         ctx->stack.next = n->next;
-        delete n;
+        app_free(n);
     } else {
 #ifdef PXT_GC_THREAD_LIST
         if (ctx->next)
@@ -105,16 +113,20 @@ void popThreadContext(ThreadContext *ctx) {
                 threadContexts->prev = NULL;
         }
 #endif
-        delete ctx;
+        app_free(ctx);
         setThreadContext(NULL);
     }
 }
 
-ThreadContext *pushThreadContext(void *sp) {
+#define ALLOC(tp) (tp *)app_alloc(sizeof(tp))
+
+ThreadContext *pushThreadContext(void *sp, void *endSP) {
     if (PXT_IN_ISR())
         target_panic(PANIC_CALLED_FROM_ISR);
 
     auto curr = getThreadContext();
+    tempRoot = (TValue *)endSP;
+    tempRootLen = (uint32_t *)sp - (uint32_t *)endSP;
     if (curr) {
 #ifdef PXT_GC_THREAD_LIST
 #ifdef PXT_GC_DEBUG
@@ -128,14 +140,14 @@ ThreadContext *pushThreadContext(void *sp) {
             oops(49);
 #endif
 #endif
-        auto seg = new StackSegment;
+        auto seg = ALLOC(StackSegment);
         VLOG("stack %p / %p", seg, curr);
         seg->top = curr->stack.top;
         seg->bottom = curr->stack.bottom;
         seg->next = curr->stack.next;
         curr->stack.next = seg;
     } else {
-        curr = new ThreadContext;
+        curr = ALLOC(ThreadContext);
         LOG("push: %p", curr);
         curr->globals = globals;
         curr->stack.next = NULL;
@@ -149,6 +161,7 @@ ThreadContext *pushThreadContext(void *sp) {
 #endif
         setThreadContext(curr);
     }
+    tempRootLen = 0;
     curr->stack.bottom = sp;
     curr->stack.top = NULL;
     return curr;
@@ -263,6 +276,12 @@ static void mark(int flags) {
     if (flags & 2)
         DMESG("RG:%p/%d", data, len);
     VLOG("globals: %p %d", data, len);
+    for (unsigned i = 0; i < len; ++i) {
+        gcProcess(*data++);
+    }
+
+    data = tempRoot;
+    len = tempRootLen;
     for (unsigned i = 0; i < len; ++i) {
         gcProcess(*data++);
     }
@@ -386,12 +405,39 @@ static void sweep(int flags) {
 
 void gc(int flags) {
     startPerfCounter(PerfCounters::GC);
+    GC_CHECK(!(inGC & IN_GC_COLLECT), 40);
+    inGC |= IN_GC_COLLECT;
     VLOG("GC mark");
     mark(flags);
     VLOG("GC sweep");
     sweep(flags);
     VLOG("GC done");
     stopPerfCounter(PerfCounters::GC);
+    inGC &= ~IN_GC_COLLECT;
+}
+
+static bool inGCArea(void *ptr) {
+    for (auto block = firstBlock; block; block = block->next) {
+        if ((void *)block->data < ptr && ptr < (void *)((uint8_t *)block->data + block->blockSize))
+            return true;
+    }
+    return false;
+}
+
+extern "C" void free(void *ptr) {
+    if (!ptr)
+        return;
+    if (inGCArea(ptr))
+        app_free(ptr);
+    else
+        xfree(ptr);
+}
+
+extern "C" void *malloc(size_t sz) {
+    if (PXT_IN_ISR() || inGC)
+        return xmalloc(sz);
+    else
+        return app_alloc(sz);
 }
 
 void *gcAllocateArray(int numbytes) {
@@ -406,6 +452,7 @@ void *app_alloc(int numbytes) {
     if (!numbytes)
         return NULL;
 
+    // gc(0);
     auto r = (uint32_t *)gcAllocateArray(numbytes);
     r[-1] |= PERMA_MASK;
     return r;
@@ -418,14 +465,20 @@ void *app_free(void *ptr) {
     return r;
 }
 
+void gcFreeze() {
+    inGC |= IN_GC_FREEZE;
+}
+
 void *gcAllocate(int numbytes) {
     size_t numwords = (numbytes + 3) >> 2;
 
     if (numbytes > GC_MAX_ALLOC_SIZE)
         oops(45);
 
-    if (PXT_IN_ISR())
+    if (PXT_IN_ISR() || (inGC & IN_GC_ALLOC))
         target_panic(PANIC_CALLED_FROM_ISR);
+
+    inGC |= IN_GC_ALLOC;
 
 #ifdef PXT_GC_CHECKS
     {
@@ -466,6 +519,7 @@ void *gcAllocate(int numbytes) {
                 p->vtable = 0;
                 GC_CHECK(!nf || !nf->nextFree || ((uint32_t)nf->nextFree) >> 20, 48);
                 VVLOG("GC=>%p %d %p", p, numwords, nf->nextFree);
+                inGC &= ~IN_GC_ALLOC;
                 return p;
             }
             prev = p;

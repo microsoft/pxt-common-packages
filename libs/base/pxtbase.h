@@ -791,6 +791,7 @@ void gcProcessStacks(int flags);
 #endif
 
 void gcProcess(TValue v);
+void gcFreeze();
 
 void *gcAllocate(int numbytes);
 void *gcAllocateArray(int numbytes);
