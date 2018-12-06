@@ -218,7 +218,7 @@ Buffer __internalDrivers() {
     return getWJacDac()->drivers();
 }
 
-#ifdef JD_MIN_VERSION(1)
+#if JD_MIN_VERSION(1)
 class JDProxyDriver : public JDDriver 
 {
   public:
@@ -293,7 +293,9 @@ class JDProxyDriver : public JDDriver
 };
 
 #else
-class JDProxyDriver {};
+class JDProxyDriver {
+
+};
 #endif
 
 typedef JDProxyDriver* JacDacDriverStatus;
