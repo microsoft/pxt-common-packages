@@ -42,7 +42,7 @@ SynthChannel *allocateChannel() {
         numCh++;
     }
 
-    if (numCh > 2)
+    if (numCh >= 3)
         return NULL;
 
     ch = new SynthChannel();
