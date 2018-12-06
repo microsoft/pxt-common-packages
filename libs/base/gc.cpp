@@ -440,6 +440,24 @@ extern "C" void *malloc(size_t sz) {
         return app_alloc(sz);
 }
 
+extern "C" void *realloc(void *ptr, size_t size) {
+    if (inGCArea(ptr)) {
+        void *mem = malloc(size);
+
+        if (ptr != NULL && mem != NULL) {
+            auto r = (uint32_t *)ptr;
+            GC_CHECK((r[-1] >> 29) == 3, 41);
+            size_t blockSize = VAR_BLOCK_WORDS(r[-1]);
+            memcpy(mem, ptr, min(blockSize * sizeof(void *), size));
+            free(ptr);
+        }
+
+        return mem;
+    } else {
+        return device_realloc(ptr, size);
+    }
+}
+
 void *gcAllocateArray(int numbytes) {
     numbytes = (numbytes + 3) & ~3;
     numbytes += 4;

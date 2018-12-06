@@ -262,6 +262,8 @@ extern "C" void target_panic(int statusCode) {
         }
     }
 
+    gcFreeze();
+
     // remember first panic code
     panicMode = true;
 
