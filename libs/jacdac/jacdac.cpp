@@ -203,10 +203,10 @@ int logicEventId() {
 * Clears any existing bridge
 */
 //% parts=jacdac
-void setBridge() {
+void clearBridge() {
 #if JD_MIN_VERSION(3)
     auto p = getWJacDac();
-    p->protocol.setBridge(NULL);
+    p->setBridge(NULL);
 #endif    
 }
 
