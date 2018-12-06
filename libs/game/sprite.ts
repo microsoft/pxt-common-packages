@@ -337,19 +337,19 @@ class Sprite implements SpriteLike {
     //% blockId="spritesetkind" block="set %sprite(mySprite) kind to %kind"
     //% kind.shadow=spritetype
     //% weight=80
-    setKind(kind: number) {
-        if (kind == undefined || this._kind === kind) return;
+    setKind(value: number) {
+        if (value == undefined || this._kind === value) return;
 
         const spritesByKind = game.currentScene().spritesByKind;
         if (this._kind >= 0 && spritesByKind[this._kind])
-            spritesByKind[this._type].remove(this);
+            spritesByKind[this._kind].remove(this);
 
-        if (kind >= 0) {
-            if (!spritesByKind[kind]) spritesByKind[kind] = new SpriteSet();
-            spritesByKind[kind].add(this);
+        if (value >= 0) {
+            if (!spritesByKind[value]) spritesByKind[value] = new SpriteSet();
+            spritesByKind[value].add(this);
         }
 
-        this._kind = kind;
+        this._kind = value;
     }
 
     /**
