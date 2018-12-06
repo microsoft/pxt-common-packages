@@ -5,6 +5,7 @@ namespace jacdac {
         constructor(name: string, deviceClass: number, stateLength: number, controlDataLength?: number) {
             super(name, DriverType.HostDriver, deviceClass, controlDataLength);
             this.state = control.createBuffer(stateLength);
+            jacdac.addDriver(this);
         }
 
         public handlePacket(pkt: Buffer): boolean {
@@ -24,6 +25,8 @@ namespace jacdac {
         constructor(name: string, deviceClass: number, stateLength: number, controlDataLength?: number) {
             super(name, DriverType.VirtualDriver, deviceClass, controlDataLength);
             this.state = control.createBuffer(stateLength);
+            jacdac.addDriver(this);
+            this.onDriverEvent(JacDacDriverEvent.Connected, () => this.notifyChange());
         }
 
         protected notifyChange() {
