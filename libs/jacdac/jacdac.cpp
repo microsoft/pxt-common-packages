@@ -218,7 +218,7 @@ Buffer __internalDrivers() {
     return getWJacDac()->drivers();
 }
 
-#ifdef CODAL_JACDAC_WIRE_SERIAL
+#if JD_MIN_VERSION(1)
 class JDProxyDriver : public JDDriver 
 {
   public:
@@ -293,7 +293,9 @@ class JDProxyDriver : public JDDriver
 };
 
 #else
-class JDProxyDriver {};
+class JDProxyDriver {
+
+};
 #endif
 
 typedef JDProxyDriver* JacDacDriverStatus;
@@ -371,7 +373,9 @@ bool isPairedInstanceAddress(JacDacDriverStatus d, uint8_t address) {
 */
 //%
 void setBridge(JacDacDriverStatus d) {
+#if JD_MIN_VERSION(1)
     jacdac::getWJacDac()->setBridge(d);
+#endif
 }
 
 } // namespace JacDacDriverStatusMethods
