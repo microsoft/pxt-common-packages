@@ -39,6 +39,6 @@ namespace jacdac {
         }
     }
 
-    //% fixedInstance whenUsed
-    export const button = new ButtonVirtualDriver("button");
+    //% fixedInstance whenUsed block="button"
+    export const buttonService = new ButtonVirtualDriver("button");
 }

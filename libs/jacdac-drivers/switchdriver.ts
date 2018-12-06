@@ -35,6 +35,6 @@ namespace jacdac {
         }
     }
 
-    //% fixedInstance whenUsed
-    export const switchButton = new TouchButtonVirtualDriver("switch");
+    //% fixedInstance whenUsed block="switch"
+    export const switchButtonService = new TouchButtonVirtualDriver("switch");
 }
