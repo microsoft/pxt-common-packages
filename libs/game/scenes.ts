@@ -165,6 +165,22 @@ namespace scene {
     }
 
     /**
+     * Center the given sprite on a tile that is the given color
+     * @param sprite
+     * @param color
+     */
+    //% blockId=gameplaceonrandomtile block="place %sprite=variables_get(mySprite) on top of random $color=colorindexpicker tile"
+    //% blockNamespace="scene" group="Tiles"
+    //% color.shadow=colorindexpicker
+    //% help=scene/place-random
+    export function placeOnRandomTile(mySprite: Sprite, color: number): void {
+        if (!mySprite) return;
+        const tiles = getTilesByType(color);
+        if (tiles.length > 0)
+            Math.pickRandom(tiles).place(mySprite);
+    }
+
+    /**
      * Set the game camera to follow a sprite
      * @param sprite
      */
