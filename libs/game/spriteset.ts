@@ -64,7 +64,7 @@ class SpriteSet {
      * @param sprite 
      */
     remove(sprite: Sprite): boolean {
-        const i = this.indexOf(sprite);
+        const i = this._sprites.indexOf(sprite);
         if (i > -1) {
             this._sprites.splice(i, 1);
             return true;
@@ -77,15 +77,7 @@ class SpriteSet {
      * @param sprite 
      */
     contains(sprite: Sprite): boolean {
-        return this.indexOf(sprite) > -1;
-    }
-
-    private indexOf(sprite: Sprite): number {
-        const n = this._sprites.length;
-        for (let i = 0; i < n; ++i)
-            if (this._sprites[i] == sprite)
-                return i;
-        return -1;
+        return this._sprites.indexOf(sprite) > -1;
     }
 
     /** 
