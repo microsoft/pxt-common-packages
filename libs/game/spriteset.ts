@@ -4,6 +4,18 @@
 class SpriteSet {
     private _sprites: Sprite[];
 
+    /**
+     * Create a new set from an array of sprites
+     * @param sprites 
+     */
+    static createFromArray(sprites: Sprite[]): SpriteSet {
+        const sp = new SpriteSet();
+        const n = sprites.length;
+        for(let i = 0; i < n; ++i)
+            sp.add(sprites[i]);
+        return sp;
+    }
+
     constructor() {
         this._sprites = [];
     }
