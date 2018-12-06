@@ -50,7 +50,7 @@ namespace sprites {
     export function allOfKind(kind: number): Sprite[] {
         const spritesByKind = game.currentScene().spritesByKind;
         if (!(kind >= 0) || !spritesByKind[kind]) return [];
-        else return spritesByKind[kind].slice(0, spritesByKind[kind].length);
+        else return spritesByKind[kind].sprites();
     }
 
     /**

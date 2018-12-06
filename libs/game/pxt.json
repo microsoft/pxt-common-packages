@@ -8,6 +8,7 @@
         "sprite.ts",
         "spritemap.ts",
         "spriteevents.ts",
+        "spriteset.ts",
         "metrics.ts",
         "obstacle.ts",
         "physics.ts",

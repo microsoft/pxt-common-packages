@@ -338,11 +338,11 @@ class Sprite implements SpriteLike {
 
         const spritesByKind = game.currentScene().spritesByKind;
         if (this._type >= 0 && spritesByKind[this._type])
-            spritesByKind[this._type].removeElement(this);
+            spritesByKind[this._type].remove(this);
 
         if (value >= 0) {
-            if (!spritesByKind[value]) spritesByKind[value] = [];
-            spritesByKind[value].push(this);
+            if (!spritesByKind[value]) spritesByKind[value] = new SpriteSet();
+            spritesByKind[value].add(this);
         }
 
         this._type = value;
@@ -698,7 +698,7 @@ class Sprite implements SpriteLike {
         }
         scene.allSprites.removeElement(this);
         if (this.type >= 0 && scene.spritesByKind[this.type])
-            scene.spritesByKind[this.type].removeElement(this);
+            scene.spritesByKind[this.type].remove(this);
         scene.physicsEngine.removeSprite(this);
         if (this.destroyHandler)
             this.destroyHandler();
