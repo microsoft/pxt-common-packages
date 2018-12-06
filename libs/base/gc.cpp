@@ -334,14 +334,22 @@ __attribute__((noinline)) static void allocateBlock() {
     curr->data[0].vtable = FREE_MASK | curr->blockSize;
     ((RefBlock *)curr->data)[0].nextFree = firstFree;
     firstFree = (RefBlock *)curr->data;
-    curr->next = firstBlock;
     // make sure reference to allocated block is stored somewhere, otherwise
     // GCC optimizes out the call to GC_ALLOC_BLOCK
     curr->data[4].vtable = (uint32_t)dummy;
-    firstBlock = curr;
-#ifdef GC_GET_HEAP_SIZE
+    curr->next = NULL;
+    if (!firstBlock) {
+        firstBlock = curr;
+    } else {
+        for (auto p = firstBlock; p; p = p->next) {
+            if (!p->next) {
+                GC_CHECK(p < curr, 40); // required by midPtr stuff
+                p->next = curr;
+                break;
+            }
+        }
+    }
     midPtr = (uint8_t *)curr->data + curr->blockSize / 4;
-#endif
 }
 
 static void sweep(int flags) {
@@ -392,6 +400,18 @@ static void sweep(int flags) {
                     }
                     prevFreePtr = start;
                 }
+            }
+        }
+    }
+
+    if (midPtr) {
+        uint32_t currFree = 0;
+        auto limit = freeSize >> 1;
+        for (auto p = firstFree; p; p = p->nextFree) {
+            currFree += VAR_BLOCK_WORDS(p->vtable);
+            if (currFree > limit) {
+                midPtr = (uint8_t *)p + ((currFree - limit) << 2);
+                break;
             }
         }
     }
@@ -524,7 +544,7 @@ void *gcAllocate(int numbytes) {
         RefBlock *prev = NULL;
         for (auto p = firstFree; p; p = p->nextFree) {
             VVLOG("p=%p", p);
-            if (i == 0 && (uint8_t*)p > midPtr)
+            if (i == 0 && (uint8_t *)p > midPtr)
                 break;
             GC_CHECK(!isReadOnly((TValue)p), 49);
             auto vt = p->vtable;
@@ -550,14 +570,6 @@ void *gcAllocate(int numbytes) {
                 GC_CHECK(!nf || !nf->nextFree || ((uint32_t)nf->nextFree) >> 20, 48);
                 VVLOG("GC=>%p %d %p", p, numwords, nf->nextFree);
                 inGC &= ~IN_GC_ALLOC;
-                if (i == 1) {
-                    // if we managed to allocate after GC, see if it was before or after our mark
-                    // and move mark towards that
-                    if ((uint8_t*)p > midPtr)
-                        midPtr += 1024;
-                    else
-                        midPtr -= 1024;
-                }
                 return p;
             }
             prev = p;
