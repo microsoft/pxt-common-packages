@@ -44,6 +44,6 @@ namespace jacdac {
         }
     }
 
-    //% fixedInstance whenUsed
-    export const lightSensor = new LightSensorVirtualDriver("lightsensor");
+    //% fixedInstance whenUsed block="light sensor"
+    export const lightSensorService = new LightSensorVirtualDriver("lightsensor");
 }
