@@ -21,7 +21,7 @@ class WJacDac {
 #if JD_MIN_VERSION(1)
         : sws(*LOOKUP_PIN(JACK_TX))
 #if JD_MIN_VERSION(3)
-        , jd(sws, LOOKUP_PIN(JACK_BUSLED), , LOOKUP_PIN(JACK_COMMLED))
+        , jd(sws, LOOKUP_PIN(JACK_BUSLED), LOOKUP_PIN(JACK_COMMLED))
 #else
         , jd(sws)
 #endif
