@@ -102,6 +102,7 @@ void setOutput(SoundOutputDestination out) {
 //% volume.min=0 volume.max=256
 //% help=music/set-volume
 //% weight=70
+//% group="Volume"
 void setVolume(int volume) {
     auto synth = &getWSynthesizer()->synth;
     synth->setVolume(max(0, min(1024, volume * 4)));
@@ -117,6 +118,7 @@ void setVolume(int volume) {
 //% parts="headphone" async
 //% blockNamespace=music
 //% weight=76 blockGap=8
+//% group="Tone"
 void playTone(int frequency, int ms) {
     auto synth = &getWSynthesizer()->synth;
 
