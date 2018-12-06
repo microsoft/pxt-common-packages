@@ -29,12 +29,12 @@ namespace jacdac {
          * @param handler 
          */
         //% blockId=jacdacswitchonevent block="jacdac %switch on %event"
-        //% group="Touch"
+        //% group="Switch"
         onEvent(event: JDSwitchDirection, handler: () => void) {
             control.onEvent(this.id, event, handler);
         }
     }
 
     //% fixedInstance whenUsed block="switch"
-    export const switchButtonService = new TouchButtonVirtualDriver("switch");
+    export const switchButtonService = new SwitchVirtualDriver("switch");
 }
