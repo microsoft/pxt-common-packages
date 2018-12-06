@@ -25,7 +25,7 @@
 #define IS_MARKED(vt) ((uint32_t)(vt)&MARKED_MASK)
 #define IS_VAR_BLOCK(vt) ((uint32_t)(vt) >> 30)
 
-#define IS_LIVE(vt) ((uint32_t)(vt) & (MARKED_MASK | PERMA_MASK))
+#define IS_LIVE(vt) (IS_MARKED(vt) || (((uint32_t)(vt) >> 28) == 0x6))
 
 #define VAR_BLOCK_WORDS(vt) (((vt) << 12) >> (12 + 2))
 
@@ -311,7 +311,7 @@ __attribute__((noinline)) static void allocateBlock() {
         target_panic(PANIC_GC_OOM);
     }
     auto lowMem = getConfig(CFG_LOW_MEM_SIMULATION_KB, 0);
-    auto sysHeapSize = getConfig(CFG_SYSTEM_HEAP_BYTES, 16 * 1024);
+    auto sysHeapSize = getConfig(CFG_SYSTEM_HEAP_BYTES, 3 * 1024);
     auto heapSize = GC_GET_HEAP_SIZE();
     sz = heapSize - sysHeapSize;
     if (lowMem) {
@@ -341,9 +341,11 @@ __attribute__((noinline)) static void allocateBlock() {
 }
 
 static void sweep(int flags) {
-    RefBlock *freePtr = NULL;
+    RefBlock *prevFreePtr = NULL;
     uint32_t freeSize = 0;
     uint32_t totalSize = 0;
+    firstFree = NULL;
+
     for (auto h = firstBlock; h; h = h->next) {
         auto d = h->data;
         auto words = h->blockSize >> 2;
@@ -378,8 +380,13 @@ static void sweep(int flags) {
 #endif
                 start->vtable = (sz << 2) | FREE_MASK;
                 if (sz > 1) {
-                    start->nextFree = freePtr;
-                    freePtr = start;
+                    start->nextFree = NULL;
+                    if (!prevFreePtr) {
+                        firstFree = start;
+                    } else {
+                        prevFreePtr->nextFree = start;
+                    }
+                    prevFreePtr = start;
                 }
             }
         }
@@ -393,7 +400,6 @@ static void sweep(int flags) {
         DMESG("GC %d/%d free", freeSize, totalSize);
     else
         LOG("GC %d/%d free", freeSize, totalSize);
-    firstFree = freePtr;
 
 #ifndef GC_GET_HEAP_SIZE
     // if the heap is 90% full, allocate a new block
