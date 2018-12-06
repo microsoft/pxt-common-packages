@@ -21,7 +21,7 @@ namespace sprites {
      * @param img the image
      */
     //% group="Create"
-    //% blockId=spritescreate block="sprite %img=screen_image_picker||of kind %kind=spritetype"
+    //% blockId=spritescreate block="sprite %img=screen_image_picker of kind %kind=spritetype"
     //% expandableArgumentMode=toggle
     //% blockSetVariable=mySprite
     //% weight=100 help=sprites/create
@@ -58,7 +58,7 @@ namespace sprites {
      * The sprite auto-destroys when it leaves the screen. You can modify position after it's created.
      */
     //% group="Create"
-    //% blockId=spritescreateprojectile block="projectile %img=screen_image_picker vx %vx vy %vy || of kind %kind=spritetype from sprite %sprite=variables_get"
+    //% blockId=spritescreateprojectile block="projectile %img=screen_image_picker vx %vx vy %vy of kind %kind=spritetype||from sprite %sprite=variables_get"
     //% weight=99 help=sprites/create-projectile
     //% blockSetVariable=projectile
     //% inlineInputMode=inline
