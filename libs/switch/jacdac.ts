@@ -3,7 +3,7 @@ namespace jacdac {
         constructor(name: string) {
             super(name, jacdac.SWITCH_DEVICE_CLASS);
             input.onSwitchMoved(SwitchDirection.Left, () => this.raiseHostEvent(SwitchDirection.Left));
-            input.onSwitchMoved(SwitchDirection.Right, () => this.raiseHostEvent(SwitchDirection.Left));
+            input.onSwitchMoved(SwitchDirection.Right, () => this.raiseHostEvent(SwitchDirection.Right));
         }
 
         serializeState() {
