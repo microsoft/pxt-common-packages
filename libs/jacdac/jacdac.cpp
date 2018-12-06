@@ -20,7 +20,11 @@ class WJacDac {
     WJacDac()
 #if JD_MIN_VERSION(1)
         : sws(*LOOKUP_PIN(JACK_TX))
+#if JD_MIN_VERSION(3)
+        , jd(sws, LOOKUP_PIN(JACK_BUSLED), LOOKUP_PIN(JACK_COMMLED))
+#else
         , jd(sws)
+#endif
         , protocol(jd) 
 #endif
         {
@@ -68,8 +72,8 @@ class WJacDac {
     }
 
     void setBridge(JDDriver* driver) {
-#if JD_MIN_VERSION(1)
-        protocol.setBridge(*driver);
+#if JD_MIN_VERSION(3)
+        protocol.setBridge(driver);
 #endif
     }
 
@@ -200,9 +204,10 @@ int logicEventId() {
 */
 //% parts=jacdac
 void clearBridge() {
-    // TODO
-  //  auto p = getWJacDac();
-//    p->protocol.setBridge(NULL);
+#if JD_MIN_VERSION(3)
+    auto p = getWJacDac();
+    p->setBridge(NULL);
+#endif    
 }
 
 /**
