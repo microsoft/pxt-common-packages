@@ -139,6 +139,7 @@ namespace music {
     //% parts="headphone" trackArgs=0
     //% blockNamespace=music inBasicCategory=true
     //% weight=75 blockGap=8
+    //% group="Tone"
     export function ringTone(frequency: number) {
         playTone(frequency, 0);
     }
@@ -152,6 +153,7 @@ namespace music {
     //% parts="headphone" trackArgs=0
     //% blockNamespace=music
     //% weight=74
+    //% group="Tone"
     export function rest(ms: number) {
         playTone(0, Math.max(ms, 20));
     }
@@ -167,6 +169,7 @@ namespace music {
     //% help=music/beat
     //% blockId=device_beat block="%fraction|beat"
     //% weight=9 blockGap=8
+    //% group="Tempo"
     export function beat(fraction?: BeatFraction): number {
         init();
         if (fraction == null) fraction = BeatFraction.Whole;
@@ -189,6 +192,7 @@ namespace music {
     //% help=music/tempo
     //% blockId=device_tempo block="tempo (bpm)"
     //% weight=64
+    //% group="Tempo"
     export function tempo(): number {
         init();
         return beatsPerMinute;
@@ -201,6 +205,7 @@ namespace music {
     //% help=music/change-tempo-by weight=37
     //% blockId=device_change_tempo block="change tempo by %value|(bpm)"
     //% weight=66 blockGap=8
+    //% group="Tempo"
     export function changeTempoBy(bpm: number): void {
         init();
         setTempo(beatsPerMinute + bpm);
@@ -214,6 +219,7 @@ namespace music {
     //% blockId=device_set_tempo block="set tempo to %value|(bpm)"
     //% bpm.min=4 bpm.max=400
     //% weight=65 blockGap=8
+    //% group="Tempo"
     export function setTempo(bpm: number): void {
         init();
         if (bpm > 0) {

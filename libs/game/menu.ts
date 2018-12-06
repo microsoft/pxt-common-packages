@@ -16,6 +16,11 @@ enum ButtonId {
 }
 
 namespace menu {
+    export let consolePriority = ConsolePriority.Debug;
+    function log(msg: string) {
+        console.add(consolePriority, `menu> ${msg}`);
+    }
+
     export interface Updater {
         update(dt: number): void;
     }
@@ -45,7 +50,7 @@ namespace menu {
             });
 
             controller.A.onEvent(ControllerButtonEvent.Pressed, inputHandler(ButtonId.A))
-            //controller.B.onEvent(ControllerButtonEvent.Pressed, inputHandler(ButtonId.B))
+            controller.B.onEvent(ControllerButtonEvent.Pressed, inputHandler(ButtonId.B))
             controller.up.onEvent(ControllerButtonEvent.Pressed, inputHandler(ButtonId.Up))
             controller.right.onEvent(ControllerButtonEvent.Pressed, inputHandler(ButtonId.Right))
             controller.down.onEvent(ControllerButtonEvent.Pressed, inputHandler(ButtonId.Down))
@@ -53,9 +58,19 @@ namespace menu {
         }
     }
 
-    function inputHandler(button: ButtonId) {
-        let state: menu.State;
-        return () => ((state = game.currentScene().menuState) && state.focus && state.focus.handleInput(button));
+    function inputHandler(button: ButtonId): () => void {
+        return () => {
+            const state = game.currentScene();
+            if (state && state.menuState && state.menuState.focus) {
+                let node: Node = state.menuState.focus;
+                // bubble up
+                while (node) {
+                    if (node instanceof Component)
+                        (<Component>node).handleInput(button);
+                    node = node.parent;
+                }
+            }
+        }
     }
 
     /**
@@ -64,6 +79,7 @@ namespace menu {
      * @param node The Node to make the UI root
      */
     export function setRoot(node: Node) {
+        log('set root');
         game.pushScene();
         game.currentScene().menuState = new menu.State(node);
     }
@@ -73,11 +89,15 @@ namespace menu {
      * component receives all button events until it is unfocused.
      */
     export function focus(c: Component, clearStack = false) {
+        log(`focus`)
         const state = game.currentScene().menuState;
         if (!state) return;
-        if (state.focus)
+        if (state.focus) {
             state.focus.onBlur();
+            state.focus = undefined;
+        }
         if (c) {
+            log(`focusing`)
             state.focus = c;
             state.focusStack.push(c);
             c.onFocus();
@@ -415,13 +435,16 @@ namespace menu {
          * Triggers a redraw of this Node (and possibly its parent in the tree)
          */
         notifyChange() {
+            if (this.dirty) return; // don't double notify
             this.dirty = true;
             if (this.parent) {
+                log(`childchanged`)
                 this.parent.onChildDidChange(this);
             }
         }
 
         onChildDidChange(child: Node) {
+            if (this.dirty) return; // don't double notify
             this.dirty = true;
             if (this.shouldBubbleChange(child)) {
                 this.notifyChange();
@@ -791,12 +814,14 @@ namespace menu {
             if (this.visible) return;
             this.visible = true;
             this.onShown();
+            this.notifyChange();
         }
 
         hide() {
             if (!this.visible) return;
             this.visible = false;
             this.onHidden();
+            this.notifyChange();
         }
 
         onShown() {
@@ -815,8 +840,8 @@ namespace menu {
 
         }
 
-        handleInput(button: number) {
-
+        handleInput(button: number): boolean {
+            return true;
         }
 
         dispose() {
@@ -825,90 +850,50 @@ namespace menu {
         }
     }
 
-    export class ListItem extends Node {
+    export class ListItem extends Component {
         content: JustifiedContent;
         label: ScrollingLabel;
         background: RectNode;
         id: number;
         handler: () => void;
 
-        constructor(labelWidth: number, text: string, id: number) {
+        constructor(labelWidth: number, font: image.Font, text: string, id: number) {
             super();
 
             this.background = new RectNode(0);
             this.appendChild(this.background);
 
-            this.label = new ScrollingLabel(labelWidth, image.font8, text);
+            this.label = new ScrollingLabel(labelWidth, font, text);
             this.appendChild(new JustifiedContent(this.label, Alignment.Left, Alignment.Center));
 
             this.id = id;
+            this.visible = true;
         }
-
 
         get selected() {
             return this.background.color != 0;
         }
 
         set selected(value: boolean) {
-            this.background.color = value ? 10 : 0;
-            this.label.color = value ? 1 : 2;
-            this.notifyChange();
+            const sel = this.background.color != 0;
+            if (sel != value) {
+                this.background.color = value ? 10 : 0;
+                this.label.color = value ? 1 : 2;
+                this.notifyChange();
+            }
         }
     }
 
     export class VerticalList extends Component {
         flow: VerticalFlow;
-        items: ListItem[];
+        font: image.Font;
+        private items: ListItem[];
 
-        get selectedItemIndex(): number {
-            for (let i = 0; i < this.items.length; ++i) {
-                const item = this.items[i];
-                if (item.selected)
-                    return i;
-            }
-            return -1;
-        }
-
-        get selectedItem(): ListItem {
-            for (let i = 0; i < this.items.length; ++i) {
-                const item = this.items[i];
-                if (item.selected)
-                    return item;
-            }
-            return undefined;
-        }
-
-        attachController() {
-            controller.down.onEvent(ControllerButtonEvent.Pressed, () => {
-                for (let i = 0; i < this.items.length - 1; ++i) {
-                    const item = this.items[i];
-                    if (item.selected) {
-                        item.selected = false;
-                        this.items[++i].selected = true;
-                        return;
-                    }
-                }
-            });
-            controller.up.onEvent(ControllerButtonEvent.Pressed, () => {
-                for (let i = 1; i < this.items.length; ++i) {
-                    const item = this.items[i];
-                    if (item.selected) {
-                        item.selected = false;
-                        this.items[--i].selected = true;
-                        return;
-                    }
-                }
-            });
-            controller.A.onEvent(ControllerButtonEvent.Pressed, () => {
-                const item = this.selectedItem;
-                item.handler();
-            });
-        }
-
-        constructor(outerWidth: number, outerHeight: number, innerWidth?: number, innerHeight?: number) {
+        constructor(outerWidth: number, outerHeight: number, font: image.Font, innerWidth?: number, innerHeight?: number) {
             super();
             this.fixedWidth = outerWidth;
             this.fixedHeight = outerHeight;
+            this.font = font;
 
             if (!innerWidth) innerWidth = outerWidth;
             if (!innerHeight) innerHeight = outerHeight;
@@ -920,12 +905,82 @@ namespace menu {
             this.appendChild(padding);
         }
 
+        get length() {
+            return this.items.length;
+        }
+
         addItem(item: string, id: number): ListItem {
-            const n = new ListItem(this.flow.width, item, id);
-            n.fixedHeight = 16;
+            const n = new ListItem(this.flow.width, this.font, item, id);
+            n.fixedHeight = this.font.charHeight + 6;
             this.items.push(n);
             this.flow.appendChild(n);
             return n;
+        }
+
+        get selectedItemIndex(): number {
+            for (let i = 0; i < this.items.length; ++i) {
+                const item = this.items[i];
+                if (item.selected)
+                    return i;
+            }
+            return -1;
+        }
+
+        set selectedItemIndex(value: number) {
+            for (let i = 0; i < this.items.length; ++i) {
+                const item = this.items[i];
+                const select = value == i;
+                if (select != item.selected) {
+                    item.selected = select;
+                    //if (item.selected)
+                    //    focus(item, true);
+                }
+            }
+        }
+
+        get selectedItem(): ListItem {
+            for (let i = 0; i < this.items.length; ++i) {
+                const item = this.items[i];
+                if (item.selected)
+                    return item;
+            }
+            return undefined;
+        }
+
+        handleInput(button: ButtonId) {
+            log(`list input ${button}`)
+            switch (button) {
+                case ButtonId.A:
+                    const item = this.selectedItem;
+                    if (item && item.handler)
+                        item.handler();
+                    break;
+                case ButtonId.Down:
+                    for (let i = 0; i < this.items.length - 1; ++i) {
+                        const item = this.items[i];
+                        if (item.selected) {
+                            item.selected = false;
+                            i = i + 1;
+                            this.items[i].selected = true;
+                            focus(this.items[i], true);
+                            break;
+                        }
+                    }
+                    break;
+                case ButtonId.Up:
+                    for (let i = 1; i < this.items.length; ++i) {
+                        const item = this.items[i];
+                        if (item.selected) {
+                            item.selected = false;
+                            i = i - 1;
+                            this.items[i].selected = true;
+                            focus(this.items[i], true);
+                            break;
+                        }
+                    }
+                    break;
+            }
+            return true;
         }
     }
 
@@ -1121,14 +1176,14 @@ namespace menu {
         node.fixedHeight = value;
     }
 
-    export class Menu extends Node {
+    export class Menu extends Component {
         list: menu.VerticalList;
         root: menu.JustifiedContent;
         b: menu.Bounds;
         margin: number;
-        onHidden?: () => void;
+        onDidHide?: () => void;
 
-        constructor() {
+        constructor(font?: image.Font) {
             super();
             this.margin = 10;
 
@@ -1142,16 +1197,15 @@ namespace menu {
             this.b.top = 30;
             this.b.appendChild(f)
 
-            this.list = new menu.VerticalList(finalWidth - 8, finalHeight - 8, finalWidth - 24, finalHeight - 24);
+            this.list = new menu.VerticalList(finalWidth - 8, finalHeight - 8, font || image.font5, finalWidth - 24, finalHeight - 24);
             f.appendChild(this.list);
             this.root = new menu.JustifiedContent(this.b, Alignment.Center, Alignment.Center);
             this.appendChild(this.root);
         }
 
         addItem(name: string, handler: () => void) {
-            const item = this.list.addItem(name, this.list.items.length);
-            if (this.list.items.length == 1)
-                this.list.items[0].selected = true;
+            const item = this.list.addItem(name, this.list.length);
+            this.list.selectedItemIndex = 0;
             item.handler = handler;
         }
 
@@ -1166,13 +1220,18 @@ namespace menu {
                 .to(screen.width - this.margin)
                 .duration(200)
                 .onEnded(() => {
+                    console.log(`show list`)
                     this.list.show();
+                    focus(this.list.selectedItem, true);
+                    this.onShown();
+                    this.notifyChange();
                 });
             vert.chain(hori);
             vert.start();
         }
 
         hide() {
+            if (!this.visible) return;
             this.list.hide();
             const hori = this.b.animate(menu.setWidth)
                 .from(150)
@@ -1184,20 +1243,28 @@ namespace menu {
                 .duration(200)
                 .onEnded(() => {
                     this.dispose();
-                    if (this.onHidden)
-                        this.onHidden();
+                    this.visible = false;
+                    this.onHidden();
+                    this.notifyChange();
+                    if (this.onDidHide)
+                        this.onDidHide();
                 });
             hori.chain(vert);
             hori.start();
         }
 
         show() {
+            if (this.visible) return;
+            this.visible = true;
             menu.setRoot(this);
-            this.list.attachController();
-            controller.B.onEvent(ControllerButtonEvent.Pressed, () => {
-                this.hide();
-            });
             this.grow();
+        }
+
+        handleInput(button: number) {
+            log(`input menu ${button}`)
+            if (button == ButtonId.B)
+                this.hide();
+            return true;
         }
     }
 }

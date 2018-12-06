@@ -5,12 +5,14 @@
         "pixel.cpp",
         "pixel.ts",
         "shims.d.ts",
-        "enums.d.ts"
+        "enums.d.ts",
+        "jacdac.ts"
     ],
     "testFiles": [
     ],
     "public": true,
     "dependencies": {
-        "core": "file:../core"
+        "core": "file:../core",
+        "jacdac": "file:../jacdac"
     }
 }

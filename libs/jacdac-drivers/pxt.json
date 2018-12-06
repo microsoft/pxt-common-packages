@@ -12,7 +12,8 @@
         "accelerometerdriver.ts",
         "touchbuttondriver.ts",
         "microphonedriver.ts",
-        "thermometerdriver.ts"
+        "thermometerdriver.ts",
+        "switchdriver.ts"
     ],
     "testFiles": [
         "test.ts"

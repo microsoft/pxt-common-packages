@@ -6,10 +6,12 @@
         "switch.cpp",
         "ns.ts",
         "shims.d.ts",
-        "enums.d.ts"
+        "enums.d.ts",
+        "jacdac.ts"
     ],
     "dependencies": {
-        "core": "file:../core"
+        "core": "file:../core",
+        "jacdac": "file:../jacdac"
     },
     "public": true
 }
