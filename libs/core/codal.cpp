@@ -1,6 +1,5 @@
 #include "pxt.h"
 
-
 void cpu_clock_init(void);
 
 PXT_ABI(__aeabi_dadd)
@@ -91,6 +90,11 @@ static void initCodal() {
     }
 
     usb_init();
+
+    auto led = LOOKUP_PIN(LED);
+    if (led) {
+        led->setDigitalValue(0);
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -204,7 +208,9 @@ static void *threadAddressFor(codal::Fiber *fib, void *sp) {
 void gcProcessStacks(int flags) {
     int numFibers = codal::list_fibers(NULL);
     codal::Fiber **fibers = (codal::Fiber **)xmalloc(sizeof(codal::Fiber *) * numFibers);
-    codal::list_fibers(fibers);
+    int num2 = codal::list_fibers(fibers);
+    if (numFibers != num2)
+        oops(12);
     int cnt = 0;
 
     for (int i = 0; i < numFibers; ++i) {
@@ -217,7 +223,7 @@ void gcProcessStacks(int flags) {
             auto end = (TValue *)threadAddressFor(fib, seg->bottom);
             if (flags & 2)
                 DMESG("RS%d:%p/%d", cnt++, ptr, end - ptr);
-            //VLOG("mark: %p - %p", ptr, end);
+            // VLOG("mark: %p - %p", ptr, end);
             while (ptr < end) {
                 gcProcess(*ptr++);
             }
@@ -226,6 +232,5 @@ void gcProcessStacks(int flags) {
     xfree(fibers);
 }
 #endif
-
 
 } // namespace pxt

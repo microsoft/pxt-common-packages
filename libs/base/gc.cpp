@@ -212,7 +212,7 @@ void gcProcess(TValue v) {
         return;
     VVLOG("gcProcess: %p", v);
     MARK(v);
-    auto scan = getScanMethod(VT(v));
+    auto scan = getScanMethod(VT(v) & ~ANY_MARKED_MASK);
     if (scan)
         scan((RefObject *)v);
     while (workQueue.getLength()) {
@@ -279,7 +279,7 @@ static uint32_t getObjectSize(RefObject *o) {
         // GC_CHECK(0x2000 <= (intptr_t)sz && (intptr_t)sz <= 0x100000, 47);
         r = sz(o);
     }
-    GC_CHECK(1 <= r && r <= (GC_MAX_ALLOC_SIZE >> 2), 48);
+    GC_CHECK(1 <= r && (r <= (GC_MAX_ALLOC_SIZE >> 2) || IS_FREE(vt)), 48);
     return r;
 }
 
@@ -447,13 +447,13 @@ void *gcAllocate(int numbytes) {
             auto vt = p->vtable;
             if (!IS_FREE(vt))
                 oops(43);
-            int left = (vt >> 2) - numwords;
+            int left = VAR_BLOCK_WORDS(vt) - numwords;
             if (left >= 0) {
                 auto nf = (RefBlock *)((void **)p + numwords);
                 // VLOG("nf=%p", nf);
                 auto nextFree = p->nextFree; // p and nf can overlap when allocating 4 bytes
                 if (left)
-                    nf->vtable = (left << 2) | 2;
+                    nf->vtable = (left << 2) | FREE_MASK;
                 if (left >= 2) {
                     nf->nextFree = nextFree;
                 } else {
