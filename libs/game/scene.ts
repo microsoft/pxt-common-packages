@@ -31,7 +31,7 @@ namespace scene {
         tileMap: tiles.TileMap;
         allSprites: SpriteLike[];
         private spriteNextId: number;
-        spritesByKind: Sprite[][];
+        spritesByKind: SpriteSet[];
         physicsEngine: PhysicsEngine;
         camera: scene.Camera;
         flags: number;
