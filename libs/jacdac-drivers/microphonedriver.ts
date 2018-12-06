@@ -37,6 +37,6 @@ namespace jacdac {
         }
     }
 
-    //% fixedInstance whenUsed
-    export const microhpone = new MicrophoneVirtualDriver("microphone");
+    //% fixedInstance whenUsed block="microphone"
+    export const microhponeService = new MicrophoneVirtualDriver("microphone");
 }

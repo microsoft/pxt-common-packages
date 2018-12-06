@@ -1,10 +1,14 @@
+
+
 #include "pxt.h"
-#include "JDProtocol.h"
-#include "JackRouter.h"
 
 #define JD_DRIVER_EVT_FILL_CONTROL_PACKET 50
-
 #define JD_MIN_VERSION(VERSION) (defined CODAL_JACDAC_WIRE_SERIAL && defined JD_VERSION && JD_VERSION >= VERSION)
+
+#if JD_MIN_VERSION(1)
+#include "JDProtocol.h"
+#include "JackRouter.h"
+#endif
 
 namespace jacdac {
 
@@ -20,7 +24,11 @@ class WJacDac {
     WJacDac()
 #if JD_MIN_VERSION(1)
         : sws(*LOOKUP_PIN(JACK_TX))
+#if JD_MIN_VERSION(3)
+        , jd(sws, LOOKUP_PIN(JACK_BUSLED), LOOKUP_PIN(JACK_COMMLED))
+#else
         , jd(sws)
+#endif
         , protocol(jd) 
 #endif
         {
@@ -68,8 +76,8 @@ class WJacDac {
     }
 
     void setBridge(JDDriver* driver) {
-#if JD_MIN_VERSION(1)
-        protocol.setBridge(*driver);
+#if JD_MIN_VERSION(3)
+        protocol.setBridge(driver);
 #endif
     }
 
@@ -200,9 +208,10 @@ int logicEventId() {
 */
 //% parts=jacdac
 void clearBridge() {
-    // TODO
-  //  auto p = getWJacDac();
-//    p->protocol.setBridge(NULL);
+#if JD_MIN_VERSION(3)
+    auto p = getWJacDac();
+    p->setBridge(NULL);
+#endif    
 }
 
 /**
@@ -213,7 +222,7 @@ Buffer __internalDrivers() {
     return getWJacDac()->drivers();
 }
 
-#ifdef CODAL_JACDAC_WIRE_SERIAL
+#if JD_MIN_VERSION(1)
 class JDProxyDriver : public JDDriver 
 {
   public:
@@ -288,7 +297,9 @@ class JDProxyDriver : public JDDriver
 };
 
 #else
-class JDProxyDriver {};
+class JDProxyDriver {
+
+};
 #endif
 
 typedef JDProxyDriver* JacDacDriverStatus;
@@ -366,7 +377,9 @@ bool isPairedInstanceAddress(JacDacDriverStatus d, uint8_t address) {
 */
 //%
 void setBridge(JacDacDriverStatus d) {
+#if JD_MIN_VERSION(1)
     jacdac::getWJacDac()->setBridge(d);
+#endif
 }
 
 } // namespace JacDacDriverStatusMethods

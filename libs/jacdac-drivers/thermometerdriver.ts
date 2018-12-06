@@ -48,6 +48,6 @@ namespace jacdac {
         }
     }
 
-    //% fixedInstance whenUsed
-    export const thermometer = new ThermometerVirtualDriver("thermometer");
+    //% fixedInstance whenUsed block="thermometer"
+    export const thermometerService = new ThermometerVirtualDriver("thermometer");
 }

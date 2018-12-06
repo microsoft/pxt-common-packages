@@ -10,7 +10,8 @@
         "jacdac.svg",
         "pxtparts.json",
         "pxt.json",
-        "shims.d.ts"
+        "shims.d.ts",
+        "actuatordriver.ts"
     ],
     "testFiles": [
     ],

@@ -14,7 +14,7 @@ namespace jacdac {
         serializeState() {
             const buf = control.createBuffer(3);
             buf.setNumber(NumberFormat.UInt8LE, 0, this.button.isPressed() ? 0xff : 0);
-            buf.setNumber(NumberFormat.UInt16LE, 0, this.button.value());
+            buf.setNumber(NumberFormat.UInt16LE, 1, this.button.value());
             return buf;
         }
     }

@@ -1,0 +1,23 @@
+namespace jacdac {
+    export class PixelHostDriver extends ActuatorHostDriver {
+        constructor(name: string) {
+            super(name, jacdac.PIXEL_DEVICE_CLASS, 4);
+        }
+
+        protected handleStateChanged(): boolean {
+            let brightness = 0;
+            let color = 0;
+            if (this.state.length >= 4) {
+                brightness = this.state.getNumber(NumberFormat.UInt8LE, 0);
+                color = pixel.rgb(
+                    this.state.getNumber(NumberFormat.UInt8LE, 1),
+                    this.state.getNumber(NumberFormat.UInt8LE, 2),
+                    this.state.getNumber(NumberFormat.UInt8LE, 3)
+                );
+            }
+            pixel.setBrightness(brightness)
+            pixel.setColor(color);
+            return true;
+        }
+    }
+}

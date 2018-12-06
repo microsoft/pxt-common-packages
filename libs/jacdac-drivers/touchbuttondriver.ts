@@ -28,6 +28,6 @@ namespace jacdac {
         }
     }
 
-    //% fixedInstance whenUsed
-    export const touch = new TouchButtonVirtualDriver("touch");
+    //% fixedInstance whenUsed block="touch"
+    export const touchService = new TouchButtonVirtualDriver("touch");
 }

@@ -30,6 +30,7 @@ namespace music {
     //% volume.min=0 volume.max=256
     //% help=music/set-volume
     //% weight=70
+    //% group="Volume"
     export function setVolume(volume: number): void {
         globalVolume = Math.clamp(0, 255, volume | 0)
     }
@@ -57,6 +58,7 @@ namespace music {
     //% parts="headphone" async
     //% blockNamespace=music
     //% weight=76 blockGap=8
+    //% group="Tone"
     export function playTone(frequency: number, ms: number): void {
         if (playToneFreq == null) {
             let buf = control.createBuffer(10 + 1)
@@ -73,7 +75,7 @@ namespace music {
                     } else {
                         addNote(buf, 0, 60, 255, 255, 1, playToneFreq, globalVolume)
                         playInstructions(buf)
-                    }                        
+                    }
                 }
             })
         }
@@ -98,6 +100,13 @@ namespace music {
             this._text = text
         }
 
+        /**
+         * Stops playing a sound
+         */
+        //% blockId=mixer_stop block="stop sound %sound"
+        //% parts="headphone"
+        //% weight=92 blockGap=8
+        //% group="Sounds"
         stop() {
             if (this._player) {
                 this._player.stop()
@@ -124,7 +133,8 @@ namespace music {
         //% help=music/play-sound
         //% blockId=mixer_loop_sound block="loop sound %sound"
         //% parts="headphone"
-        //% weight=95 blockGap=8
+        //% weight=93 blockGap=8
+        //% group="Sounds"
         loop(volume = 128) {
             this.playCore(volume, true)
         }
@@ -137,6 +147,7 @@ namespace music {
         //% blockId=mixer_play_sound block="play sound %sound"
         //% parts="headphone"
         //% weight=95 blockGap=8
+        //% group="Sounds"
         play(volume = 128) {
             this.playCore(volume, false)
         }
@@ -150,6 +161,7 @@ namespace music {
         //% blockId=mixer_play_sound_until_done block="play sound %sound|until done"
         //% parts="headphone"
         //% weight=94 blockGap=8
+        //% group="Sounds"
         playUntilDone(volume = 128) {
             this.stop()
             new MelodyPlayer(this).play(volume)
