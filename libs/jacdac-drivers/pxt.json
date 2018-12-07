@@ -6,7 +6,7 @@
         "bridge.ts",
         "buttonclient.ts",
         "lightsensorclient.ts",
-        "logger.ts",
+        "console.ts",
         "battery.ts",
         "accelerometerclient.ts",
         "touchbuttonclient.ts",

@@ -13,6 +13,7 @@
         "shims.d.ts",
         "actuator.ts",
         "messagebus.ts",
+        "console.ts",
         "ns.ts"
     ],
     "testFiles": [
