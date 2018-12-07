@@ -7,7 +7,6 @@
         "buttonclient.ts",
         "lightsensorclient.ts",
         "logger.ts",
-        "messagebus.ts",
         "battery.ts",
         "accelerometerclient.ts",
         "touchbuttonclient.ts",
