@@ -1,23 +1,3 @@
-enum JDLightCommand {
-    SetAll,
-    SetBrightness,
-    Rainbow,
-    RunningLights,
-    ColorWipe,
-    Comet,
-    TheaterChase,
-    Sparkle    
-}
-
-enum JDLightAnimation {
-    Rainbow =JDLightCommand.Rainbow,
-    RunningLights = JDLightCommand.RunningLights,
-    ColorWipe = JDLightCommand.ColorWipe,
-    Comet = JDLightCommand.Comet,
-    TheaterChase = JDLightCommand.TheaterChase,
-    Sparkle = JDLightCommand.Sparkle
-}
-
 namespace jacdac {
     //% fixedInstances
     export class LightService extends ActuatorService {

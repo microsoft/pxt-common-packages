@@ -25,3 +25,29 @@ namespace jacdac {
         DAL.DEVICE_BUTTON_EVT_LONG_CLICK
     ];
 }
+
+enum JDLightCommand {
+    SetAll,
+    SetBrightness,
+    Rainbow,
+    RunningLights,
+    ColorWipe,
+    Comet,
+    TheaterChase,
+    Sparkle    
+}
+
+enum JDLightAnimation {
+    //% block="rainbow"
+    Rainbow =JDLightCommand.Rainbow,
+    //% block="running lights"
+    RunningLights = JDLightCommand.RunningLights,
+    //% block="color wipe"
+    ColorWipe = JDLightCommand.ColorWipe,
+    //% block="comet"
+    Comet = JDLightCommand.Comet,
+    //% block="theater chase"
+    TheaterChase = JDLightCommand.TheaterChase,
+    //% block="sparkle"
+    Sparkle = JDLightCommand.Sparkle
+}
