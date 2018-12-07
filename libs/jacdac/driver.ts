@@ -10,6 +10,7 @@ namespace jacdac {
         SnifferDriver = DAL.JD_DEVICE_FLAGS_REMOTE | DAL.JD_DEVICE_FLAGS_BROADCAST, // the driver is not enumerated, and receives all packets of the same class (including control packets)
     };
 
+    //% fixedInstances
     export class Driver {
         public name: string;
         protected _proxy: JacDacDriverStatus;
@@ -99,7 +100,7 @@ namespace jacdac {
         /**
          * Register and starts the driver
          */
-        //% blockId=jacdachoststart block="%service start"
+        //% blockId=jacdachoststart block="start %service"
         //% group="Services"
         start() {
             if (!this._proxy)
