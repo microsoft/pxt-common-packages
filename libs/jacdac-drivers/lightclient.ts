@@ -6,9 +6,11 @@ namespace jacdac {
         }
 
         private sendCmd(cmd: number, value: number) {
-            const buf = control.createBuffer(5);
+            const buf = control.createBuffer(9);
             buf.setNumber(NumberFormat.UInt8LE, 0, cmd);
-            buf.setNumber(NumberFormat.UInt32LE, 1, value);
+            buf.setNumber(NumberFormat.UInt16LE, 1, 0);
+            buf.setNumber(NumberFormat.UInt16LE, 3, 0);
+            buf.setNumber(NumberFormat.UInt32LE, 5, value);
             this.sendPacket(buf);
         }
 
