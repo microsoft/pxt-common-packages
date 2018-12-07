@@ -22,7 +22,7 @@ namespace sprites {
 
         const scene = game.currentScene();
         scene.createdHandlers.push({
-            type: kind,
+            kind: kind,
             handler: handler
         })
     }
@@ -41,7 +41,7 @@ namespace sprites {
 
         const scene = game.currentScene();
         scene.destroyedHandlers.push({
-            type: kind,
+            kind: kind,
             handler: handler
         })
     }
@@ -53,13 +53,14 @@ namespace sprites {
     //% weight=100 draggableParameters
     //% blockId=spritesoverlap block="on $sprite of kind $kind=spritetype overlaps $otherSprite of kind $otherKind=spritetype"
     //% help=sprites/on-overlap
+    //% blockGap=8
     export function onOverlap(kind: number, otherKind: number, handler: (sprite: Sprite, otherSprite: Sprite) => void) {
         if (kind == undefined || otherKind == undefined ||!handler) return;
 
         const scene = game.currentScene();
         scene.overlapHandlers.push({
-            type: kind,
-            otherType: otherKind,
+            kind: kind,
+            otherKind: otherKind,
             handler: handler
         })
     }
@@ -81,7 +82,7 @@ namespace scene {
 
         const scene = game.currentScene();
         scene.collisionHandlers.push({
-            type: kind,
+            kind: kind,
             tile: tile,
             handler: handler
         })
