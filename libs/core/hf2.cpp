@@ -365,7 +365,7 @@ void bkptPaused() {
     }
 
     if (stackCopy) {
-        free(stackCopy);
+        xfree(stackCopy);
         stackCopy = NULL;
     }
 
@@ -411,7 +411,7 @@ extern "C" void handleHardFault(ExceptionContext *ectx) {
         void *ssp = (void *)(ectx + 1);
         stackSize = DEVICE_STACK_BASE - (uint32_t)ssp;
         if (stackCopy)
-            free(stackCopy);
+            xfree(stackCopy);
         stackCopy = xmalloc(stackSize);
         memcpy(stackCopy, ssp, stackSize);
         ectx->faultInstrAddr = ((uint32_t)(&bkptPaused) & (~1U));

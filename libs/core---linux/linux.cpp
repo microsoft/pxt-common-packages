@@ -44,10 +44,10 @@ void *operator new[](size_t size) {
 }
 
 void operator delete(void *p) {
-    free(p);
+    xfree(p);
 }
 void operator delete[](void *p) {
-    free(p);
+    xfree(p);
 }
 
 namespace pxt {
