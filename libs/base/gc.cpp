@@ -312,7 +312,7 @@ __attribute__((noinline)) static void allocateBlock() {
         target_panic(PANIC_GC_OOM);
     }
     auto lowMem = getConfig(CFG_LOW_MEM_SIMULATION_KB, 0);
-    auto sysHeapSize = getConfig(CFG_SYSTEM_HEAP_BYTES, 3 * 1024);
+    auto sysHeapSize = getConfig(CFG_SYSTEM_HEAP_BYTES, 4 * 1024);
     auto heapSize = GC_GET_HEAP_SIZE();
     sz = heapSize - sysHeapSize;
     if (lowMem) {
