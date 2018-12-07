@@ -1,7 +1,7 @@
 /*
     Animation library for sprites
 */
-//% color="#03AA74" weight=88 icon="\uf021"
+//% color="#03AA74" weight=78 icon="\uf021"
 namespace animation {
     //Handles all the updates
     let _onAnimUpdate: (() => void)[] = null;
