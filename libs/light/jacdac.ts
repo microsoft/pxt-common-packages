@@ -3,17 +3,15 @@ namespace jacdac {
     export class LightService extends ActuatorService {
         strip: light.NeoPixelStrip;
         constructor(name: string, strip: light.NeoPixelStrip) {
-            super(name, jacdac.LIGHT_DEVICE_CLASS, 9);
+            super(name, jacdac.LIGHT_DEVICE_CLASS, 5);
             this.strip = strip;
         }
 
         handleStateChanged(): boolean {
             const animation = this.state.getNumber(NumberFormat.UInt8LE, 0);
-            const start = this.state.getNumber(NumberFormat.UInt16LE, 1);
-            const length = this.state.getNumber(NumberFormat.UInt16LE, 3);
-            const value = this.state.getNumber(NumberFormat.UInt32LE, 5);
+            const value = this.state.getNumber(NumberFormat.UInt32LE, 1);
 
-            const range = length ? this.strip.range(start, length) : this.strip;
+            const range = this.strip;
             switch (animation) {
                 case JDLightCommand.SetAll: range.setAll(value); break;
                 case JDLightCommand.SetBrightness: range.setBrightness(value);
