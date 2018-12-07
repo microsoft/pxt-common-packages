@@ -3,28 +3,24 @@ namespace jacdac {
     /**
      * A driver that listens for message bus events
      */
-    export class MessageBusDriver extends Driver {
+    export class MessageBusService extends Driver {
         suppressForwarding: boolean;
 
         constructor() {
             super("bus", DriverType.BroadcastDriver, DAL.JD_DRIVER_CLASS_MESSAGE_BUS);
             this.suppressForwarding = false;
-            jacdac.addDriver(this);
         }
 
         raiseEvent(id: number, value: number) {
+            this.start();
             const event = control.createBuffer(4);
             event.setNumber(NumberFormat.UInt16LE, 0, id);
             event.setNumber(NumberFormat.UInt16LE, 2, value);
             this.sendPacket(event);
         }
 
-        /**
-         * Pipes matching events to JacDac bus
-         * @param id 
-         * @param value 
-         */
-        listenEvent(id: number, value: number) {
+        broadcastEvent(id: number, value: number) {
+            this.start();
             //control.dmesg(`jd> msgbus> listen event ${id} ${value}`)        
             control.onEvent(id, value, () => {
                 if (this.suppressForwarding) return;
@@ -49,24 +45,16 @@ namespace jacdac {
         }
     }
 
-    let _messageBus: MessageBusDriver;
-    /**
-     * Gets the message bus driver
-     */
-    export function messageBus(): MessageBusDriver {
-        if (!_messageBus) {
-            //control.dmesg("jd> starting message bus")
-            _messageBus = new MessageBusDriver();
-        }
-        return _messageBus;
-    }
+    //% fixedInstance whenUsed block="message bus service"
+    export const messageBusService = new MessageBusService();
 
     /**
      * Pipes specific events through JACDAC
      */
-    //%
-    export function listenEvent(src: number, value: number) {
-        messageBus().listenEvent(src, value);
+    //% block="broadcast events|from %src|with value %value" weight=5
+    //% group="Control"
+    export function broadcastEvent(src: number, value: number) {
+        messageBusService.broadcastEvent(src, value);
     }
 
     /**
@@ -76,6 +64,7 @@ namespace jacdac {
     //% blockId=jacdacMessageCode block="$msg" enumInitialMembers="message1"
     //% enumName=JacDacMessage enumMemberName=msg enumPromptHint="e.g. Start, Stop, Jump..."
     //% group="Broadcast"
+    //% enumIsHash
     export function __message(msg: number): number {
         return msg;
     }
@@ -89,7 +78,7 @@ namespace jacdac {
     //% block="raise event|from %src|with value %value" weight=5
     //% group="Control"
     export function raiseEvent(src: number, value: number) {
-        messageBus().raiseEvent(src, value);
+        messageBusService.raiseEvent(src, value);
     }
 
     /**
@@ -104,7 +93,7 @@ namespace jacdac {
     //% group="Broadcast"
     export function sendMessage(msg: number): void {
         // 0 is MICROBIT_EVT_ANY, shifting by 1
-        messageBus().raiseEvent(JD_MESSAGE_BUS_ID, msg + 1);
+        messageBusService.raiseEvent(JD_MESSAGE_BUS_ID, msg + 1);
     }
 
     /**
@@ -118,7 +107,7 @@ namespace jacdac {
     //% help=jacdac/on-received-message
     //% group="Broadcast"
     export function onReceivedMessage(msg: number, handler: () => void) {
-        messageBus(); // start message bus
+        messageBusService.start();
         control.onEvent(JD_MESSAGE_BUS_ID, msg + 1, handler);
     }
 }

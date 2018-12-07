@@ -1,6 +1,6 @@
 namespace jacdac {
     //% fixedInstances
-    export class MicrophoneVirtualDriver extends SensorVirtualDriver {
+    export class MicrophoneClient extends SensorClient {
         constructor(name: string) {
             super(name, jacdac.MICROPHONE_DEVICE_CLASS);
         }
@@ -8,6 +8,8 @@ namespace jacdac {
         /**
          * Reads the current x value from the sensor
          */
+        //% blockId=jacdacmicrophonevent block="jacdac %microphone sound level"
+        //% group="Microphone"
         get level(): number {
             const s = this.state;
             if (!s || s.length < 1) return 0;
@@ -38,5 +40,5 @@ namespace jacdac {
     }
 
     //% fixedInstance whenUsed block="microphone"
-    export const microhponeService = new MicrophoneVirtualDriver("microphone");
+    export const microphoneCLient = new MicrophoneClient("microphone");
 }

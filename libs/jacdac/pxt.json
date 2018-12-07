@@ -2,6 +2,7 @@
     "name": "jacdac",
     "description": "Plug and play single wire serial protocol - beta",
     "files": [
+        "config.ts",
         "jacdac.cpp",
         "jacdac.ts",
         "driver.ts",
@@ -11,7 +12,10 @@
         "pxtparts.json",
         "pxt.json",
         "shims.d.ts",
-        "actuatordriver.ts"
+        "actuator.ts",
+        "messagebus.ts",
+        "console.ts",
+        "ns.ts"
     ],
     "testFiles": [
     ],

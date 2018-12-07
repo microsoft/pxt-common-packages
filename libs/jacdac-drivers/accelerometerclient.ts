@@ -1,4 +1,4 @@
-enum JacdacGesture {
+enum JDGesture {
     /**
      * Raised when shaken
      */
@@ -56,7 +56,7 @@ enum JacdacGesture {
     EightG = DAL.ACCELEROMETER_EVT_8G
 }
 
-const enum JacdacDimension {
+const enum JDDimension {
     //% block=x
     X = 0,
     //% block=y
@@ -69,7 +69,7 @@ const enum JacdacDimension {
 
 namespace jacdac {
     //% fixedInstances
-    export class AccelerometerVirtualDriver extends SensorVirtualDriver {
+    export class AccelerometerClient extends SensorClient {
         constructor(name: string) {
             super(name, jacdac.ACCELEROMETER_DEVICE_CLASS);
         }
@@ -78,28 +78,28 @@ namespace jacdac {
          * Reads the current x value from the sensor
          */
         get x(): number {
-            return this.get(JacdacDimension.X);
+            return this.get(JDDimension.X);
         }
 
         /**
          * Reads the current y value from the sensor
          */
         get y(): number {
-            return this.get(JacdacDimension.Y);
+            return this.get(JDDimension.Y);
         }
 
         /**
          * Reads the current z value from the sensor
          */
         get z(): number {
-            return this.get(JacdacDimension.Z);
+            return this.get(JDDimension.Z);
         }
 
         /**
          * Reads the current strength value from the sensor
          */
         get strength(): number {
-            return this.get(JacdacDimension.Strength);
+            return this.get(JDDimension.Strength);
         }
 
 
@@ -109,13 +109,13 @@ namespace jacdac {
          */
         //% blockId=jacdacaccget block="jacdac %accelerometer %dimension"
         //% group="Accelerometer" weight=5
-        get(dimension: JacdacDimension): number {
+        get(dimension: JDDimension): number {
             const s = this.state;
             if (!s || s.length < 6) return 0;
             switch (dimension) {
-                case JacdacDimension.X:
-                case JacdacDimension.Y:
-                case JacdacDimension.Z:
+                case JDDimension.X:
+                case JDDimension.Y:
+                case JDDimension.Z:
                     return s.getNumber(NumberFormat.Int16LE, dimension * 2);
                 default: // strength
                     let r = 0;
@@ -134,11 +134,11 @@ namespace jacdac {
          */
         //% blockId=jacadacacconevent block="jacdac %accelerometer on %gesture"
         //% group="Accelerometer"
-        onEvent(gesture: JacdacGesture, handler: () => void) {
+        onEvent(gesture: JDGesture, handler: () => void) {
             control.onEvent(this.id, gesture, handler);
         }
     }
 
     //% fixedInstance whenUsed block="accelerometer"
-    export const accelerometerService = new AccelerometerVirtualDriver("accelerometer");
+    export const accelerometerClient = new AccelerometerClient("accelerometer");
 }

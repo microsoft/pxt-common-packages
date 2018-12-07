@@ -1,5 +1,5 @@
 namespace jacdac {
-    export class SwitchHostDriver extends SensorHostDriver {
+    export class SwitchService extends SensorService {
         constructor(name: string) {
             super(name, jacdac.SWITCH_DEVICE_CLASS);
             input.onSwitchMoved(SwitchDirection.Left, () => this.raiseHostEvent(SwitchDirection.Left));
@@ -12,4 +12,7 @@ namespace jacdac {
             return buf;
         }
     }
+
+    //% fixedInstance whenUsed block="switch service"
+    export const switchService = new SwitchService("switch");
 }

@@ -1,16 +1,23 @@
 namespace jacdac {
-    export class ActuatorHostDriver extends Driver {
+    export class ActuatorService extends Service {
+        stateLength: number;
         state: Buffer;
 
         constructor(name: string, deviceClass: number, stateLength: number, controlDataLength?: number) {
-            super(name, DriverType.HostDriver, deviceClass, controlDataLength);
-            this.state = control.createBuffer(stateLength);
-            jacdac.addDriver(this);
+            super(name, deviceClass, controlDataLength);
+            this.stateLength = stateLength;
+            this.state = control.createBuffer(this.stateLength);
         }
 
         public handlePacket(pkt: Buffer): boolean {
             const packet = new JDPacket(pkt);
-            this.state = packet.data;
+            const st = packet.data;
+            if (st.length < this.stateLength) {
+                this.log(`invalid data`)
+                return false;
+            }
+                
+            this.state = st;
             return this.handleStateChanged();
         }
 
@@ -19,13 +26,12 @@ namespace jacdac {
         }
     }
 
-    export class ActuatorVirtualDriver extends Driver {
+    export class ActuatorClient extends Client {
         protected state: Buffer;
 
         constructor(name: string, deviceClass: number, stateLength: number, controlDataLength?: number) {
-            super(name, DriverType.VirtualDriver, deviceClass, controlDataLength);
+            super(name, deviceClass, controlDataLength);
             this.state = control.createBuffer(stateLength);
-            jacdac.addDriver(this);
             this.onDriverEvent(JacDacDriverEvent.Connected, () => this.notifyChange());
         }
 

@@ -1,6 +1,6 @@
 namespace jacdac {
     //% fixedInstances
-    export class PixelVirtualDriver extends ActuatorVirtualDriver {
+    export class PixelClient extends ActuatorClient {
         constructor(name: string) {
             super(name, jacdac.PIXEL_DEVICE_CLASS, 4);
         }
@@ -34,5 +34,5 @@ namespace jacdac {
     }
 
     //% fixedInstance whenUsed block="pixel"
-    export const pixelService = new PixelVirtualDriver("pixel");
+    export const pixelService = new PixelClient("pixel");
 }

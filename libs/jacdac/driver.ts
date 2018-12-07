@@ -10,6 +10,7 @@ namespace jacdac {
         SnifferDriver = DAL.JD_DEVICE_FLAGS_REMOTE | DAL.JD_DEVICE_FLAGS_BROADCAST, // the driver is not enumerated, and receives all packets of the same class (including control packets)
     };
 
+    //% fixedInstances
     export class Driver {
         public name: string;
         protected _proxy: JacDacDriverStatus;
@@ -26,7 +27,8 @@ namespace jacdac {
         }
 
         get id(): number {
-            return this._proxy.id;
+            this.start();
+            return this._proxy ? this._proxy.id : -1;
         }
 
         hasProxy(): boolean {
@@ -50,11 +52,13 @@ namespace jacdac {
         }
 
         get isConnected(): boolean {
+            this.start();
             return this._proxy && this._proxy.isConnected;
         }
 
         protected get device(): jacdac.JDDevice {
-            return new jacdac.JDDevice(this._proxy.device);
+            this.start();
+            return this._proxy ? new jacdac.JDDevice(this._proxy.device) : undefined;
         }
 
         public log(text: string) {
@@ -68,6 +72,7 @@ namespace jacdac {
          * @param handler 
          */
         public onDriverEvent(event: JacDacDriverEvent, handler: () => void) {
+            this.start();
             control.onEvent(this._proxy.id, event, handler);
         }
 
@@ -90,9 +95,27 @@ namespace jacdac {
         protected sendPacket(pkt: Buffer) {
             jacdac.sendPacket(pkt, this.device.address);
         }
+
+        /**
+         * Register and starts the driver
+         */
+        //% blockId=jacdachoststart block="start %service"
+        //% group="Services"
+        start() {
+            if (!this._proxy)
+                jacdac.addDriver(this);
+        }
     }
 
-    export class VirtualDriver extends Driver {
+    //% fixedInstances
+    export class Service extends Driver {
+        constructor(name: string, deviceClass: number, controlDataLength?: number) {
+            super(name, DriverType.VirtualDriver, deviceClass, controlDataLength);
+        }
+    }
+
+    //% fixedInstances
+    export class Client extends Driver {
         constructor(name: string, deviceClass: number, controlDataLength?: number) {
             super(name, DriverType.VirtualDriver, deviceClass, controlDataLength);
         }

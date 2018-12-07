@@ -1,7 +1,7 @@
 namespace jacdac {
     //% fixedInstances
     //% weight=1
-    export class SensorVirtualDriver extends VirtualDriver {
+    export class SensorClient extends Client {
         // virtual mode only
         protected _localTime: number;
         protected _lastState: Buffer;
@@ -10,7 +10,6 @@ namespace jacdac {
         constructor(name: string, deviceClass: number) {
             super(name, DriverType.VirtualDriver, deviceClass);
             this._lastState = control.createBuffer(0);
-            jacdac.addDriver(this);
         }
 
         public get state() {
@@ -23,7 +22,7 @@ namespace jacdac {
          */
         //% blockid=jacdacsensorstreaming block="jacdac %sensor set streaming %on"
         //% on.shadow=toggleOnOff weight=1
-        //% group="Sensors"
+        //% group="Services"
         public setStreaming(on: boolean) {
             const msg = control.createBuffer(1);
             msg.setNumber(NumberFormat.UInt8LE, 0, on ? SensorCommand.StartStream : SensorCommand.StopStream);

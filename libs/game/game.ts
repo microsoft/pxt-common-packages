@@ -108,7 +108,7 @@ namespace game {
      * Finish the game and display the score
      */
     //% group="Gameplay"
-    //% blockId=gameOver block="game over||win %win"
+    //% blockId=gameOver block="game over||win %win=toggleYesNo"
     //% weight=80 help=game/over
     export function over(win: boolean = false) {
         init();
