@@ -2,6 +2,7 @@
     "name": "jacdac",
     "description": "Plug and play single wire serial protocol - beta",
     "files": [
+        "config.ts",
         "jacdac.cpp",
         "jacdac.ts",
         "driver.ts",

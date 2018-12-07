@@ -9,6 +9,7 @@
         "shims.d.ts",
         "enums.d.ts",
         "ns.ts",
+        "jacdac.ts",
         "neopixeloverrides.ts",
         "animations.jres",
         "pxtparts.json"
@@ -18,6 +19,7 @@
     ],
     "public": true,
     "dependencies": {
-        "core": "file:../core"
+        "core": "file:../core",
+        "jacdac": "file:../jacdac"
     }
 }
