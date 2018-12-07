@@ -446,6 +446,7 @@ void gc(int flags) {
     inGC &= ~IN_GC_COLLECT;
 }
 
+#ifdef GC_GET_HEAP_SIZE
 static bool inGCArea(void *ptr) {
     for (auto block = firstBlock; block; block = block->next) {
         if ((void *)block->data < ptr && ptr < (void *)((uint8_t *)block->data + block->blockSize))
@@ -487,6 +488,7 @@ extern "C" void *realloc(void *ptr, size_t size) {
         return device_realloc(ptr, size);
     }
 }
+#endif
 
 void *gcAllocateArray(int numbytes) {
     numbytes = (numbytes + 3) & ~3;
