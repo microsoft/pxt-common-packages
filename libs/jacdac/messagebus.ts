@@ -19,12 +19,7 @@ namespace jacdac {
             this.sendPacket(event);
         }
 
-        /**
-         * Pipes matching events to JacDac bus
-         * @param id 
-         * @param value 
-         */
-        listenEvent(id: number, value: number) {
+        broadcastEvent(id: number, value: number) {
             this.start();
             //control.dmesg(`jd> msgbus> listen event ${id} ${value}`)        
             control.onEvent(id, value, () => {
@@ -56,9 +51,10 @@ namespace jacdac {
     /**
      * Pipes specific events through JACDAC
      */
-    //%
-    export function listenEvent(src: number, value: number) {
-        messageBusService.listenEvent(src, value);
+    //% block="broadcast events|from %src|with value %value" weight=5
+    //% group="Control"
+    export function broadcastEvent(src: number, value: number) {
+        messageBusService.broadcastEvent(src, value);
     }
 
     /**
