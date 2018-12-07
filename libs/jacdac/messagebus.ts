@@ -3,7 +3,7 @@ namespace jacdac {
     /**
      * A driver that listens for message bus events
      */
-    export class MessageBusDriver extends Client {
+    export class MessageBusService extends Driver {
         suppressForwarding: boolean;
 
         constructor() {
@@ -49,24 +49,15 @@ namespace jacdac {
         }
     }
 
-    let _messageBus: MessageBusDriver;
-    /**
-     * Gets the message bus driver
-     */
-    export function messageBus(): MessageBusDriver {
-        if (!_messageBus) {
-            //control.dmesg("jd> starting message bus")
-            _messageBus = new MessageBusDriver();
-        }
-        return _messageBus;
-    }
+    //% fixedInstance whenUsed block="message bus service"
+    export const messageBusService = new MessageBusService();
 
     /**
      * Pipes specific events through JACDAC
      */
     //%
     export function listenEvent(src: number, value: number) {
-        messageBus().listenEvent(src, value);
+        messageBusService.listenEvent(src, value);
     }
 
     /**
@@ -89,7 +80,7 @@ namespace jacdac {
     //% block="raise event|from %src|with value %value" weight=5
     //% group="Control"
     export function raiseEvent(src: number, value: number) {
-        messageBus().raiseEvent(src, value);
+        messageBusService.raiseEvent(src, value);
     }
 
     /**
@@ -104,7 +95,7 @@ namespace jacdac {
     //% group="Broadcast"
     export function sendMessage(msg: number): void {
         // 0 is MICROBIT_EVT_ANY, shifting by 1
-        messageBus().raiseEvent(JD_MESSAGE_BUS_ID, msg + 1);
+        messageBusService.raiseEvent(JD_MESSAGE_BUS_ID, msg + 1);
     }
 
     /**
@@ -118,7 +109,7 @@ namespace jacdac {
     //% help=jacdac/on-received-message
     //% group="Broadcast"
     export function onReceivedMessage(msg: number, handler: () => void) {
-        messageBus(); // start message bus
+        const id = messageBusService.id; // start message bus
         control.onEvent(JD_MESSAGE_BUS_ID, msg + 1, handler);
     }
 }

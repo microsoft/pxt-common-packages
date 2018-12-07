@@ -11,7 +11,8 @@
         "pxtparts.json",
         "pxt.json",
         "shims.d.ts",
-        "actuatordriver.ts",
+        "actuator.ts",
+        "messagebus.ts",
         "ns.ts"
     ],
     "testFiles": [

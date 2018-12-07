@@ -10,7 +10,7 @@ namespace jacdac {
             _logBroadcastDriver = new LoggerBroadcastDriver();
     }
 
-    class LoggerBroadcastDriver extends Client {
+    class LoggerBroadcastDriver extends Driver {
         public suppressForwading: boolean;
         constructor() {
             super("log", DriverType.VirtualDriver, jacdac.LOGGER_DEVICE_CLASS);
