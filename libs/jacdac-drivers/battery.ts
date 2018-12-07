@@ -13,7 +13,7 @@ namespace jacdac {
         }
     } */
 
-    class BatterySniffer extends Client {
+    class BatterySniffer extends Driver {
         handler: (serialNumber: number, level: number) => void;
         constructor(handler: (serialNumber: number, level: number) => void) {
             super("batmon", DriverType.SnifferDriver, jacdac.BATTERY_DEVICE_CLASS);
