@@ -364,7 +364,7 @@ namespace music {
 
                 let currMs = ms
 
-                if (currMs < 0) {
+                if (currMs <= 0) {
                     const beat = 15000 / tempo;
                     currMs = duration * beat
                 }
@@ -407,5 +407,5 @@ namespace music {
     //A#7:1-200 A:1 A#7:1 A:1 A#7:2
 
     //% fixedInstance whenUsed block="siren"
-    export const siren = new Melody('a4:4 d5:4 a4:4 d5:4 a4:4 d5:4')
+    export const siren = new Melody('a4 d5 a4 d5 a4 d5')
 }
