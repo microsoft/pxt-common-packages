@@ -1,5 +1,5 @@
 namespace jacdac {
-    export class BridgeDriver extends Driver {
+    export class BridgeDriver extends Client {
         constructor(name: string) {
             super(name, 0, DAL.JD_DRIVER_CLASS_BRIDGE);
             this.supressLog = true; // too verbose

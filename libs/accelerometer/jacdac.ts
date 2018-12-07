@@ -1,5 +1,5 @@
 namespace jacdac {
-    export class AccelerometerHostDriver extends jacdac.SensorHostDriver {
+    export class AccelerometerService extends jacdac.SensorService {
         constructor(name: string) {
             super(name, jacdac.ACCELEROMETER_DEVICE_CLASS);
             input.onGesture(Gesture.Shake, () => this.raiseHostEvent(Gesture.Shake));
@@ -20,4 +20,7 @@ namespace jacdac {
             return buf;
         }
     }
+
+    //% fixedInstance whenUsed block="accelerometer service"
+    export const accelerometerService = new AccelerometerService("accelerometer");
 }

@@ -1,11 +1,10 @@
 namespace jacdac {
-    export class ActuatorHostDriver extends Driver {
+    export class ActuatorService extends Service {
         state: Buffer;
 
         constructor(name: string, deviceClass: number, stateLength: number, controlDataLength?: number) {
-            super(name, DriverType.HostDriver, deviceClass, controlDataLength);
+            super(name, deviceClass, controlDataLength);
             this.state = control.createBuffer(stateLength);
-            jacdac.addDriver(this);
         }
 
         public handlePacket(pkt: Buffer): boolean {
@@ -19,11 +18,11 @@ namespace jacdac {
         }
     }
 
-    export class ActuatorVirtualDriver extends Driver {
+    export class ActuatorClient extends Client {
         protected state: Buffer;
 
         constructor(name: string, deviceClass: number, stateLength: number, controlDataLength?: number) {
-            super(name, DriverType.VirtualDriver, deviceClass, controlDataLength);
+            super(name, deviceClass, controlDataLength);
             this.state = control.createBuffer(stateLength);
             jacdac.addDriver(this);
             this.onDriverEvent(JacDacDriverEvent.Connected, () => this.notifyChange());

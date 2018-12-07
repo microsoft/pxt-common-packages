@@ -7,7 +7,7 @@ enum JacdacLightCondition {
 
 namespace jacdac {
     //% fixedInstances
-    export class LightSensorVirtualDriver extends SensorVirtualDriver {
+    export class LightSensorClient extends SensorClient {
         constructor(name: string) {
             super(name, jacdac.LIGHT_SENSOR_DEVICE_CLASS);
         }
@@ -45,5 +45,5 @@ namespace jacdac {
     }
 
     //% fixedInstance whenUsed block="light sensor"
-    export const lightSensorService = new LightSensorVirtualDriver("lightsensor");
+    export const lightSensorClient = new LightSensorClient("lightsensor");
 }

@@ -1,4 +1,4 @@
-enum JacDacTemperatureCondition {
+enum JDTemperatureCondition {
     //% block="hot"
     Hot = DAL.SENSOR_THRESHOLD_HIGH,  // ANALOG_THRESHOLD_HIGH
     //% block="cold"
@@ -6,7 +6,7 @@ enum JacDacTemperatureCondition {
 }
 
 
-enum JacDacTemperatureUnit {
+enum JDTemperatureUnit {
     //% block="°C"
     Celsius = 0,
     //% block="°F"
@@ -15,7 +15,7 @@ enum JacDacTemperatureUnit {
 
 namespace jacdac {
     //% fixedInstances
-    export class ThermometerVirtualDriver extends SensorVirtualDriver {
+    export class ThermometerClient extends SensorClient {
         constructor(name: string) {
             super(name, jacdac.THERMOMETER_DEVICE_CLASS);
         }
@@ -23,12 +23,12 @@ namespace jacdac {
         /**
          * Reads the current x value from the sensor
          */
-        temperature(unit: JacDacTemperatureUnit): number {
+        temperature(unit: JDTemperatureUnit): number {
             const s = this.state;
             if (!s || s.length < 2) return 0;
             const t = s.getNumber(NumberFormat.Int16LE, 0);
             switch(unit) {
-                case JacDacTemperatureUnit.Fahrenheit: (t * 18) / 10 + 32;
+                case JDTemperatureUnit.Fahrenheit: (t * 18) / 10 + 32;
                 default: return t;
             }
         }
@@ -40,14 +40,14 @@ namespace jacdac {
          */
         //% blockId=jacadacthermoonevent block="jacdac %lightsensor on %lightCondition"
         //% group="Thermometer"
-        onTemperatureConditionChanged(condition: JacDacTemperatureCondition, temperature: number, unit: JacDacTemperatureUnit, handler: () => void): void {
-            if (unit == JacDacTemperatureUnit.Fahrenheit)
+        onTemperatureConditionChanged(condition: JDTemperatureCondition, temperature: number, unit: JDTemperatureUnit, handler: () => void): void {
+            if (unit == JDTemperatureUnit.Fahrenheit)
                 temperature = (temperature - 32) * 5 / 9;
-            this.setThreshold(condition == JacDacTemperatureCondition.Cold, temperature);
+            this.setThreshold(condition == JDTemperatureCondition.Cold, temperature);
             control.onEvent(this.id, condition, handler);
         }
     }
 
     //% fixedInstance whenUsed block="thermometer"
-    export const thermometerService = new ThermometerVirtualDriver("thermometer");
+    export const thermometerClient = new ThermometerClient("thermometer");
 }

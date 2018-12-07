@@ -1,5 +1,5 @@
 namespace jacdac {
-    export class LightSensorHostDriver extends jacdac.SensorHostDriver {
+    export class LightSensorService extends jacdac.SensorService {
         constructor(name: string) {
             super(name, jacdac.LIGHT_SENSOR_DEVICE_CLASS);
             input.onLightConditionChanged(LightCondition.Bright, () => this.raiseHostEvent(LightCondition.Bright));
@@ -12,4 +12,7 @@ namespace jacdac {
             return buf;
         }
     }
+
+    //% fixedInstances whenUsed block="light sensor service"
+    export const lightSensorService = new LightSensorService("lightsensor");
 }

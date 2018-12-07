@@ -3,7 +3,7 @@ namespace jacdac {
     /**
      * A driver that listens for message bus events
      */
-    export class MessageBusDriver extends Driver {
+    export class MessageBusDriver extends Client {
         suppressForwarding: boolean;
 
         constructor() {

@@ -7,7 +7,7 @@ const enum JDSwitchDirection {
 
 namespace jacdac {
     //% fixedInstances
-    export class SwitchVirtualDriver extends SensorVirtualDriver {
+    export class SwitchVirtualDriver extends SensorClient {
         constructor(name: string) {
             super(name, jacdac.SWITCH_DEVICE_CLASS);
         }

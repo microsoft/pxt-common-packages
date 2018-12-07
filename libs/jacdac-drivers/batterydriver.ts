@@ -1,10 +1,9 @@
 namespace jacdac {
-    class BatteryDriver extends Driver {
+    /* export class BatteryService extends Service {
         private level: () => number;
         constructor(level: () => number) {
-            super("bat", DriverType.HostDriver, jacdac.BATTERY_DEVICE_CLASS, 1);
+            super("bat", jacdac.BATTERY_DEVICE_CLASS, 1);
             this.level = level;
-            jacdac.addDriver(this);
         }
 
         protected updateControlPacket() {
@@ -12,18 +11,9 @@ namespace jacdac {
             this.log(`level ${batteryLevel}`);
             this.controlData.setNumber(NumberFormat.UInt8LE, 0, batteryLevel);
         }
-    }
+    } */
 
-    /**
-     * Send battery level over jacdac
-     * @param level 
-     */
-    //%
-    export function broadcastBatteryLevel(level: () => number) {
-        new BatteryDriver(level);
-    }
-
-    class BatterySniffer extends Driver {
+    class BatterySniffer extends Client {
         handler: (serialNumber: number, level: number) => void;
         constructor(handler: (serialNumber: number, level: number) => void) {
             super("batmon", DriverType.SnifferDriver, jacdac.BATTERY_DEVICE_CLASS);

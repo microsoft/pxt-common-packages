@@ -92,9 +92,28 @@ namespace jacdac {
         }
     }
 
-    export class VirtualDriver extends Driver {
+    //% fixedInstances
+    export class Service extends Driver {
         constructor(name: string, deviceClass: number, controlDataLength?: number) {
             super(name, DriverType.VirtualDriver, deviceClass, controlDataLength);
+            jacdac.addDriver(this);
+        }
+
+        /**
+         * Starts the serve
+         */
+        //% blockId=jacdachoststart block="%service start"
+        //% group="Services"
+        start() {
+            // doesn't do much but
+        }
+    }
+
+    //% fixedInstances
+    export class Client extends Driver {
+        constructor(name: string, deviceClass: number, controlDataLength?: number) {
+            super(name, DriverType.VirtualDriver, deviceClass, controlDataLength);
+            jacdac.addDriver(this);
         }
 
         /**
