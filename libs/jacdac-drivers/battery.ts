@@ -18,7 +18,6 @@ namespace jacdac {
         constructor(handler: (serialNumber: number, level: number) => void) {
             super("batmon", DriverType.SnifferDriver, jacdac.BATTERY_DEVICE_CLASS);
             this.handler = handler;
-            jacdac.addDriver(this);
         }
 
         public handleControlPacket(pkt: Buffer): boolean {

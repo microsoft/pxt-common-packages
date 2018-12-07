@@ -9,10 +9,10 @@ namespace jacdac {
         constructor() {
             super("bus", DriverType.BroadcastDriver, DAL.JD_DRIVER_CLASS_MESSAGE_BUS);
             this.suppressForwarding = false;
-            jacdac.addDriver(this);
         }
 
         raiseEvent(id: number, value: number) {
+            this.start();
             const event = control.createBuffer(4);
             event.setNumber(NumberFormat.UInt16LE, 0, id);
             event.setNumber(NumberFormat.UInt16LE, 2, value);
@@ -25,6 +25,7 @@ namespace jacdac {
          * @param value 
          */
         listenEvent(id: number, value: number) {
+            this.start();
             //control.dmesg(`jd> msgbus> listen event ${id} ${value}`)        
             control.onEvent(id, value, () => {
                 if (this.suppressForwarding) return;
@@ -109,7 +110,7 @@ namespace jacdac {
     //% help=jacdac/on-received-message
     //% group="Broadcast"
     export function onReceivedMessage(msg: number, handler: () => void) {
-        const id = messageBusService.id; // start message bus
+        messageBusService.start();
         control.onEvent(JD_MESSAGE_BUS_ID, msg + 1, handler);
     }
 }

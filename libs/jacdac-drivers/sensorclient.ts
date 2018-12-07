@@ -10,7 +10,6 @@ namespace jacdac {
         constructor(name: string, deviceClass: number) {
             super(name, DriverType.VirtualDriver, deviceClass);
             this._lastState = control.createBuffer(0);
-            jacdac.addDriver(this);
         }
 
         public get state() {

@@ -26,7 +26,8 @@ namespace jacdac {
         }
 
         get id(): number {
-            return this._proxy.id;
+            this.start();
+            return this._proxy ? this._proxy.id : -1;
         }
 
         hasProxy(): boolean {
@@ -50,14 +51,17 @@ namespace jacdac {
         }
 
         get isConnected(): boolean {
+            this.start();
             return this._proxy && this._proxy.isConnected;
         }
 
         protected get device(): jacdac.JDDevice {
-            return new jacdac.JDDevice(this._proxy.device);
+            this.start();
+            return this._proxy ? new jacdac.JDDevice(this._proxy.device) : undefined;
         }
 
         public log(text: string) {
+            this.start();
             if (!this.supressLog)
                 console.add(jacdac.consolePriority, `jd>${this.name}>${text}`);
         }
@@ -68,6 +72,7 @@ namespace jacdac {
          * @param handler 
          */
         public onDriverEvent(event: JacDacDriverEvent, handler: () => void) {
+            this.start();
             control.onEvent(this._proxy.id, event, handler);
         }
 
@@ -90,22 +95,22 @@ namespace jacdac {
         protected sendPacket(pkt: Buffer) {
             jacdac.sendPacket(pkt, this.device.address);
         }
+
+        /**
+         * Register and starts the driver
+         */
+        //% blockId=jacdachoststart block="%service start"
+        //% group="Services"
+        start() {
+            if (!this._proxy)
+                jacdac.addDriver(this);
+        }
     }
 
     //% fixedInstances
     export class Service extends Driver {
         constructor(name: string, deviceClass: number, controlDataLength?: number) {
             super(name, DriverType.VirtualDriver, deviceClass, controlDataLength);
-            jacdac.addDriver(this);
-        }
-
-        /**
-         * Starts the serve
-         */
-        //% blockId=jacdachoststart block="%service start"
-        //% group="Services"
-        start() {
-            // doesn't do much but
         }
     }
 
@@ -113,7 +118,6 @@ namespace jacdac {
     export class Client extends Driver {
         constructor(name: string, deviceClass: number, controlDataLength?: number) {
             super(name, DriverType.VirtualDriver, deviceClass, controlDataLength);
-            jacdac.addDriver(this);
         }
 
         /**

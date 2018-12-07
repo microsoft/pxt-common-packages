@@ -1,22 +1,23 @@
 namespace jacdac {
-    let _logBroadcastDriver: LoggerBroadcastDriver;
+    let _logClient: LoggerClient;
     /**
      * Sends console messages over JacDac
      */
     //% blockId=jacdac_broadcast_console block="jacdac broadcast console"
     //% group="Console"
     export function broadcastConsole() {
-        if (!_logBroadcastDriver)
-            _logBroadcastDriver = new LoggerBroadcastDriver();
+        if (!_logClient) {
+            _logClient = new LoggerClient();
+            _logClient.start();
+        }
     }
 
-    class LoggerBroadcastDriver extends Driver {
+    class LoggerClient extends Client {
         public suppressForwading: boolean;
         constructor() {
             super("log", DriverType.VirtualDriver, jacdac.LOGGER_DEVICE_CLASS);
             this.supressLog = true;
             this.suppressForwading = false;
-            jacdac.addDriver(this);
             console.addListener((priority, text) => this.broadcastLog(priority, text));
         }
 
@@ -42,21 +43,22 @@ namespace jacdac {
         }
     }
 
-    let _logListenerDriver: LoggerListenDriver;
+    let _logListenerDriver: LoggerService;
     /**
      * Listens for console messages from other devices
      */
     //% blockId=jacdac_listen_console block="jacdac listen console"
     //% group="Console"
     export function listenConsole() {
-        if (!_logListenerDriver)
-            _logListenerDriver = new LoggerListenDriver();
+        if (!_logListenerDriver) {
+            _logListenerDriver = new LoggerService();        
+            _logListenerDriver.start();
+        }
     }
 
-    class LoggerListenDriver extends Client {
+    class LoggerService extends Service {
         constructor() {
             super("log", DriverType.HostDriver, jacdac.LOGGER_DEVICE_CLASS); // TODO pickup type from DAL
-            jacdac.addDriver(this);
         }
 
         public handlePacket(pkt: Buffer): boolean {

@@ -3,14 +3,13 @@ namespace jacdac {
         constructor(name: string) {
             super(name, 0, DAL.JD_DRIVER_CLASS_BRIDGE);
             this.supressLog = true; // too verbose
-            jacdac.addDriver(this);
         }
 
-        /**
-         * Enables this driver as a bridge
-         */
-        enable() {
-            this._proxy.setBridge();
+        start() {
+            if (!this.hasProxy()) {
+                super.start();
+                if (this._proxy) this._proxy.setBridge();    
+            }
         }
     }
 

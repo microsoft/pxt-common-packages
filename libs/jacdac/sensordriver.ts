@@ -39,7 +39,6 @@ namespace jacdac {
             this.sensorState = SensorState.Stopped;
             this._sendTime = 0;
             this.streamingInterval = 50;
-            jacdac.addDriver(this);
         }
 
         public updateControlPacket() {
