@@ -12,6 +12,10 @@
 
 namespace jacdac {
 
+#if !JD_MIN_VERSION(1)
+class JDDriver {};
+#endif
+
 // Wrapper classes
 class WJacDac {
 #if JD_MIN_VERSION(1)
@@ -323,7 +327,11 @@ JacDacDriverStatus __internalAddDriver(int driverType, int driverClass, MethodCo
 //% parts=jacdac
 int __internalSendPacket(Buffer buf, int deviceAddress) {
     getWJacDac();
+#if JD_MIN_VERSION(1)
     return JDProtocol::send(buf->data, buf->length, deviceAddress);
+#else 
+    return 0;
+#endif
 }
 
 } // namespace jacdac
