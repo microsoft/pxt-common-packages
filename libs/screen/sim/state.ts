@@ -112,6 +112,34 @@ namespace pxsim {
         updateStats(stats: string) {
             this.stats = stats;
         }
+
+        renderToSvg(lcd: SVGImageElement) {
+            const screenCanvas = document.createElement("canvas");
+            screenCanvas.width = this.width
+            screenCanvas.height = this.height
+
+            const ctx = screenCanvas.getContext("2d")
+            ctx.imageSmoothingEnabled = false
+            const imgdata = ctx.getImageData(0, 0, this.width, this.height)
+            const arr = new Uint32Array(imgdata.data.buffer)
+
+            const flush = function () {
+                requested = false
+                ctx.putImageData(imgdata, 0, 0)
+                lcd.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", screenCanvas.toDataURL());
+            }
+
+            let requested = false;
+            this.onChange = () => {
+                arr.set(this.screen)
+                // paint rect
+                runtime.queueDisplayUpdate();
+                if (!requested) {
+                    requested = true
+                    window.requestAnimationFrame(flush)
+                }
+            }
+        }
     }
 
     export interface ScreenBoard extends CommonBoard {
