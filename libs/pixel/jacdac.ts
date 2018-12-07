@@ -1,5 +1,5 @@
 namespace jacdac {
-    export class PixelHostDriver extends ActuatorHostDriver {
+    export class PixelService extends ActuatorService {
         constructor(name: string) {
             super(name, jacdac.PIXEL_DEVICE_CLASS, 4);
         }
@@ -20,4 +20,7 @@ namespace jacdac {
             return true;
         }
     }
+
+    //% fixedInstance whenUsed
+    export const pixelService = new PixelService("pixel");
 }

@@ -1,6 +1,6 @@
 namespace jacdac {
     //% fixedInstances
-    export class TouchButtonVirtualDriver extends SensorVirtualDriver {
+    export class TouchButtonVirtualDriver extends SensorClient {
         constructor(name: string) {
             super(name, jacdac.TOUCHBUTTON_DEVICE_CLASS);
         }

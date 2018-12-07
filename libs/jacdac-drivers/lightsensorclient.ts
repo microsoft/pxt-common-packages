@@ -7,7 +7,7 @@ enum JacdacLightCondition {
 
 namespace jacdac {
     //% fixedInstances
-    export class LightSensorVirtualDriver extends SensorVirtualDriver {
+    export class LightSensorClient extends SensorClient {
         constructor(name: string) {
             super(name, jacdac.LIGHT_SENSOR_DEVICE_CLASS);
         }
@@ -15,6 +15,8 @@ namespace jacdac {
         /**
          * Reads the current x value from the sensor
          */
+        //% blockId=jacdaclightsensorlevel block="jacdac %lightsensor light level"
+        //% group="Light sensor"
         get level(): number {
             const s = this.state;
             if (!s || s.length < 1) return 0;
@@ -45,5 +47,5 @@ namespace jacdac {
     }
 
     //% fixedInstance whenUsed block="light sensor"
-    export const lightSensorService = new LightSensorVirtualDriver("lightsensor");
+    export const lightSensorClient = new LightSensorClient("lightsensor");
 }

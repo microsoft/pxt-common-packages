@@ -1,5 +1,5 @@
 namespace jacdac {
-    export class TemperatureHostDriver extends jacdac.SensorHostDriver {
+    export class ThermometerService extends jacdac.SensorService {
         constructor(name: string) {
             super(name, jacdac.THERMOMETER_DEVICE_CLASS);
             input.onTemperatureConditionChanged(TemperatureCondition.Cold, 10, TemperatureUnit.Celsius, () => this.raiseHostEvent(TemperatureCondition.Cold));
@@ -12,4 +12,7 @@ namespace jacdac {
             return buf;
         }
     }
+
+    //% fixedInstance whenUsed block="thermometer service"
+    export const thermometerService = new ThermometerService("therm");
 }

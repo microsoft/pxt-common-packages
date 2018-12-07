@@ -2,18 +2,17 @@
     "name": "jacdac-drivers",
     "description": "Virtual drivers for jacdac - beta",
     "files": [
-        "sensordriver.ts",
-        "bridgedriver.ts",
-        "buttondriver.ts",
-        "lightsensordriver.ts",
-        "loggerdriver.ts",
-        "messagebusdriver.ts",
-        "batterydriver.ts",
-        "accelerometerdriver.ts",
-        "touchbuttondriver.ts",
-        "microphonedriver.ts",
-        "thermometerdriver.ts",
-        "switchdriver.ts"
+        "sensorclient.ts",
+        "bridge.ts",
+        "buttonclient.ts",
+        "lightsensorclient.ts",
+        "console.ts",
+        "battery.ts",
+        "accelerometerclient.ts",
+        "touchbuttonclient.ts",
+        "microphoneclient.ts",
+        "thermometerclient.ts",
+        "switchclient.ts"
     ],
     "testFiles": [
         "test.ts"

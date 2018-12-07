@@ -11,7 +11,7 @@ const enum JDButtonEvent {
 
 namespace jacdac {
     //% fixedInstances
-    export class ButtonVirtualDriver extends SensorVirtualDriver {
+    export class ButtonClient extends SensorClient {
         constructor(name: string) {
             super(name, jacdac.BUTTON_DEVICE_CLASS);
         }
@@ -40,5 +40,5 @@ namespace jacdac {
     }
 
     //% fixedInstance whenUsed block="button"
-    export const buttonService = new ButtonVirtualDriver("button");
+    export const buttonClient = new ButtonClient("button");
 }

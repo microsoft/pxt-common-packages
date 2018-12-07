@@ -27,7 +27,7 @@ namespace jacdac {
     /**
      * JacDac service running on sensor and streaming data out
      */
-    export class SensorHostDriver extends Driver {
+    export class SensorService extends Service {
         static MAX_SILENCE = 500;
         private sensorState: SensorState;
         private _sendTime: number;
@@ -35,11 +35,10 @@ namespace jacdac {
         public streamingInterval: number; // millis
 
         constructor(name: string, deviceClass: number, controlLength = 0) {
-            super(name, DriverType.HostDriver, deviceClass, 1 + controlLength);
+            super(name, deviceClass, 1 + controlLength);
             this.sensorState = SensorState.Stopped;
             this._sendTime = 0;
             this.streamingInterval = 50;
-            jacdac.addDriver(this);
         }
 
         public updateControlPacket() {
@@ -120,7 +119,7 @@ namespace jacdac {
                         // did the state change?
                         if (this.isConnected
                             && (!this._sendState
-                                || (control.millis() - this._sendTime > SensorHostDriver.MAX_SILENCE)
+                                || (control.millis() - this._sendTime > SensorService.MAX_SILENCE)
                                 || !jacdac.bufferEqual(state, this._sendState))) {
 
                             // send state and record time

@@ -1,5 +1,5 @@
 namespace jacdac {
-    export class ButtonHostDriver extends SensorHostDriver {
+    export class ButtonService extends SensorService {
         private button: Button;
         constructor(name: string, button: Button) {
             super(name, jacdac.BUTTON_DEVICE_CLASS);
