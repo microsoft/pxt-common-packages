@@ -64,6 +64,7 @@ namespace jacdac {
     //% blockId=jacdacMessageCode block="$msg" enumInitialMembers="message1"
     //% enumName=JacDacMessage enumMemberName=msg enumPromptHint="e.g. Start, Stop, Jump..."
     //% group="Broadcast"
+    //% enumIsHash
     export function __message(msg: number): number {
         return msg;
     }
