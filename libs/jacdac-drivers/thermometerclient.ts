@@ -23,6 +23,9 @@ namespace jacdac {
         /**
          * Reads the current x value from the sensor
          */
+        //% blockId=jddevice_temperature block="temperature in %unit"
+        //% group="Thermometer"
+        //% weight=26
         temperature(unit: JDTemperatureUnit): number {
             const s = this.state;
             if (!s || s.length < 2) return 0;

@@ -15,6 +15,8 @@ namespace jacdac {
         /**
          * Reads the current x value from the sensor
          */
+        //% blockId=jacdaclightsensorlevel block="jacdac %lightsensor light level"
+        //% group="Light sensor"
         get level(): number {
             const s = this.state;
             if (!s || s.length < 1) return 0;

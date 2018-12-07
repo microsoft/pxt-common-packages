@@ -1,5 +1,5 @@
 namespace jacdac {
-    export class BridgeDriver extends Client {
+    export class BridgeDriver extends Driver {
         constructor(name: string) {
             super(name, 0, DAL.JD_DRIVER_CLASS_BRIDGE);
             this.supressLog = true; // too verbose
@@ -8,7 +8,7 @@ namespace jacdac {
         start() {
             if (!this.hasProxy()) {
                 super.start();
-                if (this._proxy) this._proxy.setBridge();    
+                if (this._proxy) this._proxy.setBridge();
             }
         }
     }
@@ -26,7 +26,7 @@ namespace jacdac {
                 const data = cp.data;
                 if (data.length)
                     console.log(" " + cp.data.toHex());
-                return true;    
+                return true;
             } else {
                 console.log(`jd>p ${packet.address} ${packet.size}b`)
                 const data = packet.data;
@@ -37,13 +37,14 @@ namespace jacdac {
         }
     }
 
-    let _logAllDriver : LogAllDriver;
+    let _logAllDriver: LogAllDriver;
     /**
      * Show ALL jacdac packets on console
      */
     export function logAllPackets() {
-        if (!_logAllDriver)
+        if (!_logAllDriver) {
             _logAllDriver = new LogAllDriver();
-        _logAllDriver.enable();
+            _logAllDriver.start();
+        }
     }
 }

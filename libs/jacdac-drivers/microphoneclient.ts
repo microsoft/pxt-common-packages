@@ -8,6 +8,8 @@ namespace jacdac {
         /**
          * Reads the current x value from the sensor
          */
+        //% blockId=jacdacmicrophonevent block="jacdac %microphone sound level"
+        //% group="Microphone"
         get level(): number {
             const s = this.state;
             if (!s || s.length < 1) return 0;
