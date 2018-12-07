@@ -62,7 +62,6 @@ namespace jacdac {
         }
 
         public log(text: string) {
-            this.start();
             if (!this.supressLog)
                 console.add(jacdac.consolePriority, `jd>${this.name}>${text}`);
         }
