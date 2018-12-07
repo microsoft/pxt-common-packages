@@ -364,7 +364,7 @@ namespace music {
 
                 let currMs = ms
 
-                if (currMs < 0) {
+                if (currMs <= 0) {
                     const beat = 15000 / tempo;
                     currMs = duration * beat
                 }
