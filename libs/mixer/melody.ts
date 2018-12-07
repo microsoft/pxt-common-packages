@@ -101,9 +101,10 @@ namespace music {
         }
 
         /**
-         * Stops playing a sound
+         * Stop playing a sound
          */
         //% blockId=mixer_stop block="stop sound %sound"
+        //% help=music/melody/stop
         //% parts="headphone"
         //% weight=92 blockGap=8
         //% group="Sounds"
@@ -130,7 +131,7 @@ namespace music {
          * Start playing a sound in a loop and don't wait for it to finish.
          * @param sound the melody to play
          */
-        //% help=music/play-sound
+        //% help=music/melody/loop
         //% blockId=mixer_loop_sound block="loop sound %sound"
         //% parts="headphone"
         //% weight=93 blockGap=8
@@ -143,7 +144,7 @@ namespace music {
          * Start playing a sound and don't wait for it to finish.
          * @param sound the melody to play
          */
-        //% help=music/play-sound
+        //% help=music/melody/play
         //% blockId=mixer_play_sound block="play sound %sound"
         //% parts="headphone"
         //% weight=95 blockGap=8
@@ -157,7 +158,7 @@ namespace music {
          * Play a sound and wait until the sound is done.
          * @param sound the melody to play
          */
-        //% help=music/play-sound-until-done
+        //% help=music/melody/play-until-done
         //% blockId=mixer_play_sound_until_done block="play sound %sound|until done"
         //% parts="headphone"
         //% weight=94 blockGap=8
