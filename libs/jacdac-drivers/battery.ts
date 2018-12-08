@@ -30,6 +30,6 @@ namespace jacdac {
     }
 
     export function monitorBatteryLevels(handler: (serialNumber: number, level: number) => void) {
-        new BatterySniffer(handler);
+        new BatterySniffer(handler).start();
     }
 }

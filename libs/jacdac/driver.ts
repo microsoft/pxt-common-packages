@@ -24,6 +24,7 @@ namespace jacdac {
             this.driverType = driverType;
             this.deviceClass = deviceClass || control.programHash();
             this._controlData = control.createBuffer(Math.max(0, controlDataLength));
+            this.supressLog = false;
         }
 
         get id(): number {
@@ -110,7 +111,7 @@ namespace jacdac {
     //% fixedInstances
     export class Service extends Driver {
         constructor(name: string, deviceClass: number, controlDataLength?: number) {
-            super(name, DriverType.VirtualDriver, deviceClass, controlDataLength);
+            super(name, DriverType.HostDriver, deviceClass, controlDataLength);
         }
     }
 
@@ -120,6 +121,11 @@ namespace jacdac {
             super(name, DriverType.VirtualDriver, deviceClass, controlDataLength);
         }
 
+        protected registerEvent(value: number, handler: () => void) {
+            control.onEvent(this.id, value, handler);
+            this.start();
+        }
+
         /**
          * Specifies the serial number that this virtual driver should bind to
          * @param serialNumber 
@@ -127,6 +133,7 @@ namespace jacdac {
         setSerialNumber(serialNumber: number) {
             this.device.serialNumber = serialNumber;
             this.device.setMode(DriverType.VirtualDriver);
+            this.start();
         }
     }
 }

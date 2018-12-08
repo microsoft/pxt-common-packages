@@ -13,6 +13,7 @@ namespace jacdac {
         }
 
         public get state() {
+            this.start();
             return this._lastState;
         }
 
@@ -24,6 +25,7 @@ namespace jacdac {
         //% on.shadow=toggleOnOff weight=1
         //% group="Services"
         public setStreaming(on: boolean) {
+            this.start();
             const msg = control.createBuffer(1);
             msg.setNumber(NumberFormat.UInt8LE, 0, on ? SensorCommand.StartStream : SensorCommand.StopStream);
             this.sendPacket(msg);
@@ -31,6 +33,7 @@ namespace jacdac {
 
         public onStateChanged(handler: () => void) {
             this._stateChangedHandler = handler;
+            this.start();
         }
 
         public handlePacket(pkt: Buffer): boolean {
@@ -65,6 +68,7 @@ namespace jacdac {
         }
 
         protected setThreshold(low: boolean, value: number) {
+            this.start();
             const buf = control.createBuffer(5);
             const cmd = low ? SensorCommand.LowThreshold : SensorCommand.HighThreshold;
             buf.setNumber(NumberFormat.UInt8LE, 0, cmd);

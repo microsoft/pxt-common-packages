@@ -31,7 +31,7 @@ namespace jacdac {
         //% blockId=jacadaclightsensoronevent block="jacdac %lightsensor on %lightCondition"
         //% group="Light sensor"
         onEvent(lightCondition: JacdacLightCondition, handler: () => void) {
-            control.onEvent(this.id, lightCondition, handler);
+            this.registerEvent(lightCondition, handler);
         }
 
         /**
