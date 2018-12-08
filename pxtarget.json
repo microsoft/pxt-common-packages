@@ -30,6 +30,7 @@
         "libs/serial",
         "libs/jacdac",
         "libs/jacdac-drivers",
+        "libs/jacdac-game",
         "libs/datalogger"
     ]
 }
