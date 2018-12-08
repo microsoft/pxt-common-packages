@@ -19,6 +19,7 @@
         "ns.ts"
     ],
     "testFiles": [
+        "test.ts"
     ],
     "public": true,
     "dependencies": {

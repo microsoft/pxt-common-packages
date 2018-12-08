@@ -7,9 +7,12 @@ namespace jacdac {
         protected _lastState: Buffer;
         private _stateChangedHandler: () => void;
 
+        private _sensorState: SensorState;
+
         constructor(name: string, deviceClass: number) {
             super(name, deviceClass);
             this._lastState = control.createBuffer(0);
+            this._sensorState = SensorState.None;
         }
 
         public get state() {
@@ -26,14 +29,32 @@ namespace jacdac {
         //% group="Services"
         public setStreaming(on: boolean) {
             this.start();
-            const msg = control.createBuffer(1);
-            msg.setNumber(NumberFormat.UInt8LE, 0, on ? SensorCommand.StartStream : SensorCommand.StopStream);
-            this.sendPacket(msg);
+            this._sensorState = on ? SensorState.Streaming : SensorState.Stopped;
+            this.sync();
+        }
+
+        private sync() {
+            if (this._sensorState == SensorState.None) return;
+            
+            const buf = control.createBuffer(1);
+            const cmd = (this._sensorState & SensorState.Streaming)
+                ? SensorCommand.StartStream : SensorCommand.StopStream;
+            buf.setNumber(NumberFormat.UInt8LE, 0, cmd);
+            this.sendPacket(buf);
         }
 
         public onStateChanged(handler: () => void) {
             this._stateChangedHandler = handler;
             this.start();
+        }
+
+        handleControlPacket(pkt: Buffer): boolean {
+            if (this._sensorState == SensorState.None) return true;
+            const packet = new ControlPacket(pkt);
+            const state = packet.data.getNumber(NumberFormat.UInt8LE, 1);
+            if ((this._sensorState & SensorState.Streaming) != (state & SensorState.Streaming))
+                this.sync(); // start            
+            return true;
         }
 
         public handlePacket(pkt: Buffer): boolean {

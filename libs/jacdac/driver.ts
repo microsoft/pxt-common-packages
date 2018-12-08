@@ -95,6 +95,7 @@ namespace jacdac {
         }
 
         protected sendPacket(pkt: Buffer) {
+            this.start();
             jacdac.sendPacket(pkt, this.device.address);
         }
 
