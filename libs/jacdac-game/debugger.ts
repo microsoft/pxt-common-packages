@@ -1,4 +1,4 @@
-namespace jdebugger {
+namespace jacdac {
     function toHex(n: number): string {
         const hexBuf = control.createBuffer(4);
         hexBuf.setNumber(NumberFormat.UInt32LE, 0, n);
@@ -69,8 +69,12 @@ namespace jdebugger {
         console.log("");
     }
 
+    let _logAllDriver: LogAllDriver;
     function showPackets() {
-        jacdac.logAllPackets();
+        if (!_logAllDriver) {
+            _logAllDriver = new LogAllDriver();
+            _logAllDriver.start();
+        }
     }
 
     function refresh() {
@@ -125,6 +129,30 @@ namespace jdebugger {
         console.log(` DOWN for packets`)
         console.log(` B for exit`)
         refresh();
+    }
+
+    class LogAllDriver extends BridgeDriver {
+        constructor() {
+            super("log")
+        }
+
+        handlePacket(pkt: Buffer): boolean {
+            const packet = new JDPacket(pkt);
+            if (packet.address == 0) {
+                const cp = new ControlPacket(packet.data);
+                console.log(`jd>cp ${cp.address}=${cp.driverClass} ${cp.flags}`)
+                const data = cp.data;
+                if (data.length)
+                    console.log(" " + cp.data.toHex());
+                return true;
+            } else {
+                console.log(`jd>p ${packet.address} ${packet.size}b`)
+                const data = packet.data;
+                if (data.length)
+                    console.log(" " + packet.data.toHex());
+            }
+            return true;
+        }
     }
 
     scene.systemMenu.addEntry(() => "jacdac console", start);
