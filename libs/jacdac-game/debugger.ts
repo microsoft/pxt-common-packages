@@ -29,7 +29,7 @@ namespace jacdac {
         console.log(`ad class    serial`);
         console.log(` flags status`);
         drivers.forEach(d => {
-            console.log(`${toHex8(d.address)} ${toHex(d.driverClass)} ${toHex(d.serialNumber)}`);
+            console.log(`${toHex8(d.address)} ${d.driverClass} ${toHex(d.serialNumber)}`);
             let flags = " " + toHex16(d.flags) + " ";
             if (d.driverClass == 0)
                 flags += "logic";
