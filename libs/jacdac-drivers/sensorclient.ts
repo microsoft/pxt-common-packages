@@ -3,24 +3,21 @@ namespace jacdac {
     //% weight=1
     export class SensorClient extends Client {
         // virtual mode only
-        private _streaming: boolean;
         protected _localTime: number;
         protected _lastState: Buffer;
         private _stateChangedHandler: () => void;
 
+        private _sensorState: SensorState;
+
         constructor(name: string, deviceClass: number) {
-            super(name, deviceClass, 1);
+            super(name, deviceClass);
             this._lastState = control.createBuffer(0);
-            this._streaming = false;
+            this._sensorState = SensorState.None;
         }
 
         public get state() {
             this.start();
             return this._lastState;
-        }
-
-        updateControlPacket() {
-            this.controlData.setNumber(NumberFormat.UInt8LE, 0, this._streaming ? 1 : 0);
         }
 
         /**
@@ -32,13 +29,30 @@ namespace jacdac {
         //% group="Services"
         public setStreaming(on: boolean) {
             this.start();
-            this._streaming = on;
-            // sent via control packet
+            this._sensorState = on ? SensorState.Streaming : SensorState.Stopped;
+            this.sync();
+        }
+
+        private sync() {
+            const buf = control.createBuffer(1);
+            const cmd = (this._sensorState & SensorState.Streaming) 
+                ? SensorCommand.StartStream : SensorCommand.StopStream;
+            buf.setNumber(NumberFormat.UInt8LE, 0, cmd);
+            this.sendPacket(buf);            
         }
 
         public onStateChanged(handler: () => void) {
             this._stateChangedHandler = handler;
             this.start();
+        }
+
+        handleControlPacket(pkt: Buffer): boolean {
+            if (this._sensorState == SensorState.None) return true;
+            const packet = new ControlPacket(pkt);
+            const state = packet.data.getNumber(NumberFormat.UInt8LE, 1);
+            if ((this._sensorState & SensorState.Streaming) != (state & SensorState.Streaming))
+                this.sync(); // start            
+            return true;
         }
 
         public handlePacket(pkt: Buffer): boolean {

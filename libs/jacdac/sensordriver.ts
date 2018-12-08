@@ -1,5 +1,6 @@
 namespace jacdac {
     export enum SensorState {
+        None = 0,
         Stopped = 0x01,
         Stopping = 0x02,
         Streaming = 0x04,
@@ -28,16 +29,12 @@ namespace jacdac {
      * JacDac service running on sensor and streaming data out
      */
     export class SensorService extends Service {
-        static MAX_SILENCE = 500;
         private sensorState: SensorState;
-        private _sendTime: number;
-        private _sendState: Buffer;
         public streamingInterval: number; // millis
 
         constructor(name: string, deviceClass: number, controlLength = 0) {
             super(name, deviceClass, 1 + controlLength);
             this.sensorState = SensorState.Stopped;
-            this._sendTime = 0;
             this.streamingInterval = 50;
         }
 
@@ -51,15 +48,6 @@ namespace jacdac {
 
         protected sensorControlPacket(): Buffer {
             return undefined;
-        }
-
-        public handleControlPacket(pkt: Buffer): boolean {
-            const cp = new ControlPacket(pkt);
-            if (cp.data.getNumber(NumberFormat.UInt8LE, 0) == 0)
-                this.stopStreaming();
-            else
-                this.startStreaming();
-            return true;
         }
 
         public handlePacket(pkt: Buffer): boolean {
@@ -126,18 +114,12 @@ namespace jacdac {
                     const state = this.serializeState();
                     if (!!state) {
                         // did the state change?
-                        if (this.isConnected
-                            && (!this._sendState
-                                || (control.millis() - this._sendTime > SensorService.MAX_SILENCE)
-                                || !jacdac.bufferEqual(state, this._sendState))) {
-
+                        if (this.isConnected) {
                             // send state and record time
                             const pkt = control.createBuffer(state.length + 1);
                             pkt.setNumber(NumberFormat.UInt8LE, 0, SensorCommand.State);
                             pkt.write(1, state);
                             this.sendPacket(pkt);
-                            this._sendState = state;
-                            this._sendTime = control.millis();
                         }
                     }
                     // check streaming interval value
@@ -153,6 +135,7 @@ namespace jacdac {
 
         private stopStreaming() {
             if (this.sensorState == SensorState.Streaming) {
+                this.log(`stopping`)
                 this.sensorState = SensorState.Stopping;
                 pauseUntil(() => this.sensorState == SensorState.Stopped);
             }
