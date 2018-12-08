@@ -22,5 +22,5 @@ namespace jacdac {
     }
 
     //% fixedInstance whenUsed block="accelerometer service"
-    export const accelerometerService = new AccelerometerService("accelerometer");
+    export const accelerometerService = new AccelerometerService("acc");
 }

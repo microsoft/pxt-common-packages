@@ -4,7 +4,7 @@ namespace jacdac {
      */
     class ConsoleService extends Service {
         constructor() {
-            super("log", DriverType.HostDriver, jacdac.LOGGER_DEVICE_CLASS); // TODO pickup type from DAL
+            super("log", jacdac.LOGGER_DEVICE_CLASS); // TODO pickup type from DAL
         }
 
         public handlePacket(pkt: Buffer): boolean {

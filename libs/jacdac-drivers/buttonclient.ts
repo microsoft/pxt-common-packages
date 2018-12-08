@@ -35,7 +35,7 @@ namespace jacdac {
         //% blockId=jacadacbtnonevent block="jacdac %button on %event"
         //% group="Buttons"
         onEvent(event: JDButtonEvent, handler: () => void) {
-            control.onEvent(this.id, event, handler);
+            this.registerEvent(event, handler);
         }
     }
 
