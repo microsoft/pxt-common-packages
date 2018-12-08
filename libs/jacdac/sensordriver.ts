@@ -53,6 +53,15 @@ namespace jacdac {
             return undefined;
         }
 
+        public handleControlPacket(pkt: Buffer): boolean {
+            const cp = new ControlPacket(pkt);
+            if (cp.data.getNumber(NumberFormat.UInt8LE, 0) == 0)
+                this.stopStreaming();
+            else
+                this.startStreaming();
+            return true;
+        }
+
         public handlePacket(pkt: Buffer): boolean {
             const packet = new JDPacket(pkt);
             const command = packet.getNumber(NumberFormat.UInt8LE, 0);

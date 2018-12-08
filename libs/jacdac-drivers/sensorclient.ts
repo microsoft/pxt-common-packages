@@ -3,18 +3,24 @@ namespace jacdac {
     //% weight=1
     export class SensorClient extends Client {
         // virtual mode only
+        private _streaming: boolean;
         protected _localTime: number;
         protected _lastState: Buffer;
         private _stateChangedHandler: () => void;
 
         constructor(name: string, deviceClass: number) {
-            super(name, deviceClass);
+            super(name, deviceClass, 1);
             this._lastState = control.createBuffer(0);
+            this._streaming = false;
         }
 
         public get state() {
             this.start();
             return this._lastState;
+        }
+
+        updateControlPacket() {
+            this.controlData.setNumber(NumberFormat.UInt8LE, 0, this._streaming ? 1 : 0);
         }
 
         /**
@@ -26,9 +32,8 @@ namespace jacdac {
         //% group="Services"
         public setStreaming(on: boolean) {
             this.start();
-            const msg = control.createBuffer(1);
-            msg.setNumber(NumberFormat.UInt8LE, 0, on ? SensorCommand.StartStream : SensorCommand.StopStream);
-            this.sendPacket(msg);
+            this._streaming = on;
+            // sent via control packet
         }
 
         public onStateChanged(handler: () => void) {

@@ -23,11 +23,13 @@ namespace jacdac {
     }
     let mode = Mode.None;
     function showDrivers() {
+
         jacdac.clearBridge();
         const drivers = jacdac.drivers();
         console.log(`${drivers.length} drivers (${jacdac.isConnected() ? "conn" : "disc"})`)
         console.log(`ad class    serial`);
         console.log(` flags status`);
+        const sn = control.deviceSerialNumber();
         drivers.forEach(d => {
             console.log(`${toHex8(d.address)} ${d.driverClass} ${toHex(d.serialNumber)}`);
             let flags = " " + toHex16(d.flags) + " ";
@@ -81,10 +83,8 @@ namespace jacdac {
     }
 
     function refresh() {
-        if (!jacdac.isConnected()) {
+        if (!jacdac.isConnected())
             console.log(`disconnected`);
-            return;
-        }
         switch (mode) {
             case Mode.Drivers: showDrivers(); break;
             case Mode.Devices: showDevices(); break;
@@ -104,6 +104,7 @@ namespace jacdac {
         });
         jacdac.onEvent(JacDacEvent.DriverChanged, () => {
             console.log(`driver changed`)
+            game.consoleOverlay.clear();
             refresh()
         });
         controller.left.onEvent(ControllerButtonEvent.Pressed, function () {
