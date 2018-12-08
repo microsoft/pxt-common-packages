@@ -3,7 +3,6 @@
     "description": "Virtual drivers for jacdac - beta",
     "files": [
         "sensorclient.ts",
-        "bridge.ts",
         "buttonclient.ts",
         "lightsensorclient.ts",
         "console.ts",
