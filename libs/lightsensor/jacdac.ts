@@ -14,5 +14,5 @@ namespace jacdac {
     }
 
     //% fixedInstances whenUsed block="light sensor service"
-    export const lightSensorService = new LightSensorService("lightsensor");
+    export const lightSensorService = new LightSensorService("lis");
 }

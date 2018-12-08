@@ -8,7 +8,7 @@ namespace jacdac {
         private _stateChangedHandler: () => void;
 
         constructor(name: string, deviceClass: number) {
-            super(name, DriverType.VirtualDriver, deviceClass);
+            super(name, deviceClass);
             this._lastState = control.createBuffer(0);
         }
 

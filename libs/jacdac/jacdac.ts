@@ -41,7 +41,7 @@ namespace jacdac {
             return;
         }
 
-        n.log(`add t${n.driverType} c${n.deviceClass}`)
+        n.log(`add c${n.deviceClass}`)
         const proxy = jacdac.__internalAddDriver(n.driverType, n.deviceClass,
             [(p: Buffer) => n.handlePacket(p),
             (p: Buffer) => n.handleControlPacket(p)],

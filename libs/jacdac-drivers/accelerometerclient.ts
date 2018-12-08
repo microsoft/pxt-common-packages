@@ -140,5 +140,5 @@ namespace jacdac {
     }
 
     //% fixedInstance whenUsed block="accelerometer"
-    export const accelerometerClient = new AccelerometerClient("accelerometer");
+    export const accelerometerClient = new AccelerometerClient("acc");
 }

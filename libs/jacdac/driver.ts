@@ -25,6 +25,7 @@ namespace jacdac {
             this.deviceClass = deviceClass || control.programHash();
             this._controlData = control.createBuffer(Math.max(0, controlDataLength));
             this.supressLog = false;
+            this._proxy = undefined;
         }
 
         get id(): number {
@@ -38,7 +39,7 @@ namespace jacdac {
 
         setProxy(value: JacDacDriverStatus) {
             this._proxy = value;
-            if (this._controlData.length)
+            if (this._proxy && this._controlData.length)
                 control.onEvent(this._proxy.id, JD_DRIVER_EVT_FILL_CONTROL_PACKET, () => this.updateControlPacket());
         }
 

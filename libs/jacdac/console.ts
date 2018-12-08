@@ -2,7 +2,7 @@ namespace jacdac {
     class ConsoleClient extends Client {
         public suppressForwading: boolean;
         constructor() {
-            super("log", DriverType.VirtualDriver, jacdac.LOGGER_DEVICE_CLASS);
+            super("log", jacdac.LOGGER_DEVICE_CLASS);
             this.supressLog = true;
             this.suppressForwading = false;
             console.addListener((priority, text) => this.broadcast(priority, text));
