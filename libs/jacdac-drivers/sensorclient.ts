@@ -34,11 +34,13 @@ namespace jacdac {
         }
 
         private sync() {
+            if (this._sensorState == SensorState.None) return;
+            
             const buf = control.createBuffer(1);
-            const cmd = (this._sensorState & SensorState.Streaming) 
+            const cmd = (this._sensorState & SensorState.Streaming)
                 ? SensorCommand.StartStream : SensorCommand.StopStream;
             buf.setNumber(NumberFormat.UInt8LE, 0, cmd);
-            this.sendPacket(buf);            
+            this.sendPacket(buf);
         }
 
         public onStateChanged(handler: () => void) {
