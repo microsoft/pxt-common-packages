@@ -25,20 +25,24 @@ namespace jacdac {
     function showDrivers() {
         jacdac.clearBridge();
         const drivers = jacdac.drivers();
-        console.log(`${drivers.length} drivers`)
-        console.log(`serial address class`);
+        console.log(`${drivers.length} drivers (${jacdac.isConnected() ? "conn" : "disc"})`)
+        console.log(`ad class    serial`);
         console.log(` flags status`);
         drivers.forEach(d => {
-            console.log(`${toHex(d.serialNumber)} ${toHex8(d.address)} ${toHex(d.driverClass)}`);
+            console.log(`${toHex8(d.address)} ${toHex(d.driverClass)} ${toHex(d.serialNumber)}`);
             let flags = " " + toHex16(d.flags) + " ";
-            if (d.isVirtualDriver())
-                flags += "virt";
-            else if (d.isHostDriver())
-                flags += "host";
-            else if (d.isBroadcastDriver())
-                flags += "broa";
-            else if (d.isSnifferDriver())
-                flags += "sniff";
+            if (d.driverClass == 0)
+                flags += "logic";
+            else {
+                if (d.isVirtualDriver())
+                    flags += "client";
+                else if (d.isHostDriver())
+                    flags += "service";
+                else if (d.isBroadcastDriver())
+                    flags += "broa";
+                else if (d.isSnifferDriver())
+                    flags += "sniff";
+            }
             if (d.isPaired())
                 flags += " paired";
             if (d.isPairing())
@@ -72,10 +76,8 @@ namespace jacdac {
 
     let _logAllDriver: LogAllDriver;
     function showPackets() {
-        if (!_logAllDriver) {
-            _logAllDriver = new LogAllDriver();
-            _logAllDriver.start();
-        }
+        if (!_logAllDriver) _logAllDriver = new LogAllDriver();
+        _logAllDriver.start();
     }
 
     function refresh() {
