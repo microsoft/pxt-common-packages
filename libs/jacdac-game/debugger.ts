@@ -16,11 +16,12 @@ namespace jacdac {
     }
 
     enum Mode {
+        None,
         Drivers,
         Devices,
         Packets
     }
-    let mode = Mode.Drivers;
+    let mode = Mode.None;
     function showDrivers() {
         jacdac.clearBridge();
         const drivers = jacdac.drivers();
@@ -105,15 +106,18 @@ namespace jacdac {
         });
         controller.left.onEvent(ControllerButtonEvent.Pressed, function () {
             mode = Mode.Drivers;
+            game.consoleOverlay.clear();
             refresh();
         })
         controller.right.onEvent(ControllerButtonEvent.Pressed, function () {
             mode = Mode.Devices;
+            game.consoleOverlay.clear();
             refresh();
         })
         controller.down.onEvent(ControllerButtonEvent.Pressed, function () {
             mode = Mode.Packets;
-            console.log(`sniffing packets`)
+            game.consoleOverlay.clear();
+            console.log(`sniffing...`)
             refresh();
         })
         controller.B.onEvent(ControllerButtonEvent.Pressed, function () {

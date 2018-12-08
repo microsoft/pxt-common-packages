@@ -11,6 +11,10 @@ namespace game.consoleOverlay {
         return !!consoleStrings;
     }
 
+    export function clear() {
+        consoleStrings = [];
+    }
+
     export function setVisible(value: boolean) {
         if (value != !!consoleStrings)
             consoleStrings = value ? [] : undefined;
