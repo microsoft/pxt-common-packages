@@ -1,4 +1,3 @@
-game.consoleOverlay.setVisible(true);
 namespace jacdac {
     const st = control.millis();
     export class TestService extends Service {
@@ -46,6 +45,4 @@ const client = new jacdac.TestClient();
 forever(() => {
     client.ping();
     pause(500);
-})
-controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
 })
