@@ -11,38 +11,22 @@
 
 #include "pinmap.h"
 
-#define SETTINGS_MAGIC_0 0x10476643
-#define SETTINGS_MAGIC_1 0x2e9a5026
-
-struct F4_Settings {
-    uint32_t magic0;
-    uint32_t magic1;
-    int *configValues;
-    uint32_t hseValue;
-    const char *info_uf2;
-    const char *manufacturer;
-    const char *device;
-    uint32_t reserved[16 - 7];
-};
-
-#define BOOTLOADER_START 0x08000000
-#define BOOTLOADER_END 0x08004000
-#define UF2_BINFO ((F4_Settings *)(BOOTLOADER_END - sizeof(F4_Settings)))
-#define UF2_INFO_TXT UF2_BINFO->info_uf2
-#define PXT_BOOTLOADER_CFG_ADDR (&(UF2_BINFO->configValues))
-#define USB_HANDOVER 0
-
-#define BOOT_RTC_SIGNATURE          0x71a21877
-#define APP_RTC_SIGNATURE           0x24a22d12
-#define POWER_DOWN_RTC_SIGNATURE    0x5019684f
-#define QUICK_BOOT(v) (RTC->BKP0R = v ? APP_RTC_SIGNATURE : BOOT_RTC_SIGNATURE)
+#ifdef STM32F4
+#define PXT_BOOTLOADER_CFG_ADDR 0x8003fc8
+#endif
 
 #define PAGE_SIZE 1024 // not really
 
 #define DEV_NUM_PINS 64
 
+#ifdef STM32F1
+#warning "PWM pins need fixing!"
 #define DEV_PWM_PINS 0b111100000011100111111110111000111111101111LL
 #define DEV_AIN_PINS 0b000011111100000000000000110000000011111111LL
+#else
+#define DEV_PWM_PINS 0b111100000011100111111110111000111111101111LL
+#define DEV_AIN_PINS 0b000011111100000000000000110000000011111111LL
+#endif
 
 // Codal doesn't yet distinguish between PWM and AIN
 #define DEV_ANALOG_PINS (DEV_PWM_PINS | DEV_AIN_PINS)
@@ -76,6 +60,7 @@ struct F4_Settings {
 #define PA_13 0x0D
 #define PA_14 0x0E
 #define PA_15 0x0F
+
 #define PB_0 0x10
 #define PB_1 0x11
 #define PB_2 0x12
@@ -92,6 +77,7 @@ struct F4_Settings {
 #define PB_13 0x1D
 #define PB_14 0x1E
 #define PB_15 0x1F
+
 #define PC_0 0x20
 #define PC_1 0x21
 #define PC_2 0x22
@@ -108,6 +94,23 @@ struct F4_Settings {
 #define PC_13 0x2D
 #define PC_14 0x2E
 #define PC_15 0x2F
+
+#define PD_0 0x30
+#define PD_1 0x31
+#define PD_2 0x32
+#define PD_3 0x33
+#define PD_4 0x34
+#define PD_5 0x35
+#define PD_6 0x36
+#define PD_7 0x37
+#define PD_8 0x38
+#define PD_9 0x39
+#define PD_10 0x3A
+#define PD_11 0x3B
+#define PD_12 0x3C
+#define PD_13 0x3D
+#define PD_14 0x3E
+#define PD_15 0x3F
 #endif
 
 #endif
