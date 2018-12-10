@@ -5,10 +5,10 @@
 #include "MultiButton.h"
 #include "ZPin.h"
 #include "SAMDTimer.h"
+#include "SAMDDAC.h"
 #include "ZSPI.h"
 #include "ZI2C.h"
 #include "ZSingleWireSerial.h"
-#include "SAMDDMAC.h"
 
 // cap touch not available on 51 yet
 #ifdef SAMD21
@@ -38,7 +38,7 @@ typedef int PinName;
 #define CODAL_I2C ZI2C
 #define CODAL_JACDAC_WIRE_SERIAL codal::ZSingleWireSerial
 #define CODAL_SERIAL codal::SAMDSerial
-#define CODAL_DMAC codal::SAMDDMAC
+#define CODAL_DAC SAMDDAC
 
 #define PXT_BOOTLOADER_CFG_ADDR (0x4000 - 4*4)
 #define PXT_BOOTLOADER_CFG_MAGIC 0xbe3fd5ce

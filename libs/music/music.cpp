@@ -9,12 +9,11 @@
 class WSynthesizer {
   public:
     Synthesizer synth;
-    SAMDDAC dac;
+    CODAL_DAC dac;
 
     WSynthesizer()
         // DAC always on PA02 on SAMD21
-        : dac(*lookupPin(PA02)
-        , pxt::getWDMAC()->dmac, synth.output) {
+        : dac(*lookupPin(PA02), synth.output) {
         synth.setSampleRate(dac.getSampleRate());
         synth.setVolume(64);
         synth.setTone(Synthesizer::SquareWaveTone);
