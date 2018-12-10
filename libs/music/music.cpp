@@ -1,7 +1,7 @@
 #include "pxt.h"
 
 #include "dmac.h"
-#include "SAMD21DAC.h"
+#include "SAMDDAC.h"
 #include "Synthesizer.h"
 #include "CodalConfig.h"
 
@@ -9,7 +9,7 @@
 class WSynthesizer {
   public:
     Synthesizer synth;
-    SAMD21DAC dac;
+    SAMDDAC dac;
 
     WSynthesizer()
         // DAC always on PA02 on SAMD21
