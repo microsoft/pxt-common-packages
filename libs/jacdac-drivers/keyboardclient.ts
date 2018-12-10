@@ -162,7 +162,8 @@ namespace jacdac {
             buf[1] = key;
             buf[2] = event;
         }
-
-        //% fixedInstance whenUsed block="keyboard"
-        export const keyboardClient = new KeyboardClient();
     }
+
+    //% fixedInstance whenUsed block="keyboard"
+    export const keyboardClient = new KeyboardClient();
+}
