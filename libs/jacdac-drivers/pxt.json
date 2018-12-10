@@ -8,7 +8,7 @@
         "console.ts",
         "battery.ts",
         "accelerometerclient.ts",
-        "touchbuttonclient.ts",
+        "touchclient.ts",
         "microphoneclient.ts",
         "thermometerclient.ts",
         "switchclient.ts",

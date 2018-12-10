@@ -95,16 +95,18 @@ namespace jacdac {
     function start() {
         game.pushScene(); // start game
         jacdac.onEvent(JacDacEvent.BusConnected, () => {
+            game.consoleOverlay.clear();
             console.log(`connected`)
             refresh()
         });
         jacdac.onEvent(JacDacEvent.BusDisconnected, () => {
+            game.consoleOverlay.clear();
             console.log(`disconnected`)
             refresh()
         });
         jacdac.onEvent(JacDacEvent.DriverChanged, () => {
-            console.log(`driver changed`)
             game.consoleOverlay.clear();
+            console.log(`driver changed`)
             refresh()
         });
         controller.left.onEvent(ControllerButtonEvent.Pressed, function () {
@@ -162,5 +164,5 @@ namespace jacdac {
         }
     }
 
-    scene.systemMenu.addEntry(() => "jacdac console", start);
+    scene.systemMenu.addEntry(() => "jacdac sniff", start, false, () => clearBridge());
 }

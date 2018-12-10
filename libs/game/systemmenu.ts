@@ -5,9 +5,10 @@ namespace scene.systemMenu {
         name: () => string;
         handler: () => void;
         repeat?: boolean;
+        onHidden?: () => void;
     }
     let customItems: MenuItem[] = undefined;
-    export function addEntry(name: () => string, handler: () => void, repeat?: boolean) {
+    export function addEntry(name: () => string, handler: () => void, repeat?: boolean, onHidden?: () => void) {
         if (!customItems) customItems = [];
         customItems.push({
             name: name,
@@ -22,6 +23,7 @@ namespace scene.systemMenu {
         controller.menu.onEvent(ControllerButtonEvent.Pressed, function () {
             active = true;
             let itemHandler: () => void = undefined;
+            let onHidden: () => void = undefined;
             const m = new menu.Menu();
             m.addItem(game.stats ? "hide stats" : "show stats", () => {
                 game.stats = !game.stats;
@@ -42,12 +44,15 @@ namespace scene.systemMenu {
                         if (item.repeat) item.handler();
                         else {
                             itemHandler = item.handler;
+                            onHidden = item.onHidden;
                             m.hide();
                         }
                     })
                 });
             m.onDidHide = () => {
                 active = false;
+                if (onHidden)
+                    onHidden;
                 if (itemHandler)
                     itemHandler();
             }

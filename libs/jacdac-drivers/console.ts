@@ -2,7 +2,8 @@ namespace jacdac {
     /**
      * Receives messages from console.log
      */
-    class ConsoleService extends Service {
+    //% fixedInstances
+    export class ConsoleService extends Service {
         constructor() {
             super("log", jacdac.LOGGER_DEVICE_CLASS); // TODO pickup type from DAL
         }
@@ -28,16 +29,6 @@ namespace jacdac {
         }
     }
 
-    let _consoleService: ConsoleService;
-    /**
-     * Listens for console messages from other devices
-     */
-    //% blockId=jacdac_listen_console block="jacdac listen console"
-    //% group="Console"
-    export function listenConsole() {
-        if (!_consoleService) {
-            _consoleService = new ConsoleService();
-            _consoleService.start();
-        }
-    }
+    //% fixedInstance whenUsed block="console service"
+    export const consoleService = new ConsoleService();
 }

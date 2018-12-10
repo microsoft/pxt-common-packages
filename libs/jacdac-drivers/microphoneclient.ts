@@ -40,5 +40,5 @@ namespace jacdac {
     }
 
     //% fixedInstance whenUsed block="microphone"
-    export const microphoneCLient = new MicrophoneClient("microphone");
+    export const microphoneClient = new MicrophoneClient("microphone");
 }
