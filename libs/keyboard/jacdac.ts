@@ -1,7 +1,9 @@
 namespace jacdac {
+
+    //% fixedInstances
     export class KeyboardService extends Service {
         constructor() {
-            super("kb", jacdac.KEYBOARD_DEVICE_CLASS);
+            super("keyb", jacdac.KEYBOARD_DEVICE_CLASS);
         }
 
         handlePacket(pkt: Buffer): boolean {
@@ -41,4 +43,7 @@ namespace jacdac {
             return true;
         }
     }
+
+    //% fixedInstance whenUsed block="keyboard service"
+    export const keyboardService = new KeyboardService();
 }
