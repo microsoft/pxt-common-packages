@@ -12,7 +12,8 @@
         "microphoneclient.ts",
         "thermometerclient.ts",
         "switchclient.ts",
-        "lightclient.ts"
+        "lightclient.ts",
+        "keyboardclient.ts"
     ],
     "testFiles": [
         "test.ts"
