@@ -4,8 +4,6 @@
 #include "GhostFAT.h"
 #include "SNORFS.h"
 
-#if CONFIG_ENABLED(DEVICE_USB)
-
 namespace codal
 {
     
@@ -28,4 +26,3 @@ public:
 
 #endif
 
-#endif
