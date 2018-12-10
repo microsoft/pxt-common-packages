@@ -13,7 +13,8 @@
         "thermometerclient.ts",
         "switchclient.ts",
         "lightclient.ts",
-        "keyboardclient.ts"
+        "keyboardclient.ts",
+        "mouseclient.ts"
     ],
     "testFiles": [
         "test.ts"

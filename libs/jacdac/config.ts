@@ -57,14 +57,16 @@ enum JDLightAnimation {
 }
 
 enum JDKeyboardCommand {
-    //% block="none"
     None,
-    //% block="type"
     Type,
-    //% key="key"
     Key,
-    //% key="media key"
     MediaKey,
-    //% key="function key"
     FunctionKey
+}
+
+enum JDMouseCommand {
+    None,
+    Button,
+    Move,
+    TurnWheel
 }
