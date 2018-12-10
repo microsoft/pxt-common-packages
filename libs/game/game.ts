@@ -151,7 +151,7 @@ namespace game {
      * @param body code to execute
      */
     //% group="Gameplay"
-    //% help=game/update weight=100 afterOnStart=true
+    //% help=game/on-update weight=100 afterOnStart=true
     //% blockId=gameupdate block="on game update"
     //% blockAllowMultiple=1
     export function onUpdate(a: () => void): void {
@@ -165,7 +165,7 @@ namespace game {
      * @param body code to execute
      */
     //% group="Gameplay"
-    //% help=game/interval weight=99 afterOnStart=true
+    //% help=game/on-unpdate-interval weight=99 afterOnStart=true
     //% blockId=gameinterval block="on game update every %period=timePicker ms"
     //% blockAllowMultiple=1
     export function onUpdateInterval(period: number, a: () => void): void {
