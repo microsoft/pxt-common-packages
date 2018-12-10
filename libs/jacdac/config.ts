@@ -13,6 +13,9 @@ namespace jacdac {
     export const PIXEL_DEVICE_CLASS = JD_DEVICE_CLASS_MAKECODE_START + 10;
     export const HAPTIC_DEVICE_CLASS = JD_DEVICE_CLASS_MAKECODE_START + 11;
     export const LIGHT_DEVICE_CLASS = JD_DEVICE_CLASS_MAKECODE_START + 12;
+    export const KEYBOARD_DEVICE_CLASS = JD_DEVICE_CLASS_MAKECODE_START + 13;
+    export const MOUSE_DEVICE_CLASS = JD_DEVICE_CLASS_MAKECODE_START + 14;
+    export const GAMEPAD_DEVICE_CLASS = JD_DEVICE_CLASS_MAKECODE_START + 15;
 
     // events
     export const JD_MESSAGE_BUS_ID = JD_DEVICE_CLASS_MAKECODE_START;
@@ -27,6 +30,7 @@ namespace jacdac {
 }
 
 enum JDLightCommand {
+    None,
     SetAll,
     SetBrightness,
     Rainbow,
@@ -50,4 +54,12 @@ enum JDLightAnimation {
     TheaterChase = JDLightCommand.TheaterChase,
     //% block="sparkle"
     Sparkle = JDLightCommand.Sparkle
+}
+
+enum JDKeyboardCommand {
+    None,
+    Type,
+    Key,
+    MediaKey,
+    FunctionKey
 }
