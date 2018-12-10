@@ -1,4 +1,4 @@
 {
-    "name": "core---stm32f103",
+    "name": "core---stm32",
     "additionalFilePath": "../core"
 }
