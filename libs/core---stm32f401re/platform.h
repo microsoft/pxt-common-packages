@@ -11,7 +11,31 @@
 
 #include "pinmap.h"
 
-#define PXT_BOOTLOADER_CFG_ADDR 0x8003fc8
+#define SETTINGS_MAGIC_0 0x10476643
+#define SETTINGS_MAGIC_1 0x2e9a5026
+
+struct F4_Settings {
+    uint32_t magic0;
+    uint32_t magic1;
+    int *configValues;
+    uint32_t hseValue;
+    const char *info_uf2;
+    const char *manufacturer;
+    const char *device;
+    uint32_t reserved[16 - 7];
+};
+
+#define BOOTLOADER_START 0x08000000
+#define BOOTLOADER_END 0x08004000
+#define UF2_BINFO ((F4_Settings *)(BOOTLOADER_END - sizeof(F4_Settings)))
+#define UF2_INFO_TXT UF2_BINFO->info_uf2
+#define PXT_BOOTLOADER_CFG_ADDR (&(UF2_BINFO->configValues))
+#define USB_HANDOVER 0
+
+#define BOOT_RTC_SIGNATURE          0x71a21877
+#define APP_RTC_SIGNATURE           0x24a22d12
+#define POWER_DOWN_RTC_SIGNATURE    0x5019684f
+#define QUICK_BOOT(v) (RTC->BKP0R = v ? APP_RTC_SIGNATURE : BOOT_RTC_SIGNATURE)
 
 #define PAGE_SIZE 1024 // not really
 
@@ -19,7 +43,6 @@
 
 #define DEV_PWM_PINS 0b111100000011100111111110111000111111101111LL
 #define DEV_AIN_PINS 0b000011111100000000000000110000000011111111LL
-
 
 // Codal doesn't yet distinguish between PWM and AIN
 #define DEV_ANALOG_PINS (DEV_PWM_PINS | DEV_AIN_PINS)

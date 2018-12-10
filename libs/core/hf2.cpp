@@ -1,7 +1,14 @@
-#define UF2_DEFINE_HANDOVER 1
 #include "pxt.h"
 
 #if CONFIG_ENABLED(DEVICE_USB)
+#ifndef USB_HANDOVER
+#define USB_HANDOVER 1
+#endif
+
+#if USB_HANDOVER
+#define UF2_DEFINE_HANDOVER 1
+#endif
+
 #include "uf2format.h"
 
 static void *stackCopy;
@@ -159,6 +166,8 @@ int HF2::sendResponse(int size) {
 int HF2::sendResponseWithData(const void *data, int size) {
     int res;
 
+    DMESG("HF2 send len=%d", size);
+        
     if (size <= (int)sizeof(pkt.buf) - 4) {
         __disable_irq();
         memcpy(pkt.resp.data8, data, size);
@@ -171,6 +180,8 @@ int HF2::sendResponseWithData(const void *data, int size) {
         __enable_irq();
     }
 
+    DMESG("HF2 send DONE len=%d", size);
+
     return res;
 }
 
@@ -181,8 +192,11 @@ static void copy_words(void *dst0, const void *src0, uint32_t n_words) {
         *dst++ = *src++;
 }
 
+#ifndef QUICK_BOOT
 #define DBL_TAP_PTR ((volatile uint32_t *)(HMCRAMC0_ADDR + HMCRAMC0_SIZE - 4))
 #define DBL_TAP_MAGIC_QUICK_BOOT 0xf02669ef
+#define QUICK_BOOT(v) *DBL_TAP_PTR = v ? DBL_TAP_MAGIC_QUICK_BOOT : 0
+#endif
 
 int HF2::endpointRequest()
 {
@@ -229,17 +243,19 @@ int HF2::endpointRequest()
         break;
 
     case HF2_CMD_RESET_INTO_APP:
-        *DBL_TAP_PTR = DBL_TAP_MAGIC_QUICK_BOOT;
+        QUICK_BOOT(1);
         // fall-through
     case HF2_CMD_RESET_INTO_BOOTLOADER:
         target_reset();
         break;
 
+#if USB_HANDOVER
     case HF2_CMD_START_FLASH:
         sendResponse(0);
         hf2_handover(in->ep);
         usb_assert(0); // should not be reached
         break;
+#endif
 
     case HF2_CMD_WRITE_WORDS:
         checkDataSize(write_words, cmd->write_words.num_words << 2);
