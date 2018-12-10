@@ -6,6 +6,7 @@
     "ignoreDocsErrors": true,
     "bundleddirs": [
         "libs/core",
+        "libs/core---samd",
         "libs/buttons",
         "libs/light",
         "libs/music",
