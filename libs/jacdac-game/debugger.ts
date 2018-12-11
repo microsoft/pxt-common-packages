@@ -48,14 +48,17 @@ namespace jacdac {
             if (d.isPaired())
                 flags += " paired";
             if (d.isPairing())
-                flags += " pairing";
+                flags += " pairng";
             if (d.flags & DAL.JD_DEVICE_FLAGS_CP_SEEN)
                 flags += " cp"
             if (d.flags & DAL.JD_DEVICE_FLAGS_INITIALISED)
                 flags += " inited"
             if (d.flags & DAL.JD_DEVICE_FLAGS_INITIALISING)
-                flags += " initing"
-            console.log(flags)
+                flags += " initng"
+            const err = d.error;
+            if (err != JDDriverErrorCode.DRIVER_OK)
+                flags += " e" + err;    
+            console.log(flags)            
         })
         console.log("");
     }
@@ -94,17 +97,17 @@ namespace jacdac {
 
     function start() {
         game.pushScene(); // start game
-        jacdac.onEvent(JacDacEvent.BusConnected, () => {
+        jacdac.onEvent(JDEvent.BusConnected, () => {
             game.consoleOverlay.clear();
             console.log(`connected`)
             refresh()
         });
-        jacdac.onEvent(JacDacEvent.BusDisconnected, () => {
+        jacdac.onEvent(JDEvent.BusDisconnected, () => {
             game.consoleOverlay.clear();
             console.log(`disconnected`)
             refresh()
         });
-        jacdac.onEvent(JacDacEvent.DriverChanged, () => {
+        jacdac.onEvent(JDEvent.DriverChanged, () => {
             game.consoleOverlay.clear();
             console.log(`driver changed`)
             refresh()
