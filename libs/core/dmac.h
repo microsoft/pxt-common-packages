@@ -5,10 +5,10 @@
 
 namespace pxt {
 
-#ifdef PlatformDMAC
+#ifdef CODAL_DMAC
 class WDMAC {
   public:
-    PlatformDMAC dmac;
+    CODAL_DMAC dmac;
 
     WDMAC() {}
 };

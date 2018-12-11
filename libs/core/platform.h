@@ -23,7 +23,7 @@
 
 #define PAGE_SIZE 256
 
-#define PlatformDMAC SAMD21DMAC
+#define CODAL_DMAC SAMD21DMAC
 
 // this is codal::_mbed for both mbed and mbedos now
 #define CODAL_MBED codal::_mbed

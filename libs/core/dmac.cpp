@@ -2,7 +2,7 @@
 
 namespace pxt {
 
-#ifdef PlatformDMAC
+#ifdef CODAL_DMAC
 SINGLETON(WDMAC);
 #endif
 

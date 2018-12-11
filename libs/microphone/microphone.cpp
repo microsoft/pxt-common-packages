@@ -1,7 +1,6 @@
 #include "pxt.h"
 #include "dmac.h"
-#include "SAMD21DAC.h"
-#include "SAMD21PDM.h"
+#include "SAMDPDM.h"
 #include "LevelDetector.h"
 #include "LevelDetectorSPL.h"
 
@@ -15,7 +14,7 @@ class WMicrophone {
     SAMD21PDM microphone;
     LevelDetectorSPL level;
     WMicrophone()
-        : microphone(*LOOKUP_PIN(MIC_DATA), *LOOKUP_PIN(MIC_CLOCK), pxt::getWDMAC()->dmac, 22000)
+        : microphone(*LOOKUP_PIN(MIC_DATA), *LOOKUP_PIN(MIC_CLOCK))
         , level(microphone.output, 95.0, 75.0, 9, 52, DEVICE_ID_MICROPHONE)
     {
         microphone.enable();
