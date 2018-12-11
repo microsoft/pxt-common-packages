@@ -111,6 +111,7 @@ namespace jacdac {
         //% blockId=jdkeyboardType block="%keyboard type %text"
         //% blockGap=8 weight=100
         //% text.shadowOptions.toString=true
+        //% group="Keyboard"
         type(type: string) {
             const buf = control.createBuffer(DAL.JD_SERIAL_DATA_SIZE)
             buf[0] = JDKeyboardCommand.Type;
@@ -132,6 +133,7 @@ namespace jacdac {
         */
         //% blockId=jdkeyboardStandardKey block="%keyboard key %key|%event"
         //% blockGap=8 weight=99
+        //% group="Keyboard"
         key(key: string, event: JDKeyboardKeyEvent) {
             const buf = control.createBuffer(3);
             buf[0] = JDKeyboardCommand.Key;
@@ -145,6 +147,7 @@ namespace jacdac {
         */
         //% blockId=jdkeyboardMediaKey block="%keyboard media key %key|%event"
         //% blockGap=8
+        //% group="Keyboard"
         mediaKey(key: JDKeyboardMediaKey, event: JDKeyboardKeyEvent) {
             const buf = control.createBuffer(3);
             buf[0] = JDKeyboardCommand.MediaKey;
@@ -158,6 +161,7 @@ namespace jacdac {
         */
         //% blockId=keyboardFunctionKey block="%keyboard function key %key|%event"
         //% blockGap=8
+        //% group="Keyboard"
         functionKey(key: JDKeyboardFunctionKey, event: JDKeyboardKeyEvent) {
             const buf = control.createBuffer(3);
             buf[0] = JDKeyboardCommand.FunctionKey;

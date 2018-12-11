@@ -18,6 +18,7 @@ namespace jacdac {
          * Sets the mouse button state to down
          */
         //% blockId=jdmouseSetButton block="%mouse button %index=joystickStandardButton|%down=toggleDownUp"
+        //% group="Mouse"
         setButton(button: JDMouseButton, down: boolean): void {
             const buf = control.createBuffer(3);
             buf[0] = JDMouseCommand.Button;
@@ -33,6 +34,7 @@ namespace jacdac {
         //% blockId=mouseMove block="%mouse move x %x|y %y"
         //% x.min=-128 x.max=127
         //% y.min=-128 y.max=127
+        //% group="Mouse"
         move(x: int32, y: int32): void {
             const buf = control.createBuffer(3);
             buf[0] = JDMouseCommand.Move;
@@ -47,6 +49,7 @@ namespace jacdac {
         //% help=mouse/wheel
         //% blockId=mouseWheel block="%mouse turn wheel %w"
         //% w.min=-128 w.max=127
+        //% group="Mouse"
         turnWheel(w: int32): void {
             const buf = control.createBuffer(2);
             buf[0] = JDMouseCommand.TurnWheel;
