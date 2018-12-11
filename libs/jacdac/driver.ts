@@ -33,15 +33,19 @@ namespace jacdac {
             return this._proxy ? this._proxy.id : -1;
         }
 
-        hasProxy(): boolean {
-            return !!this._proxy;
+        get proxy(): JacDacDriverStatus {
+            return this._proxy;
         }
 
-        setProxy(value: JacDacDriverStatus) {
-            // todo remove control event
+        set proxy(value: JacDacDriverStatus) {
+            if (this._proxy) {
+                control.onEvent(this._proxy.id, JD_DRIVER_EVT_FILL_CONTROL_PACKET, undefined);
+                jacdac.removeDriver(this);
+            }
             this._proxy = value;
-            if (this._proxy && this._controlData.length)
+            if (this._proxy && this._controlData.length) {
                 control.onEvent(this._proxy.id, JD_DRIVER_EVT_FILL_CONTROL_PACKET, () => this.updateControlPacket());
+            }
         }
 
         /**
@@ -111,7 +115,13 @@ namespace jacdac {
         }
 
         stop() {
-            // TODO
+            this.proxy = undefined;
+        }
+    }
+
+    export class Broadcast extends Driver {
+        constructor(name: string, deviceClass: number, controlDataLength?: number) {
+            super(name, DriverType.BroadcastDriver, deviceClass, controlDataLength);
         }
     }
 

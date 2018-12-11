@@ -61,7 +61,7 @@ namespace jacdac {
      * @param n driver
      */
     export function addDriver(n: Driver) {
-        if (n.hasProxy()) { // don't add twice
+        if (!!n.proxy) { // don't add twice
             n.log(`already added`);
             return;
         }
@@ -72,7 +72,19 @@ namespace jacdac {
             (p: Buffer) => n.handleControlPacket(p)],
             n.controlData
         );
-        n.setProxy(proxy);
+        n.proxy = proxy;
+    }
+
+    export function removeDriver(n: Driver) {
+        const proxy = n.proxy;
+        if (!proxy) {
+            n.log(`already removed`);
+            return;
+        }
+
+        n.log(`remove c${n.deviceClass}`);
+        n.proxy = undefined;
+        jacdac.__internalRemoveDriver(proxy);
     }
 
     /**

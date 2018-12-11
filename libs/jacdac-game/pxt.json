@@ -3,7 +3,8 @@
     "description": "JacDac services for games - beta",
     "files": [
         "console.ts",
-        "debugger.ts"
+        "debugger.ts",
+        "lobby.ts"
     ],
     "testFiles": [
     ],
