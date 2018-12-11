@@ -116,21 +116,12 @@ namespace jacdac {
             return this.buf.getNumber(NumberFormat.UInt32LE, 8);
         }
 
-        /**
-         * Sets the error portion of flags to the given error code
-         *
-         * @param e the error code to place into control packets
-         **/
+        get error(): JDDriverErrorCode {
+            return this.flags & DAL.JD_DEVICE_ERROR_MSK;
+        }
         set error(e: JDDriverErrorCode) {
             const f = this.flags & ~(DAL.JD_DEVICE_ERROR_MSK);
             this.flags = f | (e & 0xff);
-        }
-
-        /**
-         * Retrieves the current error code from the error portion of flags.
-         **/
-        get error(): JDDriverErrorCode {
-            return this.flags & DAL.JD_DEVICE_ERROR_MSK;
         }
 
         /**
