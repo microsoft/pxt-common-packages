@@ -32,8 +32,7 @@
         "dmac.cpp",
         "dmac.h",
         "timer.ts",
-        "pxtparts.json",
-        "hid.h"
+        "pxtparts.json"
     ],
     "testFiles": [
         "test.ts"
