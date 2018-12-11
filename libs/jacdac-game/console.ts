@@ -4,11 +4,14 @@ namespace jacdac {
         () => jacdacConsole ? "hide jacdac console" : "show jacdac console",
         () => {
             jacdacConsole = !jacdacConsole;
-            if (jacdacConsole)
+            game.consoleOverlay.setVisible(jacdacConsole);
+            if (jacdacConsole) {
                 jacdac.consoleService.start();
+                console.log(`listening to jacdac...`);
+            }
             else
                 jacdac.consoleService.stop();
-            game.consoleOverlay.setVisible(jacdacConsole);
+
         },
         false
     );
