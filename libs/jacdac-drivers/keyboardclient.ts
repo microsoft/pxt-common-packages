@@ -89,7 +89,6 @@ enum JDKeyboardFunctionKey {
     UpArrow = 24,
 }
 
-
 enum JDKeyboardKeyEvent {
     //% block="press"
     Press = 0,
@@ -98,6 +97,7 @@ enum JDKeyboardKeyEvent {
     //% block="down"
     Down = 2,
 }
+
 namespace jacdac {
     //% fixedInstances
     export class KeyboardClient extends Client {
@@ -137,6 +137,7 @@ namespace jacdac {
             buf[0] = JDKeyboardCommand.Key;
             buf[1] = key.charCodeAt(0);
             buf[2] = event;
+            this.sendPacket(buf);
         }
 
         /**
@@ -149,6 +150,7 @@ namespace jacdac {
             buf[0] = JDKeyboardCommand.MediaKey;
             buf[1] = key;
             buf[2] = event;
+            this.sendPacket(buf);
         }
 
         /**
@@ -161,6 +163,7 @@ namespace jacdac {
             buf[0] = JDKeyboardCommand.FunctionKey;
             buf[1] = key;
             buf[2] = event;
+            this.sendPacket(buf);
         }
     }
 
