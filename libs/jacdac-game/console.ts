@@ -1,18 +1,20 @@
 namespace jacdac {
-    let jacdacConsole = false;
     scene.systemMenu.addEntry(
-        () => jacdacConsole ? "hide jacdac console" : "show jacdac console",
+        () => jacdac.consoleDriver.mode() == JDConsoleMode.Listen ? "hide jacdac console" : "show jacdac console",
         () => {
-            jacdacConsole = !jacdacConsole;
-            game.consoleOverlay.setVisible(jacdacConsole);
-            if (jacdacConsole) {
-                jacdac.consoleService.start();
+            if (jacdac.consoleDriver.mode() == JDConsoleMode.Listen) {
+                game.consoleOverlay.setVisible(false);
+                jacdac.consoleDriver.setMode(JDConsoleMode.Off);
+            }
+            else {
+                game.consoleOverlay.setVisible(false);
+                jacdac.consoleDriver.setMode(JDConsoleMode.Listen);
                 console.log(`listening to jacdac...`);
             }
-            else
-                jacdac.consoleService.stop();
-
         },
         false
     );
+
+    // prepare listening
+    jacdac.consoleDriver.setMode(JDConsoleMode.Off);
 }

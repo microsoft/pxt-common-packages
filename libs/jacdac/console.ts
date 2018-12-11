@@ -4,20 +4,16 @@ enum JDConsoleMode {
     Listen
 }
 
-enum JDConsoleMessage {
-    SetOff = JDConsoleMode.Off,
-    SetBroadcast = JDConsoleMode.Broadcast,
-    Reserved,
-    Add
-}
-
 namespace jacdac {
 
     /**
      * Console logging driver. The driver is off, broadcasting or listening. Cannot do both.
      */
     export class ConsoleDriver extends Driver {
-        _mode: JDConsoleMode;
+        private _mode: JDConsoleMode;
+        private _lastListenerTime: number;
+
+        static BROADCAST_TIMEOUT = 10000;
 
         constructor() {
             super("log", DriverType.BroadcastDriver, jacdac.LOGGER_DEVICE_CLASS, 1);
@@ -41,17 +37,6 @@ namespace jacdac {
             }
         }
 
-        /**
-         * Sends a command to another device to broadcast or not
-         */
-        setBroadcastCommand(broadcast: boolean, address: number) {
-            this.start();
-            const buf = control.createBuffer(5);
-            buf[0] = broadcast ? JDConsoleMessage.SetBroadcast : JDConsoleMessage.SetOff;
-            buf[1] = address;
-            this.sendPacket(buf);
-        }
-
         mode(): JDConsoleMode {
             return this._mode;
         }
@@ -61,32 +46,31 @@ namespace jacdac {
             this.controlData[0] = this._mode;
         }
 
-        public handlePacket(pkt: Buffer): boolean {
-            const packet = new JDPacket(pkt);
-            const data = packet.data;
-            const cmd = data[0];
-            switch (cmd) {
-                case JDConsoleMessage.SetOff:
-                case JDConsoleMessage.SetBroadcast:
-                    const address = data[1];
-                    if (!address || address == this.device.address)
-                        this.setMode(cmd);
-                    break;
-                case JDConsoleMessage.Add:
-                    this.addMessage(data);
-                    break;
+        public handleControlPacket(pkt: Buffer): boolean {
+            const packet = new ControlPacket(pkt);
+            const mode = packet.data[0];
+            if (mode == JDConsoleMode.Listen) {
+                // if a listener entres the bus, automatically start listening
+                if (this._mode != JDConsoleMode.Listen)
+                    this.setMode(JDConsoleMode.Broadcast);
+                this._lastListenerTime = control.millis();
             }
             return true;
         }
 
-        private addMessage(data: Buffer) {
-            const priority = data[1];
+        public handlePacket(pkt: Buffer): boolean {
+            if (this._mode != JDConsoleMode.Listen) 
+                return true;
+
+            const packet = new JDPacket(pkt);
+            const data = packet.data;
+            const priority = data[0];
             // shortcut
             if (priority < console.minPriority) return true;
             // send message to console
             const packetSize = data.length;
             let str = "";
-            for (let i = 2; i < packetSize; i++)
+            for (let i = 1; i < packetSize; i++)
                 str += String.fromCharCode(data[i]);
             // pipe to console
             console.add(priority, str);
@@ -98,14 +82,19 @@ namespace jacdac {
             if (this._mode != JDConsoleMode.Broadcast || !this.isConnected)
                 return;
 
+            // no one listening?
+            if (control.millis() - this._lastListenerTime > ConsoleDriver.BROADCAST_TIMEOUT) {
+                this.setMode(JDConsoleMode.Off);
+                return;
+            }
+
             let cursor = 0;
             while (cursor < str.length) {
-                const txLength = Math.min(str.length - cursor, DAL.JD_SERIAL_DATA_SIZE - 2);
-                const buf = control.createBuffer(txLength + 2);
-                buf[0] = JDConsoleMessage.Add;
-                buf[1] = priority;
+                const txLength = Math.min(str.length - cursor, DAL.JD_SERIAL_DATA_SIZE - 1);
+                const buf = control.createBuffer(txLength + 1);
+                buf[0] = priority;
                 for (let i = 0; i < txLength; i++)
-                    buf[i + 2] = str.charCodeAt(i + cursor);
+                    buf[i + 1] = str.charCodeAt(i + cursor);
                 this.sendPacket(buf);
                 cursor += txLength;
             }
