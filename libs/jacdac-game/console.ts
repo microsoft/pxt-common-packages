@@ -16,5 +16,5 @@ namespace jacdac {
     );
 
     // prepare listening
-    jacdac.consoleDriver.setMode(JDConsoleMode.Off);
+    jacdac.consoleDriver.start();
 }
