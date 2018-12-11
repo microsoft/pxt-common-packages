@@ -20,6 +20,8 @@ sprites.create(null).destroy()
 sprites.create(null).setFlag(0, false)
 sprites.create(null).setImage(null)
 sprites.create(null).setPosition(0, 0)
+sprites.create(null).setKind(0)
+sprites.create(null).kind()
 ```
 
 ## Sprite events
@@ -51,11 +53,10 @@ sprites.onOverlap(0, 0, function (sprite, otherSprite) {})
 
 ### Image and Attributes
 
-* [**image**](/reference/sprites/sprite/lifespan)
-* [**width**](/reference/sprites/sprite/lifespan)
-* [**height**](/reference/sprites/sprite/lifespan)
+* [**image**](/reference/sprites/sprite/image)
+* [**width**](/reference/sprites/sprite/width)
+* [**height**](/reference/sprites/sprite/height)
 * [**lifespan**](/reference/sprites/sprite/lifespan)
-* [**type**](/reference/sprites/sprite/lifespan)
 
 ## See also
 
@@ -67,7 +68,10 @@ sprites.onOverlap(0, 0, function (sprite, otherSprite) {})
 [tile hit from](/reference/sprites/sprite/tile-hit-from),
 [destroy](/reference/sprites/sprite/destroy),
 [set flag](/reference/sprites/sprite/set-flag),
+[set image](/reference/sprites/sprite/set-image),
 [set position](/reference/sprites/sprite/set-position),
+[set kind](/reference/sprites/sprite/set-kind),
+[kind](/reference/sprites/sprite/kind),
 [on created](/reference/sprites/on-created),
 [on destroyed](/reference/sprites/on-destroyed),
 [on overlap](/reference/sprites/on-overlap)
