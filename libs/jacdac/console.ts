@@ -45,6 +45,7 @@ namespace jacdac {
          * Sends a command to another device to broadcast or not
          */
         setBroadcastCommand(broadcast: boolean, address: number) {
+            this.start();
             const buf = control.createBuffer(5);
             buf[0] = broadcast ? JDConsoleMessage.SetBroadcast : JDConsoleMessage.SetOff;
             buf[1] = address;
