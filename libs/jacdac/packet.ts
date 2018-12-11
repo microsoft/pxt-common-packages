@@ -96,7 +96,7 @@ namespace jacdac {
             return this.buf.getNumber(NumberFormat.UInt16LE, 2);
         }
         set flags(value: number) {
-            this.buf.setNumber(NumberFormat.UInt16LE, 2, value);    
+            this.buf.setNumber(NumberFormat.UInt16LE, 2, value);
         }
         get serialNumber(): number {
             return this.buf.getNumber(NumberFormat.UInt32LE, 4);
@@ -114,6 +114,28 @@ namespace jacdac {
         }
         get driverClass(): number {
             return this.buf.getNumber(NumberFormat.UInt32LE, 8);
+        }
+
+        get error(): JDDriverErrorCode {
+            return this.flags & DAL.JD_DEVICE_ERROR_MSK;
+        }
+        set error(e: JDDriverErrorCode) {
+            const f = this.flags & ~(DAL.JD_DEVICE_ERROR_MSK);
+            this.flags = f | (e & 0xff);
+        }
+
+        /**
+         * Indicates if the driver is connected on the bus
+         */
+        isConnected(): boolean {
+            return !!(this.flags & DAL.JD_DEVICE_FLAGS_INITIALISED);
+        }
+
+        /**
+        * Indicates if the driver is connecting on the bus
+        */
+        isConnecting(): boolean {
+            return !!(this.flags & DAL.JD_DEVICE_FLAGS_INITIALISING);
         }
 
         /**
@@ -205,7 +227,7 @@ namespace jacdac {
                 buf.setNumber(NumberFormat.UInt32LE, 0, n);
                 return buf.toHex();
             }
-            return `${toHex(this.serialNumber, NumberFormat.UInt32LE)} @${toHex(this.address, NumberFormat.UInt8LE)} c${toHex(this.driverClass, NumberFormat.UInt16LE)}`;
+            return `${toHex(this.address, NumberFormat.UInt8LE)} ${toHex(this.driverClass, NumberFormat.UInt16LE)} ${toHex(this.serialNumber, NumberFormat.UInt32LE)} ${this.isConnected() ? "v" : "x"}`;
         }
     }
 }

@@ -1,20 +1,4 @@
 namespace jacdac {
-    function toHex(n: number): string {
-        const hexBuf = control.createBuffer(4);
-        hexBuf.setNumber(NumberFormat.UInt32LE, 0, n);
-        return hexBuf.toHex();
-    }
-    function toHex16(n: number): string {
-        const hexBuf = control.createBuffer(2);
-        hexBuf.setNumber(NumberFormat.UInt16LE, 0, n);
-        return hexBuf.toHex();
-    }
-    function toHex8(n: number): string {
-        const hexBuf = control.createBuffer(1);
-        hexBuf.setNumber(NumberFormat.UInt8LE, 0, n);
-        return hexBuf.toHex();
-    }
-
     enum Mode {
         None,
         Drivers,
@@ -48,14 +32,19 @@ namespace jacdac {
             if (d.isPaired())
                 flags += " paired";
             if (d.isPairing())
-                flags += " pairing";
+                flags += " pairng";
             if (d.flags & DAL.JD_DEVICE_FLAGS_CP_SEEN)
                 flags += " cp"
-            if (d.flags & DAL.JD_DEVICE_FLAGS_INITIALISED)
-                flags += " inited"
-            if (d.flags & DAL.JD_DEVICE_FLAGS_INITIALISING)
-                flags += " initing"
-            console.log(flags)
+            if (d.isConnecting())
+                flags += " cong"
+            else if (d.isConnected())
+                flags += " conn"
+            else
+                flags += " dis";
+            const err = d.error;
+            if (err != JDDriverErrorCode.DRIVER_OK)
+                flags += " e" + err;    
+            console.log(flags)            
         })
         console.log("");
     }
@@ -94,17 +83,17 @@ namespace jacdac {
 
     function start() {
         game.pushScene(); // start game
-        jacdac.onEvent(JacDacEvent.BusConnected, () => {
+        jacdac.onEvent(JDEvent.BusConnected, () => {
             game.consoleOverlay.clear();
             console.log(`connected`)
             refresh()
         });
-        jacdac.onEvent(JacDacEvent.BusDisconnected, () => {
+        jacdac.onEvent(JDEvent.BusDisconnected, () => {
             game.consoleOverlay.clear();
             console.log(`disconnected`)
             refresh()
         });
-        jacdac.onEvent(JacDacEvent.DriverChanged, () => {
+        jacdac.onEvent(JDEvent.DriverChanged, () => {
             game.consoleOverlay.clear();
             console.log(`driver changed`)
             refresh()
@@ -135,7 +124,7 @@ namespace jacdac {
         console.log(`jacdac console`);
         console.log(` LEFT for drivers`)
         console.log(` RIGHT for devices`)
-        console.log(` DOWN for packets`)
+        console.log(` DOWN for sniffing packets`)
         console.log(` B for exit`)
         refresh();
     }

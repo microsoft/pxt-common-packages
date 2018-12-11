@@ -360,6 +360,16 @@ bool isConnected(JacDacDriverStatus d) {
 #endif   
 }
 
+/**
+* Sets the error state on the device
+*/
+//%
+void setError(JacDacDriverStatus d, int error) {
+#if JD_MIN_VERSION(4)
+    d->getDevice()->setError((DriverErrorCode)error);
+#endif
+}
+
 /** Get device id for events. */
 //% property
 uint32_t id(JacDacDriverStatus d) {

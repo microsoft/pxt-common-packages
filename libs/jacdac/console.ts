@@ -5,6 +5,21 @@ enum JDConsoleMode {
 }
 
 namespace jacdac {
+    export function toHex(n: number): string {
+        const hexBuf = control.createBuffer(4);
+        hexBuf.setNumber(NumberFormat.UInt32LE, 0, n);
+        return hexBuf.toHex();
+    }
+    export function toHex16(n: number): string {
+        const hexBuf = control.createBuffer(2);
+        hexBuf.setNumber(NumberFormat.UInt16LE, 0, n);
+        return hexBuf.toHex();
+    }
+    export function toHex8(n: number): string {
+        const hexBuf = control.createBuffer(1);
+        hexBuf.setNumber(NumberFormat.UInt8LE, 0, n);
+        return hexBuf.toHex();
+    }
 
     /**
      * Console logging driver. The driver is off, broadcasting or listening. Cannot do both.
@@ -15,8 +30,9 @@ namespace jacdac {
         static BROADCAST_TIMEOUT = 2000;
 
         constructor() {
-            super("log", DriverType.BroadcastDriver, jacdac.LOGGER_DEVICE_CLASS, 1);
+            super("log", DriverType.BroadcastDriver, jacdac.LOGGER_DEVICE_CLASS, 2);
             this.controlData[0] = JDConsoleMode.Off;
+            this.controlData[1] = console.minPriority; // TODO this may get outdated
             console.addListener((priority, text) => this.broadcast(priority, text));
         }
 
@@ -25,12 +41,23 @@ namespace jacdac {
             if (this.mode != mode) {
                 this.controlData[0] = mode;
                 this.supressLog = this.mode == JDConsoleMode.Broadcast;
+                this.priority = this.mode == JDConsoleMode.Broadcast ? ConsolePriority.Error : ConsolePriority.Log;
                 this.log(`mode ${this.mode}`);
             }
         }
 
         get mode(): JDConsoleMode {
             return this.controlData[0];
+        }
+
+        get priority(): ConsolePriority {
+            this.controlData[1] = console.minPriority;
+            return this.controlData[1];
+        }
+
+        set priority(value: ConsolePriority) {
+            this.controlData[1] = value;
+            console.minPriority = value; // keep in sync
         }
 
         public handleControlPacket(pkt: Buffer): boolean {
@@ -40,13 +67,17 @@ namespace jacdac {
                 // if a listener entres the bus, automatically start listening
                 if (this.mode != JDConsoleMode.Listen)
                     this.setMode(JDConsoleMode.Broadcast);
+                // update priority if needed
+                const priority = packet.data[1];
+                if (priority < this.priority) // update priority
+                    this.priority = priority;
                 this._lastListenerTime = control.millis();
             }
             return true;
         }
 
         public handlePacket(pkt: Buffer): boolean {
-            if (this.mode != JDConsoleMode.Listen) 
+            if (this.mode != JDConsoleMode.Listen)
                 return true;
 
             const packet = new JDPacket(pkt);
@@ -60,7 +91,7 @@ namespace jacdac {
             for (let i = 1; i < packetSize; i++)
                 str += String.fromCharCode(data[i]);
             // pipe to console
-            console.add(priority, str);
+            console.add(priority, `${toHex8(packet.address)}> ${str}`);
 
             return true;
         }
@@ -70,7 +101,7 @@ namespace jacdac {
                 return;
 
             // no one listening -- or disconnected?
-            if (!this.isConnected 
+            if (!this.isConnected
                 || control.millis() - this._lastListenerTime > ConsoleDriver.BROADCAST_TIMEOUT) {
                 this.setMode(JDConsoleMode.Off);
                 return;

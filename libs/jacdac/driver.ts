@@ -74,7 +74,7 @@ namespace jacdac {
          * @param event 
          * @param handler 
          */
-        public onDriverEvent(event: JacDacDriverEvent, handler: () => void) {
+        public onDriverEvent(event: JDDriverEvent, handler: () => void) {
             this.start();
             control.onEvent(this._proxy.id, event, handler);
         }
