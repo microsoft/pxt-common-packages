@@ -36,7 +36,6 @@ namespace jacdac {
         public handleControlPacket(pkt: Buffer): boolean {
             const packet = new ControlPacket(pkt);
             const mode = packet.data[0];
-            this.log(`cp ${mode}`)
             if (mode == JDConsoleMode.Listen) {
                 // if a listener entres the bus, automatically start listening
                 if (this.mode != JDConsoleMode.Listen)
@@ -89,22 +88,6 @@ namespace jacdac {
         }
     }
 
-    //% whenUsed block="console"
+    //% whenUsed
     export const consoleDriver = new ConsoleDriver();
-
-    /**
-     * Broadcast console messages
-     */
-    //% group="Console" block="broadcast console" blockId=jdbroadcast
-    export function broadcastConsole() {
-        consoleDriver.setMode(JDConsoleMode.Broadcast);
-    }
-
-    /**
-     * Listens for console messages
-     */
-    //% group="Console" block="listen to console" blockId=jdlistenconsole
-    export function listenConsole() {
-        consoleDriver.setMode(JDConsoleMode.Listen);
-    }
 }
