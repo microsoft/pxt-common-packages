@@ -1,20 +1,4 @@
 namespace jacdac {
-    function toHex(n: number): string {
-        const hexBuf = control.createBuffer(4);
-        hexBuf.setNumber(NumberFormat.UInt32LE, 0, n);
-        return hexBuf.toHex();
-    }
-    function toHex16(n: number): string {
-        const hexBuf = control.createBuffer(2);
-        hexBuf.setNumber(NumberFormat.UInt16LE, 0, n);
-        return hexBuf.toHex();
-    }
-    function toHex8(n: number): string {
-        const hexBuf = control.createBuffer(1);
-        hexBuf.setNumber(NumberFormat.UInt8LE, 0, n);
-        return hexBuf.toHex();
-    }
-
     enum Mode {
         None,
         Drivers,
