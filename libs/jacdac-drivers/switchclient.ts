@@ -17,10 +17,10 @@ namespace jacdac {
          */
         //% blockId=jacdacswitchright block="jacdac %switch right"
         //% group="Switch"
-        right(): number {
+        right(): boolean {
             const s = this.state;
-            if (!s || s.length < 1) return 0;
-            return s.getNumber(NumberFormat.UInt8LE, 0);
+            if (!s || s.length < 1) return false;
+            return !!s.getNumber(NumberFormat.UInt8LE, 0);
         }
 
         /**
