@@ -10,41 +10,36 @@ namespace jacdac {
      * Console logging driver. The driver is off, broadcasting or listening. Cannot do both.
      */
     export class ConsoleDriver extends Driver {
-        private _mode: JDConsoleMode;
         private _lastListenerTime: number;
 
-        static BROADCAST_TIMEOUT = 10000;
+        static BROADCAST_TIMEOUT = 2000;
 
         constructor() {
             super("log", DriverType.BroadcastDriver, jacdac.LOGGER_DEVICE_CLASS, 1);
-            this.supressLog = true;
-            this._mode = JDConsoleMode.Off;
+            this.controlData[0] = JDConsoleMode.Off;
             console.addListener((priority, text) => this.broadcast(priority, text));
         }
 
         setMode(mode: JDConsoleMode) {
             this.start();
-            if (this._mode != mode) {
-                this._mode = mode;
-                this.log(`mode ${this._mode}`);
+            if (this.mode != mode) {
+                this.controlData[0] = mode;
+                this.supressLog = this.mode == JDConsoleMode.Broadcast;
+                this.log(`mode ${this.mode}`);
             }
         }
 
-        mode(): JDConsoleMode {
-            return this._mode;
-        }
-
-        updateControlPacket() {
-            // advertise mode in control packet
-            this.controlData[0] = this._mode;
+        get mode(): JDConsoleMode {
+            return this.controlData[0];
         }
 
         public handleControlPacket(pkt: Buffer): boolean {
             const packet = new ControlPacket(pkt);
             const mode = packet.data[0];
+            this.log(`cp ${mode}`)
             if (mode == JDConsoleMode.Listen) {
                 // if a listener entres the bus, automatically start listening
-                if (this._mode != JDConsoleMode.Listen)
+                if (this.mode != JDConsoleMode.Listen)
                     this.setMode(JDConsoleMode.Broadcast);
                 this._lastListenerTime = control.millis();
             }
@@ -52,7 +47,7 @@ namespace jacdac {
         }
 
         public handlePacket(pkt: Buffer): boolean {
-            if (this._mode != JDConsoleMode.Listen) 
+            if (this.mode != JDConsoleMode.Listen) 
                 return true;
 
             const packet = new JDPacket(pkt);
@@ -72,7 +67,7 @@ namespace jacdac {
         }
 
         private broadcast(priority: ConsolePriority, str: string) {
-            if (this._mode != JDConsoleMode.Broadcast || !this.isConnected)
+            if (this.mode != JDConsoleMode.Broadcast || !this.isConnected)
                 return;
 
             // no one listening?
