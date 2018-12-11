@@ -83,29 +83,19 @@ namespace jacdac {
     export const gameService = new GameService();
 
     export class GameClient extends Client {
-        playerIndex: number;
+        playerMap: Buffer;
 
         constructor() {
             super("game", jacdac.GAMEENGINE_DEVICE_CLASS);
-            this.playerIndex = -1;
+            this.playerMap = control.createBuffer(MAX_PLAYERS);
         }
 
         handleControlPacket(pkt: Buffer): boolean {
             const packet = new ControlPacket(pkt);
             const data = packet.data;
-            const address = this.device.address;
-            for (let i = 0; i < MAX_PLAYERS; ++i)
-                if (data[i] == address) {
-                    if (this.playerIndex != i)
-                        this.log(`player index ${i}`)
-                    this.playerIndex = i;
-                    break;
-                }
-            
+            this.playerMap = data.slice(0, MAX_PLAYERS);            
             return false;
         }
-
-
     }
 
     //% whenUsed

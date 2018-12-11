@@ -59,12 +59,10 @@ namespace jacdac {
         }
 
         get isConnected(): boolean {
-            this.start();
             return this._proxy && this._proxy.isConnected;
         }
 
         protected get device(): jacdac.JDDevice {
-            this.start();
             return this._proxy ? new jacdac.JDDevice(this._proxy.device) : undefined;
         }
 
