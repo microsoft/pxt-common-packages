@@ -66,11 +66,12 @@ namespace jacdac {
         }
 
         private broadcast(priority: ConsolePriority, str: string) {
-            if (this.mode != JDConsoleMode.Broadcast || !this.isConnected)
+            if (this.mode != JDConsoleMode.Broadcast)
                 return;
 
-            // no one listening?
-            if (control.millis() - this._lastListenerTime > ConsoleDriver.BROADCAST_TIMEOUT) {
+            // no one listening -- or disconnected?
+            if (!this.isConnected 
+                || control.millis() - this._lastListenerTime > ConsoleDriver.BROADCAST_TIMEOUT) {
                 this.setMode(JDConsoleMode.Off);
                 return;
             }
