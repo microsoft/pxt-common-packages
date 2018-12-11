@@ -5,23 +5,29 @@ enum GameLobbyState {
 }
 
 namespace jacdac {
-    export class GameLobbyDriver extends Broadcast {
+    export class GameLobby extends Broadcast {
         constructor() {
-            super("lobby", jacdac.GAMELOBBY_DEVICE_CLASS, 1);
+            super("lobby", jacdac.GAMELOBBY_DEVICE_CLASS, 5);
+            this.controlData.setNumber(NumberFormat.UInt32LE, 4, control.programHash());
+            this.state = GameLobbyState.Alone;
         }
 
         get state(): GameLobbyState {
-            return this.controlData[1];
+            return this.controlData[4];
         }
 
         set state(value: GameLobbyState) {
-            this.controlData[0] = value;
+            this.controlData[4] = value;
         }
 
         handleControlPacket(pkt: Buffer): boolean {
             const packet = new ControlPacket(pkt);
             const data = packet.data;
-            const remote: GameLobbyState = packet.data[0];
+            const hash = data.getNumber(NumberFormat.UInt32LE, 0);
+            if (hash != control.programHash())
+                return true; // ignore other games
+
+            const remote: GameLobbyState = packet.data[4];
             switch (this.state) {
                 // game is alone
                 case GameLobbyState.Alone: {
@@ -67,6 +73,9 @@ namespace jacdac {
             return true;
         }
     }
+
+    //% whenUsed
+    export const gameLobby = new GameLobby();
 
     const MAX_PLAYERS = 4;
     export class GameService extends Service {
