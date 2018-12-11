@@ -204,11 +204,11 @@ namespace pxsim.jacdac {
         get driverClass(): number {
             return BufferMethods.getNumber(this.buf, BufferMethods.NumberFormat.UInt32LE, 8);
         }
-        set error(e: JDDriverErrorCode) {
+        set error(e: number) {
             const f = this.flags & ~(DAL.JD_DEVICE_ERROR_MSK);
             this.flags = f | (e & 0xff);
         }
-        get error(): JDDriverErrorCode {
+        get error(): number {
             return this.flags & DAL.JD_DEVICE_ERROR_MSK;
         }
         isConnected(): boolean {
