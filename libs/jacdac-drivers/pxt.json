@@ -11,7 +11,11 @@
         "microphoneclient.ts",
         "thermometerclient.ts",
         "switchclient.ts",
-        "lightclient.ts"
+        "lightclient.ts",
+        "keyboardclient.ts",
+        "mouseclient.ts",
+        "gamepadclient.ts",
+        "pixelclient.ts"
     ],
     "testFiles": [
         "test.ts"
