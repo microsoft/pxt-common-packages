@@ -23,78 +23,107 @@ static volatile bool resume = false;
 
 using namespace codal;
 
-static const char hidDescriptor[] = {
-    0x06, 0x97, 0xFF, // usage page vendor 0x97 (usage 0xff97 0x0001)
-    0x09, 0x01,       // usage 1
-    0xA1, 0x01,       // collection - application
-    0x15, 0x00,       // logical min 0
-    0x26, 0xFF, 0x00, // logical max 255
-    0x75, 8,          // report size 8
-    0x95, 64,         // report count 64
-    0x09, 0x01,       // usage 1
-    0x81, 0x02,       // input: data, variable, absolute
-    0x95, 64,         // report count 64
-    0x09, 0x01,       // usage 1
-    0x91, 0x02,       // output: data, variable, absolute
-    0x95, 1,          // report count 1
-    0x09, 0x01,       // usage 1
-    0xB1, 0x02,       // feature: data, variable, absolute
-    0xC0,             // end
-};
-
-static const HIDReportDescriptor reportDesc = {
-    9,
-    0x21,                  // HID
-    0x100,                 // hidbcd 1.00
-    0x00,                  // country code
-    0x01,                  // num desc
-    0x22,                  // report desc type
-    sizeof(hidDescriptor), // size of 0x22
-};
-
 static const InterfaceInfo ifaceInfo = {
-    &reportDesc,
-    sizeof(reportDesc),
-    1,
+    NULL,
+    0,
+    0,
     {
-        2,    // numEndpoints
-        0x03, /// class code - HID
-        0x00, // subclass
-        0x00, // protocol
+        0,    // numEndpoints
+        0xff, /// class code - vendor-specific
+        0x45, // subclass - chosen at random
+        0xaf, // protocol - ditto
         0x00, //
         0x00, //
     },
-    {USB_EP_TYPE_INTERRUPT, 1},
-    {USB_EP_TYPE_INTERRUPT, 1},
+    {0, 0},
+    {0, 0},
 };
 
-int HF2::stdRequest(UsbEndpointIn &ctrl, USBSetup &setup)
-{
-    if (setup.bRequest == USB_REQ_GET_DESCRIPTOR)
-    {
-        if (setup.wValueH == 0x21)
-        {
-            InterfaceDescriptor tmp;
-            fillInterfaceInfo(&tmp);
-            return ctrl.write(&tmp, sizeof(tmp));
+// same as in microbit
+#define CTRL_GET_REPORT 0x01
+#define CTRL_SET_REPORT 0x09
+#define CTRL_OUT_REPORT_H 0x2
+#define CTRL_IN_REPORT_H 0x1
+
+int HF2::classRequest(UsbEndpointIn &ctrl, USBSetup &setup) {
+    if ((setup.bmRequestType & USB_REQ_DIRECTION) == USB_REQ_HOSTTODEVICE) {
+        if (setup.bRequest != CTRL_SET_REPORT || setup.wValueL != 0 ||
+            setup.wValueH != CTRL_OUT_REPORT_H)
+            return DEVICE_NOT_SUPPORTED;
+        if (setup.wLength > 64)
+            return DEVICE_NOT_SUPPORTED;
+        ctrlWaiting = true;
+        CodalUSB::usbInstance->ctrlOut->startRead();
+        ctrl.wLength = 0; // pretend we're done
+    } else {
+        if (setup.bRequest != CTRL_GET_REPORT || setup.wValueL != 0 ||
+            setup.wValueH != CTRL_IN_REPORT_H)
+            return DEVICE_NOT_SUPPORTED;
+        if (setup.wLength != 64)
+            return DEVICE_NOT_SUPPORTED;
+
+        uint8_t buf[64];
+
+        memset(buf, 0, sizeof(buf));
+
+        target_disable_irq();
+        if (dataToSendLength) {
+            if (dataToSendPrepend) {
+                dataToSendPrepend = false;
+                buf[0] = HF2_FLAG_CMDPKT_BODY | 4;
+                memcpy(buf + 1, pkt.buf, 4);
+            } else {
+                int flag = dataToSendFlag;
+                int s = 63;
+                if (dataToSendLength <= 63) {
+                    s = dataToSendLength;
+                } else {
+                    if (flag == HF2_FLAG_CMDPKT_LAST)
+                        flag = HF2_FLAG_CMDPKT_BODY;
+                }
+
+                buf[0] = flag | s;
+                memcpy(buf + 1, dataToSend, s);
+                dataToSend += s;
+                dataToSendLength -= s;
+            }
         }
-        else if (setup.wValueH == 0x22)
-        {
-            return ctrl.write(hidDescriptor, sizeof(hidDescriptor));
-        }
+        target_enable_irq();
+
+        ctrl.write(buf, sizeof(buf));
     }
-    return DEVICE_NOT_SUPPORTED;
+
+    return DEVICE_OK;
 }
 
-const InterfaceInfo *HF2::getInterfaceInfo()
-{
+const InterfaceInfo *HF2::getInterfaceInfo() {
     return &ifaceInfo;
 }
 
-int HF2::sendSerial(const void *data, int size, int isError)
-{
-    if (!gotSomePacket) return DEVICE_OK;
-    return send(data, size, isError ? HF2_FLAG_SERIAL_ERR : HF2_FLAG_SERIAL_OUT);
+int HF2::sendSerial(const void *data, int size, int isError) {
+    if (!gotSomePacket)
+        return DEVICE_OK;
+
+    for (;;) {
+        while (dataToSendLength)
+            fiber_sleep(5);
+
+        if (size < 0)
+            break;
+
+        target_disable_irq();
+        // there could be a race
+        if (!dataToSendLength) {
+            dataToSend = (const uint8_t*)data;
+            dataToSendPrepend = false;
+            dataToSendFlag = isError ? HF2_FLAG_SERIAL_ERR : HF2_FLAG_SERIAL_OUT;
+            dataToSendLength = size;
+            size = -1;
+        }
+        target_enable_irq();
+    }
+
+    return 0;
 }
 
 // Recieve HF2 message
@@ -102,9 +131,12 @@ int HF2::sendSerial(const void *data, int size, int isError)
 // `serial` flag is cleared if we got a command message.
 int HF2::recv() {
     uint8_t buf[64];
-    int len = out->read(buf, sizeof(buf));
+    int len = CodalUSB::usbInstance->ctrlOut->read(buf, sizeof(buf));
+    DMESG("HF2 read: %d", len);
     if (len <= 0)
         return len;
+
+    CodalUSB::usbInstance->ctrlIn->write("", 0);
 
     uint8_t tag = buf[0];
     // serial packets not allowed when in middle of command packet
@@ -128,61 +160,27 @@ int HF2::recv() {
     return 0;
 }
 
-// Send HF2 message.
-// Use command message when flag == HF2_FLAG_CMDPKT_LAST
-// Use serial stdout for HF2_FLAG_SERIAL_OUT and stderr for HF2_FLAG_SERIAL_ERR.
-int HF2::send(const void *data, int size, int flag0) {
-    uint8_t buf[64];
-    const uint8_t *ptr = (const uint8_t *)data;
-
-    if (!CodalUSB::usbInstance->isInitialised())
-        return -1;
-
-    for (;;) {
-        int s = 63;
-        int flag = flag0;
-        if (size <= 63) {
-            s = size;
-        } else {
-            if (flag == HF2_FLAG_CMDPKT_LAST)
-                flag = HF2_FLAG_CMDPKT_BODY;
-        }
-        buf[0] = flag | s;
-        memcpy(buf + 1, ptr, s);
-        if (in->write(buf, sizeof(buf)) < 0)
-            return -1;
-        ptr += s;
-        size -= s;
-        if (!size)
-            break;
-    }
+int HF2::sendResponse(int size) {
+    dataToSend = pkt.buf;
+    dataToSendPrepend = false;
+    dataToSendFlag = HF2_FLAG_CMDPKT_LAST;
+    dataToSendLength = 4 + size;
     return 0;
 }
 
-int HF2::sendResponse(int size) {
-    return send(pkt.buf, 4 + size, HF2_FLAG_CMDPKT_LAST);
-}
-
 int HF2::sendResponseWithData(const void *data, int size) {
-    int res;
-
-    DMESG("HF2 send len=%d", size);
-        
+    if (dataToSendLength)
+        oops(90);
     if (size <= (int)sizeof(pkt.buf) - 4) {
-        __disable_irq();
         memcpy(pkt.resp.data8, data, size);
-        __enable_irq();
-        res = sendResponse(size);
+        return sendResponse(size);
     } else {
-        __disable_irq();
-        send(pkt.buf, 4, HF2_FLAG_CMDPKT_BODY);
-        res = send(data, size, HF2_FLAG_CMDPKT_LAST);
-        __enable_irq();
+        dataToSend = (const uint8_t*)data;
+        dataToSendPrepend = true;
+        dataToSendFlag = HF2_FLAG_CMDPKT_LAST;
+        dataToSendLength = size;
+        return 0;
     }
-
-    DMESG("HF2 send DONE len=%d", size);
-
-    return res;
 }
 
 static void copy_words(void *dst0, const void *src0, uint32_t n_words) {
@@ -198,8 +196,10 @@ static void copy_words(void *dst0, const void *src0, uint32_t n_words) {
 #define QUICK_BOOT(v) *DBL_TAP_PTR = v ? DBL_TAP_MAGIC_QUICK_BOOT : 0
 #endif
 
-int HF2::endpointRequest()
-{
+int HF2::endpointRequest() {
+    if (!ctrlWaiting)
+        return 0;
+
     int sz = recv();
 
     if (!sz)
@@ -302,7 +302,7 @@ int HF2::endpointRequest()
     return sendResponse(0);
 }
 
-HF2::HF2(HF2_Buffer &p) : USBHID(), pkt(p), gotSomePacket(false) {}
+HF2::HF2(HF2_Buffer &p) : USBHID(), pkt(p), gotSomePacket(false), ctrlWaiting(false) {}
 
 //
 //
@@ -312,25 +312,8 @@ HF2::HF2(HF2_Buffer &p) : USBHID(), pkt(p), gotSomePacket(false) {}
 
 WebHF2::WebHF2(HF2_Buffer &p) : HF2(p) {}
 
-static const InterfaceInfo ifaceInfoWeb = {
-    NULL,
-    0,
-    1,
-    {
-        2,    // numEndpoints
-        0xff, /// class code - HID
-        42, // subclass
-        0x01, // protocol
-        0x00, //
-        0x00, //
-    },
-    {USB_EP_TYPE_INTERRUPT, 1},
-    {USB_EP_TYPE_INTERRUPT, 1},
-};
-
-const InterfaceInfo *WebHF2::getInterfaceInfo()
-{
-    return &ifaceInfoWeb;
+const InterfaceInfo *WebHF2::getInterfaceInfo() {
+    return &ifaceInfo;
 }
 
 //
@@ -357,7 +340,7 @@ struct Paused_Data {
 static Paused_Data pausedData;
 
 void bkptPaused() {
-    
+
 // waiting for https://github.com/lancaster-university/codal/pull/14
 #ifdef DEVICE_GROUP_ID_USER
     // the loop below counts as "system" task, and we don't want to pause ourselves
@@ -368,8 +351,8 @@ void bkptPaused() {
 
     while (!resume) {
         // DMESG("BKPT");
-        hf2.pkt.resp.eventId = HF2_EV_DBG_PAUSED;
-        hf2.sendResponseWithData(&pausedData, sizeof(pausedData));
+        //hf2.pkt.resp.eventId = HF2_EV_DBG_PAUSED;
+        //hf2.sendResponseWithData(&pausedData, sizeof(pausedData));
         webhf2.pkt.resp.eventId = HF2_EV_DBG_PAUSED;
         webhf2.sendResponseWithData(&pausedData, sizeof(pausedData));
         // TODO use an event
