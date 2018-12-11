@@ -76,7 +76,6 @@ namespace jacdac {
         jacdac.controllerBroadcast.start(); // collect player info
         console.log(`game state: ${["alone", "service", "client"][jacdac.gameLobby.state]}`);
         const players = controllerBroadcast.states;
-        console.log(`${players.length} players`)
         players.forEach(player => {
             let r = "";
             const state = player.data[0];
