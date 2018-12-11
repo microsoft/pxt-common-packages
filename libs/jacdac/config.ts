@@ -70,3 +70,10 @@ enum JDMouseCommand {
     Move,
     TurnWheel
 }
+
+enum JDGamepadCommand {
+    None,
+    Button,
+    Move,
+    Throttle
+}

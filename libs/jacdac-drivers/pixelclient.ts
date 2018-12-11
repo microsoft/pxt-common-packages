@@ -34,5 +34,5 @@ namespace jacdac {
     }
 
     //% fixedInstance whenUsed block="pixel"
-    export const pixelService = new PixelClient("pixel");
+    export const pixelClient = new PixelClient("pixel");
 }

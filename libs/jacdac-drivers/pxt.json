@@ -13,7 +13,9 @@
         "switchclient.ts",
         "lightclient.ts",
         "keyboardclient.ts",
-        "mouseclient.ts"
+        "mouseclient.ts",
+        "gamepadclient.ts",
+        "pixelclient.ts"
     ],
     "testFiles": [
         "test.ts"
