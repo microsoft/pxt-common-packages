@@ -23,16 +23,9 @@ namespace jacdac {
         }
 
         setMode(mode: JDConsoleMode) {
+            this.start();
             if (this._mode != mode) {
                 this._mode = mode;
-                switch (this._mode) {
-                    case JDConsoleMode.Broadcast:
-                    case JDConsoleMode.Listen:
-                        this.start();
-                        break;
-                    case JDConsoleMode.Off:
-                        break; // nothing
-                }
                 this.log(`mode ${this._mode}`);
             }
         }
