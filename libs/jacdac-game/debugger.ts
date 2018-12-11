@@ -51,10 +51,12 @@ namespace jacdac {
                 flags += " pairng";
             if (d.flags & DAL.JD_DEVICE_FLAGS_CP_SEEN)
                 flags += " cp"
-            if (d.flags & DAL.JD_DEVICE_FLAGS_INITIALISED)
-                flags += " inited"
-            if (d.flags & DAL.JD_DEVICE_FLAGS_INITIALISING)
-                flags += " initng"
+            if (d.isConnecting())
+                flags += " cong"
+            else if (d.isConnected())
+                flags += " conn"
+            else
+                flags += " dis";
             const err = d.error;
             if (err != JDDriverErrorCode.DRIVER_OK)
                 flags += " e" + err;    
@@ -138,7 +140,7 @@ namespace jacdac {
         console.log(`jacdac console`);
         console.log(` LEFT for drivers`)
         console.log(` RIGHT for devices`)
-        console.log(` DOWN for packets`)
+        console.log(` DOWN for sniffing packets`)
         console.log(` B for exit`)
         refresh();
     }

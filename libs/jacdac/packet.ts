@@ -134,6 +134,20 @@ namespace jacdac {
         }
 
         /**
+         * Indicates if the driver is connected on the bus
+         */
+        isConnected(): boolean {
+            return !!(this.flags & DAL.JD_DEVICE_FLAGS_INITIALISED);
+        }
+
+        /**
+        * Indicates if the driver is connecting on the bus
+        */
+        isConnecting(): boolean {
+            return !!(this.flags & DAL.JD_DEVICE_FLAGS_INITIALISING);
+        }
+
+        /**
          * Used to determine what mode the driver is currently in.
          *
          * This will check to see if the flags field resembles the VirtualDriver mode specified in the DriverType enumeration.
@@ -222,7 +236,7 @@ namespace jacdac {
                 buf.setNumber(NumberFormat.UInt32LE, 0, n);
                 return buf.toHex();
             }
-            return `${toHex(this.serialNumber, NumberFormat.UInt32LE)} @${toHex(this.address, NumberFormat.UInt8LE)} c${toHex(this.driverClass, NumberFormat.UInt16LE)}`;
+            return `${toHex(this.address, NumberFormat.UInt8LE)} ${toHex(this.driverClass, NumberFormat.UInt16LE)} ${toHex(this.serialNumber, NumberFormat.UInt32LE)} ${this.isConnected() ? "v" : "x"}`;
         }
     }
 }
