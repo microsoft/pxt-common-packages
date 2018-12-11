@@ -20,6 +20,7 @@ namespace pxsim.jacdac {
         JD_SERIAL_MAXIMUM_BUFFERS = 10,
         JD_SERIAL_DMA_TIMEOUT = 2,
         JD_JD_FLAGS_LOSSY = 1,
+        JD_DEVICE_ERROR_MSK = 15,
         // built/codal/libraries/codal-core/inc/JACDAC/JDBridgeDriver.h
         JD_BRIDGE_HISTORY_SIZE = 8,
         // built/codal/libraries/codal-core/inc/JACDAC/JDClasses.h
@@ -202,6 +203,19 @@ namespace pxsim.jacdac {
         }
         get driverClass(): number {
             return BufferMethods.getNumber(this.buf, BufferMethods.NumberFormat.UInt32LE, 8);
+        }
+        set error(e: JDDriverErrorCode) {
+            const f = this.flags & ~(DAL.JD_DEVICE_ERROR_MSK);
+            this.flags = f | (e & 0xff);
+        }
+        get error(): JDDriverErrorCode {
+            return this.flags & DAL.JD_DEVICE_ERROR_MSK;
+        }
+        isConnected(): boolean {
+            return !!(this.flags & DAL.JD_DEVICE_FLAGS_INITIALISED);
+        }
+        isConnecting(): boolean {
+            return !!(this.flags & DAL.JD_DEVICE_FLAGS_INITIALISING);
         }
         isVirtualDriver(): boolean {
             return !!(this.flags & DAL.JD_DEVICE_FLAGS_REMOTE) && !(this.flags & DAL.JD_DEVICE_FLAGS_BROADCAST);
@@ -717,10 +731,10 @@ namespace pxsim.jacdac {
             return this.sendPacket(pkt);
         }
 
-        driverDevices(): pxsim.RefBuffer { 
+        driverDevices(): pxsim.RefBuffer {
             const buf = BufferMethods.createBuffer(this.drivers.length * JDDevice.SIZE);
             let k = 0;
-            for(const driver of this.drivers) {
+            for (const driver of this.drivers) {
                 BufferMethods.write(buf, k, driver.device.buf);
                 k += JDDevice.SIZE;
             }
@@ -785,6 +799,9 @@ namespace pxsim.JacDacDriverStatusMethods {
     }
     export function device(proxy: jacdac.JDProxyDriver): pxsim.RefBuffer {
         return proxy.device.buf;
+    }
+    export function setError(proxy: jacdac.JDProxyDriver, error: number) {
+        proxy.device.error = error;
     }
     export function isConnected(proxy: jacdac.JDProxyDriver): boolean {
         return proxy.isConnected();
