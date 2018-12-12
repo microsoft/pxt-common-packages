@@ -31,7 +31,6 @@ namespace jacdac {
             switch (cmd) {
                 case GameCommand.Controller:
                     const buttonsPressed = data[2];
-                    this.log(`updt plyr ${playerNumber} ${toHex8(buttonsPressed)}`);
                     for (let i = 0; i < this.buttons.length; ++i)
                         this.buttons[i].setPressed(playerNumber, !!(buttonsPressed & (1 << this.buttons[i].buttonOffset)));
                     break;
