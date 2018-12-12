@@ -79,13 +79,13 @@ namespace jacdac {
         players.forEach(player => {
             let r = "";
             const state = player.data[0];
-            r += (state & controller.A.id) ? "A" : " ";
-            r += (state & controller.B.id) ? "A" : " ";
-            r += (state & controller.left.id) ? "l" : " ";
-            r += (state & controller.up.id) ? "u" : " ";
-            r += (state & controller.right.id) ? "r" : " ";
-            r += (state & controller.down.id) ? "d" : " ";
-            console.log(`${toHex8(player.address)}: ${r}`)
+            r += (state & (1 << controller.A.id)) ? "A" : "-";
+            r += (state & (1 << controller.B.id)) ? "B" : "-";
+            r += (state & (1 << controller.left.id)) ? "L" : "-";
+            r += (state & (1 << controller.up.id)) ? "U" : "-";
+            r += (state & (1 << controller.right.id)) ? "R" : "-";
+            r += (state & (1 << controller.down.id)) ? "D" : "-";
+            console.log(` ${toHex8(player.address)}: ${r}`)
         })
     }
 
