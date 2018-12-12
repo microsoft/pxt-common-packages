@@ -4,11 +4,16 @@ enum GameLobbyState {
     Client
 }
 
+enum GameLobbyEvent {
+    StateChanged = 1,
+    PlayerChanged
+}
+
 namespace jacdac {
     export class GameLobby extends Broadcast {
         constructor() {
             super("lobby", jacdac.GAMELOBBY_DEVICE_CLASS, 9);
-            this.controlData.setNumber(NumberFormat.UInt32LE, 4, control.programHash());
+            this.controlData.setNumber(NumberFormat.UInt32LE, 0, control.programHash());
             this.state = GameLobbyState.Alone;
             // 0: state
             // 1-4: program hash
@@ -20,7 +25,10 @@ namespace jacdac {
         }
 
         set state(value: GameLobbyState) {
-            this.controlData[4] = value;
+            if (this.state != value) {
+                this.controlData[4] = value;
+                control.raiseEvent(this.id, GameLobbyEvent.StateChanged);
+            }
         }
 
         get players(): Buffer {
@@ -28,7 +36,13 @@ namespace jacdac {
         }
 
         set players(buf: Buffer) {
-            this.controlData.write(5, buf);
+            let changed = false;
+            for (let i = 0; i < buf.length; ++i) {
+                changed = this.controlData[5 + i] == buf[i];
+                this.controlData[5 + 1] = buf[i];
+            }
+            if (changed)
+                control.raiseEvent(this.id, GameLobbyEvent.PlayerChanged);
         }
 
         setPlayer(index: number, address: number) {
@@ -36,6 +50,10 @@ namespace jacdac {
                 this.log(`set player ${index} to ${toHex8(address)}`);
                 this.controlData[5 + index] = address;
             }
+        }
+
+        onEvent(event: GameLobbyEvent, handler: () => void) {
+            control.onEvent(this.id, event, handler);
         }
 
         handleControlPacket(pkt: Buffer): boolean {
