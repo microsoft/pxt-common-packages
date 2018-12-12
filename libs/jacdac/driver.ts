@@ -68,7 +68,7 @@ namespace jacdac {
 
         public log(text: string) {
             if (!this.supressLog)
-                console.add(jacdac.consolePriority, `jd>${this.name}>${text}`);
+                console.add(jacdac.consolePriority, `${this.device ? toHex8(this.device.address) : "--"}>${this.name}>${text}`);
         }
 
         /**

@@ -10,46 +10,81 @@ enum GameLobbyEvent {
 }
 
 namespace jacdac {
-    export class GameLobby extends Broadcast {
-        constructor() {
-            super("lobby", jacdac.GAMELOBBY_DEVICE_CLASS, 9);
-            this.controlData.setNumber(NumberFormat.UInt32LE, 0, control.programHash());
-            this.state = GameLobbyState.Alone;
-            // 0: state
-            // 1-4: program hash
-            // 5-9: player addresses
+    // 0: state
+    // 1-4: program hash
+    // 5-9: player addresses
+    class GamePacket {
+        buf: Buffer;
+        constructor(buf: Buffer) {
+            this.buf = buf;
+        }
+
+        get hash(): number {
+            return this.buf.getNumber(NumberFormat.UInt32LE, 0);
+        }
+
+        set hash(value: number) {
+            this.buf.setNumber(NumberFormat.UInt32LE, 0, value);
         }
 
         get state(): GameLobbyState {
-            return this.controlData[4];
+            return this.buf[4];
         }
 
         set state(value: GameLobbyState) {
-            if (this.state != value) {
-                this.controlData[4] = value;
+            this.buf[4] = value;
+        }
+
+        get players(): Buffer {
+            return this.buf.slice(5, 4);
+        }
+
+        set players(b: Buffer) {
+            this.buf.write(5, b);
+        }
+
+        updatePlayers(b: Buffer): boolean {
+            let changed = false;
+            for (let i = 0; i < b.length; ++i) {
+                changed = changed || this.buf[5 + i] != b[i];
+                this.buf[5 + i] = b[i];
+            }
+            return changed;
+        }
+
+        setPlayer(index: number, address: number) {
+            this.buf[5 + index] = address;
+        }
+
+        indexOfPlayer(address: number): number {
+            for (let i = 5; i < this.buf.length; ++i)
+                if (this.buf[i] == address)
+                    return i - 5;
+            return -1;
+        }
+    }
+
+    export class GameLobby extends Broadcast {
+        private current: GamePacket;
+        constructor() {
+            super("ly", jacdac.GAMELOBBY_DEVICE_CLASS, 9);
+            this.current = new GamePacket(this.controlData);
+            this.current.hash = control.programHash();
+        }
+
+        get state() {
+            return this.current.state;
+        }
+
+        set state(value: number) {
+            if (value != this.state) {
+                this.current.state = value;
                 control.raiseEvent(this.id, GameLobbyEvent.StateChanged);
             }
         }
 
         get players(): Buffer {
-            return this.controlData.slice(5, 4);
-        }
-
-        set players(buf: Buffer) {
-            let changed = false;
-            for (let i = 0; i < buf.length; ++i) {
-                changed = this.controlData[5 + i] == buf[i];
-                this.controlData[5 + 1] = buf[i];
-            }
-            if (changed)
-                control.raiseEvent(this.id, GameLobbyEvent.PlayerChanged);
-        }
-
-        setPlayer(index: number, address: number) {
-            if (this.controlData[5 + index] != address) {
-                this.log(`set player ${index} to ${toHex8(address)}`);
-                this.controlData[5 + index] = address;
-            }
+            return this.current.players;
         }
 
         onEvent(event: GameLobbyEvent, handler: () => void) {
@@ -63,45 +98,43 @@ namespace jacdac {
         }
 
         handlePacket(pkt: Buffer): boolean {
-            const packet = new ControlPacket(pkt);
+            const packet = new JDPacket(pkt);
             const data = packet.data;
             return this.processPacket(packet.address, data);
         }
 
-        private indexOfPlayer(address: number): number {
-            const players = this.players;
-            for (let i = 0; i < players.length; ++i)
-                if (players[i] == address)
-                    return i;
-            return -1;
-        }
-
         private processPacket(otherAddress: number, data: Buffer) {
-            const hash = data.getNumber(NumberFormat.UInt32LE, 0);
-            if (hash != control.programHash())
+            const otherState = new GamePacket(data);
+            if (otherState.hash != this.current.hash) {
+                this.log(`${otherState.hash}!=${this.current.hash}`)
                 return true; // ignore other games
-            const other: GameLobbyState = data[4];
-            const otherPlayers = data.slice(5, 4);
+            }
+            this.log(`${toHex8(otherAddress)} ${otherState.state} ${otherState.players.toHex()}`)
             switch (this.state) {
                 // game is alone
                 case GameLobbyState.Alone: {
-                    switch (other) {
+                    switch (otherState.state) {
                         case GameLobbyState.Alone:
                             // we detect that another player is on the bus, but neighter has started a server,
                             // put a gameserer on the bus
                             this.log(`starting game service`);
+                            this.current.setPlayer(0, this.device.address);
                             this.state = GameLobbyState.Service;
-                            this.setPlayer(0, this.device.address);
                             gameService.start();
                             // update all players with data
                             this.sendPacket(this.controlData);
                             break;
                         case GameLobbyState.Service:
-                            // another player is on the bus as a server or client already,
+                            // another player is on the bus as a server or client already
+                            // check if address is a player
+                            if (otherState.indexOfPlayer(this.device.address) == -1) {
+                                this.log(`player not in service`)
+                                break;
+                            }
                             // so launching a client to connect to the server
                             this.log(`starting game client`);
+                            this.current.players = otherState.players;
                             this.state = GameLobbyState.Client;
-                            this.players = otherPlayers;
                             gameClient.start();
                             // update all players with data
                             this.sendPacket(this.controlData);
@@ -114,17 +147,16 @@ namespace jacdac {
                 }
                 // game is a service
                 case GameLobbyState.Service:
-                    switch (other) {
+                    switch (otherState.state) {
                         case GameLobbyState.Alone:
-                            // new player on the bus, allocate player index
-                            const currentPlayers = this.players;
                             // check if this player is still in our list
-                            if (this.indexOfPlayer(otherAddress))
+                            if (this.current.indexOfPlayer(otherAddress) > -1)
                                 break;
                             // add player to list
+                            const currentPlayers = this.current.players;
                             for (let i = 1; i < currentPlayers.length; ++i) {
                                 if (!currentPlayers[i]) {
-                                    this.setPlayer(i, otherAddress);
+                                    this.current.setPlayer(i, otherAddress);
                                     // update all players with data
                                     this.sendPacket(this.controlData);
                                     break;
@@ -135,7 +167,7 @@ namespace jacdac {
                             break;
                         // there are 2 services on the bus, one has to go
                         // shutting down the one with lower address
-                        case GameLobbyState.Service: {
+                        case GameLobbyState.Service:
                             if (!this.device.isConnected() || this.device.address < otherAddress) {
                                 this.log(`stopping dup service`);
                                 this.state = GameLobbyState.Alone;
@@ -144,13 +176,18 @@ namespace jacdac {
                                 this.sendPacket(this.controlData);
                             }
                             break;
-                        }
+                        case GameLobbyState.Client:
+                            // connected client
+                            break;
                     }
                     break;
                 // game is a client
                 case GameLobbyState.Client:
                     // update player map from server
-                    this.players = otherPlayers;
+                    if (this.current.updatePlayers(otherState.players)) {
+                        this.log(`players changed`);
+                        control.raiseEvent(this.id, GameLobbyEvent.PlayerChanged);
+                    }
                     break;
             }
             return true;
