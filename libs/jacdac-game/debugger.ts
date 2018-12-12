@@ -73,9 +73,13 @@ namespace jacdac {
     }
 
     function showPlayers() {
-        jacdac.controllerBroadcast.start(); // collect player info
         console.log(`game state: ${["alone", "service", "client"][jacdac.gameLobby.state]}`);
-        const players = controllerBroadcast.states;
+        const players = jacdac.gameLobby.players;
+        for(let i = 0; i < players.length; ++i) {
+            const pa = players[i];
+            console.log(`  ${toHex8(pa)}`);
+        }
+        /*
         players.forEach(player => {
             let r = "";
             const state = player.data[0];
@@ -87,6 +91,7 @@ namespace jacdac {
             r += (state & (1 << controller.down.id)) ? "D" : "-";
             console.log(` ${toHex8(player.address)}: ${r}`)
         })
+        */
     }
 
     function refresh() {

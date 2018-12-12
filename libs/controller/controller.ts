@@ -178,7 +178,5 @@ namespace controller {
         if (!_activeButtons) return;
         const dtms = (dt * 1000) | 0
         _activeButtons.forEach(btn => btn.__update(dtms));
-        if (jacdac.controllerBroadcast.isConnected) // broadcast controller state to other players
-            jacdac.controllerBroadcast.sendUpdate(dtms, _activeButtons);
     }
 }

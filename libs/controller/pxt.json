@@ -4,13 +4,11 @@
     "files": [
         "enums.ts",
         "controller.ts",
-        "jacdac.ts",
         "targetoverrides.ts"
     ],
     "dependencies": {
         "core": "file:../core",
-        "screen": "file:../screen",
-        "jacdac": "file:../jacdac"
+        "screen": "file:../screen"
     },
     "public": true
 }
