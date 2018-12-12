@@ -103,7 +103,13 @@ namespace controller {
         }
 
         setPressed(pressed: boolean) {
-            this._pressed = pressed;
+            if (this._pressed != pressed) {
+                this._pressed = pressed;
+                if (this._pressed)
+                    this.raiseButtonUp();
+                else
+                    this.raiseButtonDown();
+            }
         }
 
         __update(dtms: number) {

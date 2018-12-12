@@ -66,10 +66,13 @@ namespace jacdac {
 
     export class GameLobbyDriver extends Broadcast {
         current: GamePacket;
+        lastServerTime: number;
+
         constructor() {
             super("ly", jacdac.GAMELOBBY_DEVICE_CLASS, 9);
             this.current = new GamePacket(this.controlData);
             this.current.hash = control.programHash();
+            this.lastServerTime = 0;
         }
 
         get state() {
@@ -85,6 +88,11 @@ namespace jacdac {
 
         get players(): Buffer {
             return this.current.players;
+        }
+
+        isServiceLost(): boolean {
+            return this.state == GameLobbyState.Client
+                && control.millis() - this.lastServerTime > 2000;
         }
 
         onEvent(event: GameLobbyEvent, handler: () => void) {
@@ -146,7 +154,7 @@ namespace jacdac {
                     break;
                 }
                 // game is a service
-                case GameLobbyState.Service:
+                case GameLobbyState.Service: {
                     switch (otherState.state) {
                         case GameLobbyState.Alone:
                             // check if this player is still in our list
@@ -179,16 +187,30 @@ namespace jacdac {
                             }
                             break;
                         case GameLobbyState.Client:
-                            // connected client
+                            // connected client?
                             break;
                     }
                     break;
+                }
                 // game is a client
                 case GameLobbyState.Client:
-                    // update player map from server
-                    if (this.current.updatePlayers(otherState.players)) {
-                        this.log(`players changed`);
-                        control.raiseEvent(this.id, GameLobbyEvent.PlayerChanged);
+                    switch (otherState.state) {
+                        case GameLobbyState.Service:
+                            // am i part of the list?
+                            if (otherState.indexOfPlayer(this.device.address)) {
+                                // update player map from server
+                                if (this.current.updatePlayers(otherState.players)) {
+                                    this.log(`players changed`);
+                                    control.raiseEvent(this.id, GameLobbyEvent.PlayerChanged);
+                                }
+                                // keep track when the server was seen
+                                this.lastServerTime = control.millis();
+                            }
+                            break;
+                        case GameLobbyState.Alone:
+                        case GameLobbyState.Client:
+                            // ignore
+                            break;
                     }
                     break;
             }
