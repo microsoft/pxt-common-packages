@@ -32,7 +32,7 @@ namespace jacdac {
         constructor(name: string, deviceClass: number, stateLength: number, controlDataLength?: number) {
             super(name, deviceClass, controlDataLength);
             this.state = control.createBuffer(stateLength);
-            this.onDriverEvent(JacDacDriverEvent.Connected, () => this.notifyChange());
+            this.onDriverEvent(JDDriverEvent.Connected, () => this.notifyChange());
         }
 
         protected notifyChange() {

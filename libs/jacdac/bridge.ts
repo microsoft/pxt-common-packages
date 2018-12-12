@@ -6,10 +6,9 @@ namespace jacdac {
         }
 
         start() {
-            if (!this.hasProxy()) {
+            if (!this.hasProxy())
                 super.start();
-                if (this._proxy) this._proxy.setBridge();
-            }
+            if (this._proxy) this._proxy.setBridge();
         }
     }
 }

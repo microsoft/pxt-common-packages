@@ -38,6 +38,7 @@ namespace jacdac {
         }
 
         setProxy(value: JacDacDriverStatus) {
+            // todo remove control event
             this._proxy = value;
             if (this._proxy && this._controlData.length)
                 control.onEvent(this._proxy.id, JD_DRIVER_EVT_FILL_CONTROL_PACKET, () => this.updateControlPacket());
@@ -73,7 +74,7 @@ namespace jacdac {
          * @param event 
          * @param handler 
          */
-        public onDriverEvent(event: JacDacDriverEvent, handler: () => void) {
+        public onDriverEvent(event: JDDriverEvent, handler: () => void) {
             this.start();
             control.onEvent(this._proxy.id, event, handler);
         }
@@ -107,6 +108,10 @@ namespace jacdac {
         start() {
             if (!this._proxy)
                 jacdac.addDriver(this);
+        }
+
+        stop() {
+            // TODO
         }
     }
 

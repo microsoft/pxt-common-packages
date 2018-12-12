@@ -325,7 +325,7 @@ class Sprite implements SpriteLike {
      */
     //% group="Overlaps"
     //% blockId="spritegetkind" block="%sprite(mySprite) kind"
-    //% weight=79
+    //% weight=79 help=sprites/sprite/kind
     kind() {
         return this._kind;
     }
@@ -336,7 +336,7 @@ class Sprite implements SpriteLike {
     //% group="Overlaps"
     //% blockId="spritesetkind" block="set %sprite(mySprite) kind to %kind"
     //% kind.shadow=spritetype
-    //% weight=80
+    //% weight=80 help=sprites/sprite/set-kind
     setKind(value: number) {
         if (value == undefined || this._kind === value) return;
 
