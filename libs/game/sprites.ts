@@ -13,7 +13,7 @@ Frame handlers:
  * Sprites on screen
  */
 //% weight=99 color="#4B7BEC" icon="\uf1d8"
-//% groups='["Create", "Properties", "Overlaps", "Collisions", "Lifecycle"]'
+//% groups='["Create", "Properties", "Projectiles", "Overlaps", "Lifecycle"]'
 namespace sprites {
 
     /**
@@ -57,7 +57,7 @@ namespace sprites {
      * Create a new sprite with given speed, and place it at the edge of the screen so it moves towards the middle.
      * The sprite auto-destroys when it leaves the screen. You can modify position after it's created.
      */
-    //% group="Create"
+    //% group="Projectiles"
     //% blockId=spritescreateprojectilefromside block="projectile %img=screen_image_picker from side with vx %vx vy %vy"
     //% weight=99 help=sprites/create-projectile-from-side
     //% blockSetVariable=projectile
@@ -73,8 +73,8 @@ namespace sprites {
      * Create a new sprite with given speed, and place it at the edge of the screen so it moves towards the middle.
      * The sprite auto-destroys when it leaves the screen. You can modify position after it's created.
      */
-    //% group="Create"
-    //% blockId=spritescreateprojectilefromsprite block="create projectile %img=screen_image_picker from %mySprite=variables_get with vx %vx vy %vy"
+    //% group="Projectiles"
+    //% blockId=spritescreateprojectilefromsprite block="projectile %img=screen_image_picker from %mySprite=variables_get with vx %vx vy %vy"
     //% weight=99 help=sprites/create-projectile-from-sprite
     //% blockSetVariable=projectile
     //% inlineInputMode=inline
@@ -87,7 +87,7 @@ namespace sprites {
      * Create a new sprite with given speed, and place it at the edge of the screen so it moves towards the middle.
      * The sprite auto-destroys when it leaves the screen. You can modify position after it's created.
      */
-    //% group="Create"
+    //% group="Projectiles"
     //% blockId=spritescreateprojectile block="projectile %img=screen_image_picker vx %vx vy %vy of kind %kind=spritetype||from sprite %sprite=variables_get(mySprite)"
     //% weight=99 help=sprites/create-projectile
     //% blockSetVariable=projectile
