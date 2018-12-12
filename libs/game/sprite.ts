@@ -54,23 +54,23 @@ class Sprite implements SpriteLike {
     _ay: Fx8
 
     //% group="Properties" blockSetVariable="mySprite"
-    //% blockCombine block="x (horizontal position)"
+    //% blockCombine block="x"
     get x(): number {
         return Fx.toInt(this._x) + (this._image.width >> 1)
     }
     //% group="Properties" blockSetVariable="mySprite"
-    //% blockCombine block="x (horizontal position)"
+    //% blockCombine block="x"
     set x(v: number) {
         this._x = Fx8(v - (this._image.width >> 1))
     }
 
     //% group="Properties" blockSetVariable="mySprite"
-    //% blockCombine block="y (vertical position)"
+    //% blockCombine block="y"
     get y(): number {
         return Fx.toInt(this._y) + (this._image.height >> 1)
     }
     //% group="Properties" blockSetVariable="mySprite"
-    //% blockCombine block="y (vertical position)"
+    //% blockCombine block="y"
     set y(v: number) {
         this._y = Fx8(v - (this._image.height >> 1))
     }
