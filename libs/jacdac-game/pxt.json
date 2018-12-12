@@ -12,6 +12,7 @@
     "public": true,
     "dependencies": {
         "game": "file:../game",
+        "local-multiplayer": "file:../local-multiplayer",
         "jacdac": "file:../jacdac"
     }
 }

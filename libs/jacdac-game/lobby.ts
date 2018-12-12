@@ -65,7 +65,7 @@ namespace jacdac {
     }
 
     export class GameLobbyDriver extends Broadcast {
-        private current: GamePacket;
+        current: GamePacket;
         constructor() {
             super("ly", jacdac.GAMELOBBY_DEVICE_CLASS, 9);
             this.current = new GamePacket(this.controlData);
@@ -106,10 +106,8 @@ namespace jacdac {
         private processPacket(otherAddress: number, data: Buffer) {
             const otherState = new GamePacket(data);
             if (otherState.hash != this.current.hash) {
-                this.log(`${otherState.hash}!=${this.current.hash}`)
                 return true; // ignore other games
             }
-            this.log(`${toHex8(otherAddress)} ${otherState.state} ${otherState.players.toHex()}`)
             switch (this.state) {
                 // game is alone
                 case GameLobbyState.Alone: {
@@ -127,7 +125,8 @@ namespace jacdac {
                         case GameLobbyState.Service:
                             // another player is on the bus as a server or client already
                             // check if address is a player
-                            if (otherState.indexOfPlayer(this.device.address) == -1) {
+                            const device = this.device;
+                            if (otherState.indexOfPlayer(device.address) == -1) {
                                 this.log(`player not in service`)
                                 break;
                             }
@@ -135,6 +134,7 @@ namespace jacdac {
                             this.log(`starting game client`);
                             this.current.players = otherState.players;
                             this.state = GameLobbyState.Client;
+                            gameClient.setPlayerAddress(device.address);
                             gameClient.start();
                             // update all players with data
                             this.sendPacket(this.controlData);
@@ -154,7 +154,8 @@ namespace jacdac {
                                 break;
                             // add player to list
                             const currentPlayers = this.current.players;
-                            for (let i = 1; i < currentPlayers.length; ++i) {
+                            let i = 1;
+                            for (; i < currentPlayers.length; ++i) {
                                 if (!currentPlayers[i]) {
                                     this.current.setPlayer(i, otherAddress);
                                     // update all players with data
@@ -162,8 +163,9 @@ namespace jacdac {
                                     break;
                                 }
                             }
-                            // we're out of players
-                            this.log(`out of players for ${toHex8(otherAddress)}`);
+                            // check if we're out of players
+                            if (i == currentPlayers.length)
+                                this.log(`out of players for ${toHex8(otherAddress)}`);
                             break;
                         // there are 2 services on the bus, one has to go
                         // shutting down the one with lower address
