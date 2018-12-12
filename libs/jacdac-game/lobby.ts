@@ -123,7 +123,7 @@ namespace jacdac {
                         case GameLobbyState.Alone:
                             // we detect that another player is on the bus, but neighter has started a server,
                             // put a gameserer on the bus
-                            this.log(`starting game service`);
+                            this.log(`start service`);
                             this.current.setPlayer(0, this.device.address);
                             this.state = GameLobbyState.Service;
                             gameService.start();
@@ -134,12 +134,13 @@ namespace jacdac {
                             // another player is on the bus as a server or client already
                             // check if address is a player
                             const device = this.device;
-                            if (otherState.indexOfPlayer(device.address) == -1) {
-                                this.log(`player not in service`)
+                            const playerIndex = otherState.indexOfPlayer(device.address);
+                            if (playerIndex < 0) {
+                                this.log(`plyr not found`)
                                 break;
                             }
                             // so launching a client to connect to the server
-                            this.log(`starting game client`);
+                            this.log(`start client (${playerIndex + 1})`);
                             this.current.players = otherState.players;
                             this.state = GameLobbyState.Client;
                             gameClient.setPlayerAddress(device.address);
@@ -173,13 +174,13 @@ namespace jacdac {
                             }
                             // check if we're out of players
                             if (i == currentPlayers.length)
-                                this.log(`out of players for ${toHex8(otherAddress)}`);
+                                this.log(`no plyrs for ${toHex8(otherAddress)}`);
                             break;
                         // there are 2 services on the bus, one has to go
                         // shutting down the one with lower address
                         case GameLobbyState.Service:
                             if (!this.device.isConnected() || this.device.address < otherAddress) {
-                                this.log(`stopping dup service`);
+                                this.log(`stop dup service`);
                                 this.state = GameLobbyState.Alone;
                                 gameService.stop();
                                 // update all players with data
@@ -197,10 +198,11 @@ namespace jacdac {
                     switch (otherState.state) {
                         case GameLobbyState.Service:
                             // am i part of the list?
-                            if (otherState.indexOfPlayer(this.device.address)) {
+                            const playerIndex = otherState.indexOfPlayer(this.device.address);
+                            if (playerIndex) {
                                 // update player map from server
                                 if (this.current.updatePlayers(otherState.players)) {
-                                    this.log(`players changed`);
+                                    this.log(`plyr changed (${playerIndex + 1})`);
                                     control.raiseEvent(this.id, GameLobbyEvent.PlayerChanged);
                                 }
                                 // keep track when the server was seen
