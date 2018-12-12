@@ -64,7 +64,7 @@ namespace jacdac {
         }
     }
 
-    export class GameLobby extends Broadcast {
+    export class GameLobbyDriver extends Broadcast {
         private current: GamePacket;
         constructor() {
             super("ly", jacdac.GAMELOBBY_DEVICE_CLASS, 9);
@@ -195,22 +195,5 @@ namespace jacdac {
     }
 
     //% whenUsed
-    export const gameLobby = new GameLobby();
-    export class GameService extends Service {
-        constructor() {
-            super("game", jacdac.GAMEENGINE_DEVICE_CLASS);
-        }
-    }
-
-    //% whenUsed
-    export const gameService = new GameService();
-
-    export class GameClient extends Client {
-        constructor() {
-            super("game", jacdac.GAMEENGINE_DEVICE_CLASS);
-        }
-    }
-
-    //% whenUsed
-    export const gameClient = new GameClient();
+    export const gameLobby = new GameLobbyDriver();
 }

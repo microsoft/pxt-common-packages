@@ -4,7 +4,8 @@
     "files": [
         "console.ts",
         "debugger.ts",
-        "lobby.ts"
+        "lobby.ts",
+        "serverclient.ts"
     ],
     "testFiles": [
     ],
