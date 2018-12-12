@@ -145,7 +145,6 @@ namespace particle {
         disable() {
             if (!this.enabled) return;
             this.enabled = false;
-            // removeSource(this);
         }
 
         setAnchor(anchor: ParticleAnchor) {
@@ -471,23 +470,23 @@ function fountainTest() {
 // confetti
 function winConfetti() {
     const confImages = [
-        img`
-        1
-    `,
-        img`
-        1
-        1
-    `,
-        img`
-        1 1
-    `,
-        img`
-        1 1
-        1 .
-    `,
-        img`
-        1 1
-        . 1
+            img`
+            1
+        `,
+            img`
+            1
+            1
+        `,
+            img`
+            1 1
+        `,
+            img`
+            1 1
+            1 .
+        `,
+            img`
+            1 1
+            . 1
     `];
     const src = mkImageArrayParticle({
         x: screen.width / 2,
@@ -501,7 +500,7 @@ function winConfetti() {
         screen.fillRect(0, top, screen.width, 44, 0);
         screen.drawLine(0, top, screen.width, top, 1);
         screen.drawLine(0, top + 44 - 1, screen.width, top + 44 - 1, 1);
-        screen.printCenter("You win!", 52, 0x5, image.font8);
+        screen.printCenter("You win!", 48, 0x5, image.font8);
         screen.printCenter("Score:" + 1, top + 20, screen.isMono ? 1 : 2, image.font5);
         screen.printCenter("HI" + 42, top + 28, screen.isMono ? 1 : 2, image.font5);
     })
