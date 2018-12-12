@@ -134,6 +134,8 @@ namespace tiles {
             return output;
         }
 
+        __serialize(offset: number): Buffer { return undefined; }
+
         __update(camera: scene.Camera, dt: number): void { }
 
         /**
@@ -170,7 +172,7 @@ namespace tiles {
 
         private isOutsideMap(col: number, row: number): boolean {
             return !this.enabled || col < 0 || col >= this._map.width
-                    || row < 0 || row >= this._map.height;
+                || row < 0 || row >= this._map.height;
         }
 
         private isInvalidIndex(index: number): boolean {
@@ -197,7 +199,7 @@ namespace tiles {
                 for (let y = y0; y <= yn; ++y) {
                     screen.drawLine(
                         offsetX,
-                        (y  << 4) + offsetY,
+                        (y << 4) + offsetY,
                         (this._map.width << 4) + offsetX,
                         (y << 4) + offsetY,
                         1)

@@ -27,6 +27,7 @@ interface SpriteLike {
     id: number;
     __update(camera: scene.Camera, dt: number): void;
     __draw(camera: scene.Camera): void;
+    __serialize(offset: number): Buffer;
 }
 
 enum FlipOption {
@@ -124,7 +125,6 @@ class Sprite implements SpriteLike {
      */
     //%
     data: any;
-
     _kind: number;
 
     /**
@@ -177,6 +177,18 @@ class Sprite implements SpriteLike {
         this.layer = 1; // by default, in layer 1
         this.lifespan = undefined;
         this._overlappers = [];
+    }
+    
+    __serialize(offset: number): Buffer {
+        const buf = control.createBuffer(offset + 12);
+        let k = offset;
+        buf.setNumber(NumberFormat.Int16LE, k, Fx.toInt(this._x)); k += 2;
+        buf.setNumber(NumberFormat.Int16LE, k, Fx.toInt(this._y)); k += 2;
+        buf.setNumber(NumberFormat.Int16LE, k, Fx.toInt(this._vx)); k += 2;
+        buf.setNumber(NumberFormat.Int16LE, k, Fx.toInt(this._vy)); k += 2;
+        buf.setNumber(NumberFormat.Int16LE, k, Fx.toInt(this._ax)); k += 2;
+        buf.setNumber(NumberFormat.Int16LE, k, Fx.toInt(this._ay)); k += 2;
+        return buf;
     }
 
     /**

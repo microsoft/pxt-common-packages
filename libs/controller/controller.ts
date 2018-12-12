@@ -190,12 +190,12 @@ namespace controller {
         _activeButtons.forEach(btn => btn.__update(dtms));
     }
 
-    export function serializeState(): Buffer {
-        const buf = control.createBuffer(1);
+    export function serialize(offset: number): Buffer {
+        const buf = control.createBuffer(offset + 1);
         let pressed = 0;
         for(let i = 0; i < _activeButtons.length; ++i)
             pressed = pressed | ((_activeButtons[i].isPressed() ? 1 : 0) << (_activeButtons[i].id - 1));
-        buf[0] = pressed;
+        buf[offset] = pressed;
         return buf;
     }
 }
