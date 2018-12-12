@@ -58,12 +58,43 @@ namespace sprites {
      * The sprite auto-destroys when it leaves the screen. You can modify position after it's created.
      */
     //% group="Create"
-    //% blockId=spritescreateprojectile block="projectile %img=screen_image_picker vx %vx vy %vy of kind %kind=spritetype||from sprite %sprite=variables_get"
+    //% blockId=spritescreateprojectilefromside block="projectile %img=screen_image_picker from side with vx %vx vy %vy"
+    //% weight=99 help=sprites/create-projectile-from-side
+    //% blockSetVariable=projectile
+    //% inlineInputMode=inline
+    //% vy.defl=100
+    export function createProjectileFromSide(img: Image, vx: number, vy: number) {
+        return createProjectile(img, vx, vy, 1);
+    }
+
+
+    
+    /**
+     * Create a new sprite with given speed, and place it at the edge of the screen so it moves towards the middle.
+     * The sprite auto-destroys when it leaves the screen. You can modify position after it's created.
+     */
+    //% group="Create"
+    //% blockId=spritescreateprojectilefromsprite block="create projectile %img=screen_image_picker from %mySprite=variables_get with vx %vx vy %vy"
+    //% weight=99 help=sprites/create-projectile-from-sprite
+    //% blockSetVariable=projectile
+    //% inlineInputMode=inline
+    //% vy.defl=100
+    export function createProjectileFromSprite(img: Image, sprite: Sprite, vx: number, vy: number): Sprite {
+        return createProjectile(img, vx, vy, 1, sprite);
+    }    
+
+    /**
+     * Create a new sprite with given speed, and place it at the edge of the screen so it moves towards the middle.
+     * The sprite auto-destroys when it leaves the screen. You can modify position after it's created.
+     */
+    //% group="Create"
+    //% blockId=spritescreateprojectile block="projectile %img=screen_image_picker vx %vx vy %vy of kind %kind=spritetype||from sprite %sprite=variables_get(mySprite)"
     //% weight=99 help=sprites/create-projectile
     //% blockSetVariable=projectile
     //% inlineInputMode=inline
     //% expandableArgumentMode=toggle
     //% vy.defl=100
+    //% deprecated=true blockHidden=true
     export function createProjectile(img: Image, vx: number, vy: number, kind?: number, sprite?: Sprite) {
         const s = sprites.create(img, kind);
         const sc = game.currentScene();
@@ -75,6 +106,11 @@ namespace sprites {
 
         const xOff = sc.tileMap ? -(s.width >> 1) : (s.width >> 1) - 1;
         const yOff = sc.tileMap ? -(s.height >> 1) : (s.height >> 1) - 1;
+
+        while(vx == 0 && vy == 0) {
+            vx = Math.randomRange(-100, 100);
+            vy = Math.randomRange(-100, 100);
+        }
 
         if (vx < 0)
             s.x = screen.width + xOff
