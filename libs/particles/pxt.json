@@ -1,6 +1,6 @@
 {
     "name": "particles",
-    "description": "Particle rendering",
+    "description": "Particle rendering - beta",
     "files": [
         "particles.ts"
     ],
