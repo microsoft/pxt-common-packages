@@ -6,6 +6,9 @@ namespace particles {
     const galois = new Math.FastRandom();
     let angleSlice = 2 * Math.PI / NUM_SLICES;
 
+    /**
+     * Initialize sin and cos values for each slice to minimize recomputation
+     */
     function initTrig() {
         if (!cachedSin) {
             cachedSin = [];
@@ -42,10 +45,11 @@ namespace particles {
 
         createParticle(anchor: ParticleAnchor) {
             const p = super.createParticle(anchor);
-            const angle = (this.minAngle + galois.randomRange(0, this.spread)) % NUM_SLICES;
 
+            const angle = (this.minAngle + galois.randomRange(0, this.spread)) % NUM_SLICES;
             p.vx = Fx.mul(cachedSin[angle], this.speed);
             p.vy = Fx.mul(cachedCos[angle], this.speed);
+
             return p;
         }
 
@@ -80,8 +84,8 @@ namespace particles {
     
         createParticle(anchor: particles.ParticleAnchor) {
             const p = super.createParticle(anchor);
+
             p.lifespan = this.galois.randomRange(150, 850);
-    
             p._x = Fx.add(Fx8(this.galois.randomRange(0, this.xRange) - (this.xRange >> 1)), p._x);
             p._y = Fx.add(Fx8(this.galois.randomRange(0, this.yRange) - (this.yRange >> 1)), p._y);
     
@@ -96,6 +100,9 @@ namespace particles {
         }
     }
 
+    /**
+     * A factory for creating a trail that is emitted by sprites.
+     */
     export class TrailFactory extends AreaFactory {
         minLifespan: number;
         maxLifespan: number;
@@ -111,8 +118,10 @@ namespace particles {
 
         createParticle(anchor: particles.ParticleAnchor) {
             const p = super.createParticle(anchor);
+
             p.lifespan = this.galois.randomRange(this.minLifespan, this.maxLifespan);
             p.data = this.galois.randomRange(0x1, 0xF);
+
             return p;
         }
 
