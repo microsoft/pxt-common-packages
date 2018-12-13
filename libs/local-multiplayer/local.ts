@@ -50,12 +50,12 @@ namespace controller {
         }
 
         // Set up events
-        multiLeft._initPlayer(player);
-        multiUp._initPlayer(player);
-        multiRight._initPlayer(player);
-        multiDown._initPlayer(player);
-        multiA._initPlayer(player);
-        multiB._initPlayer(player);
+        multiLeft.isPressed(player);
+        multiUp.isPressed(player);
+        multiRight.isPressed(player);
+        multiDown.isPressed(player);
+        multiA.isPressed(player);
+        multiB.isPressed(player);
     }
 
     /**
@@ -148,12 +148,12 @@ namespace controller {
         buttons: controller.Button[];
         handlers: ((player: number, sprite: Sprite) => void)[];
 
-        constructor(button: ButtonOffset) {
-            this.buttonOffset = button;
+        constructor(buttonOffset: ButtonOffset) {
+            this.buttons = [];
+            this.buttonOffset = buttonOffset;
         }
 
-        _initPlayer(player: PlayerNumber) {
-            if (!this.buttons) this.buttons = [];
+        private initPlayer(player: PlayerNumber) {
             if (this.buttons[player]) return;
 
             const b = new controller.Button(1 + 7 * (player - 1) + this.buttonOffset);
@@ -179,7 +179,7 @@ namespace controller {
         //% weight=97 blockGap=8 group="Multiplayer"
         //% blockId=local_keypauseuntil block="pause until $player $this **button** is $event"
         pauseUntil(player: PlayerNumber, event: ControllerButtonEvent) {
-            this._initPlayer(player);
+            this.initPlayer(player);
             this.buttons[player].pauseUntil(event);
         }
 
@@ -190,8 +190,13 @@ namespace controller {
         //% weight=95 blockGap=8 group="Multiplayer"
         //% blockId=local_keyispressed block="is $player $this **button** pressed"
         isPressed(player: PlayerNumber) {
-            this._initPlayer(player);
+            this.initPlayer(player);
             return this.buttons[player].isPressed();
+        }
+
+        setPressed(player: PlayerNumber, pressed: boolean) {
+            this.initPlayer(player);
+            this.buttons[player].setPressed(pressed);
         }
 
         private registerPlayerEvent(b: controller.Button, player: PlayerNumber, event: ControllerButtonEvent) {

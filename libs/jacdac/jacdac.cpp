@@ -322,6 +322,15 @@ JacDacDriverStatus __internalAddDriver(int driverType, int driverClass, MethodCo
 }
 
 /**
+* Internal
+*/
+//% parts=jacdac
+void __internalRemoveDriver(JacDacDriverStatus d) {
+    if (NULL == d) return;
+    delete d; // removes driver
+}
+
+/**
  * Internal
  */
 //% parts=jacdac
