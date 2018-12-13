@@ -271,14 +271,16 @@ static void mark(int flags) {
     gcProcessStacks(flags);
 #endif
 
-    auto nonPtrs = bytecode[21];
-    len = getNumGlobals() - nonPtrs;
-    data = globals + nonPtrs;
-    if (flags & 2)
-        DMESG("RG:%p/%d", data, len);
-    VLOG("globals: %p %d", data, len);
-    for (unsigned i = 0; i < len; ++i) {
-        gcProcess(*data++);
+    if (globals) {
+        auto nonPtrs = bytecode[21];
+        len = getNumGlobals() - nonPtrs;
+        data = globals + nonPtrs;
+        if (flags & 2)
+            DMESG("RG:%p/%d", data, len);
+        VLOG("globals: %p %d", data, len);
+        for (unsigned i = 0; i < len; ++i) {
+            gcProcess(*data++);
+        }
     }
 
     data = tempRoot;
