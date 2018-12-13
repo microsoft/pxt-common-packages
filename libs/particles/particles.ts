@@ -101,6 +101,10 @@ namespace particles {
             this.enabled = true;
         }
 
+        __serialize(offset: number): Buffer {
+            return undefined;
+        }
+
         __update(camera: scene.Camera, dt: number) {
             // see _update()
         }

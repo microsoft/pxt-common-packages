@@ -3,7 +3,8 @@ namespace jacdac {
         None,
         Drivers,
         Devices,
-        Packets
+        Packets,
+        Players
     }
     let mode = Mode.None;
     function showDrivers() {
@@ -71,6 +72,28 @@ namespace jacdac {
         _logAllDriver.start();
     }
 
+    function showPlayers() {
+        console.log(`game state: ${["alone", "service", "client"][jacdac.gameLobby.state]}`);
+        const players = jacdac.gameLobby.players;
+        for(let i = 0; i < players.length; ++i) {
+            const pa = players[i];
+            console.log(`  ${toHex8(pa)}`);
+        }
+        /*
+        players.forEach(player => {
+            let r = "";
+            const state = player.data[0];
+            r += (state & (1 << controller.A.id)) ? "A" : "-";
+            r += (state & (1 << controller.B.id)) ? "B" : "-";
+            r += (state & (1 << controller.left.id)) ? "L" : "-";
+            r += (state & (1 << controller.up.id)) ? "U" : "-";
+            r += (state & (1 << controller.right.id)) ? "R" : "-";
+            r += (state & (1 << controller.down.id)) ? "D" : "-";
+            console.log(` ${toHex8(player.address)}: ${r}`)
+        })
+        */
+    }
+
     function refresh() {
         if (!jacdac.isConnected())
             console.log(`disconnected`);
@@ -78,6 +101,7 @@ namespace jacdac {
             case Mode.Drivers: showDrivers(); break;
             case Mode.Devices: showDevices(); break;
             case Mode.Packets: showPackets(); break;
+            case Mode.Players: showPlayers(); break;
         }
     }
 
@@ -114,6 +138,12 @@ namespace jacdac {
             console.log(`sniffing...`)
             refresh();
         })
+        controller.up.onEvent(ControllerButtonEvent.Pressed, function () {
+            mode = Mode.Players;
+            game.consoleOverlay.clear();
+            console.log(`players`)
+            refresh();
+        })
         controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
             // done
             game.popScene();
@@ -125,6 +155,7 @@ namespace jacdac {
         console.log(` LEFT for drivers`)
         console.log(` RIGHT for devices`)
         console.log(` DOWN for sniffing packets`)
+        console.log(` UP for game debug`)
         console.log(` B for exit`)
         refresh();
     }

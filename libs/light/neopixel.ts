@@ -410,6 +410,7 @@ namespace light {
         //% help="light/neopixelstrip/range"
         //% parts="neopixel"
         //% weight=99 blockGap=30
+        //% blockSetVariable=strip
         range(start: number, length: number): NeoPixelStrip {
             let strip = new NeoPixelStrip();
             strip._parent = this;
@@ -556,7 +557,7 @@ namespace light {
                 if (this._photonMode != mode) {
                     this._photonMode = mode;
                     this.photonForward(0);
-                }    
+                }
             }
         }
 

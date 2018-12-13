@@ -3,11 +3,11 @@ namespace jacdac {
     /**
      * A driver that listens for message bus events
      */
-    export class MessageBusService extends Driver {
+    export class MessageBusService extends Broadcast {
         suppressForwarding: boolean;
 
         constructor() {
-            super("bus", DriverType.BroadcastDriver, DAL.JD_DRIVER_CLASS_MESSAGE_BUS);
+            super("bus", DAL.JD_DRIVER_CLASS_MESSAGE_BUS);
             this.suppressForwarding = false;
         }
 

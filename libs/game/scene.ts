@@ -58,7 +58,6 @@ namespace scene {
 
             this.allSprites = [];
             this.spriteNextId = 0;
-            scene.setBackgroundColor(0)
             // update controller state
             this.eventContext.registerFrameHandler(8, () => {
                 control.enablePerfCounter("controller_update")

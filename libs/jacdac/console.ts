@@ -24,13 +24,13 @@ namespace jacdac {
     /**
      * Console logging driver. The driver is off, broadcasting or listening. Cannot do both.
      */
-    export class ConsoleDriver extends Driver {
+    export class ConsoleDriver extends Broadcast {
         private _lastListenerTime: number;
 
         static BROADCAST_TIMEOUT = 2000;
 
         constructor() {
-            super("log", DriverType.BroadcastDriver, jacdac.LOGGER_DEVICE_CLASS, 2);
+            super("log", jacdac.LOGGER_DEVICE_CLASS, 2);
             this.controlData[0] = JDConsoleMode.Off;
             this.controlData[1] = console.minPriority; // TODO this may get outdated
             console.addListener((priority, text) => this.broadcast(priority, text));
