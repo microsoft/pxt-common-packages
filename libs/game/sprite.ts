@@ -8,7 +8,9 @@ enum SpriteFlag {
     //% block="destroy on wall"
     DestroyOnWall = sprites.Flag.DestroyOnWall,
     //% block="bounce on wall"
-    BounceOnWall = sprites.Flag.BounceOnWall
+    BounceOnWall = sprites.Flag.BounceOnWall,
+    //% block="show physics"
+    ShowPhysics = sprites.Flag.ShowPhysics
 }
 
 enum CollisionDirection {
@@ -522,6 +524,23 @@ class Sprite implements SpriteLike {
         const l = this.left - camera.offsetX;
         const t = this.top - camera.offsetY;
         screen.drawTransparentImage(this._image, l, t)
+
+        if (this.flags & SpriteFlag.ShowPhysics) {
+            const font = image.font5;
+            const margin = 2;
+            let tx = this.left;
+            let ty = this.bottom + margin;
+            screen.print(`${this.x >> 0},${this.y >> 0}`, tx, ty, 1, font);
+            tx -= font.charWidth;
+            if (this.vx || this.vy) {
+                ty += font.charHeight + margin;
+                screen.print(`v${this.vx >> 0},${this.vy >> 0}`, tx, ty, 1, font);
+            }
+            if (this.ax || this.ay) {
+                ty += font.charHeight + margin;
+                screen.print(`a${this.ax >> 0},${this.ay >> 0}`, tx, ty, 1, font);
+            }
+        }
 
         // debug info
         if (game.debug) {
