@@ -146,11 +146,12 @@ namespace sprites {
     }
 
     export enum Flag {
-        Ghost = 1, // doesn't collide with other sprites
-        Destroyed = 2,
-        AutoDestroy = 4, // remove the sprite when no longer visible
-        StayInScreen = 8, // sprite cannot move outside the camera region
-        DestroyOnWall = 16, // destroy sprite on contact with wall
-        BounceOnWall = 32, // Bounce on walls
+        Ghost = 1 << 0, // doesn't collide with other sprites
+        Destroyed = 1 << 1,
+        AutoDestroy = 1 << 2, // remove the sprite when no longer visible
+        StayInScreen = 1 << 3, // sprite cannot move outside the camera region
+        DestroyOnWall = 1 << 4, // destroy sprite on contact with wall
+        BounceOnWall = 1 << 5, // Bounce on walls
+        ShowPhysics = 1 << 6, // display position, velocity, acc
     }
 }
