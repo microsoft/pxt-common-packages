@@ -113,7 +113,7 @@ namespace pxsim {
             this.stats = stats;
         }
 
-        renderToSvg(lcd: SVGImageElement) {
+        bindToSvgImage(lcd: SVGImageElement) {
             const screenCanvas = document.createElement("canvas");
             screenCanvas.width = this.width
             screenCanvas.height = this.height
