@@ -28,7 +28,6 @@
         "menu.ts",
         "systemmenu.ts",
         "fixed.ts",
-        "particles.ts",
         "console.ts"
     ],
     "public": true,

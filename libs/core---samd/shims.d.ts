@@ -17,20 +17,6 @@ declare namespace pins {
     //% weight=19 shim=pins::pulseDuration
     function pulseDuration(): int32;
 }
-declare namespace pins {
-
-    /**
-     * Read `size` bytes from a 7-bit I2C `address`.
-     */
-    //% repeat.defl=0 shim=pins::i2cReadBuffer
-    function i2cReadBuffer(address: int32, size: int32, repeat?: boolean): Buffer;
-
-    /**
-     * Write bytes to a 7-bit I2C `address`.
-     */
-    //% repeat.defl=0 shim=pins::i2cWriteBuffer
-    function i2cWriteBuffer(address: int32, buf: Buffer, repeat?: boolean): int32;
-}
 
 
 declare interface AnalogInPin {
@@ -235,6 +221,20 @@ declare namespace control {
     /** Write a message and value (pointer) to DMESG debugging buffer. */
     //% shim=control::dmesgPtr
     function dmesgPtr(str: string, ptr: Object): void;
+}
+declare namespace pins {
+
+    /**
+     * Read `size` bytes from a 7-bit I2C `address`.
+     */
+    //% repeat.defl=0 shim=pins::i2cReadBuffer
+    function i2cReadBuffer(address: int32, size: int32, repeat?: boolean): Buffer;
+
+    /**
+     * Write bytes to a 7-bit I2C `address`.
+     */
+    //% repeat.defl=0 shim=pins::i2cWriteBuffer
+    function i2cWriteBuffer(address: int32, buf: Buffer, repeat?: boolean): int32;
 }
 declare namespace pins {
 
