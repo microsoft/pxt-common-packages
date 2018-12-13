@@ -21,7 +21,6 @@ namespace Math {
      * @param list The list to choose an element from
      */
     //% weight=1
-    //% blockId=pickrandomarray block="random item from %list=variables_get"
     export function pickRandom<T>(list: T[]) {
         if (!list || list.length == 0) {
             return undefined;
