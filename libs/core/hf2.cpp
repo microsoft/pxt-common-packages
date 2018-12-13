@@ -30,8 +30,8 @@ static const InterfaceInfo ifaceInfo = {
     {
         0,    // numEndpoints
         0xff, /// class code - vendor-specific
-        0x45, // subclass - chosen at random
-        0xaf, // protocol - ditto
+        42, // subclass
+        1, // protocol
         0x00, //
         0x00, //
     },
@@ -235,6 +235,7 @@ int HF2::endpointRequest() {
         resp->bininfo.flash_page_size = 0;
         resp->bininfo.flash_num_pages = 0;
         resp->bininfo.max_message_size = sizeof(pkt.buf);
+        resp->bininfo.uf2_family = PXT_UF2_FAMILY;
         return sendResponse(sizeof(resp->bininfo));
 
     case HF2_DBG_RESTART:
@@ -246,7 +247,7 @@ int HF2::endpointRequest() {
         QUICK_BOOT(1);
         // fall-through
     case HF2_CMD_RESET_INTO_BOOTLOADER:
-        target_reset();
+        NVIC_SystemReset();
         break;
 
 #if USB_HANDOVER
