@@ -95,4 +95,29 @@ namespace particles {
             screen.setPixel(Fx.toInt(x), Fx.toInt(y), col);
         }
     }
+
+    export class TrailFactory extends AreaFactory {
+        minLifespan: number;
+        maxLifespan: number;
+        galois: Math.FastRandom;
+
+        constructor(sprite: Sprite, minLifespan: number, maxLifespan: number) {
+            super(sprite.image.width >> 1, sprite.image.height >> 1);
+            this.minLifespan = minLifespan;
+            this.maxLifespan = maxLifespan;
+            this.galois = new Math.FastRandom();
+            this.setSpeed(0)
+        }
+
+        createParticle(anchor: particles.ParticleAnchor) {
+            const p = super.createParticle(anchor);
+            p.lifespan = this.galois.randomRange(this.minLifespan, this.maxLifespan);
+            p.data = this.galois.randomRange(0x1, 0xF);
+            return p;
+        }
+
+        drawParticle(p: particles.Particle, x: Fx8, y: Fx8) {
+            screen.setPixel(Fx.toInt(x), Fx.toInt(y), p.data);
+        }
+    }
 }

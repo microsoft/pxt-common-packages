@@ -90,12 +90,15 @@ namespace particles {
             this.setAcceleration(0, 0);
             this.setAnchor(anchor);
             this._dt = 0;
+            this.z = -1;
 
             if (!defaultFactory) defaultFactory = new ParticleFactory();
             this.setFactory(factory ? factory : defaultFactory);
 
             sources.push(this);
             game.currentScene().addSprite(this);
+
+            this.enabled = true;
         }
 
         __update(camera: scene.Camera, dt: number) {
@@ -221,7 +224,7 @@ namespace particles {
 
         protected updateParticle(p: Particle, fixedDt: Fx8) {
             fixedDt = Fx.rightShift(fixedDt, TIME_PRECISION);
-            
+
             p.vx = Fx.add(p.vx, Fx.mul(this.ax, fixedDt));
             p.vy = Fx.add(p.vy, Fx.mul(this.ay, fixedDt));
 
