@@ -11,6 +11,7 @@ class SynthChannel {
     Synthesizer synth;
     MixerChannel *mixch;
     bool used;
+    virtual ~SynthChannel() {}
 
     SynthChannel() : synth(SYNTHESIZER_SAMPLE_RATE, true) {}
 };
@@ -22,8 +23,10 @@ class WSynthesizer {
     SynthChannel *channels;
 
     WSynthesizer() : out(mixer) { channels = NULL; }
+    virtual ~WSynthesizer() {}
 };
 SINGLETON(WSynthesizer);
+
 
 SynthChannel *allocateChannel() {
     auto snd = getWSynthesizer();
@@ -39,7 +42,7 @@ SynthChannel *allocateChannel() {
         numCh++;
     }
 
-    if (numCh > 5)
+    if (numCh >= 3)
         return NULL;
 
     ch = new SynthChannel();

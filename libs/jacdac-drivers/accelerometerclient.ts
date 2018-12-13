@@ -135,10 +135,10 @@ namespace jacdac {
         //% blockId=jacadacacconevent block="jacdac %accelerometer on %gesture"
         //% group="Accelerometer"
         onEvent(gesture: JDGesture, handler: () => void) {
-            control.onEvent(this.id, gesture, handler);
+            this.registerEvent(gesture, handler);
         }
     }
 
     //% fixedInstance whenUsed block="accelerometer"
-    export const accelerometerClient = new AccelerometerClient("accelerometer");
+    export const accelerometerClient = new AccelerometerClient("acc");
 }

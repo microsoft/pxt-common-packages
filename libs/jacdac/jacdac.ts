@@ -1,4 +1,4 @@
-enum JacDacDriverEvent {
+enum JDDriverEvent {
     Connected = DAL.JD_DRIVER_EVT_CONNECTED,
     Disconnected = DAL.JD_DRIVER_EVT_DISCONNECTED,
     Paired = DAL.JD_DRIVER_EVT_PAIRED,
@@ -7,13 +7,38 @@ enum JacDacDriverEvent {
     PairingResponse = DAL.JD_DRIVER_EVT_PAIRING_RESPONSE
 }
 
-enum JacDacEvent {
+enum JDEvent {
     //% block="bus connected"
     BusConnected = DAL.JD_SERIAL_EVT_BUS_CONNECTED,
     //% block="bus disconnected"
     BusDisconnected = DAL.JD_SERIAL_EVT_BUS_DISCONNECTED,
     //% block="driver changed"
     DriverChanged = DAL.JD_LOGIC_DRIVER_EVT_CHANGED
+}
+
+enum JDDriverErrorCode
+{
+    // No error occurred.
+    DRIVER_OK = 0,
+
+    // Device calibration information
+    DRIVER_CALIBRATION_IN_PROGRESS,
+    DRIVER_CALIBRATION_REQUIRED,
+
+    // The driver has run out of some essential resource (e.g. allocated memory)
+    DRIVER_NO_RESOURCES,
+
+    // The driver operation could not be performed as some essential resource is busy (e.g. the display)
+    DRIVER_BUSY,
+
+    // I2C / SPI Communication error occured
+    DRIVER_COMMS_ERROR,
+
+    // An invalid state was detected (i.e. not initialised)
+    DRIVER_INVALID_STATE,
+
+    // an external peripheral has a malfunction e.g. external circuitry is drawing too much power.
+    DRIVER_PERIPHERAL_MALFUNCTION
 }
 
 /**
@@ -25,8 +50,8 @@ namespace jacdac {
 
     export type MethodCollection = ((p: Buffer) => boolean)[];
 
-    export function onEvent(event: JacDacEvent, handler: () => void) {
-        const id = event == JacDacEvent.DriverChanged ? jacdac.logicEventId() : jacdac.eventId();
+    export function onEvent(event: JDEvent, handler: () => void) {
+        const id = event == JDEvent.DriverChanged ? jacdac.logicEventId() : jacdac.eventId();
         if (id)
             control.onEvent(id, event, handler);
     }
@@ -41,7 +66,7 @@ namespace jacdac {
             return;
         }
 
-        n.log(`add t${n.driverType} c${n.deviceClass}`)
+        n.log(`add c${n.deviceClass}`)
         const proxy = jacdac.__internalAddDriver(n.driverType, n.deviceClass,
             [(p: Buffer) => n.handlePacket(p),
             (p: Buffer) => n.handleControlPacket(p)],

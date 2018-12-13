@@ -4,13 +4,32 @@
 #define GC_BLOCK_SIZE (1024 * 16)
 #endif
 
+#ifndef GC_MAX_ALLOC_SIZE
+#define GC_MAX_ALLOC_SIZE (GC_BLOCK_SIZE - 16)
+#endif
+
 #ifndef GC_ALLOC_BLOCK
 #define GC_ALLOC_BLOCK xmalloc
 #endif
 
-#define IS_FREE(vt) ((uint32_t)(vt)&2)
-#define IS_ARRAY(vt) ((uint32_t)(vt) >> 31)
-#define IS_MARKED(vt) ((uint32_t)(vt)&1)
+#define FREE_MASK 0x80000000
+#define ARRAY_MASK 0x40000000
+#define PERMA_MASK 0x20000000
+#define MARKED_MASK 0x00000001
+#define ANY_MARKED_MASK 0x00000003
+
+// the bit operations should be faster than loading large constants
+#define IS_FREE(vt) ((uint32_t)(vt) >> 31)
+#define IS_ARRAY(vt) (((uint32_t)(vt) >> 30) & 1)
+#define IS_PERMA(vt) (((uint32_t)(vt) >> 29) & 1)
+#define IS_MARKED(vt) ((uint32_t)(vt)&MARKED_MASK)
+#define IS_VAR_BLOCK(vt) ((uint32_t)(vt) >> 30)
+
+#define IS_LIVE(vt) (IS_MARKED(vt) || (((uint32_t)(vt) >> 28) == 0x6))
+
+#define VAR_BLOCK_WORDS(vt) (((vt) << 12) >> (12 + 2))
+
+#define MARK(v) *(uint32_t *)(v) |= MARKED_MASK
 
 //#define PXT_GC_DEBUG 1
 #define PXT_GC_CHECKS 1
@@ -39,7 +58,7 @@ namespace pxt {
 //%
 void popThreadContext(ThreadContext *ctx);
 //%
-ThreadContext *pushThreadContext(void *sp);
+ThreadContext *pushThreadContext(void *sp, void *endSP);
 
 unsigned RefRecord_gcsize(RefRecord *r) {
     VTable *tbl = getVTable(r);
@@ -49,7 +68,7 @@ unsigned RefRecord_gcsize(RefRecord *r) {
 #ifndef PXT_GC
 // dummies, to make the linker happy
 void popThreadContext(ThreadContext *ctx) {}
-ThreadContext *pushThreadContext(void *sp) {
+ThreadContext *pushThreadContext(void *sp, void *endSP) {
     return NULL;
 }
 void RefRecord_scan(RefRecord *r) {}
@@ -58,6 +77,14 @@ void RefRecord_scan(RefRecord *r) {}
 #ifdef PXT_GC_THREAD_LIST
 ThreadContext *threadContexts;
 #endif
+
+#define IN_GC_ALLOC 1
+#define IN_GC_COLLECT 2
+#define IN_GC_FREEZE 4
+
+static TValue *tempRoot;
+static uint8_t tempRootLen;
+uint8_t inGC;
 
 void popThreadContext(ThreadContext *ctx) {
     VLOG("pop: %p", ctx);
@@ -71,7 +98,7 @@ void popThreadContext(ThreadContext *ctx) {
         ctx->stack.top = n->top;
         ctx->stack.bottom = n->bottom;
         ctx->stack.next = n->next;
-        delete n;
+        app_free(n);
     } else {
 #ifdef PXT_GC_THREAD_LIST
         if (ctx->next)
@@ -86,16 +113,20 @@ void popThreadContext(ThreadContext *ctx) {
                 threadContexts->prev = NULL;
         }
 #endif
-        delete ctx;
+        app_free(ctx);
         setThreadContext(NULL);
     }
 }
 
-ThreadContext *pushThreadContext(void *sp) {
+#define ALLOC(tp) (tp *)app_alloc(sizeof(tp))
+
+ThreadContext *pushThreadContext(void *sp, void *endSP) {
     if (PXT_IN_ISR())
         target_panic(PANIC_CALLED_FROM_ISR);
 
     auto curr = getThreadContext();
+    tempRoot = (TValue *)endSP;
+    tempRootLen = (uint32_t *)sp - (uint32_t *)endSP;
     if (curr) {
 #ifdef PXT_GC_THREAD_LIST
 #ifdef PXT_GC_DEBUG
@@ -109,14 +140,14 @@ ThreadContext *pushThreadContext(void *sp) {
             oops(49);
 #endif
 #endif
-        auto seg = new StackSegment;
+        auto seg = ALLOC(StackSegment);
         VLOG("stack %p / %p", seg, curr);
         seg->top = curr->stack.top;
         seg->bottom = curr->stack.bottom;
         seg->next = curr->stack.next;
         curr->stack.next = seg;
     } else {
-        curr = new ThreadContext;
+        curr = ALLOC(ThreadContext);
         LOG("push: %p", curr);
         curr->globals = globals;
         curr->stack.next = NULL;
@@ -130,6 +161,7 @@ ThreadContext *pushThreadContext(void *sp) {
 #endif
         setThreadContext(curr);
     }
+    tempRootLen = 0;
     curr->stack.bottom = sp;
     curr->stack.top = NULL;
     return curr;
@@ -146,18 +178,21 @@ struct GCBlock {
     RefObject data[0];
 };
 
-LLSegment gcRoots;
-LLSegment workQueue;
-GCBlock *firstBlock;
+static LLSegment gcRoots;
+static LLSegment workQueue;
+static GCBlock *firstBlock;
 static RefBlock *firstFree;
+static uint8_t *midPtr;
 
-#define IS_OUTSIDE_GC(v) (isReadOnly(v) || IS_MARKED(*(uint32_t *)v))
 #define NO_MAGIC(vt) ((VTable *)vt)->magic != VTABLE_MAGIC
+#define VT(p) (*(uint32_t *)(p))
+#define SKIP_PROCESSING(p)                                                                         \
+    (isReadOnly(p) || (VT(p) & (ANY_MARKED_MASK | ARRAY_MASK)) || NO_MAGIC(VT(p)))
 
 void gcScan(TValue v) {
-    if (IS_OUTSIDE_GC(v) || NO_MAGIC(*(uint32_t *)v))
+    if (SKIP_PROCESSING(v))
         return;
-    *(uint32_t *)v |= 1;
+    MARK(v);
     workQueue.push(v);
 }
 
@@ -166,9 +201,9 @@ void gcScanMany(TValue *data, unsigned len) {
     for (unsigned i = 0; i < len; ++i) {
         auto v = data[i];
         // VLOG("psh: %p %d %d", v, isReadOnly(v), (*(uint32_t *)v & 1));
-        if (IS_OUTSIDE_GC(v) || NO_MAGIC(*(uint32_t *)v))
+        if (SKIP_PROCESSING(v))
             continue;
-        *(uint32_t *)v |= 1;
+        MARK(v);
         workQueue.push(v);
     }
 }
@@ -177,8 +212,9 @@ void gcScanSegment(Segment &seg) {
     auto data = seg.getData();
     if (!data)
         return;
-    GC_CHECK(!IS_MARKED(((uint32_t *)data)[-1]), 47);
-    ((uint32_t *)data)[-1] |= 1;
+    auto segBl = (uint32_t *)data - 1;
+    GC_CHECK(!IS_MARKED(VT(segBl)), 47);
+    MARK(segBl);
     gcScanMany(data, seg.getLength());
 }
 
@@ -186,25 +222,17 @@ void gcScanSegment(Segment &seg) {
 #define getSizeMethod(vt) ((RefObjectSizeMethod)(((VTable *)(vt))->methods[3]))
 
 void gcProcess(TValue v) {
-    if (IS_OUTSIDE_GC(v))
+    if (SKIP_PROCESSING(v))
         return;
-    auto p = (RefObject *)v;
-    auto vt = p->vtable;
-    if (IS_ARRAY(vt)) {
-        p->vtable |= 1;
-        return;
-    }
-    if (NO_MAGIC(vt))
-        return;
-    VVLOG("gcProcess: %p", p);
-    auto scan = getScanMethod(vt);
-    p->vtable |= 1;
+    VVLOG("gcProcess: %p", v);
+    MARK(v);
+    auto scan = getScanMethod(VT(v) & ~ANY_MARKED_MASK);
     if (scan)
-        scan(p);
+        scan((RefObject *)v);
     while (workQueue.getLength()) {
         auto curr = (RefObject *)workQueue.pop();
         VVLOG(" - %p", curr);
-        scan = getScanMethod(curr->vtable & ~1);
+        scan = getScanMethod(curr->vtable & ~ANY_MARKED_MASK);
         if (scan)
             scan(curr);
     }
@@ -252,22 +280,26 @@ static void mark(int flags) {
     for (unsigned i = 0; i < len; ++i) {
         gcProcess(*data++);
     }
+
+    data = tempRoot;
+    len = tempRootLen;
+    for (unsigned i = 0; i < len; ++i) {
+        gcProcess(*data++);
+    }
 }
 
 static uint32_t getObjectSize(RefObject *o) {
-    auto vt = o->vtable;
+    auto vt = o->vtable & ~ANY_MARKED_MASK;
     uint32_t r;
-    GC_CHECK(vt != 0 && !IS_MARKED(vt), 49);
-    if (IS_FREE(vt)) {
-        r = vt >> 2;
-    } else if (IS_ARRAY(vt)) {
-        r = (vt << 1) >> 3;
+    GC_CHECK(vt != 0, 49);
+    if (IS_VAR_BLOCK(vt)) {
+        r = VAR_BLOCK_WORDS(vt);
     } else {
         auto sz = getSizeMethod(vt);
         // GC_CHECK(0x2000 <= (intptr_t)sz && (intptr_t)sz <= 0x100000, 47);
         r = sz(o);
     }
-    GC_CHECK(1 <= r && r < 0x100000, 48);
+    GC_CHECK(1 <= r && (r <= (GC_MAX_ALLOC_SIZE >> 2) || IS_FREE(vt)), 48);
     return r;
 }
 
@@ -280,12 +312,12 @@ __attribute__((noinline)) static void allocateBlock() {
         target_panic(PANIC_GC_OOM);
     }
     auto lowMem = getConfig(CFG_LOW_MEM_SIMULATION_KB, 0);
-    auto sysHeapSize = getConfig(CFG_SYSTEM_HEAP_BYTES, 16 * 1024);
+    auto sysHeapSize = getConfig(CFG_SYSTEM_HEAP_BYTES, 4 * 1024);
     auto heapSize = GC_GET_HEAP_SIZE();
     sz = heapSize - sysHeapSize;
     if (lowMem) {
         auto memIncrement = 32 * 1024;
-        // get the memory size - assume it's increment of 32k, 
+        // get the memory size - assume it's increment of 32k,
         // and we don't statically allocate more than 32k
         auto memSize = ((heapSize + memIncrement - 1) / memIncrement) * memIncrement;
         int fillerSize = memSize - lowMem * 1024;
@@ -298,20 +330,34 @@ __attribute__((noinline)) static void allocateBlock() {
     auto curr = (GCBlock *)GC_ALLOC_BLOCK(sz);
     curr->blockSize = sz - sizeof(GCBlock);
     LOG("GC alloc: %p", curr);
-    curr->data[0].vtable = ((curr->blockSize >> 2) << 2) | 2;
+    GC_CHECK((curr->blockSize & 3) == 0, 40);
+    curr->data[0].vtable = FREE_MASK | curr->blockSize;
     ((RefBlock *)curr->data)[0].nextFree = firstFree;
     firstFree = (RefBlock *)curr->data;
-    curr->next = firstBlock;
     // make sure reference to allocated block is stored somewhere, otherwise
     // GCC optimizes out the call to GC_ALLOC_BLOCK
     curr->data[4].vtable = (uint32_t)dummy;
-    firstBlock = curr;
+    curr->next = NULL;
+    if (!firstBlock) {
+        firstBlock = curr;
+    } else {
+        for (auto p = firstBlock; p; p = p->next) {
+            if (!p->next) {
+                GC_CHECK(p < curr, 40); // required by midPtr stuff
+                p->next = curr;
+                break;
+            }
+        }
+    }
+    midPtr = (uint8_t *)curr->data + curr->blockSize / 4;
 }
 
 static void sweep(int flags) {
-    RefBlock *freePtr = NULL;
+    RefBlock *prevFreePtr = NULL;
     uint32_t freeSize = 0;
     uint32_t totalSize = 0;
+    firstFree = NULL;
+
     for (auto h = firstBlock; h; h = h->next) {
         auto d = h->data;
         auto words = h->blockSize >> 2;
@@ -319,19 +365,21 @@ static void sweep(int flags) {
         totalSize += words;
         VLOG("sweep: %p - %p", d, end);
         while (d < end) {
-            if (IS_MARKED(d->vtable)) {
+            if (IS_LIVE(d->vtable)) {
                 VVLOG("Live %p", d);
-                d->vtable &= ~1;
+                d->vtable &= ~MARKED_MASK;
                 d += getObjectSize(d);
             } else {
                 auto start = (RefBlock *)d;
-                while (d < end && !IS_MARKED(d->vtable)) {
+                while (d < end) {
                     if (IS_FREE(d->vtable)) {
                         VVLOG("Free %p", d);
+                    } else if (IS_LIVE(d->vtable)) {
+                        break;
                     } else if (IS_ARRAY(d->vtable)) {
-                        VVLOG("Free* %p", d);
+                        VVLOG("Dead Arr %p", d);
                     } else {
-                        VVLOG("Dead %p", d);
+                        VVLOG("Dead Obj %p", d);
                         GC_CHECK(((VTable *)d->vtable)->magic == VTABLE_MAGIC, 41);
                         d->destroyVT();
                     }
@@ -342,11 +390,28 @@ static void sweep(int flags) {
 #ifdef PXT_GC_CHECKS
                 memset(start, 0xff, sz << 2);
 #endif
-                start->vtable = (sz << 2) | 2;
+                start->vtable = (sz << 2) | FREE_MASK;
                 if (sz > 1) {
-                    start->nextFree = freePtr;
-                    freePtr = start;
+                    start->nextFree = NULL;
+                    if (!prevFreePtr) {
+                        firstFree = start;
+                    } else {
+                        prevFreePtr->nextFree = start;
+                    }
+                    prevFreePtr = start;
                 }
+            }
+        }
+    }
+
+    if (midPtr) {
+        uint32_t currFree = 0;
+        auto limit = freeSize >> 1;
+        for (auto p = firstFree; p; p = p->nextFree) {
+            currFree += VAR_BLOCK_WORDS(p->vtable);
+            if (currFree > limit) {
+                midPtr = (uint8_t *)p + ((currFree - limit) << 2);
+                break;
             }
         }
     }
@@ -359,7 +424,6 @@ static void sweep(int flags) {
         DMESG("GC %d/%d free", freeSize, totalSize);
     else
         LOG("GC %d/%d free", freeSize, totalSize);
-    firstFree = freePtr;
 
 #ifndef GC_GET_HEAP_SIZE
     // if the heap is 90% full, allocate a new block
@@ -371,33 +435,100 @@ static void sweep(int flags) {
 
 void gc(int flags) {
     startPerfCounter(PerfCounters::GC);
+    GC_CHECK(!(inGC & IN_GC_COLLECT), 40);
+    inGC |= IN_GC_COLLECT;
     VLOG("GC mark");
     mark(flags);
     VLOG("GC sweep");
     sweep(flags);
     VLOG("GC done");
     stopPerfCounter(PerfCounters::GC);
+    inGC &= ~IN_GC_COLLECT;
 }
+
+#ifdef GC_GET_HEAP_SIZE
+static bool inGCArea(void *ptr) {
+    for (auto block = firstBlock; block; block = block->next) {
+        if ((void *)block->data < ptr && ptr < (void *)((uint8_t *)block->data + block->blockSize))
+            return true;
+    }
+    return false;
+}
+
+extern "C" void free(void *ptr) {
+    if (!ptr)
+        return;
+    if (inGCArea(ptr))
+        app_free(ptr);
+    else
+        xfree(ptr);
+}
+
+extern "C" void *malloc(size_t sz) {
+    if (PXT_IN_ISR() || inGC)
+        return xmalloc(sz);
+    else
+        return app_alloc(sz);
+}
+
+extern "C" void *realloc(void *ptr, size_t size) {
+    if (inGCArea(ptr)) {
+        void *mem = malloc(size);
+
+        if (ptr != NULL && mem != NULL) {
+            auto r = (uint32_t *)ptr;
+            GC_CHECK((r[-1] >> 29) == 3, 41);
+            size_t blockSize = VAR_BLOCK_WORDS(r[-1]);
+            memcpy(mem, ptr, min(blockSize * sizeof(void *), size));
+            free(ptr);
+        }
+
+        return mem;
+    } else {
+        return device_realloc(ptr, size);
+    }
+}
+#endif
 
 void *gcAllocateArray(int numbytes) {
     numbytes = (numbytes + 3) & ~3;
     numbytes += 4;
     auto r = (uint32_t *)gcAllocate(numbytes);
-    *r = 0x80000000U | numbytes;
+    *r = ARRAY_MASK | numbytes;
     return r + 1;
 }
 
-void *gcPermAllocate(int numbytes) {
+void *app_alloc(int numbytes) {
+    if (!numbytes)
+        return NULL;
+
+    // gc(0);
     auto r = (uint32_t *)gcAllocateArray(numbytes);
-    registerGCPtr((TValue)(r - 1));
+    r[-1] |= PERMA_MASK;
     return r;
+}
+
+void *app_free(void *ptr) {
+    auto r = (uint32_t *)ptr;
+    GC_CHECK((r[-1] >> 29) == 3, 41);
+    r[-1] |= FREE_MASK;
+    return r;
+}
+
+void gcFreeze() {
+    inGC |= IN_GC_FREEZE;
 }
 
 void *gcAllocate(int numbytes) {
     size_t numwords = (numbytes + 3) >> 2;
 
-    if (numbytes > GC_BLOCK_SIZE - 16)
+    if (numbytes > GC_MAX_ALLOC_SIZE)
         oops(45);
+
+    if (PXT_IN_ISR() || (inGC & IN_GC_ALLOC))
+        target_panic(PANIC_CALLED_FROM_ISR);
+
+    inGC |= IN_GC_ALLOC;
 
 #ifdef PXT_GC_CHECKS
     {
@@ -415,17 +546,19 @@ void *gcAllocate(int numbytes) {
         RefBlock *prev = NULL;
         for (auto p = firstFree; p; p = p->nextFree) {
             VVLOG("p=%p", p);
+            if (i == 0 && (uint8_t *)p > midPtr)
+                break;
             GC_CHECK(!isReadOnly((TValue)p), 49);
             auto vt = p->vtable;
             if (!IS_FREE(vt))
                 oops(43);
-            int left = (vt >> 2) - numwords;
+            int left = VAR_BLOCK_WORDS(vt) - numwords;
             if (left >= 0) {
                 auto nf = (RefBlock *)((void **)p + numwords);
                 // VLOG("nf=%p", nf);
                 auto nextFree = p->nextFree; // p and nf can overlap when allocating 4 bytes
                 if (left)
-                    nf->vtable = (left << 2) | 2;
+                    nf->vtable = (left << 2) | FREE_MASK;
                 if (left >= 2) {
                     nf->nextFree = nextFree;
                 } else {
@@ -438,6 +571,7 @@ void *gcAllocate(int numbytes) {
                 p->vtable = 0;
                 GC_CHECK(!nf || !nf->nextFree || ((uint32_t)nf->nextFree) >> 20, 48);
                 VVLOG("GC=>%p %d %p", p, numwords, nf->nextFree);
+                inGC &= ~IN_GC_ALLOC;
                 return p;
             }
             prev = p;

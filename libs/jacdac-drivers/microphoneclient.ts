@@ -24,7 +24,7 @@ namespace jacdac {
         //% blockId=jacadacmicrophoneonevent block="jacdac %microphone on loud sound"
         //% group="Microphone"
         onLoudSound(handler: () => void) {
-            control.onEvent(this.id, DAL.SENSOR_THRESHOLD_HIGH, handler);
+            this.registerEvent(DAL.SENSOR_THRESHOLD_HIGH, handler);
         }
 
         /**
@@ -40,5 +40,5 @@ namespace jacdac {
     }
 
     //% fixedInstance whenUsed block="microphone"
-    export const microphoneCLient = new MicrophoneClient("microphone");
+    export const microphoneClient = new MicrophoneClient("microphone");
 }

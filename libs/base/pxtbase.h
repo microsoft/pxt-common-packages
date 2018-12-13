@@ -791,14 +791,12 @@ void gcProcessStacks(int flags);
 #endif
 
 void gcProcess(TValue v);
-
-#ifndef PXT_USE_XMALLOC
-#define xmalloc malloc
-#endif
+void gcFreeze();
 
 void *gcAllocate(int numbytes);
 void *gcAllocateArray(int numbytes);
-void *gcPermAllocate(int numbytes);
+extern "C" void *app_alloc(int numbytes);
+extern "C" void *app_free(void *ptr);
 #ifndef PXT_GC
 inline void *gcAllocate(int numbytes) {
     return xmalloc(numbytes);
@@ -886,7 +884,7 @@ int indexOf(RefCollection *c, TValue x, int start);
 bool removeElement(RefCollection *c, TValue x);
 } // namespace Array_
 
-#define NEW_GC(T) new (gcAllocate(sizeof(T))) T()
+#define NEW_GC(T, ...) new (gcAllocate(sizeof(T))) T(__VA_ARGS__)
 
 // The ARM Thumb generator in the JavaScript code is parsing
 // the hex file and looks for the magic numbers as present here.

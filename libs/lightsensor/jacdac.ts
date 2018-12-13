@@ -1,4 +1,5 @@
 namespace jacdac {
+    //% fixedInstances
     export class LightSensorService extends jacdac.SensorService {
         constructor(name: string) {
             super(name, jacdac.LIGHT_SENSOR_DEVICE_CLASS);
@@ -13,6 +14,6 @@ namespace jacdac {
         }
     }
 
-    //% fixedInstances whenUsed block="light sensor service"
-    export const lightSensorService = new LightSensorService("lightsensor");
+    //% fixedInstance whenUsed block="light sensor service"
+    export const lightSensorService = new LightSensorService("lis");
 }

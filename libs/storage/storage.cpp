@@ -1,9 +1,6 @@
 #include "pxt.h"
 #include "SPI.h"
 
-#if CONFIG_ENABLED(DEVICE_USB)
-
-#include "MbedSPI.h"
 #include "GhostSNORFS.h"
 #include "StandardSPIFlash.h"
 
@@ -203,4 +200,3 @@ Buffer readAsBuffer(String filename) {
 }
 
 } // namespace storage
-#endif

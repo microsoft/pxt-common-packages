@@ -1,7 +1,5 @@
 #include "GhostSNORFS.h"
 
-#if CONFIG_ENABLED(DEVICE_USB)
-
 #include "CodalCompat.h"
 #include "CodalDmesg.h"
 #include "CodalDevice.h"
@@ -64,4 +62,3 @@ void GhostSNORFS::addFiles()
 }
 
 }
-#endif

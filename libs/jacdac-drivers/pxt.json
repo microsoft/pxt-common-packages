@@ -3,17 +3,19 @@
     "description": "Virtual drivers for jacdac - beta",
     "files": [
         "sensorclient.ts",
-        "bridge.ts",
         "buttonclient.ts",
         "lightsensorclient.ts",
-        "console.ts",
         "battery.ts",
         "accelerometerclient.ts",
-        "touchbuttonclient.ts",
+        "touchclient.ts",
         "microphoneclient.ts",
         "thermometerclient.ts",
         "switchclient.ts",
-        "lightclient.ts"
+        "lightclient.ts",
+        "keyboardclient.ts",
+        "mouseclient.ts",
+        "gamepadclient.ts",
+        "pixelclient.ts"
     ],
     "testFiles": [
         "test.ts"

@@ -1,0 +1,15 @@
+{
+    "name": "jacdac-game",
+    "description": "JacDac services for games - beta",
+    "files": [
+        "console.ts",
+        "debugger.ts"
+    ],
+    "testFiles": [
+    ],
+    "public": true,
+    "dependencies": {
+        "game": "file:../game",
+        "jacdac": "file:../jacdac"
+    }
+}

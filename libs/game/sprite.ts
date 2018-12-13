@@ -8,7 +8,9 @@ enum SpriteFlag {
     //% block="destroy on wall"
     DestroyOnWall = sprites.Flag.DestroyOnWall,
     //% block="bounce on wall"
-    BounceOnWall = sprites.Flag.BounceOnWall
+    BounceOnWall = sprites.Flag.BounceOnWall,
+    //% block="show physics"
+    ShowPhysics = sprites.Flag.ShowPhysics
 }
 
 enum CollisionDirection {
@@ -54,23 +56,23 @@ class Sprite implements SpriteLike {
     _ay: Fx8
 
     //% group="Properties" blockSetVariable="mySprite"
-    //% blockCombine block="x (horizontal position)"
+    //% blockCombine block="x"
     get x(): number {
         return Fx.toInt(this._x) + (this._image.width >> 1)
     }
     //% group="Properties" blockSetVariable="mySprite"
-    //% blockCombine block="x (horizontal position)"
+    //% blockCombine block="x"
     set x(v: number) {
         this._x = Fx8(v - (this._image.width >> 1))
     }
 
     //% group="Properties" blockSetVariable="mySprite"
-    //% blockCombine block="y (vertical position)"
+    //% blockCombine block="y"
     get y(): number {
         return Fx.toInt(this._y) + (this._image.height >> 1)
     }
     //% group="Properties" blockSetVariable="mySprite"
-    //% blockCombine block="y (vertical position)"
+    //% blockCombine block="y"
     set y(v: number) {
         this._y = Fx8(v - (this._image.height >> 1))
     }
@@ -325,7 +327,7 @@ class Sprite implements SpriteLike {
      */
     //% group="Overlaps"
     //% blockId="spritegetkind" block="%sprite(mySprite) kind"
-    //% weight=79
+    //% weight=79 help=sprites/sprite/kind
     kind() {
         return this._kind;
     }
@@ -336,7 +338,7 @@ class Sprite implements SpriteLike {
     //% group="Overlaps"
     //% blockId="spritesetkind" block="set %sprite(mySprite) kind to %kind"
     //% kind.shadow=spritetype
-    //% weight=80
+    //% weight=80 help=sprites/sprite/set-kind
     setKind(value: number) {
         if (value == undefined || this._kind === value) return;
 
@@ -522,6 +524,23 @@ class Sprite implements SpriteLike {
         const l = this.left - camera.offsetX;
         const t = this.top - camera.offsetY;
         screen.drawTransparentImage(this._image, l, t)
+
+        if (this.flags & SpriteFlag.ShowPhysics) {
+            const font = image.font5;
+            const margin = 2;
+            let tx = this.left;
+            let ty = this.bottom + margin;
+            screen.print(`${this.x >> 0},${this.y >> 0}`, tx, ty, 1, font);
+            tx -= font.charWidth;
+            if (this.vx || this.vy) {
+                ty += font.charHeight + margin;
+                screen.print(`v${this.vx >> 0},${this.vy >> 0}`, tx, ty, 1, font);
+            }
+            if (this.ax || this.ay) {
+                ty += font.charHeight + margin;
+                screen.print(`a${this.ax >> 0},${this.ay >> 0}`, tx, ty, 1, font);
+            }
+        }
 
         // debug info
         if (game.debug) {

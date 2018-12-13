@@ -15,9 +15,11 @@
         "actuator.ts",
         "messagebus.ts",
         "console.ts",
+        "bridge.ts",
         "ns.ts"
     ],
     "testFiles": [
+        "test.ts"
     ],
     "public": true,
     "dependencies": {

@@ -6,6 +6,7 @@
     "ignoreDocsErrors": true,
     "bundleddirs": [
         "libs/core",
+        "libs/core---samd",
         "libs/buttons",
         "libs/light",
         "libs/music",
@@ -30,6 +31,8 @@
         "libs/serial",
         "libs/jacdac",
         "libs/jacdac-drivers",
-        "libs/datalogger"
+        "libs/jacdac-game",
+        "libs/datalogger",
+        "libs/particles"
     ]
 }

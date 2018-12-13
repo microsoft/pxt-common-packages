@@ -753,7 +753,7 @@ void _drawIcon(Image_ img, Buffer icon, int xy, int c) {
         return;
 
     img->makeWritable();
-    auto ii = new (gcAllocate(sizeof(RefImage))) RefImage(icon);
+    auto ii = NEW_GC(RefImage, icon);
     drawImageCore(img, ii, XX(xy), YY(xy), c);
     decrRC(ii);
 }
@@ -909,7 +909,7 @@ Image_ create(int width, int height) {
 Image_ ofBuffer(Buffer buf) {
     if (!isValidImage(buf))
         return NULL;
-    return new (gcAllocate(sizeof(RefImage))) RefImage(buf);
+    return NEW_GC(RefImage, buf);
 }
 
 /**
@@ -920,7 +920,7 @@ Buffer doubledIcon(Buffer icon) {
     if (!isValidImage(icon))
         return NULL;
 
-    auto r = new (gcAllocate(sizeof(RefImage))) RefImage(icon);
+    auto r = NEW_GC(RefImage, icon);
     auto t = ImageMethods::doubled(r);
     auto res = mkBuffer(t->data(), t->length());
     decrRC(r);

@@ -1,6 +1,6 @@
 namespace jacdac {
     //% fixedInstances
-    export class TouchButtonVirtualDriver extends SensorClient {
+    export class TouchClient extends SensorClient {
         constructor(name: string) {
             super(name, jacdac.TOUCHBUTTON_DEVICE_CLASS);
         }
@@ -29,5 +29,5 @@ namespace jacdac {
     }
 
     //% fixedInstance whenUsed block="touch"
-    export const touchService = new TouchButtonVirtualDriver("touch");
+    export const touchClient = new TouchClient("touch");
 }

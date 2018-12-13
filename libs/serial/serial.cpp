@@ -34,7 +34,7 @@ namespace pxt {
       WSerial()
         : serial(*LOOKUP_PIN(TX), *LOOKUP_PIN(RX))
         {
-          serial.baud((int)BaudRate::BaudRate115200);
+          serial.setBaud((int)BaudRate::BaudRate115200);
         }
   };
 
@@ -98,7 +98,7 @@ namespace serial {
     */
     //% help=serial/set-baud-rate
     void setBaudRate(BaudRate rate) {
-      getWSerial()->serial.baud((int)rate);
+      getWSerial()->serial.setBaud((int)rate);
     }
 
     /**
@@ -116,7 +116,9 @@ namespace serial {
     //% rx.fieldOptions.tooltips="false"
     //% blockGap=8 inlineInputMode=inline
     void redirect(DigitalInOutPin tx, DigitalInOutPin rx, BaudRate rate) {
-      getWSerial()->serial.redirect( (PinName)tx->name, (PinName)rx->name);
+      if (NULL == tx || NULL == rx)
+        return;
+      getWSerial()->serial.redirect(*tx, *rx);
       setBaudRate(rate);
     }
 }
