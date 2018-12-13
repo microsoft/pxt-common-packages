@@ -67,6 +67,10 @@ namespace particles {
             this.factory = defaultFactory;
         }
 
+        __serialize(offset: number): Buffer {
+            return undefined;
+        }
+
         __update(camera: scene.Camera, dt: number) {
             // see _update()
         }
