@@ -92,7 +92,8 @@ namespace particles {
             this._dt = 0;
             this.z = -1;
 
-            if (!defaultFactory) defaultFactory = new ParticleFactory();
+            if (!defaultFactory)
+                defaultFactory = new ParticleFactory();
             this.setFactory(factory ? factory : defaultFactory);
 
             sources.push(this);
@@ -115,7 +116,8 @@ namespace particles {
             const top = Fx8(camera.offsetY);
 
             while (current) {
-                if (current.lifespan > 0) this.drawParticle(current, left, top);
+                if (current.lifespan > 0)
+                    this.drawParticle(current, left, top);
                 current = current.next;
             }
         }
