@@ -46,7 +46,7 @@ enum JDDriverErrorCode
  */
 namespace jacdac {
     // common logging level for jacdac services
-    export let consolePriority = ConsolePriority.Silent;
+    export let consolePriority = ConsolePriority.Debug;
 
     export type MethodCollection = ((p: Buffer) => boolean)[];
 

@@ -42,7 +42,7 @@ namespace jacdac {
             // serialize the entire game state to the client
             const scene = game.currentScene();
             scene.allSprites.forEach(sprite => {
-                const buf = sprite.serialize(1);
+                const buf = sprite.__serialize(1);
                 if (buf) {
                     buf[0] = GameServiceCommand.Sprite;
                     buf.setNumber(NumberFormat.UInt32LE, 1, sprite.id);
