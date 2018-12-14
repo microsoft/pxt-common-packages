@@ -1,4 +1,5 @@
 namespace jacdac {
+
     enum Mode {
         None,
         Drivers,
@@ -7,7 +8,13 @@ namespace jacdac {
         Players
     }
     let mode = Mode.None;
+
     function showDrivers() {
+        // populate know list of drivers
+        const debugViews = [
+            jacdac.MessageBusService.debugView(),
+            jacdac.ConsoleDriver.debugView()
+        ];
 
         jacdac.clearBridge();
         const drivers = jacdac.drivers();
@@ -16,9 +23,11 @@ namespace jacdac {
         console.log(` flags status`);
         const sn = control.deviceSerialNumber();
         drivers.forEach(d => {
-            console.log(`${toHex8(d.address)} ${d.driverClass} ${toHex(d.serialNumber)}`);
+            const driverClass = d.driverClass;
+            const dbgView = debugViews.find(d => driverClass == d.driverClass);
+            console.log(`${toHex8(d.address)} ${dbgView ? dbgView.name : driverClass} ${toHex(d.serialNumber)}`);
             let flags = " " + toHex16(d.flags) + " ";
-            if (d.driverClass == 0)
+            if (driverClass == 0)
                 flags += "logic";
             else {
                 if (d.isVirtualDriver())
@@ -45,7 +54,7 @@ namespace jacdac {
             const err = d.error;
             if (err != JDDriverErrorCode.DRIVER_OK)
                 flags += " e" + err;    
-            console.log(flags)            
+            console.log(flags)
         })
         console.log("");
     }

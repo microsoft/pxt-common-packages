@@ -16,6 +16,7 @@
         "messagebus.ts",
         "console.ts",
         "bridge.ts",
+        "debugger.ts",
         "ns.ts"
     ],
     "testFiles": [

@@ -25,6 +25,13 @@ namespace jacdac {
         return true;
     }
 
+    export function bufferToString(buf: Buffer, offset: number): string {
+        let str = "";
+        for (let i = offset; (i < buf.length) && !!buf[i]; i++)
+            str += String.fromCharCode(buf[i]);
+        return str;
+    }
+    
     /**
      * JacDac service running on sensor and streaming data out
      */
