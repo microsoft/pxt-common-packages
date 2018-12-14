@@ -245,8 +245,10 @@ int HF2::endpointRequest() {
 
     case HF2_CMD_RESET_INTO_APP:
         QUICK_BOOT(1);
-        // fall-through
+        NVIC_SystemReset();
+        break;
     case HF2_CMD_RESET_INTO_BOOTLOADER:
+        QUICK_BOOT(0);
         NVIC_SystemReset();
         break;
 

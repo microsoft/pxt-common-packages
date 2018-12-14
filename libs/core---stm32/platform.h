@@ -37,7 +37,10 @@ struct F4_Settings {
 #define BOOT_RTC_SIGNATURE 0x71a21877
 #define APP_RTC_SIGNATURE 0x24a22d12
 #define HF2_RTC_SIGNATURE 0x39a63a78
-#define QUICK_BOOT(v) (RTC->BKP0R = v ? APP_RTC_SIGNATURE : HF2_RTC_SIGNATURE)
+#define QUICK_BOOT(v)                                                                              \
+    do {                                                                                           \
+        RTC->BKP0R = v ? APP_RTC_SIGNATURE : HF2_RTC_SIGNATURE;                                    \
+    } while (0)
 #else
 
 #endif
