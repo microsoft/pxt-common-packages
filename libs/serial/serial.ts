@@ -3,6 +3,7 @@
  */
 //% weight=2 color=#002050 icon="\uf287"
 //% advanced=true
+//% groups='["Write", "Read", "Configuration"]'
 namespace serial {
     /**
      * Write a line of text to the serial port.
@@ -11,6 +12,7 @@ namespace serial {
     //% weight=90
     //% help=serial/write-line blockGap=8
     //% blockId=serial_writeline block="serial|write line %text"
+    //% group="Write"
     export function writeLine(text: string): void {
         writeString(text + "\r\n");
     }
@@ -21,6 +23,7 @@ namespace serial {
     //% help=serial/write-number
     //% weight=89 blockGap=8
     //% blockId=serial_writenumber block="serial|write number %value"
+    //% group="Write"
     export function writeNumber(value: number): void {
         writeString(value.toString());
     }
@@ -33,6 +36,7 @@ namespace serial {
     //% weight=88 blockGap=8
     //% help=serial/write-value
     //% blockId=serial_writevalue block="serial|write value %name|= %value"
+    //% group="Write"
     export function writeValue(name: string, value: number): void {
         const prefix = name ? name + ":" : "";
         serial.writeLine(prefix + value);

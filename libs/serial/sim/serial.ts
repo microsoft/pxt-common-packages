@@ -10,6 +10,14 @@ namespace pxsim.serial {
         return r;
     }
 
+    export function readBuffer(): RefBuffer {
+        const s = readString();
+        const buf = control.createBuffer(s.length);
+        for(let i = 0; i < s.length; ++i)
+            buf.data[i] = s.charCodeAt(i);
+        return buf;
+    }
+
     export function writeString(str: string) {
         if (str)
             control.__log(1, str)

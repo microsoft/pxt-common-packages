@@ -49,12 +49,41 @@ namespace serial {
     //% help=serial/read-string
     //% blockId=serial_read_buffer block="serial|read string"
     //% weight=18
+    //% group="Read"
     String readString() {
       auto service = getWSerial();
       int n = service->serial.getRxBufferSize();
-      if (n == 0) return mkString("", 0);
+      if (n == 0) 
+        return mkString("");
       auto s = service->serial.read(n, SerialMode::ASYNC);
       return PSTR(s);
+    }
+
+    /**
+    * Read the buffered received data as a buffer
+    */
+    //% help=serial/read-buffer
+    //% blockId=serial_read_buffer block="serial|read buffer"
+    //% weight=17
+    //% group="Read"
+    Buffer readBuffer() {
+      auto service = getWSerial();
+      int n = service->serial.getRxBufferSize();
+      if (n == 0) 
+        return mkBuffer(NULL, 0);
+
+      auto buf = mkBuffer(NULL, n)
+      const read = service->serial.read(buf->data, buf->length, SerialMode::ASYNC);
+      if (read == CODAL_SERIAL_IN_USE) { // someone else is reading
+        decrRC(buf);
+        return mkBuffer(NULL, 0);
+      }
+      if (buf->length != read) {
+        auto buf2 = mkBuffer(buf, read);
+        decrRC(buf);
+        buf = buf2;
+      }        
+      return buf;
     }
 
     void send(const char* buffer, int length) {
@@ -69,7 +98,7 @@ namespace serial {
     //% help=serial/write-string
     //% weight=87
     //% blockId=serial_writestring block="serial|write string %text"
-    //% blockHidden=1
+    //% group="Write"
     void writeString(String text) {
       if (NULL == text) return;
       send(text->data, text->length);
@@ -80,6 +109,7 @@ namespace serial {
     */
     //% help=serial/write-buffer weight=6
     //% blockId=serial_writebuffer block="serial|write buffer %buffer"
+    //% group="Write"
     void writeBuffer(Buffer buffer) {
       if (NULL == buffer) return;
       getWSerial()->serial.send(buffer->data, buffer->length);
@@ -89,6 +119,7 @@ namespace serial {
       Sends the console message through the TX, RX pins
       **/
     //% blockId=serialsendtoconsole block="serial attach to console"
+    //% group="Configuration"
     void attachToConsole() {
       setSendToUART(serial::send);
     }
@@ -97,6 +128,7 @@ namespace serial {
     Set the baud rate of the serial port
     */
     //% help=serial/set-baud-rate
+    //% group="Configuration"
     void setBaudRate(BaudRate rate) {
       getWSerial()->serial.setBaud((int)rate);
     }
@@ -115,6 +147,7 @@ namespace serial {
     //% rx.fieldEditor="gridpicker" rx.fieldOptions.columns=3
     //% rx.fieldOptions.tooltips="false"
     //% blockGap=8 inlineInputMode=inline
+    //% group="Configuration"
     void redirect(DigitalInOutPin tx, DigitalInOutPin rx, BaudRate rate) {
       if (NULL == tx || NULL == rx)
         return;
