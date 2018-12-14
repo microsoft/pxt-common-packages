@@ -3,7 +3,7 @@
  */
 //% weight=2 color=#002050 icon="\uf287"
 //% advanced=true
-//% groups='["Write", "Read", "Configuration"]'
+//% groups='["Write", "Read", "Events", "Configuration"]'
 namespace serial {
     /**
      * Write a line of text to the serial port.
@@ -41,5 +41,4 @@ namespace serial {
         const prefix = name ? name + ":" : "";
         serial.writeLine(prefix + value);
     }
-
 }

@@ -27,6 +27,11 @@ enum class BaudRate {
   BaudRate300 = 300
 };
 
+enum SerialEvent {
+    //% block="data received"
+    DataReceived = CODAL_SERIAL_EVT_RX_FULL
+};
+
 namespace pxt {
   class WSerial {
     public:
@@ -74,7 +79,7 @@ namespace serial {
 
       auto buf = mkBuffer(NULL, n)
       const read = service->serial.read(buf->data, buf->length, SerialMode::ASYNC);
-      if (read == CODAL_SERIAL_IN_USE) { // someone else is reading
+      if (read == DEVICE_SERIAL_IN_USE) { // someone else is reading
         decrRC(buf);
         return mkBuffer(NULL, 0);
       }
@@ -153,5 +158,18 @@ namespace serial {
         return;
       getWSerial()->serial.redirect(*tx, *rx);
       setBaudRate(rate);
+    }
+
+    /**
+    * Registers code when serial events happen
+    **/
+    //% weight=9
+    //% help=serial/on-event
+    //% blockId=serial_onevent block="serial on %event"
+    //% blockGap=8
+    //% group="Events"
+    void onEvent(SerialEvent event, Action handler) {
+      auto id = getWSerial()->id;
+      registerWithDal(id, event, handler);
     }
 }
