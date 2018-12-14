@@ -64,6 +64,17 @@ namespace Math {
         }
 
         /**
+         * Returns a random element from the given list
+         * @param list The list to choose an element from
+         */
+        pickRandom<T>(list: T[]) {
+            if (!list || list.length == 0) {
+                return undefined;
+            }
+            return list[this.randomRange(0, list.length - 1)];
+        }
+
+        /**
          * @returns a random boolean value
          */
         randomBool(): boolean {

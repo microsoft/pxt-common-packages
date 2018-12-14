@@ -2,7 +2,8 @@
     "name": "particles",
     "description": "Particle rendering - beta",
     "files": [
-        "particles.ts"
+        "particles.ts",
+        "factories.ts"
     ],
     "testFiles": [
         "test.ts"

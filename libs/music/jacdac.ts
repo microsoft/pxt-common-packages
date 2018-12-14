@@ -15,9 +15,6 @@ namespace jacdac {
                     const duration = data.getNumber(NumberFormat.UInt32LE, 5);
                     music.playTone(freq, duration);
                     break;
-                case JDMusicCommand.SetVolume:
-                    music.setVolume(data[1]);
-                    break;
             }
             return true;
         }

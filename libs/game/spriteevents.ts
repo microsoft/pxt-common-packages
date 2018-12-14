@@ -55,7 +55,7 @@ namespace sprites {
     //% help=sprites/on-overlap
     //% blockGap=8
     export function onOverlap(kind: number, otherKind: number, handler: (sprite: Sprite, otherSprite: Sprite) => void) {
-        if (kind == undefined || otherKind == undefined ||!handler) return;
+        if (kind == undefined || otherKind == undefined || !handler) return;
 
         const scene = game.currentScene();
         scene.overlapHandlers.push({

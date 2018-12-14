@@ -367,17 +367,34 @@ class Sprite implements SpriteLike {
     }
 
     /**
-     * Set the sprite position
-     * @param x horizontal position
-     * @param y vertical position
+     * Set the sprite position in pixels starting from the top-left corner of the screen.
+     * @param x horizontal position in pixels
+     * @param y vertical position in pixels
      */
     //% group="Properties"
     //% weight=100
     //% blockId=spritesetpos block="set %sprite(mySprite) position to x %x y %y"
     //% help=sprites/sprite/set-position
+    //% x.shadow="positionPicker" y.shadow="positionPicker"
     setPosition(x: number, y: number): void {
         this.x = x;
         this.y = y;
+    }
+
+    /**
+     * Sets the sprite velocity in pixel / sec²
+     * @param vx 
+     * @param vy 
+     */
+    //% group="Properties"
+    //% weight=100
+    //% blockId=spritesetvel block="set %sprite(mySprite) velocity to vx %vx vy %vy"
+    //% help=sprites/sprite/set-velociy
+    //% vx.shadow=spriteSpeedPicker
+    //% vy.shadow=spriteSpeedPicker
+    setVelocity(vx: number, vy: number): void {
+        this.vx = vx;
+        this.vy = vx;
     }
 
     /**

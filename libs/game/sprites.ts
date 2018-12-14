@@ -59,6 +59,8 @@ namespace sprites {
      */
     //% group="Projectiles"
     //% blockId=spritescreateprojectilefromside block="projectile %img=screen_image_picker from side with vx %vx vy %vy"
+    //% vx.shadow=spriteSpeedPicker
+    //% vy.shadow=spriteSpeedPicker
     //% weight=99 help=sprites/create-projectile-from-side
     //% blockSetVariable=projectile
     //% inlineInputMode=inline
@@ -75,6 +77,8 @@ namespace sprites {
      */
     //% group="Projectiles"
     //% blockId=spritescreateprojectilefromsprite block="projectile %img=screen_image_picker from %sprite=variables_get(mySprite) with vx %vx vy %vy"
+    //% vx.shadow=spriteSpeedPicker
+    //% vy.shadow=spriteSpeedPicker
     //% weight=99 help=sprites/create-projectile-from-sprite
     //% blockSetVariable=projectile
     //% inlineInputMode=inline

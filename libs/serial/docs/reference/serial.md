@@ -9,18 +9,14 @@ serial.writeLine("");
 serial.writeNumber(0);
 serial.writeValue("x", 0);
 serial.writeString("");
+serial.writeBuffer(null);
 ```
 
 ## Read
 
 ```cards
 serial.readString();
-```
-
-## Advanced
-
-```cards
-serial.writeBuffer(null);
+serial.readBuffer();
 ```
 
 ## See Also
@@ -31,6 +27,7 @@ serial.writeBuffer(null);
 [write value](/reference/serial/write-value),
 [write buffer](/reference/serial/write-buffer)
 [read string](/reference/serial/read-string),
+[read buffer](/reference/serial/read-buffer),
 
 ```package
 serial
