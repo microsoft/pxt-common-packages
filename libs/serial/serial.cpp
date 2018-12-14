@@ -57,7 +57,7 @@ namespace serial {
     //% group="Read"
     String readString() {
       auto service = getWSerial();
-      if (NULL == service) return mkString("");
+      if (!service) return mkString("");
       int n = service->serial.getRxBufferSize();
       if (n == 0) 
         return mkString("");
@@ -74,7 +74,7 @@ namespace serial {
     //% group="Read"
     Buffer readBuffer() {
       auto service = getWSerial();
-      if (NULL == service) return mkBuffer(NULL, 0);
+      if (!service) return mkBuffer(NULL, 0);
       int n = service->serial.getRxBufferSize();
       if (n == 0) 
         return mkBuffer(NULL, 0);
@@ -97,7 +97,7 @@ namespace serial {
       // TODO: fix CODAL abstraction
       // getWSerial()->serial.send((uint8_t*)buffer, length * sizeof(char));
       auto service = getWSerial();
-      if (NULL == service) return;
+      if (!service) return;
       service->serial.printf("%s", buffer);
     }
 
@@ -110,7 +110,7 @@ namespace serial {
     //% group="Write"
     void writeString(String text) {
       auto service = getWSerial();
-      if (NULL == service) return;
+      if (!service) return;
       if (NULL == text) return;
       send(text->data, text->length);
     }
@@ -123,7 +123,7 @@ namespace serial {
     //% group="Write"
     void writeBuffer(Buffer buffer) {
       auto service = getWSerial();
-      if (NULL == service) return;
+      if (!service) return;
       if (NULL == buffer) return;
       service->serial.send(buffer->data, buffer->length);
     }
@@ -135,7 +135,7 @@ namespace serial {
     //% group="Configuration"
     void attachToConsole() {
       auto service = getWSerial();
-      if (NULL == service) return;
+      if (!service) return;
       setSendToUART(serial::send);
     }
 
@@ -146,7 +146,7 @@ namespace serial {
     //% group="Configuration"
     void setBaudRate(BaudRate rate) {
       auto service = getWSerial();
-      if (NULL == service) return;
+      if (!service) return;
       service->serial.setBaud((int)rate);
     }
 
@@ -167,7 +167,7 @@ namespace serial {
     //% group="Configuration"
     void redirect(DigitalInOutPin tx, DigitalInOutPin rx, BaudRate rate) {
       auto service = getWSerial();
-      if (NULL == service) return;
+      if (!service) return;
       if (NULL == tx || NULL == rx)
         return;
       service->serial.redirect(*tx, *rx);
@@ -184,7 +184,7 @@ namespace serial {
     //% group="Events"
     void onEvent(SerialEvent event, Action handler) {
       auto service = getWSerial();
-      if (NULL == service) return;
+      if (!service) return;
       auto id = service->serial.id;
       registerWithDal(id, event, handler);
     }
