@@ -43,7 +43,7 @@ namespace pxt {
         }
   };
 
-SINGLETON(WSerial);
+SINGLETON_IF_PIN(WSerial,TX);
 
 }
 
@@ -57,6 +57,7 @@ namespace serial {
     //% group="Read"
     String readString() {
       auto service = getWSerial();
+      if (NULL == service) return mkString("");
       int n = service->serial.getRxBufferSize();
       if (n == 0) 
         return mkString("");
@@ -73,12 +74,13 @@ namespace serial {
     //% group="Read"
     Buffer readBuffer() {
       auto service = getWSerial();
+      if (NULL == service) return mkBuffer(NULL, 0);
       int n = service->serial.getRxBufferSize();
       if (n == 0) 
         return mkBuffer(NULL, 0);
 
-      auto buf = mkBuffer(NULL, n)
-      const read = service->serial.read(buf->data, buf->length, SerialMode::ASYNC);
+      auto buf = mkBuffer(NULL, n);
+      auto read = service->serial.read(buf->data, buf->length, SerialMode::ASYNC);
       if (read == DEVICE_SERIAL_IN_USE) { // someone else is reading
         decrRC(buf);
         return mkBuffer(NULL, 0);
@@ -94,7 +96,9 @@ namespace serial {
     void send(const char* buffer, int length) {
       // TODO: fix CODAL abstraction
       // getWSerial()->serial.send((uint8_t*)buffer, length * sizeof(char));
-      getWSerial()->serial.printf("%s", buffer);
+      auto service = getWSerial();
+      if (NULL == service) return;
+      service->serial.printf("%s", buffer);
     }
 
     /**
@@ -105,6 +109,8 @@ namespace serial {
     //% blockId=serial_writestring block="serial|write string %text"
     //% group="Write"
     void writeString(String text) {
+      auto service = getWSerial();
+      if (NULL == service) return;
       if (NULL == text) return;
       send(text->data, text->length);
     }
@@ -116,8 +122,10 @@ namespace serial {
     //% blockId=serial_writebuffer block="serial|write buffer %buffer"
     //% group="Write"
     void writeBuffer(Buffer buffer) {
+      auto service = getWSerial();
+      if (NULL == service) return;
       if (NULL == buffer) return;
-      getWSerial()->serial.send(buffer->data, buffer->length);
+      service->serial.send(buffer->data, buffer->length);
     }
 
     /**
@@ -126,6 +134,8 @@ namespace serial {
     //% blockId=serialsendtoconsole block="serial attach to console"
     //% group="Configuration"
     void attachToConsole() {
+      auto service = getWSerial();
+      if (NULL == service) return;
       setSendToUART(serial::send);
     }
 
@@ -135,7 +145,9 @@ namespace serial {
     //% help=serial/set-baud-rate
     //% group="Configuration"
     void setBaudRate(BaudRate rate) {
-      getWSerial()->serial.setBaud((int)rate);
+      auto service = getWSerial();
+      if (NULL == service) return;
+      service->serial.setBaud((int)rate);
     }
 
     /**
@@ -154,9 +166,11 @@ namespace serial {
     //% blockGap=8 inlineInputMode=inline
     //% group="Configuration"
     void redirect(DigitalInOutPin tx, DigitalInOutPin rx, BaudRate rate) {
+      auto service = getWSerial();
+      if (NULL == service) return;
       if (NULL == tx || NULL == rx)
         return;
-      getWSerial()->serial.redirect(*tx, *rx);
+      service->serial.redirect(*tx, *rx);
       setBaudRate(rate);
     }
 
@@ -169,7 +183,9 @@ namespace serial {
     //% blockGap=8
     //% group="Events"
     void onEvent(SerialEvent event, Action handler) {
-      auto id = getWSerial()->id;
+      auto service = getWSerial();
+      if (NULL == service) return;
+      auto id = service->serial.id;
       registerWithDal(id, event, handler);
     }
 }
