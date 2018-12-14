@@ -28,7 +28,8 @@
         "menu.ts",
         "systemmenu.ts",
         "fixed.ts",
-        "console.ts"
+        "console.ts",
+        "fieldeditors.ts"
     ],
     "public": true,
     "dependencies": {
