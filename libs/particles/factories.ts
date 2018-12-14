@@ -31,6 +31,42 @@ namespace particles {
     }
 
     /**
+     * A factory for generating particles.
+     */
+    export class ParticleFactory {
+
+        constructor() {
+            // Compiler errors if this doesn't exist
+        }
+
+        /**
+         * Generate a particle at the position of the given anchor
+         * @param anchor 
+         */
+        createParticle(anchor: ParticleAnchor): Particle {
+            const p = new Particle();
+
+            p._x = Fx8(anchor.x);
+            p._y = Fx8(anchor.y);
+            p.vx = Fx.zeroFx8;
+            p.vy = Fx.zeroFx8;
+            p.lifespan = 1500;
+
+            return p;
+        }
+
+        /**
+         * Draw the given particle at the given location
+         * @param particle 
+         * @param x 
+         * @param y 
+         */
+        drawParticle(particle: Particle, x: Fx8, y: Fx8) {
+            screen.setPixel(Fx.toInt(x), Fx.toInt(y), 1);
+        }
+    }
+
+    /**
      * A factory for creating a spray of particles
      */
     export class SprayFactory extends ParticleFactory {
@@ -75,7 +111,7 @@ namespace particles {
     //% blockId=particlesspary block="spray at speed %speed center"
     //% blockSetVariable=factory
     export function sprayFactory(speed: number) {
-        const spray = new SprayFactory(100, 120, 60);
+        const spray = new SprayFactory(speed, 120, 60);
         return spray;
     }
 
@@ -130,7 +166,6 @@ namespace particles {
 
         createParticle(anchor: particles.ParticleAnchor) {
             const p = super.createParticle(anchor);
-
             p.lifespan = this.galois.randomRange(this.minLifespan, this.maxLifespan);
             p.data = this.galois.randomRange(0x1, 0xF);
 
@@ -141,4 +176,7 @@ namespace particles {
             screen.setPixel(Fx.toInt(x), Fx.toInt(y), p.data);
         }
     }
+    
+    //% whenUsed
+    export const defaultFactory = new SprayFactory(20, 0, 60);
 }
