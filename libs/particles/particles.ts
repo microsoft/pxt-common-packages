@@ -272,17 +272,6 @@ namespace particles {
         return new ParticleSource(sprite, particlesPerSecond);
     }
 
-    export function mkParticle(x: Fx8, y: Fx8, lifespan: number) {
-        const p = new Particle();
-        p._x = x;
-        p._y = y;
-        p.vx = Fx.zeroFx8;
-        p.vy = Fx.zeroFx8;
-
-        p.lifespan = lifespan;
-        return p;
-    }
-
     function init() {
         if (sources) return;
         sources = [];
