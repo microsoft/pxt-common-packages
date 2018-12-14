@@ -29,7 +29,7 @@ enum class BaudRate {
 
 enum SerialEvent {
     //% block="data received"
-    DataReceived = CODAL_SERIAL_EVT_RX_FULL
+    DataReceived = CODAL_SERIAL_EVT_RX_FULL    
 };
 
 namespace pxt {
@@ -52,7 +52,7 @@ namespace serial {
     * Read the buffered received data as a string
     */
     //% help=serial/read-string
-    //% blockId=serial_read_buffer block="serial|read string"
+    //% blockId=serial_read_string block="serial|read string"
     //% weight=18
     //% group="Read"
     String readString() {
