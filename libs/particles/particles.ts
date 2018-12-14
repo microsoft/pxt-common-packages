@@ -1,3 +1,8 @@
+/**
+ * Small particles
+ */
+//% color="#03AA74" weight=78 icon="\uf021"
+//% groups='["Create", "Properties"]'
 namespace particles {
     export let cachedSin: Fx8[];
     export let cachedCos: Fx8[];
@@ -134,9 +139,27 @@ namespace particles {
             }
         }
 
+        /**
+         * Sets the acceleration applied to the particles
+         */
+        //% blockId=particlessetacc block="particles %source set acceleration ax $ax ay $ay"
+        //% group="Properties"
         setAcceleration(ax: number, ay: number) {
             this.ax = Fx8(ax);
             this.ay = Fx8(ay);
+        }
+
+        /**
+         * Enables or disables particles
+         * @param on 
+         */
+        //% blockId=particlessetenabled block="particles %source %on=toggleOnOff"
+        //% group="Properties"
+        setEnabled(on: boolean) {
+            if (on)
+                this.enable()
+            else
+                this.disable();
         }
 
         enable() {
@@ -155,13 +178,25 @@ namespace particles {
             this.anchor = anchor;
         }
 
+        /**
+         * Sets the number of particle created per second
+         * @param particlesPerSecond 
+         */
+        //% blockId=particlessetrate block="particles %source set rate to $particlesPerSecond"
+        //% group="Properties"
         setRate(particlesPerSecond: number) {
             this.period = Math.ceil(1000 / particlesPerSecond);
             this.timer = 0;
         }
 
+        /**
+         * Sets the particle factor
+         * @param factory 
+         */
+        //% blockId=particlesetfactory block="particles %source set $factory=variables_get(factory)"
         setFactory(factory: ParticleFactory) {
-            if (factory) this.factory = factory;
+            if (factory)
+                this.factory = factory;
         }
 
         protected updateParticle(p: Particle, fixedDt: Fx8) {
@@ -177,6 +212,19 @@ namespace particles {
         protected drawParticle(p: Particle, screenLeft: Fx8, screenTop: Fx8) {
             this.factory.drawParticle(Fx.sub(p._x, screenLeft), Fx.sub(p._y, screenTop), p);
         }
+    }
+
+    /**
+     * Creates a new source of particles attached to a sprite
+     * @param sprite 
+     * @param particlesPerSecond number of particles created per second
+     */
+    //% blockId=particlesspray block="create particle source from %sprite=variables_get(mySprite) at %particlesPerSecond p/sec"
+    //% blockSetVariable=source
+    //% particlesPerSecond=100
+    //% group="Sources"
+    export function createParticleSource(sprite: Sprite, particlesPerSecond: number): ParticleSource {
+        return new ParticleSource(sprite, particlesPerSecond);
     }
 
     export class SprayFactory extends ParticleFactory {
@@ -212,6 +260,16 @@ namespace particles {
             this.minAngle = (toRadians(centerDegrees - (arcDegrees >> 1)) / angleSlice) | 0;
             this.spread = (toRadians(arcDegrees) / angleSlice) | 0;
         }
+    }
+
+    /**
+     * Creates a spray factory
+     */
+    //% blockId=particlesspary block="spray at speed %speed center"
+    //% blockSetVariable=factory
+    export function sprayFactory(speed: number) {
+        const spray = new SprayFactory(100, 120, 60);
+        return spray;
     }
 
     function initTrig() {
