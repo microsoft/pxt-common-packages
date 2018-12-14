@@ -6,22 +6,6 @@ namespace jacdac {
         }
 
         /**
-         * Set the output volume of the sound synthesizer.
-         * @param volume the volume 0...256, eg: 128
-         */
-        //% blockId=synth_set_volume block="set %music volume %volume"
-        //% volume.min=0 volume.max=256
-        //% help=music/set-volume
-        //% weight=70
-        //% group="Music"
-        setVolume(volume: number): void {
-            const buf = control.createBuffer(2);
-            buf[0] = JDMusicCommand.SetVolume;
-            buf[1] = volume;
-            this.sendPacket(buf);
-        }
-
-        /**
          * Play a tone through the speaker for some amount of time.
          * @param frequency pitch of the tone to play in Hertz (Hz), eg: Note.C
          * @param ms tone duration in milliseconds (ms), eg: BeatFraction.Half
