@@ -133,18 +133,6 @@ namespace sprites {
         return s
     }
 
-    /**
-     * Creates a new sprite of the given kind and adds it to the game. Use this
-     * with the "on sprite created" event.
-     * @param kind the kind of sprite to create
-     */
-    //% group="Lifecycle"
-    //% blockId=spritecreateempty block="create empty sprite||of kind %kind=spritetype"
-    //% weight=98
-    export function createEmptySprite(kind?: number): void {
-        sprites.create(image.create(1, 1), kind);
-    }
-
     export enum Flag {
         Ghost = 1 << 0, // doesn't collide with other sprites
         Destroyed = 1 << 1,
