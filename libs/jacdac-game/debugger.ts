@@ -12,6 +12,10 @@ namespace jacdac {
     function showDrivers() {
         // populate know list of drivers
         const debugViews = [
+            {
+                driverClass: 0,
+                name: "logic"
+            },
             jacdac.MessageBusService.debugView(),
             jacdac.ConsoleDriver.debugView()
         ];
