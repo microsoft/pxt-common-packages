@@ -9,9 +9,8 @@ namespace jacdac {
     }
     let mode = Mode.None;
 
-    function showDrivers() {
-        // populate know list of drivers
-        const debugViews = [
+    function createDebugViews() {
+        return [
             {
                 driverClass: 0,
                 name: "logic"
@@ -19,6 +18,11 @@ namespace jacdac {
             jacdac.MessageBusService.debugView(),
             jacdac.ConsoleDriver.debugView()
         ];
+    }
+
+    function showDrivers() {
+        // populate know list of drivers
+        const debugViews = createDebugViews();
 
         jacdac.clearBridge();
         const drivers = jacdac.drivers();
@@ -57,7 +61,7 @@ namespace jacdac {
                 flags += " dis";
             const err = d.error;
             if (err != JDDriverErrorCode.DRIVER_OK)
-                flags += " e" + err;    
+                flags += " e" + err;
             console.log(flags)
         })
         console.log("");
@@ -81,14 +85,14 @@ namespace jacdac {
 
     let _logAllDriver: LogAllDriver;
     function showPackets() {
-        if (!_logAllDriver) _logAllDriver = new LogAllDriver();
+        if (!_logAllDriver) _logAllDriver = new LogAllDriver(createDebugViews());
         _logAllDriver.start();
     }
 
     function showPlayers() {
         console.log(`game state: ${["alone", "service", "client"][jacdac.gameLobby.state]}`);
         const players = jacdac.gameLobby.players;
-        for(let i = 0; i < players.length; ++i) {
+        for (let i = 0; i < players.length; ++i) {
             const pa = players[i];
             console.log(`  ${toHex8(pa)}`);
         }
@@ -174,8 +178,10 @@ namespace jacdac {
     }
 
     class LogAllDriver extends BridgeDriver {
-        constructor() {
+        debugViews: DebugView[];
+        constructor(debugViews: DebugView[]) {
             super("log")
+            this.debugViews = debugViews.filter(v => !!v.render);
         }
 
         handlePacket(pkt: Buffer): boolean {
@@ -190,8 +196,16 @@ namespace jacdac {
             } else {
                 console.log(`jd>p ${packet.address} ${packet.size}b`)
                 const data = packet.data;
-                if (data.length)
-                    console.log(" " + packet.data.toHex());
+                if (data.length) {
+                    const drivers = jacdac.drivers();
+                    const driver = drivers.find(d => d.address == packet.address);
+                    const dbgView = this.debugViews.find(d => d.driverClass == driver.driverClass);
+                    if (dbgView) {
+                        console.log(" " + dbgView.render(packet.data));
+                    } else {
+                        console.log(" " + packet.data.toHex());
+                    }
+                }
             }
             return true;
         }

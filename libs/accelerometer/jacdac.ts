@@ -1,5 +1,6 @@
 namespace jacdac {
     export class AccelerometerService extends jacdac.SensorService {
+        static NAME = "acc";
         constructor(name: string) {
             super(name, jacdac.ACCELEROMETER_DEVICE_CLASS);
             input.onGesture(Gesture.Shake, () => this.raiseHostEvent(Gesture.Shake));
@@ -18,6 +19,15 @@ namespace jacdac {
             buf.setNumber(NumberFormat.Int16LE, 2, input.acceleration(Dimension.Y));
             buf.setNumber(NumberFormat.Int16LE, 4, input.acceleration(Dimension.Z));
             return buf;
+        }
+
+        static debugView(): DebugView {
+            return {
+                driverClass: jacdac.ACCELEROMETER_DEVICE_CLASS,
+                name: AccelerometerService.NAME,
+                render: function(data) { 
+                    return `${data.getNumber(NumberFormat.Int16LE, 0)} ${data.getNumber(NumberFormat.Int16LE, 2)} ${data.getNumber(NumberFormat.Int16LE, 4)}`}
+            }
         }
     }
 
