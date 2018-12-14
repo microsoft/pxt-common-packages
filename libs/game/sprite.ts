@@ -375,6 +375,7 @@ class Sprite implements SpriteLike {
     //% weight=100
     //% blockId=spritesetpos block="set %sprite(mySprite) position to x %x y %y"
     //% help=sprites/sprite/set-position
+    //% x.shadow="positionPicker" y.shadow="positionPicker"
     setPosition(x: number, y: number): void {
         this.x = x;
         this.y = y;
