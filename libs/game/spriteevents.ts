@@ -64,16 +64,6 @@ namespace sprites {
             handler: handler
         })
     }
-
-    /**
-     * A position picker
-     */
-    //% blockId=positionPicker block="%index" blockHidden=true shim=TD_ID
-    //% index.fieldEditor="position" color="#ffffff" colorSecondary="#ffffff"
-    //% index.fieldOptions.decompileLiterals="true"
-    export function __positionPicker(index: number) {
-        return index;
-    }
 }
 
 namespace scene {
