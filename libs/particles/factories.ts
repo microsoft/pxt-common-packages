@@ -70,6 +70,16 @@ namespace particles {
     }
 
     /**
+     * Creates a spray factory
+     */
+    //% blockId=particlesspary block="spray at speed %speed center"
+    //% blockSetVariable=factory
+    export function sprayFactory(speed: number) {
+        const spray = new SprayFactory(100, 120, 60);
+        return spray;
+    }
+
+    /**
      * A factory for creating particles within rectangular area
      */
     export class AreaFactory extends SprayFactory {

@@ -272,62 +272,6 @@ namespace particles {
         return new ParticleSource(sprite, particlesPerSecond);
     }
 
-    export class SprayFactory extends ParticleFactory {
-        protected speed: Fx8;
-        protected minAngle: number;
-        protected spread: number;
-
-        constructor(speed: number, centerDegrees: number, arcDegrees: number) {
-            super();
-            initTrig();
-            this.setSpeed(speed);
-            this.setDirection(centerDegrees, arcDegrees);
-        }
-
-        createParticle(anchor: ParticleAnchor) {
-            const p = super.createParticle(anchor);
-            const angle = (this.minAngle + galois.randomRange(0, this.spread)) % NUM_SLICES;
-
-            p.vx = Fx.mul(cachedSin[angle], this.speed);
-            p.vy = Fx.mul(cachedCos[angle], this.speed);
-            return p;
-        }
-
-        drawParticle(x: Fx8, y: Fx8, particle: Particle) {
-            screen.setPixel(Fx.toInt(x), Fx.toInt(y), 1);
-        }
-
-        setSpeed(pixelsPerSecond: number) {
-            this.speed = Fx8(pixelsPerSecond);
-        }
-
-        setDirection(centerDegrees: number, arcDegrees: number) {
-            this.minAngle = (toRadians(centerDegrees - (arcDegrees >> 1)) / angleSlice) | 0;
-            this.spread = (toRadians(arcDegrees) / angleSlice) | 0;
-        }
-    }
-
-    /**
-     * Creates a spray factory
-     */
-    //% blockId=particlesspary block="spray at speed %speed center"
-    //% blockSetVariable=factory
-    export function sprayFactory(speed: number) {
-        const spray = new SprayFactory(100, 120, 60);
-        return spray;
-    }
-
-    function initTrig() {
-        if (!cachedSin) {
-            cachedSin = [];
-            cachedCos = [];
-            for (let i = 0; i < NUM_SLICES; i++) {
-                cachedSin.push(Fx8(Math.sin(i * angleSlice)));
-                cachedCos.push(Fx8(Math.cos(i * angleSlice)));
-            }
-        }
-    }
-
     export function mkParticle(x: Fx8, y: Fx8, lifespan: number) {
         const p = new Particle();
         p._x = x;
