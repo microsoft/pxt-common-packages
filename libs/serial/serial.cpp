@@ -86,7 +86,7 @@ namespace serial {
         return mkBuffer(NULL, 0);
       }
       if (buf->length != read) {
-        auto buf2 = mkBuffer(buf, read);
+        auto buf2 = mkBuffer(buf->data, read);
         decrRC(buf);
         buf = buf2;
       }        
