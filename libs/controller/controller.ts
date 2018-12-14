@@ -102,13 +102,23 @@ namespace controller {
             return this._pressed;
         }
 
+        setPressed(pressed: boolean) {
+            if (this._pressed != pressed) {
+                this._pressed = pressed;
+                if (this._pressed)
+                    this.raiseButtonUp();
+                else
+                    this.raiseButtonDown();
+            }
+        }
+
         __update(dtms: number) {
             if (!this._pressed) return;
             this._pressedElasped += dtms;
             // inital delay
-            if (this._pressedElasped < this.repeatDelay) 
+            if (this._pressedElasped < this.repeatDelay)
                 return;
-            
+
             // do we have enough time to repeat
             const count = Math.floor((this._pressedElasped - this.repeatDelay) / this.repeatInterval);
             if (count != this._repeatCount) {
@@ -178,5 +188,14 @@ namespace controller {
         if (!_activeButtons) return;
         const dtms = (dt * 1000) | 0
         _activeButtons.forEach(btn => btn.__update(dtms));
+    }
+
+    export function serialize(offset: number): Buffer {
+        const buf = control.createBuffer(offset + 1);
+        let pressed = 0;
+        for(let i = 0; i < _activeButtons.length; ++i)
+            pressed = pressed | ((_activeButtons[i].isPressed() ? 1 : 0) << (_activeButtons[i].id - 1));
+        buf[offset] = pressed;
+        return buf;
     }
 }

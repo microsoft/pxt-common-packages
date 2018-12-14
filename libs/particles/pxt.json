@@ -1,0 +1,15 @@
+{
+    "name": "particles",
+    "description": "Particle rendering - beta",
+    "files": [
+        "particles.ts",
+        "factories.ts"
+    ],
+    "testFiles": [
+        "test.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "game": "file:../game"
+    }
+}

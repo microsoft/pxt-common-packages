@@ -3,7 +3,7 @@ namespace sprites {
      * Gets the sprite type
      */
     //% blockHidden=1 shim=ENUM_GET
-    //% blockId=spritetype block="$kind" enumInitialMembers="Player,Food,Enemy"
+    //% blockId=spritetype block="$kind" enumInitialMembers="Player,Projectile,Food,Enemy"
     //% enumName=SpriteKind enumMemberName=kind enumPromptHint="e.g. Coin, Fireball, Asteroid..."
     export function _spriteType(kind: number): number {
         return kind;
@@ -55,7 +55,7 @@ namespace sprites {
     //% help=sprites/on-overlap
     //% blockGap=8
     export function onOverlap(kind: number, otherKind: number, handler: (sprite: Sprite, otherSprite: Sprite) => void) {
-        if (kind == undefined || otherKind == undefined ||!handler) return;
+        if (kind == undefined || otherKind == undefined || !handler) return;
 
         const scene = game.currentScene();
         scene.overlapHandlers.push({

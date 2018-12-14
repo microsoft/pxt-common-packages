@@ -21,7 +21,6 @@ namespace Math {
      * @param list The list to choose an element from
      */
     //% weight=1
-    //% blockId=pickrandomarray block="random item from %list=variables_get"
     export function pickRandom<T>(list: T[]) {
         if (!list || list.length == 0) {
             return undefined;
@@ -62,6 +61,17 @@ namespace Math {
          */
         randomRange(min: number, max: number): number {
             return min + (max > min ? this.next() % (max - min) : 0);
+        }
+
+        /**
+         * Returns a random element from the given list
+         * @param list The list to choose an element from
+         */
+        pickRandom<T>(list: T[]) {
+            if (!list || list.length == 0) {
+                return undefined;
+            }
+            return list[this.randomRange(0, list.length - 1)];
         }
 
         /**

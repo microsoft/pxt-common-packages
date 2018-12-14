@@ -13,7 +13,7 @@ Frame handlers:
  * Sprites on screen
  */
 //% weight=99 color="#4B7BEC" icon="\uf1d8"
-//% groups='["Create", "Properties", "Overlaps", "Collisions", "Lifecycle"]'
+//% groups='["Create", "Properties", "Projectiles", "Overlaps", "Lifecycle"]'
 namespace sprites {
 
     /**
@@ -57,13 +57,48 @@ namespace sprites {
      * Create a new sprite with given speed, and place it at the edge of the screen so it moves towards the middle.
      * The sprite auto-destroys when it leaves the screen. You can modify position after it's created.
      */
-    //% group="Create"
-    //% blockId=spritescreateprojectile block="projectile %img=screen_image_picker vx %vx vy %vy of kind %kind=spritetype||from sprite %sprite=variables_get"
+    //% group="Projectiles"
+    //% blockId=spritescreateprojectilefromside block="projectile %img=screen_image_picker from side with vx %vx vy %vy"
+    //% vx.shadow=spriteSpeedPicker
+    //% vy.shadow=spriteSpeedPicker
+    //% weight=99 help=sprites/create-projectile-from-side
+    //% blockSetVariable=projectile
+    //% inlineInputMode=inline
+    //% vy.defl=100
+    export function createProjectileFromSide(img: Image, vx: number, vy: number) {
+        return createProjectile(img, vx, vy, 1);
+    }
+
+
+    
+    /**
+     * Create a new sprite with given speed, and place it at the edge of the screen so it moves towards the middle.
+     * The sprite auto-destroys when it leaves the screen. You can modify position after it's created.
+     */
+    //% group="Projectiles"
+    //% blockId=spritescreateprojectilefromsprite block="projectile %img=screen_image_picker from %sprite=variables_get(mySprite) with vx %vx vy %vy"
+    //% vx.shadow=spriteSpeedPicker
+    //% vy.shadow=spriteSpeedPicker
+    //% weight=99 help=sprites/create-projectile-from-sprite
+    //% blockSetVariable=projectile
+    //% inlineInputMode=inline
+    //% vy.defl=100
+    export function createProjectileFromSprite(img: Image, sprite: Sprite, vx: number, vy: number): Sprite {
+        return createProjectile(img, vx, vy, 1, sprite);
+    }    
+
+    /**
+     * Create a new sprite with given speed, and place it at the edge of the screen so it moves towards the middle.
+     * The sprite auto-destroys when it leaves the screen. You can modify position after it's created.
+     */
+    //% group="Projectiles"
+    //% blockId=spritescreateprojectile block="projectile %img=screen_image_picker vx %vx vy %vy of kind %kind=spritetype||from sprite %sprite=variables_get(mySprite)"
     //% weight=99 help=sprites/create-projectile
     //% blockSetVariable=projectile
     //% inlineInputMode=inline
     //% expandableArgumentMode=toggle
     //% vy.defl=100
+    //% deprecated=true blockHidden=true
     export function createProjectile(img: Image, vx: number, vy: number, kind?: number, sprite?: Sprite) {
         const s = sprites.create(img, kind);
         const sc = game.currentScene();
@@ -75,6 +110,11 @@ namespace sprites {
 
         const xOff = sc.tileMap ? -(s.width >> 1) : (s.width >> 1) - 1;
         const yOff = sc.tileMap ? -(s.height >> 1) : (s.height >> 1) - 1;
+
+        while(vx == 0 && vy == 0) {
+            vx = Math.randomRange(-100, 100);
+            vy = Math.randomRange(-100, 100);
+        }
 
         if (vx < 0)
             s.x = screen.width + xOff
@@ -97,24 +137,13 @@ namespace sprites {
         return s
     }
 
-    /**
-     * Creates a new sprite of the given kind and adds it to the game. Use this
-     * with the "on sprite created" event.
-     * @param kind the kind of sprite to create
-     */
-    //% group="Lifecycle"
-    //% blockId=spritecreateempty block="create empty sprite||of kind %kind=spritetype"
-    //% weight=98
-    export function createEmptySprite(kind?: number): void {
-        sprites.create(image.create(1, 1), kind);
-    }
-
     export enum Flag {
-        Ghost = 1, // doesn't collide with other sprites
-        Destroyed = 2,
-        AutoDestroy = 4, // remove the sprite when no longer visible
-        StayInScreen = 8, // sprite cannot move outside the camera region
-        DestroyOnWall = 16, // destroy sprite on contact with wall
-        BounceOnWall = 32, // Bounce on walls
+        Ghost = 1 << 0, // doesn't collide with other sprites
+        Destroyed = 1 << 1,
+        AutoDestroy = 1 << 2, // remove the sprite when no longer visible
+        StayInScreen = 1 << 3, // sprite cannot move outside the camera region
+        DestroyOnWall = 1 << 4, // destroy sprite on contact with wall
+        BounceOnWall = 1 << 5, // Bounce on walls
+        ShowPhysics = 1 << 6, // display position, velocity, acc
     }
 }

@@ -153,10 +153,12 @@ class WJacDac {
 #endif
     }
 };
-SINGLETON(WJacDac);
+SINGLETON_IF_PIN(WJacDac, JACK_TX);
 
 void setJackRouterOutput(int output) {
-    getWJacDac()->setJackRouterOutput(output);
+    auto service = getWJacDac();
+    if (!service) return;
+    service->setJackRouterOutput(output);
 }
 
 /**
@@ -164,7 +166,9 @@ void setJackRouterOutput(int output) {
  */
 //% parts=jacdac
 void start() {
-    getWJacDac()->start();
+    auto service = getWJacDac();
+    if (!service) return;
+    service->start();
 }
 
 /**
@@ -172,7 +176,9 @@ void start() {
  */
 //% parts=jacdac
 void stop() {
-    getWJacDac()->stop();
+    auto service = getWJacDac();
+    if (!service) return;
+    service->stop();
 }
 
 /**
@@ -180,7 +186,8 @@ void stop() {
 */
 //% parts=jacdac
 bool isRunning() {
-    return getWJacDac()->isRunning();
+    auto service = getWJacDac();
+    return !!service && service->isRunning();
 }
 
 /**
@@ -188,7 +195,8 @@ bool isRunning() {
 */
 //% parts=jacdac
 bool isConnected() {
-    return getWJacDac()->isConnected();
+    auto service = getWJacDac();
+    return !!service && service->isConnected();
 }
 
 /**
@@ -196,7 +204,9 @@ bool isConnected() {
 */
 //% parts=jacdac
 int eventId() {
-    return getWJacDac()->id();
+    auto service = getWJacDac();
+    if (!service) return -1;
+    return service->id();
 }
 
 /**
@@ -204,7 +214,9 @@ int eventId() {
 */
 //% parts=jacdac
 int logicEventId() {
-    return getWJacDac()->logicId();
+    auto service = getWJacDac();
+    if (!service) return -1;
+    return service->logicId();
 }
 
 /**
@@ -212,9 +224,10 @@ int logicEventId() {
 */
 //% parts=jacdac
 void clearBridge() {
+    auto service = getWJacDac();
+    if (!service) return;
 #if JD_MIN_VERSION(3)
-    auto p = getWJacDac();
-    p->setBridge(NULL);
+    service->setBridge(NULL);
 #endif    
 }
 
@@ -223,7 +236,9 @@ void clearBridge() {
 */
 //% parts=jacdac
 Buffer __internalDrivers() {
-    return getWJacDac()->drivers();
+    auto service = getWJacDac();
+    if (!service) return mkBuffer(NULL, 0);
+    return service->drivers();
 }
 
 #if JD_MIN_VERSION(1)
@@ -319,6 +334,15 @@ JacDacDriverStatus __internalAddDriver(int driverType, int driverClass, MethodCo
 #else
     return new JDProxyDriver();
 #endif
+}
+
+/**
+* Internal
+*/
+//% parts=jacdac
+void __internalRemoveDriver(JacDacDriverStatus d) {
+    if (NULL == d) return;
+    delete d; // removes driver
 }
 
 /**

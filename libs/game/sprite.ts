@@ -8,7 +8,9 @@ enum SpriteFlag {
     //% block="destroy on wall"
     DestroyOnWall = sprites.Flag.DestroyOnWall,
     //% block="bounce on wall"
-    BounceOnWall = sprites.Flag.BounceOnWall
+    BounceOnWall = sprites.Flag.BounceOnWall,
+    //% block="show physics"
+    ShowPhysics = sprites.Flag.ShowPhysics
 }
 
 enum CollisionDirection {
@@ -27,6 +29,7 @@ interface SpriteLike {
     id: number;
     __update(camera: scene.Camera, dt: number): void;
     __draw(camera: scene.Camera): void;
+    __serialize(offset: number): Buffer;
 }
 
 enum FlipOption {
@@ -54,23 +57,23 @@ class Sprite implements SpriteLike {
     _ay: Fx8
 
     //% group="Properties" blockSetVariable="mySprite"
-    //% blockCombine block="x (horizontal position)"
+    //% blockCombine block="x"
     get x(): number {
         return Fx.toInt(this._x) + (this._image.width >> 1)
     }
     //% group="Properties" blockSetVariable="mySprite"
-    //% blockCombine block="x (horizontal position)"
+    //% blockCombine block="x"
     set x(v: number) {
         this._x = Fx8(v - (this._image.width >> 1))
     }
 
     //% group="Properties" blockSetVariable="mySprite"
-    //% blockCombine block="y (vertical position)"
+    //% blockCombine block="y"
     get y(): number {
         return Fx.toInt(this._y) + (this._image.height >> 1)
     }
     //% group="Properties" blockSetVariable="mySprite"
-    //% blockCombine block="y (vertical position)"
+    //% blockCombine block="y"
     set y(v: number) {
         this._y = Fx8(v - (this._image.height >> 1))
     }
@@ -124,7 +127,6 @@ class Sprite implements SpriteLike {
      */
     //%
     data: any;
-
     _kind: number;
 
     /**
@@ -177,6 +179,18 @@ class Sprite implements SpriteLike {
         this.layer = 1; // by default, in layer 1
         this.lifespan = undefined;
         this._overlappers = [];
+    }
+    
+    __serialize(offset: number): Buffer {
+        const buf = control.createBuffer(offset + 12);
+        let k = offset;
+        buf.setNumber(NumberFormat.Int16LE, k, Fx.toInt(this._x)); k += 2;
+        buf.setNumber(NumberFormat.Int16LE, k, Fx.toInt(this._y)); k += 2;
+        buf.setNumber(NumberFormat.Int16LE, k, Fx.toInt(this._vx)); k += 2;
+        buf.setNumber(NumberFormat.Int16LE, k, Fx.toInt(this._vy)); k += 2;
+        buf.setNumber(NumberFormat.Int16LE, k, Fx.toInt(this._ax)); k += 2;
+        buf.setNumber(NumberFormat.Int16LE, k, Fx.toInt(this._ay)); k += 2;
+        return buf;
     }
 
     /**
@@ -353,17 +367,34 @@ class Sprite implements SpriteLike {
     }
 
     /**
-     * Set the sprite position
-     * @param x horizontal position
-     * @param y vertical position
+     * Set the sprite position in pixels starting from the top-left corner of the screen.
+     * @param x horizontal position in pixels
+     * @param y vertical position in pixels
      */
     //% group="Properties"
     //% weight=100
     //% blockId=spritesetpos block="set %sprite(mySprite) position to x %x y %y"
     //% help=sprites/sprite/set-position
+    //% x.shadow="positionPicker" y.shadow="positionPicker"
     setPosition(x: number, y: number): void {
         this.x = x;
         this.y = y;
+    }
+
+    /**
+     * Sets the sprite velocity in pixel / sec²
+     * @param vx 
+     * @param vy 
+     */
+    //% group="Properties"
+    //% weight=100
+    //% blockId=spritesetvel block="set %sprite(mySprite) velocity to vx %vx vy %vy"
+    //% help=sprites/sprite/set-velociy
+    //% vx.shadow=spriteSpeedPicker
+    //% vy.shadow=spriteSpeedPicker
+    setVelocity(vx: number, vy: number): void {
+        this.vx = vx;
+        this.vy = vx;
     }
 
     /**
@@ -522,6 +553,23 @@ class Sprite implements SpriteLike {
         const l = this.left - camera.offsetX;
         const t = this.top - camera.offsetY;
         screen.drawTransparentImage(this._image, l, t)
+
+        if (this.flags & SpriteFlag.ShowPhysics) {
+            const font = image.font5;
+            const margin = 2;
+            let tx = this.left;
+            let ty = this.bottom + margin;
+            screen.print(`${this.x >> 0},${this.y >> 0}`, tx, ty, 1, font);
+            tx -= font.charWidth;
+            if (this.vx || this.vy) {
+                ty += font.charHeight + margin;
+                screen.print(`v${this.vx >> 0},${this.vy >> 0}`, tx, ty, 1, font);
+            }
+            if (this.ax || this.ay) {
+                ty += font.charHeight + margin;
+                screen.print(`a${this.ax >> 0},${this.ay >> 0}`, tx, ty, 1, font);
+            }
+        }
 
         // debug info
         if (game.debug) {

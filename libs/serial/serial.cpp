@@ -27,6 +27,11 @@ enum class BaudRate {
   BaudRate300 = 300
 };
 
+enum SerialEvent {
+    //% block="data received"
+    DataReceived = CODAL_SERIAL_EVT_RX_FULL    
+};
+
 namespace pxt {
   class WSerial {
     public:
@@ -38,7 +43,7 @@ namespace pxt {
         }
   };
 
-SINGLETON(WSerial);
+SINGLETON_IF_PIN(WSerial,TX);
 
 }
 
@@ -47,20 +52,53 @@ namespace serial {
     * Read the buffered received data as a string
     */
     //% help=serial/read-string
-    //% blockId=serial_read_buffer block="serial|read string"
+    //% blockId=serial_read_string block="serial|read string"
     //% weight=18
+    //% group="Read"
     String readString() {
       auto service = getWSerial();
+      if (!service) return mkString("");
       int n = service->serial.getRxBufferSize();
-      if (n == 0) return mkString("", 0);
+      if (n == 0) 
+        return mkString("");
       auto s = service->serial.read(n, SerialMode::ASYNC);
       return PSTR(s);
+    }
+
+    /**
+    * Read the buffered received data as a buffer
+    */
+    //% help=serial/read-buffer
+    //% blockId=serial_read_buffer block="serial|read buffer"
+    //% weight=17
+    //% group="Read"
+    Buffer readBuffer() {
+      auto service = getWSerial();
+      if (!service) return mkBuffer(NULL, 0);
+      int n = service->serial.getRxBufferSize();
+      if (n == 0) 
+        return mkBuffer(NULL, 0);
+
+      auto buf = mkBuffer(NULL, n);
+      auto read = service->serial.read(buf->data, buf->length, SerialMode::ASYNC);
+      if (read == DEVICE_SERIAL_IN_USE) { // someone else is reading
+        decrRC(buf);
+        return mkBuffer(NULL, 0);
+      }
+      if (buf->length != read) {
+        auto buf2 = mkBuffer(buf->data, read);
+        decrRC(buf);
+        buf = buf2;
+      }        
+      return buf;
     }
 
     void send(const char* buffer, int length) {
       // TODO: fix CODAL abstraction
       // getWSerial()->serial.send((uint8_t*)buffer, length * sizeof(char));
-      getWSerial()->serial.printf("%s", buffer);
+      auto service = getWSerial();
+      if (!service) return;
+      service->serial.printf("%s", buffer);
     }
 
     /**
@@ -69,8 +107,10 @@ namespace serial {
     //% help=serial/write-string
     //% weight=87
     //% blockId=serial_writestring block="serial|write string %text"
-    //% blockHidden=1
+    //% group="Write"
     void writeString(String text) {
+      auto service = getWSerial();
+      if (!service) return;
       if (NULL == text) return;
       send(text->data, text->length);
     }
@@ -80,16 +120,22 @@ namespace serial {
     */
     //% help=serial/write-buffer weight=6
     //% blockId=serial_writebuffer block="serial|write buffer %buffer"
+    //% group="Write"
     void writeBuffer(Buffer buffer) {
+      auto service = getWSerial();
+      if (!service) return;
       if (NULL == buffer) return;
-      getWSerial()->serial.send(buffer->data, buffer->length);
+      service->serial.send(buffer->data, buffer->length);
     }
 
     /**
       Sends the console message through the TX, RX pins
       **/
     //% blockId=serialsendtoconsole block="serial attach to console"
+    //% group="Configuration"
     void attachToConsole() {
+      auto service = getWSerial();
+      if (!service) return;
       setSendToUART(serial::send);
     }
 
@@ -97,8 +143,11 @@ namespace serial {
     Set the baud rate of the serial port
     */
     //% help=serial/set-baud-rate
+    //% group="Configuration"
     void setBaudRate(BaudRate rate) {
-      getWSerial()->serial.setBaud((int)rate);
+      auto service = getWSerial();
+      if (!service) return;
+      service->serial.setBaud((int)rate);
     }
 
     /**
@@ -115,10 +164,28 @@ namespace serial {
     //% rx.fieldEditor="gridpicker" rx.fieldOptions.columns=3
     //% rx.fieldOptions.tooltips="false"
     //% blockGap=8 inlineInputMode=inline
+    //% group="Configuration"
     void redirect(DigitalInOutPin tx, DigitalInOutPin rx, BaudRate rate) {
+      auto service = getWSerial();
+      if (!service) return;
       if (NULL == tx || NULL == rx)
         return;
-      getWSerial()->serial.redirect(*tx, *rx);
+      service->serial.redirect(*tx, *rx);
       setBaudRate(rate);
+    }
+
+    /**
+    * Registers code when serial events happen
+    **/
+    //% weight=9
+    //% help=serial/on-event
+    //% blockId=serial_onevent block="serial on %event"
+    //% blockGap=8
+    //% group="Events"
+    void onEvent(SerialEvent event, Action handler) {
+      auto service = getWSerial();
+      if (!service) return;
+      auto id = service->serial.id;
+      registerWithDal(id, event, handler);
     }
 }
