@@ -68,11 +68,9 @@ namespace sprites {
     export function createProjectileFromSide(img: Image, vx: number, vy: number) {
         return createProjectile(img, vx, vy, 1);
     }
-
-
     
     /**
-     * Create a new sprite with given speed, and place it at the edge of the screen so it moves towards the middle.
+     * Create a new sprite with given speed and make start from another sprite's position.
      * The sprite auto-destroys when it leaves the screen. You can modify position after it's created.
      */
     //% group="Projectiles"

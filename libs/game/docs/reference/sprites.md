@@ -6,7 +6,9 @@ Create and move game objects. Handle collisions between objects.
 
 ```cards
 sprites.create(null)
-sprites.createProjectile(img``, 0, 0, 0)
+sprites.createProjectile(null, 0, 0, 0)
+sprites.createProjectileFromSide(null, 0, 0)
+sprites.createProjectileFromSprite(null, null, 0, 0)
 ```
 
 ## Sprite actions

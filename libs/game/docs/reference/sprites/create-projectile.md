@@ -8,7 +8,7 @@ sprites.createProjectile(img``, 0, 0, 0)
 
 A projectile is a sprite the moves from the location where it's created at. It moves with a speed (velocity), that you set in both the horizontal and veritcal directions. The sprite starts at the screen coordinate of (0, 0) unless you tell it to come from another sprite. If you do that, the projectile will start from the center of sprite you set as the source.
 
-The projectile has all the same properties that a non-moving sprite has. It will overlap with other sprites and hit collide with tiles.
+The projectile has all the same properties that a non-moving sprite has. It will overlap with other sprites and hit, or collide, with tiles.
 
 Projectiles are destroyed when they move off of the screen.
 
@@ -98,4 +98,7 @@ controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
 
 ## See also #seealso
 
-[create](/reference/sprites/create)
+[create](/reference/sprites/create),
+[create projectile from side](/reference/sprites/create-projectile-from-side),
+[create projectile from sprite](/reference/sprites/create-projectile-from-sprite)
+
