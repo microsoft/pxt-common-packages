@@ -172,8 +172,12 @@ namespace particles {
          * Destroy the source
          */
         destroy() {
-            sources.removeElement(this);
-            game.currentScene().allSprites.removeElement(this);
+            this.enabled = false;
+            control.runInParallel(() => {
+                pauseUntil(() => this.head == null);
+                sources.removeElement(this);
+                game.currentScene().allSprites.removeElement(this);
+            });
         }
 
         /**
