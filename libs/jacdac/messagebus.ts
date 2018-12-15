@@ -45,11 +45,18 @@ namespace jacdac {
             return true;
         }
 
-        static debugView(): DebugView {
-            return {
-                driverClass: DAL.JD_DRIVER_CLASS_MESSAGE_BUS,
-                name: MessageBusService.NAME
-            }
+        static debugView(): DebugView { 
+            return new MessageBusDebugView();
+        }
+    }
+
+    class MessageBusDebugView extends DebugView {
+        constructor() {
+            super(MessageBusService.NAME, DAL.JD_DRIVER_CLASS_MESSAGE_BUS);
+        }
+
+        renderPacket(packet: JDPacket): string {
+            return `${packet.getNumber(NumberFormat.UInt16LE, 0)} ${packet.getNumber(NumberFormat.UInt16LE, 2)}`;
         }
     }
 
