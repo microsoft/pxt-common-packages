@@ -35,8 +35,10 @@ extern "C" void target_init()
     initRandomSeed();
 }
 
-void screen_init() {
+void updateScreen(Image_ img);
 
+void screen_init() {
+    updateScreen(NULL);
 }
 
 }

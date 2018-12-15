@@ -31,6 +31,8 @@ class WDisplay {
 
     int eventId;
 
+    int is32Bit;
+
     pthread_mutex_t mutex;
 
     WDisplay();
@@ -69,35 +71,57 @@ void WDisplay::updateLoop() {
 
     dirty = true;
 
+    DMESG("sx=%d sy=%d ox=%d oy=%d 32=%d", sx,sy,offx,offy,is32Bit);
+
     for (;;) {
         auto start0 = current_time_us();
 
         while (!dirty)
             sleep_core_us(2000);
-        
-        //auto start = current_time_us();
+
+        // auto start = current_time_us();
 
         pthread_mutex_lock(&mutex);
         dirty = false;
-        uint16_t *dst =
-            (uint16_t *)fbuf + cur_page * screensize / 2 + offx + offy * finfo.line_length / 2;
-        uint32_t *d2 = (uint32_t*)dst;
-        for (int yy = 0; yy < height; yy++) {
-            auto shift = yy & 1 ? 4 : 0;
-            for (int i = 0; i < sy; ++i) {
-                auto src = screenBuf + yy / 2;
-                for (int xx = 0; xx < width; ++xx) {
-                    int c = this->currPalette[(*src >> shift) & 0xf];
-                    src += height / 2;
-                    for (int j = 0; j < sx / 2; ++j)
-                        *d2++ = c;
+
+        if (!is32Bit) {
+            uint16_t *dst =
+                (uint16_t *)fbuf + cur_page * screensize / 2 + offx + offy * finfo.line_length / 2;
+            uint32_t *d2 = (uint32_t *)dst;
+            for (int yy = 0; yy < height; yy++) {
+                auto shift = yy & 1 ? 4 : 0;
+                for (int i = 0; i < sy; ++i) {
+                    auto src = screenBuf + yy / 2;
+                    for (int xx = 0; xx < width; ++xx) {
+                        int c = this->currPalette[(*src >> shift) & 0xf];
+                        src += height / 2;
+                        for (int j = 0; j < sx / 2; ++j)
+                            *d2++ = c;
+                    }
+                    d2 += skip;
                 }
-                d2 += skip;
+            }
+        } else {
+            uint32_t *d2 =
+                (uint32_t *)fbuf + cur_page * screensize / 4 + offx + offy * finfo.line_length / 4;
+            for (int yy = 0; yy < height; yy++) {
+                auto shift = yy & 1 ? 4 : 0;
+                for (int i = 0; i < sy; ++i) {
+                    auto src = screenBuf + yy / 2;
+                    for (int xx = 0; xx < width; ++xx) {
+                        int c = this->currPalette[(*src >> shift) & 0xf];
+                        src += height / 2;
+                        for (int j = 0; j < sx; ++j)
+                            *d2++ = c;
+                    }
+                    d2 += skip << 1;
+                }
             }
         }
+
         pthread_mutex_unlock(&mutex);
 
-        //auto len = current_time_us() - start;
+        // auto len = current_time_us() - start;
 
         painted = true;
         raiseEvent(DEVICE_ID_NOTIFY_ONE, eventId);
@@ -114,8 +138,8 @@ void WDisplay::updateLoop() {
             ioctl(fb_fd, FBIO_WAITFORVSYNC, 0);
         }
 
-        //auto tot = current_time_us() - start;
-        //if (frameNo % 37 == 0)
+        // auto tot = current_time_us() - start;
+        // if (frameNo % 37 == 0)
         //    DMESG("copy %d us, tot %d us delay %d us",  (int)len, (int)tot, (int)(start-start0));
     }
 }
@@ -129,7 +153,7 @@ WDisplay::WDisplay() {
     lastImg = NULL;
     newPalette = false;
 
-    registerGC((TValue*)&lastImg);
+    registerGC((TValue *)&lastImg);
 
     eventId = allocateNotifyEvent();
 
@@ -149,7 +173,13 @@ WDisplay::WDisplay() {
 
     vinfo.yres_virtual = vinfo.yres * 2;
     vinfo.xres_virtual = vinfo.xres;
-    vinfo.bits_per_pixel = 16;
+
+    if (vinfo.bits_per_pixel == 32) {
+        is32Bit = true;
+    } else {
+        vinfo.bits_per_pixel = 16;
+        is32Bit = false;
+    }
 
     ioctl(fb_fd, FBIOPUT_VSCREENINFO, &vinfo);
     ioctl(fb_fd, FBIOGET_FSCREENINFO, &finfo);
@@ -175,12 +205,15 @@ void setPalette(Buffer buf) {
         uint8_t r = buf->data[i * 3];
         uint8_t g = buf->data[i * 3 + 1];
         uint8_t b = buf->data[i * 3 + 2];
-        // display->currPalette[i] = (r << 16) | (g << 8) | (b << 0);
-        r >>= 3;
-        g >>= 2;
-        b >>= 3;
-        uint16_t cc = (r << 11) | (g << 5) | (b << 0);
-         display->currPalette[i] = (cc << 16) | cc;
+        if (display->is32Bit) {
+            display->currPalette[i] = (r << 16) | (g << 8) | (b << 0);
+        } else {
+            r >>= 3;
+            g >>= 2;
+            b >>= 3;
+            uint16_t cc = (r << 11) | (g << 5) | (b << 0);
+            display->currPalette[i] = (cc << 16) | cc;
+        }
     }
     display->newPalette = true;
 }
