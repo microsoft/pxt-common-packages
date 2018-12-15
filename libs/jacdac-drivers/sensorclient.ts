@@ -127,16 +127,20 @@ namespace jacdac {
                 case SensorCommand.HighThreshold:
                     return `high ${data[1]}`
                 case SensorCommand.Event:
-                    return `ev ${packet.data.getNumber(NumberFormat.UInt16LE, 1)}`
+                    return this.renderEvent(data[1]);
                 case SensorCommand.State:
-                    return this.renderState(data.slice(1));
+                    return `ev ${this.renderState(data.slice(1)) || data[1]}`;
                 default:
                     return "";//renderCustom(data);
             }
         }
 
+        renderEvent(value: number): string {
+            return value.toString();
+        }
+
         renderState(data: Buffer): string {
-            return "";
+            return data.toHex();
         }
     }
 }

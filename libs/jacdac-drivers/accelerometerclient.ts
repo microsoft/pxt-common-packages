@@ -148,6 +148,14 @@ namespace jacdac {
             super("acc", jacdac.ACCELEROMETER_DEVICE_CLASS);
         }
 
+        renderEvent(data: number): string {
+            switch(data) {
+                case JDGesture.Shake: return "shake";
+                case JDGesture.FreeFall: return "freefall";
+            }
+            return "";
+        }
+
         renderState(data: Buffer): string {
             const x = data.getNumber(NumberFormat.UInt16LE, 0);
             const y = data.getNumber(NumberFormat.UInt16LE, 2);

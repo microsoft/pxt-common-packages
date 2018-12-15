@@ -13,7 +13,8 @@ namespace jacdac {
         return [
             jacdac.MessageBusService.debugView(),
             jacdac.ConsoleDriver.debugView(),
-            jacdac.AccelerometerClient.debugView()
+            jacdac.AccelerometerClient.debugView(),
+            jacdac.MicrophoneClient.debugView()
         ];
     }
 
