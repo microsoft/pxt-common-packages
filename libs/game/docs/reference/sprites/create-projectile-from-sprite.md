@@ -52,6 +52,7 @@ b b d d b b b b b d b b b . . . . . . . . . . . . .
 b b b b b . . . b b b . . . . . . . . . . . . . . .
 `, SpriteKind.Player)
 ship.x = 20
+controller.moveSprite(ship, 0, 20)
 controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
     photon = sprites.createProjectileFromSprite(img`
 . . . . . . 1 1 1 . .
