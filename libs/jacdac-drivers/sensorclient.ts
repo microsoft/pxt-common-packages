@@ -115,25 +115,28 @@ namespace jacdac {
 
         renderPacket(device: JDDevice, packet: JDPacket): string {
             const data = packet.data;
-            if (device.isHostDriver()) { // host
-                const cmd = data[0];
-                switch (cmd) {
-                    case SensorCommand.StartStream:
-                        const interval = data.getNumber(NumberFormat.UInt32LE, 1);
-                        return `start stream ${interval ? `(${interval}ms)` : ''}`;
-                    case SensorCommand.StopStream:
-                        return `stop stream`;
-                    case SensorCommand.LowThreshold:
-                        return `low ${data[1]}`
-                    case SensorCommand.HighThreshold:
-                        return `high ${data[1]}`
-                    default:
-                        return "";//renderCustom(data);
-                }
-            } else { // client
-                return "";
+            const cmd = data[0];
+            switch (cmd) {
+                case SensorCommand.StartStream:
+                    const interval = data.getNumber(NumberFormat.UInt32LE, 1);
+                    return `start stream ${interval ? `(${interval}ms)` : ''}`;
+                case SensorCommand.StopStream:
+                    return `stop stream`;
+                case SensorCommand.LowThreshold:
+                    return `low ${data[1]}`
+                case SensorCommand.HighThreshold:
+                    return `high ${data[1]}`
+                case SensorCommand.Event:
+                    return `ev ${packet.data.getNumber(NumberFormat.UInt16LE, 1)}`
+                case SensorCommand.State:
+                    return this.renderState(data.slice(1));
+                default:
+                    return "";//renderCustom(data);
             }
         }
 
+        renderState(data: Buffer): string {
+            return "";
+        }
     }
 }

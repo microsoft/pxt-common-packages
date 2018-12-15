@@ -12,7 +12,8 @@ namespace jacdac {
     function createDebugViews(): DebugView[] {
         return [
             jacdac.MessageBusService.debugView(),
-            jacdac.ConsoleDriver.debugView()
+            jacdac.ConsoleDriver.debugView(),
+            jacdac.AccelerometerClient.debugView()
         ];
     }
 
