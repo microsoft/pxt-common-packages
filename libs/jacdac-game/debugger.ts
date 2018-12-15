@@ -9,12 +9,8 @@ namespace jacdac {
     }
     let mode = Mode.None;
 
-    function createDebugViews() {
+    function createDebugViews(): DebugView[] {
         return [
-            {
-                driverClass: 0,
-                name: "logic"
-            },
             jacdac.MessageBusService.debugView(),
             jacdac.ConsoleDriver.debugView()
         ];
