@@ -10,7 +10,7 @@ namespace jacdac {
         renderControlPacket(cp: ControlPacket){
             return "";
         }
-        renderPacket(packet: JDPacket) {
+        renderPacket(device: JDDevice, packet: JDPacket) {
             return "";
         }
     }

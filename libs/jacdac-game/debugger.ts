@@ -180,10 +180,14 @@ namespace jacdac {
             this.debugViews = debugViews;
         }
 
-        findView(packet: JDPacket) {
+        findDevice(packet: JDPacket): JDDevice {
             const drivers = jacdac.drivers();
             const driver = drivers.find(d => d.address == packet.address);
-            const dbgView = this.debugViews.find(d => d.driverClass == driver.driverClass);
+            return driver;
+        }
+
+        findView(driver: JDDevice, packet: JDPacket) {
+            const dbgView = driver ? this.debugViews.find(d => d.driverClass == driver.driverClass) : undefined;
             return dbgView;
         }
 
@@ -192,8 +196,10 @@ namespace jacdac {
             if (packet.address == 0) {
                 const cp = new ControlPacket(packet.data);
                 console.log(`jd>cp ${cp.address}=${cp.driverClass} ${cp.flags}`)
-                const dbgView = this.findView(packet);
-                if (dbgView) {
+                let device: JDDevice;
+                let dbgView: DebugView;
+                if ((device = this.findDevice(packet))
+                    && (dbgView = this.findView(device, packet))) {
                     const str = dbgView.renderControlPacket(cp);
                     if (str)
                         console.log(" " + str);
@@ -201,9 +207,12 @@ namespace jacdac {
                 return true;
             } else {
                 console.log(`jd>p ${packet.address} ${packet.size}b`)
-                const dbgView = this.findView(packet);
+                let device: JDDevice;
+                let dbgView: DebugView;
                 let str: string;
-                if (dbgView && (str = dbgView.renderPacket(packet))) {
+                if ((device = this.findDevice(packet))
+                    && (dbgView = this.findView(device, packet))
+                    && (str = dbgView.renderPacket(device, packet))) {
                     console.log(" " + str);
                 } else {
                     console.log(" " + packet.data.toHex());

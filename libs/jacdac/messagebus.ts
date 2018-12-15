@@ -55,7 +55,7 @@ namespace jacdac {
             super(MessageBusService.NAME, DAL.JD_DRIVER_CLASS_MESSAGE_BUS);
         }
 
-        renderPacket(packet: JDPacket): string {
+        renderPacket(device: JDDevice, packet: JDPacket): string {
             return `${packet.getNumber(NumberFormat.UInt16LE, 0)} ${packet.getNumber(NumberFormat.UInt16LE, 2)}`;
         }
     }

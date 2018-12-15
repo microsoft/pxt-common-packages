@@ -126,7 +126,7 @@ namespace jacdac {
         constructor() {
             super(ConsoleDriver.NAME, jacdac.LOGGER_DEVICE_CLASS);
         }
-        renderPacket(packet: JDPacket) {
+        renderPacket(device: JDDevice, packet: JDPacket) {
             const data = packet.data;
             const pri = data[0];
             const str = bufferToString(data, 1);

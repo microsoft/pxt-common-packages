@@ -35,7 +35,7 @@ namespace jacdac {
 
         private sync() {
             if (this._sensorState == SensorState.None) return;
-            
+
             const buf = control.createBuffer(1);
             const cmd = (this._sensorState & SensorState.Streaming)
                 ? SensorCommand.StartStream : SensorCommand.StopStream;
@@ -80,32 +80,6 @@ namespace jacdac {
             }
         }
 
-        static renderControlPacket(data: Buffer): string {
-            const state = data[0];
-            switch(state) {
-                case SensorState.Stopping: return "stopping";
-                case SensorState.Streaming: return "stream";
-                default: return "stop";
-            }
-        }
-        
-        static renderClientPacket(data: Buffer, renderCustom: (data:Buffer) => string): string {
-            const cmd = data[0];
-            switch(cmd) {
-                case SensorCommand.StartStream:
-                    const interval = data.getNumber(NumberFormat.UInt32LE, 1);
-                    return `start stream ${interval ? `(${interval}ms)` : ''}`;
-                case SensorCommand.StopStream:
-                    return `stop stream`;
-                case SensorCommand.LowThreshold:                
-                    return `low ${data[1]}`
-                case SensorCommand.HighThreshold:
-                    return `high ${data[1]}`
-                default:
-                    return renderCustom(data);
-            }
-        }
-
         protected handleCustomCommand(command: number, pkt: JDPacket) {
             return true;
         }
@@ -122,5 +96,44 @@ namespace jacdac {
             buf.setNumber(NumberFormat.Int32LE, 1, value);
             this.sendPacket(buf);
         }
+    }
+
+    export class SensorDebugView extends DebugView {
+        constructor(name: string, driverClass: number) {
+            super(name, driverClass);
+        }
+
+        renderControlPacket(packet: ControlPacket): string {
+            const data = packet.data;
+            const state = data[0];
+            switch (state) {
+                case SensorState.Stopping: return "stopping";
+                case SensorState.Streaming: return "stream";
+                default: return "stop";
+            }
+        }
+
+        renderPacket(device: JDDevice, packet: JDPacket): string {
+            const data = packet.data;
+            if (device.isHostDriver()) { // host
+                const cmd = data[0];
+                switch (cmd) {
+                    case SensorCommand.StartStream:
+                        const interval = data.getNumber(NumberFormat.UInt32LE, 1);
+                        return `start stream ${interval ? `(${interval}ms)` : ''}`;
+                    case SensorCommand.StopStream:
+                        return `stop stream`;
+                    case SensorCommand.LowThreshold:
+                        return `low ${data[1]}`
+                    case SensorCommand.HighThreshold:
+                        return `high ${data[1]}`
+                    default:
+                        return "";//renderCustom(data);
+                }
+            } else { // client
+                return "";
+            }
+        }
+
     }
 }
