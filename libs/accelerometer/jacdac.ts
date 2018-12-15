@@ -20,15 +20,6 @@ namespace jacdac {
             buf.setNumber(NumberFormat.Int16LE, 4, input.acceleration(Dimension.Z));
             return buf;
         }
-
-        static debugView(): DebugView {
-            return {
-                driverClass: jacdac.ACCELEROMETER_DEVICE_CLASS,
-                name: AccelerometerService.NAME,
-                render: function(data) { 
-                    return `${data.getNumber(NumberFormat.Int16LE, 0)} ${data.getNumber(NumberFormat.Int16LE, 2)} ${data.getNumber(NumberFormat.Int16LE, 4)}`}
-            }
-        }
     }
 
     //% fixedInstance whenUsed block="accelerometer service"

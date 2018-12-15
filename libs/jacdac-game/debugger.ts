@@ -181,7 +181,14 @@ namespace jacdac {
         debugViews: DebugView[];
         constructor(debugViews: DebugView[]) {
             super("log")
-            this.debugViews = debugViews.filter(v => !!v.render);
+            this.debugViews = debugViews;
+        }
+
+        findView(packet: JDPacket) {
+            const drivers = jacdac.drivers();
+            const driver = drivers.find(d => d.address == packet.address);
+            const dbgView = this.debugViews.find(d => d.driverClass == driver.driverClass);
+            return dbgView;
         }
 
         handlePacket(pkt: Buffer): boolean {
@@ -189,22 +196,21 @@ namespace jacdac {
             if (packet.address == 0) {
                 const cp = new ControlPacket(packet.data);
                 console.log(`jd>cp ${cp.address}=${cp.driverClass} ${cp.flags}`)
-                const data = cp.data;
-                if (data.length)
-                    console.log(" " + cp.data.toHex());
+                const dbgView = this.findView(packet);
+                if (dbgView) {
+                    const str = dbgView.renderControlPacket(cp);
+                    if (str)
+                        console.log(" " + str);
+                }
                 return true;
             } else {
                 console.log(`jd>p ${packet.address} ${packet.size}b`)
-                const data = packet.data;
-                if (data.length) {
-                    const drivers = jacdac.drivers();
-                    const driver = drivers.find(d => d.address == packet.address);
-                    const dbgView = this.debugViews.find(d => d.driverClass == driver.driverClass);
-                    if (dbgView) {
-                        console.log(" " + dbgView.render(packet.data));
-                    } else {
-                        console.log(" " + packet.data.toHex());
-                    }
+                const dbgView = this.findView(packet);
+                let str: string;
+                if (dbgView && (str = dbgView.renderPacket(packet))) {
+                    console.log(" " + str);
+                } else {
+                    console.log(" " + packet.data.toHex());
                 }
             }
             return true;

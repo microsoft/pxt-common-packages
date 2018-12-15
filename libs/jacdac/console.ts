@@ -118,17 +118,20 @@ namespace jacdac {
         }
 
         static debugView(): DebugView {
-            return {
-                driverClass: jacdac.LOGGER_DEVICE_CLASS,
-                name: ConsoleDriver.NAME,
-                render: function(data) {
-                    const pri = data[0];
-                    const str = bufferToString(data, 1);
-                    return `${pri}:${str}`;
-                }
-            }
+            return new ConsoleDebugView()
         }
+    }
 
+    class ConsoleDebugView extends DebugView {
+        constructor() {
+            super(ConsoleDriver.NAME, jacdac.LOGGER_DEVICE_CLASS);
+        }
+        renderPacket(packet: JDPacket) {
+            const data = packet.data;
+            const pri = data[0];
+            const str = bufferToString(data, 1);
+            return `${pri}:${str}`;
+        }
     }
 
     //% whenUsed
