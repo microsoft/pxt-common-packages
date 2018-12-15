@@ -1,9 +1,13 @@
+/**
+ * Small particles
+ */
+//% color="#03AA74" weight=78 icon="\uf021"
+//% groups='["Create", "Properties"]'
 namespace particles {
     const TIME_PRECISION = 10; // time goes down to down to the 1<<10 seconds
 
     let lastUpdate: number;
     let sources: ParticleSource[];
-    let defaultFactory: ParticleFactory;
 
     /**
      * A single particle
@@ -27,41 +31,6 @@ namespace particles {
     }
 
     /**
-     * A factory for generating particles.
-     */
-    export class ParticleFactory {
-        constructor() {
-            // Compiler errors if this doesn't exist
-        }
-
-        /**
-         * Generate a particle at the position of the given anchor
-         * @param anchor 
-         */
-        createParticle(anchor: ParticleAnchor): Particle {
-            const p = new Particle();
-
-            p._x = Fx8(anchor.x);
-            p._y = Fx8(anchor.y);
-            p.vx = Fx.zeroFx8;
-            p.vy = Fx.zeroFx8;
-            p.lifespan = 1500;
-
-            return p;
-        }
-
-        /**
-         * Draw the given particle at the given location
-         * @param particle 
-         * @param x 
-         * @param y 
-         */
-        drawParticle(particle: Particle, x: Fx8, y: Fx8) {
-            screen.setPixel(Fx.toInt(x), Fx.toInt(y), 1);
-        }
-    }
-
-    /**
      * A source of particles
      */
     export class ParticleSource implements SpriteLike {
@@ -74,7 +43,7 @@ namespace particles {
         protected head: Particle;
         protected timer: number;
         protected period: number;
-        protected factory: ParticleFactory;
+        protected _factory: ParticleFactory;
         
         protected ax: Fx8;
         protected ay: Fx8;
@@ -91,11 +60,7 @@ namespace particles {
             this.setAnchor(anchor);
             this._dt = 0;
             this.z = -1;
-
-            if (!defaultFactory)
-                defaultFactory = new ParticleFactory();
-            this.setFactory(factory ? factory : defaultFactory);
-
+            this.setFactory(factory || particles.defaultFactory);
             sources.push(this);
             game.currentScene().addSprite(this);
 
@@ -126,7 +91,8 @@ namespace particles {
             this.timer -= dt;
             while (this.timer < 0 && this._enabled) {
                 this.timer += this.period;
-                const p = this.factory.createParticle(this.anchor);
+                const p = this._factory.createParticle(this.anchor);
+                if (!p) continue; // some factories can decide to not produce a particle
                 p.next = this.head;
                 this.head = p;
             }
@@ -169,18 +135,25 @@ namespace particles {
         }
 
         /**
-         * Set acceleration for particles created from this source
-         * @param ax 
-         * @param ay 
+         * Sets the acceleration applied to the particles
          */
+        //% blockId=particlessetacc block="particles %source set acceleration ax $ax ay $ay"
+        //% group="Properties"
         setAcceleration(ax: number, ay: number) {
             this.ax = Fx8(ax);
             this.ay = Fx8(ay);
         }
 
         /**
-         * Whether this source is currently enabled (emitting particles) or not
+         * Enables or disables particles
+         * @param on 
          */
+        //% blockId=particlessetenabled block="particles %source %on=toggleOnOff"
+        //% group="Properties"
+        setEnabled(on: boolean) {
+            this.enabled = on;
+        }
+
         get enabled() {
             return this._enabled;
         }
@@ -216,20 +189,28 @@ namespace particles {
         }
 
         /**
-         * Assign a rate for particles to be emitted at
+         * Sets the number of particle created per second
          * @param particlesPerSecond 
          */
+        //% blockId=particlessetrate block="particles %source set rate to $particlesPerSecond"
+        //% group="Properties"
         setRate(particlesPerSecond: number) {
             this.period = Math.ceil(1000 / particlesPerSecond);
             this.timer = 0;
         }
 
+        get factory(): ParticleFactory {
+            return this._factory;
+        }
+
         /**
-         * Assign a factory to emit particles with
+         * Sets the particle factor
          * @param factory 
          */
+        //% blockId=particlesetfactory block="particles %source set $factory=variables_get(factory)"
         setFactory(factory: ParticleFactory) {
-            if (factory) this.factory = factory;
+            if (factory)
+                this._factory = factory;
         }
 
         protected updateParticle(p: Particle, fixedDt: Fx8) {
@@ -243,8 +224,22 @@ namespace particles {
         }
 
         protected drawParticle(p: Particle, screenLeft: Fx8, screenTop: Fx8) {
-            this.factory.drawParticle(p, Fx.sub(p._x, screenLeft), Fx.sub(p._y, screenTop));
+            this._factory.drawParticle(p, Fx.sub(p._x, screenLeft), Fx.sub(p._y, screenTop));
         }
+    }
+
+    /**
+     * Creates a new source of particles attached to a sprite
+     * @param sprite 
+     * @param particlesPerSecond number of particles created per second
+     */
+    //% blockId=particlesspray block="create particle source from %sprite=variables_get(mySprite) at %particlesPerSecond p/sec"
+    //% particlesPerSecond.defl=20
+    //% blockSetVariable=source
+    //% particlesPerSecond=100
+    //% group="Sources"
+    export function createParticleSource(sprite: Sprite, particlesPerSecond: number): ParticleSource {
+        return new ParticleSource(sprite, particlesPerSecond);
     }
 
     function init() {
