@@ -29,7 +29,13 @@ void *LinuxDAC::play(void *self) {
 
     for (;;) {
         auto buf = dac->src.pull();
-        int frames = snd_pcm_writei(pcm_handle, buf.getBytes(), buf.length());
+        auto data = (int16_t *)buf.getBytes();
+        auto len = buf.length() / 2;
+        for (int i = 0; i < len; ++i) {
+            // playing at half-volume
+            data[i] = (data[i] - 512) << 5;
+        }
+        int frames = snd_pcm_writei(pcm_handle, data, len);
         if (frames < 0)
             frames = snd_pcm_recover(pcm_handle, frames, 0);
         if (frames < 0) {
