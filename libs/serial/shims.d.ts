@@ -77,5 +77,34 @@ declare namespace serial {
     //% group="Events" shim=serial::onEvent
     function onEvent(event: SerialEvent, handler: () => void): void;
 }
+declare namespace swserial {
+
+    /**
+     * Creates a new single wire serial instance over the given pin. Returns null if not supported.
+     */
+    //% group="Single Wire" parts="swserial" shim=swserial::createSingleWireSerial
+    function createSingleWireSerial(pin: DigitalInOutPin): SwSerial;
+}
+
+
+declare interface SwSerial {
+    /**
+     * Sets the baud rate
+     */
+    //% shim=SwSerialMethods::setBaudRate
+    setBaudRate(rate: int32): void;
+
+    /**
+     * Sends a buffer of the pin
+     */
+    //% shim=SwSerialMethods::writeBuffer
+    writeBuffer(buf: Buffer): void;
+
+    /**
+     * Receives a buffer over the pin
+     */
+    //% shim=SwSerialMethods::readBuffer
+    readBuffer(length: int32): Buffer;
+}
 
 // Auto-generated. Do not edit. Really.

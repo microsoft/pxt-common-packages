@@ -71,6 +71,11 @@ class JDProxyDriver;
 
 typedef jacdac::JDProxyDriver* JacDacDriverStatus;
 
+namespace swserial {
+class SwSerialProxy;
+}
+typedef swserial::SwSerialProxy* SwSerial;
+
 #define DEVICE_ID_BUTTON_SLIDE 3000
 #define DEVICE_ID_MICROPHONE 3001
 #define DEVICE_ID_FIRST_BUTTON 4000

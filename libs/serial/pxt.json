@@ -1,8 +1,9 @@
 {
     "name": "serial",
-    "description": "UART communicatoin",
+    "description": "UART communication",
     "files": [
         "serial.cpp",
+        "swserial.cpp",
         "serial.ts",
         "enums.d.ts",
         "shims.d.ts"
