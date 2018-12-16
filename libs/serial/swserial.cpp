@@ -49,7 +49,7 @@ void setBaudRate(swserial::SwSerial d, int rate) {
 //%
 void writeBuffer(swserial::SwSerial sw, Buffer buf) {
 #ifdef CODAL_JACDAC_WIRE_SERIAL
-    sw->sw.send(buf->data, buf->length);
+    sw->sw.sendDMA(buf->data, buf->length);
 #endif
 }
 
@@ -61,7 +61,7 @@ void writeBuffer(swserial::SwSerial sw, Buffer buf) {
 Buffer readBuffer(swserial::SwSerial sw, int length) {
     auto buf = pxt::mkBuffer(NULL, length);
 #ifdef CODAL_JACDAC_WIRE_SERIAL
-    sw->sw.receive(buf->data, buf->length);
+    sw->sw.receiveDMA(buf->data, buf->length);
 #endif
     return buf;
 }
