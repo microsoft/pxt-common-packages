@@ -4,6 +4,7 @@
     "additionalFilePath": "../music",
     "files": [
         "SoundOutput.h",
+        "sound.cpp",
         "melody.h",
         "melody.cpp",
         "melody.ts",
