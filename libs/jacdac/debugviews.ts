@@ -15,6 +15,56 @@ namespace jacdac {
         }
     }
 
+    export class SensorDebugView extends DebugView {
+        constructor(name: string, driverClass: number) {
+            super(name, driverClass);
+        }
+
+        renderControlPacket(packet: ControlPacket): string {
+            const data = packet.data;
+            const state = data[0];
+            switch (state) {
+                case SensorState.Stopping: return "stopping";
+                case SensorState.Streaming: return "stream";
+                default: return "stop";
+            }
+        }
+
+        renderPacket(device: JDDevice, packet: JDPacket): string {
+            const data = packet.data;
+            const cmd = data[0];
+            switch (cmd) {
+                case SensorCommand.StartStream:
+                    const interval = data.getNumber(NumberFormat.UInt32LE, 1);
+                    return `start stream ${interval ? `(${interval}ms)` : ''}`;
+                case SensorCommand.StopStream:
+                    return `stop stream`;
+                case SensorCommand.LowThreshold:
+                    return `low ${data[1]}`
+                case SensorCommand.HighThreshold:
+                    return `high ${data[1]}`
+                case SensorCommand.Event:
+                    return this.renderEvent(data[1]);
+                case SensorCommand.State:
+                    return `ev ${this.renderState(data.slice(1)) || data[1]}`;
+                default:
+                    return this.renderCustomPacket(cmd, packet);
+            }
+        }
+
+        renderCustomPacket(cmd: number, packet: JDPacket): string {
+            return packet.data.toHex();
+        }
+
+        renderEvent(value: number): string {
+            return value.toString();
+        }
+
+        renderState(data: Buffer): string {
+            return data.toHex();
+        }
+    }    
+
     class BridgeDebugView extends DebugView {
         constructor() {
             super("bridge", DAL.JD_DRIVER_CLASS_BRIDGE);
