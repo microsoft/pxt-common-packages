@@ -247,6 +247,12 @@ namespace jacdac {
         }
     }
 
+    class PixelDebugView extends ActuatorDebugView {
+        constructor() {
+            super("pixel", jacdac.PIXEL_DEVICE_CLASS);
+        }
+    }
+
     export function defaultDebugViews(): DebugView[] {
         return [
             new ConsoleDebugView(),
@@ -260,7 +266,8 @@ namespace jacdac {
             new SwitchDebugView(),
             new ThermometerDebugView(),
             new TouchDebugView(),
-            new BridgeDebugView()
+            new BridgeDebugView(),
+            new PixelDebugView()
         ];
     }
 }
