@@ -169,8 +169,8 @@ namespace jacdac {
         renderEvent(value: number): string {
             switch (value) {
                 case JDButtonEvent.Click: return "click";
-                case JDButtonEvent.Down: "down";
-                case JDButtonEvent.Up: "up";
+                case JDButtonEvent.Down: return "down";
+                case JDButtonEvent.Up: return "up";
                 case JDButtonEvent.LongClick: return "lg click"
                 default: return "";
             }
