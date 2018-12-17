@@ -13,6 +13,7 @@ namespace jacdac {
         return [
             jacdac.MessageBusService.debugView(),
             jacdac.ConsoleDriver.debugView(),
+            /*
             jacdac.AccelerometerClient.debugView(),
             jacdac.MicrophoneClient.debugView(),
             jacdac.ButtonClient.debugView(),
@@ -23,6 +24,7 @@ namespace jacdac {
             jacdac.PixelClient.debugView(),
             jacdac.LightClient.debugView(),
             jacdac.MusicClient.debugView(),
+            */
             jacdac.GameLobbyDriver.debugView()
         ];
     }
@@ -78,7 +80,7 @@ namespace jacdac {
                 flags += " dis";
             const err = d.error;
             if (err != JDDriverErrorCode.DRIVER_OK)
-                flags += ` e ${errors[err] || err}`;
+                flags += ` e ${errors[<number>err] || err}`;
             console.log(flags)
         })
         console.log("");
