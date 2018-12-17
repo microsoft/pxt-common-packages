@@ -116,6 +116,12 @@ namespace jacdac {
         constructor() {
             super(ConsoleDriver.NAME, jacdac.LOGGER_DEVICE_CLASS);
         }
+
+        renderControlPacket(cp: ControlPacket): string {
+            const data = cp.data;
+            return `${["off", "broad", "listen"][data[0]]} ${data[1]}`;
+        }
+
         renderPacket(device: JDDevice, packet: JDPacket) {
             const data = packet.data;
             const pri = data[0];
