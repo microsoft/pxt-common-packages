@@ -1,10 +1,18 @@
 enum JDDriverEvent {
+    //% block="connected"
     Connected = DAL.JD_DRIVER_EVT_CONNECTED,
+    //% block="disconnected"
     Disconnected = DAL.JD_DRIVER_EVT_DISCONNECTED,
+    //% block="paired"
     Paired = DAL.JD_DRIVER_EVT_PAIRED,
+    //% block="unpaired"
     Unpaired = DAL.JD_DRIVER_EVT_UNPAIRED,
+    //% block="pair rejected"
     PairingRefused = DAL.JD_DRIVER_EVT_PAIR_REJECTED,
-    PairingResponse = DAL.JD_DRIVER_EVT_PAIRING_RESPONSE
+    //% block="pairing response"
+    PairingResponse = DAL.JD_DRIVER_EVT_PAIRING_RESPONSE,
+    //% block="driver error"
+    DriverError = DAL.JD_DRIVER_EVT_ERROR
 }
 
 enum JDEvent {
@@ -13,7 +21,7 @@ enum JDEvent {
     //% block="bus disconnected"
     BusDisconnected = DAL.JD_SERIAL_EVT_BUS_DISCONNECTED,
     //% block="driver changed"
-    DriverChanged = DAL.JD_LOGIC_DRIVER_EVT_CHANGED
+    DriverChanged = DAL.JD_LOGIC_DRIVER_EVT_CHANGED,
 }
 
 enum JDDriverErrorCode

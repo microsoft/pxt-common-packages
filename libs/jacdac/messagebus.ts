@@ -6,8 +6,9 @@ namespace jacdac {
     export class MessageBusService extends Broadcast {
         suppressForwarding: boolean;
 
+        static NAME = "bus";
         constructor() {
-            super("bus", DAL.JD_DRIVER_CLASS_MESSAGE_BUS);
+            super(MessageBusService.NAME, DAL.JD_DRIVER_CLASS_MESSAGE_BUS);
             this.suppressForwarding = false;
         }
 

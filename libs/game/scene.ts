@@ -104,7 +104,7 @@ namespace scene {
             // render diagnostics
             this.eventContext.registerFrameHandler(150, () => {
                 if (game.stats)
-                    screen.print(control.EventContext.lastStats, 2, 2, 0, image.font5);
+                    screen.print(control.EventContext.lastStats + ` sprites:${this.allSprites.length}`, 2, 2, 0, image.font5);
                 if (game.debug)
                     this.physicsEngine.draw();
                 game.consoleOverlay.draw();

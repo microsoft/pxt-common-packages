@@ -10,7 +10,6 @@ namespace jacdac {
         handleStateChanged(): boolean {
             const animation = this.state.getNumber(NumberFormat.UInt8LE, 0);
             const value = this.state.getNumber(NumberFormat.UInt32LE, 1);
-
             const range = this.strip;
             switch (animation) {
                 case JDLightCommand.SetAll: range.setAll(value); break;
@@ -22,7 +21,6 @@ namespace jacdac {
                 case JDLightCommand.Comet: range.showAnimation(light.cometAnimation, value); break;
                 case JDLightCommand.Sparkle: range.showAnimation(light.sparkleAnimation, value); break;
             }
-
             return true;
         }
     }

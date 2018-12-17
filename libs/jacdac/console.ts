@@ -27,10 +27,11 @@ namespace jacdac {
     export class ConsoleDriver extends Broadcast {
         private _lastListenerTime: number;
 
+        static NAME = "log"
         static BROADCAST_TIMEOUT = 2000;
 
         constructor() {
-            super("log", jacdac.LOGGER_DEVICE_CLASS, 2);
+            super(ConsoleDriver.NAME, jacdac.LOGGER_DEVICE_CLASS, 2);
             this.controlData[0] = JDConsoleMode.Off;
             this.controlData[1] = console.minPriority; // TODO this may get outdated
             console.addListener((priority, text) => this.broadcast(priority, text));
@@ -86,10 +87,7 @@ namespace jacdac {
             // shortcut
             if (priority < console.minPriority) return true;
             // send message to console
-            const packetSize = data.length;
-            let str = "";
-            for (let i = 1; i < packetSize; i++)
-                str += String.fromCharCode(data[i]);
+            const str = bufferToString(data, 1);
             // pipe to console
             console.add(priority, `${toHex8(packet.address)}> ${str}`);
 

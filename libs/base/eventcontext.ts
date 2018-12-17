@@ -82,7 +82,7 @@ namespace control {
             if (this.timeInSample > 1000 || this.framesInSample > 30) {
                 const fps = this.framesInSample / (this.timeInSample / 1000);
                 if (EventContext.onStats) {
-                    EventContext.lastStats = `${Math.round(fps)}fps`;
+                    EventContext.lastStats = `fps:${Math.round(fps)}`;
                     EventContext.onStats(EventContext.lastStats)
                 }
                 if (control.profilingEnabled()) {
