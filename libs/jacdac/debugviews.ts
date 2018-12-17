@@ -1,4 +1,26 @@
 namespace jacdac {
+    export class DebugView {
+        driverClass: number;
+        name: string;
+
+        constructor(name: string, driverClass: number) {
+            this.name = name;
+            this.driverClass = driverClass;
+        }
+        renderControlPacket(cp: ControlPacket){
+            return "";
+        }
+        renderPacket(device: JDDevice, packet: JDPacket) {
+            return "";
+        }
+    }
+
+    class BridgeDebugView extends DebugView {
+        constructor() {
+            super("bridge", DAL.JD_DRIVER_CLASS_BRIDGE);
+        }
+    }
+
     class LightDebugView extends DebugView {
         constructor() {
             super("light", jacdac.LIGHT_DEVICE_CLASS);
@@ -169,7 +191,7 @@ namespace jacdac {
         }
     }
 
-    export function defaultDebugViews() {
+    export function defaultDebugViews(): DebugView[] {
         return [
             new ConsoleDebugView(),
             new MessageBusDebugView(),
@@ -181,7 +203,8 @@ namespace jacdac {
             new MicrophoneDebugView(),
             new SwitchDebugView(),
             new ThermometerDebugView(),
-            new TouchDebugView()
+            new TouchDebugView(),
+            new BridgeDebugView()
         ];
     }
 }

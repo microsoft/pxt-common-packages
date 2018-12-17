@@ -16,7 +16,6 @@
         "messagebus.ts",
         "console.ts",
         "bridge.ts",
-        "debugger.ts",
         "debugviews.ts",
         "ns.ts"
     ],
