@@ -92,9 +92,8 @@ namespace jacdac {
             let serials: any = {};
             drivers.filter(d => !!d.serialNumber).forEach(d => {
                 const sn = toHex(d.serialNumber)
-                if (!serials[sn]) {
+                if (!serials[sn])
                     serials[sn] = d;
-                }
             })
             const devs = Object.keys(serials);
             console.log(`${devs.length} devices`)
