@@ -163,7 +163,7 @@ namespace jacdac {
 
     class ButtonDebugView extends SensorDebugView {
         constructor() {
-            super("btn", jacdac.BUTTON_DEVICE_CLASS);
+            super("button", jacdac.BUTTON_DEVICE_CLASS);
         }
 
         renderEvent(value: number): string {
@@ -229,7 +229,7 @@ namespace jacdac {
 
     class TouchDebugView extends SensorDebugView {
         constructor() {
-            super("tch", jacdac.BUTTON_DEVICE_CLASS);
+            super("touch", jacdac.TOUCHBUTTON_DEVICE_CLASS);
         }
 
         renderEvent(value: number): string {

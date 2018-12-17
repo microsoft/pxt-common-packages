@@ -184,6 +184,8 @@ namespace jacdac {
             })
             controller.down.onEvent(ControllerButtonEvent.Pressed, () => {
                 this.mode = Mode.Packets;
+                if (this._logAllDriver)
+                    this._logAllDriver.hideControlPackets = !this._logAllDriver.hideControlPackets;
                 game.consoleOverlay.clear();
                 console.log(`sniffing...`)
                 this.refresh();
@@ -215,9 +217,11 @@ namespace jacdac {
 
     class LogAllDriver extends BridgeDriver {
         debugViews: DebugView[];
+        hideControlPackets: boolean;
         constructor(debugViews: DebugView[]) {
             super("log")
             this.debugViews = debugViews;
+            this.hideControlPackets = false;
         }
 
         findDevice(packet: JDPacket): JDDevice {
@@ -234,9 +238,10 @@ namespace jacdac {
         handlePacket(pkt: Buffer): boolean {
             const packet = new JDPacket(pkt);
             if (packet.address == 0) {
+                if(this.hideControlPackets) return true;
                 const cp = new ControlPacket(packet.data);
-                if (cp.driverClass == jacdac.LOGGER_DEVICE_CLASS) return true;
-                 
+                // too much noise
+                if (cp.driverClass == jacdac.LOGGER_DEVICE_CLASS) return true;                 
                 const dbgView = this.debugViews.find(d => d.driverClass == cp.driverClass);
                 const str = dbgView ? dbgView.renderControlPacket(cp) : "";
                 console.log(`c:${toHex8(cp.address)}> ${dbgView ? dbgView.name : cp.driverClass} ${str}`)
@@ -244,7 +249,7 @@ namespace jacdac {
                 const device = this.findDevice(packet);
                 const dbgView = this.findView(device, packet);
                 const str = dbgView ? dbgView.renderPacket(device, packet) : packet.data.toHex();
-                console.log(`c:${toHex8(packet.address)}> ${str}`)
+                console.log(`p:${toHex8(packet.address)}> ${str}`)
             }
             return true;
         }
