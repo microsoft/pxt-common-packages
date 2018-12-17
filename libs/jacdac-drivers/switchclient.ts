@@ -33,8 +33,31 @@ namespace jacdac {
         onEvent(event: JDSwitchDirection, handler: () => void) {
             this.registerEvent(event, handler);
         }
+
+        static debugView(): DebugView {
+            return new SwitchDebugView();
+        }
     }
 
     //% fixedInstance whenUsed block="switch"
     export const switchClient = new SwitchClient("switch");
+
+    class SwitchDebugView extends SensorDebugView {
+        constructor() {
+            super("switch", jacdac.SWITCH_DEVICE_CLASS);
+        }
+
+        renderEvent(value: number): string {
+            switch(value) {
+                case JDSwitchDirection.Left: return "left";
+                case JDSwitchDirection.Right: "right";
+                default: return "";
+            }
+        }
+
+        renderState(data: Buffer): string {
+            return !!data[0] ? `right` : `left`;
+        }
+    }
+
 }

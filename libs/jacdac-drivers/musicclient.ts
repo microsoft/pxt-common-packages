@@ -22,8 +22,29 @@ namespace jacdac {
             buf.setNumber(NumberFormat.UInt32LE, 5, ms);
             this.sendPacket(buf);
         }
+        
+        static debugView(): DebugView {
+            return new MusicDebugView();
+        }
     }
 
     //% fixedInstance whenUsed block="music"
     export const musicClient = new MusicClient();
+
+    class MusicDebugView extends DebugView {        
+        constructor() {
+            super("music", jacdac.MUSIC_DEVICE_CLASS);
+        }
+
+        renderPacket(device: JDDevice, packet: JDPacket) {
+            const data = packet.data;
+            const cmd = data[0];
+            switch(cmd) {
+                case JDMusicCommand.PlayTone:   
+                    return `tone ${data.getNumber(NumberFormat.UInt32LE, 1)} ${data.getNumber(NumberFormat.UInt32LE, 5)}`;
+                default:
+                    return "";
+            }
+        }
+    }
 }

@@ -84,5 +84,6 @@ enum JDGamepadCommand {
 }
 
 enum JDMusicCommand {
+    None,
     PlayTone
 }
