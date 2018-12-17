@@ -27,6 +27,17 @@ namespace jacdac {
     }
 
     function showDrivers() {
+        const errors = [
+            "ok",
+            "cal ing",
+            "cal req",
+            "no res",
+            "busy",
+            "comms err",
+            "inv state",
+            "periph mal"
+        ];
+
         // populate know list of drivers
         const debugViews = createDebugViews();
 
@@ -67,7 +78,7 @@ namespace jacdac {
                 flags += " dis";
             const err = d.error;
             if (err != JDDriverErrorCode.DRIVER_OK)
-                flags += " e" + err;
+                flags += ` e ${errors[err] || err}`;
             console.log(flags)
         })
         console.log("");
