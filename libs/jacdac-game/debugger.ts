@@ -22,7 +22,8 @@ namespace jacdac {
             jacdac.ThermometerClient.debugView(),
             jacdac.PixelClient.debugView(),
             jacdac.LightClient.debugView(),
-            jacdac.MusicClient.debugView()
+            jacdac.MusicClient.debugView(),
+            jacdac.GameLobbyDriver.debugView()
         ];
     }
 
