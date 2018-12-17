@@ -13,5 +13,11 @@ namespace jacdac {
         renderPacket(device: JDDevice, packet: JDPacket) {
             return "";
         }
+
+        static factories: DebugViewFactory[] = [
+            () => [ConsoleDriver.debugView(), MessageBusService.debugView()]
+        ];
     }
+
+    type DebugViewFactory = () => DebugView[];
 }

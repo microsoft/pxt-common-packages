@@ -30,6 +30,11 @@ namespace jacdac {
     }
 
     function showDrivers() {
+        jacdac.clearBridge();
+        renderDrivers();
+    }
+
+    function renderDrivers() {
         const errors = [
             "ok",
             "cal ing",
@@ -43,45 +48,43 @@ namespace jacdac {
 
         // populate know list of drivers
         const debugViews = createDebugViews();
-
-        jacdac.clearBridge();
         const drivers = jacdac.drivers();
-        console.log(`${drivers.length} drivers (${jacdac.isConnected() ? "conn" : "disc"})`)
-        console.log(`ad class    serial`);
-        console.log(` flags status`);
-        drivers.forEach(d => {
+        console.log(`${drivers.length - 1} drivers (${jacdac.isConnected() ? "conn" : "disc"})`)
+        console.log(`address class status serial`);
+        console.log(`status: c(lient),s(service),b(roadcast),f(sniffer)`)
+        console.log(`i(connecting),c(connected)`);
+        console.log(`p(aired),g(pairing),o(control packet)`);
+        drivers.slice(1, drivers.length).forEach(d => {
             const driverClass = d.driverClass;
             const dbgView = debugViews.find(d => driverClass == d.driverClass);
-            console.log(`${toHex8(d.address)} ${dbgView ? dbgView.name : driverClass} ${toHex(d.serialNumber)}`);
-            let flags = " " + toHex16(d.flags) + " ";
-            if (driverClass == 0)
-                flags += "logic";
-            else {
-                if (d.isVirtualDriver())
-                    flags += "client";
-                else if (d.isHostDriver())
-                    flags += "service";
-                else if (d.isBroadcastDriver())
-                    flags += "broad";
-                else if (d.isSnifferDriver())
-                    flags += "sniff";
-            }
+            let driverName = dbgView ? dbgView.name : driverClass.toString();
+            while (driverName.length < 4) driverName += " ";
+            let flags = "";
+            if (d.isVirtualDriver())
+                flags += "c";
+            else if (d.isHostDriver())
+                flags += "s";
+            else if (d.isBroadcastDriver())
+                flags += "b";
+            else if (d.isSnifferDriver())
+                flags += "f";
             if (d.isPaired())
-                flags += " paired";
-            if (d.isPairing())
-                flags += " pairng";
+                flags += "p";
+            else if (d.isPairing())
+                flags += "g";
             if (d.flags & DAL.JD_DEVICE_FLAGS_CP_SEEN)
-                flags += " cp"
+                flags += "o"
             if (d.isConnecting())
-                flags += " coing"
+                flags += "i"
             else if (d.isConnected())
-                flags += " conn"
+                flags += "c"
             else
-                flags += " dis";
+                flags += "d";
+            while(flags.length < 4) flags += " ";
+            console.log(`${toHex8(d.address)} ${driverName} ${flags} ${toHex(d.serialNumber)}`);
             const err = d.error;
             if (err != JDDriverErrorCode.DRIVER_OK)
-                flags += ` e ${errors[<number>err] || err}`;
-            console.log(flags)
+                console.log(` e ${errors[<number>err] || err}`);
         })
         console.log("");
     }
@@ -90,7 +93,7 @@ namespace jacdac {
         jacdac.clearBridge();
         const drivers = jacdac.drivers();
         let serials: any = {};
-        drivers.forEach(d => {
+        drivers.filter(d => !!d.serialNumber).forEach(d => {
             const sn = toHex(d.serialNumber)
             if (!serials[sn]) {
                 serials[sn] = d;
@@ -109,6 +112,7 @@ namespace jacdac {
     }
 
     function showPlayers() {
+        jacdac.clearBridge();
         console.log(`game state: ${["alone", "service", "client"][jacdac.gameLobby.state]}`);
         const players = jacdac.gameLobby.players;
         for (let i = 0; i < players.length; ++i) {
@@ -154,8 +158,11 @@ namespace jacdac {
             refresh()
         });
         jacdac.onEvent(JDEvent.DriverChanged, () => {
-            game.consoleOverlay.clear();
             console.log(`driver changed`)
+            if (mode == Mode.Packets) {
+                renderDrivers();
+            } else
+                game.consoleOverlay.clear();
             refresh()
         });
         controller.left.onEvent(ControllerButtonEvent.Pressed, function () {
