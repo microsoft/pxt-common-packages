@@ -10,17 +10,17 @@ namespace jacdac {
 
     class DebugMenu {
         private mode: Mode;
-        private debugViews: DebugView[];
+        private _debugViews: DebugView[];
         constructor() {
             this.mode = Mode.None;
+            this._debugViews = undefined;
         }
-        createDebugViews(): DebugView[] {
-            if (!this.debugViews) {
-                this.debugViews = defaultDebugViews();
-                this.debugViews.push(jacdac.GameLobbyDriver.debugView())
-
+        get debugViews(): DebugView[] {
+            if (!this._debugViews) {
+                this._debugViews = jacdac.defaultDebugViews();
+                this._debugViews.push(jacdac.GameLobbyDriver.debugView())
             }
-            return this.debugViews;
+            return this._debugViews;
         }
 
         showDrivers() {
@@ -48,13 +48,12 @@ namespace jacdac {
             console.log(`d(isconnected)`);
             console.log(`p(aired),g(pairing)`);
 
-            const debugViews = this.createDebugViews();
             let drivers = jacdac.drivers();
             drivers = drivers.slice(1, drivers.length);
             console.log(`${drivers.length} drivers (${jacdac.isConnected() ? "connected" : "disconected"})`)
             drivers.forEach(d => {
                 const driverClass = d.driverClass;
-                const dbgView = debugViews.find(d => driverClass == d.driverClass);
+                const dbgView = this.debugViews.find(d => driverClass == d.driverClass);
                 let driverName = dbgView ? dbgView.name : driverClass.toString();
                 while (driverName.length < 4) driverName += " ";
                 let flags = "";
@@ -103,7 +102,8 @@ namespace jacdac {
 
         private _logAllDriver: LogAllDriver;
         showPackets() {
-            if (!this._logAllDriver) this._logAllDriver = new LogAllDriver(this.createDebugViews());
+            if (!this._logAllDriver) 
+                this._logAllDriver = new LogAllDriver(this.debugViews);
             this._logAllDriver.start();
         }
 
@@ -147,7 +147,7 @@ namespace jacdac {
                 this._logAllDriver.stop();
                 this._logAllDriver = undefined;
             }
-            this.debugViews = undefined;
+            this._debugViews = undefined;
         }
 
         start() {
