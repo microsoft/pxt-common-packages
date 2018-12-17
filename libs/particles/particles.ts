@@ -2,7 +2,7 @@
  * Small particles
  */
 //% color="#03AA74" weight=78 icon="\uf021"
-//% groups='["Create", "Properties"]'
+//% groups='["Effects", "Create", "Properties"]'
 namespace particles {
     const TIME_PRECISION = 10; // time goes down to down to the 1<<10 seconds
 
@@ -268,13 +268,13 @@ namespace particles {
 
     //% fixedInstances
     export class ParticleEffect {
-        private f: () => ParticleFactory;
-        constructor(f: () => ParticleFactory) {
-            this.f = f;
+        private factoryFactory: () => ParticleFactory;
+        constructor(factoryFactory: () => ParticleFactory) {
+            this.factoryFactory = factoryFactory;
         }
 
         createFactory(): ParticleFactory {
-            return undefined;
+            return this.factoryFactory();
         }
 
         /**
@@ -282,8 +282,10 @@ namespace particles {
          * @param anchor 
          * @param particlesPerSecond 
          */
-        //% blockId=particlesstartanimation block="start %effect on %anchor=variable_get(mySprite) at rate %particlesPerSecond p/s"
-        //% particlesPerSecond=25
+        //% blockId=particlesstartanimation block="start %effect on %anchor=variables_get(mySprite) at rate %particlesPerSecond p/s"
+        //% particlesPerSecond.defl=20
+        //% particlesPerSecond.min=1 particlePerSeconds.max=100
+        //% group="Effects"
         start(anchor: ParticleAnchor, particlesPerSecond: number): void {
             const factory = this.createFactory();
             if (!factory) return;

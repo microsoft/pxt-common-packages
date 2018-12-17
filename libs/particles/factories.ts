@@ -72,7 +72,7 @@ namespace particles {
             p._y = Fx8(anchor.y);
             p.vx = Fx.zeroFx8;
             p.vy = Fx.zeroFx8;
-            p.lifespan = 1500;
+            p.lifespan = 500;
 
             return p;
         }
