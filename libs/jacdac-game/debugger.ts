@@ -57,7 +57,7 @@ namespace jacdac {
                 const driverClass = d.driverClass;
                 const dbgView = this.debugViews.find(d => driverClass == d.driverClass);
                 let driverName = dbgView ? dbgView.name : driverClass.toString();
-                while (driverName.length < 4) driverName += " ";
+                while (driverName.length < 8) driverName += " ";
                 let flags = "";
                 if (d.isVirtualDriver())
                     flags += "c";
@@ -168,9 +168,8 @@ namespace jacdac {
             });
             jacdac.onEvent(JDEvent.DriverChanged, () => {
                 console.log(`driver changed`)
-                if (this.mode == Mode.Packets) {
-                    this.renderDrivers();
-                } else game.consoleOverlay.clear();
+                if (this.mode != Mode.Packets)
+                    game.consoleOverlay.clear();
                 this.refresh()
             });
             controller.left.onEvent(ControllerButtonEvent.Pressed, () => {
@@ -236,28 +235,14 @@ namespace jacdac {
             const packet = new JDPacket(pkt);
             if (packet.address == 0) {
                 const cp = new ControlPacket(packet.data);
-                console.log(`jd>cp ${cp.address}=${cp.driverClass} ${cp.flags}`)
-                let device: JDDevice;
-                let dbgView: DebugView;
-                if ((device = this.findDevice(packet))
-                    && (dbgView = this.findView(device, packet))) {
-                    const str = dbgView.renderControlPacket(cp);
-                    if (str)
-                        console.log(" " + str);
-                }
-                return true;
+                const dbgView = this.debugViews.find(d => d.driverClass == cp.driverClass);
+                const str = dbgView ? dbgView.renderControlPacket(cp) : "";
+                console.log(`c:${toHex8(cp.address)}> ${dbgView ? dbgView.name : cp.driverClass} ${str}`)
             } else {
-                console.log(`jd>p ${packet.address} ${packet.size}b`)
-                let device: JDDevice;
-                let dbgView: DebugView;
-                let str: string;
-                if ((device = this.findDevice(packet))
-                    && (dbgView = this.findView(device, packet))
-                    && (str = dbgView.renderPacket(device, packet))) {
-                    console.log(" " + str);
-                } else {
-                    console.log(" " + packet.data.toHex());
-                }
+                const device = this.findDevice(packet);
+                const dbgView = this.findView(device, packet);
+                const str = dbgView ? dbgView.renderPacket(device, packet) : packet.data.toHex();
+                console.log(`c:${toHex8(packet.address)}> ${str}`)
             }
             return true;
         }
