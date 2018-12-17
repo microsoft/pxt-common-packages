@@ -14,7 +14,9 @@ namespace jacdac {
             jacdac.MessageBusService.debugView(),
             jacdac.ConsoleDriver.debugView(),
             jacdac.AccelerometerClient.debugView(),
-            jacdac.MicrophoneClient.debugView()
+            jacdac.MicrophoneClient.debugView(),
+            jacdac.ButtonClient.debugView(),
+            jacdac.TouchClient.debugView()
         ];
     }
 
