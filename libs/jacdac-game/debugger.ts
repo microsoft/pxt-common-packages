@@ -11,9 +11,11 @@ namespace jacdac {
     class DebugMenu {
         private mode: Mode;
         private _debugViews: DebugView[];
+        private consoleVisible: boolean;
         constructor() {
             this.mode = Mode.None;
             this._debugViews = undefined;
+            this.consoleVisible = game.consoleOverlay.isVisible();
         }
         get debugViews(): DebugView[] {
             if (!this._debugViews) {
@@ -102,7 +104,7 @@ namespace jacdac {
 
         private _logAllDriver: LogAllDriver;
         showPackets() {
-            if (!this._logAllDriver) 
+            if (!this._logAllDriver)
                 this._logAllDriver = new LogAllDriver(this.debugViews);
             this._logAllDriver.start();
         }
@@ -142,6 +144,8 @@ namespace jacdac {
         }
 
         stop() {
+            game.popScene();
+            game.consoleOverlay.setVisible(this.consoleVisible);
             clearBridge()
             if (this._logAllDriver) {
                 this._logAllDriver.stop();
@@ -166,36 +170,37 @@ namespace jacdac {
                 console.log(`driver changed`)
                 if (this.mode == Mode.Packets) {
                     this.renderDrivers();
-                } else
-                    game.consoleOverlay.clear();
+                } else game.consoleOverlay.clear();
                 this.refresh()
             });
-            controller.left.onEvent(ControllerButtonEvent.Pressed, function () {
+            controller.left.onEvent(ControllerButtonEvent.Pressed, () => {
                 this.mode = Mode.Drivers;
                 game.consoleOverlay.clear();
                 this.refresh();
             })
-            controller.right.onEvent(ControllerButtonEvent.Pressed, function () {
+            controller.right.onEvent(ControllerButtonEvent.Pressed, () => {
                 this.mode = Mode.Devices;
                 game.consoleOverlay.clear();
                 this.refresh();
             })
-            controller.down.onEvent(ControllerButtonEvent.Pressed, function () {
+            controller.down.onEvent(ControllerButtonEvent.Pressed, () => {
                 this.mode = Mode.Packets;
                 game.consoleOverlay.clear();
                 console.log(`sniffing...`)
                 this.refresh();
             })
-            controller.up.onEvent(ControllerButtonEvent.Pressed, function () {
+            controller.up.onEvent(ControllerButtonEvent.Pressed, () => {
                 this.mode = Mode.Players;
                 game.consoleOverlay.clear();
                 console.log(`players`)
                 this.refresh();
             })
-            controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
+            controller.B.onEvent(ControllerButtonEvent.Pressed, () => {
                 // done
-                game.popScene();
-                game.consoleOverlay.setVisible(false);
+                if (_menu) {
+                    _menu.stop();
+                    _menu = undefined;
+                }
             })
 
             game.consoleOverlay.setVisible(true);
@@ -262,8 +267,5 @@ namespace jacdac {
     scene.systemMenu.addEntry(() => "jacdac dashboard", () => {
         _menu = new DebugMenu();
         _menu.start();
-    }, false, () => {
-        _menu.stop();
-        _menu = undefined;
-    });
+    }, false, () => { });
 }
