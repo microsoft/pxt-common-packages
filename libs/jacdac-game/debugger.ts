@@ -202,6 +202,14 @@ namespace jacdac {
                     _menu = undefined;
                 }
             })
+            controller.A.onEvent(ControllerButtonEvent.Pressed, () => {
+                switch (this.mode) {
+                    case Mode.Packets:
+                        if (this._logAllDriver)
+                            this._logAllDriver.paused = !this._logAllDriver.paused;
+                        break;
+                }
+            })
 
             game.consoleOverlay.setVisible(true);
             console.log(`jacdac console`);
@@ -217,10 +225,12 @@ namespace jacdac {
     class LogAllDriver extends BridgeDriver {
         debugViews: DebugView[];
         hideControlPackets: boolean;
+        paused: boolean;
         constructor(debugViews: DebugView[]) {
             super("log")
             this.debugViews = debugViews;
             this.hideControlPackets = false;
+            this.paused = false;
         }
 
         findDevice(packet: JDPacket): JDDevice {
@@ -235,12 +245,14 @@ namespace jacdac {
         }
 
         handlePacket(pkt: Buffer): boolean {
+            if (this.paused) return true;
+
             const packet = new JDPacket(pkt);
             if (packet.address == 0) {
-                if(this.hideControlPackets) return true;
+                if (this.hideControlPackets) return true;
                 const cp = new ControlPacket(packet.data);
                 // too much noise
-                if (cp.driverClass == jacdac.LOGGER_DEVICE_CLASS) return true;                 
+                if (cp.driverClass == jacdac.LOGGER_DEVICE_CLASS) return true;
                 const dbgView = this.debugViews.find(d => d.driverClass == cp.driverClass);
                 const str = dbgView ? dbgView.renderControlPacket(cp) : "";
                 console.log(`c:${toHex8(cp.address)}> ${dbgView ? dbgView.name : cp.driverClass} ${str}`)
