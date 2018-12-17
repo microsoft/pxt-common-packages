@@ -32,8 +32,18 @@ namespace jacdac {
             this.state.setNumber(NumberFormat.UInt8BE, 3, (value >> 0) & 0xff)
             this.notifyChange();
         }
+
+        static debugView(): DebugView {
+            return new PixelDebugView();
+        }
     }
 
     //% fixedInstance whenUsed block="pixel"
     export const pixelClient = new PixelClient("pixel");
+
+    class PixelDebugView extends ActuatorDebugView {
+        constructor() {
+            super("pixel", jacdac.PIXEL_DEVICE_CLASS);
+        }
+    }
 }

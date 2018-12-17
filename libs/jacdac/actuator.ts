@@ -39,4 +39,14 @@ namespace jacdac {
             this.sendPacket(this.state)
         }
     }
+
+    export class ActuatorDebugView extends DebugView {
+        constructor(name: string, deviceClass: number) {
+            super(name, deviceClass);
+        }
+
+        renderPacket(device: JDDevice, packet: JDPacket) {
+            return packet.data.toHex();
+        }
+    }
 }
