@@ -34,7 +34,7 @@ namespace jacdac {
     ];
 }
 
-enum JDLightCommand {
+const enum JDLightCommand {
     None,
     SetAll,
     SetBrightness,
@@ -46,7 +46,7 @@ enum JDLightCommand {
     Sparkle    
 }
 
-enum JDLightAnimation {
+const enum JDLightAnimation {
     //% block="rainbow"
     Rainbow =JDLightCommand.Rainbow,
     //% block="running lights"
@@ -61,7 +61,7 @@ enum JDLightAnimation {
     Sparkle = JDLightCommand.Sparkle
 }
 
-enum JDKeyboardCommand {
+const enum JDKeyboardCommand {
     None,
     Type,
     Key,
@@ -69,21 +69,75 @@ enum JDKeyboardCommand {
     FunctionKey
 }
 
-enum JDMouseCommand {
+const enum JDMouseCommand {
     None,
     Button,
     Move,
     TurnWheel
 }
 
-enum JDGamepadCommand {
+const enum JDGamepadCommand {
     None,
     Button,
     Move,
     Throttle
 }
 
-enum JDMusicCommand {
+const enum JDMusicCommand {
     None,
     PlayTone
+}
+
+const enum JDGesture {
+    /**
+     * Raised when shaken
+     */
+    //% block=shake
+    Shake = DAL.ACCELEROMETER_EVT_SHAKE,
+    /**
+     * Raised when the device tilts up
+     */
+    //% block="tilt up"
+    TiltUp = DAL.ACCELEROMETER_EVT_TILT_UP,
+    /**
+     * Raised when the device tilts down
+     */
+    //% block="tilt down"
+    TiltDown = DAL.ACCELEROMETER_EVT_TILT_DOWN,
+    /**
+     * Raised when the screen is pointing left
+     */
+    //% block="tilt left"
+    TiltLeft = DAL.ACCELEROMETER_EVT_TILT_LEFT,
+    /**
+     * Raised when the screen is pointing right
+     */
+    //% block="tilt right"
+    TiltRight = DAL.ACCELEROMETER_EVT_TILT_RIGHT,
+    /**
+     * Raised when the screen faces up
+     */
+    //% block="face up"
+    FaceUp = DAL.ACCELEROMETER_EVT_FACE_UP,
+    /**
+     * Raised when the screen is pointing up and the board is horizontal
+     */
+    //% block="face down"
+    FaceDown = DAL.ACCELEROMETER_EVT_FACE_DOWN,
+    /**
+     * Raised when the board is falling!
+     */
+    //% block="free fall"
+    FreeFall = DAL.ACCELEROMETER_EVT_FREEFALL,
+}
+
+const enum JDDimension {
+    //% block=x
+    X = 0,
+    //% block=y
+    Y = 1,
+    //% block=z
+    Z = 2,
+    //% block=strength
+    Strength = 3
 }

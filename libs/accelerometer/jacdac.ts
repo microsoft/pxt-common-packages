@@ -1,16 +1,16 @@
 namespace jacdac {
     export class AccelerometerService extends jacdac.SensorService {
-        static NAME = "acc";
         constructor(name: string) {
-            super(name, jacdac.ACCELEROMETER_DEVICE_CLASS);
-            input.onGesture(Gesture.Shake, () => this.raiseHostEvent(Gesture.Shake));
-            input.onGesture(Gesture.TiltUp, () => this.raiseHostEvent(Gesture.TiltUp));
-            input.onGesture(Gesture.TiltDown, () => this.raiseHostEvent(Gesture.TiltDown));
-            input.onGesture(Gesture.TiltLeft, () => this.raiseHostEvent(Gesture.TiltLeft));
-            input.onGesture(Gesture.TiltRight, () => this.raiseHostEvent(Gesture.TiltRight));
-            input.onGesture(Gesture.FaceUp, () => this.raiseHostEvent(Gesture.FaceUp));
-            input.onGesture(Gesture.FaceDown, () => this.raiseHostEvent(Gesture.FaceDown));
-            input.onGesture(Gesture.FreeFall, () => this.raiseHostEvent(Gesture.FreeFall));
+            super("acc", jacdac.ACCELEROMETER_DEVICE_CLASS);
+            // TODO: catch all event
+            input.onGesture(Gesture.Shake, () => this.raiseHostEvent(JDGesture.Shake));
+            input.onGesture(Gesture.TiltUp, () => this.raiseHostEvent(JDGesture.TiltUp));
+            input.onGesture(Gesture.TiltDown, () => this.raiseHostEvent(JDGesture.TiltDown));
+            input.onGesture(Gesture.TiltLeft, () => this.raiseHostEvent(JDGesture.TiltLeft));
+            input.onGesture(Gesture.TiltRight, () => this.raiseHostEvent(JDGesture.TiltRight));
+            input.onGesture(Gesture.FaceUp, () => this.raiseHostEvent(JDGesture.FaceUp));
+            input.onGesture(Gesture.FaceDown, () => this.raiseHostEvent(JDGesture.FaceDown));
+            input.onGesture(Gesture.FreeFall, () => this.raiseHostEvent(JDGesture.FreeFall));
         }
 
         protected serializeState(): Buffer {
