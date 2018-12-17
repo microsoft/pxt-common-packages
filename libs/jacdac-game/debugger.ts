@@ -47,14 +47,18 @@ namespace jacdac {
         ];
 
         // populate know list of drivers
-        const debugViews = createDebugViews();
-        const drivers = jacdac.drivers();
-        console.log(`${drivers.length - 1} drivers (${jacdac.isConnected() ? "conn" : "disc"})`)
         console.log(`address class status serial`);
-        console.log(`status: c(lient),s(service),b(roadcast),f(sniffer)`)
+        console.log(`c(lient),s(service)`)
+        console.log(`b(roadcast),f(sniffer)`)
         console.log(`i(connecting),c(connected)`);
-        console.log(`p(aired),g(pairing),o(control packet)`);
-        drivers.slice(1, drivers.length).forEach(d => {
+        console.log(`d(isconnected)`);
+        console.log(`p(aired),g(pairing)`);
+
+        const debugViews = createDebugViews();
+        let drivers = jacdac.drivers();
+        drivers = drivers.slice(1, drivers.length);
+        console.log(`${drivers.length} drivers (${jacdac.isConnected() ? "connected" : "disconected"})`)
+        drivers.forEach(d => {
             const driverClass = d.driverClass;
             const dbgView = debugViews.find(d => driverClass == d.driverClass);
             let driverName = dbgView ? dbgView.name : driverClass.toString();
@@ -72,8 +76,6 @@ namespace jacdac {
                 flags += "p";
             else if (d.isPairing())
                 flags += "g";
-            if (d.flags & DAL.JD_DEVICE_FLAGS_CP_SEEN)
-                flags += "o"
             if (d.isConnecting())
                 flags += "i"
             else if (d.isConnected())
