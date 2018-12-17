@@ -282,7 +282,7 @@ namespace particles {
          * @param anchor 
          * @param particlesPerSecond 
          */
-        //% blockId=particlesstartanimation block="start %effect on %anchor=variables_get(mySprite) at rate %particlesPerSecond p/s"
+        //% blockId=particlesstartanimation block="start %effect effect on %anchor=variables_get(mySprite) at rate %particlesPerSecond p/s"
         //% particlesPerSecond.defl=20
         //% particlesPerSecond.min=1 particlePerSeconds.max=100
         //% group="Effects"
