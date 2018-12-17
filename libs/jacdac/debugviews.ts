@@ -163,14 +163,14 @@ namespace jacdac {
 
     class ButtonDebugView extends SensorDebugView {
         constructor() {
-            super("btn", jacdac.BUTTON_DEVICE_CLASS);
+            super("button", jacdac.BUTTON_DEVICE_CLASS);
         }
 
         renderEvent(value: number): string {
             switch (value) {
                 case JDButtonEvent.Click: return "click";
-                case JDButtonEvent.Down: "down";
-                case JDButtonEvent.Up: "up";
+                case JDButtonEvent.Down: return "down";
+                case JDButtonEvent.Up: return "up";
                 case JDButtonEvent.LongClick: return "lg click"
                 default: return "";
             }
@@ -229,7 +229,7 @@ namespace jacdac {
 
     class TouchDebugView extends SensorDebugView {
         constructor() {
-            super("tch", jacdac.BUTTON_DEVICE_CLASS);
+            super("touch", jacdac.TOUCHBUTTON_DEVICE_CLASS);
         }
 
         renderEvent(value: number): string {

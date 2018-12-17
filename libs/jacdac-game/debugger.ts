@@ -92,9 +92,8 @@ namespace jacdac {
             let serials: any = {};
             drivers.filter(d => !!d.serialNumber).forEach(d => {
                 const sn = toHex(d.serialNumber)
-                if (!serials[sn]) {
+                if (!serials[sn])
                     serials[sn] = d;
-                }
             })
             const devs = Object.keys(serials);
             console.log(`${devs.length} devices`)
@@ -184,6 +183,8 @@ namespace jacdac {
             })
             controller.down.onEvent(ControllerButtonEvent.Pressed, () => {
                 this.mode = Mode.Packets;
+                if (this._logAllDriver)
+                    this._logAllDriver.hideControlPackets = !this._logAllDriver.hideControlPackets;
                 game.consoleOverlay.clear();
                 console.log(`sniffing...`)
                 this.refresh();
@@ -201,6 +202,14 @@ namespace jacdac {
                     _menu = undefined;
                 }
             })
+            controller.A.onEvent(ControllerButtonEvent.Pressed, () => {
+                switch (this.mode) {
+                    case Mode.Packets:
+                        if (this._logAllDriver)
+                            this._logAllDriver.paused = !this._logAllDriver.paused;
+                        break;
+                }
+            })
 
             game.consoleOverlay.setVisible(true);
             console.log(`jacdac console`);
@@ -215,9 +224,13 @@ namespace jacdac {
 
     class LogAllDriver extends BridgeDriver {
         debugViews: DebugView[];
+        hideControlPackets: boolean;
+        paused: boolean;
         constructor(debugViews: DebugView[]) {
             super("log")
             this.debugViews = debugViews;
+            this.hideControlPackets = false;
+            this.paused = false;
         }
 
         findDevice(packet: JDPacket): JDDevice {
@@ -232,11 +245,14 @@ namespace jacdac {
         }
 
         handlePacket(pkt: Buffer): boolean {
+            if (this.paused) return true;
+
             const packet = new JDPacket(pkt);
             if (packet.address == 0) {
+                if (this.hideControlPackets) return true;
                 const cp = new ControlPacket(packet.data);
+                // too much noise
                 if (cp.driverClass == jacdac.LOGGER_DEVICE_CLASS) return true;
-                 
                 const dbgView = this.debugViews.find(d => d.driverClass == cp.driverClass);
                 const str = dbgView ? dbgView.renderControlPacket(cp) : "";
                 console.log(`c:${toHex8(cp.address)}> ${dbgView ? dbgView.name : cp.driverClass} ${str}`)
@@ -244,7 +260,7 @@ namespace jacdac {
                 const device = this.findDevice(packet);
                 const dbgView = this.findView(device, packet);
                 const str = dbgView ? dbgView.renderPacket(device, packet) : packet.data.toHex();
-                console.log(`c:${toHex8(packet.address)}> ${str}`)
+                console.log(`p:${toHex8(packet.address)}> ${str}`)
             }
             return true;
         }
