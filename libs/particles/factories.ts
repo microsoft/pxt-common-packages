@@ -11,13 +11,35 @@ namespace particles {
      */
     function initTrig() {
         if (!cachedSin) {
-            cachedSin = [];
-            cachedCos = [];
-            for (let i = 0; i < NUM_SLICES; i++) {
-                cachedSin.push(Fx8(Math.sin(i * angleSlice)));
-                cachedCos.push(Fx8(Math.cos(i * angleSlice)));
-            }
+            cachedSin = cacheSin(NUM_SLICES);
+            cachedCos = cacheCos(NUM_SLICES);
         }
+    }
+
+    /**
+     * @param slices number of cached sin values to make
+     * @returns array of cached sin values between 0 and 360 degrees
+     */
+    export function cacheSin(slices: number): Fx8[] {
+        let sin: Fx8[] = [];
+        let anglePerSlice = 2 * Math.PI / slices;
+        for (let i = 0; i < slices; i++) {
+            sin.push(Fx8(Math.sin(i * anglePerSlice)));
+        }
+        return sin;
+    }
+
+    /**
+     * @param slices number of cached cos values to make
+     * @returns array of cached cos values between 0 and 360 degrees
+     */
+    export function cacheCos(slices: number): Fx8[] {
+        let cos: Fx8[] = [];
+        let anglePerSlice = 2 * Math.PI / slices;
+        for (let i = 0; i < slices; i++) {
+            cos.push(Fx8(Math.cos(i * anglePerSlice)));
+        }
+        return cos;
     }
 
     const ratio = Math.PI / 180;
