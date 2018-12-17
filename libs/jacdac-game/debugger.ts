@@ -235,6 +235,8 @@ namespace jacdac {
             const packet = new JDPacket(pkt);
             if (packet.address == 0) {
                 const cp = new ControlPacket(packet.data);
+                if (cp.driverClass == jacdac.LOGGER_DEVICE_CLASS) return true;
+                 
                 const dbgView = this.debugViews.find(d => d.driverClass == cp.driverClass);
                 const str = dbgView ? dbgView.renderControlPacket(cp) : "";
                 console.log(`c:${toHex8(cp.address)}> ${dbgView ? dbgView.name : cp.driverClass} ${str}`)
