@@ -46,7 +46,6 @@ namespace jacdac {
         console.log(`${drivers.length} drivers (${jacdac.isConnected() ? "conn" : "disc"})`)
         console.log(`ad class    serial`);
         console.log(` flags status`);
-        const sn = control.deviceSerialNumber();
         drivers.forEach(d => {
             const driverClass = d.driverClass;
             const dbgView = debugViews.find(d => driverClass == d.driverClass);
@@ -60,7 +59,7 @@ namespace jacdac {
                 else if (d.isHostDriver())
                     flags += "service";
                 else if (d.isBroadcastDriver())
-                    flags += "broa";
+                    flags += "broad";
                 else if (d.isSnifferDriver())
                     flags += "sniff";
             }
@@ -71,7 +70,7 @@ namespace jacdac {
             if (d.flags & DAL.JD_DEVICE_FLAGS_CP_SEEN)
                 flags += " cp"
             if (d.isConnecting())
-                flags += " cong"
+                flags += " coing"
             else if (d.isConnected())
                 flags += " conn"
             else
