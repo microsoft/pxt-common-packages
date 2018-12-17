@@ -37,26 +37,6 @@ namespace jacdac {
         setLoudSoundThreshold(value: number) {
             this.setThreshold(false, value);
         }
-
-        static debugView(): DebugView {
-            return new MicrophoneDebugView();
-        }
-    }
-
-    class MicrophoneDebugView extends SensorDebugView {
-        constructor() {
-            super("mic", jacdac.MICROPHONE_DEVICE_CLASS);
-        }
-
-        renderEvent(value: number): string {
-            if (value == DAL.SENSOR_THRESHOLD_HIGH)
-                return "loud";
-            return "";
-        }
-
-        renderState(data: Buffer): string {
-            return `level ${data[0]}`;
-        }
     }
 
     //% fixedInstance whenUsed block="microphone"

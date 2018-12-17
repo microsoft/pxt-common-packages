@@ -26,33 +26,8 @@ namespace jacdac {
         onEvent(event: JDButtonEvent, handler: () => void) {
             control.onEvent(this.id, event, handler);
         }
-
-        static debugView(): DebugView {
-            return new TouchDebugView();
-        }
     }
 
     //% fixedInstance whenUsed block="touch"
     export const touchClient = new TouchClient("touch");
-
-    class TouchDebugView extends SensorDebugView {
-        constructor() {
-            super("tch", jacdac.BUTTON_DEVICE_CLASS);
-        }
-
-        renderEvent(value: number): string {
-            switch(value) {
-                case JDButtonEvent.Click: return "click";
-                case JDButtonEvent.Down: "down";
-                case JDButtonEvent.Up: "up";
-                case JDButtonEvent.LongClick: return "lg click" 
-                default: return "";
-            }
-        }
-
-        renderState(data: Buffer): string {
-            return `${data.getNumber(NumberFormat.UInt16LE, 0)}`;
-        }
-    }
-
 }

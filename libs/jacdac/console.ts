@@ -116,22 +116,6 @@ namespace jacdac {
                 cursor += txLength;
             }
         }
-
-        static debugView(): DebugView {
-            return new ConsoleDebugView()
-        }
-    }
-
-    class ConsoleDebugView extends DebugView {
-        constructor() {
-            super(ConsoleDriver.NAME, jacdac.LOGGER_DEVICE_CLASS);
-        }
-        renderPacket(device: JDDevice, packet: JDPacket) {
-            const data = packet.data;
-            const pri = data[0];
-            const str = bufferToString(data, 1);
-            return `${pri}:${str}`;
-        }
     }
 
     //% whenUsed

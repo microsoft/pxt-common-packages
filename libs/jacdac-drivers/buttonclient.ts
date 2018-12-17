@@ -37,32 +37,9 @@ namespace jacdac {
         onEvent(event: JDButtonEvent, handler: () => void) {
             this.registerEvent(event, handler);
         }
-
-        static debugView(): DebugView {
-            return new ButtonDebugView();
-        }
     }
 
     //% fixedInstance whenUsed block="button"
     export const buttonClient = new ButtonClient("btn");
 
-    class ButtonDebugView extends SensorDebugView {
-        constructor() {
-            super("btn", jacdac.BUTTON_DEVICE_CLASS);
-        }
-
-        renderEvent(value: number): string {
-            switch(value) {
-                case JDButtonEvent.Click: return "click";
-                case JDButtonEvent.Down: "down";
-                case JDButtonEvent.Up: "up";
-                case JDButtonEvent.LongClick: return "lg click" 
-                default: return "";
-            }
-        }
-
-        renderState(data: Buffer): string {
-            return !!data[0] ? `up` : `down`;
-        }
-    }
 }

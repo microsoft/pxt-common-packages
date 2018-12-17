@@ -46,36 +46,8 @@ namespace jacdac {
         showAnimation(animation: JDLightAnimation, duration: number) {
             this.sendCmd(animation, duration);
         }
-
-        static debugView(): DebugView {
-            return new LightDebugView();
-        }
     }
 
     //% fixedInstance whenUsed block="light"
     export const lightClient = new LightClient("light");
-
-    class LightDebugView extends DebugView {        
-        constructor() {
-            super("light", jacdac.LIGHT_DEVICE_CLASS);
-        }
-
-        renderPacket(device: JDDevice, packet: JDPacket) {
-            const data = packet.data;
-            const cmd = data[0];
-            const payload = data.slice(1, data.length -1);
-            const names = [
-                "none",
-                "all",
-                "bright",
-                "rainbow",
-                "rlights",
-                "colorw",
-                "comet",
-                "theaterchase",
-                "sparkle"
-            ];
-            return `${names[cmd]} ${payload.toHex()}`
-        }
-    }
 }

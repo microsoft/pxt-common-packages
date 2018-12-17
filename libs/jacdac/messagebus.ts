@@ -44,20 +44,6 @@ namespace jacdac {
             //control.dmesg(`jd> msgbus> control packet`)        
             return true;
         }
-
-        static debugView(): DebugView { 
-            return new MessageBusDebugView();
-        }
-    }
-
-    class MessageBusDebugView extends DebugView {
-        constructor() {
-            super(MessageBusService.NAME, DAL.JD_DRIVER_CLASS_MESSAGE_BUS);
-        }
-
-        renderPacket(device: JDDevice, packet: JDPacket): string {
-            return `${packet.getNumber(NumberFormat.UInt16LE, 0)} ${packet.getNumber(NumberFormat.UInt16LE, 2)}`;
-        }
     }
 
     //% fixedInstance whenUsed block="message bus service"

@@ -44,18 +44,8 @@ namespace jacdac {
         setLightConditionThreshold(level: JacdacLightCondition, value: number) {
             this.setThreshold(level == JacdacLightCondition.Dark, value);
         }
-
-        static debugView(): DebugView {
-            return new LightSensorDebugView();
-        }
     }
 
     //% fixedInstance whenUsed block="light sensor"
     export const lightSensorClient = new LightSensorClient("lis");
-
-    class LightSensorDebugView extends SensorDebugView {
-        constructor() {
-            super("lis", jacdac.LIGHT_SENSOR_DEVICE_CLASS);
-        }
-    }
 }

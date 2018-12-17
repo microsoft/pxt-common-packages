@@ -10,23 +10,9 @@ namespace jacdac {
     let mode = Mode.None;
 
     function createDebugViews(): DebugView[] {
-        return [
-            jacdac.MessageBusService.debugView(),
-            jacdac.ConsoleDriver.debugView(),
-            /*
-            jacdac.AccelerometerClient.debugView(),
-            jacdac.MicrophoneClient.debugView(),
-            jacdac.ButtonClient.debugView(),
-            jacdac.TouchClient.debugView(),
-            jacdac.SwitchClient.debugView(),
-            jacdac.LightSensorClient.debugView(),
-            jacdac.ThermometerClient.debugView(),
-            jacdac.PixelClient.debugView(),
-            jacdac.LightClient.debugView(),
-            jacdac.MusicClient.debugView(),
-            */
-            jacdac.GameLobbyDriver.debugView()
-        ];
+        const v = defaultDebugViews();
+        v.push(jacdac.GameLobbyDriver.debugView())
+        return v;
     }
 
     function showDrivers() {
