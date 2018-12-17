@@ -38,13 +38,13 @@ namespace particles {
         z: number;
         id: number;
         _dt: number;
-        
+
         protected _enabled: boolean;
         protected head: Particle;
         protected timer: number;
         protected period: number;
         protected _factory: ParticleFactory;
-        
+
         protected ax: Fx8;
         protected ay: Fx8;
 
@@ -263,6 +263,31 @@ namespace particles {
     function pruneParticles() {
         for (let i = 0; i < sources.length; i++) {
             sources[i]._prune();
+        }
+    }
+
+    //% fixedInstances
+    export class ParticleEffect {
+        private f: () => ParticleFactory;
+        constructor(f: () => ParticleFactory) {
+            this.f = f;
+        }
+
+        createFactory(): ParticleFactory {
+            return undefined;
+        }
+
+        /**
+         * Attaches a new particle animation to the sprite or anchor
+         * @param anchor 
+         * @param particlesPerSecond 
+         */
+        //% blockId=particlesstartanimation block="start %effect on %anchor=variable_get(mySprite) at rate %particlesPerSecond p/s"
+        //% particlesPerSecond=25
+        start(anchor: ParticleAnchor, particlesPerSecond: number): void {
+            const factory = this.createFactory();
+            if (!factory) return;
+            const source = new ParticleSource(anchor, particlesPerSecond, factory);
         }
     }
 }
