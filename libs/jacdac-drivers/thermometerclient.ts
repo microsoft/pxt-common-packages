@@ -49,8 +49,18 @@ namespace jacdac {
             this.setThreshold(condition == JDTemperatureCondition.Cold, temperature);
             control.onEvent(this.id, condition, handler);
         }
+
+        static debugView(): DebugView {
+            return new ThermometerDebugView();
+        }
     }
 
     //% fixedInstance whenUsed block="thermometer"
-    export const thermometerClient = new ThermometerClient("thermometer");
+    export const thermometerClient = new ThermometerClient("temp");
+
+    class ThermometerDebugView extends SensorDebugView {
+        constructor() {
+            super("temp", jacdac.THERMOMETER_DEVICE_CLASS);
+        }
+    }
 }

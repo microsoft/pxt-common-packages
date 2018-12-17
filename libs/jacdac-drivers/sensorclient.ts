@@ -131,8 +131,12 @@ namespace jacdac {
                 case SensorCommand.State:
                     return `ev ${this.renderState(data.slice(1)) || data[1]}`;
                 default:
-                    return "";//renderCustom(data);
+                    return this.renderCustomPacket(cmd, packet);
             }
+        }
+
+        renderCustomPacket(cmd: number, packet: JDPacket): string {
+            return packet.data.toHex();
         }
 
         renderEvent(value: number): string {
