@@ -2,7 +2,7 @@
  * Small particles
  */
 //% color="#382561" weight=78 icon="\uf06d"
-//% groups='["Create", "Properties"]'
+//% groups='["Effects", "Create", "Properties"]'
 namespace particles {
     const TIME_PRECISION = 10; // time goes down to down to the 1<<10 seconds
 
@@ -38,13 +38,13 @@ namespace particles {
         z: number;
         id: number;
         _dt: number;
-        
+
         protected _enabled: boolean;
         protected head: Particle;
         protected timer: number;
         protected period: number;
         protected _factory: ParticleFactory;
-        
+
         protected ax: Fx8;
         protected ay: Fx8;
 
@@ -263,6 +263,33 @@ namespace particles {
     function pruneParticles() {
         for (let i = 0; i < sources.length; i++) {
             sources[i]._prune();
+        }
+    }
+
+    //% fixedInstances
+    export class ParticleEffect {
+        private factoryFactory: () => ParticleFactory;
+        constructor(factoryFactory: () => ParticleFactory) {
+            this.factoryFactory = factoryFactory;
+        }
+
+        createFactory(): ParticleFactory {
+            return this.factoryFactory();
+        }
+
+        /**
+         * Attaches a new particle animation to the sprite or anchor
+         * @param anchor 
+         * @param particlesPerSecond 
+         */
+        //% blockId=particlesstartanimation block="start %effect effect on %anchor=variables_get(mySprite) at rate %particlesPerSecond p/s"
+        //% particlesPerSecond.defl=20
+        //% particlesPerSecond.min=1 particlePerSeconds.max=100
+        //% group="Effects"
+        start(anchor: ParticleAnchor, particlesPerSecond: number): void {
+            const factory = this.createFactory();
+            if (!factory) return;
+            const source = new ParticleSource(anchor, particlesPerSecond, factory);
         }
     }
 }

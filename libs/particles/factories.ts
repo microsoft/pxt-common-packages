@@ -72,7 +72,7 @@ namespace particles {
             p._y = Fx8(anchor.y);
             p.vx = Fx.zeroFx8;
             p.vy = Fx.zeroFx8;
-            p.lifespan = 1500;
+            p.lifespan = 500;
 
             return p;
         }
@@ -127,15 +127,8 @@ namespace particles {
         }
     }
 
-    /**
-     * Creates a spray factory
-     */
-    //% blockId=particlesspary block="spray at speed %speed center"
-    //% blockSetVariable=factory
-    export function sprayFactory(speed: number) {
-        const spray = new SprayFactory(speed, 120, 60);
-        return spray;
-    }
+    //% fixedInstance whenUsed block="spray"
+    export const sprayEffect = new ParticleEffect(function () { return new SprayFactory(100, 0, 120) });
 
     /**
      * A factory for creating particles within rectangular area
@@ -144,28 +137,28 @@ namespace particles {
         xRange: number;
         yRange: number;
         protected galois: Math.FastRandom;
-    
+
         constructor(xRange: number, yRange: number) {
             super(40, 0, 90);
             this.xRange = xRange;
             this.yRange = yRange;
             this.galois = new Math.FastRandom();
         }
-    
+
         createParticle(anchor: particles.ParticleAnchor) {
             const p = super.createParticle(anchor);
 
             p.lifespan = this.galois.randomRange(150, 850);
             p._x = Fx.add(Fx8(this.galois.randomRange(0, this.xRange) - (this.xRange >> 1)), p._x);
             p._y = Fx.add(Fx8(this.galois.randomRange(0, this.yRange) - (this.yRange >> 1)), p._y);
-    
+
             return p;
         }
-    
+
         drawParticle(p: particles.Particle, x: Fx8, y: Fx8) {
             const col = p.lifespan > 500 ?
-                            4 : p.lifespan > 250 ? 
-                                    5 : 1;
+                4 : p.lifespan > 250 ?
+                    5 : 1;
             screen.setPixel(Fx.toInt(x), Fx.toInt(y), col);
         }
     }
@@ -198,7 +191,7 @@ namespace particles {
             screen.setPixel(Fx.toInt(x), Fx.toInt(y), p.data);
         }
     }
-    
+
     //% whenUsed
     export const defaultFactory = new SprayFactory(20, 0, 60);
 }
