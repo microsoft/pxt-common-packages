@@ -184,9 +184,12 @@ namespace jacdac {
                 this.refresh();
             })
             controller.down.onEvent(ControllerButtonEvent.Pressed, () => {
-                this.mode = Mode.Packets;
-                if (this._logAllDriver)
+                if (this.mode == Mode.Packets && this._logAllDriver) {
                     this._logAllDriver.hideControlPackets = !this._logAllDriver.hideControlPackets;
+                    return;
+                }
+
+                this.mode = Mode.Packets;
                 game.consoleOverlay.clear();
                 console.log(`sniffing...`)
                 this.refresh();
@@ -205,11 +208,8 @@ namespace jacdac {
                 }
             })
             controller.A.onEvent(ControllerButtonEvent.Pressed, () => {
-                switch (this.mode) {
-                    case Mode.Packets:
-                        if (this._logAllDriver)
-                            this._logAllDriver.paused = !this._logAllDriver.paused;
-                        break;
+                if (this.mode == Mode.Packets && this._logAllDriver) {
+                    this._logAllDriver.paused = !this._logAllDriver.paused;
                 }
             })
 
