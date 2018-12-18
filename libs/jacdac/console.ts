@@ -31,9 +31,10 @@ namespace jacdac {
         static BROADCAST_TIMEOUT = 2000;
 
         constructor() {
-            super(ConsoleDriver.NAME, jacdac.LOGGER_DEVICE_CLASS, 2);
+            super(ConsoleDriver.NAME, jacdac.LOGGER_DEVICE_CLASS, 6);
             this.controlData[0] = JDConsoleMode.Off;
             this.controlData[1] = console.minPriority; // TODO this may get outdated
+            this.name = "";
             console.addListener((priority, text) => this.broadcast(priority, text));
         }
 
@@ -61,17 +62,50 @@ namespace jacdac {
             console.minPriority = value; // keep in sync
         }
 
+        private static readName(data: Buffer): string {
+            let r = "";
+            for (let i = 2; i < data.length; ++i) {
+                const c = data[i];
+                if (!c)
+                    return r;
+                r += String.fromCharCode(c);
+            }
+            return r;
+        }
+
+        updateName() {
+            let value = jacdac.deviceName();
+            const n = this.controlData.length - 2;
+            // normalize name
+            if (value.length > n)
+                value = value.substr(0, n);
+            // store characters
+            let i = 0;
+            for (; i < value.length; ++i) {
+                const c = value.charCodeAt(i);
+                this.controlData[i + 2] = c;
+            }
+            // fill remaning data with zeroes
+            for (; i < n; ++i) {
+                this.controlData[i] = 0;
+            }
+        }
+
         public handleControlPacket(pkt: Buffer): boolean {
             const packet = new ControlPacket(pkt);
-            const mode = packet.data[0];
+            const data = packet.data;
+            const mode = data[0];
             if (mode == JDConsoleMode.Listen) {
                 // if a listener entres the bus, automatically start listening
                 if (this.mode != JDConsoleMode.Listen)
                     this.setMode(JDConsoleMode.Broadcast);
                 // update priority if needed
-                const priority = packet.data[1];
+                const priority = data[1];
                 if (priority < this.priority) // update priority
                     this.priority = priority;
+                // update device name map
+                const name = ConsoleDriver.readName(packet.data);
+                setRemoteDeviceName(packet.serialNumber, name);
                 this._lastListenerTime = control.millis();
             }
             return true;
@@ -120,4 +154,45 @@ namespace jacdac {
 
     //% whenUsed
     export const consoleDriver = new ConsoleDriver();
+
+    let _deviceNames: { serialNumber: number; name: string; }[];
+    function setRemoteDeviceName(serialNumber: number, name: string) {
+        // 0 = this device
+        if (!_deviceNames)
+            _deviceNames = [];
+        let entry = _deviceNames.find(d => d.serialNumber == serialNumber);
+        if (!entry)
+            _deviceNames.push(entry = { serialNumber: serialNumber, name: undefined });
+        entry.name = name;
+        if (serialNumber == 0)
+            consoleDriver.updateName();
+    }
+
+    export function remoteDeviceName(serialNumber: number) {
+        if (_deviceNames) {
+            let entry = _deviceNames.find(d => d.serialNumber == serialNumber);
+            if (entry)
+                return entry.name;
+        }
+        return "";
+    }
+
+    /**
+     * Sets a friendly name for the device
+     * @param name 
+     */
+    //% blockId=jacdacsetdevicename block="jacdac set device name to $name"
+    //% group="Name"
+    export function setDeviceName(name: string) {
+        setRemoteDeviceName(0, name);
+    }
+
+    /**
+     * Gets the current device name
+     */
+    //% blockId=jacdacdevicename block="jacdac device name"
+    //% group="Name"
+    export function deviceName() {
+        return remoteDeviceName(0);
+    }
 }

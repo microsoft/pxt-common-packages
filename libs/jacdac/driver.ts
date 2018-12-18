@@ -37,6 +37,11 @@ namespace jacdac {
             return this._proxy;
         }
 
+        get deviceName(): string {
+            const d = this.device;
+            return d ?  jacdac.remoteDeviceName(d.serialNumber) : "";
+        }
+
         set proxy(value: JacDacDriverStatus) {
             if (this._proxy) {
                 control.onEvent(this._proxy.id, JD_DRIVER_EVT_FILL_CONTROL_PACKET, undefined);
