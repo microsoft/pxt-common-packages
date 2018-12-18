@@ -303,4 +303,61 @@ namespace particles {
             screen.setPixel(Fx.toInt(p._x), Fx.toInt(p._y), p.data);
         }
     }
+
+    export class RadialFactory extends particles.ParticleFactory {
+        protected r: Fx8;
+        protected speed: Fx8;
+        protected t: number;
+        protected spread: number;
+        protected galois: Math.FastRandom;
+        protected colors: number[];
+
+        constructor(radius: number, speed: number, spread: number, colors?: number[]) {
+            super();
+            initTrig();
+
+            if (colors && colors.length != 0)
+                this.colors = colors;
+            else
+                this.colors = [0x2, 0x3, 0x4, 0x5];
+
+            this.setRadius(radius)
+            this.speed = Fx8(-speed);
+            this.spread = spread;
+            this.t = 0;
+            this.galois = new Math.FastRandom();
+        }
+
+        createParticle(anchor: particles.ParticleAnchor) {
+            const p = super.createParticle(anchor);
+            const time = ++this.t % cachedCos.length;
+            const offsetTime = (time + this.galois.randomRange(0, this.spread)) % cachedCos.length;
+
+            p._x = Fx.iadd(anchor.x, Fx.mul(this.r, cachedCos[time]));
+            p._y = Fx.iadd(anchor.y, Fx.mul(this.r, cachedSin[time]));
+            p.vx = Fx.mul(this.speed, Fx.neg(cachedSin[offsetTime]));
+            p.vy = Fx.mul(this.speed, cachedCos[offsetTime]);
+
+            p.lifespan = this.galois.randomRange(200, 1500);
+            p.data = this.galois.pickRandom(this.colors);
+
+            return p;
+        }
+
+        drawParticle(p: particles.Particle, x: Fx8, y: Fx8) {
+            screen.setPixel(Fx.toInt(p._x), Fx.toInt(p._y), p.data);
+        }
+
+        setRadius(r: number) {
+            this.r = Fx8(r >> 1);
+        }
+
+        setSpeed(s: number) {
+            this.speed = Fx8(-s);
+        }
+
+        setSpread(s: number) {
+            this.spread = s;
+        }
+    }
 }

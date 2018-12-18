@@ -80,4 +80,22 @@ namespace particles {
         src.setAcceleration(0, -20)
         return src;
     });
+
+    //% fixedInstance whenUsed block="warm radial"
+    export const warmRadial = createEffect(function () { return new RadialFactory(0, 30, 10) });
+
+    //% fixedInstance whenUsed block="cool radial"
+    export const coolRadial = createEffect(function () { return new RadialFactory(0, 30, 10, [0x6, 0x7, 0x8, 0x9, 0xA]) });
+
+    //% fixedInstance whenUsed block="glow ring"
+    export const glowRing = createEffect(function () {
+        class RingFactory extends RadialFactory {
+            createParticle(anchor: particles.ParticleAnchor) {
+                const p = super.createParticle(anchor);
+                p.lifespan = this.galois.randomRange(200, 350);
+                return p;
+            }
+        }
+        return new RingFactory(30, 40, 10, [0x4, 0x4, 0x5]);
+    });
 }
