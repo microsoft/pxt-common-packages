@@ -30,7 +30,7 @@ namespace jacdac {
         static BROADCAST_TIMEOUT = 2000;
 
         constructor() {
-            super("log", jacdac.LOGGER_DEVICE_CLASS, 6);
+            super("log", jacdac.LOGGER_DEVICE_CLASS, 10);
             this.controlData[0] = JDConsoleMode.Off;
             this.controlData[1] = console.minPriority; // TODO this may get outdated
             this.name = "";
