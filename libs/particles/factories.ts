@@ -219,7 +219,7 @@ namespace particles {
             const pImage = this.galois.pickRandom(this.sources).clone();
             pImage.replace(0xF, p.data);
 
-            screen.drawImage(pImage,
+            screen.drawTransparentImage(pImage,
                 Fx.toInt(Fx.sub(x, this.ox)),
                 Fx.toInt(Fx.sub(y, this.oy))
             );

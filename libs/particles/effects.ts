@@ -73,6 +73,39 @@ namespace particles {
         return factory;
     });
 
+    //% fixedInstance whenUsed block="hearts"
+    export const hearts = createEffect(function () {
+        return new ShapeFactory(16, 16, img`
+            . F . F .
+            F . F . F
+            F . . . F
+            . F . F .
+            . . F . .
+        `);
+    });
+
+    //% fixedInstance whenUsed block="smiles"
+    export const smiles = createEffect(function () {
+        return new ShapeFactory(16, 16, img`
+            . f . f . 
+            . f . f . 
+            . . . . . 
+            f . . . f 
+            . f f f . 
+        `);
+    });
+
+    //% fixedInstance whenUsed block="rings"
+    export const rings = createEffect(function () {
+        return new ShapeFactory(16, 16, img`
+            . F F F . 
+            F . . . F 
+            F . . . F 
+            f . . . f 
+            . f f f . 
+        `);
+    });
+
     //% fixedInstance whenUsed block="fire"
     export const fireEffect = new ParticleEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
         const factory = new FireFactory(5);
@@ -87,8 +120,8 @@ namespace particles {
     //% fixedInstance whenUsed block="cool radial"
     export const coolRadial = createEffect(function () { return new RadialFactory(0, 30, 10, [0x6, 0x7, 0x8, 0x9, 0xA]) });
 
-    //% fixedInstance whenUsed block="glow ring"
-    export const glowRing = createEffect(function () {
+    //% fixedInstance whenUsed block="halo"
+    export const halo = createEffect(function () {
         class RingFactory extends RadialFactory {
             createParticle(anchor: particles.ParticleAnchor) {
                 const p = super.createParticle(anchor);
