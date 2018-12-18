@@ -33,7 +33,7 @@ namespace jacdac {
             super("log", jacdac.LOGGER_DEVICE_CLASS, 10);
             this.controlData[0] = JDConsoleMode.Off;
             this.controlData[1] = console.minPriority; // TODO this may get outdated
-            this.controlData[2] = 0; // empty name
+            this.updateName();
             console.addListener((priority, text) => this.broadcast(priority, text));
         }
 
@@ -86,7 +86,7 @@ namespace jacdac {
             }
             // fill remaning data with zeroes
             for (; i < n; ++i) {
-                this.controlData[i] = 0;
+                this.controlData[i + 2] = 0;
             }
         }
 
