@@ -102,7 +102,7 @@ namespace jacdac {
                 if (priority < this.priority) // update priority
                     this.priority = priority;
                 // update device name map
-                const name = ConsoleDriver.readName(packet.data);
+                const name = ConsoleDriver.readName(data);
                 setRemoteDeviceName(packet.serialNumber, name);
                 this._lastListenerTime = control.millis();
             }
