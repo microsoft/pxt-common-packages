@@ -118,12 +118,18 @@ namespace jacdac {
             const data = packet.data;
             const priority = data[0];
             // shortcut
-            if (priority < console.minPriority) return true;
+            if (priority < console.minPriority) 
+                return true;
             // send message to console
             const str = bufferToString(data, 1);
-            // pipe to console
-            console.add(priority, `${toHex8(packet.address)}> ${str}`);
 
+            // find a name of the device
+            const address = packet.address;
+            const device = jacdac.drivers().find(d => d.address == address);
+            const deviceName = (device ? jacdac.remoteDeviceName(device.serialNumber) : "") || toHex8(packet.address);
+
+            // pipe to console            
+            console.add(priority, `${deviceName}> ${str}`);
             return true;
         }
 
