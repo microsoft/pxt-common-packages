@@ -1,7 +1,7 @@
 /**
  * Small particles
  */
-//% color="#03AA74" weight=78 icon="\uf021"
+//% color="#382561" weight=78 icon="\uf06d"
 //% groups='["Create", "Properties"]'
 namespace particles {
     const TIME_PRECISION = 10; // time goes down to down to the 1<<10 seconds
