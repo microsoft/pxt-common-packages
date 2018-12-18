@@ -24,13 +24,11 @@ void *LinuxDAC::play(void *self) {
     DMESG("PCM name: '%s'", snd_pcm_name(pcm_handle));
     DMESG("PCM state: %s", snd_pcm_state_name(snd_pcm_state(pcm_handle)));
 
-    // 15ms
-    auto delay = SAMPLE_RATE / 1000 * 15;
-
     for (;;) {
         auto buf = dac->src.pull();
         auto data = (int16_t *)buf.getBytes();
         auto len = buf.length() / 2;
+        //DMESG("SND: %d samples %d %d %d %d %d", len, data[0], data[1], data[2], data[3], data[4]);
         for (int i = 0; i < len; ++i) {
             // playing at half-volume
             data[i] = (data[i] - 512) << 5;
@@ -41,9 +39,6 @@ void *LinuxDAC::play(void *self) {
         if (frames < 0) {
             DMESG("alsa write faield: %s", snd_strerror(frames));
             target_panic(951);
-        }
-        while (snd_pcm_avail(pcm_handle) < delay) {
-            sleep_core_us(5000);
         }
     }
 

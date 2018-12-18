@@ -31,15 +31,24 @@ void fiber_sleep(unsigned long ms) {
     sleep_ms(ms);
 }
 
-void fiber_wake_on_event(unsigned short, unsigned short) {
-    // shouldn't be called
-    target_panic(998);
+static uint16_t wake_source, wake_value;
+void fiber_wake_on_event(uint16_t source, uint16_t value) {
+    wake_source = source;
+    wake_value = value;
 }
 
 
 void schedule() {
-    // shouldn't be called
-    target_panic(998);
+    pxt::waitForEvent(wake_source, wake_value);
 }
+
+extern "C" void codal_dmesg(const char *format, ...)
+{
+    va_list arg;
+    va_start(arg, format);
+    vdmesg(format, arg);
+    va_end(arg);
+}
+
 
 } // namespace codal
