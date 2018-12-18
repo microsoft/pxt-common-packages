@@ -46,7 +46,7 @@ namespace particles {
             galois: Math.FastRandom;
     
             constructor() {
-                super(40, 180, 90)
+                super(40, 180, 90);
                 this.galois = new Math.FastRandom(1234);
             }
     
@@ -57,11 +57,13 @@ namespace particles {
                 return p;
             }
     
-            drawParticle(p: particles.Particle, x: Fx8, y: Fx8) { screen.setPixel(Fx.toInt(x), Fx.toInt(y), p.data); }
+            drawParticle(p: particles.Particle, x: Fx8, y: Fx8) {
+                screen.setPixel(Fx.toInt(x), Fx.toInt(y), p.data);
+            }
         }
 
         const factory = new FountainFactory();
-        const source = new ParticleSource(anchor, particlesPerSecond, factory) 
+        const source = new ParticleSource(anchor, particlesPerSecond, factory);
         source.setAcceleration(0, 40);
         return source;
     });
@@ -110,7 +112,7 @@ namespace particles {
     export const fireEffect = new ParticleEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
         const factory = new FireFactory(5);
         const src = new FireSource(anchor, particlesPerSecond, factory);
-        src.setAcceleration(0, -20)
+        src.setAcceleration(0, -20);
         return src;
     });
 

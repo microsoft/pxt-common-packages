@@ -191,7 +191,10 @@ namespace particles {
     }
 
     /**
-     * A factory for creating particles with the provided shapes fall down the screen
+     * A factory for creating particles with the provided shapes fall down the screen.
+     * 
+     * Any pixels assigned to 0xF (black) in the provided shape will be replaced with a
+     * random color for each particle.
      */
     export class ShapeFactory extends AreaFactory {
         protected sources: Image[];
@@ -208,7 +211,7 @@ namespace particles {
         }
 
         /**
-         * Add another possible shape for a particle to display
+         * Add another possible shape for a particle to display as
          * @param shape 
          */
         addShape(shape: Image) {
@@ -256,7 +259,7 @@ namespace particles {
                     F F
                     . F
             `];
-            super(xRange, yRange, confetti[0])
+            super(xRange, yRange, confetti[0]);
             for (let i = 1; i < confetti.length; i++) {
                 this.addShape(confetti[i]);
             }
@@ -286,14 +289,14 @@ namespace particles {
             const p = super.createParticle(anchor);
             p.data = this.galois.randomBool() ?
                 2 : this.galois.randomBool() ?
-                    4 : 5 // 50% 2, otherwise 50% 4 or 5
+                    4 : 5;
     
             const i = this.galois.randomRange(0, cachedCos.length);
             const r = this.galois.randomRange(this.minRadius, this.maxRadius);
             p._x = Fx.iadd(anchor.x, Fx.mul(Fx8(r), cachedCos[i]));
             p._y = Fx.iadd(anchor.y, Fx.mul(Fx8(r), cachedSin[i]));
             p.vy = Fx8(Math.randomRange(0, 10));
-            p.vx = Fx8(Math.randomRange(-5, 5))
+            p.vx = Fx8(Math.randomRange(-5, 5));
             p.lifespan = 1500;
     
             return p;
