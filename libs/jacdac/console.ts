@@ -27,11 +27,10 @@ namespace jacdac {
     export class ConsoleDriver extends Broadcast {
         private _lastListenerTime: number;
 
-        static NAME = "log"
         static BROADCAST_TIMEOUT = 2000;
 
         constructor() {
-            super(ConsoleDriver.NAME, jacdac.LOGGER_DEVICE_CLASS, 6);
+            super("log", jacdac.LOGGER_DEVICE_CLASS, 6);
             this.controlData[0] = JDConsoleMode.Off;
             this.controlData[1] = console.minPriority; // TODO this may get outdated
             this.name = "";
