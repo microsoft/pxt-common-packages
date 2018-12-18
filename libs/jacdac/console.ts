@@ -161,8 +161,13 @@ namespace jacdac {
         if (!_deviceNames)
             _deviceNames = [];
         let entry = _deviceNames.find(d => d.serialNumber == serialNumber);
-        if (!entry)
-            _deviceNames.push(entry = { serialNumber: serialNumber, name: undefined });
+        if (!entry) {
+            entry = { serialNumber: serialNumber, name: undefined };
+            if (serialNumber == 0)
+                _deviceNames.unshift(entry);
+            else
+                _deviceNames.push(entry);
+        }
         entry.name = name;
         if (serialNumber == 0)
             consoleDriver.updateName();
