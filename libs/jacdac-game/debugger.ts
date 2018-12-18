@@ -222,7 +222,7 @@ namespace jacdac {
         }
     }
 
-    class LogAllDriver extends BridgeDriver {
+    class LogAllDriver extends Bridge {
         debugViews: DebugView[];
         hideControlPackets: boolean;
         paused: boolean;
@@ -244,24 +244,22 @@ namespace jacdac {
             return dbgView;
         }
 
-        handlePacket(pkt: Buffer): boolean {
-            if (this.paused) return true;
+        sniffControlPacket(cp: ControlPacket): boolean {
+            if (this.paused || this.hideControlPackets) return true;
+            // too much noise
+            if (cp.driverClass == jacdac.LOGGER_DEVICE_CLASS) return true;
+            const dbgView = this.debugViews.find(d => d.driverClass == cp.driverClass);
+            const str = dbgView ? dbgView.renderControlPacket(cp) : "";
+            console.log(`c:${toHex8(cp.address)}> ${dbgView ? dbgView.name : cp.driverClass} ${str}`);
+            return true;
+        }
 
-            const packet = new JDPacket(pkt);
-            if (packet.address == 0) {
-                if (this.hideControlPackets) return true;
-                const cp = new ControlPacket(packet.data);
-                // too much noise
-                if (cp.driverClass == jacdac.LOGGER_DEVICE_CLASS) return true;
-                const dbgView = this.debugViews.find(d => d.driverClass == cp.driverClass);
-                const str = dbgView ? dbgView.renderControlPacket(cp) : "";
-                console.log(`c:${toHex8(cp.address)}> ${dbgView ? dbgView.name : cp.driverClass} ${str}`)
-            } else {
-                const device = this.findDevice(packet);
-                const dbgView = this.findView(device, packet);
-                const str = dbgView ? dbgView.renderPacket(device, packet) : packet.data.toHex();
-                console.log(`p:${toHex8(packet.address)}> ${str}`)
-            }
+        sniffPacket(packet: JDPacket): boolean {
+            if (this.paused) return true;
+            const device = this.findDevice(packet);
+            const dbgView = this.findView(device, packet);
+            const str = dbgView ? dbgView.renderPacket(device, packet) : packet.data.toHex();
+            console.log(`p:${toHex8(packet.address)}> ${str}`)
             return true;
         }
     }
