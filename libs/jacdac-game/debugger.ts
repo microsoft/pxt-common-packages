@@ -249,7 +249,7 @@ namespace jacdac {
         sniffControlPacket(cp: ControlPacket): boolean {
             if (this.paused || this.hideControlPackets) return true;
             // too much noise
-            if (cp.driverClass == jacdac.LOGGER_DEVICE_CLASS) return true;
+            //if (cp.driverClass == jacdac.LOGGER_DEVICE_CLASS) return true;
             const dbgView = this.debugViews.find(d => d.driverClass == cp.driverClass);
             const str = dbgView ? dbgView.renderControlPacket(cp) : "";
             const deviceName = jacdac.remoteDeviceName(cp.serialNumber);

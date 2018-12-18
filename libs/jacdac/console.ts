@@ -85,15 +85,18 @@ namespace jacdac {
                 this.controlData[i + 2] = c;
             }
             // fill remaning data with zeroes
-            for (; i < n; ++i) {
+            if (i < n)
                 this.controlData[i + 2] = 0;
-            }
         }
 
         public handleControlPacket(pkt: Buffer): boolean {
             const packet = new ControlPacket(pkt);
             const data = packet.data;
             const mode = data[0];
+            // update device name map
+            const name = ConsoleDriver.readName(data);
+            if (setRemoteDeviceName(packet.serialNumber, name))
+                this.log(`${toHex(packet.serialNumber)} -> ${name}`);
             if (mode == JDConsoleMode.Listen) {
                 // if a listener entres the bus, automatically start listening
                 if (this.mode != JDConsoleMode.Listen)
@@ -102,9 +105,6 @@ namespace jacdac {
                 const priority = data[1];
                 if (priority < this.priority) // update priority
                     this.priority = priority;
-                // update device name map
-                const name = ConsoleDriver.readName(data);
-                setRemoteDeviceName(packet.serialNumber, name);
                 this._lastListenerTime = control.millis();
             }
             return true;
@@ -118,7 +118,7 @@ namespace jacdac {
             const data = packet.data;
             const priority = data[0];
             // shortcut
-            if (priority < console.minPriority) 
+            if (priority < console.minPriority)
                 return true;
             // send message to console
             const str = bufferToString(data, 1);
@@ -161,21 +161,26 @@ namespace jacdac {
     export const consoleDriver = new ConsoleDriver();
 
     let _deviceNames: { serialNumber: number; name: string; }[];
-    function setRemoteDeviceName(serialNumber: number, name: string) {
+    function setRemoteDeviceName(serialNumber: number, name: string): boolean {
         // 0 = this device
         if (!_deviceNames)
             _deviceNames = [];
         let entry = _deviceNames.find(d => d.serialNumber == serialNumber);
         if (!entry) {
-            entry = { serialNumber: serialNumber, name: undefined };
+            entry = {
+                serialNumber: serialNumber,
+                name: ""
+            };
             if (serialNumber == 0)
                 _deviceNames.unshift(entry);
             else
                 _deviceNames.push(entry);
         }
+        const changed = entry.name != name;
         entry.name = name;
         if (serialNumber == 0)
             consoleDriver.updateName();
+        return changed;
     }
 
     export function remoteDeviceName(serialNumber: number) {
