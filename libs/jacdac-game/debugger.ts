@@ -78,7 +78,9 @@ namespace jacdac {
                 else
                     flags += "d";
                 while (flags.length < 4) flags += " ";
-                console.log(`${toHex8(d.address)} ${driverName} ${flags} ${toHex(d.serialNumber)}`);
+
+                const deviceName = jacdac.remoteDeviceName(d.serialNumber) || toHex(d.serialNumber);
+                console.log(`${toHex8(d.address)} ${driverName} ${flags} ${deviceName}`);
                 const err = d.error;
                 if (err != JDDriverErrorCode.DRIVER_OK)
                     console.log(` e ${errors[<number>err] || err}`);
@@ -93,11 +95,11 @@ namespace jacdac {
             drivers.filter(d => !!d.serialNumber).forEach(d => {
                 const sn = toHex(d.serialNumber)
                 if (!serials[sn])
-                    serials[sn] = d;
+                    serials[sn] = d.serialNumber;
             })
             const devs = Object.keys(serials);
             console.log(`${devs.length} devices`)
-            devs.forEach(d => console.log(`${d}`));
+            devs.forEach(d => console.log(`${jacdac.remoteDeviceName(serials[d])}: ${d}`));
             console.log("");
         }
 
@@ -182,9 +184,12 @@ namespace jacdac {
                 this.refresh();
             })
             controller.down.onEvent(ControllerButtonEvent.Pressed, () => {
-                this.mode = Mode.Packets;
-                if (this._logAllDriver)
+                if (this.mode == Mode.Packets && this._logAllDriver) {
                     this._logAllDriver.hideControlPackets = !this._logAllDriver.hideControlPackets;
+                    return;
+                }
+
+                this.mode = Mode.Packets;
                 game.consoleOverlay.clear();
                 console.log(`sniffing...`)
                 this.refresh();
@@ -203,11 +208,8 @@ namespace jacdac {
                 }
             })
             controller.A.onEvent(ControllerButtonEvent.Pressed, () => {
-                switch (this.mode) {
-                    case Mode.Packets:
-                        if (this._logAllDriver)
-                            this._logAllDriver.paused = !this._logAllDriver.paused;
-                        break;
+                if (this.mode == Mode.Packets && this._logAllDriver) {
+                    this._logAllDriver.paused = !this._logAllDriver.paused;
                 }
             })
 
@@ -250,7 +252,8 @@ namespace jacdac {
             if (cp.driverClass == jacdac.LOGGER_DEVICE_CLASS) return true;
             const dbgView = this.debugViews.find(d => d.driverClass == cp.driverClass);
             const str = dbgView ? dbgView.renderControlPacket(cp) : "";
-            console.log(`c:${toHex8(cp.address)}> ${dbgView ? dbgView.name : cp.driverClass} ${str}`);
+            const deviceName = jacdac.remoteDeviceName(cp.serialNumber);
+            console.log(`c:${deviceName || toHex8(cp.address)}> ${dbgView ? dbgView.name : cp.driverClass} ${str}`);
             return true;
         }
 
@@ -259,7 +262,8 @@ namespace jacdac {
             const device = this.findDevice(packet);
             const dbgView = this.findView(device, packet);
             const str = dbgView ? dbgView.renderPacket(device, packet) : packet.data.toHex();
-            console.log(`p:${toHex8(packet.address)}> ${str}`)
+            const deviceName = jacdac.remoteDeviceName(device.serialNumber);
+            console.log(`p:${deviceName || toHex8(packet.address)}> ${str}`)
             return true;
         }
     }

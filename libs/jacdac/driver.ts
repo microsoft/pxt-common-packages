@@ -37,6 +37,11 @@ namespace jacdac {
             return this._proxy;
         }
 
+        get deviceName(): string {
+            const d = this.device;
+            return d ?  jacdac.remoteDeviceName(d.serialNumber) : "";
+        }
+
         set proxy(value: JacDacDriverStatus) {
             if (this._proxy) {
                 control.onEvent(this._proxy.id, JD_DRIVER_EVT_FILL_CONTROL_PACKET, undefined);
@@ -67,8 +72,14 @@ namespace jacdac {
         }
 
         public log(text: string) {
-            if (!this.supressLog)
-                console.add(jacdac.consolePriority, `${this.device ? toHex8(this.device.address) : "--"}>${this.name}>${text}`);
+            if (!this.supressLog) {
+                let dev = jacdac.deviceName();
+                if(!dev) {
+                    const d= this.device;
+                    dev = d ? toHex8(d.address) : "--";
+                }
+                console.add(jacdac.consolePriority, `${dev}>${this.name}>${text}`);
+            }
         }
 
         /**
