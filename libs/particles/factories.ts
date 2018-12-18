@@ -127,9 +127,6 @@ namespace particles {
         }
     }
 
-    //% fixedInstance whenUsed block="spray"
-    export const sprayEffect = new ParticleEffect(function () { return new SprayFactory(100, 0, 120) });
-
     /**
      * A factory for creating particles within rectangular area
      */
@@ -171,8 +168,8 @@ namespace particles {
         maxLifespan: number;
         galois: Math.FastRandom;
 
-        constructor(sprite: Sprite, minLifespan: number, maxLifespan: number) {
-            super(sprite.image.width >> 1, sprite.image.height >> 1);
+        constructor(sprite: ParticleAnchor, minLifespan: number, maxLifespan: number) {
+            super(sprite.width ? sprite.width >> 1 : 8, sprite.height? sprite.height >> 1 : 8);
             this.minLifespan = minLifespan;
             this.maxLifespan = maxLifespan;
             this.galois = new Math.FastRandom();
@@ -181,6 +178,7 @@ namespace particles {
 
         createParticle(anchor: particles.ParticleAnchor) {
             const p = super.createParticle(anchor);
+
             p.lifespan = this.galois.randomRange(this.minLifespan, this.maxLifespan);
             p.data = this.galois.randomRange(0x1, 0xF);
 
@@ -192,6 +190,117 @@ namespace particles {
         }
     }
 
-    //% whenUsed
-    export const defaultFactory = new SprayFactory(20, 0, 60);
+    /**
+     * A factory for creating particles with the provided shapes fall down the screen
+     */
+    export class ShapeFactory extends AreaFactory {
+        protected sources: Image[];
+        protected ox: Fx8;
+        protected oy: Fx8;
+
+        constructor(xRange: number, yRange: number, source: Image) {
+            super(xRange, yRange);
+            this.sources = [source];
+
+            // Base offsets off of initial shape
+            this.ox = Fx8(source.width >> 1);
+            this.oy = Fx8(source.height >> 1);
+        }
+
+        /**
+         * Add another possible shape for a particle to display
+         * @param shape 
+         */
+        addShape(shape: Image) {
+            if (shape) this.sources.push(shape);
+        }
+
+        drawParticle(p: Particle, x: Fx8, y: Fx8) {
+            const pImage = this.galois.pickRandom(this.sources).clone();
+            pImage.replace(0xF, p.data);
+
+            screen.drawImage(pImage,
+                Fx.toInt(Fx.sub(x, this.ox)),
+                Fx.toInt(Fx.sub(y, this.oy))
+            );
+        }
+
+        createParticle(anchor: ParticleAnchor) {
+            const p = super.createParticle(anchor);
+
+            p.data = this.galois.randomRange(1, 14);
+            p.lifespan = this.galois.randomRange(250, 1000);
+
+            return p;
+        }
+    }
+
+    export class ConfettiFactory extends ShapeFactory {
+        constructor(xRange: number, yRange: number) {
+            const confetti = [
+                img`
+                    F
+                `,
+                img`
+                    F
+                    F
+                `,
+                img`
+                    F F
+                `,
+                img`
+                    F F
+                    F .
+                `,
+                img`
+                    F F
+                    . F
+            `];
+            super(xRange, yRange, confetti[0])
+            for (let i = 1; i < confetti.length; i++) {
+                this.addShape(confetti[i]);
+            }
+        }
+
+        createParticle(anchor: ParticleAnchor) {
+            const p = super.createParticle(anchor);
+            p.lifespan = this.galois.randomRange(1000, 4500);
+            return p;
+        }
+    }
+
+    export class FireFactory extends particles.ParticleFactory {
+        protected galois: Math.FastRandom;
+        protected minRadius: number;
+        protected maxRadius: number;
+    
+        constructor(radius: number) {
+            super();
+            initTrig();
+            this.galois = new Math.FastRandom();
+            this.minRadius = radius >> 1;
+            this.maxRadius = radius;
+        }
+    
+        createParticle(anchor: particles.ParticleAnchor) {
+            const p = super.createParticle(anchor);
+            p.data = this.galois.randomBool() ?
+                2 : this.galois.randomBool() ?
+                    4 : 5 // 50% 2, otherwise 50% 4 or 5
+    
+            const i = this.galois.randomRange(0, cachedCos.length);
+            const r = this.galois.randomRange(this.minRadius, this.maxRadius);
+            p._x = Fx.iadd(anchor.x, Fx.mul(Fx8(r), cachedCos[i]));
+            p._y = Fx.iadd(anchor.y, Fx.mul(Fx8(r), cachedSin[i]));
+            p.vy = Fx8(Math.randomRange(0, 10));
+            p.vx = Fx8(Math.randomRange(-5, 5))
+            p.lifespan = 1500;
+    
+            return p;
+        }
+    
+        drawParticle(p: particles.Particle, x: Fx8, y: Fx8) {
+            screen.setPixel(Fx.toInt(p._x), Fx.toInt(p._y), p.data);
+        }
+    }
 }

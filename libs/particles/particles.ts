@@ -28,6 +28,8 @@ namespace particles {
     export interface ParticleAnchor {
         x: number;
         y: number;
+        width?: number;
+        height?: number;
     }
 
     /**
@@ -266,30 +268,23 @@ namespace particles {
         }
     }
 
-    //% fixedInstances
-    export class ParticleEffect {
-        private factoryFactory: () => ParticleFactory;
-        constructor(factoryFactory: () => ParticleFactory) {
-            this.factoryFactory = factoryFactory;
+    /**
+     * A source of particles, where 
+     */
+    export class FireSource extends particles.ParticleSource {
+        private galois: Math.FastRandom;
+        constructor(anchor: particles.ParticleAnchor, particlesPerSecond: number, factory?: particles.ParticleFactory) {
+            super(anchor, particlesPerSecond, factory);
+            this.galois = new Math.FastRandom();
+            this.z = 20;
         }
 
-        createFactory(): ParticleFactory {
-            return this.factoryFactory();
-        }
-
-        /**
-         * Attaches a new particle animation to the sprite or anchor
-         * @param anchor 
-         * @param particlesPerSecond 
-         */
-        //% blockId=particlesstartanimation block="start %effect effect on %anchor=variables_get(mySprite) at rate %particlesPerSecond p/s"
-        //% particlesPerSecond.defl=20
-        //% particlesPerSecond.min=1 particlePerSeconds.max=100
-        //% group="Effects"
-        start(anchor: ParticleAnchor, particlesPerSecond: number): void {
-            const factory = this.createFactory();
-            if (!factory) return;
-            const source = new ParticleSource(anchor, particlesPerSecond, factory);
+        updateParticle(p: particles.Particle, fixedDt: Fx8) {
+            super.updateParticle(p, fixedDt);
+            if (p.next && this.galois.percentChance(30)) {
+                p.vx = p.next.vx;
+                p.vy = p.next.vy;
+            }
         }
     }
 }
