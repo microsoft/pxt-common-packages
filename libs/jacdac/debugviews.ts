@@ -114,7 +114,7 @@ namespace jacdac {
 
     class ConsoleDebugView extends DebugView {
         constructor() {
-            super(ConsoleDriver.NAME, jacdac.LOGGER_DEVICE_CLASS);
+            super("log", jacdac.LOGGER_DEVICE_CLASS);
         }
 
         renderControlPacket(cp: ControlPacket): string {
