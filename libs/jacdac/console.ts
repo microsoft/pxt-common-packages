@@ -61,7 +61,7 @@ namespace jacdac {
             console.minPriority = value; // keep in sync
         }
 
-        private static readName(data: Buffer): string {
+        static readName(data: Buffer): string {
             let r = "";
             for (let i = 2; i < data.length; ++i) {
                 const c = data[i];
