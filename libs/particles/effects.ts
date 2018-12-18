@@ -1,4 +1,6 @@
 namespace particles {
+    let ongoingEffects: ParticleSource[] = [];
+
     //% fixedInstances
     export class ParticleEffect {
         private sourceFactory: (anchor: ParticleAnchor, pps: number) => ParticleSource;
@@ -18,7 +20,7 @@ namespace particles {
         //% group="Effects"
         start(anchor: ParticleAnchor, particlesPerSecond: number): void {
             if (!this.sourceFactory) return;
-            this.sourceFactory(anchor, particlesPerSecond);
+            ongoingEffects.push(this.sourceFactory(anchor, particlesPerSecond));
         }
     }
 
@@ -26,6 +28,26 @@ namespace particles {
         const factory = factoryFactory();
         if (!factory) return undefined;
         return new ParticleEffect((anchor: ParticleAnchor, pps: number) => new ParticleSource(anchor, pps, factory));
+    }
+
+    /**
+     * Removes all effects at anchor's location
+     * @param anchor the anchor to remove effects from
+     */
+    //% blockId=particlesremoveeffect block="remove effects on %anchor=variables_get(mySprite)"
+    //% group="Effects"
+    export function removeEffects(anchor: ParticleAnchor) {
+        const remainingEffects: ParticleSource[] = [];
+
+        ongoingEffects.forEach(ps => {
+            if (ps.anchor.x == anchor.x && ps.anchor.y == anchor.y) {
+                ps.destroy();
+            } else {
+                remainingEffects.push(ps);
+            }
+        });
+
+        ongoingEffects = remainingEffects;
     }
 
     //% whenUsed

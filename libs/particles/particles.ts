@@ -36,10 +36,18 @@ namespace particles {
      * A source of particles
      */
     export class ParticleSource implements SpriteLike {
-        anchor: ParticleAnchor;
         z: number;
         id: number;
         _dt: number;
+        /**
+         * The anchor this source is currently attached to
+         */
+        anchor: ParticleAnchor;
+        /**
+         * Time to live in milliseconds. The lifespan decreases by 1 on each millisecond
+         * and the sprite gets destroyed when it reaches 0.
+         */
+        lifespan: number;
 
         protected _enabled: boolean;
         protected head: Particle;
@@ -60,6 +68,7 @@ namespace particles {
             this.setRate(particlesPerSecond);
             this.setAcceleration(0, 0);
             this.setAnchor(anchor);
+            this.lifespan = undefined;
             this._dt = 0;
             this.z = -1;
             this.setFactory(factory || particles.defaultFactory);
@@ -91,6 +100,15 @@ namespace particles {
 
         _update(dt: number) {
             this.timer -= dt;
+
+            if (this.lifespan !== undefined) {
+                this.lifespan -= dt;
+                if (this.lifespan <= 0) {
+                    this.lifespan = undefined;
+                    this.destroy();
+                }
+            }
+
             while (this.timer < 0 && this._enabled) {
                 this.timer += this.period;
                 const p = this._factory.createParticle(this.anchor);
