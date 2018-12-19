@@ -42,7 +42,7 @@ DEPS = $(PXT_HEADERS) package.json
 all: codal-core/.git $(EXE)
 
 codal-core/.git:
-	git clone https://github.com/lancaster-university/codal-core.git
+	git clone -b streamracefix-v0 https://github.com/lancaster-university/codal-core.git
 
 $(EXE): $(PXT_OBJS)
 	$(LD) -o $(EXE) $(LDFLAGS) -Wl,-Map,$(EXE:.elf=.map) $(PXT_OBJS) $(LIBSTDCPP) $(LIBS) $(NPM_LIBS)
