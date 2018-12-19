@@ -17,7 +17,7 @@ namespace jacdac {
          */
         //% blockId=jacdaclightsensorlevel block="jacdac %lightsensor light level"
         //% group="Light sensor"
-        get level(): number {
+        get lightLevel(): number {
             const s = this.state;
             if (!s || s.length < 1) return 0;
             return s.getNumber(NumberFormat.UInt8LE, 0);
