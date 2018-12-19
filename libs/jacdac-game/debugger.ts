@@ -30,13 +30,17 @@ namespace jacdac {
             this.renderDrivers();
         }
 
-        renderDrivers() {
+        state(): string {
             const states = [
                 "recv",
                 "trans",
                 "high",
                 "low"
             ];
+            return states[jacdac.state()] || "not supported";
+        }
+
+        renderDrivers() {
             const errors = [
                 "ok",
                 "cal ing",
@@ -58,7 +62,7 @@ namespace jacdac {
 
             let drivers = jacdac.drivers();
             drivers = drivers.slice(1, drivers.length);
-            console.log(`${drivers.length} drivers (${jacdac.isConnected() ? "connected" : "disconected"} ${states[jacdac.state()] || ""})`)
+            console.log(`${drivers.length} drivers (${jacdac.isConnected() ? "connected" : "disconected"} ${this.state()})`)
             drivers.forEach(d => {
                 const driverClass = d.driverClass;
                 const dbgView = this.debugViews.find(d => driverClass == d.driverClass);
@@ -143,7 +147,7 @@ namespace jacdac {
             if (!jacdac.isRunning())
                 console.log(`not running`);
             else if (!jacdac.isConnected())
-                console.log(`disconnected ${jacdac.state()}`);
+                console.log(`disconnected (${this.state()})`);
             switch (this.mode) {
                 case Mode.Drivers: this.showDrivers(); break;
                 case Mode.Devices: this.showDevices(); break;

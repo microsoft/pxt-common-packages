@@ -165,6 +165,8 @@ namespace jacdac {
         // 0 = this device
         if (!_deviceNames)
             _deviceNames = [];
+        if (serialNumber == control.deviceSerialNumber())
+            serialNumber = 0; // normalize self serial number to 0
         let entry = _deviceNames.find(d => d.serialNumber == serialNumber);
         if (!entry) {
             entry = {
