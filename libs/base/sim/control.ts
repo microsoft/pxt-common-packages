@@ -24,7 +24,7 @@ namespace pxsim.control {
             ? b.id.slice(1)
             : "42");
         if (isNaN(n)) {
-            let n = 0;
+            n = 0;
             for (let i = 0; i < b.id.length; ++i) {
                 n = ((n << 5) - n) + b.id.charCodeAt(i);
                 n |= 0;
