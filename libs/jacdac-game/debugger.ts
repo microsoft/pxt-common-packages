@@ -31,6 +31,12 @@ namespace jacdac {
         }
 
         renderDrivers() {
+            const states = [
+                "recv",
+                "trans",
+                "high",
+                "low"
+            ];
             const errors = [
                 "ok",
                 "cal ing",
@@ -52,7 +58,7 @@ namespace jacdac {
 
             let drivers = jacdac.drivers();
             drivers = drivers.slice(1, drivers.length);
-            console.log(`${drivers.length} drivers (${jacdac.isConnected() ? "connected" : "disconected"})`)
+            console.log(`${drivers.length} drivers (${jacdac.isConnected() ? "connected" : "disconected"} ${states[jacdac.state()] || ""})`)
             drivers.forEach(d => {
                 const driverClass = d.driverClass;
                 const dbgView = this.debugViews.find(d => driverClass == d.driverClass);
