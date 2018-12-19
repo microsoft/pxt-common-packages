@@ -1,4 +1,4 @@
-enum JDDriverEvent {
+const enum JDDriverEvent {
     //% block="connected"
     Connected = DAL.JD_DRIVER_EVT_CONNECTED,
     //% block="disconnected"
@@ -15,7 +15,7 @@ enum JDDriverEvent {
     DriverError = DAL.JD_DRIVER_EVT_ERROR
 }
 
-enum JDEvent {
+const enum JDEvent {
     //% block="bus connected"
     BusConnected = DAL.JD_SERIAL_EVT_BUS_CONNECTED,
     //% block="bus disconnected"
@@ -24,7 +24,7 @@ enum JDEvent {
     DriverChanged = DAL.JD_LOGIC_DRIVER_EVT_CHANGED,
 }
 
-enum JDDriverErrorCode
+const enum JDDriverErrorCode
 {
     // No error occurred.
     DRIVER_OK = 0,
@@ -49,6 +49,14 @@ enum JDDriverErrorCode
     DRIVER_PERIPHERAL_MALFUNCTION
 }
 
+const enum JDState {
+    Receiving,
+    Transmitting,
+    High,
+    Low,
+    NotSupported = -1
+}
+
 /**
  * JACDAC protocol support
  */
@@ -62,6 +70,14 @@ namespace jacdac {
         const id = event == JDEvent.DriverChanged ? jacdac.logicEventId() : jacdac.eventId();
         if (id)
             control.onEvent(id, event, handler);
+    }
+
+    /**
+     * Gets the state of the JACDAC bus
+     */
+    //% part=jacdac
+    export function state(): JDState {
+        return __internalState();
     }
 
     /**
