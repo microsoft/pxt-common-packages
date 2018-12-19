@@ -40,7 +40,7 @@ namespace particles {
         const remainingEffects: ParticleSource[] = [];
 
         ongoingEffects.forEach(ps => {
-            if (ps.anchor.x == anchor.x && ps.anchor.y == anchor.y) {
+            if (ps.anchor == anchor || ps.anchor.x == anchor.x && ps.anchor.y == anchor.y) {
                 ps.destroy();
             } else {
                 remainingEffects.push(ps);
