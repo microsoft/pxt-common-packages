@@ -2,7 +2,6 @@
 
 namespace pxsim {
     export interface CommonBoard extends CoreBoard {
-        id: string;
         buttonState: CommonButtonState;
         edgeConnectorState: EdgeConnectorState;
     }

@@ -30,6 +30,16 @@ namespace jacdac {
             this.renderDrivers();
         }
 
+        state(): string {
+            const states = [
+                "recv",
+                "trans",
+                "high",
+                "low"
+            ];
+            return states[jacdac.state()] || "not supported";
+        }
+
         renderDrivers() {
             const errors = [
                 "ok",
@@ -52,7 +62,7 @@ namespace jacdac {
 
             let drivers = jacdac.drivers();
             drivers = drivers.slice(1, drivers.length);
-            console.log(`${drivers.length} drivers (${jacdac.isConnected() ? "connected" : "disconected"})`)
+            console.log(`${drivers.length} drivers (${jacdac.isConnected() ? "connected" : "disconected"} ${this.state()})`)
             drivers.forEach(d => {
                 const driverClass = d.driverClass;
                 const dbgView = this.debugViews.find(d => driverClass == d.driverClass);
@@ -134,8 +144,10 @@ namespace jacdac {
         }
 
         refresh() {
-            if (!jacdac.isConnected())
-                console.log(`disconnected`);
+            if (!jacdac.isRunning())
+                console.log(`not running`);
+            else if (!jacdac.isConnected())
+                console.log(`disconnected (${this.state()})`);
             switch (this.mode) {
                 case Mode.Drivers: this.showDrivers(); break;
                 case Mode.Devices: this.showDevices(); break;
@@ -186,12 +198,15 @@ namespace jacdac {
             controller.down.onEvent(ControllerButtonEvent.Pressed, () => {
                 if (this.mode == Mode.Packets && this._logAllDriver) {
                     this._logAllDriver.hideControlPackets = !this._logAllDriver.hideControlPackets;
+                    console.log(`control pkts ${this._logAllDriver.hideControlPackets ? "off" : "on"}`)
                     return;
                 }
 
                 this.mode = Mode.Packets;
                 game.consoleOverlay.clear();
                 console.log(`sniffing...`)
+                console.log(`  A to pause/resume`)
+                console.log(`  DOWN control pkts on/off`)
                 this.refresh();
             })
             controller.up.onEvent(ControllerButtonEvent.Pressed, () => {
@@ -210,11 +225,12 @@ namespace jacdac {
             controller.A.onEvent(ControllerButtonEvent.Pressed, () => {
                 if (this.mode == Mode.Packets && this._logAllDriver) {
                     this._logAllDriver.paused = !this._logAllDriver.paused;
+                    console.log(this._logAllDriver.paused ? "paused" : "resumed")
                 }
             })
 
             game.consoleOverlay.setVisible(true);
-            console.log(`jacdac console`);
+            console.log(`jacdac dashboard`);
             console.log(` LEFT for drivers`)
             console.log(` RIGHT for devices`)
             console.log(` DOWN for sniffing packets`)
@@ -249,7 +265,7 @@ namespace jacdac {
         sniffControlPacket(cp: ControlPacket): boolean {
             if (this.paused || this.hideControlPackets) return true;
             // too much noise
-            if (cp.driverClass == jacdac.LOGGER_DEVICE_CLASS) return true;
+            //if (cp.driverClass == jacdac.LOGGER_DEVICE_CLASS) return true;
             const dbgView = this.debugViews.find(d => d.driverClass == cp.driverClass);
             const str = dbgView ? dbgView.renderControlPacket(cp) : "";
             const deviceName = jacdac.remoteDeviceName(cp.serialNumber);
