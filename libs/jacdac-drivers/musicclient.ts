@@ -11,11 +11,11 @@ namespace jacdac {
          * @param ms tone duration in milliseconds (ms), eg: BeatFraction.Half
          */
         //% help=music/play-tone
-        //% blockId=music_play_note block="play %music tone|at %note=device_note|for %duration=device_beat"
+        //% blockId=jdmusic_play_note block="play %music tone|at %note=device_note|for %duration=device_beat"
         //% blockNamespace=music
         //% weight=76 blockGap=8
         //% group="Music"
-        playTone(frequency: int32, ms: int32): void {
+        playTone(frequency: number, ms: number): void {
             const buf = control.createBuffer(9);
             buf[0] = JDMusicCommand.PlayTone;
             buf.setNumber(NumberFormat.UInt32LE, 1, frequency);
