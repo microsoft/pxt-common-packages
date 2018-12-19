@@ -198,12 +198,15 @@ namespace jacdac {
             controller.down.onEvent(ControllerButtonEvent.Pressed, () => {
                 if (this.mode == Mode.Packets && this._logAllDriver) {
                     this._logAllDriver.hideControlPackets = !this._logAllDriver.hideControlPackets;
+                    console.log(`control pkts ${this._logAllDriver.hideControlPackets ? "off" : "on"}`)
                     return;
                 }
 
                 this.mode = Mode.Packets;
                 game.consoleOverlay.clear();
                 console.log(`sniffing...`)
+                console.log(`  A to pause/resume`)
+                console.log(`  DOWN control pkts on/off`)
                 this.refresh();
             })
             controller.up.onEvent(ControllerButtonEvent.Pressed, () => {
@@ -222,6 +225,7 @@ namespace jacdac {
             controller.A.onEvent(ControllerButtonEvent.Pressed, () => {
                 if (this.mode == Mode.Packets && this._logAllDriver) {
                     this._logAllDriver.paused = !this._logAllDriver.paused;
+                    console.log(this._logAllDriver.paused ? "paused" : "resumed")
                 }
             })
 
@@ -261,7 +265,7 @@ namespace jacdac {
         sniffControlPacket(cp: ControlPacket): boolean {
             if (this.paused || this.hideControlPackets) return true;
             // too much noise
-            if (cp.driverClass == jacdac.LOGGER_DEVICE_CLASS) return true;
+            //if (cp.driverClass == jacdac.LOGGER_DEVICE_CLASS) return true;
             const dbgView = this.debugViews.find(d => d.driverClass == cp.driverClass);
             const str = dbgView ? dbgView.renderControlPacket(cp) : "";
             const deviceName = jacdac.remoteDeviceName(cp.serialNumber);
