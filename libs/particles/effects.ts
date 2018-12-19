@@ -1,5 +1,5 @@
 namespace particles {
-    let ongoingEffects: ParticleSource[] = [];
+    export const ongoingEffects: ParticleSource[] = [];
 
     //% fixedInstances
     export class ParticleEffect {
@@ -37,17 +37,11 @@ namespace particles {
     //% blockId=particlesremoveeffect block="remove effects on %anchor=variables_get(mySprite)"
     //% group="Effects"
     export function removeEffects(anchor: ParticleAnchor) {
-        const remainingEffects: ParticleSource[] = [];
-
         ongoingEffects.forEach(ps => {
             if (ps.anchor == anchor || ps.anchor.x == anchor.x && ps.anchor.y == anchor.y) {
                 ps.destroy();
-            } else {
-                remainingEffects.push(ps);
             }
         });
-
-        ongoingEffects = remainingEffects;
     }
 
     //% whenUsed

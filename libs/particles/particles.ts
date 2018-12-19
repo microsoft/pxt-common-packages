@@ -30,6 +30,7 @@ namespace particles {
         y: number;
         width?: number;
         height?: number;
+        flags?: number;
     }
 
     /**
@@ -45,7 +46,7 @@ namespace particles {
         anchor: ParticleAnchor;
         /**
          * Time to live in milliseconds. The lifespan decreases by 1 on each millisecond
-         * and the sprite gets destroyed when it reaches 0.
+         * and the source gets destroyed when it reaches 0.
          */
         lifespan: number;
 
@@ -107,6 +108,8 @@ namespace particles {
                     this.lifespan = undefined;
                     this.destroy();
                 }
+            } else if (this.anchor.flags !== undefined && (this.anchor.flags & sprites.Flag.Destroyed)) {
+                this.lifespan = 1000;
             }
 
             while (this.timer < 0 && this._enabled) {
@@ -193,6 +196,7 @@ namespace particles {
          */
         destroy() {
             this.enabled = false;
+            particles.ongoingEffects.removeElement(this);
             control.runInParallel(() => {
                 pauseUntil(() => this.head == null);
                 sources.removeElement(this);
