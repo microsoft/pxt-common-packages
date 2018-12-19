@@ -196,7 +196,6 @@ namespace particles {
          */
         destroy() {
             this.enabled = false;
-            particles.ongoingEffects.removeElement(this);
             control.runInParallel(() => {
                 pauseUntil(() => this.head == null);
                 sources.removeElement(this);
@@ -308,5 +307,43 @@ namespace particles {
                 p.vy = p.next.vy;
             }
         }
+    }
+
+    //% fixedInstances
+    export class ParticleEffect {
+        private sourceFactory: (anchor: ParticleAnchor, pps: number) => ParticleSource;
+
+        constructor(sourceFactory: (anchor: ParticleAnchor, particlesPerSecond: number) => ParticleSource) {
+            this.sourceFactory = sourceFactory;
+        }
+
+        /**
+         * Attaches a new particle animation to the sprite or anchor
+         * @param anchor 
+         * @param particlesPerSecond 
+         */
+        //% blockId=particlesstartanimation block="start %effect effect on %anchor=variables_get(mySprite) at rate %particlesPerSecond p/s"
+        //% particlesPerSecond.defl=20
+        //% particlesPerSecond.min=1 particlePerSeconds.max=100
+        //% group="Effects"
+        start(anchor: ParticleAnchor, particlesPerSecond: number): void {
+            if (!this.sourceFactory) return;
+            this.sourceFactory(anchor, particlesPerSecond);
+        }
+    }
+
+
+    /**
+     * Removes all effects at anchor's location
+     * @param anchor the anchor to remove effects from
+     */
+    //% blockId=particlesremoveeffect block="remove effects on %anchor=variables_get(mySprite)"
+    //% group="Effects"
+    export function removeEffects(anchor: ParticleAnchor) {
+        sources.forEach(ps => {
+            if (ps.anchor == anchor || ps.anchor.x == anchor.x && ps.anchor.y == anchor.y) {
+                ps.destroy();
+            }
+        });
     }
 }
