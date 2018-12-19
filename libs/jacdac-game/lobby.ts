@@ -1,10 +1,10 @@
-enum GameLobbyState {
+const enum GameLobbyState {
     Alone,
     Service,
     Client
 }
 
-enum GameLobbyEvent {
+const enum GameLobbyEvent {
     StateChanged = 1,
     PlayerChanged
 }
@@ -61,6 +61,10 @@ namespace jacdac {
                 if (this.buf[i] == address)
                     return i - 5;
             return -1;
+        }
+
+        toString(): string {
+            return `${this.hash} ${this.state} ${this.players}`
         }
     }
 
@@ -218,8 +222,25 @@ namespace jacdac {
             }
             return true;
         }
+
+        static debugView(): DebugView {
+            return new GameLobbyDebugView();
+        }
     }
 
     //% whenUsed
     export const gameLobby = new GameLobbyDriver();
+
+    class GameLobbyDebugView extends DebugView {
+        constructor() {
+            super("lobby", jacdac.GAMELOBBY_DEVICE_CLASS);
+        }
+
+        renderControlPacket(cp: ControlPacket) {
+            return new GamePacket(cp.data).toString();
+        }
+        renderPacket(device: JDDevice, packet: JDPacket) {
+            return new GamePacket(packet.data).toString();
+        }
+    }
 }

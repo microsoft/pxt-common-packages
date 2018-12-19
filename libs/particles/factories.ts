@@ -11,13 +11,35 @@ namespace particles {
      */
     function initTrig() {
         if (!cachedSin) {
-            cachedSin = [];
-            cachedCos = [];
-            for (let i = 0; i < NUM_SLICES; i++) {
-                cachedSin.push(Fx8(Math.sin(i * angleSlice)));
-                cachedCos.push(Fx8(Math.cos(i * angleSlice)));
-            }
+            cachedSin = cacheSin(NUM_SLICES);
+            cachedCos = cacheCos(NUM_SLICES);
         }
+    }
+
+    /**
+     * @param slices number of cached sin values to make
+     * @returns array of cached sin values between 0 and 360 degrees
+     */
+    export function cacheSin(slices: number): Fx8[] {
+        let sin: Fx8[] = [];
+        let anglePerSlice = 2 * Math.PI / slices;
+        for (let i = 0; i < slices; i++) {
+            sin.push(Fx8(Math.sin(i * anglePerSlice)));
+        }
+        return sin;
+    }
+
+    /**
+     * @param slices number of cached cos values to make
+     * @returns array of cached cos values between 0 and 360 degrees
+     */
+    export function cacheCos(slices: number): Fx8[] {
+        let cos: Fx8[] = [];
+        let anglePerSlice = 2 * Math.PI / slices;
+        for (let i = 0; i < slices; i++) {
+            cos.push(Fx8(Math.cos(i * anglePerSlice)));
+        }
+        return cos;
     }
 
     const ratio = Math.PI / 180;
@@ -50,7 +72,7 @@ namespace particles {
             p._y = Fx8(anchor.y);
             p.vx = Fx.zeroFx8;
             p.vy = Fx.zeroFx8;
-            p.lifespan = 1500;
+            p.lifespan = 500;
 
             return p;
         }
@@ -106,44 +128,34 @@ namespace particles {
     }
 
     /**
-     * Creates a spray factory
-     */
-    //% blockId=particlesspary block="spray at speed %speed center"
-    //% blockSetVariable=factory
-    export function sprayFactory(speed: number) {
-        const spray = new SprayFactory(speed, 120, 60);
-        return spray;
-    }
-
-    /**
      * A factory for creating particles within rectangular area
      */
     export class AreaFactory extends SprayFactory {
         xRange: number;
         yRange: number;
         protected galois: Math.FastRandom;
-    
+
         constructor(xRange: number, yRange: number) {
             super(40, 0, 90);
             this.xRange = xRange;
             this.yRange = yRange;
             this.galois = new Math.FastRandom();
         }
-    
+
         createParticle(anchor: particles.ParticleAnchor) {
             const p = super.createParticle(anchor);
 
             p.lifespan = this.galois.randomRange(150, 850);
             p._x = Fx.add(Fx8(this.galois.randomRange(0, this.xRange) - (this.xRange >> 1)), p._x);
             p._y = Fx.add(Fx8(this.galois.randomRange(0, this.yRange) - (this.yRange >> 1)), p._y);
-    
+
             return p;
         }
-    
+
         drawParticle(p: particles.Particle, x: Fx8, y: Fx8) {
             const col = p.lifespan > 500 ?
-                            4 : p.lifespan > 250 ? 
-                                    5 : 1;
+                4 : p.lifespan > 250 ?
+                    5 : 1;
             screen.setPixel(Fx.toInt(x), Fx.toInt(y), col);
         }
     }
@@ -156,8 +168,8 @@ namespace particles {
         maxLifespan: number;
         galois: Math.FastRandom;
 
-        constructor(sprite: Sprite, minLifespan: number, maxLifespan: number) {
-            super(sprite.image.width >> 1, sprite.image.height >> 1);
+        constructor(sprite: ParticleAnchor, minLifespan: number, maxLifespan: number) {
+            super(sprite.width ? sprite.width >> 1 : 8, sprite.height? sprite.height >> 1 : 8);
             this.minLifespan = minLifespan;
             this.maxLifespan = maxLifespan;
             this.galois = new Math.FastRandom();
@@ -166,6 +178,7 @@ namespace particles {
 
         createParticle(anchor: particles.ParticleAnchor) {
             const p = super.createParticle(anchor);
+
             p.lifespan = this.galois.randomRange(this.minLifespan, this.maxLifespan);
             p.data = this.galois.randomRange(0x1, 0xF);
 
@@ -176,7 +189,178 @@ namespace particles {
             screen.setPixel(Fx.toInt(x), Fx.toInt(y), p.data);
         }
     }
+
+    /**
+     * A factory for creating particles with the provided shapes fall down the screen.
+     * 
+     * Any pixels assigned to 0xF (black) in the provided shape will be replaced with a
+     * random color for each particle.
+     */
+    export class ShapeFactory extends AreaFactory {
+        protected sources: Image[];
+        protected ox: Fx8;
+        protected oy: Fx8;
+
+        constructor(xRange: number, yRange: number, source: Image) {
+            super(xRange, yRange);
+            this.sources = [source];
+
+            // Base offsets off of initial shape
+            this.ox = Fx8(source.width >> 1);
+            this.oy = Fx8(source.height >> 1);
+        }
+
+        /**
+         * Add another possible shape for a particle to display as
+         * @param shape 
+         */
+        addShape(shape: Image) {
+            if (shape) this.sources.push(shape);
+        }
+
+        drawParticle(p: Particle, x: Fx8, y: Fx8) {
+            const pImage = this.galois.pickRandom(this.sources).clone();
+            pImage.replace(0xF, p.data);
+
+            screen.drawTransparentImage(pImage,
+                Fx.toInt(Fx.sub(x, this.ox)),
+                Fx.toInt(Fx.sub(y, this.oy))
+            );
+        }
+
+        createParticle(anchor: ParticleAnchor) {
+            const p = super.createParticle(anchor);
+
+            p.data = this.galois.randomRange(1, 14);
+            p.lifespan = this.galois.randomRange(250, 1000);
+
+            return p;
+        }
+    }
+
+    export class ConfettiFactory extends ShapeFactory {
+        constructor(xRange: number, yRange: number) {
+            const confetti = [
+                img`
+                    F
+                `,
+                img`
+                    F
+                    F
+                `,
+                img`
+                    F F
+                `,
+                img`
+                    F F
+                    F .
+                `,
+                img`
+                    F F
+                    . F
+            `];
+            super(xRange, yRange, confetti[0]);
+            for (let i = 1; i < confetti.length; i++) {
+                this.addShape(confetti[i]);
+            }
+        }
+
+        createParticle(anchor: ParticleAnchor) {
+            const p = super.createParticle(anchor);
+            p.lifespan = this.galois.randomRange(1000, 4500);
+            return p;
+        }
+    }
+
+    export class FireFactory extends particles.ParticleFactory {
+        protected galois: Math.FastRandom;
+        protected minRadius: number;
+        protected maxRadius: number;
     
-    //% whenUsed
-    export const defaultFactory = new SprayFactory(20, 0, 60);
+        constructor(radius: number) {
+            super();
+            initTrig();
+            this.galois = new Math.FastRandom();
+            this.minRadius = radius >> 1;
+            this.maxRadius = radius;
+        }
+    
+        createParticle(anchor: particles.ParticleAnchor) {
+            const p = super.createParticle(anchor);
+            p.data = this.galois.randomBool() ?
+                2 : this.galois.randomBool() ?
+                    4 : 5;
+    
+            const i = this.galois.randomRange(0, cachedCos.length);
+            const r = this.galois.randomRange(this.minRadius, this.maxRadius);
+            p._x = Fx.iadd(anchor.x, Fx.mul(Fx8(r), cachedCos[i]));
+            p._y = Fx.iadd(anchor.y, Fx.mul(Fx8(r), cachedSin[i]));
+            p.vy = Fx8(Math.randomRange(0, 10));
+            p.vx = Fx8(Math.randomRange(-5, 5));
+            p.lifespan = 1500;
+    
+            return p;
+        }
+    
+        drawParticle(p: particles.Particle, x: Fx8, y: Fx8) {
+            screen.setPixel(Fx.toInt(p._x), Fx.toInt(p._y), p.data);
+        }
+    }
+
+    export class RadialFactory extends particles.ParticleFactory {
+        protected r: Fx8;
+        protected speed: Fx8;
+        protected t: number;
+        protected spread: number;
+        protected galois: Math.FastRandom;
+        protected colors: number[];
+
+        constructor(radius: number, speed: number, spread: number, colors?: number[]) {
+            super();
+            initTrig();
+
+            if (colors && colors.length != 0)
+                this.colors = colors;
+            else
+                this.colors = [0x2, 0x3, 0x4, 0x5];
+
+            this.setRadius(radius)
+            this.speed = Fx8(-speed);
+            this.spread = spread;
+            this.t = 0;
+            this.galois = new Math.FastRandom();
+        }
+
+        createParticle(anchor: particles.ParticleAnchor) {
+            const p = super.createParticle(anchor);
+            const time = ++this.t % cachedCos.length;
+            const offsetTime = (time + this.galois.randomRange(0, this.spread)) % cachedCos.length;
+
+            p._x = Fx.iadd(anchor.x, Fx.mul(this.r, cachedCos[time]));
+            p._y = Fx.iadd(anchor.y, Fx.mul(this.r, cachedSin[time]));
+            p.vx = Fx.mul(this.speed, Fx.neg(cachedSin[offsetTime]));
+            p.vy = Fx.mul(this.speed, cachedCos[offsetTime]);
+
+            p.lifespan = this.galois.randomRange(200, 1500);
+            p.data = this.galois.pickRandom(this.colors);
+
+            return p;
+        }
+
+        drawParticle(p: particles.Particle, x: Fx8, y: Fx8) {
+            screen.setPixel(Fx.toInt(p._x), Fx.toInt(p._y), p.data);
+        }
+
+        setRadius(r: number) {
+            this.r = Fx8(r >> 1);
+        }
+
+        setSpeed(s: number) {
+            this.speed = Fx8(-s);
+        }
+
+        setSpread(s: number) {
+            this.spread = s;
+        }
+    }
 }

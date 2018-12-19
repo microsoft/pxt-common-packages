@@ -4,6 +4,8 @@ particles.confetti.winConfetti();
 // particles.fireworks.runFireworks();
 // particles.fountain.runFountain();
 // particles.trail.runTrail();
+// particles.fire.runTorch();
+// particles.spiral.runSpiral();
 // Space pong: See bottom of screen
 
 namespace particles.print {
@@ -228,6 +230,184 @@ namespace particles.fireworks {
                 src.destroy();
             })
         });
+    }
+}
+
+namespace particles.fire {
+    const NUM_SLICES = 300;
+    let cachedSin: Fx8[];
+    let cachedCos: Fx8[];
+
+    function initTrig() {
+        if (!cachedSin) {
+            cachedSin = particles.cacheSin(NUM_SLICES);
+            cachedCos = particles.cacheCos(NUM_SLICES);
+        }
+    }
+
+    class FlameFactory extends particles.ParticleFactory {
+        protected galois: Math.FastRandom;
+        protected minRadius: number;
+        protected maxRadius: number;
+
+        constructor(radius: number) {
+            super();
+            initTrig();
+            this.galois = new Math.FastRandom();
+            this.minRadius = radius >> 1;
+            this.maxRadius = radius;
+        }
+
+        createParticle(anchor: particles.ParticleAnchor) {
+            const p = super.createParticle(anchor);
+            p.data = this.galois.randomBool() ?
+                2 : this.galois.randomBool() ?
+                    4 : 5 // 50% 2, otherwise 50% 4 or 5
+
+            const i = this.galois.randomRange(0, cachedCos.length);
+            const r = this.galois.randomRange(this.minRadius, this.maxRadius);
+            p._x = Fx.iadd(anchor.x, Fx.mul(Fx8(r), cachedCos[i]));
+            p._y = Fx.iadd(anchor.y, Fx.mul(Fx8(r), cachedSin[i]));
+            p.vy = Fx8(Math.randomRange(0, 10));
+            p.vx = Fx8(Math.randomRange(-5, 5))
+
+            return p;
+        }
+
+        drawParticle(p: particles.Particle, x: Fx8, y: Fx8) {
+            screen.setPixel(Fx.toInt(p._x), Fx.toInt(p._y), p.data);
+        }
+    }
+
+    class FireSource extends particles.ParticleSource {
+        private galois: Math.FastRandom;
+        constructor(anchor: particles.ParticleAnchor, particlesPerSecond: number, factory?: particles.ParticleFactory) {
+            super(anchor, particlesPerSecond, factory);
+            this.galois = new Math.FastRandom();
+            this.z = 20;
+        }
+
+        updateParticle(p: particles.Particle, fixedDt: Fx8) {
+            super.updateParticle(p, fixedDt);
+            if (p.next && this.galois.percentChance(30)) {
+                p.vx = p.next.vx;
+                p.vy = p.next.vy;
+            }
+        }
+    }
+
+    function mkFireSource(a: particles.ParticleAnchor) {
+        const factory = new FlameFactory(5);
+        const src = new FireSource(a, 100, factory);
+        src.setAcceleration(0, -20)
+
+        controller.A.onEvent(ControllerButtonEvent.Pressed,
+            () => src.enabled = !src.enabled
+        );
+        return src;
+    }
+
+    export function runTorch() {
+        let s = sprites.create(img`
+            e e e
+            e d e
+            e d e
+            e d e
+            e e e
+            e e d
+            e e e
+            d e e
+            e e e
+            d e e
+            e e d
+            e e d
+            e e e
+            e e e
+        `)
+        // need to offset sprite to make it look 'right', so this isn't attached to 
+        s.y += 7;
+        s.x += 1;
+
+        mkFireSource({ x: screen.width / 2, y: screen.height / 2 })
+    }
+}
+
+namespace particles.spiral {
+    const NUM_SLICES = 300;
+    let cachedSin: Fx8[];
+    let cachedCos: Fx8[];
+
+    function initTrig() {
+        if (!cachedSin) {
+            cachedSin = particles.cacheSin(NUM_SLICES);
+            cachedCos = particles.cacheCos(NUM_SLICES);
+        }
+    }
+
+    class CircleFactory extends particles.ParticleFactory {
+        protected r: Fx8;
+        protected speed: Fx8;
+        protected t: number;
+        protected spread: number;
+        protected galois: Math.FastRandom;
+
+        constructor(radius: number, speed: number, spread: number) {
+            super();
+            initTrig();
+
+            this.setRadius(radius)
+            this.speed = Fx8(-speed);
+            this.spread = spread;
+            this.t = 0;
+            this.galois = new Math.FastRandom();
+        }
+
+        createParticle(anchor: particles.ParticleAnchor) {
+            const p = super.createParticle(anchor);
+            const time = ++this.t % cachedCos.length;
+            const offsetTime = (time + this.galois.randomRange(0, this.spread)) % cachedCos.length;
+
+            p._x = Fx.iadd(anchor.x, Fx.mul(this.r, cachedCos[time]));
+            p._y = Fx.iadd(anchor.y, Fx.mul(this.r, cachedSin[time]));
+            p.vx = Fx.mul(this.speed, cachedSin[offsetTime]);
+            p.vy = Fx.mul(this.speed, Fx.neg(cachedCos[offsetTime]));
+
+            p.lifespan = this.galois.randomRange(200, 1500);
+            p.data = this.galois.randomRange(6, 0xb)
+            // p.data = this.galois.randomRange(1, 15); // rainbow mode
+
+            return p;
+        }
+
+        drawParticle(p: particles.Particle, x: Fx8, y: Fx8) {
+            screen.setPixel(Fx.toInt(p._x), Fx.toInt(p._y), p.data);
+        }
+
+        setRadius(r: number) {
+            this.r = Fx8(r >> 1);
+        }
+
+        setSpeed(s: number) {
+            this.speed = Fx8(s);
+        }
+
+        setSpread(s: number) {
+            this.spread = s;
+        }
+    }
+
+    function mkCircleSource(a: particles.ParticleAnchor) {
+        const factory = new CircleFactory(0, 60, 20);
+        const src = new particles.ParticleSource(a, 500, factory);
+        // src.setAcceleration(1000, 1000) // swirl designs
+        controller.A.onEvent(ControllerButtonEvent.Pressed,
+            () => src.enabled = !src.enabled
+        );
+        return src;
+    }
+
+    export function runSpiral() {
+        mkCircleSource({ x: screen.width / 2, y: screen.height / 2 });
     }
 }
 

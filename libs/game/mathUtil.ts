@@ -60,7 +60,7 @@ namespace Math {
          * @returns a random value between min and max (inclusive). If min is greater than or equal to max, returns min.
          */
         randomRange(min: number, max: number): number {
-            return min + (max > min ? this.next() % (max - min) : 0);
+            return min + (max > min ? this.next() % (max - min + 1) : 0);
         }
 
         /**

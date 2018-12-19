@@ -1,8 +1,8 @@
 /**
  * Small particles
  */
-//% color="#03AA74" weight=78 icon="\uf021"
-//% groups='["Create", "Properties"]'
+//% color="#382561" weight=78 icon="\uf06d"
+//% groups='["Effects", "Create", "Properties"]'
 namespace particles {
     const TIME_PRECISION = 10; // time goes down to down to the 1<<10 seconds
 
@@ -28,6 +28,8 @@ namespace particles {
     export interface ParticleAnchor {
         x: number;
         y: number;
+        width?: number;
+        height?: number;
     }
 
     /**
@@ -38,13 +40,13 @@ namespace particles {
         z: number;
         id: number;
         _dt: number;
-        
+
         protected _enabled: boolean;
         protected head: Particle;
         protected timer: number;
         protected period: number;
         protected _factory: ParticleFactory;
-        
+
         protected ax: Fx8;
         protected ay: Fx8;
 
@@ -263,6 +265,26 @@ namespace particles {
     function pruneParticles() {
         for (let i = 0; i < sources.length; i++) {
             sources[i]._prune();
+        }
+    }
+
+    /**
+     * A source of particles, where 
+     */
+    export class FireSource extends particles.ParticleSource {
+        private galois: Math.FastRandom;
+        constructor(anchor: particles.ParticleAnchor, particlesPerSecond: number, factory?: particles.ParticleFactory) {
+            super(anchor, particlesPerSecond, factory);
+            this.galois = new Math.FastRandom();
+            this.z = 20;
+        }
+
+        updateParticle(p: particles.Particle, fixedDt: Fx8) {
+            super.updateParticle(p, fixedDt);
+            if (p.next && this.galois.percentChance(30)) {
+                p.vx = p.next.vx;
+                p.vy = p.next.vy;
+            }
         }
     }
 }

@@ -3,7 +3,8 @@
     "description": "Particle rendering - beta",
     "files": [
         "particles.ts",
-        "factories.ts"
+        "factories.ts",
+        "effects.ts"
     ],
     "testFiles": [
         "test.ts"
