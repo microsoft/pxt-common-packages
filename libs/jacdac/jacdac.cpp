@@ -178,7 +178,11 @@ void start() {
 int state() {
     auto service = getWJacDac();
     if (!service) return -1;
+#if JD_MIN_VERSION(5)
     return service->getState();
+#else
+    return -1;
+#endif
 }
 /**
  * Starts the JacDac protocol
