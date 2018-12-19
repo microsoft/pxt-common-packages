@@ -230,7 +230,7 @@ namespace jacdac {
             })
 
             game.consoleOverlay.setVisible(true);
-            console.log(`jacdac console`);
+            console.log(`jacdac dashboard`);
             console.log(` LEFT for drivers`)
             console.log(` RIGHT for devices`)
             console.log(` DOWN for sniffing packets`)
