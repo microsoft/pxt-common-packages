@@ -198,9 +198,9 @@ namespace particles {
             this.enabled = false;
             control.runInParallel(() => {
                 pauseUntil(() => this.head == null);
-                this.anchor == null;
                 sources.removeElement(this);
                 game.currentScene().allSprites.removeElement(this);
+                this.anchor == null;
             });
         }
 
