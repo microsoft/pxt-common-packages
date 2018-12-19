@@ -20,17 +20,21 @@ namespace pxsim.control {
     }
     export function deviceSerialNumber(): number {
         let b = board();
-        let n = parseInt(b && b.id
-            ? b.id.slice(1)
-            : "42");
-        if (isNaN(n)) {
-            n = 0;
-            for (let i = 0; i < b.id.length; ++i) {
-                n = ((n << 5) - n) + b.id.charCodeAt(i);
-                n |= 0;
+        if (!b) return 42;
+        let n = 0;
+        if (b.id) {
+            n = parseInt(b.id.slice(1));
+            if (isNaN(n)) {
+                n = 0;
+                for (let i = 0; i < b.id.length; ++i) {
+                    n = ((n << 5) - n) + b.id.charCodeAt(i);
+                    n |= 0;
+                }
+                n = Math.abs(n);
             }
         }
-        return n
+        if (!n) n = 42;
+        return n;
     }
     export function deviceDalVersion(): string {
         return "0.0.0";
