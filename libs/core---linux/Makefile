@@ -36,8 +36,7 @@ NPM_INCLUDES = $(addprefix -I, $(wildcard node_modules/*/include))
 EXE = bld/pxt-app.elf
 HEX = $(EXE:.elf=.hex)
 
-DEPS = $(PXT_HEADERS) package.json
-#Makefile Makefile.inc
+DEPS = $(PXT_HEADERS) package.json Makefile Makefile.inc
 
 all: codal-core/.git $(EXE)
 
