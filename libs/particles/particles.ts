@@ -341,6 +341,7 @@ namespace particles {
     //% blockId=particlesremoveeffect block="remove effects on %anchor=variables_get(mySprite)"
     //% group="Effects"
     export function removeEffects(anchor: ParticleAnchor) {
+        if (!this.sources) return;
         sources.forEach(ps => {
             if (ps.anchor == anchor || ps.anchor.x == anchor.x && ps.anchor.y == anchor.y) {
                 ps.destroy();
