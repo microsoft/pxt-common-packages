@@ -152,6 +152,14 @@ class WJacDac {
     return 0;
 #endif
     }
+
+    int state() {
+#if JD_MIN_VERSION(5)
+    return jd.getState();
+#else
+    return -1;
+#endif
+    }
 };
 SINGLETON_IF_PIN(WJacDac, JACK_TX);
 
@@ -177,12 +185,7 @@ void start() {
 //% parts=jacdac
 int state() {
     auto service = getWJacDac();
-    if (!service) return -1;
-#if JD_MIN_VERSION(5)
-    return service->getState();
-#else
-    return -1;
-#endif
+    return service ? service->state() : -1;
 }
 /**
  * Starts the JacDac protocol
