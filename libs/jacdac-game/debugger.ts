@@ -140,8 +140,10 @@ namespace jacdac {
         }
 
         refresh() {
-            if (!jacdac.isConnected())
-                console.log(`disconnected`);
+            if (!jacdac.isRunning())
+                console.log(`not running`);
+            else if (!jacdac.isConnected())
+                console.log(`disconnected ${jacdac.state()}`);
             switch (this.mode) {
                 case Mode.Drivers: this.showDrivers(); break;
                 case Mode.Devices: this.showDevices(); break;
