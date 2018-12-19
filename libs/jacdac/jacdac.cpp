@@ -155,7 +155,7 @@ class WJacDac {
 
     int state() {
 #if JD_MIN_VERSION(5)
-    return jd.getState();
+    return (int)jd.getState();
 #else
     return -1;
 #endif
