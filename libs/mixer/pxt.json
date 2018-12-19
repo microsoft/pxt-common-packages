@@ -11,6 +11,7 @@
         "piano.ts",
         "legacy.ts",
         "ns.ts",
+        "targetoverrides.ts",
         "music.ts"
     ],
     "public": true,

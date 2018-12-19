@@ -16,6 +16,8 @@ void *LinuxDAC::play(void *self) {
 
     snd_pcm_t *pcm_handle;
 
+    sleep_core_us(1000 * 1000);
+
     alsa_check(0, snd_pcm_open(&pcm_handle, "default", SND_PCM_STREAM_PLAYBACK, 0));
 
     alsa_check(1, snd_pcm_set_params(pcm_handle, SND_PCM_FORMAT_S16_LE,
@@ -28,10 +30,13 @@ void *LinuxDAC::play(void *self) {
         auto buf = dac->src.pull();
         auto data = (int16_t *)buf.getBytes();
         auto len = buf.length() / 2;
-        //DMESG("SND: %d samples %d %d %d %d %d", len, data[0], data[1], data[2], data[3], data[4]);
+        if (!len) {
+            sleep_core_us(5000);
+            continue;
+        }
         for (int i = 0; i < len; ++i) {
             // playing at half-volume
-            data[i] = (data[i] - 512) << 5;
+            data[i] = (data[i] - 512) << 6;
         }
         int frames = snd_pcm_writei(pcm_handle, data, len);
         if (frames < 0)
