@@ -120,6 +120,10 @@ namespace pxsim.jacdac {
             state.protocol.bridge = undefined;
     }
 
+    export function state() {
+        return 0;
+    }
+
     export function eventId() {
         const state = getJacDacState();
         return state ? state.eventId : jacdac.DAL.DEVICE_ID_JACDAC0;

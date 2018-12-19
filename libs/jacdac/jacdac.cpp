@@ -175,7 +175,7 @@ void start() {
 * Gets the bus state
 */
 //% parts=jacdac
-int __internalState() {
+int state() {
     auto service = getWJacDac();
     if (!service) return -1;
     return service->getState();

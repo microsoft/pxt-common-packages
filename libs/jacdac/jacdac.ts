@@ -73,14 +73,6 @@ namespace jacdac {
     }
 
     /**
-     * Gets the state of the JACDAC bus
-     */
-    //% part=jacdac
-    export function state(): JDState {
-        return __internalState();
-    }
-
-    /**
      * Adds a JacDac device driver
      * @param n driver
      */

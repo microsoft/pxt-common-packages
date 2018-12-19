@@ -10,8 +10,8 @@ declare namespace jacdac {
     /**
      * Gets the bus state
      */
-    //% parts=jacdac shim=jacdac::__internalState
-    function __internalState(): int32;
+    //% parts=jacdac shim=jacdac::state
+    function state(): int32;
 
     /**
      * Starts the JacDac protocol
