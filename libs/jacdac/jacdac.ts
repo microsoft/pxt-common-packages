@@ -1,4 +1,4 @@
-const enum JDDriverEvent {
+enum JDDriverEvent {
     //% block="connected"
     Connected = DAL.JD_DRIVER_EVT_CONNECTED,
     //% block="disconnected"
@@ -15,7 +15,7 @@ const enum JDDriverEvent {
     DriverError = DAL.JD_DRIVER_EVT_ERROR
 }
 
-const enum JDEvent {
+enum JDEvent {
     //% block="bus connected"
     BusConnected = DAL.JD_SERIAL_EVT_BUS_CONNECTED,
     //% block="bus disconnected"
@@ -24,7 +24,7 @@ const enum JDEvent {
     DriverChanged = DAL.JD_LOGIC_DRIVER_EVT_CHANGED,
 }
 
-const enum JDDriverErrorCode
+enum JDDriverErrorCode
 {
     // No error occurred.
     DRIVER_OK = 0,
@@ -49,7 +49,7 @@ const enum JDDriverErrorCode
     DRIVER_PERIPHERAL_MALFUNCTION
 }
 
-const enum JDState {
+enum JDState {
     Receiving,
     Transmitting,
     High,
