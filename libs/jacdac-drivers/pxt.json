@@ -16,7 +16,8 @@
         "mouseclient.ts",
         "gamepadclient.ts",
         "pixelclient.ts",
-        "musicclient.ts"
+        "musicclient.ts",
+        "servoclient.ts"
     ],
     "testFiles": [
         "test.ts"

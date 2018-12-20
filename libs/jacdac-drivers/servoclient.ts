@@ -1,33 +1,26 @@
-/**
- * Control micro servos
- */
-//% color="#03AA74" weight=88 icon="\uf021"
-namespace servos {
-    //% fixedInstances
-    export class Servo {
-        constructor() {
+namespace jacdac {
+    export class ServoClient extends ActuatorClient {
+        constructor(name: string) {
+            super(name, jacdac.SERVO_DEVICE_CLASS, 5);
         }
 
         /**
          * Set the servo angle
          */
         //% group="Servos"
-        //% weight=100 help=servos/set-angle
-        //% blockId=servoservosetangle block="set %servo angle to %degrees=protractorPicker °"
+        //% weight=100
+        //% blockId=jdservoservosetangle block="set %servo angle to %degrees=protractorPicker °"
         //% degrees.defl=90
         //% servo.fieldEditor="gridpicker"
         //% servo.fieldOptions.width=220
         //% servo.fieldOptions.columns=2
         //% blockGap=8        
-        //% parts=microservo trackArgs=0
         setAngle(degrees: number) {
-            degrees = degrees | 0;
-            degrees = Math.clamp(0, 180, degrees);
-            this.internalSetAngle(degrees);
-        }
-
-        protected internalSetAngle(angle: number): void {
-
+            if (!this.state[0] || this.state.getNumber(NumberFormat.Int16LE, 1) != degrees) {
+                this.state[0] = 1;
+                this.state.setNumber(NumberFormat.Int16LE, 1, degrees);
+                this.notifyChange();
+            }
         }
 
         /**
@@ -35,12 +28,11 @@ namespace servos {
          * @param speed the throttle of the motor from -100% to 100%
          */
         //% group="Servos"
-        //% weight=99 help=servos/run
-        //% blockId=servoservorun block="continuous %servo run at %speed=speedPicker \\%"
+        //% weight=99
+        //% blockId=jdservoservorun block="continuous %servo run at %speed=speedPicker \\%"
         //% servo.fieldEditor="gridpicker"
         //% servo.fieldOptions.width=220
         //% servo.fieldOptions.columns=2
-        //% parts=microservo trackArgs=0
         run(speed: number): void {
             this.setAngle(Math.map(speed, -100, 100, 0, 180));
         }
@@ -60,16 +52,15 @@ namespace servos {
         setPulse(micros: number) {
             micros = micros | 0;
             micros = Math.clamp(500, 2500, micros);
-            this.internalSetPulse(micros);
-        }
-
-        protected internalSetPulse(micros: number): void {
-
+            if (this.state.getNumber(NumberFormat.UInt16LE, 3) != micros) {
+                this.state.setNumber(NumberFormat.UInt16LE, 3, micros);
+                this.notifyChange();
+            }
         }
 
         /*
-         * Stop sending commands to the servo
-         */
+        * Stop sending commands to the servo
+        */
         //% group="Servos"
         //% weight=10 help=servos/stop
         //% blockId=servoservostop block="stop %servo"
@@ -78,30 +69,10 @@ namespace servos {
         //% servo.fieldOptions.columns=2
         //% parts=microservo trackArgs=0
         stop() {
-            this.internalStop();
-        }
-
-        protected internalStop() {}
-    }
-
-    export class PinServo extends Servo {
-        private _pin: PwmOnlyPin;
-
-        constructor(pin: PwmOnlyPin) {
-            super();
-            this._pin = pin;
-        }
-
-        protected internalSetAngle(angle: number): void {
-            this._pin.servoWrite(angle);
-        }
-
-        protected internalSetPulse(micros: number): void {
-            this._pin.servoSetPulse(micros);
-        }
-
-        protected internalStop() {
-            this._pin.digitalWrite(false);
+            if (this.state[0]) {
+                this.state[0] = 0;
+                this.notifyChange();
+            }
         }
     }
 }
