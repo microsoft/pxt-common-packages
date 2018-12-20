@@ -163,6 +163,13 @@ namespace pxsim.jacdac {
         return d;
     }
 
+    export function __internalRemoveDriver(d: JDProxyDriver): void {
+        const state = getJacDacState();
+        if (state) {
+            state.protocol.remove(d);
+        }
+    }
+
     export class JDDriver {
         id: number;
         device: JDDevice;
