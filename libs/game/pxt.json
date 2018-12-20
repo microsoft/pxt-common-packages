@@ -2,6 +2,7 @@
     "name": "game",
     "description": "The game and sprite library - beta",
     "files": [
+        "constants.ts",
         "controller.ts",
         "hitbox.ts",
         "sprites.ts",
