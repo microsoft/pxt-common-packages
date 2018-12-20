@@ -196,7 +196,7 @@ enum ControllerButton {
 }
 
 namespace controller {
-    let controllers: Controller[] = [];
+    let _controllers: Controller[] = [];
 
     interface ControlledSprite {
         s: Sprite;
@@ -208,7 +208,6 @@ namespace controller {
     export class Controller {
         private buttons: Button[];
         private controlledSprites: ControlledSprite[];
-
 
         // array of left,up,right,down,a,b,menu buttons
         constructor(leftId: number) {
@@ -225,7 +224,7 @@ namespace controller {
                 const pinid = pins.lookupPinIdByCfg(cfg);
                 this.buttons.push(new Button(leftId + i, pinid));
             })
-            controllers.push(this);
+            _controllers.push(this);
         }
 
         /**
@@ -415,7 +414,7 @@ namespace controller {
      */
     export function __update(dt: number) {
         const dtms = (dt * 1000) | 0
-        controllers.forEach(ctrl => ctrl.__update(dtms));
+        _controllers.forEach(ctrl => ctrl.__update(dtms));
     }
 
     export function serialize(offset: number): Buffer {

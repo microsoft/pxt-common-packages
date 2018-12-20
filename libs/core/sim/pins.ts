@@ -119,10 +119,10 @@ namespace pxsim.PwmOnlyPinMethods {
 
 namespace pxsim.pins {
     export function lookupPinIdByCfg(key: number): number {
-        const b = board();
-        if(!b) return -1;
-        const pin = b.edgeConnectorState.getPin(key);
-        return pin.id;  
+        const id = pxsim.getConfig(key)
+        if (id != null)
+            return DAL.DEVICE_ID_IO_P0 + key;
+        return -1;
     }
 
     export function pulseDuration(): number {

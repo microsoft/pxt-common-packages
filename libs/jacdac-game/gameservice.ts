@@ -1,8 +1,9 @@
 namespace jacdac {
-    /*
     export enum GameServiceCommand {
         Sprite = 1
     }
+    
+    /*
 
     export class GameService extends Service {
         private buttons: controller.MetaButton[];
