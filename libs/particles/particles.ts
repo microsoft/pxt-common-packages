@@ -102,8 +102,6 @@ namespace particles {
 
         _update(dt: number) {
             this.timer -= dt;
-            
-            if (!this.anchor) return;
 
             if (this.lifespan !== undefined) {
                 this.lifespan -= dt;
@@ -111,7 +109,7 @@ namespace particles {
                     this.lifespan = undefined;
                     this.destroy();
                 }
-            } else if (this.anchor.flags !== undefined && (this.anchor.flags & sprites.Flag.Destroyed)) {
+            } else if (this.anchor && this.anchor.flags !== undefined && (this.anchor.flags & sprites.Flag.Destroyed)) {
                 this.lifespan = 1000;
             }
 
