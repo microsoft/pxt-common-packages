@@ -66,6 +66,22 @@ namespace servos {
         protected internalSetPulse(micros: number): void {
 
         }
+
+        /*
+         * Stop sending commands to the servo
+         */
+        //% group="Servos"
+        //% weight=10 help=servos/stop
+        //% blockId=servoservostop block="stop %servo"
+        //% servo.fieldEditor="gridpicker"
+        //% servo.fieldOptions.width=220
+        //% servo.fieldOptions.columns=2
+        //% parts=microservo trackArgs=0
+        stop() {
+            this.internalStop();
+        }
+
+        protected internalStop() {}
     }
 
     export class PinServo extends Servo {
@@ -82,6 +98,10 @@ namespace servos {
 
         protected internalSetPulse(micros: number): void {
             this._pin.servoSetPulse(micros);
+        }
+
+        protected internalStop() {
+            this._pin.digitalWrite(false);
         }
     }
 }
