@@ -3,6 +3,7 @@
     "description": "The game and sprite library - beta",
     "files": [
         "controller.ts",
+        "controllertargetoverrides.ts",
         "hitbox.ts",
         "sprites.ts",
         "sprite.ts",
@@ -33,7 +34,6 @@
     ],
     "public": true,
     "dependencies": {
-        "controller": "file:../controller",
         "screen": "file:../screen"
     }
 }

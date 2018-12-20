@@ -26,7 +26,6 @@
         "libs/storage",
         "libs/game",
         "libs/screen",
-        "libs/controller",
         "libs/servo",
         "libs/serial",
         "libs/jacdac",
