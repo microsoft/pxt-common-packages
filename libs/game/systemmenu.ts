@@ -18,7 +18,7 @@ namespace scene.systemMenu {
     }
 
     export function register() {
-        if (active) return; // don't show system menu, while in system menu
+        if (!active) return; // don't show system menu, while in system menu
 
         const ctrl = controller.player1;
         const mbtn = ctrl.menu;
