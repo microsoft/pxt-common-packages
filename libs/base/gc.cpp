@@ -189,6 +189,12 @@ static uint8_t *midPtr;
 #define SKIP_PROCESSING(p)                                                                         \
     (isReadOnly(p) || (VT(p) & (ANY_MARKED_MASK | ARRAY_MASK)) || NO_MAGIC(VT(p)))
 
+void gcMarkArray(void *data) {
+    auto segBl = (uint32_t *)data - 1;
+    GC_CHECK(!IS_MARKED(VT(segBl)), 47);
+    MARK(segBl);
+}
+
 void gcScan(TValue v) {
     if (SKIP_PROCESSING(v))
         return;
@@ -212,9 +218,7 @@ void gcScanSegment(Segment &seg) {
     auto data = seg.getData();
     if (!data)
         return;
-    auto segBl = (uint32_t *)data - 1;
-    GC_CHECK(!IS_MARKED(VT(segBl)), 47);
-    MARK(segBl);
+    gcMarkArray(data);
     gcScanMany(data, seg.getLength());
 }
 

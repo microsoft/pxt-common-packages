@@ -6,6 +6,8 @@ using namespace std;
 
 #define p10(v) __builtin_powi(10, v)
 
+#define SKIP_INCR 16
+
 namespace pxt {
 
 static HandlerBinding *handlerBindings;
@@ -40,16 +42,116 @@ PXT_DEF_STRING(emptyString, "")
 
 static const char emptyBuffer[] __attribute__((aligned(4))) = "@PXT#:\x00\x00\x00";
 
+#if PXT_UTF8
+static int utf8Len(const char *data, int size) {
+    int len = 0;
+    for (int i = 0; i < size; ++i) {
+        char c = data[i];
+        len++;
+        if ((c & 0x80) == 0x00) {
+            // skip
+        } else if ((c & 0xe0) == 0xc0) {
+            i++;
+        } else if ((c & 0xf0) == 0xe0) {
+            i += 2;
+        } else {
+            // error; just skip
+        }
+    }
+    return len;
+}
+
+static const char *utf8Skip(const char *data, int size, int skip) {
+    int len = 0;
+    for (int i = 0; i <= size; ++i) {
+        char c = data[i];
+        len++;
+        if (len >= skip)
+            return data + i;
+        if ((c & 0x80) == 0x00) {
+            // skip
+        } else if ((c & 0xe0) == 0xc0) {
+            i++;
+        } else if ((c & 0xf0) == 0xe0) {
+            i += 2;
+        } else {
+            // error; just skip over
+        }
+    }
+    return NULL;
+}
+
+static int utf8CharCode(const char *data) {
+    unsigned char c = *data;
+    if ((c & 0x80) == 0) {
+        return c;
+    } else if ((c & 0xe0) == 0xc0) {
+        return ((c & 0x1f) << 6) | (data[1] & 0x3f);
+    } else if ((c & 0xf0) == 0xe0) {
+        return ((c & 0x0f) << 12) | (data[1] & 0x3f) << 6 | (data[2] & 0x3f);
+    } else {
+        return c; // error
+    }
+}
+
+static bool isUTF8(const char *data, int len) {
+    for (int i = 0; i < len; ++i) {
+        if (data[i] & 0x80)
+            return true;
+    }
+    return false;
+}
+
+#define NUM_SKIP_ENTRIES(p) (((p)->skip.length / SKIP_INCR) - 1)
+#define SKIP_DATA(p) (const char *)(p->skip.list + NUM_SKIP_ENTRIES(p))
+
+static void setupSkipList(String r, const char *data) {
+    char *dst = (char *)SKIP_DATA(r);
+    auto len = r->skip.size;
+    if (data)
+        memcpy(dst, data, len);
+    dst[len] = 0;
+    const char *ptr = dst;
+    auto skipEntries = NUM_SKIP_ENTRIES(r);
+    for (int i = 0; i < skipEntries; ++i) {
+        ptr = utf8Skip(ptr, len - (ptr - dst), SKIP_INCR);
+        if (!ptr)
+            oops(80);
+        r->skip.list[i] = ptr - dst;
+    }
+}
+#endif
+
 String mkString(const char *data, int len) {
     if (len < 0)
         len = strlen(data);
     if (len == 0)
         return (String)emptyString;
-    String r = new (gcAllocate(sizeof(BoxedString) + len + 1)) BoxedString();
-    r->length = len;
-    if (data)
-        memcpy(r->data, data, len);
-    r->data[len] = 0;
+
+    auto vt = &string_inline_ascii_vt;
+    String r;
+
+#if PXT_UTF8
+    if (data && isUTF8(data, len)) {
+        vt = len > SKIP_INCR * 3 ? &string_skiplist16_vt : &string_inline_utf8_vt;
+    }
+    if (vt == &string_skiplist16_vt) {
+        r = new (gcAllocate(4 + 2 * 4)) BoxedString(vt);
+        r->skip.size = len;
+        r->skip.length = utf8Len(data, len);
+        r->skip.list = (uint16_t *)gcAllocateArray(NUM_SKIP_ENTRIES(r) * 2 + len + 1);
+        setupSkipList(r, data);
+    } else
+#endif
+    {
+        // for ASCII and UTF8 the layout is the same
+        r = new (gcAllocate(4 + 2 + len + 1)) BoxedString(vt);
+        r->ascii.length = len;
+        if (data)
+            memcpy(r->ascii.data, data, len);
+        r->ascii.data[len] = 0;
+    }
+
     MEMDBG("mkString: len=%d => %p", len, r);
     return r;
 }
@@ -124,27 +226,61 @@ String mkEmpty() {
 
 //%
 String fromCharCode(int code) {
+#if PXT_UTF8
+    char buf[3];
+    int len;
+    code &= 0xffff; // JS semantics
+    if (code < 0x80) {
+        buf[0] = code;
+        len = 1;
+    } else if (code < 0x800) {
+        buf[0] = 0xc0 | (code >> 6);
+        buf[1] = 0x80 | ((code >> 0) & 0x3f);
+        len = 2;
+    } else {
+        buf[0] = 0xe0 | (code >> 12);
+        buf[1] = 0x80 | ((code >> 6) & 0x3f);
+        buf[2] = 0x80 | ((code >> 0) & 0x3f);
+        len = 3;
+    }
+    return mkString(buf, len);
+#else
     char buf[] = {(char)code, 0};
     return mkString(buf, 1);
-}
-
-//%
-String charAt(String s, int pos) {
-    if (s && 0 <= pos && pos < s->length) {
-        return fromCharCode(s->data[pos]);
-    } else {
-        return mkEmpty();
-    }
+#endif
 }
 
 //%
 TNumber charCodeAt(String s, int pos) {
-    if (s && 0 <= pos && pos < s->length) {
-        return fromInt(s->data[pos]);
+#if PXT_UTF8
+    auto ptr = s->getUTF8DataAt(pos);
+    if (!ptr)
+        return TAG_NAN;
+    auto code = utf8CharCode(ptr);
+    if (!code && ptr == s->getUTF8Data() + s->getUTF8Size())
+        return TAG_NAN;
+    return fromInt(code);
+#else
+    if (s && 0 <= pos && pos < s->ascii.length) {
+        return fromInt(s->ascii.data[pos]);
     } else {
         return TAG_NAN;
     }
+#endif
 }
+
+//%
+String charAt(String s, int pos) {
+    auto v = charCodeAt(s, pos);
+    if (v == TAG_NAN)
+        return mkEmpty();
+    if (!isNumber(v))
+        oops(81);
+    return fromCharCode(numValue(v));
+}
+
+#define IS_CONS(s) ((s)->vtable == (uint32_t)&string_cons_vt)
+#define IS_EMPTY(s) ((s) == (String)emptyString)
 
 //%
 String concat(String s, String other) {
@@ -152,31 +288,89 @@ String concat(String s, String other) {
         s = (String)sNull;
     if (!other)
         other = (String)sNull;
-    if (s->length == 0)
+    if (IS_EMPTY(s))
         return (String)incrRC(other);
-    if (other->length == 0)
+    if (IS_EMPTY(other))
         return (String)incrRC(s);
-    String r = mkString(NULL, s->length + other->length);
-    memcpy(r->data, s->data, s->length);
-    memcpy(r->data + s->length, other->data, other->length);
+
+    uint32_t lenA, lenB;
+
+#if PXT_UTF8
+    if (IS_CONS(s) || IS_CONS(other))
+        goto mkCons;
+#endif
+
+    lenA = s->getUTF8Size();
+    lenB = other->getUTF8Size();
+#if PXT_UTF8
+    if (lenA + lenB > 50)
+        goto mkCons;
+#endif
+    String r;
+    {
+        auto dataA = s->getUTF8Data();
+        auto dataB = other->getUTF8Data();
+        r = mkString(NULL, lenA + lenB);
+        auto dst = (char *)r->getUTF8Data();
+        memcpy(dst, dataA, lenA);
+        memcpy(dst + lenA, dataB, lenB);
+#if PXT_UTF8
+        if (isUTF8(dst, lenA + lenB))
+            r->vtable = PXT_VTABLE_TO_INT(&string_inline_utf8_vt);
+#endif
+        return r;
+    }
+
+#if PXT_UTF8
+mkCons:
+    r = new (gcAllocate(4 + 2 * 4)) BoxedString(&string_cons_vt);
+    r->cons.left = s;
+    r->cons.right = other;
     return r;
+#endif
 }
 
 int compare(String a, String b) {
     if (a == b)
         return 0;
 
-    int compareResult = strcmp(a->data, b->data);
-    if (compareResult < 0)
-        return -1;
-    else if (compareResult > 0)
-        return 1;
+    auto lenA = a->getUTF8Size();
+    auto lenB = b->getUTF8Size();
+    auto dataA = a->getUTF8Data();
+    auto dataB = b->getUTF8Data();
+    auto len = lenA < lenB ? lenA : lenB;
+
+    // this assumes canonical encoding
+    for (unsigned i = 0; i <= len; ++i) {
+        unsigned char cA = dataA[i];
+        unsigned char cB = dataB[i];
+        if (cA == cB)
+            continue;
+#if PXT_UTF8
+        if (cA & 0x80) {
+            if (cB & 0x80) {
+                int iA = utf8CharCode(dataA + i);
+                int iB = utf8CharCode(dataB + i);
+                return iA < iB ? -1 : 1;
+            } else {
+                return 1;
+            }
+        } else if (cA < cB) {
+            // this is also triggered when cB&0x80
+            return -1;
+        } else {
+            return 1;
+        }
+#else
+        return cA < cB ? -1 : 1;
+#endif
+    }
     return 0;
 }
 
 //%
 int length(String s) {
-    return s->length;
+    return s->getLength();
 }
 
 #define isspace(c) ((c) == ' ')
@@ -234,8 +428,9 @@ NUMBER mystrtod(const char *p, char **endp) {
 TNumber toNumber(String s) {
     // JSCHECK
     char *endptr;
-    NUMBER v = mystrtod(s->data, &endptr);
-    if (endptr != s->data + s->length)
+    auto data = s->getUTF8Data();
+    NUMBER v = mystrtod(data, &endptr);
+    if (endptr != data + s->getUTF8Size())
         v = NAN;
     else if (v == 0.0 || v == -0.0)
         v = v;
@@ -248,22 +443,45 @@ TNumber toNumber(String s) {
 String substr(String s, int start, int length) {
     if (length <= 0)
         return mkEmpty();
+    auto slen = (int)s->getLength();
     if (start < 0)
-        start = max(s->length + start, 0);
-    length = min(length, s->length - start);
-    return mkString(s->data + start, length);
+        start = max(slen + start, 0);
+    length = min(length, slen - start);
+    if (length <= 0)
+        return mkEmpty();
+    auto p = s->getUTF8DataAt(start);
+#if PXT_UTF8
+    auto ep = s->getUTF8DataAt(start + length);
+    if (ep == NULL)
+        oops(82);
+    return mkString(p, ep - p);
+#else
+    return mkString(p, length);
+#endif
 }
 
 //%
 int indexOf(String s, String searchString, int start) {
     if (!s || !searchString)
         return -1;
-    if (start < 0 || start + searchString->length > s->length)
+    auto lenA = s->getUTF8Size();
+    auto lenB = searchString->getUTF8Size();
+    if (start < 0 || start + lenB > lenA)
         return -1;
-    const char *match = strstr(((const char *)s->data + start), searchString->data);
-    if (NULL == match)
-        return -1;
-    return match - s->data;
+    auto dataA = s->getUTF8Data();
+    auto dataB = searchString->getUTF8Data();
+    auto dataA0 = dataA;
+    while (lenA >= lenB) {
+        if (!memcmp(dataA, dataB, lenB))
+#if PXT_UTF8
+            return utf8Len(dataA0, dataA - dataA0);
+#else
+            return dataA - dataA0;
+#endif
+        dataA++;
+        lenA--;
+    }
+    return -1;
 }
 
 //%
@@ -540,7 +758,7 @@ int toBool(TValue v) {
     ValType t = valType(v);
     if (t == ValType::String) {
         String s = (String)v;
-        if (s->length == 0)
+        if (IS_EMPTY(s))
             return 0;
     } else if (t == ValType::Number) {
         auto x = toDouble(v);
@@ -1077,7 +1295,7 @@ void panic(int code) {
 
 //%
 String emptyToNull(String s) {
-    if (!s || s->length == 0)
+    if (!s || IS_EMPTY(s))
         return NULL;
     return s;
 }
@@ -1264,7 +1482,7 @@ void anyPrint(TValue v) {
     } else {
 #ifndef X86_64
         String s = numops::toString(v);
-        DMESG("[%s %p = %s]", pxt::typeOf(v)->data, v, s->data);
+        DMESG("[%s %p = %s]", pxt::typeOf(v)->getUTF8Data(), v, s->getUTF8Data());
         decr((TValue)s);
 #endif
     }
@@ -1282,7 +1500,96 @@ static void dtorDoNothing() {}
     DEF_VTABLE(name##_vt, tp, objectTp, (void *)&dtorDoNothing, (void *)&anyPrint)
 #endif
 
-PRIM_VTABLE(string, ValType::String, BoxedString, p->length + 1)
+#define NOOP ((void)0)
+#define STRING_VT(name, fix, scan, gcsize, data, utfsize, length, dataAt)                          \
+    static uint32_t name##_gcsize(BoxedString *p) { return (4 + (gcsize) + 3) >> 2; }              \
+    static void name##_gcscan(BoxedString *p) { scan; }                                        \
+    static const char *name##_data(BoxedString *p) {                                               \
+        fix;                                                                                       \
+        return data;                                                                               \
+    }                                                                                              \
+    static uint32_t name##_utfsize(BoxedString *p) {                                               \
+        fix;                                                                                       \
+        return utfsize;                                                                            \
+    }                                                                                              \
+    static uint32_t name##_length(BoxedString *p) {                                                \
+        fix;                                                                                       \
+        return length;                                                                             \
+    }                                                                                              \
+    static const char *name##_dataAt(BoxedString *p, uint32_t idx) {                               \
+        fix;                                                                                       \
+        return dataAt;                                                                             \
+    }                                                                                              \
+    DEF_VTABLE(name##_vt, BoxedString, ValType::String, (void *)&dtorDoNothing, (void *)&anyPrint, \
+               (void *)&name##_gcscan, (void *)&name##_gcsize, (void *)&name##_data,               \
+               (void *)&name##_utfsize, (void *)&name##_length, (void *)&name##_dataAt)
+
+void gcMarkArray(void *data);
+void gcScan(TValue v);
+
+#if PXT_UTF8
+static const char *skipLookup(BoxedString *p, uint32_t idx) {
+    if (idx > p->skip.length)
+        return NULL;
+    auto ent = idx / SKIP_INCR;
+    auto data = SKIP_DATA(p);
+    auto size = p->skip.size;
+    if (ent) {
+        auto off = p->skip.list[ent - 1];
+        data += off;
+        size -= off;
+        idx &= SKIP_INCR - 1;
+    }
+    return utf8Skip(data, size, idx);
+}
+
+static uint32_t fixSize(BoxedString *p, uint32_t *len) {
+    if (IS_CONS(p)) {
+        return fixSize(p->cons.left, len) + fixSize(p->cons.right, len);
+    }
+    *len += p->getLength();
+    return p->getUTF8Size();
+}
+
+static char *fixCopy(BoxedString *p, char *dst) {
+    if (IS_CONS(p)) {
+        dst = fixCopy(p->cons.left, dst);
+        dst = fixCopy(p->cons.right, dst);
+        return dst;
+    }
+    auto sz = p->getUTF8Size();
+    memcpy(dst, p->getUTF8Data(), sz);
+    return dst + sz;
+}
+
+// switches CONS representation into skip list representation
+// does not switch representation of CONS' children
+static void fixCons(BoxedString *r) {
+    uint32_t length = 0;
+    auto sz = fixSize(r, &length);
+    // allocate first, while [r] still holds references to its children
+    // because allocation might trigger GC
+    auto data = (uint16_t *)gcAllocateArray(NUM_SKIP_ENTRIES(r) * 2 + sz + 1);
+    r->vtable = PXT_VTABLE_TO_INT(&string_skiplist16_vt);
+    r->skip.size = sz;
+    r->skip.length = length;
+    r->skip.list = data;
+    fixCopy(r, (char*)SKIP_DATA(r));
+    setupSkipList(r, NULL);
+}
+#endif
+
+STRING_VT(string_inline_ascii, NOOP, NOOP, 2 + p->ascii.length + 1, p->ascii.data, p->ascii.length,
+          p->ascii.length, idx <= p->ascii.length ? p->ascii.data + idx : NULL)
+#if PXT_UTF8
+STRING_VT(string_inline_utf8, NOOP, NOOP, 2 + p->utf8.length + 1, p->utf8.data, p->utf8.length,
+          utf8Len(p->utf8.data, p->utf8.length), utf8Skip(p->utf8.data, p->utf8.length, idx))
+STRING_VT(string_skiplist16, NOOP, gcMarkArray(p->skip.list), 2 + 2 + 4, SKIP_DATA(p), p->skip.size,
+          p->skip.length, skipLookup(p, idx))
+STRING_VT(string_cons, fixCons(p), (gcScan((TValue)p->cons.left), gcScan((TValue)p->cons.right)),
+          4 + 4, SKIP_DATA(p), p->skip.size, p->skip.length, skipLookup(p, idx))
+#endif
+
 PRIM_VTABLE(number, ValType::Number, BoxedNumber, 0)
 PRIM_VTABLE(buffer, ValType::Object, BoxedBuffer, p->length)
 // PRIM_VTABLE(action, ValType::Function, RefAction, )

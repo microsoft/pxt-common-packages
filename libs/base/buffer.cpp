@@ -134,8 +134,8 @@ String toHex(Buffer buf) {
     const char *hex = "0123456789abcdef";
     auto res = mkString(NULL, buf->length * 2);
     for (int i = 0; i < buf->length; ++i) {
-        res->data[i << 1] = hex[buf->data[i] >> 4];
-        res->data[(i << 1) + 1] = hex[buf->data[i] & 0xf];
+        res->ascii.data[i << 1] = hex[buf->data[i] >> 4];
+        res->ascii.data[(i << 1) + 1] = hex[buf->data[i] & 0xf];
     }
     return res;
 }
