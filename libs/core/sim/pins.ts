@@ -118,6 +118,13 @@ namespace pxsim.PwmOnlyPinMethods {
 }
 
 namespace pxsim.pins {
+    export function lookupPinIdByCfg(key: number): number {
+        const b = board();
+        if(!b) return -1;
+        const pin = b.edgeConnectorState.getPin(key);
+        return pin.id;  
+    }
+
     export function pulseDuration(): number {
         // bus last event timestamp
         return 500;
