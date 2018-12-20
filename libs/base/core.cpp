@@ -142,7 +142,7 @@ static bool isUTF8(const char *data, int len) {
     return false;
 }
 
-#define NUM_SKIP_ENTRIES(p) (((p)->skip.length / SKIP_INCR) - 1)
+#define NUM_SKIP_ENTRIES(p) ((p)->skip.length / SKIP_INCR)
 #define SKIP_DATA(p) (const char *)(p->skip.list + NUM_SKIP_ENTRIES(p))
 
 static void setupSkipList(String r, const char *data) {
