@@ -128,6 +128,7 @@ namespace jacdac {
         }
     }
 
+    //% fixedInstances
     export class Broadcast extends Driver {
         constructor(name: string, deviceClass: number, controlDataLength?: number) {
             super(name, DriverType.BroadcastDriver, deviceClass, controlDataLength);
