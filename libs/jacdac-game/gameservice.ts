@@ -1,4 +1,5 @@
 namespace jacdac {
+    /*
     export enum GameServiceCommand {
         Sprite = 1
     }
@@ -54,4 +55,5 @@ namespace jacdac {
 
     //% whenUsed
     export const gameService = new GameService();
+    */
 }
