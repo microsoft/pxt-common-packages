@@ -20,7 +20,7 @@ namespace scene.systemMenu {
     export function register() {
         if (!active) return; // don't show system menu, while in system menu
 
-        const ctrl = controller.player1;
+        const ctrl = controller.controller1;
         const mbtn = ctrl.menu;
         mbtn.onEvent(ControllerButtonEvent.Pressed, function () {
             active = true;

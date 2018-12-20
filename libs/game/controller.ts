@@ -167,7 +167,7 @@ namespace controller {
     //% step.defl=100
     //% group="Single Player"
     export function dx(step: number = 100) {
-        return controller.player1.dx(step);
+        return controller.controller1.dx(step);
     }
 
 
@@ -180,7 +180,7 @@ namespace controller {
     //% step.defl=100
     //% group="Single Player"
     export function dy(step: number = 100) {
-        return controller.player1.dy(step);
+        return controller.controller1.dy(step);
     }
 }
 
@@ -439,32 +439,32 @@ namespace controller {
     //% help=controller/move-sprite
     //% group="Single Player"
     export function moveSprite(sprite: Sprite, vx: number = 100, vy: number = 100) {
-        controller.player1.moveSprite(sprite, vy, vy);
+        controller.controller1.moveSprite(sprite, vy, vy);
     }
 }
 
 namespace controller {
     //% fixedInstance whenUsed block="player 2"
-    export const player2 = new Controller(8);
+    export const controller2 = new Controller(8);
     //% fixedInstance whenUsed block="player 3"
-    export const player3 = new Controller(16);
+    export const controller3 = new Controller(16);
     //% fixedInstance whenUsed block="player 4"
-    export const player4 = new Controller(24);
+    export const controller4 = new Controller(24);
     //% fixedInstance whenUsed block="player 1"
-    export const player1 = new Controller(1);
+    export const controller1 = new Controller(1);
 
     //% fixedInstance whenUsed block="A"
-    export const A = controller.player1.A;
+    export const A = controller.controller1.A;
     //% fixedInstance whenUsed block="B"
-    export const B = controller.player1.B;
+    export const B = controller.controller1.B;
     //% fixedInstance whenUsed block="left"
-    export const left = controller.player1.left;
+    export const left = controller.controller1.left;
     //% fixedInstance whenUsed block="up"
-    export const up = controller.player1.up;
+    export const up = controller.controller1.up;
     //% fixedInstance whenUsed block="right"
-    export const right = controller.player1.right;
+    export const right = controller.controller1.right;
     //% fixedInstance whenUsed block="down"
-    export const down = controller.player1.down;
+    export const down = controller.controller1.down;
     //% fixedInstance whenUsed block="menu"
-    export const menu = controller.player1.menu;
+    export const menu = controller.controller1.menu;
 }

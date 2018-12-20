@@ -3,7 +3,7 @@
 Check if a button is being pressed or not.
 
 ```sig
-controller.anyButton.isPressed()
+controller.A.isPressed()
 ```
 
 ## Returns
