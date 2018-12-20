@@ -786,9 +786,11 @@ enum class NumberFormat {
     Float64BE,
 };
 
-// data can be NULL in both cases
+// this will, unlike mkStringCore, UTF8-canonicalize the data
 String mkString(const char *data, int len = -1);
+// data can be NULL in both cases
 Buffer mkBuffer(const uint8_t *data, int len);
+String mkStringCore(const char *data, int len = -1);
 
 TNumber getNumberCore(uint8_t *buf, int size, NumberFormat format);
 void setNumberCore(uint8_t *buf, int size, NumberFormat format, TNumber value);

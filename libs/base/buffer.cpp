@@ -127,12 +127,20 @@ void shift(Buffer buf, int offset, int start = 0, int length = -1) {
 }
 
 /**
+ * Convert a buffer to string assuming UTF8 encoding
+ */
+//%
+String toUTF8(Buffer buf) {
+    return mkString((char*)buf->data, buf->length);
+}
+
+/**
  * Convert a buffer to its hexadecimal representation.
  */
 //%
 String toHex(Buffer buf) {
     const char *hex = "0123456789abcdef";
-    auto res = mkString(NULL, buf->length * 2);
+    auto res = mkStringCore(NULL, buf->length * 2);
     for (int i = 0; i < buf->length; ++i) {
         res->ascii.data[i << 1] = hex[buf->data[i] >> 4];
         res->ascii.data[(i << 1) + 1] = hex[buf->data[i] & 0xf];
@@ -188,7 +196,7 @@ void write(Buffer buf, int dstOffset, Buffer src) {
     // srcOff and length not supported, we only do up to 4 args :/
     writeBuffer(buf, dstOffset, src, 0, -1);
 }
-}
+} // namespace BufferMethods
 
 namespace control {
 /**
@@ -199,7 +207,16 @@ namespace control {
 Buffer createBuffer(int size) {
     return mkBuffer(NULL, size);
 }
+
+/**
+ * Create a new buffer with UTF8-encoded string
+ * @param str the string to put in the buffer
+ */
+//%
+Buffer createBufferFromUTF8(String str) {
+    return mkBuffer((const uint8_t*)str->getUTF8Data(), str->getUTF8Size());
 }
+} // namespace control
 
 namespace pxt {
 static int writeBytes(uint8_t *dst, uint8_t *src, int length, bool swapBytes, int szLeft) {
@@ -353,4 +370,4 @@ TNumber getNumberCore(uint8_t *buf, int szLeft, NumberFormat format) {
 
     return 0;
 }
-}
+} // namespace pxt

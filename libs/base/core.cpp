@@ -10,6 +10,8 @@ using namespace std;
 
 namespace pxt {
 
+PXT_DEF_STRING(emptyString, "")
+
 static HandlerBinding *handlerBindings;
 
 HandlerBinding *findBinding(int source, int value) {
@@ -37,8 +39,6 @@ void setBinding(int source, int value, Action act) {
     registerGC(&curr->action);
     handlerBindings = curr;
 }
-
-PXT_DEF_STRING(emptyString, "")
 
 static const char emptyBuffer[] __attribute__((aligned(4))) = "@PXT#:\x00\x00\x00";
 
@@ -79,6 +79,46 @@ static const char *utf8Skip(const char *data, int size, int skip) {
         }
     }
     return NULL;
+}
+
+static int utf8canon(char *dst, const char *data, int size) {
+    int len = 0;
+    int outsz = 0;
+    for (int i = 0; i < size;) {
+        uint8_t c = data[i];
+        len++;
+        if ((c & 0x80) == 0x00) {
+            if (dst)
+                *dst++ = c;
+            outsz++;
+            i++;
+        } else if ((c & 0xe0) == 0xc0 && i + 1 < size && (data[i + 1] & 0xc0) == 0x80) {
+            if (dst) {
+                *dst++ = c;
+                *dst++ = data[i + 1];
+            }
+            i += 2;
+            outsz += 2;
+        } else if ((c & 0xf0) == 0xe0 && i + 2 < size && (data[i + 1] & 0xc0) == 0x80 &&
+                   (data[i + 2] & 0xc0) == 0x80) {
+            if (dst) {
+                *dst++ = c;
+                *dst++ = data[i + 1];
+                *dst++ = data[i + 2];
+            }
+            i += 3;
+            outsz += 3;
+        } else {
+            // error - encode the byte value as UTF8
+            if (dst) {
+                *dst++ = 0xc0 | (c >> 6);
+                *dst++ = 0x80 | ((c >> 0) & 0x3f);
+            }
+            outsz += 2;
+            i++;
+        }
+    }
+    return outsz;
 }
 
 static int utf8CharCode(const char *data) {
@@ -122,7 +162,7 @@ static void setupSkipList(String r, const char *data) {
 }
 #endif
 
-String mkString(const char *data, int len) {
+String mkStringCore(const char *data, int len) {
     if (len < 0)
         len = strlen(data);
     if (len == 0)
@@ -154,6 +194,28 @@ String mkString(const char *data, int len) {
 
     MEMDBG("mkString: len=%d => %p", len, r);
     return r;
+}
+
+String mkString(const char *data, int len) {
+#if PXT_UTF8
+    if (len < 0)
+        len = strlen(data);
+    if (len == 0)
+        return (String)emptyString;
+
+    int sz = utf8canon(NULL, data, len);
+    if (sz == len)
+        return mkStringCore(data, len);
+    // this could be optimized, but it only kicks in when the string isn't valid utf8
+    // which is unlikely to be performance critical
+    char *tmp = (char *)app_alloc(sz);
+    utf8canon(tmp, data, len);
+    auto r = mkStringCore(tmp, sz);
+    app_free(tmp);
+    return r;
+#else
+    return mkStringCore(data, len);
+#endif
 }
 
 Buffer mkBuffer(const uint8_t *data, int len) {
@@ -221,7 +283,7 @@ namespace String_ {
 
 //%
 String mkEmpty() {
-    return mkString("", 0);
+    return (String)emptyString;
 }
 
 //%
@@ -243,10 +305,10 @@ String fromCharCode(int code) {
         buf[2] = 0x80 | ((code >> 0) & 0x3f);
         len = 3;
     }
-    return mkString(buf, len);
+    return mkStringCore(buf, len);
 #else
     char buf[] = {(char)code, 0};
-    return mkString(buf, 1);
+    return mkStringCore(buf, 1);
 #endif
 }
 
@@ -310,7 +372,7 @@ String concat(String s, String other) {
     {
         auto dataA = s->getUTF8Data();
         auto dataB = other->getUTF8Data();
-        r = mkString(NULL, lenA + lenB);
+        r = mkStringCore(NULL, lenA + lenB);
         auto dst = (char *)r->getUTF8Data();
         memcpy(dst, dataA, lenA);
         memcpy(dst + lenA, dataB, lenB);
@@ -454,9 +516,9 @@ String substr(String s, int start, int length) {
     auto ep = s->getUTF8DataAt(start + length);
     if (ep == NULL)
         oops(82);
-    return mkString(p, ep - p);
+    return mkStringCore(p, ep - p);
 #else
-    return mkString(p, length);
+    return mkStringCore(p, length);
 #endif
 }
 
@@ -1012,7 +1074,7 @@ String toString(TValue v) {
 
         if (isNumber(v)) {
             itoa(numValue(v), buf);
-            return mkString(buf);
+            return mkStringCore(buf);
         }
 
         if (v == TAG_NAN)
@@ -1023,7 +1085,7 @@ String toString(TValue v) {
 #ifdef PXT_BOX_DEBUG
         if (x == (int)x) {
             itoa((int)x, buf);
-            return mkString(buf);
+            return mkStringCore(buf);
         }
 #endif
 
@@ -1037,7 +1099,7 @@ String toString(TValue v) {
         }
         mycvt(x, buf);
 
-        return mkString(buf);
+        return mkStringCore(buf);
     } else if (t == ValType::Function) {
         return (String)(void *)sFunction;
     } else {
@@ -1503,7 +1565,7 @@ static void dtorDoNothing() {}
 #define NOOP ((void)0)
 #define STRING_VT(name, fix, scan, gcsize, data, utfsize, length, dataAt)                          \
     static uint32_t name##_gcsize(BoxedString *p) { return (4 + (gcsize) + 3) >> 2; }              \
-    static void name##_gcscan(BoxedString *p) { scan; }                                        \
+    static void name##_gcscan(BoxedString *p) { scan; }                                            \
     static const char *name##_data(BoxedString *p) {                                               \
         fix;                                                                                       \
         return data;                                                                               \
@@ -1574,7 +1636,7 @@ static void fixCons(BoxedString *r) {
     r->skip.size = sz;
     r->skip.length = length;
     r->skip.list = data;
-    fixCopy(r, (char*)SKIP_DATA(r));
+    fixCopy(r, (char *)SKIP_DATA(r));
     setupSkipList(r, NULL);
 }
 #endif
