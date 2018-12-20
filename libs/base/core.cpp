@@ -6,7 +6,14 @@ using namespace std;
 
 #define p10(v) __builtin_powi(10, v)
 
-#define SKIP_INCR 16
+// try not to create cons-strings shorter than this
+#define SHORT_CONCAT_STRING 50
+
+// bigger value - less memory, but slower
+// 16/20 keeps s.length and s.charCodeAt(i) at about 200 cycles (for actual unicode strings), 
+// which is similar to amortized allocation time
+#define SKIP_INCR 16 // needs to be power of 2; needs to be kept in sync with compiler
+#define MIN_SKIP 20 // min. size of string to use skip list; static code has its own limit
 
 namespace pxt {
 
@@ -43,7 +50,7 @@ void setBinding(int source, int value, Action act) {
 static const char emptyBuffer[] __attribute__((aligned(4))) = "@PXT#:\x00\x00\x00";
 
 #if PXT_UTF8
-static int utf8Len(const char *data, int size) {
+int utf8Len(const char *data, int size) {
     int len = 0;
     for (int i = 0; i < size; ++i) {
         char c = data[i];
@@ -61,7 +68,7 @@ static int utf8Len(const char *data, int size) {
     return len;
 }
 
-static const char *utf8Skip(const char *data, int size, int skip) {
+const char *utf8Skip(const char *data, int size, int skip) {
     int len = 0;
     for (int i = 0; i <= size; ++i) {
         char c = data[i];
@@ -173,7 +180,7 @@ String mkStringCore(const char *data, int len) {
 
 #if PXT_UTF8
     if (data && isUTF8(data, len)) {
-        vt = len > SKIP_INCR * 3 ? &string_skiplist16_vt : &string_inline_utf8_vt;
+        vt = len >= MIN_SKIP ? &string_skiplist16_vt : &string_inline_utf8_vt;
     }
     if (vt == &string_skiplist16_vt) {
         r = new (gcAllocate(4 + 2 * 4)) BoxedString(vt);
@@ -358,14 +365,28 @@ String concat(String s, String other) {
     uint32_t lenA, lenB;
 
 #if PXT_UTF8
-    if (IS_CONS(s) || IS_CONS(other))
+    if (IS_CONS(s)) {
+        // (s->cons.left + s->cons.right) + other = s->cons.left + (s->cons.right + other)
+        if (IS_CONS(other) || IS_CONS(s->cons.right))
+            goto mkCons;
+        auto lenAL = s->cons.right->getUTF8Size();
+        lenB = other->getUTF8Size();
+        if (lenAL + lenB > SHORT_CONCAT_STRING)
+            goto mkCons;
+        // if (s->cons.right + other) is short enough, use associativity
+        // to construct a shallower tree; this should keep the live set reasonable
+        // when someone decides to construct a long string by concatenating 
+        // single characters
+        other = concat(s->cons.right, other);
+        s = s->cons.left;
         goto mkCons;
+    }
 #endif
 
     lenA = s->getUTF8Size();
     lenB = other->getUTF8Size();
 #if PXT_UTF8
-    if (lenA + lenB > 50)
+    if (lenA + lenB > SHORT_CONCAT_STRING)
         goto mkCons;
 #endif
     String r;
