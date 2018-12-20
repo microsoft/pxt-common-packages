@@ -51,6 +51,7 @@ namespace particles {
         lifespan: number;
 
         protected _enabled: boolean;
+        protected destroyed: boolean;
         protected head: Particle;
         protected timer: number;
         protected period: number;
@@ -101,6 +102,8 @@ namespace particles {
 
         _update(dt: number) {
             this.timer -= dt;
+            
+            if (!this.anchor) return;
 
             if (this.lifespan !== undefined) {
                 this.lifespan -= dt;
@@ -145,6 +148,12 @@ namespace particles {
         _prune() {
             while (this.head && this.head.lifespan <= 0) {
                 this.head = this.head.next;
+            }
+
+            if (this.destroyed && this.head == null) {
+                sources.removeElement(this);
+                game.currentScene().allSprites.removeElement(this);
+                this.anchor == null;
             }
 
             let current = this.head;
@@ -196,12 +205,7 @@ namespace particles {
          */
         destroy() {
             this.enabled = false;
-            control.runInParallel(() => {
-                pauseUntil(() => this.head == null);
-                sources.removeElement(this);
-                game.currentScene().allSprites.removeElement(this);
-                this.anchor == null;
-            });
+            this.destroyed = true;
         }
 
         /**
