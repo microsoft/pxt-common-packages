@@ -20,9 +20,7 @@ enum ControllerButton {
     //% block="right"
     Right = 2,
     //% block="down"
-    Down = 3,
-    //% block="menu"
-    Menu = 6
+    Down = 3
 }
 
 /**
@@ -286,7 +284,7 @@ namespace controller {
          */
         //%
         get menu() {
-            return this.button(ControllerButton.Menu);
+            return this.button(6);
         }
 
         /**
