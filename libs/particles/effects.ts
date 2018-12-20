@@ -32,11 +32,8 @@ namespace particles {
     export function removeEffects(anchor: ParticleAnchor) {
         const sources = game.currentScene().data.particleSources as particles.ParticleSource[];
         if (!sources) return;
-        sources.forEach(ps => {
-            if (ps.anchor == anchor || ps.anchor.x == anchor.x && ps.anchor.y == anchor.y) {
-                ps.destroy();
-            }
-        });
+        sources.filter(ps => ps.anchor == anchor || ps.anchor.x == anchor.x && ps.anchor.y == anchor.y)
+                .forEach(ps => ps.destroy());
     }
 
     function createEffect(factoryFactory: () => ParticleFactory): ParticleEffect {
