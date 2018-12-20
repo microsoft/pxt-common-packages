@@ -56,6 +56,19 @@ CodalComponent *lookupComponent(int id) {
 } // namespace pxt
 
 namespace pins {
+
+/**
+* Given a configuration key, lookup the pin id
+*/
+//%
+int lookupPinIdByCfg(int key) {
+    auto id = getConfig(key);
+    if (id < 0 || id >= DEV_NUM_PINS)
+        return -1;
+    else
+        return DEVICE_ID_IO_P0 + id;
+}
+
 /**
  * Create a new zero-initialized buffer.
  * @param size number of bytes in the buffer

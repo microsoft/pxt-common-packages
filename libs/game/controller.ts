@@ -25,7 +25,7 @@ namespace controller {
         private _repeatCount: number;
         private _initEvents: () => void;
 
-        constructor(id: number) {
+        constructor(id: number, buttonId: number) {
             this.id = id;
             this._pressed = false;
             this.repeatDelay = 500;
@@ -46,15 +46,10 @@ namespace controller {
                         this.raiseButtonDown();
                     }
                 }, 16)
-            }
-        }
-
-        configureEventIds(buttonId: number, upid: number, downid: number) {
-            const init = this._initEvents;
-            this._initEvents = () => {
-                if (init) init();
-                control.internalOnEvent(buttonId, upid, () => control.raiseEvent(INTERNAL_KEY_UP, this.id), 16)
-                control.internalOnEvent(buttonId, downid, () => control.raiseEvent(INTERNAL_KEY_DOWN, this.id), 16)
+                if (buttonId > -1) {
+                    control.internalOnEvent(buttonId, DAL.DEVICE_BUTTON_EVT_UP, () => control.raiseEvent(INTERNAL_KEY_UP, this.id), 16)
+                    control.internalOnEvent(buttonId, DAL.DEVICE_BUTTON_EVT_DOWN, () => control.raiseEvent(INTERNAL_KEY_DOWN, this.id), 16)
+                }
             }
         }
 
@@ -208,9 +203,18 @@ namespace controller {
         // array of left,up,right,down,a,b,menu buttons
         constructor(leftId: number) {
             this.buttons = [];
-            for (let i = 0; i < 7; ++i)
-                this.buttons.push(new Button(leftId + i));
-
+            [
+                DAL.CFG_PIN_BTN_LEFT,
+                DAL.CFG_PIN_BTN_UP,
+                DAL.CFG_PIN_BTN_RIGHT,
+                DAL.CFG_PIN_BTN_DOWN,
+                DAL.CFG_PIN_BTN_A,
+                DAL.CFG_PIN_BTN_B,
+                DAL.CFG_PIN_BTN_MENU
+            ].forEach((cfg, i) => {
+                const pinid = pins.lookupPinIdByCfg(cfg);
+                this.buttons.push(new Button(leftId + i, pinid));
+            })
             controllers.push(this);
         }
 
