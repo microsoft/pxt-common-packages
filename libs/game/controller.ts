@@ -12,6 +12,7 @@ enum ControllerButtonEvent {
  */
 //% weight=98 color="#e15f41" icon="\uf11b"
 //% groups='["Single Player", "Multi Player"]'
+//% blockGap=8
 namespace controller {
     let _userEventsEnabled = true;
 
@@ -197,9 +198,18 @@ enum ControllerButton {
 namespace controller {
     let controllers: Controller[] = [];
 
+    interface ControlledSprite {
+        s: Sprite;
+        vx: number;
+        vy: number;
+    }
+
     //% fixedInstances
     export class Controller {
         private buttons: Button[];
+        private controlledSprites: ControlledSprite[];
+
+
         // array of left,up,right,down,a,b,menu buttons
         constructor(leftId: number) {
             this.buttons = [];
@@ -272,6 +282,62 @@ namespace controller {
         //%
         get menu() {
             return this.button(ControllerButton.Menu);
+        }
+
+        /**
+         * Control a sprite using the direction buttons from the controller. Note that this
+         * control will take over the vx and vy of the sprite and overwrite any changes
+         * made unless a 0 is passed.
+         *
+         * @param sprite The Sprite to control
+         * @param vx The velocity used for horizontal movement when left/right is pressed
+         * @param vy The velocity used for vertical movement when up/down is pressed
+         */
+        //% blockId="ctrlgame_control_sprite" block="%controller move $sprite=variables_get(mySprite) with buttons||vx $vx vy $vy"
+        //% weight=100
+        //% vx.defl=100 vy.defl=100
+        //% help=controller/move-sprite
+        //% group="Multi Player"
+        moveSprite(sprite: Sprite, vx: number = 100, vy: number = 100) {
+            if (!sprite) return;
+            this.initControlledSprites();
+            let cp = this.controlledSprites.find(cp => cp.s.id == sprite.id);
+            if (!cp)
+                this.controlledSprites.push(cp = { s: sprite, vx: vx, vy: vy });
+            cp.vx = vx;
+            cp.vy = vy;
+        }
+
+        private initControlledSprites() {
+            if (!!this.controlledSprites) return;
+            this.controlledSprites = [];
+            // todo: move to currecnt sceane
+            game.currentScene().eventContext.registerFrameHandler(19, () => {
+                control.enablePerfCounter("controller")
+                this.controlledSprites.forEach(controlled => {
+                    if (controlled.vx) {
+                        controlled.s.vx = 0;
+
+                        if (controller.right.isPressed()) {
+                            controlled.s.vx = controlled.vx;
+                        }
+                        if (controller.left.isPressed()) {
+                            controlled.s.vx = -controlled.vx;
+                        }
+                    }
+
+                    if (controlled.vy) {
+                        controlled.s.vy = 0;
+
+                        if (controller.down.isPressed()) {
+                            controlled.s.vy = controlled.vy;
+                        }
+                        if (controller.up.isPressed()) {
+                            controlled.s.vy = -controlled.vy;
+                        }
+                    }
+                });
+            });
         }
 
         private button(button: ControllerButton): Button {
@@ -356,16 +422,6 @@ namespace controller {
         const buf = control.createBuffer(offset + 1);
         return buf;
     }
-}
-
-namespace controller {
-    interface ControlledSprite {
-        s: Sprite;
-        vx: number;
-        vy: number;
-    }
-
-    let controlledSprites: ControlledSprite[];
 
     /**
      * Control a sprite using the direction buttons from the controller. Note that this
@@ -380,46 +436,9 @@ namespace controller {
     //% weight=100
     //% vx.defl=100 vy.defl=100
     //% help=controller/move-sprite
+    //% group="Single Player"
     export function moveSprite(sprite: Sprite, vx: number = 100, vy: number = 100) {
-        if (!sprite) return;
-        if (!controlledSprites) {
-            controlledSprites = [];
-            game.currentScene().eventContext.registerFrameHandler(19, () => {
-                control.enablePerfCounter("controller")
-                controlledSprites.forEach(controlled => {
-                    if (controlled.vx) {
-                        controlled.s.vx = 0;
-
-                        if (controller.right.isPressed()) {
-                            controlled.s.vx = controlled.vx;
-                        }
-                        if (controller.left.isPressed()) {
-                            controlled.s.vx = -controlled.vx;
-                        }
-                    }
-
-                    if (controlled.vy) {
-                        controlled.s.vy = 0;
-
-                        if (controller.down.isPressed()) {
-                            controlled.s.vy = controlled.vy;
-                        }
-                        if (controller.up.isPressed()) {
-                            controlled.s.vy = -controlled.vy;
-                        }
-                    }
-                });
-            });
-        }
-
-        for (let i = 0; i < controlledSprites.length; i++) {
-            if (controlledSprites[i].s.id === sprite.id) {
-                controlledSprites[i].vx = vx;
-                controlledSprites[i].vy = vy;
-                return;
-            }
-        }
-        controlledSprites.push({ s: sprite, vx: vx, vy: vy });
+        controller.player1.moveSprite(sprite, vy, vy);
     }
 }
 
