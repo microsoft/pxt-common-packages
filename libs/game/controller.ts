@@ -34,7 +34,7 @@ namespace controller {
         private _repeatCount: number;
         private _initEvents: () => void;
 
-        constructor(id: number, buttonId?: number, upid?: number, downid?: number) {
+        constructor(id: number) {
             this.id = id;
             this._pressed = false;
             this.repeatDelay = 500;
@@ -55,10 +55,15 @@ namespace controller {
                         this.raiseButtonDown();
                     }
                 }, 16)
-                if (buttonId && upid && downid) {
-                    control.internalOnEvent(buttonId, upid, () => control.raiseEvent(INTERNAL_KEY_UP, this.id), 16)
-                    control.internalOnEvent(buttonId, downid, () => control.raiseEvent(INTERNAL_KEY_DOWN, this.id), 16)
-                }
+            }
+        }
+
+        configureEventIds(buttonId: number, upid: number, downid: number) {
+            const init = this._initEvents;
+            this._initEvents = () => {
+                if(init) init();
+                control.internalOnEvent(buttonId, upid, () => control.raiseEvent(INTERNAL_KEY_UP, this.id), 16)
+                control.internalOnEvent(buttonId, downid, () => control.raiseEvent(INTERNAL_KEY_DOWN, this.id), 16)
             }
         }
 
@@ -316,7 +321,7 @@ namespace controller {
         __update(dt: number) {
             const dtms = (dt * 1000) | 0
             this.buttons.forEach(btn => btn.__update(dtms));
-        }    
+        }
     }
 
     /**
@@ -398,4 +403,30 @@ namespace controller {
         }
         controlledSprites.push({ s: sprite, vx: vx, vy: vy });
     }
+}
+
+namespace controller {
+    //% fixedInstance whenUsed block="player 2"
+    export const player2 = new Controller(8);
+    //% fixedInstance whenUsed block="player 1"
+    export const player1 = new Controller(1);
+    //% fixedInstance whenUsed block="player 3"
+    export const player3 = new Controller(16);
+    //% fixedInstance whenUsed block="player 4"
+    export const player4 = new Controller(24);
+
+    //% fixedInstance whenUsed block="left"
+    export const left = controller.player1.left;
+    //% fixedInstance whenUsed block="up"
+    export const up = controller.player1.up;
+    //% fixedInstance whenUsed block="right"
+    export const right = controller.player1.right;
+    //% fixedInstance whenUsed block="down"
+    export const down = controller.player1.down;
+    //% fixedInstance whenUsed block="A"
+    export const A = controller.player1.A;
+    //% fixedInstance whenUsed block="B"
+    export const B = controller.player1.B;
+    //% fixedInstance whenUsed block="menu"
+    export const menu = controller.player1.menu;
 }
