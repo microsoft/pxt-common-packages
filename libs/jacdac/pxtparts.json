@@ -28,7 +28,7 @@
                 "orientation": "Y"
             },
             {
-                "target": "TX",
+                "target": "JACK_TX",
                 "style": "croc",
                 "orientation": "Y"
             },

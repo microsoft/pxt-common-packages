@@ -126,7 +126,7 @@ namespace jacdac {
             const data = packet.data;
             const pri = data[0];
             const str = bufferToString(data, 1);
-            const name = ConsoleDriver.readName(data);
+            const name = ConsoleService.readName(data);
             return `${pri}:${str} ${name}`;
         }
     }
