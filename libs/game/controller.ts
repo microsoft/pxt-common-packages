@@ -52,7 +52,7 @@ namespace controller {
         configureEventIds(buttonId: number, upid: number, downid: number) {
             const init = this._initEvents;
             this._initEvents = () => {
-                if(init) init();
+                if (init) init();
                 control.internalOnEvent(buttonId, upid, () => control.raiseEvent(INTERNAL_KEY_UP, this.id), 16)
                 control.internalOnEvent(buttonId, downid, () => control.raiseEvent(INTERNAL_KEY_DOWN, this.id), 16)
             }
@@ -154,6 +154,31 @@ namespace controller {
 
     export function _setUserEventsEnabled(enabled: boolean) {
         _userEventsEnabled = enabled;
+    }
+
+    /**
+     * Get the horizontal movement, given the step and state of buttons
+     * @param step the distance, eg: 100
+     */
+    //% weight=50 blockGap=8 help=controller/dx
+    //% blockId=keydx block="dx (left-right buttons)||scaled by %step"
+    //% step.defl=100
+    //% group="Single Player"
+    export function dx(step: number = 100) {
+        return controller.player1.dx(step);
+    }
+
+
+    /**
+     * Get the vertical movement, given the step and state of buttons
+     * @param step the distance, eg: 100
+     */
+    //% weight=49 help=keys/dy
+    //% blockId=keydy block="dy (up-down buttons)||scaled by %step"
+    //% step.defl=100
+    //% group="Single Player"
+    export function dy(step: number = 100) {
+        return controller.player1.dy(step);
     }
 }
 
@@ -327,8 +352,6 @@ namespace controller {
         const buf = control.createBuffer(offset + 1);
         return buf;
     }
-
-    export function onEvent()
 }
 
 namespace controller {
