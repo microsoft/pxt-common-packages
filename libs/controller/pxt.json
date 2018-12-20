@@ -4,6 +4,7 @@
     "files": [
         "enums.ts",
         "controller.ts",
+        "multi.ts",
         "targetoverrides.ts"
     ],
     "dependencies": {
