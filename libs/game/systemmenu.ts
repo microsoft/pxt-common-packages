@@ -20,7 +20,9 @@ namespace scene.systemMenu {
     export function register() {
         if (active) return; // don't show system menu, while in system menu
 
-        controller.menu.onEvent(ControllerButtonEvent.Pressed, function () {
+        const ctrl = controller.player1;
+        const mbtn = ctrl.menu;
+        mbtn.onEvent(ControllerButtonEvent.Pressed, function () {
             active = true;
             let itemHandler: () => void = undefined;
             let onHidden: () => void = undefined;

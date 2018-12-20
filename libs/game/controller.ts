@@ -7,6 +7,24 @@ enum ControllerButtonEvent {
     Repeated = KEY_REPEAT
 }
 
+
+enum ControllerButton {
+    //% block="left"
+    Left = 0,
+    //% block="up"
+    Up,
+    //% block="right"
+    Right,
+    //% block="down"
+    Down,
+    //% block="A"
+    A,
+    //% block="B"
+    B,
+    //% block="menu"
+    Menu
+}
+
 /**
  * Access to game controls
  */
@@ -166,25 +184,9 @@ namespace controller {
     }
 }
 
-enum ControllerButton {
-    //% block="left"
-    Left = 0,
-    //% block="up"
-    Up,
-    //% block="right"
-    Right,
-    //% block="down"
-    Down,
-    //% block="A"
-    A,
-    //% block="B"
-    B,
-    //% block="menu"
-    Menu
-}
 
 namespace controller {
-    let _controllers: Controller[] = [];
+    let _controllers: Controller[];
 
     interface ControlledSprite {
         s: Sprite;
@@ -192,13 +194,29 @@ namespace controller {
         vy: number;
     }
 
+    function addController(ctrl: Controller) {
+        if (!_controllers) {
+            _controllers = [];
+            game.currentScene().eventContext.registerFrameHandler(19, moveSprites);
+        }
+        _controllers.push(ctrl);
+    }
+
+    function moveSprites() {
+        // todo: move to currecnt sceane
+        control.enablePerfCounter("controller")
+        if (_controllers)
+            _controllers.forEach(ctrl => ctrl.__preUpdate());
+    }
+
     //% fixedInstances
     export class Controller {
         private buttons: Button[];
-        private controlledSprites: ControlledSprite[];
+        private _controlledSprites: ControlledSprite[];
 
         // array of left,up,right,down,a,b,menu buttons
         constructor(leftId: number) {
+            console.log(`controller id ${leftId}`);
             this.buttons = [];
             [
                 DAL.CFG_PIN_BTN_LEFT,
@@ -211,8 +229,8 @@ namespace controller {
             ].forEach((cfg, i) => {
                 const pinid = pins.lookupPinIdByCfg(cfg);
                 this.buttons.push(new Button(leftId + i, pinid));
-            })
-            _controllers.push(this);
+            });
+            addController(this);
         }
 
         /**
@@ -287,44 +305,12 @@ namespace controller {
         //% group="Multi Player"
         moveSprite(sprite: Sprite, vx: number = 100, vy: number = 100) {
             if (!sprite) return;
-            this.initControlledSprites();
-            let cp = this.controlledSprites.find(cp => cp.s.id == sprite.id);
+            if (!this._controlledSprites) this._controlledSprites = [];
+            let cp = this._controlledSprites.find(cp => cp.s.id == sprite.id);
             if (!cp)
-                this.controlledSprites.push(cp = { s: sprite, vx: vx, vy: vy });
+                this._controlledSprites.push(cp = { s: sprite, vx: vx, vy: vy });
             cp.vx = vx;
             cp.vy = vy;
-        }
-
-        private initControlledSprites() {
-            if (!!this.controlledSprites) return;
-            this.controlledSprites = [];
-            // todo: move to currecnt sceane
-            game.currentScene().eventContext.registerFrameHandler(19, () => {
-                control.enablePerfCounter("controller")
-                this.controlledSprites.forEach(controlled => {
-                    if (controlled.vx) {
-                        controlled.s.vx = 0;
-
-                        if (controller.right.isPressed()) {
-                            controlled.s.vx = controlled.vx;
-                        }
-                        if (controller.left.isPressed()) {
-                            controlled.s.vx = -controlled.vx;
-                        }
-                    }
-
-                    if (controlled.vy) {
-                        controlled.s.vy = 0;
-
-                        if (controller.down.isPressed()) {
-                            controlled.s.vy = controlled.vy;
-                        }
-                        if (controller.up.isPressed()) {
-                            controlled.s.vy = -controlled.vy;
-                        }
-                    }
-                });
-            });
         }
 
         private button(button: ControllerButton): Button {
@@ -389,6 +375,34 @@ namespace controller {
             }
             else if (this.down.isPressed()) return step * ctx.deltaTime
             else return 0
+        }
+
+        __preUpdate() {
+            if (!this._controlledSprites) return;
+
+            this._controlledSprites.forEach(sprite => {
+                if (sprite.vx) {
+                    sprite.s.vx = 0;
+
+                    if (this.right.isPressed()) {
+                        sprite.s.vx = sprite.vx;
+                    }
+                    if (this.left.isPressed()) {
+                        sprite.s.vx = -sprite.vx;
+                    }
+                }
+
+                if (sprite.vy) {
+                    sprite.s.vy = 0;
+
+                    if (this.down.isPressed()) {
+                        sprite.s.vy = sprite.vy;
+                    }
+                    if (this.up.isPressed()) {
+                        sprite.s.vy = -sprite.vy;
+                    }
+                }
+            });
         }
 
         __update(dt: number) {
