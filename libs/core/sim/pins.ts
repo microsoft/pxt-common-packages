@@ -121,7 +121,7 @@ namespace pxsim.pins {
     export function lookupPinIdByCfg(key: number): number {
         const id = pxsim.getConfig(key)
         if (id != null)
-            return DAL.DEVICE_ID_IO_P0 + key;
+            return DAL.DEVICE_ID_IO_P0 + id;
         return -1;
     }
 

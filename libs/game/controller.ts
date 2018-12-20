@@ -24,7 +24,6 @@ namespace controller {
         private _pressed: boolean;
         private _pressedElasped: number;
         private _repeatCount: number;
-        private _initEvents: () => void;
 
         constructor(id: number, buttonId: number) {
             this.id = id;
@@ -32,32 +31,23 @@ namespace controller {
             this.repeatDelay = 500;
             this.repeatInterval = 30;
             this._repeatCount = 0;
-            this._initEvents = () => {
-                control.internalOnEvent(INTERNAL_KEY_UP, this.id, () => {
-                    if (this._pressed) {
-                        this._pressed = false
-                        this.raiseButtonUp();
-                    }
-                }, 16)
-                control.internalOnEvent(INTERNAL_KEY_DOWN, this.id, () => {
-                    if (!this._pressed) {
-                        this._pressed = true;
-                        this._pressedElasped = 0;
-                        this._repeatCount = 0;
-                        this.raiseButtonDown();
-                    }
-                }, 16)
-                if (buttonId > -1) {
-                    control.internalOnEvent(buttonId, DAL.DEVICE_BUTTON_EVT_UP, () => control.raiseEvent(INTERNAL_KEY_UP, this.id), 16)
-                    control.internalOnEvent(buttonId, DAL.DEVICE_BUTTON_EVT_DOWN, () => control.raiseEvent(INTERNAL_KEY_DOWN, this.id), 16)
+            control.internalOnEvent(INTERNAL_KEY_UP, this.id, () => {
+                if (this._pressed) {
+                    this._pressed = false
+                    this.raiseButtonUp();
                 }
-            }
-        }
-
-        initEvents() {
-            if (this._initEvents) {
-                this._initEvents();
-                this._initEvents = undefined;
+            }, 16)
+            control.internalOnEvent(INTERNAL_KEY_DOWN, this.id, () => {
+                if (!this._pressed) {
+                    this._pressed = true;
+                    this._pressedElasped = 0;
+                    this._repeatCount = 0;
+                    this.raiseButtonDown();
+                }
+            }, 16)
+            if (buttonId > -1) {
+                control.internalOnEvent(buttonId, DAL.DEVICE_BUTTON_EVT_UP, () => control.raiseEvent(INTERNAL_KEY_UP, this.id), 16)
+                control.internalOnEvent(buttonId, DAL.DEVICE_BUTTON_EVT_DOWN, () => control.raiseEvent(INTERNAL_KEY_DOWN, this.id), 16)
             }
         }
 
@@ -89,7 +79,6 @@ namespace controller {
         //% blockId=keyonevent block="on %button **button** %event"
         //% group="Single Player"
         onEvent(event: ControllerButtonEvent, handler: () => void) {
-            this.initEvents();
             control.onEvent(event, this.id, handler);
         }
 
@@ -100,7 +89,6 @@ namespace controller {
         // blockId=keypauseuntil block="pause until %button **button** is %event"
         //% group="Single Player"
         pauseUntil(event: ControllerButtonEvent) {
-            this.initEvents();
             control.waitForEvent(event, this.id)
         }
 
