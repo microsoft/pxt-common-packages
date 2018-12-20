@@ -39,7 +39,7 @@ namespace scene {
         createdHandlers: SpriteHandler[];
         overlapHandlers: OverlapHandler[];
         collisionHandlers: CollisionHandler[];
-        data: any;
+        _data: any;
 
         constructor(eventContext: control.EventContext) {
             this.eventContext = eventContext;
@@ -52,7 +52,7 @@ namespace scene {
             this.overlapHandlers = [];
             this.collisionHandlers = [];
             this.spritesByKind = [];
-            this.data = {};
+            this._data = {};
         }
 
         init() {
@@ -117,6 +117,10 @@ namespace scene {
             this.eventContext.registerFrameHandler(200, control.__screen.update);
             // register start menu
             scene.systemMenu.register();
+        }
+
+        get data() {
+            return this._data;
         }
 
         addSprite(sprite: SpriteLike) {
