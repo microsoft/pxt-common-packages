@@ -42,7 +42,7 @@ namespace jacdac {
          */
         //% group="Servos"
         //% weight=10 help=servos/set-pulse
-        //% blockId=servoservosetpulse block="set %servo pulse to %micros μs"
+        //% blockId=jdservoservosetpulse block="set %servo pulse to %micros μs"
         //% micros.min=500 micros.max=2500
         //% micros.defl=1500
         //% servo.fieldEditor="gridpicker"
@@ -63,7 +63,7 @@ namespace jacdac {
         */
         //% group="Servos"
         //% weight=10 help=servos/stop
-        //% blockId=servoservostop block="stop %servo"
+        //% blockId=jdservoservostop block="stop %servo"
         //% servo.fieldEditor="gridpicker"
         //% servo.fieldOptions.width=220
         //% servo.fieldOptions.columns=2
