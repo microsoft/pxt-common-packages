@@ -445,12 +445,12 @@ namespace controller {
 namespace controller {
     //% fixedInstance whenUsed block="player 2"
     export const player2 = new Controller(8);
-    //% fixedInstance whenUsed block="player 1"
-    export const player1 = new Controller(1);
     //% fixedInstance whenUsed block="player 3"
     export const player3 = new Controller(16);
     //% fixedInstance whenUsed block="player 4"
     export const player4 = new Controller(24);
+    //% fixedInstance whenUsed block="player 1"
+    export const player1 = new Controller(1);
 
     //% fixedInstance whenUsed block="A"
     export const A = controller.player1.A;
