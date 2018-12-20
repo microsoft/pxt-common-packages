@@ -130,7 +130,7 @@ namespace jacdac {
                             this.log(`start service`);
                             this.current.setPlayer(0, this.device.address);
                             this.state = GameLobbyState.Service;
-                            gameService.start();
+                          //  gameService.start(); TODO
                             // update all players with data
                             this.sendPacket(this.controlData);
                             break;
@@ -186,7 +186,7 @@ namespace jacdac {
                             if (!this.device.isConnected() || this.device.address < otherAddress) {
                                 this.log(`stop dup service`);
                                 this.state = GameLobbyState.Alone;
-                                gameService.stop();
+                              // TODO  gameService.stop();
                                 // update all players with data
                                 this.sendPacket(this.controlData);
                             }
