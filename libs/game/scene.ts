@@ -39,6 +39,7 @@ namespace scene {
         createdHandlers: SpriteHandler[];
         overlapHandlers: OverlapHandler[];
         collisionHandlers: CollisionHandler[];
+        data: any;
 
         constructor(eventContext: control.EventContext) {
             this.eventContext = eventContext;
@@ -51,6 +52,7 @@ namespace scene {
             this.overlapHandlers = [];
             this.collisionHandlers = [];
             this.spritesByKind = [];
+            this.data = {};
         }
 
         init() {

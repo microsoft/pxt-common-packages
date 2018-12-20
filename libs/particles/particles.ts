@@ -5,9 +5,7 @@
 //% groups='["Effects", "Create", "Properties"]'
 namespace particles {
     const TIME_PRECISION = 10; // time goes down to down to the 1<<10 seconds
-
     let lastUpdate: number;
-    let sources: ParticleSource[];
 
     /**
      * A single particle
@@ -67,6 +65,8 @@ namespace particles {
          */
         constructor(anchor: ParticleAnchor, particlesPerSecond: number, factory?: ParticleFactory) {
             init();
+            const scene = game.currentScene();
+            const sources = scene.data.particleSources as ParticleSource[];
             this.setRate(particlesPerSecond);
             this.setAcceleration(0, 0);
             this.setAnchor(anchor);
@@ -75,7 +75,7 @@ namespace particles {
             this.z = -1;
             this.setFactory(factory || particles.defaultFactory);
             sources.push(this);
-            game.currentScene().addSprite(this);
+            scene.addSprite(this);
 
             this.enabled = true;
         }
@@ -149,8 +149,10 @@ namespace particles {
             }
 
             if (this.destroyed && this.head == null) {
+                const scene = game.currentScene();
+                const sources = scene.data.particleSources as particles.ParticleSource[];
                 sources.removeElement(this);
-                game.currentScene().allSprites.removeElement(this);
+                scene.allSprites.removeElement(this);
                 this.anchor == null;
             }
 
@@ -269,14 +271,16 @@ namespace particles {
     }
 
     function init() {
-        if (sources) return;
-        sources = [];
+        const data = game.currentScene().data;
+        if (data.particleSources) return;
+        data.particleSources = [] as ParticleSource[];
         lastUpdate = control.millis();
         game.onUpdate(updateParticles);
         game.onUpdateInterval(250, pruneParticles);
     }
 
     function updateParticles() {
+        const sources = game.currentScene().data.particleSources as particles.ParticleSource[];
         const time = control.millis();
         const dt = time - lastUpdate;
         lastUpdate = time;
@@ -287,6 +291,7 @@ namespace particles {
     }
 
     function pruneParticles() {
+        const sources = game.currentScene().data.particleSources as particles.ParticleSource[];
         for (let i = 0; i < sources.length; i++) {
             sources[i]._prune();
         }
@@ -310,44 +315,5 @@ namespace particles {
                 p.vy = p.next.vy;
             }
         }
-    }
-
-    //% fixedInstances
-    export class ParticleEffect {
-        private sourceFactory: (anchor: ParticleAnchor, pps: number) => ParticleSource;
-
-        constructor(sourceFactory: (anchor: ParticleAnchor, particlesPerSecond: number) => ParticleSource) {
-            this.sourceFactory = sourceFactory;
-        }
-
-        /**
-         * Attaches a new particle animation to the sprite or anchor
-         * @param anchor 
-         * @param particlesPerSecond 
-         */
-        //% blockId=particlesstartanimation block="start %effect effect on %anchor=variables_get(mySprite) at rate %particlesPerSecond p/s"
-        //% particlesPerSecond.defl=20
-        //% particlesPerSecond.min=1 particlePerSeconds.max=100
-        //% group="Effects"
-        start(anchor: ParticleAnchor, particlesPerSecond: number): void {
-            if (!this.sourceFactory) return;
-            this.sourceFactory(anchor, particlesPerSecond);
-        }
-    }
-
-
-    /**
-     * Removes all effects at anchor's location
-     * @param anchor the anchor to remove effects from
-     */
-    //% blockId=particlesremoveeffect block="remove effects on %anchor=variables_get(mySprite)"
-    //% group="Effects"
-    export function removeEffects(anchor: ParticleAnchor) {
-        if (!sources) return;
-        sources.forEach(ps => {
-            if (ps.anchor == anchor || ps.anchor.x == anchor.x && ps.anchor.y == anchor.y) {
-                ps.destroy();
-            }
-        });
     }
 }
