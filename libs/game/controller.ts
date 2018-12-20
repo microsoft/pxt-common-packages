@@ -9,20 +9,20 @@ enum ControllerButtonEvent {
 
 
 enum ControllerButton {
+    //% block="A"
+    A = 4,
+    //% block="B"
+    B = 5,
     //% block="left"
     Left = 0,
     //% block="up"
-    Up,
+    Up = 1,
     //% block="right"
-    Right,
+    Right = 2,
     //% block="down"
-    Down,
-    //% block="A"
-    A,
-    //% block="B"
-    B,
+    Down = 3,
     //% block="menu"
-    Menu
+    Menu = 6
 }
 
 /**
