@@ -27,62 +27,74 @@ namespace jacdac {
             this.state[0] = down ? (b | msk) : (b ^ msk);
         }
 
-        //% blockCombine
+        //% blockCombine blockSetVariable=left
+        //% group="Controller"
         get left() {
             return this.getPressed(ControllerButtonOffset.Left);
         }
 
-        //% blockCombine
+        //% blockCombine blockCombineShadow=toggleUpDown blockSetVariable=left
+        //% group="Controller"
         set left(value: boolean) {
             this.setPressed(ControllerButtonOffset.Left, value);
         }
 
         //% blockCombine
+        //% group="Controller"
         get right() {
             return this.getPressed(ControllerButtonOffset.Right);
         }
 
         //% blockCombine
+        //% group="Controller"
         set right(value: boolean) {
             this.setPressed(ControllerButtonOffset.Right, value);
         }
 
         //% blockCombine
+        //% group="Controller"
         get up() {
             return this.getPressed(ControllerButtonOffset.Up);
         }
 
         //% blockCombine
+        //% group="Controller"
         set up(value: boolean) {
             this.setPressed(ControllerButtonOffset.Up, value);
         }
 
         //% blockCombine
+        //% group="Controller"
         get down() {
             return this.getPressed(ControllerButtonOffset.Down);
         }
 
         //% blockCombine
+        //% group="Controller"
         set down(value: boolean) {
             this.setPressed(ControllerButtonOffset.Down, value);
         }
 
         //% blockCombine
+        //% group="Controller"
         get A() {
             return this.getPressed(ControllerButtonOffset.A);
         }
 
         //% blockCombine
+        //% group="Controller"
         set A(value: boolean) {
             this.setPressed(ControllerButtonOffset.A, value);
         }
 
         //% blockCombine
+        //% group="Controller"
         get B() {
             return this.getPressed(ControllerButtonOffset.B);
         }
 
         //% blockCombine
+        //% group="Controller"
         set B(value: boolean) {
             this.setPressed(ControllerButtonOffset.B, value);
         }
