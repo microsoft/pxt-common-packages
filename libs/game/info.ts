@@ -14,7 +14,8 @@ namespace info {
         Score = 1 << 1,
         Life = 1 << 2,
         Hud = 1 << 3,
-        Multi = 1 << 4
+        Multi = 1 << 4,
+        UserHeartImage = 1 << 5
     }
 
     let _players: PlayerInfo[];
@@ -38,30 +39,25 @@ namespace info {
     }
 
     function initHUD() {
-        if ((_visibilityFlag & Visibility.Hud)
-            || (_visibilityFlag & Visibility.Multi)) return;
+        if (_visibilityFlag & (Visibility.Hud | Visibility.Multi)) return;
 
         _visibilityFlag |= Visibility.Hud;
-        _heartImage = _heartImage || defaultHeartImage();
-        _multiplierImage = _multiplierImage || img`
-        1 . . . 1
-        . 1 . 1 .
-        . . 1 . .
-        . 1 . 1 .
-        1 . . . 1
-        `;
+        // non of these images should have been set
+        _heartImage = defaultHeartImage();
+        _multiplierImage = defaultMultiplyImage();
         _bgColor = screen.isMono ? 0 : 1;
         _borderColor = screen.isMono ? 1 : 3;
         _fontColor = screen.isMono ? 1 : 3;
         game.eventContext().registerFrameHandler(95, () => {
             control.enablePerfCounter("info")
+            // show score, lifes
             if (_visibilityFlag & Visibility.Multi) {
                 const ps = _players.filter(p => !!p);
                 // First draw players
                 ps.forEach(p => p.drawPlayer());
                 // Then run life over events
                 ps.forEach(p => p.raiseLifeZero(false));
-            } else {
+            } else { // single player
                 // show score
                 const p = player1();
                 if (p.hasScore() && (_visibilityFlag & Visibility.Score)) {
@@ -72,20 +68,20 @@ namespace info {
                     p.drawLives();
                 }
                 p.raiseLifeZero(true);
-                // show countdown
-                if (_gameEnd !== undefined && _visibilityFlag & Visibility.Countdown) {
-                    drawTimer(_gameEnd - control.millis())
-                    let t = Math.max(0, _gameEnd - control.millis()) / 1000;
-                    if (t <= 0) {
-                        t = 0;
-                        if (!_countdownExpired) {
-                            _countdownExpired = true;
-                            if (_countdownEndHandler) {
-                                _countdownEndHandler();
-                            }
-                            else {
-                                game.over();
-                            }
+            }
+            // show countdown in both modes
+            if (_gameEnd !== undefined && _visibilityFlag & Visibility.Countdown) {
+                drawTimer(_gameEnd - control.millis())
+                let t = Math.max(0, _gameEnd - control.millis()) / 1000;
+                if (t <= 0) {
+                    t = 0;
+                    if (!_countdownExpired) {
+                        _countdownExpired = true;
+                        if (_countdownEndHandler) {
+                            _countdownEndHandler();
+                        }
+                        else {
+                            game.over();
                         }
                     }
                 }
@@ -93,9 +89,53 @@ namespace info {
         })
     }
 
+    function initMultiHUD() {
+        if (_visibilityFlag & Visibility.Multi) return;
+
+        _visibilityFlag |= Visibility.Multi;
+        if (!_heartImage || !(_visibilityFlag & Visibility.UserHeartImage))
+            _heartImage = defaultHeartImage();
+        _multiplierImage = defaultMultiplyImage();
+    }
+
+    function defaultMultiplyImage() {
+        if (_visibilityFlag & Visibility.Multi)
+            return img`
+                1 . 1
+                . 1 .
+                1 . 1
+            `;
+        else
+            return img`
+        1 . . . 1
+        . 1 . 1 .
+        . . 1 . .
+        . 1 . 1 .
+        1 . . . 1
+        `;
+    }
+
     function defaultHeartImage() {
-        return screen.isMono ?
-            img`
+        if (_visibilityFlag & Visibility.Multi)
+            return screen.isMono ?
+                img`
+                . . 1 . 1 . .
+                . 1 . 1 . 1 .
+                . 1 . . . 1 .
+                . . 1 . 1 . .
+                . . . 1 . . .
+            `
+                :
+                img`
+                . . 1 . 1 . .
+                . 1 2 1 4 1 .
+                . 1 2 4 2 1 .
+                . . 1 2 1 . .
+                . . . 1 . . .
+            `;
+        else
+            return screen.isMono ?
+                img`
         . 1 1 . 1 1 . .
         1 . . 1 . . 1 .
         1 . . . . . 1 .
@@ -104,7 +144,7 @@ namespace info {
         . . 1 . 1 . . .
         . . . 1 . . . .
 `         :
-            img`
+                img`
         . c 2 2 . 2 2 .
         c 2 2 2 2 2 4 2
         c 2 2 2 2 4 2 2
@@ -260,6 +300,7 @@ namespace info {
     //% help=info/on-countdown-end
     //% group="Countdown"
     export function onCountdownEnd(handler: () => void) {
+        initHUD();
         _countdownEndHandler = handler;
     }
 
@@ -269,7 +310,9 @@ namespace info {
      */
     //% group="Life"
     export function setLifeImage(image: Image) {
+        initHUD();
         _heartImage = image;
+        updateFlag(Visibility.UserHeartImage, true);
     }
 
     /**
@@ -465,7 +508,7 @@ namespace info {
         private init() {
             initHUD();
             if (this._player > 1)
-                initMultiplayerHUD();
+                initMultiHUD();
         }
 
         /**
@@ -720,32 +763,6 @@ namespace info {
             return "0" + val;
         }
         return val.toString();
-    }
-
-    function initMultiplayerHUD() {
-        if (_visibilityFlag & Visibility.Multi) return;
-        _visibilityFlag |= Visibility.Multi;
-        _heartImage = _heartImage || screen.isMono ?
-            img`
-                . . 1 . 1 . .
-                . 1 . 1 . 1 .
-                . 1 . . . 1 .
-                . . 1 . 1 . .
-                . . . 1 . . .
-            `
-            :
-            img`
-                . . 1 . 1 . .
-                . 1 2 1 4 1 .
-                . 1 2 4 2 1 .
-                . . 1 2 1 . .
-                . . . 1 . . .
-            `;
-        _multiplierImage = _multiplierImage || img`
-                1 . 1
-                . 1 .
-                1 . 1
-            `;
     }
 
     //% fixedInstance whenUsed block="player 2"
