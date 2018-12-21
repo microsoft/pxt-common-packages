@@ -452,4 +452,8 @@ namespace controller {
     export function dy(step: number = 100) {
         return player1().dy(step);
     }
+
+    
+    //% fixedInstance block="any"
+    export const anyButton = new Button(0, -1);
 }
