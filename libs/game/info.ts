@@ -4,7 +4,7 @@
  *
 */
 //% color=#AA5585 weight=80 icon="\uf2bb" blockGap=8
-//% groups='["Score", "Life", "Countdown"]'
+//% groups='["Score", "Life", "Countdown", "Multi Player"]'
 namespace info {
 
     enum Visibility {
@@ -14,6 +14,9 @@ namespace info {
         Life = 1 << 2,
         All = ~(~0 << 3)
     }
+
+    let _players: PlayerInfo[];
+    let _multiplayerHud: boolean = false;
 
     let _score: number = null;
     let _highScore: number = null;
@@ -482,6 +485,280 @@ namespace info {
         }
         return val.toString();
     }
+
+    //% fixedInstances
+    export class PlayerInfo {
+        _score: number;
+        _life: number;
+        _player: number;
+        bg: number; // background color
+        border: number; // border color
+        fc: number; // font color
+        showScore?: boolean;
+        showLife?: boolean;
+        showPlayer?: boolean;
+        _lifeZeroHandler?: () => void; // onPlayerLifeOver handler
+        x?: number;
+        y?: number;
+        left?: boolean; // if true banner goes from x to the left, else goes rightward
+        up?: boolean; // if true banner goes from y up, else goes downward
+
+        constructor(player: number) {
+            this._player = player;
+            this.border = 1;
+            this.fc = 1;
+            if (this._player === 1) {
+                // Top left, and banner is white on red
+                this.bg = screen.isMono ? 0 : 2;
+                this.x = 0;
+                this.y = 0;
+            } else if (player === 2) {
+                // Top right, and banner is white on blue
+                this.bg = screen.isMono ? 0 : 8;
+                this.x = screen.width;
+                this.y = 0;
+                this.left = true;
+            } else if (player === 3) {
+                this.bg = screen.isMono ? 0 : 4;
+                this.x = 0;
+                this.y = screen.height;
+                this.up = true;
+            } else {
+                // Not displayed by default, bottom left, banner is white on green
+                this.bg = screen.isMono ? 0 : 7;
+                this.x = screen.width;
+                this.y = screen.height;
+                this.left = true;
+                this.up = true;
+            }
+
+            if (!_players)
+                _players = [];
+            _players[this._player - 1] = this;
+
+            if (this._player != 1)
+                initMultiplayerHUD();
+        }
+
+        /**
+         * Gets the player score
+         */
+        //% group="Multi Player"
+        //% blockId=playerinfoscore
+        //% property
+        get score() {
+            if (this.showScore === null) this.showScore = true;
+            if (this.showPlayer === null) this.showPlayer = true;
+
+            if (!this._score) {
+                this._score = 0;
+                saveMultiplayerHighScore();
+            }
+            return this._score;
+        }
+
+        /**
+         * Sets the player score
+         */
+        //% group="Multi Player"
+        //% blockId=playerinfoscoreset
+        //% property
+        set score(value: number) {
+            this._score = this.score + value;
+        }
+
+        /**
+         * Gets the player life
+         */
+        //% group="Multi Player"
+        //% blockId=playerinfolife
+        //% property
+        get life() {
+            if (this.showLife === null) this.showLife = true;
+            if (this.showPlayer === null) this.showPlayer = true;
+
+            if (this._life === null) {
+                this._life = 3;
+            }
+            return this._life;
+        }
+
+        /**
+         * Sets the player life
+         */
+        //% group="Multi Player"
+        //% blockId=playerinfolifeset
+        //% property
+        set life(value: number) {
+            this._life = this.life + value;
+        }
+
+        /**
+         * Runs code when life reaches zero
+         * @param handler 
+         */
+        //% group="Multi Player"
+        //% blockId=playerinfoonlifezero block="on %player life zero"
+        onLifeZero(handler: () => void) {
+            this._lifeZeroHandler = handler;
+        }
+
+        drawPlayer() {
+            const font = image.font5;
+            let score: string;
+            let life: string;
+            let height = 4;
+            let scoreWidth = 0;
+            let lifeWidth = 0;
+            const offsetX = 1;
+            let offsetY = 2;
+            let showScore = this.showScore && this._score !== null
+            let showLife = this.showLife && this._life !== null;
+    
+            if (showScore) {
+                score = "" + this.score;
+                scoreWidth = score.length * font.charWidth + 3;
+                height += font.charHeight;
+                offsetY += font.charHeight + 1;
+            }
+    
+            if (showLife) {
+                life = "" + this.life;
+                lifeWidth = _heartImage.width + _multiplierImage.width + life.length * font.charWidth + 3;
+                height += _heartImage.height;
+            }
+    
+            const width = Math.max(scoreWidth, lifeWidth);
+    
+            // bump size for space between lines
+            if (showScore && showLife) height++;
+    
+            const x = this.x - (this.left ? width : 0);
+            const y = this.y - (this.up ? height : 0);
+    
+            // Bordered Box
+            if (showScore || showLife) {
+                screen.fillRect(x, y, width, height, this.border);
+                screen.fillRect(x + 1, y + 1, width - 2, height - 2, this.bg);
+            }
+    
+            // print score
+            if (showScore) {
+                const bump = this.left ? width - scoreWidth : 0;
+                screen.print(score, x + offsetX + bump + 1, y + 2, this.fc, font);
+            }
+    
+            // print life
+            if (showLife) {
+                const xLoc = x + offsetX + (this.left ? width - lifeWidth : 0);
+    
+                let mult = _multiplierImage.clone();
+                mult.replace(1, this.fc);
+    
+                screen.drawTransparentImage(_heartImage,
+                    xLoc,
+                    y + offsetY);
+                screen.drawTransparentImage(mult,
+                    xLoc + _heartImage.width,
+                    y + offsetY + font.charHeight - _multiplierImage.height - 1);
+                screen.print(life,
+                    xLoc + _heartImage.width + _multiplierImage.width + 1,
+                    y + offsetY,
+                    this.fc,
+                    font);
+            }
+    
+            // print player icon
+            if (this.showPlayer) {
+                const pNum = "" + this._player;
+    
+                let iconWidth = pNum.length * font.charWidth + 1;
+                const iconHeight = Math.max(height, font.charHeight + 2);
+                let iconX = this.left ? (x - iconWidth + 1) : (x + width - 1);
+                let iconY = y;
+    
+                // adjustments when only player icon shown
+                if (!showScore && !showLife) {
+                    iconX += this.left ? -1 : 1;
+                    if (this.up) iconY -= 3;
+                }
+    
+                screen.fillRect(iconX, iconY, iconWidth, iconHeight, this.border);
+                screen.print(pNum, iconX + 1, iconY + (iconHeight >> 1) - (font.charHeight >> 1), this.bg, font);
+            }
+        }
+    }
+
+    function initMultiplayerHUD() {
+        if (_multiplayerHud) return;
+        _multiplayerHud = true;
+
+        // suppress standard score and life display
+        showScore(false);
+        showLife(false);
+
+        _heartImage = _heartImage || screen.isMono ?
+        img`
+                . . 1 . 1 . .
+                . 1 . 1 . 1 .
+                . 1 . . . 1 .
+                . . 1 . 1 . .
+                . . . 1 . . .
+            `
+        :
+        img`
+                . . 1 . 1 . .
+                . 1 2 1 4 1 .
+                . 1 2 4 2 1 .
+                . . 1 2 1 . .
+                . . . 1 . . .
+            `;
+;
+
+        _multiplierImage = _multiplierImage || img`
+                1 . 1
+                . 1 .
+                1 . 1
+            `;
+
+        game.eventContext().registerFrameHandler(95, () => {
+            const ps = _players.filter(p => !!p);
+            // First draw players
+            ps.forEach(p => p.drawPlayer());
+
+            // Then run life over events
+            ps.forEach(p => {
+                if (p._life !== null && p._life <= 0) {
+                    p._life = null;
+                    if (p._lifeZeroHandler) p._lifeZeroHandler();
+                }
+            });
+        })
+    }
+
+    function saveMultiplayerHighScore() {
+        if (_players) {
+            const oS = info.score();
+            const hS = info.highScore();
+            let maxScore = hS;
+            _players.filter(p => p && !!p._score)
+                .forEach(p => maxScore = Math.max(maxScore, p._score));
+            if (maxScore > hS) {
+                setScore(maxScore);
+                saveHighScore();
+                setScore(oS);
+            }
+        }
+    }
+    
+    //% fixedInstance whenUsed block="player 1"
+    export const player1 = new PlayerInfo(1);
+    //% fixedInstance whenUsed block="player 2"
+    export const player2 = new PlayerInfo(2);
+    //% fixedInstance whenUsed block="player 3"
+    export const player3 = new PlayerInfo(3);
+    //% fixedInstance whenUsed block="player 4"
+    export const player4 = new PlayerInfo(4);
 }
 
 declare namespace info {
