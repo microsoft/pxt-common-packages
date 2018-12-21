@@ -31,13 +31,6 @@ namespace info {
 
     let _countdownEndHandler: () => void;
 
-    //% fixedInstance whenUsed block="player 1"
-    function player1(): PlayerInfo {
-        if (!_players || !_players[0])
-            new PlayerInfo(1);
-        return _players[0];
-    }
-
     function initHUD() {
         if (_visibilityFlag & (Visibility.Hud | Visibility.Multi)) return;
 
@@ -59,7 +52,7 @@ namespace info {
                 ps.forEach(p => p.raiseLifeZero(false));
             } else { // single player
                 // show score
-                const p = player1();
+                const p = player1;
                 if (p.hasScore() && (_visibilityFlag & Visibility.Score)) {
                     p.drawScore();
                 }
@@ -172,13 +165,13 @@ namespace info {
     //% help=info/score
     //% group="Score"
     export function score() {
-        return player1().score();
+        return player1.score();
     }
 
     //%
     //% group="Score"
     export function hasScore() {
-        return player1().hasScore();
+        return player1.hasScore();
     }
 
     /**
@@ -200,7 +193,7 @@ namespace info {
     //% help=info/set-score
     //% group="Score"
     export function setScore(value: number) {
-        player1().setScore(value);
+        player1.setScore(value);
     }
 
     /**
@@ -212,7 +205,7 @@ namespace info {
     //% help=info/change-score-by
     //% group="Score"
     export function changeScoreBy(value: number) {
-        player1().changeScoreBy(value);
+        player1.changeScoreBy(value);
     }
 
     /**
@@ -223,12 +216,12 @@ namespace info {
     //% help=info/life
     //% group="Life"
     export function life() {
-        return player1().life();
+        return player1.life();
     }
 
     //% group="Life"
     export function hasLife() {
-        return player1().hasLife();
+        return player1.hasLife();
     }
 
     /**
@@ -240,7 +233,7 @@ namespace info {
     //% help=info/set-life
     //% group="Life"
     export function setLife(value: number) {
-        player1().setLife(value);
+        player1.setLife(value);
     }
 
     /**
@@ -252,7 +245,7 @@ namespace info {
     //% help=info/change-life-by
     //% group="Life"
     export function changeLifeBy(value: number) {
-        player1().changeLifeBy(value);
+        player1.changeLifeBy(value);
     }
 
     /**
@@ -264,7 +257,7 @@ namespace info {
     //% help=info/on-life-zero
     //% group="Life"
     export function onLifeZero(handler: () => void) {
-        player1().onLifeZero(handler);
+        player1.onLifeZero(handler);
     }
 
     /**
@@ -771,6 +764,8 @@ namespace info {
     export const player3 = new PlayerInfo(3);
     //% fixedInstance whenUsed block="player 4"
     export const player4 = new PlayerInfo(4);
+    //% fixedInstance whenUsed block="player 1"
+    export const player1 = new PlayerInfo(1);
 }
 
 declare namespace info {
