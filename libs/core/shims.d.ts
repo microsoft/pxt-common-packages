@@ -1,12 +1,5 @@
 // Auto-generated. Do not edit.
 declare namespace pins {
-
-    /**
-     * Given a configuration key, lookup the pin id
-     */
-    //% shim=pxt::lookupPinCfgId
-    function lookupPinIdByCfg(key: int32): int32;
-
     /**
      * Create a new zero-initialized buffer.
      * @param size number of bytes in the buffer
