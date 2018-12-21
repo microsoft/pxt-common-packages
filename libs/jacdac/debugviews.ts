@@ -254,6 +254,32 @@ namespace jacdac {
         }
     }
 
+    class ControllerDebugView extends DebugView {
+        constructor() {
+            super("ctrl", jacdac.CONTROLLER_DEVICE_CLASS);
+        }
+
+        renderControlPacket(cp: ControlPacket): string {
+            const data = cp.data;
+            if(data.length == 4) {
+                return `${data[0] ? toHex8(data[0]) : "--"} ${data[1] ? toHex8(data[1]) : "--"} ${data[2] ? toHex8(data[2]) : "--"} ${data[3] ? toHex8(data[3]) : "--"}`;
+            }
+            return "";
+        }
+
+        renderPacket(device: JDDevice, packet: JDPacket): string {
+            const state = packet.getNumber(NumberFormat.UInt8LE, 0);
+            const left = state & (1 << 1);
+            const up = state & (1 << 2);
+            const right = state & (1 << 3);
+            const down = state & (1 << 4);
+            const A = state & (1 << 5);
+            const B = state & (1 << 6);
+
+            return `${left ? "L" : "-"}${up ? "U": "-"}${right? "R": "-"}${down ? "D": "-"}${A ? "A": "-"}${B ? "B": "-"}`;
+        }
+    }
+
     export function defaultDebugViews(): DebugView[] {
         return [
             new ConsoleDebugView(),
@@ -268,7 +294,8 @@ namespace jacdac {
             new ThermometerDebugView(),
             new TouchDebugView(),
             new BridgeDebugView(),
-            new PixelDebugView()
+            new PixelDebugView(),
+            new ControllerDebugView()
         ];
     }
 }

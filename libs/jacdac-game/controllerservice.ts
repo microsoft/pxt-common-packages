@@ -1,77 +1,66 @@
 namespace jacdac {
-    interface PlayerInfo {
-        cp: ControlPacket;
-        playerIndex: number;
-    }
-
-    export class ControllerService extends Service {
-        players: PlayerInfo[];
+    //% fixedInstances
+    export class ControllerService extends Broadcast {
 
         constructor() {
-            super("ctrl", jacdac.CONTROLLER_DEVICE_CLASS);
-            this.players = [];
+            super("ctrl", jacdac.CONTROLLER_DEVICE_CLASS, 4);
         }
 
-        handleControlPacket(pkt: Buffer): boolean {
-            if (this.players.length > 3)
-                return true;
+        private connectClient(address: number): number {
+            // search existing player index
+            for (let i = 0; i < this.controlData.length; ++i)
+                if (address == this.controlData[i])
+                    return i + 1;
 
-            const cp = new ControlPacket(pkt);
-            let player = this.players.find(p => p.cp.address == cp.address);
-            if (!player) {
-                // did it move?
-                const previous = this.players.find(p => p.cp.serialNumber == cp.serialNumber);
-                if(previous) {
-                    previous.cp = cp;
-                    this.log(`${toHex8(cp.address)} -> ${previous.playerIndex}`);
-                    return true;
+            // did it move?
+            // clean dead players
+            const drivers = jacdac.drivers();
+            for (let i = 0; i < this.controlData.length; ++i)
+                if (this.controlData[i] && !drivers.some(d => d.address == this.controlData[i])) {
+                    this.log(`del ${toHex8(this.controlData[i])} from ${i + 1}`);
+                    this.controlData[i] = 0;
                 }
-                // add new player
-                const playerNumber = [2,3,4].filter(i => !this.players.some(p => p.playerIndex == i))[0];
-                this.players.push(player = <PlayerInfo>{ cp: cp, playerIndex: playerNumber });
-                this.log(`${toHex8(cp.address)} -> ${playerNumber}`);
+
+            // add new player
+            // try 2,3,4 first
+            for (let i = 1; i < this.controlData.length; ++i) {
+                if (this.controlData[i] == 0) {
+                    this.log(`${toHex8(address)} -> ${i + 1}`);
+                    this.controlData[i] = address;
+                    return i + 1;
+                }
             }
-            
-            return true;
+            // try player 1
+            if (this.controlData[0] == 0) {
+                this.log(`${toHex8(address)} -> ${1}`);
+                this.controlData[0] = address;
+                return 1;
+            }
+
+            // no slots available
+            return -1;
         }
 
-        handlePacket(pkt: Buffer): boolean {
+        public handlePacket(pkt: Buffer): boolean {
             const packet = new JDPacket(pkt);
-            const playerInfo = this.players.find(p => p.cp.address == packet.address);
-            if (playerInfo) {
-                const player = controller.players().find(p => p.playerIndex == playerInfo.playerIndex);
-                if (player) {
-                    const state= packet.data[0];
-                    const btns = player.buttons;
-                    for(let i = 0; btns.length; ++i)
-                        btns[i].setPressed(!!(state & (1 << i)));
-                }
+            const playerIndex = this.connectClient(packet.address);
+            if (playerIndex < 0) {
+                this.log(`no player for ${toHex8(packet.address)}`);
+                return false;
             }
+            const player = controller.players().find(p => p.playerIndex == playerIndex);
+            if (!player) {
+                this.log(`no player ${player.playerIndex}`);
+                return true;
+            }
+            const state = packet.data[0];
+            const btns = player.buttons;
+            for (let i = 0; i < btns.length; ++i)
+                btns[i].setPressed(!!(state & (1 << (i + 1))));
             return true;
         }
     }
 
-    export class ControllerClient extends Client {
-        constructor() {
-            super("ctrl", jacdac.CONTROLLER_DEVICE_CLASS);
-        }
-
-        handleControlPacket(pkt: Buffer): boolean {
-            return true;
-        }
-
-        handlePacket(pkt: Buffer): boolean {
-            return true;
-        }
-
-        update(buttonsPressed: boolean[]) {
-            if (!this.isConnected()) return;
-
-            const buf = control.createBuffer(1);
-            let b = 0;
-            for (let i = 0; i < buttonsPressed.length; ++i)
-                b |= (buttonsPressed ? 1 : 0) << i;
-            buf[0] = i;
-        }
-    }
+    //% fixedInstance whenUsed block="controller service"
+    export const controllerService = new ControllerService();
 }

@@ -1,4 +1,5 @@
 namespace jacdac {
+    //% fixedInstances
     export class ServoClient extends ActuatorClient {
         constructor(name: string) {
             super(name, jacdac.SERVO_DEVICE_CLASS, 5);
@@ -75,4 +76,7 @@ namespace jacdac {
             }
         }
     }
+
+    //% fixedInstance whenUsed block="servo"
+    export const servoClient = new ServoClient("servo");
 }
