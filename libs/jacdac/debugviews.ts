@@ -259,6 +259,14 @@ namespace jacdac {
             super("ctrl", jacdac.CONTROLLER_DEVICE_CLASS);
         }
 
+        renderControlPacket(cp: ControlPacket): string {
+            const data = cp.data;
+            if(data.length == 4) {
+                return `${data[0] ? toHex8(data[0]) : "--"} ${data[1] ? toHex8(data[1]) : "--"} ${data[2] ? toHex8(data[2]) : "--"} ${data[3] ? toHex8(data[3]) : "--"}`;
+            }
+            return "";
+        }
+
         renderPacket(device: JDDevice, packet: JDPacket): string {
             const state = packet.getNumber(NumberFormat.UInt8LE, 0);
             const left = state & (1 << 1);
