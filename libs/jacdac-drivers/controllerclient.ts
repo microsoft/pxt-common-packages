@@ -25,6 +25,7 @@ namespace jacdac {
             const b = this.state[0];
             const msk = 1 << offset;
             this.state[0] = down ? (b | msk) : (b ^ msk);
+            this.start();
         }
 
         //% blockCombine blockCombineShadow=toggleOnOff block="left pressed" blockSetVariable="button"
