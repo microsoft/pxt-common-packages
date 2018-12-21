@@ -12,19 +12,33 @@ namespace jacdac {
     //% fixedInstances
     export class ControllerClient extends Broadcast {
         state: Buffer;
+        streamingState: jacdac.SensorState;
+
         constructor() {
-            super("ctrl", jacdac.CONTROLLER_DEVICE_CLASS, 0);
-            this.state = control.createBuffer(1);
+            super("ctrl", jacdac.CONTROLLER_DEVICE_CLASS, 2);
+            this.controlData[0] = JDControllerCmd.ControlClient;
+            this.serverAddress = 0;
+            this.state = control.createBuffer(2);
+            this.state[0] = JDControllerCmd.ClientButtons;
+            this.streamingState = jacdac.SensorState.Stopped;
+        }
+
+        get serverAddress() {
+            return this.controlData[1];
+        }
+
+        set serverAddress(value: number) {
+            this.controlData[1] = value;
         }
 
         private getPressed(offset: ControllerButtonOffset): boolean {
-            return !!(this.state[0] & (1 << offset));
+            return !!(this.state[1] & (1 << offset));
         }
 
         private setPressed(offset: ControllerButtonOffset, down: boolean) {
-            const b = this.state[0];
+            const b = this.state[1];
             const msk = 1 << offset;
-            this.state[0] = down ? (b | msk) : (b ^ msk);
+            this.state[1] = down ? (b | msk) : (b ^ msk);
             this.start();
         }
 
@@ -100,15 +114,79 @@ namespace jacdac {
             this.setPressed(ControllerButtonOffset.B, value);
         }
 
-        start() {
-            if (!this._proxy) {
-                super.start();
-                control.runInBackground(() => {
-                    while (this._proxy) {
-                        this.sendPacket(this.state);
-                        pause(50);
+        isActive(): boolean {
+            return !!this.serverAddress;
+        }
+
+        handleControlPacket(pkt: Buffer): boolean {
+            const cp = new ControlPacket(pkt);
+            const data = cp.data;
+            return this.processPacket(cp.address, data);
+        }
+
+        handlePacket(pkt: Buffer): boolean {
+            const packet = new JDPacket(pkt);
+            const data = packet.data;
+            return this.processPacket(packet.address, data);
+        }
+
+        private processPacket(packetAddress: number, data: Buffer): boolean {
+            const cmd: JDControllerCmd = data[0];
+            // received a packet from the serveru
+            if (cmd == JDControllerCmd.ControlServer) {
+                console.log(`server ${toHex8(packetAddress)}`)
+                const address = this.device.address;
+                for (let i = 1; i < 5; ++i) {
+                    if (data[i] == address) {
+                        // we are connected!
+                        if (this.serverAddress != packetAddress) {
+                            this.serverAddress = packetAddress;
+                            this.log(`server ${toHex8(this.serverAddress)}`);
+                            this.startStreaming();
+                            return true;
+                        }
                     }
-                })
+                }
+                // did the server drop us
+                if (address == this.serverAddress) {
+                    this.serverAddress = 0; // streaming will stop automatically
+                    this.log(`dropped`);
+                    //this.stopStreaming();
+                }
+
+                // nope, doesn't seem to be our server
+                // do nothing
+            }
+            return true;
+        }
+
+        start() {
+            super.start();
+            this.startStreaming();
+        }
+
+        private startStreaming() {
+            if (this.streamingState != SensorState.Stopped)
+                return;
+
+            this.log(`start`);
+            this.streamingState = SensorState.Streaming;
+            control.runInBackground(() => {
+                while (this.streamingState == SensorState.Streaming) {
+                    this.sendPacket(this.state);
+                    // waiting for a bit
+                    pause(30);
+                }
+                this.streamingState = SensorState.Stopped;
+                this.log(`stopped`);
+            })
+        }
+
+        private stopStreaming() {
+            if (this.streamingState == SensorState.Streaming) {
+                this.log(`stopping`)
+                this.streamingState = SensorState.Stopping;
+                pauseUntil(() => this.streamingState == SensorState.Stopped);
             }
         }
     }
