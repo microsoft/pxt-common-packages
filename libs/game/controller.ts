@@ -233,7 +233,7 @@ namespace controller {
                     DAL.CFG_PIN_BTN_B,
                     DAL.CFG_PIN_BTN_MENU
                 ].forEach((cfg, i) => {
-                    this.buttons.push(new Button(leftId + i));
+                    this.buttons.push(new Button(leftId + i, -1));
                 });
             }
             addController(this);
