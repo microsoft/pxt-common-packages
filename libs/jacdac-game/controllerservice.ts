@@ -21,24 +21,26 @@ namespace jacdac {
         }
 
         handleControlPacket(pkt: Buffer): boolean {
-            if (this.players.length > 3)
+            if (this.players.length > 3) {
+                this.log(`too many players`)
                 return true;
+            }
 
             const cp = new ControlPacket(pkt);
+            console.log(`cp ${toHex8(cp.address)}`)
             let player = this.players.find(p => p.cp.address == cp.address);
             if (!player) {
-                this.log(`new player ${toHex8(cp.address)}`)
                 // did it move?
                 const previous = this.players.find(p => p.cp.serialNumber == cp.serialNumber);
                 if (previous) {
                     previous.cp = cp;
-                    this.log(previous.toString());
+                    this.log(`updated: ${previous.toString()}`);
                     return true;
                 }
                 // add new player
                 const playerNumber = [2, 3, 4].filter(i => !this.players.some(p => p.playerIndex == i))[0];
                 this.players.push(player = new ControllerClientInfo(cp, playerNumber));
-                this.log(player.toString());
+                this.log(`joined: ${player.toString()}`);
             }
             return true;
         }
@@ -46,15 +48,20 @@ namespace jacdac {
         handlePacket(pkt: Buffer): boolean {
             const packet = new JDPacket(pkt);
             const playerInfo = this.players.find(p => p.cp.address == packet.address);
-            if (playerInfo) {
-                const player = controller.players().find(p => p.playerIndex == playerInfo.playerIndex);
-                if (player) {
-                    const state = packet.data[0];
-                    const btns = player.buttons;
-                    for (let i = 0; btns.length; ++i)
-                        btns[i].setPressed(!!(state & (1 << i)));
-                }
+            if (!playerInfo) {
+              //  this.log(`no player at ${toHex8(packet.address)}`)
+                return true;
             }
+            const player = controller.players().find(p => p.playerIndex == playerInfo.playerIndex);
+            if (!player) {
+                //this.log(`no player ${player.playerIndex}`);
+                return true;
+            }
+
+            const state = packet.data[0];
+            const btns = player.buttons;
+            for (let i = 0; btns.length; ++i)
+                btns[i].setPressed(!!(state & (1 << i)));
             return true;
         }
     }

@@ -254,6 +254,12 @@ namespace jacdac {
         }
     }
 
+    class ControllerDebugView extends DebugView {
+        constructor() {
+            super("ctrl", jacdac.CONTROLLER_DEVICE_CLASS);
+        }
+    }
+
     export function defaultDebugViews(): DebugView[] {
         return [
             new ConsoleDebugView(),
@@ -268,7 +274,8 @@ namespace jacdac {
             new ThermometerDebugView(),
             new TouchDebugView(),
             new BridgeDebugView(),
-            new PixelDebugView()
+            new PixelDebugView(),
+            new ControllerDebugView()
         ];
     }
 }
