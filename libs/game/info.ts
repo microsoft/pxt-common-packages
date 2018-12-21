@@ -38,7 +38,8 @@ namespace info {
     }
 
     function initHUD() {
-        if (_visibilityFlag & Visibility.Hud || _visibilityFlag && Visibility.Multi) return;
+        if ((_visibilityFlag & Visibility.Hud)
+            || (_visibilityFlag && Visibility.Multi)) return;
         _visibilityFlag |= Visibility.Hud;
 
         _heartImage = _heartImage || defaultHeartImage();
@@ -49,7 +50,6 @@ namespace info {
         . 1 . 1 .
         1 . . . 1
         `;
-
         _bgColor = screen.isMono ? 0 : 1;
         _borderColor = screen.isMono ? 1 : 3;
         _fontColor = screen.isMono ? 1 : 3;
@@ -64,14 +64,14 @@ namespace info {
             } else {
                 // show score
                 const p = player1();
-                if (p._score !== null && _visibilityFlag & Visibility.Score) {
+                if (p._score !== null && (_visibilityFlag & Visibility.Score)) {
                     p.drawScore();
                 }
                 // show life
-                if (p._life !== null && _visibilityFlag & Visibility.Life) {
+                if (p._life !== null && (_visibilityFlag & Visibility.Life)) {
                     p.drawLives();
-                    p.raiseLifeZero(true);
                 }
+                p.raiseLifeZero(true);
                 // show countdown
                 if (_gameEnd !== undefined && _visibilityFlag & Visibility.Countdown) {
                     drawTimer(_gameEnd - control.millis())
@@ -115,14 +115,14 @@ namespace info {
         `;
 
     }
-    function saveHighScore() {
+
+    export function saveHighScore() {
         if (_players) {
             let hs = 0;
             _players.filter(p => p && !!p._score).forEach(p => hs = Math.max(hs, p._score));
             updateHighScore(hs);
         }
     }
-
 
     /**
      * Get the current score if any
@@ -303,7 +303,7 @@ namespace info {
 
     function updateFlag(flag: Visibility, on: boolean) {
         if (on) _visibilityFlag |= flag;
-        else _visibilityFlag &= Visibility.All ^ flag;
+        else _visibilityFlag = ~(~_visibilityFlag | flag);
         initHUD();
     }
 
@@ -423,6 +423,8 @@ namespace info {
             this._player = player;
             this.border = 1;
             this.fc = 1;
+            this._life = null;
+            this._score = null;
             if (this._player === 1) {
                 // Top left, and banner is white on red
                 this.bg = screen.isMono ? 0 : 2;
@@ -448,11 +450,13 @@ namespace info {
                 this.up = true;
             }
 
+            // init hud
             if (!_players)
                 _players = [];
             _players[this._player - 1] = this;
-
-            if (this._player != 1)
+            if (this._player == 1)
+                initHUD();
+            else
                 initMultiplayerHUD();
         }
 
@@ -479,7 +483,7 @@ namespace info {
         //% blockCombine block="score"
         set score(value: number) {
             updateFlag(Visibility.Score, true);
-            this._score = this.score + (value | 0);
+            this._score = (value | 0);
         }
 
         /**
@@ -504,7 +508,7 @@ namespace info {
         //% blockCombine block="life"
         set life(value: number) {
             updateFlag(Visibility.Life, true);
-            this._life = this.life + (value | 0);
+            this._life = (value | 0);
         }
 
         /**
@@ -644,8 +648,7 @@ namespace info {
         }
 
         drawLives() {
-            if (this._life <= 0) return;
-
+            if (this._life < 0) return;
             const font = image.font8;
             if (this._life <= 4) {
                 screen.fillRect(0, 0, this._life * (_heartImage.width + 1) + 3, _heartImage.height + 4, _borderColor);
@@ -680,13 +683,9 @@ namespace info {
     }
 
     function initMultiplayerHUD() {
+        initHUD();
         if (_visibilityFlag & Visibility.Multi) return;
         _visibilityFlag |= Visibility.Multi;
-
-        // suppress standard score and life display
-        showScore(false);
-        showLife(false);
-
         _heartImage = _heartImage || screen.isMono ?
             img`
                 . . 1 . 1 . .
@@ -703,8 +702,6 @@ namespace info {
                 . . 1 2 1 . .
                 . . . 1 . . .
             `;
-        ;
-
         _multiplierImage = _multiplierImage || img`
                 1 . 1
                 . 1 .
