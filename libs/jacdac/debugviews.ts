@@ -272,7 +272,7 @@ namespace jacdac {
         private renderData(data: Buffer): string {
             const cmd: JDControllerCmd = data[0];
             switch (cmd) {
-                case JDControllerCmd.Buttons:
+                case JDControllerCmd.ClientButtons:
                     const state = data[1];
                     const left = state & (1 << 1);
                     const up = state & (1 << 2);
@@ -281,9 +281,9 @@ namespace jacdac {
                     const A = state & (1 << 5);
                     const B = state & (1 << 6);
                     return `${left ? "L" : "-"}${up ? "U" : "-"}${right ? "R" : "-"}${down ? "D" : "-"}${A ? "A" : "-"}${B ? "B" : "-"}`;
-                case JDControllerCmd.Server:
+                case JDControllerCmd.ControlServer:
                     return `${data[1] ? toHex8(data[1]) : "--"} ${data[2] ? toHex8(data[2]) : "--"} ${data[3] ? toHex8(data[3]) : "--"} ${data[4] ? toHex8(data[4]) : "--"}`;
-                case JDControllerCmd.Client:
+                case JDControllerCmd.ControlClient:
                     return `client -> ${data[1] ? toHex8(data[1]) : "--"}`;
                 default:
                     return toHex8(cmd);

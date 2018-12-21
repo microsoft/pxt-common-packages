@@ -4,7 +4,7 @@ namespace jacdac {
 
         constructor() {
             super("ctrl", jacdac.CONTROLLER_DEVICE_CLASS, 5);
-            this.controlData[0] = JDControllerCmd.Server;
+            this.controlData[0] = JDControllerCmd.ControlServer;
         }
 
         private connectClient(address: number, serverAddress: number): number {
@@ -35,7 +35,7 @@ namespace jacdac {
 
             // add new player
             // try 2,3,4 first
-            for (let i = 1; i < this.controlData.length; ++i) {
+            for (let i = 2; i < this.controlData.length; ++i) {
                 // if slot is free and there is such a player
                 if (this.controlData[i] == 0 && ids[i]) {
                     this.log(`${toHex8(address)} -> ${i}`);
@@ -69,11 +69,12 @@ namespace jacdac {
 
         private processPacket(address: number, data: Buffer): boolean {
             const cmd: JDControllerCmd = data[0];
+            console.log(`cmd ${cmd}`)
             switch(cmd) {
-                case JDControllerCmd.Client:
+                case JDControllerCmd.ControlClient:
                     this.connectClient(address, data[1]);
                     return true;
-                case JDControllerCmd.Buttons:
+                case JDControllerCmd.ClientButtons:
                     return this.processButtonsPacket(address, data);
                 default:
                     return true;

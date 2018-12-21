@@ -16,10 +16,10 @@ namespace jacdac {
 
         constructor() {
             super("ctrl", jacdac.CONTROLLER_DEVICE_CLASS, 2);
-            this.controlData[0] = JDControllerCmd.Client;
+            this.controlData[0] = JDControllerCmd.ControlClient;
             this.serverAddress = 0;
             this.state = control.createBuffer(2);
-            this.state[0] = JDControllerCmd.Buttons;
+            this.state[0] = JDControllerCmd.ClientButtons;
             this.streamingState = jacdac.SensorState.Stopped;
         }
 
@@ -118,52 +118,52 @@ namespace jacdac {
             return !!this.serverAddress;
         }
 
-        handleControlPacket(pkt: Buffer) {
+        handleControlPacket(pkt: Buffer): boolean {
             const cp = new ControlPacket(pkt);
             const data = cp.data;
             return this.processPacket(cp.address, data);
         }
 
-        handlePacket(pkt: Buffer) {
+        handlePacket(pkt: Buffer): boolean {
             const packet = new JDPacket(pkt);
             const data = packet.data;
             return this.processPacket(packet.address, data);
         }
 
-        private processPacket(address: number, data: Buffer): boolean {
+        private processPacket(packetAddress: number, data: Buffer): boolean {
             const cmd: JDControllerCmd = data[0];
+            console.log(`cmd ${cmd}`)
             // received a packet from the server
-            if (cmd == JDControllerCmd.Server) {
+            if (cmd == JDControllerCmd.ControlServer) {
+                console.log(`server ${toHex8(packetAddress)}`)
                 const address = this.device.address;
                 for (let i = 1; i < 5; ++i) {
                     if (data[i] == address) {
                         // we are connected!
-                        if (this.serverAddress != address) {
-                            this.serverAddress = address;
+                        if (this.serverAddress != packetAddress) {
+                            this.serverAddress = packetAddress;
                             this.log(`server ${toHex8(this.serverAddress)}`);
                             this.startStreaming();
                             return true;
                         }
                     }
                 }
-
                 // did the server drop us
                 if (address == this.serverAddress) {
                     this.serverAddress = 0; // streaming will stop automatically
-                    this.log(`dropped`)
+                    this.log(`dropped`);
+                    this.stopStreaming();
                 }
 
                 // nope, doesn't seem to be our server
                 // do nothing
             }
-
             return true;
         }
 
         start() {
             if (!this._proxy)
                 super.start();
-            this.startStreaming();
         }
 
         private startStreaming() {
@@ -173,9 +173,8 @@ namespace jacdac {
             this.log(`start`);
             this.streamingState = SensorState.Streaming;
             control.runInBackground(() => {
-                while (this.streamingState == SensorState.Streaming) {
-                    if (this.isActive())
-                        this.sendPacket(this.state);
+                while (this.streamingState == SensorState.Streaming && this.isActive()) {
+                    this.sendPacket(this.state);
                     // waiting for a bit
                     pause(100);
                 }

@@ -162,9 +162,7 @@ enum JDSwitchDirection {
 }
 
 enum JDControllerCmd {
-    Buttons = 1,
-    Info,
-    Event,
-    Server,
-    Client
+    ClientButtons = 1,
+    ControlServer,
+    ControlClient
 }
