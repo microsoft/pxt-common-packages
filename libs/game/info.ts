@@ -4,7 +4,7 @@
  *
 */
 //% color=#AA5585 weight=80 icon="\uf2bb" blockGap=8
-//% groups='["Score", "Life", "Countdown", "Multi Player"]'
+//% groups='["Score", "Life", "Countdown", "Multiplayer"]'
 //% blockGap=8
 namespace info {
 
@@ -514,7 +514,7 @@ namespace info {
         /**
          * Gets the player score
          */
-        //% group="Multi Player"
+        //% group="Multiplayer"
         //% blockId=piscore block="%player score"
         score(): number {
             if (this.showScore === null) this.showScore = true;
@@ -530,7 +530,7 @@ namespace info {
         /**
          * Sets the player score
          */
-        //% group="Multi Player"
+        //% group="Multiplayer"
         //% blockId=pisetscore block="set %player score to %value"
         //% value.defl=0
         setScore(value: number) {
@@ -544,7 +544,7 @@ namespace info {
          * Changes the score of a player
          * @param value 
          */
-        //% group="Multi Player"
+        //% group="Multiplayer"
         //% blockId=pichangescore block="change %player score by %value"
         //% value.defl=1
         changeScoreBy(value: number): void {
@@ -558,7 +558,7 @@ namespace info {
         /**
          * Gets the player life
          */
-        //% group="Multi Player"
+        //% group="Multiplayer"
         //% blockid=piflife block="%player life"
         life(): number {
             if (this.showLife === null) this.showLife = true;
@@ -573,7 +573,7 @@ namespace info {
         /**
          * Sets the player life
          */
-        //% group="Multi Player"
+        //% group="Multiplayer"
         //% blockId=pisetlife block="set %player life to %value"
         //% value.defl=3
         setLife(value: number): void {
@@ -587,7 +587,7 @@ namespace info {
          * Changes the life of a player
          * @param value 
          */
-        //% group="Multi Player"
+        //% group="Multiplayer"
         //% blockId=pichangelife block="change %player life by %value"
         //% value.defl=-1
         changeLifeBy(value: number): void {
@@ -599,7 +599,7 @@ namespace info {
          * and false otherwise.
          * @param player player to check life of
          */
-        //% group="Multi Player"
+        //% group="Multiplayer"
         //% blockId=pihaslife block="%player has life"
         hasLife(): boolean {
             return this._life !== null;
@@ -609,7 +609,7 @@ namespace info {
          * Runs code when life reaches zero
          * @param handler 
          */
-        //% group="Multi Player"
+        //% group="Multiplayer"
         //% blockId=playerinfoonlifezero block="on %player life zero"
         onLifeZero(handler: () => void) {
             this._lifeZeroHandler = handler;

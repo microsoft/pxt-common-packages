@@ -27,7 +27,7 @@ enum ControllerButton {
  * Access to game controls
  */
 //% weight=98 color="#e15f41" icon="\uf11b"
-//% groups='["Single Player", "Multi Player"]'
+//% groups='["Single Player", "Multiplayer"]'
 //% blockGap=8
 namespace controller {
     let _userEventsEnabled = true;
@@ -277,7 +277,7 @@ namespace controller {
         //% weight=100
         //% vx.defl=100 vy.defl=100
         //% help=controller/move-sprite
-        //% group="Multi Player"
+        //% group="Multiplayer"
         moveSprite(sprite: Sprite, vx: number = 100, vy: number = 100) {
             if (!sprite) return;
             if (!this._controlledSprites) this._controlledSprites = [];
@@ -297,7 +297,7 @@ namespace controller {
          */
         //% weight=99 blockGap=8 help=controller/button/on-event
         //% blockId=ctrlonevent block="on %controller %button **button** %event"
-        //% group="Multi Player"
+        //% group="Multiplayer"
         onEvent(btn: ControllerButton, event: ControllerButtonEvent, handler: () => void) {
             this.button(btn).onEvent(event, handler);
         }
@@ -307,7 +307,7 @@ namespace controller {
         */
         //% weight=96 blockGap=8 help=controller/button/is-pressed
         //% blockId=ctrlispressed block="is %controller %button **button** pressed"
-        //% group="Multi Player"
+        //% group="Multiplayer"
         isPressed(btn: ControllerButton): boolean {
             return this.button(btn).isPressed();
         }
@@ -319,7 +319,7 @@ namespace controller {
         //% weight=50 blockGap=8 help=controller/dx
         //% blockId=ctrldx block="%controller dx (left-right buttons)||scaled by %step"
         //% step.defl=100
-        //% group="Multi Player"
+        //% group="Multiplayer"
         dx(step: number = 100) {
             const ctx = control.eventContext();
             if (!ctx) return 0;
@@ -339,7 +339,7 @@ namespace controller {
         //% weight=49 help=keys/dy
         //% blockId=ctrldy block="%controller dy (up-down buttons)||scaled by %step"
         //% step.defl=100
-        //% group="Multi Player"
+        //% group="Multiplayer"
         dy(step: number = 100) {
             const ctx = control.eventContext();
             if (!ctx) return 0;
