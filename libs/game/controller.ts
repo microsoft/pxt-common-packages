@@ -219,7 +219,7 @@ namespace controller {
         private _controlledSprites: ControlledSprite[];
 
         // array of left,up,right,down,a,b,menu buttons
-        constructor(leftId: number) {
+        constructor(leftId: number, idToBtn?: (id: number) => number) {
             this.buttons = [];
             [
                 DAL.CFG_PIN_BTN_LEFT,
@@ -230,8 +230,8 @@ namespace controller {
                 DAL.CFG_PIN_BTN_B,
                 DAL.CFG_PIN_BTN_MENU
             ].forEach((cfg, i) => {
-                const btn = pxt.getButtonByPinCfg(cfg);
-                this.buttons.push(new Button(leftId + i, btn ? btn.id : -1));
+                const btnid = idToBtn ? idToBtn(cfg) : -1;
+                this.buttons.push(new Button(leftId + i, btnid));
             });
             addController(this);
         }
@@ -451,15 +451,6 @@ namespace controller {
 }
 
 namespace controller {
-    //% fixedInstance whenUsed block="player 2"
-    export const controller2 = new Controller(8);
-    //% fixedInstance whenUsed block="player 3"
-    export const controller3 = new Controller(16);
-    //% fixedInstance whenUsed block="player 4"
-    export const controller4 = new Controller(24);
-    //% fixedInstance whenUsed block="player 1"
-    export const controller1 = new Controller(1);
-
     //% fixedInstance whenUsed block="A"
     export const A = controller.controller1.A;
     //% fixedInstance whenUsed block="B"

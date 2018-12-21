@@ -3,6 +3,7 @@
     "description": "The game and sprite library - beta",
     "files": [
         "constants.ts",
+        "controlleroverrides.ts",
         "controller.ts",
         "hitbox.ts",
         "sprites.ts",
@@ -34,7 +35,6 @@
     ],
     "public": true,
     "dependencies": {
-        "screen": "file:../screen",
-        "buttons": "file:../buttons"
+        "screen": "file:../screen"
     }
 }
