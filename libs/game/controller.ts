@@ -260,7 +260,7 @@ namespace controller {
          */
         //%
         get menu() {
-            return this.button(6);
+            return this.button(7);
         }
 
         /**

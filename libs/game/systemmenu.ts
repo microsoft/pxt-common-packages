@@ -20,7 +20,7 @@ namespace scene.systemMenu {
     export function register() {
         if (active) return; // don't show system menu, while in system menu
 
-        control.onEvent(1 /* 1st controller */ + 6 /* 6th button */, INTERNAL_KEY_UP, showSystemMenu);
+        controller.menu.onEvent(ControllerButtonEvent.Pressed, showSystemMenu);
     }
 
     export function showSystemMenu() {
