@@ -27,75 +27,75 @@ namespace jacdac {
             this.state[0] = down ? (b | msk) : (b ^ msk);
         }
 
-        //% blockCombine blockSetVariable=left
+        //% blockCombine blockCombineShadow=toggleOnOff block="left pressed" blockSetVariable="button"
         //% group="Controller"
-        get left() {
+        get leftPressed() {
             return this.getPressed(ControllerButtonOffset.Left);
-        }
-
-        //% blockCombine blockCombineShadow=toggleUpDown blockSetVariable=left
-        //% group="Controller"
-        set left(value: boolean) {
-            this.setPressed(ControllerButtonOffset.Left, value);
         }
 
         //% blockCombine
         //% group="Controller"
-        get right() {
+        set leftPressed(value: boolean) {
+            this.setPressed(ControllerButtonOffset.Left, value);
+        }
+
+        //% blockCombine block="right pressed"
+        //% group="Controller"
+        get rightPressed() {
             return this.getPressed(ControllerButtonOffset.Right);
         }
 
         //% blockCombine
         //% group="Controller"
-        set right(value: boolean) {
+        set rightPressed(value: boolean) {
             this.setPressed(ControllerButtonOffset.Right, value);
         }
 
-        //% blockCombine
+        //% blockCombine block="up pressed"
         //% group="Controller"
-        get up() {
+        get upPressed() {
             return this.getPressed(ControllerButtonOffset.Up);
         }
 
         //% blockCombine
         //% group="Controller"
-        set up(value: boolean) {
+        set upPressed(value: boolean) {
             this.setPressed(ControllerButtonOffset.Up, value);
         }
 
-        //% blockCombine
+        //% blockCombine block="down pressed"
         //% group="Controller"
-        get down() {
+        get downPressed() {
             return this.getPressed(ControllerButtonOffset.Down);
         }
 
         //% blockCombine
         //% group="Controller"
-        set down(value: boolean) {
+        set downPressed(value: boolean) {
             this.setPressed(ControllerButtonOffset.Down, value);
         }
 
-        //% blockCombine
+        //% blockCombine block="A pressed"
         //% group="Controller"
-        get A() {
+        get APressed() {
             return this.getPressed(ControllerButtonOffset.A);
         }
 
         //% blockCombine
         //% group="Controller"
-        set A(value: boolean) {
+        set APressed(value: boolean) {
             this.setPressed(ControllerButtonOffset.A, value);
         }
 
-        //% blockCombine
+        //% blockCombine block="B pressed"
         //% group="Controller"
-        get B() {
+        get BPressed() {
             return this.getPressed(ControllerButtonOffset.B);
         }
 
         //% blockCombine
         //% group="Controller"
-        set B(value: boolean) {
+        set BPressed(value: boolean) {
             this.setPressed(ControllerButtonOffset.B, value);
         }
 
