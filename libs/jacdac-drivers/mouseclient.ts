@@ -17,7 +17,7 @@ namespace jacdac {
         /** 
          * Sets the mouse button state to down
          */
-        //% blockId=jdmouseSetButton block="%mouse button %index=joystickStandardButton|%down=toggleDownUp"
+        //% blockId=jdmouseSetButton block="%mouse button %index|%down=toggleDownUp"
         //% group="Mouse"
         setButton(button: JDMouseButton, down: boolean): void {
             const buf = control.createBuffer(3);
