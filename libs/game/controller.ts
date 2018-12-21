@@ -282,8 +282,10 @@ namespace controller {
             if (!sprite) return;
             if (!this._controlledSprites) this._controlledSprites = [];
             let cp = this._controlledSprites.find(cp => cp.s.id == sprite.id);
-            if (!cp)
-                this._controlledSprites.push(cp = { s: sprite, vx: vx, vy: vy });
+            if (!cp) {
+                cp = { s: sprite, vx: vx, vy: vy }
+                this._controlledSprites.push(cp);
+            }
             cp.vx = vx;
             cp.vy = vy;
         }
@@ -388,7 +390,7 @@ namespace controller {
         serialize(offset: number): Buffer {
             const buf = control.createBuffer(offset + 1);
             let b = 0;
-            for(let i = 0; this.buttons.length; ++i)
+            for (let i = 0; this.buttons.length; ++i)
                 b |= (this.buttons[i].isPressed() ? 1 : 0) << i;
             buf[offset] = b
             return buf;
@@ -422,7 +424,7 @@ namespace controller {
     //% help=controller/move-sprite
     //% group="Single Player"
     export function moveSprite(sprite: Sprite, vx: number = 100, vy: number = 100) {
-        player1().moveSprite(sprite, vy, vy);
+        player1().moveSprite(sprite, vx, vy);
     }
 
 
@@ -462,7 +464,7 @@ namespace controller {
         return player1().dy(step);
     }
 
-    
+
     //% fixedInstance block="any"
     export const anyButton = new Button(0, -1);
 }
