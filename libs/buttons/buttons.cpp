@@ -115,9 +115,6 @@ Button *getButtonByPin(int pin, int flags) {
     return btn;
 }
 
-/**
-* Gets a button
-*/
 //%
 Button *getButtonByPinCfg(int key, int flags) {
     int pin = getConfig(key);
