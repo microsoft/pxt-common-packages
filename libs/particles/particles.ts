@@ -69,6 +69,7 @@ namespace particles {
          */
         constructor(anchor: ParticleAnchor, particlesPerSecond: number, factory?: ParticleFactory) {
             init();
+            this.flags = 0;
             const scene = game.currentScene();
             const sources = particleSources();
             this.setRate(particlesPerSecond);
@@ -191,7 +192,7 @@ namespace particles {
         }
 
         get enabled() {
-            return (this.flags & Flag.enabled) != 0;
+            return !!(this.flags & Flag.enabled);
         }
 
         /**
@@ -208,6 +209,7 @@ namespace particles {
          * Destroy the source
          */
         destroy() {
+            // The `_prune` step will finishing destroying this Source once all emitted particles finish rendering
             this.enabled = false;
             this.flags |= Flag.destroyed;
         }
