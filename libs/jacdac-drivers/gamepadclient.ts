@@ -52,7 +52,7 @@ namespace jacdac {
      */
     //% blockId=jdjoystickStandardButton block="%button"
     //% shim=TD_ID blockHidden=1
-    export function gamepadButton(button: GamepadButton): number {
+    export function gamepadButton(button: JDGamepadButton): number {
         return button;
     }
 
