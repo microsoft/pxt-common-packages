@@ -224,17 +224,9 @@ namespace controller {
                 this.buttons = buttons;
             else {
                 this.buttons = [];
-                [
-                    DAL.CFG_PIN_BTN_LEFT,
-                    DAL.CFG_PIN_BTN_UP,
-                    DAL.CFG_PIN_BTN_RIGHT,
-                    DAL.CFG_PIN_BTN_DOWN,
-                    DAL.CFG_PIN_BTN_A,
-                    DAL.CFG_PIN_BTN_B,
-                    DAL.CFG_PIN_BTN_MENU
-                ].forEach((cfg, i) => {
+                for(let i = 0; i < 7; ++i) {
                     this.buttons.push(new Button(leftId + i, -1));
-                });
+                }
             }
             addController(this);
         }
