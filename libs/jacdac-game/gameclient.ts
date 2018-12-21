@@ -3,6 +3,7 @@ namespace jacdac {
         Controller = 1
     }
 
+    //% fixedInstances
     export class GameClient extends Client {
         playerAddress: number;
         handler: () => void;
@@ -46,6 +47,6 @@ namespace jacdac {
         }
     }
 
-    //% whenUsed
+    //% fixedInstance whenUsed block="game client"
     export const gameClient = new GameClient();
 }

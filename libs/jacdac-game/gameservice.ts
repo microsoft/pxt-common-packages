@@ -3,6 +3,7 @@ namespace jacdac {
         Sprite = 1
     }
     
+    //% fixedInstances
     export class GameService extends Service {
         constructor() {
             super("game", jacdac.GAMEENGINE_DEVICE_CLASS);
@@ -45,6 +46,6 @@ namespace jacdac {
         }
     }
 
-    //% whenUsed
+    //% fixedInstance whenUsed block="game service"
     export const gameService = new GameService();
 }
