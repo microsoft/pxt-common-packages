@@ -491,7 +491,7 @@ namespace info {
                 this.y = screen.height;
                 this.up = true;
             } else {
-                // Not displayed by default, bottom left, banner is white on green
+                // bottom left, banner is white on green
                 this.bg = screen.isMono ? 0 : 7;
                 this.x = screen.width;
                 this.y = screen.height;
