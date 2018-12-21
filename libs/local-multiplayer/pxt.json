@@ -2,8 +2,7 @@
     "name": "local-multiplayer",
     "description": "DEPRECATED DEPRECATED DEPRECATED DEPRECATED DEPRECATED",
     "files": [
-        "local.ts",
-        "info.ts"
+        "local.ts"
     ],
     "dependencies": {
         "game": "file:../game"
