@@ -12,9 +12,8 @@ namespace info {
         Countdown = 1 << 0,
         Score = 1 << 1,
         Life = 1 << 2,
-        All = Countdown | Score | Life,
-        Hud = 1 << 4,
-        Multi = 1 << 5
+        Hud = 1 << 3,
+        Multi = 1 << 4
     }
 
     let _players: PlayerInfo[];
@@ -39,9 +38,9 @@ namespace info {
 
     function initHUD() {
         if ((_visibilityFlag & Visibility.Hud)
-            || (_visibilityFlag && Visibility.Multi)) return;
-        _visibilityFlag |= Visibility.Hud;
+            || (_visibilityFlag & Visibility.Multi)) return;
 
+        _visibilityFlag |= Visibility.Hud;
         _heartImage = _heartImage || defaultHeartImage();
         _multiplierImage = _multiplierImage || img`
         1 . . . 1
@@ -236,7 +235,6 @@ namespace info {
     //% help=info/start-countdown weight=79 blockGap=8
     //% group="Countdown"
     export function startCountdown(duration: number) {
-        initHUD();
         _gameEnd = control.millis() + duration * 1000;
         updateFlag(Visibility.Countdown, true);
         _countdownExpired = false;
@@ -410,6 +408,7 @@ namespace info {
         bg: number; // background color
         border: number; // border color
         fc: number; // font color
+        visilibity: Visibility;
         showScore?: boolean;
         showLife?: boolean;
         showPlayer?: boolean;
@@ -425,6 +424,12 @@ namespace info {
             this.fc = 1;
             this._life = null;
             this._score = null;
+            this.visilibity = Visibility.None;
+            this.showScore = null;
+            this.showLife = null;
+            this.showPlayer = null;
+            this.left = null;
+            this.up = null;
             if (this._player === 1) {
                 // Top left, and banner is white on red
                 this.bg = screen.isMono ? 0 : 2;
@@ -454,9 +459,11 @@ namespace info {
             if (!_players)
                 _players = [];
             _players[this._player - 1] = this;
-            if (this._player == 1)
-                initHUD();
-            else
+        }
+
+        private init() {
+            initHUD();
+            if (this._player > 1)
                 initMultiplayerHUD();
         }
 
@@ -482,7 +489,9 @@ namespace info {
         //% group="Multi Player"
         //% blockCombine block="score"
         set score(value: number) {
-            updateFlag(Visibility.Score, true);
+            this.init();
+            updateFlag(Visibility.Score, true); 
+            const t = this.score;           
             this._score = (value | 0);
         }
 
@@ -507,7 +516,9 @@ namespace info {
         //% group="Multi Player"
         //% blockCombine block="life"
         set life(value: number) {
+            this.init();
             updateFlag(Visibility.Life, true);
+            const t = this.life;           
             this._life = (value | 0);
         }
 
@@ -549,18 +560,18 @@ namespace info {
             let lifeWidth = 0;
             const offsetX = 1;
             let offsetY = 2;
-            let showScore = this.showScore && this._score !== null
+            let showScore = this.showScore && this._score !== null;
             let showLife = this.showLife && this._life !== null;
 
             if (showScore) {
-                score = "" + this.score;
+                score = "" + this._score;
                 scoreWidth = score.length * font.charWidth + 3;
                 height += font.charHeight;
                 offsetY += font.charHeight + 1;
             }
 
             if (showLife) {
-                life = "" + this.life;
+                life = "" + this._life;
                 lifeWidth = _heartImage.width + _multiplierImage.width + life.length * font.charWidth + 3;
                 height += _heartImage.height;
             }
@@ -683,7 +694,6 @@ namespace info {
     }
 
     function initMultiplayerHUD() {
-        initHUD();
         if (_visibilityFlag & Visibility.Multi) return;
         _visibilityFlag |= Visibility.Multi;
         _heartImage = _heartImage || screen.isMono ?
