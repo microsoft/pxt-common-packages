@@ -10,17 +10,17 @@ enum ControllerButtonEvent {
 
 enum ControllerButton {
     //% block="A"
-    A = 4,
+    A = 5,
     //% block="B"
-    B = 5,
+    B = 6,
     //% block="left"
-    Left = 0,
+    Left = 1,
     //% block="up"
-    Up = 1,
+    Up = 2,
     //% block="right"
-    Right = 2,
+    Right = 3,
     //% block="down"
-    Down = 3
+    Down = 4
 }
 
 /**
@@ -46,7 +46,7 @@ namespace controller {
             return `btn ${this.id} ${this._buttonId} ${this._pressed ? "down" : "up"}`;
         }
 
-        constructor(id: number, buttonId: number) {
+        constructor(id: number, buttonId: number = -1) {
             this.id = id;
             this._buttonId = buttonId;
             this._pressed = false;
@@ -219,20 +219,23 @@ namespace controller {
         private _controlledSprites: ControlledSprite[];
 
         // array of left,up,right,down,a,b,menu buttons
-        constructor(leftId: number, idToBtn?: (id: number) => number) {
-            this.buttons = [];
-            [
-                DAL.CFG_PIN_BTN_LEFT,
-                DAL.CFG_PIN_BTN_UP,
-                DAL.CFG_PIN_BTN_RIGHT,
-                DAL.CFG_PIN_BTN_DOWN,
-                DAL.CFG_PIN_BTN_A,
-                DAL.CFG_PIN_BTN_B,
-                DAL.CFG_PIN_BTN_MENU
-            ].forEach((cfg, i) => {
-                const btnid = idToBtn ? idToBtn(cfg) : -1;
-                this.buttons.push(new Button(leftId + i, btnid));
-            });
+        constructor(leftId: number, buttons?: Button[]) {
+            if (buttons)
+                this.buttons = buttons;
+            else {
+                this.buttons = [];
+                [
+                    DAL.CFG_PIN_BTN_LEFT,
+                    DAL.CFG_PIN_BTN_UP,
+                    DAL.CFG_PIN_BTN_RIGHT,
+                    DAL.CFG_PIN_BTN_DOWN,
+                    DAL.CFG_PIN_BTN_A,
+                    DAL.CFG_PIN_BTN_B,
+                    DAL.CFG_PIN_BTN_MENU
+                ].forEach((cfg, i) => {
+                    this.buttons.push(new Button(leftId + i));
+                });
+            }
             addController(this);
         }
 
@@ -321,7 +324,7 @@ namespace controller {
         }
 
         private button(button: ControllerButton): Button {
-            return this.buttons[button];
+            return this.buttons[button - 1];
         }
 
         /**
@@ -448,21 +451,4 @@ namespace controller {
     export function moveSprite(sprite: Sprite, vx: number = 100, vy: number = 100) {
         controller.controller1.moveSprite(sprite, vy, vy);
     }
-}
-
-namespace controller {
-    //% fixedInstance whenUsed block="A"
-    export const A = controller.controller1.A;
-    //% fixedInstance whenUsed block="B"
-    export const B = controller.controller1.B;
-    //% fixedInstance whenUsed block="left"
-    export const left = controller.controller1.left;
-    //% fixedInstance whenUsed block="up"
-    export const up = controller.controller1.up;
-    //% fixedInstance whenUsed block="right"
-    export const right = controller.controller1.right;
-    //% fixedInstance whenUsed block="down"
-    export const down = controller.controller1.down;
-    //% fixedInstance whenUsed block="menu"
-    export const menu = controller.controller1.menu;
 }
