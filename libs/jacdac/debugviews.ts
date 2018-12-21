@@ -258,6 +258,18 @@ namespace jacdac {
         constructor() {
             super("ctrl", jacdac.CONTROLLER_DEVICE_CLASS);
         }
+
+        renderPacket(device: JDDevice, packet: JDPacket): string {
+            const state = packet.getNumber(NumberFormat.UInt8LE, 0);
+            const left = state & (1 << 1);
+            const up = state & (1 << 2);
+            const right = state & (1 << 3);
+            const down = state & (1 << 4);
+            const A = state & (1 << 5);
+            const B = state & (1 << 6);
+
+            return `${left ? "L" : "-"}${up ? "U": "-"}${right? "R": "-"}${down ? "D": "-"}${A ? "A": "-"}${B ? "B": "-"}`;
+        }
     }
 
     export function defaultDebugViews(): DebugView[] {

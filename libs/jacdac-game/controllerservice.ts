@@ -21,13 +21,7 @@ namespace jacdac {
         }
 
         handleControlPacket(pkt: Buffer): boolean {
-            if (this.players.length > 3) {
-                this.log(`too many players`)
-                return true;
-            }
-
             const cp = new ControlPacket(pkt);
-            console.log(`cp ${toHex8(cp.address)}`)
             let player = this.players.find(p => p.cp.address == cp.address);
             if (!player) {
                 // did it move?
@@ -39,8 +33,12 @@ namespace jacdac {
                 }
                 // add new player
                 const playerNumber = [2, 3, 4].filter(i => !this.players.some(p => p.playerIndex == i))[0];
-                this.players.push(player = new ControllerClientInfo(cp, playerNumber));
-                this.log(`joined: ${player.toString()}`);
+                if (!!playerNumber) {
+                    this.players.push(player = new ControllerClientInfo(cp, playerNumber));
+                    this.log(`joined: ${player.toString()}`);
+                } else {
+                    this.log(`refused: ${toHex8(cp.address)}`);
+                }
             }
             return true;
         }
@@ -49,7 +47,7 @@ namespace jacdac {
             const packet = new JDPacket(pkt);
             const playerInfo = this.players.find(p => p.cp.address == packet.address);
             if (!playerInfo) {
-              //  this.log(`no player at ${toHex8(packet.address)}`)
+                //  this.log(`no player at ${toHex8(packet.address)}`)
                 return true;
             }
             const player = controller.players().find(p => p.playerIndex == playerInfo.playerIndex);

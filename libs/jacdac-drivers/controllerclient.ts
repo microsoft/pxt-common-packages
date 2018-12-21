@@ -13,7 +13,7 @@ namespace jacdac {
     export class ControllerClient extends Client {
         state: Buffer;
         constructor() {
-            super("ctrl", jacdac.CONTROLLER_DEVICE_CLASS);
+            super("ctrl", jacdac.CONTROLLER_DEVICE_CLASS, 0);
             this.state = control.createBuffer(1);
         }
 
@@ -106,7 +106,7 @@ namespace jacdac {
                 control.runInBackground(() => {
                     while (this._proxy) {
                         this.sendPacket(this.state);
-                        pause(20);
+                        pause(50);
                     }
                 })
             }
