@@ -150,24 +150,25 @@ namespace controller {
         }
     }
 
-    let _controllers: Controller[];
+    let _players: Controller[];
 
     function addController(ctrl: Controller) {
-        if (!_controllers) {
-            _controllers = [];
+        if (!_players) {
+            _players = [];
             game.currentScene().eventContext.registerFrameHandler(19, moveSprites);
         }
-        _controllers[ctrl.playerIndex - 1] = ctrl;
+        _players[ctrl.playerIndex - 1] = ctrl;
     }
 
     function player1(): Controller {
-        if (!_controllers || !_controllers[0])
+        if (!_players || !_players[0])
             addController(new Controller(1, [controller.left, controller.up, controller.right, controller.down, controller.A, controller.B, controller.menu]));
-        return _controllers[0];
+        return _players[0];
     }
-    function controllers(): Controller[] {
-        if (!_controllers) return [];
-        return _controllers.filter(ctrl => !!ctrl);
+
+    export function players(): Controller[] {
+        if (!_players) return [];
+        return _players.filter(ctrl => !!ctrl);
     }
 
     interface ControlledSprite {
@@ -179,13 +180,13 @@ namespace controller {
     function moveSprites() {
         // todo: move to currecnt sceane
         control.enablePerfCounter("controller")
-        controllers().forEach(ctrl => ctrl.__preUpdate());
+        players().forEach(ctrl => ctrl.__preUpdate());
     }
 
     //% fixedInstances
     export class Controller {
         playerIndex: number;
-        private buttons: Button[];
+        buttons: Button[];
         private _controlledSprites: ControlledSprite[];
 
         // array of left,up,right,down,a,b,menu buttons
@@ -383,6 +384,15 @@ namespace controller {
             const dtms = (dt * 1000) | 0
             this.buttons.forEach(btn => btn.__update(dtms));
         }
+
+        serialize(offset: number): Buffer {
+            const buf = control.createBuffer(offset + 1);
+            let b = 0;
+            for(let i = 0; this.buttons.length; ++i)
+                b |= (this.buttons[i].isPressed() ? 1 : 0) << i;
+            buf[offset] = b
+            return buf;
+        }
     }
 
     /**
@@ -390,12 +400,11 @@ namespace controller {
      */
     export function __update(dt: number) {
         const dtms = (dt * 1000) | 0
-        controllers().forEach(ctrl => ctrl.__update(dtms));
+        players().forEach(ctrl => ctrl.__update(dtms));
     }
 
     export function serialize(offset: number): Buffer {
-        const buf = control.createBuffer(offset + 1);
-        return buf;
+        return player1().serialize(offset);
     }
 
     /**
