@@ -56,7 +56,6 @@ CodalComponent *lookupComponent(int id) {
 } // namespace pxt
 
 namespace pins {
-
 /**
  * Create a new zero-initialized buffer.
  * @param size number of bytes in the buffer

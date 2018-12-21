@@ -1,5 +1,6 @@
 // Auto-generated. Do not edit.
 declare namespace pins {
+
     /**
      * Create a new zero-initialized buffer.
      * @param size number of bytes in the buffer
