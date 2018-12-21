@@ -10,7 +10,7 @@ namespace jacdac {
     }
 
     //% fixedInstances
-    export class ControllerClient extends Client {
+    export class ControllerClient extends Broadcast {
         state: Buffer;
         constructor() {
             super("ctrl", jacdac.CONTROLLER_DEVICE_CLASS, 0);

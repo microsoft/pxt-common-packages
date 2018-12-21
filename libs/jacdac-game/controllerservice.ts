@@ -12,7 +12,7 @@ namespace jacdac {
     }
 
     //% fixedInstances
-    export class ControllerService extends Service {
+    export class ControllerService extends Broadcast {
         players: ControllerClientInfo[];
 
         constructor() {
@@ -22,6 +22,7 @@ namespace jacdac {
 
         handleControlPacket(pkt: Buffer): boolean {
             const cp = new ControlPacket(pkt);
+            console.log(`${toHex8(cp.address)}`);
             let player = this.players.find(p => p.cp.address == cp.address);
             if (!player) {
                 // did it move?
