@@ -47,6 +47,6 @@ namespace jacdac {
         }
     }
 
-    //% fixedInstance whenUsed block="game client"
+    //% whenUsed block="game client"
     export const gameClient = new GameClient();
 }

@@ -46,6 +46,6 @@ namespace jacdac {
         }
     }
 
-    //% fixedInstance whenUsed block="game service"
+    //% whenUsed block="game service"
     export const gameService = new GameService();
 }
