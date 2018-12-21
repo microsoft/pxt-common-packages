@@ -6,7 +6,6 @@
         "info.ts"
     ],
     "dependencies": {
-        "core": "file:../controller",
         "game": "file:../game"
     },
     "public": true
