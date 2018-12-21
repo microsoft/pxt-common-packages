@@ -40,9 +40,15 @@ namespace controller {
         private _pressed: boolean;
         private _pressedElasped: number;
         private _repeatCount: number;
+        private _buttonId: number;
+
+        toString(): string {
+            return `btn ${this.id} ${this._buttonId} ${this._pressed ? "down" : "up"}`;
+        }
 
         constructor(id: number, buttonId: number) {
             this.id = id;
+            this._buttonId = buttonId;
             this._pressed = false;
             this.repeatDelay = 500;
             this.repeatInterval = 30;
@@ -214,7 +220,6 @@ namespace controller {
 
         // array of left,up,right,down,a,b,menu buttons
         constructor(leftId: number) {
-            console.log(`controller id ${leftId}`);
             this.buttons = [];
             [
                 DAL.CFG_PIN_BTN_LEFT,
@@ -225,10 +230,14 @@ namespace controller {
                 DAL.CFG_PIN_BTN_B,
                 DAL.CFG_PIN_BTN_MENU
             ].forEach((cfg, i) => {
-                const pinid = pins.lookupPinIdByCfg(cfg);
-                this.buttons.push(new Button(leftId + i, pinid));
+                const btn = pxt.getButtonByPinCfg(cfg);
+                this.buttons.push(new Button(leftId + i, btn ? btn.id : -1));
             });
             addController(this);
+        }
+
+        dump() {
+            this.buttons.forEach(b => console.log(b.toString()));
         }
 
         /**
