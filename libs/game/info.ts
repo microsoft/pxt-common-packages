@@ -12,16 +12,14 @@ namespace info {
         Countdown = 1 << 0,
         Score = 1 << 1,
         Life = 1 << 2,
-        All = ~(~0 << 3)
+        All = Countdown | Score | Life,
+        Hud = 1 << 4,
+        Multi = 1 << 5
     }
 
     let _players: PlayerInfo[];
-    let _multiplayerHud: boolean = false;
+    let _visibilityFlag: number = Visibility.None;
 
-    let _score: number = null;
-    let _highScore: number = null;
-    let _life: number = null;
-    let _hud: boolean = false;
     let _gameEnd: number = undefined;
     let _heartImage: Image;
     let _multiplierImage: Image;
@@ -29,23 +27,21 @@ namespace info {
     let _borderColor: number;
     let _fontColor: number;
     let _countdownExpired: boolean;
-    let _visibilityFlag: number = Visibility.None;
 
-
-    let _lifeOverHandler: () => void;
     let _countdownEndHandler: () => void;
 
-    /**
-     * Color of the HUD display
-     */
-    let color = 1;
+    //% fixedInstance whenUsed block="player 1"
+    function player1(): PlayerInfo {
+        if (!_players || !_players[0])
+            new PlayerInfo(1);
+        return _players[0];
+    }
 
     function initHUD() {
-        if (_hud) return;
-        _hud = true;
+        if (_visibilityFlag & Visibility.Hud || _visibilityFlag && Visibility.Multi) return;
+        _visibilityFlag |= Visibility.Hud;
 
         _heartImage = _heartImage || defaultHeartImage();
-
         _multiplierImage = _multiplierImage || img`
         1 . . . 1
         . 1 . 1 .
@@ -59,36 +55,37 @@ namespace info {
         _fontColor = screen.isMono ? 1 : 3;
         game.eventContext().registerFrameHandler(95, () => {
             control.enablePerfCounter("info")
-            // show score
-            if (_score !== null && _visibilityFlag & Visibility.Score) {
-                drawScore();
-            }
-            // show life
-            if (_life !== null && _visibilityFlag & Visibility.Life) {
-                drawLives();
-                if (_life <= 0) {
-                    _life = null;
-                    if (_lifeOverHandler) {
-                        _lifeOverHandler();
-                    }
-                    else {
-                        game.over();
-                    }
+            if (_visibilityFlag & Visibility.Multi) {
+                const ps = _players.filter(p => !!p);
+                // First draw players
+                ps.forEach(p => p.drawPlayer());
+                // Then run life over events
+                ps.forEach(p => p.raiseLifeZero(false));
+            } else {
+                // show score
+                const p = player1();
+                if (p._score !== null && _visibilityFlag & Visibility.Score) {
+                    p.drawScore();
                 }
-            }
-            // show countdown
-            if (_gameEnd !== undefined && _visibilityFlag & Visibility.Countdown) {
-                drawTimer(_gameEnd - control.millis())
-                let t = Math.max(0, _gameEnd - control.millis()) / 1000;
-                if (t <= 0) {
-                    t = 0;
-                    if (!_countdownExpired) {
-                        _countdownExpired = true;
-                        if (_countdownEndHandler) {
-                            _countdownEndHandler();
-                        }
-                        else {
-                            game.over();
+                // show life
+                if (p._life !== null && _visibilityFlag & Visibility.Life) {
+                    p.drawLives();
+                    p.raiseLifeZero(true);
+                }
+                // show countdown
+                if (_gameEnd !== undefined && _visibilityFlag & Visibility.Countdown) {
+                    drawTimer(_gameEnd - control.millis())
+                    let t = Math.max(0, _gameEnd - control.millis()) / 1000;
+                    if (t <= 0) {
+                        t = 0;
+                        if (!_countdownExpired) {
+                            _countdownExpired = true;
+                            if (_countdownEndHandler) {
+                                _countdownEndHandler();
+                            }
+                            else {
+                                game.over();
+                            }
                         }
                     }
                 }
@@ -98,7 +95,7 @@ namespace info {
 
     function defaultHeartImage() {
         return screen.isMono ?
-        img`
+            img`
         . 1 1 . 1 1 . .
         1 . . 1 . . 1 .
         1 . . . . . 1 .
@@ -107,7 +104,7 @@ namespace info {
         . . 1 . 1 . . .
         . . . 1 . . . .
 `         :
-        img`
+            img`
         . c 2 2 . 2 2 .
         c 2 2 2 2 2 4 2
         c 2 2 2 2 4 2 2
@@ -118,21 +115,14 @@ namespace info {
         `;
 
     }
-
-    function initScore() {
-        if (_score !== null) return
-        _score = 0;
-        _highScore = updateHighScore(_score);
-        updateFlag(Visibility.Score, true);
-        initHUD();
+    function saveHighScore() {
+        if (_players) {
+            let hs = 0;
+            _players.filter(p => p && !!p._score).forEach(p => hs = Math.max(hs, p._score));
+            updateHighScore(hs);
+        }
     }
 
-    function initLife() {
-        if (_life !== null) return
-        _life = 3;
-        updateFlag(Visibility.Life, true);
-        initHUD();
-    }
 
     /**
      * Get the current score if any
@@ -142,14 +132,13 @@ namespace info {
     //% help=info/score
     //% group="Score"
     export function score() {
-        initScore()
-        return _score || 0;
+        return player1().score;
     }
 
     //%
     //% group="Score"
     export function hasScore() {
-        return _score !== null
+        return player1()._score !== null
     }
 
     /**
@@ -160,8 +149,7 @@ namespace info {
     //% help=info/high-score
     //% group="Score"
     export function highScore(): number {
-        initScore();
-        return _highScore || 0;
+        return updateHighScore(0) || 0;
     }
 
     /**
@@ -172,8 +160,7 @@ namespace info {
     //% help=info/set-score
     //% group="Score"
     export function setScore(value: number) {
-        initScore()
-        _score = value | 0
+        player1().score = value;
     }
 
     /**
@@ -185,18 +172,9 @@ namespace info {
     //% help=info/change-score-by
     //% group="Score"
     export function changeScoreBy(value: number) {
-        initScore();
-        setScore(_score + value)
+        player1().score += value;
     }
 
-    /**
-     * Updates the high score based on the current score
-     */
-    export function saveHighScore() {
-        if (_score) {
-            updateHighScore(_score);
-        }
-    }
 
     /**
      * Get the number of lives
@@ -206,14 +184,12 @@ namespace info {
     //% help=info/life
     //% group="Life"
     export function life() {
-        initLife()
-        return _life
+        return player1().life;
     }
 
-    //%
     //% group="Life"
     export function hasLife() {
-        return _life !== null
+        return player1().hasLife();
     }
 
     /**
@@ -225,8 +201,7 @@ namespace info {
     //% help=info/set-life
     //% group="Life"
     export function setLife(value: number) {
-        initLife()
-        _life = value | 0
+        player1().life = value;
     }
 
     /**
@@ -238,8 +213,7 @@ namespace info {
     //% help=info/change-life-by
     //% group="Life"
     export function changeLifeBy(value: number) {
-        initLife();
-        setLife(_life + value)
+        player1().life += value;
     }
 
     /**
@@ -251,7 +225,7 @@ namespace info {
     //% help=info/on-life-zero
     //% group="Life"
     export function onLifeZero(handler: () => void) {
-        _lifeOverHandler = handler;
+        player1().onLifeZero(handler);
     }
 
     /**
@@ -306,7 +280,6 @@ namespace info {
      */
     //% group="Life"
     export function showLife(on: boolean) {
-        initLife();
         updateFlag(Visibility.Life, on);
     }
 
@@ -316,7 +289,6 @@ namespace info {
      */
     //% group="Score"
     export function showScore(on: boolean) {
-        initScore();
         updateFlag(Visibility.Score, on);
     }
 
@@ -329,10 +301,10 @@ namespace info {
         updateFlag(Visibility.Countdown, on);
     }
 
-
     function updateFlag(flag: Visibility, on: boolean) {
         if (on) _visibilityFlag |= flag;
         else _visibilityFlag &= Visibility.All ^ flag;
+        initHUD();
     }
 
     /**
@@ -391,7 +363,7 @@ namespace info {
     export function fontColor(): number {
         return _fontColor ? _fontColor : 3;
     }
-    
+
     function drawTimer(millis: number) {
         if (millis < 0) millis = 0;
         millis |= 0;
@@ -430,62 +402,6 @@ namespace info {
         }
     }
 
-    function drawScore() {
-        const s = score() | 0;
-
-        let font: image.Font;
-        let offsetY: number;
-        if (s >= 1000000) {
-            offsetY = 2;
-            font = image.font5;
-        }
-        else {
-            offsetY = 1;
-            font = image.font8;
-        }
-
-        const num = s.toString();
-        const width = num.length * font.charWidth;
-
-        screen.fillRect(screen.width - width - 2, 0, screen.width, image.font8.charHeight + 3, _borderColor)
-        screen.fillRect(screen.width - width - 1, 0, screen.width, image.font8.charHeight + 2, _bgColor)
-        screen.print(num, screen.width - width, offsetY, _fontColor, font);
-    }
-
-    function drawLives() {
-        if (_life <= 0) return;
-
-        const font = image.font8;
-        if (_life <= 4) {
-            screen.fillRect(0, 0, _life * (_heartImage.width + 1) + 3, _heartImage.height + 4, _borderColor);
-            screen.fillRect(0, 0, _life * (_heartImage.width + 1) + 2,  _heartImage.height + 3, _bgColor);
-            for (let i = 0; i < _life; i++) {
-                screen.drawTransparentImage(_heartImage, 1 + i * (_heartImage.width + 1), 1);
-            }
-        }
-        else {
-            const num = _life.toString();
-            const textWidth = num.length * font.charWidth - 1;
-            screen.fillRect(0, 0, _heartImage.width + _multiplierImage.width + textWidth + 5, _heartImage.height + 4, _borderColor)
-            screen.fillRect(0, 0, _heartImage.width + _multiplierImage.width + textWidth + 4, _heartImage.height + 3, _bgColor)
-            screen.drawTransparentImage(_heartImage, 1, 1);
-
-            let mult = _multiplierImage.clone();
-            mult.replace(1, _fontColor);
-
-            screen.drawTransparentImage(mult, _heartImage.width + 2,  font.charHeight - _multiplierImage.height - 1);
-            screen.print(num, _heartImage.width + 3 + _multiplierImage.width, 1, _fontColor, font);
-        }
-    }
-
-    function formatDecimal(val: number) {
-        val |= 0;
-        if (val < 10) {
-            return "0" + val;
-        }
-        return val.toString();
-    }
-
     //% fixedInstances
     export class PlayerInfo {
         _score: number;
@@ -497,7 +413,7 @@ namespace info {
         showScore?: boolean;
         showLife?: boolean;
         showPlayer?: boolean;
-        _lifeZeroHandler?: () => void; // onPlayerLifeOver handler
+        private _lifeZeroHandler?: () => void; // onPlayerLifeOver handler
         x?: number;
         y?: number;
         left?: boolean; // if true banner goes from x to the left, else goes rightward
@@ -544,15 +460,14 @@ namespace info {
          * Gets the player score
          */
         //% group="Multi Player"
-        //% blockId=playerinfoscore
-        //% property
+        //% blockCombine block="score"
         get score() {
             if (this.showScore === null) this.showScore = true;
             if (this.showPlayer === null) this.showPlayer = true;
 
             if (!this._score) {
                 this._score = 0;
-                saveMultiplayerHighScore();
+                saveHighScore();
             }
             return this._score;
         }
@@ -561,18 +476,17 @@ namespace info {
          * Sets the player score
          */
         //% group="Multi Player"
-        //% blockId=playerinfoscoreset
-        //% property
+        //% blockCombine block="score"
         set score(value: number) {
-            this._score = this.score + value;
+            updateFlag(Visibility.Score, true);
+            this._score = this.score + (value | 0);
         }
 
         /**
          * Gets the player life
          */
         //% group="Multi Player"
-        //% blockId=playerinfolife
-        //% property
+        //% blockCombine block="life"
         get life() {
             if (this.showLife === null) this.showLife = true;
             if (this.showPlayer === null) this.showPlayer = true;
@@ -587,10 +501,21 @@ namespace info {
          * Sets the player life
          */
         //% group="Multi Player"
-        //% blockId=playerinfolifeset
-        //% property
+        //% blockCombine block="life"
         set life(value: number) {
-            this._life = this.life + value;
+            updateFlag(Visibility.Life, true);
+            this._life = this.life + (value | 0);
+        }
+
+        /**
+         * Returns true if the given player currently has a value set for health,
+         * and false otherwise.
+         * @param player player to check life of
+         */
+        //% group="Multi Player"
+        //% blockId=playerinfolifeset block="%player has life"
+        hasLife(): boolean {
+            return this.life !== null;
         }
 
         /**
@@ -601,6 +526,14 @@ namespace info {
         //% blockId=playerinfoonlifezero block="on %player life zero"
         onLifeZero(handler: () => void) {
             this._lifeZeroHandler = handler;
+        }
+
+        raiseLifeZero(gameOver: boolean) {
+            if (this._life !== null && this._life <= 0) {
+                this._life = null;
+                if (this._lifeZeroHandler) this._lifeZeroHandler();
+                else if (gameOver) game.over();
+            }
         }
 
         drawPlayer() {
@@ -614,47 +547,47 @@ namespace info {
             let offsetY = 2;
             let showScore = this.showScore && this._score !== null
             let showLife = this.showLife && this._life !== null;
-    
+
             if (showScore) {
                 score = "" + this.score;
                 scoreWidth = score.length * font.charWidth + 3;
                 height += font.charHeight;
                 offsetY += font.charHeight + 1;
             }
-    
+
             if (showLife) {
                 life = "" + this.life;
                 lifeWidth = _heartImage.width + _multiplierImage.width + life.length * font.charWidth + 3;
                 height += _heartImage.height;
             }
-    
+
             const width = Math.max(scoreWidth, lifeWidth);
-    
+
             // bump size for space between lines
             if (showScore && showLife) height++;
-    
+
             const x = this.x - (this.left ? width : 0);
             const y = this.y - (this.up ? height : 0);
-    
+
             // Bordered Box
             if (showScore || showLife) {
                 screen.fillRect(x, y, width, height, this.border);
                 screen.fillRect(x + 1, y + 1, width - 2, height - 2, this.bg);
             }
-    
+
             // print score
             if (showScore) {
                 const bump = this.left ? width - scoreWidth : 0;
                 screen.print(score, x + offsetX + bump + 1, y + 2, this.fc, font);
             }
-    
+
             // print life
             if (showLife) {
                 const xLoc = x + offsetX + (this.left ? width - lifeWidth : 0);
-    
+
                 let mult = _multiplierImage.clone();
                 mult.replace(1, this.fc);
-    
+
                 screen.drawTransparentImage(_heartImage,
                     xLoc,
                     y + offsetY);
@@ -667,92 +600,118 @@ namespace info {
                     this.fc,
                     font);
             }
-    
+
             // print player icon
             if (this.showPlayer) {
                 const pNum = "" + this._player;
-    
+
                 let iconWidth = pNum.length * font.charWidth + 1;
                 const iconHeight = Math.max(height, font.charHeight + 2);
                 let iconX = this.left ? (x - iconWidth + 1) : (x + width - 1);
                 let iconY = y;
-    
+
                 // adjustments when only player icon shown
                 if (!showScore && !showLife) {
                     iconX += this.left ? -1 : 1;
                     if (this.up) iconY -= 3;
                 }
-    
+
                 screen.fillRect(iconX, iconY, iconWidth, iconHeight, this.border);
                 screen.print(pNum, iconX + 1, iconY + (iconHeight >> 1) - (font.charHeight >> 1), this.bg, font);
             }
         }
+
+        drawScore() {
+            const s = this.score | 0;
+
+            let font: image.Font;
+            let offsetY: number;
+            if (s >= 1000000) {
+                offsetY = 2;
+                font = image.font5;
+            }
+            else {
+                offsetY = 1;
+                font = image.font8;
+            }
+
+            const num = s.toString();
+            const width = num.length * font.charWidth;
+
+            screen.fillRect(screen.width - width - 2, 0, screen.width, image.font8.charHeight + 3, _borderColor)
+            screen.fillRect(screen.width - width - 1, 0, screen.width, image.font8.charHeight + 2, _bgColor)
+            screen.print(num, screen.width - width, offsetY, _fontColor, font);
+        }
+
+        drawLives() {
+            if (this._life <= 0) return;
+
+            const font = image.font8;
+            if (this._life <= 4) {
+                screen.fillRect(0, 0, this._life * (_heartImage.width + 1) + 3, _heartImage.height + 4, _borderColor);
+                screen.fillRect(0, 0, this._life * (_heartImage.width + 1) + 2, _heartImage.height + 3, _bgColor);
+                for (let i = 0; i < this._life; i++) {
+                    screen.drawTransparentImage(_heartImage, 1 + i * (_heartImage.width + 1), 1);
+                }
+            }
+            else {
+                const num = this._life.toString();
+                const textWidth = num.length * font.charWidth - 1;
+                screen.fillRect(0, 0, _heartImage.width + _multiplierImage.width + textWidth + 5, _heartImage.height + 4, _borderColor)
+                screen.fillRect(0, 0, _heartImage.width + _multiplierImage.width + textWidth + 4, _heartImage.height + 3, _bgColor)
+                screen.drawTransparentImage(_heartImage, 1, 1);
+
+                let mult = _multiplierImage.clone();
+                mult.replace(1, _fontColor);
+
+                screen.drawTransparentImage(mult, _heartImage.width + 2, font.charHeight - _multiplierImage.height - 1);
+                screen.print(num, _heartImage.width + 3 + _multiplierImage.width, 1, _fontColor, font);
+            }
+        }
+
+    }
+
+    function formatDecimal(val: number) {
+        val |= 0;
+        if (val < 10) {
+            return "0" + val;
+        }
+        return val.toString();
     }
 
     function initMultiplayerHUD() {
-        if (_multiplayerHud) return;
-        _multiplayerHud = true;
+        if (_visibilityFlag & Visibility.Multi) return;
+        _visibilityFlag |= Visibility.Multi;
 
         // suppress standard score and life display
         showScore(false);
         showLife(false);
 
         _heartImage = _heartImage || screen.isMono ?
-        img`
+            img`
                 . . 1 . 1 . .
                 . 1 . 1 . 1 .
                 . 1 . . . 1 .
                 . . 1 . 1 . .
                 . . . 1 . . .
             `
-        :
-        img`
+            :
+            img`
                 . . 1 . 1 . .
                 . 1 2 1 4 1 .
                 . 1 2 4 2 1 .
                 . . 1 2 1 . .
                 . . . 1 . . .
             `;
-;
+        ;
 
         _multiplierImage = _multiplierImage || img`
                 1 . 1
                 . 1 .
                 1 . 1
             `;
-
-        game.eventContext().registerFrameHandler(95, () => {
-            const ps = _players.filter(p => !!p);
-            // First draw players
-            ps.forEach(p => p.drawPlayer());
-
-            // Then run life over events
-            ps.forEach(p => {
-                if (p._life !== null && p._life <= 0) {
-                    p._life = null;
-                    if (p._lifeZeroHandler) p._lifeZeroHandler();
-                }
-            });
-        })
     }
 
-    function saveMultiplayerHighScore() {
-        if (_players) {
-            const oS = info.score();
-            const hS = info.highScore();
-            let maxScore = hS;
-            _players.filter(p => p && !!p._score)
-                .forEach(p => maxScore = Math.max(maxScore, p._score));
-            if (maxScore > hS) {
-                setScore(maxScore);
-                saveHighScore();
-                setScore(oS);
-            }
-        }
-    }
-    
-    //% fixedInstance whenUsed block="player 1"
-    export const player1 = new PlayerInfo(1);
     //% fixedInstance whenUsed block="player 2"
     export const player2 = new PlayerInfo(2);
     //% fixedInstance whenUsed block="player 3"
