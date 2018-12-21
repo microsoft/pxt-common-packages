@@ -75,4 +75,7 @@ namespace jacdac {
             }
         }
     }
+
+    //% fixedInstance whenUsed block="servo"
+    export const servoClient = new ServoClient("servo");
 }
