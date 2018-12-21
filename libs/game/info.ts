@@ -401,6 +401,7 @@ namespace info {
     }
 
     //% fixedInstances
+    //% blockGap=8
     export class PlayerInfo {
         private _score: number;
         private _life: number;
@@ -491,8 +492,8 @@ namespace info {
         //% value.defl=0
         setScore(value: number) {
             this.init();
-            updateFlag(Visibility.Score, true); 
-            const t = this.score;           
+            updateFlag(Visibility.Score, true);
+            const t = this.score();
             this._score = (value | 0);
         }
 
@@ -535,7 +536,7 @@ namespace info {
         setLife(value: number): void {
             this.init();
             updateFlag(Visibility.Life, true);
-            const t = this.life;           
+            const t = this.life();
             this._life = (value | 0);
         }
 
