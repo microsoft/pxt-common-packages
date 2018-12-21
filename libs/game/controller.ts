@@ -150,47 +150,25 @@ namespace controller {
         }
     }
 
-    /**
-     * Pause the program until a button is pressed
-     */
-    //% weight=10
-    export function pauseUntilAnyButtonIsPressed() {
-        control.waitForEvent(KEY_DOWN, 0)
-    }
-
-    export function _setUserEventsEnabled(enabled: boolean) {
-        _userEventsEnabled = enabled;
-    }
-
-    /**
-     * Get the horizontal movement, given the step and state of buttons
-     * @param step the distance, eg: 100
-     */
-    //% weight=50 blockGap=8 help=controller/dx
-    //% blockId=keydx block="dx (left-right buttons)||scaled by %step"
-    //% step.defl=100
-    //% group="Single Player"
-    export function dx(step: number = 100) {
-        return controller.controller1.dx(step);
-    }
-
-
-    /**
-     * Get the vertical movement, given the step and state of buttons
-     * @param step the distance, eg: 100
-     */
-    //% weight=49 help=keys/dy
-    //% blockId=keydy block="dy (up-down buttons)||scaled by %step"
-    //% step.defl=100
-    //% group="Single Player"
-    export function dy(step: number = 100) {
-        return controller.controller1.dy(step);
-    }
-}
-
-
-namespace controller {
     let _controllers: Controller[];
+
+    function addController(ctrl: Controller) {
+        if (!_controllers) {
+            _controllers = [];
+            game.currentScene().eventContext.registerFrameHandler(19, moveSprites);
+        }
+        _controllers[ctrl.playerIndex - 1] = ctrl;
+    }
+
+    function player1(): Controller {
+        if (!_controllers || !_controllers[0])
+            addController(new Controller(1, [controller.left, controller.up, controller.right, controller.down, controller.A, controller.B, controller.menu]));
+        return _controllers[0];
+    }
+    function controllers(): Controller[] {
+        if (!_controllers) return [];
+        return _controllers.filter(ctrl => !!ctrl);
+    }
 
     interface ControlledSprite {
         s: Sprite;
@@ -198,32 +176,26 @@ namespace controller {
         vy: number;
     }
 
-    function addController(ctrl: Controller) {
-        if (!_controllers) {
-            _controllers = [];
-            game.currentScene().eventContext.registerFrameHandler(19, moveSprites);
-        }
-        _controllers.push(ctrl);
-    }
-
     function moveSprites() {
         // todo: move to currecnt sceane
         control.enablePerfCounter("controller")
-        if (_controllers)
-            _controllers.forEach(ctrl => ctrl.__preUpdate());
+        controllers().forEach(ctrl => ctrl.__preUpdate());
     }
 
     //% fixedInstances
     export class Controller {
+        playerIndex: number;
         private buttons: Button[];
         private _controlledSprites: ControlledSprite[];
 
         // array of left,up,right,down,a,b,menu buttons
-        constructor(leftId: number, buttons: Button[]) {
+        constructor(playerIndex: number, buttons: Button[]) {
+            this.playerIndex = playerIndex;
             if (buttons)
                 this.buttons = buttons;
             else {
                 this.buttons = [];
+                const leftId = 1 + (this.playerIndex - 1) * 7;
                 for (let i = 0; i < 7; ++i) {
                     this.buttons.push(new Button(leftId + i, -1));
                 }
@@ -418,7 +390,7 @@ namespace controller {
      */
     export function __update(dt: number) {
         const dtms = (dt * 1000) | 0
-        _controllers.forEach(ctrl => ctrl.__update(dtms));
+        controllers().forEach(ctrl => ctrl.__update(dtms));
     }
 
     export function serialize(offset: number): Buffer {
@@ -441,6 +413,43 @@ namespace controller {
     //% help=controller/move-sprite
     //% group="Single Player"
     export function moveSprite(sprite: Sprite, vx: number = 100, vy: number = 100) {
-        controller.controller1.moveSprite(sprite, vy, vy);
+        player1().moveSprite(sprite, vy, vy);
+    }
+
+
+    /**
+     * Pause the program until a button is pressed
+     */
+    //% weight=10
+    export function pauseUntilAnyButtonIsPressed() {
+        control.waitForEvent(KEY_DOWN, 0)
+    }
+
+    export function _setUserEventsEnabled(enabled: boolean) {
+        _userEventsEnabled = enabled;
+    }
+
+    /**
+     * Get the horizontal movement, given the step and state of buttons
+     * @param step the distance, eg: 100
+     */
+    //% weight=50 blockGap=8 help=controller/dx
+    //% blockId=keydx block="dx (left-right buttons)||scaled by %step"
+    //% step.defl=100
+    //% group="Single Player"
+    export function dx(step: number = 100) {
+        return player1().dx(step);
+    }
+
+    /**
+     * Get the vertical movement, given the step and state of buttons
+     * @param step the distance, eg: 100
+     */
+    //% weight=49 help=keys/dy
+    //% blockId=keydy block="dy (up-down buttons)||scaled by %step"
+    //% step.defl=100
+    //% group="Single Player"
+    export function dy(step: number = 100) {
+        return player1().dy(step);
     }
 }
