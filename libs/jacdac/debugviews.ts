@@ -7,7 +7,7 @@ namespace jacdac {
             this.name = name;
             this.driverClass = driverClass;
         }
-        renderControlPacket(cp: ControlPacket){
+        renderControlPacket(cp: ControlPacket) {
             return "";
         }
         renderPacket(device: JDDevice, packet: JDPacket) {
@@ -63,7 +63,7 @@ namespace jacdac {
         renderState(data: Buffer): string {
             return data.toHex();
         }
-    }    
+    }
 
     class BridgeDebugView extends DebugView {
         constructor() {
@@ -210,7 +210,7 @@ namespace jacdac {
         }
 
         renderEvent(value: number): string {
-            switch(value) {
+            switch (value) {
                 case JDSwitchDirection.Left: return "left";
                 case JDSwitchDirection.Right: "right";
                 default: return "";
@@ -234,11 +234,11 @@ namespace jacdac {
         }
 
         renderEvent(value: number): string {
-            switch(value) {
+            switch (value) {
                 case JDButtonEvent.Click: return "click";
                 case JDButtonEvent.Down: "down";
                 case JDButtonEvent.Up: "up";
-                case JDButtonEvent.LongClick: return "lg click" 
+                case JDButtonEvent.LongClick: return "lg click"
                 default: return "";
             }
         }
@@ -261,22 +261,33 @@ namespace jacdac {
 
         renderControlPacket(cp: ControlPacket): string {
             const data = cp.data;
-            if(data.length == 4) {
-                return `${data[0] ? toHex8(data[0]) : "--"} ${data[1] ? toHex8(data[1]) : "--"} ${data[2] ? toHex8(data[2]) : "--"} ${data[3] ? toHex8(data[3]) : "--"}`;
-            }
-            return "";
+            return this.renderData(data);
         }
 
         renderPacket(device: JDDevice, packet: JDPacket): string {
-            const state = packet.getNumber(NumberFormat.UInt8LE, 0);
-            const left = state & (1 << 1);
-            const up = state & (1 << 2);
-            const right = state & (1 << 3);
-            const down = state & (1 << 4);
-            const A = state & (1 << 5);
-            const B = state & (1 << 6);
+            const data = packet.data;
+            return this.renderData(data);
+        }
 
-            return `${left ? "L" : "-"}${up ? "U": "-"}${right? "R": "-"}${down ? "D": "-"}${A ? "A": "-"}${B ? "B": "-"}`;
+        private renderData(data: Buffer): string {
+            const cmd: JDControllerCmd = data[0];
+            switch (cmd) {
+                case JDControllerCmd.Buttons:
+                    const state = data[1];
+                    const left = state & (1 << 1);
+                    const up = state & (1 << 2);
+                    const right = state & (1 << 3);
+                    const down = state & (1 << 4);
+                    const A = state & (1 << 5);
+                    const B = state & (1 << 6);
+                    return `${left ? "L" : "-"}${up ? "U" : "-"}${right ? "R" : "-"}${down ? "D" : "-"}${A ? "A" : "-"}${B ? "B" : "-"}`;
+                case JDControllerCmd.Server:
+                    return `${data[1] ? toHex8(data[1]) : "--"} ${data[2] ? toHex8(data[2]) : "--"} ${data[3] ? toHex8(data[3]) : "--"} ${data[4] ? toHex8(data[4]) : "--"}`;
+                case JDControllerCmd.Client:
+                    return `client -> ${data[1] ? toHex8(data[1]) : "--"}`;
+                default:
+                    return toHex8(cmd);
+            }
         }
     }
 
