@@ -224,7 +224,7 @@ namespace controller {
                 this.buttons = buttons;
             else {
                 this.buttons = [];
-                for(let i = 0; i < 7; ++i) {
+                for (let i = 0; i < 7; ++i) {
                     this.buttons.push(new Button(leftId + i, -1));
                 }
             }
