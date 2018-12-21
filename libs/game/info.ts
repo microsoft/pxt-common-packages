@@ -119,7 +119,7 @@ namespace info {
     export function saveHighScore() {
         if (_players) {
             let hs = 0;
-            _players.filter(p => p && p.hasScore()).forEach(p => hs = Math.max(hs, p.score()));
+            _players.filter(p => p && p.hasScore()).forEach(p => hs = Math.max(hs, p._score));
             updateHighScore(hs);
         }
     }
@@ -403,8 +403,8 @@ namespace info {
     //% fixedInstances
     //% blockGap=8
     export class PlayerInfo {
-        private _score: number;
-        private _life: number;
+        _score: number;
+        _life: number;
         _player: number;
         bg: number; // background color
         border: number; // border color
@@ -559,7 +559,7 @@ namespace info {
         //% group="Multi Player"
         //% blockId=pihaslife block="%player has life"
         hasLife(): boolean {
-            return this.life !== null;
+            return this._life !== null;
         }
 
         /**
