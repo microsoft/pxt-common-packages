@@ -46,7 +46,7 @@ namespace controller {
             return `btn ${this.id} ${this._buttonId} ${this._pressed ? "down" : "up"}`;
         }
 
-        constructor(id: number, buttonId: number = -1) {
+        constructor(id: number, buttonId: number) {
             this.id = id;
             this._buttonId = buttonId;
             this._pressed = false;
@@ -219,7 +219,7 @@ namespace controller {
         private _controlledSprites: ControlledSprite[];
 
         // array of left,up,right,down,a,b,menu buttons
-        constructor(leftId: number, buttons?: Button[]) {
+        constructor(leftId: number, buttons: Button[]) {
             if (buttons)
                 this.buttons = buttons;
             else {
