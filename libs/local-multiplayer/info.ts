@@ -1,5 +1,6 @@
 //% groups='["other","Multiplayer"]'
 namespace info {
+    
     export interface PlayerInfo {
         _score: number;
         _life: number;

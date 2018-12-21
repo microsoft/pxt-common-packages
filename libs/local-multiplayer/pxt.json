@@ -1,6 +1,6 @@
 {
     "name": "local-multiplayer",
-    "description": "Local multiplayer",
+    "description": "DEPRECATED",
     "files": [
         "local.ts",
         "info.ts"

@@ -11,7 +11,6 @@ enum PlayerNumber {
 
 //% groups='["other","Multiplayer"]'
 namespace controller {
-
     enum ButtonOffset {
         Left = 0,
         Up,
