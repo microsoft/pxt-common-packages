@@ -5,6 +5,7 @@
 */
 //% color=#AA5585 weight=80 icon="\uf2bb" blockGap=8
 //% groups='["Score", "Life", "Countdown", "Multi Player"]'
+//% blockGap=8
 namespace info {
 
     enum Visibility {
@@ -63,11 +64,11 @@ namespace info {
             } else {
                 // show score
                 const p = player1();
-                if (p._score !== null && (_visibilityFlag & Visibility.Score)) {
+                if (p.hasScore() && (_visibilityFlag & Visibility.Score)) {
                     p.drawScore();
                 }
                 // show life
-                if (p._life !== null && (_visibilityFlag & Visibility.Life)) {
+                if (p.hasLife() && (_visibilityFlag & Visibility.Life)) {
                     p.drawLives();
                 }
                 p.raiseLifeZero(true);
@@ -118,7 +119,7 @@ namespace info {
     export function saveHighScore() {
         if (_players) {
             let hs = 0;
-            _players.filter(p => p && !!p._score).forEach(p => hs = Math.max(hs, p._score));
+            _players.filter(p => p && p.hasScore()).forEach(p => hs = Math.max(hs, p.score()));
             updateHighScore(hs);
         }
     }
@@ -131,13 +132,13 @@ namespace info {
     //% help=info/score
     //% group="Score"
     export function score() {
-        return player1().score;
+        return player1().score();
     }
 
     //%
     //% group="Score"
     export function hasScore() {
-        return player1()._score !== null
+        return player1().hasScore();
     }
 
     /**
@@ -159,7 +160,7 @@ namespace info {
     //% help=info/set-score
     //% group="Score"
     export function setScore(value: number) {
-        player1().score = value;
+        player1().setScore(value);
     }
 
     /**
@@ -171,9 +172,8 @@ namespace info {
     //% help=info/change-score-by
     //% group="Score"
     export function changeScoreBy(value: number) {
-        player1().score += value;
+        player1().changeScoreBy(value);
     }
-
 
     /**
      * Get the number of lives
@@ -183,7 +183,7 @@ namespace info {
     //% help=info/life
     //% group="Life"
     export function life() {
-        return player1().life;
+        return player1().life();
     }
 
     //% group="Life"
@@ -200,7 +200,7 @@ namespace info {
     //% help=info/set-life
     //% group="Life"
     export function setLife(value: number) {
-        player1().life = value;
+        player1().setLife(value);
     }
 
     /**
@@ -212,7 +212,7 @@ namespace info {
     //% help=info/change-life-by
     //% group="Life"
     export function changeLifeBy(value: number) {
-        player1().life += value;
+        player1().changeLifeBy(value);
     }
 
     /**
@@ -402,8 +402,8 @@ namespace info {
 
     //% fixedInstances
     export class PlayerInfo {
-        _score: number;
-        _life: number;
+        private _score: number;
+        private _life: number;
         _player: number;
         bg: number; // background color
         border: number; // border color
@@ -471,8 +471,8 @@ namespace info {
          * Gets the player score
          */
         //% group="Multi Player"
-        //% blockCombine block="score"
-        get score() {
+        //% blockId=piscore block="%player score"
+        score(): number {
             if (this.showScore === null) this.showScore = true;
             if (this.showPlayer === null) this.showPlayer = true;
 
@@ -487,8 +487,9 @@ namespace info {
          * Sets the player score
          */
         //% group="Multi Player"
-        //% blockCombine block="score"
-        set score(value: number) {
+        //% blockId=pisetscore block="set %player score to %value"
+        //% value.defl=0
+        setScore(value: number) {
             this.init();
             updateFlag(Visibility.Score, true); 
             const t = this.score;           
@@ -496,11 +497,26 @@ namespace info {
         }
 
         /**
+         * Changes the score of a player
+         * @param value 
+         */
+        //% group="Multi Player"
+        //% blockId=pichangescore block="change %player score by %value"
+        //% value.defl=1
+        changeScoreBy(value: number): void {
+            this.setScore(this.score() + value);
+        }
+
+        hasScore() {
+            return this._score !== null;
+        }
+
+        /**
          * Gets the player life
          */
         //% group="Multi Player"
-        //% blockCombine block="life"
-        get life() {
+        //% blockid=piflife block="%player life"
+        life(): number {
             if (this.showLife === null) this.showLife = true;
             if (this.showPlayer === null) this.showPlayer = true;
 
@@ -514,12 +530,24 @@ namespace info {
          * Sets the player life
          */
         //% group="Multi Player"
-        //% blockCombine block="life"
-        set life(value: number) {
+        //% blockId=pisetlife block="set %player life to %value"
+        //% value.defl=3
+        setLife(value: number): void {
             this.init();
             updateFlag(Visibility.Life, true);
             const t = this.life;           
             this._life = (value | 0);
+        }
+
+        /**
+         * Changes the life of a player
+         * @param value 
+         */
+        //% group="Multi Player"
+        //% blockId=pichangelife block="change %player life by %value"
+        //% value.defl=-1
+        changeLifeBy(value: number): void {
+            this.setLife(this.life() + value);
         }
 
         /**
@@ -528,7 +556,7 @@ namespace info {
          * @param player player to check life of
          */
         //% group="Multi Player"
-        //% blockId=playerinfolifeset block="%player has life"
+        //% blockId=pihaslife block="%player has life"
         hasLife(): boolean {
             return this.life !== null;
         }
@@ -637,7 +665,7 @@ namespace info {
         }
 
         drawScore() {
-            const s = this.score | 0;
+            const s = this.score() | 0;
 
             let font: image.Font;
             let offsetY: number;
