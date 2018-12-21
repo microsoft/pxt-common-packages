@@ -38,7 +38,7 @@ namespace jacdac {
         private setPressed(offset: ControllerButtonOffset, down: boolean) {
             const b = this.state[1];
             const msk = 1 << offset;
-            this.state[0] = down ? (b | msk) : (b ^ msk);
+            this.state[1] = down ? (b | msk) : (b ^ msk);
             this.start();
         }
 
@@ -132,8 +132,7 @@ namespace jacdac {
 
         private processPacket(packetAddress: number, data: Buffer): boolean {
             const cmd: JDControllerCmd = data[0];
-            console.log(`cmd ${cmd}`)
-            // received a packet from the server
+            // received a packet from the serveru
             if (cmd == JDControllerCmd.ControlServer) {
                 console.log(`server ${toHex8(packetAddress)}`)
                 const address = this.device.address;
@@ -152,7 +151,7 @@ namespace jacdac {
                 if (address == this.serverAddress) {
                     this.serverAddress = 0; // streaming will stop automatically
                     this.log(`dropped`);
-                    this.stopStreaming();
+                    //this.stopStreaming();
                 }
 
                 // nope, doesn't seem to be our server
@@ -162,8 +161,8 @@ namespace jacdac {
         }
 
         start() {
-            if (!this._proxy)
-                super.start();
+            super.start();
+            this.startStreaming();
         }
 
         private startStreaming() {
@@ -173,10 +172,10 @@ namespace jacdac {
             this.log(`start`);
             this.streamingState = SensorState.Streaming;
             control.runInBackground(() => {
-                while (this.streamingState == SensorState.Streaming && this.isActive()) {
+                while (this.streamingState == SensorState.Streaming) {
                     this.sendPacket(this.state);
                     // waiting for a bit
-                    pause(100);
+                    pause(30);
                 }
                 this.streamingState = SensorState.Stopped;
                 this.log(`stopped`);

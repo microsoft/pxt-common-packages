@@ -282,9 +282,9 @@ namespace jacdac {
                     const B = state & (1 << 6);
                     return `${left ? "L" : "-"}${up ? "U" : "-"}${right ? "R" : "-"}${down ? "D" : "-"}${A ? "A" : "-"}${B ? "B" : "-"}`;
                 case JDControllerCmd.ControlServer:
-                    return `${data[1] ? toHex8(data[1]) : "--"} ${data[2] ? toHex8(data[2]) : "--"} ${data[3] ? toHex8(data[3]) : "--"} ${data[4] ? toHex8(data[4]) : "--"}`;
+                    return `srv> ${data[1] ? toHex8(data[1]) : "--"} ${data[2] ? toHex8(data[2]) : "--"} ${data[3] ? toHex8(data[3]) : "--"} ${data[4] ? toHex8(data[4]) : "--"}`;
                 case JDControllerCmd.ControlClient:
-                    return `client -> ${data[1] ? toHex8(data[1]) : "--"}`;
+                    return `client> ${data[1] ? toHex8(data[1]) : "--"}`;
                 default:
                     return toHex8(cmd);
             }

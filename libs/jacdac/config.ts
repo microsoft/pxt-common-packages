@@ -163,6 +163,6 @@ enum JDSwitchDirection {
 
 enum JDControllerCmd {
     ClientButtons = 1,
-    ControlServer,
-    ControlClient
+    ControlServer = 2,
+    ControlClient = 3
 }

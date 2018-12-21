@@ -11,6 +11,8 @@ namespace jacdac {
             // search existing player index
             for (let i = 1; i < this.controlData.length; ++i)
                 if (address == this.controlData[i]) {
+                    if (!serverAddress)
+                        this.sendPacket(this.controlData);
                     return i;
                 }
 
@@ -18,10 +20,7 @@ namespace jacdac {
             const drivers = jacdac.drivers();
             const players = controller.players();
             const ids: number[] = [0, 0, 0, 0, 0];
-            players.forEach(p => {
-                this.log(` found ${p.playerIndex}`)
-                ids[p.playerIndex] = 1;
-            });
+            players.forEach(p => ids[p.playerIndex] = 1);
 
             // did it move?
             // clean dead players
@@ -38,7 +37,7 @@ namespace jacdac {
             for (let i = 2; i < this.controlData.length; ++i) {
                 // if slot is free and there is such a player
                 if (this.controlData[i] == 0 && ids[i]) {
-                    this.log(`${toHex8(address)} -> ${i}`);
+                    this.log(`client ${toHex8(address)} -> p${i}`);
                     this.controlData[i] = address;
                     return i;
                 }
@@ -69,7 +68,6 @@ namespace jacdac {
 
         private processPacket(address: number, data: Buffer): boolean {
             const cmd: JDControllerCmd = data[0];
-            console.log(`cmd ${cmd}`)
             switch(cmd) {
                 case JDControllerCmd.ControlClient:
                     this.connectClient(address, data[1]);
