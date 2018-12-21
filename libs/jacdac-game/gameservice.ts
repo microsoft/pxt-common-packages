@@ -2,19 +2,11 @@ namespace jacdac {
     export enum GameServiceCommand {
         Sprite = 1
     }
-
+    
+    //% fixedInstances
     export class GameService extends Service {
-        private buttons: controller.MetaButton[];
         constructor() {
             super("game", jacdac.GAMEENGINE_DEVICE_CLASS);
-            this.buttons = [
-                controller.multiLeft,
-                controller.multiRight,
-                controller.multiUp,
-                controller.multiDown,
-                controller.multiA,
-                controller.multiB
-            ];
         }
 
         handlePacket(pkt: Buffer): boolean {
@@ -22,8 +14,9 @@ namespace jacdac {
             const data = packet.data;
             const playerAddress = data[0];
             const cmd = data[1];
-            const playerNumber: PlayerNumber = gameLobby.current.indexOfPlayer(playerAddress) + 1;
-            if (playerNumber <= 0) {
+            const playerNumber = gameLobby.current.indexOfPlayer(playerAddress) + 1;
+            const player = controller.players().find(p => p.playerIndex == playerNumber);
+            if (!player) {
                 // unknown player
                 this.log(`ukn plyr ${toHex8(playerAddress)}`)
                 return true;
@@ -31,8 +24,9 @@ namespace jacdac {
             switch (cmd) {
                 case GameClientCommand.Controller:
                     const buttonsPressed = data[2];
-                    for (let i = 0; i < this.buttons.length; ++i)
-                        this.buttons[i].setPressed(playerNumber, !!(buttonsPressed & (1 << this.buttons[i].buttonOffset)));
+                    const btns = player.buttons;
+                    for (let i = 0; i < btns.length; ++i)
+                        btns[i].setPressed(!!(buttonsPressed & (1 << i)));
                     break;
             }
             return true;
@@ -52,6 +46,6 @@ namespace jacdac {
         }
     }
 
-    //% whenUsed
+    //% whenUsed block="game service"
     export const gameService = new GameService();
 }

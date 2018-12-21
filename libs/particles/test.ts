@@ -64,7 +64,7 @@ namespace particles.trail {
     }
     
     export function runTrail(): Sprite {
-        const s = sprites.create(sprites.castle.heroFrontAttack1, SpriteKind.Player);
+        const s = sprites.create(img`1`);
         controller.moveSprite(s);
         mkTrailSource(s);
         return s;
