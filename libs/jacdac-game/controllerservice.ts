@@ -11,6 +11,7 @@ namespace jacdac {
         }
     }
 
+    //% fixedInstances
     export class ControllerService extends Service {
         players: ControllerClientInfo[];
 
@@ -36,7 +37,7 @@ namespace jacdac {
                 }
                 // add new player
                 const playerNumber = [2, 3, 4].filter(i => !this.players.some(p => p.playerIndex == i))[0];
-                this.players.push(player = new ControllerClientInfo(cp, playerNumber);
+                this.players.push(player = new ControllerClientInfo(cp, playerNumber));
                 this.log(player.toString());
             }
             return true;
