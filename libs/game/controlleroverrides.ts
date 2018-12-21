@@ -12,7 +12,7 @@ namespace controller {
     //% fixedInstance whenUsed block="down"
     export const down = new Button(ControllerButton.Down, -1);
     //% fixedInstance whenUsed block="menu"
-    export const menu = new Button(6, -1);
+    export const menu = new Button(7, -1);
 
     //% fixedInstance whenUsed block="player 2"
     export const player2 = new Controller(2, undefined);
