@@ -1,7 +1,7 @@
 namespace particles {
     //% fixedInstances
     export class ParticleEffect {
-        private sourceFactory: (anchor: ParticleAnchor, pps: number) => ParticleSource;
+        protected sourceFactory: (anchor: ParticleAnchor, pps: number) => ParticleSource;
 
         constructor(sourceFactory: (anchor: ParticleAnchor, particlesPerSecond: number) => ParticleSource) {
             this.sourceFactory = sourceFactory;
@@ -22,7 +22,66 @@ namespace particles {
         }
     }
 
-    function createEffect(factoryFactory: () => ParticleFactory): ParticleEffect {
+    class GlobalAnchor implements ParticleAnchor {
+        private camera: scene.Camera;
+
+        constructor() {
+            this.camera = game.currentScene().camera;
+        }
+
+        get x() {
+            return this.camera.offsetX + (screen.width >> 1);
+        }
+
+        get y() {
+            return this.camera.offsetY + (screen.height >> 1);
+        }
+
+        get width() {
+            return screen.width;
+        }
+
+        get height() {
+            return screen.height;
+        }
+
+    }
+
+    //% fixedInstances
+    export class GlobalEffect extends ParticleEffect {
+        protected source: ParticleSource;
+
+        constructor(sourceFactory: (anchor: ParticleAnchor, particlesPerSecond: number) => ParticleSource) {
+            super(sourceFactory);
+        }
+
+        /**
+         * Creates a new Global Effect
+         * @param particlesPerSecond 
+         */
+        //% blockId=particlesstartglobalanimation block="start global %effect effect at rate %particlesPerSecond p/s"
+        //% particlesPerSecond.defl=20
+        //% particlesPerSecond.min=1 particlePerSeconds.max=100
+        //% group="Effects"
+        startGlobal(particlesPerSecond: number): void {
+            // start global effect that occurs over entire screen (e.g. confetti / blizzard / etc)
+            if (!this.sourceFactory) return;
+            this.source = this.sourceFactory(new GlobalAnchor(), particlesPerSecond);
+        }
+
+        /**
+         * Creates a new Global Effect
+         * @param particlesPerSecond 
+         */
+        //% blockId=particlesendglobalanimation block="end global %effect effect"
+        //% group="Effects"
+        endGlobal(): void {
+            this.source.destroy();
+            this.source = null;
+        }
+    }
+
+    function createEffect(factoryFactory: (anchor?: ParticleAnchor) => ParticleFactory): ParticleEffect {
         const factory = factoryFactory();
         if (!factory) return undefined;
         return new ParticleEffect((anchor: ParticleAnchor, pps: number) => new ParticleSource(anchor, pps, factory));
@@ -32,16 +91,16 @@ namespace particles {
     export const defaultFactory = new SprayFactory(20, 0, 60);
 
     //% fixedInstance whenUsed block="spray"
-    export const sprayEffect = createEffect(function () { return new SprayFactory(100, 0, 120) });
+    export const spray = createEffect(function () { return new SprayFactory(100, 0, 120) });
 
     //% fixedInstance whenUsed block="trail"
-    export const trailEffect = new ParticleEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
+    export const trail = new ParticleEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
         const factory = new TrailFactory(anchor, 250, 1000);
         return new ParticleSource(anchor, particlesPerSecond, factory);
     });
 
     //% fixedInstance whenUsed block="fountain"
-    export const fountainEffect = new ParticleEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
+    export const fountain = new ParticleEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
         class FountainFactory extends particles.SprayFactory {
             galois: Math.FastRandom;
     
@@ -69,11 +128,11 @@ namespace particles {
     });
 
     //% fixedInstance whenUsed block="confetti"
-    export const confettiEffect = createEffect(function () {
-        const factory = new ConfettiFactory(16, 16);
+    export const confetti = new GlobalEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
+        const factory = new ConfettiFactory(anchor.width ? anchor.width : 16, 16);
         factory.setSpeed(30);
-        return factory;
-    });
+        return new ParticleSource(anchor, particlesPerSecond, factory);
+    }) as GlobalEffect;
 
     //% fixedInstance whenUsed block="hearts"
     export const hearts = createEffect(function () {
@@ -109,7 +168,7 @@ namespace particles {
     });
 
     //% fixedInstance whenUsed block="fire"
-    export const fireEffect = new ParticleEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
+    export const fire = new ParticleEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
         const factory = new FireFactory(5);
         const src = new FireSource(anchor, particlesPerSecond, factory);
         src.setAcceleration(0, -20);
@@ -138,6 +197,7 @@ namespace particles {
     export const ashes = new ParticleEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
         const src = new particles.ParticleSource(anchor, 600, new AshFactory(anchor));
         src.setAcceleration(0, 500);
+        // src.lifespan = 2500; // <<< uncomment this line after pxt-common-packages#583 is merged into branch, as source is inherently temporary
         return src;
     });
 }

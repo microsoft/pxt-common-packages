@@ -1,14 +1,14 @@
 
-particles.confetti.winConfetti();
-// particles.print.fireworkPrint("hello", image.font5);
-// particles.fireworks.runFireworks();
-// particles.fountain.runFountain();
-// particles.trail.runTrail();
-// particles.fire.runTorch();
-// particles.spiral.runSpiral();
+particles.test.confetti.winConfetti();
+// particles.test.print.fireworkPrint("hello", image.font5);
+particles.test.fireworks.runFireworks();
+// particles.test.fountain.runFountain();
+// particles.test.trail.runTrail();
+// particles.test.fire.runTorch();
+// particles.test.spiral.runSpiral();
 // Space pong: See bottom of screen
 
-namespace particles.print {
+namespace particles.test.print {
     export function fireworkPrint(text: string, font: image.Font) {
         const lleft = (screen.width >> 1) - ((text.length * font.charWidth) >> 1);
 
@@ -47,7 +47,7 @@ namespace particles.print {
     }
 }
 
-namespace particles.trail {
+namespace particles.test.trail {
     enum SpriteKind {
         Player,
         Projectile,
@@ -71,7 +71,7 @@ namespace particles.trail {
     }
 }
 
-namespace particles.fountain {
+namespace particles.test.fountain {
     class FountainFactory extends particles.SprayFactory {
         galois: Math.FastRandom;
 
@@ -102,7 +102,7 @@ namespace particles.fountain {
     }
 }
 
-namespace particles.confetti {
+namespace particles.test.confetti {
     /**
      * A factory for creating particles with the provided shapes.
      */
@@ -205,7 +205,7 @@ namespace particles.confetti {
 
 }
 
-namespace particles.fireworks {
+namespace particles.test.fireworks {
     enum SpriteKind {
         Player,
         Projectile
@@ -233,7 +233,7 @@ namespace particles.fireworks {
     }
 }
 
-namespace particles.fire {
+namespace particles.test.fire {
     const NUM_SLICES = 300;
     let cachedSin: Fx8[];
     let cachedCos: Fx8[];
@@ -332,7 +332,7 @@ namespace particles.fire {
     }
 }
 
-namespace particles.spiral {
+namespace particles.test.spiral {
     const NUM_SLICES = 300;
     let cachedSin: Fx8[];
     let cachedCos: Fx8[];

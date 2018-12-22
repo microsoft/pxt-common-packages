@@ -268,6 +268,8 @@ namespace particles {
         createParticle(anchor: ParticleAnchor) {
             const p = super.createParticle(anchor);
             p.lifespan = this.galois.randomRange(1000, 4500);
+             // confetti comes from top if possible
+            if (anchor.height) p._y = Fx.sub(p._y, Fx8(anchor.height >> 1));
             return p;
         }
     }
@@ -366,12 +368,10 @@ namespace particles {
 
     export class AshFactory extends AreaFactory {
         private colors: number[];
-        private totalCount: number;
         
-        constructor(anchor: particles.ParticleAnchor, percentKept: number = 50) {
+        constructor(anchor: particles.ParticleAnchor, percentKept: number = 20) {
             super(anchor.width ? anchor.width : 8, anchor.height ? anchor.height >> 1 : 8);
             this.colors = [];
-            this.totalCount = 0;
 
             if (anchor.image) {
                 for (let x = 0; x < anchor.image.width; x++) {
@@ -382,26 +382,22 @@ namespace particles {
                         }
                     }
                 }
-                this.colors.forEach(e => this.totalCount += e);
             } else {
-                this.colors[1] = 100;
-                this.totalCount = 100.
+                this.colors[1] = 20;
             }
         }
 
         createParticle(anchor: particles.ParticleAnchor) {
-            if (this.totalCount == 0) return undefined;
             const p = super.createParticle(anchor);
 
             let col = 0;
-            do {
-                const index = this.galois.randomRange(0x1, this.colors.length);
-                if (this.colors[index]) {
-                    this.colors[index]--;
-                    this.totalCount--;
-                    col = index;
-                }
-            } while (col == 0)
+            const index = this.galois.randomRange(0x1, this.colors.length);
+            if (this.colors[index]) {
+                this.colors[index]--;
+                col = index;
+            } else {
+                return undefined;
+            }
             p.data = col;
 
             p._y = Fx.add(Fx8(this.galois.randomRange(this.yRange >> 1, this.yRange)), p._y);
