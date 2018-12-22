@@ -28,6 +28,8 @@ namespace particles {
     export interface ParticleAnchor {
         x: number;
         y: number;
+        vx?: number;
+        vy?: number;
         width?: number;
         height?: number;
         image?: Image;

@@ -137,7 +137,7 @@ namespace particles {
     //% fixedInstance whenUsed block="ashes"
     export const ashes = new ParticleEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
         const src = new particles.ParticleSource(anchor, 600, new AshFactory(anchor));
-        src.setAcceleration(0, 300);
+        src.setAcceleration(0, 500);
         return src;
     });
 }

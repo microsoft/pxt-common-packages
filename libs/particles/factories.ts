@@ -284,13 +284,13 @@ namespace particles {
             this.minRadius = radius >> 1;
             this.maxRadius = radius;
         }
-    
+
         createParticle(anchor: particles.ParticleAnchor) {
             const p = super.createParticle(anchor);
             p.data = this.galois.randomBool() ?
                 2 : this.galois.randomBool() ?
                     4 : 5;
-    
+
             const i = this.galois.randomRange(0, cachedCos.length);
             const r = this.galois.randomRange(this.minRadius, this.maxRadius);
             p._x = Fx.iadd(anchor.x, Fx.mul(Fx8(r), cachedCos[i]));
@@ -298,10 +298,10 @@ namespace particles {
             p.vy = Fx8(Math.randomRange(0, 10));
             p.vx = Fx8(Math.randomRange(-5, 5));
             p.lifespan = 1500;
-    
+
             return p;
         }
-    
+
         drawParticle(p: particles.Particle, x: Fx8, y: Fx8) {
             screen.setPixel(Fx.toInt(p._x), Fx.toInt(p._y), p.data);
         }
@@ -366,42 +366,53 @@ namespace particles {
 
     export class AshFactory extends AreaFactory {
         private colors: number[];
-        constructor(anchor: particles.ParticleAnchor) {
+        private totalCount: number;
+        
+        constructor(anchor: particles.ParticleAnchor, percentKept: number = 50) {
             super(anchor.width ? anchor.width : 8, anchor.height ? anchor.height >> 1 : 8);
-            // refactor to use fixed 16 len color count array instead of indefinitely long array
             this.colors = [];
-    
+            this.totalCount = 0;
+
             if (anchor.image) {
                 for (let x = 0; x < anchor.image.width; x++) {
                     for (let y = 0; y < anchor.image.width; y++) {
                         const c = anchor.image.getPixel(x, y);
-                        if (c && this.galois.percentChance(50)) {
-                            this.colors.push(c);
+                        if (c && this.galois.percentChance(percentKept)) {
+                            this.colors[c]++;
                         }
                     }
                 }
+                this.colors.forEach(e => this.totalCount += e);
             } else {
-                for (let i = 0; i < 100; i++) {
-                    this.colors.push(0x1);
-                }
+                this.colors[1] = 100;
+                this.totalCount = 100.
             }
         }
-    
+
         createParticle(anchor: particles.ParticleAnchor) {
-            if (this.colors.length == 0) return undefined;
+            if (this.totalCount == 0) return undefined;
             const p = super.createParticle(anchor);
 
-            p.data = this.galois.pickRandom(this.colors);
-            this.colors.removeElement(p.data);
+            let col = 0;
+            do {
+                const index = this.galois.randomRange(0x1, this.colors.length);
+                if (this.colors[index]) {
+                    this.colors[index]--;
+                    this.totalCount--;
+                    col = index;
+                }
+            } while (col == 0)
+            p.data = col;
 
             p._y = Fx.add(Fx8(this.galois.randomRange(this.yRange >> 1, this.yRange)), p._y);
-            p.vx = Fx8(this.galois.randomRange(-20, -15));
-            p.vy = Fx8(this.galois.randomRange(-70, -50));
             p.lifespan = this.galois.randomRange(1000, 1500);
-    
+
+            p.vx = anchor.vx ? Fx.neg(Fx8(anchor.vx >> 2)): Fx.zeroFx8;
+            p.vy = Fx8(this.galois.randomRange(-150, -50));
+
             return p;
         }
-    
+
         drawParticle(p: particles.Particle, x: Fx8, y: Fx8) {
             screen.setPixel(Fx.toInt(x), Fx.toInt(y), p.data);
         }
