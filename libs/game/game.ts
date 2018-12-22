@@ -10,6 +10,7 @@ namespace game {
     export let debug = false;
     export let stats = false;
     export let gameOverSound: () => void = undefined;
+    export let gameWinSound: () => void = undefined;
 
     let _scene: scene.Scene;
     let _sceneStack: scene.Scene[];
@@ -121,8 +122,12 @@ namespace game {
         // one last screenshot
         takeScreenshot();
         control.runInParallel(() => {
-            if (gameOverSound) gameOverSound();
-            meltScreen();
+            if (win) {
+                if (gameWinSound) gameWinSound();
+            } else {
+                if (gameOverSound) gameOverSound();
+                meltScreen();
+            }
             let top = showDialogBackground(44, 4)
             screen.printCenter(win ? "YOU WIN!" : "GAME OVER!", top + 8, screen.isMono ? 1 : 5, image.font8)
             if (info.hasScore()) {
