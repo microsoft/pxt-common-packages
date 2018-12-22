@@ -22,6 +22,9 @@ namespace particles {
         }
     }
 
+    /**
+     * Anchor used for global effects that occur across the screen.
+     */
     class GlobalAnchor implements ParticleAnchor {
         private camera: scene.Camera;
 
@@ -56,7 +59,7 @@ namespace particles {
         }
 
         /**
-         * Creates a new Global Effect
+         * Creates a new Global Effect that occurs over entire screen
          * @param particlesPerSecond 
          */
         //% blockId=particlesstartglobalanimation block="start global %effect effect at rate %particlesPerSecond p/s"
@@ -64,13 +67,12 @@ namespace particles {
         //% particlesPerSecond.min=1 particlePerSeconds.max=100
         //% group="Effects"
         startGlobal(particlesPerSecond: number): void {
-            // start global effect that occurs over entire screen (e.g. confetti / blizzard / etc)
             if (!this.sourceFactory) return;
             this.source = this.sourceFactory(new GlobalAnchor(), particlesPerSecond);
         }
 
         /**
-         * Creates a new Global Effect
+         * If this effect is currently occurring globally, stop producing particles and end the effect
          * @param particlesPerSecond 
          */
         //% blockId=particlesendglobalanimation block="end global %effect effect"
@@ -146,7 +148,7 @@ namespace particles {
             . . F . .
         `);
         // if large anchor, increase lifespan
-        if (factory.xRange > 50) { 
+        if (factory.xRange > 50) {
             factory.minLifespan = 1000;
             factory.maxLifespan = 2000;
         }
@@ -155,14 +157,21 @@ namespace particles {
     });
 
     //% fixedInstance whenUsed block="smiles"
-    export const smiles = createEffect(function () {
-        return new ShapeFactory(16, 16, img`
+    export const smiles = new GlobalEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
+        const factory = new ShapeFactory(anchor.width ? anchor.width : 16, 16, img`
             . f . f . 
             . f . f . 
             . . . . . 
             f . . . f 
             . f f f . 
         `);
+        // if large anchor, increase lifespan
+        if (factory.xRange > 50) {
+            factory.minLifespan = 1000;
+            factory.maxLifespan = 2000;
+        }
+        factory.setSpeed(90);
+        return new ParticleSource(anchor, particlesPerSecond, factory);
     });
 
     //% fixedInstance whenUsed block="rings"
@@ -206,7 +215,7 @@ namespace particles {
     export const ashes = new ParticleEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
         const src = new particles.ParticleSource(anchor, 600, new AshFactory(anchor));
         src.setAcceleration(0, 500);
-        // src.lifespan = 2500; // <<< uncomment this line after pxt-common-packages#583 is merged into branch, as source is inherently temporary
+        // src.lifespan = 2500; // <<< uncomment this line after pxt-common-packages#583 is merged into branch, as effect is inherently temporary
         return src;
     });
 }
