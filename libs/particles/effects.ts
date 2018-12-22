@@ -133,4 +133,11 @@ namespace particles {
         }
         return new RingFactory(30, 40, 10, [0x4, 0x4, 0x5]);
     });
+
+    //% fixedInstance whenUsed block="ashes"
+    export const ashes = new ParticleEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
+        const src = new particles.ParticleSource(anchor, 600, new AshFactory(anchor));
+        src.setAcceleration(0, 300);
+        return src;
+    });
 }

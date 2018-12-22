@@ -30,6 +30,7 @@ namespace particles {
         y: number;
         width?: number;
         height?: number;
+        image?: Image;
     }
 
     /**

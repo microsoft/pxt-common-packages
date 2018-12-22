@@ -363,4 +363,47 @@ namespace particles {
             this.spread = s;
         }
     }
+
+    export class AshFactory extends AreaFactory {
+        private colors: number[];
+        constructor(anchor: particles.ParticleAnchor) {
+            super(anchor.width ? anchor.width : 8, anchor.height ? anchor.height >> 1 : 8);
+            // refactor to use fixed 16 len color count array instead of indefinitely long array
+            this.colors = [];
+    
+            if (anchor.image) {
+                for (let x = 0; x < anchor.image.width; x++) {
+                    for (let y = 0; y < anchor.image.width; y++) {
+                        const c = anchor.image.getPixel(x, y);
+                        if (c && this.galois.percentChance(50)) {
+                            this.colors.push(c);
+                        }
+                    }
+                }
+            } else {
+                for (let i = 0; i < 100; i++) {
+                    this.colors.push(0x1);
+                }
+            }
+        }
+    
+        createParticle(anchor: particles.ParticleAnchor) {
+            if (this.colors.length == 0) return undefined;
+            const p = super.createParticle(anchor);
+
+            p.data = this.galois.pickRandom(this.colors);
+            this.colors.removeElement(p.data);
+
+            p._y = Fx.add(Fx8(this.galois.randomRange(this.yRange >> 1, this.yRange)), p._y);
+            p.vx = Fx8(this.galois.randomRange(-20, -15));
+            p.vy = Fx8(this.galois.randomRange(-70, -50));
+            p.lifespan = this.galois.randomRange(1000, 1500);
+    
+            return p;
+        }
+    
+        drawParticle(p: particles.Particle, x: Fx8, y: Fx8) {
+            screen.setPixel(Fx.toInt(x), Fx.toInt(y), p.data);
+        }
+    }
 }
