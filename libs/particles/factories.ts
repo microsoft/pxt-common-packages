@@ -133,21 +133,26 @@ namespace particles {
     export class AreaFactory extends SprayFactory {
         xRange: number;
         yRange: number;
+        minLifespan: number;
+        maxLifespan: number;
         protected galois: Math.FastRandom;
 
-        constructor(xRange: number, yRange: number) {
+        constructor(xRange: number, yRange: number, minLifespan?: number, maxLifespan?: number) {
             super(40, 0, 90);
             this.xRange = xRange;
             this.yRange = yRange;
+            this.minLifespan = minLifespan ? minLifespan : 150;
+            this.maxLifespan = maxLifespan ? maxLifespan : 850;
             this.galois = new Math.FastRandom();
         }
 
         createParticle(anchor: particles.ParticleAnchor) {
             const p = super.createParticle(anchor);
 
-            p.lifespan = this.galois.randomRange(150, 850);
+            p.lifespan = this.galois.randomRange(this.minLifespan, this.maxLifespan);
             p._x = Fx.add(Fx8(this.galois.randomRange(0, this.xRange) - (this.xRange >> 1)), p._x);
             p._y = Fx.add(Fx8(this.galois.randomRange(0, this.yRange) - (this.yRange >> 1)), p._y);
+            if (anchor.height) p._y = Fx.sub(p._y, Fx8(anchor.height >> 1));
 
             return p;
         }
@@ -230,10 +235,7 @@ namespace particles {
 
         createParticle(anchor: ParticleAnchor) {
             const p = super.createParticle(anchor);
-
             p.data = this.galois.randomRange(1, 14);
-            p.lifespan = this.galois.randomRange(250, 1000);
-
             return p;
         }
     }
@@ -263,14 +265,9 @@ namespace particles {
             for (let i = 1; i < confetti.length; i++) {
                 this.addShape(confetti[i]);
             }
-        }
 
-        createParticle(anchor: ParticleAnchor) {
-            const p = super.createParticle(anchor);
-            p.lifespan = this.galois.randomRange(1000, 4500);
-             // confetti comes from top if possible
-            if (anchor.height) p._y = Fx.sub(p._y, Fx8(anchor.height >> 1));
-            return p;
+            this.minLifespan = 1000;
+            this.maxLifespan = 4500;
         }
     }
 

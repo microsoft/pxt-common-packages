@@ -76,8 +76,10 @@ namespace particles {
         //% blockId=particlesendglobalanimation block="end global %effect effect"
         //% group="Effects"
         endGlobal(): void {
-            this.source.destroy();
-            this.source = null;
+            if (this.source) {
+                this.source.destroy();
+                this.source = null;
+            }
         }
     }
 
@@ -132,17 +134,24 @@ namespace particles {
         const factory = new ConfettiFactory(anchor.width ? anchor.width : 16, 16);
         factory.setSpeed(30);
         return new ParticleSource(anchor, particlesPerSecond, factory);
-    }) as GlobalEffect;
+    });
 
     //% fixedInstance whenUsed block="hearts"
-    export const hearts = createEffect(function () {
-        return new ShapeFactory(16, 16, img`
+    export const hearts = new GlobalEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
+        const factory = new ShapeFactory(anchor.width ? anchor.width : 16, 16, img`
             . F . F .
             F . F . F
             F . . . F
             . F . F .
             . . F . .
         `);
+        // if large anchor, increase lifespan
+        if (factory.xRange > 50) { 
+            factory.minLifespan = 1000;
+            factory.maxLifespan = 2000;
+        }
+        factory.setSpeed(90);
+        return new ParticleSource(anchor, particlesPerSecond, factory);
     });
 
     //% fixedInstance whenUsed block="smiles"
