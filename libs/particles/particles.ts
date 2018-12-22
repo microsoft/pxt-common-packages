@@ -40,7 +40,7 @@ namespace particles {
      */
     export class ParticleSource implements SpriteLike {
         anchor: ParticleAnchor;
-        z: number;
+        private _z: number;
         id: number;
         _dt: number;
 
@@ -53,6 +53,17 @@ namespace particles {
         protected ax: Fx8;
         protected ay: Fx8;
 
+        get z() {
+            return this._z;
+        }
+
+        set z(v: number) {
+            if (v != this._z) {
+                this._z = v;
+                game.currentScene().flags |= scene.Flag.NeedsSorting;
+            }
+        }
+
         /**
          * @param anchor to emit particles from
          * @param particlesPerSecond rate at which particles are emitted
@@ -64,7 +75,7 @@ namespace particles {
             this.setAcceleration(0, 0);
             this.setAnchor(anchor);
             this._dt = 0;
-            this.z = -1;
+            this.z = 0;
             this.setFactory(factory || particles.defaultFactory);
             sources.push(this);
             game.currentScene().addSprite(this);
