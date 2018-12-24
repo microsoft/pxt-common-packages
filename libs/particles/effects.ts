@@ -215,7 +215,32 @@ namespace particles {
     export const ashes = new ParticleEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
         const src = new particles.ParticleSource(anchor, 600, new AshFactory(anchor));
         src.setAcceleration(0, 500);
-        // src.lifespan = 2500; // <<< uncomment this line after pxt-common-packages#583 is merged into branch, as effect is inherently temporary
+        // src.lifespan = 2000; // <<< uncomment this line after pxt-common-packages#583 is merged into branch, as effect is inherently temporary
+        return src;
+    });
+
+    //% fixedInstance whenUsed block="blizzard"
+    export const blizzard = new GlobalEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
+        class SnowFactory extends particles.ShapeFactory {
+            constructor(xRange: number, yRange: number) {
+                super(xRange, yRange, img`F`);
+                this.addShape(img`
+                    F
+                    F`);
+                this.minLifespan = 200;
+                this.maxLifespan = this.xRange > 50 ? 1200: 700;
+            }
+        
+            createParticle(anchor: particles.ParticleAnchor) {
+                const p = super.createParticle(anchor);
+                p.data = this.galois.percentChance(80) ? 0x1 : 0x9;
+                return p;
+            }
+        }
+
+        const factory = new SnowFactory(anchor.width ? anchor.width : 16, anchor.height ? anchor.height : 16);
+        const src = new particles.ParticleSource(anchor, particlesPerSecond, factory);
+        src.setAcceleration(-300, -100);
         return src;
     });
 }

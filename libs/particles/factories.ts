@@ -150,9 +150,8 @@ namespace particles {
             const p = super.createParticle(anchor);
 
             p.lifespan = this.galois.randomRange(this.minLifespan, this.maxLifespan);
-            p._x = Fx.add(Fx8(this.galois.randomRange(0, this.xRange) - (this.xRange >> 1)), p._x);
-            p._y = Fx.add(Fx8(this.galois.randomRange(0, this.yRange) - (this.yRange >> 1)), p._y);
-            if (anchor.height) p._y = Fx.sub(p._y, Fx8(anchor.height >> 1));
+            p._x = Fx.iadd(this.galois.randomRange(0, this.xRange) - (this.xRange >> 1), p._x);
+            p._y = Fx.iadd(this.galois.randomRange(0, this.yRange) - (anchor.height ? anchor.height >> 1 : 0), p._y);
 
             return p;
         }
@@ -168,23 +167,28 @@ namespace particles {
     /**
      * A factory for creating a trail that is emitted by sprites.
      */
-    export class TrailFactory extends AreaFactory {
+    export class TrailFactory extends ParticleFactory {
         minLifespan: number;
         maxLifespan: number;
-        galois: Math.FastRandom;
+        xRange: number;
+        yRange: number;
+        protected galois: Math.FastRandom;
 
         constructor(sprite: ParticleAnchor, minLifespan: number, maxLifespan: number) {
-            super(sprite.width ? sprite.width >> 1 : 8, sprite.height? sprite.height >> 1 : 8);
+            super();
+            this.xRange = sprite.width ? sprite.width >> 1 : 8;
+            this.yRange = sprite.height ? sprite.height >> 1 : 8;
             this.minLifespan = minLifespan;
             this.maxLifespan = maxLifespan;
             this.galois = new Math.FastRandom();
-            this.setSpeed(0)
         }
 
         createParticle(anchor: particles.ParticleAnchor) {
             const p = super.createParticle(anchor);
 
             p.lifespan = this.galois.randomRange(this.minLifespan, this.maxLifespan);
+            p._x = Fx.iadd(this.galois.randomRange(0, this.xRange) - (this.xRange >> 1), p._x);
+            p._y = Fx.iadd(this.galois.randomRange(0, this.yRange) - (this.yRange >> 1), p._y);
             p.data = this.galois.randomRange(0x1, 0xF);
 
             return p;
@@ -292,6 +296,7 @@ namespace particles {
 
             const i = this.galois.randomRange(0, cachedCos.length);
             const r = this.galois.randomRange(this.minRadius, this.maxRadius);
+
             p._x = Fx.iadd(anchor.x, Fx.mul(Fx8(r), cachedCos[i]));
             p._y = Fx.iadd(anchor.y, Fx.mul(Fx8(r), cachedSin[i]));
             p.vy = Fx8(Math.randomRange(0, 10));
@@ -370,36 +375,30 @@ namespace particles {
             super(anchor.width ? anchor.width : 8, anchor.height ? anchor.height >> 1 : 8);
             this.colors = [];
 
-            if (anchor.image) {
-                for (let x = 0; x < anchor.image.width; x++) {
-                    for (let y = 0; y < anchor.image.width; y++) {
-                        const c = anchor.image.getPixel(x, y);
-                        if (c && this.galois.percentChance(percentKept)) {
-                            this.colors[c]++;
-                        }
+            if (!anchor.image) {
+                this.colors[1] = 20;
+                return;
+            }
+            for (let x = 0; x < anchor.image.width; x++) {
+                for (let y = 0; y < anchor.image.width; y++) {
+                    const c = anchor.image.getPixel(x, y);
+                    if (c && this.galois.percentChance(percentKept)) {
+                        this.colors[c]++;
                     }
                 }
-            } else {
-                this.colors[1] = 20;
             }
         }
 
         createParticle(anchor: particles.ParticleAnchor) {
+            let col = this.galois.randomRange(0x1, this.colors.length);
+            if (!this.colors[col]) return undefined;
+
             const p = super.createParticle(anchor);
-
-            let col = 0;
-            const index = this.galois.randomRange(0x1, this.colors.length);
-            if (this.colors[index]) {
-                this.colors[index]--;
-                col = index;
-            } else {
-                return undefined;
-            }
+            this.colors[col]--;
             p.data = col;
-
-            p._y = Fx.add(Fx8(this.galois.randomRange(this.yRange >> 1, this.yRange)), p._y);
             p.lifespan = this.galois.randomRange(1000, 1500);
 
+            p._y = Fx.iadd(this.galois.randomRange(this.yRange >> 1, this.yRange), p._y);
             p.vx = anchor.vx ? Fx.neg(Fx8(anchor.vx >> 2)): Fx.zeroFx8;
             p.vy = Fx8(this.galois.randomRange(-150, -50));
 
