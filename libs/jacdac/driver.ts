@@ -44,7 +44,7 @@ namespace jacdac {
 
         set proxy(value: JacDacDriverStatus) {
             if (this._proxy) {
-                control.onEvent(this._proxy.id, JD_DRIVER_EVT_FILL_CONTROL_PACKET, undefined);
+                control.onEvent(this._proxy.id, JD_DRIVER_EVT_FILL_CONTROL_PACKET, () => {});
                 jacdac.removeDriver(this);
             }
             this._proxy = value;

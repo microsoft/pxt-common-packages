@@ -105,22 +105,12 @@ namespace jacdac {
     export const controllerService = new ControllerService();
 
     scene.systemMenu.addEntry(
-        () => "jacdac start server",
-        () => {
-            jacdac.controllerService.start();
-            // TODO: fix control packages in broadcast mode
-            game.onUpdateInterval(500, () => {
-                jacdac.controllerService.sendState();
-            })
-        }
-    );
-    scene.systemMenu.addEntry(
         () => "jacdac join game",
         () => { },
         false,
         () => {
-            game.consoleOverlay.setVisible(true);
-            jacdac.consolePriority = ConsolePriority.Log;
+            // stop server service
+            jacdac.controllerService.stop();
             // remove game enterily
             game.popScene();
             // push empty game
@@ -148,4 +138,12 @@ namespace jacdac {
             jacdac.controllerClient.start();
         }
     );
+
+    // auto start server
+    jacdac.controllerService.start();
+    // TODO: fix control packages in broadcast mode
+    game.onUpdateInterval(500, () => {
+        if (jacdac.controllerService.isStarted)
+            jacdac.controllerService.sendState();
+    })
 }
