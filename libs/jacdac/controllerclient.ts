@@ -202,7 +202,7 @@ namespace jacdac {
                 // waiting for a bit
                 pause(this.streamingInterval);
                 // check if server still alive
-                if (control.millis() - this.lastServerTime > 500) {
+                if (control.millis() - this.lastServerTime > 1000) {
                     this.serverAddress = 0; // inactive
                 }
             }
