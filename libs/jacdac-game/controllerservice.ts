@@ -151,7 +151,7 @@ namespace jacdac {
                 else
                     game.showDialog(
                         `disconnected`,
-                        `waiting for server`);
+                        `connect jacdac cable`);
             });
             jacdac.controllerClient.start();
         }
