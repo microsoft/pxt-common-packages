@@ -122,7 +122,8 @@ namespace controller {
 
         setPressed(pressed: boolean) {
             if (this._pressed != pressed) {
-                this._owner.connected = true;
+                if (this._owner)
+                    this._owner.connected = true;
                 this._pressed = pressed;
                 if (this._pressed)
                     this.raiseButtonUp();
@@ -391,12 +392,10 @@ namespace controller {
         __preUpdate() {
             if (!this._controlledSprites) return;
 
-            let deadSprites: ControlledSprite[] = undefined;
+            let deadSprites = false;
             this._controlledSprites.forEach(sprite => {
                 if (sprite.s.flags & sprites.Flag.Destroyed) {
-                    if (!deadSprites)
-                        deadSprites = [];
-                    deadSprites.push(sprite);
+                    deadSprites = true;
                     return;
                 }
 
@@ -424,7 +423,8 @@ namespace controller {
             });
 
             if (deadSprites)
-                deadSprites.forEach(ds => this._controlledSprites.removeElement(ds));
+                this._controlledSprites = this._controlledSprites
+                    .filter(s => !(s.s.flags & sprites.Flag.Destroyed));
         }
 
         __update(dt: number) {
