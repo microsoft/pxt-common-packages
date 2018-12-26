@@ -7,9 +7,10 @@ namespace jacdac {
         stateUpdateHandler: () => void;
 
         constructor() {
-            super("ctrl", jacdac.CONTROLLER_DEVICE_CLASS, 2);
+            super("ctrl", jacdac.CONTROLLER_DEVICE_CLASS, 3);
             this.controlData[0] = JDControllerCommand.ControlClient;
             this.serverAddress = 0;
+            this.playerIndex = 0;
             this.state = control.createBuffer(2);
             this.state[0] = JDControllerCommand.ClientButtons;
             this.streamingState = jacdac.SensorState.Stopped;
@@ -22,6 +23,14 @@ namespace jacdac {
 
         set serverAddress(value: number) {
             this.controlData[1] = value;
+        }
+
+        get playerIndex(): number {
+            return this.controlData[2];
+        }
+
+        set playerIndex(index: number) { 
+            this.controlData[2] = index;
         }
 
         isPressed(offset: JDControllerButton): boolean {
@@ -137,11 +146,13 @@ namespace jacdac {
             const cmd: JDControllerCommand = data[0];
             // received a packet from the server
             if (cmd == JDControllerCommand.ControlServer) {
-                console.log(`server ${toHex8(packetAddress)}`)
+                this.log(`server ${toHex8(packetAddress)}`)
                 const address = this.device.address;
-                for (let i = 1; i < 5; ++i) {
+                for (let i = 1; i <= 4; ++i) {
                     if (data[i] == address) {
                         // we are connected!
+                        this.playerIndex = i;
+                        // check that we are still connected to the same server
                         if (this.serverAddress != packetAddress) {
                             this.serverAddress = packetAddress;
                             this.log(`server ${toHex8(this.serverAddress)}`);
@@ -153,6 +164,7 @@ namespace jacdac {
                 // did the server drop us
                 if (address == this.serverAddress) {
                     this.serverAddress = 0; // streaming will stop automatically
+                    this.playerIndex = 0;
                     this.log(`dropped`);
                     this.stopStreaming();
                 }

@@ -39,7 +39,7 @@ namespace jacdac {
 
         get deviceName(): string {
             const d = this.device;
-            return d ?  jacdac.remoteDeviceName(d.serialNumber) : "";
+            return d ? jacdac.remoteDeviceName(d.serialNumber) : "";
         }
 
         set proxy(value: JacDacDriverStatus) {
@@ -76,10 +76,10 @@ namespace jacdac {
         }
 
         public log(text: string) {
-            if (!this.supressLog) {
+            if (!this.supressLog || jacdac.consolePriority < console.minPriority) {
                 let dev = jacdac.deviceName();
-                if(!dev) {
-                    const d= this.device;
+                if (!dev) {
+                    const d = this.device;
                     dev = d ? toHex8(d.address) : "--";
                 }
                 console.add(jacdac.consolePriority, `${dev}>${this.name}>${text}`);

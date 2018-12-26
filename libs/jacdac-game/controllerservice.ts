@@ -1,13 +1,12 @@
 namespace jacdac {
     //% fixedInstances
     export class ControllerService extends Broadcast {
-
         constructor() {
             super("ctrl", jacdac.CONTROLLER_DEVICE_CLASS, 5);
             this.controlData[0] = JDControllerCommand.ControlServer;
         }
 
-        private connectClient(address: number, serverAddress: number): number {
+        private connectClient(address: number, serverAddress: number, receivedPlayerIndex: number): number {
             // search existing player index
             for (let i = 1; i < this.controlData.length; ++i)
                 if (address == this.controlData[i]) {
@@ -19,7 +18,7 @@ namespace jacdac {
             this.log(`new player ${toHex8(address)}`);
             const drivers = jacdac.drivers();
             const players = controller.players();
-            const ids: number[] = [0, 0, 0, 0, 0];
+            const ids: number[] = [0, 0, 0, 0, 0]; // player 0 is not used
             players.forEach(p => ids[p.playerIndex] = 1);
 
             // did it move?
@@ -70,7 +69,7 @@ namespace jacdac {
             const cmd: JDControllerCommand = data[0];
             switch (cmd) {
                 case JDControllerCommand.ControlClient:
-                    this.connectClient(address, data[1]);
+                    this.connectClient(address, data[1], data[2]);
                     return true;
                 case JDControllerCommand.ClientButtons:
                     return this.processButtonsPacket(address, data);
@@ -80,7 +79,7 @@ namespace jacdac {
         }
 
         private processButtonsPacket(address: number, data: Buffer) {
-            const playerIndex = this.connectClient(address, -1);
+            const playerIndex = this.connectClient(address, -1, 0);
             if (playerIndex < 0) {
                 this.log(`no player for ${toHex8(address)}`);
                 return false;
@@ -96,6 +95,10 @@ namespace jacdac {
                 btns[i].setPressed(!!(state & (1 << (i + 1))));
             return true;
         }
+
+        sendState() {
+            this.sendPacket(this.controlData);
+        }
     }
 
     //% fixedInstance whenUsed block="controller service"
@@ -103,7 +106,13 @@ namespace jacdac {
 
     scene.systemMenu.addEntry(
         () => "jacdac start server",
-        () => jacdac.controllerService.start()
+        () => {
+            jacdac.controllerService.start();
+            // TODO: fix control packages in broadcast mode
+            game.onUpdateInterval(500, () => {
+                jacdac.controllerService.sendState();
+            })
+        }
     );
     scene.systemMenu.addEntry(
         () => "jacdac join game",
@@ -126,6 +135,16 @@ namespace jacdac {
                 jacdac.controllerClient.setIsPressed(JDControllerButton.Right, controller.right.isPressed());
                 jacdac.controllerClient.setIsPressed(JDControllerButton.Down, controller.down.isPressed());
             }
+            game.onPaint(() => {
+                if (jacdac.controllerClient.isActive())
+                    game.showDialog(
+                        `connected`,
+                        `player ${jacdac.controllerClient.playerIndex}`);
+                else
+                    game.showDialog(
+                        `disconnected`,
+                        `waiting for server`);
+            });
             jacdac.controllerClient.start();
         }
     );
