@@ -7,6 +7,15 @@ namespace jacdac {
         }
 
         private connectClient(address: number, serverAddress: number, receivedPlayerIndex: number): number {
+            // fast path: check if player is current
+            if (!!serverAddress
+                && receivedPlayerIndex > 0
+                && receivedPlayerIndex < this.controlData.length
+                && address == this.controlData[receivedPlayerIndex]) {
+                // player index and server address match
+                return receivedPlayerIndex;
+            }
+
             // search existing player index
             for (let i = 1; i < this.controlData.length; ++i)
                 if (address == this.controlData[i]) {
@@ -32,7 +41,16 @@ namespace jacdac {
             }
 
             // add new player
-            // try 2,3,4 first
+            // try receivedPlayerIndex first
+            if (receivedPlayerIndex 
+                && this.controlData[receivedPlayerIndex] == 0 
+                && ids[receivedPlayerIndex]) {
+                this.log(`client ${toHex8(address)} -> p${receivedPlayerIndex}`);
+                this.controlData[receivedPlayerIndex] = address;
+                return receivedPlayerIndex;
+            }
+
+            // try other positions 2,3,4 first
             for (let i = 2; i < this.controlData.length; ++i) {
                 // if slot is free and there is such a player
                 if (this.controlData[i] == 0 && ids[i]) {
@@ -43,7 +61,7 @@ namespace jacdac {
             }
             // try player 1
             if (this.controlData[1] == 0 && ids[1]) {
-                this.log(`${toHex8(address)} -> ${1}`);
+                this.log(`client ${toHex8(address)} -> ${1}`);
                 this.controlData[1] = address;
                 return 1;
             }
