@@ -37,13 +37,15 @@ namespace jacdac {
                 if (ci && !drivers.some(d => d.address == ci)) {
                     this.log(`del ${toHex8(this.controlData[i])} from ${i}`);
                     this.controlData[i] = 0;
+                    const p = players.find(p => p.playerIndex == i);
+                    if (p) p.connected = false;
                 }
             }
 
             // add new player
             // try receivedPlayerIndex first
-            if (receivedPlayerIndex 
-                && this.controlData[receivedPlayerIndex] == 0 
+            if (receivedPlayerIndex
+                && this.controlData[receivedPlayerIndex] == 0
                 && ids[receivedPlayerIndex]) {
                 this.log(`client ${toHex8(address)} -> p${receivedPlayerIndex}`);
                 this.controlData[receivedPlayerIndex] = address;

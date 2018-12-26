@@ -23,6 +23,13 @@ enum ControllerButton {
     Down = 4
 }
 
+enum ControllerEvent {
+    //% block="connected"
+    Connected = 1,
+    //% block="disconnected"
+    Disconnected = 2
+}
+
 /**
  * Access to game controls
  */
@@ -34,6 +41,7 @@ namespace controller {
 
     //% fixedInstances
     export class Button {
+        _owner: Controller;
         public id: number;
         public repeatDelay: number;
         public repeatInterval: number;
@@ -53,20 +61,8 @@ namespace controller {
             this.repeatDelay = 500;
             this.repeatInterval = 30;
             this._repeatCount = 0;
-            control.internalOnEvent(INTERNAL_KEY_UP, this.id, () => {
-                if (this._pressed) {
-                    this._pressed = false
-                    this.raiseButtonUp();
-                }
-            }, 16)
-            control.internalOnEvent(INTERNAL_KEY_DOWN, this.id, () => {
-                if (!this._pressed) {
-                    this._pressed = true;
-                    this._pressedElasped = 0;
-                    this._repeatCount = 0;
-                    this.raiseButtonDown();
-                }
-            }, 16)
+            control.internalOnEvent(INTERNAL_KEY_UP, this.id, () => this.setPressed(false), 16)
+            control.internalOnEvent(INTERNAL_KEY_DOWN, this.id, () => this.setPressed(true), 16)
             if (buttonId > -1) {
                 control.internalOnEvent(buttonId, DAL.DEVICE_BUTTON_EVT_UP, () => control.raiseEvent(INTERNAL_KEY_UP, this.id), 16)
                 control.internalOnEvent(buttonId, DAL.DEVICE_BUTTON_EVT_DOWN, () => control.raiseEvent(INTERNAL_KEY_DOWN, this.id), 16)
@@ -126,11 +122,15 @@ namespace controller {
 
         setPressed(pressed: boolean) {
             if (this._pressed != pressed) {
+                this._owner.connected = true;
                 this._pressed = pressed;
                 if (this._pressed)
                     this.raiseButtonUp();
-                else
+                else {
+                    this._pressedElasped = 0;
+                    this._repeatCount = 0;
                     this.raiseButtonDown();
+                }
             }
         }
 
@@ -153,6 +153,7 @@ namespace controller {
     let _players: Controller[];
 
     function addController(ctrl: Controller) {
+        console.log(`adding player ${ctrl.playerIndex}`);
         if (!_players) {
             _players = [];
             game.currentScene().eventContext.registerFrameHandler(19, moveSprites);
@@ -162,7 +163,7 @@ namespace controller {
 
     function player1(): Controller {
         if (!_players || !_players[0])
-            addController(new Controller(1, [controller.left, controller.up, controller.right, controller.down, controller.A, controller.B, controller.menu]));
+            new Controller(1, [controller.left, controller.up, controller.right, controller.down, controller.A, controller.B, controller.menu]);
         return _players[0];
     }
 
@@ -187,10 +188,14 @@ namespace controller {
     export class Controller {
         playerIndex: number;
         buttons: Button[];
+        private _id: number;
         private _controlledSprites: ControlledSprite[];
+        private _connected: boolean;
 
         // array of left,up,right,down,a,b,menu buttons
         constructor(playerIndex: number, buttons: Button[]) {
+            this._id = control.allocateNotifyEvent();
+            this._connected = false;
             this.playerIndex = playerIndex;
             if (buttons)
                 this.buttons = buttons;
@@ -201,7 +206,13 @@ namespace controller {
                     this.buttons.push(new Button(leftId + i, -1));
                 }
             }
+            for (let i = 0; i < this.buttons.length; ++i)
+                this.buttons[i]._owner = this;
             addController(this);
+        }
+
+        get id() {
+            return this._id;
         }
 
         dump() {
@@ -297,11 +308,34 @@ namespace controller {
         /**
          * Run some code when a button is pressed, released, or held
          */
-        //% weight=99 blockGap=8 help=controller/button/on-event
-        //% blockId=ctrlonevent block="on %controller %button **button** %event"
+        //% weight=99 blockGap=8
+        //% blockId=ctrlonbuttonevent block="on %controller %button **button** %event"
         //% group="Multiplayer"
         onButtonEvent(btn: ControllerButton, event: ControllerButtonEvent, handler: () => void) {
             this.button(btn).onEvent(event, handler);
+        }
+
+        /**
+         * Register code run when a controller event occurs
+         * @param event 
+         * @param handler 
+         */
+        //% weight=99 blockGap=8
+        //% blockId=ctrlonevent block="on %controller %event"
+        //% group="Multiplayer"
+        onEvent(event: ControllerEvent, handler: () => void) {
+            control.onEvent(this.id, event, handler);
+        }
+
+        get connected() {
+            return this._connected;
+        }
+
+        set connected(value: boolean) {
+            if (value != this._connected) {
+                this._connected = value;
+                control.raiseEvent(this.id, this._connected ? ControllerEvent.Connected : ControllerEvent.Disconnected);
+            }
         }
 
         /**
@@ -357,7 +391,15 @@ namespace controller {
         __preUpdate() {
             if (!this._controlledSprites) return;
 
+            let deadSprites: ControlledSprite[] = undefined;
             this._controlledSprites.forEach(sprite => {
+                if (sprite.s.flags & sprites.Flag.Destroyed) {
+                    if (!deadSprites)
+                        deadSprites = [];
+                    deadSprites.push(sprite);
+                    return;
+                }
+
                 if (sprite.vx) {
                     sprite.s.vx = 0;
 
@@ -380,6 +422,9 @@ namespace controller {
                     }
                 }
             });
+
+            if (deadSprites)
+                deadSprites.forEach(ds => this._controlledSprites.removeElement(ds));
         }
 
         __update(dt: number) {
