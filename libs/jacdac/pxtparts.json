@@ -1,16 +1,12 @@
 {
     "jacdac": {
-        "numberOfPins": 3,
+        "numberOfPins": 2,
         "visual": {
             "image": "jacdac.svg",
             "width": 142,
             "height": 180,
             "pinDistance": 20,
             "pinLocations": [
-                {
-                    "x": 17,
-                    "y": 11
-                },
                 {
                     "x": 30,
                     "y": 30
@@ -22,11 +18,6 @@
             ]
         },
         "pinDefinitions": [
-            {
-                "target": "threeVolt",
-                "style": "croc",
-                "orientation": "Y"
-            },
             {
                 "target": "JACK_TX",
                 "style": "croc",
@@ -45,17 +36,7 @@
             {
                 "part": true,
                 "pinIndices": [
-                    0
-                ]
-            },
-            {
-                "pinIndices": [
-                    1
-                ]
-            },
-            {
-                "pinIndices": [
-                    2
+                    0, 1
                 ]
             }
         ]
