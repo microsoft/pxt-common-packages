@@ -5,6 +5,7 @@ namespace jacdac {
         streamingState: jacdac.SensorState;
         streamingInterval: number;
         stateUpdateHandler: () => void;
+        lastServerTime: number;
 
         constructor() {
             super("ctrl", jacdac.CONTROLLER_DEVICE_CLASS, 3);
@@ -15,6 +16,7 @@ namespace jacdac {
             this.state[0] = JDControllerCommand.ClientButtons;
             this.streamingState = jacdac.SensorState.Stopped;
             this.streamingInterval = 25;
+            this.lastServerTime = 0;
         }
 
         get serverAddress() {
@@ -29,7 +31,7 @@ namespace jacdac {
             return this.controlData[2];
         }
 
-        set playerIndex(index: number) { 
+        set playerIndex(index: number) {
             this.controlData[2] = index;
         }
 
@@ -127,7 +129,7 @@ namespace jacdac {
         }
 
         isActive(): boolean {
-            return !!this.serverAddress;
+            return !!this.serverAddress && this.isConnected;
         }
 
         handleControlPacket(pkt: Buffer): boolean {
@@ -150,22 +152,23 @@ namespace jacdac {
                 const address = this.device.address;
                 for (let i = 1; i <= 4; ++i) {
                     if (data[i] == address) {
-                        // we are connected!
-                        this.playerIndex = i;
                         // check that we are still connected to the same server
                         if (this.serverAddress != packetAddress) {
                             this.serverAddress = packetAddress;
+                            this.playerIndex = i;
                             this.log(`server ${toHex8(this.serverAddress)}`);
-                            this.startStreaming();
-                            return true;
                         }
+                        this.lastServerTime = control.millis();
+                        // start streaming
+                        this.startStreaming();
+                        return true;
                     }
                 }
                 // did the server drop us
                 if (address == this.serverAddress) {
+                    this.log(`dropped`);
                     this.serverAddress = 0; // streaming will stop automatically
                     this.playerIndex = 0;
-                    this.log(`dropped`);
                     this.stopStreaming();
                 }
 
@@ -198,6 +201,10 @@ namespace jacdac {
                 this.sendPacket(this.state);
                 // waiting for a bit
                 pause(this.streamingInterval);
+                // check if server still alive
+                if (control.millis() - this.lastServerTime > 500) {
+                    this.serverAddress = 0; // inactive
+                }
             }
             this.streamingState = SensorState.Stopped;
             this.log(`stopped`);
