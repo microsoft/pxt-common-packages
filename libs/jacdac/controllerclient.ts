@@ -13,6 +13,7 @@ namespace jacdac {
     export class ControllerClient extends Broadcast {
         state: Buffer;
         streamingState: jacdac.SensorState;
+        streamingInterval: number;
 
         constructor() {
             super("ctrl", jacdac.CONTROLLER_DEVICE_CLASS, 2);
@@ -21,6 +22,7 @@ namespace jacdac {
             this.state = control.createBuffer(2);
             this.state[0] = JDControllerCmd.ClientButtons;
             this.streamingState = jacdac.SensorState.Stopped;
+            this.streamingInterval = 25;
         }
 
         get serverAddress() {
@@ -171,15 +173,17 @@ namespace jacdac {
 
             this.log(`start`);
             this.streamingState = SensorState.Streaming;
-            control.runInBackground(() => {
-                while (this.streamingState == SensorState.Streaming) {
-                    this.sendPacket(this.state);
-                    // waiting for a bit
-                    pause(30);
-                }
-                this.streamingState = SensorState.Stopped;
-                this.log(`stopped`);
-            })
+            control.runInBackground(() => this.stream());
+        }
+
+        private stream() {
+            while (this.streamingState == SensorState.Streaming) {
+                this.sendPacket(this.state);
+                // waiting for a bit
+                pause(this.streamingInterval);
+            }
+            this.streamingState = SensorState.Stopped;
+            this.log(`stopped`);
         }
 
         private stopStreaming() {
