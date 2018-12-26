@@ -58,6 +58,6 @@ namespace jacdac {
         }
     }
 
-    //% fixedInstance whenUsed block="mouse"
+    //% fixedInstance whenUsed block="mouse client"
     export const mouseClient = new MouseClient();
 }

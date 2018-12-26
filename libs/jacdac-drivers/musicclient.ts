@@ -24,6 +24,6 @@ namespace jacdac {
         }
     }
 
-    //% fixedInstance whenUsed block="music"
+    //% fixedInstance whenUsed block="music client"
     export const musicClient = new MusicClient();
 }

@@ -42,75 +42,75 @@ namespace jacdac {
             this.start();
         }
 
-        //% blockCombine blockCombineShadow=toggleOnOff block="left pressed" blockSetVariable="button"
+        //% blockCombine blockCombineShadow=toggleOnOff block="left is pressed" blockSetVariable="button"
         //% group="Controller"
-        get leftPressed() {
+        get leftIsPressed() {
             return this.getPressed(ControllerButtonOffset.Left);
         }
 
         //% blockCombine
         //% group="Controller"
-        set leftPressed(value: boolean) {
+        set leftIsPressed(value: boolean) {
             this.setPressed(ControllerButtonOffset.Left, value);
         }
 
-        //% blockCombine block="right pressed"
+        //% blockCombine block="right is pressed"
         //% group="Controller"
-        get rightPressed() {
+        get rightIsPressed() {
             return this.getPressed(ControllerButtonOffset.Right);
         }
 
         //% blockCombine
         //% group="Controller"
-        set rightPressed(value: boolean) {
+        set rightIsPressed(value: boolean) {
             this.setPressed(ControllerButtonOffset.Right, value);
         }
 
-        //% blockCombine block="up pressed"
+        //% blockCombine block="up is pressed"
         //% group="Controller"
-        get upPressed() {
+        get upIsPressed() {
             return this.getPressed(ControllerButtonOffset.Up);
         }
 
         //% blockCombine
         //% group="Controller"
-        set upPressed(value: boolean) {
+        set upIsPressed(value: boolean) {
             this.setPressed(ControllerButtonOffset.Up, value);
         }
 
-        //% blockCombine block="down pressed"
+        //% blockCombine block="down is pressed"
         //% group="Controller"
-        get downPressed() {
+        get downIsPressed() {
             return this.getPressed(ControllerButtonOffset.Down);
         }
 
         //% blockCombine
         //% group="Controller"
-        set downPressed(value: boolean) {
+        set downIsPressed(value: boolean) {
             this.setPressed(ControllerButtonOffset.Down, value);
         }
 
-        //% blockCombine block="A pressed"
+        //% blockCombine block="A is pressed"
         //% group="Controller"
-        get APressed() {
+        get AIsPressed() {
             return this.getPressed(ControllerButtonOffset.A);
         }
 
         //% blockCombine
         //% group="Controller"
-        set APressed(value: boolean) {
+        set AIsPressed(value: boolean) {
             this.setPressed(ControllerButtonOffset.A, value);
         }
 
-        //% blockCombine block="B pressed"
+        //% blockCombine block="B is pressed"
         //% group="Controller"
-        get BPressed() {
+        get BIsPressed() {
             return this.getPressed(ControllerButtonOffset.B);
         }
 
         //% blockCombine
         //% group="Controller"
-        set BPressed(value: boolean) {
+        set BIsPressed(value: boolean) {
             this.setPressed(ControllerButtonOffset.B, value);
         }
 
@@ -132,7 +132,7 @@ namespace jacdac {
 
         private processPacket(packetAddress: number, data: Buffer): boolean {
             const cmd: JDControllerCmd = data[0];
-            // received a packet from the serveru
+            // received a packet from the server
             if (cmd == JDControllerCmd.ControlServer) {
                 console.log(`server ${toHex8(packetAddress)}`)
                 const address = this.device.address;
@@ -151,7 +151,7 @@ namespace jacdac {
                 if (address == this.serverAddress) {
                     this.serverAddress = 0; // streaming will stop automatically
                     this.log(`dropped`);
-                    //this.stopStreaming();
+                    this.stopStreaming();
                 }
 
                 // nope, doesn't seem to be our server
@@ -191,6 +191,6 @@ namespace jacdac {
         }
     }
 
-    //% fixedInstance whenUsed block="controller"
+    //% fixedInstance whenUsed block="controller client"
     export const controllerClient = new ControllerClient();
 }
