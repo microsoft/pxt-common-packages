@@ -4,7 +4,7 @@ namespace jacdac {
 
         constructor() {
             super("ctrl", jacdac.CONTROLLER_DEVICE_CLASS, 5);
-            this.controlData[0] = JDControllerCmd.ControlServer;
+            this.controlData[0] = JDControllerCommand.ControlServer;
         }
 
         private connectClient(address: number, serverAddress: number): number {
@@ -67,12 +67,12 @@ namespace jacdac {
         }
 
         private processPacket(address: number, data: Buffer): boolean {
-            const cmd: JDControllerCmd = data[0];
+            const cmd: JDControllerCommand = data[0];
             switch(cmd) {
-                case JDControllerCmd.ControlClient:
+                case JDControllerCommand.ControlClient:
                     this.connectClient(address, data[1]);
                     return true;
-                case JDControllerCmd.ClientButtons:
+                case JDControllerCommand.ClientButtons:
                     return this.processButtonsPacket(address, data);
                 default:
                     return true;

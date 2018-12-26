@@ -1,14 +1,4 @@
 namespace jacdac {
-    enum ControllerButtonOffset {
-        A = 5,
-        B = 6,
-        Left = 1,
-        Up = 2,
-        Right = 3,
-        Down = 4,
-        Menu = 7
-    }
-
     //% fixedInstances
     export class ControllerClient extends Broadcast {
         state: Buffer;
@@ -17,10 +7,10 @@ namespace jacdac {
 
         constructor() {
             super("ctrl", jacdac.CONTROLLER_DEVICE_CLASS, 2);
-            this.controlData[0] = JDControllerCmd.ControlClient;
+            this.controlData[0] = JDControllerCommand.ControlClient;
             this.serverAddress = 0;
             this.state = control.createBuffer(2);
-            this.state[0] = JDControllerCmd.ClientButtons;
+            this.state[0] = JDControllerCommand.ClientButtons;
             this.streamingState = jacdac.SensorState.Stopped;
             this.streamingInterval = 25;
         }
@@ -33,11 +23,11 @@ namespace jacdac {
             this.controlData[1] = value;
         }
 
-        private getPressed(offset: ControllerButtonOffset): boolean {
+        isPressed(offset: JDControllerButton): boolean {
             return !!(this.state[1] & (1 << offset));
         }
 
-        private setPressed(offset: ControllerButtonOffset, down: boolean) {
+        setIsPressed(offset: JDControllerButton, down: boolean) {
             const b = this.state[1];
             const msk = 1 << offset;
             this.state[1] = down ? (b | msk) : (b ^ msk);
@@ -47,73 +37,73 @@ namespace jacdac {
         //% blockCombine blockCombineShadow=toggleOnOff block="left is pressed" blockSetVariable="button"
         //% group="Controller"
         get leftIsPressed() {
-            return this.getPressed(ControllerButtonOffset.Left);
+            return this.isPressed(JDControllerButton.Left);
         }
 
         //% blockCombine
         //% group="Controller"
         set leftIsPressed(value: boolean) {
-            this.setPressed(ControllerButtonOffset.Left, value);
+            this.setIsPressed(JDControllerButton.Left, value);
         }
 
         //% blockCombine block="right is pressed"
         //% group="Controller"
         get rightIsPressed() {
-            return this.getPressed(ControllerButtonOffset.Right);
+            return this.isPressed(JDControllerButton.Right);
         }
 
         //% blockCombine
         //% group="Controller"
         set rightIsPressed(value: boolean) {
-            this.setPressed(ControllerButtonOffset.Right, value);
+            this.setIsPressed(JDControllerButton.Right, value);
         }
 
         //% blockCombine block="up is pressed"
         //% group="Controller"
         get upIsPressed() {
-            return this.getPressed(ControllerButtonOffset.Up);
+            return this.isPressed(JDControllerButton.Up);
         }
 
         //% blockCombine
         //% group="Controller"
         set upIsPressed(value: boolean) {
-            this.setPressed(ControllerButtonOffset.Up, value);
+            this.setIsPressed(JDControllerButton.Up, value);
         }
 
         //% blockCombine block="down is pressed"
         //% group="Controller"
         get downIsPressed() {
-            return this.getPressed(ControllerButtonOffset.Down);
+            return this.isPressed(JDControllerButton.Down);
         }
 
         //% blockCombine
         //% group="Controller"
         set downIsPressed(value: boolean) {
-            this.setPressed(ControllerButtonOffset.Down, value);
+            this.setIsPressed(JDControllerButton.Down, value);
         }
 
         //% blockCombine block="A is pressed"
         //% group="Controller"
         get AIsPressed() {
-            return this.getPressed(ControllerButtonOffset.A);
+            return this.isPressed(JDControllerButton.A);
         }
 
         //% blockCombine
         //% group="Controller"
         set AIsPressed(value: boolean) {
-            this.setPressed(ControllerButtonOffset.A, value);
+            this.setIsPressed(JDControllerButton.A, value);
         }
 
         //% blockCombine block="B is pressed"
         //% group="Controller"
         get BIsPressed() {
-            return this.getPressed(ControllerButtonOffset.B);
+            return this.isPressed(JDControllerButton.B);
         }
 
         //% blockCombine
         //% group="Controller"
         set BIsPressed(value: boolean) {
-            this.setPressed(ControllerButtonOffset.B, value);
+            this.setIsPressed(JDControllerButton.B, value);
         }
 
         isActive(): boolean {
@@ -133,9 +123,9 @@ namespace jacdac {
         }
 
         private processPacket(packetAddress: number, data: Buffer): boolean {
-            const cmd: JDControllerCmd = data[0];
+            const cmd: JDControllerCommand = data[0];
             // received a packet from the server
-            if (cmd == JDControllerCmd.ControlServer) {
+            if (cmd == JDControllerCommand.ControlServer) {
                 console.log(`server ${toHex8(packetAddress)}`)
                 const address = this.device.address;
                 for (let i = 1; i < 5; ++i) {
