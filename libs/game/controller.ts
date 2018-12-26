@@ -154,7 +154,6 @@ namespace controller {
     let _players: Controller[];
 
     function addController(ctrl: Controller) {
-        console.log(`adding player ${ctrl.playerIndex}`);
         if (!_players) {
             _players = [];
             game.currentScene().eventContext.registerFrameHandler(19, moveSprites);
