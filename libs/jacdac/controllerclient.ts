@@ -4,6 +4,7 @@ namespace jacdac {
         state: Buffer;
         streamingState: jacdac.SensorState;
         streamingInterval: number;
+        stateUpdateHandler: () => void;
 
         constructor() {
             super("ctrl", jacdac.CONTROLLER_DEVICE_CLASS, 2);
@@ -24,14 +25,14 @@ namespace jacdac {
         }
 
         isPressed(offset: JDControllerButton): boolean {
-            return !!(this.state[1] & (1 << offset));
+            const msk = 1 << offset;
+            return !!(this.state[1] & msk);
         }
 
         setIsPressed(offset: JDControllerButton, down: boolean) {
             const b = this.state[1];
             const msk = 1 << offset;
-            this.state[1] = down ? (b | msk) : (b ^ msk);
-            this.start();
+            this.state[1] = down ? (b | msk) : (~(~b | msk));
         }
 
         //% blockCombine blockCombineShadow=toggleOnOff block="left is pressed" blockSetVariable="button"
@@ -106,6 +107,16 @@ namespace jacdac {
             this.setIsPressed(JDControllerButton.B, value);
         }
 
+        /**
+         * Register code to run when the state is about to be sent
+         * @param handler 
+         */
+        //% blockId=jdctrlclientonstate block="on %controller state update"
+        //% group="Controller"
+        onStateUpdate(handler: () => void) {
+            this.stateUpdateHandler = handler;
+        }
+
         isActive(): boolean {
             return !!this.serverAddress;
         }
@@ -168,6 +179,10 @@ namespace jacdac {
 
         private stream() {
             while (this.streamingState == SensorState.Streaming) {
+                // alllow handle to update state
+                if (this.stateUpdateHandler)
+                    this.stateUpdateHandler();
+                // send state
                 this.sendPacket(this.state);
                 // waiting for a bit
                 pause(this.streamingInterval);

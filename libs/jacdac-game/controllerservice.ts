@@ -68,7 +68,7 @@ namespace jacdac {
 
         private processPacket(address: number, data: Buffer): boolean {
             const cmd: JDControllerCommand = data[0];
-            switch(cmd) {
+            switch (cmd) {
                 case JDControllerCommand.ControlClient:
                     this.connectClient(address, data[1]);
                     return true;
@@ -100,4 +100,33 @@ namespace jacdac {
 
     //% fixedInstance whenUsed block="controller service"
     export const controllerService = new ControllerService();
+
+    scene.systemMenu.addEntry(
+        () => "jacdac start server",
+        () => jacdac.controllerService.start()
+    );
+    scene.systemMenu.addEntry(
+        () => "jacdac join game",
+        () => {},
+        false,
+        () => {
+            game.consoleOverlay.setVisible(true);
+            jacdac.consolePriority = ConsolePriority.Log;
+            // remove game enterily
+            game.popScene();
+            // push empty game
+            game.pushScene();
+            // start client
+            console.log(`connecting to server...`);
+            jacdac.controllerClient.stateUpdateHandler = function() {
+                jacdac.controllerClient.setIsPressed(JDControllerButton.A, controller.A.isPressed());
+                jacdac.controllerClient.setIsPressed(JDControllerButton.B, controller.B.isPressed());
+                jacdac.controllerClient.setIsPressed(JDControllerButton.Left, controller.left.isPressed());
+                jacdac.controllerClient.setIsPressed(JDControllerButton.Up, controller.up.isPressed());
+                jacdac.controllerClient.setIsPressed(JDControllerButton.Right, controller.right.isPressed());
+                jacdac.controllerClient.setIsPressed(JDControllerButton.Down, controller.down.isPressed());
+            }
+            jacdac.controllerClient.start();
+        }
+    );
 }

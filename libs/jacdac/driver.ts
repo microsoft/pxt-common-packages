@@ -63,6 +63,10 @@ namespace jacdac {
             return this._controlData;
         }
 
+        get isStarted(): boolean {
+            return !!this._proxy;
+        }
+
         get isConnected(): boolean {
             return this._proxy && this._proxy.isConnected;
         }
