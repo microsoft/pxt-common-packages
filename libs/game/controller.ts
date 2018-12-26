@@ -300,7 +300,7 @@ namespace controller {
         //% weight=99 blockGap=8 help=controller/button/on-event
         //% blockId=ctrlonevent block="on %controller %button **button** %event"
         //% group="Multiplayer"
-        onEvent(btn: ControllerButton, event: ControllerButtonEvent, handler: () => void) {
+        onButtonEvent(btn: ControllerButton, event: ControllerButtonEvent, handler: () => void) {
             this.button(btn).onEvent(event, handler);
         }
 
