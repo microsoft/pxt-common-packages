@@ -107,7 +107,7 @@ namespace jacdac {
     );
     scene.systemMenu.addEntry(
         () => "jacdac join game",
-        () => {},
+        () => { },
         false,
         () => {
             game.consoleOverlay.setVisible(true);
@@ -118,7 +118,7 @@ namespace jacdac {
             game.pushScene();
             // start client
             console.log(`connecting to server...`);
-            jacdac.controllerClient.stateUpdateHandler = function() {
+            jacdac.controllerClient.stateUpdateHandler = function () {
                 jacdac.controllerClient.setIsPressed(JDControllerButton.A, controller.A.isPressed());
                 jacdac.controllerClient.setIsPressed(JDControllerButton.B, controller.B.isPressed());
                 jacdac.controllerClient.setIsPressed(JDControllerButton.Left, controller.left.isPressed());
