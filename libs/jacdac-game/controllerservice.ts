@@ -2,10 +2,12 @@ namespace jacdac {
     //% fixedInstances
     export class ControllerService extends Broadcast {
         promptedServers: number[];
+        prompting: boolean;
 
         constructor() {
             super("ctrl", jacdac.CONTROLLER_DEVICE_CLASS, 5);
             this.promptedServers = [];
+            this.prompting = false;
             this.controlData[0] = JDControllerCommand.ControlServer;
         }
 
@@ -104,6 +106,8 @@ namespace jacdac {
         }
 
         private processControlServer(address: number, data: Buffer) {
+            // already prompting for another server
+            if (this.prompting) return true;
             // so there's another server on the bus,
             // if we haven't done so yet, prompt the user if he wants to join the game
             const device = jacdac.drivers().find(d => d.address == address);
@@ -117,10 +121,13 @@ namespace jacdac {
             // cache prompt
             this.promptedServers.push(device.serialNumber);
 
-            // TODO: don't block jacdac, ask in background
-            const join = game.ask("Arcade Detected", "Join?");
-            if (join) joinGame();    
-            
+            this.prompting = true;
+            control.runInParallel(() => {
+                const join = game.ask("Arcade Detected", "Join?");
+                if (join) joinGame();
+                this.prompting = false;
+            });
+
             return true;
         }
 
@@ -179,14 +186,6 @@ namespace jacdac {
         });
         jacdac.controllerClient.start();
     }
-
-    scene.systemMenu.addEntry(
-        () => "jacdac join game",
-        () => { },
-        false,
-        joinGame
-    );
-
     // auto start server
     jacdac.controllerService.start();
     // TODO: fix control packages in broadcast mode
