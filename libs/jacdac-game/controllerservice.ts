@@ -1,8 +1,11 @@
 namespace jacdac {
     //% fixedInstances
     export class ControllerService extends Broadcast {
+        promptedServers: number[];
+
         constructor() {
             super("ctrl", jacdac.CONTROLLER_DEVICE_CLASS, 5);
+            this.promptedServers = [];
             this.controlData[0] = JDControllerCommand.ControlServer;
         }
 
@@ -92,13 +95,36 @@ namespace jacdac {
                     this.connectClient(address, data[1], data[2]);
                     return true;
                 case JDControllerCommand.ClientButtons:
-                    return this.processButtonsPacket(address, data);
+                    return this.processClientButtons(address, data);
+                case JDControllerCommand.ControlServer:
+                    return this.processControlServer(address, data);
                 default:
                     return true;
             }
         }
 
-        private processButtonsPacket(address: number, data: Buffer) {
+        private processControlServer(address: number, data: Buffer) {
+            // so there's another server on the bus,
+            // if we haven't done so yet, prompt the user if he wants to join the game
+            const device = jacdac.drivers().find(d => d.address == address);
+            if (!device) // can't find any device at that address
+                return true;
+
+            // check if prompted already
+            if (this.promptedServers.indexOf(device.serialNumber) >= 0)
+                return true;
+
+            // cache prompt
+            this.promptedServers.push(device.serialNumber);
+
+            // TODO: don't block jacdac, ask in background
+            const join = game.ask("Arcade Detected", "Join?");
+            if (join) joinGame();    
+            
+            return true;
+        }
+
+        private processClientButtons(address: number, data: Buffer) {
             const playerIndex = this.connectClient(address, -1, 0);
             if (playerIndex < 0) {
                 this.log(`no player for ${toHex8(address)}`);
@@ -124,39 +150,41 @@ namespace jacdac {
     //% fixedInstance whenUsed block="controller service"
     export const controllerService = new ControllerService();
 
+    function joinGame() {
+        // stop server service
+        jacdac.controllerService.stop();
+        // remove game enterily
+        game.popScene();
+        // push empty game
+        game.pushScene();
+        // start client
+        console.log(`connecting to server...`);
+        jacdac.controllerClient.stateUpdateHandler = function () {
+            jacdac.controllerClient.setIsPressed(JDControllerButton.A, controller.A.isPressed());
+            jacdac.controllerClient.setIsPressed(JDControllerButton.B, controller.B.isPressed());
+            jacdac.controllerClient.setIsPressed(JDControllerButton.Left, controller.left.isPressed());
+            jacdac.controllerClient.setIsPressed(JDControllerButton.Up, controller.up.isPressed());
+            jacdac.controllerClient.setIsPressed(JDControllerButton.Right, controller.right.isPressed());
+            jacdac.controllerClient.setIsPressed(JDControllerButton.Down, controller.down.isPressed());
+        }
+        game.onPaint(() => {
+            if (jacdac.controllerClient.isActive())
+                game.showDialog(
+                    `connected`,
+                    `player ${jacdac.controllerClient.playerIndex}`);
+            else
+                game.showDialog(
+                    `disconnected`,
+                    `connect jacdac`);
+        });
+        jacdac.controllerClient.start();
+    }
+
     scene.systemMenu.addEntry(
         () => "jacdac join game",
         () => { },
         false,
-        () => {
-            // stop server service
-            jacdac.controllerService.stop();
-            // remove game enterily
-            game.popScene();
-            // push empty game
-            game.pushScene();
-            // start client
-            console.log(`connecting to server...`);
-            jacdac.controllerClient.stateUpdateHandler = function () {
-                jacdac.controllerClient.setIsPressed(JDControllerButton.A, controller.A.isPressed());
-                jacdac.controllerClient.setIsPressed(JDControllerButton.B, controller.B.isPressed());
-                jacdac.controllerClient.setIsPressed(JDControllerButton.Left, controller.left.isPressed());
-                jacdac.controllerClient.setIsPressed(JDControllerButton.Up, controller.up.isPressed());
-                jacdac.controllerClient.setIsPressed(JDControllerButton.Right, controller.right.isPressed());
-                jacdac.controllerClient.setIsPressed(JDControllerButton.Down, controller.down.isPressed());
-            }
-            game.onPaint(() => {
-                if (jacdac.controllerClient.isActive())
-                    game.showDialog(
-                        `connected`,
-                        `player ${jacdac.controllerClient.playerIndex}`);
-                else
-                    game.showDialog(
-                        `disconnected`,
-                        `connect jacdac cable`);
-            });
-            jacdac.controllerClient.start();
-        }
+        joinGame
     );
 
     // auto start server
