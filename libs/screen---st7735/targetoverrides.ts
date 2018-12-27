@@ -7,7 +7,7 @@ function img(lits: any, ...args: any[]): Image { return null }
 
 // set palette before creating screen, so the JS version has the right BPP
 image.setPalette(hex`__palette`)
-let screen = image.create(
+const screen = image.create(
     control.getConfigValue(DAL.CFG_DISPLAY_WIDTH, 160), 
     control.getConfigValue(DAL.CFG_DISPLAY_HEIGHT, 128))
 

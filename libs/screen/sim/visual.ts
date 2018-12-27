@@ -24,10 +24,10 @@ namespace pxsim.visuals {
             this.lastLocation = [0, 0];
 
             const partSvg = svg.parseString(`
-<svg xmlns="http://www.w3.org/2000/svg" id="svg8" width="158.439" height="138.588" viewBox="0 0 158.439 138.588">
+<svg xmlns="http://www.w3.org/2000/svg" id="svg8" width="158.439" height="146.803" viewBox="0 0 158.439 146.803">
 <g id="layer1" transform="translate(-18.95 -27.866)">
-  <path id="rect4487" fill="#00f" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.269" d="M19.584 28.5h157.17v137.319H19.584z"/>
-  <image id="thescreen" width="136.673" height="102.505" x="26.118" y="60.353" fill="#c8beb7" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width=".427"/>
+  <path id="rect4487" fill="#00f" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.306" d="M19.603 28.519h157.133v145.497H19.603z"/>
+  <image id="thescreen" width="136.673" height="109.33" x="26.118" y="61.528" fill="#c8beb7" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width=".427"/>
   <path id="GND" fill="#d4d4d4" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.139" d="M23.177 31.031h11.864v11.864H23.177z"/>
   <path id="VCC" fill="#d4d4d4" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.139" d="M42.834 31.031h11.864v11.864H42.834z"/>
   <path id="DISPLAY_DC" fill="#d4d4d4" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.139" d="M82.147 31.031h11.864v11.864H82.147z"/>

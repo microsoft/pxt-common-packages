@@ -10,8 +10,8 @@
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="158.43857"
-   height="138.58829"
-   viewBox="0 0 158.43857 138.58828"
+   height="146.80258"
+   viewBox="0 0 158.43857 146.80257"
    version="1.1"
    id="svg8"
    sodipodi:docname="part.svg"
@@ -27,7 +27,7 @@
      inkscape:pageshadow="2"
      inkscape:zoom="2.8"
      inkscape:cx="122.71658"
-     inkscape:cy="78.581068"
+     inkscape:cy="41.234686"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -57,21 +57,21 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-18.949641,-27.865861)">
+     transform="translate(-18.949642,-27.865862)">
     <rect
-       style="fill:#0000ff;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1.26879704;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       style="fill:#0000ff;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1.30587435;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="rect4487"
-       width="157.16977"
-       height="137.31949"
-       x="19.58404"
-       y="28.500259" />
+       width="157.13269"
+       height="145.4967"
+       x="19.602579"
+       y="28.518799" />
     <image
        style="fill:#c8beb7;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0.42710456;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="thescreen"
        width="136.67346"
-       height="102.50509"
+       height="109.33"
        x="26.117912"
-       y="60.352749"
+       y="61.527836"
        inkscape:label="" />
     <rect
        style="fill:#d4d4d4;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:3.1387825;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
