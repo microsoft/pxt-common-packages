@@ -12,7 +12,8 @@
         "fieldeditors.ts",
         "targetoverrides.ts",
         "ns.ts",
-        "image.d.ts"
+        "image.d.ts",
+        "pxtparts.json"
     ],
     "public": true,
     "dependencies": {

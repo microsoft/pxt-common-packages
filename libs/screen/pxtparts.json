@@ -1,0 +1,96 @@
+{
+    "screen": {
+      "visual": {
+        "builtIn": "screen",
+        "width": 147.00999450683594,
+        "height": 138.58828735351562,
+        "pinDistance": 15,
+        "pinLocations": [
+          {
+            "x": 4.227972165617942,
+            "y": 3.3232132952312785
+          },
+          {
+            "x": 24.791522874672403,
+            "y": 3.3232132952312785
+          },
+          {
+            "x": 45.35506947907088,
+            "y": 3.3232132952312785
+          },
+          {
+            "x": 65.91860787415739,
+            "y": 3.3232132952312785
+          },
+          {
+            "x": 86.48216268786783,
+            "y": 3.3232132952312785
+          },
+          {
+            "x": 107.04570108295434,
+            "y": 3.3232132952312785
+          },
+          {
+            "x": 127.60927231528872,
+            "y": 3.3232132952312785
+          }
+        ]
+      },
+      "numberOfPins": 7,
+      "instantiation": {
+        "kind": "function",
+        "fullyQualifiedName": "FUNCTION_NAMES",
+        "argumentRoles": []
+      },
+      "pinDefinitions": [
+        {
+          "target": "ground",
+          "style": "male",
+          "orientation": "+Y"
+        },
+        {
+          "target": "VCC",
+          "style": "male",
+          "orientation": "+Y"
+        },
+        {
+          "target": "DISPLAY_DC",
+          "style": "male",
+          "orientation": "+Y"
+        },
+        {
+          "target": "DISPLAY_CS",
+          "style": "male",
+          "orientation": "+Y"
+        },
+        {
+          "target": "DISPLAY_MOSI",
+          "style": "male",
+          "orientation": "+Y"
+        },
+        {
+          "target": "DISPLAY_SCK",
+          "style": "male",
+          "orientation": "+Y"
+        },
+        {
+          "target": "DISPLAY_MISO",
+          "style": "male",
+          "orientation": "+Y"
+        }
+      ],
+      "assembly": [
+        {
+          "pinIndices": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ]
+        }
+      ]
+    }
+  }
