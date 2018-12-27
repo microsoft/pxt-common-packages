@@ -118,17 +118,49 @@ namespace jacdac {
             if (this.promptedServers.indexOf(device.serialNumber) >= 0)
                 return true;
 
-            // cache prompt
-            this.promptedServers.push(device.serialNumber);
-
             this.prompting = true;
             control.runInParallel(() => {
-                const join = game.ask("Arcade Detected", "Join?");
-                if (join) joinGame();
+                const join = this.askJoin(device);
+                if (join)
+                    joinGame();
                 this.prompting = false;
             });
 
             return true;
+        }
+
+        private hasPlayers(): boolean {
+            for (let i = 1; i < this.controlData.length; ++i)
+                if (this.controlData[i]) return true;
+            return false;
+        }
+
+        private askJoin(device: JDDevice): boolean {
+            game.eventContext(); // initialize the game
+            control.pushEventContext();
+            game.showDialog("Arcade Detected", "Join?", "A = OK, B = CANCEL");
+            let answer: boolean = null;
+            controller.A.onEvent(ControllerButtonEvent.Pressed, () => answer = true);
+            controller.B.onEvent(ControllerButtonEvent.Pressed, () => answer = false);
+            pauseUntil(() =>
+                // user answered
+                answer !== null
+                // server got joined
+                || this.hasPlayers()
+                // other driver dissapeared
+                || !jacdac.drivers().find(d => d.address == device.address)
+            );
+            // wait until we have an answer or the service
+            control.popEventContext();
+
+            // cache user answer
+            if (answer !== null)
+                this.promptedServers.push(device.serialNumber);
+
+            // check that we haven't been join by then
+            return !!answer 
+                && !this.hasPlayers()
+                && !!jacdac.drivers().find(d => d.address == device.address);
         }
 
         private processClientButtons(address: number, data: Buffer) {
@@ -189,8 +221,10 @@ namespace jacdac {
     // auto start server
     jacdac.controllerService.start();
     // TODO: fix control packages in broadcast mode
-    game.onUpdateInterval(500, () => {
-        if (jacdac.controllerService.isStarted)
+    control.runInParallel(function () {
+        while (jacdac.controllerService.isStarted) {
             jacdac.controllerService.sendState();
+            pause(500);
+        }
     })
 }
