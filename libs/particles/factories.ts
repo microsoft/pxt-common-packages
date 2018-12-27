@@ -166,13 +166,11 @@ namespace particles {
     export class TrailFactory extends AreaFactory {
         minLifespan: number;
         maxLifespan: number;
-        galois: Math.FastRandom;
 
         constructor(sprite: ParticleAnchor, minLifespan: number, maxLifespan: number) {
             super(sprite.width ? sprite.width >> 1 : 8, sprite.height? sprite.height >> 1 : 8);
             this.minLifespan = minLifespan;
             this.maxLifespan = maxLifespan;
-            this.galois = new Math.FastRandom();
             this.setSpeed(0)
         }
 

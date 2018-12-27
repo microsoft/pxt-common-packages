@@ -11,7 +11,6 @@ enum PlayerNumber {
 
 //% groups='["other","Multiplayer"]'
 namespace controller {
-
     enum ButtonOffset {
         Left = 0,
         Up,
@@ -156,7 +155,7 @@ namespace controller {
         private initPlayer(player: PlayerNumber) {
             if (this.buttons[player]) return;
 
-            const b = new controller.Button(1 + 7 * (player - 1) + this.buttonOffset);
+            const b = new controller.Button(1 + 7 * (player - 1) + this.buttonOffset, -1);
             this.buttons[player] = b;
             this.registerPlayerEvent(b, player, ControllerButtonEvent.Pressed);
             this.registerPlayerEvent(b, player, ControllerButtonEvent.Released);

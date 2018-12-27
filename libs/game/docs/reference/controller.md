@@ -3,11 +3,11 @@
 Respond to game controller buttons.
 
 ```cards
-controller.anyButton.onEvent(ControllerButtonEvent.Pressed, function () {
+controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
 	
 })
-controller.anyButton.isPressed()
-controller.anyButton.pauseUntil(ControllerButtonEvent.Pressed)
+controller.A.isPressed()
+controller.A.pauseUntil(ControllerButtonEvent.Pressed)
 controller.moveSprite(null, 0, 0)
 controller.dx(100)
 controller.dy(100)

@@ -21,6 +21,6 @@ namespace jacdac {
         }
     }
 
-    //% fixedInstance whenUsed
+    //% fixedInstance whenUsed block="pixel service"
     export const pixelService = new PixelService("pixel");
 }

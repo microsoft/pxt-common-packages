@@ -7,7 +7,7 @@ namespace jacdac {
             this.name = name;
             this.driverClass = driverClass;
         }
-        renderControlPacket(cp: ControlPacket){
+        renderControlPacket(cp: ControlPacket) {
             return "";
         }
         renderPacket(device: JDDevice, packet: JDPacket) {
@@ -63,7 +63,7 @@ namespace jacdac {
         renderState(data: Buffer): string {
             return data.toHex();
         }
-    }    
+    }
 
     class BridgeDebugView extends DebugView {
         constructor() {
@@ -126,7 +126,7 @@ namespace jacdac {
             const data = packet.data;
             const pri = data[0];
             const str = bufferToString(data, 1);
-            const name = ConsoleDriver.readName(data);
+            const name = ConsoleService.readName(data);
             return `${pri}:${str} ${name}`;
         }
     }
@@ -210,7 +210,7 @@ namespace jacdac {
         }
 
         renderEvent(value: number): string {
-            switch(value) {
+            switch (value) {
                 case JDSwitchDirection.Left: return "left";
                 case JDSwitchDirection.Right: "right";
                 default: return "";
@@ -234,11 +234,11 @@ namespace jacdac {
         }
 
         renderEvent(value: number): string {
-            switch(value) {
+            switch (value) {
                 case JDButtonEvent.Click: return "click";
                 case JDButtonEvent.Down: "down";
                 case JDButtonEvent.Up: "up";
-                case JDButtonEvent.LongClick: return "lg click" 
+                case JDButtonEvent.LongClick: return "lg click"
                 default: return "";
             }
         }
@@ -251,6 +251,43 @@ namespace jacdac {
     class PixelDebugView extends ActuatorDebugView {
         constructor() {
             super("pixel", jacdac.PIXEL_DEVICE_CLASS);
+        }
+    }
+
+    class ControllerDebugView extends DebugView {
+        constructor() {
+            super("ctrl", jacdac.CONTROLLER_DEVICE_CLASS);
+        }
+
+        renderControlPacket(cp: ControlPacket): string {
+            const data = cp.data;
+            return this.renderData(data);
+        }
+
+        renderPacket(device: JDDevice, packet: JDPacket): string {
+            const data = packet.data;
+            return this.renderData(data);
+        }
+
+        private renderData(data: Buffer): string {
+            const cmd: JDControllerCommand = data[0];
+            switch (cmd) {
+                case JDControllerCommand.ClientButtons:
+                    const state = data[1];
+                    const left = state & (1 << 1);
+                    const up = state & (1 << 2);
+                    const right = state & (1 << 3);
+                    const down = state & (1 << 4);
+                    const A = state & (1 << 5);
+                    const B = state & (1 << 6);
+                    return `${left ? "L" : "-"}${up ? "U" : "-"}${right ? "R" : "-"}${down ? "D" : "-"}${A ? "A" : "-"}${B ? "B" : "-"}`;
+                case JDControllerCommand.ControlServer:
+                    return `srv> ${data[1] ? toHex8(data[1]) : "--"} ${data[2] ? toHex8(data[2]) : "--"} ${data[3] ? toHex8(data[3]) : "--"} ${data[4] ? toHex8(data[4]) : "--"}`;
+                case JDControllerCommand.ControlClient:
+                    return `client> ${data[1] ? toHex8(data[1]) : "--"}`;
+                default:
+                    return toHex8(cmd);
+            }
         }
     }
 
@@ -268,7 +305,8 @@ namespace jacdac {
             new ThermometerDebugView(),
             new TouchDebugView(),
             new BridgeDebugView(),
-            new PixelDebugView()
+            new PixelDebugView(),
+            new ControllerDebugView()
         ];
     }
 }

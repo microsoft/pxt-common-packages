@@ -1,5 +1,5 @@
 
-particles.confetti.winConfetti();
+//particles.confetti.winConfetti();
 // particles.print.fireworkPrint("hello", image.font5);
 // particles.fireworks.runFireworks();
 // particles.fountain.runFountain();
@@ -8,6 +8,7 @@ particles.confetti.winConfetti();
 // particles.spiral.runSpiral();
 // Space pong: See bottom of screen
 
+/*
 namespace particles.print {
     export function fireworkPrint(text: string, font: image.Font) {
         const lleft = (screen.width >> 1) - ((text.length * font.charWidth) >> 1);
@@ -64,7 +65,7 @@ namespace particles.trail {
     }
     
     export function runTrail(): Sprite {
-        const s = sprites.create(sprites.castle.heroFrontAttack1, SpriteKind.Player);
+        const s = sprites.create(img`1`);
         controller.moveSprite(s);
         mkTrailSource(s);
         return s;
@@ -103,9 +104,6 @@ namespace particles.fountain {
 }
 
 namespace particles.confetti {
-    /**
-     * A factory for creating particles with the provided shapes.
-     */
     class ShapeFactory extends particles.AreaFactory {
         protected sources: Image[];
         protected ox: Fx8;
@@ -120,10 +118,6 @@ namespace particles.confetti {
             this.oy = Fx8(source.height >> 1);
         }
 
-        /**
-         * Add another possible shape for a particle to display
-         * @param shape 
-         */
         addShape(shape: Image) {
             if (shape) this.sources.push(shape);
         }
@@ -506,3 +500,5 @@ namespace particles.spiral {
 //         currentBall = sprites.create(img`1`, SpriteKind.Ball)
 //     }
 // })
+
+*/

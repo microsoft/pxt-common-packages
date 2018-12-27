@@ -79,7 +79,7 @@ enum SpriteKind {
 }
 let colorBlocks: Sprite[] = []
 let blockImg: Image = null
-controller.anyButton.onEvent(ControllerButtonEvent.Pressed, function () {
+controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
     for (let i = 0; i <= 8 - 1; i++) {
         colorBlocks[i].z = colorBlocks[i].z * -1
     }

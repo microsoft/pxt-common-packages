@@ -28,7 +28,7 @@ namespace jacdac {
         }
     }
 
-    //% fixedInstance whenUsed block="button"
+    //% fixedInstance whenUsed block="button client"
     export const buttonClient = new ButtonClient("btn");
 
 }

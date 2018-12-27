@@ -17,6 +17,7 @@ namespace jacdac {
     export const MOUSE_DEVICE_CLASS = JD_DEVICE_CLASS_MAKECODE_START + 14;
     export const GAMEPAD_DEVICE_CLASS = JD_DEVICE_CLASS_MAKECODE_START + 15;
     export const MUSIC_DEVICE_CLASS = JD_DEVICE_CLASS_MAKECODE_START + 16;
+    export const SERVO_DEVICE_CLASS = JD_DEVICE_CLASS_MAKECODE_START + 17;
         
     export const GAMELOBBY_DEVICE_CLASS = JD_DEVICE_CLASS_MAKECODE_START + 100;
     export const GAMEENGINE_DEVICE_CLASS = JD_DEVICE_CLASS_MAKECODE_START + 101;
@@ -46,7 +47,7 @@ const enum JDLightCommand {
     Sparkle    
 }
 
-const enum JDLightAnimation {
+enum JDLightAnimation {
     //% block="rainbow"
     Rainbow =JDLightCommand.Rainbow,
     //% block="running lights"
@@ -88,7 +89,7 @@ const enum JDMusicCommand {
     PlayTone
 }
 
-const enum JDGesture {
+enum JDGesture {
     /**
      * Raised when shaken
      */
@@ -131,7 +132,7 @@ const enum JDGesture {
     FreeFall = DAL.ACCELEROMETER_EVT_FREEFALL,
 }
 
-const enum JDDimension {
+enum JDDimension {
     //% block=x
     X = 0,
     //% block=y
@@ -142,7 +143,7 @@ const enum JDDimension {
     Strength = 3
 }
 
-const enum JDButtonEvent {
+enum JDButtonEvent {
     //% block="click"
     Click = DAL.DEVICE_BUTTON_EVT_CLICK,
     //% block="long click"
@@ -153,10 +154,25 @@ const enum JDButtonEvent {
     Down = DAL.DEVICE_BUTTON_EVT_DOWN
 }
 
-const enum JDSwitchDirection {
+enum JDSwitchDirection {
     //% block="left"
     Left = DAL.DEVICE_BUTTON_EVT_UP,
     //% block="right"
     Right = DAL.DEVICE_BUTTON_EVT_DOWN,
 }
 
+enum JDControllerCommand {
+    ClientButtons = 1,
+    ControlServer = 2,
+    ControlClient = 3
+}
+
+enum JDControllerButton {
+    A = 5,
+    B = 6,
+    Left = 1,
+    Up = 2,
+    Right = 3,
+    Down = 4,
+    Menu = 7
+}
