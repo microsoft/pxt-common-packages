@@ -117,7 +117,7 @@ namespace jacdac {
             // cache prompt
             this.promptedServers.push(device.serialNumber);
 
-            const join = game.ask("Aracde Detected", "Join?");
+            const join = game.ask("Arcade Detected", "Join?");
             if (join) joinGame();
             
             return true;
@@ -174,7 +174,7 @@ namespace jacdac {
             else
                 game.showDialog(
                     `disconnected`,
-                    `connect jacdac cable`);
+                    `connect jacdac`);
         });
         jacdac.controllerClient.start();
     }
