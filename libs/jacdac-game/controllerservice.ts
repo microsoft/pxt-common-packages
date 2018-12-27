@@ -117,8 +117,9 @@ namespace jacdac {
             // cache prompt
             this.promptedServers.push(device.serialNumber);
 
+            // TODO: don't block jacdac, ask in background
             const join = game.ask("Arcade Detected", "Join?");
-            if (join) joinGame();
+            if (join) joinGame();    
             
             return true;
         }
