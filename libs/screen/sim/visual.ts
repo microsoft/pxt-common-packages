@@ -33,12 +33,16 @@ namespace pxsim.visuals {
     <text id="text4619-4-9-3" x="45.163" y="-110.996" fill="#fff" stroke-width=".226" font-family="consolas" font-size="6.63" font-weight="400" letter-spacing="0" style="line-height:1.25;-inkscape-font-specification:consolas" transform="rotate(90)" word-spacing="0">
       <tspan id="tspan4617-3-1-7" x="45.163" y="-110.996">SCK</tspan>
     </text>
-    <text id="text4619-4-9-0" x="46.078" y="-124.962" fill="#fff" stroke-width=".226" font-family="consolas" font-size="6.63" font-weight="400" letter-spacing="0" style="line-height:1.25;-inkscape-font-specification:consolas" transform="rotate(90)" word-spacing="0">
-      <tspan id="tspan4617-3-1-72" x="46.078" y="-124.962">MISO</tspan>
+    <text id="text4619-4-9-0" x="46.078" y="-138.962" fill="#fff" stroke-width=".226" font-family="consolas" font-size="6.63" font-weight="400" letter-spacing="0" style="line-height:1.25;-inkscape-font-specification:consolas" transform="rotate(90)" word-spacing="0">
+      <tspan id="tspan4617-3-1-72" x="46.078" y="-138.962">BL</tspan>
     </text>
     <path id="DISPLAY_RST" fill="#d4d4d4" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.139" d="M51.062 31.031h11.864v11.864H51.062z"/>
     <text id="text4619-4-94" x="44.972" y="-55.132" fill="#fff" stroke-width=".226" font-family="consolas" font-size="6.63" font-weight="400" letter-spacing="0" style="line-height:1.25;-inkscape-font-specification:consolas" transform="rotate(90)" word-spacing="0">
       <tspan id="tspan4617-3-6" x="44.972" y="-55.132">RST</tspan>
+    </text>
+    <path id="DISPLAY_BL" fill="#d4d4d4" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.139" d="M134.638 31.031h11.864v11.864h-11.864z"/>
+    <text id="text4619-4-9-0-6" x="45.403" y="-124.163" fill="#fff" stroke-width=".226" font-family="consolas" font-size="6.63" font-weight="400" letter-spacing="0" style="line-height:1.25;-inkscape-font-specification:consolas" transform="rotate(90)" word-spacing="0">
+      <tspan id="tspan4617-3-1-72-8" x="45.403" y="-124.163">MISO</tspan>
     </text>
   </g>
 </svg>
