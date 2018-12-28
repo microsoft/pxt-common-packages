@@ -7,12 +7,14 @@ function img(lits: any, ...args: any[]): Image { return null }
 
 // set palette before creating screen, so the JS version has the right BPP
 image.setPalette(hex`__palette`)
+
+// screen double buffer
 const screen = image.create(
     control.getConfigValue(DAL.CFG_DISPLAY_WIDTH, 160), 
     control.getConfigValue(DAL.CFG_DISPLAY_HEIGHT, 128))
 
 namespace image {
-    //% shim=pxt::setPalette
+    //% shim=pxt::setPalette parts="screen"
     export function setPalette(buf: Buffer) { }
 }
 
