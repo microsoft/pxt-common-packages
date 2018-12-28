@@ -74,14 +74,12 @@ namespace pxsim.visuals {
     init(bus: EventBus, state: ScreenState, svgEl: SVGSVGElement, otherParams: Map<string>): void {
       this.bus = bus;
       this.state = state;
-      this.element = svgEl;
       this.overElement = undefined;
       this.defs = [];
       this.lastLocation = [0, 0];
 
       const partSvg = svg.parseString(SCREEN_PART);
-
-      this.element.appendChild(partSvg);
+      this.element = partSvg;
       this.canvas = partSvg.getElementById('thescreen') as SVGImageElement;
       this.state.bindToSvgImage(this.canvas);
     }
@@ -95,8 +93,7 @@ namespace pxsim.visuals {
 
     private updateLoc() {
       let [x, y] = this.lastLocation;
-      //this.canvas.setLoc([x + ScreenView.CANVAS_LEFT, y + ScreenView.CANVAS_TOP]);
-      //svg.hydrate(this.part.el, { transform: `translate(${x} ${y})` }); //TODO: update part's l,h, etc.
+      translateEl(this.element, [x, y])
     }
 
     updateState(): void { }

@@ -1,19 +1,12 @@
 {
   "screen": {
+    "simulationBehavior": "screen",
     "visual": {
       "builtIn": "screen",
       "width": 158.43856811523438,
       "height": 138.58828735351562,
       "pinDistance": 15,
       "pinLocations": [
-        {
-          "x": 4.2283950766211085,
-          "y": 3.1650040243537276
-        },
-        {
-          "x": 23.884785926525034,
-          "y": 3.1650040243537276
-        },
         {
           "x": 63.197585321342515,
           "y": 3.1650040243537276
@@ -37,6 +30,14 @@
         {
           "x": 43.54119004768618,
           "y": 3.1650040243537276
+        },
+        {
+          "x": 4.2283950766211085,
+          "y": 3.1650040243537276
+        },
+        {
+          "x": 23.884785926525034,
+          "y": 3.1650040243537276
         }
       ]
     },
@@ -46,44 +47,44 @@
     },
     "pinDefinitions": [
       {
-        "target": "ground",
-        "style": "male",
-        "orientation": "+Y"
-      },
-      {
-        "target": "VCC",
-        "style": "male",
-        "orientation": "+Y"
-      },
-      {
         "target": "DISPLAY_DC",
         "style": "male",
-        "orientation": "+Y"
+        "orientation": "-Z"
       },
       {
         "target": "DISPLAY_CS",
         "style": "male",
-        "orientation": "+Y"
+        "orientation": "-Z"
       },
       {
         "target": "DISPLAY_MOSI",
         "style": "male",
-        "orientation": "+Y"
+        "orientation": "-Z"
       },
       {
         "target": "DISPLAY_SCK",
         "style": "male",
-        "orientation": "+Y"
+        "orientation": "-Z"
       },
       {
         "target": "DISPLAY_MISO",
         "style": "male",
-        "orientation": "+Y"
+        "orientation": "-Z"
       },
       {
         "target": "DISPLAY_RST",
         "style": "male",
-        "orientation": "+Y"
+        "orientation": "-Z"
+      },
+      {
+        "target": "ground",
+        "style": "male",
+        "orientation": "-Z"
+      },
+      {
+        "target": "threeVolt",
+        "style": "male",
+        "orientation": "-Z"
       }
     ],
     "assembly": [
