@@ -11,14 +11,3 @@ namespace _screen_internal {
         updateStats(msg);
     }
 }
-
-namespace image {    
-    /**
-    * Gets the screen image
-    */
-    //% blockNamespace="images" group="Create"
-    //% blockId=imagescreen block="screen"
-    export function screenImage(): Image {
-        return screen;
-    }
-}
