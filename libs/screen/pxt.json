@@ -13,7 +13,9 @@
         "targetoverrides.ts",
         "ns.ts",
         "image.d.ts",
-        "pxtparts.json"
+        "pxtparts.json",
+        "imagesoverrides.jres",
+        "imagesoverrides.ts"
     ],
     "public": true,
     "dependencies": {
