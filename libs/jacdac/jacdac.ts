@@ -73,37 +73,6 @@ namespace jacdac {
     }
 
     /**
-     * Adds a JacDac device driver
-     * @param n driver
-     */
-    export function addDriver(n: Driver) {
-        if (!!n.proxy) { // don't add twice
-            n.log(`already added`);
-            return;
-        }
-
-        n.log(`add c${n.deviceClass}`)
-        const proxy = jacdac.__internalAddDriver(n.driverType, n.deviceClass,
-            [(p: Buffer) => n.handlePacket(p),
-            (p: Buffer) => n.handleControlPacket(p)],
-            n.controlData
-        );
-        n.proxy = proxy;
-    }
-
-    export function removeDriver(n: Driver) {
-        const proxy = n.proxy;
-        if (!proxy) {
-            n.log(`already removed`);
-            return;
-        }
-
-        n.log(`remove c${n.deviceClass}`);
-        n.proxy = undefined;
-        jacdac.__internalRemoveDriver(proxy);
-    }
-
-    /**
      * Sends a packet
      * @param pkt jackdack data
      */

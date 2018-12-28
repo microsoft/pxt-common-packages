@@ -4,10 +4,13 @@
 //% color="#382561" weight=78 icon="\uf06d"
 //% groups='["Effects", "Create", "Properties"]'
 namespace particles {
-    const TIME_PRECISION = 10; // time goes down to down to the 1<<10 seconds
+    enum Flag {
+        enabled = 1 << 0,
+        destroyed = 1 << 1,
+    }
 
+    const TIME_PRECISION = 10; // time goes down to down to the 1<<10 seconds
     let lastUpdate: number;
-    let sources: ParticleSource[];
 
     /**
      * A single particle
@@ -33,18 +36,28 @@ namespace particles {
         width?: number;
         height?: number;
         image?: Image;
+        flags?: number;
     }
 
     /**
      * A source of particles
      */
     export class ParticleSource implements SpriteLike {
-        anchor: ParticleAnchor;
         private _z: number;
+        
         id: number;
         _dt: number;
+        /**
+         * The anchor this source is currently attached to
+         */
+        anchor: ParticleAnchor;
+        /**
+         * Time to live in milliseconds. The lifespan decreases by 1 on each millisecond
+         * and the source gets destroyed when it reaches 0.
+         */
+        lifespan: number;
 
-        protected _enabled: boolean;
+        protected flags: number;
         protected head: Particle;
         protected timer: number;
         protected period: number;
@@ -71,14 +84,18 @@ namespace particles {
          */
         constructor(anchor: ParticleAnchor, particlesPerSecond: number, factory?: ParticleFactory) {
             init();
+            this.flags = 0;
+            const scene = game.currentScene();
+            const sources = particleSources();
             this.setRate(particlesPerSecond);
             this.setAcceleration(0, 0);
             this.setAnchor(anchor);
+            this.lifespan = undefined;
             this._dt = 0;
             this.z = 0;
             this.setFactory(factory || particles.defaultFactory);
             sources.push(this);
-            game.currentScene().addSprite(this);
+            scene.addSprite(this);
 
             this.enabled = true;
         }
@@ -105,7 +122,18 @@ namespace particles {
 
         _update(dt: number) {
             this.timer -= dt;
-            while (this.timer < 0 && this._enabled) {
+
+            if (this.lifespan !== undefined) {
+                this.lifespan -= dt;
+                if (this.lifespan <= 0) {
+                    this.lifespan = undefined;
+                    this.destroy();
+                }
+            } else if (this.anchor && this.anchor.flags !== undefined && (this.anchor.flags & sprites.Flag.Destroyed)) {
+                this.lifespan = 1000;
+            }
+
+            while (this.timer < 0 && this.enabled) {
                 this.timer += this.period;
                 const p = this._factory.createParticle(this.anchor);
                 if (!p) continue; // some factories can decide to not produce a particle
@@ -140,6 +168,14 @@ namespace particles {
                 this.head = this.head.next;
             }
 
+            if ((this.flags & Flag.destroyed) && this.head == null) {
+                const scene = game.currentScene();
+                const sources = particleSources();
+                sources.removeElement(this);
+                scene.allSprites.removeElement(this);
+                this.anchor == null;
+            }
+
             let current = this.head;
             while (current && current.next) {
                 if (current.next.lifespan <= 0) {
@@ -171,15 +207,15 @@ namespace particles {
         }
 
         get enabled() {
-            return this._enabled;
+            return !!(this.flags & Flag.enabled);
         }
 
         /**
          * Set whether this source is currently enabled (emitting particles) or not
          */
         set enabled(v: boolean) {
-            if (v !== this._enabled) {
-                this._enabled = v;
+            if (v !== this.enabled) {
+                this.flags = v ? this.flags | Flag.enabled : this.flags ^ Flag.enabled;
                 this.timer = 0;
             }
         }
@@ -188,12 +224,9 @@ namespace particles {
          * Destroy the source
          */
         destroy() {
+            // The `_prune` step will finishing destroying this Source once all emitted particles finish rendering
             this.enabled = false;
-            control.runInParallel(() => {
-                pauseUntil(() => this.head == null);
-                sources.removeElement(this);
-                game.currentScene().allSprites.removeElement(this);
-            });
+            this.flags |= Flag.destroyed;
         }
 
         /**
@@ -259,14 +292,16 @@ namespace particles {
     }
 
     function init() {
-        if (sources) return;
-        sources = [];
+        const data = game.currentScene().data;
+        if (data.particleSources) return;
+        data.particleSources = [] as ParticleSource[];
         lastUpdate = control.millis();
         game.onUpdate(updateParticles);
         game.onUpdateInterval(250, pruneParticles);
     }
 
     function updateParticles() {
+        const sources = particleSources();
         const time = control.millis();
         const dt = time - lastUpdate;
         lastUpdate = time;
@@ -277,6 +312,7 @@ namespace particles {
     }
 
     function pruneParticles() {
+        const sources = particleSources();
         for (let i = 0; i < sources.length; i++) {
             sources[i]._prune();
         }
@@ -300,5 +336,9 @@ namespace particles {
                 p.vy = p.next.vy;
             }
         }
+    }
+
+    function particleSources() {
+        return game.currentScene().data.particleSources as particles.ParticleSource[];
     }
 }

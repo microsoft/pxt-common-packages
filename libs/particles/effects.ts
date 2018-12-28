@@ -1,4 +1,5 @@
 namespace particles {
+
     //% fixedInstances
     export class ParticleEffect {
         protected sourceFactory: (anchor: ParticleAnchor, pps: number) => ParticleSource;
@@ -85,7 +86,21 @@ namespace particles {
         }
     }
 
+    /**
+     * Removes all effects at anchor's location
+     * @param anchor the anchor to remove effects from
+     */
+    //% blockId=particlesremoveeffect block="remove effects on %anchor=variables_get(mySprite)"
+    //% group="Effects"
+    export function removeEffects(anchor: ParticleAnchor) {
+        const sources = game.currentScene().data.particleSources as particles.ParticleSource[];
+        if (!sources) return;
+        sources.filter(ps => ps.anchor == anchor || ps.anchor.x == anchor.x && ps.anchor.y == anchor.y)
+        .forEach(ps => ps.destroy());
+    }
+    
     function createEffect(factoryFactory: (anchor?: ParticleAnchor) => ParticleFactory): ParticleEffect {
+    // function createEffect(factoryFactory: () => ParticleFactory): ParticleEffect {
         const factory = factoryFactory();
         if (!factory) return undefined;
         return new ParticleEffect((anchor: ParticleAnchor, pps: number) => new ParticleSource(anchor, pps, factory));
@@ -215,7 +230,7 @@ namespace particles {
     export const ashes = new ParticleEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
         const src = new particles.ParticleSource(anchor, 600, new AshFactory(anchor));
         src.setAcceleration(0, 500);
-        // src.lifespan = 2000; // <<< uncomment this line after pxt-common-packages#583 is merged into branch, as effect is inherently temporary
+        src.lifespan = 2000;
         return src;
     });
 

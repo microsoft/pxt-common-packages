@@ -4,10 +4,7 @@
     "files": [
         "console.ts",
         "debugger.ts",
-        "controllerservice.ts",
-        "lobby.ts",
-        "gameclient.ts",
-        "gameservice.ts"
+        "controllerservice.ts"
     ],
     "testFiles": [
     ],

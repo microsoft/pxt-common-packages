@@ -161,8 +161,18 @@ enum JDSwitchDirection {
     Right = DAL.DEVICE_BUTTON_EVT_DOWN,
 }
 
-enum JDControllerCmd {
+enum JDControllerCommand {
     ClientButtons = 1,
     ControlServer = 2,
     ControlClient = 3
+}
+
+enum JDControllerButton {
+    A = 5,
+    B = 6,
+    Left = 1,
+    Up = 2,
+    Right = 3,
+    Down = 4,
+    Menu = 7
 }

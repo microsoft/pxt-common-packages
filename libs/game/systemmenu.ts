@@ -3,17 +3,18 @@ namespace scene.systemMenu {
 
     interface MenuItem {
         name: () => string;
-        handler: () => void;
+        clickHandler: () => void;
         repeat?: boolean;
-        onHidden?: () => void;
+        hiddenHandler?: () => void;
     }
     let customItems: MenuItem[] = undefined;
-    export function addEntry(name: () => string, handler: () => void, repeat?: boolean, onHidden?: () => void) {
+    export function addEntry(name: () => string, clickHandler: () => void, repeat?: boolean, hiddenHandler?: () => void) {
         if (!customItems) customItems = [];
         customItems.push({
             name: name,
-            handler: handler,
-            repeat: repeat
+            clickHandler: clickHandler,
+            repeat: repeat,
+            hiddenHandler: hiddenHandler
         });
     }
 
@@ -44,10 +45,10 @@ namespace scene.systemMenu {
         if (customItems)
             customItems.forEach(item => {
                 m.addItem(item.name(), () => {
-                    if (item.repeat) item.handler();
+                    if (item.repeat) item.clickHandler();
                     else {
-                        itemHandler = item.handler;
-                        onHidden = item.onHidden;
+                        itemHandler = item.clickHandler;
+                        onHidden = item.hiddenHandler;
                         m.hide();
                     }
                 })
@@ -55,7 +56,7 @@ namespace scene.systemMenu {
         m.onDidHide = () => {
             active = false;
             if (onHidden)
-                onHidden;
+                onHidden();
             if (itemHandler)
                 itemHandler();
         }
