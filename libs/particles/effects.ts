@@ -28,9 +28,11 @@ namespace particles {
      */
     class GlobalAnchor implements ParticleAnchor {
         private camera: scene.Camera;
+        flags: number; //TODO: remove pending fix for https://github.com/Microsoft/pxt-arcade/issues/504
 
         constructor() {
             this.camera = game.currentScene().camera;
+            this.flags = 0;  //TODO: remove pending fix for https://github.com/Microsoft/pxt-arcade/issues/504
         }
 
         get x() {
@@ -228,7 +230,7 @@ namespace particles {
 
     //% fixedInstance whenUsed block="ashes"
     export const ashes = new ParticleEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
-        const src = new particles.ParticleSource(anchor, 600, new AshFactory(anchor));
+        const src = new particles.ParticleSource(anchor, particlesPerSecond, new AshFactory(anchor));
         src.setAcceleration(0, 500);
         src.lifespan = 2000;
         return src;

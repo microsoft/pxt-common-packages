@@ -390,7 +390,10 @@ namespace particles {
         }
 
         createParticle(anchor: particles.ParticleAnchor) {
-            let col = this.galois.randomRange(0x1, this.colors.length);
+            let col = 0
+            for (let i = 0; i < 5 && !this.colors[col]; i++) {
+                col = this.galois.randomRange(0x1, this.colors.length);
+            }
             if (!this.colors[col]) return undefined;
 
             const p = super.createParticle(anchor);

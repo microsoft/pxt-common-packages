@@ -44,7 +44,7 @@ namespace particles {
      */
     export class ParticleSource implements SpriteLike {
         private _z: number;
-        
+
         id: number;
         _dt: number;
         /**
@@ -96,7 +96,6 @@ namespace particles {
             this.setFactory(factory || particles.defaultFactory);
             sources.push(this);
             scene.addSprite(this);
-
             this.enabled = true;
         }
 
@@ -123,6 +122,7 @@ namespace particles {
         _update(dt: number) {
             this.timer -= dt;
 
+            const anchor: ParticleAnchor = this.anchor;
             if (this.lifespan !== undefined) {
                 this.lifespan -= dt;
                 if (this.lifespan <= 0) {
@@ -146,7 +146,6 @@ namespace particles {
             let current = this.head;
 
             this._dt += dt;
-
             let fixedDt = Fx8(this._dt);
             if (fixedDt) {
                 do {
@@ -319,7 +318,7 @@ namespace particles {
     }
 
     /**
-     * A source of particles, where 
+     * A source of particles where particles will occasionally change speed based off of each other
      */
     export class FireSource extends particles.ParticleSource {
         private galois: Math.FastRandom;
