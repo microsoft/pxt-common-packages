@@ -1,7 +1,10 @@
 enum JDConsoleMode {
-    Off,
-    Broadcast,
-    Listen
+    //% block="off"
+    Off = 0,
+    //% block="broadcast"
+    Broadcast = 1,
+    //% block="listen"
+    Listen = 2
 }
 
 namespace jacdac {
@@ -24,6 +27,7 @@ namespace jacdac {
     /**
      * Console logging driver. The driver is off, broadcasting or listening. Cannot do both.
      */
+    //% fixedInstances
     export class ConsoleService extends Broadcast {
         private _lastListenerTime: number;
 
@@ -37,6 +41,12 @@ namespace jacdac {
             console.addListener((priority, text) => this.broadcast(priority, text));
         }
 
+        /**
+         * Sets the console service mode
+         * @param mode 
+         */
+        //% blockId=jdconsolesetmode block="set %service mode to %mode"
+        //% group="Console"
         setMode(mode: JDConsoleMode) {
             this.start();
             if (this.mode != mode) {
