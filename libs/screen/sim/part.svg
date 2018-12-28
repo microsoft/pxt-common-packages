@@ -25,9 +25,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="2.8"
-     inkscape:cx="122.71658"
-     inkscape:cy="41.234686"
+     inkscape:zoom="3.959798"
+     inkscape:cx="76.17098"
+     inkscape:cy="131.39744"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -40,7 +40,9 @@
      fit-margin-top="0"
      fit-margin-left="0"
      fit-margin-right="0"
-     fit-margin-bottom="0" />
+     fit-margin-bottom="0"
+     inkscape:measure-start="69.1964,137.679"
+     inkscape:measure-end="89.1964,137.679" />
   <metadata
      id="metadata5">
     <rdf:RDF>
@@ -86,7 +88,7 @@
        id="VCC"
        width="11.863852"
        height="11.863852"
-       x="42.833588"
+       x="37.119301"
        y="31.030863"
        inkscape:label="" />
     <rect
@@ -94,7 +96,7 @@
        id="DISPLAY_DC"
        width="11.863852"
        height="11.863852"
-       x="82.14698"
+       x="65.00412"
        y="31.030863"
        inkscape:label="" />
     <rect
@@ -102,7 +104,7 @@
        id="DISPLAY_CS"
        width="11.863852"
        height="11.863852"
-       x="101.80367"
+       x="78.946526"
        y="31.030863"
        inkscape:label="" />
     <rect
@@ -110,7 +112,7 @@
        id="DISPLAY_MOSI"
        width="11.863852"
        height="11.863852"
-       x="121.46037"
+       x="92.888939"
        y="31.030863"
        inkscape:label="" />
     <rect
@@ -118,7 +120,7 @@
        id="DISPLAY_SCK"
        width="11.863852"
        height="11.863852"
-       x="141.11707"
+       x="106.83134"
        y="31.030863"
        inkscape:label="" />
     <rect
@@ -126,8 +128,8 @@
        id="DISPLAY_MISO"
        width="11.863852"
        height="11.863852"
-       x="160.77376"
-       y="31.745148"
+       x="120.77376"
+       y="31.030863"
        inkscape:label="" />
     <text
        xml:space="preserve"
@@ -145,93 +147,93 @@
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:6.62961197px;line-height:1.25;font-family:consolas;-inkscape-font-specification:consolas;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.22600947"
        x="45.509743"
-       y="-46.88002"
+       y="-41.165733"
        id="text4619-4"
        transform="rotate(90)"><tspan
          sodipodi:role="line"
          id="tspan4617-3"
          x="45.509743"
-         y="-46.88002"
+         y="-41.165733"
          style="font-size:6.62961197px;fill:#ffffff;fill-opacity:1;stroke-width:0.22600947">VCC</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:6.62961197px;line-height:1.25;font-family:consolas;-inkscape-font-specification:consolas;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.22600947"
        x="45.169846"
-       y="-86.417221"
+       y="-69.274353"
        id="text4619-4-9"
        transform="rotate(90)"><tspan
          sodipodi:role="line"
          id="tspan4617-3-1"
          x="45.169846"
-         y="-86.417221"
+         y="-69.274353"
          style="font-size:6.62961197px;fill:#ffffff;fill-opacity:1;stroke-width:0.22600947">D/C</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:6.62961197px;line-height:1.25;font-family:consolas;-inkscape-font-specification:consolas;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.22600947"
        x="45.224876"
-       y="-105.92118"
+       y="-83.064041"
        id="text4619-4-9-2"
        transform="rotate(90)"><tspan
          sodipodi:role="line"
          id="tspan4617-3-1-5"
          x="45.224876"
-         y="-105.92118"
+         y="-83.064041"
          style="font-size:6.62961197px;fill:#ffffff;fill-opacity:1;stroke-width:0.22600947">CS</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:6.62961197px;line-height:1.25;font-family:consolas;-inkscape-font-specification:consolas;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.22600947"
        x="45.364071"
-       y="-125.60157"
+       y="-97.030144"
        id="text4619-4-9-8"
        transform="rotate(90)"><tspan
          sodipodi:role="line"
          id="tspan4617-3-1-9"
          x="45.364071"
-         y="-125.60157"
+         y="-97.030144"
          style="font-size:6.62961197px;fill:#ffffff;fill-opacity:1;stroke-width:0.22600947">MOSI</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:6.62961197px;line-height:1.25;font-family:consolas;-inkscape-font-specification:consolas;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.22600947"
        x="45.163372"
-       y="-145.28195"
+       y="-110.99624"
        id="text4619-4-9-3"
        transform="rotate(90)"><tspan
          sodipodi:role="line"
          id="tspan4617-3-1-7"
          x="45.163372"
-         y="-145.28195"
+         y="-110.99624"
          style="font-size:6.62961197px;fill:#ffffff;fill-opacity:1;stroke-width:0.22600947">SCK</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:6.62961197px;line-height:1.25;font-family:consolas;-inkscape-font-specification:consolas;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.22600947"
        x="46.078358"
-       y="-164.96234"
+       y="-124.96234"
        id="text4619-4-9-0"
        transform="rotate(90)"><tspan
          sodipodi:role="line"
          id="tspan4617-3-1-72"
          x="46.078358"
-         y="-164.96234"
+         y="-124.96234"
          style="font-size:6.62961197px;fill:#ffffff;fill-opacity:1;stroke-width:0.22600947">MISO</tspan></text>
     <rect
        style="fill:#d4d4d4;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:3.1387825;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="DISPLAY_RST"
        width="11.863852"
        height="11.863852"
-       x="62.490284"
+       x="51.06171"
        y="31.030863"
        inkscape:label="" />
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:6.62961197px;line-height:1.25;font-family:consolas;-inkscape-font-specification:consolas;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.22600947"
        x="44.972382"
-       y="-66.56041"
+       y="-55.131836"
        id="text4619-4-94"
        transform="rotate(90)"><tspan
          sodipodi:role="line"
          id="tspan4617-3-6"
          x="44.972382"
-         y="-66.56041"
+         y="-55.131836"
          style="font-size:6.62961197px;fill:#ffffff;fill-opacity:1;stroke-width:0.22600947">RST</tspan></text>
   </g>
 </svg>
