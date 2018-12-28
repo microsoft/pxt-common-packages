@@ -10,8 +10,8 @@
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="158.43857"
-   height="146.80258"
-   viewBox="0 0 158.43857 146.80257"
+   height="159.68202"
+   viewBox="0 0 158.43857 159.68201"
    version="1.1"
    id="svg8"
    sodipodi:docname="part.svg"
@@ -26,8 +26,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="3.959798"
-     inkscape:cx="76.17098"
-     inkscape:cy="151.60049"
+     inkscape:cx="85.310029"
+     inkscape:cy="99.428824"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -51,7 +51,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -59,20 +59,20 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-18.949642,-27.865862)">
+     transform="translate(-18.949641,-27.865861)">
     <rect
-       style="fill:#0000ff;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1.30587435;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       style="fill:#0000ff;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1.36196291;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="rect4487"
-       width="157.13269"
-       height="145.4967"
-       x="19.602579"
-       y="28.518799" />
+       width="157.0766"
+       height="158.32005"
+       x="19.630623"
+       y="28.546843" />
     <image
        style="fill:#c8beb7;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0.42710456;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="thescreen"
-       width="136.67346"
-       height="109.33"
-       x="26.117912"
+       width="152.96252"
+       height="122.36021"
+       x="21.698141"
        y="61.527836"
        inkscape:label="" />
     <rect
