@@ -91,7 +91,7 @@
         "orientation": "-Z"
       },
       {
-        "target": "DISPLAY_BL",
+        "target": "threeVolt",
         "style": "male",
         "orientation": "-Z"
       }
