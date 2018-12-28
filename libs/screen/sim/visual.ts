@@ -79,9 +79,9 @@ namespace pxsim.visuals {
       this.lastLocation = [0, 0];
 
       const partSvg = svg.parseString(SCREEN_PART);
+      this.canvas = partSvg.getElementById('thescreen') as SVGImageElement;
       this.element = svg.elt("g");
       this.element.appendChild(partSvg.firstElementChild as SVGElement);
-      this.canvas = partSvg.getElementById('thescreen') as SVGImageElement;
       this.state.bindToSvgImage(this.canvas);
     }
 
