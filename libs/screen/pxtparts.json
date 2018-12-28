@@ -42,9 +42,7 @@
     },
     "numberOfPins": 8,
     "instantiation": {
-      "kind": "function",
-      "fullyQualifiedName": "_screen_internal.updateScreen",
-      "argumentRoles": []
+      "kind": "singleton"
     },
     "pinDefinitions": [
       {

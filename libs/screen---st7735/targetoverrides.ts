@@ -17,7 +17,7 @@ namespace image {
 }
 
 namespace _screen_internal {
-    //% shim=pxt::updateScreen
+    //% shim=pxt::updateScreen parts="screen"
     function updateScreen(img: Image): void { }
     //% shim=pxt::updateStats
     function updateStats(msg: string): void { }
