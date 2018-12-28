@@ -51,7 +51,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -207,14 +207,14 @@
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:6.62961197px;line-height:1.25;font-family:consolas;-inkscape-font-specification:consolas;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.22600947"
        x="46.078358"
-       y="-124.96234"
+       y="-138.96234"
        id="text4619-4-9-0"
        transform="rotate(90)"><tspan
          sodipodi:role="line"
          id="tspan4617-3-1-72"
          x="46.078358"
-         y="-124.96234"
-         style="font-size:6.62961197px;fill:#ffffff;fill-opacity:1;stroke-width:0.22600947">MISO</tspan></text>
+         y="-138.96234"
+         style="font-size:6.62961197px;fill:#ffffff;fill-opacity:1;stroke-width:0.22600947">BL</tspan></text>
     <rect
        style="fill:#d4d4d4;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:3.1387825;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="DISPLAY_RST"
@@ -235,5 +235,25 @@
          x="44.972382"
          y="-55.131836"
          style="font-size:6.62961197px;fill:#ffffff;fill-opacity:1;stroke-width:0.22600947">RST</tspan></text>
+    <rect
+       style="fill:#d4d4d4;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:3.1387825;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="DISPLAY_BL"
+       width="11.863852"
+       height="11.863852"
+       x="134.6376"
+       y="31.030863"
+       inkscape:label="" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:6.62961197px;line-height:1.25;font-family:consolas;-inkscape-font-specification:consolas;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.22600947"
+       x="45.402542"
+       y="-124.1629"
+       id="text4619-4-9-0-6"
+       transform="rotate(90)"><tspan
+         sodipodi:role="line"
+         id="tspan4617-3-1-72-8"
+         x="45.402542"
+         y="-124.1629"
+         style="font-size:6.62961197px;fill:#ffffff;fill-opacity:1;stroke-width:0.22600947">MISO</tspan></text>
   </g>
 </svg>

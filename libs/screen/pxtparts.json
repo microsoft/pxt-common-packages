@@ -5,7 +5,7 @@
       "builtIn": "screen",
       "width": 158.43856811523438,
       "height": 146.8025665283203,
-      "pinDistance": 14.9,
+      "pinDistance": 14.91,
       "pinLocations": [
         {
           "x": 4.227952701380444,
@@ -38,10 +38,14 @@
         {
           "x": 32.11250533264604,
           "y": 3.1650031792503945
+        },
+        {
+          "x": 115.68761950246274,
+          "y": 3.1650031792503945
         }
       ]
     },
-    "numberOfPins": 8,
+    "numberOfPins": 9,
     "instantiation": {
       "kind": "singleton"
     },
@@ -85,6 +89,11 @@
         "target": "DISPLAY_RST",
         "style": "male",
         "orientation": "-Z"
+      },
+      {
+        "target": "DISPLAY_BL",
+        "style": "male",
+        "orientation": "-Z"
       }
     ],
     "assembly": [
@@ -97,7 +106,8 @@
           4,
           5,
           6,
-          7
+          7,
+          8
         ]
       }
     ]
