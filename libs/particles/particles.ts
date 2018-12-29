@@ -321,19 +321,50 @@ namespace particles {
     /**
      * A source of particles where particles will occasionally change speed based off of each other
      */
-    export class FireSource extends particles.ParticleSource {
-        private galois: Math.FastRandom;
-        constructor(anchor: particles.ParticleAnchor, particlesPerSecond: number, factory?: particles.ParticleFactory) {
+    export class FireSource extends ParticleSource {
+        protected galois: Math.FastRandom;
+
+        constructor(anchor: ParticleAnchor, particlesPerSecond: number, factory?: ParticleFactory) {
             super(anchor, particlesPerSecond, factory);
             this.galois = new Math.FastRandom();
             this.z = 20;
         }
 
-        updateParticle(p: particles.Particle, fixedDt: Fx8) {
+        updateParticle(p: Particle, fixedDt: Fx8) {
             super.updateParticle(p, fixedDt);
             if (p.next && this.galois.percentChance(30)) {
                 p.vx = p.next.vx;
                 p.vy = p.next.vy;
+            }
+        }
+    }
+
+    /**
+     * A source of particles where the particles oscillate horizontally, and occasionally change
+     * between a given number of defined states
+     */
+    export class BubbleSource extends ParticleSource {
+        protected maxState: number;
+        protected galois: Math.FastRandom;
+
+        constructor(anchor: ParticleAnchor, particlesPerSecond: number, maxState: number, factory?: ParticleFactory) {
+            super(anchor, particlesPerSecond, factory);
+            this.galois = new Math.FastRandom();
+            this.maxState = maxState;
+        }
+
+        updateParticle(p: Particle, fixedDt: Fx8) {
+            super.updateParticle(p, fixedDt);
+            if (this.galois.percentChance(5)) {
+                if (p.data < this.maxState) {
+                    p.data++;
+                } else if (p.data > 0) {
+                    p.data--;
+                }
+            }
+
+            if (this.galois.percentChance(4)) {
+                p.vx = Fx.neg(p.vx);
             }
         }
     }

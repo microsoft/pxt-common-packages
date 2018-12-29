@@ -50,7 +50,6 @@ namespace particles {
         get height() {
             return screen.height;
         }
-
     }
 
     //% fixedInstances
@@ -95,12 +94,13 @@ namespace particles {
     //% blockId=particlesremoveeffect block="remove effects on %anchor=variables_get(mySprite)"
     //% group="Effects"
     export function removeEffects(anchor: ParticleAnchor) {
-        const sources = game.currentScene().data.particleSources as particles.ParticleSource[];
+        const sources = game.currentScene().data.particleSources as ParticleSource[];
         if (!sources) return;
-        sources.filter(ps => ps.anchor == anchor || ps.anchor.x == anchor.x && ps.anchor.y == anchor.y)
-        .forEach(ps => ps.destroy());
+        sources
+            .filter(ps => ps.anchor == anchor || ps.anchor.x == anchor.x && ps.anchor.y == anchor.y)
+            .forEach(ps => ps.destroy());
     }
-    
+
     function createEffect(factoryFactory: (anchor?: ParticleAnchor) => ParticleFactory): ParticleEffect {
         const factory = factoryFactory();
         if (!factory) return undefined;
@@ -121,7 +121,7 @@ namespace particles {
 
     //% fixedInstance whenUsed block="fountain"
     export const fountain = new ParticleEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
-        class FountainFactory extends particles.SprayFactory {
+        class FountainFactory extends SprayFactory {
             galois: Math.FastRandom;
     
             constructor() {
@@ -129,14 +129,14 @@ namespace particles {
                 this.galois = new Math.FastRandom(1234);
             }
     
-            createParticle(anchor: particles.ParticleAnchor) {
+            createParticle(anchor: ParticleAnchor) {
                 const p = super.createParticle(anchor);
                 p.color = this.galois.randomBool() ? 8 : 9;
                 p.lifespan = 1500;
                 return p;
             }
     
-            drawParticle(p: particles.Particle, x: Fx8, y: Fx8) {
+            drawParticle(p: Particle, x: Fx8, y: Fx8) {
                 screen.setPixel(Fx.toInt(x), Fx.toInt(y), p.color);
             }
         }
@@ -186,7 +186,7 @@ namespace particles {
             factory.minLifespan = 1000;
             factory.maxLifespan = 2000;
         }
-        factory.setSpeed(90);
+        factory.setSpeed(50);
         return new ParticleSource(anchor, particlesPerSecond, factory);
     });
 
@@ -218,7 +218,7 @@ namespace particles {
     //% fixedInstance whenUsed block="halo"
     export const halo = createEffect(function () {
         class RingFactory extends RadialFactory {
-            createParticle(anchor: particles.ParticleAnchor) {
+            createParticle(anchor: ParticleAnchor) {
                 const p = super.createParticle(anchor);
                 p.lifespan = this.galois.randomRange(200, 350);
                 return p;
@@ -229,7 +229,7 @@ namespace particles {
 
     //% fixedInstance whenUsed block="ashes"
     export const ashes = new ParticleEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
-        const src = new particles.ParticleSource(anchor, particlesPerSecond, new AshFactory(anchor));
+        const src = new ParticleSource(anchor, particlesPerSecond, new AshFactory(anchor));
         src.setAcceleration(0, 500);
         src.lifespan = 2000;
         return src;
@@ -237,7 +237,7 @@ namespace particles {
 
     //% fixedInstance whenUsed block="blizzard"
     export const blizzard = new GlobalEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
-        class SnowFactory extends particles.ShapeFactory {
+        class SnowFactory extends ShapeFactory {
             constructor(xRange: number, yRange: number) {
                 super(xRange, yRange, img`F`);
                 this.addShape(img`
@@ -248,7 +248,7 @@ namespace particles {
                 this.maxLifespan = this.xRange > 50 ? 1200: 700;
             }
 
-            createParticle(anchor: particles.ParticleAnchor) {
+            createParticle(anchor: ParticleAnchor) {
                 const p = super.createParticle(anchor);
                 p.color = this.galois.percentChance(80) ? 0x1 : 0x9;
                 return p;
@@ -256,15 +256,15 @@ namespace particles {
         }
 
         const factory = new SnowFactory(anchor.width ? anchor.width : 16, anchor.height ? anchor.height : 16);
-        const src = new particles.ParticleSource(anchor, particlesPerSecond, factory);
+        const src = new ParticleSource(anchor, particlesPerSecond, factory);
         src.setAcceleration(-300, -100);
         return src;
     });
 
     //% fixedInstance whenUsed block="bubbles"
-    export const bubbles = new particles.GlobalEffect(function (anchor: particles.ParticleAnchor, particlesPerSecond: number) {
+    export const bubbles = new GlobalEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
         const min = anchor.width > 50 ? 2000 : 500;
         const factory = new BubbleFactory(anchor, min, min * 2.5);
-        return new particles.ParticleSource(anchor, particlesPerSecond, factory);
+        return new BubbleSource(anchor, particlesPerSecond, factory.stateCount - 1, factory);
     });
 }

@@ -53,7 +53,7 @@ namespace particles {
     }
 
     /**
-     * A factory for generating particles.
+     * A factory for generating particles
      */
     export class ParticleFactory {
 
@@ -380,7 +380,7 @@ namespace particles {
                 return;
             }
             for (let x = 0; x < anchor.image.width; x++) {
-                for (let y = 0; y < anchor.image.width; y++) {
+                for (let y = 0; y < anchor.image.height; y++) {
                     const c = anchor.image.getPixel(x, y);
                     if (c && this.galois.percentChance(percentKept)) {
                         this.colors[c]++;
@@ -457,6 +457,10 @@ namespace particles {
             `];
         }
 
+        get stateCount(): number {
+            return this.states.length;
+        }
+
         createParticle(anchor: ParticleAnchor) {
             const p = super.createParticle(anchor);
 
@@ -476,18 +480,6 @@ namespace particles {
         }
 
         drawParticle(p: Particle, x: Fx8, y: Fx8) {
-            if (this.galois.percentChance(5)) { // this should probably be handled in a different type of Source
-                if (p.data < this.states.length - 1) {
-                    p.data++;
-                } else {
-                    p.data--;
-                }
-            }
-
-            if (this.galois.percentChance(5)) {
-                p.vx = Fx.neg(p.vx);
-            }
-
             const toDraw = this.states[p.data].clone();
             toDraw.replace(0xF, p.color);
             screen.drawTransparentImage(toDraw, Fx.toInt(x), Fx.toInt(y));
