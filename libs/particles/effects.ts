@@ -53,7 +53,7 @@ namespace particles {
     }
 
     //% fixedInstances
-    export class GlobalEffect extends ParticleEffect {
+    export class BackgroundEffect extends ParticleEffect {
         protected source: ParticleSource;
 
         constructor(sourceFactory: (anchor: ParticleAnchor, particlesPerSecond: number) => ParticleSource) {
@@ -61,25 +61,26 @@ namespace particles {
         }
 
         /**
-         * Creates a new Global Effect that occurs over entire screen
+         * Creates a new Background Effect that occurs over entire screen
          * @param particlesPerSecond 
          */
-        //% blockId=particlesstartglobalanimation block="start global %effect effect at rate %particlesPerSecond p/s"
+        //% blockId=particlesstartbackgroundanimation block="start background %effect effect at rate %particlesPerSecond p/s"
         //% particlesPerSecond.defl=20
         //% particlesPerSecond.min=1 particlePerSeconds.max=100
         //% group="Effects"
-        startGlobal(particlesPerSecond: number): void {
+        startFullScreen(particlesPerSecond: number): void {
             if (!this.sourceFactory) return;
+            this.endFullScreen();
             this.source = this.sourceFactory(new GlobalAnchor(), particlesPerSecond);
         }
 
         /**
-         * If this effect is currently occurring globally, stop producing particles and end the effect
+         * If this effect is currently occurring as a full screen effect, stop producing particles and end the effect
          * @param particlesPerSecond 
          */
-        //% blockId=particlesendglobalanimation block="end global %effect effect"
+        //% blockId=particlesendbackgroundanimation block="end background %effect effect"
         //% group="Effects"
-        endGlobal(): void {
+        endFullScreen(): void {
             if (this.source) {
                 this.source.destroy();
                 this.source = null;
@@ -148,14 +149,14 @@ namespace particles {
     });
 
     //% fixedInstance whenUsed block="confetti"
-    export const confetti = new GlobalEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
+    export const confetti = new BackgroundEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
         const factory = new ConfettiFactory(anchor.width ? anchor.width : 16, 16);
         factory.setSpeed(30);
         return new ParticleSource(anchor, particlesPerSecond, factory);
     });
 
     //% fixedInstance whenUsed block="hearts"
-    export const hearts = new GlobalEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
+    export const hearts = new BackgroundEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
         const factory = new ShapeFactory(anchor.width ? anchor.width : 16, 16, img`
             . F . F .
             F . F . F
@@ -173,7 +174,7 @@ namespace particles {
     });
 
     //% fixedInstance whenUsed block="smiles"
-    export const smiles = new GlobalEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
+    export const smiles = new BackgroundEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
         const factory = new ShapeFactory(anchor.width ? anchor.width : 16, 16, img`
             . f . f . 
             . f . f . 
@@ -236,7 +237,7 @@ namespace particles {
     });
 
     //% fixedInstance whenUsed block="blizzard"
-    export const blizzard = new GlobalEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
+    export const blizzard = new BackgroundEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
         class SnowFactory extends ShapeFactory {
             constructor(xRange: number, yRange: number) {
                 super(xRange, yRange, img`F`);
@@ -262,7 +263,7 @@ namespace particles {
     });
 
     //% fixedInstance whenUsed block="bubbles"
-    export const bubbles = new GlobalEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
+    export const bubbles = new BackgroundEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
         const min = anchor.width > 50 ? 2000 : 500;
         const factory = new BubbleFactory(anchor, min, min * 2.5);
         return new BubbleSource(anchor, particlesPerSecond, factory.stateCount - 1, factory);
