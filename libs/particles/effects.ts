@@ -242,11 +242,12 @@ namespace particles {
                 super(xRange, yRange, img`F`);
                 this.addShape(img`
                     F
-                    F`);
+                    F`
+                );
                 this.minLifespan = 200;
                 this.maxLifespan = this.xRange > 50 ? 1200: 700;
             }
-        
+
             createParticle(anchor: particles.ParticleAnchor) {
                 const p = super.createParticle(anchor);
                 p.color = this.galois.percentChance(80) ? 0x1 : 0x9;
@@ -258,5 +259,12 @@ namespace particles {
         const src = new particles.ParticleSource(anchor, particlesPerSecond, factory);
         src.setAcceleration(-300, -100);
         return src;
+    });
+
+    //% fixedInstance whenUsed block="bubbles"
+    export const bubbles = new particles.GlobalEffect(function (anchor: particles.ParticleAnchor, particlesPerSecond: number) {
+        const min = anchor.width > 50 ? 2000 : 500;
+        const factory = new BubbleFactory(anchor, min, min * 2.5);
+        return new particles.ParticleSource(anchor, particlesPerSecond, factory);
     });
 }

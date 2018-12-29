@@ -231,7 +231,7 @@ namespace particles {
 
         /**
          * Set a anchor for particles to be emitted from
-         * @param anchor 
+         * @param anchor
          */
         setAnchor(anchor: ParticleAnchor) {
             this.anchor = anchor;
