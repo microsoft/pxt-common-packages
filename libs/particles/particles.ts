@@ -21,8 +21,9 @@ namespace particles {
         vx: Fx8;
         vy: Fx8;
         lifespan: number;
-        data: number;
         next: Particle;
+        data?: number;
+        color?: number;
     }
 
     /**

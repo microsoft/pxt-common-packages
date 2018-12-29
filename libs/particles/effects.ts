@@ -102,7 +102,6 @@ namespace particles {
     }
     
     function createEffect(factoryFactory: (anchor?: ParticleAnchor) => ParticleFactory): ParticleEffect {
-    // function createEffect(factoryFactory: () => ParticleFactory): ParticleEffect {
         const factory = factoryFactory();
         if (!factory) return undefined;
         return new ParticleEffect((anchor: ParticleAnchor, pps: number) => new ParticleSource(anchor, pps, factory));
@@ -132,13 +131,13 @@ namespace particles {
     
             createParticle(anchor: particles.ParticleAnchor) {
                 const p = super.createParticle(anchor);
-                p.data = this.galois.randomBool() ? 8 : 9;
+                p.color = this.galois.randomBool() ? 8 : 9;
                 p.lifespan = 1500;
                 return p;
             }
     
             drawParticle(p: particles.Particle, x: Fx8, y: Fx8) {
-                screen.setPixel(Fx.toInt(x), Fx.toInt(y), p.data);
+                screen.setPixel(Fx.toInt(x), Fx.toInt(y), p.color);
             }
         }
 
@@ -250,7 +249,7 @@ namespace particles {
         
             createParticle(anchor: particles.ParticleAnchor) {
                 const p = super.createParticle(anchor);
-                p.data = this.galois.percentChance(80) ? 0x1 : 0x9;
+                p.color = this.galois.percentChance(80) ? 0x1 : 0x9;
                 return p;
             }
         }

@@ -189,13 +189,13 @@ namespace particles {
             p.lifespan = this.galois.randomRange(this.minLifespan, this.maxLifespan);
             p._x = Fx.iadd(this.galois.randomRange(0, this.xRange) - (this.xRange >> 1), p._x);
             p._y = Fx.iadd(this.galois.randomRange(0, this.yRange) - (this.yRange >> 1), p._y);
-            p.data = this.galois.randomRange(0x1, 0xF);
+            p.color = this.galois.randomRange(0x1, 0xF);
 
             return p;
         }
 
         drawParticle(p: particles.Particle, x: Fx8, y: Fx8) {
-            screen.setPixel(Fx.toInt(x), Fx.toInt(y), p.data);
+            screen.setPixel(Fx.toInt(x), Fx.toInt(y), p.color);
         }
     }
 
@@ -229,7 +229,7 @@ namespace particles {
 
         drawParticle(p: Particle, x: Fx8, y: Fx8) {
             const pImage = this.galois.pickRandom(this.sources).clone();
-            pImage.replace(0xF, p.data);
+            pImage.replace(0xF, p.color);
 
             screen.drawTransparentImage(pImage,
                 Fx.toInt(Fx.sub(x, this.ox)),
@@ -239,7 +239,7 @@ namespace particles {
 
         createParticle(anchor: ParticleAnchor) {
             const p = super.createParticle(anchor);
-            p.data = this.galois.randomRange(1, 14);
+            p.color = this.galois.randomRange(1, 14);
             return p;
         }
     }
@@ -290,7 +290,7 @@ namespace particles {
 
         createParticle(anchor: particles.ParticleAnchor) {
             const p = super.createParticle(anchor);
-            p.data = this.galois.randomBool() ?
+            p.color = this.galois.randomBool() ?
                 2 : this.galois.randomBool() ?
                     4 : 5;
 
@@ -307,7 +307,7 @@ namespace particles {
         }
 
         drawParticle(p: particles.Particle, x: Fx8, y: Fx8) {
-            screen.setPixel(Fx.toInt(p._x), Fx.toInt(p._y), p.data);
+            screen.setPixel(Fx.toInt(p._x), Fx.toInt(p._y), p.color);
         }
     }
 
@@ -346,13 +346,13 @@ namespace particles {
             p.vy = Fx.mul(this.speed, cachedCos[offsetTime]);
 
             p.lifespan = this.galois.randomRange(200, 1500);
-            p.data = this.galois.pickRandom(this.colors);
+            p.color = this.galois.pickRandom(this.colors);
 
             return p;
         }
 
         drawParticle(p: particles.Particle, x: Fx8, y: Fx8) {
-            screen.setPixel(Fx.toInt(p._x), Fx.toInt(p._y), p.data);
+            screen.setPixel(Fx.toInt(p._x), Fx.toInt(p._y), p.color);
         }
 
         setRadius(r: number) {
@@ -398,7 +398,7 @@ namespace particles {
 
             const p = super.createParticle(anchor);
             this.colors[col]--;
-            p.data = col;
+            p.color = col;
             p.lifespan = this.galois.randomRange(1000, 1500);
 
             p._y = Fx.iadd(this.galois.randomRange(this.yRange >> 1, this.yRange), p._y);
@@ -409,7 +409,7 @@ namespace particles {
         }
 
         drawParticle(p: particles.Particle, x: Fx8, y: Fx8) {
-            screen.setPixel(Fx.toInt(x), Fx.toInt(y), p.data);
+            screen.setPixel(Fx.toInt(x), Fx.toInt(y), p.color);
         }
     }
 }
