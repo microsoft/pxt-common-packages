@@ -1,7 +1,7 @@
 
 // particles.test.print.fireworkPrint("hello", image.font5);
 // particles.test.fireworks.runFireworks();
-// Space pong: See bottom of screen
+// particles.test.spacepong.runSpacePong();
 
 namespace particles.test.print {
     export function fireworkPrint(text: string, font: image.Font) {
@@ -70,97 +70,92 @@ namespace particles.test.fireworks {
     }
 }
 
-// space pong: requires local multiplayer, so commented out
+namespace particles.test.spacepong {
+    enum SpriteKind {
+        Player,
+        Enemy,
+        Ball,
+        Food,
+        Projectile
+    }
 
-// enum SpriteKind {
-//     Player,
-//     Enemy,
-//     Ball,
-//     Food,
-//     Projectile
-// }
-// function mkTrailSource(sprite: Sprite) { // create a source attached to mysprite
-//     const factory = new particles.TrailFactory(sprite, 1, 800);
-//     const src = new particles.ParticleSource(sprite, 50, factory)
-//     return src;
-// }
-
-// let currentBall: Sprite = null
-// let sprite: Sprite = null
-// let trail: particles.ParticleSource; // track trail
-// sprites.onCreated(SpriteKind.Ball, function (sprite) {
-//     sprite.setImage(sprites.space.spaceAsteroid0)
-//     if (trail) trail.destroy(); // destroy previous trail
-//     trail = mkTrailSource(sprite) // create new trail
-//     sprite.z = 5;
-//     if (Math.percentChance(50)) {
-//         sprite.vx = -50
-//     } else {
-//         sprite.vx = 50
-//     }
-//     // sprite.z = 20;
-//     sprite.vy = Math.randomRange(-50, 50)
-//     sprite.setFlag(SpriteFlag.BounceOnWall, true)
-//     currentBall = sprite
-// })
-// sprites.onOverlap(SpriteKind.Player, SpriteKind.Ball, function (sprite, otherSprite) {
-//     otherSprite.vx = otherSprite.vx * -1.1
-//     otherSprite.vy += sprite.vy * 0.33
-//     pause(200)
-// })
-// info.setPlayerScore(PlayerNumber.One, 0)
-// info.setPlayerScore(PlayerNumber.Two, 0)
-// controller.setPlayerSprite(PlayerNumber.One, sprites.create(img`
-// 2 2 2 2 2 . . . . . . . . . . . 
-// 2 2 2 2 2 . . . . . . . . . . . 
-// 2 2 2 2 2 . . . . . . . . . . . 
-// 2 2 2 2 2 . . . . . . . . . . . 
-// 2 2 2 2 2 . . . . . . . . . . . 
-// 2 2 2 2 2 . . . . . . . . . . . 
-// 2 2 2 2 2 . . . . . . . . . . . 
-// 2 2 2 2 2 . . . . . . . . . . . 
-// 2 2 2 2 2 . . . . . . . . . . . 
-// 2 2 2 2 2 . . . . . . . . . . . 
-// 2 2 2 2 2 . . . . . . . . . . . 
-// 2 2 2 2 2 . . . . . . . . . . . 
-// 2 2 2 2 2 . . . . . . . . . . . 
-// 2 2 2 2 2 . . . . . . . . . . . 
-// 2 2 2 2 2 . . . . . . . . . . . 
-// 2 2 2 2 2 . . . . . . . . . . . 
-// `, SpriteKind.Player))
-// controller.movePlayer(PlayerNumber.One, 0, 100)
-// controller.playerSprite(PlayerNumber.One).x = 0
-// controller.playerSprite(PlayerNumber.One).setFlag(SpriteFlag.StayInScreen, true)
-// controller.setPlayerSprite(PlayerNumber.Two, sprites.create(img`
-// . . . . . . . . . . . 8 8 8 8 8 
-// . . . . . . . . . . . 8 8 8 8 8 
-// . . . . . . . . . . . 8 8 8 8 8 
-// . . . . . . . . . . . 8 8 8 8 8 
-// . . . . . . . . . . . 8 8 8 8 8 
-// . . . . . . . . . . . 8 8 8 8 8 
-// . . . . . . . . . . . 8 8 8 8 8 
-// . . . . . . . . . . . 8 8 8 8 8 
-// . . . . . . . . . . . 8 8 8 8 8 
-// . . . . . . . . . . . 8 8 8 8 8 
-// . . . . . . . . . . . 8 8 8 8 8 
-// . . . . . . . . . . . 8 8 8 8 8 
-// . . . . . . . . . . . 8 8 8 8 8 
-// . . . . . . . . . . . 8 8 8 8 8 
-// . . . . . . . . . . . 8 8 8 8 8 
-// . . . . . . . . . . . 8 8 8 8 8 
-// `, SpriteKind.Player))
-// controller.movePlayer(PlayerNumber.Two, 0, 100)
-// controller.playerSprite(PlayerNumber.Two).x = scene.screenWidth()
-// controller.playerSprite(PlayerNumber.Two).setFlag(SpriteFlag.StayInScreen, true)
-// currentBall = sprites.create(img`1`, SpriteKind.Ball)
-// game.onUpdate(function () {
-//     if (currentBall.left <= 0) {
-//         currentBall.destroy()
-//         info.changePlayerScoreBy(PlayerNumber.Two, 1)
-//         currentBall = sprites.create(img`1`, SpriteKind.Ball)
-//     } else if (currentBall.right >= scene.screenWidth()) {
-//         currentBall.destroy()
-//         info.changePlayerScoreBy(PlayerNumber.One, 1)
-//         currentBall = sprites.create(img`1`, SpriteKind.Ball)
-//     }
-// })
+    export function runSpacePong() {
+        let currentBall: Sprite = null
+        let sprite: Sprite = null
+        sprites.onCreated(SpriteKind.Ball, function (sprite) {
+            sprite.setImage(sprites.space.spaceAsteroid0)
+            particles.trail.start(sprite, 40)
+            sprite.z = 5;
+            if (Math.percentChance(50)) {
+                sprite.vx = -50
+            } else {
+                sprite.vx = 50
+            }
+            sprite.vy = Math.randomRange(-50, 50)
+            sprite.setFlag(SpriteFlag.BounceOnWall, true)
+            currentBall = sprite
+        })
+        sprites.onOverlap(SpriteKind.Player, SpriteKind.Ball, function (sprite, otherSprite) {
+            particles.ashes.start(currentBall, 200)
+            otherSprite.vx = otherSprite.vx * -1.1
+            otherSprite.vy += sprite.vy * 0.33
+            pause(200)
+        })
+        info.player1.setScore(0)
+        info.player2.setScore(0)
+        let sprite1 = sprites.create(img`
+        2 2 2 2 2 . . . . . . . . . . .
+        2 2 2 2 2 . . . . . . . . . . .
+        2 2 2 2 2 . . . . . . . . . . .
+        2 2 2 2 2 . . . . . . . . . . .
+        2 2 2 2 2 . . . . . . . . . . .
+        2 2 2 2 2 . . . . . . . . . . .
+        2 2 2 2 2 . . . . . . . . . . .
+        2 2 2 2 2 . . . . . . . . . . .
+        2 2 2 2 2 . . . . . . . . . . .
+        2 2 2 2 2 . . . . . . . . . . .
+        2 2 2 2 2 . . . . . . . . . . .
+        2 2 2 2 2 . . . . . . . . . . .
+        2 2 2 2 2 . . . . . . . . . . .
+        2 2 2 2 2 . . . . . . . . . . .
+        2 2 2 2 2 . . . . . . . . . . .
+        2 2 2 2 2 . . . . . . . . . . .
+        `, SpriteKind.Player);
+        controller.moveSprite(sprite1, 0, 100);
+        sprite1.x = 0;
+        sprite1.setFlag(SpriteFlag.StayInScreen, true)
+        let sprite2 = sprites.create(img`
+        . . . . . . . . . . . 8 8 8 8 8
+        . . . . . . . . . . . 8 8 8 8 8
+        . . . . . . . . . . . 8 8 8 8 8
+        . . . . . . . . . . . 8 8 8 8 8
+        . . . . . . . . . . . 8 8 8 8 8
+        . . . . . . . . . . . 8 8 8 8 8
+        . . . . . . . . . . . 8 8 8 8 8
+        . . . . . . . . . . . 8 8 8 8 8
+        . . . . . . . . . . . 8 8 8 8 8
+        . . . . . . . . . . . 8 8 8 8 8
+        . . . . . . . . . . . 8 8 8 8 8
+        . . . . . . . . . . . 8 8 8 8 8
+        . . . . . . . . . . . 8 8 8 8 8
+        . . . . . . . . . . . 8 8 8 8 8
+        . . . . . . . . . . . 8 8 8 8 8
+        . . . . . . . . . . . 8 8 8 8 8
+        `, SpriteKind.Player);
+        controller.player2.moveSprite(sprite2, 0, 100);
+        sprite2.x = scene.screenWidth()
+        sprite2.setFlag(SpriteFlag.StayInScreen, true)
+        currentBall = sprites.create(img`1`, SpriteKind.Ball)
+        game.onUpdate(function () {
+            if (currentBall.left <= 0) {
+                currentBall.destroy()
+                info.player2.changeScoreBy(1)
+                currentBall = sprites.create(img`1`, SpriteKind.Ball)
+            } else if (currentBall.right >= scene.screenWidth()) {
+                currentBall.destroy()
+                info.player1.changeScoreBy(1)
+                currentBall = sprites.create(img`1`, SpriteKind.Ball)
+            }
+        })
+    }
+}
