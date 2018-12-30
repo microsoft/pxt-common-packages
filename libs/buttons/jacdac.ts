@@ -28,5 +28,6 @@ namespace jacdac {
     export function attachButtonToController(button: Button, controllerButton: JDControllerButton) {
         button.onEvent(ButtonEvent.Up, () => jacdac.controllerClient.setIsPressed(controllerButton, false));
         button.onEvent(ButtonEvent.Down, () => jacdac.controllerClient.setIsPressed(controllerButton, true));
+        jacdac.controllerClient.start();
     }
 }
