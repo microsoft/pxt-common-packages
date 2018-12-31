@@ -14,7 +14,7 @@ namespace serial {
     //% weight=19
     //% group="Read"
     export function readLine(delimiter: string): string {
-        return readUntil(delimiters(Delimiters.Dollar));
+        return readUntil(delimiter);
     }
 
     /**

@@ -72,7 +72,7 @@ namespace serial {
     //% 
     String readUntil(String delimiter) {
       auto service = getWSerial();
-      auto s = service->serial.readUntil((delimiter->data, delimiter->length));
+      auto s = service->serial.readUntil(delimiter->data);
       return PSTR(s);
     }
 
