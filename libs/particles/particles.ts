@@ -346,16 +346,21 @@ namespace particles {
     export class BubbleSource extends ParticleSource {
         protected maxState: number;
         protected galois: Math.FastRandom;
+        stateChangePercentage: number;
+        oscilattionPercentage: number
+
 
         constructor(anchor: ParticleAnchor, particlesPerSecond: number, maxState: number, factory?: ParticleFactory) {
             super(anchor, particlesPerSecond, factory);
             this.galois = new Math.FastRandom();
             this.maxState = maxState;
+            this.stateChangePercentage = 3;
+            this.oscilattionPercentage = 4;
         }
 
         updateParticle(p: Particle, fixedDt: Fx8) {
             super.updateParticle(p, fixedDt);
-            if (this.galois.percentChance(5)) {
+            if (this.galois.percentChance(this.stateChangePercentage)) {
                 if (p.data < this.maxState) {
                     p.data++;
                 } else if (p.data > 0) {
@@ -363,7 +368,7 @@ namespace particles {
                 }
             }
 
-            if (this.galois.percentChance(4)) {
+            if (this.galois.percentChance(this.oscilattionPercentage)) {
                 p.vx = Fx.neg(p.vx);
             }
         }

@@ -26,7 +26,7 @@ namespace particles {
     /**
      * Anchor used for global effects that occur across the screen.
      */
-    class GlobalAnchor implements ParticleAnchor {
+    class FullScreenAnchor implements ParticleAnchor {
         private camera: scene.Camera;
         flags: number; //TODO: remove pending fix for https://github.com/Microsoft/pxt-arcade/issues/504
 
@@ -53,7 +53,7 @@ namespace particles {
     }
 
     //% fixedInstances
-    export class BackgroundEffect extends ParticleEffect {
+    export class FullScreenEffect extends ParticleEffect {
         protected source: ParticleSource;
 
         constructor(sourceFactory: (anchor: ParticleAnchor, particlesPerSecond: number) => ParticleSource) {
@@ -61,24 +61,24 @@ namespace particles {
         }
 
         /**
-         * Creates a new Background Effect that occurs over entire screen
+         * Creates a new effect that occurs over theentire screen
          * @param particlesPerSecond 
          */
-        //% blockId=particlesstartbackgroundanimation block="start background %effect effect at rate %particlesPerSecond p/s"
+        //% blockId=particlesStartFullScreenAnimation block="start full screen %effect effect at rate %particlesPerSecond p/s"
         //% particlesPerSecond.defl=20
         //% particlesPerSecond.min=1 particlePerSeconds.max=100
         //% group="Effects"
         startFullScreen(particlesPerSecond: number): void {
             if (!this.sourceFactory) return;
             this.endFullScreen();
-            this.source = this.sourceFactory(new GlobalAnchor(), particlesPerSecond);
+            this.source = this.sourceFactory(new FullScreenAnchor(), particlesPerSecond);
         }
 
         /**
          * If this effect is currently occurring as a full screen effect, stop producing particles and end the effect
          * @param particlesPerSecond 
          */
-        //% blockId=particlesendbackgroundanimation block="end background %effect effect"
+        //% blockId=particlesEndFullScreenAnimation block="end full screen %effect effect"
         //% group="Effects"
         endFullScreen(): void {
             if (this.source) {
@@ -149,14 +149,14 @@ namespace particles {
     });
 
     //% fixedInstance whenUsed block="confetti"
-    export const confetti = new BackgroundEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
+    export const confetti = new FullScreenEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
         const factory = new ConfettiFactory(anchor.width ? anchor.width : 16, 16);
         factory.setSpeed(30);
         return new ParticleSource(anchor, particlesPerSecond, factory);
     });
 
     //% fixedInstance whenUsed block="hearts"
-    export const hearts = new BackgroundEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
+    export const hearts = new FullScreenEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
         const factory = new ShapeFactory(anchor.width ? anchor.width : 16, 16, img`
             . F . F .
             F . F . F
@@ -169,12 +169,13 @@ namespace particles {
             factory.minLifespan = 1000;
             factory.maxLifespan = 2000;
         }
+
         factory.setSpeed(90);
         return new ParticleSource(anchor, particlesPerSecond, factory);
     });
 
     //% fixedInstance whenUsed block="smiles"
-    export const smiles = new BackgroundEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
+    export const smiles = new FullScreenEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
         const factory = new ShapeFactory(anchor.width ? anchor.width : 16, 16, img`
             . f . f . 
             . f . f . 
@@ -184,9 +185,10 @@ namespace particles {
         `);
         // if large anchor, increase lifespan
         if (factory.xRange > 50) {
-            factory.minLifespan = 1000;
-            factory.maxLifespan = 2000;
+            factory.minLifespan = 1250;
+            factory.maxLifespan = 2500;
         }
+
         factory.setSpeed(50);
         return new ParticleSource(anchor, particlesPerSecond, factory);
     });
@@ -237,7 +239,7 @@ namespace particles {
     });
 
     //% fixedInstance whenUsed block="blizzard"
-    export const blizzard = new BackgroundEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
+    export const blizzard = new FullScreenEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
         class SnowFactory extends ShapeFactory {
             constructor(xRange: number, yRange: number) {
                 super(xRange, yRange, img`F`);
@@ -263,7 +265,7 @@ namespace particles {
     });
 
     //% fixedInstance whenUsed block="bubbles"
-    export const bubbles = new BackgroundEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
+    export const bubbles = new FullScreenEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
         const min = anchor.width > 50 ? 2000 : 500;
         const factory = new BubbleFactory(anchor, min, min * 2.5);
         return new BubbleSource(anchor, particlesPerSecond, factory.stateCount - 1, factory);

@@ -368,37 +368,50 @@ namespace particles {
         }
     }
 
+    interface ColorCount {
+        color: number;
+        count: number;
+    }
+
     export class AshFactory extends AreaFactory {
-        private colors: number[];
+        private colors: ColorCount[];
         
         constructor(anchor: ParticleAnchor, percentKept: number = 20) {
             super(anchor.width ? anchor.width : 8, anchor.height ? anchor.height >> 1 : 8);
-            this.colors = [];
 
             if (!anchor.image) {
-                this.colors[1] = 20;
+                this.colors = [({ color: 1, count: 20 })];
                 return;
             }
+
+            let counts: number[] = [];
             for (let x = 0; x < anchor.image.width; x++) {
                 for (let y = 0; y < anchor.image.height; y++) {
                     const c = anchor.image.getPixel(x, y);
                     if (c && this.galois.percentChance(percentKept)) {
-                        this.colors[c]++;
+                        counts[c]++;
                     }
                 }
             }
+
+            this.colors = counts
+                .map((value: number, index: number) => {
+                    return { color: index, count: value };
+                })
+                .filter(v => v.count != 0);
         }
 
         createParticle(anchor: ParticleAnchor) {
-            let col = 0
-            for (let i = 0; i < 5 && !this.colors[col]; i++) {
-                col = this.galois.randomRange(0x1, this.colors.length);
-            }
-            if (!this.colors[col]) return undefined;
+            if (this.colors.length === 0) return undefined;
 
+            const index = this.galois.randomRange(0, this.colors.length - 1);
+            const choice = this.colors[index];
             const p = super.createParticle(anchor);
-            this.colors[col]--;
-            p.color = col;
+
+            choice.count--;
+            if (choice.count === 0) this.colors.removeAt(index);
+
+            p.color = choice.color;
             p.lifespan = this.galois.randomRange(1000, 1500);
 
             p._y = Fx.iadd(this.galois.randomRange(this.yRange >> 1, this.yRange), p._y);
