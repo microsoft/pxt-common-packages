@@ -6,6 +6,18 @@
 //% groups='["Write", "Read", "Events", "Configuration"]'
 namespace serial {
     /**
+     * Read a line of text from the serial port and return the buffer when the delimiter is met.
+     * @param delimiter text delimiter that separates each text chunk
+     */
+    //% help=serial/read-line
+    //% blockId=serial_read_line block="serial|read line %delimiter=serial_delimiter_conv"
+    //% weight=19
+    //% group="Read"
+    export function readLine(delimiter: string): string {
+        return readUntil(delimiters(Delimiters.Dollar));
+    }
+
+    /**
      * Write a line of text to the serial port.
      * @param value to send over serial
      */
@@ -40,5 +52,25 @@ namespace serial {
     export function writeValue(name: string, value: number): void {
         const prefix = name ? name + ":" : "";
         serial.writeLine(prefix + value);
+    }
+
+    /**
+    * Return the corresponding delimiter string
+    */
+    //% blockId="serial_delimiter_conv" block="%del"
+    //% weight=1 blockHidden=true
+    export function delimiters(del: Delimiters): string {
+        // even though it might not look like, this is more
+        // (memory) efficient than the C++ implementation, because the
+        // strings are statically allocated and take no RAM
+        switch (del) {
+            case Delimiters.NewLine: return "\n"
+            case Delimiters.Comma: return ","
+            case Delimiters.Dollar: return "$"
+            case Delimiters.Colon: return ":"
+            case Delimiters.Fullstop: return "."
+            case Delimiters.Hash: return "#"
+            default: return "\n"
+        }
     }
 }

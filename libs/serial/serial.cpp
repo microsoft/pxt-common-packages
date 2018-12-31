@@ -27,6 +27,21 @@ enum class BaudRate {
   BaudRate300 = 300
 };
 
+enum Delimiters {
+    //% block="new line"
+    NewLine = 1,
+    //% block=","
+    Comma = 2,
+    //% block="$"
+    Dollar = 3,
+    //% block=":"
+    Colon = 4,
+    //% block="."
+    Fullstop = 5,
+    //% block="#"
+    Hash = 6,
+};
+
 enum SerialEvent {
     //% block="data received"
     DataReceived = CODAL_SERIAL_EVT_RX_FULL    
@@ -48,6 +63,19 @@ SINGLETON_IF_PIN(WSerial,TX);
 }
 
 namespace serial {
+    /**
+     * Read a line of text from the serial port and return the buffer when the delimiter is met.
+     * @param delimiter text delimiter that separates each text chunk
+     */
+    //% help=serial/read-until
+    //% blockId=serial_read_until block="serial|read until %delimiter=serial_delimiter_conv"
+    //% 
+    String readUntil(String delimiter) {
+      auto service = getWSerial();
+      auto s = service->serial.readUntil((delimiter->data, delimiter->length));
+      return PSTR(s);
+    }
+
     /**
     * Read the buffered received data as a string
     */

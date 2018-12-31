@@ -4,6 +4,10 @@ namespace pxsim.serial {
     let _tx: pins.DigitalInOutPin;
     let _rx: pins.DigitalInOutPin;
 
+    export function readUntil(delimiter: string) {
+        
+    }
+
     export function readString(): string {
         const r = rxBuffer;
         rxBuffer = "";
