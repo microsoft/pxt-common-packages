@@ -4,6 +4,10 @@ namespace pxsim.serial {
     let _tx: pins.DigitalInOutPin;
     let _rx: pins.DigitalInOutPin;
 
+    export function onEvent(event: number, handler: RefAction) {
+        pxsim.control.internalOnEvent(DAL.DEVICE_ID_SERIAL, event, handler);        
+    }
+
     export function readString(): string {
         const r = rxBuffer;
         rxBuffer = "";
