@@ -7,6 +7,9 @@ namespace pxsim.serial {
     export function readUntil(delimiter: string) {
         
     }
+    export function onEvent(event: number, handler: RefAction) {
+        pxsim.control.internalOnEvent(DAL.DEVICE_ID_SERIAL, event, handler);        
+    }
 
     export function readString(): string {
         const r = rxBuffer;
