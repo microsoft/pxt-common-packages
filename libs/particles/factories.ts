@@ -384,6 +384,9 @@ namespace particles {
             }
 
             let counts: number[] = [];
+            for (let i = 0x0; i <= 0xF; i++) {
+                counts[i] = 0;
+            }
             for (let x = 0; x < anchor.image.width; x++) {
                 for (let y = 0; y < anchor.image.height; y++) {
                     const c = anchor.image.getPixel(x, y);
