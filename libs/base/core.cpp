@@ -73,7 +73,7 @@ const char *utf8Skip(const char *data, int size, int skip) {
     for (int i = 0; i <= size; ++i) {
         char c = data[i];
         len++;
-        if (len >= skip)
+        if (len > skip)
             return data + i;
         if ((c & 0x80) == 0x00) {
             // skip
@@ -1671,14 +1671,17 @@ static char *fixCopy(BoxedString *p, char *dst) {
 static void fixCons(BoxedString *r) {
     uint32_t length = 0;
     auto sz = fixSize(r, &length);
+    auto numSkips = length / SKIP_INCR;
     // allocate first, while [r] still holds references to its children
     // because allocation might trigger GC
-    auto data = (uint16_t *)gcAllocateArray(NUM_SKIP_ENTRIES(r) * 2 + sz + 1);
+    auto data = (uint16_t *)gcAllocateArray(numSkips * 2 + sz + 1);
+    // copy, while [r] is still cons
+    fixCopy(r, (char *)(data + numSkips));
+    // now, set [r] up properly
     r->vtable = PXT_VTABLE_TO_INT(&string_skiplist16_vt);
     r->skip.size = sz;
     r->skip.length = length;
     r->skip.list = data;
-    fixCopy(r, (char *)SKIP_DATA(r));
     setupSkipList(r, NULL);
 }
 #endif

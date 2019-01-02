@@ -400,7 +400,7 @@ int RefMap::findIdx(String key) {
     auto keydata = key->getUTF8Data();
     for (unsigned i = 0; i < len; ++i) {
         auto s = data[i];
-        if (s->getUTF8Size() == keylen && memcmp(keydata, key->getUTF8Data(), keylen) == 0)
+        if (s->getUTF8Size() == keylen && memcmp(keydata, s->getUTF8Data(), keylen) == 0)
             return i;
     }
 
