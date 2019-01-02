@@ -595,9 +595,10 @@ void *gcAllocate(int numbytes) {
 }
 
 static void removePtr(TValue v) {
-    auto len = gcRoots.getLength();
+    int len = gcRoots.getLength();
     auto data = gcRoots.getData();
-    for (unsigned i = 0; i < len; ++i) {
+    // scan from the back, as this is often used as a stack
+    for (int i = len - 1; i >= 0; --i) {
         if (data[i] == v) {
             if (i == len - 1) {
                 gcRoots.pop();

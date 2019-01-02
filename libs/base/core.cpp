@@ -414,9 +414,15 @@ String concat(String s, String other) {
         // to construct a shallower tree; this should keep the live set reasonable
         // when someone decides to construct a long string by concatenating
         // single characters
-        other = concat(s->cons.right, other);
-        s = s->cons.left;
-        goto mkCons;
+
+        // allocate [r] first, and keep it alive
+        String r = new (gcAllocate(4 + 2 * 4)) BoxedString(&string_cons_vt);
+        registerGCPtr((TValue)r);
+        r->cons.left = s->cons.left;
+        // this concat() might trigger GC
+        r->cons.right = concat(s->cons.right, other);
+        unregisterGCPtr((TValue)r);
+        return r;
     }
 #endif
 
