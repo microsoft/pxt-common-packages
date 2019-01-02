@@ -406,9 +406,9 @@ String concat(String s, String other) {
         // (s->cons.left + s->cons.right) + other = s->cons.left + (s->cons.right + other)
         if (IS_CONS(other) || IS_CONS(s->cons.right))
             goto mkCons;
-        auto lenAL = s->cons.right->getUTF8Size();
+        auto lenAR = s->cons.right->getUTF8Size();
         lenB = other->getUTF8Size();
-        if (lenAL + lenB > SHORT_CONCAT_STRING)
+        if (lenAR + lenB > SHORT_CONCAT_STRING)
             goto mkCons;
         // if (s->cons.right + other) is short enough, use associativity
         // to construct a shallower tree; this should keep the live set reasonable
@@ -1653,23 +1653,44 @@ static const char *skipLookup(BoxedString *p, uint32_t idx) {
     return utf8Skip(data, size, idx);
 }
 
+extern LLSegment workQueue;
+
 static uint32_t fixSize(BoxedString *p, uint32_t *len) {
-    if (IS_CONS(p)) {
-        return fixSize(p->cons.left, len) + fixSize(p->cons.right, len);
+    uint32_t tlen = 0;
+    uint32_t sz = 0;
+    if (workQueue.getLength())
+        oops(81);
+    workQueue.push((TValue)p);
+    while (workQueue.getLength()) {
+        p = (BoxedString *)workQueue.pop();
+        if (IS_CONS(p)) {
+            workQueue.push((TValue)p->cons.right);
+            workQueue.push((TValue)p->cons.left);
+        } else {
+            tlen += p->getLength();
+            sz += p->getUTF8Size();
+        }
     }
-    *len += p->getLength();
-    return p->getUTF8Size();
+    *len = tlen;
+    return sz;
 }
 
-static char *fixCopy(BoxedString *p, char *dst) {
-    if (IS_CONS(p)) {
-        dst = fixCopy(p->cons.left, dst);
-        dst = fixCopy(p->cons.right, dst);
-        return dst;
+static void fixCopy(BoxedString *p, char *dst) {
+    if (workQueue.getLength())
+        oops(81);
+
+    workQueue.push((TValue)p);
+    while (workQueue.getLength()) {
+        p = (BoxedString *)workQueue.pop();
+        if (IS_CONS(p)) {
+            workQueue.push((TValue)p->cons.right);
+            workQueue.push((TValue)p->cons.left);
+        } else {
+            auto sz = p->getUTF8Size();
+            memcpy(dst, p->getUTF8Data(), sz);
+            dst += sz;
+        }
     }
-    auto sz = p->getUTF8Size();
-    memcpy(dst, p->getUTF8Data(), sz);
-    return dst + sz;
 }
 
 // switches CONS representation into skip list representation

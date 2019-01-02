@@ -179,7 +179,7 @@ struct GCBlock {
 };
 
 static LLSegment gcRoots;
-static LLSegment workQueue;
+LLSegment workQueue; // (ab)used by consString making
 static GCBlock *firstBlock;
 static RefBlock *firstFree;
 static uint8_t *midPtr;
