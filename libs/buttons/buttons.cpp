@@ -186,7 +186,6 @@ namespace ButtonMethods {
  */
 //% help=input/button/on-event
 //% blockId=buttonEvent block="on %button|%event"
-//% parts="buttons"
 //% blockNamespace=input
 //% button.fieldEditor="gridpicker"
 //% button.fieldOptions.width=220
@@ -204,7 +203,6 @@ void onEvent(Button_ button, ButtonEvent ev, Action body) {
 //% help=input/button/is-pressed
 //% block="%button|is pressed"
 //% blockId=buttonIsPressed
-//% parts="buttons"
 //% blockNamespace=input
 //% button.fieldEditor="gridpicker"
 //% button.fieldOptions.width=220
@@ -222,7 +220,6 @@ bool isPressed(Button_ button) {
 //% help=input/button/was-pressed
 //% block="%button|was pressed"
 //% blockId=buttonWasPressed
-//% parts="buttons"
 //% blockNamespace=input
 //% button.fieldEditor="gridpicker"
 //% button.fieldOptions.width=220
