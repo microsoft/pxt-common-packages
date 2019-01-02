@@ -88,42 +88,79 @@ const char *utf8Skip(const char *data, int size, int skip) {
     return NULL;
 }
 
+static char *write3byte(char *dst, uint32_t charCode) {
+    if (dst) {
+        *dst++ = 0xe0 | (charCode >> 12);
+        *dst++ = 0x80 | (0x3f & (charCode >> 6));
+        *dst++ = 0x80 | (0x3f & (charCode >> 0));
+    }
+    return dst;
+}
+
+static char *write2byte(char *dst, uint32_t charCode) {
+    if (dst) {
+        *dst++ = 0xc0 | (charCode >> 6);
+        *dst++ = 0x80 | (0x3f & charCode);
+    }
+    return dst;
+}
+
 static int utf8canon(char *dst, const char *data, int size) {
-    int len = 0;
     int outsz = 0;
     for (int i = 0; i < size;) {
         uint8_t c = data[i];
-        len++;
+        uint32_t charCode = c;
         if ((c & 0x80) == 0x00) {
-            if (dst)
-                *dst++ = c;
-            outsz++;
+            charCode = c;
             i++;
         } else if ((c & 0xe0) == 0xc0 && i + 1 < size && (data[i + 1] & 0xc0) == 0x80) {
-            if (dst) {
-                *dst++ = c;
-                *dst++ = data[i + 1];
-            }
-            i += 2;
-            outsz += 2;
+            charCode = ((c & 0x1f) << 6) | (data[i + 1] & 0x3f);
+            if (charCode < 0x80)
+                goto error;
+            else
+                i += 2;
         } else if ((c & 0xf0) == 0xe0 && i + 2 < size && (data[i + 1] & 0xc0) == 0x80 &&
                    (data[i + 2] & 0xc0) == 0x80) {
-            if (dst) {
-                *dst++ = c;
-                *dst++ = data[i + 1];
-                *dst++ = data[i + 2];
-            }
-            i += 3;
-            outsz += 3;
+            charCode = ((c & 0x0f) << 12) | (data[i + 1] & 0x3f) << 6 | (data[i + 2] & 0x3f);
+            if (charCode < 0x800 || (0xd800 <= charCode && charCode <= 0xdfff))
+                goto error;
+            else
+                i += 3;
+        } else if ((c & 0xf8) == 0xf0 && i + 3 < size && (data[i + 1] & 0xc0) == 0x80 &&
+                   (data[i + 2] & 0xc0) == 0x80 && (data[i + 3] & 0xc0) == 0x80) {
+            charCode = ((c & 0x07) << 18) | (data[i + 1] & 0x3f) << 12 | (data[i + 2] & 0x3f) << 6 |
+                       (data[i + 3] & 0x3f);
+            if (charCode < 0x10000 || charCode > 0x10ffff)
+                goto error;
+            else
+                i += 4;
         } else {
-            // error - encode the byte value as UTF8
-            if (dst) {
-                *dst++ = 0xc0 | (c >> 6);
-                *dst++ = 0x80 | ((c >> 0) & 0x3f);
-            }
-            outsz += 2;
-            i++;
+            goto error;
         }
+
+        if (charCode < 0x80) {
+            outsz += 1;
+            if (dst)
+                *dst++ = charCode;
+        } else if (charCode < 0x800) {
+            outsz += 2;
+            dst = write2byte(dst, charCode);
+        } else if (charCode < 0x10000) {
+            outsz += 3;
+            dst = write3byte(dst, charCode);
+        } else {
+            outsz += 6; // a surrogate pair
+            charCode -= 0x10000;
+            dst = write3byte(dst, 0xd800 + (charCode >> 10));
+            dst = write3byte(dst, 0xdc00 + (charCode & 0x3ff));
+        }
+
+        continue;
+
+    error:
+        i++;
+        outsz += 2;
+        dst = write2byte(dst, c);
     }
     return outsz;
 }
