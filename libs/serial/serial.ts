@@ -17,7 +17,7 @@ enum Delimiters {
  * Reading and writing data over a serial connection.
  */
 //% weight=2 color=#002050 icon="\uf287"
-//% advanced=true
+//% advanced=true blockGap=8
 //% groups='["Write", "Read", "Events", "Configuration"]'
 namespace serial {
 
