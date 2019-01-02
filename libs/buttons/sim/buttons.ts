@@ -68,7 +68,7 @@ namespace pxsim {
     }
 }
 namespace pxsim.pxtcore {
-    export function getButtonByPin(pinId: number): Button {
+    export function getButtonByPin(pinId: number): CommonButton {
         let m = board().buttonState.buttonsByPin
         let b = m[pinId + ""]
         if (!b) {
@@ -77,11 +77,11 @@ namespace pxsim.pxtcore {
         return b
     }
 
-    export function getButtonByPinCfg(key: number): Button {
+    export function getButtonByPinCfg(key: number): CommonButton {
         return getButtonByPin(getConfig(key, -1))
     }
 
-    export function getButton(buttonId: number): Button {
+    export function getButton(buttonId: number): CommonButton {
         const buttons = board().buttonState.buttons;
         if (buttonId === 2) {
             board().buttonState.usesButtonAB = true;
@@ -98,7 +98,7 @@ namespace pxsim.pxtcore {
 namespace pxsim.ButtonMethods {
     export function onEvent(button: pxsim.Button, ev: number, body: pxsim.RefAction): void {
         pxsim.pxtcore.registerWithDal(button.id, ev, body);
-    }
+    }   
     
     export function isPressed(button: pxsim.Button): boolean {
         return button.pressed;
