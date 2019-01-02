@@ -34,7 +34,7 @@
         ],
         "instantiation": {
             "kind": "function",
-            "fullyQualifiedName": "Button.onEvent",
+            "fullyQualifiedName": "Button.onEvent,Button.isPressed,Button.wasPressed",
             "argumentRoles": [
                 {
                     "pinInstantiationIdx": 0,
