@@ -10,10 +10,10 @@ using namespace std;
 #define SHORT_CONCAT_STRING 50
 
 // bigger value - less memory, but slower
-// 16/20 keeps s.length and s.charCodeAt(i) at about 200 cycles (for actual unicode strings), 
+// 16/20 keeps s.length and s.charCodeAt(i) at about 200 cycles (for actual unicode strings),
 // which is similar to amortized allocation time
 #define SKIP_INCR 16 // needs to be power of 2; needs to be kept in sync with compiler
-#define MIN_SKIP 20 // min. size of string to use skip list; static code has its own limit
+#define MIN_SKIP 20  // min. size of string to use skip list; static code has its own limit
 
 namespace pxt {
 
@@ -375,7 +375,7 @@ String concat(String s, String other) {
             goto mkCons;
         // if (s->cons.right + other) is short enough, use associativity
         // to construct a shallower tree; this should keep the live set reasonable
-        // when someone decides to construct a long string by concatenating 
+        // when someone decides to construct a long string by concatenating
         // single characters
         other = concat(s->cons.right, other);
         s = s->cons.left;
@@ -423,30 +423,14 @@ int compare(String a, String b) {
     auto dataB = b->getUTF8Data();
     auto len = lenA < lenB ? lenA : lenB;
 
-    // this assumes canonical encoding
+    // this also works for UTF8, provided canonical encoding
+    // which is guaranteed by the constructor
     for (unsigned i = 0; i <= len; ++i) {
         unsigned char cA = dataA[i];
         unsigned char cB = dataB[i];
         if (cA == cB)
             continue;
-#if PXT_UTF8
-        if (cA & 0x80) {
-            if (cB & 0x80) {
-                int iA = utf8CharCode(dataA + i);
-                int iB = utf8CharCode(dataB + i);
-                return iA < iB ? -1 : 1;
-            } else {
-                return 1;
-            }
-        } else if (cA < cB) {
-            // this is also triggered when cB&0x80
-            return -1;
-        } else {
-            return 1;
-        }
-#else
         return cA < cB ? -1 : 1;
-#endif
     }
     return 0;
 }
