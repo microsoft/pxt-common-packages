@@ -78,11 +78,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
     collisions() {
         control.enablePerfCounter("phys_collisions")
 
-        // 1: clear obstacles
-        for (let i = 0; i < this.sprites.length; ++i)
-            this.sprites[i].clearObstacles();
-
-        // 2: refresh non-ghost collision map
+        // 1: refresh non-ghost collision map
         const colliders = this.sprites.filter(sprite => !(sprite.flags & sprites.Flag.Ghost));
 
         if (colliders.length < 10) {
@@ -93,7 +89,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             this.map.update(colliders);
         }
 
-        // 3: go through sprite and handle collisions
+        // 2: go through sprite and handle collisions
         const scene = game.currentScene();
         const tm = scene.tileMap;
 
@@ -165,6 +161,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
     }
 
     public moveSprite(s: Sprite, tm: tiles.TileMap, dx: Fx8, dy: Fx8) {
+        s.clearObstacles();
+
         if (dx === Fx.zeroFx8 && dy === Fx.zeroFx8) {
             s._lastX = s._x;
             s._lastY = s._y;
