@@ -1,4 +1,3 @@
-/// <reference path="../../../node_modules/pxt-core/built/pxtsim.d.ts" />
 
 namespace pxsim.visuals {
   const SCREEN_PART_WIDTH = 158.439;
