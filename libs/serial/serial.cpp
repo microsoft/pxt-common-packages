@@ -49,6 +49,51 @@ SINGLETON_IF_PIN(WSerial,TX);
 
 namespace serial {
     /**
+     * Read a line of text from the serial port and return the buffer when the delimiter is met.
+     * @param delimiter text delimiter that separates each text chunk
+     */
+    //% help=serial/read-until
+    //% blockId=serial_read_until block="serial|read until %delimiter=serial_delimiter_conv"
+    //% weight=19
+    //% group="Read"
+    String readUntil(String delimiter) {
+      auto service = getWSerial();
+      if (!service) return mkString("");
+
+      auto d = MSTR(delimiter);
+      auto r = service->serial.readUntil(d);
+      return PSTR(r);
+    }
+
+    /**
+    * Sets the size of the RX buffer in bytes
+    */
+    //% help=serial/set-rx-buffer-size
+    //% blockId=serialsetrxbuffersize block="serial set rx buffer size to $size"
+    //% weight=10
+    //% group="Configuration"
+    void setRxBufferSize(uint8_t size) {
+      auto service = getWSerial();
+      if (!service) return;
+
+      service->serial.setRxBufferSize(size);
+    }
+
+    /**
+    * Sets the size of the TX buffer in bytes
+    */
+    //% help=serial/set-tx-buffer-size
+    //% blockId=serialsetrxbuffersize block="serial set tx buffer size to $size"
+    //% weight=9
+    //% group="Configuration"
+    void setTxBufferSize(uint8_t size) {
+      auto service = getWSerial();
+      if (!service) return;
+
+      service->serial.setTxBufferSize(size);
+    }
+
+    /**
     * Read the buffered received data as a string
     */
     //% help=serial/read-string
