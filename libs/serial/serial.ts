@@ -27,6 +27,7 @@ namespace serial {
     //% help=serial/read-line
     //% blockId=serial_read_line block="serial|read line"
     //% weight=20 blockGap=8
+    //% group="Read"
     export function readLine(): string {
         return serial.readUntil("\n");
     }
@@ -36,6 +37,7 @@ namespace serial {
      */
     //% blockId="serial_delimiter_conv" block="%del"
     //% weight=1 blockHidden=true
+    //% group="Read"
     export function delimiters(del: Delimiters): string {
         // even though it might not look like, this is more
         // (memory) efficient than the C++ implementation, because the
