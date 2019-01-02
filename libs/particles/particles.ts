@@ -38,6 +38,7 @@ namespace particles {
         height?: number;
         image?: Image;
         flags?: number;
+        setImage?: (i: Image) => void;
     }
 
     /**

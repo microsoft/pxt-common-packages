@@ -238,6 +238,17 @@ namespace particles {
         return src;
     });
 
+    //% fixedInstance whenUsed block="disintegrate"
+    export const disintegrate = new ParticleEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
+        const factory = new AshFactory(anchor, true);
+        factory.minLifespan = 200;
+        factory.maxLifespan = 500;
+        const src = new ParticleSource(anchor, particlesPerSecond, factory);
+        src.setAcceleration(0, 750);
+        src.lifespan = 1250;
+        return src;
+    });
+
     //% fixedInstance whenUsed block="blizzard"
     export const blizzard = new SceneEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
         class SnowFactory extends ShapeFactory {

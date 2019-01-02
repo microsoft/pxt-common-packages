@@ -375,8 +375,10 @@ namespace particles {
     export class AshFactory extends AreaFactory {
         private colors: ColorCount[];
         
-        constructor(anchor: ParticleAnchor, percentKept: number = 20) {
+        constructor(anchor: ParticleAnchor, updateImage?: boolean, percentKept: number = 20) {
             super(anchor.width ? anchor.width : 8, anchor.height ? anchor.height >> 1 : 8);
+            this.minLifespan = 300;
+            this.maxLifespan = 700;
 
             if (!anchor.image) {
                 this.colors = [new ColorCount(1, 20)];
@@ -387,13 +389,27 @@ namespace particles {
             for (let i = 0x0; i <= 0xF; i++) {
                 counts[i] = 0;
             }
-            for (let x = 0; x < anchor.image.width; x++) {
-                for (let y = 0; y < anchor.image.height; y++) {
-                    const c = anchor.image.getPixel(x, y);
+            let result: Image = anchor.image.clone();
+
+            for (let x = 0; x < result.width; x++) {
+                for (let y = 0; y < result.height; y++) {
+                    const c = result.getPixel(x, y);
                     if (c && this.galois.percentChance(percentKept)) {
                         counts[c]++;
+                        result.setPixel(x, y, 0x0);
                     }
                 }
+            }
+
+            /** TODO: The following should be:
+             * if (updateImage && anchor.setImage) {
+             *     anchor.setImage(result);
+             * }
+             * but this fails due to https://github.com/Microsoft/pxt-arcade/issues/515 .
+             * This is a temporary workaround.
+             */
+            if (updateImage) {
+                (anchor as Sprite).setImage(result);
             }
 
             this.colors = counts
@@ -412,7 +428,6 @@ namespace particles {
             if (choice.count === 0) this.colors.removeAt(index);
 
             p.color = choice.color;
-            p.lifespan = this.galois.randomRange(1000, 1500);
 
             p._y = Fx.iadd(this.galois.randomRange(this.yRange >> 1, this.yRange), p._y);
             p.vx = anchor.vx ? Fx.neg(Fx8(anchor.vx >> 2)): Fx.zeroFx8;
