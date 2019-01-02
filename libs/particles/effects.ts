@@ -24,7 +24,7 @@ namespace particles {
     }
 
     /**
-     * Anchor used for global effects that occur across the screen.
+     * Anchor used for effects that occur across the screen.
      */
     class FullScreenAnchor implements ParticleAnchor {
         private camera: scene.Camera;
@@ -53,7 +53,7 @@ namespace particles {
     }
 
     //% fixedInstances
-    export class FullScreenEffect extends ParticleEffect {
+    export class SceneEffect extends ParticleEffect {
         protected source: ParticleSource;
 
         constructor(sourceFactory: (anchor: ParticleAnchor, particlesPerSecond: number) => ParticleSource) {
@@ -61,16 +61,16 @@ namespace particles {
         }
 
         /**
-         * Creates a new effect that occurs over theentire screen
+         * Creates a new effect that occurs over the entire screen
          * @param particlesPerSecond 
          */
-        //% blockId=particlesStartFullScreenAnimation block="start full screen %effect effect at rate %particlesPerSecond p/s"
+        //% blockId=particlesStartSceneAnimation block="start scene %effect effect at rate %particlesPerSecond p/s"
         //% particlesPerSecond.defl=20
         //% particlesPerSecond.min=1 particlePerSeconds.max=100
         //% group="Effects"
-        startFullScreen(particlesPerSecond: number): void {
+        startSceneEffect(particlesPerSecond: number): void {
             if (!this.sourceFactory) return;
-            this.endFullScreen();
+            this.endSceneEffect();
             this.source = this.sourceFactory(new FullScreenAnchor(), particlesPerSecond);
         }
 
@@ -78,9 +78,9 @@ namespace particles {
          * If this effect is currently occurring as a full screen effect, stop producing particles and end the effect
          * @param particlesPerSecond 
          */
-        //% blockId=particlesEndFullScreenAnimation block="end full screen %effect effect"
+        //% blockId=particlesEndSceneAnimation block="end scene %effect effect"
         //% group="Effects"
-        endFullScreen(): void {
+        endSceneEffect(): void {
             if (this.source) {
                 this.source.destroy();
                 this.source = null;
@@ -149,14 +149,14 @@ namespace particles {
     });
 
     //% fixedInstance whenUsed block="confetti"
-    export const confetti = new FullScreenEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
+    export const confetti = new SceneEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
         const factory = new ConfettiFactory(anchor.width ? anchor.width : 16, 16);
         factory.setSpeed(30);
         return new ParticleSource(anchor, particlesPerSecond, factory);
     });
 
     //% fixedInstance whenUsed block="hearts"
-    export const hearts = new FullScreenEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
+    export const hearts = new SceneEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
         const factory = new ShapeFactory(anchor.width ? anchor.width : 16, 16, img`
             . F . F .
             F . F . F
@@ -175,7 +175,7 @@ namespace particles {
     });
 
     //% fixedInstance whenUsed block="smiles"
-    export const smiles = new FullScreenEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
+    export const smiles = new SceneEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
         const factory = new ShapeFactory(anchor.width ? anchor.width : 16, 16, img`
             . f . f . 
             . f . f . 
@@ -239,7 +239,7 @@ namespace particles {
     });
 
     //% fixedInstance whenUsed block="blizzard"
-    export const blizzard = new FullScreenEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
+    export const blizzard = new SceneEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
         class SnowFactory extends ShapeFactory {
             constructor(xRange: number, yRange: number) {
                 super(xRange, yRange, img`F`);
@@ -265,7 +265,7 @@ namespace particles {
     });
 
     //% fixedInstance whenUsed block="bubbles"
-    export const bubbles = new FullScreenEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
+    export const bubbles = new SceneEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
         const min = anchor.width > 50 ? 2000 : 500;
         const factory = new BubbleFactory(anchor, min, min * 2.5);
         return new BubbleSource(anchor, particlesPerSecond, factory.stateCount - 1, factory);

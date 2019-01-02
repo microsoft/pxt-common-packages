@@ -368,9 +368,8 @@ namespace particles {
         }
     }
 
-    interface ColorCount {
-        color: number;
-        count: number;
+    class ColorCount {
+        constructor(public color: number, public count: number) { }
     }
 
     export class AshFactory extends AreaFactory {
@@ -380,7 +379,7 @@ namespace particles {
             super(anchor.width ? anchor.width : 8, anchor.height ? anchor.height >> 1 : 8);
 
             if (!anchor.image) {
-                this.colors = [({ color: 1, count: 20 })];
+                this.colors = [new ColorCount(1, 20)];
                 return;
             }
 
@@ -395,9 +394,7 @@ namespace particles {
             }
 
             this.colors = counts
-                .map((value: number, index: number) => {
-                    return { color: index, count: value };
-                })
+                .map((value: number, index: number) => new ColorCount(index, value))
                 .filter(v => v.count != 0);
         }
 
