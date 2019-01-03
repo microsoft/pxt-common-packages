@@ -581,8 +581,9 @@ int indexOf(String s, String searchString, int start) {
     auto dataA = s->getUTF8Data();
     auto dataB = searchString->getUTF8Data();
     auto dataA0 = dataA;
+    auto firstB = dataB[0];
     while (lenA >= lenB) {
-        if (!memcmp(dataA, dataB, lenB))
+        if (*dataA == firstB && !memcmp(dataA, dataB, lenB))
 #if PXT_UTF8
             return utf8Len(dataA0, dataA - dataA0);
 #else
