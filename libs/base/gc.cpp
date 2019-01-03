@@ -179,7 +179,7 @@ struct GCBlock {
 };
 
 static LLSegment gcRoots;
-static LLSegment workQueue;
+LLSegment workQueue; // (ab)used by consString making
 static GCBlock *firstBlock;
 static RefBlock *firstFree;
 static uint8_t *midPtr;
@@ -188,6 +188,12 @@ static uint8_t *midPtr;
 #define VT(p) (*(uint32_t *)(p))
 #define SKIP_PROCESSING(p)                                                                         \
     (isReadOnly(p) || (VT(p) & (ANY_MARKED_MASK | ARRAY_MASK)) || NO_MAGIC(VT(p)))
+
+void gcMarkArray(void *data) {
+    auto segBl = (uint32_t *)data - 1;
+    GC_CHECK(!IS_MARKED(VT(segBl)), 47);
+    MARK(segBl);
+}
 
 void gcScan(TValue v) {
     if (SKIP_PROCESSING(v))
@@ -212,9 +218,7 @@ void gcScanSegment(Segment &seg) {
     auto data = seg.getData();
     if (!data)
         return;
-    auto segBl = (uint32_t *)data - 1;
-    GC_CHECK(!IS_MARKED(VT(segBl)), 47);
-    MARK(segBl);
+    gcMarkArray(data);
     gcScanMany(data, seg.getLength());
 }
 
@@ -591,9 +595,10 @@ void *gcAllocate(int numbytes) {
 }
 
 static void removePtr(TValue v) {
-    auto len = gcRoots.getLength();
+    int len = gcRoots.getLength();
     auto data = gcRoots.getData();
-    for (unsigned i = 0; i < len; ++i) {
+    // scan from the back, as this is often used as a stack
+    for (int i = len - 1; i >= 0; --i) {
         if (data[i] == v) {
             if (i == len - 1) {
                 gcRoots.pop();
