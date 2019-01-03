@@ -344,6 +344,7 @@ Internal
 */
 //% parts=jacdac
 JacDacDriverStatus __internalAddDriver(int driverType, int driverClass, MethodCollection methods, Buffer controlData) {
+    DMESG("jd: adding driver %d %d", driverType, driverClass);
     getWJacDac();
 #if JD_MIN_VERSION(1)
     return new JDProxyDriver(JDDevice((DriverType)driverType, driverClass), methods, controlData);
@@ -357,6 +358,7 @@ JacDacDriverStatus __internalAddDriver(int driverType, int driverClass, MethodCo
 */
 //% parts=jacdac
 void __internalRemoveDriver(JacDacDriverStatus d) {
+    DMESG("jd: deleting driver %p", d);
     if (NULL == d) return;
     delete d; // removes driver
 }

@@ -50,10 +50,14 @@ namespace game {
     }
 
     export function popScene() {
-        init();
         if (_sceneStack && _sceneStack.length) {
+            // pop scenes from the stack
             _scene = _sceneStack.pop();
             control.popEventContext();
+        } else if (_scene) {
+            // post last scene
+            control.popEventContext();
+            _scene = undefined;
         }
     }
 

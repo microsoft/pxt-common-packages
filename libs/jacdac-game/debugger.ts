@@ -4,8 +4,7 @@ namespace jacdac {
         None,
         Drivers,
         Devices,
-        Packets,
-        Players
+        Packets
     }
 
     class DebugMenu {
@@ -18,10 +17,8 @@ namespace jacdac {
             this.consoleVisible = game.consoleOverlay.isVisible();
         }
         get debugViews(): DebugView[] {
-            if (!this._debugViews) {
+            if (!this._debugViews)
                 this._debugViews = jacdac.defaultDebugViews();
-                this._debugViews.push(jacdac.GameLobbyDriver.debugView())
-            }
             return this._debugViews;
         }
 
@@ -120,29 +117,6 @@ namespace jacdac {
             this._logAllDriver.start();
         }
 
-        showPlayers() {
-            jacdac.clearBridge();
-            console.log(`game state: ${["alone", "service", "client"][jacdac.gameLobby.state]}`);
-            const players = jacdac.gameLobby.players;
-            for (let i = 0; i < players.length; ++i) {
-                const pa = players[i];
-                console.log(`  ${toHex8(pa)}`);
-            }
-            /*
-            players.forEach(player => {
-                let r = "";
-                const state = player.data[0];
-                r += (state & (1 << controller.A.id)) ? "A" : "-";
-                r += (state & (1 << controller.B.id)) ? "B" : "-";
-                r += (state & (1 << controller.left.id)) ? "L" : "-";
-                r += (state & (1 << controller.up.id)) ? "U" : "-";
-                r += (state & (1 << controller.right.id)) ? "R" : "-";
-                r += (state & (1 << controller.down.id)) ? "D" : "-";
-                console.log(` ${toHex8(player.address)}: ${r}`)
-            })
-            */
-        }
-
         refresh() {
             if (!jacdac.isRunning())
                 console.log(`not running`);
@@ -152,7 +126,6 @@ namespace jacdac {
                 case Mode.Drivers: this.showDrivers(); break;
                 case Mode.Devices: this.showDevices(); break;
                 case Mode.Packets: this.showPackets(); break;
-                case Mode.Players: this.showPlayers(); break;
             }
         }
 
@@ -209,12 +182,6 @@ namespace jacdac {
                 console.log(`  DOWN control pkts on/off`)
                 this.refresh();
             })
-            controller.up.onEvent(ControllerButtonEvent.Pressed, () => {
-                this.mode = Mode.Players;
-                game.consoleOverlay.clear();
-                console.log(`players`)
-                this.refresh();
-            })
             controller.B.onEvent(ControllerButtonEvent.Pressed, () => {
                 // done
                 if (_menu) {
@@ -234,7 +201,6 @@ namespace jacdac {
             console.log(` LEFT for drivers`)
             console.log(` RIGHT for devices`)
             console.log(` DOWN for sniffing packets`)
-            console.log(` UP for game debug`)
             console.log(` B for exit`)
             this.refresh();
         }

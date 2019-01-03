@@ -171,6 +171,6 @@ namespace jacdac {
         }
     }
 
-    //% fixedInstance whenUsed block="keyboard"
+    //% fixedInstance whenUsed block="keyboard client"
     export const keyboardClient = new KeyboardClient();
 }

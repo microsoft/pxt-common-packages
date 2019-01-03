@@ -1,12 +1,10 @@
 {
     "name": "local-multiplayer",
-    "description": "Local multiplayer",
+    "description": "DEPRECATED DEPRECATED DEPRECATED DEPRECATED DEPRECATED",
     "files": [
-        "local.ts",
-        "info.ts"
+        "local.ts"
     ],
     "dependencies": {
-        "core": "file:../controller",
         "game": "file:../game"
     },
     "public": true

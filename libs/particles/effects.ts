@@ -1,4 +1,5 @@
 namespace particles {
+
     //% fixedInstances
     export class ParticleEffect {
         private sourceFactory: (anchor: ParticleAnchor, pps: number) => ParticleSource;
@@ -20,6 +21,19 @@ namespace particles {
             if (!this.sourceFactory) return;
             this.sourceFactory(anchor, particlesPerSecond);
         }
+    }
+
+    /**
+     * Removes all effects at anchor's location
+     * @param anchor the anchor to remove effects from
+     */
+    //% blockId=particlesremoveeffect block="remove effects on %anchor=variables_get(mySprite)"
+    //% group="Effects"
+    export function removeEffects(anchor: ParticleAnchor) {
+        const sources = game.currentScene().data.particleSources as particles.ParticleSource[];
+        if (!sources) return;
+        sources.filter(ps => ps.anchor == anchor || ps.anchor.x == anchor.x && ps.anchor.y == anchor.y)
+                .forEach(ps => ps.destroy());
     }
 
     function createEffect(factoryFactory: () => ParticleFactory): ParticleEffect {

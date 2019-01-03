@@ -1,7 +1,10 @@
 enum JDConsoleMode {
-    Off,
-    Broadcast,
-    Listen
+    //% block="off"
+    Off = 0,
+    //% block="broadcast"
+    Broadcast = 1,
+    //% block="listen"
+    Listen = 2
 }
 
 namespace jacdac {
@@ -24,7 +27,8 @@ namespace jacdac {
     /**
      * Console logging driver. The driver is off, broadcasting or listening. Cannot do both.
      */
-    export class ConsoleDriver extends Broadcast {
+    //% fixedInstances
+    export class ConsoleService extends Broadcast {
         private _lastListenerTime: number;
 
         static BROADCAST_TIMEOUT = 2000;
@@ -37,6 +41,12 @@ namespace jacdac {
             console.addListener((priority, text) => this.broadcast(priority, text));
         }
 
+        /**
+         * Sets the console service mode
+         * @param mode 
+         */
+        //% blockId=jdconsolesetmode block="set %service mode to %mode"
+        //% group="Console"
         setMode(mode: JDConsoleMode) {
             this.start();
             if (this.mode != mode) {
@@ -94,7 +104,7 @@ namespace jacdac {
             const data = packet.data;
             const mode = data[0];
             // update device name map
-            const name = ConsoleDriver.readName(data);
+            const name = ConsoleService.readName(data);
             if (setRemoteDeviceName(packet.serialNumber, name))
                 this.log(`${toHex(packet.serialNumber)} -> ${name}`);
             if (mode == JDConsoleMode.Listen) {
@@ -139,7 +149,7 @@ namespace jacdac {
 
             // no one listening -- or disconnected?
             if (!this.isConnected
-                || control.millis() - this._lastListenerTime > ConsoleDriver.BROADCAST_TIMEOUT) {
+                || control.millis() - this._lastListenerTime > ConsoleService.BROADCAST_TIMEOUT) {
                 this.setMode(JDConsoleMode.Off);
                 return;
             }
@@ -157,8 +167,8 @@ namespace jacdac {
         }
     }
 
-    //% whenUsed
-    export const consoleDriver = new ConsoleDriver();
+    //% fixedInstance whenUsed block="console service"
+    export const consoleService = new ConsoleService();
 
     let _deviceNames: { serialNumber: number; name: string; }[];
     function setRemoteDeviceName(serialNumber: number, name: string): boolean {
@@ -181,7 +191,7 @@ namespace jacdac {
         const changed = entry.name != name;
         entry.name = name;
         if (serialNumber == 0)
-            consoleDriver.updateName();
+            consoleService.updateName();
         return changed;
     }
 

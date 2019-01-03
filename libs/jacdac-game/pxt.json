@@ -4,16 +4,13 @@
     "files": [
         "console.ts",
         "debugger.ts",
-        "lobby.ts",
-        "gameclient.ts",
-        "gameservice.ts"
+        "controllerservice.ts"
     ],
     "testFiles": [
     ],
     "public": true,
     "dependencies": {
         "game": "file:../game",
-        "local-multiplayer": "file:../local-multiplayer",
         "jacdac": "file:../jacdac"
     }
 }
