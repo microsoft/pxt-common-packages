@@ -376,9 +376,7 @@ namespace particles {
         private colors: ColorCount[];
         
         constructor(anchor: ParticleAnchor, updateImage?: boolean, percentKept: number = 20) {
-            super(anchor.width ? anchor.width : 8, anchor.height ? anchor.height >> 1 : 8);
-            this.minLifespan = 300;
-            this.maxLifespan = 700;
+            super(anchor.width ? anchor.width : 8, anchor.height ? anchor.height >> 1 : 8, 300, 700);
 
             if (!anchor.image) {
                 this.colors = [new ColorCount(1, 20)];
