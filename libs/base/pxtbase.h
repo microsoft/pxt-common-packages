@@ -765,6 +765,8 @@ typedef BoxedBuffer *Buffer;
 typedef BoxedString *String;
 typedef RefImage *Image_;
 
+uint32_t toRealUTF8(String str, uint8_t *dst);
+
 // keep in sync with github/pxt/pxtsim/libgeneric.ts
 enum class NumberFormat {
     Int8LE = 1,

@@ -263,6 +263,37 @@ String mkString(const char *data, int len) {
 #endif
 }
 
+#ifdef PXT_UTF8
+uint32_t toRealUTF8(String str, uint8_t *dst) {
+    auto src = str->getUTF8Data();
+    auto len = str->getUTF8Size();
+    auto dlen = 0;
+
+    for (unsigned i = 0; i < len; ++i) {
+        if ((uint8_t)src[i] == 0xED && i + 5 < len) {
+            auto c0 = utf8CharCode(src + i);
+            auto c1 = utf8CharCode(src + i + 3);
+            if (0xd800 <= c0 && c0 < 0xdc00 && 0xdc00 <= c1 && c1 < 0xe000) {
+                i += 5;
+                auto charCode = ((c0 - 0xd800) << 10) + (c1 - 0xdc00) + 0x10000;
+                if (dst) {
+                    dst[dlen] = 0xf0 | (charCode >> 18);
+                    dst[dlen + 1] = 0x80 | (0x3f & (charCode >> 12));
+                    dst[dlen + 2] = 0x80 | (0x3f & (charCode >> 6));
+                    dst[dlen + 3] = 0x80 | (0x3f & (charCode >> 0));
+                }
+                dlen += 4;
+            }
+        } else {
+            if (dst)
+                dst[dlen] = src[i];
+            dlen++;
+        }
+    }
+    return dlen;
+}
+#endif
+
 Buffer mkBuffer(const uint8_t *data, int len) {
     if (len <= 0)
         return (Buffer)emptyBuffer;

@@ -131,7 +131,7 @@ void shift(Buffer buf, int offset, int start = 0, int length = -1) {
  */
 //%
 String toString(Buffer buf) {
-    return mkString((char*)buf->data, buf->length);
+    return mkString((char *)buf->data, buf->length);
 }
 
 /**
@@ -208,13 +208,21 @@ Buffer createBuffer(int size) {
     return mkBuffer(NULL, size);
 }
 
+
 /**
  * Create a new buffer with UTF8-encoded string
  * @param str the string to put in the buffer
  */
 //%
 Buffer createBufferFromUTF8(String str) {
-    return mkBuffer((const uint8_t*)str->getUTF8Data(), str->getUTF8Size());
+#if PXT_UTF8
+    auto sz = toRealUTF8(str, NULL);
+    auto r = mkBuffer(NULL, sz);
+    toRealUTF8(str, r->data);
+    return r;
+#else
+    return mkBuffer((const uint8_t *)str->getUTF8Data(), str->getUTF8Size());
+#endif
 }
 } // namespace control
 
