@@ -21,8 +21,9 @@ namespace particles {
         vx: Fx8;
         vy: Fx8;
         lifespan: number;
-        data: number;
         next: Particle;
+        data?: number;
+        color?: number;
     }
 
     /**
@@ -31,16 +32,21 @@ namespace particles {
     export interface ParticleAnchor {
         x: number;
         y: number;
+        vx?: number;
+        vy?: number;
         width?: number;
         height?: number;
+        image?: Image;
         flags?: number;
+        setImage?: (i: Image) => void;
     }
 
     /**
      * A source of particles
      */
     export class ParticleSource implements SpriteLike {
-        z: number;
+        private _z: number;
+
         id: number;
         _dt: number;
         /**
@@ -62,6 +68,17 @@ namespace particles {
         protected ax: Fx8;
         protected ay: Fx8;
 
+        get z() {
+            return this._z;
+        }
+
+        set z(v: number) {
+            if (v != this._z) {
+                this._z = v;
+                game.currentScene().flags |= scene.Flag.NeedsSorting;
+            }
+        }
+
         /**
          * @param anchor to emit particles from
          * @param particlesPerSecond rate at which particles are emitted
@@ -77,11 +94,10 @@ namespace particles {
             this.setAnchor(anchor);
             this.lifespan = undefined;
             this._dt = 0;
-            this.z = -1;
+            this.z = 0;
             this.setFactory(factory || particles.defaultFactory);
             sources.push(this);
             scene.addSprite(this);
-
             this.enabled = true;
         }
 
@@ -108,6 +124,7 @@ namespace particles {
         _update(dt: number) {
             this.timer -= dt;
 
+            const anchor: ParticleAnchor = this.anchor;
             if (this.lifespan !== undefined) {
                 this.lifespan -= dt;
                 if (this.lifespan <= 0) {
@@ -131,7 +148,6 @@ namespace particles {
             let current = this.head;
 
             this._dt += dt;
-
             let fixedDt = Fx8(this._dt);
             if (fixedDt) {
                 do {
@@ -216,7 +232,7 @@ namespace particles {
 
         /**
          * Set a anchor for particles to be emitted from
-         * @param anchor 
+         * @param anchor
          */
         setAnchor(anchor: ParticleAnchor) {
             this.anchor = anchor;
@@ -304,21 +320,57 @@ namespace particles {
     }
 
     /**
-     * A source of particles, where 
+     * A source of particles where particles will occasionally change speed based off of each other
      */
-    export class FireSource extends particles.ParticleSource {
-        private galois: Math.FastRandom;
-        constructor(anchor: particles.ParticleAnchor, particlesPerSecond: number, factory?: particles.ParticleFactory) {
+    export class FireSource extends ParticleSource {
+        protected galois: Math.FastRandom;
+
+        constructor(anchor: ParticleAnchor, particlesPerSecond: number, factory?: ParticleFactory) {
             super(anchor, particlesPerSecond, factory);
             this.galois = new Math.FastRandom();
             this.z = 20;
         }
 
-        updateParticle(p: particles.Particle, fixedDt: Fx8) {
+        updateParticle(p: Particle, fixedDt: Fx8) {
             super.updateParticle(p, fixedDt);
             if (p.next && this.galois.percentChance(30)) {
                 p.vx = p.next.vx;
                 p.vy = p.next.vy;
+            }
+        }
+    }
+
+    /**
+     * A source of particles where the particles oscillate horizontally, and occasionally change
+     * between a given number of defined states
+     */
+    export class BubbleSource extends ParticleSource {
+        protected maxState: number;
+        protected galois: Math.FastRandom;
+        stateChangePercentage: number;
+        oscilattionPercentage: number
+
+
+        constructor(anchor: ParticleAnchor, particlesPerSecond: number, maxState: number, factory?: ParticleFactory) {
+            super(anchor, particlesPerSecond, factory);
+            this.galois = new Math.FastRandom();
+            this.maxState = maxState;
+            this.stateChangePercentage = 3;
+            this.oscilattionPercentage = 4;
+        }
+
+        updateParticle(p: Particle, fixedDt: Fx8) {
+            super.updateParticle(p, fixedDt);
+            if (this.galois.percentChance(this.stateChangePercentage)) {
+                if (p.data < this.maxState) {
+                    p.data++;
+                } else if (p.data > 0) {
+                    p.data--;
+                }
+            }
+
+            if (this.galois.percentChance(this.oscilattionPercentage)) {
+                p.vx = Fx.neg(p.vx);
             }
         }
     }
