@@ -130,7 +130,7 @@ void shift(Buffer buf, int offset, int start = 0, int length = -1) {
  * Convert a buffer to string assuming UTF8 encoding
  */
 //%
-String toUTF8(Buffer buf) {
+String toString(Buffer buf) {
     return mkString((char*)buf->data, buf->length);
 }
 

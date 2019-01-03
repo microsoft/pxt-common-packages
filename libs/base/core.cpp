@@ -122,7 +122,8 @@ static int utf8canon(char *dst, const char *data, int size) {
         } else if ((c & 0xf0) == 0xe0 && i + 2 < size && (data[i + 1] & 0xc0) == 0x80 &&
                    (data[i + 2] & 0xc0) == 0x80) {
             charCode = ((c & 0x0f) << 12) | (data[i + 1] & 0x3f) << 6 | (data[i + 2] & 0x3f);
-            if (charCode < 0x800 || (0xd800 <= charCode && charCode <= 0xdfff))
+            // don't exclude surrogate pairs, since we're generating them
+            if (charCode < 0x800 /*|| (0xd800 <= charCode && charCode <= 0xdfff)*/)
                 goto error;
             else
                 i += 3;
@@ -251,7 +252,7 @@ String mkString(const char *data, int len) {
     if (sz == len)
         return mkStringCore(data, len);
     // this could be optimized, but it only kicks in when the string isn't valid utf8
-    // which is unlikely to be performance critical
+    // (or we need to introduce surrogate pairs) which is unlikely to be performance critical
     char *tmp = (char *)app_alloc(sz);
     utf8canon(tmp, data, len);
     auto r = mkStringCore(tmp, sz);
@@ -329,6 +330,8 @@ namespace String_ {
 String mkEmpty() {
     return (String)emptyString;
 }
+
+// TODO support var-args somehow?
 
 //%
 String fromCharCode(int code) {
