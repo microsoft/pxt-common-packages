@@ -37,6 +37,16 @@ namespace particles {
             anchor.setFlag(SpriteFlag.Ghost, true);
             this.sourceFactory(anchor, particlesPerSecond);
             anchor.lifespan = lifespan;
+            
+            // clear out some pixels at random to give feedback on sprite being destroyed
+            const replacementImage = anchor.image.clone();
+            if (replacementImage) {
+                const r = new Math.FastRandom();
+                for (let i = (replacementImage.width * replacementImage.height) >> 3; i > 0; --i) {
+                    replacementImage.setPixel(r.randomRange(0, replacementImage.width), r.randomRange(0, replacementImage.height), 0);
+                }
+                anchor.setImage(replacementImage);
+            }
         }
     }
 
