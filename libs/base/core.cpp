@@ -222,10 +222,13 @@ String mkStringCore(const char *data, int len) {
     }
     if (vt == &string_skiplist16_vt) {
         r = new (gcAllocate(4 + 2 * 4)) BoxedString(vt);
+        r->skip.list = NULL;
+        registerGCPtr((TValue)r);
         r->skip.size = len;
         r->skip.length = utf8Len(data, len);
         r->skip.list = (uint16_t *)gcAllocateArray(NUM_SKIP_ENTRIES(r) * 2 + len + 1);
         setupSkipList(r, data);
+        unregisterGCPtr((TValue)r);
     } else
 #endif
     {
@@ -264,6 +267,8 @@ String mkString(const char *data, int len) {
 }
 
 #ifdef PXT_UTF8
+// This converts surrogate pairs, which are encoded as 2 characters of 3 bytes each
+// into a proper 4 byte utf-8 character.
 uint32_t toRealUTF8(String str, uint8_t *dst) {
     auto src = str->getUTF8Data();
     auto len = str->getUTF8Size();
