@@ -21,12 +21,29 @@ namespace particles {
             if (!this.sourceFactory) return;
             this.sourceFactory(anchor, particlesPerSecond);
         }
+
+        /**
+         * Destroy the provided sprite with
+         * @param sprite
+         * @param particlesPerSecond
+         * @param lifespan how long the sprite will remain on the screen
+         */
+        //% blockId=particlesDestroySpriteWithAnimation block="use %effect effect to destroy %anchor=variables_get(mySprite) at rate %particlesPerSecond p/s || with lifespan %lifespan"
+        //% particlesPerSecond.defl=20
+        //% particlesPerSecond.min=1 particlePerSeconds.max=100
+        //% lifespan.defl=1500
+        //% group="Effects"
+        destroy(anchor: Sprite, particlesPerSecond: number, lifespan: number = 1500) {
+            anchor.setFlag(SpriteFlag.Ghost, true);
+            this.sourceFactory(anchor, particlesPerSecond);
+            anchor.lifespan = lifespan;
+        }
     }
 
     /**
      * Anchor used for effects that occur across the screen.
      */
-    class FullScreenAnchor implements ParticleAnchor {
+    class SceneAnchor implements ParticleAnchor {
         private camera: scene.Camera;
         flags: number; //TODO: remove pending fix for https://github.com/Microsoft/pxt-arcade/issues/504
 
@@ -71,7 +88,7 @@ namespace particles {
         startSceneEffect(particlesPerSecond: number): void {
             if (!this.sourceFactory) return;
             this.endSceneEffect();
-            this.source = this.sourceFactory(new FullScreenAnchor(), particlesPerSecond);
+            this.source = this.sourceFactory(new SceneAnchor(), particlesPerSecond);
         }
 
         /**
@@ -240,7 +257,7 @@ namespace particles {
 
     //% fixedInstance whenUsed block="disintegrate"
     export const disintegrate = new ParticleEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
-        const factory = new AshFactory(anchor, true);
+        const factory = new AshFactory(anchor, true, 30);
         factory.minLifespan = 200;
         factory.maxLifespan = 500;
         const src = new ParticleSource(anchor, particlesPerSecond, factory);
