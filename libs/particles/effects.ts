@@ -31,9 +31,9 @@ namespace particles {
         //% blockId=particlesDestroySpriteWithAnimation block="use %effect effect to destroy %anchor=variables_get(mySprite) at rate %particlesPerSecond p/s || with lifespan %lifespan"
         //% particlesPerSecond.defl=20
         //% particlesPerSecond.min=1 particlePerSeconds.max=100
-        //% lifespan.defl=1500
+        //% lifespan.defl=500
         //% group="Effects"
-        destroy(anchor: Sprite, particlesPerSecond: number, lifespan: number = 1500) {
+        destroy(anchor: Sprite, particlesPerSecond: number, lifespan: number = 500) {
             anchor.setFlag(SpriteFlag.Ghost, true);
             this.sourceFactory(anchor, particlesPerSecond);
             anchor.lifespan = lifespan;
@@ -42,8 +42,13 @@ namespace particles {
             const replacementImage = anchor.image.clone();
             if (replacementImage) {
                 const r = new Math.FastRandom();
-                for (let i = (replacementImage.width * replacementImage.height) >> 3; i > 0; --i) {
-                    replacementImage.setPixel(r.randomRange(0, replacementImage.width), r.randomRange(0, replacementImage.height), 0);
+                for (let i = (replacementImage.width * replacementImage.height) >> 4; i > 0; --i) {
+                    const x = r.randomRange(0, replacementImage.width)
+                    const y = r.randomRange(0, replacementImage.height)
+                    const w = r.randomRange(1, 3);
+                    const h = r.randomRange(1, 3);
+                    // replacementImage.setPixel(r.randomRange(0, replacementImage.width), r.randomRange(0, replacementImage.height), 0);
+                    replacementImage.drawRect(x, y, w, h, 0);
                 }
                 anchor.setImage(replacementImage);
             }
