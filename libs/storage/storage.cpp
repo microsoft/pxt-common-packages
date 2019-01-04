@@ -91,18 +91,6 @@ void appendBuffer(String filename, Buffer data) {
 }
 
 /** 
-* Overwrite file with string data. 
-* @param filename name of the file, eg: "log.txt"
-*/
-//% parts="storage"
-//% blockId="storage_overwrite" block="overwrite file $filename with $data"
-void overwrite(String filename, String data) {
-    auto f = getFile(filename);
-    if (NULL == f) return;
-    f->overwrite(data->data, data->length);
-}
-
-/** 
 * Overwrite file with a buffer. 
 * @param filename name of the file, eg: "log.txt"
 */

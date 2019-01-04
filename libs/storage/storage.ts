@@ -3,6 +3,8 @@
 */
 //% advanced=true color=#00c0c0 icon="\uf07b"
 namespace storage {
+    export let NEW_LINE = "\r\n";
+
     //% shim=storage::init
     function init() { }
 
@@ -31,5 +33,14 @@ namespace storage {
         appendBuffer(filename, control.createBufferFromUTF8(data));
     }
 
-    export let NEW_LINE = "\r\n";
+
+    /** 
+    * Overwrite file with string data. 
+    * @param filename name of the file, eg: "log.txt"
+    */
+    //% parts="storage"
+    //% blockId="storage_overwrite" block="overwrite file $filename with $data"
+    export function overwrite(filename: string, data: string) {
+        overwriteWithBuffer(filename, control.createBufferFromUTF8(data));
+    }
 }

@@ -9,14 +9,6 @@ declare namespace storage {
     function appendBuffer(filename: string, data: Buffer): void;
 
     /** 
-     * Overwrite file with string data. 
-     * @param filename name of the file, eg: "log.txt"
-     */
-    //% parts="storage"
-    //% blockId="storage_overwrite" block="overwrite file $filename with $data" shim=storage::overwrite
-    function overwrite(filename: string, data: string): void;
-
-    /** 
      * Overwrite file with a buffer. 
      * @param filename name of the file, eg: "log.txt"
      */
