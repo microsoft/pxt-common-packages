@@ -78,11 +78,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
     collisions() {
         control.enablePerfCounter("phys_collisions")
 
-        // 1: clear obstacles
-        for (let i = 0; i < this.sprites.length; ++i)
-            this.sprites[i].clearObstacles();
-
-        // 2: refresh non-ghost collision map
+        // 1: refresh non-ghost collision map
         const colliders = this.sprites.filter(sprite => !(sprite.flags & sprites.Flag.Ghost));
 
         if (colliders.length < 10) {
@@ -93,7 +89,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             this.map.update(colliders);
         }
 
-        // 3: go through sprite and handle collisions
+        // 2: go through sprite and handle collisions
         const scene = game.currentScene();
         const tm = scene.tileMap;
 
@@ -125,20 +121,52 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 }
             }
 
-            const xDiff = Fx.sub(sprite._x, sprite._lastX);
-            const yDiff = Fx.sub(sprite._y, sprite._lastY);
-            if (xDiff !== Fx.zeroFx8 || yDiff !== Fx.zeroFx8) {
-                if (Fx.abs(xDiff) < MAX_DISTANCE &&
-                    Fx.abs(yDiff) < MAX_DISTANCE) {
-                    // Undo the move
-                    sprite._x = sprite._lastX;
-                    sprite._y = sprite._lastY;
+            sprite.clearObstacles();
 
-                    // Now move it with the tilemap in mind
-                    this.moveSprite(sprite, tm, xDiff, yDiff);
+            if (tm && tm.enabled) {
+                const xDiff = Fx.sub(sprite._x, sprite._lastX);
+                const yDiff = Fx.sub(sprite._y, sprite._lastY);
+
+                let hitWall = false;
+                const bounce = sprite.flags & sprites.Flag.BounceOnWall;
+
+                if (xDiff !== Fx.zeroFx8) {
+                    const right = xDiff > Fx.zeroFx8;
+                    const x0 = Fx.toIntShifted(right ? Fx.iadd(sprite.width, sprite._x) : sprite._x, 4);
+                    for (let y = sprite._lastY; y < Fx.iadd(sprite.height + 15, sprite._lastY); y = Fx.iadd(16, y)) {
+                        const y0 = Fx.toIntShifted(Fx.min(y, Fx.iadd(sprite.height - 1, sprite._lastY)), 4);
+                        if (tm.isObstacle(x0, y0)) {
+                            hitWall = true;
+                            if (bounce) {
+                                sprite.vx *= -1;
+                            }
+                            sprite._x = right ? Fx.sub(Fx8(x0 << 4), Fx8(sprite.width)) : Fx8((x0 + 1) << 4);
+                            sprite.registerObstacle(right ? CollisionDirection.Right : CollisionDirection.Left, tm.getObstacle(x0, y0));
+                            break;
+                        }
+                    }
+                }
+                
+                if (yDiff !== Fx.zeroFx8) {
+                    const down = yDiff > Fx.zeroFx8;
+                    const y0 = Fx.toIntShifted(down ? Fx.iadd(sprite.height, sprite._y) : sprite._y, 4);
+                    for (let x = sprite._x; x < Fx.iadd(sprite.width + 15, sprite._x); x = Fx.iadd(16, x)) {
+                        const x0 = Fx.toIntShifted(Fx.min(x, Fx.iadd(sprite.width - 1, sprite._x)), 4);
+                        if (tm.isObstacle(x0, y0)) {
+                            hitWall = true;
+                            if (bounce) {
+                                sprite.vy *= -1;
+                            }
+                            sprite._y = down ? Fx.sub(Fx8(y0 << 4), Fx8(sprite.height)) : Fx8((y0 + 1) << 4);
+                            sprite.registerObstacle(down ? CollisionDirection.Bottom : CollisionDirection.Top, tm.getObstacle(x0, y0));
+                            break;
+                        }
+                    }
+                }
+                if (hitWall && (sprite.flags & sprites.Flag.DestroyOnWall)) {
+                    sprite.destroy();
                 }
             }
-
         }
     }
 
@@ -165,122 +193,17 @@ class ArcadePhysicsEngine extends PhysicsEngine {
     }
 
     public moveSprite(s: Sprite, tm: tiles.TileMap, dx: Fx8, dy: Fx8) {
+
         if (dx === Fx.zeroFx8 && dy === Fx.zeroFx8) {
             s._lastX = s._x;
             s._lastY = s._y;
             return;
         }
 
-        if (tm && tm.enabled && !(s.flags & sprites.Flag.Ghost)) {
-            let hitWall = false;
-            const bounce = s.flags & sprites.Flag.BounceOnWall;
-
-            s._hitboxes.forEach(box => {
-                const t0 = Fx.toIntShifted(box.top, 4);
-                const r0 = Fx.toIntShifted(box.right, 4);
-                const b0 = Fx.toIntShifted(box.bottom, 4);
-                const l0 = Fx.toIntShifted(box.left, 4);
-
-                if (dx > Fx.zeroFx8) {
-                    let topCollide = tm.isObstacle(r0 + 1, t0);
-                    if (topCollide || tm.isObstacle(r0 + 1, b0)) {
-                        const nextRight = Fx.add(box.right, dx);
-                        const maxRight = Fx.sub(Fx8(((r0 + 1) << 4)), GAP);
-                        if (bounce && nextRight >= maxRight) s._vx = Fx.neg(s._vx);
-                        if (nextRight > maxRight) {
-                            hitWall = true;
-                            dx = Fx.sub(dx, Fx.sub(nextRight, maxRight))
-                            s.registerObstacle(CollisionDirection.Right, tm.getObstacle(r0 + 1, topCollide ? t0 : b0))
-                        }
-                    }
-                }
-                else if (dx < Fx.zeroFx8) {
-                    const topCollide = tm.isObstacle(l0 - 1, t0);
-                    if (topCollide || tm.isObstacle(l0 - 1, b0)) {
-                        const nextLeft = Fx.add(box.left, dx);
-                        const minLeft = Fx.iadd(l0 << 4, GAP);
-                        if (bounce && nextLeft <= minLeft) s._vx = Fx.neg(s._vx);
-                        if (nextLeft < minLeft) {
-                            hitWall = true;
-                            dx = Fx.sub(dx, Fx.sub(nextLeft, minLeft))
-                            s.registerObstacle(CollisionDirection.Left, tm.getObstacle(l0 - 1, topCollide ? t0 : b0))
-                        }
-                    }
-                }
-
-                if (dy > Fx.zeroFx8) {
-                    const rightCollide = tm.isObstacle(r0, b0 + 1);
-                    if (rightCollide || tm.isObstacle(l0, b0 + 1)) {
-                        const nextBottom = Fx.add(box.bottom, dy);
-                        const maxBottom = Fx.sub(Fx8((b0 + 1) << 4), GAP);
-                        if (bounce && nextBottom >= maxBottom) s._vy = Fx.neg(s._vy);
-                        if (nextBottom > maxBottom) {
-                            hitWall = true;
-                            dy = Fx.sub(dy, Fx.sub(nextBottom, maxBottom));
-                            s.registerObstacle(CollisionDirection.Bottom, tm.getObstacle(rightCollide ? r0 : l0, b0 + 1))
-                        }
-                    }
-                }
-                else if (dy < Fx.zeroFx8) {
-                    const rightCollide = tm.isObstacle(r0, t0 - 1);
-                    if (tm.isObstacle(r0, t0 - 1) || tm.isObstacle(l0, t0 - 1)) {
-                        const nextTop = Fx.add(box.top, dy);
-                        const minTop = Fx.iadd(t0 << 4, GAP);
-                        if (bounce && nextTop <= minTop) s._vy = Fx.neg(s._vy);
-                        if (nextTop < minTop) {
-                            hitWall = true;
-                            dy = Fx.sub(dy, Fx.sub(nextTop, minTop));
-                            s.registerObstacle(CollisionDirection.Top, tm.getObstacle(rightCollide ? r0 : l0, t0 - 1))
-                        }
-                    }
-                }
-
-                // Now check each corner and bump out if necessary. This step is needed for
-                // the case where a hitbox goes diagonally into the corner of a tile.
-                const t1 = Fx.toIntShifted(Fx.add(box.top, dy), 4);
-                const r1 = Fx.toIntShifted(Fx.add(box.right, dx), 4);
-                const b1 = Fx.toIntShifted(Fx.add(box.bottom, dy), 4);
-                const l1 = Fx.toIntShifted(Fx.add(box.left, dx), 4);
-
-                if (tm.isObstacle(r1, t1)) {
-                    hitWall = true;
-                    // bump left
-                    if (bounce) s._vx = Fx.neg(s._vx);
-
-                    dx = Fx.sub(Fx.iadd(r1 << 4, box.right), GAP)
-                    s.registerObstacle(CollisionDirection.Right, tm.getObstacle(r1, t1));
-                }
-                else if (tm.isObstacle(l1, t1)) {
-                    hitWall = true;
-                    // bump right
-                    if (bounce) s._vx = Fx.neg(s._vx);
-                    dx = Fx.sub(Fx.iadd((l1 + 1) << 4, GAP), box.left)
-                    s.registerObstacle(CollisionDirection.Left, tm.getObstacle(l1, t1));
-                }
-                else {
-                    const rightCollide = tm.isObstacle(r1, b1);
-                    if (rightCollide || tm.isObstacle(l1, b1)) {
-                        if (bounce) s._vy = Fx.neg(s._vy);
-                        hitWall = true;
-                        // bump up because that is usually better for platformers
-                        dy = Fx.add(box.bottom, Fx.sub(Fx8(b1 << 4), GAP))
-                        s.registerObstacle(CollisionDirection.Bottom, tm.getObstacle(rightCollide ? r1 : l1, b1));
-                    }
-                }
-
-                if (hitWall && (s.flags & sprites.Flag.DestroyOnWall)) {
-                    s.destroy();
-                }
-            });
-        }
-
-        //if (Fx.add(Fx.abs(dx), Fx.abs(dy)) > Fx8(5))
-        //    control.dmesg(`fast move  ${dx}/${dy}`)
-
-        s._x = Fx.add(s._x, dx);
-        s._y = Fx.add(s._y, dy);
         s._lastX = s._x;
         s._lastY = s._y;
+        s._x = Fx.add(s._x, dx);
+        s._y = Fx.add(s._y, dy);
     }
 }
 
