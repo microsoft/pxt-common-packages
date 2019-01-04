@@ -5,7 +5,7 @@
 //% advanced=true blockGap=8
 //% groups='["Write", "Read", "Events", "Configuration"]'
 namespace serial {
-    const NEW_LINE = "\n";
+    export let NEW_LINE = "\n";
 
     /**
     * Read the buffered received data as a string
@@ -59,13 +59,13 @@ namespace serial {
             const c = serial.read();
             if (c < 0) // error -- return what we have so far
                 break;
-            else if (bufi == 0 && c == delimiter) // found it!                
-                break;
 
             // store in temp buffer
             buf[bufi++] = c;
             // commit completed letter
             if (bufi == 1 && (buf[0] & 0x80) == 0) {
+                if (buf[0] == delimiter)
+                    break; // found the delimiter!
                 r += String.fromCharCode(buf[0]);
                 bufi = 0;
             } else if (bufi == 2 && (c & 0xe0) == 0xc0) {
@@ -124,6 +124,6 @@ namespace serial {
             writeString(":");
         }
         writeNumber(value);
-        writeString("\n");
+        writeString(NEW_LINE);
     }
 }

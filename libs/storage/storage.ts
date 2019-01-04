@@ -3,7 +3,7 @@
 */
 //% advanced=true color=#00c0c0 icon="\uf07b"
 namespace storage {
-    export let NEW_LINE = "\r\n";
+    export let NEW_LINE = "\n";
 
     //% shim=storage::init
     function init() { }
