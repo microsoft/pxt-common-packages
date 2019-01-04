@@ -75,7 +75,8 @@ snorfs::File *getFile(String filename) {
     }
     currFilename = filename;
     incrRC(currFilename);
-    currFile = filename == NULL ? NULL : st->fs.open(filename->data);
+    // TODO: fix UTF8 encoding
+    currFile = filename == NULL ? NULL : st->fs.open(filename->getUTF8Data());
     return currFile;
 }
 
@@ -108,7 +109,8 @@ void overwriteWithBuffer(String filename, Buffer data) {
 //% parts="storage"
 //% blockId="storage_exists" block="file $filename exists"
 bool exists(String filename) {
-    return mountedStorage()->fs.exists(filename->data);
+    // TODO utf8 encoding
+    return mountedStorage()->fs.exists(filename->getUTF8Data());
 }
 
 /** 
