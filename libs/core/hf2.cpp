@@ -32,8 +32,8 @@ static const InterfaceInfo ifaceInfo = {
         0xff, /// class code - vendor-specific
         42, // subclass
         1, // protocol
-        0x00, //
-        0x00, //
+        0x02, // string
+        0x00, // alt
     },
     {0, 0},
     {0, 0},
