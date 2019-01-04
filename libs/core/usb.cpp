@@ -7,8 +7,7 @@ CodalUSB usb;
 
 // share the buffer; we will crash anyway if someone talks to us over both at the same time
 HF2_Buffer hf2buf;
-// HF2 hf2(hf2buf);
-WebHF2 webhf2(hf2buf);
+HF2 hf2(hf2buf);
 
 #if CONFIG_ENABLED(DEVICE_MOUSE)
 USBHIDMouse mouse;
@@ -69,8 +68,7 @@ void usb_init() {
 #if CONFIG_ENABLED(DEVICE_JOYSTICK)
     usb.add(joystick);
 #endif
-    // usb.add(hf2);
-    usb.add(webhf2);
+    usb.add(hf2);
     create_fiber(start_usb);
 }
 
@@ -85,8 +83,7 @@ void setSendToUART(void (*f)(const char *, int)) {
 
 void sendSerial(const char *data, int len) {
 #if CONFIG_ENABLED(DEVICE_USB)
-    // hf2.sendSerial(data, len);
-    webhf2.sendSerial(data, len);
+    hf2.sendSerial(data, len);
 #endif
     if (pSendToUART)
         pSendToUART(data, len);

@@ -30,13 +30,29 @@ static const InterfaceInfo ifaceInfo = {
     {
         0,    // numEndpoints
         0xff, /// class code - vendor-specific
-        42, // subclass
-        1, // protocol
+        42,   // subclass
+        1,    // protocol
         0x02, // string
         0x00, // alt
     },
     {0, 0},
     {0, 0},
+};
+
+static const InterfaceInfo ifaceInfoEP = {
+    NULL,
+    0,
+    2,
+    {
+        2,    // numEndpoints
+        0xff, /// class code - vendor-specific
+        42,   // subclass
+        1,    // protocol
+        0x02, // string
+        0x00, // alt
+    },
+    {USB_EP_TYPE_BULK, 0},
+    {USB_EP_TYPE_BULK, 0},
 };
 
 // same as in microbit
@@ -45,7 +61,50 @@ static const InterfaceInfo ifaceInfo = {
 #define CTRL_OUT_REPORT_H 0x2
 #define CTRL_IN_REPORT_H 0x1
 
+void HF2::prepBuffer(uint8_t *buf) {
+    memset(buf, 0, 64);
+    target_disable_irq();
+    if (dataToSendLength) {
+        if (dataToSendPrepend) {
+            dataToSendPrepend = false;
+            buf[0] = HF2_FLAG_CMDPKT_BODY | 4;
+            memcpy(buf + 1, pkt.buf, 4);
+        } else {
+            int flag = dataToSendFlag;
+            int s = 63;
+            if (dataToSendLength <= 63) {
+                s = dataToSendLength;
+            } else {
+                if (flag == HF2_FLAG_CMDPKT_LAST)
+                    flag = HF2_FLAG_CMDPKT_BODY;
+            }
+
+            buf[0] = flag | s;
+            memcpy(buf + 1, dataToSend, s);
+            dataToSend += s;
+            dataToSendLength -= s;
+        }
+    }
+    target_enable_irq();
+}
+
+void HF2::pokeSend() {
+    if (!allocateEP || !CodalUSB::usbInstance->isInitialised())
+        return;
+
+    uint8_t buf[64];
+    for (;;) {
+        prepBuffer(buf);
+        if (!buf[0])
+            break;
+        in->write(buf, sizeof(buf));
+    }
+}
+
 int HF2::classRequest(UsbEndpointIn &ctrl, USBSetup &setup) {
+    if (allocateEP)
+        return DEVICE_NOT_SUPPORTED;
+
     if ((setup.bmRequestType & USB_REQ_DIRECTION) == USB_REQ_HOSTTODEVICE) {
         if (setup.bRequest != CTRL_SET_REPORT || setup.wValueL != 0 ||
             setup.wValueH != CTRL_OUT_REPORT_H)
@@ -63,33 +122,7 @@ int HF2::classRequest(UsbEndpointIn &ctrl, USBSetup &setup) {
             return DEVICE_NOT_SUPPORTED;
 
         uint8_t buf[64];
-
-        memset(buf, 0, sizeof(buf));
-
-        target_disable_irq();
-        if (dataToSendLength) {
-            if (dataToSendPrepend) {
-                dataToSendPrepend = false;
-                buf[0] = HF2_FLAG_CMDPKT_BODY | 4;
-                memcpy(buf + 1, pkt.buf, 4);
-            } else {
-                int flag = dataToSendFlag;
-                int s = 63;
-                if (dataToSendLength <= 63) {
-                    s = dataToSendLength;
-                } else {
-                    if (flag == HF2_FLAG_CMDPKT_LAST)
-                        flag = HF2_FLAG_CMDPKT_BODY;
-                }
-
-                buf[0] = flag | s;
-                memcpy(buf + 1, dataToSend, s);
-                dataToSend += s;
-                dataToSendLength -= s;
-            }
-        }
-        target_enable_irq();
-
+        prepBuffer(buf);
         ctrl.write(buf, sizeof(buf));
     }
 
@@ -97,7 +130,7 @@ int HF2::classRequest(UsbEndpointIn &ctrl, USBSetup &setup) {
 }
 
 const InterfaceInfo *HF2::getInterfaceInfo() {
-    return &ifaceInfo;
+    return allocateEP ? &ifaceInfoEP : &ifaceInfo;
 }
 
 int HF2::sendSerial(const void *data, int size, int isError) {
@@ -114,7 +147,7 @@ int HF2::sendSerial(const void *data, int size, int isError) {
         target_disable_irq();
         // there could be a race
         if (!dataToSendLength) {
-            dataToSend = (const uint8_t*)data;
+            dataToSend = (const uint8_t *)data;
             dataToSendPrepend = false;
             dataToSendFlag = isError ? HF2_FLAG_SERIAL_ERR : HF2_FLAG_SERIAL_OUT;
             dataToSendLength = size;
@@ -131,12 +164,19 @@ int HF2::sendSerial(const void *data, int size, int isError) {
 // `serial` flag is cleared if we got a command message.
 int HF2::recv() {
     uint8_t buf[64];
-    int len = CodalUSB::usbInstance->ctrlOut->read(buf, sizeof(buf));
+    int len;
+
+    if (allocateEP)
+        len = out->read(buf, sizeof(buf));
+    else
+        len = CodalUSB::usbInstance->ctrlOut->read(buf, sizeof(buf));
     DMESG("HF2 read: %d", len);
+
     if (len <= 0)
         return len;
 
-    CodalUSB::usbInstance->ctrlIn->write("", 0);
+    if (!allocateEP)
+        CodalUSB::usbInstance->ctrlIn->write("", 0);
 
     uint8_t tag = buf[0];
     // serial packets not allowed when in middle of command packet
@@ -165,6 +205,7 @@ int HF2::sendResponse(int size) {
     dataToSendPrepend = false;
     dataToSendFlag = HF2_FLAG_CMDPKT_LAST;
     dataToSendLength = 4 + size;
+    pokeSend();
     return 0;
 }
 
@@ -175,10 +216,11 @@ int HF2::sendResponseWithData(const void *data, int size) {
         memcpy(pkt.resp.data8, data, size);
         return sendResponse(size);
     } else {
-        dataToSend = (const uint8_t*)data;
+        dataToSend = (const uint8_t *)data;
         dataToSendPrepend = true;
         dataToSendFlag = HF2_FLAG_CMDPKT_LAST;
         dataToSendLength = size;
+        pokeSend();
         return 0;
     }
 }
@@ -305,19 +347,8 @@ int HF2::endpointRequest() {
     return sendResponse(0);
 }
 
-HF2::HF2(HF2_Buffer &p) : USBHID(), pkt(p), gotSomePacket(false), ctrlWaiting(false) {}
-
-//
-//
-// WebUSB
-//
-//
-
-WebHF2::WebHF2(HF2_Buffer &p) : HF2(p) {}
-
-const InterfaceInfo *WebHF2::getInterfaceInfo() {
-    return &ifaceInfo;
-}
+HF2::HF2(HF2_Buffer &p)
+    : gotSomePacket(false), ctrlWaiting(false), pkt(p), allocateEP(true) {}
 
 //
 //
@@ -354,10 +385,8 @@ void bkptPaused() {
 
     while (!resume) {
         // DMESG("BKPT");
-        //hf2.pkt.resp.eventId = HF2_EV_DBG_PAUSED;
-        //hf2.sendResponseWithData(&pausedData, sizeof(pausedData));
-        webhf2.pkt.resp.eventId = HF2_EV_DBG_PAUSED;
-        webhf2.sendResponseWithData(&pausedData, sizeof(pausedData));
+        hf2.pkt.resp.eventId = HF2_EV_DBG_PAUSED;
+        hf2.sendResponseWithData(&pausedData, sizeof(pausedData));
         // TODO use an event
         for (int i = 0; i < 20; ++i) {
             if (resume)
