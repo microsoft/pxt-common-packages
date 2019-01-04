@@ -138,7 +138,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                         if (tm.isObstacle(x0, y0)) {
                             hitWall = true;
                             if (bounce) {
-                                sprite.vx *= -1;
+                                sprite._vx = Fx.neg(sprite._vx);
                             }
                             sprite._x = right ? Fx.sub(Fx8(x0 << 4), Fx8(sprite.width)) : Fx8((x0 + 1) << 4);
                             sprite.registerObstacle(right ? CollisionDirection.Right : CollisionDirection.Left, tm.getObstacle(x0, y0));
@@ -155,7 +155,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                         if (tm.isObstacle(x0, y0)) {
                             hitWall = true;
                             if (bounce) {
-                                sprite.vy *= -1;
+                                sprite._vy = Fx.neg(sprite._vy);
                             }
                             sprite._y = down ? Fx.sub(Fx8(y0 << 4), Fx8(sprite.height)) : Fx8((y0 + 1) << 4);
                             sprite.registerObstacle(down ? CollisionDirection.Bottom : CollisionDirection.Top, tm.getObstacle(x0, y0));
