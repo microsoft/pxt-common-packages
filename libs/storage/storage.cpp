@@ -80,18 +80,6 @@ snorfs::File *getFile(String filename) {
 }
 
 /** 
-* Append string data to a new or existing file. 
-* @param filename name of the file, eg: "log.txt"
-*/
-//% parts="storage" 
-//% blockId="storage_append" block="append file $filename with $data"
-void append(String filename, String data) {
-    auto f = getFile(filename);
-    if (NULL == f) return;
-    f->append(data->data, data->length);
-}
-
-/** 
 * Append a buffer to a new or existing file. 
 * @param filename name of the file, eg: "log.txt"
 */

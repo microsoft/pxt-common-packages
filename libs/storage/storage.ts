@@ -17,7 +17,18 @@ namespace storage {
     //% parts="storage" 
     //% blockId="storage_append_line" block="append file $filename with line $data"
     export function appendLine(filename: string, data: string): void {
-        append(filename, data + NEW_LINE);
+        append(filename, data);
+        append(filename, NEW_LINE);
+    }
+
+    /** 
+    * Append string data to a new or existing file. 
+    * @param filename name of the file, eg: "log.txt"
+    */
+    //% parts="storage" 
+    //% blockId="storage_append" block="append file $filename with $data"
+    export function append(filename: string, data: string) {
+        appendBuffer(filename, control.createBufferFromUTF8(data));
     }
 
     export let NEW_LINE = "\r\n";
