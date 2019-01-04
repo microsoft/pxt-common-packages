@@ -27,7 +27,6 @@ class WSynthesizer {
 };
 SINGLETON(WSynthesizer);
 
-
 SynthChannel *allocateChannel() {
     auto snd = getWSynthesizer();
     auto ch = snd->channels;
@@ -62,6 +61,16 @@ void forceOutput(int outp) {
     snd->out.setOutput(outp);
 }
 
+static uint16_t realNoiseTone(void *arg, int position) {
+    (void)arg;
+    (void)position;
+    static uint32_t x = 0xf01ba80;
+    x ^= x << 13;
+    x ^= x >> 17;
+    x ^= x << 5;
+    return x & 1023;
+}
+
 //%
 void playInstructions(Buffer buf) {
     auto ch = allocateChannel();
@@ -80,6 +89,9 @@ void playInstructions(Buffer buf) {
                     break;
                 case SW_NOISE:
                     ch->synth.setTone(Synthesizer::NoiseTone);
+                    break;
+                case SW_REAL_NOISE:
+                    ch->synth.setTone(realNoiseTone);
                     break;
                 case SW_SINE:
                     ch->synth.setTone(Synthesizer::SineTone);
