@@ -64,6 +64,7 @@ void forceOutput(int outp) {
 static uint16_t realNoiseTone(void *arg, int position) {
     (void)arg;
     (void)position;
+    // see https://en.wikipedia.org/wiki/Xorshift
     static uint32_t x = 0xf01ba80;
     x ^= x << 13;
     x ^= x >> 17;
