@@ -22,25 +22,4 @@ namespace storage {
         append(filename, data);
         append(filename, NEW_LINE);
     }
-
-    /** 
-    * Append string data to a new or existing file. 
-    * @param filename name of the file, eg: "log.txt"
-    */
-    //% parts="storage" 
-    //% blockId="storage_append" block="append file $filename with $data"
-    export function append(filename: string, data: string) {
-        appendBuffer(filename, control.createBufferFromUTF8(data));
-    }
-
-
-    /** 
-    * Overwrite file with string data. 
-    * @param filename name of the file, eg: "log.txt"
-    */
-    //% parts="storage"
-    //% blockId="storage_overwrite" block="overwrite file $filename with $data"
-    export function overwrite(filename: string, data: string) {
-        overwriteWithBuffer(filename, control.createBufferFromUTF8(data));
-    }
 }

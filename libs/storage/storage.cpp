@@ -81,6 +81,18 @@ snorfs::File *getFile(String filename) {
 }
 
 /** 
+* Append string data to a new or existing file. 
+* @param filename name of the file, eg: "log.txt"
+*/
+//% parts="storage" 
+//% blockId="storage_append" block="append file $filename with $data"
+void append(String filename, String data) {
+    auto f = getFile(filename);
+    if (NULL == f) return;
+    f->append(data->getUtf8data(), data->getUtf8Size());
+}
+
+/** 
 * Append a buffer to a new or existing file. 
 * @param filename name of the file, eg: "log.txt"
 */
@@ -89,6 +101,18 @@ void appendBuffer(String filename, Buffer data) {
     auto f = getFile(filename);
     if (NULL == f) return;
     f->append(data->data, data->length);
+}
+
+/** 
+* Overwrite file with string data. 
+* @param filename name of the file, eg: "log.txt"
+*/
+//% parts="storage"
+//% blockId="storage_overwrite" block="overwrite file $filename with $data"
+void overwrite(String filename, String data) {
+    auto f = getFile(filename);
+    if (NULL == f) return;
+    f->overwrite(data->getUtf8data(), data->getUtf8Size());
 }
 
 /** 
