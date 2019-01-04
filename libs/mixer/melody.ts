@@ -60,34 +60,9 @@ namespace music {
     //% weight=76 blockGap=8
     //% group="Tone"
     export function playTone(frequency: number, ms: number): void {
-        if (playToneFreq == null) {
-            let buf = control.createBuffer(10 + 1)
-            control.runInParallel(() => {
-                while (true) {
-                    if (playToneFreq && playToneEnd) {
-                        if (control.millis() > playToneEnd) {
-                            playToneFreq = 0
-                            playToneSeq++
-                        }
-                    }
-                    if (playToneFreq == 0) {
-                        pause(3)
-                    } else {
-                        addNote(buf, 0, 60, 255, 255, 1, playToneFreq, globalVolume)
-                        playInstructions(buf)
-                    }
-                }
-            })
-        }
-        playToneFreq = frequency
-        if (ms) {
-            let seq = ++playToneSeq
-            playToneEnd = control.millis() + ms
-            while (seq == playToneSeq)
-                pause(3)
-        } else {
-            playToneEnd = 0
-        }
+        let buf = control.createBuffer(10 + 1)
+        addNote(buf, 0, ms, 255, 255, 1, frequency, globalVolume)
+        playInstructions(buf)
     }
 
 
@@ -199,7 +174,7 @@ namespace music {
         play(volume: number) {
             if (!this.melody)
                 return
-            
+
             volume = Math.clamp(0, 255, (volume * globalVolume) >> 8)
 
             let notes = this.melody._text
