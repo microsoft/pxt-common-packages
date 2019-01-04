@@ -81,18 +81,6 @@ snorfs::File *getFile(String filename) {
 }
 
 /** 
-* Append string data to a new or existing file. 
-* @param filename name of the file, eg: "log.txt"
-*/
-//% parts="storage" 
-//% blockId="storage_append" block="append file $filename with $data"
-void append(String filename, String data) {
-    auto f = getFile(filename);
-    if (NULL == f) return;
-    f->append(data->getUtf8data(), data->getUtf8Size());
-}
-
-/** 
 * Append a buffer to a new or existing file. 
 * @param filename name of the file, eg: "log.txt"
 */
@@ -101,18 +89,6 @@ void appendBuffer(String filename, Buffer data) {
     auto f = getFile(filename);
     if (NULL == f) return;
     f->append(data->data, data->length);
-}
-
-/** 
-* Overwrite file with string data. 
-* @param filename name of the file, eg: "log.txt"
-*/
-//% parts="storage"
-//% blockId="storage_overwrite" block="overwrite file $filename with $data"
-void overwrite(String filename, String data) {
-    auto f = getFile(filename);
-    if (NULL == f) return;
-    f->overwrite(data->getUtf8data(), data->getUtf8Size());
 }
 
 /** 
@@ -162,27 +138,6 @@ int size(String filename) {
         return -1;
     auto f = getFile(filename);    
     return f->size();
-}
-
-/** 
-* Read contents of file as a string. 
-* @param filename name of the file, eg: "log.txt"
-*/
-//% parts="storage"
-//% blockId="storage_read" block="read file $filename"
-String read(String filename) {
-    auto f = getFile(filename);
-    if (NULL == f) 
-        return NULL;
-    auto sz = f->size();
-    if (sz > 0xffff)
-        return NULL;
-    auto tmp = app_alloc(sz);
-    f->seek(0);
-    f->read(tmp, sz);
-    auto res = mkString((char*)tmp, sz);
-    app_free(tmp);
-    return res;
 }
 
 /** 
