@@ -132,9 +132,9 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
                 if (xDiff !== Fx.zeroFx8) {
                     const right = xDiff > Fx.zeroFx8;
-                    const x0 = Fx.toIntShifted(right ? Fx.iadd(sprite.width, sprite._x) : sprite._x, 4);
-                    for (let y = sprite._lastY; y < Fx.iadd(sprite.height + 15, sprite._lastY); y = Fx.iadd(16, y)) {
-                        const y0 = Fx.toIntShifted(Fx.min(y, Fx.iadd(sprite.height - 1, sprite._lastY)), 4);
+                    const x0 = Fx.toIntShifted(right ? sprite._hitbox.right : sprite._hitbox.left, 4);
+                    for (let y = sprite._hitbox.top; y < Fx.iadd(15, sprite._hitbox.bottom); y = Fx.iadd(16, y)) {
+                        const y0 = Fx.toIntShifted(Fx.min(y, Fx.iadd(-1, sprite._hitbox.bottom)), 4);
                         if (tm.isObstacle(x0, y0)) {
                             hitWall = true;
                             if (bounce) {

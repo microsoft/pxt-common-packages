@@ -153,7 +153,7 @@ class Sprite implements SpriteLike {
     private updateSay: (dt: number, camera: scene.Camera) => void;
     private sayBubbleSprite: Sprite;
 
-    _hitboxes: game.Hitbox[];
+    _hitbox: game.Hitbox;
     _overlappers: number[];
 
     flags: number
@@ -212,36 +212,27 @@ class Sprite implements SpriteLike {
     setImage(img: Image) {
         if (!img) return; // don't break the sprite
 
-        // Identify old upper left corner
-        let oMinX = img.width;
-        let oMinY = img.height;
+        let oMinX = 0;
+        let oMinY = 0;
         let oMaxX = 0;
         let oMaxY = 0;
 
-        for (let i = 0; this._hitboxes && i < this._hitboxes.length; ++i) {
-            let box = this._hitboxes[i];
-            oMinX = Math.min(oMinX, box.ox);
-            oMinY = Math.min(oMinY, box.oy);
-            oMaxX = Math.max(oMaxX, box.ox + box.width - 1);
-            oMaxY = Math.max(oMaxY, box.oy + box.height - 1);
+        // Identify old upper left corner
+        if (this._hitbox) {
+            oMinX = this._hitbox.ox;
+            oMinY = this._hitbox.oy;
+            oMaxX = this._hitbox.ox + this._hitbox.width;
+            oMaxY = this._hitbox.oy + this._hitbox.height;
         }
 
         this._image = img;
-        this._hitboxes = game.calculateHitBoxes(this);
+        this._hitbox = game.calculateHitBox(this);
 
         // Identify new upper left corner
-        let nMinX = img.width;
-        let nMinY = img.height;
-        let nMaxX = 0;
-        let nMaxY = 0;
-
-        for (let i = 0; i < this._hitboxes.length; ++i) {
-            let box = this._hitboxes[i];
-            nMinX = Math.min(nMinX, box.ox);
-            nMinY = Math.min(nMinY, box.oy);
-            nMaxX = Math.max(nMaxX, box.ox + box.width - 1);
-            nMaxY = Math.max(nMaxY, box.oy + box.height - 1);
-        }
+        let nMinX = this._hitbox.ox;
+        let nMinY = this._hitbox.oy;
+        let nMaxX = this._hitbox.ox + this._hitbox.width;
+        let nMaxY = this._hitbox.oy + this._hitbox.height;
 
         const minXDiff = oMinX - nMinX;
         const minYDiff = oMinY - nMinY;
@@ -427,7 +418,7 @@ class Sprite implements SpriteLike {
         let startY = 2;
         let bubbleWidth = text.length * font.charWidth + bubblePadding;
         let maxOffset = text.length * font.charWidth - maxTextWidth;
-        let bubbleOffset: number;
+        let bubbleOffset: number = this._hitbox.oy;
         // sets the defaut scroll speed in pixels per second
         let speed = 45;
 
@@ -442,19 +433,6 @@ class Sprite implements SpriteLike {
         if (timeOnScreen) {
             timeOnScreen = timeOnScreen + control.millis();
         }
-
-        if (!this._hitboxes || this._hitboxes.length == 0) {
-            bubbleOffset = 0;
-        } else {
-            bubbleOffset = Fx.toInt(this._hitboxes[0].top);
-            for (let i = 0; i < this._hitboxes.length; i++) {
-                bubbleOffset = Math.min(bubbleOffset, Fx.toInt(this._hitboxes[i].top));
-            }
-
-            // Gets the length from sprites location to its highest hitbox
-            bubbleOffset = this.y - bubbleOffset;
-        }
-
 
         if (bubbleWidth > maxTextWidth + bubblePadding) {
             bubbleWidth = maxTextWidth + bubblePadding;
@@ -475,7 +453,7 @@ class Sprite implements SpriteLike {
             if (!timeOnScreen || timeOnScreen > control.millis()) {
                 this.sayBubbleSprite.image.fill(textBoxColor);
                 // The minus 2 is how much transparent padding there is under the sayBubbleSprite
-                this.sayBubbleSprite.y = this.y - bubbleOffset - ((font.charHeight + bubblePadding) >> 1) - 2;
+                this.sayBubbleSprite.y = this.top + bubbleOffset - ((font.charHeight + bubblePadding) >> 1) - 2;
                 this.sayBubbleSprite.x = this.x;
 
                 if (!this.isOutOfScreen(camera)) {
@@ -573,12 +551,7 @@ class Sprite implements SpriteLike {
 
         // debug info
         if (game.debug) {
-            let color = 1;
-            this._hitboxes.forEach(box => {
-                this._image.drawRect(box.ox, box.oy, box.width, box.height, color);
-                color++;
-                if (color >= 15) color = 1;
-            });
+            this._image.drawRect(this._hitbox.ox, this._hitbox.oy, this._hitbox.width, this._hitbox.height, 1);
         }
     }
 
