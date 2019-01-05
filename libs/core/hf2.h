@@ -50,6 +50,11 @@ class HF2 : public CodalUSBInterface {
     virtual bool enableWebUSB() { return true; }
 };
 
+class DummyIface : public CodalUSBInterface {
+  public:
+    virtual const InterfaceInfo *getInterfaceInfo();
+};
+
 #endif
 
 #endif

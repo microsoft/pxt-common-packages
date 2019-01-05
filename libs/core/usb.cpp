@@ -8,6 +8,7 @@ CodalUSB usb;
 // share the buffer; we will crash anyway if someone talks to us over both at the same time
 HF2_Buffer hf2buf;
 HF2 hf2(hf2buf);
+DummyIface dummyIface;
 
 #if CONFIG_ENABLED(DEVICE_MOUSE)
 USBHIDMouse mouse;
@@ -68,6 +69,11 @@ void usb_init() {
 #if CONFIG_ENABLED(DEVICE_JOYSTICK)
     usb.add(joystick);
 #endif
+    // the WINUSB descriptors don't seem to work if there's only one interface
+    // so we add a dummy interface first
+    usb.add(dummyIface);
+    // let's not waste EPs on the HF2 - it will run on CONTROL pipe instead
+    hf2.allocateEP = false;
     usb.add(hf2);
     create_fiber(start_usb);
 }

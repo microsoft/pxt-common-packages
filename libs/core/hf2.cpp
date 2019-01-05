@@ -347,8 +347,29 @@ int HF2::endpointRequest() {
     return sendResponse(0);
 }
 
-HF2::HF2(HF2_Buffer &p)
-    : gotSomePacket(false), ctrlWaiting(false), pkt(p), allocateEP(true) {}
+HF2::HF2(HF2_Buffer &p) : gotSomePacket(false), ctrlWaiting(false), pkt(p), allocateEP(true) {}
+
+
+static const InterfaceInfo dummyIfaceInfo = {
+    NULL,
+    0,
+    0,
+    {
+        0,    // numEndpoints
+        0xff, /// class code - vendor-specific
+        0xff,   // subclass
+        0xff,    // protocol
+        0x00, // string
+        0x00, // alt
+    },
+    {0, 0},
+    {0, 0},
+};
+
+
+const InterfaceInfo *DummyIface::getInterfaceInfo() {
+    return &dummyIfaceInfo;
+}
 
 //
 //
