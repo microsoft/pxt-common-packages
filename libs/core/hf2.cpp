@@ -170,7 +170,7 @@ int HF2::recv() {
         len = out->read(buf, sizeof(buf));
     else
         len = CodalUSB::usbInstance->ctrlOut->read(buf, sizeof(buf));
-    DMESG("HF2 read: %d", len);
+    // DMESG("HF2 read: %d", len);
 
     if (len <= 0)
         return len;
@@ -239,7 +239,7 @@ static void copy_words(void *dst0, const void *src0, uint32_t n_words) {
 #endif
 
 int HF2::endpointRequest() {
-    if (!ctrlWaiting)
+    if (!allocateEP && !ctrlWaiting)
         return 0;
 
     int sz = recv();
