@@ -175,9 +175,11 @@ String read(String filename) {
     auto sz = f->size();
     if (sz > 0xffff)
         return NULL;
-    auto res = mkString(NULL, sz);
+    auto tmp = app_alloc(sz);
     f->seek(0);
-    f->read(res->data, res->length);
+    f->read(tmp, sz);
+    auto res = mkString((char*)tmp, sz);
+    app_free(tmp);
     return res;
 }
 

@@ -10,7 +10,7 @@ namespace jacdac {
          */
         //% blockId=jacdacmicrophonevent block="jacdac %microphone sound level"
         //% group="Microphone"
-        get level(): number {
+        get soundLevel(): number {
             const s = this.state;
             if (!s || s.length < 1) return 0;
             return s.getNumber(NumberFormat.UInt8LE, 0);
@@ -39,6 +39,6 @@ namespace jacdac {
         }
     }
 
-    //% fixedInstance whenUsed block="microphone"
-    export const microphoneClient = new MicrophoneClient("microphone");
+    //% fixedInstance whenUsed block="microphone client"
+    export const microphoneClient = new MicrophoneClient("mic");
 }

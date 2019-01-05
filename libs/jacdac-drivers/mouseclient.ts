@@ -17,7 +17,7 @@ namespace jacdac {
         /** 
          * Sets the mouse button state to down
          */
-        //% blockId=jdmouseSetButton block="%mouse button %index=joystickStandardButton|%down=toggleDownUp"
+        //% blockId=jdmouseSetButton block="%mouse button %index|%down=toggleDownUp"
         //% group="Mouse"
         setButton(button: JDMouseButton, down: boolean): void {
             const buf = control.createBuffer(3);
@@ -35,7 +35,7 @@ namespace jacdac {
         //% x.min=-128 x.max=127
         //% y.min=-128 y.max=127
         //% group="Mouse"
-        move(x: int32, y: int32): void {
+        move(x: number, y: number): void {
             const buf = control.createBuffer(3);
             buf[0] = JDMouseCommand.Move;
             buf.setNumber(NumberFormat.Int8LE, 1, x);
@@ -50,7 +50,7 @@ namespace jacdac {
         //% blockId=mouseWheel block="%mouse turn wheel %w"
         //% w.min=-128 w.max=127
         //% group="Mouse"
-        turnWheel(w: int32): void {
+        turnWheel(w: number): void {
             const buf = control.createBuffer(2);
             buf[0] = JDMouseCommand.TurnWheel;
             buf.setNumber(NumberFormat.Int8LE, 1, w);
@@ -58,6 +58,6 @@ namespace jacdac {
         }
     }
 
-    //% fixedInstance whenUsed block="mouse"
+    //% fixedInstance whenUsed block="mouse client"
     export const mouseClient = new MouseClient();
 }

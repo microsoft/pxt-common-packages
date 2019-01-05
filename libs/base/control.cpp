@@ -71,7 +71,7 @@ namespace control {
     //%
     void __log(int prority, String text) {
         if (NULL == text) return;
-        pxt::sendSerial(text->data, text->length);
+        pxt::sendSerial(text->getUTF8Data(), text->getUTF8Size());
     }
 
     /**

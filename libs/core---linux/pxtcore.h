@@ -3,9 +3,11 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 
 namespace pxt {
 void dmesg(const char *fmt, ...);
+void vdmesg(const char *format, va_list arg);
 #define DMESG pxt::dmesg
 void *gcAllocBlock(size_t sz);
 }

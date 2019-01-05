@@ -14,7 +14,7 @@ namespace sprites {
      * @param kind
      * @param sprite
      */
-    //% group="Lifecycle" draggableParameters weight=97
+    //% group="Lifecycle" draggableParameters="reporter" weight=97
     //% blockId=spritesoncreated block="on created $sprite of kind $kind=spritetype"
     //% help=sprites/on-created
     export function onCreated(kind: number, handler: (sprite: Sprite) => void): void {
@@ -33,7 +33,7 @@ namespace sprites {
      * @param sprite
      */
     //% group="Lifecycle"
-    //% weight=96 draggableParameters
+    //% weight=96 draggableParameters="reporter"
     //% blockId=spritesondestroyed block="on destroyed $sprite of kind $kind=spritetype "
     //% help=sprites/on-destroyed
     export function onDestroyed(kind: number, handler: (sprite: Sprite) => void) {
@@ -50,7 +50,7 @@ namespace sprites {
      * Run code when two kinds of sprites overlap
      */
     //% group="Overlaps"
-    //% weight=100 draggableParameters
+    //% weight=100 draggableParameters="reporter"
     //% blockId=spritesoverlap block="on $sprite of kind $kind=spritetype overlaps $otherSprite of kind $otherKind=spritetype"
     //% help=sprites/on-overlap
     //% blockGap=8
@@ -74,7 +74,7 @@ namespace scene {
      * @param handler
      */
     //% group="Collisions"
-    //% weight=100 draggableParameters
+    //% weight=100 draggableParameters="reporter"
     //% blockId=spritesollisions block="on $sprite of kind $kind=spritetype hits wall $tile=colorindexpicker"
     //% help=scene/on-hit-tile
     export function onHitTile(kind: number, tile: number, handler: (sprite: Sprite) => void) {

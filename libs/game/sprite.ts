@@ -394,7 +394,7 @@ class Sprite implements SpriteLike {
     //% vy.shadow=spriteSpeedPicker
     setVelocity(vx: number, vy: number): void {
         this.vx = vx;
-        this.vy = vx;
+        this.vy = vy;
     }
 
     /**

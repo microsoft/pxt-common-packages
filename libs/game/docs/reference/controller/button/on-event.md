@@ -3,7 +3,7 @@
 Run some code when a button is pressed or released.
 
 ```sig
-controller.anyButton.onEvent(ControllerButtonEvent.Pressed, function () {
+controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
 
 });
 ```
@@ -29,7 +29,7 @@ e 1 6 6 1 e
 e 1 1 1 1 e
 e e e e e e
 `)
-controller.anyButton.onEvent(ControllerButtonEvent.Pressed, function () {
+controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
     yellowBox.x = Math.randomRange(3, scene.screenWidth() - 3)
     yellowBox.y = Math.randomRange(3, scene.screenHeight() - 3)
 })

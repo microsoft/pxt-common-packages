@@ -39,6 +39,7 @@ namespace scene {
         createdHandlers: SpriteHandler[];
         overlapHandlers: OverlapHandler[];
         collisionHandlers: CollisionHandler[];
+        private _data: any;
 
         constructor(eventContext: control.EventContext) {
             this.eventContext = eventContext;
@@ -51,6 +52,7 @@ namespace scene {
             this.overlapHandlers = [];
             this.collisionHandlers = [];
             this.spritesByKind = [];
+            this._data = {};
         }
 
         init() {
@@ -104,7 +106,7 @@ namespace scene {
             // render diagnostics
             this.eventContext.registerFrameHandler(150, () => {
                 if (game.stats)
-                    screen.print(control.EventContext.lastStats, 2, 2, 0, image.font5);
+                    screen.print(control.EventContext.lastStats + ` sprites:${this.allSprites.length}`, 2, 2, 0, image.font5);
                 if (game.debug)
                     this.physicsEngine.draw();
                 game.consoleOverlay.draw();
@@ -115,6 +117,10 @@ namespace scene {
             this.eventContext.registerFrameHandler(200, control.__screen.update);
             // register start menu
             scene.systemMenu.register();
+        }
+
+        get data() {
+            return this._data;
         }
 
         addSprite(sprite: SpriteLike) {

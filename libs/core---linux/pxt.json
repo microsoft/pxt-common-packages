@@ -17,6 +17,8 @@
         "enums.d.ts",
         "ns.ts",
         "timer.ts",
+        "platform_includes.h",
+        "codalemu.cpp",
         "pxtparts.json"
     ],
     "additionalFilePath": "../core"

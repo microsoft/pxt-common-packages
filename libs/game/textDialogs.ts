@@ -358,11 +358,16 @@ namespace game {
     //% block="show long text %str %layout"
     //% help=game/show-long-text
     export function showLongText(str: string, layout: DialogLayout) {
+        // Pause to cede control from this fiber just in case the user code created
+        // sprites and they haven't had a chance to render yet.
+        pause(1);
+
         // Clone the current screen so that it shows up behind the dialog
-        const temp = screen.clone();
+        let temp = screen.clone();
         controller._setUserEventsEnabled(false);
         game.pushScene();
         scene.setBackgroundImage(temp);
+        temp = null;
 
         let width: number;
         let height: number;

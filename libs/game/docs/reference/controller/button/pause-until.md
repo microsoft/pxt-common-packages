@@ -3,7 +3,7 @@
 Causes your program to wait until an event for a button happens.
 
 ```sig
-controller.anyButton.pauseUntil(ControllerButtonEvent.Pressed)
+controller.A.pauseUntil(ControllerButtonEvent.Pressed)
 ```
 
 ## Parameters

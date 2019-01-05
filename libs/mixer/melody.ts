@@ -199,7 +199,7 @@ namespace music {
         play(volume: number) {
             if (!this.melody)
                 return
-
+            
             volume = Math.clamp(0, 255, (volume * globalVolume) >> 8)
 
             let notes = this.melody._text
@@ -223,7 +223,7 @@ namespace music {
                 sndInstrPtr = addNote(sndInstr, sndInstrPtr, ms, beg, end, soundWave, hz, volume)
             }
 
-            const scanNextNote = () => {
+            const scanNextWord = () => {
                 if (!this.melody)
                     return ""
 
@@ -303,7 +303,7 @@ namespace music {
             }
 
             while (true) {
-                let currNote = scanNextNote();
+                let currNote = scanNextWord();
                 if (!currNote)
                     return;
 
@@ -369,7 +369,9 @@ namespace music {
                     currMs = duration * beat
                 }
 
-                if (hz <= 0) {
+                if (hz < 0) {
+                    // no frequency specified, so no duration
+                } else if (hz == 0) {
                     pause(currMs)
                 } else {
                     sndInstrPtr = 0

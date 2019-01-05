@@ -4,6 +4,9 @@
 #include "pxtbase.h"
 //#include "pins.h"
 
+#include "CodalComponent.h"
+#include "Event.h"
+
 namespace pxt {
 void raiseEvent(int id, int event);
 int allocateNotifyEvent();
@@ -41,12 +44,6 @@ typedef Buffer Sound;
 
 // extern Event lastEvent;
 } // namespace pxt
-
-#define DEVICE_ID_FIRST_BUTTON 4000
-
-#define DEVICE_EVT_ANY 0
-#define DEVICE_ID_NOTIFY 10000
-#define DEVICE_ID_NOTIFY_ONE 10001
 
 #undef PXT_MAIN
 #define PXT_MAIN                                                                                   \

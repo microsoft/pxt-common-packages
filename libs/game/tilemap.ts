@@ -24,11 +24,11 @@ namespace tiles {
         }
 
         get x(): number {
-            return this._col << 4;
+            return (this._col << 4) + 8;
         }
 
         get y(): number {
-            return this._row << 4;
+            return (this._row << 4) + 8;
         }
 
         get tileSet(): number {

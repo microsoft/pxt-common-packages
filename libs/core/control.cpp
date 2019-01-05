@@ -34,13 +34,13 @@ int allocateNotifyEvent() {
 /** Write a message to DMESG debugging buffer. */
 //%
 void dmesg(String s) {
-    DMESG("# %s", s->data);
+    DMESG("# %s", s->getUTF8Data());
 }
 
 /** Write a message and value (pointer) to DMESG debugging buffer. */
 //%
 void dmesgPtr(String str, Object_ ptr) {
-    DMESG("# %s: %p", str->data, ptr);
+    DMESG("# %s: %p", str->getUTF8Data(), ptr);
 }
 
 
