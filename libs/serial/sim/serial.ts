@@ -16,6 +16,10 @@ namespace pxsim.serial {
         // TODO
     }
 
+    export function read(): number {
+        return -1;
+    }
+
     export function readUntil(delimiter: string) {
         // TODO
         return "";
