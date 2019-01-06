@@ -16,6 +16,10 @@ namespace pxsim.serial {
         // TODO
     }
 
+    export function read(): number {
+        return -1;
+    }
+
     export function readUntil(delimiter: string) {
         // TODO
         return "";
@@ -53,5 +57,9 @@ namespace pxsim.serial {
         _tx = tx;
         _rx = rx;
         _baudRate = rate;
+    }
+
+    export function onDelimiterReceived(delimiter: number, handler: RefAction): void {
+        // TODO
     }
 }
