@@ -58,4 +58,8 @@ namespace pxsim.serial {
         _rx = rx;
         _baudRate = rate;
     }
+
+    export function onDelimiterReceived(delimiter: Delimiters, handler: () => void): void {
+        // TODO
+    }
 }
