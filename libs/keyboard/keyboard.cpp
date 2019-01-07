@@ -121,7 +121,7 @@ namespace keyboard {
     //% blockId=keyboardStandardKey block="keyboard key %key|%event"
     //% blockGap=8 weight=99
     void key(String key, KeyboardKeyEvent event) {
-        if (!key->length) return;
+        if (!key->getUTF8Size()) return;
         uint16_t ckey = key->getUTF8Data()[0];
         switch(event) {
             case KeyboardKeyEvent::Down:
