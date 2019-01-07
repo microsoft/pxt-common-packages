@@ -1379,24 +1379,24 @@ unsigned programSize() {
     return bytecode[17] * 8;
 }
 
+int *getBootloaderConfigData() __attribute__((weak));
+int *getBootloaderConfigData()
+{
+    return NULL;
+}
+
 //%
 int getConfig(int key, int defl) {
-    int *cfgData;
+    int *cfgData = getBootloaderConfigData();
 
-#ifdef PXT_BOOTLOADER_CFG_ADDR
-    cfgData = *(int **)(PXT_BOOTLOADER_CFG_ADDR);
-#ifdef PXT_BOOTLOADER_CFG_MAGIC
-    cfgData++;
-    if ((void *)0x200 <= cfgData && cfgData < (void *)PXT_BOOTLOADER_CFG_ADDR &&
-        cfgData[-1] == (int)PXT_BOOTLOADER_CFG_MAGIC)
-#endif
+    if (cfgData) {
         for (int i = 0;; i += 2) {
             if (cfgData[i] == key)
                 return cfgData[i + 1];
             if (cfgData[i] == 0)
                 break;
         }
-#endif
+    }
 
     cfgData = *(int **)&bytecode[18];
     for (int i = 0;; i += 2) {

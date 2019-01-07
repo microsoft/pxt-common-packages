@@ -31,7 +31,6 @@ struct F4_Settings {
 
 #define UF2_BINFO ((F4_Settings *)(BOOTLOADER_END - sizeof(F4_Settings)))
 #define UF2_INFO_TXT UF2_BINFO->info_uf2
-#define PXT_BOOTLOADER_CFG_ADDR (&(UF2_BINFO->configValues))
 #define USB_HANDOVER 0
 
 #define BOOT_RTC_SIGNATURE 0x71a21877
