@@ -15,7 +15,7 @@ serial.writeBuffer(null);
 ## Read
 
 ```cards
-serial.readUntil("");
+serial.readUntil(Delimiters.NewLine);
 serial.readLine();
 serial.readString();
 serial.readBuffer();
