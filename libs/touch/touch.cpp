@@ -50,6 +50,20 @@ int value(TouchButton button) {
     return button->getValue();
 }
 
+/**
+* Calibrate the touch sensivity
+*/
+//% blockId=touch_calibrate block="button %button calibrate"
+//% blockNamespace=input
+//% name.fieldEditor="gridpicker"
+//% name.fieldOptions.width=220
+//% name.fieldOptions.columns=4
+//% group="More" weight=49 blockGap=8
+//% help=input/touch/calibrate
+void calibrate(TouchButton button) {
+    button->calibrate();
+}
+
 }
 
 namespace AnalogInOutPinMethods {
