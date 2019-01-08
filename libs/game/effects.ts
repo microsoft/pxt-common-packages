@@ -31,36 +31,36 @@ namespace effects {
 
         /**
          * Change the given image with this effect
-         * @param image 
+         * @param input 
          */
-        //% blockId=imageEffectChange block="use %effect effect to change %image=variables_get(myImage)"
+        //% blockId=imageEffectChange block="use %effect effect to change %input=variables_get(myImage)"
         //% group="Images"
-        change(image: Image) {
-            this.effect(image, this.fastRandom);
+        change(input: Image) {
+            this.effect(input, this.fastRandom);
         }
     }
 
     //% fixedInstance whenUsed block="dissolve"
-    export const dissolve = new ImageEffect((image: Image, r: Math.FastRandom) => {
-        for (let i = (image.width * image.height) >> 4; i > 0; --i) {
-            const x = r.randomRange(0, image.width)
-            const y = r.randomRange(0, image.height)
+    export const dissolve = new ImageEffect((input: Image, r: Math.FastRandom) => {
+        for (let i = (input.width * input.height) >> 4; i > 0; --i) {
+            const x = r.randomRange(0, input.width)
+            const y = r.randomRange(0, input.height)
             const w = r.randomRange(1, 3);
             const h = r.randomRange(1, 3);
 
-            image.drawRect(x, y, w, h, 0);
+            input.drawRect(x, y, w, h, 0);
         }
     });
 
     //% fixedInstance whenUsed block="melt"
-    export const melt = new ImageEffect((image: Image, r: Math.FastRandom) => {
-        const rounds = (image.width * image.height) >> 4;
+    export const melt = new ImageEffect((input: Image, r: Math.FastRandom) => {
+        const rounds = (input.width * input.height) >> 4;
         for (let j = 0; j < rounds; ++j) {
-            let x = r.randomRange(0, image.width - 1)
-            let y = r.randomRange(0, image.height - 3)
-            let c = image.getPixel(x, y)
-            image.setPixel(x, y + 1, c)
-            image.setPixel(x, y + 2, c)
+            let x = r.randomRange(0, input.width - 1)
+            let y = r.randomRange(0, input.height - 3)
+            let c = input.getPixel(x, y)
+            input.setPixel(x, y + 1, c)
+            input.setPixel(x, y + 2, c)
         }
     });
 }
