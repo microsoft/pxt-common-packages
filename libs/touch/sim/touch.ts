@@ -55,6 +55,9 @@ namespace pxsim {
         value() : number {
             return 0;
         }
+
+        calibrate(): void {
+        }
     }
 
     export class TouchButtonState {
@@ -82,6 +85,10 @@ namespace pxsim.TouchButtonMethods {
 
     export function value(button: pxsim.TouchButton): number {
         return button.value();
+    }
+
+    export function calibrate(button: pxsim.TouchButton): void {
+        button.calibrate();
     }
 }
 
