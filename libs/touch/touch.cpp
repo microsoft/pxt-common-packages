@@ -32,7 +32,7 @@ namespace TouchButtonMethods {
 //% group="More" weight=16 blockGap=8
 //% help=input/touch/set-threshold
 void setThreshold(TouchButton button, int threshold) {
-    button->setThreshold(max(0, min(1023, threshold)));
+    button->setThreshold(max(0, min(1 << 12, threshold << 2)));
 }
 
 /**
@@ -47,7 +47,7 @@ void setThreshold(TouchButton button, int threshold) {
 //% group="More" weight=49 blockGap=8
 //% help=input/touch/value
 int value(TouchButton button) {
-    return button->getValue();
+    return button->getValue() >> 2;
 }
 
 /**
