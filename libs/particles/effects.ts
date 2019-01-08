@@ -21,12 +21,50 @@ namespace particles {
             if (!this.sourceFactory) return;
             this.sourceFactory(anchor, particlesPerSecond);
         }
+
+        /**
+         * Destroy the provided sprite with
+         * @param sprite
+         * @param particlesPerSecond
+         * @param lifespan how long the sprite will remain on the screen
+         */
+        //% blockId=particlesDestroySpriteWithAnimation block="use %effect effect to destroy %anchor=variables_get(mySprite) at rate %particlesPerSecond p/s || with lifespan %lifespan"
+        //% particlesPerSecond.defl=20
+        //% particlesPerSecond.min=1 particlePerSeconds.max=100
+        //% lifespan.defl=500
+        //% group="Effects"
+        destroy(anchor: Sprite, particlesPerSecond: number, lifespan: number = 500) {
+            anchor.setFlag(SpriteFlag.Ghost, true);
+            this.sourceFactory(anchor, particlesPerSecond);
+            anchor.lifespan = lifespan;
+            dissolveSprite(anchor);
+        }
+    }
+
+    /**
+     * Dissolve the given sprite by removing random sections of it's image
+     * @param sprite
+     */
+    function dissolveSprite(sprite: Sprite) {
+        const replacementImage = sprite.image.clone();
+        const r = new Math.FastRandom();
+
+        for (let i = (replacementImage.width * replacementImage.height) >> 4; i > 0; --i) {
+            const x = r.randomRange(0, replacementImage.width)
+            const y = r.randomRange(0, replacementImage.height)
+            const w = r.randomRange(1, 3);
+            const h = r.randomRange(1, 3);
+
+            replacementImage.drawRect(x, y, w, h, 0);
+        }
+
+        sprite.setImage(replacementImage);
     }
 
     /**
      * Anchor used for effects that occur across the screen.
      */
-    class FullScreenAnchor implements ParticleAnchor {
+    class SceneAnchor implements ParticleAnchor {
         private camera: scene.Camera;
         flags: number; //TODO: remove pending fix for https://github.com/Microsoft/pxt-arcade/issues/504
 
@@ -71,7 +109,7 @@ namespace particles {
         startSceneEffect(particlesPerSecond: number): void {
             if (!this.sourceFactory) return;
             this.endSceneEffect();
-            this.source = this.sourceFactory(new FullScreenAnchor(), particlesPerSecond);
+            this.source = this.sourceFactory(new SceneAnchor(), particlesPerSecond);
         }
 
         /**
@@ -240,7 +278,7 @@ namespace particles {
 
     //% fixedInstance whenUsed block="disintegrate"
     export const disintegrate = new ParticleEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
-        const factory = new AshFactory(anchor, true);
+        const factory = new AshFactory(anchor, true, 30);
         factory.minLifespan = 200;
         factory.maxLifespan = 500;
         const src = new ParticleSource(anchor, particlesPerSecond, factory);

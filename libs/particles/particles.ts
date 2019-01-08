@@ -132,7 +132,7 @@ namespace particles {
                     this.destroy();
                 }
             } else if (this.anchor && this.anchor.flags !== undefined && (this.anchor.flags & sprites.Flag.Destroyed)) {
-                this.lifespan = 1000;
+                this.lifespan = 750;
             }
 
             while (this.timer < 0 && this.enabled) {
