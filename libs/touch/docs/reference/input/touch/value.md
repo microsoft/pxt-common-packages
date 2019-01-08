@@ -13,7 +13,7 @@ A pin detects that it was touched by measuring some amount of electrical charge 
 
 ## Example #example
 
-Measure the touch values at pin **A2**. If they are greater than `512`, then flash green light on the pixels.
+Measure the touch values at pin **A1**. If they are greater than `512`, then flash green light on the pixels.
 
 ```blocks
 input.touchA1.setThreshold(100)
