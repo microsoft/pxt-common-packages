@@ -1,8 +1,3 @@
-/**
- * Small particles
- */
-//% color="#382561" weight=78 icon="\uf06d"
-//% groups='["Effects", "Create", "Properties"]'
 namespace particles {
     enum Flag {
         enabled = 1 << 0,
