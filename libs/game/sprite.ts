@@ -538,6 +538,16 @@ class Sprite implements SpriteLike {
     }
 
     /**
+     * Start an effect on this sprite
+     * @param effect the type of effect to create
+     */
+    //% group="Properties"
+    //% blockId=startEffectOnSprite block="on %sprite(mySprite) start %effect effect"
+    startEffect(effect: effects.ParticleEffect) {
+        effect.start(this);
+    }
+
+    /**
      * Indicates if the sprite is outside the screen
      */
     //%
