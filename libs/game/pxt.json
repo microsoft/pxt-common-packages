@@ -31,7 +31,10 @@
         "systemmenu.ts",
         "fixed.ts",
         "console.ts",
-        "fieldeditors.ts"
+        "fieldeditors.ts",
+        "particles.ts",
+        "particlefactories.ts",
+        "effects.ts"
     ],
     "public": true,
     "dependencies": {
