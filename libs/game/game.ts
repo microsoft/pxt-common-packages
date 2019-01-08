@@ -10,6 +10,10 @@ namespace game {
     export let debug = false;
     export let stats = false;
     export let gameOverSound: () => void = undefined;
+    // export let winEffect: effects.ImageEffect | effects.SceneEffect = undefined; // see setGameOverEffect
+    // export let loseEffect: effects.ImageEffect | effects.SceneEffect = undefined;
+    let winEffect: () => void = undefined;
+    let loseEffect: () => void = undefined;
 
     let _scene: scene.Scene;
     let _sceneStack: scene.Scene[];
@@ -39,6 +43,11 @@ namespace game {
     function init() {
         if (!_scene) _scene = new scene.Scene(control.pushEventContext());
         _scene.init();
+
+        // if (!winEffect) winEffect = effects.confetti;// see setGameOverEffect
+        // if (!loseEffect) loseEffect = effects.hearts;
+        if (!winEffect) winEffect = () => effects.confetti.startSceneEffect();
+        if (!loseEffect) loseEffect = () => effects.melt.startSceneEffect();
     }
 
     export function pushScene() {
@@ -95,17 +104,21 @@ namespace game {
         }
     }
 
-    function meltScreen() {
-        for (let i = 0; i < 10; ++i) {
-            for (let j = 0; j < 1000; ++j) {
-                let x = Math.randomRange(0, screen.width - 1)
-                let y = Math.randomRange(0, screen.height - 3)
-                let c = screen.getPixel(x, y)
-                screen.setPixel(x, y + 1, c)
-                screen.setPixel(x, y + 2, c)
-            }
-            pause(100)
-        }
+    /**
+     * Set the effect that occurs when the game is over
+     * @param win whether the animation should run on a win (true)
+     * @param effect
+     */
+    //% group="Gameplay"
+    //% blockId=setGameOverEffect block="set game over effect for win %win=toggleYesNo to %effect"
+    export function setGameOverEffect(win: boolean, effect: effects.SceneEffect) {
+        // loosen to take an interface reqing startSceneEffect when https://github.com/Microsoft/pxt-arcade/issues/515 fixed
+        init();
+        if (!effect) return;
+        if (win)
+            winEffect = () => effect.startSceneEffect();
+        else
+            loseEffect = () => effect.startSceneEffect();
     }
 
     /**
@@ -116,31 +129,41 @@ namespace game {
     //% weight=80 help=game/over
     export function over(win: boolean = false) {
         init();
-        if (__isOver) return
+        if (__isOver) return;
         __isOver = true;
-        // clear all handlers
-        control.pushEventContext();
-        // register system menu again
-        scene.systemMenu.register();
+        let chosenEffect = win ? winEffect : loseEffect;
+        
+        let background = screen.clone();
         // one last screenshot
         takeScreenshot();
+        
+        // clear all handlers
+        _scene = undefined;
+        init();
+        scene.setBackgroundImage(background);
+
         control.runInParallel(() => {
             if (gameOverSound) gameOverSound();
-            meltScreen();
-            let top = showDialogBackground(44, 4)
-            screen.printCenter(win ? "YOU WIN!" : "GAME OVER!", top + 8, screen.isMono ? 1 : 5, image.font8)
-            if (info.hasScore()) {
-                screen.printCenter("Score:" + info.score(), top + 23, screen.isMono ? 1 : 2, image.font8)
-                if (info.score() > info.highScore()) {
-                    info.saveHighScore();
-                    screen.printCenter("New High Score!", top + 34, screen.isMono ? 1 : 2, image.font5);
-                } else {
-                    screen.printCenter("HI" + info.highScore(), top + 34, screen.isMono ? 1 : 2, image.font8);
+            // chosenEffect.startSceneEffect(); // see setGameOverEffect
+            chosenEffect();
+
+            game.eventContext().registerFrameHandler(95, () => {
+                let top = showDialogBackground(46, 4);
+                screen.printCenter(win ? "YOU WIN!" : "GAME OVER!", top + 8, screen.isMono ? 1 : 5, image.font8);
+                if (info.hasScore()) {
+                    screen.printCenter("Score:" + info.score(), top + 23, screen.isMono ? 1 : 2, image.font8);
+                    if (info.score() > info.highScore()) {
+                        info.saveHighScore();
+                        screen.printCenter("New High Score!", top + 34, screen.isMono ? 1 : 2, image.font5);
+                    } else {
+                        screen.printCenter("HI" + info.highScore(), top + 34, screen.isMono ? 1 : 2, image.font8);
+                    }
                 }
-            }
-            pause(2000) // wait for users to stop pressing keys
-            waitAnyButton()
-            control.reset()
+            })
+
+            pause(2000); // wait for users to stop pressing keys
+            waitAnyButton();
+            control.reset();
         })
     }
 

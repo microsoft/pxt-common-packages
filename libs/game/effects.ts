@@ -8,17 +8,21 @@ namespace effects {
 
     //% fixedInstances
     export class ImageEffect {
+
+        // If used in an animation, this should be used as the default delay between method calls
+        protected preferredDelay: number;
         protected effect: (image: Image, fastRandom ?: Math.FastRandom) => void;
         protected fastRandom: Math.FastRandom;
 
-        constructor(effectFactory: (image: Image, fastRandom ?: Math.FastRandom) => void) {
+        constructor(defaultRate: number, effectFactory: (image: Image, fastRandom ?: Math.FastRandom) => void) {
             this.effect = effectFactory;
             this.fastRandom = new Math.FastRandom();
+            this.preferredDelay = defaultRate;
         }
 
         /**
          * Apply this effect to the image of the current sprite
-         * @param sprite 
+         * @param sprite
          */
         //% blockId=particleEffectApply block="apply %effect effect to the image of %image=variables_get(mySprite)"
         //% group="Images"
@@ -38,10 +42,27 @@ namespace effects {
         change(input: Image) {
             this.effect(input, this.fastRandom);
         }
+
+        /**
+         * Make this effect occur repeatedly on the background
+         * @param times number of times effect should occur
+         * @param delay delay between instances of the effect
+         */
+        //% blockId=particleEffectStartScene block="apply %effect effect to background || %times times"
+        //% group="Images"
+        startSceneEffect(times?: number, delay?: number): void {
+            times = times ? times : 15;
+            control.runInParallel(() => {
+                for (let i = 0; i < times; ++i) {
+                    this.change(scene.backgroundImage());
+                    pause(delay ? delay : this.preferredDelay);
+                }
+            });
+        }
     }
 
     //% fixedInstance whenUsed block="dissolve"
-    export const dissolve = new ImageEffect((input: Image, r: Math.FastRandom) => {
+    export const dissolve = new ImageEffect(25, (input: Image, r: Math.FastRandom) => {
         for (let i = (input.width * input.height) >> 4; i > 0; --i) {
             const x = r.randomRange(0, input.width)
             const y = r.randomRange(0, input.height)
@@ -53,7 +74,7 @@ namespace effects {
     });
 
     //% fixedInstance whenUsed block="melt"
-    export const melt = new ImageEffect((input: Image, r: Math.FastRandom) => {
+    export const melt = new ImageEffect(125, (input: Image, r: Math.FastRandom) => {
         const rounds = (input.width * input.height) >> 4;
         for (let j = 0; j < rounds; ++j) {
             let x = r.randomRange(0, input.width - 1)

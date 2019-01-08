@@ -31,12 +31,12 @@ namespace effects {
          * @param particlesPerSecond
          * @param lifespan how long the sprite will remain on the screen
          */
-        //% blockId=particlesDestroySpriteWithAnimation block="use %effect effect to destroy %anchor=variables_get(mySprite) at rate %particlesPerSecond p/s || with lifespan %lifespan"
+        //% blockId=particlesDestroySpriteWithAnimation block="use %effect effect to destroy %anchor=variables_get(mySprite)|| at rate %particlesPerSecond with lifespan %lifespan"
         //% particlesPerSecond.defl=20
         //% particlesPerSecond.min=1 particlePerSeconds.max=100
         //% lifespan.defl=500
         //% group="Particles"
-        destroy(anchor: Sprite, particlesPerSecond: number, lifespan: number = 500) {
+        destroy(anchor: Sprite, particlesPerSecond?: number, lifespan: number = 500) {
             anchor.setFlag(SpriteFlag.Ghost, true);
             this.start(anchor, particlesPerSecond);
             anchor.lifespan = anchor.lifespan > 0 ? anchor.lifespan : lifespan;
@@ -172,7 +172,7 @@ namespace effects {
     });
 
     //% fixedInstance whenUsed block="confetti"
-    export const confetti = new SceneEffect(10, 25, function (anchor: particles.ParticleAnchor, particlesPerSecond: number) {
+    export const confetti = new SceneEffect(10, 40, function (anchor: particles.ParticleAnchor, particlesPerSecond: number) {
         const factory = new particles.ConfettiFactory(anchor.width ? anchor.width : 16, 16);
         factory.setSpeed(30);
         return new particles.ParticleSource(anchor, particlesPerSecond, factory);
@@ -300,7 +300,7 @@ namespace effects {
     });
 
     //% fixedInstance whenUsed block="bubbles"
-    export const bubbles = new SceneEffect(15, 30, function (anchor: particles.ParticleAnchor, particlesPerSecond: number) {
+    export const bubbles = new SceneEffect(15, 40, function (anchor: particles.ParticleAnchor, particlesPerSecond: number) {
         const min = anchor.width > 50 ? 2000 : 500;
         const factory = new particles.BubbleFactory(anchor, min, min * 2.5);
         return new particles.BubbleSource(anchor, particlesPerSecond, factory.stateCount - 1, factory);

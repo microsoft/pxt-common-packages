@@ -32,8 +32,10 @@ namespace scene {
         }
 
         get image() {
-            if (!this._image)
+            if (!this._image) {
                 this._image = image.create(screen.width, screen.height);
+                this._image.fill(this.color);
+            }
             return this._image;
         }
         

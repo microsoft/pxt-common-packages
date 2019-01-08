@@ -738,11 +738,17 @@ class Sprite implements SpriteLike {
      */
     //% group="Lifecycle"
     //% weight=10
-    //% blockId=spritedestroy block="destroy %sprite(mySprite)"
+    //% blockId=spritedestroy block="destroy %sprite(mySprite)||with %effect"
     //% help=sprites/sprite/destroy
-    destroy() {
+    destroy(effect?: effects.ParticleEffect) {
         if (this.flags & sprites.Flag.Destroyed)
-            return
+            return;
+        
+        if (effect) {
+            effect.destroy(this);
+            return;
+        }
+
         this.flags |= sprites.Flag.Destroyed
         const scene = game.currentScene();
         // When current sprite is destroyed, destroys sayBubbleSprite if defined
