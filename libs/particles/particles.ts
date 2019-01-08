@@ -190,8 +190,6 @@ namespace particles {
         /**
          * Sets the acceleration applied to the particles
          */
-        //% blockId=particlessetacc block="particles %source set acceleration ax $ax ay $ay"
-        //% group="Properties"
         setAcceleration(ax: number, ay: number) {
             this.ax = Fx8(ax);
             this.ay = Fx8(ay);
@@ -201,8 +199,6 @@ namespace particles {
          * Enables or disables particles
          * @param on 
          */
-        //% blockId=particlessetenabled block="particles %source %on=toggleOnOff"
-        //% group="Properties"
         setEnabled(on: boolean) {
             this.enabled = on;
         }
@@ -242,8 +238,6 @@ namespace particles {
          * Sets the number of particle created per second
          * @param particlesPerSecond 
          */
-        //% blockId=particlessetrate block="particles %source set rate to $particlesPerSecond"
-        //% group="Properties"
         setRate(particlesPerSecond: number) {
             this.period = Math.ceil(1000 / particlesPerSecond);
             this.timer = 0;
@@ -257,7 +251,6 @@ namespace particles {
          * Sets the particle factor
          * @param factory 
          */
-        //% blockId=particlesetfactory block="particles %source set $factory=variables_get(factory)"
         setFactory(factory: ParticleFactory) {
             if (factory)
                 this._factory = factory;
@@ -283,11 +276,6 @@ namespace particles {
      * @param sprite 
      * @param particlesPerSecond number of particles created per second
      */
-    //% blockId=particlesspray block="create particle source from %sprite=variables_get(mySprite) at %particlesPerSecond p/sec"
-    //% particlesPerSecond.defl=20
-    //% blockSetVariable=source
-    //% particlesPerSecond=100
-    //% group="Sources"
     export function createParticleSource(sprite: Sprite, particlesPerSecond: number): ParticleSource {
         return new ParticleSource(sprite, particlesPerSecond);
     }

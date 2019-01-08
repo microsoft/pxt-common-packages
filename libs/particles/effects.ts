@@ -3,9 +3,11 @@ namespace particles {
     //% fixedInstances
     export class ParticleEffect {
         protected sourceFactory: (anchor: ParticleAnchor, pps: number) => ParticleSource;
+        protected defaultRate: number;
 
-        constructor(sourceFactory: (anchor: ParticleAnchor, particlesPerSecond: number) => ParticleSource) {
+        constructor(defaultParticlesPerSecond: number, sourceFactory: (anchor: ParticleAnchor, particlesPerSecond: number) => ParticleSource) {
             this.sourceFactory = sourceFactory;
+            this.defaultRate = defaultParticlesPerSecond;
         }
 
         /**
@@ -13,17 +15,17 @@ namespace particles {
          * @param anchor 
          * @param particlesPerSecond 
          */
-        //% blockId=particlesstartanimation block="start %effect effect on %anchor=variables_get(mySprite) at rate %particlesPerSecond p/s"
+        //% blockId=particlesstartanimation block="start %effect effect on %anchor=variables_get(mySprite) || at rate %particlesPerSecond p/s"
         //% particlesPerSecond.defl=20
         //% particlesPerSecond.min=1 particlePerSeconds.max=100
         //% group="Effects"
-        start(anchor: ParticleAnchor, particlesPerSecond: number): void {
+        start(anchor: ParticleAnchor, particlesPerSecond?: number): void {
             if (!this.sourceFactory) return;
-            this.sourceFactory(anchor, particlesPerSecond);
+            this.sourceFactory(anchor, particlesPerSecond ? particlesPerSecond : this.defaultRate);
         }
 
         /**
-         * Destroy the provided sprite with
+         * Destroy the provided sprite with an effect
          * @param sprite
          * @param particlesPerSecond
          * @param lifespan how long the sprite will remain on the screen
@@ -35,7 +37,7 @@ namespace particles {
         //% group="Effects"
         destroy(anchor: Sprite, particlesPerSecond: number, lifespan: number = 500) {
             anchor.setFlag(SpriteFlag.Ghost, true);
-            this.sourceFactory(anchor, particlesPerSecond);
+            this.start(anchor, particlesPerSecond);
             anchor.lifespan = lifespan;
             dissolveSprite(anchor);
         }
@@ -93,23 +95,25 @@ namespace particles {
     //% fixedInstances
     export class SceneEffect extends ParticleEffect {
         protected source: ParticleSource;
+        protected sceneDefaultRate: number;
 
-        constructor(sourceFactory: (anchor: ParticleAnchor, particlesPerSecond: number) => ParticleSource) {
-            super(sourceFactory);
+        constructor(anchorDefault: number, sceneDefault: number,  sourceFactory: (anchor: ParticleAnchor, particlesPerSecond: number) => ParticleSource) {
+            super(anchorDefault, sourceFactory);
+            this.sceneDefaultRate = sceneDefault;
         }
 
         /**
          * Creates a new effect that occurs over the entire screen
          * @param particlesPerSecond 
          */
-        //% blockId=particlesStartSceneAnimation block="start scene %effect effect at rate %particlesPerSecond p/s"
+        //% blockId=particlesStartSceneAnimation block="start scene %effect effect || at rate %particlesPerSecond p/s"
         //% particlesPerSecond.defl=20
         //% particlesPerSecond.min=1 particlePerSeconds.max=100
         //% group="Effects"
-        startSceneEffect(particlesPerSecond: number): void {
+        startSceneEffect(particlesPerSecond?: number): void {
             if (!this.sourceFactory) return;
             this.endSceneEffect();
-            this.source = this.sourceFactory(new SceneAnchor(), particlesPerSecond);
+            this.source = this.sourceFactory(new SceneAnchor(), particlesPerSecond ? particlesPerSecond : this.sceneDefaultRate);
         }
 
         /**
@@ -140,26 +144,27 @@ namespace particles {
             .forEach(ps => ps.destroy());
     }
 
-    function createEffect(factoryFactory: (anchor?: ParticleAnchor) => ParticleFactory): ParticleEffect {
+    function createEffect(defaultParticlesPerSecond: number, factoryFactory: (anchor?: ParticleAnchor) => ParticleFactory): ParticleEffect {
         const factory = factoryFactory();
         if (!factory) return undefined;
-        return new ParticleEffect((anchor: ParticleAnchor, pps: number) => new ParticleSource(anchor, pps, factory));
+        return new ParticleEffect(defaultParticlesPerSecond,
+                    (anchor: ParticleAnchor, pps: number) => new ParticleSource(anchor, pps, factory));
     }
 
     //% whenUsed
     export const defaultFactory = new SprayFactory(20, 0, 60);
 
     //% fixedInstance whenUsed block="spray"
-    export const spray = createEffect(function () { return new SprayFactory(100, 0, 120) });
+    export const spray = createEffect(20, function () { return new SprayFactory(100, 0, 120) });
 
     //% fixedInstance whenUsed block="trail"
-    export const trail = new ParticleEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
+    export const trail = new ParticleEffect(20, function (anchor: ParticleAnchor, particlesPerSecond: number) {
         const factory = new TrailFactory(anchor, 250, 1000);
         return new ParticleSource(anchor, particlesPerSecond, factory);
     });
 
     //% fixedInstance whenUsed block="fountain"
-    export const fountain = new ParticleEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
+    export const fountain = new ParticleEffect(20, function (anchor: ParticleAnchor, particlesPerSecond: number) {
         class FountainFactory extends SprayFactory {
             galois: Math.FastRandom;
     
@@ -187,14 +192,14 @@ namespace particles {
     });
 
     //% fixedInstance whenUsed block="confetti"
-    export const confetti = new SceneEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
+    export const confetti = new SceneEffect(10, 25, function (anchor: ParticleAnchor, particlesPerSecond: number) {
         const factory = new ConfettiFactory(anchor.width ? anchor.width : 16, 16);
         factory.setSpeed(30);
         return new ParticleSource(anchor, particlesPerSecond, factory);
     });
 
     //% fixedInstance whenUsed block="hearts"
-    export const hearts = new SceneEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
+    export const hearts = new SceneEffect(5, 20, function (anchor: ParticleAnchor, particlesPerSecond: number) {
         const factory = new ShapeFactory(anchor.width ? anchor.width : 16, 16, img`
             . F . F .
             F . F . F
@@ -213,7 +218,7 @@ namespace particles {
     });
 
     //% fixedInstance whenUsed block="smiles"
-    export const smiles = new SceneEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
+    export const smiles = new SceneEffect(5, 25, function (anchor: ParticleAnchor, particlesPerSecond: number) {
         const factory = new ShapeFactory(anchor.width ? anchor.width : 16, 16, img`
             . f . f . 
             . f . f . 
@@ -232,7 +237,7 @@ namespace particles {
     });
 
     //% fixedInstance whenUsed block="rings"
-    export const rings = createEffect(function () {
+    export const rings = createEffect(5, function () {
         return new ShapeFactory(16, 16, img`
             . F F F . 
             F . . . F 
@@ -243,7 +248,7 @@ namespace particles {
     });
 
     //% fixedInstance whenUsed block="fire"
-    export const fire = new ParticleEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
+    export const fire = new ParticleEffect(40, function (anchor: ParticleAnchor, particlesPerSecond: number) {
         const factory = new FireFactory(5);
         const src = new FireSource(anchor, particlesPerSecond, factory);
         src.setAcceleration(0, -20);
@@ -251,13 +256,13 @@ namespace particles {
     });
 
     //% fixedInstance whenUsed block="warm radial"
-    export const warmRadial = createEffect(function () { return new RadialFactory(0, 30, 10) });
+    export const warmRadial = createEffect(40, function () { return new RadialFactory(0, 30, 10) });
 
     //% fixedInstance whenUsed block="cool radial"
-    export const coolRadial = createEffect(function () { return new RadialFactory(0, 30, 10, [0x6, 0x7, 0x8, 0x9, 0xA]) });
+    export const coolRadial = createEffect(40, function () { return new RadialFactory(0, 30, 10, [0x6, 0x7, 0x8, 0x9, 0xA]) });
 
     //% fixedInstance whenUsed block="halo"
-    export const halo = createEffect(function () {
+    export const halo = createEffect(60, function () {
         class RingFactory extends RadialFactory {
             createParticle(anchor: ParticleAnchor) {
                 const p = super.createParticle(anchor);
@@ -269,7 +274,7 @@ namespace particles {
     });
 
     //% fixedInstance whenUsed block="ashes"
-    export const ashes = new ParticleEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
+    export const ashes = new ParticleEffect(100, function (anchor: ParticleAnchor, particlesPerSecond: number) {
         const src = new ParticleSource(anchor, particlesPerSecond, new AshFactory(anchor));
         src.setAcceleration(0, 500);
         src.lifespan = 2000;
@@ -277,7 +282,7 @@ namespace particles {
     });
 
     //% fixedInstance whenUsed block="disintegrate"
-    export const disintegrate = new ParticleEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
+    export const disintegrate = new ParticleEffect(100, function (anchor: ParticleAnchor, particlesPerSecond: number) {
         const factory = new AshFactory(anchor, true, 30);
         factory.minLifespan = 200;
         factory.maxLifespan = 500;
@@ -288,7 +293,7 @@ namespace particles {
     });
 
     //% fixedInstance whenUsed block="blizzard"
-    export const blizzard = new SceneEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
+    export const blizzard = new SceneEffect(15, 50, function (anchor: ParticleAnchor, particlesPerSecond: number) {
         class SnowFactory extends ShapeFactory {
             constructor(xRange: number, yRange: number) {
                 super(xRange, yRange, img`F`);
@@ -314,7 +319,7 @@ namespace particles {
     });
 
     //% fixedInstance whenUsed block="bubbles"
-    export const bubbles = new SceneEffect(function (anchor: ParticleAnchor, particlesPerSecond: number) {
+    export const bubbles = new SceneEffect(15, 30, function (anchor: ParticleAnchor, particlesPerSecond: number) {
         const min = anchor.width > 50 ? 2000 : 500;
         const factory = new BubbleFactory(anchor, min, min * 2.5);
         return new BubbleSource(anchor, particlesPerSecond, factory.stateCount - 1, factory);
