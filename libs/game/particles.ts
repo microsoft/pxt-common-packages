@@ -266,6 +266,9 @@ namespace particles {
         }
     }
 
+    //% whenUsed
+    export const defaultFactory = new particles.SprayFactory(20, 0, 60);
+
     /**
      * Creates a new source of particles attached to a sprite
      * @param sprite 
