@@ -58,9 +58,6 @@ namespace game {
     }
 
     export function popScene() {
-        if (_scene)
-            _scene.destroy();
-
         if (_sceneStack && _sceneStack.length) {
             // pop scenes from the stack
             _scene = _sceneStack.pop();
@@ -139,8 +136,10 @@ namespace game {
 
         // releasing memory and clear fibers. Do not add anything that releases the fiber until background is set below,
         // or screen will be cleared on the new frame and will not appear as background in the game over screen.
-        while (_sceneStack && _sceneStack.length)
+        while (_sceneStack && _sceneStack.length) {
+            _scene.destroy();
             popScene();
+        }
         pushScene();
         scene.setBackgroundImage(screen.clone());
 

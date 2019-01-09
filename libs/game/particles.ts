@@ -4,7 +4,7 @@ namespace particles {
         destroyed = 1 << 1,
     }
 
-    const MAX_SOURCES = 10; // maximum count of sources before removing previous sources
+    const MAX_SOURCES = 7; // maximum count of sources before removing previous sources
     const TIME_PRECISION = 10; // time goes down to down to the 1<<10 seconds
     let lastUpdate: number;
 
