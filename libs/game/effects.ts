@@ -57,6 +57,9 @@ namespace effects {
         //% group="Images"
         startSceneEffect(times?: number, delay?: number): void {
             times = times ? times : 15;
+
+            // fill in colors so that the effects apply to entire background
+            scene.backgroundImage().replace(0, scene.backgroundColor());
             control.runInParallel(() => {
                 for (let i = 0; i < times; ++i) {
                     this.change(scene.backgroundImage());
