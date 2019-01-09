@@ -108,7 +108,7 @@ namespace effects {
         endSceneEffect(): void {
             if (this.source) {
                 this.source.destroy();
-                this.source = null;
+                this.source = undefined;
             }
         }
     }

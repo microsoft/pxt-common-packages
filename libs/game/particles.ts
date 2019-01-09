@@ -169,6 +169,7 @@ namespace particles {
         }
 
         _prune() {
+            if (!this) return;
             while (this.head && this.head.lifespan <= 0) {
                 this.head = this.head.next;
             }
@@ -178,7 +179,7 @@ namespace particles {
                 const sources = particleSources();
                 sources.removeElement(this);
                 scene.allSprites.removeElement(this);
-                this.anchor == null;
+                this.anchor == undefined;
             }
 
             let current = this.head;
