@@ -95,8 +95,7 @@ namespace effects {
             if (!this.sourceFactory || (this.source && this.source.enabled))
                 return;
 
-            if (this.source)
-                this.endSceneEffect();
+            this.endSceneEffect();
             this.source = this.sourceFactory(new SceneAnchor(), particlesPerSecond ? particlesPerSecond : this.sceneDefaultRate);
         }
 

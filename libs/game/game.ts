@@ -159,7 +159,7 @@ namespace game {
                     screen.printCenter("HI" + info.highScore(), top + 34, screen.isMono ? 1 : 2, image.font8);
                 }
             }
-        })
+        });
 
         pause(2000); // wait for users to stop pressing keys
         waitAnyButton();

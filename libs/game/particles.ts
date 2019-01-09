@@ -173,7 +173,7 @@ namespace particles {
                 this.head = this.head.next;
             }
 
-            if ((this.flags & Flag.destroyed) && this.head == null) {
+            if ((this.flags & Flag.destroyed) && !this.head) {
                 const scene = game.currentScene();
                 const sources = particleSources();
                 sources.removeElement(this);
