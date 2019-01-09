@@ -243,11 +243,11 @@ class Sprite implements SpriteLike {
 
         // If just a small change to the hitbox, don't change the hitbox
         // Used for things like walking animations
-        if (Math.abs(minXDiff) + Math.abs(maxXDiff) <= 2) {
+        if (oMaxX != oMinX && Math.abs(minXDiff) + Math.abs(maxXDiff) <= 2) {
             this._hitbox.ox = oMinX;
             this._hitbox.width = oMaxX - oMinX;
         }
-        if (Math.abs(minYDiff) + Math.abs(maxYDiff) <= 2) {
+        if (oMaxY != oMinY && Math.abs(minYDiff) + Math.abs(maxYDiff) <= 2) {
             this._hitbox.oy = oMinY;
             this._hitbox.height = oMaxY - oMinY;
         }
