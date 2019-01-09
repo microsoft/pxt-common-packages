@@ -92,8 +92,11 @@ namespace effects {
         //% blockId=particlesStartSceneAnimation block="start scene %effect effect || at rate %particlesPerSecond p/s"
         //% group="Particles"
         startSceneEffect(particlesPerSecond?: number): void {
-            if (!this.sourceFactory || this.source) return;
-            this.endSceneEffect();
+            if (!this.sourceFactory || (this.source && this.source.enabled))
+                return;
+
+            if (this.source)
+                this.endSceneEffect();
             this.source = this.sourceFactory(new SceneAnchor(), particlesPerSecond ? particlesPerSecond : this.sceneDefaultRate);
         }
 

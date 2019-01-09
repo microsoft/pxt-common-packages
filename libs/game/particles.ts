@@ -4,6 +4,7 @@ namespace particles {
         destroyed = 1 << 1,
     }
 
+    const MAX_SOURCES = 10; // maximum count of sources before removing previous sources
     const TIME_PRECISION = 10; // time goes down to down to the 1<<10 seconds
     let lastUpdate: number;
 
@@ -307,9 +308,15 @@ namespace particles {
 
     function pruneParticles() {
         const sources = particleSources();
-        for (let i = 0; i < sources.length; i++) {
-            sources[i]._prune();
+
+        // remove and immediately destroy old sources until at or below MAX_SOURCES
+        while (sources.length > MAX_SOURCES) {
+            const removedSource = sources.shift();
+            removedSource.clear();
+            removedSource.destroy();
         }
+
+        sources.forEach(s => s._prune());
     }
 
     /**
