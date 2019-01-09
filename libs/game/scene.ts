@@ -127,5 +127,23 @@ namespace scene {
             this.allSprites.push(sprite);
             sprite.id = this.spriteNextId++;
         }
+
+        _clearScene() {
+            this.eventContext = undefined;
+            this.menuState = undefined;
+            this.background = undefined;
+            this.tileMap = undefined;
+            this.allSprites = undefined;
+            this.spriteNextId = undefined;
+            this.spritesByKind = undefined;
+            this.physicsEngine = undefined;
+            this.camera = undefined;
+            this.flags = undefined;
+            this.destroyedHandlers = undefined;
+            this.createdHandlers = undefined;
+            this.overlapHandlers = undefined;
+            this.collisionHandlers = undefined;
+            this._data = undefined;
+        }
     }
 }

@@ -58,6 +58,7 @@ namespace game {
     }
 
     export function popScene() {
+        _scene._clearScene();
         if (_sceneStack && _sceneStack.length) {
             // pop scenes from the stack
             _scene = _sceneStack.pop();
@@ -134,13 +135,12 @@ namespace game {
         // one last screenshot
         takeScreenshot();
 
-        // releasing memory and clear fibers. Do not add anything that releases fiber until have background is set below,
-        // or background image will be cleared and not appear on game over screen.
-        const background = screen;
+        // releasing memory and clear fibers. Do not add anything that releases the fiber until background is set below,
+        // or screen will be cleared on the new frame and will not appear as background in the game over screen.
         while (_sceneStack && _sceneStack.length)
             popScene();
         pushScene();
-        scene.setBackgroundImage(background.clone());
+        scene.setBackgroundImage(screen.clone());
 
         if (gameOverSound) gameOverSound();
         chosenEffect.startSceneEffect();
