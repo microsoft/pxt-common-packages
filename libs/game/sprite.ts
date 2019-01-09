@@ -542,7 +542,7 @@ class Sprite implements SpriteLike {
      * @param effect the type of effect to create
      */
     //% group="Properties"
-    //% blockId=startEffectOnSprite block="on %sprite(mySprite) start %effect effect"
+    //% blockId=startEffectOnSprite block="%sprite(mySprite) start %effect effect"
     startEffect(effect: effects.ParticleEffect) {
         effect.start(this);
     }
