@@ -5,11 +5,13 @@
 //% groups='["Gameplay", "Prompt"]'
 namespace game {
     /**
-     * Determins if diagnostics are shown
+     * Determines if diagnostics are shown
      */
     export let debug = false;
     export let stats = false;
     export let gameOverSound: () => void = undefined;
+    export let winEffect: effects.BackgroundEffect = undefined;
+    export let loseEffect: effects.BackgroundEffect = undefined;
 
     let _scene: scene.Scene;
     let _sceneStack: scene.Scene[];
@@ -39,10 +41,16 @@ namespace game {
     function init() {
         if (!_scene) _scene = new scene.Scene(control.pushEventContext());
         _scene.init();
+
+        if (!winEffect)
+            winEffect = effects.confetti;
+        if (!loseEffect)
+            loseEffect = effects.melt;
     }
 
     export function pushScene() {
         init();
+        particles.clearAll();
         if (!_sceneStack) _sceneStack = [];
         _sceneStack.push(_scene);
         _scene = undefined;
@@ -95,17 +103,20 @@ namespace game {
         }
     }
 
-    function meltScreen() {
-        for (let i = 0; i < 10; ++i) {
-            for (let j = 0; j < 1000; ++j) {
-                let x = Math.randomRange(0, screen.width - 1)
-                let y = Math.randomRange(0, screen.height - 3)
-                let c = screen.getPixel(x, y)
-                screen.setPixel(x, y + 1, c)
-                screen.setPixel(x, y + 2, c)
-            }
-            pause(100)
-        }
+    /**
+     * Set the effect that occurs when the game is over
+     * @param win whether the animation should run on a win (true)
+     * @param effect
+     */
+    //% group="Gameplay"
+    //% blockId=setGameOverEffect block="set game over effect for win %win=toggleYesNo to %effect"
+    export function setGameOverEffect(win: boolean, effect: effects.BackgroundEffect) {
+        init();
+        if (!effect) return;
+        if (win)
+            winEffect = effect;
+        else
+            loseEffect = effect;
     }
 
     /**
@@ -116,21 +127,31 @@ namespace game {
     //% weight=80 help=game/over
     export function over(win: boolean = false) {
         init();
-        if (__isOver) return
+        if (__isOver) return;
         __isOver = true;
-        // clear all handlers
-        control.pushEventContext();
-        // register system menu again
-        scene.systemMenu.register();
+        let chosenEffect = win ? winEffect : loseEffect;
+
         // one last screenshot
         takeScreenshot();
-        control.runInParallel(() => {
-            if (gameOverSound) gameOverSound();
-            meltScreen();
-            let top = showDialogBackground(44, 4)
-            screen.printCenter(win ? "YOU WIN!" : "GAME OVER!", top + 8, screen.isMono ? 1 : 5, image.font8)
+
+        // releasing memory and clear fibers. Do not add anything that releases the fiber until background is set below,
+        // or screen will be cleared on the new frame and will not appear as background in the game over screen.
+        while (_sceneStack && _sceneStack.length) {
+            _scene.destroy();
+            popScene();
+        }
+        pushScene();
+        scene.setBackgroundImage(screen.clone());
+
+        if (gameOverSound) gameOverSound();
+        chosenEffect.startSceneEffect();
+        pause(500);
+
+        game.eventContext().registerFrameHandler(95, () => {
+            let top = showDialogBackground(46, 4);
+            screen.printCenter(win ? "YOU WIN!" : "GAME OVER!", top + 8, screen.isMono ? 1 : 5, image.font8);
             if (info.hasScore()) {
-                screen.printCenter("Score:" + info.score(), top + 23, screen.isMono ? 1 : 2, image.font8)
+                screen.printCenter("Score:" + info.score(), top + 23, screen.isMono ? 1 : 2, image.font8);
                 if (info.score() > info.highScore()) {
                     info.saveHighScore();
                     screen.printCenter("New High Score!", top + 34, screen.isMono ? 1 : 2, image.font5);
@@ -138,10 +159,11 @@ namespace game {
                     screen.printCenter("HI" + info.highScore(), top + 34, screen.isMono ? 1 : 2, image.font8);
                 }
             }
-            pause(2000) // wait for users to stop pressing keys
-            waitAnyButton()
-            control.reset()
-        })
+        });
+
+        pause(2000); // wait for users to stop pressing keys
+        waitAnyButton();
+        control.reset();
     }
 
     /**

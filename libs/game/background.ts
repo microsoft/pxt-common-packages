@@ -32,8 +32,9 @@ namespace scene {
         }
 
         get image() {
-            if (!this._image)
+            if (!this._image) {
                 this._image = image.create(screen.width, screen.height);
+            }
             return this._image;
         }
         
@@ -41,10 +42,14 @@ namespace scene {
             this._image = image;
         }
 
+        hasBackgroundImage(): boolean {
+            return !!this._image;
+        }
+
         render() {
             screen.fill(this.color);
             if (this._image)
-                screen.drawImage(this._image, 0, 0)
+                screen.drawTransparentImage(this._image, 0, 0)
             if (this._layers) {
                 this._layers.forEach(layer => {
                     // compute displacement based on distance

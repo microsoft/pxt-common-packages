@@ -32,7 +32,6 @@
         "libs/jacdac-drivers",
         "libs/jacdac-game",
         "libs/datalogger",
-        "libs/particles",
         "libs/local-multiplayer"
     ]
 }

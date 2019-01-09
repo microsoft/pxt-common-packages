@@ -509,6 +509,16 @@ class Sprite implements SpriteLike {
     }
 
     /**
+     * Start an effect on this sprite
+     * @param effect the type of effect to create
+     */
+    //% group="Properties"
+    //% blockId=startEffectOnSprite block="%sprite(mySprite) start %effect effect"
+    startEffect(effect: effects.ParticleEffect) {
+        effect.start(this);
+    }
+
+    /**
      * Indicates if the sprite is outside the screen
      */
     //%
@@ -704,11 +714,17 @@ class Sprite implements SpriteLike {
      */
     //% group="Lifecycle"
     //% weight=10
-    //% blockId=spritedestroy block="destroy %sprite(mySprite)"
+    //% blockId=spritedestroy block="destroy %sprite(mySprite) || with %effect effect"
     //% help=sprites/sprite/destroy
-    destroy() {
+    destroy(effect?: effects.ParticleEffect) {
         if (this.flags & sprites.Flag.Destroyed)
-            return
+            return;
+        
+        if (effect) {
+            effect.destroy(this);
+            return;
+        }
+
         this.flags |= sprites.Flag.Destroyed
         const scene = game.currentScene();
         // When current sprite is destroyed, destroys sayBubbleSprite if defined

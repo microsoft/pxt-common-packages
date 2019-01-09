@@ -68,8 +68,6 @@ namespace sprites {
     export function createProjectileFromSide(img: Image, vx: number, vy: number) {
         return createProjectile(img, vx, vy, 1);
     }
-
-
     
     /**
      * Create a new sprite with given speed, and place it at the edge of the screen so it moves towards the middle.
