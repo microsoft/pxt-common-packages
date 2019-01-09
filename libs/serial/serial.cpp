@@ -178,6 +178,9 @@ namespace serial {
     /**
     Set the baud rate of the serial port
     */
+    //% weight=10
+    //% blockId=serial_setbaudrate block="serial|set baud rate %rate"
+    //% blockGap=8 inlineInputMode=inline
     //% help=serial/set-baud-rate
     //% group="Configuration"
     void setBaudRate(BaudRate rate) {
