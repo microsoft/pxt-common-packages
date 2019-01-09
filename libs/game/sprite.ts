@@ -530,8 +530,8 @@ class Sprite implements SpriteLike {
     __draw(camera: scene.Camera) {
         if (this.isOutOfScreen(camera)) return;
 
-        const l = this.left - camera.offsetX;
-        const t = this.top - camera.offsetY;
+        const l = Fx.toIntShifted(this._x, 0) - camera.offsetX;
+        const t = Fx.toIntShifted(this._y, 0) - camera.offsetY;
         screen.drawTransparentImage(this._image, l, t)
 
         if (this.flags & SpriteFlag.ShowPhysics) {
