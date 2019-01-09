@@ -128,7 +128,7 @@ namespace scene {
             sprite.id = this.spriteNextId++;
         }
 
-        _clearScene() {
+        destroy() {
             this.eventContext = undefined;
             this.menuState = undefined;
             this.background = undefined;

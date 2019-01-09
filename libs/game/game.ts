@@ -58,7 +58,9 @@ namespace game {
     }
 
     export function popScene() {
-        _scene._clearScene();
+        if (_scene)
+            _scene.destroy();
+
         if (_sceneStack && _sceneStack.length) {
             // pop scenes from the stack
             _scene = _sceneStack.pop();
