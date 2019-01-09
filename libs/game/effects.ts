@@ -56,6 +56,7 @@ namespace effects {
          * @param delay delay between instances of the effect
          */
         //% blockId=particleEffectStartScene block="apply %effect effect to background || %times times"
+        //% times.defl=15
         //% group="Images"
         startSceneEffect(times?: number, delay?: number): void {
             if (!game.currentScene().background.hasBackgroundImage()) return;

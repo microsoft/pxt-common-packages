@@ -85,8 +85,6 @@ namespace effects {
          * @param particlesPerSecond 
          */
         //% blockId=particlesStartSceneAnimation block="start scene %effect effect || at rate %particlesPerSecond p/s"
-        //% particlesPerSecond.defl=20
-        //% particlesPerSecond.min=1 particlePerSeconds.max=100
         //% group="Particles"
         startSceneEffect(particlesPerSecond?: number): void {
             if (!this.sourceFactory || this.source) return;
