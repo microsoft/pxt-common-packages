@@ -56,10 +56,9 @@ namespace effects {
         //% blockId=particleEffectStartScene block="apply %effect effect to background || %times times"
         //% group="Images"
         startSceneEffect(times?: number, delay?: number): void {
+            if (!game.currentScene().background.hasBackgroundImage()) return;
             times = times ? times : 15;
 
-            // fill in colors so that the effects apply to entire background
-            scene.backgroundImage().replace(0, scene.backgroundColor());
             control.runInParallel(() => {
                 for (let i = 0; i < times; ++i) {
                     this.change(scene.backgroundImage());
@@ -70,8 +69,8 @@ namespace effects {
     }
 
     //% fixedInstance whenUsed block="dissolve"
-    export const dissolve = new ImageEffect(25, (input: Image, r: Math.FastRandom) => {
-        for (let i = (input.width * input.height) >> 4; i > 0; --i) {
+    export const dissolve = new ImageEffect(100, (input: Image, r: Math.FastRandom) => {
+        for (let i = (input.width * input.height) >> 5; i > 0; --i) {
             const x = r.randomRange(0, input.width)
             const y = r.randomRange(0, input.height)
             const w = r.randomRange(1, 3);
@@ -83,7 +82,7 @@ namespace effects {
 
     //% fixedInstance whenUsed block="melt"
     export const melt = new ImageEffect(125, (input: Image, r: Math.FastRandom) => {
-        const rounds = (input.width * input.height) >> 4;
+        const rounds = (input.width * input.height) >> 5;
         for (let j = 0; j < rounds; ++j) {
             let x = r.randomRange(0, input.width - 1)
             let y = r.randomRange(0, input.height - 3)

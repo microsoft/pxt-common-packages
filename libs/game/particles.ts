@@ -222,6 +222,13 @@ namespace particles {
         }
 
         /**
+         * Clear all particles emitted from this source
+         */
+        clear() {
+            this.head = undefined;
+        }
+
+        /**
          * Set a anchor for particles to be emitted from
          * @param anchor
          */
@@ -359,6 +366,12 @@ namespace particles {
                 p.vx = Fx.neg(p.vx);
             }
         }
+    }
+
+    export function clearAll() {
+        const sources = particleSources();
+        if (sources)
+            sources.forEach(s => s.clear());
     }
 
     function particleSources() {

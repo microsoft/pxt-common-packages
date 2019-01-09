@@ -48,6 +48,7 @@ namespace game {
 
     export function pushScene() {
         init();
+        particles.clearAll();
         if (!_sceneStack) _sceneStack = [];
         _sceneStack.push(_scene);
         _scene = undefined;
@@ -131,7 +132,8 @@ namespace game {
         let background = screen.clone();
         // one last screenshot
         takeScreenshot();
-        
+
+        popScene();
         pushScene();
         scene.setBackgroundImage(background);
 

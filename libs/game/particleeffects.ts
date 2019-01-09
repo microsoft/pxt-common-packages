@@ -232,13 +232,13 @@ namespace effects {
     });
 
     //% fixedInstance whenUsed block="warm radial"
-    export const warmRadial = createEffect(40, function () { return new particles.RadialFactory(0, 30, 10) });
+    export const warmRadial = createEffect(30, function () { return new particles.RadialFactory(0, 30, 10) });
 
     //% fixedInstance whenUsed block="cool radial"
-    export const coolRadial = createEffect(40, function () { return new particles.RadialFactory(0, 30, 10, [0x6, 0x7, 0x8, 0x9, 0xA]) });
+    export const coolRadial = createEffect(30, function () { return new particles.RadialFactory(0, 30, 10, [0x6, 0x7, 0x8, 0x9, 0xA]) });
 
     //% fixedInstance whenUsed block="halo"
-    export const halo = createEffect(60, function () {
+    export const halo = createEffect(40, function () {
         class RingFactory extends particles.RadialFactory {
             createParticle(anchor: particles.ParticleAnchor) {
                 const p = super.createParticle(anchor);
@@ -250,7 +250,7 @@ namespace effects {
     });
 
     //% fixedInstance whenUsed block="ashes"
-    export const ashes = new ParticleEffect(100, function (anchor: particles.ParticleAnchor, particlesPerSecond: number) {
+    export const ashes = new ParticleEffect(60, function (anchor: particles.ParticleAnchor, particlesPerSecond: number) {
         const factory = new particles.AshFactory(anchor);
         const src = new particles.ParticleSource(anchor, particlesPerSecond, factory);
         src.setAcceleration(0, 500);
@@ -259,7 +259,7 @@ namespace effects {
     });
 
     //% fixedInstance whenUsed block="disintegrate"
-    export const disintegrate = new ParticleEffect(100, function (anchor: particles.ParticleAnchor, particlesPerSecond: number) {
+    export const disintegrate = new ParticleEffect(60, function (anchor: particles.ParticleAnchor, particlesPerSecond: number) {
         const factory = new particles.AshFactory(anchor, true, 30);
         factory.minLifespan = 200;
         factory.maxLifespan = 500;

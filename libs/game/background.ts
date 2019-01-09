@@ -42,6 +42,10 @@ namespace scene {
             this._image = image;
         }
 
+        hasBackgroundImage(): boolean {
+            return !!this._image;
+        }
+
         render() {
             screen.fill(this.color);
             if (this._image)
