@@ -20,7 +20,7 @@ declare namespace serial {
     function setTxBufferSize(size: uint8): void;
 
     /**
-     * Reads a single byte from the serial receive buffer. Negative if error.
+     * Reads a single byte from the serial receive buffer. Negative if error, 0 if no data.
      */
     //% Group="Read" shim=serial::read
     function read(): int32;
