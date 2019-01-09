@@ -241,24 +241,15 @@ class Sprite implements SpriteLike {
         const maxXDiff = oMaxX - nMaxX;
         const maxYDiff = oMaxY - nMaxY;
 
-        const scene = game.currentScene();
-        const tmap = scene.tileMap;
-
-        if (tmap && tmap.enabled && this.width <= 16 && this.height <= 16) {
-            const l = (nMinX + this.left) >> 4;
-            const r = (nMaxX + this.left) >> 4;
-            const t = (nMinY + this.top) >> 4;
-            const b = (nMaxY + this.top) >> 4;
-
-            if (tmap.isObstacle(l, t) && (minXDiff > 0 || minYDiff > 0)) {
-                scene.physicsEngine.moveSprite(this, scene.tileMap, Fx8(minXDiff), Fx8(minYDiff));
-            } else if (tmap.isObstacle(r, t) && (maxXDiff < 0 || minYDiff > 0)) {
-                scene.physicsEngine.moveSprite(this, scene.tileMap, Fx8(maxXDiff), Fx8(minYDiff));
-            } else if (tmap.isObstacle(l, b) && (minXDiff > 0 || maxYDiff < 0)) {
-                scene.physicsEngine.moveSprite(this, scene.tileMap, Fx8(minXDiff), Fx8(maxYDiff));
-            } else if (tmap.isObstacle(r, b) && (maxXDiff < 0 || maxYDiff < 0)) {
-                scene.physicsEngine.moveSprite(this, scene.tileMap, Fx8(maxXDiff), Fx8(maxYDiff));
-            }
+        // If just a small change to the hitbox, don't change the hitbox
+        // Used for things like walking animations
+        if (Math.abs(minXDiff) + Math.abs(maxXDiff) <= 2) {
+            this._hitbox.ox = oMinX;
+            this._hitbox.width = oMaxX - oMinX;
+        }
+        if (Math.abs(minYDiff) + Math.abs(maxYDiff) <= 2) {
+            this._hitbox.oy = oMinY;
+            this._hitbox.height = oMaxY - oMinY;
         }
     }
 
