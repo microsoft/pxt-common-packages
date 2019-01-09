@@ -70,7 +70,7 @@ namespace effects {
     }
 
     //% fixedInstances
-    export class SceneEffect extends ParticleEffect {
+    export class SceneEffect extends ParticleEffect implements BackgroundEffect {
         protected source: particles.ParticleSource;
         protected sceneDefaultRate: number;
 

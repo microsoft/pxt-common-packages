@@ -5,15 +5,13 @@
 //% groups='["Gameplay", "Prompt"]'
 namespace game {
     /**
-     * Determins if diagnostics are shown
+     * Determines if diagnostics are shown
      */
     export let debug = false;
     export let stats = false;
     export let gameOverSound: () => void = undefined;
-    // export let winEffect: effects.ImageEffect | effects.SceneEffect = undefined; // see setGameOverEffect
-    // export let loseEffect: effects.ImageEffect | effects.SceneEffect = undefined;
-    let winEffect: () => void = undefined;
-    let loseEffect: () => void = undefined;
+    export let winEffect: effects.BackgroundEffect = undefined;
+    export let loseEffect: effects.BackgroundEffect = undefined;
 
     let _scene: scene.Scene;
     let _sceneStack: scene.Scene[];
@@ -44,10 +42,8 @@ namespace game {
         if (!_scene) _scene = new scene.Scene(control.pushEventContext());
         _scene.init();
 
-        // if (!winEffect) winEffect = effects.confetti;// see setGameOverEffect
-        // if (!loseEffect) loseEffect = effects.hearts;
-        if (!winEffect) winEffect = () => effects.confetti.startSceneEffect();
-        if (!loseEffect) loseEffect = () => effects.melt.startSceneEffect();
+        if (!winEffect) winEffect = effects.confetti;
+        if (!loseEffect) loseEffect = effects.melt;
     }
 
     export function pushScene() {
@@ -112,13 +108,12 @@ namespace game {
     //% group="Gameplay"
     //% blockId=setGameOverEffect block="set game over effect for win %win=toggleYesNo to %effect"
     export function setGameOverEffect(win: boolean, effect: effects.SceneEffect) {
-        // loosen to take an interface reqing startSceneEffect when https://github.com/Microsoft/pxt-arcade/issues/515 fixed
         init();
         if (!effect) return;
         if (win)
-            winEffect = () => effect.startSceneEffect();
+            winEffect = effect;
         else
-            loseEffect = () => effect.startSceneEffect();
+            loseEffect = effect;
     }
 
     /**
@@ -137,15 +132,12 @@ namespace game {
         // one last screenshot
         takeScreenshot();
         
-        // clear all handlers
-        _scene = undefined;
-        init();
+        pushScene();
         scene.setBackgroundImage(background);
 
         control.runInParallel(() => {
             if (gameOverSound) gameOverSound();
-            // chosenEffect.startSceneEffect(); // see setGameOverEffect
-            chosenEffect();
+            chosenEffect.startSceneEffect();
 
             game.eventContext().registerFrameHandler(95, () => {
                 let top = showDialogBackground(46, 4);
@@ -163,6 +155,7 @@ namespace game {
 
             pause(2000); // wait for users to stop pressing keys
             waitAnyButton();
+            popScene();
             control.reset();
         })
     }

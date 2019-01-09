@@ -748,7 +748,7 @@ class Sprite implements SpriteLike {
      */
     //% group="Lifecycle"
     //% weight=10
-    //% blockId=spritedestroy block="destroy %sprite(mySprite) || with %effect"
+    //% blockId=spritedestroy block="destroy %sprite(mySprite) || with %effect effect"
     //% help=sprites/sprite/destroy
     destroy(effect?: effects.ParticleEffect) {
         if (this.flags & sprites.Flag.Destroyed)

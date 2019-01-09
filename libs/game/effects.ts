@@ -6,8 +6,12 @@
 //% advanced=true
 namespace effects {
 
+    export interface BackgroundEffect {
+        startSceneEffect(): void;
+    }
+
     //% fixedInstances
-    export class ImageEffect {
+    export class ImageEffect implements BackgroundEffect {
 
         // If used in an animation, this should be used as the default delay between method calls
         protected preferredDelay: number;
