@@ -14,6 +14,16 @@ void platform_init() {
     initRandomSeed();
     setSendToUART(platformSendSerial);
 
+    auto neopix = LOOKUP_PIN(NEOPIXEL);
+    if (neopix && ZSPI::isValidMOSIPin(*neopix)) {
+        auto num = getConfig(CFG_NUM_NEOPIXELS, 0);
+        if (num) {
+            uint8_t off[3 * num];
+            memset(off, 0, sizeof(off));
+            pxt::spiNeopixelSendBuffer(neopix, off, sizeof(off));
+        }
+    }
+
     /*
         if (*HF2_DBG_MAGIC_PTR == HF2_DBG_MAGIC_START) {
             *HF2_DBG_MAGIC_PTR = 0;

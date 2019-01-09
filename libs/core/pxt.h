@@ -41,6 +41,10 @@ using namespace codal;
 #endif
 #endif
 
+#ifndef NEOPIXEL_SPI
+#define NEOPIXEL_SPI 1
+#endif
+
 namespace pxt {
 
 #if CONFIG_ENABLED(DEVICE_USB)
@@ -62,6 +66,12 @@ extern Event lastEvent;
 extern CODAL_TIMER devTimer;
 extern MessageBus devMessageBus;
 extern codal::CodalDevice device;
+
+
+#if NEOPIXEL_SPI
+void spiNeopixelSendBuffer(DigitalInOutPin pin, const uint8_t *data, unsigned size);
+#endif
+
 } // namespace pxt
 
 namespace jacdac {
