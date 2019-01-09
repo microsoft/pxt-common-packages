@@ -45,7 +45,7 @@ namespace scene {
         render() {
             screen.fill(this.color);
             if (this._image)
-                screen.drawImage(this._image, 0, 0)
+                screen.drawTransparentImage(this._image, 0, 0)
             if (this._layers) {
                 this._layers.forEach(layer => {
                     // compute displacement based on distance
