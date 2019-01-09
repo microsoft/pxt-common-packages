@@ -19,6 +19,7 @@ namespace effects {
          * @param particlesPerSecond 
          */
         //% blockId=particlesstartanimation block="start %effect effect on %anchor=variables_get(mySprite) || for %pause=timePicker|ms at rate %particlesPerSecond p/s"
+        //% expandableArgumentMode="toggle";
         //% group="Particles"
         start(anchor: particles.ParticleAnchor, duration?: number, particlesPerSecond?: number): void {
             if (!this.sourceFactory) return;
@@ -33,6 +34,7 @@ namespace effects {
          * @param lifespan how long the sprite will remain on the screen
          */
         //% blockId=particlesDestroySpriteWithAnimation block="use %effect effect to destroy %anchor=variables_get(mySprite) || for %pause=timePicker|ms at rate %particlesPerSecond"
+        //% expandableArgumentMode="toggle";
         //% lifespan.defl=500
         //% group="Particles"
         destroy(anchor: Sprite, duration?: number, particlesPerSecond?: number) {
