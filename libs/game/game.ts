@@ -130,15 +130,17 @@ namespace game {
         if (__isOver) return;
         __isOver = true;
         let chosenEffect = win ? winEffect : loseEffect;
-        
-        let background = screen.clone();
+
         // one last screenshot
         takeScreenshot();
 
+        // releasing memory and clear fibers. Do not add anything that releases fiber until have background is set below,
+        // or background image will be cleared and not appear on game over screen.
+        const background = screen;
         while (_sceneStack && _sceneStack.length)
             popScene();
         pushScene();
-        scene.setBackgroundImage(background);
+        scene.setBackgroundImage(background.clone());
 
         if (gameOverSound) gameOverSound();
         chosenEffect.startSceneEffect();

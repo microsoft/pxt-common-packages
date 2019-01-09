@@ -89,7 +89,7 @@ namespace effects {
         //% particlesPerSecond.min=1 particlePerSeconds.max=100
         //% group="Particles"
         startSceneEffect(particlesPerSecond?: number): void {
-            if (!this.sourceFactory) return;
+            if (!this.sourceFactory || this.source) return;
             this.endSceneEffect();
             this.source = this.sourceFactory(new SceneAnchor(), particlesPerSecond ? particlesPerSecond : this.sceneDefaultRate);
         }

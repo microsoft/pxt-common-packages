@@ -372,8 +372,7 @@ namespace particles {
         const sources = particleSources();
         if (sources) {
             sources.forEach(s => {
-                s.clear()
-                s.destroy();
+                s.clear();
             });
             pruneParticles();
         }
