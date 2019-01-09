@@ -29,7 +29,7 @@ namespace effects {
          * @param particlesPerSecond
          * @param lifespan how long the sprite will remain on the screen
          */
-        //% blockId=particlesDestroySpriteWithAnimation block="use %effect effect to destroy %anchor=variables_get(mySprite)|| at rate %particlesPerSecond with lifespan %lifespan"
+        //% blockId=particlesDestroySpriteWithAnimation block="use %effect effect to destroy %anchor=variables_get(mySprite) || at rate %particlesPerSecond with lifespan %lifespan"
         //% lifespan.defl=500
         //% group="Particles"
         destroy(anchor: Sprite, particlesPerSecond?: number, lifespan: number = 500) {
