@@ -100,16 +100,22 @@ namespace serial {
     }
 
     /**
-    * Reads a single byte from the serial receive buffer. Negative if error.
+    * Reads a single byte from the serial receive buffer. Negative if error, 0 if no data.
+    * @param asyncRead false to sleep until data arrived; otherwise returns immediately
     */
     //% Group="Read"
     int read() {
       auto service = getWSerial();
-      if (!service) return DEVICE_NO_DATA;
+      if (!service) return DEVICE_NOT_SUPPORTED;
 
       uint8_t buf[1];
-      auto r = service->serial.read(buf, 1);
-      return r < 0 ? r : buf[0];
+      auto r = service->serial.read(buf, 1, codal::SerialMode::ASYNC);
+      // r < 0 => error
+      if (r < 0) return r;
+      // r == 0, nothing read
+      if (r == 0) return DEVICE_NO_DATA;
+      // read 1 char
+      return buf[0];
     }
 
     /**

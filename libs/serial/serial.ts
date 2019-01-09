@@ -55,11 +55,14 @@ namespace serial {
         let r = "";
         let buf = control.createBuffer(3);
         let bufi = 0;
-        do {
+        while(timeOut === undefined || (control.millis() - start > timeOut)) {
             const c = serial.read();
-            if (c < 0) // error -- return what we have so far
+            if (c == DAL.DEVICE_NO_DATA) { // no data, sleep and try again
+                pause(1);
+                continue;
+            }
+            else if (c < 0) // error -- return what we have so far
                 break;
-
             // store in temp buffer
             buf[bufi++] = c;
             // commit completed letter
@@ -80,8 +83,7 @@ namespace serial {
                     break;
                 }
             }
-        } while (timeOut === undefined || (control.millis() - start > timeOut));
-
+        }
         return r;
     }
 

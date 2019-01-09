@@ -1,7 +1,7 @@
 // Auto-generated. Do not edit.
 
 
-declare const enum BaudRate {
+    declare const enum BaudRate {
     //% block=115200
     BaudRate115200 = 115200,
     //% block=57600
