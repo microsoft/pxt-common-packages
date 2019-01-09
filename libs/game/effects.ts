@@ -18,11 +18,13 @@ namespace effects {
         protected preferredDelay: number;
         protected effect: (image: Image, fastRandom ?: Math.FastRandom) => void;
         protected fastRandom: Math.FastRandom;
+        private sceneIsRunning: boolean;
 
         constructor(defaultRate: number, effectFactory: (image: Image, fastRandom ?: Math.FastRandom) => void) {
             this.effect = effectFactory;
             this.fastRandom = new Math.FastRandom();
             this.preferredDelay = defaultRate;
+            this.sceneIsRunning = false;
         }
 
         /**
@@ -60,10 +62,13 @@ namespace effects {
             times = times ? times : 15;
 
             control.runInParallel(() => {
+                pauseUntil(() => !this.sceneIsRunning);
+                this.sceneIsRunning = true;
                 for (let i = 0; i < times; ++i) {
                     this.change(scene.backgroundImage());
                     pause(delay ? delay : this.preferredDelay);
                 }
+                this.sceneIsRunning = false;
             });
         }
     }

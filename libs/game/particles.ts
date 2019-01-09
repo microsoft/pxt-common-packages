@@ -370,8 +370,13 @@ namespace particles {
 
     export function clearAll() {
         const sources = particleSources();
-        if (sources)
-            sources.forEach(s => s.clear());
+        if (sources) {
+            sources.forEach(s => {
+                s.clear()
+                s.destroy();
+            });
+            pruneParticles();
+        }
     }
 
     function particleSources() {

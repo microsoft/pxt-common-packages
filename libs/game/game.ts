@@ -42,8 +42,10 @@ namespace game {
         if (!_scene) _scene = new scene.Scene(control.pushEventContext());
         _scene.init();
 
-        if (!winEffect) winEffect = effects.confetti;
-        if (!loseEffect) loseEffect = effects.melt;
+        if (!winEffect)
+            winEffect = effects.confetti;
+        if (!loseEffect)
+            loseEffect = effects.melt;
     }
 
     export function pushScene() {
@@ -133,32 +135,32 @@ namespace game {
         // one last screenshot
         takeScreenshot();
 
-        popScene();
+        while (_sceneStack && _sceneStack.length)
+            popScene();
         pushScene();
         scene.setBackgroundImage(background);
 
-        control.runInParallel(() => {
-            if (gameOverSound) gameOverSound();
-            chosenEffect.startSceneEffect();
+        if (gameOverSound) gameOverSound();
+        chosenEffect.startSceneEffect();
+        pause(500);
 
-            game.eventContext().registerFrameHandler(95, () => {
-                let top = showDialogBackground(46, 4);
-                screen.printCenter(win ? "YOU WIN!" : "GAME OVER!", top + 8, screen.isMono ? 1 : 5, image.font8);
-                if (info.hasScore()) {
-                    screen.printCenter("Score:" + info.score(), top + 23, screen.isMono ? 1 : 2, image.font8);
-                    if (info.score() > info.highScore()) {
-                        info.saveHighScore();
-                        screen.printCenter("New High Score!", top + 34, screen.isMono ? 1 : 2, image.font5);
-                    } else {
-                        screen.printCenter("HI" + info.highScore(), top + 34, screen.isMono ? 1 : 2, image.font8);
-                    }
+        game.eventContext().registerFrameHandler(95, () => {
+            let top = showDialogBackground(46, 4);
+            screen.printCenter(win ? "YOU WIN!" : "GAME OVER!", top + 8, screen.isMono ? 1 : 5, image.font8);
+            if (info.hasScore()) {
+                screen.printCenter("Score:" + info.score(), top + 23, screen.isMono ? 1 : 2, image.font8);
+                if (info.score() > info.highScore()) {
+                    info.saveHighScore();
+                    screen.printCenter("New High Score!", top + 34, screen.isMono ? 1 : 2, image.font5);
+                } else {
+                    screen.printCenter("HI" + info.highScore(), top + 34, screen.isMono ? 1 : 2, image.font8);
                 }
-            })
-
-            pause(2000); // wait for users to stop pressing keys
-            waitAnyButton();
-            control.reset();
+            }
         })
+
+        pause(2000); // wait for users to stop pressing keys
+        waitAnyButton();
+        control.reset();
     }
 
     /**
