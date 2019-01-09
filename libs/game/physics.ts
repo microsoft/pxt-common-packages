@@ -132,9 +132,9 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
                 if (xDiff !== Fx.zeroFx8) {
                     const right = xDiff > Fx.zeroFx8;
-                    const x0 = Fx.toIntShifted(right ? sprite._hitbox.right : sprite._hitbox.left, 4);
-                    for (let y = Fx.sub(sprite._hitbox.top, yDiff); y < Fx.iadd(15, Fx.sub(sprite._hitbox.bottom, yDiff)); y = Fx.iadd(16, y)) {
-                        const y0 = Fx.toIntShifted(Fx.min(y, Fx.iadd(-1, Fx.sub(sprite._hitbox.bottom, yDiff))), 4);
+                    const x0 = Fx.toIntShifted(right ? Fx.iadd(1, sprite._hitbox.right) : sprite._hitbox.left, 4);
+                    for (let y = Fx.sub(sprite._hitbox.top, yDiff); y < Fx.iadd(16, Fx.sub(sprite._hitbox.bottom, yDiff)); y = Fx.iadd(16, y)) {
+                        const y0 = Fx.toIntShifted(Fx.min(y, Fx.sub(sprite._hitbox.bottom, yDiff)), 4);
                         if (tm.isObstacle(x0, y0)) {
                             hitWall = true;
                             if (bounce) {
@@ -146,12 +146,11 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                         }
                     }
                 }
-                
                 if (yDiff !== Fx.zeroFx8) {
                     const down = yDiff > Fx.zeroFx8;
-                    const y0 = Fx.toIntShifted(down ? sprite._hitbox.bottom : sprite._hitbox.top, 4);
-                    for (let x = sprite._hitbox.left; x < Fx.iadd(15, sprite._hitbox.right); x = Fx.iadd(16, x)) {
-                        const x0 = Fx.toIntShifted(Fx.min(x, Fx.iadd(-1, sprite._hitbox.right)), 4);
+                    const y0 = Fx.toIntShifted(down ? Fx.iadd(1, sprite._hitbox.bottom) : sprite._hitbox.top, 4);
+                    for (let x = sprite._hitbox.left; x < Fx.iadd(16, sprite._hitbox.right); x = Fx.iadd(16, x)) {
+                        const x0 = Fx.toIntShifted(Fx.min(x, sprite._hitbox.right), 4);
                         if (tm.isObstacle(x0, y0)) {
                             hitWall = true;
                             if (bounce) {
@@ -193,13 +192,6 @@ class ArcadePhysicsEngine extends PhysicsEngine {
     }
 
     public moveSprite(s: Sprite, tm: tiles.TileMap, dx: Fx8, dy: Fx8) {
-
-        if (dx === Fx.zeroFx8 && dy === Fx.zeroFx8) {
-            s._lastX = s._x;
-            s._lastY = s._y;
-            return;
-        }
-
         s._lastX = s._x;
         s._lastY = s._y;
         s._x = Fx.add(s._x, dx);

@@ -64,6 +64,7 @@ class Sprite implements SpriteLike {
     //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="x"
     set x(v: number) {
+        this._lastX = this._x;
         this._x = Fx8(v - (this._image.width >> 1))
     }
 
@@ -75,6 +76,7 @@ class Sprite implements SpriteLike {
     //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="y"
     set y(v: number) {
+        this._lastY = this._y;
         this._y = Fx8(v - (this._image.height >> 1))
     }
 
