@@ -82,9 +82,17 @@ namespace particles {
          */
         constructor(anchor: ParticleAnchor, particlesPerSecond: number, factory?: ParticleFactory) {
             init();
-            this.flags = 0;
             const scene = game.currentScene();
             const sources = particleSources();
+
+            // remove and immediately destroy oldest source if over MAX_SOURCES
+            if (sources.length > MAX_SOURCES) {
+                const removedSource = sources.shift();
+                removedSource.clear();
+                removedSource.destroy();
+            }
+
+            this.flags = 0;
             this.setRate(particlesPerSecond);
             this.setAcceleration(0, 0);
             this.setAnchor(anchor);
@@ -220,6 +228,7 @@ namespace particles {
             // The `_prune` step will finishing destroying this Source once all emitted particles finish rendering
             this.enabled = false;
             this.flags |= Flag.destroyed;
+            this._prune();
         }
 
         /**
@@ -308,14 +317,6 @@ namespace particles {
 
     function pruneParticles() {
         const sources = particleSources();
-
-        // remove and immediately destroy old sources until at or below MAX_SOURCES
-        while (sources.length > MAX_SOURCES) {
-            const removedSource = sources.shift();
-            removedSource.clear();
-            removedSource.destroy();
-        }
-
         sources.forEach(s => s._prune());
     }
 
