@@ -6,6 +6,7 @@
 //% advanced=true
 namespace effects {
 
+    //% fixedInstances
     export interface BackgroundEffect {
         startSceneEffect(): void;
     }

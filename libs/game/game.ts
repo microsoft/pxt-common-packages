@@ -107,7 +107,7 @@ namespace game {
      */
     //% group="Gameplay"
     //% blockId=setGameOverEffect block="set game over effect for win %win=toggleYesNo to %effect"
-    export function setGameOverEffect(win: boolean, effect: effects.SceneEffect) {
+    export function setGameOverEffect(win: boolean, effect: effects.BackgroundEffect) {
         init();
         if (!effect) return;
         if (win)
