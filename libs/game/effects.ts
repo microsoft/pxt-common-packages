@@ -18,13 +18,13 @@ namespace effects {
         protected preferredDelay: number;
         protected effect: (image: Image, fastRandom ?: Math.FastRandom) => void;
         protected fastRandom: Math.FastRandom;
-        private sceneIsRunning: boolean;
+        private times: number;
 
         constructor(defaultRate: number, effectFactory: (image: Image, fastRandom ?: Math.FastRandom) => void) {
             this.effect = effectFactory;
             this.fastRandom = new Math.FastRandom();
             this.preferredDelay = defaultRate;
-            this.sceneIsRunning = false;
+            this.times = undefined;
         }
 
         /**
@@ -59,17 +59,19 @@ namespace effects {
         //% group="Images"
         startSceneEffect(times?: number, delay?: number): void {
             if (!game.currentScene().background.hasBackgroundImage()) return;
-            times = times ? times : 15;
+            const wasRunning = this.times != undefined;
+            this.times = times ? times : 15;
 
-            control.runInParallel(() => {
-                pauseUntil(() => !this.sceneIsRunning);
-                this.sceneIsRunning = true;
-                for (let i = 0; i < times; ++i) {
-                    this.change(scene.backgroundImage());
-                    pause(delay ? delay : this.preferredDelay);
-                }
-                this.sceneIsRunning = false;
-            });
+            if (!wasRunning) {
+                control.runInParallel(() => {
+                    while (times > 0) {
+                        this.change(scene.backgroundImage());
+                        pause(delay ? delay : this.preferredDelay);
+                        --times;
+                    }
+                    this.times = undefined;
+                });
+            }
         }
     }
 
