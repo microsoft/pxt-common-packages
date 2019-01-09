@@ -155,7 +155,6 @@ namespace game {
 
             pause(2000); // wait for users to stop pressing keys
             waitAnyButton();
-            popScene();
             control.reset();
         })
     }
