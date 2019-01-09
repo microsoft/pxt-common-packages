@@ -4,6 +4,7 @@
 #include "Image.h"
 #include "MultiButton.h"
 #include "ZPin.h"
+#include "SAMDTCCTimer.h"
 #include "SAMDTimer.h"
 #include "SAMDDAC.h"
 #include "ZSPI.h"
@@ -33,6 +34,8 @@ typedef int PinName;
 #define IS_ANALOG_PIN(id) 1
 
 #define CODAL_PIN ZPin
+#define CODAL_TCCTIMER SAMDTCCTimer
+#define CODAL_TCCTIMER_CTOR_ARGS (TCC0, TCC0_IRQn)
 #define CODAL_TIMER SAMDTimer
 #define CODAL_SPI ZSPI
 #define CODAL_I2C ZI2C

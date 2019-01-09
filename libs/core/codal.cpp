@@ -24,7 +24,13 @@ __attribute__((section(".binmeta"))) __attribute__((used)) const uint32_t pxt_bi
     0x00ff00ff, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff,
 };
 
+#ifdef CODAL_TCCTIMER_CTOR_ARGS
+CODAL_TCCTIMER devTccTimer(CODAL_TCCTIMER_CTOR_ARGS);
+CODAL_TIMER devTimer(devTccTimer);
+#else
 CODAL_TIMER devTimer;
+#endif
+
 Event lastEvent;
 MessageBus devMessageBus;
 codal::CodalDevice device;
