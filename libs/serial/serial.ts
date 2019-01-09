@@ -5,7 +5,7 @@
 //% advanced=true blockGap=8
 //% groups='["Write", "Read", "Events", "Configuration"]'
 namespace serial {
-    export let NEW_LINE = "\n";
+    export let NEW_LINE = "\r\n"; // \r require or Putty really unhappy on windows
 
     /**
     * Read the buffered received data as a string
