@@ -35,8 +35,8 @@ void platform_init() {
 
 int *getBootloaderConfigData() {
 #ifdef SAMD51
-    auto config_data = *(uint32_t *)(0x4000 - 4 * 4);
-    if (config_data && (config_data & 3) == 0 && config_data < 0x4000) {
+    auto config_data = *(uint32_t *)(BOOTLOADER_END - 4 * 4);
+    if (config_data && (config_data & 3) == 0 && config_data < BOOTLOADER_END) {
         auto p = (uint32_t *)config_data;
         if (p[0] == CFG_MAGIC0 && p[1] == CFG_MAGIC1)
             return (int *)p + 4;

@@ -49,23 +49,6 @@ int *getBootloaderConfigData() {
     return NULL;
 }
 
-// TODO extract these from uf2_info()?
-static const char *string_descriptors[3];
-
-void platform_usb_init() {
-    static char serial[12];
-    itoa(target_get_serial() & 0x7fffffff, serial);
-
-    auto dev = (char *)app_alloc(strlen(UF2_BINFO->device) + 10);
-    strcpy(dev, UF2_BINFO->device);
-    strcat(dev, " (app)");
-
-    string_descriptors[0] = UF2_BINFO->manufacturer;
-    string_descriptors[1] = dev;
-    string_descriptors[2] = serial;
-    usb.stringDescriptors = string_descriptors;
-}
-
 } // namespace pxt
 
 void cpu_clock_init() {

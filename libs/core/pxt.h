@@ -72,6 +72,8 @@ extern codal::CodalDevice device;
 void spiNeopixelSendBuffer(DigitalInOutPin pin, const uint8_t *data, unsigned size);
 #endif
 
+void set_usb_strings(const char *uf2_info);
+
 } // namespace pxt
 
 namespace jacdac {
