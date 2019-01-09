@@ -19,8 +19,8 @@ namespace scene {
 
             // if sprite, follow sprite
             if (this.sprite) {
-                this.offsetX = Fx.toIntShifted(this.sprite._x, 0) + (this.sprite.width >> 1) - (screen.width >> 1);
-                this.offsetY = Fx.toIntShifted(this.sprite._y, 0) + (this.sprite.height >> 1) - (screen.height >> 1);
+                this.offsetX = this.sprite.x - (screen.width >> 1);
+                this.offsetY = this.sprite.y - (screen.height >> 1);
             }
 
             // don't escape tile map

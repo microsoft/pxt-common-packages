@@ -132,9 +132,9 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
                 if (xDiff !== Fx.zeroFx8) {
                     const right = xDiff > Fx.zeroFx8;
-                    const x0 = Fx.toIntShifted(right ? Fx.iadd(1, sprite._hitbox.right) : sprite._hitbox.left, 4);
+                    const x0 = Fx.toIntShifted(Fx.add(right ? Fx.iadd(1, sprite._hitbox.right) : sprite._hitbox.left, Fx8(0.5)), 4);
                     for (let y = Fx.sub(sprite._hitbox.top, yDiff); y < Fx.iadd(16, Fx.sub(sprite._hitbox.bottom, yDiff)); y = Fx.iadd(16, y)) {
-                        const y0 = Fx.toIntShifted(Fx.min(y, Fx.sub(sprite._hitbox.bottom, yDiff)), 4);
+                        const y0 = Fx.toIntShifted(Fx.add(Fx.min(y, Fx.sub(sprite._hitbox.bottom, yDiff)), Fx8(0.5)), 4);
                         if (tm.isObstacle(x0, y0)) {
                             hitWall = true;
                             if (bounce) {
@@ -148,9 +148,9 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 }
                 if (yDiff !== Fx.zeroFx8) {
                     const down = yDiff > Fx.zeroFx8;
-                    const y0 = Fx.toIntShifted(down ? Fx.iadd(1, sprite._hitbox.bottom) : sprite._hitbox.top, 4);
+                    const y0 = Fx.toIntShifted(Fx.add(down ? Fx.iadd(1, sprite._hitbox.bottom) : sprite._hitbox.top, Fx8(0.5)), 4);
                     for (let x = sprite._hitbox.left; x < Fx.iadd(16, sprite._hitbox.right); x = Fx.iadd(16, x)) {
-                        const x0 = Fx.toIntShifted(Fx.min(x, sprite._hitbox.right), 4);
+                        const x0 = Fx.toIntShifted(Fx.add(Fx.min(x, sprite._hitbox.right), Fx8(0.5)), 4);
                         if (tm.isObstacle(x0, y0)) {
                             hitWall = true;
                             if (bounce) {
