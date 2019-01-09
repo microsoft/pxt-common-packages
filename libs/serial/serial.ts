@@ -55,7 +55,7 @@ namespace serial {
         let r = "";
         let buf = control.createBuffer(3);
         let bufi = 0;
-        while(timeOut === undefined || (control.millis() - start > timeOut)) {
+        while(timeOut === undefined || (control.millis() - start < timeOut)) {
             const c = serial.read();
             if (c == DAL.DEVICE_NO_DATA) { // no data, sleep and try again
                 pause(1);
