@@ -176,9 +176,11 @@ namespace particles {
 
             if ((this.flags & Flag.destroyed) && !this.head) {
                 const scene = game.currentScene();
+                if (scene)
+                    scene.allSprites.removeElement(this);
                 const sources = particleSources();
-                sources.removeElement(this);
-                scene.allSprites.removeElement(this);
+                if (sources)
+                    sources.removeElement(this);
                 this.anchor == undefined;
             }
 
@@ -217,7 +219,7 @@ namespace particles {
          */
         set enabled(v: boolean) {
             if (v !== this.enabled) {
-                this.flags = v ? this.flags | Flag.enabled : this.flags ^ Flag.enabled;
+                this.flags = v ? (this.flags | Flag.enabled) : (this.flags ^ Flag.enabled);
                 this.timer = 0;
             }
         }
@@ -381,6 +383,22 @@ namespace particles {
         const sources = particleSources();
         if (sources) {
             sources.forEach(s => s.clear());
+            pruneParticles();
+        }
+    }
+
+    export function disableAll() {
+        const sources = particleSources();
+        if (sources) {
+            sources.forEach(s => s.enabled = false);
+            pruneParticles();
+        }
+    }
+
+    export function enableAll() {
+        const sources = particleSources();
+        if (sources) {
+            sources.forEach(s => s.enabled = true);
             pruneParticles();
         }
     }

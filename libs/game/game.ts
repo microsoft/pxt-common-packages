@@ -51,6 +51,7 @@ namespace game {
     export function pushScene() {
         init();
         particles.clearAll();
+        particles.disableAll();
         if (!_sceneStack) _sceneStack = [];
         _sceneStack.push(_scene);
         _scene = undefined;
@@ -58,6 +59,8 @@ namespace game {
     }
 
     export function popScene() {
+        if (_scene)
+            particles.enableAll();
         if (_sceneStack && _sceneStack.length) {
             // pop scenes from the stack
             _scene = _sceneStack.pop();

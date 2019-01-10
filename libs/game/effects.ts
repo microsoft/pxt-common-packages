@@ -64,13 +64,13 @@ namespace effects {
             if (!game.currentScene().background.hasBackgroundImage()) return;
             const wasRunning = this.times != undefined;
             this.times = times ? times : 15;
-
+            
             if (!wasRunning) {
                 control.runInParallel(() => {
-                    while (times > 0) {
+                    while (this.times > 0) {
                         this.change(scene.backgroundImage());
                         pause(delay ? delay : this.preferredDelay);
-                        --times;
+                        --this.times;
                     }
                     this.times = undefined;
                 });
