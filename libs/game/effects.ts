@@ -64,7 +64,7 @@ namespace effects {
             if (!game.currentScene().background.hasBackgroundImage()) return;
             const wasRunning = this.times != undefined;
             this.times = times ? times : 15;
-            
+
             if (!wasRunning) {
                 control.runInParallel(() => {
                     while (this.times > 0) {
