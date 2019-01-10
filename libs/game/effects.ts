@@ -59,7 +59,7 @@ namespace effects {
         //% times.defl=15
         //% blockNamespace=scene
         //% weight=50
-        //% group="Effects"
+        //% group="Effects" blockGap=8
         startSceneEffect(times?: number, delay?: number): void {
             if (!game.currentScene().background.hasBackgroundImage()) return;
             const wasRunning = this.times != undefined;
