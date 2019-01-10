@@ -4,7 +4,7 @@
 #include "Image.h"
 #include "MultiButton.h"
 #include "ZPin.h"
-#include "ZTimer.h"
+#include "Timer.h"
 #include "ZSPI.h"
 #include "ZI2C.h"
 #include "ZSingleWireSerial.h"
@@ -62,7 +62,7 @@ struct F4_Settings {
 #define DEV_ANALOG_PINS (DEV_PWM_PINS | DEV_AIN_PINS)
 
 #define CODAL_PIN ZPin
-#define CODAL_TIMER ZTimer
+#define CODAL_TIMER Timer
 #define CODAL_SPI ZSPI
 #define CODAL_I2C ZI2C
 #define CODAL_JACDAC_WIRE_SERIAL codal::ZSingleWireSerial
@@ -70,6 +70,12 @@ struct F4_Settings {
 #define PERF_NOW() (TIM5->CNT)
 
 #define IMAGE_BITS 4
+
+// the USB ID of the bootloader
+#undef USB_DEFAULT_VID
+#define USB_DEFAULT_VID 0x26AC
+#undef USB_DEFAULT_PID
+#define USB_DEFAULT_PID 0x1043
 
 // The parameters below needs tuning!
 
