@@ -55,9 +55,11 @@ namespace effects {
          * @param times number of times effect should occur
          * @param delay delay between instances of the effect
          */
-        //% blockId=particleEffectStartScene block="apply %effect effect to background || %times times"
+        //% blockId=particleEffectStartScene block="apply %effect effect to background image || %times times"
         //% times.defl=15
-        //% group="Images"
+        //% blockNamespace=scene
+        //% weight=50
+        //% group="Effects"
         startSceneEffect(times?: number, delay?: number): void {
             if (!game.currentScene().background.hasBackgroundImage()) return;
             const wasRunning = this.times != undefined;
