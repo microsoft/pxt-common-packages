@@ -2,12 +2,9 @@
 
 #if CONFIG_ENABLED(DEVICE_USB)
 #include "uf2format.h"
-#include "GhostFAT.h"
 
 namespace pxt {
 CodalUSB usb;
-
-GhostFAT gmsc;
 
 // share the buffer; we will crash anyway if someone talks to us over both at the same time
 HF2_Buffer hf2buf;
@@ -89,22 +86,16 @@ void usb_init() {
     platform_usb_init();
 
 #ifdef STM32F4
-    // as long as we don't enable MSC here, put dummy in its place
-    gmsc.interfaceIdx = 0x00;
-    hf2.interfaceIdx = 0x01;
-#endif
-
-    // the WINUSB descriptors don't seem to work if there's only one interface
-    // so we add a dummy interface first
-    usb.add(gmsc);
-
-#ifdef STM32F4
     // let's not waste EPs on the HF2 - it will run on CONTROL pipe instead
     // this doesn't seem to currently work on SAMD, so only do it on STM, which
     // has very few EPs
-    //hf2.allocateEP = false;
+    hf2.allocateEP = false;
 #endif
     usb.add(hf2);
+
+    // the WINUSB descriptors don't seem to work if there's only one interface
+    // so we add a dummy interface
+    usb.add(dummyIface);
 
 #if CONFIG_ENABLED(DEVICE_MOUSE)
     usb.add(mouse);

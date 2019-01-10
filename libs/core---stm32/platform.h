@@ -71,11 +71,6 @@ struct F4_Settings {
 
 #define IMAGE_BITS 4
 
-// the USB ID of the bootloader
-#undef USB_DEFAULT_VID
-#define USB_DEFAULT_VID 0x26AC
-#undef USB_DEFAULT_PID
-#define USB_DEFAULT_PID 0x1043
 
 // The parameters below needs tuning!
 
