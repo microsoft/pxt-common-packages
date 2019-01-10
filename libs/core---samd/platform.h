@@ -4,7 +4,7 @@
 #include "Image.h"
 #include "MultiButton.h"
 #include "ZPin.h"
-#include "SAMDTimer.h"
+#include "Timer.h"
 #include "SAMDDAC.h"
 #include "ZSPI.h"
 #include "ZI2C.h"
@@ -40,7 +40,7 @@ typedef int PinName;
 #define IS_ANALOG_PIN(id) 1
 
 #define CODAL_PIN ZPin
-#define CODAL_TIMER SAMDTimer
+#define CODAL_TIMER Timer
 #define CODAL_SPI ZSPI
 #define CODAL_I2C ZI2C
 #define CODAL_JACDAC_WIRE_SERIAL codal::ZSingleWireSerial

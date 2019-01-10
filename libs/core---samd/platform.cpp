@@ -1,9 +1,18 @@
 #include "pxt.h"
 
+#include "SAMDTCTimer.h"
+#include "SAMDTCCTimer.h"
+
 namespace pxt {
 
-SAMDTCCTimer devTccTimer(TCC0, TCC0_IRQn);
-CODAL_TIMER devTimer(devTccTimer);
+#ifdef SAMD21
+SAMDTCCTimer lowTimer(TCC0, TCC0_IRQn);
+#endif
+#ifdef SAMD51
+SAMDTCTimer lowTimer(TC0, TC0_IRQn);
+#endif
+
+CODAL_TIMER devTimer(lowTimer);
 
 static void initRandomSeed() {
     int seed = 0xC0DA1;
