@@ -138,8 +138,12 @@ int HF2::sendSerial(const void *data, int size, int isError) {
         return DEVICE_OK;
 
     for (;;) {
-        while (dataToSendLength)
+        pokeSend();
+
+        while (dataToSendLength) {
             fiber_sleep(5);
+            pokeSend();
+        }
 
         if (size < 0)
             break;
