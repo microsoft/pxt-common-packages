@@ -49,7 +49,7 @@ void setThreshold(TouchButton button, int threshold) {
 //% group="More" weight=16 blockGap=8
 //% help=input/touch/threshold
 int threshold(TouchButton button) {
-    return button->threshold() >> 2;
+    return button->threshold >> 2;
 }
 
 /**
