@@ -64,6 +64,7 @@ class Sprite implements SpriteLike {
     //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="x"
     set x(v: number) {
+        this._lastX = this._x;
         this._x = Fx8(v - (this._image.width >> 1))
     }
 
@@ -75,6 +76,7 @@ class Sprite implements SpriteLike {
     //% group="Properties" blockSetVariable="mySprite"
     //% blockCombine block="y"
     set y(v: number) {
+        this._lastY = this._y;
         this._y = Fx8(v - (this._image.height >> 1))
     }
 
@@ -153,7 +155,7 @@ class Sprite implements SpriteLike {
     private updateSay: (dt: number, camera: scene.Camera) => void;
     private sayBubbleSprite: Sprite;
 
-    _hitboxes: game.Hitbox[];
+    _hitbox: game.Hitbox;
     _overlappers: number[];
 
     flags: number
@@ -212,60 +214,42 @@ class Sprite implements SpriteLike {
     setImage(img: Image) {
         if (!img) return; // don't break the sprite
 
-        // Identify old upper left corner
-        let oMinX = img.width;
-        let oMinY = img.height;
+        let oMinX = 0;
+        let oMinY = 0;
         let oMaxX = 0;
         let oMaxY = 0;
 
-        for (let i = 0; this._hitboxes && i < this._hitboxes.length; ++i) {
-            let box = this._hitboxes[i];
-            oMinX = Math.min(oMinX, box.ox);
-            oMinY = Math.min(oMinY, box.oy);
-            oMaxX = Math.max(oMaxX, box.ox + box.width - 1);
-            oMaxY = Math.max(oMaxY, box.oy + box.height - 1);
+        // Identify old upper left corner
+        if (this._hitbox) {
+            oMinX = this._hitbox.ox;
+            oMinY = this._hitbox.oy;
+            oMaxX = this._hitbox.ox + this._hitbox.width;
+            oMaxY = this._hitbox.oy + this._hitbox.height;
         }
 
         this._image = img;
-        this._hitboxes = game.calculateHitBoxes(this);
+        this._hitbox = game.calculateHitBox(this);
 
         // Identify new upper left corner
-        let nMinX = img.width;
-        let nMinY = img.height;
-        let nMaxX = 0;
-        let nMaxY = 0;
-
-        for (let i = 0; i < this._hitboxes.length; ++i) {
-            let box = this._hitboxes[i];
-            nMinX = Math.min(nMinX, box.ox);
-            nMinY = Math.min(nMinY, box.oy);
-            nMaxX = Math.max(nMaxX, box.ox + box.width - 1);
-            nMaxY = Math.max(nMaxY, box.oy + box.height - 1);
-        }
+        let nMinX = this._hitbox.ox;
+        let nMinY = this._hitbox.oy;
+        let nMaxX = this._hitbox.ox + this._hitbox.width;
+        let nMaxY = this._hitbox.oy + this._hitbox.height;
 
         const minXDiff = oMinX - nMinX;
         const minYDiff = oMinY - nMinY;
         const maxXDiff = oMaxX - nMaxX;
         const maxYDiff = oMaxY - nMaxY;
 
-        const scene = game.currentScene();
-        const tmap = scene.tileMap;
-
-        if (tmap && tmap.enabled && this.width <= 16 && this.height <= 16) {
-            const l = (nMinX + this.left) >> 4;
-            const r = (nMaxX + this.left) >> 4;
-            const t = (nMinY + this.top) >> 4;
-            const b = (nMaxY + this.top) >> 4;
-
-            if (tmap.isObstacle(l, t) && (minXDiff > 0 || minYDiff > 0)) {
-                scene.physicsEngine.moveSprite(this, scene.tileMap, Fx8(minXDiff), Fx8(minYDiff));
-            } else if (tmap.isObstacle(r, t) && (maxXDiff < 0 || minYDiff > 0)) {
-                scene.physicsEngine.moveSprite(this, scene.tileMap, Fx8(maxXDiff), Fx8(minYDiff));
-            } else if (tmap.isObstacle(l, b) && (minXDiff > 0 || maxYDiff < 0)) {
-                scene.physicsEngine.moveSprite(this, scene.tileMap, Fx8(minXDiff), Fx8(maxYDiff));
-            } else if (tmap.isObstacle(r, b) && (maxXDiff < 0 || maxYDiff < 0)) {
-                scene.physicsEngine.moveSprite(this, scene.tileMap, Fx8(maxXDiff), Fx8(maxYDiff));
-            }
+        // If just a small change to the hitbox, don't change the hitbox
+        // Used for things like walking animations
+        if (oMaxX != oMinX && Math.abs(minXDiff) + Math.abs(maxXDiff) <= 2) {
+            this._hitbox.ox = oMinX;
+            this._hitbox.width = oMaxX - oMinX;
+        }
+        if (oMaxY != oMinY && Math.abs(minYDiff) + Math.abs(maxYDiff) <= 2) {
+            this._hitbox.oy = oMinY;
+            this._hitbox.height = oMaxY - oMinY;
         }
     }
 
@@ -427,7 +411,7 @@ class Sprite implements SpriteLike {
         let startY = 2;
         let bubbleWidth = text.length * font.charWidth + bubblePadding;
         let maxOffset = text.length * font.charWidth - maxTextWidth;
-        let bubbleOffset: number;
+        let bubbleOffset: number = this._hitbox.oy;
         // sets the defaut scroll speed in pixels per second
         let speed = 45;
 
@@ -442,19 +426,6 @@ class Sprite implements SpriteLike {
         if (timeOnScreen) {
             timeOnScreen = timeOnScreen + control.millis();
         }
-
-        if (!this._hitboxes || this._hitboxes.length == 0) {
-            bubbleOffset = 0;
-        } else {
-            bubbleOffset = Fx.toInt(this._hitboxes[0].top);
-            for (let i = 0; i < this._hitboxes.length; i++) {
-                bubbleOffset = Math.min(bubbleOffset, Fx.toInt(this._hitboxes[i].top));
-            }
-
-            // Gets the length from sprites location to its highest hitbox
-            bubbleOffset = this.y - bubbleOffset;
-        }
-
 
         if (bubbleWidth > maxTextWidth + bubblePadding) {
             bubbleWidth = maxTextWidth + bubblePadding;
@@ -475,7 +446,7 @@ class Sprite implements SpriteLike {
             if (!timeOnScreen || timeOnScreen > control.millis()) {
                 this.sayBubbleSprite.image.fill(textBoxColor);
                 // The minus 2 is how much transparent padding there is under the sayBubbleSprite
-                this.sayBubbleSprite.y = this.y - bubbleOffset - ((font.charHeight + bubblePadding) >> 1) - 2;
+                this.sayBubbleSprite.y = this.top + bubbleOffset - ((font.charHeight + bubblePadding) >> 1) - 2;
                 this.sayBubbleSprite.x = this.x;
 
                 if (!this.isOutOfScreen(camera)) {
@@ -538,6 +509,16 @@ class Sprite implements SpriteLike {
     }
 
     /**
+     * Start an effect on this sprite
+     * @param effect the type of effect to create
+     */
+    //% group="Properties"
+    //% blockId=startEffectOnSprite block="%sprite(mySprite) start %effect effect"
+    startEffect(effect: effects.ParticleEffect) {
+        effect.start(this);
+    }
+
+    /**
      * Indicates if the sprite is outside the screen
      */
     //%
@@ -573,12 +554,7 @@ class Sprite implements SpriteLike {
 
         // debug info
         if (game.debug) {
-            let color = 1;
-            this._hitboxes.forEach(box => {
-                this._image.drawRect(box.ox, box.oy, box.width, box.height, color);
-                color++;
-                if (color >= 15) color = 1;
-            });
+            screen.drawRect(Fx.toInt(this._hitbox.left), Fx.toInt(this._hitbox.top), this._hitbox.width, this._hitbox.height, 1);
         }
     }
 
@@ -738,11 +714,17 @@ class Sprite implements SpriteLike {
      */
     //% group="Lifecycle"
     //% weight=10
-    //% blockId=spritedestroy block="destroy %sprite(mySprite)"
+    //% blockId=spritedestroy block="destroy %sprite(mySprite) || with %effect effect"
     //% help=sprites/sprite/destroy
-    destroy() {
+    destroy(effect?: effects.ParticleEffect) {
         if (this.flags & sprites.Flag.Destroyed)
-            return
+            return;
+        
+        if (effect) {
+            effect.destroy(this);
+            return;
+        }
+
         this.flags |= sprites.Flag.Destroyed
         const scene = game.currentScene();
         // When current sprite is destroyed, destroys sayBubbleSprite if defined
