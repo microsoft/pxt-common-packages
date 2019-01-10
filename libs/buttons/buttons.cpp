@@ -93,10 +93,10 @@ Button *getButtonByPin(int pin, int flags) {
     auto btn = (Button *)lookupComponent(cpid);
     if (btn == NULL) {
 #ifdef PXT_74HC165
-        if (pin >= 100) {
+        if (pin >= 1000) {
             if (!buttonMultiplexer)
                 buttonMultiplexer = new ButtonMultiplexer(DEVICE_ID_FIRST_BUTTON);
-            return buttonMultiplexer->createButton(cpid, pin - 100);
+            return buttonMultiplexer->createButton(cpid, pin - 1000);
         }
 #endif
         auto pull = PullMode::None;

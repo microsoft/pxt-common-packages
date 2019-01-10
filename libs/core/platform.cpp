@@ -3,6 +3,8 @@
 
 namespace pxt {
 
+CODAL_TIMER devTimer;
+
 static void initRandomSeed() {
     int seed = 0xC0DA1;
     auto pinTemp = LOOKUP_PIN(TEMPERATURE);
@@ -59,4 +61,4 @@ void platform_init() {
     }
 }
 
-}
+} // namespace pxt
