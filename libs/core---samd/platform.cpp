@@ -2,6 +2,9 @@
 
 namespace pxt {
 
+SAMDTCCTimer devTccTimer(TCC0, TCC0_IRQn);
+CODAL_TIMER devTimer(devTccTimer);
+
 static void initRandomSeed() {
     int seed = 0xC0DA1;
     // TODO use TRNG
@@ -47,6 +50,4 @@ int *getBootloaderConfigData() {
 
 } // namespace pxt
 
-void cpu_clock_init() {
-    //    devTimer.init();
-}
+void cpu_clock_init() {}
