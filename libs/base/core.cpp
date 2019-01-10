@@ -1387,7 +1387,16 @@ int *getBootloaderConfigData()
 
 //%
 int getConfig(int key, int defl) {
-    int *cfgData = getBootloaderConfigData();
+    int *cfgData = *(int **)&bytecode[18];
+
+    for (int i = 0;; i += 2) {
+        if (cfgData[i] == key)
+            return cfgData[i + 1];
+        if (cfgData[i] == 0)
+            break;
+    }
+
+    cfgData = getBootloaderConfigData();
 
     if (cfgData) {
         for (int i = 0;; i += 2) {
@@ -1398,13 +1407,7 @@ int getConfig(int key, int defl) {
         }
     }
 
-    cfgData = *(int **)&bytecode[18];
-    for (int i = 0;; i += 2) {
-        if (cfgData[i] == key)
-            return cfgData[i + 1];
-        if (cfgData[i] == 0)
-            return defl;
-    }
+    return defl;
 }
 
 } // namespace pxt
