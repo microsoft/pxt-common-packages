@@ -202,7 +202,7 @@ namespace game {
         if (!a || period < 0) return;
         let timer = 0;
         game.eventContext().registerFrameHandler(19, () => {
-            const time = control.millis();
+            const time = game.currentScene().millis();
             if (timer <= time) {
                 timer = time + period;
                 a();
@@ -220,5 +220,15 @@ namespace game {
         init();
         if (!a) return;
         game.eventContext().registerFrameHandler(75, a);
+    }
+
+    /**
+     * Returns the time since the game started in milliseconds
+     */
+    //% blockId=arcade_game_runtime block="time since start (ms)"
+    //% group="Gameplay" weight=11
+    //% help=game/runtime
+    export function runtime(): number {
+        return currentScene().millis();
     }
 }

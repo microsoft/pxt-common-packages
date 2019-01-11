@@ -414,6 +414,7 @@ class Sprite implements SpriteLike {
         let bubbleOffset: number = this._hitbox.oy;
         // sets the defaut scroll speed in pixels per second
         let speed = 45;
+        const currentScene = game.currentScene();
 
         // Calculates the speed of the scroll if scrolling is needed and a time is specified
         if (timeOnScreen && maxOffset > 0) {
@@ -424,7 +425,7 @@ class Sprite implements SpriteLike {
         }
 
         if (timeOnScreen) {
-            timeOnScreen = timeOnScreen + control.millis();
+            timeOnScreen = timeOnScreen + currentScene.millis();
         }
 
         if (bubbleWidth > maxTextWidth + bubblePadding) {
@@ -444,7 +445,7 @@ class Sprite implements SpriteLike {
         this.sayBubbleSprite.setFlag(SpriteFlag.Ghost, true);
         this.updateSay = (dt, camera) => {
             // Update box stuff as long as timeOnScreen doesn't exist or it can still be on the screen
-            if (!timeOnScreen || timeOnScreen > control.millis()) {
+            if (!timeOnScreen || timeOnScreen > currentScene.millis()) {
                 this.sayBubbleSprite.image.fill(textBoxColor);
                 // The minus 2 is how much transparent padding there is under the sayBubbleSprite
                 this.sayBubbleSprite.y = this.top + bubbleOffset - ((font.charHeight + bubblePadding) >> 1) - 2;
