@@ -7,8 +7,6 @@ namespace scene {
         drawOffsetX: number;
         drawOffsetY: number;
         sprite: Sprite;
-        private oldOffsetX: number;
-        private oldOffsetY: number;
 
         private shakeStartTime: number;
         private shakeDuration: number;
@@ -20,9 +18,6 @@ namespace scene {
 
             this.drawOffsetX = 0;
             this.drawOffsetY = 0;
-
-            this.oldOffsetX = 0;
-            this.oldOffsetY = 0;
         }
 
         shake(amplitude: number = 4, duration: number = 1000) {
@@ -79,12 +74,6 @@ namespace scene {
                     this.drawOffsetX += x;
                     this.drawOffsetY += y;
                 }
-            }
-
-            if (this.oldOffsetX != this.offsetX
-                || this.oldOffsetY != this.offsetY) {
-                this.oldOffsetX = this.offsetX;
-                this.oldOffsetY = this.offsetY;
             }
         }
     }
