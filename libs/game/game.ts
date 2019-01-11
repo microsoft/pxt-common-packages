@@ -9,7 +9,8 @@ namespace game {
      */
     export let debug = false;
     export let stats = false;
-    export let gameOverSound: () => void = undefined;
+    export let loseSound: music.Melody = undefined;
+    export let winSound: music.Melody = undefined;
     export let winEffect: effects.BackgroundEffect = undefined;
     export let loseEffect: effects.BackgroundEffect = undefined;
 
@@ -46,6 +47,11 @@ namespace game {
             winEffect = effects.confetti;
         if (!loseEffect)
             loseEffect = effects.melt;
+
+        if (!winSound)
+            winSound = music.powerUp;
+        if (!loseSound)
+            loseSound = music.wawawawaa;
     }
 
     export function pushScene() {
@@ -123,6 +129,22 @@ namespace game {
     }
 
     /**
+     * Set the music that occurs when the game is over
+     * @param win whether the music should play on a win (true)
+     * @param effect
+     */
+    //% group="Gameplay"
+    //% blockId=setGameOverSound block="set game over sound for win %win=toggleYesNo to %music"
+    export function setGameOverSound(win: boolean, sound: music.Melody) {
+        init();
+        if (!sound) return;
+        if (win)
+            winSound = sound;
+        else
+            loseSound = sound;
+    }
+
+    /**
      * Finish the game and display the score
      */
     //% group="Gameplay"
@@ -132,7 +154,6 @@ namespace game {
         init();
         if (__isOver) return;
         __isOver = true;
-        let chosenEffect = win ? winEffect : loseEffect;
 
         // one last screenshot
         takeScreenshot();
@@ -146,8 +167,14 @@ namespace game {
         pushScene();
         scene.setBackgroundImage(screen.clone());
 
-        if (gameOverSound) gameOverSound();
-        chosenEffect.startSceneEffect();
+        if (win) {
+            winEffect.startSceneEffect();
+            winSound.play();
+        } else {
+            loseEffect.startSceneEffect();
+            loseSound.play();
+        }
+
         pause(500);
 
         game.eventContext().registerFrameHandler(95, () => {
