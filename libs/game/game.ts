@@ -127,13 +127,16 @@ namespace game {
      * Finish the game and display the score
      */
     //% group="Gameplay"
-    //% blockId=gameOver block="game over||win %win=toggleYesNo"
+    //% blockId=gameOver block="game over||win %win=toggleYesNo with %effect effect"
     //% weight=80 help=game/over
-    export function over(win: boolean = false) {
+    export function over(win: boolean = false, effect?: effects.BackgroundEffect) {
         init();
         if (__isOver) return;
         __isOver = true;
-        let chosenEffect = win ? winEffect : loseEffect;
+
+        if (!effect) {
+            effect = win ? winEffect : loseEffect;
+        }
 
         // one last screenshot
         takeScreenshot();
@@ -148,7 +151,7 @@ namespace game {
         scene.setBackgroundImage(screen.clone());
 
         if (gameOverSound) gameOverSound();
-        chosenEffect.startSceneEffect();
+        effect.startScreenEffect();
         pause(500);
 
         game.eventContext().registerFrameHandler(95, () => {
