@@ -10,6 +10,7 @@ namespace game {
     export let debug = false;
     export let stats = false;
     export let gameOverSound: () => void = undefined;
+    export let gameWinSound: () => void = undefined
     export let winEffect: effects.BackgroundEffect = undefined;
     export let loseEffect: effects.BackgroundEffect = undefined;
 
@@ -59,8 +60,6 @@ namespace game {
     }
 
     export function popScene() {
-        if (_scene)
-            particles.enableAll();
         if (_sceneStack && _sceneStack.length) {
             // pop scenes from the stack
             _scene = _sceneStack.pop();
@@ -70,6 +69,8 @@ namespace game {
             control.popEventContext();
             _scene = undefined;
         }
+        if (_scene)
+            particles.enableAll();
     }
 
     function showDialogBackground(h: number, c: number) {
