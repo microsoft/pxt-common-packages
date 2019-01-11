@@ -85,10 +85,7 @@ namespace control {
             this.framesInSample++
             if (this.timeInSample > 1000 || this.framesInSample > 30) {
                 const fps = this.framesInSample / (this.timeInSample / 1000);
-                if (EventContext.onStats) {
-                    EventContext.lastStats = `fps:${Math.round(fps)}`;
-                    EventContext.onStats(EventContext.lastStats)
-                }
+                EventContext.lastStats = `fps:${Math.round(fps)}`;
                 if (control.profilingEnabled()) {
                     control.dmesg(`${(fps * 100) | 0}/100 fps - ${this.framesInSample} frames`)
                     control.gc()
