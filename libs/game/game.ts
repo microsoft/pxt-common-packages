@@ -10,7 +10,6 @@ namespace game {
     export let debug = false;
     export let stats = false;
     export let gameOverSound: () => void = undefined;
-    export let gameWinSound: () => void = undefined
     export let winEffect: effects.BackgroundEffect = undefined;
     export let loseEffect: effects.BackgroundEffect = undefined;
 
