@@ -1,9 +1,3 @@
-/**
- * Small particles
- */
-//% color="#382561" weight=78 icon="\uf06d"
-//% groups='["Particles"]'
-//% advanced=true
 namespace effects {
 
     //% fixedInstances
@@ -30,9 +24,6 @@ namespace effects {
          * @param duration
          * @param particlesPerSecond 
          */
-        //% blockId=particlesstartanimation block="start %effect effect on %anchor=variables_get(mySprite) for %pause=timePicker|ms || at rate %particlesPerSecond p/s"
-        //% expandableArgumentMode="toggle";
-        //% group="Particles"
         start(anchor: particles.ParticleAnchor, duration?: number, particlesPerSecond?: number): void {
             if (!this.sourceFactory) return;
             const src = this.sourceFactory(anchor, particlesPerSecond ? particlesPerSecond : this.defaultRate);
@@ -131,7 +122,8 @@ namespace effects {
      * @param anchor the anchor to remove effects from
      */
     //% blockId=particlesclearparticles block="clear effects on %anchor=variables_get(mySprite)"
-    //% group="Particles"
+    //% blockNamespace=sprites
+    //% group="Effects" weight=89
     export function clearParticles(anchor: particles.ParticleAnchor) {
         const sources = game.currentScene().data.particleSources as particles.ParticleSource[];
         if (!sources) return;
