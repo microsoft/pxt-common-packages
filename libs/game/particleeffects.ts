@@ -90,7 +90,9 @@ namespace effects {
          * @param particlesPerSecond 
          */
         //% blockId=particlesStartSceneAnimation block="start scene %effect effect || at rate %particlesPerSecond p/s"
-        //% group="Particles"
+        //% blockNamespace=scene
+        //% group="Effects" blockGap=8
+        //% weight=90
         startSceneEffect(particlesPerSecond?: number): void {
             if (!this.sourceFactory || (this.source && this.source.enabled))
                 return;
@@ -104,7 +106,9 @@ namespace effects {
          * @param particlesPerSecond 
          */
         //% blockId=particlesEndSceneAnimation block="end scene %effect effect"
-        //% group="Particles"
+        //% blockNamespace=scene
+        //% group="Effects" blockGap=8
+        //% weight=80
         endSceneEffect(): void {
             if (this.source) {
                 this.source.destroy();
