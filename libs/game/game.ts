@@ -111,8 +111,6 @@ namespace game {
      * @param win whether the animation should run on a win (true)
      * @param effect
      */
-    //% group="Gameplay"
-    //% blockId=setGameOverEffect block="set game over effect for win %win=toggleYesNo to %effect"
     export function setGameOverEffect(win: boolean, effect: effects.BackgroundEffect) {
         init();
         if (!effect) return;
