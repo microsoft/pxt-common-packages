@@ -115,8 +115,8 @@ namespace particles {
 
         __draw(camera: scene.Camera) {
             let current = this.head;
-            const left = Fx8(camera.offsetX);
-            const top = Fx8(camera.offsetY);
+            const left = Fx8(camera.drawOffsetX);
+            const top = Fx8(camera.drawOffsetY);
 
             while (current) {
                 if (current.lifespan > 0)

@@ -92,7 +92,7 @@ namespace scene {
             // render background 60
             this.eventContext.registerFrameHandler(60, () => {
                 control.enablePerfCounter("render background")
-                this.background.render();
+                this.background.draw();
             })
             // paint 75
             // render sprites 90

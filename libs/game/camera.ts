@@ -1,7 +1,11 @@
 namespace scene {
     export class Camera {
+        // coordinate used for all physics computation
         offsetX: number;
         offsetY: number;
+        // coordinate used for draw sprites, may including shaking
+        drawOffsetX: number;
+        drawOffsetY: number;
         sprite: Sprite;
         private oldOffsetX: number;
         private oldOffsetY: number;
@@ -9,12 +13,13 @@ namespace scene {
         private shakeStartTime: number;
         private shakeDuration: number;
         private shakeAmplitude: number;
-        private shakeOffsetX: number;
-        private shakeOffsetY: number;
 
         constructor() {
             this.offsetX = 0;
             this.offsetY = 0;
+
+            this.drawOffsetX = 0;
+            this.drawOffsetY = 0;
 
             this.oldOffsetX = 0;
             this.oldOffsetY = 0;
@@ -35,14 +40,6 @@ namespace scene {
         update() {
             const scene = game.currentScene();
 
-            // remove previous shake offset
-            if (this.shakeOffsetX !== undefined) {
-                this.offsetX -= this.shakeOffsetX;
-                this.offsetY -= this.shakeOffsetY;
-                this.shakeOffsetX = undefined;
-                this.shakeOffsetY = undefined;
-            }
-
             // if sprite, follow sprite
             if (this.sprite) {
                 this.offsetX = this.sprite.x - (screen.width >> 1);
@@ -59,6 +56,9 @@ namespace scene {
             this.offsetX |= 0;
             this.offsetY |= 0;
 
+            this.drawOffsetX = this.offsetX;
+            this.drawOffsetY = this.offsetY;
+
             // apply shake if needed
             if (this.shakeStartTime !== undefined) {
                 const elapsed = control.millis() - this.shakeStartTime;
@@ -73,11 +73,11 @@ namespace scene {
                     if (percentComplete >= dampStart)
                         damp = Math.max(0, 1 - percentComplete);
                     const f = this.shakeAmplitude * damp;
-                    this.shakeOffsetX = (Math.random() * f) >> 0;
-                    this.shakeOffsetY = (Math.random() * f) >> 0;
+                    const x = (Math.random() * f) >> 0;
+                    const y = (Math.random() * f) >> 0;
                     // apply to offset
-                    this.offsetX += this.shakeOffsetX;
-                    this.offsetY += this.shakeOffsetY;
+                    this.drawOffsetX += x;
+                    this.drawOffsetY += y;
                 }
             }
 

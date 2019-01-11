@@ -46,16 +46,16 @@ namespace scene {
             return !!this._image;
         }
 
-        render() {
+        draw() {
             screen.fill(this.color);
             if (this._image)
                 screen.drawTransparentImage(this._image, 0, 0)
             if (this._layers) {
                 this._layers.forEach(layer => {
                     // compute displacement based on distance
-                    const ox = Math.round(this.camera.offsetX / (1 + layer.distance));
-                    const oy = Math.round(this.camera.offsetY / (1 + layer.distance));
-                    layer.render(ox, oy);
+                    const ox = Math.round(this.camera.drawOffsetX / (1 + layer.distance));
+                    const oy = Math.round(this.camera.drawOffsetY / (1 + layer.distance));
+                    layer.draw(ox, oy);
                 });
             }
         }
@@ -97,7 +97,7 @@ namespace scene {
             }
         }
 
-        render(offsetX: number, offsetY: number) {
+        draw(offsetX: number, offsetY: number) {
             const w = screen.width;
             const h = screen.height;
             const pw = this.img.width;
