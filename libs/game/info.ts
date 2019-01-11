@@ -271,7 +271,6 @@ namespace info {
     //% group="Countdown"
     export function startCountdown(duration: number) {
         _gameEnd = game.currentScene().millis() + duration * 1000;
-        console.log(`gameend ` + _gameEnd)
         updateFlag(Visibility.Countdown, true);
         _countdownExpired = false;
     }
