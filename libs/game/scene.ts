@@ -38,6 +38,7 @@ namespace scene {
         createdHandlers: SpriteHandler[];
         overlapHandlers: OverlapHandler[];
         collisionHandlers: CollisionHandler[];
+        private _millis: number;
         private _data: any;
 
         constructor(eventContext: control.EventContext) {
@@ -52,6 +53,7 @@ namespace scene {
             this.collisionHandlers = [];
             this.spritesByKind = [];
             this._data = {};
+            this._millis = 0;
         }
 
         init() {
@@ -61,8 +63,9 @@ namespace scene {
             this.spriteNextId = 0;
             // update controller state
             this.eventContext.registerFrameHandler(8, () => {
-                control.enablePerfCounter("controller_update")
                 const dt = this.eventContext.deltaTime;
+                this._millis += dt;
+                control.enablePerfCounter("controller_update")
                 controller.__update(dt);
             })
             // update sprites in tilemap
@@ -120,6 +123,13 @@ namespace scene {
 
         get data() {
             return this._data;
+        }
+
+        /**
+         * Gets the elapsed time in the scene
+         */
+        millis(): number {
+            return this._millis;
         }
 
         addSprite(sprite: SpriteLike) {

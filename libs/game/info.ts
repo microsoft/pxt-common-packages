@@ -64,8 +64,10 @@ namespace info {
             }
             // show countdown in both modes
             if (_gameEnd !== undefined && _visibilityFlag & Visibility.Countdown) {
-                drawTimer(_gameEnd - control.millis())
-                let t = Math.max(0, _gameEnd - control.millis()) / 1000;
+                const scene = game.currentScene();
+                const elapsed = _gameEnd - scene.millis();
+                drawTimer(elapsed)
+                let t = elapsed / 1000;
                 if (t <= 0) {
                     t = 0;
                     if (!_countdownExpired) {
@@ -268,7 +270,7 @@ namespace info {
     //% help=info/start-countdown weight=79 blockGap=8
     //% group="Countdown"
     export function startCountdown(duration: number) {
-        _gameEnd = control.millis() + duration * 1000;
+        _gameEnd = game.currentScene().millis() + duration * 1000;
         updateFlag(Visibility.Countdown, true);
         _countdownExpired = false;
     }
