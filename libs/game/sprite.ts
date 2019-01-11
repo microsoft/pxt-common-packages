@@ -388,19 +388,18 @@ class Sprite implements SpriteLike {
      */
     //% group="Properties"
     //% blockId=spritesay block="%sprite(mySprite) say %text||for %millis ms"
+    //% millis.shadow=timePicker
     //% inlineInputMode=inline
     //% help=sprites/sprite/say
     say(text: string, timeOnScreen?: number, textColor = 15, textBoxColor = 1) {
-
         if (!text) {
             this.updateSay = undefined;
             if (this.sayBubbleSprite) {
                 this.sayBubbleSprite.destroy();
+                this.sayBubbleSprite = undefined;
             }
             return;
         }
-
-
 
         let pixelsOffset = 0;
         let holdTextSeconds = 1.5;
@@ -436,6 +435,7 @@ class Sprite implements SpriteLike {
         // Destroy previous sayBubbleSprite to prevent leaking
         if (this.sayBubbleSprite) {
             this.sayBubbleSprite.destroy();
+            this.sayBubbleSprite = undefined;
         }
 
         this.sayBubbleSprite = sprites.create(image.create(bubbleWidth, font.charHeight + bubblePadding), -1);
