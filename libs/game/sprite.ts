@@ -389,19 +389,18 @@ class Sprite implements SpriteLike {
     //% group="Effects"
     //% weight=60
     //% blockId=spritesay block="%sprite(mySprite) say %text||for %millis ms"
+    //% millis.shadow=timePicker
     //% inlineInputMode=inline
     //% help=sprites/sprite/say
     say(text: string, timeOnScreen?: number, textColor = 15, textBoxColor = 1) {
-
         if (!text) {
             this.updateSay = undefined;
             if (this.sayBubbleSprite) {
                 this.sayBubbleSprite.destroy();
+                this.sayBubbleSprite = undefined;
             }
             return;
         }
-
-
 
         let pixelsOffset = 0;
         let holdTextSeconds = 1.5;
@@ -437,6 +436,7 @@ class Sprite implements SpriteLike {
         // Destroy previous sayBubbleSprite to prevent leaking
         if (this.sayBubbleSprite) {
             this.sayBubbleSprite.destroy();
+            this.sayBubbleSprite = undefined;
         }
 
         this.sayBubbleSprite = sprites.create(image.create(bubbleWidth, font.charHeight + bubblePadding), -1);
@@ -533,8 +533,8 @@ class Sprite implements SpriteLike {
     __draw(camera: scene.Camera) {
         if (this.isOutOfScreen(camera)) return;
 
-        const l = this.left - camera.offsetX;
-        const t = this.top - camera.offsetY;
+        const l = this.left - camera.drawOffsetX;
+        const t = this.top - camera.drawOffsetY;
         screen.drawTransparentImage(this._image, l, t)
 
         if (this.flags & SpriteFlag.ShowPhysics) {

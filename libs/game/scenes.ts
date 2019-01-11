@@ -180,6 +180,20 @@ namespace scene {
     }
 
     /**
+     * Shake the camera
+     * @param sprite
+     */
+    //% blockId=camerashake block="camera shake by %amplitude pixels for %duration ms"
+    //% amplitude.min=1 amplitude.max=8 amplitude.defl=4
+    //% duration.shadow=timePicker duration.defl=500
+    //% group="Camera"
+    //% help=scene/camera-shake
+    export function cameraShake(amplitude: number = 4, duration: number = 500) {
+        const scene = game.currentScene();
+        scene.camera.shake(amplitude, duration);
+    }
+
+    /**
      * Set the game camera to follow a sprite
      * @param sprite
      */
