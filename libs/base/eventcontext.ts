@@ -53,8 +53,8 @@ namespace control {
         private frameWorker: number;
         private framesInSample: number;
         private timeInSample: number;
-        public deltaTime: number;
-        private prevTime: number;
+        public deltaTimeMillis: number;
+        private prevTimeMillis: number;
     
         static lastStats: string;
         static onStats: (stats: string) => void;
@@ -63,16 +63,20 @@ namespace control {
             this.handlers = [];
             this.framesInSample = 0;
             this.timeInSample = 0;
-            this.deltaTime = 0;
+            this.deltaTimeMillis = 0;
             this.frameWorker = 0;
+        }
+
+        get deltaTime() {
+            return this.deltaTimeMillis / 1000;
         }
 
         private runCallbacks() {
             control.enablePerfCounter("all frame callbacks")
 
             let loopStart = control.millis()
-            this.deltaTime = (loopStart - this.prevTime) / 1000.0
-            this.prevTime = loopStart;
+            this.deltaTimeMillis = loopStart - this.prevTimeMillis;
+            this.prevTimeMillis = loopStart;
             for (let f of this.frameCallbacks) {
                 f.handler()
             }
@@ -102,8 +106,8 @@ namespace control {
 
             this.framesInSample = 0;
             this.timeInSample = 0;
-            this.deltaTime = 0;
-            this.prevTime = control.millis();
+            this.deltaTimeMillis = 0;
+            this.prevTimeMillis = control.millis();
             const worker = this.frameWorker;
             control.runInParallel(() => {
                 while (worker == this.frameWorker) {

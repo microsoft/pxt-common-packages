@@ -66,7 +66,7 @@ namespace info {
             if (_gameEnd !== undefined && _visibilityFlag & Visibility.Countdown) {
                 const scene = game.currentScene();
                 const elapsed = _gameEnd - scene.millis();
-                drawTimer(elapsed)
+                drawTimer(elapsed);
                 let t = elapsed / 1000;
                 if (t <= 0) {
                     t = 0;
@@ -271,6 +271,7 @@ namespace info {
     //% group="Countdown"
     export function startCountdown(duration: number) {
         _gameEnd = game.currentScene().millis() + duration * 1000;
+        console.log(`gameend ` + _gameEnd)
         updateFlag(Visibility.Countdown, true);
         _countdownExpired = false;
     }

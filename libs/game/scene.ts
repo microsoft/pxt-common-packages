@@ -63,10 +63,9 @@ namespace scene {
             this.spriteNextId = 0;
             // update controller state
             this.eventContext.registerFrameHandler(8, () => {
-                const dt = this.eventContext.deltaTime;
-                this._millis += dt;
+                this._millis += this.eventContext.deltaTimeMillis;
                 control.enablePerfCounter("controller_update")
-                controller.__update(dt);
+                controller.__update(this.eventContext.deltaTime);
             })
             // update sprites in tilemap
             this.eventContext.registerFrameHandler(9, () => {
