@@ -10,6 +10,7 @@ class WDisplay {
 
     uint32_t currPalette[16];
     bool newPalette;
+    bool inUpdate;
 
     uint8_t *screenBuf;
     Image_ lastStatus;
@@ -62,6 +63,7 @@ class WDisplay {
 
         lastStatus = NULL;
         registerGC((TValue *)&lastStatus);
+        inUpdate = false;
     }
 
     void setAddrStatus() {
@@ -104,6 +106,11 @@ void updateScreenStatusBar(Image_ img) {
 void updateScreen(Image_ img) {
     auto display = getWDisplay();
 
+    if (display->inUpdate)
+        return;
+
+    display->inUpdate = true;
+
     if (img && img->isDirty()) {
         if (img->bpp() != 4 || img->width() != display->width ||
             img->height() != display->displayHeight)
@@ -140,6 +147,8 @@ void updateScreen(Image_ img) {
         display->setAddrMain();
         display->lastStatus = NULL;
     }
+
+    display->inUpdate = false;
 }
 
 //%
