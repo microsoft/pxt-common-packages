@@ -1,21 +1,18 @@
 namespace scene.systemMenu {
     export let active = false;
 
-    interface MenuItem {
-        name: () => string;
-        clickHandler: () => void;
-        repeat?: boolean;
-        hiddenHandler?: () => void;
+    class MenuItem {
+        constructor(
+            public name: () => string,
+            public clickHandler: () => void,
+            public repeat?: boolean,
+            public hiddenHandler?: () => void) { }
     }
+    
     let customItems: MenuItem[] = undefined;
     export function addEntry(name: () => string, clickHandler: () => void, repeat?: boolean, hiddenHandler?: () => void) {
         if (!customItems) customItems = [];
-        customItems.push({
-            name: name,
-            clickHandler: clickHandler,
-            repeat: repeat,
-            hiddenHandler: hiddenHandler
-        });
+        customItems.push(new MenuItem(name, clickHandler, repeat, hiddenHandler));
     }
 
     export function register() {
