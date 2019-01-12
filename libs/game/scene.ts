@@ -100,14 +100,18 @@ namespace scene {
             this.eventContext.registerFrameHandler(90, () => {
                 control.enablePerfCounter("sprite_draw")
                 if (this.flags & Flag.NeedsSorting)
-                this.allSprites.sort(function (a, b) { return a.z - b.z || a.id - b.id; })
+                    this.allSprites.sort(function (a, b) { return a.z - b.z || a.id - b.id; })
                 for (const s of this.allSprites)
                     s.__draw(this.camera);
             })
             // render diagnostics
             this.eventContext.registerFrameHandler(150, () => {
-                if (game.stats)
-                    screen.print(control.EventContext.lastStats + ` sprites:${this.allSprites.length}`, 2, 2, 0, image.font5);
+                if (game.stats && control.EventContext.onStats) {
+                    control.EventContext.onStats(
+                        control.EventContext.lastStats +
+                        ` sprites:${this.allSprites.length}`
+                    )
+                }
                 if (game.debug)
                     this.physicsEngine.draw();
                 game.consoleOverlay.draw();
