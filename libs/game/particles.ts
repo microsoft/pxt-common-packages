@@ -387,6 +387,9 @@ namespace particles {
         }
     }
 
+    /**
+     * Stop all particle sources from creating any new particles
+     */
     export function disableAll() {
         const sources = particleSources();
         if (sources) {
@@ -395,6 +398,9 @@ namespace particles {
         }
     }
 
+    /**
+     * Allow all particle sources to create any new particles
+     */
     export function enableAll() {
         const sources = particleSources();
         if (sources) {

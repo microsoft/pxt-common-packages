@@ -1,6 +1,11 @@
 namespace effects {
 
     //% fixedInstances
+    export interface BackgroundEffect {
+        startScreenEffect(): void;
+    }
+
+    //% fixedInstances
     export class ParticleEffect {
         protected sourceFactory: (anchor: particles.ParticleAnchor, pps: number) => particles.ParticleSource;
         protected defaultRate: number;
@@ -14,17 +19,16 @@ namespace effects {
         }
 
         /**
-         * Attaches a new particle animation to the sprite or anchor
-         * @param anchor 
+         * Attaches a new particle animation to the sprite or anchor for a short period of time
+         * @param anchor
+         * @param duration
          * @param particlesPerSecond 
          */
-        //% blockId=particlesstartanimation block="start %effect effect on %anchor=variables_get(mySprite) || for %pause=timePicker|ms at rate %particlesPerSecond p/s"
-        //% expandableArgumentMode="toggle";
-        //% group="Particles"
         start(anchor: particles.ParticleAnchor, duration?: number, particlesPerSecond?: number): void {
             if (!this.sourceFactory) return;
             const src = this.sourceFactory(anchor, particlesPerSecond ? particlesPerSecond : this.defaultRate);
-            src.lifespan = duration > 0 ? duration : this.defaultLifespan;
+            if (duration)
+                src.lifespan = duration > 0 ? duration : this.defaultLifespan;
         }
 
         /**
@@ -33,14 +37,10 @@ namespace effects {
          * @param particlesPerSecond
          * @param lifespan how long the sprite will remain on the screen
          */
-        //% blockId=particlesDestroySpriteWithAnimation block="use %effect effect to destroy %anchor=variables_get(mySprite) || for %pause=timePicker|ms at rate %particlesPerSecond"
-        //% expandableArgumentMode="toggle";
-        //% lifespan.defl=500
-        //% group="Particles"
-        destroy(anchor: Sprite, duration?: number, particlesPerSecond?: number) {
+        destroy(anchor: Sprite, particlesPerSecond?: number, duration: number = 500) {
             anchor.setFlag(SpriteFlag.Ghost, true);
             this.start(anchor, particlesPerSecond);
-            anchor.lifespan = duration > 0 ? this.defaultLifespan : duration;
+            anchor.lifespan = duration;
             effects.dissolve.applyTo(anchor);
         }
     }
@@ -75,7 +75,7 @@ namespace effects {
     }
 
     //% fixedInstances
-    export class SceneEffect extends ParticleEffect implements BackgroundEffect {
+    export class ScreenEffect extends ParticleEffect implements BackgroundEffect {
         protected source: particles.ParticleSource;
         protected sceneDefaultRate: number;
 
@@ -89,15 +89,15 @@ namespace effects {
          * Creates a new effect that occurs over the entire screen
          * @param particlesPerSecond 
          */
-        //% blockId=particlesStartSceneAnimation block="start scene %effect effect || at rate %particlesPerSecond p/s"
+        //% blockId=particlesStartScreenAnimation block="start screen %effect effect"
         //% blockNamespace=scene
         //% group="Effects" blockGap=8
         //% weight=90
-        startSceneEffect(particlesPerSecond?: number): void {
+        startScreenEffect(particlesPerSecond?: number): void {
             if (!this.sourceFactory || (this.source && this.source.enabled))
                 return;
 
-            this.endSceneEffect();
+            this.endScreenEffect();
             this.source = this.sourceFactory(new SceneAnchor(), particlesPerSecond ? particlesPerSecond : this.sceneDefaultRate);
         }
 
@@ -105,11 +105,11 @@ namespace effects {
          * If this effect is currently occurring as a full screen effect, stop producing particles and end the effect
          * @param particlesPerSecond 
          */
-        //% blockId=particlesEndSceneAnimation block="end scene %effect effect"
+        //% blockId=particlesEndScreenAnimation block="end screen %effect effect"
         //% blockNamespace=scene
         //% group="Effects" blockGap=8
         //% weight=80
-        endSceneEffect(): void {
+        endScreenEffect(): void {
             if (this.source) {
                 this.source.destroy();
                 this.source = undefined;
@@ -121,9 +121,10 @@ namespace effects {
      * Removes all effects at anchor's location
      * @param anchor the anchor to remove effects from
      */
-    //% blockId=particlesremoveparticles block="remove particle effects on %anchor=variables_get(mySprite)"
-    //% group="Particles"
-    export function removeParticles(anchor: particles.ParticleAnchor) {
+    //% blockId=particlesclearparticles block="clear effects on %anchor=variables_get(mySprite)"
+    //% blockNamespace=sprites
+    //% group="Effects" weight=89
+    export function clearParticles(anchor: particles.ParticleAnchor) {
         const sources = game.currentScene().data.particleSources as particles.ParticleSource[];
         if (!sources) return;
         sources
@@ -177,14 +178,14 @@ namespace effects {
     });
 
     //% fixedInstance whenUsed block="confetti"
-    export const confetti = new SceneEffect(10, 40, 4000, function (anchor: particles.ParticleAnchor, particlesPerSecond: number) {
+    export const confetti = new ScreenEffect(10, 40, 4000, function (anchor: particles.ParticleAnchor, particlesPerSecond: number) {
         const factory = new particles.ConfettiFactory(anchor.width ? anchor.width : 16, 16);
         factory.setSpeed(30);
         return new particles.ParticleSource(anchor, particlesPerSecond, factory);
     });
 
     //% fixedInstance whenUsed block="hearts"
-    export const hearts = new SceneEffect(5, 20, 2000, function (anchor: particles.ParticleAnchor, particlesPerSecond: number) {
+    export const hearts = new ScreenEffect(5, 20, 2000, function (anchor: particles.ParticleAnchor, particlesPerSecond: number) {
         const factory = new particles.ShapeFactory(anchor.width ? anchor.width : 16, 16, img`
             . F . F .
             F . F . F
@@ -203,7 +204,7 @@ namespace effects {
     });
 
     //% fixedInstance whenUsed block="smiles"
-    export const smiles = new SceneEffect(5, 25, 1500, function (anchor: particles.ParticleAnchor, particlesPerSecond: number) {
+    export const smiles = new ScreenEffect(5, 25, 1500, function (anchor: particles.ParticleAnchor, particlesPerSecond: number) {
         const factory = new particles.ShapeFactory(anchor.width ? anchor.width : 16, 16, img`
             . f . f . 
             . f . f . 
@@ -277,7 +278,7 @@ namespace effects {
     });
 
     //% fixedInstance whenUsed block="blizzard"
-    export const blizzard = new SceneEffect(15, 50, 3000, function (anchor: particles.ParticleAnchor, particlesPerSecond: number) {
+    export const blizzard = new ScreenEffect(15, 50, 3000, function (anchor: particles.ParticleAnchor, particlesPerSecond: number) {
         class SnowFactory extends particles.ShapeFactory {
             constructor(xRange: number, yRange: number) {
                 super(xRange, yRange, img`F`);
@@ -303,7 +304,7 @@ namespace effects {
     });
 
     //% fixedInstance whenUsed block="bubbles"
-    export const bubbles = new SceneEffect(15, 40, 5000, function (anchor: particles.ParticleAnchor, particlesPerSecond: number) {
+    export const bubbles = new ScreenEffect(15, 40, 5000, function (anchor: particles.ParticleAnchor, particlesPerSecond: number) {
         const min = anchor.width > 50 ? 2000 : 500;
         const factory = new particles.BubbleFactory(anchor, min, min * 2.5);
         return new particles.BubbleSource(anchor, particlesPerSecond, factory.stateCount - 1, factory);
