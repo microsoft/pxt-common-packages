@@ -128,26 +128,16 @@ namespace game {
 
     /**
      * Set the music that occurs when the player wins
+     * @param win
      * @param effect
      */
-    //% group="Gameplay"
-    //% blockId=setGameWinSound block="set game win sound to %music"
-    export function setGameWinSound(sound: music.Melody) {
+    export function setGameOverSound(win: boolean, sound: music.Melody) {
         init();
         if (!sound) return;
-        winSound = sound;
-    }
-
-    /**
-     * Set the music that occurs when the player loses
-     * @param effect
-     */
-    //% group="Gameplay"
-    //% blockId=setGameLoseSound block="set game lose sound to %music"
-    export function setGameLoseSound(sound: music.Melody) {
-        init();
-        if (!sound) return;
-        loseSound = sound;
+        if (win)
+            winSound = sound;
+        else
+            loseSound = sound;
     }
 
     /**
