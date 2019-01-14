@@ -108,6 +108,6 @@ namespace jacdac {
         }
     }
 
-    //% fixedInstance whenUsed block="gamepad"
+    //% fixedInstance whenUsed block="gamepad client"
     export const gamepadClient = new GamepadClient();
 }

@@ -17,4 +17,17 @@ namespace jacdac {
             return buf;
         }
     }
+
+    /**
+     * Connects the events of the button to the controller button
+     * @param controllerButton 
+     * @param button 
+     */
+    //% blockId=jdattachctrlbtn block="jacdac attach $button to controller $controllerButton"
+    //% group="Controller"
+    export function attachButtonToController(button: Button, controllerButton: JDControllerButton) {
+        button.onEvent(ButtonEvent.Up, () => jacdac.controllerClient.setIsPressed(controllerButton, false));
+        button.onEvent(ButtonEvent.Down, () => jacdac.controllerClient.setIsPressed(controllerButton, true));
+        jacdac.controllerClient.start();
+    }
 }

@@ -75,20 +75,9 @@ snorfs::File *getFile(String filename) {
     }
     currFilename = filename;
     incrRC(currFilename);
-    currFile = filename == NULL ? NULL : st->fs.open(filename->data);
+    // TODO: fix UTF8 encoding
+    currFile = filename == NULL ? NULL : st->fs.open(filename->getUTF8Data());
     return currFile;
-}
-
-/** 
-* Append string data to a new or existing file. 
-* @param filename name of the file, eg: "log.txt"
-*/
-//% parts="storage" 
-//% blockId="storage_append" block="append file $filename with $data"
-void append(String filename, String data) {
-    auto f = getFile(filename);
-    if (NULL == f) return;
-    f->append(data->data, data->length);
 }
 
 /** 
@@ -100,18 +89,6 @@ void appendBuffer(String filename, Buffer data) {
     auto f = getFile(filename);
     if (NULL == f) return;
     f->append(data->data, data->length);
-}
-
-/** 
-* Overwrite file with string data. 
-* @param filename name of the file, eg: "log.txt"
-*/
-//% parts="storage"
-//% blockId="storage_overwrite" block="overwrite file $filename with $data"
-void overwrite(String filename, String data) {
-    auto f = getFile(filename);
-    if (NULL == f) return;
-    f->overwrite(data->data, data->length);
 }
 
 /** 
@@ -132,7 +109,8 @@ void overwriteWithBuffer(String filename, Buffer data) {
 //% parts="storage"
 //% blockId="storage_exists" block="file $filename exists"
 bool exists(String filename) {
-    return mountedStorage()->fs.exists(filename->data);
+    // TODO utf8 encoding
+    return mountedStorage()->fs.exists(filename->getUTF8Data());
 }
 
 /** 
@@ -160,25 +138,6 @@ int size(String filename) {
         return -1;
     auto f = getFile(filename);    
     return f->size();
-}
-
-/** 
-* Read contents of file as a string. 
-* @param filename name of the file, eg: "log.txt"
-*/
-//% parts="storage"
-//% blockId="storage_read" block="read file $filename"
-String read(String filename) {
-    auto f = getFile(filename);
-    if (NULL == f) 
-        return NULL;
-    auto sz = f->size();
-    if (sz > 0xffff)
-        return NULL;
-    auto res = mkString(NULL, sz);
-    f->seek(0);
-    f->read(res->data, res->length);
-    return res;
 }
 
 /** 

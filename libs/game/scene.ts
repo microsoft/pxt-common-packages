@@ -1,7 +1,6 @@
 /**
  * Control the background, tiles and camera
  */
-//% groups='["Background", "Tiles", "Camera"]'
 namespace scene {
     export enum Flag {
         NeedsSorting = 1 << 1,
@@ -39,6 +38,8 @@ namespace scene {
         createdHandlers: SpriteHandler[];
         overlapHandlers: OverlapHandler[];
         collisionHandlers: CollisionHandler[];
+        private _millis: number;
+        private _data: any;
 
         constructor(eventContext: control.EventContext) {
             this.eventContext = eventContext;
@@ -51,6 +52,8 @@ namespace scene {
             this.overlapHandlers = [];
             this.collisionHandlers = [];
             this.spritesByKind = [];
+            this._data = {};
+            this._millis = 0;
         }
 
         init() {
@@ -60,9 +63,9 @@ namespace scene {
             this.spriteNextId = 0;
             // update controller state
             this.eventContext.registerFrameHandler(8, () => {
+                this._millis += this.eventContext.deltaTimeMillis;
                 control.enablePerfCounter("controller_update")
-                const dt = this.eventContext.deltaTime;
-                controller.__update(dt);
+                controller.__update(this.eventContext.deltaTime);
             })
             // update sprites in tilemap
             this.eventContext.registerFrameHandler(9, () => {
@@ -90,21 +93,25 @@ namespace scene {
             // render background 60
             this.eventContext.registerFrameHandler(60, () => {
                 control.enablePerfCounter("render background")
-                this.background.render();
+                this.background.draw();
             })
             // paint 75
             // render sprites 90
             this.eventContext.registerFrameHandler(90, () => {
                 control.enablePerfCounter("sprite_draw")
                 if (this.flags & Flag.NeedsSorting)
-                this.allSprites.sort(function (a, b) { return a.z - b.z || a.id - b.id; })
+                    this.allSprites.sort(function (a, b) { return a.z - b.z || a.id - b.id; })
                 for (const s of this.allSprites)
                     s.__draw(this.camera);
             })
             // render diagnostics
             this.eventContext.registerFrameHandler(150, () => {
-                if (game.stats)
-                    screen.print(control.EventContext.lastStats + ` sprites:${this.allSprites.length}`, 2, 2, 0, image.font5);
+                if (game.stats && control.EventContext.onStats) {
+                    control.EventContext.onStats(
+                        control.EventContext.lastStats +
+                        ` sprites:${this.allSprites.length}`
+                    )
+                }
                 if (game.debug)
                     this.physicsEngine.draw();
                 game.consoleOverlay.draw();
@@ -117,9 +124,38 @@ namespace scene {
             scene.systemMenu.register();
         }
 
+        get data() {
+            return this._data;
+        }
+
+        /**
+         * Gets the elapsed time in the scene
+         */
+        millis(): number {
+            return this._millis;
+        }
+
         addSprite(sprite: SpriteLike) {
             this.allSprites.push(sprite);
             sprite.id = this.spriteNextId++;
+        }
+
+        destroy() {
+            this.eventContext = undefined;
+            this.menuState = undefined;
+            this.background = undefined;
+            this.tileMap = undefined;
+            this.allSprites = undefined;
+            this.spriteNextId = undefined;
+            this.spritesByKind = undefined;
+            this.physicsEngine = undefined;
+            this.camera = undefined;
+            this.flags = undefined;
+            this.destroyedHandlers = undefined;
+            this.createdHandlers = undefined;
+            this.overlapHandlers = undefined;
+            this.collisionHandlers = undefined;
+            this._data = undefined;
         }
     }
 }

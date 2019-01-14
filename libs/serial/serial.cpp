@@ -27,9 +27,32 @@ enum class BaudRate {
   BaudRate300 = 300
 };
 
-enum SerialEvent {
+enum class SerialEvent {
     //% block="data received"
     DataReceived = CODAL_SERIAL_EVT_RX_FULL    
+};
+
+enum class Delimiters {
+    //% block="new line"
+    NewLine = 10, //'\n',
+    //% block=","
+    Comma = 44, //',',
+    //% block="$"
+    Dollar = 36, // '$',
+    //% block=":"
+    Colon = 58, // ':',
+    //% block="."
+    Fullstop = 46, //'.',
+    //% block="#"
+    Hash = 35, //'#',
+    //% block=";"
+    SemiColumn = 59,
+    //% block="space",
+    Space = 32,
+    //% block="tab"
+    Tab = 9, //'\t'
+    //% block="pipe"
+    Pipe = 124 // `|`,
 };
 
 namespace pxt {
@@ -49,20 +72,50 @@ SINGLETON_IF_PIN(WSerial,TX);
 
 namespace serial {
     /**
-    * Read the buffered received data as a string
+    * Sets the size of the RX buffer in bytes
     */
-    //% help=serial/read-string
-    //% blockId=serial_read_string block="serial|read string"
-    //% weight=18
-    //% group="Read"
-    String readString() {
+    //% help=serial/set-rx-buffer-size
+    //% blockId=serialsetrxbuffersize block="serial set rx buffer size to $size"
+    //% weight=10
+    //% group="Configuration"
+    void setRxBufferSize(uint8_t size) {
       auto service = getWSerial();
-      if (!service) return mkString("");
-      int n = service->serial.getRxBufferSize();
-      if (n == 0) 
-        return mkString("");
-      auto s = service->serial.read(n, SerialMode::ASYNC);
-      return PSTR(s);
+      if (!service) return;
+
+      service->serial.setRxBufferSize(size);
+    }
+
+    /**
+    * Sets the size of the TX buffer in bytes
+    */
+    //% help=serial/set-tx-buffer-size
+    //% blockId=serialsettxbuffersize block="serial set tx buffer size to $size"
+    //% weight=9
+    //% group="Configuration"
+    void setTxBufferSize(uint8_t size) {
+      auto service = getWSerial();
+      if (!service) return;
+
+      service->serial.setTxBufferSize(size);
+    }
+
+    /**
+    * Reads a single byte from the serial receive buffer. Negative if error, 0 if no data.
+    * @param asyncRead false to sleep until data arrived; otherwise returns immediately
+    */
+    //% Group="Read"
+    int read() {
+      auto service = getWSerial();
+      if (!service) return DEVICE_NOT_SUPPORTED;
+
+      uint8_t buf[1];
+      auto r = service->serial.read(buf, 1, codal::SerialMode::ASYNC);
+      // r < 0 => error
+      if (r < 0) return r;
+      // r == 0, nothing read
+      if (r == 0) return DEVICE_NO_DATA;
+      // read 1 char
+      return buf[0];
     }
 
     /**
@@ -94,25 +147,8 @@ namespace serial {
     }
 
     void send(const char* buffer, int length) {
-      // TODO: fix CODAL abstraction
-      // getWSerial()->serial.send((uint8_t*)buffer, length * sizeof(char));
       auto service = getWSerial();
-      if (!service) return;
-      service->serial.printf("%s", buffer);
-    }
-
-    /**
-     * Write some text to the serial port.
-     */
-    //% help=serial/write-string
-    //% weight=87
-    //% blockId=serial_writestring block="serial|write string %text"
-    //% group="Write"
-    void writeString(String text) {
-      auto service = getWSerial();
-      if (!service) return;
-      if (NULL == text) return;
-      send(text->data, text->length);
+      service->serial.send((uint8_t*)buffer, length);
     }
 
     /**
@@ -142,6 +178,9 @@ namespace serial {
     /**
     Set the baud rate of the serial port
     */
+    //% weight=10
+    //% blockId=serial_setbaudrate block="serial|set baud rate %rate"
+    //% blockGap=8 inlineInputMode=inline
     //% help=serial/set-baud-rate
     //% group="Configuration"
     void setBaudRate(BaudRate rate) {
@@ -175,6 +214,23 @@ namespace serial {
     }
 
     /**
+    * Registers code when a delimiter is received
+    **/
+    //% weight=10
+    //% help=serial/on-delimiter-received
+    //% blockId=serial_ondelimiter block="serial on delimiter $delimiter received"
+    //% blockGap=8
+    //% group="Events"
+    void onDelimiterReceived(Delimiters delimiter, Action handler) {
+      auto service = getWSerial();
+      if (!service) return;
+      auto id = service->serial.id;
+      registerWithDal(id, CODAL_SERIAL_EVT_DELIM_MATCH, handler);
+      ManagedString d((char)delimiter);
+      service->serial.eventOn(d);
+    }
+
+    /**
     * Registers code when serial events happen
     **/
     //% weight=9
@@ -186,6 +242,6 @@ namespace serial {
       auto service = getWSerial();
       if (!service) return;
       auto id = service->serial.id;
-      registerWithDal(id, event, handler);
+      registerWithDal(id, (int)event, handler);
     }
 }

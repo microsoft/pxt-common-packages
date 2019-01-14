@@ -4,6 +4,7 @@
 #define SW_SAWTOOTH 2
 #define SW_SINE 3 // TODO remove it? it takes space
 #define SW_NOISE 4
+#define SW_REAL_NOISE 5
 #define SW_SQUARE_10 11
 #define SW_SQUARE_50 15
 

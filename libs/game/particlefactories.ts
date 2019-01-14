@@ -53,7 +53,7 @@ namespace particles {
     }
 
     /**
-     * A factory for generating particles.
+     * A factory for generating particles
      */
     export class ParticleFactory {
 
@@ -133,26 +133,30 @@ namespace particles {
     export class AreaFactory extends SprayFactory {
         xRange: number;
         yRange: number;
+        minLifespan: number;
+        maxLifespan: number;
         protected galois: Math.FastRandom;
 
-        constructor(xRange: number, yRange: number) {
+        constructor(xRange: number, yRange: number, minLifespan?: number, maxLifespan?: number) {
             super(40, 0, 90);
             this.xRange = xRange;
             this.yRange = yRange;
+            this.minLifespan = minLifespan ? minLifespan : 150;
+            this.maxLifespan = maxLifespan ? maxLifespan : 850;
             this.galois = new Math.FastRandom();
         }
 
-        createParticle(anchor: particles.ParticleAnchor) {
+        createParticle(anchor: ParticleAnchor) {
             const p = super.createParticle(anchor);
 
-            p.lifespan = this.galois.randomRange(150, 850);
-            p._x = Fx.add(Fx8(this.galois.randomRange(0, this.xRange) - (this.xRange >> 1)), p._x);
-            p._y = Fx.add(Fx8(this.galois.randomRange(0, this.yRange) - (this.yRange >> 1)), p._y);
+            p.lifespan = this.galois.randomRange(this.minLifespan, this.maxLifespan);
+            p._x = Fx.iadd(this.galois.randomRange(0, this.xRange) - (this.xRange >> 1), p._x);
+            p._y = Fx.iadd(this.galois.randomRange(0, this.yRange) - (anchor.height ? anchor.height >> 1 : 0), p._y);
 
             return p;
         }
 
-        drawParticle(p: particles.Particle, x: Fx8, y: Fx8) {
+        drawParticle(p: Particle, x: Fx8, y: Fx8) {
             const col = p.lifespan > 500 ?
                 4 : p.lifespan > 250 ?
                     5 : 1;
@@ -163,30 +167,35 @@ namespace particles {
     /**
      * A factory for creating a trail that is emitted by sprites.
      */
-    export class TrailFactory extends AreaFactory {
+    export class TrailFactory extends ParticleFactory {
         minLifespan: number;
         maxLifespan: number;
-        galois: Math.FastRandom;
+        xRange: number;
+        yRange: number;
+        protected galois: Math.FastRandom;
 
         constructor(sprite: ParticleAnchor, minLifespan: number, maxLifespan: number) {
-            super(sprite.width ? sprite.width >> 1 : 8, sprite.height? sprite.height >> 1 : 8);
+            super();
+            this.xRange = sprite.width ? sprite.width >> 1 : 8;
+            this.yRange = sprite.height ? sprite.height >> 1 : 8;
             this.minLifespan = minLifespan;
             this.maxLifespan = maxLifespan;
             this.galois = new Math.FastRandom();
-            this.setSpeed(0)
         }
 
-        createParticle(anchor: particles.ParticleAnchor) {
+        createParticle(anchor: ParticleAnchor) {
             const p = super.createParticle(anchor);
 
             p.lifespan = this.galois.randomRange(this.minLifespan, this.maxLifespan);
-            p.data = this.galois.randomRange(0x1, 0xF);
+            p._x = Fx.iadd(this.galois.randomRange(0, this.xRange) - (this.xRange >> 1), p._x);
+            p._y = Fx.iadd(this.galois.randomRange(0, this.yRange) - (this.yRange >> 1), p._y);
+            p.color = this.galois.randomRange(0x1, 0xF);
 
             return p;
         }
 
-        drawParticle(p: particles.Particle, x: Fx8, y: Fx8) {
-            screen.setPixel(Fx.toInt(x), Fx.toInt(y), p.data);
+        drawParticle(p: Particle, x: Fx8, y: Fx8) {
+            screen.setPixel(Fx.toInt(x), Fx.toInt(y), p.color);
         }
     }
 
@@ -220,7 +229,7 @@ namespace particles {
 
         drawParticle(p: Particle, x: Fx8, y: Fx8) {
             const pImage = this.galois.pickRandom(this.sources).clone();
-            pImage.replace(0xF, p.data);
+            pImage.replace(0xF, p.color);
 
             screen.drawTransparentImage(pImage,
                 Fx.toInt(Fx.sub(x, this.ox)),
@@ -230,10 +239,7 @@ namespace particles {
 
         createParticle(anchor: ParticleAnchor) {
             const p = super.createParticle(anchor);
-
-            p.data = this.galois.randomRange(1, 14);
-            p.lifespan = this.galois.randomRange(250, 1000);
-
+            p.color = this.galois.randomRange(1, 14);
             return p;
         }
     }
@@ -263,16 +269,13 @@ namespace particles {
             for (let i = 1; i < confetti.length; i++) {
                 this.addShape(confetti[i]);
             }
-        }
 
-        createParticle(anchor: ParticleAnchor) {
-            const p = super.createParticle(anchor);
-            p.lifespan = this.galois.randomRange(1000, 4500);
-            return p;
+            this.minLifespan = 1000;
+            this.maxLifespan = 4500;
         }
     }
 
-    export class FireFactory extends particles.ParticleFactory {
+    export class FireFactory extends ParticleFactory {
         protected galois: Math.FastRandom;
         protected minRadius: number;
         protected maxRadius: number;
@@ -284,30 +287,31 @@ namespace particles {
             this.minRadius = radius >> 1;
             this.maxRadius = radius;
         }
-    
-        createParticle(anchor: particles.ParticleAnchor) {
+
+        createParticle(anchor: ParticleAnchor) {
             const p = super.createParticle(anchor);
-            p.data = this.galois.randomBool() ?
+            p.color = this.galois.randomBool() ?
                 2 : this.galois.randomBool() ?
                     4 : 5;
-    
+
             const i = this.galois.randomRange(0, cachedCos.length);
             const r = this.galois.randomRange(this.minRadius, this.maxRadius);
+
             p._x = Fx.iadd(anchor.x, Fx.mul(Fx8(r), cachedCos[i]));
             p._y = Fx.iadd(anchor.y, Fx.mul(Fx8(r), cachedSin[i]));
             p.vy = Fx8(Math.randomRange(0, 10));
             p.vx = Fx8(Math.randomRange(-5, 5));
             p.lifespan = 1500;
-    
+
             return p;
         }
-    
-        drawParticle(p: particles.Particle, x: Fx8, y: Fx8) {
-            screen.setPixel(Fx.toInt(p._x), Fx.toInt(p._y), p.data);
+
+        drawParticle(p: Particle, x: Fx8, y: Fx8) {
+            screen.setPixel(Fx.toInt(p._x), Fx.toInt(p._y), p.color);
         }
     }
 
-    export class RadialFactory extends particles.ParticleFactory {
+    export class RadialFactory extends ParticleFactory {
         protected r: Fx8;
         protected speed: Fx8;
         protected t: number;
@@ -331,7 +335,7 @@ namespace particles {
             this.galois = new Math.FastRandom();
         }
 
-        createParticle(anchor: particles.ParticleAnchor) {
+        createParticle(anchor: ParticleAnchor) {
             const p = super.createParticle(anchor);
             const time = ++this.t % cachedCos.length;
             const offsetTime = (time + this.galois.randomRange(0, this.spread)) % cachedCos.length;
@@ -342,13 +346,13 @@ namespace particles {
             p.vy = Fx.mul(this.speed, cachedCos[offsetTime]);
 
             p.lifespan = this.galois.randomRange(200, 1500);
-            p.data = this.galois.pickRandom(this.colors);
+            p.color = this.galois.pickRandom(this.colors);
 
             return p;
         }
 
-        drawParticle(p: particles.Particle, x: Fx8, y: Fx8) {
-            screen.setPixel(Fx.toInt(p._x), Fx.toInt(p._y), p.data);
+        drawParticle(p: Particle, x: Fx8, y: Fx8) {
+            screen.setPixel(Fx.toInt(p._x), Fx.toInt(p._y), p.color);
         }
 
         setRadius(r: number) {
@@ -361,6 +365,150 @@ namespace particles {
 
         setSpread(s: number) {
             this.spread = s;
+        }
+    }
+
+    class ColorCount {
+        constructor(public color: number, public count: number) { }
+    }
+
+    export class AshFactory extends AreaFactory {
+        private colors: ColorCount[];
+        
+        constructor(anchor: ParticleAnchor, updateImage?: boolean, percentKept: number = 20) {
+            super(anchor.width ? anchor.width : 8, anchor.height ? anchor.height >> 1 : 8, 300, 700);
+
+            if (!anchor.image) {
+                this.colors = [new ColorCount(1, 20)];
+                return;
+            }
+
+            let counts: number[] = [];
+            for (let i = 0x0; i <= 0xF; i++) {
+                counts[i] = 0;
+            }
+            let result: Image = anchor.image.clone();
+
+            for (let x = 0; x < result.width; x++) {
+                for (let y = 0; y < result.height; y++) {
+                    const c = result.getPixel(x, y);
+                    if (c && this.galois.percentChance(percentKept)) {
+                        counts[c]++;
+                        result.setPixel(x, y, 0x0);
+                    }
+                }
+            }
+
+            /** TODO: The following should be:
+             * if (updateImage && anchor.setImage) {
+             *     anchor.setImage(result);
+             * }
+             * but this fails due to https://github.com/Microsoft/pxt-arcade/issues/515 .
+             * This is a temporary workaround.
+             */
+            if (updateImage) {
+                (anchor as Sprite).setImage(result);
+            }
+
+            this.colors = counts
+                .map((value: number, index: number) => new ColorCount(index, value))
+                .filter(v => v.count != 0);
+        }
+
+        createParticle(anchor: ParticleAnchor) {
+            if (this.colors.length === 0) return undefined;
+
+            const index = this.galois.randomRange(0, this.colors.length - 1);
+            const choice = this.colors[index];
+            const p = super.createParticle(anchor);
+
+            choice.count--;
+            if (choice.count === 0) this.colors.removeAt(index);
+
+            p.color = choice.color;
+
+            p._y = Fx.iadd(this.galois.randomRange(this.yRange >> 1, this.yRange), p._y);
+            p.vx = anchor.vx ? Fx.neg(Fx8(anchor.vx >> 2)): Fx.zeroFx8;
+            p.vy = Fx8(this.galois.randomRange(-150, -50));
+
+            return p;
+        }
+
+        drawParticle(p: Particle, x: Fx8, y: Fx8) {
+            screen.setPixel(Fx.toInt(x), Fx.toInt(y), p.color);
+        }
+    }
+
+    export class BubbleFactory extends ParticleFactory {
+        minLifespan: number;
+        maxLifespan: number;
+        xRange: number;
+        yRange: number;
+        protected galois: Math.FastRandom;
+        protected states: Image[];
+    
+        constructor(sprite: ParticleAnchor, minLifespan: number, maxLifespan: number) {
+            super();
+            initTrig();
+            this.galois = new Math.FastRandom();
+
+            this.xRange = sprite.width ? sprite.width : 16;
+            this.yRange = 8;
+            this.minLifespan = minLifespan;
+            this.maxLifespan = maxLifespan;
+
+            this.states = [
+                img`
+                    F
+                    `,
+                img`
+                    F F
+                `, img`
+                    F F
+                    F F
+                `, img`
+                    F F F
+                    F . F
+                    F F F
+                `, img`
+                    . F F .
+                    F . . F
+                    F . . F
+                    . F F .
+                `, img`
+                    . F F F .
+                    F . . . F
+                    F . . . F
+                    . F F F .
+            `];
+        }
+
+        get stateCount(): number {
+            return this.states.length;
+        }
+
+        createParticle(anchor: ParticleAnchor) {
+            const p = super.createParticle(anchor);
+
+            p.lifespan = this.galois.randomRange(this.minLifespan, this.maxLifespan);
+            p._x = Fx.iadd(this.galois.randomRange(0, this.xRange) - (this.xRange >> 1), p._x);
+            p._y = Fx.iadd(this.galois.randomRange(-this.yRange, 0) + (anchor.height ? anchor.height >> 1 : 0), p._y);
+
+            p.vy = Fx8(Math.randomRange(-30, -5));
+            p.vx = Fx8(Math.randomRange(-10, 10));
+
+            p.data = this.galois.percentChance(80) ? 0 : 2;
+            p.color = this.galois.percentChance(90) ?
+                0x9 : (this.galois.percentChance(50) ?
+                    0x6 : 0x8);
+
+            return p;
+        }
+
+        drawParticle(p: Particle, x: Fx8, y: Fx8) {
+            const toDraw = this.states[p.data].clone();
+            toDraw.replace(0xF, p.color);
+            screen.drawTransparentImage(toDraw, Fx.toInt(x), Fx.toInt(y));
         }
     }
 }

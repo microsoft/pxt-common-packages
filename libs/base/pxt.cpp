@@ -396,10 +396,11 @@ int RefMap::findIdx(String key) {
     }
 
     // slow path
-    auto keylen = key->length;
+    auto keylen = key->getUTF8Size();
+    auto keydata = key->getUTF8Data();
     for (unsigned i = 0; i < len; ++i) {
         auto s = data[i];
-        if (s->length == keylen && memcmp(s->data, key->data, keylen) == 0)
+        if (s->getUTF8Size() == keylen && memcmp(keydata, s->getUTF8Data(), keylen) == 0)
             return i;
     }
 

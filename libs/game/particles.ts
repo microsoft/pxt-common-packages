@@ -1,13 +1,12 @@
-/**
- * Small particles
- */
-//% color="#382561" weight=78 icon="\uf06d"
-//% groups='["Effects", "Create", "Properties"]'
 namespace particles {
-    const TIME_PRECISION = 10; // time goes down to down to the 1<<10 seconds
+    enum Flag {
+        enabled = 1 << 0,
+        destroyed = 1 << 1,
+    }
 
+    const MAX_SOURCES = 7; // maximum count of sources before removing previous sources
+    const TIME_PRECISION = 10; // time goes down to down to the 1<<10 seconds
     let lastUpdate: number;
-    let sources: ParticleSource[];
 
     /**
      * A single particle
@@ -18,8 +17,9 @@ namespace particles {
         vx: Fx8;
         vy: Fx8;
         lifespan: number;
-        data: number;
         next: Particle;
+        data?: number;
+        color?: number;
     }
 
     /**
@@ -28,20 +28,34 @@ namespace particles {
     export interface ParticleAnchor {
         x: number;
         y: number;
+        vx?: number;
+        vy?: number;
         width?: number;
         height?: number;
+        image?: Image;
+        flags?: number;
+        setImage?: (i: Image) => void;
     }
 
     /**
      * A source of particles
      */
     export class ParticleSource implements SpriteLike {
-        anchor: ParticleAnchor;
-        z: number;
+        private _z: number;
+
         id: number;
         _dt: number;
+        /**
+         * The anchor this source is currently attached to
+         */
+        anchor: ParticleAnchor;
+        /**
+         * Time to live in milliseconds. The lifespan decreases by 1 on each millisecond
+         * and the source gets destroyed when it reaches 0.
+         */
+        lifespan: number;
 
-        protected _enabled: boolean;
+        protected flags: number;
         protected head: Particle;
         protected timer: number;
         protected period: number;
@@ -50,6 +64,17 @@ namespace particles {
         protected ax: Fx8;
         protected ay: Fx8;
 
+        get z() {
+            return this._z;
+        }
+
+        set z(v: number) {
+            if (v != this._z) {
+                this._z = v;
+                game.currentScene().flags |= scene.Flag.NeedsSorting;
+            }
+        }
+
         /**
          * @param anchor to emit particles from
          * @param particlesPerSecond rate at which particles are emitted
@@ -57,15 +82,26 @@ namespace particles {
          */
         constructor(anchor: ParticleAnchor, particlesPerSecond: number, factory?: ParticleFactory) {
             init();
+            const scene = game.currentScene();
+            const sources = particleSources();
+
+            // remove and immediately destroy oldest source if over MAX_SOURCES
+            if (sources.length > MAX_SOURCES) {
+                const removedSource = sources.shift();
+                removedSource.clear();
+                removedSource.destroy();
+            }
+
+            this.flags = 0;
             this.setRate(particlesPerSecond);
             this.setAcceleration(0, 0);
             this.setAnchor(anchor);
+            this.lifespan = undefined;
             this._dt = 0;
-            this.z = -1;
+            this.z = 0;
             this.setFactory(factory || particles.defaultFactory);
             sources.push(this);
-            game.currentScene().addSprite(this);
-
+            scene.addSprite(this);
             this.enabled = true;
         }
 
@@ -79,8 +115,8 @@ namespace particles {
 
         __draw(camera: scene.Camera) {
             let current = this.head;
-            const left = Fx8(camera.offsetX);
-            const top = Fx8(camera.offsetY);
+            const left = Fx8(camera.drawOffsetX);
+            const top = Fx8(camera.drawOffsetY);
 
             while (current) {
                 if (current.lifespan > 0)
@@ -91,7 +127,19 @@ namespace particles {
 
         _update(dt: number) {
             this.timer -= dt;
-            while (this.timer < 0 && this._enabled) {
+
+            const anchor: ParticleAnchor = this.anchor;
+            if (this.lifespan !== undefined) {
+                this.lifespan -= dt;
+                if (this.lifespan <= 0) {
+                    this.lifespan = undefined;
+                    this.destroy();
+                }
+            } else if (this.anchor && this.anchor.flags !== undefined && (this.anchor.flags & sprites.Flag.Destroyed)) {
+                this.lifespan = 750;
+            }
+
+            while (this.timer < 0 && this.enabled) {
                 this.timer += this.period;
                 const p = this._factory.createParticle(this.anchor);
                 if (!p) continue; // some factories can decide to not produce a particle
@@ -104,7 +152,6 @@ namespace particles {
             let current = this.head;
 
             this._dt += dt;
-
             let fixedDt = Fx8(this._dt);
             if (fixedDt) {
                 do {
@@ -122,8 +169,19 @@ namespace particles {
         }
 
         _prune() {
+            if (!this) return;
             while (this.head && this.head.lifespan <= 0) {
                 this.head = this.head.next;
+            }
+
+            if ((this.flags & Flag.destroyed) && !this.head) {
+                const scene = game.currentScene();
+                if (scene)
+                    scene.allSprites.removeElement(this);
+                const sources = particleSources();
+                if (sources)
+                    sources.removeElement(this);
+                this.anchor == undefined;
             }
 
             let current = this.head;
@@ -139,8 +197,6 @@ namespace particles {
         /**
          * Sets the acceleration applied to the particles
          */
-        //% blockId=particlessetacc block="particles %source set acceleration ax $ax ay $ay"
-        //% group="Properties"
         setAcceleration(ax: number, ay: number) {
             this.ax = Fx8(ax);
             this.ay = Fx8(ay);
@@ -150,22 +206,20 @@ namespace particles {
          * Enables or disables particles
          * @param on 
          */
-        //% blockId=particlessetenabled block="particles %source %on=toggleOnOff"
-        //% group="Properties"
         setEnabled(on: boolean) {
             this.enabled = on;
         }
 
         get enabled() {
-            return this._enabled;
+            return !!(this.flags & Flag.enabled);
         }
 
         /**
          * Set whether this source is currently enabled (emitting particles) or not
          */
         set enabled(v: boolean) {
-            if (v !== this._enabled) {
-                this._enabled = v;
+            if (v !== this.enabled) {
+                this.flags = v ? (this.flags | Flag.enabled) : (this.flags ^ Flag.enabled);
                 this.timer = 0;
             }
         }
@@ -174,17 +228,22 @@ namespace particles {
          * Destroy the source
          */
         destroy() {
+            // The `_prune` step will finishing destroying this Source once all emitted particles finish rendering
             this.enabled = false;
-            control.runInParallel(() => {
-                pauseUntil(() => this.head == null);
-                sources.removeElement(this);
-                game.currentScene().allSprites.removeElement(this);
-            });
+            this.flags |= Flag.destroyed;
+            this._prune();
+        }
+
+        /**
+         * Clear all particles emitted from this source
+         */
+        clear() {
+            this.head = undefined;
         }
 
         /**
          * Set a anchor for particles to be emitted from
-         * @param anchor 
+         * @param anchor
          */
         setAnchor(anchor: ParticleAnchor) {
             this.anchor = anchor;
@@ -194,8 +253,6 @@ namespace particles {
          * Sets the number of particle created per second
          * @param particlesPerSecond 
          */
-        //% blockId=particlessetrate block="particles %source set rate to $particlesPerSecond"
-        //% group="Properties"
         setRate(particlesPerSecond: number) {
             this.period = Math.ceil(1000 / particlesPerSecond);
             this.timer = 0;
@@ -209,7 +266,6 @@ namespace particles {
          * Sets the particle factor
          * @param factory 
          */
-        //% blockId=particlesetfactory block="particles %source set $factory=variables_get(factory)"
         setFactory(factory: ParticleFactory) {
             if (factory)
                 this._factory = factory;
@@ -230,29 +286,29 @@ namespace particles {
         }
     }
 
+    //% whenUsed
+    export const defaultFactory = new particles.SprayFactory(20, 0, 60);
+
     /**
      * Creates a new source of particles attached to a sprite
      * @param sprite 
      * @param particlesPerSecond number of particles created per second
      */
-    //% blockId=particlesspray block="create particle source from %sprite=variables_get(mySprite) at %particlesPerSecond p/sec"
-    //% particlesPerSecond.defl=20
-    //% blockSetVariable=source
-    //% particlesPerSecond=100
-    //% group="Sources"
     export function createParticleSource(sprite: Sprite, particlesPerSecond: number): ParticleSource {
         return new ParticleSource(sprite, particlesPerSecond);
     }
 
     function init() {
-        if (sources) return;
-        sources = [];
+        const data = game.currentScene().data;
+        if (data.particleSources) return;
+        data.particleSources = [] as ParticleSource[];
         lastUpdate = control.millis();
         game.onUpdate(updateParticles);
         game.onUpdateInterval(250, pruneParticles);
     }
 
     function updateParticles() {
+        const sources = particleSources();
         const time = control.millis();
         const dt = time - lastUpdate;
         lastUpdate = time;
@@ -263,28 +319,97 @@ namespace particles {
     }
 
     function pruneParticles() {
-        for (let i = 0; i < sources.length; i++) {
-            sources[i]._prune();
-        }
+        const sources = particleSources();
+        sources.forEach(s => s._prune());
     }
 
     /**
-     * A source of particles, where 
+     * A source of particles where particles will occasionally change speed based off of each other
      */
-    export class FireSource extends particles.ParticleSource {
-        private galois: Math.FastRandom;
-        constructor(anchor: particles.ParticleAnchor, particlesPerSecond: number, factory?: particles.ParticleFactory) {
+    export class FireSource extends ParticleSource {
+        protected galois: Math.FastRandom;
+
+        constructor(anchor: ParticleAnchor, particlesPerSecond: number, factory?: ParticleFactory) {
             super(anchor, particlesPerSecond, factory);
             this.galois = new Math.FastRandom();
             this.z = 20;
         }
 
-        updateParticle(p: particles.Particle, fixedDt: Fx8) {
+        updateParticle(p: Particle, fixedDt: Fx8) {
             super.updateParticle(p, fixedDt);
             if (p.next && this.galois.percentChance(30)) {
                 p.vx = p.next.vx;
                 p.vy = p.next.vy;
             }
         }
+    }
+
+    /**
+     * A source of particles where the particles oscillate horizontally, and occasionally change
+     * between a given number of defined states
+     */
+    export class BubbleSource extends ParticleSource {
+        protected maxState: number;
+        protected galois: Math.FastRandom;
+        stateChangePercentage: number;
+        oscilattionPercentage: number
+
+
+        constructor(anchor: ParticleAnchor, particlesPerSecond: number, maxState: number, factory?: ParticleFactory) {
+            super(anchor, particlesPerSecond, factory);
+            this.galois = new Math.FastRandom();
+            this.maxState = maxState;
+            this.stateChangePercentage = 3;
+            this.oscilattionPercentage = 4;
+        }
+
+        updateParticle(p: Particle, fixedDt: Fx8) {
+            super.updateParticle(p, fixedDt);
+            if (this.galois.percentChance(this.stateChangePercentage)) {
+                if (p.data < this.maxState) {
+                    p.data++;
+                } else if (p.data > 0) {
+                    p.data--;
+                }
+            }
+
+            if (this.galois.percentChance(this.oscilattionPercentage)) {
+                p.vx = Fx.neg(p.vx);
+            }
+        }
+    }
+
+    export function clearAll() {
+        const sources = particleSources();
+        if (sources) {
+            sources.forEach(s => s.clear());
+            pruneParticles();
+        }
+    }
+
+    /**
+     * Stop all particle sources from creating any new particles
+     */
+    export function disableAll() {
+        const sources = particleSources();
+        if (sources) {
+            sources.forEach(s => s.enabled = false);
+            pruneParticles();
+        }
+    }
+
+    /**
+     * Allow all particle sources to create any new particles
+     */
+    export function enableAll() {
+        const sources = particleSources();
+        if (sources) {
+            sources.forEach(s => s.enabled = true);
+            pruneParticles();
+        }
+    }
+
+    function particleSources() {
+        return game.currentScene().data.particleSources as particles.ParticleSource[];
     }
 }

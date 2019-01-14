@@ -28,6 +28,6 @@ namespace jacdac {
         }
     }
 
-    //% fixedInstance whenUsed block="switch"
+    //% fixedInstance whenUsed block="switch client"
     export const switchClient = new SwitchClient("switch");
 }

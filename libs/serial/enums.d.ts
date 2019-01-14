@@ -1,7 +1,7 @@
 // Auto-generated. Do not edit.
 
 
-declare const enum BaudRate {
+    declare const enum BaudRate {
     //% block=115200
     BaudRate115200 = 115200,
     //% block=57600
@@ -32,6 +32,30 @@ declare const enum BaudRate {
     declare const enum SerialEvent {
     //% block="data received"
     DataReceived = 3,  // CODAL_SERIAL_EVT_RX_FULL
+    }
+
+
+    declare const enum Delimiters {
+    //% block="new line"
+    NewLine = 10,
+    //% block=","
+    Comma = 44,
+    //% block="$"
+    Dollar = 36,
+    //% block=":"
+    Colon = 58,
+    //% block="."
+    Fullstop = 46,
+    //% block="#"
+    Hash = 35,
+    //% block=";"
+    SemiColumn = 59,
+    //% block="space",
+    Space = 32,
+    //% block="tab"
+    Tab = 9,
+    //% block="pipe"
+    Pipe = 124,
     }
 
 // Auto-generated. Do not edit. Really.

@@ -4,7 +4,7 @@
 #include "Image.h"
 #include "MultiButton.h"
 #include "ZPin.h"
-#include "SAMDTimer.h"
+#include "Timer.h"
 #include "SAMDDAC.h"
 #include "ZSPI.h"
 #include "ZI2C.h"
@@ -23,9 +23,16 @@
 
 typedef int PinName;
 
-// #define PXT_BOOTLOADER_CFG_ADDR 0x8003fc8
-
 #define PAGE_SIZE 512
+
+#ifdef SAMD21
+#define BOOTLOADER_END 0x2000
+#endif
+
+#ifdef SAMD51
+#define BOOTLOADER_END 0x4000
+#define USB_HANDOVER 0
+#endif
 
 // if we ever want to support 100+ pin packages, need to add PC,PD ports and increase this to 128
 #define DEV_NUM_PINS 64
@@ -33,15 +40,12 @@ typedef int PinName;
 #define IS_ANALOG_PIN(id) 1
 
 #define CODAL_PIN ZPin
-#define CODAL_TIMER SAMDTimer
+#define CODAL_TIMER Timer
 #define CODAL_SPI ZSPI
 #define CODAL_I2C ZI2C
 #define CODAL_JACDAC_WIRE_SERIAL codal::ZSingleWireSerial
 #define CODAL_SERIAL codal::SAMDSerial
 #define CODAL_DAC SAMDDAC
-
-#define PXT_BOOTLOADER_CFG_ADDR (0x4000 - 4*4)
-#define PXT_BOOTLOADER_CFG_MAGIC 0xbe3fd5ce
 
 #define PXT_74HC165 1
 

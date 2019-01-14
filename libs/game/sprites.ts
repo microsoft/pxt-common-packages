@@ -13,7 +13,7 @@ Frame handlers:
  * Sprites on screen
  */
 //% weight=99 color="#4B7BEC" icon="\uf1d8"
-//% groups='["Create", "Properties", "Projectiles", "Overlaps", "Lifecycle"]'
+//% groups='["Create", "Physics", "Effects", "Projectiles", "Overlaps", "Lifecycle"]'
 namespace sprites {
 
     /**
@@ -68,8 +68,6 @@ namespace sprites {
     export function createProjectileFromSide(img: Image, vx: number, vy: number) {
         return createProjectile(img, vx, vy, 1);
     }
-
-
     
     /**
      * Create a new sprite with given speed, and place it at the edge of the screen so it moves towards the middle.

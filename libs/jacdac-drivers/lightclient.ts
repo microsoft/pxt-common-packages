@@ -48,6 +48,6 @@ namespace jacdac {
         }
     }
 
-    //% fixedInstance whenUsed block="light"
+    //% fixedInstance whenUsed block="light client"
     export const lightClient = new LightClient("light");
 }

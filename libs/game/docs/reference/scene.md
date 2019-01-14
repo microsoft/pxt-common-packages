@@ -18,6 +18,7 @@ scene.getTile(0, 0).place(null)
 scene.onHitTile(0, 0, function (sprite) {})
 scene.cameraFollowSprite(null)
 scene.centerCameraAt(0, 0)
+scene.cameraShake(4,500)
 ```
 
 ## See also
@@ -36,4 +37,5 @@ scene.centerCameraAt(0, 0)
 [place](/reference/scene/place),
 [on hit tile](/reference/scene/on-hit-tile),
 [camera follow sprite](/reference/scene/camera-follow-sprite),
-[center camera at](/reference/scene/center-camera-at)
+[center camera at](/reference/scene/center-camera-at),
+[camera shake](/reference/scene/camera-shake)

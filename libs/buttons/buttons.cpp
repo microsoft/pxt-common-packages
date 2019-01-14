@@ -93,10 +93,10 @@ Button *getButtonByPin(int pin, int flags) {
     auto btn = (Button *)lookupComponent(cpid);
     if (btn == NULL) {
 #ifdef PXT_74HC165
-        if (pin >= 100) {
+        if (pin >= 1000) {
             if (!buttonMultiplexer)
                 buttonMultiplexer = new ButtonMultiplexer(DEVICE_ID_FIRST_BUTTON);
-            return buttonMultiplexer->createButton(cpid, pin - 100);
+            return buttonMultiplexer->createButton(cpid, pin - 1000);
         }
 #endif
         auto pull = PullMode::None;
@@ -186,7 +186,6 @@ namespace ButtonMethods {
  */
 //% help=input/button/on-event
 //% blockId=buttonEvent block="on %button|%event"
-//% parts="buttons"
 //% blockNamespace=input
 //% button.fieldEditor="gridpicker"
 //% button.fieldOptions.width=220
@@ -204,7 +203,6 @@ void onEvent(Button_ button, ButtonEvent ev, Action body) {
 //% help=input/button/is-pressed
 //% block="%button|is pressed"
 //% blockId=buttonIsPressed
-//% parts="buttons"
 //% blockNamespace=input
 //% button.fieldEditor="gridpicker"
 //% button.fieldOptions.width=220
@@ -222,7 +220,6 @@ bool isPressed(Button_ button) {
 //% help=input/button/was-pressed
 //% block="%button|was pressed"
 //% blockId=buttonWasPressed
-//% parts="buttons"
 //% blockNamespace=input
 //% button.fieldEditor="gridpicker"
 //% button.fieldOptions.width=220
