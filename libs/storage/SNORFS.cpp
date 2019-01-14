@@ -689,7 +689,7 @@ DirEntry *FS::dirRead() {
             return NULL;
         }
         int off = dirptr & 0xff;
-        int len = min(DIRCHUNK, SNORFS_PAGE_SIZE - off);
+        int len = min(DIRCHUNK, pagesPerRow - off);
         flash.readBytes(indexAddr(dirptr), buf, len);
         for (int i = 0; i < len; ++i) {
             if (i + off >= 0x100)
@@ -710,6 +710,10 @@ DirEntry *FS::dirRead() {
             }
         }
         dirptr += len;
+        if ((dirptr & 0xff) == pagesPerRow) {
+            dirptr &= ~0xff;
+            dirptr += 0x100;
+        }
     }
 }
 
@@ -821,8 +825,8 @@ void File::computeWritePage() {
     writeMetaPage = readMetaPage;
     writeOffsetInPage = readOffsetInPage;
     writeNumExplicitSizes = 0;
-    if (writePage) {
-        fs.flash.readBytes(fs.pageAddr(writePage), fs.buf, SNORFS_PAGE_SIZE);
+    if (newWritePage) {
+        fs.flash.readBytes(fs.pageAddr(newWritePage), fs.buf, SNORFS_PAGE_SIZE);
         for (int i = SNORFS_PAGE_SIZE - 1; i >= 0; --i) {
             if (fs.buf[i] == 0xff)
                 break;

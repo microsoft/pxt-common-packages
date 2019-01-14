@@ -311,7 +311,7 @@ void testAll() {
 int main() {
     for (uint32_t i = 0; i < sizeof(randomData); ++i)
         randomData[i] = rand();
-    MemFlash flash(2 * 1024 * 1024 / SNORFS_PAGE_SIZE);
+    MemFlash flash(4 * 1024 * 1024 / SNORFS_PAGE_SIZE);
     fs = new codal::snorfs::FS(flash, ROW_SIZE);
     assert(!fs->tryMount());
     flash.eraseChip();
@@ -327,6 +327,8 @@ int main() {
     simpleTest(NULL, 256);
     simpleTest(NULL, 10000);
 
+    printf("one\n");
+
     auto bufFree = fs->freeSize();
     testBuf();
     assert(bufFree == fs->freeSize());
@@ -339,12 +341,16 @@ int main() {
     simpleTest(NULL, 1003, 20);
     testAll();
 
+    printf("two\n");
+
     multiTest(2, 1000, 100);
     multiTest(10, 1000, 100);
     for (int i = 0; i < 20; ++i)
         multiTest(10, 300, 200);
     simpleTest(NULL, 1003, 300);
     testAll();
+
+    printf("three\n");
 
     auto prevFree = fs->freeSize();
     auto iters = 1000; // more for stress testing

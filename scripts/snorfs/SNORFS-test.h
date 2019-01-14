@@ -17,8 +17,8 @@ inline int max(int a, int b)
 //#define LOG(...) do{}while(0)
 #define LOG printf
 
-#define LOGV printf
-#define LOGVx(...)                                                                                  \
+//#define LOGV printf
+#define LOGV(...)                                                                                  \
     do                                                                                             \
     {                                                                                              \
     } while (0)
