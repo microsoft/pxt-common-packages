@@ -22,3 +22,5 @@ projects/
 _locales/
 libpxt.a
 test
+scripts/snorfs/stest*
+
