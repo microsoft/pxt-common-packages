@@ -7,15 +7,12 @@
 
 #define SNORFS_PAGE_SIZE 256
 
-namespace codal
-{
-namespace snorfs
-{
+namespace codal {
+namespace snorfs {
 
 class File;
 
-struct DirEntry
-{
+struct DirEntry {
     uint32_t size;
     uint16_t flags;
     uint16_t fileID;
@@ -23,8 +20,7 @@ struct DirEntry
 };
 
 // Supported flash size: 1-16MB
-class FS
-{
+class FS {
     friend class File;
 
     SPIFlash &flash;
@@ -48,18 +44,15 @@ class FS
 
     uint16_t dirptr;
 
-    uint32_t rowAddr(uint8_t rowIdx)
-    {
+    uint32_t rowAddr(uint8_t rowIdx) {
         if (rowIdx >= numRows)
             target_panic(DEVICE_FLASH_ERROR);
         return rowRemapCache[rowIdx] * rowSize;
     }
-    uint32_t indexAddr(uint16_t ptr)
-    {
+    uint32_t indexAddr(uint16_t ptr) {
         return rowAddr(ptr >> 8) + rowSize - SNORFS_PAGE_SIZE + (ptr & 0xff);
     }
-    uint32_t pageAddr(uint16_t ptr)
-    {
+    uint32_t pageAddr(uint16_t ptr) {
         // page zero is index, shouldn't be accessed through this
         if (!(ptr & 0xff))
             target_panic(DEVICE_FLASH_ERROR);
@@ -87,7 +80,7 @@ class FS
     bool pageErased(uint32_t addr);
     bool rowErased(uint32_t addr, bool checkFull);
 
-public:
+  public:
     FS(SPIFlash &f, uint32_t rowSize = 256 * SNORFS_PAGE_SIZE);
     ~FS();
     // returns NULL if file doesn't exists and create==false
@@ -114,8 +107,7 @@ public:
 #endif
 };
 
-class File
-{
+class File {
     // Invariants:
     // firstPage == 0 <==> no pages has been allocated
     // readOffset % SNORFS_PAGE_SIZE == 0 && readPage != 0 ==>
@@ -161,7 +153,7 @@ class File
     File(FS &f, const char *filename);
     File *primary();
 
-public:
+  public:
     int read(void *data, uint32_t len);
     void append(const void *data, uint32_t len);
     void seek(uint32_t pos);
@@ -177,7 +169,7 @@ public:
     void debugDump();
 #endif
 };
-}
-}
+} // namespace snorfs
+} // namespace codal
 
 #endif

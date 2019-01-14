@@ -15,24 +15,21 @@ using namespace std;
 typedef codal::snorfs::File File;
 codal::snorfs::FS *fs;
 
-class FileCache
-{
-public:
+class FileCache {
+  public:
     char name[64];
     bool del;
     bool visited;
     vector<uint8_t> data;
 
-    void append(const void *buf, uint32_t len)
-    {
+    void append(const void *buf, uint32_t len) {
         assert(len < MAX_WR);
         uint8_t *ptr = (uint8_t *)buf;
         while (len--)
             data.push_back(*ptr++);
     }
 
-    void validate(File *f)
-    {
+    void validate(File *f) {
         uint8_t tmp[512];
         bool align = false;
         f->seek(0);
@@ -40,26 +37,20 @@ public:
 
         assert(!del);
 
-        while (ptr < data.size())
-        {
+        while (ptr < data.size()) {
             assert(ptr == f->tell());
 
             size_t len;
 
-            if (align)
-            {
+            if (align) {
                 len = 256;
                 align = false;
-            }
-            else if (rand() % 3 == 0)
-            {
+            } else if (rand() % 3 == 0) {
                 len = 256 - (ptr & 0xff);
                 if (len == 0)
                     len = 256;
                 align = true;
-            }
-            else
-            {
+            } else {
                 len = rand() % 500 + 1;
             }
             len = min(data.size() - ptr, len);
@@ -71,10 +62,8 @@ public:
             LOGV("read len=%d l=%d at %d / %x %x %x %x\n", (int)len, l, ptr, tmp[0], tmp[1], tmp[2],
                  tmp[3]);
             assert(l == (int)len);
-            for (unsigned i = 0; i < len; ++i)
-            {
-                if (tmp[i] != data[ptr + i])
-                {
+            for (unsigned i = 0; i < len; ++i) {
+                if (tmp[i] != data[ptr + i]) {
                     LOG("failure: %d != %d at %d (i=%d)\n", tmp[i], data[ptr + i], ptr + i, i);
                     assert(false);
                 }
@@ -86,17 +75,14 @@ public:
 
         // test reading random ranges
         int ranges = 5;
-        while (ranges--)
-        {
+        while (ranges--) {
             int start = rand() % data.size();
             size_t len = rand() % 512;
             len = min(len, data.size() - start);
             f->seek(start);
             f->read(tmp, len);
-            for (unsigned i = 0; i < len; ++i)
-            {
-                if (tmp[i] != data[start + i])
-                {
+            for (unsigned i = 0; i < len; ++i) {
+                if (tmp[i] != data[start + i]) {
                     assert(false);
                 }
             }
@@ -106,12 +92,10 @@ public:
 
 vector<FileCache *> files;
 
-class MemFlash : public codal::SPIFlash
-{
+class MemFlash : public codal::SPIFlash {
     uint32_t npages;
     uint8_t *data;
-    int erase(uint32_t addr, uint32_t len)
-    {
+    int erase(uint32_t addr, uint32_t len) {
         assert(addr % len == 0);
         assert(addr + len <= chipSize());
         for (uint32_t i = 0; i < len; ++i)
@@ -120,9 +104,8 @@ class MemFlash : public codal::SPIFlash
     }
     uint32_t chipSize() { return npages * SNORFS_PAGE_SIZE; }
 
-public:
-    MemFlash(int npages)
-    {
+  public:
+    MemFlash(int npages) {
         this->npages = npages;
         data = new uint8_t[chipSize()];
         beforeErase = NULL;
@@ -141,34 +124,31 @@ public:
     int numErases;
     uint64_t ticks;
 
-    void useSnapshot()
-    {
+    void useSnapshot() {
         delete data;
         data = beforeErase;
         beforeErase = NULL;
     }
 
     int numPages() { return npages; }
-    int readBytes(uint32_t addr, void *buffer, uint32_t len)
-    {
+    int readBytes(uint32_t addr, void *buffer, uint32_t len) {
         assert(addr + len <= chipSize());
         assert(len <= SNORFS_PAGE_SIZE); // needed?
         memcpy(buffer, data + addr, len);
         ticks += 5 + len;
         return 0;
     }
-    int writeBytes(uint32_t addr, const void *buffer, uint32_t len)
-    {
+    int writeBytes(uint32_t addr, const void *buffer, uint32_t len) {
         assert(len <= SNORFS_PAGE_SIZE);
         assert(addr / SNORFS_PAGE_SIZE == (addr + len - 1) / SNORFS_PAGE_SIZE);
         assert(addr + len <= chipSize());
         bytesWritten += len;
         numWrites++;
         uint8_t *ptr = (uint8_t *)buffer;
-        for (uint32_t i = 0; i < len; ++i)
-        {
+        for (uint32_t i = 0; i < len; ++i) {
             if (data[addr + i] != 0xff && !(data[addr + i] && *ptr == 0x00)) {
-                LOG("write error: addr=%d len=%d i=%d data[]=%d -> %d\n", addr, len, i, data[addr+i], *ptr);
+                LOG("write error: addr=%d len=%d i=%d data[]=%d -> %d\n", addr, len, i,
+                    data[addr + i], *ptr);
                 assert(false);
             }
             data[addr + i] = *ptr++;
@@ -176,16 +156,13 @@ public:
         ticks += len * 3 + 50;
         return 0;
     }
-    int eraseSmallRow(uint32_t addr)
-    {
+    int eraseSmallRow(uint32_t addr) {
         assert(false);
         return erase(addr, SPIFLASH_SMALL_ROW_SIZE);
     }
-    int eraseBigRow(uint32_t addr)
-    {
+    int eraseBigRow(uint32_t addr) {
         numErases++;
-        if (snapshotBeforeErase)
-        {
+        if (snapshotBeforeErase) {
             snapshotBeforeErase = false;
             beforeErase = new uint8_t[chipSize()];
             memcpy(beforeErase, data, chipSize());
@@ -196,8 +173,7 @@ public:
     int eraseChip() { return erase(0, chipSize()); }
 };
 
-File *mk(const char *fn)
-{
+File *mk(const char *fn) {
     auto r = fs->open(fn);
     assert(r != NULL);
     return r;
@@ -206,8 +182,7 @@ File *mk(const char *fn)
 uint8_t randomData[1024 * 1024 * 16];
 uint32_t fileSeqNo;
 
-const char *getFileName(uint32_t id)
-{
+const char *getFileName(uint32_t id) {
     static char namebuf[60];
     id *= 0x811c9dc5;
     const char *padding = "ABCDEFGHIJKLMNOPQR";
@@ -215,10 +190,8 @@ const char *getFileName(uint32_t id)
     return namebuf;
 }
 
-FileCache *lookupFile(const char *fn, bool creat = true)
-{
-    for (auto f : files)
-    {
+FileCache *lookupFile(const char *fn, bool creat = true) {
+    for (auto f : files) {
         if (strcmp(f->name, fn) == 0)
             return f;
     }
@@ -231,13 +204,11 @@ FileCache *lookupFile(const char *fn, bool creat = true)
     return r;
 }
 
-uint8_t *getRandomData()
-{
+uint8_t *getRandomData() {
     return randomData + rand() % (sizeof(randomData) - MAX_WR);
 }
 
-void simpleTest(const char *fn, int len, int rep = 1)
-{
+void simpleTest(const char *fn, int len, int rep = 1) {
     if (fn == NULL)
         fn = getFileName(++fileSeqNo);
 
@@ -246,12 +217,10 @@ void simpleTest(const char *fn, int len, int rep = 1)
     auto fc = lookupFile(fn);
 
     auto f = mk(fn);
-    while (rep--)
-    {
+    while (rep--) {
         auto data = getRandomData();
         f->append(data, len);
-        if (rep % 32 == 7)
-        {
+        if (rep % 32 == 7) {
             LOGV("reopen\n");
             delete f;
             f = mk(fn);
@@ -269,40 +238,31 @@ void simpleTest(const char *fn, int len, int rep = 1)
     delete f;
 }
 
-void multiTest(int nfiles, int blockSize, int reps, bool over = false)
-{
+void multiTest(int nfiles, int blockSize, int reps, bool over = false) {
     auto fs = new File *[nfiles];
     auto fcs = new FileCache *[nfiles];
-    for (int i = 0; i < nfiles; ++i)
-    {
+    for (int i = 0; i < nfiles; ++i) {
         fcs[i] = lookupFile(getFileName(++fileSeqNo));
         fs[i] = mk(fcs[i]->name);
     }
     reps *= nfiles;
-    while (reps--)
-    {
+    while (reps--) {
         int i = rand() % nfiles;
         auto d = getRandomData();
         auto len = (rand() % blockSize) + 1;
-        if (over)
-        {
+        if (over) {
             fs[i]->overwrite(d, len);
             fcs[i]->data.clear();
-        }
-        else
-        {
+        } else {
             fs[i]->append(d, len);
         }
         fcs[i]->append(d, len);
     }
-    for (int i = 0; i < nfiles; ++i)
-    {
+    for (int i = 0; i < nfiles; ++i) {
         fcs[i]->validate(fs[i]);
     }
-    for (int i = 0; i < nfiles; ++i)
-    {
-        if (over || rand() % 10 != 0)
-        {
+    for (int i = 0; i < nfiles; ++i) {
+        if (over || rand() % 10 != 0) {
             fs[i]->del();
             fcs[i]->del = true;
         }
@@ -310,21 +270,18 @@ void multiTest(int nfiles, int blockSize, int reps, bool over = false)
     }
 }
 
-void testBuf()
-{
+void testBuf() {
     File *fs[] = {mk("buffer.dat"), mk("buffer.dat"), mk("buffer.dat")};
     int readP[] = {0, 0, 0};
     int writeP = 0;
-    while (writeP < 1024 * 1024)
-    {
+    while (writeP < 1024 * 1024) {
         auto f = fs[rand() % 3];
         assert((int)f->size() == writeP);
         int len = rand() % 2000 + 100;
         f->append(randomData + writeP, len);
         writeP += len;
 
-        for (int i = 0; i < 3; ++i)
-        {
+        for (int i = 0; i < 3; ++i) {
             int len2 = rand() % 2000 + 100;
             char buf[len2];
             f = fs[i];
@@ -338,16 +295,11 @@ void testBuf()
     fs[0]->del();
 }
 
-void testAll()
-{
-    for (auto fc : files)
-    {
-        if (fc->del)
-        {
+void testAll() {
+    for (auto fc : files) {
+        if (fc->del) {
             assert(!fs->exists(fc->name));
-        }
-        else
-        {
+        } else {
             auto f = fs->open(fc->name, false);
             assert(!!f);
             fc->validate(f);
@@ -356,8 +308,7 @@ void testAll()
     }
 }
 
-int main()
-{
+int main() {
     for (uint32_t i = 0; i < sizeof(randomData); ++i)
         randomData[i] = rand();
     MemFlash flash(2 * 1024 * 1024 / SNORFS_PAGE_SIZE);
@@ -370,7 +321,7 @@ int main()
         fs = new codal::snorfs::FS(flash, ROW_SIZE);
         testAll();
     }
-    
+
     fs->debugDump();
     simpleTest(NULL, 1000);
     simpleTest(NULL, 256);
@@ -421,8 +372,7 @@ int main()
 
     fs->dirRewind();
     codal::snorfs::DirEntry *ent;
-    while ((ent = fs->dirRead()) != NULL)
-    {
+    while ((ent = fs->dirRead()) != NULL) {
         auto fc = lookupFile(ent->name, false);
         if (!fc)
             oops();
@@ -431,8 +381,7 @@ int main()
         fc->visited = true;
         LOG("%8d %s\n", ent->size, ent->name);
     }
-    for (auto f : files)
-    {
+    for (auto f : files) {
         if (!f->visited && !f->del)
             oops();
     }
