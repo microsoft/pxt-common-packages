@@ -83,8 +83,8 @@ uint32_t FS::random(uint32_t max)
 
 int FS::firstFree(uint16_t pageIdx)
 {
-    flash.readBytes(indexAddr(pageIdx), buf, SPIFLASH_PAGE_SIZE);
-    for (int k = 1; k < SPIFLASH_PAGE_SIZE - 1; ++k)
+    flash.readBytes(indexAddr(pageIdx), buf, SNORFS_PAGE_SIZE);
+    for (int k = 1; k < SNORFS_PAGE_SIZE - 1; ++k)
         if (buf[k] == 0xff)
             return pageIdx | k;
     return 0;
@@ -116,8 +116,8 @@ static void initBlockHeader(BlockHeader &hd, bool free)
 
 bool FS::pageErased(uint32_t addr)
 {
-    flash.readBytes(addr, buf, SPIFLASH_PAGE_SIZE);
-    for (int i = 0; i < SPIFLASH_PAGE_SIZE; ++i)
+    flash.readBytes(addr, buf, SNORFS_PAGE_SIZE);
+    for (int i = 0; i < SNORFS_PAGE_SIZE; ++i)
         if (buf[i] != 0xff)
             return false;
     return true;
@@ -128,7 +128,7 @@ bool FS::rowErased(uint32_t addr, bool checkFull)
     if (!checkFull)
         return pageErased(addr) && pageErased(addr + 512) && pageErased(addr + 1024);
 
-    for (uint32_t off = 0; off < SPIFLASH_BIG_ROW_SIZE; off += SPIFLASH_PAGE_SIZE)
+    for (uint32_t off = 0; off < SPIFLASH_BIG_ROW_SIZE; off += SNORFS_PAGE_SIZE)
     {
         if (!pageErased(addr + off))
             return false;
@@ -141,7 +141,7 @@ void FS::format()
     if (files)
         oops();
 
-    uint32_t end = flash.numPages() * SPIFLASH_PAGE_SIZE;
+    uint32_t end = flash.numPages() * SNORFS_PAGE_SIZE;
     uint16_t rowIdx = 0;
     BlockHeader hd;
     initBlockHeader(hd, false);
@@ -201,9 +201,9 @@ void FS::gcCore(bool force, bool isData)
     for (unsigned row = start; row < end; ++row)
     {
         uint32_t addr = indexAddr(row << 8);
-        flash.readBytes(addr, buf, SPIFLASH_PAGE_SIZE);
+        flash.readBytes(addr, buf, SNORFS_PAGE_SIZE);
         uint16_t numDel = 0;
-        for (int i = 1; i < SPIFLASH_PAGE_SIZE - 1; i++)
+        for (int i = 1; i < SNORFS_PAGE_SIZE - 1; i++)
         {
             if (buf[i] == 0x00)
                 numDel++;
@@ -242,7 +242,7 @@ void FS::gcCore(bool force, bool isData)
     //   * force is true (we desperately need space)
     //   * there's a row that's more than 50% deleted
     //   * clearing a row will increase free space by more than 20%
-    if (force || maxDelCnt > SPIFLASH_PAGE_SIZE / 2 || (maxDelCnt * 5 > freePages))
+    if (force || maxDelCnt > SNORFS_PAGE_SIZE / 2 || (maxDelCnt * 5 > freePages))
     {
         swapRow(rowRemapCache[maxDelIdx]);
         if (!readHeaders()) // this will trigger levelling on the new free block
@@ -261,11 +261,11 @@ void FS::swapRow(int row)
     uint32_t trg = freeRow * SPIFLASH_BIG_ROW_SIZE;
     uint32_t src = row * SPIFLASH_BIG_ROW_SIZE;
 
-    uint32_t skipmask[SPIFLASH_PAGE_SIZE / 32];
+    uint32_t skipmask[SNORFS_PAGE_SIZE / 32];
     memset(skipmask, 0, sizeof(skipmask));
-    auto idxOff = SPIFLASH_BIG_ROW_SIZE - SPIFLASH_PAGE_SIZE;
-    flash.readBytes(src + idxOff, buf, SPIFLASH_PAGE_SIZE);
-    for (int i = 1; i < SPIFLASH_PAGE_SIZE - 1; i++)
+    auto idxOff = SPIFLASH_BIG_ROW_SIZE - SNORFS_PAGE_SIZE;
+    flash.readBytes(src + idxOff, buf, SNORFS_PAGE_SIZE);
+    for (int i = 1; i < SNORFS_PAGE_SIZE - 1; i++)
     {
         if (buf[i] == 0x00)
         {
@@ -284,18 +284,18 @@ void FS::swapRow(int row)
 
     setFlag(trg, freeFlag, 0); // no longer free
 
-    flash.writeBytes(trg + idxOff, buf, SPIFLASH_PAGE_SIZE);
-    for (int i = 1; i < SPIFLASH_PAGE_SIZE - 1; ++i)
+    flash.writeBytes(trg + idxOff, buf, SNORFS_PAGE_SIZE);
+    for (int i = 1; i < SNORFS_PAGE_SIZE - 1; ++i)
     {
         if (skipmask[i / 32] & (1U << (i % 32)))
             continue;
 
-        flash.readBytes(src + SPIFLASH_PAGE_SIZE * i, buf, SPIFLASH_PAGE_SIZE);
-        flash.writeBytes(trg + SPIFLASH_PAGE_SIZE * i, buf, SPIFLASH_PAGE_SIZE);
+        flash.readBytes(src + SNORFS_PAGE_SIZE * i, buf, SNORFS_PAGE_SIZE);
+        flash.writeBytes(trg + SNORFS_PAGE_SIZE * i, buf, SNORFS_PAGE_SIZE);
         busy();
     }
 
-    flash.readBytes(src, buf, SPIFLASH_PAGE_SIZE);
+    flash.readBytes(src, buf, SNORFS_PAGE_SIZE);
     auto hd = (BlockHeader *)(void *)buf;
     flash.writeBytes(trg + offsetof(BlockHeader, logicalBlockId), &hd->logicalBlockId, 2);
     setFlag(trg, copiedFlag, SNORFS_COPIED_FLAG);
@@ -308,7 +308,7 @@ void FS::swapRow(int row)
     flash.eraseBigRow(src);
     busy();
     int last = 0;
-    for (int i = 0; i < SPIFLASH_PAGE_SIZE; ++i)
+    for (int i = 0; i < SNORFS_PAGE_SIZE; ++i)
         if (buf[i] != 0xff)
             last = i;
     flash.writeBytes(src, buf, last + 1);
@@ -446,7 +446,7 @@ void FS::mount()
     {
         if (dirptr == SNORFS_TRY_MOUNT)
         {
-            uint32_t end = flash.numPages() * SPIFLASH_PAGE_SIZE;
+            uint32_t end = flash.numPages() * SNORFS_PAGE_SIZE;
             for (uint32_t addr = 0; addr < end; addr += SPIFLASH_BIG_ROW_SIZE)
             {
                 if (!rowErased(addr, false))
@@ -534,7 +534,7 @@ uint8_t FS::dataPageSize()
 {
     int markedLen = 0;
     int i;
-    for (i = SPIFLASH_PAGE_SIZE - 1; i >= 0; --i)
+    for (i = SNORFS_PAGE_SIZE - 1; i >= 0; --i)
     {
         if (buf[i] == 0xff)
             break;
@@ -626,8 +626,8 @@ uint16_t FS::findMetaEntry(const char *filename)
 
     for (int i = 0; i < numMetaRows; ++i)
     {
-        flash.readBytes(indexAddr(i << 8), buf, SPIFLASH_PAGE_SIZE);
-        for (int j = 1; j < SPIFLASH_PAGE_SIZE - 1; ++j)
+        flash.readBytes(indexAddr(i << 8), buf, SNORFS_PAGE_SIZE);
+        for (int j = 1; j < SNORFS_PAGE_SIZE - 1; ++j)
         {
             if (buf[j] == h)
             {
@@ -651,7 +651,7 @@ uint16_t FS::createMetaPage(const char *filename)
     uint16_t page = findFreePage(false);
     uint16_t buflen = strlen(filename) + 2;
 
-    memset(buf, 0xff, SPIFLASH_PAGE_SIZE);
+    memset(buf, 0xff, SNORFS_PAGE_SIZE);
     buf[0] = 0x01;
     memcpy(buf + 1, filename, buflen - 1);
 
@@ -713,7 +713,7 @@ int FS::metaStart(uint16_t *nextPtr, uint16_t *nextPtrPtr)
     if (nextPtrPtr)
         *nextPtrPtr = start;
     start += 2;
-    for (int i = start; i + 2 < SPIFLASH_PAGE_SIZE; i += 3)
+    for (int i = start; i + 2 < SNORFS_PAGE_SIZE; i += 3)
         if (buf[i] == 0x00 && buf[i + 1] == 0x00 && buf[i + 2] == 0x00)
             start = i + 3;
     return start;
@@ -726,11 +726,11 @@ uint32_t FS::fileSize(uint16_t metaPage)
     uint16_t currPage = metaPage;
     for (;;)
     {
-        flash.readBytes(pageAddr(currPage), buf, SPIFLASH_PAGE_SIZE);
+        flash.readBytes(pageAddr(currPage), buf, SNORFS_PAGE_SIZE);
         if (buf[0] == 0x00)
             return 0; // deleted
         uint16_t nextPtr;
-        for (int i = metaStart(&nextPtr); i + 2 < SPIFLASH_PAGE_SIZE; i += 3)
+        for (int i = metaStart(&nextPtr); i + 2 < SNORFS_PAGE_SIZE; i += 3)
         {
             uint16_t page = read16(i);
             if (page == 0xffff)
@@ -760,7 +760,7 @@ uint32_t FS::fileSize(uint16_t metaPage)
 
     if (lastPage)
     {
-        flash.readBytes(pageAddr(lastPage), buf, SPIFLASH_PAGE_SIZE);
+        flash.readBytes(pageAddr(lastPage), buf, SNORFS_PAGE_SIZE);
         sz += dataPageSize();
     }
 
@@ -789,7 +789,7 @@ DirEntry *FS::dirRead()
             return NULL;
         }
         int off = dirptr & 0xff;
-        int len = min(DIRCHUNK, SPIFLASH_PAGE_SIZE - off);
+        int len = min(DIRCHUNK, SNORFS_PAGE_SIZE - off);
         flash.readBytes(indexAddr(dirptr), buf, len);
         for (int i = 0; i < len; ++i)
         {
@@ -823,7 +823,7 @@ bool File::seekNextPage(uint16_t *cache)
 
     if (*cache != readMetaPage)
     {
-        fs.flash.readBytes(fs.pageAddr(readMetaPage), fs.buf, SPIFLASH_PAGE_SIZE);
+        fs.flash.readBytes(fs.pageAddr(readMetaPage), fs.buf, SNORFS_PAGE_SIZE);
         *cache = readMetaPage;
     }
 
@@ -831,7 +831,7 @@ bool File::seekNextPage(uint16_t *cache)
     bool isNext = false;
     uint16_t newReadPage = 0;
 
-    for (int i = fs.metaStart(&nextPtr); i + 2 < SPIFLASH_PAGE_SIZE; i += 3)
+    for (int i = fs.metaStart(&nextPtr); i + 2 < SNORFS_PAGE_SIZE; i += 3)
     {
         uint16_t page = fs.read16(i);
         if (page == 0xffff)
@@ -860,7 +860,7 @@ bool File::seekNextPage(uint16_t *cache)
     if (readPageSize == 0xff)
     {
         *cache = 0;
-        fs.flash.readBytes(fs.pageAddr(newReadPage), fs.buf, SPIFLASH_PAGE_SIZE);
+        fs.flash.readBytes(fs.pageAddr(newReadPage), fs.buf, SNORFS_PAGE_SIZE);
         readPageSize = fs.dataPageSize();
     }
     else
@@ -940,8 +940,8 @@ void File::computeWritePage()
     writeNumExplicitSizes = 0;
     if (writePage)
     {
-        fs.flash.readBytes(fs.pageAddr(writePage), fs.buf, SPIFLASH_PAGE_SIZE);
-        for (int i = SPIFLASH_PAGE_SIZE - 1; i >= 0; --i)
+        fs.flash.readBytes(fs.pageAddr(writePage), fs.buf, SNORFS_PAGE_SIZE);
+        for (int i = SNORFS_PAGE_SIZE - 1; i >= 0; --i)
         {
             if (fs.buf[i] == 0xff)
                 break;
@@ -974,7 +974,7 @@ void File::append(const void *data, uint32_t len)
     while (len > 0)
     {
         int nwrite =
-            min((int)len, SPIFLASH_PAGE_SIZE - (writeNumExplicitSizes + 2) - writeOffsetInPage);
+            min((int)len, SNORFS_PAGE_SIZE - (writeNumExplicitSizes + 2) - writeOffsetInPage);
         if (nwrite <= 0 || writePage == 0)
         {
             allocatePage();
@@ -990,7 +990,7 @@ void File::append(const void *data, uint32_t len)
         // if the last byte was 0xff, we need an end marker
         if (((uint8_t *)data)[nwrite - 1] == 0xff)
         {
-            fs.flash.writeBytes(fs.pageAddr(writePage) + SPIFLASH_PAGE_SIZE -
+            fs.flash.writeBytes(fs.pageAddr(writePage) + SNORFS_PAGE_SIZE -
                                     (writeNumExplicitSizes++ + 1),
                                 &writeOffsetInPage, 1);
         }
@@ -1014,11 +1014,11 @@ void File::allocatePage()
 {
     fs.feedRandom(fileID());
 
-    fs.flash.readBytes(fs.pageAddr(writeMetaPage), fs.buf, SPIFLASH_PAGE_SIZE);
+    fs.flash.readBytes(fs.pageAddr(writeMetaPage), fs.buf, SNORFS_PAGE_SIZE);
     int next = 0;
     int last = 0;
     uint16_t nextPP;
-    for (int i = fs.metaStart(NULL, &nextPP); i + 2 < SPIFLASH_PAGE_SIZE; i += 3)
+    for (int i = fs.metaStart(NULL, &nextPP); i + 2 < SNORFS_PAGE_SIZE; i += 3)
     {
         if (fs.buf[i] == 0xff && fs.buf[i + 1] == 0xff)
         {
@@ -1034,7 +1034,7 @@ void File::allocatePage()
     if (writePage && last)
     {
 #ifdef SNORFS_TEST
-        fs.flash.readBytes(fs.pageAddr(writePage), fs.buf, SPIFLASH_PAGE_SIZE);
+        fs.flash.readBytes(fs.pageAddr(writePage), fs.buf, SNORFS_PAGE_SIZE);
         uint8_t len = fs.dataPageSize();
         if (len != writeOffsetInPage)
             oops();
@@ -1120,9 +1120,9 @@ void File::overwrite(const void *data, uint32_t len)
 
     fs.lock();
 
-    fs.flash.readBytes(metaPageAddr(), fs.buf, SPIFLASH_PAGE_SIZE);
+    fs.flash.readBytes(metaPageAddr(), fs.buf, SNORFS_PAGE_SIZE);
     int freePtr = 0;
-    for (int i = fs.metaStart(); i + 2 + 6 < SPIFLASH_PAGE_SIZE; i += 3)
+    for (int i = fs.metaStart(); i + 2 + 6 < SNORFS_PAGE_SIZE; i += 3)
     {
         if (fs.buf[i] == 0xff && fs.buf[i + 1] == 0xff)
         {

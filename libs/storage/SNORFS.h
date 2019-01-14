@@ -5,6 +5,8 @@
 
 #define DEVICE_FLASH_ERROR 950
 
+#define SNORFS_PAGE_SIZE 256
+
 namespace codal
 {
 namespace snorfs
@@ -26,7 +28,7 @@ class FS
     friend class File;
 
     SPIFlash &flash;
-    uint8_t buf[SPIFLASH_PAGE_SIZE];
+    uint8_t buf[SNORFS_PAGE_SIZE];
 
     File *files;
 
@@ -53,14 +55,14 @@ class FS
     }
     uint32_t indexAddr(uint16_t ptr)
     {
-        return rowAddr(ptr >> 8) + SPIFLASH_BIG_ROW_SIZE - SPIFLASH_PAGE_SIZE + (ptr & 0xff);
+        return rowAddr(ptr >> 8) + SPIFLASH_BIG_ROW_SIZE - SNORFS_PAGE_SIZE + (ptr & 0xff);
     }
     uint32_t pageAddr(uint16_t ptr)
     {
         // page zero is index, shouldn't be accessed through this
         if (!(ptr & 0xff))
             target_panic(DEVICE_FLASH_ERROR);
-        return rowAddr(ptr >> 8) + SPIFLASH_PAGE_SIZE * (ptr & 0xff);
+        return rowAddr(ptr >> 8) + SNORFS_PAGE_SIZE * (ptr & 0xff);
     }
 
     int firstFree(uint16_t pageIdx);
@@ -91,9 +93,9 @@ public:
     File *open(const char *filename, bool create = true);
     File *open(uint16_t fileID);
     bool exists(const char *filename);
-    uint32_t rawSize() { return flash.numPages() * SPIFLASH_PAGE_SIZE; }
-    uint32_t totalSize() { return (fullPages + deletedPages + freePages) * SPIFLASH_PAGE_SIZE; }
-    uint32_t freeSize() { return (deletedPages + freePages) * SPIFLASH_PAGE_SIZE; }
+    uint32_t rawSize() { return flash.numPages() * SNORFS_PAGE_SIZE; }
+    uint32_t totalSize() { return (fullPages + deletedPages + freePages) * SNORFS_PAGE_SIZE; }
+    uint32_t freeSize() { return (deletedPages + freePages) * SNORFS_PAGE_SIZE; }
     void busy(bool isBusy = true);
     void maybeGC();
     // this allow raw r/o access; will lock the instance as needed
@@ -115,9 +117,9 @@ class File
 {
     // Invariants:
     // firstPage == 0 <==> no pages has been allocated
-    // readOffset % SPIFLASH_PAGE_SIZE == 0 && readPage != 0 ==>
+    // readOffset % SNORFS_PAGE_SIZE == 0 && readPage != 0 ==>
     //       readPage is on page for (readOffset - 1)
-    // writePage % SPIFLASH_PAGE_SIZE == 0 && writePage != 0 ==>
+    // writePage % SNORFS_PAGE_SIZE == 0 && writePage != 0 ==>
     //       writePage is on page for (metaSize - 1)
     // if readPage is 0 it needs to be recomputed
     // if writePage is 0 it needs to be recomputed

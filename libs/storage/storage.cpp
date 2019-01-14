@@ -23,7 +23,7 @@ class WStorage {
     WStorage()
         : flashSPI(*LOOKUP_PIN(FLASH_MOSI), *LOOKUP_PIN(FLASH_MISO), *LOOKUP_PIN(FLASH_SCK)),
           flash(flashSPI, *LOOKUP_PIN(FLASH_CS),
-                getConfig(CFG_FLASH_BYTES, 2 * 1024 * 1024) / SPIFLASH_PAGE_SIZE),
+                getConfig(CFG_FLASH_BYTES, 2 * 1024 * 1024) / SNORFS_PAGE_SIZE),
           fs(flash), msc(fs) {
         // see if we can mount it
         mounted = fs.tryMount();

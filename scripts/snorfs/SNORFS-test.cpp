@@ -116,7 +116,7 @@ class MemFlash : public codal::SPIFlash
             data[addr + i] = 0xff;
         return 0;
     }
-    uint32_t chipSize() { return npages * SPIFLASH_PAGE_SIZE; }
+    uint32_t chipSize() { return npages * SNORFS_PAGE_SIZE; }
 
 public:
     MemFlash(int npages)
@@ -150,15 +150,15 @@ public:
     int readBytes(uint32_t addr, void *buffer, uint32_t len)
     {
         assert(addr + len <= chipSize());
-        assert(len <= SPIFLASH_PAGE_SIZE); // needed?
+        assert(len <= SNORFS_PAGE_SIZE); // needed?
         memcpy(buffer, data + addr, len);
         ticks += 5 + len;
         return 0;
     }
     int writeBytes(uint32_t addr, const void *buffer, uint32_t len)
     {
-        assert(len <= SPIFLASH_PAGE_SIZE);
-        assert(addr / SPIFLASH_PAGE_SIZE == (addr + len - 1) / SPIFLASH_PAGE_SIZE);
+        assert(len <= SNORFS_PAGE_SIZE);
+        assert(addr / SNORFS_PAGE_SIZE == (addr + len - 1) / SNORFS_PAGE_SIZE);
         assert(addr + len <= chipSize());
         bytesWritten += len;
         numWrites++;
@@ -355,7 +355,7 @@ int main()
 {
     for (uint32_t i = 0; i < sizeof(randomData); ++i)
         randomData[i] = rand();
-    MemFlash flash(2 * 1024 * 1024 / SPIFLASH_PAGE_SIZE);
+    MemFlash flash(2 * 1024 * 1024 / SNORFS_PAGE_SIZE);
     fs = new codal::snorfs::FS(flash);
     assert(!fs->tryMount());
     flash.eraseChip();
