@@ -10,7 +10,7 @@ using namespace std;
 
 #define MAX_WR 2000000
 
-#define ROW_SIZE (256 * SNORFS_PAGE_SIZE)
+#define ROW_SIZE (64 * SNORFS_PAGE_SIZE)
 
 typedef codal::snorfs::File File;
 codal::snorfs::FS *fs;
@@ -167,7 +167,10 @@ public:
         uint8_t *ptr = (uint8_t *)buffer;
         for (uint32_t i = 0; i < len; ++i)
         {
-            assert(data[addr + i] == 0xff || (data[addr + i] && *ptr == 0x00));
+            if (data[addr + i] != 0xff && !(data[addr + i] && *ptr == 0x00)) {
+                LOG("write error: addr=%d len=%d i=%d data[]=%d -> %d\n", addr, len, i, data[addr+i], *ptr);
+                assert(false);
+            }
             data[addr + i] = *ptr++;
         }
         ticks += len * 3 + 50;
