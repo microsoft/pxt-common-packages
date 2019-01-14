@@ -26,6 +26,8 @@ static uint16_t snorfs_unlocked_event;
 #define SNORFS_COMPUTING_WRITE_PAGE 0x00ff
 #define SNORFS_TRY_MOUNT 0xfff0
 
+namespace codal {
+namespace snorfs {
 struct BlockHeader {
     uint32_t magic;
     uint8_t version;
@@ -35,6 +37,8 @@ struct BlockHeader {
     uint32_t freeFlag;
     uint32_t copiedFlag;
 };
+} // namespace snorfs
+} // namespace codal
 
 static uint8_t fnhash(const char *fn) {
     uint32_t h = 0x811c9dc5;
@@ -91,10 +95,10 @@ void FS::busy(bool) {
     // blink LED or something
 }
 
-static void initBlockHeader(BlockHeader &hd, bool free) {
+void FS::initBlockHeader(BlockHeader &hd, bool free) {
     hd.magic = SNORFS_MAGIC;
     hd.version = 0;
-    hd.numMetaRows = 2;
+    hd.numMetaRows = 2 * (256 / pagesPerRow);
     hd.eraseCount = 0;
     if (free) {
         hd.logicalBlockId = 0xffff;

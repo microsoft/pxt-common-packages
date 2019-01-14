@@ -311,7 +311,7 @@ void testAll() {
 int main() {
     for (uint32_t i = 0; i < sizeof(randomData); ++i)
         randomData[i] = rand();
-    MemFlash flash(4 * 1024 * 1024 / SNORFS_PAGE_SIZE);
+    MemFlash flash(2 * 1024 * 1024 / SNORFS_PAGE_SIZE);
     fs = new codal::snorfs::FS(flash, ROW_SIZE);
     assert(!fs->tryMount());
     flash.eraseChip();

@@ -19,6 +19,8 @@ struct DirEntry {
     char name[65];
 };
 
+struct BlockHeader;
+
 // Supported flash size: 1-16MB
 class FS {
     friend class File;
@@ -82,6 +84,7 @@ class FS {
     void unlock();
     bool pageErased(uint32_t addr);
     bool rowErased(uint32_t addr, bool checkFull);
+    void initBlockHeader(BlockHeader &hd, bool free);
 
   public:
     FS(SPIFlash &f, uint32_t rowSize = 256 * SNORFS_PAGE_SIZE);
