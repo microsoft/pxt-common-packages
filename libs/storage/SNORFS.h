@@ -39,6 +39,7 @@ class FS
     volatile bool locked;
 
     uint32_t randomSeed;
+    uint32_t rowSize;
 
     // this is for data pages only
     uint16_t fullPages;
@@ -51,11 +52,11 @@ class FS
     {
         if (rowIdx >= numRows)
             target_panic(DEVICE_FLASH_ERROR);
-        return rowRemapCache[rowIdx] * SPIFLASH_BIG_ROW_SIZE;
+        return rowRemapCache[rowIdx] * rowSize;
     }
     uint32_t indexAddr(uint16_t ptr)
     {
-        return rowAddr(ptr >> 8) + SPIFLASH_BIG_ROW_SIZE - SNORFS_PAGE_SIZE + (ptr & 0xff);
+        return rowAddr(ptr >> 8) + rowSize - SNORFS_PAGE_SIZE + (ptr & 0xff);
     }
     uint32_t pageAddr(uint16_t ptr)
     {
@@ -87,7 +88,7 @@ class FS
     bool rowErased(uint32_t addr, bool checkFull);
 
 public:
-    FS(SPIFlash &f);
+    FS(SPIFlash &f, uint32_t rowSize = 256 * SNORFS_PAGE_SIZE);
     ~FS();
     // returns NULL if file doesn't exists and create==false
     File *open(const char *filename, bool create = true);
