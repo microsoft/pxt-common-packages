@@ -1,16 +1,4 @@
-/**
- * Small particles
- */
-//% color="#382561" weight=78 icon="\uf06d"
-//% groups='["Particles", "Images"]'
-//% advanced=true
 namespace effects {
-
-    //% fixedInstances
-    export interface BackgroundEffect {
-        startSceneEffect(): void;
-    }
-
     //% fixedInstances
     export class ImageEffect implements BackgroundEffect {
 
@@ -31,8 +19,6 @@ namespace effects {
          * Apply this effect to the image of the current sprite
          * @param sprite
          */
-        //% blockId=particleEffectApply block="apply %effect effect to the image of %image=variables_get(mySprite)"
-        //% group="Images"
         applyTo(sprite: Sprite) {
             if (!sprite || !sprite.image) return;
             const clonedImage = sprite.image.clone();
@@ -44,23 +30,16 @@ namespace effects {
          * Change the given image with this effect
          * @param input 
          */
-        //% blockId=imageEffectChange block="use %effect effect to change %input=variables_get(myImage)"
-        //% group="Images"
         change(input: Image) {
             this.effect(input, this.fastRandom);
         }
 
         /**
-         * Make this effect occur repeatedly on the background
+         * Make this effect occur repeatedly on the background image
          * @param times number of times effect should occur
          * @param delay delay between instances of the effect
          */
-        //% blockId=particleEffectStartScene block="apply %effect effect to background image || %times times"
-        //% times.defl=15
-        //% blockNamespace=scene
-        //% weight=50
-        //% group="Effects" blockGap=8
-        startSceneEffect(times?: number, delay?: number): void {
+        startScreenEffect(times?: number, delay?: number): void {
             if (!game.currentScene().background.hasBackgroundImage()) return;
             const wasRunning = this.times != undefined;
             this.times = times ? times : 15;

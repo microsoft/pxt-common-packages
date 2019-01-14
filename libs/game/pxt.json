@@ -32,10 +32,10 @@
         "fixed.ts",
         "console.ts",
         "fieldeditors.ts",
-        "effects.ts",
         "particles.ts",
         "particlefactories.ts",
-        "particleeffects.ts"
+        "particleeffects.ts",
+        "effects.ts"
     ],
     "public": true,
     "dependencies": {

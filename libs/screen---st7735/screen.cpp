@@ -10,11 +10,14 @@ class WDisplay {
 
     uint32_t currPalette[16];
     bool newPalette;
+    bool inUpdate;
 
     uint8_t *screenBuf;
-    Image_ lastImg;
+    Image_ lastStatus;
 
-    int width, height;
+    uint16_t width, height;
+    uint16_t displayHeight;
+    uint8_t offX, offY;
     uint32_t palXOR;
 
     WDisplay()
@@ -39,8 +42,8 @@ class WDisplay {
         uint32_t frmctr1 = getConfig(CFG_DISPLAY_CFG1, 0x000603);
         palXOR = (cfg0 & 0x1000000) ? 0xffffff : 0x000000;
         auto madctl = cfg0 & 0xff;
-        auto offX = (cfg0 >> 8) & 0xff;
-        auto offY = (cfg0 >> 16) & 0xff;
+        offX = (cfg0 >> 8) & 0xff;
+        offY = (cfg0 >> 16) & 0xff;
         auto freq = (cfg2 & 0xff);
         if (!freq)
             freq = 15;
@@ -53,11 +56,20 @@ class WDisplay {
         lcd.configure(madctl, frmctr1);
         width = getConfig(CFG_DISPLAY_WIDTH, 160);
         height = getConfig(CFG_DISPLAY_HEIGHT, 128);
+        displayHeight = height;
         lcd.setAddrWindow(offX, offY, width, height);
         DMESG("screen: %d x %d, off=%d,%d", width, height, offX, offY);
         screenBuf = (uint8_t *)app_alloc(width * height / 2 + 20);
-        lastImg = NULL;
+
+        lastStatus = NULL;
+        registerGC((TValue *)&lastStatus);
+        inUpdate = false;
     }
+
+    void setAddrStatus() {
+        lcd.setAddrWindow(offX, offY + displayHeight, width, height - displayHeight);
+    }
+    void setAddrMain() { lcd.setAddrWindow(offX, offY, width, displayHeight); }
 };
 
 SINGLETON(WDisplay);
@@ -76,18 +88,32 @@ void setPalette(Buffer buf) {
 }
 
 //%
+void setupScreenStatusBar(int barHeight) {
+    auto display = getWDisplay();
+    display->displayHeight = display->height - barHeight;
+    display->setAddrMain();
+}
+
+//%
+void updateScreenStatusBar(Image_ img) {
+    auto display = getWDisplay();
+    if (!img)
+        return;
+    display->lastStatus = img;
+}
+
+//%
 void updateScreen(Image_ img) {
     auto display = getWDisplay();
 
-    if (img && img != display->lastImg) {
-        decrRC(display->lastImg);
-        incrRC(img);
-        display->lastImg = img;
-    }
-    img = display->lastImg;
+    if (display->inUpdate)
+        return;
+
+    display->inUpdate = true;
 
     if (img && img->isDirty()) {
-        if (img->bpp() != 4 || img->width() != display->width || img->height() != display->height)
+        if (img->bpp() != 4 || img->width() != display->width ||
+            img->height() != display->displayHeight)
             target_panic(PANIC_SCREEN_ERROR);
 
         img->clearDirty();
@@ -105,8 +131,24 @@ void updateScreen(Image_ img) {
         memcpy(display->screenBuf, img->pix(), img->pixLength());
 
         // DMESG("send");
-        display->lcd.sendIndexedImage(display->screenBuf, display->width, display->height, palette);
+        display->lcd.sendIndexedImage(display->screenBuf, img->width(), img->height(), palette);
     }
+
+    if (display->lastStatus) {
+        display->lcd.waitForSendDone();
+        img = display->lastStatus;
+        auto barHeight = display->height - display->displayHeight;
+        if (img->bpp() != 4 || barHeight != img->height() || img->width() != display->width)
+            target_panic(PANIC_SCREEN_ERROR);
+        memcpy(display->screenBuf, img->pix(), img->pixLength());
+        display->setAddrStatus();
+        display->lcd.sendIndexedImage(display->screenBuf, img->width(), img->height(), NULL);
+        display->lcd.waitForSendDone();
+        display->setAddrMain();
+        display->lastStatus = NULL;
+    }
+
+    display->inUpdate = false;
 }
 
 //%

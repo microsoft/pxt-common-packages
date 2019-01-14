@@ -9,10 +9,10 @@ namespace game {
      */
     export let debug = false;
     export let stats = false;
-    export let loseSound: music.Melody = undefined;
-    export let winSound: music.Melody = undefined;
     export let winEffect: effects.BackgroundEffect = undefined;
     export let loseEffect: effects.BackgroundEffect = undefined;
+    let loseSound: music.Melody = undefined;
+    let winSound: music.Melody = undefined;
 
     let _scene: scene.Scene;
     let _sceneStack: scene.Scene[];
@@ -65,8 +65,6 @@ namespace game {
     }
 
     export function popScene() {
-        if (_scene)
-            particles.enableAll();
         if (_sceneStack && _sceneStack.length) {
             // pop scenes from the stack
             _scene = _sceneStack.pop();
@@ -76,6 +74,8 @@ namespace game {
             control.popEventContext();
             _scene = undefined;
         }
+        if (_scene)
+            particles.enableAll();
     }
 
     function showDialogBackground(h: number, c: number) {
@@ -117,8 +117,6 @@ namespace game {
      * @param win whether the animation should run on a win (true)
      * @param effect
      */
-    //% group="Gameplay"
-    //% blockId=setGameOverEffect block="set game over effect for win %win=toggleYesNo to %effect"
     export function setGameOverEffect(win: boolean, effect: effects.BackgroundEffect) {
         init();
         if (!effect) return;
@@ -156,12 +154,16 @@ namespace game {
      * Finish the game and display the score
      */
     //% group="Gameplay"
-    //% blockId=gameOver block="game over||win %win=toggleYesNo"
+    //% blockId=gameOver block="game over %win=toggleWinLose || with %effect effect"
     //% weight=80 help=game/over
-    export function over(win: boolean = false) {
+    export function over(win: boolean = false, effect?: effects.BackgroundEffect) {
         init();
         if (__isOver) return;
         __isOver = true;
+
+        if (!effect) {
+            effect = win ? winEffect : loseEffect;
+        }
 
         // one last screenshot
         takeScreenshot();
@@ -175,13 +177,12 @@ namespace game {
         pushScene();
         scene.setBackgroundImage(screen.clone());
 
-        if (win) {
-            winEffect.startSceneEffect();
+        if (win)
             winSound.play();
-        } else {
-            loseEffect.startSceneEffect();
+        else
             loseSound.play();
-        }
+
+        effect.startScreenEffect();
 
         pause(500);
 
