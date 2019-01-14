@@ -53,9 +53,9 @@ FS::FS(SPIFlash &f, uint32_t rowSize) : flash(f) {
     files = NULL;
     locked = false;
     this->rowSize = rowSize;
+    pagesPerRow = rowSize / SNORFS_PAGE_SIZE;
 
-    auto numP = rowSize / SNORFS_PAGE_SIZE;
-    if (numP * SNORFS_PAGE_SIZE != rowSize || numP > SNORFS_PAGE_SIZE)
+    if (pagesPerRow * SNORFS_PAGE_SIZE != rowSize || pagesPerRow > SNORFS_PAGE_SIZE)
         oops();
 
     if (!snorfs_unlocked_event)
@@ -80,8 +80,8 @@ uint32_t FS::random(uint32_t max) {
 }
 
 int FS::firstFree(uint16_t pageIdx) {
-    flash.readBytes(indexAddr(pageIdx), buf, SNORFS_PAGE_SIZE);
-    for (int k = 1; k < SNORFS_PAGE_SIZE - 1; ++k)
+    flash.readBytes(indexAddr(pageIdx), buf, pagesPerRow);
+    for (int k = 1; k < pagesPerRow - 1; ++k)
         if (buf[k] == 0xff)
             return pageIdx | k;
     return 0;
@@ -180,9 +180,9 @@ void FS::gcCore(bool force, bool isData) {
 
     for (unsigned row = start; row < end; ++row) {
         uint32_t addr = indexAddr(row << 8);
-        flash.readBytes(addr, buf, SNORFS_PAGE_SIZE);
+        flash.readBytes(addr, buf, pagesPerRow);
         uint16_t numDel = 0;
-        for (int i = 1; i < SNORFS_PAGE_SIZE - 1; i++) {
+        for (int i = 1; i < pagesPerRow - 1; i++) {
             if (buf[i] == 0x00)
                 numDel++;
             if (!force) {
@@ -217,7 +217,7 @@ void FS::gcCore(bool force, bool isData) {
     //   * force is true (we desperately need space)
     //   * there's a row that's more than 50% deleted
     //   * clearing a row will increase free space by more than 20%
-    if (force || maxDelCnt > SNORFS_PAGE_SIZE / 2 || (maxDelCnt * 5 > freePages)) {
+    if (force || maxDelCnt > pagesPerRow / 2 || (maxDelCnt * 5 > freePages)) {
         swapRow(rowRemapCache[maxDelIdx]);
         if (!readHeaders()) // this will trigger levelling on the new free block
             oops();         // but it should never fail
@@ -234,11 +234,11 @@ void FS::swapRow(int row) {
     uint32_t trg = freeRow * rowSize;
     uint32_t src = row * rowSize;
 
-    uint32_t skipmask[SNORFS_PAGE_SIZE / 32];
+    uint32_t skipmask[(pagesPerRow + 31) / 32];
     memset(skipmask, 0, sizeof(skipmask));
-    auto idxOff = rowSize - SNORFS_PAGE_SIZE;
-    flash.readBytes(src + idxOff, buf, SNORFS_PAGE_SIZE);
-    for (int i = 1; i < SNORFS_PAGE_SIZE - 1; i++) {
+    auto idxOff = rowSize - pagesPerRow;
+    flash.readBytes(src + idxOff, buf, pagesPerRow);
+    for (int i = 1; i < pagesPerRow - 1; i++) {
         if (buf[i] == 0x00) {
             skipmask[i / 32] |= 1U << (i % 32);
             buf[i] = 0xff;
@@ -255,8 +255,8 @@ void FS::swapRow(int row) {
 
     setFlag(trg, freeFlag, 0); // no longer free
 
-    flash.writeBytes(trg + idxOff, buf, SNORFS_PAGE_SIZE);
-    for (int i = 1; i < SNORFS_PAGE_SIZE - 1; ++i) {
+    flash.writeBytes(trg + idxOff, buf, pagesPerRow);
+    for (int i = 1; i < pagesPerRow - 1; ++i) {
         if (skipmask[i / 32] & (1U << (i % 32)))
             continue;
 
@@ -551,8 +551,8 @@ uint16_t FS::findMetaEntry(const char *filename) {
         oops();
 
     for (int i = 0; i < numMetaRows; ++i) {
-        flash.readBytes(indexAddr(i << 8), buf, SNORFS_PAGE_SIZE);
-        for (int j = 1; j < SNORFS_PAGE_SIZE - 1; ++j) {
+        flash.readBytes(indexAddr(i << 8), buf, pagesPerRow);
+        for (int j = 1; j < pagesPerRow - 1; ++j) {
             if (buf[j] == h) {
                 uint8_t tmp[buflen];
                 uint16_t pageIdx = (i << 8) | j;

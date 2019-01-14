@@ -36,6 +36,7 @@ class FS {
 
     uint32_t randomSeed;
     uint32_t rowSize;
+    uint16_t pagesPerRow;
 
     // this is for data pages only
     uint16_t fullPages;
@@ -50,11 +51,13 @@ class FS {
         return rowRemapCache[rowIdx] * rowSize;
     }
     uint32_t indexAddr(uint16_t ptr) {
-        return rowAddr(ptr >> 8) + rowSize - SNORFS_PAGE_SIZE + (ptr & 0xff);
+        if ((ptr & 0xff) >= pagesPerRow)
+            target_panic(DEVICE_FLASH_ERROR);
+        return rowAddr(ptr >> 8) + rowSize - pagesPerRow + (ptr & 0xff);
     }
     uint32_t pageAddr(uint16_t ptr) {
         // page zero is index, shouldn't be accessed through this
-        if (!(ptr & 0xff))
+        if (!(ptr & 0xff) || (ptr & 0xff) >= pagesPerRow)
             target_panic(DEVICE_FLASH_ERROR);
         return rowAddr(ptr >> 8) + SNORFS_PAGE_SIZE * (ptr & 0xff);
     }
