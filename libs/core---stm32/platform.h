@@ -4,7 +4,7 @@
 #include "Image.h"
 #include "MultiButton.h"
 #include "ZPin.h"
-#include "ZTimer.h"
+#include "Timer.h"
 #include "ZSPI.h"
 #include "ZI2C.h"
 #include "ZSingleWireSerial.h"
@@ -31,7 +31,6 @@ struct F4_Settings {
 
 #define UF2_BINFO ((F4_Settings *)(BOOTLOADER_END - sizeof(F4_Settings)))
 #define UF2_INFO_TXT UF2_BINFO->info_uf2
-#define PXT_BOOTLOADER_CFG_ADDR (&(UF2_BINFO->configValues))
 #define USB_HANDOVER 0
 
 #define BOOT_RTC_SIGNATURE 0x71a21877
@@ -63,7 +62,7 @@ struct F4_Settings {
 #define DEV_ANALOG_PINS (DEV_PWM_PINS | DEV_AIN_PINS)
 
 #define CODAL_PIN ZPin
-#define CODAL_TIMER ZTimer
+#define CODAL_TIMER Timer
 #define CODAL_SPI ZSPI
 #define CODAL_I2C ZI2C
 #define CODAL_JACDAC_WIRE_SERIAL codal::ZSingleWireSerial
@@ -71,6 +70,7 @@ struct F4_Settings {
 #define PERF_NOW() (TIM5->CNT)
 
 #define IMAGE_BITS 4
+
 
 // The parameters below needs tuning!
 

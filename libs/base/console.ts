@@ -36,15 +36,15 @@ namespace console {
     }
 
     export function debug(text: string) {
-        this.add(ConsolePriority.Debug, text);
+        add(ConsolePriority.Debug, text);
     }
 
     export function warning(text: string) {
-        this.add(ConsolePriority.Warning, text);
+        add(ConsolePriority.Warning, text);
     }
 
     export function error(text: string) {
-        this.add(ConsolePriority.Error, text);
+        add(ConsolePriority.Error, text);
     }
 
     /**

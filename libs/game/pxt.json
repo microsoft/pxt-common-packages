@@ -31,10 +31,15 @@
         "systemmenu.ts",
         "fixed.ts",
         "console.ts",
-        "fieldeditors.ts"
+        "fieldeditors.ts",
+        "particles.ts",
+        "particlefactories.ts",
+        "particleeffects.ts",
+        "effects.ts"
     ],
     "public": true,
     "dependencies": {
-        "screen": "file:../screen"
+        "screen": "file:../screen",
+        "mixer": "file:../mixer"
     }
 }

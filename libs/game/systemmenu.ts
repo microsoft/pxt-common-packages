@@ -42,6 +42,17 @@ namespace scene.systemMenu {
             }
             m.hide();
         });
+        m.addItem("volume up", () => {
+            const v = music.volume();
+            music.setVolume(v + 32);
+            music.playTone(440, 500);
+        });
+        m.addItem("volume down", () => {
+            const v = music.volume();
+            music.setVolume(v - 32);
+            music.playTone(440, 500);
+        });
+
         if (customItems)
             customItems.forEach(item => {
                 m.addItem(item.name(), () => {

@@ -2,7 +2,7 @@
  * Control the background, tiles and camera
  */
 //% weight=88 color="#401255" icon="\uf1bb"
-//% groups='["Screen", "Tiles", "Collisions", "Camera"]'
+//% groups='["Screen", "Effects", "Tiles", "Collisions", "Camera"]'
 //% blockGap=8
 namespace scene {
     /**
@@ -177,6 +177,20 @@ namespace scene {
         const tiles = getTilesByType(color);
         if (tiles.length > 0)
             Math.pickRandom(tiles).place(sprite);
+    }
+
+    /**
+     * Shake the camera
+     * @param sprite
+     */
+    //% blockId=camerashake block="camera shake by %amplitude pixels for %duration ms"
+    //% amplitude.min=1 amplitude.max=8 amplitude.defl=4
+    //% duration.shadow=timePicker duration.defl=500
+    //% group="Camera"
+    //% help=scene/camera-shake
+    export function cameraShake(amplitude: number = 4, duration: number = 500) {
+        const scene = game.currentScene();
+        scene.camera.shake(amplitude, duration);
     }
 
     /**

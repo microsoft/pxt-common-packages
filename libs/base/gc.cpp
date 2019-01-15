@@ -412,7 +412,7 @@ static void sweep(int flags) {
 
     if (midPtr) {
         uint32_t currFree = 0;
-        auto limit = freeSize >> 1;
+        auto limit = freeSize >> 2;
         for (auto p = firstFree; p; p = p->nextFree) {
             currFree += VAR_BLOCK_WORDS(p->vtable);
             if (currFree > limit) {

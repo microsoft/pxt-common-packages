@@ -1,14 +1,10 @@
-/**
- * Small particles
- */
-//% color="#382561" weight=78 icon="\uf06d"
-//% groups='["Effects", "Create", "Properties"]'
 namespace particles {
     enum Flag {
         enabled = 1 << 0,
         destroyed = 1 << 1,
     }
 
+    const MAX_SOURCES = 7; // maximum count of sources before removing previous sources
     const TIME_PRECISION = 10; // time goes down to down to the 1<<10 seconds
     let lastUpdate: number;
 
@@ -86,9 +82,17 @@ namespace particles {
          */
         constructor(anchor: ParticleAnchor, particlesPerSecond: number, factory?: ParticleFactory) {
             init();
-            this.flags = 0;
             const scene = game.currentScene();
             const sources = particleSources();
+
+            // remove and immediately destroy oldest source if over MAX_SOURCES
+            if (sources.length > MAX_SOURCES) {
+                const removedSource = sources.shift();
+                removedSource.clear();
+                removedSource.destroy();
+            }
+
+            this.flags = 0;
             this.setRate(particlesPerSecond);
             this.setAcceleration(0, 0);
             this.setAnchor(anchor);
@@ -111,8 +115,8 @@ namespace particles {
 
         __draw(camera: scene.Camera) {
             let current = this.head;
-            const left = Fx8(camera.offsetX);
-            const top = Fx8(camera.offsetY);
+            const left = Fx8(camera.drawOffsetX);
+            const top = Fx8(camera.drawOffsetY);
 
             while (current) {
                 if (current.lifespan > 0)
@@ -165,16 +169,19 @@ namespace particles {
         }
 
         _prune() {
+            if (!this) return;
             while (this.head && this.head.lifespan <= 0) {
                 this.head = this.head.next;
             }
 
-            if ((this.flags & Flag.destroyed) && this.head == null) {
+            if ((this.flags & Flag.destroyed) && !this.head) {
                 const scene = game.currentScene();
+                if (scene)
+                    scene.allSprites.removeElement(this);
                 const sources = particleSources();
-                sources.removeElement(this);
-                scene.allSprites.removeElement(this);
-                this.anchor == null;
+                if (sources)
+                    sources.removeElement(this);
+                this.anchor == undefined;
             }
 
             let current = this.head;
@@ -190,8 +197,6 @@ namespace particles {
         /**
          * Sets the acceleration applied to the particles
          */
-        //% blockId=particlessetacc block="particles %source set acceleration ax $ax ay $ay"
-        //% group="Properties"
         setAcceleration(ax: number, ay: number) {
             this.ax = Fx8(ax);
             this.ay = Fx8(ay);
@@ -201,8 +206,6 @@ namespace particles {
          * Enables or disables particles
          * @param on 
          */
-        //% blockId=particlessetenabled block="particles %source %on=toggleOnOff"
-        //% group="Properties"
         setEnabled(on: boolean) {
             this.enabled = on;
         }
@@ -216,7 +219,7 @@ namespace particles {
          */
         set enabled(v: boolean) {
             if (v !== this.enabled) {
-                this.flags = v ? this.flags | Flag.enabled : this.flags ^ Flag.enabled;
+                this.flags = v ? (this.flags | Flag.enabled) : (this.flags ^ Flag.enabled);
                 this.timer = 0;
             }
         }
@@ -228,6 +231,14 @@ namespace particles {
             // The `_prune` step will finishing destroying this Source once all emitted particles finish rendering
             this.enabled = false;
             this.flags |= Flag.destroyed;
+            this._prune();
+        }
+
+        /**
+         * Clear all particles emitted from this source
+         */
+        clear() {
+            this.head = undefined;
         }
 
         /**
@@ -242,8 +253,6 @@ namespace particles {
          * Sets the number of particle created per second
          * @param particlesPerSecond 
          */
-        //% blockId=particlessetrate block="particles %source set rate to $particlesPerSecond"
-        //% group="Properties"
         setRate(particlesPerSecond: number) {
             this.period = Math.ceil(1000 / particlesPerSecond);
             this.timer = 0;
@@ -257,7 +266,6 @@ namespace particles {
          * Sets the particle factor
          * @param factory 
          */
-        //% blockId=particlesetfactory block="particles %source set $factory=variables_get(factory)"
         setFactory(factory: ParticleFactory) {
             if (factory)
                 this._factory = factory;
@@ -278,16 +286,14 @@ namespace particles {
         }
     }
 
+    //% whenUsed
+    export const defaultFactory = new particles.SprayFactory(20, 0, 60);
+
     /**
      * Creates a new source of particles attached to a sprite
      * @param sprite 
      * @param particlesPerSecond number of particles created per second
      */
-    //% blockId=particlesspray block="create particle source from %sprite=variables_get(mySprite) at %particlesPerSecond p/sec"
-    //% particlesPerSecond.defl=20
-    //% blockSetVariable=source
-    //% particlesPerSecond=100
-    //% group="Sources"
     export function createParticleSource(sprite: Sprite, particlesPerSecond: number): ParticleSource {
         return new ParticleSource(sprite, particlesPerSecond);
     }
@@ -314,9 +320,7 @@ namespace particles {
 
     function pruneParticles() {
         const sources = particleSources();
-        for (let i = 0; i < sources.length; i++) {
-            sources[i]._prune();
-        }
+        sources.forEach(s => s._prune());
     }
 
     /**
@@ -372,6 +376,36 @@ namespace particles {
             if (this.galois.percentChance(this.oscilattionPercentage)) {
                 p.vx = Fx.neg(p.vx);
             }
+        }
+    }
+
+    export function clearAll() {
+        const sources = particleSources();
+        if (sources) {
+            sources.forEach(s => s.clear());
+            pruneParticles();
+        }
+    }
+
+    /**
+     * Stop all particle sources from creating any new particles
+     */
+    export function disableAll() {
+        const sources = particleSources();
+        if (sources) {
+            sources.forEach(s => s.enabled = false);
+            pruneParticles();
+        }
+    }
+
+    /**
+     * Allow all particle sources to create any new particles
+     */
+    export function enableAll() {
+        const sources = particleSources();
+        if (sources) {
+            sources.forEach(s => s.enabled = true);
+            pruneParticles();
         }
     }
 

@@ -1,8 +1,9 @@
 #include "pxt.h"
 
-namespace pxt {
-
 #if CONFIG_ENABLED(DEVICE_USB)
+#include "uf2format.h"
+
+namespace pxt {
 CodalUSB usb;
 
 // share the buffer; we will crash anyway if someone talks to us over both at the same time
@@ -37,13 +38,6 @@ static const DeviceDescriptor device_desc = {
     0x01    // bNumConfigs
 };
 
-// TODO extract these from uf2_info()?
-static const char *string_descriptors[] = {
-    "Example Corp.",
-    "PXT Device",
-    "42424242",
-};
-
 static void start_usb() {
     // start USB with a delay, so that user code can add new interfaces if needed
     // (eg USB HID keyboard, or MSC)
@@ -54,11 +48,54 @@ static void start_usb() {
 void platform_usb_init() __attribute__((weak));
 void platform_usb_init() {}
 
-void usb_init() {
+void set_usb_strings(const char *uf2_info) {
+    static const char *string_descriptors[3];
+    static char serial[12];
+    itoa(target_get_serial() & 0x7fffffff, serial);
+
+    auto model = strstr(uf2_info, "Model: ");
+    if (model) {
+        model += 7;
+        auto end = model;
+        while (*end && *end != '\n' && *end != '\r')
+            end++;
+        auto len = end - model;
+        auto dev = (char *)app_alloc(len + 10);
+        memcpy(dev, model, len);
+        strcpy(dev + len, " (app)");
+        // try to split into manufacturer and
+        auto sep = strstr(dev, " / ");
+        if (sep) {
+            *sep = '\0';
+            string_descriptors[0] = dev;
+            string_descriptors[1] = sep + 3;
+        } else {
+            string_descriptors[0] = dev;
+            string_descriptors[1] = dev;
+        }
+    }
+
+    string_descriptors[2] = serial;
     usb.stringDescriptors = string_descriptors;
+}
+
+void usb_init() {
     usb.deviceDescriptor = &device_desc;
+    set_usb_strings(UF2_INFO_TXT);
 
     platform_usb_init();
+
+#ifdef STM32F4
+    // let's not waste EPs on the HF2 - it will run on CONTROL pipe instead
+    // this doesn't seem to currently work on SAMD, so only do it on STM, which
+    // has very few EPs
+    hf2.allocateEP = false;
+#endif
+    usb.add(hf2);
+
+    // the WINUSB descriptors don't seem to work if there's only one interface
+    // so we add a dummy interface
+    usb.add(dummyIface);
 
 #if CONFIG_ENABLED(DEVICE_MOUSE)
     usb.add(mouse);
@@ -69,19 +106,19 @@ void usb_init() {
 #if CONFIG_ENABLED(DEVICE_JOYSTICK)
     usb.add(joystick);
 #endif
-    // the WINUSB descriptors don't seem to work if there's only one interface
-    // so we add a dummy interface first
-    usb.add(dummyIface);
-    // let's not waste EPs on the HF2 - it will run on CONTROL pipe instead
-    hf2.allocateEP = false;
-    usb.add(hf2);
+
     create_fiber(start_usb);
 }
 
+} // namespace pxt
+
 #else
+namespace pxt {
 void usb_init() {}
+} // namespace pxt
 #endif
 
+namespace pxt {
 static void (*pSendToUART)(const char *data, int len) = NULL;
 void setSendToUART(void (*f)(const char *, int)) {
     pSendToUART = f;

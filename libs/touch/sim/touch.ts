@@ -44,16 +44,24 @@ namespace pxsim {
     }
 
     export class TouchButton extends CommonButton {
+        _threshold: number = 200;
         constructor(pin: number) {
             super(pin);
         }
 
         setThreshold(value: number) {
+            this._threshold = value;
+        }
 
+        threshold() {
+            return this._threshold;
         }
 
         value() : number {
             return 0;
+        }
+
+        calibrate(): void {
         }
     }
 
@@ -82,6 +90,10 @@ namespace pxsim.TouchButtonMethods {
 
     export function value(button: pxsim.TouchButton): number {
         return button.value();
+    }
+
+    export function calibrate(button: pxsim.TouchButton): void {
+        button.calibrate();
     }
 }
 

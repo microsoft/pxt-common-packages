@@ -3,7 +3,7 @@
 Set the threshold amount used to detect a that a pin was touched.
 
 ```sig
-input.pinA1.setThreshold(0)
+input.touchA1.setThreshold(0)
 ```
 Pins (or pads) on a board used to detect a touch are measured to see how much electrical charge is on them. This measurement happens over a short period of time while a charge builds up when you touch it. To control the amount of charge it takes for the touch circuit to say that a touch happen, you set the touch threshold.
 
@@ -18,8 +18,8 @@ Setting a higher threshold value makes it take longer for a touch event to happe
 Set the touch threshold to `1000`. Test touch sensitivity by making all the pixels on the ring turn red when pin **A1** detects a touch.
 
 ```blocks
-input.pinA1.setThreshold(1000);
-input.pinA1.onEvent(ButtonEvent.Click, function () {
+input.touchA1.setThreshold(1000);
+input.touchA1.onEvent(ButtonEvent.Click, function () {
     light.setAll(0xff0000);
 })
 ```
