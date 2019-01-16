@@ -286,6 +286,7 @@ namespace controller {
          */
         //% blockId="ctrlgame_control_sprite" block="%controller move $sprite=variables_get(mySprite) with buttons||vx $vx vy $vy"
         //% weight=100
+        //% expandableArgumentMode="toggle"
         //% vx.defl=100 vy.defl=100
         //% help=controller/move-sprite
         //% group="Multiplayer"
@@ -464,6 +465,7 @@ namespace controller {
      */
     //% blockId="game_control_sprite" block="move $sprite=variables_get(mySprite) with buttons||vx $vx vy $vy"
     //% weight=100
+    //% expandableArgumentMode="toggle"
     //% vx.defl=100 vy.defl=100
     //% help=controller/move-sprite
     //% group="Single Player"
