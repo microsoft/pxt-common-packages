@@ -529,7 +529,7 @@ void *gcAllocate(int numbytes) {
     size_t numwords = (numbytes + 3) >> 2;
 
     if (numbytes > GC_MAX_ALLOC_SIZE)
-        oops(45);
+        target_panic(PANIC_GC_TOO_BIG_ALLOCATION);
 
     if (PXT_IN_ISR() || (inGC & IN_GC_ALLOC))
         target_panic(PANIC_CALLED_FROM_ISR);
