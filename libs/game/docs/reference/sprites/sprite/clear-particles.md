@@ -35,13 +35,14 @@ effects.clearParticles(blobject)
 
 ### Campfire #ex2
 
-Show a ``fire`` effect coming from a sprite image of firewood. When button **A** is pressed, the campfire goes out and the ``bubble`` effect simulates the fire smoldering.
+Show a ``fire`` effect coming from a sprite image of firewood. When button **A** is pressed, the campfire goes out and the ``blizzard`` with the ``bubble`` effect simulates the fire smoldering.
 
 ```blocks
 let logs: Sprite = null
 controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
     effects.clearParticles(logs)
-    logs.startEffect(effects.bubbles, 1500)
+    logs.startEffect(effects.blizzard, 750)
+    logs.startEffect(effects.bubbles, 2000)
 })
 logs = sprites.create(img`
     . . . . . . . . . . . . . . . .
