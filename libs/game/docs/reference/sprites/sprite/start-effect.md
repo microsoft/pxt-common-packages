@@ -15,7 +15,7 @@ There are several built-in particle motion effects you can put on a sprite. In t
 
 ## Example #example
 
-Start a 5 second ``fire`` spray effect on the blob sprite.
+Start a 5 second ``fire`` particle effect on the blob sprite.
 
 ```blocks
 let blobject: Sprite = null
