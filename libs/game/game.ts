@@ -144,7 +144,7 @@ namespace game {
      * Finish the game and display the score
      */
     //% group="Gameplay"
-    //% blockId=gameOver block="game over %win=toggleWinLose || with %effect effect"
+    //% blockId=gameOver block="game over || %win=toggleWinLose with %effect effect"
     //% weight=80 help=game/over
     export function over(win: boolean = false, effect?: effects.BackgroundEffect) {
         init();
