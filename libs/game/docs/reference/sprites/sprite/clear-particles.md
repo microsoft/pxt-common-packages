@@ -6,7 +6,7 @@ Stop the particle effect currently displaying at a sprite.
 effects.clearParticles(null)
 ```
 
-Particle effects, when started, are set for a sprite. You can stop the effect early, if a duration was set, or stop it from running continuously if no duration was set.
+Particle effects, when started, are set for a sprite. You can stop the effect early, if a duration was set, or stop it from displaying continuously if no duration was set.
 
 ## Parameters
 
