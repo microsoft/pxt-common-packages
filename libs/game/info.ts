@@ -423,12 +423,11 @@ namespace info {
 
 
         if (seconds < 60) {
-            left += 3
             const top = 1;
             const remainder = Math.idiv(millis % 1000, 10);
 
             screen.print(formatDecimal(seconds) + ".", left, top, color1, font)
-            const decimalLeft = left + 3 * font.charWidth - 2;
+            const decimalLeft = left + 3 * font.charWidth;
             screen.print(formatDecimal(remainder), decimalLeft, top + 2, color1, smallFont)
         }
         else {
