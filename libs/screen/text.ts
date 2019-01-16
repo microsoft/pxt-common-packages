@@ -4,7 +4,7 @@ namespace image {
         charWidth: number;
         charHeight: number;
         data: Buffer;
-        doubledCache?: Font;
+        multiplier?: number;
     }
 
     //% whenUsed
@@ -126,33 +126,21 @@ a420a8fcaa828400 a720087e2a1c0800 ab200098a4a6bf02 ac20183c5a5a4200 af20627f2244
 
     }
 
+    //% deprecated=1 hidden=1
     export function doubledFont(f: Font): Font {
-        if (f.doubledCache) return f.doubledCache
-        let byteHeight = (f.charHeight + 7) >> 3
-        let sz = f.charWidth * byteHeight
-        let numChars = f.data.length / (sz + 2)
-        let newByteHeight = ((f.charHeight * 2) + 7) >> 3
-        let nsz = f.charWidth * 2 * newByteHeight
-        let data = control.createBuffer((nsz + 2) * numChars)
-        let tmp = control.createBuffer(4 + sz)
-        tmp[0] = 0xe1
-        tmp[1] = f.charWidth
-        tmp[2] = f.charHeight
-        let dst = 0
-        for (let i = 0; i < f.data.length; i += 2 + sz) {
-            tmp.write(4, f.data.slice(i + 2, sz))
-            let dbl = image.doubledIcon(tmp).slice(4)
-            data[dst] = f.data[i]
-            data[dst + 1] = f.data[i + 1]
-            data.write(dst + 2, dbl)
-            dst += 2 + dbl.length
+        return scaledFont(f, 2)
+    }
+
+    export function scaledFont(f: Font, size: number): Font {
+        size |= 0
+        if (size < 2)
+            return f
+        return {
+            charWidth: f.charWidth * size,
+            charHeight: f.charHeight * size,
+            data: f.data,
+            multiplier: f.multiplier ? size * f.multiplier : size
         }
-        f.doubledCache = {
-            charWidth: f.charWidth * 2,
-            charHeight: f.charHeight * 2,
-            data: data
-        }
-        return f.doubledCache
     }
 
     //% whenUsed
@@ -206,15 +194,21 @@ namespace helpers {
         if (!color) color = 1
         let x0 = x
         let cp = 0
-        let byteHeight = (font.charHeight + 7) >> 3
-        let charSize = byteHeight * font.charWidth
-        let imgBuf = control.createBuffer(4 + charSize)
+        let mult = font.multiplier ? font.multiplier : 1
+        let dataW = Math.idiv(font.charWidth, mult)
+        let dataH = Math.idiv(font.charHeight, mult)
+        let byteHeight = (dataH + 7) >> 3
+        let charSize = byteHeight * dataW
         let dataSize = 2 + charSize
         let fontdata = font.data
         let lastchar = Math.idiv(fontdata.length, dataSize) - 1
-        imgBuf[0] = 0xe1
-        imgBuf[1] = font.charWidth
-        imgBuf[2] = font.charHeight
+        let imgBuf: Buffer
+        if (mult == 1) {
+            imgBuf = control.createBuffer(4 + charSize)
+            imgBuf[0] = 0xe1
+            imgBuf[1] = dataW
+            imgBuf[2] = dataH
+        }
         while (cp < text.length) {
             let ch = text.charCodeAt(cp++)
             if (ch == 10) {
@@ -242,7 +236,7 @@ namespace helpers {
                 let l = 0
                 let r = lastchar
                 let off = 0 // this should be a space (0x0020)
-                let guess = (ch - 32) * dataSize
+                let guess = (cc - 32) * dataSize
                 if (fontdata.getNumber(NumberFormat.UInt16LE, guess) == cc)
                     off = guess
                 else {
@@ -260,9 +254,37 @@ namespace helpers {
                     }
                 }
 
-                imgBuf.write(4, fontdata.slice(off + 2, charSize))
-                img.drawIcon(imgBuf, x, y, color)
-                x += font.charWidth
+                if (mult == 1) {
+                    imgBuf.write(4, fontdata.slice(off + 2, charSize))
+                    img.drawIcon(imgBuf, x, y, color)
+                    x += font.charWidth
+                } else {
+                    off += 2
+                    for (let i = 0; i < dataW; ++i) {
+                        let j = 0
+                        let mask = 0x01
+                        let c = fontdata[off++]
+                        while (j < dataH) {
+                            if (mask == 0x100) {
+                                c = fontdata[off++]
+                                mask = 0x01
+                            }
+                            let n = 0
+                            while (c & mask) {
+                                n++
+                                mask <<= 1
+                            }
+                            if (n) {
+                                img.fillRect(x, y + j * mult, mult, mult * n, color)
+                                j += n
+                            } else {
+                                mask <<= 1
+                                j++
+                            }
+                        }
+                        x += mult
+                    }
+                }
             }
         }
     }
