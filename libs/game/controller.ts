@@ -126,11 +126,11 @@ namespace controller {
                     this._owner.connected = true;
                 this._pressed = pressed;
                 if (this._pressed)
-                    this.raiseButtonUp();
+                    this.raiseButtonDown();
                 else {
                     this._pressedElasped = 0;
                     this._repeatCount = 0;
-                    this.raiseButtonDown();
+                    this.raiseButtonUp();
                 }
             }
         }
