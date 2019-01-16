@@ -33,7 +33,7 @@ pause(2000)
 effects.clearParticles(blobject)
 ```
 
-### Campfire
+### Campfire #ex2
 
 Show a ``fire`` effect coming from a sprite image of firewood. When button **A** is pressed, the campfire goes out and the ``bubble`` effect simulates the fire smoldering.
 
