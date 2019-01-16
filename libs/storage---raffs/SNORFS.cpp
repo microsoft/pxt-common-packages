@@ -20,8 +20,6 @@ static uint16_t snorfs_unlocked_event;
 struct FSHeader {
     uint32_t magic;
     uint32_t bytes;
-    uint32_t reserved0;
-    uint32_t reserved1;
 };
 
 // https://tools.ietf.org/html/draft-eastlake-fnv-14#section-3
@@ -199,7 +197,111 @@ MetaEntry *FS::findMetaEntry(const char *filename) {
     return NULL;
 }
 
-bool FS::tryGC(uint32_t spaceNeeded) {}
+uint32_t FS::getFileSize(uint16_t dataptr, uint16_t *lastptr) {
+    if (dataptr == 0xffff) {
+        if (lastptr)
+            *lastptr = 0;
+        return 0;
+    }
+    uint32_t sz = 0;
+    for (;;) {
+        auto hd = basePtr[dataptr];
+        auto nextptr = hd >> 16;
+        auto blsz = hd & 0xffff;
+        sz += blsz;
+        if (nextptr == 0xffff) {
+            if (lastptr)
+                *lastptr = dataptr;
+            return sz;
+        }
+        if (nextptr == 0 || nextptr > bytes / 8)
+            oops();
+    }
+}
+
+uint32_t FS::copyFile(uint16_t dataptr, uint32_t dst) {
+    if (dataptr == 0xffff)
+        return dst;
+    for (;;) {
+        auto hd = basePtr[dataptr];
+        auto nextptr = hd >> 16;
+        auto blsz = hd & 0xffff;
+        flash.writeBytes((void *)dst, basePtr + dataptr + 1, blsz);
+        dst += blsz;
+        if (nextptr == 0xffff)
+            return dst;
+        if (nextptr == 0 || nextptr > bytes / 8)
+            oops();
+    }
+}
+
+bool FS::tryGC(int spaceNeeded) {
+    int spaceLeft = (int)metaPtr - (int)freeDataPtr;
+
+    if (spaceLeft > spaceNeeded + 32)
+        return false;
+
+    auto newBase = (uint32_t)basePtr == baseAddr ? baseAddr + bytes / 2 : baseAddr;
+
+    erasePages(newBase, bytes / 2);
+
+    auto metaDst = (MetaEntry *)(newBase + bytes / 2);
+    auto newBaseP = (uint32_t *)newBase;
+    auto dataDst = newBaseP + sizeof(FSHeader) / 4;
+
+    for (auto p = metaPtr; p < endPtr; p++) {
+        MetaEntry m = *p;
+        if (m.dataptr == 0)
+            continue;
+        auto fnlen = strlen((char *)(basePtr + m.fnptr));
+        flash.write(dataDst, basePtr + m.fnptr, fnlen + 1);
+        m.fnptr = dataDst - newBaseP;
+        dataDst += (fnlen + 3 + 1) / 4;
+
+        auto sz = getFileSize(m.dataptr);
+        if (sz) {
+            uint32_t hd = 0xffff0000 | sz;
+            flash.writeBytes(dataDst++, &hd, sizeof(hd));
+            auto newDst = copyFile(m.dataptr, (uint32_t)dataDst);
+            m.dataptr = (dataDst - 1) - newBasePtr;
+            dataDst = (uint32_t *)((newDst + 3) & ~3);
+        }
+
+        flash.write(--metaDst, &m, sizeof(m));
+
+        for (auto f = files; f; f = f->next) {
+            if (f->meta == p) {
+                f->resetCaches();
+                f->meta = metaDst;
+            }
+        }
+    }
+
+    if (dataDst[-1] == M1) {
+        uint32_t eofMark = 0;
+        flash.write(dataDst++, &eofMark, 4);
+    }
+
+    if ((int)metaDst - (int)dataDst <= spaceNeeded + 32)
+        oops(); // out of space!
+
+    FSHeader hd;
+    hd.magic = RAFFS_MAGIC;
+    hd.bytes = bytes;
+    flash.write(newBaseP, &hd, sizeof(hd));
+
+    // clear old magic
+    hd.magic = 0;
+    hd.bytes = 0;
+    flash.write(basePtr, &hd, sizeof(hd));
+
+    basePtr = newBaseP;
+    endPtr = (MetaEntry *)(newBase + bytes / 2);
+    metaPtr = metaDst;
+    freeDataPtr = dataDst;
+
+    return true;
+}
 
 MetaEntry *FS::createMetaPage(const char *filename, MetaEntry *existing) {
     auto buflen = strlen(filename) + 4;
@@ -258,70 +360,6 @@ void File::seek(uint32_t pos) {
     if (pos < readOffset)
         rewind();
     read(NULL, pos - readOffset);
-}
-
-int FS::metaStart(uint16_t *nextPtr, uint16_t *nextPtrPtr) {
-    int start = 1;
-    while (start < 64 && buf[start])
-        start++;
-    start++;
-    if (nextPtr)
-        *nextPtr = read16(start);
-    if (nextPtrPtr)
-        *nextPtrPtr = start;
-    start += 2;
-    for (int i = start; i + 2 < SNORFS_PAGE_SIZE; i += 3)
-        if (buf[i] == 0x00 && buf[i + 1] == 0x00 && buf[i + 2] == 0x00)
-            start = i + 3;
-    return start;
-}
-
-uint32_t FS::fileSize(uint16_t metaPage) {
-    uint32_t sz = 0;
-    uint16_t lastPage = 0;
-    uint16_t currPage = metaPage;
-    for (;;) {
-        flash.readBytes(pageAddr(currPage), buf, SNORFS_PAGE_SIZE);
-        if (buf[0] == 0x00)
-            return 0; // deleted
-        uint16_t nextPtr;
-        for (int i = metaStart(&nextPtr); i + 2 < SNORFS_PAGE_SIZE; i += 3) {
-            uint16_t page = read16(i);
-            if (page == 0xffff) {
-                if (nextPtr != 0xffff)
-                    oops();
-                break;
-            }
-            if (buf[i + 2] == 0xff) {
-                lastPage = page;
-            } else {
-                sz += buf[i + 2] + 1;
-                if (lastPage)
-                    oops();
-            }
-        }
-        if (nextPtr == 0xffff)
-            break;
-
-        if (lastPage)
-            oops();
-        currPage = nextPtr;
-    }
-
-    if (lastPage) {
-        flash.readBytes(pageAddr(lastPage), buf, SNORFS_PAGE_SIZE);
-        sz += dataPageSize();
-    }
-
-    if (lastPage || currPage != metaPage) {
-        flash.readBytes(pageAddr(metaPage), buf, 64);
-    }
-
-    return sz;
-}
-
-uint16_t FS::read16(int off) {
-    return buf[off] | (buf[off + 1] << 8);
 }
 
 #define DIRCHUNK 32
@@ -531,54 +569,6 @@ void File::append(const void *data, uint32_t len) {
     }
 
     fs.unlock();
-}
-
-void File::allocatePage() {
-    fs.feedRandom(fileID());
-
-    fs.flash.readBytes(fs.pageAddr(writeMetaPage), fs.buf, SNORFS_PAGE_SIZE);
-    int next = 0;
-    int last = 0;
-    uint16_t nextPP;
-    for (int i = fs.metaStart(NULL, &nextPP); i + 2 < SNORFS_PAGE_SIZE; i += 3) {
-        if (fs.buf[i] == 0xff && fs.buf[i + 1] == 0xff) {
-            next = i;
-            break;
-        }
-        last = i;
-    }
-
-    if (last && fs.buf[last + 2] != 0xff)
-        oops();
-
-    if (writePage && last) {
-#ifdef SNORFS_TEST
-        fs.flash.readBytes(fs.pageAddr(writePage), fs.buf, SNORFS_PAGE_SIZE);
-        uint8_t len = fs.dataPageSize();
-        if (len != writeOffsetInPage)
-            oops();
-#endif
-        uint8_t v = writeOffsetInPage - 1;
-        fs.flash.writeBytes(fs.pageAddr(writeMetaPage) + last + 2, &v, 1);
-    }
-
-    if (!next) {
-        uint16_t newMeta = fs.findFreePage(false);
-        fs.markPage(newMeta, 0x02);
-        uint8_t hd[] = {0x02, 0x00};
-        fs.flash.writeBytes(fs.pageAddr(newMeta), hd, 2);
-        fs.flash.writeBytes(fs.pageAddr(writeMetaPage) + nextPP, &newMeta, 2);
-        writeMetaPage = newMeta;
-        next = 4;
-    }
-
-    // if writePage is set, try to keep the new page on the same row - this helps with
-    // delete locality
-    writePage = fs.findFreePage(true, writePage);
-    fs.markPage(writePage, 1);
-    fs.flash.writeBytes(fs.pageAddr(writeMetaPage) + next, &writePage, 2);
-    writeOffsetInPage = 0;
-    writeNumExplicitSizes = 0;
 }
 
 void File::delCore(bool delMeta) {

@@ -71,24 +71,16 @@ class File {
 
     FS &fs;
     File *next;
-    uint32_t metaSize;
 
-    uint16_t metaPage; // the address of main meta entry
+    MetaEntry *meta;
 
-    // this is for reading
-    uint16_t readMetaPage;
+    // reading
     uint16_t readPage;
-    uint8_t readOffsetInPage;
-    uint8_t readPageSize;
-    uint32_t readOffset;
+    uint16_t readOffset;
+    uint16_t readOffsetInPage;
 
-    // this is for writing (append)
-    uint16_t writeMetaPage;
-    uint16_t writePage;
-    uint8_t writeOffsetInPage;
-    uint8_t writeNumExplicitSizes;
-
-    uint32_t metaPageAddr() { return fs.pageAddr(metaPage); }
+    // for writing
+    uint16_t lastPage;
 
     void rewind();
     bool seekNextPage(uint16_t *cache);
@@ -109,7 +101,6 @@ class File {
     void seek(uint32_t pos);
     uint32_t size();
     uint32_t tell() { return readOffset; }
-    uint32_t fileID() { return metaPage; }
     bool isDeleted() { return writePage == 0xffff; }
     void overwrite(const void *data, uint32_t len);
     void del();
