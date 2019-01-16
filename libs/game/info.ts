@@ -528,7 +528,7 @@ namespace info {
         //% group="Multiplayer"
         //% blockId=pisetscore block="set %player score to %value"
         //% value.defl=0
-        //% help=info/on-life-zero
+        //% help=info/set-score
         setScore(value: number) {
             this.init();
             updateFlag(Visibility.Score, true);
