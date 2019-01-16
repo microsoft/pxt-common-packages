@@ -5,8 +5,8 @@ Create and move game objects. Handle collisions between objects.
 ## Create sprites
 
 ```cards
-sprites.create(null)
-sprites.createProjectile(img``, 0, 0, 0)
+sprites.create(img`.`)
+sprites.createProjectile(img`.`, 0, 0, 0)
 ```
 
 ## Sprite actions
@@ -22,6 +22,13 @@ sprites.create(null).setImage(null)
 sprites.create(null).setPosition(0, 0)
 sprites.create(null).setKind(0)
 sprites.create(null).kind()
+```
+
+## Sprite effects
+
+```cards
+sprites.create(null).startEffect(effects.spray, 500)
+effects.clearParticles(null)
 ```
 
 ## Sprite events
@@ -72,6 +79,8 @@ sprites.onOverlap(0, 0, function (sprite, otherSprite) {})
 [set position](/reference/sprites/sprite/set-position),
 [set kind](/reference/sprites/sprite/set-kind),
 [kind](/reference/sprites/sprite/kind),
+[start effect](/reference/sprites/sprite/start-effect),
+[clear particles](/reference/sprites/sprite/clear-particles),
 [on created](/reference/sprites/on-created),
 [on destroyed](/reference/sprites/on-destroyed),
 [on overlap](/reference/sprites/on-overlap)
