@@ -175,6 +175,7 @@ inline bool canBeTagged(int v) {
 typedef enum {
     PANIC_CODAL_OOM = 20,
     PANIC_GC_OOM = 21,
+    PANIC_GC_TOO_BIG_ALLOCATION = 22,
     PANIC_CODAL_HEAP_ERROR = 30,
     PANIC_CODAL_NULL_DEREFERENCE = 40,
     PANIC_CODAL_USB_ERROR = 50,
