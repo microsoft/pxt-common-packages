@@ -9,9 +9,10 @@ namespace game {
      */
     export let debug = false;
     export let stats = false;
-    export let gameOverSound: () => void = undefined;
     export let winEffect: effects.BackgroundEffect = undefined;
     export let loseEffect: effects.BackgroundEffect = undefined;
+    let loseSound: music.Melody = undefined;
+    let winSound: music.Melody = undefined;
 
     let _scene: scene.Scene;
     let _sceneStack: scene.Scene[];
@@ -46,6 +47,11 @@ namespace game {
             winEffect = effects.confetti;
         if (!loseEffect)
             loseEffect = effects.melt;
+
+        if (!winSound)
+            winSound = music.powerUp;
+        if (!loseSound)
+            loseSound = music.wawawawaa;
     }
 
     export function pushScene() {
@@ -121,6 +127,20 @@ namespace game {
     }
 
     /**
+     * Set the music that occurs when the player wins
+     * @param win
+     * @param effect
+     */
+    export function setGameOverSound(win: boolean, sound: music.Melody) {
+        init();
+        if (!sound) return;
+        if (win)
+            winSound = sound;
+        else
+            loseSound = sound;
+    }
+
+    /**
      * Finish the game and display the score
      */
     //% group="Gameplay"
@@ -147,8 +167,13 @@ namespace game {
         pushScene();
         scene.setBackgroundImage(screen.clone());
 
-        if (gameOverSound) gameOverSound();
+        if (win)
+            winSound.play();
+        else
+            loseSound.play();
+
         effect.startScreenEffect();
+
         pause(500);
 
         game.eventContext().registerFrameHandler(95, () => {

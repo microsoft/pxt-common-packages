@@ -195,7 +195,7 @@ namespace helpers {
     export function imagePrintCenter(img: Image, text: string, y: number, color?: number, font?: image.Font) {
         if (!font) font = image.font8
         let w = text.length * font.charWidth
-        let x = (screen.width - w) / 2
+        let x = (img.width - w) / 2
         imagePrint(img, text, x, y, color, font)
     }
 
