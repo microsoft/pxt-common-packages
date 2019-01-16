@@ -15,7 +15,7 @@ There are several built-in particle motion effects you can put on a sprite. In t
 
 ## Example #example
 
-Start a 5 second ``fire`` particle effect on the blob sprite.
+Start a 5 second ``cool radial`` spray effect on the blob sprite.
 
 ```blocks
 let blobject: Sprite = null
@@ -27,7 +27,7 @@ blobject = sprites.create(img`
     . a a a a .
     . a a a a .
 `, 0)
-blobject.startEffect(effects.fire, 5000)
+blobject.startEffect(effects.coolRadial, 5000)
 ```
 
 ## See also #seealso

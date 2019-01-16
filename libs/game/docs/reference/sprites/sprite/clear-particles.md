@@ -14,6 +14,8 @@ Particle effects, when started, are set for a sprite. You can stop the effect ea
 
 ## Example #example
 
+### Spray the confetti #ex1
+
 Start a ``confetti`` effect on the blob sprite for 5 seconds but then stop it after just 2 seconds.
 
 ```blocks
@@ -29,6 +31,37 @@ blobject = sprites.create(img`
 blobject.startEffect(effects.confetti, 5000)
 pause(2000)
 effects.clearParticles(blobject)
+```
+
+### Campfire
+
+Show a ``fire`` effect coming from a sprite image of firewood. When button **A** is pressed, the campfire goes out and the ``bubble`` effect simulates the fire smoldering.
+
+```blocks
+let logs: Sprite = null
+controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
+    effects.clearParticles(logs)
+    logs.startEffect(effects.bubbles, 1500)
+})
+logs = sprites.create(img`
+    . . . . . . . . . . . . . . . .
+    . . . . . . . . . . . . . . . .
+    . . . . . . . . . . . . . . . .
+    . . . . . . . . . . . . . . . .
+    . . . . . . . . . . . . . . . .
+    . . . . . . . . . . . . e . . .
+    . . e e . . . . . . . e e . . .
+    . . . e e e . . . e e d e . . .
+    . . . e d e e e . e d e e . . .
+    . . . e e d d e e d d e . . . .
+    . . . . . e e d d e e . . . . .
+    . . . e e d e e d d e . . . . .
+    . . e e d d e e e d d e e . . .
+    . . e d d e e . e e e d e e . .
+    . . e e e . . . . . e e e . . .
+    . . . . . . . . . . . . . . . .
+`, 0)
+logs.startEffect(effects.fire)
 ```
 
 ## See also #seealso
