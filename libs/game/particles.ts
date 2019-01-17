@@ -298,9 +298,9 @@ namespace particles {
     }
 
     function init() {
-        const data = game.currentScene().data;
-        if (data.particleSources) return;
-        data.particleSources = [] as ParticleSource[];
+        const scene = game.currentScene();
+        if (scene.particleSources) return;
+        scene.particleSources = [];
         lastUpdate = control.millis();
         game.onUpdate(updateParticles);
         game.onUpdateInterval(250, pruneParticles);
@@ -410,6 +410,6 @@ namespace particles {
     }
 
     function particleSources() {
-        return game.currentScene().data.particleSources as particles.ParticleSource[];
+        return game.currentScene().particleSources;
     }
 }
