@@ -169,19 +169,22 @@ namespace particles {
         }
 
         _prune() {
+            console.log(`prune ${this.head}`)
             while (this.head && this.head.lifespan <= 0) {
                 this.head = this.head.next;
             }
 
             if ((this.flags & Flag.destroyed) && !this.head) {
+                console.log(`remove source`);
                 const scene = game.currentScene();
                 if (scene)
                     scene.allSprites.removeElement(this);
                 const sources = particleSources();
-                if (sources) {
+                if (sources && sources.length) {
                     sources.removeElement(this);
                     console.log(`sources ${sources.length}`);
                     sources.forEach((s,i) => console.log(`${i} ${s}`));
+                    console.log(`...`)
                 }
                 this.anchor == undefined;
             }
