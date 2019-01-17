@@ -1,5 +1,4 @@
 #include "pxt.h"
-#include "neopixel.h"
 
 
 namespace pixel {

@@ -1,5 +1,4 @@
 #include "pxt.h"
-#include "neopixel.h"
 
 /**
  * Functions to operate colored LEDs.
