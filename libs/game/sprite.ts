@@ -366,7 +366,7 @@ class Sprite implements SpriteLike {
     }
 
     /**
-     * Sets the sprite velocity in pixel / sec²
+     * Sets the sprite velocity in pixel / sec
      * @param vx 
      * @param vy 
      */

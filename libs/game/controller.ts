@@ -297,6 +297,12 @@ namespace controller {
                 cp = { s: sprite, vx: vx, vy: vy }
                 this._controlledSprites.push(cp);
             }
+            if (cp.vx && vx == 0) {
+                cp.s.vx = 0
+            }
+            if (cp.vy && vy == 0) {
+                cp.s.vy = 0
+            }
             cp.vx = vx;
             cp.vy = vy;
         }
