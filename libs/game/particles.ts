@@ -169,7 +169,6 @@ namespace particles {
         }
 
         _prune() {
-            if (!this) return;
             while (this.head && this.head.lifespan <= 0) {
                 this.head = this.head.next;
             }
