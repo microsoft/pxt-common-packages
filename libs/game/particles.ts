@@ -169,13 +169,11 @@ namespace particles {
         }
 
         _prune() {
-            console.log(`prune ${this.head}`)
             while (this.head && this.head.lifespan <= 0) {
                 this.head = this.head.next;
             }
 
             if ((this.flags & Flag.destroyed) && !this.head) {
-                console.log(`remove source`);
                 const scene = game.currentScene();
                 if (scene)
                     scene.allSprites.removeElement(this);
