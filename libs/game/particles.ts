@@ -180,12 +180,8 @@ namespace particles {
                 if (scene)
                     scene.allSprites.removeElement(this);
                 const sources = particleSources();
-                if (sources && sources.length) {
+                if (sources && sources.length)
                     sources.removeElement(this);
-                    console.log(`sources ${sources.length}`);
-                    sources.forEach((s,i) => console.log(`${i} ${s}`));
-                    console.log(`...`)
-                }
                 this.anchor == undefined;
             }
 
@@ -326,7 +322,7 @@ namespace particles {
     function pruneParticles() {
         const sources = particleSources();
         if (sources)
-            sources.forEach(s => s._prune());
+            sources.slice().forEach(s => s._prune());
     }
 
     /**
@@ -417,8 +413,6 @@ namespace particles {
 
     function particleSources() {
         const sources = game.currentScene().particleSources;
-        console.log(`sources ${sources.length}`);
-        sources.forEach((s,i) => console.log(`${i} ${s}`));
         return sources;
     }
 }
