@@ -320,7 +320,8 @@ namespace particles {
 
     function pruneParticles() {
         const sources = particleSources();
-        sources.forEach(s => s._prune());
+        if (sources)
+            sources.slice(0, sources.length).forEach(s => s._prune());
     }
 
     /**
