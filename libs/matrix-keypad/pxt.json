@@ -1,6 +1,6 @@
 {
     "name": "buttonpad",
-    "description": "A rectangular matrix of buttons",
+    "description": "A rectangular matrix of buttons - beta",
     "files": [
         "README.md",
         "keypad.ts"
