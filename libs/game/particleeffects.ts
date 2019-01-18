@@ -309,4 +309,10 @@ namespace effects {
         const factory = new particles.BubbleFactory(anchor, min, min * 2.5);
         return new particles.BubbleSource(anchor, particlesPerSecond, factory.stateCount - 1, factory);
     });
+
+    //% fixedInstance whenUsed block="star field"
+    export const starField = new ScreenEffect(2, 5, 5000, function (anchor: particles.ParticleAnchor, particlesPerSecond: number) {
+        const factory = new particles.StarFactory([0x1, 0x3, 0x5, 0x9, 0xC]);
+        return new particles.ParticleSource(anchor, particlesPerSecond, factory);
+    });
 }
