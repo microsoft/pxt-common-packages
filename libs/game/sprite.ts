@@ -718,14 +718,16 @@ class Sprite implements SpriteLike {
      */
     //% group="Effects"
     //% weight=80
-    //% blockId=spritedestroy block="destroy %sprite(mySprite) || with %effect effect"
+    //% blockId=spritedestroy block="destroy %sprite(mySprite) || with %effect effect for %duration ms"
+    //% duration.shadow=timePicker
+    //% expandableArgumentMode="toggle"
     //% help=sprites/sprite/destroy
-    destroy(effect?: effects.ParticleEffect) {
+    destroy(effect?: effects.ParticleEffect, duration?: number) {
         if (this.flags & sprites.Flag.Destroyed)
             return;
         
         if (effect) {
-            effect.destroy(this);
+            effect.destroy(this, duration);
             return;
         }
 

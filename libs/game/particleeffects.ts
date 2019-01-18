@@ -34,13 +34,14 @@ namespace effects {
         /**
          * Destroy the provided sprite with an effect
          * @param sprite
+         * @param duration how long the sprite will remain on the screen
          * @param particlesPerSecond
-         * @param lifespan how long the sprite will remain on the screen
          */
-        destroy(anchor: Sprite, particlesPerSecond?: number, duration: number = 500) {
+        destroy(anchor: Sprite, duration?: number, particlesPerSecond?: number) {
             anchor.setFlag(SpriteFlag.Ghost, true);
             this.start(anchor, particlesPerSecond);
-            anchor.lifespan = duration;
+            if (duration)
+                anchor.lifespan = duration;
             effects.dissolve.applyTo(anchor);
         }
     }
@@ -88,17 +89,27 @@ namespace effects {
         /**
          * Creates a new effect that occurs over the entire screen
          * @param particlesPerSecond 
+         * @param duration
          */
-        //% blockId=particlesStartScreenAnimation block="start screen %effect effect"
+        //% blockId=particlesStartScreenAnimation block="start screen %effect effect || for %duration ms"
+        //% duration.shadow=timePicker
         //% blockNamespace=scene
         //% group="Effects" blockGap=8
         //% weight=90
-        startScreenEffect(particlesPerSecond?: number): void {
-            if (!this.sourceFactory || (this.source && this.source.enabled))
+        startScreenEffect(duration?: number, particlesPerSecond?: number): void {
+            if (!this.sourceFactory)
                 return;
+
+            if (this.source && this.source.enabled) {
+                if (duration)
+                    this.source.lifespan = duration;
+                return;
+            }
 
             this.endScreenEffect();
             this.source = this.sourceFactory(new SceneAnchor(), particlesPerSecond ? particlesPerSecond : this.sceneDefaultRate);
+            if (duration)
+                this.source.lifespan = duration;
         }
 
         /**
