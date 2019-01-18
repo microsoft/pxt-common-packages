@@ -506,10 +506,11 @@ namespace info {
         }
 
         /**
-         * Gets the player score
+         * Get the player score
          */
         //% group="Multiplayer"
         //% blockId=piscore block="%player score"
+        //% help=info/score
         score(): number {
             if (this.showScore === null) this.showScore = true;
             if (this.showPlayer === null) this.showPlayer = true;
@@ -522,11 +523,12 @@ namespace info {
         }
 
         /**
-         * Sets the player score
+         * Set the player score
          */
         //% group="Multiplayer"
         //% blockId=pisetscore block="set %player score to %value"
         //% value.defl=0
+        //% help=info/set-score
         setScore(value: number) {
             this.init();
             updateFlag(Visibility.Score, true);
@@ -535,12 +537,13 @@ namespace info {
         }
 
         /**
-         * Changes the score of a player
+         * Change the score of a player
          * @param value 
          */
         //% group="Multiplayer"
         //% blockId=pichangescore block="change %player score by %value"
         //% value.defl=1
+        //% help=info/change-score-by
         changeScoreBy(value: number): void {
             this.setScore(this.score() + value);
         }
@@ -550,10 +553,11 @@ namespace info {
         }
 
         /**
-         * Gets the player life
+         * Get the player life
          */
         //% group="Multiplayer"
         //% blockid=piflife block="%player life"
+        //% help=info/life
         life(): number {
             if (this.showLife === null) this.showLife = true;
             if (this.showPlayer === null) this.showPlayer = true;
@@ -565,11 +569,12 @@ namespace info {
         }
 
         /**
-         * Sets the player life
+         * Set the player life
          */
         //% group="Multiplayer"
         //% blockId=pisetlife block="set %player life to %value"
         //% value.defl=3
+        //% help=info/set-life
         setLife(value: number): void {
             this.init();
             updateFlag(Visibility.Life, true);
@@ -578,23 +583,25 @@ namespace info {
         }
 
         /**
-         * Changes the life of a player
+         * Change the life of a player
          * @param value 
          */
         //% group="Multiplayer"
         //% blockId=pichangelife block="change %player life by %value"
         //% value.defl=-1
+        //% help=info/change-life-by
         changeLifeBy(value: number): void {
             this.setLife(this.life() + value);
         }
 
         /**
-         * Returns true if the given player currently has a value set for health,
+         * Return true if the given player currently has a value set for health,
          * and false otherwise.
          * @param player player to check life of
          */
         //% group="Multiplayer"
         //% blockId=pihaslife block="%player has life"
+        //% help=info/has-life
         hasLife(): boolean {
             return this._life !== null;
         }
@@ -605,6 +612,7 @@ namespace info {
          */
         //% group="Multiplayer"
         //% blockId=playerinfoonlifezero block="on %player life zero"
+        //% help=info/on-life-zero
         onLifeZero(handler: () => void) {
             this._lifeZeroHandler = handler;
         }

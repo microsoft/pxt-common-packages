@@ -298,6 +298,12 @@ namespace controller {
                 cp = { s: sprite, vx: vx, vy: vy }
                 this._controlledSprites.push(cp);
             }
+            if (cp.vx && vx == 0) {
+                cp.s.vx = 0
+            }
+            if (cp.vy && vy == 0) {
+                cp.s.vy = 0
+            }
             cp.vx = vx;
             cp.vy = vy;
         }
@@ -312,6 +318,7 @@ namespace controller {
         //% weight=99 blockGap=8
         //% blockId=ctrlonbuttonevent block="on %controller %button **button** %event"
         //% group="Multiplayer"
+        //% help=controller/on-button-event
         onButtonEvent(btn: ControllerButton, event: ControllerButtonEvent, handler: () => void) {
             this.button(btn).onEvent(event, handler);
         }
@@ -324,6 +331,7 @@ namespace controller {
         //% weight=99 blockGap=8
         //% blockId=ctrlonevent block="on %controller %event"
         //% group="Multiplayer"
+        //% help=controller/on-event
         onEvent(event: ControllerEvent, handler: () => void) {
             control.onEvent(this.id, event, handler);
         }
