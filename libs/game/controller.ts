@@ -168,7 +168,7 @@ namespace controller {
     }
 
     export function players(): Controller[] {
-        if (!_players) return [];
+        player1(); // ensure player1 is present
         return _players.filter(ctrl => !!ctrl);
     }
 
