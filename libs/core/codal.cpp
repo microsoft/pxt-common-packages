@@ -191,6 +191,8 @@ int current_time_ms() {
 
 #ifdef PXT_GC
 ThreadContext *getThreadContext() {
+    if (!currentFiber)
+        return NULL;
     return (ThreadContext *)currentFiber->user_data;
 }
 
@@ -205,6 +207,9 @@ static void *threadAddressFor(codal::Fiber *fib, void *sp) {
 }
 
 void gcProcessStacks(int flags) {
+    if (!currentFiber)
+        return; // scheduler not yet initialized
+
     int numFibers = codal::list_fibers(NULL);
     codal::Fiber **fibers = (codal::Fiber **)xmalloc(sizeof(codal::Fiber *) * numFibers);
     int num2 = codal::list_fibers(fibers);
