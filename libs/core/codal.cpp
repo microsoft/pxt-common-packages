@@ -207,8 +207,13 @@ static void *threadAddressFor(codal::Fiber *fib, void *sp) {
 }
 
 void gcProcessStacks(int flags) {
-    if (!currentFiber)
-        return; // scheduler not yet initialized
+    // check scheduler is initialized
+    if (!currentFiber) {
+        // make sure we allocate something to at least initalize the memory allocator
+        void * volatile p = xmalloc(1);
+        xfree(p);
+        return;
+    }
 
     int numFibers = codal::list_fibers(NULL);
     codal::Fiber **fibers = (codal::Fiber **)xmalloc(sizeof(codal::Fiber *) * numFibers);
