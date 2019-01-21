@@ -9,8 +9,8 @@
 #include "I2C.h"
 #include "CoordinateSystem.h"
 
-#ifndef PXT_DEFUALT_ACCELEROMETER
-#define PXT_DEFUALT_ACCELEROMETER ACCELEROMETER_TYPE_LIS3DH
+#ifndef PXT_DEFAULT_ACCELEROMETER
+#define PXT_DEFAULT_ACCELEROMETER ACCELEROMETER_TYPE_LIS3DH
 #endif
 
 #ifndef PXT_SUPPORT_LIS3DH
@@ -72,7 +72,7 @@ class WAccel {
             i2c = new CODAL_I2C(*LOOKUP_PIN(ACCELEROMETER_SDA), *LOOKUP_PIN(ACCELEROMETER_SCL));
         }
 
-        auto accType = getConfig(CFG_ACCELEROMETER_TYPE, PXT_DEFUALT_ACCELEROMETER);
+        auto accType = getConfig(CFG_ACCELEROMETER_TYPE, PXT_DEFAULT_ACCELEROMETER);
         acc = NULL;
         switch (accType) {
 #if PXT_SUPPORT_LIS3DH
