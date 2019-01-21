@@ -1,22 +1,18 @@
 #include "pxt.h"
 #include "STMLowLevelTimer.h"
+#include "Accelerometer.h"
 
 namespace pxt {
 
 STMLowLevelTimer tim5(TIM5, TIM5_IRQn);
 CODAL_TIMER devTimer(tim5);
 
+void initAccelRandom();
+
 static void initRandomSeed() {
-    int seed = 0xC0DA1;
-    /*
-    auto pinTemp = LOOKUP_PIN(TEMPERATURE);
-    if (pinTemp)
-        seed *= pinTemp->getAnalogValue();
-    auto pinLight = LOOKUP_PIN(LIGHT);
-    if (pinLight)
-        seed *= pinLight->getAnalogValue();
-    */
-    seedRandom(seed);
+    if (getConfig(CFG_ACCELEROMETER_TYPE, -1) != -1) {
+        initAccelRandom();
+    }
 }
 
 void platformSendSerial(const char *data, int len) {
@@ -80,5 +76,4 @@ void platform_usb_init() {
 
 } // namespace pxt
 
-void cpu_clock_init() {
-}
+void cpu_clock_init() {}

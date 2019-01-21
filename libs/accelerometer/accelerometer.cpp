@@ -88,18 +88,18 @@ enum class Gesture {
     //% block="free fall"
     FreeFall = ACCELEROMETER_EVT_FREEFALL,
     /**
-    * Raised when a 3G shock is detected
-    */
+     * Raised when a 3G shock is detected
+     */
     //% block="3g"
     ThreeG = ACCELEROMETER_EVT_3G,
     /**
-    * Raised when a 6G shock is detected
-    */
+     * Raised when a 6G shock is detected
+     */
     //% block="6g"
     SixG = ACCELEROMETER_EVT_6G,
     /**
-    * Raised when a 8G shock is detected
-    */
+     * Raised when a 8G shock is detected
+     */
     //% block="8g"
     EightG = ACCELEROMETER_EVT_8G
 };
@@ -107,7 +107,21 @@ enum class Gesture {
 // defined in accelhw.cpp
 namespace pxt {
 codal::Accelerometer *getAccelerometer();
+
+void initAccelRandom() {
+    auto acc = getAccelerometer();
+    for (int i = 0; i < 10; ++i) {
+        acc->requestUpdate();
+        if (acc->getY())
+            break;
+        fiber_sleep(5);
+    }
+    seedAddRandom(acc->getX());
+    seedAddRandom(acc->getY());
+    seedAddRandom(acc->getZ());
 }
+
+} // namespace pxt
 
 namespace input {
 /**
@@ -198,4 +212,4 @@ void setAccelerometerRange(AcceleratorRange range) {
     getAccelerometer()->setRange((int)range);
 }
 
-}
+} // namespace input
