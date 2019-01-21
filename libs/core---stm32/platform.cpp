@@ -67,6 +67,7 @@ static void writeHex(char *buf, uint32_t n) {
 }
 
 void platform_usb_init() {
+#if CONFIG_ENABLED(DEVICE_USB)
     static char serial_number[25];
 
     writeHex(serial_number, STM32_UUID[0]);
@@ -74,6 +75,7 @@ void platform_usb_init() {
     writeHex(serial_number + 16, STM32_UUID[2]);
 
     usb.stringDescriptors[2] = serial_number;
+#endif
 }
 
 } // namespace pxt
