@@ -27,8 +27,8 @@ class FS {
     struct MetaEntry {
         uint16_t fnhash;
         uint16_t fnptr;
-        uint16_t dataptr;
         uint16_t reserved;
+        uint16_t dataptr;
     };
 
     Flash &flash;
