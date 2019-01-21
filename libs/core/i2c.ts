@@ -6,6 +6,8 @@ namespace pins {
     //% blockId=pins_i2c_readnumber block="i2c read number at address %address|of format %format|repeated %repeated"
     export function i2cReadNumber(address: number, format: NumberFormat, repeated?: boolean): number {
         const buf = pins.i2cReadBuffer(address, pins.sizeOf(format), repeated)
+        if (!buf)
+            return undefined
         return buf.getNumber(format, 0)
     }
 

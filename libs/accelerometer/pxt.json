@@ -4,6 +4,7 @@
     "files": [
         "README.md",
         "accelerometer.cpp",
+        "accelhw.cpp",
         "axis.h",
         "shims.d.ts",
         "enums.d.ts",
