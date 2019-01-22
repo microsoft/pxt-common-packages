@@ -239,6 +239,55 @@ void fill(Image_ img, int c) {
     memset(img->pix(), img->fillMask(c), img->pixLength());
 }
 
+/**
+ * Copy row(s) of pixel from image to buffer (8 bit per pixel).
+ */
+//%
+void getRows(Image_ img, int x, Buffer dst) {
+    if (img->bpp() != 4)
+        return;
+
+    int w = img->width();
+    int h = img->height();
+    if (x >= w || x < 0)
+        return;
+
+    uint8_t *sp = img->pix(x, 0);
+    uint8_t *dp = dst->data;
+    int n = min(dst->length, (w - x) * h) >> 1;
+
+    while (n--) {
+        *dp++ = *sp & 0xf;
+        *dp++ = *sp >> 4;
+        sp++;
+    }
+}
+
+/**
+ * Copy row(s) of pixel from buffer to image.
+ */
+//%
+void setRows(Image_ img, int x, Buffer src) {
+    if (img->bpp() != 4)
+        return;
+
+    int w = img->width();
+    int h = img->height();
+    if (x >= w || x < 0)
+        return;
+
+    img->makeWritable();
+
+    uint8_t *dp = img->pix(x, 0);
+    uint8_t *sp = src->data;
+    int n = min(src->length, (w - x) * h) >> 1;
+
+    while (n--) {
+        *dp++ = (sp[0] & 0xf) | (sp[1] << 4);
+        sp += 2;
+    }
+}
+
 void fillRect(Image_ img, int x, int y, int w, int h, int c) {
     if (w == 0 || h == 0 || x >= img->width() || y >= img->height())
         return;
@@ -316,6 +365,51 @@ void fillRect(Image_ img, int x, int y, int w, int h, int c) {
 //%
 void _fillRect(Image_ img, int xy, int wh, int c) {
     fillRect(img, XX(xy), YY(xy), XX(wh), YY(wh), c);
+}
+
+void mapRect(Image_ img, int x, int y, int w, int h, Buffer map) {
+    if (w == 0 || h == 0 || x >= img->width() || y >= img->height())
+        return;
+
+    if (img->bpp() != 4 || map->length < 16)
+        return;
+
+    int x2 = x + w - 1;
+    int y2 = y + h - 1;
+
+    if (x2 < 0 || y2 < 0)
+        return;
+
+    img->clamp(&x2, &y2);
+    img->clamp(&x, &y);
+    w = x2 - x + 1;
+    h = y2 - y + 1;
+
+    img->makeWritable();
+
+    auto bh = img->byteHeight();
+    auto m = map->data;
+    uint8_t *p = img->pix(x, y);
+    while (w-- > 0) {
+        auto ptr = p;
+        unsigned shift = y & 1;
+        for (int i = 0; i < h; i++) {
+            if (shift) {
+                *ptr = (m[*ptr >> 4] << 4) | (*ptr & 0x0f);
+                ptr++;
+                shift = 0;
+            } else {
+                *ptr = (m[*ptr & 0xf] & 0xf) | (*ptr & 0xf0);
+                shift = 1;
+            }
+        }
+        p += bh;
+    }
+}
+
+//%
+void _mapRect(Image_ img, int xy, int wh, Buffer c) {
+    mapRect(img, XX(xy), YY(xy), XX(wh), YY(wh), c);
 }
 
 /**
@@ -546,7 +640,7 @@ bool drawImageCore(Image_ img, Image_ from, int x, int y, int color) {
         return false;
     }
 
-    //DMESG("drawIMG(%d,%d) at (%d,%d) w=%d bh=%d len=%d", 
+    // DMESG("drawIMG(%d,%d) at (%d,%d) w=%d bh=%d len=%d",
     //    w,h,x, y, img->width(), img->byteHeight(), len );
 
     auto fromH = from->byteHeight();
@@ -554,156 +648,174 @@ bool drawImageCore(Image_ img, Image_ from, int x, int y, int color) {
     auto fromBase = from->pix();
     auto imgBase = img->pix(0, y);
 
-    #define LOOPHD for (int xx = 0; xx < w; ++xx, ++x) if (0 <= x && x < sw)
-
+#define LOOPHD                                                                                     \
+    for (int xx = 0; xx < w; ++xx, ++x)                                                            \
+        if (0 <= x && x < sw)
 
     if (tbp == 4 && fbp == 4) {
         auto wordH = fromH >> 2;
         LOOPHD {
-                y = y0;
+            y = y0;
 
-                auto fdata = (uint32_t*)fromBase + wordH * xx;
-                auto tdata = imgBase + imgH * x;
+            auto fdata = (uint32_t *)fromBase + wordH * xx;
+            auto tdata = imgBase + imgH * x;
 
-                //DMESG("%d,%d xx=%d/%d - %p (%p) -- %d",x,y,xx,w,tdata,img->pix(),
-                //    (uint8_t*)fdata - from->pix());
+            // DMESG("%d,%d xx=%d/%d - %p (%p) -- %d",x,y,xx,w,tdata,img->pix(),
+            //    (uint8_t*)fdata - from->pix());
 
-                auto cnt = wordH;
-                auto bot = min(sh, y + h);
+            auto cnt = wordH;
+            auto bot = min(sh, y + h);
 
-                #define COLS(s) ((v >> (s)) & 0xf)
-                #define COL(s) COLS(s)
-                
-                #define STEPA(s)  \
-                    if (COL(s) && 0 <= y && y < bot) SETLOW(s); \
-                    y++; 
-                #define STEPB(s)  \
-                    if (COL(s) && 0 <= y && y < bot) SETHIGH(s); \
-                    y++; tdata++;
-                 #define STEPAQ(s)  \
-                    if (COL(s)) SETLOW(s); 
-                #define STEPBQ(s)  \
-                    if (COL(s)) SETHIGH(s); \
-                    tdata++;
+#define COLS(s) ((v >> (s)) & 0xf)
+#define COL(s) COLS(s)
 
-                // perf: expanded version 5% faster
-                #define ORDER(A,B) A(0); B(4); A(8); B(12); A(16); B(20); A(24); B(28)
-                //#define ORDER(A,B) for (int k = 0; k < 32; k += 8) { A(k); B(4+k); }
-                #define LOOP(A,B,xbot) while (cnt--) { \
-                            auto v = *fdata++; \
-                            if (0 <= y && y <= xbot - 8) { \
-                                ORDER(A ## Q,  B ## Q); \
-                                y += 8; \
-                            } else { \
-                                ORDER(A, B); \
-                            } \
-                        }
-                #define LOOPS(xbot) if (y & 1) \
-                        LOOP(STEPB, STEPA, xbot) \
-                    else \
-                        LOOP(STEPA, STEPB, xbot)
+#define STEPA(s)                                                                                   \
+    if (COL(s) && 0 <= y && y < bot)                                                               \
+        SETLOW(s);                                                                                 \
+    y++;
+#define STEPB(s)                                                                                   \
+    if (COL(s) && 0 <= y && y < bot)                                                               \
+        SETHIGH(s);                                                                                \
+    y++;                                                                                           \
+    tdata++;
+#define STEPAQ(s)                                                                                  \
+    if (COL(s))                                                                                    \
+        SETLOW(s);
+#define STEPBQ(s)                                                                                  \
+    if (COL(s))                                                                                    \
+        SETHIGH(s);                                                                                \
+    tdata++;
 
-                if (color >= 0) {
-                #define SETHIGH(s) *tdata = (*tdata & 0x0f) | ((COLS(s)) << 4)
-                #define SETLOW(s) *tdata = (*tdata & 0xf0) | COLS(s)
-                    LOOPS(sh)
-                } else if (color == -2) {
-                    #undef COL
-                    #define COL(s) 1
-                    LOOPS(bot)
-                } else {
-                    #undef COL
-                    #define COL(s) COLS(s)
-                    #undef SETHIGH
-                    #define SETHIGH(s) if(*tdata & 0xf0) return true
-                    #undef SETLOW
-                    #define SETLOW(s) if(*tdata & 0x0f) return true
-                    LOOPS(sh)
-                }
-    } }
-    else if (tbp == 1 && fbp == 1) {
+// perf: expanded version 5% faster
+#define ORDER(A, B)                                                                                \
+    A(0);                                                                                          \
+    B(4);                                                                                          \
+    A(8);                                                                                          \
+    B(12);                                                                                         \
+    A(16);                                                                                         \
+    B(20);                                                                                         \
+    A(24);                                                                                         \
+    B(28)
+//#define ORDER(A,B) for (int k = 0; k < 32; k += 8) { A(k); B(4+k); }
+#define LOOP(A, B, xbot)                                                                           \
+    while (cnt--) {                                                                                \
+        auto v = *fdata++;                                                                         \
+        if (0 <= y && y <= xbot - 8) {                                                             \
+            ORDER(A##Q, B##Q);                                                                     \
+            y += 8;                                                                                \
+        } else {                                                                                   \
+            ORDER(A, B);                                                                           \
+        }                                                                                          \
+    }
+#define LOOPS(xbot)                                                                                \
+    if (y & 1)                                                                                     \
+        LOOP(STEPB, STEPA, xbot)                                                                   \
+    else                                                                                           \
+        LOOP(STEPA, STEPB, xbot)
+
+            if (color >= 0) {
+#define SETHIGH(s) *tdata = (*tdata & 0x0f) | ((COLS(s)) << 4)
+#define SETLOW(s) *tdata = (*tdata & 0xf0) | COLS(s)
+                LOOPS(sh)
+            } else if (color == -2) {
+#undef COL
+#define COL(s) 1
+                LOOPS(bot)
+            } else {
+#undef COL
+#define COL(s) COLS(s)
+#undef SETHIGH
+#define SETHIGH(s)                                                                                 \
+    if (*tdata & 0xf0)                                                                             \
+    return true
+#undef SETLOW
+#define SETLOW(s)                                                                                  \
+    if (*tdata & 0x0f)                                                                             \
+    return true
+                LOOPS(sh)
+            }
+        }
+    } else if (tbp == 1 && fbp == 1) {
         auto left = img->pix() - imgBase;
         auto right = img->pix(0, img->height() - 1) - imgBase;
         LOOPHD {
-                y = y0;
+            y = y0;
 
+            auto data = fromBase + fromH * xx;
+            auto off = imgBase + imgH * x;
+            auto off0 = off + left;
+            auto off1 = off + right;
 
-                auto data = fromBase + fromH * xx;
-                auto off = imgBase + imgH * x;
-                auto off0 = off + left;
-                auto off1 = off + right;
+            int shift = (y & 7);
 
-                int shift = (y & 7);
+            int y1 = y + h + (y & 7);
+            int prev = 0;
 
-                int y1 = y + h + (y & 7);
-                int prev = 0;
+            while (y < y1 - 8) {
+                int curr = *data++ << shift;
+                if (off0 <= off && off <= off1) {
+                    uint8_t v = (curr >> 0) | (prev >> 8);
 
-                while (y < y1 - 8) {
-                    int curr = *data++ << shift;
-                    if (off0 <= off && off <= off1) {
-                        uint8_t v = (curr >> 0) | (prev >> 8);
-
-                        if (color == -1) {
-                            if (*off & v)
-                                return true;
-                        } else {
-                            *off |= v;
-                        }
-                    }
-                    off++;
-                    prev = curr;
-                    y += 8;
-                }
-
-                int left = y1 - y; 
-                if (left > 0) {
-                    int curr = *data << shift;
-                    if (off0 <= off && off <= off1) {
-                        uint8_t v = ((curr >> 0) | (prev >> 8)) & (0xff >> (8 - left));
-                        if (color == -1) {
-                            if (*off & v)
-                                return true;
-                        } else {
-                            *off |= v;
-                        }
+                    if (color == -1) {
+                        if (*off & v)
+                            return true;
+                    } else {
+                        *off |= v;
                     }
                 }
+                off++;
+                prev = curr;
+                y += 8;
+            }
+
+            int left = y1 - y;
+            if (left > 0) {
+                int curr = *data << shift;
+                if (off0 <= off && off <= off1) {
+                    uint8_t v = ((curr >> 0) | (prev >> 8)) & (0xff >> (8 - left));
+                    if (color == -1) {
+                        if (*off & v)
+                            return true;
+                    } else {
+                        *off |= v;
+                    }
+                }
+            }
         }
+    } else if (tbp == 4 && fbp == 1) {
+        if (y < 0) {
+            fromBase = from->pix(0, -y);
+            imgBase = img->pix();
         }
-        else if (tbp == 4 && fbp == 1)  {
+        // icon mode
+        LOOPHD {
+            auto fdata = fromBase + fromH * xx;
+            auto tdata = imgBase + imgH * x;
+
+            unsigned mask = 0x01;
+            auto v = *fdata++;
+            int off = (y & 1) ? 1 : 0;
             if (y < 0) {
-                fromBase = from->pix(0, -y);
-                imgBase = img->pix();
+                mask <<= -y & 7;
+                off = 0;
             }
-                // icon mode
-            LOOPHD {
-                auto fdata = fromBase + fromH * xx;
-                auto tdata = imgBase + imgH * x;
-
-                unsigned mask = 0x01;
-                auto v = *fdata++;
-                int off = (y & 1) ? 1 : 0;
-                if (y < 0) {
-                    mask <<= -y & 7;
-                    off = 0;
+            for (int i = off; i < len + off; ++i) {
+                if (mask == 0x100) {
+                    mask = 0x01;
+                    v = *fdata++;
                 }
-                for (int i = off; i < len+off; ++i) {
-                    if (mask == 0x100) {
-                        mask = 0x01;
-                        v = *fdata++;
-                    }
-                    if (v & mask) {
-                        if (i & 1)
-                            *tdata = (*tdata & 0x0f) | (color << 4);
-                        else
-                            *tdata = (*tdata & 0xf0) | color;
-                    }
-                    mask <<= 1;
+                if (v & mask) {
                     if (i & 1)
-                        tdata++;
+                        *tdata = (*tdata & 0x0f) | (color << 4);
+                    else
+                        *tdata = (*tdata & 0xf0) | color;
                 }
+                mask <<= 1;
+                if (i & 1)
+                    tdata++;
             }
         }
+    }
 
     return false;
 }
