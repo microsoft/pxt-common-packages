@@ -73,11 +73,11 @@ namespace serial {
                     break; // found the delimiter!
                 r += String.fromCharCode(buf[0]);
                 bufi = 0;
-            } else if (bufi == 2 && (c & 0xe0) == 0xc0) {
+            } else if (bufi == 2 && (buf[0] & 0xe0) == 0xc0) {
                 r += String.fromCharCode(((buf[0] & 0x1f) << 6) | (buf[1] & 0x3f));
                 bufi = 0;
             } else if (bufi == 3) {
-                if ((c & 0xf0) == 0xe0) {
+                if ((buf[0] & 0xf0) == 0xe0) {
                     r += String.fromCharCode(((buf[0] & 0x0f) << 12) | (buf[1] & 0x3f) << 6 | (buf[2] & 0x3f));
                     bufi = 0;
                 } else {
