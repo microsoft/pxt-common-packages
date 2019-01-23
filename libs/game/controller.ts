@@ -135,9 +135,9 @@ namespace controller {
             }
         }
 
-        __update(dtmus: number) {
+        __update(dtms: number) {
             if (!this._pressed) return;
-            this._pressedElasped += dtmus / 1000;
+            this._pressedElasped += dtms;
 
             // inital delay
             if (this._pressedElasped < this.repeatDelay)
@@ -436,8 +436,8 @@ namespace controller {
                     .filter(s => !(s.s.flags & sprites.Flag.Destroyed));
         }
 
-        __update(dt: number) {
-            const dtms = (dt * 1000) | 0
+        __update(dtms: number) {
+            dtms = dtms | 0;
             this.buttons.forEach(btn => btn.__update(dtms));
         }
 
