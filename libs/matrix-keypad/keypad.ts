@@ -11,10 +11,22 @@ namespace input {
         messageBusId: number;
         timePressed: number[];
 
-        constructor(rowPins: DigitalInOutPin[], columnPins: DigitalInOutPin[], messageBusId: number) {
-            this.rowPins = rowPins;
-            this.columnPins = columnPins;
-            this.messageBusId = this.messageBusId;
+        constructor(messageBusId: number) {
+            this.messageBusId = messageBusId;
+            
+            const rows = pxt.getConfig(DAL.CFG_NUM_MATRIX_KEYPAD_ROWS, 0);
+            const columns = pxt.getConfig(DAL.CFG_NUM_MATRIX_KEYPAD_COLS, 0);
+            
+            this.rowPins = [];
+            for(let i = 0; i < rows; ++i) {
+                const p = pxt.getPinCfg(DAL.CFG_MATRIX_KEYPAD_ROW0 + i);
+                this.rowPins.push(p);
+            }
+            this.columnPins = [];
+            for(let i = 0; i < cols; ++i) {
+                const p = pxt.getPinCfg(DAL.CFG_MATRIX_KEYPAD_COL0 + i);
+                this.rowPins.push(p);
+            }
             this.timePressed = [];
         }
 
