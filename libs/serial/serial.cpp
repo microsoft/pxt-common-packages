@@ -127,7 +127,7 @@ namespace serial {
     Buffer readBuffer() {
       auto service = getWSerial();
       if (!service) return mkBuffer(NULL, 0);
-      int n = service->serial.getRxBufferSize();
+      int n = service->serial.rxBufferedSize();
       if (n == 0) 
         return mkBuffer(NULL, 0);
 

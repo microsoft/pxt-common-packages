@@ -7,6 +7,65 @@
 namespace serial {
     export let NEW_LINE = "\r\n"; // \r require or Putty really unhappy on windows
 
+    class UTF8Decoder {
+        private buf: Buffer;
+
+        constructor() {
+            this.buf = undefined;
+        }
+
+        add(buf: Buffer) {
+            if (!this.buf)
+                this.buf = buf;
+            else {
+                const b = control.createBuffer(this.buf.length + buf.length);
+                b.write(0, this.buf);
+                b.write(this.buf.length, buf);
+                this.buf = b;
+            }
+        }
+
+        decode(): string {
+            if (!this.buf) return "";
+
+            // scan the end of the buffer for partial characters
+            let length = 0;
+            for (let i = this.buf.length - 1; i >= 0; i--) {
+                const c = this.buf[i];
+                if ((c & 0x80) == 0) {
+                    length = i + 1;
+                    break;
+                }
+                else if ((c & 0xe0) == 0xc0) {
+                    length = i + 2;
+                    break;
+                }
+                else if ((c & 0xf0) == 0xe0) {
+                    length = i + 3;
+                    break;
+                }
+            }
+            // is last beyond the end?
+            if (length == this.buf.length) {
+                const s = this.buf.toString();
+                this.buf = undefined;
+                return s;
+            } else if (length == 0) // data yet
+                return "";
+            else {
+                const s = this.buf.slice(0, length).toString();
+                this.buf = this.buf.slice(length);
+                return s;
+            }
+        }
+    }
+    let _decoder: UTF8Decoder;
+    function decoder(): UTF8Decoder {
+        if (!_decoder)
+            _decoder = new UTF8Decoder();
+        return _decoder;
+    }
+
     /**
     * Read the buffered received data as a string
     */
@@ -16,19 +75,9 @@ namespace serial {
     //% group="Read"
     export function readString(): string {
         const buf = serial.readBuffer();
-        return buf.toString();
-    }
-
-    /**
-     * Write some text to the serial port.
-     */
-    //% help=serial/write-string
-    //% weight=87
-    //% blockId=serial_writestring block="serial|write string %text"
-    //% group="Write"
-    export function writeString(text: string) {
-        const buf = control.createBufferFromUTF8(text);
-        serial.writeBuffer(buf);
+        const d = decoder();
+        d.add(buf);
+        return d.decode();
     }
 
     /**
@@ -52,41 +101,23 @@ namespace serial {
     //% group="Read"    
     export function readUntil(delimiter: Delimiters, timeOut?: number): string {
         const start = control.millis();
+        const d = decoder();
         let r = "";
-        let buf = control.createBuffer(3);
-        let bufi = 0;
-        while(timeOut === undefined || (control.millis() - start < timeOut)) {
-            const c = serial.read();
-            if (c == DAL.DEVICE_NOT_SUPPORTED) // serial not supported
-                return r;
-            else if (c == DAL.DEVICE_NO_DATA) { // no data, sleep and try again
-                pause(1);
-                continue;
-            }
-            else if (c < 0) // error -- return what we have so far
-                break;
-            // store in temp buffer
-            buf[bufi++] = c;
-            // commit completed letter
-            if (bufi == 1 && (buf[0] & 0x80) == 0) {
-                if (buf[0] == delimiter)
-                    break; // found the delimiter!
-                r += String.fromCharCode(buf[0]);
-                bufi = 0;
-            } else if (bufi == 2 && (buf[0] & 0xe0) == 0xc0) {
-                r += String.fromCharCode(((buf[0] & 0x1f) << 6) | (buf[1] & 0x3f));
-                bufi = 0;
-            } else if (bufi == 3) {
-                if ((buf[0] & 0xf0) == 0xe0) {
-                    r += String.fromCharCode(((buf[0] & 0x0f) << 12) | (buf[1] & 0x3f) << 6 | (buf[2] & 0x3f));
-                    bufi = 0;
-                } else {
-                    // error...
-                    break;
-                }
-            }
+        while (timeOut === undefined || (control.millis() - start < timeOut)) {
         }
         return r;
+    }
+
+    /**
+     * Write some text to the serial port.
+     */
+    //% help=serial/write-string
+    //% weight=87
+    //% blockId=serial_writestring block="serial|write string %text"
+    //% group="Write"
+    export function writeString(text: string) {
+        const buf = control.createBufferFromUTF8(text);
+        serial.writeBuffer(buf);
     }
 
     /**
