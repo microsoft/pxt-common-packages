@@ -88,6 +88,10 @@ namespace pxsim.TouchButtonMethods {
         button.setThreshold(value);
     }
 
+    export function threshold(button: pxsim.TouchButton) {
+        return button.threshold();
+    }
+
     export function value(button: pxsim.TouchButton): number {
         return button.value();
     }

@@ -16,12 +16,27 @@ The number of lives is increased by adding the change value when it is greater t
 
 Add `20` to the life count when the player reaches `10000` points.
 
+### Single player
+
 ```blocks
 let giveLives = true
 
 if (info.score() > 9999) {
     if (giveLives) {
         info.changeLifeBy(20)
+        giveLives = false
+    }
+}
+```
+
+### Multiplayer
+
+```blocks
+let giveLives = true
+
+if (info.player2.score() > 9999) {
+    if (giveLives) {
+        info.player2.changeLifeBy(20)
         giveLives = false
     }
 }

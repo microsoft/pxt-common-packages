@@ -799,6 +799,7 @@ TNumber getNumberCore(uint8_t *buf, int size, NumberFormat format);
 void setNumberCore(uint8_t *buf, int size, NumberFormat format, TNumber value);
 
 void seedRandom(unsigned seed);
+void seedAddRandom(unsigned seed);
 // max is inclusive
 unsigned getRandom(unsigned max);
 

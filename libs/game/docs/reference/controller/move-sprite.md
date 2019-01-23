@@ -18,6 +18,8 @@ Instead of tracking the direction buttons in a game update function and then upd
 
 Create a sprite with a circular image. Move the sprite around the screen with the direction buttons.
 
+### Single player
+
 ```blocks
 enum SpriteKind {
     Player,
@@ -43,6 +45,35 @@ mySprite = sprites.create(img`
 . . . . . . . . . . . . . . . . 
 `, SpriteKind.Player)
 controller.moveSprite(mySprite, 100, 100)
+```
+
+### Multiplayer
+
+```blocks
+enum SpriteKind {
+    Player,
+    Enemy
+}
+let mySprite: Sprite = null
+mySprite = sprites.create(img`
+. . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . 
+. . . . . 7 7 7 7 7 7 . . . . . 
+. . . 7 7 7 7 7 7 7 7 7 7 . . . 
+. . . 7 7 7 7 7 7 7 7 7 7 . . . 
+. . 7 7 7 7 7 7 7 7 7 7 7 7 . . 
+. . 7 7 7 7 7 7 7 7 7 7 7 7 . . 
+. . 7 7 7 7 7 7 7 7 7 7 7 7 . . 
+. . 7 7 7 7 7 7 7 7 7 7 7 7 . . 
+. . 7 7 7 7 7 7 7 7 7 7 7 7 . . 
+. . 7 7 7 7 7 7 7 7 7 7 7 7 . . 
+. . . 7 7 7 7 7 7 7 7 7 7 . . . 
+. . . 7 7 7 7 7 7 7 7 7 7 . . . 
+. . . . . 7 7 7 7 7 7 . . . . . 
+. . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . 
+`, SpriteKind.Player)
+controller.player2.moveSprite(mySprite, 100, 100)
 ```
 
 ## See also #seealso

@@ -55,7 +55,7 @@ namespace control {
         private timeInSample: number;
         public deltaTimeMillis: number;
         private prevTimeMillis: number;
-    
+
         static lastStats: string;
         static onStats: (stats: string) => void;
 
@@ -86,6 +86,8 @@ namespace control {
             if (this.timeInSample > 1000 || this.framesInSample > 30) {
                 const fps = this.framesInSample / (this.timeInSample / 1000);
                 EventContext.lastStats = `fps:${Math.round(fps)}`;
+                if (fps < 99)
+                    EventContext.lastStats += "." + (Math.round(fps * 10) % 10)
                 if (control.profilingEnabled()) {
                     control.dmesg(`${(fps * 100) | 0}/100 fps - ${this.framesInSample} frames`)
                     control.gc()

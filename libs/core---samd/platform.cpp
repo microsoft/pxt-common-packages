@@ -6,7 +6,7 @@
 namespace pxt {
 
 #ifdef SAMD21
-SAMDTCCTimer lowTimer(TCC0, TCC0_IRQn);
+SAMDTCTimer lowTimer(TC4, TC4_IRQn);
 #endif
 #ifdef SAMD51
 SAMDTCTimer lowTimer(TC0, TC0_IRQn);

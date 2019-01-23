@@ -76,6 +76,20 @@ namespace pxsim.control {
         if (v instanceof RefRecord) {
             return `${v.vtable.name}@${v.id}`
         }
+
+        if (v instanceof RefCollection) {
+            let r = "["
+            for (let e of v.toArray()) {
+                if (r.length > 200) {
+                    r += "..."
+                    break
+                }
+                r += toStr(e) + ", "
+            }
+            r += "]"
+            return r
+        }
+            
         return v + ""
     }
     export function dmesgPtr(msg: string, ptr: any) {
