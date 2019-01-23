@@ -75,6 +75,18 @@ class WDisplay {
 SINGLETON(WDisplay);
 
 //%
+void setScreenSleep(bool sleepOn) {
+    auto display = getWDisplay();
+
+    auto bl = LOOKUP_PIN(DISPLAY_BL);
+    if (bl) {
+        bl->setDigitalValue(!sleepOn);
+    }
+
+    display->lcd.setSleep(sleepOn);
+}
+
+//%
 void setPalette(Buffer buf) {
     auto display = getWDisplay();
     if (48 != buf->length)

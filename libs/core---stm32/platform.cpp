@@ -4,8 +4,8 @@
 
 namespace pxt {
 
-STMLowLevelTimer tim5(TIM5, TIM5_IRQn);
-CODAL_TIMER devTimer(tim5);
+STMLowLevelTimer lowTimer(TIM5, TIM5_IRQn);
+CODAL_TIMER devTimer(lowTimer);
 
 void initAccelRandom();
 
@@ -13,6 +13,57 @@ static void initRandomSeed() {
     if (getConfig(CFG_ACCELEROMETER_TYPE, -1) != -1) {
         initAccelRandom();
     }
+}
+
+void setScreenSleep(bool sleepOn);
+
+//%
+void deepsleep() {
+    setScreenSleep(true);
+
+    auto btn = LOOKUP_PIN(BTN_MENU);
+    btn->eventOn(DEVICE_PIN_EVENT_ON_EDGE);
+
+    auto led0 = LOOKUP_PIN(LED1);
+    if (led0)
+        led0->setDigitalValue(0);
+    
+    auto led = LOOKUP_PIN(LED);
+    if (led)
+        led->setDigitalValue(0);
+
+    lowTimer.disableIRQ();
+
+    auto longPress = 1000;
+
+    // waiting for long-press
+    for (;;) {
+        DMESG("deep sleep");
+        target_deepsleep();
+
+        int numSleep = 0;
+        for (;;) {
+            codal::system_timer_wait_ms(5);
+            numSleep += 5;
+            if (btn->getDigitalValue() == 1)
+                break;
+            // indicate to the user they have pressed long enough
+            if (numSleep > longPress) {
+                auto bl = LOOKUP_PIN(DISPLAY_BL);
+                if (bl)
+                    bl->setDigitalValue(1);
+            }
+        }
+        // A pressed for longer than Nms
+        if (numSleep > longPress)
+            break;
+    }
+
+    lowTimer.enableIRQ();
+
+    DMESG("end deep sleep");
+
+    setScreenSleep(false);
 }
 
 void platformSendSerial(const char *data, int len) {
