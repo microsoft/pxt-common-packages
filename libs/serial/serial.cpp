@@ -127,13 +127,12 @@ namespace serial {
     Buffer readBuffer() {
       auto service = getWSerial();
       if (!service) return mkBuffer(NULL, 0);
-      int n = service->serial.rxBufferedSize();
-      if (n == 0) 
-        return mkBuffer(NULL, 0);
-
+      int n = service->serial.getRxBufferSize();
+      // n maybe 0 but we still call read to force 
+      // to initialize rx
       auto buf = mkBuffer(NULL, n);
       auto read = service->serial.read(buf->data, buf->length, SerialMode::ASYNC);
-      if (read == DEVICE_SERIAL_IN_USE) { // someone else is reading
+      if (read == DEVICE_SERIAL_IN_USE || read == 0) { // someone else is reading
         decrRC(buf);
         return mkBuffer(NULL, 0);
       }
@@ -141,7 +140,7 @@ namespace serial {
         auto buf2 = mkBuffer(buf->data, read);
         decrRC(buf);
         buf = buf2;
-      }        
+      }
       return buf;
     }
 

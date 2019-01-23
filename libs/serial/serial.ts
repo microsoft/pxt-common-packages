@@ -15,6 +15,8 @@ namespace serial {
         }
 
         add(buf: Buffer) {
+            if (!buf || !buf.length) return;
+
             if (!this.buf)
                 this.buf = buf;
             else {
@@ -22,6 +24,34 @@ namespace serial {
                 b.write(0, this.buf);
                 b.write(this.buf.length, buf);
                 this.buf = b;
+            }
+        }
+
+        decodeUntil(delimiter: Delimiters): string {
+            if (!this.buf) return undefined;
+            let i = 0;
+            for (; i < this.buf.length; ++i) {
+                const c = this.buf[i];
+                // skip multi-chars
+                if ((c & 0xe0) == 0xc0)
+                    i += 1;
+                else if ((c & 0xf0) == 0xe0)
+                    i += 2;
+                else if (c == delimiter) {
+                    // found it
+                    break;
+                }
+            }
+
+            if (i >= this.buf.length)
+                return undefined;
+            else {
+                const s = this.buf.slice(0, i).toString();
+                if (i + 1 == this.buf.length)
+                    this.buf = undefined;
+                else
+                    this.buf = this.buf.slice(i + 1);
+                return s;
             }
         }
 
@@ -50,9 +80,9 @@ namespace serial {
                 const s = this.buf.toString();
                 this.buf = undefined;
                 return s;
-            } else if (length == 0) // data yet
+            } else if (length == 0) { // data yet
                 return "";
-            else {
+            } else {
                 const s = this.buf.slice(0, length).toString();
                 this.buf = this.buf.slice(length);
                 return s;
@@ -100,12 +130,19 @@ namespace serial {
     //% weight=19
     //% group="Read"    
     export function readUntil(delimiter: Delimiters, timeOut?: number): string {
-        const start = control.millis();
         const d = decoder();
-        let r = "";
-        while (timeOut === undefined || (control.millis() - start < timeOut)) {
+        const start = control.millis();
+        do {
+            const s = d.decodeUntil(delimiter);
+            if (s !== undefined)
+                return s;
+            const b = serial.readBuffer()
+            d.add(b);
+            pause(1);
         }
-        return r;
+        while (timeOut === undefined || (control.millis() - start < timeOut));
+        // giving up
+        return "";
     }
 
     /**
