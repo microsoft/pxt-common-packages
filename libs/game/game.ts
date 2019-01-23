@@ -155,9 +155,6 @@ namespace game {
             effect = win ? winEffect : loseEffect;
         }
 
-        // one last screenshot
-        takeScreenshot();
-
         // releasing memory and clear fibers. Do not add anything that releases the fiber until background is set below,
         // or screen will be cleared on the new frame and will not appear as background in the game over screen.
         while (_sceneStack && _sceneStack.length) {
@@ -194,12 +191,6 @@ namespace game {
         waitAnyButton();
         control.reset();
     }
-
-    /**
-     * Tells the game host to grab a screenshot
-     */
-    //% shim=game::takeScreenshot
-    declare function takeScreenshot(): void;
 
     /**
      * Update the position and velocities of sprites
