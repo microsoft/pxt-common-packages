@@ -101,7 +101,6 @@ namespace serial {
 
     /**
     * Reads a single byte from the serial receive buffer. Negative if error, 0 if no data.
-    * @param asyncRead false to sleep until data arrived; otherwise returns immediately
     */
     //% Group="Read"
     int read() {
