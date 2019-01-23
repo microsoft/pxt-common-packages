@@ -11,8 +11,8 @@ namespace input {
         messageBusId: number;
         timePressed: number[];
 
-        constructor(messageBusId: number) {
-            this.messageBusId = messageBusId;
+        constructor() {
+            this.messageBusId = pxt.getConfig(DAL.CFG_MATRIX_KEYPAD_MESSAGE_ID);
             
             const rows = pxt.getConfig(DAL.CFG_NUM_MATRIX_KEYPAD_ROWS, 0);
             const columns = pxt.getConfig(DAL.CFG_NUM_MATRIX_KEYPAD_COLS, 0);
@@ -23,11 +23,13 @@ namespace input {
                 this.rowPins.push(p);
             }
             this.columnPins = [];
-            for(let i = 0; i < cols; ++i) {
+            for(let i = 0; i < columns; ++i) {
                 const p = pxt.getPinCfg(DAL.CFG_MATRIX_KEYPAD_COL0 + i);
                 this.rowPins.push(p);
             }
             this.timePressed = [];
+
+            this.pulseRows();
         }
 
         static setInput(p: DigitalInOutPin) {
@@ -96,4 +98,7 @@ namespace input {
             return !!this.timePressed[x * this.columnPins.length + y];
         }
     }
+
+    //% fixedInstance whenUsed block="keypad"
+    export const keypad = new MatrixKeypad();
 }
