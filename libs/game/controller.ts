@@ -125,10 +125,10 @@ namespace controller {
                 if (this._owner)
                     this._owner.connected = true;
                 this._pressed = pressed;
-                if (this._pressed)
-                    this.raiseButtonDown();
-                else {
+                if (this._pressed) {
                     this._pressedElasped = 0;
+                    this.raiseButtonDown();
+                } else {
                     this._repeatCount = 0;
                     this.raiseButtonUp();
                 }
@@ -137,12 +137,13 @@ namespace controller {
 
         __update(dtms: number) {
             if (!this._pressed) return;
-            this._pressedElasped += dtms;
+            this._pressedElasped += dtms / 1000;
+
             // inital delay
             if (this._pressedElasped < this.repeatDelay)
                 return;
 
-            // do we have enough time to repeat
+            // repeat count for this step
             const count = Math.floor((this._pressedElasped - this.repeatDelay) / this.repeatInterval);
             if (count != this._repeatCount) {
                 this.raiseButtonRepeat();
