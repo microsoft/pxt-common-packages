@@ -10,6 +10,11 @@ namespace pins {
       }
     }
 
+    CODAL_I2C *getI2C() {
+      initI2C();
+      return i2c;
+    }
+
       /**
      * Read `size` bytes from a 7-bit I2C `address`.
      */

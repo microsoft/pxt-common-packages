@@ -511,4 +511,83 @@ namespace particles {
             screen.drawTransparentImage(toDraw, Fx.toInt(x), Fx.toInt(y));
         }
     }
+
+    export class StarFactory extends ParticleFactory {
+        protected galois: Math.FastRandom;
+        protected possibleColors: number[]
+        minRate: number;
+        maxRate: number;
+        images: Image[];
+
+        constructor(possibleColors?: number[], minRate: number = 15, maxRate: number = 25) {
+            super();
+            this.galois = new Math.FastRandom();
+            this.minRate = minRate;
+            this.maxRate = maxRate;
+            this.images = [
+                img`
+                    1
+                `,
+                img`
+                    1 . 1
+                    . 1 .
+                    1 . 1
+                `, img`
+                    . 1 .
+                    1 1 1
+                    . 1 .
+                `
+            ];
+
+            if (possibleColors && possibleColors.length)
+                this.possibleColors = possibleColors
+            else
+                this.possibleColors = [1];
+        }
+
+        createParticle(anchor: ParticleAnchor) {
+            const p = super.createParticle(anchor);
+            const xRange = anchor.width ? anchor.width >> 1 : 8;
+
+            p._x = Fx8(this.galois.randomRange(anchor.x - xRange, anchor.x + xRange));
+            p._y = Fx8(anchor.height ? anchor.y - (anchor.height >> 1) : anchor.y);
+            p.vy = Fx8(this.galois.randomRange(this.minRate, this.maxRate));
+
+            // set lifespan based off velocity and screen height (plus a little to make sure it doesn't disappear early)
+            p.lifespan = Fx.toInt(Fx.mul(Fx.div(Fx8(screen.height + 20), p.vy), Fx8(1000)));
+
+            const length = this.possibleColors.length - 1;
+            p.color = this.possibleColors[this.possibleColors.length - 1];
+            for (let i = 0; i < length; ++i) {
+                if (this.galois.percentChance(80 - (i * 10))) {
+                    p.color = this.possibleColors[i];
+                    break;
+                }
+            }
+
+            // images besides the first one are only used on occasion
+            p.data = this.galois.percentChance(15) ? this.galois.randomRange(1, this.images.length - 1) : 0;
+
+            return p;
+        }
+
+        drawParticle(p: Particle, x: Fx8, y: Fx8) {
+            // on occasion, twinkle from white to yellow
+            const twinkleFlag = 0x8000;
+            const rest = 0x7FFF;
+            if (twinkleFlag && p.data) {
+                if (this.galois.percentChance(10)) {
+                    p.color = 1;
+                    p.data &= rest;
+                }
+            } else if (p.color === 1 && this.galois.percentChance(1)) {
+                p.color = 5;
+                p.data |= twinkleFlag;
+            }
+
+            const selected = this.images[rest & p.data].clone();
+            selected.replace(0x1, p.color);
+            screen.drawImage(selected, Fx.toInt(x), Fx.toInt(y));
+        }
+    }
 }
