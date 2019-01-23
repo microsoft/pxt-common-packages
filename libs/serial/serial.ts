@@ -57,7 +57,9 @@ namespace serial {
         let bufi = 0;
         while(timeOut === undefined || (control.millis() - start < timeOut)) {
             const c = serial.read();
-            if (c == DAL.DEVICE_NO_DATA) { // no data, sleep and try again
+            if (c == DAL.DEVICE_NOT_SUPPORTED) // serial not supported
+                return r;
+            else if (c == DAL.DEVICE_NO_DATA) { // no data, sleep and try again
                 pause(1);
                 continue;
             }
