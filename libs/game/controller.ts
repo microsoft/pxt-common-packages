@@ -135,9 +135,9 @@ namespace controller {
             }
         }
 
-        __update(dtms: number) {
+        __update(dtmus: number) {
             if (!this._pressed) return;
-            this._pressedElasped += dtms / 1000;
+            this._pressedElasped += dtmus / 1000;
 
             // inital delay
             if (this._pressedElasped < this.repeatDelay)
