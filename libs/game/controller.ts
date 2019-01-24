@@ -125,10 +125,10 @@ namespace controller {
                 if (this._owner)
                     this._owner.connected = true;
                 this._pressed = pressed;
-                if (this._pressed)
-                    this.raiseButtonDown();
-                else {
+                if (this._pressed) {
                     this._pressedElasped = 0;
+                    this.raiseButtonDown();
+                } else {
                     this._repeatCount = 0;
                     this.raiseButtonUp();
                 }
@@ -138,11 +138,12 @@ namespace controller {
         __update(dtms: number) {
             if (!this._pressed) return;
             this._pressedElasped += dtms;
+
             // inital delay
             if (this._pressedElasped < this.repeatDelay)
                 return;
 
-            // do we have enough time to repeat
+            // repeat count for this step
             const count = Math.floor((this._pressedElasped - this.repeatDelay) / this.repeatInterval);
             if (count != this._repeatCount) {
                 this.raiseButtonRepeat();
@@ -435,8 +436,8 @@ namespace controller {
                     .filter(s => !(s.s.flags & sprites.Flag.Destroyed));
         }
 
-        __update(dt: number) {
-            const dtms = (dt * 1000) | 0
+        __update(dtms: number) {
+            dtms = dtms | 0;
             this.buttons.forEach(btn => btn.__update(dtms));
         }
 
