@@ -93,4 +93,65 @@ namespace effects {
         }
     });
 
+    //% fixedInstance whenUsed block="splatter"
+    export const splatter = new ImageEffect(125, (input: Image, r: Math.FastRandom) => {
+        const imgs: Image[] = [
+            img`
+            . 1 .
+            1 1 1
+            . 1 1`,
+            img`
+            . 1 1 .
+            1 1 1 1
+            . 1 1 .`,
+            img`
+            . 1 1 1 .
+            1 1 1 1 1
+            1 1 1 1 1
+            1 1 1 1 1
+            . 1 1 1 .`,
+            img`
+            . . 1 1 . .
+            . 1 1 1 1 .
+            1 1 1 1 1 1
+            1 1 1 1 1 1
+            . 1 1 1 1 .
+            . . 1 1 . .`,
+            img`
+            . . 1 1 1. .
+            . 1 1 1 1 1 .
+            1 1 1 1 1 1 1
+            1 1 1 1 1 1 1
+            1 1 1 1 1 1 1
+            . 1 1 1 1 1 .
+            . . 1 1 1. .`,
+            img`
+            . . 1 1 1 1 . .
+            . 1 1 1 1 1 1 .
+            1 1 1 1 1 1 1 1
+            1 1 1 1 1 1 1 1
+            1 1 1 1 1 1 1 1
+            1 1 1 1 1 1 1 1
+            . 1 1 1 1 1 1 .
+            . . 1 1 1 1 . .`,
+            img`
+            . . . 1 1 1 . . .
+            . . 1 1 1 1 1 . .
+            . 1 1 1 1 1 1 1 .
+            1 1 1 1 1 1 1 1 1
+            1 1 1 1 1 1 1 1 1
+            1 1 1 1 1 1 1 1 1
+            . 1 1 1 1 1 1 1 .
+            . . 1 1 1 1 1 . .
+            . . . 1 1 1 . . .`,
+        ];
+
+        const rounds = 12;
+        for (let j = 0; j < rounds; ++j) {
+            const im = imgs[r.randomRange(0, imgs.length - 1)];
+            const x = r.randomRange(0, input.width - im.width / 2);
+            const y = r.randomRange(0, input.height - im.height / 2);
+            input.drawImage(im, x, y);
+        }
+    });
 }
