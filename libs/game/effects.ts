@@ -4,11 +4,11 @@ namespace effects {
 
         // If used in an animation, this should be used as the default delay between method calls
         protected preferredDelay: number;
-        protected effect: (image: Image, fastRandom ?: Math.FastRandom) => void;
+        protected effect: (image: Image, fastRandom?: Math.FastRandom) => void;
         protected fastRandom: Math.FastRandom;
         private times: number;
 
-        constructor(defaultRate: number, effectFactory: (image: Image, fastRandom ?: Math.FastRandom) => void) {
+        constructor(defaultRate: number, effectFactory: (image: Image, fastRandom?: Math.FastRandom) => void) {
             this.effect = effectFactory;
             this.fastRandom = new Math.FastRandom();
             this.preferredDelay = defaultRate;
@@ -80,4 +80,17 @@ namespace effects {
             input.setPixel(x, y + 2, c)
         }
     });
+
+    //% fixedInstance whenUsed block="slash"
+    export const slash = new ImageEffect(125, (input: Image, r: Math.FastRandom) => {
+        const rounds = 12;
+        for (let j = 0; j < rounds; ++j) {
+            let horizontal = r.randomBool();
+            let length = r.randomRange(5, 50);
+            let x = r.randomRange(0, input.width - (horizontal ? length : 1));
+            let y = r.randomRange(0, input.height - (horizontal ? 3 : length));
+            input.drawLine(x, y, horizontal ? x + length : x, horizontal ? y : y + length, 1);
+        }
+    });
+
 }
