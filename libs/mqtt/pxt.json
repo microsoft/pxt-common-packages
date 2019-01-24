@@ -1,0 +1,21 @@
+{
+    "name": "mqtt",
+    "description": "Micro-MQTT for MakeCode",
+    "files": [
+        "README.md",
+        "ConnectFlags.ts",
+        "ConnectReturnCode.ts",
+        "ControlPacketType.ts",
+        "IConnectionOptions.ts",
+        "IMessage.ts",
+        "micro-mqtt.ts",
+        "Net.ts"
+    ],
+    "tests": [
+        "test.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core"
+    }
+}
