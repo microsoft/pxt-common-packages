@@ -181,6 +181,80 @@ namespace control {
 
     //% shim=pxt::programHash
     export function programHash(): number { return 0 }
+
+    export enum IntervalMode {
+        Interval,
+        Timeout,
+        Immediate
+    }
+
+    let intervals: Interval[] = [];
+    class Interval {
+
+        id: number;
+        func: () => void;
+        delay: number;
+        mode: IntervalMode;
+
+        constructor(func: () => void, delay: number, mode: IntervalMode) {
+            this.id = intervals.length == 0
+                ? 1 : intervals[intervals.length - 1].id + 1;
+            this.func = func;
+            this.delay = delay;
+            this.mode = mode;
+            intervals.push(this);
+
+            control.runInParallel(() => this.work());
+        }
+
+        work() {
+            // execute
+            switch (this.mode) {
+                case IntervalMode.Immediate:
+                case IntervalMode.Timeout:
+                    if (this.delay > 0)
+                        pause(this.delay); // timeout
+                    if (this.delay >= 0) // immediate, timeout
+                        this.func();
+                    break;
+                case IntervalMode.Interval:
+                    while (this.delay > 0) {
+                        pause(this.delay);
+                        // might have been cancelled during this duration
+                        if (this.delay > 0)
+                            this.func();
+                    }
+                    break;
+            }
+            // remove from interval array
+            for (let i = 0; i < intervals.length; ++i) {
+                if (intervals[i].id == this.id) {
+                    intervals.splice(i, 1);
+                    break;
+                }
+            }
+        }
+
+        cancel() {
+            this.delay = -1;
+        }
+    }
+
+    export function setInterval(func: () => void, delay: number, mode: IntervalMode): number {
+        if (!func || delay < 0) return 0;
+        const interval = new Interval(func, delay, mode);
+        return interval.id;
+    }
+
+    export function clearInterval(intervalId: number, mode: IntervalMode): void {
+        for (let i = 0; i < intervals.length; ++i) {
+            const it = intervals[i];
+            if (it.id == intervalId && it.mode == mode) {
+                it.cancel();
+                break;
+            }
+        }
+    }
 }
 
 /**
@@ -229,4 +303,61 @@ namespace basic {
     export function pause(millis: number) {
         loops.pause(millis);
     }
+}
+
+/**
+ * Calls a function with a fixed time delay between each call to that function.
+ * @param func 
+ * @param delay 
+ */
+//%
+function setInterval(func: () => void, delay: number): number {
+    delay = Math.max(10, delay | 0);
+    return control.setInterval(func, delay, control.IntervalMode.Interval);
+}
+
+/**
+ * Cancels repeated action which was set up using setInterval().
+ * @param intervalId 
+ */
+//%
+function clearInterval(intervalId: number) {
+    control.clearInterval(intervalId, control.IntervalMode.Interval);
+}
+
+/**
+ * Calls a function after specified delay.
+ * @param func 
+ * @param delay 
+ */
+//%
+function setTimeout(func: () => void, delay: number): number {
+    return control.setInterval(func, delay, control.IntervalMode.Timeout);
+}
+
+/**
+ * Clears the delay set by setTimeout().
+ * @param intervalId 
+ */
+//%
+function clearTimeout(intervalId: number) {
+    control.clearInterval(intervalId, control.IntervalMode.Timeout);
+}
+
+/**
+ * Calls a function as soon as possible.
+ * @param func 
+ */
+//%
+function setImmediate(func: () => void): number {
+    return control.setInterval(func, 0, control.IntervalMode.Immediate);
+}
+
+/**
+ * Cancels the immediate actions.
+ * @param intervalId 
+ */
+//%
+function clearImmediate(intervalId: number) {
+    control.clearInterval(intervalId, control.IntervalMode.Immediate);
 }
