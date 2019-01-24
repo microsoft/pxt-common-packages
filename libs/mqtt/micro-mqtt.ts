@@ -17,8 +17,6 @@ export const enum Constants {
  * The specifics of the MQTT protocol.
  */
 export module Protocol {
-    const strChr: (...codes: number[]) => string = String.fromCharCode;
-
     /**
      * Encode remaining length
      * http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html#_Toc398718023
@@ -68,7 +66,7 @@ export module Protocol {
      * http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html#_Figure_1.1_Structure
      */
     function pack(s: string): string {
-        return strChr(...getBytes(s.length)) + s;
+        return String.fromCharCode(getBytes(s.length)) + s;
     }
 
     /**
@@ -78,8 +76,8 @@ export module Protocol {
     function createPacket(byte1: number, variable: string, payload: string = ''): string {
         const byte2: number[] = encodeRemainingLength(variable.length + payload.length);
 
-        return strChr(byte1) +
-            strChr(...byte2) +
+        return String.fromCharCode(byte1) +
+            String.fromCharCode(byte2) +
             variable +
             payload;
     }
@@ -92,10 +90,10 @@ export module Protocol {
         const byte1: number = ControlPacketType.Connect << 4;
 
         const protocolName: string = pack('MQTT');
-        const protocolLevel: string = strChr(4);
-        const flags: string = strChr(createConnectFlags(options));
+        const protocolLevel: string = String.fromCharCode(4);
+        const flags: string = String.fromCharCode(createConnectFlags(options));
 
-        const keepAlive: string = strChr(...getBytes(Constants.KeepAlive));
+        const keepAlive: string = String.fromCharCode(getBytes(Constants.KeepAlive));
 
         let payload: string = pack(options.clientId);
 
@@ -122,7 +120,7 @@ export module Protocol {
      * http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html#_Toc384800454
      */
     export function createPingReq(): string {
-        return strChr(ControlPacketType.PingReq << 4, 0);
+        return String.fromCharCode(ControlPacketType.PingReq << 4, 0);
     }
 
     /**
@@ -133,7 +131,7 @@ export module Protocol {
         let byte1: number = ControlPacketType.Publish << 4 | (qos << 1);
         byte1 |= (retained) ? 1 : 0;
 
-        const pid: string = strChr(...getBytes(Constants.FixedPackedId));
+        const pid: string = String.fromCharCode(getBytes(Constants.FixedPackedId));
         const variable: string = (qos === 0) ? pack(topic) : pack(topic) + pid;
 
         return createPacket(byte1, variable, message);
@@ -193,7 +191,7 @@ export module Protocol {
     export function createPubAck(pid: number): string {
         const byte1: number = ControlPacketType.PubAck << 4;
 
-        return createPacket(byte1, strChr(...getBytes(pid)));
+        return createPacket(byte1, String.fromCharCode(getBytes(pid)));
     }
 
     /**
@@ -202,12 +200,12 @@ export module Protocol {
      */
     export function createSubscribe(topic: string, qos: number): string {
         const byte1: number = ControlPacketType.Subscribe << 4 | 2;
-        const pid: string = strChr(...getBytes(Constants.FixedPackedId));
+        const pid: string = String.fromCharCode(getBytes(Constants.FixedPackedId));
 
         return createPacket(byte1,
                             pid,
                             pack(topic) +
-            strChr(qos));
+            String.fromCharCode(qos));
     }
 }
 
@@ -222,7 +220,7 @@ export class Client {
      // @ts-ignore
     protected emit: (event: string, arg?: string | IMessage) => boolean;
 
-    private opt: IConnectionOptions;
+    public opt: IConnectionOptions;
 
     private net: INet;
     private sct?: ISocket;
@@ -230,7 +228,7 @@ export class Client {
     private wdId: number = Constants.Uninitialized;
     private piId: number = Constants.Uninitialized;
 
-    private connected: boolean = false;
+    public connected: boolean = false;
 
     // tslint:disable-next-line:no-unsafe-any
     constructor(opt: IConnectionOptions, net: INet) {
