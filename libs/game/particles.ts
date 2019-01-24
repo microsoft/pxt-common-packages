@@ -178,7 +178,7 @@ namespace particles {
                 if (scene)
                     scene.allSprites.removeElement(this);
                 const sources = particleSources();
-                if (sources)
+                if (sources && sources.length)
                     sources.removeElement(this);
                 this.anchor == undefined;
             }
@@ -298,9 +298,9 @@ namespace particles {
     }
 
     function init() {
-        const data = game.currentScene().data;
-        if (data.particleSources) return;
-        data.particleSources = [] as ParticleSource[];
+        const scene = game.currentScene();
+        if (scene.particleSources) return;
+        scene.particleSources = [];
         lastUpdate = control.millis();
         game.onUpdate(updateParticles);
         game.onUpdateInterval(250, pruneParticles);
@@ -410,6 +410,7 @@ namespace particles {
     }
 
     function particleSources() {
-        return game.currentScene().data.particleSources as particles.ParticleSource[];
+        const sources = game.currentScene().particleSources;
+        return sources;
     }
 }

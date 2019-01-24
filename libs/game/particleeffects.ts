@@ -136,7 +136,7 @@ namespace effects {
     //% blockNamespace=sprites
     //% group="Effects" weight=89
     export function clearParticles(anchor: particles.ParticleAnchor) {
-        const sources = game.currentScene().data.particleSources as particles.ParticleSource[];
+        const sources = game.currentScene().particleSources;
         if (!sources) return;
         sources
             .filter(ps => ps.anchor == anchor || ps.anchor.x == anchor.x && ps.anchor.y == anchor.y)
