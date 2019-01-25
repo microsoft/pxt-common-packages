@@ -35,8 +35,10 @@ class NetSocket {
 namespace pxsim.NetMethods {
     export function connect(host: string, port: number, handler: () => void): Socket {
         // ignore port
-        const ws = new WebSocket(`wss://${host}::443/$iothub/websocket`);
-        return new NetSocket(ws);
+        const r = pxsim.runtime;
+        if (!r) return undefined;
+        const ws = r.createWebSocket(`${host}::443/$iothub/websocket`);
+        return ws;
     }
 }
 
