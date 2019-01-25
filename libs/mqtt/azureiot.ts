@@ -4,7 +4,7 @@ const enum AzureIotEvent {
     Error = 3
 }
 
-namespace azure {
+namespace azureiot {
     export let logPriority = ConsolePriority.Silent;
 
     let _mqttClient: mqtt.Client;
@@ -21,10 +21,13 @@ namespace azure {
         return _mqttClient;
     }
 
+    //% shim=azure.createAzureNet
+    declare function createAzureNet(): Net;
+
     function createMQTTClient() {
         _messageBusId = control.allocateNotifyEvent(); // TODO
 
-        const net: mqtt.INet = undefined; // TODO
+        const net = createAzureNet(); // TODO
         const sasToken = "";// TODO get from config
         const sasParts = parsePropertyBag(sasToken, ";");
         const iotHubHostName = sasParts["HostName"];
@@ -33,21 +36,17 @@ namespace azure {
 
         const opts: mqtt.IConnectionOptions = {
             host: iotHubHostName,
-            port: 8883,
+            /* port: 8883, overriden based on platform */
             username: `${iotHubHostName}/${deviceId}/api-version=2018-06-30`,
             password: sharedAccessSignature,
             clientId: deviceId
         }
         const c = new mqtt.Client(opts, net);
-        c.on('info', (msg: string) => log(msg));
         c.on('connected', () => control.raiseEvent(_messageBusId, AzureIotEvent.Connected));
         c.on('disconnected', () => control.raiseEvent(_messageBusId, AzureIotEvent.Disconnected));
         c.on('error', () => control.raiseEvent(_messageBusId, AzureIotEvent.Error));
         c.on('receive', (packet: mqtt.IMessage) => handleReceive(packet));
         c.connect();
-        // wait for connection
-        if (!c.connected)
-            control.waitForEvent(_messageBusId, AzureIotEvent.Connected);
         return c;
     }
 
@@ -87,6 +86,16 @@ namespace azure {
         return Object.keys(props)
             .map(k => `${k}=${JSON.stringify(props[k])}`)
             .join('&');
+    }
+
+    /**
+     * Connects to the IoT hub
+     */
+    export function connect() {
+        const c = mqttClient();
+        // wait for connection
+        if (!c.connected)
+            control.waitForEvent(_messageBusId, AzureIotEvent.Connected);
     }
 
     /**
