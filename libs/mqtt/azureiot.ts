@@ -21,7 +21,7 @@ namespace azureiot {
         return _mqttClient;
     }
 
-    //% shim=azure.createAzureNet
+    //% shim=azureiot.createAzureNet
     declare function createAzureNet(): Net;
 
     function createMQTTClient() {
@@ -77,7 +77,7 @@ namespace azureiot {
     function decodeQuery(msg: string, separator?: string): any {
         const r = parsePropertyBag(msg, separator);
         // TODO uridecode
-        Object.keys(r).forEach(k => r[k] = Object.parse(r[k]));
+        Object.keys(r).forEach(k => r[k] = JSON.parse(r[k]));
         return r;
     }
 
