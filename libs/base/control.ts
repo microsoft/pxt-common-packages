@@ -242,7 +242,7 @@ namespace control {
 
     export function setInterval(func: () => void, delay: number, mode: IntervalMode): number {
         if (!func || delay < 0) return 0;
-        if (!_intervals) __internals = [];
+        if (!_intervals) _intervals = [];
         const interval = new Interval(func, delay, mode);
         return interval.id;
     }
