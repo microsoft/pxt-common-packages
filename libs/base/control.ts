@@ -227,12 +227,7 @@ namespace control {
                     break;
             }
             // remove from interval array
-            for (let i = 0; i < _intervals.length; ++i) {
-                if (_intervals[i].id == this.id) {
-                    _intervals.splice(i, 1);
-                    break;
-                }
-            }
+            _intervals.removeElement(this);
         }
 
         cancel() {
