@@ -188,7 +188,7 @@ namespace control {
         Immediate
     }
 
-    let intervals: Interval[] = [];
+    let _intervals: Interval[] = undefined;
     class Interval {
 
         id: number;
@@ -197,12 +197,12 @@ namespace control {
         mode: IntervalMode;
 
         constructor(func: () => void, delay: number, mode: IntervalMode) {
-            this.id = intervals.length == 0
-                ? 1 : intervals[intervals.length - 1].id + 1;
+            this.id = _intervals.length == 0
+                ? 1 : _intervals[_intervals.length - 1].id + 1;
             this.func = func;
             this.delay = delay;
             this.mode = mode;
-            intervals.push(this);
+            _intervals.push(this);
 
             control.runInParallel(() => this.work());
         }
@@ -227,9 +227,9 @@ namespace control {
                     break;
             }
             // remove from interval array
-            for (let i = 0; i < intervals.length; ++i) {
-                if (intervals[i].id == this.id) {
-                    intervals.splice(i, 1);
+            for (let i = 0; i < _intervals.length; ++i) {
+                if (_intervals[i].id == this.id) {
+                    _intervals.splice(i, 1);
                     break;
                 }
             }
@@ -242,13 +242,15 @@ namespace control {
 
     export function setInterval(func: () => void, delay: number, mode: IntervalMode): number {
         if (!func || delay < 0) return 0;
+        if (!_intervals) __internals = [];
         const interval = new Interval(func, delay, mode);
         return interval.id;
     }
 
     export function clearInterval(intervalId: number, mode: IntervalMode): void {
-        for (let i = 0; i < intervals.length; ++i) {
-            const it = intervals[i];
+        if (!_intervals) return;
+        for (let i = 0; i < _intervals.length; ++i) {
+            const it = _intervals[i];
             if (it.id == intervalId && it.mode == mode) {
                 it.cancel();
                 break;
