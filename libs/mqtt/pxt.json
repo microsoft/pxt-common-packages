@@ -3,11 +3,6 @@
     "description": "Micro-MQTT for MakeCode",
     "files": [
         "README.md",
-        "ConnectFlags.ts",
-        "ConnectReturnCode.ts",
-        "ControlPacketType.ts",
-        "IConnectionOptions.ts",
-        "IMessage.ts",
         "Net.ts",
         "micro-mqtt.ts",
         "azureiot.ts"

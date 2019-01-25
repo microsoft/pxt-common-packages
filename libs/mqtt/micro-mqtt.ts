@@ -1,4 +1,64 @@
 namespace mqtt {
+    /**
+     * Connect flags
+     * http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html#_Toc385349229
+     */
+    export const enum ConnectFlags {
+        UserName = 128,
+        Password = 64,
+        WillRetain = 32,
+        WillQoS2 = 16,
+        WillQoS1 = 8,
+        Will = 4,
+        CleanSession = 2
+    }
+
+    /**
+     * Connect Return code
+     * http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html#_Toc385349256
+     */
+    export const enum ConnectReturnCode {
+        Unknown = -1,
+        Accepted = 0,
+        UnacceptableProtocolVersion = 1,
+        IdentifierRejected = 2,
+        ServerUnavailable = 3,
+        BadUserNameOrPassword = 4,
+        NotAuthorized = 5
+    }
+
+    /**
+     * A message received in a Publish packet.
+     */
+    export interface IMessage {
+        pid?: number;
+        topic: string;
+        content: string;
+        qos: number;
+        retain: number;
+        next?: number;
+    }
+
+    /**
+     * MQTT Control Packet type
+     * http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html#_Toc353481061
+     */
+    export const enum ControlPacketType {
+        Connect = 1,
+        ConnAck = 2,
+        Publish = 3,
+        PubAck = 4,
+        // PubRec = 5,
+        // PubRel = 6,
+        // PubComp = 7,
+        Subscribe = 8,
+        SubAck = 9,
+        Unsubscribe = 10,
+        UnsubAck = 11,
+        PingReq = 12,
+        PingResp = 13,
+        Disconnect = 14
+    }
 
     /**
      * Optimization, the TypeScript compiler replaces the constant enums.
@@ -10,6 +70,25 @@ namespace mqtt {
         Uninitialized = -123,
         FixedPackedId = 1,
         KeepAlive = 60
+    }
+
+    /**
+     * The options used to connect to the MQTT broker.
+     */
+    export interface IConnectionOptions {
+        host: string;
+        port?: number;
+        username?: string;
+        password?: string;
+        clientId: string;
+        will?: IConnectionOptionsWill;
+    }
+
+    export interface IConnectionOptionsWill {
+        topic: string;
+        message: string;
+        qos?: number;
+        retain?: boolean;
     }
 
     /**

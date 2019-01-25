@@ -50,10 +50,10 @@ namespace azureiot {
         return c;
     }
 
-    function handleReceive(packet: mqtt.IMesssage) {
+    function handleReceive(packet: mqtt.IMessage) {
         if (!_receiveHandler) return; // nobody's listening
         const topic = packet.topic;
-        const props = packet.topic.substring(`devices/${_mqttClient.opt.clientId}/messages/devicebound/`.length);
+        const props = packet.topic.substr(`devices/${_mqttClient.opt.clientId}/messages/devicebound/`.length);
         const msg = decodeQuery(props);
         _receiveHandler(msg);
     }
