@@ -455,7 +455,7 @@ namespace mqtt {
             }
         }
 
-        private ping = (): void => {
+        private ping() {
             this.send(Protocol.createPingReq());
             this.emit('debug', 'Sent: Ping request.');
         }

@@ -21,7 +21,7 @@ namespace azureiot {
         return _mqttClient;
     }
 
-    //% shim=azureiot.createAzureNet
+    //% shim=azureiot::createAzureNet
     declare function createAzureNet(): Net;
 
     function createMQTTClient() {
