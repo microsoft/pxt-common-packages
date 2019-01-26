@@ -3,7 +3,8 @@
     "description": "Micro-MQTT for MakeCode",
     "files": [
         "README.md",
-        "Net.ts",
+        "net.ts",
+        "uartnet.ts",
         "micro-mqtt.ts",
         "azureiot.ts"
     ],
