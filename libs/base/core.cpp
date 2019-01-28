@@ -399,19 +399,26 @@ String fromCharCode(int code) {
 #endif
 }
 
+
+
 //%
 TNumber charCodeAt(String s, int pos) {
+    if (!s) return TAG_NAN;
+    return s->charCodeAt(pos);
+}
+
+TNumber BoxedString::charCodeAt(int pos) {
 #if PXT_UTF8
-    auto ptr = s->getUTF8DataAt(pos);
+    auto ptr = this->getUTF8DataAt(pos);
     if (!ptr)
         return TAG_NAN;
     auto code = utf8CharCode(ptr);
-    if (!code && ptr == s->getUTF8Data() + s->getUTF8Size())
+    if (!code && ptr == this->getUTF8Data() + this->getUTF8Size())
         return TAG_NAN;
     return fromInt(code);
 #else
-    if (s && 0 <= pos && pos < s->ascii.length) {
-        return fromInt(s->ascii.data[pos]);
+    if (0 <= pos && pos < this->ascii.length) {
+        return fromInt(this->ascii.data[pos]);
     } else {
         return TAG_NAN;
     }
