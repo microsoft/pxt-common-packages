@@ -16,7 +16,7 @@ namespace mouse {
     * Sets the mouse button state to down
     */
     //% help=mouse/set-button
-    //% blockId=mouseSetButton block="mouse button %index=joystickStandardButton|%down=toggleDownUp"
+    //% blockId=mouseSetButton block="mouse button %index|%down=toggleDownUp"
     void setButton(MouseButton button, bool down) {
         if (down)
             pxt::mouse.buttonDown((codal::USBHIDMouseButton)button);

@@ -8,8 +8,7 @@
 
 #define HF2_BUF_SIZE 256
 
-typedef struct
-{
+typedef struct {
     uint16_t size;
     uint8_t serial;
     union {
@@ -21,30 +20,39 @@ typedef struct
     };
 } HF2_Buffer;
 
-class HF2 : public codal::USBHID
-{
-public:
-    HF2_Buffer &pkt;
+class HF2 : public CodalUSBInterface {
+    void prepBuffer(uint8_t *buf);
+    void pokeSend();
+
+    const uint8_t *dataToSend;
+    volatile uint32_t dataToSendLength;
+    bool dataToSendPrepend;
+    uint8_t dataToSendFlag;
+
     bool gotSomePacket;
+    bool ctrlWaiting;
+
+  public:
+    HF2_Buffer &pkt;
+
+    bool allocateEP;
 
     int sendResponse(int size);
-    int send(const void *data, int size, int flag);
     int recv();
     int sendResponseWithData(const void *data, int size);
 
     HF2(HF2_Buffer &pkt);
     virtual int endpointRequest();
-    virtual int stdRequest(UsbEndpointIn &ctrl, USBSetup& setup);
+    virtual int classRequest(UsbEndpointIn &ctrl, USBSetup &setup);
     virtual const InterfaceInfo *getInterfaceInfo();
     int sendSerial(const void *data, int size, int isError = 0);
+
+    virtual bool enableWebUSB() { return true; }
 };
 
-class WebHF2 : public HF2
-{
-public:
-    WebHF2(HF2_Buffer &pkt);
+class DummyIface : public CodalUSBInterface {
+  public:
     virtual const InterfaceInfo *getInterfaceInfo();
-    virtual bool enableWebUSB() { return true; }
 };
 
 #endif

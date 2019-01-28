@@ -16,8 +16,11 @@ scene.getTile(0, 0)
 scene.getTilesByType(0)
 scene.getTile(0, 0).place(null)
 scene.onHitTile(0, 0, function (sprite) {})
+effects.confetti.startScreenEffect()
+effects.confetti.endScreenEffect()
 scene.cameraFollowSprite(null)
 scene.centerCameraAt(0, 0)
+scene.cameraShake(4,500)
 ```
 
 ## See also
@@ -35,5 +38,8 @@ scene.centerCameraAt(0, 0)
 [get tiles by type](/reference/scene/get-tiles-by-type),
 [place](/reference/scene/place),
 [on hit tile](/reference/scene/on-hit-tile),
+[start screen effect](/reference/scene/start-screen-effect),
+[end screen effect](/reference/scene/end-screen-effect),
 [camera follow sprite](/reference/scene/camera-follow-sprite),
-[center camera at](/reference/scene/center-camera-at)
+[center camera at](/reference/scene/center-camera-at),
+[camera shake](/reference/scene/camera-shake)

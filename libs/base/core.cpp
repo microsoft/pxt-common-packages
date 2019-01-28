@@ -6,7 +6,18 @@ using namespace std;
 
 #define p10(v) __builtin_powi(10, v)
 
+// try not to create cons-strings shorter than this
+#define SHORT_CONCAT_STRING 50
+
+// bigger value - less memory, but slower
+// 16/20 keeps s.length and s.charCodeAt(i) at about 200 cycles (for actual unicode strings),
+// which is similar to amortized allocation time
+#define SKIP_INCR 16 // needs to be power of 2; needs to be kept in sync with compiler
+#define MIN_SKIP 20  // min. size of string to use skip list; static code has its own limit
+
 namespace pxt {
+
+PXT_DEF_STRING(emptyString, "")
 
 static HandlerBinding *handlerBindings;
 
@@ -36,23 +47,257 @@ void setBinding(int source, int value, Action act) {
     handlerBindings = curr;
 }
 
-PXT_DEF_STRING(emptyString, "")
-
 static const char emptyBuffer[] __attribute__((aligned(4))) = "@PXT#:\x00\x00\x00";
 
-String mkString(const char *data, int len) {
+#if PXT_UTF8
+int utf8Len(const char *data, int size) {
+    int len = 0;
+    for (int i = 0; i < size; ++i) {
+        char c = data[i];
+        len++;
+        if ((c & 0x80) == 0x00) {
+            // skip
+        } else if ((c & 0xe0) == 0xc0) {
+            i++;
+        } else if ((c & 0xf0) == 0xe0) {
+            i += 2;
+        } else {
+            // error; just skip
+        }
+    }
+    return len;
+}
+
+const char *utf8Skip(const char *data, int size, int skip) {
+    int len = 0;
+    for (int i = 0; i <= size; ++i) {
+        char c = data[i];
+        len++;
+        if (len > skip)
+            return data + i;
+        if ((c & 0x80) == 0x00) {
+            // skip
+        } else if ((c & 0xe0) == 0xc0) {
+            i++;
+        } else if ((c & 0xf0) == 0xe0) {
+            i += 2;
+        } else {
+            // error; just skip over
+        }
+    }
+    return NULL;
+}
+
+static char *write3byte(char *dst, uint32_t charCode) {
+    if (dst) {
+        *dst++ = 0xe0 | (charCode >> 12);
+        *dst++ = 0x80 | (0x3f & (charCode >> 6));
+        *dst++ = 0x80 | (0x3f & (charCode >> 0));
+    }
+    return dst;
+}
+
+static char *write2byte(char *dst, uint32_t charCode) {
+    if (dst) {
+        *dst++ = 0xc0 | (charCode >> 6);
+        *dst++ = 0x80 | (0x3f & charCode);
+    }
+    return dst;
+}
+
+static int utf8canon(char *dst, const char *data, int size) {
+    int outsz = 0;
+    for (int i = 0; i < size;) {
+        uint8_t c = data[i];
+        uint32_t charCode = c;
+        if ((c & 0x80) == 0x00) {
+            charCode = c;
+            i++;
+        } else if ((c & 0xe0) == 0xc0 && i + 1 < size && (data[i + 1] & 0xc0) == 0x80) {
+            charCode = ((c & 0x1f) << 6) | (data[i + 1] & 0x3f);
+            if (charCode < 0x80)
+                goto error;
+            else
+                i += 2;
+        } else if ((c & 0xf0) == 0xe0 && i + 2 < size && (data[i + 1] & 0xc0) == 0x80 &&
+                   (data[i + 2] & 0xc0) == 0x80) {
+            charCode = ((c & 0x0f) << 12) | (data[i + 1] & 0x3f) << 6 | (data[i + 2] & 0x3f);
+            // don't exclude surrogate pairs, since we're generating them
+            if (charCode < 0x800 /*|| (0xd800 <= charCode && charCode <= 0xdfff)*/)
+                goto error;
+            else
+                i += 3;
+        } else if ((c & 0xf8) == 0xf0 && i + 3 < size && (data[i + 1] & 0xc0) == 0x80 &&
+                   (data[i + 2] & 0xc0) == 0x80 && (data[i + 3] & 0xc0) == 0x80) {
+            charCode = ((c & 0x07) << 18) | (data[i + 1] & 0x3f) << 12 | (data[i + 2] & 0x3f) << 6 |
+                       (data[i + 3] & 0x3f);
+            if (charCode < 0x10000 || charCode > 0x10ffff)
+                goto error;
+            else
+                i += 4;
+        } else {
+            goto error;
+        }
+
+        if (charCode < 0x80) {
+            outsz += 1;
+            if (dst)
+                *dst++ = charCode;
+        } else if (charCode < 0x800) {
+            outsz += 2;
+            dst = write2byte(dst, charCode);
+        } else if (charCode < 0x10000) {
+            outsz += 3;
+            dst = write3byte(dst, charCode);
+        } else {
+            outsz += 6; // a surrogate pair
+            charCode -= 0x10000;
+            dst = write3byte(dst, 0xd800 + (charCode >> 10));
+            dst = write3byte(dst, 0xdc00 + (charCode & 0x3ff));
+        }
+
+        continue;
+
+    error:
+        i++;
+        outsz += 2;
+        dst = write2byte(dst, c);
+    }
+    return outsz;
+}
+
+static int utf8CharCode(const char *data) {
+    unsigned char c = *data;
+    if ((c & 0x80) == 0) {
+        return c;
+    } else if ((c & 0xe0) == 0xc0) {
+        return ((c & 0x1f) << 6) | (data[1] & 0x3f);
+    } else if ((c & 0xf0) == 0xe0) {
+        return ((c & 0x0f) << 12) | (data[1] & 0x3f) << 6 | (data[2] & 0x3f);
+    } else {
+        return c; // error
+    }
+}
+
+static bool isUTF8(const char *data, int len) {
+    for (int i = 0; i < len; ++i) {
+        if (data[i] & 0x80)
+            return true;
+    }
+    return false;
+}
+
+#define NUM_SKIP_ENTRIES(p) ((p)->skip.length / SKIP_INCR)
+#define SKIP_DATA(p) (const char *)(p->skip.list + NUM_SKIP_ENTRIES(p))
+
+static void setupSkipList(String r, const char *data) {
+    char *dst = (char *)SKIP_DATA(r);
+    auto len = r->skip.size;
+    if (data)
+        memcpy(dst, data, len);
+    dst[len] = 0;
+    const char *ptr = dst;
+    auto skipEntries = NUM_SKIP_ENTRIES(r);
+    for (int i = 0; i < skipEntries; ++i) {
+        ptr = utf8Skip(ptr, len - (ptr - dst), SKIP_INCR);
+        if (!ptr)
+            oops(80);
+        r->skip.list[i] = ptr - dst;
+    }
+}
+#endif
+
+String mkStringCore(const char *data, int len) {
     if (len < 0)
         len = strlen(data);
     if (len == 0)
         return (String)emptyString;
-    String r = new (gcAllocate(sizeof(BoxedString) + len + 1)) BoxedString();
-    r->length = len;
-    if (data)
-        memcpy(r->data, data, len);
-    r->data[len] = 0;
+
+    auto vt = &string_inline_ascii_vt;
+    String r;
+
+#if PXT_UTF8
+    if (data && isUTF8(data, len)) {
+        vt = len >= MIN_SKIP ? &string_skiplist16_vt : &string_inline_utf8_vt;
+    }
+    if (vt == &string_skiplist16_vt) {
+        r = new (gcAllocate(4 + 2 * 4)) BoxedString(vt);
+        r->skip.list = NULL;
+        registerGCPtr((TValue)r);
+        r->skip.size = len;
+        r->skip.length = utf8Len(data, len);
+        r->skip.list = (uint16_t *)gcAllocateArray(NUM_SKIP_ENTRIES(r) * 2 + len + 1);
+        setupSkipList(r, data);
+        unregisterGCPtr((TValue)r);
+    } else
+#endif
+    {
+        // for ASCII and UTF8 the layout is the same
+        r = new (gcAllocate(4 + 2 + len + 1)) BoxedString(vt);
+        r->ascii.length = len;
+        if (data)
+            memcpy(r->ascii.data, data, len);
+        r->ascii.data[len] = 0;
+    }
+
     MEMDBG("mkString: len=%d => %p", len, r);
     return r;
 }
+
+String mkString(const char *data, int len) {
+#if PXT_UTF8
+    if (len < 0)
+        len = strlen(data);
+    if (len == 0)
+        return (String)emptyString;
+
+    int sz = utf8canon(NULL, data, len);
+    if (sz == len)
+        return mkStringCore(data, len);
+    // this could be optimized, but it only kicks in when the string isn't valid utf8
+    // (or we need to introduce surrogate pairs) which is unlikely to be performance critical
+    char *tmp = (char *)app_alloc(sz);
+    utf8canon(tmp, data, len);
+    auto r = mkStringCore(tmp, sz);
+    app_free(tmp);
+    return r;
+#else
+    return mkStringCore(data, len);
+#endif
+}
+
+#ifdef PXT_UTF8
+// This converts surrogate pairs, which are encoded as 2 characters of 3 bytes each
+// into a proper 4 byte utf-8 character.
+uint32_t toRealUTF8(String str, uint8_t *dst) {
+    auto src = str->getUTF8Data();
+    auto len = str->getUTF8Size();
+    auto dlen = 0;
+
+    for (unsigned i = 0; i < len; ++i) {
+        if ((uint8_t)src[i] == 0xED && i + 5 < len) {
+            auto c0 = utf8CharCode(src + i);
+            auto c1 = utf8CharCode(src + i + 3);
+            if (0xd800 <= c0 && c0 < 0xdc00 && 0xdc00 <= c1 && c1 < 0xe000) {
+                i += 5;
+                auto charCode = ((c0 - 0xd800) << 10) + (c1 - 0xdc00) + 0x10000;
+                if (dst) {
+                    dst[dlen] = 0xf0 | (charCode >> 18);
+                    dst[dlen + 1] = 0x80 | (0x3f & (charCode >> 12));
+                    dst[dlen + 2] = 0x80 | (0x3f & (charCode >> 6));
+                    dst[dlen + 3] = 0x80 | (0x3f & (charCode >> 0));
+                }
+                dlen += 4;
+            }
+        } else {
+            if (dst)
+                dst[dlen] = src[i];
+            dlen++;
+        }
+    }
+    return dlen;
+}
+#endif
 
 Buffer mkBuffer(const uint8_t *data, int len) {
     if (len <= 0)
@@ -71,6 +316,10 @@ static unsigned random_value = 0xC0DA1;
 
 void seedRandom(unsigned seed) {
     random_value = seed;
+}
+
+void seedAddRandom(unsigned seed) {
+    random_value = (random_value * 0x1000193) ^ seed;
 }
 
 unsigned getRandom(unsigned max) {
@@ -102,6 +351,24 @@ unsigned getRandom(unsigned max) {
     return result;
 }
 
+TNumber BoxedString::charCodeAt(int pos) {
+#if PXT_UTF8
+    auto ptr = this->getUTF8DataAt(pos);
+    if (!ptr)
+        return TAG_NAN;
+    auto code = utf8CharCode(ptr);
+    if (!code && ptr == this->getUTF8Data() + this->getUTF8Size())
+        return TAG_NAN;
+    return fromInt(code);
+#else
+    if (0 <= pos && pos < this->ascii.length) {
+        return fromInt(this->ascii.data[pos]);
+    } else {
+        return TAG_NAN;
+    }
+#endif
+}
+
 PXT_DEF_STRING(sTrue, "true")
 PXT_DEF_STRING(sFalse, "false")
 PXT_DEF_STRING(sUndefined, "undefined")
@@ -119,32 +386,57 @@ namespace String_ {
 
 //%
 String mkEmpty() {
-    return mkString("", 0);
+    return (String)emptyString;
 }
+
+// TODO support var-args somehow?
 
 //%
 String fromCharCode(int code) {
+#if PXT_UTF8
+    char buf[3];
+    int len;
+    code &= 0xffff; // JS semantics
+    if (code < 0x80) {
+        buf[0] = code;
+        len = 1;
+    } else if (code < 0x800) {
+        buf[0] = 0xc0 | (code >> 6);
+        buf[1] = 0x80 | ((code >> 0) & 0x3f);
+        len = 2;
+    } else {
+        buf[0] = 0xe0 | (code >> 12);
+        buf[1] = 0x80 | ((code >> 6) & 0x3f);
+        buf[2] = 0x80 | ((code >> 0) & 0x3f);
+        len = 3;
+    }
+    return mkStringCore(buf, len);
+#else
     char buf[] = {(char)code, 0};
-    return mkString(buf, 1);
+    return mkStringCore(buf, 1);
+#endif
+}
+
+
+
+//%
+TNumber charCodeAt(String s, int pos) {
+    if (!s) return TAG_NAN;
+    return s->charCodeAt(pos);
 }
 
 //%
 String charAt(String s, int pos) {
-    if (s && 0 <= pos && pos < s->length) {
-        return fromCharCode(s->data[pos]);
-    } else {
+    auto v = charCodeAt(s, pos);
+    if (v == TAG_NAN)
         return mkEmpty();
-    }
+    if (!isNumber(v))
+        oops(81);
+    return fromCharCode(numValue(v));
 }
 
-//%
-TNumber charCodeAt(String s, int pos) {
-    if (s && 0 <= pos && pos < s->length) {
-        return fromInt(s->data[pos]);
-    } else {
-        return TAG_NAN;
-    }
-}
+#define IS_CONS(s) ((s)->vtable == (uint32_t)&string_cons_vt)
+#define IS_EMPTY(s) ((s) == (String)emptyString)
 
 //%
 String concat(String s, String other) {
@@ -152,31 +444,93 @@ String concat(String s, String other) {
         s = (String)sNull;
     if (!other)
         other = (String)sNull;
-    if (s->length == 0)
+    if (IS_EMPTY(s))
         return (String)incrRC(other);
-    if (other->length == 0)
+    if (IS_EMPTY(other))
         return (String)incrRC(s);
-    String r = mkString(NULL, s->length + other->length);
-    memcpy(r->data, s->data, s->length);
-    memcpy(r->data + s->length, other->data, other->length);
+
+    uint32_t lenA, lenB;
+
+#if PXT_UTF8
+    if (IS_CONS(s)) {
+        // (s->cons.left + s->cons.right) + other = s->cons.left + (s->cons.right + other)
+        if (IS_CONS(other) || IS_CONS(s->cons.right))
+            goto mkCons;
+        auto lenAR = s->cons.right->getUTF8Size();
+        lenB = other->getUTF8Size();
+        if (lenAR + lenB > SHORT_CONCAT_STRING)
+            goto mkCons;
+        // if (s->cons.right + other) is short enough, use associativity
+        // to construct a shallower tree; this should keep the live set reasonable
+        // when someone decides to construct a long string by concatenating
+        // single characters
+
+        // allocate [r] first, and keep it alive
+        String r = new (gcAllocate(4 + 2 * 4)) BoxedString(&string_cons_vt);
+        registerGCPtr((TValue)r);
+        r->cons.left = s->cons.left;
+        // this concat() might trigger GC
+        r->cons.right = concat(s->cons.right, other);
+        unregisterGCPtr((TValue)r);
+        return r;
+    }
+#endif
+
+    lenA = s->getUTF8Size();
+    lenB = other->getUTF8Size();
+#if PXT_UTF8
+    if (lenA + lenB > SHORT_CONCAT_STRING)
+        goto mkCons;
+#endif
+    String r;
+    {
+        auto dataA = s->getUTF8Data();
+        auto dataB = other->getUTF8Data();
+        r = mkStringCore(NULL, lenA + lenB);
+        auto dst = (char *)r->getUTF8Data();
+        memcpy(dst, dataA, lenA);
+        memcpy(dst + lenA, dataB, lenB);
+#if PXT_UTF8
+        if (isUTF8(dst, lenA + lenB))
+            r->vtable = PXT_VTABLE_TO_INT(&string_inline_utf8_vt);
+#endif
+        return r;
+    }
+
+#if PXT_UTF8
+mkCons:
+    r = new (gcAllocate(4 + 2 * 4)) BoxedString(&string_cons_vt);
+    r->cons.left = s;
+    r->cons.right = other;
     return r;
+#endif
 }
 
 int compare(String a, String b) {
     if (a == b)
         return 0;
 
-    int compareResult = strcmp(a->data, b->data);
-    if (compareResult < 0)
-        return -1;
-    else if (compareResult > 0)
-        return 1;
+    auto lenA = a->getUTF8Size();
+    auto lenB = b->getUTF8Size();
+    auto dataA = a->getUTF8Data();
+    auto dataB = b->getUTF8Data();
+    auto len = lenA < lenB ? lenA : lenB;
+
+    // this also works for UTF8, provided canonical encoding
+    // which is guaranteed by the constructor
+    for (unsigned i = 0; i <= len; ++i) {
+        unsigned char cA = dataA[i];
+        unsigned char cB = dataB[i];
+        if (cA == cB)
+            continue;
+        return cA < cB ? -1 : 1;
+    }
     return 0;
 }
 
 //%
 int length(String s) {
-    return s->length;
+    return s->getLength();
 }
 
 #define isspace(c) ((c) == ' ')
@@ -234,8 +588,9 @@ NUMBER mystrtod(const char *p, char **endp) {
 TNumber toNumber(String s) {
     // JSCHECK
     char *endptr;
-    NUMBER v = mystrtod(s->data, &endptr);
-    if (endptr != s->data + s->length)
+    auto data = s->getUTF8Data();
+    NUMBER v = mystrtod(data, &endptr);
+    if (endptr != data + s->getUTF8Size())
         v = NAN;
     else if (v == 0.0 || v == -0.0)
         v = v;
@@ -248,22 +603,46 @@ TNumber toNumber(String s) {
 String substr(String s, int start, int length) {
     if (length <= 0)
         return mkEmpty();
+    auto slen = (int)s->getLength();
     if (start < 0)
-        start = max(s->length + start, 0);
-    length = min(length, s->length - start);
-    return mkString(s->data + start, length);
+        start = max(slen + start, 0);
+    length = min(length, slen - start);
+    if (length <= 0)
+        return mkEmpty();
+    auto p = s->getUTF8DataAt(start);
+#if PXT_UTF8
+    auto ep = s->getUTF8DataAt(start + length);
+    if (ep == NULL)
+        oops(82);
+    return mkStringCore(p, ep - p);
+#else
+    return mkStringCore(p, length);
+#endif
 }
 
 //%
 int indexOf(String s, String searchString, int start) {
     if (!s || !searchString)
         return -1;
-    if (start < 0 || start + searchString->length > s->length)
+    auto lenA = s->getUTF8Size();
+    auto lenB = searchString->getUTF8Size();
+    if (start < 0 || start + lenB > lenA)
         return -1;
-    const char *match = strstr(((const char *)s->data + start), searchString->data);
-    if (NULL == match)
-        return -1;
-    return match - s->data;
+    auto dataA = s->getUTF8Data();
+    auto dataB = searchString->getUTF8Data();
+    auto dataA0 = dataA;
+    auto firstB = dataB[0];
+    while (lenA >= lenB) {
+        if (*dataA == firstB && !memcmp(dataA, dataB, lenB))
+#if PXT_UTF8
+            return utf8Len(dataA0, dataA - dataA0);
+#else
+            return dataA - dataA0;
+#endif
+        dataA++;
+        lenA--;
+    }
+    return -1;
 }
 
 //%
@@ -540,7 +919,7 @@ int toBool(TValue v) {
     ValType t = valType(v);
     if (t == ValType::String) {
         String s = (String)v;
-        if (s->length == 0)
+        if (IS_EMPTY(s))
             return 0;
     } else if (t == ValType::Number) {
         auto x = toDouble(v);
@@ -794,7 +1173,7 @@ String toString(TValue v) {
 
         if (isNumber(v)) {
             itoa(numValue(v), buf);
-            return mkString(buf);
+            return mkStringCore(buf);
         }
 
         if (v == TAG_NAN)
@@ -805,7 +1184,7 @@ String toString(TValue v) {
 #ifdef PXT_BOX_DEBUG
         if (x == (int)x) {
             itoa((int)x, buf);
-            return mkString(buf);
+            return mkStringCore(buf);
         }
 #endif
 
@@ -819,7 +1198,7 @@ String toString(TValue v) {
         }
         mycvt(x, buf);
 
-        return mkString(buf);
+        return mkStringCore(buf);
     } else if (t == ValType::Function) {
         return (String)(void *)sFunction;
     } else {
@@ -1011,32 +1390,35 @@ unsigned programSize() {
     return bytecode[17] * 8;
 }
 
+int *getBootloaderConfigData() __attribute__((weak));
+int *getBootloaderConfigData()
+{
+    return NULL;
+}
+
 //%
 int getConfig(int key, int defl) {
-    int *cfgData;
+    int *cfgData = *(int **)&bytecode[18];
 
-#ifdef PXT_BOOTLOADER_CFG_ADDR
-    cfgData = *(int **)(PXT_BOOTLOADER_CFG_ADDR);
-#ifdef PXT_BOOTLOADER_CFG_MAGIC
-    cfgData++;
-    if ((void *)0x200 <= cfgData && cfgData < (void *)PXT_BOOTLOADER_CFG_ADDR &&
-        cfgData[-1] == (int)PXT_BOOTLOADER_CFG_MAGIC)
-#endif
+    for (int i = 0;; i += 2) {
+        if (cfgData[i] == key)
+            return cfgData[i + 1];
+        if (cfgData[i] == 0)
+            break;
+    }
+
+    cfgData = getBootloaderConfigData();
+
+    if (cfgData) {
         for (int i = 0;; i += 2) {
             if (cfgData[i] == key)
                 return cfgData[i + 1];
             if (cfgData[i] == 0)
                 break;
         }
-#endif
-
-    cfgData = *(int **)&bytecode[18];
-    for (int i = 0;; i += 2) {
-        if (cfgData[i] == key)
-            return cfgData[i + 1];
-        if (cfgData[i] == 0)
-            return defl;
     }
+
+    return defl;
 }
 
 } // namespace pxt
@@ -1077,7 +1459,7 @@ void panic(int code) {
 
 //%
 String emptyToNull(String s) {
-    if (!s || s->length == 0)
+    if (!s || IS_EMPTY(s))
         return NULL;
     return s;
 }
@@ -1264,7 +1646,7 @@ void anyPrint(TValue v) {
     } else {
 #ifndef X86_64
         String s = numops::toString(v);
-        DMESG("[%s %p = %s]", pxt::typeOf(v)->data, v, s->data);
+        DMESG("[%s %p = %s]", pxt::typeOf(v)->getUTF8Data(), v, s->getUTF8Data());
         decr((TValue)s);
 #endif
     }
@@ -1282,7 +1664,120 @@ static void dtorDoNothing() {}
     DEF_VTABLE(name##_vt, tp, objectTp, (void *)&dtorDoNothing, (void *)&anyPrint)
 #endif
 
-PRIM_VTABLE(string, ValType::String, BoxedString, p->length + 1)
+#define NOOP ((void)0)
+#define STRING_VT(name, fix, scan, gcsize, data, utfsize, length, dataAt)                          \
+    static uint32_t name##_gcsize(BoxedString *p) { return (4 + (gcsize) + 3) >> 2; }              \
+    static void name##_gcscan(BoxedString *p) { scan; }                                            \
+    static const char *name##_data(BoxedString *p) {                                               \
+        fix;                                                                                       \
+        return data;                                                                               \
+    }                                                                                              \
+    static uint32_t name##_utfsize(BoxedString *p) {                                               \
+        fix;                                                                                       \
+        return utfsize;                                                                            \
+    }                                                                                              \
+    static uint32_t name##_length(BoxedString *p) {                                                \
+        fix;                                                                                       \
+        return length;                                                                             \
+    }                                                                                              \
+    static const char *name##_dataAt(BoxedString *p, uint32_t idx) {                               \
+        fix;                                                                                       \
+        return dataAt;                                                                             \
+    }                                                                                              \
+    DEF_VTABLE(name##_vt, BoxedString, ValType::String, (void *)&dtorDoNothing, (void *)&anyPrint, \
+               (void *)&name##_gcscan, (void *)&name##_gcsize, (void *)&name##_data,               \
+               (void *)&name##_utfsize, (void *)&name##_length, (void *)&name##_dataAt)
+
+void gcMarkArray(void *data);
+void gcScan(TValue v);
+
+#if PXT_UTF8
+static const char *skipLookup(BoxedString *p, uint32_t idx) {
+    if (idx > p->skip.length)
+        return NULL;
+    auto ent = idx / SKIP_INCR;
+    auto data = SKIP_DATA(p);
+    auto size = p->skip.size;
+    if (ent) {
+        auto off = p->skip.list[ent - 1];
+        data += off;
+        size -= off;
+        idx &= SKIP_INCR - 1;
+    }
+    return utf8Skip(data, size, idx);
+}
+
+extern LLSegment workQueue;
+
+static uint32_t fixSize(BoxedString *p, uint32_t *len) {
+    uint32_t tlen = 0;
+    uint32_t sz = 0;
+    if (workQueue.getLength())
+        oops(81);
+    workQueue.push((TValue)p);
+    while (workQueue.getLength()) {
+        p = (BoxedString *)workQueue.pop();
+        if (IS_CONS(p)) {
+            workQueue.push((TValue)p->cons.right);
+            workQueue.push((TValue)p->cons.left);
+        } else {
+            tlen += p->getLength();
+            sz += p->getUTF8Size();
+        }
+    }
+    *len = tlen;
+    return sz;
+}
+
+static void fixCopy(BoxedString *p, char *dst) {
+    if (workQueue.getLength())
+        oops(81);
+
+    workQueue.push((TValue)p);
+    while (workQueue.getLength()) {
+        p = (BoxedString *)workQueue.pop();
+        if (IS_CONS(p)) {
+            workQueue.push((TValue)p->cons.right);
+            workQueue.push((TValue)p->cons.left);
+        } else {
+            auto sz = p->getUTF8Size();
+            memcpy(dst, p->getUTF8Data(), sz);
+            dst += sz;
+        }
+    }
+}
+
+// switches CONS representation into skip list representation
+// does not switch representation of CONS' children
+static void fixCons(BoxedString *r) {
+    uint32_t length = 0;
+    auto sz = fixSize(r, &length);
+    auto numSkips = length / SKIP_INCR;
+    // allocate first, while [r] still holds references to its children
+    // because allocation might trigger GC
+    auto data = (uint16_t *)gcAllocateArray(numSkips * 2 + sz + 1);
+    // copy, while [r] is still cons
+    fixCopy(r, (char *)(data + numSkips));
+    // now, set [r] up properly
+    r->vtable = PXT_VTABLE_TO_INT(&string_skiplist16_vt);
+    r->skip.size = sz;
+    r->skip.length = length;
+    r->skip.list = data;
+    setupSkipList(r, NULL);
+}
+#endif
+
+STRING_VT(string_inline_ascii, NOOP, NOOP, 2 + p->ascii.length + 1, p->ascii.data, p->ascii.length,
+          p->ascii.length, idx <= p->ascii.length ? p->ascii.data + idx : NULL)
+#if PXT_UTF8
+STRING_VT(string_inline_utf8, NOOP, NOOP, 2 + p->utf8.length + 1, p->utf8.data, p->utf8.length,
+          utf8Len(p->utf8.data, p->utf8.length), utf8Skip(p->utf8.data, p->utf8.length, idx))
+STRING_VT(string_skiplist16, NOOP, gcMarkArray(p->skip.list), 2 + 2 + 4, SKIP_DATA(p), p->skip.size,
+          p->skip.length, skipLookup(p, idx))
+STRING_VT(string_cons, fixCons(p), (gcScan((TValue)p->cons.left), gcScan((TValue)p->cons.right)),
+          4 + 4, SKIP_DATA(p), p->skip.size, p->skip.length, skipLookup(p, idx))
+#endif
+
 PRIM_VTABLE(number, ValType::Number, BoxedNumber, 0)
 PRIM_VTABLE(buffer, ValType::Object, BoxedBuffer, p->length)
 // PRIM_VTABLE(action, ValType::Function, RefAction, )

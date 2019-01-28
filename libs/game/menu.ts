@@ -1220,7 +1220,6 @@ namespace menu {
                 .to(screen.width - this.margin)
                 .duration(200)
                 .onEnded(() => {
-                    console.log(`show list`)
                     this.list.show();
                     focus(this.list.selectedItem, true);
                     this.onShown();

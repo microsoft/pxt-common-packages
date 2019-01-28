@@ -1,6 +1,9 @@
 #include "pxt.h"
-#include "neopixel.h"
 
+
+#ifndef DEFAULT_NEOPIXEL_PIN
+#define DEFAULT_NEOPIXEL_PIN PA11
+#endif
 
 namespace pixel {
 
@@ -14,7 +17,7 @@ void sendBuffer(Buffer buf) {
     if (pinName < 0) {
         pinName = PIN(NEOPIXEL);
         if (pinName < 0)
-            pinName = PA11;
+            pinName = DEFAULT_NEOPIXEL_PIN;
         neopixel_send_buffer(*lookupPin(pinName), buf->data, buf->length);
     } else {
         // TODO this code is untested (no hardware), lifted from bootloader

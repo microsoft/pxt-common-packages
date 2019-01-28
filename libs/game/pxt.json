@@ -2,6 +2,8 @@
     "name": "game",
     "description": "The game and sprite library - beta",
     "files": [
+        "constants.ts",
+        "controlleroverrides.ts",
         "controller.ts",
         "hitbox.ts",
         "sprites.ts",
@@ -29,11 +31,15 @@
         "systemmenu.ts",
         "fixed.ts",
         "console.ts",
-        "fieldeditors.ts"
+        "fieldeditors.ts",
+        "particles.ts",
+        "particlefactories.ts",
+        "particleeffects.ts",
+        "effects.ts"
     ],
     "public": true,
     "dependencies": {
-        "controller": "file:../controller",
-        "screen": "file:../screen"
+        "screen": "file:../screen",
+        "mixer": "file:../mixer"
     }
 }

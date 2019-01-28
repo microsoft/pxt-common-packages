@@ -28,6 +28,6 @@ namespace jacdac {
         }
     }
 
-    //% fixedInstance whenUsed block="touch"
+    //% fixedInstance whenUsed block="touch client"
     export const touchClient = new TouchClient("touch");
 }

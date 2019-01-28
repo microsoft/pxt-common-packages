@@ -80,20 +80,23 @@ static void dmesgFlushRaw() {
     fdatasync(fileno(dmesgFile));
 }
 
-void dmesg(const char *format, ...) {
+void vdmesg(const char *format, va_list arg) {
     char buf[500];
 
     snprintf(buf, sizeof(buf), "[%8d] ", current_time_ms());
     dmesgRaw(buf, strlen(buf));
-
-    va_list arg;
-    va_start(arg, format);
     vsnprintf(buf, sizeof(buf), format, arg);
-    va_end(arg);
     dmesgRaw(buf, strlen(buf));
     dmesgRaw("\n", 1);
 
     dmesgFlushRaw();
+}
+
+void dmesg(const char *format, ...) {
+    va_list arg;
+    va_start(arg, format);
+    vdmesg(format, arg);
+    va_end(arg);
 }
 
 int getSerialNumber() {

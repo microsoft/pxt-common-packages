@@ -20,6 +20,10 @@
 #include "pxtconfig.h"
 #include "configkeys.h"
 
+#ifndef PXT_UTF8
+#define PXT_UTF8 0
+#endif
+
 #define intcheck(...) check(__VA_ARGS__)
 //#define intcheck(...) do {} while (0)
 
@@ -171,6 +175,7 @@ inline bool canBeTagged(int v) {
 typedef enum {
     PANIC_CODAL_OOM = 20,
     PANIC_GC_OOM = 21,
+    PANIC_GC_TOO_BIG_ALLOCATION = 22,
     PANIC_CODAL_HEAP_ERROR = 30,
     PANIC_CODAL_NULL_DEREFERENCE = 40,
     PANIC_CODAL_USB_ERROR = 50,
@@ -386,14 +391,22 @@ struct VTable {
     uint32_t ifaceHashMult;
     // we only use the first few methods here; pxt will generate more
 #ifdef PXT_GC
-    PVoid methods[5];
+    PVoid methods[8];
 #else
     PVoid methods[3];
 #endif
 };
 
 //%
-extern const VTable string_vt;
+extern const VTable string_inline_ascii_vt;
+#if PXT_UTF8
+//%
+extern const VTable string_inline_utf8_vt;
+//%
+extern const VTable string_cons_vt;
+//%
+extern const VTable string_skiplist16_vt;
+#endif
 //%
 extern const VTable buffer_vt;
 //%
@@ -649,9 +662,50 @@ class BoxedNumber : public RefObject {
 
 class BoxedString : public RefObject {
   public:
-    uint16_t length;
-    char data[0];
-    BoxedString() : RefObject(&string_vt) {}
+    union {
+        struct {
+            uint16_t length;
+            char data[0];
+        } ascii;
+#if PXT_UTF8
+        struct {
+            uint16_t length;
+            char data[0];
+        } utf8;
+        struct {
+            BoxedString *left;
+            BoxedString *right;
+        } cons;
+        struct {
+            uint16_t size;
+            uint16_t length;
+            uint16_t *list;
+        } skip;
+#endif
+    };
+
+#if PXT_UTF8
+    uint32_t runMethod(int idx) {
+        return ((uint32_t(*)(BoxedString *))((VTable *)this->vtable)->methods[idx])(this);
+    }
+    const char *getUTF8Data() { return (const char *)runMethod(4); }
+    uint32_t getUTF8Size() { return runMethod(5); }
+    // in characters
+    uint32_t getLength() { return runMethod(6); }
+    const char *getUTF8DataAt(uint32_t pos) {
+        auto meth = ((const char *(*)(BoxedString *, uint32_t))((VTable *)this->vtable)->methods[7]);
+        return meth(this, pos);
+    }
+#else
+    const char *getUTF8Data() { return ascii.data; }
+    uint32_t getUTF8Size() { return ascii.length; }
+    uint32_t getLength() { return ascii.length; }
+    const char *getUTF8DataAt(uint32_t pos) { return pos < ascii.length ? ascii.data + pos : NULL; }
+#endif
+
+    TNumber charCodeAt(int pos);
+
+    BoxedString(const VTable *vt) : RefObject(vt) {}
 };
 
 class BoxedBuffer : public RefObject {
@@ -714,6 +768,8 @@ typedef BoxedBuffer *Buffer;
 typedef BoxedString *String;
 typedef RefImage *Image_;
 
+uint32_t toRealUTF8(String str, uint8_t *dst);
+
 // keep in sync with github/pxt/pxtsim/libgeneric.ts
 enum class NumberFormat {
     Int8LE = 1,
@@ -735,14 +791,17 @@ enum class NumberFormat {
     Float64BE,
 };
 
-// data can be NULL in both cases
+// this will, unlike mkStringCore, UTF8-canonicalize the data
 String mkString(const char *data, int len = -1);
+// data can be NULL in both cases
 Buffer mkBuffer(const uint8_t *data, int len);
+String mkStringCore(const char *data, int len = -1);
 
 TNumber getNumberCore(uint8_t *buf, int size, NumberFormat format);
 void setNumberCore(uint8_t *buf, int size, NumberFormat format, TNumber value);
 
 void seedRandom(unsigned seed);
+void seedAddRandom(unsigned seed);
 // max is inclusive
 unsigned getRandom(unsigned max);
 

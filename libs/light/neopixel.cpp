@@ -1,20 +1,4 @@
 #include "pxt.h"
-#include "neopixel.h"
-
-#ifndef NEOPIXEL_SPI
-#define NEOPIXEL_SPI 1
-#endif
-
-#if NEOPIXEL_SPI
-static codal::SPI *spi = NULL;
-static void initSPI(DevicePin *mosi) {
-    DevicePin *noPin = NULL;
-    if (NULL == spi) {
-        spi = new CODAL_SPI(*mosi, *noPin, *noPin);
-        spi->setFrequency(2400000);
-    }
-}
-#endif
 
 /**
  * Functions to operate colored LEDs.
@@ -45,45 +29,11 @@ DigitalInOutPin defaultPin() {
 //% parts="neopixel"
 void sendBuffer(DigitalInOutPin pin, int mode, Buffer buf) {
 #if NEOPIXEL_SPI
-    if (!(mode & 0x100)) 
+    if (mode & 0x100)
+        spiNeopixelSendBuffer(pin, buf->data, buf->length);
+    else
 #endif
-    {
         neopixel_send_buffer(*pin, buf->data, buf->length);
-        return;
-    }
-
-#if NEOPIXEL_SPI
-    int32_t iptr = 0, optr = 100;
-    uint32_t len = optr + buf->length * 3 + optr;
-    uint8_t *expBuf = new uint8_t[len];
-    memset(expBuf, 0, len);
-    uint8_t imask = 0x80;
-    uint8_t omask = 0x80;
-
-#define WR(k)                                                                                      \
-    if (k)                                                                                         \
-        expBuf[optr] |= omask;                                                                     \
-    omask >>= 1;                                                                                   \
-    if (!omask) {                                                                                  \
-        omask = 0x80;                                                                              \
-        optr++;                                                                                    \
-    }
-
-    while (iptr < buf->length) {
-        WR(1);
-        WR(buf->data[iptr] & imask);
-        imask >>= 1;
-        if (!imask) {
-            imask = 0x80;
-            iptr++;
-        }
-        WR(0);
-    }
-
-    initSPI(pin);
-    spi->transfer(expBuf, len, NULL, 0);
-    delete expBuf;
-#endif
 }
 
 } // namespace light

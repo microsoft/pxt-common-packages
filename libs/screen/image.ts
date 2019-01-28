@@ -67,6 +67,9 @@ namespace helpers {
     //% shim=ImageMethods::_fillRect
     function _fillRect(img: Image, xy: number, wh: number, c: color): void { }
 
+    //% shim=ImageMethods::_mapRect
+    function _mapRect(img: Image, xy: number, wh: number, m: Buffer): void { }
+
     //% shim=ImageMethods::_drawIcon
     function _drawIcon(img: Image, icon: Buffer, xy: number, c: color): void { }
 
@@ -79,6 +82,9 @@ namespace helpers {
     }
     export function imageFillRect(img: Image, x: number, y: number, w: number, h: number, c: color): void {
         _fillRect(img, pack(x, y), pack(w, h), c)
+    }
+    export function imageMapRect(img: Image, x: number, y: number, w: number, h: number, m: Buffer): void {
+        _mapRect(img, pack(x, y), pack(w, h), m)
     }
     export function imageDrawLine(img: Image, x: number, y: number, w: number, h: number, c: color): void {
         _drawLine(img, pack(x, y), pack(w, h), c)
@@ -115,4 +121,15 @@ namespace helpers {
         }
     }
 
+}
+
+namespace image {    
+    /**
+    * Gets the screen image
+    */
+    //% blockNamespace="images" group="Create"
+    //% blockId=imagescreen block="screen"
+    export function screenImage(): Image {
+        return screen;
+    }
 }

@@ -9,6 +9,12 @@ interface Image {
     fillRect(x: number, y: number, w: number, h: number, c: color): void;
 
     /**
+     * Replace colors in a rectangle
+     */
+    //% helper=imageMapRect
+    mapRect(x: number, y: number, w: number, h: number, colorMap: Buffer): void;
+
+    /**
      * Draw a line
      */
     //% helper=imageDrawLine blockNamespace="images" inlineInputMode="inline" group="Drawing"

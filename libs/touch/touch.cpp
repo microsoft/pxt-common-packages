@@ -29,10 +29,27 @@ namespace TouchButtonMethods {
 //% name.fieldEditor="gridpicker"
 //% name.fieldOptions.width=220
 //% name.fieldOptions.columns=4
+//% threshold.min=0
+//% threshold.max=1023
 //% group="More" weight=16 blockGap=8
 //% help=input/touch/set-threshold
 void setThreshold(TouchButton button, int threshold) {
-    button->setThreshold(max(0, min(1023, threshold)));
+    button->setThreshold(max(0, min(1 << 12, threshold << 2)));
+}
+
+/**
+ * Gets the current threshold
+ * @param name button name
+ */
+//% blockId=touch_threshold block="button %button|threshold"
+//% blockNamespace=input
+//% name.fieldEditor="gridpicker"
+//% name.fieldOptions.width=220
+//% name.fieldOptions.columns=4
+//% group="More" weight=16 blockGap=8
+//% help=input/touch/threshold
+int threshold(TouchButton button) {
+    return button->threshold >> 2;
 }
 
 /**
@@ -47,7 +64,21 @@ void setThreshold(TouchButton button, int threshold) {
 //% group="More" weight=49 blockGap=8
 //% help=input/touch/value
 int value(TouchButton button) {
-    return button->getValue();
+    return button->getValue() >> 2;
+}
+
+/**
+* Calibrate the touch sensivity
+*/
+//% blockId=touch_calibrate block="button %button calibrate"
+//% blockNamespace=input
+//% name.fieldEditor="gridpicker"
+//% name.fieldOptions.width=220
+//% name.fieldOptions.columns=4
+//% group="More" weight=49 blockGap=8
+//% help=input/touch/calibrate
+void calibrate(TouchButton button) {
+    button->calibrate();
 }
 
 }

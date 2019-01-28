@@ -26,13 +26,11 @@
         "libs/storage",
         "libs/game",
         "libs/screen",
-        "libs/controller",
         "libs/servo",
         "libs/serial",
         "libs/jacdac",
         "libs/jacdac-drivers",
         "libs/jacdac-game",
-        "libs/datalogger",
-        "libs/particles"
+        "libs/datalogger"
     ]
 }

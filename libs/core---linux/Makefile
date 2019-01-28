@@ -1,7 +1,27 @@
 include Makefile.inc
 
-COMMON_FLAGS = -W -Wall -Wno-unused-parameter -Ipxtapp -fwrapv -fno-threadsafe-statics -O3 $(NPM_INCLUDES) -g
-LIBS = -lwiringPi -lm -lpthread -lrt
+CODAL_SRC = \
+	codal-core/source/streams/DataStream.cpp \
+	codal-core/source/streams/Mixer.cpp \
+	codal-core/source/streams/Synthesizer.cpp \
+	codal-core/source/types/ManagedBuffer.cpp \
+	codal-core/source/types/RefCounted.cpp \
+	codal-core/source/types/RefCountedInit.cpp \
+
+CODAL_INC = \
+	-Icodal-core/inc/streams \
+	-Icodal-core/inc/types \
+	-Icodal-core/inc/core \
+	-Icodal-core/inc/drivers \
+	-Icodal-core/inc/driver-models \
+
+PXT_OBJS := $(addprefix bld/,$(CODAL_SRC:.cpp=.o)) $(PXT_OBJS)
+
+COMMON_FLAGS = -W -Wall -Wno-unused-parameter -Ipxtapp \
+	-fwrapv -fno-threadsafe-statics -ffunction-sections -O3 \
+	$(NPM_INCLUDES) -g \
+	$(CODAL_INC)
+LIBS = -lwiringPi -lm -lpthread -lrt -lasound
 CFLAGS = $(COMMON_FLAGS) -std=c99
 CXXFLAGS = $(COMMON_FLAGS) -std=c++11 -fno-rtti -fno-exceptions -fno-unwind-tables
 LDFLAGS = -Wl,--gc-sections -Wl,--sort-common -Wl,--sort-section=alignment -g -lwiringPi
@@ -18,7 +38,10 @@ HEX = $(EXE:.elf=.hex)
 
 DEPS = $(PXT_HEADERS) package.json Makefile Makefile.inc
 
-all: $(EXE)
+all: codal-core/.git $(EXE)
+
+codal-core/.git:
+	git clone -b streamracefix-v0 https://github.com/lancaster-university/codal-core.git
 
 $(EXE): $(PXT_OBJS)
 	$(LD) -o $(EXE) $(LDFLAGS) -Wl,-Map,$(EXE:.elf=.map) $(PXT_OBJS) $(LIBSTDCPP) $(LIBS) $(NPM_LIBS)

@@ -51,6 +51,6 @@ namespace jacdac {
         }
     }
 
-    //% fixedInstance whenUsed block="thermometer"
-    export const thermometerClient = new ThermometerClient("thermometer");
+    //% fixedInstance whenUsed block="thermometer client"
+    export const thermometerClient = new ThermometerClient("temp");
 }

@@ -35,7 +35,7 @@ namespace jacdac {
 
         private sync() {
             if (this._sensorState == SensorState.None) return;
-            
+
             const buf = control.createBuffer(1);
             const cmd = (this._sensorState & SensorState.Streaming)
                 ? SensorCommand.StartStream : SensorCommand.StopStream;

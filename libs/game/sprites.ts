@@ -13,7 +13,7 @@ Frame handlers:
  * Sprites on screen
  */
 //% weight=99 color="#4B7BEC" icon="\uf1d8"
-//% groups='["Create", "Properties", "Projectiles", "Overlaps", "Lifecycle"]'
+//% groups='["Create", "Physics", "Effects", "Projectiles", "Overlaps", "Lifecycle"]'
 namespace sprites {
 
     /**

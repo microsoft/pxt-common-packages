@@ -24,11 +24,11 @@ namespace tiles {
         }
 
         get x(): number {
-            return this._col << 4;
+            return (this._col << 4) + 8;
         }
 
         get y(): number {
-            return this._row << 4;
+            return (this._row << 4) + 8;
         }
 
         get tileSet(): number {
@@ -46,8 +46,8 @@ namespace tiles {
         place(mySprite: Sprite): void {
             if (!mySprite) return;
 
-            mySprite.x = this.x + 8;
-            mySprite.y = this.y + 8;
+            mySprite.x = this.x;
+            mySprite.y = this.y;
         }
     }
 
@@ -144,12 +144,12 @@ namespace tiles {
         __draw(camera: scene.Camera): void {
             if (!this.enabled) return;
 
-            const offsetX = camera.offsetX & 0xf;
-            const offsetY = camera.offsetY & 0xf;
-            const x0 = Math.max(0, camera.offsetX >> 4);
-            const xn = Math.min(this._map.width, ((camera.offsetX + screen.width) >> 4) + 1);
-            const y0 = Math.max(0, camera.offsetY >> 4);
-            const yn = Math.min(this._map.height, ((camera.offsetY + screen.height) >> 4) + 1);
+            const offsetX = camera.drawOffsetX & 0xf;
+            const offsetY = camera.drawOffsetY & 0xf;
+            const x0 = Math.max(0, camera.drawOffsetX >> 4);
+            const xn = Math.min(this._map.width, ((camera.drawOffsetX + screen.width) >> 4) + 1);
+            const y0 = Math.max(0, camera.drawOffsetY >> 4);
+            const yn = Math.min(this._map.height, ((camera.drawOffsetY + screen.height) >> 4) + 1);
 
             for (let x = x0; x <= xn; ++x) {
                 for (let y = y0; y <= yn; ++y) {
@@ -179,12 +179,12 @@ namespace tiles {
             return index < 0 || index > 0xf;
         }
 
-        render(camera: scene.Camera) {
+        draw(camera: scene.Camera) {
             if (!this.enabled) return;
 
             if (game.debug) {
-                const offsetX = -camera.offsetX;
-                const offsetY = -camera.offsetY;
+                const offsetX = -camera.drawOffsetX;
+                const offsetY = -camera.drawOffsetY;
                 const x0 = Math.max(0, -(offsetX >> 4));
                 const xn = Math.min(this._map.width, (-offsetX + screen.width) >> 4);
                 const y0 = Math.max(0, -(offsetY >> 4));

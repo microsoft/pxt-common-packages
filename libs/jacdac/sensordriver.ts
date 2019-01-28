@@ -25,11 +25,17 @@ namespace jacdac {
         return true;
     }
 
+    export function bufferToString(buf: Buffer, offset: number): string {
+        let str = "";
+        for (let i = offset; (i < buf.length) && !!buf[i]; i++)
+            str += String.fromCharCode(buf[i]);
+        return str;
+    }
+    
     /**
      * JacDac service running on sensor and streaming data out
      */
     export class SensorService extends Service {
-        private sensorState: SensorState;
         public streamingInterval: number; // millis
 
         constructor(name: string, deviceClass: number, controlLength = 0) {
@@ -38,9 +44,16 @@ namespace jacdac {
             this.streamingInterval = 50;
         }
 
+        get sensorState(): SensorState {
+            return this.controlData[0];
+        }
+
+        set sensorState(value: SensorState) {
+            this.controlData[0] = value;
+        }
+
         public updateControlPacket() {
             // send streaming state in control package
-            this.controlData.setNumber(NumberFormat.UInt8LE, 0, this.sensorState);
             const buf = this.sensorControlPacket();
             if (buf)
                 this.controlData.write(1, buf);

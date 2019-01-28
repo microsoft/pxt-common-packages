@@ -60,34 +60,9 @@ namespace music {
     //% weight=76 blockGap=8
     //% group="Tone"
     export function playTone(frequency: number, ms: number): void {
-        if (playToneFreq == null) {
-            let buf = control.createBuffer(10 + 1)
-            control.runInParallel(() => {
-                while (true) {
-                    if (playToneFreq && playToneEnd) {
-                        if (control.millis() > playToneEnd) {
-                            playToneFreq = 0
-                            playToneSeq++
-                        }
-                    }
-                    if (playToneFreq == 0) {
-                        pause(3)
-                    } else {
-                        addNote(buf, 0, 60, 255, 255, 1, playToneFreq, globalVolume)
-                        playInstructions(buf)
-                    }
-                }
-            })
-        }
-        playToneFreq = frequency
-        if (ms) {
-            let seq = ++playToneSeq
-            playToneEnd = control.millis() + ms
-            while (seq == playToneSeq)
-                pause(3)
-        } else {
-            playToneEnd = 0
-        }
+        let buf = control.createBuffer(10 + 1)
+        addNote(buf, 0, ms, 255, 255, 1, frequency, globalVolume)
+        playInstructions(buf)
     }
 
 
@@ -223,7 +198,7 @@ namespace music {
                 sndInstrPtr = addNote(sndInstr, sndInstrPtr, ms, beg, end, soundWave, hz, volume)
             }
 
-            const scanNextNote = () => {
+            const scanNextWord = () => {
                 if (!this.melody)
                     return ""
 
@@ -303,7 +278,7 @@ namespace music {
             }
 
             while (true) {
-                let currNote = scanNextNote();
+                let currNote = scanNextWord();
                 if (!currNote)
                     return;
 
@@ -369,7 +344,9 @@ namespace music {
                     currMs = duration * beat
                 }
 
-                if (hz <= 0) {
+                if (hz < 0) {
+                    // no frequency specified, so no duration
+                } else if (hz == 0) {
                     pause(currMs)
                 } else {
                     sndInstrPtr = 0

@@ -1,10 +1,3 @@
-const enum JDSwitchDirection {
-    //% block="left"
-    Left = DAL.DEVICE_BUTTON_EVT_UP,
-    //% block="right"
-    Right = DAL.DEVICE_BUTTON_EVT_DOWN,
-}
-
 namespace jacdac {
     //% fixedInstances
     export class SwitchClient extends SensorClient {
@@ -35,6 +28,6 @@ namespace jacdac {
         }
     }
 
-    //% fixedInstance whenUsed block="switch"
+    //% fixedInstance whenUsed block="switch client"
     export const switchClient = new SwitchClient("switch");
 }

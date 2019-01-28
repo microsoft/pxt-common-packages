@@ -37,15 +37,9 @@ namespace jacdac {
             return this._proxy;
         }
 
-        set proxy(value: JacDacDriverStatus) {
-            if (this._proxy) {
-                control.onEvent(this._proxy.id, JD_DRIVER_EVT_FILL_CONTROL_PACKET, undefined);
-                jacdac.removeDriver(this);
-            }
-            this._proxy = value;
-            if (this._proxy && this._controlData.length) {
-                control.onEvent(this._proxy.id, JD_DRIVER_EVT_FILL_CONTROL_PACKET, () => this.updateControlPacket());
-            }
+        get deviceName(): string {
+            const d = this.device;
+            return d ? jacdac.remoteDeviceName(d.serialNumber) : "";
         }
 
         /**
@@ -58,6 +52,10 @@ namespace jacdac {
             return this._controlData;
         }
 
+        get isStarted(): boolean {
+            return !!this._proxy;
+        }
+
         get isConnected(): boolean {
             return this._proxy && this._proxy.isConnected;
         }
@@ -67,8 +65,14 @@ namespace jacdac {
         }
 
         public log(text: string) {
-            if (!this.supressLog)
-                console.add(jacdac.consolePriority, `${this.device ? toHex8(this.device.address) : "--"}>${this.name}>${text}`);
+            if (!this.supressLog || jacdac.consolePriority < console.minPriority) {
+                let dev = jacdac.deviceName();
+                if (!dev) {
+                    const d = this.device;
+                    dev = d ? toHex8(d.address) : "--";
+                }
+                console.add(jacdac.consolePriority, `${dev}>${this.name}>${text}`);
+            }
         }
 
         /**
@@ -108,15 +112,29 @@ namespace jacdac {
         //% blockId=jacdachoststart block="start %service"
         //% group="Services"
         start() {
-            if (!this._proxy)
-                jacdac.addDriver(this);
+            if (this._proxy) return; // started already
+
+            this.log("start");
+            this._proxy = jacdac.__internalAddDriver(this.driverType, this.deviceClass,
+                [(p: Buffer) => this.handlePacket(p),
+                (p: Buffer) => this.handleControlPacket(p)],
+                this.controlData
+            );
+            if (this._controlData.length)
+                control.onEvent(this._proxy.id, JD_DRIVER_EVT_FILL_CONTROL_PACKET, () => this.updateControlPacket());
         }
 
         stop() {
-            this.proxy = undefined;
+            if (!this._proxy) return; // stopped already
+
+            this.log("stop")
+            control.onEvent(this._proxy.id, JD_DRIVER_EVT_FILL_CONTROL_PACKET, () => { });
+            jacdac.__internalRemoveDriver(this._proxy);
+            this._proxy = undefined;
         }
     }
 
+    //% fixedInstances
     export class Broadcast extends Driver {
         constructor(name: string, deviceClass: number, controlDataLength?: number) {
             super(name, DriverType.BroadcastDriver, deviceClass, controlDataLength);

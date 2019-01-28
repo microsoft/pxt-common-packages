@@ -56,67 +56,69 @@ class Sprite implements SpriteLike {
     _ax: Fx8
     _ay: Fx8
 
-    //% group="Properties" blockSetVariable="mySprite"
+    //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="x"
     get x(): number {
         return Fx.toInt(this._x) + (this._image.width >> 1)
     }
-    //% group="Properties" blockSetVariable="mySprite"
+    //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="x"
     set x(v: number) {
+        this._lastX = this._x;
         this._x = Fx8(v - (this._image.width >> 1))
     }
 
-    //% group="Properties" blockSetVariable="mySprite"
+    //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="y"
     get y(): number {
         return Fx.toInt(this._y) + (this._image.height >> 1)
     }
-    //% group="Properties" blockSetVariable="mySprite"
+    //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="y"
     set y(v: number) {
+        this._lastY = this._y;
         this._y = Fx8(v - (this._image.height >> 1))
     }
 
-    //% group="Properties" blockSetVariable="mySprite"
+    //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="vx (velocity x)"
     get vx(): number {
         return Fx.toFloat(this._vx)
     }
-    //% group="Properties" blockSetVariable="mySprite"
+    //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="vx (velocity x)"
     set vx(v: number) {
         this._vx = Fx8(v)
     }
 
-    //% group="Properties" blockSetVariable="mySprite"
+    //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="vy (velocity y)"
     get vy(): number {
         return Fx.toFloat(this._vy)
     }
-    //% group="Properties" blockSetVariable="mySprite"
+    //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="vy (velocity y)"
     set vy(v: number) {
         this._vy = Fx8(v)
     }
 
-    //% group="Properties" blockSetVariable="mySprite"
+    //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="ax (acceleration x)"
     get ax(): number {
         return Fx.toFloat(this._ax)
     }
-    //% group="Properties" blockSetVariable="mySprite"
+    //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="ax (acceleration x)"
     set ax(v: number) {
         this._ax = Fx8(v)
     }
 
-    //% group="Properties" blockSetVariable="mySprite"
+    //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="ay (acceleration y)"
     get ay(): number {
         return Fx.toFloat(this._ay)
     }
-    //% group="Properties" blockSetVariable="mySprite"
+    //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="ay (acceleration y)"
     set ay(v: number) {
         this._ay = Fx8(v)
@@ -132,7 +134,7 @@ class Sprite implements SpriteLike {
     /**
      * A bitset of layer. Each bit is a layer, default is 1.
      */
-    //% group="Properties"
+    //% group="Physics"
     layer: number;
 
     _lastX: Fx8;
@@ -144,7 +146,7 @@ class Sprite implements SpriteLike {
      * Time to live in milliseconds. The lifespan decreases by 1 on each millisecond
      * and the sprite gets destroyed when it reaches 0.
      */
-    //% group="Properties" blockSetVariable="mySprite"
+    //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="lifespan"
     lifespan: number;
     private _image: Image;
@@ -153,7 +155,7 @@ class Sprite implements SpriteLike {
     private updateSay: (dt: number, camera: scene.Camera) => void;
     private sayBubbleSprite: Sprite;
 
-    _hitboxes: game.Hitbox[];
+    _hitbox: game.Hitbox;
     _overlappers: number[];
 
     flags: number
@@ -212,70 +214,52 @@ class Sprite implements SpriteLike {
     setImage(img: Image) {
         if (!img) return; // don't break the sprite
 
-        // Identify old upper left corner
-        let oMinX = img.width;
-        let oMinY = img.height;
+        let oMinX = 0;
+        let oMinY = 0;
         let oMaxX = 0;
         let oMaxY = 0;
 
-        for (let i = 0; this._hitboxes && i < this._hitboxes.length; ++i) {
-            let box = this._hitboxes[i];
-            oMinX = Math.min(oMinX, box.ox);
-            oMinY = Math.min(oMinY, box.oy);
-            oMaxX = Math.max(oMaxX, box.ox + box.width - 1);
-            oMaxY = Math.max(oMaxY, box.oy + box.height - 1);
+        // Identify old upper left corner
+        if (this._hitbox) {
+            oMinX = this._hitbox.ox;
+            oMinY = this._hitbox.oy;
+            oMaxX = this._hitbox.ox + this._hitbox.width;
+            oMaxY = this._hitbox.oy + this._hitbox.height;
         }
 
         this._image = img;
-        this._hitboxes = game.calculateHitBoxes(this);
+        this._hitbox = game.calculateHitBox(this);
 
         // Identify new upper left corner
-        let nMinX = img.width;
-        let nMinY = img.height;
-        let nMaxX = 0;
-        let nMaxY = 0;
-
-        for (let i = 0; i < this._hitboxes.length; ++i) {
-            let box = this._hitboxes[i];
-            nMinX = Math.min(nMinX, box.ox);
-            nMinY = Math.min(nMinY, box.oy);
-            nMaxX = Math.max(nMaxX, box.ox + box.width - 1);
-            nMaxY = Math.max(nMaxY, box.oy + box.height - 1);
-        }
+        let nMinX = this._hitbox.ox;
+        let nMinY = this._hitbox.oy;
+        let nMaxX = this._hitbox.ox + this._hitbox.width;
+        let nMaxY = this._hitbox.oy + this._hitbox.height;
 
         const minXDiff = oMinX - nMinX;
         const minYDiff = oMinY - nMinY;
         const maxXDiff = oMaxX - nMaxX;
         const maxYDiff = oMaxY - nMaxY;
 
-        const scene = game.currentScene();
-        const tmap = scene.tileMap;
-
-        if (tmap && tmap.enabled && this.width <= 16 && this.height <= 16) {
-            const l = (nMinX + this.left) >> 4;
-            const r = (nMaxX + this.left) >> 4;
-            const t = (nMinY + this.top) >> 4;
-            const b = (nMaxY + this.top) >> 4;
-
-            if (tmap.isObstacle(l, t) && (minXDiff > 0 || minYDiff > 0)) {
-                scene.physicsEngine.moveSprite(this, scene.tileMap, Fx8(minXDiff), Fx8(minYDiff));
-            } else if (tmap.isObstacle(r, t) && (maxXDiff < 0 || minYDiff > 0)) {
-                scene.physicsEngine.moveSprite(this, scene.tileMap, Fx8(maxXDiff), Fx8(minYDiff));
-            } else if (tmap.isObstacle(l, b) && (minXDiff > 0 || maxYDiff < 0)) {
-                scene.physicsEngine.moveSprite(this, scene.tileMap, Fx8(minXDiff), Fx8(maxYDiff));
-            } else if (tmap.isObstacle(r, b) && (maxXDiff < 0 || maxYDiff < 0)) {
-                scene.physicsEngine.moveSprite(this, scene.tileMap, Fx8(maxXDiff), Fx8(maxYDiff));
-            }
+        // If just a small change to the hitbox, don't change the hitbox
+        // Used for things like walking animations
+        if (oMaxX != oMinX && Math.abs(minXDiff) + Math.abs(maxXDiff) <= 2) {
+            this._hitbox.ox = oMinX;
+            this._hitbox.width = oMaxX - oMinX;
+        }
+        if (oMaxY != oMinY && Math.abs(minYDiff) + Math.abs(maxYDiff) <= 2) {
+            this._hitbox.oy = oMinY;
+            this._hitbox.height = oMaxY - oMinY;
         }
     }
 
-    //% group="Properties" blockSetVariable="mySprite"
+    //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="z (depth)"
     get z(): number {
         return this._z;
     }
 
-    //% group="Properties" blockSetVariable="mySprite"
+    //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="z (depth)"
     set z(value: number) {
         if (value != this._z) {
@@ -284,52 +268,52 @@ class Sprite implements SpriteLike {
         }
     }
 
-    //% group="Properties" blockSetVariable="mySprite"
+    //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="width"
     get width() {
         return this._image.width
     }
-    //% group="Properties" blockSetVariable="mySprite"
+    //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="height"
     get height() {
         return this._image.height
     }
-    //% group="Properties" blockSetVariable="mySprite"
+    //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="left"
     get left() {
         return Fx.toInt(this._x)
     }
-    //% group="Properties" blockSetVariable="mySprite"
+    //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="left"
     set left(value: number) {
         this._x = Fx8(value)
     }
-    //% group="Properties" blockSetVariable="mySprite"
+    //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="right"
     get right() {
         return this.left + this.width
     }
-    //% group="Properties" blockSetVariable="mySprite"
+    //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="right"
     set right(value: number) {
         this.left = value - this.width
     }
-    //% group="Properties" blockSetVariable="mySprite"
+    //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine
     get top() {
         return Fx.toInt(this._y);
     }
-    //% group="Properties" blockSetVariable="mySprite"
+    //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine
     set top(value: number) {
         this._y = Fx8(value);
     }
-    //% group="Properties" blockSetVariable="mySprite"
+    //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="bottom"
     get bottom() {
         return this.top + this.height;
     }
-    //% group="Properties" blockSetVariable="mySprite"
+    //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="bottom"
     set bottom(value: number) {
         this.top = value - this.height;
@@ -371,7 +355,7 @@ class Sprite implements SpriteLike {
      * @param x horizontal position in pixels
      * @param y vertical position in pixels
      */
-    //% group="Properties"
+    //% group="Physics"
     //% weight=100
     //% blockId=spritesetpos block="set %sprite(mySprite) position to x %x y %y"
     //% help=sprites/sprite/set-position
@@ -382,11 +366,11 @@ class Sprite implements SpriteLike {
     }
 
     /**
-     * Sets the sprite velocity in pixel / sec²
+     * Sets the sprite velocity in pixel / sec
      * @param vx 
      * @param vy 
      */
-    //% group="Properties"
+    //% group="Physics"
     //% weight=100
     //% blockId=spritesetvel block="set %sprite(mySprite) velocity to vx %vx vy %vy"
     //% help=sprites/sprite/set-velociy
@@ -394,7 +378,7 @@ class Sprite implements SpriteLike {
     //% vy.shadow=spriteSpeedPicker
     setVelocity(vx: number, vy: number): void {
         this.vx = vx;
-        this.vy = vx;
+        this.vy = vy;
     }
 
     /**
@@ -402,21 +386,21 @@ class Sprite implements SpriteLike {
      * @param text the text to say, eg: ":)"
      * @param time time to keep text on
      */
-    //% group="Properties"
+    //% group="Effects"
+    //% weight=60
     //% blockId=spritesay block="%sprite(mySprite) say %text||for %millis ms"
+    //% millis.shadow=timePicker
     //% inlineInputMode=inline
     //% help=sprites/sprite/say
     say(text: string, timeOnScreen?: number, textColor = 15, textBoxColor = 1) {
-
         if (!text) {
             this.updateSay = undefined;
             if (this.sayBubbleSprite) {
                 this.sayBubbleSprite.destroy();
+                this.sayBubbleSprite = undefined;
             }
             return;
         }
-
-
 
         let pixelsOffset = 0;
         let holdTextSeconds = 1.5;
@@ -427,9 +411,10 @@ class Sprite implements SpriteLike {
         let startY = 2;
         let bubbleWidth = text.length * font.charWidth + bubblePadding;
         let maxOffset = text.length * font.charWidth - maxTextWidth;
-        let bubbleOffset: number;
+        let bubbleOffset: number = this._hitbox.oy;
         // sets the defaut scroll speed in pixels per second
         let speed = 45;
+        const currentScene = game.currentScene();
 
         // Calculates the speed of the scroll if scrolling is needed and a time is specified
         if (timeOnScreen && maxOffset > 0) {
@@ -440,21 +425,8 @@ class Sprite implements SpriteLike {
         }
 
         if (timeOnScreen) {
-            timeOnScreen = timeOnScreen + control.millis();
+            timeOnScreen = timeOnScreen + currentScene.millis();
         }
-
-        if (!this._hitboxes || this._hitboxes.length == 0) {
-            bubbleOffset = 0;
-        } else {
-            bubbleOffset = Fx.toInt(this._hitboxes[0].top);
-            for (let i = 0; i < this._hitboxes.length; i++) {
-                bubbleOffset = Math.min(bubbleOffset, Fx.toInt(this._hitboxes[i].top));
-            }
-
-            // Gets the length from sprites location to its highest hitbox
-            bubbleOffset = this.y - bubbleOffset;
-        }
-
 
         if (bubbleWidth > maxTextWidth + bubblePadding) {
             bubbleWidth = maxTextWidth + bubblePadding;
@@ -465,6 +437,7 @@ class Sprite implements SpriteLike {
         // Destroy previous sayBubbleSprite to prevent leaking
         if (this.sayBubbleSprite) {
             this.sayBubbleSprite.destroy();
+            this.sayBubbleSprite = undefined;
         }
 
         this.sayBubbleSprite = sprites.create(image.create(bubbleWidth, font.charHeight + bubblePadding), -1);
@@ -472,10 +445,10 @@ class Sprite implements SpriteLike {
         this.sayBubbleSprite.setFlag(SpriteFlag.Ghost, true);
         this.updateSay = (dt, camera) => {
             // Update box stuff as long as timeOnScreen doesn't exist or it can still be on the screen
-            if (!timeOnScreen || timeOnScreen > control.millis()) {
+            if (!timeOnScreen || timeOnScreen > currentScene.millis()) {
                 this.sayBubbleSprite.image.fill(textBoxColor);
                 // The minus 2 is how much transparent padding there is under the sayBubbleSprite
-                this.sayBubbleSprite.y = this.y - bubbleOffset - ((font.charHeight + bubblePadding) >> 1) - 2;
+                this.sayBubbleSprite.y = this.top + bubbleOffset - ((font.charHeight + bubblePadding) >> 1) - 2;
                 this.sayBubbleSprite.x = this.x;
 
                 if (!this.isOutOfScreen(camera)) {
@@ -538,6 +511,17 @@ class Sprite implements SpriteLike {
     }
 
     /**
+     * Start an effect on this sprite
+     * @param effect the type of effect to create
+     */
+    //% group="Effects"
+    //% weight=90
+    //% blockId=startEffectOnSprite block="%sprite(mySprite) start %effect effect || for %duration=timePicker|ms"
+    startEffect(effect: effects.ParticleEffect, duration?: number) {
+        effect.start(this, duration);
+    }
+
+    /**
      * Indicates if the sprite is outside the screen
      */
     //%
@@ -550,8 +534,8 @@ class Sprite implements SpriteLike {
     __draw(camera: scene.Camera) {
         if (this.isOutOfScreen(camera)) return;
 
-        const l = this.left - camera.offsetX;
-        const t = this.top - camera.offsetY;
+        const l = this.left - camera.drawOffsetX;
+        const t = this.top - camera.drawOffsetY;
         screen.drawTransparentImage(this._image, l, t)
 
         if (this.flags & SpriteFlag.ShowPhysics) {
@@ -573,12 +557,7 @@ class Sprite implements SpriteLike {
 
         // debug info
         if (game.debug) {
-            let color = 1;
-            this._hitboxes.forEach(box => {
-                this._image.drawRect(box.ox, box.oy, box.width, box.height, color);
-                color++;
-                if (color >= 15) color = 1;
-            });
+            screen.drawRect(Fx.toInt(this._hitbox.left), Fx.toInt(this._hitbox.top), this._hitbox.width, this._hitbox.height, 1);
         }
     }
 
@@ -626,7 +605,8 @@ class Sprite implements SpriteLike {
     /**
      * Set a sprite flag
      */
-    //% group="Properties"
+    //% group="Effects"
+    //% weight=30
     //% blockId=spritesetsetflag block="set %sprite(mySprite) %flag %on=toggleOnOff"
     //% flag.defl=SpriteFlag.StayInScreen
     //% help=sprites/sprite/set-flag
@@ -736,13 +716,21 @@ class Sprite implements SpriteLike {
     /**
      * Destroy the sprite
      */
-    //% group="Lifecycle"
-    //% weight=10
-    //% blockId=spritedestroy block="destroy %sprite(mySprite)"
+    //% group="Effects"
+    //% weight=80
+    //% blockId=spritedestroy block="destroy %sprite(mySprite) || with %effect effect for %duration ms"
+    //% duration.shadow=timePicker
+    //% expandableArgumentMode="toggle"
     //% help=sprites/sprite/destroy
-    destroy() {
+    destroy(effect?: effects.ParticleEffect, duration?: number) {
         if (this.flags & sprites.Flag.Destroyed)
-            return
+            return;
+        
+        if (effect) {
+            effect.destroy(this, duration);
+            return;
+        }
+
         this.flags |= sprites.Flag.Destroyed
         const scene = game.currentScene();
         // When current sprite is destroyed, destroys sayBubbleSprite if defined
