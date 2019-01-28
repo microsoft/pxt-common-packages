@@ -351,6 +351,24 @@ unsigned getRandom(unsigned max) {
     return result;
 }
 
+TNumber BoxedString::charCodeAt(int pos) {
+#if PXT_UTF8
+    auto ptr = this->getUTF8DataAt(pos);
+    if (!ptr)
+        return TAG_NAN;
+    auto code = utf8CharCode(ptr);
+    if (!code && ptr == this->getUTF8Data() + this->getUTF8Size())
+        return TAG_NAN;
+    return fromInt(code);
+#else
+    if (0 <= pos && pos < this->ascii.length) {
+        return fromInt(this->ascii.data[pos]);
+    } else {
+        return TAG_NAN;
+    }
+#endif
+}
+
 PXT_DEF_STRING(sTrue, "true")
 PXT_DEF_STRING(sFalse, "false")
 PXT_DEF_STRING(sUndefined, "undefined")
@@ -405,24 +423,6 @@ String fromCharCode(int code) {
 TNumber charCodeAt(String s, int pos) {
     if (!s) return TAG_NAN;
     return s->charCodeAt(pos);
-}
-
-TNumber BoxedString::charCodeAt(int pos) {
-#if PXT_UTF8
-    auto ptr = this->getUTF8DataAt(pos);
-    if (!ptr)
-        return TAG_NAN;
-    auto code = utf8CharCode(ptr);
-    if (!code && ptr == this->getUTF8Data() + this->getUTF8Size())
-        return TAG_NAN;
-    return fromInt(code);
-#else
-    if (0 <= pos && pos < this->ascii.length) {
-        return fromInt(this->ascii.data[pos]);
-    } else {
-        return TAG_NAN;
-    }
-#endif
 }
 
 //%
