@@ -71,6 +71,8 @@ sprites.onOverlap(0, 0, function (sprite, otherSprite) {})
 
 [create](/reference/sprites/create),
 [create projectile](/reference/sprites/create-projectile),
+[create projectile from sprite](/reference/sprites/create-projectile-from-sprite),
+[create projectile from side](/reference/sprites/create-projectile-from-side),
 [say](/reference/sprites/sprite/say),
 [overlaps with](/reference/sprites/sprite/overlaps-with),
 [is hitting tile](/reference/sprites/sprite-is-hittint-tile),
