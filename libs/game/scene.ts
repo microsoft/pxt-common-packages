@@ -81,6 +81,8 @@ namespace scene {
                 const dt = this.eventContext.deltaTime;
                 this.physicsEngine.move(dt);
             })
+            // controller update 19
+            this.eventContext.registerFrameHandler(19, controller._moveSprites);
             // user update 20
             // apply collisions 30
             this.eventContext.registerFrameHandler(30, () => {

@@ -157,7 +157,6 @@ namespace controller {
     function addController(ctrl: Controller) {
         if (!_players) {
             _players = [];
-            game.currentScene().eventContext.registerFrameHandler(19, moveSprites);
         }
         _players[ctrl.playerIndex - 1] = ctrl;
     }
@@ -179,7 +178,7 @@ namespace controller {
         vy: number;
     }
 
-    function moveSprites() {
+    export function _moveSprites() {
         // todo: move to currecnt sceane
         control.enablePerfCounter("controller")
         players().forEach(ctrl => ctrl.__preUpdate());
@@ -326,8 +325,8 @@ namespace controller {
 
         /**
          * Register code run when a controller event occurs
-         * @param event 
-         * @param handler 
+         * @param event
+         * @param handler
          */
         //% weight=99 blockGap=8
         //% blockId=ctrlonevent block="on %controller %event"
