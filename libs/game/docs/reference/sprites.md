@@ -6,7 +6,6 @@ Create and move game objects. Handle collisions between objects.
 
 ```cards
 sprites.create(null)
-sprites.createProjectile(null, 0, 0, 0)
 sprites.createProjectileFromSide(null, 0, 0)
 sprites.createProjectileFromSprite(null, null, 0, 0)
 ```
@@ -70,7 +69,6 @@ sprites.onOverlap(0, 0, function (sprite, otherSprite) {})
 ## See also
 
 [create](/reference/sprites/create),
-[create projectile](/reference/sprites/create-projectile),
 [create projectile from sprite](/reference/sprites/create-projectile-from-sprite),
 [create projectile from side](/reference/sprites/create-projectile-from-side),
 [say](/reference/sprites/sprite/say),
