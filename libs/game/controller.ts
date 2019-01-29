@@ -172,7 +172,7 @@ namespace controller {
         return _players.filter(ctrl => !!ctrl);
     }
 
-    interface ControlledSprite {
+    export interface ControlledSprite {
         s: Sprite;
         vx: number;
         vy: number;
@@ -189,7 +189,6 @@ namespace controller {
         playerIndex: number;
         buttons: Button[];
         private _id: number;
-        private _controlledSprites: ControlledSprite[];
         private _connected: boolean;
 
         // array of left,up,right,down,a,b,menu buttons
@@ -209,6 +208,14 @@ namespace controller {
             for (let i = 0; i < this.buttons.length; ++i)
                 this.buttons[i]._owner = this;
             addController(this);
+        }
+
+        get _controlledSprites(): ControlledSprite[] {
+            return game.currentScene().controlledSprites[this.playerIndex];
+        }
+
+        set _controlledSprites(cps: ControlledSprite[]) {
+            game.currentScene().controlledSprites[this.playerIndex] = cps;
         }
 
         get id() {

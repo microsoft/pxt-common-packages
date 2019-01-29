@@ -39,6 +39,8 @@ namespace scene {
         overlapHandlers: OverlapHandler[];
         collisionHandlers: CollisionHandler[];
         particleSources: particles.ParticleSource[];
+        controlledSprites: controller.ControlledSprite[][];
+
         private _millis: number;
         private _data: any;
 
@@ -53,6 +55,7 @@ namespace scene {
             this.overlapHandlers = [];
             this.collisionHandlers = [];
             this.spritesByKind = [];
+            this.controlledSprites = [];
             this._data = {};
             this._millis = 0;
         }
