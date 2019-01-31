@@ -6,7 +6,7 @@
  * Reading data of module lora.
  */
 //% weight=2 color=#002050 icon="\uf09e"
-//% advanced=true blockGap=8
+//% blockGap=8
 namespace lora {
     // registers
     const REG_FIFO = 0x00;

@@ -13,9 +13,6 @@
     ],
     "public": true,
     "dependencies": {
-        "core": "*"
-    },
-    "testDependencies": {
-        "arduino-mkr1300": "*"
+        "core": "file:../core"
     }
 }
