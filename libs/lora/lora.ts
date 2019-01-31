@@ -15,7 +15,7 @@ namespace lora {
     function log(msg: string) {
         console.add(consolePriority, `lora: ${msg}`);
     }
-    
+
     // registers
     const REG_FIFO = 0x00;
     const REG_OP_MODE = 0x01;
@@ -226,24 +226,6 @@ namespace lora {
         writeRegister(REG_MODEM_CONFIG_1, readRegister(REG_MODEM_CONFIG_1) | 0x01);
     }
 
-    // Begin Packet to send
-    function beginPacket(): number {
-        // put in standby mode
-        idle();
-
-        if (implicitHeader) {
-            implicitHeaderMode();
-        } else {
-            explicitHeaderMode();
-        }
-
-        // reset FIFO address and paload length
-        writeRegister(REG_FIFO_ADDR_PTR, 0);
-        writeRegister(REG_PAYLOAD_LENGTH, 0);
-
-        return 1;
-    }
-
     /**
     * Read Version of chip
     **/
@@ -251,23 +233,6 @@ namespace lora {
     //% weight=45 blockGap=8 blockId="version" block="lora version"
     export function version(): number {
         return readRegister(REG_VERSION);
-    }
-
-    function endPacket(): number
-    {
-        // put in TX mode
-        writeRegister(REG_OP_MODE, MODE_LONG_RANGE_MODE | MODE_TX);
-
-        // wait for TX done
-        while ((readRegister(REG_IRQ_FLAGS) & IRQ_TX_DONE_MASK) == 0) {
-            //TO DO: yield();
-            pause(10);
-        }
-
-        // clear IRQ's
-        writeRegister(REG_IRQ_FLAGS, IRQ_TX_DONE_MASK);
-
-        return 1;
     }
 
     /**
@@ -352,6 +317,41 @@ namespace lora {
         return fError | 0;
     }
 
+    // Begin Packet to send
+    function beginPacket(): void {
+        log(`begin packet`)
+        // put in standby mode
+        idle();
+
+        if (implicitHeader) {
+            implicitHeaderMode();
+        } else {
+            explicitHeaderMode();
+        }
+
+        // reset FIFO address and paload length
+        writeRegister(REG_FIFO_ADDR_PTR, 0);
+        writeRegister(REG_PAYLOAD_LENGTH, 0);
+    }
+
+    function endPacket(): number {
+        log(`end packet`)
+        // put in TX mode
+        writeRegister(REG_OP_MODE, MODE_LONG_RANGE_MODE | MODE_TX);
+
+        // wait for TX done
+        while ((readRegister(REG_IRQ_FLAGS) & IRQ_TX_DONE_MASK) == 0) {
+            //TO DO: yield();
+            log(`wait tx`)
+            pause(10);
+        }
+
+        // clear IRQ's
+        writeRegister(REG_IRQ_FLAGS, IRQ_TX_DONE_MASK);
+
+        return 1;
+    }
+
     /**
      * Write Packet to send
      **/
@@ -364,37 +364,13 @@ namespace lora {
         if (!a) return;
 
         log('send')
-        // put in standby mode
-        idle();
-
-        if (implicitHeader) {
-            implicitHeaderMode();
-        } else {
-            explicitHeaderMode();
-        }
-
-        log('reset fifo, payload')
-
-        // reset FIFO address and payload length
-        writeRegister(REG_FIFO_ADDR_PTR, 0);
-        writeRegister(REG_PAYLOAD_LENGTH, 0);
+        beginPacket();
 
         const buf = control.createBufferFromUTF8(a);
         log(`write payload (${buf.length} bytes)`)
         writeRaw(buf);
 
-        // wait for TX done
-        let r = 0;
-        while (((r = readRegister(REG_IRQ_FLAGS)) & IRQ_TX_DONE_MASK) == 0) {
-            //TO DO: yield();
-            log(`wait for txdone (${r})`)
-            pause(10);
-        }
-
-        // clear IRQ's
-        log('clear interupts')
-        writeRegister(REG_IRQ_FLAGS, IRQ_TX_DONE_MASK);
-        return;
+        endPacket();
     }
 
     function writeRaw(buffer: Buffer) {
@@ -445,8 +421,7 @@ namespace lora {
     /**
     * Peek Packet to send
     **/
-    export function peek(): number
-    {
+    export function peek(): number {
         if (!available()) {
             return -1;
         }
@@ -519,8 +494,7 @@ namespace lora {
     /**
     * Get Spreading Factor of LoRa
     **/
-    function getSpreadingFactor(): number
-    {
+    function getSpreadingFactor(): number {
         return readRegister(REG_MODEM_CONFIG_2) >> 4;
     }
 
@@ -546,8 +520,7 @@ namespace lora {
     /**
     * Get Signal Bandwidth of LoRa
     **/
-    function getSignalBandwidth(): number
-    {
+    function getSignalBandwidth(): number {
         const bw = (readRegister(REG_MODEM_CONFIG_1) >> 4);
         switch (bw) {
             case 0: return 7.8E3;
@@ -637,8 +610,7 @@ namespace lora {
         writeRegister(REG_MODEM_CONFIG_2, readRegister(REG_MODEM_CONFIG_2) & 0xfb);
     }
 
-    function random(): number
-    {
+    function random(): number {
         return readRegister(REG_RSSI_WIDEBAND);
     }
 
