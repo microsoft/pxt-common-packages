@@ -16,6 +16,7 @@ namespace lora {
         console.add(consolePriority, `lora: ${msg}`);
     }
 
+    const FIRMWARE_VERSION = 0x12;
     // registers
     const REG_FIFO = 0x00;
     const REG_OP_MODE = 0x01;
@@ -82,6 +83,7 @@ namespace lora {
         return (bitvalue ? bitSet(value, bit) : bitClear(value, bit));
     }
 
+    let _version: number;
     let frequency = 915E6;
     let _packetIndex = 0;
     let _implicitHeaderMode = 0;
@@ -95,9 +97,9 @@ namespace lora {
         cs = csPin;
         boot = bootPin;
         rst = rstPin;
-        //    auto cs = LOOKUP_PIN(A8); 
-        //      auto boot = LOOKUP_PIN(D15);
-        //        auto rst = LOOKUP_PIN(A7);
+        // auto cs = LOOKUP_PIN(A8); 
+        // auto boot = LOOKUP_PIN(D15);
+        // auto rst = LOOKUP_PIN(A7);
 
         cs.digitalWrite(false);
 
@@ -116,8 +118,8 @@ namespace lora {
         pins.spiFrequency(250000);
         pins.spiMode(0);
 
-        const version = readRegister(REG_VERSION);
-        log(`ready v${version}`)
+        _version = readRegister(REG_VERSION);
+        log(`version v${version}, required v${FIRMWARE_VERSION}`);
 
         //Sleep
         sleep();
@@ -180,7 +182,7 @@ namespace lora {
     //% parts="lora"
     //% weight=45 blockGap=8 blockId="version" block="lora version"
     export function version(): number {
-        return readRegister(REG_VERSION);
+        return _version;
     }
 
     /**
