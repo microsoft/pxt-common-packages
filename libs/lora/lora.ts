@@ -189,7 +189,9 @@ namespace lora {
         pins.spiWrite(MODE_LONG_RANGE_MODE | MODE_STDBY);
         cs.digitalWrite(true);
 
-        log('ready')
+        // check version
+        const version = readRegister(REG_VERSION);
+        log(`ready v${version}`)
     }
 
     // Write Register of SX. 
@@ -246,9 +248,9 @@ namespace lora {
     * Read Version of chip
     **/
     //% parts="lora"
-    //% weight=45 blockGap=8 blockId="readVersion" block="lora read version"
-    export function readVersion(): number {
-        return readRegister(0x42);
+    //% weight=45 blockGap=8 blockId="version" block="lora version"
+    export function version(): number {
+        return readRegister(REG_VERSION);
     }
 
     function endPacket(): number
