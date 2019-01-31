@@ -5,8 +5,7 @@
     "license": "MIT",
     "files": [
         "README.md",
-        "lora.ts",
-        "shims.d.ts"
+        "lora.ts"
     ],
     "testFiles": [
         "test.ts"
