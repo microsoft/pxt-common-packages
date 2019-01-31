@@ -8,9 +8,12 @@
 //% weight=2 color=#002050 icon="\uf09e"
 //% blockGap=8
 namespace lora {
-    let logPriority = ConsolePriority.Silent;
+    /**
+     * Priority of log messages
+     */
+    export let consolePriority = ConsolePriority.Silent;
     function log(msg: string) {
-        console.add(logPriority, `lora: ${msg}`);
+        console.add(consolePriority, `lora: ${msg}`);
     }
     
     // registers
