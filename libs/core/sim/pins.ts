@@ -161,5 +161,29 @@ namespace pxsim.pins {
     export function spiPins(mosi: number, miso: number, sck: number) {
         // TODO
     }
+
+    export class SpiDevice {
+
+    }
+
+    export function createSpi(mosi: number, miso: number, sck: number) {
+        return new SpiDevice();
+    }
+}
+
+namespace pxsim.SpiDeviceMethods {
+
+    export function write(device: pxsim.pins.SpiDevice, value: number) {
+        return 0;
+    }
+
+    export function transfer(device: pxsim.pins.SpiDevice, command: Buffer, response: Buffer) {
+    }
+
+    export function setFrequency(device: pxsim.pins.SpiDevice, frequency: number) {
+    }
+
+    export function setMode(device: pxsim.pins.SpiDevice, mode: number) {
+    }
 }
 
