@@ -104,94 +104,42 @@ namespace lora {
         // Hardware reset
         log('hw reset')
         boot.digitalWrite(false);
-
         rst.digitalWrite(true);
         pause(200);
         rst.digitalWrite(false);
         pause(200);
         rst.digitalWrite(true);
         pause(50);
+
+        // init spi
         cs.digitalWrite(true);
         pins.spiFrequency(250000);
         pins.spiMode(0);
 
-        //Sleep
-        log('sleep')
-        cs.digitalWrite(false);
-        pins.spiWrite(REG_OP_MODE | 0x80);
-        pins.spiWrite(MODE_LONG_RANGE_MODE | MODE_SLEEP);
-        cs.digitalWrite(true);
-
-        // set frequency
-        log('set frequency')
-
-        const frf = ((frequency | 0) << 19) / 32000000;
-
-        //writeRegister(REG_FRF_MSB, (uint8_t)(frf >> 16));
-        cs.digitalWrite(false);
-        pins.spiWrite(REG_FRF_MSB | 0x80);
-        pins.spiWrite((frf >> 16) & 0xff);
-        cs.digitalWrite(true);
-
-        //writeRegister(REG_FRF_MID, (uint8_t)(frf >> 8));
-        cs.digitalWrite(false);
-        pins.spiWrite(REG_FRF_MID | 0x80);
-        pins.spiWrite((frf >> 8) & 0xff);
-        cs.digitalWrite(true);
-
-        //writeRegister(REG_FRF_LSB, (uint8_t)(frf >> 0));
-        cs.digitalWrite(false);
-        pins.spiWrite(REG_FRF_LSB | 0x80);
-        pins.spiWrite((frf >> 0) & 0xff);
-        cs.digitalWrite(true);
-
-        // set base addresses
-        //REG_FIFO_TX_BASE_ADDR
-        cs.digitalWrite(false);
-        pins.spiWrite(REG_FIFO_TX_BASE_ADDR | 0x80);
-        pins.spiWrite(0);
-        cs.digitalWrite(true);
-
-        //REG_FIFO_RX_BASE_ADDR
-        cs.digitalWrite(false);
-        pins.spiWrite(REG_FIFO_RX_BASE_ADDR | 0x80);
-        pins.spiWrite(0);
-        cs.digitalWrite(true);
-
-        // set LNA boost
-
-        cs.digitalWrite(false);
-        pins.spiWrite(REG_LNA & 0x7f);
-        const response = pins.spiWrite(0x00);
-        cs.digitalWrite(true);
-
-        cs.digitalWrite(false);
-        pins.spiWrite(REG_LNA | 0x80);
-        pins.spiWrite(response | 0x03);
-        cs.digitalWrite(true);
-
-
-        // set auto AGC
-        cs.digitalWrite(false);
-        pins.spiWrite(REG_MODEM_CONFIG_3 | 0x80);
-        pins.spiWrite(0x04);
-        cs.digitalWrite(true);
-
-        // set output power to 17 dBm
-        cs.digitalWrite(false);
-        pins.spiWrite(REG_PA_CONFIG | 0x80);
-        pins.spiWrite(0x70 | 17);
-        cs.digitalWrite(true);
-
-        // put in standby mode
-        cs.digitalWrite(false);
-        pins.spiWrite(REG_OP_MODE | 0x80);
-        pins.spiWrite(MODE_LONG_RANGE_MODE | MODE_STDBY);
-        cs.digitalWrite(true);
-
-        // check version
         const version = readRegister(REG_VERSION);
         log(`ready v${version}`)
+
+        //Sleep
+        sleep();
+
+        // set frequency
+        setFrequency(frequency);
+
+        // set base addresses
+        writeRegister(REG_FIFO_TX_BASE_ADDR, 0);
+        writeRegister(REG_FIFO_RX_BASE_ADDR, 0);
+
+        // set LNA boost
+        writeRegister(REG_LNA, readRegister(REG_LNA) | 0x03);
+
+        // set auto AGC
+        writeRegister(REG_MODEM_CONFIG_3, 0x04);        
+
+        // set output power to 17 dBm
+        setTxPower(17);
+
+        // put in standby mode
+        idle();
     }
 
     // Write Register of SX. 
@@ -312,7 +260,7 @@ namespace lora {
         }
 
         const fXtal = 32E6; // FXOSC: crystal oscillator (XTAL) frequency (2.5. Chip Specification, p. 14)
-        const fError = ((freqError * (1 << 24)) / fXtal) * (getSignalBandwidth() / 500000.0); // p. 37
+        const fError = ((freqError * (1 << 24)) / fXtal) * (signalBandwidth() / 500000.0); // p. 37
 
         return fError | 0;
     }
@@ -450,14 +398,17 @@ namespace lora {
     /**
     * Sleep Mode
     **/
-    function sleep() {
+    //%
+    export function sleep() {
         writeRegister(REG_OP_MODE, MODE_LONG_RANGE_MODE | MODE_SLEEP);
     }
 
     /**
     * Set Tx Power
     **/
-    function setTxPower(level: number) {
+    //%
+    export function setTxPower(level: number) {
+        level = level | 0;
         if (PA_OUTPUT_RFO_PIN == outputPin) {
             // RFO
             if (level < 0) {
@@ -482,7 +433,8 @@ namespace lora {
     /**
     * Set Frecuency of LoRa
     **/
-    function setFrequency(frequency: number) {
+    //%
+    export function setFrequency(frequency: number) {
 
         const frf = ((frequency | 0) << 19) / 32000000;
 
@@ -494,7 +446,8 @@ namespace lora {
     /**
     * Get Spreading Factor of LoRa
     **/
-    function getSpreadingFactor(): number {
+    //%
+    export function spreadingFactor(): number {
         return readRegister(REG_MODEM_CONFIG_2) >> 4;
     }
 
@@ -520,7 +473,8 @@ namespace lora {
     /**
     * Get Signal Bandwidth of LoRa
     **/
-    function getSignalBandwidth(): number {
+    //%
+    export function signalBandwidth(): number {
         const bw = (readRegister(REG_MODEM_CONFIG_1) >> 4);
         switch (bw) {
             case 0: return 7.8E3;
@@ -541,7 +495,7 @@ namespace lora {
     /**
     * Set Signal Bandwidth of LoRa
     **/
-    function setSignalBandwidth(sbw: number) {
+    export function setSignalBandwidth(sbw: number) {
         let bw;
 
         if (sbw <= 7.8E3) {
@@ -572,7 +526,7 @@ namespace lora {
 
     function setLdoFlag() {
         // Section 4.1.1.5
-        const symbolDuration = 1000 / (getSignalBandwidth() / (1 << getSpreadingFactor()));
+        const symbolDuration = 1000 / (signalBandwidth() / (1 << spreadingFactor()));
 
         // Section 4.1.1.6
         const ldoOn = symbolDuration > 16 ? 1 : 0;
