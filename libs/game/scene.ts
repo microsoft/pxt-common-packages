@@ -38,6 +38,7 @@ namespace scene {
         createdHandlers: SpriteHandler[];
         overlapHandlers: OverlapHandler[];
         collisionHandlers: CollisionHandler[];
+        particleSources: particles.ParticleSource[];
         private _millis: number;
         private _data: any;
 

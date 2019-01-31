@@ -703,6 +703,8 @@ class BoxedString : public RefObject {
     const char *getUTF8DataAt(uint32_t pos) { return pos < ascii.length ? ascii.data + pos : NULL; }
 #endif
 
+    TNumber charCodeAt(int pos);
+
     BoxedString(const VTable *vt) : RefObject(vt) {}
 };
 

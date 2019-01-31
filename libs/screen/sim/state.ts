@@ -140,6 +140,13 @@ namespace pxsim {
                 }
             }
         }
+
+        setupScreenStatusBar(barHeight: number) {
+            // TODO
+        }
+        updateScreenStatusBar(img: RefImage) {
+            // TODO
+        }
     }
 
     export interface ScreenBoard extends CommonBoard {
