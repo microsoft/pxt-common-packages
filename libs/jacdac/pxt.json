@@ -10,7 +10,6 @@
         "sensordriver.ts",
         "jacdac.svg",
         "pxtparts.json",
-        "pxt.json",
         "shims.d.ts",
         "actuator.ts",
         "messagebus.ts",
