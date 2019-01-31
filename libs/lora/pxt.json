@@ -1,0 +1,21 @@
+{
+    "name": "lora",
+    "version": "0.2.2",
+    "description": "Library for Lora",
+    "license": "MIT",
+    "files": [
+        "README.md",
+        "lora.ts",
+        "shims.d.ts"
+    ],
+    "testFiles": [
+        "test.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "*"
+    },
+    "testDependencies": {
+        "arduino-mkr1300": "*"
+    }
+}
