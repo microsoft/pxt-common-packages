@@ -8,7 +8,11 @@
 //% weight=2 color=#002050 icon="\uf09e"
 //% blockGap=8
 namespace lora {
-    const log = (msg: string) => control.dmesg(`lora: ${msg}`);
+    let logPriority = ConsolePriority.Silent;
+    function log(msg: string) {
+        console.add(logPriority, `lora: ${msg}`);
+    }
+    
     // registers
     const REG_FIFO = 0x00;
     const REG_OP_MODE = 0x01;
