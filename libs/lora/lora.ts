@@ -78,6 +78,7 @@ namespace lora {
     let _packetIndex = 0;
     let _implicitHeaderMode = 0;
     let implicitHeader = false;
+    let outputPin = PA_OUTPUT_PA_BOOST_PIN;
     let cs: DigitalInOutPin;
     let boot: DigitalInOutPin;
     let rst: DigitalInOutPin;
@@ -456,8 +457,6 @@ namespace lora {
     * Set Tx Power
     **/
     function setTxPower(level: number) {
-        const outputPin = PA_OUTPUT_PA_BOOST_PIN;
-
         if (PA_OUTPUT_RFO_PIN == outputPin) {
             // RFO
             if (level < 0) {
@@ -521,7 +520,7 @@ namespace lora {
     /**
     * Get Signal Bandwidth of LoRa
     **/
-    function getSignalBandwidth()
+    function getSignalBandwidth(): number
     {
         const bw = (readRegister(REG_MODEM_CONFIG_1) >> 4);
         switch (bw) {
@@ -535,8 +534,9 @@ namespace lora {
             case 7: return 125E3;
             case 8: return 250E3;
             case 9: return 500E3;
-            default: 0; // unknown
         }
+        // unknown
+        return 0;
     }
 
     /**
