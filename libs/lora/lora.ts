@@ -8,6 +8,7 @@
 //% weight=2 color=#002050 icon="\uf09e"
 //% blockGap=8
 namespace lora {
+    const log = (msg: string) => control.dmesg(`lora: ${msg}`);
     // registers
     const REG_FIFO = 0x00;
     const REG_OP_MODE = 0x01;
@@ -94,7 +95,7 @@ namespace lora {
         cs.digitalWrite(false);
 
         // Hardware reset
-
+        log('hw reset')
         boot.digitalWrite(false);
 
         rst.digitalWrite(true);
@@ -108,12 +109,14 @@ namespace lora {
         pins.spiMode(0);
 
         //Sleep
+        log('sleep')
         cs.digitalWrite(false);
         pins.spiWrite(REG_OP_MODE | 0x80);
         pins.spiWrite(MODE_LONG_RANGE_MODE | MODE_SLEEP);
         cs.digitalWrite(true);
 
         // set frequency
+        log('set frequency')
 
         const frf = ((frequency | 0) << 19) / 32000000;
 
@@ -179,6 +182,7 @@ namespace lora {
         pins.spiWrite(MODE_LONG_RANGE_MODE | MODE_STDBY);
         cs.digitalWrite(true);
 
+        log('ready')
     }
 
     // Write Register of SX. 
@@ -348,6 +352,7 @@ namespace lora {
     //% name.fieldOptions.columns=4
     //% blockId="send" block="lora|send string %text"
     export function send(a: string) {
+        log('send')
         // put in standby mode
         idle();
 
@@ -357,21 +362,25 @@ namespace lora {
             explicitHeaderMode();
         }
 
+        log('reset fifo, payload')
+
         // reset FIFO address and paload length
         writeRegister(REG_FIFO_ADDR_PTR, 0);
         writeRegister(REG_PAYLOAD_LENGTH, 0);
 
-        // if( a->charCodeAt(0) ==  0)return;
+        log('write payload')
         const buf = control.createBufferFromUTF8(a);
         writeRaw(buf);
 
         // wait for TX done
         while ((readRegister(REG_IRQ_FLAGS) & IRQ_TX_DONE_MASK) == 0) {
             //TO DO: yield();
+            log('wait for txdone')
             pause(10);
         }
 
         // clear IRQ's
+        log('clear interupts')
         writeRegister(REG_IRQ_FLAGS, IRQ_TX_DONE_MASK);
         return;
     }
@@ -443,6 +452,7 @@ namespace lora {
     }
 
     function idle() {
+        log('idle')
         writeRegister(REG_OP_MODE, MODE_LONG_RANGE_MODE | MODE_STDBY);
     }
 
