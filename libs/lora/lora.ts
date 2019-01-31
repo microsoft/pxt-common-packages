@@ -246,7 +246,7 @@ namespace lora {
     * Read Version of chip
     **/
     //% parts="lora"
-    //% weight=45 blockGap=8 blockId="readVersion" block="lora|read version"
+    //% weight=45 blockGap=8 blockId="readVersion" block="lora read version"
     export function readVersion(): number {
         return readRegister(0x42);
     }
@@ -272,7 +272,7 @@ namespace lora {
     * Parse Packet to send
     **/
     //% parts="lora"
-    //% weight=45 blockGap=8 blockId="parsePacket" block="lora|parse packet %size"
+    //% weight=45 blockGap=8 blockId="parsePacket" block="lora parse packet %size"
     export function parsePacket(size: number): number {
         let packetLength = 0;
         let irqFlags = readRegister(REG_IRQ_FLAGS);
@@ -321,7 +321,7 @@ namespace lora {
     * Packet RSSI
     **/
     //% parts="lora"
-    //% weight=45 blockGap=8 blockId="packetRssi" block="lora|packet RSSI"
+    //% weight=45 blockGap=8 blockId="packetRssi" block="lora packet RSSI"
     export function packetRssi(): number {
         return (readRegister(REG_PKT_RSSI_VALUE) - (frequency < 868E6 ? 164 : 157));
     }
@@ -357,8 +357,10 @@ namespace lora {
     //% name.fieldEditor="gridpicker"
     //% name.fieldOptions.width=220
     //% name.fieldOptions.columns=4
-    //% blockId="send" block="lora|send string %text"
+    //% blockId="send" block="lora send string %text"
     export function send(a: string) {
+        if (!a) return;
+
         log('send')
         // put in standby mode
         idle();
@@ -375,14 +377,15 @@ namespace lora {
         writeRegister(REG_FIFO_ADDR_PTR, 0);
         writeRegister(REG_PAYLOAD_LENGTH, 0);
 
-        log('write payload')
         const buf = control.createBufferFromUTF8(a);
+        log(`write payload (${buf.length} bytes)`)
         writeRaw(buf);
 
         // wait for TX done
-        while ((readRegister(REG_IRQ_FLAGS) & IRQ_TX_DONE_MASK) == 0) {
+        let r = 0;
+        while (((r = readRegister(REG_IRQ_FLAGS)) & IRQ_TX_DONE_MASK) == 0) {
             //TO DO: yield();
-            log('wait for txdone')
+            log(`wait for txdone (${r})`)
             pause(10);
         }
 
@@ -401,6 +404,8 @@ namespace lora {
             size = MAX_PKT_LENGTH - currentLength;
         }
 
+        log(`write raw ${buffer.length} -> ${size} bytes`)
+
         // write data
         for (let i = 0; i < size; i++) {
             writeRegister(REG_FIFO, buffer[i]);
@@ -414,9 +419,9 @@ namespace lora {
     * Available Packet
     **/
     //% parts="lora"
-    //% weight=45 blockGap=8 blockId="available" block="lora|available"
+    //% weight=45 blockGap=8 blockId="available" block="lora available"
     export function available(): number {
-        return (readRegister(REG_RX_NB_BYTES) - _packetIndex);
+        return readRegister(REG_RX_NB_BYTES) - _packetIndex;
     }
 
     /**
