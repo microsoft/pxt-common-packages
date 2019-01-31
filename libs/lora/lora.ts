@@ -373,7 +373,7 @@ namespace lora {
 
         log('reset fifo, payload')
 
-        // reset FIFO address and paload length
+        // reset FIFO address and payload length
         writeRegister(REG_FIFO_ADDR_PTR, 0);
         writeRegister(REG_PAYLOAD_LENGTH, 0);
 
@@ -398,6 +398,7 @@ namespace lora {
     function writeRaw(buffer: Buffer) {
         const currentLength = readRegister(REG_PAYLOAD_LENGTH);
         let size = buffer.length;
+        log(`current payload length: ${currentLength}`)
 
         // check size
         if ((currentLength + size) > MAX_PKT_LENGTH) {
@@ -413,6 +414,7 @@ namespace lora {
 
         // update length
         writeRegister(REG_PAYLOAD_LENGTH, currentLength + size);
+        log(`updated payload length: ${readRegister(REG_PAYLOAD_LENGTH)}`)
     }
 
     /**
