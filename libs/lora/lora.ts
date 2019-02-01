@@ -120,7 +120,7 @@ namespace lora {
         pins.spiMode(0);
 
         _version = readRegister(REG_VERSION);
-        log(`version v${version}, required v${FIRMWARE_VERSION}`);
+        log(`version v${version()}, required v${FIRMWARE_VERSION}`);
 
         //Sleep
         sleep();
