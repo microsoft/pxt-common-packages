@@ -31,7 +31,7 @@ info.onCountdownEnd(function () {})
 ## Multiplayer
 
 ```cards
-info.player1.onLifeZero(function () {)
+info.player1.onLifeZero(function () {})
 info.player1.hasLife()
 info.player1.changeLifeBy(-1)
 info.player1.setLife(3)
