@@ -90,7 +90,7 @@ static SPIDevice _spi = NULL;
 /**
 * Gets the default SPI driver
 */
-//% property
+//%
 SPIDevice spi() {
     if (NULL == _spi)
         _spi = createSPI(LOOKUP_PIN(MOSI), LOOKUP_PIN(MISO), LOOKUP_PIN(SCK));
