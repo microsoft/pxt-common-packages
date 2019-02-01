@@ -118,6 +118,10 @@ namespace pxsim.PwmOnlyPinMethods {
 }
 
 namespace pxsim.pins {
+    export function pinByCfg(key: number) {
+        return pxsim.pxtcore.getPinCfg(key);
+    }
+
     export function pulseDuration(): number {
         // bus last event timestamp
         return 500;
@@ -160,6 +164,34 @@ namespace pxsim.pins {
 
     export function spiPins(mosi: number, miso: number, sck: number) {
         // TODO
+    }
+
+    export function spi(): SPIDevice {
+        const b = board();
+        return b.edgeConnectorState.spi;
+    }
+
+    export function createSPI(mosi: DigitalInOutPin, miso: DigitalInOutPin, sck: DigitalInOutPin) {
+        return new SPIDevice(mosi, miso, sck);
+    }
+}
+
+namespace pxsim.SPIDeviceMethods {
+
+    export function write(device: pxsim.SPIDevice, value: number) {
+        return device.write(value);
+    }
+
+    export function transfer(device: pxsim.SPIDevice, command: RefBuffer, response: RefBuffer) {
+        device.transfer(command, response);
+    }
+
+    export function setFrequency(device: pxsim.SPIDevice, frequency: number) {
+        device.setFrequency(frequency);
+    }
+
+    export function setMode(device: pxsim.SPIDevice, mode: number) {
+        device.setMode(mode);
     }
 }
 
