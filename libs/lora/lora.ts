@@ -96,10 +96,10 @@ namespace lora {
     let rst: DigitalInOutPin;
 
     export function init(
-        spiDevice: pins.SPIDevice, 
-        csPin: DigitalInOutPin, 
-        bootPin: DigitalInOutPin, 
-        rstPin: DigitalInOutPin) {
+        spiDevice?: pins.SPIDevice, 
+        csPin?: DigitalInOutPin, 
+        bootPin?: DigitalInOutPin, 
+        rstPin?: DigitalInOutPin) {
         if (!spiDevice) {
             spiDevice = pins.createSPI(
                 pin.getPinCfg(DAL.CFG_LORAL_MOSI),
