@@ -140,5 +140,8 @@
 #define CFG_LORA_MISO 220
 #define CFG_LORA_MOSI 221
 #define CFG_LORA_SCK 222
+#define CFG_LORA_CS 223
+#define CFG_LORA_BOOT 224
+#define CFG_LORA_RESET 225
 
 #endif
