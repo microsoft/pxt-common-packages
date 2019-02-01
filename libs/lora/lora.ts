@@ -7,7 +7,7 @@
  */
 //% weight=2 color=#002050 icon="\uf09e"
 //% blockGap=8
-//% groups='["Sender", "Receiver", "Mode", "Configuration"]'
+//% groups='["Sender", "Receiver", "Packet", "Mode", "Configuration"]'
 namespace lora {
     /**
      * Priority of log messages
@@ -186,9 +186,45 @@ namespace lora {
     }
 
     /**
-    * Parse Packet to send
+    * Parse a packet as a string
     **/
     //% group="Receiver"
+    //% parts="lora"
+    //% blockId=lorareadstring block="lora read string"
+    export function readString(): string {
+        const buf = readBuffer();
+        return buf.toString();
+    }
+
+    /**
+    * Parse a packet as a buffer
+    **/
+    //% group="Receiver"
+    //% parts="lora"
+    //% blockId=lorareadbuffer block="lora read buffer"
+    export function readBuffer(): Buffer {
+        let length = parsePacket(0);
+        if (length <= 0) 
+            return control.createBuffer(0); // nothing to read
+
+        // allocate buffer to store data
+        let buf = control.createBuffer(length);
+        let i = 0;
+        // read all bytes
+        for (let i = 0; i < buf.length; ++i) {
+            const c = read();
+            if (c < 0) break;
+            buf[i] = c;
+        }
+        if (i != buf.length)
+            buf = buf.slice(0, i);
+        return buf;
+    }
+
+    /**
+    * Parse Packet to send
+    **/
+    //% group="Packet"
     //% parts="lora"
     //% weight=45 blockGap=8 blockId=loraparsepacket block="lora parse packet %size"
     export function parsePacket(size: number): number {
@@ -197,7 +233,6 @@ namespace lora {
 
         if (size > 0) {
             implicitHeaderMode();
-
             writeRegister(REG_PAYLOAD_LENGTH, size & 0xff);
         } else {
             explicitHeaderMode();
@@ -238,15 +273,20 @@ namespace lora {
     /**
     * Packet RSSI
     **/
-    //% group="Receiver"
+    //% group="Packet"
     //% parts="lora"
     //% weight=45 blockGap=8 blockId=lorapacketRssi block="lora packet RSSI"
     export function packetRssi(): number {
         return (readRegister(REG_PKT_RSSI_VALUE) - (frequency < 868E6 ? 164 : 157));
     }
 
-    // Packet SNR
-    function packetSnr(): number {
+    /**
+     * Packet SNR
+     */
+    //% group="Packet"
+    //% parts="lora"
+    //% blockId=lorapacketsnr block="lora packet SNR"
+    export function packetSnr(): number {
         return (readRegister(REG_PKT_SNR_VALUE)) * 0.25;
     }
 
@@ -305,21 +345,29 @@ namespace lora {
     }
 
     /**
-     * Write Packet to send
+     * Write string to send
      **/
     //% parts="lora"
     //% group="Sender"
-    //% blockId=lorasend block="lora send string $text"
-    export function send(text: string) {
+    //% blockId=lorasendstring block="lora send string $text"
+    export function sendString(text: string) {
         if (!text) return;
+        const buf = control.createBufferFromUTF8(text);
+        sendBuffer(buf);
+    }
 
+    /**
+     * Write buffer to send
+     **/
+    //% parts="lora"
+    //% group="Sender"
+    //% blockId=lorasendbuffer block="lora send buffer $buffer"
+    export function sendBuffer(buffer: Buffer) {
+        if (!buffer || buffer.length == 0) return;
         log('send')
         beginPacket();
-
-        const buf = control.createBufferFromUTF8(text);
-        log(`write payload (${buf.length} bytes)`)
-        writeRaw(buf);
-
+        log(`write payload (${buffer.length} bytes)`)
+        writeRaw(buffer);
         endPacket();
     }
 
@@ -349,7 +397,7 @@ namespace lora {
     * Available Packet
     **/
     //% parts="lora"
-    //% group="Receiver"
+    //% group="Packet"
     //% weight=45 blockGap=8 
     //% blockId=loraavailable block="lora available"
     export function available(): number {
@@ -360,8 +408,7 @@ namespace lora {
     * Read Packet
     **/
     //% parts="lora"
-    //% group="Receiver"
-    //% group="Receiver"
+    //% group="Packet"
     //% blockId=loraread block="lora read"
     export function read(): number {
         if (!available()) {
@@ -377,7 +424,7 @@ namespace lora {
     * Peek Packet to send
     **/
     //% parts="lora"
-    //% group="Receiver"
+    //% group="Packet"
     //% blockId=lorapeek block="lora peek"
     export function peek(): number {
         if (!available()) {
