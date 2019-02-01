@@ -35,7 +35,15 @@ static WStorage *mountedStorage() {
     auto s = getWStorage();
     if (s->mounted)
         return s;
+    
+    DMESG("formatting storage");
+    
+    s->fs.exists("foobar"); // forces mount
+    s->mounted = true;
 
+    return s;
+
+/*
     auto p = LOOKUP_PIN(LED);
     // lock-up blinking LED
     // TODO wait for A+B, erase SPI chip, and reset
@@ -45,6 +53,7 @@ static WStorage *mountedStorage() {
         p->setDigitalValue(0);
         fiber_sleep(100);
     }
+    */
 }
 
 //%
@@ -52,6 +61,7 @@ void init() {
     usb.delayStart();
     auto s = getWStorage();
     if (s->mounted) {
+        DMESG("adding MSC");
         usb.add(s->msc);
         s->msc.addFiles();
     }
