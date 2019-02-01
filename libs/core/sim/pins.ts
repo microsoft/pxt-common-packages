@@ -177,7 +177,7 @@ namespace pxsim.SpiDeviceMethods {
         return 0;
     }
 
-    export function transfer(device: pxsim.pins.SpiDevice, command: Buffer, response: Buffer) {
+    export function transfer(device: pxsim.pins.SpiDevice, command: RefBuffer, response: RefBuffer) {
     }
 
     export function setFrequency(device: pxsim.pins.SpiDevice, frequency: number) {
