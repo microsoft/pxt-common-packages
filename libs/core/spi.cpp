@@ -73,7 +73,13 @@ void setMode(SpiDevice device, int mode) {
 namespace pins {
 
 static SpiDevice _spi = NULL;
-static SpiDevice getSPI() {
+
+
+/**
+* Gets the default SPI driver
+*/
+//%
+SpiDevice spi() {
     if (NULL == _spi)
         _spi = createSpi(LOOKUP_PIN(MOSI), LOOKUP_PIN(MISO), LOOKUP_PIN(SCK));
     return _spi;
@@ -86,7 +92,7 @@ static SpiDevice getSPI() {
 //% help=pins/spi-write weight=5 advanced=true
 //% blockId=spi_write block="spi write %value"
 int spiWrite(int value) {
-    return getSPI()->write(value);
+    return spi()->write(value);
 }
 
 /**
@@ -95,7 +101,7 @@ int spiWrite(int value) {
 //% help=pins/spi-transfer weight=4 advanced=true
 //% blockId=spi_transfer block="spi transfer %command into %response"
 void spiTransfer(Buffer command, Buffer response) {
-    getSPI()->transfer(command, response);
+    spi()->transfer(command, response);
 }
 
 /**
@@ -105,7 +111,7 @@ void spiTransfer(Buffer command, Buffer response) {
 //% help=pins/spi-frequency weight=4 advanced=true
 //% blockId=spi_frequency block="spi frequency %frequency"
 void spiFrequency(int frequency) {
-    getSPI()->setFrequency(frequency);
+    spi()->setFrequency(frequency);
 }
 
 /**
@@ -115,7 +121,7 @@ void spiFrequency(int frequency) {
 //% help=pins/spi-mode weight=3 advanced=true
 //% blockId=spi_mode block="spi mode %mode"
 void spiMode(int mode) {
-    getSPI()->setMode(mode);
+    spi()->setMode(mode);
 }
 
 } // namespace pins
