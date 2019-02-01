@@ -169,10 +169,8 @@ namespace pxsim.pins {
     }
 
     export function spi(): SPIDevice {
-        return undefined;
-        // TEmporarily disable to eable arcade build
-        //const b = board();
-        //return b.edgeConnectorState.spi;
+        const b = board();
+        return b.edgeConnectorState.spi;
     }
 
     export function createSPI(mosi: DigitalInOutPin, miso: DigitalInOutPin, sck: DigitalInOutPin) {
