@@ -57,6 +57,14 @@ CodalComponent *lookupComponent(int id) {
 
 namespace pins {
 /**
+* Get a pin by configuration id (DAL.CFG_PIN...)
+*/
+//%
+DigitalInOutPin pinByCfg(int key) {
+    return pxt::getPinCfg(key);
+}
+
+/**
  * Create a new zero-initialized buffer.
  * @param size number of bytes in the buffer
  */

@@ -118,6 +118,10 @@ namespace pxsim.PwmOnlyPinMethods {
 }
 
 namespace pxsim.pins {
+    export function pinByCfg(key: number) {
+        return pxsim.pxtcore.getPinCfg(key);
+    }
+
     export function pulseDuration(): number {
         // bus last event timestamp
         return 500;
