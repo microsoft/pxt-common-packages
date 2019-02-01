@@ -76,6 +76,13 @@ void set_usb_strings(const char *uf2_info);
 
 } // namespace pxt
 
+namespace pins {
+class CodalSpiDevice;
+} // namespace pins
+
+typedef pins::CodalSpiDevice* SpiDevice;
+
+
 namespace jacdac {
 class JDProxyDriver;
 } // namespace network

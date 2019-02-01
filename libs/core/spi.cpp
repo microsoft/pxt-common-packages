@@ -1,7 +1,6 @@
 #include "pxt.h"
 #include "ErrorNo.h"
 
-
 namespace pins {
 
 class CodalSpiDevice {
@@ -27,7 +26,7 @@ public:
     }
 
     void setFrequency(int frequency) {
-        spi->setFrequency(frequency);
+        spi.setFrequency(frequency);
     }
 
     void setMode(int mode) {
@@ -40,9 +39,9 @@ typedef CodalSpiDevice* SpiDevice;
 /**
 * Opens a SPI driver
 */
-//%
-SpiDevice createSpi(int mosiPin, int misoPin, int sckPin) {
-    return new CodalSpiDevice(pxt::lookupPin(mosiPin), pxt::lookupPin(misoPin), pxt::lookupPin(sckPin));
+//% parts=spi
+SpiDevice createSpi(DevicePin* mosiPin, DevicePin* misoPin, DevicePin* sckPin) {
+    return new CodalSpiDevice(mosiPin, misoPin, sckPin);
 }
 
 }
