@@ -108,7 +108,7 @@ namespace lora {
             );
             csPin = pins.getPinCfg(DAL.CFG_LORAL_CS);
             bootPin = pins.getPinCfg(DAL.CFG_LORAL_BOOT);
-            restPin = pins.getPinCfg(DAL.CFG_LORAL_RESET);
+            rstPin = pins.getPinCfg(DAL.CFG_LORAL_RESET);
         }
 
         spi = spiDevice;
