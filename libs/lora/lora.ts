@@ -115,11 +115,10 @@ namespace lora {
         _state = 1;
         if (!_spi) {
             log(`init using builtin lora pins`);
-            _spi = pins.createSPI(
-                pins.pinByCfg(DAL.CFG_PIN_LORA_MOSI),
-                pins.pinByCfg(DAL.CFG_PIN_LORA_MISO),
-                pins.pinByCfg(DAL.CFG_PIN_LORA_SCK)
-            );
+            const mosi = pins.pinByCfg(DAL.CFG_PIN_LORA_MOSI);
+            const miso = pins.pinByCfg(DAL.CFG_PIN_LORA_MISO);
+            const sck = pins.pinByCfg(DAL.CFG_PIN_LORA_SCK);
+            _spi = pins.createSPI(mosi, miso, sck);
             _cs = pins.pinByCfg(DAL.CFG_PIN_LORA_CS);
             _boot = pins.pinByCfg(DAL.CFG_PIN_LORA_BOOT);
             _rst = pins.pinByCfg(DAL.CFG_PIN_LORA_RESET);
