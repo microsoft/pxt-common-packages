@@ -118,8 +118,10 @@ namespace pxsim.PwmOnlyPinMethods {
 }
 
 namespace pxsim.pins {
-    export function pinByCfg(key: number) {
-        return pxsim.pxtcore.getPinCfg(key);
+    export function pinByCfg(key: number): Pin {
+        // return pxsim.pxtcore.getPinCfg(key);
+        // Temporarily disabling to enable Aracde build
+        return undefined;
     }
 
     export function pulseDuration(): number {
@@ -167,8 +169,10 @@ namespace pxsim.pins {
     }
 
     export function spi(): SPIDevice {
-        const b = board();
-        return b.edgeConnectorState.spi;
+        return undefined;
+        // TEmporarily disable to eable arcade build
+        //const b = board();
+        //return b.edgeConnectorState.spi;
     }
 
     export function createSPI(mosi: DigitalInOutPin, miso: DigitalInOutPin, sck: DigitalInOutPin) {
