@@ -114,9 +114,9 @@ namespace lora {
 
         _state = 1;
         if (!_spi) {
-            log(`using builtin lora pins`);
+            log(`init using builtin lora pins`);
             _spi = pins.createSPI(
-                pins.pinByCfg(DAL.CFG_PIN_LORA_MISO),
+                pins.pinByCfg(DAL.CFG_PIN_LORA_MOSI),
                 pins.pinByCfg(DAL.CFG_PIN_LORA_MISO),
                 pins.pinByCfg(DAL.CFG_PIN_LORA_SCK)
             );
