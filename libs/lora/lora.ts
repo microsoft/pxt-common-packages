@@ -7,6 +7,7 @@
  */
 //% weight=2 color=#002050 icon="\uf09e"
 //% blockGap=8
+//% groups='["Sender", "Receiver", "Mode", "Configuration"]'
 namespace lora {
     /**
      * Priority of log messages
@@ -135,7 +136,7 @@ namespace lora {
         writeRegister(REG_LNA, readRegister(REG_LNA) | 0x03);
 
         // set auto AGC
-        writeRegister(REG_MODEM_CONFIG_3, 0x04);        
+        writeRegister(REG_MODEM_CONFIG_3, 0x04);
 
         // set output power to 17 dBm
         setTxPower(17);
@@ -177,10 +178,9 @@ namespace lora {
     }
 
     /**
-    * Read Version of chip
+    * Read Version of firmware
     **/
     //% parts="lora"
-    //% weight=45 blockGap=8 blockId="version" block="lora version"
     export function version(): number {
         return _version;
     }
@@ -188,8 +188,9 @@ namespace lora {
     /**
     * Parse Packet to send
     **/
+    //% group="Receiver"
     //% parts="lora"
-    //% weight=45 blockGap=8 blockId="parsePacket" block="lora parse packet %size"
+    //% weight=45 blockGap=8 blockId=loraparsepacket block="lora parse packet %size"
     export function parsePacket(size: number): number {
         let packetLength = 0;
         let irqFlags = readRegister(REG_IRQ_FLAGS);
@@ -237,8 +238,9 @@ namespace lora {
     /**
     * Packet RSSI
     **/
+    //% group="Receiver"
     //% parts="lora"
-    //% weight=45 blockGap=8 blockId="packetRssi" block="lora packet RSSI"
+    //% weight=45 blockGap=8 blockId=lorapacketRssi block="lora packet RSSI"
     export function packetRssi(): number {
         return (readRegister(REG_PKT_RSSI_VALUE) - (frequency < 868E6 ? 164 : 157));
     }
@@ -305,8 +307,9 @@ namespace lora {
     /**
      * Write Packet to send
      **/
-    //% weight=45 blockGap=8 
-    //% blockId="send" block="lora send string $text"
+    //% parts="lora"
+    //% group="Sender"
+    //% blockId=lorasend block="lora send string $text"
     export function send(text: string) {
         if (!text) return;
 
@@ -346,7 +349,9 @@ namespace lora {
     * Available Packet
     **/
     //% parts="lora"
-    //% weight=45 blockGap=8 blockId="available" block="lora available"
+    //% group="Receiver"
+    //% weight=45 blockGap=8 
+    //% blockId=loraavailable block="lora available"
     export function available(): number {
         return readRegister(REG_RX_NB_BYTES) - _packetIndex;
     }
@@ -355,6 +360,9 @@ namespace lora {
     * Read Packet
     **/
     //% parts="lora"
+    //% group="Receiver"
+    //% group="Receiver"
+    //% blockId=loraread block="lora read"
     export function read(): number {
         if (!available()) {
             return -1;
@@ -368,6 +376,9 @@ namespace lora {
     /**
     * Peek Packet to send
     **/
+    //% parts="lora"
+    //% group="Receiver"
+    //% blockId=lorapeek block="lora peek"
     export function peek(): number {
         if (!available()) {
             return -1;
@@ -389,7 +400,13 @@ namespace lora {
         //TODO
     }
 
-    function idle() {
+    /**
+     * Put LoRa in idle mode
+     */
+    //% parts="lora"
+    //% group="Mode"
+    //% blockId=loraidle block="lora idle"
+    export function idle() {
         log('idle')
         writeRegister(REG_OP_MODE, MODE_LONG_RANGE_MODE | MODE_STDBY);
     }
@@ -397,7 +414,9 @@ namespace lora {
     /**
     * Sleep Mode
     **/
-    //%
+    //% parts="lora"
+    //% group="Mode"
+    //% blockId=lorasleep block="lora sleep"
     export function sleep() {
         writeRegister(REG_OP_MODE, MODE_LONG_RANGE_MODE | MODE_SLEEP);
     }
@@ -405,7 +424,9 @@ namespace lora {
     /**
     * Set Tx Power
     **/
-    //%
+    //% parts="lora"
+    //% group="Configuration"
+    //% blockId=lorasettxpower block="lora set tx power to $level"
     export function setTxPower(level: number) {
         level = level | 0;
         if (PA_OUTPUT_RFO_PIN == outputPin) {
@@ -432,7 +453,9 @@ namespace lora {
     /**
     * Set Frecuency of LoRa
     **/
-    //%
+    //% parts="lora"
+    //% group="Configuration"
+    //% blockId=lorasetsetfrequency block="lora set frequency to $frequency"
     export function setFrequency(frequency: number) {
 
         const frf = ((frequency | 0) << 19) / 32000000;
@@ -445,19 +468,31 @@ namespace lora {
     /**
     * Get Spreading Factor of LoRa
     **/
-    //%
+    //% parts="lora"
+    //% group="Configuration"
+    //% blockId=loraspreadingfactor block="lora spreading factor"
     export function spreadingFactor(): number {
         return readRegister(REG_MODEM_CONFIG_2) >> 4;
     }
 
-    function setSpreadingFactor(sf: number) {
-        if (sf < 6) {
-            sf = 6;
-        } else if (sf > 12) {
-            sf = 12;
+    /**
+     * Sets the spreading factoring
+     * @param factor spreading factor
+     */
+    //% parts="lora"
+    //% blockId=lorasetspreadingfactor block="lora set spreading factor $factor"
+    //% factor.min=6 factor.max=12
+    //% factor.defl=8
+    //% group="Configuration"
+    export function setSpreadingFactor(factor: number) {
+        factor = factor | 0;
+        if (factor < 6) {
+            factor = 6;
+        } else if (factor > 12) {
+            factor = 12;
         }
 
-        if (sf == 6) {
+        if (factor == 6) {
             writeRegister(REG_DETECTION_OPTIMIZE, 0xc5);
             writeRegister(REG_DETECTION_THRESHOLD, 0x0c);
         } else {
@@ -465,14 +500,16 @@ namespace lora {
             writeRegister(REG_DETECTION_THRESHOLD, 0x0a);
         }
 
-        writeRegister(REG_MODEM_CONFIG_2, (readRegister(REG_MODEM_CONFIG_2) & 0x0f) | ((sf << 4) & 0xf0));
+        writeRegister(REG_MODEM_CONFIG_2, (readRegister(REG_MODEM_CONFIG_2) & 0x0f) | ((factor << 4) & 0xf0));
         setLdoFlag();
     }
 
     /**
     * Get Signal Bandwidth of LoRa
     **/
-    //%
+    //% parts="lora"
+    //% group="Configuration"
+    //% blockId=lorasignalbandwith block="signal bandwidth"
     export function signalBandwidth(): number {
         const bw = (readRegister(REG_MODEM_CONFIG_1) >> 4);
         switch (bw) {
@@ -494,26 +531,29 @@ namespace lora {
     /**
     * Set Signal Bandwidth of LoRa
     **/
-    export function setSignalBandwidth(sbw: number) {
+    //% parts="lora"
+    //% group="Configuration"
+    //% blockId=lorasetsignalbandwith block="set signal bandwidth to $value"
+    export function setSignalBandwidth(value: number) {
         let bw;
 
-        if (sbw <= 7.8E3) {
+        if (value <= 7.8E3) {
             bw = 0;
-        } else if (sbw <= 10.4E3) {
+        } else if (value <= 10.4E3) {
             bw = 1;
-        } else if (sbw <= 15.6E3) {
+        } else if (value <= 15.6E3) {
             bw = 2;
-        } else if (sbw <= 20.8E3) {
+        } else if (value <= 20.8E3) {
             bw = 3;
-        } else if (sbw <= 31.25E3) {
+        } else if (value <= 31.25E3) {
             bw = 4;
-        } else if (sbw <= 41.7E3) {
+        } else if (value <= 41.7E3) {
             bw = 5;
-        } else if (sbw <= 62.5E3) {
+        } else if (value <= 62.5E3) {
             bw = 6;
-        } else if (sbw <= 125E3) {
+        } else if (value <= 125E3) {
             bw = 7;
-        } else if (sbw <= 250E3) {
+        } else if (value <= 250E3) {
             bw = 8;
         } else /*if (sbw <= 250E3)*/ {
             bw = 9;
@@ -555,12 +595,14 @@ namespace lora {
         writeRegister(REG_SYNC_WORD, sw);
     }
 
-    function enableCrc() {
-        writeRegister(REG_MODEM_CONFIG_2, readRegister(REG_MODEM_CONFIG_2) | 0x04);
-    }
-
-    function disableCrc() {
-        writeRegister(REG_MODEM_CONFIG_2, readRegister(REG_MODEM_CONFIG_2) & 0xfb);
+    //% parts="lora"
+    //% group="Configuration"
+    //% blockId=lorasetcrc block="lora set crc $on"
+    //% on.shadow=toggleOnOff
+    export function setCrc(on: boolean) {
+        let v = readRegister(REG_MODEM_CONFIG_2);
+        if (on) v = v | 0x04; else v = v & 0xfb;
+        writeRegister(REG_MODEM_CONFIG_2, v);
     }
 
     function random(): number {
