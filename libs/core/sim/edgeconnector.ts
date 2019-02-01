@@ -97,6 +97,32 @@ namespace pxsim {
         }
     }
 
+    export class SPIDevice {
+        frequency: number;
+        mode: number;
+
+        constructor(public mosi: DigitalInOutPin, miso: DigitalInOutPin, sck: DigitalInOutPin) {
+            this.frequency = 250000;
+            this.mode = 0;
+        }
+
+        write(value: number) {
+            return 0;
+        }
+    
+        transfer(command: RefBuffer, response: RefBuffer) {
+        }
+    
+        setFrequency(frequency: number) {
+            this.frequency = frequency;
+        }
+    
+        setMode(mode: number) {
+            this.mode = mode;
+        }
+    
+    }
+
     export interface EdgeConnectorProps {
         pins: number[];
         servos?: { [name: string]: number; }
@@ -104,6 +130,7 @@ namespace pxsim {
 
     export class EdgeConnectorState {
         pins: Pin[];
+        private _spi: SPIDevice;
 
         constructor(public props: EdgeConnectorProps) {
             this.pins = props.pins.map(id => id != undefined ? new Pin(id) : null);
@@ -111,6 +138,12 @@ namespace pxsim {
 
         public getPin(id: number) {
             return this.pins.filter(p => p && p.id == id)[0] || null
+        }
+
+        get spi(): SPIDevice {
+            if (!this._spi)
+                this._spi = pxsim.pins.createSPI(undefined, undefined, undefined);
+            return this._spi;
         }
     }
 

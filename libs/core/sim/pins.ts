@@ -162,52 +162,31 @@ namespace pxsim.pins {
         // TODO
     }
 
-    export class SpiDevice {
-        frequency: number;
-        mode: number;
-
-        constructor(public mosi: DigitalInOutPin, miso: DigitalInOutPin, sck: DigitalInOutPin) {
-            this.frequency = 250000;
-            this.mode = 0;
-        }
-
-        write(value: number) {
-            return 0;
-        }
-    
-        transfer(command: RefBuffer, response: RefBuffer) {
-        }
-    
-        setFrequency(frequency: number) {
-            this.frequency = frequency;
-        }
-    
-        setMode(mode: number) {
-            this.mode = mode;
-        }
-    
+    export function spi() {
+        const b = board();
+        return b.edgeConnectorState.spi;
     }
 
     export function createSPI(mosi: DigitalInOutPin, miso: DigitalInOutPin, sck: DigitalInOutPin) {
-        return new SpiDevice(mosi, miso, sck);
+        return new SPIDevice(mosi, miso, sck);
     }
 }
 
-namespace pxsim.SpiDeviceMethods {
+namespace pxsim.SPIDeviceMethods {
 
-    export function write(device: pxsim.pins.SpiDevice, value: number) {
+    export function write(device: pxsim.pins.SPIDevice, value: number) {
         return device.write(value);
     }
 
-    export function transfer(device: pxsim.pins.SpiDevice, command: RefBuffer, response: RefBuffer) {
+    export function transfer(device: pxsim.pins.SPIDevice, command: RefBuffer, response: RefBuffer) {
         device.transfer(command, response);
     }
 
-    export function setFrequency(device: pxsim.pins.SpiDevice, frequency: number) {
+    export function setFrequency(device: pxsim.pins.SPIDevice, frequency: number) {
         device.setFrequency(frequency);
     }
 
-    export function setMode(device: pxsim.pins.SpiDevice, mode: number) {
+    export function setMode(device: pxsim.pins.SPIDevice, mode: number) {
         device.setMode(mode);
     }
 }
