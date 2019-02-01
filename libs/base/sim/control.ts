@@ -1,3 +1,10 @@
+namespace pxsim.pxtcore {
+    // TODO: add in support for mode, as in CODAL
+    export function registerWithDal(id: number, evid: number, handler: RefAction, mode: number = 0) {
+        board().bus.listen(id, evid, handler);
+    }
+}
+
 namespace pxsim.control {
     export let runInParallel = thread.runInBackground;
     export let delay = thread.pause;
@@ -42,7 +49,6 @@ namespace pxsim.control {
     export function internalOnEvent(id: number, evid: number, handler: RefAction) {
         pxtcore.registerWithDal(id, evid, handler)
     }
-
     export function waitForEvent(id: number, evid: number) {
         const cb = getResume();
         board().bus.wait(id, evid, cb);
@@ -89,7 +95,7 @@ namespace pxsim.control {
             r += "]"
             return r
         }
-            
+
         return v + ""
     }
     export function dmesgPtr(msg: string, ptr: any) {
