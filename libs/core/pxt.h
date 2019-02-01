@@ -77,10 +77,10 @@ void set_usb_strings(const char *uf2_info);
 } // namespace pxt
 
 namespace pins {
-class CodalSpiDevice;
+class CodalSPIProxy;
 } // namespace pins
 
-typedef pins::CodalSpiDevice* SpiDevice;
+typedef pins::CodalSPIProxy* SPIDevice;
 
 
 namespace jacdac {

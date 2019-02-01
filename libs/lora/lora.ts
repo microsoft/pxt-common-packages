@@ -90,11 +90,28 @@ namespace lora {
     let _implicitHeaderMode = 0;
     let implicitHeader = false;
     let outputPin = PA_OUTPUT_PA_BOOST_PIN;
+    let spi: pins.SPIDevice;
     let cs: DigitalInOutPin;
     let boot: DigitalInOutPin;
     let rst: DigitalInOutPin;
 
-    export function init(csPin: DigitalInOutPin, bootPin: DigitalInOutPin, rstPin: DigitalInOutPin) {
+    export function init(
+        spiDevice: pins.SPIDevice, 
+        csPin: DigitalInOutPin, 
+        bootPin: DigitalInOutPin, 
+        rstPin: DigitalInOutPin) {
+        if (!spiDevice) {
+            spiDevice = pins.createSPI(
+                pin.getPinCfg(DAL.CFG_LORAL_MOSI),
+                pin.getPinCfg(DAL.CFG_LORAL_MISO),
+                pin.getPinCfg(DAL.CFG_LORAL_SCK)
+            );
+            csPin = pins.getPinCfg(DAL.CFG_LORAL_CS);
+            bootPin = pins.getPinCfg(DAL.CFG_LORAL_BOOT);
+            restPin = pins.getPinCfg(DAL.CFG_LORAL_RESET);
+        }
+
+        spi = spiDevice;
         cs = csPin;
         boot = bootPin;
         rst = rstPin;
@@ -116,8 +133,8 @@ namespace lora {
 
         // init spi
         cs.digitalWrite(true);
-        pins.spiFrequency(250000);
-        pins.spiMode(0);
+        spi.setFrequency(250000);
+        spi.setMode(0);
 
         _version = readRegister(REG_VERSION);
         log(`version v${version()}, required v${FIRMWARE_VERSION}`);
@@ -149,8 +166,8 @@ namespace lora {
     function writeRegister(address: number, value: number) {
         cs.digitalWrite(false);
 
-        pins.spiWrite(address | 0x80);
-        pins.spiWrite(value);
+        spi.write(address | 0x80);
+        spi.write(value);
 
         cs.digitalWrite(true);
     }
@@ -158,8 +175,8 @@ namespace lora {
     // Read register of SX 
     function readRegister(address: number): number {
         cs.digitalWrite(false);
-        pins.spiWrite(address & 0x7f);
-        const response = pins.spiWrite(0x00);
+        spi.write(address & 0x7f);
+        const response = spi.write(0x00);
 
         cs.digitalWrite(true);
 

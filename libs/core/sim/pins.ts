@@ -166,7 +166,7 @@ namespace pxsim.pins {
 
     }
 
-    export function createSpi(mosi: number, miso: number, sck: number) {
+    export function createSPI(mosi: number, miso: number, sck: number) {
         return new SpiDevice();
     }
 }

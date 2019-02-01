@@ -3,12 +3,12 @@
 
 namespace pins {
 
-class CodalSpiDevice {
+class CodalSPIProxy {
 private:
     CODAL_SPI spi;
 
 public:
-    CodalSpiDevice(DevicePin* mosi, DevicePin* miso, DevicePin* sck)
+    CodalSPIProxy(DevicePin* mosi, DevicePin* miso, DevicePin* sck)
         : spi(*mosi, *miso, *sck) 
     {
     }
@@ -34,37 +34,37 @@ public:
     }
 };
 
-typedef CodalSpiDevice* SpiDevice;
+typedef CodalSPIProxy* SPIDevice;
 
 /**
 * Opens a SPI driver
 */
 //% parts=spi
-SpiDevice createSpi(DevicePin* mosiPin, DevicePin* misoPin, DevicePin* sckPin) {
-    return new CodalSpiDevice(mosiPin, misoPin, sckPin);
+SPIDevice createSPI(DigitalInOutPin mosiPin, DigitalInOutPin misoPin, DigitalInOutPin sckPin) {
+    return new CodalSPIProxy(mosiPin, misoPin, sckPin);
 }
 
 }
 
-namespace SpiDeviceMethods {
+namespace SPIDeviceMethods {
 
 //%
-int write(SpiDevice device, int value) {
+int write(SPIDevice device, int value) {
     return device->write(value);
 }
 
 //% 
-void transfer(SpiDevice device, Buffer command, Buffer response) {
+void transfer(SPIDevice device, Buffer command, Buffer response) {
     device->transfer(command, response);
 }
 
 //%
-void setFrequency(SpiDevice device, int frequency) {
+void setFrequency(SPIDevice device, int frequency) {
     device->setFrequency(frequency);
 }
 
 //%
-void setMode(SpiDevice device, int mode) {
+void setMode(SPIDevice device, int mode) {
     device->setMode(mode);
 }
 
@@ -72,16 +72,16 @@ void setMode(SpiDevice device, int mode) {
 
 namespace pins {
 
-static SpiDevice _spi = NULL;
+static SPIDevice _spi = NULL;
 
 
 /**
 * Gets the default SPI driver
 */
 //%
-SpiDevice spi() {
+SPIDevice spi() {
     if (NULL == _spi)
-        _spi = createSpi(LOOKUP_PIN(MOSI), LOOKUP_PIN(MISO), LOOKUP_PIN(SCK));
+        _spi = createSPI(LOOKUP_PIN(MOSI), LOOKUP_PIN(MISO), LOOKUP_PIN(SCK));
     return _spi;
 }
 
