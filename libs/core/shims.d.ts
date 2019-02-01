@@ -239,6 +239,47 @@ declare namespace pins {
 declare namespace pins {
 
     /**
+     * Opens a SPI driver
+     */
+    //% parts=spi shim=pins::createSPI
+    function createSPI(mosiPin: DigitalInOutPin, misoPin: DigitalInOutPin, sckPin: DigitalInOutPin): SPIDevice;
+}
+
+
+declare interface SPIDevice {
+    /**
+     * Write to the SPI bus
+     */
+    //% shim=SPIDeviceMethods::write
+    write(value: int32): int32;
+
+    /**
+     * Transfer buffers over the SPI bus
+     */
+    //% shim=SPIDeviceMethods::transfer
+    transfer(command: Buffer, response: Buffer): void;
+
+    /**
+     * Sets the SPI clock frequency
+     */
+    //% shim=SPIDeviceMethods::setFrequency
+    setFrequency(frequency: int32): void;
+
+    /**
+     * Sets the SPI bus mode
+     */
+    //% shim=SPIDeviceMethods::setMode
+    setMode(mode: int32): void;
+}
+declare namespace pins {
+
+    /**
+     * Gets the default SPI driver
+     */
+    //% shim=pins::spi
+    function spi(): SPIDevice;
+
+    /**
      * Write to the SPI slave and return the response
      * @param value Data to be sent to the SPI slave
      */

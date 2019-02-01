@@ -162,7 +162,7 @@ namespace pxsim.pins {
         // TODO
     }
 
-    export function spi() {
+    export function spi(): SPIDevice {
         const b = board();
         return b.edgeConnectorState.spi;
     }
@@ -174,19 +174,19 @@ namespace pxsim.pins {
 
 namespace pxsim.SPIDeviceMethods {
 
-    export function write(device: pxsim.pins.SPIDevice, value: number) {
+    export function write(device: pxsim.SPIDevice, value: number) {
         return device.write(value);
     }
 
-    export function transfer(device: pxsim.pins.SPIDevice, command: RefBuffer, response: RefBuffer) {
+    export function transfer(device: pxsim.SPIDevice, command: RefBuffer, response: RefBuffer) {
         device.transfer(command, response);
     }
 
-    export function setFrequency(device: pxsim.pins.SPIDevice, frequency: number) {
+    export function setFrequency(device: pxsim.SPIDevice, frequency: number) {
         device.setFrequency(frequency);
     }
 
-    export function setMode(device: pxsim.pins.SPIDevice, mode: number) {
+    export function setMode(device: pxsim.SPIDevice, mode: number) {
         device.setMode(mode);
     }
 }
