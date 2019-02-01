@@ -163,27 +163,52 @@ namespace pxsim.pins {
     }
 
     export class SpiDevice {
+        frequency: number;
+        mode: number;
 
+        constructor(public mosi: DigitalInOutPin, miso: DigitalInOutPin, sck: DigitalInOutPin) {
+            this.frequency = 250000;
+            this.mode = 0;
+        }
+
+        write(value: number) {
+            return 0;
+        }
+    
+        transfer(command: RefBuffer, response: RefBuffer) {
+        }
+    
+        setFrequency(frequency: number) {
+            this.frequency = frequency;
+        }
+    
+        setMode(mode: number) {
+            this.mode = mode;
+        }
+    
     }
 
-    export function createSPI(mosi: number, miso: number, sck: number) {
-        return new SpiDevice();
+    export function createSPI(mosi: DigitalInOutPin, miso: DigitalInOutPin, sck: DigitalInOutPin) {
+        return new SpiDevice(mosi, miso, sck);
     }
 }
 
 namespace pxsim.SpiDeviceMethods {
 
     export function write(device: pxsim.pins.SpiDevice, value: number) {
-        return 0;
+        return device.write(value);
     }
 
     export function transfer(device: pxsim.pins.SpiDevice, command: RefBuffer, response: RefBuffer) {
+        device.transfer(command, response);
     }
 
     export function setFrequency(device: pxsim.pins.SpiDevice, frequency: number) {
+        device.setFrequency(frequency);
     }
 
     export function setMode(device: pxsim.pins.SpiDevice, mode: number) {
+        device.setMode(mode);
     }
 }
 
