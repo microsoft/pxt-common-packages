@@ -306,17 +306,14 @@ namespace lora {
      * Write Packet to send
      **/
     //% weight=45 blockGap=8 
-    //% name.fieldEditor="gridpicker"
-    //% name.fieldOptions.width=220
-    //% name.fieldOptions.columns=4
-    //% blockId="send" block="lora send string %text"
-    export function send(a: string) {
-        if (!a) return;
+    //% blockId="send" block="lora send string $text"
+    export function send(text: string) {
+        if (!text) return;
 
         log('send')
         beginPacket();
 
-        const buf = control.createBufferFromUTF8(a);
+        const buf = control.createBufferFromUTF8(text);
         log(`write payload (${buf.length} bytes)`)
         writeRaw(buf);
 
