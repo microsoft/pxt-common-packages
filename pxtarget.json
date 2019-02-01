@@ -32,6 +32,7 @@
         "libs/jacdac-drivers",
         "libs/jacdac-game",
         "libs/datalogger",
-        "libs/matrix-keypad"
+        "libs/matrix-keypad",
+        "libs/lora"
     ]
 }
