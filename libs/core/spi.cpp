@@ -48,21 +48,33 @@ SPIDevice createSPI(DigitalInOutPin mosiPin, DigitalInOutPin misoPin, DigitalInO
 
 namespace SPIDeviceMethods {
 
+/**
+* Write to the SPI bus
+*/
 //%
 int write(SPIDevice device, int value) {
     return device->write(value);
 }
 
+/**
+* Transfer buffers over the SPI bus
+*/
 //% 
 void transfer(SPIDevice device, Buffer command, Buffer response) {
     device->transfer(command, response);
 }
 
+/**
+* Sets the SPI clock frequency
+*/
 //%
 void setFrequency(SPIDevice device, int frequency) {
     device->setFrequency(frequency);
 }
 
+/**
+* Sets the SPI bus mode
+*/
 //%
 void setMode(SPIDevice device, int mode) {
     device->setMode(mode);
