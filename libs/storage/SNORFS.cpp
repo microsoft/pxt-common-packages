@@ -141,6 +141,8 @@ void FS::format()
     if (files)
         oops();
 
+    LOG("formatting SNORFS");
+
     uint32_t end = flash.numPages() * SPIFLASH_PAGE_SIZE;
     uint16_t rowIdx = 0;
     BlockHeader hd;
@@ -328,7 +330,7 @@ bool FS::readHeaders()
 {
     memset(rowRemapCache, 0xff, numRows);
 
-    BlockHeader hd;
+    static BlockHeader hd; // can't be on stack!
     int freeRow = -1;
     bool freeDirty = false;
     bool freeRandom = false;
@@ -431,6 +433,7 @@ bool FS::tryMount()
         unlock();
         dirptr = 0;
     }
+    LOG("mount SNORFS, rows=%d", numRows);
     return numRows > 0;
 }
 
@@ -573,10 +576,12 @@ File *FS::open(const char *filename, bool create)
     auto page = findMetaEntry(filename);
     if (page == 0)
     {
-        if (create)
+        if (create) {
             page = createMetaPage(filename);
-        else
+        } else {
+            unlock();
             return NULL;
+        }
     }
     auto r = new File(*this, page);
     unlock();
@@ -592,8 +597,8 @@ bool FS::exists(const char *filename)
 }
 
 void FS::lock()
-{
-    while (locked)
+{    
+    while (locked)        
         fiber_wait_for_event(DEVICE_ID_NOTIFY, snorfs_unlocked_event);
     locked = true;
     mount();
@@ -624,6 +629,8 @@ uint16_t FS::findMetaEntry(const char *filename)
     if (buflen > 64)
         oops();
 
+    auto tmp = new uint8_t[buflen];
+
     for (int i = 0; i < numMetaRows; ++i)
     {
         flash.readBytes(indexAddr(i << 8), buf, SPIFLASH_PAGE_SIZE);
@@ -631,16 +638,18 @@ uint16_t FS::findMetaEntry(const char *filename)
         {
             if (buf[j] == h)
             {
-                uint8_t tmp[buflen];
                 uint16_t pageIdx = (i << 8) | j;
                 auto addr = pageAddr(pageIdx);
                 flash.readBytes(addr, tmp, buflen);
-                if (tmp[0] == 1 && memcmp(tmp + 1, filename, buflen - 1) == 0)
+                if (tmp[0] == 1 && memcmp(tmp + 1, filename, buflen - 1) == 0) {
+                    delete tmp;
                     return pageIdx;
+                }
             }
         }
     }
 
+    delete tmp;
     return 0;
 }
 

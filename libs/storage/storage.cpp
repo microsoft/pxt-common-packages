@@ -37,7 +37,6 @@ static WStorage *mountedStorage() {
         return s;
     
     DMESG("formatting storage");
-    
     s->fs.exists("foobar"); // forces mount
     s->mounted = true;
 
@@ -61,7 +60,6 @@ void init() {
     usb.delayStart();
     auto s = getWStorage();
     if (s->mounted) {
-        DMESG("adding MSC");
         usb.add(s->msc);
         s->msc.addFiles();
     }
