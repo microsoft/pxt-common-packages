@@ -116,13 +116,13 @@ namespace lora {
         if (!_spi) {
             log(`using builtin lora pins`);
             _spi = pins.createSPI(
-                pin.getPinCfg(DAL.CFG_PIN_LORAL_MOSI),
-                pin.getPinCfg(DAL.CFG_PIN_LORAL_MISO),
-                pin.getPinCfg(DAL.CFG_PIN_LORAL_SCK)
+                pxt.getPinCfg(DAL.CFG_PIN_LORA_MISO),
+                pxt.getPinCfg(DAL.CFG_PIN_LORA_MISO),
+                pxt.getPinCfg(DAL.CFG_PIN_LORA_SCK)
             );
-            _cs = pins.getPinCfg(DAL.CFG_PIN_LORAL_CS);
-            _boot = pins.getPinCfg(DAL.CFG_PIN_LORAL_BOOT);
-            _rst = pins.getPinCfg(DAL.CFG_PIN_LORAL_RESET);
+            _cs = pxt.getPinCfg(DAL.CFG_PIN_LORA_CS);
+            _boot = pxt.getPinCfg(DAL.CFG_PIN_LORA_BOOT);
+            _rst = pxt.getPinCfg(DAL.CFG_PIN_LORA_RESET);
         }
 
         _cs.digitalWrite(false);

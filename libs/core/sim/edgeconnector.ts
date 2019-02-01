@@ -101,7 +101,7 @@ namespace pxsim {
         frequency: number;
         mode: number;
 
-        constructor(public mosi: DigitalInOutPin, miso: DigitalInOutPin, sck: DigitalInOutPin) {
+        constructor(public mosi: pins.DigitalInOutPin, miso: pins.DigitalInOutPin, sck: pins.DigitalInOutPin) {
             this.frequency = 250000;
             this.mode = 0;
         }
