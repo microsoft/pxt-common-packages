@@ -146,12 +146,15 @@ void ST7735::sendCmd(uint8_t *buf, int len) {
     cs->setDigitalValue(1);
 }
 
-// this is for 120MHz
 static void busy_wait_us(int ms) {
+    target_wait_us(ms);
+    /*
+    // this is for 120MHz
     while (ms--) {
         for (int i = 0; i < 30; ++i)
             asm volatile("nop");
     }
+    */
 }
 
 void ST7735::sendCmdSeq(const uint8_t *buf) {
@@ -235,6 +238,9 @@ void ST7735::drawNumber(int idx, int x, int y, int color) {
 }
 
 static void drawPanic(int code) {
+    if (!LOOKUP_PIN(DISPLAY_MOSI))
+        return;
+
     ST7735 display;
 
     display.init();
