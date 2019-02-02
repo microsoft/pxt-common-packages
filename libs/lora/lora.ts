@@ -512,11 +512,11 @@ namespace lora {
     **/
     //% parts="lora"
     //% group="Configuration"
-    //% blockId=lorasettxpower block="lora set tx power to $level"
-    export function setTxPower(level: number) {
+    //% blockId=lorasettxpower block="lora set tx power to $level dBm"
+    export function setTxPower(level: number, rfo?: boolean) {
         init();
         level = level | 0;
-        if (PA_OUTPUT_RFO_PIN == _outputPin) {
+        if (rfo) {
             // RFO
             if (level < 0) {
                 level = 0;
