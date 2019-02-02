@@ -112,6 +112,14 @@ public:
     ser.send(buffer->data, buffer->length);
   }
 
+  void redirect(DevicePin* tx, DevicePin* rx, BaudRate rate) {
+      ser.redirect(*tx, *rx);
+      setBaudRate(rate);
+  }
+
+  void onEvent(SerialEvent event, Action handler) {
+    registerWithDal(ser.id, (int)event, handler);
+  }
 };
 
 typedef CodalSerialDeviceProxy* SerialDevice;
@@ -120,8 +128,12 @@ typedef CodalSerialDeviceProxy* SerialDevice;
 * Opens a Serial communication driver
 */
 //% parts=serial
-SerialDevice createSerial(DigitalInOutPin tx, DigitalInOutPin rx) {
-    return new CodalSerialDeviceProxy(tx, rx);
+SerialDevice createSerial(DigitalInOutPin tx, DigitalInOutPin rx, int id) {
+  auto txSize = !!tx ? CODAL_SERIAL_DEFAULT_BUFFER_SIZE : 0;
+  auto txSize = !!rx ? CODAL_SERIAL_DEFAULT_BUFFER_SIZE : 0;
+  if (!id)
+    id = allocateNotifyEvent();
+  return new CodalSerialDeviceProxy(tx, rx, txSize, rxSize, id);
 }
 
 }
@@ -174,6 +186,21 @@ namespace SerialDeviceMethods {
   void writeBuffer(SerialDevice device, Buffer buffer) {
     device->writeBuffer(buffer);
   }
+  
+  /**
+  */
+  //%
+  void redirect(SerialDevice device, DigitalInOutPin tx, DigitalInOutPin rx, BaudRate rate) {
+    device->redirect(tx, rx, rate);
+  }
+
+  /**
+  * Register code when a serial event occurs
+  */
+  //%
+  void onEvent(SerialDevice device, SerialEvent event, Action handler) {
+    device->onEvent(event, handler);
+  }
 }
 
 namespace pxt {
@@ -181,7 +208,7 @@ namespace pxt {
     public:
       SerialDevice serial;
       WSerial()
-        : serial(serial::createSerial(LOOKUP_PIN(TX), LOOKUP_PIN(RX)))
+        : serial(serial::createSerial(LOOKUP_PIN(TX), LOOKUP_PIN(RX), DEVICE_ID_SERIAL))
         {}
   };
 
@@ -189,121 +216,15 @@ SINGLETON_IF_PIN(WSerial,TX);
 }
 
 namespace serial {
-    /**
-    * Sets the size of the RX buffer in bytes
-    */
-    //% help=serial/set-rx-buffer-size
-    //% blockId=serialsetrxbuffersize block="serial set rx buffer size to $size"
-    //% weight=10
-    //% group="Configuration"
-    void setRxBufferSize(uint8_t size) {
-      auto service = getWSerial();
-      if (!service) return;
-      service->serial->setRxBufferSize(size);
-    }
 
-    /**
-    * Sets the size of the TX buffer in bytes
-    */
-    //% help=serial/set-tx-buffer-size
-    //% blockId=serialsettxbuffersize block="serial set tx buffer size to $size"
-    //% weight=9
-    //% group="Configuration"
-    void setTxBufferSize(uint8_t size) {
-      auto service = getWSerial();
-      if (!service) return;
-      service->serial->setTxBufferSize(size);
-    }
-
-    /**
-    * Reads a single byte from the serial receive buffer. Negative if error, 0 if no data.
-    */
-    //% Group="Read"
-    int read() {
-      auto service = getWSerial();
-      if (!service) return DEVICE_NOT_SUPPORTED;
-      return service->serial->read();
-    }
-
-    /**
-    * Read the buffered received data as a buffer
-    */
-    //% help=serial/read-buffer
-    //% blockId=serial_read_buffer block="serial|read buffer"
-    //% weight=17
-    //% group="Read"
-    Buffer readBuffer() {
-      auto service = getWSerial();
-      if (!service) return mkBuffer(NULL, 0);
-      return service->serial->readBuffer();
-    }
-
-    void send(const char* buffer, int length) {
-      auto service = getWSerial();
-      service->serial->ser.send((uint8_t*)buffer, length);
-    }
-
-    /**
-    * Send a buffer across the serial connection.
-    */
-    //% help=serial/write-buffer weight=6
-    //% blockId=serial_writebuffer block="serial|write buffer %buffer"
-    //% group="Write"
-    void writeBuffer(Buffer buffer) {
-      auto service = getWSerial();
-      if (!service) return;
-      if (NULL == buffer) return;
-      service->serial->writeBuffer(buffer);
-    }
-
-    /**
-      Sends the console message through the TX, RX pins
-      **/
-    //% blockId=serialsendtoconsole block="serial attach to console"
-    //% group="Configuration"
-    void attachToConsole() {
-      auto service = getWSerial();
-      if (!service) return;
-      setSendToUART(serial::send);
-    }
-
-    /**
-    Set the baud rate of the serial port
-    */
-    //% weight=10
-    //% blockId=serial_setbaudrate block="serial|set baud rate %rate"
-    //% blockGap=8 inlineInputMode=inline
-    //% help=serial/set-baud-rate
-    //% group="Configuration"
-    void setBaudRate(BaudRate rate) {
-      auto service = getWSerial();
-      if (!service) return;
-      service->serial->setBaudRate(rate);
-    }
-
-    /**
-    * Set the serial input and output to use pins instead of the USB connection.
-    * @param tx the new transmission pin
-    * @param rx the new reception pin
-    * @param rate the new baud rate
-    */
-    //% weight=10
-    //% help=serial/redirect
-    //% blockId=serial_redirect block="serial|redirect to|TX %tx|RX %rx"
-    //% tx.fieldEditor="gridpicker" tx.fieldOptions.columns=3
-    //% tx.fieldOptions.tooltips="false"
-    //% rx.fieldEditor="gridpicker" rx.fieldOptions.columns=3
-    //% rx.fieldOptions.tooltips="false"
-    //% blockGap=8 inlineInputMode=inline
-    //% group="Configuration"
-    void redirect(DigitalInOutPin tx, DigitalInOutPin rx, BaudRate rate) {
-      auto service = getWSerial();
-      if (!service) return;
-      if (NULL == tx || NULL == rx)
-        return;
-      service->serial->ser.redirect(*tx, *rx);
-      setBaudRate(rate);
-    }
+/**
+* Gets the default serial interface if any
+*/
+//%
+SerialDevice device() {
+  auto service = getWSerial();
+  return service ? service->serial : NULL;
+}
 
     /**
     * Registers code when a delimiter is received
@@ -320,20 +241,5 @@ namespace serial {
       registerWithDal(id, CODAL_SERIAL_EVT_DELIM_MATCH, handler);
       ManagedString d((char)delimiter);
       service->serial->ser.eventOn(d);
-    }
-
-    /**
-    * Registers code when serial events happen
-    **/
-    //% weight=9
-    //% help=serial/on-event
-    //% blockId=serial_onevent block="serial on %event"
-    //% blockGap=8
-    //% group="Events"
-    void onEvent(SerialEvent event, Action handler) {
-      auto service = getWSerial();
-      if (!service) return;
-      auto id = service->serial->ser.id;
-      registerWithDal(id, (int)event, handler);
     }
 }

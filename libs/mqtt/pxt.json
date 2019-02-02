@@ -4,7 +4,7 @@
     "files": [
         "README.md",
         "net.ts",
-        "uartnet.ts",
+        "esp8266.ts",
         "micro-mqtt.ts",
         "azureiot.ts"
     ],

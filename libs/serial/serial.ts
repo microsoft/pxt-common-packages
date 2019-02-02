@@ -116,4 +116,141 @@ namespace serial {
         writeNumber(value);
         writeString(NEW_LINE);
     }
+
+    /**
+    * Sets the size of the RX buffer in bytes
+    */
+    //% help=serial/set-rx-buffer-size
+    //% blockId=serialsetrxbuffersize block="serial set rx buffer size to $size"
+    //% weight=10
+    //% group="Configuration"
+    export function setRxBufferSize(size: number) {
+        const ser = device();
+        if (ser)
+            ser.setRxBufferSize(size);
+    }
+
+    /**
+    * Sets the size of the TX buffer in bytes
+    */
+    //% help=serial/set-tx-buffer-size
+    //% blockId=serialsettxbuffersize block="serial set tx buffer size to $size"
+    //% weight=9
+    //% group="Configuration"
+    export function setTxBufferSize(size: number) {
+        const ser = device();
+        if (ser)
+            ser.setTxBufferSize(size);
+    }
+
+    /**
+    * Reads a single byte from the serial receive buffer. Negative if error, 0 if no data.
+    */
+    //% Group="Read"
+    export function read(): number {
+        const ser = device();
+        if (ser)
+            return ser.read();
+        else return DAL.DEVICE_NOT_SUPPORTED;
+    }
+
+    /**
+    * Read the buffered received data as a buffer
+    */
+    //% help=serial/read-buffer
+    //% blockId=serial_read_buffer block="serial|read buffer"
+    //% weight=17
+    //% group="Read"
+    export function readBuffer(): Buffer {
+        const ser = device();
+        if (ser)
+            return ser.readBuffer();
+        else
+            return control.createBuffer(0);
+    }
+
+
+    /**
+    * Send a buffer across the serial connection.
+    */
+    //% help=serial/write-buffer weight=6
+    //% blockId=serial_writebuffer block="serial|write buffer %buffer"
+    //% group="Write"
+    export function writeBuffer(buffer: Buffer) {
+        const ser = device();
+        if (!ser) return;
+        ser.writeBuffer(buffer);
+    }
+
+
+    /**
+    Set the baud rate of the serial port
+    */
+    //% weight=10
+    //% blockId=serial_setbaudrate block="serial|set baud rate %rate"
+    //% blockGap=8 inlineInputMode=inline
+    //% help=serial/set-baud-rate
+    //% group="Configuration"
+    export function setBaudRate(rate: BaudRate) {
+        const ser = device();
+        if (!ser) return;
+        ser.setBaudRate(rate);
+    }
+
+
+    /**
+      Sends the console message through the TX, RX pins
+      **/
+    //% blockId=serialsendtoconsole block="serial attach to console"
+    //% group="Configuration"
+    export function attachToConsole() {
+        const ser = device();
+        if (!ser) return;
+        console.addListener(logListener)
+    }
+
+    function logListener(priority: ConsolePriority, text: string) {
+        switch (priority) {
+            case ConsolePriority.Debug: writeString("dbg> "); break;
+            case ConsolePriority.Error: writeString("err> "); break;
+            case ConsolePriority.Warning: writeString("wrn> "); break;
+        }
+        writeLine(text);
+    }
+
+
+    /**
+    * Set the serial input and output to use pins instead of the USB connection.
+    * @param tx the new transmission pin
+    * @param rx the new reception pin
+    * @param rate the new baud rate
+    */
+    //% weight=10
+    //% help=serial/redirect
+    //% blockId=serial_redirect block="serial|redirect to|TX %tx|RX %rx"
+    //% tx.fieldEditor="gridpicker" tx.fieldOptions.columns=3
+    //% tx.fieldOptions.tooltips="false"
+    //% rx.fieldEditor="gridpicker" rx.fieldOptions.columns=3
+    //% rx.fieldOptions.tooltips="false"
+    //% blockGap=8 inlineInputMode=inline
+    //% group="Configuration"
+    export function redirect(tx: DigitalInOutPin, rx: DigitalInOutPin, rate: BaudRate) {
+        const ser = device();
+        if (!ser) return;
+        ser.redirect(tx, rx, rate);
+    }
+
+    /**
+* Registers code when serial events happen
+**/
+    //% weight=9
+    //% help=serial/on-event
+    //% blockId=serial_onevent block="serial on %event"
+    //% blockGap=8
+    //% group="Events"
+    export function onEvent(event: SerialEvent, handler: () => void) {
+        const ser = device();
+        if (!ser) return;
+        ser.onEvent(event, handler);
+    }
 }

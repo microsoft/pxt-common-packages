@@ -1,13 +1,5 @@
 namespace net {
-    export let logPriority = ConsolePriority.Silent;
-    function log(msg: string) {
-        console.add(logPriority, `wifi: ` + msg);
-    }
-
-    export interface UART {
-        write(buffer: Buffer): void;
-        readLine(): Buffer;
-    }
+    // https://www.espressif.com/sites/default/files/documentation/4a-esp8266_at_instruction_set_en.pdf    
 
     export const enum APSecurity {
         Open = 1,
@@ -23,32 +15,71 @@ namespace net {
         Event
     }
 
-    export class ATProtocol {
-        public uart: UART;
+    export class ESP8266ATCommandDevice {
+        private ser: SerialDevice;
         private _info: string;
-
-        constructor(uart: UART) {
-            this.uart = uart;
+        constructor(ser: SerialDevice) {
+            this.ser = ser;
         }
 
         get info() {
             return this._info;
         }
 
+        private readLine(): string {
+            const decoder = new UTF8Decoder();
+            let s: string;
+            do {
+                decoder.add(this.ser.readBuffer());
+                // \n
+            } while ((s = decoder.decodeUntil(10)) === undefined);
+            return s;
+        }
+
+        private readResponse(marker?: string): string[] {
+            if (!marker) marker = "OK";
+            let r: string[] = [];
+            do {
+                const l = this.readLine();
+                if (l == marker)
+                    break;
+                r.push(l);
+            } while(true);
+            return r;
+        }
+
+        test(command: string) {
+            const msg = `AT+${command}=?`;
+            const buf = control.createBufferFromUTF8(msg);
+            this.ser.writeBuffer(buf);
+            return this.readResponse();
+        }
+
+        query(command: string) {
+            const msg = `AT+${command}?`;
+            const buf = control.createBufferFromUTF8(msg);
+            this.ser.writeBuffer(buf);
+            return this.readResponse();
+        }
+
+        set(command: string, args: string[]) {
+            const msg = `AT+${command}=${args.join(',')}`;
+            const buf = control.createBufferFromUTF8(msg);
+            this.ser.writeBuffer(buf);
+            return this.readResponse();
+        }
+
+        exec(command: string) {
+            const msg = `AT+${command}`;
+            const buf = control.createBufferFromUTF8(msg);
+            this.ser.writeBuffer(buf);
+            return this.readResponse();
+        }
+
         public start(): boolean {
             if (!this._info) {
-                this.uart.write(hex`11111111`);
-                const r = this.read("AT");
-                switch (r.status) {
-                    case ATResponseStatus.Ok:
-                        this._info = r.data;
-                        log(`started`);
-                        break;
-                    case ATResponseStatus.Error:
-                        this._info = undefined;
-                        log(`error: ${r.errorCode}`);
-                        break;
-                }
+                const r = this.exec("GMR");
+                this.info = r.join(', ')
             }
             return !!this._info;
         }
