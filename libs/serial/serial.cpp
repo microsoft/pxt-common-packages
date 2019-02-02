@@ -120,6 +120,12 @@ public:
   void onEvent(SerialEvent event, Action handler) {
     registerWithDal(ser.id, (int)event, handler);
   }
+
+  void onDelimiterReceived(Delimiters delimiter, Action handler) {
+    registerWithDal(ser.id, CODAL_SERIAL_EVT_DELIM_MATCH, handler);
+    ManagedString d((char)delimiter);
+    ser.eventOn(d);
+  }
 };
 
 typedef CodalSerialDeviceProxy* SerialDevice;
@@ -201,6 +207,14 @@ namespace SerialDeviceMethods {
   void onEvent(SerialDevice device, SerialEvent event, Action handler) {
     device->onEvent(event, handler);
   }
+
+  /**
+  * Registers code when a delimiter is received
+  **/
+  //%
+  void onDelimiterReceived(SerialDevice device, Delimiters delimiter, Action handler) {
+    device->onDelimiterReceived(delimiter, handler);
+  }
 }
 
 namespace pxt {
@@ -225,21 +239,4 @@ SerialDevice device() {
   auto service = getWSerial();
   return service ? service->serial : NULL;
 }
-
-    /**
-    * Registers code when a delimiter is received
-    **/
-    //% weight=10
-    //% help=serial/on-delimiter-received
-    //% blockId=serial_ondelimiter block="serial on delimiter $delimiter received"
-    //% blockGap=8
-    //% group="Events"
-    void onDelimiterReceived(Delimiters delimiter, Action handler) {
-      auto service = getWSerial();
-      if (!service) return;
-      auto id = service->serial->ser.id;
-      registerWithDal(id, CODAL_SERIAL_EVT_DELIM_MATCH, handler);
-      ManagedString d((char)delimiter);
-      service->serial->ser.eventOn(d);
-    }
 }

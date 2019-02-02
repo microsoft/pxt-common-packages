@@ -241,8 +241,8 @@ namespace serial {
     }
 
     /**
-* Registers code when serial events happen
-**/
+    * Registers code when serial events happen
+    **/
     //% weight=9
     //% help=serial/on-event
     //% blockId=serial_onevent block="serial on %event"
@@ -252,5 +252,19 @@ namespace serial {
         const ser = device();
         if (!ser) return;
         ser.onEvent(event, handler);
+    }
+
+    /**
+    * Registers code when a delimiter is received
+    **/
+    //% weight=10
+    //% help=serial/on-delimiter-received
+    //% blockId=serial_ondelimiter block="serial on delimiter $delimiter received"
+    //% blockGap=8
+    //% group="Events"
+    export function onDelimiterReceived(delimiter: Delimiters, handler: () => void) {
+        const ser = device();
+        if (!ser) return;
+        ser.onEvent(delimiter, handler);
     }
 }
