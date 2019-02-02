@@ -55,19 +55,137 @@ enum class Delimiters {
     Pipe = 124 // `|`,
 };
 
+namespace serial {
+
+class CodalSerialDeviceProxy {
+public:
+  CODAL_SERIAL ser;
+  CodalSerialProxy(DevicePin* tx, DevicePin* rx)
+        : ser(*tx, *rx) 
+  {
+    ser.setBaud((int)BaudRate::BaudRate115200);
+  }
+
+  void setRxBufferSize(uint8_t size) {
+    ser.setRxBufferSize(size);
+  }
+
+  void setTxBufferSize(uint8_t size) {
+    ser.setTxBufferSize(size);
+  }
+
+  void setBaudRate(BaudRate rate) {
+    ser.setBaud((int)rate);
+  }
+
+  int read() {
+    uint8_t buf[1];
+    auto r = ser.read(buf, 1, codal::SerialMode::ASYNC);
+    // r < 0 => error
+    if (r < 0) return r;
+    // r == 0, nothing read
+    if (r == 0) return DEVICE_NO_DATA;
+    // read 1 char
+    return buf[0];
+  }
+
+  Buffer readBuffer() {
+    int n = ser.getRxBufferSize();
+    // n maybe 0 but we still call read to force 
+    // to initialize rx
+    auto buf = mkBuffer(NULL, n);
+    auto read = ser.read(buf->data, buf->length, SerialMode::ASYNC);
+    if (read == DEVICE_SERIAL_IN_USE || read == 0) { // someone else is reading
+      decrRC(buf);
+      return mkBuffer(NULL, 0);
+    }
+    if (buf->length != read) {
+      auto buf2 = mkBuffer(buf->data, read);
+      decrRC(buf);
+      buf = buf2;
+    }
+    return buf;
+  }
+
+  void writeBuffer(Buffer buffer) {
+    if (NULL == buffer) return;
+    ser.send(buffer->data, buffer->length);
+  }
+
+}
+
+typedef CodalSerialDevice* SerialDevice;
+
+/**
+* Opens a Serial communication driver
+*/
+//% parts=sreial
+SerialDevice createSerial(DigitalInOutPin tx, DigitalInOutPin rx) {
+    return new CodalSerialProxy(tx, rx);
+}
+
+}
+
+namespace SerialDeviceMethods {
+  /**
+  * Sets the size of the RX buffer in bytes
+  */
+  //%
+  void setRxBufferSize(SerialDevice device, uint8_t size) {
+    device->setRxBufferSize(size);
+  }
+
+  /**
+  * Sets the size of the TX buffer in bytes
+  */
+  //%
+  void setTxBufferSize(SerialDevice device, uint8_t size) {
+    device->setTxBufferSize(size);
+  }
+
+  /**
+  Set the baud rate of the serial port
+  */
+  //%
+  void setBaudRate(SerialDevice device, BaudRate rate) {
+    device->setBaudRate(rate);
+  }
+
+  /**
+  * Reads a single byte from the serial receive buffer. Negative if error, 0 if no data.
+  */
+  //%
+  int read(SerialDevice device) {
+    return device->read();
+  }
+
+  /**
+  * Read the buffered received data as a buffer
+  */
+  //%
+  Buffer readBuffer(SerialDevice device) {
+    return device->readBuffer();
+  }
+
+  /**
+  * Send a buffer across the serial connection.
+  */
+  //%
+  void writeBuffer(SerialDevice device, Buffer buffer) {
+    device->writeBuffer(buffer);
+  }
+}
+
 namespace pxt {
   class WSerial {
     public:
-      CODAL_SERIAL serial;
+      SerialDevice serial;
       WSerial()
-        : serial(*LOOKUP_PIN(TX), *LOOKUP_PIN(RX))
-        {
-          serial.setBaud((int)BaudRate::BaudRate115200);
-        }
+        : serial(serial::createSerial(LOOKUP_PIN(TX), LOOKUP_PIN(RX)))
+        {}
   };
 
 SINGLETON_IF_PIN(WSerial,TX);
-
 }
 
 namespace serial {
@@ -81,8 +199,7 @@ namespace serial {
     void setRxBufferSize(uint8_t size) {
       auto service = getWSerial();
       if (!service) return;
-
-      service->serial.setRxBufferSize(size);
+      service->serial->setRxBufferSize(size);
     }
 
     /**
@@ -95,8 +212,7 @@ namespace serial {
     void setTxBufferSize(uint8_t size) {
       auto service = getWSerial();
       if (!service) return;
-
-      service->serial.setTxBufferSize(size);
+      service->serial->setTxBufferSize(size);
     }
 
     /**
@@ -106,15 +222,7 @@ namespace serial {
     int read() {
       auto service = getWSerial();
       if (!service) return DEVICE_NOT_SUPPORTED;
-
-      uint8_t buf[1];
-      auto r = service->serial.read(buf, 1, codal::SerialMode::ASYNC);
-      // r < 0 => error
-      if (r < 0) return r;
-      // r == 0, nothing read
-      if (r == 0) return DEVICE_NO_DATA;
-      // read 1 char
-      return buf[0];
+      return service->serial->read();
     }
 
     /**
@@ -127,26 +235,12 @@ namespace serial {
     Buffer readBuffer() {
       auto service = getWSerial();
       if (!service) return mkBuffer(NULL, 0);
-      int n = service->serial.getRxBufferSize();
-      // n maybe 0 but we still call read to force 
-      // to initialize rx
-      auto buf = mkBuffer(NULL, n);
-      auto read = service->serial.read(buf->data, buf->length, SerialMode::ASYNC);
-      if (read == DEVICE_SERIAL_IN_USE || read == 0) { // someone else is reading
-        decrRC(buf);
-        return mkBuffer(NULL, 0);
-      }
-      if (buf->length != read) {
-        auto buf2 = mkBuffer(buf->data, read);
-        decrRC(buf);
-        buf = buf2;
-      }
-      return buf;
+      return service->serial->readBuffer();
     }
 
     void send(const char* buffer, int length) {
       auto service = getWSerial();
-      service->serial.send((uint8_t*)buffer, length);
+      service->serial->ser.send((uint8_t*)buffer, length);
     }
 
     /**
@@ -159,7 +253,7 @@ namespace serial {
       auto service = getWSerial();
       if (!service) return;
       if (NULL == buffer) return;
-      service->serial.send(buffer->data, buffer->length);
+      service->serial->writeBuffer(buffer);
     }
 
     /**
@@ -184,7 +278,7 @@ namespace serial {
     void setBaudRate(BaudRate rate) {
       auto service = getWSerial();
       if (!service) return;
-      service->serial.setBaud((int)rate);
+      service->serial->setBaudRate((int)rate);
     }
 
     /**
@@ -207,7 +301,7 @@ namespace serial {
       if (!service) return;
       if (NULL == tx || NULL == rx)
         return;
-      service->serial.redirect(*tx, *rx);
+      service->serial->ser.redirect(*tx, *rx);
       setBaudRate(rate);
     }
 
@@ -225,7 +319,7 @@ namespace serial {
       auto id = service->serial.id;
       registerWithDal(id, CODAL_SERIAL_EVT_DELIM_MATCH, handler);
       ManagedString d((char)delimiter);
-      service->serial.eventOn(d);
+      service->serial->ser.eventOn(d);
     }
 
     /**
@@ -239,7 +333,7 @@ namespace serial {
     void onEvent(SerialEvent event, Action handler) {
       auto service = getWSerial();
       if (!service) return;
-      auto id = service->serial.id;
+      auto id = service->serial->ser.id;
       registerWithDal(id, (int)event, handler);
     }
 }

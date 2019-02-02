@@ -78,10 +78,11 @@ void set_usb_strings(const char *uf2_info);
 
 namespace pins {
 class CodalSPIProxy;
+class CodalSerialProxy;
 } // namespace pins
 
 typedef pins::CodalSPIProxy* SPIDevice;
-
+typedef pins::CodalSerialProxy* SerialDevice;
 
 namespace jacdac {
 class JDProxyDriver;
