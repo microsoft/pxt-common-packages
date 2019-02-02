@@ -155,4 +155,25 @@ void updateScreen(Image_ img) {
 void updateStats(String msg) {
     // ignore...
 }
+
+
+//%
+void getUnicode(int ch, Buffer buf) {
+	// this function is target dependent
+    auto display = getWDisplay();
+    display->lcd.waitForSendDone();
+	/*
+    if (!display->fsMounted){
+        int ret = display->fs.mount();
+        if (ret == 0){
+            display->fp = display->fs.open("/unicode12.bin", 0x1);
+            display->fsMounted = true;
+        }
+    }
+    DMESG("show unicode %x", ch);
+    uint32_t bias = ch*24;
+    display->fp->seek(bias);
+    display->fp->read(buf->data, 24);
+	*/
+}
 } // namespace pxt

@@ -486,6 +486,31 @@ namespace pxsim.ImageMethods {
         }
     }
 
+    export function drawUnicode(img: RefImage, ch: number, x: number, y: number, color: number) {
+        img.makeWritable()
+        const canvas = document.createElement("canvas")
+        const ctx = canvas.getContext("2d");
+        ctx.font = "12px WenQuanYi";
+        ctx.fillStyle = "white";
+        canvas.width = 12;
+        canvas.height = 12;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillText(String.fromCharCode(ch), 0, 11);
+        let data32 = new Uint32Array(ctx.getImageData(0, 0, canvas.width, canvas.height).data.buffer);
+        for (let i = 0; i < data32.length; i++) {
+            if (data32[i] & 0xE0000000) {
+                let px = (i % canvas.width);
+                let py = ((i / canvas.width) | 0);
+                img.data[img.pix(x+px, y+py)] = img.color(color)
+            }
+        }
+        // console.log("draw unicode", ch, x, y);
+    }
+
+    export function _drawUnicode(img: RefImage, ch: number, xy: number, color: number) {
+        drawUnicode(img, ch, XX(xy), YY(xy), color)
+    }
+
     export function drawIcon(img: RefImage, icon: RefBuffer, x: number, y: number, color: number) {
         const img2 = icon.data
         if (!img2 || img2.length < 5 || img2[0] != 0xe1)

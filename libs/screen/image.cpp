@@ -131,7 +131,7 @@ bool isValidImage(Buffer buf) {
 
     return true;
 }
-
+void getUnicode(int ch, Buffer buf);
 } // namespace pxt
 
 namespace ImageMethods {
@@ -869,6 +869,30 @@ void _drawIcon(Image_ img, Buffer icon, int xy, int c) {
     drawImageCore(img, ii, XX(xy), YY(xy), c);
     decrRC(ii);
 }
+
+//%
+void _drawUnicode(Image_ img, int ch, int xy, int c){
+    int x = XX(xy);
+    int y = YY(xy);
+    Buffer buf = mkBuffer(NULL, 32);
+    uint8_t * b = buf->data;
+    getUnicode(ch, buf);
+    for (int i=0;i<24;i+=2){
+        for (int j=7;j>-1;j--){
+            if ((b[i]>>j) & 0x1){
+                setPixel(img, x+7-j, y, c);
+            }
+        }
+        for (int j=7;j>-1;j--){
+            if ((b[i+1]>>j) & 0x1){
+                setPixel(img, x+8+7-j, y, c);
+            }
+        }
+        y+=1;
+    }
+
+}
+
 
 static void drawLineLow(Image_ img, int x0, int y0, int x1, int y1, int c) {
     int dx = x1 - x0;

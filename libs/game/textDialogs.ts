@@ -13,10 +13,17 @@ enum DialogLayout {
     Full
 }
 
+enum FontType {
+    //% block=8px
+    font8,
+    //% block=12px
+    font12
+}
+
 namespace game {
     let dialogFrame: Image;
     let dialogCursor: Image;
-    let dialogFont: image.Font;
+    export let dialogFont: image.Font;
     let dialogTextColor: number;
 
     export class BaseDialog {
@@ -40,7 +47,7 @@ namespace game {
 
             this.frame = frame || dialogFrame || (dialogFrame = defaultFrame());
 
-            this.font = font || dialogFont || (dialogFont = image.font8);
+            this.font = dialogFont || font || (dialogFont = image.font8);
 
             this.cursor = cursor || dialogCursor || (dialogCursor = defaultCursorImage());
 
@@ -287,7 +294,7 @@ namespace game {
         maxSubOffset: number;
 
         constructor(width: number, height: number) {
-            super(width, height, defaultSplashFrame(), image.font8)
+            super(width, height, defaultSplashFrame())
             this.maxOffset = -1;
             this.maxSubOffset = -1;
             this.textColor = 1;
@@ -561,8 +568,20 @@ namespace game {
         dialogTextColor = Math.floor(Math.min(15, Math.max(0, color)));
     }
 
-    export function setDialogFont(font: image.Font) {
-        dialogFont = font;
+    /**
+     * Set font size, 12px will support unicode characters
+     *
+     * @param font the font type
+     */
+    //% blockId=game_dialog_set_dialog_font group="Dialogs"
+    //% block="set dialog font to %font"
+    export function setDialogFont(font: FontType) {
+        if (font === FontType.font8){
+            dialogFont = image.font8;
+        } else {
+            dialogFont = image.font12;
+        }
+        
     }
 
     /**

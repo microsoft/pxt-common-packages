@@ -169,6 +169,13 @@ f3000c12130d0000 04010e05051e1000 05010609191f0800 06010c1213131200 07010c121313
 19010e151d1a0000 41011f1412100000 4201100f14120000 43011f0205081f00 44011e03031c0000 5a0110140b030200
 5b0110140b030000 7901121a17130000 7a01121a17130000 7b01121b17120000 7c01121b17120000`,
     }
+
+    //% whenUsed
+    export const font12: Font = {
+        charWidth: 12,
+        charHeight: 12,
+        data: hex``
+    }
 }
 
 interface Image {
@@ -218,6 +225,13 @@ namespace helpers {
 
             if (ch < 32)
                 continue // skip control chars
+
+            // draw unicode, font load from somewhere elese
+            if (font == image.font12){
+                img.drawUnicode(ch, x, y, color);
+                x += font.charWidth
+                continue
+            }
 
             // decompose Korean characters
             let arr = [ch]
