@@ -60,8 +60,8 @@ namespace serial {
 class CodalSerialDeviceProxy {
 public:
   CODAL_SERIAL ser;
-  CodalSerialProxy(DevicePin* tx, DevicePin* rx)
-        : ser(*tx, *rx) 
+  CodalSerialDeviceProxy(DevicePin* tx, DevicePin* rx)
+    : ser(*tx, *rx) 
   {
     ser.setBaud((int)BaudRate::BaudRate115200);
   }
@@ -112,16 +112,16 @@ public:
     ser.send(buffer->data, buffer->length);
   }
 
-}
+};
 
-typedef CodalSerialDevice* SerialDevice;
+typedef CodalSerialDeviceProxy* SerialDevice;
 
 /**
 * Opens a Serial communication driver
 */
-//% parts=sreial
+//% parts=serial
 SerialDevice createSerial(DigitalInOutPin tx, DigitalInOutPin rx) {
-    return new CodalSerialProxy(tx, rx);
+    return new CodalSerialDeviceProxy(tx, rx);
 }
 
 }
@@ -278,7 +278,7 @@ namespace serial {
     void setBaudRate(BaudRate rate) {
       auto service = getWSerial();
       if (!service) return;
-      service->serial->setBaudRate((int)rate);
+      service->serial->setBaudRate(rate);
     }
 
     /**
@@ -316,7 +316,7 @@ namespace serial {
     void onDelimiterReceived(Delimiters delimiter, Action handler) {
       auto service = getWSerial();
       if (!service) return;
-      auto id = service->serial.id;
+      auto id = service->serial->ser.id;
       registerWithDal(id, CODAL_SERIAL_EVT_DELIM_MATCH, handler);
       ManagedString d((char)delimiter);
       service->serial->ser.eventOn(d);
