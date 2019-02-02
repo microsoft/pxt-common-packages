@@ -60,9 +60,12 @@ namespace serial {
 class CodalSerialDeviceProxy {
 public:
   CODAL_SERIAL ser;
-  CodalSerialDeviceProxy(DevicePin* tx, DevicePin* rx)
-    : ser(*tx, *rx) 
+  CodalSerialDeviceProxy(DevicePin* tx, DevicePin* rx, uint16_t id)
+    : ser(*tx, *rx)
   {
+    if (!id)
+      id = allocateNotifyEvent();
+    ser.id = id;
     ser.setBaud((int)BaudRate::BaudRate115200);
   }
 
@@ -135,11 +138,7 @@ typedef CodalSerialDeviceProxy* SerialDevice;
 */
 //% parts=serial
 SerialDevice createSerial(DigitalInOutPin tx, DigitalInOutPin rx, int id) {
-  auto txSize = !!tx ? CODAL_SERIAL_DEFAULT_BUFFER_SIZE : 0;
-  auto txSize = !!rx ? CODAL_SERIAL_DEFAULT_BUFFER_SIZE : 0;
-  if (!id)
-    id = allocateNotifyEvent();
-  return new CodalSerialDeviceProxy(tx, rx, txSize, rxSize, id);
+  return new CodalSerialDeviceProxy(tx, rx, id);
 }
 
 }
