@@ -696,4 +696,13 @@ namespace lora {
         if (on) v = v | 0x04; else v = v & 0xfb;
         writeRegister(REG_MODEM_CONFIG_2, v);
     }
+
+    export function dumpRegisters() {
+        init();
+        const buf = control.createBuffer(128);
+        for (let i = 0; i < buf.length; i++) {
+            buf[i] = readRegister(i);
+        }
+        console.log(buf.toHex());
+    }
 }
