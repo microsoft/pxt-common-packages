@@ -81,7 +81,7 @@ namespace pxsim {
 
         onEvent(ev: number, handler: RefAction) {
             const b = board();
-            switch(ev) {
+            switch (ev) {
                 case DAL.DEVICE_PIN_EVT_PULSE_HI:
                 case DAL.DEVICE_PIN_EVT_PULSE_LO:
                     this.eventMode = DAL.DEVICE_PIN_EVENT_ON_PULSE;
@@ -109,28 +109,31 @@ namespace pxsim {
         write(value: number) {
             return 0;
         }
-    
+
         transfer(command: RefBuffer, response: RefBuffer) {
         }
-    
+
         setFrequency(frequency: number) {
             this.frequency = frequency;
         }
-    
+
         setMode(mode: number) {
             this.mode = mode;
         }
-    
+
     }
 
     export interface EdgeConnectorProps {
         pins: number[];
-        servos?: { [name: string]: number; }
+        servos?: {
+            [name: string]: number;
+        }
     }
 
     export class EdgeConnectorState {
         pins: Pin[];
         private _spi: SPIDevice;
+        private _serial: SerialDevice;
 
         constructor(public props: EdgeConnectorProps) {
             this.pins = props.pins.map(id => id != undefined ? new Pin(id) : null);
@@ -144,6 +147,12 @@ namespace pxsim {
             if (!this._spi)
                 this._spi = pxsim.pins.createSPI(undefined, undefined, undefined);
             return this._spi;
+        }
+
+        get serial(): SerialDevice {
+            if (!this._serial)
+                this._serial = pxsim.serial.createSerial(undefined, undefined, DAL.DEVICE_ID_SERIAL);
+            return this._serial;
         }
     }
 

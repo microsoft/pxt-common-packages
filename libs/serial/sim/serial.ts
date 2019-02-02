@@ -1,65 +1,99 @@
+namespace pxsim {
+    export class SerialDevice {
+        private baudRate: number;
+        private rxBuffer: RefBuffer;
+        private txBuffer: RefBuffer;
+
+        constructor(private tx: pins.DigitalInOutPin, private rx: pins.DigitalInOutPin, private id: number) {
+            this.baudRate = 115200;
+            this.setRxBufferSize(64);
+            this.setTxBufferSize(64);
+        }
+
+        setTxBufferSize(size: number) {
+            this.txBuffer = control.createBuffer(size);
+        }
+
+        setRxBufferSize(size: number) {
+            this.rxBuffer = control.createBuffer(size);
+        }
+
+        read(): number {
+            return -1;
+        }
+
+        readBuffer(): RefBuffer {
+            const buf = control.createBuffer(0);
+            return buf;
+        }
+
+        writeBuffer(buffer: any) {
+        }
+
+        setBaudRate(rate: number) {
+            this.baudRate = rate;
+        }
+
+        redirect(tx: pins.DigitalInOutPin, rx: pins.DigitalInOutPin, rate: number) {
+            this.tx = tx;
+            this.rx = rx;
+            this.baudRate = rate;
+        }
+
+        onEvent(event: number, handler: RefAction) {
+            pxsim.control.internalOnEvent(this.id, event, handler);
+        }
+
+        onDelimiterReceived(delimiter: number, handler: RefAction): void {
+            // TODO
+        }
+    }
+}
+
+namespace pxsim.SerialDeviceMethods {
+    export function setTxBufferSize(device: SerialDevice, size: number) {
+        device.setTxBufferSize(size);
+    }
+    export function setRxBufferSize(device: SerialDevice, size: number) {
+        device.setRxBufferSize(size);
+    }
+
+    export function read(device: SerialDevice): number {
+        return device.read();
+    }
+
+    export function readBuffer(device: SerialDevice): RefBuffer {
+        return device.readBuffer();
+    }
+
+    export function writeBuffer(device: SerialDevice, buffer: RefBuffer) {
+        device.writeBuffer(buffer);
+    }
+
+    export function setBaudRate(device: SerialDevice, rate: number) {
+        device.setBaudRate(rate);
+    }
+
+    export function redirect(device: SerialDevice, tx: pins.DigitalInOutPin, rx: pins.DigitalInOutPin, rate: number) {
+        device.redirect(tx, rx, rate);
+    }
+
+    export function onEvent(device: SerialDevice, event: number, handler: RefAction) {
+        device.onEvent(event, handler);
+    }
+
+    export function onDelimiterReceived(device: SerialDevice, delimiter: number, handler: RefAction): void {
+        device.onDelimiterReceived(delimiter, handler);
+    }
+}
+
 namespace pxsim.serial {
-    let rxBuffer: string = ""; // another iframe could write to this
-    let _baudRate: number;
-    let _tx: pins.DigitalInOutPin;
-    let _rx: pins.DigitalInOutPin;
-
-    export function onEvent(event: number, handler: RefAction) {
-        pxsim.control.internalOnEvent(DAL.DEVICE_ID_SERIAL, event, handler);        
+    export function createSerial(tx: DigitalInOutPin, rx: DigitalInOutPin, id: number): SerialDevice {
+        return new SerialDevice(tx, rx, id);
     }
 
-    export function setTxBufferSize(size: number) {
-        // TODO
-    }
-
-    export function setRxBufferSize(size: number) {
-        // TODO
-    }
-
-    export function read(): number {
-        return -1;
-    }
-
-    export function readUntil(delimiter: string) {
-        // TODO
-        return "";
-    }
-
-    export function readString(): string {
-        const r = rxBuffer;
-        rxBuffer = "";
-        return r;
-    }
-
-    export function readBuffer(): RefBuffer {
-        const s = readString();
-        const buf = control.createBuffer(s.length);
-        for(let i = 0; i < s.length; ++i)
-            buf.data[i] = s.charCodeAt(i);
-        return buf;
-    }
-
-    export function writeString(str: string) {
-        if (str)
-            control.__log(1, str)
-    }
-
-    export function writeBuffer(buffer: any) {
-        // NOP, can't simulate
-    }
-    export function attachToConsole() {
-        // DO NO write to console.log
-    }
-    export function setBaudRate(rate: number) {
-        _baudRate = rate;
-    }
-    export function redirect(tx: pins.DigitalInOutPin, rx: pins.DigitalInOutPin, rate: number) {
-        _tx = tx;
-        _rx = rx;
-        _baudRate = rate;
-    }
-
-    export function onDelimiterReceived(delimiter: number, handler: RefAction): void {
-        // TODO
+    export function device(): SerialDevice {
+        const b = board() as pxsim.EdgeConnectorBoard;
+        return b && b.edgeConnectorState && b.serial;
     }
 }

@@ -265,6 +265,6 @@ namespace serial {
     export function onDelimiterReceived(delimiter: Delimiters, handler: () => void) {
         const ser = device();
         if (!ser) return;
-        ser.onEvent(delimiter, handler);
+        ser.onDelimiterReceived(delimiter, handler);
     }
 }
