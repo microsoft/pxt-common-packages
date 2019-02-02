@@ -1,7 +1,3 @@
-frequency: 915000000
-frf: E4C000
-
-
 lora: registers:
 lora: 0x00: 0x68
 lora: 0x01: 0x81
