@@ -13,7 +13,7 @@
        },
        "pinDefinitions": [
            {"target": "ground", "style": "male", "orientation": "-Z"},
-           {"target": "D0", "style": "male", "orientation": "-Z"}
+           {"target": "A0", "style": "male", "orientation": "-Z"}
        ],
        "instantiation": {
            "kind": "singleton"

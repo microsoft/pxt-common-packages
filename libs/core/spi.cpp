@@ -2,10 +2,99 @@
 #include "ErrorNo.h"
 
 namespace pins {
-static codal::SPI *spi = NULL;
-static void initSPI() {
-    if (NULL == spi)
-        spi = new CODAL_SPI(*LOOKUP_PIN(MOSI), *LOOKUP_PIN(MISO), *LOOKUP_PIN(SCK));
+
+class CodalSPIProxy {
+private:
+    CODAL_SPI spi;
+
+public:
+    CodalSPIProxy(DevicePin* mosi, DevicePin* miso, DevicePin* sck)
+        : spi(*mosi, *miso, *sck) 
+    {
+    }
+
+    int write(int value) {
+        return spi.write(value);
+    }
+
+    void transfer(Buffer command, Buffer response) {
+        auto cdata = NULL == command ? NULL : command->data;
+        auto clength = NULL == command ? 0 : command->length;
+        auto rdata = NULL == response ? NULL : response->data;
+        auto rlength = NULL == response ? 0 : response->length;
+        spi.transfer(cdata, clength, rdata, rlength);
+    }
+
+    void setFrequency(int frequency) {
+        spi.setFrequency(frequency);
+    }
+
+    void setMode(int mode) {
+        spi.setMode(mode);
+    }
+};
+
+typedef CodalSPIProxy* SPIDevice;
+
+/**
+* Opens a SPI driver
+*/
+//% parts=spi
+SPIDevice createSPI(DigitalInOutPin mosiPin, DigitalInOutPin misoPin, DigitalInOutPin sckPin) {
+    return new CodalSPIProxy(mosiPin, misoPin, sckPin);
+}
+
+}
+
+namespace SPIDeviceMethods {
+
+/**
+* Write to the SPI bus
+*/
+//%
+int write(SPIDevice device, int value) {
+    return device->write(value);
+}
+
+/**
+* Transfer buffers over the SPI bus
+*/
+//% 
+void transfer(SPIDevice device, Buffer command, Buffer response) {
+    device->transfer(command, response);
+}
+
+/**
+* Sets the SPI clock frequency
+*/
+//%
+void setFrequency(SPIDevice device, int frequency) {
+    device->setFrequency(frequency);
+}
+
+/**
+* Sets the SPI bus mode
+*/
+//%
+void setMode(SPIDevice device, int mode) {
+    device->setMode(mode);
+}
+
+}
+
+namespace pins {
+
+static SPIDevice _spi = NULL;
+
+
+/**
+* Gets the default SPI driver
+*/
+//%
+SPIDevice spi() {
+    if (NULL == _spi)
+        _spi = createSPI(LOOKUP_PIN(MOSI), LOOKUP_PIN(MISO), LOOKUP_PIN(SCK));
+    return _spi;
 }
 
 /**
@@ -15,8 +104,7 @@ static void initSPI() {
 //% help=pins/spi-write weight=5 advanced=true
 //% blockId=spi_write block="spi write %value"
 int spiWrite(int value) {
-    initSPI();
-    return spi->write(value);
+    return spi()->write(value);
 }
 
 /**
@@ -25,12 +113,7 @@ int spiWrite(int value) {
 //% help=pins/spi-transfer weight=4 advanced=true
 //% blockId=spi_transfer block="spi transfer %command into %response"
 void spiTransfer(Buffer command, Buffer response) {
-    initSPI();
-    auto cdata = NULL == command ? NULL : command->data;
-    auto clength = NULL == command ? 0 : command->length;
-    auto rdata = NULL == response ? NULL : response->data;
-    auto rlength = NULL == response ? 0 : response->length;
-    spi->transfer(cdata, clength, rdata, rlength);
+    spi()->transfer(command, response);
 }
 
 /**
@@ -40,8 +123,7 @@ void spiTransfer(Buffer command, Buffer response) {
 //% help=pins/spi-frequency weight=4 advanced=true
 //% blockId=spi_frequency block="spi frequency %frequency"
 void spiFrequency(int frequency) {
-    initSPI();
-    spi->setFrequency(frequency);
+    spi()->setFrequency(frequency);
 }
 
 /**
@@ -51,9 +133,9 @@ void spiFrequency(int frequency) {
 //% help=pins/spi-mode weight=3 advanced=true
 //% blockId=spi_mode block="spi mode %mode"
 void spiMode(int mode) {
-    initSPI();
-    spi->setMode(mode);
+    spi()->setMode(mode);
 }
+
 } // namespace pins
 
 #if NEOPIXEL_SPI

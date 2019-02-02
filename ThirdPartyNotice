@@ -16,18 +16,19 @@ Notwithstanding any other terms, you may reverse engineer this software to the
 extent required to debug changes to any libraries licensed under the GNU Lesser
 General Public License.
 
-
-
-1.   micro-mqtt 1.0.0 (https://github.com/rovale/micro-mqtt/commit/d790a42bdd88a5514d93b683b6fb10edc2a2f873)
-
-%% micro-mqtt 1.0.0 NOTICES AND INFORMATION BEGIN HERE (https://github.com/rovale/micro-mqtt/commit/d790a42bdd88a5514d93b683b6fb10edc2a2f873)
-=========================================
-
-Copyright (c) 2016 Ronald van Leuwen, Rovale
-
 ------------------------------------------------------------------------------
 
 All sections of code within this repository are licensed under an MIT License:
+=======
+1.   pxt-lora v0.2.2 (https://github.com/ElectronicCats/pxt-lora/archive/v0.2.2.tar.gz)
+2.   arduino-LoRa v0.5.0 (https://github.com/sandeepmistry/arduino-LoRa)
+3.   micro-mqtt 1.0.0 (https://github.com/rovale/micro-mqtt/commit/d790a42bdd88a5514d93b683b6fb10edc2a2f873)
+
+%% pxt-lora v0.2.2 NOTICES AND INFORMATION BEGIN HERE (https://github.com/ElectronicCats/pxt-lora/archive/v0.2.2.tar.gz)
+=========================================
+MIT License
+
+Copyright (c) 2018 Electronic Cats
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -36,27 +37,41 @@ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-
-------------------------------------------------------------------------------
-
-All remaining work in this repository (apart from that in the datasheets directory)
-is licensed under the Creative Commons Attribution-ShareAlike 3.0 Unported License.
-
-To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/3.0/ 
-or send a letter to Creative Commons, 444 Castro Street, Suite 900, Mountain View, 
-California, 94041, USA.
-
-------------------------------------------------------------------------------
-
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 =========================================
-END OF micro-mqtt NOTICES AND INFORMATION
+END OF pxt-lora NOTICES AND INFORMATION
+
+%% arduino-LoRa v0.5.0 NOTICES AND INFORMATION BEGIN HERE (https://github.com/sandeepmistry/arduino-LoRa/archive/0.5.0.tar.gz)
+=========================================
+MIT License
+
+Copyright (c) 2016 Sandeep Mistry
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+=========================================
+END OF arduino-LoRa NOTICES AND INFORMATION
