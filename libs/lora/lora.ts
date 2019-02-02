@@ -545,7 +545,8 @@ namespace lora {
     //% blockId=lorasetsetfrequency block="lora set frequency to $frequency"
     export function setFrequency(frequency: number) {
         init();
-        const frf = ((frequency | 0) << 19) / 32000000;
+        _frequency = frequency;
+        const frf = ((frequency*(1<<19))/32000000) | 0;
 
         writeRegister(REG_FRF_MSB, (frf >> 16) & 0xff);
         writeRegister(REG_FRF_MID, (frf >> 8) & 0xff);
@@ -699,10 +700,16 @@ namespace lora {
 
     export function dumpRegisters() {
         init();
-        const buf = control.createBuffer(128);
-        for (let i = 0; i < buf.length; i++) {
-            buf[i] = readRegister(i);
+        log(`registers:`)
+        const buf = control.createBuffer(1);
+        for (let i = 0; i < 128; i++) {
+            let r = "0x";
+            buf[0] = i;
+            r += buf.toHex();
+            r += ": 0x";
+            buf[0] = readRegister(i);
+            r += buf.toHex();
+            log(r);
         }
-        console.log(buf.toHex());
     }
 }
