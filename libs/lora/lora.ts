@@ -512,11 +512,11 @@ namespace lora {
     **/
     //% parts="lora"
     //% group="Configuration"
-    //% blockId=lorasettxpower block="lora set tx power to $level"
-    export function setTxPower(level: number) {
+    //% blockId=lorasettxpower block="lora set tx power to $level dBm"
+    export function setTxPower(level: number, rfo?: boolean) {
         init();
         level = level | 0;
-        if (PA_OUTPUT_RFO_PIN == _outputPin) {
+        if (rfo) {
             // RFO
             if (level < 0) {
                 level = 0;
@@ -545,7 +545,8 @@ namespace lora {
     //% blockId=lorasetsetfrequency block="lora set frequency to $frequency"
     export function setFrequency(frequency: number) {
         init();
-        const frf = ((frequency | 0) << 19) / 32000000;
+        _frequency = frequency;
+        const frf = ((frequency*(1<<19))/32000000) | 0;
 
         writeRegister(REG_FRF_MSB, (frf >> 16) & 0xff);
         writeRegister(REG_FRF_MID, (frf >> 8) & 0xff);
@@ -695,5 +696,20 @@ namespace lora {
         let v = readRegister(REG_MODEM_CONFIG_2);
         if (on) v = v | 0x04; else v = v & 0xfb;
         writeRegister(REG_MODEM_CONFIG_2, v);
+    }
+
+    export function dumpRegisters() {
+        init();
+        log(`registers:`)
+        const buf = control.createBuffer(1);
+        for (let i = 0; i < 128; i++) {
+            let r = "0x";
+            buf[0] = i;
+            r += buf.toHex();
+            r += ": 0x";
+            buf[0] = readRegister(i);
+            r += buf.toHex();
+            log(r);
+        }
     }
 }
