@@ -119,9 +119,7 @@ namespace pxsim.PwmOnlyPinMethods {
 
 namespace pxsim.pins {
     export function pinByCfg(key: number): Pin {
-        // return pxsim.pxtcore.getPinCfg(key);
-        // Temporarily disabling to enable Aracde build
-        return undefined;
+        return pxsim.pxtcore.getPinCfg(key);
     }
 
     export function pulseDuration(): number {
