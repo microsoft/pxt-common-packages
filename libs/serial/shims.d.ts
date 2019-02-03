@@ -4,7 +4,7 @@ declare namespace serial {
     /**
      * Opens a Serial communication driver
      */
-    //% parts=serial shim=serial::createSerial
+    //% shim=serial::internalCreateSerialDevice
     function internalCreateSerialDevice(tx: DigitalInOutPin, rx: DigitalInOutPin, id: int32): SerialDevice;
 }
 
