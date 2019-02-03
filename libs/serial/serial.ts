@@ -22,7 +22,7 @@ namespace serial {
         }
 
         readLine(timeOut?: number): string {
-            return serial.readUntil(Delimiters.NewLine, timeOut);
+            return this.readUntil(Delimiters.NewLine, timeOut);
         }
 
         readUntil(delimiter: Delimiters, timeOut?: number): string {
@@ -47,8 +47,8 @@ namespace serial {
         }
 
         writeLine(text: string) {
-            writeString(text);
-            writeString(serial.NEW_LINE);
+            this.writeString(text);
+            this.writeString(serial.NEW_LINE);
         }
     }
 
@@ -60,7 +60,7 @@ namespace serial {
      */
     //% parts=serial
     export function createSerial(tx: DigitalInOutPin, rx: DigitalInOutPin, id: number): Serial {
-        const dev = serial.internalCreateSerialDevice(tx, rx, DAL.DEVICE_ID_SERIAL);
+        const dev = serial.internalCreateSerialDevice(tx, rx, id);
         return new Serial(dev);
     }
 
