@@ -1,282 +1,120 @@
 namespace net {
     // https://www.espressif.com/sites/default/files/documentation/4a-esp8266_at_instruction_set_en.pdf    
 
-    export const enum APSecurity {
-        Open = 1,
-        WPAWPA2Personal = 2,
-        WEP = 3,
-        WAPEnterprise = 4
-    }
-
-    export const enum ATResponseStatus {
-        Unknown,
-        Ok,
-        Error,
-        Event
-    }
-
-    export class ESP8266ATCommandDevice {
-        private ser: SerialDevice;
-        private _info: string;
-        constructor(ser: SerialDevice) {
-            this.ser = ser;
+    export class ESP8266ATCommander {
+        private modem: ATModem;
+        constructor(at: ATModem) {
+            this.modem = at;
+            this.modem.consolePrefix = "esp";
         }
 
-        get info() {
-            return this._info;
+        reset(): boolean {
+            this.modem.set("UART_DEF", [8, 1, 0, 0])
+            this.modem.exec("RST");
+            pause(2000);
+            this.firmwareInfo();
+            return r.ok;
         }
 
-        private readLine(): string {
-            const decoder = new UTF8Decoder();
-            let s: string;
-            do {
-                decoder.add(this.ser.readBuffer());
-                // \n
-            } while ((s = decoder.decodeUntil(10)) === undefined);
-            return s;
+        firmwareInfo() {
+            const r = this.modem.exec("GMR");
+            return r.text();
         }
 
-        private readResponse(marker?: string): string[] {
-            if (!marker) marker = "OK";
-            let r: string[] = [];
-            do {
-                const l = this.readLine();
-                if (l == marker)
-                    break;
-                r.push(l);
-            } while(true);
+        setStationMode(): boolean {
+            return this.modem.set("CWMODE", [1]).ok;
+        }
+
+        connect(ssid: string, pwd: string, bssid?: string): boolean {
+            return this.modem.set("CWJAP", [ssid, pwd, bssid]).ok;
+        }
+
+        ipAddress() {
+            const r = this.modem.exec("CIFSR");
+        }
+
+        disconnect(): boolean {
+            return this.modem.exec("CWQAP").ok;
+        }
+
+        connectionStatus(): ATResponse {
+            return this.modem.exec("CIPSTATUS");
+        }
+
+        tcpSocket(ssl: boolean, ip: string, port: number, keepAlive?: number): ATResponse {
+            const r = this.modem.set("CIPSTART", [ssl ? "SSL" : "TCP", ip, port, keepAlive]);
             return r;
         }
 
-        test(command: string) {
-            const msg = `AT+${command}=?`;
-            const buf = control.createBufferFromUTF8(msg);
-            this.ser.writeBuffer(buf);
-            return this.readResponse();
-        }
-
-        query(command: string) {
-            const msg = `AT+${command}?`;
-            const buf = control.createBufferFromUTF8(msg);
-            this.ser.writeBuffer(buf);
-            return this.readResponse();
-        }
-
-        set(command: string, args: string[]) {
-            const msg = `AT+${command}=${args.join(',')}`;
-            const buf = control.createBufferFromUTF8(msg);
-            this.ser.writeBuffer(buf);
-            return this.readResponse();
-        }
-
-        exec(command: string) {
-            const msg = `AT+${command}`;
-            const buf = control.createBufferFromUTF8(msg);
-            this.ser.writeBuffer(buf);
-            return this.readResponse();
-        }
-
-        public start(): boolean {
-            if (!this._info) {
-                const r = this.exec("GMR");
-                this.info = r.join(', ')
-            }
-            return !!this._info;
-        }
-
-        private write(cmd: string, args?: string[]) {
-            this.start(); // ensure started
-
-            let msg = `AT`;
-            if (cmd)
-                msg += `+${cmd}`;
-            if (args) {
-                while (args.length && args[args.length - 1] === undefined)
-                    args.pop(); // pop optional arguments
-                if (args.length > 0)
-                    msg += `=${args.join(',')}`;
-            }
-            msg += "\r\n";
-            log(`->${msg}`);
-            this.uart.write(control.createBufferFromUTF8(msg));
-        }
-
-        private read(command: string, eventHandler?: (r: ATResponse) => void): ATResponse {
-            let r: ATResponse;
-            while (!r) {
-                const msg = this.uart.readLine().toString();
-                log(`<-${msg}`);
-                r = new ATResponse(msg);
-                // is this for this command?
-                if (command != r.command) {
-                    log(`error, received ${r.command}, expected ${command}`);
-                    return new ATResponse(`+ERROR+${command}=-1`);
-                }
-                // queue events
-                if (r.status == ATResponseStatus.Event) {
-                    if (eventHandler)
-                        eventHandler(r);
-                    r = undefined;
-                    continue;  // keep reading
-                }
-            }
-            return r;
-        }
-
-        private exec(command: string, args?: string[], eventHandler?: (r: ATResponse) => void): ATResponse {
-            this.write(command, args);
-            return this.read(command, eventHandler);
-        }
-
-        ipAddress(): { ip: string, subnet?: string, gateway?: string } {
-            const v = this.exec("GETIP").returnValues;
-            return {
-                ip: v[0],
-                subnet: v[1],
-                gateway: v[2]
-            }
-        }
-
-        macAddress(): string {
-            return this.exec("GETMAC").data;
-        }
-
-        rssi(): number {
-            return parseFloat(this.exec("RSSI").data);
-        }
-
-        ping(host: string, ttl: number = 0) {
-            this.exec("PING", [host, ttl.toString()], ev => log(ev.data)); // handle events
-        }
-
-        connect(ssid: string, security: APSecurity, indexOrUserName?: string, key?: string, channel?: string) {
-            const r = this.exec("CONN", [ssid, security.toString(), indexOrUserName, key, channel]);
-        }
-
-        connectDefault() {
-            const r = this.exec("DEFCONN");
-        }
-
-        mode(): string {
-            return this.exec("MODE").data;
-        }
-
-        dismode() {
-            this.exec("DISMODE");
-        }
-
-        tcpClientSocket(remoteIp: string, remotePort: number, ssl: boolean, autoRecv: boolean): string {
-            const r = this.exec("TCPCLI", [remoteIp, remotePort.toString(), ssl ? "1" : "0", autoRecv ? "1" : "0"]);
-            return r.data;
-        }
-
-        sendData(socketHandler: string, data: string): ATResponse {
-            let length = data.length;
-            let l = "";
-            for (let i = 0; i < 4; ++i) {
-                const d = length % 10;
-                l = d + l;
-                length = ((length - d) / 10) | 0;
-            }
-            const msg = `\1S${socketHandler}${l}${data}\r\n`;
-            this.uart.write(control.createBufferFromUTF8(msg));
-            const rmsg = this.uart.readLine().toString();
-            const r = new ATResponse(rmsg);
-            return r;
+        tcpClose(){
+            this.modem.exec("CIPCLOSE");
         }
     }
 
-    export class ATResponse {
-        private msg: string;
-        constructor(msg: string) {
-            this.msg = msg;
+    class ESP8266ATNet implements Net {
+        public modem: ESP8266ATCommander;
+        constructor(protocol: ESP8266ATCommander) {
+            this.modem = protocol;
         }
 
-        get ok() {
-            return this.msg.indexOf("+OK+") == 0;
-        }
-
-        get status(): ATResponseStatus {
-            const i = this.msg.indexOf('+', 1);
-            const st = this.msg.substr(1, i - 1);
-            switch (st) {
-                case "OK": return ATResponseStatus.Ok;
-                case "ERROR": return ATResponseStatus.Error;
-                case "EVT": return ATResponseStatus.Event;
-                default: return ATResponseStatus.Unknown;
-            }
-        }
-
-        get command(): string {
-            const start = this.msg.indexOf('+', 1);
-            const end = this.msg.indexOf('=', start);
-            if (end < 0) return this.msg.substr(start);
-            else return this.msg.substr(start, end - start);
-        }
-
-        get errorCode(): number {
-            const i = this.msg.indexOf(':');
-            if (i < 0) return 0;
-            else return parseInt(this.msg.substr(i + 1));
-        }
-
-        get data(): string {
-            if (!this.ok) return "";
-            const i = this.msg.indexOf('=');
-            if (i < 0) return '';
-            else return this.msg.substr(i + 1);
-        }
-
-        get returnValues(): string[] {
-            if (!this.ok) return [];
-            return this.data.split(',');
+        connect(ssl: boolean, host: string, port: number): Socket {
+            return new ESP8266ATSocket(this.modem);
         }
     }
 
-    class ATNet implements Net {
-        public protocol: ATProtocol;
-        constructor(protocol: ATProtocol) {
-            this.protocol = protocol;
-            this.protocol.start();
+    class ESP8266ATSocket implements net.Socket {
+        ssl: boolean;
+        host: string;
+        port: number;
+        modem: ESP8266ATCommander;
+        handlers: any;
+
+        conn: ATResponse;
+
+        constructor(ssl:boolean, host: string, port: number, modem: ESP8266ATCommander) {
+            this.ssl = ssl;
+            this.host = host;
+            this.port = port;
+            this.modem = modem;
+            this.handlers = {};
         }
 
-        connect(host: string, port: number): Socket {
-            const id = this.protocol.tcpClientSocket(host, port, true, true);
-            if (!id) return undefined;
-            return new ATSocket(this.protocol, id);
-        }
-    }
-
-    class ATSocket implements net.Socket {
-        public protocol: ATProtocol;
-        public socketHandler: string;
-        constructor(protocol: ATProtocol, socketHandler: string) {
-            this.protocol = protocol;
-            this.socketHandler = socketHandler;
+        open() {
+            this.conn = this.modem.tcpSocket(this.ssl, this.host, this.port);
+            if (this.conn.ok)
+                this.raise("open");
+            else 
+                this.raise("error");
         }
 
         send(data: string): void {
-            this.protocol.sendData(this.socketHandler, data);
+            this.modem.sendData(data);
         }
 
         close(): void {
-
+            this.modem.tcpClose();
+            this.raise("close");
+        }
+        
+        private raise(ev: string) {
+            const close = this.handlers[ev] as () => void;
+            if (close) close();
         }
 
         onOpen(handler: () => void): void {
-
+            this.handlers["open"] = handler;
         }
 
         onClose(handler: () => void): void {
-
+            this.handlers["close"] = handler;
         }
 
         onError(handler: () => void): void {
-
+            this.handlers["error"] = handler;
         }
 
         onMessage(handler: (data: string) => void): void {
-
+            this.handlers["message"] = handler;
         }
     }
 }
