@@ -133,7 +133,7 @@ namespace pxsim {
     export class EdgeConnectorState {
         pins: Pin[];
         private _spi: SPIDevice;
-        private _serial: SerialDevice;
+        private _serials: SerialDevice[] = [];
 
         constructor(public props: EdgeConnectorProps) {
             this.pins = props.pins.map(id => id != undefined ? new Pin(id) : null);
@@ -149,10 +149,11 @@ namespace pxsim {
             return this._spi;
         }
 
-        get serial(): SerialDevice {
-            if (!this._serial)
-                this._serial = pxsim.serial.createSerial(undefined, undefined, DAL.DEVICE_ID_SERIAL);
-            return this._serial;
+        createSerialDevice(tx: pins.DigitalInOutPin, rx: pins.DigitalInOutPin, id: number): SerialDevice {
+            let ser = this._serials.filter(s => s.tx == tx && s.rx == rx)[0];
+            if (!ser)
+                this._serials.push(ser = new SerialDevice(tx, rx, id));
+            return ser;
         }
     }
 
