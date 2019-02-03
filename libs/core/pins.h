@@ -50,6 +50,7 @@ namespace pxt {
 DevicePin *getPin(int id);
 DevicePin *getPinCfg(int key);
 DevicePin *lookupPin(int pinName);
+DevicePin *lookupPinCfg(int key);
 void linkPin(int from, int to);
 Button *getButtonByPin(int pin, int flags);
 AbstractButton *getButton(int id);

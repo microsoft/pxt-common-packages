@@ -77,7 +77,7 @@ namespace console {
      */
     //%
     export function addListener(listener: (priority: ConsolePriority, text: string) => void) {
-        if (!listener) return;
+        if (!listener || listeners.indexOf(listener) > -1) return;
         listeners.push(listener);
     }
 

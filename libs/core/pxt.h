@@ -82,6 +82,11 @@ class CodalSPIProxy;
 
 typedef pins::CodalSPIProxy* SPIDevice;
 
+namespace serial {
+class CodalSerialDeviceProxy;
+}
+
+typedef serial::CodalSerialDeviceProxy* SerialDevice;
 
 namespace jacdac {
 class JDProxyDriver;
