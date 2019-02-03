@@ -118,7 +118,7 @@ namespace pxsim.PwmOnlyPinMethods {
 }
 
 namespace pxsim.pins {
-    export function pinByCfg(key: number): Pin {
+    export function lookupPinCfg(key: number): Pin {
         return pxsim.pxtcore.getPinCfg(key);
     }
 

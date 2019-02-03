@@ -4,8 +4,8 @@ declare namespace serial {
     /**
      * Opens a Serial communication driver
      */
-    //% parts=serial shim=serial::createSerial
-    function createSerial(tx: DigitalInOutPin, rx: DigitalInOutPin, id: int32): SerialDevice;
+    //% shim=serial::internalCreateSerialDevice
+    function internalCreateSerialDevice(tx: DigitalInOutPin, rx: DigitalInOutPin, id: int32): SerialDevice;
 }
 
 
@@ -62,14 +62,6 @@ declare interface SerialDevice {
      **/
     //% shim=SerialDeviceMethods::onDelimiterReceived
     onDelimiterReceived(delimiter: Delimiters, handler: () => void): void;
-}
-declare namespace serial {
-
-    /**
-     * Gets the default serial interface if any
-     */
-    //% shim=serial::device
-    function device(): SerialDevice;
 }
 
 // Auto-generated. Do not edit. Really.

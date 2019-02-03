@@ -1,4 +1,6 @@
 #include "pxt.h"
+#include <vector>
+using namespace std;
 
 enum class BaudRate {
   //% block=115200
@@ -59,11 +61,13 @@ namespace serial {
 
 class CodalSerialDeviceProxy {
 public:
+  DevicePin* tx;
+  DevicePin* rx;
   CODAL_SERIAL ser;
-  CodalSerialDeviceProxy(DevicePin* tx, DevicePin* rx, uint16_t id)
-    : ser(*tx, *rx)
+  CodalSerialDeviceProxy(DevicePin* _tx, DevicePin* _rx, uint16_t id)
+    : tx(_tx), rx(_rx), ser(*tx, *rx)
   {
-    if (!id)
+    if (id <= 0)
       id = allocateNotifyEvent();
     ser.id = id;
     ser.setBaud((int)BaudRate::BaudRate115200);
@@ -116,8 +120,10 @@ public:
   }
 
   void redirect(DevicePin* tx, DevicePin* rx, BaudRate rate) {
-      ser.redirect(*tx, *rx);
-      setBaudRate(rate);
+      this->tx = tx;
+      this->rx = rx;
+      this->ser.redirect(*tx, *rx);
+      this->setBaudRate(rate);
   }
 
   void onEvent(SerialEvent event, Action handler) {
@@ -133,12 +139,23 @@ public:
 
 typedef CodalSerialDeviceProxy* SerialDevice;
 
+static vector<SerialDevice> serialDevices;
+
 /**
 * Opens a Serial communication driver
 */
-//% parts=serial
-SerialDevice createSerial(DigitalInOutPin tx, DigitalInOutPin rx, int id) {
-  return new CodalSerialDeviceProxy(tx, rx, id);
+//%
+SerialDevice internalCreateSerialDevice(DigitalInOutPin tx, DigitalInOutPin rx, int id) {
+  // lookup existing devices
+  for (auto serialDevice : serialDevices) {
+    if (serialDevice->tx == tx && serialDevice->rx == rx)
+      return serialDevice;
+  }
+
+  // allocate new one
+  auto ser = new CodalSerialDeviceProxy(tx, rx, id);
+  serialDevices.push_back(ser);
+  return ser;
 }
 
 }
@@ -214,28 +231,4 @@ namespace SerialDeviceMethods {
   void onDelimiterReceived(SerialDevice device, Delimiters delimiter, Action handler) {
     device->onDelimiterReceived(delimiter, handler);
   }
-}
-
-namespace pxt {
-  class WSerial {
-    public:
-      SerialDevice serial;
-      WSerial()
-        : serial(serial::createSerial(LOOKUP_PIN(TX), LOOKUP_PIN(RX), DEVICE_ID_SERIAL))
-        {}
-  };
-
-SINGLETON_IF_PIN(WSerial,TX);
-}
-
-namespace serial {
-
-/**
-* Gets the default serial interface if any
-*/
-//%
-SerialDevice device() {
-  auto service = getWSerial();
-  return service ? service->serial : NULL;
-}
 }

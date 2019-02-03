@@ -4,7 +4,7 @@ namespace pxsim {
         private rxBuffer: RefBuffer;
         private txBuffer: RefBuffer;
 
-        constructor(private tx: pins.DigitalInOutPin, private rx: pins.DigitalInOutPin, private id: number) {
+        constructor(public tx: pins.DigitalInOutPin, public rx: pins.DigitalInOutPin, private id: number) {
             this.baudRate = 115200;
             this.setRxBufferSize(64);
             this.setTxBufferSize(64);
@@ -88,12 +88,8 @@ namespace pxsim.SerialDeviceMethods {
 }
 
 namespace pxsim.serial {
-    export function createSerial(tx: DigitalInOutPin, rx: DigitalInOutPin, id: number): SerialDevice {
-        return new SerialDevice(tx, rx, id);
-    }
-
-    export function device(): SerialDevice {
-        const b = board() as pxsim.EdgeConnectorBoard;
-        return b && b.edgeConnectorState && b.serial;
+    export function internalCreateSerialDevice(tx: pins.DigitalInOutPin, rx: pins.DigitalInOutPin, id: number): SerialDevice {
+        const b = board() as EdgeConnectorBoard;
+        return b && b.edgeConnectorState ? b.edgeConnectorState.createSerialDevice(tx, rx, id) : new SerialDevice(tx, rx, id);
     }
 }
