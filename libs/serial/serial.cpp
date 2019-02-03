@@ -136,8 +136,8 @@ typedef CodalSerialDeviceProxy* SerialDevice;
 /**
 * Opens a Serial communication driver
 */
-//% parts=serial
-SerialDevice createSerial(DigitalInOutPin tx, DigitalInOutPin rx, int id) {
+//%
+SerialDevice internalCreateSerialDevice(DigitalInOutPin tx, DigitalInOutPin rx, int id) {
   return new CodalSerialDeviceProxy(tx, rx, id);
 }
 

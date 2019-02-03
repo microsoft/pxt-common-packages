@@ -7,7 +7,7 @@
 namespace serial {
     export let NEW_LINE = "\r\n"; // \r require or Putty really unhappy on windows
 
-    export class UTF8Serial {
+    export class Serial {
         serialDevice: SerialDevice;
         decoder: UTF8Decoder;
         constructor(serialDevice: SerialDevice) {
@@ -47,14 +47,25 @@ namespace serial {
         }
     }
 
-    let _device: UTF8Serial;
-    export function device(): UTF8Serial {
+    /**
+     * Creates a serial comm device
+     * @param tx 
+     * @param rx 
+     * @param id 
+     */
+    //% parts=serial
+    export function createSerial(tx: DigitalInOutPin, rx: DigitalInOutPin, id: number): Serial {
+        const dev = serial.internalCreateSerialDevice(tx, rx, DAL.DEVICE_ID_SERIAL);
+        return new Serial(dev);
+    }
+
+    let _device: Serial;
+    export function device(): Serial {
         if (!_device) {
             const tx = pins.pinByCfg(DAL.CFG_PIN_TX);
             const rx = pins.pinByCfg(DAL.CFG_PIN_RX);
             if (!tx || !rx) return undefined;
-            const dev = serial.createSerial(tx, rx, DAL.DEVICE_ID_SERIAL);
-            _device = new UTF8Serial(dev);
+            _device = serial.createSerial(tx, rx, DAL.DEVICE_ID_SERIAL);
         }
         return _device;
     }
