@@ -88,12 +88,7 @@ namespace pxsim.SerialDeviceMethods {
 }
 
 namespace pxsim.serial {
-    export function createSerial(tx: pins.DigitalInOutPin, rx: pins.DigitalInOutPin, id: number): SerialDevice {
+    export function internalCreateSerialDevice(tx: pins.DigitalInOutPin, rx: pins.DigitalInOutPin, id: number): SerialDevice {
         return new SerialDevice(tx, rx, id);
-    }
-
-    export function device(): SerialDevice {
-        const b = board() as pxsim.EdgeConnectorBoard;
-        return b && b.edgeConnectorState && b.edgeConnectorState.serial;
     }
 }
