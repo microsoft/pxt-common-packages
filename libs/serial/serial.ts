@@ -45,6 +45,11 @@ namespace serial {
             const buf = control.createBufferFromUTF8(text);
             this.serialDevice.writeBuffer(buf);
         }
+
+        writeLine(text: string) {
+            writeString(text);
+            writeString(serial.NEW_LINE);
+        }
     }
 
     /**
@@ -128,8 +133,8 @@ namespace serial {
     //% blockId=serial_writeline block="serial|write line %text"
     //% group="Write"
     export function writeLine(text: string): void {
-        writeString(text);
-        writeString(NEW_LINE);
+        const d = device();
+        if (d) d.writeLine(text);
     }
 
     /**
