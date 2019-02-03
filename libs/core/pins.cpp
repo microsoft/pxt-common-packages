@@ -61,7 +61,7 @@ namespace pins {
 */
 //%
 DigitalInOutPin pinByCfg(int key) {
-    return pxt::getPinCfg(key);
+    return pxt::lookupPinCfg(key);
 }
 
 /**

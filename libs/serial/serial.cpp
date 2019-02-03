@@ -215,27 +215,3 @@ namespace SerialDeviceMethods {
     device->onDelimiterReceived(delimiter, handler);
   }
 }
-
-namespace pxt {
-  class WSerial {
-    public:
-      SerialDevice serial;
-      WSerial()
-        : serial(serial::createSerial(LOOKUP_PIN(TX), LOOKUP_PIN(RX), DEVICE_ID_SERIAL))
-        {}
-  };
-
-SINGLETON_IF_PIN(WSerial,TX);
-}
-
-namespace serial {
-
-/**
-* Gets the default serial interface if any
-*/
-//%
-SerialDevice device() {
-  auto service = getWSerial();
-  return service ? service->serial : NULL;
-}
-}

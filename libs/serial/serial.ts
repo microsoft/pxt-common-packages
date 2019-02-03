@@ -7,11 +7,56 @@
 namespace serial {
     export let NEW_LINE = "\r\n"; // \r require or Putty really unhappy on windows
 
-    let _decoder: UTF8Decoder;
-    function decoder(): UTF8Decoder {
-        if (!_decoder)
-            _decoder = new UTF8Decoder();
-        return _decoder;
+    export class UTF8Serial {
+        serialDevice: SerialDevice;
+        decoder: UTF8Decoder;
+        constructor(serialDevice: SerialDevice) {
+            this.serialDevice = serialDevice;
+            this.decoder = new UTF8Decoder();
+        }
+
+        readString(): string {
+            const buf = this.serialDevice.readBuffer();
+            this.decoder.add(buf);
+            return this.decoder.decode();
+        }
+
+        readLine(timeOut?: number): string {
+            return serial.readUntil(Delimiters.NewLine, timeOut);
+        }
+
+        readUntil(delimiter: Delimiters, timeOut?: number): string {
+            const start = control.millis();
+            do {
+                const s = this.decoder.decodeUntil(delimiter);
+                if (s !== undefined)
+                    return s;
+                const b = this.serialDevice.readBuffer()
+                this.decoder.add(b);
+                pause(1);
+            }
+            while (timeOut === undefined || (control.millis() - start < timeOut));
+            // giving up
+            return "";
+        }
+
+        writeString(text: string) {
+            if (!text) return;
+            const buf = control.createBufferFromUTF8(text);
+            this.serialDevice.writeBuffer(buf);
+        }
+    }
+
+    let _device: UTF8Serial;
+    export function device(): UTF8Serial {
+        if (!_device) {
+            const tx = pins.pinByCfg(DAL.CFG_PIN_TX);
+            const rx = pins.pinByCfg(DAL.CFG_PIN_RX);
+            if (!tx || !rx) return undefined;
+            const dev = serial.createSerial(tx, rx, DAL.DEVICE_ID_SERIAL);
+            _device = new UTF8Serial(dev);
+        }
+        return _device;
     }
 
     /**
@@ -22,10 +67,8 @@ namespace serial {
     //% weight=18
     //% group="Read"
     export function readString(): string {
-        const buf = serial.readBuffer();
-        const d = decoder();
-        d.add(buf);
-        return d.decode();
+        const d = device();
+        return d ? d.readString() : "";
     }
 
     /**
@@ -36,7 +79,8 @@ namespace serial {
     //% weight=20 blockGap=8
     //% group="Read"
     export function readLine(): string {
-        return serial.readUntil(Delimiters.NewLine);
+        const d = device();
+        return d ? d.readLine() : "";
     }
 
     /**
@@ -48,19 +92,8 @@ namespace serial {
     //% weight=19
     //% group="Read"    
     export function readUntil(delimiter: Delimiters, timeOut?: number): string {
-        const d = decoder();
-        const start = control.millis();
-        do {
-            const s = d.decodeUntil(delimiter);
-            if (s !== undefined)
-                return s;
-            const b = serial.readBuffer()
-            d.add(b);
-            pause(1);
-        }
-        while (timeOut === undefined || (control.millis() - start < timeOut));
-        // giving up
-        return "";
+        const d = device();
+        return d ? d.readUntil(delimiter, timeOut) : "";
     }
 
     /**
@@ -71,8 +104,8 @@ namespace serial {
     //% blockId=serial_writestring block="serial|write string %text"
     //% group="Write"
     export function writeString(text: string) {
-        const buf = control.createBufferFromUTF8(text);
-        serial.writeBuffer(buf);
+        const d = device();
+        if (d) d.writeString(text);
     }
 
     /**
@@ -127,7 +160,7 @@ namespace serial {
     export function setRxBufferSize(size: number) {
         const ser = device();
         if (ser)
-            ser.setRxBufferSize(size);
+            ser.serialDevice.setRxBufferSize(size);
     }
 
     /**
@@ -140,7 +173,7 @@ namespace serial {
     export function setTxBufferSize(size: number) {
         const ser = device();
         if (ser)
-            ser.setTxBufferSize(size);
+            ser.serialDevice.setTxBufferSize(size);
     }
 
     /**
@@ -150,7 +183,7 @@ namespace serial {
     export function read(): number {
         const ser = device();
         if (ser)
-            return ser.read();
+            return ser.serialDevice.read();
         else return DAL.DEVICE_NOT_SUPPORTED;
     }
 
@@ -164,7 +197,7 @@ namespace serial {
     export function readBuffer(): Buffer {
         const ser = device();
         if (ser)
-            return ser.readBuffer();
+            return ser.serialDevice.readBuffer();
         else
             return control.createBuffer(0);
     }
@@ -178,8 +211,8 @@ namespace serial {
     //% group="Write"
     export function writeBuffer(buffer: Buffer) {
         const ser = device();
-        if (!ser) return;
-        ser.writeBuffer(buffer);
+        if (ser)
+            ser.serialDevice.writeBuffer(buffer);
     }
 
 
@@ -193,8 +226,8 @@ namespace serial {
     //% group="Configuration"
     export function setBaudRate(rate: BaudRate) {
         const ser = device();
-        if (!ser) return;
-        ser.setBaudRate(rate);
+        if (ser)
+            ser.serialDevice.setBaudRate(rate);
     }
 
 
@@ -204,8 +237,6 @@ namespace serial {
     //% blockId=serialsendtoconsole block="serial attach to console"
     //% group="Configuration"
     export function attachToConsole() {
-        const ser = device();
-        if (!ser) return;
         console.addListener(logListener)
     }
 
@@ -236,8 +267,8 @@ namespace serial {
     //% group="Configuration"
     export function redirect(tx: DigitalInOutPin, rx: DigitalInOutPin, rate: BaudRate) {
         const ser = device();
-        if (!ser) return;
-        ser.redirect(tx, rx, rate);
+        if (ser)
+            ser.serialDevice.redirect(tx, rx, rate);
     }
 
     /**
@@ -250,8 +281,8 @@ namespace serial {
     //% group="Events"
     export function onEvent(event: SerialEvent, handler: () => void) {
         const ser = device();
-        if (!ser) return;
-        ser.onEvent(event, handler);
+        if (ser)
+            ser.serialDevice.onEvent(event, handler);
     }
 
     /**
@@ -264,7 +295,7 @@ namespace serial {
     //% group="Events"
     export function onDelimiterReceived(delimiter: Delimiters, handler: () => void) {
         const ser = device();
-        if (!ser) return;
-        ser.onDelimiterReceived(delimiter, handler);
+        if (ser)
+            ser.serialDevice.onDelimiterReceived(delimiter, handler);
     }
 }
