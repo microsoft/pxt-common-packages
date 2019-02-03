@@ -23,8 +23,7 @@ namespace net {
     export class ATModem {
         public consolePriority = ConsolePriority.Silent;
         public consolePrefix = "at";
-        public onEvent: (msg: string) => void;
-        private ser: serial.Serial;
+        protected ser: serial.Serial;
         constructor(ser: serial.Serial) {
             this.ser = ser;
             this.ser.serialDevice.setRxBufferSize(254);
@@ -34,24 +33,42 @@ namespace net {
             console.add(this.consolePriority, `${this.consolePrefix}> ${msg}`);
         }
 
+        protected DATA_PREFIX = "+IPD,";
         private readLine(): string {
-            const prefix = "+IPD";
-            let l : string;
+            let l: string;
             do {
                 l = this.ser.readLine();
-                // +IPD,n:xxxxxxxxxx	
-                if (l && l.substr(0, prefix.length) == prefix) {
-                    if (this.onEvent)
-                        this.onEvent(l);
+                if (l && l.substr(0, this.DATA_PREFIX.length) == this.DATA_PREFIX) {
+                    this.handlePayload(l);
                     l = undefined;
                 }
             } while (!l);
             return l;
         }
 
-        private readResponse(msg: string): ATResponse {
+        private handlePayload(msg: string) {
+            // +IPD,n:xxxxxxxxxx
+            const icol = msg.indexOf(':', this.DATA_PREFIX.length);
+            const n = parseInt(msg.substr(this.DATA_PREFIX.length, icol - this.DATA_PREFIX.length));
+            let data = msg.substr(icol + 1);
+            if (data.length > n)
+                data = data.substr(0, n);
+
+            if (data.length == n)
+                this.handleData(data);
+        }
+
+        protected handleData(data: string) {
+
+        }
+
+        private command(msg: string): ATResponse {
             this.log(msg);
             this.ser.writeLine(msg);
+            return this.readResponse();
+        }
+
+        protected readResponse(): ATResponse {
             const r = new ATResponse();
             do {
                 const l = this.readLine();
@@ -69,12 +86,12 @@ namespace net {
 
         test(command: string) {
             const msg = `AT+${command}=?`;
-            return this.readResponse(msg);
+            return this.command(msg);
         }
 
         query(command: string) {
             const msg = `AT+${command}?`;
-            return this.readResponse(msg);
+            return this.command(msg);
         }
 
         set(command: string, args: (number | string)[]) {
@@ -82,12 +99,12 @@ namespace net {
                 .map(v => v instanceof number ? v.toString() : `"${(v as string).replace(',', "\\,").replace('"', `\\"`)}`)
                 .join(',');
             const msg = `AT+${command}=${}`;
-            return this.readResponse(msg);
+            return this.command(msg);
         }
 
         exec(command: string) {
             const msg = `AT+${command}`;
-            return this.readResponse(msg);
+            return this.command(msg);
         }
     }
 }
