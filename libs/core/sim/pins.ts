@@ -166,9 +166,14 @@ namespace pxsim.pins {
         // TODO
     }
 
+    export function i2c(): I2C {
+        const b = board();
+        return b.edgeConnectorState && b.edgeConnectorState.i2c;
+    }
+
     export function spi(): SPI {
         const b = board();
-        return b.edgeConnectorState.spi;
+        return b.edgeConnectorState && b.edgeConnectorState.spi;
     }
 
     export function createSPI(mosi: DigitalInOutPin, miso: DigitalInOutPin, sck: DigitalInOutPin) {

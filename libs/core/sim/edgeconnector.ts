@@ -101,7 +101,7 @@ namespace pxsim {
         frequency: number;
         mode: number;
 
-        constructor(public mosi: pins.DigitalInOutPin, miso: pins.DigitalInOutPin, sck: pins.DigitalInOutPin) {
+        constructor(public mosi: pins.DigitalInOutPin, public miso: pins.DigitalInOutPin, public sck: pins.DigitalInOutPin) {
             this.frequency = 250000;
             this.mode = 0;
         }
@@ -120,7 +120,19 @@ namespace pxsim {
         setMode(mode: number) {
             this.mode = mode;
         }
+    }
 
+    export class I2C {
+        constructor(public sda: pins.DigitalInOutPin, public scl: pins.DigitalInOutPin) {
+
+        }
+        readBuffer(address: number, size: number, repeat?: boolean): RefBuffer {
+            return control.createBuffer(0);
+        }
+
+        writeBuffer(address: number, buf: RefBuffer, repeat?: boolean): number {
+            return 0;
+        }
     }
 
     export interface EdgeConnectorProps {
@@ -132,7 +144,8 @@ namespace pxsim {
 
     export class EdgeConnectorState {
         pins: Pin[];
-        private _spi: SPI;
+        private _i2cs: I2C[] = [];
+        private _spis: SPI[] = [];
         private _serials: SerialDevice[] = [];
 
         constructor(public props: EdgeConnectorProps) {
@@ -143,10 +156,26 @@ namespace pxsim {
             return this.pins.filter(p => p && p.id == id)[0] || null
         }
 
+        createI2C(sda: pins.DigitalInOutPin, scl: pins.DigitalInOutPin) {
+            let ser = this._i2cs.filter(s => s.sda == sda && s.scl == scl)[0];
+            if (!ser)
+                this._i2cs.push(ser = new I2C(sda, scl));
+            return ser;
+        }
+
+        get i2c(): I2C {
+            return this.createI2C(undefined, undefined);
+        }
+
+        createSPI(mosi: pins.DigitalInOutPin, miso: pins.DigitalInOutPin, sck: pins.DigitalInOutPin) {
+            let ser = this._spis.filter(s => s.mosi == mosi && s.miso == miso && s.sck == sck)[0];
+            if (!ser)
+                this._spis.push(ser = new SPI(mosi, miso, sck));
+            return ser;
+        }
+
         get spi(): SPI {
-            if (!this._spi)
-                this._spi = pxsim.pins.createSPI(undefined, undefined, undefined);
-            return this._spi;
+            return this.createSPI(undefined, undefined, undefined);
         }
 
         createSerialDevice(tx: pins.DigitalInOutPin, rx: pins.DigitalInOutPin, id: number): SerialDevice {
