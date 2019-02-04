@@ -16,7 +16,11 @@ public:
     , scl(_scl)
     , i2c(*_sda, *_scl) {
 
-    }
+  }
+
+  CODAL_I2C* getI2C() {
+    return &(this->i2c);
+  }
   
   bool matchPins(DevicePin* sda, DevicePin* scl) {
       return this->sda == sda && this->scl == scl;
@@ -93,6 +97,10 @@ I2C_ i2c() {
     _i2c = createI2C(LOOKUP_PIN(SDA), LOOKUP_PIN(SCL));
   }
   return _i2c;
+}
+
+CODAL_I2C *getI2C() {
+  return i2c()->getI2C();
 }
 
 }

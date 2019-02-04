@@ -27,7 +27,7 @@ namespace pins {
      */
     //%
     export function i2cReadBuffer(address: number, size: number, repeat: boolean = false): Buffer {
-        return i2c().readBuffer(address, size, repeat);
+        return pins.i2c().readBuffer(address, size, repeat);
     }
 
     /**
@@ -35,7 +35,7 @@ namespace pins {
      */
     //%
     export function i2cWriteBuffer(address: number, buf: Buffer, repeat: boolean = false): number {
-        return i2c() -> i2cWriteBuffer(address, buf, repeat);
+        return pins.i2c().i2cWriteBuffer(address, buf, repeat);
     }
 
     export class I2CDevice {
