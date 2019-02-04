@@ -131,66 +131,42 @@ namespace pxsim.pins {
         return pxsim.BufferMethods.createBuffer(sz)
     }
 
-    export function i2cReadBuffer(address: number, size: number, repeat?: boolean): RefBuffer {
-        // fake reading zeros
-        return createBuffer(size)
+    export function createI2C(sda: DigitalInOutPin, scl: DigitalInOutPin) {
+        const b = board() as EdgeConnectorBoard;
+        return b && b.edgeConnectorState && b.edgeConnectorState.createI2C(sda, scl);
     }
-
-    export function i2cWriteBuffer(address: number, buf: RefBuffer, repeat?: boolean): void {
-        // fake - noop
-    }
-
-    export function spiWrite(value: number): number {
-        // TODO
-        return 0;
-    }
-
-    export function spiMode(mode: number): void {
-        // TODO
-    }
-
-    export function spiTransfer(command: RefBuffer, response: RefBuffer): number {
-        // TODO
-        return 0;
-    }
-
-    export function spiFrequency(f: number): void {
-        // TODO
-    }
-
-    export function spiFormat(bits: number, mode: number): void {
-        // TODO
-    }
-
-    export function spiPins(mosi: number, miso: number, sck: number) {
-        // TODO
-    }
-
-    export function spi(): SPIDevice {
-        const b = board();
-        return b.edgeConnectorState.spi;
-    }
-
+   
     export function createSPI(mosi: DigitalInOutPin, miso: DigitalInOutPin, sck: DigitalInOutPin) {
-        return new SPIDevice(mosi, miso, sck);
+        const b = board() as EdgeConnectorBoard;
+        return b && b.edgeConnectorState && b.edgeConnectorState.createSPI(mosi, miso, sck);
     }
 }
 
-namespace pxsim.SPIDeviceMethods {
+namespace pxsim.I2CMethods {
+    export function readBuffer(i2c: I2C, address: number, size: number, repeat?: boolean): RefBuffer {
+        return control.createBuffer(0);
+    }
 
-    export function write(device: pxsim.SPIDevice, value: number) {
+    export function writeBuffer(i2c: I2C, address: number, buf: RefBuffer, repeat?: boolean): number {
+        return 0;
+    }
+}
+
+namespace pxsim.SPIMethods {
+
+    export function write(device: pxsim.SPI, value: number) {
         return device.write(value);
     }
 
-    export function transfer(device: pxsim.SPIDevice, command: RefBuffer, response: RefBuffer) {
+    export function transfer(device: pxsim.SPI, command: RefBuffer, response: RefBuffer) {
         device.transfer(command, response);
     }
 
-    export function setFrequency(device: pxsim.SPIDevice, frequency: number) {
+    export function setFrequency(device: pxsim.SPI, frequency: number) {
         device.setFrequency(frequency);
     }
 
-    export function setMode(device: pxsim.SPIDevice, mode: number) {
+    export function setMode(device: pxsim.SPI, mode: number) {
         device.setMode(mode);
     }
 }

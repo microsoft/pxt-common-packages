@@ -1,6 +1,4 @@
 #include "pxt.h"
-#include <vector>
-using namespace std;
 
 enum class BaudRate {
   //% block=115200
@@ -60,17 +58,24 @@ enum class Delimiters {
 namespace serial {
 
 class CodalSerialDeviceProxy {
-public:
+private:
   DevicePin* tx;
   DevicePin* rx;
+public:
   CODAL_SERIAL ser;
+  CodalSerialDeviceProxy* next;
+
   CodalSerialDeviceProxy(DevicePin* _tx, DevicePin* _rx, uint16_t id)
-    : tx(_tx), rx(_rx), ser(*tx, *rx)
+    : tx(_tx), rx(_rx), ser(*tx, *rx), next(NULL)
   {
     if (id <= 0)
       id = allocateNotifyEvent();
     ser.id = id;
     ser.setBaud((int)BaudRate::BaudRate115200);
+  }
+
+  bool matchPins(DevicePin* _tx, DevicePin* _rx) {
+          return this->tx == _tx && this->rx == _rx;
   }
 
   void setRxBufferSize(uint8_t size) {
@@ -138,23 +143,23 @@ public:
 };
 
 typedef CodalSerialDeviceProxy* SerialDevice;
-
-static vector<SerialDevice> serialDevices;
-
+static SerialDevice serialDevices(NULL);
 /**
 * Opens a Serial communication driver
 */
 //%
 SerialDevice internalCreateSerialDevice(DigitalInOutPin tx, DigitalInOutPin rx, int id) {
-  // lookup existing devices
-  for (auto serialDevice : serialDevices) {
-    if (serialDevice->tx == tx && serialDevice->rx == rx)
-      return serialDevice;
+  auto dev = serialDevices;
+  while(dev) {
+    if (dev->matchPins(tx, rx))
+      return dev;
+    dev = dev->next;
   }
 
   // allocate new one
   auto ser = new CodalSerialDeviceProxy(tx, rx, id);
-  serialDevices.push_back(ser);
+  ser->next = serialDevices;
+  serialDevices = ser;
   return ser;
 }
 

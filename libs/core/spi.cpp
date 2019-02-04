@@ -5,12 +5,25 @@ namespace pins {
 
 class CodalSPIProxy {
 private:
+    DevicePin* mosi; 
+    DevicePin* miso; 
+    DevicePin* sck;
     CODAL_SPI spi;
+public:
+    CodalSPIProxy* next;
 
 public:
-    CodalSPIProxy(DevicePin* mosi, DevicePin* miso, DevicePin* sck)
-        : spi(*mosi, *miso, *sck) 
+    CodalSPIProxy(DevicePin* _mosi, DevicePin* _miso, DevicePin* _sck)
+        : mosi(_mosi)
+        , miso(_miso)
+        , sck(_sck)
+        , spi(*_mosi, *_miso, *_sck) 
+        , next(NULL)
     {
+    }
+
+    bool matchPins(DevicePin* mosi, DevicePin* miso, DevicePin* sck) {
+        return this->mosi == mosi && this->miso == miso && this->sck == sck;
     }
 
     int write(int value) {
@@ -34,25 +47,36 @@ public:
     }
 };
 
-typedef CodalSPIProxy* SPIDevice;
+SPI_ spis(NULL);
 
 /**
 * Opens a SPI driver
 */
+//% help=pins/create-spi
 //% parts=spi
-SPIDevice createSPI(DigitalInOutPin mosiPin, DigitalInOutPin misoPin, DigitalInOutPin sckPin) {
-    return new CodalSPIProxy(mosiPin, misoPin, sckPin);
+SPI_ createSPI(DigitalInOutPin mosiPin, DigitalInOutPin misoPin, DigitalInOutPin sckPin) {
+  auto dev = spis;
+  while(dev) {
+    if (dev->matchPins(mosiPin, misoPin, sckPin))
+      return dev;
+    dev = dev->next;
+  }
+
+  auto ser = new CodalSPIProxy(mosiPin, misoPin, sckPin);
+  ser->next = spis;
+  spis = ser;
+  return ser;
 }
 
 }
 
-namespace SPIDeviceMethods {
+namespace SPIMethods {
 
 /**
 * Write to the SPI bus
 */
 //%
-int write(SPIDevice device, int value) {
+int write(SPI_ device, int value) {
     return device->write(value);
 }
 
@@ -60,7 +84,7 @@ int write(SPIDevice device, int value) {
 * Transfer buffers over the SPI bus
 */
 //% 
-void transfer(SPIDevice device, Buffer command, Buffer response) {
+void transfer(SPI_ device, Buffer command, Buffer response) {
     device->transfer(command, response);
 }
 
@@ -68,7 +92,7 @@ void transfer(SPIDevice device, Buffer command, Buffer response) {
 * Sets the SPI clock frequency
 */
 //%
-void setFrequency(SPIDevice device, int frequency) {
+void setFrequency(SPI_ device, int frequency) {
     device->setFrequency(frequency);
 }
 
@@ -76,67 +100,11 @@ void setFrequency(SPIDevice device, int frequency) {
 * Sets the SPI bus mode
 */
 //%
-void setMode(SPIDevice device, int mode) {
+void setMode(SPI_ device, int mode) {
     device->setMode(mode);
 }
 
 }
-
-namespace pins {
-
-static SPIDevice _spi = NULL;
-
-
-/**
-* Gets the default SPI driver
-*/
-//%
-SPIDevice spi() {
-    if (NULL == _spi)
-        _spi = createSPI(LOOKUP_PIN(MOSI), LOOKUP_PIN(MISO), LOOKUP_PIN(SCK));
-    return _spi;
-}
-
-/**
- * Write to the SPI slave and return the response
- * @param value Data to be sent to the SPI slave
- */
-//% help=pins/spi-write weight=5 advanced=true
-//% blockId=spi_write block="spi write %value"
-int spiWrite(int value) {
-    return spi()->write(value);
-}
-
-/**
- * Writes a given command to SPI bus, and afterwards reads the response.
- */
-//% help=pins/spi-transfer weight=4 advanced=true
-//% blockId=spi_transfer block="spi transfer %command into %response"
-void spiTransfer(Buffer command, Buffer response) {
-    spi()->transfer(command, response);
-}
-
-/**
- * Sets the SPI frequency
- * @param frequency the clock frequency, eg: 1000000
- */
-//% help=pins/spi-frequency weight=4 advanced=true
-//% blockId=spi_frequency block="spi frequency %frequency"
-void spiFrequency(int frequency) {
-    spi()->setFrequency(frequency);
-}
-
-/**
- * Sets the SPI mode and bits
- * @param mode the mode, eg: 3
- */
-//% help=pins/spi-mode weight=3 advanced=true
-//% blockId=spi_mode block="spi mode %mode"
-void spiMode(int mode) {
-    spi()->setMode(mode);
-}
-
-} // namespace pins
 
 #if NEOPIXEL_SPI
 namespace pxt {

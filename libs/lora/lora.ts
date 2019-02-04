@@ -114,13 +114,13 @@ namespace lora {
     let _implicitHeaderMode = 0;
     let _implicitHeader = false;
     let _outputPin = PA_OUTPUT_PA_BOOST_PIN;
-    let _spi: SPIDevice;
+    let _spi: SPI;
     let _cs: DigitalInOutPin;
     let _boot: DigitalInOutPin;
     let _rst: DigitalInOutPin;
 
 
-    export function setPins(spiDevice: SPIDevice,
+    export function setPins(spiDevice: SPI,
         csPin: DigitalInOutPin,
         bootPin: DigitalInOutPin,
         rstPin: DigitalInOutPin) {
