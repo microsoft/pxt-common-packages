@@ -1,7 +1,5 @@
 #include "pxt.h"
 #include "ErrorNo.h"
-#include <vector>
-using namespace std;
 
 namespace pins {
 
@@ -11,6 +9,8 @@ private:
     DevicePin* miso; 
     DevicePin* sck;
     CODAL_SPI spi;
+public:
+    CodalSPIProxy* next;
 
 public:
     CodalSPIProxy(DevicePin* _mosi, DevicePin* _miso, DevicePin* _sck)
@@ -18,6 +18,7 @@ public:
         , miso(_miso)
         , sck(_sck)
         , spi(*_mosi, *_miso, *_sck) 
+        , next(NULL)
     {
     }
 
@@ -46,22 +47,24 @@ public:
     }
 };
 
-static vector<SPI_> spis;
+SPI_ spis(NULL);
 
 /**
 * Opens a SPI driver
 */
 //% parts=spi
 SPI_ createSPI(DigitalInOutPin mosiPin, DigitalInOutPin misoPin, DigitalInOutPin sckPin) {
-  // lookup existing devices
-  for (auto dev : spis) {
+  auto dev = spis;
+  while(dev) {
     if (dev->matchPins(mosiPin, misoPin, sckPin))
       return dev;
+    dev = dev->next;
   }
 
-  auto s = new CodalSPIProxy(mosiPin, misoPin, sckPin);
-  spis.push_back(s);
-  return s;
+  auto ser = new CodalSPIProxy(mosiPin, misoPin, sckPin);
+  ser->next = spis;
+  spis = ser;
+  return ser;
 }
 
 }

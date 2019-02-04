@@ -1,7 +1,5 @@
 #include "pxt.h"
 #include "ErrorNo.h"
-#include <vector>
-using namespace std;
 
 namespace pins {
 
@@ -11,10 +9,14 @@ private:
   DevicePin* scl;
   CODAL_I2C i2c;
 public:
+  CodalI2CProxy* next;
+public:
   CodalI2CProxy(DevicePin* _sda, DevicePin* _scl)
     : sda(_sda)
     , scl(_scl)
-    , i2c(*_sda, *_scl) {
+    , i2c(*_sda, *_scl) 
+    , next(NULL)
+  {
 
   }
 
@@ -68,20 +70,24 @@ int writeBuffer(I2C_ i2c, int address, Buffer buf, bool repeat = false)
 
 namespace pins {
 
-static vector<I2C_> i2cs;
+static I2C_ i2cs(NULL);
 /**
 * Opens a Serial communication driver
 */
 //%
 I2C_ createI2C(DigitalInOutPin sda, DigitalInOutPin scl) {
   // lookup existing devices
-  for (auto dev : i2cs) {
+  auto dev = i2cs;
+  while(dev) {
     if (dev->matchPins(sda, scl))
       return dev;
+    dev = dev->next;
   }
   // allocate new one
   auto ser = new CodalI2CProxy(sda, scl);
-  i2cs.push_back(ser);
+  // push in list
+  ser->next = i2cs;
+  i2cs = ser;
   return ser;
 }
 
