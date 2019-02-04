@@ -35,7 +35,7 @@ namespace pins {
      */
     //%
     export function i2cWriteBuffer(address: number, buf: Buffer, repeat: boolean = false): number {
-        return pins.i2c().i2cWriteBuffer(address, buf, repeat);
+        return pins.i2c().writeBuffer(address, buf, repeat);
     }
 
     export class I2CDevice {
