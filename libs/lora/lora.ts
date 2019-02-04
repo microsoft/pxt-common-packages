@@ -138,6 +138,7 @@ namespace lora {
             const sck = pins.pinByCfg(DAL.CFG_PIN_LORA_SCK);
             // make sure pins are ok
             if (!mosi || !miso || !sck) {
+                log(`missing SPI pins (MOSI ${!!mosi} MISO ${!!miso} SCK ${!!sck})`)
                 state = LoRaState.LoRaInvalidConfiguration;
                 return;
             }
@@ -148,7 +149,8 @@ namespace lora {
         }
 
         // final check for pins
-        if (!_spi || !_cs || !_boot || !_rst) {
+        if (!_cs || !_boot || !_rst) {
+            log(`missing pins (CS ${!!_cs} BOOT ${!!_boot} RST ${!!_rst})`)
             state = LoRaState.LoRaInvalidConfiguration;
             return;
         }
@@ -174,6 +176,7 @@ namespace lora {
         log(`version v${version()}, required v${FIRMWARE_VERSION}`);
 
         if (_version != FIRMWARE_VERSION) {
+            log(`firmware upgrade required`);
             state = LoRaState.LoRaIncorrectFirmwareVersion;
             return;
         }
