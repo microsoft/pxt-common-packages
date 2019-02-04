@@ -80,6 +80,9 @@ I2C_ createI2C(DigitalInOutPin sda, DigitalInOutPin scl) {
       return dev;
   }
 
+  // hack: somewhat fixes SAMD lockup
+  sda->setDigitalValue(0);
+  scl->setDigitalValue(0); 
   // allocate new one
   auto ser = new CodalI2CProxy(sda, scl);
   i2cs.push_back(ser);

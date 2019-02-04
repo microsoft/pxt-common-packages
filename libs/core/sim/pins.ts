@@ -131,41 +131,6 @@ namespace pxsim.pins {
         return pxsim.BufferMethods.createBuffer(sz)
     }
 
-    export function i2cReadBuffer(address: number, size: number, repeat?: boolean): RefBuffer {
-        // fake reading zeros
-        return createBuffer(size)
-    }
-
-    export function i2cWriteBuffer(address: number, buf: RefBuffer, repeat?: boolean): void {
-        // fake - noop
-    }
-
-    export function spiWrite(value: number): number {
-        // TODO
-        return 0;
-    }
-
-    export function spiMode(mode: number): void {
-        // TODO
-    }
-
-    export function spiTransfer(command: RefBuffer, response: RefBuffer): number {
-        // TODO
-        return 0;
-    }
-
-    export function spiFrequency(f: number): void {
-        // TODO
-    }
-
-    export function spiFormat(bits: number, mode: number): void {
-        // TODO
-    }
-
-    export function spiPins(mosi: number, miso: number, sck: number) {
-        // TODO
-    }
-
     export function i2c(): I2C {
         const b = board();
         return b.edgeConnectorState && b.edgeConnectorState.i2c;
@@ -178,6 +143,16 @@ namespace pxsim.pins {
 
     export function createSPI(mosi: DigitalInOutPin, miso: DigitalInOutPin, sck: DigitalInOutPin) {
         return new SPI(mosi, miso, sck);
+    }
+}
+
+namespace pxsim.I2CMethods {
+    export function readBuffer(i2c: I2C, address: number, size: number, repeat?: boolean): RefBuffer {
+        return control.createBuffer(0);
+    }
+
+    export function writeBuffer(i2c: I2C, address: number, buf: RefBuffer, repeat?: boolean): number {
+        return 0;
     }
 }
 
