@@ -9,10 +9,30 @@
 //% blockGap=8
 //% groups='["Sender", "Receiver", "Packet", "Mode", "Configuration"]'
 namespace lora {
+    export const enum LoRaState {
+        None,
+        /**
+         * Started initialization
+         */
+        Initializing,
+        /**
+         * LoRa module initialized and ready to go.
+         */
+        Ready,
+        /**
+         * Firmware update is required on the LoRa module
+         */
+        LoRaIncorrectFirmwareVersion,
+        /**
+         * Pins are not configured properly
+         */
+        LoRaInvalidConfiguration
+    }
+
     /**
      * Priority of log messages
      */
-    export let consolePriority = ConsolePriority.Silent;
+    export let consolePriority = ConsolePriority.Log;
     function log(msg: string) {
         console.add(consolePriority, `lora: ${msg}`);
     }
@@ -84,7 +104,10 @@ namespace lora {
         return (bitvalue ? bitSet(value, bit) : bitClear(value, bit));
     }
 
-    let _state: number = 0;
+    /**
+     * State of the driver
+     */
+    export let state: LoRaState = LoRaState.None;
     let _version: number;
     let _frequency = 915E6;
     let _packetIndex = 0;
@@ -106,22 +129,35 @@ namespace lora {
         _boot = bootPin;
         _rst = rstPin;
         // force reset
-        _state = 0;
+        state = LoRaState.None;
     }
 
     function init() {
-        if (_state > 0) return; // already inited
+        if (state != LoRaState.None) return; // already inited
 
-        _state = 1;
+        state = LoRaState.Initializing;
         if (!_spi) {
             log(`init using builtin lora pins`);
             const mosi = pins.pinByCfg(DAL.CFG_PIN_LORA_MOSI);
             const miso = pins.pinByCfg(DAL.CFG_PIN_LORA_MISO);
             const sck = pins.pinByCfg(DAL.CFG_PIN_LORA_SCK);
+            // make sure pins are ok
+            if (!mosi || !miso || !sck) {
+                log(`missing SPI pins (MOSI ${!!mosi} MISO ${!!miso} SCK ${!!sck})`)
+                state = LoRaState.LoRaInvalidConfiguration;
+                return;
+            }
             _spi = pins.createSPI(mosi, miso, sck);
             _cs = pins.pinByCfg(DAL.CFG_PIN_LORA_CS);
             _boot = pins.pinByCfg(DAL.CFG_PIN_LORA_BOOT);
             _rst = pins.pinByCfg(DAL.CFG_PIN_LORA_RESET);
+        }
+
+        // final check for pins
+        if (!_cs || !_boot || !_rst) {
+            log(`missing pins (CS ${!!_cs} BOOT ${!!_boot} RST ${!!_rst})`)
+            state = LoRaState.LoRaInvalidConfiguration;
+            return;
         }
 
         _cs.digitalWrite(false);
@@ -143,6 +179,12 @@ namespace lora {
 
         _version = readRegister(REG_VERSION);
         log(`version v${version()}, required v${FIRMWARE_VERSION}`);
+
+        if (_version != FIRMWARE_VERSION) {
+            log(`firmware upgrade required`);
+            state = LoRaState.LoRaIncorrectFirmwareVersion;
+            return;
+        }
 
         //Sleep
         sleep();
@@ -166,8 +208,7 @@ namespace lora {
         // put in standby mode
         idle();
 
-        _version = readRegister(REG_VERSION);
-        log(`version v${version()}, required v${FIRMWARE_VERSION}`);
+        state = LoRaState.Ready;
     }
 
     // Write Register of SX. 
@@ -203,6 +244,16 @@ namespace lora {
     }
 
     /**
+     * Indicates the LoRa module is correctly initialized
+     */
+    //% group="Configuration"
+    //% blockId=loraeady block="lora is ready"
+    export function isReady(): boolean {
+        init();
+        return state == LoRaState.Ready;
+    }
+
+    /**
     * Read Version of firmware
     **/
     //% parts="lora"
@@ -218,7 +269,8 @@ namespace lora {
     //% parts="lora"
     //% blockId=lorareadstring block="lora read string"
     export function readString(): string {
-        init();
+        if (!isReady()) return "";
+
         const buf = readBuffer();
         return buf.toString();
     }
@@ -230,7 +282,8 @@ namespace lora {
     //% parts="lora"
     //% blockId=lorareadbuffer block="lora read buffer"
     export function readBuffer(): Buffer {
-        init();
+        if (!isReady()) return control.createBuffer(0);
+
         let length = parsePacket(0);
         if (length <= 0)
             return control.createBuffer(0); // nothing to read
@@ -256,7 +309,8 @@ namespace lora {
     //% parts="lora"
     //% weight=45 blockGap=8 blockId=loraparsepacket block="lora parse packet %size"
     export function parsePacket(size: number): number {
-        init();
+        if (!isReady()) return 0;
+
         let packetLength = 0;
         let irqFlags = readRegister(REG_IRQ_FLAGS);
 
@@ -306,7 +360,8 @@ namespace lora {
     //% parts="lora"
     //% weight=45 blockGap=8 blockId=lorapacketRssi block="lora packet RSSI"
     export function packetRssi(): number {
-        init();
+        if (!isReady()) return -1;
+
         return (readRegister(REG_PKT_RSSI_VALUE) - (_frequency < 868E6 ? 164 : 157));
     }
 
@@ -317,7 +372,8 @@ namespace lora {
     //% parts="lora"
     //% blockId=lorapacketsnr block="lora packet SNR"
     export function packetSnr(): number {
-        init();
+        if (!isReady()) return -1;
+
         return (readRegister(REG_PKT_SNR_VALUE)) * 0.25;
     }
 
@@ -383,8 +439,8 @@ namespace lora {
     //% group="Sender"
     //% blockId=lorasendstring block="lora send string $text"
     export function sendString(text: string) {
-        init();
         if (!text) return;
+        if (!isReady()) return;
         const buf = control.createBufferFromUTF8(text);
         sendBuffer(buf);
     }
@@ -396,8 +452,8 @@ namespace lora {
     //% group="Sender"
     //% blockId=lorasendbuffer block="lora send buffer $buffer"
     export function sendBuffer(buffer: Buffer) {
-        init();
         if (!buffer || buffer.length == 0) return;
+        if (!isReady()) return;
         log('send')
         beginPacket();
         log(`write payload (${buffer.length} bytes)`)
@@ -435,7 +491,7 @@ namespace lora {
     //% weight=45 blockGap=8 
     //% blockId=loraavailable block="lora available"
     export function available(): number {
-        init();
+        if (!isReady()) return 0;
         return readRegister(REG_RX_NB_BYTES) - _packetIndex;
     }
 
@@ -446,11 +502,9 @@ namespace lora {
     //% group="Packet"
     //% blockId=loraread block="lora read"
     export function read(): number {
-        init();
-        if (!available()) {
+        if (!isReady()) return -1;
+        if (!available())
             return -1;
-        }
-
         _packetIndex++;
 
         return readRegister(REG_FIFO);
@@ -463,10 +517,9 @@ namespace lora {
     //% group="Packet"
     //% blockId=lorapeek block="lora peek"
     export function peek(): number {
-        init();
-        if (!available()) {
+        if (!isReady()) return -1;
+        if (!available())
             return -1;
-        }
 
         // store current FIFO address
         const currentAddress = readRegister(REG_FIFO_ADDR_PTR);
@@ -491,7 +544,7 @@ namespace lora {
     //% group="Mode"
     //% blockId=loraidle block="lora idle"
     export function idle() {
-        init();
+        if (!isReady()) return;
         log('idle')
         writeRegister(REG_OP_MODE, MODE_LONG_RANGE_MODE | MODE_STDBY);
     }
@@ -503,7 +556,7 @@ namespace lora {
     //% group="Mode"
     //% blockId=lorasleep block="lora sleep"
     export function sleep() {
-        init();
+        if (!isReady()) return;
         writeRegister(REG_OP_MODE, MODE_LONG_RANGE_MODE | MODE_SLEEP);
     }
 
@@ -514,7 +567,7 @@ namespace lora {
     //% group="Configuration"
     //% blockId=lorasettxpower block="lora set tx power to $level dBm"
     export function setTxPower(level: number, rfo?: boolean) {
-        init();
+        if (!isReady()) return;
         level = level | 0;
         if (rfo) {
             // RFO
@@ -544,9 +597,9 @@ namespace lora {
     //% group="Configuration"
     //% blockId=lorasetsetfrequency block="lora set frequency to $frequency"
     export function setFrequency(frequency: number) {
-        init();
+        if (!isReady()) return;
         _frequency = frequency;
-        const frf = ((frequency*(1<<19))/32000000) | 0;
+        const frf = ((frequency * (1 << 19)) / 32000000) | 0;
 
         writeRegister(REG_FRF_MSB, (frf >> 16) & 0xff);
         writeRegister(REG_FRF_MID, (frf >> 8) & 0xff);
@@ -560,7 +613,7 @@ namespace lora {
     //% group="Configuration"
     //% blockId=loraspreadingfactor block="lora spreading factor"
     export function spreadingFactor(): number {
-        init();
+        if (!isReady()) return -1;
         return readRegister(REG_MODEM_CONFIG_2) >> 4;
     }
 
@@ -574,7 +627,7 @@ namespace lora {
     //% factor.defl=8
     //% group="Configuration"
     export function setSpreadingFactor(factor: number) {
-        init();
+        if (!isReady()) return;
         factor = factor | 0;
         if (factor < 6) {
             factor = 6;
@@ -601,7 +654,7 @@ namespace lora {
     //% group="Configuration"
     //% blockId=lorasignalbandwith block="signal bandwidth"
     export function signalBandwidth(): number {
-        init();
+        if (!isReady()) return 0;
         const bw = (readRegister(REG_MODEM_CONFIG_1) >> 4);
         switch (bw) {
             case 0: return 7.8E3;
@@ -626,7 +679,7 @@ namespace lora {
     //% group="Configuration"
     //% blockId=lorasetsignalbandwith block="set signal bandwidth to $value"
     export function setSignalBandwidth(value: number) {
-        init();
+        if (!isReady()) return;
         let bw;
 
         if (value <= 7.8E3) {
@@ -692,7 +745,7 @@ namespace lora {
     //% blockId=lorasetcrc block="lora set crc $on"
     //% on.shadow=toggleOnOff
     export function setCrc(on: boolean) {
-        init();
+        if (!isReady()) return;
         let v = readRegister(REG_MODEM_CONFIG_2);
         if (on) v = v | 0x04; else v = v & 0xfb;
         writeRegister(REG_MODEM_CONFIG_2, v);
@@ -700,6 +753,8 @@ namespace lora {
 
     export function dumpRegisters() {
         init();
+        log(`state: ${["none", "initializing", "ready", "incorrect firmware", "invalid config"][state]}`)
+        if (!isReady()) return;
         log(`registers:`)
         const buf = control.createBuffer(1);
         for (let i = 0; i < 128; i++) {
