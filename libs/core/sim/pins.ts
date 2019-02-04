@@ -131,18 +131,14 @@ namespace pxsim.pins {
         return pxsim.BufferMethods.createBuffer(sz)
     }
 
-    export function i2c(): I2C {
-        const b = board();
-        return b.edgeConnectorState && b.edgeConnectorState.i2c;
+    export function createI2C(sda: DigitalInOutPin, scl: DigitalInOutPin) {
+        const b = board() as EdgeConnectorBoard;
+        return b && b.edgeConnectorState && b.edgeConnectorState.createI2C(sda, scl);
     }
-
-    export function spi(): SPI {
-        const b = board();
-        return b.edgeConnectorState && b.edgeConnectorState.spi;
-    }
-
+   
     export function createSPI(mosi: DigitalInOutPin, miso: DigitalInOutPin, sck: DigitalInOutPin) {
-        return new SPI(mosi, miso, sck);
+        const b = board() as EdgeConnectorBoard;
+        return b && b.edgeConnectorState && b.edgeConnectorState.createSPI(mosi, miso, sck);
     }
 }
 

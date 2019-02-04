@@ -92,21 +92,4 @@ I2C_ createI2C(DigitalInOutPin sda, DigitalInOutPin scl) {
   return ser;
 }
 
-
-static I2C_ _i2c;
-/**
-* Gets the default I2C device
-*/
-//%
-I2C_ i2c() {
-  if (NULL == _i2c) {
-    _i2c = createI2C(LOOKUP_PIN(SDA), LOOKUP_PIN(SCL));
-  }
-  return _i2c;
-}
-
-CODAL_I2C *getI2C() {
-  return i2c()->getI2C();
-}
-
 }

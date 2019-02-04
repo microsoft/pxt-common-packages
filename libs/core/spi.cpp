@@ -106,62 +106,6 @@ void setMode(SPI_ device, int mode) {
 
 }
 
-namespace pins {
-
-static SPI_ _spi = NULL;
-
-
-/**
-* Gets the default SPI driver
-*/
-//%
-SPI_ spi() {
-    if (NULL == _spi)
-        _spi = createSPI(LOOKUP_PIN(MOSI), LOOKUP_PIN(MISO), LOOKUP_PIN(SCK));
-    return _spi;
-}
-
-/**
- * Write to the SPI slave and return the response
- * @param value Data to be sent to the SPI slave
- */
-//% help=pins/spi-write weight=5 advanced=true
-//% blockId=spi_write block="spi write %value"
-int spiWrite(int value) {
-    return spi()->write(value);
-}
-
-/**
- * Writes a given command to SPI bus, and afterwards reads the response.
- */
-//% help=pins/spi-transfer weight=4 advanced=true
-//% blockId=spi_transfer block="spi transfer %command into %response"
-void spiTransfer(Buffer command, Buffer response) {
-    spi()->transfer(command, response);
-}
-
-/**
- * Sets the SPI frequency
- * @param frequency the clock frequency, eg: 1000000
- */
-//% help=pins/spi-frequency weight=4 advanced=true
-//% blockId=spi_frequency block="spi frequency %frequency"
-void spiFrequency(int frequency) {
-    spi()->setFrequency(frequency);
-}
-
-/**
- * Sets the SPI mode and bits
- * @param mode the mode, eg: 3
- */
-//% help=pins/spi-mode weight=3 advanced=true
-//% blockId=spi_mode block="spi mode %mode"
-void spiMode(int mode) {
-    spi()->setMode(mode);
-}
-
-} // namespace pins
-
 #if NEOPIXEL_SPI
 namespace pxt {
 static codal::SPI *spi = NULL;

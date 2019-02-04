@@ -38,6 +38,20 @@ namespace pins {
         return pins.i2c().writeBuffer(address, buf, repeat);
     }
 
+    let _i2c: I2C;
+    /**
+     * Gets the default I2C bus
+     */
+    //%
+    export function i2c() {
+        if (!_i2c) {
+            const sda = pins.pinByCfg(DAL.CFG_PIN_SDA);
+            const scl = pins.pinByCfg(DAL.CFG_PIN_SCL);
+            _i2c = pins.createI2C(sda, scl);    
+        }
+        return _i2c;        
+    }
+
     export class I2CDevice {
         public address: number;
         private _hasError: boolean;

@@ -163,19 +163,11 @@ namespace pxsim {
             return ser;
         }
 
-        get i2c(): I2C {
-            return this.createI2C(undefined, undefined);
-        }
-
         createSPI(mosi: pins.DigitalInOutPin, miso: pins.DigitalInOutPin, sck: pins.DigitalInOutPin) {
             let ser = this._spis.filter(s => s.mosi == mosi && s.miso == miso && s.sck == sck)[0];
             if (!ser)
                 this._spis.push(ser = new SPI(mosi, miso, sck));
             return ser;
-        }
-
-        get spi(): SPI {
-            return this.createSPI(undefined, undefined, undefined);
         }
 
         createSerialDevice(tx: pins.DigitalInOutPin, rx: pins.DigitalInOutPin, id: number): SerialDevice {
