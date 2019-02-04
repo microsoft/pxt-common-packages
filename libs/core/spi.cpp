@@ -1,16 +1,27 @@
 #include "pxt.h"
 #include "ErrorNo.h"
+#include <vector>
 
 namespace pins {
 
 class CodalSPIProxy {
 private:
+    DevicePin* mosi; 
+    DevicePin* miso; 
+    DevicePin* sck;
     CODAL_SPI spi;
 
 public:
     CodalSPIProxy(DevicePin* mosi, DevicePin* miso, DevicePin* sck)
-        : spi(*mosi, *miso, *sck) 
+        : mosi(mosi)
+        , miso(miso)
+        , scl(sck)
+        , spi(*mosi, *miso, *sck) 
     {
+    }
+
+    bool matchPins(DevicePin* mosi, DevicePin* miso, DevicePin* sck) {
+        return this->mosi == mosi && this->miso == miso && this->sck == sck;
     }
 
     int write(int value) {
@@ -35,13 +46,21 @@ public:
 };
 
 typedef CodalSPIProxy* SPIDevice;
-
+static vector<SPIDevice> spis;
 /**
 * Opens a SPI driver
 */
 //% parts=spi
 SPIDevice createSPI(DigitalInOutPin mosiPin, DigitalInOutPin misoPin, DigitalInOutPin sckPin) {
-    return new CodalSPIProxy(mosiPin, misoPin, sckPin);
+  // lookup existing devices
+  for (auto dev : spis) {
+    if (dev->matchPins(mosiPin, misoPin, sckPin))
+      return dev;
+  }
+
+  auto s = new CodalSPIProxy(mosiPin, misoPin, sckPin);
+  spis.push_back(s);
+  return s;
 }
 
 }

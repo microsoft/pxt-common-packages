@@ -60,9 +60,10 @@ enum class Delimiters {
 namespace serial {
 
 class CodalSerialDeviceProxy {
-public:
+private:
   DevicePin* tx;
   DevicePin* rx;
+public:
   CODAL_SERIAL ser;
   CodalSerialDeviceProxy(DevicePin* _tx, DevicePin* _rx, uint16_t id)
     : tx(_tx), rx(_rx), ser(*tx, *rx)
@@ -71,6 +72,10 @@ public:
       id = allocateNotifyEvent();
     ser.id = id;
     ser.setBaud((int)BaudRate::BaudRate115200);
+  }
+
+  bool matchPins(DevicePin* _tx, DevicePin* _rx) {
+          return this->tx == _tx && this->_rx == _rx;
   }
 
   void setRxBufferSize(uint8_t size) {
@@ -138,9 +143,7 @@ public:
 };
 
 typedef CodalSerialDeviceProxy* SerialDevice;
-
 static vector<SerialDevice> serialDevices;
-
 /**
 * Opens a Serial communication driver
 */
@@ -148,7 +151,7 @@ static vector<SerialDevice> serialDevices;
 SerialDevice internalCreateSerialDevice(DigitalInOutPin tx, DigitalInOutPin rx, int id) {
   // lookup existing devices
   for (auto serialDevice : serialDevices) {
-    if (serialDevice->tx == tx && serialDevice->rx == rx)
+    if (serialDevice->matchPins(tx, rx))
       return serialDevice;
   }
 

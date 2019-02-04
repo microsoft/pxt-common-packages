@@ -22,6 +22,22 @@ namespace pins {
         pins.i2cWriteBuffer(address, buf, repeated)
     }
 
+    /**
+     * Read `size` bytes from a 7-bit I2C `address`.
+     */
+    //%
+    export function i2cReadBuffer(address: number, size: number, repeat: boolean = false): Buffer {
+        return i2c().readBuffer(address, size, repeat);
+    }
+
+    /**
+     * Write bytes to a 7-bit I2C `address`.
+     */
+    //%
+    export function i2cWriteBuffer(address: number, buf: Buffer, repeat: boolean = false): number {
+        return i2c() -> i2cWriteBuffer(address, buf, repeat);
+    }
+
     export class I2CDevice {
         public address: number;
         private _hasError: boolean;
