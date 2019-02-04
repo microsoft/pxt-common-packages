@@ -12,6 +12,10 @@ namespace lora {
     export const enum LoRaState {
         None,
         /**
+         * Started initialization
+         */
+        Initializing,
+        /**
          * LoRa module initialized and ready to go.
          */
         Ready,
@@ -28,7 +32,7 @@ namespace lora {
     /**
      * Priority of log messages
      */
-    export let consolePriority = ConsolePriority.Silent;
+    export let consolePriority = ConsolePriority.Log;
     function log(msg: string) {
         console.add(consolePriority, `lora: ${msg}`);
     }
@@ -131,6 +135,7 @@ namespace lora {
     function init() {
         if (state != LoRaState.None) return; // already inited
 
+        state = LoRaState.Initializing;
         if (!_spi) {
             log(`init using builtin lora pins`);
             const mosi = pins.pinByCfg(DAL.CFG_PIN_LORA_MOSI);
@@ -748,7 +753,7 @@ namespace lora {
 
     export function dumpRegisters() {
         init();
-        log(`state: ${["none", "ready", "incorrect firmware", "invalid config"][state]}`)
+        log(`state: ${["none", "initializing", "ready", "incorrect firmware", "invalid config"][state]}`)
         if (!isReady()) return;
         log(`registers:`)
         const buf = control.createBuffer(1);
