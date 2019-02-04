@@ -1,5 +1,7 @@
 #include "pxt.h"
 #include "ErrorNo.h"
+#include "CodalDmesg.h"
+#include "configkeys.h"
 
 namespace pins {
 
@@ -77,14 +79,25 @@ static I2C_ i2cs(NULL);
 //% help=pins/create-i2c
 //% parts=i2c
 I2C_ createI2C(DigitalInOutPin sda, DigitalInOutPin scl) {
+  // pick up defaults
+  if (!sda || !scl) {
+    DMESG("i2c: lookup default pins");
+    sda = LOOKUP_PIN(SDA);
+    scl = LOOKUP_PIN(SCL);
+  }
+
   // lookup existing devices
   auto dev = i2cs;
   while(dev) {
-    if (dev->matchPins(sda, scl))
+    if (dev->matchPins(sda, scl)) {
+      DMESG("i2c: found existing i2c");
       return dev;
+    }
     dev = dev->next;
   }
+
   // allocate new one
+  DMESG("i2c: mounting on new device");
   auto ser = new CodalI2CProxy(sda, scl);
   // push in list
   ser->next = i2cs;
@@ -92,4 +105,11 @@ I2C_ createI2C(DigitalInOutPin sda, DigitalInOutPin scl) {
   return ser;
 }
 
+}
+
+namespace pxt {
+  CODAL_I2C* getI2C(DigitalInOutPin sda, DigitalInOutPin scl) {
+    auto i2c = pins::createI2C(sda, scl);
+    return i2c->getI2C();
+  }
 }
