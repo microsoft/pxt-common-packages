@@ -67,7 +67,7 @@ class WAccel {
     WAccel() : space(ACC_SYSTEM, ACC_UPSIDEDOWN, ACC_ROTATION) {
         CODAL_I2C *i2c;
         if (PIN(ACCELEROMETER_SDA) == (PinName)-1 || PIN(ACCELEROMETER_SDA) == PIN(SDA)) {
-            i2c = pins::getI2C();
+            i2c = pins::i2c();
         } else {
             i2c = new CODAL_I2C(*LOOKUP_PIN(ACCELEROMETER_SDA), *LOOKUP_PIN(ACCELEROMETER_SCL));
         }

@@ -97,7 +97,7 @@ namespace pxsim {
         }
     }
 
-    export class SPIDevice {
+    export class SPI {
         frequency: number;
         mode: number;
 
@@ -132,7 +132,7 @@ namespace pxsim {
 
     export class EdgeConnectorState {
         pins: Pin[];
-        private _spi: SPIDevice;
+        private _spi: SPI;
         private _serials: SerialDevice[] = [];
 
         constructor(public props: EdgeConnectorProps) {
@@ -143,7 +143,7 @@ namespace pxsim {
             return this.pins.filter(p => p && p.id == id)[0] || null
         }
 
-        get spi(): SPIDevice {
+        get spi(): SPI {
             if (!this._spi)
                 this._spi = pxsim.pins.createSPI(undefined, undefined, undefined);
             return this._spi;

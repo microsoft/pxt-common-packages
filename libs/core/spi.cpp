@@ -1,6 +1,7 @@
 #include "pxt.h"
 #include "ErrorNo.h"
 #include <vector>
+using namespace std;
 
 namespace pins {
 
@@ -12,11 +13,11 @@ private:
     CODAL_SPI spi;
 
 public:
-    CodalSPIProxy(DevicePin* mosi, DevicePin* miso, DevicePin* sck)
-        : mosi(mosi)
-        , miso(miso)
-        , scl(sck)
-        , spi(*mosi, *miso, *sck) 
+    CodalSPIProxy(DevicePin* _mosi, DevicePin* _miso, DevicePin* _sck)
+        : mosi(_mosi)
+        , miso(_miso)
+        , sck(_sck)
+        , spi(*_mosi, *_miso, *_sck) 
     {
     }
 
@@ -45,13 +46,13 @@ public:
     }
 };
 
-typedef CodalSPIProxy* SPIDevice;
-static vector<SPIDevice> spis;
+static vector<SPI_> spis;
+
 /**
 * Opens a SPI driver
 */
 //% parts=spi
-SPIDevice createSPI(DigitalInOutPin mosiPin, DigitalInOutPin misoPin, DigitalInOutPin sckPin) {
+SPI_ createSPI(DigitalInOutPin mosiPin, DigitalInOutPin misoPin, DigitalInOutPin sckPin) {
   // lookup existing devices
   for (auto dev : spis) {
     if (dev->matchPins(mosiPin, misoPin, sckPin))
@@ -65,13 +66,13 @@ SPIDevice createSPI(DigitalInOutPin mosiPin, DigitalInOutPin misoPin, DigitalInO
 
 }
 
-namespace SPIDeviceMethods {
+namespace SPIMethods {
 
 /**
 * Write to the SPI bus
 */
 //%
-int write(SPIDevice device, int value) {
+int write(SPI_ device, int value) {
     return device->write(value);
 }
 
@@ -79,7 +80,7 @@ int write(SPIDevice device, int value) {
 * Transfer buffers over the SPI bus
 */
 //% 
-void transfer(SPIDevice device, Buffer command, Buffer response) {
+void transfer(SPI_ device, Buffer command, Buffer response) {
     device->transfer(command, response);
 }
 
@@ -87,7 +88,7 @@ void transfer(SPIDevice device, Buffer command, Buffer response) {
 * Sets the SPI clock frequency
 */
 //%
-void setFrequency(SPIDevice device, int frequency) {
+void setFrequency(SPI_ device, int frequency) {
     device->setFrequency(frequency);
 }
 
@@ -95,7 +96,7 @@ void setFrequency(SPIDevice device, int frequency) {
 * Sets the SPI bus mode
 */
 //%
-void setMode(SPIDevice device, int mode) {
+void setMode(SPI_ device, int mode) {
     device->setMode(mode);
 }
 
@@ -103,14 +104,14 @@ void setMode(SPIDevice device, int mode) {
 
 namespace pins {
 
-static SPIDevice _spi = NULL;
+static SPI_ _spi = NULL;
 
 
 /**
 * Gets the default SPI driver
 */
 //%
-SPIDevice spi() {
+SPI_ spi() {
     if (NULL == _spi)
         _spi = createSPI(LOOKUP_PIN(MOSI), LOOKUP_PIN(MISO), LOOKUP_PIN(SCK));
     return _spi;

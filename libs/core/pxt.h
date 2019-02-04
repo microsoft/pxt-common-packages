@@ -78,9 +78,11 @@ void set_usb_strings(const char *uf2_info);
 
 namespace pins {
 class CodalSPIProxy;
+class CodalI2CProxy;
 } // namespace pins
 
-typedef pins::CodalSPIProxy* SPIDevice;
+typedef pins::CodalI2CProxy* I2C_;
+typedef pins::CodalSPIProxy* SPI_;
 
 namespace serial {
 class CodalSerialDeviceProxy;

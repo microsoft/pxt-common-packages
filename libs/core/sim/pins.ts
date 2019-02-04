@@ -166,31 +166,31 @@ namespace pxsim.pins {
         // TODO
     }
 
-    export function spi(): SPIDevice {
+    export function spi(): SPI {
         const b = board();
         return b.edgeConnectorState.spi;
     }
 
     export function createSPI(mosi: DigitalInOutPin, miso: DigitalInOutPin, sck: DigitalInOutPin) {
-        return new SPIDevice(mosi, miso, sck);
+        return new SPI(mosi, miso, sck);
     }
 }
 
-namespace pxsim.SPIDeviceMethods {
+namespace pxsim.SPIMethods {
 
-    export function write(device: pxsim.SPIDevice, value: number) {
+    export function write(device: pxsim.SPI, value: number) {
         return device.write(value);
     }
 
-    export function transfer(device: pxsim.SPIDevice, command: RefBuffer, response: RefBuffer) {
+    export function transfer(device: pxsim.SPI, command: RefBuffer, response: RefBuffer) {
         device.transfer(command, response);
     }
 
-    export function setFrequency(device: pxsim.SPIDevice, frequency: number) {
+    export function setFrequency(device: pxsim.SPI, frequency: number) {
         device.setFrequency(frequency);
     }
 
-    export function setMode(device: pxsim.SPIDevice, mode: number) {
+    export function setMode(device: pxsim.SPI, mode: number) {
         device.setMode(mode);
     }
 }

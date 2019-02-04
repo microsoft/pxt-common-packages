@@ -75,7 +75,7 @@ public:
   }
 
   bool matchPins(DevicePin* _tx, DevicePin* _rx) {
-          return this->tx == _tx && this->_rx == _rx;
+          return this->tx == _tx && this->rx == _rx;
   }
 
   void setRxBufferSize(uint8_t size) {
