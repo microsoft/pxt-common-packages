@@ -6,9 +6,11 @@ using namespace std;
 namespace pins {
 
 class CodalI2CProxy {
+private:
   DevicePin* sda;
   DevicePin* scl;
   CODAL_I2C i2c;
+public:
   CodalI2CProxy(DevicePin* _sda, DevicePin* _scl)
     : sda(_sda)
     , scl(_scl)
@@ -60,6 +62,7 @@ int writeBuffer(I2C i2c, int address, Buffer buf, bool repeat = false)
 
 }
 
+namespace pins {
 static vector<I2C> i2cs;
 /**
 * Opens a Serial communication driver
