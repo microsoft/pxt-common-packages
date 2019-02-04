@@ -65,6 +65,7 @@ class WAccel {
   public:
     Accelerometer *acc;
     WAccel() : space(ACC_SYSTEM, ACC_UPSIDEDOWN, ACC_ROTATION) {
+        DMESG("ACCEL: mounting");
         codal::I2C* i2c = pxt::getI2C(LOOKUP_PIN(ACCELEROMETER_SDA), LOOKUP_PIN(ACCELEROMETER_SCL));
         auto accType = getConfig(CFG_ACCELEROMETER_TYPE, PXT_DEFAULT_ACCELEROMETER);
         acc = NULL;
