@@ -74,7 +74,8 @@ static I2C_ i2cs(NULL);
 /**
 * Opens a Serial communication driver
 */
-//%
+//% help=pins/create-i2c
+//% parts=i2c
 I2C_ createI2C(DigitalInOutPin sda, DigitalInOutPin scl) {
   // lookup existing devices
   auto dev = i2cs;

@@ -58,6 +58,7 @@ namespace serial {
      * @param rx 
      * @param id 
      */
+    //% help=serial/create-serial
     //% parts=serial
     export function createSerial(tx: DigitalInOutPin, rx: DigitalInOutPin, id?: number): Serial {
         const dev = serial.internalCreateSerialDevice(tx, rx, id || 0);

@@ -52,6 +52,7 @@ SPI_ spis(NULL);
 /**
 * Opens a SPI driver
 */
+//% help=pins/create-spi
 //% parts=spi
 SPI_ createSPI(DigitalInOutPin mosiPin, DigitalInOutPin misoPin, DigitalInOutPin sckPin) {
   auto dev = spis;
