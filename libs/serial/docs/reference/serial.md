@@ -28,6 +28,12 @@ serial.setRxBufferSize(64);
 serial.setTxBufferSize(64);
 ```
 
+## Avanced
+
+```cards
+serial.createSerial(undefined, undefined);
+```
+
 ## See Also
 
 [write line](/reference/serial/write-line),
@@ -40,7 +46,8 @@ serial.setTxBufferSize(64);
 [read string](/reference/serial/read-string),
 [read buffer](/reference/serial/read-buffer),
 [set rx buffer size](/reference/serial/set-rx-buffer-size),
-[set tx buffer size](/reference/serial/set-tx-buffer-size)
+[set tx buffer size](/reference/serial/set-tx-buffer-size),
+[create serial](/reference/serial/create-serial)
 
 ```package
 serial

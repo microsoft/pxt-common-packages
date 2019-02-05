@@ -45,6 +45,11 @@ DevicePin *lookupPin(int pinName) {
     return getPin(pinName);
 }
 
+//%
+DevicePin *lookupPinCfg(int key) {
+    return lookupPin(getConfig(key));
+}
+
 CodalComponent *lookupComponent(int id) {
     for (int i = 0; i < DEVICE_COMPONENT_COUNT; ++i) {
         if (CodalComponent::components[i] && CodalComponent::components[i]->id == id)
@@ -61,7 +66,7 @@ namespace pins {
 */
 //%
 DigitalInOutPin pinByCfg(int key) {
-    return pxt::getPinCfg(key);
+    return pxt::lookupPinCfg(key);
 }
 
 /**

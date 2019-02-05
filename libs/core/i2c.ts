@@ -22,6 +22,36 @@ namespace pins {
         pins.i2cWriteBuffer(address, buf, repeated)
     }
 
+    /**
+     * Read `size` bytes from a 7-bit I2C `address`.
+     */
+    //%
+    export function i2cReadBuffer(address: number, size: number, repeat: boolean = false): Buffer {
+        return pins.i2c().readBuffer(address, size, repeat);
+    }
+
+    /**
+     * Write bytes to a 7-bit I2C `address`.
+     */
+    //%
+    export function i2cWriteBuffer(address: number, buf: Buffer, repeat: boolean = false): number {
+        return pins.i2c().writeBuffer(address, buf, repeat);
+    }
+
+    let _i2c: I2C;
+    /**
+     * Gets the default I2C bus
+     */
+    //%
+    export function i2c() {
+        if (!_i2c) {
+            const sda = pins.pinByCfg(DAL.CFG_PIN_SDA);
+            const scl = pins.pinByCfg(DAL.CFG_PIN_SCL);
+            _i2c = pins.createI2C(sda, scl);    
+        }
+        return _i2c;        
+    }
+
     export class I2CDevice {
         public address: number;
         private _hasError: boolean;

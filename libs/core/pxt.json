@@ -21,6 +21,7 @@
         "i2c.cpp",
         "i2c.ts",
         "spi.cpp",
+        "spi.ts",
         "shims.d.ts",
         "enums.d.ts",
         "hf2.cpp",

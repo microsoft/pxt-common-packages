@@ -16,8 +16,10 @@ Notwithstanding any other terms, you may reverse engineer this software to the
 extent required to debug changes to any libraries licensed under the GNU Lesser
 General Public License.
 
+------------------------------------------------------------------------------
 
-
+All sections of code within this repository are licensed under an MIT License:
+=======
 1.   pxt-lora v0.2.2 (https://github.com/ElectronicCats/pxt-lora/archive/v0.2.2.tar.gz)
 2.   arduino-LoRa v0.5.0 (https://github.com/sandeepmistry/arduino-LoRa)
 

@@ -52,8 +52,8 @@
 #error "please define PXT_SUPPORT_* and PXT_DEFUALT_ACCELEROMETER"
 #endif
 
-namespace pins {
-CODAL_I2C *getI2C();
+namespace pxt {
+CODAL_I2C* getI2C(DigitalInOutPin sda, DigitalInOutPin scl);
 }
 
 namespace pxt {
@@ -65,13 +65,8 @@ class WAccel {
   public:
     Accelerometer *acc;
     WAccel() : space(ACC_SYSTEM, ACC_UPSIDEDOWN, ACC_ROTATION) {
-        CODAL_I2C *i2c;
-        if (PIN(ACCELEROMETER_SDA) == (PinName)-1 || PIN(ACCELEROMETER_SDA) == PIN(SDA)) {
-            i2c = pins::getI2C();
-        } else {
-            i2c = new CODAL_I2C(*LOOKUP_PIN(ACCELEROMETER_SDA), *LOOKUP_PIN(ACCELEROMETER_SCL));
-        }
-
+        DMESG("ACCEL: mounting");
+        codal::I2C* i2c = pxt::getI2C(LOOKUP_PIN(ACCELEROMETER_SDA), LOOKUP_PIN(ACCELEROMETER_SCL));
         auto accType = getConfig(CFG_ACCELEROMETER_TYPE, PXT_DEFAULT_ACCELEROMETER);
         acc = NULL;
         switch (accType) {
