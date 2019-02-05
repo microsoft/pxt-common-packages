@@ -22,6 +22,10 @@ public:
     {
     }
 
+    CODAL_SPI* getSPI() {
+        return &spi;
+    }
+
     bool matchPins(DevicePin* mosi, DevicePin* miso, DevicePin* sck) {
         return this->mosi == mosi && this->miso == miso && this->sck == sck;
     }
@@ -66,6 +70,11 @@ SPI_ createSPI(DigitalInOutPin mosiPin, DigitalInOutPin misoPin, DigitalInOutPin
   ser->next = spis;
   spis = ser;
   return ser;
+}
+
+CODAL_SPI* getSPI(DigitalInOutPin mosiPin, DigitalInOutPin misoPin, DigitalInOutPin sckPin) {
+    auto spi = createSPI(mosiPin, misoPin, sckPin);
+    return spi->getSPI();
 }
 
 }

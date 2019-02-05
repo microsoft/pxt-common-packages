@@ -57,15 +57,6 @@ void sendBuffer(DevicePin* pin, int mode, Buffer buf) {
 }
 
 // SPI
-static codal::SPI *spi = NULL;
-static void initSPI(DevicePin *mosi) {
-    DevicePin *noPin = NULL;
-    if (NULL == spi) {
-        spi = new CODAL_SPI(*mosi, *noPin, *noPin);
-        spi->setFrequency(2400000);
-    }
-}
-
 void spiNeopixelSendBuffer(DevicePin* pin, const uint8_t *data, unsigned size) {
     int32_t iptr = 0, optr = 100;
     uint32_t len = optr + size * 3 + optr;
@@ -94,7 +85,8 @@ void spiNeopixelSendBuffer(DevicePin* pin, const uint8_t *data, unsigned size) {
         WR(0);
     }
 
-    initSPI(pin);
+    auto spi = pxt::getSPI(pin, noPin, noPin);
+    spi->setFrequency(2400000);
     spi->transfer(expBuf, len, NULL, 0);
     delete expBuf;
 }

@@ -75,6 +75,11 @@ class CodalI2CProxy;
 typedef pins::CodalI2CProxy* I2C_;
 typedef pins::CodalSPIProxy* SPI_;
 
+namespace pxt {
+CODAL_I2C* getI2C(DigitalInOutPin sda, DigitalInOutPin scl);
+CODAL_SPI* getZPI(DigitalInOutPin mosi, DigitalInOutPin miso, DigitalInOutPin sck);
+}
+
 namespace serial {
 class CodalSerialDeviceProxy;
 }
