@@ -72,8 +72,12 @@ SPI_ createSPI(DigitalInOutPin mosiPin, DigitalInOutPin misoPin, DigitalInOutPin
   return ser;
 }
 
+}
+
+namespace pxt {
+
 CODAL_SPI* getSPI(DigitalInOutPin mosiPin, DigitalInOutPin misoPin, DigitalInOutPin sckPin) {
-    auto spi = createSPI(mosiPin, misoPin, sckPin);
+    auto spi = pins::createSPI(mosiPin, misoPin, sckPin);
     return spi->getSPI();
 }
 
