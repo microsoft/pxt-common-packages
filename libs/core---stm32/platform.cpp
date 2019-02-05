@@ -1,6 +1,7 @@
 #include "pxt.h"
 #include "STMLowLevelTimer.h"
 #include "Accelerometer.h"
+#include "light.h"
 
 namespace pxt {
 
@@ -28,6 +29,7 @@ void platformSendSerial(const char *data, int len) {
 void platform_init() {
     initRandomSeed();
     setSendToUART(platformSendSerial);
+    light::clear();
 
     /*
         if (*HF2_DBG_MAGIC_PTR == HF2_DBG_MAGIC_START) {

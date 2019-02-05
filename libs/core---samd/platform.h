@@ -18,14 +18,6 @@
 
 #include "pinmap.h"
 
-
-#ifdef SAMD21
-#include "neopixel.h"
-#else
-#define neopixel_send_buffer(pin, ptr, len) pxt::spiNeopixelSendBuffer(&(pin), (ptr), (len))
-#endif
-
-
 #undef min
 #undef max
 

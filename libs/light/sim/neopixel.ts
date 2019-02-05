@@ -44,8 +44,4 @@ namespace pxsim.light {
 
         runtime.queueDisplayUpdate();
     }
-
-    export function defaultPin() {
-        return (board() as LightBoard).defaultNeopixelPin();
-    }
 }

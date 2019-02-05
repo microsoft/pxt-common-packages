@@ -53,10 +53,6 @@
 #endif
 
 namespace pxt {
-CODAL_I2C* getI2C(DigitalInOutPin sda, DigitalInOutPin scl);
-}
-
-namespace pxt {
 
 // Wrapper classes
 class WAccel {
