@@ -24,10 +24,6 @@
 #define CODAL_SPI CODAL_MBED::SPI
 #endif
 
-#ifndef CODAL_I2C
-#define CODAL_I2C CODAL_MBED::I2C
-#endif
-
 #ifndef CODAL_SERIAL
 #define CODAL_SERIAL CODAL_MBED::Serial
 #endif
