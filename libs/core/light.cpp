@@ -56,7 +56,6 @@ void sendBuffer(DevicePin* pin, int mode, Buffer buf) {
     light::sendData(pin, mode, buf->data, buf->length);
 }
 
-static DevicePin* NO_PIN = NULL;
 // SPI
 void spiNeopixelSendBuffer(DevicePin* pin, const uint8_t *data, unsigned size) {
     int32_t iptr = 0, optr = 100;
@@ -86,7 +85,7 @@ void spiNeopixelSendBuffer(DevicePin* pin, const uint8_t *data, unsigned size) {
         WR(0);
     }
 
-    auto spi = pxt::getSPI(pin, NO_PIN, NO_PIN);
+    auto spi = pxt::getSPI(pin, NULL, NULL);
     spi->setFrequency(2400000);
     spi->transfer(expBuf, len, NULL, 0);
     delete expBuf;
