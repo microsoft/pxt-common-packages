@@ -3,11 +3,8 @@
     "description": "The programmable LED (WS2812b) driver.",
     "files": [
         "README.md",
-        "neopixel.cpp",
         "neopixel.ts",
         "create.ts",
-        "shims.d.ts",
-        "enums.d.ts",
         "ns.ts",
         "jacdac.ts",
         "neopixeloverrides.ts",

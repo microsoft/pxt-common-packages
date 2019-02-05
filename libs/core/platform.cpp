@@ -1,5 +1,5 @@
 #include "pxt.h"
-#include "neopixel.h"
+#include "light.h"
 
 namespace pxt {
 
@@ -44,7 +44,7 @@ static void clearNeoPixels() {
             memset(neobuf, 0, size);
             neoPin->setDigitalValue(0);
             fiber_sleep(1);
-            neopixel_send_buffer(*neoPin, neobuf, 30);
+            pxt::lightSendBuffer(neoPin, neobuf, 30);
         }
     }
 }
