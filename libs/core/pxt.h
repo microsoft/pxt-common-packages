@@ -77,7 +77,7 @@ typedef pins::CodalSPIProxy* SPI_;
 
 namespace pxt {
 CODAL_I2C* getI2C(DigitalInOutPin sda, DigitalInOutPin scl);
-CODAL_SPI* getZPI(DigitalInOutPin mosi, DigitalInOutPin miso, DigitalInOutPin sck);
+CODAL_SPI* getSPI(DigitalInOutPin mosi, DigitalInOutPin miso, DigitalInOutPin sck);
 }
 
 namespace serial {
