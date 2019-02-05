@@ -117,6 +117,14 @@ void sendPixelBuffer(Buffer buf) {
         }
         // data stream
         for (int i = 0; i < buf->length; ++i) {
+            if (i % 3 == 0) {
+                // write brightness byte -- full brightness
+                dat->setDigitalValue(1);
+                for (int k = 0; k < 8; ++k) {
+                    clk->setDigitalValue(1);
+                    clk->setDigitalValue(0);
+                }
+            }
             int x = buf->data[i];
             for (uint8_t i = 0x80; i != 0; i >>= 1) {
                 dat->setDigitalValue(x & i ? 1 : 0);
