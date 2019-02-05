@@ -18,7 +18,7 @@ bool isValidSPIPin(DigitalInOutPin pin) {
 #if SAMD51
     return ZSPI::isValidMOSIPin(*pin);
 #else
-    // TODO
+    // TODO: support for SPI neopixels
     return false;
 #endif
 
@@ -44,6 +44,7 @@ void sendData(DevicePin* pin, int mode, const uint8_t* data, unsigned length) {
         spiNeopixelSendBuffer(pin, data, length);
     }
 #if SAMD21
+    // TODO bit banging for all cpus
     else {
         neopixel_send_buffer(*pin, data, length);
     }
