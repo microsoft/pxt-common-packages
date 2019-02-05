@@ -85,6 +85,7 @@ void spiNeopixelSendBuffer(DevicePin* pin, const uint8_t *data, unsigned size) {
         WR(0);
     }
 
+    DigitalPin* noPin = NULL;
     auto spi = pxt::getSPI(pin, noPin, noPin);
     spi->setFrequency(2400000);
     spi->transfer(expBuf, len, NULL, 0);
