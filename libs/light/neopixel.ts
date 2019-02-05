@@ -1002,6 +1002,9 @@ namespace light {
     ): NeoPixelStrip {
         if (!mode)
             mode = NeoPixelMode.RGB
+        if (!pin) {
+            pin = pins.pinByCfg(DAL.CFG_PIN_NEOPIXEL);
+        }
 
         const strip = new NeoPixelStrip();
         strip._buffered = false;
@@ -1009,7 +1012,7 @@ namespace light {
         strip._length = Math.max(0, numleds);
         strip._brightness = 20;
         strip._start = 0;
-        strip._pin = pin ? pin : defaultPin();
+        strip._pin = pin;
         if (strip._pin) // board with no-board LEDs won't have a default pin
             strip._pin.digitalWrite(false);
         strip._barGraphHigh = 0;

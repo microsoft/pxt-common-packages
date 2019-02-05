@@ -7,6 +7,75 @@
 namespace serial {
     export let NEW_LINE = "\r\n"; // \r require or Putty really unhappy on windows
 
+    export class Serial {
+        serialDevice: SerialDevice;
+        decoder: UTF8Decoder;
+        constructor(serialDevice: SerialDevice) {
+            this.serialDevice = serialDevice;
+            this.decoder = new UTF8Decoder();
+        }
+
+        readString(): string {
+            const buf = this.serialDevice.readBuffer();
+            this.decoder.add(buf);
+            return this.decoder.decode();
+        }
+
+        readLine(timeOut?: number): string {
+            return this.readUntil(Delimiters.NewLine, timeOut);
+        }
+
+        readUntil(delimiter: Delimiters, timeOut?: number): string {
+            const start = control.millis();
+            do {
+                const s = this.decoder.decodeUntil(delimiter);
+                if (s !== undefined)
+                    return s;
+                const b = this.serialDevice.readBuffer()
+                this.decoder.add(b);
+                pause(1);
+            }
+            while (timeOut === undefined || (control.millis() - start < timeOut));
+            // giving up
+            return "";
+        }
+
+        writeString(text: string) {
+            if (!text) return;
+            const buf = control.createBufferFromUTF8(text);
+            this.serialDevice.writeBuffer(buf);
+        }
+
+        writeLine(text: string) {
+            this.writeString(text);
+            this.writeString(serial.NEW_LINE);
+        }
+    }
+
+    /**
+     * Creates a serial comm device
+     * @param tx 
+     * @param rx 
+     * @param id 
+     */
+    //% help=serial/create-serial
+    //% parts=serial
+    export function createSerial(tx: DigitalInOutPin, rx: DigitalInOutPin, id?: number): Serial {
+        const dev = serial.internalCreateSerialDevice(tx, rx, id || 0);
+        return new Serial(dev);
+    }
+
+    let _device: Serial;
+    export function device(): Serial {
+        if (!_device) {
+            const tx = pins.pinByCfg(DAL.CFG_PIN_TX);
+            const rx = pins.pinByCfg(DAL.CFG_PIN_RX);
+            if (!tx || !rx) return undefined;
+            _device = serial.createSerial(tx, rx, DAL.DEVICE_ID_SERIAL);
+        }
+        return _device;
+    }
+
     /**
     * Read the buffered received data as a string
     */
@@ -15,20 +84,8 @@ namespace serial {
     //% weight=18
     //% group="Read"
     export function readString(): string {
-        const buf = serial.readBuffer();
-        return buf.toString();
-    }
-
-    /**
-     * Write some text to the serial port.
-     */
-    //% help=serial/write-string
-    //% weight=87
-    //% blockId=serial_writestring block="serial|write string %text"
-    //% group="Write"
-    export function writeString(text: string) {
-        const buf = control.createBufferFromUTF8(text);
-        serial.writeBuffer(buf);
+        const d = device();
+        return d ? d.readString() : "";
     }
 
     /**
@@ -39,7 +96,8 @@ namespace serial {
     //% weight=20 blockGap=8
     //% group="Read"
     export function readLine(): string {
-        return serial.readUntil(Delimiters.NewLine);
+        const d = device();
+        return d ? d.readLine() : "";
     }
 
     /**
@@ -51,40 +109,20 @@ namespace serial {
     //% weight=19
     //% group="Read"    
     export function readUntil(delimiter: Delimiters, timeOut?: number): string {
-        const start = control.millis();
-        let r = "";
-        let buf = control.createBuffer(3);
-        let bufi = 0;
-        while(timeOut === undefined || (control.millis() - start < timeOut)) {
-            const c = serial.read();
-            if (c == DAL.DEVICE_NO_DATA) { // no data, sleep and try again
-                pause(1);
-                continue;
-            }
-            else if (c < 0) // error -- return what we have so far
-                break;
-            // store in temp buffer
-            buf[bufi++] = c;
-            // commit completed letter
-            if (bufi == 1 && (buf[0] & 0x80) == 0) {
-                if (buf[0] == delimiter)
-                    break; // found the delimiter!
-                r += String.fromCharCode(buf[0]);
-                bufi = 0;
-            } else if (bufi == 2 && (c & 0xe0) == 0xc0) {
-                r += String.fromCharCode(((buf[0] & 0x1f) << 6) | (buf[1] & 0x3f));
-                bufi = 0;
-            } else if (bufi == 3) {
-                if ((c & 0xf0) == 0xe0) {
-                    r += String.fromCharCode(((buf[0] & 0x0f) << 12) | (buf[1] & 0x3f) << 6 | (buf[2] & 0x3f));
-                    bufi = 0;
-                } else {
-                    // error...
-                    break;
-                }
-            }
-        }
-        return r;
+        const d = device();
+        return d ? d.readUntil(delimiter, timeOut) : "";
+    }
+
+    /**
+     * Write some text to the serial port.
+     */
+    //% help=serial/write-string
+    //% weight=87
+    //% blockId=serial_writestring block="serial|write string %text"
+    //% group="Write"
+    export function writeString(text: string) {
+        const d = device();
+        if (d) d.writeString(text);
     }
 
     /**
@@ -96,8 +134,8 @@ namespace serial {
     //% blockId=serial_writeline block="serial|write line %text"
     //% group="Write"
     export function writeLine(text: string): void {
-        writeString(text);
-        writeString(NEW_LINE);
+        const d = device();
+        if (d) d.writeLine(text);
     }
 
     /**
@@ -127,5 +165,154 @@ namespace serial {
         }
         writeNumber(value);
         writeString(NEW_LINE);
+    }
+
+    /**
+    * Sets the size of the RX buffer in bytes
+    */
+    //% help=serial/set-rx-buffer-size
+    //% blockId=serialsetrxbuffersize block="serial set rx buffer size to $size"
+    //% weight=10
+    //% group="Configuration"
+    export function setRxBufferSize(size: number) {
+        const ser = device();
+        if (ser)
+            ser.serialDevice.setRxBufferSize(size);
+    }
+
+    /**
+    * Sets the size of the TX buffer in bytes
+    */
+    //% help=serial/set-tx-buffer-size
+    //% blockId=serialsettxbuffersize block="serial set tx buffer size to $size"
+    //% weight=9
+    //% group="Configuration"
+    export function setTxBufferSize(size: number) {
+        const ser = device();
+        if (ser)
+            ser.serialDevice.setTxBufferSize(size);
+    }
+
+    /**
+    * Reads a single byte from the serial receive buffer. Negative if error, 0 if no data.
+    */
+    //% Group="Read"
+    export function read(): number {
+        const ser = device();
+        if (ser)
+            return ser.serialDevice.read();
+        else return DAL.DEVICE_NOT_SUPPORTED;
+    }
+
+    /**
+    * Read the buffered received data as a buffer
+    */
+    //% help=serial/read-buffer
+    //% blockId=serial_read_buffer block="serial|read buffer"
+    //% weight=17
+    //% group="Read"
+    export function readBuffer(): Buffer {
+        const ser = device();
+        if (ser)
+            return ser.serialDevice.readBuffer();
+        else
+            return control.createBuffer(0);
+    }
+
+
+    /**
+    * Send a buffer across the serial connection.
+    */
+    //% help=serial/write-buffer weight=6
+    //% blockId=serial_writebuffer block="serial|write buffer %buffer"
+    //% group="Write"
+    export function writeBuffer(buffer: Buffer) {
+        const ser = device();
+        if (ser)
+            ser.serialDevice.writeBuffer(buffer);
+    }
+
+
+    /**
+    Set the baud rate of the serial port
+    */
+    //% weight=10
+    //% blockId=serial_setbaudrate block="serial|set baud rate %rate"
+    //% blockGap=8 inlineInputMode=inline
+    //% help=serial/set-baud-rate
+    //% group="Configuration"
+    export function setBaudRate(rate: BaudRate) {
+        const ser = device();
+        if (ser)
+            ser.serialDevice.setBaudRate(rate);
+    }
+
+
+    /**
+      Sends the console message through the TX, RX pins
+      **/
+    //% blockId=serialsendtoconsole block="serial attach to console"
+    //% group="Configuration"
+    export function attachToConsole() {
+        console.addListener(logListener)
+    }
+
+    function logListener(priority: ConsolePriority, text: string) {
+        switch (priority) {
+            case ConsolePriority.Debug: writeString("dbg> "); break;
+            case ConsolePriority.Error: writeString("err> "); break;
+            case ConsolePriority.Warning: writeString("wrn> "); break;
+        }
+        writeLine(text);
+    }
+
+
+    /**
+    * Set the serial input and output to use pins instead of the USB connection.
+    * @param tx the new transmission pin
+    * @param rx the new reception pin
+    * @param rate the new baud rate
+    */
+    //% weight=10
+    //% help=serial/redirect
+    //% blockId=serial_redirect block="serial|redirect to|TX %tx|RX %rx"
+    //% tx.fieldEditor="gridpicker" tx.fieldOptions.columns=3
+    //% tx.fieldOptions.tooltips="false"
+    //% rx.fieldEditor="gridpicker" rx.fieldOptions.columns=3
+    //% rx.fieldOptions.tooltips="false"
+    //% blockGap=8 inlineInputMode=inline
+    //% group="Configuration"
+    export function redirect(tx: DigitalInOutPin, rx: DigitalInOutPin, rate: BaudRate) {
+        const ser = device();
+        if (ser)
+            ser.serialDevice.redirect(tx, rx, rate);
+    }
+
+    /**
+    * Registers code when serial events happen
+    **/
+    //% weight=9
+    //% help=serial/on-event
+    //% blockId=serial_onevent block="serial on %event"
+    //% blockGap=8
+    //% group="Events"
+    export function onEvent(event: SerialEvent, handler: () => void) {
+        const ser = device();
+        if (ser)
+            ser.serialDevice.onEvent(event, handler);
+    }
+
+    /**
+    * Registers code when a delimiter is received
+    **/
+    //% weight=10
+    //% help=serial/on-delimiter-received
+    //% blockId=serial_ondelimiter block="serial on delimiter $delimiter received"
+    //% blockGap=8
+    //% group="Events"
+    export function onDelimiterReceived(delimiter: Delimiters, handler: () => void) {
+        const ser = device();
+        if (ser)
+            ser.serialDevice.onDelimiterReceived(delimiter, handler);
     }
 }

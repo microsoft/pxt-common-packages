@@ -54,7 +54,7 @@ namespace pixel {
         buffer[1] = red;
         buffer[2] = blue;
 
-        pixel.sendBuffer(buffer);
+        light.sendPixelBuffer(buffer);
     }
 
     /**

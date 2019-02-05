@@ -704,6 +704,8 @@ class BoxedString : public RefObject {
     const char *getUTF8DataAt(uint32_t pos) { return pos < ascii.length ? ascii.data + pos : NULL; }
 #endif
 
+    TNumber charCodeAt(int pos);
+
     BoxedString(const VTable *vt) : RefObject(vt) {}
 };
 
@@ -800,6 +802,7 @@ TNumber getNumberCore(uint8_t *buf, int size, NumberFormat format);
 void setNumberCore(uint8_t *buf, int size, NumberFormat format, TNumber value);
 
 void seedRandom(unsigned seed);
+void seedAddRandom(unsigned seed);
 // max is inclusive
 unsigned getRandom(unsigned max);
 

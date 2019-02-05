@@ -318,6 +318,10 @@ void seedRandom(unsigned seed) {
     random_value = seed;
 }
 
+void seedAddRandom(unsigned seed) {
+    random_value = (random_value * 0x1000193) ^ seed;
+}
+
 unsigned getRandom(unsigned max) {
     unsigned m, result;
 
@@ -345,6 +349,24 @@ unsigned getRandom(unsigned max) {
     } while (result > (unsigned)max);
 
     return result;
+}
+
+TNumber BoxedString::charCodeAt(int pos) {
+#if PXT_UTF8
+    auto ptr = this->getUTF8DataAt(pos);
+    if (!ptr)
+        return TAG_NAN;
+    auto code = utf8CharCode(ptr);
+    if (!code && ptr == this->getUTF8Data() + this->getUTF8Size())
+        return TAG_NAN;
+    return fromInt(code);
+#else
+    if (0 <= pos && pos < this->ascii.length) {
+        return fromInt(this->ascii.data[pos]);
+    } else {
+        return TAG_NAN;
+    }
+#endif
 }
 
 PXT_DEF_STRING(sTrue, "true")
@@ -395,23 +417,12 @@ String fromCharCode(int code) {
 #endif
 }
 
+
+
 //%
 TNumber charCodeAt(String s, int pos) {
-#if PXT_UTF8
-    auto ptr = s->getUTF8DataAt(pos);
-    if (!ptr)
-        return TAG_NAN;
-    auto code = utf8CharCode(ptr);
-    if (!code && ptr == s->getUTF8Data() + s->getUTF8Size())
-        return TAG_NAN;
-    return fromInt(code);
-#else
-    if (s && 0 <= pos && pos < s->ascii.length) {
-        return fromInt(s->ascii.data[pos]);
-    } else {
-        return TAG_NAN;
-    }
-#endif
+    if (!s) return TAG_NAN;
+    return s->charCodeAt(pos);
 }
 
 //%

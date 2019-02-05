@@ -125,10 +125,10 @@ namespace controller {
                 if (this._owner)
                     this._owner.connected = true;
                 this._pressed = pressed;
-                if (this._pressed)
-                    this.raiseButtonDown();
-                else {
+                if (this._pressed) {
                     this._pressedElasped = 0;
+                    this.raiseButtonDown();
+                } else {
                     this._repeatCount = 0;
                     this.raiseButtonUp();
                 }
@@ -138,11 +138,12 @@ namespace controller {
         __update(dtms: number) {
             if (!this._pressed) return;
             this._pressedElasped += dtms;
+
             // inital delay
             if (this._pressedElasped < this.repeatDelay)
                 return;
 
-            // do we have enough time to repeat
+            // repeat count for this step
             const count = Math.floor((this._pressedElasped - this.repeatDelay) / this.repeatInterval);
             if (count != this._repeatCount) {
                 this.raiseButtonRepeat();
@@ -156,7 +157,6 @@ namespace controller {
     function addController(ctrl: Controller) {
         if (!_players) {
             _players = [];
-            game.currentScene().eventContext.registerFrameHandler(19, moveSprites);
         }
         _players[ctrl.playerIndex - 1] = ctrl;
     }
@@ -168,17 +168,17 @@ namespace controller {
     }
 
     export function players(): Controller[] {
-        if (!_players) return [];
+        player1(); // ensure player1 is present
         return _players.filter(ctrl => !!ctrl);
     }
 
-    interface ControlledSprite {
+    export interface ControlledSprite {
         s: Sprite;
         vx: number;
         vy: number;
     }
 
-    function moveSprites() {
+    export function _moveSprites() {
         // todo: move to currecnt sceane
         control.enablePerfCounter("controller")
         players().forEach(ctrl => ctrl.__preUpdate());
@@ -189,7 +189,6 @@ namespace controller {
         playerIndex: number;
         buttons: Button[];
         private _id: number;
-        private _controlledSprites: ControlledSprite[];
         private _connected: boolean;
 
         // array of left,up,right,down,a,b,menu buttons
@@ -209,6 +208,14 @@ namespace controller {
             for (let i = 0; i < this.buttons.length; ++i)
                 this.buttons[i]._owner = this;
             addController(this);
+        }
+
+        get _controlledSprites(): ControlledSprite[] {
+            return game.currentScene().controlledSprites[this.playerIndex];
+        }
+
+        set _controlledSprites(cps: ControlledSprite[]) {
+            game.currentScene().controlledSprites[this.playerIndex] = cps;
         }
 
         get id() {
@@ -325,8 +332,8 @@ namespace controller {
 
         /**
          * Register code run when a controller event occurs
-         * @param event 
-         * @param handler 
+         * @param event
+         * @param handler
          */
         //% weight=99 blockGap=8
         //% blockId=ctrlonevent block="on %controller %event"
@@ -435,8 +442,8 @@ namespace controller {
                     .filter(s => !(s.s.flags & sprites.Flag.Destroyed));
         }
 
-        __update(dt: number) {
-            const dtms = (dt * 1000) | 0
+        __update(dtms: number) {
+            dtms = dtms | 0;
             this.buttons.forEach(btn => btn.__update(dtms));
         }
 

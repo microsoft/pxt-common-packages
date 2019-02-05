@@ -181,6 +181,77 @@ namespace control {
 
     //% shim=pxt::programHash
     export function programHash(): number { return 0 }
+
+    export enum IntervalMode {
+        Interval,
+        Timeout,
+        Immediate
+    }
+
+    let _intervals: Interval[] = undefined;
+    class Interval {
+
+        id: number;
+        func: () => void;
+        delay: number;
+        mode: IntervalMode;
+
+        constructor(func: () => void, delay: number, mode: IntervalMode) {
+            this.id = _intervals.length == 0
+                ? 1 : _intervals[_intervals.length - 1].id + 1;
+            this.func = func;
+            this.delay = delay;
+            this.mode = mode;
+            _intervals.push(this);
+
+            control.runInParallel(() => this.work());
+        }
+
+        work() {
+            // execute
+            switch (this.mode) {
+                case IntervalMode.Immediate:
+                case IntervalMode.Timeout:
+                    if (this.delay > 0)
+                        pause(this.delay); // timeout
+                    if (this.delay >= 0) // immediate, timeout
+                        this.func();
+                    break;
+                case IntervalMode.Interval:
+                    while (this.delay > 0) {
+                        pause(this.delay);
+                        // might have been cancelled during this duration
+                        if (this.delay > 0)
+                            this.func();
+                    }
+                    break;
+            }
+            // remove from interval array
+            _intervals.removeElement(this);
+        }
+
+        cancel() {
+            this.delay = -1;
+        }
+    }
+
+    export function setInterval(func: () => void, delay: number, mode: IntervalMode): number {
+        if (!func || delay < 0) return 0;
+        if (!_intervals) _intervals = [];
+        const interval = new Interval(func, delay, mode);
+        return interval.id;
+    }
+
+    export function clearInterval(intervalId: number, mode: IntervalMode): void {
+        if (!_intervals) return;
+        for (let i = 0; i < _intervals.length; ++i) {
+            const it = _intervals[i];
+            if (it.id == intervalId && it.mode == mode) {
+                it.cancel();
+                break;
+            }
+        }
+    }
 }
 
 /**
@@ -228,5 +299,146 @@ function hex(lits: any, ...args: any[]): Buffer { return null }
 namespace basic {
     export function pause(millis: number) {
         loops.pause(millis);
+    }
+}
+
+/**
+ * Calls a function with a fixed time delay between each call to that function.
+ * @param func 
+ * @param delay 
+ */
+//%
+function setInterval(func: () => void, delay: number): number {
+    delay = Math.max(10, delay | 0);
+    return control.setInterval(func, delay, control.IntervalMode.Interval);
+}
+
+/**
+ * Cancels repeated action which was set up using setInterval().
+ * @param intervalId 
+ */
+//%
+function clearInterval(intervalId: number) {
+    control.clearInterval(intervalId, control.IntervalMode.Interval);
+}
+
+/**
+ * Calls a function after specified delay.
+ * @param func 
+ * @param delay 
+ */
+//%
+function setTimeout(func: () => void, delay: number): number {
+    return control.setInterval(func, delay, control.IntervalMode.Timeout);
+}
+
+/**
+ * Clears the delay set by setTimeout().
+ * @param intervalId 
+ */
+//%
+function clearTimeout(intervalId: number) {
+    control.clearInterval(intervalId, control.IntervalMode.Timeout);
+}
+
+/**
+ * Calls a function as soon as possible.
+ * @param func 
+ */
+//%
+function setImmediate(func: () => void): number {
+    return control.setInterval(func, 0, control.IntervalMode.Immediate);
+}
+
+/**
+ * Cancels the immediate actions.
+ * @param intervalId 
+ */
+//%
+function clearImmediate(intervalId: number) {
+    control.clearInterval(intervalId, control.IntervalMode.Immediate);
+}
+
+class UTF8Decoder {
+    private buf: Buffer;
+
+    constructor() {
+        this.buf = undefined;
+    }
+
+    add(buf: Buffer) {
+        if (!buf || !buf.length) return;
+
+        if (!this.buf)
+            this.buf = buf;
+        else {
+            const b = control.createBuffer(this.buf.length + buf.length);
+            b.write(0, this.buf);
+            b.write(this.buf.length, buf);
+            this.buf = b;
+        }
+    }
+
+    decodeUntil(delimiter: number): string {
+        if (!this.buf) return undefined;
+        delimiter = delimiter | 0;
+        let i = 0;
+        for (; i < this.buf.length; ++i) {
+            const c = this.buf[i];
+            // skip multi-chars
+            if ((c & 0xe0) == 0xc0)
+                i += 1;
+            else if ((c & 0xf0) == 0xe0)
+                i += 2;
+            else if (c == delimiter) {
+                // found it
+                break;
+            }
+        }
+
+        if (i >= this.buf.length)
+            return undefined;
+        else {
+            const s = this.buf.slice(0, i).toString();
+            if (i + 1 == this.buf.length)
+                this.buf = undefined;
+            else
+                this.buf = this.buf.slice(i + 1);
+            return s;
+        }
+    }
+
+    decode(): string {
+        if (!this.buf) return "";
+
+        // scan the end of the buffer for partial characters
+        let length = 0;
+        for (let i = this.buf.length - 1; i >= 0; i--) {
+            const c = this.buf[i];
+            if ((c & 0x80) == 0) {
+                length = i + 1;
+                break;
+            }
+            else if ((c & 0xe0) == 0xc0) {
+                length = i + 2;
+                break;
+            }
+            else if ((c & 0xf0) == 0xe0) {
+                length = i + 3;
+                break;
+            }
+        }
+        // is last beyond the end?
+        if (length == this.buf.length) {
+            const s = this.buf.toString();
+            this.buf = undefined;
+            return s;
+        } else if (length == 0) { // data yet
+            return "";
+        } else {
+            const s = this.buf.slice(0, length).toString();
+            this.buf = this.buf.slice(length);
+            return s;
+        }
     }
 }

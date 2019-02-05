@@ -34,14 +34,14 @@ namespace effects {
         /**
          * Destroy the provided sprite with an effect
          * @param sprite
-         * @param duration how long the sprite will remain on the screen
+         * @param duration how long the sprite will remain on the screen. If set to 0 or undefined,
+         *                  uses the default rate for this effect.
          * @param particlesPerSecond
          */
         destroy(anchor: Sprite, duration?: number, particlesPerSecond?: number) {
             anchor.setFlag(SpriteFlag.Ghost, true);
             this.start(anchor, particlesPerSecond);
-            if (duration)
-                anchor.lifespan = duration;
+            anchor.lifespan = duration ? duration : this.defaultLifespan >> 2;
             effects.dissolve.applyTo(anchor);
         }
     }
@@ -136,7 +136,7 @@ namespace effects {
     //% blockNamespace=sprites
     //% group="Effects" weight=89
     export function clearParticles(anchor: particles.ParticleAnchor) {
-        const sources = game.currentScene().data.particleSources as particles.ParticleSource[];
+        const sources = game.currentScene().particleSources;
         if (!sources) return;
         sources
             .filter(ps => ps.anchor == anchor || ps.anchor.x == anchor.x && ps.anchor.y == anchor.y)
@@ -204,6 +204,7 @@ namespace effects {
             . F . F .
             . . F . .
         `);
+
         // if large anchor, increase lifespan
         if (factory.xRange > 50) {
             factory.minLifespan = 1000;

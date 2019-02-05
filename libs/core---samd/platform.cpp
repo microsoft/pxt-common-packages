@@ -2,6 +2,7 @@
 
 #include "SAMDTCTimer.h"
 #include "SAMDTCCTimer.h"
+#include "light.h"
 
 namespace pxt {
 
@@ -12,6 +13,7 @@ SAMDTCTimer lowTimer(TC4, TC4_IRQn);
 SAMDTCTimer lowTimer(TC0, TC0_IRQn);
 #endif
 
+__attribute__((used))
 CODAL_TIMER devTimer(lowTimer);
 
 static void initRandomSeed() {
@@ -25,16 +27,7 @@ void platformSendSerial(const char *data, int len) {}
 void platform_init() {
     initRandomSeed();
     setSendToUART(platformSendSerial);
-
-    auto neopix = LOOKUP_PIN(NEOPIXEL);
-    if (neopix && ZSPI::isValidMOSIPin(*neopix)) {
-        auto num = getConfig(CFG_NUM_NEOPIXELS, 0);
-        if (num) {
-            uint8_t off[3 * num];
-            memset(off, 0, sizeof(off));
-            pxt::spiNeopixelSendBuffer(neopix, off, sizeof(off));
-        }
-    }
+    light::clear();
 
     /*
         if (*HF2_DBG_MAGIC_PTR == HF2_DBG_MAGIC_START) {

@@ -17,6 +17,9 @@ namespace game {
     let _scene: scene.Scene;
     let _sceneStack: scene.Scene[];
 
+    let _scenePushHandlers: (() => void)[];
+    let _scenePopHandlers: (() => void)[];
+
     export function currentScene(): scene.Scene {
         init();
         return _scene;
@@ -62,6 +65,10 @@ namespace game {
         _sceneStack.push(_scene);
         _scene = undefined;
         init();
+
+        if (_scenePushHandlers) {
+            _scenePushHandlers.forEach(cb => cb());
+        }
     }
 
     export function popScene() {
@@ -76,6 +83,10 @@ namespace game {
         }
         if (_scene)
             particles.enableAll();
+
+        if (_scenePopHandlers) {
+            _scenePopHandlers.forEach(cb => cb());
+        }
     }
 
     function showDialogBackground(h: number, c: number) {
@@ -155,9 +166,6 @@ namespace game {
             effect = win ? winEffect : loseEffect;
         }
 
-        // one last screenshot
-        takeScreenshot();
-
         // releasing memory and clear fibers. Do not add anything that releases the fiber until background is set below,
         // or screen will be cleared on the new frame and will not appear as background in the game over screen.
         while (_sceneStack && _sceneStack.length) {
@@ -194,12 +202,6 @@ namespace game {
         waitAnyButton();
         control.reset();
     }
-
-    /**
-     * Tells the game host to grab a screenshot
-     */
-    //% shim=game::takeScreenshot
-    declare function takeScreenshot(): void;
 
     /**
      * Update the position and velocities of sprites
@@ -256,5 +258,51 @@ namespace game {
     //% help=game/runtime
     export function runtime(): number {
         return currentScene().millis();
+    }
+
+    /**
+     * Register a handler that runs whenever a scene is pushed onto the scene
+     * stack. Useful for extensions that need to store/restore state as the
+     * event context changes. The handler is run AFTER the push operation (i.e.
+     * after game.currentScene() has changed)
+     *
+     * @param handler Code to run when a scene is pushed onto the stack
+     */
+    export function addScenePushHandler(handler: () => void) {
+        if (!_scenePushHandlers) _scenePushHandlers = [];
+        _scenePushHandlers.push(handler);
+    }
+
+    /**
+     * Remove a scene push handler. Useful for extensions that need to store/restore state as the
+     * event context changes.
+     *
+     * @param handler The handler to remove
+     */
+    export function removeScenePushHandler(handler: () => void) {
+        if (_scenePushHandlers) _scenePushHandlers.removeElement(handler);
+    }
+
+    /**
+     * Register a handler that runs whenever a scene is popped off of the scene
+     * stack. Useful for extensions that need to store/restore state as the
+     * event context changes. The handler is run AFTER the pop operation. (i.e.
+     * after game.currentScene() has changed)
+     *
+     * @param handler Code to run when a scene is removed from the top of the stack
+     */
+    export function addScenePopHandler(handler: () => void) {
+        if (!_scenePopHandlers) _scenePopHandlers = [];
+        _scenePopHandlers.push(handler);
+    }
+
+    /**
+     * Remove a scene pop handler. Useful for extensions that need to store/restore state as the
+     * event context changes.
+     *
+     * @param handler The handler to remove
+     */
+    export function removeScenePopHandler(handler: () => void) {
+        if (_scenePopHandlers) _scenePopHandlers.removeElement(handler);
     }
 }

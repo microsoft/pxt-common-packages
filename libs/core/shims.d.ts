@@ -2,6 +2,12 @@
 declare namespace pins {
 
     /**
+     * Get a pin by configuration id (DAL.CFG_PIN...)
+     */
+    //% shim=pins::pinByCfg
+    function pinByCfg(key: int32): DigitalInOutPin;
+
+    /**
      * Create a new zero-initialized buffer.
      * @param size number of bytes in the buffer
      */
@@ -222,21 +228,77 @@ declare namespace control {
     //% shim=control::dmesgPtr
     function dmesgPtr(str: string, ptr: Object): void;
 }
-declare namespace pins {
 
+
+declare interface I2C {
     /**
      * Read `size` bytes from a 7-bit I2C `address`.
      */
-    //% repeat.defl=0 shim=pins::i2cReadBuffer
-    function i2cReadBuffer(address: int32, size: int32, repeat?: boolean): Buffer;
+    //% repeat.defl=0 shim=I2CMethods::readBuffer
+    readBuffer(address: int32, size: int32, repeat?: boolean): Buffer;
 
     /**
      * Write bytes to a 7-bit I2C `address`.
      */
-    //% repeat.defl=0 shim=pins::i2cWriteBuffer
-    function i2cWriteBuffer(address: int32, buf: Buffer, repeat?: boolean): int32;
+    //% repeat.defl=0 shim=I2CMethods::writeBuffer
+    writeBuffer(address: int32, buf: Buffer, repeat?: boolean): int32;
 }
 declare namespace pins {
+
+    /**
+     * Opens a Serial communication driver
+     */
+    //% shim=pins::createI2C
+    function createI2C(sda: DigitalInOutPin, scl: DigitalInOutPin): I2C;
+
+    /**
+     * Gets the default I2C device
+     */
+    //% shim=pins::i2c
+    function i2c(): I2C;
+}
+declare namespace pins {
+
+    /**
+     * Opens a SPI driver
+     */
+    //% parts=spi shim=pins::createSPI
+    function createSPI(mosiPin: DigitalInOutPin, misoPin: DigitalInOutPin, sckPin: DigitalInOutPin): SPI;
+}
+
+
+declare interface SPI {
+    /**
+     * Write to the SPI bus
+     */
+    //% shim=SPIMethods::write
+    write(value: int32): int32;
+
+    /**
+     * Transfer buffers over the SPI bus
+     */
+    //% shim=SPIMethods::transfer
+    transfer(command: Buffer, response: Buffer): void;
+
+    /**
+     * Sets the SPI clock frequency
+     */
+    //% shim=SPIMethods::setFrequency
+    setFrequency(frequency: int32): void;
+
+    /**
+     * Sets the SPI bus mode
+     */
+    //% shim=SPIMethods::setMode
+    setMode(mode: int32): void;
+}
+declare namespace pins {
+
+    /**
+     * Gets the default SPI driver
+     */
+    //% shim=pins::spi
+    function spi(): SPI;
 
     /**
      * Write to the SPI slave and return the response

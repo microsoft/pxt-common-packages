@@ -72,11 +72,13 @@ class WDisplay {
     void setAddrMain() { lcd.setAddrWindow(offX, offY, width, displayHeight); }
 };
 
-SINGLETON(WDisplay);
+SINGLETON_IF_PIN(WDisplay, DISPLAY_MOSI);
 
 //%
 void setPalette(Buffer buf) {
     auto display = getWDisplay();
+    if (!display) return;
+
     if (48 != buf->length)
         target_panic(PANIC_SCREEN_ERROR);
     for (int i = 0; i < 16; ++i) {
@@ -90,6 +92,8 @@ void setPalette(Buffer buf) {
 //%
 void setupScreenStatusBar(int barHeight) {
     auto display = getWDisplay();
+    if (!display) return;
+    
     display->displayHeight = display->height - barHeight;
     display->setAddrMain();
 }
@@ -97,6 +101,8 @@ void setupScreenStatusBar(int barHeight) {
 //%
 void updateScreenStatusBar(Image_ img) {
     auto display = getWDisplay();
+    if (!display) return;
+    
     if (!img)
         return;
     display->lastStatus = img;
@@ -105,7 +111,8 @@ void updateScreenStatusBar(Image_ img) {
 //%
 void updateScreen(Image_ img) {
     auto display = getWDisplay();
-
+    if (!display) return;
+    
     if (display->inUpdate)
         return;
 

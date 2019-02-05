@@ -21,6 +21,7 @@
         "i2c.cpp",
         "i2c.ts",
         "spi.cpp",
+        "spi.ts",
         "shims.d.ts",
         "enums.d.ts",
         "hf2.cpp",
@@ -32,6 +33,8 @@
         "dmac.cpp",
         "dmac.h",
         "timer.ts",
+        "light.cpp",
+        "light.h",
         "pxtparts.json"
     ],
     "testFiles": [

@@ -45,6 +45,11 @@ DevicePin *lookupPin(int pinName) {
     return getPin(pinName);
 }
 
+//%
+DevicePin *lookupPinCfg(int key) {
+    return lookupPin(getConfig(key));
+}
+
 CodalComponent *lookupComponent(int id) {
     for (int i = 0; i < DEVICE_COMPONENT_COUNT; ++i) {
         if (CodalComponent::components[i] && CodalComponent::components[i]->id == id)
@@ -56,6 +61,14 @@ CodalComponent *lookupComponent(int id) {
 } // namespace pxt
 
 namespace pins {
+/**
+* Get a pin by configuration id (DAL.CFG_PIN...)
+*/
+//%
+DigitalInOutPin pinByCfg(int key) {
+    return pxt::lookupPinCfg(key);
+}
+
 /**
  * Create a new zero-initialized buffer.
  * @param size number of bytes in the buffer

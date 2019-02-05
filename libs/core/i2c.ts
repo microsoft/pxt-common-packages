@@ -6,6 +6,8 @@ namespace pins {
     //% blockId=pins_i2c_readnumber block="i2c read number at address %address|of format %format|repeated %repeated"
     export function i2cReadNumber(address: number, format: NumberFormat, repeated?: boolean): number {
         const buf = pins.i2cReadBuffer(address, pins.sizeOf(format), repeated)
+        if (!buf)
+            return undefined
         return buf.getNumber(format, 0)
     }
 
@@ -18,6 +20,36 @@ namespace pins {
         const buf = control.createBuffer(pins.sizeOf(format))
         buf.setNumber(format, 0, value)
         pins.i2cWriteBuffer(address, buf, repeated)
+    }
+
+    /**
+     * Read `size` bytes from a 7-bit I2C `address`.
+     */
+    //%
+    export function i2cReadBuffer(address: number, size: number, repeat: boolean = false): Buffer {
+        return pins.i2c().readBuffer(address, size, repeat);
+    }
+
+    /**
+     * Write bytes to a 7-bit I2C `address`.
+     */
+    //%
+    export function i2cWriteBuffer(address: number, buf: Buffer, repeat: boolean = false): number {
+        return pins.i2c().writeBuffer(address, buf, repeat);
+    }
+
+    let _i2c: I2C;
+    /**
+     * Gets the default I2C bus
+     */
+    //%
+    export function i2c() {
+        if (!_i2c) {
+            const sda = pins.pinByCfg(DAL.CFG_PIN_SDA);
+            const scl = pins.pinByCfg(DAL.CFG_PIN_SCL);
+            _i2c = pins.createI2C(sda, scl);    
+        }
+        return _i2c;        
     }
 
     export class I2CDevice {

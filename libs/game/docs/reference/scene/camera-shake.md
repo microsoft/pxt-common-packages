@@ -1,6 +1,6 @@
 # camera Shake
 
-Shakes the camera to create an shock effect.
+Shake the camera view to create a shock effect.
 
 ```sig
 scene.cameraShake(4, 1000)
@@ -12,6 +12,12 @@ scene.cameraShake(4, 1000)
 * **duration**: a [number](/types/number) duration in milli-seconds
 
 ## Example #example
+
+Shake the camera view for 1 second.
+
+```blocks
+scene.cameraShake(4, 1000)
+```
 
 ## See also #seealso
 

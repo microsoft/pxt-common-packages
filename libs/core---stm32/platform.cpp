@@ -1,22 +1,19 @@
 #include "pxt.h"
 #include "STMLowLevelTimer.h"
+#include "Accelerometer.h"
+#include "light.h"
 
 namespace pxt {
 
 STMLowLevelTimer tim5(TIM5, TIM5_IRQn);
 CODAL_TIMER devTimer(tim5);
 
+void initAccelRandom();
+
 static void initRandomSeed() {
-    int seed = 0xC0DA1;
-    /*
-    auto pinTemp = LOOKUP_PIN(TEMPERATURE);
-    if (pinTemp)
-        seed *= pinTemp->getAnalogValue();
-    auto pinLight = LOOKUP_PIN(LIGHT);
-    if (pinLight)
-        seed *= pinLight->getAnalogValue();
-    */
-    seedRandom(seed);
+    if (getConfig(CFG_ACCELEROMETER_TYPE, -1) != -1) {
+        initAccelRandom();
+    }
 }
 
 void platformSendSerial(const char *data, int len) {
@@ -32,6 +29,7 @@ void platformSendSerial(const char *data, int len) {
 void platform_init() {
     initRandomSeed();
     setSendToUART(platformSendSerial);
+    light::clear();
 
     /*
         if (*HF2_DBG_MAGIC_PTR == HF2_DBG_MAGIC_START) {
@@ -67,6 +65,7 @@ static void writeHex(char *buf, uint32_t n) {
 }
 
 void platform_usb_init() {
+#if CONFIG_ENABLED(DEVICE_USB)
     static char serial_number[25];
 
     writeHex(serial_number, STM32_UUID[0]);
@@ -74,9 +73,9 @@ void platform_usb_init() {
     writeHex(serial_number + 16, STM32_UUID[2]);
 
     usb.stringDescriptors[2] = serial_number;
+#endif
 }
 
 } // namespace pxt
 
-void cpu_clock_init() {
-}
+void cpu_clock_init() {}
