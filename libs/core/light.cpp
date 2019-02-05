@@ -3,7 +3,6 @@
 namespace light {
 //declarations
 void spiNeopixelSendBuffer(DevicePin* pin, const uint8_t *data, unsigned size);
-void nopNeopixelSendBuffer(DevicePin* pin, const uint8_t *data, unsigned size);
 
 }
 
