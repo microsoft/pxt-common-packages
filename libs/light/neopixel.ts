@@ -59,7 +59,9 @@ enum NeoPixelMode {
     //% block="RGB+W"
     RGBW = 2,
     //% block="RGB (RGB format)"
-    RGB_RGB = 3
+    RGB_RGB = 3,
+    //% block="DotStar (APA102c)"
+    DotStar = 4
 }
 
 enum LightMove {
@@ -263,14 +265,23 @@ namespace light {
             const offset = (pixeloffset + this._start) * stride;
             const b = this.buf;
             let red = 0, green = 0, blue = 0;
-            if (this._mode === NeoPixelMode.RGB_RGB) {
-                red = this.buf[offset + 0];
-                green = this.buf[offset + 1];
-            } else {
-                green = this.buf[offset + 0];
-                red = this.buf[offset + 1];
+            switch (this._mode) {
+                case NeoPixelMode.RGB_RGB:
+                    red = this.buf[offset + 0];
+                    green = this.buf[offset + 1];
+                    blue = this.buf[offset + 2];
+                    break;
+                case NeoPixelMode.DotStar:
+                    blue = this.buf[offset + 1];
+                    green = this.buf[offset + 2];
+                    red = this.buf[offset + 3];
+                    break;
+                default:
+                    green = this.buf[offset + 0];
+                    red = this.buf[offset + 1];
+                    blue = this.buf[offset + 2];
+                    break;
             }
-            blue = this.buf[offset + 2];
 
             return rgb(red, green, blue);
         }
@@ -442,7 +453,7 @@ namespace light {
         }
 
         private stride(): number {
-            return this._mode === NeoPixelMode.RGBW ? 4 : 3;
+            return this._mode === NeoPixelMode.RGBW || this._mode == NeoPixelMode.DotStar ? 4 : 3;
         }
 
         initPhoton() {
@@ -731,14 +742,26 @@ namespace light {
 
         private setBufferRGB(offset: number, red: number, green: number, blue: number): void {
             const b = this.buf;
-            if (this._mode === NeoPixelMode.RGB_RGB) {
-                b[offset + 0] = red;
-                b[offset + 1] = green;
-            } else {
-                b[offset + 0] = green;
-                b[offset + 1] = red;
+            // https://cdn-shop.adafruit.com/datasheets/APA102.pdf
+            switch (this._mode) {
+                case NeoPixelMode.RGB_RGB:
+                    b[offset] = red;
+                    b[offset + 1] = green;
+                    b[offset + 2] = blue;
+                    break;
+                case NeoPixelMode.DotStar:
+                    // https://cdn-shop.adafruit.com/datasheets/APA102.pdf
+                    b[offset] = 0xe | 0x1f; // full brightness
+                    b[offset + 1] = blue;
+                    b[offset + 2] = green;
+                    b[offset + 3] = red;
+                    break;
+                default:
+                    b[offset + 0] = green;
+                    b[offset + 1] = red;
+                    b[offset + 2] = blue;
+                    break;
             }
-            b[offset + 2] = blue;
         }
 
         private reallocateBuffer(): void {
