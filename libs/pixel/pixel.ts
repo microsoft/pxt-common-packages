@@ -29,7 +29,7 @@ enum PixelColors {
 /**
  * Functions to operate on-board color LED (if any).
  */
-//% weight=100 color="#0078d7" icon="\uf00a"
+//% weight=100 color="#0078d7" icon="\uf0eb"
 namespace pixel {
     let brightness = 20;
 
