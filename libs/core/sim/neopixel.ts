@@ -11,20 +11,23 @@ namespace pxsim {
         public buffer: Uint8Array;
         public mode: number = NeoPixelMode.RGB; // GRB
         public get length() {
-            return this.buffer ? (this.buffer.length / this.stride) >> 0 : 0;
+            return this.buffer ? (this.buffer.length / this.stride) | 0 : 0;
         }
 
         public get stride() {
-            return this.mode == NeoPixelMode.RGBW ? 4 : 3;
+            return this.mode == NeoPixelMode.RGBW || this.mode == NeoPixelMode.DotStar ? 4 : 3;
         }
 
         public pixelColor(pixel: number): number[] {
             const offset = pixel * this.stride;
+            // RBG
             switch (this.mode) {
                 case NeoPixelMode.RGBW:
                     return [this.buffer[offset + 1], this.buffer[offset], this.buffer[offset + 2], this.buffer[offset + 3]];
                 case NeoPixelMode.RGB_RGB:
                     return [this.buffer[offset], this.buffer[offset + 1], this.buffer[offset + 2]];
+                case NeoPixelMode.DotStar:
+                    return [this.buffer[offset + 3], this.buffer[offset + 2], this.buffer[offset + 1]];
                 default:
                     return [this.buffer[offset + 1], this.buffer[offset + 0], this.buffer[offset + 2]];
             }
