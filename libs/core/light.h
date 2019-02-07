@@ -16,7 +16,7 @@ namespace light {
     * @param mode the color encoding mode
     * @param buf The buffer to send to the pin
     */
-    //% parts="neopixel"
+    //%
     void sendBuffer(DigitalInOutPin data, DigitalInOutPin clk, int mode, Buffer buf);
 
     void neopixelSendData(DevicePin* pin, int mode, const uint8_t* data, unsigned length);
