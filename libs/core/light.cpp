@@ -7,6 +7,11 @@
 #define NEOPIXEL_MIN_LENGTH_FOR_SPI 48
 #define DOTSTAR_MIN_LENGTH_FOR_SPI 48
 
+#define LIGHTMODE_RGB 1
+#define LIGHTMODE_RGBW 2 
+#define LIGHTMODE_RGB_RGB 4
+#define LIGHTMODE_DOTSTAR 8
+
 namespace light {
 bool isValidSPIPin(DigitalInOutPin pin) {
     if (!pin)
@@ -84,7 +89,7 @@ void neopixelSendData(DevicePin* pin, int mode, const uint8_t* data, unsigned le
 #endif
 }
 
-void bitBangDotStarSendData(DevicePin* data, DevicePin* clk, const uint8_t* buf, unsigned length) {
+void bitBangDotStarSendData(DevicePin* data, DevicePin* clk, int mode, const uint8_t* buf, unsigned length) {
     // first frame of zeroes
     data->setDigitalValue(0);
     for (unsigned i = 0; i < 32; ++i) {
@@ -103,11 +108,11 @@ void bitBangDotStarSendData(DevicePin* data, DevicePin* clk, const uint8_t* buf,
     }
     // https://cpldcpu.wordpress.com/2016/12/13/sk9822-a-clone-of-the-apa102/
     // reset frame
-    data->setDigitalValue(0);
-    for (unsigned i = 0; i < 32 ; ++i) {
-        clk->setDigitalValue(1);
-        clk->setDigitalValue(0);
-    }
+    //data->setDigitalValue(0);
+    //for (unsigned i = 0; i < 32 ; ++i) {
+    //    clk->setDigitalValue(1);
+    //    clk->setDigitalValue(0);
+    //}
 
     // https://cpldcpu.wordpress.com/2014/11/30/understanding-the-apa102-superled/
     data->setDigitalValue(1);
@@ -130,19 +135,20 @@ void spiDotStarSendData(DevicePin* data, DevicePin* clk, const uint8_t* buf, uns
         spi->transfer(ONE_FRAME, sizeof(ONE_FRAME), NULL, 0); // final frame
 }
 
-void dotStarSendData(DevicePin* data, DevicePin* clk, const uint8_t* buf, unsigned length) {
+void dotStarSendData(DevicePin* data, DevicePin* clk, int mode, const uint8_t* buf, unsigned length) {
     if (!data || !clk || !buf || !length) return;
+
     if (length > DOTSTAR_MIN_LENGTH_FOR_SPI && isValidSPIPin(data))
-        spiDotStarSendData(data, clk, buf, length);
+        spiDotStarSendData(data, clk, mode, buf, length);
     else 
-        bitBangDotStarSendData(data, clk, buf, length);
+        bitBangDotStarSendData(data, clk, mode, buf, length);
 }
 
 void sendBuffer(DevicePin* data, DevicePin* clk, int mode, Buffer buf) {
     if (!data || !buf || !buf->length) return;
 
-    if (data && clk)
-        light::dotStarSendData(data, clk, buf->data, buf->length);
+    if (mode & LIGHTMODE_DOTSTAR)
+        light::dotStarSendData(data, clk, mode, buf->data, buf->length);
     else
         light::neopixelSendData(data, mode, buf->data, buf->length);
 }
