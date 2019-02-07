@@ -69,13 +69,14 @@ void spiNeopixelSendBuffer(DevicePin* pin, const uint8_t *data, unsigned size) {
 void neopixelSendData(DevicePin* pin, int mode, const uint8_t* data, unsigned length) {
     if (!pin || !length) return;
 
-    if (length > 31 && isValidSPIPin(pin)) {
-        spiNeopixelSendBuffer(pin, data, length);
-    }
 #if SAMD21
-    // TODO bit banging for all cpus
-    else {
+    if (length > 31 && isValidSPIPin(pin))
+        spiNeopixelSendBuffer(pin, data, length);
+    else
         neopixel_send_buffer(*pin, data, length);
+#else    
+    if (isValidSPIPin(pin)) {
+        spiNeopixelSendBuffer(pin, data, length);
     }
 #endif
 }
