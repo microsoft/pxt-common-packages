@@ -3,7 +3,8 @@ namespace pxsim {
     enum NeoPixelMode {
         RGB = 1,
         RGBW = 2,
-        RGB_RGB = 3
+        RGB_RGB = 3,
+        DotStar = 4
     }
 
     export class CommonNeoPixelState {

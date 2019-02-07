@@ -341,7 +341,7 @@ namespace light {
                 // apply photon
                 if (this._photonPenColor) {
                     // draw head and trail
-                    const tailn = Math.min(2, Math.max(8, this._length / 10));
+                    const tailn = Math.max(1, Math.min(8, this._length >> 4));
                     let pi = this._photonPos * stride;
                     let c = Math.max(128, this._brightness);
                     let dc = (c - 32) / tailn;
@@ -358,7 +358,7 @@ namespace light {
                         if (pi < 0) pi += sb.length;
                     }
                 }
-                console.log(`${!!this._dataPin} ${!!this._clkPin} ${this.mode} hex${sb.toHex()}`)
+                //console.log(`${!!this._dataPin} ${!!this._clkPin} ${this.mode} hex${sb.toHex()}`)
                 light.sendBuffer(this._dataPin, this._clkPin, this._mode, sb);
             }
         }
