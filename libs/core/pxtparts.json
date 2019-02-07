@@ -98,6 +98,11 @@
         "numberOfPins": 4,
         "pinDefinitions": [
             {
+                "target": "ground",
+                "style": "solder",
+                "orientation": "+Z"
+            },
+            {
                 "target": {
                     "pinInstantiationIdx": 0
                 },
@@ -115,11 +120,6 @@
                 "target": "threeVolt",
                 "style": "solder",
                 "orientation": "+Z"
-            },
-            {
-                "target": "ground",
-                "style": "solder",
-                "orientation": "+Z"
             }
         ],
         "instantiation": {
@@ -128,11 +128,11 @@
             "argumentRoles": [
                 {
                     "pinInstantiationIdx": 0,
-                    "partParameter": "pin"
+                    "partParameter": "dataPin"
                 },
                 {
                     "pinInstantiationIdx": 1,
-                    "partParameter": "pin"
+                    "partParameter": "clkPin"
                 },
                 {
                     "partParameter": "mode"
@@ -143,13 +143,17 @@
             {
                 "part": true,
                 "pinIndices": [
-                    2, 3
+                    0
                 ]
             },
             {
                 "pinIndices": [
-                    0,
-                    1
+                    1, 2
+                ]
+            },
+            {
+                "pinIndices": [
+                    3
                 ]
             }
         ]
