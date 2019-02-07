@@ -9,8 +9,8 @@
 
 #define LIGHTMODE_RGB 1
 #define LIGHTMODE_RGBW 2 
-#define LIGHTMODE_RGB_RGB 4
-#define LIGHTMODE_DOTSTAR 8
+#define LIGHTMODE_RGB_RGB 3
+#define LIGHTMODE_DOTSTAR 4
 
 namespace light {
 bool isValidSPIPin(DigitalInOutPin pin) {
@@ -125,7 +125,7 @@ void bitBangDotStarSendData(DevicePin* data, DevicePin* clk, int mode, const uin
 
 static uint8_t ZERO_FRAME[4];
 static uint8_t ONE_FRAME[] = {1,1,1,1};
-void spiDotStarSendData(DevicePin* data, DevicePin* clk, const uint8_t* buf, unsigned length) {
+void spiDotStarSendData(DevicePin* data, DevicePin* clk, int mode, const uint8_t* buf, unsigned length) {
     auto spi = pxt::getSPI(data, NULL, clk);
 
     spi->transfer(ZERO_FRAME, sizeof(ZERO_FRAME), NULL, 0); // initial frame
@@ -147,7 +147,7 @@ void dotStarSendData(DevicePin* data, DevicePin* clk, int mode, const uint8_t* b
 void sendBuffer(DevicePin* data, DevicePin* clk, int mode, Buffer buf) {
     if (!data || !buf || !buf->length) return;
 
-    if (mode & LIGHTMODE_DOTSTAR)
+    if (mode == LIGHTMODE_DOTSTAR)
         light::dotStarSendData(data, clk, mode, buf->data, buf->length);
     else
         light::neopixelSendData(data, mode, buf->data, buf->length);
