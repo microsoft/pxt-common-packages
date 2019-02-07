@@ -1,11 +1,5 @@
 #include "light.h"
 
-namespace light {
-//declarations
-void spiNeopixelSendBuffer(DevicePin* pin, const uint8_t *data, unsigned size);
-
-}
-
 #ifdef SAMD21
 #include "neopixel.h"
 #endif
@@ -33,14 +27,14 @@ void clear() {
         auto n = 3 * num;
         uint8_t off[n];
         memset(off, 0, sizeof(off));
-        light::sendData(neopix, 0x100, off, sizeof(off));
+        light::neopixelSendData(neopix, 0x100, off, sizeof(off));
     }
 }
 
-void sendData(DevicePin* pin, int mode, const uint8_t* data, unsigned length) {
+void neopixelSendData(DevicePin* pin, int mode, const uint8_t* data, unsigned length) {
     if (!pin || !length) return;
 
-    if (isValidSPIPin(pin) && mode & 0x100) {
+    if (length > 10 && isValidSPIPin(pin)) {
         spiNeopixelSendBuffer(pin, data, length);
     }
 #if SAMD21
@@ -49,11 +43,6 @@ void sendData(DevicePin* pin, int mode, const uint8_t* data, unsigned length) {
         neopixel_send_buffer(*pin, data, length);
     }
 #endif
-}
-
-void sendBuffer(DevicePin* pin, int mode, Buffer buf) {
-    if (!pin || !buf || !buf->length) return;
-    light::sendData(pin, mode, buf->data, buf->length);
 }
 
 // SPI
@@ -91,56 +80,48 @@ void spiNeopixelSendBuffer(DevicePin* pin, const uint8_t *data, unsigned size) {
     delete expBuf;
 }
 
-void sendPixelBuffer(Buffer buf) {
-    if (!buf || !buf->length) return;
-
-    auto dat = LOOKUP_PIN(DOTSTAR_DATA);
-    if (dat) {
-        auto clk = LOOKUP_PIN(DOTSTAR_CLOCK);
-        if (!clk) {
-            DMESG("pixel: missing DOTSTAR_CLOCK config");
-            return;
-        }
-        // first frame of zeroes
-        dat->setDigitalValue(0);
-        for (int i = 0; i < 32; ++i) {
+void dotStarSendData(DevicePin* data, DevicePin* clk, const uint8* buf, unsigned length) {
+    if (!data || !clk || !buf || !length) return;
+    // first frame of zeroes
+    dat->setDigitalValue(0);
+    for (int i = 0; i < 32; ++i) {
+        clk->setDigitalValue(1);
+        clk->setDigitalValue(0);
+    }
+    // data stream
+    for (int i = 0; i < length; ++i) {
+        int x = buf->data[i];
+        for (uint8_t i = 0x80; i != 0; i >>= 1) {
+            dat->setDigitalValue(x & i ? 1 : 0);
             clk->setDigitalValue(1);
             clk->setDigitalValue(0);
         }
-        // data stream
-        for (int i = 0; i < buf->length; ++i) {
-            if (i % 3 == 0) {
-                // write brightness byte -- full brightness
-                dat->setDigitalValue(1);
-                for (int k = 0; k < 8; ++k) {
-                    clk->setDigitalValue(1);
-                    clk->setDigitalValue(0);
-                }
-            }
-            int x = buf->data[i];
-            for (uint8_t i = 0x80; i != 0; i >>= 1) {
-                dat->setDigitalValue(x & i ? 1 : 0);
-                clk->setDigitalValue(1);
-                clk->setDigitalValue(0);
-            }
-        }
-        // last frame of 1s
-        dat->setDigitalValue(1);
-        for (int i = 0; i < 32; ++i) {
-            clk->setDigitalValue(1);
-            clk->setDigitalValue(0);
-        }
-
-        return;
+    }
+    // https://cpldcpu.wordpress.com/2016/12/13/sk9822-a-clone-of-the-apa102/
+    // reset frame
+    dat->setDigitalValue(0);
+    for (int i = 0; i < 32 ; ++i) {
+        clk->setDigitalValue(1);
+        clk->setDigitalValue(0);
     }
 
-    auto neo = LOOKUP_PIN(NEOPIXEL);
-    if (neo) {
-        light::sendData(neo, 0x100, buf->data, buf->length);
-        return;
+    // last frame of 1s
+    dat->setDigitalValue(1);
+    // https://cpldcpu.wordpress.com/2014/11/30/understanding-the-apa102-superled/
+    auto n = max(32, length >> 2 + 1);
+    for (int i = 0; i < n; ++i) {
+        clk->setDigitalValue(1);
+        clk->setDigitalValue(0);
     }
+}
 
-    DMESG("pixel: not supported or configured");
+void sendBuffer(DevicePin* data, Device* clk, int mode, Buffer buf) {
+    if (!pin || !buf || !buf->length) return;
+
+    if (dataPin && clkPin)
+        light::dotStarSendData(data, clk, buf, buf->length);
+    else
+        light::neopixelSendData(data, mode, buf->data, buf->length);
 }
 
 } // namespace pxt

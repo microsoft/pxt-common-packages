@@ -37,7 +37,7 @@ namespace pxsim {
 
 namespace pxsim.light {
     // Currently only modifies the builtin pixels
-    export function sendBuffer(pin: pins.DigitalInOutPin, mode: number, b: RefBuffer) {
+    export function sendBuffer(pin: pins.DigitalInOutPin, clk: pins.DigitalInOutPin, mode: number, b: RefBuffer) {
         const state = neopixelState(pin.id);
         state.mode = mode & 0xff; // TODO RGBW support
         state.buffer = b.data;

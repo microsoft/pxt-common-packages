@@ -91,12 +91,14 @@ enum PhotonMode {
 //% weight=100 color="#0078d7" icon="\uf00a"
 //% groups='["other", "Color", "Photon", "More"]'
 namespace light {
+    export type LightStrip = NeoPixelStrip;
     /**
      * A NeoPixel strip
      */
     export class NeoPixelStrip {
         _parent: NeoPixelStrip;
-        _pin: DigitalInOutPin;
+        _dataPin: DigitalInOutPin;
+        _clkPin: DigitalInOutPin;
         _buf: Buffer; // unscaled color buffer
         // per pixel scaling. This buffer is allocated on-demand when per-pixel brightness is needed.
         // when rendering, if this buffer is null, use _brightness instead
@@ -319,7 +321,7 @@ namespace light {
         //% group="More" weight=86 blockGap=8
         show(): void {
             if (this._parent) this._parent.show();
-            else if (this._pin) {
+            else if (this._dataPin) {
                 const b = this.buf;
                 // bb may be undefined if the brightness
                 // is uniform over the strip and has not been allocated
@@ -354,7 +356,7 @@ namespace light {
                 let mode = this._mode as number
                 if (this.spi)
                     mode |= 0x100
-                light.sendBuffer(this._pin, mode, sb);
+                light.sendBuffer(this._dataPin, this._clkPin, mode, sb);
             }
         }
 
@@ -425,7 +427,8 @@ namespace light {
         range(start: number, length: number): NeoPixelStrip {
             let strip = new NeoPixelStrip();
             strip._parent = this;
-            strip._pin = this._pin;
+            strip._dataPin = this._dataPin;
+            strip._clkPin = this._clkPin;
             strip._brightness = this._brightness;
             strip._start = this._start + Math.clamp(0, this._length - 1, start);
             strip._length = Math.clamp(0, this._length - (strip._start - this._start), length);
@@ -1011,13 +1014,39 @@ namespace light {
     }
 
     /**
-     * This block is deprecated, use ``light.createStrip`` instead.
+     * Create a new dot star strip
+     */
+    //% blockId="light_create_dotstar" block="create dotstar strip|data %data|clock %clk|pixels %numleds"
+    //% help="light/create-dot-star-strip"
+    //% trackArgs=0,1,2
+    //% parts="neopixel"
+    //% weight=100 advanced=true
+    export function createDotStarStrip(
+        dataPin: DigitalInOutPin,
+        clkPin: DigitalInOutPin,
+        numleds: number): NeoPixelStrip {
+        const strip = new NeoPixelStrip();
+        strip._buffered = false;
+        strip._mode = NeoPixelMode.DotStar;
+        strip._length = Math.max(0, numleds | 0);
+        strip._brightness = 20;
+        strip._start = 0;
+        strip._dataPin = dataPin;
+        strip._clkPin = clkPin;
+        strip._barGraphHigh = 0;
+        strip._barGraphHighLast = 0;
+
+        return strip;
+    }
+
+    /**
+     * Creates a strip of color LEDs (WS2812b)
      */
     //% blockId="neopixel_create" block="create strip|pin %pin|pixels %numleds|mode %mode"
     //% help="light/create-neo-pixel-strip"
     //% trackArgs=0,2
     //% parts="neopixel"
-    //% weight=100 deprecated=true blockHidden=true
+    //% weight=100 blockHidden=true
     export function createNeoPixelStrip(
         pin: DigitalInOutPin = null,
         numleds: number = 10,
@@ -1025,9 +1054,8 @@ namespace light {
     ): NeoPixelStrip {
         if (!mode)
             mode = NeoPixelMode.RGB
-        if (!pin) {
+        if (!pin)
             pin = pins.pinByCfg(DAL.CFG_PIN_NEOPIXEL);
-        }
 
         const strip = new NeoPixelStrip();
         strip._buffered = false;
@@ -1035,9 +1063,9 @@ namespace light {
         strip._length = Math.max(0, numleds);
         strip._brightness = 20;
         strip._start = 0;
-        strip._pin = pin;
-        if (strip._pin) // board with no-board LEDs won't have a default pin
-            strip._pin.digitalWrite(false);
+        strip._dataPin = pin;
+        if (strip._dataPin) // board with no-board LEDs won't have a default pin
+            strip._dataPin.digitalWrite(false);
         strip._barGraphHigh = 0;
         strip._barGraphHighLast = 0;
 

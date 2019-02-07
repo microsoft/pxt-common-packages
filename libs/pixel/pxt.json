@@ -10,6 +10,7 @@
     "public": true,
     "dependencies": {
         "core": "file:../core",
+        "light": "file:../light",
         "jacdac": "file:../jacdac"
     }
 }

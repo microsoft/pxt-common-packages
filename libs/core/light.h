@@ -11,20 +11,15 @@ namespace light {
 
     /**
     * Send a programmable light buffer to the specified digital pin
-    * @param pin The pin that the light are connected to
+    * @param data The pin that the light are connected to
+    * @param clk the clock line if nay
     * @param mode the color encoding mode
     * @param buf The buffer to send to the pin
     */
     //% parts="neopixel"
-    void sendBuffer(DigitalInOutPin pin, int mode, Buffer buf);
+    void sendBuffer(DigitalInOutPin data, DigitalInOutPin clk, int mode, Buffer buf);
 
-    void sendData(DevicePin* pin, int mode, const uint8_t* data, unsigned length);
-
-    /**
-    * Sends a single color to a single onboard LED programmable light
-    */
-    //%
-    void sendPixelBuffer(Buffer buf);
+    void neopixelSendData(DevicePin* pin, int mode, const uint8_t* data, unsigned length);
 }
 
 #endif
