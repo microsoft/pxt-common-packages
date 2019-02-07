@@ -31,20 +31,6 @@ void clear() {
     }
 }
 
-void neopixelSendData(DevicePin* pin, int mode, const uint8_t* data, unsigned length) {
-    if (!pin || !length) return;
-
-    if (length > 10 && isValidSPIPin(pin)) {
-        spiNeopixelSendBuffer(pin, data, length);
-    }
-#if SAMD21
-    // TODO bit banging for all cpus
-    else {
-        neopixel_send_buffer(*pin, data, length);
-    }
-#endif
-}
-
 // SPI
 void spiNeopixelSendBuffer(DevicePin* pin, const uint8_t *data, unsigned size) {
     int32_t iptr = 0, optr = 100;
@@ -80,46 +66,79 @@ void spiNeopixelSendBuffer(DevicePin* pin, const uint8_t *data, unsigned size) {
     delete expBuf;
 }
 
-void dotStarSendData(DevicePin* data, DevicePin* clk, const uint8* buf, unsigned length) {
-    if (!data || !clk || !buf || !length) return;
+void neopixelSendData(DevicePin* pin, int mode, const uint8_t* data, unsigned length) {
+    if (!pin || !length) return;
+
+    if (length > 31 && isValidSPIPin(pin)) {
+        spiNeopixelSendBuffer(pin, data, length);
+    }
+#if SAMD21
+    // TODO bit banging for all cpus
+    else {
+        neopixel_send_buffer(*pin, data, length);
+    }
+#endif
+}
+
+void bitBangDotStarSendData(DevicePin* data, DevicePin* clk, const uint8_t* buf, unsigned length) {
     // first frame of zeroes
-    dat->setDigitalValue(0);
-    for (int i = 0; i < 32; ++i) {
+    data->setDigitalValue(0);
+    for (unsigned i = 0; i < 32; ++i) {
         clk->setDigitalValue(1);
         clk->setDigitalValue(0);
     }
     // data stream
-    for (int i = 0; i < length; ++i) {
-        int x = buf->data[i];
+    for (unsigned i = 0; i < length; ++i) {
+        auto x = buf[i];
         for (uint8_t i = 0x80; i != 0; i >>= 1) {
-            dat->setDigitalValue(x & i ? 1 : 0);
+            data->setDigitalValue(x & i ? 1 : 0);
             clk->setDigitalValue(1);
             clk->setDigitalValue(0);
         }
     }
     // https://cpldcpu.wordpress.com/2016/12/13/sk9822-a-clone-of-the-apa102/
     // reset frame
-    dat->setDigitalValue(0);
-    for (int i = 0; i < 32 ; ++i) {
+    data->setDigitalValue(0);
+    for (unsigned i = 0; i < 32 ; ++i) {
         clk->setDigitalValue(1);
         clk->setDigitalValue(0);
     }
 
     // last frame of 1s
-    dat->setDigitalValue(1);
+    data->setDigitalValue(1);
     // https://cpldcpu.wordpress.com/2014/11/30/understanding-the-apa102-superled/
-    auto n = max(32, length >> 2 + 1);
-    for (int i = 0; i < n; ++i) {
+    unsigned n = max(32, (length >> 3));
+    for (unsigned i = 0; i < n; ++i) {
         clk->setDigitalValue(1);
         clk->setDigitalValue(0);
     }
 }
 
-void sendBuffer(DevicePin* data, Device* clk, int mode, Buffer buf) {
-    if (!pin || !buf || !buf->length) return;
+static uint8_t ZERO_FRAME[32];
+static uint8_t ONE_FRAME[] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
+void spiDotStarSendData(DevicePin* data, DevicePin* clk, const uint8_t* buf, unsigned length) {
+    auto spi = pxt::getSPI(data, NULL, clk);
 
-    if (dataPin && clkPin)
-        light::dotStarSendData(data, clk, buf, buf->length);
+    spi->transfer(ZERO_FRAME, sizeof(ZERO_FRAME), NULL, 0); // initial frame
+    spi->transfer(buf, length, NULL, 0);
+    spi->transfer(ZERO_FRAME, sizeof(ZERO_FRAME), NULL, 0); // reset frame
+    for(unsigned i = 0; i < length >> 3; i += 32)
+        spi->transfer(ONE_FRAME, sizeof(ONE_FRAME), NULL, 0); // final frame
+}
+
+void dotStarSendData(DevicePin* data, DevicePin* clk, const uint8_t* buf, unsigned length) {
+    if (!data || !clk || !buf || !length) return;
+    if (length > 31 && isValidSPIPin(data))
+        spiDotStarSendData(data, clk, buf, length);
+    else 
+        bitBangDotStarSendData(data, clk, buf, length);
+}
+
+void sendBuffer(DevicePin* data, DevicePin* clk, int mode, Buffer buf) {
+    if (!data || !buf || !buf->length) return;
+
+    if (data && clk)
+        light::dotStarSendData(data, clk, buf->data, buf->length);
     else
         light::neopixelSendData(data, mode, buf->data, buf->length);
 }
