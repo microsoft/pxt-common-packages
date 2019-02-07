@@ -43,7 +43,7 @@
         ],
         "instantiation": {
             "kind": "function",
-            "fullyQualifiedName": "light.createNeoPixelStrip",
+            "fullyQualifiedName": "light.createStrip,light.createNeoPixelStrip",
             "argumentRoles": [
                 {
                     "pinInstantiationIdx": 0,

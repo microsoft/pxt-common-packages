@@ -9,7 +9,6 @@
         "jacdac.ts",
         "neopixeloverrides.ts",
         "animations.jres",
-        "pxtparts.json",
         "targetoverrides.ts"
     ],
     "testFiles": [
