@@ -122,7 +122,6 @@ namespace light {
         // last animation used by showAnimationFrame
         _lastAnimation: NeoPixelAnimation;
         _lastAnimationRenderer: () => boolean;
-        spi: boolean;
 
         /**
          * Gets the underlying color buffer for the entire strip
@@ -323,16 +322,20 @@ namespace light {
             if (this._parent) this._parent.show();
             else if (this._dataPin) {
                 const b = this.buf;
+
                 // bb may be undefined if the brightness
                 // is uniform over the strip and has not been allocated
                 const _bb = this._brightnessBuf;
                 if (!this._sendBuf) this._sendBuf = control.createBuffer(b.length);
                 const sb = this._sendBuf;
                 const stride = this.stride();
+                const strideOffset = this._mode == NeoPixelMode.DotStar ? 1 : 0;
                 // apply brightness
                 for (let i = 0; i < this._length; ++i) {
                     const offset = (this._start + i) * stride;
-                    for (let j = 0; j < stride; ++j)
+                    for(let j = 0; j < strideOffset; ++j)
+                        sb[offset + j] = 0xff;
+                    for (let j = strideOffset; j < stride; ++j)
                         sb[offset + j] = (b[offset + j] * (_bb ? _bb[i] : this._brightness)) >> 8;
                 }
                 // apply photon
@@ -353,10 +356,8 @@ namespace light {
                         if (pi < 0) pi += sb.length;
                     }
                 }
-                let mode = this._mode as number
-                if (this.spi)
-                    mode |= 0x100
-                light.sendBuffer(this._dataPin, this._clkPin, mode, sb);
+                console.log(`${!!this._dataPin} ${!!this._clkPin} ${this.mode} hex${sb.toHex()}`)
+                light.sendBuffer(this._dataPin, this._clkPin, this._mode, sb);
             }
         }
 
@@ -754,7 +755,7 @@ namespace light {
                     break;
                 case NeoPixelMode.DotStar:
                     // https://cdn-shop.adafruit.com/datasheets/APA102.pdf
-                    b[offset] = 0xe | 0x1f; // full brightness
+                    b[offset] = 0xe0 | 0x1f; // full brightness
                     b[offset + 1] = blue;
                     b[offset + 2] = green;
                     b[offset + 3] = red;

@@ -4,6 +4,9 @@
 #include "neopixel.h"
 #endif
 
+#define NEOPIXEL_MIN_LENGTH_FOR_SPI 48
+#define DOTSTAR_MIN_LENGTH_FOR_SPI 48
+
 namespace light {
 bool isValidSPIPin(DigitalInOutPin pin) {
     if (!pin)
@@ -70,7 +73,7 @@ void neopixelSendData(DevicePin* pin, int mode, const uint8_t* data, unsigned le
     if (!pin || !length) return;
 
 #if SAMD21
-    if (length > 31 && isValidSPIPin(pin))
+    if (length > NEOPIXEL_MIN_LENGTH_FOR_SPI && isValidSPIPin(pin))
         spiNeopixelSendBuffer(pin, data, length);
     else
         neopixel_send_buffer(*pin, data, length);
@@ -88,11 +91,12 @@ void bitBangDotStarSendData(DevicePin* data, DevicePin* clk, const uint8_t* buf,
         clk->setDigitalValue(1);
         clk->setDigitalValue(0);
     }
+
     // data stream
     for (unsigned i = 0; i < length; ++i) {
         auto x = buf[i];
-        for (uint8_t i = 0x80; i != 0; i >>= 1) {
-            data->setDigitalValue(x & i ? 1 : 0);
+        for (uint8_t j = 0x80; j != 0; j >>= 1) {
+            data->setDigitalValue(x & j ? 1 : 0);
             clk->setDigitalValue(1);
             clk->setDigitalValue(0);
         }
@@ -105,18 +109,17 @@ void bitBangDotStarSendData(DevicePin* data, DevicePin* clk, const uint8_t* buf,
         clk->setDigitalValue(0);
     }
 
-    // last frame of 1s
-    data->setDigitalValue(1);
     // https://cpldcpu.wordpress.com/2014/11/30/understanding-the-apa102-superled/
-    unsigned n = max(32, (length >> 3));
+    data->setDigitalValue(1);
+    unsigned n = 32;
     for (unsigned i = 0; i < n; ++i) {
         clk->setDigitalValue(1);
         clk->setDigitalValue(0);
     }
 }
 
-static uint8_t ZERO_FRAME[32];
-static uint8_t ONE_FRAME[] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
+static uint8_t ZERO_FRAME[4];
+static uint8_t ONE_FRAME[] = {1,1,1,1};
 void spiDotStarSendData(DevicePin* data, DevicePin* clk, const uint8_t* buf, unsigned length) {
     auto spi = pxt::getSPI(data, NULL, clk);
 
@@ -129,7 +132,7 @@ void spiDotStarSendData(DevicePin* data, DevicePin* clk, const uint8_t* buf, uns
 
 void dotStarSendData(DevicePin* data, DevicePin* clk, const uint8_t* buf, unsigned length) {
     if (!data || !clk || !buf || !length) return;
-    if (length > 31 && isValidSPIPin(data))
+    if (length > DOTSTAR_MIN_LENGTH_FOR_SPI && isValidSPIPin(data))
         spiDotStarSendData(data, clk, buf, length);
     else 
         bitBangDotStarSendData(data, clk, buf, length);
