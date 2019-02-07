@@ -333,7 +333,7 @@ namespace light {
                 // apply brightness
                 for (let i = 0; i < this._length; ++i) {
                     const offset = (this._start + i) * stride;
-                    for(let j = 0; j < strideOffset; ++j)
+                    for (let j = 0; j < strideOffset; ++j)
                         sb[offset + j] = 0xff;
                     for (let j = strideOffset; j < stride; ++j)
                         sb[offset + j] = (b[offset + j] * (_bb ? _bb[i] : this._brightness)) >> 8;
@@ -348,6 +348,8 @@ namespace light {
                     for (let bi = 0; bi < tailn && c > 0; ++bi) {
                         if (this._mode == NeoPixelMode.RGBW)
                             sb[pi + 3] = c;
+                        else if (this._mode == NeoPixelMode.DotStar)
+                            sb[pi + 1] = sb[pi + 2] = sb[pi + 3] = c;
                         else
                             sb[pi] = sb[pi + 1] = sb[pi + 2] = c;
 
