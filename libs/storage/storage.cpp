@@ -171,13 +171,4 @@ Buffer readAsBuffer(String filename) {
     return res;
 }
 
-/**
-* Erases all content on the storage. No undo!
-**/
-//% parts="storage"
-void format() {
-    auto st = mountedStorage();
-    // /if (st)
-}
-
 } // namespace storage
