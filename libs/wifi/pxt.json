@@ -1,0 +1,15 @@
+{
+    "name": "wifi",
+    "description": "WiFi",
+    "files": [
+        "wifi.ts"
+    ],
+    "testFiles": [
+        "test.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core"
+    }
+
+}
