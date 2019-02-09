@@ -110,6 +110,8 @@ codal::Accelerometer *getAccelerometer();
 
 void initAccelRandom() {
     auto acc = getAccelerometer();
+    if (!acc) return;
+
     for (int i = 0; i < 10; ++i) {
         acc->requestUpdate();
         if (acc->getY())
@@ -138,6 +140,8 @@ namespace input {
 //% weight=92 blockGap=12
 void onGesture(Gesture gesture, Action body) {
     auto acc = getAccelerometer();
+    if (!acc) return;
+
     acc->requestUpdate();
     int gi = (int)gesture;
     if (gi == ACCELEROMETER_EVT_3G && acc->getRange() < 3)
@@ -149,6 +153,8 @@ void onGesture(Gesture gesture, Action body) {
 
 int getAccelerationStrength() {
     auto acc = getAccelerometer();
+    if (!acc) return 0;
+
     float x = acc->getX();
     float y = acc->getY();
     float z = acc->getZ();
@@ -168,13 +174,16 @@ int getAccelerationStrength() {
 //% dimension.fieldOptions.columns=2
 //% weight=42 blockGap=8
 int acceleration(Dimension dimension) {
+    auto acc = getAccelerometer();
+    if (!acc) return 0;
+
     switch (dimension) {
     case Dimension::X:
-        return getAccelerometer()->getX();
+        return acc->getX();
     case Dimension::Y:
-        return getAccelerometer()->getY();
+        return acc->getY();
     case Dimension::Z:
-        return getAccelerometer()->getZ();
+        return acc->getZ();
     case Dimension::Strength:
         return getAccelerationStrength();
     }
@@ -190,11 +199,14 @@ int acceleration(Dimension dimension) {
 //% parts="accelerometer"
 //% group="More" weight=38
 int rotation(Rotation kind) {
+    auto acc = getAccelerometer();
+    if (!acc) return 0;
+
     switch (kind) {
     case Rotation::Pitch:
-        return getAccelerometer()->getPitch();
+        return acc->getPitch();
     case Rotation::Roll:
-        return getAccelerometer()->getRoll();
+        return acc->getRoll();
     }
     return 0;
 }
@@ -209,7 +221,10 @@ int rotation(Rotation kind) {
 //% parts="accelerometer"
 //% group="More" weight=15 blockGap=8
 void setAccelerometerRange(AcceleratorRange range) {
-    getAccelerometer()->setRange((int)range);
+    auto acc = getAccelerometer();
+    if (!acc) return;
+
+    acc->setRange((int)range);
 }
 
 } // namespace input
