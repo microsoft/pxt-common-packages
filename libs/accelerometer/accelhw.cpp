@@ -61,7 +61,7 @@ class WAccel {
 
   public:
     Accelerometer *acc;
-    WAccel() : space(ACC_SYSTEM, ACC_UPSIDEDOWN, ACC_ROTATION) {
+    WAccel() : space(ACC_SYSTEM, ACC_UPSIDEDOWN, ACC_ROTATION), acc(NULL) {
         DMESG("ACCEL: mounting");
         auto sda = LOOKUP_PIN(ACCELEROMETER_SDA);
         auto scl = LOOKUP_PIN(ACCELEROMETER_SCL);
@@ -76,7 +76,6 @@ class WAccel {
             return;
         }
         auto accType = getConfig(CFG_ACCELEROMETER_TYPE, PXT_DEFAULT_ACCELEROMETER);
-        acc = NULL;
         switch (accType) {
 #if PXT_SUPPORT_LIS3DH
         case ACCELEROMETER_TYPE_LIS3DH:
@@ -105,26 +104,23 @@ class WAccel {
 #endif
         }
 
-        if (acc == NULL) {
+        if (NULL == acc) {
             if (LOOKUP_PIN(ACCELEROMETER_SDA))
                 target_panic(PANIC_CODAL_HARDWARE_CONFIGURATION_ERROR);
             else
                 DMESG("acc: invalid ACCELEROMETER_TYPE");
         }
-
-        if (acc) {
+        else {
             // acc->init(); - doesn't do anything
             acc->configure();
             acc->requestUpdate();
         }
     }
 };
-SINGLETON_IF_PIN(WAccel, ACCELEROMETER_SDA);
+SINGLETON(WAccel);
 
 codal::Accelerometer *getAccelerometer() {
-    auto acc = getWAccel();
-    if (acc) return acc->acc;
-    else return NULL;
+    return getWAccel()->acc;
 }
 
 } // namespace pxt
