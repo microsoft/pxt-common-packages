@@ -2,9 +2,6 @@
 #include "pulse.h"
 
 // from samd21.cpp
-void NVIC_Setup();
-void setPeriodicCallback(uint32_t usec, void *data, void (*callback)(void *));
-void clearPeriodicCallback();
 void setTCC0(int enabled);
 
 namespace network {
@@ -83,9 +80,19 @@ uint16_t crc16ccit(uint8_t *data, uint32_t len) {
     return crc;
 }
 
-PulseBase::PulseBase(uint16_t id, int pinOut, int pinIn) {
-    NVIC_Setup();
+static PulseBase* instance = NULL;
+
+static void timer_irq(uint16_t channels)
+{
+    if (instance)
+        instance->timerIRQ(channels);
+}
+
+PulseBase::PulseBase(uint16_t id, int pinOut, int pinIn, LowLevelTimer* t) {
     this->id = id;
+    this->timer = t;
+
+    instance = this;
 
     recvState = PULSE_RECV_ERROR;
     sending = false;
@@ -98,6 +105,9 @@ PulseBase::PulseBase(uint16_t id, int pinOut, int pinIn) {
 
         devMessageBus.listen(id, PULSE_PACKET_END_EVENT, this, &PulseBase::packetEnd);
     }
+
+    timer->setIRQ(timer_irq);
+    timer->enable();
 }
 
 void PulseBase::setupGapEvents() {
@@ -154,16 +164,16 @@ void PulseBase::send(Buffer d) {
     for (int i = 0; i < 15; ++i)
         encodedMsg.push(1);
 
-    auto gap = system_timer_current_time_us() - lastSendTime;
+    auto gap = timer->captureCounter() - lastSendTime;
+
     // we require 200ms between sends
     if (gap < 200000) {
         gap = (200000 - gap) / 1000;
         fiber_sleep(gap);
     }
 
-    while (isReciving())
+    while (isReceiving())
         fiber_sleep(10);
-    lastSendTime = system_timer_current_time_us();
 
     // encodedMsg.print();
 
@@ -173,11 +183,19 @@ void PulseBase::send(Buffer d) {
 
     sendPtr = 0;
 
-    setPeriodicCallback(PULSE_PULSE_LEN, this, (void (*)(void *)) & PulseBase::process);
+    lastSendTime = timer->captureCounter();
+
+    timer->setCompare(0, lastSendTime + PULSE_PULSE_LEN);
+
     while (sending) {
         fiber_sleep(10);
     }
     fiber_sleep(5);
+}
+
+void PulseBase::timerIRQ(uint16_t)
+{
+    process();
 }
 
 void PulseBase::finish(int code) {
@@ -325,7 +343,7 @@ void PulseBase::pulseMark(Event ev) {
     }
 }
 
-bool PulseBase::isReciving() {
+bool PulseBase::isReceiving() {
     auto now = system_timer_current_time_us();
     // inpin low means mark
     if (inpin->getDigitalValue() == 0 || now - lastMarkTime < 10000) {
@@ -343,7 +361,7 @@ void PulseBase::process() {
     if (!sending)
         return;
 
-    auto now = system_timer_current_time_us();
+    auto now = timer->captureCounter();
     if (sendStartTime == 0)
         sendStartTime = now - (PULSE_PULSE_LEN / 2);
 
@@ -354,10 +372,12 @@ void PulseBase::process() {
     if (encodedMsgPtr >= encodedMsg.size()) {
         encodedMsg.setLength(0);
         finishPWM();
-        clearPeriodicCallback();
+
         sending = false;
         return;
     }
+
+    timer->setCompare(0, now + PULSE_PULSE_LEN);
 
     int curr = encodedMsg.get(encodedMsgPtr);
     if (curr != pwmstate)
