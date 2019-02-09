@@ -10,6 +10,26 @@ CODAL_TIMER devTimer(tim5);
 
 void initAccelRandom();
 
+extern "C" void update_osc_init(RCC_OscInitTypeDef *oscInit) {
+    uint32_t clockCFG = getConfig(CFG_CLOCK_CONFIG, 0);
+    
+    //for (int i = 0; i < 0x7fffffff; ++i) asm("nop");
+
+    if (!clockCFG)
+        return;
+
+    oscInit->PLL.PLLN = clockCFG & 0xffff;
+    oscInit->PLL.PLLP = (clockCFG >> 16) & 0xff;
+    oscInit->PLL.PLLQ = (clockCFG >> 24) & 0xff;
+
+    uint32_t cpu_mhz = oscInit->PLL.PLLN / oscInit->PLL.PLLP;
+    uint32_t usb_hz = oscInit->PLL.PLLN * 1000000 / oscInit->PLL.PLLQ;
+
+    if (usb_hz != 48000000 || cpu_mhz < 16 || cpu_mhz > 200)
+        target_panic(DEVICE_HARDWARE_CONFIGURATION_ERROR);
+    
+}
+
 static void initRandomSeed() {
     if (getConfig(CFG_ACCELEROMETER_TYPE, -1) != -1) {
         initAccelRandom();
