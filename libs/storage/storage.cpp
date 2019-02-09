@@ -29,13 +29,23 @@ class WStorage {
         mounted = fs.tryMount();
     }
 };
-SINGLETON(WStorage);
+SINGLETON_IF_PIN(WStorage, FLASH_MOSI);
 
 static WStorage *mountedStorage() {
     auto s = getWStorage();
+    if (!s) 
+        return NULL;
+
     if (s->mounted)
         return s;
+    
+    DMESG("formatting storage");
+    s->fs.exists("foobar"); // forces mount
+    s->mounted = true;
 
+    return s;
+
+/*
     auto p = LOOKUP_PIN(LED);
     // lock-up blinking LED
     // TODO wait for A+B, erase SPI chip, and reset
@@ -45,13 +55,14 @@ static WStorage *mountedStorage() {
         p->setDigitalValue(0);
         fiber_sleep(100);
     }
+    */
 }
 
 //%
 void init() {
     usb.delayStart();
     auto s = getWStorage();
-    if (s->mounted) {
+    if (s && s->mounted) {
         usb.add(s->msc);
         s->msc.addFiles();
     }
@@ -60,6 +71,8 @@ void init() {
 
 snorfs::File *getFile(String filename) {
     auto st = mountedStorage();
+    if (!st) 
+        return NULL;
 
     // maybe we want to keep say up to 5 files open?
     static String currFilename;
@@ -109,8 +122,8 @@ void overwriteWithBuffer(String filename, Buffer data) {
 //% parts="storage"
 //% blockId="storage_exists" block="file $filename exists"
 bool exists(String filename) {
-    // TODO utf8 encoding
-    return mountedStorage()->fs.exists(filename->getUTF8Data());
+    auto st = mountedStorage();
+    return !!st && st->fs.exists(filename->getUTF8Data());
 }
 
 /** 

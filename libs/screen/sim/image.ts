@@ -675,12 +675,28 @@ namespace pxsim.image {
 
 namespace pxsim.pxtcore {
     export function updateScreen(img: RefImage) {
-        getScreenState().showImage(img)
+        const state = getScreenState();
+        if (state)
+            state.showImage(img)
     }
     export function updateStats(s: string) {
-        getScreenState().updateStats(s);
+        const state = getScreenState();
+        if (state)
+            state.updateStats(s);
     }
     export function setPalette(b: RefBuffer) {
-        getScreenState().setPalette(b)
+        const state = getScreenState();
+        if (state)
+            state.setPalette(b)
+    }
+    export function setupScreenStatusBar(barHeight: number) {
+        const state = getScreenState();
+        if (state)
+            state.setupScreenStatusBar(barHeight);
+    }
+    export function updateScreenStatusBar(img: RefImage) {
+        const state = getScreenState();
+        if (state)
+            state.updateScreenStatusBar(img);
     }
 }

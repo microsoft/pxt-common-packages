@@ -12,7 +12,9 @@
         "legacy.ts",
         "ns.ts",
         "targetoverrides.ts",
-        "music.ts"
+        "music.ts",
+        "pxtparts.json",
+        "speaker.svg"
     ],
     "public": true,
     "dependencies": {
