@@ -65,7 +65,7 @@ class WAccel {
         DMESG("ACCEL: mounting");
         auto sda = LOOKUP_PIN(ACCELEROMETER_SDA);
         auto scl = LOOKUP_PIN(ACCELEROMETER_SCL);
-        if (!sda || !scl) { // use default i2c instead
+        if (NULL == sda || NULL == scl) { // use default i2c instead
             DMESG("accelerometer: using SDA, SCL");
             sda = LOOKUP_PIN(SDA);
             scl = LOOKUP_PIN(SCL);
