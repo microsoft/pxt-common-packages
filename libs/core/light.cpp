@@ -4,8 +4,8 @@
 #include "neopixel.h"
 #endif
 
-#define NEOPIXEL_MIN_LENGTH_FOR_SPI 48
-#define DOTSTAR_MIN_LENGTH_FOR_SPI 48
+#define NEOPIXEL_MIN_LENGTH_FOR_SPI 8
+#define DOTSTAR_MIN_LENGTH_FOR_SPI 8
 
 #define LIGHTMODE_RGB 1
 #define LIGHTMODE_RGBW 2 
@@ -21,7 +21,8 @@ bool isValidSPIPin(DigitalInOutPin pin) {
     return ZSPI::isValidMOSIPin(*pin);
 #else
     // TODO: support for SPI neopixels
-    return false;
+    // default SPI pins supported for now
+    return pin == LOOKUP_PIN(MOSI);
 #endif
 
 }
