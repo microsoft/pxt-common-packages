@@ -13,7 +13,7 @@
 #define LIGHTMODE_DOTSTAR 4
 
 namespace light {
-bool isValidSPIPin(DigitalInOutPin pin) {
+bool isValidMOSIPin(DigitalInOutPin pin) {
     if (!pin)
         return false;
 
@@ -79,12 +79,12 @@ void neopixelSendData(DevicePin* pin, int mode, const uint8_t* data, unsigned le
     if (!pin || !length) return;
 
 #if SAMD21
-    if (length > NEOPIXEL_MIN_LENGTH_FOR_SPI && isValidSPIPin(pin))
+    if (length > NEOPIXEL_MIN_LENGTH_FOR_SPI && isValidMOSIPin(pin))
         spiNeopixelSendBuffer(pin, data, length);
     else
         neopixel_send_buffer(*pin, data, length);
 #else    
-    if (isValidSPIPin(pin)) {
+    if (isValidMOSIPin(pin)) {
         spiNeopixelSendBuffer(pin, data, length);
     }
 #endif
@@ -139,7 +139,7 @@ void spiDotStarSendData(DevicePin* data, DevicePin* clk, int mode, const uint8_t
 void dotStarSendData(DevicePin* data, DevicePin* clk, int mode, const uint8_t* buf, unsigned length) {
     if (!data || !clk || !buf || !length) return;
 
-    if (length > DOTSTAR_MIN_LENGTH_FOR_SPI && isValidSPIPin(data))
+    if (length > DOTSTAR_MIN_LENGTH_FOR_SPI && isValidMOSIPin(data))
         spiDotStarSendData(data, clk, mode, buf, length);
     else 
         bitBangDotStarSendData(data, clk, mode, buf, length);
