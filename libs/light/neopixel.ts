@@ -145,6 +145,18 @@ namespace light {
         _lastAnimation: NeoPixelAnimation;
         _lastAnimationRenderer: () => boolean;
 
+        constructor() {
+            this._buffered = false;
+            this._mode = NeoPixelMode.RGB;
+            this._length = 0;
+            this._brightness = 20;
+            this._start = 0;
+            this._dataPin = undefined;
+            this._clkPin = undefined;
+            this._barGraphHigh = 0;
+            this._barGraphHighLast = 0;    
+        }
+
         /**
          * Gets the underlying color buffer for the entire strip
          */
@@ -1088,16 +1100,10 @@ namespace light {
         clkPin: DigitalInOutPin,
         numleds: number): NeoPixelStrip {
         const strip = new NeoPixelStrip();
-        strip._buffered = false;
         strip._mode = NeoPixelMode.APA102;
         strip._length = Math.max(0, numleds | 0);
-        strip._brightness = 20;
-        strip._start = 0;
         strip._dataPin = dataPin;
         strip._clkPin = clkPin;
-        strip._barGraphHigh = 0;
-        strip._barGraphHighLast = 0;
-
         return strip;
     }
 
@@ -1111,27 +1117,19 @@ namespace light {
     //% weight=100 blockSetVariable=strip
     //% advanced=true blockHidden=1
     export function createNeoPixelStrip(
-        pin: DigitalInOutPin = null,
+        pin: DigitalInOutPin,
         numleds: number = 10,
         mode?: NeoPixelMode
     ): NeoPixelStrip {
         if (!mode)
             mode = NeoPixelMode.RGB;
-        if (!pin)
-            pin = pins.pinByCfg(DAL.CFG_PIN_NEOPIXEL);
 
         const strip = new NeoPixelStrip();
-        strip._buffered = false;
         strip._mode = mode;
         strip._length = Math.max(0, numleds | 0);
-        strip._brightness = 20;
-        strip._start = 0;
         strip._dataPin = pin;
         if (strip._dataPin) // board with no-board LEDs won't have a default pin
             strip._dataPin.digitalWrite(false);
-        strip._barGraphHigh = 0;
-        strip._barGraphHighLast = 0;
-
         return strip;
     }
 

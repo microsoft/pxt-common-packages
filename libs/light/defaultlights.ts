@@ -6,6 +6,17 @@ namespace light {
     export const pixels = light.defaultStrip();
 
     /**
+     * Create a range of pixels.
+     * @param start offset in the NeoPixel strip to start the range
+     * @param length number of pixels in the range, eg: 4
+     */
+    //% blockId="lightstrip_range" block="range from %start|with %length|pixels"
+    //% weight=1
+    export function range(start: number, length: number): NeoPixelStrip {
+        return pixels.range(start, length);
+    }
+
+    /**
      * Sets the number of LEDS on the default light strip
      */
     //% blockId=lightds_setlength block="set default strip length to %numleds pixels"
