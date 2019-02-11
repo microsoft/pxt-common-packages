@@ -176,7 +176,7 @@ namespace light {
          * Set all of the pixels on the strip to one RGB color.
          * @param rgb RGB color of the LED
          */
-        //% blockId="light_set_strip_color" block="%strip|set all pixels to %rgb=colorNumberPicker"
+        //% blockId="light_set_strip_color" block="set %strip all pixels to %rgb=colorNumberPicker"
         //% help="light/neopixelstrip/set-all"
         //% weight=80 blockGap=8
         //% advanced=true
@@ -250,7 +250,7 @@ namespace light {
          * @param pixeloffset position of the NeoPixel in the strip
          * @param color RGB color of the LED
          */
-        //% blockId="light_set_pixel_color" block="%strip|set pixel color at %pixeloffset|to %rgb=colorNumberPicker"
+        //% blockId="light_set_pixel_color" block="set %strip pixel color at %pixeloffset|to %rgb=colorNumberPicker"
         //% help="light/neopixelstrip/set-pixel-color"
         //% weight=79 blockGap=8
         //% group="More" advanced=true
@@ -315,7 +315,7 @@ namespace light {
          * @param pixeloffset position of the LED in the strip
          * @param white brightness of the white LED
          */
-        //% blockId="light_set_pixel_white_led" block="%strip|set pixel white LED at %pixeloffset|to %white"
+        //% blockId="light_set_pixel_white_led" block="set %strip pixel white LED at %pixeloffset|to %white"
         //% help="light/neopixelstrip/set-pixel-white-led"
         //% weight=5 blockGap=8
         //% group="More" advanced=true
@@ -425,7 +425,7 @@ namespace light {
          * Set the brightness of the strip. This flag only applies to future operation.
          * @param brightness a measure of LED brightness in 0-255. eg: 20
          */
-        //% blockId="light_set_brightness" block="%strip|set brightness %brightness"
+        //% blockId="light_set_brightness" block="set %strip brightness %brightness"
         //% brightness.min=0 brightness.max=255
         //% help="light/neopixelstrip/set-brightness"
         //% weight=2 blockGap=8
@@ -748,7 +748,7 @@ namespace light {
          * Enables or disables automatically calling show when a change is made
          * @param on call show whenever a light is modified
          */
-        //% blockId=light_set_buffered block="%strip|set buffered  %on"
+        //% blockId=light_set_buffered block="set %strip buffered  %on"
         //% help="light/neopixelstrip/set-buffered"
         //% weight=86 blockGap=8
         //% group="Configuration" advanced=true
@@ -770,7 +770,7 @@ namespace light {
          * Sets the color mode and clears the colors.
          * @param mode the kind of color encoding required by the programmable lights
          */
-        //% blockId=light_set_mode block="%strip|set mode %mode"
+        //% blockId=light_set_mode block="set %strip mode to %mode"
         //% help="light/neopixelstrip/set-mode"
         //% weight=1 blockGap=8
         //% group="Configuration" advanced=true
@@ -783,7 +783,7 @@ namespace light {
          * Sets the number of LEDs on a strip
          * @param numleds 
          */
-        //% blockId=light_set_length block="%strip|set length %length"
+        //% blockId=light_set_length block="set %strip length to %length pixels"
         //% weight=1 blockGap=8
         //% group="Configuration" advanced=true
         setLength(numleds: number): void {
