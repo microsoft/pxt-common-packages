@@ -5,6 +5,8 @@
         "README.md",
         "neopixel.ts",
         "create.ts",
+        "defaultstrip.ts",
+        "onboardstrip.ts",
         "defaultlights.ts",
         "ns.ts",
         "jacdac.ts",
