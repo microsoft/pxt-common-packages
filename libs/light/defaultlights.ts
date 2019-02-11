@@ -36,7 +36,6 @@ namespace light {
         return _defaultStrip;
     }
 
-
     let _onboardStrip: light.LightStrip;
     /**
      * Get the default light strip.
