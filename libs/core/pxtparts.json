@@ -124,7 +124,7 @@
         ],
         "instantiation": {
             "kind": "function",
-            "fullyQualifiedName": "light.createDotStarStrip",
+            "fullyQualifiedName": "light.createAPA102Strip",
             "argumentRoles": [
                 {
                     "pinInstantiationIdx": 0,
