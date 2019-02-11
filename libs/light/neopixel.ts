@@ -60,7 +60,7 @@ const enum NeoPixelMode {
     RGBW = 2,
     //% block="RGB (RGB format)"
     RGB_RGB = 3,
-    //% block="APA102c"
+    //% block="APA102"
     APA102 = 4
 }
 
