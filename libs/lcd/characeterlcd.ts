@@ -44,6 +44,7 @@ namespace lcd {
         _message: string;
         _enable: boolean;
         _rtl: boolean;
+        
         // pylint: disable-msg=too-many-arguments
         constructor(rs: DigitalInOutPin, en: DigitalInOutPin,
             d4: DigitalInOutPin, d5: DigitalInOutPin, d6: DigitalInOutPin, d7: DigitalInOutPin,
@@ -142,8 +143,8 @@ namespace lcd {
         }
 
         /** 
-    * Enable or disable the display. True to enable the display. False to disable the display.
-    */
+        * Enable or disable the display. True to enable the display. False to disable the display.
+        */
         get display(): boolean {
             return (this.displaycontrol & _LCD_DISPLAYON) == _LCD_DISPLAYON
         }
