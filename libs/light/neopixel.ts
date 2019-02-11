@@ -178,6 +178,7 @@ namespace light {
         //% blockId="light_set_strip_color" block="%strip|set all pixels to %rgb=colorNumberPicker"
         //% help="light/neopixelstrip/set-all"
         //% weight=80 blockGap=8
+        //% group="Strip"
         setAll(rgb: number) {
             const red = unpackR(rgb);
             const green = unpackG(rgb);
@@ -200,6 +201,7 @@ namespace light {
         //% blockId=light_show_bar_graph block="%strip|graph %value||up to %high" icon="\uf080"
         //% help=light/neopixelstrip/graph
         //% weight=70
+        //% group="Strip"
         graph(value: number, high?: number): void {
             console.logValue("", value);
             value = Math.abs(value);
@@ -250,6 +252,7 @@ namespace light {
         //% blockId="light_set_pixel_color" block="%strip|set pixel color at %pixeloffset|to %rgb=colorNumberPicker"
         //% help="light/neopixelstrip/set-pixel-color"
         //% weight=79
+        //% group="Strip"
         setPixelColor(pixeloffset: number, color: number): void {
             pixeloffset = pixeloffset >> 0;
             if (pixeloffset < 0
@@ -271,7 +274,8 @@ namespace light {
          */
         //% blockId="light_get_pixel_color" block="%strip|pixel color at %pixeloffset"
         //% help="light/neopixelstrip/pixel-color"
-        //% group="More" weight=9 blockGap=8
+        //% weight=9 blockGap=8
+        //% group="Strip"
         pixelColor(pixeloffset: number): number {
             pixeloffset = pixeloffset >> 0;
             if (pixeloffset < 0
@@ -312,7 +316,8 @@ namespace light {
          */
         //% blockId="light_set_pixel_white_led" block="%strip|set pixel white LED at %pixeloffset|to %white"
         //% help="light/neopixelstrip/set-pixel-white-led"
-        //% group="More" weight=5 blockGap=8
+        //% weight=5 blockGap=8
+        //% group="Strip"
         setPixelWhiteLED(pixeloffset: number, white: number): void {
             if (this._mode != NeoPixelMode.RGBW) return;
 
@@ -332,7 +337,8 @@ namespace light {
          */
         //% blockId="light_show" block="%strip|show"
         //% help="light/neopixelstrip/show"
-        //% group="More" weight=86 blockGap=8
+        //% weight=86 blockGap=8
+        //% group="Strip"
         show(): void {
             if (this._parent) this._parent.show();
             else if (this._dataPin) {
@@ -395,7 +401,8 @@ namespace light {
          */
         //% blockId="light_clear" block="%strip|clear"
         //% help="light/neopixelstrip/clear"
-        //% group="More" weight=85
+        //% weight=85
+        //% group="Strip"
         clear(): void {
             const stride = this.stride();
             this.buf.fill(0, this._start * stride, this._length * stride);
@@ -407,7 +414,8 @@ namespace light {
          */
         //% blockId="light_length" block="%strip|length"
         //% help="light/neopixelstrip/length"
-        //% group="More" weight=8 blockGap=8
+        //% weight=8 blockGap=8
+        //% group="Strip"
         length() {
             return this._length;
         }
@@ -420,8 +428,9 @@ namespace light {
         //% brightness.min=0 brightness.max=255
         //% help="light/neopixelstrip/set-brightness"
         //% weight=2 blockGap=8
+        //% group="Strip"
         setBrightness(brightness: number): void {
-            this._brightness = Math.max(0, Math.min(0xff, brightness >> 0));
+            this._brightness = Math.max(0, Math.min(0xff, brightness | 0));
             // if this is a top level strip clear any existing brightness buffer
             if (!this._parent)
                 this._brightnessBuf = undefined;
@@ -437,7 +446,8 @@ namespace light {
         //% blockId="light_get_brightness" block="%strip|brightness"
         //% help="light/neopixelstrip/brightness"
         //% parts=neopixel
-        //% group="More" weight=7
+        //% weight=7
+        //% group="Strip"
         brightness(): number {
             return this._brightness;
         }
@@ -451,6 +461,7 @@ namespace light {
         //% help="light/neopixelstrip/range"
         //% weight=99 blockGap=30
         //% blockSetVariable=strip
+        //% group="Strip"
         range(start: number, length: number): NeoPixelStrip {
             let strip = new NeoPixelStrip();
             strip._parent = this;
@@ -469,7 +480,8 @@ namespace light {
          */
         //% blockId="light_move_pixels" block="%strip|%kind=MoveKind|by %offset"
         //% help="light/neopixelstrip/move"
-        //% group="More" weight=87 blockGap=8
+        //% weight=87 blockGap=8
+        //% group="Strip"
         move(kind: LightMove, offset: number = 1): void {
             const stride = this.stride();
             if (kind === LightMove.Shift) {
@@ -603,6 +615,7 @@ namespace light {
         //% blockId=light_show_animation block="%strip|show animation %animation=light_animation_picker|for %duration=timePicker|ms"
         //% help="light/neopixelstrip/show-animation"
         //% weight=90 blockGap=8
+        //% group="Strip"
         showAnimation(animation: NeoPixelAnimation, duration: number) {
             if (!animation) return;
 
@@ -640,6 +653,7 @@ namespace light {
         //% blockId=light_show_animation_frame block="%strip|show frame of %animation=light_animation_picker|animation"
         //% help="light/neopixelstrip/show-animation-frame"
         //% weight=87 blockGap=8
+        //% group="Strip"
         showAnimationFrame(animation: NeoPixelAnimation) {
             if (!animation) {
                 this._lastAnimation = undefined;
@@ -713,6 +727,7 @@ namespace light {
         //% blockId=light_stop_all_animations block="%strip|stop all animations"
         //% help="light/neopixelstrip/stop-all-animations"
         //% weight=85
+        //% group="Strip"
         stopAllAnimations() {
             if (this._animationQueue) {
                 this._animationQueue.cancel();
@@ -727,7 +742,7 @@ namespace light {
          */
         //% blockId=light_set_buffered block="%strip|set buffered  %on"
         //% help="light/neopixelstrip/set-buffered"
-        //% group="More" weight=86
+        //% group="Configuration" weight=86
         setBuffered(on: boolean): void {
             if (this._parent) this._parent.setBuffered(on);
             else this._buffered = on;
@@ -736,7 +751,7 @@ namespace light {
         /**
          * Gets a value indicated if the changes are buffered
          */
-        //% weight=85 group="More"
+        //% weight=85 group="Configuration"
         buffered(): boolean {
             return this._parent ? this._parent.buffered() : this._buffered;
         }
@@ -747,7 +762,7 @@ namespace light {
          */
         //% blockId=light_set_mode block="%strip|set mode %mode"
         //% help="light/neopixelstrip/set-mode"
-        //% group="More" weight=1
+        //% group="Configuration" weight=1
         setMode(mode: NeoPixelMode): void {
             this._mode = mode;
             this.reallocateBuffer();
@@ -758,7 +773,7 @@ namespace light {
          * @param numleds 
          */
         //% blockId=light_set_length block="%strip|set length %length"
-        //% group="More" weight=1
+        //% group="Configuration" weight=1
         setLength(numleds: number): void {
             const n = Math.max(0, numleds | 0);
             if (n == this._length) return; // nothing to do
