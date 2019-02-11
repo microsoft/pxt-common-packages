@@ -317,6 +317,13 @@ namespace light {
             else if (this._dataPin) {
                 const b = this.buf;
 
+                // fast path: no processing
+                if (this._brightness == 0xff && !this._brightnessBuf && !this._photonPenColor) {
+                    // no need to process buffer
+                    light.sendBuffer(this._dataPin, this._clkPin, this._mode, b);
+                    return;
+                }
+
                 // bb may be undefined if the brightness
                 // is uniform over the strip and has not been allocated
                 const _bb = this._brightnessBuf;
