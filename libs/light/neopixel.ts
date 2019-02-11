@@ -1094,7 +1094,7 @@ namespace light {
         const strip = new NeoPixelStrip();
         strip._buffered = false;
         strip._mode = mode;
-        strip._length = Math.max(0, numleds);
+        strip._length = Math.max(0, numleds | 0);
         strip._brightness = 20;
         strip._start = 0;
         strip._dataPin = pin;

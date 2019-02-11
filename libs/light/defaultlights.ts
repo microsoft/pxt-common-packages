@@ -1,10 +1,43 @@
 namespace light {
     /**
-     * Gets the default light strip
+     * Gets the default external light strip
      */
     //% whenUsed
     export const pixels = light.defaultStrip();
 
+    let _defaultStrip: NeoPixelStrip;
+    /**
+     * Get the default light strip.
+     */
+    //% help=light/default-strip
+    //% blockId="neopixel_default_strip" block="default strip"
+    //% weight=101 blockGap=8
+    //% subcategory="NeoPixel"
+    export function defaultStrip(): NeoPixelStrip {
+        if (_defaultStrip) return _defaultStrip;
+
+        const data = pins.pinByCfg(DAL.CFG_PIN_DOTSTAR_DATA);
+        const clk = pins.pinByCfg(DAL.CFG_PIN_DOTSTAR_CLOCK);
+        const dsnum = pxt.getConfig(DAL.CFG_NUM_DOTSTARS, 0);
+        const neo = pins.pinByCfg(DAL.CFG_PIN_NEOPIXEL);
+        const neonum = pxt.getConfig(DAL.CFG_NUM_DOTSTARS, 0);
+        const mosi = pxt.getPinByCfg(DAL.CFG_PIN_MOSI);
+        const sck = pxt.getPinByCfg(DAL.CFG_PIN_SCK);
+
+        if (data && clk && dsnum > 1) {
+            _defaultStrip = light.createAPA102Strip(data, clk, dsnum);
+            _defaultStrip.setBrightness(96);
+        } else if(neo && neonum > 1) {
+            _defaultStrip = light.createNeoPixelStrip(neo, neonum, NeoPixelMode.RGB);
+        } else { // mount strip on SPI
+            _defaultStrip = light.createAPA102Strip(mosi, sck, 30, NeoPixelMode.APA102);
+        }
+
+        return _defaultStrip;
+    }
+
+
+    let _onboardStrip: light.LightStrip;
     /**
      * Get the default light strip.
      */
@@ -13,7 +46,22 @@ namespace light {
     //% weight=101 blockGap=8
     //% subcategory="NeoPixel"
     export function onboardStrip(): NeoPixelStrip {
-        return pixels;
+        if (_onboardStrip) return _onboardStrip;
+
+        const data = pins.pinByCfg(DAL.CFG_PIN_DOTSTAR_DATA);
+        const clk = pins.pinByCfg(DAL.CFG_PIN_DOTSTAR_CLOCK);
+        const dsnum = pxt.getConfig(DAL.CFG_NUM_DOTSTARS, 1);
+        const neo = pins.pinByCfg(DAL.CFG_PIN_NEOPIXEL);
+        const neonum = pxt.getConfig(DAL.CFG_NUM_NEOPIXELS, 1);
+        if (data && clk) {
+            _onboardStrip = light.createAPA102Strip(data, clk, dsnum);
+            _onboardStrip.setBrightness(96);
+        } else if (neo) {
+            _onboardStrip = light.createNeoPixelStrip(neo, neonum, NeoPixelMode.RGB);
+        } else {
+            _onboardStrip = light.createNeoPixelStrip(undefined, 0);
+        }
+        return _onboardStrip;
     }
 
     /**
