@@ -26,83 +26,14 @@ static void set_if_present(int cfg, int val) {
 
 //%
 void deepsleep() {
+    // this in particular puts accelerometer to sleep, which the bootloader
+    // doesn't do
+    CodalComponent::setAllSleep(true);
 
+    // ask bootloader to do the deep sleeping
     QUICK_BOOT(1);
     RTC->BKP1R = 0x10b37889;
     NVIC_SystemReset();
-
-    auto btn = LOOKUP_PIN(BTN_MENU);
-    btn->eventOn(DEVICE_PIN_EVENT_ON_EDGE);
-
-    auto btn2 = LOOKUP_PIN(BTN_MENU2);
-    if (!btn2) btn2 = btn;
-    btn2->eventOn(DEVICE_PIN_EVENT_ON_EDGE);
-
-    auto bl = LOOKUP_PIN(DISPLAY_BL);
-    if (bl)
-        bl->setDigitalValue(0);
-
-    auto led0 = LOOKUP_PIN(LED1);
-    if (led0)
-        led0->setDigitalValue(0);
-
-    auto led = LOOKUP_PIN(LED);
-    if (led)
-        led->setDigitalValue(0);
-
-    CodalComponent::setAllSleep(true);
-
-    lowTimer.disableIRQ();
-
-    auto longPress = 1000;
-
-    //set_if_present(CFG_PIN_DISPLAY_RST, 0);
-
-#if 0
-    set_if_present(CFG_PIN_BTN_LEFT, 0);
-    set_if_present(CFG_PIN_BTN_RIGHT, 0);
-    set_if_present(CFG_PIN_BTN_UP, 0);
-    set_if_present(CFG_PIN_BTN_DOWN, 0);
-#endif
-
-    #if 1
-    RCC->AHB1LPENR = 0x1900F;
-    RCC->AHB2LPENR = 0x0;
-    RCC->APB1LPENR = 0x10000000;
-    RCC->APB2LPENR = 0x00004000;
-    #endif
-
-    // set_if_present(CFG_PIN_JACK_SND, 0);
-    set_if_present(CFG_PIN_JACK_HPEN, 0);
-    set_if_present(CFG_PIN_JACK_BZEN, 0);
-    set_if_present(CFG_PIN_JACK_PWREN, 0);
-
-    // waiting for long-press
-    for (;;) {
-        DMESG("deep sleep");
-        target_deepsleep();
-
-        int numSleep = 0;
-        for (;;) {
-            codal::system_timer_wait_ms(5);
-            numSleep += 5;
-            if (btn->getDigitalValue() == 1 && btn2->getDigitalValue() == 1)
-                break;
-            // indicate to the user they have pressed long enough
-            if (numSleep > longPress) {
-                if (bl)
-                    bl->setDigitalValue(1);
-            }
-        }
-        // A pressed for longer than Nms
-        if (numSleep > longPress)
-            break;
-    }
-
-    lowTimer.enableIRQ();
-
-    CodalComponent::setAllSleep(false);
-    DMESG("end deep sleep");
 }
 
 void platformSendSerial(const char *data, int len) {

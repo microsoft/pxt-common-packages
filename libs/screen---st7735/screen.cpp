@@ -74,7 +74,6 @@ class WDisplay {
 
 SINGLETON_IF_PIN(WDisplay, DISPLAY_MOSI);
 
-
 //%
 void setScreenBrigtness(int level) {
     auto bl = LOOKUP_PIN(DISPLAY_BL);
@@ -92,13 +91,6 @@ void setScreenBrigtness(int level) {
         bl->setAnalogPeriodUs(1000);
         bl->setAnalogValue(level * level * 1023 / 10000);
     }
-}
-
-//%
-void setScreenSleep(bool sleepOn) {
-    auto display = getWDisplay();
-    setScreenBrigtness(0);
-    display->lcd.setSleep(sleepOn);
 }
 
 //%

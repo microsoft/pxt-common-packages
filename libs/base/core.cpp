@@ -1390,6 +1390,10 @@ unsigned programSize() {
     return bytecode[17] * 8;
 }
 
+void deepsleep() __attribute__((weak));
+//%
+void deepsleep() { }
+
 int *getBootloaderConfigData() __attribute__((weak));
 int *getBootloaderConfigData()
 {
