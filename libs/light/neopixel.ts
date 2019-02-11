@@ -1,7 +1,7 @@
 /**
  * Well known colors
  */
-enum Colors {
+const enum Colors {
     //% block=red
     Red = 0xFF0000,
     //% block=orange
@@ -29,7 +29,7 @@ enum Colors {
 /**
  * Well known color hues
  */
-enum ColorHues {
+const enum ColorHues {
     //% block=red
     Red = 0,
     //% block=orange
@@ -53,7 +53,7 @@ enum ColorHues {
 /**
  * Different modes for RGB or RGB+W NeoPixel strips
  */
-enum NeoPixelMode {
+const enum NeoPixelMode {
     //% block="RGB (GRB format)"
     RGB = 1,
     //% block="RGB+W"
@@ -64,7 +64,7 @@ enum NeoPixelMode {
     APA102 = 4
 }
 
-enum LightMove {
+const enum LightMove {
     //% block="rotate"
     Rotate,
     //% block="shift"
@@ -74,7 +74,7 @@ enum LightMove {
 /**
  * A determines the mode of the photon
  */
-enum PhotonMode {
+const enum PhotonMode {
     //% block="pen up"
     PenUp,
     //% block="pen down"
@@ -83,6 +83,27 @@ enum PhotonMode {
     Eraser,
     //% block="off"
     Off
+}
+
+const enum LightAnimation {
+    //% blockImage=1
+    //% block="rainbow"
+    Rainbow,
+    //% blockImage=1
+    //% block="running lights"
+    RunningLights,
+    //% blockImage=1
+    //% block="comet"
+    Comet,
+    //% blockImage=1
+    //% block="sparkle"
+    Sparkle,
+    //% blockImage=1
+    //% block="theater chase"
+    TheaterChase,
+    //% blockImage=1
+    //% block="color wipe"
+    ColorWipe
 }
 
 /**
@@ -1066,7 +1087,7 @@ namespace light {
         mode?: NeoPixelMode
     ): NeoPixelStrip {
         if (!mode)
-            mode = NeoPixelMode.RGB
+            mode = NeoPixelMode.RGB;
         if (!pin)
             pin = pins.pinByCfg(DAL.CFG_PIN_NEOPIXEL);
 
