@@ -340,27 +340,32 @@ namespace light {
                         sb[offset + j] = (b[offset + j] * (_bb ? _bb[i] : this._brightness)) >> 8;
                 }
                 // apply photon
-                if (this._photonPenColor) {
-                    // draw head and trail
-                    const tailn = Math.max(1, Math.min(8, this._length >> 4));
-                    let pi = this._photonPos * stride;
-                    let c = Math.max(128, this._brightness);
-                    let dc = (c - 32) / tailn;
-                    for (let bi = 0; bi < tailn && c > 0; ++bi) {
-                        if (this._mode == NeoPixelMode.RGBW)
-                            sb[pi + 3] = c;
-                        else if (this._mode == NeoPixelMode.APA102)
-                            sb[pi + 1] = sb[pi + 2] = sb[pi + 3] = c;
-                        else
-                            sb[pi] = sb[pi + 1] = sb[pi + 2] = c;
-
-                        c -= dc;
-                        pi += (-this._photonDir * stride) % sb.length;
-                        if (pi < 0) pi += sb.length;
-                    }
-                }
+                this.drawPhoton(sb, stride);
                 //console.log(`${!!this._dataPin} ${!!this._clkPin} ${this.mode} hex${sb.toHex()}`)
                 light.sendBuffer(this._dataPin, this._clkPin, this._mode, sb);
+            }
+        }
+
+        protected drawPhoton(sb: Buffer, stride: number) {
+            // apply photon
+            if (this._photonPenColor) {
+                // draw head and trail
+                const tailn = Math.max(1, Math.min(8, this._length >> 4));
+                let pi = this._photonPos * stride;
+                let c = Math.max(128, this._brightness);
+                let dc = (c - 32) / tailn;
+                for (let bi = 0; bi < tailn && c > 0; ++bi) {
+                    if (this._mode == NeoPixelMode.RGBW)
+                        sb[pi + 3] = c;
+                    else if (this._mode == NeoPixelMode.APA102)
+                        sb[pi + 1] = sb[pi + 2] = sb[pi + 3] = c;
+                    else
+                        sb[pi] = sb[pi + 1] = sb[pi + 2] = c;
+
+                    c -= dc;
+                    pi += (-this._photonDir * stride) % sb.length;
+                    if (pi < 0) pi += sb.length;
+                }
             }
         }
 
