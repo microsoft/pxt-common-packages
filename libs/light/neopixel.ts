@@ -732,6 +732,24 @@ namespace light {
             this.reallocateBuffer();
         }
 
+        /**
+         * Sets the number of LEDs on a strip
+         * @param numleds 
+         */
+        //% blockId=light_set_length block="%strip|set length %length"
+        //% group="More" weight=1
+        setLength(numleds: number): void {
+            const n = Math.max(0, numleds | 0);
+            if (n == this._length) return; // nothing to do
+
+            if (this._parent)
+                this._length = Math.min(n, this._parent.length() - this._start);
+            else {
+                this._length = n;
+                this.reallocateBuffer();
+            }
+        }
+
         private autoShow() {
             if (!this.buffered())
                 this.show();
@@ -762,6 +780,7 @@ namespace light {
         }
 
         private reallocateBuffer(): void {
+            if (this._parent) return; // not supported in ranges
             const stride = this.stride();
             this._buf = control.createBuffer(this._length * stride);
             this._brightnessBuf = undefined;
