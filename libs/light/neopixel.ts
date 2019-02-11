@@ -111,6 +111,7 @@ const enum LightAnimation {
  */
 //% weight=100 color="#0078d7" icon="\uf00a"
 //% groups='["other", "Color", "Photon", "More"]'
+//% blockGap=8
 namespace light {
     export type LightStrip = NeoPixelStrip;
     /**
@@ -178,7 +179,7 @@ namespace light {
         //% blockId="light_set_strip_color" block="%strip|set all pixels to %rgb=colorNumberPicker"
         //% help="light/neopixelstrip/set-all"
         //% weight=80 blockGap=8
-        //% group="Strip"
+        //% advanced=true
         setAll(rgb: number) {
             const red = unpackR(rgb);
             const green = unpackG(rgb);
@@ -201,7 +202,7 @@ namespace light {
         //% blockId=light_show_bar_graph block="%strip|graph %value||up to %high" icon="\uf080"
         //% help=light/neopixelstrip/graph
         //% weight=70
-        //% group="Strip"
+        //% advanced=true
         graph(value: number, high?: number): void {
             console.logValue("", value);
             value = Math.abs(value);
@@ -252,7 +253,7 @@ namespace light {
         //% blockId="light_set_pixel_color" block="%strip|set pixel color at %pixeloffset|to %rgb=colorNumberPicker"
         //% help="light/neopixelstrip/set-pixel-color"
         //% weight=79
-        //% group="Strip"
+        //% group="More" advanced=true
         setPixelColor(pixeloffset: number, color: number): void {
             pixeloffset = pixeloffset >> 0;
             if (pixeloffset < 0
@@ -275,7 +276,7 @@ namespace light {
         //% blockId="light_get_pixel_color" block="%strip|pixel color at %pixeloffset"
         //% help="light/neopixelstrip/pixel-color"
         //% weight=9 blockGap=8
-        //% group="Strip"
+        //% group="More" advanced=true
         pixelColor(pixeloffset: number): number {
             pixeloffset = pixeloffset >> 0;
             if (pixeloffset < 0
@@ -317,7 +318,7 @@ namespace light {
         //% blockId="light_set_pixel_white_led" block="%strip|set pixel white LED at %pixeloffset|to %white"
         //% help="light/neopixelstrip/set-pixel-white-led"
         //% weight=5 blockGap=8
-        //% group="Strip"
+        //% group="More" advanced=true
         setPixelWhiteLED(pixeloffset: number, white: number): void {
             if (this._mode != NeoPixelMode.RGBW) return;
 
@@ -338,7 +339,7 @@ namespace light {
         //% blockId="light_show" block="%strip|show"
         //% help="light/neopixelstrip/show"
         //% weight=86 blockGap=8
-        //% group="Strip"
+        //% group="More" advanced=true
         show(): void {
             if (this._parent) this._parent.show();
             else if (this._dataPin) {
@@ -402,7 +403,7 @@ namespace light {
         //% blockId="light_clear" block="%strip|clear"
         //% help="light/neopixelstrip/clear"
         //% weight=85
-        //% group="Strip"
+        //% group="More" advanced=true
         clear(): void {
             const stride = this.stride();
             this.buf.fill(0, this._start * stride, this._length * stride);
@@ -415,7 +416,7 @@ namespace light {
         //% blockId="light_length" block="%strip|length"
         //% help="light/neopixelstrip/length"
         //% weight=8 blockGap=8
-        //% group="Strip"
+        //% group="More" advanced=true
         length() {
             return this._length;
         }
@@ -428,7 +429,7 @@ namespace light {
         //% brightness.min=0 brightness.max=255
         //% help="light/neopixelstrip/set-brightness"
         //% weight=2 blockGap=8
-        //% group="Strip"
+        //% advanced=true
         setBrightness(brightness: number): void {
             this._brightness = Math.max(0, Math.min(0xff, brightness | 0));
             // if this is a top level strip clear any existing brightness buffer
@@ -447,7 +448,7 @@ namespace light {
         //% help="light/neopixelstrip/brightness"
         //% parts=neopixel
         //% weight=7
-        //% group="Strip"
+        //% group="More" advanced=true
         brightness(): number {
             return this._brightness;
         }
@@ -461,7 +462,7 @@ namespace light {
         //% help="light/neopixelstrip/range"
         //% weight=99 blockGap=30
         //% blockSetVariable=strip
-        //% group="Strip"
+        //% advanced=true
         range(start: number, length: number): NeoPixelStrip {
             let strip = new NeoPixelStrip();
             strip._parent = this;
@@ -481,7 +482,7 @@ namespace light {
         //% blockId="light_move_pixels" block="%strip|%kind=MoveKind|by %offset"
         //% help="light/neopixelstrip/move"
         //% weight=87 blockGap=8
-        //% group="Strip"
+        //% group="More" advanced=true
         move(kind: LightMove, offset: number = 1): void {
             const stride = this.stride();
             if (kind === LightMove.Shift) {
@@ -512,7 +513,8 @@ namespace light {
          */
         //% blockId=light_photon_fd block="%strip|photon forward by %steps"
         //% help="light/neopixelstrip/photon-forward"
-        //% group="Photon" weight=41 blockGap=8
+        //% weight=41 blockGap=8
+        //% group="Photon" advanced=true
         photonForward(steps: number) {
             this.setPhotonPosition(this._photonPos + this._photonDir * steps);
         }
@@ -522,7 +524,8 @@ namespace light {
          */
         //% blockId=light_photon_flip block="%strip|photon flip"
         //% help="light/neopixelstrip/photon-flip"
-        //% group="Photon" weight=40 blockGap=8
+        //% weight=40 blockGap=8
+        //% group="Photon" advanced=true
         photonFlip() {
             this.initPhoton();
             this._photonDir *= -1;
@@ -534,7 +537,8 @@ namespace light {
          */
         //% blockId=light_photon_set_position block="%strip|photon set position %index"
         //% help="light/neopixelstrip/set-photon-position"
-        //% group="Photon" weight=39 blockGap=8
+        //% weight=39 blockGap=8
+        //% group="Photon" advanced=true
         setPhotonPosition(index: number) {
             this.initPhoton();
 
@@ -564,7 +568,8 @@ namespace light {
          */
         //% blockId=light_photon_set_pen_color block="%strip=variables_get|photon set pen color %color=colorNumberPicker"
         //% help="light/neopixelstrip/set-photon-pen-color"
-        //% group="Photon" weight=38 blockGap=8
+        //% weight=38 blockGap=8
+        //% group="Photon" advanced=true
         setPhotonPenColor(color: number) {
             this.initPhoton();
             this._photonPenColor = color;
@@ -577,12 +582,14 @@ namespace light {
          */
         //% blockId=light_photon_set_pen_hue block="%strip=variables_get|photon set pen hue %hue=colorWheelHsvPicker"
         //% help="light/neopixelstrip/set-photon-pen-hue"
-        //% group="Photon" weight=39 blockGap=8
+        //% weight=39 blockGap=8
+        //% group="Photon" advanced=true
         setPhotonPenHue(hue: number) {
             this.setPhotonPenColor(hsv(hue, 0xff, 0xff));
         }
 
         //% deprecated=1 blockHidden=1
+        //% group="Photon" advanced=true
         setPhotonColor(hue: number) {
             this.setPhotonPenHue(hue);
         }
@@ -593,7 +600,8 @@ namespace light {
          */
         //% blockId=light_photon_set_photon block="%strip|photon %mode"
         //% help="light/neopixelstrip/set-photon-mode"
-        //% group="Photon" weight=38
+        //% weight=38
+        //% group="Photon" advanced=true
         setPhotonMode(mode: PhotonMode) {
             if (mode == PhotonMode.Off) {
                 this._photonPos = undefined;
@@ -615,7 +623,7 @@ namespace light {
         //% blockId=light_show_animation block="%strip|show animation %animation=light_animation_picker|for %duration=timePicker|ms"
         //% help="light/neopixelstrip/show-animation"
         //% weight=90 blockGap=8
-        //% group="Strip"
+        //% advanced=true
         showAnimation(animation: NeoPixelAnimation, duration: number) {
             if (!animation) return;
 
@@ -653,7 +661,7 @@ namespace light {
         //% blockId=light_show_animation_frame block="%strip|show frame of %animation=light_animation_picker|animation"
         //% help="light/neopixelstrip/show-animation-frame"
         //% weight=87 blockGap=8
-        //% group="Strip"
+        //% group="More" advanced=true
         showAnimationFrame(animation: NeoPixelAnimation) {
             if (!animation) {
                 this._lastAnimation = undefined;
@@ -727,7 +735,7 @@ namespace light {
         //% blockId=light_stop_all_animations block="%strip|stop all animations"
         //% help="light/neopixelstrip/stop-all-animations"
         //% weight=85
-        //% group="Strip"
+        //% group="More" advanced=true
         stopAllAnimations() {
             if (this._animationQueue) {
                 this._animationQueue.cancel();
@@ -742,7 +750,8 @@ namespace light {
          */
         //% blockId=light_set_buffered block="%strip|set buffered  %on"
         //% help="light/neopixelstrip/set-buffered"
-        //% group="Configuration" weight=86
+        //% weight=86 blockGap=8
+        //% group="Configuration" advanced=true
         setBuffered(on: boolean): void {
             if (this._parent) this._parent.setBuffered(on);
             else this._buffered = on;
@@ -751,7 +760,8 @@ namespace light {
         /**
          * Gets a value indicated if the changes are buffered
          */
-        //% weight=85 group="Configuration"
+        //% weight=85 blockGap=8
+        //% group="Configuration" advanced=true
         buffered(): boolean {
             return this._parent ? this._parent.buffered() : this._buffered;
         }
@@ -762,7 +772,8 @@ namespace light {
          */
         //% blockId=light_set_mode block="%strip|set mode %mode"
         //% help="light/neopixelstrip/set-mode"
-        //% group="Configuration" weight=1
+        //% weight=1 blockGap=8
+        //% group="Configuration" advanced=true
         setMode(mode: NeoPixelMode): void {
             this._mode = mode;
             this.reallocateBuffer();
@@ -773,7 +784,8 @@ namespace light {
          * @param numleds 
          */
         //% blockId=light_set_length block="%strip|set length %length"
-        //% group="Configuration" weight=1
+        //% weight=1 blockGap=8
+        //% group="Configuration" advanced=true
         setLength(numleds: number): void {
             const n = Math.max(0, numleds | 0);
             if (n == this._length) return; // nothing to do
@@ -1063,13 +1075,14 @@ namespace light {
     }
 
     /**
-     * Create a new dot star strip
+     * Creates a strip of colored LEDs (APA102)
      */
     //% blockId="light_create_dotstar" block="create APA102 strip|data %data|clock %clk|pixels %numleds"
     //% help="light/create-apa102-strip"
     //% trackArgs=0,1,2
     //% parts="dotstar"
-    //% weight=100 advanced=true
+    //% weight=100 blockSetVariable=strip
+    //% advanced=true
     export function createAPA102Strip(
         dataPin: DigitalInOutPin,
         clkPin: DigitalInOutPin,
@@ -1089,13 +1102,14 @@ namespace light {
     }
 
     /**
-     * Creates a strip of color LEDs (WS2812b)
+     * Creates a strip of colored LEDs (WS2812b)
      */
-    //% blockId="neopixel_create" block="create strip|pin %pin|pixels %numleds|mode %mode"
+    //% blockId="neopixel_create" block="create WS2812 strip|pin %pin|pixels %numleds"
     //% help="light/create-neo-pixel-strip"
     //% trackArgs=0,2
     //% parts="neopixel"
-    //% weight=100 blockHidden=true
+    //% weight=100 blockSetVariable=strip
+    //% advanced=true
     export function createNeoPixelStrip(
         pin: DigitalInOutPin = null,
         numleds: number = 10,
@@ -1528,7 +1542,8 @@ namespace light {
     //% blockId=light_animation_picker block="%animation" shim=TD_ID
     //% animation.fieldEditor="imagedropdown"
     //% animation.fieldOptions.columns=3
-    //% group="More" weight=0
+    //% weight=0
+    //% group="More"
     export function _animationPicker(animation: NeoPixelAnimation): NeoPixelAnimation {
         return animation;
     }

@@ -2,7 +2,7 @@
 namespace light {
     /**
      * Create a new programmable light strip.
-     * @param pin the pin where the neopixel is connected.
+     * @param pin the pin where the strip is connected.
      * @param numleds number of leds in the strip, eg: 30
      * @param mode the light encoding mode for different LED strips, eg: NeoPixelMode.RGB_GRB
      */
@@ -12,6 +12,7 @@ namespace light {
     //% blockSetVariable=strip
     //% trackArgs=0,2
     //% parts="neopixel"
+    //% advanced=true
     export function createStrip(
         pin: DigitalInOutPin = null,
         numleds: number = 30,

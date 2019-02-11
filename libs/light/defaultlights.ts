@@ -11,8 +11,8 @@ namespace light {
      */
     //% help=light/default-strip
     //% blockId="neopixel_default_strip" block="default strip"
-    //% weight=101 blockGap=8
-    //% subcategory="NeoPixel"
+    //% weight=110 blockGap=8
+    //% advanced=true
     export function defaultStrip(): NeoPixelStrip {
         if (_defaultStrip) return _defaultStrip;
 
@@ -42,8 +42,8 @@ namespace light {
      */
     //% help=light/onboard-strip
     //% blockId="neopixel_onboard_strip" block="onboard strip"
-    //% weight=101 blockGap=8
-    //% subcategory="NeoPixel"
+    //% weight=111 blockGap=8
+    //% advanced=true
     export function onboardStrip(): NeoPixelStrip {
         if (_onboardStrip) return _onboardStrip;
 
@@ -61,6 +61,16 @@ namespace light {
             _onboardStrip = light.createNeoPixelStrip(undefined, 0);
         }
         return _onboardStrip;
+    }
+
+    /**
+     * Configure the number of LEDS and light mode of the default strip
+     * @param numleds number of LEDs
+     * @param mode the kind of LED attached
+     */
+    export function configure(numleds: number, mode: NeoPixelMode) {
+        light.pixels.setLength(numleds);
+        light.pixels.setMode(mode);
     }
 
     /**
