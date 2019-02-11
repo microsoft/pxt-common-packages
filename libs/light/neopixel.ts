@@ -787,7 +787,9 @@ namespace light {
         //% weight=1 blockGap=8
         //% group="Configuration" advanced=true
         setMode(mode: NeoPixelMode): void {
-            if (this._mode != mode) {
+            if (this._parent)
+                this._parent.setMode(mode);
+            else if (this._mode != mode) {
                 this._mode = mode;
                 this.reallocateBuffer();
             }
@@ -802,13 +804,14 @@ namespace light {
         //% group="Configuration" advanced=true
         setLength(numleds: number): void {
             const n = Math.max(0, numleds | 0);
-            if (n == this._length) return; // nothing to do
-
-            if (this._parent)
-                this._length = Math.min(n, this._parent.length() - this._start);
-            else {
-                this._length = n;
-                this.reallocateBuffer();
+            // lazy update
+            if (n != this._length) {
+                if (this._parent)
+                    this._length = Math.min(n, this._parent.length() - this._start);
+                else {
+                    this._length = n;
+                    this.reallocateBuffer();
+                }
             }
         }
 
