@@ -154,7 +154,7 @@ namespace light {
             this._dataPin = undefined;
             this._clkPin = undefined;
             this._barGraphHigh = 0;
-            this._barGraphHighLast = 0;    
+            this._barGraphHighLast = 0;
         }
 
         /**
@@ -787,8 +787,10 @@ namespace light {
         //% weight=1 blockGap=8
         //% group="Configuration" advanced=true
         setMode(mode: NeoPixelMode): void {
-            this._mode = mode;
-            this.reallocateBuffer();
+            if (this._mode != mode) {
+                this._mode = mode;
+                this.reallocateBuffer();
+            }
         }
 
         /**
