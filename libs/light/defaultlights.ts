@@ -18,11 +18,11 @@ namespace light {
 
         const data = pins.pinByCfg(DAL.CFG_PIN_DOTSTAR_DATA);
         const clk = pins.pinByCfg(DAL.CFG_PIN_DOTSTAR_CLOCK);
-        const dsnum = pxt.getConfig(DAL.CFG_NUM_DOTSTARS, 0);
+        const dsnum = control.getConfigValue(DAL.CFG_NUM_DOTSTARS, 0);
         const neo = pins.pinByCfg(DAL.CFG_PIN_NEOPIXEL);
-        const neonum = pxt.getConfig(DAL.CFG_NUM_DOTSTARS, 0);
-        const mosi = pxt.getPinByCfg(DAL.CFG_PIN_MOSI);
-        const sck = pxt.getPinByCfg(DAL.CFG_PIN_SCK);
+        const neonum = control.getConfigValue(DAL.CFG_NUM_DOTSTARS, 0);
+        const mosi = pins.pinByCfg(DAL.CFG_PIN_MOSI);
+        const sck = pins.pinByCfg(DAL.CFG_PIN_SCK);
 
         if (data && clk && dsnum > 1) {
             _defaultStrip = light.createAPA102Strip(data, clk, dsnum);
@@ -30,7 +30,7 @@ namespace light {
         } else if(neo && neonum > 1) {
             _defaultStrip = light.createNeoPixelStrip(neo, neonum, NeoPixelMode.RGB);
         } else { // mount strip on SPI
-            _defaultStrip = light.createAPA102Strip(mosi, sck, 30, NeoPixelMode.APA102);
+            _defaultStrip = light.createAPA102Strip(mosi, sck, 30);
         }
 
         return _defaultStrip;
@@ -49,9 +49,9 @@ namespace light {
 
         const data = pins.pinByCfg(DAL.CFG_PIN_DOTSTAR_DATA);
         const clk = pins.pinByCfg(DAL.CFG_PIN_DOTSTAR_CLOCK);
-        const dsnum = pxt.getConfig(DAL.CFG_NUM_DOTSTARS, 1);
+        const dsnum = control.getConfigValue(DAL.CFG_NUM_DOTSTARS, 1);
         const neo = pins.pinByCfg(DAL.CFG_PIN_NEOPIXEL);
-        const neonum = pxt.getConfig(DAL.CFG_NUM_NEOPIXELS, 1);
+        const neonum = control.getConfigValue(DAL.CFG_NUM_NEOPIXELS, 1);
         if (data && clk) {
             _onboardStrip = light.createAPA102Strip(data, clk, dsnum);
             _onboardStrip.setBrightness(96);
