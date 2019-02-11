@@ -60,6 +60,14 @@ interface Image {
     rotated(deg: number): Image;
 }
 
+interface ScreenImage extends Image {
+    /**
+     * Sets the screen backlight brightness (0-100)
+     */
+    //% helper=setScreenBrightness
+    setBrightness(deg: number): Image;
+}
+
 namespace helpers {
     //% shim=ImageMethods::_drawLine
     function _drawLine(img: Image, xy: number, wh: number, c: color): void { }
@@ -121,9 +129,15 @@ namespace helpers {
         }
     }
 
+    //% shim=pxt::setScreenBrightness
+    function _setScreenBrightness(brightness: number) { }
+    
+    export function setScreenBrightness(img: Image, b: number) {
+        _setScreenBrightness(b)
+    }
 }
 
-namespace image {    
+namespace image {
     /**
     * Get the screen image
     */

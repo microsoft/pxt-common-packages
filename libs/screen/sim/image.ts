@@ -699,4 +699,5 @@ namespace pxsim.pxtcore {
         if (state)
             state.updateScreenStatusBar(img);
     }
+    export function setScreenBrightness(b: number) {}
 }

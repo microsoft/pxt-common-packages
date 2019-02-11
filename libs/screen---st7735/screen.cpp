@@ -75,7 +75,7 @@ class WDisplay {
 SINGLETON_IF_PIN(WDisplay, DISPLAY_MOSI);
 
 //%
-void setScreenBrigtness(int level) {
+void setScreenBrightness(int level) {
     auto bl = LOOKUP_PIN(DISPLAY_BL);
     if (!bl)
         return;
