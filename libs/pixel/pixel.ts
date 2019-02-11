@@ -40,7 +40,7 @@ namespace pixel {
         const clk = pins.pinByCfg(DAL.CFG_PIN_DOTSTAR_CLOCK);
         if (data && clk) {
             control.dmesg(`pixel: found data & clk`);
-            _strip = light.createDotStarStrip(data, clk, 1);
+            _strip = light.createAPA102Strip(data, clk, 1);
             _strip.setBrightness(96);
             return true;
         }

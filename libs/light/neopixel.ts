@@ -60,8 +60,8 @@ enum NeoPixelMode {
     RGBW = 2,
     //% block="RGB (RGB format)"
     RGB_RGB = 3,
-    //% block="DotStar (APA102c)"
-    DotStar = 4
+    //% block="APA102c"
+    APA102 = 4
 }
 
 enum LightMove {
@@ -268,7 +268,7 @@ namespace light {
                     green = this.buf[offset + 1];
                     blue = this.buf[offset + 2];
                     break;
-                case NeoPixelMode.DotStar:
+                case NeoPixelMode.APA102:
                     blue = this.buf[offset + 1];
                     green = this.buf[offset + 2];
                     red = this.buf[offset + 3];
@@ -323,7 +323,7 @@ namespace light {
                 if (!this._sendBuf) this._sendBuf = control.createBuffer(b.length);
                 const sb = this._sendBuf;
                 const stride = this.stride();
-                const strideOffset = this._mode == NeoPixelMode.DotStar ? 1 : 0;
+                const strideOffset = this._mode == NeoPixelMode.APA102 ? 1 : 0;
                 // apply brightness
                 for (let i = 0; i < this._length; ++i) {
                     const offset = (this._start + i) * stride;
@@ -342,7 +342,7 @@ namespace light {
                     for (let bi = 0; bi < tailn && c > 0; ++bi) {
                         if (this._mode == NeoPixelMode.RGBW)
                             sb[pi + 3] = c;
-                        else if (this._mode == NeoPixelMode.DotStar)
+                        else if (this._mode == NeoPixelMode.APA102)
                             sb[pi + 1] = sb[pi + 2] = sb[pi + 3] = c;
                         else
                             sb[pi] = sb[pi + 1] = sb[pi + 2] = c;
@@ -449,7 +449,7 @@ namespace light {
         }
 
         private stride(): number {
-            return this._mode === NeoPixelMode.RGBW || this._mode == NeoPixelMode.DotStar ? 4 : 3;
+            return this._mode === NeoPixelMode.RGBW || this._mode == NeoPixelMode.APA102 ? 4 : 3;
         }
 
         initPhoton() {
@@ -734,7 +734,7 @@ namespace light {
                     b[offset + 1] = green;
                     b[offset + 2] = blue;
                     break;
-                case NeoPixelMode.DotStar:
+                case NeoPixelMode.APA102:
                     // https://cdn-shop.adafruit.com/datasheets/APA102.pdf
                     b[offset] = 0xe0 | 0x1f; // full brightness
                     b[offset + 1] = blue;
@@ -998,18 +998,18 @@ namespace light {
     /**
      * Create a new dot star strip
      */
-    //% blockId="light_create_dotstar" block="create dotstar strip|data %data|clock %clk|pixels %numleds"
-    //% help="light/create-dot-star-strip"
+    //% blockId="light_create_dotstar" block="create APA102 strip|data %data|clock %clk|pixels %numleds"
+    //% help="light/create-apa102-strip"
     //% trackArgs=0,1,2
     //% parts="dotstar"
     //% weight=100 advanced=true
-    export function createDotStarStrip(
+    export function createAPA102Strip(
         dataPin: DigitalInOutPin,
         clkPin: DigitalInOutPin,
         numleds: number): NeoPixelStrip {
         const strip = new NeoPixelStrip();
         strip._buffered = false;
-        strip._mode = NeoPixelMode.DotStar;
+        strip._mode = NeoPixelMode.APA102;
         strip._length = Math.max(0, numleds | 0);
         strip._brightness = 20;
         strip._start = 0;
