@@ -6,6 +6,7 @@
         "characeterlcd.ts",
         "characeterlcdmono.ts",
         "characeterlcdrgb.ts",
+        "lcd.ts"
     ],
     "testFiles": [
         "test.ts"

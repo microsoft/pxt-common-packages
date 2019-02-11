@@ -105,7 +105,7 @@ namespace lcd {
             return (this.displaycontrol & _LCD_CURSORON) == _LCD_CURSORON;
         }
 
-        set cursor(show: boolean): void {
+        set cursor(show: boolean) {
             if (show) {
                 this.displaycontrol |= _LCD_CURSORON
             } else {
@@ -117,19 +117,11 @@ namespace lcd {
 
         /** 
          * Move the cursor to position ``column``, ``row`` 
-         * */
+         **/
         public setCursorPosition(column: number, row: number): void {
-            // Clamp row to the last row of the display
-            if (row >= this.lines) {
-                row = this.lines - 1
-            }
+            column = Math.max(0, Math.min(this.columns - 1, column | 0));
+            row = Math.max(0, Math.min(this.lines - 1, row | 0));
 
-            // Clamp to last column of display
-            if (column >= this.columns) {
-                column = this.columns - 1
-            }
-
-            // Set location
             this._write8(_LCD_SETDDRAMADDR | column + _LCD_ROW_OFFSETS[row])
         }
 
@@ -141,13 +133,11 @@ namespace lcd {
             return (this.displaycontrol & _LCD_BLINKON) == _LCD_BLINKON
         }
 
-        set blink(blink: boolean): void {
-            if (blink) {
+        set blink(value: boolean) {
+            if (value)
                 this.displaycontrol |= _LCD_BLINKON
-            } else {
+            else
                 this.displaycontrol &= ~_LCD_BLINKON
-            }
-
             this._write8(_LCD_DISPLAYCONTROL | this.displaycontrol)
         }
 
@@ -158,7 +148,7 @@ namespace lcd {
             return (this.displaycontrol & _LCD_DISPLAYON) == _LCD_DISPLAYON
         }
 
-        set display(enable: boolean): void {
+        set display(enable: boolean) {
             if (enable) {
                 this.displaycontrol |= _LCD_DISPLAYON
             } else {
@@ -175,7 +165,7 @@ namespace lcd {
             return this._message
         }
 
-        set message(message: string): void {
+        set message(message: string) {
             this._message = message;
             let line = 0
             // Track times through iteration, to act on the initial character of the message
@@ -224,7 +214,7 @@ namespace lcd {
             return this._rtl;
         }
 
-        set rightToLeft(direction: boolean): void {
+        set rightToLeft(direction: boolean) {
             if (this._rtl != direction) {
                 this._rtl = direction;
                 if (this._rtl)
