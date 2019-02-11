@@ -64,12 +64,20 @@ namespace light {
     }
 
     /**
-     * Configure the number of LEDS and light mode of the default strip
-     * @param numleds number of LEDs
-     * @param mode the kind of LED attached
+     * Sets the number of LEDS on the default light strip
      */
-    export function configure(numleds: number, mode: NeoPixelMode) {
+    //% blockId=lightds_setlength block="set default strip length to %numleds pixels"
+    //% weight=0
+    export function setLength(numleds: number) {
         light.pixels.setLength(numleds);
+    }
+
+    /**
+     * Sets the type of RGB light on the default strip
+     */
+    //% blockId=lightds_setmode block="set default strip mode to %mode"
+    //% weight=0
+    export function setMode(mode: NeoPixelMode) {
         light.pixels.setMode(mode);
     }
 

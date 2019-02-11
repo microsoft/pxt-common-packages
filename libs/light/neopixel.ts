@@ -201,7 +201,7 @@ namespace light {
          */
         //% blockId=light_show_bar_graph block="%strip|graph %value||up to %high" icon="\uf080"
         //% help=light/neopixelstrip/graph
-        //% weight=70
+        //% weight=70 blockGap=8
         //% advanced=true
         graph(value: number, high?: number): void {
             console.logValue("", value);
@@ -252,7 +252,7 @@ namespace light {
          */
         //% blockId="light_set_pixel_color" block="%strip|set pixel color at %pixeloffset|to %rgb=colorNumberPicker"
         //% help="light/neopixelstrip/set-pixel-color"
-        //% weight=79
+        //% weight=79 blockGap=8
         //% group="More" advanced=true
         setPixelColor(pixeloffset: number, color: number): void {
             pixeloffset = pixeloffset >> 0;
@@ -402,7 +402,7 @@ namespace light {
          */
         //% blockId="light_clear" block="%strip|clear"
         //% help="light/neopixelstrip/clear"
-        //% weight=85
+        //% weight=85 blockGap=8
         //% group="More" advanced=true
         clear(): void {
             const stride = this.stride();
@@ -447,7 +447,7 @@ namespace light {
         //% blockId="light_get_brightness" block="%strip|brightness"
         //% help="light/neopixelstrip/brightness"
         //% parts=neopixel
-        //% weight=7
+        //% weight=7 blockGap=8
         //% group="More" advanced=true
         brightness(): number {
             return this._brightness;
@@ -734,7 +734,7 @@ namespace light {
          */
         //% blockId=light_stop_all_animations block="%strip|stop all animations"
         //% help="light/neopixelstrip/stop-all-animations"
-        //% weight=85
+        //% weight=85 blockGap=8
         //% group="More" advanced=true
         stopAllAnimations() {
             if (this._animationQueue) {
@@ -1077,7 +1077,7 @@ namespace light {
     /**
      * Creates a strip of colored LEDs (APA102)
      */
-    //% blockId="light_create_dotstar" block="create APA102 strip|data %data|clock %clk|pixels %numleds"
+    //% blockId="light_create_dotstar" block="create APA102 strip|data %data|clock %clk|with %numleds pixels"
     //% help="light/create-apa102-strip"
     //% trackArgs=0,1,2
     //% parts="dotstar"
@@ -1104,12 +1104,12 @@ namespace light {
     /**
      * Creates a strip of colored LEDs (WS2812b)
      */
-    //% blockId="neopixel_create" block="create WS2812 strip|pin %pin|pixels %numleds"
+    //% blockId="neopixel_create" block="create WS2812 strip|pin %pin|with %numleds pixels"
     //% help="light/create-neo-pixel-strip"
     //% trackArgs=0,2
     //% parts="neopixel"
     //% weight=100 blockSetVariable=strip
-    //% advanced=true
+    //% advanced=true blockHidden=1
     export function createNeoPixelStrip(
         pin: DigitalInOutPin = null,
         numleds: number = 10,
