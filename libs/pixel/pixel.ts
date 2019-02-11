@@ -27,7 +27,7 @@ enum PixelColors {
 }
 
 /**
- * Functions to operate on-board color LED (if any).
+ * Functions to operate the on-board color LED (if any).
  */
 //% weight=100 color="#0078d7" icon="\uf0eb"
 namespace pixel {
@@ -39,15 +39,16 @@ namespace pixel {
         const data = pins.pinByCfg(DAL.CFG_PIN_DOTSTAR_DATA);
         const clk = pins.pinByCfg(DAL.CFG_PIN_DOTSTAR_CLOCK);
         if (data && clk) {
-            control.dmesg(`pixel: found data & clk`);
-            _strip = light.createAPA102Strip(data, clk, 1);
+            const num = pxt.getConfig(DAL.CFG_NUM_DOTSTARS, 1);
+            _strip = light.createAPA102Strip(data, clk, num);
             _strip.setBrightness(96);
             return true;
         }
 
         const neo = pins.pinByCfg(DAL.CFG_PIN_NEOPIXEL);
         if (neo) {
-            _strip = light.createNeoPixelStrip(neo, 1, NeoPixelMode.RGB);
+            const num = pxt.getConfig(DAL.CFG_NUM_NEOPIXELS, 1);
+            _strip = light.createNeoPixelStrip(neo, 1, NeoPixelMode.RGB, num);
             return true;
         }
 

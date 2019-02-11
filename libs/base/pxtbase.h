@@ -254,6 +254,7 @@ void debugMemLeaks();
 //%
 void anyPrint(TValue v);
 
+//%
 int getConfig(int key, int defl = -1);
 
 //%
