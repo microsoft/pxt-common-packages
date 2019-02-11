@@ -1,0 +1,17 @@
+{
+    "name": "lcd",
+    "description": "Characeter LCD driver",
+    "files": [
+        "README.md",
+        "characeterlcd.ts",
+        "characeterlcdmono.ts",
+        "characeterlcdrgb.ts",
+    ],
+    "testFiles": [
+        "test.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core"
+    }
+}
