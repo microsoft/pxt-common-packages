@@ -16,8 +16,6 @@ static void initRandomSeed() {
     }
 }
 
-void setScreenSleep(bool sleepOn);
-
 static void set_if_present(int cfg, int val) {
     auto snd = pxt::lookupPinCfg(cfg);
     if (snd)
