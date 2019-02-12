@@ -74,6 +74,7 @@ interface ScreenImage extends Image {
     brightness(): number;
 }
 
+// pxt compiler currently crashes on non-functions in helpers namespace; will fix
 namespace _helpers_workaround {
     export let brightness = 100
 }
