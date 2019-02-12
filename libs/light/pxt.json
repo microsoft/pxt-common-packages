@@ -1,10 +1,13 @@
 {
     "name": "light",
-    "description": "The programmable LED (WS2812b) driver.",
+    "description": "The programmable LED (WS2812b,APA102) driver.",
     "files": [
         "README.md",
         "neopixel.ts",
         "create.ts",
+        "defaultstrip.ts",
+        "onboardstrip.ts",
+        "defaultlights.ts",
         "ns.ts",
         "jacdac.ts",
         "neopixeloverrides.ts",
