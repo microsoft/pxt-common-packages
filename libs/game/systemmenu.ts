@@ -59,7 +59,7 @@ namespace scene.systemMenu {
             screen.setBrightness(screen.brightness() - 10)
         });
         m.addItem("sleep (MENU to wake)", () => {
-            control.deepsleep();
+            control.deepSleep();
         });
 
         if (customItems)

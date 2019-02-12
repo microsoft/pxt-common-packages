@@ -23,7 +23,7 @@ static void set_if_present(int cfg, int val) {
 }
 
 //%
-void deepsleep() {
+void deepSleep() {
     // this in particular puts accelerometer to sleep, which the bootloader
     // doesn't do
     CodalComponent::setAllSleep(true);

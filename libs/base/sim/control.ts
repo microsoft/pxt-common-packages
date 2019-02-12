@@ -4,7 +4,10 @@ namespace pxsim.pxtcore {
         board().bus.listen(id, evid, handler);
     }
 
-    export function deepsleep() { }
+    export function deepSleep() {
+        // TODO?
+        console.log("deep sleep requested")
+    }
 }
 
 namespace pxsim.control {
