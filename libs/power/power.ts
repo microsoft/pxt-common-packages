@@ -22,6 +22,7 @@ namespace power {
      */
     //% blockId=powerpke block="power poke"
     export function poke() {
+        init();
         _poked = control.millis();
     }
 
@@ -30,6 +31,7 @@ namespace power {
      */
     //% blockId=powercheckdeepsleep block="power check deep sleep"
     export function checkDeepSleep() {
+        init();
         const p = _poked || 0;
         const to = _timeout || 0;
         if (to > 0 && 
@@ -45,5 +47,12 @@ namespace power {
     //% blockId=powerdeepsleep block="power deep sleep"
     //% shim=pxt::deepSleep
     export function deepSleep() {
+    }
+
+    function init() {
+        if (_timeout !== undefined) return;
+
+        // read default value
+        _timeout = control.getConfigValue(DAL.CFG_POWER_DEEPSLEEP_TIMEOUT, -1) * 1000;
     }
 }

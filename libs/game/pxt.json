@@ -5,7 +5,6 @@
         "constants.ts",
         "controlleroverrides.ts",
         "controller.ts",
-        "poweroverrides.ts",
         "hitbox.ts",
         "sprites.ts",
         "sprite.ts",
@@ -42,6 +41,6 @@
     "dependencies": {
         "screen": "file:../screen",
        "mixer": "file:../mixer",
-       "power": "file:..power"
+       "power": "file:../power"
     }
 }

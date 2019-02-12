@@ -1,1 +1,0 @@
-// hardware specific power options
