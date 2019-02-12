@@ -2,6 +2,7 @@
  * Power and sleep management
  */
 //% advanced=true icon="\uf011" color="#898989"
+//% weight=1 blockGap=8
 namespace power {
     let _poked: number;
     let _timeout: number;
