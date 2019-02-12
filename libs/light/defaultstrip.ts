@@ -15,7 +15,7 @@ namespace light {
         const clk = pins.pinByCfg(DAL.CFG_PIN_DOTSTAR_CLOCK);
         const dsnum = control.getConfigValue(DAL.CFG_NUM_DOTSTARS, 0);
         const neo = pins.pinByCfg(DAL.CFG_PIN_NEOPIXEL);
-        const neonum = control.getConfigValue(DAL.CFG_NUM_DOTSTARS, 0);
+        const neonum = control.getConfigValue(DAL.CFG_NUM_NEOPIXELS, 0);
         const mosi = pins.pinByCfg(DAL.CFG_PIN_MOSI);
         const sck = pins.pinByCfg(DAL.CFG_PIN_SCK);
 
