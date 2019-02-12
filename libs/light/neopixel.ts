@@ -801,6 +801,7 @@ namespace light {
          */
         //% blockId=light_set_length block="set %strip length to %length pixels"
         //% weight=1 blockGap=8
+        //% length.shadow=lightLengthPicker
         //% group="Configuration" advanced=true
         setLength(numleds: number): void {
             const n = Math.max(0, numleds | 0);
@@ -1549,5 +1550,18 @@ namespace light {
     //% group="More"
     export function _animationPicker(animation: NeoPixelAnimation): NeoPixelAnimation {
         return animation;
+    }
+
+        /**
+      * Get the light length picker
+      * @param pixels number of LEDs
+      */
+    //% blockId=lightLengthPicker block="%pixels"
+    //% blockHidden=true shim=TD_ID
+    //% colorSecondary="#FFFFFF"
+    //% pixels.fieldEditor="numberdropdown" pixels.fieldOptions.decompileLiterals=true
+    //% pixels.fieldOptions.data='[["7", 7], ["8", 8], ["12", 12], ["16", 16], ["24", 24], ["30", 30], ["60", 60], ["64", 64], ["90", 90], ["120", 120], ["144", 144]]'
+    export function __lengthPicker(pixels: number): number {
+        return pixels;
     }
 }
