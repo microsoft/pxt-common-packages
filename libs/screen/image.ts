@@ -66,6 +66,16 @@ interface ScreenImage extends Image {
      */
     //% helper=setScreenBrightness
     setBrightness(deg: number): Image;
+
+    /**
+     * Gets current screen backlight brightness (0-100)
+     */
+    //% helper=screenBrightness
+    brightness(): number;
+}
+
+namespace _helpers_workaround {
+    export let brightness = 100
 }
 
 namespace helpers {
@@ -131,9 +141,14 @@ namespace helpers {
 
     //% shim=pxt::setScreenBrightness
     function _setScreenBrightness(brightness: number) { }
-    
+
     export function setScreenBrightness(img: Image, b: number) {
-        _setScreenBrightness(b)
+        _helpers_workaround.brightness = b
+        _setScreenBrightness(_helpers_workaround.brightness)
+    }
+
+    export function screenBrightness(img: Image) {
+        return _helpers_workaround.brightness
     }
 }
 

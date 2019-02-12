@@ -24,9 +24,6 @@ namespace scene.systemMenu {
         controller.menu.onEvent(ControllerButtonEvent.Pressed, showSystemMenu);
     }
 
-    //% shim=pxt::deepsleep
-    function deepsleep() {}
-
     export function showSystemMenu() {
         active = true;
         let itemHandler: () => void = undefined;
@@ -55,8 +52,14 @@ namespace scene.systemMenu {
             music.setVolume(v - 32);
             music.playTone(440, 500);
         });
+        m.addItem("brightness up", () => {
+            screen.setBrightness(screen.brightness() + 10)
+        });
+        m.addItem("brightness down", () => {
+            screen.setBrightness(screen.brightness() - 10)
+        });
         m.addItem("sleep (MENU to wake)", () => {
-            deepsleep();
+            control.deepsleep();
         });
 
         if (customItems)
