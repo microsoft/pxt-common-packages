@@ -122,6 +122,7 @@ namespace controller {
 
         setPressed(pressed: boolean) {
             if (this._pressed != pressed) {
+                power.poke();
                 if (this._owner)
                     this._owner.connected = true;
                 this._pressed = pressed;

@@ -123,6 +123,8 @@ namespace scene {
                 game.consoleOverlay.draw();
                 // clear flags
                 this.flags = 0;
+                // check for power deep sleep
+                power.checkDeepSleep();
             });
             // update screen
             this.eventContext.registerFrameHandler(200, control.__screen.update);
