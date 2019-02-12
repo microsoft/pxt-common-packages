@@ -27,19 +27,6 @@ bool isValidMOSIPin(DigitalInOutPin pin) {
 
 }
 
-void clear() {
-    auto neopix = LOOKUP_PIN(NEOPIXEL);
-    if (neopix) {
-        auto num = getConfig(CFG_NUM_NEOPIXELS, 0);
-        if (num <= 0) return; // wrong length
-
-        auto n = 3 * num;
-        uint8_t off[n];
-        memset(off, 0, sizeof(off));
-        light::neopixelSendData(neopix, 0x100, off, sizeof(off));
-    }
-}
-
 // SPI
 void spiNeopixelSendBuffer(DevicePin* pin, const uint8_t *data, unsigned size) {
     int32_t iptr = 0, optr = 100;
@@ -152,6 +139,30 @@ void sendBuffer(DevicePin* data, DevicePin* clk, int mode, Buffer buf) {
         light::dotStarSendData(data, clk, mode, buf->data, buf->length);
     else
         light::neopixelSendData(data, mode, buf->data, buf->length);
+}
+
+
+void clear() {
+    auto neopix = LOOKUP_PIN(NEOPIXEL);
+    auto neonum = getConfig(CFG_NUM_NEOPIXELS, 0);
+    if (neopix && neonum >= 0) {
+        auto n = 3 * num;
+        uint8_t off[n];
+        memset(off, 0, sizeof(off));
+        light::neopixelSendData(neopix, 0x100, off, sizeof(off));
+    }
+
+    auto data = LOOKUP_PIN(DOTSTAR_DATA);
+    auto clk = LOOKUP_PIN(DOTSTAR_CLK);
+    auto dsnum = getConfig(CFG_NUM_DOTSTAR, 0);
+    if (data && clk && dsnum > 0) {
+        auto n = 4 * num;
+        uint8_t off[n];
+        memset(off, 0, sizeof(off));
+        for(unsigned i = 0; i < n; i += 4)
+            off[i] = 0xe0;
+        bitBangDotStarSendData(data, clk, 0x100, off, sizeof(off));
+    }
 }
 
 } // namespace pxt
