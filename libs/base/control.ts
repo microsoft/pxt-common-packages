@@ -50,6 +50,12 @@ namespace control {
         panic(108)
     }
 
+    /**
+     * Puts the device in low-power mode. Long press of MENU button will wake it up.
+     */
+    //% shim=pxt::deepSleep
+    export function deepSleep() {}
+
     export class AnimationQueue {
         running: boolean;
         eventID: number;

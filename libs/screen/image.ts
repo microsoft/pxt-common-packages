@@ -60,6 +60,25 @@ interface Image {
     rotated(deg: number): Image;
 }
 
+interface ScreenImage extends Image {
+    /**
+     * Sets the screen backlight brightness (0-100)
+     */
+    //% helper=setScreenBrightness
+    setBrightness(deg: number): Image;
+
+    /**
+     * Gets current screen backlight brightness (0-100)
+     */
+    //% helper=screenBrightness
+    brightness(): number;
+}
+
+// pxt compiler currently crashes on non-functions in helpers namespace; will fix
+namespace _helpers_workaround {
+    export let brightness = 100
+}
+
 namespace helpers {
     //% shim=ImageMethods::_drawLine
     function _drawLine(img: Image, xy: number, wh: number, c: color): void { }
@@ -121,9 +140,20 @@ namespace helpers {
         }
     }
 
+    //% shim=pxt::setScreenBrightness
+    function _setScreenBrightness(brightness: number) { }
+
+    export function setScreenBrightness(img: Image, b: number) {
+        _helpers_workaround.brightness = b
+        _setScreenBrightness(_helpers_workaround.brightness)
+    }
+
+    export function screenBrightness(img: Image) {
+        return _helpers_workaround.brightness
+    }
 }
 
-namespace image {    
+namespace image {
     /**
     * Get the screen image
     */

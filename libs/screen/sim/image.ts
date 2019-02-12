@@ -699,4 +699,8 @@ namespace pxsim.pxtcore {
         if (state)
             state.updateScreenStatusBar(img);
     }
+    export function setScreenBrightness(b: number) {
+        // I guess we could at least turn the screen off, when b==0,
+        // otherwise, it probably doesn't make much sense to do anything.
+    }
 }

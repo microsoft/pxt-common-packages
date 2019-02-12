@@ -3,6 +3,11 @@ namespace pxsim.pxtcore {
     export function registerWithDal(id: number, evid: number, handler: RefAction, mode: number = 0) {
         board().bus.listen(id, evid, handler);
     }
+
+    export function deepSleep() {
+        // TODO?
+        console.log("deep sleep requested")
+    }
 }
 
 namespace pxsim.control {

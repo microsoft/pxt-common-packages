@@ -52,6 +52,15 @@ namespace scene.systemMenu {
             music.setVolume(v - 32);
             music.playTone(440, 500);
         });
+        m.addItem("brightness up", () => {
+            screen.setBrightness(screen.brightness() + 10)
+        });
+        m.addItem("brightness down", () => {
+            screen.setBrightness(screen.brightness() - 10)
+        });
+        m.addItem("sleep (MENU to wake)", () => {
+            control.deepSleep();
+        });
 
         if (customItems)
             customItems.forEach(item => {

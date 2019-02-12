@@ -5,8 +5,8 @@
 
 namespace pxt {
 
-STMLowLevelTimer tim5(TIM5, TIM5_IRQn);
-CODAL_TIMER devTimer(tim5);
+STMLowLevelTimer lowTimer(TIM5, TIM5_IRQn);
+CODAL_TIMER devTimer(lowTimer);
 
 void initAccelRandom();
 
@@ -14,6 +14,24 @@ static void initRandomSeed() {
     if (getConfig(CFG_ACCELEROMETER_TYPE, -1) != -1) {
         initAccelRandom();
     }
+}
+
+static void set_if_present(int cfg, int val) {
+    auto snd = pxt::lookupPinCfg(cfg);
+    if (snd)
+        snd->setDigitalValue(val);
+}
+
+//%
+void deepSleep() {
+    // this in particular puts accelerometer to sleep, which the bootloader
+    // doesn't do
+    CodalComponent::setAllSleep(true);
+
+    // ask bootloader to do the deep sleeping
+    QUICK_BOOT(1);
+    RTC->BKP1R = 0x10b37889;
+    NVIC_SystemReset();
 }
 
 void platformSendSerial(const char *data, int len) {
@@ -31,6 +49,11 @@ void platform_init() {
     setSendToUART(platformSendSerial);
     light::clear();
 
+    // make sure sound doesn't draw power before enabled
+    set_if_present(CFG_PIN_JACK_SND, 0);
+    set_if_present(CFG_PIN_JACK_HPEN, 0);
+    set_if_present(CFG_PIN_JACK_BZEN, 1);
+ 
     /*
         if (*HF2_DBG_MAGIC_PTR == HF2_DBG_MAGIC_START) {
             *HF2_DBG_MAGIC_PTR = 0;
