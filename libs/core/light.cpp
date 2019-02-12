@@ -146,20 +146,20 @@ void clear() {
     auto neopix = LOOKUP_PIN(NEOPIXEL);
     auto neonum = getConfig(CFG_NUM_NEOPIXELS, 0);
     if (neopix && neonum >= 0) {
-        auto n = 3 * num;
+        auto n = 3 * neonum;
         uint8_t off[n];
         memset(off, 0, sizeof(off));
         light::neopixelSendData(neopix, 0x100, off, sizeof(off));
     }
 
     auto data = LOOKUP_PIN(DOTSTAR_DATA);
-    auto clk = LOOKUP_PIN(DOTSTAR_CLK);
-    auto dsnum = getConfig(CFG_NUM_DOTSTAR, 0);
+    auto clk = LOOKUP_PIN(DOTSTAR_CLOCK);
+    auto dsnum = getConfig(CFG_NUM_DOTSTARS, 0);
     if (data && clk && dsnum > 0) {
-        auto n = 4 * num;
+        auto n = 4 * dsnum;
         uint8_t off[n];
         memset(off, 0, sizeof(off));
-        for(unsigned i = 0; i < n; i += 4)
+        for(int i = 0; i < n; i += 4)
             off[i] = 0xe0;
         bitBangDotStarSendData(data, clk, 0x100, off, sizeof(off));
     }
