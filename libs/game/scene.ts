@@ -63,6 +63,7 @@ namespace scene {
         init() {
             if (this.allSprites) return;
 
+            power.poke(); // keep game alive a little more
             this.allSprites = [];
             this.spriteNextId = 0;
             // update controller state
