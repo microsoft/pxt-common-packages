@@ -283,7 +283,7 @@ namespace light {
 
         /**
          * Gets the pixel color.
-         * @param pixeloffset position of the NeoPixel in the strip
+         * @param pixeloffset position of the LED in the strip
          */
         //% blockId="light_get_pixel_color" block="%strip|pixel color at %pixeloffset"
         //% help="light/neopixelstrip/pixel-color"
@@ -377,7 +377,7 @@ namespace light {
                     for (let j = 0; j < strideOffset; ++j)
                         sb[offset + j] = 0xff;
                     for (let j = strideOffset; j < stride; ++j)
-                        sb[offset + j] = (b[offset + j] * (_bb ? _bb[i] : this._brightness)) >> 8;
+                        sb[offset + j] = gamma28[(b[offset + j] * (_bb ? _bb[i] : this._brightness)) >> 8];
                 }
                 // apply photon
                 this.drawPhoton(sb, stride);
@@ -396,11 +396,11 @@ namespace light {
                 let dc = (c - 32) / tailn;
                 for (let bi = 0; bi < tailn && c > 0; ++bi) {
                     if (this._mode == NeoPixelMode.RGBW)
-                        sb[pi + 3] = c;
+                        sb[pi + 3] = gamma28[c];
                     else if (this._mode == NeoPixelMode.APA102)
-                        sb[pi + 1] = sb[pi + 2] = sb[pi + 3] = c;
+                        sb[pi + 1] = sb[pi + 2] = sb[pi + 3] = gamma28[c];
                     else
-                        sb[pi] = sb[pi + 1] = sb[pi + 2] = c;
+                        sb[pi] = sb[pi + 1] = sb[pi + 2] = gamma28[c];
 
                     c -= dc;
                     pi += (-this._photonDir * stride) % sb.length;
@@ -1564,4 +1564,22 @@ namespace light {
     export function __lengthPicker(pixels: number): number {
         return pixels;
     }
+
+/*
+To regenerate this table:
+
+// Original code from Adafruit at 
+// https://learn.adafruit.com/led-tricks-gamma-correction/the-longer-fix
+let gamma   = 2.8, max_in  = 0xff, max_out = 0xff;
+let hex = "const gamma = hex`";
+for(let i=0; i<= max_in; i++) {
+  const x = (Math.pow(i / max_in, gamma) * max_out + 0.5) | 0;
+  hex += (`00` + x.toString(16)).slice(-2);
+}
+hex += "`"
+console.log("const gamma = hex`" + hex + "`");
+
+*/
+
+    const gamma28 = hex`000000000000000000000000000000000000000000000000000000000101010101010101010101010102020202020202020303030303030304040404040505050506060606070707070808080909090a0a0a0b0b0b0c0c0d0d0d0e0e0f0f101011111212131314141515161617181819191a1b1b1c1d1d1e1f202021222323242526272728292a2b2c2d2e2f303132323334363738393a3b3c3d3e3f40424344454648494a4b4d4e4f515253555657595a5c5d5f606263656668696b6d6e7072737577787a7c7e7f81838587898a8c8e90929496989a9c9ea0a2a4a7a9abadafb1b4b6b8babdbfc1c4c6c8cbcdd0d2d5d7dadcdfe1e4e7e9eceff1f4f7f9fcff`
 }
