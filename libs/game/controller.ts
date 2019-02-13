@@ -285,9 +285,9 @@ namespace controller {
         }
 
         /**
-         * Control a sprite using the direction buttons from the controller. Note that this
-         * control will take over the vx and vy of the sprite and overwrite any changes
-         * made unless a 0 is passed.
+         * Control a sprite using the direction buttons from the controller. Note that this will overwrite
+         * the current velocity of the sprite whenever a directional button is pressed. To stop controlling
+         * a sprite, pass 0 for vx and vy.
          *
          * @param sprite The Sprite to control
          * @param vx The velocity used for horizontal movement when left/right is pressed
