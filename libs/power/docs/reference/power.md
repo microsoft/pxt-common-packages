@@ -1,5 +1,7 @@
 # Power
 
+Power state mode control. Set the inactivity timeout and sleep state.
+
 ```cards
 power.poke()
 power.setDeepSleepTimeout(10)

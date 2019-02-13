@@ -8,7 +8,7 @@ namespace power {
     let _timeout: number;
 
     /**
-     * Sets the no-activity duration after which the device should go to deep sleep.
+     * Set the no-activity duration after which the device should go to deep sleep.
      * @param seconds duration in seconds until the device should be put in lower power mode
      */
     //% blockId=powersetdeepsleeptimout block="power set deep sleep timeout to %seconds s"
@@ -30,7 +30,7 @@ namespace power {
     }
 
     /**
-     * Checks if the device has had any "pokes" and needs to be put in deep sleep mode.
+     * Check if the device has had any "pokes" and needs to go into deep sleep mode.
      */
     //% blockId=powercheckdeepsleep block="power check deep sleep"
     //% help=/power/check-deep-sleep
@@ -46,7 +46,7 @@ namespace power {
     }
 
     /**
-     * Puts the device into a deep sleep state.
+     * Put the device into a deep sleep state.
      */
     //% blockId=powerdeepsleep block="power deep sleep"
     //% shim=pxt::deepSleep
