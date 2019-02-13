@@ -32,6 +32,7 @@
         "libs/jacdac-drivers",
         "libs/jacdac-game",
         "libs/datalogger",
-        "libs/lora"
+        "libs/lora",
+        "libs/power"
     ]
 }

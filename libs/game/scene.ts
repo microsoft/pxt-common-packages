@@ -63,6 +63,7 @@ namespace scene {
         init() {
             if (this.allSprites) return;
 
+            power.poke(); // keep game alive a little more
             this.allSprites = [];
             this.spriteNextId = 0;
             // update controller state
@@ -123,6 +124,8 @@ namespace scene {
                 game.consoleOverlay.draw();
                 // clear flags
                 this.flags = 0;
+                // check for power deep sleep
+                power.checkDeepSleep();
             });
             // update screen
             this.eventContext.registerFrameHandler(200, control.__screen.update);

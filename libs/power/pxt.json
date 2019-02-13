@@ -1,0 +1,13 @@
+{
+    "name": "power",
+    "description": "Power and sleep management",
+    "files": [
+        "power.ts"
+    ],
+    "testFiles": [
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core"
+    }
+}
