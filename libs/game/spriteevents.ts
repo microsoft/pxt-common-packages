@@ -48,25 +48,18 @@ namespace sprites {
 
     /**
      * Run code on each sprite of the given kind on an interval of time
-     * Runs after game.onUpdate()
+     * Runs before game.onUpdate()
      * @param kind the kind of sprites to apply the code to
      * @param interval how often to run the code
      * @param handler the code to run
      */
     //% group="Lifecycle"
     //% weight=98 afterOnStart=true draggableParameters="reporter"
-    //% blockId=updateintervalbyKind block="on update %kind=spritetype sprites every %interval=timePicker ms"
+    //% blockId=updateintervalbyKind block="on update $sprite of kind %kind=spritetype every %interval=timePicker ms"
     //% blockAllowMultiple=1
     export function updateByKind(kind: number, interval: number, handler: (sprite: Sprite) => void) {
         if (!handler || interval < 0) return;
-        let timer = 0;
-        game.eventContext().registerFrameHandler(21, () => {
-            const time = game.currentScene().millis();
-            if (timer <= time) {
-                timer = time + interval;
-                sprites.allOfKind(kind).forEach(handler);
-            }
-        });
+        game.onUpdateInterval(interval, () => sprites.allOfKind(kind).forEach(handler));
     }
 
     /**
