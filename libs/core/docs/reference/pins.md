@@ -33,7 +33,7 @@ pins.i2cWriteNumber(
 NumberFormat.Int8LE,
 false
 )
-pins.createSPI(undefined, undefined);
+pins.createI2C(undefined, undefined);
 ```
 
 ## SPI

@@ -1,17 +1,19 @@
 #include "light.h"
 
-namespace light {
-//declarations
-void spiNeopixelSendBuffer(DevicePin* pin, const uint8_t *data, unsigned size);
-
-}
-
 #ifdef SAMD21
 #include "neopixel.h"
 #endif
 
+#define NEOPIXEL_MIN_LENGTH_FOR_SPI 8
+#define DOTSTAR_MIN_LENGTH_FOR_SPI 8
+
+#define LIGHTMODE_RGB 1
+#define LIGHTMODE_RGBW 2 
+#define LIGHTMODE_RGB_RGB 3
+#define LIGHTMODE_DOTSTAR 4
+
 namespace light {
-bool isValidSPIPin(DigitalInOutPin pin) {
+bool isValidMOSIPin(DigitalInOutPin pin) {
     if (!pin)
         return false;
 
@@ -19,41 +21,10 @@ bool isValidSPIPin(DigitalInOutPin pin) {
     return ZSPI::isValidMOSIPin(*pin);
 #else
     // TODO: support for SPI neopixels
-    return false;
+    // default SPI pins supported for now
+    return pin == LOOKUP_PIN(MOSI);
 #endif
 
-}
-
-void clear() {
-    auto neopix = LOOKUP_PIN(NEOPIXEL);
-    if (neopix) {
-        auto num = getConfig(CFG_NUM_NEOPIXELS, 0);
-        if (num <= 0) return; // wrong length
-
-        auto n = 3 * num;
-        uint8_t off[n];
-        memset(off, 0, sizeof(off));
-        light::sendData(neopix, 0x100, off, sizeof(off));
-    }
-}
-
-void sendData(DevicePin* pin, int mode, const uint8_t* data, unsigned length) {
-    if (!pin || !length) return;
-
-    if (isValidSPIPin(pin) && mode & 0x100) {
-        spiNeopixelSendBuffer(pin, data, length);
-    }
-#if SAMD21
-    // TODO bit banging for all cpus
-    else {
-        neopixel_send_buffer(*pin, data, length);
-    }
-#endif
-}
-
-void sendBuffer(DevicePin* pin, int mode, Buffer buf) {
-    if (!pin || !buf || !buf->length) return;
-    light::sendData(pin, mode, buf->data, buf->length);
 }
 
 // SPI
@@ -91,56 +62,107 @@ void spiNeopixelSendBuffer(DevicePin* pin, const uint8_t *data, unsigned size) {
     delete expBuf;
 }
 
-void sendPixelBuffer(Buffer buf) {
-    if (!buf || !buf->length) return;
+void neopixelSendData(DevicePin* pin, int mode, const uint8_t* data, unsigned length) {
+    if (!pin || !length) return;
 
-    auto dat = LOOKUP_PIN(DOTSTAR_DATA);
-    if (dat) {
-        auto clk = LOOKUP_PIN(DOTSTAR_CLOCK);
-        if (!clk) {
-            DMESG("pixel: missing DOTSTAR_CLOCK config");
-            return;
-        }
-        // first frame of zeroes
-        dat->setDigitalValue(0);
-        for (int i = 0; i < 32; ++i) {
+#if SAMD21
+    if (length > NEOPIXEL_MIN_LENGTH_FOR_SPI && isValidMOSIPin(pin))
+        spiNeopixelSendBuffer(pin, data, length);
+    else
+        neopixel_send_buffer(*pin, data, length);
+#else    
+    if (isValidMOSIPin(pin)) {
+        spiNeopixelSendBuffer(pin, data, length);
+    }
+#endif
+}
+
+void bitBangDotStarSendData(DevicePin* data, DevicePin* clk, int mode, const uint8_t* buf, unsigned length) {
+    // first frame of zeroes
+    data->setDigitalValue(0);
+    for (unsigned i = 0; i < 32; ++i) {
+        clk->setDigitalValue(1);
+        clk->setDigitalValue(0);
+    }
+
+    // data stream
+    for (unsigned i = 0; i < length; ++i) {
+        auto x = buf[i];
+        for (uint8_t j = 0x80; j != 0; j >>= 1) {
+            data->setDigitalValue(x & j ? 1 : 0);
             clk->setDigitalValue(1);
             clk->setDigitalValue(0);
         }
-        // data stream
-        for (int i = 0; i < buf->length; ++i) {
-            if (i % 3 == 0) {
-                // write brightness byte -- full brightness
-                dat->setDigitalValue(1);
-                for (int k = 0; k < 8; ++k) {
-                    clk->setDigitalValue(1);
-                    clk->setDigitalValue(0);
-                }
-            }
-            int x = buf->data[i];
-            for (uint8_t i = 0x80; i != 0; i >>= 1) {
-                dat->setDigitalValue(x & i ? 1 : 0);
-                clk->setDigitalValue(1);
-                clk->setDigitalValue(0);
-            }
-        }
-        // last frame of 1s
-        dat->setDigitalValue(1);
-        for (int i = 0; i < 32; ++i) {
-            clk->setDigitalValue(1);
-            clk->setDigitalValue(0);
-        }
+    }
+    // https://cpldcpu.wordpress.com/2016/12/13/sk9822-a-clone-of-the-apa102/
+    // reset frame
+    //data->setDigitalValue(0);
+    //for (unsigned i = 0; i < 32 ; ++i) {
+    //    clk->setDigitalValue(1);
+    //    clk->setDigitalValue(0);
+    //}
 
-        return;
+    // https://cpldcpu.wordpress.com/2014/11/30/understanding-the-apa102-superled/
+    data->setDigitalValue(1);
+    unsigned n = 32;
+    for (unsigned i = 0; i < n; ++i) {
+        clk->setDigitalValue(1);
+        clk->setDigitalValue(0);
+    }
+}
+
+static uint8_t ZERO_FRAME[4];
+static uint8_t ONE_FRAME[] = {1,1,1,1};
+void spiDotStarSendData(DevicePin* data, DevicePin* clk, int mode, const uint8_t* buf, unsigned length) {
+    auto spi = pxt::getSPI(data, NULL, clk);
+
+    spi->transfer(ZERO_FRAME, sizeof(ZERO_FRAME), NULL, 0); // initial frame
+    spi->transfer(buf, length, NULL, 0);
+    spi->transfer(ZERO_FRAME, sizeof(ZERO_FRAME), NULL, 0); // reset frame
+    for(unsigned i = 0; i < length >> 3; i += 32)
+        spi->transfer(ONE_FRAME, sizeof(ONE_FRAME), NULL, 0); // final frame
+}
+
+void dotStarSendData(DevicePin* data, DevicePin* clk, int mode, const uint8_t* buf, unsigned length) {
+    if (!data || !clk || !buf || !length) return;
+
+    if (length > DOTSTAR_MIN_LENGTH_FOR_SPI && isValidMOSIPin(data))
+        spiDotStarSendData(data, clk, mode, buf, length);
+    else 
+        bitBangDotStarSendData(data, clk, mode, buf, length);
+}
+
+void sendBuffer(DevicePin* data, DevicePin* clk, int mode, Buffer buf) {
+    if (!data || !buf || !buf->length) return;
+
+    if (mode == LIGHTMODE_DOTSTAR)
+        light::dotStarSendData(data, clk, mode, buf->data, buf->length);
+    else
+        light::neopixelSendData(data, mode, buf->data, buf->length);
+}
+
+
+void clear() {
+    auto neopix = LOOKUP_PIN(NEOPIXEL);
+    auto neonum = getConfig(CFG_NUM_NEOPIXELS, 0);
+    if (neopix && neonum >= 0) {
+        auto n = 3 * neonum;
+        uint8_t off[n];
+        memset(off, 0, sizeof(off));
+        light::neopixelSendData(neopix, 0x100, off, sizeof(off));
     }
 
-    auto neo = LOOKUP_PIN(NEOPIXEL);
-    if (neo) {
-        light::sendData(neo, 0x100, buf->data, buf->length);
-        return;
+    auto data = LOOKUP_PIN(DOTSTAR_DATA);
+    auto clk = LOOKUP_PIN(DOTSTAR_CLOCK);
+    auto dsnum = getConfig(CFG_NUM_DOTSTARS, 0);
+    if (data && clk && dsnum > 0) {
+        auto n = 4 * dsnum;
+        uint8_t off[n];
+        memset(off, 0, sizeof(off));
+        for(int i = 0; i < n; i += 4)
+            off[i] = 0xe0;
+        bitBangDotStarSendData(data, clk, 0x100, off, sizeof(off));
     }
-
-    DMESG("pixel: not supported or configured");
 }
 
 } // namespace pxt

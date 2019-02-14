@@ -266,7 +266,7 @@ String mkString(const char *data, int len) {
 #endif
 }
 
-#ifdef PXT_UTF8
+#if PXT_UTF8
 // This converts surrogate pairs, which are encoded as 2 characters of 3 bytes each
 // into a proper 4 byte utf-8 character.
 uint32_t toRealUTF8(String str, uint8_t *dst) {
@@ -1389,6 +1389,10 @@ void *ptrOfLiteral(int offset);
 unsigned programSize() {
     return bytecode[17] * 8;
 }
+
+void deepSleep() __attribute__((weak));
+//%
+void deepSleep() { }
 
 int *getBootloaderConfigData() __attribute__((weak));
 int *getBootloaderConfigData()
