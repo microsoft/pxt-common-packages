@@ -113,6 +113,9 @@ namespace game {
         if (subtitle)
             screen.print(subtitle, 8, top + 8 + font.charHeight + 2, screen.isMono ? 1 : 6, font);
         if (footer) {
+            const footerTop = screen.height - font.charHeight - 4;
+            screen.fillRect(0, footerTop, screen.width, font.charHeight + 4, 0);
+            screen.drawLine(0, footerTop, screen.width, footerTop, 1);
             screen.print(
                 footer,
                 screen.width - footer.length * font.charWidth - 8,
