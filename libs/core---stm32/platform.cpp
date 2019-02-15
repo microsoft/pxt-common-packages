@@ -5,7 +5,12 @@
 
 namespace pxt {
 
+#ifdef STM32F1
+STMLowLevelTimer lowTimer(TIM4, TIM4_IRQn);
+#else
 STMLowLevelTimer lowTimer(TIM5, TIM5_IRQn);
+#endif
+
 CODAL_TIMER devTimer(lowTimer);
 
 void initAccelRandom();
