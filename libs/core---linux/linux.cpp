@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <sys/types.h>
+#include <sys/mman.h>
 #include <errno.h>
 #include <malloc.h>
 
@@ -23,15 +24,15 @@ void *xmalloc(size_t sz) {
     if (allocBytes >= MALLOC_CHECK_PERIOD) {
         allocBytes = 0;
         auto info = mallinfo();
-        DMESG("malloc used: %d kb", info.uordblks / 1024);
+        // DMESG("malloc used: %d kb", info.uordblks / 1024);
         if (info.uordblks > MALLOC_LIMIT) {
-            target_panic(904);
+            target_panic(PANIC_MEMORY_LIMIT_EXCEEDED);
         }
     }
 #endif
     auto r = malloc(sz);
     if (r == NULL)
-        target_panic(905); // shouldn't happen
+        oops(50); // shouldn't happen
     return r;
 }
 
@@ -60,12 +61,12 @@ struct Thread {
     struct Thread *next;
     Action act;
     TValue arg0;
+    TValue data0;
+    TValue data1;
     pthread_t pid;
     pthread_cond_t waitCond;
     int waitSource;
     int waitValue;
-    TValue data0;
-    TValue data1;
 };
 
 static struct Thread *allThreads;
@@ -165,6 +166,7 @@ void disposeThread(Thread *t) {
             }
         }
     }
+    unregisterGC(&t->act, 4);
     decr(t->act);
     decr(t->arg0);
     decr(t->data0);
@@ -190,6 +192,7 @@ void setupThread(Action a, TValue arg = 0, void (*runner)(Thread *) = NULL, TVal
     memset(thr, 0, sizeof(Thread));
     thr->next = allThreads;
     allThreads = thr;
+    registerGC(&thr->act, 4);
     thr->act = incr(a);
     thr->arg0 = incr(arg);
     thr->data0 = incr(d0);
@@ -245,7 +248,7 @@ void waitForEvent(int source, int value) {
         }
     }
     DMESG("current thread not registered!");
-    target_panic(901);
+    oops(52);
 }
 
 static void dispatchEvent(Event &e) {
@@ -309,7 +312,7 @@ void raiseEvent(int id, int event) {
     pthread_mutex_lock(&eventMutex);
     if (eventTail == NULL) {
         if (eventHead != NULL)
-            target_panic(902);
+            oops(51);
         eventHead = eventTail = e;
     } else {
         eventTail->next = e;
@@ -338,6 +341,8 @@ static void runPoller(Thread *thr) {
 
     // note that this is run without the user mutex held - it should not modify any state!
     TValue prev = pxt::runAction0(query);
+    if (!isTagged(prev))
+        oops(30);
 
     startUser();
     pxt::runAction2(thr->act, prev, prev);
@@ -348,6 +353,8 @@ static void runPoller(Thread *thr) {
         if (paniced)
             break;
         TValue curr = pxt::runAction0(query);
+        if (!isTagged(curr))
+            oops(30);
         if (curr != prev) {
             startUser();
             pxt::runAction2(thr->act, prev, curr);
@@ -392,5 +399,42 @@ void initRuntime() {
     startUser();
 }
 
+#ifdef PXT_GC
+#define GC_BASE 0x20000000
+#define GC_PAGE_SIZE 4096
+void *gcAllocBlock(size_t sz) {
+    static uint8_t *currPtr = (uint8_t *)GC_BASE;
+    sz = (sz + GC_PAGE_SIZE - 1) & ~(GC_PAGE_SIZE - 1);
+    void *r = mmap(currPtr, sz, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    if (r == MAP_FAILED) {
+        DMESG("mmap %p failed; err=%d", currPtr, errno);
+        target_panic(PANIC_INTERNAL_ERROR);
+    }
+    currPtr = (uint8_t *)r + sz;
+    if (isReadOnly((TValue)r)) {
+        DMESG("mmap returned read-only address: %p", r);
+        target_panic(PANIC_INTERNAL_ERROR);
+    }
+    return r;
+}
+#endif
+
+static __thread ThreadContext *threadCtx;
+
+ThreadContext *getThreadContext() {
+    return threadCtx;
+}
+
+void setThreadContext(ThreadContext *ctx) {
+    threadCtx = ctx;
+}
+
+void *getCurrentFiber() {
+    return (void *)pthread_self();
+}
+
+void *threadAddressFor(ThreadContext *, void *sp) {
+    return sp;
+}
 
 } // namespace pxt

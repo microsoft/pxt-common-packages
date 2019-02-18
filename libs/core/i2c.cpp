@@ -20,7 +20,7 @@ namespace pins {
       Buffer buf = createBuffer(size);
       int status = i2c->read(address << 1, buf->data, size, repeat);
       if (status != ErrorCode::DEVICE_OK) {
-        free(buf);
+        decrRC(buf);
         buf = 0;
       }
       return buf;

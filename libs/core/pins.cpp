@@ -1,25 +1,25 @@
 #include "pxt.h"
 
 namespace pxt {
-    static DevicePin **pinPtrs;
-    static uint8_t numPinPtrs;
-    static uint8_t pinPos[DEV_NUM_PINS];
+static DevicePin **pinPtrs;
+static uint8_t numPinPtrs;
+static uint8_t pinPos[DEV_NUM_PINS];
 
 //%
 DevicePin *getPin(int id) {
     if (id < 0 || id >= DEV_NUM_PINS)
-        target_panic(42);
+        target_panic(PANIC_NO_SUCH_PIN);
 
     // we could use lookupComponent() here - it would be slightly slower
 
     int ptr = pinPos[id];
     if (ptr == 0) {
-        pinPtrs = (DevicePin **)realloc(pinPtrs, (numPinPtrs + 1) * sizeof(void*));
+        pinPtrs = (DevicePin **)realloc(pinPtrs, (numPinPtrs + 1) * sizeof(void *));
         bool isAnalog = IS_ANALOG_PIN(id);
-        pinPtrs[numPinPtrs++] = new DevicePin(
-            DEVICE_ID_IO_P0 + id,
-            (PinName)id,
-            isAnalog ? PIN_CAPABILITY_AD : PIN_CAPABILITY_DIGITAL);
+        // GCTODO
+        pinPtrs[numPinPtrs++] =
+            new DevicePin(DEVICE_ID_IO_P0 + id, (PinName)id,
+                          isAnalog ? PIN_CAPABILITY_AD : PIN_CAPABILITY_DIGITAL);
         ptr = numPinPtrs;
         pinPos[id] = ptr;
     }
@@ -28,19 +28,20 @@ DevicePin *getPin(int id) {
 
 //%
 DevicePin *getPinCfg(int key) {
-    return getPin(getConfig(key));;
+    return getPin(getConfig(key));
 }
 
 void linkPin(int from, int to) {
     if (from < 0 || from >= DEV_NUM_PINS)
-        target_panic(42);
+        target_panic(PANIC_NO_SUCH_PIN);
     getPin(to);
     pinPos[from] = pinPos[to];
 }
 
 //%
 DevicePin *lookupPin(int pinName) {
-    if (pinName < 0) return NULL;
+    if (pinName < 0)
+        return NULL;
     return getPin(pinName);
 }
 
@@ -52,7 +53,7 @@ CodalComponent *lookupComponent(int id) {
     return NULL;
 }
 
-}
+} // namespace pxt
 
 namespace pins {
 /**
@@ -65,13 +66,13 @@ Buffer createBuffer(int size) {
 }
 
 /**
-* Get the duration of the last pulse in microseconds. This function should be called from a
-* ``onPulsed`` handler.
-*/
+ * Get the duration of the last pulse in microseconds. This function should be called from a
+ * ``onPulsed`` handler.
+ */
 //% help=pins/pulse-duration blockGap=8
 //% blockId=pins_pulse_duration block="pulse duration (µs)"
 //% weight=19
 int pulseDuration() {
     return pxt::lastEvent.timestamp;
 }
-}
+} // namespace pins

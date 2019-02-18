@@ -32,7 +32,7 @@ namespace pxt {
     public:
       CODAL_SERIAL serial;
       WSerial()
-        : serial(PIN(TX), PIN(RX))
+        : serial(*LOOKUP_PIN(TX), *LOOKUP_PIN(RX))
         {
           serial.baud((int)BaudRate::BaudRate115200);
         }
@@ -43,6 +43,20 @@ SINGLETON(WSerial);
 }
 
 namespace serial {
+    /**
+    * Read the buffered received data as a string
+    */
+    //% help=serial/read-string
+    //% blockId=serial_read_buffer block="serial|read string"
+    //% weight=18
+    String readString() {
+      auto service = getWSerial();
+      int n = service->serial.getRxBufferSize();
+      if (n == 0) return mkString("", 0);
+      auto s = service->serial.read(n, SerialMode::ASYNC);
+      return PSTR(s);
+    }
+
     void send(const char* buffer, int length) {
       // TODO: fix CODAL abstraction
       // getWSerial()->serial.send((uint8_t*)buffer, length * sizeof(char));
@@ -82,31 +96,26 @@ namespace serial {
     /**
     Set the baud rate of the serial port
     */
+    //% help=serial/set-baud-rate
     //% blockId=serialsetbaudrate block="serial set baud rate to %rate"
     void setBaudRate(BaudRate rate) {
       getWSerial()->serial.baud((int)rate);
     }
 
     /**
-      Configure the pins used by the serial interface/
-    **/
-    /**
     * Set the serial input and output to use pins instead of the USB connection.
     * @param tx the new transmission pin, eg: SerialPin.P0
     * @param rx the new reception pin, eg: SerialPin.P1
-    * @param rate the new baud rate. eg: 115200
     */
     //% weight=10
     //% help=serial/redirect
-    //% blockId=serial_redirect block="serial|redirect to|TX %tx|RX %rx|at baud rate %rate"
-    //% blockExternalInputs=1
+    //% blockId=serial_redirect block="serial|redirect to|TX %tx|RX %rx"
     //% tx.fieldEditor="gridpicker" tx.fieldOptions.columns=3
     //% tx.fieldOptions.tooltips="false"
     //% rx.fieldEditor="gridpicker" rx.fieldOptions.columns=3
     //% rx.fieldOptions.tooltips="false"
     //% blockGap=8 inlineInputMode=inline
-    void redirect(DigitalInOutPin tx, DigitalInOutPin rx, BaudRate rate) {
+    void redirect(DigitalInOutPin tx, DigitalInOutPin rx) {
       getWSerial()->serial.redirect((PinName)tx->name, (PinName)rx->name);
-      getWSerial()->serial.baud((int)rate);
     }
 }

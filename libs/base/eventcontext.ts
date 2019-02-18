@@ -52,6 +52,7 @@ namespace control {
         private framesInSample: number;
         private timeInSample: number;
         public deltaTime: number;
+        private prevTime: number;
         static onStats: (stats: string) => void;
 
         constructor() {
@@ -63,6 +64,36 @@ namespace control {
             this.frameWorker = 0;
         }
 
+        private runCallbacks() {
+            control.enablePerfCounter("all frame callbacks")
+
+            this.frameNo++
+            let loopStart = control.millis()
+            this.deltaTime = (loopStart - this.prevTime) / 1000.0
+            this.prevTime = loopStart;
+            for (let f of this.frameCallbacks) {
+                f.handler()
+            }
+            let runtime = control.millis() - loopStart
+            this.timeInSample += runtime
+            this.framesInSample++
+            if (this.timeInSample > 1000 || this.framesInSample > 30) {
+                const fps = this.framesInSample / (this.timeInSample / 1000);
+                if (EventContext.onStats) {
+                    EventContext.onStats(`${Math.round(fps)}fps`)
+                }
+                if (control.profilingEnabled()) {
+                    control.dmesg(`${(fps * 100) | 0}/100 fps - ${this.framesInSample} frames`)
+                    control.gc()
+                    control.dmesgPerfCounters()
+                }
+                this.timeInSample = 0
+                this.framesInSample = 0
+            }
+            let delay = Math.max(1, 20 - runtime)
+            return delay
+        }
+
         private registerFrameCallbacks() {
             if (!this.frameCallbacks) return;
 
@@ -70,29 +101,11 @@ namespace control {
             this.framesInSample = 0;
             this.timeInSample = 0;
             this.deltaTime = 0;
-            let prevTime = control.millis();
+            this.prevTime = control.millis();
             const worker = this.frameWorker;
             control.runInParallel(() => {
                 while (worker == this.frameWorker) {
-                    this.frameNo++
-                    let loopStart = control.millis()
-                    this.deltaTime = (loopStart - prevTime) / 1000.0
-                    prevTime = loopStart;
-                    for (let f of this.frameCallbacks) {
-                        f.handler()
-                    }
-                    let runtime = control.millis() - loopStart
-                    this.timeInSample += runtime
-                    this.framesInSample++
-                    if (this.timeInSample > 1000 || this.framesInSample > 30) {
-                        if (EventContext.onStats) {
-                            const fps = Math.round(this.framesInSample / (this.timeInSample / 1000));
-                            EventContext.onStats(`${fps}fps`)
-                        }
-                        this.timeInSample = 0
-                        this.framesInSample = 0
-                    }
-                    let delay = Math.max(1, 20 - runtime)
+                    let delay = this.runCallbacks()
                     pause(delay)
                 }
             })

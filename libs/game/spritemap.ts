@@ -68,10 +68,10 @@ namespace sprites {
             const areaWidth = tMap ? tMap.areaWidth() : screen.width;
             const areaHeight = tMap ? tMap.areaHeight() : screen.height;
 
-            this.cellWidth = Math.clamp(8, areaWidth / 4, maxWidth * 2);
-            this.cellHeight = Math.clamp(8, areaHeight / 4, maxHeight * 2);
-            this.rowCount = (areaHeight / this.cellHeight) >> 0
-            this.columnCount = (areaWidth / this.cellWidth) >> 0;
+            this.cellWidth = Math.clamp(8, areaWidth >> 2, maxWidth * 2);
+            this.cellHeight = Math.clamp(8, areaHeight >> 2, maxHeight * 2);
+            this.rowCount = Math.idiv(areaHeight, this.cellHeight)
+            this.columnCount = Math.idiv(areaWidth, this.cellWidth)
 
 
             for (const sprite of sprites)
@@ -79,8 +79,8 @@ namespace sprites {
         }
 
         private key(x: number, y: number): number {
-            const xi = Math.clamp(0, this.columnCount, (x / this.cellWidth) >> 0);
-            const yi = Math.clamp(0, this.rowCount, (y / this.cellHeight) >> 0);
+            const xi = Math.clamp(0, this.columnCount, Math.idiv(x, this.cellWidth));
+            const yi = Math.clamp(0, this.rowCount, Math.idiv(y, this.cellHeight));
             return xi + yi * this.columnCount;
         }
 
@@ -108,8 +108,8 @@ namespace sprites {
 
             const left = sprite.left;
             const top = sprite.top;
-            const xn = Math.ceil(sprite.width / this.cellWidth)
-            const yn = Math.ceil(sprite.height / this.cellHeight);
+            const xn = Math.idiv(sprite.width + this.cellWidth - 1, this.cellWidth);
+            const yn = Math.idiv(sprite.height + this.cellHeight - 1, this.cellHeight);
             for (let x = 0; x <= xn; x++)
                 for (let y = 0; y <= yn; y++)
                     this.insertAtKey(left + Math.min(sprite.width, x * this.cellWidth), top + Math.min(sprite.height, y * this.cellHeight), sprite)
