@@ -323,6 +323,15 @@ void registerWithDal(int id, int event, Action a) {
     setBinding(id, event, a);
 }
 
+static bool backgroundHandlerFlag = false;
+void setBackgroundHandlerFlag() {
+    backgroundHandlerFlag = true;
+}
+
+void unregisterFromDal(Action a) { 
+    // unimplemented, for now
+}
+
 static void runPoller(Thread *thr) {
     Action query = thr->data0;
     auto us = (uint64_t)toInt(thr->data1) * 1000;
