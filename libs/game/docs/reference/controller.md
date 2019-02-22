@@ -23,10 +23,8 @@ controller.player2.dy()
 
 ## Configuration
 
-
 * [Button Repeat Interval](/reference/controller/button/repeat-interval)
 * [Button Repeat Delay](/reference/controller/button/repeat-delay)
-
 
 ## See also
 
