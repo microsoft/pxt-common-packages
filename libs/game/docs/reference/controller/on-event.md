@@ -28,10 +28,9 @@ e e e e e e
 `)
 controller.player2.onEvent(ControllerEvent.Connected, function () {
     yellowBox.say("Player2 is on!")
+})
 ```
 
 ## See also #seealso
 
-[is pressed](/reference/controller/on-button-event),
-[repeatDelay](/reference/controller/button/repeat-delay),
-[repeatInterval](/reference/controller/button/repeat-interval)
+[is pressed](/reference/controller/on-button-event)
