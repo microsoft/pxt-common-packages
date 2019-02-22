@@ -43,7 +43,9 @@ namespace controller {
     export class Button {
         _owner: Controller;
         public id: number;
+        //% help=controller/button/repeat-delay
         public repeatDelay: number;
+        //% help=controller/button/repeat-interval
         public repeatInterval: number;
         private _pressed: boolean;
         private _pressedElasped: number;

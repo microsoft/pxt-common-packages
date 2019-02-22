@@ -32,4 +32,6 @@ controller.player2.onEvent(ControllerEvent.Connected, function () {
 
 ## See also #seealso
 
-[is pressed](/reference/controller/on-button-event)
+[is pressed](/reference/controller/on-button-event),
+[repeatDelay](/reference/controller/button/repeat-delay),
+[repeatInterval](/reference/controller/button/repeat-interval)
