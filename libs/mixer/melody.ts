@@ -19,7 +19,7 @@ namespace music {
     //% shim=music::forceOutput
     export function forceOutput(buf: MusicOutput) { }
 
-    let globalVolume = 128
+    let globalVolume = control.getConfigValue(DAL.CFG_SPEAKER_VOLUME, 128)
 
     /**
      * Set the default output volume of the sound synthesizer.
