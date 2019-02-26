@@ -187,7 +187,7 @@ namespace game {
 
         pause(500);
 
-        game.eventContext().registerFrameHandler(95, () => {
+        game.eventContext().registerFrameHandler(scene.HUD_PRIORITY, () => {
             let top = showDialogBackground(46, 4);
             screen.printCenter(win ? "YOU WIN!" : "GAME OVER!", top + 8, screen.isMono ? 1 : 5, image.font8);
             if (info.hasScore()) {
@@ -217,7 +217,7 @@ namespace game {
     export function onUpdate(a: () => void): void {
         init();
         if (!a) return;
-        game.eventContext().registerFrameHandler(20, a);
+        game.eventContext().registerFrameHandler(scene.UPDATE_PRIORITY, a);
     }
 
     /**
@@ -232,7 +232,7 @@ namespace game {
         init();
         if (!a || period < 0) return;
         let timer = 0;
-        game.eventContext().registerFrameHandler(19, () => {
+        game.eventContext().registerFrameHandler(scene.UPDATE_INTERVAL_PRIORITY, () => {
             const time = game.currentScene().millis();
             if (timer <= time) {
                 timer = time + period;
@@ -242,7 +242,7 @@ namespace game {
     }
 
     /**
-     * Draw on screen before sprites
+     * Draw on screen before sprites, after background
      * @param body code to execute
      */
     //% group="Gameplay"
@@ -250,7 +250,19 @@ namespace game {
     export function onPaint(a: () => void): void {
         init();
         if (!a) return;
-        game.eventContext().registerFrameHandler(75, a);
+        game.eventContext().registerFrameHandler(scene.PAINT_PRIORITY, a);
+    }
+
+    /**
+     * Draw on screen after sprites
+     * @param body code to execute
+     */
+    //% group="Gameplay"
+    //% help=game/shade weight=10 afterOnStart=true
+    export function onShade(a: () => void): void {
+        init();
+        if (!a) return;
+        game.eventContext().registerFrameHandler(scene.SHADE_PRIORITY, a);
     }
 
     /**
