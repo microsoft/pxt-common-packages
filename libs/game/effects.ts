@@ -151,7 +151,7 @@ namespace effects {
             const im = imgs[r.randomRange(0, imgs.length - 1)];
             const x = r.randomRange(0, input.width - im.width / 2);
             const y = r.randomRange(0, input.height - im.height / 2);
-            input.drawImage(im, x, y);
+            input.drawTransparentImage(im, x, y);
         }
     });
 }
