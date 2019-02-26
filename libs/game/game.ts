@@ -242,7 +242,7 @@ namespace game {
     }
 
     /**
-     * Draw on screen before sprites
+     * Draw on screen before sprites, after background
      * @param body code to execute
      */
     //% group="Gameplay"
@@ -251,6 +251,18 @@ namespace game {
         init();
         if (!a) return;
         game.eventContext().registerFrameHandler(scene.PAINT_PRIORITY, a);
+    }
+
+    /**
+     * Draw on screen after sprites
+     * @param body code to execute
+     */
+    //% group="Gameplay"
+    //% help=game/shade weight=10 afterOnStart=true
+    export function onShade(a: () => void): void {
+        init();
+        if (!a) return;
+        game.eventContext().registerFrameHandler(scene.SHADE_PRIORITY, a);
     }
 
     /**

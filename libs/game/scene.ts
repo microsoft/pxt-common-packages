@@ -35,6 +35,7 @@ namespace scene {
     export const RENDER_BACKGROUND_PRIORITY = 60;
     export const PAINT_PRIORITY = 75;
     export const RENDER_SPRITES_PRIORITY = 90;
+    export const SHADE_PRIORITY = 94;
     export const HUD_PRIORITY = 95;
     export const RENDER_DIAGNOSTICS_PRIORITY = 150;
     export const UPDATE_SCREEN_PRIORITY = 200;
