@@ -172,6 +172,7 @@ inline bool canBeTagged(int v) {
 }
 #endif
 
+// keep in sym with sim/control.ts
 typedef enum {
     PANIC_CODAL_OOM = 20,
     PANIC_GC_OOM = 21,
