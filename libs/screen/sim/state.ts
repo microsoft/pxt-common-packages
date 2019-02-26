@@ -41,6 +41,10 @@ namespace pxsim {
             const rd = new Uint32Array(ca.buffer)
             const src = buf.data as Uint8Array
             this.palette = new Uint32Array((src.length / 3) | 0)
+
+            if (48 != this.palette.length)
+                pxsim.pxtrt.panic(pxsim.PXT_PANIC.PANIC_SCREEN_ERROR);
+
             for (let i = 0; i < this.palette.length; ++i) {
                 const p = i * 3
                 ca[0] = src[p + 0]
