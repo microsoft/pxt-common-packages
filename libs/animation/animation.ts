@@ -28,7 +28,7 @@ namespace animation {
         _init() {
             if (!_onAnimUpdate) {
                 _onAnimUpdate = [];
-                game.eventContext().registerFrameHandler(15, () => {
+                game.eventContext().registerFrameHandler(scene.ANIMATION_UPDATE_PRIORITY, () => {
                     _onAnimUpdate.forEach(element => {
                         element();
                     });
@@ -115,7 +115,7 @@ namespace animation {
             //Priority 16 is slightly lower than 15 for animation update loop.
             //This is allow the animation to complete, so we have the new display ready to go.
             _onSpriteUpdate = [];
-            game.eventContext().registerFrameHandler(16, () => {
+            game.eventContext().registerFrameHandler(scene.SPRITE_ANIMATION_UPDATE_PRIORITY, () => {
                 _onSpriteUpdate.forEach(element => {
                     element();
                 });

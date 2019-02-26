@@ -23,6 +23,22 @@ namespace scene {
         handler: (sprite: Sprite) => void
     }
 
+    export const CONTROLLER_PRIORITY = 8;
+    export const TILEMAP_PRIORITY = 9;
+    export const PHYSICS_PRIORITY = 10;
+    export const ANIMATION_UPDATE_PRIORITY = 15;
+    export const SPRITE_ANIMATION_UPDATE_PRIORITY = 16;
+    export const UPDATE_INTERVAL_PRIORITY = 19;
+    export const UPDATE_PRIORITY = 20;
+    export const CONTROLLER_SPRITES_PRIORITY = 19;
+    export const OVERLAP_PRIORITY = 30;
+    export const RENDER_BACKGROUND_PRIORITY = 60;
+    export const PAINT_PRIORITY = 75;
+    export const RENDER_SPRITES_PRIORITY = 90;
+    export const HUD_PRIORITY = 95;
+    export const RENDER_DIAGNOSTICS_PRIORITY = 150;
+    export const UPDATE_SCREEN_PRIORITY = 200;
+
     export class Scene {
         eventContext: control.EventContext;
         menuState: menu.State;
@@ -67,29 +83,29 @@ namespace scene {
             this.allSprites = [];
             this.spriteNextId = 0;
             // update controller state
-            this.eventContext.registerFrameHandler(8, () => {
+            this.eventContext.registerFrameHandler(CONTROLLER_PRIORITY, () => {
                 this._millis += this.eventContext.deltaTimeMillis;
                 control.enablePerfCounter("controller_update")
                 controller.__update(this.eventContext.deltaTime);
             })
             // update sprites in tilemap
-            this.eventContext.registerFrameHandler(9, () => {
+            this.eventContext.registerFrameHandler(TILEMAP_PRIORITY, () => {
                 control.enablePerfCounter("tilemap_update")
                 if (this.tileMap) {
                     this.tileMap.update(this.camera);
                 }
             })
             // apply physics 10
-            this.eventContext.registerFrameHandler(10, () => {
+            this.eventContext.registerFrameHandler(PHYSICS_PRIORITY, () => {
                 control.enablePerfCounter("physics")
                 const dt = this.eventContext.deltaTime;
                 this.physicsEngine.move(dt);
             })
             // controller update 19
-            this.eventContext.registerFrameHandler(19, controller._moveSprites);
+            this.eventContext.registerFrameHandler(CONTROLLER_SPRITES_PRIORITY, controller._moveSprites);
             // user update 20
             // apply collisions 30
-            this.eventContext.registerFrameHandler(30, () => {
+            this.eventContext.registerFrameHandler(OVERLAP_PRIORITY, () => {
                 control.enablePerfCounter("collisions")
                 const dt = this.eventContext.deltaTime;
                 this.physicsEngine.collisions();
@@ -98,13 +114,13 @@ namespace scene {
                     s.__update(this.camera, dt);
             })
             // render background 60
-            this.eventContext.registerFrameHandler(60, () => {
+            this.eventContext.registerFrameHandler(RENDER_BACKGROUND_PRIORITY, () => {
                 control.enablePerfCounter("render background")
                 this.background.draw();
             })
             // paint 75
             // render sprites 90
-            this.eventContext.registerFrameHandler(90, () => {
+            this.eventContext.registerFrameHandler(RENDER_SPRITES_PRIORITY, () => {
                 control.enablePerfCounter("sprite_draw")
                 if (this.flags & Flag.NeedsSorting)
                     this.allSprites.sort(function (a, b) { return a.z - b.z || a.id - b.id; })
@@ -112,7 +128,7 @@ namespace scene {
                     s.__draw(this.camera);
             })
             // render diagnostics
-            this.eventContext.registerFrameHandler(150, () => {
+            this.eventContext.registerFrameHandler(RENDER_DIAGNOSTICS_PRIORITY, () => {
                 if (game.stats && control.EventContext.onStats) {
                     control.EventContext.onStats(
                         control.EventContext.lastStats +
@@ -128,7 +144,7 @@ namespace scene {
                 power.checkDeepSleep();
             });
             // update screen
-            this.eventContext.registerFrameHandler(200, control.__screen.update);
+            this.eventContext.registerFrameHandler(UPDATE_SCREEN_PRIORITY, control.__screen.update);
             // register start menu
             scene.systemMenu.register();
         }
