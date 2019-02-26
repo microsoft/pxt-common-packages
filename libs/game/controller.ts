@@ -179,6 +179,7 @@ namespace controller {
         s: Sprite;
         vx: number;
         vy: number;
+        _inputLastFrame: boolean;
     }
 
     export function _moveSprites() {
@@ -286,9 +287,9 @@ namespace controller {
         }
 
         /**
-         * Control a sprite using the direction buttons from the controller. Note that this
-         * control will take over the vx and vy of the sprite and overwrite any changes
-         * made unless a 0 is passed.
+         * Control a sprite using the direction buttons from the controller. Note that this will overwrite
+         * the current velocity of the sprite whenever a directional button is pressed. To stop controlling
+         * a sprite, pass 0 for vx and vy.
          *
          * @param sprite The Sprite to control
          * @param vx The velocity used for horizontal movement when left/right is pressed
@@ -305,7 +306,7 @@ namespace controller {
             if (!this._controlledSprites) this._controlledSprites = [];
             let cp = this._controlledSprites.find(cp => cp.s.id == sprite.id);
             if (!cp) {
-                cp = { s: sprite, vx: vx, vy: vy }
+                cp = { s: sprite, vx: vx, vy: vy, _inputLastFrame: false }
                 this._controlledSprites.push(cp);
             }
             if (cp.vx && vx == 0) {
@@ -411,32 +412,46 @@ namespace controller {
             if (!this._controlledSprites) return;
 
             let deadSprites = false;
+            let svx: number;
+            let svy: number;
             this._controlledSprites.forEach(sprite => {
                 if (sprite.s.flags & sprites.Flag.Destroyed) {
                     deadSprites = true;
                     return;
                 }
+                svx = 0;
+                svy = 0;
 
                 if (sprite.vx) {
-                    sprite.s.vx = 0;
-
                     if (this.right.isPressed()) {
-                        sprite.s.vx = sprite.vx;
+                        svx += sprite.vx;
                     }
                     if (this.left.isPressed()) {
-                        sprite.s.vx = -sprite.vx;
+                        svx -=sprite.vx;
                     }
                 }
 
                 if (sprite.vy) {
-                    sprite.s.vy = 0;
-
                     if (this.down.isPressed()) {
-                        sprite.s.vy = sprite.vy;
+                        svy += sprite.vy;
                     }
                     if (this.up.isPressed()) {
-                        sprite.s.vy = -sprite.vy;
+                        svy -= sprite.vy;
                     }
+                }
+
+                if (sprite._inputLastFrame) {
+                    sprite.s.vx = 0;
+                    sprite.s.vy = 0;
+                }
+
+                if (svx || svy) {
+                    sprite.s.vx = svx;
+                    sprite.s.vy = svy;
+                    sprite._inputLastFrame = true;
+                }
+                else {
+                    sprite._inputLastFrame = false;
                 }
             });
 
