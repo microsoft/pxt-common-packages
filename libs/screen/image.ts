@@ -135,7 +135,9 @@ namespace helpers {
         cy = cy | 0;
         r = r | 0;
         // short cuts
-        if (r == 0) {
+        if (r < 0) 
+            return;
+        else if (r == 0) {
             img.setPixel(cx, cy, col);
             return;
         } else if (r == 1) {
@@ -191,7 +193,9 @@ namespace helpers {
         cy = cy | 0;
         r = r | 0;
         // short cuts
-        if (r == 0) {
+        if (r < 0) 
+            return;
+        else if (r == 0) {
             img.setPixel(cx, cy, col);
             return;
         } else if (r == 1) {
