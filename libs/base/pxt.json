@@ -10,6 +10,7 @@
         "pxtbase.h",
         "core.cpp",
         "advmath.cpp",
+        "trig.cpp",
         "pxt-helpers.ts",
         "buffer.cpp",
         "buffer.ts",

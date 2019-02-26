@@ -1229,11 +1229,6 @@ TNumber pow(TNumber x, TNumber y) {
 #endif
 }
 
-//%
-TNumber atan2(TNumber y, TNumber x) {
-    return fromDouble(::atan2(toDouble(y), toDouble(x)));
-}
-
 NUMBER randomDouble() {
     return getRandom(UINT_MAX) / ((NUMBER)UINT_MAX + 1) +
            getRandom(0xffffff) / ((NUMBER)UINT_MAX * 0xffffff);
@@ -1281,27 +1276,6 @@ TNumber log(TNumber x){SINGLE(log)}
 
 //%
 TNumber log10(TNumber x){SINGLE(log10)}
-
-//%
-TNumber tan(TNumber x){SINGLE(tan)}
-
-//%
-TNumber sin(TNumber x){SINGLE(sin)}
-
-//%
-TNumber cos(TNumber x){SINGLE(cos)}
-
-//%
-TNumber atan(TNumber x){SINGLE(atan)}
-
-//%
-TNumber asin(TNumber x){SINGLE(asin)}
-
-//%
-TNumber acos(TNumber x){SINGLE(acos)}
-
-//%
-TNumber sqrt(TNumber x){SINGLE(sqrt)}
 
 //%
 TNumber floor(TNumber x){SINGLE(floor)}
