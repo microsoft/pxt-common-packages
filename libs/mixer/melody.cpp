@@ -58,8 +58,11 @@ SynthChannel *allocateChannel() {
 //%
 void enableAmp(int enabled)
 {
+    // this is also compiled on linux
+#ifdef LOOKUP_PIN
     auto pin = LOOKUP_PIN(SPEAKER_AMP);
     if (pin) pin->setDigitalValue(enabled);
+#endif
 }
 
 //%
