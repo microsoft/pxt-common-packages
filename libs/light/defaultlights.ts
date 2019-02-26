@@ -19,7 +19,7 @@ namespace light {
     /**
      * Sets the number of LEDS on the default light strip
      */
-    //% blockId=lightds_setlength block="set default strip length to %numleds pixels"
+    //% blockId=lightds_setlength block="set pixels length to %numleds pixels"
     //% numleds.defl=30
     //% numleds.shadow=lightLengthPicker
     //% weight=0
