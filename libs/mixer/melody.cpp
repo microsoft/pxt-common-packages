@@ -56,6 +56,13 @@ SynthChannel *allocateChannel() {
 }
 
 //%
+void enableAmp(int enabled)
+{
+    auto pin = LOOKUP_PIN(SPEAKER_AMP);
+    if (pin) pin->setDigitalValue(enabled);
+}
+
+//%
 void forceOutput(int outp) {
     auto snd = getWSynthesizer();
     snd->out.setOutput(outp);

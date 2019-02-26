@@ -118,9 +118,11 @@ void initAccelRandom() {
             break;
         fiber_sleep(5);
     }
-    seedAddRandom(acc->getX());
-    seedAddRandom(acc->getY());
-    seedAddRandom(acc->getZ());
+    int x = acc->getX(), y = acc->getY(), z = acc->getZ();
+    DMESG("random seed from accel %d,%d,%d", x, y, z);
+    seedAddRandom(x);
+    seedAddRandom(y);
+    seedAddRandom(z);
 }
 
 } // namespace pxt
