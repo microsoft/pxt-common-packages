@@ -1,29 +1,41 @@
 /**
  * Control micro servos
  */
-//% color="#03AA74" weight=88 icon="\uf021"
+//% color="#03AA74" weight=88 icon="\uf021" blockGap=8
+//% groups='["Positional", "Continuous", "Configuration"]'
 namespace servos {
     //% fixedInstances
     export class Servo {
+        private _minAngle: number;
+        private _maxAngle: number;
+        private _stopOnNeutral: boolean;
+
         constructor() {
+            this._minAngle = 0;
+            this._maxAngle = 180;
+            this._stopOnNeutral = false;
         }
 
         /**
          * Set the servo angle
          */
-        //% group="Servos"
         //% weight=100 help=servos/set-angle
         //% blockId=servoservosetangle block="set %servo angle to %degrees=protractorPicker °"
         //% degrees.defl=90
         //% servo.fieldEditor="gridpicker"
         //% servo.fieldOptions.width=220
         //% servo.fieldOptions.columns=2
-        //% blockGap=8        
+        //% blockGap=8
         //% parts=microservo trackArgs=0
+        //% group="Positional"
         setAngle(degrees: number) {
             degrees = degrees | 0;
-            degrees = Math.clamp(0, 180, degrees);
-            this.internalSetAngle(degrees);
+            degrees = Math.clamp(this._minAngle, this._maxAngle, degrees);
+
+            if (this._stopOnNeutral && degrees == 90)
+                this.stop();
+            else  
+                this.internalSetAngle(degrees);
         }
 
         protected internalSetAngle(angle: number): void {
@@ -34,21 +46,21 @@ namespace servos {
          * Set the throttle on a continuous servo
          * @param speed the throttle of the motor from -100% to 100%
          */
-        //% group="Servos"
         //% weight=99 help=servos/run
         //% blockId=servoservorun block="continuous %servo run at %speed=speedPicker \\%"
         //% servo.fieldEditor="gridpicker"
         //% servo.fieldOptions.width=220
         //% servo.fieldOptions.columns=2
         //% parts=microservo trackArgs=0
+        //% group="Continuous"
+        //% blockGap=8
         run(speed: number): void {
-            this.setAngle(Math.map(speed, -100, 100, 0, 180));
+            this.setAngle(Math.map(speed, -100, 100, this._minAngle, this._maxAngle));
         }
 
         /*
          * Set the pulse width to the servo in microseconds
          */
-        //% group="Servos"
         //% weight=10 help=servos/set-pulse
         //% blockId=servoservosetpulse block="set %servo pulse to %micros μs"
         //% micros.min=500 micros.max=2500
@@ -57,6 +69,8 @@ namespace servos {
         //% servo.fieldOptions.width=220
         //% servo.fieldOptions.columns=2
         //% parts=microservo trackArgs=0
+        //% group="Configuration"
+        //% blockGap=8
         setPulse(micros: number) {
             micros = micros | 0;
             micros = Math.clamp(500, 2500, micros);
@@ -68,17 +82,71 @@ namespace servos {
         }
 
         /*
-         * Stop sending commands to the servo
+         * Stop sending commands to the servo. 
+         * On a normal servo this will stop the servo where it is, rather than return it to neutral position.
+         * It will also not provide any holding force.
          */
-        //% group="Servos"
         //% weight=10 help=servos/stop
         //% blockId=servoservostop block="stop %servo"
         //% servo.fieldEditor="gridpicker"
         //% servo.fieldOptions.width=220
         //% servo.fieldOptions.columns=2
         //% parts=microservo trackArgs=0
+        //% group="Continuous"
+        //% blockGap=8
         stop() {
             this.internalStop();
+        }
+
+        /**
+         * Gets the minimum angle for the servo
+         */
+        public get minAngle() {
+            return this._minAngle;
+        }
+
+        /**
+         * Gets the maximum angle for the servo
+         */
+        public get maxAngle() {
+            return this._maxAngle;
+        }
+
+        /**
+         * Configure the range support by the servo between 0 and 180
+         * @param minAngle the minimum angle from 0 to 90
+         * @param maxAngle the maximum angle from 90 to 180
+         */
+        //% help=servos/set-range
+        //% blockId=servosetrange block="set %servo range from %minAngle to %maxAngle"
+        //% minAngle.min=0 minAngle.max=90
+        //% maxAngle.min=90 maxAngle.max=180 maxAngle.defl=180
+        //% servo.fieldEditor="gridpicker"
+        //% servo.fieldOptions.width=220
+        //% servo.fieldOptions.columns=2
+        //% parts=microservo trackArgs=0
+        //% group="Configuration"
+        //% blockGap=8
+        public setRange(minAngle: number, maxAngle: number) {
+            this._minAngle = Math.max(0, Math.min(90, minAngle | 0));
+            this._maxAngle = Math.max(90, Math.min(180, maxAngle | 0));
+        }
+
+        /**
+         * Sets a mode where the servo is stopped when the angle is neutral (90deg or 0% for continuous servos).
+         * @param on true to enable this mode
+         */
+        //% help=servos/set-stop-on-neutral
+        //% blockId=servostoponneutral block="set %servo stop on neutral %on"
+        //% on.fieldEditor=toggleonoff
+        //% on.fieldOptions.decompileLiterals=true
+        //% group="Configuration"
+        //% blockGap=8
+        //% servo.fieldEditor="gridpicker"
+        //% servo.fieldOptions.width=220
+        //% servo.fieldOptions.columns=2
+        public setStopOnNeutral(on: boolean) {
+            this._stopOnNeutral = true;
         }
 
         protected internalStop() {}
