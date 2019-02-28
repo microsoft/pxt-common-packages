@@ -88,7 +88,7 @@ namespace servos {
         }
 
         /*
-         * Stop sending commands to the servo. 
+         * Stop sending commands to the servo so that its rotation will stop at the current position.
          * On a normal servo this will stop the servo where it is, rather than return it to neutral position.
          * It will also not provide any holding force.
          */
@@ -119,7 +119,7 @@ namespace servos {
         }
 
         /**
-         * Configure the range support by the servo between 0 and 180
+         * Set the possible rotation range angles for the servo between 0 and 180
          * @param minAngle the minimum angle from 0 to 90
          * @param maxAngle the maximum angle from 90 to 180
          */
@@ -139,7 +139,7 @@ namespace servos {
         }
 
         /**
-         * Sets a mode where the servo is stopped when the angle is neutral (0%).
+         * Set a servo stop mode so it will stop when the rotation angle is in the neutral position, 90 degrees.
          * @param on true to enable this mode
          */
         //% help=servos/set-stop-on-neutral
