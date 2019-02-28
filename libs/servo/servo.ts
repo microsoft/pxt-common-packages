@@ -138,7 +138,7 @@ namespace servos {
         }
 
         /**
-         * Sets a mode where the servo is stopped when the angle is neutral (90deg or 0% for continuous servos).
+         * Sets a mode where the servo is stopped when the angle is neutral (0%).
          * @param on true to enable this mode
          */
         //% help=servos/set-stop-on-neutral
