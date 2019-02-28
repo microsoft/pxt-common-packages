@@ -16,6 +16,12 @@ namespace servos {
             this._stopOnNeutral = false;
         }
 
+        private clampDegrees(degrees: number): number {
+            degrees = degrees | 0;
+            degrees = Math.clamp(this._minAngle, this._maxAngle, degrees);
+            return degrees;
+        }
+
         /**
          * Set the servo angle
          */
@@ -29,13 +35,8 @@ namespace servos {
         //% parts=microservo trackArgs=0
         //% group="Positional"
         setAngle(degrees: number) {
-            degrees = degrees | 0;
-            degrees = Math.clamp(this._minAngle, this._maxAngle, degrees);
-
-            if (this._stopOnNeutral && degrees == 90)
-                this.stop();
-            else  
-                this.internalSetAngle(degrees);
+            degrees = this.clampDegrees(degrees);
+            this.internalSetAngle(degrees);
         }
 
         protected internalSetAngle(angle: number): void {
@@ -55,7 +56,11 @@ namespace servos {
         //% group="Continuous"
         //% blockGap=8
         run(speed: number): void {
-            this.setAngle(Math.map(speed, -100, 100, this._minAngle, this._maxAngle));
+            const degrees = this.clampDegrees(Math.map(speed, -100, 100, this._minAngle, this._maxAngle));
+            if (this._stopOnNeutral && degrees == 90)
+                this.stop();
+            else
+                this.setAngle(degrees);
         }
 
         /*
@@ -149,7 +154,7 @@ namespace servos {
             this._stopOnNeutral = true;
         }
 
-        protected internalStop() {}
+        protected internalStop() { }
     }
 
     export class PinServo extends Servo {
