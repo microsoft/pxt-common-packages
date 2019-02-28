@@ -57,7 +57,8 @@ namespace servos {
         //% blockGap=8
         run(speed: number): void {
             const degrees = this.clampDegrees(Math.map(speed, -100, 100, this._minAngle, this._maxAngle));
-            if (this._stopOnNeutral && degrees == 90)
+            const neutral = (this.maxAngle - this.minAngle) >> 1;
+            if (this._stopOnNeutral && degrees == neutral)
                 this.stop();
             else
                 this.setAngle(degrees);
