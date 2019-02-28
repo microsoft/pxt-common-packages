@@ -151,7 +151,7 @@ namespace servos {
         //% servo.fieldOptions.width=220
         //% servo.fieldOptions.columns=2
         public setStopOnNeutral(on: boolean) {
-            this._stopOnNeutral = true;
+            this._stopOnNeutral = on;
         }
 
         protected internalStop() { }
