@@ -4,7 +4,7 @@
 
 using namespace std;
 
-namespace pxt {
+namespace Math_ {
 
 #define SINGLE(op) return fromDouble(::op(toDouble(x)));
 
