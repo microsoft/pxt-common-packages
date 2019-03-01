@@ -64,9 +64,11 @@ namespace servos {
                 this.setAngle(degrees);
         }
 
-        /*
+        /**
          * Set the pulse width to the servo in microseconds
+         * @param micros the width of the pulse in microseconds
          */
+
         //% weight=10 help=servos/set-pulse
         //% blockId=servoservosetpulse block="set %servo pulse to %micros μs"
         //% micros.min=500 micros.max=2500
@@ -87,11 +89,11 @@ namespace servos {
 
         }
 
-        /*
+        /**
          * Stop sending commands to the servo so that its rotation will stop at the current position.
-         * On a normal servo this will stop the servo where it is, rather than return it to neutral position.
-         * It will also not provide any holding force.
          */
+        // On a normal servo this will stop the servo where it is, rather than return it to neutral position.
+        // It will also not provide any holding force.
         //% weight=10 help=servos/stop
         //% blockId=servoservostop block="stop %servo"
         //% servo.fieldEditor="gridpicker"
