@@ -37,4 +37,6 @@ controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
 
 ## See also #seealso
 
-[is pressed](/reference/controller/button/is-pressed)
+[is pressed](/reference/controller/button/is-pressed),
+[repeatDelay](/reference/controller/button/repeat-delay),
+[repeatInterval](/reference/controller/button/repeat-interval)

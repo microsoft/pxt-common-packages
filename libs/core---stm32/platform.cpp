@@ -5,15 +5,42 @@
 
 namespace pxt {
 
-STMLowLevelTimer tim5(TIM5, TIM5_IRQn);
-CODAL_TIMER devTimer(tim5);
+#ifdef STM32F1
+STMLowLevelTimer lowTimer(TIM4, TIM4_IRQn);
+#else
+STMLowLevelTimer lowTimer(TIM5, TIM5_IRQn);
+#endif
+
+CODAL_TIMER devTimer(lowTimer);
 
 void initAccelRandom();
 
 static void initRandomSeed() {
+#ifdef STM32F4
     if (getConfig(CFG_ACCELEROMETER_TYPE, -1) != -1) {
         initAccelRandom();
     }
+#endif
+}
+
+static void set_if_present(int cfg, int val) {
+    auto snd = pxt::lookupPinCfg(cfg);
+    if (snd)
+        snd->setDigitalValue(val);
+}
+
+//%
+void deepSleep() {
+    // this in particular puts accelerometer to sleep, which the bootloader
+    // doesn't do
+    CodalComponent::setAllSleep(true);
+
+#ifdef STM32F4
+    // ask bootloader to do the deep sleeping
+    QUICK_BOOT(1);
+    RTC->BKP1R = 0x10b37889;
+    NVIC_SystemReset();
+#endif
 }
 
 void platformSendSerial(const char *data, int len) {
@@ -31,6 +58,11 @@ void platform_init() {
     setSendToUART(platformSendSerial);
     light::clear();
 
+    // make sure sound doesn't draw power before enabled
+    set_if_present(CFG_PIN_JACK_SND, 0);
+    set_if_present(CFG_PIN_JACK_HPEN, 0);
+    set_if_present(CFG_PIN_JACK_BZEN, 1);
+ 
     /*
         if (*HF2_DBG_MAGIC_PTR == HF2_DBG_MAGIC_START) {
             *HF2_DBG_MAGIC_PTR = 0;
@@ -41,12 +73,14 @@ void platform_init() {
 }
 
 int *getBootloaderConfigData() {
+#ifdef STM32F4
     auto config_data = (uint32_t)(UF2_BINFO->configValues);
     if (config_data && (config_data & 3) == 0) {
         auto p = (uint32_t *)config_data - 4;
         if (p[0] == CFG_MAGIC0 && p[1] == CFG_MAGIC1)
             return (int *)p + 4;
     }
+#endif
 
     return NULL;
 }

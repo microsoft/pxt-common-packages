@@ -4,8 +4,8 @@
 #include "neopixel.h"
 #endif
 
-#define NEOPIXEL_MIN_LENGTH_FOR_SPI 48
-#define DOTSTAR_MIN_LENGTH_FOR_SPI 48
+#define NEOPIXEL_MIN_LENGTH_FOR_SPI 8
+#define DOTSTAR_MIN_LENGTH_FOR_SPI 8
 
 #define LIGHTMODE_RGB 1
 #define LIGHTMODE_RGBW 2 
@@ -13,7 +13,7 @@
 #define LIGHTMODE_DOTSTAR 4
 
 namespace light {
-bool isValidSPIPin(DigitalInOutPin pin) {
+bool isValidMOSIPin(DigitalInOutPin pin) {
     if (!pin)
         return false;
 
@@ -21,22 +21,10 @@ bool isValidSPIPin(DigitalInOutPin pin) {
     return ZSPI::isValidMOSIPin(*pin);
 #else
     // TODO: support for SPI neopixels
-    return false;
+    // default SPI pins supported for now
+    return pin == LOOKUP_PIN(MOSI);
 #endif
 
-}
-
-void clear() {
-    auto neopix = LOOKUP_PIN(NEOPIXEL);
-    if (neopix) {
-        auto num = getConfig(CFG_NUM_NEOPIXELS, 0);
-        if (num <= 0) return; // wrong length
-
-        auto n = 3 * num;
-        uint8_t off[n];
-        memset(off, 0, sizeof(off));
-        light::neopixelSendData(neopix, 0x100, off, sizeof(off));
-    }
 }
 
 // SPI
@@ -78,12 +66,12 @@ void neopixelSendData(DevicePin* pin, int mode, const uint8_t* data, unsigned le
     if (!pin || !length) return;
 
 #if SAMD21
-    if (length > NEOPIXEL_MIN_LENGTH_FOR_SPI && isValidSPIPin(pin))
+    if (length > NEOPIXEL_MIN_LENGTH_FOR_SPI && isValidMOSIPin(pin))
         spiNeopixelSendBuffer(pin, data, length);
     else
         neopixel_send_buffer(*pin, data, length);
 #else    
-    if (isValidSPIPin(pin)) {
+    if (isValidMOSIPin(pin)) {
         spiNeopixelSendBuffer(pin, data, length);
     }
 #endif
@@ -138,7 +126,7 @@ void spiDotStarSendData(DevicePin* data, DevicePin* clk, int mode, const uint8_t
 void dotStarSendData(DevicePin* data, DevicePin* clk, int mode, const uint8_t* buf, unsigned length) {
     if (!data || !clk || !buf || !length) return;
 
-    if (length > DOTSTAR_MIN_LENGTH_FOR_SPI && isValidSPIPin(data))
+    if (length > DOTSTAR_MIN_LENGTH_FOR_SPI && isValidMOSIPin(data))
         spiDotStarSendData(data, clk, mode, buf, length);
     else 
         bitBangDotStarSendData(data, clk, mode, buf, length);
@@ -151,6 +139,30 @@ void sendBuffer(DevicePin* data, DevicePin* clk, int mode, Buffer buf) {
         light::dotStarSendData(data, clk, mode, buf->data, buf->length);
     else
         light::neopixelSendData(data, mode, buf->data, buf->length);
+}
+
+
+void clear() {
+    auto neopix = LOOKUP_PIN(NEOPIXEL);
+    auto neonum = getConfig(CFG_NUM_NEOPIXELS, 0);
+    if (neopix && neonum >= 0) {
+        auto n = 3 * neonum;
+        uint8_t off[n];
+        memset(off, 0, sizeof(off));
+        light::neopixelSendData(neopix, 0x100, off, sizeof(off));
+    }
+
+    auto data = LOOKUP_PIN(DOTSTAR_DATA);
+    auto clk = LOOKUP_PIN(DOTSTAR_CLOCK);
+    auto dsnum = getConfig(CFG_NUM_DOTSTARS, 0);
+    if (data && clk && dsnum > 0) {
+        auto n = 4 * dsnum;
+        uint8_t off[n];
+        memset(off, 0, sizeof(off));
+        for(int i = 0; i < n; i += 4)
+            off[i] = 0xe0;
+        bitBangDotStarSendData(data, clk, 0x100, off, sizeof(off));
+    }
 }
 
 } // namespace pxt

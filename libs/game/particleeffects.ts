@@ -145,10 +145,9 @@ namespace effects {
 
     function createEffect(defaultParticlesPerSecond: number, defaultLifespan: number,
             factoryFactory: (anchor?: particles.ParticleAnchor) => particles.ParticleFactory): ParticleEffect {
-        const factory = factoryFactory();
-        if (!factory) return undefined;
         return new ParticleEffect(defaultParticlesPerSecond, defaultLifespan,
-                    (anchor: particles.ParticleAnchor, pps: number) => new particles.ParticleSource(anchor, pps, factory));
+                    (anchor: particles.ParticleAnchor, pps: number) =>
+                        new particles.ParticleSource(anchor, pps, factoryFactory()));
     }
 
     //% fixedInstance whenUsed block="spray"

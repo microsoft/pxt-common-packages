@@ -14,7 +14,7 @@
         "targetoverrides.ts",
         "music.ts",
         "pxtparts.json",
-        "speaker.svg"
+        "headphone.svg"
     ],
     "public": true,
     "dependencies": {

@@ -19,7 +19,19 @@ namespace music {
     //% shim=music::forceOutput
     export function forceOutput(buf: MusicOutput) { }
 
-    let globalVolume = 128
+    let globalVolume: number = null
+
+    //% shim=music::enableAmp
+    function enableAmp(en: number) {
+        return // for sim
+    }
+
+    function initVolume() {
+        if (globalVolume === null) {
+            globalVolume = 0
+            setVolume(control.getConfigValue(DAL.CFG_SPEAKER_VOLUME, 128))
+        }
+    }
 
     /**
      * Set the default output volume of the sound synthesizer.
@@ -33,6 +45,7 @@ namespace music {
     //% group="Volume"
     export function setVolume(volume: number): void {
         globalVolume = Math.clamp(0, 255, volume | 0)
+        enableAmp(globalVolume > 0 ? 1 : 0)
     }
 
     /**
@@ -41,6 +54,7 @@ namespace music {
     //% parts="speaker"
     //% weight=70
     export function volume(): number {
+        initVolume()
         return globalVolume;
     }
 
@@ -61,7 +75,7 @@ namespace music {
     //% group="Tone"
     export function playTone(frequency: number, ms: number): void {
         let buf = control.createBuffer(10 + 1)
-        addNote(buf, 0, ms, 255, 255, 1, frequency, globalVolume)
+        addNote(buf, 0, ms, 255, 255, 1, frequency, volume())
         playInstructions(buf)
     }
 
@@ -175,7 +189,7 @@ namespace music {
             if (!this.melody)
                 return
 
-            volume = Math.clamp(0, 255, (volume * globalVolume) >> 8)
+            volume = Math.clamp(0, 255, (volume * music.volume()) >> 8)
 
             let notes = this.melody._text
             let pos = 0;

@@ -29,7 +29,6 @@
         "mathUtil.ts",
         "menu.ts",
         "systemmenu.ts",
-        "fixed.ts",
         "console.ts",
         "fieldeditors.ts",
         "particles.ts",
@@ -40,6 +39,7 @@
     "public": true,
     "dependencies": {
         "screen": "file:../screen",
-        "mixer": "file:../mixer"
+       "mixer": "file:../mixer",
+       "power": "file:../power"
     }
 }
