@@ -43,6 +43,13 @@ namespace particles {
     export class ParticleSource implements SpriteLike {
         private _z: number;
 
+        /**
+         * A relative ranking of this sources priority
+         * When necessary, a source with a lower priority will
+         * be culled before a source with a higher priority.
+         */
+        priority: number;
+
         id: number;
         _dt: number;
         /**
@@ -99,6 +106,7 @@ namespace particles {
             this.lifespan = undefined;
             this._dt = 0;
             this.z = 0;
+            this.priority = 0;
             this.setFactory(factory || particles.defaultFactory);
             sources.push(this);
             scene.addSprite(this);
@@ -315,6 +323,7 @@ namespace particles {
         for (let i = 0; i < sources.length; i++) {
             sources[i]._update(dt);
         }
+        sources.sort((a, b) => (a.priority - b.priority || a.id - b.id));
     }
 
     function pruneParticles() {
