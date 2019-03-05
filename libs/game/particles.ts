@@ -327,7 +327,7 @@ namespace particles {
             sources[i]._update(dt);
         }
     }
-    
+
     function pruneParticles() {
         const sources = particleSources();
         if (sources)
