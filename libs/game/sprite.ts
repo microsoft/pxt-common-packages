@@ -182,7 +182,7 @@ class Sprite implements SpriteLike {
         this.lifespan = undefined;
         this._overlappers = [];
     }
-    
+
     __serialize(offset: number): Buffer {
         const buf = control.createBuffer(offset + 12);
         let k = offset;
@@ -198,7 +198,7 @@ class Sprite implements SpriteLike {
     /**
      * Gets the current image
      */
-    //% group="Lifecycle"
+    //% group="Image"
     //% blockId=spriteimage block="%sprite(mySprite) image"
     //% weight=8
     get image(): Image {
@@ -208,7 +208,7 @@ class Sprite implements SpriteLike {
     /**
      * Sets the image on the sprite
      */
-    //% group="Lifecycle"
+    //% group="Image"
     //% blockId=spritesetimage block="set %sprite(mySprite) image to %img=screen_image_picker"
     //% weight=7 help=sprites/sprite/set-image
     setImage(img: Image) {
@@ -725,7 +725,7 @@ class Sprite implements SpriteLike {
     destroy(effect?: effects.ParticleEffect, duration?: number) {
         if (this.flags & sprites.Flag.Destroyed)
             return;
-        
+
         if (effect) {
             effect.destroy(this, duration);
             return;
