@@ -331,7 +331,7 @@ namespace particles {
     function pruneParticles() {
         const sources = particleSources();
         if (sources)
-        sources.slice(0, sources.length).forEach(s => s._prune());
+            sources.slice(0, sources.length).forEach(s => s._prune());
     }
     
     function sortSources() {
