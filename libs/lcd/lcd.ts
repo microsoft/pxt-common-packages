@@ -1,6 +1,7 @@
 /**
  * Character LCD support
  */
+//% icon="\uf0ae" color="#219E42"
 namespace lcd {
     let _screen: CharacterLCD;
 
@@ -13,8 +14,8 @@ namespace lcd {
         const db5 = pins.pinByCfg(DAL.CFG_PIN_LCD_DATALINE5);
         const db6 = pins.pinByCfg(DAL.CFG_PIN_LCD_DATALINE6);
         const db7 = pins.pinByCfg(DAL.CFG_PIN_LCD_DATALINE7);
-        const columns = pxt.cfg(DAL.CFG_NUM_LCD_COLUMNS, 16);
-        const lines = pxt.cfg(DAL.CFG_NUM_LCD_ROWS, 2);
+        const columns = control.getConfigValue(DAL.CFG_NUM_LCD_COLUMNS, 16);
+        const lines = control.getConfigValue(DAL.CFG_NUM_LCD_ROWS, 2);
 
         if (!rs || !en || !db4 || !db5 || !db6 || !db7) {
             _screen = null; // not supported
