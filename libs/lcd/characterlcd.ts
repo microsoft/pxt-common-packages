@@ -60,7 +60,7 @@ namespace lcd {
             this.dl6 = d6;
             this.dl7 = d7;
             // set all pins as outputs
-            for (let pin of [rs, en, d4, d5, d6, d7]) {
+            for (const pin of [rs, en, d4, d5, d6, d7]) {
                 pin.digitalWrite(false);
             }
             // Initialise the display

@@ -38,6 +38,22 @@ namespace lcd {
 
         l.clear();
         l.message = text;
+
+        // tell the simulator about this data
+        __showString(text);
+    }
+
+    //% shim=lcd::__showString
+    function __showString(s: string) {
+    }
+
+    /**
+     * Clears the screen
+     */
+    //% blockId=lcdclear block="lcd clear"
+    //% parts=lcd
+    export function clear() {
+        showString("");
     }
 
     /**

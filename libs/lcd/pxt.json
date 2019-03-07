@@ -6,7 +6,8 @@
         "characterlcd.ts",
         "characterlcdmono.ts",
         "characterlcdrbg.ts",
-        "lcd.ts"
+        "lcd.ts",
+        "lcd.cpp"
     ],
     "testFiles": [
         "test.ts"
