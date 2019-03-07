@@ -145,16 +145,15 @@ namespace servos {
          * @param on true to enable this mode
          */
         //% help=servos/set-stop-on-neutral
-        //% blockId=servostoponneutral block="set %servo stop on neutral %on"
-        //% on.fieldEditor=toggleonoff
-        //% on.fieldOptions.decompileLiterals=true
+        //% blockId=servostoponneutral block="set %servo stop on neutral %enabled"
+        //% enabled.shadow=toggleOnOff
         //% group="Configuration"
         //% blockGap=8
         //% servo.fieldEditor="gridpicker"
         //% servo.fieldOptions.width=220
         //% servo.fieldOptions.columns=2
-        public setStopOnNeutral(on: boolean) {
-            this._stopOnNeutral = on;
+        public setStopOnNeutral(enabled: boolean) {
+            this._stopOnNeutral = enabled;
         }
 
         protected internalStop() { }
