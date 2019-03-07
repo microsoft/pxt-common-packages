@@ -11,7 +11,8 @@ namespace pxsim {
         send(buf: RefBuffer) {
             Runtime.postMessage(<SimulatorInfraredPacketMessage>{
                 type: "irpacket",
-                packet:  buf.data
+                packet:  buf.data,
+                broadcast: true
             })
         }
 
