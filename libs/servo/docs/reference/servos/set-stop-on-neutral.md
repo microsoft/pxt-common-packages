@@ -10,7 +10,7 @@ When telling a servo to stop, instead just stopping an the current rotation angl
 
 ## Parameters
 
-* **on**: a [boolean](types/boolean) which, when `true`, sets the servo to return to the neutral position when stopped. Otherwise, if `false`, the servo will remain at its current position when stopped.
+* **enabled**: a [boolean](types/boolean) which, when `true`, sets the servo to return to the neutral position when stopped. Otherwise, if `false`, the servo will remain at its current position when stopped.
 
 ## Example
 
