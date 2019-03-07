@@ -11,6 +11,10 @@ STMLowLevelTimer lowTimer(TIM4, TIM4_IRQn);
 STMLowLevelTimer lowTimer(TIM5, TIM5_IRQn);
 #endif
 
+LowLevelTimer* getLowLevelTimer() {
+    return &lowTimer;
+}
+
 CODAL_TIMER devTimer(lowTimer);
 
 void initAccelRandom();

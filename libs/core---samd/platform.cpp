@@ -13,6 +13,10 @@ SAMDTCTimer lowTimer(TC4, TC4_IRQn);
 SAMDTCTimer lowTimer(TC0, TC0_IRQn);
 #endif
 
+LowLevelTimer* getLowLevelTimer() {
+    return &lowTimer;
+}
+
 __attribute__((used))
 CODAL_TIMER devTimer(lowTimer);
 

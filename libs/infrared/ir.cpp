@@ -5,7 +5,10 @@ namespace network {
 
 class IrWrap : public PulseBase {
 public:
-    IrWrap() : PulseBase(PULSE_IR_COMPONENT_ID, PIN(IR_OUT), PIN(IR_IN)) { setupGapEvents(); }
+    IrWrap() 
+    : PulseBase(PULSE_IR_COMPONENT_ID, PIN(IR_OUT), PIN(IR_IN), getLowLevelTimer()) { 
+        setupGapEvents(); 
+    }
 };
 SINGLETON(IrWrap);
 /**
