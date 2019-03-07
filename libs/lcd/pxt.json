@@ -3,9 +3,9 @@
     "description": "Characeter LCD driver",
     "files": [
         "README.md",
-        "characeterlcd.ts",
-        "characeterlcdmono.ts",
-        "characeterlcdrgb.ts",
+        "characterlcd.ts",
+        "characterlcdmono.ts",
+        "characterlcdrbg.ts",
         "lcd.ts"
     ],
     "testFiles": [

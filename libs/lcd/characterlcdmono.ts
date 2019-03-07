@@ -8,10 +8,18 @@ namespace lcd {
             connected to common anode. ``True`` if LCD is inverted i.e. backlight pin is connected
             to common cathode.
         */
-        constructor(rs: DigitalInOutPin, en: DigitalInOutPin, db4: DigitalInOutPin, db5: DigitalInOutPin,
+        constructor(
+            rs: DigitalInOutPin,
+            en: DigitalInOutPin,
+            db4: DigitalInOutPin,
+            db5: DigitalInOutPin,
             db6: DigitalInOutPin,
-            db7: DigitalInOutPin, columns: number, lines: number,
-            backlight_pin: DigitalInOutPin = null, backlight_inverted: boolean = false) {
+            db7: DigitalInOutPin,
+            columns: number,
+            lines: number,
+            backlight_pin: DigitalInOutPin = null,
+            backlight_inverted: boolean = false
+        ) {
             super(rs, en, db4, db5, db6, db7, columns, lines);
             // Backlight pin and inversion
             this.backlight_pin = backlight_pin;
