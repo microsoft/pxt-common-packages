@@ -10,6 +10,7 @@ Package adds support LoRa.
 
 Requires firmware v1.1.6 or later on the on-board Murata module. Please use the [MKRWANFWUpdate_standalone example](https://github.com/arduino-libraries/MKRWAN/blob/master/examples/MKRWANFWUpdate_standalone/MKRWANFWUpdate_standalone.ino) from latest [MKRWAN library](https://github.com/arduino-libraries/MKRWAN) release to update the firmware.
 
+You mush apply [this patch](https://github.com/arduino-libraries/MKRWAN/commit/d994574bedf73c970a41a3d3b11d439e33f49d8c) to get the firmware update to work.
 ## ~
 
 ## Usage
