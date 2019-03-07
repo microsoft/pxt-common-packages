@@ -18,7 +18,6 @@
 #include "Button.h"
 #include "CodalFiber.h"
 #include "MessageBus.h"
-#include "LowLevelTimer.h"
 
 using namespace codal;
 
