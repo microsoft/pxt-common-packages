@@ -135,6 +135,7 @@ namespace lora {
     function init() {
         if (state != LoRaState.None) return; // already inited
 
+        log(`init`);
         state = LoRaState.Initializing;
         if (!_spi) {
             log(`init using builtin lora pins`);
@@ -420,9 +421,13 @@ namespace lora {
         writeRegister(REG_OP_MODE, MODE_LONG_RANGE_MODE | MODE_TX);
 
         // wait for TX done
+        let k = 0;
         while ((readRegister(REG_IRQ_FLAGS) & IRQ_TX_DONE_MASK) == 0) {
             //TO DO: yield();
-            log(`wait tx`)
+            if (k++ % 100 == 0) {
+                log(`wait tx`)
+                dumpRegisters()
+            }
             pause(10);
         }
 
@@ -757,10 +762,47 @@ namespace lora {
         if (!isReady()) return;
         log(`registers:`)
         const buf = control.createBuffer(1);
+        const regNames: any = {};
+        regNames[REG_FIFO] = "REG_FIFO";
+        regNames[REG_OP_MODE] = "REG_OP_MODE";
+        regNames[REG_FRF_MSB] = "REG_FRF_MSB";
+        regNames[REG_FRF_MID] = "REG_FRF_MID";
+        regNames[REG_FRF_LSB] = "REG_FRF_LSB";
+        regNames[REG_PA_CONFIG] = "REG_PA_CONFIG";
+        regNames[REG_LNA] = "REG_LNA";
+        regNames[REG_FIFO_ADDR_PTR] = "REG_FIFO_ADDR_PTR";
+        regNames[REG_FIFO_TX_BASE_ADDR] = "REG_FIFO_TX_BASE_ADDR";
+        regNames[REG_FIFO_RX_BASE_ADDR] = "REG_FIFO_RX_BASE_ADDR";
+        regNames[REG_FIFO_RX_CURRENT_ADDR] = "REG_FIFO_RX_CURRENT_ADDR";
+        regNames[REG_IRQ_FLAGS] = "REG_IRQ_FLAGS";
+        regNames[REG_RX_NB_BYTES] = "REG_RX_NB_BYTES";
+        regNames[REG_PKT_SNR_VALUE] = "REG_PKT_SNR_VALUE";
+        regNames[REG_PKT_RSSI_VALUE] = "REG_PKT_RSSI_VALUE";
+        regNames[REG_MODEM_CONFIG_1] = "REG_MODEM_CONFIG_1";
+        regNames[REG_MODEM_CONFIG_2] = "REG_MODEM_CONFIG_2";
+        regNames[REG_PREAMBLE_MSB] = "REG_PREAMBLE_MSB";
+        regNames[REG_PREAMBLE_LSB] = "REG_PREAMBLE_LSB";
+        regNames[REG_PAYLOAD_LENGTH] = "REG_PAYLOAD_LENGTH";
+        regNames[REG_MODEM_CONFIG_3] = "REG_MODEM_CONFIG_3";
+        regNames[REG_FREQ_ERROR_MSB] = "REG_FREQ_ERROR_MSB";
+        regNames[REG_FREQ_ERROR_MID] = "REG_FREQ_ERROR_MID";
+        regNames[REG_FREQ_ERROR_LSB] = "REG_FREQ_ERROR_LSB";
+        regNames[REG_RSSI_WIDEBAND] = "REG_RSSI_WIDEBAND";
+        regNames[REG_DETECTION_OPTIMIZE] = "REG_DETECTION_OPTIMIZE";
+        regNames[REG_DETECTION_THRESHOLD] = "REG_DETECTION_THRESHOLD";
+        regNames[REG_SYNC_WORD] = "REG_SYNC_WORD";
+        regNames[REG_DIO_MAPPING_1] = "REG_DIO_MAPPING_1";
+        regNames[REG_VERSION] = "REG_VERSION";
+
         for (let i = 0; i < 128; i++) {
-            let r = "0x";
-            buf[0] = i;
-            r += buf.toHex();
+            let r: string;
+            if (regNames[i])
+                r = regNames[i];
+            else {
+                r = "0x";
+                buf[0] = i;
+                r += buf.toHex();
+            }
             r += ": 0x";
             buf[0] = readRegister(i);
             r += buf.toHex();
