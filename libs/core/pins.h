@@ -52,7 +52,6 @@ Button *getButtonByPin(int pin, int flags);
 AbstractButton *getButton(int id);
 MultiButton *getMultiButton(int id, int pinA, int pinB, int flags);
 CodalComponent *lookupComponent(int id);
-LowLevelTimer* getLowLevelTimer();
 }
 
 #define PINOP(op) name->op

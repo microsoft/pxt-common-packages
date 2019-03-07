@@ -6,10 +6,6 @@
 
 namespace pxt {
 
-LowLevelTimer* getLowLevelTimer() {
-    return NULL;
-}
-
 static void initRandomSeed() {
     int seed = 0xC0DA1;
     int fd = open("/dev/urandom", O_RDONLY);
