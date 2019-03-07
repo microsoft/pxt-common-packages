@@ -64,9 +64,11 @@ namespace servos {
                 this.setAngle(degrees);
         }
 
-        /*
+        /**
          * Set the pulse width to the servo in microseconds
+         * @param micros the width of the pulse in microseconds
          */
+
         //% weight=10 help=servos/set-pulse
         //% blockId=servoservosetpulse block="set %servo pulse to %micros μs"
         //% micros.min=500 micros.max=2500
@@ -87,11 +89,11 @@ namespace servos {
 
         }
 
-        /*
-         * Stop sending commands to the servo. 
-         * On a normal servo this will stop the servo where it is, rather than return it to neutral position.
-         * It will also not provide any holding force.
+        /**
+         * Stop sending commands to the servo so that its rotation will stop at the current position.
          */
+        // On a normal servo this will stop the servo where it is, rather than return it to neutral position.
+        // It will also not provide any holding force.
         //% weight=10 help=servos/stop
         //% blockId=servoservostop block="stop %servo"
         //% servo.fieldEditor="gridpicker"
@@ -119,7 +121,7 @@ namespace servos {
         }
 
         /**
-         * Configure the range support by the servo between 0 and 180
+         * Set the possible rotation range angles for the servo between 0 and 180
          * @param minAngle the minimum angle from 0 to 90
          * @param maxAngle the maximum angle from 90 to 180
          */
@@ -139,20 +141,19 @@ namespace servos {
         }
 
         /**
-         * Sets a mode where the servo is stopped when the angle is neutral (0%).
+         * Set a servo stop mode so it will stop when the rotation angle is in the neutral position, 90 degrees.
          * @param on true to enable this mode
          */
         //% help=servos/set-stop-on-neutral
-        //% blockId=servostoponneutral block="set %servo stop on neutral %on"
-        //% on.fieldEditor=toggleonoff
-        //% on.fieldOptions.decompileLiterals=true
+        //% blockId=servostoponneutral block="set %servo stop on neutral %enabled"
+        //% enabled.shadow=toggleOnOff
         //% group="Configuration"
         //% blockGap=8
         //% servo.fieldEditor="gridpicker"
         //% servo.fieldOptions.width=220
         //% servo.fieldOptions.columns=2
-        public setStopOnNeutral(on: boolean) {
-            this._stopOnNeutral = on;
+        public setStopOnNeutral(enabled: boolean) {
+            this._stopOnNeutral = enabled;
         }
 
         protected internalStop() { }

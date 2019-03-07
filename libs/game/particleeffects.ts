@@ -108,6 +108,7 @@ namespace effects {
 
             this.endScreenEffect();
             this.source = this.sourceFactory(new SceneAnchor(), particlesPerSecond ? particlesPerSecond : this.sceneDefaultRate);
+            this.source.priority = 10;
             if (duration)
                 this.source.lifespan = duration;
         }

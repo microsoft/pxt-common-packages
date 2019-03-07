@@ -3,6 +3,7 @@
 
 #include "pxt.h"
 #include "bitvector.h"
+#include "LowLevelTimer.h"
 
 #define PULSE_MAX_MSG_SIZE 34
 #define PULSE_PACKET_END_EVENT 0x1
@@ -78,6 +79,7 @@ class PulseBase {
   protected:
     DevicePin *pin;
     DevicePin *inpin;
+    LowLevelTimer* timer;
     BitVector encodedMsg;
     uint16_t sendPtr;
     int8_t pwmstate;
@@ -97,7 +99,7 @@ class PulseBase {
     DbgBuffer dbg;
 
   public:
-    PulseBase(uint16_t id, int pinOut, int pinIn);
+    PulseBase(uint16_t id, int pinOut, int pinIn, LowLevelTimer* t);
     virtual void setupGapEvents();
     virtual void listen();
     virtual void setupPWM();
@@ -112,8 +114,9 @@ class PulseBase {
     void packetEnd(Event);
     void pulseMark(Event ev);
     Buffer getBuffer();
-    bool isReciving();
+    bool isReceiving();
     void process();
+    void timerIRQ(uint16_t);
 };
 }
 #endif

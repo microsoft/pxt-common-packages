@@ -1010,7 +1010,7 @@ bool removeElement(RefCollection *c, TValue x);
         return JOIN(inst, ClassName);                                                              \
     }
 
-/// Defines getClassName() function to fetch the singleton
+/// Defines getClassName() function to fetch the singleton if PIN present
 #define SINGLETON_IF_PIN(ClassName, pin)                                                           \
     static ClassName *JOIN(inst, ClassName);                                                       \
     ClassName *JOIN(get, ClassName)() {                                                            \
