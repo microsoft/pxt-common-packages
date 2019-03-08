@@ -1,5 +1,5 @@
 // Adapted from https://github.com/ElectronicCats/pxt-lora/
-
+// https://www.mouser.com/ds/2/761/sx1276-944191.pdf
 
 
 /**
@@ -41,10 +41,13 @@ namespace lora {
     // registers
     const REG_FIFO = 0x00;
     const REG_OP_MODE = 0x01;
+    // unused
     const REG_FRF_MSB = 0x06;
     const REG_FRF_MID = 0x07;
     const REG_FRF_LSB = 0x08;
     const REG_PA_CONFIG = 0x09;
+    const REG_PA_RAMP = 0x0a;
+    const REG_OCP = 0x0b;
     const REG_LNA = 0x0c;
     const REG_FIFO_ADDR_PTR = 0x0d;
     const REG_FIFO_TX_BASE_ADDR = 0x0e;
@@ -52,6 +55,11 @@ namespace lora {
     const REG_FIFO_RX_CURRENT_ADDR = 0x10;
     const REG_IRQ_FLAGS = 0x12;
     const REG_RX_NB_BYTES = 0x13;
+    const REG_RX_HEADER_COUNT_VALUE_MSB = 0x14;
+    const REG_RX_HEADER_COUNT_VALUE_LSB = 0x15;
+    const REG_RX_PACKET_COUNT_VALUE_MSB = 0x16;
+    const REG_RX_PACKET_COUNT_VALUE_LSB = 0x17;
+    const REG_MODEM_STAT = 0x18;
     const REG_PKT_SNR_VALUE = 0x19;
     const REG_PKT_RSSI_VALUE = 0x1a;
     const REG_MODEM_CONFIG_1 = 0x1d;
@@ -59,16 +67,32 @@ namespace lora {
     const REG_PREAMBLE_MSB = 0x20;
     const REG_PREAMBLE_LSB = 0x21;
     const REG_PAYLOAD_LENGTH = 0x22;
+    const REG_MAX_PAYLOAD_LENGTH = 0x23;
+    const REG_HOP_PERIOD = 0x24;
+    const REG_FIFO_RX_BYTE_AD = 0x25;
     const REG_MODEM_CONFIG_3 = 0x26;
+    // 0x27 reserved
     const REG_FREQ_ERROR_MSB = 0x28;
     const REG_FREQ_ERROR_MID = 0x29;
     const REG_FREQ_ERROR_LSB = 0x2a;
+    // 2b reserved
     const REG_RSSI_WIDEBAND = 0x2c;
+    // 2d-2f reserved
     const REG_DETECTION_OPTIMIZE = 0x31;
+    const REG_INVERT_IQ = 0x33;
     const REG_DETECTION_THRESHOLD = 0x37;
     const REG_SYNC_WORD = 0x39;
     const REG_DIO_MAPPING_1 = 0x40;
+    const REG_DIO_MAPPING_2 = 0x40;
     const REG_VERSION = 0x42;
+    const REG_TCXO = 0x4b;
+    const REG_PA_DAC = 0x4d;
+    const REG_FORMER_TEMP = 0x5b;
+    const REG_AGC_REF = 0x61;
+    const REG_AGC_THRESH_1 = 0x62;
+    const REG_AGC_THRESH_2 = 0x63;
+    const REG_AGC_THRESH_3 = 0x64;
+    const REG_PLL = 0x70;
 
     // modes
     const MODE_LONG_RANGE_MODE = 0x80;
@@ -135,6 +159,7 @@ namespace lora {
     function init() {
         if (state != LoRaState.None) return; // already inited
 
+        log(`init`);
         state = LoRaState.Initializing;
         if (!_spi) {
             log(`init using builtin lora pins`);
@@ -187,10 +212,10 @@ namespace lora {
         }
 
         //Sleep
-        sleep();
+        writeRegister(REG_OP_MODE, MODE_LONG_RANGE_MODE | MODE_SLEEP);
 
         // set frequency
-        setFrequency(_frequency);
+        setFrequencyRegisters(_frequency);
 
         // set base addresses
         writeRegister(REG_FIFO_TX_BASE_ADDR, 0);
@@ -203,12 +228,13 @@ namespace lora {
         writeRegister(REG_MODEM_CONFIG_3, 0x04);
 
         // set output power to 17 dBm
-        setTxPower(17);
+        setTxPowerRegisters(17);
 
         // put in standby mode
-        idle();
+        writeRegister(REG_OP_MODE, MODE_LONG_RANGE_MODE | MODE_STDBY);
 
         state = LoRaState.Ready;
+        log(`ready`);
     }
 
     // Write Register of SX. 
@@ -409,7 +435,7 @@ namespace lora {
             explicitHeaderMode();
         }
 
-        // reset FIFO address and paload length
+        // reset FIFO address and payload length
         writeRegister(REG_FIFO_ADDR_PTR, 0);
         writeRegister(REG_PAYLOAD_LENGTH, 0);
     }
@@ -420,9 +446,11 @@ namespace lora {
         writeRegister(REG_OP_MODE, MODE_LONG_RANGE_MODE | MODE_TX);
 
         // wait for TX done
+        // TODO interupts!
+        let k = 0;
         while ((readRegister(REG_IRQ_FLAGS) & IRQ_TX_DONE_MASK) == 0) {
-            //TO DO: yield();
-            log(`wait tx`)
+            if (k++ % 100 == 0)
+                log(`wait tx`)
             pause(10);
         }
 
@@ -560,14 +588,8 @@ namespace lora {
         writeRegister(REG_OP_MODE, MODE_LONG_RANGE_MODE | MODE_SLEEP);
     }
 
-    /**
-    * Set Tx Power
-    **/
-    //% parts="lora"
-    //% group="Configuration"
-    //% blockId=lorasettxpower block="lora set tx power to $level dBm"
-    export function setTxPower(level: number, rfo?: boolean) {
-        if (!isReady()) return;
+
+    function setTxPowerRegisters(level: number, rfo?: boolean) {
         level = level | 0;
         if (rfo) {
             // RFO
@@ -591,6 +613,27 @@ namespace lora {
     }
 
     /**
+    * Set Tx Power
+    **/
+    //% parts="lora"
+    //% group="Configuration"
+    //% blockId=lorasettxpower block="lora set tx power to $level dBm"
+    export function setTxPower(level: number, rfo?: boolean) {
+        if (!isReady()) return;
+        setTxPowerRegisters(level, rfo);
+    }
+
+    function setFrequencyRegisters(frequency: number) {
+        _frequency = frequency;
+        const frf = ((frequency * (1 << 19)) / 32000000) | 0;
+        log(`frequency ${_frequency} -> ${frf}`);
+
+        writeRegister(REG_FRF_MSB, (frf >> 16) & 0xff);
+        writeRegister(REG_FRF_MID, (frf >> 8) & 0xff);
+        writeRegister(REG_FRF_LSB, (frf >> 0) & 0xff);
+    }
+
+    /**
     * Set Frecuency of LoRa
     **/
     //% parts="lora"
@@ -598,12 +641,7 @@ namespace lora {
     //% blockId=lorasetsetfrequency block="lora set frequency to $frequency"
     export function setFrequency(frequency: number) {
         if (!isReady()) return;
-        _frequency = frequency;
-        const frf = ((frequency * (1 << 19)) / 32000000) | 0;
-
-        writeRegister(REG_FRF_MSB, (frf >> 16) & 0xff);
-        writeRegister(REG_FRF_MID, (frf >> 8) & 0xff);
-        writeRegister(REG_FRF_LSB, (frf >> 0) & 0xff);
+        setFrequencyRegisters(_frequency);
     }
 
     /**
@@ -757,14 +795,73 @@ namespace lora {
         if (!isReady()) return;
         log(`registers:`)
         const buf = control.createBuffer(1);
+        const regNames: any = {};
+        regNames[REG_FIFO] = "REG_FIFO";
+        regNames[REG_OP_MODE] = "REG_OP_MODE";
+        // unused
+        regNames[REG_FRF_MSB] = "REG_FRF_MSB";
+        regNames[REG_FRF_MID] = "REG_FRF_MID";
+        regNames[REG_FRF_LSB] = "REG_FRF_LSB";
+        regNames[REG_PA_CONFIG] = "REG_PA_CONFIG";
+        regNames[REG_PA_RAMP] = "REG_PA_RAMP";
+        regNames[REG_OCP] = "REG_OCP";
+        regNames[REG_LNA] = "REG_LNA";
+        regNames[REG_FIFO_ADDR_PTR] = "REG_FIFO_ADDR_PTR";
+        regNames[REG_FIFO_TX_BASE_ADDR] = "REG_FIFO_TX_BASE_ADDR";
+        regNames[REG_FIFO_RX_BASE_ADDR] = "REG_FIFO_RX_BASE_ADDR";
+        regNames[REG_FIFO_RX_CURRENT_ADDR] = "REG_FIFO_RX_CURRENT_ADDR";
+        regNames[REG_IRQ_FLAGS] = "REG_IRQ_FLAGS";
+        regNames[REG_RX_NB_BYTES] = "REG_RX_NB_BYTES";
+        regNames[REG_RX_HEADER_COUNT_VALUE_MSB] = "REG_RX_HEADER_COUNT_VALUE_MSB";
+        regNames[REG_RX_HEADER_COUNT_VALUE_LSB] = "REG_RX_HEADER_COUNT_VALUE_LSB";
+        regNames[REG_RX_PACKET_COUNT_VALUE_MSB] = "REG_RX_PACKET_COUNT_VALUE_MSB";
+        regNames[REG_RX_PACKET_COUNT_VALUE_LSB] = "REG_RX_PACKET_COUNT_VALUE_LSB";
+        regNames[REG_MODEM_STAT] = "REG_MODEM_STAT";
+        regNames[REG_PKT_SNR_VALUE] = "REG_PKT_SNR_VALUE";
+        regNames[REG_PKT_RSSI_VALUE] = "REG_PKT_RSSI_VALUE";
+        regNames[REG_MODEM_CONFIG_1] = "REG_MODEM_CONFIG_1";
+        regNames[REG_MODEM_CONFIG_2] = "REG_MODEM_CONFIG_2";
+        regNames[REG_PREAMBLE_MSB] = "REG_PREAMBLE_MSB";
+        regNames[REG_PREAMBLE_LSB] = "REG_PREAMBLE_LSB";
+        regNames[REG_PAYLOAD_LENGTH] = "REG_PAYLOAD_LENGTH";
+        regNames[REG_MAX_PAYLOAD_LENGTH] = "REG_MAX_PAYLOAD_LENGTH";
+        regNames[REG_HOP_PERIOD] = "REG_HOP_PERIOD";
+        regNames[REG_FIFO_RX_BYTE_AD] = "REG_FIFO_RX_BYTE_AD";
+        regNames[REG_MODEM_CONFIG_3] = "REG_MODEM_CONFIG_3";
+        // 0x27 reserved
+        regNames[REG_FREQ_ERROR_MSB] = "REG_FREQ_ERROR_MSB";
+        regNames[REG_FREQ_ERROR_MID] = "REG_FREQ_ERROR_MID";
+        regNames[REG_FREQ_ERROR_LSB] = "REG_FREQ_ERROR_LSB";
+        // 2b reserved
+        regNames[REG_RSSI_WIDEBAND] = "REG_RSSI_WIDEBAND";
+        // 2d-2f reserved
+        regNames[REG_DETECTION_OPTIMIZE] = "REG_DETECTION_OPTIMIZE";
+        regNames[REG_INVERT_IQ] = "REG_INVERT_IQ";
+        regNames[REG_DETECTION_THRESHOLD] = "REG_DETECTION_THRESHOLD";
+        regNames[REG_SYNC_WORD] = "REG_SYNC_WORD";
+        regNames[REG_DIO_MAPPING_1] = "REG_DIO_MAPPING_1";
+        regNames[REG_DIO_MAPPING_2] = "REG_DIO_MAPPING_2";
+        regNames[REG_VERSION] = "REG_VERSION";
+        regNames[REG_TCXO] = "REG_TCXO";
+        regNames[REG_PA_DAC] = "REG_PA_DAC";
+        regNames[REG_FORMER_TEMP] = "REG_FORMER_TEMP";
+        regNames[REG_AGC_REF] = "REG_AGC_REF";
+        regNames[REG_AGC_THRESH_1] = "REG_AGC_THRESH_1";
+        regNames[REG_AGC_THRESH_2] = "REG_AGC_THRESH_2";
+        regNames[REG_AGC_THRESH_3] = "REG_AGC_THRESH_3";
+        regNames[REG_PLL] = "REG_PLL";
+
         for (let i = 0; i < 128; i++) {
-            let r = "0x";
-            buf[0] = i;
-            r += buf.toHex();
-            r += ": 0x";
-            buf[0] = readRegister(i);
-            r += buf.toHex();
-            log(r);
+            let r: string = regNames[i];
+            if (!!r) {
+                r += " (0x";
+                buf[0] = i;
+                r += buf.toHex();
+                r += "): 0x";
+                buf[0] = readRegister(i);
+                r += buf.toHex();
+                log(r);
+            }
         }
     }
 }

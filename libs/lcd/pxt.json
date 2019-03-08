@@ -1,0 +1,22 @@
+{
+    "name": "lcd",
+    "description": "Characeter LCD driver",
+    "files": [
+        "README.md",
+        "characterlcd.ts",
+        "characterlcdmono.ts",
+        "characterlcdrbg.ts",
+        "lcd.ts",
+        "lcd.cpp",
+        "pxtparts.json",
+        "jacdac.ts"
+    ],
+    "testFiles": [
+        "test.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core",
+        "jacdac": "file:../jacdac"
+    }
+}

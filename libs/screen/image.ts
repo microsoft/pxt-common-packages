@@ -54,10 +54,41 @@ interface Image {
     drawRect(x: number, y: number, w: number, h: number, c: color): void;
 
     /**
+     * Draw a circle
+     */
+    //% helper=imageDrawCircle
+    drawCircle(cx: number, cy: number, r: number, c: color): void;
+
+    /**
+     * Fills a circle
+     */
+    //% helper=imageFillCircle
+    fillCircle(cx: number, cy: number, r: number, c: color): void;
+
+    /**
      * Returns an image rotated by -90, 0, 90, 180, 270 deg clockwise
      */
     //% helper=imageRotated
     rotated(deg: number): Image;
+}
+
+interface ScreenImage extends Image {
+    /**
+     * Sets the screen backlight brightness (0-100)
+     */
+    //% helper=setScreenBrightness
+    setBrightness(deg: number): Image;
+
+    /**
+     * Gets current screen backlight brightness (0-100)
+     */
+    //% helper=screenBrightness
+    brightness(): number;
+}
+
+// pxt compiler currently crashes on non-functions in helpers namespace; will fix
+namespace _helpers_workaround {
+    export let brightness = 100
 }
 
 namespace helpers {
@@ -99,6 +130,121 @@ namespace helpers {
         imageDrawLine(img, x + w, y + h, x, y + h, c)
     }
 
+    export function imageDrawCircle(img: Image, cx: number, cy: number, r: number, col: number) {
+        cx = cx | 0;
+        cy = cy | 0;
+        r = r | 0;
+        // short cuts
+        if (r < 0) 
+            return;
+        else if (r == 0) {
+            img.setPixel(cx, cy, col);
+            return;
+        } else if (r == 1) {
+            img.setPixel(cx + 1, cy, col);
+            img.setPixel(cx, cy + 1, col);
+            img.setPixel(cx - 1, cy, col);
+            img.setPixel(cx, cy - 1, col);
+            return;
+        }
+
+        const fcx = Fx8(cx);
+        const fcy = Fx8(cy);
+        const fr = Fx8(r);
+        const fr2 = Fx.leftShift(fr, 1);
+
+        let x = Fx.sub(fr, Fx.oneFx8)
+        let y = Fx.zeroFx8;
+        let dx = Fx.oneFx8;
+        let dy = Fx.oneFx8;
+        let err = Fx.sub(dx, fr2);
+        while (Fx.compare(x, y) >= 0) {
+            const cxpx = Fx.toInt(Fx.add(fcx, x));
+            const cxpy = Fx.toInt(Fx.add(fcx, y));
+            const cxmx = Fx.toInt(Fx.sub(fcx, x));
+            const cxmy = Fx.toInt(Fx.sub(fcx, y));
+            const cypy = Fx.toInt(Fx.add(fcy, y));
+            const cymy = Fx.toInt(Fx.sub(fcy, y));
+            const cypx = Fx.toInt(Fx.add(fcy, x));
+            const cymx = Fx.toInt(Fx.sub(fcy, x));
+
+            img.setPixel(cxpx, cypy, col);
+            img.setPixel(cxmx, cypy, col);
+            img.setPixel(cxmx, cymy, col);
+            img.setPixel(cxpx, cymy, col);
+            img.setPixel(cxpy, cypx, col);
+            img.setPixel(cxpy, cymx, col);
+            img.setPixel(cxmy, cymx, col);
+            img.setPixel(cxmy, cypx, col);
+
+            if (Fx.compare(err, Fx.zeroFx8) <= 0) {
+                y = Fx.add(y, Fx.oneFx8);
+                err = Fx.add(err, dy);
+                dy = Fx.add(dy, Fx.twoFx8);
+            } else {
+                x = Fx.sub(x, Fx.oneFx8);
+                dx = Fx.add(dx, Fx.twoFx8);
+                err = Fx.add(err, Fx.sub(dx, fr2));
+            }
+        }
+    }
+    export function imageFillCircle(img: Image, cx: number, cy: number, r: number, col: number) {
+        cx = cx | 0;
+        cy = cy | 0;
+        r = r | 0;
+        // short cuts
+        if (r < 0) 
+            return;
+        else if (r == 0) {
+            img.setPixel(cx, cy, col);
+            return;
+        } else if (r == 1) {
+            img.setPixel(cx, cy, col);
+            img.setPixel(cx + 1, cy, col);
+            img.setPixel(cx, cy + 1, col);
+            img.setPixel(cx - 1, cy, col);
+            img.setPixel(cx, cy - 1, col);
+            return;
+        }
+
+        const fcx = Fx8(cx);
+        const fcy = Fx8(cy);
+        const fr = Fx8(r);
+        const fr2 = Fx.leftShift(fr, 1);
+
+        let x = Fx.sub(fr, Fx.oneFx8)
+        let y = Fx.zeroFx8;
+        let dx = Fx.oneFx8;
+        let dy = Fx.oneFx8;
+        let err = Fx.sub(dx, fr2);
+        while (Fx.compare(x, y) >= 0) {
+            const cxpx = Fx.toInt(Fx.add(fcx, x));
+            const cxpy = Fx.toInt(Fx.add(fcx, y));
+            const cxmx = Fx.toInt(Fx.sub(fcx, x));
+            const cxmy = Fx.toInt(Fx.sub(fcx, y));
+            const cypy = Fx.toInt(Fx.add(fcy, y));
+            const cymy = Fx.toInt(Fx.sub(fcy, y));
+            const cypx = Fx.toInt(Fx.add(fcy, x));
+            const cymx = Fx.toInt(Fx.sub(fcy, x));
+
+            if (Fx.compare(err, Fx.zeroFx8) <= 0) {
+                img.drawLine(cxmx, cypy, cxpx, cypy, col)
+                img.drawLine(cxmx, cymy, cxpx, cymy, col)
+
+                y = Fx.add(y, Fx.oneFx8);
+                err = Fx.add(err, dy);
+                dy = Fx.add(dy, Fx.twoFx8);
+            } else {
+                img.drawLine(cxmy, cymx, cxmy, cypx, col)
+                img.drawLine(cxpy, cymx, cxpy, cypx, col)
+
+                x = Fx.sub(x, Fx.oneFx8);
+                dx = Fx.add(dx, Fx.twoFx8);
+                err = Fx.add(err, Fx.sub(dx, fr2));
+            }
+        }
+    }
+
     /**
      * Returns an image rotated by 90, 180, 270 deg clockwise
      */
@@ -121,9 +267,20 @@ namespace helpers {
         }
     }
 
+    //% shim=pxt::setScreenBrightness
+    function _setScreenBrightness(brightness: number) { }
+
+    export function setScreenBrightness(img: Image, b: number) {
+        _helpers_workaround.brightness = b
+        _setScreenBrightness(_helpers_workaround.brightness)
+    }
+
+    export function screenBrightness(img: Image) {
+        return _helpers_workaround.brightness
+    }
 }
 
-namespace image {    
+namespace image {
     /**
     * Get the screen image
     */

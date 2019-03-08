@@ -587,7 +587,7 @@ namespace particles {
 
             const selected = this.images[rest & p.data].clone();
             selected.replace(0x1, p.color);
-            screen.drawImage(selected, Fx.toInt(x), Fx.toInt(y));
+            screen.drawTransparentImage(selected, Fx.toInt(x), Fx.toInt(y));
         }
     }
 }

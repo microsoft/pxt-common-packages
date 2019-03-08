@@ -1,7 +1,7 @@
 /**
  * Well known colors for a NeoPixel strip
  */
-enum PixelColors {
+const enum PixelColors {
     //% block=red blockIdentity=pixel.colors
     Red = 0xFF0000,
     //% block=orange blockIdentity=pixel.colors
@@ -27,32 +27,15 @@ enum PixelColors {
 }
 
 /**
- * Functions to operate on-board color LED (if any).
+ * Functions to operate the on-board color LED (if any).
  */
 //% weight=100 color="#0078d7" icon="\uf0eb"
 namespace pixel {
-    let _strip: light.LightStrip;
-
-    function init(): boolean {
-        if (_strip) return true;
-
-        const data = pins.pinByCfg(DAL.CFG_PIN_DOTSTAR_DATA);
-        const clk = pins.pinByCfg(DAL.CFG_PIN_DOTSTAR_CLOCK);
-        if (data && clk) {
-            _strip = light.createDotStarStrip(data, clk, 1);
-            return true;
-        }
-
-        const neo = pins.pinByCfg(DAL.CFG_PIN_NEOPIXEL);
-        if (neo) {
-            _strip = light.createNeoPixelStrip(neo, 1, NeoPixelMode.RGB);
-            return true;
-        }
-
-        // not configured
-        control.dmesg("pixel not configured");
-        return false;
-    }
+    /**
+     * Gets the underlying light strip
+     */
+    //% whenUsed
+    export const strip: light.LightStrip = light.onboardStrip();
 
     /**
      * Set the on-board pixel to a given color.
@@ -63,8 +46,7 @@ namespace pixel {
     //% blockGap=8
     //% parts="pixel"
     export function setColor(color: number): void {
-        if (!init()) return;
-        _strip.setAll(color);
+        strip.setAll(color);
     }
 
     /**
@@ -87,8 +69,7 @@ namespace pixel {
     //% parts="pixel"
     //% brightness.min=0 brightness.max=255
     export function setBrightness(brightness: number): void {
-        if (!init()) return;
-        _strip.setBrightness(brightness);
+        strip.setBrightness(brightness);
     }
 
     /**

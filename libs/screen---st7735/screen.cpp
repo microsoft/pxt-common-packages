@@ -75,6 +75,25 @@ class WDisplay {
 SINGLETON_IF_PIN(WDisplay, DISPLAY_MOSI);
 
 //%
+void setScreenBrightness(int level) {
+    auto bl = LOOKUP_PIN(DISPLAY_BL);
+    if (!bl)
+        return;
+
+    if (level < 0) level = 0;
+    if (level > 100) level = 100;
+
+    if (level == 0)
+        bl->setDigitalValue(0);
+    else if (level == 100)
+        bl->setDigitalValue(1);
+    else {
+        bl->setAnalogPeriodUs(1000);
+        bl->setAnalogValue(level * level * 1023 / 10000);
+    }
+}
+
+//%
 void setPalette(Buffer buf) {
     auto display = getWDisplay();
     if (!display) return;

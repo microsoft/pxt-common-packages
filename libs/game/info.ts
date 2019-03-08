@@ -41,7 +41,7 @@ namespace info {
         _bgColor = screen.isMono ? 0 : 1;
         _borderColor = screen.isMono ? 1 : 3;
         _fontColor = screen.isMono ? 1 : 3;
-        game.eventContext().registerFrameHandler(95, () => {
+        game.eventContext().registerFrameHandler(scene.HUD_PRIORITY, () => {
             control.enablePerfCounter("info")
             // show score, lifes
             if (_visibilityFlag & Visibility.Multi) {
