@@ -49,7 +49,7 @@ namespace lcd {
         _message: string;
         _enable: boolean;
         _rtl: boolean;
-        
+
         // pylint: disable-msg=too-many-arguments
         constructor(rs: DigitalInOutPin, en: DigitalInOutPin,
             d4: DigitalInOutPin, d5: DigitalInOutPin, d6: DigitalInOutPin, d7: DigitalInOutPin,
@@ -112,13 +112,13 @@ namespace lcd {
         }
 
         set cursor(show: boolean) {
-            if (show) {
+            const dc = this.displaycontrol;
+            if (show)
                 this.displaycontrol |= _LCD_CURSORON
-            } else {
+            else
                 this.displaycontrol &= ~_LCD_CURSORON
-            }
-
-            this._write8(_LCD_DISPLAYCONTROL | this.displaycontrol)
+            if (dc != this.displaycontrol)
+                this._write8(_LCD_DISPLAYCONTROL | this.displaycontrol)
         }
 
         /** 
@@ -140,11 +140,13 @@ namespace lcd {
         }
 
         set blink(value: boolean) {
+            const dc = this.displaycontrol;
             if (value)
                 this.displaycontrol |= _LCD_BLINKON
             else
                 this.displaycontrol &= ~_LCD_BLINKON
-            this._write8(_LCD_DISPLAYCONTROL | this.displaycontrol)
+            if (dc != this.displaycontrol)
+                this._write8(_LCD_DISPLAYCONTROL | this.displaycontrol)
         }
 
         /** 
@@ -155,13 +157,14 @@ namespace lcd {
         }
 
         set display(enable: boolean) {
-            if (enable) {
+            const dc = this.displaycontrol;
+            if (enable)
                 this.displaycontrol |= _LCD_DISPLAYON
-            } else {
+            else
                 this.displaycontrol &= ~_LCD_DISPLAYON
-            }
 
-            this._write8(_LCD_DISPLAYCONTROL | this.displaycontrol)
+            if (dc != this.displaycontrol)
+                this._write8(_LCD_DISPLAYCONTROL | this.displaycontrol)
         }
 
         /** 
