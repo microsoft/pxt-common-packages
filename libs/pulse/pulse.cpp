@@ -1,6 +1,8 @@
 #include "pxt.h"
 #include "pulse.h"
 
+#define IR_TIMER_CHANNEL 0
+
 // from samd21.cpp
 void setTCC0(int enabled);
 
@@ -196,7 +198,7 @@ void PulseBase::send(Buffer d) {
 
     lastSendTime = timer->captureCounter();
 
-    timer->setCompare(0, lastSendTime + PULSE_PULSE_LEN);
+    timer->setCompare(IR_TIMER_CHANNEL, lastSendTime + PULSE_PULSE_LEN);
 
     while (sending) {
         fiber_sleep(10);
@@ -388,7 +390,7 @@ void PulseBase::process() {
         return;
     }
 
-    timer->offsetCompare(0, PULSE_PULSE_LEN);
+    timer->offsetCompare(IR_TIMER_CHANNEL, PULSE_PULSE_LEN);
 
     int curr = encodedMsg.get(encodedMsgPtr);
     if (curr != pwmstate)
