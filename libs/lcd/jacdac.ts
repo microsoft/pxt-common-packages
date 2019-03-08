@@ -6,14 +6,19 @@ namespace jacdac {
         }
 
         handleStateChanged() {
-            const flags: JDLCDFlags = this.state[0];
+            const l = lcd.screen();
+            if (!l) return true;
 
-            lcd.setDisplay(!!(flags & JDLCDFlags.Display));
-            lcd.setBlink(!!(flags & JDLCDFlags.Blink));
-            lcd.setCursor(!!(flags & JDLCDFlags.Cursor));
+            const flags: JDLCDFlags = this.state[0];
+            l.display = !!(flags & JDLCDFlags.Display);
+            l.blink = !!(flags & JDLCDFlags.Blink);
+            l.cursor = !!(flags & JDLCDFlags.Cursor);
 
             const message = bufferToString(this.state, 1);
-            lcd.showString(message);
+            if (message != l.message) {
+                l.clear();
+                l.message = message;
+            }
             return true;
         }
     }

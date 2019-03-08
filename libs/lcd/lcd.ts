@@ -4,10 +4,13 @@
 //% icon="\uf0ae" color="#219E42" blockGap=8
 //% groups='["Display", "Configuration"]'
 namespace lcd {
-    export let screen: CharacterLCD;
+    let _screen: CharacterLCD;
 
-    function init(): CharacterLCD {
-        if (screen !== undefined) return screen;
+    /**
+     * Gets the current LCD screen
+     */
+    export function screen(): CharacterLCD {
+        if (_screen !== undefined) return _screen;
 
         const rs = pins.pinByCfg(DAL.CFG_PIN_LCD_RESET);
         const en = pins.pinByCfg(DAL.CFG_PIN_LCD_ENABLE);
@@ -19,38 +22,55 @@ namespace lcd {
         const lines = control.getConfigValue(DAL.CFG_NUM_LCD_ROWS, 2);
 
         if (!rs || !en || !db4 || !db5 || !db6 || !db7) {
-            screen = null; // not supported
+            _screen = null; // not supported
         }
         else {
-            screen = new CharacterLCDMono(rs, en, db4, db5, db6, db7, columns, lines);
+            _screen = new CharacterLCDMono(rs, en, db4, db5, db6, db7, columns, lines);
         }
-        return screen;
+        return _screen;
     }
 
     /**
      * Shows a string on the LCD screen
      * @param text the text to show
+     * @param line the line number starting at 1...
      */
-    //% blockId=lcdshowstring block="lcd show string %text"
+    //% blockId=lcdshowstring block="lcd show string %text at line %line"
+    //% line.min=1 line.max=2 line.defl=1
     //% parts="lcd"
     //% group="Display"
-    export function showString(text: string) {
-        const l = init();
+    export function showString(text: string, line: number) {
+        const l = screen();
         if (!l) return;
 
+        line = (line - 1) | 0;
+        if (line < 0 || line >= l.lines) return; // out of range
+
+        // insert text in line
+        const lines = (l.message || "").split('\n');
+        // assign all lines within range
+        text.split('\n')
+            .filter((tl, i) => line + i < l.lines)
+            .forEach((tl, i) => {
+                lines[line + i] = tl;
+            })
+        // reassemble text
+        const message = lines.map(l => l || "").join('\n');
+
         l.clear();
-        l.message = text;
+        l.message = message;
     }
 
     /**
      * Shows a number on the LCD screen
      * @param value the number to show
      */
-    //% blockId=lcdshownumber block="lcd show number %value"
+    //% blockId=lcdshownumber block="lcd show number %value at line %line"
+    //% line.min=1 line.max=2 line.defl=1
     //% parts="lcd"
     //% group="Display"
-    export function showNumber(value: number) {
-        showString(value.toString());
+    export function showNumber(value: number, line: number) {
+        showString(value.toString(), line);
     }
 
     /**
@@ -60,7 +80,10 @@ namespace lcd {
     //% parts=lcd
     //% group="Display"
     export function clear() {
-        showString("");
+        const l = screen();
+        if (!l) return;
+        l.clear();
+        l.message = "";
     }
 
     /**
@@ -72,7 +95,7 @@ namespace lcd {
     //% parts="lcd"
     //% group="Configuration"
     export function setDisplay(enabled: boolean) {
-        const l = init();
+        const l = screen();
         if (!l) return;
 
         l.display = !!enabled;
@@ -86,7 +109,7 @@ namespace lcd {
     //% enabled.shadow=toggleOnOff
     //% group="Configuration"
     export function setBlink(enabled: boolean) {
-        const l = init();
+        const l = screen();
         if (!l) return;
 
         l.blink = !!enabled;
@@ -100,7 +123,7 @@ namespace lcd {
     //% enabled.shadow=toggleOnOff
     //% group="Configuration"
     export function setCursor(enabled: boolean) {
-        const l = init();
+        const l = screen();
         if (!l) return;
 
         l.cursor = !!enabled;
