@@ -4,7 +4,7 @@
 //% color="#03AA74" weight=78 icon="\uf021"
 namespace animation {
     //Handles all the updates
-    let animations: Animation[] = null;
+    let animations: Animation[];
 
     export class Animation {
 
