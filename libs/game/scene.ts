@@ -27,7 +27,6 @@ namespace scene {
     export const TILEMAP_PRIORITY = 9;
     export const PHYSICS_PRIORITY = 10;
     export const ANIMATION_UPDATE_PRIORITY = 15;
-    export const SPRITE_ANIMATION_UPDATE_PRIORITY = 16;
     export const UPDATE_INTERVAL_PRIORITY = 19;
     export const UPDATE_PRIORITY = 20;
     export const CONTROLLER_SPRITES_PRIORITY = 19;
