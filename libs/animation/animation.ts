@@ -5,10 +5,10 @@
 namespace animation {
     //Handles all the updates
     let _onAnimUpdate: (() => void)[] = null;
-    let _onSpriteUpdate: (() => void)[] = null;
 
     export class Animation {
 
+        sprites: Sprite[];
         frames: Image[];
         index: number;
         interval: number;
@@ -20,6 +20,7 @@ namespace animation {
             this.index = -1;
             this.action = action;
             this.frames = [];
+            this.sprites = [];
             this.lastTime = control.millis();
 
             this._init();
@@ -44,6 +45,18 @@ namespace animation {
                 this.index = (this.index + 1) % this.frames.length;
                 this.lastTime = currentTime;
             }
+            
+            this.sprites = this.sprites.filter(sprite => !(sprite.flags & sprites.Flag.Destroyed));
+
+            this.sprites.forEach(sprite => {
+                if (sprite._action === this.action) {
+                    let newImage = this.getImage();
+                    //Update only if the image has changed
+                    if (sprite.image !== newImage) {
+                        sprite.setImage(newImage);
+                    }
+                }
+            });
         }
 
         getImage() {
@@ -71,6 +84,12 @@ namespace animation {
         //% help=animation/add-animation
         addAnimationFrame(frame: Image) {
             this.frames[++this.index] = frame;
+        }
+
+        registerSprite(sprite: Sprite) {
+            if (this.sprites.indexOf(sprite) === -1) {
+                this.sprites.push(sprite);
+            }
         }
 
     }
@@ -110,27 +129,7 @@ namespace animation {
     //% weight=30
     //% help=animation/attach-animation
     export function attachAnimation(sprite: Sprite, set: Animation) {
-        if (!_onSpriteUpdate) {
-            //First attach register the update call back.
-            //Priority 16 is slightly lower than 15 for animation update loop.
-            //This is allow the animation to complete, so we have the new display ready to go.
-            _onSpriteUpdate = [];
-            game.eventContext().registerFrameHandler(scene.SPRITE_ANIMATION_UPDATE_PRIORITY, () => {
-                _onSpriteUpdate.forEach(element => {
-                    element();
-                });
-            });
-        }
-
-        _onSpriteUpdate.push(() => {
-            if (sprite._action === set.action) {
-                let newImage = set.getImage();
-                //Update only if the image has changed
-                if (sprite.image !== newImage) {
-                    sprite.setImage(newImage)
-                }
-            }
-        })
+        set.registerSprite(sprite);
     }
 
     /**
