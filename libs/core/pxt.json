@@ -56,9 +56,13 @@
         ],
         "excludePrefix": [
             "USB_",
+            "HID_",
             "REQUEST_",
             "LIS3DH_",
             "FXOS8700_",
+            "MMA8653_",
+            "MAG_",
+            "MAG3110_",
             "HF2_",
             "PXT_REF_TAG_",
             "MS_",
