@@ -10,7 +10,7 @@ namespace jacdac {
          */
         //% group="Servos"
         //% weight=100
-        //% blockId=jdservoservosetangle block="set %servo angle to %degrees=protractorPicker °"
+        //% blockId=jdservoservosetangle block="jacdac set %servo angle to %degrees=protractorPicker °"
         //% degrees.defl=90
         //% servo.fieldEditor="gridpicker"
         //% servo.fieldOptions.width=220
@@ -30,7 +30,7 @@ namespace jacdac {
          */
         //% group="Servos"
         //% weight=99
-        //% blockId=jdservoservorun block="continuous %servo run at %speed=speedPicker \\%"
+        //% blockId=jdservoservorun block="jacdac continuous %servo run at %speed=speedPicker \\%"
         //% servo.fieldEditor="gridpicker"
         //% servo.fieldOptions.width=220
         //% servo.fieldOptions.columns=2
@@ -43,7 +43,7 @@ namespace jacdac {
          */
         //% group="Servos"
         //% weight=10 help=servos/set-pulse
-        //% blockId=jdservoservosetpulse block="set %servo pulse to %micros μs"
+        //% blockId=jdservoservosetpulse block="jacdac set %servo pulse to %micros μs"
         //% micros.min=500 micros.max=2500
         //% micros.defl=1500
         //% servo.fieldEditor="gridpicker"
@@ -64,7 +64,7 @@ namespace jacdac {
         */
         //% group="Servos"
         //% weight=10 help=servos/stop
-        //% blockId=jdservoservostop block="stop %servo"
+        //% blockId=jdservoservostop block="jacdac stop %servo"
         //% servo.fieldEditor="gridpicker"
         //% servo.fieldOptions.width=220
         //% servo.fieldOptions.columns=2
