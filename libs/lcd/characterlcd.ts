@@ -1,4 +1,9 @@
 namespace lcd {
+
+    //% shim=lcd::__write8
+    function __write8(value: number, char_mode: boolean): void {
+    }
+
     // Commands
     const _LCD_CLEARDISPLAY = 0x01
     const _LCD_RETURNHOME = 0x02
@@ -172,7 +177,7 @@ namespace lcd {
             // Track times through iteration, to act on the initial character of the message
             let initial_character = 0
             // iterate through each character
-            for (let character of message) {
+            for (const character of message) {
                 // If this is the first character in the string:
                 if (initial_character == 0) {
                     // Start at (1, 1) unless direction is set right to left, in which case start
@@ -260,6 +265,7 @@ namespace lcd {
          * @param char_mode character/data mode selector. False (default) for data only, True for character bits.
          */
         private _write8(value: number, char_mode = false): void {
+            __write8(value, char_mode);
             // one ms delay to prevent writing too quickly.
             pause(1)
             // set character/data bit. (charmode = False)

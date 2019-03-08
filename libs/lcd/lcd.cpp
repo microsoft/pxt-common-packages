@@ -2,7 +2,7 @@
 
 namespace lcd {
     //%
-    void __showString(String text) {
+    void __write8(int value, bool char_mode) {
         // sim only
     }    
 }
