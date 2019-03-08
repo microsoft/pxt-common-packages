@@ -4,7 +4,7 @@
 //% color="#03AA74" weight=78 icon="\uf021"
 namespace animation {
     //Handles all the updates
-    let _onAnimUpdate: (() => void)[] = null;
+    let animations: Animation[] = null;
 
     export class Animation {
 
@@ -27,15 +27,13 @@ namespace animation {
         }
 
         _init() {
-            if (!_onAnimUpdate) {
-                _onAnimUpdate = [];
+            if (!animations) {
+                animations = [];
                 game.eventContext().registerFrameHandler(scene.ANIMATION_UPDATE_PRIORITY, () => {
-                    _onAnimUpdate.forEach(element => {
-                        element();
-                    });
+                    animations.forEach(anim => anim.update());
                 });
             }
-            _onAnimUpdate.push(() => this.update());
+            animations.push(this);
         }
 
         update() {
