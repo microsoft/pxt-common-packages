@@ -2,10 +2,12 @@ namespace pxsim {
     export class LCDState {
         lines = 0;
         columns = 0;
-        cursor: [number, number];
+        cursorPos: [number, number];
         text: string[];
         backLightColor: string = "#6e7d6e";
+        cursor = false;
         display = false;
+        blink = false;
 
         public sensorUsed: boolean = false;
 
@@ -22,7 +24,7 @@ namespace pxsim {
             this.text = [];
             for (let i = 0; i < this.lines; ++i)
                 this.text.push(s);
-            this.cursor = [0, 0];
+            this.cursorPos = [0, 0];
         }
 
         public setUsed() {
@@ -69,12 +71,12 @@ namespace pxsim.lcd {
         b.setUsed();
 
         if (char_mode) {
-            const c = b.cursor[0];
-            const r = b.cursor[1];
+            const c = b.cursorPos[0];
+            const r = b.cursorPos[1];
             const s = b.text[r];
             if (s && c >= 0 && c < s.length) {
                 b.text[r] = s.substring(0, c) + String_.fromCharCode(value) + s.substring(c + 1);
-                b.cursor[0]++;
+                b.cursorPos[0]++;
             }
         } else {
             if (value & _LCD_SETDDRAMADDR) {
@@ -83,8 +85,8 @@ namespace pxsim.lcd {
                 // this._write8(_LCD_SETDDRAMADDR | column + _LCD_ROW_OFFSETS[row])
                 for (let i = _LCD_ROW_OFFSETS.length - 1; i >= 0; i--) {
                     if (((value & _LCD_ROW_OFFSETS[i]) == _LCD_ROW_OFFSETS[i]) || i == 0) {
-                        b.cursor[0] = value - _LCD_ROW_OFFSETS[i];
-                        b.cursor[1] = i;
+                        b.cursorPos[0] = value - _LCD_ROW_OFFSETS[i];
+                        b.cursorPos[1] = i;
                         break;
                     }
                 }
@@ -94,22 +96,13 @@ namespace pxsim.lcd {
             }
             if (value & _LCD_DISPLAYCONTROL) {
                 b.display = !!(value & _LCD_DISPLAYON);
+                b.cursor = !!(value & _LCD_CURSORON);
+                b.blink = !!(value & _LCD_BLINKON);
             }
             if (value & _LCD_RETURNHOME) {
-                b.cursor = [0, 0];
+                b.cursorPos = [0, 0];
             }
         }
-
-
-        /*
-        if (b.cursor[0] >= b.lines || b.cursor[0] < 0)
-            return;
-            
-        if (b.cursor[1] >= b.columns || b.cursor[1] < 0)
-            return;
-        b.text[b.cursor[0]] = b.text[b.cursor[0]].substring(0, b.cursor[1]) + s + b.text[b.cursor[0]].substring(b.cursor[1] + s.length, b.columns);
-        b.cursor[1] += s.length;
-        */
         runtime.queueDisplayUpdate()
     }
 }
