@@ -4,6 +4,17 @@
 // from samd21.cpp
 void setTCC0(int enabled);
 
+#ifdef SAMD21
+void setTCC0(int enabled) {
+    while (TCC0->STATUS.reg & TC_STATUS_SYNCBUSY)
+        ;
+    if (enabled)
+        TCC0->CTRLA.reg |= TC_CTRLA_ENABLE;
+    else
+        TCC0->CTRLA.reg &= ~TC_CTRLA_ENABLE;
+}
+#endif
+
 namespace network {
 
 static const uint8_t hamming[16] = {
@@ -107,6 +118,7 @@ PulseBase::PulseBase(uint16_t id, int pinOut, int pinIn, LowLevelTimer* t) {
     }
 
     timer->setIRQ(timer_irq);
+    timer->setBitMode(BitMode16);
     timer->enable();
 }
 
@@ -130,7 +142,6 @@ void PulseBase::setupPWM() {
 }
 
 void PulseBase::setPWM(int enabled) {
-    // pin->setPwm(enabled);
     setTCC0(enabled);
     pwmstate = enabled;
 }
@@ -377,7 +388,7 @@ void PulseBase::process() {
         return;
     }
 
-    timer->setCompare(0, now + PULSE_PULSE_LEN);
+    timer->offsetCompare(0, PULSE_PULSE_LEN);
 
     int curr = encodedMsg.get(encodedMsgPtr);
     if (curr != pwmstate)
