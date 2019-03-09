@@ -24,7 +24,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -325,70 +325,70 @@
        x="100.408"
        y="112.93147"
        width="14.783"
-       height="24.358999"/>
+       height="24.358999" />
     <text
        id="case14_text"
        class="cls-textCase"
        x="116.253"
        y="112.93147"
        width="14.783"
-       height="24.358999"/>
+       height="24.358999" />
     <text
        id="case15_text"
        class="cls-textCase"
        x="132.093"
        y="112.93147"
        width="14.783"
-       height="24.358999"/>
+       height="24.358999" />
     <text
        id="case16_text"
        class="cls-textCase"
        x="147.93401"
        y="112.93147"
        width="14.783"
-       height="24.358999"/>
+       height="24.358999" />
     <text
        id="case17_text"
        class="cls-textCase"
        x="163.77499"
        y="112.93147"
        width="14.783"
-       height="24.358999"/>
+       height="24.358999" />
     <text
        id="case18_text"
        class="cls-textCase"
        x="179.618"
        y="112.93147"
        width="14.783"
-       height="24.358999"/>
+       height="24.358999" />
     <text
        id="case19_text"
        class="cls-textCase"
        x="195.459"
        y="112.93147"
        width="14.783"
-       height="24.358999"/>
+       height="24.358999" />
     <text
        id="case110_text"
        class="cls-textCase"
        x="211.30099"
        y="112.93147"
        width="14.783"
-       height="24.358999"/>
+       height="24.358999" />
     <text
        id="case111_text"
        class="cls-textCase"
        x="227.14301"
        y="112.93147"
        width="14.783"
-       height="24.358999"/>
+       height="24.358999" />
     <text
        id="case112_text"
        class="cls-textCase"
        x="242.985"
        y="112.93147"
        width="14.783"
-       height="24.358999"/>
+       height="24.358999" />
     <text
        id="case113_text"
        class="cls-textCase"
@@ -739,7 +739,7 @@
      inkscape:label="#rect4824-4" />
   <rect
      style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:0.56749606;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-     id="rw"
+     id="GND5"
      width="9.6923046"
      height="9.6923046"
      x="71.244774"
