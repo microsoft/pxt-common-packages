@@ -39,9 +39,10 @@ namespace lcd {
     //% line.min=1 line.max=2 line.defl=1
     //% parts="lcd"
     //% group="Display"
-    export function showString(text: string, line: number) {
+    export function showString(text: string, line?: number) {
         const l = screen();
         if (!l) return;
+        if (line === undefined) line = 1;
 
         line = (line - 1) | 0;
         if (line < 0 || line >= l.lines) return; // out of range
@@ -69,7 +70,7 @@ namespace lcd {
     //% line.min=1 line.max=2 line.defl=1
     //% parts="lcd"
     //% group="Display"
-    export function showNumber(value: number, line: number) {
+    export function showNumber(value: number, line?: number) {
         showString(value.toString(), line);
     }
 
