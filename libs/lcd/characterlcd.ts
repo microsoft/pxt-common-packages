@@ -101,6 +101,7 @@ namespace lcd {
          **/
         public clear(): void {
             this._write8(_LCD_CLEARDISPLAY)
+            this._message = "";
             pause(3)
         }
 
@@ -145,7 +146,7 @@ namespace lcd {
                 this.displaycontrol |= _LCD_BLINKON
             else
                 this.displaycontrol &= ~_LCD_BLINKON
-            if (dc != this.displaycontrol)
+                if (dc != this.displaycontrol)
                 this._write8(_LCD_DISPLAYCONTROL | this.displaycontrol)
         }
 
@@ -175,7 +176,9 @@ namespace lcd {
         }
 
         set message(message: string) {
-            this._message = message;
+            if (this._message === message) return; // nothing to do here
+
+            this._message = message || "";
             let line = 0
             // Track times through iteration, to act on the initial character of the message
             let initial_character = 0
