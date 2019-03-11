@@ -84,7 +84,7 @@ namespace lcd {
             // Set entry mode
             this._write8(_LCD_ENTRYMODESET | this.displaymode)
             this.clear()
-            this._message = null
+            this._message = ""
             this._enable = null
         }
 
@@ -129,6 +129,7 @@ namespace lcd {
             column = Math.max(0, Math.min(this.columns - 1, column | 0));
             row = Math.max(0, Math.min(this.lines - 1, row | 0));
 
+            //console.log(`cursor ${_LCD_SETDDRAMADDR | column + _LCD_ROW_OFFSETS[row]}`)
             this._write8(_LCD_SETDDRAMADDR | column + _LCD_ROW_OFFSETS[row])
         }
 
@@ -176,29 +177,31 @@ namespace lcd {
         }
 
         set message(message: string) {
+            if (message === undefined || message === null) message = "";
             if (this._message === message) return; // nothing to do here
 
-            const oldMessage = this._message || "";
-            this._message = message || "";
+            const oldMessage = this._message;
+            this._message = message;
+            //console.log(`'${oldMessage}' => '${message}'`);
 
             const ltr = !!(this.displaymode & _LCD_ENTRYLEFT);
             const oldLines = oldMessage.split('\n');
             const lines = this._message.split('\n');
-            const rn = Math.max(oldLines.length, lines.length);
+            const rn = Math.min(this.lines, Math.max(oldLines.length, lines.length));
 
             let cursorrow = -1;
             let cursorcol = -1;
             for (let row = 0; row < rn; ++row) {
-                const oldLine = oldLines[row] || "";
-                const line = lines[row] || "";
-                const cn = Math.max(oldLine.length, line.length);
+                let oldLine = oldLines[row];
+                if (oldLine === undefined) oldLine = "";
+                let line = lines[row];
+                if (line === undefined) line = "";
+                const cn = Math.min(this.columns, Math.max(oldLine.length, line.length));
                 for (let column = 0; column < cn; ++column) {
                     const oc = oldLine.charCodeAt(column);
                     const c = line.charCodeAt(column);
-                    if (oc == c) {
+                    if (oc !== c) {
                         // letter is already shown, skip
-
-                    } else {
                         // move cursor if needed
                         if (row != cursorrow || column != cursorcol) {
                             //console.log(`set cursor pos ${column}, ${row}`);
@@ -207,7 +210,10 @@ namespace lcd {
                             cursorcol = column;
                         }
                         //console.log(`write ${String.fromCharCode(c)} (${String.fromCharCode(oc)}) at ${cursorcol}, ${cursorrow}`);
-                        this._write8(c, true);
+                        if (column >= line.length)
+                            this._write8(32 /* space */, true);
+                        else
+                            this._write8(c, true);
                         cursorcol++;
                     }
                 }
