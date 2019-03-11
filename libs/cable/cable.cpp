@@ -1,5 +1,7 @@
 #include "pxt.h"
 #include "pulse.h"
+#include "SAMDTCTimer.h"
+#include "SAMDTCCTimer.h"
 
 namespace network {
 
@@ -20,7 +22,7 @@ class CableWrap : public PulseBase {
         inpin->eventOn(DEVICE_PIN_EVENT_ON_PULSE);
     }
 
-    CableWrap() : PulseBase(PULSE_CABLE_COMPONENT_ID, PIN(TX), PIN(TX)) { setupGapEvents(); }
+    CableWrap() : PulseBase(PULSE_CABLE_COMPONENT_ID, PIN(TX), PIN(TX),new SAMDTCCTimer(TCC2, TCC2_IRQn)) { setupGapEvents(); }
 };
 SINGLETON(CableWrap);
 
