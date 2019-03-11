@@ -7,10 +7,10 @@ namespace network {
 
 class IrWrap : public PulseBase {
 public:
-    IrWrap() 
-    : PulseBase(PULSE_IR_COMPONENT_ID, PIN(IR_OUT), PIN(IR_IN), 
-        new SAMDTCTimer(TC3, TC3_IRQn)) { 
-        setupGapEvents(); 
+    IrWrap()
+    : PulseBase(PULSE_IR_COMPONENT_ID, PIN(IR_OUT), PIN(IR_IN),
+        new SAMDTCCTimer(TCC2, TCC2_IRQn)) {
+        setupGapEvents();
     }
 };
 SINGLETON(IrWrap);
