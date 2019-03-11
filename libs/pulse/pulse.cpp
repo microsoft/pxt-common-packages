@@ -105,7 +105,7 @@ PulseBase::PulseBase(uint16_t id, int pinOut, int pinIn, LowLevelTimer* t) {
     this->id = id;
     this->timer = t;
 
-    t->setIRQPriority(1);
+    t->setIRQPriority(0);
 
     instance = this;
 
