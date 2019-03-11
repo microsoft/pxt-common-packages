@@ -16,7 +16,6 @@ namespace jacdac {
 
             const message = bufferToString(this.state, 1);
             if (message != l.message) {
-                l.clear();
                 l.message = message;
             }
             return true;
