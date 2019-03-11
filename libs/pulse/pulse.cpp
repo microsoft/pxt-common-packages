@@ -1,8 +1,21 @@
 #include "pxt.h"
 #include "pulse.h"
 
+#define IR_TIMER_CHANNEL 0
+
 // from samd21.cpp
 void setTCC0(int enabled);
+
+#ifdef SAMD21
+void setTCC0(int enabled) {
+    while (TCC0->STATUS.reg & TC_STATUS_SYNCBUSY)
+        ;
+    if (enabled)
+        TCC0->CTRLA.reg |= TC_CTRLA_ENABLE;
+    else
+        TCC0->CTRLA.reg &= ~TC_CTRLA_ENABLE;
+}
+#endif
 
 namespace network {
 
@@ -92,6 +105,8 @@ PulseBase::PulseBase(uint16_t id, int pinOut, int pinIn, LowLevelTimer* t) {
     this->id = id;
     this->timer = t;
 
+    t->setIRQPriority(0);
+
     instance = this;
 
     recvState = PULSE_RECV_ERROR;
@@ -107,6 +122,7 @@ PulseBase::PulseBase(uint16_t id, int pinOut, int pinIn, LowLevelTimer* t) {
     }
 
     timer->setIRQ(timer_irq);
+    timer->setBitMode(BitMode16);
     timer->enable();
 }
 
@@ -130,7 +146,6 @@ void PulseBase::setupPWM() {
 }
 
 void PulseBase::setPWM(int enabled) {
-    // pin->setPwm(enabled);
     setTCC0(enabled);
     pwmstate = enabled;
 }
@@ -164,7 +179,7 @@ void PulseBase::send(Buffer d) {
     for (int i = 0; i < 15; ++i)
         encodedMsg.push(1);
 
-    auto gap = timer->captureCounter() - lastSendTime;
+    auto gap = system_timer_current_time_us() - lastSendTime;
 
     // we require 200ms between sends
     if (gap < 200000) {
@@ -183,9 +198,9 @@ void PulseBase::send(Buffer d) {
 
     sendPtr = 0;
 
-    lastSendTime = timer->captureCounter();
+    lastSendTime = system_timer_current_time_us();
 
-    timer->setCompare(0, lastSendTime + PULSE_PULSE_LEN);
+    timer->offsetCompare(IR_TIMER_CHANNEL, PULSE_PULSE_LEN);
 
     while (sending) {
         fiber_sleep(10);
@@ -358,10 +373,11 @@ Buffer PulseBase::getBuffer() {
 }
 
 void PulseBase::process() {
+    // DMESG("PROC");
     if (!sending)
         return;
 
-    auto now = timer->captureCounter();
+    auto now = system_timer_current_time_us();
     if (sendStartTime == 0)
         sendStartTime = now - (PULSE_PULSE_LEN / 2);
 
@@ -377,7 +393,7 @@ void PulseBase::process() {
         return;
     }
 
-    timer->setCompare(0, now + PULSE_PULSE_LEN);
+    timer->offsetCompare(IR_TIMER_CHANNEL, PULSE_PULSE_LEN);
 
     int curr = encodedMsg.get(encodedMsgPtr);
     if (curr != pwmstate)
