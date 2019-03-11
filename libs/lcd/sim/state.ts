@@ -91,15 +91,15 @@ namespace pxsim.lcd {
                     }
                 }
             }
-            if (value & _LCD_CLEARDISPLAY) {
+            if (value == _LCD_CLEARDISPLAY) {
                 b.clear();
             }
-            if (value & _LCD_DISPLAYCONTROL) {
-                b.display = !!(value & _LCD_DISPLAYON);
-                b.cursor = !!(value & _LCD_CURSORON);
-                b.blink = !!(value & _LCD_BLINKON);
+            if ((value & _LCD_DISPLAYCONTROL) == _LCD_DISPLAYCONTROL) {
+                b.display = (value & _LCD_DISPLAYON) == _LCD_DISPLAYON;
+                b.cursor = (value & _LCD_CURSORON) == _LCD_CURSORON;
+                b.blink = (value & _LCD_BLINKON) == _LCD_BLINKON;
             }
-            if (value & _LCD_RETURNHOME) {
+            if (value == _LCD_RETURNHOME) {
                 b.cursorPos = [0, 0];
             }
         }

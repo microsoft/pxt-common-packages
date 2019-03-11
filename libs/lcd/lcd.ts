@@ -58,7 +58,6 @@ namespace lcd {
         // reassemble text
         const message = lines.map(l => l || "").join('\n');
 
-        l.clear();
         l.message = message;
     }
 
