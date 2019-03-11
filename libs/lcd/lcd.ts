@@ -48,15 +48,19 @@ namespace lcd {
         if (line < 0 || line >= l.lines) return; // out of range
 
         // insert text in line
-        const lines = (l.message || "").split('\n');
+        const lines = l.message.split('\n');
         // assign all lines within range
         text.split('\n')
             .filter((tl, i) => line + i < l.lines)
             .forEach((tl, i) => {
                 lines[line + i] = tl;
             })
+        // fill the holes
+        for(let i = 0; i < lines.length; ++i) {
+            if (lines[i] === undefined) lines[i] = "";
+        }
         // reassemble text
-        const message = lines.map(l => l || "").join('\n');
+        const message = lines.join('\n');
 
         l.message = message;
     }

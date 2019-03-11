@@ -74,7 +74,7 @@ namespace pxsim.lcd {
             const c = b.cursorPos[0];
             const r = b.cursorPos[1];
             const s = b.text[r];
-            if (s && c >= 0 && c < s.length) {
+            if (s !== undefined && c >= 0 && c < s.length) {
                 b.text[r] = s.substring(0, c) + String_.fromCharCode(value) + s.substring(c + 1);
                 b.cursorPos[0]++;
             }
@@ -91,15 +91,15 @@ namespace pxsim.lcd {
                     }
                 }
             }
-            if (value == _LCD_CLEARDISPLAY) {
+            else if (value == _LCD_CLEARDISPLAY) {
                 b.clear();
             }
-            if ((value & _LCD_DISPLAYCONTROL) == _LCD_DISPLAYCONTROL) {
+            else if ((value & _LCD_DISPLAYCONTROL) == _LCD_DISPLAYCONTROL) {
                 b.display = (value & _LCD_DISPLAYON) == _LCD_DISPLAYON;
                 b.cursor = (value & _LCD_CURSORON) == _LCD_CURSORON;
                 b.blink = (value & _LCD_BLINKON) == _LCD_BLINKON;
             }
-            if (value == _LCD_RETURNHOME) {
+            else if (value == _LCD_RETURNHOME) {
                 b.cursorPos = [0, 0];
             }
         }
