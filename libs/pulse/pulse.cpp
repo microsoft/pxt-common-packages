@@ -177,7 +177,7 @@ void PulseBase::send(Buffer d) {
     for (int i = 0; i < 15; ++i)
         encodedMsg.push(1);
 
-    auto gap = timer->captureCounter() - lastSendTime;
+    auto gap = system_timer_current_time_us() - lastSendTime;
 
     // we require 200ms between sends
     if (gap < 200000) {
@@ -196,9 +196,9 @@ void PulseBase::send(Buffer d) {
 
     sendPtr = 0;
 
-    lastSendTime = timer->captureCounter();
+    lastSendTime = system_timer_current_time_us();
 
-    timer->setCompare(IR_TIMER_CHANNEL, lastSendTime + PULSE_PULSE_LEN);
+    timer->offsetCompare(IR_TIMER_CHANNEL, PULSE_PULSE_LEN);
 
     while (sending) {
         fiber_sleep(10);
@@ -371,10 +371,11 @@ Buffer PulseBase::getBuffer() {
 }
 
 void PulseBase::process() {
+    // DMESG("PROC");
     if (!sending)
         return;
 
-    auto now = timer->captureCounter();
+    auto now = system_timer_current_time_us();
     if (sendStartTime == 0)
         sendStartTime = now - (PULSE_PULSE_LEN / 2);
 
