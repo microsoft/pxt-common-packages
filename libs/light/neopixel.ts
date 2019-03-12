@@ -193,6 +193,7 @@ namespace light {
         //% weight=80 blockGap=8
         //% advanced=true
         setAll(rgb: number) {
+            rgb = rgb | 0;
             const red = unpackR(rgb);
             const green = unpackG(rgb);
             const blue = unpackB(rgb);
@@ -266,8 +267,10 @@ namespace light {
         //% help="light/neopixelstrip/set-pixel-color"
         //% weight=79 blockGap=8
         //% group="More" advanced=true
-        setPixelColor(pixeloffset: number, color: number): void {
-            pixeloffset = pixeloffset >> 0;
+        setPixelColor(pixeloffset: number, color: number): void {            
+            pixeloffset = pixeloffset | 0;
+            color = color | 0;
+
             if (pixeloffset < 0
                 || pixeloffset >= this._length)
                 return;
@@ -290,7 +293,7 @@ namespace light {
         //% weight=9 blockGap=8
         //% group="More" advanced=true
         pixelColor(pixeloffset: number): number {
-            pixeloffset = pixeloffset >> 0;
+            pixeloffset = pixeloffset | 0;
             if (pixeloffset < 0
                 || pixeloffset >= this._length) {
                 return 0;
@@ -334,6 +337,7 @@ namespace light {
         setPixelWhiteLED(pixeloffset: number, white: number): void {
             if (this._mode != NeoPixelMode.RGBW) return;
 
+            pixeloffset = pixeloffset | 0;
             if (pixeloffset < 0
                 || pixeloffset >= this._length)
                 return;
@@ -476,6 +480,9 @@ namespace light {
         //% blockSetVariable=strip
         //% advanced=true
         range(start: number, length: number): NeoPixelStrip {
+            start = start | 0;
+            length = length | 0;
+
             let strip = new NeoPixelStrip();
             strip._parent = this;
             strip._dataPin = this._dataPin;
@@ -496,6 +503,8 @@ namespace light {
         //% weight=87 blockGap=8
         //% group="More" advanced=true
         move(kind: LightMove, offset: number = 1): void {
+            offset = offset | 0;
+
             const stride = this.stride();
             if (kind === LightMove.Shift) {
                 this.buf.shift(-offset * stride, this._start * stride, this._length * stride)
@@ -528,6 +537,7 @@ namespace light {
         //% weight=41 blockGap=8
         //% group="Photon" advanced=true
         photonForward(steps: number) {
+            steps = steps | 0;
             this.setPhotonPosition(this._photonPos + this._photonDir * steps);
         }
 
@@ -552,6 +562,8 @@ namespace light {
         //% weight=39 blockGap=8
         //% group="Photon" advanced=true
         setPhotonPosition(index: number) {
+            index = index | 0;
+
             this.initPhoton();
 
             // disable buffering
@@ -583,6 +595,7 @@ namespace light {
         //% weight=38 blockGap=8
         //% group="Photon" advanced=true
         setPhotonPenColor(color: number) {
+            color = color | 0;
             this.initPhoton();
             this._photonPenColor = color;
             this.photonForward(0);
@@ -597,6 +610,7 @@ namespace light {
         //% weight=39 blockGap=8
         //% group="Photon" advanced=true
         setPhotonPenHue(hue: number) {
+            hue = hue | 0;
             this.setPhotonPenColor(hsv(hue, 0xff, 0xff));
         }
 
@@ -803,7 +817,7 @@ namespace light {
         //% weight=1 blockGap=8
         //% length.shadow=lightLengthPicker
         //% group="Configuration" advanced=true
-        setLength(numleds: number): void {
+        setLength(numleds: number): void {            
             const n = Math.max(0, numleds | 0);
             // lazy update
             if (n != this._length) {
