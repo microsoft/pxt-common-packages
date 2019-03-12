@@ -275,7 +275,7 @@ namespace serial {
     */
     //% weight=10
     //% help=serial/redirect
-    //% blockId=serial_redirect block="serial|redirect to|TX %tx|RX %rx"
+    //% blockId=serial_redirect block="serial|redirect to|TX %tx|RX %rx at rate %rate"
     //% tx.fieldEditor="gridpicker" tx.fieldOptions.columns=3
     //% tx.fieldOptions.tooltips="false"
     //% rx.fieldEditor="gridpicker" rx.fieldOptions.columns=3
