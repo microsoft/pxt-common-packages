@@ -24,6 +24,7 @@
         "control.ts",
         "console.ts",
         "json.ts",
+        "templates.ts",
         "eventcontext.ts"
     ],
     "testFiles": [

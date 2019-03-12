@@ -287,12 +287,6 @@ function pause(ms: number): void {
     loops.pause(ms);
 }
 
-/**
- * Tagged hex literal converter
- */
-//% shim=@hex
-function hex(lits: any, ...args: any[]): Buffer { return null }
-
 // micro:bit compatibility
 // these functions allow some level of reuse
 // between micro:bit and other maker-style editors
