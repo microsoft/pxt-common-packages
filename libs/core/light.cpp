@@ -78,7 +78,8 @@ void neopixelSendData(DevicePin* pin, int mode, const uint8_t* data, unsigned le
 }
 
 void bitBangDotStarSendData(DevicePin* data, DevicePin* clk, int mode, const uint8_t* buf, unsigned length) {
-    // first frame of zeroes
+    clk->setDigitalValue(0);
+    // initial frame of zeros
     data->setDigitalValue(0);
     for (unsigned i = 0; i < 32; ++i) {
         clk->setDigitalValue(1);
@@ -104,11 +105,15 @@ void bitBangDotStarSendData(DevicePin* data, DevicePin* clk, int mode, const uin
 
     // https://cpldcpu.wordpress.com/2014/11/30/understanding-the-apa102-superled/
     data->setDigitalValue(1);
-    unsigned n = 32;
+    unsigned n = length >> 1;
     for (unsigned i = 0; i < n; ++i) {
         clk->setDigitalValue(1);
         clk->setDigitalValue(0);
     }
+
+    // leave line low
+    data->setDigitalValue(0);
+    clk->setDigitalValue(0);
 }
 
 static uint8_t ZERO_FRAME[4];
