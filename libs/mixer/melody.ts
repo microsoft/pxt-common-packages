@@ -35,11 +35,12 @@ namespace music {
 
     /**
      * Set the default output volume of the sound synthesizer.
-     * @param volume the volume 0...256, eg: 128
+     * @param volume the volume 0...255
      */
     //% blockId=synth_set_volume block="set volume %volume"
     //% parts="speaker"
-    //% volume.min=0 volume.max=256
+    //% volume.min=0 volume.max=255
+    //% volume.defl=20
     //% help=music/set-volume
     //% weight=70
     //% group="Volume"
