@@ -419,6 +419,7 @@ namespace controller {
                     deadSprites = true;
                     return;
                 }
+
                 svx = 0;
                 svy = 0;
 
@@ -441,13 +442,13 @@ namespace controller {
                 }
 
                 if (sprite._inputLastFrame) {
-                    sprite.s.vx = 0;
-                    sprite.s.vy = 0;
+                    if (sprite.vx) sprite.s.vx = 0;
+                    if (sprite.vy) sprite.s.vy = 0;
                 }
 
                 if (svx || svy) {
-                    sprite.s.vx = svx;
-                    sprite.s.vy = svy;
+                    if (sprite.vx) sprite.s.vx = svx;
+                    if (sprite.vy) sprite.s.vy = svy;
                     sprite._inputLastFrame = true;
                 }
                 else {
