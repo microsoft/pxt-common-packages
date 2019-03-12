@@ -105,8 +105,6 @@ PulseBase::PulseBase(uint16_t id, int pinOut, int pinIn, LowLevelTimer* t) {
     this->id = id;
     this->timer = t;
 
-    t->setIRQPriority(0);
-
     instance = this;
 
     recvState = PULSE_RECV_ERROR;
@@ -121,6 +119,7 @@ PulseBase::PulseBase(uint16_t id, int pinOut, int pinIn, LowLevelTimer* t) {
         devMessageBus.listen(id, PULSE_PACKET_END_EVENT, this, &PulseBase::packetEnd);
     }
 
+    timer->setIRQPriority(0);
     timer->setIRQ(timer_irq);
     timer->setBitMode(BitMode16);
     timer->enable();
@@ -200,7 +199,7 @@ void PulseBase::send(Buffer d) {
 
     lastSendTime = system_timer_current_time_us();
 
-    timer->offsetCompare(IR_TIMER_CHANNEL, PULSE_PULSE_LEN);
+    timer->setCompare(IR_TIMER_CHANNEL, timer->captureCounter() + PULSE_PULSE_LEN);
 
     while (sending) {
         fiber_sleep(10);
