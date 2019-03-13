@@ -1,21 +1,23 @@
 namespace controller {
     let vibrationPin: DigitalInOutPin;
-    let vibrationTime: number;
+    let vibrationEnd: number;
 
     function updateVibration() {
         // turn off vibration if needed
-        if (vibrationPin && vibrationTime > 0 && vibrationTime > control.millis()) {
-            vibrationPin.digitalWrite(false);
-            vibrationTime = -1;
+        if (vibrationEnd > 0 && vibrationEnd < control.millis()) {
+            console.log(`${vibrationEnd} > ${control.millis()}`)
+            if (vibrationPin)
+                vibrationPin.digitalWrite(false);
+            vibrationEnd = -1;
+            console.log('vibration off')
         }
     }
 
     function initVibration(s: scene.Scene) {
         if (!vibrationPin)
             vibrationPin = pins.pinByCfg(DAL.CFG_PIN_VIBRATION);
-        vibrationTime = -1;
-        if (vibrationPin)
-            s.eventContext.registerFrameHandler(scene.UPDATE_PRIORITY, updateVibration);
+        vibrationEnd = -1;
+        s.eventContext.registerFrameHandler(scene.UPDATE_PRIORITY, updateVibration);
     }
 
     /**
@@ -26,8 +28,13 @@ namespace controller {
     //% millis.shadow=timePicker
     //% group="Extras"
     export function vibrate(millis: number) {
-        if (millis <= 0) vibrationTime = -1;
-        else vibrationTime = control.millis() + millis;
+        const off = vibrationEnd <= 0;
+        vibrationEnd = millis <= 0 ? -1 : (control.millis() + Math.min(3000, millis));
+        if (off) {
+            if (vibrationPin)
+                vibrationPin.digitalWrite(true);
+            console.log('vibration on')
+        }
     }
 
     scene.Scene.initializers.push(initVibration);
