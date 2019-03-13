@@ -105,7 +105,7 @@ enum class KeyboardKeyEvent {
 
 namespace keyboard {
     /**
-    * Sends a sequence of keystrokes to the keyboard
+    * Send a sequence of keystrokes to the keyboard
     */
     //% blockId=keyboardType block="keyboard type %text"
     //% blockGap=8 weight=100
@@ -116,7 +116,7 @@ namespace keyboard {
     }
 
     /**
-    * Sends a key command
+    * Send a key command
     */
     //% blockId=keyboardStandardKey block="keyboard key %key|%event"
     //% blockGap=8 weight=99
@@ -137,7 +137,7 @@ namespace keyboard {
     }
 
     /**
-    * Sends a media key command
+    * Send a media key command
     */
     //% blockId=keyboardMediaKey block="keyboard media key %key|%event"
     //% blockGap=8
@@ -157,7 +157,7 @@ namespace keyboard {
     }
 
     /**
-    *
+    * Send a function key command
     */
     //% blockId=keyboardFunctionKey block="keyboard function key %key|%event"
     //% blockGap=8
