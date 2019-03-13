@@ -1,6 +1,11 @@
+const enum ControllerGesture {
+    //% block="shake"
+    Shake = Gesture.Shake,
+}
+
 namespace controller {
     
-    let lastGesture: Gesture = undefined;
+    let lastGesture: ControllerGesture = undefined;
     let gestureHandlers: any;
     /**
      * Do something when a gesture happens (like shaking the board).
@@ -14,10 +19,10 @@ namespace controller {
     //% gesture.fieldOptions.columns=3
     //% weight=92 blockGap=12
     //% group="Extras"
-    export function onGesture(gesture: Gesture, handler: () => void) {
+    export function onGesture(gesture: ControllerGesture, handler: () => void) {
         if (!gestureHandlers) gestureHandlers = {};
         gestureHandlers[gesture] = handler;
-        input.onGesture(gesture, () => {
+        input.onGesture(<Gesture><number>gesture, () => {
             lastGesture = gesture;
         })
     }
