@@ -110,7 +110,7 @@ class WAccel {
             break;
 #endif
 #if PXT_SUPPORT_MPU6050
-        case ACCELEROMETER_TYPE_MMA8453:
+        case ACCELEROMETER_TYPE_MPU6050:
             acc = new MPU6050(*i2c, *LOOKUP_PIN(ACCELEROMETER_INT), space);
             break;
 #endif
