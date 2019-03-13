@@ -166,7 +166,15 @@ namespace controller {
 
     function player1(): Controller {
         if (!_players || !_players[0])
-            new Controller(1, [controller.left, controller.up, controller.right, controller.down, controller.A, controller.B, controller.menu]);
+            new Controller(1, [
+                controller.left,
+                controller.up,
+                controller.right,
+                controller.down,
+                controller.A,
+                controller.B,
+                controller.menu
+            ], pins.pinByCfg(DAL.CFG_PIN_VIBRATION));
         return _players[0];
     }
 
@@ -195,11 +203,13 @@ namespace controller {
         private _id: number;
         private _connected: boolean;
         private _vibrationEnd: number;
+        private _vibrationPin: DigitalInOutPin;
 
         // array of left,up,right,down,a,b,menu buttons
-        constructor(playerIndex: number, buttons: Button[]) {
+        constructor(playerIndex: number, buttons: Button[], vibrationPin?: DigitalInOutPin) {
             this._id = control.allocateNotifyEvent();
             this._connected = false;
+            this._vibrationPin = vibrationPin
             this._vibrationEnd = -1;
             this.playerIndex = playerIndex;
             if (buttons)
@@ -424,8 +434,8 @@ namespace controller {
             else {
                 const vibrating = this._vibrationEnd > 0;
                 this._vibrationEnd = control.millis() + Math.min(3000, millis | 0);
-                if (!vibrating)
-                    control.raiseEvent(this._id, INTERNAL_VIBRATE_ON);
+                if (!vibrating && this._vibrationPin)
+                    this._vibrationPin.digitalWrite(true);
             }
         }
 
@@ -487,7 +497,8 @@ namespace controller {
             this.buttons.forEach(btn => btn.__update(dtms));
             if (this._vibrationEnd > 0 && this._vibrationEnd > control.millis()) {
                 this._vibrationEnd = -1;
-                control.raiseEvent(this._id, INTERNAL_VIBRATE_OFF);
+                if (this._vibrationPin)
+                    this._vibrationPin.digitalWrite(false);
             }
         }
 
