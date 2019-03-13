@@ -1,0 +1,13 @@
+{
+    "name": "controller",
+    "description": "Extra game controller functionalities",
+    "files": [
+        "README.md",
+        "vibration.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core",
+        "game": "file:../game"
+    }
+}
