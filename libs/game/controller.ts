@@ -194,11 +194,13 @@ namespace controller {
         buttons: Button[];
         private _id: number;
         private _connected: boolean;
+        private _vibrationEnd: number;
 
         // array of left,up,right,down,a,b,menu buttons
         constructor(playerIndex: number, buttons: Button[]) {
             this._id = control.allocateNotifyEvent();
             this._connected = false;
+            this._vibrationEnd = -1;
             this.playerIndex = playerIndex;
             if (buttons)
                 this.buttons = buttons;
@@ -408,6 +410,25 @@ namespace controller {
             else return 0
         }
 
+        /**
+         * Vibrate the controller, if supported.
+         * @param millis duration of the vibration
+         */
+        //% blockId=ctrlvirbtate block="%controller vibrate %millis|ms"
+        //% millis.shadow=timePicker
+        //% millis.defl=200
+        //% weight=5
+        vibrate(millis: number) {
+            if (millis <= 0)
+                this._vibrationEnd = -1;
+            else {
+                const vibrating = this._vibrationEnd > 0;
+                this._vibrationEnd = control.millis() + Math.min(3000, millis | 0);
+                if (!vibrating)
+                    control.raiseEvent(this._id, INTERNAL_VIBRATE_ON);
+            }
+        }
+
         __preUpdate() {
             if (!this._controlledSprites) return;
 
@@ -428,7 +449,7 @@ namespace controller {
                         svx += sprite.vx;
                     }
                     if (this.left.isPressed()) {
-                        svx -=sprite.vx;
+                        svx -= sprite.vx;
                     }
                 }
 
@@ -464,6 +485,10 @@ namespace controller {
         __update(dtms: number) {
             dtms = dtms | 0;
             this.buttons.forEach(btn => btn.__update(dtms));
+            if (this._vibrationEnd > 0 && this._vibrationEnd > control.millis()) {
+                this._vibrationEnd = -1;
+                control.raiseEvent(this._id, INTERNAL_VIBRATE_OFF);
+            }
         }
 
         serialize(offset: number): Buffer {
@@ -507,6 +532,17 @@ namespace controller {
         player1().moveSprite(sprite, vx, vy);
     }
 
+    /**
+     * Vibrate the controller, if supported.
+     * @param millis duration of the vibration
+     */
+    //% blockId=gamectrlvirbtate block="vibrate %millis|ms"
+    //% millis.shadow=timePicker
+    //% millis.defl=200
+    //% weight=5
+    export function vibrate(millis: number) {
+        player1().vibrate(millis);
+    }
 
     /**
      * Pause the program until a button is pressed
