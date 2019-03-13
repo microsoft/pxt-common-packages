@@ -33,6 +33,7 @@
         "libs/jacdac-game",
         "libs/datalogger",
         "libs/lora",
-        "libs/power"
+        "libs/power",
+        "libs/controller"
     ]
 }

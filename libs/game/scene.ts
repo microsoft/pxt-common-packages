@@ -60,6 +60,9 @@ namespace scene {
         private _millis: number;
         private _data: any;
 
+        // a set of functions that need to be called when a scene is being initialized
+        static initializers: ((scene: Scene) => void)[] = [];
+
         constructor(eventContext: control.EventContext) {
             this.eventContext = eventContext;
             this.flags = 0;
@@ -145,8 +148,8 @@ namespace scene {
             });
             // update screen
             this.eventContext.registerFrameHandler(UPDATE_SCREEN_PRIORITY, control.__screen.update);
-            // register start menu
-            scene.systemMenu.register();
+            // register additional components
+            Scene.initializers.forEach(f => f(this));
         }
 
         get data() {

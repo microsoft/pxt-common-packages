@@ -82,4 +82,6 @@ namespace scene.systemMenu {
         }
         m.show();
     }
+
+    scene.Scene.initializers.push(register);
 }
