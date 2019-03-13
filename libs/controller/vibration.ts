@@ -5,11 +5,9 @@ namespace controller {
     function updateVibration() {
         // turn off vibration if needed
         if (vibrationEnd > 0 && vibrationEnd < control.millis()) {
-            console.log(`${vibrationEnd} > ${control.millis()}`)
             if (vibrationPin)
                 vibrationPin.digitalWrite(false);
             vibrationEnd = -1;
-            console.log('vibration off')
         }
     }
 
@@ -33,7 +31,6 @@ namespace controller {
         if (off) {
             if (vibrationPin)
                 vibrationPin.digitalWrite(true);
-            console.log('vibration on')
         }
     }
 
