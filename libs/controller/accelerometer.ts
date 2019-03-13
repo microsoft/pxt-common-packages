@@ -7,13 +7,13 @@ namespace controller {
      * @param gesture the type of gesture to track, eg: Gesture.Shake
      * @param body code to run when gesture is raised
      */
-    //% help=input/on-gesture
     //% blockId=ctrlongesture block="on |%NAME"
     //% parts="accelerometer"
     //% gesture.fieldEditor="gridpicker"
     //% gesture.fieldOptions.width=220
     //% gesture.fieldOptions.columns=3
-    //% weight=92 blockGap=12    
+    //% weight=92 blockGap=12
+    //% group="Extras"
     export function onGesture(gesture: Gesture, handler: () => void) {
         if (!gestureHandlers) gestureHandlers = {};
         gestureHandlers[gesture] = handler;
@@ -27,13 +27,13 @@ namespace controller {
      * x=0, y=0 and z=-1023)
      * @param dimension TODO
      */
-    //% help=input/acceleration
     //% blockId=ctrlaccelerationvalue block="acceleration (mg)|%NAME"
     //% parts="accelerometer"
     //% dimension.fieldEditor="gridpicker"
     //% dimension.fieldOptions.width=180
     //% dimension.fieldOptions.columns=2
     //% weight=42 blockGap=8
+    //% group="Extras"
     export function acceleration(dimension: Dimension): number {
         return input.acceleration(dimension);
     }
