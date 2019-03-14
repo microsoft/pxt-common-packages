@@ -9,6 +9,7 @@
     "public": true,
     "dependencies": {
         "core": "file:../core",
+        "accelerometer": "file:../accelerometer",
         "game": "file:../game"
     }
 }

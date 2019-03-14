@@ -1,15 +1,29 @@
-const enum ControllerGesture {
+enum ControllerGesture {
+    /**
+     * Shake gesture
+     */
     //% block="shake"
     Shake = Gesture.Shake,
 }
 
-namespace controller {
-    
+enum ControllerDimension {
+    //% block=x
+    X = Dimension.X,
+    //% block=y
+    Y = Dimension.Y,
+    //% block=z
+    Z = Dimension.Z,
+    //% block=strength
+    Strength = Dimension.Strength
+}
+
+namespace controller {    
     let lastGesture: ControllerGesture = undefined;
     let gestureHandlers: any;
+
     /**
      * Do something when a gesture happens (like shaking the board).
-     * @param gesture the type of gesture to track, eg: Gesture.Shake
+     * @param gesture the type of gesture to track
      * @param body code to run when gesture is raised
      */
     //% blockId=ctrlongesture block="on |%NAME"
@@ -17,7 +31,6 @@ namespace controller {
     //% gesture.fieldEditor="gridpicker"
     //% gesture.fieldOptions.width=220
     //% gesture.fieldOptions.columns=3
-    //% weight=92 blockGap=12
     //% group="Extras"
     export function onGesture(gesture: ControllerGesture, handler: () => void) {
         if (!gestureHandlers) gestureHandlers = {};
@@ -30,17 +43,16 @@ namespace controller {
     /**
      * Get the acceleration value in milli-gravitys (when the board is laying flat with the screen up,
      * x=0, y=0 and z=-1023)
-     * @param dimension TODO
+     * @param dimension the axis along which the acceleration if measured
      */
     //% blockId=ctrlaccelerationvalue block="acceleration (mg)|%NAME"
     //% parts="accelerometer"
     //% dimension.fieldEditor="gridpicker"
     //% dimension.fieldOptions.width=180
     //% dimension.fieldOptions.columns=2
-    //% weight=42 blockGap=8
     //% group="Extras"
-    export function acceleration(dimension: Dimension): number {
-        return input.acceleration(dimension);
+    export function acceleration(dimension: ControllerDimension): number {
+        return input.acceleration(<Dimension><number>dimension);
     }
 
     function updateGesture() {
