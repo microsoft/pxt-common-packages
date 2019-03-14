@@ -197,6 +197,11 @@ WDisplay::WDisplay() {
 }
 
 //%
+void setScreenBrightness(int level) {
+ // TODO
+}
+
+//%
 void setPalette(Buffer buf) {
     auto display = getWDisplay();
     if (48 != buf->length)
