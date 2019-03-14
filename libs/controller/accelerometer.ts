@@ -4,6 +4,36 @@ enum ControllerGesture {
      */
     //% block="shake"
     Shake = Gesture.Shake,
+    /**
+     * Raised when the device tilts up
+     */
+    //% block="tilt up"
+    TiltUp = Gesture.TiltUp,  // ACCELEROMETER_EVT_TILT_UP
+    /**
+     * Raised when the device tilts down
+     */
+    //% block="tilt down"
+    TiltDown = Gesture.TiltDown,  // ACCELEROMETER_EVT_TILT_DOWN
+    /**
+     * Raised when the screen is pointing left
+     */
+    //% block="tilt left"
+    TiltLeft = Gesture.TiltLeft,  // ACCELEROMETER_EVT_TILT_LEFT
+    /**
+     * Raised when the screen is pointing right
+     */
+    //% block="tilt right"
+    TiltRight = Gesture.TiltRight,  // ACCELEROMETER_EVT_TILT_RIGHT
+    /**
+     * Raised when the screen faces up
+     */
+    //% block="screen up"
+    ScreenUp = Gesture.FaceUp,  // ACCELEROMETER_EVT_FACE_UP
+    /**
+     * Raised when the screen is pointing up and the board is horizontal
+     */
+    //% block="screen down"
+    ScreenDown = Gesture.FaceDown,  // ACCELEROMETER_EVT_FACE_DOWN
 }
 
 enum ControllerDimension {
