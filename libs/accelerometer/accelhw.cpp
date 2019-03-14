@@ -49,6 +49,13 @@
 #include "MSA300.h"
 #endif
 
+#ifndef PXT_SUPPORT_MPU6050
+#define PXT_SUPPORT_MPU6050 0
+#endif
+#if PXT_SUPPORT_MPU6050
+#include "MPU6050.h"
+#endif
+
 #if defined(CODAL_ACCELEROMETER)
 #error "please define PXT_SUPPORT_* and PXT_DEFUALT_ACCELEROMETER"
 #endif
@@ -100,6 +107,11 @@ class WAccel {
 #if PXT_SUPPORT_MMA8453
         case ACCELEROMETER_TYPE_MMA8453:
             acc = new MMA8453(*i2c, *LOOKUP_PIN(ACCELEROMETER_INT), space);
+            break;
+#endif
+#if PXT_SUPPORT_MPU6050
+        case ACCELEROMETER_TYPE_MPU6050:
+            acc = new MPU6050(*i2c, *LOOKUP_PIN(ACCELEROMETER_INT), space);
             break;
 #endif
         }
