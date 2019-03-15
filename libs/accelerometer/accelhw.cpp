@@ -95,9 +95,12 @@ class WAccel {
             break;
 #endif
 #if PXT_SUPPORT_FXOS8700
-        case ACCELEROMETER_TYPE_FXOS8700:
-            acc = new FXOS8700Accelerometer(*i2c, *LOOKUP_PIN(ACCELEROMETER_INT), space);
+        case ACCELEROMETER_TYPE_FXOS8700: {
+            // TODO: singleton when exposing gyro
+            auto fox = new FXOS8700(*i2c, *LOOKUP_PIN(ACCELEROMETER_INT));
+            acc = new FXOS8700Accelerometer(*fox, space);
             break;
+        }
 #endif
 #if PXT_SUPPORT_MMA8653
         case ACCELEROMETER_TYPE_MMA8653:
@@ -129,7 +132,8 @@ class WAccel {
         }
     }
 };
-SINGLETON_IF(WAccel, ACCELEROMETER_INT);
+
+SINGLETON_IF_PIN(WAccel, ACCELEROMETER_INT);
 
 codal::Accelerometer *getAccelerometer() {
     auto wacc = getWAccel();
