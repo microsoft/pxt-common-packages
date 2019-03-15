@@ -28,6 +28,8 @@ servos.P0.run(0)
 [run](/reference/servos/run),
 [stop](/reference/servos/stop)
 
+[Brief Guide to Servos](https://www.kitronik.co.uk/pdf/a-brief-guide-to-servos.pdf)
+
 ```package
 servo
 ```

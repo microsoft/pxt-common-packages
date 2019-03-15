@@ -27,6 +27,8 @@ servos.P0.run(0)
 [set pulse](/reference/servos/set-pulse),
 [set angle](/reference/servos/set-angle)
 
+[Brief Guide to Servos](https://www.kitronik.co.uk/pdf/a-brief-guide-to-servos.pdf)
+
 ```package
 servo
 ```
