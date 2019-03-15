@@ -2,6 +2,12 @@
 
 Rotate and run servos connected to the pins.
 
+### ~ hint
+
+To better understand how servos work and how they are controlled, take a few minutes to read this [Brief Guide to Servos](https://www.kitronik.co.uk/pdf/a-brief-guide-to-servos.pdf).
+
+### 
+
 ```cards
 servos.P0.setPulse(1500)
 servos.P0.setAngle(90)
@@ -20,6 +26,7 @@ servos.P0.setStopOnNeutral(false)
 [set range](/reference/servos/set-range),
 [set stop on neutral](/reference/servos/set-stop-on-neutral)
 
+[Brief Guide to Servos](https://www.kitronik.co.uk/pdf/a-brief-guide-to-servos.pdf)
 
 ```package
 servo

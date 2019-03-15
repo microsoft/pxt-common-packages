@@ -50,6 +50,8 @@ for (let i = 0; i < 5; i++) {
 [set pulse](/reference/servos/set-pulse),
 [run](/reference/servos/run)
 
+[Brief Guide to Servos](https://www.kitronik.co.uk/pdf/a-brief-guide-to-servos.pdf)
+
 ```package
 servo
 ```
