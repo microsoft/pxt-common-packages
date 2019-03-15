@@ -129,10 +129,11 @@ class WAccel {
         }
     }
 };
-SINGLETON(WAccel);
+SINGLETON_IF(WAccel, ACCELEROMETER_INT);
 
 codal::Accelerometer *getAccelerometer() {
-    return getWAccel()->acc;
+    auto wacc = getWAccel();
+    return wacc ? wacc->acc : NULL;
 }
 
 } // namespace pxt

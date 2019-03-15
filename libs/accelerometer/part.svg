@@ -9,6 +9,9 @@
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="96"
    height="50"
+   y="0"
+   x="0"
+   viewBox="0 0 96 50"
    id="svg4493"
    version="1.1"
    sodipodi:docname="part.svg"
@@ -21,6 +24,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -39,184 +43,173 @@
      inkscape:window-height="837"
      id="namedview4510"
      showgrid="false"
-     inkscape:zoom="11.666667"
-     inkscape:cx="52.457373"
-     inkscape:cy="25"
+     inkscape:zoom="8.2495794"
+     inkscape:cx="39.080921"
+     inkscape:cy="27.960292"
      inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
-     inkscape:current-layer="svg4493" />
+     inkscape:current-layer="svg4493"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     units="px" />
   <rect
      rx="1.2"
-     y=".1"
-     height="49.9"
-     width="95.9"
+     y="0.050000001"
+     height="49.900002"
+     width="95.900002"
      id="rect5038"
-     fill="#5a86c2"
-     stroke="#8e8e8e"
-     stroke-width=".1" />
+     x="0.050000001"
+     style="fill:#5a86c2;stroke:#8e8e8e;stroke-width:0.1" />
   <text
      id="text5094"
-     y="14.8"
-     x="3.9000001"
+     y="42.553501"
+     x="3.9503546"
      style="font-weight:400;font-size:14.39999962px;line-height:1.25;font-family:consolas;-inkscape-font-specification:consolas;letter-spacing:0;word-spacing:0;fill:#ffffff;stroke-width:0.40000001"
      font-weight="400"
      font-size="14.4"
      letter-spacing="0"
      word-spacing="0"
-     transform="scale(0.99297,1.00708)">
+     transform="scale(0.99296988,1.0070799)">
     <tspan
-       y="14.8"
-       x="3.9000001"
+       y="42.553501"
+       x="3.9503546"
        id="tspan5092"
-       style="font-size:10.66666546px">ACCELEROMETER</tspan>
+       style="font-size:10.66666508px">ACCELEROMETER</tspan>
   </text>
   <rect
      rx="0.86792409"
-     y="5.2652326"
-     x="81.536659"
+     y="33.215233"
+     x="81.586662"
      height="12.126678"
      width="12.498106"
      id="rect5096"
      style="stroke:#000000;stroke-width:0.43046477" />
-  <g
-     id="g4585"
-     transform="matrix(-4.31528 0 0 -4.29074 15.7 52)"
-     fill="#fff"
-     stroke-width=".1">
-    <circle
-       r="1"
-       id="path5042-7-6"
-       cx="1.8"
-       cy="1.9"
-       stroke="#000" />
-    <text
-       word-spacing="0"
-       letter-spacing="0"
-       font-size="1.9"
-       font-weight="400"
-       style="line-height:1.25;-inkscape-font-specification:consolas"
-       x="-6.2"
-       y="2.5"
-       id="text5100-8-5"
-       transform="matrix(0 -1.00996 .99014 0 0 0)"
-       font-family="consolas">
-      <tspan
-         id="tspan5098-2-4"
-         x="-6.2"
-         y="2.5">INT</tspan>
-    </text>
-  </g>
-  <g
-     id="g4595"
-     transform="matrix(-4.31528 0 0 -4.29074 84.3 52.7)"
-     fill="#fff"
-     stroke-width=".1">
-    <circle
-       r="1"
-       id="path5042-7-3"
-       cx="8.4"
-       cy="1.9"
-       stroke="#000" />
-    <text
-       word-spacing="0"
-       letter-spacing="0"
-       font-size="1.9"
-       font-weight="400"
-       style="line-height:1.25;-inkscape-font-specification:consolas"
-       x="-6.4"
-       y="9.2"
-       id="text5100-8-5-4"
-       transform="matrix(0 -1.00996 .99014 0 0 0)"
-       font-family="consolas">
-      <tspan
-         x="-6.4"
-         y="9.2"
-         id="tspan5156">SDA</tspan>
-    </text>
-  </g>
-  <g
-     id="g4600"
-     transform="matrix(-4.31528 0 0 -4.29074 118.6 52.6)"
-     fill="#fff"
-     stroke-width=".1">
-    <circle
-       r="1"
-       id="path5042-7-1"
-       cx="11.8"
-       cy="1.9"
-       stroke="#000" />
-    <text
-       word-spacing="0"
-       letter-spacing="0"
-       font-size="1.9"
-       font-weight="400"
-       style="line-height:1.25;-inkscape-font-specification:consolas"
-       x="-6.2"
-       y="12.5"
-       id="text5100-8-5-4-9"
-       transform="matrix(0 -1.00996 .99014 0 0 0)"
-       font-family="consolas">
-      <tspan
-         x="-6.2"
-         y="12.5"
-         id="tspan5156-5">VCC</tspan>
-    </text>
-  </g>
-  <g
-     id="g4605"
-     transform="matrix(-4.31528 0 0 -4.29074 152.9 52.6)"
-     fill="#fff"
-     stroke-width=".1">
-    <circle
-       r="1"
-       id="path5042-7-0"
-       cx="15.1"
-       cy="1.9"
-       stroke="#000" />
-    <text
-       word-spacing="0"
-       letter-spacing="0"
-       font-size="1.9"
-       font-weight="400"
-       style="line-height:1.25;-inkscape-font-specification:consolas"
-       x="-6.3"
-       y="15.8"
-       id="text5100-8-5-4-9-3"
-       transform="matrix(0 -1.00996 .99014 0 0 0)"
-       font-family="consolas">
-      <tspan
-         x="-6.3"
-         y="15.8"
-         id="tspan5156-5-7">GND</tspan>
-    </text>
-  </g>
-  <g
-     id="g4590"
-     transform="matrix(-4.31528 0 0 -4.29074 50 51.5)"
-     fill="#fff"
-     stroke-width=".1">
-    <circle
-       r="1"
-       id="path5042-7-6-2"
-       cx="5.1"
-       cy="1.9"
-       stroke="#000" />
-    <text
-       word-spacing="0"
-       letter-spacing="0"
-       font-size="1.9"
-       font-weight="400"
-       style="line-height:1.25;-inkscape-font-specification:consolas"
-       x="-6.1"
-       y="5.8"
-       id="text5100-8-5-47"
-       transform="matrix(0 -1.00996 .99014 0 0 0)"
-       font-family="consolas">
-      <tspan
-         id="tspan5098-2-4-5"
-         x="-6.1"
-         y="5.8">SCL</tspan>
-    </text>
-  </g>
+  <ellipse
+     style="fill:#ffffff;stroke:#000000;stroke-width:0.43029925"
+     cy="-7.8975935"
+     cx="-7.9824963"
+     id="ACCELEROMETER_INT"
+     transform="scale(-1)"
+     rx="4.31528"
+     ry="4.29074"
+     inkscape:label="#path5042-7-6" />
+  <text
+     transform="matrix(0,1.0070833,-0.99296652,0,0,0)"
+     id="text5100-8-5"
+     y="-5.1040711"
+     x="14.567331"
+     style="font-weight:400;font-size:8.17569256px;line-height:1.25;font-family:consolas;-inkscape-font-specification:consolas;letter-spacing:0;word-spacing:0;fill:#ffffff;stroke-width:0.43029964"
+     font-weight="400"
+     font-size="1.9"
+     letter-spacing="0"
+     word-spacing="0">
+    <tspan
+       y="-5.1040711"
+       x="14.567331"
+       id="tspan5098-2-4"
+       style="stroke-width:0.43029964">INT</tspan>
+  </text>
+  <ellipse
+     style="fill:#ffffff;stroke:#000000;stroke-width:0.43029925"
+     cy="-7.8975935"
+     cx="-48.10165"
+     id="SDA"
+     transform="scale(-1)"
+     rx="4.31528"
+     ry="4.29074"
+     inkscape:label="#path5042-7-3" />
+  <text
+     transform="matrix(0,1.0070833,-0.99296652,0,0,0)"
+     id="text5100-8-5-4"
+     y="-45.359909"
+     x="14.810845"
+     style="font-weight:400;font-size:8.17569256px;line-height:1.25;font-family:consolas;-inkscape-font-specification:consolas;letter-spacing:0;word-spacing:0;fill:#ffffff;stroke-width:0.43029964"
+     font-weight="400"
+     font-size="1.9"
+     letter-spacing="0"
+     word-spacing="0">
+    <tspan
+       id="tspan5156"
+       y="-45.359909"
+       x="14.810845"
+       style="stroke-width:0.43029964">SDA</tspan>
+  </text>
+  <ellipse
+     style="fill:#ffffff;stroke:#000000;stroke-width:0.43029925"
+     cy="-7.8975935"
+     cx="-67.729698"
+     id="VCC"
+     transform="scale(-1)"
+     rx="4.31528"
+     ry="4.29074"
+     inkscape:label="#path5042-7-1" />
+  <text
+     transform="matrix(0,1.0070833,-0.99296652,0,0,0)"
+     id="text5100-8-5-4-9"
+     y="-65.70298"
+     x="15.237993"
+     style="font-weight:400;font-size:8.17569256px;line-height:1.25;font-family:consolas;-inkscape-font-specification:consolas;letter-spacing:0;word-spacing:0;fill:#ffffff;stroke-width:0.43029964"
+     font-weight="400"
+     font-size="1.9"
+     letter-spacing="0"
+     word-spacing="0">
+    <tspan
+       id="tspan5156-5"
+       y="-65.70298"
+       x="15.237993"
+       style="stroke-width:0.43029964">VCC</tspan>
+  </text>
+  <ellipse
+     style="fill:#ffffff;stroke:#000000;stroke-width:0.43029925"
+     cy="-7.8975935"
+     cx="-87.789276"
+     id="GND"
+     transform="scale(-1)"
+     rx="4.31528"
+     ry="4.29074"
+     inkscape:label="#path5042-7-0" />
+  <text
+     transform="matrix(0,1.0070833,-0.99296652,0,0,0)"
+     id="text5100-8-5-4-9-3"
+     y="-86.046051"
+     x="14.990487"
+     style="font-weight:400;font-size:8.17569256px;line-height:1.25;font-family:consolas;-inkscape-font-specification:consolas;letter-spacing:0;word-spacing:0;fill:#ffffff;stroke-width:0.43029964"
+     font-weight="400"
+     font-size="1.9"
+     letter-spacing="0"
+     word-spacing="0">
+    <tspan
+       id="tspan5156-5-7"
+       y="-86.046051"
+       x="14.990487"
+       style="stroke-width:0.43029964">GND</tspan>
+  </text>
+  <ellipse
+     style="fill:#ffffff;stroke:#000000;stroke-width:0.43029925"
+     cy="-7.8975935"
+     cx="-28.042072"
+     id="SCL"
+     transform="scale(-1)"
+     rx="4.31528"
+     ry="4.29074"
+     inkscape:label="#path5042-7-6-2" />
+  <text
+     transform="matrix(0,1.0070833,-0.99296652,0,0,0)"
+     id="text5100-8-5-47"
+     y="-25.44714"
+     x="14.810845"
+     style="font-weight:400;font-size:8.17569256px;line-height:1.25;font-family:consolas;-inkscape-font-specification:consolas;letter-spacing:0;word-spacing:0;fill:#ffffff;stroke-width:0.43029964"
+     font-weight="400"
+     font-size="1.9"
+     letter-spacing="0"
+     word-spacing="0">
+    <tspan
+       y="-25.44714"
+       x="14.810845"
+       id="tspan5098-2-4-5"
+       style="stroke-width:0.43029964">SCL</tspan>
+  </text>
 </svg>

@@ -1,35 +1,74 @@
 {
     "accelerometer": {
-        "visual": {
-            "image": "lis3dh.svg",
-            "width": 96,
-            "height": 50,
-            "pinDistance": 20,
-            "pinLocations": [
-                {"x": 8, "y": 50},
-                {"x": 28, "y": 50},
-                {"x": 48, "y": 50},
-                {"x": 68, "y": 50},
-                {"x": 88, "y": 50}
-            ]
-        },
-        "numberOfPins": 5,
-        "instantiation": {
-            "kind": "singleton"
-        },
-        "pinDefinitions": [
-            {"target": "D1", "style": "male", "orientation": "+Y" },
-            {"target": "SCL", "style": "male", "orientation": "+Y" },
-            {"target": "SDA", "style": "male", "orientation": "+Y" },
-            {"target": "threeVolt", "style": "male", "orientation": "+Y" },
-            {"target": "ground", "style": "male", "orientation": "+Y" }
-        ],
-        "assembly": [
-            {"part": true },
-            {"pinIndices": [4]},
-            {"pinIndices": [0]},
-            {"pinIndices": [1, 2]},
-            {"pinIndices": [3]}
+      "visual": {
+        "image": "part.svg",
+        "width": 96,
+        "height": 50,
+        "pinDistance": 15,
+        "pinLocations": [
+          {
+            "x": 3.668502386837808,
+            "y": 3.6068519087999653
+          },
+          {
+            "x": 43.78649282247823,
+            "y": 3.6068519087999653
+          },
+          {
+            "x": 63.41396611937591,
+            "y": 3.6068519087999653
+          },
+          {
+            "x": 83.4729624002177,
+            "y": 3.6068519087999653
+          },
+          {
+            "x": 23.727500793722786,
+            "y": 3.6068519087999653
+          }
         ]
+      },
+      "numberOfPins": 5,
+      "instantiation": {
+        "kind": "singleton"
+      },
+      "pinDefinitions": [
+        {
+          "target": "ACCELEROMETER_INT",
+          "style": "male",
+          "orientation": "-Z"
+        },
+        {
+          "target": "SDA",
+          "style": "male",
+          "orientation": "-Z"
+        },
+        {
+          "target": "threeVolt",
+          "style": "male",
+          "orientation": "-Z"
+        },
+        {
+          "target": "ground",
+          "style": "male",
+          "orientation": "-Z"
+        },
+        {
+          "target": "SCL",
+          "style": "male",
+          "orientation": "-Z"
+        }
+      ],
+      "assembly": [
+        {
+          "pinIndices": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ]
+        }
+      ]
     }
-}
+  }
