@@ -96,6 +96,9 @@ namespace effects {
         //% blockNamespace=scene
         //% group="Effects" blockGap=8
         //% weight=90
+        //% effect.fieldEditor="gridpicker"
+        //% effect.fieldOptions.width=220
+        //% effect.fieldOptions.columns=3
         startScreenEffect(duration?: number, particlesPerSecond?: number): void {
             if (!this.sourceFactory)
                 return;
@@ -121,6 +124,9 @@ namespace effects {
         //% blockNamespace=scene
         //% group="Effects" blockGap=8
         //% weight=80
+        //% effect.fieldEditor="gridpicker"
+        //% effect.fieldOptions.width=220
+        //% effect.fieldOptions.columns=3
         endScreenEffect(): void {
             if (this.source) {
                 this.source.destroy();

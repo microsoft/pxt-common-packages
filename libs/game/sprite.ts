@@ -517,6 +517,9 @@ class Sprite implements SpriteLike {
     //% group="Effects"
     //% weight=90
     //% blockId=startEffectOnSprite block="%sprite(mySprite) start %effect effect || for %duration=timePicker|ms"
+    //% effect.fieldEditor="gridpicker"
+    //% effect.fieldOptions.width=220
+    //% effect.fieldOptions.columns=3
     startEffect(effect: effects.ParticleEffect, duration?: number) {
         effect.start(this, duration);
     }
@@ -722,6 +725,9 @@ class Sprite implements SpriteLike {
     //% duration.shadow=timePicker
     //% expandableArgumentMode="toggle"
     //% help=sprites/sprite/destroy
+    //% effect.fieldEditor="gridpicker"
+    //% effect.fieldOptions.width=220
+    //% effect.fieldOptions.columns=3
     destroy(effect?: effects.ParticleEffect, duration?: number) {
         if (this.flags & sprites.Flag.Destroyed)
             return;
