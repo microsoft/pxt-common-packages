@@ -84,7 +84,7 @@ namespace music {
     //% fixedInstances
     export class Melody {
         _text: string;
-        _player: MelodyPlayer;
+        private _player: MelodyPlayer;
 
         constructor(text: string) {
             this._text = text
