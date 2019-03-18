@@ -23,6 +23,8 @@ servos.P0.stop()
 [run](/reference/servos/run),
 [set angle](/reference/servos/set-angle)
 
+[Brief Guide to Servos](https://www.kitronik.co.uk/pdf/a-brief-guide-to-servos.pdf)
+
 ```package
 servo
 ```

@@ -8,7 +8,7 @@
 //% blockGap=8
 namespace info {
 
-    enum Visibility {
+    export enum Visibility {
         None = 0,
         Countdown = 1 << 0,
         Score = 1 << 1,
