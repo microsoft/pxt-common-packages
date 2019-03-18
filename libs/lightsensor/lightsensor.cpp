@@ -44,7 +44,7 @@ class WLight {
         sensor.setHighThreshold(LIGHTSENSOR_HIGH_THRESHOLD);
     }
 };
-SINGLETON(WLight);
+SINGLETON_IF_PIN(WLight, LIGHT);
 
 }
 
@@ -59,7 +59,10 @@ namespace input {
 //% parts="lightsensor"
 //% weight=84 blockGap=12
 void onLightConditionChanged(LightCondition condition, Action handler) {
-    auto sensor = &getWLight()->sensor;
+    auto wlight = getWLight();
+    if (NULL == wlight) return;    
+    auto sensor = wlight->sensor;
+
     sensor->updateSample();
     registerWithDal(sensor->id, (int)condition, handler);
 }
@@ -72,8 +75,11 @@ void onLightConditionChanged(LightCondition condition, Action handler) {
 //% parts="lightsensor"
 //% weight=30 blockGap=8
 int lightLevel() {
+    auto wlight = getWLight();
+    if (NULL == wlight) return 127;
+    auto sensor = wlight->sensor;
     // 0...1023
-    int value = getWLight()->sensor.getValue();
+    int value = sensor.getValue();
     return value / 4;
 }
 
@@ -86,10 +92,14 @@ int lightLevel() {
 //% value.min=1 value.max=255
 //% group="More" weight=13 blockGap=8
 void setLightThreshold(LightCondition condition, int value) {
+    auto wlight = getWLight();
+    if (NULL == wlight) return;
+    auto sensor = wlight->sensor;
+
     int v = value * 4;
     if (condition == LightCondition::Dark)
-        getWLight()->sensor.setLowThreshold(v);
+        wlight->sensor.setLowThreshold(v);
     else
-        getWLight()->sensor.setHighThreshold(v);
+        wlight->sensor.setHighThreshold(v);
 }
 }
