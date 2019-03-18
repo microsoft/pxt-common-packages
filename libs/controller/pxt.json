@@ -4,7 +4,8 @@
     "files": [
         "README.md",
         "vibration.ts",
-        "accelerometer.ts"
+        "accelerometer.ts",
+        "lightsensor.ts"
     ],
     "public": true,
     "dependencies": {
