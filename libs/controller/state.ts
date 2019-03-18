@@ -2,7 +2,7 @@ namespace controller {
     export interface ControllerSceneState {
         lastGesture?: ControllerGesture;
         gestureHandlers?: any;
-        lastLightCondition?: LightCondition;
+        lastLightCondition?: ControllerLightCondition;
         lightHandlers?: any;
     }
 
