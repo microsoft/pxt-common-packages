@@ -10,7 +10,7 @@
         "enums.d.ts",
         "ns.ts",
         "pxtparts.json",
-        "lis3dh.svg",
+        "part.svg",
         "jacdac.ts"
     ],
     "testFiles": [

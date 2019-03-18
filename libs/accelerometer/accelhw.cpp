@@ -49,6 +49,13 @@
 #include "MSA300.h"
 #endif
 
+#ifndef PXT_SUPPORT_MPU6050
+#define PXT_SUPPORT_MPU6050 0
+#endif
+#if PXT_SUPPORT_MPU6050
+#include "MPU6050.h"
+#endif
+
 #if defined(CODAL_ACCELEROMETER)
 #error "please define PXT_SUPPORT_* and PXT_DEFUALT_ACCELEROMETER"
 #endif
@@ -88,9 +95,12 @@ class WAccel {
             break;
 #endif
 #if PXT_SUPPORT_FXOS8700
-        case ACCELEROMETER_TYPE_FXOS8700:
-            acc = new FXOS8700Accelerometer(*i2c, *LOOKUP_PIN(ACCELEROMETER_INT), space);
+        case ACCELEROMETER_TYPE_FXOS8700: {
+            // TODO: singleton when exposing gyro
+            auto fox = new FXOS8700(*i2c, *LOOKUP_PIN(ACCELEROMETER_INT));
+            acc = new FXOS8700Accelerometer(*fox, space);
             break;
+        }
 #endif
 #if PXT_SUPPORT_MMA8653
         case ACCELEROMETER_TYPE_MMA8653:
@@ -100,6 +110,11 @@ class WAccel {
 #if PXT_SUPPORT_MMA8453
         case ACCELEROMETER_TYPE_MMA8453:
             acc = new MMA8453(*i2c, *LOOKUP_PIN(ACCELEROMETER_INT), space);
+            break;
+#endif
+#if PXT_SUPPORT_MPU6050
+        case ACCELEROMETER_TYPE_MPU6050:
+            acc = new MPU6050(*i2c, *LOOKUP_PIN(ACCELEROMETER_INT), space);
             break;
 #endif
         }
@@ -117,10 +132,12 @@ class WAccel {
         }
     }
 };
-SINGLETON(WAccel);
+
+SINGLETON_IF_PIN(WAccel, ACCELEROMETER_INT);
 
 codal::Accelerometer *getAccelerometer() {
-    return getWAccel()->acc;
+    auto wacc = getWAccel();
+    return wacc ? wacc->acc : NULL;
 }
 
 } // namespace pxt

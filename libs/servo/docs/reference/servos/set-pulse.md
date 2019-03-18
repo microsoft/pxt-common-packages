@@ -50,6 +50,8 @@ servos.P0.setAngle(90)
 [set angle](/reference/servos/set-angle),
 [run](/reference/servos/run)
 
+[Brief Guide to Servos](https://www.kitronik.co.uk/pdf/a-brief-guide-to-servos.pdf)
+
 ```package
 servo
 ```

@@ -29,6 +29,7 @@ namespace scene {
     export const ANIMATION_UPDATE_PRIORITY = 15;
     export const UPDATE_INTERVAL_PRIORITY = 19;
     export const UPDATE_PRIORITY = 20;
+    export const UPDATE_CONTROLLER_PRIORITY = 19;
     export const CONTROLLER_SPRITES_PRIORITY = 19;
     export const OVERLAP_PRIORITY = 30;
     export const RENDER_BACKGROUND_PRIORITY = 60;
@@ -59,6 +60,9 @@ namespace scene {
 
         private _millis: number;
         private _data: any;
+
+        // a set of functions that need to be called when a scene is being initialized
+        static initializers: ((scene: Scene) => void)[] = [];
 
         constructor(eventContext: control.EventContext) {
             this.eventContext = eventContext;
@@ -145,8 +149,8 @@ namespace scene {
             });
             // update screen
             this.eventContext.registerFrameHandler(UPDATE_SCREEN_PRIORITY, control.__screen.update);
-            // register start menu
-            scene.systemMenu.register();
+            // register additional components
+            Scene.initializers.forEach(f => f(this));
         }
 
         get data() {

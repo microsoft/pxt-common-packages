@@ -702,5 +702,8 @@ namespace pxsim.pxtcore {
     export function setScreenBrightness(b: number) {
         // I guess we could at least turn the screen off, when b==0,
         // otherwise, it probably doesn't make much sense to do anything.
+        const state = getScreenState();
+        if (state)
+            state.setScreenBrightness(b);
     }
 }
