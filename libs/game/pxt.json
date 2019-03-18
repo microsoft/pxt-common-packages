@@ -31,11 +31,11 @@
         "systemmenu.ts",
         "console.ts",
         "fieldeditors.ts",
+        "effects.jres",
         "particles.ts",
         "particlefactories.ts",
         "particleeffects.ts",
-        "effects.ts",
-        "effects.jres"
+        "effects.ts"
     ],
     "public": true,
     "dependencies": {

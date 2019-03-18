@@ -259,10 +259,10 @@ namespace effects {
         return src;
     });
 
-    //% fixedInstance whenUsed block="warm radial" jres=effects.warmRadial
+    //% fixedInstance whenUsed block="warm radial" jres=effects.warmradial
     export const warmRadial = createEffect(30, 2500, function () { return new particles.RadialFactory(0, 30, 10) });
 
-    //% fixedInstance whenUsed block="cool radial" jres=effects.coolRadial
+    //% fixedInstance whenUsed block="cool radial" jres=effects.coolradial
     export const coolRadial = createEffect(30, 2000, function () { return new particles.RadialFactory(0, 30, 10, [0x6, 0x7, 0x8, 0x9, 0xA]) });
 
     //% fixedInstance whenUsed block="halo" jres=effects.halo
@@ -328,7 +328,7 @@ namespace effects {
         return new particles.BubbleSource(anchor, particlesPerSecond, factory.stateCount - 1, factory);
     });
 
-    //% fixedInstance whenUsed block="star field" jres=effects.starField
+    //% fixedInstance whenUsed block="star field" jres=effects.starfield
     export const starField = new ScreenEffect(2, 5, 5000, function (anchor: particles.ParticleAnchor, particlesPerSecond: number) {
         const factory = new particles.StarFactory([0x1, 0x3, 0x5, 0x9, 0xC]);
         return new particles.ParticleSource(anchor, particlesPerSecond, factory);
