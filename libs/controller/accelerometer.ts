@@ -110,7 +110,7 @@ namespace controller {
     }
 
     function initAccelerometer(s: scene.Scene) {
-        s.eventContext.registerFrameHandler(scene.UPDATE_PRIORITY, updateGesture);
+        s.eventContext.registerFrameHandler(scene.UPDATE_CONTROLLER_PRIORITY, updateGesture);
     }
 
     scene.Scene.initializers.push(initAccelerometer);

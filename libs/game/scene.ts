@@ -29,6 +29,7 @@ namespace scene {
     export const ANIMATION_UPDATE_PRIORITY = 15;
     export const UPDATE_INTERVAL_PRIORITY = 19;
     export const UPDATE_PRIORITY = 20;
+    export const UPDATE_CONTROLLER_PRIORITY = 19;
     export const CONTROLLER_SPRITES_PRIORITY = 19;
     export const OVERLAP_PRIORITY = 30;
     export const RENDER_BACKGROUND_PRIORITY = 60;
