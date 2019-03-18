@@ -175,7 +175,7 @@ namespace music {
     }
 
 
-    export class MelodyPlayer {
+    class MelodyPlayer {
         melody: Melody;
 
         constructor(m: Melody) {
