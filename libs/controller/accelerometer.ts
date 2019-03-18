@@ -102,7 +102,7 @@ namespace controller {
 
     function updateGesture() {
         const state = sceneState();
-        if (state && state.gestureHandlers && state.lastGesture !== undefined && state.gestureHandlers[lastGesture]) {
+        if (state && state.gestureHandlers && state.lastGesture !== undefined && state.gestureHandlers[state.lastGesture]) {
             const handler = state.gestureHandlers[state.lastGesture];
             state.lastGesture = undefined;
             handler();
