@@ -3,11 +3,16 @@
     "description": "Extra game controller functionalities",
     "files": [
         "README.md",
-        "vibration.ts"
+        "state.ts",
+        "vibration.ts",
+        "accelerometer.ts",
+        "lightsensor.ts"
     ],
     "public": true,
     "dependencies": {
         "core": "file:../core",
+        "accelerometer": "file:../accelerometer",
+        "lightsensor": "file:../lightsensor",
         "game": "file:../game"
     }
 }
