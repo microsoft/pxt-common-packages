@@ -63,8 +63,8 @@ void onLightConditionChanged(LightCondition condition, Action handler) {
     if (NULL == wlight) return;    
     auto sensor = wlight->sensor;
 
-    sensor->updateSample();
-    registerWithDal(sensor->id, (int)condition, handler);
+    sensor.updateSample();
+    registerWithDal(sensor.id, (int)condition, handler);
 }
 
 /**
@@ -98,8 +98,8 @@ void setLightThreshold(LightCondition condition, int value) {
 
     int v = value * 4;
     if (condition == LightCondition::Dark)
-        wlight->sensor.setLowThreshold(v);
+        sensor.setLowThreshold(v);
     else
-        wlight->sensor.setHighThreshold(v);
+        sensor.setHighThreshold(v);
 }
 }
