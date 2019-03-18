@@ -84,7 +84,7 @@ namespace music {
     //% fixedInstances
     export class Melody {
         _text: string;
-        player: MelodyPlayer;
+        _player: MelodyPlayer;
 
         constructor(text: string) {
             this._text = text
@@ -99,17 +99,17 @@ namespace music {
         //% weight=92 blockGap=8
         //% group="Sounds"
         stop() {
-            if (this.player) {
-                this.player.stop()
-                this.player = null
+            if (this._player) {
+                this._player.stop()
+                this._player = null
             }
         }
 
         private playCore(volume: number, loop: boolean) {
             this.stop()
-            const p = new MelodyPlayer(this)
+            const p = this._player = new MelodyPlayer(this)
             control.runInParallel(() => {
-                while (this.player == p) {
+                while (this._player == p) {
                     p.play(volume)
                     if (!loop)
                         break
@@ -155,7 +155,8 @@ namespace music {
         //% group="Sounds"
         playUntilDone(volume = 128) {
             this.stop()
-            new MelodyPlayer(this).play(volume)
+            this._player = new MelodyPlayer(this)
+            this._player.play(volume)
         }
     }
 
@@ -179,7 +180,6 @@ namespace music {
 
         constructor(m: Melody) {
             this.melody = m
-            m.player = this
         }
 
         stop() {
