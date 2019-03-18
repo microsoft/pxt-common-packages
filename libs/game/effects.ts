@@ -57,7 +57,7 @@ namespace effects {
         }
     }
 
-    //% fixedInstance whenUsed block="dissolve"
+    //% fixedInstance whenUsed block="dissolve" jres=effects.dissolve
     export const dissolve = new ImageEffect(100, (input: Image, r: Math.FastRandom) => {
         for (let i = (input.width * input.height) >> 5; i > 0; --i) {
             const x = r.randomRange(0, input.width)
@@ -69,7 +69,7 @@ namespace effects {
         }
     });
 
-    //% fixedInstance whenUsed block="melt"
+    //% fixedInstance whenUsed block="melt" jres=effects.melt
     export const melt = new ImageEffect(125, (input: Image, r: Math.FastRandom) => {
         const rounds = (input.width * input.height) >> 5;
         for (let j = 0; j < rounds; ++j) {
@@ -81,7 +81,7 @@ namespace effects {
         }
     });
 
-    //% fixedInstance whenUsed block="slash"
+    //% fixedInstance whenUsed block="slash" jres=effects.slash
     export const slash = new ImageEffect(125, (input: Image, r: Math.FastRandom) => {
         const rounds = 12;
         for (let j = 0; j < rounds; ++j) {
@@ -93,7 +93,7 @@ namespace effects {
         }
     });
 
-    //% fixedInstance whenUsed block="splatter"
+    //% fixedInstance whenUsed block="splatter" jres=effects.splatter
     export const splatter = new ImageEffect(125, (input: Image, r: Math.FastRandom) => {
         const imgs: Image[] = [
             img`

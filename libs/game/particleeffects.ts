@@ -96,7 +96,7 @@ namespace effects {
         //% blockNamespace=scene
         //% group="Effects" blockGap=8
         //% weight=90
-        //% effect.fieldEditor="gridpicker"
+        //% effect.fieldEditor="imagedropdown"
         //% effect.fieldOptions.width=220
         //% effect.fieldOptions.columns=3
         startScreenEffect(duration?: number, particlesPerSecond?: number): void {
@@ -124,7 +124,7 @@ namespace effects {
         //% blockNamespace=scene
         //% group="Effects" blockGap=8
         //% weight=80
-        //% effect.fieldEditor="gridpicker"
+        //% effect.fieldEditor="imagedropdown"
         //% effect.fieldOptions.width=220
         //% effect.fieldOptions.columns=3
         endScreenEffect(): void {
@@ -157,16 +157,16 @@ namespace effects {
                         new particles.ParticleSource(anchor, pps, factoryFactory()));
     }
 
-    //% fixedInstance whenUsed block="spray"
+    //% fixedInstance whenUsed block="spray" jres=effects.spray
     export const spray = createEffect(20, 2000, function () { return new particles.SprayFactory(100, 0, 120) });
 
-    //% fixedInstance whenUsed block="trail"
+    //% fixedInstance whenUsed block="trail" jres=effects.trail
     export const trail = new ParticleEffect(20, 4000, function (anchor: particles.ParticleAnchor, particlesPerSecond: number) {
         const factory = new particles.TrailFactory(anchor, 250, 1000);
         return new particles.ParticleSource(anchor, particlesPerSecond, factory);
     });
 
-    //% fixedInstance whenUsed block="fountain"
+    //% fixedInstance whenUsed block="fountain" jres=effects.fountain
     export const fountain = new ParticleEffect(20, 3000, function (anchor: particles.ParticleAnchor, particlesPerSecond: number) {
         class FountainFactory extends particles.SprayFactory {
             galois: Math.FastRandom;
@@ -194,14 +194,14 @@ namespace effects {
         return source;
     });
 
-    //% fixedInstance whenUsed block="confetti"
+    //% fixedInstance whenUsed block="confetti" jres=effects.confetti
     export const confetti = new ScreenEffect(10, 40, 4000, function (anchor: particles.ParticleAnchor, particlesPerSecond: number) {
         const factory = new particles.ConfettiFactory(anchor.width ? anchor.width : 16, 16);
         factory.setSpeed(30);
         return new particles.ParticleSource(anchor, particlesPerSecond, factory);
     });
 
-    //% fixedInstance whenUsed block="hearts"
+    //% fixedInstance whenUsed block="hearts" jres=effects.hearts
     export const hearts = new ScreenEffect(5, 20, 2000, function (anchor: particles.ParticleAnchor, particlesPerSecond: number) {
         const factory = new particles.ShapeFactory(anchor.width ? anchor.width : 16, 16, img`
             . F . F .
@@ -221,7 +221,7 @@ namespace effects {
         return new particles.ParticleSource(anchor, particlesPerSecond, factory);
     });
 
-    //% fixedInstance whenUsed block="smiles"
+    //% fixedInstance whenUsed block="smiles" jres=effects.smiles
     export const smiles = new ScreenEffect(5, 25, 1500, function (anchor: particles.ParticleAnchor, particlesPerSecond: number) {
         const factory = new particles.ShapeFactory(anchor.width ? anchor.width : 16, 16, img`
             . f . f . 
@@ -240,7 +240,7 @@ namespace effects {
         return new particles.ParticleSource(anchor, particlesPerSecond, factory);
     });
 
-    //% fixedInstance whenUsed block="rings"
+    //% fixedInstance whenUsed block="rings" jres=effects.rings
     export const rings = createEffect(5, 1000, function () {
         return new particles.ShapeFactory(16, 16, img`
             . F F F . 
@@ -251,7 +251,7 @@ namespace effects {
         `);
     });
 
-    //% fixedInstance whenUsed block="fire"
+    //% fixedInstance whenUsed block="fire" jres=effects.fire
     export const fire = new ParticleEffect(40, 5000, function (anchor: particles.ParticleAnchor, particlesPerSecond: number) {
         const factory = new particles.FireFactory(5);
         const src = new particles.FireSource(anchor, particlesPerSecond, factory);
@@ -259,13 +259,13 @@ namespace effects {
         return src;
     });
 
-    //% fixedInstance whenUsed block="warm radial"
+    //% fixedInstance whenUsed block="warm radial" jres=effects.warmRadial
     export const warmRadial = createEffect(30, 2500, function () { return new particles.RadialFactory(0, 30, 10) });
 
-    //% fixedInstance whenUsed block="cool radial"
+    //% fixedInstance whenUsed block="cool radial" jres=effects.coolRadial
     export const coolRadial = createEffect(30, 2000, function () { return new particles.RadialFactory(0, 30, 10, [0x6, 0x7, 0x8, 0x9, 0xA]) });
 
-    //% fixedInstance whenUsed block="halo"
+    //% fixedInstance whenUsed block="halo" jres=effects.halo
     export const halo = createEffect(40, 3000, function () {
         class RingFactory extends particles.RadialFactory {
             createParticle(anchor: particles.ParticleAnchor) {
@@ -277,7 +277,7 @@ namespace effects {
         return new RingFactory(30, 40, 10, [0x4, 0x4, 0x5]);
     });
 
-    //% fixedInstance whenUsed block="ashes"
+    //% fixedInstance whenUsed block="ashes" jres=effects.ashes
     export const ashes = new ParticleEffect(60, 2000, function (anchor: particles.ParticleAnchor, particlesPerSecond: number) {
         const factory = new particles.AshFactory(anchor);
         const src = new particles.ParticleSource(anchor, particlesPerSecond, factory);
@@ -285,7 +285,7 @@ namespace effects {
         return src;
     });
 
-    //% fixedInstance whenUsed block="disintegrate"
+    //% fixedInstance whenUsed block="disintegrate" jres=effects.disintegrate
     export const disintegrate = new ParticleEffect(60, 1250, function (anchor: particles.ParticleAnchor, particlesPerSecond: number) {
         const factory = new particles.AshFactory(anchor, true, 30);
         factory.minLifespan = 200;
@@ -295,7 +295,7 @@ namespace effects {
         return src;
     });
 
-    //% fixedInstance whenUsed block="blizzard"
+    //% fixedInstance whenUsed block="blizzard" jres=effects.blizzard
     export const blizzard = new ScreenEffect(15, 50, 3000, function (anchor: particles.ParticleAnchor, particlesPerSecond: number) {
         class SnowFactory extends particles.ShapeFactory {
             constructor(xRange: number, yRange: number) {
@@ -321,14 +321,14 @@ namespace effects {
         return src;
     });
 
-    //% fixedInstance whenUsed block="bubbles"
+    //% fixedInstance whenUsed block="bubbles" jres=effects.bubbles
     export const bubbles = new ScreenEffect(15, 40, 5000, function (anchor: particles.ParticleAnchor, particlesPerSecond: number) {
         const min = anchor.width > 50 ? 2000 : 500;
         const factory = new particles.BubbleFactory(anchor, min, min * 2.5);
         return new particles.BubbleSource(anchor, particlesPerSecond, factory.stateCount - 1, factory);
     });
 
-    //% fixedInstance whenUsed block="star field"
+    //% fixedInstance whenUsed block="star field" jres=effects.starField
     export const starField = new ScreenEffect(2, 5, 5000, function (anchor: particles.ParticleAnchor, particlesPerSecond: number) {
         const factory = new particles.StarFactory([0x1, 0x3, 0x5, 0x9, 0xC]);
         return new particles.ParticleSource(anchor, particlesPerSecond, factory);

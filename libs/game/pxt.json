@@ -34,7 +34,8 @@
         "particles.ts",
         "particlefactories.ts",
         "particleeffects.ts",
-        "effects.ts"
+        "effects.ts",
+        "effects.jres"
     ],
     "public": true,
     "dependencies": {
