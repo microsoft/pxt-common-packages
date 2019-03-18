@@ -107,7 +107,7 @@ namespace music {
 
         private playCore(volume: number, loop: boolean) {
             this.stop()
-            const p = new MelodyPlayer(this)
+            const p = this._player = new MelodyPlayer(this)
             control.runInParallel(() => {
                 while (this._player == p) {
                     p.play(volume)
@@ -155,7 +155,8 @@ namespace music {
         //% group="Sounds"
         playUntilDone(volume = 128) {
             this.stop()
-            new MelodyPlayer(this).play(volume)
+            this._player = new MelodyPlayer(this)
+            this._player.play(volume)
         }
     }
 
@@ -179,7 +180,6 @@ namespace music {
 
         constructor(m: Melody) {
             this.melody = m
-            m._player = this
         }
 
         stop() {
