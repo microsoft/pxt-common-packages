@@ -47,9 +47,23 @@ enum ControllerDimension {
     Strength = Dimension.Strength
 }
 
-namespace controller {    
-    let lastGesture: ControllerGesture = undefined;
-    let gestureHandlers: any;
+namespace controller {
+    interface ControllerAccelerometerState {
+        lastGesture: ControllerGesture;
+        gestureHandlers: any;
+    }
+
+    function sceneState(): ControllerAccelerometerState {
+        const sc = game.currentScene();
+        let state = sc.data["controller.accelerometer"];
+        if (!state) {
+            state = sc.data["controller.accelerometer"] = <ControllerAccelerometerState>{
+                lastGesture: undefined,
+                gestureHandlers: undefined
+            };
+        }
+        return state;
+    }
 
     /**
      * Do something when a gesture happens (like shaking the board).
@@ -63,10 +77,11 @@ namespace controller {
     //% gesture.fieldOptions.columns=3
     //% group="Extras"
     export function onGesture(gesture: ControllerGesture, handler: () => void) {
-        if (!gestureHandlers) gestureHandlers = {};
-        gestureHandlers[gesture] = handler;
+        const state = sceneState();
+        if (!state.gestureHandlers) state.gestureHandlers = {};
+        state.gestureHandlers[gesture] = handler;
         input.onGesture(<Gesture><number>gesture, () => {
-            lastGesture = gesture;
+            state.lastGesture = gesture;
         })
     }
 
@@ -86,9 +101,10 @@ namespace controller {
     }
 
     function updateGesture() {
-        if (gestureHandlers && lastGesture !== undefined && gestureHandlers[lastGesture]) {
-            const handler = gestureHandlers[lastGesture];
-            lastGesture = undefined;
+        const state = sceneState();
+        if (state && state.gestureHandlers && state.lastGesture !== undefined && state.gestureHandlers[lastGesture]) {
+            const handler = state.gestureHandlers[state.lastGesture];
+            state.lastGesture = undefined;
             handler();
         }
     }
