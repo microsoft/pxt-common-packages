@@ -3,6 +3,7 @@
     "description": "Extra game controller functionalities",
     "files": [
         "README.md",
+        "state.ts",
         "vibration.ts",
         "accelerometer.ts",
         "lightsensor.ts"

@@ -48,23 +48,6 @@ enum ControllerDimension {
 }
 
 namespace controller {
-    interface ControllerAccelerometerState {
-        lastGesture: ControllerGesture;
-        gestureHandlers: any;
-    }
-
-    function sceneState(): ControllerAccelerometerState {
-        const sc = game.currentScene();
-        let state = sc.data["controller.accelerometer"];
-        if (!state) {
-            state = sc.data["controller.accelerometer"] = <ControllerAccelerometerState>{
-                lastGesture: undefined,
-                gestureHandlers: undefined
-            };
-        }
-        return state;
-    }
-
     /**
      * Do something when a gesture happens (like shaking the board).
      * @param gesture the type of gesture to track
@@ -80,8 +63,10 @@ namespace controller {
         const state = sceneState();
         if (!state.gestureHandlers) state.gestureHandlers = {};
         state.gestureHandlers[gesture] = handler;
-        input.onGesture(<Gesture><number>gesture, () => {
-            state.lastGesture = gesture;
+        
+        input.onGesture(<Gesture><number>gesture, function() {
+            const st = sceneState();
+            st.lastGesture = gesture;
         })
     }
 
@@ -99,19 +84,4 @@ namespace controller {
     export function acceleration(dimension: ControllerDimension): number {
         return input.acceleration(<Dimension><number>dimension);
     }
-
-    function updateGesture() {
-        const state = sceneState();
-        if (state && state.gestureHandlers && state.lastGesture !== undefined && state.gestureHandlers[state.lastGesture]) {
-            const handler = state.gestureHandlers[state.lastGesture];
-            state.lastGesture = undefined;
-            handler();
-        }
-    }
-
-    function initAccelerometer(s: scene.Scene) {
-        s.eventContext.registerFrameHandler(scene.UPDATE_CONTROLLER_PRIORITY, updateGesture);
-    }
-
-    scene.Scene.initializers.push(initAccelerometer);
 }
