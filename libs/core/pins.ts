@@ -33,5 +33,4 @@ interface PwmPin extends PwmOnlyPin, AnalogInOutPin {
 //% color=#A80000 weight=85 icon="\uf140" advanced=true
 //% groups='["other", "Servo", "i2c"]'
 namespace pins {
-
 }
