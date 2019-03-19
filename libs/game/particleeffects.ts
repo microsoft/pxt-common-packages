@@ -97,7 +97,6 @@ namespace effects {
         //% group="Effects" blockGap=8
         //% weight=90
         //% effect.fieldEditor="imagedropdown"
-        //% effect.fieldOptions.width=510
         //% effect.fieldOptions.columns=3
         startScreenEffect(duration?: number, particlesPerSecond?: number): void {
             if (!this.sourceFactory)
@@ -125,7 +124,6 @@ namespace effects {
         //% group="Effects" blockGap=8
         //% weight=80
         //% effect.fieldEditor="imagedropdown"
-        //% effect.fieldOptions.width=510
         //% effect.fieldOptions.columns=3
         endScreenEffect(): void {
             if (this.source) {
