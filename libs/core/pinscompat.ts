@@ -79,4 +79,8 @@ namespace pins {
     export function pulseIn(pin: DigitalPin, value: PulseValue, maxDuration?: number): number {
         return pin.pulseIn(value, maxDuration);
     }
+
+    export function map(value: number, fromLow: number, fromHigh: number, toLow: number, toHigh: number): number {
+        return Math.map(value, fromLow, fromHigh, toLow, toHigh);
+    }
 }

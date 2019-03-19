@@ -33,7 +33,4 @@ interface PwmPin extends PwmOnlyPin, AnalogInOutPin {
 //% color=#A80000 weight=85 icon="\uf140" advanced=true
 //% groups='["other", "Servo", "i2c"]'
 namespace pins {
-    export function map(value: number, fromLow: number, fromHigh: number, toLow: number, toHigh: number): number {
-        return Math.map(value, fromLow, fromHigh, toLow, toHigh);
-    }
 }
