@@ -18,6 +18,7 @@ namespace pxsim {
         pitch = false;
         pull = 0; // PullDown
         eventMode = 0;
+        used: boolean = false;
 
         setValue(value: number) {
             // value set from the simulator
