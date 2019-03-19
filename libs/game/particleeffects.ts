@@ -97,7 +97,7 @@ namespace effects {
         //% group="Effects" blockGap=8
         //% weight=90
         //% effect.fieldEditor="imagedropdown"
-        //% effect.fieldOptions.columns=3
+        //% effect.fieldOptions.columns=4
         startScreenEffect(duration?: number, particlesPerSecond?: number): void {
             if (!this.sourceFactory)
                 return;
@@ -124,7 +124,7 @@ namespace effects {
         //% group="Effects" blockGap=8
         //% weight=80
         //% effect.fieldEditor="imagedropdown"
-        //% effect.fieldOptions.columns=3
+        //% effect.fieldOptions.columns=4
         endScreenEffect(): void {
             if (this.source) {
                 this.source.destroy();

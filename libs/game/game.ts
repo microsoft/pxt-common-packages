@@ -161,7 +161,7 @@ namespace game {
     //% blockId=gameOver block="game over || %win=toggleWinLose with %effect effect"
     //% weight=80 help=game/over
     //% effect.fieldEditor="imagedropdown"
-    //% effect.fieldOptions.columns=3
+    //% effect.fieldOptions.columns=4
     export function over(win: boolean = false, effect?: effects.BackgroundEffect) {
         init();
         if (__isOver) return;
