@@ -16,6 +16,7 @@
         "pinsDigital.cpp",
         "pinsPWM.cpp",
         "pins.ts",
+        "pinscompat.ts",
         "control.cpp",
         "i2c.cpp",
         "i2c.ts",
