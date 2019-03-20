@@ -31,7 +31,7 @@
 
     declare const enum SerialEvent {
     //% block="data received"
-    DataReceived = 3,  // CODAL_SERIAL_EVT_RX_FULL
+    DataReceived = 4,  // CODAL_SERIAL_EVT_DATA_RECEIVED
     }
 
 
