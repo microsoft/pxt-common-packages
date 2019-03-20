@@ -1,7 +1,48 @@
 // this type alias is required for backward compatibility
 // it gets overriden in microbit (DigitalPin is an enum over there)
-type DigitalPin = DigitalInOutPin;
-type AnalogPin = AnalogInOutPin;
+enum DigitalPin {
+    P0 = DAL.CFG_PIN_P0,
+    P1 = DAL.CFG_PIN_P1,
+    P2 = DAL.CFG_PIN_P2,
+    P3 = DAL.CFG_PIN_P3,
+    P4 = DAL.CFG_PIN_P4,
+    P5 = DAL.CFG_PIN_P5,
+    P6 = DAL.CFG_PIN_P6,
+    P7 = DAL.CFG_PIN_P7,
+    P8 = DAL.CFG_PIN_P8,
+    P9 = DAL.CFG_PIN_P9,
+    P10 = DAL.CFG_PIN_P10,
+    P11 = DAL.CFG_PIN_P11,
+    P12 = DAL.CFG_PIN_P12,
+    P13 = DAL.CFG_PIN_P13,
+    P14 = DAL.CFG_PIN_P14,
+    P15 = DAL.CFG_PIN_P15,
+    P16 = DAL.CFG_PIN_P16,
+    P19 = DAL.CFG_PIN_P19,
+    P20 = DAL.CFG_PIN_P20
+}
+
+declare const enum AnalogPin {
+    P0 = DAL.CFG_PIN_P0,
+    P1 = DAL.CFG_PIN_P1,
+    P2 = DAL.CFG_PIN_P2,
+    P3 = DAL.CFG_PIN_P3,
+    P4 = DAL.CFG_PIN_P4,
+    P10 = DAL.CFG_PIN_P10,
+    P5 = DAL.CFG_PIN_P5,
+    P6 = DAL.CFG_PIN_P6,
+    P7 = DAL.CFG_PIN_P7,
+    P8 = DAL.CFG_PIN_P8,
+    P9 = DAL.CFG_PIN_P9,
+    P11 = DAL.CFG_PIN_P11,
+    P12 = DAL.CFG_PIN_P12,
+    P13 = DAL.CFG_PIN_P13,
+    P14 = DAL.CFG_PIN_P14,
+    P15 = DAL.CFG_PIN_P15,
+    P16 = DAL.CFG_PIN_P16,
+    P19 = DAL.CFG_PIN_P19,
+    P20 = DAL.CFG_PIN_P20
+}
 
 namespace pins {
     /**
@@ -11,7 +52,9 @@ namespace pins {
      */
     //% deprecated=1
     export function setPull(pin: DigitalPin, mode: PinPullMode) {
-        pin.setPull(mode);
+        const p = pins.pinByCfg(pin);
+        if (p)
+            p.setPull(mode);
     }
 
     /**
@@ -21,7 +64,9 @@ namespace pins {
      */
     //% deprecated=1
     export function digitalWritePin(pin: DigitalPin, value: number) {
-        pin.digitalWrite(!!value);
+        const p = pins.pinByCfg(pin);
+        if (p)
+            p.digitalWrite(!!value);
     }
 
     /**
@@ -30,7 +75,8 @@ namespace pins {
      */
     //% deprecated=1
     export function digitalReadPin(pin: DigitalPin): number {
-        return pin.digitalRead() ? 1 : 0;
+        const p = pins.pinByCfg(pin);
+        return p && p.digitalRead() ? 1 : 0;
     }
 
     /**
@@ -40,7 +86,9 @@ namespace pins {
      */
     //% deprecated=1
     export function analogWritePin(pin: AnalogOutPin, value: number) {
-        pin.analogWrite(value);
+        const p = pins.pinByCfg(pin) as AnalogOutPin;
+        if (p)
+            p.analogWrite(value);
     }
 
     /**
@@ -49,7 +97,10 @@ namespace pins {
      */
     //% deprecated=1
     export function analogReadPin(pin: AnalogInPin): number {
-        return pin.analogRead();
+        const p = pins.pinByCfg(pin);
+        if (p)
+            return pin.analogRead();
+        else return 0;
     }
 
     /**
@@ -58,7 +109,9 @@ namespace pins {
     */
     //% deprecated=1
     export function onPulsed(pin: DigitalPin, pulse: PulseValue, body: () => void): void {
-        pin.onPulsed(pulse, body);
+        const p = pins.pinByCfg(pin);
+        if (p)
+            p.onPulsed(pulse, body);
     }
 
     /**
@@ -66,7 +119,9 @@ namespace pins {
     */
     //% deprecated=1
     export function onEvent(pin: DigitalPin, event: PinEvent, body: () => void): void {
-        pin.onEvent(event, body);
+        const p = pins.pinByCfg(pin);
+        if (p)
+            p.onEvent(event, body);
     }
 
     /**
@@ -77,7 +132,11 @@ namespace pins {
     */
     //% deprecated=1
     export function pulseIn(pin: DigitalPin, value: PulseValue, maxDuration?: number): number {
-        return pin.pulseIn(value, maxDuration);
+        const p = pins.pinByCfg(pin);
+        if (p)
+            return p.pulseIn(value, maxDuration);
+        else 
+            return 0;
     }
 
     export function map(value: number, fromLow: number, fromHigh: number, toLow: number, toHigh: number): number {
