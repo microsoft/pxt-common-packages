@@ -1,4 +1,5 @@
 #include "pxt.h"
+#include "Serial.h"
 
 enum class BaudRate {
   //% block=115200
