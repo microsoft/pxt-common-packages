@@ -29,7 +29,7 @@ enum class BaudRate {
 
 enum class SerialEvent {
     //% block="data received"
-    DataReceived = CODAL_SERIAL_EVT_RX_FULL    
+    DataReceived = CODAL_SERIAL_EVT_DATA_RECEIVED    
 };
 
 enum class Delimiters {
@@ -132,6 +132,7 @@ public:
   }
 
   void onEvent(SerialEvent event, Action handler) {
+    ser.setRxBufferSize(ser.getRxBufferSize()); // turn on reading
     registerWithDal(ser.id, (int)event, handler);
   }
 
