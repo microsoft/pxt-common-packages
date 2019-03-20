@@ -2,8 +2,7 @@
     "name": "edge-connector",
     "description": "20 pin Edge Connector",
     "files": [
-        "REAMD.md",
-        "config.ts",
+        "README.md",
         "device.d.ts",
         "pinscompat.ts"
     ],
