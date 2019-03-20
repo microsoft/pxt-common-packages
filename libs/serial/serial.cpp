@@ -29,7 +29,9 @@ enum class BaudRate {
 
 enum class SerialEvent {
     //% block="data received"
-    DataReceived = CODAL_SERIAL_EVT_DATA_RECEIVED    
+    DataReceived = CODAL_SERIAL_EVT_DATA_RECEIVED,
+    //% block="rx buffer full"
+    RxBufferFull = CODAL_SERIAL_EVT_RX_FULL
 };
 
 enum class Delimiters {
