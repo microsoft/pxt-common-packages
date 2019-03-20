@@ -21,13 +21,13 @@ declare namespace pins {
      * Pin P3 on the edge connector
      */
     //% fixedInstance shim=pxt::lookupPinCfg(CFG_PIN_P3)
-    const P3: AnalogOutPin;
+    const P3: AnalogInPin;
 
     /**
      * Pin P3 on the edge connector
      */
     //% fixedInstance shim=pxt::lookupPinCfg(CFG_PIN_P4)
-    const P4: PwmOnlyPin;
+    const P4: AnalogInPin;
 
     /**
      * Pin P5 on the edge connector
@@ -51,7 +51,7 @@ declare namespace pins {
      * Pin P8 on the edge connector
      */
     //% fixedInstance shim=pxt::lookupPinCfg(CFG_PIN_P8)
-    const P8: PwmPin;
+    const P8: DigitalInOutPin;
 
     /**
      * Pin P9 on the edge connector
@@ -63,7 +63,7 @@ declare namespace pins {
      * Pin P10 on the edge connector
      */
     //% fixedInstance shim=pxt::lookupPinCfg(CFG_PIN_P10)
-    const P10: PwmOnlyPin;
+    const P10: AnalogInPin;
 
     /**
      * Pin P11 on the edge connector
