@@ -1,0 +1,13 @@
+{
+    "name": "edge-connector",
+    "description": "20 pin Edge Connector",
+    "files": [
+        "config.ts",
+        "device.d.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core",
+        "serial": "file:../serial"
+    }
+}
