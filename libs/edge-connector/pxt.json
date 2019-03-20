@@ -3,7 +3,8 @@
     "description": "20 pin Edge Connector",
     "files": [
         "config.ts",
-        "device.d.ts"
+        "device.d.ts",
+        "pinscompat.ts"
     ],
     "public": true,
     "dependencies": {

@@ -22,7 +22,7 @@ enum DigitalPin {
     P20 = DAL.CFG_PIN_P20
 }
 
-declare const enum AnalogPin {
+enum AnalogPin {
     P0 = DAL.CFG_PIN_P0,
     P1 = DAL.CFG_PIN_P1,
     P2 = DAL.CFG_PIN_P2,
@@ -85,7 +85,7 @@ namespace pins {
      * @param value 
      */
     //% deprecated=1
-    export function analogWritePin(pin: AnalogOutPin, value: number) {
+    export function analogWritePin(pin: AnalogPin, value: number) {
         const p = pins.pinByCfg(pin) as AnalogOutPin;
         if (p)
             p.analogWrite(value);
@@ -96,11 +96,12 @@ namespace pins {
      * @param pin 
      */
     //% deprecated=1
-    export function analogReadPin(pin: AnalogInPin): number {
-        const p = pins.pinByCfg(pin);
+    export function analogReadPin(pin: AnalogPin): number {
+        const p = pins.pinByCfg(pin) as AnalogInPin;
         if (p)
-            return pin.analogRead();
-        else return 0;
+            return p.analogRead();
+        else 
+            return 0;
     }
 
     /**
