@@ -249,10 +249,11 @@ namespace serial {
 
 
     /**
-      Sends the console message through the TX, RX pins
+      Send console messages through the TX, RX pins
       **/
     //% blockId=serialsendtoconsole block="serial attach to console"
     //% group="Configuration"
+    //% help=serial/attach-to-console
     export function attachToConsole() {
         console.addListener(logListener)
     }
