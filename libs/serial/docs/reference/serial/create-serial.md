@@ -20,7 +20,7 @@ This will create an instance of the ``Serial`` port object. This new instance is
 
 ## Return
 
-* a ``Serial`` instance that allows to interact with the bus directly.
+* a ``Serial`` instance that allows you to interact with the bus directly.
 
 ## Example #example
 
