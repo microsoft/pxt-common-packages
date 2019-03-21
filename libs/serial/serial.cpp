@@ -172,16 +172,18 @@ SerialDevice internalCreateSerialDevice(DigitalInOutPin tx, DigitalInOutPin rx, 
 namespace SerialDeviceMethods {
   /**
   * Sets the size of the RX buffer in bytes
+  * @param size number of bytes of the rx buffer
   */
-  //%
+  //% size.defl=64
   void setRxBufferSize(SerialDevice device, uint8_t size) {
     device->setRxBufferSize(size);
   }
 
   /**
   * Sets the size of the TX buffer in bytes
+  * @param size number of bytes of the rx buffer
   */
-  //%
+  //% size.defl=64
   void setTxBufferSize(SerialDevice device, uint8_t size) {
     device->setTxBufferSize(size);
   }
