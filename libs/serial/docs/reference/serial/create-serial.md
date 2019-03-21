@@ -24,7 +24,7 @@ This will create an instance of the ``Serial`` port object. This new instance is
 
 ## Example #example
 
-Create you own serial communication device on pins **A0** and **A1**.
+Create your own serial communication device on pins **A0** and **A1**.
 
 ```typescript-ignore
 let mySerial = serial.createSerial(pins.A0, pins.A1)
