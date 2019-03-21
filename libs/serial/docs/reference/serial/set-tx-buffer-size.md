@@ -25,7 +25,7 @@ serial.writeString("Send me out. I'm not too big for the buffer.")
 
 ## See also #seealso
 
-[set rx buffer size](/reference/serial/set-rx-buffer-size),
+[set rx buffer size](/reference/serial/set-rx-buffer-size)
 
 ```package
 serial
