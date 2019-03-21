@@ -22,13 +22,17 @@ namespace effects {
          * Attaches a new particle animation to the sprite or anchor for a short period of time
          * @param anchor
          * @param duration
-         * @param particlesPerSecond 
+         * @param particlesPerSecond
          */
         start(anchor: particles.ParticleAnchor, duration?: number, particlesPerSecond?: number): void {
             if (!this.sourceFactory) return;
-            const src = this.sourceFactory(anchor, particlesPerSecond ? particlesPerSecond : this.defaultRate);
+            const src = this.sourceFactory(anchor, particlesPerSecond || this.defaultRate);
             if (duration)
                 src.lifespan = duration > 0 ? duration : this.defaultLifespan;
+
+            if (effectStartedListener) {
+                effectStartedListener(this, anchor, src.lifespan || -1, particlesPerSecond || this.defaultRate);
+            }
         }
 
         /**
@@ -88,7 +92,7 @@ namespace effects {
 
         /**
          * Creates a new effect that occurs over the entire screen
-         * @param particlesPerSecond 
+         * @param particlesPerSecond
          * @param duration
          */
         //% blockId=particlesStartScreenAnimation block="start screen %effect effect || for %duration ms"
@@ -115,7 +119,7 @@ namespace effects {
 
         /**
          * If this effect is currently occurring as a full screen effect, stop producing particles and end the effect
-         * @param particlesPerSecond 
+         * @param particlesPerSecond
          */
         //% blockId=particlesEndScreenAnimation block="end screen %effect effect"
         //% blockNamespace=scene
@@ -164,19 +168,19 @@ namespace effects {
     export const fountain = new ParticleEffect(20, 3000, function (anchor: particles.ParticleAnchor, particlesPerSecond: number) {
         class FountainFactory extends particles.SprayFactory {
             galois: Math.FastRandom;
-    
+
             constructor() {
                 super(40, 180, 90);
                 this.galois = new Math.FastRandom(1234);
             }
-    
+
             createParticle(anchor: particles.ParticleAnchor) {
                 const p = super.createParticle(anchor);
                 p.color = this.galois.randomBool() ? 8 : 9;
                 p.lifespan = 1500;
                 return p;
             }
-    
+
             drawParticle(p: particles.Particle, x: Fx8, y: Fx8) {
                 screen.setPixel(Fx.toInt(x), Fx.toInt(y), p.color);
             }
@@ -218,11 +222,11 @@ namespace effects {
     //% fixedInstance whenUsed block="smiles"
     export const smiles = new ScreenEffect(5, 25, 1500, function (anchor: particles.ParticleAnchor, particlesPerSecond: number) {
         const factory = new particles.ShapeFactory(anchor.width ? anchor.width : 16, 16, img`
-            . f . f . 
-            . f . f . 
-            . . . . . 
-            f . . . f 
-            . f f f . 
+            . f . f .
+            . f . f .
+            . . . . .
+            f . . . f
+            . f f f .
         `);
         // if large anchor, increase lifespan
         if (factory.xRange > 50) {
@@ -237,11 +241,11 @@ namespace effects {
     //% fixedInstance whenUsed block="rings"
     export const rings = createEffect(5, 1000, function () {
         return new particles.ShapeFactory(16, 16, img`
-            . F F F . 
-            F . . . F 
-            F . . . F 
-            f . . . f 
-            . f f f . 
+            . F F F .
+            F . . . F
+            F . . . F
+            f . . . f
+            . f f f .
         `);
     });
 
@@ -327,4 +331,13 @@ namespace effects {
         const factory = new particles.StarFactory([0x1, 0x3, 0x5, 0x9, 0xC]);
         return new particles.ParticleSource(anchor, particlesPerSecond, factory);
     });
+
+
+    type ParticleEffectListener = (effect: ParticleEffect, anchor: particles.ParticleAnchor, duration: number, particlesPerSecond: number) => void;
+
+    let effectStartedListener: ParticleEffectListener;
+
+    export function onParticleEffectStarted(cb: ParticleEffectListener) {
+        effectStartedListener = cb;
+    }
 }

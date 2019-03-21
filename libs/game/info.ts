@@ -437,6 +437,10 @@ namespace info {
         }
     }
 
+    export function countdownTimeRemaining() {
+        return _gameEnd - game.currentScene().millis();
+    }
+
     //% fixedInstances
     //% blockGap=8
     export class PlayerInfo {
@@ -538,7 +542,7 @@ namespace info {
 
         /**
          * Change the score of a player
-         * @param value 
+         * @param value
          */
         //% group="Multiplayer"
         //% blockId=pichangescore block="change %player score by %value"
@@ -584,7 +588,7 @@ namespace info {
 
         /**
          * Change the life of a player
-         * @param value 
+         * @param value
          */
         //% group="Multiplayer"
         //% blockId=pichangelife block="change %player life by %value"
@@ -608,7 +612,7 @@ namespace info {
 
         /**
          * Runs code when life reaches zero
-         * @param handler 
+         * @param handler
          */
         //% group="Multiplayer"
         //% blockId=playerinfoonlifezero block="on %player life zero"

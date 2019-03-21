@@ -7,6 +7,8 @@ namespace jacdac {
         stateUpdateHandler: () => void;
         lastServerTime: number;
 
+        protected packetListener: (pkt: Buffer) => void;
+
         constructor() {
             super("ctrl", jacdac.CONTROLLER_DEVICE_CLASS, 3);
             this.controlData[0] = JDControllerCommand.ControlClient;
@@ -44,6 +46,10 @@ namespace jacdac {
             const b = this.state[1];
             const msk = 1 << offset;
             this.state[1] = down ? (b | msk) : (~(~b | msk));
+        }
+
+        addPacketListener(listener: (pkt: Buffer) => void) {
+            this.packetListener = listener;
         }
 
         //% blockCombine blockCombineShadow=toggleOnOff block="left is pressed" blockSetVariable="button"
@@ -120,7 +126,7 @@ namespace jacdac {
 
         /**
          * Register code to run when the state is about to be sent
-         * @param handler 
+         * @param handler
          */
         //% blockId=jdctrlclientonstate block="on %controller state update"
         //% group="Controller"
@@ -144,7 +150,12 @@ namespace jacdac {
             return this.processPacket(packet.address, data);
         }
 
+        sendPacketExternal(pkt: Buffer) {
+            this.sendPacket(pkt);
+        }
+
         private processPacket(packetAddress: number, data: Buffer): boolean {
+
             const cmd: JDControllerCommand = data[0];
             // received a packet from the server
             if (cmd == JDControllerCommand.ControlServer) {
@@ -175,6 +186,8 @@ namespace jacdac {
                 // nope, doesn't seem to be our server
                 // do nothing
             }
+            else if (this.packetListener) this.packetListener(data);
+
             return true;
         }
 

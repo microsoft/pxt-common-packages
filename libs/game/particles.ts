@@ -85,7 +85,7 @@ namespace particles {
         /**
          * @param anchor to emit particles from
          * @param particlesPerSecond rate at which particles are emitted
-         * @param factory [optional] factory to generate particles with; otherwise, 
+         * @param factory [optional] factory to generate particles with; otherwise,
          */
         constructor(anchor: ParticleAnchor, particlesPerSecond: number, factory?: ParticleFactory) {
             init();
@@ -212,7 +212,7 @@ namespace particles {
 
         /**
          * Enables or disables particles
-         * @param on 
+         * @param on
          */
         setEnabled(on: boolean) {
             this.enabled = on;
@@ -259,7 +259,7 @@ namespace particles {
 
         /**
          * Sets the number of particle created per second
-         * @param particlesPerSecond 
+         * @param particlesPerSecond
          */
         setRate(particlesPerSecond: number) {
             this.period = Math.ceil(1000 / particlesPerSecond);
@@ -272,7 +272,7 @@ namespace particles {
 
         /**
          * Sets the particle factor
-         * @param factory 
+         * @param factory
          */
         setFactory(factory: ParticleFactory) {
             if (factory)
@@ -299,7 +299,7 @@ namespace particles {
 
     /**
      * Creates a new source of particles attached to a sprite
-     * @param sprite 
+     * @param sprite
      * @param particlesPerSecond number of particles created per second
      */
     export function createParticleSource(sprite: Sprite, particlesPerSecond: number): ParticleSource {
@@ -333,7 +333,7 @@ namespace particles {
         if (sources)
             sources.slice(0, sources.length).forEach(s => s._prune());
     }
-    
+
     function sortSources() {
         const sources = particleSources();
         sources.sort((a, b) => (a.priority - b.priority || a.id - b.id));

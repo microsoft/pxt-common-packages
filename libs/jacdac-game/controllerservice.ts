@@ -3,6 +3,7 @@ namespace jacdac {
     export class ControllerService extends Broadcast {
         promptedServers: number[];
         prompting: boolean;
+        protected externalAddress: number;
 
         constructor() {
             super("ctrl", jacdac.CONTROLLER_DEVICE_CLASS, 5);
@@ -94,7 +95,9 @@ namespace jacdac {
             const cmd: JDControllerCommand = data[0];
             switch (cmd) {
                 case JDControllerCommand.ControlClient:
-                    this.connectClient(address, data[1], data[2]);
+                    if (this.connectClient(address, data[1], data[2]) !== -1) {
+                        this.externalAddress = address;
+                    }
                     return true;
                 case JDControllerCommand.ClientButtons:
                     return this.processClientButtons(address, data);
@@ -129,7 +132,7 @@ namespace jacdac {
             return true;
         }
 
-        private hasPlayers(): boolean {
+        public hasPlayers(): boolean {
             for (let i = 1; i < this.controlData.length; ++i)
                 if (this.controlData[i]) return true;
             return false;
@@ -158,7 +161,7 @@ namespace jacdac {
                 this.promptedServers.push(device.serialNumber);
 
             // check that we haven't been join by then
-            return !!answer 
+            return !!answer
                 && !this.hasPlayers()
                 && !!jacdac.drivers().find(d => d.address == device.address);
         }
@@ -169,6 +172,9 @@ namespace jacdac {
                 this.log(`no player for ${toHex8(address)}`);
                 return false;
             }
+
+            this.externalAddress = address;
+
             const player = controller.players().find(p => p.playerIndex == playerIndex);
             if (!player) {
                 this.log(`no player ${player.playerIndex}`);
@@ -179,6 +185,10 @@ namespace jacdac {
             for (let i = 0; i < btns.length; ++i)
                 btns[i].setPressed(!!(state & (1 << (i + 1))));
             return true;
+        }
+
+        sendPacketExternal(pkt: Buffer) {
+            jacdac.sendPacket(pkt, this.externalAddress || this.device.address);
         }
 
         sendState() {
@@ -193,9 +203,9 @@ namespace jacdac {
         // stop server service
         jacdac.controllerService.stop();
         // remove game enterily
-        game.popScene();
-        // push empty game
-        game.pushScene();
+        // game.popScene();
+        // // push empty game
+        // game.pushScene();
         // start client
         console.log(`connecting to server...`);
         jacdac.controllerClient.stateUpdateHandler = function () {
@@ -206,16 +216,16 @@ namespace jacdac {
             jacdac.controllerClient.setIsPressed(JDControllerButton.Right, controller.right.isPressed());
             jacdac.controllerClient.setIsPressed(JDControllerButton.Down, controller.down.isPressed());
         }
-        game.onPaint(() => {
-            if (jacdac.controllerClient.isActive())
-                game.showDialog(
-                    `connected`,
-                    `player ${jacdac.controllerClient.playerIndex}`);
-            else
-                game.showDialog(
-                    `disconnected`,
-                    `connect jacdac`);
-        });
+        // game.onPaint(() => {
+        //     if (jacdac.controllerClient.isActive())
+        //         game.showDialog(
+        //             `connected`,
+        //             `player ${jacdac.controllerClient.playerIndex}`);
+        //     else
+        //         game.showDialog(
+        //             `disconnected`,
+        //             `connect jacdac`);
+        // });
         jacdac.controllerClient.start();
     }
     // auto start server
