@@ -3,7 +3,7 @@
 Create a new serial communication channel on the pins.
 
 ```sig
-pins.createSerial(pins.A0, pins.A1, 0);
+serial.createSerial(TX, RX, 0)
 ```
 
 If your board doesn't have a USB connection which provides a serial port, you can create a serial communication channel on its pins. Also, you might want another serial channel for exclusive use by your program for which you set your own bus identifier.
