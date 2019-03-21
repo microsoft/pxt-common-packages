@@ -83,6 +83,7 @@
 #define CFG_PIN_BATTSENSE 75
 #define CFG_PIN_VIBRATION 76
 #define CFG_PIN_PWREN 77
+#define CFG_PIN_DMX_OUT 78
 
 // default I2C address
 #define ACCELEROMETER_TYPE_LIS3DH 0x32

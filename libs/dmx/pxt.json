@@ -2,10 +2,7 @@
     "name": "dmx",
     "description": "DMX-512 protocol support",
     "files": [
-        "dmx.cpp",
-        "dmx.ts",
-        "shims.d.ts",
-        "enums.d.ts"
+        "dmx.ts"
     ],
     "dependencies": {
         "core": "file:../core"
