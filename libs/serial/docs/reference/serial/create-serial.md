@@ -3,7 +3,7 @@
 Create a new serial communication channel on the pins.
 
 ```sig
-serial.createSerial(TX, RX, 0)
+serial.createSerial(pins.TX, pins.RX)
 ```
 
 If your board doesn't have a USB connection which provides a serial port, you can create a serial communication channel on its pins. Also, you might want another serial channel for exclusive use by your program for which you set your own bus identifier.
@@ -21,6 +21,20 @@ This will create an instance of the ``Serial`` port object. This new instance is
 ## Return
 
 * a ``Serial`` instance that allows to interact with the bus directly.
+
+## Example #example
+
+Create you own serial communication device on pins **A0** and **A1**.
+
+```typescript-ignore
+let mySerial = serial.createSerial(pins.A0, pins.A1)
+mySerial.serialDevice.setBaudRate(BaudRate.BaudRate9600)
+mySerial.writeLine("My own serial connection")
+```
+
+## See also #seealso
+
+[redirect](/reference/serial/redirect)
 
 ```package
 serial
