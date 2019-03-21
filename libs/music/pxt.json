@@ -10,7 +10,8 @@
         "music.ts",
         "piano.ts",
         "ns.ts",
-        "speaker.svg",
+        "headphone.svg",
+        "jacdac.ts",
         "pxtparts.json"        
     ],
     "testFiles": [
@@ -18,6 +19,7 @@
     ],
     "public": true,
     "dependencies": {
-        "core": "file:../core"
+        "core": "file:../core",
+        "jacdac": "file:../jacdac"
     }
 }

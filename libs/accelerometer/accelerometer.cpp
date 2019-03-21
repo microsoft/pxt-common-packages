@@ -3,19 +3,7 @@
 #include "Pin.h"
 #include "I2C.h"
 #include "CoordinateSystem.h"
-
-#ifdef CODAL_ACCELEROMETER
-
-#ifdef CODAL_ACCELEROMETER_HEADER
-#include CODAL_ACCELEROMETER_HEADER
-#endif
-
-#else
-
-#include "LIS3DH.h"
-#define CODAL_ACCELEROMETER codal::LIS3DH
-
-#endif
+#include "Accelerometer.h"
 
 enum class Dimension {
     //% block=x
@@ -100,45 +88,48 @@ enum class Gesture {
     //% block="free fall"
     FreeFall = ACCELEROMETER_EVT_FREEFALL,
     /**
-    * Raised when a 3G shock is detected
-    */
+     * Raised when a 3G shock is detected
+     */
     //% block="3g"
     ThreeG = ACCELEROMETER_EVT_3G,
     /**
-    * Raised when a 6G shock is detected
-    */
+     * Raised when a 6G shock is detected
+     */
     //% block="6g"
     SixG = ACCELEROMETER_EVT_6G,
     /**
-    * Raised when a 8G shock is detected
-    */
+     * Raised when a 8G shock is detected
+     */
     //% block="8g"
     EightG = ACCELEROMETER_EVT_8G
 };
 
+// defined in accelhw.cpp
 namespace pxt {
+codal::Accelerometer *getAccelerometer();
 
-// Wrapper classes
-class WAccel {
-    CODAL_MBED::I2C i2c; // note that this is different pins than io->i2c
-    CoordinateSpace space;
-  public:
-    CODAL_ACCELEROMETER acc;
-    WAccel()
-        : i2c(*LOOKUP_PIN(ACCELEROMETER_SDA), *LOOKUP_PIN(ACCELEROMETER_SCL)),
-          space(ACC_SYSTEM, ACC_UPSIDEDOWN, ACC_ROTATION),
-          acc(i2c, *LOOKUP_PIN(ACCELEROMETER_INT), space)
-    {
-        acc.init();        
+void initAccelRandom() {
+    auto acc = getAccelerometer();
+    if (!acc) return;
+
+    for (int i = 0; i < 10; ++i) {
+        acc->requestUpdate();
+        if (acc->getY())
+            break;
+        fiber_sleep(5);
     }
-};
-
-SINGLETON(WAccel);
+    int x = acc->getX(), y = acc->getY(), z = acc->getZ();
+    DMESG("random seed from accel %d,%d,%d", x, y, z);
+    seedAddRandom(x);
+    seedAddRandom(y);
+    seedAddRandom(z);
 }
+
+} // namespace pxt
 
 namespace input {
 /**
- * Do something when when a gesture is done (like shaking the board).
+ * Do something when a gesture happens (like shaking the board).
  * @param gesture the type of gesture to track, eg: Gesture.Shake
  * @param body code to run when gesture is raised
  */
@@ -150,8 +141,10 @@ namespace input {
 //% gesture.fieldOptions.columns=3
 //% weight=92 blockGap=12
 void onGesture(Gesture gesture, Action body) {
-    auto acc = &getWAccel()->acc;
-    acc->updateSample();
+    auto acc = getAccelerometer();
+    if (!acc) return;
+
+    acc->requestUpdate();
     int gi = (int)gesture;
     if (gi == ACCELEROMETER_EVT_3G && acc->getRange() < 3)
         acc->setRange(4);
@@ -161,7 +154,9 @@ void onGesture(Gesture gesture, Action body) {
 }
 
 int getAccelerationStrength() {
-    auto acc = &getWAccel()->acc;
+    auto acc = getAccelerometer();
+    if (!acc) return 0;
+
     float x = acc->getX();
     float y = acc->getY();
     float z = acc->getZ();
@@ -181,13 +176,16 @@ int getAccelerationStrength() {
 //% dimension.fieldOptions.columns=2
 //% weight=42 blockGap=8
 int acceleration(Dimension dimension) {
+    auto acc = getAccelerometer();
+    if (!acc) return 0;
+
     switch (dimension) {
     case Dimension::X:
-        return getWAccel()->acc.getX();
+        return acc->getX();
     case Dimension::Y:
-        return getWAccel()->acc.getY();
+        return acc->getY();
     case Dimension::Z:
-        return getWAccel()->acc.getZ();
+        return acc->getZ();
     case Dimension::Strength:
         return getAccelerationStrength();
     }
@@ -203,11 +201,14 @@ int acceleration(Dimension dimension) {
 //% parts="accelerometer"
 //% group="More" weight=38
 int rotation(Rotation kind) {
+    auto acc = getAccelerometer();
+    if (!acc) return 0;
+
     switch (kind) {
     case Rotation::Pitch:
-        return getWAccel()->acc.getPitch();
+        return acc->getPitch();
     case Rotation::Roll:
-        return getWAccel()->acc.getRoll();
+        return acc->getRoll();
     }
     return 0;
 }
@@ -222,7 +223,10 @@ int rotation(Rotation kind) {
 //% parts="accelerometer"
 //% group="More" weight=15 blockGap=8
 void setAccelerometerRange(AcceleratorRange range) {
-    getWAccel()->acc.setRange((int)range);
+    auto acc = getAccelerometer();
+    if (!acc) return;
+
+    acc->setRange((int)range);
 }
 
-}
+} // namespace input

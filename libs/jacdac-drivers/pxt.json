@@ -1,0 +1,31 @@
+{
+    "name": "jacdac-drivers",
+    "description": "Virtual drivers for jacdac - beta",
+    "files": [
+        "sensorclient.ts",
+        "buttonclient.ts",
+        "lightsensorclient.ts",
+        "battery.ts",
+        "accelerometerclient.ts",
+        "touchclient.ts",
+        "microphoneclient.ts",
+        "thermometerclient.ts",
+        "switchclient.ts",
+        "lightclient.ts",
+        "keyboardclient.ts",
+        "mouseclient.ts",
+        "gamepadclient.ts",
+        "pixelclient.ts",
+        "musicclient.ts",
+        "servoclient.ts",
+        "lcdclient.ts"
+    ],
+    "testFiles": [
+        "test.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core",
+        "jacdac": "file:../jacdac"
+    }
+}

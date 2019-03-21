@@ -5,17 +5,20 @@
         "mouse.cpp",
         "shims.d.ts",
         "enums.d.ts",
-        "mouse.ts"
+        "mouse.ts",
+        "jacdac.ts"
     ],
     "tests": [
         "test.ts"
     ],
     "public": true,
     "dependencies": {
-        "core": "file:../core"
+        "core": "file:../core",
+        "jacdac": "file:../jacdac"
     },
     "yotta": {
         "config": {
+            "DEVICE_USB": 1,
             "DEVICE_MOUSE": 1
         }
     }

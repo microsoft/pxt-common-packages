@@ -15,24 +15,24 @@ namespace game {
         }
 
         get left() {
-            return this.parent.left + this.ox;
+            return Fx.iadd(this.ox, this.parent._x)
         }
 
         get top() {
-            return this.parent.top + this.oy;
+            return Fx.iadd(this.oy, this.parent._y)
         }
 
         get right() {
-            return this.left + this.width - 1;
+            return Fx.iadd(this.width - 1, this.left)
         }
 
         get bottom() {
-            return this.top + this.height - 1;
+            return Fx.iadd(this.height - 1, this.top)
         }
     }
 
 
-    export function calculateHitBoxes(s: Sprite): Hitbox[] {
+    export function calculateHitBox(s: Sprite): Hitbox {
         const i = s.image;
         let minX = i.width;
         let minY = i.height;
@@ -52,31 +52,7 @@ namespace game {
 
         const width = maxX - minX + 1;
         const height = maxY - minY + 1;
-        if (width <= 0 || height <= 0) {
-            return [];
-        }
-        else if (width < 16 && height < 16) {
-            return [new Hitbox(s, width, height, minX, minY)]
-        }
-
-        const rows = Math.idiv(height, 15) + 1;
-        const columns = Math.idiv(width, 15) + 1;
-        const boxes: Hitbox[] = [];
-        for (let c = 0; c < columns; c++) {
-            let boxWidth = 15;
-            if (c === columns - 1) {
-                boxWidth = width % 15;
-            }
-
-            for (let r = 0; r < rows; r++) {
-                let boxHeight = 15;
-                if (r === rows - 1) {
-                    boxHeight = height % 15;
-                }
-                if (boxWidth > 0 && boxHeight > 0)
-                    boxes.push(new Hitbox(s, boxWidth, boxHeight, minX + c * 15, minY + r * 15));
-            }
-        }
-        return boxes;
+        
+        return new Hitbox(s, width, height, minX, minY);
     }
 }

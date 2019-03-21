@@ -1,14 +1,18 @@
 {
     "name": "controller",
-    "description": "Game controller",
+    "description": "Extra game controller functionalities",
     "files": [
-        "enums.ts",
-        "controller.ts",
-        "targetoverrides.ts"
+        "README.md",
+        "state.ts",
+        "vibration.ts",
+        "accelerometer.ts",
+        "lightsensor.ts"
     ],
+    "public": true,
     "dependencies": {
         "core": "file:../core",
-        "screen": "file:../screen"
-    },
-    "public": true
+        "accelerometer": "file:../accelerometer",
+        "lightsensor": "file:../lightsensor",
+        "game": "file:../game"
+    }
 }

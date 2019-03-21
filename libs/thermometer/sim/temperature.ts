@@ -26,7 +26,7 @@ namespace pxsim.input {
             ? temperature 
             : (((temperature - 32) * 10) / 18 >> 0);
         
-        if (condition === DAL.ANALOG_THRESHOLD_HIGH) {
+        if (condition === DAL.LEVEL_THRESHOLD_HIGH) {
             b.setHighThreshold(t);
         }
         else {

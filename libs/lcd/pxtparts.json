@@ -1,0 +1,145 @@
+{
+  "lcd": {
+    "simulationBehavior": "lcd",
+    "visual": {
+      "builtIn": "lcd",
+      "width": 322.7900085449219,
+      "height": 129.2734832763672,
+      "pinDistance": 15,
+      "pinLocations": [
+        {
+          "x": 11.983749261125496,
+          "y": 8.037069860858837
+        },
+        {
+          "x": 174.95982904462969,
+          "y": 8.037069860858837
+        },
+        {
+          "x": 86.06377405577577,
+          "y": 8.037069860858837
+        },
+        {
+          "x": 71.24775738046868,
+          "y": 8.037069860858837
+        },
+        {
+          "x": 56.431758730357025,
+          "y": 8.037069860858837
+        },
+        {
+          "x": 41.61576008024537,
+          "y": 8.037069860858837
+        },
+        {
+          "x": 26.799752417536006,
+          "y": 8.037069860858837
+        },
+        {
+          "x": 189.77581868214364,
+          "y": 8.037069860858837
+        },
+        {
+          "x": 160.14380335672487,
+          "y": 8.037069860858837
+        },
+        {
+          "x": 219.40781598236694,
+          "y": 8.037069860858837
+        },
+        {
+          "x": 204.59180831965756,
+          "y": 8.037069860858837
+        },
+        {
+          "x": 234.22384167027172,
+          "y": 8.037069860858837
+        }
+      ]
+    },
+    "numberOfPins": 12,
+    "instantiation": {
+      "kind": "singleton"
+    },
+    "pinDefinitions": [
+      {
+        "target": "ground",
+        "style": "male",
+        "orientation": "-Z"
+      },
+      {
+        "target": "LCD_DATALINE5",
+        "style": "male",
+        "orientation": "-Z"
+      },
+      {
+        "target": "LCD_ENABLE",
+        "style": "male",
+        "orientation": "-Z"
+      },
+      {
+        "target": "ground",
+        "style": "male",
+        "orientation": "-Z"
+      },
+      {
+        "target": "LCD_RESET",
+        "style": "male",
+        "orientation": "-Z"
+      },
+      {
+        "target": "ground",
+        "style": "male",
+        "orientation": "-Z"
+      },
+      {
+        "target": "fiveVolt",
+        "style": "male",
+        "orientation": "-Z"
+      },
+      {
+        "target": "LCD_DATALINE6",
+        "style": "male",
+        "orientation": "-Z"
+      },
+      {
+        "target": "LCD_DATALINE4",
+        "style": "male",
+        "orientation": "-Z"
+      },
+      {
+        "target": "fiveVolt",
+        "style": "male",
+        "orientation": "-Z"
+      },
+      {
+        "target": "LCD_DATALINE7",
+        "style": "male",
+        "orientation": "-Z"
+      },
+      {
+        "target": "ground",
+        "style": "male",
+        "orientation": "-Z"
+      }
+    ],
+    "assembly": [
+      {
+        "pinIndices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ]
+      }
+    ]
+  }
+}

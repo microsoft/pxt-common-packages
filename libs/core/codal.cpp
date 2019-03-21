@@ -9,7 +9,7 @@ PXT_ABI(__aeabi_dsub)
 PXT_ABI(__aeabi_ddiv)
 PXT_ABI(__aeabi_dmul)
 
-#define PXT_COMM_BASE 0x20001000  // 4k in
+#define PXT_COMM_BASE 0x20001000 // 4k in
 
 namespace pxt {
 
@@ -24,7 +24,6 @@ __attribute__((section(".binmeta"))) __attribute__((used)) const uint32_t pxt_bi
     0x00ff00ff, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff,
 };
 
-CODAL_TIMER devTimer;
 Event lastEvent;
 MessageBus devMessageBus;
 codal::CodalDevice device;
@@ -35,30 +34,31 @@ struct FreeList {
 
 static void commInit() {
     int commSize = bytecode[20];
-    if (!commSize) return;
+    if (!commSize)
+        return;
 
-    FreeList *head = NULL;        
-    void *commBase = (void*)PXT_COMM_BASE;
+    FreeList *head = NULL;
+    void *commBase = (void *)PXT_COMM_BASE;
     for (;;) {
-        void *p = malloc(4);
-        // assume 4 byte alloc header; if we're not hitting 8 byte alignment, try allocating 8 bytes, not 4
-        // without the volatile, gcc assumes 8 byte alignment on malloc()
+        void *p = xmalloc(4);
+        // assume 4 byte alloc header; if we're not hitting 8 byte alignment, try allocating 8
+        // bytes, not 4 without the volatile, gcc assumes 8 byte alignment on malloc()
         volatile unsigned hp = (unsigned)p;
         if (hp & 4) {
-            free(p);
-            p = malloc(8);
+            xfree(p);
+            p = xmalloc(8);
         }
         if (p == commBase) {
-            free(p);
+            xfree(p);
             // allocate the comm section; this is never freed
-            p = malloc(commSize);
+            p = xmalloc(commSize);
             if (p != commBase)
-                target_panic(999);
+                oops(10);
             break;
         }
-        if (p > commBase) 
-            target_panic(999);
-        auto f = (FreeList*)p;
+        if (p > commBase)
+            oops(11);
+        auto f = (FreeList *)p;
         f->next = head;
         head = f;
     }
@@ -66,7 +66,7 @@ static void commInit() {
     while (head) {
         auto p = head;
         head = head->next;
-        free(p);
+        xfree(p);
     }
 }
 
@@ -89,6 +89,11 @@ static void initCodal() {
     }
 
     usb_init();
+
+    auto led = LOOKUP_PIN(LED);
+    if (led) {
+        led->setDigitalValue(0);
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -120,11 +125,12 @@ void registerWithDal(int id, int event, Action a, int flags) {
 
 void fiberDone(void *a) {
     decr((Action)a);
+    unregisterGCPtr((Action)a);
     release_fiber();
 }
 
 void releaseFiber() {
-    release_fiber();    
+    release_fiber();
 }
 
 void sleep_ms(unsigned ms) {
@@ -145,6 +151,7 @@ void forever_stub(void *a) {
 void runForever(Action a) {
     if (a != 0) {
         incr(a);
+        registerGCPtr(a);
         create_fiber(forever_stub, (void *)a);
     }
 }
@@ -152,6 +159,7 @@ void runForever(Action a) {
 void runInParallel(Action a) {
     if (a != 0) {
         incr(a);
+        registerGCPtr(a);
         create_fiber((void (*)(void *))runAction0, (void *)a, fiberDone);
     }
 }
@@ -180,4 +188,58 @@ int getSerialNumber() {
 int current_time_ms() {
     return system_timer_current_time();
 }
+
+#ifdef PXT_GC
+ThreadContext *getThreadContext() {
+    if (!currentFiber)
+        return NULL;
+    return (ThreadContext *)currentFiber->user_data;
 }
+
+void setThreadContext(ThreadContext *ctx) {
+    currentFiber->user_data = ctx;
+}
+
+static void *threadAddressFor(codal::Fiber *fib, void *sp) {
+    if (fib == currentFiber)
+        return sp;
+    return (uint8_t *)sp + ((uint8_t *)fib->stack_top - (uint8_t *)tcb_get_stack_base(fib->tcb));
+}
+
+void gcProcessStacks(int flags) {
+    // check scheduler is initialized
+    if (!currentFiber) {
+        // make sure we allocate something to at least initalize the memory allocator
+        void * volatile p = xmalloc(1);
+        xfree(p);
+        return;
+    }
+
+    int numFibers = codal::list_fibers(NULL);
+    codal::Fiber **fibers = (codal::Fiber **)xmalloc(sizeof(codal::Fiber *) * numFibers);
+    int num2 = codal::list_fibers(fibers);
+    if (numFibers != num2)
+        oops(12);
+    int cnt = 0;
+
+    for (int i = 0; i < numFibers; ++i) {
+        auto fib = fibers[i];
+        auto ctx = (ThreadContext *)fib->user_data;
+        if (!ctx)
+            continue;
+        for (auto seg = &ctx->stack; seg; seg = seg->next) {
+            auto ptr = (TValue *)threadAddressFor(fib, seg->top);
+            auto end = (TValue *)threadAddressFor(fib, seg->bottom);
+            if (flags & 2)
+                DMESG("RS%d:%p/%d", cnt++, ptr, end - ptr);
+            // VLOG("mark: %p - %p", ptr, end);
+            while (ptr < end) {
+                gcProcess(*ptr++);
+            }
+        }
+    }
+    xfree(fibers);
+}
+#endif
+
+} // namespace pxt

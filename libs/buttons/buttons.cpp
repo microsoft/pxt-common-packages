@@ -13,8 +13,8 @@ These button events need CODAL work.
 */
 
 /**
-* User interaction on buttons
-*/
+ * User interaction on buttons
+ */
 enum class ButtonEvent {
     //% block="click"
     Click = DEVICE_BUTTON_EVT_CLICK,
@@ -26,12 +26,79 @@ enum class ButtonEvent {
     Down = DEVICE_BUTTON_EVT_DOWN
 };
 
+#ifdef PXT_74HC165
+static void waitABit() {
+    for (int i = 0; i < 10; ++i)
+        asm volatile ("nop");
+}
+class MultiplexedButton;
+class ButtonMultiplexer : public CodalComponent {
+  public:
+    Pin fakePin;
+    Pin &latch;
+    Pin &clock;
+    Pin &data;
+    uint32_t state;
+    MultiplexedButton *createButton(uint16_t id, uint8_t shift);
+    ButtonMultiplexer(uint16_t id)
+        : fakePin(id, (PinNumber)0, PinCapability::PIN_CAPABILITY_DIGITAL),
+          latch(*LOOKUP_PIN(BTNMX_LATCH)), clock(*LOOKUP_PIN(BTNMX_CLOCK)),
+          data(*LOOKUP_PIN(BTNMX_DATA)) {
+        this->state = 0;
+        this->id = id;
+        this->status |= DEVICE_COMPONENT_STATUS_SYSTEM_TICK;
+    }
+
+    virtual void periodicCallback() {
+        latch.setDigitalValue(0);
+        waitABit();
+        latch.setDigitalValue(1);
+        waitABit();
+
+        state = 0;
+
+        for (int i = 0; i < 8; i++) {
+            state <<= 1;
+            if (data.getDigitalValue())
+                state |= 1;
+            clock.setDigitalValue(1);
+            waitABit();
+            clock.setDigitalValue(0);
+            waitABit();
+        }
+    }
+};
+class MultiplexedButton : public Button {
+  public:
+    ButtonMultiplexer *parent;
+    uint8_t shift;
+    MultiplexedButton(uint16_t id, uint8_t shift, ButtonMultiplexer *parent)
+        : Button(parent->fakePin, id), parent(parent), shift(shift) {}
+
+  protected:
+    virtual int buttonActive() { return (parent->state & (1 << shift)) != 0; }
+};
+
+MultiplexedButton *ButtonMultiplexer::createButton(uint16_t id, uint8_t shift) {
+    return new MultiplexedButton(id, shift, this);
+}
+
+static ButtonMultiplexer *buttonMultiplexer;
+#endif
+
 namespace pxt {
 //%
 Button *getButtonByPin(int pin, int flags) {
     auto cpid = DEVICE_ID_FIRST_BUTTON + pin;
     auto btn = (Button *)lookupComponent(cpid);
     if (btn == NULL) {
+#ifdef PXT_74HC165
+        if (pin >= 1000) {
+            if (!buttonMultiplexer)
+                buttonMultiplexer = new ButtonMultiplexer(DEVICE_ID_FIRST_BUTTON);
+            return buttonMultiplexer->createButton(cpid, pin - 1000);
+        }
+#endif
         auto pull = PullMode::None;
         if ((flags & 0xf0) == 0x10)
             pull = PullMode::Down;
@@ -40,7 +107,8 @@ Button *getButtonByPin(int pin, int flags) {
         else if ((flags & 0xf0) == 0x20)
             pull = PullMode::None;
         else
-            target_panic(42);
+            oops(3);
+        // GCTODO
         btn = new Button(*lookupPin(pin), cpid, DEVICE_BUTTON_ALL_EVENTS,
                          (ButtonPolarity)(flags & 0xf), pull);
     }
@@ -50,7 +118,8 @@ Button *getButtonByPin(int pin, int flags) {
 //%
 Button *getButtonByPinCfg(int key, int flags) {
     int pin = getConfig(key);
-    if (pin == -1) target_panic(42);
+    if (pin == -1)
+        target_panic(PANIC_NO_SUCH_CONFIG);
     return getButtonByPin(pin, flags);
 }
 
@@ -67,7 +136,7 @@ AbstractButton *getButton(int id) {
     else if (id == 2)
         return getMultiButton(DEVICE_ID_BUTTON_AB, pa, pb, flags);
     else {
-        target_panic(42);
+        target_panic(PANIC_INVALID_ARGUMENT);
         return NULL;
     }
 }
@@ -77,6 +146,7 @@ MultiButton *getMultiButton(int id, int pinA, int pinB, int flags) {
     if (btn == NULL) {
         auto bA = getButtonByPin(pinA, flags);
         auto bB = getButtonByPin(pinB, flags);
+        // GCTODO
         btn = new codal::MultiButton(bA->id, bB->id, id);
 
         // A user has registered to receive events from the buttonAB multibutton.
@@ -92,8 +162,7 @@ MultiButton *getMultiButton(int id, int pinA, int pinB, int flags) {
     }
     return btn;
 }
-}
-
+} // namespace pxt
 
 namespace DigitalInOutPinMethods {
 
@@ -105,29 +174,27 @@ Button_ pushButton(DigitalInOutPin pin) {
     return pxt::getButtonByPin(pin->name, BUTTON_ACTIVE_LOW_PULL_UP);
 }
 
-}
-
+} // namespace DigitalInOutPinMethods
 
 //% noRefCounting fixedInstances
 namespace ButtonMethods {
-/**	
- * Do something when a button (`A`, `B` or both `A` + `B`) is clicked, double clicked, etc...	
- * @param button the button that needs to be clicked or used	
- * @param event the kind of button gesture that needs to be detected	
- * @param body code to run when the event is raised	
- */	
-//% help=input/button/on-event	
-//% blockId=buttonEvent block="on %button|%event"	
-//% parts="buttons"	
-//% blockNamespace=input	
-//% button.fieldEditor="gridpicker"	
-//% button.fieldOptions.width=220	
-//% button.fieldOptions.columns=3	
-//% weight=96 blockGap=12	
-//% trackArgs=0	
-void onEvent(Button_ button, ButtonEvent ev, Action body) {	
-    registerWithDal(button->id, (int)ev, body);	
-}    
+/**
+ * Do something when a button (`A`, `B` or both `A` + `B`) is clicked, double clicked, etc...
+ * @param button the button that needs to be clicked or used
+ * @param event the kind of button gesture that needs to be detected
+ * @param body code to run when the event is raised
+ */
+//% help=input/button/on-event
+//% blockId=buttonEvent block="on %button|%event"
+//% blockNamespace=input
+//% button.fieldEditor="gridpicker"
+//% button.fieldOptions.width=220
+//% button.fieldOptions.columns=3
+//% weight=96 blockGap=12
+//% trackArgs=0
+void onEvent(Button_ button, ButtonEvent ev, Action body) {
+    registerWithDal(button->id, (int)ev, body);
+}
 
 /**
  * Check if a button is pressed or not.
@@ -136,7 +203,6 @@ void onEvent(Button_ button, ButtonEvent ev, Action body) {
 //% help=input/button/is-pressed
 //% block="%button|is pressed"
 //% blockId=buttonIsPressed
-//% parts="buttons"
 //% blockNamespace=input
 //% button.fieldEditor="gridpicker"
 //% button.fieldOptions.width=220
@@ -154,7 +220,6 @@ bool isPressed(Button_ button) {
 //% help=input/button/was-pressed
 //% block="%button|was pressed"
 //% blockId=buttonWasPressed
-//% parts="buttons"
 //% blockNamespace=input
 //% button.fieldEditor="gridpicker"
 //% button.fieldOptions.width=220
@@ -166,11 +231,11 @@ bool wasPressed(Button_ button) {
 }
 
 /**
-* Gets the component identifier for the buton
-*/
+ * Gets the component identifier for the buton
+ */
 //%
 int id(Button_ button) {
     return button->id;
 }
 
-}
+} // namespace ButtonMethods

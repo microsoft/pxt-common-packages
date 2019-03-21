@@ -1,12 +1,12 @@
 # Sprites
 
-Create and move game objects. Handle collisions between objects.
+Create and move game objects. Handle overlaps between objects.
 
 ## Create sprites
 
 ```cards
-sprites.create(null)
-sprites.createProjectile(img``, 0, 0, 0)
+sprites.create(img`.`)
+sprites.createProjectile(img`.`, 0, 0, 0)
 ```
 
 ## Sprite actions
@@ -14,12 +14,19 @@ sprites.createProjectile(img``, 0, 0, 0)
 ```cards
 sprites.create(null).say("")
 sprites.create(null).overlapsWith(null)
-sprites.create(null).isHittingTile(CollisionDirection.Left)
-sprites.create(null).tileHitFrom(CollisionDirection.Left)
 sprites.create(null).destroy()
 sprites.create(null).setFlag(0, false)
 sprites.create(null).setImage(null)
 sprites.create(null).setPosition(0, 0)
+sprites.create(null).setKind(0)
+sprites.create(null).kind()
+```
+
+## Sprite effects
+
+```cards
+sprites.create(null).startEffect(effects.spray, 500)
+effects.clearParticles(null)
 ```
 
 ## Sprite events
@@ -51,11 +58,10 @@ sprites.onOverlap(0, 0, function (sprite, otherSprite) {})
 
 ### Image and Attributes
 
-* [**image**](/reference/sprites/sprite/lifespan)
-* [**width**](/reference/sprites/sprite/lifespan)
-* [**height**](/reference/sprites/sprite/lifespan)
+* [**image**](/reference/sprites/sprite/image)
+* [**width**](/reference/sprites/sprite/width)
+* [**height**](/reference/sprites/sprite/height)
 * [**lifespan**](/reference/sprites/sprite/lifespan)
-* [**type**](/reference/sprites/sprite/lifespan)
 
 ## See also
 
@@ -63,11 +69,14 @@ sprites.onOverlap(0, 0, function (sprite, otherSprite) {})
 [create projectile](/reference/sprites/create-projectile),
 [say](/reference/sprites/sprite/say),
 [overlaps with](/reference/sprites/sprite/overlaps-with),
-[is hitting tile](/reference/sprites/sprite-is-hittint-tile),
-[tile hit from](/reference/sprites/sprite/tile-hit-from),
 [destroy](/reference/sprites/sprite/destroy),
 [set flag](/reference/sprites/sprite/set-flag),
+[set image](/reference/sprites/sprite/set-image),
 [set position](/reference/sprites/sprite/set-position),
+[set kind](/reference/sprites/sprite/set-kind),
+[kind](/reference/sprites/sprite/kind),
+[start effect](/reference/sprites/sprite/start-effect),
+[clear particles](/reference/sprites/sprite/clear-particles),
 [on created](/reference/sprites/on-created),
 [on destroyed](/reference/sprites/on-destroyed),
 [on overlap](/reference/sprites/on-overlap)

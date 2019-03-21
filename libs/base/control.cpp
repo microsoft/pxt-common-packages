@@ -69,8 +69,45 @@ namespace control {
     *
     */
     //%
-    void __log(String text) {
+    void __log(int prority, String text) {
         if (NULL == text) return;
-        pxt::sendSerial(text->data, text->length);
+        pxt::sendSerial(text->getUTF8Data(), text->getUTF8Size());
+    }
+
+    /**
+     * Dump internal information about a value.
+     */
+    //%
+    void dmesgValue(TValue v) {
+        anyPrint(v);
+    }
+
+    /**
+     * Force GC and dump basic information about heap.
+     */
+    //%
+    void gc() {
+        pxt::gc(1);
+    }
+
+    /**
+     * Force GC and halt waiting for debugger to do a full heap dump.
+     */
+    //%
+    void heapDump() {
+        pxt::gc(2);
+        target_panic(PANIC_HEAP_DUMPED);
+    }
+
+    /**
+     * Return true if profiling is enabled in the current build.
+     */
+    //%
+    bool profilingEnabled() {
+#ifdef PXT_PROFILE
+        return true;
+#else
+        return false;
+#endif
     }
 }

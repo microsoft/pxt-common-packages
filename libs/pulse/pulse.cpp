@@ -1,11 +1,21 @@
 #include "pxt.h"
 #include "pulse.h"
 
+#define IR_TIMER_CHANNEL 0
+
 // from samd21.cpp
-void NVIC_Setup();
-void setPeriodicCallback(uint32_t usec, void *data, void (*callback)(void *));
-void clearPeriodicCallback();
 void setTCC0(int enabled);
+
+#ifdef SAMD21
+void setTCC0(int enabled) {
+    while (TCC0->STATUS.reg & TC_STATUS_SYNCBUSY)
+        ;
+    if (enabled)
+        TCC0->CTRLA.reg |= TC_CTRLA_ENABLE;
+    else
+        TCC0->CTRLA.reg &= ~TC_CTRLA_ENABLE;
+}
+#endif
 
 namespace network {
 
@@ -83,9 +93,19 @@ uint16_t crc16ccit(uint8_t *data, uint32_t len) {
     return crc;
 }
 
-PulseBase::PulseBase(uint16_t id, int pinOut, int pinIn) {
-    NVIC_Setup();
+static PulseBase* instance = NULL;
+
+static void timer_irq(uint16_t channels)
+{
+    if (instance)
+        instance->timerIRQ(channels);
+}
+
+PulseBase::PulseBase(uint16_t id, int pinOut, int pinIn, LowLevelTimer* t) {
     this->id = id;
+    this->timer = t;
+
+    instance = this;
 
     recvState = PULSE_RECV_ERROR;
     sending = false;
@@ -98,6 +118,11 @@ PulseBase::PulseBase(uint16_t id, int pinOut, int pinIn) {
 
         devMessageBus.listen(id, PULSE_PACKET_END_EVENT, this, &PulseBase::packetEnd);
     }
+
+    timer->setIRQPriority(0);
+    timer->setIRQ(timer_irq);
+    timer->setBitMode(BitMode16);
+    timer->enable();
 }
 
 void PulseBase::setupGapEvents() {
@@ -120,7 +145,6 @@ void PulseBase::setupPWM() {
 }
 
 void PulseBase::setPWM(int enabled) {
-    // pin->setPwm(enabled);
     setTCC0(enabled);
     pwmstate = enabled;
 }
@@ -155,15 +179,15 @@ void PulseBase::send(Buffer d) {
         encodedMsg.push(1);
 
     auto gap = system_timer_current_time_us() - lastSendTime;
+
     // we require 200ms between sends
     if (gap < 200000) {
         gap = (200000 - gap) / 1000;
         fiber_sleep(gap);
     }
 
-    while (isReciving())
+    while (isReceiving())
         fiber_sleep(10);
-    lastSendTime = system_timer_current_time_us();
 
     // encodedMsg.print();
 
@@ -173,11 +197,19 @@ void PulseBase::send(Buffer d) {
 
     sendPtr = 0;
 
-    setPeriodicCallback(PULSE_PULSE_LEN, this, (void (*)(void *)) & PulseBase::process);
+    lastSendTime = system_timer_current_time_us();
+
+    timer->setCompare(IR_TIMER_CHANNEL, timer->captureCounter() + PULSE_PULSE_LEN);
+
     while (sending) {
         fiber_sleep(10);
     }
     fiber_sleep(5);
+}
+
+void PulseBase::timerIRQ(uint16_t)
+{
+    process();
 }
 
 void PulseBase::finish(int code) {
@@ -283,6 +315,8 @@ void PulseBase::packetEnd(Event) {
     uint16_t crc = crc16ccit(buf, ptr);
     uint16_t pktCrc = (buf[ptr + 1] << 8) | buf[ptr];
 
+    if (!outBuffer)
+        registerGC((TValue*)&outBuffer);
     decrRC(outBuffer);
     outBuffer = pins::createBuffer(ptr);
     memcpy(outBuffer->data, buf, ptr);
@@ -323,7 +357,7 @@ void PulseBase::pulseMark(Event ev) {
     }
 }
 
-bool PulseBase::isReciving() {
+bool PulseBase::isReceiving() {
     auto now = system_timer_current_time_us();
     // inpin low means mark
     if (inpin->getDigitalValue() == 0 || now - lastMarkTime < 10000) {
@@ -338,6 +372,7 @@ Buffer PulseBase::getBuffer() {
 }
 
 void PulseBase::process() {
+    // DMESG("PROC");
     if (!sending)
         return;
 
@@ -352,10 +387,12 @@ void PulseBase::process() {
     if (encodedMsgPtr >= encodedMsg.size()) {
         encodedMsg.setLength(0);
         finishPWM();
-        clearPeriodicCallback();
+
         sending = false;
         return;
     }
+
+    timer->offsetCompare(IR_TIMER_CHANNEL, PULSE_PULSE_LEN);
 
     int curr = encodedMsg.get(encodedMsgPtr);
     if (curr != pwmstate)

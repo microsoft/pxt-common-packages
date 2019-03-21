@@ -1,9 +1,6 @@
 #include "pxt.h"
 #include "SPI.h"
 
-#if CONFIG_ENABLED(DEVICE_USB)
-
-#include "MbedSPI.h"
 #include "GhostSNORFS.h"
 #include "StandardSPIFlash.h"
 
@@ -32,13 +29,23 @@ class WStorage {
         mounted = fs.tryMount();
     }
 };
-SINGLETON(WStorage);
+SINGLETON_IF_PIN(WStorage, FLASH_MOSI);
 
 static WStorage *mountedStorage() {
     auto s = getWStorage();
+    if (!s) 
+        return NULL;
+
     if (s->mounted)
         return s;
+    
+    DMESG("formatting storage");
+    s->fs.exists("foobar"); // forces mount
+    s->mounted = true;
 
+    return s;
+
+/*
     auto p = LOOKUP_PIN(LED);
     // lock-up blinking LED
     // TODO wait for A+B, erase SPI chip, and reset
@@ -48,13 +55,14 @@ static WStorage *mountedStorage() {
         p->setDigitalValue(0);
         fiber_sleep(100);
     }
+    */
 }
 
 //%
 void init() {
     usb.delayStart();
     auto s = getWStorage();
-    if (s->mounted) {
+    if (s && s->mounted) {
         usb.add(s->msc);
         s->msc.addFiles();
     }
@@ -63,11 +71,16 @@ void init() {
 
 snorfs::File *getFile(String filename) {
     auto st = mountedStorage();
+    if (!st) 
+        return NULL;
 
     // maybe we want to keep say up to 5 files open?
     static String currFilename;
     static snorfs::File *currFile;
-    if (currFilename) {
+
+    if (!currFilename) {
+        registerGC((TValue*)&currFilename);
+    } else {
         if (filename && String_::compare(currFilename, filename) == 0)
             return currFile;
         decrRC(currFilename);
@@ -75,46 +88,50 @@ snorfs::File *getFile(String filename) {
     }
     currFilename = filename;
     incrRC(currFilename);
-    currFile = filename == NULL ? NULL : st->fs.open(filename->data);
+    // TODO: fix UTF8 encoding
+    currFile = filename == NULL ? NULL : st->fs.open(filename->getUTF8Data());
     return currFile;
 }
 
-/** Append string data to a new or existing file. */
-//% part="storage"
-void append(String filename, String data) {
-    auto f = getFile(filename);
-    f->append(data->data, data->length);
-}
-
-/** Append a buffer to a new or existing file. */
-//% part="storage"
+/** 
+* Append a buffer to a new or existing file. 
+* @param filename name of the file, eg: "log.txt"
+*/
+//% parts="storage"
 void appendBuffer(String filename, Buffer data) {
     auto f = getFile(filename);
+    if (NULL == f) return;
     f->append(data->data, data->length);
 }
 
-/** Overwrite file with string data. */
-//% part="storage"
-void overwrite(String filename, String data) {
-    auto f = getFile(filename);
-    f->overwrite(data->data, data->length);
-}
-
-/** Overwrite file with a buffer. */
-//% part="storage"
+/** 
+* Overwrite file with a buffer. 
+* @param filename name of the file, eg: "log.txt"
+*/
+//% parts="storage"
 void overwriteWithBuffer(String filename, Buffer data) {
     auto f = getFile(filename);
+    if (NULL == f) return;
     f->overwrite(data->data, data->length);
 }
 
-/** Return true if the file already exists. */
-//% part="storage"
+/** 
+* Return true if the file already exists. 
+* @param filename name of the file, eg: "log.txt"
+*/
+//% parts="storage"
+//% blockId="storage_exists" block="file $filename exists"
 bool exists(String filename) {
-    return mountedStorage()->fs.exists(filename->data);
+    auto st = mountedStorage();
+    return !!st && st->fs.exists(filename->getUTF8Data());
 }
 
-/** Delete a file, or do nothing if it doesn't exist. */
-//% part="storage"
+/** 
+* Delete a file, or do nothing if it doesn't exist. 
+* @param filename name of the file, eg: "log.txt"
+*/
+//% parts="storage"
+//% blockId="storage_remove" block="remove file $filename"
 void remove(String filename) {
     if (!exists(filename))
         return;
@@ -123,32 +140,28 @@ void remove(String filename) {
     getFile(NULL);
 }
 
-/** Return the size of the file, or -1 if it doesn't exists. */
-//% part="storage"
+/** 
+* Return the size of the file, or -1 if it doesn't exists. 
+* @param filename name of the file, eg: "log.txt"
+*/
+//% parts="storage"
+//% blockId="storage_size" block="size of file $filename"
 int size(String filename) {
     if (!exists(filename))
         return -1;
-    auto f = getFile(filename);
+    auto f = getFile(filename);    
     return f->size();
 }
 
-/** Read contents of file as a string. */
-//% part="storage"
-String read(String filename) {
-    auto f = getFile(filename);
-    auto sz = f->size();
-    if (sz > 0xffff)
-        return NULL;
-    auto res = mkString(NULL, sz);
-    f->seek(0);
-    f->read(res->data, res->length);
-    return res;
-}
-
-/** Read contents of file as a buffer. */
-//% part="storage"
+/** 
+* Read contents of file as a buffer. 
+* @param filename name of the file, eg: "log.txt"
+*/
+//% parts="storage"
 Buffer readAsBuffer(String filename) {
     auto f = getFile(filename);
+    if (NULL == f) 
+        return NULL;
     auto sz = f->size();
     if (sz > 0xffff)
         return NULL;
@@ -159,4 +172,3 @@ Buffer readAsBuffer(String filename) {
 }
 
 } // namespace storage
-#endif

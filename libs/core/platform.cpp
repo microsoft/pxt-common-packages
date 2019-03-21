@@ -1,7 +1,9 @@
 #include "pxt.h"
-#include "neopixel.h"
+#include "light.h"
 
 namespace pxt {
+
+CODAL_TIMER devTimer;
 
 static void initRandomSeed() {
     int seed = 0xC0DA1;
@@ -28,28 +30,13 @@ static void remapSwdPin(int pinCfg, int fallback) {
 static void initSwdPins() {
     remapSwdPin(CFG_PIN_NEOPIXEL, PIN(D0));
     remapSwdPin(CFG_PIN_RXLED, PIN(D1));
-}
-
-static void clearNeoPixels() {
-    // clear on-board neopixels
-    auto neoPin = LOOKUP_PIN(NEOPIXEL);
-    if (neoPin) {
-        int numNeopixels = getConfig(CFG_NUM_NEOPIXELS, 0);
-        int size = numNeopixels * 3;
-        if (size) {
-            uint8_t neobuf[size];
-            memset(neobuf, 0, size);
-            neoPin->setDigitalValue(0);
-            fiber_sleep(1);
-            neopixel_send_buffer(*neoPin, neobuf, 30);
-        }
-    }
+    remapSwdPin(CFG_PIN_SPEAKER_AMP, PIN(D2));
 }
 
 void platform_init() {
     initSwdPins();
     initRandomSeed();
-    clearNeoPixels();
+    light::clear();
 
     if (*HF2_DBG_MAGIC_PTR == HF2_DBG_MAGIC_START) {
         *HF2_DBG_MAGIC_PTR = 0;
@@ -58,4 +45,4 @@ void platform_init() {
     }
 }
 
-}
+} // namespace pxt

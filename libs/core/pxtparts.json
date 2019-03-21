@@ -1,4 +1,234 @@
 {
+    "neopixel": {
+        "simulationBehavior": "neopixel",
+        "visual": {
+            "builtIn": "neopixel",
+            "width": 58,
+            "height": 113,
+            "pinDistance": 9,
+            "pinLocations": [
+                {
+                    "x": 10,
+                    "y": 0
+                },
+                {
+                    "x": 19,
+                    "y": 0
+                },
+                {
+                    "x": 28,
+                    "y": 0
+                }
+            ]
+        },
+        "numberOfPins": 3,
+        "pinDefinitions": [
+            {
+                "target": {
+                    "pinInstantiationIdx": 0
+                },
+                "style": "solder",
+                "orientation": "+Z"
+            },
+            {
+                "target": "threeVolt",
+                "style": "solder",
+                "orientation": "+Z"
+            },
+            {
+                "target": "ground",
+                "style": "solder",
+                "orientation": "+Z"
+            }
+        ],
+        "instantiation": {
+            "kind": "function",
+            "fullyQualifiedName": "light.createStrip,light.createNeoPixelStrip",
+            "argumentRoles": [
+                {
+                    "pinInstantiationIdx": 0,
+                    "partParameter": "pin"
+                },
+                {
+                    "partParameter": "mode"
+                }
+            ]
+        },
+        "assembly": [
+            {
+                "part": true,
+                "pinIndices": [
+                    2
+                ]
+            },
+            {
+                "pinIndices": [
+                    0,
+                    1
+                ]
+            }
+        ]
+    },
+    "dotstar": {
+        "simulationBehavior": "dotstar",
+        "visual": {
+            "builtIn": "dotstar",
+            "width": 58,
+            "height": 113,
+            "pinDistance": 9,
+            "pinLocations": [
+                {
+                    "x": 10,
+                    "y": 0
+                },
+                {
+                    "x": 17,
+                    "y": 0
+                },
+                {
+                    "x": 24,
+                    "y": 0
+                },
+                {
+                    "x": 31,
+                    "y": 0
+                }
+            ]
+        },
+        "numberOfPins": 4,
+        "pinDefinitions": [
+            {
+                "target": "ground",
+                "style": "solder",
+                "orientation": "+Z"
+            },
+            {
+                "target": {
+                    "pinInstantiationIdx": 0
+                },
+                "style": "solder",
+                "orientation": "+Z"
+            },
+            {
+                "target": {
+                    "pinInstantiationIdx": 1
+                },
+                "style": "solder",
+                "orientation": "+Z"
+            },
+            {
+                "target": "threeVolt",
+                "style": "solder",
+                "orientation": "+Z"
+            }
+        ],
+        "instantiation": {
+            "kind": "function",
+            "fullyQualifiedName": "light.createAPA102Strip",
+            "argumentRoles": [
+                {
+                    "pinInstantiationIdx": 0,
+                    "partParameter": "dataPin"
+                },
+                {
+                    "pinInstantiationIdx": 1,
+                    "partParameter": "clkPin"
+                },
+                {
+                    "partParameter": "mode"
+                }
+            ]
+        },
+        "assembly": [
+            {
+                "part": true,
+                "pinIndices": [
+                    0
+                ]
+            },
+            {
+                "pinIndices": [
+                    1, 2
+                ]
+            },
+            {
+                "pinIndices": [
+                    3
+                ]
+            }
+        ]
+    },
+    "pixels": {
+        "simulationBehavior": "pixels",
+        "visual": { 
+            "builtIn": "pixels",
+            "width": 58,
+            "height": 113,
+            "pinDistance": 9,
+            "pinLocations": [
+                {
+                    "x": 10,
+                    "y": 0
+                },
+                {
+                    "x": 17,
+                    "y": 0
+                },
+                {
+                    "x": 24,
+                    "y": 0
+                },
+                {
+                    "x": 31,
+                    "y": 0
+                }
+            ]
+        },
+        "numberOfPins": 4,
+        "pinDefinitions": [
+            {
+                "target": "ground",
+                "style": "solder",
+                "orientation": "+Z"
+            },
+            {
+                "target": "MOSI",
+                "style": "solder",
+                "orientation": "+Z"
+            },
+            {
+                "target": "SCK",
+                "style": "solder",
+                "orientation": "+Z"
+            },
+            {
+                "target": "threeVolt",
+                "style": "solder",
+                "orientation": "+Z"
+            }
+        ],
+        "instantiation": {
+            "kind": "singleton"
+        },
+        "assembly": [
+            {
+                "part": true,
+                "pinIndices": [
+                    0
+                ]
+            },
+            {
+                "pinIndices": [
+                    1, 2
+                ]
+            },
+            {
+                "pinIndices": [
+                    3
+                ]
+            }
+        ]
+    },    
     "buttons": {
         "simulationBehavior": "buttons",
         "visual": {
@@ -34,7 +264,7 @@
         ],
         "instantiation": {
             "kind": "function",
-            "fullyQualifiedName": "Button.onEvent",
+            "fullyQualifiedName": "Button.onEvent,Button.isPressed,Button.wasPressed",
             "argumentRoles": [
                 {
                     "pinInstantiationIdx": 0,

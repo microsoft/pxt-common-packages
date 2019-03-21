@@ -68,10 +68,10 @@ namespace pxsim {
             this.state = state;
             switch (state) {
                 case ThresholdState.High:
-                    board().bus.queue(this.id, DAL.ANALOG_THRESHOLD_HIGH);
+                    board().bus.queue(this.id, DAL.SENSOR_THRESHOLD_HIGH);
                     break;
                 case ThresholdState.Low:
-                    board().bus.queue(this.id, DAL.ANALOG_THRESHOLD_LOW);
+                    board().bus.queue(this.id, DAL.SENSOR_THRESHOLD_LOW);
                     break;
                 case ThresholdState.Normal:
                     break;

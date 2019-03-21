@@ -44,16 +44,24 @@ namespace pxsim {
     }
 
     export class TouchButton extends CommonButton {
+        _threshold: number = 200;
         constructor(pin: number) {
             super(pin);
         }
 
         setThreshold(value: number) {
+            this._threshold = value;
+        }
 
+        threshold() {
+            return this._threshold;
         }
 
         value() : number {
             return 0;
+        }
+
+        calibrate(): void {
         }
     }
 
@@ -67,12 +75,14 @@ namespace pxsim {
 }
 
 namespace pxsim.pxtcore {
-    export function getTouchButton(index: number): TouchButton {
+    export function getTouchButton(id: number): TouchButton {
         const state = (board() as CapTouchBoard).touchButtonState;
-        const btn = state.buttons.filter(b => b.id == index)[0]
-        if (btn) {
-            (getPin(btn.id) as pins.CommonPin).used = true;
-            runtime.queueDisplayUpdate();
+        const btn = state.buttons.filter(b => b.id == id)[0]
+        // simulator done somewhere else
+        const io = (board() as EdgeConnectorBoard).edgeConnectorState;
+        if (io) {
+            const pin = io.pins.filter(p => p.id == id)[0];
+            pins.markUsed(pin);
         }
         return btn;
     }
@@ -83,8 +93,16 @@ namespace pxsim.TouchButtonMethods {
         button.setThreshold(value);
     }
 
+    export function threshold(button: pxsim.TouchButton) {
+        return button.threshold();
+    }
+
     export function value(button: pxsim.TouchButton): number {
         return button.value();
+    }
+
+    export function calibrate(button: pxsim.TouchButton): void {
+        button.calibrate();
     }
 }
 

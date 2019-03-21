@@ -1,14 +1,14 @@
 /*
     Animation library for sprites
 */
-//% color="#03AA74" weight=88 icon="\uf021"
+//% color="#03AA74" weight=78 icon="\uf021"
 namespace animation {
     //Handles all the updates
-    let _onAnimUpdate: (() => void)[] = null;
-    let _onSpriteUpdate: (() => void)[] = null;
+    let animations: Animation[];
 
     export class Animation {
 
+        sprites: Sprite[];
         frames: Image[];
         index: number;
         interval: number;
@@ -20,21 +20,20 @@ namespace animation {
             this.index = -1;
             this.action = action;
             this.frames = [];
+            this.sprites = [];
             this.lastTime = control.millis();
 
             this._init();
         }
 
         _init() {
-            if (!_onAnimUpdate) {
-                _onAnimUpdate = [];
-                game.eventContext().registerFrameHandler(15, () => {
-                    _onAnimUpdate.forEach(element => {
-                        element();
-                    });
+            if (!animations) {
+                animations = [];
+                game.eventContext().registerFrameHandler(scene.ANIMATION_UPDATE_PRIORITY, () => {
+                    animations.forEach(anim => anim.update());
                 });
             }
-            _onAnimUpdate.push(() => this.update());
+            animations.push(this);
         }
 
         update() {
@@ -44,6 +43,18 @@ namespace animation {
                 this.index = (this.index + 1) % this.frames.length;
                 this.lastTime = currentTime;
             }
+            
+            this.sprites = this.sprites.filter(sprite => !(sprite.flags & sprites.Flag.Destroyed));
+
+            this.sprites.forEach(sprite => {
+                if (sprite._action === this.action) {
+                    let newImage = this.getImage();
+                    //Update only if the image has changed
+                    if (sprite.image !== newImage) {
+                        sprite.setImage(newImage);
+                    }
+                }
+            });
         }
 
         getImage() {
@@ -62,11 +73,21 @@ namespace animation {
             this.interval = interval;
         }
 
+        /**
+        * Add an image frame to an animation
+        */
         //% blockId=addAnimationFrame
         //% block="add frame $frame=screen_image_picker to $this=variables_get(anim)"
         //% weight=40
+        //% help=animation/add-animation
         addAnimationFrame(frame: Image) {
             this.frames[++this.index] = frame;
+        }
+
+        registerSprite(sprite: Sprite) {
+            if (this.sprites.indexOf(sprite) === -1) {
+                this.sprites.push(sprite);
+            }
         }
 
     }
@@ -86,53 +107,36 @@ namespace animation {
     }
 
     /**
-     * Creates an animation
+     * Create an animation
      */
     //% blockId=createAnimation
     //% block="create animation of $action=action_enum_shim with interval $interval ms"
     //% interval.defl=1000
     //% blockSetVariable="anim"
     //% weight=50
+    //% help=animation/create-animation
     export function createAnimation(action: number, interval: number) {
         return new Animation(action, interval);
     }
 
     /**
-     * attaches an animation to a sprite
+     * Attach an animation to a sprite
      */
     //% blockId=attachAnimation
     //% block="attach animation $set=variables_get(anim) to sprite $sprite=variables_get(mySprite)"
     //% weight=30
+    //% help=animation/attach-animation
     export function attachAnimation(sprite: Sprite, set: Animation) {
-        if (!_onSpriteUpdate) {
-            //First attach register the update call back.
-            //Priority 16 is slightly lower than 15 for animation update loop.
-            //This is allow the animation to complete, so we have the new display ready to go.
-            _onSpriteUpdate = [];
-            game.eventContext().registerFrameHandler(16, () => {
-                _onSpriteUpdate.forEach(element => {
-                    element();
-                });
-            });
-        }
-
-        _onSpriteUpdate.push(() => {
-            if (sprite._action === set.action) {
-                let newImage = set.getImage();
-                //Update only if the image has changed
-                if (sprite.image !== newImage) {
-                    sprite.setImage(newImage)
-                }
-            }
-        })
+        set.registerSprite(sprite);
     }
 
     /**
-     * Sets the action to Sprite
+     * Set an animation action to a sprite
      */
     //% blockId=setAction
     //% block="activate animation $action=action_enum_shim on $sprite=variables_get(mySprite)"
     //% weight=20
+    //% help=animation/set-action
     export function setAction(sprite: Sprite, action: number) {
         sprite._action = action;
     }

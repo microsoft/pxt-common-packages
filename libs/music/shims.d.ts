@@ -5,14 +5,11 @@ declare interface AnalogOutPin {}
 declare namespace music {
 
     /**
-     * Set a source of digital sound data (PCM) for making tones.
-     * Samples are 1024 x 10bit unsigned PCM.
-     * A reference to the buffer is kept to avoid the memory overhead, so changes to the buffer
-     * values are reflected immediately to the sound output.
+     * This function is deprecated.
      */
     //% help=music/set-tone
     //% weight=1 group="Tones"
-    //% deprecated
+    //% deprecated blockHidden=1
     //% blockId=music_set_tone block="set tone %buffer" shim=music::setTone
     function setTone(buffer: Buffer): void;
 
@@ -24,7 +21,8 @@ declare namespace music {
     //% parts="speaker"
     //% volume.min=0 volume.max=256
     //% help=music/set-volume
-    //% weight=70 shim=music::setVolume
+    //% weight=70
+    //% group="Volume" shim=music::setVolume
     function setVolume(volume: int32): void;
 
     /**
@@ -36,7 +34,8 @@ declare namespace music {
     //% blockId=music_play_note block="play tone|at %note=device_note|for %duration=device_beat"
     //% parts="headphone" async
     //% blockNamespace=music
-    //% weight=76 blockGap=8 shim=music::playTone
+    //% weight=76 blockGap=8
+    //% group="Tone" shim=music::playTone
     function playTone(frequency: int32, ms: int32): void;
 }
 

@@ -13,10 +13,10 @@ enum class MouseButton {
 
 namespace mouse {
     /** 
-    * Sets the mouse button state to down
+    * Set the mouse button state to up or down
     */
     //% help=mouse/set-button
-    //% blockId=mouseSetButton block="mouse button %index=joystickStandardButton|%down=toggleDownUp"
+    //% blockId=mouseSetButton block="mouse button %index|%down=toggleDownUp"
     void setButton(MouseButton button, bool down) {
         if (down)
             pxt::mouse.buttonDown((codal::USBHIDMouseButton)button);
@@ -25,7 +25,7 @@ namespace mouse {
     }
 
     /**
-    * Moves the mouse
+    * Move the mouse in the X and Y direction
     **/
     //% help=mouse/move
     //% blockId=mouseMove block="mouse move x %x|y %y"
@@ -36,9 +36,9 @@ namespace mouse {
     }
 
     /**
-    * Moves the mouse
+    * Turn the mouse wheel
     **/
-    //% help=mouse/wheel
+    //% help=mouse/turn-wheel
     //% blockId=mouseWheel block="turn wheel %w"
     //% w.min=-128 w.max=127
     void turnWheel(int w) {

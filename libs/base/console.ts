@@ -1,15 +1,51 @@
 /// <reference no-default-lib="true"/>
 
+enum ConsolePriority {
+    Debug = 0,
+    Log = 1,
+    Warning = 2,
+    Error = 3,
+    Silent = 4
+}
+
 /**
  * Reading and writing data to the console output.
  */
 //% weight=12 color=#002050 icon="\uf120"
 //% advanced=true
 namespace console {
-    type Listener = (text: string) => void;
+    type Listener = (priority: ConsolePriority, text: string) => void;
+
+    /**
+     * Minimum priority to send messages to listeners
+     */
+    export let minPriority = ConsolePriority.Log;
 
     //% whenUsed
-    const listeners: Listener[] = [function(text: string) { control.__log(text); }];
+    const listeners: Listener[] = [
+        function (priority: ConsolePriority, text: string) { control.__log(priority, text); }
+    ];
+
+    export function add(priority: ConsolePriority, text: string) {
+        if (priority < minPriority) return;
+        // add new line
+        text += "\n";
+        // send to listeners
+        for (let i = 0; i < listeners.length; ++i)
+            listeners[i](priority, text);
+    }
+
+    export function debug(text: string) {
+        add(ConsolePriority.Debug, text);
+    }
+
+    export function warning(text: string) {
+        add(ConsolePriority.Warning, text);
+    }
+
+    export function error(text: string) {
+        add(ConsolePriority.Error, text);
+    }
 
     /**
      * Write a line of text to the console output.
@@ -20,11 +56,7 @@ namespace console {
     //% blockId=console_log block="console|log %text"
     //% text.shadowOptions.toString=true
     export function log(text: string): void {
-        // pad text on the 32byte boundar
-        text += "\r\n";
-        // send to listeners
-        for (let i = 0; i < listeners.length; ++i)
-            listeners[i](text);
+        add(ConsolePriority.Log, text);
     }
 
     /**
@@ -44,8 +76,20 @@ namespace console {
      * @param listener
      */
     //%
-    export function addListener(listener: (text: string) => void) {
-        if (!listener) return;
+    export function addListener(listener: (priority: ConsolePriority, text: string) => void) {
+        if (!listener || listeners.indexOf(listener) > -1) return;
         listeners.push(listener);
+    }
+
+    /**
+     * Removes a listener
+     * @param listener 
+     */
+    //%
+    export function removeListener(listener: (priority: ConsolePriority, text: string) => void) {
+        if (!listener) return;
+        const i = listeners.indexOf(listener);
+        if (i > -1)
+            listeners.splice(i, 1);
     }
 }

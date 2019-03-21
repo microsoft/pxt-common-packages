@@ -17,8 +17,8 @@ namespace pxsim.input {
         let b = lightSensorState();
         b.setUsed();
         switch(condition) {
-            case DAL.ANALOG_THRESHOLD_LOW: b.setLowThreshold(value); break;
-            case DAL.ANALOG_THRESHOLD_HIGH: b.setHighThreshold(value); break;
+            case DAL.SENSOR_THRESHOLD_LOW: b.setLowThreshold(value); break;
+            case DAL.SENSOR_THRESHOLD_HIGH: b.setHighThreshold(value); break;
         }
     }    
 }

@@ -33,4 +33,13 @@ pins.i2cWriteNumber(
 NumberFormat.Int8LE,
 false
 )
+pins.createI2C(undefined, undefined);
+```
+
+## SPI
+
+```cards
+pins.spiWrite(0);
+pins.spiMode(3);
+pins.createSPI(undefined, undefined, undefined);
 ```

@@ -3,6 +3,7 @@
     "description": "The screen library",
     "files": [
         "screen.cpp",
+        "panic.cpp",
         "image.cpp",
         "image.ts",
         "text.ts",
@@ -11,7 +12,10 @@
         "fieldeditors.ts",
         "targetoverrides.ts",
         "ns.ts",
-        "image.d.ts"
+        "image.d.ts",
+        "pxtparts.json",
+        "imagesoverrides.jres",
+        "imagesoverrides.ts"
     ],
     "public": true,
     "dependencies": {

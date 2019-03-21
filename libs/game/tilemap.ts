@@ -24,11 +24,11 @@ namespace tiles {
         }
 
         get x(): number {
-            return this._col << 4;
+            return (this._col << 4) + 8;
         }
 
         get y(): number {
-            return this._row << 4;
+            return (this._row << 4) + 8;
         }
 
         get tileSet(): number {
@@ -46,8 +46,8 @@ namespace tiles {
         place(mySprite: Sprite): void {
             if (!mySprite) return;
 
-            mySprite.x = this.x + 8;
-            mySprite.y = this.y + 8;
+            mySprite.x = this.x;
+            mySprite.y = this.y;
         }
     }
 
@@ -61,24 +61,21 @@ namespace tiles {
         private _tileSets: TileSet[];
 
         constructor() {
-            this._map = img`1`;
             this._tileSets = [];
             this._layer = 1;
-
             this.z = -1;
 
             const sc = game.currentScene();
-            sc.allSprites.push(this);
+            sc.addSprite(this);
             sc.flags |= scene.Flag.NeedsSorting;
-            this.id = sc.allSprites.length;
         }
 
         offsetX(value: number) {
-            return Math.clamp(0, (this._map.width << 4) - screen.width, value);
+            return Math.clamp(0, Math.max(this.areaWidth() - screen.width, 0), value);
         }
 
         offsetY(value: number) {
-            return Math.clamp(0, (this._map.height << 4) - screen.height, value);
+            return Math.clamp(0, Math.max(this.areaHeight() - screen.height, 0), value);
         }
 
         areaWidth() {
@@ -97,6 +94,10 @@ namespace tiles {
             if (this._layer != value) {
                 this._layer = value;
             }
+        }
+
+        get enabled(): boolean {
+            return !!this._map;
         }
 
         setTile(index: number, img: Image, collisions?: boolean) {
@@ -119,7 +120,7 @@ namespace tiles {
         }
 
         public getTilesByType(index: number): Tile[] {
-            if (this.isInvalidIndex(index)) return undefined;
+            if (this.isInvalidIndex(index) || !this.enabled) return undefined;
 
             let output: Tile[] = [];
             for (let col = 0; col < this._map.width; ++col) {
@@ -133,18 +134,22 @@ namespace tiles {
             return output;
         }
 
+        __serialize(offset: number): Buffer { return undefined; }
+
         __update(camera: scene.Camera, dt: number): void { }
 
         /**
          * Draws all visible
          */
         __draw(camera: scene.Camera): void {
-            const offsetX = camera.offsetX & 0xf;
-            const offsetY = camera.offsetY & 0xf;
-            const x0 = Math.max(0, camera.offsetX >> 4);
-            const xn = Math.min(this._map.width, ((camera.offsetX + screen.width) >> 4) + 1);
-            const y0 = Math.max(0, camera.offsetY >> 4);
-            const yn = Math.min(this._map.height, ((camera.offsetY + screen.height) >> 4) + 1);
+            if (!this.enabled) return;
+
+            const offsetX = camera.drawOffsetX & 0xf;
+            const offsetY = camera.drawOffsetY & 0xf;
+            const x0 = Math.max(0, camera.drawOffsetX >> 4);
+            const xn = Math.min(this._map.width, ((camera.drawOffsetX + screen.width) >> 4) + 1);
+            const y0 = Math.max(0, camera.drawOffsetY >> 4);
+            const yn = Math.min(this._map.height, ((camera.drawOffsetY + screen.height) >> 4) + 1);
 
             for (let x = x0; x <= xn; ++x) {
                 for (let y = y0; y <= yn; ++y) {
@@ -166,19 +171,20 @@ namespace tiles {
         }
 
         private isOutsideMap(col: number, row: number): boolean {
-            return col < 0 || col >= this._map.width
-                    || row < 0 || row >= this._map.height;
+            return !this.enabled || col < 0 || col >= this._map.width
+                || row < 0 || row >= this._map.height;
         }
 
         private isInvalidIndex(index: number): boolean {
             return index < 0 || index > 0xf;
         }
 
-        render(camera: scene.Camera) {
-            if (!this._map) return;
+        draw(camera: scene.Camera) {
+            if (!this.enabled) return;
+
             if (game.debug) {
-                const offsetX = -camera.offsetX;
-                const offsetY = -camera.offsetY;
+                const offsetX = -camera.drawOffsetX;
+                const offsetY = -camera.drawOffsetY;
                 const x0 = Math.max(0, -(offsetX >> 4));
                 const xn = Math.min(this._map.width, (-offsetX + screen.width) >> 4);
                 const y0 = Math.max(0, -(offsetY >> 4));
@@ -193,7 +199,7 @@ namespace tiles {
                 for (let y = y0; y <= yn; ++y) {
                     screen.drawLine(
                         offsetX,
-                        (y  << 4) + offsetY,
+                        (y << 4) + offsetY,
                         (this._map.width << 4) + offsetX,
                         (y << 4) + offsetY,
                         1)
@@ -207,7 +213,7 @@ namespace tiles {
         public collisions(s: Sprite): sprites.Obstacle[] {
             let overlappers: sprites.StaticObstacle[] = [];
 
-            if ((s.layer & this.layer) && !(s.flags & sprites.Flag.Ghost)) {
+            if (this.enabled && (s.layer & this.layer) && !(s.flags & sprites.Flag.Ghost)) {
                 const x0 = Math.max(0, s.left >> 4);
                 const xn = Math.min(this._map.width, (s.right >> 4) + 1);
                 const y0 = Math.max(0, s.top >> 4);
@@ -233,14 +239,15 @@ namespace tiles {
         }
 
         public isObstacle(col: number, row: number) {
-            if (!this._map) return false;
+            if (!this.enabled) return false;
             if (this.isOutsideMap(col, row)) return true;
 
-            return this._tileSets[this._map.getPixel(col, row)].obstacle;
+            let t = this._tileSets[this._map.getPixel(col, row)];
+            return t && t.obstacle;
         }
 
         public getObstacle(col: number, row: number) {
-            if (!this._map) return undefined;
+            if (!this.enabled) return undefined;
             if (this.isOutsideMap(col, row)) return undefined;
 
             const index = this._map.getPixel(col, row);

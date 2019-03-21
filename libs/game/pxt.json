@@ -2,12 +2,15 @@
     "name": "game",
     "description": "The game and sprite library - beta",
     "files": [
+        "constants.ts",
+        "controlleroverrides.ts",
         "controller.ts",
         "hitbox.ts",
         "sprites.ts",
         "sprite.ts",
         "spritemap.ts",
         "spriteevents.ts",
+        "spriteset.ts",
         "metrics.ts",
         "obstacle.ts",
         "physics.ts",
@@ -23,11 +26,20 @@
         "ask.ts",
         "targetoverrides.cpp",
         "targetoverrides.ts",
-        "mathUtil.ts"
+        "mathUtil.ts",
+        "menu.ts",
+        "systemmenu.ts",
+        "console.ts",
+        "fieldeditors.ts",
+        "particles.ts",
+        "particlefactories.ts",
+        "particleeffects.ts",
+        "effects.ts"
     ],
     "public": true,
     "dependencies": {
-        "controller": "file:../controller",
-        "screen": "file:../screen"
+        "screen": "file:../screen",
+       "mixer": "file:../mixer",
+       "power": "file:../power"
     }
 }

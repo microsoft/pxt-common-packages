@@ -94,6 +94,68 @@ namespace pxsim.ImageMethods {
         fillRect(img, XX(xy), YY(xy), XX(wh), YY(wh), c)
     }
 
+    export function mapRect(img: RefImage, x: number, y: number, w: number, h: number, c: RefBuffer) {
+        if (c.data.length < 16)
+            return
+        img.makeWritable()
+        let [x2, y2] = img.clamp(x + w - 1, y + h - 1);
+        [x, y] = img.clamp(x, y)
+        let p = img.pix(x, y)
+        w = x2 - x + 1
+        h = y2 - y + 1
+        let d = img._width - w
+
+        while (h-- > 0) {
+            for (let i = 0; i < w; ++i) {
+                img.data[p] = c.data[img.data[p]]
+                p++
+            }
+            p += d
+        }
+    }
+
+    export function _mapRect(img: RefImage, xy: number, wh: number, c: RefBuffer) {
+        mapRect(img, XX(xy), YY(xy), XX(wh), YY(wh), c)
+    }
+
+    export function getRows(img: RefImage, x: number, dst: RefBuffer) {
+        x |= 0
+        if (!img.inRange(x, 0))
+            return
+
+        let dp = 0
+        let len = Math.min(dst.data.length, (img._width - x) * img._height)
+        let sp = x
+        let hh = 0
+        while (len--) {
+            if (hh++ >= img._height) {
+                hh = 0
+                sp = ++x
+            }
+            dst.data[dp++] = img.data[sp]
+            sp += img._width
+        }
+    }
+
+    export function setRows(img: RefImage, x: number, src: RefBuffer) {
+        x |= 0
+        if (!img.inRange(x, 0))
+            return
+
+        let sp = 0
+        let len = Math.min(src.data.length, (img._width - x) * img._height)
+        let dp = x
+        let hh = 0
+        while (len--) {
+            if (hh++ >= img._height) {
+                hh = 0
+                dp = ++x
+            }
+            img.data[dp] = src.data[sp++]
+            dp += img._width
+        }
+    }
+
     export function clone(img: RefImage) {
         let r = new RefImage(img._width, img._height, img._bpp)
         r.data.set(img.data)
@@ -613,12 +675,35 @@ namespace pxsim.image {
 
 namespace pxsim.pxtcore {
     export function updateScreen(img: RefImage) {
-        getScreenState().showImage(img)
+        const state = getScreenState();
+        if (state)
+            state.showImage(img)
     }
     export function updateStats(s: string) {
-        getScreenState().updateStats(s);
+        const state = getScreenState();
+        if (state)
+            state.updateStats(s);
     }
     export function setPalette(b: RefBuffer) {
-        getScreenState().setPalette(b)
+        const state = getScreenState();
+        if (state)
+            state.setPalette(b)
+    }
+    export function setupScreenStatusBar(barHeight: number) {
+        const state = getScreenState();
+        if (state)
+            state.setupScreenStatusBar(barHeight);
+    }
+    export function updateScreenStatusBar(img: RefImage) {
+        const state = getScreenState();
+        if (state)
+            state.updateScreenStatusBar(img);
+    }
+    export function setScreenBrightness(b: number) {
+        // I guess we could at least turn the screen off, when b==0,
+        // otherwise, it probably doesn't make much sense to do anything.
+        const state = getScreenState();
+        if (state)
+            state.setScreenBrightness(b);
     }
 }

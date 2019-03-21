@@ -2,7 +2,7 @@
  * Control the background, tiles and camera
  */
 //% weight=88 color="#401255" icon="\uf1bb"
-//% groups='["Screen", "Tiles", "Collisions", "Camera"]'
+//% groups='["Screen", "Effects", "Tiles", "Collisions", "Camera"]'
 //% blockGap=8
 namespace scene {
     /**
@@ -125,7 +125,7 @@ namespace scene {
      * @param index
      * @param img
      */
-    //% blockId=gamesettile block="set tile %index=colorindexpicker to %img=screen_image_picker||with wall %wall=toggleOnOff"
+    //% blockId=gamesettile block="set tile %index=colorindexpicker to %img=screen_image_picker with wall %wall=toggleOnOff"
     //% group="Tiles"
     //% help=scene/set-tile
     export function setTile(index: number, img: Image, wall?: boolean) {
@@ -162,6 +162,36 @@ namespace scene {
         if (!scene.tileMap)
             scene.tileMap = new tiles.TileMap();
         return scene.tileMap.getTilesByType(index);
+    }
+
+    /**
+     * Center the given sprite on a random tile that is the given color
+     * @param sprite
+     * @param color
+     */
+    //% blockId=gameplaceonrandomtile block="place %sprite=variables_get(mySprite) on top of random $color tile"
+    //% blockNamespace="scene" group="Tiles"
+    //% color.shadow="colorindexpicker"
+    //% help=scene/place-on-random-tile
+    export function placeOnRandomTile(sprite: Sprite, color: number): void {
+        if (!sprite || !game.currentScene().tileMap) return;
+        const tiles = getTilesByType(color);
+        if (tiles.length > 0)
+            Math.pickRandom(tiles).place(sprite);
+    }
+
+    /**
+     * Shake the camera
+     * @param sprite
+     */
+    //% blockId=camerashake block="camera shake by %amplitude pixels for %duration ms"
+    //% amplitude.min=1 amplitude.max=8 amplitude.defl=4
+    //% duration.shadow=timePicker duration.defl=500
+    //% group="Camera"
+    //% help=scene/camera-shake
+    export function cameraShake(amplitude: number = 4, duration: number = 500) {
+        const scene = game.currentScene();
+        scene.camera.shake(amplitude, duration);
     }
 
     /**

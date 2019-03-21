@@ -1,23 +1,26 @@
 {
     "name": "light",
-    "description": "The programmable LED (WS2812b) driver.",
+    "description": "The programmable LED (WS2812b,APA102) driver.",
     "files": [
         "README.md",
-        "neopixel.cpp",
         "neopixel.ts",
         "create.ts",
-        "shims.d.ts",
-        "enums.d.ts",
+        "defaultstrip.ts",
+        "onboardstrip.ts",
+        "defaultlights.ts",
+        "defaultlightsoverrides.ts",
         "ns.ts",
+        "jacdac.ts",
         "neopixeloverrides.ts",
         "animations.jres",
-        "pxtparts.json"
+        "targetoverrides.ts"
     ],
     "testFiles": [
         "test.ts"
     ],
     "public": true,
     "dependencies": {
-        "core": "file:../core"
+        "core": "file:../core",
+        "jacdac": "file:../jacdac"
     }
 }

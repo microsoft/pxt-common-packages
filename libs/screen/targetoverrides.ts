@@ -1,5 +1,5 @@
 // This file would be usually overridden by the target.
-const screen = image.create(178, 128)
+const screen = image.create(178, 128) as ScreenImage
 
 namespace _screen_internal {
     //% shim=pxt::updateScreen
@@ -9,16 +9,5 @@ namespace _screen_internal {
     control.__screen.setupUpdate(() => updateScreen(screen))
     control.EventContext.onStats = function(msg: string) { 
         updateStats(msg);
-    }
-}
-
-namespace image {    
-    /**
-    * Gets the screen image
-    */
-    //% blockNamespace="images" group="Create"
-    //% blockId=imagescreen block="screen"
-    export function screenImage(): Image {
-        return screen;
     }
 }

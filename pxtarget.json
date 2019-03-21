@@ -6,6 +6,7 @@
     "ignoreDocsErrors": true,
     "bundleddirs": [
         "libs/core",
+        "libs/core---samd",
         "libs/buttons",
         "libs/light",
         "libs/music",
@@ -25,8 +26,15 @@
         "libs/storage",
         "libs/game",
         "libs/screen",
-        "libs/controller",
         "libs/servo",
-        "libs/serial"
+        "libs/serial",
+        "libs/jacdac",
+        "libs/jacdac-drivers",
+        "libs/jacdac-game",
+        "libs/datalogger",
+        "libs/lora",
+        "libs/power",
+        "libs/controller",
+        "libs/edge-connector"
     ]
 }

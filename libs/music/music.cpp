@@ -1,7 +1,7 @@
 #include "pxt.h"
 
 #include "dmac.h"
-#include "SAMD21DAC.h"
+#include "SAMDDAC.h"
 #include "Synthesizer.h"
 #include "CodalConfig.h"
 
@@ -9,13 +9,24 @@
 class WSynthesizer {
   public:
     Synthesizer synth;
-    SAMD21DAC dac;
+    CODAL_DAC dac;
 
     WSynthesizer()
         // DAC always on PA02 on SAMD21
-        : dac(*lookupPin(PA02), pxt::getWDMAC()->dmac, synth.output) {
+        : dac(*lookupPin(PA02), synth.output) {
         synth.setSampleRate(dac.getSampleRate());
         synth.setVolume(64);
+        synth.setTone(Synthesizer::SquareWaveTone);
+        this->setAmp(true);
+    }
+
+    // turns on/off the speaker amp
+    void setAmp(bool on) {
+        // turn off speaker as needed
+        auto pinAmp = LOOKUP_PIN(SPEAKER_AMP);
+        if (pinAmp) {
+            pinAmp->setDigitalValue(on ? 1 : 0);
+        }
     }
 };
 SINGLETON(WSynthesizer);
@@ -43,27 +54,13 @@ void analogWrite(AnalogOutPin name, int value) {
 namespace music {
 
 Buffer tone; // empty buffer to hold custom tone
-SoundOutputDestination soundOutputDestination = SoundOutputDestination::Speaker;
-
-// turns on/off the speaker amp
-void updateSpeakerAmp() {
-    // turn off speaker as needed
-    //auto pinAmp = LOOKUP_PIN(SPEAKER_AMP);
-    //if (pinAmp) {
-    //    bool on = SoundOutputDestination::Speaker == soundOutputDestination;
-    //    pinAmp->setDigitalValue(on ? 1 : 0);
-    //}
-}
 
 /**
-* Set a source of digital sound data (PCM) for making tones.
-* Samples are 1024 x 10bit unsigned PCM.
-* A reference to the buffer is kept to avoid the memory overhead, so changes to the buffer
-* values are reflected immediately to the sound output.
+* This function is deprecated.
 */
 //% help=music/set-tone
 //% weight=1 group="Tones"
-//% deprecated
+//% deprecated blockHidden=1
 //% blockId=music_set_tone block="set tone %buffer"
 void setTone(Buffer buffer) {
     if (!buffer) return;
@@ -71,6 +68,8 @@ void setTone(Buffer buffer) {
     if (buffer->length != TONE_WIDTH * sizeof(uint16_t))
         return; // invalid length
 
+    if (!tone)
+        registerGC((TValue*)&tone);
     decrRC(tone);
     tone = buffer; // keep a reference to the buffer
     incrRC(tone);
@@ -87,10 +86,7 @@ void setTone(Buffer buffer) {
 // blockId=music_set_output block="set output %out"
 // parts="speaker" blockGap=8 advanced=true
 void setOutput(SoundOutputDestination out) {
-    if (out != soundOutputDestination) {
-        soundOutputDestination = out;
-        updateSpeakerAmp();
-    }
+    getWSynthesizer()->setAmp(out == SoundOutputDestination::Speaker);
 }
 
 /**
@@ -102,6 +98,7 @@ void setOutput(SoundOutputDestination out) {
 //% volume.min=0 volume.max=256
 //% help=music/set-volume
 //% weight=70
+//% group="Volume"
 void setVolume(int volume) {
     auto synth = &getWSynthesizer()->synth;
     synth->setVolume(max(0, min(1024, volume * 4)));
@@ -117,6 +114,7 @@ void setVolume(int volume) {
 //% parts="headphone" async
 //% blockNamespace=music
 //% weight=76 blockGap=8
+//% group="Tone"
 void playTone(int frequency, int ms) {
     auto synth = &getWSynthesizer()->synth;
 

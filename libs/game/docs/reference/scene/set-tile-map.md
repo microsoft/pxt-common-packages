@@ -6,7 +6,7 @@ Arrange image tiles as a pattern in the scene.
 scene.setTileMap(null)
 ```
 
-Your game scene contains a [tile map](/reference/tile-maps). A tile map is an arrangement (a pattern) of image tiles that fill up some of the scene. At first, the scene has an empty tile map and no tile pattern is displayed. To build up your scene, you need to make some tiles, add them to the scene, and then tell the scene where to place the tiles.
+Your game scene contains a [tile map](/reference/scene/tile-map). A tile map is an arrangement (a pattern) of image tiles that fill up some of the scene. At first, the scene has an empty tile map and no tile pattern is displayed. To build up your scene, you need to make some tiles, add them to the scene, and then tell the scene where to place the tiles.
 
 The tile map uses an image layout to map the tiles for the scene. The color numbers in the image are identifiers (an index) for image tiles that were added to the scene. Tile indexes are placed at various locations in the map to create what's displayed in the scene. If there's no tile set with an index to match a color number in the map, the actual color for that number is filled into the scene at that tile location instead.
 

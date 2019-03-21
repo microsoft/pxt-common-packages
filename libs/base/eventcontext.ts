@@ -45,55 +45,72 @@ namespace control {
 
     function doNothing() { }
 
+
+
     export class EventContext {
         private handlers: EventHandler[];
         private frameCallbacks: FrameCallback[];
         private frameWorker: number;
-        private frameNo: number;
         private framesInSample: number;
         private timeInSample: number;
-        public deltaTime: number;
+        public deltaTimeMillis: number;
+        private prevTimeMillis: number;
+
+        static lastStats: string;
         static onStats: (stats: string) => void;
 
         constructor() {
             this.handlers = [];
-            this.frameNo = 0;
             this.framesInSample = 0;
             this.timeInSample = 0;
-            this.deltaTime = 0;
+            this.deltaTimeMillis = 0;
             this.frameWorker = 0;
+        }
+
+        get deltaTime() {
+            return this.deltaTimeMillis / 1000;
+        }
+
+        private runCallbacks() {
+            control.enablePerfCounter("all frame callbacks")
+
+            let loopStart = control.millis()
+            this.deltaTimeMillis = loopStart - this.prevTimeMillis;
+            this.prevTimeMillis = loopStart;
+            for (let f of this.frameCallbacks) {
+                f.handler()
+            }
+            let runtime = control.millis() - loopStart
+            this.timeInSample += runtime
+            this.framesInSample++
+            if (this.timeInSample > 1000 || this.framesInSample > 30) {
+                const fps = this.framesInSample / (this.timeInSample / 1000);
+                EventContext.lastStats = `fps:${Math.round(fps)}`;
+                if (fps < 99)
+                    EventContext.lastStats += "." + (Math.round(fps * 10) % 10)
+                if (control.profilingEnabled()) {
+                    control.dmesg(`${(fps * 100) | 0}/100 fps - ${this.framesInSample} frames`)
+                    control.gc()
+                    control.dmesgPerfCounters()
+                }
+                this.timeInSample = 0
+                this.framesInSample = 0
+            }
+            let delay = Math.max(1, 20 - runtime)
+            return delay
         }
 
         private registerFrameCallbacks() {
             if (!this.frameCallbacks) return;
 
-            this.frameNo = 0;
             this.framesInSample = 0;
             this.timeInSample = 0;
-            this.deltaTime = 0;
-            let prevTime = control.millis();
+            this.deltaTimeMillis = 0;
+            this.prevTimeMillis = control.millis();
             const worker = this.frameWorker;
             control.runInParallel(() => {
                 while (worker == this.frameWorker) {
-                    this.frameNo++
-                    let loopStart = control.millis()
-                    this.deltaTime = (loopStart - prevTime) / 1000.0
-                    prevTime = loopStart;
-                    for (let f of this.frameCallbacks) {
-                        f.handler()
-                    }
-                    let runtime = control.millis() - loopStart
-                    this.timeInSample += runtime
-                    this.framesInSample++
-                    if (this.timeInSample > 1000 || this.framesInSample > 30) {
-                        if (EventContext.onStats) {
-                            const fps = Math.round(this.framesInSample / (this.timeInSample / 1000));
-                            EventContext.onStats(`${fps}fps`)
-                        }
-                        this.timeInSample = 0
-                        this.framesInSample = 0
-                    }
-                    let delay = Math.max(1, 20 - runtime)
+                    let delay = this.runCallbacks()
                     pause(delay)
                 }
             })

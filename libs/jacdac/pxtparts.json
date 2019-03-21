@@ -1,0 +1,44 @@
+{
+    "jacdac": {
+        "numberOfPins": 2,
+        "visual": {
+            "image": "jacdac.svg",
+            "width": 142,
+            "height": 180,
+            "pinDistance": 20,
+            "pinLocations": [
+                {
+                    "x": 30,
+                    "y": 30
+                },
+                {
+                    "x": 55,
+                    "y": 50
+                }
+            ]
+        },
+        "pinDefinitions": [
+            {
+                "target": "JACK_TX",
+                "style": "croc",
+                "orientation": "Y"
+            },
+            {
+                "target": "ground",
+                "style": "croc",
+                "orientation": "Y"
+            }
+        ],
+        "instantiation": {
+            "kind": "singleton"
+        },
+        "assembly": [
+            {
+                "part": true,
+                "pinIndices": [
+                    0, 1
+                ]
+            }
+        ]
+    }
+}

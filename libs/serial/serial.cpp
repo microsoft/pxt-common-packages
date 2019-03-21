@@ -1,4 +1,5 @@
 #include "pxt.h"
+#include "Serial.h"
 
 enum class BaudRate {
   //% block=115200
@@ -27,86 +28,216 @@ enum class BaudRate {
   BaudRate300 = 300
 };
 
-namespace pxt {
-  class WSerial {
-    public:
-      CODAL_SERIAL serial;
-      WSerial()
-        : serial(PIN(TX), PIN(RX))
-        {
-          serial.baud((int)BaudRate::BaudRate115200);
-        }
-  };
+enum class SerialEvent {
+    //% block="data received"
+    DataReceived = CODAL_SERIAL_EVT_DATA_RECEIVED,
+    //% block="rx buffer full"
+    RxBufferFull = CODAL_SERIAL_EVT_RX_FULL
+};
 
-SINGLETON(WSerial);
+enum class Delimiters {
+    //% block="new line"
+    NewLine = 10, //'\n',
+    //% block=","
+    Comma = 44, //',',
+    //% block="$"
+    Dollar = 36, // '$',
+    //% block=":"
+    Colon = 58, // ':',
+    //% block="."
+    Fullstop = 46, //'.',
+    //% block="#"
+    Hash = 35, //'#',
+    //% block=";"
+    SemiColumn = 59,
+    //% block="space",
+    Space = 32,
+    //% block="tab"
+    Tab = 9, //'\t'
+    //% block="pipe"
+    Pipe = 124 // `|`,
+};
+
+namespace serial {
+
+class CodalSerialDeviceProxy {
+private:
+  DevicePin* tx;
+  DevicePin* rx;
+public:
+  CODAL_SERIAL ser;
+  CodalSerialDeviceProxy* next;
+
+  CodalSerialDeviceProxy(DevicePin* _tx, DevicePin* _rx, uint16_t id)
+    : tx(_tx), rx(_rx), ser(*tx, *rx), next(NULL)
+  {
+    if (id <= 0)
+      id = allocateNotifyEvent();
+    ser.id = id;
+    ser.setBaud((int)BaudRate::BaudRate115200);
+  }
+
+  bool matchPins(DevicePin* _tx, DevicePin* _rx) {
+          return this->tx == _tx && this->rx == _rx;
+  }
+
+  void setRxBufferSize(uint8_t size) {
+    ser.setRxBufferSize(size);
+  }
+
+  void setTxBufferSize(uint8_t size) {
+    ser.setTxBufferSize(size);
+  }
+
+  void setBaudRate(BaudRate rate) {
+    ser.setBaud((int)rate);
+  }
+
+  int read() {
+    uint8_t buf[1];
+    auto r = ser.read(buf, 1, codal::SerialMode::ASYNC);
+    // r < 0 => error
+    if (r < 0) return r;
+    // r == 0, nothing read
+    if (r == 0) return DEVICE_NO_DATA;
+    // read 1 char
+    return buf[0];
+  }
+
+  Buffer readBuffer() {
+    int n = ser.getRxBufferSize();
+    // n maybe 0 but we still call read to force 
+    // to initialize rx
+    auto buf = mkBuffer(NULL, n);
+    auto read = ser.read(buf->data, buf->length, SerialMode::ASYNC);
+    if (read == DEVICE_SERIAL_IN_USE || read == 0) { // someone else is reading
+      decrRC(buf);
+      return mkBuffer(NULL, 0);
+    }
+    if (buf->length != read) {
+      auto buf2 = mkBuffer(buf->data, read);
+      decrRC(buf);
+      buf = buf2;
+    }
+    return buf;
+  }
+
+  void writeBuffer(Buffer buffer) {
+    if (NULL == buffer) return;
+    ser.send(buffer->data, buffer->length);
+  }
+
+  void redirect(DevicePin* tx, DevicePin* rx, BaudRate rate) {
+      this->tx = tx;
+      this->rx = rx;
+      this->ser.redirect(*tx, *rx);
+      this->setBaudRate(rate);
+  }
+
+  void onEvent(SerialEvent event, Action handler) {
+    ser.setRxBufferSize(ser.getRxBufferSize()); // turn on reading
+    registerWithDal(ser.id, (int)event, handler);
+  }
+
+  void onDelimiterReceived(Delimiters delimiter, Action handler) {
+    registerWithDal(ser.id, CODAL_SERIAL_EVT_DELIM_MATCH, handler);
+    ManagedString d((char)delimiter);
+    ser.eventOn(d);
+  }
+};
+
+typedef CodalSerialDeviceProxy* SerialDevice;
+static SerialDevice serialDevices(NULL);
+/**
+* Opens a Serial communication driver
+*/
+//%
+SerialDevice internalCreateSerialDevice(DigitalInOutPin tx, DigitalInOutPin rx, int id) {
+  auto dev = serialDevices;
+  while(dev) {
+    if (dev->matchPins(tx, rx))
+      return dev;
+    dev = dev->next;
+  }
+
+  // allocate new one
+  auto ser = new CodalSerialDeviceProxy(tx, rx, id);
+  ser->next = serialDevices;
+  serialDevices = ser;
+  return ser;
+}
 
 }
 
-namespace serial {
-    void send(const char* buffer, int length) {
-      // TODO: fix CODAL abstraction
-      // getWSerial()->serial.send((uint8_t*)buffer, length * sizeof(char));
-      getWSerial()->serial.printf("%s", buffer);
-    }
+namespace SerialDeviceMethods {
+  /**
+  * Sets the size of the RX buffer in bytes
+  */
+  //%
+  void setRxBufferSize(SerialDevice device, uint8_t size) {
+    device->setRxBufferSize(size);
+  }
 
-    /**
-     * Write some text to the serial port.
-     */
-    //% help=serial/write-string
-    //% weight=87
-    //% blockId=serial_writestring block="serial|write string %text"
-    //% blockHidden=1
-    void writeString(String text) {
-      if (NULL == text) return;
-      send(text->data, text->length);
-    }
+  /**
+  * Sets the size of the TX buffer in bytes
+  */
+  //%
+  void setTxBufferSize(SerialDevice device, uint8_t size) {
+    device->setTxBufferSize(size);
+  }
 
-    /**
-    * Send a buffer across the serial connection.
-    */
-    //% help=serial/write-buffer weight=6
-    //% blockId=serial_writebuffer block="serial|write buffer %buffer"
-    void writeBuffer(Buffer buffer) {
-      if (NULL == buffer) return;
-      getWSerial()->serial.send(buffer->data, buffer->length);
-    }
+  /**
+  Set the baud rate of the serial port
+  */
+  //%
+  void setBaudRate(SerialDevice device, BaudRate rate) {
+    device->setBaudRate(rate);
+  }
 
-    /**
-      Sends the console message through the TX, RX pins
-      **/
-    //% blockId=serialsendtoconsole block="serial attach to console"
-    void attachToConsole() {
-      setSendToUART(serial::send);
-    }
+  /**
+  * Reads a single byte from the serial receive buffer. Negative if error, 0 if no data.
+  */
+  //%
+  int read(SerialDevice device) {
+    return device->read();
+  }
 
-    /**
-    Set the baud rate of the serial port
-    */
-    //% blockId=serialsetbaudrate block="serial set baud rate to %rate"
-    void setBaudRate(BaudRate rate) {
-      getWSerial()->serial.baud((int)rate);
-    }
+  /**
+  * Read the buffered received data as a buffer
+  */
+  //%
+  Buffer readBuffer(SerialDevice device) {
+    return device->readBuffer();
+  }
 
-    /**
-      Configure the pins used by the serial interface/
-    **/
-    /**
-    * Set the serial input and output to use pins instead of the USB connection.
-    * @param tx the new transmission pin, eg: SerialPin.P0
-    * @param rx the new reception pin, eg: SerialPin.P1
-    * @param rate the new baud rate. eg: 115200
-    */
-    //% weight=10
-    //% help=serial/redirect
-    //% blockId=serial_redirect block="serial|redirect to|TX %tx|RX %rx|at baud rate %rate"
-    //% blockExternalInputs=1
-    //% tx.fieldEditor="gridpicker" tx.fieldOptions.columns=3
-    //% tx.fieldOptions.tooltips="false"
-    //% rx.fieldEditor="gridpicker" rx.fieldOptions.columns=3
-    //% rx.fieldOptions.tooltips="false"
-    //% blockGap=8 inlineInputMode=inline
-    void redirect(DigitalInOutPin tx, DigitalInOutPin rx, BaudRate rate) {
-      getWSerial()->serial.redirect((PinName)tx->name, (PinName)rx->name);
-      getWSerial()->serial.baud((int)rate);
-    }
+  /**
+  * Send a buffer across the serial connection.
+  */
+  //%
+  void writeBuffer(SerialDevice device, Buffer buffer) {
+    device->writeBuffer(buffer);
+  }
+  
+  /**
+  */
+  //%
+  void redirect(SerialDevice device, DigitalInOutPin tx, DigitalInOutPin rx, BaudRate rate) {
+    device->redirect(tx, rx, rate);
+  }
+
+  /**
+  * Register code when a serial event occurs
+  */
+  //%
+  void onEvent(SerialDevice device, SerialEvent event, Action handler) {
+    device->onEvent(event, handler);
+  }
+
+  /**
+  * Registers code when a delimiter is received
+  **/
+  //%
+  void onDelimiterReceived(SerialDevice device, Delimiters delimiter, Action handler) {
+    device->onDelimiterReceived(delimiter, handler);
+  }
 }

@@ -26,7 +26,7 @@ int allocateNotifyEvent() {
 /** Write data to DMESG debugging buffer. */
 //%
 void dmesg(String s) {
-    DMESG("# %s", s->data);
+    DMESG("# %s", s->getUTF8Data());
 }
 
 }
