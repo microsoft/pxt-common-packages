@@ -37,7 +37,7 @@ enum GamepadButton {
     //% block="down"
     //% blockIdentity=gamepad.button enumval=13
     Down = 13,
-    //% block="light"
+    //% block="left"
     //% blockIdentity=gamepad.button enumval=14
     Left = 14,
     //% block="right"

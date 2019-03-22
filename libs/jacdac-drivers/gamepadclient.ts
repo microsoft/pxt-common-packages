@@ -37,7 +37,7 @@ enum JDGamepadButton {
     //% block="down"
     //% enumval=13
     Down = 13,
-    //% block="light"
+    //% block="left"
     //% enumval=14
     Left = 14,
     //% block="right"
