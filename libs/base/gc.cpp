@@ -30,7 +30,9 @@
 #define VAR_BLOCK_WORDS(vt) (((vt) << 12) >> (12 + 2))
 
 //#define PXT_GC_DEBUG 1
+#ifndef PXT_GC_CHECK
 #define PXT_GC_CHECKS 1
+#endif
 //#define PXT_GC_STRESS 1
 
 #define MARK(v)                                                                                    \
