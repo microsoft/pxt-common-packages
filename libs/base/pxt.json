@@ -31,5 +31,18 @@
         "test.ts"
     ],
     "public": true,
-    "dependencies": {}
+    "dependencies": {},
+    "yotta": {
+        "optionalConfig": {
+            "PXT_GC_CHECKS": 0
+        },
+        "userConfigs": [
+            {
+                "description": "(Diagnostics) Garbage Collection checks.",
+                "config": {
+                    "PXT_GC_CHECKS": 1
+                }
+            }
+        ]
+    }
 }
