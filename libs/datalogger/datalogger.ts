@@ -31,7 +31,7 @@ namespace datalogger {
         /**
          * Appends a row of data
          */
-        appendRow(values: string[]): void { }
+        appendRow(values: number[]): void { }
         /**
          * Flushes any buffered data
          */
@@ -89,11 +89,10 @@ namespace datalogger {
                     }
                 }
                 // append row
-                let textRow: string[] = _row.map(x => "" + x);
-                _storage.appendRow(textRow);
+                _storage.appendRow(_row);
                 if (_console) {
                     // drop time
-                    console.log(textRow.slice(1, _row.length).join(','));
+                    console.log(_row.slice(1, _row.length).join(','));
                 }
                 // clear values
                 _row = undefined;
