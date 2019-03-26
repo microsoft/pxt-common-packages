@@ -29,7 +29,7 @@ namespace datalogger {
         /**
          * Appends a row of data
          */
-        appendRow(values: number[]): void { 
+        appendRow(values: string[]): void { 
             const line = values.join(datalogger.SEPARATOR);
             storage.appendLine(this.filename, line);
         }

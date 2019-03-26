@@ -1,3 +1,12 @@
+enum LogSeparator {
+    //% block="tab"
+    Tab,
+    //% block="comma"
+    Comma,
+    //% block="semicolon"
+    Semicolon
+};
+
 /**
  * A tiny data logging framework
  */
@@ -22,7 +31,7 @@ namespace datalogger {
         /**
          * Appends a row of data
          */
-        appendRow(values: number[]): void { }
+        appendRow(values: string[]): void { }
         /**
          * Flushes any buffered data
          */
@@ -80,10 +89,11 @@ namespace datalogger {
                     }
                 }
                 // append row
-                _storage.appendRow(_row);
+                let textRow: string[] = _row.map(x => "" + x);
+                _storage.appendRow(textRow);
                 if (_console) {
                     // drop time
-                    console.log(_row.slice(1, _row.length).join(','));
+                    console.log(textRow.slice(1, _row.length).join(','));
                 }
                 // clear values
                 _row = undefined;
@@ -185,5 +195,21 @@ namespace datalogger {
     //% enabled.shadow=toggleOnOff
     export function sendToConsole(enabled: boolean) {
         _console = enabled;
+    }
+
+    /**
+     * Set the character used to separate values in a row.
+     * @param separator the value separator character, eg: "\t"
+     */
+    //% group="Configuration"
+    //% blockId="datalogSeparator" block="data logger set separator $separator"
+    export function setSeparator(separator: LogSeparator) {
+        if (!_enabled) {
+            switch(separator) {
+                case LogSeparator.Tab: SEPARATOR = "\t"; break;
+                case LogSeparator.Comma: SEPARATOR = ","; break;
+                case LogSeparator.Semicolon: SEPARATOR = ";"; break;
+            }
+        }
     }
 }
