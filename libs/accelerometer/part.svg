@@ -15,7 +15,7 @@
    id="svg4493"
    version="1.1"
    sodipodi:docname="part.svg"
-   inkscape:version="0.92.3 (2405546, 2018-03-11)">
+   inkscape:version="0.92.1 r15371">
   <metadata
      id="metadata4514">
     <rdf:RDF>
@@ -24,7 +24,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -39,8 +39,8 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1920"
-     inkscape:window-height="1017"
+     inkscape:window-width="1600"
+     inkscape:window-height="837"
      id="namedview4510"
      showgrid="false"
      inkscape:zoom="8.2495794"
@@ -142,7 +142,7 @@
   <ellipse
      style="fill:#ffffff;stroke:#000000;stroke-width:0.32272443"
      cy="-5.9231954"
-     cx="-54.055618"
+     cx="-70.055618"
      id="VCC"
      transform="scale(-1)"
      rx="3.23646"
@@ -151,7 +151,7 @@
   <text
      transform="matrix(0,1.0070833,-0.99296652,0,0,0)"
      id="text5100-8-5-4-9"
-     y="-52.558662"
+     y="-68.672005"
      x="11.428495"
      style="font-weight:400;font-size:6.13176918px;line-height:1.25;font-family:consolas;-inkscape-font-specification:consolas;letter-spacing:0;word-spacing:0;fill:#ffffff;stroke-width:0.32272473"
      font-weight="400"
@@ -160,14 +160,14 @@
      word-spacing="0">
     <tspan
        id="tspan5156-5"
-       y="-52.558662"
+       y="-68.672005"
        x="11.428495"
        style="stroke-width:0.32272473">VCC</tspan>
   </text>
   <ellipse
      style="fill:#ffffff;stroke:#000000;stroke-width:0.32272443"
      cy="-5.9231954"
-     cx="-69.100304"
+     cx="-85.100304"
      id="GND"
      transform="scale(-1)"
      rx="3.23646"
@@ -176,7 +176,7 @@
   <text
      transform="matrix(0,1.0070833,-0.99296652,0,0,0)"
      id="text5100-8-5-4-9-3"
-     y="-67.815964"
+     y="-83.929306"
      x="11.242865"
      style="font-weight:400;font-size:6.13176918px;line-height:1.25;font-family:consolas;-inkscape-font-specification:consolas;letter-spacing:0;word-spacing:0;fill:#ffffff;stroke-width:0.32272473"
      font-weight="400"
@@ -185,7 +185,7 @@
      word-spacing="0">
     <tspan
        id="tspan5156-5-7"
-       y="-67.815964"
+       y="-83.929306"
        x="11.242865"
        style="stroke-width:0.32272473">GND</tspan>
   </text>
@@ -213,5 +213,30 @@
        x="11.108133"
        id="tspan5098-2-4-5"
        style="stroke-width:0.32272473">SCL</tspan>
+  </text>
+  <ellipse
+     style="fill:#ffffff;stroke:#000000;stroke-width:0.32272443"
+     cy="-5.5968285"
+     cx="-54.547421"
+     id="SDO"
+     transform="scale(-1)"
+     rx="3.23646"
+     ry="3.218055"
+     inkscape:label="#path5042-7-3" />
+  <text
+     transform="matrix(0,1.0070833,-0.99296652,0,0,0)"
+     id="text5100-8-5-4-4"
+     y="-52.621964"
+     x="10.784061"
+     style="font-weight:400;font-size:6.13176918px;line-height:1.25;font-family:consolas;-inkscape-font-specification:consolas;letter-spacing:0;word-spacing:0;fill:#ffffff;stroke-width:0.32272473"
+     font-weight="400"
+     font-size="1.9"
+     letter-spacing="0"
+     word-spacing="0">
+    <tspan
+       id="tspan5156-4"
+       y="-52.621964"
+       x="10.784061"
+       style="stroke-width:0.32272473">SDO</tspan>
   </text>
 </svg>
