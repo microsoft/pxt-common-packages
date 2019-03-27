@@ -50,7 +50,7 @@ namespace jacdac {
 
         handleControlPacket(pkt: Buffer): boolean {
             if (this._sensorState == SensorState.None) return true;
-            const packet = new ControlPacket(pkt);
+            const packet = new JDControlPacket(pkt);
             const state = packet.data.getNumber(NumberFormat.UInt8LE, 1);
             if ((this._sensorState & SensorState.Streaming) != (state & SensorState.Streaming))
                 this.sync(); // start            

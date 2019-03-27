@@ -133,15 +133,15 @@ namespace jacdac {
         }
 
         handleControlPacket(pkt: Buffer): boolean {
-            const cp = new ControlPacket(pkt);
+            const cp = new JDControlPacket(pkt);
             const data = cp.data;
-            return this.processPacket(cp.address, data);
+            return this.processPacket(cp.deviceAddress, data);
         }
 
         handlePacket(pkt: Buffer): boolean {
             const packet = new JDPacket(pkt);
             const data = packet.data;
-            return this.processPacket(packet.address, data);
+            return this.processPacket(packet.deviceAddress, data);
         }
 
         private processPacket(packetAddress: number, data: Buffer): boolean {
@@ -149,7 +149,7 @@ namespace jacdac {
             // received a packet from the server
             if (cmd == JDControllerCommand.ControlServer) {
                 this.log(`server ${toHex8(packetAddress)}`)
-                const address = this.device.address;
+                const address = this.device.deviceAddress;
                 for (let i = 1; i <= 4; ++i) {
                     if (data[i] == address) {
                         // check that we are still connected to the same server

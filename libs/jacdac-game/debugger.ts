@@ -87,7 +87,7 @@ namespace jacdac {
                 while (flags.length < 4) flags += " ";
 
                 const deviceName = jacdac.remoteDeviceName(d.serialNumber) || toHex(d.serialNumber);
-                console.log(`${toHex8(d.address)} ${driverName} ${flags} ${deviceName}`);
+                console.log(`${toHex8(d.deviceAddress)} ${driverName} ${flags} ${deviceName}`);
                 const err = d.error;
                 if (err != JDDriverErrorCode.DRIVER_OK)
                     console.log(` e ${errors[<number>err] || err}`);
@@ -219,7 +219,7 @@ namespace jacdac {
 
         findDevice(packet: JDPacket): JDDevice {
             const drivers = jacdac.drivers();
-            const driver = drivers.find(d => d.address == packet.address);
+            const driver = drivers.find(d => d.address == packet.deviceAddress);
             return driver;
         }
 
@@ -228,14 +228,14 @@ namespace jacdac {
             return dbgView;
         }
 
-        sniffControlPacket(cp: ControlPacket): boolean {
+        sniffControlPacket(cp: JDControlPacket): boolean {
             if (this.paused || this.hideControlPackets) return true;
             // too much noise
             //if (cp.driverClass == jacdac.LOGGER_DEVICE_CLASS) return true;
             const dbgView = this.debugViews.find(d => d.driverClass == cp.driverClass);
             const str = dbgView ? dbgView.renderControlPacket(cp) : "";
             const deviceName = jacdac.remoteDeviceName(cp.serialNumber);
-            console.log(`c:${deviceName || toHex8(cp.address)}> ${dbgView ? dbgView.name : cp.driverClass} ${str}`);
+            console.log(`c:${deviceName || toHex8(cp.deviceAddress)}> ${dbgView ? dbgView.name : cp.driverClass} ${str}`);
             return true;
         }
 
@@ -245,7 +245,7 @@ namespace jacdac {
             const dbgView = this.findView(device, packet);
             const str = dbgView ? dbgView.renderPacket(device, packet) : packet.data.toHex();
             const deviceName = jacdac.remoteDeviceName(device.serialNumber);
-            console.log(`p:${deviceName || toHex8(packet.address)}> ${str}`)
+            console.log(`p:${deviceName || toHex8(packet.deviceAddress)}> ${str}`)
             return true;
         }
     }

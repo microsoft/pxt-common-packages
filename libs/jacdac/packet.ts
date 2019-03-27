@@ -5,49 +5,75 @@ namespace jacdac {
             this.buf = buf;
         }
         get crc(): number {
-            return this.buf.getNumber(NumberFormat.UInt16LE, 0);
+            // crc is stored in the first 12 bits, service number in the final 4 bits
+            return this.buf.getNumber(NumberFormat.UInt16LE, 0) >> 4;
         }
-        get address(): number {
+        get serviceNumber(): number {
+            return this.buf.getNumber(NumberFormat.UInt8LE, 1) & 0x0f;
+        }
+        /**
+         * control is 0, devices are allocated address in the range 1 - 255
+         */
+        get deviceAddress(): number {
             return this.buf.getNumber(NumberFormat.UInt8LE, 2);
         }
+        /**
+         * the size, address, and crc are not included by the size variable. 
+         * The size of a packet dictates the size of the data field.
+         */
         get size(): number {
             return this.buf.getNumber(NumberFormat.UInt8LE, 3);
         }
-        get data(): Buffer {
-            return this.buf.slice(4);
+        get data(): Buffer {            
+            return this.buf.slice(4, this.size);
+        }
+        get communicationRate(): number {            
+            return this.buf.getNumber(NumberFormat.UInt8LE, this.buf.length - 1);
         }
 
         getNumber(format: NumberFormat, offset: number) {
             return this.buf.getNumber(format, offset + 4);
         }
-
         setNumber(format: NumberFormat, offset: number, value: number) {
             this.buf.setNumber(format, offset + 4, value);
         }
     }
 
-    export class ControlPacket {
+    /**
+     * This struct represents a JDControlPacket used by the logic service
+     * A control packet provides full information about a service, it's most important use is to translates the address used in
+     * standard packets to the full service information. Standard packet address == control packet address.
+     *
+     * Currently there are two types of packet:
+     * CONTROL_JD_TYPE_HELLO - Which broadcasts the availablity of a service
+     * CONTROL_JD_TYPE_PAIRING_REQUEST - Used when services are pairing to one another.
+    struct JDControlPacket
+    {
+        uint64_t udid; // the "unique" serial number of the device.
+        uint8_t device_address;
+        uint8_t device_flags;
+        uint8_t data[];
+    } __attribute((__packed__));
+    */
+    export class JDControlPacket {
         buf: Buffer;
         constructor(buf: Buffer) {
             this.buf = buf;
         }
-        get packetType(): number {
-            return this.buf.getNumber(NumberFormat.UInt8LE, 0);
+        /**
+         * the "unique" serial number of the device.
+         */
+        get udid(): Buffer {
+            return this.buf.slice(0, 4);
         }
-        get address(): number {
-            return this.buf.getNumber(NumberFormat.UInt8LE, 1);
+        get deviceAddress(): number {
+            return this.buf.getNumber(NumberFormat.UInt8LE, 5);
         }
-        get flags(): number {
-            return this.buf.getNumber(NumberFormat.UInt16LE, 2);
-        }
-        get driverClass(): number {
-            return this.buf.getNumber(NumberFormat.UInt32LE, 4);
-        }
-        get serialNumber(): number {
-            return this.buf.getNumber(NumberFormat.UInt32LE, 8);
+        get deviceFlags(): number {
+            return this.buf.getNumber(NumberFormat.UInt8LE, 6);
         }
         get data(): Buffer {
-            return this.buf.slice(12);
+            return this.buf.slice(7);
         }
 
         toString(): string {
@@ -56,19 +82,10 @@ namespace jacdac {
                 buf.setNumber(NumberFormat.UInt32LE, 4, n);
                 return buf.toHex();
             }
-            return `${toHex(this.serialNumber & 0xffff)}> d${toHex(this.address)} c${toHex(this.driverClass)} ${this.data.toHex()}`;
+            return `${this.udid.toHex()}> d${toHex(this.deviceAddress)} ${this.data.toHex()}`;
         }
     }
 
-    /*
-        struct JDDevice
-    {
-        uint8_t address; // the address assigned by the logic driver.
-        uint8_t rolling_counter; // used to trigger various time related events
-        uint16_t flags; // various flags indicating the state of the driver
-        uint32_t serial_number; // the serial number used to "uniquely" identify a device
-        uint32_t driver_class; // the class of the driver, created or selected from the list in JDClasses.h
-        */
     export class JDDevice {
         static SIZE = 12;
         buf: Buffer;
@@ -86,56 +103,84 @@ namespace jacdac {
             return new JDDevice(buf);
         }
 
-        get address(): number {
-            return this.buf.getNumber(NumberFormat.UInt8LE, 0);
+    /*
+struct JDDevice
+{
+    uint64_t udid;
+    uint8_t device_flags;
+    uint8_t device_address;
+    uint8_t communication_rate;
+    uint8_t rolling_counter;
+    uint16_t servicemap_bitmsk;
+    uint8_t broadcast_servicemap[JD_DEVICE_MAX_HOST_SERVICES / 2]; // use to map remote broadcast services to local broadcast services.
+    JDDevice* next;
+    uint8_t* name;
+};
+        */
+
+        /**
+         * the "unique" serial number of the device.
+         */
+        get udid(): Buffer {
+            return this.buf.slice(0, 4);
+        }
+        get deviceAddress(): number {
+            return this.buf.getNumber(NumberFormat.UInt8LE, 6);
+        }
+        get deviceFlags(): number {
+            return this.buf.getNumber(NumberFormat.UInt8LE, 5);
+        }
+        set deviceFlags(value: number) {
+            this.buf.setNumber(NumberFormat.UInt8LE, 5, value);
+        }
+        get communicationRate(): number {
+            return this.buf.getNumber(NumberFormat.UInt8LE, 7);
         }
         get rollingCounter(): number {
-            return this.buf.getNumber(NumberFormat.UInt8LE, 1);
+            return this.buf.getNumber(NumberFormat.UInt8LE, 8);
         }
-        get flags(): number {
-            return this.buf.getNumber(NumberFormat.UInt16LE, 2);
+        get serviceBitmask(): number {
+            return this.buf.getNumber(NumberFormat.UInt16LE, 9);
         }
-        set flags(value: number) {
-            this.buf.setNumber(NumberFormat.UInt16LE, 2, value);
-        }
-        get serialNumber(): number {
-            return this.buf.getNumber(NumberFormat.UInt32LE, 4);
-        }
-        set serialNumber(value: number) {
-            this.buf.setNumber(NumberFormat.UInt32LE, 4, value);
-        }
+
+        /*
+    uint8_t broadcast_servicemap[JD_DEVICE_MAX_HOST_SERVICES / 2]; // use to map remote broadcast services to local broadcast services.
+    JDDevice* next;
+    uint8_t* name;
+        */
+
         setMode(m: DriverType, initialised = false) {
-            this.flags &= ~DAL.JD_DEVICE_DRIVER_MODE_MSK;
-            this.flags |= m;
+            this.deviceFlags &= ~DAL.JD_DEVICE_DRIVER_MODE_MSK;
+            this.deviceFlags |= m;
             if (initialised)
-                this.flags |= DAL.JD_DEVICE_FLAGS_INITIALISED;
+                this.deviceFlags |= DAL.JD_DEVICE_FLAGS_INITIALISED;
             else
-                this.flags &= ~DAL.JD_DEVICE_FLAGS_INITIALISED;
+                this.deviceFlags &= ~DAL.JD_DEVICE_FLAGS_INITIALISED;
         }
         get driverClass(): number {
             return this.buf.getNumber(NumberFormat.UInt32LE, 8);
         }
 
         get error(): JDDriverErrorCode {
-            return this.flags & DAL.JD_DEVICE_ERROR_MSK;
+            return this.deviceFlags & DAL.JD_DEVICE_ERROR_MSK;
         }
         set error(e: JDDriverErrorCode) {
-            const f = this.flags & ~(DAL.JD_DEVICE_ERROR_MSK);
-            this.flags = f | (e & 0xff);
+            const f = this.deviceFlags & ~(DAL.JD_DEVICE_ERROR_MSK);
+            this.deviceFlags = f | (e & 0xff);
         }
 
         /**
          * Indicates if the driver is connected on the bus
          */
         isConnected(): boolean {
-            return !!(this.flags & DAL.JD_DEVICE_FLAGS_INITIALISED);
+            return !!(this.deviceFlags & DAL.JD_DEVICE_FLAGS_INITIALISED);
         }
 
         /**
         * Indicates if the driver is connecting on the bus
         */
         isConnecting(): boolean {
-            return !!(this.flags & DAL.JD_DEVICE_FLAGS_INITIALISING);
+            return !!(this.deviceFlags & DAL.JD_DEVICE_FLAGS_INITIALISING);
         }
 
         /**
@@ -146,7 +191,7 @@ namespace jacdac {
          * @returns true if in VirtualDriver mode.
          **/
         isVirtualDriver(): boolean {
-            return !!(this.flags & DAL.JD_DEVICE_FLAGS_REMOTE) && !(this.flags & DAL.JD_DEVICE_FLAGS_BROADCAST);
+            return !!(this.deviceFlags & DAL.JD_DEVICE_FLAGS_REMOTE) && !(this.deviceFlags & DAL.JD_DEVICE_FLAGS_BROADCAST);
         }
 
         /**
@@ -157,7 +202,7 @@ namespace jacdac {
          * @returns true if in PairedDriver mode.
          **/
         isPairedDriver(): boolean {
-            return !!(this.flags & DAL.JD_DEVICE_FLAGS_BROADCAST) && !!(this.flags & DAL.JD_DEVICE_FLAGS_PAIR);
+            return !!(this.deviceFlags & DAL.JD_DEVICE_FLAGS_BROADCAST) && !!(this.deviceFlags & DAL.JD_DEVICE_FLAGS_PAIR);
         }
 
         /**
@@ -168,7 +213,7 @@ namespace jacdac {
          * @returns true if in SnifferDriver mode.
          **/
         isHostDriver(): boolean {
-            return !!(this.flags & DAL.JD_DEVICE_FLAGS_LOCAL) && !(this.flags & DAL.JD_DEVICE_FLAGS_BROADCAST);
+            return !!(this.deviceFlags & DAL.JD_DEVICE_FLAGS_LOCAL) && !(this.deviceFlags & DAL.JD_DEVICE_FLAGS_BROADCAST);
         }
 
         /**
@@ -179,7 +224,7 @@ namespace jacdac {
          * @returns true if in BroadcastDriver mode.
          **/
         isBroadcastDriver(): boolean {
-            return !!(this.flags & DAL.JD_DEVICE_FLAGS_LOCAL) && !!(this.flags & DAL.JD_DEVICE_FLAGS_BROADCAST);
+            return !!(this.deviceFlags & DAL.JD_DEVICE_FLAGS_LOCAL) && !!(this.deviceFlags & DAL.JD_DEVICE_FLAGS_BROADCAST);
         }
 
         /**
@@ -190,7 +235,7 @@ namespace jacdac {
          * @returns true if in SnifferDriver mode.
          **/
         isSnifferDriver(): boolean {
-            return !!(this.flags & DAL.JD_DEVICE_FLAGS_REMOTE) && !!(this.flags & DAL.JD_DEVICE_FLAGS_BROADCAST);
+            return !!(this.deviceFlags & DAL.JD_DEVICE_FLAGS_REMOTE) && !!(this.deviceFlags & DAL.JD_DEVICE_FLAGS_BROADCAST);
         }
 
         /**
@@ -199,7 +244,7 @@ namespace jacdac {
          * @returns true if paired
          **/
         isPaired(): boolean {
-            return !!(this.flags & DAL.JD_DEVICE_FLAGS_PAIRED);
+            return !!(this.deviceFlags & DAL.JD_DEVICE_FLAGS_PAIRED);
         }
 
         /**
@@ -208,7 +253,7 @@ namespace jacdac {
          * @returns true if pairable
          **/
         isPairable(): boolean {
-            return !!(this.flags & DAL.JD_DEVICE_FLAGS_PAIRABLE);
+            return !!(this.deviceFlags & DAL.JD_DEVICE_FLAGS_PAIRABLE);
         }
 
         /**
@@ -217,7 +262,7 @@ namespace jacdac {
          * @returns true if pairing
          **/
         isPairing(): boolean {
-            return !!(this.flags & DAL.JD_DEVICE_FLAGS_PAIRING);
+            return !!(this.deviceFlags & DAL.JD_DEVICE_FLAGS_PAIRING);
         }
 
         toString(): string {
@@ -227,7 +272,7 @@ namespace jacdac {
                 buf.setNumber(NumberFormat.UInt32LE, 0, n);
                 return buf.toHex();
             }
-            return `${toHex(this.address, NumberFormat.UInt8LE)} ${toHex(this.driverClass, NumberFormat.UInt16LE)} ${toHex(this.serialNumber, NumberFormat.UInt32LE)} ${this.isConnected() ? "v" : "x"}`;
+            return `${toHex(this.deviceAddress, NumberFormat.UInt8LE)} ${toHex(this.driverClass, NumberFormat.UInt16LE)} ${toHex(this.serialNumber, NumberFormat.UInt32LE)} ${this.isConnected() ? "v" : "x"}`;
         }
     }
 }

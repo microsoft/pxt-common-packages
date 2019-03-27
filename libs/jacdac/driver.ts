@@ -69,7 +69,7 @@ namespace jacdac {
                 let dev = jacdac.deviceName();
                 if (!dev) {
                     const d = this.device;
-                    dev = d ? toHex8(d.address) : "--";
+                    dev = d ? toHex8(d.deviceAddress) : "--";
                 }
                 console.add(jacdac.consolePriority, `${dev}>${this.name}>${text}`);
             }
@@ -103,7 +103,7 @@ namespace jacdac {
 
         protected sendPacket(pkt: Buffer) {
             this.start();
-            jacdac.sendPacket(pkt, this.device.address);
+            jacdac.sendPacket(pkt, this.device.deviceAddress);
         }
 
         /**

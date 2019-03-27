@@ -100,7 +100,7 @@ namespace jacdac {
         }
 
         public handleControlPacket(pkt: Buffer): boolean {
-            const packet = new ControlPacket(pkt);
+            const packet = new JDControlPacket(pkt);
             const data = packet.data;
             const mode = data[0];
             // update device name map
@@ -134,9 +134,9 @@ namespace jacdac {
             const str = bufferToString(data, 1);
 
             // find a name of the device
-            const address = packet.address;
+            const address = packet.deviceAddress;
             const device = jacdac.drivers().find(d => d.address == address);
-            const deviceName = (device ? jacdac.remoteDeviceName(device.serialNumber) : "") || toHex8(packet.address);
+            const deviceName = (device ? jacdac.remoteDeviceName(device.serialNumber) : "") || toHex8(packet.deviceAddress);
 
             // pipe to console            
             console.add(priority, `${deviceName}> ${str}`);

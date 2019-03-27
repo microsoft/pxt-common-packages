@@ -21,7 +21,7 @@ namespace jacdac {
         }
 
         public handleControlPacket(pkt: Buffer): boolean {
-            const cp = new ControlPacket(pkt);
+            const cp = new JDControlPacket(pkt);
             const level = cp.data.getNumber(NumberFormat.UInt8LE, 0);
             this.log(`${cp.serialNumber}: ${level}`);
             this.handler(cp.serialNumber, level);

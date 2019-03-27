@@ -7,7 +7,7 @@ namespace jacdac {
             this.name = name;
             this.driverClass = driverClass;
         }
-        renderControlPacket(cp: ControlPacket) {
+        renderControlPacket(cp: JDControlPacket) {
             return "";
         }
         renderPacket(device: JDDevice, packet: JDPacket) {
@@ -20,7 +20,7 @@ namespace jacdac {
             super(name, driverClass);
         }
 
-        renderControlPacket(packet: ControlPacket): string {
+        renderControlPacket(packet: JDControlPacket): string {
             const data = packet.data;
             const state = data[0];
             switch (state) {
@@ -117,7 +117,7 @@ namespace jacdac {
             super("log", jacdac.LOGGER_DEVICE_CLASS);
         }
 
-        renderControlPacket(cp: ControlPacket): string {
+        renderControlPacket(cp: JDControlPacket): string {
             const data = cp.data;
             return `${["off", "broad", "listen"][data[0]]} ${data[1]}`;
         }
@@ -259,7 +259,7 @@ namespace jacdac {
             super("ctrl", jacdac.CONTROLLER_DEVICE_CLASS);
         }
 
-        renderControlPacket(cp: ControlPacket): string {
+        renderControlPacket(cp: JDControlPacket): string {
             const data = cp.data;
             return this.renderData(data);
         }

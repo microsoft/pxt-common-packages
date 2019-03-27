@@ -39,7 +39,7 @@ namespace jacdac {
             // clean dead players
             for (let i = 1; i < this.controlData.length; ++i) {
                 const ci = this.controlData[i];
-                if (ci && !drivers.some(d => d.address == ci)) {
+                if (ci && !drivers.some(d => d.deviceAddress == ci)) {
                     this.log(`del ${toHex8(this.controlData[i])} from ${i}`);
                     this.controlData[i] = 0;
                     const p = players.find(p => p.playerIndex == i);
@@ -79,15 +79,15 @@ namespace jacdac {
         }
 
         handleControlPacket(pkt: Buffer) {
-            const cp = new ControlPacket(pkt);
+            const cp = new JDControlPacket(pkt);
             const data = cp.data;
-            return this.processPacket(cp.address, data);
+            return this.processPacket(cp.deviceAddress, data);
         }
 
         handlePacket(pkt: Buffer) {
             const packet = new JDPacket(pkt);
             const data = packet.data;
-            return this.processPacket(packet.address, data);
+            return this.processPacket(packet.deviceAddress, data);
         }
 
         private processPacket(address: number, data: Buffer): boolean {
@@ -148,7 +148,7 @@ namespace jacdac {
                 // server got joined
                 || this.hasPlayers()
                 // other driver dissapeared
-                || !jacdac.drivers().find(d => d.address == device.address)
+                || !jacdac.drivers().find(d => d.address == device.deviceAddress)
             );
             // wait until we have an answer or the service
             control.popEventContext();
@@ -160,7 +160,7 @@ namespace jacdac {
             // check that we haven't been join by then
             return !!answer 
                 && !this.hasPlayers()
-                && !!jacdac.drivers().find(d => d.address == device.address);
+                && !!jacdac.drivers().find(d => d.address == device.deviceAddress);
         }
 
         private processClientButtons(address: number, data: Buffer) {

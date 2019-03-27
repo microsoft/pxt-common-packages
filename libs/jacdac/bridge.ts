@@ -7,8 +7,8 @@ namespace jacdac {
 
         handlePacket(pkt: Buffer): boolean {
             const packet = new JDPacket(pkt);
-            if(packet.address == 0) // control packet
-                return this.sniffControlPacket(new ControlPacket(packet.data));
+            if(packet.deviceAddress == 0) // control packet
+                return this.sniffControlPacket(new JDControlPacket(packet.data));
             else
                return this.sniffPacket(packet);
         }
@@ -17,7 +17,7 @@ namespace jacdac {
             return true;
         }
 
-        sniffControlPacket(packet: ControlPacket): boolean {
+        sniffControlPacket(packet: JDControlPacket): boolean {
             return true;
         } 
 
