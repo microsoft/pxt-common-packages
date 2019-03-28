@@ -327,4 +327,14 @@ namespace effects {
         const factory = new particles.StarFactory([0x1, 0x3, 0x5, 0x9, 0xC]);
         return new particles.ParticleSource(anchor, particlesPerSecond, factory);
     });
+
+    //% fixedInstance whenUsed block="clouds"
+    export const clouds = new ScreenEffect(0.2, 0.5, 5000, function (anchor: particles.ParticleAnchor, particlesPerSecond: number) {
+        const factory = new particles.CloudFactory();
+        const source = new particles.ParticleSource(anchor, particlesPerSecond, factory);
+
+        // render behind tile map
+        source.z = -2;
+        return source;
+    });
 }
