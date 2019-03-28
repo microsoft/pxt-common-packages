@@ -207,6 +207,7 @@ namespace datalogger {
      */
     //% group="Configuration"
     //% blockId="datalogSeparator" block="data logger set separator $separator"
+    //% help=datalogger/set-separator
     export function setSeparator(separator: LogSeparator) {
         if (!_enabled) {
             SEPARATOR = String.fromCharCode(separator);
