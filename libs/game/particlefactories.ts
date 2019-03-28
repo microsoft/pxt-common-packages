@@ -460,8 +460,7 @@ namespace particles {
             this.states = [
                 img`
                     F
-                    `,
-                img`
+                `, img`
                     F F
                 `, img`
                     F F
@@ -480,7 +479,8 @@ namespace particles {
                     F . . . F
                     F . . . F
                     . F F F .
-            `];
+                `
+            ];
         }
 
         get stateCount(): number {
@@ -734,18 +734,8 @@ namespace particles {
 
                 screen.drawTransparentImage(
                     selection,
-                    Fx.toInt(
-                        Fx.add(
-                            p._x,
-                            xOffset
-                        )
-                    ),
-                    Fx.toInt(
-                        Fx.add(
-                            p._y,
-                            yOffset
-                        )
-                    )
+                    Fx.toInt(Fx.add(p._x, xOffset)),
+                    Fx.toInt(Fx.add(p._y, yOffset))
                 );
             }
         }
