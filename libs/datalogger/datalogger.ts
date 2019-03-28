@@ -106,11 +106,12 @@ namespace datalogger {
     }
 
     /**
-     * Starts a new row of data
+     * Start a new row of data
      */
     //% group="Data"
     //% weight=100
     //% blockId=datalogAddRow block="data logger add row"
+    //% help=datalogger/add-row
     export function addRow(): void {
         if (!_enabled || !_storage) return;
 
@@ -119,7 +120,7 @@ namespace datalogger {
     }
 
     /**
-     * Adds a cell to the row of data
+     * Add a named value to the row of data
      * @param name name of the cell, eg: "x"
      * @param value value of the cell, eg: 0
      */
@@ -127,6 +128,7 @@ namespace datalogger {
     //% weight=99
     //% blockId=datalogAddValue block="data logger add %name|=%value"
     //% blockGap=12
+    //% help=datalogger/add-value
     export function addValue(name: string, value: number) {
         if (!_row) return;
         // happy path
@@ -163,23 +165,25 @@ namespace datalogger {
     }
 
     /**
-     * Sets the minimum number of milli seconds between rows
+     * Set the minimum number of milliseconds between rows
      * @param millis milliseconds between each sample, eg: 50
      */
     //% group="Configuration"
     //% blockId=datalogSetSamplingInterval block="set data logger sampling interval to $millis|(ms)"
     //% millis.shadow=timePicker
+    //% help=datalogger/set-sample-interval
     export function setSampleInterval(millis: number) {
         _samplingInterval = millis >> 0;
     }
 
     /**
-     * Turns on or off datalogging
+     * Turn on or off datalogging
      * @param enabled 
      */
     //% group="Configuration"
     //% blockId=datalogEnabled block="data logger $enabled"
     //% enabled.shadow=toggleOnOff
+    //% help=datalogger/set-enabled
     export function setEnabled(enabled: boolean) {
         flush();
         _enabled = enabled;
@@ -192,6 +196,7 @@ namespace datalogger {
     //% group="Configuration"
     //% blockId="datalogConsole" block="data logger to console $enabled"
     //% enabled.shadow=toggleOnOff
+    //% help=datalogger/send-to-console
     export function sendToConsole(enabled: boolean) {
         _console = enabled;
     }
