@@ -1,6 +1,6 @@
 # set Separator
 
-Set the log value separator charactor.
+Set the log value separator character.
 
 ```sig
 datalogger.setSeparator(LogSeparator.Tab)
