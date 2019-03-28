@@ -332,7 +332,9 @@ namespace effects {
     export const clouds = new ScreenEffect(0.2, 0.5, 5000, function (anchor: particles.ParticleAnchor, particlesPerSecond: number) {
         const factory = new particles.CloudFactory();
         const source = new particles.ParticleSource(anchor, particlesPerSecond, factory);
-        source.z = -1;
+
+        // render behind tile map
+        source.z = -2;
         return source;
     });
 }
