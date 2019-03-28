@@ -24,6 +24,8 @@ time (s),x,y,z
 47,73,4,82
 ```
 
+You can only change the separator character when logging is not enabled. The new separator is used when logging is enabled again.
+
 ## Parameters
 
 * **separator**: the text character used to separate the values in a row of data in the log file. The separator characters to choose from are `tab ('    ')`, `comma (',')`, or `semicolon (';')`.
