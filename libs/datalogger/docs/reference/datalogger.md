@@ -14,6 +14,7 @@ datalogger.addValue("x", 0)
 datalogger.setEnabled(false)
 datalogger.setSampleInterval(50)
 datalogger.sendToConsole(false)
+datalogger.setSeparator(LogSeparator.Tab)
 ```
 
 ## See also
@@ -22,7 +23,8 @@ datalogger.sendToConsole(false)
 [add value](/reference/datalogger/add-value),
 [set enabled](/reference/datalogger/set-enabled),
 [set sample interval](/reference/datalogger/set-sample-interval),
-[send to console](/reference/datalogger/send-to-console)
+[send to console](/reference/datalogger/send-to-console),
+[set separator](/reference/datalogger/set-separator)
 
 ```package
 datalogger

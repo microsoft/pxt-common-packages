@@ -1,3 +1,12 @@
+enum LogSeparator {
+    //% block="tab"
+    Tab = 0x09,
+    //% block="comma"
+    Comma = 0x2c,
+    //% block="semicolon"
+    Semicolon = 0x3b
+};
+
 /**
  * A tiny data logging framework
  */
@@ -190,5 +199,18 @@ namespace datalogger {
     //% help=datalogger/send-to-console
     export function sendToConsole(enabled: boolean) {
         _console = enabled;
+    }
+
+    /**
+     * Set the character used to separate values in a row.
+     * @param separator the value separator character, eg: "\t"
+     */
+    //% group="Configuration"
+    //% blockId="datalogSeparator" block="data logger set separator $separator"
+    //% help=datalogger/set-separator
+    export function setSeparator(separator: LogSeparator) {
+        if (!_enabled) {
+            SEPARATOR = String.fromCharCode(separator);
+        }
     }
 }
