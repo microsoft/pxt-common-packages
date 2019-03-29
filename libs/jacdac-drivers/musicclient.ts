@@ -7,12 +7,12 @@ namespace jacdac {
 
         /**
          * Play a tone through the speaker for some amount of time.
-         * @param frequency pitch of the tone to play in Hertz (Hz), eg: Note.C
-         * @param ms tone duration in milliseconds (ms), eg: BeatFraction.Half
+         * @param frequency pitch of the tone to play in Hertz (Hz), eg: 440
+         * @param ms tone duration in milliseconds (ms), eg: 500
          */
-        //% help=music/play-tone
-        //% blockId=jdmusic_play_note block="play %music tone|at %note=device_note|for %duration=device_beat"
-        //% blockNamespace=music
+        //% blockId=jdmusic_play_note block="play %music tone|at %note|for %duration"
+        //% note.defl=440
+        //% duration.defl=500
         //% weight=76 blockGap=8
         //% group="Music"
         playTone(frequency: number, ms: number): void {
