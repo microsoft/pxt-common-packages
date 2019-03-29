@@ -27,6 +27,8 @@ namespace image {
 }
 
 
+//% snippet='img` `'
+//% pySnippet='img(""" """)'
 //% fixedInstances
 interface Image {
     /**
