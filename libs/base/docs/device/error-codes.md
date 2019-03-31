@@ -9,8 +9,8 @@ Your @boardname@ may encounter a situation that prevents it from running your co
 Some panic codes are for general errors that might occur while your program runs. Other times, a device or resource you want to use isn't present or isn't working and you receive a panic code for that. Several panic codes are related to the use of memory and accessing data in it.
 
 * **20** (`PANIC_CODAL_OOM`): there is no free memory on the @boardname@
-* **21** (`PANIC_GC_OOM`): Garbage collection can't allocate any more memory
-* **22** (`PANIC_GC_TOO_BIG_ALLOCATION`): Garbage collection can't alloc memory for the requested size
+* **21** (`PANIC_GC_OOM`): Garbage Collection can't allocate any more memory
+* **22** (`PANIC_GC_TOO_BIG_ALLOCATION`): Garbage Collection can't alloc memory for the requested size
 * **30** (`PANIC_CODAL_HEAP_ERROR`): a general memory allocation error
 * **40** (`PANIC_CODAL_NULL_DEREFERENCE`): a memory pointer is NULL and points to an invalid location
 * **50** (`PANIC_CODAL_USB_ERROR`): USB is not available or can't initialize, transmit, or receive
@@ -24,7 +24,7 @@ Some panic codes are for general errors that might occur while your program runs
 * **907** (`PANIC_NO_SUCH_CONFIG`): the specified device resource is not present
 * **908** (`NO_SUCH_PIN`): the specified pin is not present on the board
 * **909** (`PANIC_INVALID_ARGUMENT`): the argument value is out of range or the type or format is invalid
-* **910** (`PANIC_MEMORY_LIMIT_EXCEEDED`) = insufficient memory is available to satisfy and allocation request
+* **910** (`PANIC_MEMORY_LIMIT_EXCEEDED`): insufficient memory is available to satisfy and allocation request
 * **911** (`PANIC_SCREEN_ERROR`): the screen isn't present or it can't properly display the output
 * **912** (`PANIC_MISSING_PROPERTY`): the property requeste is not present in the current object
 * **913** (`PANIC_INVALID_IMAGE`): the data for a screen image data is invalid or formatted incorrectly
@@ -34,8 +34,8 @@ Some panic codes are for general errors that might occur while your program runs
 * **981** (`PANIC_CAST_FROM_BOOLEAN`): attempted cast from a [boolean](/types/boolean) value to an incompatible type
 * **982** (`PANIC_CAST_FROM_NUMBER`): attempted cast from a [number](/types) value to an incompatible type or no conversion is available
 * **983** (`PANIC_CAST_FROM_STRING`): attempted cast from a [string](/types/string) value to an incompatible type or no conversion is available
-* **984** (`PANIC_CAST_FROM_OBJECT`) = attempted cast from an object to an incompatible type
-* **985** (`PANIC_CAST_FROM_FUNCTION`) = attempted cast from a function to a non-function type
+* **984** (`PANIC_CAST_FROM_OBJECT`): attempted cast from an object to an incompatible type
+* **985** (`PANIC_CAST_FROM_FUNCTION`): attempted cast from a function to a non-function type
 * **989** (`PANIC_CAST_FROM_NULL`): attmepted cast from a `null` value to another type
 
 ## #specific
