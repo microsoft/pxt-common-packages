@@ -140,7 +140,7 @@ void dumpDmesg();
 #define TAG_UNDEFINED (TValue)0
 #define TAG_NULL TAGGED_SPECIAL(1) // 6
 #define TAG_NAN TAGGED_SPECIAL(3)  // 14
-#define TAG_NUMBER(n) (TNumber)(void *)((n << 1) | 1)
+#define TAG_NUMBER(n) (TNumber)(void *)(((intptr_t)n << 1) | 1)
 
 inline bool isTagged(TValue v) {
     return ((intptr_t)v & 3) || !v;
@@ -162,15 +162,15 @@ inline int numValue(TValue n) {
     return (intptr_t)n >> 1;
 }
 
-#ifdef PXT_BOX_DEBUG
 inline bool canBeTagged(int) {
+#ifdef PXT_BOX_DEBUG
     return false;
-}
+#elif defined(PXT64)
+    return true;
 #else
-inline bool canBeTagged(int v) {
     return (v << 1) >> 1 == v;
-}
 #endif
+}
 
 // keep in sym with sim/control.ts
 typedef enum {
