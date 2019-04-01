@@ -27,7 +27,7 @@ Event::Event(uint16_t source, uint16_t value, EventLaunchMode mode) {
     }
 }
 
-void fiber_sleep(unsigned long ms) {
+void fiber_sleep(unsigned ms) {
     sleep_ms(ms);
 }
 

@@ -12,6 +12,8 @@
 #define GC_ALLOC_BLOCK xmalloc
 #endif
 
+TODO64
+
 #define FREE_MASK 0x80000000
 #define ARRAY_MASK 0x40000000
 #define PERMA_MASK 0x20000000

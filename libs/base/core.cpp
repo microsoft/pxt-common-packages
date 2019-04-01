@@ -435,7 +435,7 @@ String charAt(String s, int pos) {
     return fromCharCode(numValue(v));
 }
 
-#define IS_CONS(s) ((s)->vtable == (uint32_t)&string_cons_vt)
+#define IS_CONS(s) ((s)->vtable == (uintptr_t)&string_cons_vt)
 #define IS_EMPTY(s) ((s) == (String)emptyString)
 
 //%

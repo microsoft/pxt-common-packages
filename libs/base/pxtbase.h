@@ -59,7 +59,7 @@ void *operator new(size_t size);
 
 #ifndef ramint_t
 // this type limits size of arrays
-#ifdef __linux__
+#if defined(__linux__) || defined(PXT64)
 // TODO fix the inline array accesses to take note of this!
 #define ramint_t uint32_t
 #else
@@ -217,8 +217,6 @@ class RefRecord;
 // Utility functions
 
 typedef TValue (*RunActionType)(Action a, TValue arg0, TValue arg1, TValue arg2);
-typedef TValue (*GetPropertyType)(TValue obj, unsigned key);
-typedef TValue (*SetPropertyType)(TValue obj, unsigned key, TValue v);
 
 #define asmRunAction3 ((RunActionType)(((uintptr_t *)bytecode)[12]))
 
@@ -996,7 +994,7 @@ bool removeElement(RefCollection *c, TValue x);
         return 0;                                                                                  \
     }
 
-#define PXT_FNPTR(x) (unsigned)(void *)(x)
+#define PXT_FNPTR(x) (uintptr_t)(void *)(x)
 
 #define PXT_ABI(...)
 

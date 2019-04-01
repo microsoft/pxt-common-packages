@@ -1,0 +1,25 @@
+{
+    "name": "core---vm",
+    "files": [
+        "README.md",
+        "Makefile",
+        "dal.d.ts",
+        "linux.cpp",
+        "config.cpp",
+        "target.cpp",
+        "pxt.h",
+        "platform.h",
+        "platform.cpp",
+        "pxtcore.h",
+        "pins.h",
+        "control.cpp",
+        "shims.d.ts",
+        "enums.d.ts",
+        "ns.ts",
+        "timer.ts",
+        "platform_includes.h",
+        "codalemu.cpp",
+        "pxtparts.json"
+    ],
+    "additionalFilePath": "../core---linux"
+}

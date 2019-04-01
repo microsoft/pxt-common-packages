@@ -27,11 +27,11 @@ Action mkAction(int totallen, RefAction *act) {
         return (TValue)act; // no closure needed
     }
 
-    void *ptr = gcAllocate(sizeof(RefAction) + totallen * sizeof(unsigned));
+    void *ptr = gcAllocate(sizeof(RefAction) + totallen * sizeof(void*));
     RefAction *r = new (ptr) RefAction();
     r->len = totallen;
     r->func = act->func;
-    memset(r->fields, 0, r->len * sizeof(unsigned));
+    memset(r->fields, 0, r->len * sizeof(void*));
 
     MEMDBG("mkAction: start=%p => %p", act, r);
 
@@ -265,7 +265,7 @@ TValue Segment::remove(unsigned i) {
         TValue ret = data[i];
         if (i + 1 < length) {
             // Move the rest of the elements to fill in the gap.
-            memmove(data + i, data + i + 1, (length - i - 1) * sizeof(unsigned));
+            memmove(data + i, data + i + 1, (length - i - 1) * sizeof(void*));
         }
         length--;
         data[length] = Segment::DefaultValue;
@@ -289,7 +289,7 @@ void Segment::insert(unsigned i, TValue value) {
         ensure(length + 1);
 
         // Move the rest of the elements to fill in the gap.
-        memmove(data + i + 1, data + i, (length - i) * sizeof(unsigned));
+        memmove(data + i + 1, data + i, (length - i) * sizeof(void*));
 
         data[i] = value;
         length++;
