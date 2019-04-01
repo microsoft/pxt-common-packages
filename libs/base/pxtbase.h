@@ -162,7 +162,8 @@ inline int numValue(TValue n) {
     return (intptr_t)n >> 1;
 }
 
-inline bool canBeTagged(int) {
+inline bool canBeTagged(int v) {
+    (void)v;
 #ifdef PXT_BOX_DEBUG
     return false;
 #elif defined(PXT64)
