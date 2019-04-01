@@ -1,5 +1,13 @@
 #include "pxtbase.h"
 
+/*
+TODO64
+- can you mmap /dev/zero on iOS, Windows, XBox, Android
+- use the same tagged pointer scheme?
+- what about integers?
+- where are programs loaded on each platform?
+*/
+
 #ifndef GC_BLOCK_SIZE
 #define GC_BLOCK_SIZE (1024 * 16)
 #endif
@@ -12,24 +20,33 @@
 #define GC_ALLOC_BLOCK xmalloc
 #endif
 
-TODO64
+#ifdef PXT64
+#define HIGH_SHIFT 48
+#define BYTES_TO_WORDS(x) ((x) >> 3)
+#define WORDS_TO_BYTES(x) ((x) << 3)
+#define ALIGN_TO_WORD(x) (((x) + 7) & (~7UL))
+#define VAR_BLOCK_WORDS(vt) ((uint32_t)((vt) >> 2))
+#else
+#define HIGH_SHIFT 28
+#define BYTES_TO_WORDS(x) ((x) >> 2)
+#define WORDS_TO_BYTES(x) ((x) << 2)
+#define ALIGN_TO_WORD(x) (((x) + 3) & (~3U))
+#define VAR_BLOCK_WORDS(vt) (((vt) << 12) >> (12 + 2))
+#endif
 
-#define FREE_MASK 0x80000000
-#define ARRAY_MASK 0x40000000
-#define PERMA_MASK 0x20000000
-#define MARKED_MASK 0x00000001
-#define ANY_MARKED_MASK 0x00000003
+#define FREE_MASK (1UL << (HIGH_SHIFT + 3))
+#define ARRAY_MASK (1UL << (HIGH_SHIFT + 2))
+#define PERMA_MASK (1UL << (HIGH_SHIFT + 1))
+#define MARKED_MASK 0x1
+#define ANY_MARKED_MASK 0x3
 
 // the bit operations should be faster than loading large constants
-#define IS_FREE(vt) ((uint32_t)(vt) >> 31)
-#define IS_ARRAY(vt) (((uint32_t)(vt) >> 30) & 1)
-#define IS_PERMA(vt) (((uint32_t)(vt) >> 29) & 1)
-#define IS_MARKED(vt) ((uint32_t)(vt)&MARKED_MASK)
-#define IS_VAR_BLOCK(vt) ((uint32_t)(vt) >> 30)
-
-#define IS_LIVE(vt) (IS_MARKED(vt) || (((uint32_t)(vt) >> 28) == 0x6))
-
-#define VAR_BLOCK_WORDS(vt) (((vt) << 12) >> (12 + 2))
+#define IS_FREE(vt) ((uintptr_t)(vt) >> (HIGH_SHIFT + 3))
+#define IS_ARRAY(vt) (((uintptr_t)(vt) >> (HIGH_SHIFT + 2)) & 1)
+#define IS_PERMA(vt) (((uintptr_t)(vt) >> (HIGH_SHIFT + 1)) & 1)
+#define IS_VAR_BLOCK(vt) ((uintptr_t)(vt) >> (HIGH_SHIFT + 2))
+#define IS_MARKED(vt) ((uintptr_t)(vt)&MARKED_MASK)
+#define IS_LIVE(vt) (IS_MARKED(vt) || (((uintptr_t)(vt) >> (HIGH_SHIFT)) == 0x6))
 
 //#define PXT_GC_DEBUG 1
 #ifndef PXT_GC_CHECK
@@ -40,7 +57,7 @@ TODO64
 #define MARK(v)                                                                                    \
     do {                                                                                           \
         GC_CHECK(inGCArea(v), 47);                                                                 \
-        *(uint32_t *)(v) |= MARKED_MASK;                                                           \
+        *(uintptr_t *)(v) |= MARKED_MASK;                                                          \
     } while (0)
 
 #ifdef PXT_GC_DEBUG
@@ -70,7 +87,7 @@ ThreadContext *pushThreadContext(void *sp, void *endSP);
 
 unsigned RefRecord_gcsize(RefRecord *r) {
     VTable *tbl = getVTable(r);
-    return tbl->numbytes >> 2;
+    return BYTES_TO_WORDS(tbl->numbytes);
 }
 
 #ifndef PXT_GC
@@ -134,7 +151,7 @@ ThreadContext *pushThreadContext(void *sp, void *endSP) {
 
     auto curr = getThreadContext();
     tempRoot = (TValue *)endSP;
-    tempRootLen = (uint32_t *)sp - (uint32_t *)endSP;
+    tempRootLen = (uintptr_t *)sp - (uintptr_t *)endSP;
     if (curr) {
 #ifdef PXT_GC_THREAD_LIST
 #ifdef PXT_GC_DEBUG
@@ -201,12 +218,12 @@ static bool inGCArea(void *ptr) {
 }
 
 #define NO_MAGIC(vt) ((VTable *)vt)->magic != VTABLE_MAGIC
-#define VT(p) (*(uint32_t *)(p))
+#define VT(p) (*(uintptr_t *)(p))
 #define SKIP_PROCESSING(p)                                                                         \
     (isReadOnly(p) || (VT(p) & (ANY_MARKED_MASK | ARRAY_MASK)) || NO_MAGIC(VT(p)))
 
 void gcMarkArray(void *data) {
-    auto segBl = (uint32_t *)data - 1;
+    auto segBl = (uintptr_t *)data - 1;
     GC_CHECK(!IS_MARKED(VT(segBl)), 47);
     MARK(segBl);
 }
@@ -270,8 +287,8 @@ static void mark(int flags) {
     }
     for (unsigned i = 0; i < len; ++i) {
         auto d = data[i];
-        if ((uint32_t)d & 1) {
-            d = *(TValue *)((uint32_t)d & ~1);
+        if ((uintptr_t)d & 1) {
+            d = *(TValue *)((uintptr_t)d & ~1);
         }
         gcProcess(d);
     }
@@ -382,7 +399,7 @@ static void sweep(int flags) {
 
     for (auto h = firstBlock; h; h = h->next) {
         auto d = h->data;
-        auto words = h->blockSize >> 2;
+        auto words = BYTES_TO_WORDS(h->blockSize);
         auto end = d + words;
         totalSize += words;
         VLOG("sweep: %p - %p", d, end);
@@ -410,7 +427,7 @@ static void sweep(int flags) {
                 auto sz = d - (RefObject *)start;
                 freeSize += sz;
 #ifdef PXT_GC_CHECKS
-                memset(start, 0xff, sz << 2);
+                memset(start, 0xff, WORDS_TO_BYTES(sz));
 #endif
                 start->vtable = (sz << 2) | FREE_MASK;
                 if (sz > 1) {
@@ -438,9 +455,8 @@ static void sweep(int flags) {
         }
     }
 
-    // convert to bytes
-    freeSize <<= 2;
-    totalSize <<= 2;
+    freeSize = WORDS_TO_BYTES(freeSize);
+    totalSize = WORDS_TO_BYTES(totalSize);
 
     if (flags & 1)
         DMESG("GC %d/%d free", freeSize, totalSize);
@@ -490,8 +506,8 @@ extern "C" void *realloc(void *ptr, size_t size) {
         void *mem = malloc(size);
 
         if (ptr != NULL && mem != NULL) {
-            auto r = (uint32_t *)ptr;
-            GC_CHECK((r[-1] >> 29) == 3, 41);
+            auto r = (uintptr_t *)ptr;
+            GC_CHECK((r[-1] >> (HIGH_SHIFT + 1)) == 3, 41);
             size_t blockSize = VAR_BLOCK_WORDS(r[-1]);
             memcpy(mem, ptr, min(blockSize * sizeof(void *), size));
             free(ptr);
@@ -505,8 +521,8 @@ extern "C" void *realloc(void *ptr, size_t size) {
 #endif
 
 void *gcAllocateArray(int numbytes) {
-    numbytes = (numbytes + 3) & ~3;
-    numbytes += 4;
+    numbytes = ALIGN_TO_WORD(numbytes);
+    numbytes += sizeof(void *);
     auto r = (uint32_t *)gcAllocate(numbytes);
     *r = ARRAY_MASK | numbytes;
     return r + 1;
@@ -524,7 +540,7 @@ void *app_alloc(int numbytes) {
 
 void *app_free(void *ptr) {
     auto r = (uint32_t *)ptr;
-    GC_CHECK((r[-1] >> 29) == 3, 41);
+    GC_CHECK((r[-1] >> (HIGH_SHIFT + 1)) == 3, 41);
     r[-1] |= FREE_MASK;
     return r;
 }
@@ -534,7 +550,7 @@ void gcFreeze() {
 }
 
 void *gcAllocate(int numbytes) {
-    size_t numwords = (numbytes + 3) >> 2;
+    size_t numwords = BYTES_TO_WORDS(ALIGN_TO_WORD(numbytes));
 
     if (numbytes > GC_MAX_ALLOC_SIZE)
         target_panic(PANIC_GC_TOO_BIG_ALLOCATION);
@@ -583,7 +599,7 @@ void *gcAllocate(int numbytes) {
                 else
                     firstFree = nf;
                 p->vtable = 0;
-                GC_CHECK(!nf || !nf->nextFree || ((uint32_t)nf->nextFree) >> 20, 48);
+                GC_CHECK(!nf || !nf->nextFree || ((uint32_t)nf->nextFree) >> (HIGH_SHIFT - 8), 48);
                 VVLOG("GC=>%p %d %p", p, numwords, nf->nextFree);
                 inGC &= ~IN_GC_ALLOC;
                 return p;
@@ -681,7 +697,7 @@ void RefMap::scan(RefMap *t) {
 
 void RefRecord_scan(RefRecord *r) {
     VTable *tbl = getVTable(r);
-    gcScanMany(r->fields, (tbl->numbytes - sizeof(RefRecord)) >> 2);
+    gcScanMany(r->fields, BYTES_TO_WORDS(tbl->numbytes - sizeof(RefRecord)));
 }
 
 #define SIZE(off) (sizeof(*t) + (off) + 3) >> 2
@@ -697,7 +713,7 @@ unsigned RefCollection::gcsize(RefCollection *t) {
 }
 
 unsigned RefAction::gcsize(RefAction *t) {
-    return SIZE(t->len << 2);
+    return SIZE(WORDS_TO_BYTES(t->len));
 }
 
 unsigned RefRefLocal::gcsize(RefRefLocal *t) {

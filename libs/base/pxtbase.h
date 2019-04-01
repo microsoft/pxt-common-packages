@@ -382,6 +382,7 @@ enum class BuiltInType : uint16_t {
     User0 = 16,
 };
 
+// TODO64 might need better aligned layout
 struct VTable {
     uint16_t numbytes;
     ValType objectType;
@@ -437,7 +438,7 @@ inline bool isReadOnly(TValue v) {
 class RefObject {
   public:
 #ifdef PXT_GC
-    uint32_t vtable;
+    uintptr_t vtable;
 
     RefObject(const VTable *vt) { vtable = PXT_VTABLE_TO_INT(vt); }
 #else
