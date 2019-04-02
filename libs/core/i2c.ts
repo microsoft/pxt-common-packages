@@ -32,8 +32,8 @@ namespace pins {
      * @param valueFormat format of the value, default is UInt8LE
      */
     //% weight=3 group="i2c"
-    //% blockId=i2c_writereg block="i2c write register|at address $addfress|at register $register|value $value"
-    export function i2cWriteRegister(address: number, register: number, value: number, valueFormat?: NumberFormat): number {
+    //% blockId=i2c_writereg block="i2c write register|at address $address|at register $register|value $value"
+    export function i2cWriteRegister(address: number, register: number, value: number, valueFormat?: NumberFormat): void {
         if (valueFormat === undefined)
             valueFormat = NumberFormat.UInt8LE;
         const valueSize = pins.sizeOf(valueFormat);
