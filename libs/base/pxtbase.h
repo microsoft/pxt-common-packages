@@ -238,7 +238,7 @@ typedef enum {
 
 } PXT_PANIC;
 
-extern const unsigned functionsAndBytecode[];
+extern const uintptr_t functionsAndBytecode[];
 extern TValue *globals;
 extern uint16_t *bytecode;
 class RefRecord;
@@ -685,13 +685,11 @@ typedef int color;
 
 // note: this is hardcoded in PXT (hexfile.ts)
 
-#ifndef PXT64
 class BoxedNumber : public RefObject {
   public:
     NUMBER num;
     BoxedNumber() : RefObject(&number_vt) {}
 } __attribute__((packed));
-#endif
 
 class BoxedString : public RefObject {
   public:
@@ -989,7 +987,7 @@ bool removeElement(RefCollection *c, TValue x);
 //
 #define PXT_SHIMS_BEGIN                                                                            \
     namespace pxt {                                                                                \
-    const unsigned functionsAndBytecode[]                                                          \
+    const uintptr_t functionsAndBytecode[]                                                          \
         __attribute__((aligned(0x20))) = {0x08010801, 0x42424242, 0x08010801, 0x8de9d83e,
 
 #define PXT_SHIMS_END                                                                              \

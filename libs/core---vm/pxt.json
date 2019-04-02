@@ -19,6 +19,7 @@
         "timer.ts",
         "platform_includes.h",
         "codalemu.cpp",
+        "keys.cpp",
         "pxtparts.json"
     ],
     "additionalFilePath": "../core---linux"

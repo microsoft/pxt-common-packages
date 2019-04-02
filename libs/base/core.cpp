@@ -1783,10 +1783,7 @@ STRING_VT(string_cons, fixCons(p), (gcScan((TValue)p->cons.left), gcScan((TValue
           4 + 4, SKIP_DATA(p), p->skip.size, p->skip.length, skipLookup(p, idx))
 #endif
 
-#ifndef PXT64
 PRIM_VTABLE(number, ValType::Number, BoxedNumber, 0)
-#endif
-
 PRIM_VTABLE(buffer, ValType::Object, BoxedBuffer, p->length)
 // PRIM_VTABLE(action, ValType::Function, RefAction, )
 
