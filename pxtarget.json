@@ -34,6 +34,7 @@
         "libs/datalogger",
         "libs/lora",
         "libs/power",
-        "libs/controller"
+        "libs/controller",
+        "libs/colorsensor"
     ]
 }
