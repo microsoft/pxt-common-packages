@@ -1,0 +1,22 @@
+{
+    "name": "jacdacts",
+    "description": "JACDAC TS",
+    "additionalFilePath": "../../node_modules/@jacdac/jacdac-ts/source",
+    "files": [
+        "consts.ts",
+        "control.ts",
+        "crc.ts",
+        "devicemanager.ts",
+        "ifaces.ts",
+        "jacdac.ts",
+        "namingservice.ts",
+        "options.ts",
+        "rngservice.ts",
+        "service.ts",
+        "structs.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core"
+    }
+}
