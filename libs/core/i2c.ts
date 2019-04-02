@@ -38,7 +38,7 @@ namespace pins {
             valueFormat = NumberFormat.UInt8LE;
         const valueSize = pins.sizeOf(valueFormat);
         const buf = control.createBuffer(1 + valueSize);
-        buf.setNumber(NumberFormat.UInt8BE, 0, register);
+        buf.setNumber(NumberFormat.UInt8LE, 0, register);
         buf.setNumber(valueFormat, 1, value);
         pins.i2cWriteBuffer(address, buf);
     }
@@ -54,7 +54,7 @@ namespace pins {
     export function i2cReadRegister(address: number, register: number, valueFormat?: NumberFormat): number {
         if (valueFormat === undefined)
             valueFormat = NumberFormat.UInt8LE;
-        pins.i2cWriteNumber(address, register, NumberFormat.UInt8BE);
+        pins.i2cWriteNumber(address, register, NumberFormat.UInt8LE);
         return pins.i2cReadNumber(address, valueFormat);
     }
 
