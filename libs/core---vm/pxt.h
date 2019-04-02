@@ -42,24 +42,50 @@ void target_exit();
 // Buffer, Sound, and Image share representation.
 typedef Buffer Sound;
 
+struct VMFnHeader {
+    uint32_t nameLiteral;
+    uint32_t start;
+    uint32_t size;
+};
+
+struct VMImageHeader {
+    uint64_t magic0;
+    uint64_t magic1;
+    uint64_t hexHash;
+    uint64_t programHash;
+
+    uint32_t allocGlobals;
+    uint32_t nonPointerGlobals;
+
+    // image structure
+    uint32_t totalBytes;          // in the entire image, include this header
+    uint32_t numConfigData;       // 8 (int+int)
+    uint32_t numIfaceMemberNames; // 4 (offset)
+    uint32_t numDoubleLiterals;   // 8 (double)
+    uint32_t numIntLiterals;      // 4 (int)
+    uint32_t numPointerLiterals;  // 4 (offset)
+    uint32_t numFunctions;        // sizeof(FnHeader)
+    uint32_t reserved[20];
+};
+
 struct VMImage {
     double *doubleConst;
     int *intConst;
 };
 
 struct FiberContext {
-    VMImage *img;
     TValue *stackBase;
     FiberContext *next;
     FiberContext *prev;
 
     uint32_t *pc;
+    uint32_t *img;
     TValue *sp;
     TValue r0;
     TValue *caps;
 };
 
-typedef void (*OpFun)(FiberContext *ctx, int arg);
+typedef void (*OpFun)(FiberContext *ctx, unsigned arg);
 
 extern const OpFun opcodes[];
 

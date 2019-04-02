@@ -941,6 +941,16 @@ int toBool(TValue v);
 int toBoolDecr(TValue v);
 } // namespace numops
 
+namespace pxt {
+inline bool toBoolQuick(TValue v) {
+    if (v == TAG_TRUE)
+        return true;
+    if (v == TAG_FALSE || v == TAG_UNDEFINED || v == TAG_NULL)
+        return false;
+    return numops::toBool(v);
+}
+} // namespace pxt
+
 namespace pins {
 Buffer createBuffer(int size);
 }
@@ -987,7 +997,7 @@ bool removeElement(RefCollection *c, TValue x);
 //
 #define PXT_SHIMS_BEGIN                                                                            \
     namespace pxt {                                                                                \
-    const uintptr_t functionsAndBytecode[]                                                          \
+    const uintptr_t functionsAndBytecode[]                                                         \
         __attribute__((aligned(0x20))) = {0x08010801, 0x42424242, 0x08010801, 0x8de9d83e,
 
 #define PXT_SHIMS_END                                                                              \
