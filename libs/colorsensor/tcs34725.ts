@@ -3,7 +3,7 @@
  * 
  * More details here: https://ams.com/documents/20143/36005/TCS3472_DS000390_2-00.pdf/6e452176-2407-faaf-a590-d526c78c7432
  */
-namespace tcs3475 {
+namespace sensors {
 
     const TCS34725_I2C_ADDRESS = 0x29        //I2C address of the TCS34725 (Page 34)
 
@@ -53,7 +53,7 @@ namespace tcs3475 {
     /* #region Enums for Modes, etc */
 
     // Parameters for setting the internal integration time of the RGBC clear and IR channel.
-    enum TCS34725_ATIME {
+    export enum TCS34725_ATIME {
         ATIME_2_4_MS = 0xFF,    // 1 2.4 ms 1024
         ATIME_24_MS = 0xF6,     // 10 24 ms 10240
         ATIME_100_MS = 0xD5,    // 42 101 ms 43008
@@ -97,33 +97,36 @@ namespace tcs3475 {
     }
 
 
-    class TCS34725 implements sensors.ColorSensor {
+    export class TCS34725 implements sensors.ColorSensor {
         isConnected: boolean;
-        atimeIntegrationValue: number;
-        gainSensorValue: number;
+        atimeIntegrationValue: TCS34725_ATIME;
+        gainSensorValue: TCS34725_AGAIN;
 
         constructor() {
             this.isConnected = false;
             this.atimeIntegrationValue = 0;
             this.gainSensorValue = 0;
+
+            this.start(TCS34725_ATIME.ATIME_2_4_MS, TCS34725_AGAIN.AGAIN_1X);
         }
 
-        connect() {
-            if (this.isConnected) return;
+        private connect() {
+            let retry = 0;
+            while (!this.isConnected && retry < 5) {
 
-            //REGISTER FORMAT:   CMD | TRANSACTION | ADDRESS
-            //REGISTER READ:     TCS34725_REGISTER_COMMAND (0x80) | TCS34725_REGISTER_ID (0x12)
-            let device_id = pins.i2cReadRegister(TCS34725_I2C_ADDRESS, TCS34725_REGISTER_COMMAND | TCS34725_REGISTER_ID)
+                //REGISTER FORMAT:   CMD | TRANSACTION | ADDRESS
+                //REGISTER READ:     TCS34725_REGISTER_COMMAND (0x80) | TCS34725_REGISTER_ID (0x12)
+                const device_id = pins.i2cReadRegister(TCS34725_I2C_ADDRESS, TCS34725_REGISTER_COMMAND | TCS34725_REGISTER_ID)
 
-            //Check that device Identification has one of 2 i2c addresses         
-            if ((device_id != 0x44) && (device_id != 0x10)) {
-                this.isConnected = false;
+                //Check that device Identification has one of 2 i2c addresses         
+                if ((device_id == 0x44) || (device_id == 0x10))
+                    this.isConnected = true;
+
+                retry++;
             }
-            else
-                this.isConnected = true;
         }
 
-        turnSensorOn(atime: TCS34725_ATIME) {
+        private turnSensorOn() {
 
             //REGISTER FORMAT:   CMD | TRANSACTION | ADDRESS
             //REGISTER VALUE:    TCS34725_REGISTER_COMMAND (0x80) | TCS34725_REGISTER_ENABLE (0x00)
@@ -137,11 +140,11 @@ namespace tcs3475 {
             //REGISTER WRITE:    TCS34725_REGISTER_PON_ENABLE (0x01) | TCS34725_REGISTER_AEN_ENABLE (0x02)        
             pins.i2cWriteRegister(TCS34725_I2C_ADDRESS, TCS34725_REGISTER_COMMAND | TCS34725_REGISTER_ENABLE, TCS34725_REGISTER_PON_ENABLE | TCS34725_REGISTER_AEN_ENABLE);
 
-            this.pauseSensorForIntegrationTime(atime);
+            this.pauseSensorForIntegrationTime();
         }
 
-        private pauseSensorForIntegrationTime(atime: TCS34725_ATIME) {
-            switch (atime) {
+        private pauseSensorForIntegrationTime() {
+            switch (this.atimeIntegrationValue) {
                 case TCS34725_ATIME.ATIME_2_4_MS: {
                     basic.pause(2.4);
                     break;
@@ -165,7 +168,7 @@ namespace tcs3475 {
             }
         }
 
-        turnSensorOff() {
+        private turnOff() {
             //REGISTER FORMAT:   CMD | TRANSACTION | ADDRESS
             //REGISTER READ:     TCS34725_REGISTER_COMMAND (0x80) | TCS34725_REGISTER_ID (0x12)        
             let sensorReg = pins.i2cReadNumber(TCS34725_I2C_ADDRESS, TCS34725_REGISTER_COMMAND | TCS34725_REGISTER_ENABLE);
@@ -200,16 +203,19 @@ namespace tcs3475 {
             this.gainSensorValue = gain;
         }
 
-        start(atime: TCS34725_ATIME, gain: TCS34725_AGAIN) {
+        private start(atime: TCS34725_ATIME, gain: TCS34725_AGAIN) {
             this.connect();
             this.setATIMEintegration(atime);
             this.setGAINsensor(gain);
-            this.turnSensorOn(atime);
+            this.turnSensorOn();
         }
 
         color(): number {
             //Always check that sensor is/was turned on
             this.connect();
+
+            if (!this.isConnected)
+                return 0;
 
             //REGISTER FORMAT:   CMD | TRANSACTION | ADDRESS
             //REGISTER READ:     TCS34725_REGISTER_COMMAND (0x80) | TCS34725_REGISTER_RDATAL (0x16)          
@@ -227,7 +233,7 @@ namespace tcs3475 {
             //REGISTER READ:     TCS34725_REGISTER_COMMAND (0x80) | TCS34725_REGISTER_CDATAL (0x14)          
             const clearColorValue = pins.i2cReadRegister(TCS34725_I2C_ADDRESS, TCS34725_REGISTER_COMMAND | TCS34725_REGISTER_CDATAL, NumberFormat.UInt16LE);
 
-            this.pauseSensorForIntegrationTime(this.atimeIntegrationValue);
+            this.pauseSensorForIntegrationTime();
 
             let sum = clearColorValue;
             let r = 0;
