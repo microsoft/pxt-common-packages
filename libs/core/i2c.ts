@@ -29,7 +29,7 @@ namespace pins {
      * @param address I2c address of the device
      * @param register register index
      * @param value value to write
-     * @param registerFormat format of the register, default is UInt8LE
+     * @param registerFormat format of the register, default is UInt8BE
      * @param valueFormat format of the value, default is UInt8LE
      */
     //% weight=3 group="i2c"
@@ -51,7 +51,7 @@ namespace pins {
      * Reads the value from a I2C register.
      * @param address I2c address of the device
      * @param register register index
-     * @param registerFormat format of the register, default is UInt8LE
+     * @param registerFormat format of the register, default is UInt8BE
      * @param valueFormat format of the value, default is UInt8LE
      */
     //% weight=3 group="i2c"
@@ -61,7 +61,7 @@ namespace pins {
             registerFormat = NumberFormat.UInt8BE;
         if (valueFormat === undefined)
             valueFormat = NumberFormat.UInt8LE;
-        pins.i2cWriteNumber(address, register, NumberFormat.UInt8LE);
+        pins.i2cWriteNumber(address, register, registerFormat);
         return pins.i2cReadNumber(address, valueFormat);
     }
 
