@@ -33,3 +33,5 @@ if (pins.A0.analogRead() < 10) {
 ## See also #seealso
 
 [assert](/reference/control/assert)
+
+[Error Codes](/device/error-codes)

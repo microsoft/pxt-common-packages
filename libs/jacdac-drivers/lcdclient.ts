@@ -79,7 +79,7 @@ namespace jacdac {
          * Show or hide cursor
          * @param enabled true to display cursor, false otherwise
          */
-        //% blockId=jdlcdsetcursor block="jacdac set %client curcor %enabled"
+        //% blockId=jdlcdsetcursor block="jacdac set %client cursor %enabled"
         //% enabled.shadow=toggleOnOff
         //% group="LCD" blockGap=8
         setCursor(enabled: boolean) {

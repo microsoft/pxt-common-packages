@@ -12,7 +12,7 @@ enum GamepadButton {
     LeftBumper = 4,
     //% block="right bumper"
     //% blockIdentity=gamepad.button enumval=5
-    RightBumer = 5,
+    RightBumper = 5,
     //% block="left trigger"
     //% blockIdentity=gamepad.button enumval=6
     LeftTrigger = 6,
@@ -37,7 +37,7 @@ enum GamepadButton {
     //% block="down"
     //% blockIdentity=gamepad.button enumval=13
     Down = 13,
-    //% block="light"
+    //% block="left"
     //% blockIdentity=gamepad.button enumval=14
     Left = 14,
     //% block="right"

@@ -368,15 +368,14 @@ namespace particles {
         protected maxState: number;
         protected galois: Math.FastRandom;
         stateChangePercentage: number;
-        oscilattionPercentage: number
-
+        oscillationPercentage: number
 
         constructor(anchor: ParticleAnchor, particlesPerSecond: number, maxState: number, factory?: ParticleFactory) {
             super(anchor, particlesPerSecond, factory);
             this.galois = new Math.FastRandom();
             this.maxState = maxState;
             this.stateChangePercentage = 3;
-            this.oscilattionPercentage = 4;
+            this.oscillationPercentage = 4;
         }
 
         updateParticle(p: Particle, fixedDt: Fx8) {
@@ -389,7 +388,7 @@ namespace particles {
                 }
             }
 
-            if (this.galois.percentChance(this.oscilattionPercentage)) {
+            if (this.galois.percentChance(this.oscillationPercentage)) {
                 p.vx = Fx.neg(p.vx);
             }
         }

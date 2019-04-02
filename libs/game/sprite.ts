@@ -57,7 +57,7 @@ class Sprite implements SpriteLike {
     _ay: Fx8
 
     //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine block="x"
+    //% blockCombine block="x" callInDebugger
     get x(): number {
         return Fx.toInt(this._x) + (this._image.width >> 1)
     }
@@ -69,7 +69,7 @@ class Sprite implements SpriteLike {
     }
 
     //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine block="y"
+    //% blockCombine block="y" callInDebugger
     get y(): number {
         return Fx.toInt(this._y) + (this._image.height >> 1)
     }
@@ -81,7 +81,7 @@ class Sprite implements SpriteLike {
     }
 
     //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine block="vx (velocity x)"
+    //% blockCombine block="vx (velocity x)" callInDebugger
     get vx(): number {
         return Fx.toFloat(this._vx)
     }
@@ -92,7 +92,7 @@ class Sprite implements SpriteLike {
     }
 
     //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine block="vy (velocity y)"
+    //% blockCombine block="vy (velocity y)" callInDebugger
     get vy(): number {
         return Fx.toFloat(this._vy)
     }
@@ -103,7 +103,7 @@ class Sprite implements SpriteLike {
     }
 
     //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine block="ax (acceleration x)"
+    //% blockCombine block="ax (acceleration x)" callInDebugger
     get ax(): number {
         return Fx.toFloat(this._ax)
     }
@@ -114,7 +114,7 @@ class Sprite implements SpriteLike {
     }
 
     //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine block="ay (acceleration y)"
+    //% blockCombine block="ay (acceleration y)" callInDebugger
     get ay(): number {
         return Fx.toFloat(this._ay)
     }
