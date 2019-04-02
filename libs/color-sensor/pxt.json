@@ -1,5 +1,5 @@
 {
-    "name": "colorsensor",
+    "name": "color-sensor",
     "description": "Color sensor (TCS24725)",
     "files": [
         "README.md",

@@ -35,6 +35,6 @@
         "libs/lora",
         "libs/power",
         "libs/controller",
-        "libs/colorsensor"
+        "libs/color-sensor"
     ]
 }
