@@ -29,21 +29,17 @@ namespace pins {
      * @param address I2c address of the device
      * @param register register index
      * @param value value to write
-     * @param registerFormat format of the register, default is UInt8BE
      * @param valueFormat format of the value, default is UInt8LE
      */
     //% weight=3 group="i2c"
     //% blockId=i2c_writereg block="i2c write register|at address $addfress|at register $register|value $value"
-    export function i2cWriteRegister(address: number, register: number, value: number, registerFormat?: NumberFormat, valueFormat?: NumberFormat): number {
-        if (registerFormat === undefined)
-            registerFormat = NumberFormat.UInt8BE;
+    export function i2cWriteRegister(address: number, register: number, value: number, valueFormat?: NumberFormat): number {
         if (valueFormat === undefined)
             valueFormat = NumberFormat.UInt8LE;
-        const registerSize = pins.sizeOf(registerFormat);
         const valueSize = pins.sizeOf(valueFormat);
-        const buf = control.createBuffer(registerSize + valueSize);
-        buf.setNumber(registerFormat, 0, register);
-        buf.setNumber(valueFormat, registerSize, value);
+        const buf = control.createBuffer(1 + valueSize);
+        buf.setNumber(NumberFormat.UInt8BE, 0, register);
+        buf.setNumber(valueFormat, 1, value);
         pins.i2cWriteBuffer(address, buf);
     }
 
@@ -51,17 +47,14 @@ namespace pins {
      * Reads the value from a I2C register.
      * @param address I2c address of the device
      * @param register register index
-     * @param registerFormat format of the register, default is UInt8BE
      * @param valueFormat format of the value, default is UInt8LE
      */
     //% weight=3 group="i2c"
     //% blockId=i2c_readreg block="i2c read register|at address $addfress|at register $register"
-    export function i2cReadRegister(address: number, register: number, registerFormat?: NumberFormat, valueFormat?: NumberFormat): number {
-        if (registerFormat === undefined)
-            registerFormat = NumberFormat.UInt8BE;
+    export function i2cReadRegister(address: number, register: number, valueFormat?: NumberFormat): number {
         if (valueFormat === undefined)
             valueFormat = NumberFormat.UInt8LE;
-        pins.i2cWriteNumber(address, register, registerFormat);
+        pins.i2cWriteNumber(address, register, NumberFormat.UInt8BE);
         return pins.i2cReadNumber(address, valueFormat);
     }
 
