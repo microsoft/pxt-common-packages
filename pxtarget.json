@@ -7,7 +7,7 @@
     "bundleddirs": [
         "libs/core",
         "libs/core---samd",
-        "libs/jacdacts",
+        "libs/jacdac-ts",
         "libs/buttons",
         "libs/light",
         "libs/music",

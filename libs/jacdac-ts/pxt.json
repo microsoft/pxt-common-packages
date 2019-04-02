@@ -1,5 +1,5 @@
 {
-    "name": "jacdacts",
+    "name": "jacdac-ts",
     "description": "JACDAC TS",
     "additionalFilePath": "../../node_modules/@jacdac/jacdac-ts/source",
     "files": [
