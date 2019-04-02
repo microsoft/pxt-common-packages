@@ -237,9 +237,9 @@ static int writeBytes(uint8_t *dst, uint8_t *src, int length, bool swapBytes, in
         for (int i = 0; i < length; ++i)
             *--p = src[i];
     } else {
-        if (length == 4 && ((uint32_t)dst & 3) == 0)
+        if (length == 4 && ((uintptr_t)dst & 3) == 0)
             *(uint32_t *)dst = *(uint32_t *)src;
-        else if (length == 2 && ((uint32_t)dst & 1) == 0)
+        else if (length == 2 && ((uintptr_t)dst & 1) == 0)
             *(uint16_t *)dst = *(uint16_t *)src;
         else
             memcpy(dst, src, length);
@@ -259,9 +259,9 @@ static int readBytes(uint8_t *src, uint8_t *dst, int length, bool swapBytes, int
         for (int i = 0; i < length; ++i)
             dst[i] = *--p;
     } else {
-        if (length == 4 && ((uint32_t)src & 3) == 0)
+        if (length == 4 && ((uintptr_t)src & 3) == 0)
             *(uint32_t *)dst = *(uint32_t *)src;
-        else if (length == 2 && ((uint32_t)src & 1) == 0)
+        else if (length == 2 && ((uintptr_t)src & 1) == 0)
             *(uint16_t *)dst = *(uint16_t *)src;
         else
             memcpy(dst, src, length);

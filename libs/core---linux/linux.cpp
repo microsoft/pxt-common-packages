@@ -10,7 +10,18 @@
 #include <sys/types.h>
 #include <sys/mman.h>
 #include <errno.h>
+
+#if defined(__linux__) && !defined(POKY)
 #include <malloc.h>
+#define MALLOC_STATS
+#endif
+
+// should this be something like CXX11 or whatever?
+#ifdef PXT64
+#define THROW throw()
+#else
+#define THROW /* nothing */
+#endif
 
 #define THREAD_DBG(...)
 
@@ -18,7 +29,7 @@
 #define MALLOC_CHECK_PERIOD (1024 * 1024)
 
 void *xmalloc(size_t sz) {
-#ifndef POKY
+#ifdef MALLOC_STATS
     static size_t allocBytes = 0;
     allocBytes += sz;
     if (allocBytes >= MALLOC_CHECK_PERIOD) {
@@ -43,10 +54,10 @@ void *operator new[](size_t size) {
     return xmalloc(size);
 }
 
-void operator delete(void *p) {
+void operator delete(void *p) THROW {
     xfree(p);
 }
-void operator delete[](void *p) {
+void operator delete[](void *p) THROW {
     xfree(p);
 }
 
@@ -397,7 +408,7 @@ void initRuntime() {
 void *gcAllocBlock(size_t sz) {
     static uint8_t *currPtr = (uint8_t *)GC_BASE;
     sz = (sz + GC_PAGE_SIZE - 1) & ~(GC_PAGE_SIZE - 1);
-    void *r = mmap(currPtr, sz, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    void *r = mmap(currPtr, sz, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
     if (r == MAP_FAILED) {
         DMESG("mmap %p failed; err=%d", currPtr, errno);
         target_panic(PANIC_INTERNAL_ERROR);
@@ -409,6 +420,11 @@ void *gcAllocBlock(size_t sz) {
     }
     return r;
 }
+#endif
+
+// TODO64
+#ifdef PXT64
+#define __thread /* */
 #endif
 
 static __thread ThreadContext *threadCtx;

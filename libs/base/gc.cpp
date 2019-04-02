@@ -375,7 +375,7 @@ __attribute__((noinline)) static void allocateBlock() {
     firstFree = (RefBlock *)curr->data;
     // make sure reference to allocated block is stored somewhere, otherwise
     // GCC optimizes out the call to GC_ALLOC_BLOCK
-    curr->data[4].vtable = (uint32_t)dummy;
+    curr->data[4].vtable = (uintptr_t)dummy;
     curr->next = NULL;
     if (!firstBlock) {
         firstBlock = curr;
@@ -523,7 +523,7 @@ extern "C" void *realloc(void *ptr, size_t size) {
 void *gcAllocateArray(int numbytes) {
     numbytes = ALIGN_TO_WORD(numbytes);
     numbytes += sizeof(void *);
-    auto r = (uint32_t *)gcAllocate(numbytes);
+    auto r = (uintptr_t *)gcAllocate(numbytes);
     *r = ARRAY_MASK | numbytes;
     return r + 1;
 }
@@ -533,13 +533,13 @@ void *app_alloc(int numbytes) {
         return NULL;
 
     // gc(0);
-    auto r = (uint32_t *)gcAllocateArray(numbytes);
+    auto r = (uintptr_t *)gcAllocateArray(numbytes);
     r[-1] |= PERMA_MASK;
     return r;
 }
 
 void *app_free(void *ptr) {
-    auto r = (uint32_t *)ptr;
+    auto r = (uintptr_t *)ptr;
     GC_CHECK((r[-1] >> (HIGH_SHIFT + 1)) == 3, 41);
     r[-1] |= FREE_MASK;
     return r;
@@ -599,7 +599,7 @@ void *gcAllocate(int numbytes) {
                 else
                     firstFree = nf;
                 p->vtable = 0;
-                GC_CHECK(!nf || !nf->nextFree || ((uint32_t)nf->nextFree) >> (HIGH_SHIFT - 8), 48);
+                GC_CHECK(!nf || !nf->nextFree || ((uintptr_t)nf->nextFree) >> (HIGH_SHIFT - 8), 48);
                 VVLOG("GC=>%p %d %p", p, numwords, nf->nextFree);
                 inGC &= ~IN_GC_ALLOC;
                 return p;
@@ -646,7 +646,7 @@ void registerGC(TValue *root, int numwords) {
         return;
     }
 
-    gcRoots.push((TValue)((uint32_t)root | 1));
+    gcRoots.push((TValue)((uintptr_t)root | 1));
 }
 
 void unregisterGC(TValue *root, int numwords) {
@@ -659,7 +659,7 @@ void unregisterGC(TValue *root, int numwords) {
         return;
     }
 
-    removePtr((TValue)((uint32_t)root | 1));
+    removePtr((TValue)((uintptr_t)root | 1));
 }
 
 void registerGCPtr(TValue ptr) {

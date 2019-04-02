@@ -77,7 +77,11 @@ static void dmesgRaw(const char *buf, uint32_t len) {
 
 static void dmesgFlushRaw() {
     fflush(dmesgFile);
+#ifdef __linux__
     fdatasync(fileno(dmesgFile));
+#else
+    fsync(fileno(dmesgFile));
+#endif
 }
 
 void vdmesg(const char *format, va_list arg) {

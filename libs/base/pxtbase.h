@@ -453,7 +453,7 @@ extern const VTable RefAction_vtable;
 
 #ifdef PXT_GC
 inline bool isReadOnly(TValue v) {
-    return isTagged(v) || !((uint32_t)v >> 28);
+    return isTagged(v) || !((uintptr_t)v >> 28);
 }
 #endif
 
@@ -718,8 +718,8 @@ class BoxedString : public RefObject {
     };
 
 #if PXT_UTF8
-    uint32_t runMethod(int idx) {
-        return ((uint32_t(*)(BoxedString *))((VTable *)this->vtable)->methods[idx])(this);
+    uintptr_t runMethod(int idx) {
+        return ((uintptr_t(*)(BoxedString *))((VTable *)this->vtable)->methods[idx])(this);
     }
     const char *getUTF8Data() { return (const char *)runMethod(4); }
     uint32_t getUTF8Size() { return runMethod(5); }
@@ -997,7 +997,7 @@ bool removeElement(RefCollection *c, TValue x);
     ;                                                                                              \
     }
 
-#ifndef X86_64
+#if !defined(X86_64) && !defined(PXT64)
 #pragma GCC diagnostic ignored "-Wpmf-conversions"
 #endif
 

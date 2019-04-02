@@ -591,9 +591,9 @@ TNumber toNumber(String s) {
     NUMBER v = mystrtod(data, &endptr);
     if (endptr != data + s->getUTF8Size())
         v = NAN;
-    else if (v == 0.0 || v == -0.0)
-        v = v;
-    else if (!isnormal(v))
+    else if (v == 0.0 || v == -0.0) {
+        // nothing
+    } else if (!isnormal(v))
         v = NAN;
     return fromDouble(v);
 }
@@ -774,9 +774,14 @@ static inline TValue doubleToInt(double x) {
 }
 #else
 static inline TValue doubleToInt(NUMBER r) {
+#ifdef PXT64
+    if ((int)r == r)
+        return TAG_NUMBER((int)r);
+#else
     int ri = ((int)r) << 1;
     if ((ri >> 1) == r)
-        return (TNumber)(ri | 1);
+        return (TNumber)(uintptr_t)(ri | 1);
+#endif
     return TAG_UNDEFINED;
 }
 #endif
@@ -837,8 +842,8 @@ TNumber eqFixup(TNumber v) {
 
 static inline bool eq_core(TValue a, TValue b, ValType ta) {
 #ifndef PXT_BOX_DEBUG
-    int aa = (int)a;
-    int bb = (int)b;
+    auto aa = (intptr_t)a;
+    auto bb = (intptr_t)b;
 
     // if at least one of the values is tagged, they are not equal
     if ((aa | bb) & 3)
@@ -967,6 +972,11 @@ TNumber subs(TNumber a, TNumber b){NUMOP(-)}
 //%
 TNumber muls(TNumber a, TNumber b) {
     if (bothNumbers(a, b)) {
+#ifdef PXT64
+        auto tmp = (int64_t)numValue(a) * (int64_t)numValue(b);
+        if ((int)tmp == tmp)
+            return TAG_NUMBER((int)tmp);
+#else
         int aa = (int)a;
         int bb = (int)b;
         // if both operands fit 15 bits, the result will not overflow int
@@ -974,6 +984,7 @@ TNumber muls(TNumber a, TNumber b) {
             // it may overflow 31 bit int though - use fromInt to convert properly
             return fromInt((aa >> 1) * (bb >> 1));
         }
+#endif
     }
     NUMOP(*)
 }
@@ -1017,7 +1028,7 @@ TNumber ands(TNumber a, TNumber b) {
 
 #define CMPOP_RAW(op, t, f)                                                                        \
     if (bothNumbers(a, b))                                                                         \
-        return (int)a op((int)b) ? t : f;                                                          \
+        return (intptr_t)a op((intptr_t)b) ? t : f;                                                          \
     int cmp = valCompare(a, b);                                                                    \
     return cmp != -2 && cmp op 0 ? t : f;
 
