@@ -49,7 +49,7 @@ TODO64
 #define IS_LIVE(vt) (IS_MARKED(vt) || (((uintptr_t)(vt) >> (HIGH_SHIFT)) == 0x6))
 
 //#define PXT_GC_DEBUG 1
-#ifndef PXT_GC_CHECK
+#ifndef PXT_GC_CHECKS
 #define PXT_GC_CHECKS 1
 #endif
 //#define PXT_GC_STRESS 1

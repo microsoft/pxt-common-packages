@@ -173,6 +173,34 @@ inline bool canBeTagged(int v) {
 #endif
 }
 
+#ifdef PXT64
+// see https://anniecherkaev.com/the-secret-life-of-nan
+
+#define NanBoxingOffset 0x1000000000000LL
+
+template <typename TO, typename FROM> TO bitwise_cast(FROM in) {
+    STATIC_ASSERT(sizeof(TO) == sizeof(FROM));
+    union {
+        FROM from;
+        TO to;
+    } u;
+    u.from = in;
+    return u.to;
+}
+
+inline bool isDouble(TValue v) {
+    return ((uintptr_t)v >> 48);
+}
+
+inline double doubleVal(TValue v) {
+    return bitwise_cast<double>((uint64_t)v - NanBoxingOffset);
+}
+
+inline TValue tvalueFromDouble(double d) {
+    return (TValue)(bitwise_cast<uint64_t>(d) + NanBoxingOffset);
+}
+#endif
+
 // keep in sym with sim/control.ts
 typedef enum {
     PANIC_CODAL_OOM = 20,
@@ -657,11 +685,13 @@ typedef int color;
 
 // note: this is hardcoded in PXT (hexfile.ts)
 
+#ifndef PXT64
 class BoxedNumber : public RefObject {
   public:
     NUMBER num;
     BoxedNumber() : RefObject(&number_vt) {}
 } __attribute__((packed));
+#endif
 
 class BoxedString : public RefObject {
   public:
@@ -696,7 +726,8 @@ class BoxedString : public RefObject {
     // in characters
     uint32_t getLength() { return runMethod(6); }
     const char *getUTF8DataAt(uint32_t pos) {
-        auto meth = ((const char *(*)(BoxedString *, uint32_t))((VTable *)this->vtable)->methods[7]);
+        auto meth =
+            ((const char *(*)(BoxedString *, uint32_t))((VTable *)this->vtable)->methods[7]);
         return meth(this, pos);
     }
 #else

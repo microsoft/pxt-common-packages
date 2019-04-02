@@ -417,11 +417,10 @@ String fromCharCode(int code) {
 #endif
 }
 
-
-
 //%
 TNumber charCodeAt(String s, int pos) {
-    if (!s) return TAG_NAN;
+    if (!s)
+        return TAG_NAN;
     return s->charCodeAt(pos);
 }
 
@@ -696,11 +695,21 @@ NUMBER toDouble(TNumber v) {
     if (isTagged(v))
         return toInt(v);
 
+#ifdef PXT64
+    if (isDouble(v))
+        return doubleVal(v);
+#endif
+
     ValType t = valType(v);
+
+#ifndef PXT64
     if (t == ValType::Number) {
         BoxedNumber *p = (BoxedNumber *)v;
         return p->num;
-    } else if (t == ValType::String) {
+    }
+#endif
+
+    if (t == ValType::String) {
         // TODO avoid allocation
         auto tmp = String_::toNumber((String)v);
         auto r = toDouble(tmp);
@@ -780,10 +789,14 @@ TNumber fromDouble(NUMBER r) {
 #endif
     if (isnan(r))
         return TAG_NAN;
+#ifdef PXT64
+    return tvalueFromDouble(r);
+#else
     BoxedNumber *p = NEW_GC(BoxedNumber);
     p->num = r;
     MEMDBG("mkNum: %d/1000 => %p", (int)(r * 1000), p);
     return (TNumber)p;
+#endif
 }
 
 TNumber fromFloat(float r) {
@@ -1366,11 +1379,10 @@ unsigned programSize() {
 
 void deepSleep() __attribute__((weak));
 //%
-void deepSleep() { }
+void deepSleep() {}
 
 int *getBootloaderConfigData() __attribute__((weak));
-int *getBootloaderConfigData()
-{
+int *getBootloaderConfigData() {
     return NULL;
 }
 
@@ -1569,6 +1581,10 @@ ValType valType(TValue v) {
             oops(1);
             return ValType::Object;
         }
+#ifdef PXT64
+    } else if (isDouble(v)) {
+        return ValType::Number;
+#endif
     } else {
         auto vt = getVTable((RefObject *)v);
         if (vt->magic == VTABLE_MAGIC)
@@ -1756,7 +1772,10 @@ STRING_VT(string_cons, fixCons(p), (gcScan((TValue)p->cons.left), gcScan((TValue
           4 + 4, SKIP_DATA(p), p->skip.size, p->skip.length, skipLookup(p, idx))
 #endif
 
+#ifndef PXT64
 PRIM_VTABLE(number, ValType::Number, BoxedNumber, 0)
+#endif
+
 PRIM_VTABLE(buffer, ValType::Object, BoxedBuffer, p->length)
 // PRIM_VTABLE(action, ValType::Function, RefAction, )
 
