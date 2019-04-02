@@ -20,6 +20,8 @@
         "platform_includes.h",
         "codalemu.cpp",
         "keys.cpp",
+        "vm.cpp",
+        "verify.cpp",
         "pxtparts.json"
     ],
     "additionalFilePath": "../core---linux"
