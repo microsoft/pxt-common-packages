@@ -75,6 +75,19 @@ void op_jmptrue(FiberContext *ctx, unsigned arg) {
 }
 
 //%
+void op_call(FiberContext *ctx, unsigned arg) {
+    *--ctx->sp = (TValue)(((ctx->pc - ctx->imgbase) << 8) | 2);
+    ctx->pc = ctx->imgbase + arg;
+}
+
+//%
+void op_ret(FiberContext *ctx, unsigned arg) {
+    ctx->sp += arg; // optional popmany
+    auto retaddr = (intptr_t)*ctx->sp++;
+    ctx->pc = ctx->imgbase + (retaddr >> 8);
+}
+
+//%
 void op_pop(FiberContext *ctx, unsigned) {
     ctx->r0 = *ctx->sp++;
 }

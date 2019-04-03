@@ -102,6 +102,7 @@ struct VMImage {
     OpFun *opcodes;
 };
 
+// not doing this, likely
 struct StackFrame {
     StackFrame *caller;
     uint32_t *retPC;
