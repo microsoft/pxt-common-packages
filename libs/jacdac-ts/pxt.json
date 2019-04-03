@@ -9,7 +9,7 @@
         "devicemanager.ts",
         "ifaces.ts",
         "jacdac.ts",
-        "namingservice.ts",
+        "configurationservice.ts",
         "options.ts",
         "rngservice.ts",
         "service.ts",
