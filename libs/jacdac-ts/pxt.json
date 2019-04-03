@@ -13,7 +13,8 @@
         "options.ts",
         "rngservice.ts",
         "service.ts",
-        "structs.ts"
+        "structs.ts",
+        "jacdac.cpp"
     ],
     "public": true,
     "dependencies": {
