@@ -140,7 +140,7 @@ void dumpDmesg();
 #define TAG_UNDEFINED (TValue)0
 #define TAG_NULL TAGGED_SPECIAL(1) // 6
 #define TAG_NAN TAGGED_SPECIAL(3)  // 14
-#define TAG_NUMBER(n) (TNumber)(void *)(((intptr_t)n << 1) | 1)
+#define TAG_NUMBER(n) (TNumber)(void *)(((uintptr_t)n << 1) | 1)
 
 inline bool isTagged(TValue v) {
     return ((intptr_t)v & 3) || !v;

@@ -42,10 +42,47 @@ void target_exit();
 // Buffer, Sound, and Image share representation.
 typedef Buffer Sound;
 
-struct VMFnHeader {
-    uint32_t nameLiteral;
-    uint32_t start;
-    uint32_t size;
+/*
+
+Image load:
+* go over all sections
+* construct array of section addresses
+* construct opcodes[] array from OpCodeMap
+* for Literal/Function sections replace the section header with VTable pointer
+* validate literals (length etc)
+* validate functions
+
+*/
+
+#define OPCODE_API_SIZE 10 // up to 1024 APIs
+#define OPCODE_BASE_SIZE 6 // up to 63 base opcodes
+#define OPCODE_BASE_MASK ((1 << OPCODE_BASE_SIZE) - 1)
+
+struct FiberContext;
+typedef void (*OpFun)(FiberContext *ctx, unsigned arg);
+typedef void (*ApiFun)(FiberContext *ctx);
+
+enum class SectionType {
+    Invalid = 0,
+
+    // singular sections
+    InfoHeader,       // VMImageHeader
+    OpCodeMap,        // \0-terminated names of opcodes and APIs (shims)
+    DoubleLiterals,   // arrays of doubles
+    IntLiterals,      // array of int32s
+    ConfigData,       // sorted array of pairs of int32s; zero-terminated
+    IfaceMemberNames, // array of 32 bit offsets, that point to string literals
+
+    // repetitive sections
+    Function,
+    Literal, // aux field contains literal type (string, hex, image, ...)
+};
+
+struct VMImageSection {
+    uint8_t type;
+    uint8_t flags;
+    uint16_t aux;
+    uint32_t size; // in bytes, including this header
 };
 
 struct VMImageHeader {
@@ -56,38 +93,33 @@ struct VMImageHeader {
 
     uint32_t allocGlobals;
     uint32_t nonPointerGlobals;
-
-    // image structure
-    uint32_t totalBytes;          // in the entire image, include this header
-    uint32_t numConfigData;       // 8 (int+int)
-    uint32_t numIfaceMemberNames; // 4 (offset)
-    uint32_t numDoubleLiterals;   // 8 (double)
-    uint32_t numIntLiterals;      // 4 (int)
-    uint32_t numPointerLiterals;  // 4 (offset)
-    uint32_t numFunctions;        // sizeof(FnHeader)
-    uint32_t reserved[20];
 };
 
 struct VMImage {
-    double *doubleConst;
-    int *intConst;
+    double *doubleLiterals;
+    int *intLiterals;
+    TValue *pointerLiterals;
+    OpFun *opcodes;
+};
+
+struct StackFrame {
+    StackFrame *caller;
+    uint32_t *retPC;
+    TValue *stackBase;
+    uint32_t *fnbase;
 };
 
 struct FiberContext {
-    TValue *stackBase;
     FiberContext *next;
     FiberContext *prev;
 
+    uint32_t *imgbase;
+    VMImage *img;
     uint32_t *pc;
-    uint32_t *img;
     TValue *sp;
     TValue r0;
     TValue *caps;
 };
-
-typedef void (*OpFun)(FiberContext *ctx, unsigned arg);
-
-extern const OpFun opcodes[];
 
 } // namespace pxt
 
