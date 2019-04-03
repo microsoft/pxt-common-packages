@@ -10,10 +10,11 @@
         "ifaces.ts",
         "jacdac.ts",
         "configurationservice.ts",
-        "options.ts",
         "rngservice.ts",
         "service.ts",
         "structs.ts",
+        "rand.ts",
+        "makecodeoptions.ts",
         "jacdac.cpp"
     ],
     "public": true,
