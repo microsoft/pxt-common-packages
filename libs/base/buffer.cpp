@@ -23,6 +23,22 @@ void setByte(Buffer buf, int off, int v) {
         buf->data[off] = v;
 }
 
+/**
+* Reads an unsigned byte at a particular location
+*/
+//%
+uint8 getUint8(Buffer buf, int off) {
+    return getByte(buf, off);
+}
+
+/**
+* Writes an unsigned byte at a particular location
+*/
+//%
+void setUint8(Buffer buf, int off, uint8 v) {
+    setByte(buf, off, v);
+}
+
 int writeBuffer(Buffer buf, int dstOffset, Buffer src, int srcOffset = 0, int length = -1) {
     if (length < 0)
         length = src->length;
