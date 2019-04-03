@@ -25,4 +25,19 @@ namespace jacdac{
     }
 
     export let options: JDOptions = new MakeCodeOptions();
+
+    class JACDACBus implements JDPhysicalLayer
+    {
+        writeBuffer(b:Buffer)
+        {
+            __writeBuffer(b);
+        }
+
+        isConnected()
+        {
+            return __isConnected()
+        }
+    }
+
+    jacdac.JACDAC.instance.bus = new JACDACBus();
 }

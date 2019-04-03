@@ -15,7 +15,8 @@
         "structs.ts",
         "rand.ts",
         "makecodeoptions.ts",
-        "jacdac.cpp"
+        "jacdac.cpp",
+        "shims.d.ts"
     ],
     "public": true,
     "dependencies": {

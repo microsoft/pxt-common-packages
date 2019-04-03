@@ -8,6 +8,13 @@ namespace pxt {
 #ifdef STM32F1
 STMLowLevelTimer lowTimer(TIM4, TIM4_IRQn);
 #else
+STMLowLevelTimer jacdacTimer(TIM2, TIM2_IRQn);
+
+LowLevelTimer* getJACDACTimer()
+{
+    return &jacdacTimer;
+}
+
 STMLowLevelTimer lowTimer(TIM5, TIM5_IRQn);
 #endif
 
@@ -62,7 +69,7 @@ void platform_init() {
     set_if_present(CFG_PIN_JACK_SND, 0);
     set_if_present(CFG_PIN_JACK_HPEN, 0);
     set_if_present(CFG_PIN_JACK_BZEN, 1);
- 
+
     /*
         if (*HF2_DBG_MAGIC_PTR == HF2_DBG_MAGIC_START) {
             *HF2_DBG_MAGIC_PTR = 0;
