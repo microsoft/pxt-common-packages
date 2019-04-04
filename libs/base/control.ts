@@ -287,6 +287,17 @@ function pause(ms: number): void {
     loops.pause(ms);
 }
 
+/**
+ * Convert any value to a string
+ * @param value value to be converted to a string
+ */
+//% help=text/to-string weight=1
+//% block="convert $value=variables_get(myValue) to string"
+//% blockId=variable_to_string blockNamespace="text"
+function toString(value: any): string {
+    return "" + value;
+}
+
 // micro:bit compatibility
 // these functions allow some level of reuse
 // between micro:bit and other maker-style editors
