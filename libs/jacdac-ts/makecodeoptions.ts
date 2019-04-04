@@ -38,7 +38,7 @@ namespace jacdac {
             let buf: Buffer = undefined;
             while (buf = __physGetPacket()) {
                 const pkt = new JDPacket(buf);
-                jacdac.JACDAC.instance.processPacket(pkt)
+                jacdac.JACDAC.instance.routePacket(pkt)
             }
         }
 

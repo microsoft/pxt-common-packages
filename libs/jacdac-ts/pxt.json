@@ -10,6 +10,7 @@
         "ifaces.ts",
         "jacdac.ts",
         "configurationservice.ts",
+        "consoleservice.ts",
         "rngservice.ts",
         "service.ts",
         "structs.ts",

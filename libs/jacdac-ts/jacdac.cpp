@@ -26,6 +26,16 @@ class WJDPhysicalLayer {
     bool isConnected() {
         return phys.isConnected();
     }
+
+    int getId()
+    {
+        return phys.id;
+    }
+
+    JDPacket* getPacket()
+    {
+        return phys.getPacket();
+    }
 };
 
 SINGLETON_IF_PIN(WJDPhysicalLayer, JACK_TX);
@@ -59,7 +69,7 @@ Buffer __physGetPacket() {
     if (jd) {
         auto pkt = jd->getPacket();
         if (pkt)
-            buf = mkBuffer(pkt, sizeof(JDPacket));
+            buf = mkBuffer((uint8_t*)pkt, sizeof(JDPacket));
         free(pkt);
     }
     return buf;

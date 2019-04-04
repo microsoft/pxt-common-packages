@@ -7,7 +7,14 @@
 namespace pxt {
 
 #ifdef SAMD21
-SAMDTCTimer lowTimer(TC4, TC4_IRQn);
+SAMDTCTimer jacdacTimer(TC4, TC4_IRQn);
+SAMDTCTimer lowTimer(TC3, TC3_IRQn);
+
+LowLevelTimer* getJACDACTimer()
+{
+    return &jacdacTimer;
+}
+
 #endif
 #ifdef SAMD51
 SAMDTCTimer lowTimer(TC0, TC0_IRQn);
