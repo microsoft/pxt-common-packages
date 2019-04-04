@@ -96,6 +96,7 @@ bool __physIsConnected() {
 void __physStart()
 {
     auto jd = getWJDPhysicalLayer();
-    jd->start();
+    if (jd)
+        jd->start();
 }
 }
