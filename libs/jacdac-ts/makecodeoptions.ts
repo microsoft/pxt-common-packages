@@ -51,5 +51,15 @@ namespace jacdac {
         }
     }
 
-    jacdac.JACDAC.instance.bus = new JACDACBus();
+    let jacdacStarted = false;
+    export function testStart() : void
+    {
+        if (jacdacStarted)
+            return;
+
+        jacdacStarted = true;
+        jacdac.JACDAC.instance.bus = new JACDACBus();
+        __physStart();
+        jacdac.JACDAC.instance.start();
+    }
 }

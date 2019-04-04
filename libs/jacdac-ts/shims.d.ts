@@ -24,6 +24,12 @@ declare namespace jacdac {
      **/
     //% shim=jacdac::__physIsConnected
     function __physIsConnected(): boolean;
+
+    /**
+     * Starts the JACDAC physical layer.
+     **/
+    //% shim=jacdac::__physStart
+    function __physStart(): void;
 }
 
 // Auto-generated. Do not edit. Really.

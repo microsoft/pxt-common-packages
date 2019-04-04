@@ -36,6 +36,11 @@ class WJDPhysicalLayer {
     {
         return phys.getPacket();
     }
+
+    void start()
+    {
+        phys.start();
+    }
 };
 
 SINGLETON_IF_PIN(WJDPhysicalLayer, JACK_TX);
@@ -84,4 +89,13 @@ bool __physIsConnected() {
     return jd && jd->isConnected();
 }
 
+/**
+ * Starts the JACDAC physical layer.
+ **/
+//%
+void __physStart()
+{
+    auto jd = getWJDPhysicalLayer();
+    jd->start();
+}
 }
