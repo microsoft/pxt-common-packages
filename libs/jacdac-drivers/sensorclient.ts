@@ -48,16 +48,15 @@ namespace jacdac {
             this.start();
         }
 
-        handleControlPacket(pkt: Buffer): boolean {
-            if (this._sensorState == SensorState.None) return true;
-            const packet = new JDControlPacket(pkt);
-            const state = packet.data.getNumber(NumberFormat.UInt8LE, 1);
+        handleServiceInformation(device: JDDevice, serviceInfo: JDServiceInformation): number {
+            if (this._sensorState == SensorState.None) return DEVICE_OK;
+            const state = serviceInfo.data.getNumber(NumberFormat.UInt8LE, 1);
             if ((this._sensorState & SensorState.Streaming) != (state & SensorState.Streaming))
                 this.sync(); // start            
-            return true;
+            return DEVICE_OK;
         }
 
-        public handlePacket(pkt: Buffer): boolean {
+        handlePacket(pkt: Buffer): boolean {
             const packet = new JDPacket(pkt);
             const command = packet.getNumber(NumberFormat.UInt8LE, 0);
             this.log(`vpkt ${command}`)

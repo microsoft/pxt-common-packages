@@ -78,10 +78,9 @@ namespace jacdac {
             return -1;
         }
 
-        handleControlPacket(pkt: Buffer) {
-            const cp = new JDControlPacket(pkt);
-            const data = cp.data;
-            return this.processPacket(cp.address, data);
+        handleServiceInformation(device: JDDevice, serviceInfo: JDServiceInformation): number {
+            const data = serviceInfo.data;
+            return this.processPacket(device.address, data);
         }
 
         handlePacket(pkt: Buffer) {

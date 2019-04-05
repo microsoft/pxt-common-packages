@@ -132,9 +132,9 @@ namespace jacdac {
             return !!this.serverAddress && this.isConnected();
         }
 
-        handleControlPacket(cp: JDControlPacket): number {
-            const data = cp.data;
-            return this.processPacket(cp.device_address, data);
+        handleServiceInformation(device: JDDevice, serviceInfo: JDServiceInformation): number {
+            const data = serviceInfo.data;
+            return this.processPacket(device.address, data);
         }
 
         handlePacket(packet: JDPacket): number {
