@@ -56,8 +56,7 @@ namespace jacdac {
             return DEVICE_OK;
         }
 
-        handlePacket(pkt: Buffer): boolean {
-            const packet = new JDPacket(pkt);
+        handlePacket(packet: JDPacket): number {
             const command = packet.getNumber(NumberFormat.UInt8LE, 0);
             this.log(`vpkt ${command}`)
             switch (command) {
@@ -73,18 +72,18 @@ namespace jacdac {
                 case SensorCommand.Event:
                     const value = packet.data.getNumber(NumberFormat.UInt16LE, 1);
                     control.raiseEvent(this.id, value);
-                    return true;
+                    return jacdac.DEVICE_OK;
                 default:
                     return this.handleCustomCommand(command, packet);
             }
         }
 
-        protected handleCustomCommand(command: number, pkt: JDPacket) {
-            return true;
+        protected handleCustomCommand(command: number, pkt: JDPacket): number {
+            return jacdac.DEVICE_OK;
         }
 
-        protected handleVirtualState(state: Buffer) {
-            return true;
+        protected handleVirtualState(state: Buffer): number {
+            return jacdac.DEVICE_OK;
         }
 
         protected setThreshold(low: boolean, value: number) {

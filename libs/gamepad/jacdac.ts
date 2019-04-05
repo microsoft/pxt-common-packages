@@ -5,8 +5,7 @@ namespace jacdac {
             super("gpad", jacdac.GAMEPAD_DEVICE_CLASS);
         }
 
-        handlePacket(pkt: Buffer): number {
-            const packet = new JDPacket(pkt);
+        handlePacket(packet: JDPacket): number {
             const data = packet.data;
             const cmd: JDGamepadCommand = data[0];
             switch (cmd) {

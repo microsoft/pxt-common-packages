@@ -1,20 +1,4 @@
 namespace jacdac {
-    export class DebugView {
-        driverClass: number;
-        name: string;
-
-        constructor(name: string, driverClass: number) {
-            this.name = name;
-            this.driverClass = driverClass;
-        }
-        renderControlPacket(cp: JDControlPacket) {
-            return "";
-        }
-        renderPacket(device: JDDevice, packet: JDPacket) {
-            return "";
-        }
-    }
-
     export class SensorDebugView extends DebugView {
         constructor(name: string, driverClass: number) {
             super(name, driverClass);

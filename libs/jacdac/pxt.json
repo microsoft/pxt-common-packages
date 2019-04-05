@@ -6,6 +6,7 @@
         "consts.ts",
         "control.ts",
         "crc.ts",
+        "debugview.ts",
         "devicemanager.ts",
         "ifaces.ts",
         "jacdac.ts",

@@ -5,8 +5,7 @@ namespace jacdac {
             super("mous", jacdac.MOUSE_DEVICE_CLASS);
         }
 
-        handlePacket(pkt: Buffer): boolean {
-            const packet = new JDPacket(pkt);
+        handlePacket(packet: JDPacket): number {
             const data = packet.data;
             const cmd: JDMouseCommand = data[0];
             switch (cmd) {
@@ -25,7 +24,7 @@ namespace jacdac {
                     mouse.turnWheel(w);
                     break;
             }
-            return true;
+            return jacdac.DEVICE_OK;
         }
     }
 

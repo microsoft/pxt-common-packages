@@ -134,7 +134,7 @@ namespace jacdac {
 
         handleServiceInformation(device: JDDevice, serviceInfo: JDServiceInformation): number {
             const data = serviceInfo.data;
-            return this.processPacket(device.address, data);
+            return this.processPacket(device.device_address, data);
         }
 
         handlePacket(packet: JDPacket): number {
