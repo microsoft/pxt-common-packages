@@ -27,9 +27,17 @@ class WJDPhysicalLayer {
         return phys.isConnected();
     }
 
+    bool isRunning() { 
+        return phys.isRunning();
+    }
+
     int getId()
     {
         return phys.id;
+    }
+
+    int getState() {
+        return phys.getState();
     }
 
     JDPacket* getPacket()
@@ -40,6 +48,11 @@ class WJDPhysicalLayer {
     void start()
     {
         phys.start();
+    }
+
+    void stop()
+    {
+        phys.stop();
     }
 };
 
@@ -92,6 +105,15 @@ bool __physIsConnected() {
 }
 
 /**
+ * Indicates if the bus is running
+ **/
+//%
+bool __physIsRunning() {
+    auto jd = getWJDPhysicalLayer();
+    return jd && jd->isRunning();
+}
+
+/**
  * Starts the JACDAC physical layer.
  **/
 //%
@@ -101,4 +123,25 @@ void __physStart()
     if (jd)
         jd->start();
 }
+
+/**
+ * Stops the JACDAC physical layer.
+ **/
+//%
+void __physStop()
+{
+    auto jd = getWJDPhysicalLayer();
+    if (jd)
+        jd->stop();
+}
+
+/**
+* Gets the bus state
+*/
+//%
+int __physState() {
+    auto js = getWJDPhysicalLayer();
+    return js ? js->getState() : -1;
+}
+
 }

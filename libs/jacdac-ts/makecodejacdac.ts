@@ -11,6 +11,14 @@ namespace jacdac {
             control.onEvent(__physId(), DAL.JD_SERIAL_EVT_DATA_READY, () => this.handlePacketData());
         }
 
+        stop() {
+            __physStop();
+        }
+
+        get state(): number {
+            return __physState();
+        }
+
         handlePacketData() {
             let buf: Buffer = undefined;
             while (buf = __physGetPacket()) {
@@ -25,6 +33,10 @@ namespace jacdac {
 
         isConnected() {
             return __physIsConnected()
+        }
+
+        isRunning() {
+            return __physIsRunning();
         }
     }
 
