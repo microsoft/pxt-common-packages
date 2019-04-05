@@ -5,7 +5,7 @@ namespace jacdac {
             super("gpad", jacdac.GAMEPAD_DEVICE_CLASS);
         }
 
-        handlePacket(pkt: Buffer): boolean {
+        handlePacket(pkt: Buffer): number {
             const packet = new JDPacket(pkt);
             const data = packet.data;
             const cmd: JDGamepadCommand = data[0];
@@ -22,7 +22,7 @@ namespace jacdac {
                     gamepad.setThrottle(data[1], data.getNumber(NumberFormat.Int8LE, 2));
                     break;
             }
-            return true;
+            return jacdac.DEVICE_OK;
         }
     }
 

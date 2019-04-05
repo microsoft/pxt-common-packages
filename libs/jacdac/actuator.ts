@@ -9,19 +9,19 @@ namespace jacdac {
             this.state = control.createBuffer(this.stateLength);
         }
 
-        public handlePacket(packet: JDPacket): boolean {
+        public handlePacket(packet: JDPacket): number {
             const st = packet.data;
             if (st.length < this.stateLength) {
                 this.log(`invalid data`)
-                return false;
+                return jacdac.DEVICE_INVALID_PACKET;
             }
                 
             this.state = st;
             return this.handleStateChanged();
         }
 
-        protected handleStateChanged(): boolean {
-            return true;
+        protected handleStateChanged(): number {
+            return jacdac.DEVICE_OK;
         }
     }
 

@@ -129,20 +129,20 @@ namespace jacdac {
         }
 
         isActive(): boolean {
-            return !!this.serverAddress && this.isConnected;
+            return !!this.serverAddress && this.isConnected();
         }
 
-        handleControlPacket(cp: JDControlPacket): boolean {
+        handleControlPacket(cp: JDControlPacket): number {
             const data = cp.data;
             return this.processPacket(cp.device_address, data);
         }
 
-        handlePacket(packet: JDPacket): boolean {
+        handlePacket(packet: JDPacket): number {
             const data = packet.data;
             return this.processPacket(packet.device_address, data);
         }
 
-        private processPacket(packetAddress: number, data: Buffer): boolean {
+        private processPacket(packetAddress: number, data: Buffer): number {
             const cmd: JDControllerCommand = data[0];
             // received a packet from the server
             if (cmd == JDControllerCommand.ControlServer) {
@@ -159,7 +159,7 @@ namespace jacdac {
                         this.lastServerTime = control.millis();
                         // start streaming
                         this.startStreaming();
-                        return true;
+                        return jacdac.DEVICE_OK;
                     }
                 }
                 // did the server drop us
@@ -173,7 +173,7 @@ namespace jacdac {
                 // nope, doesn't seem to be our server
                 // do nothing
             }
-            return true;
+            return jacdac.DEVICE_OK;
         }
 
         start() {

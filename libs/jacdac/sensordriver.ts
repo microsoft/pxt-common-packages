@@ -63,7 +63,7 @@ namespace jacdac {
             return undefined;
         }
 
-        public handlePacket(packet: JDPacket): boolean {
+        public handlePacket(packet: JDPacket): number {
             const data = packet.data;
             const command = data.getNumber(NumberFormat.UInt8LE, 0);
             this.log(`hpkt ${command}`);
@@ -73,16 +73,16 @@ namespace jacdac {
                     if (interval)
                         this.streamingInterval = Math.max(20, interval);
                     this.startStreaming();
-                    return true;
+                    return jacdac.DEVICE_OK;
                 case SensorCommand.StopStream:
                     this.stopStreaming();
-                    return true;
+                    return jacdac.DEVICE_OK;
                 case SensorCommand.LowThreshold:                
                     this.setThreshold(true, data.getNumber(NumberFormat.UInt32LE, 1));
-                    return true;
+                    return jacdac.DEVICE_OK;
                 case SensorCommand.HighThreshold:
                     this.setThreshold(false, data.getNumber(NumberFormat.UInt32LE, 1));
-                    return true;
+                    return jacdac.DEVICE_OK;
                 default:
                     // let the user deal with it
                     return this.handleCustomCommand(command, packet);
@@ -99,8 +99,8 @@ namespace jacdac {
 
         }
 
-        protected handleCustomCommand(command: number, pkt: JDPacket) {
-            return true;
+        protected handleCustomCommand(command: number, pkt: JDPacket): number {
+            return jacdac.DEVICE_OK;
         }
 
         protected raiseHostEvent(value: number) {
