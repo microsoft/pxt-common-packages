@@ -28,6 +28,7 @@
         "libs/screen",
         "libs/servo",
         "libs/serial",
+        "libs/pixel",
         "libs/jacdac",
         "libs/jacdac-drivers",
         "libs/jacdac-game",
