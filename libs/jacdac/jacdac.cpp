@@ -141,7 +141,7 @@ void __physStop()
 //%
 int __physState() {
     auto js = getWJDPhysicalLayer();
-    return js ? js->getState() : -1;
+    return js ? (int)js->getState() : -1;
 }
 
 }
