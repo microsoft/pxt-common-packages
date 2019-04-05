@@ -5,13 +5,19 @@ namespace jacdac {
         protected service: jacdac.JDService;
         protected supressLog: boolean;
         private _controlData: Buffer;
+        private _eventId: number;
 
         constructor(name: string, serviceClass: number, mode: JDServiceMode, controlDataLength = 0) {
             this.name = name;
             this.service = new jacdac.JDService(serviceClass, mode);
             this._controlData = control.createBuffer(Math.max(0, controlDataLength));
             this.supressLog = false;
+            this._eventId = control.allocateNotifyEvent();
             this.service.onHandlePacket = pkt => this.handlePacket(pkt);
+        }
+
+        get eventId() {
+            return this._eventId;
         }
 
         get serviceNumber(): number {
@@ -19,15 +25,14 @@ namespace jacdac {
             return this.service.service_number;
         }
 
+        get deviceAddress(): number {
+            const d = this.service.device();
+            return d ? d.device_address : -1;
+        }
+
         get deviceName(): string {
             const d = this.service.device();
             return d ? d.device_name : "";
-        }
-
-        /**
-         * Update the controlData buffer
-         */
-        protected updateControlPacket() {
         }
 
         get controlData(): Buffer {
@@ -44,7 +49,7 @@ namespace jacdac {
 
         public log(text: string) {
             if (!this.supressLog || jacdac.consolePriority < console.minPriority) {
-                let dev = jacdac.JACDAC.instance.deviceName();
+                let dev = jacdac.JACDAC.instance.getDeviceName();
                 if (!dev) {
                     const d = this.service.device;
                     dev = d ? toHex8(d.device_address) : "--";
@@ -54,20 +59,10 @@ namespace jacdac {
         }
 
         /**
-         * Registers code to run a on a particular event
-         * @param event 
-         * @param handler 
-         */
-        public onDriverEvent(event: JDDriverEvent, handler: () => void) {
-            this.start();
-            control.onEvent(this.service.id, event, handler);
-        }
-
-        /**
          * Called by the logic driver when a data packet is addressed to this driver
          * Return false when the packet wasn't handled here.
          */
-        public handlePacket(pkt: JDPacket): boolean {
+        public handlePacket(packet: JDPacket): boolean {
             return false
         }
 
@@ -75,7 +70,7 @@ namespace jacdac {
          * Called by the logic driver when a control packet is received
          * @param pkt 
          */
-        public handleControlPacket(pkt: Buffer): boolean {
+        public handleControlPacket(packet: JDControlPacket): boolean {
             return false;
         }
 
@@ -92,15 +87,12 @@ namespace jacdac {
         start() {
             if (jacdac.JACDAC.instance.add(this.service)) {
                 this.log("start");
-                if (this._controlData.length)
-                    control.onEvent(this.service.id, JD_DRIVER_EVT_FILL_CONTROL_PACKET, () => this.updateControlPacket());
             }
         }
 
         stop() {
             if (jacdac.JACDAC.instance.remove(this.service)) {
                 this.log("stop")
-                control.onEvent(this.service.id, JD_DRIVER_EVT_FILL_CONTROL_PACKET, () => { });
             }
         }
     }
@@ -126,9 +118,7 @@ namespace jacdac {
         }
 
         protected registerEvent(value: number, handler: () => void) {
-
-            TODO
-            control.onEvent(this.id, value, handler);
+            control.onEvent(this.eventId, value, handler);
             this.start();
         }
     }
