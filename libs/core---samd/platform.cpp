@@ -12,6 +12,7 @@ SAMDTCTimer lowTimer(TC3, TC3_IRQn);
 
 LowLevelTimer* getJACDACTimer()
 {
+    jacdacTimer.setIRQPriority(1);
     return &jacdacTimer;
 }
 

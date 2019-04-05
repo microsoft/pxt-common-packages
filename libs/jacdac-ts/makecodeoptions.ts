@@ -1,65 +1,31 @@
-namespace jacdac {
-
-    class MakeCodeOptions implements JDOptions {
-        utf8Decode(buf: Buffer): string {
-            return buf.toString();
-        }
-        utf8Encode(str: string): Buffer {
-            return control.createBufferFromUTF8(str);
-        }
-        createBuffer(size: number): Buffer {
-            return control.createBuffer(size);
-        }
-        error(message: string) {
-            console.add(ConsolePriority.Error, message);
-        }
-        log(message: string) {
-            console.add(ConsolePriority.Log, message);
-        }
-
-        private sn: Buffer;
-        getSerialNumber(): Buffer {
-            if (!this.sn) {
-                this.sn = control.createBuffer(8);
-                this.sn.setNumber(NumberFormat.UInt32LE, 0, control.deviceSerialNumber())
-            }
-            return this.sn;
-        }
+namespace jacdac.options
+{
+    let sn: Buffer
+    export function utf8Decode (buf: Buffer) {
+        return buf.toString();
     }
 
-    export let options: JDOptions = new MakeCodeOptions();
-
-    class JACDACBus implements JDPhysicalLayer {
-        constructor() {
-            control.onEvent(__physId(), DAL.JD_SERIAL_EVT_DATA_READY, () => this.handlePacketData());
-        }
-
-        handlePacketData() {
-            let buf: Buffer = undefined;
-            while (buf = __physGetPacket()) {
-                const pkt = new JDPacket(buf);
-                jacdac.JACDAC.instance.routePacket(pkt)
-            }
-        }
-
-        writeBuffer(b: Buffer) {
-            __physSendPacket(b);
-        }
-
-        isConnected() {
-            return __physIsConnected()
-        }
+    export function utf8Encode (str: string) {
+        return control.createBufferFromUTF8(str);
     }
 
-    let jacdacStarted = false;
-    export function testStart() : void
-    {
-        if (jacdacStarted)
-            return;
+    export function createBuffer (size: number) {
+        return control.createBuffer(size);
+    }
 
-        jacdacStarted = true;
-        jacdac.JACDAC.instance.bus = new JACDACBus();
-        __physStart();
-        jacdac.JACDAC.instance.start();
+    export function error (message: string) {
+        console.add(ConsolePriority.Error, message);
+    }
+
+    export function log (message: string)  {
+        console.add(ConsolePriority.Log, message);
+    }
+
+    export function getSerialNumber ()  {
+        if (!sn) {
+            sn = control.createBuffer(8);
+            sn.setNumber(NumberFormat.UInt32LE, 0, control.deviceSerialNumber())
+        }
+        return sn;
     }
 }

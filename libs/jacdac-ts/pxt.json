@@ -16,6 +16,7 @@
         "structs.ts",
         "rand.ts",
         "makecodeoptions.ts",
+        "makecodejacdac.ts",
         "jacdac.cpp",
         "shims.d.ts"
     ],

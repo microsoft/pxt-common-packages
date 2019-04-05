@@ -15,7 +15,7 @@ class WJDPhysicalLayer {
         sws(*LOOKUP_PIN(JACK_TX)),
         phys(sws, *pxt::getJACDACTimer(), LOOKUP_PIN(JACK_BUSLED), LOOKUP_PIN(JACK_COMMLED))
     {
-        phys.start();
+        sws.setBaud(1000000);
     }
 
     void send(Buffer b)
@@ -74,8 +74,10 @@ Buffer __physGetPacket() {
     if (jd) {
         auto pkt = jd->getPacket();
         if (pkt)
+        {
             buf = mkBuffer((uint8_t*)pkt, sizeof(JDPacket));
-        free(pkt);
+            free(pkt);
+        }
     }
     return buf;
 }
