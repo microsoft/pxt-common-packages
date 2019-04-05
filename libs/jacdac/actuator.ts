@@ -10,13 +10,7 @@ namespace jacdac {
         }
 
         public handlePacket(packet: JDPacket): number {
-            const st = packet.data;
-            if (st.length < this.stateLength) {
-                this.log(`invalid data`)
-                return jacdac.DEVICE_INVALID_PACKET;
-            }
-                
-            this.state = st;
+            this.state = packet.data;
             return this.handleStateChanged();
         }
 
