@@ -83,22 +83,22 @@ namespace jacdac {
 
     //% fixedInstances
     export class Broadcast extends Service {
-        constructor(name: string, deviceClass: number, controlDataLength?: number) {
-            super(name, JDServiceMode.BroadcastHostService, deviceClass, controlDataLength);
+        constructor(name: string, serviceClass: number, controlDataLength?: number) {
+            super(name, JDServiceMode.BroadcastHostService, serviceClass, controlDataLength);
         }
     }
 
     //% fixedInstances
     export class Host extends Service {
-        constructor(name: string, deviceClass: number, controlDataLength?: number) {
-            super(name, JDServiceMode.HostService, deviceClass, controlDataLength);
+        constructor(name: string, serviceClass: number, controlDataLength?: number) {
+            super(name, JDServiceMode.HostService, serviceClass, controlDataLength);
         }
     }
 
     //% fixedInstances
     export class Client extends Service {
-        constructor(name: string, deviceClass: number, controlDataLength?: number) {
-            super(name, JDServiceMode.ClientService, deviceClass, controlDataLength);
+        constructor(name: string, serviceClass: number, controlDataLength?: number) {
+            super(name, JDServiceMode.ClientService, serviceClass, controlDataLength);
         }
 
         protected registerEvent(value: number, handler: () => void) {

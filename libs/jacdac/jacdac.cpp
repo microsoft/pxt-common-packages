@@ -135,13 +135,4 @@ void __physStop()
         jd->stop();
 }
 
-/**
-* Gets the bus state
-*/
-//%
-int __physState() {
-    auto js = getWJDPhysicalLayer();
-    return js ? (int)js->getState() : -1;
-}
-
 }

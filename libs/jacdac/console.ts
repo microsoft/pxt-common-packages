@@ -34,17 +34,17 @@ namespace jacdac {
          */
         //% blockId=jdconsolesetmode block="set %service mode to %mode"
         //% group="Console"
-        setMode(mode: JDConsoleMode) {
+        setConsoleMode(consoleMode: JDConsoleMode) {
             this.start();
-            if (this.mode != mode) {
-                this.controlData[0] = mode;
-                this.supressLog = this.mode == JDConsoleMode.Logger;
-                this.priority = this.mode == JDConsoleMode.Logger ? ConsolePriority.Error : ConsolePriority.Log;
-                this.log(`mode ${this.mode}`);
+            if (this.consoleMode != consoleMode) {
+                this.controlData[0] = consoleMode;
+                this.supressLog = this.consoleMode == JDConsoleMode.Logger;
+                this.priority = this.consoleMode == JDConsoleMode.Logger ? ConsolePriority.Error : ConsolePriority.Log;
+                this.log(`mode ${this.consoleMode}`);
             }
         }
 
-        get mode(): JDConsoleMode {
+        get consoleMode(): JDConsoleMode {
             return this.controlData[0];
         }
 
@@ -60,13 +60,13 @@ namespace jacdac {
 
         handleServiceInformation(device: JDDevice, serviceInfo: JDServiceInformation): number {
             const data = serviceInfo.data;
-            const mode = data[0];
+            const consoleMode = data[0];
             const priority = data[1];
 
-            if (mode == JDConsoleMode.Listen) {
+            if (consoleMode == JDConsoleMode.Listen) {
                 // if a listener enters the bus, automatically start broadcasting
-                if (this.mode != JDConsoleMode.Listen)
-                    this.setMode(JDConsoleMode.Logger);
+                if (this.consoleMode != JDConsoleMode.Listen)
+                    this.setConsoleMode(JDConsoleMode.Logger);
                 // update priority if needed
                 if (priority < this.priority) // update priority
                     this.priority = priority;
@@ -77,7 +77,7 @@ namespace jacdac {
 
         handlePacket(packet: JDPacket): number {
             // received packet, ignore unless in listening mode
-            if (this.mode != JDConsoleMode.Listen)
+            if (this.consoleMode != JDConsoleMode.Listen)
                 return jacdac.DEVICE_OK;
 
             const data = packet.data;
@@ -90,7 +90,8 @@ namespace jacdac {
                         return jacdac.DEVICE_OK;
 
                     // send message to console
-                    const deviceName = packet.device_name;
+                    const device = jacdac.JACDAC.instance.getRemoteDevice(packet.device_address);
+                    const deviceName = device ? device.device_name : `${toHex8(packet.device_address)}`;
                     const str = data.slice(2).toString();
                     console.add(priority, `${deviceName}> ${str}`);
                     break;
@@ -102,13 +103,13 @@ namespace jacdac {
         }
 
         private broadcast(priority: ConsolePriority, str: string) {
-            if (this.mode != JDConsoleMode.Logger)
+            if (this.consoleMode != JDConsoleMode.Logger)
                 return;
 
             // no one listening -- or disconnected?
-            if (!jacdac.JACDAC.instance.isConnected()
+            if (!jacdac.JACDAC.instance.bus.isConnected()
                 || control.millis() - this._lastListenerTime > ConsoleService.BROADCAST_TIMEOUT) {
-                this.setMode(JDConsoleMode.Off);
+                this.setConsoleMode(JDConsoleMode.Off);
                 return;
             }
 

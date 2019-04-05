@@ -22,10 +22,6 @@ namespace jacdac {
             __physStop();
         }
 
-        get state(): JDBusState {
-            return __physState();
-        }
-
         handlePacketData() {
             let buf: Buffer = undefined;
             while (buf = __physGetPacket()) {

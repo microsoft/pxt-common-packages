@@ -134,12 +134,4 @@ namespace pxsim.jacdac {
         if (state)
             state.stop();
     }
-
-    /**
-     * Gets the bus state
-     */
-    export function __physState(): number {
-        const state = getJacDacState();
-        return state ? state.getState() : 0;
-    }
 }
