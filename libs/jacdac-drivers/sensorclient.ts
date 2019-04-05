@@ -50,18 +50,20 @@ namespace jacdac {
 
         handleServiceInformation(device: JDDevice, serviceInfo: JDServiceInformation): number {
             if (this._sensorState == SensorState.None) return DEVICE_OK;
-            const state = serviceInfo.data.getNumber(NumberFormat.UInt8LE, 1);
+            const data = serviceInfo.data;
+            const state = data.getNumber(NumberFormat.UInt8LE, 1);
             if ((this._sensorState & SensorState.Streaming) != (state & SensorState.Streaming))
                 this.sync(); // start            
             return DEVICE_OK;
         }
 
         handlePacket(packet: JDPacket): number {
-            const command = packet.getNumber(NumberFormat.UInt8LE, 0);
+            const data = packet.data;
+            const command = data.getNumber(NumberFormat.UInt8LE, 0);
             this.log(`vpkt ${command}`)
             switch (command) {
                 case SensorCommand.State:
-                    const state = packet.data.slice(1);
+                    const state = data.slice(1);
                     const changed = !jacdac.bufferEqual(this._lastState, state);
                     const r = this.handleVirtualState(state);
                     this._lastState = state;
@@ -70,8 +72,8 @@ namespace jacdac {
                         this._stateChangedHandler();
                     return r;
                 case SensorCommand.Event:
-                    const value = packet.data.getNumber(NumberFormat.UInt16LE, 1);
-                    control.raiseEvent(this.id, value);
+                    const value = data.getNumber(NumberFormat.UInt16LE, 1);
+                    control.raiseEvent(this.eventId, value);
                     return jacdac.DEVICE_OK;
                 default:
                     return this.handleCustomCommand(command, packet);
