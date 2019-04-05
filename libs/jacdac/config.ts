@@ -42,7 +42,6 @@ namespace jacdac {
 
     // events
     export const JD_MESSAGE_BUS_ID = JD_DEVICE_CLASS_MAKECODE_START;
-    export const JD_DRIVER_EVT_FILL_CONTROL_PACKET = 2001;
 
     export const BUTTON_EVENTS = [
         DAL.DEVICE_BUTTON_EVT_CLICK,
@@ -50,40 +49,6 @@ namespace jacdac {
         DAL.DEVICE_BUTTON_EVT_UP,
         DAL.DEVICE_BUTTON_EVT_LONG_CLICK
     ];
-}
-
-enum JDEvent {
-    //% block="bus connected"
-    BusConnected = DAL.JD_SERIAL_EVT_BUS_CONNECTED,
-    //% block="bus disconnected"
-    BusDisconnected = DAL.JD_SERIAL_EVT_BUS_DISCONNECTED,
-    //% block="driver changed"
-    DriverChanged = DAL.JD_LOGIC_DRIVER_EVT_CHANGED,
-}
-
-enum JDDriverErrorCode
-{
-    // No error occurred.
-    DRIVER_OK = 0,
-
-    // Device calibration information
-    DRIVER_CALIBRATION_IN_PROGRESS,
-    DRIVER_CALIBRATION_REQUIRED,
-
-    // The driver has run out of some essential resource (e.g. allocated memory)
-    DRIVER_NO_RESOURCES,
-
-    // The driver operation could not be performed as some essential resource is busy (e.g. the display)
-    DRIVER_BUSY,
-
-    // I2C / SPI Communication error occured
-    DRIVER_COMMS_ERROR,
-
-    // An invalid state was detected (i.e. not initialised)
-    DRIVER_INVALID_STATE,
-
-    // an external peripheral has a malfunction e.g. external circuitry is drawing too much power.
-    DRIVER_PERIPHERAL_MALFUNCTION
 }
 
 const enum JDLightCommand {

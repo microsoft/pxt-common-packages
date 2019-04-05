@@ -142,12 +142,13 @@ namespace jacdac {
 
         start() {
             game.pushScene(); // start game
-            jacdac.onEvent(JDEvent.BusConnected, () => {
+            /*
+            jacdac.JACDAC.instance.onConnected(() => {
                 game.consoleOverlay.clear();
                 console.log(`connected`)
                 this.refresh()
             });
-            jacdac.onEvent(JDEvent.BusDisconnected, () => {
+            jacdac.JACDAC.instance.consoleService.onDisconnected(() => {
                 game.consoleOverlay.clear();
                 console.log(`disconnected`)
                 this.refresh()
@@ -158,6 +159,7 @@ namespace jacdac {
                     game.consoleOverlay.clear();
                 this.refresh()
             });
+            */
             controller.left.onEvent(ControllerButtonEvent.Pressed, () => {
                 this.mode = Mode.Drivers;
                 game.consoleOverlay.clear();
