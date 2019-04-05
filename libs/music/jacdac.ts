@@ -1,6 +1,6 @@
 namespace jacdac {
     //% fixedInstances
-    export class MusicService extends Service {
+    export class MusicService extends Host {
         constructor() {
             super("mus", jacdac.MUSIC_DEVICE_CLASS);
         }

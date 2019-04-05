@@ -8,14 +8,12 @@ namespace pxsim {
     export class JacDacState {
         eventId: number;
         board: BaseBoard;
-        protocol: jacdac.JDProtocol;
         running = false;
         runtimeId: string;
 
         constructor(board: BaseBoard) {
             this.eventId = pxsim.jacdac.DAL.DEVICE_ID_JACDAC0;
             this.board = board;
-            this.protocol = new jacdac.JDProtocol();
             board.addMessageListener(msg => this.processMessage(msg));
         }
 

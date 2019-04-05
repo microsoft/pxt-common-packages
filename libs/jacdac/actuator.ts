@@ -1,5 +1,5 @@
 namespace jacdac {
-    export class ActuatorService extends Service {
+    export class ActuatorService extends Host {
         stateLength: number;
         state: Buffer;
 
@@ -9,8 +9,7 @@ namespace jacdac {
             this.state = control.createBuffer(this.stateLength);
         }
 
-        public handlePacket(pkt: Buffer): boolean {
-            const packet = new JDPacket(pkt);
+        public handlePacket(packet: JDPacket): boolean {
             const st = packet.data;
             if (st.length < this.stateLength) {
                 this.log(`invalid data`)

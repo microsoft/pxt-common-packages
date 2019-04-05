@@ -1,7 +1,7 @@
 namespace jacdac {
 
     //% fixedInstances
-    export class KeyboardService extends Service {
+    export class KeyboardService extends Host {
         constructor() {
             super("keyb", jacdac.KEYBOARD_DEVICE_CLASS);
         }

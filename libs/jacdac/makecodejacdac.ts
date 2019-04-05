@@ -1,6 +1,13 @@
+enum JDBusState {
+    Receiving,
+    Transmitting,
+    High,
+    Low,
+    NotSupported = -1
+}
 
 namespace jacdac {
-
+    
     class JACDACBus implements jacdac.JDPhysicalLayer {
         constructor() {
         }
@@ -15,7 +22,7 @@ namespace jacdac {
             __physStop();
         }
 
-        get state(): number {
+        get state(): JDBusState {
             return __physState();
         }
 

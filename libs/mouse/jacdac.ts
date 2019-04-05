@@ -1,6 +1,6 @@
 namespace jacdac {
     //% fixedInstances
-    export class MouseService extends Service {
+    export class MouseService extends Host {
         constructor() {
             super("mous", jacdac.MOUSE_DEVICE_CLASS);
         }

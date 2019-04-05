@@ -13,7 +13,7 @@ namespace jacdac {
         }
     } */
 
-    class BatterySniffer extends Driver {
+    class BatterySniffer extends Service {
         handler: (serialNumber: number, level: number) => void;
         constructor(handler: (serialNumber: number, level: number) => void) {
             super("batmon", DriverType.SnifferDriver, jacdac.BATTERY_DEVICE_CLASS);
@@ -21,7 +21,7 @@ namespace jacdac {
         }
 
         public handleControlPacket(pkt: Buffer): boolean {
-            const cp = new ControlPacket(pkt);
+            const cp = new JDControlPacket(pkt);
             const level = cp.data.getNumber(NumberFormat.UInt8LE, 0);
             this.log(`${cp.serialNumber}: ${level}`);
             this.handler(cp.serialNumber, level);

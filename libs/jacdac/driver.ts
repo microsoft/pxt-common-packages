@@ -1,45 +1,27 @@
 namespace jacdac {
-    // This enumeration specifies that supported configurations that drivers should utilise.
-    // Many combinations of flags are supported, but only the ones listed here have been fully implemented.
-    export enum DriverType {
-        VirtualDriver = DAL.JD_DEVICE_FLAGS_REMOTE, // the driver is seeking the use of another device's resource
-        PairedDriver = DAL.JD_DEVICE_FLAGS_BROADCAST | DAL.JD_DEVICE_FLAGS_PAIR,
-        HostDriver = DAL.JD_DEVICE_FLAGS_LOCAL, // the driver is hosting a resource for others to use.
-        PairableHostDriver = DAL.JD_DEVICE_FLAGS_PAIRABLE | DAL.JD_DEVICE_FLAGS_LOCAL, // the driver is allowed to pair with another driver of the same class
-        BroadcastDriver = DAL.JD_DEVICE_FLAGS_LOCAL | DAL.JD_DEVICE_FLAGS_BROADCAST, // the driver is enumerated with its own address, and receives all packets of the same class (including control packets)
-        SnifferDriver = DAL.JD_DEVICE_FLAGS_REMOTE | DAL.JD_DEVICE_FLAGS_BROADCAST, // the driver is not enumerated, and receives all packets of the same class (including control packets)
-    };
-
     //% fixedInstances
-    export class Driver {
+    export class Service {
         public name: string;
-        protected _proxy: JacDacDriverStatus;
-        public driverType: jacdac.DriverType;
-        public deviceClass: number;
+        protected service: jacdac.JDService;
         protected supressLog: boolean;
         private _controlData: Buffer;
 
-        constructor(name: string, driverType: jacdac.DriverType, deviceClass: number, controlDataLength = 0) {
+        constructor(name: string, serviceClass: number, mode: JDServiceMode, controlDataLength = 0) {
             this.name = name;
-            this.driverType = driverType;
-            this.deviceClass = deviceClass || control.programHash();
+            this.service = new jacdac.JDService(serviceClass, mode);
             this._controlData = control.createBuffer(Math.max(0, controlDataLength));
             this.supressLog = false;
-            this._proxy = undefined;
+            this.service.onHandlePacket = pkt => this.handlePacket(pkt);
         }
 
-        get id(): number {
+        get serviceNumber(): number {
             this.start();
-            return this._proxy ? this._proxy.id : -1;
-        }
-
-        get proxy(): JacDacDriverStatus {
-            return this._proxy;
+            return this.service.service_number;
         }
 
         get deviceName(): string {
-            const d = this.device;
-            return d ? jacdac.remoteDeviceName(d.serialNumber) : "";
+            const d = this.service.device();
+            return d ? d.device_name : "";
         }
 
         /**
@@ -53,25 +35,21 @@ namespace jacdac {
         }
 
         get isStarted(): boolean {
-            return !!this._proxy;
+            return jacdac.JACDAC.instance.contains(this.service);
         }
 
         get isConnected(): boolean {
-            return this._proxy && this._proxy.isConnected;
-        }
-
-        protected get device(): jacdac.JDDevice {
-            return this._proxy ? new jacdac.JDDevice(this._proxy.device) : undefined;
+            return this.service.isConnected();
         }
 
         public log(text: string) {
             if (!this.supressLog || jacdac.consolePriority < console.minPriority) {
-                let dev = jacdac.deviceName();
+                let dev = jacdac.JACDAC.instance.deviceName();
                 if (!dev) {
-                    const d = this.device;
-                    dev = d ? toHex8(d.address) : "--";
+                    const d = this.service.device;
+                    dev = d ? toHex8(d.device_address) : "--";
                 }
-                console.add(jacdac.consolePriority, `${dev}>${this.name}>${text}`);
+                console.add(jacdac.consolePriority, `${dev}:${toHex8(this.serviceNumber)}>${this.name}>${text}`);
             }
         }
 
@@ -82,14 +60,14 @@ namespace jacdac {
          */
         public onDriverEvent(event: JDDriverEvent, handler: () => void) {
             this.start();
-            control.onEvent(this._proxy.id, event, handler);
+            control.onEvent(this.service.id, event, handler);
         }
 
         /**
          * Called by the logic driver when a data packet is addressed to this driver
          * Return false when the packet wasn't handled here.
          */
-        public handlePacket(pkt: Buffer): boolean {
+        public handlePacket(pkt: JDPacket): boolean {
             return false
         }
 
@@ -103,7 +81,7 @@ namespace jacdac {
 
         protected sendPacket(pkt: Buffer) {
             this.start();
-            jacdac.sendPacket(pkt, this.device.address);
+            this.service.send(pkt);
         }
 
         /**
@@ -112,60 +90,45 @@ namespace jacdac {
         //% blockId=jacdachoststart block="start %service"
         //% group="Services"
         start() {
-            if (this._proxy) return; // started already
-
-            this.log("start");
-            this._proxy = jacdac.__internalAddDriver(this.driverType, this.deviceClass,
-                [(p: Buffer) => this.handlePacket(p),
-                (p: Buffer) => this.handleControlPacket(p)],
-                this.controlData
-            );
-            if (this._controlData.length)
-                control.onEvent(this._proxy.id, JD_DRIVER_EVT_FILL_CONTROL_PACKET, () => this.updateControlPacket());
+            if (jacdac.JACDAC.instance.add(this.service)) {
+                this.log("start");
+                if (this._controlData.length)
+                    control.onEvent(this.service.id, JD_DRIVER_EVT_FILL_CONTROL_PACKET, () => this.updateControlPacket());
+            }
         }
 
         stop() {
-            if (!this._proxy) return; // stopped already
-
-            this.log("stop")
-            control.onEvent(this._proxy.id, JD_DRIVER_EVT_FILL_CONTROL_PACKET, () => { });
-            jacdac.__internalRemoveDriver(this._proxy);
-            this._proxy = undefined;
+            if (jacdac.JACDAC.instance.remove(this.service)) {
+                this.log("stop")
+                control.onEvent(this.service.id, JD_DRIVER_EVT_FILL_CONTROL_PACKET, () => { });
+            }
         }
     }
 
     //% fixedInstances
-    export class Broadcast extends Driver {
+    export class Broadcast extends Service {
         constructor(name: string, deviceClass: number, controlDataLength?: number) {
-            super(name, DriverType.BroadcastDriver, deviceClass, controlDataLength);
+            super(name, JDServiceMode.BroadcastHostService, deviceClass, controlDataLength);
         }
     }
 
     //% fixedInstances
-    export class Service extends Driver {
+    export class Host extends Service {
         constructor(name: string, deviceClass: number, controlDataLength?: number) {
-            super(name, DriverType.HostDriver, deviceClass, controlDataLength);
+            super(name, JDServiceMode.HostService, deviceClass, controlDataLength);
         }
     }
 
     //% fixedInstances
-    export class Client extends Driver {
+    export class Client extends Service {
         constructor(name: string, deviceClass: number, controlDataLength?: number) {
-            super(name, DriverType.VirtualDriver, deviceClass, controlDataLength);
+            super(name, JDServiceMode.ClientService, deviceClass, controlDataLength);
         }
 
         protected registerEvent(value: number, handler: () => void) {
-            control.onEvent(this.id, value, handler);
-            this.start();
-        }
 
-        /**
-         * Specifies the serial number that this virtual driver should bind to
-         * @param serialNumber 
-         */
-        setSerialNumber(serialNumber: number) {
-            this.device.serialNumber = serialNumber;
-            this.device.setMode(DriverType.VirtualDriver);
+            TODO
+            control.onEvent(this.id, value, handler);
             this.start();
         }
     }

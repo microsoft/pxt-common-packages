@@ -1,6 +1,6 @@
 namespace jacdac {
     //% fixedInstances
-    export class GamepadService extends Service {
+    export class GamepadService extends Host {
         constructor() {
             super("gpad", jacdac.GAMEPAD_DEVICE_CLASS);
         }

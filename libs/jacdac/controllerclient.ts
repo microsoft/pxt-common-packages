@@ -132,14 +132,12 @@ namespace jacdac {
             return !!this.serverAddress && this.isConnected;
         }
 
-        handleControlPacket(pkt: Buffer): boolean {
-            const cp = new ControlPacket(pkt);
+        handleControlPacket(cp: JDControlPacket): boolean {
             const data = cp.data;
             return this.processPacket(cp.address, data);
         }
 
-        handlePacket(pkt: Buffer): boolean {
-            const packet = new JDPacket(pkt);
+        handlePacket(packet: JDPacket): boolean {
             const data = packet.data;
             return this.processPacket(packet.address, data);
         }

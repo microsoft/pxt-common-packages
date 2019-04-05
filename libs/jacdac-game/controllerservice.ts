@@ -79,7 +79,7 @@ namespace jacdac {
         }
 
         handleControlPacket(pkt: Buffer) {
-            const cp = new ControlPacket(pkt);
+            const cp = new JDControlPacket(pkt);
             const data = cp.data;
             return this.processPacket(cp.address, data);
         }
