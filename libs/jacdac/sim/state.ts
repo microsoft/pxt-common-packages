@@ -56,11 +56,13 @@ namespace pxsim {
         }
 
         processMessage(msg: pxsim.SimulatorMessage) {
-            if (!this.running) return;
+            const b = board();
+            if (!this.running || !b) return;
 
             if (msg && msg.type == "jacdac") {
                 const jdmsg = msg as pxsim.SimulatorJacDacMessage;
                 this.packetQueue.push(jdmsg.packet);
+                b.bus.queue(this.eventId, DAL.JD_SERIAL_EVT_DATA_READY);
             }
         }
     }
