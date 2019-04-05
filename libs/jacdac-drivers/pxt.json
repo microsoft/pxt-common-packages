@@ -5,7 +5,6 @@
         "sensorclient.ts",
         "buttonclient.ts",
         "lightsensorclient.ts",
-        "battery.ts",
         "accelerometerclient.ts",
         "touchclient.ts",
         "microphoneclient.ts",

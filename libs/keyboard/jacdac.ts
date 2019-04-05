@@ -1,13 +1,12 @@
 namespace jacdac {
 
     //% fixedInstances
-    export class KeyboardService extends Service {
+    export class KeyboardService extends Host {
         constructor() {
             super("keyb", jacdac.KEYBOARD_DEVICE_CLASS);
         }
 
-        handlePacket(pkt: Buffer): boolean {
-            const packet = new JDPacket(pkt);
+        handlePacket(packet: JDPacket): number {
             const data = packet.data;
             const cmd = data.getNumber(NumberFormat.UInt8LE, 0);
             switch (cmd) {
@@ -40,7 +39,7 @@ namespace jacdac {
                     break;
                 }
             }
-            return true;
+            return jacdac.DEVICE_OK;
         }
     }
 

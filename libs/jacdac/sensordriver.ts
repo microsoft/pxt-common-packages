@@ -35,7 +35,7 @@ namespace jacdac {
     /**
      * JacDac service running on sensor and streaming data out
      */
-    export class SensorService extends Service {
+    export class SensorHost extends Host {
         public streamingInterval: number; // millis
 
         constructor(name: string, deviceClass: number, controlLength = 0) {
@@ -63,26 +63,26 @@ namespace jacdac {
             return undefined;
         }
 
-        public handlePacket(pkt: Buffer): boolean {
-            const packet = new JDPacket(pkt);
-            const command = packet.getNumber(NumberFormat.UInt8LE, 0);
+        public handlePacket(packet: JDPacket): number {
+            const data = packet.data;
+            const command = data.getNumber(NumberFormat.UInt8LE, 0);
             this.log(`hpkt ${command}`);
             switch (command) {
                 case SensorCommand.StartStream:
-                    const interval = packet.getNumber(NumberFormat.UInt32LE, 1);
+                    const interval = data.getNumber(NumberFormat.UInt32LE, 1);
                     if (interval)
                         this.streamingInterval = Math.max(20, interval);
                     this.startStreaming();
-                    return true;
+                    return jacdac.DEVICE_OK;
                 case SensorCommand.StopStream:
                     this.stopStreaming();
-                    return true;
+                    return jacdac.DEVICE_OK;
                 case SensorCommand.LowThreshold:                
-                    this.setThreshold(true, packet.getNumber(NumberFormat.UInt32LE, 1));
-                    return true;
+                    this.setThreshold(true, data.getNumber(NumberFormat.UInt32LE, 1));
+                    return jacdac.DEVICE_OK;
                 case SensorCommand.HighThreshold:
-                    this.setThreshold(false, packet.getNumber(NumberFormat.UInt32LE, 1));
-                    return true;
+                    this.setThreshold(false, data.getNumber(NumberFormat.UInt32LE, 1));
+                    return jacdac.DEVICE_OK;
                 default:
                     // let the user deal with it
                     return this.handleCustomCommand(command, packet);
@@ -99,8 +99,8 @@ namespace jacdac {
 
         }
 
-        protected handleCustomCommand(command: number, pkt: JDPacket) {
-            return true;
+        protected handleCustomCommand(command: number, pkt: JDPacket): number {
+            return jacdac.DEVICE_OK;
         }
 
         protected raiseHostEvent(value: number) {

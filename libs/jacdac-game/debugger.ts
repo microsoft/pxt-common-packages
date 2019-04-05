@@ -228,13 +228,13 @@ namespace jacdac {
             return dbgView;
         }
 
-        sniffControlPacket(cp: ControlPacket): boolean {
+        sniffControlPacket(cp: JDControlPacket): boolean {
             if (this.paused || this.hideControlPackets) return true;
             // too much noise
             //if (cp.driverClass == jacdac.LOGGER_DEVICE_CLASS) return true;
             const dbgView = this.debugViews.find(d => d.driverClass == cp.driverClass);
             const str = dbgView ? dbgView.renderControlPacket(cp) : "";
-            const deviceName = jacdac.remoteDeviceName(cp.serialNumber);
+            const deviceName = cp.device_name;
             console.log(`c:${deviceName || toHex8(cp.address)}> ${dbgView ? dbgView.name : cp.driverClass} ${str}`);
             return true;
         }

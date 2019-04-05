@@ -6,7 +6,7 @@ namespace jacdac {
             this.servo = servo;
         }
 
-        handleStateChanged(): boolean {
+        protected handleStateChanged(): number {
             const on = !!this.state[0];
             if (!on)
                 this.servo.stop();
@@ -17,7 +17,7 @@ namespace jacdac {
                     this.servo.setPulse(pulse);
                 this.servo.setAngle(angle);
             }
-            return true;
+            return jacdac.DEVICE_OK;
         }
     }
 }

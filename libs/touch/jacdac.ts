@@ -1,5 +1,5 @@
 namespace jacdac {
-    export class TouchButtonService extends SensorService {
+    export class TouchButtonService extends SensorHost {
         private button: TouchButton;
         constructor(name: string, button: TouchButton) {
             super(name, jacdac.TOUCHBUTTON_DEVICE_CLASS);

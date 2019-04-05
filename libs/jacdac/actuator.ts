@@ -1,5 +1,5 @@
 namespace jacdac {
-    export class ActuatorService extends Service {
+    export class ActuatorService extends Host {
         stateLength: number;
         state: Buffer;
 
@@ -9,20 +9,13 @@ namespace jacdac {
             this.state = control.createBuffer(this.stateLength);
         }
 
-        public handlePacket(pkt: Buffer): boolean {
-            const packet = new JDPacket(pkt);
-            const st = packet.data;
-            if (st.length < this.stateLength) {
-                this.log(`invalid data`)
-                return false;
-            }
-                
-            this.state = st;
+        public handlePacket(packet: JDPacket): number {
+            this.state = packet.data;
             return this.handleStateChanged();
         }
 
-        protected handleStateChanged(): boolean {
-            return true;
+        protected handleStateChanged(): number {
+            return jacdac.DEVICE_OK;
         }
     }
 
@@ -32,7 +25,8 @@ namespace jacdac {
         constructor(name: string, deviceClass: number, stateLength: number, controlDataLength?: number) {
             super(name, deviceClass, controlDataLength);
             this.state = control.createBuffer(stateLength);
-            this.onDriverEvent(JDDriverEvent.Connected, () => this.notifyChange());
+            // TODO
+            // this.onDriverEvent(JDDriverEvent.Connected, () => this.notifyChange());
         }
 
         protected notifyChange() {

@@ -78,14 +78,12 @@ namespace jacdac {
             return -1;
         }
 
-        handleControlPacket(pkt: Buffer) {
-            const cp = new ControlPacket(pkt);
-            const data = cp.data;
-            return this.processPacket(cp.address, data);
+        handleServiceInformation(device: JDDevice, serviceInfo: JDServiceInformation): number {
+            const data = serviceInfo.data;
+            return this.processPacket(device.device_address, data);
         }
 
-        handlePacket(pkt: Buffer) {
-            const packet = new JDPacket(pkt);
+        handlePacket(packet: JDPacket): number {
             const data = packet.data;
             return this.processPacket(packet.address, data);
         }
@@ -148,7 +146,7 @@ namespace jacdac {
                 // server got joined
                 || this.hasPlayers()
                 // other driver dissapeared
-                || !jacdac.drivers().find(d => d.address == device.address)
+                || !jacdac.drivers().find(d => d.device_address == device.device_address)
             );
             // wait until we have an answer or the service
             control.popEventContext();
@@ -160,7 +158,7 @@ namespace jacdac {
             // check that we haven't been join by then
             return !!answer 
                 && !this.hasPlayers()
-                && !!jacdac.drivers().find(d => d.address == device.address);
+                && !!jacdac.drivers().find(d => d.device_address == device.device_address);
         }
 
         private processClientButtons(address: number, data: Buffer) {

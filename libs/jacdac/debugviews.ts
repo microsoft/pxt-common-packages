@@ -1,26 +1,10 @@
 namespace jacdac {
-    export class DebugView {
-        driverClass: number;
-        name: string;
-
-        constructor(name: string, driverClass: number) {
-            this.name = name;
-            this.driverClass = driverClass;
-        }
-        renderControlPacket(cp: ControlPacket) {
-            return "";
-        }
-        renderPacket(device: JDDevice, packet: JDPacket) {
-            return "";
-        }
-    }
-
     export class SensorDebugView extends DebugView {
         constructor(name: string, driverClass: number) {
             super(name, driverClass);
         }
 
-        renderControlPacket(packet: ControlPacket): string {
+        renderControlPacket(packet: JDControlPacket): string {
             const data = packet.data;
             const state = data[0];
             switch (state) {
@@ -117,7 +101,7 @@ namespace jacdac {
             super("log", jacdac.LOGGER_DEVICE_CLASS);
         }
 
-        renderControlPacket(cp: ControlPacket): string {
+        renderControlPacket(cp: JDControlPacket): string {
             const data = cp.data;
             return `${["off", "broad", "listen"][data[0]]} ${data[1]}`;
         }
@@ -126,7 +110,7 @@ namespace jacdac {
             const data = packet.data;
             const pri = data[0];
             const str = bufferToString(data, 1);
-            const name = ConsoleService.readName(data);
+            const name = device.device_name || "?";
             return `${pri}:${str} ${name}`;
         }
     }
@@ -137,7 +121,8 @@ namespace jacdac {
         }
 
         renderPacket(device: JDDevice, packet: JDPacket): string {
-            return `${packet.getNumber(NumberFormat.UInt16LE, 0)} ${packet.getNumber(NumberFormat.UInt16LE, 2)}`;
+            const data = packet.data;
+            return `${data.getNumber(NumberFormat.UInt16LE, 0)} ${data.getNumber(NumberFormat.UInt16LE, 2)}`;
         }
     }
 
@@ -259,7 +244,7 @@ namespace jacdac {
             super("ctrl", jacdac.CONTROLLER_DEVICE_CLASS);
         }
 
-        renderControlPacket(cp: ControlPacket): string {
+        renderControlPacket(cp: JDControlPacket): string {
             const data = cp.data;
             return this.renderData(data);
         }

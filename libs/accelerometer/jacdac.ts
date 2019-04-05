@@ -1,5 +1,5 @@
 namespace jacdac {
-    export class AccelerometerService extends jacdac.SensorService {
+    export class AccelerometerService extends jacdac.SensorHost {
         constructor(name: string) {
             super("acc", jacdac.ACCELEROMETER_DEVICE_CLASS);
             // TODO: catch all event

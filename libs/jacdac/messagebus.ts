@@ -29,20 +29,14 @@ namespace jacdac {
             }, DAL.MESSAGE_BUS_LISTENER_IMMEDIATE)
         }
 
-        public handlePacket(pkt: Buffer): boolean {
-            //control.dmesg(`jd> msgbus> packet`)        
-            const packet = new JDPacket(pkt);
-            const id = packet.getNumber(NumberFormat.UInt16LE, 0);
-            const value = packet.getNumber(NumberFormat.UInt16LE, 2);
+        handlePacket(packet: JDPacket): number {
+            const data = packet.data;
+            const id = data.getNumber(NumberFormat.UInt16LE, 0);
+            const value = data.getNumber(NumberFormat.UInt16LE, 2);
             this.suppressForwarding = true;
             control.raiseEvent(id, value);
             this.suppressForwarding = false;
-            return true;
-        }
-
-        public handleControlPacket(pkt: Buffer): boolean {
-            //control.dmesg(`jd> msgbus> control packet`)        
-            return true;
+            return jacdac.DEVICE_OK;
         }
     }
 
