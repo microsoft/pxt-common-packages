@@ -8,6 +8,10 @@ enum JDConsoleMode {
 }
 
 namespace jacdac {
+    const enum JDConsolePacketType {
+        Message
+    }
+
     /**
      * Console logging driver. The driver has 3 exclusive states: off, logging or listening.
      */
@@ -77,16 +81,22 @@ namespace jacdac {
                 return jacdac.DEVICE_OK;
 
             const data = packet.data;
-            const priority = data[0];
+            const type: JDConsolePacketType.Message = data[0];
+            switch (type) {
+                case JDConsolePacketType.Message:
+                    const priority = data[1];
+                    // shortcut
+                    if (priority < this.priority)
+                        return jacdac.DEVICE_OK;
 
-            // shortcut
-            if (priority < this.priority)
-                return jacdac.DEVICE_OK;
-
-            // send message to console
-            const deviceName = packet.device_name;
-            const str = data.slice(1).toString();
-            console.add(priority, `${deviceName}> ${str}`);
+                    // send message to console
+                    const deviceName = packet.device_name;
+                    const str = data.slice(2).toString();
+                    console.add(priority, `${deviceName}> ${str}`);
+                    break;
+                default:
+                    break;
+            }
 
             return jacdac.DEVICE_OK;
         }
@@ -102,14 +112,14 @@ namespace jacdac {
                 return;
             }
 
-            // TODO fix this.
             let cursor = 0;
             while (cursor < str.length) {
-                const txLength = Math.min(str.length - cursor, DAL.JD_SERIAL_DATA_SIZE - 1);
-                const buf = control.createBuffer(txLength + 1);
-                buf[0] = priority;
+                const txLength = Math.min(str.length - cursor, jacdac.JD_SERIAL_MAX_PAYLOAD_SIZE - 2);
+                const buf = control.createBuffer(txLength + 2);
+                buf[0] = JDConsolePacketType.Message;
+                buf[1] = priority;
                 for (let i = 0; i < txLength; i++)
-                    buf[i + 1] = str.charCodeAt(i + cursor);
+                    buf[i + 2] = str.charCodeAt(i + cursor);
                 this.sendPacket(buf);
                 cursor += txLength;
             }
