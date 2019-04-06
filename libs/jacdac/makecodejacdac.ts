@@ -7,13 +7,12 @@ enum JDBusState {
 }
 
 namespace jacdac {
-    
+
     class JACDACBus implements jacdac.JDPhysicalLayer {
         constructor() {
         }
 
-        start()
-        {
+        start() {
             __physStart();
             control.onEvent(__physId(), DAL.JD_SERIAL_EVT_DATA_READY, () => this.handlePacketData());
         }
@@ -44,15 +43,25 @@ namespace jacdac {
     }
 
     let jacdacStarted = false;
-    export function start() : void
-    {
+    let bus: JACDACBus;
+    export function start(): void {
         if (jacdacStarted)
             return;
 
         jacdacStarted = true;
-        let bus = new JACDACBus();
-        jacdac.JACDAC.instance.bus = bus
+        if (!bus) {
+            bus = new JACDACBus();
+            jacdac.JACDAC.instance.bus = bus;
+        }
         jacdac.JACDAC.instance.start();
         bus.start();
+    }
+
+    export function stop() {
+        if (jacdacStarted) {
+            jacdacStarted = false;
+            jacdac.JACDAC.instance.stop();
+            bus.stop();
+        }
     }
 }
