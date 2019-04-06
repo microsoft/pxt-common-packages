@@ -38,7 +38,7 @@ namespace jacdac {
             return this._controlData;
         }
 
-        isStarted(): boolean {
+        get isStarted(): boolean {
             return jacdac.JACDAC.instance.contains(this);
         }
 
