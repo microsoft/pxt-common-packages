@@ -64,6 +64,7 @@ namespace jacdac {
         //% blockId=jacdachoststart block="start %service"
         //% group="Services"
         start() {
+            jacdac.start();
             if (jacdac.JACDAC.instance.add(this)) {
                 this.log("start");
             }
