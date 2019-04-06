@@ -127,7 +127,7 @@ namespace jacdac {
                     const state = this.serializeState();
                     if (!!state) {
                         // did the state change?
-                        if (this.isConnected) {
+                        if (this.isConnected()) {
                             // send state and record time
                             const pkt = control.createBuffer(state.length + 1);
                             pkt.setNumber(NumberFormat.UInt8LE, 0, SensorCommand.State);
