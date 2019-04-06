@@ -276,22 +276,20 @@ namespace jacdac {
         }
     }
 
-    export function defaultDebugViews(): DebugView[] {
-        return [
-            new ConsoleDebugView(),
-            new MessageBusDebugView(),
-            new LightDebugView(),
-            new MusicDebugView(),
-            new AccelerometerDebugView(),
-            new ButtonDebugView(),
-            new LightSensorDebugView(),
-            new MicrophoneDebugView(),
-            new SwitchDebugView(),
-            new ThermometerDebugView(),
-            new TouchDebugView(),
-            new BridgeDebugView(),
-            new PixelDebugView(),
-            new ControllerDebugView()
-        ];
+    export function registerDebugViews() {
+        new ConsoleDebugView();
+        new MessageBusDebugView();
+        new LightDebugView();
+        new MusicDebugView();
+        new AccelerometerDebugView();
+        new ButtonDebugView();
+        new LightSensorDebugView();
+        new MicrophoneDebugView();
+        new SwitchDebugView();
+        new ThermometerDebugView();
+        new TouchDebugView();
+        new BridgeDebugView();
+        new PixelDebugView();
+        new ControllerDebugView();
     }
 }
