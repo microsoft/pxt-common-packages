@@ -42,7 +42,7 @@ namespace jacdac {
             return jacdac.JACDAC.instance.contains(this);
         }
 
-        public log(text: string) {
+        protected log(text: string) {
             if (!this.supressLog || jacdac.consolePriority < console.minPriority) {
                 let dev = jacdac.JACDAC.instance.getDeviceName();
                 if (!dev) {
