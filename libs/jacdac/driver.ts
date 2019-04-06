@@ -6,7 +6,7 @@ namespace jacdac {
         private _controlData: Buffer;
         private _eventId: number;
 
-        constructor(name: string, serviceClass: number, mode: JDServiceMode, controlDataLength = 0) {
+        constructor(name: string, mode: JDServiceMode, serviceClass: number, controlDataLength = 0) {
             super(serviceClass, mode)
 
             this.name = name;
