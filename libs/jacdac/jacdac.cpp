@@ -36,10 +36,6 @@ class WJDPhysicalLayer {
         return phys.id;
     }
 
-    int getState() {
-        return phys.getState();
-    }
-
     JDPacket* getPacket()
     {
         return phys.getPacket();
