@@ -54,8 +54,7 @@ Image load:
 
 */
 
-#define OPCODE_API_SIZE 10 // up to 1024 APIs
-#define OPCODE_BASE_SIZE 6 // up to 63 base opcodes
+#define OPCODE_BASE_SIZE 7 // up to 127 base opcodes
 #define OPCODE_BASE_MASK ((1 << OPCODE_BASE_SIZE) - 1)
 
 struct FiberContext;
@@ -114,9 +113,9 @@ struct FiberContext {
     FiberContext *next;
     FiberContext *prev;
 
-    uint32_t *imgbase;
+    uint16_t *imgbase;
     VMImage *img;
-    uint32_t *pc;
+    uint16_t *pc;
     TValue *sp;
     TValue r0;
     TValue *caps;
