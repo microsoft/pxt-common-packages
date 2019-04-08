@@ -75,9 +75,15 @@ void op_jmptrue(FiberContext *ctx, unsigned arg) {
 }
 
 //%
-void op_call(FiberContext *ctx, unsigned arg) {
+void op_callproc(FiberContext *ctx, unsigned arg) {
     *--ctx->sp = (TValue)(((ctx->pc - ctx->imgbase) << 8) | 2);
-    ctx->pc += (int)arg;
+    ctx->pc = (uint16_t *)ctx->img->pointerLiterals[arg] + 4;
+}
+
+//%
+void op_callind(FiberContext *ctx, unsigned arg) {
+    *--ctx->sp = (TValue)(((ctx->pc - ctx->imgbase) << 8) | 2);
+    ctx->pc = (uint16_t *)ctx->img->pointerLiterals[arg] + 4;
 }
 
 //%

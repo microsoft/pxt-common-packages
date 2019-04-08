@@ -62,18 +62,18 @@ typedef void (*OpFun)(FiberContext *ctx, unsigned arg);
 typedef void (*ApiFun)(FiberContext *ctx);
 
 enum class SectionType {
-    Invalid = 0,
+    Invalid = 0x00,
 
     // singular sections
-    InfoHeader,       // VMImageHeader
-    OpCodeMap,        // \0-terminated names of opcodes and APIs (shims)
-    NumberLiterals,   // array of boxed doubles and ints
-    ConfigData,       // sorted array of pairs of int32s; zero-terminated
-    IfaceMemberNames, // array of 32 bit offsets, that point to string literals
+    InfoHeader = 0x01,       // VMImageHeader
+    OpCodeMap = 0x02,        // \0-terminated names of opcodes and APIs (shims)
+    NumberLiterals = 0x03,   // array of boxed doubles and ints
+    ConfigData = 0x04,       // sorted array of pairs of int32s; zero-terminated
+    IfaceMemberNames = 0x05, // array of 32 bit offsets, that point to string literals
 
     // repetitive sections
-    Function,
-    Literal, // aux field contains literal type (string, hex, image, ...)
+    Function = 0x20,
+    Literal = 0x21, // aux field contains literal type (string, hex, image, ...)
 };
 
 struct VMImageSection {
@@ -83,6 +83,9 @@ struct VMImageSection {
     uint32_t size; // in bytes, including this header
     uint8_t data[0];
 };
+
+#define VM_MAGIC0 0x000a34365458500aULL // \nPXT64\n\0
+#define VM_MAGIC1 0x6837215e2bfe7154ULL
 
 struct VMImageHeader {
     uint64_t magic0;

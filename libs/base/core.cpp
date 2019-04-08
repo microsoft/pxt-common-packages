@@ -429,7 +429,7 @@ String charAt(String s, int pos) {
     auto v = charCodeAt(s, pos);
     if (v == TAG_NAN)
         return mkEmpty();
-    if (!isNumber(v))
+    if (!isInt(v))
         oops(81);
     return fromCharCode(numValue(v));
 }
@@ -662,7 +662,7 @@ namespace pxt {
 
 // ES5 9.5, 9.6
 unsigned toUInt(TNumber v) {
-    if (isNumber(v))
+    if (isInt(v))
         return numValue(v);
     if (isSpecial(v)) {
         if ((intptr_t)v >> 6)
@@ -994,7 +994,7 @@ TNumber div(TNumber a, TNumber b){NUMOP(/)}
 
 //%
 TNumber mod(TNumber a, TNumber b) {
-    if (isNumber(a) && isNumber(b) && numValue(b))
+    if (isInt(a) && isInt(b) && numValue(b))
         BITOP(%)
     return fromDouble(fmod(toDouble(a), toDouble(b)));
 }
@@ -1195,7 +1195,7 @@ String toString(TValue v) {
     } else if (t == ValType::Number) {
         char buf[64];
 
-        if (isNumber(v)) {
+        if (isInt(v)) {
             itoa(numValue(v), buf);
             return mkStringCore(buf);
         }
@@ -1265,7 +1265,7 @@ TNumber random() {
 
 //%
 TNumber randomRange(TNumber min, TNumber max) {
-    if (isNumber(min) && isNumber(max)) {
+    if (isInt(min) && isInt(max)) {
         int mini = numValue(min);
         int maxi = numValue(max);
         if (mini > maxi) {
@@ -1582,7 +1582,7 @@ ValType valType(TValue v) {
         if (!v)
             return ValType::Undefined;
 
-        if (isNumber(v) || v == TAG_NAN)
+        if (isInt(v) || v == TAG_NAN)
             return ValType::Number;
         if (v == TAG_TRUE || v == TAG_FALSE)
             return ValType::Boolean;

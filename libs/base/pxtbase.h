@@ -142,20 +142,33 @@ void dumpDmesg();
 #define TAG_NAN TAGGED_SPECIAL(3)  // 14
 #define TAG_NUMBER(n) (TNumber)(void *)(((uintptr_t)n << 1) | 1)
 
-inline bool isTagged(TValue v) {
-    return ((intptr_t)v & 3) || !v;
+inline bool isDouble(TValue v) {
+#ifdef PXT64
+    return ((uintptr_t)v >> 48) == 0;
+#else
+    (void)v;
+    return false;
+#endif
 }
 
-inline bool isNumber(TValue v) {
-    return (intptr_t)v & 1;
+inline bool isPointer(TValue v) {
+    return !isDouble(v) && ((intptr_t)v & 3) == 0;
+}
+
+inline bool isTagged(TValue v) {
+    return (!isDouble(v) && ((intptr_t)v & 3)) || !v;
+}
+
+inline bool isInt(TValue v) {
+    return !isDouble(v) && ((intptr_t)v & 1);
 }
 
 inline bool isSpecial(TValue v) {
-    return (intptr_t)v & 2;
+    return !isDouble(v) && ((intptr_t)v & 2);
 }
 
 inline bool bothNumbers(TValue a, TValue b) {
-    return (intptr_t)a & (intptr_t)b & 1;
+    return !isDouble(a) && !isDouble(b) && ((intptr_t)a & (intptr_t)b & 1);
 }
 
 inline int numValue(TValue n) {
@@ -186,10 +199,6 @@ template <typename TO, typename FROM> TO bitwise_cast(FROM in) {
     } u;
     u.from = in;
     return u.to;
-}
-
-inline bool isDouble(TValue v) {
-    return ((uintptr_t)v >> 48);
 }
 
 inline double doubleVal(TValue v) {
