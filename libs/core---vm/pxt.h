@@ -67,8 +67,7 @@ enum class SectionType {
     // singular sections
     InfoHeader,       // VMImageHeader
     OpCodeMap,        // \0-terminated names of opcodes and APIs (shims)
-    DoubleLiterals,   // arrays of doubles
-    IntLiterals,      // array of int32s
+    NumberLiterals,   // array of boxed doubles and ints
     ConfigData,       // sorted array of pairs of int32s; zero-terminated
     IfaceMemberNames, // array of 32 bit offsets, that point to string literals
 
@@ -82,6 +81,7 @@ struct VMImageSection {
     uint8_t flags;
     uint16_t aux;
     uint32_t size; // in bytes, including this header
+    uint8_t data[0];
 };
 
 struct VMImageHeader {
@@ -95,8 +95,7 @@ struct VMImageHeader {
 };
 
 struct VMImage {
-    double *doubleLiterals;
-    int *intLiterals;
+    uint64_t *numberLiterals;
     TValue *pointerLiterals;
     OpFun *opcodes;
 };
