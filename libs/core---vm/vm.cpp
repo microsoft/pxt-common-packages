@@ -91,11 +91,11 @@ void op_callind(FiberContext *ctx, unsigned arg) {
 
 //%
 void op_ret(FiberContext *ctx, unsigned arg) {
-    unsigned numTmps = (arg & 0xf) | ((arg >> 8) & 0xff);
-    unsigned numArgs = ((arg >> 4) & 0xf) | ((arg >> 16) & 0xff);
+    unsigned numTmps = (arg & 0xf) | ((arg >> 4) & 0xff0);
+    unsigned retNumArgs = ((arg >> 4) & 0xf) | ((arg >> 12) & 0xff0);
     ctx->sp += numTmps;
     auto retaddr = (intptr_t)*ctx->sp++;
-    ctx->sp += numArgs;
+    ctx->sp += retNumArgs;
     ctx->pc = ctx->imgbase + (retaddr >> 8);
 }
 
@@ -213,7 +213,7 @@ void validateFunction(VMImage *img, VMImageSection *sect) {
     auto atEnd = false;
 
     unsigned numArgs = sect->aux;
-    unsigned numCaps = 0; // TODO
+    unsigned numCaps = 100; // TODO
 
     while (pc < lastPC) {
         if (currStack > 200)
@@ -250,7 +250,7 @@ void validateFunction(VMImage *img, VMImageSection *sect) {
             FNERR(1227);
         auto opd = img->opcodeDescs[opIdx];
 
-        printf("%4d/%d -> %04x idx=%d arg=%d %s\n", pc, lastPC, opcode, opIdx, arg,
+        printf("%4d/%d -> %04x idx=%d arg=%d st=%d %s\n", pc, lastPC, opcode, opIdx, arg, currStack,
                opd ? opd->name : "NA");
 
         if (!opd)
@@ -280,8 +280,8 @@ void validateFunction(VMImage *img, VMImageSection *sect) {
             if (currStack < baseStack)
                 FNERR(1206);
         } else if (fn == op_ret) {
-            unsigned numTmps = (arg & 0xf) | ((arg >> 8) & 0xff);
-            unsigned retNumArgs = ((arg >> 4) & 0xf) | ((arg >> 16) & 0xff);
+            unsigned numTmps = (arg & 0xf) | ((arg >> 4) & 0xff0);
+            unsigned retNumArgs = ((arg >> 4) & 0xf) | ((arg >> 12) & 0xff0);
             if (currStack != baseStack)
                 FNERR(1207);
             if (numTmps + 1 != (unsigned)baseStack)
@@ -293,7 +293,7 @@ void validateFunction(VMImage *img, VMImageSection *sect) {
         } else if (fn == op_ldloc || fn == op_stloc) {
             if (arg == (unsigned)currStack - 1)
                 FNERR(1210); // trying to load return address
-            if (arg >= (unsigned)currStack - 1 + numArgs)
+            if (arg > (unsigned)currStack - 1 + numArgs)
                 FNERR(1211);
         } else if (fn == op_ldcap || fn == op_stcap) {
             if (arg >= numCaps)
