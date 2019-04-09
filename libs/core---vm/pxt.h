@@ -61,7 +61,7 @@ struct FiberContext;
 typedef void (*OpFun)(FiberContext *ctx, unsigned arg);
 typedef void (*ApiFun)(FiberContext *ctx);
 
-enum class SectionType {
+enum class SectionType : uint8_t {
     Invalid = 0x00,
 
     // singular sections
@@ -77,7 +77,7 @@ enum class SectionType {
 };
 
 struct VMImageSection {
-    uint8_t type;
+    SectionType type;
     uint8_t flags;
     uint16_t aux;
     uint32_t size; // in bytes, including this header
@@ -98,9 +98,18 @@ struct VMImageHeader {
 };
 
 struct VMImage {
-    uint64_t *numberLiterals;
+    TValue *numberLiterals;
     TValue *pointerLiterals;
+    uint32_t *configData;
     OpFun *opcodes;
+    uint64_t *dataStart, *dataEnd;
+    VMImageHeader *infoHeader;
+
+    uint32_t numSections;
+    uint32_t numNumberLiterals;
+    uint32_t numConfigDataEntries;
+    uint32_t errorCode;
+    uint32_t errorOffset;
 };
 
 // not doing this, likely

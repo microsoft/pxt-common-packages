@@ -144,7 +144,7 @@ void dumpDmesg();
 
 inline bool isDouble(TValue v) {
 #ifdef PXT64
-    return ((uintptr_t)v >> 48) == 0;
+    return ((uintptr_t)v >> 48) != 0;
 #else
     (void)v;
     return false;
