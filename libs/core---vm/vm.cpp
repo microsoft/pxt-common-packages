@@ -63,13 +63,13 @@ void op_jmp(FiberContext *ctx, unsigned arg) {
 }
 
 //%
-void op_jmpfalse(FiberContext *ctx, unsigned arg) {
+void op_jmpz(FiberContext *ctx, unsigned arg) {
     if (!toBoolQuick(ctx->r0))
         ctx->pc += (int)arg;
 }
 
 //%
-void op_jmptrue(FiberContext *ctx, unsigned arg) {
+void op_jmpnz(FiberContext *ctx, unsigned arg) {
     if (toBoolQuick(ctx->r0))
         ctx->pc += (int)arg;
 }
@@ -82,14 +82,30 @@ void op_callproc(FiberContext *ctx, unsigned arg) {
 
 //%
 void op_callind(FiberContext *ctx, unsigned arg) {
+    auto fn = ctx->r0;
+    if (!isPointer(fn))
+        failedCast(fn);
+    auto vt = getVTable((RefObject *)fn);
+    if (vt->objectType != ValType::Function)
+        failedCast(fn);
+    
+    if (arg != vt->reserved) {
+        // TODO re-arrange the stack, so that the right number
+        // of arguments is present
+        failedCast(fn);
+    }
+
     *--ctx->sp = (TValue)(((ctx->pc - ctx->imgbase) << 8) | 2);
-    ctx->pc = (uint16_t *)ctx->img->pointerLiterals[arg] + 4;
+    ctx->pc = (uint16_t *)fn + 4;
 }
 
 //%
 void op_ret(FiberContext *ctx, unsigned arg) {
-    ctx->sp += arg; // optional popmany
+    unsigned numTmps = (arg & 0xf) | ((arg >> 8) & 0xff);
+    unsigned numArgs = ((arg >> 4) & 0xf) | ((arg >> 16) & 0xff);
+    ctx->sp += numTmps;
     auto retaddr = (intptr_t)*ctx->sp++;
+    ctx->sp += numArgs;
     ctx->pc = ctx->imgbase + (retaddr >> 8);
 }
 
