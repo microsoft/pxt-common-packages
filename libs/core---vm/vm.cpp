@@ -157,6 +157,34 @@ void call_getConfig(FiberContext *ctx) {
     ctx->sp += 1;
 }
 
+//%
+Action fetchMethodIface(TValue obj, int methodId) {
+    return NULL;
+}
+
+//%
+Action fetchMethod(TValue obj, int methodId) {
+    return NULL;
+}
+
+//%
+void stfld(TValue obj, int fieldId, TValue v) {
+}
+
+//%
+TValue ldfld(TValue obj, int fieldId) {
+    return NULL;
+}
+
+//%
+TValue instanceOf(TValue obj, int firstClass, int lastClass) {
+    return NULL;
+}
+
+//%
+void validateInstanceOf(TValue obj, int firstClass, int lastClass) {
+}
+
 void exec_loop(FiberContext *ctx) {
     auto opcodes = ctx->img->opcodes;
     while (ctx->pc) {
