@@ -43,15 +43,26 @@ void target_exit();
 // Buffer, Sound, and Image share representation.
 typedef Buffer Sound;
 
-
 } // namespace pxt
 
 #undef PXT_MAIN
 #define PXT_MAIN                                                                                   \
     int main(int argc, char **argv) {                                                              \
         pxt::initialArgv = argv;                                                                   \
-        pxt::vmStart();                                                                              \
+        pxt::vmStart();                                                                            \
         return 0;                                                                                  \
+    }
+
+#undef PXT_SHIMS_BEGIN
+#define PXT_SHIMS_BEGIN                                                                            \
+    namespace pxt {                                                                                \
+    const OpcodeDesc staticOpcodes[] __attribute__((aligned(0x20))) = {
+
+#undef PXT_SHIMS_END
+#define PXT_SHIMS_END                                                                              \
+    { 0, 0, 0 }                                                                                    \
+    }                                                                                              \
+    ;                                                                                              \
     }
 
 #endif

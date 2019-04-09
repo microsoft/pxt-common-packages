@@ -442,7 +442,7 @@ int getNumGlobals() {
     return bytecode[16];
 }
 
-#ifndef X86_64
+#ifndef PXT64
 void exec_binary(unsigned *pc) {
     // XXX re-enable once the calibration code is fixed and [editor/embedded.ts]
     // properly prepends a call to [internal_main].
