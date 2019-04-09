@@ -1,0 +1,16 @@
+{
+    "name": "color-sensor",
+    "description": "Color sensor (TCS24725)",
+    "files": [
+        "README.md",
+        "colorsensor.ts",
+        "tcs34725.ts"
+    ],
+    "testFiles": [
+        "test.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core"
+    }
+}
