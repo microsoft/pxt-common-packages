@@ -91,6 +91,11 @@ struct FiberContext {
     TValue *caps;
 };
 
+
+void vmStart();
+VMImage *loadVMImage(void *data, unsigned length);
+VMImage *setVMImgError(VMImage *img, int code, void *pos);
+
 } // namespace pxt
 
 #endif

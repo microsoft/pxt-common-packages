@@ -21,6 +21,7 @@
         "codalemu.cpp",
         "keys.cpp",
         "vm.cpp",
+        "vmload.cpp",
         "vm.h",
         "verify.cpp",
         "pxtparts.json"

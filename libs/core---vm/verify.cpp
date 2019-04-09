@@ -2,12 +2,13 @@
 
 namespace pxt {
 
-#define ERROR(code, pos)                                                                           \
-    do {                                                                                           \
-        img->errorOffset = (uint8_t *)pos - (uint8_t *)img->dataStart;                             \
-        img->errorCode = code;                                                                     \
-        return img;                                                                                \
-    } while (0)
+VMImage *setVMImgError(VMImage *img, int code, void *pos) {
+    img->errorOffset = pos ? (uint8_t *)pos - (uint8_t *)img->dataStart : 0;
+    img->errorCode = code;
+    return img;
+}
+
+#define ERROR(code, pos) return setVMImgError(img, code, pos)
 #define CHECK(cond, code)                                                                          \
     do {                                                                                           \
         if (!(cond))                                                                               \
@@ -40,6 +41,7 @@ static VMImage *countSections(VMImage *img) {
 
 static VMImage *loadSections(VMImage *img) {
     auto idx = 0;
+
     FOR_SECTIONS() {
         CHECK(sect->size < 32000, 1014);
 
@@ -97,7 +99,7 @@ static VMImage *loadSections(VMImage *img) {
 
         if (sect->type == SectionType::NumberLiterals) {
             CHECK(!img->numberLiterals, 1004);
-            img->numNumberLiterals = sect->size >> 3;
+            img->numNumberLiterals = (sect->size >> 3) - 1;
             img->numberLiterals = (TValue *)sect->data;
             for (unsigned i = 0; i < img->numNumberLiterals; ++i) {
                 auto ptr = &img->numberLiterals[i];
@@ -106,7 +108,9 @@ static VMImage *loadSections(VMImage *img) {
                     CHECK_AT(!isnan(doubleVal(v)), 1005, ptr);
                 else if (isInt(v))
                     CHECK_AT(((uintptr_t)v >> 1) <= 0xffffffff, 1006, ptr);
-                else
+                else if (v == 0) {
+                    // OK - padding probably
+                } else
                     CHECK_AT(false, 1007, ptr);
             }
         }
@@ -123,6 +127,12 @@ static VMImage *loadSections(VMImage *img) {
 
         idx++;
     }
+
+    CHECK_AT(img->infoHeader != NULL, 1019, 0);
+    CHECK_AT(img->opcodes != NULL, 1020, 0);
+    CHECK_AT(img->numberLiterals != NULL, 1021, 0);
+    CHECK_AT(img->configData != NULL, 1022, 0);
+
     return NULL;
 }
 
@@ -137,17 +147,22 @@ static VMImage *validateFunctions(VMImage *img) {
     return NULL;
 }
 
+static VMImage *injectVTables(VMImage *img) {
+    // TODO replace section headers with vtables (for 0x20 and above)
+    return NULL;
+}
+
 VMImage *loadVMImage(void *data, unsigned length) {
     auto img = new VMImage();
     memset(img, 0, sizeof(*img));
 
-    CHECK_AT(0, ALIGNED((uintptr_t)data), 1000);
-    CHECK_AT(0, ALIGNED(length), 1001);
+    CHECK_AT(ALIGNED((uintptr_t)data), 1000, 0);
+    CHECK_AT(ALIGNED(length), 1001, 0);
 
     img->dataStart = (uint64_t *)data;
     img->dataEnd = (uint64_t *)((uint8_t *)data + length);
 
-    if (countSections(img) || loadSections(img) || validateFunctions(img)) {
+    if (countSections(img) || loadSections(img) || validateFunctions(img) || injectVTables(img)) {
         // error!
         return img;
     }

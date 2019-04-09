@@ -199,8 +199,7 @@ void exec_loop(FiberContext *ctx) {
 // 1230
 #define FNERR(errcode)                                                                             \
     do {                                                                                           \
-        img->errorOffset = (uint8_t *)&code[pc] - (uint8_t *)img->dataStart;                       \
-        img->errorCode = errcode;                                                                  \
+        setVMImgError(img, errcode, &code[pc]);                                                    \
         return;                                                                                    \
     } while (0)
 #define FORCE_STACK(v, errcode, pc)                                                                \

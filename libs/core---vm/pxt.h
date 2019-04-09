@@ -50,7 +50,7 @@ typedef Buffer Sound;
 #define PXT_MAIN                                                                                   \
     int main(int argc, char **argv) {                                                              \
         pxt::initialArgv = argv;                                                                   \
-        pxt::start();                                                                              \
+        pxt::vmStart();                                                                              \
         return 0;                                                                                  \
     }
 
