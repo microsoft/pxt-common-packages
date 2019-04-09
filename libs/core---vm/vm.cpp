@@ -3,6 +3,11 @@
 // TODO optimze add/sub/etc
 // TODO look for patterns in output for combined instructions
 
+// TODO static vs heap-allocated functions; number of captures
+// TODO VTable layout and lookups (need to reimplement from asm to C)
+// TODO strings - can't really do UTF16
+// TODO replacement of section headers with vtables
+
 #define FUNCTION_CODE_OFFSET 8
 
 namespace pxt {
@@ -91,7 +96,7 @@ void op_callind(FiberContext *ctx, unsigned arg) {
 
 //%
 void op_ret(FiberContext *ctx, unsigned arg) {
-    unsigned numTmps = (arg & 0xf) | ((arg >> 4) & 0xff0);
+    unsigned numTmps = (ag & 0xf) | ((arg >> 4) & 0xff0);
     unsigned retNumArgs = ((arg >> 4) & 0xf) | ((arg >> 12) & 0xff0);
     ctx->sp += numTmps;
     auto retaddr = (intptr_t)*ctx->sp++;
