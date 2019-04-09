@@ -73,6 +73,7 @@ static VMImage *loadSections(VMImage *img) {
             int i = 0;
             while (curr < endp) {
                 img->opcodeDescs[i] = NULL;
+                img->opcodes[i] = NULL;
                 if (*curr) {
                     for (auto st = staticOpcodes; st->name; st++) {
                         if (strcmp(st->name, (const char *)curr) == 0) {
@@ -82,8 +83,8 @@ static VMImage *loadSections(VMImage *img) {
                     }
                     // unresolved symbol; report name?
                     CHECK_AT(img->opcodeDescs[i] != NULL, 1018, curr);
+                    img->opcodes[i] = img->opcodeDescs[i]->fn;
                 }
-                img->opcodes[i] = img->opcodeDescs[i] ? img->opcodeDescs[i]->fn : NULL;
 
                 while (*curr)
                     curr++;

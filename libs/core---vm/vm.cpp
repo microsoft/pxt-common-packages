@@ -196,8 +196,8 @@ void exec_loop(FiberContext *ctx) {
     }
 }
 
-// 1227
-#define ERROR(errcode)                                                                             \
+// 1230
+#define FNERR(errcode)                                                                             \
     do {                                                                                           \
         img->errorOffset = (uint8_t *)&code[pc] - (uint8_t *)img->dataStart;                       \
         img->errorCode = errcode;                                                                  \
@@ -206,7 +206,7 @@ void exec_loop(FiberContext *ctx) {
 #define FORCE_STACK(v, errcode, pc)                                                                \
     do {                                                                                           \
         if (stackDepth[pc] && stackDepth[pc] != v)                                                 \
-            ERROR(errcode);                                                                        \
+            FNERR(errcode);                                                                        \
         stackDepth[pc] = v;                                                                        \
     } while (0)
 
@@ -225,13 +225,15 @@ void validateFunction(VMImage *img, VMImageSection *sect) {
 
     while (pc < lastPC) {
         if (currStack > 200)
-            ERROR(1204);
-
-        atEnd = false;
+            FNERR(1204);
 
         FORCE_STACK(currStack, 1201, pc);
 
         uint16_t opcode = code[pc++];
+        if (opcode == 0 && atEnd)
+            continue; // allow padding at the end
+
+        atEnd = false;
         OpFun fn;
         unsigned arg;
         unsigned opIdx;
@@ -242,6 +244,17 @@ void validateFunction(VMImage *img, VMImageSection *sect) {
         } else if (opcode >> 14 == 0b10) {
             opIdx = opcode & 0x3fff;
             arg = 0;
+            if (opIdx >= img->numOpcodes)
+                FNERR(1227);
+            auto opd = img->opcodeDescs[opIdx];
+            if (!opd)
+                FNERR(1228);
+            if (opd->numArgs > 1) {
+                currStack -= opd->numArgs - 1;
+                if (currStack < baseStack)
+                    FNERR(1229);
+            }
+            continue;
         } else {
             unsigned tmp = ((int32_t)opcode << (16 + 2)) >> (2 + OPCODE_BASE_SIZE);
             FORCE_STACK(0xffff, 1200, pc); // cannot jump here!
@@ -260,89 +273,89 @@ void validateFunction(VMImage *img, VMImageSection *sect) {
         } else if (fn == op_popmany) {
             currStack -= arg;
             if (currStack < baseStack)
-                ERROR(1205);
+                FNERR(1205);
         } else if (fn == op_push) {
             currStack++;
         } else if (fn == op_pop) {
             currStack--;
             if (currStack < baseStack)
-                ERROR(1206);
+                FNERR(1206);
         } else if (fn == op_ret) {
             unsigned numTmps = (arg & 0xf) | ((arg >> 8) & 0xff);
             unsigned retNumArgs = ((arg >> 4) & 0xf) | ((arg >> 16) & 0xff);
             if (currStack != baseStack)
-                ERROR(1207);
+                FNERR(1207);
             if (numTmps + 1 != (unsigned)baseStack)
-                ERROR(1208);
+                FNERR(1208);
             if (retNumArgs != numArgs)
-                ERROR(1209);
+                FNERR(1209);
             currStack = baseStack;
             atEnd = true;
         } else if (fn == op_ldloc || fn == op_stloc) {
             if (arg == (unsigned)currStack - 1)
-                ERROR(1210); // trying to load return address
+                FNERR(1210); // trying to load return address
             if (arg >= (unsigned)currStack - 1 + numArgs)
-                ERROR(1211);
+                FNERR(1211);
         } else if (fn == op_ldcap || fn == op_stcap) {
             if (arg >= numCaps)
-                ERROR(1212);
+                FNERR(1212);
         } else if (fn == op_ldglb || fn == op_stglb) {
             if (arg >= img->infoHeader->allocGlobals)
-                ERROR(1213);
+                FNERR(1213);
             // not supported (yet?)
             if (arg < img->infoHeader->nonPointerGlobals)
-                ERROR(1214);
+                FNERR(1214);
         } else if (fn == op_ldlit) {
             if (arg >= img->numSections)
-                ERROR(1215);
+                FNERR(1215);
             if (!img->pointerLiterals[arg])
-                ERROR(1216);
+                FNERR(1216);
         } else if (fn == op_ldnumber) {
             if (arg >= img->numNumberLiterals)
-                ERROR(1217);
+                FNERR(1217);
         } else if (fn == op_callproc) {
             if (arg >= img->numSections)
-                ERROR(1218);
+                FNERR(1218);
             auto fsec = (VMImageSection *)img->pointerLiterals[arg];
             if (!fsec)
-                ERROR(1219);
+                FNERR(1219);
             if (fsec->type != SectionType::Function)
-                ERROR(1220);
+                FNERR(1220);
             unsigned calledArgs = fsec->aux;
             currStack -= calledArgs;
             if (currStack < baseStack)
-                ERROR(1221);
+                FNERR(1221);
         } else if (fn == op_callind) {
             if (arg > 40)
-                ERROR(1222);
+                FNERR(1222);
             currStack -= arg;
             if (currStack < baseStack)
-                ERROR(1223);
+                FNERR(1223);
         } else if (fn == op_ldspecial) {
             auto a = (TValue)(uintptr_t)arg;
             if (a != TAG_TRUE && a != TAG_FALSE && a != TAG_UNDEFINED && a != TAG_UNDEFINED &&
                 a != TAG_NAN)
-                ERROR(1224);
+                FNERR(1224);
         } else if (fn == op_ldint || fn == op_ldintneg) {
             // nothing to check!
         } else if (fn == op_jmp || fn == op_jmpnz || fn == op_jmpz) {
             unsigned newPC = pc + arg; // will overflow for backjump
             if (newPC >= lastPC)
-                ERROR(1202);
+                FNERR(1202);
             FORCE_STACK(currStack, 1226, newPC);
             if (fn == op_jmp) {
                 if (currStack != baseStack)
-                    ERROR(1203);
+                    FNERR(1203);
                 atEnd = true;
             }
         } else {
-            ERROR(1225);
+            FNERR(1225);
         }
     }
 
     if (!atEnd) {
         pc--;
-        ERROR(1210);
+        FNERR(1210);
     }
 }
 
