@@ -73,6 +73,7 @@ static VMImage *loadSections(VMImage *img) {
             img->opcodeDescs = new const OpcodeDesc *[img->numOpcodes];
 
             int i = 0;
+            curr = sect->data;
             while (curr < endp) {
                 img->opcodeDescs[i] = NULL;
                 img->opcodes[i] = NULL;
@@ -87,9 +88,9 @@ static VMImage *loadSections(VMImage *img) {
                     CHECK_AT(img->opcodeDescs[i] != NULL, 1018, curr);
                     img->opcodes[i] = img->opcodeDescs[i]->fn;
                 }
-
                 while (*curr)
                     curr++;
+                curr++;
             }
         }
 
@@ -143,6 +144,8 @@ static VMImage *validateFunctions(VMImage *img) {
         if (sect->type != SectionType::Function)
             continue;
         validateFunction(img, sect);
+        if (img->errorCode)
+            return img;
     }
     return NULL;
 }

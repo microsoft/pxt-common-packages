@@ -262,6 +262,9 @@ void validateFunction(VMImage *img, VMImageSection *sect) {
             arg = (opcode >> OPCODE_BASE_SIZE) + tmp;
         }
 
+
+        printf("%d/%d -> %x idx=%d arg=%d\n", pc, lastPC, opcode, opIdx, arg);
+
         fn = img->opcodes[opIdx];
 
         if (fn == op_pushmany) {
