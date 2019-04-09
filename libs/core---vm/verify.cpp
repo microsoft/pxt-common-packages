@@ -55,7 +55,39 @@ static VMImage *loadSections(VMImage *img) {
         }
 
         if (sect->type == SectionType::OpCodeMap) {
-            // TODO
+            CHECK(img->opcodes == NULL, 1015);
+            auto curr = sect->data;
+            auto endp = sect->data + sect->size - 8;
+            CHECK(endp[-1] == 0, 1017);
+
+            while (curr < endp) {
+                if (*curr == 0)
+                    img->numOpcodes++;
+                curr++;
+            }
+            CHECK(img->numOpcodes > OPCODE_BASE_MASK, 1016);
+
+            img->opcodes = new OpFun[img->numOpcodes];
+            img->opcodeDescs = new const OpcodeDesc *[img->numOpcodes];
+
+            int i = 0;
+            while (curr < endp) {
+                img->opcodeDescs[i] = NULL;
+                if (*curr) {
+                    for (auto st = staticOpcodes; st->name; st++) {
+                        if (strcmp(st->name, (const char *)curr) == 0) {
+                            img->opcodeDescs[i] = st;
+                            break;
+                        }
+                    }
+                    // unresolved symbol; report name?
+                    CHECK_AT(img->opcodeDescs[i] != NULL, 1018, curr);
+                }
+                img->opcodes[i] = img->opcodeDescs[i] ? img->opcodeDescs[i]->fn : NULL;
+
+                while (*curr)
+                    curr++;
+            }
         }
 
         if (sect->type == SectionType::IfaceMemberNames) {

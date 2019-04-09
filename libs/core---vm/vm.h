@@ -36,6 +36,14 @@ struct VMImageSection {
 #define VM_MAGIC0 0x000a34365458500aULL // \nPXT64\n\0
 #define VM_MAGIC1 0x6837215e2bfe7154ULL
 
+struct OpcodeDesc {
+    const char *name;
+    OpFun fn;
+    int numArgs;
+};
+
+extern const OpcodeDesc staticOpcodes[];
+
 struct VMImageHeader {
     uint64_t magic0;
     uint64_t magic1;
@@ -51,12 +59,14 @@ struct VMImage {
     TValue *pointerLiterals;
     uint32_t *configData;
     OpFun *opcodes;
+    const OpcodeDesc **opcodeDescs;
     uint64_t *dataStart, *dataEnd;
     VMImageHeader *infoHeader;
 
     uint32_t numSections;
     uint32_t numNumberLiterals;
     uint32_t numConfigDataEntries;
+    uint32_t numOpcodes;
     uint32_t errorCode;
     uint32_t errorOffset;
 };

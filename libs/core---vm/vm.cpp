@@ -147,6 +147,13 @@ void call_getConfig(FiberContext *ctx) {
     ctx->sp += 1;
 }
 
+const OpcodeDesc staticOpcodes[] = { // list follows
+    {"op_push", op_push, 0},
+    {"op_pop", op_pop, 0},
+    {"op_ldintneg", op_ldintneg, 0},
+    {"pxt::getConfig", (OpFun)call_getConfig, 2},
+    {NULL, NULL, 0}};
+
 //%
 Action fetchMethodIface(TValue obj, int methodId) {
     return NULL;
