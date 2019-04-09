@@ -50,6 +50,8 @@ static VMImage *countSections(VMImage *img) {
 static VMImage *loadSections(VMImage *img) {
     auto idx = 0;
     FOR_SECTIONS() {
+        CHECK(sect->size < 32000, 1014);
+
         if (sect->type == SectionType::InfoHeader) {
             CHECK(sect->size >= sizeof(VMImageHeader), 1008);
             auto hd = (VMImageHeader *)sect->data;
@@ -100,12 +102,13 @@ static VMImage *loadSections(VMImage *img) {
     return NULL;
 }
 
+void validateFunction(VMImage *img, VMImageSection *sect);
+
 static VMImage *validateFunctions(VMImage *img) {
     FOR_SECTIONS() {
         if (sect->type != SectionType::Function)
             continue;
-        uint16_t stackDepth[sect->size / 2];
-        memset(stackDepth, 0, sizeof(stackDepth));
+        validateFunction(img, sect);
     }
     return NULL;
 }

@@ -15,6 +15,8 @@
 
 // TODO look for patterns in output for combined instructions
 
+#define FUNCTION_CODE_OFFSET 8
+
 namespace pxt {
 
 //%
@@ -77,7 +79,7 @@ void op_jmpnz(FiberContext *ctx, unsigned arg) {
 //%
 void op_callproc(FiberContext *ctx, unsigned arg) {
     *--ctx->sp = (TValue)(((ctx->pc - ctx->imgbase) << 8) | 2);
-    ctx->pc = (uint16_t *)ctx->img->pointerLiterals[arg] + 4;
+    ctx->pc = (uint16_t *)ctx->img->pointerLiterals[arg] + (FUNCTION_CODE_OFFSET / 2);
 }
 
 //%
@@ -88,7 +90,7 @@ void op_callind(FiberContext *ctx, unsigned arg) {
     auto vt = getVTable((RefObject *)fn);
     if (vt->objectType != ValType::Function)
         failedCast(fn);
-    
+
     if (arg != vt->reserved) {
         // TODO re-arrange the stack, so that the right number
         // of arguments is present
@@ -168,8 +170,7 @@ Action fetchMethod(TValue obj, int methodId) {
 }
 
 //%
-void stfld(TValue obj, int fieldId, TValue v) {
-}
+void stfld(TValue obj, int fieldId, TValue v) {}
 
 //%
 TValue ldfld(TValue obj, int fieldId) {
@@ -182,8 +183,7 @@ TValue instanceOf(TValue obj, int firstClass, int lastClass) {
 }
 
 //%
-void validateInstanceOf(TValue obj, int firstClass, int lastClass) {
-}
+void validateInstanceOf(TValue obj, int firstClass, int lastClass) {}
 
 void exec_loop(FiberContext *ctx) {
     auto opcodes = ctx->img->opcodes;
@@ -198,6 +198,155 @@ void exec_loop(FiberContext *ctx) {
             opcode = *ctx->pc++;
             opcodes[opcode & OPCODE_BASE_MASK](ctx, (opcode >> OPCODE_BASE_SIZE) + tmp);
         }
+    }
+}
+
+#define ERROR(errcode)                                                                             \
+    do {                                                                                           \
+        img->errorOffset = (uint8_t *)&code[pc] - (uint8_t *)img->dataStart;                       \
+        img->errorCode = errcode;                                                                  \
+        return;                                                                                    \
+    } while (0)
+#define FORCE_STACK(v, errcode, pc)                                                                \
+    do {                                                                                           \
+        if (stackDepth[pc] && stackDepth[pc] != v)                                                 \
+            ERROR(errcode);                                                                        \
+        stackDepth[pc] = v;                                                                        \
+    } while (0)
+
+void validateFunction(VMImage *img, VMImageSection *sect) {
+    uint16_t stackDepth[sect->size / 2];
+    memset(stackDepth, 0, sizeof(stackDepth));
+    int baseStack = 1; // 1 is the return address; also zero in the array above means unknown yet
+    int currStack = baseStack;
+    unsigned pc = 0;
+    auto code = (uint16_t *)((uint8_t *)sect + FUNCTION_CODE_OFFSET);
+    auto lastPC = (sect->size - FUNCTION_CODE_OFFSET) >> 1;
+    auto atEnd = false;
+
+    unsigned numArgs = sect->aux;
+    unsigned numCaps = 0; // TODO
+
+    while (pc < lastPC) {
+        if (currStack > 200)
+            ERROR(1204);
+
+        atEnd = false;
+
+        FORCE_STACK(currStack, 1201, pc);
+
+        uint16_t opcode = code[pc++];
+        OpFun fn;
+        unsigned arg;
+        unsigned opIdx;
+
+        if (opcode >> 15 == 0) {
+            opIdx = opcode & OPCODE_BASE_MASK;
+            arg = opcode >> OPCODE_BASE_SIZE;
+        } else if (opcode >> 14 == 0b10) {
+            opIdx = opcode & 0x3fff;
+            arg = 0;
+        } else {
+            unsigned tmp = ((int32_t)opcode << (16 + 2)) >> (2 + OPCODE_BASE_SIZE);
+            FORCE_STACK(0xffff, 1200, pc); // cannot jump here!
+            opcode = code[pc++];
+            opIdx = opcode & OPCODE_BASE_MASK;
+            arg = (opcode >> OPCODE_BASE_SIZE) + tmp;
+        }
+
+        fn = img->opcodes[opIdx];
+
+        if (fn == op_pushmany) {
+            if (currStack == 1 && baseStack == 1)
+                baseStack = currStack = arg + 1;
+            else
+                currStack += arg;
+        } else if (fn == op_popmany) {
+            currStack -= arg;
+            if (currStack < baseStack)
+                ERROR(1205);
+        } else if (fn == op_push) {
+            currStack++;
+        } else if (fn == op_pop) {
+            currStack--;
+            if (currStack < baseStack)
+                ERROR(1206);
+        } else if (fn == op_ret) {
+            unsigned numTmps = (arg & 0xf) | ((arg >> 8) & 0xff);
+            unsigned retNumArgs = ((arg >> 4) & 0xf) | ((arg >> 16) & 0xff);
+            if (currStack != baseStack)
+                ERROR(1207);
+            if (numTmps + 1 != (unsigned)baseStack)
+                ERROR(1208);
+            if (retNumArgs != numArgs)
+                ERROR(1209);
+            currStack = baseStack;
+            atEnd = true;
+        } else if (fn == op_ldloc || fn == op_stloc) {
+            if (arg == (unsigned)currStack - 1)
+                ERROR(1210); // trying to load return address
+            if (arg >= (unsigned)currStack - 1 + numArgs)
+                ERROR(1211);
+        } else if (fn == op_ldcap || fn == op_stcap) {
+            if (arg >= numCaps)
+                ERROR(1212);
+        } else if (fn == op_ldglb || fn == op_stglb) {
+            if (arg >= img->infoHeader->allocGlobals)
+                ERROR(1213);
+            // not supported (yet?)
+            if (arg < img->infoHeader->nonPointerGlobals)
+                ERROR(1214);
+        } else if (fn == op_ldlit) {
+            if (arg >= img->numSections)
+                ERROR(1215);
+            if (!img->pointerLiterals[arg])
+                ERROR(1216);
+        } else if (fn == op_ldnumber) {
+            if (arg >= img->numNumberLiterals)
+                ERROR(1217);
+        } else if (fn == op_callproc) {
+            if (arg >= img->numSections)
+                ERROR(1218);
+            auto fsec = (VMImageSection *)img->pointerLiterals[arg];
+            if (!fsec)
+                ERROR(1219);
+            if (fsec->type != SectionType::Function)
+                ERROR(1220);
+            unsigned calledArgs = fsec->aux;
+            currStack -= calledArgs;
+            if (currStack < baseStack)
+                ERROR(1221);
+        } else if (fn == op_callind) {
+            if (arg > 40)
+                ERROR(1222);
+            currStack -= arg;
+            if (currStack < baseStack)
+                ERROR(1223);
+        } else if (fn == op_ldspecial) {
+            auto a = (TValue)(uintptr_t)arg;
+            if (a != TAG_TRUE && a != TAG_FALSE && a != TAG_UNDEFINED && a != TAG_UNDEFINED &&
+                a != TAG_NAN)
+                ERROR(1224);
+        } else if (fn == op_ldint || fn == op_ldintneg) {
+            // nothing to check!
+        } else if (fn == op_jmp || fn == op_jmpnz || fn == op_jmpz) {
+            unsigned newPC = pc + arg; // will overflow for backjump
+            if (newPC >= lastPC)
+                ERROR(1202);
+            FORCE_STACK(currStack, 1202, newPC);
+            if (fn == op_jmp) {
+                if (currStack != baseStack)
+                    ERROR(1203);
+                atEnd = true;
+            }
+        } else {
+            ERROR(1225);
+        }
+    }
+
+    if (!atEnd) {
+        pc--;
+        ERROR(1210);
     }
 }
 
