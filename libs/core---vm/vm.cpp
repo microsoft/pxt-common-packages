@@ -1,18 +1,6 @@
 #include "pxt.h"
 
-// first reloc, then validate
-// image as list of objects
-// every loaded pointer has to have metadata! go and read first word
-//   - can be valid double
-//   - can be relocated pointer to a valid VTable
-// reloc - local (within image, just add image pointer) or external (vtables only?)
-
-// TODO reloc entries in the image
-// TODO linked list of function stacks
 // TODO optimze add/sub/etc
-// TODO list of api number->name mapping in the image - resolved at load time
-// TODO same for opcodes
-
 // TODO look for patterns in output for combined instructions
 
 #define FUNCTION_CODE_OFFSET 8
@@ -201,6 +189,7 @@ void exec_loop(FiberContext *ctx) {
     }
 }
 
+// 1227
 #define ERROR(errcode)                                                                             \
     do {                                                                                           \
         img->errorOffset = (uint8_t *)&code[pc] - (uint8_t *)img->dataStart;                       \
@@ -333,7 +322,7 @@ void validateFunction(VMImage *img, VMImageSection *sect) {
             unsigned newPC = pc + arg; // will overflow for backjump
             if (newPC >= lastPC)
                 ERROR(1202);
-            FORCE_STACK(currStack, 1202, newPC);
+            FORCE_STACK(currStack, 1226, newPC);
             if (fn == op_jmp) {
                 if (currStack != baseStack)
                     ERROR(1203);
