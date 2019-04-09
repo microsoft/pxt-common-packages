@@ -91,6 +91,7 @@ static VMImage *loadSections(VMImage *img) {
                 while (*curr)
                     curr++;
                 curr++;
+                i++;
             }
         }
 

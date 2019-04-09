@@ -229,6 +229,7 @@ void validateFunction(VMImage *img, VMImageSection *sect) {
         OpFun fn;
         unsigned arg;
         unsigned opIdx;
+        bool isRtCall = false;
 
         if (opcode >> 15 == 0) {
             opIdx = opcode & OPCODE_BASE_MASK;
@@ -236,17 +237,7 @@ void validateFunction(VMImage *img, VMImageSection *sect) {
         } else if (opcode >> 14 == 0b10) {
             opIdx = opcode & 0x3fff;
             arg = 0;
-            if (opIdx >= img->numOpcodes)
-                FNERR(1227);
-            auto opd = img->opcodeDescs[opIdx];
-            if (!opd)
-                FNERR(1228);
-            if (opd->numArgs > 1) {
-                currStack -= opd->numArgs - 1;
-                if (currStack < baseStack)
-                    FNERR(1229);
-            }
-            continue;
+            isRtCall = true;
         } else {
             unsigned tmp = ((int32_t)opcode << (16 + 2)) >> (2 + OPCODE_BASE_SIZE);
             FORCE_STACK(0xffff, 1200, pc); // cannot jump here!
@@ -255,12 +246,25 @@ void validateFunction(VMImage *img, VMImageSection *sect) {
             arg = (opcode >> OPCODE_BASE_SIZE) + tmp;
         }
 
+        if (opIdx >= img->numOpcodes)
+            FNERR(1227);
+        auto opd = img->opcodeDescs[opIdx];
 
-        printf("%d/%d -> %x idx=%d arg=%d\n", pc, lastPC, opcode, opIdx, arg);
+        printf("%4d/%d -> %04x idx=%d arg=%d %s\n", pc, lastPC, opcode, opIdx, arg,
+               opd ? opd->name : "NA");
+
+        if (!opd)
+            FNERR(1228);
 
         fn = img->opcodes[opIdx];
 
-        if (fn == op_pushmany) {
+        if (isRtCall) {
+            if (opd->numArgs > 1) {
+                currStack -= opd->numArgs - 1;
+                if (currStack < baseStack)
+                    FNERR(1229);
+            }
+        } else if (fn == op_pushmany) {
             if (currStack == 1 && baseStack == 1)
                 baseStack = currStack = arg + 1;
             else
@@ -328,7 +332,7 @@ void validateFunction(VMImage *img, VMImageSection *sect) {
                 FNERR(1223);
         } else if (fn == op_ldspecial) {
             auto a = (TValue)(uintptr_t)arg;
-            if (a != TAG_TRUE && a != TAG_FALSE && a != TAG_UNDEFINED && a != TAG_UNDEFINED &&
+            if (a != TAG_TRUE && a != TAG_FALSE && a != TAG_UNDEFINED && a != TAG_NULL &&
                 a != TAG_NAN)
                 FNERR(1224);
         } else if (fn == op_ldint || fn == op_ldintneg) {
