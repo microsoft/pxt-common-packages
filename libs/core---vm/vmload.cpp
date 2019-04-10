@@ -2,6 +2,8 @@
 
 namespace pxt {
 
+VMImage *vmImg;
+
 void vmStart() {
     auto fn = pxt::initialArgv[1];
     auto f = fopen(fn, "r");
@@ -21,6 +23,7 @@ void vmStart() {
         printf("validation error %d at 0x%x\n", img->errorCode, img->errorOffset);
         exit(2);
     }
+    vmImg = img;
     exit(0);
 }
 

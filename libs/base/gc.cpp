@@ -112,6 +112,7 @@ static uint8_t tempRootLen;
 uint8_t inGC;
 
 void popThreadContext(ThreadContext *ctx) {
+#ifndef PXT_VM
     VLOG("pop: %p", ctx);
 
     if (!ctx)
@@ -141,11 +142,15 @@ void popThreadContext(ThreadContext *ctx) {
         app_free(ctx);
         setThreadContext(NULL);
     }
+#endif
 }
 
 #define ALLOC(tp) (tp *)app_alloc(sizeof(tp))
 
 ThreadContext *pushThreadContext(void *sp, void *endSP) {
+#ifdef PXT_VM
+    return NULL;
+#else
     if (PXT_IN_ISR())
         target_panic(PANIC_CALLED_FROM_ISR);
 
@@ -190,6 +195,7 @@ ThreadContext *pushThreadContext(void *sp, void *endSP) {
     curr->stack.bottom = sp;
     curr->stack.top = NULL;
     return curr;
+#endif
 }
 
 class RefBlock : public RefObject {

@@ -86,11 +86,23 @@ struct FiberContext {
     uint16_t *imgbase;
     VMImage *img;
     uint16_t *pc;
+    uint16_t *suspendedPC;
     TValue *sp;
     TValue r0;
     TValue *caps;
+
+    // wait_for_event
+    int waitSource;
+    int waitValue;
+
+    // for sleep
+    uint64_t wakeTime;
+
+    ThreadContext *threadCtx;
 };
 
+extern VMImage *vmImg;
+extern FiberContext *currentFiber;
 
 void vmStart();
 VMImage *loadVMImage(void *data, unsigned length);

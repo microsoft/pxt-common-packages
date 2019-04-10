@@ -54,7 +54,7 @@ void *operator new[](size_t size) {
     return xmalloc(size);
 }
 
-void operator delete(void *p)THROW {
+void operator delete(void *p) THROW {
     xfree(p);
 }
 void operator delete[](void *p) THROW {
