@@ -422,10 +422,6 @@ void *gcAllocBlock(size_t sz) {
 }
 #endif
 
-// TODO64
-#ifdef PXT64
-#define __thread /* */
-#endif
 
 static __thread ThreadContext *threadCtx;
 

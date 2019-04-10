@@ -96,7 +96,7 @@ void op_callind(FiberContext *ctx, unsigned arg) {
 
 //%
 void op_ret(FiberContext *ctx, unsigned arg) {
-    unsigned numTmps = (ag & 0xf) | ((arg >> 4) & 0xff0);
+    unsigned numTmps = (arg & 0xf) | ((arg >> 4) & 0xff0);
     unsigned retNumArgs = ((arg >> 4) & 0xf) | ((arg >> 12) & 0xff0);
     ctx->sp += numTmps;
     auto retaddr = (intptr_t)*ctx->sp++;

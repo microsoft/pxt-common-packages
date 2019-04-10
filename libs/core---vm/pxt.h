@@ -12,13 +12,6 @@ namespace pxt {
 void raiseEvent(int id, int event);
 int allocateNotifyEvent();
 void sleep_core_us(uint64_t us);
-void startUser();
-void stopUser();
-
-const char *getConfigString(const char *name);
-int getConfigInt(const char *name, int defl);
-#define ENDMARK -0x7fff0123
-const int *getConfigInts(const char *name);
 
 class Button;
 typedef Button *Button_;
