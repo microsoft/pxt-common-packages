@@ -60,7 +60,7 @@ namespace pxsim.music {
         let cb = getResume();
         if (ms <= 0) cb();
         else {
-            setTimeout(() => {
+            runtime.schedule(() => {
                 AudioContextManager.stop();
                 audioState.stopPlaying();
 

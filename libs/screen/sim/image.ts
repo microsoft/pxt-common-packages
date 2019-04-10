@@ -44,6 +44,10 @@ namespace pxsim {
         makeWritable() {
             this.dirty = true
         }
+
+        toDebugString() {
+            return this._width + "x" + this._height 
+        }
     }
 }
 
