@@ -6,7 +6,12 @@ Rotate and run servos connected to the pins.
 
 To better understand how servos work and how they are controlled, take a few minutes to read this [Brief Guide to Servos](https://www.kitronik.co.uk/pdf/a-brief-guide-to-servos.pdf).
 
-### 
+
+Also, watch this video for a further look into how motors and servos work.
+
+https://www.youtube.com/watch?v=okxooamdAP4
+
+### ~
 
 ```cards
 servos.P0.setPulse(1500)
