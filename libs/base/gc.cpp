@@ -192,7 +192,7 @@ static uint8_t *midPtr;
 
 static bool inGCArea(void *ptr) {
     for (auto block = firstBlock; block; block = block->next) {
-        if ((void *)block->data < ptr && ptr < (void *)((uint8_t *)block->data + block->blockSize))
+        if ((void *)block->data <= ptr && ptr < (void *)((uint8_t *)block->data + block->blockSize))
             return true;
     }
     return false;
