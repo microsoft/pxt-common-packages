@@ -54,7 +54,7 @@ void *operator new[](size_t size) {
     return xmalloc(size);
 }
 
-void operator delete(void *p) THROW {
+void operator delete(void *p)THROW {
     xfree(p);
 }
 void operator delete[](void *p) THROW {
@@ -148,8 +148,9 @@ void sleep_ms(uint32_t ms) {
 void sleep_us(uint64_t us) {
     if (us > 50000) {
         sleep_ms(us / 1000);
+    } else {
+        sleep_core_us(us);
     }
-    sleep_core_us(us);
 }
 
 uint64_t currTime() {
@@ -421,7 +422,6 @@ void *gcAllocBlock(size_t sz) {
     return r;
 }
 #endif
-
 
 static __thread ThreadContext *threadCtx;
 
