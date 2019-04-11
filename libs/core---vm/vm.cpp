@@ -7,6 +7,8 @@
 // TODO VTable layout and lookups (need to reimplement from asm to C)
 // TODO strings - can't really do UTF16
 // TODO replacement of section headers with vtables
+// TODO 4.5/20 instructions are push - combine
+// TODO figure out 'stloc 0; ldloc 0' pattern (shareddef/ref?)
 
 namespace pxt {
 
