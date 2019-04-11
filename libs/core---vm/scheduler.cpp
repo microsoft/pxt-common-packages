@@ -63,6 +63,14 @@ Event *mkEvent(int source, int value) {
 volatile bool paniced;
 extern "C" void drawPanic(int code);
 
+void schedule() {
+    auto f = currentFiber;
+    if (!f->wakeTime && !f->waitSource)
+        oops(55);
+    f->resumePC = f->pc;
+    f->pc = NULL; // this will break the exec_loop()
+}
+
 extern "C" void target_panic(int error_code) {
     char buf[50];
     int prevErr = errno;
@@ -118,28 +126,42 @@ int current_time_ms() {
     return current_time_us() / 1000;
 }
 
-void disposeThread(FiberContext *t) {
-    if (allThreads == t) {
-        allThreads = t->next;
+void disposeFiber(FiberContext *t) {
+    if (allFibers == t) {
+        allFibers = t->next;
     } else {
-        for (auto tt = allThreads; tt; tt = tt->next) {
+        for (auto tt = allFibers; tt; tt = tt->next) {
             if (tt->next == t) {
                 tt->next = t->next;
                 break;
             }
         }
     }
-    unregisterGC(&t->act, 4);
-    decr(t->act);
-    decr(t->arg0);
-    decr(t->data0);
-    decr(t->data1);
-    pthread_cond_destroy(&t->waitCond);
-    delete t;
+
+    xfree(t->stackBase);
+    xfree(t);
 }
 
-void setupThread(Action a, TValue arg = 0) {
-    // TODO
+FiberContext *setupThread(Action a, TValue arg = 0) {
+    auto t = (FiberContext *)xmalloc(sizeof(FiberContext));
+    memset(t, 0, sizeof(*t));
+    t->stackBase = (TValue *)xmalloc(VM_STACK_SIZE * sizeof(TValue));
+    t->stackLimit = t->stackBase + VM_MAX_FUNCTION_STACK + 5;
+    t->sp = t->stackBase + VM_STACK_SIZE;
+    *--t->sp = 0;
+    *--t->sp = 0;
+    *--t->sp = 0;
+    *--t->sp = arg;
+    *--t->sp = TAG_STACK_BOTTOM;
+    t->resumePC = (uint16_t *)a + (VM_FUNCTION_CODE_OFFSET / 2);
+
+    t->img = vmImg;
+    t->imgbase = (uint16_t *)vmImg->dataStart;
+
+    t->next = allFibers;
+    allFibers = t;
+
+    return t;
 }
 
 void runInParallel(Action a) {
@@ -147,13 +169,13 @@ void runInParallel(Action a) {
 }
 
 void runForever(Action a) {
-    // TODO
-    target_panic(999);
+    auto f = setupThread(a);
+    f->foreverPC = f->resumePC;
 }
 
 void waitForEvent(int source, int value) {
-    currentFiber->wakeSource = source;
-    currentFiber->wakeValue = value;
+    currentFiber->waitSource = source;
+    currentFiber->waitValue = value;
     schedule();
 }
 
@@ -172,15 +194,13 @@ static void dispatchEvent(Event &e) {
 static void wakeFibers() {
     while (eventHead != NULL) {
         if (paniced)
-            return 0;
+            return;
         Event *ev = eventHead;
         eventHead = ev->next;
         if (eventHead == NULL)
             eventTail = NULL;
 
         for (auto thr = allFibers; thr; thr = thr->next) {
-            if (paniced)
-                return 0;
             if (thr->waitSource == 0)
                 continue;
             if (thr->waitValue != ev->value && thr->waitValue != DEVICE_EVT_ANY)
@@ -198,26 +218,20 @@ static void wakeFibers() {
     }
 }
 
-void schedule() {
-    auto f = currentFiber;
-    if (!f->wakeTime && !f->waitSource)
-        oops(55);
-    f->resumePC = f->pc;
-    f->pc = NULL; // this will break the exec_loop()
-}
-
 static void mainRunLoop() {
     FiberContext *f = NULL;
     for (;;) {
+        if (paniced)
+            return;
         wakeFibers();
         auto now = current_time_ms();
-        auto full = false;
+        auto fromBeg = false;
         if (!f) {
             f = allFibers;
-            full = true;
+            fromBeg = true;
         }
         while (f) {
-            if (f->wakeTime && now >= f->wakeTime)
+            if (f->wakeTime && now >= (int)f->wakeTime)
                 f->wakeTime = 0;
             if (!f->wakeTime && !f->waitSource)
                 break;
@@ -234,11 +248,11 @@ static void mainRunLoop() {
                     f->resumePC = f->foreverPC;
                     f->wakeTime = current_time_ms() + 20;
                 } else {
-                    disposeThread(f);
+                    disposeFiber(f);
                 }
             }
             f = n;
-        } else if (full) {
+        } else if (fromBeg) {
             sleep_core_us(1000);
         }
     }
@@ -307,6 +321,20 @@ void *gcAllocBlock(size_t sz) {
         target_panic(PANIC_INTERNAL_ERROR);
     }
     return r;
+}
+
+void gcProcessStacks(int flags) {
+    int cnt = 0;
+    for (auto f = allFibers; f; f = f->next) {
+        auto ptr = f->stackBase + VM_STACK_SIZE - 1;
+        auto end = f->sp;
+        if (flags & 2)
+            DMESG("RS%d:%p/%d", cnt++, ptr, end - ptr);
+        // VLOG("mark: %p - %p", ptr, end);
+        while (ptr <= end) {
+            gcProcess(*ptr++);
+        }
+    }
 }
 #endif
 

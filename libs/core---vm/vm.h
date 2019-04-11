@@ -79,17 +79,26 @@ struct StackFrame {
     uint32_t *fnbase;
 };
 
+#define VM_FUNCTION_CODE_OFFSET 8
+
+// maximum size (in words) of stack in a single function
+#define VM_MAX_FUNCTION_STACK 200
+#define VM_STACK_SIZE 1000
+
 struct FiberContext {
     FiberContext *next;
-    FiberContext *prev;
 
     uint16_t *imgbase;
     VMImage *img;
     uint16_t *pc;
-    uint16_t *suspendedPC;
+    uint16_t *resumePC;
+    uint16_t *foreverPC;
     TValue *sp;
     TValue r0;
     TValue *caps;
+
+    TValue *stackBase;
+    TValue *stackLimit;
 
     // wait_for_event
     int waitSource;
@@ -97,8 +106,6 @@ struct FiberContext {
 
     // for sleep
     uint64_t wakeTime;
-
-    ThreadContext *threadCtx;
 };
 
 extern VMImage *vmImg;
@@ -107,6 +114,7 @@ extern FiberContext *currentFiber;
 void vmStart();
 VMImage *loadVMImage(void *data, unsigned length);
 VMImage *setVMImgError(VMImage *img, int code, void *pos);
+void exec_loop(FiberContext *ctx);
 
 } // namespace pxt
 

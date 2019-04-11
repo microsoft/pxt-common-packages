@@ -8,8 +8,6 @@
 // TODO strings - can't really do UTF16
 // TODO replacement of section headers with vtables
 
-#define FUNCTION_CODE_OFFSET 8
-
 namespace pxt {
 
 //%
@@ -71,8 +69,10 @@ void op_jmpnz(FiberContext *ctx, unsigned arg) {
 
 //%
 void op_callproc(FiberContext *ctx, unsigned arg) {
+    if (ctx->sp < ctx->stackLimit)
+        error(PANIC_STACK_OVERFLOW);
     *--ctx->sp = (TValue)(((ctx->pc - ctx->imgbase) << 8) | 2);
-    ctx->pc = (uint16_t *)ctx->img->pointerLiterals[arg] + (FUNCTION_CODE_OFFSET / 2);
+    ctx->pc = (uint16_t *)ctx->img->pointerLiterals[arg] + (VM_FUNCTION_CODE_OFFSET / 2);
 }
 
 //%
@@ -90,8 +90,11 @@ void op_callind(FiberContext *ctx, unsigned arg) {
         failedCast(fn);
     }
 
+    if (ctx->sp < ctx->stackLimit)
+        error(PANIC_STACK_OVERFLOW);
+
     *--ctx->sp = (TValue)(((ctx->pc - ctx->imgbase) << 8) | 2);
-    ctx->pc = (uint16_t *)fn + 4;
+    ctx->pc = (uint16_t *)fn + (VM_FUNCTION_CODE_OFFSET / 2);
 }
 
 //%
@@ -101,7 +104,10 @@ void op_ret(FiberContext *ctx, unsigned arg) {
     ctx->sp += numTmps;
     auto retaddr = (intptr_t)*ctx->sp++;
     ctx->sp += retNumArgs;
-    ctx->pc = ctx->imgbase + (retaddr >> 8);
+    if (retaddr == (intptr_t)TAG_STACK_BOTTOM)
+        ctx->pc = NULL;
+    else
+        ctx->pc = ctx->imgbase + (retaddr >> 8);
 }
 
 //%
@@ -213,15 +219,15 @@ void validateFunction(VMImage *img, VMImageSection *sect) {
     int baseStack = 1; // 1 is the return address; also zero in the array above means unknown yet
     int currStack = baseStack;
     unsigned pc = 0;
-    auto code = (uint16_t *)((uint8_t *)sect + FUNCTION_CODE_OFFSET);
-    auto lastPC = (sect->size - FUNCTION_CODE_OFFSET) >> 1;
+    auto code = (uint16_t *)((uint8_t *)sect + VM_FUNCTION_CODE_OFFSET);
+    auto lastPC = (sect->size - VM_FUNCTION_CODE_OFFSET) >> 1;
     auto atEnd = false;
 
     unsigned numArgs = sect->aux;
     unsigned numCaps = 100; // TODO
 
     while (pc < lastPC) {
-        if (currStack > 200)
+        if (currStack > VM_MAX_FUNCTION_STACK)
             FNERR(1204);
 
         FORCE_STACK(currStack, 1201, pc);
@@ -330,8 +336,6 @@ void validateFunction(VMImage *img, VMImageSection *sect) {
             if (currStack < baseStack)
                 FNERR(1221);
         } else if (fn == op_callind) {
-            if (arg > 40)
-                FNERR(1222);
             currStack -= arg;
             if (currStack < baseStack)
                 FNERR(1223);
@@ -343,7 +347,7 @@ void validateFunction(VMImage *img, VMImageSection *sect) {
         } else if (fn == op_ldint || fn == op_ldintneg) {
             // nothing to check!
         } else if (fn == op_jmp || fn == op_jmpnz || fn == op_jmpz) {
-            unsigned newPC = pc + arg; // will overflow for backjump
+            unsigned newPC = pc + arg; // will overflow for backjump, but this is fine
             if (newPC >= lastPC)
                 FNERR(1202);
             FORCE_STACK(currStack, 1226, newPC);

@@ -566,7 +566,7 @@ void *gcAllocate(int numbytes) {
 
     inGC |= IN_GC_ALLOC;
 
-#ifdef PXT_GC_CHECKS
+#if defined(PXT_GC_CHECKS) && !defined(PXT_VM)
     {
         auto curr = getThreadContext();
         if (curr && !curr->stack.top)

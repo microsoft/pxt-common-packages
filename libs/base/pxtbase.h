@@ -140,6 +140,7 @@ void dumpDmesg();
 #define TAG_UNDEFINED (TValue)0
 #define TAG_NULL TAGGED_SPECIAL(1) // 6
 #define TAG_NAN TAGGED_SPECIAL(3)  // 14
+#define TAG_STACK_BOTTOM TAGGED_SPECIAL(4)
 #define TAG_NUMBER(n) (TNumber)(void *)(((uintptr_t)n << 1) | 1)
 
 inline bool isDouble(TValue v) {
@@ -235,6 +236,7 @@ typedef enum {
     PANIC_INVALID_IMAGE = 913,
     PANIC_CALLED_FROM_ISR = 914,
     PANIC_HEAP_DUMPED = 915,
+    PANIC_STACK_OVERFLOW = 916,
 
     PANIC_CAST_FIRST = 980,
     PANIC_CAST_FROM_UNDEFINED = 980,
