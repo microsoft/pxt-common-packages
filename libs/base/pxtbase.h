@@ -661,7 +661,11 @@ typedef TValue (*ActionCB)(TValue *captured, TValue arg0, TValue arg1, TValue ar
 class RefAction : public RefObject {
   public:
     uint16_t len;
+    uint16_t numArgs;
+#ifdef PXT_VM
+    uint16_t initialLen;
     uint16_t reserved;
+#endif
     ActionCB func; // The function pointer
     // fields[] contain captured locals
     TValue fields[];

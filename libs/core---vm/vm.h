@@ -1,8 +1,17 @@
 #ifndef _PXT_VM_H
 #define _PXT_VM_H
 
-#define OPCODE_BASE_SIZE 7 // up to 127 base opcodes
-#define OPCODE_BASE_MASK ((1 << OPCODE_BASE_SIZE) - 1)
+#define VM_MAGIC0 0x000a34365458500aULL // \nPXT64\n\0
+#define VM_MAGIC1 0x6837215e2bfe7154ULL
+
+#define VM_OPCODE_BASE_SIZE 7 // up to 127 base opcodes
+#define VM_OPCODE_BASE_MASK ((1 << VM_OPCODE_BASE_SIZE) - 1)
+
+#define VM_FUNCTION_CODE_OFFSET 24
+
+// maximum size (in words) of stack in a single function
+#define VM_MAX_FUNCTION_STACK 200
+#define VM_STACK_SIZE 1000
 
 namespace pxt {
 
@@ -32,9 +41,6 @@ struct VMImageSection {
     uint32_t size; // in bytes, including this header
     uint8_t data[0];
 };
-
-#define VM_MAGIC0 0x000a34365458500aULL // \nPXT64\n\0
-#define VM_MAGIC1 0x6837215e2bfe7154ULL
 
 struct OpcodeDesc {
     const char *name;
@@ -78,12 +84,6 @@ struct StackFrame {
     TValue *stackBase;
     uint32_t *fnbase;
 };
-
-#define VM_FUNCTION_CODE_OFFSET 8
-
-// maximum size (in words) of stack in a single function
-#define VM_MAX_FUNCTION_STACK 200
-#define VM_STACK_SIZE 1000
 
 struct FiberContext {
     FiberContext *next;

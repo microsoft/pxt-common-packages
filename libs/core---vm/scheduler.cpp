@@ -153,7 +153,8 @@ FiberContext *setupThread(Action a, TValue arg = 0) {
     *--t->sp = 0;
     *--t->sp = arg;
     *--t->sp = TAG_STACK_BOTTOM;
-    t->resumePC = (uint16_t *)a + (VM_FUNCTION_CODE_OFFSET / 2);
+    auto ra = (RefAction*)a;
+    t->resumePC = (uint16_t *)ra->func;
 
     t->img = vmImg;
     t->imgbase = (uint16_t *)vmImg->dataStart;

@@ -2,6 +2,8 @@
 
 // TODO optimze add/sub/etc
 // TODO look for patterns in output for combined instructions
+// TODO check for backjumps (how many)
+// TODO review all exported functions; maybe just disallow pxt::* except for specific things?
 
 // TODO static vs heap-allocated functions; number of captures
 // TODO VTable layout and lookups (need to reimplement from asm to C)
@@ -9,6 +11,8 @@
 // TODO replacement of section headers with vtables
 // TODO 4.5/20 instructions are push - combine
 // TODO figure out 'stloc 0; ldloc 0' pattern (shareddef/ref?)
+// TODO resolve 'func' pointer in Actions
+// TODO validate that functions with captured vars are not called directly
 
 namespace pxt {
 
@@ -74,7 +78,7 @@ void op_callproc(FiberContext *ctx, unsigned arg) {
     if (ctx->sp < ctx->stackLimit)
         error(PANIC_STACK_OVERFLOW);
     *--ctx->sp = (TValue)(((ctx->pc - ctx->imgbase) << 8) | 2);
-    ctx->pc = (uint16_t *)ctx->img->pointerLiterals[arg] + (VM_FUNCTION_CODE_OFFSET / 2);
+    ctx->pc = (uint16_t *)((RefAction *)ctx->img->pointerLiterals[arg])->func;
 }
 
 //%
@@ -86,17 +90,22 @@ void op_callind(FiberContext *ctx, unsigned arg) {
     if (vt->objectType != ValType::Function)
         failedCast(fn);
 
-    if (arg != vt->reserved) {
-        // TODO re-arrange the stack, so that the right number
-        // of arguments is present
+    auto ra = (RefAction *)fn;
+
+    if (arg != ra->numArgs) {
+        // TODO re-arrange the stack, so that the right number of arguments is present
         failedCast(fn);
     }
+
+    if (ra->initialLen != ra->len)
+        // trying to call function template
+        error(PANIC_INVALID_VTABLE);
 
     if (ctx->sp < ctx->stackLimit)
         error(PANIC_STACK_OVERFLOW);
 
     *--ctx->sp = (TValue)(((ctx->pc - ctx->imgbase) << 8) | 2);
-    ctx->pc = (uint16_t *)fn + (VM_FUNCTION_CODE_OFFSET / 2);
+    ctx->pc = (uint16_t *)ra->func;
 }
 
 //%
@@ -191,13 +200,13 @@ void exec_loop(FiberContext *ctx) {
     while (ctx->pc) {
         uint16_t opcode = *ctx->pc++;
         if (opcode >> 15 == 0) {
-            opcodes[opcode & OPCODE_BASE_MASK](ctx, opcode >> OPCODE_BASE_SIZE);
+            opcodes[opcode & VM_OPCODE_BASE_MASK](ctx, opcode >> VM_OPCODE_BASE_SIZE);
         } else if (opcode >> 14 == 0b10) {
             ((ApiFun)opcodes[opcode & 0x3fff])(ctx);
         } else {
-            unsigned tmp = ((int32_t)opcode << (16 + 2)) >> (2 + OPCODE_BASE_SIZE);
+            unsigned tmp = ((int32_t)opcode << (16 + 2)) >> (2 + VM_OPCODE_BASE_SIZE);
             opcode = *ctx->pc++;
-            opcodes[opcode & OPCODE_BASE_MASK](ctx, (opcode >> OPCODE_BASE_SIZE) + tmp);
+            opcodes[opcode & VM_OPCODE_BASE_MASK](ctx, (opcode >> VM_OPCODE_BASE_SIZE) + tmp);
         }
     }
 }
@@ -215,7 +224,7 @@ void exec_loop(FiberContext *ctx) {
         stackDepth[pc] = v;                                                                        \
     } while (0)
 
-void validateFunction(VMImage *img, VMImageSection *sect) {
+void validateFunction(VMImage *img, VMImageSection *sect, int debug) {
     uint16_t stackDepth[sect->size / 2];
     memset(stackDepth, 0, sizeof(stackDepth));
     int baseStack = 1; // 1 is the return address; also zero in the array above means unknown yet
@@ -225,8 +234,10 @@ void validateFunction(VMImage *img, VMImageSection *sect) {
     auto lastPC = (sect->size - VM_FUNCTION_CODE_OFFSET) >> 1;
     auto atEnd = false;
 
-    unsigned numArgs = sect->aux;
-    unsigned numCaps = 100; // TODO
+    RefAction *ra = (RefAction *)sect;
+
+    unsigned numArgs = ra->numArgs;
+    unsigned numCaps = ra->initialLen;
 
     while (pc < lastPC) {
         if (currStack > VM_MAX_FUNCTION_STACK)
@@ -245,26 +256,27 @@ void validateFunction(VMImage *img, VMImageSection *sect) {
         bool isRtCall = false;
 
         if (opcode >> 15 == 0) {
-            opIdx = opcode & OPCODE_BASE_MASK;
-            arg = opcode >> OPCODE_BASE_SIZE;
+            opIdx = opcode & VM_OPCODE_BASE_MASK;
+            arg = opcode >> VM_OPCODE_BASE_SIZE;
         } else if (opcode >> 14 == 0b10) {
             opIdx = opcode & 0x3fff;
             arg = 0;
             isRtCall = true;
         } else {
-            unsigned tmp = ((int32_t)opcode << (16 + 2)) >> (2 + OPCODE_BASE_SIZE);
+            unsigned tmp = ((int32_t)opcode << (16 + 2)) >> (2 + VM_OPCODE_BASE_SIZE);
             FORCE_STACK(0xffff, 1200, pc); // cannot jump here!
             opcode = code[pc++];
-            opIdx = opcode & OPCODE_BASE_MASK;
-            arg = (opcode >> OPCODE_BASE_SIZE) + tmp;
+            opIdx = opcode & VM_OPCODE_BASE_MASK;
+            arg = (opcode >> VM_OPCODE_BASE_SIZE) + tmp;
         }
 
         if (opIdx >= img->numOpcodes)
             FNERR(1227);
         auto opd = img->opcodeDescs[opIdx];
 
-        printf("%4d/%d -> %04x idx=%d arg=%d st=%d %s\n", pc, lastPC, opcode, opIdx, arg, currStack,
-               opd ? opd->name : "NA");
+        if (debug)
+            printf("%4d/%d -> %04x idx=%d arg=%d st=%d %s\n", pc, lastPC, opcode, opIdx, arg,
+                   currStack, opd ? opd->name : "NA");
 
         if (!opd)
             FNERR(1228);
@@ -333,7 +345,7 @@ void validateFunction(VMImage *img, VMImageSection *sect) {
                 FNERR(1219);
             if (fsec->type != SectionType::Function)
                 FNERR(1220);
-            unsigned calledArgs = fsec->aux;
+            unsigned calledArgs = ((RefAction *)fsec)->numArgs;
             currStack -= calledArgs;
             if (currStack < baseStack)
                 FNERR(1221);

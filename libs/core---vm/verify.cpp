@@ -67,7 +67,7 @@ static VMImage *loadSections(VMImage *img) {
                     img->numOpcodes++;
                 curr++;
             }
-            CHECK(img->numOpcodes > OPCODE_BASE_MASK, 1016);
+            CHECK(img->numOpcodes > VM_OPCODE_BASE_MASK, 1016);
 
             img->opcodes = new OpFun[img->numOpcodes];
             img->opcodeDescs = new const OpcodeDesc *[img->numOpcodes];
@@ -138,15 +138,18 @@ static VMImage *loadSections(VMImage *img) {
     return NULL;
 }
 
-void validateFunction(VMImage *img, VMImageSection *sect);
+void validateFunction(VMImage *img, VMImageSection *sect, int debug);
 
 static VMImage *validateFunctions(VMImage *img) {
     FOR_SECTIONS() {
         if (sect->type != SectionType::Function)
             continue;
-        validateFunction(img, sect);
-        if (img->errorCode)
+        validateFunction(img, sect, 0);
+        if (img->errorCode) {
+            // try again with debug
+            validateFunction(img, sect, 1);
             return img;
+        }
     }
     return NULL;
 }

@@ -22,6 +22,8 @@ void vmStart() {
     if (img->errorCode) {
         printf("validation error %d at 0x%x\n", img->errorCode, img->errorOffset);
         exit(2);
+    } else {
+        printf("Validation OK\n");
     }
     vmImg = img;
     exit(0);
