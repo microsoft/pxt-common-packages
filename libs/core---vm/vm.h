@@ -29,6 +29,7 @@ enum class SectionType : uint8_t {
     NumberLiterals = 0x03,   // array of boxed doubles and ints
     ConfigData = 0x04,       // sorted array of pairs of int32s; zero-terminated
     IfaceMemberNames = 0x05, // array of 32 bit offsets, that point to string literals
+    VCallInfos = 0x06,       // array of pairs of offset (32b), method index (32b)
 
     // repetitive sections
     Function = 0x20,

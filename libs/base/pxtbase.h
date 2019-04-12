@@ -426,10 +426,16 @@ struct VTable {
     uint16_t numbytes;
     ValType objectType;
     uint8_t magic;
+#ifdef PXT64
+    uint32_t ifaceHashEntries; // also padding
+#endif
     PVoid *ifaceTable;
     BuiltInType classNo;
     uint16_t reserved;
     uint32_t ifaceHashMult;
+#ifdef PXT64
+    uint32_t padding64;
+#endif
     // we only use the first few methods here; pxt will generate more
 #ifdef PXT_GC
     PVoid methods[8];
@@ -1047,9 +1053,16 @@ bool removeElement(RefCollection *c, TValue x);
 #pragma GCC diagnostic ignored "-Wpmf-conversions"
 #endif
 
+
+#ifdef PXT64
+#define DEF_VTABLE(name, tp, valtype, ...)                                                         \
+    const VTable name __attribute__((aligned(1 << PXT_VTABLE_SHIFT))) = {                          \
+        sizeof(tp), valtype, VTABLE_MAGIC, 0, 0, BuiltInType::tp, 0, 0, 0, {__VA_ARGS__}};
+#else
 #define DEF_VTABLE(name, tp, valtype, ...)                                                         \
     const VTable name __attribute__((aligned(1 << PXT_VTABLE_SHIFT))) = {                          \
         sizeof(tp), valtype, VTABLE_MAGIC, 0, BuiltInType::tp, 0, 0, {__VA_ARGS__}};
+#endif
 
 #ifdef PXT_GC
 #define PXT_VTABLE(classname)                                                                      \
