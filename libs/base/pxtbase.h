@@ -422,7 +422,6 @@ enum class BuiltInType : uint16_t {
     User0 = 16,
 };
 
-// TODO64 might need better aligned layout
 struct VTable {
     uint16_t numbytes;
     ValType objectType;
