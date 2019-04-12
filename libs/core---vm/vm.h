@@ -19,6 +19,7 @@ struct FiberContext;
 typedef void (*OpFun)(FiberContext *ctx, unsigned arg);
 typedef void (*ApiFun)(FiberContext *ctx);
 
+// keep in sync with backvm.ts
 enum class SectionType : uint8_t {
     Invalid = 0x00,
 
@@ -32,6 +33,7 @@ enum class SectionType : uint8_t {
     // repetitive sections
     Function = 0x20,
     Literal = 0x21, // aux field contains literal type (string, hex, image, ...)
+    VTable = 0x22,
 };
 
 struct VMImageSection {
