@@ -81,6 +81,11 @@ static inline VTable *getStaticVTable(VMImage *img, unsigned classId) {
     return (VTable *)((void **)img->pointerLiterals[classId] + 1);
 }
 
+//%
+void op_newobj(FiberContext *ctx, unsigned arg) {
+    ctx->r0 = (TValue)pxt::mkClassInstance(getStaticVTable(ctx->img, arg));
+}
+
 static inline void checkClass(FiberContext *ctx, TValue obj, unsigned classId, unsigned fldId) {
     if (!isPointer(obj))
         failedCast(obj);
@@ -294,7 +299,7 @@ void exec_loop(FiberContext *ctx) {
     }
 }
 
-// 1238
+// 1239
 #define FNERR(errcode)                                                                             \
     do {                                                                                           \
         setVMImgError(img, errcode, &code[pc]);                                                    \
@@ -431,14 +436,16 @@ void validateFunction(VMImage *img, VMImageSection *sect, int debug) {
                 if (currStack < baseStack)
                     FNERR(1232);
             }
-        } else if (fn == op_ldlit) {
+        } else if (fn == op_ldlit || fn == op_newobj) {
             if (arg >= img->numSections)
                 FNERR(1215);
             auto fsec = (VMImageSection *)img->pointerLiterals[arg];
             if (!fsec)
                 FNERR(1216);
-            if (fsec->type == SectionType::VTable)
+            if (fn == op_ldlit && fsec->type == SectionType::VTable)
                 FNERR(1237);
+            if (fn == op_newobj && fsec->type != SectionType::VTable)
+                FNERR(1238);
         } else if (fn == op_ldnumber) {
             if (arg >= img->numNumberLiterals)
                 FNERR(1217);
