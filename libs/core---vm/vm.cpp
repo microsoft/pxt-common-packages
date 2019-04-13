@@ -10,9 +10,10 @@
 // TODO strings - can't really do UTF16
 // TODO replacement of section headers with vtables
 // TODO 4.5/20 instructions are push - combine
-// TODO figure out 'stloc 0; ldloc 0' pattern (shareddef/ref?)
 // TODO resolve 'func' pointer in Actions
 // TODO validate that functions with captured vars are not called directly
+// TODO validate vtables
+// TODO iface get/set
 
 #define SPLIT_ARG(arg0, arg1) unsigned arg0 = arg & 31, arg1 = arg >> 6
 
@@ -182,8 +183,8 @@ void op_calliface(FiberContext *ctx, unsigned arg) {
 
     unsigned n = 3;
     while (n--) {
-        uint32_t off2 = ((uint16_t *)vt->ifaceTable)[off];
-        auto ent = (struct IfaceEntry *)vt->ifaceTable + off2;
+        uint32_t off2 = ((uint16_t *)&vt->methods[4])[off];
+        auto ent = (struct IfaceEntry *)&vt->methods[4] + off2;
 
         if (ent->memberId == ifaceIdx) {
             if (ent->aux == 0) {
