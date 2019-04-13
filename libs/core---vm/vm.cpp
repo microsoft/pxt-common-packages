@@ -16,6 +16,7 @@
 // TODO iface get/set
 
 #define SPLIT_ARG(arg0, arg1) unsigned arg0 = arg & 31, arg1 = arg >> 6
+#define SPLIT_ARG2(arg0, arg1) unsigned arg0 = arg & 255, arg1 = arg >> 8
 
 namespace pxt {
 
@@ -74,6 +75,40 @@ void op_jmpz(FiberContext *ctx, unsigned arg) {
 void op_jmpnz(FiberContext *ctx, unsigned arg) {
     if (toBoolQuick(ctx->r0))
         ctx->pc += (int)arg;
+}
+
+static inline VTable *getStaticVTable(VMImage *img, unsigned classId) {
+    return (VTable *)((void **)img->pointerLiterals[classId] + 1);
+}
+
+static inline void checkClass(FiberContext *ctx, TValue obj, unsigned classId, unsigned fldId) {
+    if (!isPointer(obj))
+        failedCast(obj);
+    auto vt = getVTable((RefObject *)obj);
+    auto vt2 = getStaticVTable(ctx->img, classId);
+    if (vt == vt2)
+        return;
+    if ((int)vt2->classNo <= (int)vt->classNo && (int)vt->classNo <= (int)vt2->lastClassNo) {
+        // double check field range - we don't really check class sequence numbers
+        if (8 + fldId * 8 >= vt->numbytes)
+            failedCast(obj);
+    }
+}
+
+//%
+void op_ldfld(FiberContext *ctx, unsigned arg) {
+    SPLIT_ARG2(fldId, classId);
+    auto obj = ctx->r0;
+    checkClass(ctx, obj, classId, fldId);
+    ctx->r0 = ((RefRecord *)obj)->fields[fldId];
+}
+
+//%
+void op_stfld(FiberContext *ctx, unsigned arg) {
+    SPLIT_ARG2(fldId, classId);
+    auto obj = *--ctx->sp;
+    checkClass(ctx, obj, classId, fldId);
+    ((RefRecord *)obj)->fields[fldId] = ctx->r0;
 }
 
 //%
@@ -259,7 +294,7 @@ void exec_loop(FiberContext *ctx) {
     }
 }
 
-// 1231
+// 1238
 #define FNERR(errcode)                                                                             \
     do {                                                                                           \
         setVMImgError(img, errcode, &code[pc]);                                                    \
@@ -376,11 +411,34 @@ void validateFunction(VMImage *img, VMImageSection *sect, int debug) {
             // not supported (yet?)
             if (arg < img->infoHeader->nonPointerGlobals)
                 FNERR(1214);
+        } else if (fn == op_ldfld || fn == op_stfld) {
+            SPLIT_ARG2(fldId, classId);
+
+            if (classId >= img->numSections)
+                FNERR(1236);
+            auto fsec = (VMImageSection *)img->pointerLiterals[classId];
+            if (!fsec)
+                FNERR(1233);
+            if (fsec->type != SectionType::VTable)
+                FNERR(1234);
+
+            auto vt = getStaticVTable(img, classId);
+            if (fldId * 8 + 8 >= vt->numbytes)
+                FNERR(1235);
+
+            if (fn == op_stfld) {
+                currStack--;
+                if (currStack < baseStack)
+                    FNERR(1232);
+            }
         } else if (fn == op_ldlit) {
             if (arg >= img->numSections)
                 FNERR(1215);
-            if (!img->pointerLiterals[arg])
+            auto fsec = (VMImageSection *)img->pointerLiterals[arg];
+            if (!fsec)
                 FNERR(1216);
+            if (fsec->type == SectionType::VTable)
+                FNERR(1237);
         } else if (fn == op_ldnumber) {
             if (arg >= img->numNumberLiterals)
                 FNERR(1217);
