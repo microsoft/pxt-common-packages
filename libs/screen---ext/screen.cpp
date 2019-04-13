@@ -29,12 +29,12 @@ WDisplay::WDisplay() {
     registerGC((TValue *)&lastImg);
 }
 
-//%
+//% expose
 void setScreenBrightness(int level) {
     // TODO
 }
 
-//%
+//% expose
 void setPalette(Buffer buf) {
     auto display = getWDisplay();
     if (48 != buf->length)
@@ -74,12 +74,12 @@ void WDisplay::update(Image_ img) {
     }
 }
 
-//%
+//% expose
 void updateScreen(Image_ img) {
     getWDisplay()->update(img);
 }
 
-//%
+//% expose
 void updateStats(String msg) {
     // DMESG("render: %s", msg->data);
 }
