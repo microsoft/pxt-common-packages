@@ -84,15 +84,20 @@ static VMImage *loadSections(VMImage *img) {
                             break;
                         }
                     }
-                    // unresolved symbol; report name?
-                    CHECK_AT(img->opcodeDescs[i] != NULL, 1018, curr);
-                    img->opcodes[i] = img->opcodeDescs[i]->fn;
+                    if (img->opcodeDescs[i] == NULL) {
+                        printf("missing: %s\n", (const char*)curr);
+                        setVMImgError(img, 1018, curr);
+                    } else {
+                        img->opcodes[i] = img->opcodeDescs[i]->fn;
+                    }
                 }
                 while (*curr)
                     curr++;
                 curr++;
                 i++;
             }
+            if (img->errorCode)
+                return img;
         }
 
         if (sect->type == SectionType::IfaceMemberNames) {
