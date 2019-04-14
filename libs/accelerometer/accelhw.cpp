@@ -65,7 +65,51 @@ namespace pxt {
 // Wrapper classes
 class WAccel {
     CoordinateSpace space;
+	
+	int detectAccelerometer(codal::I2C& i2c){
+		uint8_t data;
+		int result;
 
+#if PXT_SUPPORT_LIS3DH
+		result = i2c.readRegister(ACCELEROMETER_TYPE_LIS3DH, LIS3DH_WHOAMI, &data, 1);
+		if (result ==0)
+			return ACCELEROMETER_TYPE_LIS3DH;
+#endif
+			
+#if PXT_SUPPORT_MMA8453
+		result = i2c.readRegister(ACCELEROMETER_TYPE_MMA8453, MMA8653_WHOAMI/*MMA8453 is similar to MMA8653*/ , &data, 1);
+		if (result ==0)
+			return ACCELEROMETER_TYPE_MMA8453;
+#endif
+
+#if PXT_SUPPORT_FXOS8700
+		result = i2c.readRegister(ACCELEROMETER_TYPE_FXOS8700, FXOS8700_WHO_AM_I, &data, 1);
+		if (result ==0)
+			return ACCELEROMETER_TYPE_FXOS8700;
+#endif
+		
+#if PXT_SUPPORT_MMA8653
+		result = i2c.readRegister(ACCELEROMETER_TYPE_MMA8653,  MMA8653_WHOAMI, &data, 1);
+		if (result ==0)
+			return ACCELEROMETER_TYPE_MMA8653;	
+#endif
+		
+#if PXT_SUPPORT_MSA300
+		result = i2c.readRegister(ACCELEROMETER_TYPE_MSA300, MSA300_WHOAMI, &data, 1);
+		if (result ==0)
+			return ACCELEROMETER_TYPE_MSA300;	
+#endif
+			
+#if PXT_SUPPORT_MPU6050
+		result = i2c.readRegister(ACCELEROMETER_TYPE_MPU6050, MPU6050_WHOAMI, &data, 1);
+		if (result ==0)
+			return ACCELEROMETER_TYPE_MPU6050;	
+#endif 
+
+		return PXT_DEFAULT_ACCELEROMETER;
+	}
+	
+	
   public:
     Accelerometer *acc;
     WAccel() : space(ACC_SYSTEM, ACC_UPSIDEDOWN, ACC_ROTATION), acc(NULL) {
@@ -82,7 +126,9 @@ class WAccel {
             DMESG("accelerometer: no i2c available");
             return;
         }
-        auto accType = getConfig(CFG_ACCELEROMETER_TYPE, PXT_DEFAULT_ACCELEROMETER);
+		
+        int accDetect=detectAccelerometer(*i2c);		
+        auto accType = getConfig(CFG_ACCELEROMETER_TYPE, accDetect);
         switch (accType) {
 #if PXT_SUPPORT_LIS3DH
         case ACCELEROMETER_TYPE_LIS3DH:
