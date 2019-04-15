@@ -158,15 +158,15 @@ namespace game {
      * Finish the game and display the score
      */
     //% group="Gameplay"
-    //% blockId=gameOver block="game over %win=toggleWinLose with %effect effect"
+    //% blockId=gameOver block="game over %gameWon=toggleWinLose || with %effect effect"
     //% weight=80 help=game/over
-    export function over(win: boolean = false, effect?: effects.BackgroundEffect) {
+    export function over(gameWon: boolean = false, effect?: effects.BackgroundEffect) {
         init();
         if (__isOver) return;
         __isOver = true;
 
         if (!effect) {
-            effect = win ? winEffect : loseEffect;
+            effect = gameWon ? winEffect : loseEffect;
         }
 
         // releasing memory and clear fibers. Do not add anything that releases the fiber until background is set below,
@@ -178,7 +178,7 @@ namespace game {
         pushScene();
         scene.setBackgroundImage(screen.clone());
 
-        if (win)
+        if (gameWon)
             winSound.play();
         else
             loseSound.play();
@@ -189,7 +189,7 @@ namespace game {
 
         game.eventContext().registerFrameHandler(scene.HUD_PRIORITY, () => {
             let top = showDialogBackground(46, 4);
-            screen.printCenter(win ? "YOU WIN!" : "GAME OVER!", top + 8, screen.isMono ? 1 : 5, image.font8);
+            screen.printCenter(gameWon ? "YOU WIN!" : "GAME OVER!", top + 8, screen.isMono ? 1 : 5, image.font8);
             if (info.hasScore()) {
                 screen.printCenter("Score:" + info.score(), top + 23, screen.isMono ? 1 : 2, image.font8);
                 if (info.score() > info.highScore()) {
