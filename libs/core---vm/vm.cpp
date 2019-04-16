@@ -2,18 +2,16 @@
 
 // TODO optimze add/sub/etc
 // TODO look for patterns in output for combined instructions
+// TODO 4.5/20 instructions are push - combine
 // TODO check for backjumps (how many)
-// TODO review all exported functions; maybe just disallow pxt::* except for specific things?
 
 // TODO static vs heap-allocated functions; number of captures
-// TODO VTable layout and lookups (need to reimplement from asm to C)
 // TODO strings - can't really do UTF16
 // TODO replacement of section headers with vtables
-// TODO 4.5/20 instructions are push - combine
 // TODO resolve 'func' pointer in Actions
 // TODO validate that functions with captured vars are not called directly
-// TODO validate vtables
 // TODO iface get/set
+// TODO check on all allowed pxt::* functions
 
 #define SPLIT_ARG(arg0, arg1) unsigned arg0 = arg & 31, arg1 = arg >> 6
 #define SPLIT_ARG2(arg0, arg1) unsigned arg0 = arg & 255, arg1 = arg >> 8
@@ -202,12 +200,6 @@ void op_ldintneg(FiberContext *ctx, unsigned arg) {
     ctx->r0 = TAG_NUMBER(-(int)arg);
 }
 
-struct IfaceEntry {
-    uint16_t memberId;
-    uint16_t aux;
-    uint32_t method;
-};
-
 //%
 void op_calliface(FiberContext *ctx, unsigned arg) {
     SPLIT_ARG(numArgs, ifaceIdx);
@@ -222,9 +214,10 @@ void op_calliface(FiberContext *ctx, unsigned arg) {
     uint32_t off = (ifaceIdx * mult) >> (mult & 0xff);
 
     unsigned n = 3;
+    auto multBase = (uint16_t *)&vt->methods[VM_NUM_CPP_METHODS];
     while (n--) {
-        uint32_t off2 = ((uint16_t *)&vt->methods[4])[off];
-        auto ent = (struct IfaceEntry *)&vt->methods[4] + off2;
+        uint32_t off2 = multBase[off];
+        auto ent = (struct IfaceEntry *)multBase + off2;
 
         if (ent->memberId == ifaceIdx) {
             if (ent->aux == 0) {
@@ -232,7 +225,7 @@ void op_calliface(FiberContext *ctx, unsigned arg) {
                 callind(ctx, (RefAction *)fn, numArgs);
             } else {
                 // load field
-                ctx->r0 = ((RefRecord *)obj)->fields[ent->aux];
+                ctx->r0 = ((RefRecord *)obj)->fields[ent->aux - 1];
                 // and call
                 op_callind(ctx, numArgs);
             }

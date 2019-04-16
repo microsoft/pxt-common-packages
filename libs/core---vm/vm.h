@@ -9,6 +9,8 @@
 
 #define VM_FUNCTION_CODE_OFFSET 24
 
+#define VM_NUM_CPP_METHODS 4
+
 // maximum size (in words) of stack in a single function
 #define VM_MAX_FUNCTION_STACK 200
 #define VM_STACK_SIZE 1000
@@ -48,6 +50,12 @@ struct OpcodeDesc {
     const char *name;
     OpFun fn;
     int numArgs;
+};
+
+struct IfaceEntry {
+    uint16_t memberId;
+    uint16_t aux;
+    uint32_t method;
 };
 
 extern const OpcodeDesc staticOpcodes[];

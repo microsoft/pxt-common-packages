@@ -8,6 +8,7 @@ VMImage *setVMImgError(VMImage *img, int code, void *pos) {
     return img;
 }
 
+// next free error 1041
 #define ERROR(code, pos) return setVMImgError(img, code, pos)
 #define CHECK(cond, code)                                                                          \
     do {                                                                                           \
@@ -85,7 +86,7 @@ static VMImage *loadSections(VMImage *img) {
                         }
                     }
                     if (img->opcodeDescs[i] == NULL) {
-                        printf("missing: %s\n", (const char*)curr);
+                        printf("missing: %s\n", (const char *)curr);
                         setVMImgError(img, 1018, curr);
                     } else {
                         img->opcodes[i] = img->opcodeDescs[i]->fn;
@@ -147,13 +148,66 @@ void validateFunction(VMImage *img, VMImageSection *sect, int debug);
 
 static VMImage *validateFunctions(VMImage *img) {
     FOR_SECTIONS() {
-        if (sect->type != SectionType::Function)
-            continue;
-        validateFunction(img, sect, 0);
-        if (img->errorCode) {
-            // try again with debug
-            validateFunction(img, sect, 1);
-            return img;
+        if (sect->type == SectionType::VTable) {
+            uint8_t *endp = sect->data + sect->size - 8;
+            auto vt = (VTable *)sect->data;
+            auto multBase = (uint16_t *)&vt->methods[VM_NUM_CPP_METHODS];
+            CHECK((uint8_t *)multBase < endp,
+                  1023); // basic size check, before dereferencing anything
+
+            auto maxMult = 0xffffffffU >> (vt->ifaceHashMult & 0xff);
+
+            CHECK(vt->numbytes < 1024, 1024);
+            CHECK((vt->numbytes & 7) == 0, 1025);
+            CHECK(vt->objectType == ValType::Object, 1026);
+            CHECK(vt->magic == VTABLE_MAGIC, 1027);
+            CHECK(vt->ifaceHashEntries > maxMult + 3, 1028);
+            CHECK((uint8_t*)(multBase + vt->ifaceHashEntries) < endp, 1029);
+            CHECK(vt->reserved == 0, 1030);
+            CHECK(vt->ifaceHashMult != 0, 1031);
+            CHECK((vt->ifaceHashEntries & 3) == 0, 1032);
+
+            uint32_t maxOff = 0;
+            uint32_t minOff = 0xfffffff;
+            for (unsigned i = 0; i < vt->ifaceHashEntries; ++i) {
+                uint32_t off2 = multBase[i];
+                if (off2 > maxOff)
+                    maxOff = off2;
+                if (off2 < minOff)
+                    minOff = off2;
+                auto ent = (IfaceEntry *)multBase + off2;
+                //printf("%p ep=%p %d\n", ent, endp, off2);
+                CHECK((uint8_t *)(ent + 1) <= endp, 1033);
+            }
+
+            CHECK(minOff * sizeof(IfaceEntry) == vt->ifaceHashEntries * 2, 1034);
+
+            for (unsigned i = minOff; i <= maxOff; ++i) {
+                auto ent = (IfaceEntry *)multBase + i;
+                //printf("%p %d\n", ent, i);
+                if (ent->aux == 0) {
+                    CHECK(ent->method < img->numSections, 1037);
+                    auto fn = img->pointerLiterals[ent->method];
+                    CHECK(fn != NULL, 1038);
+                    CHECK(((VMImageSection *)fn)->type == SectionType::Function, 1039);
+                } else {
+                    CHECK(ent->aux < (vt->numbytes >> 3), 1035);
+                    CHECK(ent->aux == ent->method, 1036);
+                }
+            }
+
+            auto p = (uint8_t*)((IfaceEntry *)multBase + maxOff + 1);
+            while (p < endp)
+                CHECK(*p++ == 0, 1040);
+        }
+
+        if (sect->type == SectionType::Function) {
+            validateFunction(img, sect, 0);
+            if (img->errorCode) {
+                // try again with debug
+                validateFunction(img, sect, 1);
+                return img;
+            }
         }
     }
     return NULL;
