@@ -16,7 +16,7 @@ enum ButtonId {
 }
 
 namespace menu {
-    export let consolePriority = ConsolePriority.Debug;
+    export let consolePriority = ConsolePriority.Log;
     function log(msg: string) {
         console.add(consolePriority, `menu> ${msg}`);
     }
@@ -856,6 +856,8 @@ namespace menu {
         background: RectNode;
         id: number;
         handler: () => void;
+        leftHandler: () => void;
+        rightHandler: () => void;
 
         constructor(labelWidth: number, font: image.Font, text: string, id: number) {
             super();
@@ -950,11 +952,26 @@ namespace menu {
         handleInput(button: ButtonId) {
             log(`list input ${button}`)
             switch (button) {
-                case ButtonId.A:
+                case ButtonId.A: {
                     const item = this.selectedItem;
                     if (item && item.handler)
                         item.handler();
                     break;
+                }
+                case ButtonId.Left: {
+                    log(`list left`)
+                    const item = this.selectedItem;
+                    if (item && item.leftHandler)
+                        item.leftHandler();
+                    break;
+                }
+                case ButtonId.Right: {
+                    log(`list right`)
+                    const item = this.selectedItem;
+                    if (item && item.rightHandler)
+                        item.rightHandler();
+                    break;
+                }
                 case ButtonId.Down:
                     for (let i = 0; i < this.items.length - 1; ++i) {
                         const item = this.items[i];
@@ -1207,6 +1224,13 @@ namespace menu {
             const item = this.list.addItem(name, this.list.length);
             this.list.selectedItemIndex = 0;
             item.handler = handler;
+        }
+
+        addSliderItem(name: string,  leftHandler: () => void, rightHandler: () => void) {
+            const item = this.list.addItem(name, this.list.length);
+            this.list.selectedItemIndex = 0;
+            item.leftHandler = leftHandler;
+            item.rightHandler = rightHandler;
         }
 
         private grow() {

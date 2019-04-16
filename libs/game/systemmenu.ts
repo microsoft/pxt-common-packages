@@ -42,22 +42,20 @@ namespace scene.systemMenu {
             }
             m.hide();
         });
-        m.addItem("volume up", () => {
-            const v = music.volume();
-            music.setVolume(v + 32);
-            music.playTone(440, 500);
-        });
-        m.addItem("volume down", () => {
-            const v = music.volume();
-            music.setVolume(v - 32);
-            music.playTone(440, 500);
-        });
-        m.addItem("brightness up", () => {
-            screen.setBrightness(screen.brightness() + 10)
-        });
-        m.addItem("brightness down", () => {
-            screen.setBrightness(screen.brightness() - 10)
-        });
+        m.addSliderItem("volume <=>",
+            () => {
+                const v = music.volume();
+                music.setVolume(v - 32);
+                music.playTone(440, 500);
+            }, () => {
+                const v = music.volume();
+                music.setVolume(v + 32);
+                music.playTone(440, 500);
+            });
+        m.addSliderItem("brightness <=>",
+            () => screen.setBrightness(screen.brightness() - 10),
+            () => screen.setBrightness(screen.brightness() + 10)
+        );
         m.addItem("sleep (MENU to wake)", () => {
             power.deepSleep();
         });

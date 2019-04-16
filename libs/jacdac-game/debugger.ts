@@ -1,4 +1,4 @@
-namespace jacdac {
+namespace jacdac.dbg {
 
     enum Mode {
         None,
@@ -8,6 +8,7 @@ namespace jacdac {
     }
 
     class DebugMenu {
+        private started: boolean;
         private mode: Mode;
         private _debugViews: DebugView[];
         private consoleVisible: boolean;
@@ -130,6 +131,9 @@ namespace jacdac {
         }
 
         stop() {
+            if (!this.started) return;
+            this.started = false;
+
             game.popScene();
             game.consoleOverlay.setVisible(this.consoleVisible);
             clearBridge()
@@ -141,6 +145,9 @@ namespace jacdac {
         }
 
         start() {
+            if (this.started) return;
+            this.started = true;
+            
             game.pushScene(); // start game
             jacdac.onEvent(JDEvent.BusConnected, () => {
                 game.consoleOverlay.clear();
@@ -251,8 +258,17 @@ namespace jacdac {
     }
 
     let _menu: DebugMenu;
-    scene.systemMenu.addEntry(() => "jacdac dashboard", () => {
+    /**
+     * Shows a basic debugger interface
+     */
+    export function show() {
+        if (_menu)
+            _menu.stop();
         _menu = new DebugMenu();
         _menu.start();
-    }, false, () => { });
+    }
+
+    scene.systemMenu.addEntry(
+        () => "jacdac dashboard",
+        show, false, () => { });
 }
