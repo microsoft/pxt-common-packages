@@ -87,19 +87,4 @@ namespace music {
         currMelody = new Melody(sound);
         currMelody.playUntilDone();
     }
-
-    /**
-     * Stop all sounds from playing.
-     */
-    //% help=music/stop-all-sounds
-    //% blockId=music_stop_all_sounds block="stop all sounds"
-    //% weight=93
-    //% deprecated=true hidden=true
-    export function stopAllSounds() {
-        if (currMelody) {
-            currMelody.stop();
-            currMelody = null;
-        }
-        //music.rest(1);
-    }
 }

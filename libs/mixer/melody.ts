@@ -59,10 +59,6 @@ namespace music {
         return globalVolume;
     }
 
-    let playToneFreq: number
-    let playToneEnd: number
-    let playToneSeq = 0
-
     /**
      * Play a tone through the speaker for some amount of time.
      * @param frequency pitch of the tone to play in Hertz (Hz), eg: Note.C
@@ -80,14 +76,36 @@ namespace music {
         playInstructions(buf)
     }
 
+    /**
+     * Stop all sounds from playing.
+     */
+    //% help=music/stop-all-sounds
+    //% blockId=music_stop_all_sounds block="stop all sounds"
+    //% weight=93
+    export function stopAllSounds() {
+        Melody.stopAll();
+    }
 
     //% fixedInstances
     export class Melody {
         _text: string;
         private _player: MelodyPlayer;
 
+        private static playingMelodies: Melody[];
+
+        static stopAll() {
+            if (Melody.playingMelodies) {
+                const ms = Melody.playingMelodies.slice(0, Melody.playingMelodies.length);
+                ms.forEach(p => p.stop());
+            }
+        }
+
         constructor(text: string) {
             this._text = text
+        }
+
+        get text() {
+            return this._text;
         }
 
         /**
@@ -103,17 +121,39 @@ namespace music {
                 this._player.stop()
                 this._player = null
             }
+            this.unregisterMelody();
+        }
+
+        private registerMelody() {
+            // keep track of the active players
+            if (!Melody.playingMelodies) Melody.playingMelodies = [];
+            // stop and pop melodies if too many playing
+            if (Melody.playingMelodies.length > 4) {
+                // stop last player (also pops)
+                Melody.playingMelodies[Melody.playingMelodies.length - 1].stop();
+            }
+            // put back the melody on top of the melody stack
+            Melody.playingMelodies.removeElement(this);
+            Melody.playingMelodies.push(this);
+        }
+        private unregisterMelody() {
+            // remove from list
+            if (Melody.playingMelodies) {
+                Melody.playingMelodies.removeElement(this); // remove self
+            }
         }
 
         private playCore(volume: number, loop: boolean) {
             this.stop()
             const p = this._player = new MelodyPlayer(this)
+            this.registerMelody();
             control.runInParallel(() => {
                 while (this._player == p) {
                     p.play(volume)
                     if (!loop)
                         break
                 }
+                this.unregisterMelody();
             })
         }
 
@@ -155,8 +195,17 @@ namespace music {
         //% group="Sounds"
         playUntilDone(volume = 128) {
             this.stop()
-            this._player = new MelodyPlayer(this)
+            const p = this._player = new MelodyPlayer(this)
+            this._player.onPlayFinished = () => {
+                if (p == this._player)
+                    this.unregisterMelody();
+            }
+            this.registerMelody();
             this._player.play(volume)
+        }
+
+        toString() {
+            return this._text;
         }
     }
 
@@ -178,6 +227,8 @@ namespace music {
     class MelodyPlayer {
         melody: Melody;
 
+        onPlayFinished: () => void;
+
         constructor(m: Melody) {
             this.melody = m
         }
@@ -189,7 +240,6 @@ namespace music {
         play(volume: number) {
             if (!this.melody)
                 return
-
             volume = Math.clamp(0, 255, (volume * music.volume()) >> 8)
 
             let notes = this.melody._text
@@ -294,8 +344,11 @@ namespace music {
 
             while (true) {
                 let currNote = scanNextWord();
-                if (!currNote)
+                if (!currNote) {
+                    if (this.onPlayFinished)
+                        this.onPlayFinished();
                     return;
+                }
 
                 hz = -1;
 
