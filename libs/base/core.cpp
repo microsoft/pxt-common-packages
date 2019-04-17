@@ -2,10 +2,6 @@
 #include <limits.h>
 #include <stdlib.h>
 
-#ifdef PXT_VM
-#include "vm.h"
-#endif
-
 using namespace std;
 
 #define p10(v) __builtin_powi(10, v)
@@ -1396,10 +1392,12 @@ namespace pxt {
 //%
 void *ptrOfLiteral(int offset);
 
+#ifndef PXT_VM
 //%
 unsigned programSize() {
     return bytecode[17] * 8;
 }
+#endif
 
 void deepSleep() __attribute__((weak));
 //%
@@ -1413,7 +1411,7 @@ int *getBootloaderConfigData() {
 //%
 int getConfig(int key, int defl) {
 #ifdef PXT_VM
-    int *cfgData = currentFiber->img->configData;
+    int *cfgData = vmImg->configData;
 #else
     int *cfgData = *(int **)&bytecode[18];
 #endif
@@ -1510,7 +1508,7 @@ TValue mapGetByString(RefMap *map, String key) {
 }
 
 #ifdef PXT_VM
-#define IFACE_MEMBER_NAMES currentFiber->img->ifaceMemberNames
+#define IFACE_MEMBER_NAMES vmImg->ifaceMemberNames
 #else
 #define IFACE_MEMBER_NAMES *(uintptr_t **)&bytecode[22]
 #endif

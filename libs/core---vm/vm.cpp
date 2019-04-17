@@ -7,7 +7,6 @@
 
 // TODO iface member names - dynamic lookup fallback
 // TODO check on all allowed pxt::* functions
-// TODO check bytecode[...] usage
 
 #define SPLIT_ARG(arg0, arg1) unsigned arg0 = arg & 31, arg1 = arg >> 6
 #define SPLIT_ARG2(arg0, arg1) unsigned arg0 = arg & 255, arg1 = arg >> 8

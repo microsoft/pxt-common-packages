@@ -1127,4 +1127,9 @@ bool removeElement(RefCollection *c, TValue x);
         return JOIN(inst, ClassName);                                                              \
     }
 
+
+#ifdef PXT_VM
+#include "vm.h"
+#endif
+
 #endif

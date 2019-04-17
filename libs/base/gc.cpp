@@ -315,7 +315,11 @@ static void mark(int flags) {
 #endif
 
     if (globals) {
+#ifdef PXT_VM
+        auto nonPtrs = vmImg->infoHeader->nonPointerGlobals;
+#else
         auto nonPtrs = bytecode[21];
+#endif
         len = getNumGlobals() - nonPtrs;
         data = globals + nonPtrs;
         if (flags & 2)

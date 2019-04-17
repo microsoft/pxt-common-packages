@@ -353,8 +353,13 @@ void RefAction::destroy(RefAction *t) {
 }
 
 void RefAction::print(RefAction *t) {
+#ifdef PXT_VM
+    DMESG("RefAction %p pc=%X size=%d", t, 
+        (const uint8_t *)t->func - (const uint8_t *)vmImg->dataStart, t->len);
+#else
     DMESG("RefAction %p r=%d pc=%X size=%d", t, REFCNT(t),
           (const uint8_t *)t->func - (const uint8_t *)bytecode, t->len);
+#endif
 }
 
 PXT_VTABLE_CTOR(RefRefLocal) {
@@ -421,7 +426,9 @@ void error(PXT_PANIC code, int subcode) {
     target_panic(code);
 }
 
+#ifndef PXT_VM
 uint16_t *bytecode;
+#endif
 TValue *globals;
 
 void checkStr(bool cond, const char *msg) {
@@ -433,6 +440,19 @@ void checkStr(bool cond, const char *msg) {
     }
 }
 
+#ifdef PXT_VM
+int templateHash() {
+    return (int)vmImg->infoHeader->hexHash;
+}
+
+int programHash() {
+    return (int)vmImg->infoHeader->programHash;
+}
+
+int getNumGlobals() {
+    return (int)vmImg->infoHeader->allocGlobals;
+}
+#else
 int templateHash() {
     return ((int *)bytecode)[4];
 }
@@ -444,6 +464,7 @@ int programHash() {
 int getNumGlobals() {
     return bytecode[16];
 }
+#endif
 
 #ifndef PXT64
 void exec_binary(unsigned *pc) {
