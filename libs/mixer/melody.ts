@@ -83,7 +83,7 @@ namespace music {
     //% blockId=music_stop_all_sounds block="stop all sounds"
     //% weight=93
     export function stopAllSounds() {
-        MelodyPlayer.stopAll();
+        Melody.stopAll();
     }
 
     //% fixedInstances
@@ -91,8 +91,21 @@ namespace music {
         _text: string;
         private _player: MelodyPlayer;
 
+        private static playingMelodies: Melody[];
+
+        static stopAll() {
+            if (Melody.playingMelodies) {
+                const ms = Melody.playingMelodies.slice(0, Melody.playingMelodies.length);
+                ms.forEach(p => p.stop());
+            }
+        }
+
         constructor(text: string) {
             this._text = text
+        }
+
+        get text() {
+            return this._text;
         }
 
         /**
@@ -105,20 +118,46 @@ namespace music {
         //% group="Sounds"
         stop() {
             if (this._player) {
+                console.log(`stopping ${this._text}`)
                 this._player.stop()
                 this._player = null
+            }
+            this.unregisterMelody();
+        }
+
+        private registerMelody() {
+            // keep track of the active players
+            if (!Melody.playingMelodies) Melody.playingMelodies = [];
+            // if already playing, remove from list
+            Melody.playingMelodies.removeElement(this);
+            // stop and pop melodies if too many playing
+            if (Melody.playingMelodies.length > 4) {
+                // stop last player (also pops)
+                Melody.playingMelodies[Melody.playingMelodies.length - 1].stop();
+            }
+            // push to list of playing melodies
+            //console.log(`register ${this._text}`)
+            Melody.playingMelodies.push(this);
+        }
+        private unregisterMelody() {
+            // remove from list
+            if (Melody.playingMelodies) {
+                //console.log(`unregister ${this._text}`)
+                Melody.playingMelodies.removeElement(this); // remove self
             }
         }
 
         private playCore(volume: number, loop: boolean) {
             this.stop()
             const p = this._player = new MelodyPlayer(this)
+            this.registerMelody();
             control.runInParallel(() => {
                 while (this._player == p) {
                     p.play(volume)
                     if (!loop)
                         break
                 }
+                this.unregisterMelody();
             })
         }
 
@@ -160,8 +199,17 @@ namespace music {
         //% group="Sounds"
         playUntilDone(volume = 128) {
             this.stop()
-            this._player = new MelodyPlayer(this)
+            const p = this._player = new MelodyPlayer(this)
+            this._player.onPlayFinished = () => {
+                if (p == this._player)
+                    this.unregisterMelody();
+            }
+            this.registerMelody();
             this._player.play(volume)
+        }
+
+        toString() {
+            return this._text;
         }
     }
 
@@ -183,15 +231,7 @@ namespace music {
     class MelodyPlayer {
         melody: Melody;
 
-        private static allPlayers: MelodyPlayer[];
-        
-        static stopAll() {
-            if (MelodyPlayer.allPlayers) {
-                MelodyPlayer.allPlayers
-                    .slice(0)
-                    .forEach(p => p.stop());
-            }
-        }
+        onPlayFinished: () => void;
 
         constructor(m: Melody) {
             this.melody = m
@@ -199,25 +239,11 @@ namespace music {
 
         stop() {
             this.melody = null
-            if(MelodyPlayer.allPlayers)
-                MelodyPlayer.allPlayers.removeElement(this); // remove self
         }
 
         play(volume: number) {
             if (!this.melody)
                 return
-
-            // keep track of the active players
-            if (!MelodyPlayer.allPlayers) MelodyPlayer.allPlayers = [];
-            if (MelodyPlayer.allPlayers.length > 4) {
-                // stop last player (also pops)
-                MelodyPlayer.allPlayers[MelodyPlayer.allPlayers.length - 1].stop();
-            }
-            MelodyPlayer.allPlayers.push(this);
-            this.playInteral(volume);
-        }
-
-        private playInteral(volume: number) {
             volume = Math.clamp(0, 255, (volume * music.volume()) >> 8)
 
             let notes = this.melody._text
@@ -323,7 +349,8 @@ namespace music {
             while (true) {
                 let currNote = scanNextWord();
                 if (!currNote) {
-                    MelodyPlayer.allPlayers.removeElement(this); // remove self
+                    if (this.onPlayFinished)
+                        this.onPlayFinished();
                     return;
                 }
 
