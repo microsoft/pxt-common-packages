@@ -7,7 +7,6 @@
 // TODO getConfig() should have a callback into host
 
 // TODO iface member names - dynamic lookup fallback
-// TODO check on all allowed pxt::* functions
 // TODO check types of arguments passed to runtime functions (cpp.ts)
 
 #define SPLIT_ARG(arg0, arg1) unsigned arg0 = arg & 31, arg1 = arg >> 6

@@ -153,7 +153,7 @@ inline bool isDouble(TValue v) {
 }
 
 inline bool isPointer(TValue v) {
-    return !isDouble(v) && ((intptr_t)v & 3) == 0;
+    return !isDouble(v) && v != 0 && ((intptr_t)v & 3) == 0;
 }
 
 inline bool isTagged(TValue v) {
@@ -373,7 +373,7 @@ inline void *ptrOfLiteral(int offset) {
 // TODO
 inline bool isRefCounted(TValue e) {
 #ifdef PXT_GC
-    return !isTagged(e);
+    return isPointer(e);
 #else
     return !isTagged(e) && (*((uint16_t *)e) & 1) == 1;
 #endif
