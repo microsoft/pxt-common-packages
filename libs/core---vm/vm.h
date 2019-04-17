@@ -105,7 +105,7 @@ struct FiberContext {
     uint16_t *foreverPC;
     TValue *sp;
     TValue r0;
-    TValue *caps;
+    RefAction *currAction;
 
     TValue *stackBase;
     TValue *stackLimit;

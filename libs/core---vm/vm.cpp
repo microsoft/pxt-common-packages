@@ -5,11 +5,8 @@
 // TODO 4.5/20 instructions are push - combine
 // TODO check for backjumps (how many)
 
-// TODO static vs heap-allocated functions; number of captures
-// TODO strings - can't really do UTF16
 // TODO replacement of section headers with vtables
 // TODO resolve 'func' pointer in Actions
-// TODO validate that functions with captured vars are not called directly
 // TODO iface get/set
 // TODO check on all allowed pxt::* functions
 
@@ -29,13 +26,8 @@ void op_ldloc(FiberContext *ctx, unsigned arg) {
 }
 
 //%
-void op_stcap(FiberContext *ctx, unsigned arg) {
-    ctx->caps[arg] = ctx->r0;
-}
-
-//%
 void op_ldcap(FiberContext *ctx, unsigned arg) {
-    ctx->r0 = ctx->caps[arg];
+    ctx->r0 = ctx->currAction->fields[arg];
 }
 
 //%
@@ -114,12 +106,19 @@ void op_stfld(FiberContext *ctx, unsigned arg) {
     ((RefRecord *)obj)->fields[fldId] = ctx->r0;
 }
 
-//%
-void op_callproc(FiberContext *ctx, unsigned arg) {
+static inline void runAction(FiberContext *ctx, RefAction *ra) {
     if (ctx->sp < ctx->stackLimit)
         error(PANIC_STACK_OVERFLOW);
+
+    *--ctx->sp = (TValue)ctx->currAction;
     *--ctx->sp = (TValue)(((ctx->pc - ctx->imgbase) << 8) | 2);
-    ctx->pc = (uint16_t *)((RefAction *)ctx->img->pointerLiterals[arg])->func;
+    ctx->currAction = ra;
+    ctx->pc = (uint16_t *)ra->func;
+}
+
+//%
+void op_callproc(FiberContext *ctx, unsigned arg) {
+    runAction(ctx, (RefAction *)ctx->img->pointerLiterals[arg]);
 }
 
 static void callind(FiberContext *ctx, RefAction *ra, unsigned numArgs) {
@@ -132,11 +131,7 @@ static void callind(FiberContext *ctx, RefAction *ra, unsigned numArgs) {
         // trying to call function template
         error(PANIC_INVALID_VTABLE);
 
-    if (ctx->sp < ctx->stackLimit)
-        error(PANIC_STACK_OVERFLOW);
-
-    *--ctx->sp = (TValue)(((ctx->pc - ctx->imgbase) << 8) | 2);
-    ctx->pc = (uint16_t *)ra->func;
+    runAction(ctx, ra);
 }
 
 //%
@@ -156,11 +151,13 @@ void op_ret(FiberContext *ctx, unsigned arg) {
     SPLIT_ARG(retNumArgs, numTmps);
     ctx->sp += numTmps;
     auto retaddr = (intptr_t)*ctx->sp++;
-    ctx->sp += retNumArgs;
-    if (retaddr == (intptr_t)TAG_STACK_BOTTOM)
+    if (retaddr == (intptr_t)TAG_STACK_BOTTOM) {
         ctx->pc = NULL;
-    else
+    } else {
+        ctx->currAction = (RefAction *)*ctx->sp++;
+        ctx->sp += retNumArgs;
         ctx->pc = ctx->imgbase + (retaddr >> 8);
+    }
 }
 
 //%
@@ -400,7 +397,7 @@ void validateFunction(VMImage *img, VMImageSection *sect, int debug) {
                 FNERR(1210); // trying to load return address
             if (arg > (unsigned)currStack - 1 + numArgs)
                 FNERR(1211);
-        } else if (fn == op_ldcap || fn == op_stcap) {
+        } else if (fn == op_ldcap) {
             if (arg >= numCaps)
                 FNERR(1212);
         } else if (fn == op_ldglb || fn == op_stglb) {

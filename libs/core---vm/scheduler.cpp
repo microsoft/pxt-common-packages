@@ -336,6 +336,7 @@ void gcProcessStacks(int flags) {
     for (auto f = allFibers; f; f = f->next) {
         auto ptr = f->stackBase + VM_STACK_SIZE - 1;
         auto end = f->sp;
+        gcProcess((TValue)f->currAction);
         if (flags & 2)
             DMESG("RS%d:%p/%d", cnt++, ptr, end - ptr);
         // VLOG("mark: %p - %p", ptr, end);
