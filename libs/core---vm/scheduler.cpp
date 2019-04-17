@@ -296,11 +296,13 @@ void initRuntime() {
 
     target_startup();
 
-    setupThread(0);
+    setupThread((TValue)vmImg->entryPoint);
 
     target_init();
     screen_init();
     initKeys();
+
+    DMESG("start main loop");
 
     mainRunLoop();
 }

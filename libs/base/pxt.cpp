@@ -30,11 +30,11 @@ Action mkAction(int totallen, RefAction *act) {
         return (TValue)act; // no closure needed
     }
 
-    void *ptr = gcAllocate(sizeof(RefAction) + totallen * sizeof(void*));
+    void *ptr = gcAllocate(sizeof(RefAction) + totallen * sizeof(void *));
     RefAction *r = new (ptr) RefAction();
     r->len = totallen;
     r->func = act->func;
-    memset(r->fields, 0, r->len * sizeof(void*));
+    memset(r->fields, 0, r->len * sizeof(void *));
 
     MEMDBG("mkAction: start=%p => %p", act, r);
 
@@ -268,7 +268,7 @@ TValue Segment::remove(unsigned i) {
         TValue ret = data[i];
         if (i + 1 < length) {
             // Move the rest of the elements to fill in the gap.
-            memmove(data + i, data + i + 1, (length - i - 1) * sizeof(void*));
+            memmove(data + i, data + i + 1, (length - i - 1) * sizeof(void *));
         }
         length--;
         data[length] = Segment::DefaultValue;
@@ -292,7 +292,7 @@ void Segment::insert(unsigned i, TValue value) {
         ensure(length + 1);
 
         // Move the rest of the elements to fill in the gap.
-        memmove(data + i + 1, data + i, (length - i) * sizeof(void*));
+        memmove(data + i + 1, data + i, (length - i) * sizeof(void *));
 
         data[i] = value;
         length++;
@@ -340,7 +340,8 @@ void RefCollection::print(RefCollection *t) {
     t->head.print();
 }
 
-PXT_VTABLE_CTOR(RefAction) {}
+PXT_VTABLE(RefAction, ValType::Function)
+RefAction::RefAction() : PXT_VTABLE_INIT(RefAction) {}
 
 // fields[] contain captured locals
 void RefAction::destroy(RefAction *t) {
@@ -354,8 +355,8 @@ void RefAction::destroy(RefAction *t) {
 
 void RefAction::print(RefAction *t) {
 #ifdef PXT_VM
-    DMESG("RefAction %p pc=%X size=%d", t, 
-        (const uint8_t *)t->func - (const uint8_t *)vmImg->dataStart, t->len);
+    DMESG("RefAction %p pc=%X size=%d", t,
+          (const uint8_t *)t->func - (const uint8_t *)vmImg->dataStart, t->len);
 #else
     DMESG("RefAction %p r=%d pc=%X size=%d", t, REFCNT(t),
           (const uint8_t *)t->func - (const uint8_t *)bytecode, t->len);

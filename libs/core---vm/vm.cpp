@@ -5,11 +5,14 @@
 // TODO 4.5/20 instructions are push - combine
 // TODO check for backjumps (how many)
 // TODO getConfig() should have a callback into host
+// TODO stloc X; ldloc X -> stloc X
 
 // TODO string object field lookups
 
 #define SPLIT_ARG(arg0, arg1) unsigned arg0 = arg & 31, arg1 = arg >> 6
 #define SPLIT_ARG2(arg0, arg1) unsigned arg0 = arg & 255, arg1 = arg >> 8
+
+#define TRACE DMESG
 
 namespace pxt {
 
@@ -75,6 +78,7 @@ void op_newobj(FiberContext *ctx, unsigned arg) {
 }
 
 static inline void checkClass(FiberContext *ctx, TValue obj, unsigned classId, unsigned fldId) {
+    TRACE("check class: %p cl=%d f=%d", obj, classId, fldId);
     if (!isPointer(obj))
         failedCast(obj);
     auto vt = getVTable((RefObject *)obj);
@@ -99,7 +103,7 @@ void op_ldfld(FiberContext *ctx, unsigned arg) {
 //%
 void op_stfld(FiberContext *ctx, unsigned arg) {
     SPLIT_ARG2(fldId, classId);
-    auto obj = *--ctx->sp;
+    auto obj = *ctx->sp++;
     checkClass(ctx, obj, classId, fldId);
     ((RefRecord *)obj)->fields[fldId] = ctx->r0;
 }
@@ -107,7 +111,7 @@ void op_stfld(FiberContext *ctx, unsigned arg) {
 static inline void runAction(FiberContext *ctx, RefAction *ra) {
     if (ctx->sp < ctx->stackLimit)
         error(PANIC_STACK_OVERFLOW);
-
+    
     *--ctx->sp = (TValue)ctx->currAction;
     *--ctx->sp = (TValue)(((ctx->pc - ctx->imgbase) << 8) | 2);
     ctx->currAction = ra;
@@ -346,6 +350,7 @@ void exec_loop(FiberContext *ctx) {
     auto opcodes = ctx->img->opcodes;
     while (ctx->pc) {
         uint16_t opcode = *ctx->pc++;
+        TRACE("0x%x: %04x", (uint8_t*)ctx->pc - 2 - (uint8_t*)ctx->img->dataStart, opcode);
         if (opcode >> 15 == 0) {
             opcodes[opcode & VM_OPCODE_BASE_MASK](ctx, opcode >> VM_OPCODE_BASE_SIZE);
         } else if (opcode >> 14 == 0b10) {
@@ -487,9 +492,9 @@ void validateFunction(VMImage *img, VMImageSection *sect, int debug) {
             currStack = baseStack;
             atEnd = true;
         } else if (fn == op_ldloc || fn == op_stloc) {
-            if (arg == (unsigned)currStack - 1)
-                FNERR(1210); // trying to load return address
-            if (arg > (unsigned)currStack - 1 + numArgs)
+            if (arg == (unsigned)currStack - 1 || arg == (unsigned)currStack)
+                FNERR(1210); // trying to load return address/function
+            if (arg > (unsigned)currStack + numArgs)
                 FNERR(1211);
         } else if (fn == op_ldcap) {
             if (arg >= numCaps)

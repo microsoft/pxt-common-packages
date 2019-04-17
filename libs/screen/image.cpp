@@ -13,7 +13,7 @@
 
 namespace pxt {
 
-PXT_VTABLE(RefImage)
+PXT_VTABLE(RefImage, ValType::Object)
 
 void RefImage::destroy(RefImage *t) {
     decrRC(t->buffer());

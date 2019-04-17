@@ -26,7 +26,13 @@ void vmStart() {
         printf("Validation OK\n");
     }
     vmImg = img;
-    exit(0);
+
+    globals = (TValue *)app_alloc(sizeof(TValue) * getNumGlobals());
+    memset(globals, 0, sizeof(TValue) * getNumGlobals());
+
+    initRuntime();  // never returns
+
+    exit(10);
 }
 
 } // namespace pxt

@@ -1095,19 +1095,19 @@ bool removeElement(RefCollection *c, TValue x);
 #endif
 
 #ifdef PXT_GC
-#define PXT_VTABLE(classname)                                                                      \
-    DEF_VTABLE(classname##_vtable, classname, ValType::Object, (void *)&classname::destroy,        \
+#define PXT_VTABLE(classname, valtp)                                                               \
+    DEF_VTABLE(classname##_vtable, classname, valtp, (void *)&classname::destroy,                  \
                (void *)&classname::print, (void *)&classname::scan, (void *)&classname::gcsize)
 #else
-#define PXT_VTABLE(classname)                                                                      \
-    DEF_VTABLE(classname##_vtable, classname, ValType::Object, (void *)&classname::destroy,        \
+#define PXT_VTABLE(classname, valtp)                                                               \
+    DEF_VTABLE(classname##_vtable, classname, valtp, (void *)&classname::destroy,                  \
                (void *)&classname::print)
 #endif
 
 #define PXT_VTABLE_INIT(classname) RefObject(&classname##_vtable)
 
 #define PXT_VTABLE_CTOR(classname)                                                                 \
-    PXT_VTABLE(classname)                                                                          \
+    PXT_VTABLE(classname, ValType::Object)                                                         \
     classname::classname() : PXT_VTABLE_INIT(classname)
 
 #define PXT_MAIN                                                                                   \

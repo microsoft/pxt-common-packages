@@ -81,6 +81,7 @@ struct VMImage {
     VMImageSection **sections;
     VMImageHeader *infoHeader;
     const OpcodeDesc **opcodeDescs;
+    RefAction *entryPoint;
 
     uint32_t numSections;
     uint32_t numNumberLiterals;

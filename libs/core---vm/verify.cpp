@@ -182,7 +182,8 @@ static VMImage *loadIfaceNames(VMImage *img) {
             for (unsigned i = 0; i < len; ++i) {
                 CHECK(ptrs[i] < img->numSections, 1051);
                 auto ss = img->sections[ptrs[i]];
-                CHECK(ss->type == SectionType::Literal && (BuiltInType)ss->aux == BuiltInType::BoxedString,
+                CHECK(ss->type == SectionType::Literal &&
+                          (BuiltInType)ss->aux == BuiltInType::BoxedString,
                       1052);
                 ptrs[i] = (uintptr_t)img->pointerLiterals[ptrs[i]];
                 // pointers have to be sorted
@@ -285,8 +286,16 @@ static VMImage *injectVTables(VMImage *img) {
                 break;
             }
         } else if (sect->type == SectionType::Function) {
+            if (!img->entryPoint)
+                img->entryPoint = (RefAction *)sect;
             ((RefAction *)sect)->vtable = PXT_VTABLE_TO_INT(&RefAction_vtable);
             ((RefAction *)sect)->func = (ActionCB)((uint8_t *)sect + VM_FUNCTION_CODE_OFFSET);
+        } else if (sect->type == SectionType::VTable) {
+            auto vt = (VTable *)sect->data;
+            vt->methods[0] = (void *)pxt::RefRecord_destroy;
+            vt->methods[1] = (void *)pxt::RefRecord_print;
+            vt->methods[2] = (void *)pxt::RefRecord_scan;
+            vt->methods[3] = (void *)pxt::RefRecord_gcsize;
         }
     }
     return NULL;
@@ -302,7 +311,8 @@ VMImage *loadVMImage(void *data, unsigned length) {
     img->dataStart = (uint64_t *)data;
     img->dataEnd = (uint64_t *)((uint8_t *)data + length);
 
-    if (countSections(img) || loadSections(img) || loadIfaceNames(img) || validateFunctions(img) || injectVTables(img)) {
+    if (countSections(img) || loadSections(img) || loadIfaceNames(img) || validateFunctions(img) ||
+        injectVTables(img)) {
         // error!
         return img;
     }
