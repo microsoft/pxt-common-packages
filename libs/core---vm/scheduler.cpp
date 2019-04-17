@@ -306,8 +306,15 @@ void initRuntime() {
 }
 
 #ifdef PXT_GC
+
+#ifdef PXT64
+#define GC_BASE 0x2000000000
+#define GC_PAGE_SIZE (64 * 1024)
+#else
 #define GC_BASE 0x20000000
 #define GC_PAGE_SIZE 4096
+#endif
+
 void *gcAllocBlock(size_t sz) {
     static uint8_t *currPtr = (uint8_t *)GC_BASE;
     sz = (sz + GC_PAGE_SIZE - 1) & ~(GC_PAGE_SIZE - 1);

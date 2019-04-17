@@ -470,7 +470,11 @@ extern const VTable RefAction_vtable;
 
 #ifdef PXT_GC
 inline bool isReadOnly(TValue v) {
+#ifdef PXT64
+    return !isPointer(v) || !((uintptr_t)v >> 37);
+#else
     return isTagged(v) || !((uintptr_t)v >> 28);
+#endif
 }
 #endif
 
