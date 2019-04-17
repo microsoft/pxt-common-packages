@@ -127,14 +127,13 @@ namespace music {
         private registerMelody() {
             // keep track of the active players
             if (!Melody.playingMelodies) Melody.playingMelodies = [];
-            // if already playing, remove from list
-            Melody.playingMelodies.removeElement(this);
             // stop and pop melodies if too many playing
             if (Melody.playingMelodies.length > 4) {
                 // stop last player (also pops)
                 Melody.playingMelodies[Melody.playingMelodies.length - 1].stop();
             }
-            // push to list of playing melodies
+            // put back the melody on top of the melody stack
+            Melody.playingMelodies.removeElement(this);
             Melody.playingMelodies.push(this);
         }
         private unregisterMelody() {
