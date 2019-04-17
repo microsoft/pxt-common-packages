@@ -234,8 +234,14 @@ static VMImage *validateFunctions(VMImage *img) {
 
             CHECK(minOff * sizeof(IfaceEntry) == vt->ifaceHashEntries * 2, 1034);
 
+            auto last1 = (IfaceEntry *)multBase + maxOff + 1;
+            if (last1->memberId != 0)
+                maxOff++;
+
             for (unsigned i = minOff; i <= maxOff; ++i) {
                 auto ent = (IfaceEntry *)multBase + i;
+                if (ent->memberId == 0)
+                    continue;
                 // printf("%p %d\n", ent, i);
                 if (ent->aux == 0) {
                     CHECK(ent->method < img->numSections, 1037);
