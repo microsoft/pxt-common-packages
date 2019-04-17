@@ -221,7 +221,7 @@ String mkStringCore(const char *data, int len) {
         vt = len >= MIN_SKIP ? &string_skiplist16_vt : &string_inline_utf8_vt;
     }
     if (vt == &string_skiplist16_vt) {
-        r = new (gcAllocate(sizeof(void*) + sizeof(r->skip))) BoxedString(vt);
+        r = new (gcAllocate(sizeof(void *) + sizeof(r->skip))) BoxedString(vt);
         r->skip.list = NULL;
         registerGCPtr((TValue)r);
         r->skip.size = len;
@@ -233,7 +233,7 @@ String mkStringCore(const char *data, int len) {
 #endif
     {
         // for ASCII and UTF8 the layout is the same
-        r = new (gcAllocate(sizeof(void*) + 2 + len + 1)) BoxedString(vt);
+        r = new (gcAllocate(sizeof(void *) + 2 + len + 1)) BoxedString(vt);
         r->ascii.length = len;
         if (data)
             memcpy(r->ascii.data, data, len);
@@ -465,7 +465,7 @@ String concat(String s, String other) {
         // single characters
 
         // allocate [r] first, and keep it alive
-        String r = new (gcAllocate(3 * sizeof(void*))) BoxedString(&string_cons_vt);
+        String r = new (gcAllocate(3 * sizeof(void *))) BoxedString(&string_cons_vt);
         registerGCPtr((TValue)r);
         r->cons.left = s->cons.left;
         // this concat() might trigger GC
@@ -498,7 +498,7 @@ String concat(String s, String other) {
 
 #if PXT_UTF8
 mkCons:
-    r = new (gcAllocate(3 * sizeof(void*))) BoxedString(&string_cons_vt);
+    r = new (gcAllocate(3 * sizeof(void *))) BoxedString(&string_cons_vt);
     r->cons.left = s;
     r->cons.right = other;
     return r;
@@ -1028,7 +1028,7 @@ TNumber ands(TNumber a, TNumber b) {
 
 #define CMPOP_RAW(op, t, f)                                                                        \
     if (bothNumbers(a, b))                                                                         \
-        return (intptr_t)a op((intptr_t)b) ? t : f;                                                          \
+        return (intptr_t)a op((intptr_t)b) ? t : f;                                                \
     int cmp = valCompare(a, b);                                                                    \
     return cmp != -2 && cmp op 0 ? t : f;
 
@@ -1661,7 +1661,7 @@ static void dtorDoNothing() {}
 
 #ifdef PXT_GC
 #define PRIM_VTABLE(name, objectTp, tp, szexpr)                                                    \
-    static uint32_t name##_size(tp *p) { return ((sizeof(tp) + szexpr) + 3) >> 2; }                \
+    static uint32_t name##_size(tp *p) { return TOWORDS(sizeof(tp) + szexpr); }                    \
     DEF_VTABLE(name##_vt, tp, objectTp, (void *)&dtorDoNothing, (void *)&anyPrint, 0,              \
                (void *)&name##_size)
 #else
@@ -1670,8 +1670,9 @@ static void dtorDoNothing() {}
 #endif
 
 #define NOOP ((void)0)
+
 #define STRING_VT(name, fix, scan, gcsize, data, utfsize, length, dataAt)                          \
-    static uint32_t name##_gcsize(BoxedString *p) { return (4 + (gcsize) + 3) >> 2; }              \
+    static uint32_t name##_gcsize(BoxedString *p) { return TOWORDS(sizeof(void *) + (gcsize)); }   \
     static void name##_gcscan(BoxedString *p) { scan; }                                            \
     static const char *name##_data(BoxedString *p) {                                               \
         fix;                                                                                       \
@@ -1777,10 +1778,10 @@ STRING_VT(string_inline_ascii, NOOP, NOOP, 2 + p->ascii.length + 1, p->ascii.dat
 #if PXT_UTF8
 STRING_VT(string_inline_utf8, NOOP, NOOP, 2 + p->utf8.length + 1, p->utf8.data, p->utf8.length,
           utf8Len(p->utf8.data, p->utf8.length), utf8Skip(p->utf8.data, p->utf8.length, idx))
-STRING_VT(string_skiplist16, NOOP, gcMarkArray(p->skip.list), 2 + 2 + 4, SKIP_DATA(p), p->skip.size,
-          p->skip.length, skipLookup(p, idx))
+STRING_VT(string_skiplist16, NOOP, gcMarkArray(p->skip.list), 2 * sizeof(void *), SKIP_DATA(p),
+          p->skip.size, p->skip.length, skipLookup(p, idx))
 STRING_VT(string_cons, fixCons(p), (gcScan((TValue)p->cons.left), gcScan((TValue)p->cons.right)),
-          4 + 4, SKIP_DATA(p), p->skip.size, p->skip.length, skipLookup(p, idx))
+          2 * sizeof(void *), SKIP_DATA(p), p->skip.size, p->skip.length, skipLookup(p, idx))
 #endif
 
 PRIM_VTABLE(number, ValType::Number, BoxedNumber, 0)

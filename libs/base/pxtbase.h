@@ -943,6 +943,13 @@ inline void *gcAllocate(int numbytes) {
 }
 #endif
 
+
+#ifdef PXT64
+#define TOWORDS(bytes) (((bytes) + 7) >> 3)
+#else
+#define TOWORDS(bytes) (((bytes) + 3) >> 2)
+#endif
+
 enum class PerfCounters {
     GC,
 };

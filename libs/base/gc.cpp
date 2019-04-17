@@ -344,7 +344,7 @@ static uint32_t getObjectSize(RefObject *o) {
         // GC_CHECK(0x2000 <= (intptr_t)sz && (intptr_t)sz <= 0x100000, 47);
         r = sz(o);
     }
-    GC_CHECK(1 <= r && (r <= (GC_MAX_ALLOC_SIZE >> 2) || IS_FREE(vt)), 48);
+    GC_CHECK(1 <= r && (r <= BYTES_TO_WORDS(GC_MAX_ALLOC_SIZE) || IS_FREE(vt)), 48);
     return r;
 }
 
@@ -610,7 +610,7 @@ void *gcAllocate(int numbytes) {
                     firstFree = nf;
                 p->vtable = 0;
                 GC_CHECK(!nf || !nf->nextFree || ((uintptr_t)nf->nextFree) >> (HIGH_SHIFT - 8), 48);
-                VVLOG("GC=>%p %d %p -> %p,%p", p, numwords, nf, nf->nextFree, (void*)nf->vtable);
+                VVLOG("GC=>%p %d %p -> %p,%p", p, numwords, nf, nf->nextFree, (void *)nf->vtable);
                 inGC &= ~IN_GC_ALLOC;
                 return p;
             }
@@ -710,7 +710,7 @@ void RefRecord_scan(RefRecord *r) {
     gcScanMany(r->fields, BYTES_TO_WORDS(tbl->numbytes - sizeof(RefRecord)));
 }
 
-#define SIZE(off) (sizeof(*t) + (off) + 3) >> 2
+#define SIZE(off) TOWORDS(sizeof(*t) + (off))
 
 unsigned RefImage::gcsize(RefImage *t) {
     if (t->hasBuffer())
