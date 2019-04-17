@@ -56,7 +56,7 @@ TODO64
 
 #define MARK(v)                                                                                    \
     do {                                                                                           \
-        GC_CHECK(inGCArea(v), 47);                                                                 \
+        GC_CHECK(inGCArea(v), 42);                                                                 \
         *(uintptr_t *)(v) |= MARKED_MASK;                                                          \
     } while (0)
 
@@ -557,6 +557,7 @@ void gcFreeze() {
 
 void *gcAllocate(int numbytes) {
     size_t numwords = BYTES_TO_WORDS(ALIGN_TO_WORD(numbytes));
+    // VVLOG("alloc %d bytes %d words", numbytes, numwords);
 
     if (numbytes > GC_MAX_ALLOC_SIZE)
         target_panic(PANIC_GC_TOO_BIG_ALLOCATION);
@@ -582,17 +583,20 @@ void *gcAllocate(int numbytes) {
         RefBlock *prev = NULL;
         for (auto p = firstFree; p; p = p->nextFree) {
             VVLOG("p=%p", p);
-            if (i == 0 && (uint8_t *)p > midPtr)
+            if (i == 0 && (uint8_t *)p > midPtr) {
+                VLOG("past midptr %p; gc", midPtr);
                 break;
+            }
             GC_CHECK(!isReadOnly((TValue)p), 49);
             auto vt = p->vtable;
             if (!IS_FREE(vt))
                 oops(43);
             int left = VAR_BLOCK_WORDS(vt) - numwords;
+            // VVLOG("%p %d - %d = %d", (void*)vt, (int)VAR_BLOCK_WORDS(vt), (int)numwords, left);
             if (left >= 0) {
                 auto nf = (RefBlock *)((void **)p + numwords);
-                // VLOG("nf=%p", nf);
                 auto nextFree = p->nextFree; // p and nf can overlap when allocating 4 bytes
+                // VVLOG("nf=%p nef=%p", nf, nextFree);
                 if (left)
                     nf->vtable = (left << 2) | FREE_MASK;
                 if (left >= 2) {
@@ -606,7 +610,7 @@ void *gcAllocate(int numbytes) {
                     firstFree = nf;
                 p->vtable = 0;
                 GC_CHECK(!nf || !nf->nextFree || ((uintptr_t)nf->nextFree) >> (HIGH_SHIFT - 8), 48);
-                VVLOG("GC=>%p %d %p", p, numwords, nf->nextFree);
+                VVLOG("GC=>%p %d %p -> %p,%p", p, numwords, nf, nf->nextFree, (void*)nf->vtable);
                 inGC &= ~IN_GC_ALLOC;
                 return p;
             }
