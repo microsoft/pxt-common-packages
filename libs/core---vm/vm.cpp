@@ -286,6 +286,48 @@ void op_callset(FiberContext *ctx, unsigned arg) {
 }
 
 //%
+void op_mapget(FiberContext *ctx, unsigned arg) {
+    auto obj = ctx->sp[0];
+    if (!isPointer(obj))
+        failedCast(obj);
+    auto vt = getVTable((RefObject *)obj);
+    auto key = numops::toString(ctx->r0);
+    if (vt->classNo == BuiltInType::RefMap) {
+        ctx->r0 = pxtrt::mapGetByString((RefMap *)obj, key);
+        ctx->sp++;
+    } else {
+        int k = pxtrt::lookupMapKey(key);
+        if (k == 0) {
+            ctx->sp++;
+            ctx->r0 = TAG_UNDEFINED;
+        } else {
+            callifaceCore(ctx, 1, k, 1);
+        }
+    }
+}
+
+//%
+void op_mapset(FiberContext *ctx, unsigned arg) {
+    auto obj = ctx->sp[1];
+    if (!isPointer(obj))
+        failedCast(obj);
+    auto vt = getVTable((RefObject *)obj);
+    auto key = numops::toString(ctx->sp[0]);
+    if (vt->classNo == BuiltInType::RefMap) {
+        pxtrt::mapSetByString((RefMap *)obj, key, ctx->r0);
+        ctx->sp += 2;
+    } else {
+        int k = pxtrt::lookupMapKey(key);
+        if (k == 0) {
+            failedCast(obj);
+        } else {
+            ctx->sp[0] = ctx->r0;
+            callifaceCore(ctx, 2, k, 2);
+        }
+    }
+}
+
+//%
 void op_checkinst(FiberContext *ctx, unsigned arg) {
     auto obj = ctx->r0;
     ctx->r0 = TAG_FALSE;
@@ -316,7 +358,15 @@ void exec_loop(FiberContext *ctx) {
     }
 }
 
-// 1243
+} // namespace pxt
+
+//
+// Verification
+//
+
+namespace pxt {
+
+// 1248
 #define FNERR(errcode)                                                                             \
     do {                                                                                           \
         setVMImgError(img, errcode, &code[pc]);                                                    \
@@ -409,9 +459,23 @@ void validateFunction(VMImage *img, VMImageSection *sect, int debug) {
         } else if (fn == op_push) {
             currStack++;
         } else if (fn == op_pop) {
+            if (arg)
+                FNERR(1243);
             currStack--;
             if (currStack < baseStack)
                 FNERR(1206);
+        } else if (fn == op_mapget) {
+            if (arg)
+                FNERR(1244);
+            currStack--;
+            if (currStack < baseStack)
+                FNERR(1245);
+        } else if (fn == op_mapset) {
+            if (arg)
+                FNERR(1246);
+            currStack -= 2;
+            if (currStack < baseStack)
+                FNERR(1247);
         } else if (fn == op_ret) {
             SPLIT_ARG(retNumArgs, numTmps);
             if (currStack != baseStack)
