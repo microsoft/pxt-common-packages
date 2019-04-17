@@ -73,11 +73,14 @@ struct VMImageHeader {
 struct VMImage {
     TValue *numberLiterals;
     TValue *pointerLiterals;
-    uint32_t *configData;
     OpFun *opcodes;
-    const OpcodeDesc **opcodeDescs;
+    int32_t *configData;
+    uintptr_t *ifaceMemberNames;
+
     uint64_t *dataStart, *dataEnd;
+    VMImageSection **sections;
     VMImageHeader *infoHeader;
+    const OpcodeDesc **opcodeDescs;
 
     uint32_t numSections;
     uint32_t numNumberLiterals;

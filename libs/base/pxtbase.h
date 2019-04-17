@@ -777,8 +777,8 @@ class BoxedString : public RefObject {
 
 class BoxedBuffer : public RefObject {
   public:
-    // data needs to be word-aligned, so we use 32 bits for length
-    int length;
+    // data needs to be word-aligned, so we use 32/64 bits for length
+    intptr_t length;
     uint8_t data[0];
     BoxedBuffer() : RefObject(&buffer_vt) {}
 };
@@ -981,10 +981,16 @@ inline void initPerfCounters() {}
 inline void dumpPerfCounters() {}
 #endif
 
-} // namespace pxt
-
+#ifdef PXT_VM
+String mkInternalString(const char *str);
+#define PXT_DEF_STRING(name, val)                                                                  \
+    String name = mkInternalString(val);
+#else
 #define PXT_DEF_STRING(name, val)                                                                  \
     static const char name[] __attribute__((aligned(4))) = "@PXT@:" val;
+#endif
+
+} // namespace pxt
 
 using namespace pxt;
 

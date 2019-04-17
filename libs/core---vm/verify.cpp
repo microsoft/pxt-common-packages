@@ -8,7 +8,7 @@ VMImage *setVMImgError(VMImage *img, int code, void *pos) {
     return img;
 }
 
-// next free error 1045
+// next free error 1055
 #define ERROR(code, pos) return setVMImgError(img, code, pos)
 #define CHECK(cond, code)                                                                          \
     do {                                                                                           \
@@ -25,8 +25,9 @@ VMImage *setVMImgError(VMImage *img, int code, void *pos) {
 #define FOR_SECTIONS()                                                                             \
     VMImageSection *sect, *next;                                                                   \
     for (sect = (VMImageSection *)img->dataStart;                                                  \
-         (next = (VMImageSection *)((uint8_t *)sect + sect->size)), (uint64_t *)sect < img->dataEnd;  \
-                                   sect = next)
+         (next = (VMImageSection *)((uint8_t *)sect + sect->size)),                                \
+        (uint64_t *)sect < img->dataEnd;                                                           \
+         sect = next)
 
 static VMImage *countSections(VMImage *img) {
     auto p = img->dataStart;
@@ -38,6 +39,7 @@ static VMImage *countSections(VMImage *img) {
     }
     CHECK_AT(p == img->dataEnd, 1003, p);
     img->pointerLiterals = new TValue[img->numSections];
+    img->sections = new VMImageSection *[img->numSections];
 
     return NULL;
 }
@@ -52,6 +54,7 @@ static VMImage *loadSections(VMImage *img) {
 
     FOR_SECTIONS() {
         CHECK(sect->size < 32000, 1014);
+        CHECK(sect->size >= 16, 1048);
 
         if (sect->type == SectionType::InfoHeader) {
             CHECK(sect->size >= sizeof(VMImageHeader), 1008);
@@ -108,10 +111,6 @@ static VMImage *loadSections(VMImage *img) {
                 return img;
         }
 
-        if (sect->type == SectionType::IfaceMemberNames) {
-            // TODO
-        }
-
         if (sect->type == SectionType::NumberLiterals) {
             CHECK(!img->numberLiterals, 1004);
             img->numNumberLiterals = (sect->size >> 3) - 1;
@@ -131,19 +130,32 @@ static VMImage *loadSections(VMImage *img) {
         }
 
         if (sect->type == SectionType::ConfigData) {
-            img->numConfigDataEntries = sect->size >> 3;
-            img->configData = (uint32_t *)sect->data;
+            img->numConfigDataEntries = (sect->size - 8) >> 3;
+            img->configData = (int32_t *)sect->data;
+            CHECK(img->configData[(img->numConfigDataEntries - 1) * 2] == 0, 1045);
         }
 
-        if (sect->type == SectionType::Literal && sect->aux == (int)BuiltInType::BoxedString) {
-            CHECK(sect->size >= 16, 1041);
-            auto str = (CompiledString *)sect->data;
-            CHECK(sect->size >= str->numbytes + 8 + 4 + 1, 1042);
-            auto v = (TValue)mkString(str->utf8data, str->numbytes);
-            registerGCPtr(v);
-            img->pointerLiterals[idx] = v;
-        } else if (sect->type == SectionType::Literal || sect->type == SectionType::Function ||
-                   sect->type == SectionType::VTable) {
+        img->sections[idx] = sect;
+
+        if (sect->type == SectionType::Literal) {
+            if (sect->aux == (int)BuiltInType::BoxedString) {
+                auto str = (CompiledString *)sect->data;
+                CHECK(sect->size >= str->numbytes + 8 + 4 + 1, 1042);
+                auto v = (TValue)mkString(str->utf8data, str->numbytes);
+                registerGCPtr(v);
+                img->pointerLiterals[idx] = v;
+                printf("set %d - %p\n",idx,v);
+            } else {
+                img->pointerLiterals[idx] = (TValue)sect;
+
+                if (sect->aux == (int)BuiltInType::BoxedBuffer) {
+                    auto buf = (BoxedBuffer *)sect;
+                    CHECK(sect->size >= buf->length + sizeof(*buf), 1049);
+                } else {
+                    CHECK(0, 1050);
+                }
+            }
+        } else if (sect->type == SectionType::Function || sect->type == SectionType::VTable) {
             img->pointerLiterals[idx] = (TValue)sect;
         } else {
             img->pointerLiterals[idx] = nullptr;
@@ -203,9 +215,8 @@ static VMImage *validateFunctions(VMImage *img) {
                 // printf("%p %d\n", ent, i);
                 if (ent->aux == 0) {
                     CHECK(ent->method < img->numSections, 1037);
-                    auto fn = img->pointerLiterals[ent->method];
-                    CHECK(fn != NULL, 1038);
-                    CHECK(((VMImageSection *)fn)->type == SectionType::Function, 1039);
+                    auto fn = img->sections[ent->method];
+                    CHECK(fn->type == SectionType::Function, 1039);
                 } else {
                     CHECK(ent->aux < (vt->numbytes >> 3), 1035);
                     CHECK(ent->aux == ent->method, 1036);
@@ -215,6 +226,26 @@ static VMImage *validateFunctions(VMImage *img) {
             auto p = (uint8_t *)((IfaceEntry *)multBase + maxOff + 1);
             while (p < endp)
                 CHECK(*p++ == 0, 1040);
+        }
+
+        if (sect->type == SectionType::IfaceMemberNames) {
+            uintptr_t *ptrs = (uintptr_t *)sect->data;
+            img->ifaceMemberNames = ptrs;
+            auto len = *ptrs++;
+            CHECK(sect->size >= 16 + len * 8, 1047);
+            for (unsigned i = 0; i < len; ++i) {
+                CHECK(ptrs[i] < img->numSections, 1051);
+                printf("%d\n",(int)ptrs[i]);
+                auto ss = img->sections[ptrs[i]];
+                CHECK(ss->type == SectionType::Literal && (BuiltInType)ss->aux == BuiltInType::BoxedString,
+                      1052);
+                ptrs[i] = (uintptr_t)img->pointerLiterals[ptrs[i]];
+                printf("l=%p %p\n", ptrs[i], ss);
+                // pointers have to be sorted
+                CHECK(i == 0 || ptrs[i - 1] < ptrs[i], 1053);
+                // and so strings
+                CHECK(i == 0 || String_::compare((String)ptrs[i - 1], (String)ptrs[i]) < 0, 1054);
+            }
         }
 
         if (sect->type == SectionType::Function) {

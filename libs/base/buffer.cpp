@@ -79,7 +79,7 @@ void fill(Buffer buf, int value, int offset = 0, int length = -1) {
         return; // DEVICE_INVALID_PARAMETER;
     if (length < 0)
         length = buf->length;
-    length = min(length, buf->length - offset);
+    length = min((intptr_t)length, buf->length - offset);
     memset(buf->data + offset, value, length);
 }
 
@@ -91,7 +91,7 @@ Buffer slice(Buffer buf, int offset = 0, int length = -1) {
     offset = min((int)buf->length, offset);
     if (length < 0)
         length = buf->length;
-    length = min(length, buf->length - offset);
+    length = min((intptr_t)length, buf->length - offset);
     return mkBuffer(buf->data + offset, length);
 }
 

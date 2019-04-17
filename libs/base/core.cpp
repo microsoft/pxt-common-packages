@@ -2,6 +2,10 @@
 #include <limits.h>
 #include <stdlib.h>
 
+#ifdef PXT_VM
+#include "vm.h"
+#endif
+
 using namespace std;
 
 #define p10(v) __builtin_powi(10, v)
@@ -206,6 +210,15 @@ static void setupSkipList(String r, const char *data) {
     }
 }
 #endif
+
+String mkInternalString(const char *str) {
+    int len = strlen(str);
+    String r = new (xmalloc(sizeof(void *) + 2 + len + 1)) BoxedString(&string_inline_ascii_vt);
+    r->ascii.length = len;
+    memcpy(r->ascii.data, str, len);
+    r->ascii.data[len] = 0;
+    return r;
+}
 
 String mkStringCore(const char *data, int len) {
     if (len < 0)
@@ -1399,7 +1412,11 @@ int *getBootloaderConfigData() {
 
 //%
 int getConfig(int key, int defl) {
+#ifdef PXT_VM
+    int *cfgData = currentFiber->img->configData;
+#else
     int *cfgData = *(int **)&bytecode[18];
+#endif
 
     for (int i = 0;; i += 2) {
         if (cfgData[i] == key)
@@ -1492,9 +1509,15 @@ TValue mapGetByString(RefMap *map, String key) {
     return r;
 }
 
+#ifdef PXT_VM
+#define IFACE_MEMBER_NAMES currentFiber->img->ifaceMemberNames
+#else
+#define IFACE_MEMBER_NAMES *(uintptr_t **)&bytecode[22]
+#endif
+
 //%
 int lookupMapKey(String key) {
-    auto arr = *(uintptr_t **)&bytecode[22];
+    auto arr = IFACE_MEMBER_NAMES;
     auto len = *arr++;
     auto ikey = (uintptr_t)key;
     auto l = 0U;
@@ -1526,7 +1549,7 @@ int lookupMapKey(String key) {
 
 //%
 TValue mapGet(RefMap *map, unsigned key) {
-    auto arr = *(String **)&bytecode[22];
+    auto arr = (String *)IFACE_MEMBER_NAMES;
     auto r = mapGetByString(map, arr[key + 1]);
     map->unref();
     return r;
@@ -1547,7 +1570,7 @@ void mapSetByString(RefMap *map, String key, TValue val) {
 
 //%
 void mapSet(RefMap *map, unsigned key, TValue val) {
-    auto arr = *(String **)&bytecode[22];
+    auto arr = (String *)IFACE_MEMBER_NAMES;
     mapSetByString(map, arr[key + 1], val);
     decr(val);
     map->unref();

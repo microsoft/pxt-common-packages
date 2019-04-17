@@ -437,9 +437,7 @@ void validateFunction(VMImage *img, VMImageSection *sect, int debug) {
 
             if (classId >= img->numSections)
                 FNERR(1236);
-            auto fsec = (VMImageSection *)img->pointerLiterals[classId];
-            if (!fsec)
-                FNERR(1233);
+            auto fsec = img->sections[classId];
             if (fsec->type != SectionType::VTable)
                 FNERR(1234);
 
@@ -452,15 +450,17 @@ void validateFunction(VMImage *img, VMImageSection *sect, int debug) {
                 if (currStack < baseStack)
                     FNERR(1232);
             }
-        } else if (fn == op_ldlit || fn == op_newobj) {
+        } else if (fn == op_ldlit ) {
             if (arg >= img->numSections)
                 FNERR(1215);
-            auto fsec = (VMImageSection *)img->pointerLiterals[arg];
-            if (!fsec)
-                FNERR(1216);
-            if (fn == op_ldlit && fsec->type == SectionType::VTable)
+            auto fsec = img->sections[arg];
+            if (fsec->type != SectionType::Literal && fsec->type != SectionType::Function)
                 FNERR(1237);
-            if (fn == op_newobj && fsec->type != SectionType::VTable)
+        } else if (fn == op_newobj) {
+            if (arg >= img->numSections)
+                FNERR(1219);
+            auto fsec = img->sections[arg];
+            if (fsec->type != SectionType::VTable)
                 FNERR(1238);
         } else if (fn == op_ldnumber) {
             if (arg >= img->numNumberLiterals)
@@ -468,9 +468,7 @@ void validateFunction(VMImage *img, VMImageSection *sect, int debug) {
         } else if (fn == op_callproc) {
             if (arg >= img->numSections)
                 FNERR(1218);
-            auto fsec = (VMImageSection *)img->pointerLiterals[arg];
-            if (!fsec)
-                FNERR(1219);
+            auto fsec = img->sections[arg];
             if (fsec->type != SectionType::Function)
                 FNERR(1220);
             unsigned calledArgs = ((RefAction *)fsec)->numArgs;
