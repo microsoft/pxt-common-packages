@@ -8,7 +8,7 @@ VMImage *setVMImgError(VMImage *img, int code, void *pos) {
     return img;
 }
 
-// next free error 1041
+// next free error 1045
 #define ERROR(code, pos) return setVMImgError(img, code, pos)
 #define CHECK(cond, code)                                                                          \
     do {                                                                                           \
@@ -23,8 +23,10 @@ VMImage *setVMImgError(VMImage *img, int code, void *pos) {
 #define ALIGNED(sz) (((sz)&7) == 0)
 
 #define FOR_SECTIONS()                                                                             \
-    for (auto sect = (VMImageSection *)img->dataStart; (uint64_t *)sect < img->dataEnd;            \
-         sect = (VMImageSection *)((uint8_t *)sect + sect->size))
+    VMImageSection *sect, *next;                                                                   \
+    for (sect = (VMImageSection *)img->dataStart;                                                  \
+         (next = (VMImageSection *)((uint8_t *)sect + sect->size)), (uint64_t *)sect < img->dataEnd;  \
+                                   sect = next)
 
 static VMImage *countSections(VMImage *img) {
     auto p = img->dataStart;
@@ -135,15 +137,17 @@ static VMImage *loadSections(VMImage *img) {
 
         if (sect->type == SectionType::Literal && sect->aux == (int)BuiltInType::BoxedString) {
             CHECK(sect->size >= 16, 1041);
-            auto str = (CompiledString*)sect->data;
+            auto str = (CompiledString *)sect->data;
             CHECK(sect->size >= str->numbytes + 8 + 4 + 1, 1042);
             auto v = (TValue)mkString(str->utf8data, str->numbytes);
             registerGCPtr(v);
             img->pointerLiterals[idx] = v;
-        } else if ((int)sect->type >= 0x20)
+        } else if (sect->type == SectionType::Literal || sect->type == SectionType::Function ||
+                   sect->type == SectionType::VTable) {
             img->pointerLiterals[idx] = (TValue)sect;
-        else
+        } else {
             img->pointerLiterals[idx] = nullptr;
+        }
 
         idx++;
     }
@@ -174,7 +178,7 @@ static VMImage *validateFunctions(VMImage *img) {
             CHECK(vt->objectType == ValType::Object, 1026);
             CHECK(vt->magic == VTABLE_MAGIC, 1027);
             CHECK(vt->ifaceHashEntries > maxMult + 3, 1028);
-            CHECK((uint8_t*)(multBase + vt->ifaceHashEntries) < endp, 1029);
+            CHECK((uint8_t *)(multBase + vt->ifaceHashEntries) < endp, 1029);
             CHECK(vt->reserved == 0, 1030);
             CHECK(vt->ifaceHashMult != 0, 1031);
             CHECK((vt->ifaceHashEntries & 3) == 0, 1032);
@@ -188,7 +192,7 @@ static VMImage *validateFunctions(VMImage *img) {
                 if (off2 < minOff)
                     minOff = off2;
                 auto ent = (IfaceEntry *)multBase + off2;
-                //printf("%p ep=%p %d\n", ent, endp, off2);
+                // printf("%p ep=%p %d\n", ent, endp, off2);
                 CHECK((uint8_t *)(ent + 1) <= endp, 1033);
             }
 
@@ -196,7 +200,7 @@ static VMImage *validateFunctions(VMImage *img) {
 
             for (unsigned i = minOff; i <= maxOff; ++i) {
                 auto ent = (IfaceEntry *)multBase + i;
-                //printf("%p %d\n", ent, i);
+                // printf("%p %d\n", ent, i);
                 if (ent->aux == 0) {
                     CHECK(ent->method < img->numSections, 1037);
                     auto fn = img->pointerLiterals[ent->method];
@@ -208,7 +212,7 @@ static VMImage *validateFunctions(VMImage *img) {
                 }
             }
 
-            auto p = (uint8_t*)((IfaceEntry *)multBase + maxOff + 1);
+            auto p = (uint8_t *)((IfaceEntry *)multBase + maxOff + 1);
             while (p < endp)
                 CHECK(*p++ == 0, 1040);
         }
@@ -226,7 +230,24 @@ static VMImage *validateFunctions(VMImage *img) {
 }
 
 static VMImage *injectVTables(VMImage *img) {
-    // TODO replace section headers with vtables (for 0x20 and above)
+    // this is the last FOR_SECTIONS() that will ever work
+    FOR_SECTIONS() {
+        if (sect->type == SectionType::Literal) {
+            switch ((BuiltInType)sect->aux) {
+            case BuiltInType::BoxedString:
+                break;
+            case BuiltInType::BoxedBuffer:
+                ((RefObject *)sect)->vtable = PXT_VTABLE_TO_INT(&buffer_vt);
+                break;
+            default:
+                CHECK(0, 1043);
+                break;
+            }
+        } else if (sect->type == SectionType::Function) {
+            ((RefAction *)sect)->vtable = PXT_VTABLE_TO_INT(&RefAction_vtable);
+            ((RefAction *)sect)->func = (ActionCB)((uint8_t *)sect + VM_FUNCTION_CODE_OFFSET);
+        }
+    }
     return NULL;
 }
 

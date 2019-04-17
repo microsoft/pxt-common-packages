@@ -5,8 +5,6 @@
 // TODO 4.5/20 instructions are push - combine
 // TODO check for backjumps (how many)
 
-// TODO replacement of section headers with vtables
-// TODO resolve 'func' pointer in Actions
 // TODO iface get/set
 // TODO check on all allowed pxt::* functions
 
@@ -289,7 +287,7 @@ void exec_loop(FiberContext *ctx) {
     }
 }
 
-// 1239
+// 1240
 #define FNERR(errcode)                                                                             \
     do {                                                                                           \
         setVMImgError(img, errcode, &code[pc]);                                                    \
@@ -316,6 +314,9 @@ void validateFunction(VMImage *img, VMImageSection *sect, int debug) {
 
     unsigned numArgs = ra->numArgs;
     unsigned numCaps = ra->initialLen;
+
+    if (numCaps > 200)
+        FNERR(1239);
 
     while (pc < lastPC) {
         if (currStack > VM_MAX_FUNCTION_STACK)
