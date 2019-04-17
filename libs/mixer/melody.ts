@@ -59,10 +59,6 @@ namespace music {
         return globalVolume;
     }
 
-    let playToneFreq: number
-    let playToneEnd: number
-    let playToneSeq = 0
-
     /**
      * Play a tone through the speaker for some amount of time.
      * @param frequency pitch of the tone to play in Hertz (Hz), eg: Note.C
@@ -80,6 +76,15 @@ namespace music {
         playInstructions(buf)
     }
 
+    /**
+     * Stop all sounds from playing.
+     */
+    //% help=music/stop-all-sounds
+    //% blockId=music_stop_all_sounds block="stop all sounds"
+    //% weight=93
+    export function stopAllSounds() {
+        MelodyPlayer.stopAll();
+    }
 
     //% fixedInstances
     export class Melody {
@@ -178,18 +183,42 @@ namespace music {
     class MelodyPlayer {
         melody: Melody;
 
+        private static allPlayers: MelodyPlayer[];
+        
+        static stopAll() {
+            if (MelodyPlayer.allPlayers) {
+                MelodyPlayer.allPlayers
+                    .slice(0)
+                    .forEach(p => p.stop());
+            }
+        }
+
         constructor(m: Melody) {
             this.melody = m
         }
 
         stop() {
             this.melody = null
+            if(MelodyPlayer.allPlayers)
+                MelodyPlayer.allPlayers.removeElement(this); // remove self
         }
 
         play(volume: number) {
             if (!this.melody)
                 return
 
+            // keep track of the active players
+            if (!MelodyPlayer.allPlayers) MelodyPlayer.allPlayers = [];
+            if (MelodyPlayer.allPlayers.length > 4) {
+                // stop last player (also pops)
+                MelodyPlayer.allPlayers[MelodyPlayer.allPlayers.length - 1].stop();
+            }
+            MelodyPlayer.allPlayers.push(this);
+            this.playInteral(volume);
+            MelodyPlayer.allPlayers.removeElement(this); // remove self
+        }
+
+        private playInteral(volume: number) {
             volume = Math.clamp(0, 255, (volume * music.volume()) >> 8)
 
             let notes = this.melody._text
