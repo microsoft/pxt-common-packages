@@ -221,7 +221,7 @@ String mkStringCore(const char *data, int len) {
         vt = len >= MIN_SKIP ? &string_skiplist16_vt : &string_inline_utf8_vt;
     }
     if (vt == &string_skiplist16_vt) {
-        r = new (gcAllocate(4 + 2 * 4)) BoxedString(vt);
+        r = new (gcAllocate(sizeof(void*) + sizeof(r->skip))) BoxedString(vt);
         r->skip.list = NULL;
         registerGCPtr((TValue)r);
         r->skip.size = len;
@@ -233,7 +233,7 @@ String mkStringCore(const char *data, int len) {
 #endif
     {
         // for ASCII and UTF8 the layout is the same
-        r = new (gcAllocate(4 + 2 + len + 1)) BoxedString(vt);
+        r = new (gcAllocate(sizeof(void*) + 2 + len + 1)) BoxedString(vt);
         r->ascii.length = len;
         if (data)
             memcpy(r->ascii.data, data, len);
@@ -465,7 +465,7 @@ String concat(String s, String other) {
         // single characters
 
         // allocate [r] first, and keep it alive
-        String r = new (gcAllocate(4 + 2 * 4)) BoxedString(&string_cons_vt);
+        String r = new (gcAllocate(3 * sizeof(void*))) BoxedString(&string_cons_vt);
         registerGCPtr((TValue)r);
         r->cons.left = s->cons.left;
         // this concat() might trigger GC
@@ -498,7 +498,7 @@ String concat(String s, String other) {
 
 #if PXT_UTF8
 mkCons:
-    r = new (gcAllocate(4 + 2 * 4)) BoxedString(&string_cons_vt);
+    r = new (gcAllocate(3 * sizeof(void*))) BoxedString(&string_cons_vt);
     r->cons.left = s;
     r->cons.right = other;
     return r;
