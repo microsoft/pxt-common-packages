@@ -215,7 +215,6 @@ namespace music {
             }
             MelodyPlayer.allPlayers.push(this);
             this.playInteral(volume);
-            MelodyPlayer.allPlayers.removeElement(this); // remove self
         }
 
         private playInteral(volume: number) {
@@ -323,8 +322,10 @@ namespace music {
 
             while (true) {
                 let currNote = scanNextWord();
-                if (!currNote)
+                if (!currNote) {
+                    MelodyPlayer.allPlayers.removeElement(this); // remove self
                     return;
+                }
 
                 hz = -1;
 
