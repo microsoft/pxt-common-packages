@@ -129,6 +129,24 @@ VMImage *loadVMImage(void *data, unsigned length);
 VMImage *setVMImgError(VMImage *img, int code, void *pos);
 void exec_loop(FiberContext *ctx);
 
+#define DEF_CONVERSION(retp, tp, btp)                                                              \
+    static inline retp tp(TValue v) {                                                              \
+        if (!isPointer(v))                                                                         \
+            failedCast(v);                                                                         \
+        if (getVTable((RefObject *)v)->classNo != btp)                                             \
+            failedCast(v);                                                                         \
+        return (retp)v;                                                                            \
+    }
+
+DEF_CONVERSION(RefCollection *, asRefCollection, BuiltInType::RefCollection)
+DEF_CONVERSION(RefAction *, asRefAction, BuiltInType::RefAction)
+DEF_CONVERSION(RefRefLocal *, asRefRefLocal, BuiltInType::RefRefLocal)
+DEF_CONVERSION(RefMap *, asRefMap, BuiltInType::RefMap)
+
+DEF_CONVERSION(String, asString, BuiltInType::BoxedString)
+DEF_CONVERSION(Buffer, asBuffer, BuiltInType::BoxedBuffer)
+DEF_CONVERSION(Image_, asImage_, BuiltInType::RefImage)
+
 } // namespace pxt
 
 #endif
