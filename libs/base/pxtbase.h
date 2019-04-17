@@ -422,7 +422,6 @@ enum class BuiltInType : uint16_t {
     User0 = 16,
 };
 
-
 struct VTable {
     uint16_t numbytes;
     ValType objectType;
@@ -943,7 +942,6 @@ inline void *gcAllocate(int numbytes) {
 }
 #endif
 
-
 #ifdef PXT64
 #define TOWORDS(bytes) (((bytes) + 7) >> 3)
 #else
@@ -983,8 +981,7 @@ inline void dumpPerfCounters() {}
 
 #ifdef PXT_VM
 String mkInternalString(const char *str);
-#define PXT_DEF_STRING(name, val)                                                                  \
-    String name = mkInternalString(val);
+#define PXT_DEF_STRING(name, val) String name = mkInternalString(val);
 #else
 #define PXT_DEF_STRING(name, val)                                                                  \
     static const char name[] __attribute__((aligned(4))) = "@PXT@:" val;
@@ -1012,6 +1009,21 @@ inline bool toBoolQuick(TValue v) {
     return numops::toBool(v);
 }
 } // namespace pxt
+
+namespace pxtrt {
+//%
+RefMap *mkMap();
+//%
+TValue mapGetByString(RefMap *map, String key);
+//%
+int lookupMapKey(String key);
+//%
+TValue mapGet(RefMap *map, unsigned key);
+//%
+void mapSetByString(RefMap *map, String key, TValue val);
+//%
+void mapSet(RefMap *map, unsigned key, TValue val);
+} // namespace pxtrt
 
 namespace pins {
 Buffer createBuffer(int size);
@@ -1071,11 +1083,11 @@ bool removeElement(RefCollection *c, TValue x);
 #pragma GCC diagnostic ignored "-Wpmf-conversions"
 #endif
 
-
 #ifdef PXT64
 #define DEF_VTABLE(name, tp, valtype, ...)                                                         \
     const VTable name __attribute__((aligned(1 << PXT_VTABLE_SHIFT))) = {                          \
-        sizeof(tp), valtype, VTABLE_MAGIC, 0, BuiltInType::tp, BuiltInType::tp, 0, 0, {__VA_ARGS__}};
+        sizeof(tp), valtype, VTABLE_MAGIC, 0, BuiltInType::tp, BuiltInType::tp,                    \
+        0,          0,       {__VA_ARGS__}};
 #else
 #define DEF_VTABLE(name, tp, valtype, ...)                                                         \
     const VTable name __attribute__((aligned(1 << PXT_VTABLE_SHIFT))) = {                          \
@@ -1126,7 +1138,6 @@ bool removeElement(RefCollection *c, TValue x);
             JOIN(inst, ClassName) = new ClassName();                                               \
         return JOIN(inst, ClassName);                                                              \
     }
-
 
 #ifdef PXT_VM
 #include "vm.h"

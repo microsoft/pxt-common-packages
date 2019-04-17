@@ -1490,14 +1490,12 @@ int ptrToBool(TValue p) {
     }
 }
 
-//%
 RefMap *mkMap() {
     auto r = NEW_GC(RefMap);
     MEMDBG("mkMap: => %p", r);
     return r;
 }
 
-//%
 TValue mapGetByString(RefMap *map, String key) {
     int i = map->findIdx(key);
     if (i < 0) {
@@ -1513,7 +1511,6 @@ TValue mapGetByString(RefMap *map, String key) {
 #define IFACE_MEMBER_NAMES *(uintptr_t **)&bytecode[22]
 #endif
 
-//%
 int lookupMapKey(String key) {
     auto arr = IFACE_MEMBER_NAMES;
     auto len = *arr++;
@@ -1545,7 +1542,6 @@ int lookupMapKey(String key) {
     return 0;
 }
 
-//%
 TValue mapGet(RefMap *map, unsigned key) {
     auto arr = (String *)IFACE_MEMBER_NAMES;
     auto r = mapGetByString(map, arr[key + 1]);
@@ -1553,7 +1549,6 @@ TValue mapGet(RefMap *map, unsigned key) {
     return r;
 }
 
-//%
 void mapSetByString(RefMap *map, String key, TValue val) {
     int i = map->findIdx(key);
     if (i < 0) {
@@ -1566,7 +1561,7 @@ void mapSetByString(RefMap *map, String key, TValue val) {
     incr(val);
 }
 
-//%
+
 void mapSet(RefMap *map, unsigned key, TValue val) {
     auto arr = (String *)IFACE_MEMBER_NAMES;
     mapSetByString(map, arr[key + 1], val);

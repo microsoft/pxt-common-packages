@@ -86,6 +86,7 @@ struct VMImage {
     uint32_t numNumberLiterals;
     uint32_t numConfigDataEntries;
     uint32_t numOpcodes;
+    uint32_t numIfaceMemberNames;
     uint32_t errorCode;
     uint32_t errorOffset;
 };

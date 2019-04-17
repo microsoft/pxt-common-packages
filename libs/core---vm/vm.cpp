@@ -6,8 +6,7 @@
 // TODO check for backjumps (how many)
 // TODO getConfig() should have a callback into host
 
-// TODO iface member names - dynamic lookup fallback
-// TODO check types of arguments passed to runtime functions (cpp.ts)
+// TODO string object field lookups
 
 #define SPLIT_ARG(arg0, arg1) unsigned arg0 = arg & 31, arg1 = arg >> 6
 #define SPLIT_ARG2(arg0, arg1) unsigned arg0 = arg & 255, arg1 = arg >> 8
@@ -203,8 +202,24 @@ static inline void callifaceCore(FiberContext *ctx, unsigned numArgs, unsigned i
         failedCast(obj);
     auto vt = getVTable((RefObject *)obj);
     uint32_t mult = vt->ifaceHashMult;
-    if (!mult)
+
+    if (!mult) {
+        if (vt->classNo == BuiltInType::RefMap) {
+            if (getset == 2) {
+                pxtrt::mapSet((RefMap *)obj, ifaceIdx, ctx->sp[0]);
+                ctx->sp += 2; // and pop arguments
+            } else {
+                ctx->r0 = pxtrt::mapGet((RefMap *)obj, ifaceIdx);
+                if (getset == 0) {
+                    op_callind(ctx, numArgs);
+                } else {
+                    ctx->sp += 1;
+                }
+            }
+            return;
+        }
         failedCast(obj);
+    }
     uint32_t off = (ifaceIdx * mult) >> (mult & 0xff);
 
     unsigned n = 3;
@@ -277,7 +292,7 @@ void op_checkinst(FiberContext *ctx, unsigned arg) {
 
     if (isPointer(obj)) {
         auto vt2 = getStaticVTable(ctx->img, arg);
-        auto vt = getVTable((RefObject*)obj);
+        auto vt = getVTable((RefObject *)obj);
         if (vt == vt2)
             ctx->r0 = TAG_TRUE;
         else if ((int)vt2->classNo <= (int)vt->classNo && (int)vt->classNo <= (int)vt2->lastClassNo)
@@ -301,7 +316,7 @@ void exec_loop(FiberContext *ctx) {
     }
 }
 
-// 1240
+// 1243
 #define FNERR(errcode)                                                                             \
     do {                                                                                           \
         setVMImgError(img, errcode, &code[pc]);                                                    \
@@ -470,15 +485,20 @@ void validateFunction(VMImage *img, VMImageSection *sect, int debug) {
                 FNERR(1223);
         } else if (fn == op_calliface) {
             SPLIT_ARG(numArgs, ifaceIdx);
-            (void)ifaceIdx;
+            if (ifaceIdx == 0 || ifaceIdx >= img->numIfaceMemberNames)
+                FNERR(1240);
             currStack -= numArgs;
             if (currStack < baseStack)
                 FNERR(1230);
         } else if (fn == op_callget) {
+            if (arg == 0 || arg >= img->numIfaceMemberNames)
+                FNERR(1241);
             currStack -= 1;
             if (currStack < baseStack)
                 FNERR(1230);
         } else if (fn == op_callset) {
+            if (arg == 0 || arg >= img->numIfaceMemberNames)
+                FNERR(1242);
             currStack -= 2;
             if (currStack < baseStack)
                 FNERR(1230);

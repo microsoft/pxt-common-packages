@@ -171,6 +171,31 @@ static VMImage *loadSections(VMImage *img) {
     return NULL;
 }
 
+static VMImage *loadIfaceNames(VMImage *img) {
+    FOR_SECTIONS() {
+        if (sect->type == SectionType::IfaceMemberNames) {
+            uintptr_t *ptrs = (uintptr_t *)sect->data;
+            img->ifaceMemberNames = ptrs;
+            auto len = *ptrs++;
+            img->numIfaceMemberNames = len;
+            CHECK(sect->size >= 16 + len * 8, 1047);
+            for (unsigned i = 0; i < len; ++i) {
+                CHECK(ptrs[i] < img->numSections, 1051);
+                auto ss = img->sections[ptrs[i]];
+                CHECK(ss->type == SectionType::Literal && (BuiltInType)ss->aux == BuiltInType::BoxedString,
+                      1052);
+                ptrs[i] = (uintptr_t)img->pointerLiterals[ptrs[i]];
+                // pointers have to be sorted
+                CHECK(i == 0 || ptrs[i - 1] < ptrs[i], 1053);
+                // and so strings
+                CHECK(i == 0 || String_::compare((String)ptrs[i - 1], (String)ptrs[i]) < 0, 1054);
+            }
+        }
+    }
+
+    return NULL;
+}
+
 void validateFunction(VMImage *img, VMImageSection *sect, int debug);
 
 static VMImage *validateFunctions(VMImage *img) {
@@ -227,24 +252,6 @@ static VMImage *validateFunctions(VMImage *img) {
                 CHECK(*p++ == 0, 1040);
         }
 
-        if (sect->type == SectionType::IfaceMemberNames) {
-            uintptr_t *ptrs = (uintptr_t *)sect->data;
-            img->ifaceMemberNames = ptrs;
-            auto len = *ptrs++;
-            CHECK(sect->size >= 16 + len * 8, 1047);
-            for (unsigned i = 0; i < len; ++i) {
-                CHECK(ptrs[i] < img->numSections, 1051);
-                auto ss = img->sections[ptrs[i]];
-                CHECK(ss->type == SectionType::Literal && (BuiltInType)ss->aux == BuiltInType::BoxedString,
-                      1052);
-                ptrs[i] = (uintptr_t)img->pointerLiterals[ptrs[i]];
-                // pointers have to be sorted
-                CHECK(i == 0 || ptrs[i - 1] < ptrs[i], 1053);
-                // and so strings
-                CHECK(i == 0 || String_::compare((String)ptrs[i - 1], (String)ptrs[i]) < 0, 1054);
-            }
-        }
-
         if (sect->type == SectionType::Function) {
             validateFunction(img, sect, 0);
             if (img->errorCode) {
@@ -289,7 +296,7 @@ VMImage *loadVMImage(void *data, unsigned length) {
     img->dataStart = (uint64_t *)data;
     img->dataEnd = (uint64_t *)((uint8_t *)data + length);
 
-    if (countSections(img) || loadSections(img) || validateFunctions(img) || injectVTables(img)) {
+    if (countSections(img) || loadSections(img) || loadIfaceNames(img) || validateFunctions(img) || injectVTables(img)) {
         // error!
         return img;
     }
