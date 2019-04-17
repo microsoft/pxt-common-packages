@@ -40,6 +40,11 @@ static VMImage *countSections(VMImage *img) {
     return NULL;
 }
 
+struct CompiledString {
+    uint16_t numbytes;
+    char utf8data[0];
+};
+
 static VMImage *loadSections(VMImage *img) {
     auto idx = 0;
 
@@ -128,7 +133,14 @@ static VMImage *loadSections(VMImage *img) {
             img->configData = (uint32_t *)sect->data;
         }
 
-        if ((int)sect->type >= 0x20)
+        if (sect->type == SectionType::Literal && sect->aux == (int)BuiltInType::BoxedString) {
+            CHECK(sect->size >= 16, 1041);
+            auto str = (CompiledString*)sect->data;
+            CHECK(sect->size >= str->numbytes + 8 + 2 + 1, 1042);
+            auto v = (TValue)mkString(str->utf8data, str->numbytes);
+            registerGCPtr(v);
+            img->pointerLiterals[idx] = v;
+        } else if ((int)sect->type >= 0x20)
             img->pointerLiterals[idx] = (TValue)sect;
         else
             img->pointerLiterals[idx] = nullptr;
