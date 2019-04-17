@@ -1520,9 +1520,9 @@ int lookupMapKey(String key) {
     auto arr = IFACE_MEMBER_NAMES;
     auto len = *arr++;
     auto ikey = (uintptr_t)key;
-    auto l = 0U;
+    auto l = 1U; // skip index 0 - it's invalid
     auto r = len - 1;
-    if (arr[0] <= ikey && ikey <= arr[len - 1]) {
+    if (arr[l] <= ikey && ikey <= arr[r]) {
         while (l <= r) {
             auto m = (l + r) >> 1;
             if (arr[m] == ikey)

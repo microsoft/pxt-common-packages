@@ -144,7 +144,6 @@ static VMImage *loadSections(VMImage *img) {
                 auto v = (TValue)mkString(str->utf8data, str->numbytes);
                 registerGCPtr(v);
                 img->pointerLiterals[idx] = v;
-                printf("set %d - %p\n",idx,v);
             } else {
                 img->pointerLiterals[idx] = (TValue)sect;
 
@@ -235,12 +234,10 @@ static VMImage *validateFunctions(VMImage *img) {
             CHECK(sect->size >= 16 + len * 8, 1047);
             for (unsigned i = 0; i < len; ++i) {
                 CHECK(ptrs[i] < img->numSections, 1051);
-                printf("%d\n",(int)ptrs[i]);
                 auto ss = img->sections[ptrs[i]];
                 CHECK(ss->type == SectionType::Literal && (BuiltInType)ss->aux == BuiltInType::BoxedString,
                       1052);
                 ptrs[i] = (uintptr_t)img->pointerLiterals[ptrs[i]];
-                printf("l=%p %p\n", ptrs[i], ss);
                 // pointers have to be sorted
                 CHECK(i == 0 || ptrs[i - 1] < ptrs[i], 1053);
                 // and so strings
