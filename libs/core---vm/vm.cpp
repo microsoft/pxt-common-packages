@@ -4,9 +4,11 @@
 // TODO look for patterns in output for combined instructions
 // TODO 4.5/20 instructions are push - combine
 // TODO check for backjumps (how many)
+// TODO getConfig() should have a callback into host
 
 // TODO iface member names - dynamic lookup fallback
 // TODO check on all allowed pxt::* functions
+// TODO check types of arguments passed to runtime functions (cpp.ts)
 
 #define SPLIT_ARG(arg0, arg1) unsigned arg0 = arg & 31, arg1 = arg >> 6
 #define SPLIT_ARG2(arg0, arg1) unsigned arg0 = arg & 255, arg1 = arg >> 8
@@ -270,30 +272,19 @@ void op_callset(FiberContext *ctx, unsigned arg) {
 }
 
 //%
-Action fetchMethodIface(TValue obj, int methodId) {
-    return NULL;
+void op_checkinst(FiberContext *ctx, unsigned arg) {
+    auto obj = ctx->r0;
+    ctx->r0 = TAG_FALSE;
+
+    if (isPointer(obj)) {
+        auto vt2 = getStaticVTable(ctx->img, arg);
+        auto vt = getVTable((RefObject*)obj);
+        if (vt == vt2)
+            ctx->r0 = TAG_TRUE;
+        else if ((int)vt2->classNo <= (int)vt->classNo && (int)vt->classNo <= (int)vt2->lastClassNo)
+            ctx->r0 = TAG_TRUE;
+    }
 }
-
-//%
-Action fetchMethod(TValue obj, int methodId) {
-    return NULL;
-}
-
-//%
-void stfld(TValue obj, int fieldId, TValue v) {}
-
-//%
-TValue ldfld(TValue obj, int fieldId) {
-    return NULL;
-}
-
-//%
-TValue instanceOf(TValue obj, int firstClass, int lastClass) {
-    return NULL;
-}
-
-//%
-void validateInstanceOf(TValue obj, int firstClass, int lastClass) {}
 
 void exec_loop(FiberContext *ctx) {
     auto opcodes = ctx->img->opcodes;
@@ -449,13 +440,13 @@ void validateFunction(VMImage *img, VMImageSection *sect, int debug) {
                 if (currStack < baseStack)
                     FNERR(1232);
             }
-        } else if (fn == op_ldlit ) {
+        } else if (fn == op_ldlit) {
             if (arg >= img->numSections)
                 FNERR(1215);
             auto fsec = img->sections[arg];
             if (fsec->type != SectionType::Literal && fsec->type != SectionType::Function)
                 FNERR(1237);
-        } else if (fn == op_newobj) {
+        } else if (fn == op_newobj || fn == op_checkinst) {
             if (arg >= img->numSections)
                 FNERR(1219);
             auto fsec = img->sections[arg];
