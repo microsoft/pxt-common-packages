@@ -45,6 +45,14 @@ basic.pause(3000)
 servos.P0.setAngle(90)
 ```
 
+## ~ hint
+
+How do servos run their motors to change the position of their arm or shaft? Find out in this MakeCode hardware video:
+
+https://www.youtube.com/watch?v=okxooamdAP4
+
+## ~
+
 ## See also
 
 [set angle](/reference/servos/set-angle),
