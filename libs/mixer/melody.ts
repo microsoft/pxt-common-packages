@@ -118,7 +118,6 @@ namespace music {
         //% group="Sounds"
         stop() {
             if (this._player) {
-                console.log(`stopping ${this._text}`)
                 this._player.stop()
                 this._player = null
             }
@@ -136,13 +135,11 @@ namespace music {
                 Melody.playingMelodies[Melody.playingMelodies.length - 1].stop();
             }
             // push to list of playing melodies
-            //console.log(`register ${this._text}`)
             Melody.playingMelodies.push(this);
         }
         private unregisterMelody() {
             // remove from list
             if (Melody.playingMelodies) {
-                //console.log(`unregister ${this._text}`)
                 Melody.playingMelodies.removeElement(this); // remove self
             }
         }
