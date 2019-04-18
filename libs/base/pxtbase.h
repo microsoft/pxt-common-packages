@@ -134,16 +134,6 @@ void dumpDmesg();
 // also defined DMESG macro
 // end
 
-/*
-0x64dfb0:	0x0000000000376e02	0x0000000000625af0
-0x64dfc0:	0x00000020000033e8	0x000000000000000a
-0x64dfd0:	0x0000002000020390	0x00000020000203d0
-0x64dfe0:	0x0000002000020378	0x00000020000130f8
-0x64dff0:	0x00000020000130c8	0x0000000000000000
-0x64e000:	0x0000000000000007	0x0000000000000007
-0x64e010:	0x0000000000046c02	0x0000000000622480
-*/
-
 #define TAGGED_SPECIAL(n) (TValue)(void *)((n << 2) | 2)
 #define TAG_FALSE TAGGED_SPECIAL(2) // 10
 #define TAG_TRUE TAGGED_SPECIAL(16) // 66
@@ -941,6 +931,9 @@ void gcProcessStacks(int flags);
 
 void gcProcess(TValue v);
 void gcFreeze();
+#ifdef PXT_VM
+void gcStartup();
+#endif
 
 void *gcAllocate(int numbytes);
 void *gcAllocateArray(int numbytes);

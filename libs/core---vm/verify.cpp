@@ -142,7 +142,7 @@ static VMImage *loadSections(VMImage *img) {
                 auto str = (CompiledString *)sect->data;
                 CHECK(sect->size >= str->numbytes + 8 + 4 + 1, 1042);
                 auto v = (TValue)mkString(str->utf8data, str->numbytes);
-                registerGCPtr(v);
+                //registerGCPtr(v);
                 img->pointerLiterals[idx] = v;
             } else {
                 img->pointerLiterals[idx] = (TValue)sect;

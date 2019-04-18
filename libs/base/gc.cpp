@@ -106,10 +106,16 @@ ThreadContext *threadContexts;
 #define IN_GC_ALLOC 1
 #define IN_GC_COLLECT 2
 #define IN_GC_FREEZE 4
+#define IN_GC_PREALLOC 8
 
 static TValue *tempRoot;
 static uint8_t tempRootLen;
+
+#ifdef PXT_VM
+uint8_t inGC = IN_GC_PREALLOC;
+#else
 uint8_t inGC;
+#endif
 
 void popThreadContext(ThreadContext *ctx) {
 #ifndef PXT_VM
@@ -560,6 +566,10 @@ void gcFreeze() {
     inGC |= IN_GC_FREEZE;
 }
 
+void gcStartup() {
+    inGC &= ~IN_GC_PREALLOC;
+}
+
 void *gcAllocate(int numbytes) {
     size_t numwords = BYTES_TO_WORDS(ALIGN_TO_WORD(numbytes));
     // VVLOG("alloc %d bytes %d words", numbytes, numwords);
@@ -569,6 +579,11 @@ void *gcAllocate(int numbytes) {
 
     if (PXT_IN_ISR() || (inGC & IN_GC_ALLOC))
         target_panic(PANIC_CALLED_FROM_ISR);
+
+#ifdef PXT_VM
+    if (inGC & IN_GC_PREALLOC)
+        return xmalloc(numbytes);
+#endif
 
     inGC |= IN_GC_ALLOC;
 

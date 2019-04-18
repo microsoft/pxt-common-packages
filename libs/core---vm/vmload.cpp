@@ -27,6 +27,8 @@ void vmStart() {
     }
     vmImg = img;
 
+    gcStartup();
+
     globals = (TValue *)app_alloc(sizeof(TValue) * getNumGlobals());
     memset(globals, 0, sizeof(TValue) * getNumGlobals());
 
