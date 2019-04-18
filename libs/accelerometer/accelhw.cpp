@@ -15,7 +15,7 @@
 #endif
 
 #ifndef PXT_SUPPORT_LIS3DH
-#define PXT_SUPPORT_LIS3DH 1
+#define PXT_SUPPORT_LIS3DH 0
 #endif
 #if PXT_SUPPORT_LIS3DH
 #include "LIS3DH.h"
