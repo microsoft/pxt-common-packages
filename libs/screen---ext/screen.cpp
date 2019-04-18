@@ -22,6 +22,7 @@ SINGLETON(WDisplay);
 WDisplay::WDisplay() {
     width = getConfig(CFG_DISPLAY_WIDTH, 160);
     height = getConfig(CFG_DISPLAY_HEIGHT, 128);
+    DMESG("init display: %dx%d", width, height);
     screenBuf = new uint8_t[width * height / 2 + 20];
     lastImg = NULL;
     newPalette = false;

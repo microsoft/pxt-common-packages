@@ -111,7 +111,7 @@ void op_stfld(FiberContext *ctx, unsigned arg) {
 static inline void runAction(FiberContext *ctx, RefAction *ra) {
     if (ctx->sp < ctx->stackLimit)
         error(PANIC_STACK_OVERFLOW);
-    
+
     *--ctx->sp = (TValue)ctx->currAction;
     *--ctx->sp = (TValue)(((ctx->pc - ctx->imgbase) << 8) | 2);
     ctx->currAction = ra;
@@ -125,8 +125,15 @@ void op_callproc(FiberContext *ctx, unsigned arg) {
 
 static void callind(FiberContext *ctx, RefAction *ra, unsigned numArgs) {
     if (numArgs != ra->numArgs) {
-        // TODO re-arrange the stack, so that the right number of arguments is present
-        failedCast((TValue)ra);
+        int missing = ra->numArgs - numArgs;
+        if (missing < 0) {
+            // just drop the ones on top
+            ctx->sp += -missing;
+        } else {
+            // add some undefineds
+            while (missing--)
+                *--ctx->sp = TAG_UNDEFINED;
+        }
     }
 
     if (ra->initialLen != ra->len)
@@ -350,7 +357,7 @@ void exec_loop(FiberContext *ctx) {
     auto opcodes = ctx->img->opcodes;
     while (ctx->pc) {
         uint16_t opcode = *ctx->pc++;
-        TRACE("0x%x: %04x", (uint8_t*)ctx->pc - 2 - (uint8_t*)ctx->img->dataStart, opcode);
+        TRACE("0x%x: %04x", (uint8_t *)ctx->pc - 2 - (uint8_t *)ctx->img->dataStart, opcode);
         if (opcode >> 15 == 0) {
             opcodes[opcode & VM_OPCODE_BASE_MASK](ctx, opcode >> VM_OPCODE_BASE_SIZE);
         } else if (opcode >> 14 == 0b10) {

@@ -33,6 +33,9 @@ Action mkAction(int totallen, RefAction *act) {
     void *ptr = gcAllocate(sizeof(RefAction) + totallen * sizeof(void *));
     RefAction *r = new (ptr) RefAction();
     r->len = totallen;
+#ifdef PXT64
+    r->initialLen = totallen;
+#endif
     r->func = act->func;
     memset(r->fields, 0, r->len * sizeof(void *));
 

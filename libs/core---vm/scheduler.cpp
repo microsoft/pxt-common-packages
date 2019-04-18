@@ -154,6 +154,7 @@ FiberContext *setupThread(Action a, TValue arg = 0) {
     *--t->sp = arg;
     *--t->sp = TAG_STACK_BOTTOM;
     auto ra = (RefAction*)a;
+//    t->currAction = ra;
     t->resumePC = (uint16_t *)ra->func;
 
     t->img = vmImg;
@@ -336,8 +337,8 @@ void *gcAllocBlock(size_t sz) {
 void gcProcessStacks(int flags) {
     int cnt = 0;
     for (auto f = allFibers; f; f = f->next) {
-        auto ptr = f->stackBase + VM_STACK_SIZE - 1;
-        auto end = f->sp;
+        auto end = f->stackBase + VM_STACK_SIZE - 1;
+        auto ptr = f->sp;
         gcProcess((TValue)f->currAction);
         if (flags & 2)
             DMESG("RS%d:%p/%d", cnt++, ptr, end - ptr);

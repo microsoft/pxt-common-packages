@@ -31,7 +31,7 @@ TODO64
 #define BYTES_TO_WORDS(x) ((x) >> 2)
 #define WORDS_TO_BYTES(x) ((x) << 2)
 #define ALIGN_TO_WORD(x) (((x) + 3) & (~3U))
-#define VAR_BLOCK_WORDS(vt) (((vt) << 12) >> (12 + 2))
+#define VAR_BLOCK_WORDS(vt) (((vt) << 16) >> (16 + 2))
 #endif
 
 #define FREE_MASK (1UL << (HIGH_SHIFT + 3))
@@ -380,7 +380,7 @@ __attribute__((noinline)) static void allocateBlock() {
     curr->blockSize = sz - sizeof(GCBlock);
     LOG("GC alloc: %p", curr);
     GC_CHECK((curr->blockSize & 3) == 0, 40);
-    curr->data[0].vtable = FREE_MASK | curr->blockSize;
+    curr->data[0].vtable = FREE_MASK | (TOWORDS(curr->blockSize) << 2);
     ((RefBlock *)curr->data)[0].nextFree = firstFree;
     firstFree = (RefBlock *)curr->data;
     // make sure reference to allocated block is stored somewhere, otherwise
@@ -431,6 +431,7 @@ static void sweep(int flags) {
                         VVLOG("Dead Obj %p", d);
                         GC_CHECK(((VTable *)d->vtable)->magic == VTABLE_MAGIC, 41);
                         d->destroyVT();
+                        VVLOG("destroyed");
                     }
                     d += getObjectSize(d);
                 }
@@ -534,7 +535,7 @@ void *gcAllocateArray(int numbytes) {
     numbytes = ALIGN_TO_WORD(numbytes);
     numbytes += sizeof(void *);
     auto r = (uintptr_t *)gcAllocate(numbytes);
-    *r = ARRAY_MASK | numbytes;
+    *r = ARRAY_MASK | (TOWORDS(numbytes) << 2);
     return r + 1;
 }
 
@@ -613,8 +614,9 @@ void *gcAllocate(int numbytes) {
                 else
                     firstFree = nf;
                 p->vtable = 0;
-                GC_CHECK(!nf || !nf->nextFree || ((uintptr_t)nf->nextFree) >> (HIGH_SHIFT - 8), 48);
-                VVLOG("GC=>%p %d %p -> %p,%p", p, numwords, nf, nf->nextFree, (void *)nf->vtable);
+                VVLOG("GC=>%p %d %p -> %p,%p", p, numwords, nf, nf ? nf->nextFree : 0,
+                      nf ? (void *)nf->vtable : 0);
+                GC_CHECK(!nf || !nf->nextFree || !isReadOnly((TValue)nf->nextFree), 48);
                 inGC &= ~IN_GC_ALLOC;
                 return p;
             }
