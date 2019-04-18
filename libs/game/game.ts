@@ -256,15 +256,26 @@ namespace game {
         if (!foreverRunning) {
             foreverRunning = true;
             control.runInParallel(() => {
-                const handlers = game.currentScene().gameForeverHandlers;
                 while (1) {
-                    handlers.forEach(h => h());
+                    const handlers = game.currentScene().gameForeverHandlers;
+                    handlers.forEach(h => {
+                        if (!h.active) {
+                            h.active = true;
+                            control.runInParallel(() => {
+                                h.handler();
+                                h.active = false;
+                            });
+                        }
+                    });
                     pause(30);
                 }
             });
         }
 
-        game.currentScene().gameForeverHandlers.push(action);
+        game.currentScene().gameForeverHandlers.push({
+            handler: action,
+            active: false
+        });
     }
 
     /**

@@ -23,6 +23,11 @@ namespace scene {
         handler: (sprite: Sprite) => void
     }
 
+    export interface GameForeverHandlers {
+        active: boolean;
+        handler: () => void;
+    }
+
     export const CONTROLLER_PRIORITY = 8;
     export const TILEMAP_PRIORITY = 9;
     export const PHYSICS_PRIORITY = 10;
@@ -55,7 +60,7 @@ namespace scene {
         createdHandlers: SpriteHandler[];
         overlapHandlers: OverlapHandler[];
         collisionHandlers: CollisionHandler[];
-        gameForeverHandlers: (() => void)[];
+        gameForeverHandlers: GameForeverHandlers[];
         particleSources: particles.ParticleSource[];
         controlledSprites: controller.ControlledSprite[][];
 
