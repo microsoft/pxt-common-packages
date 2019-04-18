@@ -148,13 +148,18 @@ FiberContext *setupThread(Action a, TValue arg = 0) {
     t->stackBase = (TValue *)xmalloc(VM_STACK_SIZE * sizeof(TValue));
     t->stackLimit = t->stackBase + VM_MAX_FUNCTION_STACK + 5;
     t->sp = t->stackBase + VM_STACK_SIZE;
+    *--t->sp = (TValue)0xf00df00df00df00d;
     *--t->sp = 0;
     *--t->sp = 0;
     *--t->sp = 0;
     *--t->sp = arg;
+    *--t->sp = 0;
     *--t->sp = TAG_STACK_BOTTOM;
     auto ra = (RefAction*)a;
-//    t->currAction = ra;
+    // we only pass 1 argument, but can in fact handle up to 4
+    if (ra->numArgs > 2)
+        target_panic(PANIC_INVALID_IMAGE);
+    t->currAction = ra;
     t->resumePC = (uint16_t *)ra->func;
 
     t->img = vmImg;

@@ -12,7 +12,8 @@
 #define SPLIT_ARG(arg0, arg1) unsigned arg0 = arg & 31, arg1 = arg >> 6
 #define SPLIT_ARG2(arg0, arg1) unsigned arg0 = arg & 255, arg1 = arg >> 8
 
-#define TRACE DMESG
+//#define TRACE DMESG
+#define TRACE NOLOG
 
 namespace pxt {
 
@@ -113,7 +114,7 @@ static inline void runAction(FiberContext *ctx, RefAction *ra) {
         error(PANIC_STACK_OVERFLOW);
 
     *--ctx->sp = (TValue)ctx->currAction;
-    *--ctx->sp = (TValue)(((ctx->pc - ctx->imgbase) << 8) | 2);
+    *--ctx->sp = (TValue)(((ctx->pc - ctx->imgbase) << 9) | 2);
     ctx->currAction = ra;
     ctx->pc = (uint16_t *)ra->func;
 }
@@ -126,6 +127,7 @@ void op_callproc(FiberContext *ctx, unsigned arg) {
 static void callind(FiberContext *ctx, RefAction *ra, unsigned numArgs) {
     if (numArgs != ra->numArgs) {
         int missing = ra->numArgs - numArgs;
+        TRACE("callind missing=%d", missing);
         if (missing < 0) {
             // just drop the ones on top
             ctx->sp += -missing;
@@ -165,7 +167,7 @@ void op_ret(FiberContext *ctx, unsigned arg) {
     } else {
         ctx->currAction = (RefAction *)*ctx->sp++;
         ctx->sp += retNumArgs;
-        ctx->pc = ctx->imgbase + (retaddr >> 8);
+        ctx->pc = ctx->imgbase + (retaddr >> 9);
     }
 }
 
@@ -357,7 +359,7 @@ void exec_loop(FiberContext *ctx) {
     auto opcodes = ctx->img->opcodes;
     while (ctx->pc) {
         uint16_t opcode = *ctx->pc++;
-        TRACE("0x%x: %04x", (uint8_t *)ctx->pc - 2 - (uint8_t *)ctx->img->dataStart, opcode);
+        TRACE("0x%x: %04x %d", (uint8_t *)ctx->pc - 2 - (uint8_t *)ctx->img->dataStart, opcode, (int)(ctx->stackBase + VM_STACK_SIZE - ctx->sp));
         if (opcode >> 15 == 0) {
             opcodes[opcode & VM_OPCODE_BASE_MASK](ctx, opcode >> VM_OPCODE_BASE_SIZE);
         } else if (opcode >> 14 == 0b10) {

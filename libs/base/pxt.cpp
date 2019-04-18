@@ -34,7 +34,9 @@ Action mkAction(int totallen, RefAction *act) {
     RefAction *r = new (ptr) RefAction();
     r->len = totallen;
 #ifdef PXT64
-    r->initialLen = totallen;
+    r->numArgs = act->numArgs;
+    r->initialLen = act->initialLen;
+    r->reserved = act->reserved;
 #endif
     r->func = act->func;
     memset(r->fields, 0, r->len * sizeof(void *));

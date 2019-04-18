@@ -145,7 +145,6 @@ DEF_CONVERSION(RefAction *, asRefAction, BuiltInType::RefAction)
 DEF_CONVERSION(RefRefLocal *, asRefRefLocal, BuiltInType::RefRefLocal)
 DEF_CONVERSION(RefMap *, asRefMap, BuiltInType::RefMap)
 
-DEF_CONVERSION(String, asString, BuiltInType::BoxedString)
 DEF_CONVERSION(Buffer, asBuffer, BuiltInType::BoxedBuffer)
 DEF_CONVERSION(Image_, asImage_, BuiltInType::RefImage)
 
