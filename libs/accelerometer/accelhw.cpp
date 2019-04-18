@@ -90,8 +90,7 @@ class WAccel {
         if (NULL == acc) {
             int accDetect = detectAccelerometer(i2c);
             DMESG("accelerometer: detected %d", accDetect);
-            accType = getConfig(CFG_ACCELEROMETER_TYPE, accDetect);
-            acc = instantiateAccelerometer(accType, i2c);
+            acc = instantiateAccelerometer(accDetect, i2c);
         }
 
         if (NULL == acc) {
