@@ -38,6 +38,8 @@ enum ControllerEvent {
 //% blockGap=8
 namespace controller {
     let _userEventsEnabled = true;
+    let defaultRepeatDelay = 500;
+    let defaultRepeatInterval = 30;
 
     //% fixedInstances
     export class Button {
@@ -60,8 +62,8 @@ namespace controller {
             this.id = id;
             this._buttonId = buttonId;
             this._pressed = false;
-            this.repeatDelay = 500;
-            this.repeatInterval = 30;
+            this.repeatDelay = undefined;
+            this.repeatInterval = undefined;
             this._repeatCount = 0;
             control.internalOnEvent(INTERNAL_KEY_UP, this.id, () => this.setPressed(false), 16)
             control.internalOnEvent(INTERNAL_KEY_DOWN, this.id, () => this.setPressed(true), 16)
@@ -142,17 +144,33 @@ namespace controller {
             if (!this._pressed) return;
             this._pressedElasped += dtms;
 
+            const delay = this.repeatDelay === undefined ? defaultRepeatDelay : this.repeatDelay;
+            const interval = this.repeatInterval === undefined ? defaultRepeatInterval : this.repeatInterval;
+
             // inital delay
-            if (this._pressedElasped < this.repeatDelay)
+            if (this._pressedElasped < delay)
                 return;
 
             // repeat count for this step
-            const count = Math.floor((this._pressedElasped - this.repeatDelay) / this.repeatInterval);
+            const count = Math.floor((this._pressedElasped - delay - interval) / interval);
             if (count != this._repeatCount) {
                 this.raiseButtonRepeat();
                 this._repeatCount = count;
             }
         }
+    }
+
+    /**
+     * Set default values for repeat button event delay and interval
+     * @param delay default delay for buttons, eg: 500
+     * @param interval default interval for buttons, eg: 30
+     */
+    //% blockId=repeatDefaultDelayInterval block="set repeat delay $delay interval $interval"
+    //% weight=10
+    //% group="Single Player"
+    export function setRepeatDefault(delay: number, interval: number) {
+        defaultRepeatDelay = delay;
+        defaultRepeatInterval = interval;
     }
 
     let _players: Controller[];
