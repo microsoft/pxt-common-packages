@@ -15,6 +15,11 @@
 #define VM_MAX_FUNCTION_STACK 200
 #define VM_STACK_SIZE 1000
 
+#define VM_ENCODE_PC(pc) ((TValue)(((pc) << 9) | 2))
+#define VM_DECODE_PC(pc) (((uintptr_t)pc) >> 9)
+#define TAG_STACK_BOTTOM VM_ENCODE_PC(1)
+
+
 namespace pxt {
 
 struct FiberContext;
@@ -90,6 +95,7 @@ struct VMImage {
     uint32_t numIfaceMemberNames;
     uint32_t errorCode;
     uint32_t errorOffset;
+    int toStringKey;
 };
 
 // not doing this, likely
@@ -147,6 +153,8 @@ DEF_CONVERSION(RefMap *, asRefMap, BuiltInType::RefMap)
 
 DEF_CONVERSION(Buffer, asBuffer, BuiltInType::BoxedBuffer)
 DEF_CONVERSION(Image_, asImage_, BuiltInType::RefImage)
+
+String convertToString(FiberContext *ctx, TValue v);
 
 } // namespace pxt
 

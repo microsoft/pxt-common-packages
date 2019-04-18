@@ -155,7 +155,7 @@ FiberContext *setupThread(Action a, TValue arg = 0) {
     *--t->sp = arg;
     *--t->sp = 0;
     *--t->sp = TAG_STACK_BOTTOM;
-    auto ra = (RefAction*)a;
+    auto ra = (RefAction *)a;
     // we only pass 1 argument, but can in fact handle up to 4
     if (ra->numArgs > 2)
         target_panic(PANIC_INVALID_IMAGE);
@@ -165,8 +165,16 @@ FiberContext *setupThread(Action a, TValue arg = 0) {
     t->img = vmImg;
     t->imgbase = (uint16_t *)vmImg->dataStart;
 
-    t->next = allFibers;
-    allFibers = t;
+    // add at the end
+    if (allFibers)
+        for (auto p = allFibers; p; p = p->next) {
+            if (!p->next) {
+                p->next = t;
+                break;
+            }
+        }
+    else
+        allFibers = t;
 
     return t;
 }

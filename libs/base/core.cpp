@@ -235,6 +235,7 @@ String mkStringCore(const char *data, int len) {
         registerGCPtr((TValue)r);
         r->skip.size = len;
         r->skip.length = utf8Len(data, len);
+        r->skip.list = NULL; // in case gc triggers below
         r->skip.list = (uint16_t *)gcAllocateArray(NUM_SKIP_ENTRIES(r) * 2 + len + 1);
         setupSkipList(r, data);
         unregisterGCPtr((TValue)r);
@@ -662,7 +663,7 @@ int includes(String s, String searchString, int start) {
 
 namespace Boolean_ {
 //%
-bool bang(int v) {
+bool bang(bool v) {
     return v == 0;
 }
 } // namespace Boolean_
@@ -1035,11 +1036,19 @@ TNumber ands(TNumber a, TNumber b) {
     BITOP(&)
 }
 
+#ifdef PXT64
+#define CMPOP_RAW(op, t, f)                                                                        \
+    if (bothNumbers(a, b))                                                                         \
+        return numValue(a) op numValue(b) ? t : f;                                                 \
+    int cmp = valCompare(a, b);                                                                    \
+    return cmp != -2 && cmp op 0 ? t : f;
+#else
 #define CMPOP_RAW(op, t, f)                                                                        \
     if (bothNumbers(a, b))                                                                         \
         return (intptr_t)a op((intptr_t)b) ? t : f;                                                \
     int cmp = valCompare(a, b);                                                                    \
     return cmp != -2 && cmp op 0 ? t : f;
+#endif
 
 #define CMPOP(op) CMPOP_RAW(op, TAG_TRUE, TAG_FALSE)
 
@@ -1561,7 +1570,6 @@ void mapSetByString(RefMap *map, String key, TValue val) {
     incr(val);
 }
 
-
 void mapSet(RefMap *map, unsigned key, TValue val) {
     auto arr = (String *)IFACE_MEMBER_NAMES;
     mapSetByString(map, arr[key + 1], val);
@@ -1794,8 +1802,8 @@ STRING_VT(string_inline_ascii, NOOP, NOOP, 2 + p->ascii.length + 1, p->ascii.dat
 #if PXT_UTF8
 STRING_VT(string_inline_utf8, NOOP, NOOP, 2 + p->utf8.length + 1, p->utf8.data, p->utf8.length,
           utf8Len(p->utf8.data, p->utf8.length), utf8Skip(p->utf8.data, p->utf8.length, idx))
-STRING_VT(string_skiplist16, NOOP, gcMarkArray(p->skip.list), 2 * sizeof(void *), SKIP_DATA(p),
-          p->skip.size, p->skip.length, skipLookup(p, idx))
+STRING_VT(string_skiplist16, NOOP, if (p->skip.list) gcMarkArray(p->skip.list), 2 * sizeof(void *),
+          SKIP_DATA(p), p->skip.size, p->skip.length, skipLookup(p, idx))
 STRING_VT(string_cons, fixCons(p), (gcScan((TValue)p->cons.left), gcScan((TValue)p->cons.right)),
           2 * sizeof(void *), SKIP_DATA(p), p->skip.size, p->skip.length, skipLookup(p, idx))
 #endif

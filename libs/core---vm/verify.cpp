@@ -8,7 +8,7 @@ VMImage *setVMImgError(VMImage *img, int code, void *pos) {
     return img;
 }
 
-// next free error 1055
+// next free error 1057
 #define ERROR(code, pos) return setVMImgError(img, code, pos)
 #define CHECK(cond, code)                                                                          \
     do {                                                                                           \
@@ -219,6 +219,8 @@ static VMImage *validateFunctions(VMImage *img) {
             CHECK(vt->reserved == 0, 1030);
             CHECK(vt->ifaceHashMult != 0, 1031);
             CHECK((vt->ifaceHashEntries & 3) == 0, 1032);
+            CHECK((int)vt->classNo >= (int)BuiltInType::User0, 1055);
+            CHECK((int)vt->lastClassNo >= (int)vt->classNo, 1056);
 
             uint32_t maxOff = 0;
             uint32_t minOff = 0xfffffff;

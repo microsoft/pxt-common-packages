@@ -57,7 +57,7 @@ void dumpDmesg() {
 
 static void dmesgRaw(const char *buf, uint32_t len) {
     if (!dmesgFile) {
-        dmesgFile = fopen("/tmp/dmesg.txt", "w");
+        dmesgFile = fopen("dmesg.txt", "w");
         if (!dmesgFile)
             dmesgFile = stderr;
     }
@@ -71,7 +71,6 @@ static void dmesgRaw(const char *buf, uint32_t len) {
     memcpy(dmesgBuf + dmesgPtr, buf, len);
     dmesgPtr += len;
     fwrite(buf, 1, len, dmesgFile);
-
     fwrite(buf, 1, len, stderr);
 }
 

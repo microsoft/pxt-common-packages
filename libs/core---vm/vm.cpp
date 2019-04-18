@@ -12,6 +12,10 @@
 #define SPLIT_ARG(arg0, arg1) unsigned arg0 = arg & 31, arg1 = arg >> 6
 #define SPLIT_ARG2(arg0, arg1) unsigned arg0 = arg & 255, arg1 = arg >> 8
 
+#define PUSH(v) *--ctx->sp = (v)
+#define POPVAL() *ctx->sp++
+#define POP(n) ctx->sp += (n)
+
 //#define TRACE DMESG
 #define TRACE NOLOG
 
@@ -104,7 +108,7 @@ void op_ldfld(FiberContext *ctx, unsigned arg) {
 //%
 void op_stfld(FiberContext *ctx, unsigned arg) {
     SPLIT_ARG2(fldId, classId);
-    auto obj = *ctx->sp++;
+    auto obj = POPVAL();
     checkClass(ctx, obj, classId, fldId);
     ((RefRecord *)obj)->fields[fldId] = ctx->r0;
 }
@@ -113,8 +117,8 @@ static inline void runAction(FiberContext *ctx, RefAction *ra) {
     if (ctx->sp < ctx->stackLimit)
         error(PANIC_STACK_OVERFLOW);
 
-    *--ctx->sp = (TValue)ctx->currAction;
-    *--ctx->sp = (TValue)(((ctx->pc - ctx->imgbase) << 9) | 2);
+    PUSH((TValue)ctx->currAction);
+    PUSH(VM_ENCODE_PC(ctx->pc - ctx->imgbase));
     ctx->currAction = ra;
     ctx->pc = (uint16_t *)ra->func;
 }
@@ -130,11 +134,11 @@ static void callind(FiberContext *ctx, RefAction *ra, unsigned numArgs) {
         TRACE("callind missing=%d", missing);
         if (missing < 0) {
             // just drop the ones on top
-            ctx->sp += -missing;
+            POP(-missing);
         } else {
             // add some undefineds
             while (missing--)
-                *--ctx->sp = TAG_UNDEFINED;
+                PUSH(TAG_UNDEFINED);
         }
     }
 
@@ -160,37 +164,39 @@ void op_callind(FiberContext *ctx, unsigned arg) {
 //%
 void op_ret(FiberContext *ctx, unsigned arg) {
     SPLIT_ARG(retNumArgs, numTmps);
-    ctx->sp += numTmps;
-    auto retaddr = (intptr_t)*ctx->sp++;
+
+    POP(numTmps);
+    auto retaddr = (intptr_t)POPVAL();
+    ctx->currAction = (RefAction *)POPVAL();
+    POP(retNumArgs);
+
     if (retaddr == (intptr_t)TAG_STACK_BOTTOM) {
         ctx->pc = NULL;
     } else {
-        ctx->currAction = (RefAction *)*ctx->sp++;
-        ctx->sp += retNumArgs;
-        ctx->pc = ctx->imgbase + (retaddr >> 9);
+        ctx->pc = ctx->imgbase + VM_DECODE_PC(retaddr);
     }
 }
 
 //%
 void op_pop(FiberContext *ctx, unsigned) {
-    ctx->r0 = *ctx->sp++;
+    ctx->r0 = POPVAL();
 }
 
 //%
 void op_popmany(FiberContext *ctx, unsigned arg) {
-    ctx->sp += arg;
+    POP(arg);
 }
 
 //%
 void op_pushmany(FiberContext *ctx, unsigned arg) {
     while (arg--) {
-        *--ctx->sp = TAG_UNDEFINED;
+        PUSH(TAG_UNDEFINED);
     }
 }
 
 //%
 void op_push(FiberContext *ctx, unsigned) {
-    *--ctx->sp = ctx->r0;
+    PUSH(ctx->r0);
 }
 
 //%
@@ -208,6 +214,29 @@ void op_ldintneg(FiberContext *ctx, unsigned arg) {
     ctx->r0 = TAG_NUMBER(-(int)arg);
 }
 
+static TValue lookupIfaceMember(TValue obj, VTable *vt, unsigned ifaceIdx) {
+    uint32_t mult = vt->ifaceHashMult;
+    uint32_t off = (ifaceIdx * mult) >> (mult & 0xff);
+
+    unsigned n = 3;
+    auto multBase = (uint16_t *)&vt->methods[VM_NUM_CPP_METHODS];
+    while (n--) {
+        uint32_t off2 = multBase[off];
+        auto ent = (struct IfaceEntry *)multBase + off2;
+
+        if (ent->memberId == ifaceIdx) {
+            if (ent->aux == 0) {
+                return vmImg->pointerLiterals[ent->method];
+            } else {
+                return ((RefRecord *)obj)->fields[ent->aux - 1];
+            }
+        }
+        off++;
+    }
+
+    return NULL;
+}
+
 static inline void callifaceCore(FiberContext *ctx, unsigned numArgs, unsigned ifaceIdx,
                                  int getset) {
     auto obj = ctx->sp[numArgs - 1];
@@ -220,13 +249,13 @@ static inline void callifaceCore(FiberContext *ctx, unsigned numArgs, unsigned i
         if (vt->classNo == BuiltInType::RefMap) {
             if (getset == 2) {
                 pxtrt::mapSet((RefMap *)obj, ifaceIdx, ctx->sp[0]);
-                ctx->sp += 2; // and pop arguments
+                POP(2); // and pop arguments
             } else {
                 ctx->r0 = pxtrt::mapGet((RefMap *)obj, ifaceIdx);
                 if (getset == 0) {
                     op_callind(ctx, numArgs);
                 } else {
-                    ctx->sp += 1;
+                    POP(1);
                 }
             }
             return;
@@ -254,7 +283,7 @@ static inline void callifaceCore(FiberContext *ctx, unsigned numArgs, unsigned i
                 if (getset == 2) {
                     // store field
                     ((RefRecord *)obj)->fields[ent->aux - 1] = ctx->sp[0];
-                    ctx->sp += 2; // and pop arguments
+                    POP(2); // and pop arguments
                 } else {
                     // load field
                     ctx->r0 = ((RefRecord *)obj)->fields[ent->aux - 1];
@@ -263,7 +292,7 @@ static inline void callifaceCore(FiberContext *ctx, unsigned numArgs, unsigned i
                         op_callind(ctx, numArgs);
                     } else {
                         // if just loading, pop the object arg
-                        ctx->sp += 1;
+                        POP(1);
                     }
                 }
             }
@@ -307,11 +336,11 @@ void op_mapget(FiberContext *ctx, unsigned arg) {
     auto key = numops::toString(ctx->r0);
     if (vt->classNo == BuiltInType::RefMap) {
         ctx->r0 = pxtrt::mapGetByString((RefMap *)obj, key);
-        ctx->sp++;
+        POP(1);
     } else {
         int k = pxtrt::lookupMapKey(key);
         if (k == 0) {
-            ctx->sp++;
+            POP(1);
             ctx->r0 = TAG_UNDEFINED;
         } else {
             callifaceCore(ctx, 1, k, 1);
@@ -328,7 +357,7 @@ void op_mapset(FiberContext *ctx, unsigned arg) {
     auto key = numops::toString(ctx->sp[0]);
     if (vt->classNo == BuiltInType::RefMap) {
         pxtrt::mapSetByString((RefMap *)obj, key, ctx->r0);
-        ctx->sp += 2;
+        POP(2);
     } else {
         int k = pxtrt::lookupMapKey(key);
         if (k == 0) {
@@ -355,11 +384,56 @@ void op_checkinst(FiberContext *ctx, unsigned arg) {
     }
 }
 
+static TValue inlineInvoke(FiberContext *ctx, RefAction *fn, int numArgs) {
+    auto prevPC = ctx->pc;
+    auto prevR0 = ctx->r0;
+    // make sure call will push TAG_STACK_BOTTOM
+    ctx->pc = (uint16_t *)ctx->imgbase + 1;
+    callind(ctx, fn, numArgs);
+    exec_loop(ctx);
+    if (ctx->resumePC)
+        target_panic(PANIC_BLOCKING_TO_STRING);
+    auto r = ctx->r0;
+    ctx->pc = prevPC;
+    ctx->r0 = prevR0;
+    return r;
+}
+
+String convertToString(FiberContext *ctx, TValue v) {
+    if (isPointer(v)) {
+        auto vt = getVTable((RefObject *)v);
+        if ((int)vt->classNo >= (int)BuiltInType::User0) {
+            auto img = ctx->img;
+            if (!img->toStringKey) {
+                img->toStringKey = pxtrt::lookupMapKey(mkString("toString"));
+                if (!img->toStringKey)
+                    img->toStringKey = -1;
+            }
+            if (img->toStringKey > 0) {
+                auto fn = lookupIfaceMember(v, vt, img->toStringKey);
+                if (fn && isPointer(fn) &&
+                    getVTable((RefObject *)fn)->objectType == ValType::Function) {
+                    PUSH(v);                    
+                    v = inlineInvoke(ctx, (RefAction *)fn, 1);
+                    PUSH(v); // make sure it doesn't get collected
+                }
+            }
+        }
+    }
+
+    auto rr = numops::toString(v);
+    if ((TValue)rr != v)
+        PUSH((TValue)rr); // make sure it doesn't get collected
+    
+    return rr;
+}
+
 void exec_loop(FiberContext *ctx) {
     auto opcodes = ctx->img->opcodes;
     while (ctx->pc) {
         uint16_t opcode = *ctx->pc++;
-        TRACE("0x%x: %04x %d", (uint8_t *)ctx->pc - 2 - (uint8_t *)ctx->img->dataStart, opcode, (int)(ctx->stackBase + VM_STACK_SIZE - ctx->sp));
+        TRACE("0x%x: %04x %d", (uint8_t *)ctx->pc - 2 - (uint8_t *)ctx->img->dataStart, opcode,
+              (int)(ctx->stackBase + VM_STACK_SIZE - ctx->sp));
         if (opcode >> 15 == 0) {
             opcodes[opcode & VM_OPCODE_BASE_MASK](ctx, opcode >> VM_OPCODE_BASE_SIZE);
         } else if (opcode >> 14 == 0b10) {
