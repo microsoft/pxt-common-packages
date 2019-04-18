@@ -6,6 +6,8 @@
 #include <stdarg.h>
 #include <fcntl.h>
 
+//#define HIGH_VOLUME 1
+
 namespace pxt {
 
 void target_exit() {
@@ -71,15 +73,19 @@ static void dmesgRaw(const char *buf, uint32_t len) {
     memcpy(dmesgBuf + dmesgPtr, buf, len);
     dmesgPtr += len;
     fwrite(buf, 1, len, dmesgFile);
+#ifndef HIGH_VOLUME
     fwrite(buf, 1, len, stderr);
+#endif
 }
 
 static void dmesgFlushRaw() {
+#ifndef HIGH_VOLUME
     fflush(dmesgFile);
 #ifdef __linux__
     fdatasync(fileno(dmesgFile));
 #else
     fsync(fileno(dmesgFile));
+#endif
 #endif
 }
 
