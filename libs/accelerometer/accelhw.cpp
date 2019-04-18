@@ -11,7 +11,7 @@
 #include "CodalDmesg.h"
 
 #ifndef PXT_DEFAULT_ACCELEROMETER
-#define PXT_DEFAULT_ACCELEROMETER ACCELEROMETER_TYPE_LIS3DH
+#define PXT_DEFAULT_ACCELEROMETER -1
 #endif
 
 #ifndef PXT_SUPPORT_LIS3DH
@@ -57,7 +57,7 @@
 #endif
 
 #if defined(CODAL_ACCELEROMETER)
-#error "please define PXT_SUPPORT_* and PXT_DEFUALT_ACCELEROMETER"
+#error "please define PXT_SUPPORT_*"
 #endif
 
 namespace pxt {
@@ -65,7 +65,48 @@ namespace pxt {
 // Wrapper classes
 class WAccel {
     CoordinateSpace space;
-	
+		
+  public:
+    Accelerometer *acc;
+    WAccel() : space(ACC_SYSTEM, ACC_UPSIDEDOWN, ACC_ROTATION), acc(NULL) {
+        DMESG("ACCEL: mounting");
+        auto sda = LOOKUP_PIN(ACCELEROMETER_SDA);
+        auto scl = LOOKUP_PIN(ACCELEROMETER_SCL);
+        if (NULL == sda || NULL == scl) { // use default i2c instead
+            DMESG("accelerometer: using SDA, SCL");
+            sda = LOOKUP_PIN(SDA);
+            scl = LOOKUP_PIN(SCL);
+        }
+        codal::I2C* i2c = pxt::getI2C(sda, scl);
+        if (!i2c) {
+            DMESG("accelerometer: no i2c available");
+            return;
+        }
+		
+        int accType = getConfig(CFG_ACCELEROMETER_TYPE, PXT_DEFAULT_ACCELEROMETER);
+        auto acc = instantiateAccelerometer(accType);
+        if (NULL == acc) {
+            int accDetect = detectAccelerometer(*i2c);
+            DMESG("accelerometer: detected %d", accDetect);
+            accType = getConfig(CFG_ACCELEROMETER_TYPE, accDetect);
+            acc = instantiateAccelerometer(accType);
+        }
+
+        if (NULL == acc) {
+            if (LOOKUP_PIN(ACCELEROMETER_SDA))
+                target_panic(PANIC_CODAL_HARDWARE_CONFIGURATION_ERROR);
+            else
+                DMESG("acc: invalid ACCELEROMETER_TYPE");
+        }
+        else {
+            // acc->init(); - doesn't do anything
+            acc->configure();
+            acc->requestUpdate();
+        }
+    }
+
+private:
+
 	int detectAccelerometer(codal::I2C& i2c){
 		uint8_t data;
 		int result;
@@ -108,27 +149,9 @@ class WAccel {
 
 		return PXT_DEFAULT_ACCELEROMETER;
 	}
-	
-	
-  public:
-    Accelerometer *acc;
-    WAccel() : space(ACC_SYSTEM, ACC_UPSIDEDOWN, ACC_ROTATION), acc(NULL) {
-        DMESG("ACCEL: mounting");
-        auto sda = LOOKUP_PIN(ACCELEROMETER_SDA);
-        auto scl = LOOKUP_PIN(ACCELEROMETER_SCL);
-        if (NULL == sda || NULL == scl) { // use default i2c instead
-            DMESG("accelerometer: using SDA, SCL");
-            sda = LOOKUP_PIN(SDA);
-            scl = LOOKUP_PIN(SCL);
-        }
-        codal::I2C* i2c = pxt::getI2C(sda, scl);
-        if (!i2c) {
-            DMESG("accelerometer: no i2c available");
-            return;
-        }
-		
-        int accDetect=detectAccelerometer(*i2c);		
-        auto accType = getConfig(CFG_ACCELEROMETER_TYPE, accDetect);
+
+    codal::Accelerometer* instantiateAccelerometer(int accType) {
+        codal::Accelerometer* acc = NULL;
         switch (accType) {
 #if PXT_SUPPORT_LIS3DH
         case ACCELEROMETER_TYPE_LIS3DH:
@@ -164,19 +187,9 @@ class WAccel {
             break;
 #endif
         }
-
-        if (NULL == acc) {
-            if (LOOKUP_PIN(ACCELEROMETER_SDA))
-                target_panic(PANIC_CODAL_HARDWARE_CONFIGURATION_ERROR);
-            else
-                DMESG("acc: invalid ACCELEROMETER_TYPE");
-        }
-        else {
-            // acc->init(); - doesn't do anything
-            acc->configure();
-            acc->requestUpdate();
-        }
+        return acc;
     }
+
 };
 
 SINGLETON_IF_PIN(WAccel, ACCELEROMETER_INT);
