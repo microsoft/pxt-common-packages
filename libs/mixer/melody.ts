@@ -81,7 +81,8 @@ namespace music {
      */
     //% help=music/stop-all-sounds
     //% blockId=music_stop_all_sounds block="stop all sounds"
-    //% weight=93
+    //% weight=10
+    //% group="Sounds"
     export function stopAllSounds() {
         Melody.stopAll();
     }
