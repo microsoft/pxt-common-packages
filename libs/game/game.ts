@@ -241,6 +241,32 @@ namespace game {
         });
     }
 
+    // Indicates whether the fiber needs to be created
+    let foreverRunning = false;
+
+    /**
+     * Repeats the code forever in the background for this scene.
+     * On each iteration, allows other codes to run.
+     * @param body code to execute
+     */
+    //% group="Gameplay"
+    //% help=game/forever weight=98 afterOnStart=true
+    //% blockId=gameForever block="forever" blockAllowMultiple=1
+    export function forever(action: () => void): void {
+        if (!foreverRunning) {
+            foreverRunning = true;
+            control.runInParallel(() => {
+                const handlers = game.currentScene().gameForeverHandlers;
+                while (1) {
+                    handlers.forEach(h => h());
+                    pause(30);
+                }
+            });
+        }
+
+        game.currentScene().gameForeverHandlers.push(action);
+    }
+
     /**
      * Draw on screen before sprites, after background
      * @param body code to execute
