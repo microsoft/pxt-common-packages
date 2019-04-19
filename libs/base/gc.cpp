@@ -263,6 +263,7 @@ void gcScanSegment(Segment &seg) {
     auto data = seg.getData();
     if (!data)
         return;
+    VVLOG("seg %p %d", data, seg.getLength());
     gcMarkArray(data);
     gcScanMany(data, seg.getLength());
 }
@@ -622,7 +623,7 @@ void *gcAllocate(int numbytes) {
                 if (left >= 2) {
                     nf->nextFree = nextFree;
                 } else {
-                    nf = p->nextFree;
+                    nf = nextFree;
                 }
                 if (prev)
                     prev->nextFree = nf;

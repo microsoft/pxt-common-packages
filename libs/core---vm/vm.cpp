@@ -271,12 +271,12 @@ static inline void callifaceCore(FiberContext *ctx, unsigned numArgs, unsigned i
         auto ent = (struct IfaceEntry *)multBase + off2;
 
         if (ent->memberId == ifaceIdx) {
-            if (getset == 2) {
-                ent++;
-                if (ent->memberId != ifaceIdx)
-                    failedCast(obj);
-            }
             if (ent->aux == 0) {
+                if (getset == 2) {
+                    ent++;
+                    if (ent->memberId != ifaceIdx)
+                        failedCast(obj);
+                }
                 auto fn = ctx->img->pointerLiterals[ent->method];
                 callind(ctx, (RefAction *)fn, numArgs);
             } else {
@@ -355,6 +355,7 @@ void op_mapset(FiberContext *ctx, unsigned arg) {
         failedCast(obj);
     auto vt = getVTable((RefObject *)obj);
     auto key = numops::toString(ctx->sp[0]);
+    ctx->sp[0] = (TValue)key; // save it, so it doesn't get GCed
     if (vt->classNo == BuiltInType::RefMap) {
         pxtrt::mapSetByString((RefMap *)obj, key, ctx->r0);
         POP(2);
@@ -413,7 +414,7 @@ String convertToString(FiberContext *ctx, TValue v) {
                 auto fn = lookupIfaceMember(v, vt, img->toStringKey);
                 if (fn && isPointer(fn) &&
                     getVTable((RefObject *)fn)->objectType == ValType::Function) {
-                    PUSH(v);                    
+                    PUSH(v);
                     v = inlineInvoke(ctx, (RefAction *)fn, 1);
                     PUSH(v); // make sure it doesn't get collected
                 }
@@ -424,7 +425,7 @@ String convertToString(FiberContext *ctx, TValue v) {
     auto rr = numops::toString(v);
     if ((TValue)rr != v)
         PUSH((TValue)rr); // make sure it doesn't get collected
-    
+
     return rr;
 }
 
