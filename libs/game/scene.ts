@@ -24,7 +24,7 @@ namespace scene {
     }
 
     export interface GameForeverHandlers {
-        active: boolean;
+        lock: boolean;
         handler: () => void;
     }
 

@@ -259,11 +259,11 @@ namespace game {
                 while (1) {
                     const handlers = game.currentScene().gameForeverHandlers;
                     handlers.forEach(h => {
-                        if (!h.active) {
-                            h.active = true;
+                        if (!h.lock) {
+                            h.lock = true;
                             control.runInParallel(() => {
                                 h.handler();
-                                h.active = false;
+                                h.lock = false;
                             });
                         }
                     });
@@ -274,7 +274,7 @@ namespace game {
 
         game.currentScene().gameForeverHandlers.push({
             handler: action,
-            active: false
+            lock: false
         });
     }
 
