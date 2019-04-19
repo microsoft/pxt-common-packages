@@ -187,7 +187,7 @@ static VMImage *loadIfaceNames(VMImage *img) {
                       1052);
                 ptrs[i] = (uintptr_t)img->pointerLiterals[ptrs[i]];
                 // pointers have to be sorted
-                CHECK(i == 0 || ptrs[i - 1] < ptrs[i], 1053);
+                //CHECK(i == 0 || ptrs[i - 1] < ptrs[i], 1053);
                 // and so strings
                 CHECK(i == 0 || String_::compare((String)ptrs[i - 1], (String)ptrs[i]) < 0, 1054);
             }

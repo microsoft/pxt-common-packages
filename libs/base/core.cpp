@@ -1523,9 +1523,10 @@ TValue mapGetByString(RefMap *map, String key) {
 int lookupMapKey(String key) {
     auto arr = IFACE_MEMBER_NAMES;
     auto len = *arr++;
-    auto ikey = (uintptr_t)key;
     auto l = 1U; // skip index 0 - it's invalid
     auto r = len - 1;
+#ifndef PXT_VM
+    auto ikey = (uintptr_t)key;
     if (arr[l] <= ikey && ikey <= arr[r]) {
         while (l <= r) {
             auto m = (l + r) >> 1;
@@ -1536,7 +1537,9 @@ int lookupMapKey(String key) {
             else
                 r = m - 1;
         }
-    } else {
+    } else
+#endif
+    {
         while (l <= r) {
             auto m = (l + r) >> 1;
             auto cmp = String_::compare((String)arr[m], key);
