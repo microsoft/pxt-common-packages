@@ -1398,6 +1398,8 @@ bool removeElement(RefCollection *c, TValue x) {
 } // namespace Array_
 
 namespace pxt {
+int debugFlags;
+
 //%
 void *ptrOfLiteral(int offset);
 
