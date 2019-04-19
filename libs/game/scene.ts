@@ -23,6 +23,11 @@ namespace scene {
         handler: (sprite: Sprite) => void
     }
 
+    export interface GameForeverHandlers {
+        lock: boolean;
+        handler: () => void;
+    }
+
     export const CONTROLLER_PRIORITY = 8;
     export const TILEMAP_PRIORITY = 9;
     export const PHYSICS_PRIORITY = 10;
@@ -55,6 +60,7 @@ namespace scene {
         createdHandlers: SpriteHandler[];
         overlapHandlers: OverlapHandler[];
         collisionHandlers: CollisionHandler[];
+        gameForeverHandlers: GameForeverHandlers[];
         particleSources: particles.ParticleSource[];
         controlledSprites: controller.ControlledSprite[][];
 
@@ -74,6 +80,7 @@ namespace scene {
             this.createdHandlers = [];
             this.overlapHandlers = [];
             this.collisionHandlers = [];
+            this.gameForeverHandlers = [];
             this.spritesByKind = [];
             this.controlledSprites = [];
             this._data = {};
@@ -184,6 +191,7 @@ namespace scene {
             this.createdHandlers = undefined;
             this.overlapHandlers = undefined;
             this.collisionHandlers = undefined;
+            this.gameForeverHandlers = undefined;
             this._data = undefined;
         }
     }
