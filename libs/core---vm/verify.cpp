@@ -34,6 +34,7 @@ static VMImage *countSections(VMImage *img) {
     while (p < img->dataEnd) {
         auto sect = (VMImageSection *)p;
         CHECK(ALIGNED(sect->size), 1002);
+        CHECK(sect->size > 0, 1002);
         img->numSections++;
         p += sect->size >> 3;
     }
@@ -307,6 +308,8 @@ VMImage *loadVMImage(void *data, unsigned length) {
     auto img = new VMImage();
     memset(img, 0, sizeof(*img));
 
+    DMESG("loading image at %p (%d bytes)", data, length);
+
     CHECK_AT(ALIGNED((uintptr_t)data), 1000, 0);
     CHECK_AT(ALIGNED(length), 1001, 0);
 
@@ -318,6 +321,9 @@ VMImage *loadVMImage(void *data, unsigned length) {
         // error!
         return img;
     }
+
+    DMESG("image loaded");
+
 
     return img;
 }

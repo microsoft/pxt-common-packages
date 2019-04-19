@@ -951,6 +951,8 @@ inline void *gcAllocate(int numbytes) {
 #define TOWORDS(bytes) (((bytes) + 3) >> 2)
 #endif
 
+extern int debugFlags;
+
 enum class PerfCounters {
     GC,
 };

@@ -99,6 +99,15 @@ namespace control {
         target_panic(PANIC_HEAP_DUMPED);
     }
 
+
+    /**
+     * Force GC and halt waiting for debugger to do a full heap dump.
+     */
+    //%
+    void setDebugFlags(int flags) {
+        debugFlags = flags;
+    }
+
     /**
      * Return true if profiling is enabled in the current build.
      */

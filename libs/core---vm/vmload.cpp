@@ -5,7 +5,7 @@ namespace pxt {
 VMImage *vmImg;
 
 static void vmStartCore(const char *fn) {
-    auto f = fopen(fn, "r");
+    auto f = fopen(fn, "rb");
     if (!f) {
         printf("cannot open %s\n", fn);
         exit(1);

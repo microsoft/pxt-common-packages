@@ -21,8 +21,12 @@
 #define VM_DECODE_PC(pc) (((uintptr_t)pc) >> 9)
 #define TAG_STACK_BOTTOM VM_ENCODE_PC(1)
 
-#define DLLEXPORT extern "C"
-
+#define PXTEXT extern
+#ifdef __MINGW32__
+#define DLLEXPORT PXTEXT "C"
+#else
+#define DLLEXPORT PXTEXT "C"
+#endif
 
 namespace pxt {
 
@@ -54,6 +58,8 @@ struct VMImageSection {
     uint32_t size; // in bytes, including this header
     uint8_t data[0];
 };
+
+STATIC_ASSERT(sizeof(VMImageSection) == 8);
 
 struct OpcodeDesc {
     const char *name;
