@@ -306,6 +306,10 @@ void raiseEvent(int id, int event) {
     pthread_mutex_unlock(&eventMutex);
 }
 
+DLLEXPORT void pxt_raise_event(int id, int event) {
+    raiseEvent(id, event);
+}
+
 void registerWithDal(int id, int event, Action a, int flags) {
     // TODO support flags
     setBinding(id, event, a);
