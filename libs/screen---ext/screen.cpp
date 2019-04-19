@@ -51,10 +51,12 @@ void setPalette(Buffer buf) {
 
 static pthread_mutex_t screenMutex;
 static pthread_cond_t dataBroadcast;
+static int numGetPixels;
 
 DLLEXPORT void pxt_screen_get_pixels(int width, int height, uint32_t *screen)
 {
     auto disp = getWDisplay();
+    numGetPixels++;
 
     pthread_mutex_lock(&screenMutex);
     if (!disp->dataWaiting)
@@ -91,7 +93,8 @@ void WDisplay::update(Image_ img) {
         img->clearDirty();
 
         pthread_mutex_lock(&screenMutex);
-        if (dataWaiting)
+        // if the data have not been picked up, but it had been in the past, wait
+        if (dataWaiting && numGetPixels)
             pthread_cond_wait(&dataBroadcast, &screenMutex);
         memcpy(screenBuf, img->pix(), img->pixLength());
         dataWaiting = true;
