@@ -68,9 +68,9 @@ DLLEXPORT void pxt_screen_get_pixels(int width, int height, uint32_t *screen)
         uint32_t *p = screen + x;
         for (int y = 0; y < (height >> 1); ++y) {
             uint8_t v = *sp++;
-            *p = pal[v >> 4];
-            p += width;
             *p = pal[v & 0xf];
+            p += width;
+            *p = pal[v >> 4];
             p += width;
         }
     }
