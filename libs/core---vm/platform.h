@@ -33,4 +33,6 @@ namespace pxt
 
 #define PXT_IN_ISR() false
 
+#define GC_BLOCK_SIZE (1024 * 64)
+
 #endif
