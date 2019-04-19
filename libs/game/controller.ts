@@ -165,7 +165,7 @@ namespace controller {
      * @param delay number of milliseconds from when the button is pressed to when the repeat event starts firing, eg: 500
      * @param interval minimum number of milliseconds between calls to the button repeat event, eg: 30
      */
-    //% blockId=repeatDefaultDelayInterval block="set repeat delay $delay interval $interval"
+    //% blockId=repeatDefaultDelayInterval block="set button repeat delay $delay interval $interval"
     //% weight=10
     //% group="Single Player"
     export function setRepeatDefault(delay: number, interval: number) {
