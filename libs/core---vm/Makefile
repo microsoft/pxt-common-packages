@@ -9,7 +9,8 @@ CODAL_INC = \
 	-Icodal-core/inc/drivers \
 	-Icodal-core/inc/driver-models \
 
-PXT_OBJS := $(addprefix bld/,$(CODAL_SRC:.cpp=.o)) $(PXT_OBJS)
+BUILD := bld-$(CROSS_TRIPLE)
+PXT_OBJS := $(addprefix $(BUILD)/,$(CODAL_SRC:.cpp=.o)) $(PXT_OBJS:bld/%=$(BUILD)/%)
 
 COMMON_FLAGS = -W -Wall -Wno-unused-parameter -Wno-unused-private-field -Ipxtapp \
 	-fwrapv -fno-threadsafe-statics -ffunction-sections -O3 \
@@ -27,48 +28,61 @@ LIBSTDCPP =
 NPM_LIBS = $(wildcard node_modules/*/lib/*.a)
 NPM_INCLUDES = $(addprefix -I, $(wildcard node_modules/*/include))
 
-EXE = bld/pxt-app.elf
-HEX = $(EXE:.elf=.hex)
 
 ifeq (darwin,$(findstring darwin,$(CROSS_TRIPLE)))
-SOFLAGS = -dynamiclib
-SONAME = $(EXE:.elf=.dylib)
+SOFLAGS := -dynamiclib
+SONAME := libpxt.dylib
+EXE := $(BUILD)/pxt-vm-cli
 else
 ifeq (linux,$(findstring linux,$(CROSS_TRIPLE)))
-SOFLAGS = -shared
-SONAME = $(EXE:.elf=.so)
+SOFLAGS := -shared
+SONAME := libpxt.so
+EXE := $(BUILD)/pxt-vm-cli-linux
+COMMON_FLAGS += -fPIC
 else
-SOFLAGS = -shared
-SONAME = $(EXE:.elf=.dll)
+SOFLAGS := -shared
+SONAME := pxt.dll
+EXE := $(BUILD)/pxt-vm-cli.exe
 endif
 endif
 
 DEPS = $(PXT_HEADERS) package.json Makefile Makefile.inc
 
-all: codal-core/.git $(EXE)
+all: codal-core/.git
+	CROSS_TRIPLE=osx crossbuild make -j8 build-one
+	CROSS_TRIPLE=win64 crossbuild make -j8 build-one
+	CROSS_TRIPLE=linux crossbuild make -j8 build-one
+	rm -f bld/*.tgz bld/*.b64
+	tar zcf bld/all.tgz bld/*
+	base64 < bld/all.tgz > bld/all.tgz.b64
+	@echo Build OK
+
+create-dir:
+	mkdir -p $(BUILD) bld
+
+build-one: create-dir $(EXE)
 
 codal-core/.git:
 	git clone -b streamracefix-v0 https://github.com/lancaster-university/codal-core.git
 
-$(EXE): $(PXT_OBJS)
+$(EXE) $(SONAME): $(PXT_OBJS)
 	$(LD) -o $(EXE) $(LDFLAGS) $(PXT_OBJS) $(LIBSTDCPP) $(LIBS) $(NPM_LIBS)
-	$(LD) $(SOFLAGS) -o $(SONAME) $(LDFLAGS) $(PXT_OBJS) $(LIBSTDCPP) $(LIBS) $(NPM_LIBS)
-	cp $(EXE) $(EXE:.elf=.full)
-	$(PREF)strip $(EXE)
+	$(LD) -o $(SONAME) $(SOFLAGS) $(LDFLAGS) $(PXT_OBJS) $(LIBSTDCPP) $(LIBS) $(NPM_LIBS)
 	#node -p 'require("fs").readFileSync("$(EXE)").toString("hex")' > $(HEX)
-	@ls -l $(EXE)
+	cp $(EXE) $(SONAME) bld/
+	@ls -l $(EXE) $(SONAME)
 
 clean:
-	rm -rf bld
+	rm -rf bld bld-*
 
-bld/%.o: %.cpp $(DEPS)
+$(BUILD)/%.o: %.cpp $(DEPS)
 	@mkdir -p $(dir $@)
 	$(CC) $(CXXFLAGS) -c $< -o $@
 
-bld/%.o: %.s $(DEPS)
+$(BUILD)/%.o: %.s $(DEPS)
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-bld/%.o: %.c $(DEPS)
+$(BUILD)/%.o: %.c $(DEPS)
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@

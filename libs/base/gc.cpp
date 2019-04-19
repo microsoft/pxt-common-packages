@@ -34,9 +34,9 @@ TODO64
 #define VAR_BLOCK_WORDS(vt) (((vt) << 16) >> (16 + 2))
 #endif
 
-#define FREE_MASK (1UL << (HIGH_SHIFT + 3))
-#define ARRAY_MASK (1UL << (HIGH_SHIFT + 2))
-#define PERMA_MASK (1UL << (HIGH_SHIFT + 1))
+#define FREE_MASK (1ULL << (HIGH_SHIFT + 3))
+#define ARRAY_MASK (1ULL << (HIGH_SHIFT + 2))
+#define PERMA_MASK (1ULL << (HIGH_SHIFT + 1))
 #define MARKED_MASK 0x1
 #define ANY_MARKED_MASK 0x3
 

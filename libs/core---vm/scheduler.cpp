@@ -7,8 +7,13 @@
 #include <unistd.h>
 #include <signal.h>
 #include <sys/types.h>
-#include <sys/mman.h>
 #include <errno.h>
+
+#ifdef __MINGW64__
+#include <windows.h>
+#else
+#include <sys/mman.h>
+#endif
 
 // should this be something like CXX11 or whatever?
 #define THROW throw()
@@ -354,11 +359,20 @@ void initRuntime() {
 void *gcAllocBlock(size_t sz) {
     static uint8_t *currPtr = (uint8_t *)GC_BASE;
     sz = (sz + GC_PAGE_SIZE - 1) & ~(GC_PAGE_SIZE - 1);
+#ifdef __MINGW32__
+    void *r = VirtualAlloc(currPtr, sz, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+    if (r == NULL) {
+        DMESG("VirtualAlloc %p failed; err=%d", currPtr, GetLastError());
+        target_panic(PANIC_INTERNAL_ERROR);
+    }
+#else
     void *r = mmap(currPtr, sz, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
     if (r == MAP_FAILED) {
         DMESG("mmap %p failed; err=%d", currPtr, errno);
         target_panic(PANIC_INTERNAL_ERROR);
     }
+#endif
+
     currPtr = (uint8_t *)r + sz;
     if (isReadOnly((TValue)r)) {
         DMESG("mmap returned read-only address: %p", r);

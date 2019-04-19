@@ -11,35 +11,19 @@
 namespace pxt {
 
 void target_exit() {
+#ifdef __MINGW32__
+    exit(0);
+#else
     kill(getpid(), SIGTERM);
+#endif
 }
 
 extern "C" void target_reset() {
-    for (int i = 3; i < 1000; ++i)
-        close(i);
-    if (!fork()) {
-        execv(initialArgv[0], initialArgv);
-        exit(127);
-    } else {
-        target_exit();
-    }
+    // TODO
+    target_exit();
 }
 
 void target_startup() {
-    int pid = getpid();
-    DMESG("runtime starting, pid=%d...", pid);
-
-    FILE *pf = fopen("/tmp/pxt-pid", "r");
-    if (pf) {
-        int p2 = 0;
-        fscanf(pf, "%d", &p2);
-        if (p2)
-            kill(p2, SIGTERM);
-        fclose(pf);
-    }
-    pf = fopen("/tmp/pxt-pid", "w");
-    fprintf(pf, "%d", pid);
-    fclose(pf);
 }
 
 static FILE *dmesgFile;
@@ -78,13 +62,12 @@ static void dmesgRaw(const char *buf, uint32_t len) {
 #endif
 }
 
+void deepSleep() {
+    // nothing to do
+}
+
 void dmesg_flush() {
     fflush(dmesgFile);
-#ifdef __linux__
-    fdatasync(fileno(dmesgFile));
-#else
-    fsync(fileno(dmesgFile));
-#endif
 }
 
 static void dmesgFlushRaw() {
