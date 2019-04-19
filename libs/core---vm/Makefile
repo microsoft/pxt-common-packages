@@ -52,6 +52,7 @@ all: codal-core/.git
 	CROSS_TRIPLE=osx crossbuild make -j8 build-one
 	CROSS_TRIPLE=win64 crossbuild make -j8 build-one
 	CROSS_TRIPLE=linux crossbuild make -j8 build-one
+	cp /usr/x86_64-w64-mingw32/lib/libwinpthread-1.dll bld/
 	rm -f bld/*.tgz bld/*.b64
 	tar zcf bld/all.tgz bld/*
 	base64 < bld/all.tgz > bld/all.tgz.b64
@@ -68,7 +69,6 @@ codal-core/.git:
 $(EXE) $(SONAME): $(PXT_OBJS)
 	$(LD) -o $(EXE) $(LDFLAGS) $(PXT_OBJS) $(LIBSTDCPP) $(LIBS) $(NPM_LIBS)
 	$(LD) -o $(SONAME) $(SOFLAGS) $(LDFLAGS) $(PXT_OBJS) $(LIBSTDCPP) $(LIBS) $(NPM_LIBS)
-	#node -p 'require("fs").readFileSync("$(EXE)").toString("hex")' > $(HEX)
 	cp $(EXE) $(SONAME) bld/
 	@ls -l $(EXE) $(SONAME)
 
