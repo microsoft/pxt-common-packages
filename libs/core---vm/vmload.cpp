@@ -4,8 +4,7 @@ namespace pxt {
 
 VMImage *vmImg;
 
-void vmStart() {
-    auto fn = pxt::initialArgv[1];
+static void vmStartCore(const char *fn) {
     auto f = fopen(fn, "r");
     if (!f) {
         printf("cannot open %s\n", fn);
@@ -35,6 +34,18 @@ void vmStart() {
     initRuntime();  // never returns
 
     exit(10);
+}
+
+void vmStart() {
+    auto fn = pxt::initialArgv[1];
+    vmStartCore(fn);
+}
+
+DLLEXPORT void pxt_vm_start(const char *fn)
+{
+    pthread_t disp;
+    pthread_create(&disp, NULL, (void*(*)(void*))vmStartCore, (void*)fn);
+    pthread_detach(disp);
 }
 
 } // namespace pxt

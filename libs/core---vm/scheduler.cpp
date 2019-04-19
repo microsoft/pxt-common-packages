@@ -41,6 +41,8 @@ static uint64_t startTime;
 
 FiberContext *allFibers;
 FiberContext *currentFiber;
+static pthread_mutex_t eventMutex;
+static pthread_cond_t newEventBroadcast;
 
 static struct Event *eventHead, *eventTail;
 
@@ -211,13 +213,20 @@ static void dispatchEvent(Event &e) {
 }
 
 static void wakeFibers() {
-    while (eventHead != NULL) {
+    for (;;) {
         if (paniced)
             return;
+
+        pthread_mutex_lock(&eventMutex);
+        if (eventHead == NULL) {
+            pthread_mutex_unlock(&eventMutex);
+            return;
+        }
         Event *ev = eventHead;
         eventHead = ev->next;
         if (eventHead == NULL)
             eventTail = NULL;
+        pthread_mutex_unlock(&eventMutex);
 
         for (auto thr = allFibers; thr; thr = thr->next) {
             if (thr->waitSource == 0)
@@ -284,6 +293,7 @@ int allocateNotifyEvent() {
 
 void raiseEvent(int id, int event) {
     auto e = mkEvent(id, event);
+    pthread_mutex_lock(&eventMutex);
     if (eventTail == NULL) {
         if (eventHead != NULL)
             oops(51);
@@ -292,6 +302,8 @@ void raiseEvent(int id, int event) {
         eventTail->next = e;
         eventTail = e;
     }
+    pthread_cond_broadcast(&newEventBroadcast);
+    pthread_mutex_unlock(&eventMutex);
 }
 
 void registerWithDal(int id, int event, Action a, int flags) {

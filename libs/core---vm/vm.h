@@ -1,6 +1,8 @@
 #ifndef _PXT_VM_H
 #define _PXT_VM_H
 
+#include <pthread.h>
+
 #define VM_MAGIC0 0x000a34365458500aULL // \nPXT64\n\0
 #define VM_MAGIC1 0x6837215e2bfe7154ULL
 
@@ -18,6 +20,8 @@
 #define VM_ENCODE_PC(pc) ((TValue)(((pc) << 9) | 2))
 #define VM_DECODE_PC(pc) (((uintptr_t)pc) >> 9)
 #define TAG_STACK_BOTTOM VM_ENCODE_PC(1)
+
+#define DLLEXPORT extern "C"
 
 
 namespace pxt {

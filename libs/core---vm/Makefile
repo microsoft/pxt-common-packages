@@ -30,6 +30,19 @@ NPM_INCLUDES = $(addprefix -I, $(wildcard node_modules/*/include))
 EXE = bld/pxt-app.elf
 HEX = $(EXE:.elf=.hex)
 
+ifeq (darwin,$(findstring darwin,$(CROSS_TRIPLE)))
+SOFLAGS = -dynamiclib
+SONAME = $(EXE:.elf=.dylib)
+else
+ifeq (linux,$(findstring linux,$(CROSS_TRIPLE)))
+SOFLAGS = -shared
+SONAME = $(EXE:.elf=.so)
+else
+SOFLAGS = -shared
+SONAME = $(EXE:.elf=.dll)
+endif
+endif
+
 DEPS = $(PXT_HEADERS) package.json Makefile Makefile.inc
 
 all: codal-core/.git $(EXE)
@@ -39,6 +52,7 @@ codal-core/.git:
 
 $(EXE): $(PXT_OBJS)
 	$(LD) -o $(EXE) $(LDFLAGS) $(PXT_OBJS) $(LIBSTDCPP) $(LIBS) $(NPM_LIBS)
+	$(LD) $(SOFLAGS) -o $(SONAME) $(LDFLAGS) $(PXT_OBJS) $(LIBSTDCPP) $(LIBS) $(NPM_LIBS)
 	cp $(EXE) $(EXE:.elf=.full)
 	$(PREF)strip $(EXE)
 	#node -p 'require("fs").readFileSync("$(EXE)").toString("hex")' > $(HEX)

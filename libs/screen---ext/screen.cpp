@@ -5,7 +5,7 @@ namespace pxt {
 class WDisplay {
   public:
     uint32_t currPalette[16];
-    bool newPalette;
+    bool newPalette, dataWaiting;
 
     uint8_t *screenBuf;
     Image_ lastImg;
@@ -44,9 +44,37 @@ void setPalette(Buffer buf) {
         uint8_t r = buf->data[i * 3];
         uint8_t g = buf->data[i * 3 + 1];
         uint8_t b = buf->data[i * 3 + 2];
-        display->currPalette[i] = (r << 16) | (g << 8) | (b << 0);
+        display->currPalette[i] = (0xff << 24) | (r << 0) | (g << 8) | (b << 16);
     }
     display->newPalette = true;
+}
+
+static pthread_mutex_t screenMutex;
+static pthread_cond_t dataBroadcast;
+
+DLLEXPORT void pxt_screen_get_pixels(int width, int height, uint32_t *screen)
+{
+    auto disp = getWDisplay();
+
+    pthread_mutex_lock(&screenMutex);
+    if (!disp->dataWaiting)
+        pthread_cond_wait(&dataBroadcast, &screenMutex);
+    disp->dataWaiting = false;
+    if (width != disp->width || height != disp->height)
+        target_panic(PANIC_SCREEN_ERROR);
+    auto sp = disp->screenBuf;
+    auto pal = disp->currPalette;
+    for (int x = 0; x < width; ++x) {
+        uint32_t *p = screen + x;
+        for (int y = 0; y < (height >> 1); ++y) {
+            uint8_t v = *sp++;
+            *p = pal[v >> 4];
+            p += width;
+            *p = pal[v & 0xf];
+            p += width;
+        }
+    }
+    pthread_mutex_unlock(&screenMutex);
 }
 
 void performUpdate(uint8_t *screenBuf, uint32_t *palette) {
@@ -65,7 +93,11 @@ void WDisplay::update(Image_ img) {
 
         img->clearDirty();
 
+        pthread_mutex_lock(&screenMutex);
         memcpy(screenBuf, img->pix(), img->pixLength());
+        dataWaiting = true;
+        pthread_cond_broadcast(&dataBroadcast);
+        pthread_mutex_unlock(&screenMutex);
 
         performUpdate(screenBuf, currPalette);
 
