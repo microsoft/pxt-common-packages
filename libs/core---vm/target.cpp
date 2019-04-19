@@ -78,14 +78,18 @@ static void dmesgRaw(const char *buf, uint32_t len) {
 #endif
 }
 
-static void dmesgFlushRaw() {
-#ifndef HIGH_VOLUME
+void dmesg_flush() {
     fflush(dmesgFile);
 #ifdef __linux__
     fdatasync(fileno(dmesgFile));
 #else
     fsync(fileno(dmesgFile));
 #endif
+}
+
+static void dmesgFlushRaw() {
+#ifndef HIGH_VOLUME
+    dmesg_flush();
 #endif
 }
 

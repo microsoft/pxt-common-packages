@@ -71,6 +71,8 @@ void schedule() {
     f->pc = NULL; // this will break the exec_loop()
 }
 
+void dmesg_flush();
+
 extern "C" void target_panic(int error_code) {
     char buf[50];
     int prevErr = errno;
@@ -82,6 +84,8 @@ extern "C" void target_panic(int error_code) {
     drawPanic(error_code);
     DMESG("PANIC %d", error_code);
     DMESG("errno=%d %s", prevErr, strerror(prevErr));
+
+    dmesg_flush();
 
     for (int i = 0; i < 10; ++i) {
         sendSerial(buf, strlen(buf));
@@ -353,6 +357,7 @@ void gcProcessStacks(int flags) {
         auto end = f->stackBase + VM_STACK_SIZE - 1;
         auto ptr = f->sp;
         gcProcess((TValue)f->currAction);
+        gcProcess((TValue)f->r0);
         if (flags & 2)
             DMESG("RS%d:%p/%d", cnt++, ptr, end - ptr);
         // VLOG("mark: %p - %p", ptr, end);
