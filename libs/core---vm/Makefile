@@ -13,7 +13,7 @@ BUILD := bld-$(CROSS_TRIPLE)
 PXT_OBJS := $(addprefix $(BUILD)/,$(CODAL_SRC:.cpp=.o)) $(PXT_OBJS:bld/%=$(BUILD)/%)
 
 COMMON_FLAGS = -W -Wall -Wno-unused-parameter -Wno-unused-private-field -Ipxtapp \
-	-fwrapv -fno-threadsafe-statics -ffunction-sections -O3 \
+	-fwrapv -fno-threadsafe-statics -ffunction-sections -fno-strict-aliasing -O2 \
 	$(NPM_INCLUDES) -g \
 	$(CODAL_INC)
 LIBS = -lm -lpthread
