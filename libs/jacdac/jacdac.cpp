@@ -38,7 +38,12 @@ class WJDPhysicalLayer {
 
     JDPacket* getPacket()
     {
-        return phys.getPacket();
+        auto pkt = phys.getPacket();
+#if CONFIG_ENABLED(DEVICE_JACDAC_DEBUG)
+        if (pkt)
+            pxt::jacdacDebug.handlePacket(pkt);
+#endif
+        return pkt;
     }
 
     void start()

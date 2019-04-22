@@ -20,7 +20,6 @@
         "makecodejacdac.ts",
         "jacdac.cpp",
         "shims.d.ts",
-
         "config.ts",
         "console.ts",
         "driver.ts",
@@ -40,5 +39,15 @@
     "public": true,
     "dependencies": {
         "core": "file:../core"
+    },
+    "yotta": {
+        "userConfigs": [
+            {
+                "description": "JACDAC WebUSB debugging.",
+                "config": {
+                    "DEVICE_JACDAC_DEBUG": 1
+                }
+            }
+        ]
     }
 }
