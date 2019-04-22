@@ -29,4 +29,7 @@ namespace jacdac.options
         }
         return sn;
     }
+    export function getTimeMs() {
+        return control.millis();
+    }
 }

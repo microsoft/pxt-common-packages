@@ -55,6 +55,9 @@ namespace jacdac {
         }
         jacdac.JACDAC.instance.start();
         bus.start();
+        console.addListener(function(pri, msg) {
+            jacdac.JACDAC.instance.consoleService.add(<jacdac.JDConsolePriority><number>pri, msg);
+        });
     }
 
     export function stop() {

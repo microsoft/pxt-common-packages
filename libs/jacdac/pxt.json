@@ -21,7 +21,6 @@
         "jacdac.cpp",
         "shims.d.ts",
         "config.ts",
-        "console.ts",
         "driver.ts",
         "sensordriver.ts",
         "jacdac.svg",
