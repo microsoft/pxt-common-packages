@@ -25,6 +25,7 @@ namespace jacdac {
             super("log", jacdac.LOGGER_DEVICE_CLASS, 2);
             this.controlData[0] = JDConsoleMode.Off;
             this.controlData[1] = console.minPriority; // TODO this may get outdated
+            this._lastListenerTime = 0;
             console.addListener((priority, text) => this.broadcast(priority, text));
         }
 
@@ -36,11 +37,12 @@ namespace jacdac {
         //% group="Console"
         setConsoleMode(consoleMode: JDConsoleMode) {
             this.start();
+            this.log(`request set mode ${consoleMode}, current ${this.consoleMode}`)
             if (this.consoleMode != consoleMode) {
                 this.controlData[0] = consoleMode;
                 this.supressLog = this.consoleMode == JDConsoleMode.Logger;
                 this.priority = this.consoleMode == JDConsoleMode.Logger ? ConsolePriority.Error : ConsolePriority.Log;
-                this.log(`mode ${this.consoleMode}`);
+                this.log(`set mode ${this.consoleMode}`);
             }
         }
 
@@ -62,6 +64,7 @@ namespace jacdac {
             const data = serviceInfo.data;
             const consoleMode = data[0];
             const priority = data[1];
+            console.log(`service info ${data.toHex()} mode ${consoleMode} pri ${priority}`)
 
             if (consoleMode == JDConsoleMode.Listen) {
                 // if a listener enters the bus, automatically start broadcasting
@@ -107,11 +110,11 @@ namespace jacdac {
                 return;
 
             // no one listening -- or disconnected?
-            if (!jacdac.JACDAC.instance.bus.isConnected()
-                || control.millis() - this._lastListenerTime > ConsoleService.BROADCAST_TIMEOUT) {
-                this.setConsoleMode(JDConsoleMode.Off);
-                return;
-            }
+          //  if (!jacdac.JACDAC.instance.bus.isConnected()
+        //        || control.millis() - this._lastListenerTime > ConsoleService.BROADCAST_TIMEOUT) {
+         //       this.setConsoleMode(JDConsoleMode.Off);
+        //        return;
+         //   }
 
             let cursor = 0;
             while (cursor < str.length) {

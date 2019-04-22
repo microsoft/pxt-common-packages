@@ -44,10 +44,12 @@ namespace pxsim {
             const buf = pxsim.BufferMethods.createBuffer(b.length);
             for (let i = 0; i < buf.data.length; ++i)
                 buf.data[i] = b[i];
+            //console.log("jd> recv " + pxsim.BufferMethods.toHex(buf));
             return buf;
         }
 
         sendPacket(buf: RefBuffer) {
+            //console.log("jd> send " + pxsim.BufferMethods.toHex(buf));
             Runtime.postMessage(<SimulatorJacDacMessage>{
                 type: "jacdac",
                 broadcast: true,
