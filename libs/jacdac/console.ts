@@ -17,9 +17,10 @@ namespace jacdac {
      */
     //% fixedInstances
     export class ConsoleService extends Broadcast {
-        private _lastListenerTime: number;
-
         static BROADCAST_TIMEOUT = 2000;
+
+        private _lastListenerTime: number;
+        onMessageReceived: (device: jacdac.JDDevice, priority: ConsolePriority, text: string) => void;
 
         constructor() {
             super("log", jacdac.LOGGER_DEVICE_CLASS, 2);
@@ -97,6 +98,8 @@ namespace jacdac {
                     const deviceName = device && device.device_name ? device.device_name : `${toHex8(packet.device_address)}`;
                     const str = data.slice(2).toString();
                     console.add(priority, `${deviceName}> ${str}`);
+                    if (this.onMessageReceived)
+                        this.onMessageReceived(device, priority, str);
                     break;
                 default:
                     break;
