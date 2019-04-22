@@ -40,7 +40,7 @@ SONAME := libpxt.so
 EXE := $(BUILD)/pxt-vm-cli-linux
 COMMON_FLAGS += -fPIC
 else
-SOFLAGS := -shared
+SOFLAGS := -shared -static
 SONAME := pxt.dll
 EXE := $(BUILD)/pxt-vm-cli.exe
 endif
