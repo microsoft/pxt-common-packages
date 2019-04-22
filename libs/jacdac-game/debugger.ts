@@ -21,17 +21,6 @@ namespace jacdac.dbg {
         }
 
         renderServices() {
-            const errors = [
-                "ok",
-                "cal ing",
-                "cal req",
-                "no res",
-                "busy",
-                "comms err",
-                "inv state",
-                "periph mal"
-            ];
-
             // populate know list of drivers
             console.log(`address class status serial`);
             console.log(`c(lient),s(service)`)
@@ -41,9 +30,9 @@ namespace jacdac.dbg {
             console.log(`p(aired),g(pairing)`);
 
             const devices = jacdac.devices();
-            console.log(`${devices.length} devices (${jacdac.isConnected() ? "connected" : "disconected"} ${this.state()})`)
+            console.log(`${devices.length} devices (${jacdac.isConnected() ? "connected" : "disconnected"})`)
             devices.forEach(device => {
-                const services = d.services;
+                const services = device.services;
                 services.forEach(service => {
                     const serviceClass = service.service_class;
                     const dbgView = jacdac.debugger.debugView(serviceClass);
@@ -93,7 +82,18 @@ namespace jacdac.dbg {
                 game.consoleOverlay.clear();
                 this.refresh();
             })
+            controller.A.onEvent(ControllerButtonEvent.Pressed, () => {
+                const consoleService = jacdac.consoleService();
+                if (consoleService.consoleMode == JDConsoleServiceMode.Listen) {
+                    consoleService.consoleMode = JDConsoleServiceMode.Off;
+                    console.log(`jacdac console off`);
+                } else {
+                    consoleService.consoleMode = JDConsoleServiceMode.Listen;
+                    console.log(`jacdac console on`);
+                }
+            })
             controller.B.onEvent(ControllerButtonEvent.Pressed, () => {
+                stop();
                 // done
                 if (_menu) {
                     _menu.stop();
@@ -103,8 +103,9 @@ namespace jacdac.dbg {
 
             game.consoleOverlay.setVisible(true);
             console.log(`jacdac dashboard`);
-            console.log(` LEFT for drivers`)
+            console.log(` LEFT for services`)
             console.log(` RIGHT for devices`)
+            console.log(` A console on/off`)
             console.log(` B for exit`)
             this.refresh();
         }
