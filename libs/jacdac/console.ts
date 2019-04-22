@@ -37,7 +37,6 @@ namespace jacdac {
         //% group="Console"
         setConsoleMode(consoleMode: JDConsoleMode) {
             this.start();
-            this.log(`request set mode ${consoleMode}, current ${this.consoleMode}`)
             if (this.consoleMode != consoleMode) {
                 this.controlData[0] = consoleMode;
                 this.supressLog = this.consoleMode == JDConsoleMode.Logger;
@@ -66,7 +65,6 @@ namespace jacdac {
                 return -1; // TODO fix
             const consoleMode = data[0];
             const priority = data[1];
-            console.log(`service info ${data.toHex()} mode ${consoleMode} pri ${priority}`)
 
             if (consoleMode == JDConsoleMode.Listen) {
                 // if a listener enters the bus, automatically start broadcasting
@@ -96,7 +94,7 @@ namespace jacdac {
 
                     // send message to console
                     const device = jacdac.JACDAC.instance.getRemoteDevice(packet.device_address);
-                    const deviceName = device ? device.device_name : `${toHex8(packet.device_address)}`;
+                    const deviceName = device && device.device_name ? device.device_name : `${toHex8(packet.device_address)}`;
                     const str = data.slice(2).toString();
                     console.add(priority, `${deviceName}> ${str}`);
                     break;
@@ -112,11 +110,11 @@ namespace jacdac {
                 return;
 
             // no one listening -- or disconnected?
-          //  if (!jacdac.JACDAC.instance.bus.isConnected()
-        //        || control.millis() - this._lastListenerTime > ConsoleService.BROADCAST_TIMEOUT) {
-         //       this.setConsoleMode(JDConsoleMode.Off);
-        //        return;
-         //   }
+            if (!jacdac.JACDAC.instance.bus.isConnected()
+                || control.millis() - this._lastListenerTime > ConsoleService.BROADCAST_TIMEOUT) {
+                this.setConsoleMode(JDConsoleMode.Off);
+                return;
+            }
 
             let cursor = 0;
             while (cursor < str.length) {
