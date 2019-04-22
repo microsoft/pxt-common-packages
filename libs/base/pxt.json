@@ -25,7 +25,10 @@
         "console.ts",
         "json.ts",
         "templates.ts",
-        "eventcontext.ts"
+        "eventcontext.ts",
+        "basic.ts",
+        "utfdecoder.ts",
+        "scheduling.ts"
     ],
     "testFiles": [
         "test.ts"
