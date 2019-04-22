@@ -20,6 +20,9 @@ namespace jacdac {
         static BROADCAST_TIMEOUT = 2000;
 
         private _lastListenerTime: number;
+        /**
+         * Run code when receiving a new log entry
+         */
         onMessageReceived: (device: jacdac.JDDevice, priority: ConsolePriority, text: string) => void;
 
         constructor() {
