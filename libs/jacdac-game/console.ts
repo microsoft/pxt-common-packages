@@ -16,5 +16,5 @@ namespace jacdac {
     );
 
     // prepare listening
-    jacdac.consoleService.start();
+    jacdac.consoleService();
 }
