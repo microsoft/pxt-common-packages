@@ -62,6 +62,8 @@ namespace jacdac {
 
         handleServiceInformation(device: JDDevice, serviceInfo: JDServiceInformation): number {
             const data = serviceInfo.data;
+            if (data.length < 2)
+                return -1; // TODO fix
             const consoleMode = data[0];
             const priority = data[1];
             console.log(`service info ${data.toHex()} mode ${consoleMode} pri ${priority}`)

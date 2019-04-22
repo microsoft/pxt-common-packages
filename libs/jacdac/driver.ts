@@ -42,6 +42,10 @@ namespace jacdac {
             return jacdac.JACDAC.instance.contains(this);
         }
 
+        addAdvertisementData(): Buffer {
+            return this._controlData;
+        }
+
         protected log(text: string) {
             if (!this.supressLog || jacdac.consolePriority < console.minPriority) {
                 let dev = jacdac.JACDAC.instance.getDeviceName();
