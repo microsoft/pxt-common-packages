@@ -1,6 +1,16 @@
 #ifndef __PXT_CONFIGKEYS_H
 #define __PXT_CONFIGKEYS_H
 
+// used by pins.cpp to mask off the pin name from any config
+// lower 16 pins of value are the pin name
+#define CFG_PIN_NAME_MSK 0x0000ffff
+// upper 16 bits of value is any configuration of the pin.
+#define CFG_PIN_CONFIG_MSK 0xffff0000
+
+// begin optional pin configurations
+#define CFG_PIN_CONFIG_ACTIVE_LO 0x10000
+
+
 #define CFG_MAGIC0 0x1e9e10f1
 #define CFG_MAGIC1 0x20227a79
 
