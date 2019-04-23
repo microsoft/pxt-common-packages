@@ -18,16 +18,15 @@ class WJDPhysicalLayer {
         sws.setBaud(1000000);
     }
 
-    void send(Buffer b)
-    {
-        phys.send((JDPacket*)b->data);
+    void send(Buffer b) {
+        phys.send((JDPacket*)b->data,NULL,false);
     }
 
     bool isConnected() {
         return phys.isConnected();
     }
 
-    bool isRunning() { 
+    bool isRunning() {
         return phys.isRunning();
     }
 
@@ -93,6 +92,7 @@ Buffer __physGetPacket() {
             free(pkt);
         }
     }
+
     return buf;
 }
 
