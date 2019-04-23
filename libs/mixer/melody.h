@@ -11,8 +11,8 @@
 struct SoundInstruction {
     uint8_t soundWave;
     uint8_t flags;
-    uint16_t frequency;
-    uint16_t duration;
-    uint16_t startVolume;
-    uint16_t endVolume;
+    uint16_t frequency;   // Hz
+    uint16_t duration;    // ms
+    uint16_t startVolume; // 0-1023
+    uint16_t endVolume;   // 0-1023
 };
