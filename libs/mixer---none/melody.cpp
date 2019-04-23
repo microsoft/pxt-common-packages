@@ -1,4 +1,5 @@
 #include "pxt.h"
+#include "SoundOutput.h"
 #include "melody.h"
 
 namespace music {

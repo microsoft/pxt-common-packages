@@ -1,91 +1,9 @@
 #include "pxt.h"
-#include "Synthesizer.h"
 #include "SoundOutput.h"
-
 #include "melody.h"
-
-#ifdef DATASTREAM_MAXIMUM_BUFFERS
-#define CODAL 1
-#endif
 
 namespace music {
 
-#define MAX_SOUNDS 5
-#define OUTPUT_BITS 12
-
-STATIC_ASSERT((1 << (16 - OUTPUT_BITS)) > MAX_SOUNDS);
-
-struct PlayingSound {
-    uint32_t startSampleNo;
-    uint32_t samplesLeftInCurr;
-    uint32_t tonePosition;
-    int32_t prevVolume;
-    Buffer instructions;
-    SoundInstruction *currInstr, *instrEnd;
-};
-
-struct WaitingSound {
-    uint32_t startSampleNo;
-    WaitingSound *next;
-    Buffer instructions;
-};
-
-class WSynthesizer
-#ifdef CODAL
-    : public DataSource
-#endif
-{
-  public:
-    uint32_t currSample; // after 25h of playing we might get a glitch
-    uint32_t sampleRate; // eg 44100
-    PlayingSound playingSounds[MAX_SOUNDS];
-    WaitingSound *waiting;
-    bool active;
-
-    SoundOutput out;
-
-    int fillSamples(int16_t *dst, int numsamples);
-    int updateQueues();
-
-    WSynthesizer() : out(*this) {
-        currSample = 0;
-        active = false;
-        sampleRate = out.dac.getSampleRate();
-        memset(&playingSounds, 0, sizeof(playingSounds));
-        waiting = NULL;
-#ifdef CODAL
-        upstream = NULL;
-#endif
-    }
-    virtual ~WSynthesizer() {}
-
-    void poke() {
-        if (!active) {
-            active = true;
-#ifdef CODAL
-            if (upstream)
-                upstream->pullRequest();
-#endif
-        }
-    }
-
-#ifdef CODAL
-    DataSink *upstream;
-    virtual ManagedBuffer pull() {
-        ManagedBuffer data(512);
-        int r = fillSamples((int16_t *)data.getBytes(), 512 / 2);
-        if (!waiting && !r) {
-            active = false;
-            // return empty - nothing left to play
-            return ManagedBuffer();
-        }
-        if (upstream)
-            upstream->pullRequest();
-        return data;
-    }
-    virtual void connect(DataSink &sink) { upstream = &sink; }
-#endif
-};
 SINGLETON(WSynthesizer);
 
 static const int16_t sinQ[256] = {
@@ -238,7 +156,7 @@ int WSynthesizer::fillSamples(int16_t *dst, int numsamples) {
         return 1;
 
     int timeLeft = updateQueues();
-    int res = 0;
+    int res = waiting != NULL;
 
     // if there's a pending sound to be started somewhere during numsamples,
     // split the call into two
@@ -260,15 +178,15 @@ int WSynthesizer::fillSamples(int16_t *dst, int numsamples) {
 
         res = 1;
 
-        SoundInstruction *instr;
-        gentone_t fn;
+        SoundInstruction *instr = NULL;
+        gentone_t fn = NULL;
         snd->currInstr--;
         uint32_t toneStep = 0;
-        int32_t volumeStep;
+        int32_t volumeStep = 0;
         uint32_t tonePosition = snd->tonePosition;
         uint32_t samplesLeft = 0;
-        uint8_t wave;
-        int32_t volume;
+        uint8_t wave = 0;
+        int32_t volume = 0;
         uint32_t prevFreq = 0;
 
         for (int j = 0; j < numsamples; ++j) {
@@ -361,6 +279,7 @@ void queuePlayInstructions(int when, Buffer buf) {
 //%
 void stopPlaying() {
     auto snd = getWSynthesizer();
+
 
     target_disable_irq();
     auto p = snd->waiting;
