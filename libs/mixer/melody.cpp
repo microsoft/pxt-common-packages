@@ -40,14 +40,16 @@ class WSynthesizer
     uint32_t sampleRate; // eg 44100
     PlayingSound playingSounds[MAX_SOUNDS];
     WaitingSound *waiting;
+    bool active;
 
     SoundOutput out;
 
-    void fillSamples(int16_t *dst, uint32_t numsamples);
-    void updateQueues();
+    int fillSamples(int16_t *dst, int numsamples);
+    int updateQueues();
 
     WSynthesizer() : out(*this) {
         currSample = 0;
+        active = false;
         sampleRate = out.dac.getSampleRate();
         memset(&playingSounds, 0, sizeof(playingSounds));
         waiting = NULL;
@@ -57,15 +59,28 @@ class WSynthesizer
     }
     virtual ~WSynthesizer() {}
 
+    void poke() {
+        if (!active) {
+            active = true;
+#ifdef CODAL
+            if (upstream)
+                upstream->pullRequest();
+#endif
+        }
+    }
+
 #ifdef CODAL
     DataSink *upstream;
     virtual ManagedBuffer pull() {
         ManagedBuffer data(512);
-        fillSamples((int16_t *)data.getBytes(), 512 / 2);
-
+        int r = fillSamples((int16_t *)data.getBytes(), 512 / 2);
+        if (!waiting && !r) {
+            active = false;
+            // return empty - nothing left to play
+            return ManagedBuffer();
+        }
         if (upstream)
             upstream->pullRequest();
-
         return data;
     }
     virtual void connect(DataSink &sink) { upstream = &sink; }
@@ -167,17 +182,21 @@ static gentone_t getWaveFn(uint8_t wave) {
 
 #define CLAMP(lo, v, hi) ((v) = ((v) < (lo) ? (lo) : (v) > (hi) ? (hi) : (v)))
 
-void WSynthesizer::updateQueues() {
+int WSynthesizer::updateQueues() {
     while (1) {
         WaitingSound *prev = NULL, *p;
+        int minLeft = 0xffffff;
         for (p = waiting; p; p = p->next) {
-            if (p->startSampleNo <= currSample) {
+            int timeLeft = p->startSampleNo - currSample;
+            if (timeLeft <= 0) {
                 if (prev)
                     prev->next = p->next;
                 else
                     waiting = p->next;
                 break;
             }
+            if (timeLeft < minLeft)
+                minLeft = timeLeft;
         }
         if (p) {
             PlayingSound *snd;
@@ -209,16 +228,25 @@ void WSynthesizer::updateQueues() {
             delete p;
         } else {
             // no more sounds to move
-            break;
+            return minLeft;
         }
     }
 }
 
-void WSynthesizer::fillSamples(int16_t *dst, uint32_t numsamples) {
-    if (numsamples == 0)
-        return;
+int WSynthesizer::fillSamples(int16_t *dst, int numsamples) {
+    if (numsamples <= 0)
+        return 1;
 
-    updateQueues();
+    int timeLeft = updateQueues();
+    int res = 0;
+
+    // if there's a pending sound to be started somewhere during numsamples,
+    // split the call into two
+    if (timeLeft < numsamples) {
+        fillSamples(dst, timeLeft);
+        fillSamples(dst + timeLeft, numsamples - timeLeft);
+        return 1;
+    }
 
     memset(dst, 0, numsamples * 2);
 
@@ -229,6 +257,8 @@ void WSynthesizer::fillSamples(int16_t *dst, uint32_t numsamples) {
         PlayingSound *snd = &playingSounds[i];
         if (snd->instructions == NULL)
             continue;
+
+        res = 1;
 
         SoundInstruction *instr;
         gentone_t fn;
@@ -241,7 +271,7 @@ void WSynthesizer::fillSamples(int16_t *dst, uint32_t numsamples) {
         int32_t volume;
         uint32_t prevFreq = 0;
 
-        for (unsigned j = 0; j < numsamples; ++j) {
+        for (int j = 0; j < numsamples; ++j) {
             if (samplesLeft == 0) {
                 instr = ++snd->currInstr;
                 if (instr >= snd->instrEnd) {
@@ -287,12 +317,14 @@ void WSynthesizer::fillSamples(int16_t *dst, uint32_t numsamples) {
     currSample += numsamples;
 
     const int MAXVAL = (1 << (OUTPUT_BITS - 1)) - 1;
-    for (unsigned j = 0; j < numsamples; ++j) {
+    for (int j = 0; j < numsamples; ++j) {
         if (dst[j] > MAXVAL)
             dst[j] = MAXVAL;
         else if (dst[j] < -MAXVAL)
             dst[j] = -MAXVAL;
     }
+
+    return res;
 }
 
 //%
@@ -322,6 +354,8 @@ void queuePlayInstructions(int when, Buffer buf) {
     p->startSampleNo = snd->currSample + when * snd->sampleRate / 1000;
     p->next = snd->waiting;
     snd->waiting = p;
+
+    snd->poke();
 }
 
 //%
