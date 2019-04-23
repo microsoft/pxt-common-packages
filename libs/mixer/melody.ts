@@ -13,10 +13,10 @@ namespace music {
         7d06e0064907b8072d08a9082d09b9094d0aea0a900b400cfa0cc00d910e6f0f5a1053115b1272139a14d4152017
         8018f519801b231dde1e`
 
-    //% promise shim=music::queuePlayInstructions
+    //% shim=music::queuePlayInstructions
     function queuePlayInstructions(timeDelta: number, buf: Buffer) { }
 
-    //% promise shim=music::stopPlaying
+    //% shim=music::stopPlaying
     function stopPlaying() { }
 
     //% shim=music::forceOutput
@@ -74,7 +74,7 @@ namespace music {
     //% weight=76 blockGap=8
     //% group="Tone"
     export function playTone(frequency: number, ms: number): void {
-        let buf = control.createBuffer(10 + 1)
+        let buf = control.createBuffer(10)
         addNote(buf, 0, ms, 255, 255, 1, frequency, volume())
         queuePlayInstructions(0, buf)
     }
@@ -257,7 +257,7 @@ namespace music {
             let ms = 0
             let timePos = 0
             let startTime = control.millis()
-            let now = startTime
+            let now = 0
 
             let envA = 0
             let envD = 0
@@ -432,13 +432,13 @@ namespace music {
                     addForm(envR, envS, 0)
 
                     queuePlayInstructions(timePos - now, sndInstr.slice(0, sndInstrPtr))
-                    timePos += currMs + envR
+                    timePos += currMs // don't add envR - it's supposed overlap next sound
                 }
 
                 let timeLeft = timePos - now
                 if (timeLeft > 100) {
-                    pause(timeLeft - 10)
-                    now = control.millis()
+                    pause(timeLeft - 30)
+                    now = control.millis() - startTime
                 }
             }
         }

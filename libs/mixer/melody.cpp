@@ -280,7 +280,6 @@ void queuePlayInstructions(int when, Buffer buf) {
 void stopPlaying() {
     auto snd = getWSynthesizer();
 
-
     target_disable_irq();
     auto p = snd->waiting;
     snd->waiting = NULL;
