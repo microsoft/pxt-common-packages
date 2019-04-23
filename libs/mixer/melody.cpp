@@ -4,6 +4,10 @@
 
 #include "melody.h"
 
+#ifdef DATASTREAM_MAXIMUM_BUFFERS
+#define CODAL 1
+#endif
+
 namespace music {
 
 #define MAX_SOUNDS 5
@@ -26,26 +30,46 @@ struct WaitingSound {
     Buffer instructions;
 };
 
-class WSynthesizer {
+class WSynthesizer
+#ifdef CODAL
+    : public DataSource
+#endif
+{
   public:
     uint32_t currSample; // after 25h of playing we might get a glitch
     uint32_t sampleRate; // eg 44100
     PlayingSound playingSounds[MAX_SOUNDS];
     WaitingSound *waiting;
-    Mixer fake;
 
     SoundOutput out;
 
     void fillSamples(int16_t *dst, uint32_t numsamples);
     void updateQueues();
 
-    WSynthesizer() : out(fake) {
+    WSynthesizer() : out(*this) {
         currSample = 0;
         sampleRate = out.dac.getSampleRate();
         memset(&playingSounds, 0, sizeof(playingSounds));
         waiting = NULL;
+#ifdef CODAL
+        upstream = NULL;
+#endif
     }
     virtual ~WSynthesizer() {}
+
+#ifdef CODAL
+    DataSink *upstream;
+    virtual ManagedBuffer pull() {
+        ManagedBuffer data(512);
+        fillSamples((int16_t *)data.getBytes(), 512 / 2);
+
+        if (upstream)
+            upstream->pullRequest();
+
+        return data;
+    }
+    virtual void connect(DataSink &sink) { upstream = &sink; }
+#endif
 };
 SINGLETON(WSynthesizer);
 
