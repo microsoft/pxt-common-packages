@@ -288,7 +288,7 @@ void forceOutput(int outp) {
 }
 
 //%
-void queuePlayInstructions(uint32_t when, Buffer buf) {
+void queuePlayInstructions(int when, Buffer buf) {
     auto snd = getWSynthesizer();
 
     registerGCPtr((TValue)buf);
@@ -298,6 +298,28 @@ void queuePlayInstructions(uint32_t when, Buffer buf) {
     p->startSampleNo = snd->currSample + when * snd->sampleRate / 1000;
     p->next = snd->waiting;
     snd->waiting = p;
+}
+
+//%
+void stopPlaying() {
+    auto snd = getWSynthesizer();
+
+    target_disable_irq();
+    auto p = snd->waiting;
+    snd->waiting = NULL;
+    for (unsigned i = 0; i < MAX_SOUNDS; ++i) {
+        auto s = &snd->playingSounds[i];
+        unregisterGCPtr((TValue)s->instructions);
+        s->instructions = NULL;
+    }
+    target_enable_irq();
+
+    while (p) {
+        auto n = p->next;
+        unregisterGCPtr((TValue)p->instructions);
+        delete p;
+        p = n;
+    }
 }
 
 } // namespace music

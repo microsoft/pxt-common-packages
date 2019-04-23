@@ -13,8 +13,11 @@ namespace music {
         7d06e0064907b8072d08a9082d09b9094d0aea0a900b400cfa0cc00d910e6f0f5a1053115b1272139a14d4152017
         8018f519801b231dde1e`
 
-    //% promise shim=music::playInstructions
-    function playInstructions(buf: Buffer) { }
+    //% promise shim=music::queuePlayInstructions
+    function queuePlayInstructions(timeDelta: number, buf: Buffer) { }
+
+    //% promise shim=music::stopPlaying
+    function stopPlaying() { }
 
     //% shim=music::forceOutput
     export function forceOutput(buf: MusicOutput) { }
@@ -73,7 +76,7 @@ namespace music {
     export function playTone(frequency: number, ms: number): void {
         let buf = control.createBuffer(10 + 1)
         addNote(buf, 0, ms, 255, 255, 1, frequency, volume())
-        playInstructions(buf)
+        queuePlayInstructions(0, buf)
     }
 
     /**
@@ -85,6 +88,7 @@ namespace music {
     //% group="Sounds"
     export function stopAllSounds() {
         Melody.stopAll();
+        stopPlaying();
     }
 
     //% fixedInstances
@@ -251,6 +255,9 @@ namespace music {
 
             let hz = 0
             let ms = 0
+            let timePos = 0
+            let startTime = control.millis()
+            let now = startTime
 
             let envA = 0
             let envD = 0
@@ -409,14 +416,14 @@ namespace music {
                 let currMs = ms
 
                 if (currMs <= 0) {
-                    const beat = 15000 / tempo;
+                    const beat = Math.idiv(15000, tempo);
                     currMs = duration * beat
                 }
 
                 if (hz < 0) {
                     // no frequency specified, so no duration
                 } else if (hz == 0) {
-                    pause(currMs)
+                    timePos += currMs
                 } else {
                     sndInstrPtr = 0
                     addForm(envA, 0, 255)
@@ -424,7 +431,14 @@ namespace music {
                     addForm(currMs - (envA + envD), envS, envS)
                     addForm(envR, envS, 0)
 
-                    playInstructions(sndInstr)
+                    queuePlayInstructions(timePos - now, sndInstr.slice(0, sndInstrPtr))
+                    timePos += currMs + envR
+                }
+
+                let timeLeft = timePos - now
+                if (timeLeft > 100) {
+                    pause(timeLeft - 10)
+                    now = control.millis()
                 }
             }
         }
