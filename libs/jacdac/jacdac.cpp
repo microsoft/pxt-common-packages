@@ -13,7 +13,7 @@ class WJDPhysicalLayer {
   public:
     WJDPhysicalLayer() :
         sws(*LOOKUP_PIN(JACK_TX)),
-        phys(sws, *pxt::getJACDACTimer(), LOOKUP_PIN(JACK_BUSLED), LOOKUP_PIN(JACK_COMMLED))
+        phys(sws, *pxt::getJACDACTimer(), LOOKUP_PIN(JACK_BUSLED), LOOKUP_PIN(JACK_COMMLED), (PIN(JACK_BUSLED) & CFG_PIN_CONFIG_ACTIVE_LO) > 0, (PIN(JACK_COMMLED) & CFG_PIN_CONFIG_ACTIVE_LO) > 0)
     {
         sws.setBaud(1000000);
 #if CONFIG_ENABLED(DEVICE_JACDAC_DEBUG)
