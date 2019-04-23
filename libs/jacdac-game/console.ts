@@ -1,14 +1,14 @@
 namespace jacdac {
     scene.systemMenu.addEntry(
-        () => jacdac.consoleService.consoleMode == JDConsoleMode.Listen ? "hide jacdac console" : "show jacdac console",
+        () => jacdac.consoleService().consoleMode == jacdac.JDConsoleMode.Listen ? "hide jacdac console" : "show jacdac console",
         () => {
-            if (jacdac.consoleService.consoleMode == JDConsoleMode.Listen) {
+            if (jacdac.consoleService().consoleMode == jacdac.JDConsoleServiceMode.Listen) {
                 game.consoleOverlay.setVisible(false);
-                jacdac.consoleService.setConsoleMode(JDConsoleMode.Off);
+                jacdac.consoleService().consoleMode = jacdac.JDConsoleServiceMode.Off;
             }
             else {
                 game.consoleOverlay.setVisible(true);
-                jacdac.consoleService.setConsoleMode(JDConsoleMode.Listen);
+                jacdac.consoleService().consoleMode = jacdac.JDConsoleMode.Listen;
                 console.log(`listening to jacdac...`);
             }
         },
