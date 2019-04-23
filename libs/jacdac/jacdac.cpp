@@ -16,6 +16,9 @@ class WJDPhysicalLayer {
         phys(sws, *pxt::getJACDACTimer(), LOOKUP_PIN(JACK_BUSLED), LOOKUP_PIN(JACK_COMMLED))
     {
         sws.setBaud(1000000);
+#if CONFIG_ENABLED(DEVICE_JACDAC_DEBUG)
+        pxt::jacdacDebug.setPhysicalLayer(phys);
+#endif
     }
 
     void send(Buffer b) {
