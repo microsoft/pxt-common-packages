@@ -104,11 +104,13 @@ static gentone_t getWaveFn(uint8_t wave) {
 #define CLAMP(lo, v, hi) ((v) = ((v) < (lo) ? (lo) : (v) > (hi) ? (hi) : (v)))
 
 int WSynthesizer::updateQueues() {
+    const int maxTime = 0xffffff;
     while (1) {
         WaitingSound *prev = NULL, *p;
-        int minLeft = 0xffffff;
+        int minLeft = maxTime;
         for (p = waiting; p; p = p->next) {
-            int timeLeft = p->startSampleNo - currSample;
+            int timeLeft =
+                p->state == SoundState::Waiting ? p->startSampleNo - currSample : maxTime;
             if (timeLeft <= 0) {
                 if (prev)
                     prev->next = p->next;
@@ -125,7 +127,7 @@ int WSynthesizer::updateQueues() {
             int minIdx = -1;
             for (unsigned i = 0; i < MAX_SOUNDS; ++i) {
                 snd = &playingSounds[i];
-                if (snd->instructions == NULL)
+                if (snd->sound == NULL)
                     break;
                 if (minIdx == -1 ||
                     playingSounds[minIdx].startSampleNo < playingSounds[i].startSampleNo)
@@ -135,6 +137,10 @@ int WSynthesizer::updateQueues() {
             // if we didn't find a free slot, expel the oldest sound
             if (!snd)
                 snd = &playingSounds[minIdx];
+            if (snd->sound)
+                snd->sound->state = SoundState::Done;
+            snd->sound = p;
+            p->state = SoundState::Playing;
             snd->startSampleNo = currSample;
             snd->currInstr = (SoundInstruction *)p->instructions->data;
             snd->instrEnd = snd->currInstr + p->instructions->length / sizeof(SoundInstruction);
@@ -144,8 +150,6 @@ int WSynthesizer::updateQueues() {
                 CLAMP(0, p->endVolume, 1023);
                 CLAMP(1, p->duration, 60000);
             }
-            unregisterGCPtr((TValue)snd->instructions);
-            snd->instructions = p->instructions;
             snd->prevVolume = -1;
             delete p;
         } else {
@@ -179,7 +183,7 @@ int WSynthesizer::fillSamples(int16_t *dst, int numsamples) {
 
     for (unsigned i = 0; i < MAX_SOUNDS; ++i) {
         PlayingSound *snd = &playingSounds[i];
-        if (snd->instructions == NULL)
+        if (snd->sound == NULL)
             continue;
 
         res = 1;
@@ -222,7 +226,7 @@ int WSynthesizer::fillSamples(int16_t *dst, int numsamples) {
             int v = fn(wave, (tonePosition >> 16) & 1023);
             v = (v * (volume >> 16)) >> (10 + (16 - OUTPUT_BITS));
 
-            //if (v > MAXVAL)
+            // if (v > MAXVAL)
             //    target_panic(123);
 
             dst[j] += v;
@@ -233,8 +237,8 @@ int WSynthesizer::fillSamples(int16_t *dst, int numsamples) {
         }
 
         if (instr >= snd->instrEnd) {
-            unregisterGCPtr((TValue)snd->instructions);
-            snd->instructions = NULL;
+            snd->sound->state = SoundState::Done;
+            snd->sound = NULL;
         } else {
             snd->tonePosition = tonePosition;
             if (samplesLeft == 0)
@@ -279,12 +283,28 @@ void queuePlayInstructions(int when, Buffer buf) {
     registerGCPtr((TValue)buf);
 
     auto p = new WaitingSound;
+    p->state = SoundState::Waiting;
     p->instructions = buf;
     p->startSampleNo = snd->currSample + when * snd->sampleRate / 1000;
+
+    LOG("Queue %dms now=%d off=%d %p", when, snd->currSample, p->startSampleNo - snd->currSample,
+        buf->data);
+
+    target_disable_irq();
+    // add new sound to queue
     p->next = snd->waiting;
     snd->waiting = p;
-
-    LOG("Queue %dms now=%d off=%d %p", when, snd->currSample, p->startSampleNo - snd->currSample, buf->data);
+    // remove sounds that have already been fully played
+    while (p) {
+        while (p->next && p->next->state == SoundState::Done) {
+            auto todel = p->next;
+            p->next = todel->next;
+            unregisterGCPtr((TValue)todel->instructions);
+            delete todel;
+        }
+        p = p->next;
+    }
+    target_enable_irq();
 
     snd->poke();
 }
@@ -297,18 +317,15 @@ void stopPlaying() {
     auto p = snd->waiting;
     snd->waiting = NULL;
     for (unsigned i = 0; i < MAX_SOUNDS; ++i) {
-        auto s = &snd->playingSounds[i];
-        unregisterGCPtr((TValue)s->instructions);
-        s->instructions = NULL;
+        snd->playingSounds[i].sound = NULL;
     }
-    target_enable_irq();
-
     while (p) {
         auto n = p->next;
         unregisterGCPtr((TValue)p->instructions);
         delete p;
         p = n;
     }
+    target_enable_irq();
 }
 
 } // namespace music

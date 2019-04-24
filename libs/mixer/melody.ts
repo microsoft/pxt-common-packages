@@ -62,6 +62,12 @@ namespace music {
         return globalVolume;
     }
 
+    function playNoteCore(when: number, frequency: number, ms: number) {
+        let buf = control.createBuffer(10)
+        addNote(buf, 0, ms, 255, 255, 1, frequency, volume())
+        queuePlayInstructions(when, buf)
+    }
+
     /**
      * Play a tone through the speaker for some amount of time.
      * @param frequency pitch of the tone to play in Hertz (Hz), eg: Note.C
@@ -74,10 +80,34 @@ namespace music {
     //% weight=76 blockGap=8
     //% group="Tone"
     export function playTone(frequency: number, ms: number): void {
-        let buf = control.createBuffer(10)
-        addNote(buf, 0, ms, 255, 255, 1, frequency, volume())
-        queuePlayInstructions(0, buf)
+        if (ms == 0)
+            ms = 86400000 // 1 day
+
+        if (ms <= 700) {
+            playNoteCore(0, frequency, ms)
+            pause(ms)
+        } else {
+            const id = ++playToneID
+            control.runInParallel(() => {
+                let pos = control.millis()
+                while (id == playToneID && ms > 0) {
+                    let now = control.millis()
+                    let d = pos - now
+                    let t = Math.min(ms, 500)
+                    ms -= t
+                    pos += t
+                    playNoteCore(d - 1, frequency, t)
+                    if (ms == 0)
+                        pause(d + t)
+                    else
+                        pause(d + t - 100)
+                }
+            })
+        }
     }
+
+    let playToneID = 0
+
 
     /**
      * Stop all sounds from playing.

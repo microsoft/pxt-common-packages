@@ -31,19 +31,26 @@ namespace music {
 
 STATIC_ASSERT((1 << (16 - OUTPUT_BITS)) > MAX_SOUNDS);
 
+enum class SoundState : uint8_t {
+    Waiting,
+    Playing,
+    Done
+};
+
+struct WaitingSound {
+    uint32_t startSampleNo;
+    SoundState state;
+    WaitingSound *next;
+    Buffer instructions;
+};
+
 struct PlayingSound {
     uint32_t startSampleNo;
     uint32_t samplesLeftInCurr;
     uint32_t tonePosition;
     int32_t prevVolume;
-    Buffer instructions;
+    WaitingSound *sound;
     SoundInstruction *currInstr, *instrEnd;
-};
-
-struct WaitingSound {
-    uint32_t startSampleNo;
-    WaitingSound *next;
-    Buffer instructions;
 };
 
 class WSynthesizer
