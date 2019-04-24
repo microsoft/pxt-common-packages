@@ -8,7 +8,7 @@ namespace jacdac {
 
         static NAME = "bus";
         constructor() {
-            super(MessageBusService.NAME, DAL.JD_DRIVER_CLASS_MESSAGE_BUS);
+            super(MessageBusService.NAME, jacdac.MESSAGE_BUS_DEVICE_CLASS);
             this.suppressForwarding = false;
         }
 

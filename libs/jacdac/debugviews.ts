@@ -49,12 +49,6 @@ namespace jacdac {
         }
     }
 
-    class BridgeDebugView extends DebugView {
-        constructor() {
-            super("bridge", DAL.JD_DRIVER_CLASS_BRIDGE);
-        }
-    }
-
     class LightDebugView extends DebugView {
         constructor() {
             super("light", jacdac.LIGHT_DEVICE_CLASS);
@@ -117,7 +111,7 @@ namespace jacdac {
 
     class MessageBusDebugView extends DebugView {
         constructor() {
-            super(MessageBusService.NAME, DAL.JD_DRIVER_CLASS_MESSAGE_BUS);
+            super(MessageBusService.NAME, jacdac.MESSAGE_BUS_DEVICE_CLASS);
         }
 
         renderPacket(device: JDDevice, packet: JDPacket): string {
@@ -288,7 +282,6 @@ namespace jacdac {
         new SwitchDebugView();
         new ThermometerDebugView();
         new TouchDebugView();
-        new BridgeDebugView();
         new PixelDebugView();
         new ControllerDebugView();
     }

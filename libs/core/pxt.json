@@ -35,6 +35,8 @@
         "timer.ts",
         "light.cpp",
         "light.h",
+        "keyvaluestorage.cpp",
+        "keyvaluestorage.ts",
         "pxtparts.json"
     ],
     "testFiles": [
