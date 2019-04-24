@@ -1,8 +1,8 @@
 namespace pxsim.configStorage {
-    export function setBuffer(key: string, value: Buffer): void {
+    export function setBuffer(key: string, value: RefBuffer): void {
         // TODO
     }
-    export function getBuffer(key: string): Buffer {
+    export function getBuffer(key: string): RefBuffer {
         // TODO
         return undefined;
     }
