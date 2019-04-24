@@ -1,4 +1,6 @@
-namespace pxsim {
+namespace pxsim {    
+    const JD_SERIAL_EVT_DATA_READY = 1;
+
     export interface SimulatorJacDacMessage extends SimulatorBroadcastMessage {
         type: "jacdac";
         broadcast: true;
@@ -64,7 +66,7 @@ namespace pxsim {
             if (msg && msg.type == "jacdac") {
                 const jdmsg = msg as pxsim.SimulatorJacDacMessage;
                 this.packetQueue.push(jdmsg.packet);
-                b.bus.queue(this.eventId, DAL.JD_SERIAL_EVT_DATA_READY);
+                b.bus.queue(this.eventId, JD_SERIAL_EVT_DATA_READY);
             }
         }
     }
