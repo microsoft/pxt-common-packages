@@ -15,12 +15,11 @@
 struct SoundInstruction {
     uint8_t soundWave;
     uint8_t flags;
-    uint16_t frequency;   // Hz
-    uint16_t duration;    // ms
+    uint16_t frequency;  // Hz
+    uint16_t duration;   // ms
     int16_t startVolume; // 0-1023
     int16_t endVolume;   // 0-1023
 };
-
 
 #ifdef DATASTREAM_MAXIMUM_BUFFERS
 #define CODAL 1
@@ -53,6 +52,11 @@ class WSynthesizer
 #endif
 {
   public:
+#ifdef CODAL
+    DataSink *upstream;
+#else
+    void *upstream;
+#endif
     uint32_t currSample; // after 25h of playing we might get a glitch
     uint32_t sampleRate; // eg 44100
     PlayingSound playingSounds[MAX_SOUNDS];
@@ -64,30 +68,31 @@ class WSynthesizer
     int fillSamples(int16_t *dst, int numsamples);
     int updateQueues();
 
-    WSynthesizer() : out(*this) {
+    WSynthesizer() : upstream(NULL), out(*this) {
         currSample = 0;
         active = false;
         sampleRate = out.dac.getSampleRate();
         memset(&playingSounds, 0, sizeof(playingSounds));
         waiting = NULL;
-#ifdef CODAL
-        upstream = NULL;
-#endif
     }
     virtual ~WSynthesizer() {}
+
+    void pokeUpstream() {
+#ifdef CODAL
+        if (upstream) {
+            upstream->pullRequest();
+        }
+#endif
+    }
 
     void poke() {
         if (!active) {
             active = true;
-#ifdef CODAL
-            if (upstream)
-                upstream->pullRequest();
-#endif
+            pokeUpstream();
         }
     }
 
 #ifdef CODAL
-    DataSink *upstream;
     virtual ManagedBuffer pull() {
         ManagedBuffer data(512);
         int r = fillSamples((int16_t *)data.getBytes(), 512 / 2);
@@ -96,12 +101,11 @@ class WSynthesizer
             // return empty - nothing left to play
             return ManagedBuffer();
         }
-        if (upstream)
-            upstream->pullRequest();
+        pokeUpstream();
         return data;
     }
     virtual void connect(DataSink &sink) { upstream = &sink; }
 #endif
 };
 
-}
+} // namespace music
