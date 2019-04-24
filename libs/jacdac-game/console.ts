@@ -2,9 +2,9 @@ namespace jacdac {
     scene.systemMenu.addEntry(
         () => jacdac.consoleService().consoleMode == jacdac.JDConsoleMode.Listen ? "hide jacdac console" : "show jacdac console",
         () => {
-            if (jacdac.consoleService().consoleMode == jacdac.JDConsoleServiceMode.Listen) {
+            if (jacdac.consoleService().consoleMode == jacdac.JDConsoleMode.Listen) {
                 game.consoleOverlay.setVisible(false);
-                jacdac.consoleService().consoleMode = jacdac.JDConsoleServiceMode.Off;
+                jacdac.consoleService().consoleMode = jacdac.JDConsoleMode.Off;
             }
             else {
                 game.consoleOverlay.setVisible(true);
