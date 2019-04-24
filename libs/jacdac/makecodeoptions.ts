@@ -14,11 +14,11 @@ namespace jacdac.options
     }
 
     export function error (message: string) {
-        console.add(ConsolePriority.Error, "jd> " + message);
+        console.add(ConsolePriority.Error, ":jd> " + message);
     }
 
     export function log (message: string)  {
-        console.add(jacdac.consolePriority, "jd> " + message);
+        console.add(jacdac.consolePriority, ":jd> " + message);
     }
 
     export function getSerialNumber ()  {

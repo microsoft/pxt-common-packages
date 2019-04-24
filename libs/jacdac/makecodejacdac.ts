@@ -58,10 +58,13 @@ namespace jacdac {
         const DEVICE_NAME_STORAGE_KEY = "jddn";
         if (!jacdac.JACDAC.instance.getDeviceName()) {
             const deviceName = configStorage.getItem(DEVICE_NAME_STORAGE_KEY);
-            if (deviceName)
+            if (deviceName) {
+                console.add(jacdac.consolePriority, `:jd> restoring device name changed to ${deviceName}`)
                 jacdac.JACDAC.instance.setDeviceName(deviceName);
+            }
         }
         jacdac.JACDAC.instance.onNameRemotelyChanged = function (name: string) {
+            console.add(jacdac.consolePriority, `:jd> device name changed to ${name}`)
             configStorage.setItem(DEVICE_NAME_STORAGE_KEY, name);
         };
 
