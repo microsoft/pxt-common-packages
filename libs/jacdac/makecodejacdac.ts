@@ -53,6 +53,17 @@ namespace jacdac {
             bus = new JACDACBus();
             jacdac.JACDAC.instance.bus = bus;
         }
+
+        // load name from storage
+        const DEVICE_NAME_STORAGE_KEY = "jddn";
+        const deviceName = configStorage.getItem(DEVICE_NAME_STORAGE_KEY);
+        if (deviceName)
+            jacdac.JACDAC.instance.setDeviceName(deviceName);
+        jacdac.JACDAC.instance.onNameRemotelyChanged = function(name: string) {
+            configStorage.setItem(DEVICE_NAME_STORAGE_KEY, name);
+        };
+
+        // start service
         jacdac.JACDAC.instance.start();
         bus.start();
         console.addListener(function(pri, msg) {
