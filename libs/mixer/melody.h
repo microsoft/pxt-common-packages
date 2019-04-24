@@ -58,7 +58,7 @@ class WSynthesizer
     void *upstream;
 #endif
     uint32_t currSample; // after 25h of playing we might get a glitch
-    uint32_t sampleRate; // eg 44100
+    int32_t sampleRate; // eg 44100
     PlayingSound playingSounds[MAX_SOUNDS];
     WaitingSound *waiting;
     bool active;
@@ -95,7 +95,12 @@ class WSynthesizer
 #ifdef CODAL
     virtual ManagedBuffer pull() {
         ManagedBuffer data(512);
-        int r = fillSamples((int16_t *)data.getBytes(), 512 / 2);
+        auto dp = (int16_t *)data.getBytes();
+        auto sz = 512/2;
+        int r = fillSamples(dp, sz);
+        while (sz--) {
+            *dp++ += 512;
+        }
         if (!r) {
             active = false;
             // return empty - nothing left to play

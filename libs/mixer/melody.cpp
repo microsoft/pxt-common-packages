@@ -2,6 +2,9 @@
 #include "SoundOutput.h"
 #include "melody.h"
 
+//#define LOG DMESG
+#define LOG NOLOG
+
 namespace music {
 
 SINGLETON(WSynthesizer);
@@ -115,6 +118,7 @@ int WSynthesizer::updateQueues() {
             }
             if (timeLeft < minLeft)
                 minLeft = timeLeft;
+            prev = p;
         }
         if (p) {
             PlayingSound *snd;
@@ -162,6 +166,7 @@ int WSynthesizer::fillSamples(int16_t *dst, int numsamples) {
     // split the call into two
     if (timeLeft < numsamples) {
         fillSamples(dst, timeLeft);
+        LOG("M split %d", timeLeft);
         fillSamples(dst + timeLeft, numsamples - timeLeft);
         return 1;
     }
@@ -170,6 +175,7 @@ int WSynthesizer::fillSamples(int16_t *dst, int numsamples) {
 
     uint32_t samplesPerMS = (sampleRate << 8) / 1000;
     float toneStepMult = (1024.0 * (1 << 16)) / sampleRate;
+    const int MAXVAL = (1 << (OUTPUT_BITS - 1)) - 1;
 
     for (unsigned i = 0; i < MAX_SOUNDS; ++i) {
         PlayingSound *snd = &playingSounds[i];
@@ -197,7 +203,7 @@ int WSynthesizer::fillSamples(int16_t *dst, int numsamples) {
                 }
                 wave = instr->soundWave;
                 fn = getWaveFn(wave);
-                samplesLeft = (uint32_t)(instr->duration * samplesPerMS);
+                samplesLeft = (uint32_t)(instr->duration * samplesPerMS >> 8);
                 if (prevFreq != instr->frequency) {
                     toneStep = (uint32_t)(toneStepMult * instr->frequency);
                     prevFreq = instr->frequency;
@@ -208,12 +214,16 @@ int WSynthesizer::fillSamples(int16_t *dst, int numsamples) {
                     samplesLeft = snd->samplesLeftInCurr;
                     volume = snd->prevVolume;
                 } else {
+                    LOG("#sampl %d %p", samplesLeft, instr);
                     volume = instr->startVolume << 16;
                 }
             }
 
             int v = fn(wave, (tonePosition >> 16) & 1023);
             v = (v * (volume >> 16)) >> (10 + (16 - OUTPUT_BITS));
+
+            //if (v > MAXVAL)
+            //    target_panic(123);
 
             dst[j] += v;
 
@@ -227,6 +237,8 @@ int WSynthesizer::fillSamples(int16_t *dst, int numsamples) {
             snd->instructions = NULL;
         } else {
             snd->tonePosition = tonePosition;
+            if (samplesLeft == 0)
+                samplesLeft++; // avoid infinite loop in next iteration
             snd->samplesLeftInCurr = samplesLeft;
             snd->prevVolume = volume;
         }
@@ -234,7 +246,6 @@ int WSynthesizer::fillSamples(int16_t *dst, int numsamples) {
 
     currSample += numsamples;
 
-    const int MAXVAL = (1 << (OUTPUT_BITS - 1)) - 1;
     for (int j = 0; j < numsamples; ++j) {
         if (dst[j] > MAXVAL)
             dst[j] = MAXVAL;
@@ -272,6 +283,8 @@ void queuePlayInstructions(int when, Buffer buf) {
     p->startSampleNo = snd->currSample + when * snd->sampleRate / 1000;
     p->next = snd->waiting;
     snd->waiting = p;
+
+    LOG("Queue %dms now=%d off=%d %p", when, snd->currSample, p->startSampleNo - snd->currSample, buf->data);
 
     snd->poke();
 }

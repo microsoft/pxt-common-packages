@@ -436,8 +436,8 @@ namespace music {
                 }
 
                 let timeLeft = timePos - now
-                if (timeLeft > 100) {
-                    pause(timeLeft - 30)
+                if (timeLeft > 200) {
+                    pause(timeLeft - 100)
                     now = control.millis() - startTime
                 }
             }
