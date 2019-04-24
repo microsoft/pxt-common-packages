@@ -249,9 +249,6 @@ namespace game {
      * On each iteration, allows other codes to run.
      * @param body code to execute
      */
-    //% group="Gameplay"
-    //% help=game/forever weight=98 afterOnStart=true
-    //% blockId=gameForever block="forever" blockAllowMultiple=1
     export function forever(action: () => void): void {
         if (!foreverRunning) {
             foreverRunning = true;
