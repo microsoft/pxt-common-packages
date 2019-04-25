@@ -24,27 +24,29 @@ ifeq (darwin,$(findstring darwin,$(CROSS_TRIPLE)))
 SOFLAGS := -dynamiclib
 SONAME := libpxt.dylib
 EXE := $(BUILD)/pxt-vm-cli
+SDL_EXE = $(BUILD)/pxt-vm-sdl
 else
 ifeq (linux,$(findstring linux,$(CROSS_TRIPLE)))
 SOFLAGS := -shared
 SONAME := libpxt.so
 EXE := $(BUILD)/pxt-vm-cli-linux
 COMMON_FLAGS += -fPIC
+SDL_EXE = skip
 else
 SOFLAGS := -shared -static
 SONAME := pxt.dll
 EXE := $(BUILD)/pxt-vm-cli.exe
+SDL_EXE = $(BUILD)/pxt-vm-sdl.exe
 endif
 endif
 
-SDL_EXE = $(EXE:cli=sdl)
 
 DEPS = $(PXT_HEADERS) package.json Makefile Makefile.inc
 
 all:
 	CROSS_TRIPLE=osx crossbuild make -j8 build-one
-	#CROSS_TRIPLE=win64 crossbuild make -j8 build-one
-	#CROSS_TRIPLE=linux crossbuild make -j8 build-one
+	CROSS_TRIPLE=win64 crossbuild make -j8 build-one
+	CROSS_TRIPLE=linux crossbuild make -j8 build-one
 	rm -f bld/*.tgz bld/*.b64
 	tar zcf bld/all.tgz bld/*
 	base64 < bld/all.tgz > bld/all.tgz.b64
@@ -55,7 +57,9 @@ create-dir:
 	mkdir -p $(BUILD) bld
 
 build-one: create-dir $(EXE)
+ifneq ($(SDL_EXE),skip)
 	$(MAKE) CXXFLAGS="$(CXXFLAGS) $(shell sdl2-config --cflags)" $(SDL_EXE)
+endif
 
 $(EXE) $(SONAME): $(PXT_OBJS)
 	$(LD) -o $(EXE) $(LDFLAGS) $(PXT_OBJS) $(LIBSTDCPP) $(LIBS) $(NPM_LIBS)
