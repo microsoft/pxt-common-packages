@@ -1,14 +1,5 @@
 include Makefile.inc
 
-CODAL_SRC =
-
-CODAL_INC = \
-	-Icodal-core/inc/streams \
-	-Icodal-core/inc/types \
-	-Icodal-core/inc/core \
-	-Icodal-core/inc/drivers \
-	-Icodal-core/inc/driver-models \
-
 BUILD := bld-$(CROSS_TRIPLE)
 PXT_OBJS := $(addprefix $(BUILD)/,$(CODAL_SRC:.cpp=.o)) $(PXT_OBJS:bld/%=$(BUILD)/%)
 
@@ -48,11 +39,10 @@ endif
 
 DEPS = $(PXT_HEADERS) package.json Makefile Makefile.inc
 
-all: codal-core/.git
+all:
 	CROSS_TRIPLE=osx crossbuild make -j8 build-one
-	CROSS_TRIPLE=win64 crossbuild make -j8 build-one
-	CROSS_TRIPLE=linux crossbuild make -j8 build-one
-	cp /usr/x86_64-w64-mingw32/lib/libwinpthread-1.dll bld/
+	#CROSS_TRIPLE=win64 crossbuild make -j8 build-one
+	#CROSS_TRIPLE=linux crossbuild make -j8 build-one
 	rm -f bld/*.tgz bld/*.b64
 	tar zcf bld/all.tgz bld/*
 	base64 < bld/all.tgz > bld/all.tgz.b64
@@ -62,9 +52,6 @@ create-dir:
 	mkdir -p $(BUILD) bld
 
 build-one: create-dir $(EXE)
-
-codal-core/.git:
-	git clone -b streamracefix-v0 https://github.com/lancaster-university/codal-core.git
 
 $(EXE) $(SONAME): $(PXT_OBJS)
 	$(LD) -o $(EXE) $(LDFLAGS) $(PXT_OBJS) $(LIBSTDCPP) $(LIBS) $(NPM_LIBS)
