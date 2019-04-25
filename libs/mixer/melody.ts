@@ -83,7 +83,7 @@ namespace music {
         if (ms == 0)
             ms = 86400000 // 1 day
 
-        if (ms <= 700) {
+        if (ms <= 2000) {
             playNoteCore(0, frequency, ms)
             pause(ms)
         } else {
