@@ -6,7 +6,6 @@
         "consts.ts",
         "control.ts",
         "crc.ts",
-        "debugview.ts",
         "devicemanager.ts",
         "ifaces.ts",
         "jacdac.ts",
@@ -28,7 +27,6 @@
         "actuator.ts",
         "messagebus.ts",
         "controllerclient.ts",
-        "debugviews.ts",
         "ns.ts",
         "README.md"
     ],

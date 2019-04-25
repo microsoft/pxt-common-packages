@@ -13,7 +13,6 @@ namespace jacdac.dbg {
         constructor() {
             this.mode = Mode.None;
             this.consoleVisible = game.consoleOverlay.isVisible();
-            jacdac.registerDebugViews();
         }
 
         showServices() {
@@ -27,12 +26,6 @@ namespace jacdac.dbg {
                 const services = device.services;
                 services.forEach(service => {
                     const serviceClass = service.service_class;
-                    const dbgView = jacdac.debugView(serviceClass);
-                    let driverName = dbgView ? dbgView.name : serviceClass.toString();
-                    while (driverName.length < 8) driverName += " ";
-                    let flags = "";
-                    while (flags.length < 4) flags += " ";
-                    console.log(`${device} ${flags} ${dbgView}`);
                 })
             })
             console.log("");
