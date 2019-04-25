@@ -2,11 +2,14 @@
 #define __PXT_H
 
 #include "pxtbase.h"
-//#include "pins.h"
 
-#include "CodalComponent.h"
-#include "Event.h"
 #include "vm.h"
+
+#define OUTPUT_BITS 12
+
+#define DEVICE_EVT_ANY 0
+#define DEVICE_ID_NOTIFY_ONE 1022
+#define DEVICE_ID_NOTIFY 1023
 
 namespace pxt {
 void raiseEvent(int id, int event);
