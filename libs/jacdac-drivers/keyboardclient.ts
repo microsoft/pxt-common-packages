@@ -113,7 +113,7 @@ namespace jacdac {
         //% text.shadowOptions.toString=true
         //% group="Keyboard"
         type(type: string) {
-            const buf = control.createBuffer(DAL.JD_SERIAL_DATA_SIZE)
+            const buf = control.createBuffer(jacdac.JD_SERIAL_MAX_PAYLOAD_SIZE)
             buf[0] = JDKeyboardCommand.Type;
             let n = 0;
             while (n < type.length) {
