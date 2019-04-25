@@ -17,7 +17,8 @@
         "pixelclient.ts",
         "musicclient.ts",
         "servoclient.ts",
-        "lcdclient.ts"
+        "lcdclient.ts",
+        "colorsensorclient.ts"
     ],
     "testFiles": [
         "test.ts"

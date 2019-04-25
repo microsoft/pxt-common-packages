@@ -40,6 +40,7 @@ namespace jacdac {
     export const CONTROLLER_DEVICE_CLASS = 2018;
     export const LCD_DEVICE_CLASS = 2019;
     export const MESSAGE_BUS_DEVICE_CLASS = 2020;
+    export const COLOR_SENSOR_DEVICE_CLASS = 2021;
 
     // events
     export const JD_MESSAGE_BUS_ID = JD_DEVICE_CLASS_MAKECODE_START;
