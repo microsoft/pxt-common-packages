@@ -1,7 +1,7 @@
 {
     "name": "jacdac",
     "description": "Plug and play single wire serial protocol - beta",
-    "additionalFilePath": "../../node_modules/@jacdac/jacdac-ts/source",
+    "additionalFilePath": "../../node_modules/@jacdac/jacdac-ts/jacdac",
     "files": [
         "consts.ts",
         "control.ts",
