@@ -158,7 +158,7 @@ namespace game {
      * Finish the game and display the score
      */
     //% group="Gameplay"
-    //% blockId=gameOver block="game over || %win=toggleWinLose with %effect effect"
+    //% blockId=gameOver block="game over %win=toggleWinLose || with %effect effect"
     //% weight=80 help=game/over
     export function over(win: boolean = false, effect?: effects.BackgroundEffect) {
         init();
@@ -238,6 +238,40 @@ namespace game {
                 timer = time + period;
                 a();
             }
+        });
+    }
+
+    // Indicates whether the fiber needs to be created
+    let foreverRunning = false;
+
+    /**
+     * Repeats the code forever in the background for this scene.
+     * On each iteration, allows other codes to run.
+     * @param body code to execute
+     */
+    export function forever(action: () => void): void {
+        if (!foreverRunning) {
+            foreverRunning = true;
+            control.runInParallel(() => {
+                while (1) {
+                    const handlers = game.currentScene().gameForeverHandlers;
+                    handlers.forEach(h => {
+                        if (!h.lock) {
+                            h.lock = true;
+                            control.runInParallel(() => {
+                                h.handler();
+                                h.lock = false;
+                            });
+                        }
+                    });
+                    pause(30);
+                }
+            });
+        }
+
+        game.currentScene().gameForeverHandlers.push({
+            handler: action,
+            lock: false
         });
     }
 

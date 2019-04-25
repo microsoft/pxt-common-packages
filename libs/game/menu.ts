@@ -16,7 +16,7 @@ enum ButtonId {
 }
 
 namespace menu {
-    export let consolePriority = ConsolePriority.Log;
+    export let consolePriority = ConsolePriority.Debug;
     function log(msg: string) {
         console.add(consolePriority, `menu> ${msg}`);
     }
