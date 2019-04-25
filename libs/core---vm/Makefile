@@ -1,12 +1,13 @@
 include Makefile.inc
 
 BUILD := bld-$(CROSS_TRIPLE)
-PXT_OBJS := $(addprefix $(BUILD)/,$(CODAL_SRC:.cpp=.o)) $(PXT_OBJS:bld/%=$(BUILD)/%)
+SDL_OBJ := $(BUILD)/pxtapp/hw---vm/sdlmain.o
+PXT_OBJS := $(PXT_OBJS:bld/%=$(BUILD)/%)
+PXT_OBJS := $(PXT_OBJS:$(SDL_OBJ)=)
 
 COMMON_FLAGS = -W -Wall -Wno-unused-parameter -Wno-unused-private-field -Ipxtapp \
 	-fwrapv -fno-threadsafe-statics -ffunction-sections -fno-strict-aliasing -O2 \
-	$(NPM_INCLUDES) -g \
-	$(CODAL_INC)
+	$(NPM_INCLUDES) -g
 LIBS = -lm -lpthread
 CFLAGS = $(COMMON_FLAGS) -std=c99
 CXXFLAGS = $(COMMON_FLAGS) -std=c++11 -fno-rtti -fno-exceptions -fno-unwind-tables
@@ -14,7 +15,6 @@ LDFLAGS = -g
 
 CC = $(PREF)gcc
 LD = $(PREF)gcc
-#LIBSTDCPP = /usr/lib/gcc/arm-linux-gnueabi/4.9/libstdc++.a
 LIBSTDCPP = 
 NPM_LIBS = $(wildcard node_modules/*/lib/*.a)
 NPM_INCLUDES = $(addprefix -I, $(wildcard node_modules/*/include))
@@ -37,6 +37,8 @@ EXE := $(BUILD)/pxt-vm-cli.exe
 endif
 endif
 
+SDL_EXE = $(EXE:cli=sdl)
+
 DEPS = $(PXT_HEADERS) package.json Makefile Makefile.inc
 
 all:
@@ -46,18 +48,23 @@ all:
 	rm -f bld/*.tgz bld/*.b64
 	tar zcf bld/all.tgz bld/*
 	base64 < bld/all.tgz > bld/all.tgz.b64
+	@ls -l bld/
 	@echo Build OK
 
 create-dir:
 	mkdir -p $(BUILD) bld
 
 build-one: create-dir $(EXE)
+	$(MAKE) CXXFLAGS="$(CXXFLAGS) $(shell sdl2-config --cflags)" $(SDL_EXE)
 
 $(EXE) $(SONAME): $(PXT_OBJS)
 	$(LD) -o $(EXE) $(LDFLAGS) $(PXT_OBJS) $(LIBSTDCPP) $(LIBS) $(NPM_LIBS)
 	$(LD) -o $(SONAME) $(SOFLAGS) $(LDFLAGS) $(PXT_OBJS) $(LIBSTDCPP) $(LIBS) $(NPM_LIBS)
 	cp $(EXE) $(SONAME) bld/
-	@ls -l $(EXE) $(SONAME)
+
+$(SDL_EXE): $(SDL_OBJ)
+	$(LD) -o $(SDL_EXE) $(LDFLAGS) $(SDL_OBJ) $(LIBSTDCPP) $(LIBS) $(shell sdl2-config --static-libs)
+	cp $(SDL_EXE) bld/
 
 clean:
 	rm -rf bld bld-*
