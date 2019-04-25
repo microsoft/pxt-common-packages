@@ -201,7 +201,7 @@ namespace music {
         //% parts="headphone"
         //% weight=93 blockGap=8
         //% group="Sounds"
-        loop(volume = 128) {
+        loop(volume = 255) {
             this.playCore(volume, true)
         }
 
@@ -214,7 +214,7 @@ namespace music {
         //% parts="headphone"
         //% weight=95 blockGap=8
         //% group="Sounds"
-        play(volume = 128) {
+        play(volume = 255) {
             this.playCore(volume, false)
         }
 
@@ -228,7 +228,7 @@ namespace music {
         //% parts="headphone"
         //% weight=94 blockGap=8
         //% group="Sounds"
-        playUntilDone(volume = 128) {
+        playUntilDone(volume = 255) {
             this.stop()
             const p = this._player = new MelodyPlayer(this)
             this._player.onPlayFinished = () => {
