@@ -25,7 +25,7 @@
   ],
   "dependencies": {
     "pxt-core": "^5.8.2",
-    "@jacdac/jacdac-ts": "^0.0.6"
+    "@jacdac/jacdac-ts": "^0.0.8"
   },
   "devDependencies": {
     "typescript": "2.6.1",
