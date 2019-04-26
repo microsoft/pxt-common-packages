@@ -106,21 +106,16 @@ static gentone_t getWaveFn(uint8_t wave) {
 int WSynthesizer::updateQueues() {
     const int maxTime = 0xffffff;
     while (1) {
-        WaitingSound *prev = NULL, *p;
+        WaitingSound *p;
         int minLeft = maxTime;
         for (p = waiting; p; p = p->next) {
             int timeLeft =
                 p->state == SoundState::Waiting ? p->startSampleNo - currSample : maxTime;
             if (timeLeft <= 0) {
-                if (prev)
-                    prev->next = p->next;
-                else
-                    waiting = p->next;
                 break;
             }
             if (timeLeft < minLeft)
                 minLeft = timeLeft;
-            prev = p;
         }
         if (p) {
             PlayingSound *snd;
@@ -151,7 +146,6 @@ int WSynthesizer::updateQueues() {
                 CLAMP(1, p->duration, 60000);
             }
             snd->prevVolume = -1;
-            delete p;
         } else {
             // no more sounds to move
             return minLeft;
@@ -311,6 +305,8 @@ void queuePlayInstructions(int when, Buffer buf) {
 
 //%
 void stopPlaying() {
+    LOG("stop playing!");
+
     auto snd = getWSynthesizer();
 
     target_disable_irq();
