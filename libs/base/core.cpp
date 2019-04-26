@@ -975,14 +975,25 @@ int toBoolDecr(TValue v) {
     return r;
 }
 
-// TODO
 // The integer, non-overflow case for add/sub/bit opts is handled in assembly
 
-//%
-TNumber adds(TNumber a, TNumber b){NUMOP(+)}
+#ifdef PXT_VM
+#define NUMOP2(op) \
+   if (bothNumbers(a, b)) { \
+        auto tmp = (int64_t)numValue(a) op (int64_t)numValue(b); \
+        if ((int)tmp == tmp) \
+            return TAG_NUMBER((int)tmp); \
+    } \
+    NUMOP(op)
+#else
+#define NUMOP2(op) NUMOP(op)
+#endif
 
 //%
-TNumber subs(TNumber a, TNumber b){NUMOP(-)}
+TNumber adds(TNumber a, TNumber b){NUMOP2(+)}
+
+//%
+TNumber subs(TNumber a, TNumber b){NUMOP2(-)}
 
 //%
 TNumber muls(TNumber a, TNumber b) {
