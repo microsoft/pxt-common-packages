@@ -16,6 +16,9 @@ void raiseEvent(int id, int event);
 int allocateNotifyEvent();
 void sleep_core_us(uint64_t us);
 
+void target_disable_irq();
+void target_enable_irq();
+
 class Button;
 typedef Button *Button_;
 
