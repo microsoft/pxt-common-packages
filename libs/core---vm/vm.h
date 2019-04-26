@@ -144,6 +144,7 @@ extern FiberContext *currentFiber;
 
 void vmStart();
 VMImage *loadVMImage(void *data, unsigned length);
+void unloadVMImage(VMImage *img);
 VMImage *setVMImgError(VMImage *img, int code, void *pos);
 void exec_loop(FiberContext *ctx);
 

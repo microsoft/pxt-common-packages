@@ -67,7 +67,7 @@ Event *mkEvent(int source, int value) {
     return res;
 }
 
-volatile bool paniced;
+volatile int panicCode;
 extern "C" void drawPanic(int code);
 
 void schedule() {
@@ -80,26 +80,37 @@ void schedule() {
 
 void dmesg_flush();
 
-extern "C" void target_panic(int error_code) {
-    char buf[50];
+static void panic_core(int error_code) {
     int prevErr = errno;
 
-    paniced = true;
-
-    snprintf(buf, sizeof(buf), "\nPANIC %d\n", error_code);
+    panicCode = error_code;
 
     drawPanic(error_code);
-    DMESG("PANIC %d", error_code);
+    
+    DMESG("PANIC %d", error_code % 1000);
     DMESG("errno=%d %s", prevErr, strerror(prevErr));
 
     dmesg_flush();
+}
 
-    for (int i = 0; i < 10; ++i) {
-        sendSerial(buf, strlen(buf));
-        sleep_core_us(500 * 1000);
-    }
+extern "C" void target_panic(int error_code) {
+    panic_core(error_code);
 
-    target_exit();
+    while (1)
+        sleep_core_us(10000);
+}
+
+DLLEXPORT int pxt_get_panic_code() {
+    return panicCode;
+}
+
+void soft_panic(int errorCode) {
+    if (errorCode >= 999)
+        errorCode = 999;
+    if (errorCode <= 0)
+        errorCode = 1;
+    panic_core(1000 + errorCode);
+    systemReset();
 }
 
 void sleep_core_us(uint64_t us) {
@@ -219,9 +230,6 @@ static void dispatchEvent(Event &e) {
 
 static void wakeFibers() {
     for (;;) {
-        if (paniced)
-            return;
-
         pthread_mutex_lock(&eventMutex);
         if (eventHead == NULL) {
             pthread_mutex_unlock(&eventMutex);
@@ -251,10 +259,11 @@ static void wakeFibers() {
     }
 }
 
+
 static void mainRunLoop() {
     FiberContext *f = NULL;
     for (;;) {
-        if (paniced)
+        if (panicCode)
             return;
         wakeFibers();
         auto now = current_time_ms();
@@ -397,5 +406,51 @@ void gcProcessStacks(int flags) {
     }
 }
 #endif
+
+
+#define MAX_RESET_FN 32
+static reset_fn_t resetFunctions[MAX_RESET_FN];
+
+void registerResetFunction(reset_fn_t fn)
+{
+    for (int i = 0; i < MAX_RESET_FN; ++i) {
+        if (!resetFunctions[i]) {
+            resetFunctions[i] = fn;
+            return;
+        }
+    }
+
+    target_panic(PANIC_INTERNAL_ERROR);
+}
+
+void systemReset() {
+    if (!panicCode)
+        panicCode = -1;
+
+    dmesg("TARGET RESET");
+
+    gcFreeze();
+
+    for (int i = 0; i < MAX_RESET_FN; ++i) {
+        auto fn = resetFunctions[i];
+        if (fn)
+            fn();
+    }
+
+    coreReset(); // clears handler bindings
+
+    currentFiber = NULL;
+    while (allFibers) {
+        disposeFiber(allFibers);
+    }
+
+    // this will consume all events, but won't dispatch anything, since all listener maps are empty
+    wakeFibers(); 
+
+    // mark all GC memory as free
+    gcReset();
+
+    pthread_exit(NULL);
+}
 
 } // namespace pxt

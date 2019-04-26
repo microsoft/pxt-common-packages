@@ -260,7 +260,7 @@ static inline void callifaceCore(FiberContext *ctx, unsigned numArgs, unsigned i
             }
             return;
         }
-        failedCast(obj);
+        missingProperty(obj);
     }
     uint32_t off = (ifaceIdx * mult) >> (mult & 0xff);
 
@@ -275,7 +275,7 @@ static inline void callifaceCore(FiberContext *ctx, unsigned numArgs, unsigned i
                 if (getset == 2) {
                     ent++;
                     if (ent->memberId != ifaceIdx)
-                        failedCast(obj);
+                        missingProperty(obj);
                 }
                 auto fn = ctx->img->pointerLiterals[ent->method];
                 callind(ctx, (RefAction *)fn, numArgs);
@@ -306,8 +306,7 @@ static inline void callifaceCore(FiberContext *ctx, unsigned numArgs, unsigned i
         ctx->sp += 1; // pop object arg
         ctx->r0 = TAG_UNDEFINED;
     } else {
-        // member not found
-        failedCast(obj);
+        missingProperty(obj);
     }
 }
 
@@ -362,7 +361,7 @@ void op_mapset(FiberContext *ctx, unsigned arg) {
     } else {
         int k = pxtrt::lookupMapKey(key);
         if (k == 0) {
-            failedCast(obj);
+            missingProperty(obj);
         } else {
             ctx->sp[0] = ctx->r0;
             callifaceCore(ctx, 2, k, 2);

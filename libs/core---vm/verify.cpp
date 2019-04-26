@@ -328,4 +328,16 @@ VMImage *loadVMImage(void *data, unsigned length) {
     return img;
 }
 
+void unloadVMImage(VMImage *img) {
+    if (!img)
+        return;
+    delete img->pointerLiterals;
+    delete img->sections;
+    delete img->opcodes;
+    delete img->opcodeDescs;
+    delete (uint8_t*)img->dataStart;
+    memset(img, 0, sizeof(*img));
+    delete img;
+}
+
 } // namespace pxt

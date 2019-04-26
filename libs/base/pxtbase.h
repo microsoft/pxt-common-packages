@@ -47,6 +47,10 @@ void *operator new(size_t size);
 #include "platform.h"
 #include "pxtcore.h"
 
+#ifndef PXT_REGISTER_RESET
+#define PXT_REGISTER_RESET(fn) ((void)0)
+#endif
+
 #ifndef PXT_VTABLE_SHIFT
 #define PXT_VTABLE_SHIFT 2
 #endif
@@ -933,7 +937,12 @@ void gcProcess(TValue v);
 void gcFreeze();
 #ifdef PXT_VM
 void gcStartup();
+void gcPreStartup();
 #endif
+
+void coreReset();
+void gcReset();
+void systemReset();
 
 void *gcAllocate(int numbytes);
 void *gcAllocateArray(int numbytes);
@@ -949,6 +958,10 @@ inline void *gcAllocate(int numbytes) {
 #define TOWORDS(bytes) (((bytes) + 7) >> 3)
 #else
 #define TOWORDS(bytes) (((bytes) + 3) >> 2)
+#endif
+
+#ifndef PXT_VM
+#define soft_panic target_panic
 #endif
 
 extern int debugFlags;

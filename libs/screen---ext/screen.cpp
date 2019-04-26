@@ -1,14 +1,11 @@
 #include "pxt.h"
 
-
 namespace pxt {
 class WDisplay {
   public:
     uint32_t currPalette[16];
     bool newPalette, dataWaiting;
-
     uint8_t *screenBuf;
-    Image_ lastImg;
 
     int width, height;
 
@@ -24,10 +21,7 @@ WDisplay::WDisplay() {
     height = getConfig(CFG_DISPLAY_HEIGHT, 128);
     DMESG("init display: %dx%d", width, height);
     screenBuf = new uint8_t[width * height / 2 + 20];
-    lastImg = NULL;
     newPalette = false;
-
-    registerGC((TValue *)&lastImg);
 }
 
 //% expose
@@ -53,26 +47,35 @@ static pthread_mutex_t screenMutex;
 static pthread_cond_t dataBroadcast;
 static int numGetPixels;
 
-DLLEXPORT void pxt_screen_get_pixels(int width, int height, uint32_t *screen)
-{
+DLLEXPORT void pxt_screen_get_pixels(int width, int height, uint32_t *screen) {
     auto disp = getWDisplay();
     numGetPixels++;
 
     pthread_mutex_lock(&screenMutex);
-    if (!disp->dataWaiting)
-        pthread_cond_wait(&dataBroadcast, &screenMutex);
+    if (!disp->dataWaiting) {
+        struct timespec timeout = {0, 100 * 1000 * 1000}; // up to 100ms
+        pthread_cond_timedwait(&dataBroadcast, &screenMutex, &timeout);
+    }
     if (width != disp->width || height != disp->height)
         target_panic(PANIC_SCREEN_ERROR);
-    auto sp = disp->screenBuf;
-    auto pal = disp->currPalette;
-    for (int x = 0; x < width; ++x) {
-        uint32_t *p = screen + x;
-        for (int y = 0; y < (height >> 1); ++y) {
-            uint8_t v = *sp++;
-            *p = pal[v & 0xf];
-            p += width;
-            *p = pal[v >> 4];
-            p += width;
+    if (panicCode > 0) {
+        int n = width * height;
+        uint32_t *p = screen;
+        // blue screen
+        while (n--)
+            *p++ = 0xff0000ff;
+    } else {
+        auto sp = disp->screenBuf;
+        auto pal = disp->currPalette;
+        for (int x = 0; x < width; ++x) {
+            uint32_t *p = screen + x;
+            for (int y = 0; y < (height >> 1); ++y) {
+                uint8_t v = *sp++;
+                *p = pal[v & 0xf];
+                p += width;
+                *p = pal[v >> 4];
+                p += width;
+            }
         }
     }
     pthread_cond_broadcast(&dataBroadcast);
@@ -81,29 +84,25 @@ DLLEXPORT void pxt_screen_get_pixels(int width, int height, uint32_t *screen)
 }
 
 void WDisplay::update(Image_ img) {
-    if (img && img != lastImg) {
-        lastImg = img;
-    }
-    img = lastImg;
+    if (!img)
+        return;
 
-    if (img && img->isDirty()) {
-        if (img->bpp() != 4 || img->width() != width || img->height() != height)
-            target_panic(PANIC_SCREEN_ERROR);
+    if (img->bpp() != 4 || img->width() != width || img->height() != height)
+        target_panic(PANIC_SCREEN_ERROR);
 
-        img->clearDirty();
+    img->clearDirty();
 
-        pthread_mutex_lock(&screenMutex);
-        // if the data have not been picked up, but it had been in the past, wait
-        if (dataWaiting && numGetPixels)
-            pthread_cond_wait(&dataBroadcast, &screenMutex);
-        memcpy(screenBuf, img->pix(), img->pixLength());
-        dataWaiting = true;
-        pthread_cond_broadcast(&dataBroadcast);
-        pthread_mutex_unlock(&screenMutex);
+    pthread_mutex_lock(&screenMutex);
+    // if the data have not been picked up, but it had been in the past, wait
+    if (dataWaiting && numGetPixels)
+        pthread_cond_wait(&dataBroadcast, &screenMutex);
+    memcpy(screenBuf, img->pix(), img->pixLength());
+    dataWaiting = true;
+    pthread_cond_broadcast(&dataBroadcast);
+    pthread_mutex_unlock(&screenMutex);
 
-        if (newPalette) {
-            newPalette = false;
-        }
+    if (newPalette) {
+        newPalette = false;
     }
 }
 

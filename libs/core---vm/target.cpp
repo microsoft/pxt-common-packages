@@ -12,16 +12,11 @@
 namespace pxt {
 
 void target_exit() {
-#ifdef __MINGW32__
-    exit(0);
-#else
-    kill(getpid(), SIGTERM);
-#endif
+    systemReset();
 }
 
 extern "C" void target_reset() {
-    // TODO
-    target_exit();
+    systemReset();
 }
 
 void target_startup() {}
@@ -127,7 +122,7 @@ void dumpDmesg() {
 
 LogQueue codalLogStore;
 
-extern "C" int pxt_get_logs(int logtype, char *dst, int maxSize) {
+DLLEXPORT int pxt_get_logs(int logtype, char *dst, int maxSize) {
     if (logtype != 0)
         return 0;
     target_disable_irq();

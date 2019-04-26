@@ -7,8 +7,8 @@ VMImage *vmImg;
 static void vmStartCore(const char *fn) {
     auto f = fopen(fn, "rb");
     if (!f) {
-        printf("cannot open %s\n", fn);
-        exit(1);
+        dmesg("cannot open %s", fn);
+        return;
     }
 
     fseek(f, 0, SEEK_END);
@@ -17,12 +17,18 @@ static void vmStartCore(const char *fn) {
     auto data = new uint8_t[len + 16];
     fread(data, len, 1, f);
     fclose(f);
+
+    unloadVMImage(vmImg);
+    vmImg = NULL;
+
+    gcPreStartup();
+
     auto img = loadVMImage(data, len);
     if (img->errorCode) {
-        printf("validation error %d at 0x%x\n", img->errorCode, img->errorOffset);
-        exit(2);
+        dmesg("validation error %d at 0x%x", img->errorCode, img->errorOffset);
+        return;
     } else {
-        printf("Validation OK\n");
+        dmesg("Validation OK");
     }
     vmImg = img;
 
@@ -31,9 +37,7 @@ static void vmStartCore(const char *fn) {
     globals = (TValue *)app_alloc(sizeof(TValue) * getNumGlobals());
     memset(globals, 0, sizeof(TValue) * getNumGlobals());
 
-    initRuntime();  // never returns
-
-    exit(10);
+    initRuntime();
 }
 
 void vmStart() {
@@ -43,6 +47,7 @@ void vmStart() {
 
 DLLEXPORT void pxt_vm_start(const char *fn)
 {
+    panicCode = 0;
     pthread_t disp;
     pthread_create(&disp, NULL, (void*(*)(void*))vmStartCore, (void*)fn);
     pthread_detach(disp);

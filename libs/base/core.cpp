@@ -38,13 +38,18 @@ void setBinding(int source, int value, Action act) {
         curr->action = act;
         return;
     }
-    curr = new HandlerBinding();
+    curr = new (app_alloc(sizeof(HandlerBinding))) HandlerBinding();
     curr->next = handlerBindings;
     curr->source = source;
     curr->value = value;
     curr->action = act;
     registerGC(&curr->action);
     handlerBindings = curr;
+}
+
+void coreReset() {
+    // these are allocated on GC heap, so they will go away together with the reset
+    handlerBindings = NULL;
 }
 
 static const char emptyBuffer[] __attribute__((aligned(4))) = "@PXT#:\x00\x00\x00";
@@ -1481,7 +1486,7 @@ RefAction *stclo(RefAction *a, int idx, TValue v) {
 
 //%
 void panic(int code) {
-    target_panic(code);
+    soft_panic(code);
 }
 
 //%
@@ -1829,12 +1834,12 @@ void failedCast(TValue v) {
         code = PANIC_CAST_FROM_NULL;
     else
         code = PANIC_CAST_FIRST + (int)valType(v);
-    target_panic(code);
+    soft_panic(code);
 }
 
 void missingProperty(TValue v) {
     DMESG("missing property on %p", v);
-    target_panic(PANIC_MISSING_PROPERTY);
+    soft_panic(PANIC_MISSING_PROPERTY);
 }
 
 #ifdef PXT_PROFILE

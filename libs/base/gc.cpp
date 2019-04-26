@@ -108,14 +108,12 @@ ThreadContext *threadContexts;
 #define IN_GC_FREEZE 4
 #define IN_GC_PREALLOC 8
 
+#ifndef PXT_VM
 static TValue *tempRoot;
 static uint8_t tempRootLen;
-
-#ifdef PXT_VM
-uint8_t inGC = IN_GC_PREALLOC;
-#else
-uint8_t inGC;
 #endif
+
+uint8_t inGC;
 
 void popThreadContext(ThreadContext *ctx) {
 #ifndef PXT_VM
@@ -337,11 +335,13 @@ static void mark(int flags) {
         }
     }
 
+#ifndef PXT_VM
     data = tempRoot;
     len = tempRootLen;
     for (unsigned i = 0; i < len; ++i) {
         gcProcess(*data++);
     }
+#endif
 }
 
 static uint32_t getObjectSize(RefObject *o) {
@@ -357,6 +357,13 @@ static uint32_t getObjectSize(RefObject *o) {
     }
     GC_CHECK(1 <= r && (r <= BYTES_TO_WORDS(GC_MAX_ALLOC_SIZE) || IS_FREE(vt)), 48);
     return r;
+}
+
+static void addFreeBlock(GCBlock *curr) {
+    curr->data[0].vtable = FREE_MASK | (TOWORDS(curr->blockSize) << 2);
+    ((RefBlock *)curr->data)[0].nextFree = firstFree;
+    firstFree = (RefBlock *)curr->data;
+    midPtr = (uint8_t *)curr->data + curr->blockSize / 4;
 }
 
 __attribute__((noinline)) static void allocateBlock() {
@@ -387,9 +394,7 @@ __attribute__((noinline)) static void allocateBlock() {
     curr->blockSize = sz - sizeof(GCBlock);
     LOG("GC alloc: %p", curr);
     GC_CHECK((curr->blockSize & 3) == 0, 40);
-    curr->data[0].vtable = FREE_MASK | (TOWORDS(curr->blockSize) << 2);
-    ((RefBlock *)curr->data)[0].nextFree = firstFree;
-    firstFree = (RefBlock *)curr->data;
+    addFreeBlock(curr);
     // make sure reference to allocated block is stored somewhere, otherwise
     // GCC optimizes out the call to GC_ALLOC_BLOCK
     curr->data[4].vtable = (uintptr_t)dummy;
@@ -405,7 +410,6 @@ __attribute__((noinline)) static void allocateBlock() {
             }
         }
     }
-    midPtr = (uint8_t *)curr->data + curr->blockSize / 4;
 }
 
 static void sweep(int flags) {
@@ -571,6 +575,27 @@ void gcStartup() {
     inGC &= ~IN_GC_PREALLOC;
 }
 
+void gcReset() {
+    inGC &= ~IN_GC_FREEZE;
+
+    gcRoots.setLength(0);
+
+    if (inGC)
+        oops(41);
+
+    if (workQueue.getLength())
+        oops(41);
+
+    firstFree = NULL;
+    for (auto h = firstBlock; h; h = h->next) {
+        addFreeBlock(h);
+    }
+}
+
+void gcPreStartup() {
+    inGC |= IN_GC_PREALLOC;
+}
+
 void *gcAllocate(int numbytes) {
     size_t numwords = BYTES_TO_WORDS(ALIGN_TO_WORD(numbytes));
     // VVLOG("alloc %d bytes %d words", numbytes, numwords);
@@ -578,7 +603,7 @@ void *gcAllocate(int numbytes) {
     if (numbytes > GC_MAX_ALLOC_SIZE)
         target_panic(PANIC_GC_TOO_BIG_ALLOCATION);
 
-    if (PXT_IN_ISR() || (inGC & IN_GC_ALLOC))
+    if (PXT_IN_ISR() || (inGC & (IN_GC_ALLOC | IN_GC_COLLECT | IN_GC_FREEZE)))
         target_panic(PANIC_CALLED_FROM_ISR);
 
 #ifdef PXT_VM

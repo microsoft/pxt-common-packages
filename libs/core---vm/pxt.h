@@ -38,6 +38,7 @@ class MMap : public RefObject {
 extern volatile bool paniced;
 extern char **initialArgv;
 void target_exit();
+extern volatile int panicCode;
 
 // Buffer, Sound, and Image share representation.
 typedef Buffer Sound;

@@ -26,7 +26,9 @@ namespace pxt
     class MultiButton;
     class CodalComponent;
     
-    
+    typedef void (*reset_fn_t)();
+    void registerResetFunction(reset_fn_t fn);
+    void soft_panic(int errorCode);
 } // pxt
 
 #define IMAGE_BITS 4
@@ -34,5 +36,7 @@ namespace pxt
 #define PXT_IN_ISR() false
 
 #define GC_BLOCK_SIZE (1024 * 64)
+
+#define PXT_REGISTER_RESET(fn) pxt::registerResetFunction(fn)
 
 #endif
