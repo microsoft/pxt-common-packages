@@ -259,6 +259,17 @@
 #define CFG_PIN_P18 418
 #define CFG_PIN_P19 419
 #define CFG_PIN_P20 420
+#define CFG_PIN_P21 421
+#define CFG_PIN_P22 422
+#define CFG_PIN_P23 423
+#define CFG_PIN_P24 424
+#define CFG_PIN_P25 425
+#define CFG_PIN_P26 426
+#define CFG_PIN_P27 427
+#define CFG_PIN_P28 428
+#define CFG_PIN_P29 429
+#define CFG_PIN_P30 430
+#define CFG_PIN_P31 431
 
 #define CFG_PIN_LORA_MISO 1001
 #define CFG_PIN_LORA_MOSI 1002
