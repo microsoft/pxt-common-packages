@@ -506,20 +506,24 @@ void validateFunction(VMImage *img, VMImageSection *sect, int debug) {
         unsigned arg;
         unsigned opIdx;
         bool isRtCall = false;
+        bool hasPush = false;
 
         if (opcode >> 15 == 0) {
             opIdx = opcode & VM_OPCODE_BASE_MASK;
-            arg = opcode >> VM_OPCODE_BASE_SIZE;
+            arg = opcode >> VM_OPCODE_ARG_POS;
+            hasPush = !!(opcode & VM_OPCODE_PUSH_MASK);
         } else if (opcode >> 14 == 0b10) {
-            opIdx = opcode & 0x3fff;
+            opIdx = opcode & 0x1fff;
             arg = 0;
             isRtCall = true;
+            hasPush = !!(opcode & VM_RTCALL_PUSH_MASK);
         } else {
             unsigned tmp = ((int32_t)opcode << (16 + 2)) >> (2 + VM_OPCODE_ARG_POS);
             FORCE_STACK(0xffff, 1200, pc); // cannot jump here!
             opcode = code[pc++];
             opIdx = opcode & VM_OPCODE_BASE_MASK;
             arg = (opcode >> VM_OPCODE_ARG_POS) + tmp;
+            hasPush = !!(opcode & VM_OPCODE_PUSH_MASK);
         }
 
         if (opIdx >= img->numOpcodes)
@@ -528,7 +532,7 @@ void validateFunction(VMImage *img, VMImageSection *sect, int debug) {
 
         if (debug)
             DMESG("%4d/%d -> %04x idx=%d arg=%d st=%d %s", pc, lastPC, opcode, opIdx, arg,
-                   currStack, opd ? opd->name : "NA");
+                  currStack, opd ? opd->name : "NA");
 
         if (!opd)
             FNERR(1228);
@@ -680,6 +684,9 @@ void validateFunction(VMImage *img, VMImageSection *sect, int debug) {
         } else {
             FNERR(1225);
         }
+
+        if (hasPush)
+            currStack++;
     }
 
     if (!atEnd) {
