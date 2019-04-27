@@ -141,6 +141,8 @@ uint64_t currTime() {
 }
 
 uint64_t current_time_us() {
+    if (!startTime)
+        startTime = currTime();
     return currTime() - startTime;
 }
 
@@ -340,8 +342,7 @@ void initKeys();
 void target_startup();
 
 void initRuntime() {
-    startTime = currTime();
-
+    current_time_ms();
     target_startup();
 
     setupThread((TValue)vmImg->entryPoint);

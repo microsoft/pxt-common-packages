@@ -79,7 +79,7 @@ static VMImage *loadSections(VMImage *img) {
                     img->numOpcodes++;
                 curr++;
             }
-            CHECK(img->numOpcodes > VM_OPCODE_BASE_MASK, 1016);
+            CHECK(img->numOpcodes >= VM_FIRST_RTCALL, 1016);
 
             img->opcodes = new OpFun[img->numOpcodes];
             img->opcodeDescs = new const OpcodeDesc *[img->numOpcodes];
@@ -97,7 +97,7 @@ static VMImage *loadSections(VMImage *img) {
                         }
                     }
                     if (img->opcodeDescs[i] == NULL) {
-                        printf("missing: %s\n", (const char *)curr);
+                        DMESG("missing opcode: %s", (const char *)curr);
                         setVMImgError(img, 1018, curr);
                     } else {
                         img->opcodes[i] = img->opcodeDescs[i]->fn;
@@ -232,7 +232,6 @@ static VMImage *validateFunctions(VMImage *img) {
                 if (off2 < minOff)
                     minOff = off2;
                 auto ent = (IfaceEntry *)multBase + off2;
-                // printf("%p ep=%p %d\n", ent, endp, off2);
                 CHECK((uint8_t *)(ent + 1) <= endp, 1033);
             }
 
@@ -246,7 +245,6 @@ static VMImage *validateFunctions(VMImage *img) {
                 auto ent = (IfaceEntry *)multBase + i;
                 if (ent->memberId == 0)
                     continue;
-                // printf("%p %d\n", ent, i);
                 if (ent->aux == 0) {
                     CHECK(ent->method < img->numSections, 1037);
                     auto fn = img->sections[ent->method];

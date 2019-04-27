@@ -435,13 +435,19 @@ void exec_loop(FiberContext *ctx) {
         TRACE("0x%x: %04x %d", (uint8_t *)ctx->pc - 2 - (uint8_t *)ctx->img->dataStart, opcode,
               (int)(ctx->stackBase + VM_STACK_SIZE - ctx->sp));
         if (opcode >> 15 == 0) {
-            opcodes[opcode & VM_OPCODE_BASE_MASK](ctx, opcode >> VM_OPCODE_BASE_SIZE);
+            opcodes[opcode & VM_OPCODE_BASE_MASK](ctx, opcode >> VM_OPCODE_ARG_POS);
+            if (opcode & VM_OPCODE_PUSH_MASK)
+                PUSH(ctx->r0);
         } else if (opcode >> 14 == 0b10) {
-            ((ApiFun)opcodes[opcode & 0x3fff])(ctx);
+            ((ApiFun)opcodes[opcode & 0x1fff])(ctx);
+            if (opcode & VM_RTCALL_PUSH_MASK)
+                PUSH(ctx->r0);
         } else {
-            unsigned tmp = ((int32_t)opcode << (16 + 2)) >> (2 + VM_OPCODE_BASE_SIZE);
+            unsigned tmp = ((int32_t)opcode << (16 + 2)) >> (2 + VM_OPCODE_ARG_POS);
             opcode = *ctx->pc++;
-            opcodes[opcode & VM_OPCODE_BASE_MASK](ctx, (opcode >> VM_OPCODE_BASE_SIZE) + tmp);
+            opcodes[opcode & VM_OPCODE_BASE_MASK](ctx, (opcode >> VM_OPCODE_ARG_POS) + tmp);
+            if (opcode & VM_OPCODE_PUSH_MASK)
+                PUSH(ctx->r0);
         }
     }
 }
@@ -509,11 +515,11 @@ void validateFunction(VMImage *img, VMImageSection *sect, int debug) {
             arg = 0;
             isRtCall = true;
         } else {
-            unsigned tmp = ((int32_t)opcode << (16 + 2)) >> (2 + VM_OPCODE_BASE_SIZE);
+            unsigned tmp = ((int32_t)opcode << (16 + 2)) >> (2 + VM_OPCODE_ARG_POS);
             FORCE_STACK(0xffff, 1200, pc); // cannot jump here!
             opcode = code[pc++];
             opIdx = opcode & VM_OPCODE_BASE_MASK;
-            arg = (opcode >> VM_OPCODE_BASE_SIZE) + tmp;
+            arg = (opcode >> VM_OPCODE_ARG_POS) + tmp;
         }
 
         if (opIdx >= img->numOpcodes)
@@ -521,7 +527,7 @@ void validateFunction(VMImage *img, VMImageSection *sect, int debug) {
         auto opd = img->opcodeDescs[opIdx];
 
         if (debug)
-            printf("%4d/%d -> %04x idx=%d arg=%d st=%d %s\n", pc, lastPC, opcode, opIdx, arg,
+            DMESG("%4d/%d -> %04x idx=%d arg=%d st=%d %s", pc, lastPC, opcode, opIdx, arg,
                    currStack, opd ? opd->name : "NA");
 
         if (!opd)
