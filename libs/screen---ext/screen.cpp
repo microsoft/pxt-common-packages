@@ -48,8 +48,17 @@ static pthread_cond_t dataBroadcast;
 static int numGetPixels;
 
 DLLEXPORT void pxt_screen_get_pixels(int width, int height, uint32_t *screen) {
-    auto disp = getWDisplay();
+    auto disp = instWDisplay;
     numGetPixels++;
+
+    if (!disp) {
+        int n = width * height;
+        uint32_t *p = screen;
+        // blue screen
+        while (n--)
+            *p++ = 0xff000000;
+        return;
+    }
 
     pthread_mutex_lock(&screenMutex);
     if (!disp->dataWaiting) {
