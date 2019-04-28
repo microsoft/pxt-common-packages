@@ -252,21 +252,3 @@ namespace sensors {
         }
     }
 }
-
-/*
-let strip: neopixel.Strip = null
-strip = neopixel.create(DigitalPin.P1, 30, NeoPixelMode.RGB)
-strip.setBrightness(255)
-
-TCS34725.start(TCS34725_ATIME.ATIME_2_4_MS, TCS34725_AGAIN.AGAIN_1X);
-
-basic.forever(function () {
-    basic.pause(2000);
-    serial.writeLine(TCS34725.isConnected + "");
-    let a = TCS34725.getSensorRGB();
-
-    strip.showColor(neopixel.rgb(a.red, a.green, a.blue));
-
-})
-
-*/

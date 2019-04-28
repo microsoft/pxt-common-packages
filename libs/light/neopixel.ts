@@ -149,7 +149,7 @@ namespace light {
             this._buffered = false;
             this._mode = NeoPixelMode.RGB;
             this._length = 0;
-            this._brightness = 20;
+            this._brightness = 16;
             this._start = 0;
             this._dataPin = undefined;
             this._clkPin = undefined;
