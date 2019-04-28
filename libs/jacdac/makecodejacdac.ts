@@ -70,6 +70,12 @@ namespace jacdac {
             configStorage.setItem(DEVICE_NAME_STORAGE_KEY, name);
         };
 
+        jacdac.JACDAC.instance.onIdentificationRequest = function () {
+            // DEVICE_ID_JACDAC_CONFIGURATION_SERVICE = 33
+            // JD_CONTROL_CONFIGURATION_EVT_IDENTIFY = 2
+            control.raiseEvent(33, 2)
+        }
+
         // start service
         jacdac.JACDAC.instance.start();
         bus.start();
