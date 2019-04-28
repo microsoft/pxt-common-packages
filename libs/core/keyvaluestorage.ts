@@ -8,7 +8,17 @@ namespace configStorage {
         if (value == null)
             configStorage.removeItem(key);
         else
-            configStorage.setBuffer(key, control.createBufferFromUTF8(value));
+        {
+            let idx = 0;
+            let buf = control.createBuffer(value.length + 1);
+            buf[idx++] = value.length;
+            let valBuf = control.createBufferFromUTF8(value);
+
+            for (let i = 0; i < valBuf.length; i++)
+                buf[idx++] = valBuf[i];
+
+            configStorage.setBuffer(key, buf);
+        }
     }
 
     /**
@@ -17,6 +27,17 @@ namespace configStorage {
      */
     export function getItem(key: string): string {
         const buf = configStorage.getBuffer(key);
-        return buf ? buf.toString() : undefined;
+
+        if (!buf)
+            return undefined;
+
+        let idx = 0;
+        let count = buf[idx++];
+        const retBuf = control.createBuffer(count);
+
+        for (let i = 0; i < count; i++)
+            retBuf[i] = buf[idx++];
+
+        return retBuf.toString();
     }
 }

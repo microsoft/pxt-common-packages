@@ -55,7 +55,8 @@ namespace jacdac {
         }
 
         // load name from storage
-        const DEVICE_NAME_STORAGE_KEY = "jddn";
+        const DEVICE_NAME_STORAGE_KEY = "jddn"
+
         if (!jacdac.JACDAC.instance.getDeviceName()) {
             const deviceName = configStorage.getItem(DEVICE_NAME_STORAGE_KEY);
             if (deviceName) {
@@ -64,6 +65,7 @@ namespace jacdac {
             }
         }
         jacdac.JACDAC.instance.onNameRemotelyChanged = function (name: string) {
+            control.dmesg(`:jd> device name changed to ${name}`);
             console.add(jacdac.consolePriority, `:jd> device name changed to ${name}`)
             configStorage.setItem(DEVICE_NAME_STORAGE_KEY, name);
         };
