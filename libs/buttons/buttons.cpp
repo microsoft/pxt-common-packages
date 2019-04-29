@@ -29,20 +29,18 @@ enum class ButtonEvent {
 #ifdef PXT_74HC165
 static void waitABit() {
     for (int i = 0; i < 10; ++i)
-        asm volatile ("nop");
+        asm volatile("nop");
 }
 class MultiplexedButton;
 class ButtonMultiplexer : public CodalComponent {
   public:
-    Pin fakePin;
     Pin &latch;
     Pin &clock;
     Pin &data;
     uint32_t state;
     MultiplexedButton *createButton(uint16_t id, uint8_t shift);
     ButtonMultiplexer(uint16_t id)
-        : fakePin(id, (PinNumber)0, PinCapability::PIN_CAPABILITY_DIGITAL),
-          latch(*LOOKUP_PIN(BTNMX_LATCH)), clock(*LOOKUP_PIN(BTNMX_CLOCK)),
+        : latch(*LOOKUP_PIN(BTNMX_LATCH)), clock(*LOOKUP_PIN(BTNMX_CLOCK)),
           data(*LOOKUP_PIN(BTNMX_DATA)) {
         this->state = 0;
         this->id = id;
@@ -73,7 +71,7 @@ class MultiplexedButton : public Button {
     ButtonMultiplexer *parent;
     uint8_t shift;
     MultiplexedButton(uint16_t id, uint8_t shift, ButtonMultiplexer *parent)
-        : Button(parent->fakePin, id), parent(parent), shift(shift) {}
+        : Button(parent->data, id), parent(parent), shift(shift) {}
 
   protected:
     virtual int buttonActive() { return (parent->state & (1 << shift)) != 0; }
@@ -86,25 +84,70 @@ MultiplexedButton *ButtonMultiplexer::createButton(uint16_t id, uint8_t shift) {
 static ButtonMultiplexer *buttonMultiplexer;
 #endif
 
+class AnalogButton : public Button {
+  public:
+    int16_t threshold;
+    bool state;
+
+    AnalogButton(Pin &pin, uint16_t id, int threshold)
+        : Button(pin, id), threshold(threshold), state(false) {}
+
+  protected:
+    virtual int buttonActive() {
+        int v = _pin.getAnalogValue() - 512;
+        int thr = threshold;
+
+        if (thr < 0) {
+            v = -v;
+            thr = -thr;
+        }
+
+        if (v > thr)
+            state = true;
+        else if (state && v > thr * 3 / 4)
+            state = true;
+        else
+            state = false;
+
+        return state;
+    }
+};
+
 namespace pxt {
 //%
 Button *getButtonByPin(int pin, int flags) {
+    pin &= 0xffff;
+
+    unsigned highflags = (unsigned)pin >> 16;
+    if (highflags & 0xff)
+        flags = highflags & 0xff;
+
     auto cpid = DEVICE_ID_FIRST_BUTTON + pin;
     auto btn = (Button *)lookupComponent(cpid);
     if (btn == NULL) {
 #ifdef PXT_74HC165
-        if (pin >= 1000) {
+        if (1000 <= pin && pin < 1100) {
             if (!buttonMultiplexer)
                 buttonMultiplexer = new ButtonMultiplexer(DEVICE_ID_FIRST_BUTTON);
             return buttonMultiplexer->createButton(cpid, pin - 1000);
         }
 #endif
+        if (1100 <= pin && pin < 1300) {
+            pin -= 1100;
+            int thr = getConfig(CFG_ANALOG_BUTTON_THRESHOLD, 300);
+            if (pin >= 100) {
+                thr = -thr;
+                pin -= 100;
+            }
+            return new AnalogButton(*lookupPin(pin), cpid, thr);
+        }
+
         auto pull = PullMode::None;
         if ((flags & 0xf0) == 0x10)
             pull = PullMode::Down;
         else if ((flags & 0xf0) == 0x20)
             pull = PullMode::Up;
-        else if ((flags & 0xf0) == 0x20)
+        else if ((flags & 0xf0) == 0x30)
             pull = PullMode::None;
         else
             oops(3);
