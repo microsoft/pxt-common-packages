@@ -1,7 +1,7 @@
 namespace sensors {
     /**
      * Makecode package for the TSL2591 Light sensor.
-     * 
+     *
      * More details here: https://ams.com/documents/20143/36005/TSL2591_DS000338_6-00.pdf/090eb50d-bb18-5b45-4938-9b3672f86b80
      */
 
@@ -79,35 +79,23 @@ namespace sensors {
         private atimeIntegrationValue: TSL2591_ATIME;
         private gainSensorValue: TSL2591_AGAIN;
 
-        constructor(
-            id: number,
-            atime: TSL2591_ATIME = TSL2591_ATIME.ATIME_100_MS,
-            gain: TSL2591_AGAIN = TSL2591_AGAIN.AGAIN_MEDIUM,
-            address = TSL2591_I2C_ADDRESS) {
+        constructor(id: number) {
             super(id);
-            this.TSL2591_I2C_ADDR = address || TSL2591_I2C_ADDRESS;
+            this.atimeIntegrationValue = TSL2591_ATIME.ATIME_100_MS,
+            this.gainSensorValue = TSL2591_AGAIN.AGAIN_HIGH,
+            this.TSL2591_I2C_ADDR = TSL2591_I2C_ADDRESS;
             this.isConnected = false;
-            this.atimeIntegrationValue = atime;
-            this.gainSensorValue = gain;
-
-            while (!this.isConnected) {
-                this.initSensor();
-            }
-
-            this.configureSensor();
+            this.initSensor();
         }
 
         private initSensor() {
             //REGISTER FORMAT:   CMD | TRANSACTION | ADDRESS
             //REGISTER READ:     TSL2591_REGISTER_COMMAND (0x80) | TSL2591_REGISTER_COMMAND_NORMAL (0x20) | TSL2591_REGISTER_ID (0x12)
             let device_id = pins.i2cReadRegister(this.TSL2591_I2C_ADDR, TSL2591_REGISTER_COMMAND | TSL2591_REGISTER_ID)
+            //Check that device Identification = 0x50 (Page 19)
+            this.isConnected = (device_id == 0x50);
 
-            //Check that device Identification = 0x50 (Page 19)   
-            if (device_id != 0x50) {
-                this.isConnected = false;
-            }
-            else
-                this.isConnected = true;
+            this.configureSensor();
         }
 
         setAtime(atime: TSL2591_ATIME) {
@@ -121,10 +109,9 @@ namespace sensors {
         }
 
         private configureSensor() {
-            //Always make sure the sensor is connected. Useful for cases when this block is used but the sensor wasn't set randomly. 
-            while (!this.isConnected) {
-                this.initSensor();
-            }
+            //Always make sure the sensor is connected. Useful for cases when this block is used but the sensor wasn't set randomly.
+            if (!this.isConnected)
+                return;
 
             //Turn sensor on
             this.enableSensor();
@@ -133,11 +120,7 @@ namespace sensors {
             //REGISTER FORMAT:   CMD | TRANSACTION | ADDRESS
             //REGISTER VALUE:    TSL2591_REGISTER_COMMAND (0x80) | TSL2591_REGISTER_CONTROL (0x01)
             //REGISTER WRITE:    atimeIntegrationValue | gainSensorValue
-
             pins.i2cWriteRegister(this.TSL2591_I2C_ADDR, TSL2591_REGISTER_COMMAND | TSL2591_REGISTER_CONTROL, this.atimeIntegrationValue | this.gainSensorValue);
-
-            //Turn sensor off
-            this.disableSensor();
         }
 
         private enableSensor() {
@@ -145,15 +128,10 @@ namespace sensors {
             //2 - Next, turn it on, then enable ALS, enable ALS Interrupt, and enable No Persist Interrupt
 
             if (this.isConnected)
-
                 //REGISTER FORMAT:   CMD | TRANSACTION | ADDRESS
                 //REGISTER VALUE:    TSL2591_REGISTER_COMMAND (0x80) | TSL2591_REGISTER_COMMAND_NORMAL (0x20) | TSL2591_REGISTER_ENABLE (0x00)
                 //REGISTER WRITE:    TSL2591_REGISTER_PON_ENABLE (0x01) | TSL2591_REGISTER_AEN_ENABLE (0x02) | TSL2591_REGISTER_AIEN_ENABLE (0x10) | TSL2591_REGISTER_NPIEN_ENABLE (0x80)
-
-                pins.i2cWriteRegister(this.TSL2591_I2C_ADDR, TSL2591_REGISTER_COMMAND | TSL2591_REGISTER_ENABLE, TSL2591_REGISTER_PON_ENABLE | TSL2591_REGISTER_AEN_ENABLE | TSL2591_REGISTER_AIEN_ENABLE | TSL2591_REGISTER_NPIEN_ENABLE)
-            else
-                return;
-
+                pins.i2cWriteRegister(this.TSL2591_I2C_ADDR, TSL2591_REGISTER_COMMAND | TSL2591_REGISTER_ENABLE, TSL2591_REGISTER_PON_ENABLE | TSL2591_REGISTER_AEN_ENABLE /*| TSL2591_REGISTER_AIEN_ENABLE | TSL2591_REGISTER_NPIEN_ENABLE*/)
         }
 
         disableSensor() {
@@ -161,39 +139,55 @@ namespace sensors {
             //2 - Next, turn it off
 
             if (this.isConnected)
-
                 //REGISTER FORMAT:   CMD | TRANSACTION | ADDRESS
                 //REGISTER VALUE:    TSL2591_REGISTER_COMMAND (0x80) | TSL2591_REGISTER_COMMAND_NORMAL (0x20) | TSL2591_REGISTER_ENABLE (0x00)
                 //REGISTER WRITE:    TSL2591_REGISTER_POFF_ENABLE (0x00)
-
                 pins.i2cWriteRegister(this.TSL2591_I2C_ADDR, TSL2591_REGISTER_COMMAND | TSL2591_REGISTER_ENABLE, TSL2591_REGISTER_POFF_ENABLE)
-            else
-                return;
         }
 
         protected readSpectrum(): LightSpectrum {
-            //Turn sensor on
-            this.enableSensor();
+            let retVal: LightSpectrum = new LightSpectrum();
+            if (this.isConnected) {
+                // this.enableSensor();
+                // basic.pause(100);
 
-            //Wait for the ADC of the TSL2591 to complete before reading values
-            for (let x = 0; x < this.atimeIntegrationValue; x++) {
-                basic.pause(120);
+                //REGISTER FORMAT:   CMD | TRANSACTION | ADDRESS
+                //REGISTER READ:     TSL2591_REGISTER_COMMAND (0x80) | TSL2591_REGISTER_COMMAND_NORMAL (0x20) | TSL2591_REGISTER_C1DATAL (0x16)
+
+                const channel0l = pins.i2cReadRegister(this.TSL2591_I2C_ADDR, TSL2591_REGISTER_COMMAND | TSL2591_REGISTER_C0DATAL);
+                const channel0h = pins.i2cReadRegister(this.TSL2591_I2C_ADDR, TSL2591_REGISTER_COMMAND | TSL2591_REGISTER_C0DATAH);
+                const channel1l = pins.i2cReadRegister(this.TSL2591_I2C_ADDR, TSL2591_REGISTER_COMMAND | TSL2591_REGISTER_C1DATAL);
+                const channel1h = pins.i2cReadRegister(this.TSL2591_I2C_ADDR, TSL2591_REGISTER_COMMAND | TSL2591_REGISTER_C1DATAH);
+                // const channel1 = pins.i2cReadRegister(this.TSL2591_I2C_ADDR, TSL2591_REGISTER_COMMAND | TSL2591_REGISTER_C1DATAL, NumberFormat.UInt16LE);
+
+                if (channel0l !== undefined && channel0h !== undefined && channel1l !== undefined && channel1h !== undefined) {
+                    const full = channel0l | (channel0h << 8);
+                    const ir = channel1l | (channel1h << 8);
+                    // catch overflow condition when ir and full are equal (max value)
+                    let visible = (full != ir) ? full - ir : full;
+                    // control.dmesg("RAW C0:");
+                    // control.dmesg(channel0l.toString());
+                    // control.dmesg(channel0h.toString());
+                    // control.dmesg("RAW C1:");
+                    // control.dmesg(channel1l.toString());
+                    // control.dmesg(channel1h.toString());
+                    // control.dmesg("PROC:");
+                    // control.dmesg(full.toString());
+                    // control.dmesg(ir.toString());
+                    // control.dmesg(visible.toString());
+
+                    retVal.full = full;
+                    retVal.infrared = ir;
+                    retVal.visible = visible;
+                    retVal.normalized = Math.map(visible, 0, 37888, 0, 1024);
+                }
+                else
+                    control.dmesg("LSBAD");
             }
+            else
+                this.initSensor();
 
-            //REGISTER FORMAT:   CMD | TRANSACTION | ADDRESS
-            //REGISTER READ:     TSL2591_REGISTER_COMMAND (0x80) | TSL2591_REGISTER_COMMAND_NORMAL (0x20) | TSL2591_REGISTER_C1DATAL (0x16)
-
-            const channel0 = pins.i2cReadRegister(this.TSL2591_I2C_ADDR, TSL2591_REGISTER_COMMAND | TSL2591_REGISTER_C1DATAL, NumberFormat.UInt16LE);
-            const channel1 = pins.i2cReadRegister(this.TSL2591_I2C_ADDR, TSL2591_REGISTER_COMMAND | TSL2591_REGISTER_C0DATAL, NumberFormat.UInt16LE);
-
-            const full = (channel0 << 16) | channel1;
-            const infrared = channel1;
-            const visible = full - channel1;
-            return {
-                full: full,
-                infrared: infrared,
-                visible: visible
-            }
+            return retVal
         }
     }
 }

@@ -1,42 +1,45 @@
 namespace sensors {
-    export interface LightSpectrum {
+    export class LightSpectrum {
         full: number;
         infrared: number;
         visible: number;
+        normalized: number;
+
+        constructor() {
+            this.full = -1;
+            this.infrared = -1;
+            this.visible = -1;
+            this.normalized = -1;
+        }
     }
 
-    export abstract class LightSpectrumSensor {
+    export class LightSpectrumSensor {
         public id: number;
         private reading: boolean;
         private _spectrum: LightSpectrum;
-        private fullLevelDetector: pins.LevelDetector;
-        private infraredLevelDetector: pins.LevelDetector;
-        private visibleLevelDetector: pins.LevelDetector;
+        private normalizedLevelDetector: pins.LevelDetector;
 
         constructor(id: number) {
             this.id = id;
             this.reading = false;
-            this._spectrum = {
-                full: -1, 
-                infrared: -1, 
-                visible: -1
-            }
+            this._spectrum = new LightSpectrum();
         }
-        protected abstract readSpectrum(): LightSpectrum;
+        protected readSpectrum(): LightSpectrum {
+            return new LightSpectrum();
+        }
         protected startReading() {
             if (this.reading) return;
+            this.reading = true;
             control.runInBackground(() => {
-                this.fullLevelDetector = new pins.LevelDetector(this.id, 0, 1023, 255, 768);
-                this.fullLevelDetector.onHigh = () => control.raiseEvent(this.id, JDLightSpectrumEvent.FullBright);
-                this.fullLevelDetector.onHigh = () => control.raiseEvent(this.id, JDLightSpectrumEvent.FullDark);
-                this.infraredLevelDetector = new pins.LevelDetector(this.id, 0, 1023, 255, 768);
-                this.infraredLevelDetector.onHigh = () => control.raiseEvent(this.id, JDLightSpectrumEvent.InfraredBright);
-                this.infraredLevelDetector.onHigh = () => control.raiseEvent(this.id, JDLightSpectrumEvent.InfraredDark);
-                this.visibleLevelDetector = new pins.LevelDetector(this.id, 0, 1023, 255, 768);
-                this.visibleLevelDetector.onHigh = () => control.raiseEvent(this.id, JDLightSpectrumEvent.VisibleBright);
-                this.visibleLevelDetector.onHigh = () => control.raiseEvent(this.id, JDLightSpectrumEvent.VisibleDark);
+                this.normalizedLevelDetector = new pins.LevelDetector(this.id, 0, 1023, 50, 900);
+                this.normalizedLevelDetector.onHigh = () => control.raiseEvent(this.id, JDLightSpectrumEvent.VisibleBright);
+                this.normalizedLevelDetector.onLow = () => control.raiseEvent(this.id, JDLightSpectrumEvent.VisibleDark);
                 while (this.reading) {
-                    this._spectrum = this.readSpectrum();
+                    let spec = this.readSpectrum();
+                    if (spec.full != -1 && spec.infrared != -1 && spec.visible != -1) {
+                        this._spectrum = spec;
+                        this.normalizedLevelDetector.level = spec.normalized;
+                    }
                     pause(1);
                 }
             });
@@ -87,8 +90,8 @@ namespace input {
 
     /**
      * Register code to run when the light condition changed
-     * @param event 
-     * @param handler 
+     * @param event
+     * @param handler
      */
     export function onLightSpectrumConditionChanged(event: JDLightSpectrumEvent, handler: () => void): void {
         const sensor = lightSpectrumSensor();
