@@ -38,6 +38,7 @@
         "libs/power",
         "libs/controller",
         "libs/color-sensor",
+        "libs/light-spectrum-sensor",
         "libs/edge-connector"
     ]
 }
