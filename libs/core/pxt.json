@@ -37,6 +37,7 @@
         "light.h",
         "keyvaluestorage.cpp",
         "keyvaluestorage.ts",
+        "leveldetector.ts",
         "pxtparts.json"
     ],
     "testFiles": [
