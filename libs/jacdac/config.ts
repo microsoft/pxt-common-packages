@@ -204,16 +204,16 @@ const enum JDLCDFlags {
 }
 
 const enum JDLightSpectrumRange {
-    Full = 1,
-    Infrared = 2,
-    Visible = 4
+    Full = 10,
+    Infrared = 20,
+    Visible = 40
 }
 
 const enum JDLightSpectrumEvent {
-    FullBright,
-    FullDark,
-    InfraredBright,
-    InfraredDark,
-    VisibleBright,
-    VisibleDark
+    FullBright = JDLightSpectrumRange.Full | DAL.LEVEL_THRESHOLD_HIGH,
+    FullDark = JDLightSpectrumRange.Full | DAL.LEVEL_THRESHOLD_LOW,
+    InfraredBright = JDLightSpectrumRange.Infrared | DAL.LEVEL_THRESHOLD_HIGH,
+    InfraredDark = JDLightSpectrumRange.Infrared | DAL.LEVEL_THRESHOLD_LOW,
+    VisibleBright = JDLightSpectrumRange.Visible | DAL.LEVEL_THRESHOLD_HIGH,
+    VisibleDark = JDLightSpectrumRange.Visible | DAL.LEVEL_THRESHOLD_LOW
 }

@@ -80,10 +80,11 @@ namespace sensors {
         private gainSensorValue: TSL2591_AGAIN;
 
         constructor(
+            id: number,
             atime: TSL2591_ATIME = TSL2591_ATIME.ATIME_100_MS,
             gain: TSL2591_AGAIN = TSL2591_AGAIN.AGAIN_MEDIUM,
             address = TSL2591_I2C_ADDRESS) {
-            super();
+            super(id);
             this.TSL2591_I2C_ADDR = address || TSL2591_I2C_ADDRESS;
             this.isConnected = false;
             this.atimeIntegrationValue = atime;

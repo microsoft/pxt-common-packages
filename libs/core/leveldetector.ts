@@ -7,6 +7,8 @@ namespace pins {
         public highThreshold: number;
         private _level: number;
         private _state: number;
+        public onHigh: () => void;
+        public onLow: () => void;
 
         constructor(id: number, 
             min: number, max: number, 
@@ -18,6 +20,9 @@ namespace pins {
             this.highThreshold = highThreshold;
             this._level = Math.ceil((max - min) / 2);
             this._state = 0;
+
+            this.onHigh = () => control.raiseEvent(this.id, DAL.LEVEL_THRESHOLD_HIGH);
+            this.onLow = () => control.raiseEvent(this.id, DAL.LEVEL_THRESHOLD_LOW);
         }
 
         get level(): number {
@@ -66,10 +71,10 @@ namespace pins {
             this._state = state;
             switch (state) {
                 case DAL.LEVEL_THRESHOLD_HIGH:
-                    control.raiseEvent(this.id, DAL.SENSOR_THRESHOLD_HIGH);
+                    if (this.onHigh) this.onHigh();
                     break;
                 case DAL.LEVEL_THRESHOLD_LOW:
-                    control.raiseEvent(this.id, DAL.SENSOR_THRESHOLD_LOW);
+                    if (this.onLow) this.onLow();
                     break;
             }
         }
