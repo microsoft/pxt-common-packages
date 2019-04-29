@@ -9,8 +9,10 @@ namespace servos {
         private _minAngle: number;
         private _maxAngle: number;
         private _stopOnNeutral: boolean;
+        private _angle: number;
 
         constructor() {
+            this._angle = -1;
             this._minAngle = 0;
             this._maxAngle = 180;
             this._stopOnNeutral = false;
@@ -36,11 +38,15 @@ namespace servos {
         //% group="Positional"
         setAngle(degrees: number) {
             degrees = this.clampDegrees(degrees);
-            this.internalSetAngle(degrees);
+            this._angle = this.internalSetAngle(degrees);
         }
 
-        protected internalSetAngle(angle: number): void {
+        get angle() {
+            return this._angle;
+        }
 
+        protected internalSetAngle(angle: number): number {
+            return 0;
         }
 
         /**
@@ -167,8 +173,9 @@ namespace servos {
             this._pin = pin;
         }
 
-        protected internalSetAngle(angle: number): void {
+        protected internalSetAngle(angle: number): number {
             this._pin.servoWrite(angle);
+            return angle;
         }
 
         protected internalSetPulse(micros: number): void {

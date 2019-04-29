@@ -2,8 +2,13 @@ namespace jacdac {
     export class ServoService extends ActuatorService {
         servo: servos.Servo;
         constructor(name: string, servo: servos.Servo) {
-            super(name, jacdac.SERVO_DEVICE_CLASS, 5);
+            super(name, jacdac.SERVO_DEVICE_CLASS, 5, 2);
             this.servo = servo;
+        }
+
+        addAdvertisementData() {
+            this.controlData.setNumber(NumberFormat.Int16LE, 0, this.servo.angle);
+            return super.addAdvertisementData();
         }
 
         protected handleStateChanged(): number {
