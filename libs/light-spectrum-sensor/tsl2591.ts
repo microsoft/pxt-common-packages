@@ -72,7 +72,7 @@ namespace sensors {
         ATIME_600_MS = 0x05     // 600 ms
     }
 
-    export class TSL2591 implements sensors.LightSpectrumSensor {
+    export class TSL2591 extends sensors.LightSpectrumSensor {
 
         private TSL2591_I2C_ADDR: number;
         private isConnected: boolean;
@@ -83,6 +83,7 @@ namespace sensors {
             atime: TSL2591_ATIME = TSL2591_ATIME.ATIME_100_MS,
             gain: TSL2591_AGAIN = TSL2591_AGAIN.AGAIN_MEDIUM,
             address = TSL2591_I2C_ADDRESS) {
+            super();
             this.TSL2591_I2C_ADDR = address || TSL2591_I2C_ADDRESS;
             this.isConnected = false;
             this.atimeIntegrationValue = atime;
@@ -93,8 +94,6 @@ namespace sensors {
             }
 
             this.configureSensor();
-
-            this.disableSensor();
         }
 
         private initSensor() {
@@ -171,12 +170,7 @@ namespace sensors {
                 return;
         }
 
-        spectrum(): LightSpectrum {
-            //Always make sure the sensor is connected. Useful for cases when this block is used but the sensor wasn't set randomly. 
-            while (!this.isConnected) {
-                this.initSensor();
-            }
-
+        protected readSpectrum(): LightSpectrum {
             //Turn sensor on
             this.enableSensor();
 
@@ -188,16 +182,12 @@ namespace sensors {
             //REGISTER FORMAT:   CMD | TRANSACTION | ADDRESS
             //REGISTER READ:     TSL2591_REGISTER_COMMAND (0x80) | TSL2591_REGISTER_COMMAND_NORMAL (0x20) | TSL2591_REGISTER_C1DATAL (0x16)
 
-            const high = pins.i2cReadRegister(this.TSL2591_I2C_ADDR, TSL2591_REGISTER_COMMAND | TSL2591_REGISTER_C1DATAL, NumberFormat.UInt16LE);
-            const low = pins.i2cReadRegister(this.TSL2591_I2C_ADDR, TSL2591_REGISTER_COMMAND | TSL2591_REGISTER_C0DATAL, NumberFormat.UInt16LE);
+            const channel0 = pins.i2cReadRegister(this.TSL2591_I2C_ADDR, TSL2591_REGISTER_COMMAND | TSL2591_REGISTER_C1DATAL, NumberFormat.UInt16LE);
+            const channel1 = pins.i2cReadRegister(this.TSL2591_I2C_ADDR, TSL2591_REGISTER_COMMAND | TSL2591_REGISTER_C0DATAL, NumberFormat.UInt16LE);
 
-            const full = (high << 16 | low) & 0xFFFF;
-            const infrared = high;
-            const visible = low;
-
-            //Turn sensor off
-            this.disableSensor();
-
+            const full = (channel0 << 16) | channel1;
+            const infrared = channel1;
+            const visible = full - channel1;
             return {
                 full: full,
                 infrared: infrared,

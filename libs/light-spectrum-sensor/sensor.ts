@@ -5,8 +5,37 @@ namespace sensors {
         visible: number;
     }
 
-    export interface LightSpectrumSensor {
-        spectrum(): LightSpectrum;
+    export abstract class LightSpectrumSensor {
+        private reading: boolean;
+        private _spectrum: LightSpectrum;
+        constructor() {
+            this.reading = false;
+            this._spectrum = {
+                full: -1, infrared: -1, visible: -1
+            }
+        }
+        protected abstract readSpectrum(): LightSpectrum;
+        protected startReading() {
+            if (this.reading) return;
+            control.runInBackground(() => {
+                while (this.reading) {
+                    this._spectrum = this.readSpectrum();
+                    pause(1);
+                }
+            });
+        }
+
+        get spectrum(): LightSpectrum {
+            if (!this.reading) {
+                this._spectrum = this.readSpectrum();
+                this.startReading();
+            }
+            return this._spectrum;
+        }
+        onEvent(event: JDLightSpectrumEvent, handler: () => void): void {
+            this.startReading();
+
+        }
     }
 }
 
@@ -36,5 +65,16 @@ namespace input {
             }
         }
         return -1;
+    }
+
+    /**
+     * Register code to run when the light condition changed
+     * @param event 
+     * @param handler 
+     */
+    export function onLightSpectrumConditionChanged(event: JDLightSpectrumEvent, handler: () => void): void {
+        const sensor = lightSpectrumSensor();
+        if (sensor)
+            sensor.onEvent(event, handler);
     }
 }

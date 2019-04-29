@@ -208,3 +208,12 @@ const enum JDLightSpectrumRange {
     Infrared = 2,
     Visible = 4
 }
+
+const enum JDLightSpectrumEvent {
+    FullBright,
+    FullDark,
+    InfraredBright,
+    InfraredDark,
+    VisibleBright,
+    VisibleDark
+}
