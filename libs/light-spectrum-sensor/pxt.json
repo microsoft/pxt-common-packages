@@ -1,13 +1,11 @@
 {
-    "name": "lightsensor",
-    "description": "Onboard light level sensor",
+    "name": "light-spectrum-sensor",
+    "description": "Light Spectrum sensor (TSL2591)",
     "files": [
         "README.md",
-        "lightsensor.cpp",
-        "jacdac.ts",
-        "ns.ts",
-        "shims.d.ts",
-        "enums.d.ts"
+        "sensor.ts",
+        "tsl2591.ts",
+        "jacdac.ts"
     ],
     "testFiles": [
         "test.ts"
