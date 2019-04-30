@@ -218,3 +218,8 @@ const enum JDLightSpectrumEvent {
     VisibleBright = JDLightSpectrumRange.Visible | DAL.LEVEL_THRESHOLD_HIGH,
     VisibleDark = JDLightSpectrumRange.Visible | DAL.LEVEL_THRESHOLD_LOW
 }
+
+const enum JDPromixityEvent {
+    Close = DAL.LEVEL_THRESHOLD_LOW,
+    Far = DAL.LEVEL_THRESHOLD_HIGH
+}
