@@ -55,6 +55,7 @@ namespace control {
         private timeInSample: number;
         public deltaTimeMillis: number;
         private prevTimeMillis: number;
+        private idleCallbacks: (() => void)[];
 
         static lastStats: string;
         static onStats: (stats: string) => void;
@@ -65,6 +66,7 @@ namespace control {
             this.timeInSample = 0;
             this.deltaTimeMillis = 0;
             this.frameWorker = 0;
+            this.idleCallbacks = undefined;
         }
 
         get deltaTime() {
@@ -160,8 +162,22 @@ namespace control {
             this.handlers.push(hn);
             hn.register();
         }
-    }
 
+        onIdle(handler: () => void) {
+            if (!this.idleCallbacks) {
+                this.idleCallbacks = [];
+                this.registerHandler(15/*DAL.DEVICE_ID_SCHEDULER*/, 2/*DAL.DEVICE_SCHEDULER_EVT_IDLE*/, () => this.runIdleHandler(), 16);
+            }
+            this.idleCallbacks.push(handler);
+        }
+
+        runIdleHandler() {
+            if (this.idleCallbacks) {
+                const ics = this.idleCallbacks.slice(0);
+                ics.forEach(ic => ic());
+            }
+        }    
+    }
     let eventContexts: EventContext[];
 
     /**
@@ -204,5 +220,14 @@ namespace control {
             context.register();
         else
             eventContexts = undefined;
+    }
+
+    /**
+     * Registers a function to run when the device is idling
+     * @param handler 
+    */
+    export function onIdle(handler: () => void) {
+        if (handler)
+            eventContext().onIdle(handler);
     }
 }
