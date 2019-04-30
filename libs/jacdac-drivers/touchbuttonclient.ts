@@ -12,7 +12,7 @@ namespace jacdac {
         //% group="Touch"
         value(): number {
             const s = this.state;
-            if (!s || s.length < 2) return 0;
+            if (!s || s.length < 2) return -1;
             return s.getNumber(NumberFormat.UInt16LE, 0);
         }
 
