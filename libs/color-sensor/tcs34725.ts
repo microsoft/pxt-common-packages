@@ -235,17 +235,13 @@ namespace sensors {
 
             this.pauseSensorForIntegrationTime();
 
-            let sum = clearColorValue;
-            let r = 0;
-            let g = 0;
-            let b = 0;
-
             if (clearColorValue == 0)
                 return 0;
             else {
-                r = (redColorValue / sum * 255) & 0xff;
-                g = (greenColorValue / sum * 255) & 0xff;
-                b = (blueColorValue / sum * 255) & 0xff;
+                const sum = clearColorValue;
+                const r = ((redColorValue / sum) * 255) & 0xff;
+                const g = ((greenColorValue / sum) * 255) & 0xff;
+                const b = ((blueColorValue / sum) * 255) & 0xff;
 
                 return (r << 16) | (g << 8) | b;
             }

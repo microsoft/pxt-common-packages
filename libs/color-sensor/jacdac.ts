@@ -12,5 +12,5 @@ namespace jacdac {
     }
 
     //% fixedInstance whenUsed block="color sensor service"
-    export const colorSensorService = new ColorSensorService("color-sensor");
+    export const colorSensorService = new ColorSensorService("col");
 }
