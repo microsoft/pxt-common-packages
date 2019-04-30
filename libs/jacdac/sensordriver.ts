@@ -41,7 +41,7 @@ namespace jacdac {
         constructor(name: string, deviceClass: number, controlLength = 0) {
             super(name, deviceClass, 1 + controlLength);
             this.sensorState = SensorState.Stopped;
-            this.streamingInterval = 50;
+            this.streamingInterval = 100;
         }
 
         get sensorState(): SensorState {
