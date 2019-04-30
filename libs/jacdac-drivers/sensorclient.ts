@@ -62,7 +62,7 @@ namespace jacdac {
             const command = data.getNumber(NumberFormat.UInt8LE, 0);
             this.log(`vpkt ${command}`)
             switch (command) {
-                case SensorCommand.State:
+                case SensorCommand.State: {
                     const state = data.slice(1);
                     const changed = !jacdac.bufferEqual(this._lastState, state);
                     const r = this.handleVirtualState(state);
@@ -71,10 +71,12 @@ namespace jacdac {
                     if (changed && this._stateChangedHandler)
                         this._stateChangedHandler();
                     return r;
-                case SensorCommand.Event:
+                }
+                case SensorCommand.Event: {
                     const value = data.getNumber(NumberFormat.UInt16LE, 1);
                     control.raiseEvent(this.eventId, value);
                     return jacdac.DEVICE_OK;
+                }
                 default:
                     return this.handleCustomCommand(command, packet);
             }
