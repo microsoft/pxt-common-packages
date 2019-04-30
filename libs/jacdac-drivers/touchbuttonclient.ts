@@ -30,4 +30,38 @@ namespace jacdac {
 
     //% fixedInstance whenUsed block="touch button client"
     export const touchButtonClient = new TouchButtonClient("touch");
+
+    /**
+     * A client of multiple buttons
+     */
+    export class TouchButtonsClient extends SensorClient {
+        constructor(name: string) {
+            super(name, jacdac.TOUCH_BUTTONS_DEVICE_CLASS);
+        }
+
+        /**
+         * Reads the current x value from the sensor
+         */
+        //% blockId=jdtoubhbuttonsvalue block="jacdac %button value"
+        //% group="Touch"
+        value(index: number): number {
+            const s = this.state;
+            if (!s || s.length + 1 < 2 * index) return -1;
+            return s.getNumber(NumberFormat.UInt16LE, index * 2);
+        }
+
+        /**
+         * Runs code when an event happens on the sensor
+         * @param gesture 
+         * @param handler 
+         */
+        //% blockId=jdtouchbuttonsevent block="jacdac %client on %event"
+        //% group="Touch"
+        onEvent(index: number, handler: () => void) {
+            this.registerEvent(index + 1, handler);
+        }
+    }
+
+    //% fixedInstance whenUsed block="touch buttons client"
+    export const touchButtonsClient = new TouchButtonsClient("tch");
 }

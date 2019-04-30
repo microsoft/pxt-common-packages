@@ -104,7 +104,7 @@ namespace jacdac {
         }
 
         protected raiseHostEvent(value: number) {
-            const pkt = control.createBuffer(3);
+            const pkt = control.createBuffer(4);
             pkt.setNumber(NumberFormat.UInt8LE, 0, SensorCommand.Event);
             pkt.setNumber(NumberFormat.UInt16LE, 1, value);
             this.sendPacket(pkt);

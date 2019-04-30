@@ -12,9 +12,25 @@ namespace jacdac {
         }
 
         serializeState() {
-            const buf = control.createBuffer(3);
+            const buf = control.createBuffer(4);
             buf.setNumber(NumberFormat.UInt8LE, 0, this.button.isPressed() ? 0xff : 0);
             buf.setNumber(NumberFormat.UInt16LE, 1, this.button.value());
+            return buf;
+        }
+    }
+
+    export class TouchButtonsService extends SensorHost {
+        private buttons: TouchButton[];
+        constructor(name: string, buttons: TouchButton[]) {
+            super(name, jacdac.TOUCH_BUTTONS_DEVICE_CLASS);
+            this.buttons = buttons;
+            this.buttons.forEach((t, i) => t.onEvent(ButtonEvent.Click, () => this.raiseHostEvent(i + 1)));
+        }
+
+        serializeState() {
+            const buf = control.createBuffer(2 * this.buttons.length);
+            for(let i = 0; i < this.buttons.length; ++i)
+                buf.setNumber(NumberFormat.UInt16LE, i * 2, this.buttons[i].value());
             return buf;
         }
     }
