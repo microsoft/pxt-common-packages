@@ -1,41 +1,36 @@
-namespace jacdac{
-
-
+namespace jacdac {
     export class JDIdentification {
-        identifying:boolean;
+        identifying: boolean;
 
-        constructor () {
+        constructor() {
             this.identifying = false;
-            control.onEvent(33,2, () =>{
+            control.onEvent(33,2, () => {
                 this.identify();
             });
         }
 
-        identify()
-        {
+        identify() {
             this.identifying = true;
             // do something to identify the device
             this.identifying = false;
         }
     }
 
-    export class JDGPIOIdentification extends JDIdentification{
-        pin : DigitalInOutPin
-        constructor (pin:DigitalInOutPin) {
+    export class JDGPIOIdentification extends JDIdentification {
+        pin: DigitalInOutPin
+        constructor(pin: DigitalInOutPin) {
             super();
-            this.pin = pin;
+            this.pin = pin || pins.pinByCfg(DAL.CFG_PIN_LED);
         }
 
-        identify()
-        {
-            if (this.identifying)
+        identify() {
+            if (this.identifying || !this.pin)
                 return;
 
             this.identifying = true;
 
             let state = false;
-            for (let i = 0; i < 50; i++)
-            {
+            for (let i = 0; i < 50; i++) {
                 this.pin.digitalWrite(state = !state);
                 pause(100);
             }
@@ -43,5 +38,10 @@ namespace jacdac{
             this.identifying = false;
         }
     }
-    export let identification: JDIdentification;
+
+    /**
+     * The identitifiation service
+     */
+    //% fixedInstance whenUsed
+    export const identification: JDIdentification = new JDGPIOIdentification(undefined);
 }
