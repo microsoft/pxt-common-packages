@@ -163,7 +163,7 @@ const enum JDDimension {
     Strength = 3
 }
 
-enum JDButtonEvent {
+const enum JDButtonEvent {
     //% block="click"
     Click = DAL.DEVICE_BUTTON_EVT_CLICK,
     //% block="long click"
@@ -174,7 +174,7 @@ enum JDButtonEvent {
     Down = DAL.DEVICE_BUTTON_EVT_DOWN
 }
 
-enum JDSwitchDirection {
+const enum JDSwitchDirection {
     //% block="left"
     Left = DAL.DEVICE_BUTTON_EVT_UP,
     //% block="right"

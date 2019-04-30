@@ -673,6 +673,7 @@ namespace light {
                 const keepRendering = animationRenderer();
                 this.setBuffered(buf);
                 this.show();
+                pause(1);
                 return duration > 0
                     ? now <= duration
                     : keepRendering;
@@ -831,8 +832,10 @@ namespace light {
         }
 
         private autoShow() {
-            if (!this.buffered())
+            if (!this.buffered()) {
                 this.show();
+                pause(1);
+            }
         }
 
         private setBufferRGB(offset: number, red: number, green: number, blue: number): void {
@@ -1314,7 +1317,7 @@ namespace light {
                 for (let i = 0; i < n; i++) {
                     strip.setPixelColor(i, hsv(((i * 256) / (n - 1) + offset) % 0xff, 0xff, 0xff));
                 }
-                offset += 128 / n;
+                offset += Math.ceil(Math.max(1, Math.min(8, n / 20)));
                 if (offset >= 0xff) {
                     offset = 0;
                     return false;
