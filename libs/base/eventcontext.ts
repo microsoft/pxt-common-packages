@@ -163,7 +163,7 @@ namespace control {
             hn.register();
         }
 
-        onIdle(handler: () => void) {
+        addIdleHandler(handler: () => void) {
             if (!this.idleCallbacks) {
                 this.idleCallbacks = [];
                 this.registerHandler(15/*DAL.DEVICE_ID_SCHEDULER*/, 2/*DAL.DEVICE_SCHEDULER_EVT_IDLE*/, () => this.runIdleHandler(), 16);
@@ -171,7 +171,7 @@ namespace control {
             this.idleCallbacks.push(handler);
         }
 
-        runIdleHandler() {
+        private runIdleHandler() {
             if (this.idleCallbacks) {
                 const ics = this.idleCallbacks.slice(0);
                 ics.forEach(ic => ic());
@@ -228,6 +228,6 @@ namespace control {
     */
     export function onIdle(handler: () => void) {
         if (handler)
-            eventContext().onIdle(handler);
+            eventContext().addIdleHandler(handler);
     }
 }
