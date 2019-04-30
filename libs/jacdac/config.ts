@@ -210,6 +210,13 @@ const enum JDLightSpectrumRange {
     Visible = 40
 }
 
+const enum JDLightCondition {
+    //% block="dark"
+    Dark = DAL.SENSOR_THRESHOLD_LOW,
+    //% block="bright"
+    Bright = DAL.SENSOR_THRESHOLD_HIGH
+}
+
 const enum JDLightSpectrumEvent {
     FullBright = JDLightSpectrumRange.Full | DAL.LEVEL_THRESHOLD_HIGH,
     FullDark = JDLightSpectrumRange.Full | DAL.LEVEL_THRESHOLD_LOW,

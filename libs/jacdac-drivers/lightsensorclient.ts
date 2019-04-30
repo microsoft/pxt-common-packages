@@ -1,10 +1,3 @@
-enum JacdacLightCondition {
-    //% block="dark"
-    Dark = DAL.SENSOR_THRESHOLD_LOW,
-    //% block="bright"
-    Bright = DAL.SENSOR_THRESHOLD_HIGH
-}
-
 namespace jacdac {
     //% fixedInstances
     export class LightSensorClient extends SensorClient {
@@ -28,10 +21,10 @@ namespace jacdac {
          * @param gesture 
          * @param handler 
          */
-        //% blockId=jacadaclightsensoronevent block="jacdac %lightsensor on %lightCondition"
+        //% blockId=jacadaclightsensoronevent block="jacdac %client on %event"
         //% group="Light sensor"
-        onEvent(lightCondition: JacdacLightCondition, handler: () => void) {
-            this.registerEvent(lightCondition, handler);
+        onEvent(event: JDLightCondition, handler: () => void) {
+            this.registerEvent(event, handler);
         }
 
         /**
@@ -41,8 +34,8 @@ namespace jacdac {
          */
         //% blockId=jacdaclightsetthrshold block="jacdac %lightsensor set threshold %level to %value"
         //% group="Light sensor"
-        setLightConditionThreshold(level: JacdacLightCondition, value: number) {
-            this.setThreshold(level == JacdacLightCondition.Dark, value);
+        setLightConditionThreshold(level: JDLightCondition, value: number) {
+            this.setThreshold(level == JDLightCondition.Dark, value);
         }
     }
 

@@ -2,6 +2,8 @@ namespace jacdac {
     export class LightSpectrumSensorService extends SensorHost {
         constructor(name: string) {
             super(name, jacdac.LIGHT_SPECTRUM_SENSOR_DEVICE_CLASS);
+            input.onLightSpectrumConditionChanged(JDLightSpectrumEvent.VisibleBright, () => this.raiseHostEvent(JDLightSpectrumEvent.VisibleBright));
+            input.onLightSpectrumConditionChanged(JDLightSpectrumEvent.VisibleDark, () => this.raiseHostEvent(JDLightSpectrumEvent.VisibleDark));
         }
 
         serializeState(): Buffer {

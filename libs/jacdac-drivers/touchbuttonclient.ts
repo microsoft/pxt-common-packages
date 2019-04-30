@@ -1,6 +1,6 @@
 namespace jacdac {
     //% fixedInstances
-    export class TouchClient extends SensorClient {
+    export class TouchButtonClient extends SensorClient {
         constructor(name: string) {
             super(name, jacdac.TOUCHBUTTON_DEVICE_CLASS);
         }
@@ -28,6 +28,6 @@ namespace jacdac {
         }
     }
 
-    //% fixedInstance whenUsed block="touch client"
-    export const touchClient = new TouchClient("touch");
+    //% fixedInstance whenUsed block="touch button client"
+    export const touchButtonClient = new TouchButtonClient("touch");
 }

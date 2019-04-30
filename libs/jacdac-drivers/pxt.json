@@ -6,7 +6,7 @@
         "buttonclient.ts",
         "lightsensorclient.ts",
         "accelerometerclient.ts",
-        "touchclient.ts",
+        "touchbuttonclient.ts",
         "microphoneclient.ts",
         "thermometerclient.ts",
         "switchclient.ts",
@@ -19,7 +19,8 @@
         "servoclient.ts",
         "lcdclient.ts",
         "colorsensorclient.ts",
-        "proximityclient.ts"
+        "proximityclient.ts",
+        "lightspectrumsensorclient.ts"
     ],
     "testFiles": [
         "test.ts"
