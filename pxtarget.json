@@ -39,6 +39,7 @@
         "libs/controller",
         "libs/color-sensor",
         "libs/light-spectrum-sensor",
-        "libs/edge-connector"
+        "libs/edge-connector",
+        "libs/proximity"
     ]
 }
