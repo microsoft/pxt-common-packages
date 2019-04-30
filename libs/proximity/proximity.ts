@@ -18,7 +18,7 @@ namespace sensors {
 
         private levelDetector(): pins.LevelDetector {
             if (!this._levelDetector) {
-                this._levelDetector = new pins.LevelDetector(9901, 0, 1023, 128, 768);
+                this._levelDetector = new pins.LevelDetector(9901, 0, 1023, 45, 600);
                 control.runInBackground(() => {
                     while(true) {
                         this._levelDetector.level = this.distance();
@@ -31,8 +31,8 @@ namespace sensors {
 
         /**
          * Registers an event when a level is detected
-         * @param event 
-         * @param handler 
+         * @param event
+         * @param handler
          */
         onDistanceEvent(event: PromixityEvent, handler: () => void) {
             const ld = this.levelDetector();
@@ -60,8 +60,8 @@ namespace input {
 
     /**
      * Registers a distance event
-     * @param event 
-     * @param handler 
+     * @param event
+     * @param handler
      */
     export function onDistanceEvent(event: PromixityEvent, handler: () => void) {
         const sensor = proximitySensor();

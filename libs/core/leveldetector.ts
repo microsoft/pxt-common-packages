@@ -5,13 +5,15 @@ namespace pins {
         public max: number;
         public lowThreshold: number;
         public highThreshold: number;
+        private transition: number;
         private _level: number;
         private _state: number;
         public onHigh: () => void;
         public onLow: () => void;
+        public transitionWindow: number;
 
-        constructor(id: number, 
-            min: number, max: number, 
+        constructor(id: number,
+            min: number, max: number,
             lowThreshold: number, highThreshold: number) {
             this.id = id;
             this.min = min;
@@ -20,6 +22,8 @@ namespace pins {
             this.highThreshold = highThreshold;
             this._level = Math.ceil((max - min) / 2);
             this._state = 0;
+            this.transitionWindow = 4;
+            this.transition = 0;
 
             this.onHigh = () => control.raiseEvent(this.id, DAL.LEVEL_THRESHOLD_HIGH);
             this.onLow = () => control.raiseEvent(this.id, DAL.LEVEL_THRESHOLD_LOW);
@@ -30,6 +34,9 @@ namespace pins {
         }
 
         set level(level: number) {
+            control.dmesg("LEVEL: ");
+            control.dmesg(level.toString());
+
             this._level = this.clampValue(level);
 
             if (this._level >= this.highThreshold) {
@@ -64,16 +71,20 @@ namespace pins {
         }
 
         private setState(state: number) {
-            if (this._state === state) {
+                                        // not enough samples to change
+            if (this._state === state || this.transition++ < this.transitionWindow) {
                 return;
             }
 
+            this.transition = 0;
             this._state = state;
             switch (state) {
                 case DAL.LEVEL_THRESHOLD_HIGH:
+                    control.dmesg("HI!");
                     if (this.onHigh) this.onHigh();
                     break;
                 case DAL.LEVEL_THRESHOLD_LOW:
+                    control.dmesg("LO!");
                     if (this.onLow) this.onLow();
                     break;
             }

@@ -13,9 +13,11 @@ namespace vl53l0x {
 
 
     export class VL53L0X extends sensors.PromixitySensor {
+        private _distance: number;
         constructor() {
             super();
             this.init();
+            this._distance = -1;
         }
 
         init() {
@@ -58,7 +60,15 @@ namespace vl53l0x {
         distance(): number {
             pins.i2cWriteNumber(VL53L0X_REG_I2C_SLAVE_DEVICE_ADDRESS, VL53L0X_REG_RESULT_RANGE_STATUS, NumberFormat.UInt8LE)
             const b = pins.i2cReadBuffer(VL53L0X_REG_I2C_SLAVE_DEVICE_ADDRESS, 12);
-            return ((b[10] & 0xFF) << 8) | (b[11] & 0xFF);
+            const dist = ((b[10] & 0xFF) << 8) | (b[11] & 0xFF);
+
+            // control.dmesg("READ: ");
+            // control.dmesg(dist.toString());
+
+            if (dist != 20 && dist != 0)
+                this._distance = dist;
+
+            return this._distance / 10;
         }
     }
 }

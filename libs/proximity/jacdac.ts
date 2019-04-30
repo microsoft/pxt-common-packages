@@ -8,7 +8,7 @@ namespace jacdac {
 
         protected serializeState(): Buffer {
             const buf = control.createBuffer(4);
-            buf.setNumber(NumberFormat.Int32LE, 0, input.distance());
+            buf.setNumber(NumberFormat.UInt32LE, 0, (input.distance() * 10) | 0);
             return buf;
         }
     }
