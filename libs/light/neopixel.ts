@@ -671,13 +671,15 @@ namespace light {
             startBrightness: number,
             endBrightness: number,
             duration: number,
+            yoyo?: boolean,
             transition?: BrightnessTransition
         ) {
             const player = this._transitionPlayer = new BrightnessTransitionPlayer(
                 transition || new EasingBrightnessTransition(undefined),
                 startBrightness,
                 endBrightness,
-                duration);
+                duration,
+                yoyo);
             control.runInBackground(() => {
                 while (player == this._transitionPlayer) {
                     const buf = this.buffered();

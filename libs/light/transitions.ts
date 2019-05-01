@@ -11,7 +11,7 @@ namespace easing {
 
 namespace light {
     export class BrightnessTransition {
-        constructor() {}
+        constructor() { }
         apply(strip: LightStrip, t: number, start: number, end: number): void {
 
         }
@@ -22,7 +22,8 @@ namespace light {
         private spatialEasing: easing.Easing;
 
         constructor(
-            timeEasing: easing.Easing, spatialEasing?: easing.Easing) {
+            timeEasing: easing.Easing, 
+            spatialEasing?: easing.Easing) {
             super();
             this.timeEasing = timeEasing || easing.inOutQuad;
             this.spatialEasing = spatialEasing;
@@ -52,28 +53,36 @@ namespace light {
         private endBrightness: number;
         private duration: number;
         private startTime: number;
+        private yoyo: number;
 
         constructor(
             transition: BrightnessTransition,
             startBrightness: number,
             endBrightness: number,
-            duration: number) {
+            duration: number,
+            yoyo: boolean) {
             this.transition = transition;
             this.startBrightness = startBrightness;
             this.endBrightness = endBrightness;
             this.duration = duration;
             this.startTime = control.millis();
+            this.yoyo = yoyo ? 1 : 0;
         }
 
         update(strip: LightStrip): boolean {
-            const elapsed = control.millis() - this.startTime;
-            if (elapsed > this.duration)
-                return false;
-            else {
-                const t = elapsed / this.duration;
-                this.transition.apply(strip, t, this.startBrightness, this.endBrightness);
-                return true;
+            let elapsed = control.millis() - this.startTime;
+            if (elapsed > this.duration) {
+                this.yoyo = -this.yoyo;
+                this.startTime = control.millis();
+                elapsed = 0;
+                return !!this.yoyo;
             }
+
+            let t = elapsed / this.duration;
+            if (this.yoyo < 0)
+                t = 1 - t;
+            this.transition.apply(strip, t, this.startBrightness, this.endBrightness);
+            return true;
         }
     }
 }
