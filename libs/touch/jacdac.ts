@@ -24,12 +24,18 @@ namespace jacdac {
         constructor(name: string, buttons: TouchButton[]) {
             super(name, jacdac.TOUCH_BUTTONS_DEVICE_CLASS);
             this.buttons = buttons;
-            this.buttons.forEach((t, i) => t.onEvent(ButtonEvent.Click, () => this.raiseHostEvent(i + 1)));
+            this.buttons.forEach((t, i) => {
+                jacdac.BUTTON_EVENTS.forEach((ev, j) => {
+                    const k = DAL.ACCELEROMETER_EVT_SHAKE + 1
+                        + i * jacdac.BUTTON_EVENTS.length + j;
+                    t.onEvent(<ButtonEvent><number>ev, () => this.raiseHostEvent(k))
+                })
+            });
         }
 
         serializeState() {
             const buf = control.createBuffer(2 * this.buttons.length);
-            for(let i = 0; i < this.buttons.length; ++i)
+            for (let i = 0; i < this.buttons.length; ++i)
                 buf.setNumber(NumberFormat.UInt16LE, i * 2, this.buttons[i].value());
             return buf;
         }

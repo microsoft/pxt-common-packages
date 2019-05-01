@@ -48,7 +48,7 @@ namespace jacdac {
     // events
     export const JD_MESSAGE_BUS_ID = JD_DEVICE_CLASS_MAKECODE_START;
 
-    export const BUTTON_EVENTS = [
+    export const BUTTON_EVENTS: number[] = [
         DAL.DEVICE_BUTTON_EVT_CLICK,
         DAL.DEVICE_BUTTON_EVT_DOWN,
         DAL.DEVICE_BUTTON_EVT_UP,

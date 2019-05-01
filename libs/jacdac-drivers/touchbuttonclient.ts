@@ -55,10 +55,15 @@ namespace jacdac {
          * @param gesture 
          * @param handler 
          */
-        //% blockId=jdtouchbuttonsevent block="jacdac %client on %event"
+        //% blockId=jdtouchbuttonsevent block="jacdac %client %index on %event"
         //% group="Touch"
-        onEvent(index: number, handler: () => void) {
-            this.registerEvent(index + 1, handler);
+        onEvent(index: number, event: ButtonEvent, handler: () => void) {
+            const j = jacdac.BUTTON_EVENTS.indexOf(<number>event);
+            if (j > -1) {
+                const k = DAL.ACCELEROMETER_EVT_SHAKE + 1
+                    + index * jacdac.BUTTON_EVENTS.length + j;
+                this.registerEvent(k, handler);
+            }
         }
     }
 
