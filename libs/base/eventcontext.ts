@@ -171,6 +171,11 @@ namespace control {
             this.idleCallbacks.push(handler);
         }
 
+        removeIdleHandler(handler: () => void) {
+            if (handler && this.idleCallbacks)
+                this.idleCallbacks.removeElement(handler);
+        }
+
         private runIdleHandler() {
             if (this.idleCallbacks) {
                 const ics = this.idleCallbacks.slice(0);
@@ -230,20 +235,30 @@ namespace control {
     export function onIdle(handler: () => void) {
         if (!handler) return;
 
+        console.log("register onidle")
         const ctx = eventContext();
         if (ctx) ctx.addIdleHandler(handler);
         else {
             if (!_idleCallbacks) {
                 _idleCallbacks = [];
                 // TODO: use background events
+                console.log("schedule onidle")
                 control.internalOnEvent(
                     15/*DAL.DEVICE_ID_SCHEDULER*/,
                     2/*DAL.DEVICE_SCHEDULER_EVT_IDLE*/,
                     function() {
+                        console.log("idle")
                         _idleCallbacks.slice(0).forEach(cb => cb());
                     }, 16);
             }
             _idleCallbacks.push(handler);
         }
+    }
+
+    export function removeIdleHandler(handler: () => void) {
+        if (!handler) return;
+        const ctx = eventContext();
+        if (ctx) ctx.removeIdleHandler(handler);
+        else if (_idleCallbacks) _idleCallbacks.removeElement(handler);
     }
 }

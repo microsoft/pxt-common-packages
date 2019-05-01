@@ -144,7 +144,7 @@ namespace light {
         // last animation used by showAnimationFrame
         _lastAnimation: NeoPixelAnimation;
         _lastAnimationRenderer: () => boolean;
-        _transitionPlayer: TransitionPlayer;
+        _transitionPlayer: BrightnessTransitionPlayer;
 
         constructor() {
             this._buffered = false;
@@ -659,9 +659,32 @@ namespace light {
             }
         }
 
-        startTransition(transition: Transition, duration: number) {
-            this._transitionPlayer = new TransitionPlayer(transition, duration);
-            this._transitionPlayer.start();
+        /**
+         * Starts a brightness transition on the strip (and cancels any other running transition)
+         * @param transition 
+         * @param duration 
+         */
+        startBrightnessTransition(
+            brightness: number,
+            duration: number,
+            transition?: BrightnessTransition
+        ) {
+            const player = this._transitionPlayer = new BrightnessTransitionPlayer(
+                transition || new BrightnessTransition(undefined),
+                this.brightness(),
+                brightness,
+                duration);
+            const play = () => {
+                console.log("strip play")
+                if (player != this._transitionPlayer)
+                    control.removeIdleHandler(play);
+                else {
+                    if (!player.update(this))
+                        this._transitionPlayer = undefined;
+                    this.show();
+                }
+            }
+            control.onIdle(play);
         }
 
         /**
