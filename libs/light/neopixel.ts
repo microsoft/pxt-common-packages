@@ -144,6 +144,7 @@ namespace light {
         // last animation used by showAnimationFrame
         _lastAnimation: NeoPixelAnimation;
         _lastAnimationRenderer: () => boolean;
+        _transitionPlayer: BrightnessTransitionPlayer;
 
         constructor() {
             this._buffered = false;
@@ -448,7 +449,7 @@ namespace light {
         //% advanced=true
         setBrightness(brightness: number): void {
             const b = Math.max(0, Math.min(0xff, brightness | 0));
-            if (b != this._brightness) {
+            if (b != this._brightness || this._brightnessBuf) {
                 this._brightness = b;
                 // if this is a top level strip clear any existing brightness buffer
                 if (!this._parent)
@@ -456,6 +457,23 @@ namespace light {
                 // if this is a NOT top-level strip or if brightness buff has been allocated,
                 else if (this._parent || this._brightnessBuf)
                     this.brightnessBuf.fill(this._brightness, this._start, this._length);
+                this.autoShow();
+            }
+        }
+
+        /**
+         * Sets an individual pixel brightness
+         * @param index 
+         * @param brightness 
+         */
+        setPixelBrightness(index: number, brightness: number): void {
+            const i = (index | 0);
+            if (i < 0 || i > this._length) return;
+
+            const b = Math.max(0, Math.min(0xff, brightness | 0));
+            const bb = this.brightnessBuf;
+            if (bb[this._start + i] != b) {
+                bb[this._start + i] = b;
                 this.autoShow();
             }
         }
@@ -642,6 +660,39 @@ namespace light {
                     this.photonForward(0);
                 }
             }
+        }
+
+        /**
+         * Starts a brightness transition on the strip (and cancels any other running transition)
+         * @param transition 
+         * @param duration 
+         */
+        startBrightnessTransition(
+            startBrightness: number,
+            endBrightness: number,
+            duration: number,
+            repeat?: number,
+            yoyo?: boolean,
+            transition?: BrightnessTransition
+        ) {
+            const player = this._transitionPlayer = new BrightnessTransitionPlayer(
+                transition || new EasingBrightnessTransition(undefined),
+                startBrightness,
+                endBrightness,
+                duration,
+                repeat,
+                yoyo);
+            control.runInBackground(() => {
+                while (player == this._transitionPlayer) {
+                    const buf = this.buffered();
+                    this.setBuffered(true);
+                    const keepRendering = player.update(this);
+                    this.setBuffered(buf);
+                    this.show();
+                    pause(20);
+                    if (!keepRendering) break;
+                }
+            });
         }
 
         /**

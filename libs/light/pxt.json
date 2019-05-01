@@ -4,6 +4,7 @@
     "files": [
         "README.md",
         "neopixel.ts",
+        "transitions.ts",
         "create.ts",
         "defaultstrip.ts",
         "onboardstrip.ts",
