@@ -235,20 +235,27 @@ namespace control {
     export function onIdle(handler: () => void) {
         if (!handler) return;
 
-        console.log("register onidle")
         const ctx = eventContext();
         if (ctx) ctx.addIdleHandler(handler);
         else {
             if (!_idleCallbacks) {
                 _idleCallbacks = [];
-                // TODO: use background events
-                console.log("schedule onidle")
-                control.internalOnEvent(
-                    15/*DAL.DEVICE_ID_SCHEDULER*/,
-                    2/*DAL.DEVICE_SCHEDULER_EVT_IDLE*/,
-                    function() {
+                control.runInBackground(function() {
+                    while(_idleCallbacks) {
                         _idleCallbacks.slice(0).forEach(cb => cb());
-                    }, 16);
+                        pause(20);
+                    }
+                })
+                /*
+                control.internalOnEvent(
+                    15. // DAL.DEVICE_ID_SCHEDULER
+                    2, // DAL.DEVICE_SCHEDULER_EVT_IDLE
+                    function() {
+                        pins.LED.digitalWrite(on = !on);
+                        if (_idleCallbacks)
+                            _idleCallbacks.slice(0).forEach(cb => cb());
+                    }, 192); // MESSAGE_BUS_LISTENER_IMMEDIATE
+                */
             }
             _idleCallbacks.push(handler);
         }
