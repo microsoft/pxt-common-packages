@@ -668,14 +668,15 @@ namespace light {
          * @param duration 
          */
         startBrightnessTransition(
-            brightness: number,
+            startBrightness: number,
+            endBrightness: number,
             duration: number,
             transition?: BrightnessTransition
         ) {
             const player = this._transitionPlayer = new BrightnessTransitionPlayer(
                 transition || new EasingBrightnessTransition(undefined),
-                this.brightness(),
-                brightness,
+                startBrightness,
+                endBrightness,
                 duration);
             control.runInBackground(() => {
                 while (player == this._transitionPlayer) {
