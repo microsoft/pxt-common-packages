@@ -58,25 +58,49 @@ namespace jacdac {
                 this.notifyChange();
             }
         }
-
-        /*
-        * Stop sending commands to the servo
-        */
-        //% group="Servos"
-        //% weight=10 help=servos/stop
-        //% blockId=jdservoservostop block="jacdac stop %servo"
-        //% servo.fieldEditor="gridpicker"
-        //% servo.fieldOptions.width=220
-        //% servo.fieldOptions.columns=2
-        //% parts=microservo trackArgs=0
-        stop() {
-            if (this.state[0]) {
-                this.state[0] = 0;
-                this.notifyChange();
-            }
-        }
     }
 
     //% fixedInstance whenUsed block="servo client"
     export const servoClient = new ServoClient("servo");
+
+    //% fixedInstances
+    export class ServosClient extends ActuatorClient {
+        constructor(name: string, length: number) {
+            super(name, jacdac.SERVOS_DEVICE_CLASS, 4 * length);
+        }
+
+        /**
+         * Set the servo angle
+         */
+        //% group="Servos"
+        //% weight=100
+        //% blockId=jdservoservossetangle block="jacdac set %servo %index angle to %degrees=protractorPicker °"
+        //% degrees.defl=90
+        //% servo.fieldEditor="gridpicker"
+        //% servo.fieldOptions.width=220
+        //% servo.fieldOptions.columns=2
+        //% blockGap=8        
+        setAngle(index: number, degrees: number) {
+            const k = index * 4;
+            if (!this.state[k + 0] || this.state.getNumber(NumberFormat.Int16LE, k + 1) != degrees) {
+                this.state[k + 0] = 1;
+                this.state.setNumber(NumberFormat.Int16LE, k + 1, degrees);
+                this.notifyChange();
+            }
+        }
+
+        /**
+         * Set the throttle on a continuous servo
+         * @param speed the throttle of the motor from -100% to 100%
+         */
+        //% group="Servos"
+        //% weight=99
+        //% blockId=jdservosservorun block="jacdac continuous %servo %index run at %speed=speedPicker \\%"
+        //% servo.fieldEditor="gridpicker"
+        //% servo.fieldOptions.width=220
+        //% servo.fieldOptions.columns=2
+        run(index: number, speed: number): void {
+            this.setAngle(index, Math.map(speed, -100, 100, 0, 180));
+        }
+    }
 }

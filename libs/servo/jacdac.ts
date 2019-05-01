@@ -2,7 +2,7 @@ namespace jacdac {
     export class ServoService extends ActuatorService {
         servo: servos.Servo;
         constructor(name: string, servo: servos.Servo) {
-            super(name, jacdac.SERVO_DEVICE_CLASS, 5, 2);
+            super(name, jacdac.SERVO_DEVICE_CLASS, 8, 2);
             this.servo = servo;
         }
 
@@ -21,6 +21,35 @@ namespace jacdac {
                 if (pulse)
                     this.servo.setPulse(pulse);
                 this.servo.setAngle(angle);
+            }
+            return jacdac.DEVICE_OK;
+        }
+    }
+
+    export class ServosService extends ActuatorService {
+        private servos: servos.Servo[];
+
+        constructor(name: string, servos: servos.Servo[]) {
+            super(name, jacdac.SERVOS_DEVICE_CLASS, servos.length * 4, servos.length);
+            this.servos = servos;
+        }
+
+        addAdvertisementData() {
+            for (let i = 0; i < this.servos.length; ++i) {
+                this.controlData.setNumber(NumberFormat.Int16LE, i, this.servos[i].angle);
+            }
+            return super.addAdvertisementData();
+        }
+
+        protected handleStateChanged(): number {
+            for (let i = 0; i < this.servos.length; ++i) {
+                const servo = this.servos[i];
+                const on = i * 4;
+                const angle = this.state.getNumber(NumberFormat.Int16LE, i * 4 + 1);
+                if (!on)
+                    servo.stop();
+                else
+                    servo.setAngle(angle);
             }
             return jacdac.DEVICE_OK;
         }

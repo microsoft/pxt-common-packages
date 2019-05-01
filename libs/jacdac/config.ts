@@ -44,6 +44,7 @@ namespace jacdac {
     export const LIGHT_SPECTRUM_SENSOR_DEVICE_CLASS = 2022;
     export const PROXIMITY_DEVICE_CLASS = 2023;
     export const TOUCH_BUTTONS_DEVICE_CLASS = 2024;
+    export const SERVOS_DEVICE_CLASS = 2025;
 
     // events
     export const JD_MESSAGE_BUS_ID = JD_DEVICE_CLASS_MAKECODE_START;
