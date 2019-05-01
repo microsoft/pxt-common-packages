@@ -11,11 +11,19 @@ namespace easing {
 
 namespace light {
     export class BrightnessTransition {
+        constructor() {}
+        apply(strip: LightStrip, t: number, start: number, end: number): void {
+
+        }
+    }
+
+    export class EasingBrightnessTransition extends BrightnessTransition {
         private timeEasing: easing.Easing;
         private spatialEasing: easing.Easing;
 
         constructor(
             timeEasing: easing.Easing, spatialEasing?: easing.Easing) {
+            super();
             this.timeEasing = timeEasing || easing.inOutQuad;
             this.spatialEasing = spatialEasing;
         }
@@ -31,9 +39,8 @@ namespace light {
                 // convolve desired brightness with spacial easing function
                 const n = strip.length();
                 for (let i = 0; i < n; ++i) {
-                    const x = i / (n - 1);
-                    const bi = b * this.spatialEasing(x);
-                    strip.setPixelBrightness(i, start + db * bi);
+                    const x = this.spatialEasing(i / (n - 1)); // [0..1]
+                    strip.setPixelBrightness(i, end - db * (1 - b) * x);
                 }
             }
         }

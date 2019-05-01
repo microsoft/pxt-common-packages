@@ -449,7 +449,7 @@ namespace light {
         //% advanced=true
         setBrightness(brightness: number): void {
             const b = Math.max(0, Math.min(0xff, brightness | 0));
-            if (b != this._brightness) {
+            if (b != this._brightness || this._brightnessBuf) {
                 this._brightness = b;
                 // if this is a top level strip clear any existing brightness buffer
                 if (!this._parent)
@@ -467,12 +467,15 @@ namespace light {
          * @param brightness 
          */
         setPixelBrightness(index: number, brightness: number): void {
-            const i = this._start + (index | 0);
+            const i = (index | 0);
             if (i < 0 || i > this._length) return;
 
             const b = Math.max(0, Math.min(0xff, brightness | 0));
-            const buf = this.brightnessBuf;
-            buf[i] = b;
+            const bb = this.brightnessBuf;
+            if (bb[this._start + i] != b) {
+                bb[this._start + i] = b;
+                this.autoShow();
+            }
         }
 
         /**
@@ -670,7 +673,7 @@ namespace light {
             transition?: BrightnessTransition
         ) {
             const player = this._transitionPlayer = new BrightnessTransitionPlayer(
-                transition || new BrightnessTransition(undefined),
+                transition || new EasingBrightnessTransition(undefined),
                 this.brightness(),
                 brightness,
                 duration);
