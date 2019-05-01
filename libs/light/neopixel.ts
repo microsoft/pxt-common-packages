@@ -449,7 +449,7 @@ namespace light {
         setBrightness(brightness: number): void {
             const b = Math.max(0, Math.min(0xff, brightness | 0));
             if (b != this._brightness) {
-                this._brightness = Math.max(0, Math.min(0xff, brightness | 0));
+                this._brightness = b;
                 // if this is a top level strip clear any existing brightness buffer
                 if (!this._parent)
                     this._brightnessBuf = undefined;
