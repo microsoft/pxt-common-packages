@@ -144,6 +144,7 @@ namespace light {
         // last animation used by showAnimationFrame
         _lastAnimation: NeoPixelAnimation;
         _lastAnimationRenderer: () => boolean;
+        _transitionPlayer: TransitionPlayer;
 
         constructor() {
             this._buffered = false;
@@ -461,6 +462,20 @@ namespace light {
         }
 
         /**
+         * Sets an individual pixel brightness
+         * @param index 
+         * @param brightness 
+         */
+        setPixelBrightness(index: number, brightness: number): void {
+            const i = this._start + (index | 0);
+            if (i < 0 || i > this._length) return;
+
+            const b = Math.max(0, Math.min(0xff, brightness | 0));
+            const buf = this.brightnessBuf;
+            buf[i] = b;
+        }
+
+        /**
          * Get the brightness of the pixel strip.
          */
         //% blockId="light_get_brightness" block="%strip|brightness"
@@ -642,6 +657,11 @@ namespace light {
                     this.photonForward(0);
                 }
             }
+        }
+
+        startTransition(transition: Transition, duration: number) {
+            this._transitionPlayer = new TransitionPlayer(transition, duration);
+            this._transitionPlayer.start();
         }
 
         /**
