@@ -247,7 +247,6 @@ namespace control {
                     15/*DAL.DEVICE_ID_SCHEDULER*/,
                     2/*DAL.DEVICE_SCHEDULER_EVT_IDLE*/,
                     function() {
-                        console.log("idle")
                         _idleCallbacks.slice(0).forEach(cb => cb());
                     }, 16);
             }

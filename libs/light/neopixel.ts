@@ -675,7 +675,6 @@ namespace light {
                 brightness,
                 duration);
             const play = () => {
-                console.log("strip play")
                 if (player != this._transitionPlayer)
                     control.removeIdleHandler(play);
                 else {
