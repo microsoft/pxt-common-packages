@@ -16,7 +16,7 @@ class WJDPhysicalLayer {
         phys(sws, *pxt::getJACDACTimer(), LOOKUP_PIN(JACK_BUSLED), LOOKUP_PIN(JACK_COMMLED), (PIN(JACK_BUSLED) & CFG_PIN_CONFIG_ACTIVE_LO) > 0, (PIN(JACK_COMMLED) & CFG_PIN_CONFIG_ACTIVE_LO) > 0)
     {
         sws.setBaud(1000000);
-#if CONFIG_ENABLED(DEVICE_JACDAC_DEBUG)
+#if CONFIG_ENABLED(DEVICE_USB) && CONFIG_ENABLED(DEVICE_JACDAC_DEBUG)
         pxt::jacdacDebug.setPhysicalLayer(phys);
 #endif
     }
@@ -41,7 +41,7 @@ class WJDPhysicalLayer {
     JDPacket* getPacket()
     {
         auto pkt = phys.getPacket();
-#if CONFIG_ENABLED(DEVICE_JACDAC_DEBUG)
+#if CONFIG_ENABLED(DEVICE_USB) && CONFIG_ENABLED(DEVICE_JACDAC_DEBUG)
         if (pkt)
             pxt::jacdacDebug.handlePacket(pkt);
 #endif
