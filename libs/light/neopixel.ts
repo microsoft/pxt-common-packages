@@ -267,7 +267,7 @@ namespace light {
         //% help="light/neopixelstrip/set-pixel-color"
         //% weight=79 blockGap=8
         //% group="More" advanced=true
-        setPixelColor(pixeloffset: number, color: number): void {            
+        setPixelColor(pixeloffset: number, color: number): void {
             pixeloffset = pixeloffset | 0;
             color = color | 0;
 
@@ -447,14 +447,17 @@ namespace light {
         //% weight=2 blockGap=8
         //% advanced=true
         setBrightness(brightness: number): void {
-            this._brightness = Math.max(0, Math.min(0xff, brightness | 0));
-            // if this is a top level strip clear any existing brightness buffer
-            if (!this._parent)
-                this._brightnessBuf = undefined;
-            // if this is a NOT top-level strip or if brightness buff has been allocated,
-            else if (this._parent || this._brightnessBuf)
-                this.brightnessBuf.fill(this._brightness, this._start, this._length);
-            this.autoShow();
+            const b = Math.max(0, Math.min(0xff, brightness | 0));
+            if (b != this._brightness) {
+                this._brightness = Math.max(0, Math.min(0xff, brightness | 0));
+                // if this is a top level strip clear any existing brightness buffer
+                if (!this._parent)
+                    this._brightnessBuf = undefined;
+                // if this is a NOT top-level strip or if brightness buff has been allocated,
+                else if (this._parent || this._brightnessBuf)
+                    this.brightnessBuf.fill(this._brightness, this._start, this._length);
+                this.autoShow();
+            }
         }
 
         /**
@@ -818,7 +821,7 @@ namespace light {
         //% weight=1 blockGap=8
         //% length.shadow=lightLengthPicker
         //% group="Configuration" advanced=true
-        setLength(numleds: number): void {            
+        setLength(numleds: number): void {
             const n = Math.max(0, numleds | 0);
             // lazy update
             if (n != this._length) {
@@ -1108,7 +1111,7 @@ namespace light {
             this.setMode(mode);
         }
     }
-    
+
     /**
      * Creates a strip of colored LEDs (WS2812b)
      */
@@ -1548,10 +1551,10 @@ namespace light {
         return animation;
     }
 
-        /**
-      * Get the light length picker
-      * @param pixels number of LEDs
-      */
+    /**
+  * Get the light length picker
+  * @param pixels number of LEDs
+  */
     //% blockId=lightLengthPicker block="%pixels"
     //% blockHidden=true shim=TD_ID
     //% colorSecondary="#FFFFFF"
