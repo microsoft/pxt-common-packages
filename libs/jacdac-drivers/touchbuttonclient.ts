@@ -57,7 +57,7 @@ namespace jacdac {
          */
         //% blockId=jdtouchbuttonsevent block="jacdac %client %index on %event"
         //% group="Touch"
-        onEvent(index: number, event: ButtonEvent, handler: () => void) {
+        onEvent(index: number, event: JDButtonEvent, handler: () => void) {
             const j = jacdac.BUTTON_EVENTS.indexOf(<number>event);
             if (j > -1) {
                 const k = DAL.ACCELEROMETER_EVT_SHAKE + 1

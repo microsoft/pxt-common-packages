@@ -51,9 +51,9 @@ namespace jacdac {
 
     export const BUTTON_EVENTS: number[] = [
         DAL.DEVICE_BUTTON_EVT_CLICK,
+        DAL.DEVICE_BUTTON_EVT_LONG_CLICK,
         DAL.DEVICE_BUTTON_EVT_DOWN,
-        DAL.DEVICE_BUTTON_EVT_UP,
-        DAL.DEVICE_BUTTON_EVT_LONG_CLICK
+        DAL.DEVICE_BUTTON_EVT_UP
     ];
 }
 
