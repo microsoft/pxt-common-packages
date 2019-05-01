@@ -1376,13 +1376,16 @@ int *getBootloaderConfigData()
 
 //%
 int getConfig(int key, int defl) {
-    int *cfgData = *(int **)&bytecode[18];
+    int *cfgData;
 
-    for (int i = 0;; i += 2) {
-        if (cfgData[i] == key)
-            return cfgData[i + 1];
-        if (cfgData[i] == 0)
-            break;
+    if (bytecode) {    
+        cfgData = *(int **)&bytecode[18];
+        for (int i = 0;; i += 2) {
+            if (cfgData[i] == key)
+                return cfgData[i + 1];
+            if (cfgData[i] == 0)
+                break;
+        }
     }
 
     cfgData = getBootloaderConfigData();
