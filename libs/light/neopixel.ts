@@ -674,16 +674,17 @@ namespace light {
                 this.brightness(),
                 brightness,
                 duration);
-            const play = () => {
-                if (player != this._transitionPlayer)
-                    control.removeIdleHandler(play);
-                else {
-                    if (!player.update(this))
-                        this._transitionPlayer = undefined;
+            control.runInBackground(() => {
+                while (player == this._transitionPlayer) {
+                    const buf = this.buffered();
+                    this.setBuffered(true);
+                    const keepRendering = player.update(this);
+                    this.setBuffered(buf);
                     this.show();
+                    pause(20);
+                    if (!keepRendering) break;
                 }
-            }
-            control.onIdle(play);
+            });
         }
 
         /**
