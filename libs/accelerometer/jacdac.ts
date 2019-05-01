@@ -17,7 +17,7 @@ namespace jacdac {
         }
 
         raiseCustomGestureEvent(id: number) {
-            this.raiseHostEvent(JDGesture.Shake + id);
+            this.raiseHostEvent(JDGesture.Shake + 1 + (id | 0));
         }
 
         protected serializeState(): Buffer {
