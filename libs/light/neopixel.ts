@@ -671,6 +671,7 @@ namespace light {
             startBrightness: number,
             endBrightness: number,
             duration: number,
+            repeat?: number,
             yoyo?: boolean,
             transition?: BrightnessTransition
         ) {
@@ -679,6 +680,7 @@ namespace light {
                 startBrightness,
                 endBrightness,
                 duration,
+                repeat,
                 yoyo);
             control.runInBackground(() => {
                 while (player == this._transitionPlayer) {
