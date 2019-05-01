@@ -16,6 +16,10 @@ namespace jacdac {
             input.onGesture(Gesture.EightG, () => this.raiseHostEvent(JDGesture.EightG));
         }
 
+        raiseCustomGestureEvent(id: number) {
+            this.raiseHostEvent(JDGesture.Shake + id);
+        }
+
         protected serializeState(): Buffer {
             const buf = control.createBuffer(6);
             buf.setNumber(NumberFormat.Int16LE, 0, input.acceleration(Dimension.X));
