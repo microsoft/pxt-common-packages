@@ -222,12 +222,28 @@ namespace control {
             eventContexts = undefined;
     }
 
+    let _idleCallbacks: (() => void)[];
     /**
      * Registers a function to run when the device is idling
      * @param handler 
     */
     export function onIdle(handler: () => void) {
-        if (handler)
-            eventContext().addIdleHandler(handler);
+        if (!handler) return;
+
+        const ctx = eventContext();
+        if (ctx) ctx.addIdleHandler(handler);
+        else {
+            if (!_idleCallbacks) {
+                _idleCallbacks = [];
+                // TODO: use background events
+                control.internalOnEvent(
+                    15/*DAL.DEVICE_ID_SCHEDULER*/,
+                    2/*DAL.DEVICE_SCHEDULER_EVT_IDLE*/,
+                    function() {
+                        _idleCallbacks.slice(0).forEach(cb => cb());
+                    }, 16);
+            }
+            _idleCallbacks.push(handler);
+        }
     }
 }
