@@ -110,7 +110,7 @@ const enum JDMusicCommand {
     PlayTone
 }
 
-enum JDGesture {
+const enum JDGesture {
     /**
      * Raised when shaken
      */
@@ -151,6 +151,21 @@ enum JDGesture {
      */
     //% block="free fall"
     FreeFall = DAL.ACCELEROMETER_EVT_FREEFALL,
+    /**
+     * Raised when a 3G shock is detected
+     */
+    //% block="3g"
+    ThreeG = DAL.ACCELEROMETER_EVT_3G,
+    /**
+     * Raised when a 6G shock is detected
+     */
+    //% block="6g"
+    SixG = DAL.ACCELEROMETER_EVT_6G,
+    /**
+     * Raised when a 8G shock is detected
+     */
+    //% block="8g"
+    EightG = DAL.ACCELEROMETER_EVT_8G
 }
 
 const enum JDDimension {
