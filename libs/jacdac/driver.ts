@@ -106,6 +106,24 @@ namespace jacdac {
             super(name, JDServiceMode.ClientService, serviceClass, controlDataLength);
         }
 
+        /** 
+         * Sets the required device name
+        */
+        setRequiredDeviceName(name: string) {
+            const dev = new jacdac.JDRequiredDevice();
+            dev.device_name = name;
+            this.requiredDevice = dev;
+        }
+
+        /** 
+         * Sets the required device name
+        */
+        setRequiredDeviceUuid(uuid: Buffer) {
+            const dev = new jacdac.JDRequiredDevice();
+            dev.unique_device_identifier = uuid;
+            this.requiredDevice = dev;
+        }
+
         protected registerEvent(value: number, handler: () => void) {
             control.onEvent(this.eventId, value, handler);
             this.start();
