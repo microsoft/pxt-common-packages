@@ -285,6 +285,36 @@ namespace light {
             this.autoShow();
         }
 
+        blendPixelColor(pixeloffset: number, color: number, alpha: number): void {
+            pixeloffset = pixeloffset | 0;
+            color = color | 0;
+
+            if (pixeloffset < 0
+                || pixeloffset >= this._length)
+                return;
+
+            const stride = this.stride();
+            pixeloffset = (pixeloffset + this._start) * stride;
+            const red = unpackR(color);
+            const green = unpackG(color);
+            const blue = unpackB(color);
+
+            // read current color
+            const ccolor = this.readPixelColorAtOffset(pixeloffset);
+            const cred = unpackR(ccolor);
+            const cgreen = unpackG(ccolor);
+            const cblue = unpackB(ccolor);
+
+            // apply alpha color
+            const ared = (red * (0xff - alpha) + cred * alpha) >> 0xff;
+            const agreen = (green * (0xff - alpha) + cgreen * alpha) >> 0xff;
+            const ablue = (blue * (0xff - alpha) + cblue * alpha) >> 0xff;
+
+            // apply color again
+            this.setBufferRGB(pixeloffset, ared, agreen, ablue)
+            this.autoShow();
+        }
+
         /**
          * Gets the pixel color.
          * @param pixeloffset position of the NeoPixel in the strip
@@ -302,6 +332,10 @@ namespace light {
 
             const stride = this.stride();
             const offset = (pixeloffset + this._start) * stride;
+            return this.readPixelColorAtOffset(offset);
+        }
+
+        private readPixelColorAtOffset(offset: number): number {
             const b = this.buf;
             let red = 0, green = 0, blue = 0;
             switch (this._mode) {

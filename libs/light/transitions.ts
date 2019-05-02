@@ -1,4 +1,5 @@
 namespace easing {
+    export function one(t: number): number { return 1; }
     export function linear(t: number): number { return t; }
     export function inQuad(t: number): number { return t * t; }
     export function outQuad(t: number): number { return t * (2 - t); }
@@ -22,7 +23,7 @@ namespace light {
         private spatialEasing: easing.Easing;
 
         constructor(
-            timeEasing: easing.Easing, 
+            timeEasing: easing.Easing,
             spatialEasing?: easing.Easing) {
             super();
             this.timeEasing = timeEasing || easing.inOutQuad;

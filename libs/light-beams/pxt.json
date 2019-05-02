@@ -1,0 +1,15 @@
+{
+    "name": "light-beams",
+    "description": "Light based game engine",
+    "files": [
+        "README.md",
+        "beam.ts"
+    ],
+    "testFiles": [
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core",
+        "light": "file:../light"
+    }
+}
