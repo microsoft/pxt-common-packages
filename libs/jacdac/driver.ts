@@ -106,19 +106,33 @@ namespace jacdac {
             super(name, JDServiceMode.ClientService, serviceClass, controlDataLength);
         }
 
-        /** 
-         * Sets the required device name
-        */
-        setRequiredDeviceName(name: string) {
-            const dev = new jacdac.JDRequiredDevice();
-            dev.device_name = name;
-            this.requiredDevice = dev;
+        /**
+         * Gest the required device names
+         */
+        get requiredDeviceName() {
+            return this.requiredDevice && this.requiredDevice.device_name;
         }
 
         /** 
          * Sets the required device name
         */
-        setRequiredDeviceUuid(uuid: Buffer) {
+        set requiredDeviceName(name: string) {
+            const dev = new jacdac.JDRequiredDevice();
+            dev.device_name = name;
+            this.requiredDevice = dev;
+        }
+
+        /**
+         * Set required device uuid
+         */
+        get requiredDeviceUuid() {
+            return this.requiredDevice && this.requiredDevice.unique_device_identifier;
+        }
+
+        /** 
+         * Sets the required device name
+        */
+        set requiredDeviceUuid(uuid: Buffer) {
             const dev = new jacdac.JDRequiredDevice();
             dev.unique_device_identifier = uuid;
             this.requiredDevice = dev;
