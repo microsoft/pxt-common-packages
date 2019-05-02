@@ -66,7 +66,7 @@ namespace jacdac {
     //% fixedInstances
     export class ServosClient extends ActuatorClient {
         constructor(name: string, length: number) {
-            super(name, jacdac.SERVOS_DEVICE_CLASS, 4 * length);
+            super(name, jacdac.SERVOS_DEVICE_CLASS, 4 * length, 2 * length);
         }
 
         /**
@@ -82,11 +82,9 @@ namespace jacdac {
         //% blockGap=8        
         setAngle(index: number, degrees: number) {
             const k = index * 4;
-            if (!this.state[k + 0] || this.state.getNumber(NumberFormat.Int16LE, k + 1) != degrees) {
-                this.state[k + 0] = 1;
-                this.state.setNumber(NumberFormat.Int16LE, k + 1, degrees);
-                this.notifyChange();
-            }
+            this.state.setNumber(NumberFormat.UInt8LE, k, 1);
+            this.state.setNumber(NumberFormat.Int16LE, k + 1, degrees);
+            this.notifyChange();
         }
 
         /**

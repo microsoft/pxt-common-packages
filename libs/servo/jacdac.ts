@@ -30,13 +30,13 @@ namespace jacdac {
         private servos: servos.Servo[];
 
         constructor(name: string, servos: servos.Servo[]) {
-            super(name, jacdac.SERVOS_DEVICE_CLASS, servos.length * 4, servos.length);
+            super(name, jacdac.SERVOS_DEVICE_CLASS, servos.length * 4, servos.length * 2);
             this.servos = servos;
         }
 
         addAdvertisementData() {
             for (let i = 0; i < this.servos.length; ++i) {
-                this.controlData.setNumber(NumberFormat.Int16LE, i, this.servos[i].angle);
+                this.controlData.setNumber(NumberFormat.Int16LE, i * 2, this.servos[i].angle);
             }
             return super.addAdvertisementData();
         }
@@ -44,7 +44,7 @@ namespace jacdac {
         protected handleStateChanged(): number {
             for (let i = 0; i < this.servos.length; ++i) {
                 const servo = this.servos[i];
-                const on = i * 4;
+                const on = !!this.state.getNumber(NumberFormat.UInt8LE, i * 4);
                 const angle = this.state.getNumber(NumberFormat.Int16LE, i * 4 + 1);
                 if (!on)
                     servo.stop();

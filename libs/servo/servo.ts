@@ -12,7 +12,7 @@ namespace servos {
         private _angle: number;
 
         constructor() {
-            this._angle = -1;
+            this._angle = undefined;
             this._minAngle = 0;
             this._maxAngle = 180;
             this._stopOnNeutral = false;
@@ -42,7 +42,7 @@ namespace servos {
         }
 
         get angle() {
-            return this._angle;
+            return this._angle || 90;
         }
 
         protected internalSetAngle(angle: number): number {
@@ -109,7 +109,8 @@ namespace servos {
         //% group="Continuous"
         //% blockGap=8
         stop() {
-            this.internalStop();
+            if (this._angle !== undefined)
+                this.internalStop();
         }
 
         /**
@@ -183,7 +184,8 @@ namespace servos {
         }
 
         protected internalStop() {
-            this._pin.digitalWrite(false);
+            this._pin.digitalRead();
+            this._pin.setPull(PinPullMode.PullNone);
         }
     }
 }
