@@ -1357,7 +1357,7 @@ namespace light {
         }
     }
 
-    class RainbowCycleAnimation extends NeoPixelAnimation {
+    export class RainbowCycleAnimation extends NeoPixelAnimation {
         public delay: number;
         constructor(delay: number) {
             super();
@@ -1385,7 +1385,7 @@ namespace light {
     //% fixedInstance block="rainbow" whenUsed jres blockIdentity="light._animationPicker"
     export const rainbowAnimation: NeoPixelAnimation = new RainbowCycleAnimation(50);
 
-    class RunningLightsAnimation extends NeoPixelAnimation {
+    export class RunningLightsAnimation extends NeoPixelAnimation {
         public red: number;
         public green: number;
         public blue: number;
