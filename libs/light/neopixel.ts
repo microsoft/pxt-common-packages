@@ -1466,7 +1466,7 @@ namespace light {
     //% fixedInstance block="comet" jres blockIdentity="light._animationPicker"
     export const cometAnimation: NeoPixelAnimation = new CometAnimation(0xff, 0, 0xff, 50);
 
-    class SparkleAnimation extends NeoPixelAnimation {
+    export class SparkleAnimation extends NeoPixelAnimation {
         public rgb: number;
         public delay: number;
 
