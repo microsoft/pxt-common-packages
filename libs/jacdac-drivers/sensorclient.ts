@@ -33,10 +33,21 @@ namespace jacdac {
             this.sync();
         }
 
+        /**
+         * Requests the sensor to calibrate
+         */
+        public calibrate() {
+            this.start();
+            const buf = control.createBuffer(2);
+            const cmd = SensorCommand.Calibrate;
+            buf.setNumber(NumberFormat.UInt8LE, 0, cmd);
+            this.sendPacket(buf);
+        }
+
         private sync() {
             if (this._sensorState == SensorState.None) return;
 
-            const buf = control.createBuffer(1);
+            const buf = control.createBuffer(2);
             const cmd = (this._sensorState & SensorState.Streaming)
                 ? SensorCommand.StartStream : SensorCommand.StopStream;
             buf.setNumber(NumberFormat.UInt8LE, 0, cmd);
@@ -92,7 +103,7 @@ namespace jacdac {
 
         protected setThreshold(low: boolean, value: number) {
             this.start();
-            const buf = control.createBuffer(5);
+            const buf = control.createBuffer(6);
             const cmd = low ? SensorCommand.LowThreshold : SensorCommand.HighThreshold;
             buf.setNumber(NumberFormat.UInt8LE, 0, cmd);
             buf.setNumber(NumberFormat.Int32LE, 1, value);

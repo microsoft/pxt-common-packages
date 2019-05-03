@@ -12,7 +12,8 @@ namespace jacdac {
         StartStream,
         StopStream,
         LowThreshold,
-        HighThreshold
+        HighThreshold,
+        Calibrate
     }
 
     export function bufferEqual(l: Buffer, r: Buffer): boolean {
@@ -83,6 +84,8 @@ namespace jacdac {
                 case SensorCommand.HighThreshold:
                     this.setThreshold(false, data.getNumber(NumberFormat.UInt32LE, 1));
                     return jacdac.DEVICE_OK;
+                case SensorCommand.Calibrate:
+                    return this.handleCalibrateCommand(packet);
                 default:
                     // let the user deal with it
                     return this.handleCustomCommand(command, packet);
@@ -97,6 +100,11 @@ namespace jacdac {
         // override
         protected setThreshold(low: boolean, value: number) {
 
+        }
+
+        // override
+        protected handleCalibrateCommand(pkt: JDPacket): number {
+            return jacdac.DEVICE_OK;
         }
 
         protected handleCustomCommand(command: number, pkt: JDPacket): number {

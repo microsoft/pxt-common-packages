@@ -17,6 +17,11 @@ namespace jacdac {
             buf.setNumber(NumberFormat.UInt16LE, 1, this.button.value());
             return buf;
         }
+
+        handleCalibrateCommand(pkt: JDPacket): number {
+            this.button.calibrate();
+            return super.handleCalibrateCommand(pkt);
+        }
     }
 
     export class TouchButtonsService extends SensorHost {
@@ -38,6 +43,12 @@ namespace jacdac {
             for (let i = 0; i < this.buttons.length; ++i)
                 buf.setNumber(NumberFormat.UInt16LE, i * 2, this.buttons[i].value());
             return buf;
+        }
+
+        handleCalibrateCommand(pkt: JDPacket): number {
+            for (let i = 0; i < this.buttons.length; ++i)
+                this.buttons[i].calibrate();
+            return super.handleCalibrateCommand(pkt);
         }
     }
 }
