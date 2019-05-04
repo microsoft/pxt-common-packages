@@ -135,7 +135,7 @@ namespace jacdac {
         //% blockGap=8 weight=99
         //% group="Keyboard"
         key(key: string, event: JDKeyboardKeyEvent) {
-            const buf = control.createBuffer(3);
+            const buf = control.createBuffer(4);
             buf[0] = JDKeyboardCommand.Key;
             buf[1] = key.charCodeAt(0);
             buf[2] = event;
@@ -149,7 +149,7 @@ namespace jacdac {
         //% blockGap=8
         //% group="Keyboard"
         mediaKey(key: JDKeyboardMediaKey, event: JDKeyboardKeyEvent) {
-            const buf = control.createBuffer(3);
+            const buf = control.createBuffer(4);
             buf[0] = JDKeyboardCommand.MediaKey;
             buf[1] = key;
             buf[2] = event;
@@ -163,7 +163,7 @@ namespace jacdac {
         //% blockGap=8
         //% group="Keyboard"
         functionKey(key: JDKeyboardFunctionKey, event: JDKeyboardKeyEvent) {
-            const buf = control.createBuffer(3);
+            const buf = control.createBuffer(4);
             buf[0] = JDKeyboardCommand.FunctionKey;
             buf[1] = key;
             buf[2] = event;

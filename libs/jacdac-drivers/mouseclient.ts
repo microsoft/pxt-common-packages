@@ -20,7 +20,7 @@ namespace jacdac {
         //% blockId=jdmouseSetButton block="%mouse button %index|%down=toggleDownUp"
         //% group="Mouse"
         setButton(button: JDMouseButton, down: boolean): void {
-            const buf = control.createBuffer(3);
+            const buf = control.createBuffer(4);
             buf[0] = JDMouseCommand.Button;
             buf[1] = button;
             buf[2] = down ? 1 : 0;
@@ -36,7 +36,7 @@ namespace jacdac {
         //% y.min=-128 y.max=127
         //% group="Mouse"
         move(x: number, y: number): void {
-            const buf = control.createBuffer(3);
+            const buf = control.createBuffer(4);
             buf[0] = JDMouseCommand.Move;
             buf.setNumber(NumberFormat.Int8LE, 1, x);
             buf.setNumber(NumberFormat.Int8LE, 2, y);
