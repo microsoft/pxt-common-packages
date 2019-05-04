@@ -696,6 +696,13 @@ namespace light {
         }
 
         /**
+         * Stops any running brightness transition
+         */
+        stopBrightnessTransition() {
+            this._transitionPlayer = undefined;
+        }
+
+        /**
          * Show an animation or queue an animation in the animation queue
          * @param animation the animation to run
          * @param duration the duration to run in milliseconds, eg: 500
