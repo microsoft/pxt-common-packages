@@ -144,12 +144,13 @@ namespace light {
         // last animation used by showAnimationFrame
         _lastAnimation: NeoPixelAnimation;
         _lastAnimationRenderer: () => boolean;
+        _transitionPlayer: BrightnessTransitionPlayer;
 
         constructor() {
             this._buffered = false;
             this._mode = NeoPixelMode.RGB;
             this._length = 0;
-            this._brightness = 20;
+            this._brightness = 16;
             this._start = 0;
             this._dataPin = undefined;
             this._clkPin = undefined;
@@ -202,6 +203,37 @@ namespace light {
             const stride = this.stride();
             for (let i = this._start; i < end; ++i) {
                 this.setBufferRGB(i * stride, red, green, blue)
+            }
+            this.autoShow();
+        }
+
+        /**
+         * Sets a gradient between two colors
+         * @param startColor the start color
+         * @param endColor the end color
+         */
+        //% blockId="lightsetgradient" block="set %strip gradient from %startColor=colorNumberPicker to %endColor=colorNumberPicker"
+        //% weight=79 blockGap=8
+        //% advanced=true
+        setGradient(startColor: number, endColor: number, easing?: easing.Easing) {
+            const sr = unpackR(startColor);
+            const sg = unpackG(startColor);
+            const sb = unpackB(startColor);
+            const er = unpackR(endColor);
+            const eg = unpackG(endColor);
+            const eb = unpackB(endColor);
+
+            const end = this._start + this._length;
+            const n1 = this._length - 1;
+            const stride = this.stride();
+            for (let i = this._start; i < end; ++i) {
+                let x = (i - this._start) / n1;
+                if (easing) x = easing(x);
+                const ox = 1 - x;
+                const r = (sr * ox + er * x) | 0;
+                const g = (sg * ox + eg * x) | 0;
+                const b = (sb * ox + eb * x) | 0;
+                this.setBufferRGB(i * stride, r, g, b);
             }
             this.autoShow();
         }
@@ -267,7 +299,7 @@ namespace light {
         //% help="light/neopixelstrip/set-pixel-color"
         //% weight=79 blockGap=8
         //% group="More" advanced=true
-        setPixelColor(pixeloffset: number, color: number): void {            
+        setPixelColor(pixeloffset: number, color: number): void {
             pixeloffset = pixeloffset | 0;
             color = color | 0;
 
@@ -447,14 +479,34 @@ namespace light {
         //% weight=2 blockGap=8
         //% advanced=true
         setBrightness(brightness: number): void {
-            this._brightness = Math.max(0, Math.min(0xff, brightness | 0));
-            // if this is a top level strip clear any existing brightness buffer
-            if (!this._parent)
-                this._brightnessBuf = undefined;
-            // if this is a NOT top-level strip or if brightness buff has been allocated,
-            else if (this._parent || this._brightnessBuf)
-                this.brightnessBuf.fill(this._brightness, this._start, this._length);
-            this.autoShow();
+            const b = Math.max(0, Math.min(0xff, brightness | 0));
+            if (b != this._brightness || this._brightnessBuf) {
+                this._brightness = b;
+                // if this is a top level strip clear any existing brightness buffer
+                if (!this._parent)
+                    this._brightnessBuf = undefined;
+                // if this is a NOT top-level strip or if brightness buff has been allocated,
+                else if (this._parent || this._brightnessBuf)
+                    this.brightnessBuf.fill(this._brightness, this._start, this._length);
+                this.autoShow();
+            }
+        }
+
+        /**
+         * Sets an individual pixel brightness
+         * @param index 
+         * @param brightness 
+         */
+        setPixelBrightness(index: number, brightness: number): void {
+            const i = (index | 0);
+            if (i < 0 || i > this._length) return;
+
+            const b = Math.max(0, Math.min(0xff, brightness | 0));
+            const bb = this.brightnessBuf;
+            if (bb[this._start + i] != b) {
+                bb[this._start + i] = b;
+                this.autoShow();
+            }
         }
 
         /**
@@ -642,6 +694,46 @@ namespace light {
         }
 
         /**
+         * Starts a brightness transition on the strip (and cancels any other running transition)
+         * @param transition 
+         * @param duration 
+         */
+        startBrightnessTransition(
+            startBrightness: number,
+            endBrightness: number,
+            duration: number,
+            repeat?: number,
+            yoyo?: boolean,
+            transition?: BrightnessTransition
+        ) {
+            const player = this._transitionPlayer = new BrightnessTransitionPlayer(
+                transition || new EasingBrightnessTransition(undefined),
+                startBrightness,
+                endBrightness,
+                duration,
+                repeat,
+                yoyo);
+            control.runInBackground(() => {
+                while (player == this._transitionPlayer) {
+                    const buf = this.buffered();
+                    this.setBuffered(true);
+                    const keepRendering = player.update(this);
+                    this.setBuffered(buf);
+                    this.show();
+                    pause(20);
+                    if (!keepRendering) break;
+                }
+            });
+        }
+
+        /**
+         * Stops any running brightness transition
+         */
+        stopBrightnessTransition() {
+            this._transitionPlayer = undefined;
+        }
+
+        /**
          * Show an animation or queue an animation in the animation queue
          * @param animation the animation to run
          * @param duration the duration to run in milliseconds, eg: 500
@@ -673,6 +765,7 @@ namespace light {
                 const keepRendering = animationRenderer();
                 this.setBuffered(buf);
                 this.show();
+                pause(1);
                 return duration > 0
                     ? now <= duration
                     : keepRendering;
@@ -817,7 +910,7 @@ namespace light {
         //% weight=1 blockGap=8
         //% length.shadow=lightLengthPicker
         //% group="Configuration" advanced=true
-        setLength(numleds: number): void {            
+        setLength(numleds: number): void {
             const n = Math.max(0, numleds | 0);
             // lazy update
             if (n != this._length) {
@@ -831,8 +924,10 @@ namespace light {
         }
 
         private autoShow() {
-            if (!this.buffered())
+            if (!this.buffered()) {
                 this.show();
+                pause(1);
+            }
         }
 
         private setBufferRGB(offset: number, red: number, green: number, blue: number): void {
@@ -1105,7 +1200,7 @@ namespace light {
             this.setMode(mode);
         }
     }
-    
+
     /**
      * Creates a strip of colored LEDs (WS2812b)
      */
@@ -1300,7 +1395,7 @@ namespace light {
         }
     }
 
-    class RainbowCycleAnimation extends NeoPixelAnimation {
+    export class RainbowCycleAnimation extends NeoPixelAnimation {
         public delay: number;
         constructor(delay: number) {
             super();
@@ -1314,7 +1409,7 @@ namespace light {
                 for (let i = 0; i < n; i++) {
                     strip.setPixelColor(i, hsv(((i * 256) / (n - 1) + offset) % 0xff, 0xff, 0xff));
                 }
-                offset += 128 / n;
+                offset += Math.ceil(Math.max(1, Math.min(8, n / 20)));
                 if (offset >= 0xff) {
                     offset = 0;
                     return false;
@@ -1328,7 +1423,7 @@ namespace light {
     //% fixedInstance block="rainbow" whenUsed jres blockIdentity="light._animationPicker"
     export const rainbowAnimation: NeoPixelAnimation = new RainbowCycleAnimation(50);
 
-    class RunningLightsAnimation extends NeoPixelAnimation {
+    export class RunningLightsAnimation extends NeoPixelAnimation {
         public red: number;
         public green: number;
         public blue: number;
@@ -1409,7 +1504,7 @@ namespace light {
     //% fixedInstance block="comet" jres blockIdentity="light._animationPicker"
     export const cometAnimation: NeoPixelAnimation = new CometAnimation(0xff, 0, 0xff, 50);
 
-    class SparkleAnimation extends NeoPixelAnimation {
+    export class SparkleAnimation extends NeoPixelAnimation {
         public rgb: number;
         public delay: number;
 
@@ -1545,10 +1640,10 @@ namespace light {
         return animation;
     }
 
-        /**
-      * Get the light length picker
-      * @param pixels number of LEDs
-      */
+    /**
+  * Get the light length picker
+  * @param pixels number of LEDs
+  */
     //% blockId=lightLengthPicker block="%pixels"
     //% blockHidden=true shim=TD_ID
     //% colorSecondary="#FFFFFF"
