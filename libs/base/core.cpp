@@ -1,8 +1,10 @@
 #include "pxtbase.h"
+#include "LowLevelTimer.h"
 #include <limits.h>
 #include <stdlib.h>
 
 using namespace std;
+using namespace codal;
 
 #define p10(v) __builtin_powi(10, v)
 

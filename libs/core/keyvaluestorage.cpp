@@ -1,21 +1,20 @@
 #include "pxt.h"
-#ifdef CODAL_NVMCONTROLLER
 #include "KeyValueStorage.h"
-#endif
-
 
 namespace pxt {
 
 class WKeyValueStorage {
 #ifdef CODAL_NVMCONTROLLER
     CODAL_NVMCONTROLLER controller;
-    KeyValueStorage storage;
+#else
+    NVMController controller;
 #endif
+    KeyValueStorage storage;
   public:
 
     WKeyValueStorage()
     : controller()
-    , storage(controller) { 
+    , storage(controller) {
     }
 
     bool isSupported() {
