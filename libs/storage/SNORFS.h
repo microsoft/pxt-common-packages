@@ -53,13 +53,11 @@ class FS {
         return rowRemapCache[rowIdx] * SNORFS_ROW_SIZE;
     }
     uint32_t indexAddr(uint16_t ptr) {
-        if ((ptr & 0xff) >= pagesPerRow)
-            target_panic(DEVICE_FLASH_ERROR);
-        return rowAddr(ptr >> 8) + SNORFS_ROW_SIZE - pagesPerRow + (ptr & 0xff);
+        return rowAddr(ptr >> 8) + SNORFS_ROW_SIZE - SNORFS_PAGES_PER_ROW + (ptr & 0xff);
     }
     uint32_t pageAddr(uint16_t ptr) {
         // page zero is index, shouldn't be accessed through this
-        if (!(ptr & 0xff) || (ptr & 0xff) >= pagesPerRow)
+        if (!(ptr & 0xff))
             target_panic(DEVICE_FLASH_ERROR);
         return rowAddr(ptr >> 8) + SNORFS_PAGE_SIZE * (ptr & 0xff);
     }

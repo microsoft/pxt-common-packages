@@ -10,8 +10,6 @@ using namespace std;
 
 #define MAX_WR 2000000
 
-#define ROW_SIZE (64 * SNORFS_PAGE_SIZE)
-
 typedef codal::snorfs::File File;
 codal::snorfs::FS *fs;
 
@@ -168,7 +166,7 @@ class MemFlash : public codal::SPIFlash {
             memcpy(beforeErase, data, chipSize());
         }
         ticks += 400000;
-        return erase(addr, ROW_SIZE);
+        return erase(addr, SPIFLASH_BIG_ROW_SIZE);
     }
     int eraseChip() { return erase(0, chipSize()); }
 };
@@ -312,13 +310,13 @@ int main() {
     for (uint32_t i = 0; i < sizeof(randomData); ++i)
         randomData[i] = rand();
     MemFlash flash(2 * 1024 * 1024 / SNORFS_PAGE_SIZE);
-    fs = new codal::snorfs::FS(flash, ROW_SIZE);
+    fs = new codal::snorfs::FS(flash);
     assert(!fs->tryMount());
     flash.eraseChip();
     assert(fs->tryMount());
     for (int i = 0; i < 5; ++i) {
         simpleTest("data.txt", 2);
-        fs = new codal::snorfs::FS(flash, ROW_SIZE);
+        fs = new codal::snorfs::FS(flash);
         testAll();
     }
 
@@ -364,14 +362,14 @@ int main() {
 
     // re-mount
     flash.snapshotBeforeErase = true;
-    fs = new codal::snorfs::FS(flash, ROW_SIZE);
+    fs = new codal::snorfs::FS(flash);
     fs->dump();
     testAll();
 
     printf("recovery!\n");
 
     flash.useSnapshot();
-    fs = new codal::snorfs::FS(flash, ROW_SIZE);
+    fs = new codal::snorfs::FS(flash);
     fs->dump();
     multiTest(30, 3000, iters, true);
     testAll();
