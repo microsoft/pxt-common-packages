@@ -6,7 +6,8 @@
 
 #define oops() target_panic(DEVICE_FLASH_ERROR)
 
-#define OFF(v) (int)((uintptr_t)v - (uintptr_t)basePtr)
+#define OFF2(v, basePtr) (int)((uintptr_t)v - (uintptr_t)basePtr)
+#define OFF(v) OFF2(v, basePtr)
 
 #ifndef SNORFS_TEST
 #define LOG DMESG
@@ -225,9 +226,12 @@ MetaEntry *FS::findMetaEntry(const char *filename) {
     uint16_t buflen = strlen(filename) + 1;
 
     for (auto p = metaPtr; p < endPtr; p++) {
+        //LOGV("check at %x %x %x", OFF(p),p->fnhash,h);
         if (p->fnhash == h && memcmp(basePtr + p->fnptr, filename, buflen) == 0)
             return p;
     }
+
+    //LOGV("fail");
 
     return NULL;
 }
@@ -502,6 +506,7 @@ int File::read(void *data, uint32_t len) {
 
         nread += n;
         len -= n;
+        readOffset += n;
 
         if (len == 0 || nextptr == 0xffff) {
             readOffsetInPage = (srcptr + n) - srcptr0;
@@ -659,6 +664,7 @@ void FS::debugDump() {
 }
 
 void File::debugDump() {
-    LOGV("fileID: 0x%x, rd: 0x%x/%d", meta->dataptr, readPage, tell());
+    LOGV("fileID: 0x%x -> %x, rd: 0x%x/%d", OFF2(meta, fs.basePtr), meta->dataptr, readPage,
+         tell());
 }
 #endif

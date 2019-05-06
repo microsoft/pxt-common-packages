@@ -81,6 +81,8 @@ class FileCache {
             f->read(tmp, len);
             for (unsigned i = 0; i < len; ++i) {
                 if (tmp[i] != data[start + i]) {
+                    f->debugDump();
+                    LOG("tmp[%d]=%d data[%d + %d]=%d", i, tmp[i], start, i, data[start + i]);
                     assert(false);
                 }
             }
@@ -132,7 +134,9 @@ class MemFlash :
                     *ptr);
                 assert(false);
             }
-            data[addr + i] = *ptr++;
+            if (*ptr != 0xff)
+                data[addr + i] = *ptr;
+            ptr++;
         }
         ticks += len * 3 + 50;
         return 0;
