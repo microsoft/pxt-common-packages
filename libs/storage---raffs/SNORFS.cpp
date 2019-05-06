@@ -107,11 +107,7 @@ void FS::format() {
     if (files)
         oops();
 
-    erasePages(baseAddr, bytes / 2);
     FSHeader hd;
-    hd.magic = RAFFS_MAGIC;
-    hd.bytes = bytes;
-    writeBytes((void *)baseAddr, &hd, sizeof(hd));
 
     // in case the secondary header is valid, clear it
     auto hd2 = (FSHeader *)(baseAddr + bytes / 2);
@@ -120,6 +116,12 @@ void FS::format() {
         hd.bytes = 0;
         writeBytes(hd2, &hd, sizeof(hd));
     }
+
+    // write the primary header
+    erasePages(baseAddr, bytes / 2);
+    hd.magic = RAFFS_MAGIC;
+    hd.bytes = bytes;
+    writeBytes((void *)baseAddr, &hd, sizeof(hd));
 
     flushFlash();
 }
@@ -290,7 +292,7 @@ bool FS::tryGC(int spaceNeeded) {
     int spaceLeft = (intptr_t)metaPtr - (intptr_t)freeDataPtr;
 
 #ifdef SNORFS_TEST
-    for (auto p = freeDataPtr; p < (uint32_t*)metaPtr; p++) {
+    for (auto p = freeDataPtr; p < (uint32_t *)metaPtr; p++) {
         if (*p != M1) {
             LOG("value at %x = %x", OFF(p), *p);
             oops();
@@ -301,7 +303,7 @@ bool FS::tryGC(int spaceNeeded) {
     if (spaceLeft > spaceNeeded + 32)
         return false;
 
-    LOG("running GC; needed %d, left %d", spaceNeeded, spaceLeft);
+    LOG("running flash FS GC; needed %d, left %d", spaceNeeded, spaceLeft);
 
     readDirPtr = NULL;
 
@@ -358,6 +360,8 @@ bool FS::tryGC(int spaceNeeded) {
 
     LOG("GC done: %d free", (int)((intptr_t)metaDst - (intptr_t)dataDst));
 
+    flushFlash();
+
     FSHeader hd;
     hd.magic = RAFFS_MAGIC;
     hd.bytes = bytes;
@@ -398,6 +402,8 @@ MetaEntry *FS::createMetaPage(const char *filename, MetaEntry *existing) {
     }
     m.dataptr = 0xffff;
     m.flags = 0xfffe;
+
+    flushFlash();
 
     auto r = --metaPtr;
     writeBytes(r, &m, sizeof(m));
@@ -578,11 +584,9 @@ void File::append(const void *data, uint32_t len) {
 
     uint16_t thisPtr = fs.freeDataPtr - fs.basePtr;
     lastPage = thisPtr; // cache it
-    fs.writeBytes(pageDst, &thisPtr, sizeof(thisPtr));
 
     uint32_t newHd = 0xffff0000 | len;
     fs.writeBytes(fs.freeDataPtr++, &newHd, sizeof(newHd));
-
     fs.writeBytes(fs.freeDataPtr, data, len);
 
     uint32_t zero = 0;
@@ -599,6 +603,10 @@ void File::append(const void *data, uint32_t len) {
     }
 
     fs.freeDataPtr += (len + 3) >> 2;
+
+    // and only at the end update the next link
+    fs.flushFlash();
+    fs.writeBytes(pageDst, &thisPtr, sizeof(thisPtr));
 
     fs.unlock();
 }
