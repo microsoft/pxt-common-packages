@@ -358,11 +358,18 @@ codal::snorfs::FS *mkFS(MemFlash &flash) {
 int main() {
     for (uint32_t i = 0; i < sizeof(randomData); ++i)
         randomData[i] = rand();
+#ifdef CODAL_RAFFS_H
+    MemFlash flash(128 * 1024 / SNORFS_PAGE_SIZE);
+#else
     MemFlash flash(2 * 1024 * 1024 / SNORFS_PAGE_SIZE);
+#endif
+
     fs = mkFS(flash);
     assert(!fs->tryMount());
+#ifndef CODAL_RAFFS_H
     flash.eraseChip();
     assert(fs->tryMount());
+#endif
     for (int i = 0; i < 5; ++i) {
         simpleTest("data.txt", 2);
         fs = mkFS(flash);

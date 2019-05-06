@@ -101,8 +101,6 @@ void FS::format() {
     if (files)
         oops();
 
-    busy();
-
     erasePages(baseAddr, bytes / 2);
     FSHeader hd;
     hd.magic = RAFFS_MAGIC;
@@ -117,12 +115,12 @@ void FS::format() {
         writeBytes(hd2, &hd, sizeof(hd));
     }
 
-    busy(false);
+    flushFlash();
 }
 
-void FS::mount() {
+bool FS::tryMount() {
     if (basePtr)
-        return;
+        return true;
 
     auto addr = baseAddr + bytes / 2;
 
@@ -135,7 +133,7 @@ void FS::mount() {
         if (hd->magic == RAFFS_MAGIC && hd->bytes == bytes) {
             // OK
         } else {
-            format();
+            return false;
         }
     }
 
@@ -151,6 +149,16 @@ void FS::mount() {
     while (*p == M1)
         p--;
     freeDataPtr = p + 1;
+
+    return true;
+}
+
+void FS::mount() {
+    if (tryMount())
+        return;
+    format();
+    if (!tryMount())
+        oops();
 }
 
 FS::~FS() {}
@@ -271,6 +279,8 @@ bool FS::tryGC(int spaceNeeded) {
 
     auto newBase = (uintptr_t)basePtr == baseAddr ? baseAddr + bytes / 2 : baseAddr;
 
+    flushFlash();
+
     erasePages(newBase, bytes / 2);
 
     auto metaDst = (MetaEntry *)(newBase + bytes / 2);
@@ -296,6 +306,7 @@ bool FS::tryGC(int spaceNeeded) {
         }
 
         writeBytes(--metaDst, &m, sizeof(m));
+        flushFlash();
 
         for (auto f = files; f; f = f->next) {
             if (f->meta == p) {
@@ -322,6 +333,8 @@ bool FS::tryGC(int spaceNeeded) {
     hd.magic = 0;
     hd.bytes = 0;
     writeBytes(basePtr, &hd, sizeof(hd));
+
+    flushFlash();
 
     basePtr = newBaseP;
     endPtr = (MetaEntry *)(newBase + bytes / 2);
@@ -353,6 +366,7 @@ MetaEntry *FS::createMetaPage(const char *filename, MetaEntry *existing) {
 
     auto r = --metaPtr;
     writeBytes(r, &m, sizeof(m));
+    flushFlash();
 
     return r;
 }
@@ -402,7 +416,7 @@ DirEntry *FS::dirRead() {
         if (p->dataptr != 0) {
             dirEnt.size = getFileSize(p->dataptr);
             dirEnt.flags = p->flags;
-            dirEnt.name = (const char*)(basePtr + p->fnptr);
+            dirEnt.name = (const char *)(basePtr + p->fnptr);
             unlock();
             return &dirEnt;
         }
@@ -536,7 +550,7 @@ void File::append(const void *data, uint32_t len) {
         fs.writeBytes((uint8_t *)fs.freeDataPtr + len, &zero, 4 - (len & 3));
     } else {
         // check if data ends with M1
-        if (*(uint32_t *)((uint8_t*)data + len - 4) == M1) {
+        if (*(uint32_t *)((uint8_t *)data + len - 4) == M1) {
             // if so, write some 0s
             fs.writeBytes((uint8_t *)fs.freeDataPtr + len, &zero, 4);
             len += 4;
@@ -607,6 +621,7 @@ void File::overwrite(const void *data, uint32_t len) {
         m.dataptr = 0xffff;
         --fs.metaPtr;
         fs.writeBytes(fs.metaPtr, &m, sizeof(m));
+        fs.flushFlash();
         // set everyone's (including ours) meta ptr
         for (auto f = fs.files; f; f = f->next) {
             if (f->meta == meta) {
@@ -629,8 +644,7 @@ int FS::readFlashBytes(uintptr_t addr, void *buffer, uint32_t len) {
 }
 
 #ifdef SNORFS_TEST
-void FS::dump() {
-}
+void FS::dump() {}
 
 void FS::debugDump() {
     // dump();
