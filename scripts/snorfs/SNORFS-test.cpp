@@ -122,9 +122,14 @@ class MemFlash :
         numWrites++;
         uint8_t *ptr = (uint8_t *)buffer;
         for (uint32_t i = 0; i < len; ++i) {
-            if (data[addr + i] != 0xff && !(data[addr + i] && *ptr == 0x00)) {
-                LOG("write error: addr=%d len=%d data[%d]=%d -> %d", addr, len, i,
-                    data[addr + i], *ptr);
+#ifdef CODAL_RAFFS_H
+            if (*ptr != 0xff && (data[addr + i] & *ptr) != *ptr)
+#else
+            if (data[addr + i] != 0xff && !(data[addr + i] && *ptr == 0x00))
+#endif
+            {
+                LOG("write error: addr=%d len=%d data[%d]=%d -> %d", addr, len, i, data[addr + i],
+                    *ptr);
                 assert(false);
             }
             data[addr + i] = *ptr++;
@@ -143,7 +148,6 @@ class MemFlash :
         ticks += sz * 10;
         erase(addr, sz);
     }
-
 
   public:
     MemFlash(int npages) {
@@ -175,15 +179,11 @@ class MemFlash :
     int numPages() { return npages; }
 
 #ifdef CODAL_RAFFS_H
-    uintptr_t dataBase() {
-        return (uintptr_t)data;
-    }
+    uintptr_t dataBase() { return (uintptr_t)data; }
     int writeBytes(uintptr_t addr, const void *buffer, uint32_t len) {
         return writeBytesCore(addr - dataBase(), buffer, len);
     }
-    int pageSize(uintptr_t ) { 
-        return SNORFS_PAGE_SIZE;
-    }
+    int pageSize(uintptr_t) { return SNORFS_PAGE_SIZE; }
     int erasePage(uintptr_t addr) {
         uint32_t off = addr - dataBase();
         assert((off & (SNORFS_PAGE_SIZE - 1)) == 0);
@@ -205,9 +205,7 @@ class MemFlash :
         assert(false);
         return erase(addr, SPIFLASH_SMALL_ROW_SIZE);
     }
-    int eraseBigRow(uint32_t addr) {
-        return eraseCore(addr, SPIFLASH_BIG_ROW_SIZE);
-    }
+    int eraseBigRow(uint32_t addr) { return eraseCore(addr, SPIFLASH_BIG_ROW_SIZE); }
 #endif
     int eraseChip() { return erase(0, chipSize()); }
 };

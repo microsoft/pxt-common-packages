@@ -6,6 +6,8 @@
 
 #define oops() target_panic(DEVICE_FLASH_ERROR)
 
+#define OFF(v) (int)((uintptr_t)v - (uintptr_t)basePtr)
+
 #ifndef SNORFS_TEST
 #define LOG DMESG
 #define LOGV(...)                                                                                  \
@@ -76,6 +78,7 @@ void FS::flushFlash() {
 }
 
 void FS::writeBytes(void *dst, const void *src, uint32_t size) {
+    LOGV("write %x %d", OFF(dst), size);
     while (size > 0) {
         uint32_t off = (uintptr_t)dst & (sizeof(flashBuf) - 1);
         uintptr_t newaddr = (uintptr_t)dst - off;
@@ -150,7 +153,6 @@ bool FS::tryMount() {
         p--;
     freeDataPtr = p + 1;
 
-#define OFF(v) (int)((uintptr_t)v - (uintptr_t)basePtr)
     LOG("mounted, end=%x meta=%x free=%x", OFF(endPtr), OFF(metaPtr), OFF(freeDataPtr));
 
     return true;
@@ -364,6 +366,7 @@ MetaEntry *FS::createMetaPage(const char *filename, MetaEntry *existing) {
         m.fnhash = fnhash(filename);
         m.fnptr = freeDataPtr - basePtr;
         writeBytes(freeDataPtr, filename, buflen - 3);
+        flushFlash();
         freeDataPtr += buflen / 4;
     }
     m.dataptr = 0xffff;
