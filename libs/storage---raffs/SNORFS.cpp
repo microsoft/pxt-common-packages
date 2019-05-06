@@ -280,13 +280,19 @@ uintptr_t FS::copyFile(uint16_t dataptr, uintptr_t dst) {
     }
 }
 
+void FS::forceGC() {
+    lock();
+    tryGC(0x7fff0000);
+    unlock();
+}
+
 bool FS::tryGC(int spaceNeeded) {
     int spaceLeft = (intptr_t)metaPtr - (intptr_t)freeDataPtr;
 
     if (spaceLeft > spaceNeeded + 32)
         return false;
 
-    LOG("running GC; needed %d, got %d", spaceNeeded, spaceLeft);
+    LOG("running GC; needed %d, left %d", spaceNeeded, spaceLeft);
 
     readDirPtr = NULL;
 
@@ -334,10 +340,12 @@ bool FS::tryGC(int spaceNeeded) {
         writeBytes(dataDst++, &eofMark, 4);
     }
 
-    if ((intptr_t)metaDst - (intptr_t)dataDst <= spaceNeeded + 32) {
+    if (spaceNeeded != 0x7fff0000 && (intptr_t)metaDst - (intptr_t)dataDst <= spaceNeeded + 32) {
         LOG("TODO: out of flash space!");
         oops();
     }
+
+    LOG("GC done: %d free", (intptr_t)metaDst - (intptr_t)dataDst);
 
     FSHeader hd;
     hd.magic = RAFFS_MAGIC;

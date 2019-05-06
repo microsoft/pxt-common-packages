@@ -10,6 +10,12 @@ using namespace std;
 
 #define MAX_WR 2000000
 
+#ifdef CODAL_RAFFS_H
+#define SZMULT 3
+#else
+#define SZMULT 100
+#endif
+
 typedef codal::snorfs::File File;
 codal::snorfs::FS *fs;
 
@@ -253,7 +259,7 @@ void simpleTest(const char *fn, int len, int rep = 1) {
     if (fn == NULL)
         fn = getFileName(++fileSeqNo);
 
-    LOGV("\n\n* %s", fn);
+    LOGV("\nsimpleTest(%s, %d, %d)", fn, len, rep);
 
     auto fc = lookupFile(fn);
 
@@ -280,6 +286,8 @@ void simpleTest(const char *fn, int len, int rep = 1) {
 }
 
 void multiTest(int nfiles, int blockSize, int reps, bool over = false) {
+    LOGV("multi(%d,%d,%d)", nfiles, blockSize ,reps);
+
     auto fs = new File *[nfiles];
     auto fcs = new FileCache *[nfiles];
     for (int i = 0; i < nfiles; ++i) {
@@ -315,7 +323,7 @@ void testBuf() {
     File *fs[] = {mk("buffer.dat"), mk("buffer.dat"), mk("buffer.dat")};
     int readP[] = {0, 0, 0};
     int writeP = 0;
-    while (writeP < 1024 * 1024) {
+    while (writeP < 10240 * SZMULT) {
         auto f = fs[rand() % 3];
         assert((int)f->size() == writeP);
         int len = rand() % 2000 + 100;
@@ -361,7 +369,7 @@ int main() {
     for (uint32_t i = 0; i < sizeof(randomData); ++i)
         randomData[i] = rand();
 #ifdef CODAL_RAFFS_H
-    MemFlash flash(128 * 1024 / SNORFS_PAGE_SIZE);
+    MemFlash flash(250 * 1024 / SNORFS_PAGE_SIZE);
 #else
     MemFlash flash(2 * 1024 * 1024 / SNORFS_PAGE_SIZE);
 #endif
@@ -383,36 +391,41 @@ int main() {
     simpleTest(NULL, 256);
     simpleTest(NULL, 10000);
 
-    printf("one\n");
+    LOG("one");
 
+    fs->forceGC();
     auto bufFree = fs->freeSize();
     testBuf();
+    fs->forceGC();
     assert(bufFree == fs->freeSize());
 
-    simpleTest(NULL, 300000);
+    simpleTest(NULL, 3000 * SZMULT);
     simpleTest(NULL, 100, 20);
     simpleTest(NULL, 128, 20);
-    simpleTest(NULL, 128, 2000);
-    simpleTest(NULL, 13, 2000);
-    simpleTest(NULL, 1003, 20);
+    simpleTest(NULL, 128, 20 * SZMULT);
+    simpleTest(NULL, 13, 20 * SZMULT);
+    simpleTest(NULL, 10 * SZMULT + 3, 20);
+
     testAll();
 
-    printf("two\n");
+    LOG("two");
 
-    multiTest(2, 1000, 100);
-    multiTest(10, 1000, 100);
+    multiTest(2, 1000, SZMULT);
+    multiTest(10, 1000, SZMULT);
     for (int i = 0; i < 20; ++i)
-        multiTest(10, 300, 200);
-    simpleTest(NULL, 1003, 300);
+        multiTest(10, 300, 2 * SZMULT);
+    simpleTest(NULL, 1003, 3 * SZMULT);
     testAll();
 
-    printf("three\n");
+    LOG("three");
 
+    fs->forceGC();
     auto prevFree = fs->freeSize();
-    auto iters = 1000; // more for stress testing
+    auto iters = 10 * SZMULT; // more for stress testing
     multiTest(3, 30000, iters, true);
     multiTest(30, 3000, iters, true);
     auto diff = prevFree - fs->freeSize();
+    fs->forceGC();
     printf("free: %d kb %d\n", fs->freeSize() / 1024, diff);
     testAll();
 
