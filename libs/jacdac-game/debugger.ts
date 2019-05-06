@@ -121,21 +121,18 @@ namespace jacdac.dbg {
         show, JACDAC_ICON);
 
     scene.systemMenu.addEntry(
-        () => jacdac.consoleService.mode == JDConsoleMode.Listen ? "hide jacdac console" : "show jacdac console",
+        () => jacdac.consoleService().consoleMode == JDConsoleMode.Listen ? "hide jacdac console" : "show jacdac console",
         () => {
-            if (jacdac.consoleService.mode == JDConsoleMode.Listen) {
+            if (jacdac.consoleService().consoleMode == JDConsoleMode.Listen) {
                 game.consoleOverlay.setVisible(false);
-                jacdac.consoleService.setMode(JDConsoleMode.Off);
+                jacdac.consoleService().consoleMode = JDConsoleMode.Off;
             }
             else {
                 game.consoleOverlay.setVisible(true);
-                jacdac.consoleService.setMode(JDConsoleMode.Listen);
+                jacdac.consoleService().consoleMode = JDConsoleMode.Listen;
                 console.log(`listening to jacdac...`);
             }
         },
         JACDAC_ICON
     );
-
-    // prepare listening
-    jacdac.consoleService.start();
 }
