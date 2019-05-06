@@ -289,6 +289,15 @@ void FS::forceGC() {
 bool FS::tryGC(int spaceNeeded) {
     int spaceLeft = (intptr_t)metaPtr - (intptr_t)freeDataPtr;
 
+#ifdef SNORFS_TEST
+    for (auto p = freeDataPtr; p < (uint32_t*)metaPtr; p++) {
+        if (*p != M1) {
+            LOG("value at %x = %x", OFF(p), *p);
+            oops();
+        }
+    }
+#endif
+
     if (spaceLeft > spaceNeeded + 32)
         return false;
 
@@ -322,6 +331,8 @@ bool FS::tryGC(int spaceNeeded) {
             auto newDst = copyFile(m.dataptr, (uintptr_t)dataDst);
             m.dataptr = (dataDst - 1) - newBaseP;
             dataDst = (uint32_t *)((newDst + 3) & ~3);
+        } else {
+            m.dataptr = 0xffff;
         }
 
         writeBytes(--metaDst, &m, sizeof(m));
@@ -345,7 +356,7 @@ bool FS::tryGC(int spaceNeeded) {
         oops();
     }
 
-    LOG("GC done: %d free", (intptr_t)metaDst - (intptr_t)dataDst);
+    LOG("GC done: %d free", (int)((intptr_t)metaDst - (intptr_t)dataDst));
 
     FSHeader hd;
     hd.magic = RAFFS_MAGIC;
@@ -542,6 +553,9 @@ void File::append(const void *data, uint32_t len) {
     if (len == 0 || meta->dataptr == 0)
         return;
 
+    LOGV("append len=%d meta=%x free=%x", len, OFF2(fs.metaPtr, fs.basePtr),
+         OFF2(fs.freeDataPtr, fs.basePtr));
+
     fs.lock();
 
     fs.tryGC(len + 4 + 4 + 3);
@@ -610,6 +624,8 @@ void File::del() {
 void File::overwrite(const void *data, uint32_t len) {
     fs.lock();
     resetAllCaches();
+
+    LOGV("overwrite len=%d dp=%x f=%x", len, meta->dataptr, OFF2(fs.freeDataPtr, fs.basePtr));
 
     auto numJumps = 0;
     if (meta->dataptr != 0xffff) {

@@ -11,7 +11,7 @@ using namespace std;
 #define MAX_WR 2000000
 
 #ifdef CODAL_RAFFS_H
-#define SZMULT 3
+#define SZMULT 5
 #else
 #define SZMULT 100
 #endif
@@ -421,9 +421,9 @@ int main() {
 
     fs->forceGC();
     auto prevFree = fs->freeSize();
-    auto iters = 10 * SZMULT; // more for stress testing
-    multiTest(3, 30000, iters, true);
-    multiTest(30, 3000, iters, true);
+    auto iters = 1000; // more for stress testing
+    multiTest(3, 300 * SZMULT, iters, true);
+    multiTest(30, 30 * SZMULT, iters, true);
     auto diff = prevFree - fs->freeSize();
     fs->forceGC();
     printf("free: %d kb %d\n", fs->freeSize() / 1024, diff);
