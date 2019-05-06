@@ -122,7 +122,7 @@ void FS::mount() {
     auto p = (uint32_t *)endPtr - 2;
     while (*p != M1)
         p -= 2;
-    metaPtr = (MetaPtr *)(p + 2);
+    metaPtr = (MetaEntry *)(p + 2);
 
     p = (uint32_t *)metaPtr - 1;
     while (*p == M1)
@@ -243,6 +243,8 @@ bool FS::tryGC(int spaceNeeded) {
     if (spaceLeft > spaceNeeded + 32)
         return false;
 
+    readDirPtr = NULL;
+
     auto newBase = (uint32_t)basePtr == baseAddr ? baseAddr + bytes / 2 : baseAddr;
 
     erasePages(newBase, bytes / 2);
@@ -323,7 +325,7 @@ MetaEntry *FS::createMetaPage(const char *filename, MetaEntry *existing) {
         freeDataPtr += buflen / 4;
     }
     m.dataptr = 0xffff;
-    m.reserved = 0;
+    m.flags = 0xfffe;
 
     auto r = --metaPtr;
     flash.write(r, &m, sizeof(m));
@@ -364,41 +366,27 @@ void File::seek(uint32_t pos) {
     read(NULL, pos - readOffset);
 }
 
-#define DIRCHUNK 32
 DirEntry *FS::dirRead() {
     lock();
-    for (;;) {
-        if ((dirptr >> 8) >= numMetaRows) {
+
+    if (readDirPtr == NULL) {
+        readDirPtr = metaPtr;
+    }
+
+    while (readDirPtr < endPtr) {
+        auto p = readDirPtr++;
+        if (p->dataptr != 0) {
+            dirEnt.size = getFileSize(p->dataptr);
+            dirEnt.flags = p->flags;
+            dirEnt.filename = basePtr + p->fnptr;
             unlock();
-            return NULL;
-        }
-        int off = dirptr & 0xff;
-        int len = min(DIRCHUNK, pagesPerRow - off);
-        flash.readBytes(indexAddr(dirptr), buf, len);
-        for (int i = 0; i < len; ++i) {
-            if (i + off >= 0x100)
-                oops();
-            if (0x02 < buf[i] && buf[i] < 0xff) {
-                dirptr += i;
-                DirEntry tmp;
-                tmp.flags = 0;
-                tmp.fileID = dirptr;
-                tmp.size = fileSize(dirptr);
-                dirptr++;
-                if (buf[0] == 0x01) {
-                    strcpy(tmp.name, (char *)buf + 1);
-                    memcpy(buf, &tmp, sizeof(tmp));
-                    unlock();
-                    return (DirEntry *)(void *)buf;
-                }
-            }
-        }
-        dirptr += len;
-        if ((dirptr & 0xff) == pagesPerRow) {
-            dirptr &= ~0xff;
-            dirptr += 0x100;
+            return &dirEnt;
         }
     }
+
+    readDirPtr = NULL;
+    unlock();
+    return NULL;
 }
 
 uint32_t File::size() {
@@ -469,7 +457,7 @@ int File::read(void *data, uint32_t len) {
         nread += n;
         len -= n;
 
-        if (blsz >= len || nextptr == 0xffff) {
+        if (len == 0 || nextptr == 0xffff) {
             readOffsetInPage = (srcptr + n) - srcptr0;
             break;
         }
@@ -490,7 +478,7 @@ void File::append(const void *data, uint32_t len) {
 
     fs.lock();
 
-    tryGC(len + 4 + 3);
+    tryGC(len + 4 + 4 + 3);
 
     if (len > 0xfffe)
         oops();
@@ -517,14 +505,35 @@ void File::append(const void *data, uint32_t len) {
 
     fs.flash.writeBytes(freeDataPtr, data, len);
 
+    uint32_t zero = 0;
+    if (len & 3) {
+        // align with 0s
+        fs.flash.writeBytes((uint8_t *)freeDataPtr + len, &zero, 4 - (len & 3));
+    } else {
+        // check if data ends with M1
+        if (*(uint32_t *)(data + len - 4) == M1) {
+            // if so, write some 0s
+            fs.flash.writeBytes((uint8_t *)freeDataPtr + len, &zero, 4);
+            len += 4;
+        }
+    }
+
     freeDataPtr += (len + 3) >> 2;
 
     fs.unlock();
 }
 
+void File::resetAllCaches() {
+    for (auto f = fs.files; f; f = f->next) {
+        if (f->meta == meta) {
+            f->resetCaches();
+        }
+    }
+}
+
 void File::del() {
     fs.lock();
-    resetCaches();
+    resetAllCaches();
     if (meta->dataptr) {
         uint16_t zero = 0;
         fs.flash.writeBytes(&meta->dataptr, &zero, sizeof(zero));
@@ -533,13 +542,8 @@ void File::del() {
 }
 
 void File::overwrite(const void *data, uint32_t len) {
-    for (auto f = fs.files; f; f = f->next) {
-        if (f->meta == meta) {
-            f->resetCaches();
-        }
-    }
-
     fs.lock();
+    resetAllCaches();
 
     auto numJumps = 0;
     if (meta->dataptr != 0xffff) {

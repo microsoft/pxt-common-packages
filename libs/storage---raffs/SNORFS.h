@@ -25,10 +25,10 @@ class FS {
     friend class File;
 
     struct MetaEntry {
-        uint16_t fnhash;
-        uint16_t fnptr;
-        uint16_t reserved;
-        uint16_t dataptr;
+        uint16_t fnhash; // hash of file name
+        uint16_t fnptr; // offset in words; can't be 0xffff
+        uint16_t flags; // can't be 0xffff - to avoid M1 word
+        uint16_t dataptr; // offset in words; 0xffff - empty file
     };
 
     Flash &flash;
@@ -37,8 +37,9 @@ class FS {
     volatile bool locked;
 
     uint32_t *basePtr, *freeDataPtr;
-    MetaEntry *endPtr, *metaPtr;
+    MetaEntry *endPtr, *metaPtr, *readDirPtr;
     uint32_t baseAddr, bytes;
+    DirEntry dirEnt;
 
   public:
     FS(Flash &flash, uint32_t baseAddr, uint32_t bytes);
@@ -55,7 +56,7 @@ class FS {
     int readFlashBytes(uint32_t addr, void *buffer, uint32_t len);
     bool tryMount();
 
-    void dirRewind() { dirptr = 0; }
+    void dirRewind() { readDirPtr = NULL; }
     DirEntry *dirRead(); // data is only valid until next call to to any of File or FS function
 
 #ifdef SNORFS_TEST
@@ -83,17 +84,15 @@ class File {
     uint16_t lastPage;
 
     void rewind();
-    bool seekNextPage(uint16_t *cache);
-    void allocatePage();
-    void newMetaPage();
-    void findFreeMetaPage();
-    void computeWritePage();
-    void saveSizeDiff(int32_t sizeDiff);
-    void appendCore(const void *data, uint32_t len);
-    void delCore(bool delMeta);
     File(FS &f, uint16_t filePage);
     File(FS &f, const char *filename);
     File *primary();
+    void resetAllCaches();
+    void resetCaches() {
+        lastPage = 0;
+        readPage = 0;
+        readOffsetInPage = 0;
+    }
 
   public:
     int read(void *data, uint32_t len);
