@@ -6,7 +6,7 @@
 
 #define oops() target_panic(DEVICE_FLASH_ERROR)
 
-#define OFF2(v, basePtr) (int)((uintptr_t)v - (uintptr_t)basePtr)
+#define OFF2(v, basePtr) (int)((uint32_t *)v - (uint32_t *)basePtr)
 #define OFF(v) OFF2(v, basePtr)
 
 #ifndef SNORFS_TEST
@@ -79,7 +79,8 @@ void FS::flushFlash() {
 }
 
 void FS::writeBytes(void *dst, const void *src, uint32_t size) {
-    LOGV("write %x %d", OFF(dst), size);
+    LOGV("write %x %d %x:%x:%x:%x", OFF(dst), size, ((const uint8_t *)src)[0],
+         ((const uint8_t *)src)[1], ((const uint8_t *)src)[2], ((const uint8_t *)src)[3]);
     while (size > 0) {
         uint32_t off = (uintptr_t)dst & (sizeof(flashBuf) - 1);
         uintptr_t newaddr = (uintptr_t)dst - off;
@@ -95,6 +96,7 @@ void FS::writeBytes(void *dst, const void *src, uint32_t size) {
         memcpy(flashBuf + off, src, n);
         size -= n;
         src = (const uint8_t *)src + n;
+        dst = (uint8_t *)dst + n;
     }
 }
 
@@ -226,12 +228,12 @@ MetaEntry *FS::findMetaEntry(const char *filename) {
     uint16_t buflen = strlen(filename) + 1;
 
     for (auto p = metaPtr; p < endPtr; p++) {
-        //LOGV("check at %x %x %x", OFF(p),p->fnhash,h);
+        // LOGV("check at %x %x %x", OFF(p),p->fnhash,h);
         if (p->fnhash == h && memcmp(basePtr + p->fnptr, filename, buflen) == 0)
             return p;
     }
 
-    //LOGV("fail");
+    // LOGV("fail");
 
     return NULL;
 }
@@ -332,8 +334,10 @@ bool FS::tryGC(int spaceNeeded) {
         writeBytes(dataDst++, &eofMark, 4);
     }
 
-    if ((intptr_t)metaDst - (intptr_t)dataDst <= spaceNeeded + 32)
-        oops(); // out of space!
+    if ((intptr_t)metaDst - (intptr_t)dataDst <= spaceNeeded + 32) {
+        LOG("TODO: out of flash space!");
+        oops();
+    }
 
     FSHeader hd;
     hd.magic = RAFFS_MAGIC;
@@ -487,6 +491,7 @@ int File::read(void *data, uint32_t len) {
         auto srcptr0 = (uint8_t *)(fs.basePtr + dataptr + 1);
         auto srcptr = srcptr0;
         if (readOffsetInPage) {
+            LOGV("roff=%d", readOffsetInPage);
             if (readOffsetInPage > blsz)
                 oops();
             blsz -= readOffsetInPage;
@@ -500,6 +505,7 @@ int File::read(void *data, uint32_t len) {
         }
 
         if (n && data) {
+            LOGV("read: %x:%x:...", srcptr[0], srcptr[1]);
             memcpy(data, srcptr, n);
             data = (uint8_t *)data + n;
         }
