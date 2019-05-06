@@ -437,12 +437,14 @@ int main() {
     fs->dump();
     testAll();
 
+#ifndef CODAL_RAFFS_H
     printf("recovery!\n");
-
     flash.useSnapshot();
+#endif
+
     fs = mkFS(flash);
     fs->dump();
-    multiTest(30, 3000, iters, true);
+    multiTest(30, 30 * SZMULT, iters, true);
     testAll();
 
     fs->dirRewind();
