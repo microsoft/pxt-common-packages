@@ -29,11 +29,17 @@
 
 #define VAR_BLOCK_WORDS(vt) (((vt) << 12) >> (12 + 2))
 
-#define MARK(v) *(uint32_t *)(v) |= MARKED_MASK
-
 //#define PXT_GC_DEBUG 1
+#ifndef PXT_GC_CHECK
 #define PXT_GC_CHECKS 1
+#endif
 //#define PXT_GC_STRESS 1
+
+#define MARK(v)                                                                                    \
+    do {                                                                                           \
+        GC_CHECK(inGCArea(v), 47);                                                                 \
+        *(uint32_t *)(v) |= MARKED_MASK;                                                           \
+    } while (0)
 
 #ifdef PXT_GC_DEBUG
 #define LOG DMESG
@@ -183,6 +189,14 @@ LLSegment workQueue; // (ab)used by consString making
 static GCBlock *firstBlock;
 static RefBlock *firstFree;
 static uint8_t *midPtr;
+
+static bool inGCArea(void *ptr) {
+    for (auto block = firstBlock; block; block = block->next) {
+        if ((void *)block->data <= ptr && ptr < (void *)((uint8_t *)block->data + block->blockSize))
+            return true;
+    }
+    return false;
+}
 
 #define NO_MAGIC(vt) ((VTable *)vt)->magic != VTABLE_MAGIC
 #define VT(p) (*(uint32_t *)(p))
@@ -453,14 +467,6 @@ void gc(int flags) {
 }
 
 #ifdef GC_GET_HEAP_SIZE
-static bool inGCArea(void *ptr) {
-    for (auto block = firstBlock; block; block = block->next) {
-        if ((void *)block->data < ptr && ptr < (void *)((uint8_t *)block->data + block->blockSize))
-            return true;
-    }
-    return false;
-}
-
 extern "C" void free(void *ptr) {
     if (!ptr)
         return;
@@ -529,7 +535,7 @@ void *gcAllocate(int numbytes) {
     size_t numwords = (numbytes + 3) >> 2;
 
     if (numbytes > GC_MAX_ALLOC_SIZE)
-        oops(45);
+        target_panic(PANIC_GC_TOO_BIG_ALLOCATION);
 
     if (PXT_IN_ISR() || (inGC & IN_GC_ALLOC))
         target_panic(PANIC_CALLED_FROM_ISR);

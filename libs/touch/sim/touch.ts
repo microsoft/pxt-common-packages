@@ -75,10 +75,15 @@ namespace pxsim {
 }
 
 namespace pxsim.pxtcore {
-    export function getTouchButton(index: number): TouchButton {
+    export function getTouchButton(id: number): TouchButton {
         const state = (board() as CapTouchBoard).touchButtonState;
-        const btn = state.buttons.filter(b => b.id == index)[0]
+        const btn = state.buttons.filter(b => b.id == id)[0]
         // simulator done somewhere else
+        const io = (board() as EdgeConnectorBoard).edgeConnectorState;
+        if (io) {
+            const pin = io.pins.filter(p => p.id == id)[0];
+            pins.markUsed(pin);
+        }
         return btn;
     }
 }
@@ -86,6 +91,10 @@ namespace pxsim.pxtcore {
 namespace pxsim.TouchButtonMethods {
     export function setThreshold(button: pxsim.TouchButton, value: number) {
         button.setThreshold(value);
+    }
+
+    export function threshold(button: pxsim.TouchButton) {
+        return button.threshold();
     }
 
     export function value(button: pxsim.TouchButton): number {

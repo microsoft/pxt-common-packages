@@ -9,12 +9,16 @@ namespace game {
      */
     export let debug = false;
     export let stats = false;
-    export let gameOverSound: () => void = undefined;
     export let winEffect: effects.BackgroundEffect = undefined;
     export let loseEffect: effects.BackgroundEffect = undefined;
+    let loseSound: music.Melody = undefined;
+    let winSound: music.Melody = undefined;
 
     let _scene: scene.Scene;
     let _sceneStack: scene.Scene[];
+
+    let _scenePushHandlers: (() => void)[];
+    let _scenePopHandlers: (() => void)[];
 
     export function currentScene(): scene.Scene {
         init();
@@ -46,6 +50,11 @@ namespace game {
             winEffect = effects.confetti;
         if (!loseEffect)
             loseEffect = effects.melt;
+
+        if (!winSound)
+            winSound = music.powerUp;
+        if (!loseSound)
+            loseSound = music.wawawawaa;
     }
 
     export function pushScene() {
@@ -56,6 +65,10 @@ namespace game {
         _sceneStack.push(_scene);
         _scene = undefined;
         init();
+
+        if (_scenePushHandlers) {
+            _scenePushHandlers.forEach(cb => cb());
+        }
     }
 
     export function popScene() {
@@ -70,6 +83,10 @@ namespace game {
         }
         if (_scene)
             particles.enableAll();
+
+        if (_scenePopHandlers) {
+            _scenePopHandlers.forEach(cb => cb());
+        }
     }
 
     function showDialogBackground(h: number, c: number) {
@@ -96,6 +113,9 @@ namespace game {
         if (subtitle)
             screen.print(subtitle, 8, top + 8 + font.charHeight + 2, screen.isMono ? 1 : 6, font);
         if (footer) {
+            const footerTop = screen.height - font.charHeight - 4;
+            screen.fillRect(0, footerTop, screen.width, font.charHeight + 4, 0);
+            screen.drawLine(0, footerTop, screen.width, footerTop, 1);
             screen.print(
                 footer,
                 screen.width - footer.length * font.charWidth - 8,
@@ -121,6 +141,20 @@ namespace game {
     }
 
     /**
+     * Set the music that occurs when the player wins
+     * @param win
+     * @param effect
+     */
+    export function setGameOverSound(win: boolean, sound: music.Melody) {
+        init();
+        if (!sound) return;
+        if (win)
+            winSound = sound;
+        else
+            loseSound = sound;
+    }
+
+    /**
      * Finish the game and display the score
      */
     //% group="Gameplay"
@@ -135,9 +169,6 @@ namespace game {
             effect = win ? winEffect : loseEffect;
         }
 
-        // one last screenshot
-        takeScreenshot();
-
         // releasing memory and clear fibers. Do not add anything that releases the fiber until background is set below,
         // or screen will be cleared on the new frame and will not appear as background in the game over screen.
         while (_sceneStack && _sceneStack.length) {
@@ -147,11 +178,16 @@ namespace game {
         pushScene();
         scene.setBackgroundImage(screen.clone());
 
-        if (gameOverSound) gameOverSound();
+        if (win)
+            winSound.play();
+        else
+            loseSound.play();
+
         effect.startScreenEffect();
+
         pause(500);
 
-        game.eventContext().registerFrameHandler(95, () => {
+        game.eventContext().registerFrameHandler(scene.HUD_PRIORITY, () => {
             let top = showDialogBackground(46, 4);
             screen.printCenter(win ? "YOU WIN!" : "GAME OVER!", top + 8, screen.isMono ? 1 : 5, image.font8);
             if (info.hasScore()) {
@@ -171,12 +207,6 @@ namespace game {
     }
 
     /**
-     * Tells the game host to grab a screenshot
-     */
-    //% shim=game::takeScreenshot
-    declare function takeScreenshot(): void;
-
-    /**
      * Update the position and velocities of sprites
      * @param body code to execute
      */
@@ -187,7 +217,7 @@ namespace game {
     export function onUpdate(a: () => void): void {
         init();
         if (!a) return;
-        game.eventContext().registerFrameHandler(20, a);
+        game.eventContext().registerFrameHandler(scene.UPDATE_PRIORITY, a);
     }
 
     /**
@@ -202,7 +232,7 @@ namespace game {
         init();
         if (!a || period < 0) return;
         let timer = 0;
-        game.eventContext().registerFrameHandler(19, () => {
+        game.eventContext().registerFrameHandler(scene.UPDATE_INTERVAL_PRIORITY, () => {
             const time = game.currentScene().millis();
             if (timer <= time) {
                 timer = time + period;
@@ -211,8 +241,42 @@ namespace game {
         });
     }
 
+    // Indicates whether the fiber needs to be created
+    let foreverRunning = false;
+
     /**
-     * Draw on screen before sprites
+     * Repeats the code forever in the background for this scene.
+     * On each iteration, allows other codes to run.
+     * @param body code to execute
+     */
+    export function forever(action: () => void): void {
+        if (!foreverRunning) {
+            foreverRunning = true;
+            control.runInParallel(() => {
+                while (1) {
+                    const handlers = game.currentScene().gameForeverHandlers;
+                    handlers.forEach(h => {
+                        if (!h.lock) {
+                            h.lock = true;
+                            control.runInParallel(() => {
+                                h.handler();
+                                h.lock = false;
+                            });
+                        }
+                    });
+                    pause(30);
+                }
+            });
+        }
+
+        game.currentScene().gameForeverHandlers.push({
+            handler: action,
+            lock: false
+        });
+    }
+
+    /**
+     * Draw on screen before sprites, after background
      * @param body code to execute
      */
     //% group="Gameplay"
@@ -220,7 +284,19 @@ namespace game {
     export function onPaint(a: () => void): void {
         init();
         if (!a) return;
-        game.eventContext().registerFrameHandler(75, a);
+        game.eventContext().registerFrameHandler(scene.PAINT_PRIORITY, a);
+    }
+
+    /**
+     * Draw on screen after sprites
+     * @param body code to execute
+     */
+    //% group="Gameplay"
+    //% help=game/shade weight=10 afterOnStart=true
+    export function onShade(a: () => void): void {
+        init();
+        if (!a) return;
+        game.eventContext().registerFrameHandler(scene.SHADE_PRIORITY, a);
     }
 
     /**
@@ -231,5 +307,51 @@ namespace game {
     //% help=game/runtime
     export function runtime(): number {
         return currentScene().millis();
+    }
+
+    /**
+     * Register a handler that runs whenever a scene is pushed onto the scene
+     * stack. Useful for extensions that need to store/restore state as the
+     * event context changes. The handler is run AFTER the push operation (i.e.
+     * after game.currentScene() has changed)
+     *
+     * @param handler Code to run when a scene is pushed onto the stack
+     */
+    export function addScenePushHandler(handler: () => void) {
+        if (!_scenePushHandlers) _scenePushHandlers = [];
+        _scenePushHandlers.push(handler);
+    }
+
+    /**
+     * Remove a scene push handler. Useful for extensions that need to store/restore state as the
+     * event context changes.
+     *
+     * @param handler The handler to remove
+     */
+    export function removeScenePushHandler(handler: () => void) {
+        if (_scenePushHandlers) _scenePushHandlers.removeElement(handler);
+    }
+
+    /**
+     * Register a handler that runs whenever a scene is popped off of the scene
+     * stack. Useful for extensions that need to store/restore state as the
+     * event context changes. The handler is run AFTER the pop operation. (i.e.
+     * after game.currentScene() has changed)
+     *
+     * @param handler Code to run when a scene is removed from the top of the stack
+     */
+    export function addScenePopHandler(handler: () => void) {
+        if (!_scenePopHandlers) _scenePopHandlers = [];
+        _scenePopHandlers.push(handler);
+    }
+
+    /**
+     * Remove a scene pop handler. Useful for extensions that need to store/restore state as the
+     * event context changes.
+     *
+     * @param handler The handler to remove
+     */
+    export function removeScenePopHandler(handler: () => void) {
+        if (_scenePopHandlers) _scenePopHandlers.removeElement(handler);
     }
 }

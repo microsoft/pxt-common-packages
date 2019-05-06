@@ -72,11 +72,32 @@ class WDisplay {
     void setAddrMain() { lcd.setAddrWindow(offX, offY, width, displayHeight); }
 };
 
-SINGLETON(WDisplay);
+SINGLETON_IF_PIN(WDisplay, DISPLAY_MOSI);
+
+//%
+void setScreenBrightness(int level) {
+    auto bl = LOOKUP_PIN(DISPLAY_BL);
+    if (!bl)
+        return;
+
+    if (level < 0) level = 0;
+    if (level > 100) level = 100;
+
+    if (level == 0)
+        bl->setDigitalValue(0);
+    else if (level == 100)
+        bl->setDigitalValue(1);
+    else {
+        bl->setAnalogPeriodUs(1000);
+        bl->setAnalogValue(level * level * 1023 / 10000);
+    }
+}
 
 //%
 void setPalette(Buffer buf) {
     auto display = getWDisplay();
+    if (!display) return;
+
     if (48 != buf->length)
         target_panic(PANIC_SCREEN_ERROR);
     for (int i = 0; i < 16; ++i) {
@@ -90,6 +111,8 @@ void setPalette(Buffer buf) {
 //%
 void setupScreenStatusBar(int barHeight) {
     auto display = getWDisplay();
+    if (!display) return;
+    
     display->displayHeight = display->height - barHeight;
     display->setAddrMain();
 }
@@ -97,6 +120,8 @@ void setupScreenStatusBar(int barHeight) {
 //%
 void updateScreenStatusBar(Image_ img) {
     auto display = getWDisplay();
+    if (!display) return;
+    
     if (!img)
         return;
     display->lastStatus = img;
@@ -105,7 +130,8 @@ void updateScreenStatusBar(Image_ img) {
 //%
 void updateScreen(Image_ img) {
     auto display = getWDisplay();
-
+    if (!display) return;
+    
     if (display->inUpdate)
         return;
 

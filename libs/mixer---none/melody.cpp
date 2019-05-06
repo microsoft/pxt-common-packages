@@ -14,4 +14,9 @@ void playInstructions(Buffer buf) {
     }
 }
 
+//%
+void enableAmp(int enabled) {
+
+}
+
 } // namespace music

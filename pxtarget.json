@@ -32,6 +32,10 @@
         "libs/jacdac-drivers",
         "libs/jacdac-game",
         "libs/datalogger",
-        "libs/local-multiplayer"
+        "libs/lora",
+        "libs/power",
+        "libs/controller",
+        "libs/color-sensor",
+        "libs/edge-connector"
     ]
 }

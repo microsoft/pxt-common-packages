@@ -1,6 +1,6 @@
 # set Life
 
-Set the game life count to this amount.
+Set the player life count to this amount.
 
 ```sig
 info.setLife(0)
@@ -16,8 +16,16 @@ Your program has a life counter which you can set to record the number of lives 
 
 Set the player life count to `9` lives before starting the game.
 
+### Single player
+
 ```blocks
 info.setLife(9)
+```
+
+### Multiplayer
+
+```blocks
+info.player2.setLife(9)
 ```
 
 ## See also #seealso

@@ -1,6 +1,6 @@
 # on Life Zero
 
-Run some code when the game life count reaches zero.
+Run some code when the player life count reaches zero.
 
 ```sig
 info.onLifeZero(function () {})
@@ -26,12 +26,26 @@ Indiviual sprites have their own [lifespan](/reference/sprites/sprite/lifespan).
 
 Set the life count to `3`. In the game update function, decrease the life count by `1` each second. Show a message when the life count becomes `0`.
 
+#### Single player
+
 ```blocks
 info.setLife(3)
 game.onUpdateInterval(1000, function() {
     info.changeLifeBy(-1)
 })
 info.onLifeZero(function () {
+    game.showLongText("Life is zero!", DialogLayout.Bottom)
+})
+```
+
+#### Multiplayer
+
+```blocks
+info.player2.setLife(3)
+game.onUpdateInterval(1000, function() {
+    info.player2.changeLifeBy(-1)
+})
+info.player2.onLifeZero(function () {
     game.showLongText("Life is zero!", DialogLayout.Bottom)
 })
 ```

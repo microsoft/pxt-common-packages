@@ -1,3 +1,15 @@
+namespace pxsim.pxtcore {
+    // TODO: add in support for mode, as in CODAL
+    export function registerWithDal(id: number, evid: number, handler: RefAction, mode: number = 0) {
+        board().bus.listen(id, evid, handler);
+    }
+
+    export function deepSleep() {
+        // TODO?
+        console.log("deep sleep requested")
+    }
+}
+
 namespace pxsim.control {
     export let runInParallel = thread.runInBackground;
     export let delay = thread.pause;
@@ -42,7 +54,6 @@ namespace pxsim.control {
     export function internalOnEvent(id: number, evid: number, handler: RefAction) {
         pxtcore.registerWithDal(id, evid, handler)
     }
-
     export function waitForEvent(id: number, evid: number) {
         const cb = getResume();
         board().bus.wait(id, evid, cb);
@@ -76,6 +87,20 @@ namespace pxsim.control {
         if (v instanceof RefRecord) {
             return `${v.vtable.name}@${v.id}`
         }
+
+        if (v instanceof RefCollection) {
+            let r = "["
+            for (let e of v.toArray()) {
+                if (r.length > 200) {
+                    r += "..."
+                    break
+                }
+                r += toStr(e) + ", "
+            }
+            r += "]"
+            return r
+        }
+
         return v + ""
     }
     export function dmesgPtr(msg: string, ptr: any) {
@@ -103,5 +128,44 @@ namespace pxsim.control {
 
     export function heapDump() {
         // TODO something better
+    }
+}
+
+// keep in sync with pxtbase.h
+namespace pxsim {
+    export const enum PXT_PANIC {
+        PANIC_CODAL_OOM = 20,
+        PANIC_GC_OOM = 21,
+        PANIC_GC_TOO_BIG_ALLOCATION = 22,
+        PANIC_CODAL_HEAP_ERROR = 30,
+        PANIC_CODAL_NULL_DEREFERENCE = 40,
+        PANIC_CODAL_USB_ERROR = 50,
+        PANIC_CODAL_HARDWARE_CONFIGURATION_ERROR = 90,
+
+        PANIC_INVALID_BINARY_HEADER = 901,
+        PANIC_OUT_OF_BOUNDS = 902,
+        PANIC_REF_DELETED = 903,
+        PANIC_SIZE = 904,
+        PANIC_INVALID_VTABLE = 905,
+        PANIC_INTERNAL_ERROR = 906,
+        PANIC_NO_SUCH_CONFIG = 907,
+        PANIC_NO_SUCH_PIN = 908,
+        PANIC_INVALID_ARGUMENT = 909,
+        PANIC_MEMORY_LIMIT_EXCEEDED = 910,
+        PANIC_SCREEN_ERROR = 911,
+        PANIC_MISSING_PROPERTY = 912,
+        PANIC_INVALID_IMAGE = 913,
+        PANIC_CALLED_FROM_ISR = 914,
+        PANIC_HEAP_DUMPED = 915,
+
+        PANIC_CAST_FIRST = 980,
+        PANIC_CAST_FROM_UNDEFINED = 980,
+        PANIC_CAST_FROM_BOOLEAN = 981,
+        PANIC_CAST_FROM_NUMBER = 982,
+        PANIC_CAST_FROM_STRING = 983,
+        PANIC_CAST_FROM_OBJECT = 984,
+        PANIC_CAST_FROM_FUNCTION = 985,
+        PANIC_CAST_FROM_NULL = 989,
+
     }
 }

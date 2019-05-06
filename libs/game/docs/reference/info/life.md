@@ -16,12 +16,27 @@ Your program has a life counter which you can set to record the number of lives 
 
 Give the player a bonus of `1000` points if they reach `9` lives.
 
+### Single player
+
 ```blocks
 let giveBonus = true
 
 if (info.life() > 8) {
     if (giveBonus) {
         info.changeScoreBy(1000)
+        giveBonus = false
+    }
+}
+```
+
+### Multiplayer
+
+```blocks
+let giveBonus = true
+
+if (info.player2.life() > 8) {
+    if (giveBonus) {
+        info.player2.changeScoreBy(1000)
         giveBonus = false
     }
 }

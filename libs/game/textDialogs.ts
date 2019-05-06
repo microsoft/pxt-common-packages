@@ -592,9 +592,9 @@ namespace game {
             const currentState = controller.A.isPressed();
             if (currentState && !pressed) {
                 pressed = true;
-                done = true;
                 scene.setBackgroundImage(null); // GC it
                 game.popScene();
+                done = true;
             }
             else if (pressed && !currentState) {
                 pressed = false;

@@ -1,6 +1,6 @@
 # Game
 
-Game control and player interactions.
+Game control and text display actions.
 
 ```cards
 game.over()

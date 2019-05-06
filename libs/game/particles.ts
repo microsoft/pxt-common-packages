@@ -43,6 +43,13 @@ namespace particles {
     export class ParticleSource implements SpriteLike {
         private _z: number;
 
+        /**
+         * A relative ranking of this sources priority
+         * When necessary, a source with a lower priority will
+         * be culled before a source with a higher priority.
+         */
+        priority: number;
+
         id: number;
         _dt: number;
         /**
@@ -87,6 +94,7 @@ namespace particles {
 
             // remove and immediately destroy oldest source if over MAX_SOURCES
             if (sources.length > MAX_SOURCES) {
+                sortSources();
                 const removedSource = sources.shift();
                 removedSource.clear();
                 removedSource.destroy();
@@ -99,6 +107,7 @@ namespace particles {
             this.lifespan = undefined;
             this._dt = 0;
             this.z = 0;
+            this.priority = 0;
             this.setFactory(factory || particles.defaultFactory);
             sources.push(this);
             scene.addSprite(this);
@@ -169,7 +178,6 @@ namespace particles {
         }
 
         _prune() {
-            if (!this) return;
             while (this.head && this.head.lifespan <= 0) {
                 this.head = this.head.next;
             }
@@ -179,7 +187,7 @@ namespace particles {
                 if (scene)
                     scene.allSprites.removeElement(this);
                 const sources = particleSources();
-                if (sources)
+                if (sources && sources.length)
                     sources.removeElement(this);
                 this.anchor == undefined;
             }
@@ -299,9 +307,9 @@ namespace particles {
     }
 
     function init() {
-        const data = game.currentScene().data;
-        if (data.particleSources) return;
-        data.particleSources = [] as ParticleSource[];
+        const scene = game.currentScene();
+        if (scene.particleSources) return;
+        scene.particleSources = [];
         lastUpdate = control.millis();
         game.onUpdate(updateParticles);
         game.onUpdateInterval(250, pruneParticles);
@@ -309,6 +317,8 @@ namespace particles {
 
     function updateParticles() {
         const sources = particleSources();
+        sortSources();
+
         const time = control.millis();
         const dt = time - lastUpdate;
         lastUpdate = time;
@@ -320,7 +330,13 @@ namespace particles {
 
     function pruneParticles() {
         const sources = particleSources();
-        sources.forEach(s => s._prune());
+        if (sources)
+            sources.slice(0, sources.length).forEach(s => s._prune());
+    }
+    
+    function sortSources() {
+        const sources = particleSources();
+        sources.sort((a, b) => (a.priority - b.priority || a.id - b.id));
     }
 
     /**
@@ -352,15 +368,14 @@ namespace particles {
         protected maxState: number;
         protected galois: Math.FastRandom;
         stateChangePercentage: number;
-        oscilattionPercentage: number
-
+        oscillationPercentage: number
 
         constructor(anchor: ParticleAnchor, particlesPerSecond: number, maxState: number, factory?: ParticleFactory) {
             super(anchor, particlesPerSecond, factory);
             this.galois = new Math.FastRandom();
             this.maxState = maxState;
             this.stateChangePercentage = 3;
-            this.oscilattionPercentage = 4;
+            this.oscillationPercentage = 4;
         }
 
         updateParticle(p: Particle, fixedDt: Fx8) {
@@ -373,7 +388,7 @@ namespace particles {
                 }
             }
 
-            if (this.galois.percentChance(this.oscilattionPercentage)) {
+            if (this.galois.percentChance(this.oscillationPercentage)) {
                 p.vx = Fx.neg(p.vx);
             }
         }
@@ -410,6 +425,7 @@ namespace particles {
     }
 
     function particleSources() {
-        return game.currentScene().data.particleSources as particles.ParticleSource[];
+        const sources = game.currentScene().particleSources;
+        return sources;
     }
 }

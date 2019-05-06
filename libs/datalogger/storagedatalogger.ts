@@ -18,7 +18,10 @@ namespace datalogger {
         /**
          * Appends the headers in datalog
          */
-        appendHeaders(headers: string[]): void { 
+        appendHeaders(headers: string[]): void {
+            // skip this step if file already exists
+            if (storage.exists(this.filename))
+                return;
             const line = headers.join(datalogger.SEPARATOR);
             storage.appendLine(this.filename, `sep=${datalogger.SEPARATOR}`);
             storage.appendLine(this.filename, line);

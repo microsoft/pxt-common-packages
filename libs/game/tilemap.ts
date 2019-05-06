@@ -46,8 +46,8 @@ namespace tiles {
         place(mySprite: Sprite): void {
             if (!mySprite) return;
 
-            mySprite.x = this.x + 8;
-            mySprite.y = this.y + 8;
+            mySprite.x = this.x;
+            mySprite.y = this.y;
         }
     }
 

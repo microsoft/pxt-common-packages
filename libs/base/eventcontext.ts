@@ -55,7 +55,8 @@ namespace control {
         private timeInSample: number;
         public deltaTimeMillis: number;
         private prevTimeMillis: number;
-    
+        private idleCallbacks: (() => void)[];
+
         static lastStats: string;
         static onStats: (stats: string) => void;
 
@@ -65,6 +66,7 @@ namespace control {
             this.timeInSample = 0;
             this.deltaTimeMillis = 0;
             this.frameWorker = 0;
+            this.idleCallbacks = undefined;
         }
 
         get deltaTime() {
@@ -86,6 +88,8 @@ namespace control {
             if (this.timeInSample > 1000 || this.framesInSample > 30) {
                 const fps = this.framesInSample / (this.timeInSample / 1000);
                 EventContext.lastStats = `fps:${Math.round(fps)}`;
+                if (fps < 99)
+                    EventContext.lastStats += "." + (Math.round(fps * 10) % 10)
                 if (control.profilingEnabled()) {
                     control.dmesg(`${(fps * 100) | 0}/100 fps - ${this.framesInSample} frames`)
                     control.gc()
@@ -158,8 +162,22 @@ namespace control {
             this.handlers.push(hn);
             hn.register();
         }
-    }
 
+        addIdleHandler(handler: () => void) {
+            if (!this.idleCallbacks) {
+                this.idleCallbacks = [];
+                this.registerHandler(15/*DAL.DEVICE_ID_SCHEDULER*/, 2/*DAL.DEVICE_SCHEDULER_EVT_IDLE*/, () => this.runIdleHandler(), 16);
+            }
+            this.idleCallbacks.push(handler);
+        }
+
+        private runIdleHandler() {
+            if (this.idleCallbacks) {
+                const ics = this.idleCallbacks.slice(0);
+                ics.forEach(ic => ic());
+            }
+        }    
+    }
     let eventContexts: EventContext[];
 
     /**
@@ -202,5 +220,30 @@ namespace control {
             context.register();
         else
             eventContexts = undefined;
+    }
+
+    let _idleCallbacks: (() => void)[];
+    /**
+     * Registers a function to run when the device is idling
+     * @param handler 
+    */
+    export function onIdle(handler: () => void) {
+        if (!handler) return;
+
+        const ctx = eventContext();
+        if (ctx) ctx.addIdleHandler(handler);
+        else {
+            if (!_idleCallbacks) {
+                _idleCallbacks = [];
+                // TODO: use background events
+                control.internalOnEvent(
+                    15/*DAL.DEVICE_ID_SCHEDULER*/,
+                    2/*DAL.DEVICE_SCHEDULER_EVT_IDLE*/,
+                    function() {
+                        _idleCallbacks.slice(0).forEach(cb => cb());
+                    }, 16);
+            }
+            _idleCallbacks.push(handler);
+        }
     }
 }

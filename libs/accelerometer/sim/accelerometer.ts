@@ -391,13 +391,13 @@ namespace pxsim {
         accelerometer: Accelerometer;
         useShake = false;
         private tiltDecayer = 0;
-        private element: SVGElement;
+        private element: HTMLElement | SVGElement;
 
         constructor(runtime: Runtime) {
            this.accelerometer = new Accelerometer(runtime);
         }
 
-        attachEvents(element: SVGElement) {
+        attachEvents(element: HTMLElement | SVGElement) {
             this.element = element;
             this.tiltDecayer = 0;
             this.element.addEventListener(pointerEvents.move, (ev: MouseEvent) => {
@@ -428,7 +428,6 @@ namespace pxsim {
                         accx = Math.floor(Math.abs(accx) * 0.85) * (accx > 0 ? 1 : -1);
                         let accy = this.accelerometer.getY();
                         accy = Math.floor(Math.abs(accy) * 0.85) * (accy > 0 ? 1 : -1);
-                        console.log(accy)
                         let accz = -Math.sqrt(Math.max(0, 1023 * 1023 - accx * accx - accy * accy));
                         if (Math.abs(accx) <= 24 && Math.abs(accy) <= 24) {
                             clearInterval(this.tiltDecayer);

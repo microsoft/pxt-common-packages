@@ -36,15 +36,15 @@ namespace console {
     }
 
     export function debug(text: string) {
-        this.add(ConsolePriority.Debug, text);
+        add(ConsolePriority.Debug, text);
     }
 
     export function warning(text: string) {
-        this.add(ConsolePriority.Warning, text);
+        add(ConsolePriority.Warning, text);
     }
 
     export function error(text: string) {
-        this.add(ConsolePriority.Error, text);
+        add(ConsolePriority.Error, text);
     }
 
     /**
@@ -77,7 +77,7 @@ namespace console {
      */
     //%
     export function addListener(listener: (priority: ConsolePriority, text: string) => void) {
-        if (!listener) return;
+        if (!listener || listeners.indexOf(listener) > -1) return;
         listeners.push(listener);
     }
 

@@ -172,9 +172,11 @@ inline bool canBeTagged(int v) {
 }
 #endif
 
+// keep in sym with sim/control.ts
 typedef enum {
     PANIC_CODAL_OOM = 20,
     PANIC_GC_OOM = 21,
+    PANIC_GC_TOO_BIG_ALLOCATION = 22,
     PANIC_CODAL_HEAP_ERROR = 30,
     PANIC_CODAL_NULL_DEREFERENCE = 40,
     PANIC_CODAL_USB_ERROR = 50,
@@ -253,6 +255,7 @@ void debugMemLeaks();
 //%
 void anyPrint(TValue v);
 
+//%
 int getConfig(int key, int defl = -1);
 
 //%
@@ -377,6 +380,7 @@ enum class BuiltInType : uint16_t {
     RefCollection = 6,
     RefRefLocal = 7,
     RefMap = 8,
+    RefMImage = 9,
     User0 = 16,
 };
 
@@ -702,8 +706,20 @@ class BoxedString : public RefObject {
     const char *getUTF8DataAt(uint32_t pos) { return pos < ascii.length ? ascii.data + pos : NULL; }
 #endif
 
+    TNumber charCodeAt(int pos);
+
     BoxedString(const VTable *vt) : RefObject(vt) {}
 };
+
+// cross version compatible way of accessing string data
+#ifndef PXT_STRING_DATA
+#define PXT_STRING_DATA(str) str->getUTF8Data()
+#endif
+
+// cross version compatible way of accessing string length
+#ifndef PXT_STRING_DATA_LENGTH
+#define PXT_STRING_DATA_LENGTH(str) str->getUTF8Size()
+#endif
 
 class BoxedBuffer : public RefObject {
   public:
@@ -712,6 +728,20 @@ class BoxedBuffer : public RefObject {
     uint8_t data[0];
     BoxedBuffer() : RefObject(&buffer_vt) {}
 };
+
+// cross version compatible way of access data field
+#ifndef PXT_BUFFER_DATA
+#define PXT_BUFFER_DATA(buffer) buffer->data
+#endif
+
+// cross version compatible way of access data length
+#ifndef PXT_BUFFER_LENGTH
+#define PXT_BUFFER_LENGTH(buffer) buffer->length
+#endif
+
+#ifndef PXT_CREATE_BUFFER
+#define PXT_CREATE_BUFFER(data, len) pxt::mkBuffer(data, len)
+#endif
 
 // the first byte of data indicates the format - currently 0xE1 or 0xE4 to 1 or 4 bit bitmaps
 // second byte indicates width in pixels
@@ -798,6 +828,7 @@ TNumber getNumberCore(uint8_t *buf, int size, NumberFormat format);
 void setNumberCore(uint8_t *buf, int size, NumberFormat format, TNumber value);
 
 void seedRandom(unsigned seed);
+void seedAddRandom(unsigned seed);
 // max is inclusive
 unsigned getRandom(unsigned max);
 
@@ -1003,7 +1034,7 @@ bool removeElement(RefCollection *c, TValue x);
         return JOIN(inst, ClassName);                                                              \
     }
 
-/// Defines getClassName() function to fetch the singleton
+/// Defines getClassName() function to fetch the singleton if PIN present
 #define SINGLETON_IF_PIN(ClassName, pin)                                                           \
     static ClassName *JOIN(inst, ClassName);                                                       \
     ClassName *JOIN(get, ClassName)() {                                                            \

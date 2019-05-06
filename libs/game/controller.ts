@@ -38,12 +38,16 @@ enum ControllerEvent {
 //% blockGap=8
 namespace controller {
     let _userEventsEnabled = true;
+    let defaultRepeatDelay = 500;
+    let defaultRepeatInterval = 30;
 
     //% fixedInstances
     export class Button {
         _owner: Controller;
         public id: number;
+        //% help=controller/button/repeat-delay
         public repeatDelay: number;
+        //% help=controller/button/repeat-interval
         public repeatInterval: number;
         private _pressed: boolean;
         private _pressedElasped: number;
@@ -58,8 +62,8 @@ namespace controller {
             this.id = id;
             this._buttonId = buttonId;
             this._pressed = false;
-            this.repeatDelay = 500;
-            this.repeatInterval = 30;
+            this.repeatDelay = undefined;
+            this.repeatInterval = undefined;
             this._repeatCount = 0;
             control.internalOnEvent(INTERNAL_KEY_UP, this.id, () => this.setPressed(false), 16)
             control.internalOnEvent(INTERNAL_KEY_DOWN, this.id, () => this.setPressed(true), 16)
@@ -122,15 +126,16 @@ namespace controller {
 
         setPressed(pressed: boolean) {
             if (this._pressed != pressed) {
+                power.poke();
                 if (this._owner)
                     this._owner.connected = true;
                 this._pressed = pressed;
-                if (this._pressed)
-                    this.raiseButtonUp();
-                else {
+                if (this._pressed) {
                     this._pressedElasped = 0;
-                    this._repeatCount = 0;
                     this.raiseButtonDown();
+                } else {
+                    this._repeatCount = 0;
+                    this.raiseButtonUp();
                 }
             }
         }
@@ -138,12 +143,16 @@ namespace controller {
         __update(dtms: number) {
             if (!this._pressed) return;
             this._pressedElasped += dtms;
+
+            const delay = this.repeatDelay === undefined ? defaultRepeatDelay : this.repeatDelay;
+            const interval = this.repeatInterval === undefined ? defaultRepeatInterval : this.repeatInterval;
+
             // inital delay
-            if (this._pressedElasped < this.repeatDelay)
+            if (this._pressedElasped < delay)
                 return;
 
-            // do we have enough time to repeat
-            const count = Math.floor((this._pressedElasped - this.repeatDelay) / this.repeatInterval);
+            // repeat count for this step
+            const count = Math.floor((this._pressedElasped - delay - interval) / interval);
             if (count != this._repeatCount) {
                 this.raiseButtonRepeat();
                 this._repeatCount = count;
@@ -151,12 +160,24 @@ namespace controller {
         }
     }
 
+    /**
+     * Configures the timing of the on button repeat event for all of the controller buttons
+     * @param delay number of milliseconds from when the button is pressed to when the repeat event starts firing, eg: 500
+     * @param interval minimum number of milliseconds between calls to the button repeat event, eg: 30
+     */
+    //% blockId=repeatDefaultDelayInterval block="set button repeat delay $delay ms interval $interval ms"
+    //% weight=10
+    //% group="Single Player"
+    export function setRepeatDefault(delay: number, interval: number) {
+        defaultRepeatDelay = delay;
+        defaultRepeatInterval = interval;
+    }
+
     let _players: Controller[];
 
     function addController(ctrl: Controller) {
         if (!_players) {
             _players = [];
-            game.currentScene().eventContext.registerFrameHandler(19, moveSprites);
         }
         _players[ctrl.playerIndex - 1] = ctrl;
     }
@@ -168,17 +189,18 @@ namespace controller {
     }
 
     export function players(): Controller[] {
-        if (!_players) return [];
+        player1(); // ensure player1 is present
         return _players.filter(ctrl => !!ctrl);
     }
 
-    interface ControlledSprite {
+    export interface ControlledSprite {
         s: Sprite;
         vx: number;
         vy: number;
+        _inputLastFrame: boolean;
     }
 
-    function moveSprites() {
+    export function _moveSprites() {
         // todo: move to currecnt sceane
         control.enablePerfCounter("controller")
         players().forEach(ctrl => ctrl.__preUpdate());
@@ -189,7 +211,6 @@ namespace controller {
         playerIndex: number;
         buttons: Button[];
         private _id: number;
-        private _controlledSprites: ControlledSprite[];
         private _connected: boolean;
 
         // array of left,up,right,down,a,b,menu buttons
@@ -209,6 +230,14 @@ namespace controller {
             for (let i = 0; i < this.buttons.length; ++i)
                 this.buttons[i]._owner = this;
             addController(this);
+        }
+
+        get _controlledSprites(): ControlledSprite[] {
+            return game.currentScene().controlledSprites[this.playerIndex];
+        }
+
+        set _controlledSprites(cps: ControlledSprite[]) {
+            game.currentScene().controlledSprites[this.playerIndex] = cps;
         }
 
         get id() {
@@ -276,9 +305,9 @@ namespace controller {
         }
 
         /**
-         * Control a sprite using the direction buttons from the controller. Note that this
-         * control will take over the vx and vy of the sprite and overwrite any changes
-         * made unless a 0 is passed.
+         * Control a sprite using the direction buttons from the controller. Note that this will overwrite
+         * the current velocity of the sprite whenever a directional button is pressed. To stop controlling
+         * a sprite, pass 0 for vx and vy.
          *
          * @param sprite The Sprite to control
          * @param vx The velocity used for horizontal movement when left/right is pressed
@@ -286,6 +315,7 @@ namespace controller {
          */
         //% blockId="ctrlgame_control_sprite" block="%controller move $sprite=variables_get(mySprite) with buttons||vx $vx vy $vy"
         //% weight=100
+        //% expandableArgumentMode="toggle"
         //% vx.defl=100 vy.defl=100
         //% help=controller/move-sprite
         //% group="Multiplayer"
@@ -294,8 +324,14 @@ namespace controller {
             if (!this._controlledSprites) this._controlledSprites = [];
             let cp = this._controlledSprites.find(cp => cp.s.id == sprite.id);
             if (!cp) {
-                cp = { s: sprite, vx: vx, vy: vy }
+                cp = { s: sprite, vx: vx, vy: vy, _inputLastFrame: false }
                 this._controlledSprites.push(cp);
+            }
+            if (cp.vx && vx == 0) {
+                cp.s.vx = 0
+            }
+            if (cp.vy && vy == 0) {
+                cp.s.vy = 0
             }
             cp.vx = vx;
             cp.vy = vy;
@@ -311,18 +347,20 @@ namespace controller {
         //% weight=99 blockGap=8
         //% blockId=ctrlonbuttonevent block="on %controller %button **button** %event"
         //% group="Multiplayer"
+        //% help=controller/on-button-event
         onButtonEvent(btn: ControllerButton, event: ControllerButtonEvent, handler: () => void) {
             this.button(btn).onEvent(event, handler);
         }
 
         /**
          * Register code run when a controller event occurs
-         * @param event 
-         * @param handler 
+         * @param event
+         * @param handler
          */
         //% weight=99 blockGap=8
         //% blockId=ctrlonevent block="on %controller %event"
         //% group="Multiplayer"
+        //% help=controller/on-event
         onEvent(event: ControllerEvent, handler: () => void) {
             control.onEvent(this.id, event, handler);
         }
@@ -392,32 +430,47 @@ namespace controller {
             if (!this._controlledSprites) return;
 
             let deadSprites = false;
+            let svx: number;
+            let svy: number;
             this._controlledSprites.forEach(sprite => {
                 if (sprite.s.flags & sprites.Flag.Destroyed) {
                     deadSprites = true;
                     return;
                 }
 
-                if (sprite.vx) {
-                    sprite.s.vx = 0;
+                svx = 0;
+                svy = 0;
 
+                if (sprite.vx) {
                     if (this.right.isPressed()) {
-                        sprite.s.vx = sprite.vx;
+                        svx += sprite.vx;
                     }
                     if (this.left.isPressed()) {
-                        sprite.s.vx = -sprite.vx;
+                        svx -=sprite.vx;
                     }
                 }
 
                 if (sprite.vy) {
-                    sprite.s.vy = 0;
-
                     if (this.down.isPressed()) {
-                        sprite.s.vy = sprite.vy;
+                        svy += sprite.vy;
                     }
                     if (this.up.isPressed()) {
-                        sprite.s.vy = -sprite.vy;
+                        svy -= sprite.vy;
                     }
+                }
+
+                if (sprite._inputLastFrame) {
+                    if (sprite.vx) sprite.s.vx = 0;
+                    if (sprite.vy) sprite.s.vy = 0;
+                }
+
+                if (svx || svy) {
+                    if (sprite.vx) sprite.s.vx = svx;
+                    if (sprite.vy) sprite.s.vy = svy;
+                    sprite._inputLastFrame = true;
+                }
+                else {
+                    sprite._inputLastFrame = false;
                 }
             });
 
@@ -426,8 +479,8 @@ namespace controller {
                     .filter(s => !(s.s.flags & sprites.Flag.Destroyed));
         }
 
-        __update(dt: number) {
-            const dtms = (dt * 1000) | 0
+        __update(dtms: number) {
+            dtms = dtms | 0;
             this.buttons.forEach(btn => btn.__update(dtms));
         }
 
@@ -464,6 +517,7 @@ namespace controller {
      */
     //% blockId="game_control_sprite" block="move $sprite=variables_get(mySprite) with buttons||vx $vx vy $vy"
     //% weight=100
+    //% expandableArgumentMode="toggle"
     //% vx.defl=100 vy.defl=100
     //% help=controller/move-sprite
     //% group="Single Player"

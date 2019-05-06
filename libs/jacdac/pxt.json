@@ -10,7 +10,6 @@
         "sensordriver.ts",
         "jacdac.svg",
         "pxtparts.json",
-        "pxt.json",
         "shims.d.ts",
         "actuator.ts",
         "messagebus.ts",
@@ -18,7 +17,8 @@
         "bridge.ts",
         "controllerclient.ts",
         "debugviews.ts",
-        "ns.ts"
+        "ns.ts",
+        "README.md"
     ],
     "testFiles": [
         "test.ts"

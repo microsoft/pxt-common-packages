@@ -20,6 +20,8 @@ If the ``left`` key is pressed, then the movement value is negative. If the ``ri
 
 ## Example #example
 
+### Single player
+
 Move the ``cosmo`` object on the screen with the direction controller.
 
 ```blocks
@@ -35,6 +37,26 @@ aaaaaaaaaaaaa
 game.onUpdate(function () {
     cosmo.x += controller.dx(100)
     cosmo.y += controller.dy(80)
+})
+```
+
+### Multiplayer
+
+Move the ``cosmo`` object on the screen with the direction controller.
+
+```blocks
+const cosmo = sprites.create(img`
+....aaaaa
+...aaaaaaa
+aaaaaaaaaaaaa
+...aaaaaaa
+....aaaaa
+.....a.a
+....a...a
+`)
+game.onUpdate(function () {
+    cosmo.x += controller.player2.dx(100)
+    cosmo.y += controller.player2.dy(80)
 })
 ```
 

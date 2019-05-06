@@ -125,7 +125,7 @@ namespace scene {
      * @param index
      * @param img
      */
-    //% blockId=gamesettile block="set tile %index=colorindexpicker to %img=screen_image_picker||with wall %wall=toggleOnOff"
+    //% blockId=gamesettile block="set tile %index=colorindexpicker to %img=screen_image_picker with wall %wall=toggleOnOff"
     //% group="Tiles"
     //% help=scene/set-tile
     export function setTile(index: number, img: Image, wall?: boolean) {
@@ -172,6 +172,7 @@ namespace scene {
     //% blockId=gameplaceonrandomtile block="place %sprite=variables_get(mySprite) on top of random $color tile"
     //% blockNamespace="scene" group="Tiles"
     //% color.shadow="colorindexpicker"
+    //% help=scene/place-on-random-tile
     export function placeOnRandomTile(sprite: Sprite, color: number): void {
         if (!sprite || !game.currentScene().tileMap) return;
         const tiles = getTilesByType(color);
