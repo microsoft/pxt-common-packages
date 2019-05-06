@@ -171,6 +171,11 @@ namespace control {
             this.idleCallbacks.push(handler);
         }
 
+        removeIdleHandler(handler: () => void) {
+            if (handler && this.idleCallbacks)
+                this.idleCallbacks.removeElement(handler);
+        }
+
         private runIdleHandler() {
             if (this.idleCallbacks) {
                 const ics = this.idleCallbacks.slice(0);
@@ -235,15 +240,31 @@ namespace control {
         else {
             if (!_idleCallbacks) {
                 _idleCallbacks = [];
-                // TODO: use background events
-                control.internalOnEvent(
-                    15/*DAL.DEVICE_ID_SCHEDULER*/,
-                    2/*DAL.DEVICE_SCHEDULER_EVT_IDLE*/,
-                    function() {
+                control.runInBackground(function() {
+                    while(_idleCallbacks) {
                         _idleCallbacks.slice(0).forEach(cb => cb());
-                    }, 16);
+                        pause(20);
+                    }
+                })
+                /*
+                control.internalOnEvent(
+                    15. // DAL.DEVICE_ID_SCHEDULER
+                    2, // DAL.DEVICE_SCHEDULER_EVT_IDLE
+                    function() {
+                        pins.LED.digitalWrite(on = !on);
+                        if (_idleCallbacks)
+                            _idleCallbacks.slice(0).forEach(cb => cb());
+                    }, 192); // MESSAGE_BUS_LISTENER_IMMEDIATE
+                */
             }
             _idleCallbacks.push(handler);
         }
+    }
+
+    export function removeIdleHandler(handler: () => void) {
+        if (!handler) return;
+        const ctx = eventContext();
+        if (ctx) ctx.removeIdleHandler(handler);
+        else if (_idleCallbacks) _idleCallbacks.removeElement(handler);
     }
 }
