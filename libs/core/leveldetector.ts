@@ -80,11 +80,9 @@ namespace pins {
             this._state = state;
             switch (state) {
                 case DAL.LEVEL_THRESHOLD_HIGH:
-                    control.dmesg("HI!");
                     if (this.onHigh) this.onHigh();
                     break;
                 case DAL.LEVEL_THRESHOLD_LOW:
-                    control.dmesg("LO!");
                     if (this.onLow) this.onLow();
                     break;
             }
