@@ -208,6 +208,37 @@ namespace light {
         }
 
         /**
+         * Sets a gradient between two colors
+         * @param startColor the start color
+         * @param endColor the end color
+         */
+        //% blockId="lightsetgradient" block="set %strip gradient from %startColor=colorNumberPicker to %endColor=colorNumberPicker"
+        //% weight=79 blockGap=8
+        //% advanced=true
+        setGradient(startColor: number, endColor: number, easing?: easing.Easing) {
+            const sr = unpackR(startColor);
+            const sg = unpackG(startColor);
+            const sb = unpackB(startColor);
+            const er = unpackR(endColor);
+            const eg = unpackG(endColor);
+            const eb = unpackB(endColor);
+
+            const end = this._start + this._length;
+            const n1 = this._length - 1;
+            const stride = this.stride();
+            for (let i = this._start; i < end; ++i) {
+                let x = (i - this._start) / n1;
+                if (easing) x = easing(x);
+                const ox = 1 - x;
+                const r = (sr * ox + er * x) | 0;
+                const g = (sg * ox + eg * x) | 0;
+                const b = (sb * ox + eb * x) | 0;
+                this.setBufferRGB(i * stride, r, g, b);
+            }
+            this.autoShow();
+        }
+
+        /**
          * Display a vertical bar graph based on the `value` and `high` value.
          * If `high` is 0, the chart gets adjusted automatically.
          * @param value current value to plot

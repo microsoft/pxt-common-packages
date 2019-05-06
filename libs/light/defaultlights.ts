@@ -17,6 +17,17 @@ namespace light {
     }
 
     /**
+     * Sets a gradient between two colors
+     * @param startColor the start color
+     * @param endColor the end color
+     */
+    //% blockId="builtinlightsetgradient" block="set gradient from %startRgb=colorNumberPicker to %endRgb=colorNumberPicker"
+    //% weight=78 blockGap=8
+    export function setGradient(startRgb: number, endRgb: number, easing?: easing.Easing) {
+        light.pixels.setGradient(startRgb, endRgb, easing);
+    }
+
+    /**
      * Turn off all pixel LEDs on the onboard strip.
      */
     //% blockId="builtin_neopixel_clear" block="clear"
