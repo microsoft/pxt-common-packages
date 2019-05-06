@@ -635,6 +635,11 @@ void File::overwrite(const void *data, uint32_t len) {
 
     LOGV("overwrite len=%d dp=%x f=%x", len, meta->dataptr, OFF2(fs.freeDataPtr, fs.basePtr));
 
+    // For small overwrites, allocate space before deleting anything to avoid losing the file
+    // when we lose the power. OTOH, for big files delete it first, in case we run out of space.
+    if (len < 256)
+        fs.tryGC(len + 16);
+
     auto numJumps = 0;
     if (meta->dataptr != 0xffff) {
         auto dataptr = meta->dataptr;
