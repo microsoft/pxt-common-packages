@@ -90,7 +90,14 @@ class FileCache {
 
 vector<FileCache *> files;
 
-class MemFlash : public codal::SPIFlash {
+class MemFlash :
+#ifdef CODAL_RAFFS_H
+    public codal::Flash
+#define SNORFS_PAGE_SIZE 256
+#else
+    public codal::SPIFlash
+#endif
+{
     uint32_t npages;
     uint8_t *data;
     int erase(uint32_t addr, uint32_t len) {
@@ -100,43 +107,14 @@ class MemFlash : public codal::SPIFlash {
             data[addr + i] = 0xff;
         return 0;
     }
-    uint32_t chipSize() { return npages * SNORFS_PAGE_SIZE; }
 
-  public:
-    MemFlash(int npages) {
-        this->npages = npages;
-        data = new uint8_t[chipSize()];
-        beforeErase = NULL;
-        snapshotBeforeErase = false;
-
-        bytesWritten = 0;
-        numWrites = 0;
-        numErases = 0;
-        ticks = 0;
+    uint8_t *allocData() {
+        uintptr_t res = (uintptr_t) new uint8_t[chipSize() + SNORFS_PAGE_SIZE * 2];
+        res = res & ~(SNORFS_PAGE_SIZE - 1);
+        return (uint8_t *)res;
     }
 
-    bool snapshotBeforeErase;
-    uint8_t *beforeErase;
-    int bytesWritten;
-    int numWrites;
-    int numErases;
-    uint64_t ticks;
-
-    void useSnapshot() {
-        delete data;
-        data = beforeErase;
-        beforeErase = NULL;
-    }
-
-    int numPages() { return npages; }
-    int readBytes(uint32_t addr, void *buffer, uint32_t len) {
-        assert(addr + len <= chipSize());
-        assert(len <= SNORFS_PAGE_SIZE); // needed?
-        memcpy(buffer, data + addr, len);
-        ticks += 5 + len;
-        return 0;
-    }
-    int writeBytes(uint32_t addr, const void *buffer, uint32_t len) {
+    int writeBytesCore(uint32_t addr, const void *buffer, uint32_t len) {
         assert(len <= SNORFS_PAGE_SIZE);
         assert(addr / SNORFS_PAGE_SIZE == (addr + len - 1) / SNORFS_PAGE_SIZE);
         assert(addr + len <= chipSize());
@@ -154,20 +132,83 @@ class MemFlash : public codal::SPIFlash {
         ticks += len * 3 + 50;
         return 0;
     }
+
+    void eraseCore(uint32_t addr, uint32_t sz) {
+        numErases++;
+        if (snapshotBeforeErase) {
+            snapshotBeforeErase = false;
+            beforeErase = allocData();
+            memcpy(beforeErase, data, chipSize());
+        }
+        ticks += sz * 10;
+        erase(addr, sz);
+    }
+
+
+  public:
+    MemFlash(int npages) {
+        this->npages = npages;
+        data = allocData();
+        beforeErase = NULL;
+        snapshotBeforeErase = false;
+
+        bytesWritten = 0;
+        numWrites = 0;
+        numErases = 0;
+        ticks = 0;
+    }
+
+    bool snapshotBeforeErase;
+    uint8_t *beforeErase;
+    int bytesWritten;
+    int numWrites;
+    int numErases;
+    uint64_t ticks;
+
+    void useSnapshot() {
+        data = beforeErase;
+        beforeErase = NULL;
+    }
+
+    uint32_t chipSize() { return npages * SNORFS_PAGE_SIZE; }
+
+    int numPages() { return npages; }
+
+#ifdef CODAL_RAFFS_H
+    uintptr_t dataBase() {
+        return (uintptr_t)data;
+    }
+    int writeBytes(uintptr_t addr, const void *buffer, uint32_t len) {
+        return writeBytesCore(addr - dataBase(), buffer, len);
+    }
+    int pageSize(uintptr_t ) { 
+        return SNORFS_PAGE_SIZE;
+    }
+    int erasePage(uintptr_t addr) {
+        uint32_t off = addr - dataBase();
+        assert((off & (SNORFS_PAGE_SIZE - 1)) == 0);
+        eraseCore(off, SNORFS_PAGE_SIZE);
+        return 0;
+    }
+#else
+    int readBytes(uint32_t addr, void *buffer, uint32_t len) {
+        assert(addr + len <= chipSize());
+        assert(len <= SNORFS_PAGE_SIZE); // needed?
+        memcpy(buffer, data + addr, len);
+        ticks += 5 + len;
+        return 0;
+    }
+    int writeBytes(uint32_t addr, const void *buffer, uint32_t len) {
+        return writeBytesCore(addr, buffer, len);
+    }
     int eraseSmallRow(uint32_t addr) {
         assert(false);
         return erase(addr, SPIFLASH_SMALL_ROW_SIZE);
     }
     int eraseBigRow(uint32_t addr) {
-        numErases++;
-        if (snapshotBeforeErase) {
-            snapshotBeforeErase = false;
-            beforeErase = new uint8_t[chipSize()];
-            memcpy(beforeErase, data, chipSize());
-        }
-        ticks += 400000;
-        return erase(addr, SPIFLASH_BIG_ROW_SIZE);
+        return eraseCore(addr, SPIFLASH_BIG_ROW_SIZE);
     }
+#endif
     int eraseChip() { return erase(0, chipSize()); }
 };
 
@@ -306,17 +347,25 @@ void testAll() {
     }
 }
 
+codal::snorfs::FS *mkFS(MemFlash &flash) {
+#ifdef CODAL_RAFFS_H
+    return new codal::snorfs::FS(flash, flash.dataBase(), flash.chipSize());
+#else
+    return new codal::snorfs::FS(flash);
+#endif
+}
+
 int main() {
     for (uint32_t i = 0; i < sizeof(randomData); ++i)
         randomData[i] = rand();
     MemFlash flash(2 * 1024 * 1024 / SNORFS_PAGE_SIZE);
-    fs = new codal::snorfs::FS(flash);
+    fs = mkFS(flash);
     assert(!fs->tryMount());
     flash.eraseChip();
     assert(fs->tryMount());
     for (int i = 0; i < 5; ++i) {
         simpleTest("data.txt", 2);
-        fs = new codal::snorfs::FS(flash);
+        fs = mkFS(flash);
         testAll();
     }
 
@@ -362,14 +411,14 @@ int main() {
 
     // re-mount
     flash.snapshotBeforeErase = true;
-    fs = new codal::snorfs::FS(flash);
+    fs = mkFS(flash);
     fs->dump();
     testAll();
 
     printf("recovery!\n");
 
     flash.useSnapshot();
-    fs = new codal::snorfs::FS(flash);
+    fs = mkFS(flash);
     fs->dump();
     multiTest(30, 3000, iters, true);
     testAll();

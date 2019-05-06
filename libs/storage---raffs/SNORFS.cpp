@@ -30,9 +30,8 @@ static uint16_t fnhash(const char *fn) {
     return h ^ (h >> 16);
 }
 
-FS::FS(Flash &flash, uint32_t baseAddr, uint32_t bytes)
+FS::FS(Flash &flash, uintptr_t baseAddr, uint32_t bytes)
     : flash(flash), baseAddr(baseAddr), bytes(bytes) {
-    dirptr = 0;
     files = NULL;
     locked = false;
 
@@ -40,11 +39,13 @@ FS::FS(Flash &flash, uint32_t baseAddr, uint32_t bytes)
     endPtr = NULL;
     freeDataPtr = NULL;
     metaPtr = NULL;
+    readDirPtr = NULL;
+    flashBufAddr = 0;
 
     if (bytes > 0xffff * 4 * 2)
         oops();
 
-    auto page = flash.page_size(baseAddr);
+    auto page = flash.pageSize(baseAddr);
     // baseAddr and bytes needs to page-aligned, and we need even number of pages
     auto numPages = bytes / page;
     if ((baseAddr & (page - 1)) || bytes % page || numPages < 2 || (numPages & 1))
@@ -54,16 +55,42 @@ FS::FS(Flash &flash, uint32_t baseAddr, uint32_t bytes)
         snorfs_unlocked_event = codal::allocateNotifyEvent();
 }
 
-void FS::erasePages(uint32_t addr, uint32_t len) {
+void FS::erasePages(uintptr_t addr, uint32_t len) {
     auto end = addr + len;
-    auto page = flash.page_size(addr);
+    auto page = flash.pageSize(addr);
     if (addr & (page - 1))
         oops();
     while (addr < end) {
-        if (flash.page_size(addr) != page)
+        if (flash.pageSize(addr) != page)
             oops();
-        flash.erase_page(addr);
+        flash.erasePage(addr);
         addr += page;
+    }
+}
+
+void FS::flushFlash() {
+    if (flashBufAddr) {
+        flash.writeBytes(flashBufAddr, flashBuf, sizeof(flashBuf));
+        flashBufAddr = 0;
+    }
+}
+
+void FS::writeBytes(void *dst, const void *src, uint32_t size) {
+    while (size > 0) {
+        uint32_t off = (uintptr_t)dst & (sizeof(flashBuf) - 1);
+        uintptr_t newaddr = (uintptr_t)dst - off;
+        if (newaddr != flashBufAddr) {
+            flushFlash();
+            memset(flashBuf, 0xff, sizeof(flashBuf));
+            flashBufAddr = newaddr;
+        }
+
+        unsigned n = sizeof(flashBuf) - off;
+        if (n > size)
+            n = size;
+        memcpy(flashBuf + off, src, n);
+        size -= n;
+        src = (const uint8_t *)src + n;
     }
 }
 
@@ -80,21 +107,17 @@ void FS::format() {
     FSHeader hd;
     hd.magic = RAFFS_MAGIC;
     hd.bytes = bytes;
-    flash.write((void *)baseAddr, &hd, sizeof(hd));
+    writeBytes((void *)baseAddr, &hd, sizeof(hd));
 
     // in case the secondary header is valid, clear it
     auto hd2 = (FSHeader *)(baseAddr + bytes / 2);
     if (hd2->magic == RAFFS_MAGIC) {
         hd.magic = 0;
         hd.bytes = 0;
-        flash.write(hd2, &hd, sizeof(hd));
+        writeBytes(hd2, &hd, sizeof(hd));
     }
 
     busy(false);
-}
-
-void FS::gcCore(bool force, bool isData) {
-    debugDump();
 }
 
 void FS::mount() {
@@ -177,6 +200,7 @@ void FS::lock() {
 void FS::unlock() {
     if (!locked)
         oops();
+    flushFlash();
     locked = false;
 #ifndef SNORFS_TEST
     Event(DEVICE_ID_NOTIFY, snorfs_unlocked_event);
@@ -221,14 +245,14 @@ uint32_t FS::getFileSize(uint16_t dataptr, uint16_t *lastptr) {
     }
 }
 
-uint32_t FS::copyFile(uint16_t dataptr, uint32_t dst) {
+uintptr_t FS::copyFile(uint16_t dataptr, uintptr_t dst) {
     if (dataptr == 0xffff)
         return dst;
     for (;;) {
         auto hd = basePtr[dataptr];
         auto nextptr = hd >> 16;
         auto blsz = hd & 0xffff;
-        flash.writeBytes((void *)dst, basePtr + dataptr + 1, blsz);
+        writeBytes((void *)dst, basePtr + dataptr + 1, blsz);
         dst += blsz;
         if (nextptr == 0xffff)
             return dst;
@@ -238,14 +262,14 @@ uint32_t FS::copyFile(uint16_t dataptr, uint32_t dst) {
 }
 
 bool FS::tryGC(int spaceNeeded) {
-    int spaceLeft = (int)metaPtr - (int)freeDataPtr;
+    int spaceLeft = (intptr_t)metaPtr - (intptr_t)freeDataPtr;
 
     if (spaceLeft > spaceNeeded + 32)
         return false;
 
     readDirPtr = NULL;
 
-    auto newBase = (uint32_t)basePtr == baseAddr ? baseAddr + bytes / 2 : baseAddr;
+    auto newBase = (uintptr_t)basePtr == baseAddr ? baseAddr + bytes / 2 : baseAddr;
 
     erasePages(newBase, bytes / 2);
 
@@ -258,20 +282,20 @@ bool FS::tryGC(int spaceNeeded) {
         if (m.dataptr == 0)
             continue;
         auto fnlen = strlen((char *)(basePtr + m.fnptr));
-        flash.write(dataDst, basePtr + m.fnptr, fnlen + 1);
+        writeBytes(dataDst, basePtr + m.fnptr, fnlen + 1);
         m.fnptr = dataDst - newBaseP;
         dataDst += (fnlen + 3 + 1) / 4;
 
         auto sz = getFileSize(m.dataptr);
         if (sz) {
             uint32_t hd = 0xffff0000 | sz;
-            flash.writeBytes(dataDst++, &hd, sizeof(hd));
-            auto newDst = copyFile(m.dataptr, (uint32_t)dataDst);
-            m.dataptr = (dataDst - 1) - newBasePtr;
+            writeBytes(dataDst++, &hd, sizeof(hd));
+            auto newDst = copyFile(m.dataptr, (uintptr_t)dataDst);
+            m.dataptr = (dataDst - 1) - newBaseP;
             dataDst = (uint32_t *)((newDst + 3) & ~3);
         }
 
-        flash.write(--metaDst, &m, sizeof(m));
+        writeBytes(--metaDst, &m, sizeof(m));
 
         for (auto f = files; f; f = f->next) {
             if (f->meta == p) {
@@ -283,21 +307,21 @@ bool FS::tryGC(int spaceNeeded) {
 
     if (dataDst[-1] == M1) {
         uint32_t eofMark = 0;
-        flash.write(dataDst++, &eofMark, 4);
+        writeBytes(dataDst++, &eofMark, 4);
     }
 
-    if ((int)metaDst - (int)dataDst <= spaceNeeded + 32)
+    if ((intptr_t)metaDst - (intptr_t)dataDst <= spaceNeeded + 32)
         oops(); // out of space!
 
     FSHeader hd;
     hd.magic = RAFFS_MAGIC;
     hd.bytes = bytes;
-    flash.write(newBaseP, &hd, sizeof(hd));
+    writeBytes(newBaseP, &hd, sizeof(hd));
 
     // clear old magic
     hd.magic = 0;
     hd.bytes = 0;
-    flash.write(basePtr, &hd, sizeof(hd));
+    writeBytes(basePtr, &hd, sizeof(hd));
 
     basePtr = newBaseP;
     endPtr = (MetaEntry *)(newBase + bytes / 2);
@@ -321,14 +345,14 @@ MetaEntry *FS::createMetaPage(const char *filename, MetaEntry *existing) {
     } else {
         m.fnhash = fnhash(filename);
         m.fnptr = freeDataPtr - basePtr;
-        flash.write(freeDataPtr, filename, buflen - 3);
+        writeBytes(freeDataPtr, filename, buflen - 3);
         freeDataPtr += buflen / 4;
     }
     m.dataptr = 0xffff;
     m.flags = 0xfffe;
 
     auto r = --metaPtr;
-    flash.write(r, &m, sizeof(m));
+    writeBytes(r, &m, sizeof(m));
 
     return r;
 }
@@ -378,7 +402,7 @@ DirEntry *FS::dirRead() {
         if (p->dataptr != 0) {
             dirEnt.size = getFileSize(p->dataptr);
             dirEnt.flags = p->flags;
-            dirEnt.filename = basePtr + p->fnptr;
+            dirEnt.name = (const char*)(basePtr + p->fnptr);
             unlock();
             return &dirEnt;
         }
@@ -431,11 +455,11 @@ int File::read(void *data, uint32_t len) {
 
     int nread = 0;
     for (;;) {
-        auto hd = basePtr[dataptr];
+        auto hd = fs.basePtr[dataptr];
         auto nextptr = hd >> 16;
         auto blsz = hd & 0xffff;
-        auto srcptr0 = (uint8_t *)(basePtr + dataptr + 1);
-        auto srcptr = srcptr;
+        auto srcptr0 = (uint8_t *)(fs.basePtr + dataptr + 1);
+        auto srcptr = srcptr0;
         if (readOffsetInPage) {
             if (readOffsetInPage > blsz)
                 oops();
@@ -462,6 +486,7 @@ int File::read(void *data, uint32_t len) {
             break;
         }
 
+        auto bytes = fs.bytes;
         VALIDATE_NEXT(nextptr);
         dataptr = nextptr;
     }
@@ -478,7 +503,7 @@ void File::append(const void *data, uint32_t len) {
 
     fs.lock();
 
-    tryGC(len + 4 + 4 + 3);
+    fs.tryGC(len + 4 + 4 + 3);
 
     if (len > 0xfffe)
         oops();
@@ -496,29 +521,29 @@ void File::append(const void *data, uint32_t len) {
     if (*pageDst != 0xffff)
         oops();
 
-    uint16_t thisPtr = freeDataPtr - basePtr;
+    uint16_t thisPtr = fs.freeDataPtr - fs.basePtr;
     lastPage = thisPtr; // cache it
-    fs.flash.writeBytes((uint32_t)pageDst, &thisPtr, sizeof(thisPtr));
+    fs.writeBytes(pageDst, &thisPtr, sizeof(thisPtr));
 
     uint32_t newHd = 0xffff0000 | len;
-    fs.flash.writeBytes(freeDataPtr++, &newHd, sizeof(newHd));
+    fs.writeBytes(fs.freeDataPtr++, &newHd, sizeof(newHd));
 
-    fs.flash.writeBytes(freeDataPtr, data, len);
+    fs.writeBytes(fs.freeDataPtr, data, len);
 
     uint32_t zero = 0;
     if (len & 3) {
         // align with 0s
-        fs.flash.writeBytes((uint8_t *)freeDataPtr + len, &zero, 4 - (len & 3));
+        fs.writeBytes((uint8_t *)fs.freeDataPtr + len, &zero, 4 - (len & 3));
     } else {
         // check if data ends with M1
-        if (*(uint32_t *)(data + len - 4) == M1) {
+        if (*(uint32_t *)((uint8_t*)data + len - 4) == M1) {
             // if so, write some 0s
-            fs.flash.writeBytes((uint8_t *)freeDataPtr + len, &zero, 4);
+            fs.writeBytes((uint8_t *)fs.freeDataPtr + len, &zero, 4);
             len += 4;
         }
     }
 
-    freeDataPtr += (len + 3) >> 2;
+    fs.freeDataPtr += (len + 3) >> 2;
 
     fs.unlock();
 }
@@ -536,7 +561,7 @@ void File::del() {
     resetAllCaches();
     if (meta->dataptr) {
         uint16_t zero = 0;
-        fs.flash.writeBytes(&meta->dataptr, &zero, sizeof(zero));
+        fs.writeBytes(&meta->dataptr, &zero, sizeof(zero));
     }
     fs.unlock();
 }
@@ -549,16 +574,17 @@ void File::overwrite(const void *data, uint32_t len) {
     if (meta->dataptr != 0xffff) {
         auto dataptr = meta->dataptr;
         for (;;) {
-            auto hd = basePtr[dataptr];
+            auto hd = fs.basePtr[dataptr];
             auto nextptr = hd >> 16;
             uint16_t blsz = hd & 0xffff;
             if (blsz) {
                 blsz = 0;
-                fs.flash.writeBytes((void *)(basePtr + dataptr), &blsz, 2);
+                fs.writeBytes((void *)(fs.basePtr + dataptr), &blsz, 2);
             }
             numJumps++;
             if (nextptr == 0xffff)
                 break;
+            auto bytes = fs.bytes;
             VALIDATE_NEXT(nextptr);
             dataptr = nextptr;
         }
@@ -569,18 +595,18 @@ void File::overwrite(const void *data, uint32_t len) {
     if (newMetaNeeded)
         lenNeeded += sizeof(*meta);
 
-    tryGC(lenNeeded);
+    fs.tryGC(lenNeeded);
 
     // GC might have reset out meta->dataptr to empty, no need to allocate new meta entry in that
     // case
     if (newMetaNeeded && meta->dataptr != 0xffff) {
         // clear old entry
         uint16_t zero = 0;
-        fs.flash.writeBytes(&meta->dataptr, &zero, 2);
+        fs.writeBytes(&meta->dataptr, &zero, 2);
         MetaEntry m = *meta;
         m.dataptr = 0xffff;
         --fs.metaPtr;
-        fs.flash.writeBytes(fs.metaPtr, &m, sizeof(m));
+        fs.writeBytes(fs.metaPtr, &m, sizeof(m));
         // set everyone's (including ours) meta ptr
         for (auto f = fs.files; f; f = f->next) {
             if (f->meta == meta) {
@@ -595,31 +621,15 @@ void File::overwrite(const void *data, uint32_t len) {
     append(data, len);
 }
 
-int FS::readFlashBytes(uint32_t addr, void *buffer, uint32_t len) {
+int FS::readFlashBytes(uintptr_t addr, void *buffer, uint32_t len) {
     lock();
-    int r = flash.readBytes(addr, buffer, len);
+    memcpy(buffer, (void *)addr, len);
     unlock();
-    return r;
+    return len;
 }
 
 #ifdef SNORFS_TEST
 void FS::dump() {
-    if (numRows == 0) {
-        LOG("not mounted\n");
-        mount();
-    }
-    LOG("row#: %d; remap: ", numRows);
-
-    for (unsigned i = 0; i < numRows + 1; ++i) {
-        BlockHeader hd;
-        auto addr = i * rowSize;
-        flash.readBytes(addr, &hd, sizeof(hd));
-        LOG("[%d: %d] ", (int16_t)hd.logicalBlockId, hd.eraseCount);
-    }
-
-    LOG("free: %d/%d, (junk: %d)", freePages + deletedPages, fullPages + freePages + deletedPages,
-        deletedPages);
-    LOG("\n");
 }
 
 void FS::debugDump() {

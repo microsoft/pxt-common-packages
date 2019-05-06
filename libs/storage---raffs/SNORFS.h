@@ -1,16 +1,11 @@
-#ifndef CODAL_SNORFS_H
-#define CODAL_SNORFS_H
+#ifndef CODAL_RAFFS_H
+#define CODAL_RAFFS_H
 
 #include "Flash.h"
 
 #define DEVICE_FLASH_ERROR 950
 
-#define SNORFS_PAGE_SIZE 256
-
 namespace codal {
-
-class Flash {};
-
 namespace snorfs {
 
 class File;
@@ -21,15 +16,17 @@ struct DirEntry {
     const char *name;
 };
 
+struct MetaEntry {
+    uint16_t fnhash;  // hash of file name
+    uint16_t fnptr;   // offset in words; can't be 0xffff
+    uint16_t flags;   // can't be 0xffff - to avoid M1 word
+    uint16_t dataptr; // offset in words; 0xffff - empty file
+};
+
+#define FLASH_BUFFER_SIZE 64
+
 class FS {
     friend class File;
-
-    struct MetaEntry {
-        uint16_t fnhash; // hash of file name
-        uint16_t fnptr; // offset in words; can't be 0xffff
-        uint16_t flags; // can't be 0xffff - to avoid M1 word
-        uint16_t dataptr; // offset in words; 0xffff - empty file
-    };
 
     Flash &flash;
     File *files;
@@ -38,22 +35,38 @@ class FS {
 
     uint32_t *basePtr, *freeDataPtr;
     MetaEntry *endPtr, *metaPtr, *readDirPtr;
-    uint32_t baseAddr, bytes;
+    uintptr_t baseAddr;
+    uint32_t bytes;
     DirEntry dirEnt;
+    uintptr_t flashBufAddr;
+    uint8_t flashBuf[FLASH_BUFFER_SIZE];
+
+    void erasePages(uintptr_t addr, uint32_t len);
+    void flushFlash();
+    void writeBytes(void *dst, const void *src, uint32_t size);
+    void format();
+    void mount();
+    void lock();
+    void unlock();
+    MetaEntry *findMetaEntry(const char *filename);
+    MetaEntry *createMetaPage(const char *filename, MetaEntry *existing);
+    uint32_t getFileSize(uint16_t dataptr, uint16_t *lastptr = NULL);
+    uintptr_t copyFile(uint16_t dataptr, uintptr_t dst);
+    bool tryGC(int spaceNeeded);
 
   public:
-    FS(Flash &flash, uint32_t baseAddr, uint32_t bytes);
+    FS(Flash &flash, uintptr_t baseAddr, uint32_t bytes);
     ~FS();
     // returns NULL if file doesn't exists and create==false
     File *open(const char *filename, bool create = true);
     bool exists(const char *filename);
-    uint32_t rawSize() { return flash.numPages() * SNORFS_PAGE_SIZE; }
-    uint32_t totalSize() { return (fullPages + deletedPages + freePages) * SNORFS_PAGE_SIZE; }
-    uint32_t freeSize() { return (deletedPages + freePages) * SNORFS_PAGE_SIZE; }
+    uint32_t rawSize() { return bytes / 2; }
+    uint32_t totalSize() { return bytes / 2; }
+    uint32_t freeSize() { return (uintptr_t)endPtr - (uintptr_t)freeDataPtr; }
     void busy(bool isBusy = true);
     void maybeGC();
     // this allow raw r/o access; will lock the instance as needed
-    int readFlashBytes(uint32_t addr, void *buffer, uint32_t len);
+    int readFlashBytes(uintptr_t addr, void *buffer, uint32_t len);
     bool tryMount();
 
     void dirRewind() { readDirPtr = NULL; }
@@ -84,8 +97,7 @@ class File {
     uint16_t lastPage;
 
     void rewind();
-    File(FS &f, uint16_t filePage);
-    File(FS &f, const char *filename);
+    File(FS &f, MetaEntry *existing);
     File *primary();
     void resetAllCaches();
     void resetCaches() {
@@ -100,7 +112,7 @@ class File {
     void seek(uint32_t pos);
     uint32_t size();
     uint32_t tell() { return readOffset; }
-    bool isDeleted() { return writePage == 0xffff; }
+    bool isDeleted() { return meta->dataptr == 0; }
     void overwrite(const void *data, uint32_t len);
     void del();
     void truncate() { overwrite(NULL, 0); }
