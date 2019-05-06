@@ -6,6 +6,8 @@
 #define DEVICE_FLASH_ERROR 950
 
 #define SNORFS_PAGE_SIZE 256
+#define SNORFS_PAGES_PER_ROW 256
+#define SNORFS_ROW_SIZE (SNORFS_PAGES_PER_ROW*SNORFS_PAGE_SIZE)
 
 namespace codal {
 namespace snorfs {
@@ -37,8 +39,6 @@ class FS {
     volatile bool locked;
 
     uint32_t randomSeed;
-    uint32_t rowSize;
-    uint16_t pagesPerRow;
 
     // this is for data pages only
     uint16_t fullPages;
@@ -50,12 +50,12 @@ class FS {
     uint32_t rowAddr(uint8_t rowIdx) {
         if (rowIdx >= numRows)
             target_panic(DEVICE_FLASH_ERROR);
-        return rowRemapCache[rowIdx] * rowSize;
+        return rowRemapCache[rowIdx] * SNORFS_ROW_SIZE;
     }
     uint32_t indexAddr(uint16_t ptr) {
         if ((ptr & 0xff) >= pagesPerRow)
             target_panic(DEVICE_FLASH_ERROR);
-        return rowAddr(ptr >> 8) + rowSize - pagesPerRow + (ptr & 0xff);
+        return rowAddr(ptr >> 8) + SNORFS_ROW_SIZE - pagesPerRow + (ptr & 0xff);
     }
     uint32_t pageAddr(uint16_t ptr) {
         // page zero is index, shouldn't be accessed through this
@@ -87,7 +87,7 @@ class FS {
     void initBlockHeader(BlockHeader &hd, bool free);
 
   public:
-    FS(SPIFlash &f, uint32_t rowSize = 256 * SNORFS_PAGE_SIZE);
+    FS(SPIFlash &f);
     ~FS();
     // returns NULL if file doesn't exists and create==false
     File *open(const char *filename, bool create = true);

@@ -50,16 +50,14 @@ static uint8_t fnhash(const char *fn) {
     return h;
 }
 
-FS::FS(SPIFlash &f, uint32_t rowSize) : flash(f) {
+FS::FS(SPIFlash &f) : flash(f) {
     numRows = 0;
     randomSeed = 1;
     dirptr = 0;
     files = NULL;
     locked = false;
-    this->rowSize = rowSize;
-    pagesPerRow = rowSize / SNORFS_PAGE_SIZE;
 
-    if (pagesPerRow * SNORFS_PAGE_SIZE != rowSize || pagesPerRow > SNORFS_PAGE_SIZE)
+    if (SNORFS_PAGES_PER_ROW * SNORFS_PAGE_SIZE != SNORFS_ROW_SIZE || SNORFS_PAGES_PER_ROW > SNORFS_PAGE_SIZE)
         oops();
 
     if (!snorfs_unlocked_event)
@@ -84,8 +82,8 @@ uint32_t FS::random(uint32_t max) {
 }
 
 int FS::firstFree(uint16_t pageIdx) {
-    flash.readBytes(indexAddr(pageIdx), buf, pagesPerRow);
-    for (int k = 1; k < pagesPerRow - 1; ++k)
+    flash.readBytes(indexAddr(pageIdx), buf, SNORFS_PAGES_PER_ROW);
+    for (int k = 1; k < SNORFS_PAGES_PER_ROW - 1; ++k)
         if (buf[k] == 0xff)
             return pageIdx | k;
     return 0;
@@ -98,7 +96,7 @@ void FS::busy(bool) {
 void FS::initBlockHeader(BlockHeader &hd, bool free) {
     hd.magic = SNORFS_MAGIC;
     hd.version = 0;
-    hd.numMetaRows = 2 * (256 / pagesPerRow);
+    hd.numMetaRows = 2 * (256 / SNORFS_PAGES_PER_ROW);
     hd.eraseCount = 0;
     if (free) {
         hd.logicalBlockId = 0xffff;
@@ -122,7 +120,7 @@ bool FS::rowErased(uint32_t addr, bool checkFull) {
     if (!checkFull)
         return pageErased(addr) && pageErased(addr + 512) && pageErased(addr + 1024);
 
-    for (uint32_t off = 0; off < rowSize; off += SNORFS_PAGE_SIZE) {
+    for (uint32_t off = 0; off < SNORFS_ROW_SIZE; off += SNORFS_PAGE_SIZE) {
         if (!pageErased(addr + off))
             return false;
     }
@@ -141,7 +139,7 @@ void FS::format() {
     initBlockHeader(hd, false);
     bool didErase = false;
 
-    for (uint32_t addr = 0; addr < end; addr += rowSize) {
+    for (uint32_t addr = 0; addr < end; addr += SNORFS_ROW_SIZE) {
         busy();
         // in case we didn't need to do any erase yet, do a quick "likely" erasure test
         if (dirptr != SNORFS_TRY_MOUNT && !rowErased(addr, didErase)) {
@@ -151,7 +149,7 @@ void FS::format() {
         }
 
         // the last empty row?
-        if (addr + rowSize >= end) {
+        if (addr + SNORFS_ROW_SIZE >= end) {
             initBlockHeader(hd, true);
         } else {
             hd.logicalBlockId = rowIdx;
@@ -186,9 +184,9 @@ void FS::gcCore(bool force, bool isData) {
 
     for (unsigned row = start; row < end; ++row) {
         uint32_t addr = indexAddr(row << 8);
-        flash.readBytes(addr, buf, pagesPerRow);
+        flash.readBytes(addr, buf, SNORFS_PAGES_PER_ROW);
         uint16_t numDel = 0;
-        for (int i = 1; i < pagesPerRow - 1; i++) {
+        for (int i = 1; i < SNORFS_PAGES_PER_ROW - 1; i++) {
             if (buf[i] == 0x00)
                 numDel++;
             if (!force) {
@@ -223,7 +221,7 @@ void FS::gcCore(bool force, bool isData) {
     //   * force is true (we desperately need space)
     //   * there's a row that's more than 50% deleted
     //   * clearing a row will increase free space by more than 20%
-    if (force || maxDelCnt > pagesPerRow / 2 || (maxDelCnt * 5 > freePages)) {
+    if (force || maxDelCnt > SNORFS_PAGES_PER_ROW / 2 || (maxDelCnt * 5 > freePages)) {
         swapRow(rowRemapCache[maxDelIdx]);
         if (!readHeaders()) // this will trigger levelling on the new free block
             oops();         // but it should never fail
@@ -237,14 +235,14 @@ void FS::swapRow(int row) {
     LOGV("[swap row: %d] ", row);
     if (freeRow == row || row > numRows)
         oops();
-    uint32_t trg = freeRow * rowSize;
-    uint32_t src = row * rowSize;
+    uint32_t trg = freeRow * SNORFS_ROW_SIZE;
+    uint32_t src = row * SNORFS_ROW_SIZE;
 
-    uint32_t skipmask[(pagesPerRow + 31) / 32];
+    uint32_t skipmask[(SNORFS_PAGES_PER_ROW + 31) / 32];
     memset(skipmask, 0, sizeof(skipmask));
-    auto idxOff = rowSize - pagesPerRow;
-    flash.readBytes(src + idxOff, buf, pagesPerRow);
-    for (int i = 1; i < pagesPerRow - 1; i++) {
+    auto idxOff = SNORFS_ROW_SIZE - SNORFS_PAGES_PER_ROW;
+    flash.readBytes(src + idxOff, buf, SNORFS_PAGES_PER_ROW);
+    for (int i = 1; i < SNORFS_PAGES_PER_ROW - 1; i++) {
         if (buf[i] == 0x00) {
             skipmask[i / 32] |= 1U << (i % 32);
             buf[i] = 0xff;
@@ -261,8 +259,8 @@ void FS::swapRow(int row) {
 
     setFlag(trg, freeFlag, 0); // no longer free
 
-    flash.writeBytes(trg + idxOff, buf, pagesPerRow);
-    for (int i = 1; i < pagesPerRow - 1; ++i) {
+    flash.writeBytes(trg + idxOff, buf, SNORFS_PAGES_PER_ROW);
+    for (int i = 1; i < SNORFS_PAGES_PER_ROW - 1; ++i) {
         if (skipmask[i / 32] & (1U << (i % 32)))
             continue;
 
@@ -313,7 +311,7 @@ bool FS::readHeaders() {
     uint32_t totalEraseCount = 0;
 
     for (unsigned i = 0; i < (unsigned)numRows + 1; ++i) {
-        auto addr = i * rowSize;
+        auto addr = i * SNORFS_ROW_SIZE;
         flash.readBytes(addr, &hd, sizeof(hd));
         if (hd.magic != SNORFS_MAGIC || hd.version != 0) {
             // likely, we got a power failure during row erase - it now contains random data
@@ -369,9 +367,9 @@ bool FS::readHeaders() {
         busy();
         initBlockHeader(hd, true);
         hd.eraseCount = freeRandom ? totalEraseCount / numRows : freeEraseCnt;
-        flash.eraseBigRow(freeRow * rowSize);
+        flash.eraseBigRow(freeRow * SNORFS_ROW_SIZE);
         busy();
-        flash.writeBytes(freeRow * rowSize, &hd, sizeof(hd));
+        flash.writeBytes(freeRow * SNORFS_ROW_SIZE, &hd, sizeof(hd));
         busy(false);
     } else if (minEraseCnt + SNORFS_LEVELING_THRESHOLD < freeEraseCnt) {
         swapRow(minEraseIdx);
@@ -399,13 +397,13 @@ void FS::mount() {
     if (numRows > 0)
         return;
 
-    numRows = (flash.numPages() * SNORFS_PAGE_SIZE / rowSize) - 1;
+    numRows = (flash.numPages() * SNORFS_PAGE_SIZE / SNORFS_ROW_SIZE) - 1;
     rowRemapCache = new uint8_t[numRows];
 
     if (!readHeaders()) {
         if (dirptr == SNORFS_TRY_MOUNT) {
             uint32_t end = flash.numPages() * SNORFS_PAGE_SIZE;
-            for (uint32_t addr = 0; addr < end; addr += rowSize) {
+            for (uint32_t addr = 0; addr < end; addr += SNORFS_ROW_SIZE) {
                 if (!rowErased(addr, false)) {
                     numRows = 0;
                     delete rowRemapCache;
@@ -707,7 +705,7 @@ DirEntry *FS::dirRead() {
             return NULL;
         }
         int off = dirptr & 0xff;
-        int len = min(DIRCHUNK, pagesPerRow - off);
+        int len = min(DIRCHUNK, SNORFS_PAGES_PER_ROW - off);
         flash.readBytes(indexAddr(dirptr), buf, len);
         for (int i = 0; i < len; ++i) {
             if (i + off >= 0x100)
@@ -728,7 +726,7 @@ DirEntry *FS::dirRead() {
             }
         }
         dirptr += len;
-        if ((dirptr & 0xff) == pagesPerRow) {
+        if ((dirptr & 0xff) == SNORFS_PAGES_PER_ROW) {
             dirptr &= ~0xff;
             dirptr += 0x100;
         }
@@ -1048,7 +1046,7 @@ void FS::dump() {
 
     for (unsigned i = 0; i < numRows + 1; ++i) {
         BlockHeader hd;
-        auto addr = i * rowSize;
+        auto addr = i * SNORFS_ROW_SIZE;
         flash.readBytes(addr, &hd, sizeof(hd));
         LOG("[%d: %d] ", (int16_t)hd.logicalBlockId, hd.eraseCount);
     }
