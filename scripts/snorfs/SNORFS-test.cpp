@@ -57,12 +57,12 @@ class FileCache {
 
             int l = f->read(tmp, len);
             f->debugDump();
-            LOGV("read len=%d l=%d at %d / %x %x %x %x\n", (int)len, l, ptr, tmp[0], tmp[1], tmp[2],
+            LOGV("read len=%d l=%d at %d / %x %x %x %x", (int)len, l, ptr, tmp[0], tmp[1], tmp[2],
                  tmp[3]);
             assert(l == (int)len);
             for (unsigned i = 0; i < len; ++i) {
                 if (tmp[i] != data[ptr + i]) {
-                    LOG("failure: %d != %d at %d (i=%d)\n", tmp[i], data[ptr + i], ptr + i, i);
+                    LOG("failure: %d != %d at %d (i=%d)", tmp[i], data[ptr + i], ptr + i, i);
                     assert(false);
                 }
             }
@@ -123,7 +123,7 @@ class MemFlash :
         uint8_t *ptr = (uint8_t *)buffer;
         for (uint32_t i = 0; i < len; ++i) {
             if (data[addr + i] != 0xff && !(data[addr + i] && *ptr == 0x00)) {
-                LOG("write error: addr=%d len=%d i=%d data[]=%d -> %d\n", addr, len, i,
+                LOG("write error: addr=%d len=%d data[%d]=%d -> %d", addr, len, i,
                     data[addr + i], *ptr);
                 assert(false);
             }
@@ -251,7 +251,7 @@ void simpleTest(const char *fn, int len, int rep = 1) {
     if (fn == NULL)
         fn = getFileName(++fileSeqNo);
 
-    LOGV("\n\n* %s\n", fn);
+    LOGV("\n\n* %s", fn);
 
     auto fc = lookupFile(fn);
 
@@ -260,7 +260,7 @@ void simpleTest(const char *fn, int len, int rep = 1) {
         auto data = getRandomData();
         f->append(data, len);
         if (rep % 32 == 7) {
-            LOGV("reopen\n");
+            LOGV("reopen");
             delete f;
             f = mk(fn);
         }
@@ -270,7 +270,7 @@ void simpleTest(const char *fn, int len, int rep = 1) {
     fc->validate(f);
     delete f;
 
-    LOGV("\nAgain.\n");
+    LOGV("\nAgain.");
 
     f = mk(fn);
     fc->validate(f);
@@ -439,7 +439,7 @@ int main() {
         if (fc->data.size() != ent->size)
             oops();
         fc->visited = true;
-        LOG("%8d %s\n", ent->size, ent->name);
+        LOG("%8d %s", ent->size, ent->name);
     }
     for (auto f : files) {
         if (!f->visited && !f->del)

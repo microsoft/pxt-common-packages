@@ -14,14 +14,13 @@ inline int max(int a, int b)
     return (a > b ? a : b);
 }
 
-//#define LOG(...) do{}while(0)
-#define LOG printf
+#define NOLOG(...) ((void)0)
+#define DMESG(fmt, ...) printf(fmt "\n" , ## __VA_ARGS__)
 
-//#define LOGV printf
-#define LOGV(...)                                                                                  \
-    do                                                                                             \
-    {                                                                                              \
-    } while (0)
+//#define LOG NOLOG
+#define LOG DMESG
+//#define LOGV NOLOG
+#define LOGV DMESG
 
 #define target_panic(...) assert(false)
 #define fiber_wait_for_event(...) assert(false)

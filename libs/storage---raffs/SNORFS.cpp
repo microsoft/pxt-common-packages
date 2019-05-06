@@ -150,6 +150,9 @@ bool FS::tryMount() {
         p--;
     freeDataPtr = p + 1;
 
+#define OFF(v) (int)((uintptr_t)v - (uintptr_t)basePtr)
+    LOG("mounted, end=%x meta=%x free=%x", OFF(endPtr), OFF(metaPtr), OFF(freeDataPtr));
+
     return true;
 }
 
@@ -274,6 +277,8 @@ bool FS::tryGC(int spaceNeeded) {
 
     if (spaceLeft > spaceNeeded + 32)
         return false;
+
+    LOG("running GC; needed %d, got %d", spaceNeeded, spaceLeft);
 
     readDirPtr = NULL;
 
@@ -651,7 +656,6 @@ void FS::debugDump() {
 }
 
 void File::debugDump() {
-    LOGV("fileID: 0x%x, rd: 0x%x/%d, wr: 0x%x/%d\n", fileID(), readPage, tell(), writePage,
-         metaSize);
+    LOGV("fileID: 0x%x, rd: 0x%x/%d", meta->dataptr, readPage, tell());
 }
 #endif
