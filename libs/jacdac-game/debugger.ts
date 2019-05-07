@@ -1,6 +1,25 @@
 namespace jacdac.dbg {
 
-    export const JACDAC_ICON = img`
+    export const JACDAC_DEBUG_ICON = img`
+        . . . . . c . . . . c . . 1 . .
+        . . . 1 . . c c c c . . . . . 1
+        . f f f f f 5 c c 5 f f f f f .
+        . f . . . . c c c c . . . . f .
+        . f . 1 . c . . . . c 1 . . f 1
+        . f . . . . . . . . . . . . f .
+        f f f f f f f . . f f f f f f f
+        f 4 4 4 4 4 f . . f 5 5 5 5 5 f
+        f 4 f f f 4 f . . f 5 f f f 5 f
+        f 4 f d f 4 f . . f 5 f d f 5 f
+        f 4 f d f 4 f . . f 5 f d f 5 f
+        f 4 f f f 4 f . . f 5 f f f 5 f
+        f 4 4 4 4 4 f . . f 5 5 5 5 5 f
+        f 4 f 4 f 4 f . . f 5 f 5 f 5 f
+        f 4 4 4 4 4 f . . f 5 5 5 5 5 f
+        f f f f f f f . . f f f f f f f
+        `;
+
+    export const JACDAC_CONSOLE_ICON = img`
         . . . . . 1 . 1 . . . . . 1 . .
         . . . 1 . . . . . 1 . . . . . 1
         . . . . . f f f f f f f f f f .
@@ -29,7 +48,14 @@ namespace jacdac.dbg {
         private started: boolean;
         private mode: Mode;
         private consoleVisible: boolean;
+        private debugFont: image.Font;
+        private marginx: number;
+        private marginy: number;
+
         constructor() {
+            this.debugFont = image.font5;
+            this.marginy = 2;
+            this.marginx = 4;
             this.mode = Mode.None;
             this.consoleVisible = game.consoleOverlay.isVisible();
         }
@@ -50,6 +76,34 @@ namespace jacdac.dbg {
             console.log("");
         }
 
+        makeDiagnostic(label:string, value:string, horizontalOffset: number, color: number, barHeight: number)
+        {
+            const charCount = Math.max(value.length, label.length)
+            let size = this.debugFont.charWidth * charCount + this.marginx
+            screen.fillRect(horizontalOffset,0,size, barHeight,color);
+
+            screen.print(label, (this.marginx / 2) + horizontalOffset, this.marginy, 1, this.debugFont);
+            screen.print(value, (this.marginx / 2) + horizontalOffset, this.debugFont.charHeight + (2 * this.marginy), 1, this.debugFont);
+
+            horizontalOffset += size + 1
+
+            return horizontalOffset;
+        }
+
+        paintDiagnosticsBar(){
+            const diag = jacdac.diagnostics();
+            const height = 2 * (this.debugFont.charHeight + (2 * this.marginy))
+            screen.fillRect(0, 0, screen.width, height, 1);
+            const errorCount = diag.bus_lo_error + diag.bus_uart_error + diag.bus_timeout_error + diag.packets_dropped;
+
+            let horiz = 1;
+            horiz = this.makeDiagnostic("TX", diag.packets_sent.toString(), horiz, 6, height);
+            horiz = this.makeDiagnostic("RX", diag.packets_received.toString(), horiz, 7, height);
+            horiz = this.makeDiagnostic("ERR", errorCount.toString(),horiz, 2, height);
+
+            return height
+        }
+
         showDevices() {
             const devices = jacdac.devices();
             console.log(`${devices.length} devices`)
@@ -58,8 +112,9 @@ namespace jacdac.dbg {
         }
 
         refresh() {
+            let verticalOffset = this.paintDiagnosticsBar()
             if (!jacdac.isConnected())
-                console.log(`disconnected`);
+                screen.print("disconnected", this.marginx, verticalOffset, 4, this.debugFont);
             switch (this.mode) {
                 case Mode.Services: this.showServices(); break;
                 case Mode.Devices: this.showDevices(); break;
@@ -76,6 +131,10 @@ namespace jacdac.dbg {
 
         start() {
             game.pushScene();
+            controller._setUserEventsEnabled(false);
+            game.onShade(() => {
+                this.refresh();
+            });
             controller.left.onEvent(ControllerButtonEvent.Pressed, () => {
                 this.mode = Mode.Services;
                 game.consoleOverlay.clear();
@@ -118,7 +177,7 @@ namespace jacdac.dbg {
 
     scene.systemMenu.addEntry(
         () => "jacdac dashboard",
-        show, JACDAC_ICON);
+        show, JACDAC_DEBUG_ICON);
 
     scene.systemMenu.addEntry(
         () => jacdac.consoleService().consoleMode == JDConsoleMode.Listen ? "hide jacdac console" : "show jacdac console",
@@ -133,6 +192,6 @@ namespace jacdac.dbg {
                 console.log(`listening to jacdac...`);
             }
         },
-        JACDAC_ICON
+        JACDAC_CONSOLE_ICON
     );
 }

@@ -40,6 +40,10 @@ namespace jacdac {
         isRunning() {
             return __physIsRunning();
         }
+
+        getDiagnostics() {
+            return __physGetDiagnostics();
+        }
     }
 
     let jacdacStarted = false;
@@ -82,6 +86,12 @@ namespace jacdac {
         console.addListener(function (pri, msg) {
             jacdac.JACDAC.instance.consoleService.add(<jacdac.JDConsolePriority><number>pri, msg);
         });
+    }
+
+    export function diagnostics() {
+        if (!bus)
+            return undefined;
+        return new jacdac.JDDiagnostics(bus.getDiagnostics());
     }
 
     export function stop() {

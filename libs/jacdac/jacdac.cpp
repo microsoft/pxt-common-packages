@@ -57,6 +57,11 @@ class WJDPhysicalLayer {
     {
         phys.stop();
     }
+
+    JDDiagnostics getDiagnostics()
+    {
+        return phys.getDiagnostics();
+    }
 };
 
 SINGLETON_IF_PIN(WJDPhysicalLayer, JACK_TX);
@@ -126,6 +131,23 @@ void __physStart()
     auto jd = getWJDPhysicalLayer();
     if (jd)
         jd->start();
+}
+
+
+/**
+ * Reads the diagnostics struct provided by the physical layer. Returns a buffer or NULL.
+ **/
+//%
+Buffer __physGetDiagnostics() {
+    auto jd = getWJDPhysicalLayer();
+    Buffer buf = NULL;
+
+    if (jd) {
+        JDDiagnostics diagnostics = jd->getDiagnostics();
+        buf = mkBuffer((uint8_t*)&diagnostics, sizeof(JDDiagnostics));
+    }
+
+    return buf;
 }
 
 /**
