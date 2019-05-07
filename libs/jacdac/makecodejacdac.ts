@@ -90,7 +90,8 @@ namespace jacdac {
 
     export function diagnostics() {
         if (!bus)
-            return undefined;
+            return new jacdac.JDDiagnostics(control.createBuffer(0));
+
         return new jacdac.JDDiagnostics(bus.getDiagnostics());
     }
 
