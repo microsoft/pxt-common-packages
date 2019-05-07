@@ -5,8 +5,8 @@
 
 #define DEVICE_FLASH_ERROR 950
 
-namespace codal {
-namespace snorfs {
+namespace pxt {
+namespace raffs {
 
 class File;
 
@@ -57,7 +57,7 @@ class FS {
   public:
     FS(Flash &flash, uintptr_t baseAddr, uint32_t bytes);
     ~FS();
-    // returns NULL if file doesn't exists and create==false
+    // returns NULL if file doesn't exists and create==false or when there's no space to create it
     File *open(const char *filename, bool create = true);
     bool exists(const char *filename);
     uint32_t rawSize() { return bytes / 2; }
@@ -108,12 +108,13 @@ class File {
 
   public:
     int read(void *data, uint32_t len);
-    void append(const void *data, uint32_t len);
     void seek(uint32_t pos);
     uint32_t size();
     uint32_t tell() { return readOffset; }
     bool isDeleted() { return meta->dataptr == 0; }
-    void overwrite(const void *data, uint32_t len);
+    // thse two return negative value when out of space
+    int append(const void *data, uint32_t len);
+    int overwrite(const void *data, uint32_t len);
     void del();
     void truncate() { overwrite(NULL, 0); }
     ~File();
@@ -121,7 +122,7 @@ class File {
     void debugDump();
 #endif
 };
-} // namespace snorfs
-} // namespace codal
+} // namespace raffs
+} // namespace pxt
 
 #endif

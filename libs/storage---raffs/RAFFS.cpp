@@ -1,4 +1,4 @@
-#include "SNORFS.h"
+#include "RAFFS.h"
 #include "CodalDmesg.h"
 #include "NotifyEvents.h"
 #include "MessageBus.h"
@@ -16,9 +16,9 @@
     } while (0)
 #endif
 
-using namespace codal::snorfs;
+using namespace pxt::raffs;
 
-static uint16_t snorfs_unlocked_event;
+static uint16_t raffs_unlocked_event;
 
 struct FSHeader {
     uint32_t magic;
@@ -54,8 +54,8 @@ FS::FS(Flash &flash, uintptr_t baseAddr, uint32_t bytes)
     if ((baseAddr & (page - 1)) || bytes % page || numPages < 2 || (numPages & 1))
         oops();
 
-    if (!snorfs_unlocked_event)
-        snorfs_unlocked_event = codal::allocateNotifyEvent();
+    if (!raffs_unlocked_event)
+        raffs_unlocked_event = codal::allocateNotifyEvent();
 }
 
 void FS::erasePages(uintptr_t addr, uint32_t len) {
@@ -185,15 +185,13 @@ File *FS::open(const char *filename, bool create) {
     if (meta == NULL) {
         if (create)
             meta = createMetaPage(filename, NULL);
-        else
-            return NULL;
     } else if (meta->dataptr == 0) {
         if (create)
             meta = createMetaPage(filename, meta);
         else
-            return NULL;
+            meta = NULL;
     }
-    auto r = new File(*this, meta);
+    auto r = meta ? new File(*this, meta) : NULL;
     unlock();
     return r;
 }
@@ -210,7 +208,7 @@ bool FS::exists(const char *filename) {
 
 void FS::lock() {
     while (locked)
-        fiber_wait_for_event(DEVICE_ID_NOTIFY, snorfs_unlocked_event);
+        fiber_wait_for_event(DEVICE_ID_NOTIFY, raffs_unlocked_event);
     locked = true;
     mount();
 }
@@ -221,7 +219,7 @@ void FS::unlock() {
     flushFlash();
     locked = false;
 #ifndef SNORFS_TEST
-    Event(DEVICE_ID_NOTIFY, snorfs_unlocked_event);
+    Event(DEVICE_ID_NOTIFY, raffs_unlocked_event);
 #endif
 }
 
@@ -301,7 +299,7 @@ bool FS::tryGC(int spaceNeeded) {
 #endif
 
     if (spaceLeft > spaceNeeded + 32)
-        return false;
+        return true;
 
     LOG("running flash FS GC; needed %d, left %d", spaceNeeded, spaceLeft);
 
@@ -353,9 +351,13 @@ bool FS::tryGC(int spaceNeeded) {
         writeBytes(dataDst++, &eofMark, 4);
     }
 
-    if (spaceNeeded != 0x7fff0000 && (intptr_t)metaDst - (intptr_t)dataDst <= spaceNeeded + 32) {
-        LOG("TODO: out of flash space!");
-        oops();
+    if ((intptr_t)metaDst - (intptr_t)dataDst <= spaceNeeded + 32) {
+#ifdef SNORFS_TEST
+        if (spaceNeeded != 0x7fff0000)
+            oops();
+#else
+        return false;
+#endif
     }
 
     LOG("GC done: %d free", (int)((intptr_t)metaDst - (intptr_t)dataDst));
@@ -385,8 +387,16 @@ bool FS::tryGC(int spaceNeeded) {
 MetaEntry *FS::createMetaPage(const char *filename, MetaEntry *existing) {
     auto buflen = strlen(filename) + 4;
 
-    if (tryGC(sizeof(MetaEntry) + (existing ? 0 : buflen))) {
+    auto prevBase = basePtr;
+    if (!tryGC(sizeof(MetaEntry) + (existing ? 0 : buflen)))
+        return NULL;
+
+    // if we run the GC, the existing meta page is gone; re-create it
+    if (prevBase != basePtr) {
         existing = NULL;
+        // we may need more space now
+        if (!tryGC(sizeof(MetaEntry) + buflen))
+            return NULL;
     }
 
     MetaEntry m;
@@ -555,16 +565,19 @@ int File::read(void *data, uint32_t len) {
     return nread;
 }
 
-void File::append(const void *data, uint32_t len) {
+int File::append(const void *data, uint32_t len) {
     if (len == 0 || meta->dataptr == 0)
-        return;
+        return 0;
 
     LOGV("append len=%d meta=%x free=%x", len, OFF2(fs.metaPtr, fs.basePtr),
          OFF2(fs.freeDataPtr, fs.basePtr));
 
     fs.lock();
 
-    fs.tryGC(len + 4 + 4 + 3);
+    if (!fs.tryGC(len + 4 + 4 + 3)) {
+        fs.unlock();
+        return -1;
+    }
 
     if (len > 0xfffe)
         oops();
@@ -609,6 +622,8 @@ void File::append(const void *data, uint32_t len) {
     fs.writeBytes(pageDst, &thisPtr, sizeof(thisPtr));
 
     fs.unlock();
+
+    return 0;
 }
 
 void File::resetAllCaches() {
@@ -629,16 +644,16 @@ void File::del() {
     fs.unlock();
 }
 
-void File::overwrite(const void *data, uint32_t len) {
+int File::overwrite(const void *data, uint32_t len) {
     fs.lock();
     resetAllCaches();
 
     LOGV("overwrite len=%d dp=%x f=%x", len, meta->dataptr, OFF2(fs.freeDataPtr, fs.basePtr));
 
-    // For small overwrites, allocate space before deleting anything to avoid losing the file
-    // when we lose the power. OTOH, for big files delete it first, in case we run out of space.
-    if (len < 256)
-        fs.tryGC(len + 16);
+    // Try to allocate space before deleting anything to avoid losing the file
+    // when we lose the power. We try again later (in case we failed first, but then
+    // freed up some space), and check the result code.
+    fs.tryGC(len + 16);
 
     auto numJumps = 0;
     if (meta->dataptr != 0xffff) {
@@ -665,7 +680,10 @@ void File::overwrite(const void *data, uint32_t len) {
     if (newMetaNeeded)
         lenNeeded += sizeof(*meta);
 
-    fs.tryGC(lenNeeded);
+    if (!fs.tryGC(lenNeeded)) {
+        fs.unlock();
+        return -1;
+    }
 
     // GC might have reset out meta->dataptr to empty, no need to allocate new meta entry in that
     // case
@@ -689,7 +707,7 @@ void File::overwrite(const void *data, uint32_t len) {
     rewind();
     fs.unlock();
 
-    append(data, len);
+    return append(data, len);
 }
 
 int FS::readFlashBytes(uintptr_t addr, void *buffer, uint32_t len) {
