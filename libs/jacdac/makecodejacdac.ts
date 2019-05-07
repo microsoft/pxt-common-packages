@@ -88,10 +88,11 @@ namespace jacdac {
         });
     }
 
-    export function diagnostics() {
+    export function diagnostics(): jacdac.JDDiagnostics {
         if (!bus)
             return undefined;
-        return new jacdac.JDDiagnostics(bus.getDiagnostics());
+        const buf = bus.getDiagnostics();
+        return buf && new jacdac.JDDiagnostics(buf);
     }
 
     export function stop() {
