@@ -69,6 +69,11 @@ namespace pxsim {
                 b.bus.queue(this.eventId, JD_SERIAL_EVT_DATA_READY);
             }
         }
+
+        getDiagnostics(): RefBuffer {
+            // TODO
+            return undefined;
+        }
     }
 
     export interface JacDacBoard extends CommonBoard {
@@ -137,5 +142,10 @@ namespace pxsim.jacdac {
         const state = getJacDacState();
         if (state)
             state.stop();
+    }
+
+    export function __physGetDiagnostics(): RefBuffer {
+        const state = getJacDacState();
+        return state && state.getDiagnostics();
     }
 }

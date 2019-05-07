@@ -17,6 +17,12 @@
 #include "CapTouchButton.h"
 #endif
 
+#ifdef SAMD21
+#define OUTPUT_BITS 10
+#else
+#define OUTPUT_BITS 12
+#endif
+
 #include "pinmap.h"
 
 #undef min

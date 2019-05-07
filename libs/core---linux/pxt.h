@@ -2,10 +2,10 @@
 #define __PXT_H
 
 #include "pxtbase.h"
-//#include "pins.h"
 
-#include "CodalComponent.h"
-#include "Event.h"
+#define DEVICE_EVT_ANY 0
+#define DEVICE_ID_NOTIFY_ONE 1022
+#define DEVICE_ID_NOTIFY 1023
 
 namespace pxt {
 void raiseEvent(int id, int event);
@@ -13,6 +13,9 @@ int allocateNotifyEvent();
 void sleep_core_us(uint64_t us);
 void startUser();
 void stopUser();
+
+void target_disable_irq();
+void target_enable_irq();
 
 const char *getConfigString(const char *name);
 int getConfigInt(const char *name, int defl);

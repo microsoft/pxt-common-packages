@@ -88,7 +88,7 @@ namespace jacdac {
         });
     }
 
-    export function diagnostics() {
+    export function diagnostics(): jacdac.JDDiagnostics {
         if (!bus)
             return new jacdac.JDDiagnostics(control.createBuffer(0));
 
