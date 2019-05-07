@@ -1,4 +1,22 @@
 {
     "name": "storage---raffs",
-    "additionalFilePath": "../storage"
+    "additionalFilePath": "../storage",
+    "description": "USB Pen-drive support and flash storage",
+    "files": [
+        "RAFFS.cpp",
+        "RAFFS.h",
+        "Flash.h",
+        "storage.cpp",
+        "storage.ts",
+        "shims.d.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core"
+    },
+    "yotta": {
+        "config": {
+            "DEVICE_USB": 1
+        }
+    }
 }
