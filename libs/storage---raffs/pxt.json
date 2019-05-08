@@ -6,6 +6,7 @@
         "RAFFS.cpp",
         "RAFFS.h",
         "Flash.h",
+        "ZFlash.cpp",
         "storage.cpp",
         "storage.ts",
         "shims.d.ts"
