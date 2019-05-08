@@ -32,9 +32,9 @@ namespace music {
 STATIC_ASSERT((1 << (16 - OUTPUT_BITS)) > MAX_SOUNDS);
 
 enum class SoundState : uint8_t {
-    Waiting,
-    Playing,
-    Done
+    Waiting, //
+    Playing, //
+    Done     //
 };
 
 struct WaitingSound {
@@ -65,7 +65,7 @@ class WSynthesizer
     void *upstream;
 #endif
     uint32_t currSample; // after 25h of playing we might get a glitch
-    int32_t sampleRate; // eg 44100
+    int32_t sampleRate;  // eg 44100
     PlayingSound playingSounds[MAX_SOUNDS];
     WaitingSound *waiting;
     bool active;
@@ -103,10 +103,10 @@ class WSynthesizer
     virtual ManagedBuffer pull() {
         ManagedBuffer data(512);
         auto dp = (int16_t *)data.getBytes();
-        auto sz = 512/2;
+        auto sz = 512 / 2;
         int r = fillSamples(dp, sz);
         while (sz--) {
-            *dp++ += 512;
+            *dp++ += 1 << (OUTPUT_BITS - 1);
         }
         if (!r) {
             active = false;
