@@ -14,7 +14,7 @@ namespace jacdac {
 
         start() {
             __physStart();
-            control.onEvent(__physId(), DAL.JD_SERIAL_EVT_DATA_READY, () => this.handlePacketData());
+            control.internalOnEvent(__physId(), DAL.JD_SERIAL_EVT_DATA_READY, () => this.handlePacketData());
         }
 
         stop() {
