@@ -252,6 +252,16 @@ namespace control {
             }
         }
     }
+
+    //% shim=control::_ramSize
+    function _ramSize() {
+        return 32 * 1024 * 1024;
+    }
+
+    /** Returns estimated size of memory in bytes. */
+    export function ramSize() {
+        return getConfigValue(DAL.CFG_RAM_BYTES, 0) || _ramSize();
+    }
 }
 
 /**

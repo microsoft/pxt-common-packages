@@ -1,5 +1,7 @@
 #include "pxt.h"
 
+extern uint32_t _estack;
+
 namespace control {
 
 /**
@@ -43,5 +45,10 @@ void dmesgPtr(String str, Object_ ptr) {
     DMESG("# %s: %p", str->getUTF8Data(), ptr);
 }
 
+//%
+uint32_t _ramSize()
+{
+    return (uint32_t)&_estack & 0x1fffffff;
+}
 
 }
