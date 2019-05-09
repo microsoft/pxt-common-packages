@@ -4,7 +4,17 @@ namespace particles {
         destroyed = 1 << 1,
     }
 
-    const MAX_SOURCES = 7; // maximum count of sources before removing previous sources
+    // maximum count of sources before removing previous sources
+    const MAX_SOURCES = (() => {
+        const sz = control.ramSize();
+        if (sz <= 1024 * 100) {
+            return 8;
+        } else if (sz <= 1024 * 200) {
+            return 16;
+        } else {
+            return 50;
+        }
+    })();
     const TIME_PRECISION = 10; // time goes down to down to the 1<<10 seconds
     let lastUpdate: number;
 
@@ -93,7 +103,7 @@ namespace particles {
             const sources = particleSources();
 
             // remove and immediately destroy oldest source if over MAX_SOURCES
-            if (sources.length > MAX_SOURCES) {
+            if (sources.length >= MAX_SOURCES) {
                 sortSources();
                 const removedSource = sources.shift();
                 removedSource.clear();
