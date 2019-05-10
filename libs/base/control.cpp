@@ -101,7 +101,7 @@ namespace control {
 
 
     /**
-     * Force GC and halt waiting for debugger to do a full heap dump.
+     * Set flags used when connecting an external debugger.
      */
     //%
     void setDebugFlags(int flags) {

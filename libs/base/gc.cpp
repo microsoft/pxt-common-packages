@@ -1,12 +1,5 @@
 #include "pxtbase.h"
 
-/*
-TODO64
-- can you mmap /dev/zero on iOS, Windows, XBox, Android
-- use the same tagged pointer scheme?
-- what about integers?
-- where are programs loaded on each platform?
-*/
 
 #ifndef GC_BLOCK_SIZE
 #define GC_BLOCK_SIZE (1024 * 16)

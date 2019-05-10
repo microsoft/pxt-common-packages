@@ -212,6 +212,7 @@ static void setupSkipList(String r, const char *data) {
 }
 #endif
 
+#ifdef PXT_VM
 String mkInternalString(const char *str) {
     int len = strlen(str);
     String r = new (xmalloc(sizeof(void *) + 2 + len + 1)) BoxedString(&string_inline_ascii_vt);
@@ -220,6 +221,7 @@ String mkInternalString(const char *str) {
     r->ascii.data[len] = 0;
     return r;
 }
+#endif
 
 String mkStringCore(const char *data, int len) {
     if (len < 0)
