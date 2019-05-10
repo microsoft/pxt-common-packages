@@ -18,6 +18,7 @@ LD = $(PREF)gcc
 LIBSTDCPP = 
 NPM_LIBS = $(wildcard node_modules/*/lib/*.a)
 NPM_INCLUDES = $(addprefix -I, $(wildcard node_modules/*/include))
+STRIP = strip
 
 
 ifeq (darwin,$(findstring darwin,$(CROSS_TRIPLE)))
@@ -25,6 +26,7 @@ SOFLAGS := -dynamiclib
 SONAME := libpxt.dylib
 EXE := $(BUILD)/pxt-vm-cli
 SDL_EXE = $(BUILD)/pxt-vm-sdl
+STRIP = strip -S
 else
 ifeq (linux,$(findstring linux,$(CROSS_TRIPLE)))
 SOFLAGS := -shared
@@ -40,7 +42,6 @@ EXE := $(BUILD)/pxt-vm-cli.exe
 SDL_EXE = $(BUILD)/pxt-vm-sdl.exe
 endif
 endif
-
 
 DEPS = $(PXT_HEADERS) package.json Makefile Makefile.inc
 
@@ -62,14 +63,15 @@ ifneq ($(SDL_EXE),skip)
 	$(MAKE) CXXFLAGS="$(CXXFLAGS) $(shell sdl2-config --cflags)" $(SDL_EXE)
 endif
 
-$(EXE) $(SONAME): $(PXT_OBJS)
+$(EXE) $(BUILD)/$(SONAME): $(PXT_OBJS)
 	$(LD) -o $(EXE) $(LDFLAGS) $(PXT_OBJS) $(LIBSTDCPP) $(LIBS) $(NPM_LIBS)
-	$(LD) -o $(SONAME) $(SOFLAGS) $(LDFLAGS) $(PXT_OBJS) $(LIBSTDCPP) $(LIBS) $(NPM_LIBS)
-	cp $(EXE) $(SONAME) bld/
+	$(LD) -o $(BUILD)/$(SONAME) $(SOFLAGS) $(LDFLAGS) $(PXT_OBJS) $(LIBSTDCPP) $(LIBS) $(NPM_LIBS)
+	$(STRIP) -o bld/$(shell basename $(EXE)) $(EXE)
+	$(STRIP) -o bld/$(SONAME) $(BUILD)/$(SONAME)
 
 $(SDL_EXE): $(SDL_OBJ)
 	$(LD) -o $(SDL_EXE) $(LDFLAGS) $(SDL_OBJ) $(LIBSTDCPP) $(LIBS) $(shell sdl2-config --static-libs)
-	cp $(SDL_EXE) bld/
+	$(STRIP) -o bld/$(shell basename $(SDL_EXE)) $(SDL_EXE)
 
 clean:
 	rm -rf bld bld-*
