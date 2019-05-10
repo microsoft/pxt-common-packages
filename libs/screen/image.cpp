@@ -153,7 +153,7 @@ int height(Image_ img) {
 }
 
 /**
- * True iff the image is monochromatic (black and white)
+ * True if the image is monochromatic (black and white)
  */
 //% property
 bool isMono(Image_ img) {

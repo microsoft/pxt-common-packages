@@ -26,7 +26,8 @@
         "json.ts",
         "templates.ts",
         "eventcontext.ts",
-        "basic.ts",
+        "pause.ts",
+        "forever.ts",
         "utfdecoder.ts",
         "scheduling.ts"
     ],
