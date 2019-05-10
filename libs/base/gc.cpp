@@ -398,13 +398,15 @@ __attribute__((noinline)) static void allocateBlock() {
     // make sure reference to allocated block is stored somewhere, otherwise
     // GCC optimizes out the call to GC_ALLOC_BLOCK
     curr->data[4].vtable = (uintptr_t)dummy;
-    curr->next = NULL;
-    if (!firstBlock) {
+    
+    // blocks need to be sorted by address for midPtr to work
+    if (!firstBlock || curr < firstBlock) {
+        curr->next = firstBlock;
         firstBlock = curr;
     } else {
         for (auto p = firstBlock; p; p = p->next) {
-            if (!p->next) {
-                GC_CHECK(p < curr, 40); // required by midPtr stuff
+            if (!p->next || curr < p->next) {
+                curr->next = p->next;
                 p->next = curr;
                 break;
             }

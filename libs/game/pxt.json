@@ -2,6 +2,7 @@
     "name": "game",
     "description": "The game and sprite library - beta",
     "files": [
+        "gameoverrides.ts",
         "constants.ts",
         "controlleroverrides.ts",
         "controller.ts",
@@ -29,6 +30,7 @@
         "mathUtil.ts",
         "menu.ts",
         "systemmenu.ts",
+        "systemmenuicons.ts",
         "console.ts",
         "fieldeditors.ts",
         "particles.ts",
