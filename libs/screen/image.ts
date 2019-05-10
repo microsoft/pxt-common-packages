@@ -106,6 +106,9 @@ namespace helpers {
     //% shim=ImageMethods::_drawIcon
     function _drawIcon(img: Image, icon: Buffer, xy: number, c: color): void { }
 
+    //% shim=ImageMethods::_fillCircle
+    function _fillCircle(img: Image, cx: number, cy: number, r: number, c: color): void { }
+
     function pack(x: number, y: number) {
         return (Math.clamp(-30000, 30000, x | 0) & 0xffff) | (Math.clamp(-30000, 30000, y | 0) << 16)
     }
