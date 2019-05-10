@@ -70,7 +70,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
             s._vx = constrain(Fx.add(s._vx, Fx.mul(s._ax, dtSec)))
             s._vy = constrain(Fx.add(s._vy, Fx.mul(s._ay, dtSec)))
-            
+
             this.moveSprite(s, tm,
                 Fx.idiv(Fx.mul(Fx.add(s._vx, ovx), dt2), 1000),
                 Fx.idiv(Fx.mul(Fx.add(s._vy, ovy), dt2), 1000))
