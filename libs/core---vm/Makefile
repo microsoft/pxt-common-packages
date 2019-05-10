@@ -33,7 +33,8 @@ EXE := $(BUILD)/pxt-vm-cli-linux
 COMMON_FLAGS += -fPIC
 SDL_EXE = skip
 else
-SOFLAGS := -shared -static
+SOFLAGS := -shared
+LDFLAGS += -static
 SONAME := pxt.dll
 EXE := $(BUILD)/pxt-vm-cli.exe
 SDL_EXE = $(BUILD)/pxt-vm-sdl.exe
