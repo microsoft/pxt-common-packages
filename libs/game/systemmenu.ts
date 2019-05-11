@@ -278,7 +278,7 @@ namespace scene.systemMenu {
     }
 
     function brightnessDown() {
-        screen.setBrightness(Math.max(screen.brightness() - 10, 0));
+        screen.setBrightness(Math.max(screen.brightness() - 10, 10));
     }
 
     function toggleStats() {
