@@ -18,13 +18,13 @@
 #define BYTES_TO_WORDS(x) ((x) >> 3)
 #define WORDS_TO_BYTES(x) ((x) << 3)
 #define ALIGN_TO_WORD(x) (((x) + 7) & (~7ULL))
-#define VAR_BLOCK_WORDS(vt) ((uint32_t)((vt) >> 2))
+#define VAR_BLOCK_WORDS(vt) (((vt) << 16) >> (16 + 2))
 #else
 #define HIGH_SHIFT 28
 #define BYTES_TO_WORDS(x) ((x) >> 2)
 #define WORDS_TO_BYTES(x) ((x) << 2)
 #define ALIGN_TO_WORD(x) (((x) + 3) & (~3U))
-#define VAR_BLOCK_WORDS(vt) (((vt) << 16) >> (16 + 2))
+#define VAR_BLOCK_WORDS(vt) (((uint32_t)(vt) << 4) >> (4 + 2))
 #endif
 
 #define FREE_MASK (1ULL << (HIGH_SHIFT + 3))
@@ -46,6 +46,9 @@
 #define PXT_GC_CHECKS 1
 #endif
 //#define PXT_GC_STRESS 1
+
+
+//#define PXT_GC_CHECKS 1
 
 #define MARK(v)                                                                                    \
     do {                                                                                           \
@@ -633,7 +636,7 @@ void *gcAllocate(int numbytes) {
             if (!IS_FREE(vt))
                 oops(43);
             int left = VAR_BLOCK_WORDS(vt) - numwords;
-            // VVLOG("%p %d - %d = %d", (void*)vt, (int)VAR_BLOCK_WORDS(vt), (int)numwords, left);
+            VVLOG("%p %d - %d = %d", (void*)vt, (int)VAR_BLOCK_WORDS(vt), (int)numwords, left);
             if (left >= 0) {
                 auto nf = (RefBlock *)((void **)p + numwords);
                 auto nextFree = p->nextFree; // p and nf can overlap when allocating 4 bytes
