@@ -273,7 +273,7 @@ namespace helpers {
     function _setScreenBrightness(brightness: number) { }
 
     export function setScreenBrightness(img: Image, b: number) {
-        b = Math.clamp(10, 100, b);
+        b = Math.clamp(10, 100, b | 0);
         _helpers_workaround.brightness = b
         _setScreenBrightness(_helpers_workaround.brightness)
     }
