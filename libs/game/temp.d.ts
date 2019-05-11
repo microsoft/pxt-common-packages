@@ -24,8 +24,8 @@ declare interface String {
 
 declare namespace Math {
     function clamp(min: number, max: number, value: number): number;
-    function ceil(n: number): number;
-    function floor(n: number): number;
+    function ceil(x: number): number;
+    function floor(x: number): number;
     function max(a: number, b: number): number;
     function min(a: number, b: number): number;
     function abs(x: number): number;
