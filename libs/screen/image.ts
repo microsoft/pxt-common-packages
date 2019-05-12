@@ -76,7 +76,7 @@ interface Image {
 
 interface ScreenImage extends Image {
     /**
-     * Sets the screen backlight brightness (0-100)
+     * Sets the screen backlight brightness (10-100)
      */
     //% helper=setScreenBrightness
     setBrightness(deg: number): Image;
@@ -223,6 +223,7 @@ namespace helpers {
     function _setScreenBrightness(brightness: number) { }
 
     export function setScreenBrightness(img: Image, b: number) {
+        b = Math.clamp(10, 100, b | 0);
         _helpers_workaround.brightness = b
         _setScreenBrightness(_helpers_workaround.brightness)
     }
