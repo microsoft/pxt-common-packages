@@ -1003,21 +1003,20 @@ void fillCircle(Image_ img, int cx, int cy, int r, int c) {
     int y = 0;
     int dx = 1;
     int dy = 1;
+    int err = dx - (r << 1);
 
     while (x >= y) {
+        fillRect(img, cx + x, cy - y, 1, 1 + (y << 1), c);
+        fillRect(img, cx + y, cy - x, 1, 1 + (x << 1), c);
+        fillRect(img, cx - x, cy - y, 1, 1 + (y << 1), c);
+        fillRect(img, cx - y, cy - x, 1, 1 + (x << 1), c);
         if (err <= 0) {
-            fillRect(img, cx - x, cy + y, x << 1, 1, c);
-            fillRect(img, cx - x, cy - y, x << 1, 1, c);
-
-            y += 1;
+            ++y;
             err += dy;
             dy += 2;
         }
         else {
-            fillRect(cx - y, cy - x, 1, y << 1, c);
-            fillRect(cx + y, cy - x, 1, y << 1, c);
-
-            x -= 1;
+            --x;
             dx += 2;
             err += dx - (r << 1);
         }
