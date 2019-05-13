@@ -2,7 +2,7 @@ namespace scene.systemMenu {
     let instance: PauseMenu;
     let customMenuOptions: MenuOption[];
 
-    enum CardState {
+    export enum CardState {
         Selected,
         Active,
         None

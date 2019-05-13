@@ -47,7 +47,6 @@ namespace scene {
 
     export class Scene {
         eventContext: control.EventContext;
-        menuState: menu.State;
         background: Background;
         tileMap: tiles.TileMap;
         allSprites: SpriteLike[];
@@ -178,7 +177,6 @@ namespace scene {
 
         destroy() {
             this.eventContext = undefined;
-            this.menuState = undefined;
             this.background = undefined;
             this.tileMap = undefined;
             this.allSprites = undefined;
