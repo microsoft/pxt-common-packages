@@ -18,7 +18,14 @@ LowLevelTimer* getJACDACTimer()
 
 #endif
 #ifdef SAMD51
-SAMDTCTimer lowTimer(TC0, TC0_IRQn);
+SAMDTCTimer jacdacTimer(TC0, TC0_IRQn);
+SAMDTCTimer lowTimer(TC2, TC2_IRQn);
+
+LowLevelTimer* getJACDACTimer()
+{
+    jacdacTimer.setIRQPriority(1);
+    return &jacdacTimer;
+}
 #endif
 
 __attribute__((used))
