@@ -106,6 +106,9 @@ namespace helpers {
     //% shim=ImageMethods::_drawIcon
     function _drawIcon(img: Image, icon: Buffer, xy: number, c: color): void { }
 
+    //% shim=ImageMethods::_fillCircle
+    function _fillCircle(img: Image, cxy: number, r: number, c: color): void { }
+
     function pack(x: number, y: number) {
         return (Math.clamp(-30000, 30000, x | 0) & 0xffff) | (Math.clamp(-30000, 30000, y | 0) << 16)
     }
@@ -191,60 +194,7 @@ namespace helpers {
         }
     }
     export function imageFillCircle(img: Image, cx: number, cy: number, r: number, col: number) {
-        cx = cx | 0;
-        cy = cy | 0;
-        r = r | 0;
-        // short cuts
-        if (r < 0) 
-            return;
-        else if (r == 0) {
-            img.setPixel(cx, cy, col);
-            return;
-        } else if (r == 1) {
-            img.setPixel(cx, cy, col);
-            img.setPixel(cx + 1, cy, col);
-            img.setPixel(cx, cy + 1, col);
-            img.setPixel(cx - 1, cy, col);
-            img.setPixel(cx, cy - 1, col);
-            return;
-        }
-
-        const fcx = Fx8(cx);
-        const fcy = Fx8(cy);
-        const fr = Fx8(r);
-        const fr2 = Fx.leftShift(fr, 1);
-
-        let x = Fx.sub(fr, Fx.oneFx8)
-        let y = Fx.zeroFx8;
-        let dx = Fx.oneFx8;
-        let dy = Fx.oneFx8;
-        let err = Fx.sub(dx, fr2);
-        while (Fx.compare(x, y) >= 0) {
-            const cxpx = Fx.toInt(Fx.add(fcx, x));
-            const cxpy = Fx.toInt(Fx.add(fcx, y));
-            const cxmx = Fx.toInt(Fx.sub(fcx, x));
-            const cxmy = Fx.toInt(Fx.sub(fcx, y));
-            const cypy = Fx.toInt(Fx.add(fcy, y));
-            const cymy = Fx.toInt(Fx.sub(fcy, y));
-            const cypx = Fx.toInt(Fx.add(fcy, x));
-            const cymx = Fx.toInt(Fx.sub(fcy, x));
-
-            if (Fx.compare(err, Fx.zeroFx8) <= 0) {
-                img.drawLine(cxmx, cypy, cxpx, cypy, col)
-                img.drawLine(cxmx, cymy, cxpx, cymy, col)
-
-                y = Fx.add(y, Fx.oneFx8);
-                err = Fx.add(err, dy);
-                dy = Fx.add(dy, Fx.twoFx8);
-            } else {
-                img.drawLine(cxmy, cymx, cxmy, cypx, col)
-                img.drawLine(cxpy, cymx, cxpy, cypx, col)
-
-                x = Fx.sub(x, Fx.oneFx8);
-                dx = Fx.add(dx, Fx.twoFx8);
-                err = Fx.add(err, Fx.sub(dx, fr2));
-            }
-        }
+        _fillCircle(img, pack(cx, cy), r, col);
     }
 
     /**
