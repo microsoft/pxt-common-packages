@@ -1,13 +1,8 @@
 #include "pxt.h"
 
-// TODO optimze add/sub/etc
 // TODO look for patterns in output for combined instructions
-// TODO 4.5/20 instructions are push - combine
 // TODO check for backjumps (how many)
 // TODO getConfig() should have a callback into host
-// TODO stloc X; ldloc X -> stloc X
-
-// TODO string object field lookups
 
 #define SPLIT_ARG(arg0, arg1) unsigned arg0 = arg & 31, arg1 = arg >> 6
 #define SPLIT_ARG2(arg0, arg1) unsigned arg0 = arg & 255, arg1 = arg >> 8
