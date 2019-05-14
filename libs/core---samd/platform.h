@@ -16,15 +16,13 @@
 #include "CapTouchButton.h"
 #endif
 
-#include "pinmap.h"
-
-
 #ifdef SAMD21
-#include "neopixel.h"
+#define OUTPUT_BITS 10
 #else
-#define neopixel_send_buffer(pin, ptr, len) pxt::spiNeopixelSendBuffer(&(pin), (ptr), (len))
+#define OUTPUT_BITS 12
 #endif
 
+#include "pinmap.h"
 
 #undef min
 #undef max

@@ -29,11 +29,17 @@
 
 #define VAR_BLOCK_WORDS(vt) (((vt) << 12) >> (12 + 2))
 
-#define MARK(v) *(uint32_t *)(v) |= MARKED_MASK
-
 //#define PXT_GC_DEBUG 1
+#ifndef PXT_GC_CHECK
 #define PXT_GC_CHECKS 1
+#endif
 //#define PXT_GC_STRESS 1
+
+#define MARK(v)                                                                                    \
+    do {                                                                                           \
+        GC_CHECK(inGCArea(v), 47);                                                                 \
+        *(uint32_t *)(v) |= MARKED_MASK;                                                           \
+    } while (0)
 
 #ifdef PXT_GC_DEBUG
 #define LOG DMESG
@@ -183,6 +189,14 @@ LLSegment workQueue; // (ab)used by consString making
 static GCBlock *firstBlock;
 static RefBlock *firstFree;
 static uint8_t *midPtr;
+
+static bool inGCArea(void *ptr) {
+    for (auto block = firstBlock; block; block = block->next) {
+        if ((void *)block->data <= ptr && ptr < (void *)((uint8_t *)block->data + block->blockSize))
+            return true;
+    }
+    return false;
+}
 
 #define NO_MAGIC(vt) ((VTable *)vt)->magic != VTABLE_MAGIC
 #define VT(p) (*(uint32_t *)(p))
@@ -343,13 +357,15 @@ __attribute__((noinline)) static void allocateBlock() {
     // make sure reference to allocated block is stored somewhere, otherwise
     // GCC optimizes out the call to GC_ALLOC_BLOCK
     curr->data[4].vtable = (uint32_t)dummy;
-    curr->next = NULL;
-    if (!firstBlock) {
+    
+    // blocks need to be sorted by address for midPtr to work
+    if (!firstBlock || curr < firstBlock) {
+        curr->next = firstBlock;
         firstBlock = curr;
     } else {
         for (auto p = firstBlock; p; p = p->next) {
-            if (!p->next) {
-                GC_CHECK(p < curr, 40); // required by midPtr stuff
+            if (!p->next || curr < p->next) {
+                curr->next = p->next;
                 p->next = curr;
                 break;
             }
@@ -453,14 +469,6 @@ void gc(int flags) {
 }
 
 #ifdef GC_GET_HEAP_SIZE
-static bool inGCArea(void *ptr) {
-    for (auto block = firstBlock; block; block = block->next) {
-        if ((void *)block->data < ptr && ptr < (void *)((uint8_t *)block->data + block->blockSize))
-            return true;
-    }
-    return false;
-}
-
 extern "C" void free(void *ptr) {
     if (!ptr)
         return;

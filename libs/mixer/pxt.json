@@ -12,7 +12,9 @@
         "legacy.ts",
         "ns.ts",
         "targetoverrides.ts",
-        "music.ts"
+        "music.ts",
+        "pxtparts.json",
+        "headphone.svg"
     ],
     "public": true,
     "dependencies": {

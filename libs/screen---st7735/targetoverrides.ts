@@ -32,6 +32,6 @@ namespace _screen_internal {
             updateStats(msg);
         }
 
-        return img;
+        return img as ScreenImage;
     }
 }

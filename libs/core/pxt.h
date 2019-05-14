@@ -41,10 +41,6 @@ using namespace codal;
 #endif
 #endif
 
-#ifndef NEOPIXEL_SPI
-#define NEOPIXEL_SPI 1
-#endif
-
 namespace pxt {
 
 #if CONFIG_ENABLED(DEVICE_USB)
@@ -67,11 +63,6 @@ extern CODAL_TIMER devTimer;
 extern MessageBus devMessageBus;
 extern codal::CodalDevice device;
 
-
-#if NEOPIXEL_SPI
-void spiNeopixelSendBuffer(DigitalInOutPin pin, const uint8_t *data, unsigned size);
-#endif
-
 void set_usb_strings(const char *uf2_info);
 
 } // namespace pxt
@@ -83,6 +74,13 @@ class CodalI2CProxy;
 
 typedef pins::CodalI2CProxy* I2C_;
 typedef pins::CodalSPIProxy* SPI_;
+
+namespace pxt {
+#ifdef CODAL_I2C
+CODAL_I2C* getI2C(DigitalInOutPin sda, DigitalInOutPin scl);
+#endif
+CODAL_SPI* getSPI(DigitalInOutPin mosi, DigitalInOutPin miso, DigitalInOutPin sck);
+}
 
 namespace serial {
 class CodalSerialDeviceProxy;

@@ -3,6 +3,8 @@
 #include "CodalDmesg.h"
 #include "configkeys.h"
 
+#ifdef CODAL_I2C
+
 namespace pins {
 
 class CodalI2CProxy {
@@ -113,3 +115,5 @@ namespace pxt {
     return i2c->getI2C();
   }
 }
+
+#endif

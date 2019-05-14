@@ -38,12 +38,16 @@ enum ControllerEvent {
 //% blockGap=8
 namespace controller {
     let _userEventsEnabled = true;
+    let defaultRepeatDelay = 500;
+    let defaultRepeatInterval = 30;
 
     //% fixedInstances
     export class Button {
         _owner: Controller;
         public id: number;
+        //% help=controller/button/repeat-delay
         public repeatDelay: number;
+        //% help=controller/button/repeat-interval
         public repeatInterval: number;
         private _pressed: boolean;
         private _pressedElasped: number;
@@ -58,8 +62,8 @@ namespace controller {
             this.id = id;
             this._buttonId = buttonId;
             this._pressed = false;
-            this.repeatDelay = 500;
-            this.repeatInterval = 30;
+            this.repeatDelay = undefined;
+            this.repeatInterval = undefined;
             this._repeatCount = 0;
             control.internalOnEvent(INTERNAL_KEY_UP, this.id, () => this.setPressed(false), 16)
             control.internalOnEvent(INTERNAL_KEY_DOWN, this.id, () => this.setPressed(true), 16)
@@ -122,6 +126,7 @@ namespace controller {
 
         setPressed(pressed: boolean) {
             if (this._pressed != pressed) {
+                power.poke();
                 if (this._owner)
                     this._owner.connected = true;
                 this._pressed = pressed;
@@ -139,17 +144,33 @@ namespace controller {
             if (!this._pressed) return;
             this._pressedElasped += dtms;
 
+            const delay = this.repeatDelay === undefined ? defaultRepeatDelay : this.repeatDelay;
+            const interval = this.repeatInterval === undefined ? defaultRepeatInterval : this.repeatInterval;
+
             // inital delay
-            if (this._pressedElasped < this.repeatDelay)
+            if (this._pressedElasped < delay)
                 return;
 
             // repeat count for this step
-            const count = Math.floor((this._pressedElasped - this.repeatDelay) / this.repeatInterval);
+            const count = Math.floor((this._pressedElasped - delay - interval) / interval);
             if (count != this._repeatCount) {
                 this.raiseButtonRepeat();
                 this._repeatCount = count;
             }
         }
+    }
+
+    /**
+     * Configures the timing of the on button repeat event for all of the controller buttons
+     * @param delay number of milliseconds from when the button is pressed to when the repeat event starts firing, eg: 500
+     * @param interval minimum number of milliseconds between calls to the button repeat event, eg: 30
+     */
+    //% blockId=repeatDefaultDelayInterval block="set button repeat delay $delay ms interval $interval ms"
+    //% weight=10
+    //% group="Single Player"
+    export function setRepeatDefault(delay: number, interval: number) {
+        defaultRepeatDelay = delay;
+        defaultRepeatInterval = interval;
     }
 
     let _players: Controller[];
@@ -176,6 +197,7 @@ namespace controller {
         s: Sprite;
         vx: number;
         vy: number;
+        _inputLastFrame: boolean;
     }
 
     export function _moveSprites() {
@@ -283,9 +305,9 @@ namespace controller {
         }
 
         /**
-         * Control a sprite using the direction buttons from the controller. Note that this
-         * control will take over the vx and vy of the sprite and overwrite any changes
-         * made unless a 0 is passed.
+         * Control a sprite using the direction buttons from the controller. Note that this will overwrite
+         * the current velocity of the sprite whenever a directional button is pressed. To stop controlling
+         * a sprite, pass 0 for vx and vy.
          *
          * @param sprite The Sprite to control
          * @param vx The velocity used for horizontal movement when left/right is pressed
@@ -302,7 +324,7 @@ namespace controller {
             if (!this._controlledSprites) this._controlledSprites = [];
             let cp = this._controlledSprites.find(cp => cp.s.id == sprite.id);
             if (!cp) {
-                cp = { s: sprite, vx: vx, vy: vy }
+                cp = { s: sprite, vx: vx, vy: vy, _inputLastFrame: false }
                 this._controlledSprites.push(cp);
             }
             if (cp.vx && vx == 0) {
@@ -408,32 +430,47 @@ namespace controller {
             if (!this._controlledSprites) return;
 
             let deadSprites = false;
+            let svx: number;
+            let svy: number;
             this._controlledSprites.forEach(sprite => {
                 if (sprite.s.flags & sprites.Flag.Destroyed) {
                     deadSprites = true;
                     return;
                 }
 
-                if (sprite.vx) {
-                    sprite.s.vx = 0;
+                svx = 0;
+                svy = 0;
 
+                if (sprite.vx) {
                     if (this.right.isPressed()) {
-                        sprite.s.vx = sprite.vx;
+                        svx += sprite.vx;
                     }
                     if (this.left.isPressed()) {
-                        sprite.s.vx = -sprite.vx;
+                        svx -=sprite.vx;
                     }
                 }
 
                 if (sprite.vy) {
-                    sprite.s.vy = 0;
-
                     if (this.down.isPressed()) {
-                        sprite.s.vy = sprite.vy;
+                        svy += sprite.vy;
                     }
                     if (this.up.isPressed()) {
-                        sprite.s.vy = -sprite.vy;
+                        svy -= sprite.vy;
                     }
+                }
+
+                if (sprite._inputLastFrame) {
+                    if (sprite.vx) sprite.s.vx = 0;
+                    if (sprite.vy) sprite.s.vy = 0;
+                }
+
+                if (svx || svy) {
+                    if (sprite.vx) sprite.s.vx = svx;
+                    if (sprite.vy) sprite.s.vy = svy;
+                    sprite._inputLastFrame = true;
+                }
+                else {
+                    sprite._inputLastFrame = false;
                 }
             });
 

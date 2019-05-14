@@ -10,7 +10,9 @@
         "pxtbase.h",
         "core.cpp",
         "advmath.cpp",
+        "trig.cpp",
         "pxt-helpers.ts",
+        "fixed.ts",
         "buffer.cpp",
         "buffer.ts",
         "shims.d.ts",
@@ -22,11 +24,29 @@
         "control.ts",
         "console.ts",
         "json.ts",
-        "eventcontext.ts"
+        "templates.ts",
+        "eventcontext.ts",
+        "pause.ts",
+        "forever.ts",
+        "utfdecoder.ts",
+        "scheduling.ts"
     ],
     "testFiles": [
         "test.ts"
     ],
     "public": true,
-    "dependencies": {}
+    "dependencies": {},
+    "yotta": {
+        "optionalConfig": {
+            "PXT_GC_CHECKS": 0
+        },
+        "userConfigs": [
+            {
+                "description": "(Diagnostics) Garbage Collection checks.",
+                "config": {
+                    "PXT_GC_CHECKS": 1
+                }
+            }
+        ]
+    }
 }

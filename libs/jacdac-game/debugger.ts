@@ -1,4 +1,23 @@
-namespace jacdac {
+namespace jacdac.dbg {
+
+    export const JACDAC_ICON = img`
+        . . . . . 1 . 1 . . . . . 1 . .
+        . . . 1 . . . . . 1 . . . . . 1
+        . . . . . f f f f f f f f f f .
+        . . . . . f . . . . . . . . f .
+        . . . 1 . f . 1 . . . 1 . . f 1
+        . . . . . f . . . . . . . . f .
+        f f f f f f f . . f f f f f f f
+        f 4 4 4 4 4 f . . f 5 5 5 5 5 f
+        f 4 f f f 4 f . . f 5 f f f 5 f
+        f 4 f d f 4 f . . f 5 f d f 5 f
+        f 4 f d f 4 f . . f 5 f d f 5 f
+        f 4 f f f 4 f . . f 5 f f f 5 f
+        f 4 4 4 4 4 f . . f 5 5 5 5 5 f
+        f 4 f 4 f 4 f . . f 5 f 5 f 5 f
+        f 4 4 4 4 4 f . . f 5 5 5 5 5 f
+        f f f f f f f . . f f f f f f f
+        `;
 
     enum Mode {
         None,
@@ -8,6 +27,7 @@ namespace jacdac {
     }
 
     class DebugMenu {
+        private started: boolean;
         private mode: Mode;
         private _debugViews: DebugView[];
         private consoleVisible: boolean;
@@ -130,6 +150,9 @@ namespace jacdac {
         }
 
         stop() {
+            if (!this.started) return;
+            this.started = false;
+
             game.popScene();
             game.consoleOverlay.setVisible(this.consoleVisible);
             clearBridge()
@@ -141,6 +164,9 @@ namespace jacdac {
         }
 
         start() {
+            if (this.started) return;
+            this.started = true;
+
             game.pushScene(); // start game
             jacdac.onEvent(JDEvent.BusConnected, () => {
                 game.consoleOverlay.clear();
@@ -251,8 +277,36 @@ namespace jacdac {
     }
 
     let _menu: DebugMenu;
-    scene.systemMenu.addEntry(() => "jacdac dashboard", () => {
+    /**
+     * Shows a basic debugger interface
+     */
+    export function show() {
+        if (_menu)
+            _menu.stop();
         _menu = new DebugMenu();
         _menu.start();
-    }, false, () => { });
+    }
+
+    scene.systemMenu.addEntry(
+        () => "jacdac dashboard",
+        show, JACDAC_ICON);
+
+    scene.systemMenu.addEntry(
+        () => jacdac.consoleService.mode == JDConsoleMode.Listen ? "hide jacdac console" : "show jacdac console",
+        () => {
+            if (jacdac.consoleService.mode == JDConsoleMode.Listen) {
+                game.consoleOverlay.setVisible(false);
+                jacdac.consoleService.setMode(JDConsoleMode.Off);
+            }
+            else {
+                game.consoleOverlay.setVisible(true);
+                jacdac.consoleService.setMode(JDConsoleMode.Listen);
+                console.log(`listening to jacdac...`);
+            }
+        },
+        JACDAC_ICON
+    );
+
+    // prepare listening
+    jacdac.consoleService.start();
 }

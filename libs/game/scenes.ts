@@ -125,7 +125,7 @@ namespace scene {
      * @param index
      * @param img
      */
-    //% blockId=gamesettile block="set tile %index=colorindexpicker to %img=screen_image_picker||with wall %wall=toggleOnOff"
+    //% blockId=gamesettile block="set tile %index=colorindexpicker to %img=screen_image_picker with wall %wall=toggleOnOff"
     //% group="Tiles"
     //% help=scene/set-tile
     export function setTile(index: number, img: Image, wall?: boolean) {

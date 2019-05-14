@@ -19,6 +19,7 @@ namespace jacdac {
     export const MUSIC_DEVICE_CLASS = 2016;
     export const SERVO_DEVICE_CLASS = 2017;
     export const CONTROLLER_DEVICE_CLASS = 2018;
+    export const LCD_DEVICE_CLASS = 2019;
 
     // events
     export const JD_MESSAGE_BUS_ID = JD_DEVICE_CLASS_MAKECODE_START;
@@ -41,12 +42,12 @@ const enum JDLightCommand {
     ColorWipe,
     Comet,
     TheaterChase,
-    Sparkle    
+    Sparkle
 }
 
 enum JDLightAnimation {
     //% block="rainbow"
-    Rainbow =JDLightCommand.Rainbow,
+    Rainbow = JDLightCommand.Rainbow,
     //% block="running lights"
     RunningLights = JDLightCommand.RunningLights,
     //% block="color wipe"
@@ -129,7 +130,7 @@ enum JDGesture {
     FreeFall = DAL.ACCELEROMETER_EVT_FREEFALL,
 }
 
-enum JDDimension {
+const enum JDDimension {
     //% block=x
     X = 0,
     //% block=y
@@ -158,13 +159,13 @@ enum JDSwitchDirection {
     Right = DAL.DEVICE_BUTTON_EVT_DOWN,
 }
 
-enum JDControllerCommand {
+const enum JDControllerCommand {
     ClientButtons = 1,
     ControlServer = 2,
     ControlClient = 3
 }
 
-enum JDControllerButton {
+const enum JDControllerButton {
     A = 5,
     B = 6,
     Left = 1,
@@ -172,4 +173,11 @@ enum JDControllerButton {
     Right = 3,
     Down = 4,
     Menu = 7
+}
+
+const enum JDLCDFlags {
+    None,
+    Display = 1 << 0,
+    Blink = 1 << 1,
+    Cursor = 1 << 2
 }

@@ -33,6 +33,8 @@
         "dmac.cpp",
         "dmac.h",
         "timer.ts",
+        "light.cpp",
+        "light.h",
         "pxtparts.json"
     ],
     "testFiles": [

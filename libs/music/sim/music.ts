@@ -46,6 +46,10 @@ namespace pxsim.music {
         // TODO: implement set tone in the audio context
     }
 
+    export function enableAmp(enabled: number) {
+        // TODO
+    }
+
     export function playTone(frequency: number, ms: number) {
         const b = board();
         if (!b) return;
@@ -60,7 +64,7 @@ namespace pxsim.music {
         let cb = getResume();
         if (ms <= 0) cb();
         else {
-            setTimeout(() => {
+            runtime.schedule(() => {
                 AudioContextManager.stop();
                 audioState.stopPlaying();
 
