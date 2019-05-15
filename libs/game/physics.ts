@@ -26,8 +26,8 @@ class PhysicsEngine {
 }
 
 const MAX_DISTANCE = Fx8(15); // pixels
-const MAX_TIME_STEP = Fx8(0.1); // seconds
-const MAX_VELOCITY = Fx.div(MAX_DISTANCE, MAX_TIME_STEP);
+const MAX_TIME_STEP = Fx8(100); // milliseconds
+const MAX_VELOCITY = Fx.div(MAX_DISTANCE, Fx.idiv(MAX_TIME_STEP, 1000));
 const NEG_MAX_VELOCITY = Fx.neg(MAX_VELOCITY)
 const GAP = Fx8(0.1);
 
@@ -57,8 +57,10 @@ class ArcadePhysicsEngine extends PhysicsEngine {
     }
 
     move(dt: number) {
-        const dtf = Fx.min(MAX_TIME_STEP, Fx8(dt))
-        const dt2 = Fx.idiv(dtf, 2)
+        // Sprite movement logic is done in milliseconds to avoid rounding errors with Fx8 numbers
+        const dtf = Fx.min(MAX_TIME_STEP, Fx8(dt * 1000))
+        const dtSec = Fx.idiv(dtf, 1000); 
+        const dt2 = Fx.idiv(dtf, 2);
 
         const tm = game.currentScene().tileMap;
 
@@ -66,12 +68,12 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             const ovx = constrain(s._vx);
             const ovy = constrain(s._vy);
 
-            s._vx = constrain(Fx.add(s._vx, Fx.mul(s._ax, dtf)))
-            s._vy = constrain(Fx.add(s._vy, Fx.mul(s._ay, dtf)))
+            s._vx = constrain(Fx.add(s._vx, Fx.mul(s._ax, dtSec)))
+            s._vy = constrain(Fx.add(s._vy, Fx.mul(s._ay, dtSec)))
 
             this.moveSprite(s, tm,
-                Fx.mul(Fx.add(s._vx, ovx), dt2),
-                Fx.mul(Fx.add(s._vy, ovy), dt2))
+                Fx.idiv(Fx.mul(Fx.add(s._vx, ovx), dt2), 1000),
+                Fx.idiv(Fx.mul(Fx.add(s._vy, ovy), dt2), 1000))
         }
     }
 
