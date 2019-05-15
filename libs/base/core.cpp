@@ -21,23 +21,24 @@ PXT_DEF_STRING(emptyString, "")
 
 static HandlerBinding *handlerBindings;
 
-HandlerBinding *findBinding(int source, int value) {
-    return nextBinding(handlerBindings);
-}
-
 HandlerBinding *nextBinding(HandlerBinding *curr, int source, int value) {
     for (auto p = curr; p; p = p->next) {
-        if ((p->source == source || p->source == DEVICE_ID_ANY) && (p->value == value || p->value == DEVICE_EVT_ANY) {
+        if ((p->source == source || p->source == DEVICE_ID_ANY) && 
+            (p->value == value || p->value == DEVICE_EVT_ANY)) {
             return p;
         }
     }
     return 0;
 }
 
+HandlerBinding *findBinding(int source, int value) {
+    return nextBinding(handlerBindings, source, value);
+}
+
 void setBinding(int source, int value, Action act) {
     HandlerBinding* curr = NULL;
     for (auto p = handlerBindings; p; p = p->next) {
-        if ((p->source == source) && (p->value == value) {
+        if ((p->source == source) && (p->value == value)) {
             curr = p; 
             break;
         }
