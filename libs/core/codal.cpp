@@ -110,10 +110,6 @@ void dispatchEvent(Event e) {
     auto value = fromInt(e.value);
     if (curr)
         runAction1(curr->action, value);
-
-    curr = findBinding(e.source, DEVICE_EVT_ANY);
-    if (curr)
-        runAction1(curr->action, value);
 }
 
 void registerWithDal(int id, int event, Action a, int flags) {
