@@ -2,11 +2,15 @@
 #include "ST7735.h"
 #include "ILI9341.h"
 
+#ifdef STM32F4
+#include "FSMCIO.h"
+#endif
+
 namespace pxt {
 
 class WDisplay {
   public:
-    CODAL_SPI spi;
+    ScreenIO *io;
     ST7735 *lcd;
 
     uint32_t currPalette[16];
@@ -22,16 +26,32 @@ class WDisplay {
     bool doubleSize;
     uint32_t palXOR;
 
-    WDisplay()
-        : spi(*LOOKUP_PIN(DISPLAY_MOSI), *LOOKUP_PIN(DISPLAY_MISO), *LOOKUP_PIN(DISPLAY_SCK)) {
+    WDisplay() {
+        int conn = getConfig(CFG_DISPLAY_CONNECTION, 0);
+        SPI *spi = NULL;
+        if (conn == 0) {
+            spi = new CODAL_SPI(*LOOKUP_PIN(DISPLAY_MOSI), *LOOKUP_PIN(DISPLAY_MISO),
+                                *LOOKUP_PIN(DISPLAY_SCK));
+            io = new SPIScreenIO(*spi);
+        } else if (conn == 1 || conn == 2) {
+#ifdef STM32F4
+            io = new FSMCIO();
+            DMESG("created FSMCIO");
+#else
+            target_panic(PANIC_SCREEN_ERROR);
+#endif
+        } else {
+            target_panic(PANIC_SCREEN_ERROR);
+        }
+
         int dispTp = getConfig(CFG_DISPLAY_TYPE, DISPLAY_TYPE_ST7735);
 
         doubleSize = false;
 
         if (dispTp == DISPLAY_TYPE_ST7735)
-            lcd = new ST7735(spi, *LOOKUP_PIN(DISPLAY_CS), *LOOKUP_PIN(DISPLAY_DC));
+            lcd = new ST7735(*io, *LOOKUP_PIN(DISPLAY_CS), *LOOKUP_PIN(DISPLAY_DC));
         else if (dispTp == DISPLAY_TYPE_ILI9341) {
-            lcd = new ILI9341(spi, *LOOKUP_PIN(DISPLAY_CS), *LOOKUP_PIN(DISPLAY_DC));
+            lcd = new ILI9341(*io, *LOOKUP_PIN(DISPLAY_CS), *LOOKUP_PIN(DISPLAY_DC));
             doubleSize = true;
         } else
             target_panic(PANIC_SCREEN_ERROR);
@@ -62,8 +82,10 @@ class WDisplay {
 
         DMESG("configure screen: FRMCTR1=%p MADCTL=%p SPI at %dMHz", frmctr1, madctl, freq);
 
-        spi.setFrequency(freq * 1000000);
-        spi.setMode(0);
+        if (spi) {
+            spi->setFrequency(freq * 1000000);
+            spi->setMode(0);
+        }
         lcd->init();
         lcd->configure(madctl, frmctr1);
         width = getConfig(CFG_DISPLAY_WIDTH, 160);
@@ -93,8 +115,10 @@ void setScreenBrightness(int level) {
     if (!bl)
         return;
 
-    if (level < 0) level = 0;
-    if (level > 100) level = 100;
+    if (level < 0)
+        level = 0;
+    if (level > 100)
+        level = 100;
 
     if (level == 0)
         bl->setDigitalValue(0);
@@ -109,7 +133,8 @@ void setScreenBrightness(int level) {
 //%
 void setPalette(Buffer buf) {
     auto display = getWDisplay();
-    if (!display) return;
+    if (!display)
+        return;
 
     if (48 != buf->length)
         target_panic(PANIC_SCREEN_ERROR);
@@ -124,7 +149,8 @@ void setPalette(Buffer buf) {
 //%
 void setupScreenStatusBar(int barHeight) {
     auto display = getWDisplay();
-    if (!display) return;
+    if (!display)
+        return;
     if (!display->doubleSize) {
         display->displayHeight = display->height - barHeight;
         display->setAddrMain();
@@ -134,8 +160,9 @@ void setupScreenStatusBar(int barHeight) {
 //%
 void updateScreenStatusBar(Image_ img) {
     auto display = getWDisplay();
-    if (!display) return;
-    
+    if (!display)
+        return;
+
     if (!img)
         return;
     display->lastStatus = img;
@@ -144,8 +171,9 @@ void updateScreenStatusBar(Image_ img) {
 //%
 void updateScreen(Image_ img) {
     auto display = getWDisplay();
-    if (!display) return;
-    
+    if (!display)
+        return;
+
     if (display->inUpdate)
         return;
 
