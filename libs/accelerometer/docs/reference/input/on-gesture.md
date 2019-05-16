@@ -18,6 +18,7 @@ input.onGesture(Gesture.Shake,() => {
 > * `tilt left`: the board is tilted to the left
 > * `tilt right`: the board is tilted to the right
 > * `free fall`: the board is falling for a distance
+> * `2g`: acceleration force of 2 g (works well for step detection)
 > * `3g`: acceleration force of 3 g
 > * `6g`: acceleration force of 6 g
 * ``body``: code to run when the gesture event occurs
