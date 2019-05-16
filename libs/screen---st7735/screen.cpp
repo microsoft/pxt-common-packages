@@ -91,7 +91,7 @@ class WDisplay {
         width = getConfig(CFG_DISPLAY_WIDTH, 160);
         height = getConfig(CFG_DISPLAY_HEIGHT, 128);
         displayHeight = height;
-        lcd->setAddrWindow(offX, offY, width, height);
+        setAddrMain();
         DMESG("screen: %d x %d, off=%d,%d", width, height, offX, offY);
         int sz = doubleSize ? (width >> 1) * (height >> 1) : width * height;
         screenBuf = (uint8_t *)app_alloc(sz / 2 + 20);
