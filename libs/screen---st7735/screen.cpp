@@ -27,16 +27,17 @@ class WDisplay {
     uint32_t palXOR;
 
     WDisplay() {
-        int conn = getConfig(CFG_DISPLAY_CONNECTION, 0);
+        uint32_t cfg2 = getConfig(CFG_DISPLAY_CFG2, 0x0);
+        int conn = cfg2 >> 24;
+
         SPI *spi = NULL;
         if (conn == 0) {
             spi = new CODAL_SPI(*LOOKUP_PIN(DISPLAY_MOSI), *LOOKUP_PIN(DISPLAY_MISO),
                                 *LOOKUP_PIN(DISPLAY_SCK));
             io = new SPIScreenIO(*spi);
-        } else if (conn == 1 || conn == 2) {
-#ifdef STM32F4
-            io = new FSMCIO();
-            DMESG("created FSMCIO");
+        } else if (conn == 1) {
+#ifdef PARALLEL_SCREEN_IO
+            io = new PARALLEL_SCREEN_IO(cfg2 & 0xffffff, PIN(DISPLAY_MOSI), PIN(DISPLAY_MISO));
 #else
             target_panic(PANIC_SCREEN_ERROR);
 #endif
@@ -70,22 +71,22 @@ class WDisplay {
         }
 
         uint32_t cfg0 = getConfig(CFG_DISPLAY_CFG0, 0x40);
-        uint32_t cfg2 = getConfig(CFG_DISPLAY_CFG2, 0x0);
         uint32_t frmctr1 = getConfig(CFG_DISPLAY_CFG1, 0x000603);
         palXOR = (cfg0 & 0x1000000) ? 0xffffff : 0x000000;
         auto madctl = cfg0 & 0xff;
         offX = (cfg0 >> 8) & 0xff;
         offY = (cfg0 >> 16) & 0xff;
-        auto freq = (cfg2 & 0xff);
-        if (!freq)
-            freq = 15;
 
-        DMESG("configure screen: FRMCTR1=%p MADCTL=%p SPI at %dMHz", frmctr1, madctl, freq);
+        DMESG("configure screen: FRMCTR1=%p MADCTL=%p", frmctr1, madctl);
 
         if (spi) {
+            auto freq = (cfg2 & 0xff);
+            if (!freq)
+                freq = 15;
             spi->setFrequency(freq * 1000000);
             spi->setMode(0);
         }
+
         lcd->init();
         lcd->configure(madctl, frmctr1);
         width = getConfig(CFG_DISPLAY_WIDTH, 160);
