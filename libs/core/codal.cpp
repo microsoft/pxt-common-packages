@@ -110,7 +110,7 @@ void dispatchEvent(Event e) {
     auto value = fromInt(e.value);
     while (curr) {
         runAction1(curr->action, value);
-        curr = nextBinding(curr, e.source, e.value);
+        curr = nextBinding(curr->next, e.source, e.value);
     }
 }
 

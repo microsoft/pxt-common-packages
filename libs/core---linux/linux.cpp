@@ -257,7 +257,7 @@ static void dispatchEvent(Event &e) {
     auto curr = findBinding(e.source, e.value);
     while(curr) {
         setupThread(curr->action, fromInt(e.value));
-        curr = nextBinding(curr, e.source, e.value);
+        curr = nextBinding(curr->next, e.source, e.value);
     }
 }
 
