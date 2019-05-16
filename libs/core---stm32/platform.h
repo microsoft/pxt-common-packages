@@ -46,8 +46,8 @@ struct F4_Settings {
 
 #define PAGE_SIZE 1024 // not really
 
-#ifdef STM32F412Zx
-#define DEV_NUM_PINS 96
+#ifdef STM32F412Rx
+#define DEV_NUM_PINS 96 // needed for testing right now
 #else
 #define DEV_NUM_PINS 64
 #endif
