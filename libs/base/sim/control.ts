@@ -30,6 +30,9 @@ namespace pxsim.control {
             ? b.id.slice(0, 4)
             : "abcd";
     }
+    export function _ramSize() {
+        return 32 * 1024 * 1024;
+    }
     export function deviceSerialNumber(): number {
         let b = board();
         if (!b) return 42;
