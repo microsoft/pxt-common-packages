@@ -998,6 +998,36 @@ void _drawLine(Image_ img, int xy, int wh, int c) {
     drawLine(img, XX(xy), YY(xy), XX(wh), YY(wh), c);
 }
 
+void fillCircle(Image_ img, int cx, int cy, int r, int c) {
+    int x = r - 1;
+    int y = 0;
+    int dx = 1;
+    int dy = 1;
+    int err = dx - (r << 1);
+
+    while (x >= y) {
+        fillRect(img, cx + x, cy - y, 1, 1 + (y << 1), c);
+        fillRect(img, cx + y, cy - x, 1, 1 + (x << 1), c);
+        fillRect(img, cx - x, cy - y, 1, 1 + (y << 1), c);
+        fillRect(img, cx - y, cy - x, 1, 1 + (x << 1), c);
+        if (err <= 0) {
+            ++y;
+            err += dy;
+            dy += 2;
+        }
+        else {
+            --x;
+            dx += 2;
+            err += dx - (r << 1);
+        }
+    }
+}
+
+//%
+void _fillCircle(Image_ img, int cxy, int r, int c) {
+    fillCircle(img, XX(cxy), YY(cxy), r, c);
+}
+
 } // namespace ImageMethods
 
 namespace image {
