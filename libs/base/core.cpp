@@ -650,6 +650,11 @@ int includes(String s, String searchString, int start) {
     return -1 != indexOf(s, searchString, start);
 }
 
+//%
+bool isEmpty(String s) {
+    return !s || IS_EMPTY(s);
+}
+
 } // namespace String_
 
 namespace Boolean_ {
