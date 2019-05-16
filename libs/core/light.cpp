@@ -66,7 +66,7 @@ void neopixelSendData(DevicePin* pin, int mode, const uint8_t* data, unsigned le
     if (!pin || !length) return;
 
 #if defined(SAMD21) || defined(SAMD51)
-    if (length > NEOPIXEL_MIN_LENGTH_FOR_SPI && isValidMOSIPin(pin))		     if (length > NEOPIXEL_MIN_LENGTH_FOR_SPI && isValidMOSIPin(pin))
+    if (length > NEOPIXEL_MIN_LENGTH_FOR_SPI && isValidMOSIPin(pin))
         spiNeopixelSendBuffer(pin, data, length);
     else
         neopixel_send_buffer(*pin, data, length);
