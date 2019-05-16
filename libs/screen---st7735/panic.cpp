@@ -283,6 +283,7 @@ extern "C" void target_panic(int statusCode) {
     const int dat = 3 * unit;
     const int intra = unit;
     const int inter = 2 * unit;
+    const int word = 6 * unit;
     while (1) {
         if (led) {
             // SOS
@@ -304,6 +305,15 @@ extern "C" void target_panic(int statusCode) {
             }
             // inter character space
             busy_wait_us(inter);
+            // . . .
+            for(int i = 0; i < 3; ++i) {
+                led->setDigitalValue(1);
+                busy_wait_us(dit);
+                led->setDigitalValue(0);
+                busy_wait_us(intra);
+            }
+            // inter character space
+            busy_wait_us(word);
         }
     }
 }
