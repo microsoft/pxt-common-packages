@@ -108,12 +108,10 @@ void dispatchEvent(Event e) {
 
     auto curr = findBinding(e.source, e.value);
     auto value = fromInt(e.value);
-    if (curr)
+    while (curr) {
         runAction1(curr->action, value);
-
-    curr = findBinding(e.source, DEVICE_EVT_ANY);
-    if (curr)
-        runAction1(curr->action, value);
+        curr = nextBinding(curr->next, e.source, e.value);
+    }
 }
 
 void registerWithDal(int id, int event, Action a, int flags) {
