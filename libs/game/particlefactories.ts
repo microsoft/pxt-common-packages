@@ -307,7 +307,11 @@ namespace particles {
         }
 
         drawParticle(p: Particle, x: Fx8, y: Fx8) {
-            screen.setPixel(Fx.toInt(p._x), Fx.toInt(p._y), p.color);
+            screen.setPixel(
+                Fx.toInt(x),
+                Fx.toInt(y),
+                p.color
+            );
         }
     }
 
@@ -352,7 +356,11 @@ namespace particles {
         }
 
         drawParticle(p: Particle, x: Fx8, y: Fx8) {
-            screen.setPixel(Fx.toInt(p._x), Fx.toInt(p._y), p.color);
+            screen.setPixel(
+                Fx.toInt(x),
+                Fx.toInt(y),
+                p.color
+            );
         }
 
         setRadius(r: number) {
@@ -682,13 +690,10 @@ namespace particles {
             const p = super.createParticle(anchor);
             const yRange = anchor.height ? anchor.height >> 1 : 8;
             p.data = Math.randomRange(0, this.clouds.length - 1);
-            p._x = Fx.sub(
-                Fx8(anchor.width ? anchor.x + (anchor.width >> 1) : anchor.x),
-                Fx8(this.camera.offsetX)
-            );
-            p._y = Fx.sub(
+            p._x = Fx8(anchor.width ? anchor.x + (anchor.width >> 1) : anchor.x)
+            p._y = Fx.add(
                 Fx8(Math.randomRange(anchor.y - yRange, anchor.y + yRange)),
-                Fx8(this.camera.offsetY - (this.clouds[p.data].width >> 1))
+                Fx8(this.clouds[p.data].width >> 1)
             );
             p.vx = Fx8(-Math.randomRange(this.minRate, this.maxRate));
 
@@ -720,8 +725,8 @@ namespace particles {
             const mainImage = this.clouds[p.data];
             screen.drawTransparentImage(
                 mainImage,
-                Fx.toInt(p._x),
-                Fx.toInt(p._y)
+                Fx.toInt(x),
+                Fx.toInt(y)
             );
 
             if (p.color & 1) {
@@ -734,8 +739,8 @@ namespace particles {
 
                 screen.drawTransparentImage(
                     selection,
-                    Fx.toInt(Fx.add(p._x, xOffset)),
-                    Fx.toInt(Fx.add(p._y, yOffset))
+                    Fx.toInt(Fx.add(x, xOffset)),
+                    Fx.toInt(Fx.add(y, yOffset))
                 );
             }
         }
