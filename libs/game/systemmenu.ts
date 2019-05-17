@@ -268,17 +268,19 @@ namespace scene.systemMenu {
     }
 
     function volumeDown() {
-        const v = music.volume();
-        music.setVolume(v - 32);
+        const v = music.volume()
+        const newVolume = ((v - 1) >> 5) << 5;
+
+        music.setVolume(newVolume);
         music.playTone(440, 500);
     }
 
     function brightnessUp() {
-        screen.setBrightness(Math.min(screen.brightness() + 10, 100));
+        screen.setBrightness(screen.brightness() + 10);
     }
 
     function brightnessDown() {
-        screen.setBrightness(Math.max(screen.brightness() - 10, 10));
+        screen.setBrightness(screen.brightness() - 10);
     }
 
     function toggleStats() {
