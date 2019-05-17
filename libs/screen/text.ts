@@ -198,8 +198,14 @@ namespace helpers {
         x |= 0
         y |= 0
         if (!font) {
-            for (let i = 0; i < text.length; ++i)
-                font = image.font8
+            let hasHigh = false
+            for (let i = 0; i < text.length; ++i) {
+                if (text.charCodeAt(i) > 0x2000) {
+                    hasHigh = true
+                    break
+                }
+            }
+            font = hasHigh ? image.font12 : image.font8
         }
         if (!color) color = 1
         let x0 = x
