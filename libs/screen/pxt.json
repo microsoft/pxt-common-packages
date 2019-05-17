@@ -15,7 +15,8 @@
         "image.d.ts",
         "pxtparts.json",
         "imagesoverrides.jres",
-        "imagesoverrides.ts"
+        "imagesoverrides.ts",
+        "source-han-sans.jres"
     ],
     "public": true,
     "dependencies": {
