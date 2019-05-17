@@ -259,8 +259,11 @@ void enableAmp(int enabled) {
     // this is also compiled on linux
 #ifdef LOOKUP_PIN
     auto pin = LOOKUP_PIN(SPEAKER_AMP);
-    if (pin)
+    if (pin) {
+        if (PIN(SPEAKER_AMP) & CFG_PIN_CONFIG_ACTIVE_LO)
+            enabled = !enabled;
         pin->setDigitalValue(enabled);
+    }
 #endif
 }
 
