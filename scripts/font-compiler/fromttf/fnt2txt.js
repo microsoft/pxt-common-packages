@@ -121,4 +121,9 @@ for (let i = 0; i < charsUNI.length; ++i) {
     rr += chars[i]
 }
 
-fs.writeFileSync("font.txt", rr, "utf8")
+rr = `# This is based on Adobe Source Han Sans, see https://github.com/adobe-fonts/source-han-sans
+charWidth=12
+charHeight=12
+jres=1
+` + rr
+fs.writeFileSync("adobe-source-han-sans.txt", rr, "utf8")

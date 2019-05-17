@@ -7,7 +7,8 @@ Only a subset of ideograms is drawn, based on frequency of characters in Japanes
 and Korean.
 
 The Hangul subset is based on https://tools.ietf.org/html/draft-ietf-idn-lsb-ace-01
-It contains 888 Hangul syllabus.
+It contains 888 Hangul syllabus. Then all syllabus from https://en.wiktionary.org/wiki/Wiktionary:Frequency_lists/Korean_5800
+were added.
 
 The ideogram frequencies are in the following files (characters in files are ordered
 by frequency):
