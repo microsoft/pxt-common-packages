@@ -246,7 +246,7 @@ namespace effects {
     });
 
     //% fixedInstance whenUsed block="fire"
-    export const fire = new ParticleEffect(40, 5000, function (anchor: particles.ParticleAnchor, particlesPerSecond: number) {
+    export const fire = new ParticleEffect(50, 5000, function (anchor: particles.ParticleAnchor, particlesPerSecond: number) {
         const factory = new particles.FireFactory(5);
         const src = new particles.FireSource(anchor, particlesPerSecond, factory);
         src.setAcceleration(0, -20);
@@ -260,7 +260,7 @@ namespace effects {
     export const coolRadial = createEffect(30, 2000, function () { return new particles.RadialFactory(0, 30, 10, [0x6, 0x7, 0x8, 0x9, 0xA]) });
 
     //% fixedInstance whenUsed block="halo"
-    export const halo = createEffect(40, 3000, function () {
+    export const halo = createEffect(70, 3000, function () {
         class RingFactory extends particles.RadialFactory {
             createParticle(anchor: particles.ParticleAnchor) {
                 const p = super.createParticle(anchor);
@@ -329,7 +329,7 @@ namespace effects {
     });
 
     //% fixedInstance whenUsed block="clouds"
-    export const clouds = new ScreenEffect(0.2, 0.5, 5000, function (anchor: particles.ParticleAnchor, particlesPerSecond: number) {
+    export const clouds = new ScreenEffect(.5, 1.5, 5000, function (anchor: particles.ParticleAnchor, particlesPerSecond: number) {
         const factory = new particles.CloudFactory();
         const source = new particles.ParticleSource(anchor, particlesPerSecond, factory);
 
