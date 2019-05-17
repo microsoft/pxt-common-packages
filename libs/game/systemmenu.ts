@@ -268,7 +268,7 @@ namespace scene.systemMenu {
     }
 
     function volumeDown() {
-        const v = music.volume()
+        const v = music.volume();
         const newVolume = ((v - 1) >> 5) << 5;
 
         music.setVolume(newVolume);
