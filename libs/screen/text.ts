@@ -133,6 +133,15 @@ a420a8fcaa828400 a720087e2a1c0800 ab200098a4a6bf02 ac20183c5a5a4200 af20627f2244
         data: hex``
     }
 
+    export function getFontForText(text: string) {
+        for (let i = 0; i < text.length; ++i) {
+            // this is quite approximate
+            if (text.charCodeAt(i) > 0x2000)
+                return image.font12
+        }
+        return image.font8
+    }
+
     //% deprecated=1 hidden=1
     export function doubledFont(f: Font): Font {
         return scaledFont(f, 2)
@@ -188,7 +197,7 @@ interface Image {
 
 namespace helpers {
     export function imagePrintCenter(img: Image, text: string, y: number, color?: number, font?: image.Font) {
-        if (!font) font = image.font8
+        if (!font) font = image.getFontForText(text)
         let w = text.length * font.charWidth
         let x = (img.width - w) / 2
         imagePrint(img, text, x, y, color, font)
@@ -197,16 +206,8 @@ namespace helpers {
     export function imagePrint(img: Image, text: string, x: number, y: number, color?: number, font?: image.Font) {
         x |= 0
         y |= 0
-        if (!font) {
-            let hasHigh = false
-            for (let i = 0; i < text.length; ++i) {
-                if (text.charCodeAt(i) > 0x2000) {
-                    hasHigh = true
-                    break
-                }
-            }
-            font = hasHigh ? image.font12 : image.font8
-        }
+        if (!font)
+            font = image.getFontForText(text)
         if (!color) color = 1
         let x0 = x
         let cp = 0
