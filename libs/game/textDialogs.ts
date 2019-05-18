@@ -40,7 +40,7 @@ namespace game {
 
             this.frame = frame || dialogFrame || (dialogFrame = defaultFrame());
 
-            this.font = font || dialogFont || (dialogFont = image.font8);
+            this.font = font || dialogFont || (dialogFont = image.font8); // FONT8-TODO
 
             this.cursor = cursor || dialogCursor || (dialogCursor = defaultCursorImage());
 
@@ -287,7 +287,7 @@ namespace game {
         maxSubOffset: number;
 
         constructor(width: number, height: number) {
-            super(width, height, defaultSplashFrame(), image.font8)
+            super(width, height, defaultSplashFrame())
             this.maxOffset = -1;
             this.maxSubOffset = -1;
             this.textColor = 1;

@@ -100,7 +100,7 @@ namespace game {
 
     export function showDialog(title: string, subtitle: string, footer?: string) {
         init();
-        const font = image.font8;
+        const font = image.getFontForText(title + subtitle + (footer || ""));
         let h = 8;
         if (title)
             h += font.charHeight;
