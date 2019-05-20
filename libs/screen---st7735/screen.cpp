@@ -37,8 +37,8 @@ class WDisplay {
                                 *LOOKUP_PIN(DISPLAY_SCK));
             io = new SPIScreenIO(*spi);
         } else if (conn == 1) {
-#ifdef PARALLEL_SCREEN_IO
-            io = new PARALLEL_SCREEN_IO(cfg2 & 0xffffff, PIN(DISPLAY_MOSI), PIN(DISPLAY_MISO));
+#ifdef CODAL_CREATE_PARALLEL_SCREEN_IO
+            io = CODAL_CREATE_PARALLEL_SCREEN_IO(cfg2 & 0xffffff, PIN(DISPLAY_MOSI), PIN(DISPLAY_MISO));
 #else
             target_panic(PANIC_SCREEN_ERROR);
 #endif
