@@ -278,12 +278,42 @@ extern "C" void target_panic(int statusCode) {
 
     auto led = LOOKUP_PIN(LED);
 
+    const int unit = 100000;
+    const int dit = unit;
+    const int dat = 3 * unit;
+    const int intra = unit;
+    const int inter = 2 * unit;
+    const int word = 6 * unit;
     while (1) {
         if (led) {
-            led->setDigitalValue(1);
-            busy_wait_us(100000);
-            led->setDigitalValue(0);
-            busy_wait_us(300000);
+            // SOS
+            // . . .
+            for(int i = 0; i < 3; ++i) {
+                led->setDigitalValue(1);
+                busy_wait_us(dit);
+                led->setDigitalValue(0);
+                busy_wait_us(intra);
+            }
+            // inter character space
+            busy_wait_us(inter);
+            // - - - 
+            for(int i = 0; i < 3; ++i) {
+                led->setDigitalValue(1);
+                busy_wait_us(dat);
+                led->setDigitalValue(0);
+                busy_wait_us(intra);
+            }
+            // inter character space
+            busy_wait_us(inter);
+            // . . .
+            for(int i = 0; i < 3; ++i) {
+                led->setDigitalValue(1);
+                busy_wait_us(dit);
+                led->setDigitalValue(0);
+                busy_wait_us(intra);
+            }
+            // inter character space
+            busy_wait_us(word);
         }
     }
 }
