@@ -255,12 +255,10 @@ static void dispatchEvent(Event &e) {
     lastEvent = e;
 
     auto curr = findBinding(e.source, e.value);
-    if (curr)
+    while(curr) {
         setupThread(curr->action, fromInt(e.value));
-
-    curr = findBinding(e.source, DEVICE_EVT_ANY);
-    if (curr)
-        setupThread(curr->action, fromInt(e.value));
+        curr = nextBinding(curr->next, e.source, e.value);
+    }
 }
 
 static void *evtDispatcher(void *dummy) {

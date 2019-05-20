@@ -128,6 +128,11 @@ enum JDGesture {
      */
     //% block="free fall"
     FreeFall = DAL.ACCELEROMETER_EVT_FREEFALL,
+    /**
+     * Raised when a 2g move (or step) is detected
+     */
+    //% block="2g (step)"
+    TwoG = DAL.ACCELEROMETER_EVT_2G,
 }
 
 const enum JDDimension {
