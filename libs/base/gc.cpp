@@ -323,11 +323,26 @@ static uint32_t getObjectSize(RefObject *o) {
     return r;
 }
 
-__attribute__((noinline)) static void allocateBlock() {
-    auto sz = GC_BLOCK_SIZE;
+static GCBlock *allocateBlockCore() {
+    int sz = GC_BLOCK_SIZE;
     void *dummy = NULL;
 #ifdef GC_GET_HEAP_SIZE
     if (firstBlock) {
+#ifdef GC_STACK_BASE
+        if (!firstBlock->next) {
+            int memSize = getConfig(CFG_RAM_BYTES, 0);
+            int codalEnd = GC_STACK_BASE;
+            // round up to 1k - there is sometimes a few bytes below the stack
+            codalEnd = (codalEnd + 1024) & ~1023;
+            int codalSize = codalEnd & 0xffffff;
+            sz = memSize - codalSize - 4;
+            if (sz > 0) {
+                auto curr = (GCBlock *)codalEnd;
+                curr->blockSize = sz - sizeof(GCBlock);
+                return curr;
+            }
+        }
+#endif
         gc(2); // dump roots
         target_panic(PANIC_GC_OOM);
     }
@@ -349,15 +364,20 @@ __attribute__((noinline)) static void allocateBlock() {
 #endif
     auto curr = (GCBlock *)GC_ALLOC_BLOCK(sz);
     curr->blockSize = sz - sizeof(GCBlock);
+    // make sure reference to allocated block is stored somewhere, otherwise
+    // GCC optimizes out the call to GC_ALLOC_BLOCK
+    curr->data[4].vtable = (uint32_t)dummy;
+    return curr;
+}
+
+__attribute__((noinline)) static void allocateBlock() {
+    auto curr = allocateBlockCore();
     LOG("GC alloc: %p", curr);
     GC_CHECK((curr->blockSize & 3) == 0, 40);
     curr->data[0].vtable = FREE_MASK | curr->blockSize;
     ((RefBlock *)curr->data)[0].nextFree = firstFree;
     firstFree = (RefBlock *)curr->data;
-    // make sure reference to allocated block is stored somewhere, otherwise
-    // GCC optimizes out the call to GC_ALLOC_BLOCK
-    curr->data[4].vtable = (uint32_t)dummy;
-    
+
     // blocks need to be sorted by address for midPtr to work
     if (!firstBlock || curr < firstBlock) {
         curr->next = firstBlock;
