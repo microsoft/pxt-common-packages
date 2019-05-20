@@ -2,6 +2,7 @@
 #include "ST7735.h"
 #include "ILI9341.h"
 
+#include "SPIScreenIO.h"
 #ifdef STM32F4
 #include "FSMCIO.h"
 #endif
