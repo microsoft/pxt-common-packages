@@ -6,6 +6,7 @@
         "accelerometer.cpp",
         "accelhw.cpp",
         "axis.h",
+        "gesture.ts",
         "shims.d.ts",
         "enums.d.ts",
         "ns.ts",

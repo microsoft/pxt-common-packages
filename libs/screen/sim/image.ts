@@ -547,6 +547,34 @@ namespace pxsim.ImageMethods {
     export function _drawIcon(img: RefImage, icon: RefBuffer, xy: number, color: number) {
         drawIcon(img, icon, XX(xy), YY(xy), color)
     }
+
+    export function fillCircle(img: RefImage, cx: number, cy: number, r: number, c: number) {
+        let x = r - 1;
+        let y = 0;
+        let dx = 1;
+        let dy = 1;
+        let err = dx - (r << 1);
+        while (x >= y) {
+            fillRect(img, cx + x, cy - y, 1, 1 + (y << 1), c);
+            fillRect(img, cx + y, cy - x, 1, 1 + (x << 1), c);
+            fillRect(img, cx - x, cy - y, 1, 1 + (y << 1), c);
+            fillRect(img, cx - y, cy - x, 1, 1 + (x << 1), c);
+            if (err <= 0) {
+                y++;
+                err += dy;
+                dy += 2;
+            }
+            if (err > 0) {
+                x--;
+                dx += 2;
+                err += dx - (r << 1);
+            }
+        }
+    }
+    
+    export function _fillCircle(img: RefImage, cxy: number, r: number, c: number) {
+        fillCircle(img, XX(cxy), YY(cxy), r, c);
+    }
 }
 
 

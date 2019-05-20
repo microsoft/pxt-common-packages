@@ -39,7 +39,7 @@ namespace console {
         add(ConsolePriority.Debug, text);
     }
 
-    export function warning(text: string) {
+    export function warn(text: string) {
         add(ConsolePriority.Warning, text);
     }
 

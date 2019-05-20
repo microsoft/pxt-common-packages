@@ -13,8 +13,11 @@ namespace music {
         7d06e0064907b8072d08a9082d09b9094d0aea0a900b400cfa0cc00d910e6f0f5a1053115b1272139a14d4152017
         8018f519801b231dde1e`
 
-    //% promise shim=music::playInstructions
-    function playInstructions(buf: Buffer) { }
+    //% shim=music::queuePlayInstructions
+    function queuePlayInstructions(timeDelta: number, buf: Buffer) { }
+
+    //% shim=music::stopPlaying
+    function stopPlaying() { }
 
     //% shim=music::forceOutput
     export function forceOutput(buf: MusicOutput) { }
@@ -59,6 +62,12 @@ namespace music {
         return globalVolume;
     }
 
+    function playNoteCore(when: number, frequency: number, ms: number) {
+        let buf = control.createBuffer(10)
+        addNote(buf, 0, ms, 255, 255, 1, frequency, volume())
+        queuePlayInstructions(when, buf)
+    }
+
     /**
      * Play a tone through the speaker for some amount of time.
      * @param frequency pitch of the tone to play in Hertz (Hz), eg: Note.C
@@ -71,10 +80,34 @@ namespace music {
     //% weight=76 blockGap=8
     //% group="Tone"
     export function playTone(frequency: number, ms: number): void {
-        let buf = control.createBuffer(10 + 1)
-        addNote(buf, 0, ms, 255, 255, 1, frequency, volume())
-        playInstructions(buf)
+        if (ms == 0)
+            ms = 86400000 // 1 day
+
+        if (ms <= 2000) {
+            playNoteCore(0, frequency, ms)
+            pause(ms)
+        } else {
+            const id = ++playToneID
+            control.runInParallel(() => {
+                let pos = control.millis()
+                while (id == playToneID && ms > 0) {
+                    let now = control.millis()
+                    let d = pos - now
+                    let t = Math.min(ms, 500)
+                    ms -= t
+                    pos += t
+                    playNoteCore(d - 1, frequency, t)
+                    if (ms == 0)
+                        pause(d + t)
+                    else
+                        pause(d + t - 100)
+                }
+            })
+        }
     }
+
+    let playToneID = 0
+
 
     /**
      * Stop all sounds from playing.
@@ -85,6 +118,7 @@ namespace music {
     //% group="Sounds"
     export function stopAllSounds() {
         Melody.stopAll();
+        stopPlaying();
     }
 
     //% fixedInstances
@@ -167,7 +201,7 @@ namespace music {
         //% parts="headphone"
         //% weight=93 blockGap=8
         //% group="Sounds"
-        loop(volume = 128) {
+        loop(volume = 255) {
             this.playCore(volume, true)
         }
 
@@ -180,7 +214,7 @@ namespace music {
         //% parts="headphone"
         //% weight=95 blockGap=8
         //% group="Sounds"
-        play(volume = 128) {
+        play(volume = 255) {
             this.playCore(volume, false)
         }
 
@@ -194,7 +228,7 @@ namespace music {
         //% parts="headphone"
         //% weight=94 blockGap=8
         //% group="Sounds"
-        playUntilDone(volume = 128) {
+        playUntilDone(volume = 255) {
             this.stop()
             const p = this._player = new MelodyPlayer(this)
             this._player.onPlayFinished = () => {
@@ -251,6 +285,9 @@ namespace music {
 
             let hz = 0
             let ms = 0
+            let timePos = 0
+            let startTime = control.millis()
+            let now = 0
 
             let envA = 0
             let envD = 0
@@ -345,6 +382,7 @@ namespace music {
 
             while (true) {
                 let currNote = scanNextWord();
+                let prevNote: boolean = false;
                 if (!currNote) {
                     if (this.onPlayFinished)
                         this.onPlayFinished();
@@ -360,42 +398,49 @@ namespace music {
                 for (let i = 0; i < currNote.length; i++) {
                     let noteChar = currNote.charAt(i);
                     switch (noteChar) {
-                        case 'c': case 'C': note = 1; break;
-                        case 'd': case 'D': note = 3; break;
-                        case 'e': case 'E': note = 5; break;
-                        case 'f': case 'F': note = 6; break;
-                        case 'g': case 'G': note = 8; break;
-                        case 'a': case 'A': note = 10; break;
-                        case 'b': case 'B': note = 12; break;
-                        case 'r': case 'R': hz = 0; break;
-                        case '#': note++; break;
-                        case 'b': note--; break; // doesn't do anything
+                        case 'c': case 'C': note = 1; prevNote = true; break;
+                        case 'd': case 'D': note = 3; prevNote = true; break;
+                        case 'e': case 'E': note = 5; prevNote = true; break;
+                        case 'f': case 'F': note = 6; prevNote = true; break;
+                        case 'g': case 'G': note = 8; prevNote = true; break;
+                        case 'a': case 'A': note = 10; prevNote = true; break;
+                        case 'B': note = 12; prevNote = true; break;
+                        case 'r': case 'R': hz = 0; prevNote = false; break;
+                        case '#': note++; prevNote = false; break;
+                        case 'b': if (prevNote) note--; else { note = 12; prevNote = true; } break;
                         case ',':
                             consumeToken();
+                            prevNote = false;
                             break;
                         case '!':
                             tokenKind = Token.Hz;
+                            prevNote = false;
                             break;
                         case '@':
                             consumeToken();
                             tokenKind = Token.EnvelopeA;
+                            prevNote = false;
                             break;
                         case '~':
                             consumeToken();
                             tokenKind = Token.WaveForm;
+                            prevNote = false;
                             break;
                         case ':':
                             consumeToken();
                             tokenKind = Token.Beat;
+                            prevNote = false;
                             break;
                         case '-':
                             consumeToken();
                             tokenKind = Token.Tempo;
+                            prevNote = false;
                             break;
                         default:
                             if (tokenKind == Token.Note)
                                 tokenKind = Token.Octave;
                             token += noteChar;
+                            prevNote = false;
                             break;
                     }
                 }
@@ -409,14 +454,14 @@ namespace music {
                 let currMs = ms
 
                 if (currMs <= 0) {
-                    const beat = 15000 / tempo;
+                    const beat = Math.idiv(15000, tempo);
                     currMs = duration * beat
                 }
 
                 if (hz < 0) {
                     // no frequency specified, so no duration
                 } else if (hz == 0) {
-                    pause(currMs)
+                    timePos += currMs
                 } else {
                     sndInstrPtr = 0
                     addForm(envA, 0, 255)
@@ -424,7 +469,14 @@ namespace music {
                     addForm(currMs - (envA + envD), envS, envS)
                     addForm(envR, envS, 0)
 
-                    playInstructions(sndInstr)
+                    queuePlayInstructions(timePos - now, sndInstr.slice(0, sndInstrPtr))
+                    timePos += currMs // don't add envR - it's supposed overlap next sound
+                }
+
+                let timeLeft = timePos - now
+                if (timeLeft > 200) {
+                    pause(timeLeft - 100)
+                    now = control.millis() - startTime
                 }
             }
         }

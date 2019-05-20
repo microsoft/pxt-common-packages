@@ -88,6 +88,11 @@ enum class Gesture {
     //% block="free fall"
     FreeFall = ACCELEROMETER_EVT_FREEFALL,
     /**
+     * Raised when a 2G shock is detected
+     */
+    //% block="2g (step)"
+    TwoG = ACCELEROMETER_EVT_2G,
+    /**
      * Raised when a 3G shock is detected
      */
     //% block="3g"
@@ -153,16 +158,6 @@ void onGesture(Gesture gesture, Action body) {
     registerWithDal(DEVICE_ID_GESTURE, gi, body);
 }
 
-int getAccelerationStrength() {
-    auto acc = getAccelerometer();
-    if (!acc) return 0;
-
-    float x = acc->getX();
-    float y = acc->getY();
-    float z = acc->getZ();
-    return (int)sqrtf(x * x + y * y + z * z);
-}
-
 /**
  * Get the acceleration value in milli-gravitys (when the board is laying flat with the screen up,
  * x=0, y=0 and z=-1023)
@@ -179,6 +174,7 @@ int acceleration(Dimension dimension) {
     auto acc = getAccelerometer();
     if (!acc) return 0;
 
+    acc->requestUpdate();
     switch (dimension) {
     case Dimension::X:
         return acc->getX();
@@ -187,7 +183,10 @@ int acceleration(Dimension dimension) {
     case Dimension::Z:
         return acc->getZ();
     case Dimension::Strength:
-        return getAccelerationStrength();
+        float x = acc->getX();
+        float y = acc->getY();
+        float z = acc->getZ();
+        return (int)sqrtf(x * x + y * y + z * z);
     }
     return 0;
 }
@@ -204,6 +203,7 @@ int rotation(Rotation kind) {
     auto acc = getAccelerometer();
     if (!acc) return 0;
 
+    acc->requestUpdate();
     switch (kind) {
     case Rotation::Pitch:
         return acc->getPitch();
