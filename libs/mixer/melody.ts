@@ -382,6 +382,7 @@ namespace music {
 
             while (true) {
                 let currNote = scanNextWord();
+                let prevNote: boolean = false;
                 if (!currNote) {
                     if (this.onPlayFinished)
                         this.onPlayFinished();
@@ -397,42 +398,49 @@ namespace music {
                 for (let i = 0; i < currNote.length; i++) {
                     let noteChar = currNote.charAt(i);
                     switch (noteChar) {
-                        case 'c': case 'C': note = 1; break;
-                        case 'd': case 'D': note = 3; break;
-                        case 'e': case 'E': note = 5; break;
-                        case 'f': case 'F': note = 6; break;
-                        case 'g': case 'G': note = 8; break;
-                        case 'a': case 'A': note = 10; break;
-                        case 'b': case 'B': note = 12; break;
-                        case 'r': case 'R': hz = 0; break;
-                        case '#': note++; break;
-                        case 'b': note--; break; // doesn't do anything
+                        case 'c': case 'C': note = 1; prevNote = true; break;
+                        case 'd': case 'D': note = 3; prevNote = true; break;
+                        case 'e': case 'E': note = 5; prevNote = true; break;
+                        case 'f': case 'F': note = 6; prevNote = true; break;
+                        case 'g': case 'G': note = 8; prevNote = true; break;
+                        case 'a': case 'A': note = 10; prevNote = true; break;
+                        case 'B': note = 12; prevNote = true; break;
+                        case 'r': case 'R': hz = 0; prevNote = false; break;
+                        case '#': note++; prevNote = false; break;
+                        case 'b': if (prevNote) note--; else { note = 12; prevNote = true; } break;
                         case ',':
                             consumeToken();
+                            prevNote = false;
                             break;
                         case '!':
                             tokenKind = Token.Hz;
+                            prevNote = false;
                             break;
                         case '@':
                             consumeToken();
                             tokenKind = Token.EnvelopeA;
+                            prevNote = false;
                             break;
                         case '~':
                             consumeToken();
                             tokenKind = Token.WaveForm;
+                            prevNote = false;
                             break;
                         case ':':
                             consumeToken();
                             tokenKind = Token.Beat;
+                            prevNote = false;
                             break;
                         case '-':
                             consumeToken();
                             tokenKind = Token.Tempo;
+                            prevNote = false;
                             break;
                         default:
                             if (tokenKind == Token.Note)
                                 tokenKind = Token.Octave;
                             token += noteChar;
+                            prevNote = false;
                             break;
                     }
                 }

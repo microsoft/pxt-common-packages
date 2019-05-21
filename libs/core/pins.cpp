@@ -45,6 +45,7 @@ void linkPin(int from, int to) {
 DevicePin *lookupPin(int pinName) {
     if (pinName < 0 || pinName == 0xff)
         return NULL;
+    pinName &= CFG_PIN_NAME_MSK;
     return getPin(pinName);
 }
 

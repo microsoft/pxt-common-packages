@@ -14,10 +14,11 @@ namespace jacdac {
             input.onGesture(Gesture.ThreeG, () => this.raiseHostEvent(JDGesture.ThreeG));
             input.onGesture(Gesture.SixG, () => this.raiseHostEvent(JDGesture.SixG));
             input.onGesture(Gesture.EightG, () => this.raiseHostEvent(JDGesture.EightG));
+            input.onGesture(Gesture.TwoG, () => this.raiseHostEvent(JDGesture.TwoG));
         }
 
         raiseCustomGestureEvent(id: number) {
-            this.raiseHostEvent(JDGesture.Shake + 1 + (id | 0));
+            this.raiseHostEvent(JDGesture.TwoG + 1 + (id | 0));
         }
 
         protected serializeState(): Buffer {

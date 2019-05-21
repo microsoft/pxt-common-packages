@@ -166,7 +166,12 @@ const enum JDGesture {
      * Raised when a 8G shock is detected
      */
     //% block="8g"
-    EightG = DAL.ACCELEROMETER_EVT_8G
+    EightG = DAL.ACCELEROMETER_EVT_8G,
+    /**
+     * Raised when a 2g move (or step) is detected
+     */
+    //% block="2g (step)"
+    TwoG = DAL.ACCELEROMETER_EVT_2G,
 }
 
 const enum JDDimension {

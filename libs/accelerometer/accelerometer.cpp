@@ -88,6 +88,11 @@ enum class Gesture {
     //% block="free fall"
     FreeFall = ACCELEROMETER_EVT_FREEFALL,
     /**
+     * Raised when a 2G shock is detected
+     */
+    //% block="2g (step)"
+    TwoG = ACCELEROMETER_EVT_2G,
+    /**
      * Raised when a 3G shock is detected
      */
     //% block="3g"
