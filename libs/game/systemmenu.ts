@@ -264,7 +264,7 @@ namespace scene.systemMenu {
     function volumeUp() {
         const v = music.volume();
         const remainder = v % 32;
-        let newVolume = v + 32 - remainder;
+        const newVolume = v + 32 - remainder;
 
         music.setVolume(newVolume);
         music.playTone(440, 500);
@@ -273,7 +273,7 @@ namespace scene.systemMenu {
     function volumeDown() {
         const v = music.volume();
         const remainder = v % 32;
-        let newVolume = v - (remainder ? remainder : 32);
+        const newVolume = v - (remainder ? remainder : 32);
 
         music.setVolume(newVolume);
         music.playTone(440, 500);
