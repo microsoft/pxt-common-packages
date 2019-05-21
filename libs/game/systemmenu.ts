@@ -263,13 +263,17 @@ namespace scene.systemMenu {
 
     function volumeUp() {
         const v = music.volume();
-        music.setVolume(v + 32);
+        const remainder = v % 32;
+        let newVolume = v + 32 - remainder;
+
+        music.setVolume(newVolume);
         music.playTone(440, 500);
     }
 
     function volumeDown() {
         const v = music.volume();
-        const newVolume = ((v - 1) >> 5) << 5;
+        const remainder = v % 32;
+        let newVolume = v - (remainder ? remainder : 32);
 
         music.setVolume(newVolume);
         music.playTone(440, 500);
