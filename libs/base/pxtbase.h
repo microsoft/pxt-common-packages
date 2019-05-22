@@ -298,6 +298,7 @@ struct HandlerBinding {
     Action action;
 };
 HandlerBinding *findBinding(int source, int value);
+HandlerBinding *nextBinding(HandlerBinding *curr, int source, int value);
 void setBinding(int source, int value, Action act);
 
 // The standard calling convention is:
