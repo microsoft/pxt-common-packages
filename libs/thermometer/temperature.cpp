@@ -57,7 +57,7 @@ void onTemperatureConditionChanged(TemperatureCondition condition, int temperatu
 int temperature(TemperatureUnit unit) {
     auto thermo = getWTemp();
     // default to 21 if not present
-    int (value = NULL != thermo) ? thermo->sensor.getValue() : 21;
+    int value = (NULL != thermo) ? thermo->sensor.getValue() : 21;
     if (unit == TemperatureUnit::Celsius) return value;
     else return (value * 18) / 10 + 32;
 }
