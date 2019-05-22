@@ -16,7 +16,7 @@ enum class TemperatureUnit {
 };
 
 namespace pxt {
-SINGLETON(WTemp);
+SINGLETON_IF_PIN(WTemp, TEMPERATURE);
 }
 
 namespace input {
@@ -32,7 +32,10 @@ namespace input {
 //% help=input/on-temperature-condition-changed blockExternalInputs=0
 //% group="More" weight=76
 void onTemperatureConditionChanged(TemperatureCondition condition, int temperature, TemperatureUnit unit, Action handler) {
-    auto sensor = &getWTemp()->sensor;
+    auto thermo = getWTemp();
+    if (!thermo) return;
+
+    auto sensor = &thermo->sensor;
     sensor->updateSample();
 
     int t = unit == TemperatureUnit::Celsius ? temperature : ((temperature - 32) * 10) / 18;
@@ -52,7 +55,9 @@ void onTemperatureConditionChanged(TemperatureCondition condition, int temperatu
 //% parts="thermometer"
 //% weight=26
 int temperature(TemperatureUnit unit) {
-    int value = getWTemp()->sensor.getValue();
+    auto thermo = getWTemp();
+    // default to 21 if not present
+    int value = (NULL != thermo) ? thermo->sensor.getValue() : 21;
     if (unit == TemperatureUnit::Celsius) return value;
     else return (value * 18) / 10 + 32;
 }
