@@ -1,5 +1,8 @@
 #include "light.h"
+
+#if defined(SAMD21) || defined(SAMD51)
 #include "neopixel.h"
+#endif
 
 #define NEOPIXEL_MIN_LENGTH_FOR_SPI 24
 #define DOTSTAR_MIN_LENGTH_FOR_SPI 24
@@ -62,12 +65,16 @@ void spiNeopixelSendBuffer(DevicePin* pin, const uint8_t *data, unsigned size) {
 void neopixelSendData(DevicePin* pin, int mode, const uint8_t* data, unsigned length) {
     if (!pin || !length) return;
 
-    DMESG("LEN %d",length);
-
+#if defined(SAMD21) || defined(SAMD51)
     if (length > NEOPIXEL_MIN_LENGTH_FOR_SPI && isValidMOSIPin(pin))
         spiNeopixelSendBuffer(pin, data, length);
     else
         neopixel_send_buffer(*pin, data, length);
+ #else
+     if (isValidMOSIPin(pin)) {
+         spiNeopixelSendBuffer(pin, data, length);
+     }
+ #endif
 }
 
 void bitBangDotStarSendData(DevicePin* data, DevicePin* clk, int mode, const uint8_t* buf, unsigned length) {
