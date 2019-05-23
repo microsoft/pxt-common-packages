@@ -19,6 +19,7 @@ struct SoundInstruction {
     uint16_t duration;   // ms
     int16_t startVolume; // 0-1023
     int16_t endVolume;   // 0-1023
+    uint16_t endFrequency;  // Hz
 };
 
 #ifdef DATASTREAM_MAXIMUM_BUFFERS
@@ -49,6 +50,8 @@ struct PlayingSound {
     uint32_t samplesLeftInCurr;
     uint32_t tonePosition;
     int32_t prevVolume;
+    uint32_t prevToneStep;
+    int32_t prevToneDelta;
     WaitingSound *sound;
     SoundInstruction *currInstr, *instrEnd;
 };
