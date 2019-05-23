@@ -305,7 +305,7 @@ namespace music {
                 let freqStart = hz;
                 let freqEnd = endHz;
 
-                const envelopeWidth = ms > 0 ? 1000 : duration * Math.idiv(15000, tempo) + envR;
+                const envelopeWidth = ms > 0 ? ms : duration * Math.idiv(15000, tempo) + envR;
                 if (endHz != hz && envelopeWidth != 0) {
                     const slope = (freqEnd - freqStart) / envelopeWidth;
                     freqStart = hz + slope * msOff;
