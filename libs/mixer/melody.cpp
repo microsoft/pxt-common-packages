@@ -223,7 +223,7 @@ int WSynthesizer::fillSamples(int16_t *dst, int numsamples) {
                         toneStep = (uint32_t)(toneStepMult * instr->frequency);
                         if (instr->frequency != instr->endFrequency) {
                             uint32_t endToneStep = (uint32_t)(toneStepMult * instr->endFrequency);
-                            toneDelta = (int32_t)(toneStep - endToneStep) / samplesLeft;
+                            toneDelta = (int32_t)(endToneStep - toneStep) / (int32_t)samplesLeft;
                         } else {
                             toneDelta = 0;
                         }
