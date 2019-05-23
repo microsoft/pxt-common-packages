@@ -156,7 +156,7 @@ namespace jacdac {
                 this.promptedServers.push(device.udidl);
 
             // check that we haven't been join by then
-            return !!answer 
+            return !!answer
                 && !this.hasPlayers()
                 && !!jacdac.devices().find(d => d.device_address == device.device_address);
         }
@@ -217,12 +217,12 @@ namespace jacdac {
         jacdac.controllerClient.start();
     }
     // auto start server
-    jacdac.controllerService.start();
-    // TODO: fix control packages in broadcast mode
-    control.runInParallel(function () {
-        while (jacdac.controllerService.isStarted) {
-            jacdac.controllerService.sendState();
-            pause(500);
-        }
-    })
+    // jacdac.controllerService.start();
+    // // TODO: fix control packages in broadcast mode
+    // control.runInParallel(function () {
+    //     while (jacdac.controllerService.isStarted) {
+    //         jacdac.controllerService.sendState();
+    //         pause(500);
+    //     }
+    // })
 }
