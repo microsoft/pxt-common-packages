@@ -1,0 +1,12 @@
+{
+    "name": "feather-wing",
+    "description": "Adafruit FeatherWing pinout",
+    "files": [
+        "README.md",
+        "device.d.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core"
+    }
+}

@@ -36,6 +36,7 @@
         "libs/power",
         "libs/controller",
         "libs/color-sensor",
-        "libs/edge-connector"
+        "libs/edge-connector",
+        "libs/feather-wing"
     ]
 }
