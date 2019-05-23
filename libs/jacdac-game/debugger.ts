@@ -80,10 +80,10 @@ namespace jacdac.dbg {
         {
             const charCount = Math.max(value.length, label.length)
             let size = this.debugFont.charWidth * charCount + this.marginx
-            screen.fillRect(horizontalOffset,0,size, barHeight,color);
+            screen.fillRect(horizontalOffset,screen.height - barHeight,size, barHeight,color);
 
-            screen.print(label, (this.marginx / 2) + horizontalOffset, this.marginy, 1, this.debugFont);
-            screen.print(value, (this.marginx / 2) + horizontalOffset, this.debugFont.charHeight + (2 * this.marginy), 1, this.debugFont);
+            screen.print(label, (this.marginx / 2) + horizontalOffset, screen.height - barHeight + this.marginy, 1, this.debugFont);
+            screen.print(value, (this.marginx / 2) + horizontalOffset, screen.height - (this.debugFont.charHeight + (2 * this.marginy)), 1, this.debugFont);
 
             horizontalOffset += size + 1
 
@@ -92,13 +92,17 @@ namespace jacdac.dbg {
 
         paintDiagnosticsBar(){
             const diag = jacdac.diagnostics();
+            let background = 1
+            if (diag.bus_state)
+                background = 2
             const height = 2 * (this.debugFont.charHeight + (2 * this.marginy))
-            screen.fillRect(0, 0, screen.width, height, 1);
-            const errorCount = diag.bus_lo_error + diag.bus_uart_error + diag.bus_timeout_error + diag.packets_dropped;
+            screen.fillRect(0, screen.height - height, screen.width, height, background);
+            const errorCount = diag.bus_lo_error + diag.bus_uart_error + diag.bus_timeout_error;
 
             let horiz = 1;
             horiz = this.makeDiagnostic("TX", diag.packets_sent.toString(), horiz, 6, height);
             horiz = this.makeDiagnostic("RX", diag.packets_received.toString(), horiz, 7, height);
+            horiz = this.makeDiagnostic("DR", diag.packets_dropped.toString(),horiz, 2, height);
             horiz = this.makeDiagnostic("ERR", errorCount.toString(),horiz, 2, height);
 
             return height
@@ -126,27 +130,28 @@ namespace jacdac.dbg {
             this.started = false;
 
             game.popScene();
-            game.consoleOverlay.setVisible(this.consoleVisible);
+            game.consoleOverlay.setVisible(false);
+
+            // controller._setUserEventsEnabled(true);
         }
 
         start() {
             game.pushScene();
-            controller._setUserEventsEnabled(false);
+            // controller._setUserEventsEnabled(false);
             game.onShade(() => {
-                this.refresh();
+                this.paintDiagnosticsBar();
             });
-            controller.left.onEvent(ControllerButtonEvent.Pressed, () => {
+            controller.left.onEvent(SYSTEM_KEY_DOWN, () => {
                 this.mode = Mode.Services;
                 game.consoleOverlay.clear();
                 this.refresh();
             })
-            controller.right.onEvent(ControllerButtonEvent.Pressed, () => {
+            controller.right.onEvent(SYSTEM_KEY_DOWN, () => {
                 this.mode = Mode.Devices;
                 game.consoleOverlay.clear();
                 this.refresh();
             })
-            controller.B.onEvent(ControllerButtonEvent.Pressed, () => {
-                stop();
+            controller.B.onEvent(SYSTEM_KEY_DOWN, () => {
                 // done
                 if (_menu) {
                     _menu.stop();
@@ -155,11 +160,11 @@ namespace jacdac.dbg {
             })
 
             game.consoleOverlay.setVisible(true);
-            console.log(`jacdac dashboard`);
-            console.log(` LEFT for services`)
-            console.log(` RIGHT for devices`)
-            console.log(` A console on/off`)
-            console.log(` B for exit`)
+            // console.log(`jacdac dashboard`);
+            // console.log(` LEFT for services`)
+            // console.log(` RIGHT for devices`)
+            // console.log(` A console on/off`)
+            // console.log(` B for exit`)
             this.refresh();
         }
     }
