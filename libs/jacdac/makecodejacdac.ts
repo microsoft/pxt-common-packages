@@ -81,8 +81,9 @@ namespace jacdac {
         }
 
         // start service
-        jacdac.JACDAC.instance.start();
         bus.start();
+        jacdac.JACDAC.instance.start();
+
         console.addListener(function (pri, msg) {
             jacdac.JACDAC.instance.consoleService.add(<jacdac.JDConsolePriority><number>pri, msg);
         });
