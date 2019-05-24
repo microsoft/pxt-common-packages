@@ -1,5 +1,7 @@
 #include "pxtbase.h"
+#ifdef CODAL_JACDAC_WIRE_SERIAL
 #include "LowLevelTimer.h"
+#endif
 #include <limits.h>
 #include <stdlib.h>
 
@@ -1445,10 +1447,12 @@ void deepSleep() __attribute__((weak));
 //%
 void deepSleep() {}
 
+#ifdef CODAL_JACDAC_WIRE_SERIAL
 LowLevelTimer *getJACDACTimer() __attribute__((weak));
 LowLevelTimer *getJACDACTimer() {
     return NULL;
 }
+#endif
 
 int *getBootloaderConfigData() __attribute__((weak));
 int *getBootloaderConfigData() {

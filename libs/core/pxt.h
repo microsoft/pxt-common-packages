@@ -86,7 +86,9 @@ namespace pxt {
 CODAL_I2C* getI2C(DigitalInOutPin sda, DigitalInOutPin scl);
 #endif
 CODAL_SPI* getSPI(DigitalInOutPin mosi, DigitalInOutPin miso, DigitalInOutPin sck);
+#ifdef CODAL_JACDAC_WIRE_SERIAL
 LowLevelTimer* getJACDACTimer();
+#endif
 }
 
 namespace serial {
