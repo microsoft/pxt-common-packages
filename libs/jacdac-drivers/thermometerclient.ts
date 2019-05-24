@@ -47,7 +47,7 @@ namespace jacdac {
             if (unit == JDTemperatureUnit.Fahrenheit)
                 temperature = (temperature - 32) * 5 / 9;
             this.setThreshold(condition == JDTemperatureCondition.Cold, temperature);
-            control.onEvent(this.id, condition, handler);
+            control.onEvent(this.eventId, condition, handler);
         }
     }
 

@@ -1,8 +1,10 @@
 #include "pxtbase.h"
+#include "LowLevelTimer.h"
 #include <limits.h>
 #include <stdlib.h>
 
 using namespace std;
+using namespace codal;
 
 #define p10(v) __builtin_powi(10, v)
 
@@ -1231,7 +1233,7 @@ function testFloatAsInt() {
         testInt(-i - 0x3fff0002)
         testFloat(i + 0x3fffffff + 1)
         testFloat((i + 10000) * 1000000)
-    }   
+    }
 }
 #endif
 
@@ -1443,6 +1445,11 @@ unsigned programSize() {
 void deepSleep() __attribute__((weak));
 //%
 void deepSleep() {}
+
+LowLevelTimer* getJACDACTimer() __attribute__((weak));
+LowLevelTimer* getJACDACTimer() {
+    return NULL;
+}
 
 int *getBootloaderConfigData() __attribute__((weak));
 int *getBootloaderConfigData() {

@@ -1,12 +1,11 @@
 namespace jacdac {
     //% fixedInstances
-    export class MusicService extends Service {
+    export class MusicService extends Host {
         constructor() {
             super("mus", jacdac.MUSIC_DEVICE_CLASS);
         }
 
-        handlePacket(pkt: Buffer): boolean {
-            const packet = new JDPacket(pkt);
+        handlePacket(packet: JDPacket): number {
             const data = packet.data;
             const cmd: JDMusicCommand = data[0];
             switch(cmd) {
@@ -16,7 +15,7 @@ namespace jacdac {
                     music.playTone(freq, duration);
                     break;
             }
-            return true;
+            return jacdac.DEVICE_OK;
         }
     }
 

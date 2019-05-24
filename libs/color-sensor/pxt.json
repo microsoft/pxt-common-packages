@@ -4,13 +4,15 @@
     "files": [
         "README.md",
         "colorsensor.ts",
-        "tcs34725.ts"
+        "tcs34725.ts",
+        "jacdac.ts"
     ],
     "testFiles": [
         "test.ts"
     ],
     "public": true,
     "dependencies": {
-        "core": "file:../core"
+        "core": "file:../core",
+        "jacdac": "file:../jacdac"
     }
 }

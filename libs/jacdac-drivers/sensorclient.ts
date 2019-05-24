@@ -33,10 +33,21 @@ namespace jacdac {
             this.sync();
         }
 
+        /**
+         * Requests the sensor to calibrate
+         */
+        public calibrate() {
+            this.start();
+            const buf = control.createBuffer(2);
+            const cmd = SensorCommand.Calibrate;
+            buf.setNumber(NumberFormat.UInt8LE, 0, cmd);
+            this.sendPacket(buf);
+        }
+
         private sync() {
             if (this._sensorState == SensorState.None) return;
 
-            const buf = control.createBuffer(1);
+            const buf = control.createBuffer(2);
             const cmd = (this._sensorState & SensorState.Streaming)
                 ? SensorCommand.StartStream : SensorCommand.StopStream;
             buf.setNumber(NumberFormat.UInt8LE, 0, cmd);
@@ -48,22 +59,22 @@ namespace jacdac {
             this.start();
         }
 
-        handleControlPacket(pkt: Buffer): boolean {
-            if (this._sensorState == SensorState.None) return true;
-            const packet = new ControlPacket(pkt);
-            const state = packet.data.getNumber(NumberFormat.UInt8LE, 1);
+        handleServiceInformation(device: JDDevice, serviceInfo: JDServiceInformation): number {
+            if (this._sensorState == SensorState.None) return DEVICE_OK;
+            const data = serviceInfo.data;
+            const state = data.getNumber(NumberFormat.UInt8LE, 1);
             if ((this._sensorState & SensorState.Streaming) != (state & SensorState.Streaming))
                 this.sync(); // start            
-            return true;
+            return DEVICE_OK;
         }
 
-        public handlePacket(pkt: Buffer): boolean {
-            const packet = new JDPacket(pkt);
-            const command = packet.getNumber(NumberFormat.UInt8LE, 0);
+        handlePacket(packet: JDPacket): number {
+            const data = packet.data;
+            const command = data.getNumber(NumberFormat.UInt8LE, 0);
             this.log(`vpkt ${command}`)
             switch (command) {
-                case SensorCommand.State:
-                    const state = packet.data.slice(1);
+                case SensorCommand.State: {
+                    const state = data.slice(1);
                     const changed = !jacdac.bufferEqual(this._lastState, state);
                     const r = this.handleVirtualState(state);
                     this._lastState = state;
@@ -71,26 +82,28 @@ namespace jacdac {
                     if (changed && this._stateChangedHandler)
                         this._stateChangedHandler();
                     return r;
-                case SensorCommand.Event:
-                    const value = packet.data.getNumber(NumberFormat.UInt16LE, 1);
-                    control.raiseEvent(this.id, value);
-                    return true;
+                }
+                case SensorCommand.Event: {
+                    const value = data.getNumber(NumberFormat.UInt16LE, 1);
+                    control.raiseEvent(this.eventId, value);
+                    return jacdac.DEVICE_OK;
+                }
                 default:
                     return this.handleCustomCommand(command, packet);
             }
         }
 
-        protected handleCustomCommand(command: number, pkt: JDPacket) {
-            return true;
+        protected handleCustomCommand(command: number, pkt: JDPacket): number {
+            return jacdac.DEVICE_OK;
         }
 
-        protected handleVirtualState(state: Buffer) {
-            return true;
+        protected handleVirtualState(state: Buffer): number {
+            return jacdac.DEVICE_OK;
         }
 
         protected setThreshold(low: boolean, value: number) {
             this.start();
-            const buf = control.createBuffer(5);
+            const buf = control.createBuffer(6);
             const cmd = low ? SensorCommand.LowThreshold : SensorCommand.HighThreshold;
             buf.setNumber(NumberFormat.UInt8LE, 0, cmd);
             buf.setNumber(NumberFormat.Int32LE, 1, value);
