@@ -212,9 +212,9 @@ namespace light {
          * @param startColor the start color
          * @param endColor the end color
          */
-        //% blockId="lightsetgradient" block="set %strip gradient from %startColor=colorNumberPicker to %endColor=colorNumberPicker"
+        //% blockId=lightsetgradient block="set %strip gradient from %startColor=colorNumberPicker to %endColor=colorNumberPicker"
         //% weight=79 blockGap=8
-        //% advanced=true
+        //% group="More" advanced=true blockHidden=true
         setGradient(startColor: number, endColor: number, easing?: (t: number) => number) {
             const sr = unpackR(startColor);
             const sg = unpackG(startColor);
