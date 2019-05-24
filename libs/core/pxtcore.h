@@ -7,6 +7,7 @@
 #define itoa(a, b) codal::itoa(a, b)
 
 #define GC_GET_HEAP_SIZE() device_heap_size(0)
+#define GC_STACK_BASE DEVICE_STACK_BASE
 #define xmalloc device_malloc
 #define xfree device_free
 

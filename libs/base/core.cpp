@@ -26,8 +26,7 @@ static HandlerBinding *handlerBindings;
 HandlerBinding *nextBinding(HandlerBinding *curr, int source, int value) {
     for (auto p = curr; p; p = p->next) {
         // DEVICE_ID_ANY == DEVICE_EXT_ANY == 0
-        if ((p->source == source || p->source == 0) && 
-            (p->value == value || p->value == 0)) {
+        if ((p->source == source || p->source == 0) && (p->value == value || p->value == 0)) {
             return p;
         }
     }
@@ -39,10 +38,10 @@ HandlerBinding *findBinding(int source, int value) {
 }
 
 void setBinding(int source, int value, Action act) {
-    HandlerBinding* curr = NULL;
+    HandlerBinding *curr = NULL;
     for (auto p = handlerBindings; p; p = p->next) {
         if ((p->source == source) && (p->value == value)) {
-            curr = p; 
+            curr = p;
             break;
         }
     }
@@ -994,12 +993,12 @@ int toBoolDecr(TValue v) {
 // The integer, non-overflow case for add/sub/bit opts is handled in assembly
 
 #ifdef PXT_VM
-#define NUMOP2(op) \
-   if (bothNumbers(a, b)) { \
-        auto tmp = (int64_t)numValue(a) op (int64_t)numValue(b); \
-        if ((int)tmp == tmp) \
-            return TAG_NUMBER((int)tmp); \
-    } \
+#define NUMOP2(op)                                                                                 \
+    if (bothNumbers(a, b)) {                                                                       \
+        auto tmp = (int64_t)numValue(a) op(int64_t) numValue(b);                                   \
+        if ((int)tmp == tmp)                                                                       \
+            return TAG_NUMBER((int)tmp);                                                           \
+    }                                                                                              \
     NUMOP(op)
 #else
 #define NUMOP2(op) NUMOP(op)
@@ -1446,8 +1445,8 @@ void deepSleep() __attribute__((weak));
 //%
 void deepSleep() {}
 
-LowLevelTimer* getJACDACTimer() __attribute__((weak));
-LowLevelTimer* getJACDACTimer() {
+LowLevelTimer *getJACDACTimer() __attribute__((weak));
+LowLevelTimer *getJACDACTimer() {
     return NULL;
 }
 
@@ -1461,14 +1460,16 @@ int getConfig(int key, int defl) {
 #ifdef PXT_VM
     int *cfgData = vmImg->configData;
 #else
-    int *cfgData = *(int **)&bytecode[18];
+    int *cfgData = bytecode ? *(int **)&bytecode[18] : NULL;
 #endif
 
-    for (int i = 0;; i += 2) {
-        if (cfgData[i] == key)
-            return cfgData[i + 1];
-        if (cfgData[i] == 0)
-            break;
+    if (cfgData) {
+        for (int i = 0;; i += 2) {
+            if (cfgData[i] == key)
+                return cfgData[i + 1];
+            if (cfgData[i] == 0)
+                break;
+        }
     }
 
     cfgData = getBootloaderConfigData();
