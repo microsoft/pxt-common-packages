@@ -64,7 +64,7 @@ namespace music {
 
     function playNoteCore(when: number, frequency: number, ms: number) {
         let buf = control.createBuffer(10)
-        addNote(buf, 0, ms, 255, 255, 1, frequency, volume())
+        addNote(buf, 0, ms, 255, 255, 3, frequency, volume())
         queuePlayInstructions(when, buf)
     }
 
@@ -383,6 +383,9 @@ namespace music {
             while (true) {
                 let currNote = scanNextWord();
                 if (!currNote) {
+                    let timeLeft = timePos - now
+                    if (timeLeft > 0)
+                        pause(timeLeft)
                     if (this.onPlayFinished)
                         this.onPlayFinished();
                     return;
