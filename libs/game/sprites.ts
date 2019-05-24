@@ -66,7 +66,7 @@ namespace sprites {
     //% inlineInputMode=inline
     //% vy.defl=100
     export function createProjectileFromSide(img: Image, vx: number, vy: number) {
-        return createProjectile(img, vx, vy, 1);
+        return createProjectile(img, vx, vy, SpriteKind.Projectile);
     }
 
     /**
@@ -82,7 +82,7 @@ namespace sprites {
     //% inlineInputMode=inline
     //% vy.defl=100
     export function createProjectileFromSprite(img: Image, sprite: Sprite, vx: number, vy: number): Sprite {
-        return createProjectile(img, vx, vy, 1, sprite);
+        return createProjectile(img, vx, vy, SpriteKind.Projectile, sprite);
     }
 
     /**
@@ -98,7 +98,7 @@ namespace sprites {
     //% vy.defl=100
     //% deprecated=true blockHidden=true
     export function createProjectile(img: Image, vx: number, vy: number, kind?: number, sprite?: Sprite) {
-        const s = sprites.create(img, kind);
+        const s = sprites.create(img, kind || SpriteKind.Projectile);
         const sc = game.currentScene();
         s.vx = vx
         s.vy = vy
