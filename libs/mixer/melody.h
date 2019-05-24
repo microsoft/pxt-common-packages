@@ -75,13 +75,7 @@ class WSynthesizer
     int fillSamples(int16_t *dst, int numsamples);
     int updateQueues();
 
-    WSynthesizer() : upstream(NULL), out(*this) {
-        currSample = 0;
-        active = false;
-        sampleRate = out.dac.getSampleRate();
-        memset(&playingSounds, 0, sizeof(playingSounds));
-        waiting = NULL;
-    }
+    WSynthesizer();
     virtual ~WSynthesizer() {}
 
     void pokeUpstream() {

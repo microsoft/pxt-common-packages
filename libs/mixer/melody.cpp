@@ -327,6 +327,15 @@ void stopPlaying() {
     target_enable_irq();
 }
 
+WSynthesizer::WSynthesizer() : upstream(NULL), out(*this) {
+    currSample = 0;
+    active = false;
+    sampleRate = out.dac.getSampleRate();
+    memset(&playingSounds, 0, sizeof(playingSounds));
+    waiting = NULL;
+    PXT_REGISTER_RESET(stopPlaying);
+}
+
 } // namespace music
 
 namespace jacdac {
