@@ -1,12 +1,12 @@
 #include "pxtbase.h"
 #ifdef CODAL_JACDAC_WIRE_SERIAL
 #include "LowLevelTimer.h"
+using namespace codal;
 #endif
 #include <limits.h>
 #include <stdlib.h>
 
 using namespace std;
-using namespace codal;
 
 #define p10(v) __builtin_powi(10, v)
 
