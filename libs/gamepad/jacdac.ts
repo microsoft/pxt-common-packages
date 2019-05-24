@@ -1,12 +1,11 @@
 namespace jacdac {
     //% fixedInstances
-    export class GamepadService extends Service {
+    export class GamepadService extends Host {
         constructor() {
             super("gpad", jacdac.GAMEPAD_DEVICE_CLASS);
         }
 
-        handlePacket(pkt: Buffer): boolean {
-            const packet = new JDPacket(pkt);
+        handlePacket(packet: JDPacket): number {
             const data = packet.data;
             const cmd: JDGamepadCommand = data[0];
             switch (cmd) {
@@ -22,7 +21,7 @@ namespace jacdac {
                     gamepad.setThrottle(data[1], data.getNumber(NumberFormat.Int8LE, 2));
                     break;
             }
-            return true;
+            return jacdac.DEVICE_OK;
         }
     }
 

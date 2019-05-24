@@ -30,7 +30,7 @@ namespace jacdac {
                 }
 
             this.log(`new player ${toHex8(address)}`);
-            const drivers = jacdac.drivers();
+            const devices = jacdac.devices();
             const players = controller.players();
             const ids: number[] = [0, 0, 0, 0, 0]; // player 0 is not used
             players.forEach(p => ids[p.playerIndex] = 1);
@@ -39,7 +39,7 @@ namespace jacdac {
             // clean dead players
             for (let i = 1; i < this.controlData.length; ++i) {
                 const ci = this.controlData[i];
-                if (ci && !drivers.some(d => d.address == ci)) {
+                if (ci && !devices.some(d => d.device_address == ci)) {
                     this.log(`del ${toHex8(this.controlData[i])} from ${i}`);
                     this.controlData[i] = 0;
                     const p = players.find(p => p.playerIndex == i);
@@ -78,45 +78,43 @@ namespace jacdac {
             return -1;
         }
 
-        handleControlPacket(pkt: Buffer) {
-            const cp = new ControlPacket(pkt);
-            const data = cp.data;
-            return this.processPacket(cp.address, data);
+        handleServiceInformation(device: JDDevice, serviceInfo: JDServiceInformation): number {
+            const data = serviceInfo.data;
+            return this.processPacket(device.device_address, data);
         }
 
-        handlePacket(pkt: Buffer) {
-            const packet = new JDPacket(pkt);
+        handlePacket(packet: JDPacket): number {
             const data = packet.data;
-            return this.processPacket(packet.address, data);
+            return this.processPacket(packet.device_address, data);
         }
 
-        private processPacket(address: number, data: Buffer): boolean {
+        private processPacket(address: number, data: Buffer): number {
             const cmd: JDControllerCommand = data[0];
             switch (cmd) {
                 case JDControllerCommand.ControlClient:
                     this.connectClient(address, data[1], data[2]);
-                    return true;
+                    return DAL.DEVICE_OK;
                 case JDControllerCommand.ClientButtons:
                     return this.processClientButtons(address, data);
                 case JDControllerCommand.ControlServer:
                     return this.processControlServer(address, data);
                 default:
-                    return true;
+                    return DAL.DEVICE_OK;
             }
         }
 
-        private processControlServer(address: number, data: Buffer) {
+        private processControlServer(address: number, data: Buffer): number {
             // already prompting for another server
-            if (this.prompting) return true;
+            if (this.prompting) return DAL.DEVICE_OK;
             // so there's another server on the bus,
             // if we haven't done so yet, prompt the user if he wants to join the game
-            const device = jacdac.drivers().find(d => d.address == address);
+            const device = jacdac.devices().find(d => d.device_address == address);
             if (!device) // can't find any device at that address
-                return true;
+                return DAL.DEVICE_OK;
 
             // check if prompted already
-            if (this.promptedServers.indexOf(device.serialNumber) >= 0)
-                return true;
+            if (this.promptedServers.indexOf(device.udidl) >= 0)
+                return DAL.DEVICE_OK;
 
             this.prompting = true;
             control.runInParallel(() => {
@@ -126,7 +124,7 @@ namespace jacdac {
                 this.prompting = false;
             });
 
-            return true;
+            return DAL.DEVICE_OK;
         }
 
         private hasPlayers(): boolean {
@@ -148,37 +146,37 @@ namespace jacdac {
                 // server got joined
                 || this.hasPlayers()
                 // other driver dissapeared
-                || !jacdac.drivers().find(d => d.address == device.address)
+                || !jacdac.devices().find(d => d.device_address == device.device_address)
             );
             // wait until we have an answer or the service
             control.popEventContext();
 
             // cache user answer
             if (answer !== null)
-                this.promptedServers.push(device.serialNumber);
+                this.promptedServers.push(device.udidl);
 
             // check that we haven't been join by then
-            return !!answer 
+            return !!answer
                 && !this.hasPlayers()
-                && !!jacdac.drivers().find(d => d.address == device.address);
+                && !!jacdac.devices().find(d => d.device_address == device.device_address);
         }
 
-        private processClientButtons(address: number, data: Buffer) {
+        private processClientButtons(address: number, data: Buffer): number {
             const playerIndex = this.connectClient(address, -1, 0);
             if (playerIndex < 0) {
                 this.log(`no player for ${toHex8(address)}`);
-                return false;
+                return DAL.DEVICE_BUSY;
             }
             const player = controller.players().find(p => p.playerIndex == playerIndex);
             if (!player) {
                 this.log(`no player ${player.playerIndex}`);
-                return true;
+                return DAL.DEVICE_OK;
             }
             const state = data[1];
             const btns = player.buttons;
             for (let i = 0; i < btns.length; ++i)
                 btns[i].setPressed(!!(state & (1 << (i + 1))));
-            return true;
+            return DAL.DEVICE_OK;
         }
 
         sendState() {
@@ -219,12 +217,12 @@ namespace jacdac {
         jacdac.controllerClient.start();
     }
     // auto start server
-    jacdac.controllerService.start();
-    // TODO: fix control packages in broadcast mode
-    control.runInParallel(function () {
-        while (jacdac.controllerService.isStarted) {
-            jacdac.controllerService.sendState();
-            pause(500);
-        }
-    })
+    // jacdac.controllerService.start();
+    // // TODO: fix control packages in broadcast mode
+    // control.runInParallel(function () {
+    //     while (jacdac.controllerService.isStarted) {
+    //         jacdac.controllerService.sendState();
+    //         pause(500);
+    //     }
+    // })
 }

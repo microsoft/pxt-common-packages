@@ -12,7 +12,8 @@ namespace jacdac {
         StartStream,
         StopStream,
         LowThreshold,
-        HighThreshold
+        HighThreshold,
+        Calibrate
     }
 
     export function bufferEqual(l: Buffer, r: Buffer): boolean {
@@ -35,13 +36,13 @@ namespace jacdac {
     /**
      * JacDac service running on sensor and streaming data out
      */
-    export class SensorService extends Service {
+    export class SensorHost extends Host {
         public streamingInterval: number; // millis
 
         constructor(name: string, deviceClass: number, controlLength = 0) {
             super(name, deviceClass, 1 + controlLength);
             this.sensorState = SensorState.Stopped;
-            this.streamingInterval = 50;
+            this.streamingInterval = 100;
         }
 
         get sensorState(): SensorState {
@@ -63,26 +64,28 @@ namespace jacdac {
             return undefined;
         }
 
-        public handlePacket(pkt: Buffer): boolean {
-            const packet = new JDPacket(pkt);
-            const command = packet.getNumber(NumberFormat.UInt8LE, 0);
+        public handlePacket(packet: JDPacket): number {
+            const data = packet.data;
+            const command = data.getNumber(NumberFormat.UInt8LE, 0);
             this.log(`hpkt ${command}`);
             switch (command) {
                 case SensorCommand.StartStream:
-                    const interval = packet.getNumber(NumberFormat.UInt32LE, 1);
+                    const interval = data.getNumber(NumberFormat.UInt32LE, 1);
                     if (interval)
                         this.streamingInterval = Math.max(20, interval);
                     this.startStreaming();
-                    return true;
+                    return jacdac.DEVICE_OK;
                 case SensorCommand.StopStream:
                     this.stopStreaming();
-                    return true;
+                    return jacdac.DEVICE_OK;
                 case SensorCommand.LowThreshold:                
-                    this.setThreshold(true, packet.getNumber(NumberFormat.UInt32LE, 1));
-                    return true;
+                    this.setThreshold(true, data.getNumber(NumberFormat.UInt32LE, 1));
+                    return jacdac.DEVICE_OK;
                 case SensorCommand.HighThreshold:
-                    this.setThreshold(false, packet.getNumber(NumberFormat.UInt32LE, 1));
-                    return true;
+                    this.setThreshold(false, data.getNumber(NumberFormat.UInt32LE, 1));
+                    return jacdac.DEVICE_OK;
+                case SensorCommand.Calibrate:
+                    return this.handleCalibrateCommand(packet);
                 default:
                     // let the user deal with it
                     return this.handleCustomCommand(command, packet);
@@ -99,12 +102,17 @@ namespace jacdac {
 
         }
 
-        protected handleCustomCommand(command: number, pkt: JDPacket) {
-            return true;
+        // override
+        protected handleCalibrateCommand(pkt: JDPacket): number {
+            return jacdac.DEVICE_OK;
+        }
+
+        protected handleCustomCommand(command: number, pkt: JDPacket): number {
+            return jacdac.DEVICE_OK;
         }
 
         protected raiseHostEvent(value: number) {
-            const pkt = control.createBuffer(3);
+            const pkt = control.createBuffer(4);
             pkt.setNumber(NumberFormat.UInt8LE, 0, SensorCommand.Event);
             pkt.setNumber(NumberFormat.UInt16LE, 1, value);
             this.sendPacket(pkt);
@@ -127,7 +135,7 @@ namespace jacdac {
                     const state = this.serializeState();
                     if (!!state) {
                         // did the state change?
-                        if (this.isConnected) {
+                        if (this.isConnected()) {
                             // send state and record time
                             const pkt = control.createBuffer(state.length + 1);
                             pkt.setNumber(NumberFormat.UInt8LE, 0, SensorCommand.State);

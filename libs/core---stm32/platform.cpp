@@ -8,6 +8,13 @@ namespace pxt {
 #ifdef STM32F1
 STMLowLevelTimer lowTimer(TIM4, TIM4_IRQn);
 #else
+STMLowLevelTimer jacdacTimer(TIM2, TIM2_IRQn);
+
+LowLevelTimer* getJACDACTimer()
+{
+    return &jacdacTimer;
+}
+
 STMLowLevelTimer lowTimer(TIM5, TIM5_IRQn);
 #endif
 

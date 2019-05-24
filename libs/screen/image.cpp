@@ -13,7 +13,7 @@
 
 namespace pxt {
 
-PXT_VTABLE(RefImage)
+PXT_VTABLE(RefImage, ValType::Object)
 
 void RefImage::destroy(RefImage *t) {
     decrRC(t->buffer());
@@ -254,7 +254,7 @@ void getRows(Image_ img, int x, Buffer dst) {
 
     uint8_t *sp = img->pix(x, 0);
     uint8_t *dp = dst->data;
-    int n = min(dst->length, (w - x) * h) >> 1;
+    int n = min(dst->length, (intptr_t)(w - x) * h) >> 1;
 
     while (n--) {
         *dp++ = *sp & 0xf;
@@ -280,7 +280,7 @@ void setRows(Image_ img, int x, Buffer src) {
 
     uint8_t *dp = img->pix(x, 0);
     uint8_t *sp = src->data;
-    int n = min(src->length, (w - x) * h) >> 1;
+    int n = min(src->length, (intptr_t)(w - x) * h) >> 1;
 
     while (n--) {
         *dp++ = (sp[0] & 0xf) | (sp[1] << 4);

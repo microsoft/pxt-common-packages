@@ -68,6 +68,10 @@ namespace jacdac {
         onEvent(gesture: JDGesture, handler: () => void) {
             this.registerEvent(gesture, handler);
         }
+
+        onCustomGesture(id: number, handler: () => void) {
+            this.registerEvent(JDGesture.Shake + id, handler);
+        }
     }
 
     //% fixedInstance whenUsed block="accelerometer client"

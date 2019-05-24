@@ -14,6 +14,7 @@ namespace input {
      * Uses a color sensor to capture the ambient color as a RGB value.
      */
     //% blockId=sensor_lightcolor block="light color"
+    //% group="Color Sensor"
     export function lightColor(): number {
         if (!_colorSensor)
             _colorSensor = new sensors.TCS34725();
