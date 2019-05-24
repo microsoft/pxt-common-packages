@@ -405,7 +405,7 @@ static GCBlock *allocateBlockCore() {
     curr->blockSize = sz - sizeof(GCBlock);
     // make sure reference to allocated block is stored somewhere, otherwise
     // GCC optimizes out the call to GC_ALLOC_BLOCK
-    curr->data[4].vtable = (uint32_t)dummy;
+    curr->data[4].vtable = (uint32_t)(uintptr_t)dummy;
     return curr;
 }
 

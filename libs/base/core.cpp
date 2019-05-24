@@ -1,10 +1,12 @@
 #include "pxtbase.h"
+#ifdef CODAL_JACDAC_WIRE_SERIAL
 #include "LowLevelTimer.h"
+using namespace codal;
+#endif
 #include <limits.h>
 #include <stdlib.h>
 
 using namespace std;
-using namespace codal;
 
 #define p10(v) __builtin_powi(10, v)
 
@@ -1445,10 +1447,12 @@ void deepSleep() __attribute__((weak));
 //%
 void deepSleep() {}
 
+#ifdef CODAL_JACDAC_WIRE_SERIAL
 LowLevelTimer *getJACDACTimer() __attribute__((weak));
 LowLevelTimer *getJACDACTimer() {
     return NULL;
 }
+#endif
 
 int *getBootloaderConfigData() __attribute__((weak));
 int *getBootloaderConfigData() {

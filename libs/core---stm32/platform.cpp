@@ -5,6 +5,7 @@
 
 namespace pxt {
 
+#ifdef CODAL_JACDAC_WIRE_SERIAL
 #ifdef STM32F1
 STMLowLevelTimer lowTimer(TIM4, TIM4_IRQn);
 #else
@@ -14,6 +15,7 @@ LowLevelTimer* getJACDACTimer()
 {
     return &jacdacTimer;
 }
+#endif // CODAL_JACDAC_WIRE_SERIAL
 
 STMLowLevelTimer lowTimer(TIM5, TIM5_IRQn);
 #endif

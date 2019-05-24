@@ -6,6 +6,7 @@
 
 namespace pxt {
 
+#ifdef CODAL_JACDAC_WIRE_SERIAL
 #ifdef SAMD21
 SAMDTCTimer jacdacTimer(TC4, TC4_IRQn);
 SAMDTCTimer lowTimer(TC3, TC3_IRQn);
@@ -27,6 +28,7 @@ LowLevelTimer* getJACDACTimer()
     return &jacdacTimer;
 }
 #endif
+#endif // CODAL_JACDAC_WIRE_SERIAL
 
 __attribute__((used))
 CODAL_TIMER devTimer(lowTimer);
