@@ -39,4 +39,11 @@ namespace pxt
 
 #define PXT_REGISTER_RESET(fn) pxt::registerResetFunction(fn)
 
+#ifdef __APPLE__
+#include "TargetConditionals.h"
+#if TARGET_OS_IPHONE
+#define PXT_IOS 1
+#endif
+#endif
+
 #endif
