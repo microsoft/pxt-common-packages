@@ -384,6 +384,8 @@ void *gcAllocBlock(size_t sz) {
         currPtr = gcBase;
     }
     void *r = currPtr;
+    if ((uint8_t *)currPtr - gcBase > 1024 * 1024 - sz)
+        target_panic(20);
 #else
     void *r = mmap(currPtr, sz, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
     if (r == MAP_FAILED) {
