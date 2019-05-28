@@ -8,7 +8,11 @@ A set of packages used in various MakeCode editors such as https://makecode.adaf
 
 ## Updating JACDAC-TS
 
-Copy the .ts files under node_modules/@jacdac/jacdac-ts/jacdac to libs/jacdac
+In order to be included in our Static TypeScript release, the JACDAC-ts file had to be "inlined"
+in the libs/jacdac project. To update these files, run the script:
+
+    sh update-jacdac.sh
+
 
 ## Contributing
 

@@ -23,7 +23,7 @@ All sections of code within this repository are licensed under an MIT License:
 1.   pxt-lora v0.2.2 (https://github.com/ElectronicCats/pxt-lora/archive/v0.2.2.tar.gz)
 2.   arduino-LoRa v0.5.0 (https://github.com/sandeepmistry/arduino-LoRa)
 3.   Adafruit_CircuitPython_CharLCD v3.1.2 (https://github.com/adafruit/Adafruit_CircuitPython_CharLCD)
-4.   @jacdac/jacdac-ts v.0.0.8 (https://github.com/jacdac/jacdac-ts)
+4.   @jacdac/jacdac-ts v.0.0.9 (https://github.com/jacdac/jacdac-ts)
 
 %% pxt-lora v0.2.2 NOTICES AND INFORMATION BEGIN HERE (https://github.com/ElectronicCats/pxt-lora/archive/v0.2.2.tar.gz)
 =========================================
