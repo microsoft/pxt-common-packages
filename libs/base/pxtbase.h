@@ -789,7 +789,7 @@ class BoxedString : public RefObject {
 class BoxedBuffer : public RefObject {
   public:
     // data needs to be word-aligned, so we use 32 bits for length
-    int32_t length;
+    int length;
 #ifdef PXT64
     int32_t _padding;
 #endif
