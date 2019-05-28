@@ -176,7 +176,7 @@ inline bool bothNumbers(TValue a, TValue b) {
 }
 
 inline int numValue(TValue n) {
-    return (intptr_t)n >> 1;
+    return (int)((intptr_t)n >> 1);
 }
 
 inline bool canBeTagged(int v) {
@@ -473,9 +473,16 @@ extern const VTable RefAction_vtable;
 #endif
 
 #ifdef PXT_GC
+#ifdef PXT_IOS
+extern uint8_t *gcBase;
+#endif
 inline bool isReadOnly(TValue v) {
 #ifdef PXT64
+#ifdef PXT_IOS
+    return !isPointer(v) || (((uintptr_t)v - (uintptr_t)gcBase) >> 26) != 0;
+#else
     return !isPointer(v) || !((uintptr_t)v >> 37);
+#endif
 #else
     return isTagged(v) || !((uintptr_t)v >> 28);
 #endif
@@ -749,9 +756,9 @@ class BoxedString : public RefObject {
         return ((uintptr_t(*)(BoxedString *))((VTable *)this->vtable)->methods[idx])(this);
     }
     const char *getUTF8Data() { return (const char *)runMethod(4); }
-    uint32_t getUTF8Size() { return runMethod(5); }
+    uint32_t getUTF8Size() { return (uint32_t)runMethod(5); }
     // in characters
-    uint32_t getLength() { return runMethod(6); }
+    uint32_t getLength() { return (uint32_t)runMethod(6); }
     const char *getUTF8DataAt(uint32_t pos) {
         auto meth =
             ((const char *(*)(BoxedString *, uint32_t))((VTable *)this->vtable)->methods[7]);
@@ -781,8 +788,11 @@ class BoxedString : public RefObject {
 
 class BoxedBuffer : public RefObject {
   public:
-    // data needs to be word-aligned, so we use 32/64 bits for length
-    intptr_t length;
+    // data needs to be word-aligned, so we use 32 bits for length
+    int32_t length;
+#ifdef PXT64
+    int32_t _padding;
+#endif
     uint8_t data[0];
     BoxedBuffer() : RefObject(&buffer_vt) {}
 };
@@ -823,7 +833,7 @@ class RefImage : public RefObject {
     }
 
     uint8_t *data() { return hasBuffer() ? buffer()->data : _data; }
-    int length() { return hasBuffer() ? buffer()->length : (_buffer >> 2); }
+    int length() { return (int)(hasBuffer() ? buffer()->length : (_buffer >> 2)); }
     int pixLength() { return length() - 4; }
 
     int height();

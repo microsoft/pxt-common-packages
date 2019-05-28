@@ -219,7 +219,7 @@ static void setupSkipList(String r, const char *data) {
     const char *ptr = dst;
     auto skipEntries = NUM_SKIP_ENTRIES(r);
     for (int i = 0; i < skipEntries; ++i) {
-        ptr = utf8Skip(ptr, len - (ptr - dst), SKIP_INCR);
+        ptr = utf8Skip(ptr, (int)(len - (ptr - dst)), SKIP_INCR);
         if (!ptr)
             oops(80);
         r->skip.list[i] = ptr - dst;
@@ -229,7 +229,7 @@ static void setupSkipList(String r, const char *data) {
 
 #ifdef PXT_VM
 String mkInternalString(const char *str) {
-    int len = strlen(str);
+    int len = (int)strlen(str);
     String r = new (xmalloc(sizeof(void *) + 2 + len + 1)) BoxedString(&string_inline_ascii_vt);
     r->ascii.length = len;
     memcpy(r->ascii.data, str, len);
@@ -240,7 +240,7 @@ String mkInternalString(const char *str) {
 
 String mkStringCore(const char *data, int len) {
     if (len < 0)
-        len = strlen(data);
+        len = (int)strlen(data);
     if (len == 0)
         return (String)emptyString;
 
@@ -279,7 +279,7 @@ String mkStringCore(const char *data, int len) {
 String mkString(const char *data, int len) {
 #if PXT_UTF8
     if (len < 0)
-        len = strlen(data);
+        len = (int)strlen(data);
     if (len == 0)
         return (String)emptyString;
 
@@ -606,7 +606,7 @@ NUMBER mystrtod(const char *p, char **endp) {
 
     if (*p) {
         p++;
-        int pw = strtol(p, endp, 10);
+        int pw = (int)strtol(p, endp, 10);
         v *= p10(pw);
     } else {
         *endp = (char *)p;
@@ -645,7 +645,7 @@ String substr(String s, int start, int length) {
     auto ep = s->getUTF8DataAt(start + length);
     if (ep == NULL)
         oops(82);
-    return mkStringCore(p, ep - p);
+    return mkStringCore(p, (int)(ep - p));
 #else
     return mkStringCore(p, length);
 #endif
@@ -666,7 +666,7 @@ int indexOf(String s, String searchString, int start) {
     while (lenA >= lenB) {
         if (*dataA == firstB && !memcmp(dataA, dataB, lenB))
 #if PXT_UTF8
-            return utf8Len(dataA0, dataA - dataA0);
+            return utf8Len(dataA0, (int)(dataA - dataA0));
 #else
             return dataA - dataA0;
 #endif
@@ -1567,8 +1567,8 @@ TValue mapGetByString(RefMap *map, String key) {
 int lookupMapKey(String key) {
     auto arr = IFACE_MEMBER_NAMES;
     auto len = *arr++;
-    auto l = 1U; // skip index 0 - it's invalid
-    auto r = len - 1;
+    int l = 1U; // skip index 0 - it's invalid
+    int r = (int)len - 1;
 #ifndef PXT_VM
     auto ikey = (uintptr_t)key;
     if (arr[l] <= ikey && ikey <= arr[r]) {
@@ -1585,7 +1585,7 @@ int lookupMapKey(String key) {
 #endif
     {
         while (l <= r) {
-            auto m = (l + r) >> 1;
+            int m = (l + r) >> 1;
             auto cmp = String_::compare((String)arr[m], key);
             if (cmp == 0)
                 return m;

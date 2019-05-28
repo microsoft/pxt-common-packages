@@ -172,9 +172,9 @@ void vdmesg(const char *format, va_list arg) {
     target_disable_irq();
 
     snprintf(buf, sizeof(buf), "[%8d] ", current_time_ms());
-    dmesgRaw(buf, strlen(buf));
+    dmesgRaw(buf, (uint32_t)strlen(buf));
     vsnprintf(buf, sizeof(buf), format, arg);
-    dmesgRaw(buf, strlen(buf));
+    dmesgRaw(buf, (uint32_t)strlen(buf));
     dmesgRaw("\n", 1);
 
     target_enable_irq();

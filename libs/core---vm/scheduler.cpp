@@ -86,7 +86,7 @@ static void panic_core(int error_code) {
     panicCode = error_code;
 
     drawPanic(error_code);
-    
+
     DMESG("PANIC %d", error_code % 1000);
     DMESG("errno=%d %s", prevErr, strerror(prevErr));
 
@@ -128,7 +128,7 @@ void sleep_ms(uint32_t ms) {
 
 void sleep_us(uint64_t us) {
     if (us > 50000) {
-        sleep_ms(us / 1000);
+        sleep_ms((uint32_t)(us / 1000));
     } else {
         sleep_core_us(us);
     }
@@ -147,7 +147,7 @@ uint64_t current_time_us() {
 }
 
 int current_time_ms() {
-    return current_time_us() / 1000;
+    return (int)(current_time_us() / 1000);
 }
 
 void disposeFiber(FiberContext *t) {
@@ -261,7 +261,6 @@ static void wakeFibers() {
     }
 }
 
-
 static void mainRunLoop() {
     FiberContext *f = NULL;
     for (;;) {
@@ -366,6 +365,10 @@ void initRuntime() {
 #define GC_PAGE_SIZE 4096
 #endif
 
+#ifdef PXT_IOS
+uint8_t *gcBase;
+#endif
+
 void *gcAllocBlock(size_t sz) {
     static uint8_t *currPtr = (uint8_t *)GC_BASE;
     sz = (sz + GC_PAGE_SIZE - 1) & ~(GC_PAGE_SIZE - 1);
@@ -375,6 +378,14 @@ void *gcAllocBlock(size_t sz) {
         DMESG("VirtualAlloc %p failed; err=%d", currPtr, GetLastError());
         target_panic(PANIC_INTERNAL_ERROR);
     }
+#elif defined(PXT_IOS)
+    if (!gcBase) {
+        gcBase = (uint8_t *)xmalloc(1024 * 1024);
+        currPtr = gcBase;
+    }
+    void *r = currPtr;
+    if ((uint8_t *)currPtr - gcBase > 1024 * 1024 - sz)
+        target_panic(20);
 #else
     void *r = mmap(currPtr, sz, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
     if (r == MAP_FAILED) {
@@ -408,12 +419,10 @@ void gcProcessStacks(int flags) {
 }
 #endif
 
-
 #define MAX_RESET_FN 32
 static reset_fn_t resetFunctions[MAX_RESET_FN];
 
-void registerResetFunction(reset_fn_t fn)
-{
+void registerResetFunction(reset_fn_t fn) {
     for (int i = 0; i < MAX_RESET_FN; ++i) {
         if (!resetFunctions[i]) {
             resetFunctions[i] = fn;
@@ -446,7 +455,7 @@ void systemReset() {
     }
 
     // this will consume all events, but won't dispatch anything, since all listener maps are empty
-    wakeFibers(); 
+    wakeFibers();
 
     // mark all GC memory as free
     gcReset();

@@ -12,7 +12,7 @@ static void vmStartCore(const char *fn) {
     }
 
     fseek(f, 0, SEEK_END);
-    unsigned len = ftell(f);
+    auto len = (unsigned)ftell(f);
     fseek(f, 0, SEEK_SET);
     auto data = new uint8_t[len + 16];
     fread(data, len, 1, f);

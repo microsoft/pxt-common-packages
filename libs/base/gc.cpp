@@ -654,7 +654,7 @@ void *gcAllocate(int numbytes) {
             auto vt = p->vtable;
             if (!IS_FREE(vt))
                 oops(43);
-            int left = VAR_BLOCK_WORDS(vt) - numwords;
+            int left = (int)(VAR_BLOCK_WORDS(vt) - numwords);
             VVLOG("%p %d - %d = %d", (void*)vt, (int)VAR_BLOCK_WORDS(vt), (int)numwords, left);
             if (left >= 0) {
                 auto nf = (RefBlock *)((void **)p + numwords);

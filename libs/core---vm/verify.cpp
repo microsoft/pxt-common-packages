@@ -3,7 +3,7 @@
 namespace pxt {
 
 VMImage *setVMImgError(VMImage *img, int code, void *pos) {
-    img->errorOffset = pos ? (uint8_t *)pos - (uint8_t *)img->dataStart : 0;
+    img->errorOffset = pos ? (int)((uint8_t *)pos - (uint8_t *)img->dataStart) : 0;
     img->errorCode = code;
     return img;
 }
@@ -178,7 +178,7 @@ static VMImage *loadIfaceNames(VMImage *img) {
             uintptr_t *ptrs = (uintptr_t *)sect->data;
             img->ifaceMemberNames = ptrs;
             auto len = *ptrs++;
-            img->numIfaceMemberNames = len;
+            img->numIfaceMemberNames = (uint32_t)len;
             CHECK(sect->size >= 16 + len * 8, 1047);
             for (unsigned i = 0; i < len; ++i) {
                 CHECK(ptrs[i] < img->numSections, 1051);
