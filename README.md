@@ -6,6 +6,10 @@ A set of packages used in various MakeCode editors such as https://makecode.adaf
 [![Community Discord](https://img.shields.io/discord/448979533891371018.svg)](https://aka.ms/makecodecommunity)
 
 
-# Contributing
+## Updating JACDAC-TS
+
+Copy the .ts files under node_modules/@jacdac/jacdac-ts/jacdac to libs/jacdac
+
+## Contributing
 
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
