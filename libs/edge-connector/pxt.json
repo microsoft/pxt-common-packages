@@ -8,6 +8,7 @@
     ],
     "public": true,
     "dependencies": {
-        "core": "file:../core"
+        "core": "file:../core",
+        "serial": "file:../serial"
     }
 }
