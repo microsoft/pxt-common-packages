@@ -13,10 +13,10 @@ class WJDPhysicalLayer {
 #endif    
 
   public:
-    WJDPhysicalLayer() :
+    WJDPhysicalLayer()
 #ifdef CODAL_JACDAC_WIRE_SERIAL
-        sws(*LOOKUP_PIN(JACK_TX)),
-        phys(sws, *pxt::getJACDACTimer(), LOOKUP_PIN(JACK_BUSLED), LOOKUP_PIN(JACK_COMMLED), (PIN(JACK_BUSLED) & CFG_PIN_CONFIG_ACTIVE_LO) > 0, (PIN(JACK_COMMLED) & CFG_PIN_CONFIG_ACTIVE_LO) > 0)
+        : sws(*LOOKUP_PIN(JACK_TX))
+        , phys(sws, *pxt::getJACDACTimer(), LOOKUP_PIN(JACK_BUSLED), LOOKUP_PIN(JACK_COMMLED), (PIN(JACK_BUSLED) & CFG_PIN_CONFIG_ACTIVE_LO) > 0, (PIN(JACK_COMMLED) & CFG_PIN_CONFIG_ACTIVE_LO) > 0)
 #endif        
     {
 #ifdef CODAL_JACDAC_WIRE_SERIAL
@@ -96,13 +96,6 @@ class WJDPhysicalLayer {
 #endif       
     }
 };
-
-class WJDPhysicalLayer {
-    WJDPhysicalLayer():
-    {}
-}
-
-#endif
 
 SINGLETON_IF_PIN(WJDPhysicalLayer, JACK_TX);
 
