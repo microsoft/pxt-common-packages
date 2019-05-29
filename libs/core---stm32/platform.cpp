@@ -5,25 +5,20 @@
 
 namespace pxt {
 
-#ifdef CODAL_JACDAC_WIRE_SERIAL
 #ifdef STM32F1
 STMLowLevelTimer lowTimer(TIM4, TIM4_IRQn);
 #else
+STMLowLevelTimer lowTimer(TIM5, TIM5_IRQn);
+#endif
 STMLowLevelTimer jacdacTimer(TIM2, TIM2_IRQn);
-
 LowLevelTimer* getJACDACTimer()
 {
     return &jacdacTimer;
 }
-#endif // CODAL_JACDAC_WIRE_SERIAL
-
-STMLowLevelTimer lowTimer(TIM5, TIM5_IRQn);
-#endif
-
 CODAL_TIMER devTimer(lowTimer);
 
 void initAccelRandom();
-
+#ifdef STM32F4
 extern "C" void apply_clock_init(RCC_OscInitTypeDef *oscInit, RCC_ClkInitTypeDef *clkConfig,
                                  uint32_t flashLatency) {
 
@@ -83,6 +78,7 @@ extern "C" void apply_clock_init(RCC_OscInitTypeDef *oscInit, RCC_ClkInitTypeDef
     HAL_RCC_OscConfig(oscInit);
     HAL_RCC_ClockConfig(clkConfig, flashLatency);
 }
+#endif
 
 static void initRandomSeed() {
 #ifdef STM32F4
