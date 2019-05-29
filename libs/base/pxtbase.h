@@ -191,6 +191,8 @@ inline bool canBeTagged(int v) {
 }
 
 #ifdef PXT64
+STATIC_ASSERT(sizeof(void*) == 8);
+
 // see https://anniecherkaev.com/the-secret-life-of-nan
 
 #define NanBoxingOffset 0x1000000000000LL
@@ -212,6 +214,8 @@ inline double doubleVal(TValue v) {
 inline TValue tvalueFromDouble(double d) {
     return (TValue)(bitwise_cast<uint64_t>(d) + NanBoxingOffset);
 }
+#else
+STATIC_ASSERT(sizeof(void*) == 4);
 #endif
 
 // keep in sym with sim/control.ts
