@@ -1,6 +1,6 @@
 {
-    "name": "jacdac-drivers",
-    "description": "Virtual drivers for jacdac - beta",
+    "name": "jacdac-services",
+    "description": "Services for jacdac",
     "files": [
         "sensorclient.ts",
         "buttonclient.ts",
