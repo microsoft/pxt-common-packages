@@ -11,6 +11,7 @@ namespace jacdac {
             input.onGesture(Gesture.FaceUp, () => this.raiseHostEvent(JDGesture.FaceUp));
             input.onGesture(Gesture.FaceDown, () => this.raiseHostEvent(JDGesture.FaceDown));
             input.onGesture(Gesture.FreeFall, () => this.raiseHostEvent(JDGesture.FreeFall));
+            input.onGesture(Gesture.TwoG, () => this.raiseHostEvent(JDGesture.TwoG));
         }
 
         protected serializeState(): Buffer {
