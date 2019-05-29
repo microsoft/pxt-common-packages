@@ -7,62 +7,102 @@
 namespace jacdac {
 
 class WJDPhysicalLayer {
+#ifdef CODAL_JACDAC_WIRE_SERIAL
     CODAL_JACDAC_WIRE_SERIAL sws;
     JDPhysicalLayer phys;
+#endif    
 
   public:
     WJDPhysicalLayer() :
+#ifdef CODAL_JACDAC_WIRE_SERIAL
         sws(*LOOKUP_PIN(JACK_TX)),
         phys(sws, *pxt::getJACDACTimer(), LOOKUP_PIN(JACK_BUSLED), LOOKUP_PIN(JACK_COMMLED), (PIN(JACK_BUSLED) & CFG_PIN_CONFIG_ACTIVE_LO) > 0, (PIN(JACK_COMMLED) & CFG_PIN_CONFIG_ACTIVE_LO) > 0)
+#endif        
     {
+#ifdef CODAL_JACDAC_WIRE_SERIAL
         sws.setBaud(1000000);
 #if CONFIG_ENABLED(DEVICE_USB) && CONFIG_ENABLED(DEVICE_JACDAC_DEBUG)
         pxt::jacdacDebug.setPhysicalLayer(phys);
 #endif
+#endif
     }
 
     void send(Buffer b) {
+#ifdef CODAL_JACDAC_WIRE_SERIAL
         phys.send((JDPacket*)b->data,NULL,false);
+#endif        
     }
 
     bool isConnected() {
+#ifdef CODAL_JACDAC_WIRE_SERIAL
         return phys.isConnected();
+#else
+        return false;
+#endif
     }
 
     bool isRunning() {
+#ifdef CODAL_JACDAC_WIRE_SERIAL
         return phys.isRunning();
+#else
+        return false;
+#endif
     }
 
     int getId()
     {
+#ifdef CODAL_JACDAC_WIRE_SERIAL
         return phys.id;
+#else
+        return -1;
+#endif
     }
 
     JDPacket* getPacket()
     {
+#ifdef CODAL_JACDAC_WIRE_SERIAL
         auto pkt = phys.getPacket();
 #if CONFIG_ENABLED(DEVICE_USB) && CONFIG_ENABLED(DEVICE_JACDAC_DEBUG)
         if (pkt)
             pxt::jacdacDebug.handlePacket(pkt);
 #endif
         return pkt;
+#else
+        return NULL;
+#endif        
     }
 
     void start()
     {
+#ifdef CODAL_JACDAC_WIRE_SERIAL
         phys.start();
+#endif        
     }
 
     void stop()
     {
+#ifdef CODAL_JACDAC_WIRE_SERIAL
         phys.stop();
+#endif       
     }
 
     JDDiagnostics getDiagnostics()
     {
+#ifdef CODAL_JACDAC_WIRE_SERIAL
         return phys.getDiagnostics();
+#else
+        JDDiagnostics d;
+        return d;
+#endif       
     }
 };
+
+class WJDPhysicalLayer {
+    WJDPhysicalLayer():
+    {}
+}
+
+#endif
 
 SINGLETON_IF_PIN(WJDPhysicalLayer, JACK_TX);
 
