@@ -109,32 +109,49 @@ namespace music {
     let playToneID = 0
 
     /**
-     * Play a melody
-     * @param melody using the
-     * melody field editor
+     * Play a melody from a string representation.
+     * Notes are expressed as a string of characters with this format: NOTE[octave][:duration]
+     * @param melody string
      */
-    //% blockId=playMelody
+    //% block="play melody from string $melody" blockId=playMelodyFromString
     //% blockNamespace=music
     //% weight=75 blockGap=8
     //% group="Melody"
     //% melody.defl="D4:2 E4:2 F#4:2 G4:2 A4:2 B4:2 Db5:2 D5:2"
     export function playMelody(melody: string) {
-        this.melody = new Melody(melody);
-        this.melody.play();
+        const song = new Melody(melody);
+        song.play();
     }
 
     /**
-     * Play a melody
-     * @param melody using 
-     * a string representation
+     * Play a melody from the melody editor.
+     * @param melody
      */
-    //% blockId=playMelodyFromString
+    //% block="play melody from melody editor $melody" blockId=playMelodyFromEditor
     //% blockNamespace=music
     //% weight=75 blockGap=8
     //% group="Melody"
-    export function playMelodyFromString(melody: string): Melody {
-        this.melody = new Melody(melody);
-        return this.melody
+    //% melody.shadow="melody_editor"
+    export function playMelodyFromEditor(melody: Melody) {
+
+    }
+
+
+    /**
+     * Create a melody with the melody editor.
+     * @param melody
+     */
+    //% block="$melody" blockId=melody_editor
+    //% blockNamespace=music
+    //% blockHidden = true
+    //% weight=75 blockGap=8
+    //% group="Melody" duplicateShadowOnDrag
+    //% melody.fieldEditor="melody"
+    //% melody.fieldOptions.decompileLiterals=true
+    //% melody.fieldOptions.decompileIndirectFixedInstances="true"
+    export function melodyEditor(melody: string): Melody {
+        const song = new Melody(melody);
+        return song
     }
     
     /**
