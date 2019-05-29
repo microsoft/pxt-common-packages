@@ -31,7 +31,7 @@
         "libs/serial",
         "libs/pixel",
         "libs/jacdac",
-        "libs/jacdac-drivers",
+        "libs/jacdac-services",
         "libs/jacdac-game",
         "libs/datalogger",
         "libs/lora",
