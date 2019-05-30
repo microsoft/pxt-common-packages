@@ -81,6 +81,7 @@ namespace jacdac {
         //% servo.fieldOptions.columns=2
         //% blockGap=8        
         setAngle(index: number, degrees: number) {
+            this.ensureState((index + 1) * 4);
             const k = index * 4;
             this.state.setNumber(NumberFormat.UInt8LE, k, 1);
             this.state.setNumber(NumberFormat.Int16LE, k + 1, degrees);
@@ -101,4 +102,7 @@ namespace jacdac {
             this.setAngle(index, Math.map(speed, -100, 100, 0, 180));
         }
     }
+
+    //% fixedInstance whenUsed block="servos client"
+    export const servosClient = new ServosClient("servos", 2);
 }

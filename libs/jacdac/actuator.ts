@@ -29,6 +29,14 @@ namespace jacdac {
             // this.onDriverEvent(JDDriverEvent.Connected, () => this.notifyChange());
         }
 
+        protected ensureState(length: number) {
+            if (length > this.state.length) {
+                const b = control.createBuffer(length);
+                b.write(0, this.state);
+                this.state = b;
+            }
+        }
+
         protected notifyChange() {
             this.sendPacket(this.state)
         }

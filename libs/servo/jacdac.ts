@@ -42,7 +42,7 @@ namespace jacdac {
         }
 
         protected handleStateChanged(): number {
-            for (let i = 0; i < this.servos.length; ++i) {
+            for (let i = 0; i < this.servos.length && (i + 1) * 4 <= this.state.length; ++i) {
                 const servo = this.servos[i];
                 const on = !!this.state.getNumber(NumberFormat.UInt8LE, i * 4);
                 const angle = this.state.getNumber(NumberFormat.Int16LE, i * 4 + 1);
