@@ -21,3 +21,8 @@ namespace controller {
         strip.clear();
     }
 }
+
+//% advanced=true
+namespace light {
+    
+}
