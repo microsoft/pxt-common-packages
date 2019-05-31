@@ -13,7 +13,7 @@ namespace controller {
         if (duration <= 0) return;
 
         const strip = light.defaultStrip();
-        if (!strip) return;
+        if (!strip || !strip.length()) return;
 
         // don't blind users
         const brightess = control.getConfigValue(DAL.CFG_CONTROLLER_LIGHT_MAX_BRIGHTNESS, 32);
