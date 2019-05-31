@@ -15,15 +15,15 @@ namespace controller {
         const strip = light.onboardStrip();
         if (!strip || !strip.length()) return;
 
-        // don't blind users
-        const brightess = control.getConfigValue(DAL.CFG_CONTROLLER_LIGHT_MAX_BRIGHTNESS, 16);
-        strip.setBrightness(brightess);
-
         const scene = game.currentScene();
         let anim = scene.data[ANIM_KEY] as light.NeoPixelAnimation;
         // schedule animation
-        if (anim === undefined) // undefined means the game.update hasn't been registered yet
+        if (anim === undefined) { // undefined means the game.update hasn't been registered yet
+            // don't blind users
+            const brightess = control.getConfigValue(DAL.CFG_CONTROLLER_LIGHT_MAX_BRIGHTNESS, 4);
+            strip.setBrightness(brightess);
             game.onUpdateInterval(50, renderLightFrame);
+        }
 
         // record data for animation
         scene.data[ANIM_KEY] = animation;
