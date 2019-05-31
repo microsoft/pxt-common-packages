@@ -6,10 +6,10 @@ namespace controller {
      * @param animation 
      * @param duration 
      */
-    //% blockId=controller_show_animation block="show light animation %animation=light_animation_picker|for %duration=timePicker|ms"
+    //% blockId=controller_show_animation block="start light animation %animation=light_animation_picker|for %duration=timePicker|ms"
     //% weight=30 blockGap=8
     //% group="Extras"
-    export function showLightAnimation(animation: light.NeoPixelAnimation, duration: number) {
+    export function startLightAnimation(animation: light.NeoPixelAnimation, duration: number) {
         if (duration <= 0) return;
 
         const strip = light.defaultStrip();
