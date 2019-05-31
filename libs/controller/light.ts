@@ -40,10 +40,15 @@ namespace controller {
 
         // expired?
         let animend = scene.data[ANIM_TIME_KEY] || 0;
-        if (game.runtime() > animend) // invalidate key
+        if (game.runtime() > animend) { // invalidate key
             anim = scene.data[ANIM_KEY] = null; // make sure to use null
+        }
+
+        const strip = light.defaultStrip();
         if (anim)
             strip.showAnimationFrame(anim);
+        else
+            strip.clear();
     }
 }
 
