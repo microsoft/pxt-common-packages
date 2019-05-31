@@ -20,12 +20,12 @@ namespace light {
         const sck = pins.pinByCfg(DAL.CFG_PIN_SCK);
 
         _defaultStrip = new NeoPixelStrip();
-        if (data && clk && dsnum > 1) {
+        if (data && clk && dsnum > 0) {
             _defaultStrip._mode = NeoPixelMode.APA102;
             _defaultStrip._dataPin = data;
             _defaultStrip._clkPin = clk;
             _defaultStrip._length = dsnum;
-        } else if(neo && neonum > 1) {
+        } else if(neo && neonum > 0) {
             _defaultStrip._mode = NeoPixelMode.RGB;
             _defaultStrip._dataPin = neo;
             _defaultStrip._length = neonum;
