@@ -30,6 +30,7 @@ class RotaryEncoder_ {
     RotaryEncoder_(Pin &pinA, Pin &pinB) : pinA(pinA), pinB(pinB) {
         position = 0;
         id = pinA.id;
+        // don't do exactly 1000us, so that it doesn't occur exactly at scheduler ticks
         system_timer_event_every_us(973, id, ROT_EV_TIMER);
         EventModel::defaultEventBus->listen(id, ROT_EV_TIMER, this, &RotaryEncoder_::process,
                                             MESSAGE_BUS_LISTENER_IMMEDIATE);
