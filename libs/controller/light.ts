@@ -12,7 +12,7 @@ namespace controller {
     export function startLightAnimation(animation: light.NeoPixelAnimation, duration: number) {
         if (duration <= 0) return;
 
-        const strip = light.defaultStrip();
+        const strip = light.onboardStrip();
         if (!strip || !strip.length()) return;
 
         // don't blind users
@@ -44,7 +44,7 @@ namespace controller {
             anim = scene.data[ANIM_KEY] = null; // make sure to use null
         }
 
-        const strip = light.defaultStrip();
+        const strip = light.onboardStrip();
         if (anim)
             strip.showAnimationFrame(anim);
         else
