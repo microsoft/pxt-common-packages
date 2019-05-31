@@ -119,7 +119,7 @@ namespace tiles {
         }
 
         public getTilesByType(index: number): Tile[] {
-            if (this.isInvalidIndex(index) || !this.enabled) return undefined;
+            if (this.isInvalidIndex(index) || !this.enabled) return [];
 
             let output: Tile[] = [];
             for (let col = 0; col < this._map.width; ++col) {
