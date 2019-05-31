@@ -1404,14 +1404,14 @@ namespace light {
 
         public createRenderer(strip: NeoPixelStrip): () => boolean {
             const n = strip.length();
-            let offset = 0;
+            let hueOffset = 0;
             return () => {
                 for (let i = 0; i < n; i++) {
-                    strip.setPixelColor(i, hsv(((i * 256) / (n - 1) + offset) % 0xff, 0xff, 0xff));
+                    strip.setPixelColor(i, hsv(((i * 256) / (n - 1) + hueOffset) % 0xff, 0xff, 0xff));
                 }
-                offset += Math.ceil(Math.max(1, Math.min(8, n / 20)));
-                if (offset >= 0xff) {
-                    offset = 0;
+                hueOffset += 128 / n;
+                if (hueOffset >= 0xff) {
+                    hueOffset = 0;
                     return false;
                 } else {
                     return true;
