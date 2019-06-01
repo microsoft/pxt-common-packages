@@ -171,7 +171,7 @@ namespace tiles {
 
         private generateTile(index: number): TileSet {
             if (index == 0) return undefined;
-            const size = 2 >> this.scale
+            const size = 2 << this.scale
 
             const i = image.create(size, size);
             i.fill(index);
