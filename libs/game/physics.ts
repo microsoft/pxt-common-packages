@@ -127,7 +127,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
             if (tm && tm.enabled) {
                 const scale = tm.scale;
-                const size = 2 << scale;
+                const size = 1 << scale;
                 const xDiff = Fx.sub(sprite._x, sprite._lastX);
                 const yDiff = Fx.sub(sprite._y, sprite._lastY);
 

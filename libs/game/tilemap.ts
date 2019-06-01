@@ -1,10 +1,23 @@
 namespace tiles {
     class TileSet {
-        image: Image;
         obstacle: boolean;
-        constructor(image: Image, collisions: boolean) {
-            this.image = image;
+        private map: TileMap;
+        private originalImage: Image;
+        private cachedImage: Image;
+
+        constructor(image: Image, collisions: boolean, map: TileMap) {
+            this.originalImage = image;
             this.obstacle = collisions;
+            this.map = map;
+        }
+
+        get image(): Image {
+            const size = 1 << this.map.scale;
+            if (!this.cachedImage || this.cachedImage.width != size || this.cachedImage.height != size) {
+                this.cachedImage = image.create(size, size);
+                this.cachedImage.drawImage(this.originalImage, 0, 0);
+            }
+            return this.cachedImage;
         }
     }
 
@@ -25,12 +38,12 @@ namespace tiles {
 
         get x(): number {
             const scale = this.tileMap.scale;
-            return (this._col << scale) + (2 << (scale - 1));
+            return (this._col << scale) + (1 << (scale - 1));
         }
 
         get y(): number {
             const scale = this.tileMap.scale;
-            return (this._row << scale) + (2 << (scale - 1));
+            return (this._row << scale) + (1 << (scale - 1));
         }
 
         get tileSet(): number {
@@ -110,7 +123,7 @@ namespace tiles {
 
         setTile(index: number, img: Image, collisions?: boolean) {
             if (this.isInvalidIndex(index)) return;
-            this._tileSets[index] = new TileSet(img, collisions);
+            this._tileSets[index] = new TileSet(img, collisions, this);
         }
 
         setMap(map: Image) {
@@ -175,11 +188,11 @@ namespace tiles {
 
         private generateTile(index: number): TileSet {
             if (index == 0) return undefined;
-            const size = 2 << this.scale
+            const size = 1 << this.scale
 
             const i = image.create(size, size);
             i.fill(index);
-            return this._tileSets[index] = new TileSet(i, false);
+            return this._tileSets[index] = new TileSet(i, false, this);
         }
 
         private isOutsideMap(col: number, row: number): boolean {
