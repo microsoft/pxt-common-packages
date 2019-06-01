@@ -16,19 +16,21 @@ namespace tiles {
         private _row: number;
         private _col: number;
         private _map: Image;
+        private _scale: number;
 
-        constructor(col: number, row: number, map: Image) {
+        constructor(col: number, row: number, map: Image, scale: number) {
             this._col = col;
             this._row = row;
             this._map = map;
+            this._scale = scale;
         }
 
         get x(): number {
-            return (this._col << 4) + 8;
+            return (this._col << this._scale) + (2 << this._scale - 1);
         }
 
         get y(): number {
-            return (this._row << 4) + 8;
+            return (this._row << this._scale) + (2 << this._scale - 1);
         }
 
         get tileSet(): number {
@@ -54,6 +56,7 @@ namespace tiles {
     export class TileMap implements SpriteLike {
         id: number;
         z: number;
+        scale: number
 
         private _layer: number;
 
@@ -64,6 +67,7 @@ namespace tiles {
             this._tileSets = [];
             this._layer = 1;
             this.z = -1;
+            this.scale = 4;
 
             const sc = game.currentScene();
             sc.addSprite(this);
@@ -79,11 +83,11 @@ namespace tiles {
         }
 
         areaWidth() {
-            return this._map ? (this._map.width << 4) : 0;
+            return this._map ? (this._map.width << this.scale) : 0;
         }
 
         areaHeight() {
-            return this._map ? (this._map.height << 4) : 0;
+            return this._map ? (this._map.height << this.scale) : 0;
         }
 
         get layer(): number {
@@ -110,7 +114,7 @@ namespace tiles {
         }
 
         public getTile(col: number, row: number): Tile {
-            return new Tile(col, row, this._map);
+            return new Tile(col, row, this._map, this.scale);
         }
 
         public setTileAt(col: number, row: number, index: number): void {
@@ -126,7 +130,7 @@ namespace tiles {
                 for (let row = 0; row < this._map.height; ++row) {
                     let currTile = this._map.getPixel(col, row);
                     if (currTile === index) {
-                        output.push(new Tile(col, row, this._map));
+                        output.push(new Tile(col, row, this._map, this.scale));
                     }
                 }
             }
@@ -145,17 +149,21 @@ namespace tiles {
 
             const offsetX = camera.drawOffsetX & 0xf;
             const offsetY = camera.drawOffsetY & 0xf;
-            const x0 = Math.max(0, camera.drawOffsetX >> 4);
-            const xn = Math.min(this._map.width, ((camera.drawOffsetX + screen.width) >> 4) + 1);
-            const y0 = Math.max(0, camera.drawOffsetY >> 4);
-            const yn = Math.min(this._map.height, ((camera.drawOffsetY + screen.height) >> 4) + 1);
+            const x0 = Math.max(0, camera.drawOffsetX >> this.scale);
+            const xn = Math.min(this._map.width, ((camera.drawOffsetX + screen.width) >> this.scale) + 1);
+            const y0 = Math.max(0, camera.drawOffsetY >> this.scale);
+            const yn = Math.min(this._map.height, ((camera.drawOffsetY + screen.height) >> this.scale) + 1);
 
             for (let x = x0; x <= xn; ++x) {
                 for (let y = y0; y <= yn; ++y) {
                     const index = this._map.getPixel(x, y);
                     const tile = this._tileSets[index] || this.generateTile(index);
                     if (tile) {
-                        screen.drawTransparentImage(tile.image, ((x - x0) << 4) - offsetX, ((y - y0) << 4) - offsetY)
+                        screen.drawTransparentImage(
+                            tile.image,
+                            ((x - x0) << this.scale) - offsetX,
+                            ((y - y0) << this.scale) - offsetY
+                        );
                     }
                 }
             }
@@ -163,10 +171,11 @@ namespace tiles {
 
         private generateTile(index: number): TileSet {
             if (index == 0) return undefined;
+            const size = 2 >> this.scale
 
-            const img = image.create(16, 16);
-            img.fill(index);
-            return this._tileSets[index] = new TileSet(img, false);
+            const i = image.create(size, size);
+            i.fill(index);
+            return this._tileSets[index] = new TileSet(i, false);
         }
 
         private isOutsideMap(col: number, row: number): boolean {
@@ -184,24 +193,27 @@ namespace tiles {
             if (game.debug) {
                 const offsetX = -camera.drawOffsetX;
                 const offsetY = -camera.drawOffsetY;
-                const x0 = Math.max(0, -(offsetX >> 4));
-                const xn = Math.min(this._map.width, (-offsetX + screen.width) >> 4);
-                const y0 = Math.max(0, -(offsetY >> 4));
-                const yn = Math.min(this._map.height, (-offsetY + screen.height) >> 4);
+                const x0 = Math.max(0, -(offsetX >> this.scale));
+                const xn = Math.min(this._map.width, (-offsetX + screen.width) >> this.scale);
+                const y0 = Math.max(0, -(offsetY >> this.scale));
+                const yn = Math.min(this._map.height, (-offsetY + screen.height) >> this.scale);
                 for (let x = x0; x <= xn; ++x) {
                     screen.drawLine(
-                        (x << 4) + offsetX,
+                        (x << this.scale) + offsetX,
                         offsetY,
-                        (x << 4) + offsetX,
-                        (this._map.height << 4) + offsetY, 1)
+                        (x << this.scale) + offsetX,
+                        (this._map.height << this.scale) + offsetY,
+                        1
+                    );
                 }
                 for (let y = y0; y <= yn; ++y) {
                     screen.drawLine(
                         offsetX,
-                        (y << 4) + offsetY,
-                        (this._map.width << 4) + offsetX,
-                        (y << 4) + offsetY,
-                        1)
+                        (y << this.scale) + offsetY,
+                        (this._map.width << this.scale) + offsetX,
+                        (y << this.scale) + offsetY,
+                        1
+                    );
                 }
             }
         }
@@ -213,19 +225,19 @@ namespace tiles {
             let overlappers: sprites.StaticObstacle[] = [];
 
             if (this.enabled && (s.layer & this.layer) && !(s.flags & sprites.Flag.Ghost)) {
-                const x0 = Math.max(0, s.left >> 4);
-                const xn = Math.min(this._map.width, (s.right >> 4) + 1);
-                const y0 = Math.max(0, s.top >> 4);
-                const yn = Math.min(this._map.height, (s.bottom >> 4) + 1);
+                const x0 = Math.max(0, s.left >> this.scale);
+                const xn = Math.min(this._map.width, (s.right >> this.scale) + 1);
+                const y0 = Math.max(0, s.top >> this.scale);
+                const yn = Math.min(this._map.height, (s.bottom >> this.scale) + 1);
 
                 // let res = `x: ${x0}-${xn} y: ${y0}-${yn} HIT:`;
                 for (let x = x0; x <= xn; ++x) {
-                    const left = x << 4;
+                    const left = x << this.scale;
                     for (let y = y0; y <= yn; ++y) {
                         const index = this._map.getPixel(x, y);
                         const tile = this._tileSets[index] || this.generateTile(index);
                         if (tile && tile.obstacle) {
-                            const top = y << 4;
+                            const top = y << this.scale;
                             if (tile.image.overlapsWith(s.image, s.left - left, s.top - top)) {
                                 overlappers.push(new sprites.StaticObstacle(tile.image, top, left, this.layer, index));
                             }
@@ -252,7 +264,7 @@ namespace tiles {
             const index = this._map.getPixel(col, row);
             const tile = this._tileSets[index] || this.generateTile(index);
             if (tile.obstacle) {
-                return new sprites.StaticObstacle(tile.image, row << 4, col << 4, this.layer, index);
+                return new sprites.StaticObstacle(tile.image, row << this.scale, col << this.scale, this.layer, index);
             }
             return undefined;
         }

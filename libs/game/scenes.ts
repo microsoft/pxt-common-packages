@@ -117,7 +117,8 @@ namespace scene {
         const scene = game.currentScene();
         if (!scene.tileMap)
             scene.tileMap = new tiles.TileMap();
-        scene.tileMap.setTileAt(tile.x >> 4, tile.y >> 4, index);
+        const scale = scene.tileMap.scale;
+        scene.tileMap.setTileAt(tile.x >> scale, tile.y >> scale, index);
     }
 
     /**
