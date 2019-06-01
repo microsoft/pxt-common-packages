@@ -14,8 +14,12 @@ namespace tiles {
         get image(): Image {
             const size = 1 << this.map.scale;
             if (!this.cachedImage || this.cachedImage.width != size || this.cachedImage.height != size) {
-                this.cachedImage = image.create(size, size);
-                this.cachedImage.drawImage(this.originalImage, 0, 0);
+                if (this.originalImage.width == size && this.originalImage.height == size) {
+                    this.cachedImage = this.originalImage;
+                } else {
+                    this.cachedImage = image.create(size, size);
+                    this.cachedImage.drawImage(this.originalImage, 0, 0);
+                }
             }
             return this.cachedImage;
         }
