@@ -25,12 +25,12 @@ namespace tiles {
 
         get x(): number {
             const scale = this.tileMap.scale;
-            return (this._col << scale) + (2 << scale - 1);
+            return (this._col << scale) + (2 << (scale - 1));
         }
 
         get y(): number {
             const scale = this.tileMap.scale;
-            return (this._row << scale) + (2 << scale - 1);
+            return (this._row << scale) + (2 << (scale - 1));
         }
 
         get tileSet(): number {
