@@ -15,26 +15,26 @@ namespace tiles {
     export class Tile {
         private _row: number;
         private _col: number;
-        private _map: Image;
-        private _scale: number;
+        private tileMap: TileMap;
 
-        constructor(col: number, row: number, map: Image, scale: number) {
+        constructor(col: number, row: number, map: TileMap) {
             this._col = col;
             this._row = row;
-            this._map = map;
-            this._scale = scale;
+            this.tileMap = map;
         }
 
         get x(): number {
-            return (this._col << this._scale) + (2 << this._scale - 1);
+            const scale = this.tileMap.scale;
+            return (this._col << scale) + (2 << scale - 1);
         }
 
         get y(): number {
-            return (this._row << this._scale) + (2 << this._scale - 1);
+            const scale = this.tileMap.scale;
+            return (this._row << scale) + (2 << scale - 1);
         }
 
         get tileSet(): number {
-            return this._map.getPixel(this._col, this._row) | 0;
+            return this.tileMap.image.getPixel(this._col, this._row) | 0;
         }
 
         /**
@@ -72,6 +72,10 @@ namespace tiles {
             const sc = game.currentScene();
             sc.addSprite(this);
             sc.flags |= scene.Flag.NeedsSorting;
+        }
+
+        get image(): Image {
+            return this._map;
         }
 
         offsetX(value: number) {
@@ -114,7 +118,7 @@ namespace tiles {
         }
 
         public getTile(col: number, row: number): Tile {
-            return new Tile(col, row, this._map, this.scale);
+            return new Tile(col, row, this);
         }
 
         public setTileAt(col: number, row: number, index: number): void {
@@ -130,7 +134,7 @@ namespace tiles {
                 for (let row = 0; row < this._map.height; ++row) {
                     let currTile = this._map.getPixel(col, row);
                     if (currTile === index) {
-                        output.push(new Tile(col, row, this._map, this.scale));
+                        output.push(new Tile(col, row, this));
                     }
                 }
             }
