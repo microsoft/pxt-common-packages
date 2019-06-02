@@ -699,6 +699,9 @@ typedef TValue (*ActionCB)(TValue *captured, TValue arg0, TValue arg1, TValue ar
 // Ref-counted function pointer.
 class RefAction : public RefObject {
   public:
+#if defined(PXT_VM) && defined(PXT32)
+    uint32_t _padding; // match binary format in .pxt64 files
+#endif
     uint16_t len;
     uint16_t numArgs;
 #ifdef PXT_VM

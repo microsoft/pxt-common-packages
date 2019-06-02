@@ -69,7 +69,7 @@ void op_jmpnz(FiberContext *ctx, unsigned arg) {
 }
 
 static inline VTable *getStaticVTable(VMImage *img, unsigned classId) {
-    return (VTable *)((void **)img->pointerLiterals[classId] + 1);
+    return (VTable *)((uintptr_t)img->pointerLiterals[classId] + 8);
 }
 
 //%
