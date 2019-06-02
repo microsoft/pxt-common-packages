@@ -1570,6 +1570,7 @@ int lookupMapKey(String key) {
     int l = 1U; // skip index 0 - it's invalid
     int r = (int)len - 1;
 #ifndef PXT_VM
+    // VM-TODO do we still need to avoid this with VM?
     auto ikey = (uintptr_t)key;
     if (arr[l] <= ikey && ikey <= arr[r]) {
         while (l <= r) {

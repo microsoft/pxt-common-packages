@@ -24,6 +24,10 @@
 #define PXT_UTF8 0
 #endif
 
+#if defined(PXT_VM) && !defined(PXT32)
+#define PXT64 1
+#endif
+
 #define intcheck(...) check(__VA_ARGS__)
 //#define intcheck(...) do {} while (0)
 
@@ -63,7 +67,7 @@ void *operator new(size_t size);
 
 #ifndef ramint_t
 // this type limits size of arrays
-#if defined(__linux__) || defined(PXT64)
+#if defined(__linux__) || defined(PXT_VM)
 // TODO fix the inline array accesses to take note of this!
 #define ramint_t uint32_t
 #else
@@ -435,7 +439,7 @@ struct VTable {
     uint16_t numbytes;
     ValType objectType;
     uint8_t magic;
-#ifdef PXT64
+#ifdef PXT_VM
     uint16_t ifaceHashEntries;
     BuiltInType lastClassNo;
 #else
@@ -1116,7 +1120,7 @@ bool removeElement(RefCollection *c, TValue x);
 #pragma GCC diagnostic ignored "-Wpmf-conversions"
 #endif
 
-#ifdef PXT64
+#ifdef PXT_VM
 #define DEF_VTABLE(name, tp, valtype, ...)                                                         \
     const VTable name __attribute__((aligned(1 << PXT_VTABLE_SHIFT))) = {                          \
         sizeof(tp), valtype, VTABLE_MAGIC, 0, BuiltInType::tp, BuiltInType::tp,                    \
