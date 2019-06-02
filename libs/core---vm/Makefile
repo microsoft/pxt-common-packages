@@ -22,8 +22,6 @@ STRIP = strip
 
 ifeq (i386,$(findstring i386,$(CROSS_TRIPLE)))
 X32 = -32
-CXXFLAGS += -DPXT32=1
-CFLAGS += -DPXT32=1
 endif
 
 ifeq (darwin,$(findstring darwin,$(CROSS_TRIPLE)))

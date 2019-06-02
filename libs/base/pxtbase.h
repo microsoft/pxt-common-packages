@@ -24,8 +24,15 @@
 #define PXT_UTF8 0
 #endif
 
-#if defined(PXT_VM) && !defined(PXT32)
+#if defined(PXT_VM)
+#include <stdint.h>
+#if UINTPTR_MAX == 0xffffffff
+#define PXT32 1
+#elif UINTPTR_MAX == 0xffffffffffffffff
 #define PXT64 1
+#else
+#error "UINTPTR_MAX has invalid value"
+#endif
 #endif
 
 #define intcheck(...) check(__VA_ARGS__)
