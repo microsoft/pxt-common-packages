@@ -150,6 +150,12 @@ void dumpDmesg();
 #define TAG_NAN TAGGED_SPECIAL(3)  // 14
 #define TAG_NUMBER(n) (TNumber)(void *)(((uintptr_t)(uint32_t)(n) << 1) | 1)
 
+#ifdef PXT_VM
+inline bool isEncodedDouble(uint64_t v) {
+    return (v >> 48) != 0;
+}
+#endif
+
 inline bool isDouble(TValue v) {
 #ifdef PXT64
     return ((uintptr_t)v >> 48) != 0;
@@ -194,8 +200,6 @@ inline bool canBeTagged(int v) {
 #endif
 }
 
-#ifdef PXT64
-STATIC_ASSERT(sizeof(void*) == 8);
 
 // see https://anniecherkaev.com/the-secret-life-of-nan
 
@@ -211,6 +215,12 @@ template <typename TO, typename FROM> TO bitwise_cast(FROM in) {
     return u.to;
 }
 
+inline double decodeDouble(uint64_t v) {
+    return bitwise_cast<double>(v - NanBoxingOffset);
+}
+
+#ifdef PXT64
+STATIC_ASSERT(sizeof(void*) == 8);
 inline double doubleVal(TValue v) {
     return bitwise_cast<double>((uint64_t)v - NanBoxingOffset);
 }
@@ -798,7 +808,8 @@ class BoxedBuffer : public RefObject {
   public:
     // data needs to be word-aligned, so we use 32 bits for length
     int length;
-#ifdef PXT64
+#ifdef PXT_VM
+    // VM can be 64 bit and it compiles as such
     int32_t _padding;
 #endif
     uint8_t data[0];
@@ -1116,7 +1127,7 @@ bool removeElement(RefCollection *c, TValue x);
     ;                                                                                              \
     }
 
-#if !defined(X86_64) && !defined(PXT64)
+#if !defined(X86_64) && !defined(PXT_VM)
 #pragma GCC diagnostic ignored "-Wpmf-conversions"
 #endif
 

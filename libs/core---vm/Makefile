@@ -20,12 +20,17 @@ NPM_LIBS = $(wildcard node_modules/*/lib/*.a)
 NPM_INCLUDES = $(addprefix -I, $(wildcard node_modules/*/include))
 STRIP = strip
 
+ifeq (i386,$(findstring i386,$(CROSS_TRIPLE)))
+X32 = -32
+CXXFLAGS += -DPXT32=1
+CFLAGS += -DPXT32=1
+endif
 
 ifeq (darwin,$(findstring darwin,$(CROSS_TRIPLE)))
 SOFLAGS := -dynamiclib
-SONAME := libpxt.dylib
-EXE := $(BUILD)/pxt-vm-cli
-SDL_EXE = $(BUILD)/pxt-vm-sdl
+SONAME := libpxt$(X32).dylib
+EXE := $(BUILD)/pxt-vm-cli$(X32)
+SDL_EXE = $(BUILD)/pxt-vm-sdl$(X32)
 STRIP = strip -S
 else
 ifeq (linux,$(findstring linux,$(CROSS_TRIPLE)))
@@ -45,10 +50,12 @@ endif
 
 DEPS = $(PXT_HEADERS) package.json Makefile Makefile.inc
 
+# VM-TODO
 all:
+	CROSS_TRIPLE=osx32 crossbuild make -j8 build-one
 	CROSS_TRIPLE=osx crossbuild make -j8 build-one
-	CROSS_TRIPLE=win64 crossbuild make -j8 build-one
-	CROSS_TRIPLE=linux crossbuild make -j8 build-one
+	#CROSS_TRIPLE=win64 crossbuild make -j8 build-one
+	#CROSS_TRIPLE=linux crossbuild make -j8 build-one
 	rm -f bld/*.tgz bld/*.b64
 	tar zcf bld/all.tgz bld/*
 	base64 < bld/all.tgz > bld/all.tgz.b64
