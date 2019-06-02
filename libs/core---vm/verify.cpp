@@ -29,6 +29,8 @@ VMImage *setVMImgError(VMImage *img, int code, void *pos) {
         (uint64_t *)sect < img->dataEnd;                                                           \
          sect = next)
 
+#define ALLOC_ARRAY(tp, sz) (tp*)gcPrealloc(sizeof(tp) * sz)
+
 static VMImage *countSections(VMImage *img) {
     auto p = img->dataStart;
     while (p < img->dataEnd) {
@@ -39,8 +41,8 @@ static VMImage *countSections(VMImage *img) {
         p += sect->size >> 3;
     }
     CHECK_AT(p == img->dataEnd, 1003, p);
-    img->pointerLiterals = new TValue[img->numSections];
-    img->sections = new VMImageSection *[img->numSections];
+    img->pointerLiterals = ALLOC_ARRAY(TValue, img->numSections);
+    img->sections = ALLOC_ARRAY(VMImageSection *, img->numSections);
 
     return NULL;
 }
@@ -81,8 +83,8 @@ static VMImage *loadSections(VMImage *img) {
             }
             CHECK(img->numOpcodes >= VM_FIRST_RTCALL, 1016);
 
-            img->opcodes = new OpFun[img->numOpcodes];
-            img->opcodeDescs = new const OpcodeDesc *[img->numOpcodes];
+            img->opcodes = ALLOC_ARRAY(OpFun, img->numOpcodes);
+            img->opcodeDescs = ALLOC_ARRAY(const OpcodeDesc *, img->numOpcodes);
 
             int i = 0;
             curr = sect->data;
@@ -120,7 +122,7 @@ static VMImage *loadSections(VMImage *img) {
 #ifdef PXT64
             img->numberLiterals = (TValue *)values;
 #else
-            img->numberLiterals = (TValue *)xmalloc(sizeof(void *) * img->numNumberLiterals);
+            img->numberLiterals = ALLOC_ARRAY(TValue, img->numNumberLiterals);
 #endif
 
             for (unsigned i = 0; i < img->numNumberLiterals; ++i) {
@@ -335,12 +337,6 @@ VMImage *loadVMImage(void *data, unsigned length) {
 void unloadVMImage(VMImage *img) {
     if (!img)
         return;
-    // VM-TODO free string literals
-    // VM-TODO free number literals
-    delete img->pointerLiterals;
-    delete img->sections;
-    delete img->opcodes;
-    delete img->opcodeDescs;
     delete (uint8_t *)img->dataStart;
     memset(img, 0, sizeof(*img));
     delete img;

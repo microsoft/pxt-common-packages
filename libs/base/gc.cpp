@@ -1,6 +1,5 @@
 #include "pxtbase.h"
 
-
 #ifndef GC_BLOCK_SIZE
 #define GC_BLOCK_SIZE (1024 * 16)
 #endif
@@ -46,7 +45,6 @@
 #define PXT_GC_CHECKS 1
 #endif
 //#define PXT_GC_STRESS 1
-
 
 //#define PXT_GC_CHECKS 1
 
@@ -588,10 +586,6 @@ void gcFreeze() {
     inGC |= IN_GC_FREEZE;
 }
 
-void gcStartup() {
-    inGC &= ~IN_GC_PREALLOC;
-}
-
 void gcReset() {
     inGC &= ~IN_GC_FREEZE;
 
@@ -609,9 +603,34 @@ void gcReset() {
     }
 }
 
+#ifdef PXT_VM
+static uint8_t *preallocBlock;
+static uint8_t *preallocPointer;
+
+#define PREALLOC_SIZE (1024 * 1024)
+
 void gcPreStartup() {
+    xfree(preallocBlock);
+    preallocBlock = (uint8_t *)xmalloc(PREALLOC_SIZE);
+    preallocPointer = preallocBlock;
     inGC |= IN_GC_PREALLOC;
 }
+
+void gcStartup() {
+    inGC &= ~IN_GC_PREALLOC;
+    preallocPointer = NULL;
+}
+
+void *gcPrealloc(int numbytes) {
+    if (!preallocPointer)
+        oops(49);
+    void *r = preallocPointer;
+    preallocPointer += ALIGN_TO_WORD(numbytes);
+    if (preallocPointer > preallocBlock + PREALLOC_SIZE)
+        oops(48);
+    return r;
+}
+#endif
 
 void *gcAllocate(int numbytes) {
     size_t numwords = BYTES_TO_WORDS(ALIGN_TO_WORD(numbytes));
@@ -625,7 +644,7 @@ void *gcAllocate(int numbytes) {
 
 #ifdef PXT_VM
     if (inGC & IN_GC_PREALLOC)
-        return xmalloc(numbytes);
+        return gcPrealloc(numbytes);
 #endif
 
     inGC |= IN_GC_ALLOC;
@@ -655,7 +674,7 @@ void *gcAllocate(int numbytes) {
             if (!IS_FREE(vt))
                 oops(43);
             int left = (int)(VAR_BLOCK_WORDS(vt) - numwords);
-            VVLOG("%p %d - %d = %d", (void*)vt, (int)VAR_BLOCK_WORDS(vt), (int)numwords, left);
+            VVLOG("%p %d - %d = %d", (void *)vt, (int)VAR_BLOCK_WORDS(vt), (int)numwords, left);
             if (left >= 0) {
                 auto nf = (RefBlock *)((void **)p + numwords);
                 auto nextFree = p->nextFree; // p and nf can overlap when allocating 4 bytes

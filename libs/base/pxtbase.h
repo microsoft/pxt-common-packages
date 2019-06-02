@@ -971,6 +971,7 @@ void gcFreeze();
 #ifdef PXT_VM
 void gcStartup();
 void gcPreStartup();
+void *gcPrealloc(int numbytes);
 #endif
 
 void coreReset();
