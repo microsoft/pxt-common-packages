@@ -1409,7 +1409,7 @@ namespace light {
                 for (let i = 0; i < n; i++) {
                     strip.setPixelColor(i, hsv(((i * 256) / (n - 1) + hueOffset) % 0xff, 0xff, 0xff));
                 }
-                hueOffset += 128 / n;
+                hueOffset += Math.ceil(128 / n);
                 if (hueOffset >= 0xff) {
                     hueOffset = 0;
                     return false;
