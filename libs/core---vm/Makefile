@@ -46,17 +46,20 @@ LDFLAGS += -static
 SONAME := pxt$(X32).dll
 EXE := $(BUILD)/pxt-vm-cli$(X32).exe
 SDL_EXE = $(BUILD)/pxt-vm-sdl$(X32).exe
+ifeq ($(X32),-32)
+LDFLAGS += -Wl,--image-base,0x08000000
+endif
 endif
 endif
 
 DEPS = $(PXT_HEADERS) package.json Makefile Makefile.inc
 
 all:
-	#CROSS_TRIPLE=win32 crossbuild make -j8 build-one
 	CROSS_TRIPLE=win64 crossbuild make -j8 build-one
 	CROSS_TRIPLE=linux crossbuild make -j8 build-one
-	CROSS_TRIPLE=osx32 crossbuild make -j8 build-one
 	CROSS_TRIPLE=osx crossbuild make -j8 build-one
+	CROSS_TRIPLE=win32 crossbuild make -j8 build-one
+	#CROSS_TRIPLE=osx32 crossbuild make -j8 build-one
 	rm -f bld/*.tgz bld/*.b64
 	tar zcf bld/all.tgz bld/*
 	base64 < bld/all.tgz > bld/all.tgz.b64
