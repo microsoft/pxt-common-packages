@@ -207,7 +207,6 @@ inline bool canBeTagged(int v) {
 #endif
 }
 
-
 // see https://anniecherkaev.com/the-secret-life-of-nan
 
 #define NanBoxingOffset 0x1000000000000LL
@@ -227,7 +226,7 @@ inline double decodeDouble(uint64_t v) {
 }
 
 #ifdef PXT64
-STATIC_ASSERT(sizeof(void*) == 8);
+STATIC_ASSERT(sizeof(void *) == 8);
 inline double doubleVal(TValue v) {
     return bitwise_cast<double>((uint64_t)v - NanBoxingOffset);
 }
@@ -236,7 +235,7 @@ inline TValue tvalueFromDouble(double d) {
     return (TValue)(bitwise_cast<uint64_t>(d) + NanBoxingOffset);
 }
 #else
-STATIC_ASSERT(sizeof(void*) == 4);
+STATIC_ASSERT(sizeof(void *) == 4);
 #endif
 
 // keep in sym with sim/control.ts
@@ -526,7 +525,13 @@ class RefObject {
 #ifdef PXT_GC
     uintptr_t vtable;
 
-    RefObject(const VTable *vt) { vtable = PXT_VTABLE_TO_INT(vt); }
+    RefObject(const VTable *vt) {
+#if defined(PXT32) && defined(PXT_VM)
+        if ((uint32_t)vt & 0xf0000000)
+            target_panic(PANIC_INVALID_VTABLE);
+#endif
+        vtable = PXT_VTABLE_TO_INT(vt);
+    }
 #else
     uint16_t refcnt;
     uint16_t vtable;

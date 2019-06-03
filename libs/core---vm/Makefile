@@ -23,6 +23,9 @@ STRIP = strip
 ifeq (i386,$(findstring i386,$(CROSS_TRIPLE)))
 X32 = -32
 endif
+ifeq (i686,$(findstring i686,$(CROSS_TRIPLE)))
+X32 = -32
+endif
 
 ifeq (darwin,$(findstring darwin,$(CROSS_TRIPLE)))
 SOFLAGS := -dynamiclib
@@ -33,27 +36,27 @@ STRIP = strip -S
 else
 ifeq (linux,$(findstring linux,$(CROSS_TRIPLE)))
 SOFLAGS := -shared
-SONAME := libpxt.so
-EXE := $(BUILD)/pxt-vm-cli-linux
+SONAME := libpxt$(X32).so
+EXE := $(BUILD)/pxt-vm-cli-linux$(X32)
 COMMON_FLAGS += -fPIC
 SDL_EXE = skip
 else
 SOFLAGS := -shared
 LDFLAGS += -static
-SONAME := pxt.dll
-EXE := $(BUILD)/pxt-vm-cli.exe
-SDL_EXE = $(BUILD)/pxt-vm-sdl.exe
+SONAME := pxt$(X32).dll
+EXE := $(BUILD)/pxt-vm-cli$(X32).exe
+SDL_EXE = $(BUILD)/pxt-vm-sdl$(X32).exe
 endif
 endif
 
 DEPS = $(PXT_HEADERS) package.json Makefile Makefile.inc
 
-# VM-TODO
 all:
+	#CROSS_TRIPLE=win32 crossbuild make -j8 build-one
+	CROSS_TRIPLE=win64 crossbuild make -j8 build-one
+	CROSS_TRIPLE=linux crossbuild make -j8 build-one
 	CROSS_TRIPLE=osx32 crossbuild make -j8 build-one
 	CROSS_TRIPLE=osx crossbuild make -j8 build-one
-	#CROSS_TRIPLE=win64 crossbuild make -j8 build-one
-	#CROSS_TRIPLE=linux crossbuild make -j8 build-one
 	rm -f bld/*.tgz bld/*.b64
 	tar zcf bld/all.tgz bld/*
 	base64 < bld/all.tgz > bld/all.tgz.b64

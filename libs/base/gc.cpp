@@ -349,7 +349,7 @@ static uint32_t getObjectSize(RefObject *o) {
         // GC_CHECK(0x2000 <= (intptr_t)sz && (intptr_t)sz <= 0x100000, 47);
         r = sz(o);
     }
-    GC_CHECK(1 <= r && (r <= BYTES_TO_WORDS(GC_MAX_ALLOC_SIZE) || IS_FREE(vt)), 48);
+    GC_CHECK(1 <= r && (r <= BYTES_TO_WORDS(GC_MAX_ALLOC_SIZE) || IS_FREE(vt)), 41);
     return r;
 }
 
@@ -613,6 +613,8 @@ void gcPreStartup() {
     xfree(preallocBlock);
     preallocBlock = (uint8_t *)xmalloc(PREALLOC_SIZE);
     preallocPointer = preallocBlock;
+    if (!isReadOnly((TValue)preallocBlock))
+        oops(40);
     inGC |= IN_GC_PREALLOC;
 }
 
@@ -626,8 +628,11 @@ void *gcPrealloc(int numbytes) {
         oops(49);
     void *r = preallocPointer;
     preallocPointer += ALIGN_TO_WORD(numbytes);
-    if (preallocPointer > preallocBlock + PREALLOC_SIZE)
+    if (preallocPointer > preallocBlock + PREALLOC_SIZE) {
+        DMESG("pre-alloc size exceeded! block=%p ptr=%p sz=%d", preallocBlock, preallocPointer,
+              (int)PREALLOC_SIZE);
         oops(48);
+    }
     return r;
 }
 #endif
