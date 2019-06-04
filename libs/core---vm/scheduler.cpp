@@ -9,7 +9,8 @@
 #include <sys/types.h>
 #include <errno.h>
 
-#ifdef __MINGW64__
+// __MINGW32__ is defined on both mingw32 and mingw64
+#ifdef __MINGW32__
 #include <windows.h>
 #else
 #include <sys/mman.h>

@@ -1569,7 +1569,6 @@ int lookupMapKey(String key) {
     auto len = *arr++;
     int l = 1U; // skip index 0 - it's invalid
     int r = (int)len - 1;
-#ifndef PXT_VM
     auto ikey = (uintptr_t)key;
     if (arr[l] <= ikey && ikey <= arr[r]) {
         while (l <= r) {
@@ -1582,7 +1581,6 @@ int lookupMapKey(String key) {
                 r = m - 1;
         }
     } else
-#endif
     {
         while (l <= r) {
             int m = (l + r) >> 1;

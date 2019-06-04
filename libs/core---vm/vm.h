@@ -15,7 +15,12 @@
 
 #define VM_FUNCTION_CODE_OFFSET 24
 
+// The binary has space for 4 64 bit pointers, so on 32 bit machines we pretend there is 8 of them
+#ifdef PXT32
+#define VM_NUM_CPP_METHODS 8
+#else
 #define VM_NUM_CPP_METHODS 4
+#endif
 
 // maximum size (in words) of stack in a single function
 #define VM_MAX_FUNCTION_STACK 200
