@@ -146,8 +146,8 @@ namespace pxsim.visuals {
                 let btng = <SVGGElement>svg.elt("g");
                 let btn = svg.child(btng, "rect", { class: "sim-button-virtual", x: x, y: y, rx: corner, ry: corner, width: w, height: w});
                 let btnTxt = mkTxt(cx + txtXOff, cy + txtYOff, txtSize, 0, "A+B");
-                pxsim.U.addClass(btnTxt, "sim-text")
-                pxsim.U.addClass(btnTxt, "sim-text-virtual");
+                pxsim.U.addClass(btnTxt as any, "sim-text")
+                pxsim.U.addClass(btnTxt as any, "sim-text-virtual");
 
                 btng.appendChild(btnTxt);
 
@@ -158,7 +158,7 @@ namespace pxsim.visuals {
             this.abBtn.style.visibility = "hidden";
 
             let el = svg.elt("g");
-            pxsim.U.addClass(el, "sim-buttonpair")
+            pxsim.U.addClass(el as any, "sim-buttonpair")
             el.appendChild(this.aBtn);
             el.appendChild(this.bBtn);
             el.appendChild(this.abBtn);
