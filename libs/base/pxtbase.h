@@ -984,6 +984,11 @@ void gcFreeze();
 void gcStartup();
 void gcPreStartup();
 void *gcPrealloc(int numbytes);
+bool inGCPrealloc();
+#else
+static inline bool inGCPrealloc() {
+    return false;
+}
 #endif
 
 void coreReset();

@@ -635,6 +635,10 @@ void *gcPrealloc(int numbytes) {
     }
     return r;
 }
+
+bool inGCPrealloc() {
+    return (inGC & IN_GC_PREALLOC) != 0;
+}
 #endif
 
 void *gcAllocate(int numbytes) {
@@ -648,7 +652,7 @@ void *gcAllocate(int numbytes) {
         target_panic(PANIC_CALLED_FROM_ISR);
 
 #ifdef PXT_VM
-    if (inGC & IN_GC_PREALLOC)
+    if (inGCPrealloc())
         return gcPrealloc(numbytes);
 #endif
 
