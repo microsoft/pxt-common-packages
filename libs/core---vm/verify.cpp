@@ -337,7 +337,7 @@ VMImage *loadVMImage(void *data, unsigned length) {
 void unloadVMImage(VMImage *img) {
     if (!img)
         return;
-    delete (uint8_t *)img->dataStart;
+    free(img->dataStart);
     memset(img, 0, sizeof(*img));
     delete img;
 }

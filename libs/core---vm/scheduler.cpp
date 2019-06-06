@@ -286,6 +286,8 @@ static void mainRunLoop() {
             f->pc = f->resumePC;
             f->resumePC = NULL;
             exec_loop(f);
+            if (panicCode)
+                return;
             auto n = f->next;
             if (f->resumePC == NULL) {
                 if (f->foreverPC) {
@@ -354,6 +356,7 @@ void initRuntime() {
     DMESG("start main loop");
 
     mainRunLoop();
+    systemReset();
 }
 
 #ifdef PXT_GC

@@ -426,6 +426,8 @@ String convertToString(FiberContext *ctx, TValue v) {
 void exec_loop(FiberContext *ctx) {
     auto opcodes = ctx->img->opcodes;
     while (ctx->pc) {
+        if (panicCode)
+            return;
         uint16_t opcode = *ctx->pc++;
         TRACE("0x%x: %04x %d", (uint8_t *)ctx->pc - 2 - (uint8_t *)ctx->img->dataStart, opcode,
               (int)(ctx->stackBase + VM_STACK_SIZE - ctx->sp));

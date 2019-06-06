@@ -150,6 +150,7 @@ struct FiberContext {
 
 extern VMImage *vmImg;
 extern FiberContext *currentFiber;
+extern volatile int panicCode;
 
 void vmStart();
 VMImage *loadVMImage(void *data, unsigned length);
