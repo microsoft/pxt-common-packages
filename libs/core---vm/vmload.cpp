@@ -88,9 +88,16 @@ static void *startFromUserWorker(void *fn) {
     return NULL;
 }
 
+static const char *lastFN;
 void vmStartFromUser(const char *fn) {
     pthread_t pt;
-    pthread_create(&pt, NULL, startFromUserWorker, (void*)fn);
+    if (!fn && lastFN) {
+        dmesg("re-starting %s", lastFN);
+        fn = lastFN;
+    }
+    lastFN = fn;
+    if (fn)
+        pthread_create(&pt, NULL, startFromUserWorker, (void*)fn);
     systemReset();
 }
 
