@@ -58,6 +58,9 @@ enum class SectionType : uint8_t {
     Function = 0x20,
     Literal = 0x21, // aux field contains literal type (string, hex, image, ...)
     VTable = 0x22,
+
+    // meta sections, ignored by the VM
+    MetaName = 0x80,
 };
 
 struct VMImageSection {
@@ -67,6 +70,10 @@ struct VMImageSection {
     uint32_t size; // in bytes, including this header
     uint8_t data[0];
 };
+
+static inline VMImageSection * vmNextSection(VMImageSection *sect) {
+    return (VMImageSection *)((uint8_t *)sect + sect->size);
+}
 
 STATIC_ASSERT(sizeof(VMImageSection) == 8);
 
@@ -157,6 +164,7 @@ VMImage *loadVMImage(void *data, unsigned length);
 void unloadVMImage(VMImage *img);
 VMImage *setVMImgError(VMImage *img, int code, void *pos);
 void exec_loop(FiberContext *ctx);
+void vmStartFromUser(const char *fn);
 
 #define DEF_CONVERSION(retp, tp, btp)                                                              \
     static inline retp tp(TValue v) {                                                              \

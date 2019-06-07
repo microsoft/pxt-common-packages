@@ -25,11 +25,9 @@ VMImage *setVMImgError(VMImage *img, int code, void *pos) {
 #define FOR_SECTIONS()                                                                             \
     VMImageSection *sect, *next;                                                                   \
     for (sect = (VMImageSection *)img->dataStart;                                                  \
-         (next = (VMImageSection *)((uint8_t *)sect + sect->size)),                                \
-        (uint64_t *)sect < img->dataEnd;                                                           \
-         sect = next)
+         (next = vmNextSection(sect), (uint64_t *)sect < img->dataEnd); sect = next)
 
-#define ALLOC_ARRAY(tp, sz) (tp*)gcPrealloc(sizeof(tp) * sz)
+#define ALLOC_ARRAY(tp, sz) (tp *)gcPrealloc(sizeof(tp) * sz)
 
 static VMImage *countSections(VMImage *img) {
     auto p = img->dataStart;
@@ -157,8 +155,8 @@ static VMImage *loadSections(VMImage *img) {
                 auto str = (CompiledString *)sect->data;
                 CHECK(sect->size >= str->numbytes + 8 + 4, 1042);
                 auto v = sect->aux == (int)BuiltInType::BoxedString
-                                      ? (TValue)mkString(str->utf8data, str->numbytes)
-                                      : (TValue)mkBuffer((uint8_t*)str->utf8data, str->numbytes);
+                             ? (TValue)mkString(str->utf8data, str->numbytes)
+                             : (TValue)mkBuffer((uint8_t *)str->utf8data, str->numbytes);
                 // registerGCPtr(v);
                 img->pointerLiterals[idx] = v;
             } else {
@@ -185,7 +183,7 @@ static VMImage *loadIfaceNames(VMImage *img) {
     FOR_SECTIONS() {
         if (sect->type == SectionType::IfaceMemberNames) {
             uint64_t *ptrs = (uint64_t *)sect->data;
-            uintptr_t *dst = (uintptr_t*)ptrs;
+            uintptr_t *dst = (uintptr_t *)ptrs;
             img->ifaceMemberNames = dst;
             auto len = *ptrs++;
             img->numIfaceMemberNames = (uint32_t)len;

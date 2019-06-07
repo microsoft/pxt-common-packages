@@ -28,7 +28,9 @@ static void vmStartCore(uint8_t *data, unsigned len) {
 }
 
 static void vmStartFile(const char *fn) {
-    auto f = fopen(fn, "rb");
+    // we open for read/write so that modification time is updated
+    // we use it for sorting by recent usage
+    auto f = fopen(fn, "r+b");
     if (!f) {
         dmesg("cannot open %s", fn);
         return;
@@ -65,7 +67,6 @@ pthread_t vm_thread;
 int vm_has_thread;
 
 static void spinThread() {
-    panicCode = 0;
     if (vm_has_thread) {
         void *dummy;
         if (!panicCode)
@@ -73,8 +74,24 @@ static void spinThread() {
         pthread_join(vm_thread, &dummy);
         vm_has_thread = 0;
     }
+    panicCode = 0;
     pthread_create(&vm_thread, NULL, multiStart, NULL);
     vm_has_thread = 1;
+}
+
+static void *startFromUserWorker(void *fn) {
+    void *dummy;
+    pthread_join(vm_thread, &dummy);
+    vm_thread = pthread_self();
+    panicCode = 0;
+    vmStartFile((char*)fn);
+    return NULL;
+}
+
+void vmStartFromUser(const char *fn) {
+    pthread_t pt;
+    pthread_create(&pt, NULL, startFromUserWorker, (void*)fn);
+    systemReset();
 }
 
 DLLEXPORT void pxt_vm_start(const char *fn) {
