@@ -1,4 +1,13 @@
 namespace tiles {
+    export enum Scale {
+        //% block="8x8"
+        Eight = 3,
+        //% block="16x16"
+        Sixteen = 4,
+        //% block="32x32"
+        ThirtyTwo = 5
+    }
+
     class TileSet {
         obstacle: boolean;
         private map: TileMap;
@@ -80,11 +89,11 @@ namespace tiles {
         private _map: Image;
         private _tileSets: TileSet[];
 
-        constructor() {
+        constructor(scale: tiles.Scale = Scale.Sixteen) {
             this._tileSets = [];
             this._layer = 1;
             this.z = -1;
-            this.scale = 4;
+            this.scale = scale;
 
             const sc = game.currentScene();
             sc.addSprite(this);
