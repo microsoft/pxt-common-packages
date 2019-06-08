@@ -176,9 +176,9 @@ namespace tiles {
          */
         __draw(camera: scene.Camera): void {
             if (!this.enabled) return;
-
-            const offsetX = camera.drawOffsetX & 0xf;
-            const offsetY = camera.drawOffsetY & 0xf;
+            const sz = 0x1 << this.scale;
+            const offsetX = camera.drawOffsetX % sz;
+            const offsetY = camera.drawOffsetY % sz;
             const x0 = Math.max(0, camera.drawOffsetX >> this.scale);
             const xn = Math.min(this._map.width, ((camera.drawOffsetX + screen.width) >> this.scale) + 1);
             const y0 = Math.max(0, camera.drawOffsetY >> this.scale);
