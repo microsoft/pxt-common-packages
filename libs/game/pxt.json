@@ -12,6 +12,7 @@
         "spritemap.ts",
         "spriteevents.ts",
         "spriteset.ts",
+        "spritekind.ts",
         "metrics.ts",
         "obstacle.ts",
         "physics.ts",

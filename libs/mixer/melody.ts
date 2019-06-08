@@ -24,6 +24,8 @@ namespace music {
 
     let globalVolume: number = null
 
+    const BUFFER_SIZE: number = 12;
+
     //% shim=music::enableAmp
     function enableAmp(en: number) {
         return // for sim
@@ -63,8 +65,8 @@ namespace music {
     }
 
     function playNoteCore(when: number, frequency: number, ms: number) {
-        let buf = control.createBuffer(10)
-        addNote(buf, 0, ms, 255, 255, 3, frequency, volume())
+        let buf = control.createBuffer(BUFFER_SIZE)
+        addNote(buf, 0, ms, 255, 255, 3, frequency, volume(), frequency)
         queuePlayInstructions(when, buf)
     }
 
@@ -244,7 +246,7 @@ namespace music {
         }
     }
 
-    function addNote(sndInstr: Buffer, sndInstrPtr: number, ms: number, beg: number, end: number, soundWave: number, hz: number, volume: number) {
+    function addNote(sndInstr: Buffer, sndInstrPtr: number, ms: number, beg: number, end: number, soundWave: number, hz: number, volume: number, endHz: number) {
         if (ms > 0) {
             sndInstr.setNumber(NumberFormat.UInt8LE, sndInstrPtr, soundWave)
             sndInstr.setNumber(NumberFormat.UInt8LE, sndInstrPtr + 1, 0)
@@ -252,7 +254,8 @@ namespace music {
             sndInstr.setNumber(NumberFormat.UInt16LE, sndInstrPtr + 4, ms)
             sndInstr.setNumber(NumberFormat.UInt16LE, sndInstrPtr + 6, (beg * volume) >> 6)
             sndInstr.setNumber(NumberFormat.UInt16LE, sndInstrPtr + 8, (end * volume) >> 6)
-            sndInstrPtr += 10
+            sndInstr.setNumber(NumberFormat.UInt16LE, sndInstrPtr + 10, endHz);
+            sndInstrPtr += BUFFER_SIZE;
         }
         sndInstr.setNumber(NumberFormat.UInt8LE, sndInstrPtr, 0) // terminate
         return sndInstrPtr
@@ -284,6 +287,7 @@ namespace music {
             let tempo = 120; // default tempo
 
             let hz = 0
+            let endHz = -1
             let ms = 0
             let timePos = 0
             let startTime = control.millis()
@@ -294,11 +298,20 @@ namespace music {
             let envS = 255
             let envR = 0
             let soundWave = 1 // triangle
-            let sndInstr = control.createBuffer(5 * 10)
+            let sndInstr = control.createBuffer(5 * BUFFER_SIZE)
             let sndInstrPtr = 0
 
-            const addForm = (ms: number, beg: number, end: number) => {
-                sndInstrPtr = addNote(sndInstr, sndInstrPtr, ms, beg, end, soundWave, hz, volume)
+            const addForm = (formDuration: number, beg: number, end: number, msOff: number) => {
+                let freqStart = hz;
+                let freqEnd = endHz;
+
+                const envelopeWidth = ms > 0 ? ms : duration * Math.idiv(15000, tempo) + envR;
+                if (endHz != hz && envelopeWidth != 0) {
+                    const slope = (freqEnd - freqStart) / envelopeWidth;
+                    freqStart = hz + slope * msOff;
+                    freqEnd = hz + slope * (msOff + formDuration);
+                }
+                sndInstrPtr = addNote(sndInstr, sndInstrPtr, formDuration, beg, end, soundWave, freqStart, volume, freqEnd);
             }
 
             const scanNextWord = () => {
@@ -331,12 +344,13 @@ namespace music {
                 Beat,
                 Tempo,
                 Hz,
+                EndHz,
                 Ms,
                 WaveForm,
                 EnvelopeA,
                 EnvelopeD,
                 EnvelopeS,
-                EnvelopeR,
+                EnvelopeR
             }
 
             let token: string = "";
@@ -375,6 +389,7 @@ namespace music {
                         case Token.EnvelopeD: envD = d; tokenKind = Token.EnvelopeS; break;
                         case Token.EnvelopeS: envS = Math.clamp(0, 255, d); tokenKind = Token.EnvelopeR; break;
                         case Token.EnvelopeR: envR = d; break;
+                        case Token.EndHz: endHz = d; break;
                     }
                     token = "";
                 }
@@ -439,6 +454,10 @@ namespace music {
                             tokenKind = Token.Tempo;
                             prevNote = false;
                             break;
+                        case '^':
+                            consumeToken();
+                            tokenKind = Token.EndHz;
+                            break;
                         default:
                             if (tokenKind == Token.Note)
                                 tokenKind = Token.Octave;
@@ -466,13 +485,18 @@ namespace music {
                 } else if (hz == 0) {
                     timePos += currMs
                 } else {
+                    if (endHz < 0) {
+                        endHz = hz;
+                    }
+
                     sndInstrPtr = 0
-                    addForm(envA, 0, 255)
-                    addForm(envD, 255, envS)
-                    addForm(currMs - (envA + envD), envS, envS)
-                    addForm(envR, envS, 0)
+                    addForm(envA, 0, 255, 0)
+                    addForm(envD, 255, envS, envA)
+                    addForm(currMs - (envA + envD), envS, envS, envD + envA)
+                    addForm(envR, envS, 0, currMs)
 
                     queuePlayInstructions(timePos - now, sndInstr.slice(0, sndInstrPtr))
+                    endHz = -1;
                     timePos += currMs // don't add envR - it's supposed overlap next sound
                 }
 

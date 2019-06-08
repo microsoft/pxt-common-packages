@@ -39,6 +39,9 @@ using namespace codal;
 #if CONFIG_ENABLED(DEVICE_JOYSTICK)
 #include "HIDJoystick.h"
 #endif
+#if CONFIG_ENABLED(DEVICE_JACDAC_DEBUG)
+#include "USBJACDAC.h"
+#endif
 #endif
 
 namespace pxt {
@@ -54,6 +57,9 @@ extern USBHIDKeyboard keyboard;
 #endif
 #if CONFIG_ENABLED(DEVICE_JOYSTICK)
 extern USBHIDJoystick joystick;
+#endif
+#if CONFIG_ENABLED(DEVICE_JACDAC_DEBUG)
+extern USBJACDAC jacdacDebug;
 #endif
 #endif
 
@@ -80,6 +86,9 @@ namespace pxt {
 CODAL_I2C* getI2C(DigitalInOutPin sda, DigitalInOutPin scl);
 #endif
 CODAL_SPI* getSPI(DigitalInOutPin mosi, DigitalInOutPin miso, DigitalInOutPin sck);
+#ifdef CODAL_JACDAC_WIRE_SERIAL
+LowLevelTimer* getJACDACTimer();
+#endif
 }
 
 namespace serial {
