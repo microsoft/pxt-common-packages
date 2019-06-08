@@ -93,12 +93,13 @@ namespace scene {
     /**
      * Set the map for placing tiles in the scene
      * @param map
+     * @param scale
      */
     //% blockId=gamesettilemap block="set tile map to %map=tilemap_image_picker || with %scale pixel tiles"
-    //% scale.defl=tiles.Scale.Sixteen
+    //% scale.defl=TileScale.Sixteen
     //% group="Tiles"
     //% help=scene/set-tile-map
-    export function setTileMap(map: Image, scale = tiles.Scale.Sixteen) {
+    export function setTileMap(map: Image, scale = TileScale.Sixteen) {
         const scene = game.currentScene();
         if (!scene.tileMap)
             scene.tileMap = new tiles.TileMap();
