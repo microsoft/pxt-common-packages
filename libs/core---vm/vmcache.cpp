@@ -233,4 +233,15 @@ void run(String name) {
     vmStartFromUser(pathBuf);
 }
 
+//%
+void del(String name) {
+    auto scriptId = name->getUTF8Data();
+    auto pathBuf = scriptPath(scriptId);
+    if (!pathBuf)
+        return;
+    dmesg("delete %s from cache", pathBuf);
+    remove(pathBuf);
+    free(pathBuf);
+}
+
 } // namespace vmcache
