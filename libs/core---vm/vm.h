@@ -122,6 +122,8 @@ struct VMImage {
     uint32_t errorCode;
     uint32_t errorOffset;
     int toStringKey;
+
+    int execLock;
 };
 
 // not doing this, likely
