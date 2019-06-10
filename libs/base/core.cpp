@@ -1149,8 +1149,9 @@ TNumber neqq(TNumber a, TNumber b) {
 }
 
 
-// should not be more than 15, as 16 digits cannot be accurately represented
-// in 64 bit double and this code may crash
+// How many significant digits mycvt() should output.
+// This cannot be more than 15, as this is the most that can be accurately represented
+// in 64 bit double. Otherwise this code may crash.
 #define DIGITS 15
 
 void mycvt(NUMBER d, char *buf) {
@@ -1168,24 +1169,30 @@ void mycvt(NUMBER d, char *buf) {
     int pw = (int)log10(d);
     int e = 1;
 
+    // if outside 1e-6 -- 1e21 range, we use the e-notation
     if (d < 1e-6 || d > 1e21) {
+        // normalize number to 1.XYZ, save e, and reset pw
         d /= p10(pw);
         e = pw;
         pw = 0;
     }
 
     int trailingZ = 0;
-    int dotAfter = pw + 1;
+    int dotAfter = pw + 1; // at which position the dot should be in the number
 
+    // normalize number to be integer with exactly DIGITS digits
     if (pw >= DIGITS) {
+        // if the number is larger than DIGITS, we need trailing zeroes
         trailingZ = pw - DIGITS + 1;
         d /= p10(trailingZ);
     } else {
         d *= p10(DIGITS - pw - 1);
     }
 
+    // make sure we have an integer
     d = round(d);
 
+    // if number is less than 1, we need 0.00...00 at the beginning
     if (dotAfter < 1) {
         *buf++ = '0';
         *buf++ = '.';
@@ -1194,23 +1201,30 @@ void mycvt(NUMBER d, char *buf) {
             *buf++ = '0';
     }
 
+    // now print out the actual number
     for (int i = DIGITS - 1; i >= 0; i--) {
         NUMBER q = p10(i);
+        // this may be faster than fp-division and fmod(); or maybe not
+        // anyways, it works
         int k = '0';
         while (d >= q) {
             d -= q;
             k++;
         }
         *buf++ = k;
+        // if we're after dot, and what's left is zeroes, stop
         if (d == 0 && (DIGITS - i) >= dotAfter)
             break;
+        // print the dot, if we arrived at it
         if ((DIGITS - i) == dotAfter)
             *buf++ = '.';
     }
 
+    // print out remaining trailing zeroes if any
     while (trailingZ-- > 0)
         *buf++ = '0';
 
+    // if we used e-notation, handle that
     if (e != 1) {
         *buf++ = 'e';
         itoa(e, buf);
