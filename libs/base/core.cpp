@@ -1154,6 +1154,9 @@ TNumber neqq(TNumber a, TNumber b) {
 // in 64 bit double. Otherwise this code may crash.
 #define DIGITS 15
 
+// The basic idea is we convert d to an double representing integer with DIGITS
+// digits, and then print it out, putting dot in the right place.
+
 void mycvt(NUMBER d, char *buf) {
     if (d < 0) {
         *buf++ = '-';
