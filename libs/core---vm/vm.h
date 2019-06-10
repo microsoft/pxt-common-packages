@@ -58,9 +58,6 @@ enum class SectionType : uint8_t {
     Function = 0x20,
     Literal = 0x21, // aux field contains literal type (string, hex, image, ...)
     VTable = 0x22,
-
-    // meta sections, ignored by the VM
-    MetaName = 0x80,
 };
 
 struct VMImageSection {
@@ -99,6 +96,12 @@ struct VMImageHeader {
 
     uint32_t allocGlobals;
     uint32_t nonPointerGlobals;
+
+    uint64_t lastUsageTime;
+    uint64_t installationTime;
+    uint64_t publicationTime;
+    uint8_t reserved[64];
+    uint8_t name[128];
 };
 
 struct VMImage {

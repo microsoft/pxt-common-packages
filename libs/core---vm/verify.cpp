@@ -64,7 +64,7 @@ static VMImage *loadSections(VMImage *img) {
             CHECK(hd->magic1 == VM_MAGIC1, 1010);
             CHECK(hd->allocGlobals >= hd->nonPointerGlobals, 1011);
             CHECK(hd->allocGlobals < 10000, 1012);
-            CHECK(!img->infoHeader, 1013);
+            CHECK(idx == 0, 1013);
             img->infoHeader = hd;
         }
 
