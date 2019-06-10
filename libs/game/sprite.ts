@@ -124,12 +124,18 @@ class Sprite implements SpriteLike {
         this._ay = Fx8(v)
     }
 
+    private _data: any;
+    _kind: number;
+
     /** 
      * Custom data
      */
     //%
-    data: any;
-    _kind: number;
+    get data() {
+        if (this._data === undefined)
+            this._data = {};
+        return this._data;
+    }
 
     /**
      * A bitset of layer. Each bit is a layer, default is 1.
