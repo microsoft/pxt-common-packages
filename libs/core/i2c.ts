@@ -25,7 +25,7 @@ namespace pins {
     }
 
     /**
-     * Writes a value in a I2C register.
+     * Write a value in a I2C register.
      * @param address I2c address of the device
      * @param register register index
      * @param value value to write
@@ -44,7 +44,7 @@ namespace pins {
     }
 
     /**
-     * Reads the value from a I2C register.
+     * Read the value from a I2C register.
      * @param address I2c address of the device
      * @param register register index
      * @param valueFormat format of the value, default is UInt8LE

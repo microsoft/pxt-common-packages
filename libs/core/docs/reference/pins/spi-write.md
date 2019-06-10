@@ -1,6 +1,6 @@
-# SPI Write
+# spi Write
 
-Write to the SPI Slave and return the response.
+Write a single data value to an SPI slave device and return the response.
 
 ```sig
 pins.spiWrite(0);
@@ -8,12 +8,22 @@ pins.spiWrite(0);
 
 ## Parameters
 
-* ``value``: value	Data to be sent to the SPI slave
+* ``value``: a [number](/types/number) value to send to the SPI slave.
 
 ## Returns
 
-* a [number](/types/number) Response from the SPI slave
+* a [number](/types/number) which is a response value from the SPI slave.
+
+## Example
+
+Write the value of `16` to the SPI slave device.
+
+```blocks
+let spiOK = pins.spiWrite(16);
+```
 
 ## See also
 
-[SPI](https://developer.mbed.org/handbook/SPI)
+[spi transfer](/reference/pins/spi-transfer)
+
+[SPI handbook](https://developer.mbed.org/handbook/SPI)
