@@ -1148,6 +1148,11 @@ TNumber neqq(TNumber a, TNumber b) {
     return !pxt::eqq_bool(a, b) ? TAG_TRUE : TAG_FALSE;
 }
 
+
+// should not be more than 15, as 16 digits cannot be accurately represented
+// in 64 bit double and this code may crash
+#define DIGITS 15
+
 void mycvt(NUMBER d, char *buf) {
     if (d < 0) {
         *buf++ = '-';
@@ -1162,36 +1167,49 @@ void mycvt(NUMBER d, char *buf) {
 
     int pw = (int)log10(d);
     int e = 1;
-    int beforeDot = 1;
 
-    if (0.000001 <= d && d < 1e21) {
-        if (pw > 0) {
-            d /= p10(pw);
-            beforeDot = 1 + pw;
-        }
-    } else {
+    if (d < 1e-6 || d > 1e21) {
         d /= p10(pw);
         e = pw;
+        pw = 0;
     }
 
-    int sig = 0;
-    while (sig < 17 || beforeDot > 0) {
-        // printf("%f sig=%d bd=%d\n", d, sig, beforeDot);
-        int c = (int)d;
-        *buf++ = '0' + c;
-        d = (d - c) * 10;
-        if (--beforeDot == 0)
+    int trailingZ = 0;
+    int dotAfter = pw + 1;
+
+    if (pw >= DIGITS) {
+        trailingZ = pw - DIGITS + 1;
+        d /= p10(trailingZ);
+    } else {
+        d *= p10(DIGITS - pw - 1);
+    }
+
+    d = round(d);
+
+    if (dotAfter < 1) {
+        *buf++ = '0';
+        *buf++ = '.';
+        int n = -dotAfter;
+        while (n--)
+            *buf++ = '0';
+    }
+
+    for (int i = DIGITS - 1; i >= 0; i--) {
+        NUMBER q = p10(i);
+        int k = '0';
+        while (d >= q) {
+            d -= q;
+            k++;
+        }
+        *buf++ = k;
+        if (d == 0 && (DIGITS - i) >= dotAfter)
+            break;
+        if ((DIGITS - i) == dotAfter)
             *buf++ = '.';
-        if (sig || c)
-            sig++;
     }
 
-    buf--;
-    while (*buf == '0')
-        buf--;
-    if (*buf == '.')
-        buf--;
-    buf++;
+    while (trailingZ-- > 0)
+        *buf++ = '0';
 
     if (e != 1) {
         *buf++ = 'e';
