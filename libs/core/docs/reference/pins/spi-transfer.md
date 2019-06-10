@@ -31,5 +31,3 @@ pins.spiTransfer(cmdBuff, resBuff)
 ## See also
 
 [spi write](/reference/pins/spi-write)
-
-[SPI handbook](https://developer.mbed.org/handbook/SPI)

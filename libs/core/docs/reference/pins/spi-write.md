@@ -25,5 +25,3 @@ let spiOK = pins.spiWrite(16);
 ## See also
 
 [spi transfer](/reference/pins/spi-transfer)
-
-[SPI handbook](https://developer.mbed.org/handbook/SPI)

@@ -21,5 +21,3 @@ pins.spiFrequency(1000000);
 ## See also
 
 [spi mode](/reference/pins/spi-mode)
-
-[SPI handbook](https://developer.mbed.org/handbook/SPI)

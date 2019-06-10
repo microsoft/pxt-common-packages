@@ -27,5 +27,3 @@ pins.spiMode(3);
 ## See also
 
 [spi frequency](/reference/pins/spi-frequency)
-
-[SPI handbook](https://developer.mbed.org/handbook/SPI)
