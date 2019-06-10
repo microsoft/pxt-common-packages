@@ -168,6 +168,7 @@ void disposeFiber(FiberContext *t) {
 }
 
 FiberContext *setupThread(Action a, TValue arg = 0) {
+    //DMESG("setup thread: %p", a);
     auto t = (FiberContext *)xmalloc(sizeof(FiberContext));
     memset(t, 0, sizeof(*t));
     t->stackBase = (TValue *)xmalloc(VM_STACK_SIZE * sizeof(TValue));
@@ -391,7 +392,7 @@ void *gcAllocBlock(size_t sz) {
     }
 #elif defined(PXT_IOS)
     if (!gcBase) {
-        gcBase = (uint8_t *)xmalloc(1024 * 1024);
+        gcBase = (uint8_t *)xmalloc(1 << PXT_IOS_HEAP_ALLOC_BITS);
         currPtr = gcBase;
     }
     void *r = currPtr;

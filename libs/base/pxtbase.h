@@ -497,6 +497,9 @@ extern const VTable RefAction_vtable;
 #define PXT_VTABLE_TO_INT(vt) ((uintptr_t)(vt) >> PXT_VTABLE_SHIFT)
 #endif
 
+// allocate 1M of heap on iOS
+#define PXT_IOS_HEAP_ALLOC_BITS 20
+
 #ifdef PXT_GC
 #ifdef PXT_IOS
 extern uint8_t *gcBase;
@@ -504,7 +507,7 @@ extern uint8_t *gcBase;
 inline bool isReadOnly(TValue v) {
 #ifdef PXT64
 #ifdef PXT_IOS
-    return !isPointer(v) || (((uintptr_t)v - (uintptr_t)gcBase) >> 26) != 0;
+    return !isPointer(v) || (((uintptr_t)v - (uintptr_t)gcBase) >> PXT_IOS_HEAP_ALLOC_BITS) != 0;
 #else
     return !isPointer(v) || !((uintptr_t)v >> 37);
 #endif
