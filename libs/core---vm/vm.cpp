@@ -425,7 +425,7 @@ String convertToString(FiberContext *ctx, TValue v) {
 
 void exec_loop(FiberContext *ctx) {
     if(ctx->img->execLock)
-        target_panic(111);
+        target_panic(PANIC_VM_ERROR);
     ctx->img->execLock = 1;
     auto opcodes = ctx->img->opcodes;
     while (ctx->pc) {
