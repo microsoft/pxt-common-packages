@@ -32,6 +32,7 @@ namespace pins {
      * @param valueFormat format of the value, default is UInt8LE
      */
     //% weight=3 group="i2c"
+    //% help=pins/i2c-write-register
     //% blockId=i2c_writereg block="i2c write register|at address $address|at register $register|value $value"
     export function i2cWriteRegister(address: number, register: number, value: number, valueFormat?: NumberFormat): void {
         if (valueFormat === undefined)
@@ -50,6 +51,7 @@ namespace pins {
      * @param valueFormat format of the value, default is UInt8LE
      */
     //% weight=3 group="i2c"
+    //% help=pins/i2c-read-register
     //% blockId=i2c_readreg block="i2c read register|at address $addfress|at register $register"
     export function i2cReadRegister(address: number, register: number, valueFormat?: NumberFormat): number {
         if (valueFormat === undefined)

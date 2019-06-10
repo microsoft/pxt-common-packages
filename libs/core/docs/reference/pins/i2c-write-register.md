@@ -29,4 +29,5 @@ pins.i2cWriteRegister(DAC, register, dacData)
 
 ## See also
 
-[i2c write number](/reference/pins/i2c-writenumber)
+[i2c read register](/reference/pins/i2c-read-register)
+[i2c write number](/reference/pins/i2c-write-number)
