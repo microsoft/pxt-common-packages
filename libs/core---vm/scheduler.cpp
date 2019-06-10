@@ -293,6 +293,13 @@ static void mainRunLoop() {
                 if (f->foreverPC) {
                     f->resumePC = f->foreverPC;
                     f->wakeTime = current_time_ms() + 20;
+                    // restore stack, as setupThread() does it
+                    for (int i = 0; i < 5; ++i) {
+                        if (*--f->sp == TAG_STACK_BOTTOM)
+                            break;
+                    }
+                    if (*f->sp != TAG_STACK_BOTTOM)
+                        target_panic(PANIC_INVALID_IMAGE);
                 } else {
                     disposeFiber(f);
                 }
