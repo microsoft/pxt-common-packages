@@ -18,7 +18,7 @@ SPI uses two changes in the clock signal to decide when to transfer data. These 
 
 ## Example
 
-Set the SPI signal mode to CPOL rising and CPHA falling.
+Set the SPI signal mode to transfer at the trailing rising edge of the clock signal.
 
 ```blocks
 pins.spiMode(3);
