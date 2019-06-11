@@ -16,7 +16,7 @@ void target_exit() {
 }
 
 extern "C" void target_reset() {
-    systemReset();
+    vmStartFromUser(NULL);
 }
 
 void target_startup() {}

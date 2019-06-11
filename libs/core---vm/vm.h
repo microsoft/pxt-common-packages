@@ -68,6 +68,10 @@ struct VMImageSection {
     uint8_t data[0];
 };
 
+static inline VMImageSection * vmNextSection(VMImageSection *sect) {
+    return (VMImageSection *)((uint8_t *)sect + sect->size);
+}
+
 STATIC_ASSERT(sizeof(VMImageSection) == 8);
 
 struct OpcodeDesc {
@@ -92,6 +96,12 @@ struct VMImageHeader {
 
     uint32_t allocGlobals;
     uint32_t nonPointerGlobals;
+
+    uint64_t lastUsageTime;
+    uint64_t installationTime;
+    uint64_t publicationTime;
+    uint8_t reserved[64];
+    uint8_t name[128];
 };
 
 struct VMImage {
@@ -115,6 +125,8 @@ struct VMImage {
     uint32_t errorCode;
     uint32_t errorOffset;
     int toStringKey;
+
+    int execLock;
 };
 
 // not doing this, likely
@@ -150,12 +162,14 @@ struct FiberContext {
 
 extern VMImage *vmImg;
 extern FiberContext *currentFiber;
+extern volatile int panicCode;
 
 void vmStart();
 VMImage *loadVMImage(void *data, unsigned length);
 void unloadVMImage(VMImage *img);
 VMImage *setVMImgError(VMImage *img, int code, void *pos);
 void exec_loop(FiberContext *ctx);
+void vmStartFromUser(const char *fn);
 
 #define DEF_CONVERSION(retp, tp, btp)                                                              \
     static inline retp tp(TValue v) {                                                              \

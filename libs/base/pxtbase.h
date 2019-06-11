@@ -265,6 +265,7 @@ typedef enum {
     PANIC_HEAP_DUMPED = 915,
     PANIC_STACK_OVERFLOW = 916,
     PANIC_BLOCKING_TO_STRING = 917,
+    PANIC_VM_ERROR = 918,
 
     PANIC_CAST_FIRST = 980,
     PANIC_CAST_FROM_UNDEFINED = 980,
@@ -496,6 +497,9 @@ extern const VTable RefAction_vtable;
 #define PXT_VTABLE_TO_INT(vt) ((uintptr_t)(vt) >> PXT_VTABLE_SHIFT)
 #endif
 
+// allocate 1M of heap on iOS
+#define PXT_IOS_HEAP_ALLOC_BITS 20
+
 #ifdef PXT_GC
 #ifdef PXT_IOS
 extern uint8_t *gcBase;
@@ -503,7 +507,7 @@ extern uint8_t *gcBase;
 inline bool isReadOnly(TValue v) {
 #ifdef PXT64
 #ifdef PXT_IOS
-    return !isPointer(v) || (((uintptr_t)v - (uintptr_t)gcBase) >> 26) != 0;
+    return !isPointer(v) || (((uintptr_t)v - (uintptr_t)gcBase) >> PXT_IOS_HEAP_ALLOC_BITS) != 0;
 #else
     return !isPointer(v) || !((uintptr_t)v >> 37);
 #endif
@@ -984,6 +988,11 @@ void gcFreeze();
 void gcStartup();
 void gcPreStartup();
 void *gcPrealloc(int numbytes);
+bool inGCPrealloc();
+#else
+static inline bool inGCPrealloc() {
+    return false;
+}
 #endif
 
 void coreReset();

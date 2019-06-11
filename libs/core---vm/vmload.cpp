@@ -37,7 +37,7 @@ static void vmStartFile(const char *fn) {
     fseek(f, 0, SEEK_END);
     auto len = (unsigned)ftell(f);
     fseek(f, 0, SEEK_SET);
-    auto data = new uint8_t[len + 16];
+    auto data = (uint8_t*)malloc(len + 16);
     fread(data, len, 1, f);
     fclose(f);
 
@@ -61,11 +61,42 @@ void vmStart() {
     vmStartFile(fn);
 }
 
+pthread_t vm_thread;
+int vm_has_thread;
+
 static void spinThread() {
+    if (vm_has_thread) {
+        void *dummy;
+        if (!panicCode)
+            panicCode = -1;
+        pthread_join(vm_thread, &dummy);
+        vm_has_thread = 0;
+    }
     panicCode = 0;
-    pthread_t disp;
-    pthread_create(&disp, NULL, multiStart, NULL);
-    pthread_detach(disp);
+    pthread_create(&vm_thread, NULL, multiStart, NULL);
+    vm_has_thread = 1;
+}
+
+static void *startFromUserWorker(void *fn) {
+    void *dummy;
+    pthread_join(vm_thread, &dummy);
+    vm_thread = pthread_self();
+    panicCode = 0;
+    vmStartFile((char*)fn);
+    return NULL;
+}
+
+static const char *lastFN;
+void vmStartFromUser(const char *fn) {
+    pthread_t pt;
+    if (!fn && lastFN) {
+        dmesg("re-starting %s", lastFN);
+        fn = lastFN;
+    }
+    lastFN = fn;
+    if (fn)
+        pthread_create(&pt, NULL, startFromUserWorker, (void*)fn);
+    systemReset();
 }
 
 DLLEXPORT void pxt_vm_start(const char *fn) {
