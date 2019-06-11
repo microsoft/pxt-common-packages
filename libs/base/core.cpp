@@ -1249,6 +1249,8 @@ void mycvt(NUMBER d, char *buf) {
     // if we used e-notation, handle that
     if (e != 1) {
         *buf++ = 'e';
+        if (e > 0)
+            *buf++ = '+';
         itoa(e, buf);
     } else {
         *buf = 0;
