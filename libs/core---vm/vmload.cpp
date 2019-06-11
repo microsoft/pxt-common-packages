@@ -28,9 +28,7 @@ static void vmStartCore(uint8_t *data, unsigned len) {
 }
 
 static void vmStartFile(const char *fn) {
-    // we open for read/write so that modification time is updated
-    // we use it for sorting by recent usage
-    auto f = fopen(fn, "r+b");
+    auto f = fopen(fn, "rb");
     if (!f) {
         dmesg("cannot open %s", fn);
         return;
