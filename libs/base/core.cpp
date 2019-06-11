@@ -1154,7 +1154,25 @@ TNumber neqq(TNumber a, TNumber b) {
 // in 64 bit double. Otherwise this code may crash.
 #define DIGITS 15
 
-// The basic idea is we convert d to an double representing integer with DIGITS
+static const uint64_t pows[] = {
+    1LL,
+    10LL,
+    100LL,
+    1000LL,
+    10000LL,
+    100000LL,
+    1000000LL,
+    10000000LL,
+    100000000LL,
+    1000000000LL,
+    10000000000LL,    
+    100000000000LL,
+    1000000000000LL,
+    10000000000000LL,
+    100000000000000LL,
+};
+
+// The basic idea is we convert d to a 64 bit integer with DIGITS
 // digits, and then print it out, putting dot in the right place.
 
 void mycvt(NUMBER d, char *buf) {
@@ -1183,17 +1201,16 @@ void mycvt(NUMBER d, char *buf) {
     int trailingZ = 0;
     int dotAfter = pw + 1; // at which position the dot should be in the number
 
+    uint64_t dd;
+
     // normalize number to be integer with exactly DIGITS digits
     if (pw >= DIGITS) {
         // if the number is larger than DIGITS, we need trailing zeroes
         trailingZ = pw - DIGITS + 1;
-        d /= p10(trailingZ);
+        dd = (uint64_t)(d / p10(trailingZ) + 0.5);
     } else {
-        d *= p10(DIGITS - pw - 1);
+        dd = (uint64_t)(d * p10(DIGITS - pw - 1) + 0.5);
     }
-
-    // make sure we have an integer
-    d = round(d);
 
     // if number is less than 1, we need 0.00...00 at the beginning
     if (dotAfter < 1) {
@@ -1204,19 +1221,21 @@ void mycvt(NUMBER d, char *buf) {
             *buf++ = '0';
     }
 
+    //uint64_t q = 100000000000000LL;
+
     // now print out the actual number
     for (int i = DIGITS - 1; i >= 0; i--) {
-        NUMBER q = p10(i);
+        uint64_t q = pows[i];
         // this may be faster than fp-division and fmod(); or maybe not
         // anyways, it works
         int k = '0';
-        while (d >= q) {
-            d -= q;
+        while (dd >= q) {
+            dd -= q;
             k++;
         }
         *buf++ = k;
         // if we're after dot, and what's left is zeroes, stop
-        if (d == 0 && (DIGITS - i) >= dotAfter)
+        if (dd == 0 && (DIGITS - i) >= dotAfter)
             break;
         // print the dot, if we arrived at it
         if ((DIGITS - i) == dotAfter)
