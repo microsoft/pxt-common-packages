@@ -517,6 +517,7 @@ class Sprite implements SpriteLike {
     //% group="Effects"
     //% weight=90
     //% blockId=startEffectOnSprite block="%sprite(mySprite) start %effect effect || for %duration=timePicker|ms"
+    //% help=sprites/sprite/start-effect
     startEffect(effect: effects.ParticleEffect, duration?: number) {
         effect.start(this, duration);
     }
