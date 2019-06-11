@@ -133,7 +133,7 @@ namespace music {
     //% group="Melody"
     //% melody.shadow="melody_editor"
     export function playMelodyFromEditor(melody: Melody) {
-
+        melody.play();
     }
 
 
