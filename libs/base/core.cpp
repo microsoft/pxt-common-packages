@@ -1193,7 +1193,10 @@ void mycvt(NUMBER d, char *buf) {
     // if outside 1e-6 -- 1e21 range, we use the e-notation
     if (d < 1e-6 || d > 1e21) {
         // normalize number to 1.XYZ, save e, and reset pw
-        d /= p10(pw);
+        if (pw < 0)
+            d *= p10(-pw);
+        else
+            d /= p10(pw);
         e = pw;
         pw = 0;
     }
@@ -1220,8 +1223,6 @@ void mycvt(NUMBER d, char *buf) {
         while (n--)
             *buf++ = '0';
     }
-
-    //uint64_t q = 100000000000000LL;
 
     // now print out the actual number
     for (int i = DIGITS - 1; i >= 0; i--) {
