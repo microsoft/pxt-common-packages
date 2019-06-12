@@ -26,7 +26,7 @@ namespace pins {
     }
 
     /**
-     * Writes a given command to SPI bus, and afterwards reads the response.
+     * Write a given command to SPI bus, and afterwards read the response.
      */
     //% help=pins/spi-transfer weight=4 advanced=true
     //% blockId=spi_transfer block="spi transfer %command into %response"
@@ -35,7 +35,7 @@ namespace pins {
     }
 
     /**
-     * Sets the SPI frequency
+     * Set the SPI frequency
      * @param frequency the clock frequency, eg: 1000000
      */
     //% help=pins/spi-frequency weight=4 advanced=true
@@ -45,7 +45,7 @@ namespace pins {
     }
 
     /**
-     * Sets the SPI mode and bits
+     * Set the SPI signal mode
      * @param mode the mode, eg: 3
      */
     //% help=pins/spi-mode weight=3 advanced=true
