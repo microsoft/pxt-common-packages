@@ -150,7 +150,11 @@ namespace music {
     //% melody.fieldOptions.decompileLiterals=true
     //% melody.fieldOptions.decompileIndirectFixedInstances="true"
     export function melodyEditor(melody: string): Melody {
-        const song = new Melody(melody);
+        let melodies: string[] = melody.split("-");
+        // melodies[0] is name
+        // melodies[1] is tempo
+        // melodies[2] is the first melody
+        const song = new Melody(melodies[2]);
         return song
     }
     
