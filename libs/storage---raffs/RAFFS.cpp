@@ -18,6 +18,9 @@ using namespace codal;
     } while (0)
 #endif
 
+#undef LOGV
+#define LOGV DMESG
+
 using namespace pxt::raffs;
 
 static uint16_t raffs_unlocked_event;
@@ -102,12 +105,14 @@ void FS::writeBytes(void *dst, const void *src, uint32_t size) {
     }
 }
 
-#define RAFFS_MAGIC 0x67862084
+#define RAFFS_MAGIC 0x67862085
 #define M1 0xffffffffU
 
 void FS::format() {
     if (files)
         oops();
+
+    LOG("formatting...");
 
     FSHeader hd;
 

@@ -1,4 +1,8 @@
+#include "pxt.h"
 #include "Flash.h"
+
+//#define LOG DMESG
+#define LOG NOLOG
 
 #ifdef STM32F4
 namespace codal {
@@ -62,6 +66,7 @@ int ZFlash::erasePage(uintptr_t address) {
 }
 
 int ZFlash::writeBytes(uintptr_t dst, const void *src, uint32_t len) {
+    LOG("WR flash at %p len=%d", (void *)dst, len);
     waitForLast();
     unlock();
 
@@ -83,17 +88,22 @@ int ZFlash::writeBytes(uintptr_t dst, const void *src, uint32_t len) {
             memset(data.buf, 0xff, 4);
 
         memcpy(data.buf + off, src, n);
+        
+        *((volatile uint32_t *)dst) = data.asuint;
+
+        dst += n;
         src = (const uint8_t *)src + n;
         len -= n;
 
-        *((volatile uint32_t *)dst) = data.asuint;
         waitForLast();
     }
 
     FLASH->CR = FLASH_CR_PSIZE_1;
     lock();
 
+    LOG("WR flash OK");
+
     return 0;
 }
-}
+} // namespace codal
 #endif
