@@ -212,9 +212,9 @@ namespace light {
          * @param startColor the start color
          * @param endColor the end color
          */
-        //% blockId="lightsetgradient" block="set %strip gradient from %startColor=colorNumberPicker to %endColor=colorNumberPicker"
+        //% blockId=lightsetgradient block="set %strip gradient from %startColor=colorNumberPicker to %endColor=colorNumberPicker"
         //% weight=79 blockGap=8
-        //% advanced=true
+        //% group="More" advanced=true blockHidden=true
         setGradient(startColor: number, endColor: number, easing?: (t: number) => number) {
             const sr = unpackR(startColor);
             const sg = unpackG(startColor);
@@ -1404,14 +1404,14 @@ namespace light {
 
         public createRenderer(strip: NeoPixelStrip): () => boolean {
             const n = strip.length();
-            let offset = 0;
+            let hueOffset = 0;
             return () => {
                 for (let i = 0; i < n; i++) {
-                    strip.setPixelColor(i, hsv(((i * 256) / (n - 1) + offset) % 0xff, 0xff, 0xff));
+                    strip.setPixelColor(i, hsv(((i * 256) / (n - 1) + hueOffset) % 0xff, 0xff, 0xff));
                 }
-                offset += Math.ceil(Math.max(1, Math.min(8, n / 20)));
-                if (offset >= 0xff) {
-                    offset = 0;
+                hueOffset += Math.ceil(128 / n);
+                if (hueOffset >= 0xff) {
+                    hueOffset = 0;
                     return false;
                 } else {
                     return true;

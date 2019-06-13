@@ -9,6 +9,7 @@
 #include "ZSPI.h"
 #include "ZI2C.h"
 #include "ZSingleWireSerial.h"
+#include "SAMDNVM.h"
 
 // cap touch not available on 51 yet
 #ifdef SAMD21
@@ -53,6 +54,10 @@ typedef int PinName;
 #define CODAL_JACDAC_WIRE_SERIAL codal::ZSingleWireSerial
 #define CODAL_SERIAL codal::SAMDSerial
 #define CODAL_DAC SAMDDAC
+
+#ifdef SAMD21
+#define CODAL_NVMCONTROLLER codal::SAMDNVM
+#endif
 
 #define PXT_74HC165 1
 

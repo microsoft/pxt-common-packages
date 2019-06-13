@@ -141,6 +141,7 @@ int WSynthesizer::updateQueues() {
             snd->instrEnd = snd->currInstr + p->instructions->length / sizeof(SoundInstruction);
             for (auto p = snd->currInstr; p < snd->instrEnd; p++) {
                 CLAMP(20, p->frequency, 20000);
+                CLAMP(20, p->endFrequency, 20000);
                 CLAMP(0, p->startVolume, 1023);
                 CLAMP(0, p->endVolume, 1023);
                 CLAMP(1, p->duration, 60000);
@@ -186,12 +187,14 @@ int WSynthesizer::fillSamples(int16_t *dst, int numsamples) {
         gentone_t fn = NULL;
         snd->currInstr--;
         uint32_t toneStep = 0;
+        int32_t toneDelta = 0;
         int32_t volumeStep = 0;
         uint32_t tonePosition = snd->tonePosition;
         uint32_t samplesLeft = 0;
         uint8_t wave = 0;
         int32_t volume = 0;
         uint32_t prevFreq = 0;
+        uint32_t prevEndFreq = 0;
 
         for (int j = 0; j < numsamples; ++j) {
             if (samplesLeft == 0) {
@@ -201,19 +204,32 @@ int WSynthesizer::fillSamples(int16_t *dst, int numsamples) {
                 }
                 wave = instr->soundWave;
                 fn = getWaveFn(wave);
+
                 samplesLeft = (uint32_t)(instr->duration * samplesPerMS >> 8);
-                if (prevFreq != instr->frequency) {
-                    toneStep = (uint32_t)(toneStepMult * instr->frequency);
-                    prevFreq = instr->frequency;
-                }
                 volumeStep = ((int)(instr->endVolume - instr->startVolume) << 16) / samplesLeft;
+
                 if (j == 0 && snd->prevVolume != -1) {
                     // restore previous state
                     samplesLeft = snd->samplesLeftInCurr;
                     volume = snd->prevVolume;
+                    toneStep = snd->prevToneStep;
+                    toneDelta = snd->prevToneDelta;
+                    prevFreq = instr->frequency;
+                    prevEndFreq = instr->endFrequency;
                 } else {
                     LOG("#sampl %d %p", samplesLeft, instr);
                     volume = instr->startVolume << 16;
+                    if (prevFreq != instr->frequency || prevEndFreq != instr->endFrequency) {
+                        toneStep = (uint32_t)(toneStepMult * instr->frequency);
+                        if (instr->frequency != instr->endFrequency) {
+                            uint32_t endToneStep = (uint32_t)(toneStepMult * instr->endFrequency);
+                            toneDelta = (int32_t)(endToneStep - toneStep) / (int32_t)samplesLeft;
+                        } else {
+                            toneDelta = 0;
+                        }
+                        prevFreq = instr->frequency;
+                        prevEndFreq = instr->endFrequency;
+                    }
                 }
             }
 
@@ -226,6 +242,7 @@ int WSynthesizer::fillSamples(int16_t *dst, int numsamples) {
             dst[j] += v;
 
             tonePosition += toneStep;
+            toneStep += toneDelta;
             volume += volumeStep;
             samplesLeft--;
         }
@@ -239,6 +256,8 @@ int WSynthesizer::fillSamples(int16_t *dst, int numsamples) {
                 samplesLeft++; // avoid infinite loop in next iteration
             snd->samplesLeftInCurr = samplesLeft;
             snd->prevVolume = volume;
+            snd->prevToneDelta = toneDelta;
+            snd->prevToneStep = toneStep;
         }
     }
 
@@ -325,6 +344,15 @@ void stopPlaying() {
         p = n;
     }
     target_enable_irq();
+}
+
+WSynthesizer::WSynthesizer() : upstream(NULL), out(*this) {
+    currSample = 0;
+    active = false;
+    sampleRate = out.dac.getSampleRate();
+    memset(&playingSounds, 0, sizeof(playingSounds));
+    waiting = NULL;
+    PXT_REGISTER_RESET(stopPlaying);
 }
 
 } // namespace music

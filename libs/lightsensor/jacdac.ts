@@ -1,6 +1,6 @@
 namespace jacdac {
     //% fixedInstances
-    export class LightSensorService extends jacdac.SensorService {
+    export class LightSensorService extends jacdac.SensorHost {
         constructor(name: string) {
             super(name, jacdac.LIGHT_SENSOR_DEVICE_CLASS);
             input.onLightConditionChanged(LightCondition.Bright, () => this.raiseHostEvent(LightCondition.Bright));

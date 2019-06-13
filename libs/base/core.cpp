@@ -1,4 +1,8 @@
 #include "pxtbase.h"
+#ifdef CODAL_JACDAC_WIRE_SERIAL
+#include "LowLevelTimer.h"
+using namespace codal;
+#endif
 #include <limits.h>
 #include <stdlib.h>
 
@@ -24,8 +28,7 @@ static HandlerBinding *handlerBindings;
 HandlerBinding *nextBinding(HandlerBinding *curr, int source, int value) {
     for (auto p = curr; p; p = p->next) {
         // DEVICE_ID_ANY == DEVICE_EXT_ANY == 0
-        if ((p->source == source || p->source == 0) && 
-            (p->value == value || p->value == 0)) {
+        if ((p->source == source || p->source == 0) && (p->value == value || p->value == 0)) {
             return p;
         }
     }
@@ -37,10 +40,10 @@ HandlerBinding *findBinding(int source, int value) {
 }
 
 void setBinding(int source, int value, Action act) {
-    HandlerBinding* curr = NULL;
+    HandlerBinding *curr = NULL;
     for (auto p = handlerBindings; p; p = p->next) {
         if ((p->source == source) && (p->value == value)) {
-            curr = p; 
+            curr = p;
             break;
         }
     }
@@ -50,13 +53,18 @@ void setBinding(int source, int value, Action act) {
         curr->action = act;
         return;
     }
-    curr = new HandlerBinding();
+    curr = new (app_alloc(sizeof(HandlerBinding))) HandlerBinding();
     curr->next = handlerBindings;
     curr->source = source;
     curr->value = value;
     curr->action = act;
     registerGC(&curr->action);
     handlerBindings = curr;
+}
+
+void coreReset() {
+    // these are allocated on GC heap, so they will go away together with the reset
+    handlerBindings = NULL;
 }
 
 static const char emptyBuffer[] __attribute__((aligned(4))) = "@PXT#:\x00\x00\x00";
@@ -211,7 +219,7 @@ static void setupSkipList(String r, const char *data) {
     const char *ptr = dst;
     auto skipEntries = NUM_SKIP_ENTRIES(r);
     for (int i = 0; i < skipEntries; ++i) {
-        ptr = utf8Skip(ptr, len - (ptr - dst), SKIP_INCR);
+        ptr = utf8Skip(ptr, (int)(len - (ptr - dst)), SKIP_INCR);
         if (!ptr)
             oops(80);
         r->skip.list[i] = ptr - dst;
@@ -219,10 +227,21 @@ static void setupSkipList(String r, const char *data) {
 }
 #endif
 
+#ifdef PXT_VM
+String mkInternalString(const char *str) {
+    int len = (int)strlen(str);
+    String r = new (xmalloc(sizeof(void *) + 2 + len + 1)) BoxedString(&string_inline_ascii_vt);
+    r->ascii.length = len;
+    memcpy(r->ascii.data, str, len);
+    r->ascii.data[len] = 0;
+    return r;
+}
+#endif
+
 String mkStringCore(const char *data, int len) {
     if (len < 0)
-        len = strlen(data);
-    if (len == 0)
+        len = (int)strlen(data);
+    if (len == 0 && !inGCPrealloc())
         return (String)emptyString;
 
     auto vt = &string_inline_ascii_vt;
@@ -233,11 +252,12 @@ String mkStringCore(const char *data, int len) {
         vt = len >= MIN_SKIP ? &string_skiplist16_vt : &string_inline_utf8_vt;
     }
     if (vt == &string_skiplist16_vt) {
-        r = new (gcAllocate(4 + 2 * 4)) BoxedString(vt);
+        r = new (gcAllocate(sizeof(void *) + sizeof(r->skip))) BoxedString(vt);
         r->skip.list = NULL;
         registerGCPtr((TValue)r);
         r->skip.size = len;
         r->skip.length = utf8Len(data, len);
+        r->skip.list = NULL; // in case gc triggers below
         r->skip.list = (uint16_t *)gcAllocateArray(NUM_SKIP_ENTRIES(r) * 2 + len + 1);
         setupSkipList(r, data);
         unregisterGCPtr((TValue)r);
@@ -245,7 +265,7 @@ String mkStringCore(const char *data, int len) {
 #endif
     {
         // for ASCII and UTF8 the layout is the same
-        r = new (gcAllocate(4 + 2 + len + 1)) BoxedString(vt);
+        r = new (gcAllocate(sizeof(void *) + 2 + len + 1)) BoxedString(vt);
         r->ascii.length = len;
         if (data)
             memcpy(r->ascii.data, data, len);
@@ -259,8 +279,8 @@ String mkStringCore(const char *data, int len) {
 String mkString(const char *data, int len) {
 #if PXT_UTF8
     if (len < 0)
-        len = strlen(data);
-    if (len == 0)
+        len = (int)strlen(data);
+    if (len == 0 && !inGCPrealloc())
         return (String)emptyString;
 
     int sz = utf8canon(NULL, data, len);
@@ -312,7 +332,7 @@ uint32_t toRealUTF8(String str, uint8_t *dst) {
 #endif
 
 Buffer mkBuffer(const uint8_t *data, int len) {
-    if (len <= 0)
+    if (len <= 0 && !inGCPrealloc())
         return (Buffer)emptyBuffer;
     Buffer r = new (gcAllocate(sizeof(BoxedBuffer) + len)) BoxedBuffer();
     r->length = len;
@@ -429,11 +449,10 @@ String fromCharCode(int code) {
 #endif
 }
 
-
-
 //%
 TNumber charCodeAt(String s, int pos) {
-    if (!s) return TAG_NAN;
+    if (!s)
+        return TAG_NAN;
     return s->charCodeAt(pos);
 }
 
@@ -442,12 +461,12 @@ String charAt(String s, int pos) {
     auto v = charCodeAt(s, pos);
     if (v == TAG_NAN)
         return mkEmpty();
-    if (!isNumber(v))
+    if (!isInt(v))
         oops(81);
     return fromCharCode(numValue(v));
 }
 
-#define IS_CONS(s) ((s)->vtable == (uint32_t)&string_cons_vt)
+#define IS_CONS(s) ((s)->vtable == (uintptr_t)&string_cons_vt)
 #define IS_EMPTY(s) ((s) == (String)emptyString)
 
 //%
@@ -478,7 +497,7 @@ String concat(String s, String other) {
         // single characters
 
         // allocate [r] first, and keep it alive
-        String r = new (gcAllocate(4 + 2 * 4)) BoxedString(&string_cons_vt);
+        String r = new (gcAllocate(3 * sizeof(void *))) BoxedString(&string_cons_vt);
         registerGCPtr((TValue)r);
         r->cons.left = s->cons.left;
         // this concat() might trigger GC
@@ -511,7 +530,7 @@ String concat(String s, String other) {
 
 #if PXT_UTF8
 mkCons:
-    r = new (gcAllocate(4 + 2 * 4)) BoxedString(&string_cons_vt);
+    r = new (gcAllocate(3 * sizeof(void *))) BoxedString(&string_cons_vt);
     r->cons.left = s;
     r->cons.right = other;
     return r;
@@ -587,7 +606,7 @@ NUMBER mystrtod(const char *p, char **endp) {
 
     if (*p) {
         p++;
-        int pw = strtol(p, endp, 10);
+        int pw = (int)strtol(p, endp, 10);
         v *= p10(pw);
     } else {
         *endp = (char *)p;
@@ -604,9 +623,9 @@ TNumber toNumber(String s) {
     NUMBER v = mystrtod(data, &endptr);
     if (endptr != data + s->getUTF8Size())
         v = NAN;
-    else if (v == 0.0 || v == -0.0)
-        v = v;
-    else if (!isnormal(v))
+    else if (v == 0.0 || v == -0.0) {
+        // nothing
+    } else if (!isnormal(v))
         v = NAN;
     return fromDouble(v);
 }
@@ -626,7 +645,7 @@ String substr(String s, int start, int length) {
     auto ep = s->getUTF8DataAt(start + length);
     if (ep == NULL)
         oops(82);
-    return mkStringCore(p, ep - p);
+    return mkStringCore(p, (int)(ep - p));
 #else
     return mkStringCore(p, length);
 #endif
@@ -647,7 +666,7 @@ int indexOf(String s, String searchString, int start) {
     while (lenA >= lenB) {
         if (*dataA == firstB && !memcmp(dataA, dataB, lenB))
 #if PXT_UTF8
-            return utf8Len(dataA0, dataA - dataA0);
+            return utf8Len(dataA0, (int)(dataA - dataA0));
 #else
             return dataA - dataA0;
 #endif
@@ -666,7 +685,7 @@ int includes(String s, String searchString, int start) {
 
 namespace Boolean_ {
 //%
-bool bang(int v) {
+bool bang(bool v) {
     return v == 0;
 }
 } // namespace Boolean_
@@ -675,7 +694,7 @@ namespace pxt {
 
 // ES5 9.5, 9.6
 unsigned toUInt(TNumber v) {
-    if (isNumber(v))
+    if (isInt(v))
         return numValue(v);
     if (isSpecial(v)) {
         if ((intptr_t)v >> 6)
@@ -708,11 +727,21 @@ NUMBER toDouble(TNumber v) {
     if (isTagged(v))
         return toInt(v);
 
+#ifdef PXT64
+    if (isDouble(v))
+        return doubleVal(v);
+#endif
+
     ValType t = valType(v);
+
+#ifndef PXT64
     if (t == ValType::Number) {
         BoxedNumber *p = (BoxedNumber *)v;
         return p->num;
-    } else if (t == ValType::String) {
+    }
+#endif
+
+    if (t == ValType::String) {
         // TODO avoid allocation
         auto tmp = String_::toNumber((String)v);
         auto r = toDouble(tmp);
@@ -777,9 +806,14 @@ static inline TValue doubleToInt(double x) {
 }
 #else
 static inline TValue doubleToInt(NUMBER r) {
+#ifdef PXT64
+    if ((int)r == r)
+        return TAG_NUMBER((int)r);
+#else
     int ri = ((int)r) << 1;
     if ((ri >> 1) == r)
-        return (TNumber)(ri | 1);
+        return (TNumber)(uintptr_t)(ri | 1);
+#endif
     return TAG_UNDEFINED;
 }
 #endif
@@ -792,10 +826,14 @@ TNumber fromDouble(NUMBER r) {
 #endif
     if (isnan(r))
         return TAG_NAN;
+#ifdef PXT64
+    return tvalueFromDouble(r);
+#else
     BoxedNumber *p = NEW_GC(BoxedNumber);
     p->num = r;
     MEMDBG("mkNum: %d/1000 => %p", (int)(r * 1000), p);
     return (TNumber)p;
+#endif
 }
 
 TNumber fromFloat(float r) {
@@ -836,8 +874,8 @@ TNumber eqFixup(TNumber v) {
 
 static inline bool eq_core(TValue a, TValue b, ValType ta) {
 #ifndef PXT_BOX_DEBUG
-    int aa = (int)a;
-    int bb = (int)b;
+    auto aa = (intptr_t)a;
+    auto bb = (intptr_t)b;
 
     // if at least one of the values is tagged, they are not equal
     if ((aa | bb) & 3)
@@ -954,18 +992,34 @@ int toBoolDecr(TValue v) {
     return r;
 }
 
-// TODO
 // The integer, non-overflow case for add/sub/bit opts is handled in assembly
 
-//%
-TNumber adds(TNumber a, TNumber b){NUMOP(+)}
+#ifdef PXT_VM
+#define NUMOP2(op)                                                                                 \
+    if (bothNumbers(a, b)) {                                                                       \
+        auto tmp = (int64_t)numValue(a) op(int64_t) numValue(b);                                   \
+        if ((int)tmp == tmp)                                                                       \
+            return TAG_NUMBER((int)tmp);                                                           \
+    }                                                                                              \
+    NUMOP(op)
+#else
+#define NUMOP2(op) NUMOP(op)
+#endif
 
 //%
-TNumber subs(TNumber a, TNumber b){NUMOP(-)}
+TNumber adds(TNumber a, TNumber b){NUMOP2(+)}
+
+//%
+TNumber subs(TNumber a, TNumber b){NUMOP2(-)}
 
 //%
 TNumber muls(TNumber a, TNumber b) {
     if (bothNumbers(a, b)) {
+#ifdef PXT64
+        auto tmp = (int64_t)numValue(a) * (int64_t)numValue(b);
+        if ((int)tmp == tmp)
+            return TAG_NUMBER((int)tmp);
+#else
         int aa = (int)a;
         int bb = (int)b;
         // if both operands fit 15 bits, the result will not overflow int
@@ -973,6 +1027,7 @@ TNumber muls(TNumber a, TNumber b) {
             // it may overflow 31 bit int though - use fromInt to convert properly
             return fromInt((aa >> 1) * (bb >> 1));
         }
+#endif
     }
     NUMOP(*)
 }
@@ -982,7 +1037,7 @@ TNumber div(TNumber a, TNumber b){NUMOP(/)}
 
 //%
 TNumber mod(TNumber a, TNumber b) {
-    if (isNumber(a) && isNumber(b) && numValue(b))
+    if (isInt(a) && isInt(b) && numValue(b))
         BITOP(%)
     return fromDouble(fmod(toDouble(a), toDouble(b)));
 }
@@ -1014,11 +1069,19 @@ TNumber ands(TNumber a, TNumber b) {
     BITOP(&)
 }
 
+#ifdef PXT64
 #define CMPOP_RAW(op, t, f)                                                                        \
     if (bothNumbers(a, b))                                                                         \
-        return (int)a op((int)b) ? t : f;                                                          \
+        return numValue(a) op numValue(b) ? t : f;                                                 \
     int cmp = valCompare(a, b);                                                                    \
     return cmp != -2 && cmp op 0 ? t : f;
+#else
+#define CMPOP_RAW(op, t, f)                                                                        \
+    if (bothNumbers(a, b))                                                                         \
+        return (intptr_t)a op((intptr_t)b) ? t : f;                                                \
+    int cmp = valCompare(a, b);                                                                    \
+    return cmp != -2 && cmp op 0 ? t : f;
+#endif
 
 #define CMPOP(op) CMPOP_RAW(op, TAG_TRUE, TAG_FALSE)
 
@@ -1085,6 +1148,33 @@ TNumber neqq(TNumber a, TNumber b) {
     return !pxt::eqq_bool(a, b) ? TAG_TRUE : TAG_FALSE;
 }
 
+
+// How many significant digits mycvt() should output.
+// This cannot be more than 15, as this is the most that can be accurately represented
+// in 64 bit double. Otherwise this code may crash.
+#define DIGITS 15
+
+static const uint64_t pows[] = {
+    1LL,
+    10LL,
+    100LL,
+    1000LL,
+    10000LL,
+    100000LL,
+    1000000LL,
+    10000000LL,
+    100000000LL,
+    1000000000LL,
+    10000000000LL,    
+    100000000000LL,
+    1000000000000LL,
+    10000000000000LL,
+    100000000000000LL,
+};
+
+// The basic idea is we convert d to a 64 bit integer with DIGITS
+// digits, and then print it out, putting dot in the right place.
+
 void mycvt(NUMBER d, char *buf) {
     if (d < 0) {
         *buf++ = '-';
@@ -1099,39 +1189,69 @@ void mycvt(NUMBER d, char *buf) {
 
     int pw = (int)log10(d);
     int e = 1;
-    int beforeDot = 1;
 
-    if (0.000001 <= d && d < 1e21) {
-        if (pw > 0) {
+    // if outside 1e-6 -- 1e21 range, we use the e-notation
+    if (d < 1e-6 || d > 1e21) {
+        // normalize number to 1.XYZ, save e, and reset pw
+        if (pw < 0)
+            d *= p10(-pw);
+        else
             d /= p10(pw);
-            beforeDot = 1 + pw;
-        }
-    } else {
-        d /= p10(pw);
         e = pw;
+        pw = 0;
     }
 
-    int sig = 0;
-    while (sig < 17 || beforeDot > 0) {
-        // printf("%f sig=%d bd=%d\n", d, sig, beforeDot);
-        int c = (int)d;
-        *buf++ = '0' + c;
-        d = (d - c) * 10;
-        if (--beforeDot == 0)
+    int trailingZ = 0;
+    int dotAfter = pw + 1; // at which position the dot should be in the number
+
+    uint64_t dd;
+
+    // normalize number to be integer with exactly DIGITS digits
+    if (pw >= DIGITS) {
+        // if the number is larger than DIGITS, we need trailing zeroes
+        trailingZ = pw - DIGITS + 1;
+        dd = (uint64_t)(d / p10(trailingZ) + 0.5);
+    } else {
+        dd = (uint64_t)(d * p10(DIGITS - pw - 1) + 0.5);
+    }
+
+    // if number is less than 1, we need 0.00...00 at the beginning
+    if (dotAfter < 1) {
+        *buf++ = '0';
+        *buf++ = '.';
+        int n = -dotAfter;
+        while (n--)
+            *buf++ = '0';
+    }
+
+    // now print out the actual number
+    for (int i = DIGITS - 1; i >= 0; i--) {
+        uint64_t q = pows[i];
+        // this may be faster than fp-division and fmod(); or maybe not
+        // anyways, it works
+        int k = '0';
+        while (dd >= q) {
+            dd -= q;
+            k++;
+        }
+        *buf++ = k;
+        // if we're after dot, and what's left is zeroes, stop
+        if (dd == 0 && (DIGITS - i) >= dotAfter)
+            break;
+        // print the dot, if we arrived at it
+        if ((DIGITS - i) == dotAfter)
             *buf++ = '.';
-        if (sig || c)
-            sig++;
     }
 
-    buf--;
-    while (*buf == '0')
-        buf--;
-    if (*buf == '.')
-        buf--;
-    buf++;
+    // print out remaining trailing zeroes if any
+    while (trailingZ-- > 0)
+        *buf++ = '0';
 
+    // if we used e-notation, handle that
     if (e != 1) {
         *buf++ = 'e';
+        if (e > 0)
+            *buf++ = '+';
         itoa(e, buf);
     } else {
         *buf = 0;
@@ -1171,7 +1291,7 @@ function testFloatAsInt() {
         testInt(-i - 0x3fff0002)
         testFloat(i + 0x3fffffff + 1)
         testFloat((i + 10000) * 1000000)
-    }   
+    }
 }
 #endif
 
@@ -1183,7 +1303,7 @@ String toString(TValue v) {
     } else if (t == ValType::Number) {
         char buf[64];
 
-        if (isNumber(v)) {
+        if (isInt(v)) {
             itoa(numValue(v), buf);
             return mkStringCore(buf);
         }
@@ -1253,7 +1373,7 @@ TNumber random() {
 
 //%
 TNumber randomRange(TNumber min, TNumber max) {
-    if (isNumber(min) && isNumber(max)) {
+    if (isInt(min) && isInt(max)) {
         int mini = numValue(min);
         int maxi = numValue(max);
         if (mini > maxi) {
@@ -1368,33 +1488,49 @@ bool removeElement(RefCollection *c, TValue x) {
 } // namespace Array_
 
 namespace pxt {
+int debugFlags;
+
 //%
 void *ptrOfLiteral(int offset);
 
+#ifndef PXT_VM
 //%
 unsigned programSize() {
     return bytecode[17] * 8;
 }
+#endif
 
 void deepSleep() __attribute__((weak));
 //%
-void deepSleep() { }
+void deepSleep() {}
+
+#ifdef CODAL_JACDAC_WIRE_SERIAL
+LowLevelTimer *getJACDACTimer() __attribute__((weak));
+LowLevelTimer *getJACDACTimer() {
+    return NULL;
+}
+#endif
 
 int *getBootloaderConfigData() __attribute__((weak));
-int *getBootloaderConfigData()
-{
+int *getBootloaderConfigData() {
     return NULL;
 }
 
 //%
 int getConfig(int key, int defl) {
-    int *cfgData = *(int **)&bytecode[18];
+#ifdef PXT_VM
+    int *cfgData = vmImg->configData;
+#else
+    int *cfgData = bytecode ? *(int **)&bytecode[18] : NULL;
+#endif
 
-    for (int i = 0;; i += 2) {
-        if (cfgData[i] == key)
-            return cfgData[i + 1];
-        if (cfgData[i] == 0)
-            break;
+    if (cfgData) {
+        for (int i = 0;; i += 2) {
+            if (cfgData[i] == key)
+                return cfgData[i + 1];
+            if (cfgData[i] == 0)
+                break;
+        }
     }
 
     cfgData = getBootloaderConfigData();
@@ -1444,7 +1580,7 @@ RefAction *stclo(RefAction *a, int idx, TValue v) {
 
 //%
 void panic(int code) {
-    target_panic(code);
+    soft_panic(code);
 }
 
 //%
@@ -1464,14 +1600,12 @@ int ptrToBool(TValue p) {
     }
 }
 
-//%
 RefMap *mkMap() {
     auto r = NEW_GC(RefMap);
     MEMDBG("mkMap: => %p", r);
     return r;
 }
 
-//%
 TValue mapGetByString(RefMap *map, String key) {
     int i = map->findIdx(key);
     if (i < 0) {
@@ -1481,14 +1615,19 @@ TValue mapGetByString(RefMap *map, String key) {
     return r;
 }
 
-//%
+#ifdef PXT_VM
+#define IFACE_MEMBER_NAMES vmImg->ifaceMemberNames
+#else
+#define IFACE_MEMBER_NAMES *(uintptr_t **)&bytecode[22]
+#endif
+
 int lookupMapKey(String key) {
-    auto arr = *(uintptr_t **)&bytecode[22];
+    auto arr = IFACE_MEMBER_NAMES;
     auto len = *arr++;
+    int l = 1U; // skip index 0 - it's invalid
+    int r = (int)len - 1;
     auto ikey = (uintptr_t)key;
-    auto l = 0U;
-    auto r = len - 1;
-    if (arr[0] <= ikey && ikey <= arr[len - 1]) {
+    if (arr[l] <= ikey && ikey <= arr[r]) {
         while (l <= r) {
             auto m = (l + r) >> 1;
             if (arr[m] == ikey)
@@ -1498,9 +1637,10 @@ int lookupMapKey(String key) {
             else
                 r = m - 1;
         }
-    } else {
+    } else
+    {
         while (l <= r) {
-            auto m = (l + r) >> 1;
+            int m = (l + r) >> 1;
             auto cmp = String_::compare((String)arr[m], key);
             if (cmp == 0)
                 return m;
@@ -1513,15 +1653,13 @@ int lookupMapKey(String key) {
     return 0;
 }
 
-//%
 TValue mapGet(RefMap *map, unsigned key) {
-    auto arr = *(String **)&bytecode[22];
+    auto arr = (String *)IFACE_MEMBER_NAMES;
     auto r = mapGetByString(map, arr[key + 1]);
     map->unref();
     return r;
 }
 
-//%
 void mapSetByString(RefMap *map, String key, TValue val) {
     int i = map->findIdx(key);
     if (i < 0) {
@@ -1534,9 +1672,8 @@ void mapSetByString(RefMap *map, String key, TValue val) {
     incr(val);
 }
 
-//%
 void mapSet(RefMap *map, unsigned key, TValue val) {
-    auto arr = *(String **)&bytecode[22];
+    auto arr = (String *)IFACE_MEMBER_NAMES;
     mapSetByString(map, arr[key + 1], val);
     decr(val);
     map->unref();
@@ -1571,7 +1708,7 @@ ValType valType(TValue v) {
         if (!v)
             return ValType::Undefined;
 
-        if (isNumber(v) || v == TAG_NAN)
+        if (isInt(v) || v == TAG_NAN)
             return ValType::Number;
         if (v == TAG_TRUE || v == TAG_FALSE)
             return ValType::Boolean;
@@ -1581,6 +1718,10 @@ ValType valType(TValue v) {
             oops(1);
             return ValType::Object;
         }
+#ifdef PXT64
+    } else if (isDouble(v)) {
+        return ValType::Number;
+#endif
     } else {
         auto vt = getVTable((RefObject *)v);
         if (vt->magic == VTABLE_MAGIC)
@@ -1646,7 +1787,7 @@ static void dtorDoNothing() {}
 
 #ifdef PXT_GC
 #define PRIM_VTABLE(name, objectTp, tp, szexpr)                                                    \
-    static uint32_t name##_size(tp *p) { return ((sizeof(tp) + szexpr) + 3) >> 2; }                \
+    static uint32_t name##_size(tp *p) { return TOWORDS(sizeof(tp) + szexpr); }                    \
     DEF_VTABLE(name##_vt, tp, objectTp, (void *)&dtorDoNothing, (void *)&anyPrint, 0,              \
                (void *)&name##_size)
 #else
@@ -1655,8 +1796,9 @@ static void dtorDoNothing() {}
 #endif
 
 #define NOOP ((void)0)
+
 #define STRING_VT(name, fix, scan, gcsize, data, utfsize, length, dataAt)                          \
-    static uint32_t name##_gcsize(BoxedString *p) { return (4 + (gcsize) + 3) >> 2; }              \
+    static uint32_t name##_gcsize(BoxedString *p) { return TOWORDS(sizeof(void *) + (gcsize)); }   \
     static void name##_gcscan(BoxedString *p) { scan; }                                            \
     static const char *name##_data(BoxedString *p) {                                               \
         fix;                                                                                       \
@@ -1762,10 +1904,10 @@ STRING_VT(string_inline_ascii, NOOP, NOOP, 2 + p->ascii.length + 1, p->ascii.dat
 #if PXT_UTF8
 STRING_VT(string_inline_utf8, NOOP, NOOP, 2 + p->utf8.length + 1, p->utf8.data, p->utf8.length,
           utf8Len(p->utf8.data, p->utf8.length), utf8Skip(p->utf8.data, p->utf8.length, idx))
-STRING_VT(string_skiplist16, NOOP, gcMarkArray(p->skip.list), 2 + 2 + 4, SKIP_DATA(p), p->skip.size,
-          p->skip.length, skipLookup(p, idx))
+STRING_VT(string_skiplist16, NOOP, if (p->skip.list) gcMarkArray(p->skip.list), 2 * sizeof(void *),
+          SKIP_DATA(p), p->skip.size, p->skip.length, skipLookup(p, idx))
 STRING_VT(string_cons, fixCons(p), (gcScan((TValue)p->cons.left), gcScan((TValue)p->cons.right)),
-          4 + 4, SKIP_DATA(p), p->skip.size, p->skip.length, skipLookup(p, idx))
+          2 * sizeof(void *), SKIP_DATA(p), p->skip.size, p->skip.length, skipLookup(p, idx))
 #endif
 
 PRIM_VTABLE(number, ValType::Number, BoxedNumber, 0)
@@ -1784,12 +1926,12 @@ void failedCast(TValue v) {
         code = PANIC_CAST_FROM_NULL;
     else
         code = PANIC_CAST_FIRST + (int)valType(v);
-    target_panic(code);
+    soft_panic(code);
 }
 
 void missingProperty(TValue v) {
     DMESG("missing property on %p", v);
-    target_panic(PANIC_MISSING_PROPERTY);
+    soft_panic(PANIC_MISSING_PROPERTY);
 }
 
 #ifdef PXT_PROFILE
