@@ -21,6 +21,13 @@ class PXTMSC : public GhostFAT {
     virtual const char *volumeLabel() { return "MAKECODE"; }
 };
 
+#define BOOTLOADER_START 0x08000000
+#define BOOTLOADER_END 0x08008000
+
+static void readCfg(GFATEntry *, unsigned blockAddr, char *dst) {
+  memcpy(dst, (void *)(BOOTLOADER_START + blockAddr * 512), 512);
+}
+
 PXTMSC::PXTMSC(FS &fs) : fs(fs) {
     currFile = NULL;
     currEntry = NULL;
@@ -45,6 +52,14 @@ void PXTMSC::addFiles() {
     CodalUSB::usbInstance->delayStart();
 
     GhostFAT::addFiles();
+
+    // rename info_uf2.txt to info_xf2.txt, so that the drive is not detected as one accepting UF2 files
+    for (auto f = files; f; f = f->next) {
+        if (strcmp(f->filename, "info_uf2.txt") == 0)
+            f->filename[5] = 'x';
+    }
+
+    addFile(readCfg, this, "config.bin", BOOTLOADER_END - BOOTLOADER_START);
 
     addDirectory(20, "FLASH");
 
