@@ -47,7 +47,7 @@ static const DeviceDescriptor device_desc = {
 static void start_usb() {
     // start USB with a delay, so that user code can add new interfaces if needed
     // (eg USB HID keyboard, or MSC)
-    fiber_sleep(100);
+    fiber_sleep(1000);
     usb.start();
 }
 
