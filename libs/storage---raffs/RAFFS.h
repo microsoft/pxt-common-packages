@@ -28,7 +28,7 @@ struct MetaEntry {
 class FS {
     friend class File;
 
-    Flash &flash;
+    codal::Flash &flash;
     File *files;
 
     volatile bool locked;
@@ -55,7 +55,7 @@ class FS {
     bool tryGC(int spaceNeeded);
 
   public:
-    FS(Flash &flash, uintptr_t baseAddr, uint32_t bytes);
+    FS(codal::Flash &flash, uintptr_t baseAddr, uint32_t bytes);
     ~FS();
     // returns NULL if file doesn't exists and create==false or when there's no space to create it
     File *open(const char *filename, bool create = true);

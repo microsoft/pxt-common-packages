@@ -1,6 +1,7 @@
 #include "Flash.h"
 
 #ifdef STM32F4
+namespace codal {
 static void waitForLast() {
     while ((FLASH->SR & FLASH_SR_BSY) == FLASH_SR_BSY)
         ;
@@ -8,8 +9,8 @@ static void waitForLast() {
 
 static void unlock() {
     FLASH->CR |= FLASH_CR_LOCK;
-    FLASH->KEYR = FLASH_KEYR_KEY1;
-    FLASH->KEYR = FLASH_KEYR_KEY2;
+    FLASH->KEYR = FLASH_KEY1;
+    FLASH->KEYR = FLASH_KEY2;
 }
 
 static void lock() {
@@ -17,12 +18,12 @@ static void lock() {
 }
 
 int ZFlash::pageSize(uintptr_t address) {
-    address |= 0x0800_0000;
-    if (address < 0x0801_0000)
+    address |= 0x08000000;
+    if (address < 0x08010000)
         return 16 * 1024;
-    if (address < 0x0802_0000)
+    if (address < 0x08020000)
         return 64 * 1024;
-    if (address < 0x0810_0000)
+    if (address < 0x08100000)
         return 128 * 1024;
     target_panic(950);
     return 0;
@@ -32,8 +33,8 @@ int ZFlash::erasePage(uintptr_t address) {
     waitForLast();
     unlock();
 
-    address |= 0x0800_0000;
-    uintptr_t ptr = 0x0800_0000;
+    address |= 0x08000000;
+    uintptr_t ptr = 0x08000000;
     int sectNum = 0;
     while (1) {
         ptr += pageSize(ptr);
@@ -64,7 +65,7 @@ int ZFlash::writeBytes(uintptr_t dst, const void *src, uint32_t len) {
     waitForLast();
     unlock();
 
-    dst |= 0x0800_0000;
+    dst |= 0x08000000;
 
     FLASH->CR = FLASH_CR_PSIZE_1 | FLASH_CR_PG;
 
@@ -76,7 +77,7 @@ int ZFlash::writeBytes(uintptr_t dst, const void *src, uint32_t len) {
     while (len > 0) {
         int off = dst & 3;
         int n = 4 - off;
-        if (n > len)
+        if (n > (int)len)
             n = len;
         if (off)
             memset(data.buf, 0xff, 4);
@@ -93,5 +94,6 @@ int ZFlash::writeBytes(uintptr_t dst, const void *src, uint32_t len) {
     lock();
 
     return 0;
+}
 }
 #endif

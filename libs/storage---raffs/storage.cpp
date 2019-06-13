@@ -1,7 +1,9 @@
 #include "pxt.h"
 #include "RAFFS.h"
+#include "GhostFAT.h"
 
 using namespace pxt::raffs;
+using namespace codal;
 
 namespace storage {
 
@@ -63,7 +65,14 @@ class WStorage {
     FS fs;
     PXTMSC msc;
 
-    WStorage() : flash(), fs(flash), msc(fs) { }
+    WStorage() : flash(), 
+#ifdef STM32F4
+    fs(flash, 0x8008000, 32 * 1024),
+#else
+    fs(flash),     
+#endif
+    msc(fs)
+    { }
 };
 SINGLETON(WStorage);
 

@@ -4,6 +4,8 @@
 #include "MessageBus.h"
 #include <stddef.h>
 
+using namespace codal;
+
 #define oops() target_panic(DEVICE_FLASH_ERROR)
 
 #define OFF2(v, basePtr) (int)((uint32_t *)v - (uint32_t *)basePtr)

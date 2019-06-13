@@ -46,12 +46,14 @@ class Flash {
     virtual int writeBytes(uintptr_t dst, const void *src, uint32_t len) = 0;
 };
 
-class ZFlash {
+class ZFlash : public Flash {
   public:
     virtual int pageSize(uintptr_t address);
     virtual int erasePage(uintptr_t address);
     virtual int writeBytes(uintptr_t dst, const void *src, uint32_t len);
 };
+
+#define CODAL_FLASH codal::ZFlash
 
 
 } // namespace codal
