@@ -9,6 +9,7 @@
         "ZFlash.cpp",
         "storage.cpp",
         "storage.ts",
+        "storagelow.ts",
         "shims.d.ts"
     ],
     "public": true,

@@ -80,6 +80,12 @@ class WStorage {
     FS fs;
     PXTMSC msc;
 
+    // maybe we want to keep say up to 5 files open?
+    String currFilename;
+    raffs::File *currFile;
+
+    bool isMounted;
+
     WStorage() : flash(), 
 #ifdef STM32F4
     fs(flash, 0x8008000, 32 * 1024),
@@ -87,15 +93,20 @@ class WStorage {
     fs(flash),     
 #endif
     msc(fs)
-    { }
+    {
+        isMounted = false;
+        currFile = NULL;
+        currFilename = NULL;
+        registerGC((TValue *)&currFilename);
+    }
 };
 SINGLETON(WStorage);
 
 static WStorage *mountedStorage() {
     auto s = getWStorage();
-    if (!s)
-        return NULL;
-    s->fs.exists("foobar"); // forces mount
+    if (s->fs.tryMount())
+        return s;
+    s->fs.exists("foobar"); // forces mount and possibly format
     return s;
 }
 
@@ -115,23 +126,17 @@ raffs::File *getFile(String filename) {
     if (!st)
         return NULL;
 
-    // maybe we want to keep say up to 5 files open?
-    static String currFilename;
-    static raffs::File *currFile;
-
-    if (!currFilename) {
-        registerGC((TValue *)&currFilename);
-    } else {
-        if (filename && String_::compare(currFilename, filename) == 0)
-            return currFile;
-        decrRC(currFilename);
-        delete currFile;
+    if (st->currFilename) {
+        if (filename && String_::compare(st->currFilename, filename) == 0)
+            return st->currFile;
+        decrRC(st->currFilename);
+        delete st->currFile;
     }
-    currFilename = filename;
-    incrRC(currFilename);
+    st->currFilename = filename;
+    incrRC(st->currFilename);
     // TODO: fix UTF8 encoding
-    currFile = filename == NULL ? NULL : st->fs.open(filename->getUTF8Data());
-    return currFile;
+    st->currFile = filename == NULL ? NULL : st->fs.open(filename->getUTF8Data());
+    return st->currFile;
 }
 
 /**
@@ -213,5 +218,21 @@ Buffer readAsBuffer(String filename) {
     f->read(res->data, res->length);
     return res;
 }
+
+
+//%
+RefCollection *_list() {
+    auto st = mountedStorage();
+    st->fs.dirRewind();
+    auto res = Array_::mk();
+    for (;;) {
+        auto d = st->fs.dirRead();
+        if (!d)
+            break;
+        res->head.push((TValue)mkString(d->name, -1));
+    }
+    return res;
+}
+
 
 } // namespace storage
