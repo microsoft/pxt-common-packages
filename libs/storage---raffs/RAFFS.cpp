@@ -18,8 +18,10 @@ using namespace codal;
     } while (0)
 #endif
 
+#if 0
 #undef LOGV
 #define LOGV DMESG
+#endif
 
 using namespace pxt::raffs;
 
