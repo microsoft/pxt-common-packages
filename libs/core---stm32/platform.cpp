@@ -83,7 +83,7 @@ extern "C" void apply_clock_init(RCC_OscInitTypeDef *oscInit, RCC_ClkInitTypeDef
 static void initRandomSeed() {
 #ifdef STM32F4
     if (getConfig(CFG_ACCELEROMETER_TYPE, -1) != -1) {
-        initAccelRandom();
+        //initAccelRandom();
     }
 #endif
 }

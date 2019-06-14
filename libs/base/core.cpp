@@ -350,6 +350,7 @@ void seedRandom(unsigned seed) {
     random_value = seed;
 }
 
+//%
 void seedAddRandom(unsigned seed) {
     random_value = (random_value * 0x1000193) ^ seed;
 }

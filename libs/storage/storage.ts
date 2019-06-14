@@ -55,9 +55,3 @@ namespace storage {
         return buf.toString();
     }
 }
-
-declare namespace storage {
-    //% parts="storage" shim=storage::_list
-    //% blockId="storage_list" block="list files"
-    function list(): string[];
-}

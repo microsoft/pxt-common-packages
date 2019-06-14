@@ -219,7 +219,6 @@ Buffer readAsBuffer(String filename) {
     return res;
 }
 
-
 //%
 RefCollection *_list() {
     auto st = mountedStorage();
