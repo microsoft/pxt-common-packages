@@ -535,11 +535,13 @@ RefCollection *keysOf(TValue v) {
     auto len = rm->keys.getLength();
     if (!len)
         return r;
+    registerGCObj(r);
     r->setLength(len);
     auto dst = r->getData();
     memcpy(dst, rm->keys.getData(), len * sizeof(TValue));
     for (unsigned i = 0; i < len; ++i)
         incr(dst[i]);
+    unregisterGCObj(r);
     return r;
 }
 } // namespace pxtrt

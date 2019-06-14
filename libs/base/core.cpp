@@ -254,13 +254,13 @@ String mkStringCore(const char *data, int len) {
     if (vt == &string_skiplist16_vt) {
         r = new (gcAllocate(sizeof(void *) + sizeof(r->skip))) BoxedString(vt);
         r->skip.list = NULL;
-        registerGCPtr((TValue)r);
+        registerGCObj(r);
         r->skip.size = len;
         r->skip.length = utf8Len(data, len);
         r->skip.list = NULL; // in case gc triggers below
         r->skip.list = (uint16_t *)gcAllocateArray(NUM_SKIP_ENTRIES(r) * 2 + len + 1);
         setupSkipList(r, data);
-        unregisterGCPtr((TValue)r);
+        unregisterGCObj(r);
     } else
 #endif
     {
@@ -346,6 +346,7 @@ Buffer mkBuffer(const uint8_t *data, int len) {
 
 static unsigned random_value = 0xC0DA1;
 
+//%
 void seedRandom(unsigned seed) {
     random_value = seed;
 }
@@ -499,11 +500,11 @@ String concat(String s, String other) {
 
         // allocate [r] first, and keep it alive
         String r = new (gcAllocate(3 * sizeof(void *))) BoxedString(&string_cons_vt);
-        registerGCPtr((TValue)r);
+        registerGCObj(r);
         r->cons.left = s->cons.left;
         // this concat() might trigger GC
         r->cons.right = concat(s->cons.right, other);
-        unregisterGCPtr((TValue)r);
+        unregisterGCObj(r);
         return r;
     }
 #endif

@@ -224,12 +224,17 @@ RefCollection *_list() {
     auto st = mountedStorage();
     st->fs.dirRewind();
     auto res = Array_::mk();
+    registerGCObj(res);
     for (;;) {
         auto d = st->fs.dirRead();
         if (!d)
             break;
-        res->head.push((TValue)mkString(d->name, -1));
+        auto str = mkString(d->name, -1);
+        registerGCObj(str);
+        res->head.push((TValue)str);
+        unregisterGCObj(str);
     }
+    unregisterGCObj(res);
     return res;
 }
 

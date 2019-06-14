@@ -296,7 +296,7 @@ void forceOutput(int outp) {
 void queuePlayInstructions(int when, Buffer buf) {
     auto snd = getWSynthesizer();
 
-    registerGCPtr((TValue)buf);
+    registerGCObj(buf);
 
     auto p = new WaitingSound;
     p->state = SoundState::Waiting;
@@ -315,7 +315,7 @@ void queuePlayInstructions(int when, Buffer buf) {
         while (p->next && p->next->state == SoundState::Done) {
             auto todel = p->next;
             p->next = todel->next;
-            unregisterGCPtr((TValue)todel->instructions);
+            unregisterGCObj(todel->instructions);
             delete todel;
         }
         p = p->next;
@@ -339,7 +339,7 @@ void stopPlaying() {
     }
     while (p) {
         auto n = p->next;
-        unregisterGCPtr((TValue)p->instructions);
+        unregisterGCObj(p->instructions);
         delete p;
         p = n;
     }
