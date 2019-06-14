@@ -149,6 +149,7 @@ namespace music {
     //% melody.fieldEditor="melody"
     //% melody.fieldOptions.decompileLiterals=true
     //% melody.fieldOptions.decompileIndirectFixedInstances="true"
+    //% melody.fieldOptions.onParentBlock="true"
     export function melodyEditor(melody: string): Melody {
         let melodies: string[] = melody.split("-");
         // melodies[0] is name
