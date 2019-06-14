@@ -352,7 +352,7 @@ void seedRandom(unsigned seed) {
 
 //%
 void seedAddRandom(unsigned seed) {
-    random_value = (random_value * 0x1000193) ^ seed;
+    random_value ^= 0xCA2557CB * seed;
 }
 
 unsigned getRandom(unsigned max) {
