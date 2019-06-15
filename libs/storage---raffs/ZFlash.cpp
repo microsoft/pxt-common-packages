@@ -122,8 +122,8 @@ static void unlock() {
 
 static void lock() {
     // re-enable cache
-    NVMCTRL->CTRLA.bit.CACHEDIS0 = false;
-    NVMCTRL->CTRLA.bit.CACHEDIS1 = false;
+    //NVMCTRL->CTRLA.bit.CACHEDIS0 = false;
+    //NVMCTRL->CTRLA.bit.CACHEDIS1 = false;
     // invalidate cortex-m cache - it's a separate one
     CMCC->MAINT0.bit.INVALL = 1;
 }
@@ -151,33 +151,17 @@ int ZFlash::writeBytes(uintptr_t dst, const void *src, uint32_t len) {
     waitForLast();
     unlock();
 
-    union {
-        uint8_t buf[16];
-        uint32_t asuint[4];
-    } data;
+    NVMCTRL->CTRLB.reg = NVMCTRL_CTRLB_CMDEX_KEY | NVMCTRL_CTRLB_CMD_PBC;
+    waitForLast();
 
-    while (len > 0) {
-        int off = dst & 15;
-        int n = 16 - off;
-        if (n > (int)len)
-            n = len;
-        if (n != 16)
-            memset(data.buf, 0xff, 4);
 
-        memcpy(data.buf + off, src, n);
+        for (unsigned i = 0; i < len / 4; ++i)
+            ((volatile uint32_t *)dst)[i] = ((uint32_t*)src)[i];
 
-        for (unsigned i = 0; i < 4; ++i)
-            ((volatile uint32_t *)dst)[i] = data.asuint[i];
-
-        // Trigger the quad word write.
         NVMCTRL->ADDR.reg = (uint32_t)dst; // not needed?
-        NVMCTRL->CTRLB.reg = NVMCTRL_CTRLB_CMDEX_KEY | NVMCTRL_CTRLB_CMD_WQW;
+        NVMCTRL->CTRLB.reg = NVMCTRL_CTRLB_CMDEX_KEY | NVMCTRL_CTRLB_CMD_WP;
         waitForLast();
 
-        dst += n;
-        src = (const uint8_t *)src + n;
-        len -= n;
-    }
 
     lock();
 

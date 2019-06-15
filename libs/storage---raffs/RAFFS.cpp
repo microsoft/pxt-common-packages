@@ -80,7 +80,19 @@ void FS::erasePages(uintptr_t addr, uint32_t len) {
 
 void FS::flushFlash() {
     if (flashBufAddr) {
+        int fail = 0;
+        int n = 10;
+        while (n--) {
         flash.writeBytes(flashBufAddr, flashBuf, sizeof(flashBuf));
+        fail = 0;
+        for (unsigned i = 0; i < sizeof(flashBuf); ++i)
+            if (flashBuf[i] != 0xff && flashBuf[i] != ((uint8_t*)flashBufAddr)[i])
+                fail++;
+        if (!fail)
+            break;
+        }
+        if(fail)
+        target_panic(999);
         flashBufAddr = 0;
     }
 }
@@ -107,7 +119,7 @@ void FS::writeBytes(void *dst, const void *src, uint32_t size) {
     }
 }
 
-#define RAFFS_MAGIC 0x67862085
+#define RAFFS_MAGIC 0x67862089
 #define M1 0xffffffffU
 
 void FS::format() {
