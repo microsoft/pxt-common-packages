@@ -21,9 +21,6 @@ class PXTMSC : public GhostFAT {
     virtual const char *volumeLabel() { return "MAKECODE"; }
 };
 
-#define BOOTLOADER_START 0x08000000
-#define BOOTLOADER_END 0x08008000
-
 static void readCfg(GFATEntry *, unsigned blockAddr, char *dst) {
   memcpy(dst, (void *)(BOOTLOADER_START + blockAddr * 512), 512);
 }
@@ -87,8 +84,10 @@ class WStorage {
     bool isMounted;
 
     WStorage() : flash(), 
-#ifdef STM32F4
+#if defined(STM32F4)
     fs(flash, 0x8008000, 32 * 1024),
+#elif defined(SAMD51)
+    fs(flash, 512*1024 - 32*1024, 32 * 1024),
 #else
     fs(flash),     
 #endif
