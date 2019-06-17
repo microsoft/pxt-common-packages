@@ -8,6 +8,7 @@
         "accelerometer.ts",
         "lightsensor.ts",
         "thermometer.ts",
+        "controller.ts",
         "light.ts"
     ],
     "public": true,
