@@ -96,7 +96,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                             s._vx,
                             ovx
                         ),
-                        dt2),
+                        dt2
+                    ),
                     1000
                 ),
                 Fx.idiv(
@@ -105,7 +106,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                             s._vy,
                             ovy
                         ),
-                        dt2),
+                        dt2
+                    ),
                     1000
                 )
             );
@@ -294,13 +296,12 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
                 let hitWall = false;
 
-
                 if (xDiff !== Fx.zeroFx8) {
-                    applyHorizontalTileMapMovement(sprite, xDiff, yDiff);
+                    hitWall = hitWall && applyHorizontalTileMapMovement(sprite, xDiff, yDiff);
                 }
 
                 if (yDiff !== Fx.zeroFx8) {
-                    applyVerticalTileMapMovement(sprite, xDiff, yDiff);
+                    hitWall = hitWall && applyVerticalTileMapMovement(sprite, xDiff, yDiff);
                 }
 
                 if (hitWall && (sprite.flags & sprites.Flag.DestroyOnWall)) {
