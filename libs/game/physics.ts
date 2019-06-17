@@ -117,48 +117,15 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         control.enablePerfCounter("phys_collisions")
 
         // 1: refresh non-ghost collision map
-        const colliders = this.sprites.filter(sprite => !(sprite.flags & sprites.Flag.Ghost));
-
-        if (colliders.length < 10) {
-            // not enough sprite, just brute force it
-            this.map = undefined;
-        } else {
-            if (!this.map) this.map = new sprites.SpriteMap();
-            this.map.update(colliders);
-        }
+        const colliders = this.collidableSprites();
 
         // 2: go through sprite and handle collisions
         const scene = game.currentScene();
         const tm = scene.tileMap;
 
         for (const sprite of colliders) {
-            const overSprites = scene.physicsEngine.overlaps(sprite);
-            for (const overlapper of overSprites) {
-                // Maintaining invariant that the sprite with the higher ID has the other sprite as an overlapper
-                const higher = sprite.id > overlapper.id ? sprite : overlapper;
-                const lower = higher === sprite ? overlapper : sprite;
-
-                if (higher._overlappers.indexOf(lower.id) === -1) {
-                    if (sprite.overlapHandler) {
-                        higher._overlappers.push(lower.id);
-                        control.runInParallel(() => {
-                            sprite.overlapHandler(overlapper);
-                            higher._overlappers.removeElement(lower.id);
-                        });
-                    }
-
-                    scene.overlapHandlers
-                        .filter(h => h.kind == sprite.kind() && h.otherKind == overlapper.kind())
-                        .forEach(h => {
-                            higher._overlappers.push(lower.id);
-                            control.runInParallel(() => {
-                                h.handler(sprite, overlapper);
-                                higher._overlappers.removeElement(lower.id);
-                            });
-                        });
-                }
-            }
-
+            const overSprites = this.overlaps(sprite);
+            applySpriteOverlapHandlers(sprite, overSprites);
             sprite.clearObstacles();
 
             if (tm && tm.enabled) {
@@ -235,6 +202,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                         }
                     }
                 }
+
                 if (yDiff !== Fx.zeroFx8) {
                     const down = yDiff > Fx.zeroFx8;
                     const y0 = Fx.toIntShifted(
@@ -300,6 +268,48 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 }
             }
         }
+
+        function applySpriteOverlapHandlers(sprite: Sprite, overSprites: Sprite[]) {
+            for (const overlapper of overSprites) {
+                // Maintaining invariant that the sprite with the higher ID has the other sprite as an overlapper
+                const higher = sprite.id > overlapper.id ? sprite : overlapper;
+                const lower = higher === sprite ? overlapper : sprite;
+
+                if (higher._overlappers.indexOf(lower.id) === -1) {
+                    if (sprite.overlapHandler) {
+                        higher._overlappers.push(lower.id);
+                        control.runInParallel(() => {
+                            sprite.overlapHandler(overlapper);
+                            higher._overlappers.removeElement(lower.id);
+                        });
+                    }
+
+                    scene.overlapHandlers
+                        .filter(h => h.kind == sprite.kind() && h.otherKind == overlapper.kind())
+                        .forEach(h => {
+                            higher._overlappers.push(lower.id);
+                            control.runInParallel(() => {
+                                h.handler(sprite, overlapper);
+                                higher._overlappers.removeElement(lower.id);
+                            });
+                        });
+                }
+            }
+        }
+    }
+
+    private collidableSprites(): Sprite[] {
+        const colliders = this.sprites.filter(sprite => !(sprite.flags & sprites.Flag.Ghost));
+
+        if (colliders.length < 10) {
+            // not enough sprite, just brute force it
+            this.map = undefined;
+        } else {
+            if (!this.map) this.map = new sprites.SpriteMap();
+            this.map.update(colliders);
+        }
+
+        return colliders;
     }
 
     /**
