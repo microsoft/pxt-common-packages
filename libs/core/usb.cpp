@@ -23,6 +23,9 @@ USBHIDKeyboard keyboard;
 #if CONFIG_ENABLED(DEVICE_JOYSTICK)
 USBHIDJoystick joystick;
 #endif
+#if CONFIG_ENABLED(DEVICE_JACDAC_DEBUG)
+USBJACDAC jacdacDebug;
+#endif
 
 static const DeviceDescriptor device_desc = {
     0x12,   // bLength
@@ -114,6 +117,9 @@ void usb_init() {
 #endif
 #if CONFIG_ENABLED(DEVICE_JOYSTICK)
     usb.add(joystick);
+#endif
+#if CONFIG_ENABLED(DEVICE_JACDAC_DEBUG)
+    usb.add(jacdacDebug);
 #endif
 
     create_fiber(start_usb);
