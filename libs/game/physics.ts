@@ -125,43 +125,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         const tileScale = tm ? tm.scale : 0;
         const tileSize = tm ? 1 << tileScale : 0;
 
-        for (const sprite of colliders) {
-            const overSprites = this.overlaps(sprite);
-
-            applySpriteOverlapHandlers(sprite, overSprites, scene);
-            sprite.clearObstacles();
-
-            if (tm && tm.enabled) {
-                const xDiff = Fx.sub(
-                    sprite._x,
-                    sprite._lastX
-                );
-
-                const yDiff = Fx.sub(
-                    sprite._y,
-                    sprite._lastY
-                );
-
-                let hitWall = false;
-
-
-                if (xDiff !== Fx.zeroFx8) {
-                    applyHorizontalTileMapMovement(sprite, xDiff, yDiff, tm, tileScale, tileSize);
-                }
-
-                if (yDiff !== Fx.zeroFx8) {
-                    applyVerticalTileMapMovement(sprite, xDiff, yDiff, tm, tileScale, tileSize);
-                }
-
-                if (hitWall && (sprite.flags & sprites.Flag.DestroyOnWall)) {
-                    sprite.destroy();
-                }
-            }
-        }
-
-        function applySpriteOverlapHandlers(sprite: Sprite, overSprites: Sprite[]
-            // this last param should be unnecessary https://github.com/microsoft/pxt-arcade/issues/1062
-            , scene: scene.Scene): void {
+        function applySpriteOverlapHandlers(sprite: Sprite, overSprites: Sprite[]): void {
             for (const overlapper of overSprites) {
                 // Maintaining invariant that the sprite with the higher ID has the other sprite as an overlapper
                 const higher = sprite.id > overlapper.id ? sprite : overlapper;
@@ -190,9 +154,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         }
 
         // returns true if movement was blocked (by a tile)
-        function applyHorizontalTileMapMovement(sprite: Sprite, xDiff: Fx8, yDiff: Fx8
-            // these last three params should be unnecessary https://github.com/microsoft/pxt-arcade/issues/1062
-            , tm: tiles.TileMap, tileScale: number, tileSize: number): boolean {
+        function applyHorizontalTileMapMovement(sprite: Sprite, xDiff: Fx8, yDiff: Fx8): boolean {
             const right = xDiff > Fx.zeroFx8;
             const x0 = Fx.toIntShifted(
                 Fx.add(
@@ -253,9 +215,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         }
 
         // returns true if movement was blocked (by a tile)
-        function applyVerticalTileMapMovement(sprite: Sprite, xDiff: Fx8, yDiff: Fx8,
-            // these last three params should be unnecessary https://github.com/microsoft/pxt-arcade/issues/1062
-            tm: tiles.TileMap, tileScale: number, tileSize: number): boolean {
+        function applyVerticalTileMapMovement(sprite: Sprite, xDiff: Fx8, yDiff: Fx8): boolean {
             const down = yDiff > Fx.zeroFx8;
             const y0 = Fx.toIntShifted(
                 Fx.add(
@@ -314,6 +274,41 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             }
             return false;
         }
+
+        for (const sprite of colliders) {
+            const overSprites = this.overlaps(sprite);
+
+            applySpriteOverlapHandlers(sprite, overSprites);
+            sprite.clearObstacles();
+
+            if (tm && tm.enabled) {
+                const xDiff = Fx.sub(
+                    sprite._x,
+                    sprite._lastX
+                );
+
+                const yDiff = Fx.sub(
+                    sprite._y,
+                    sprite._lastY
+                );
+
+                let hitWall = false;
+
+
+                if (xDiff !== Fx.zeroFx8) {
+                    applyHorizontalTileMapMovement(sprite, xDiff, yDiff);
+                }
+
+                if (yDiff !== Fx.zeroFx8) {
+                    applyVerticalTileMapMovement(sprite, xDiff, yDiff);
+                }
+
+                if (hitWall && (sprite.flags & sprites.Flag.DestroyOnWall)) {
+                    sprite.destroy();
+                }
+            }
+        }
+
     }
 
     private collidableSprites(): Sprite[] {
