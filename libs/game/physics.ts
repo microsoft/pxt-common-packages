@@ -10,7 +10,7 @@ class PhysicsEngine {
 
     removeSprite(sprite: Sprite) { }
 
-    moveSprite(s: Sprite, tm: tiles.TileMap, dx: Fx8, dy: Fx8) { }
+    moveSprite(s: Sprite, dx: Fx8, dy: Fx8) { }
 
     draw() { }
 
@@ -65,8 +65,6 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         const dtSec = Fx.idiv(dtf, 1000); 
         const dt2 = Fx.idiv(dtf, 2);
 
-        const tm = game.currentScene().tileMap;
-
         for (let s of this.sprites) {
             const ovx = this.constrain(s._vx);
             const ovy = this.constrain(s._vy);
@@ -90,7 +88,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 )
             );
 
-            this.moveSprite(s, tm,
+            this.moveSprite(
+                s,
                 Fx.idiv(
                     Fx.mul(
                         Fx.add(
@@ -125,6 +124,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
         for (const sprite of colliders) {
             const overSprites = this.overlaps(sprite);
+
             applySpriteOverlapHandlers(sprite, overSprites);
             sprite.clearObstacles();
 
@@ -334,7 +334,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         }
     }
 
-    public moveSprite(s: Sprite, tm: tiles.TileMap, dx: Fx8, dy: Fx8) {
+    public moveSprite(s: Sprite, dx: Fx8, dy: Fx8) {
         s._lastX = s._x;
         s._lastY = s._y;
         s._x = Fx.add(s._x, dx);
