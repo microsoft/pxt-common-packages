@@ -120,7 +120,10 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
         // 2: go through sprite and handle collisions
         const scene = game.currentScene();
+
         const tm = scene.tileMap;
+        const tileScale = tm ? tm.scale : 0;
+        const tileSize = tm ? 1 << tileScale : 0;
 
         for (const sprite of colliders) {
             const overSprites = this.overlaps(sprite);
@@ -129,8 +132,6 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             sprite.clearObstacles();
 
             if (tm && tm.enabled) {
-                const scale = tm.scale;
-                const size = 1 << scale;
                 const xDiff = Fx.sub(
                     sprite._x,
                     sprite._lastX
@@ -153,13 +154,13 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                                 sprite._hitbox.left,
                             Fx.oneHalfFx8
                         ),
-                        scale
+                        tileScale
                     );
 
                     for (
                         let y = Fx.sub(sprite._hitbox.top, yDiff);
-                        y < Fx.iadd(size, Fx.sub(sprite._hitbox.bottom, yDiff));
-                        y = Fx.iadd(size, y)
+                        y < Fx.iadd(tileSize, Fx.sub(sprite._hitbox.bottom, yDiff));
+                        y = Fx.iadd(tileSize, y)
                     ) {
                         const y0 = Fx.toIntShifted(
                             Fx.add(
@@ -172,7 +173,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                                 ),
                                 Fx.oneHalfFx8
                             ),
-                            scale
+                            tileScale
                         );
 
                         if (tm.isObstacle(x0, y0)) {
@@ -184,11 +185,11 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                                 -sprite._hitbox.ox,
                                 right ?
                                     Fx.sub(
-                                        Fx8(x0 << scale),
+                                        Fx8(x0 << tileScale),
                                         Fx8(sprite._hitbox.width)
                                     )
                                     :
-                                    Fx8((x0 + 1) << scale)
+                                    Fx8((x0 + 1) << tileScale)
                             );
 
                             sprite.registerObstacle(
@@ -216,13 +217,13 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                                 sprite._hitbox.top,
                             Fx.oneHalfFx8
                         ),
-                        scale
+                        tileScale
                     );
 
                     for (
                         let x = sprite._hitbox.left;
-                        x < Fx.iadd(size, sprite._hitbox.right);
-                        x = Fx.iadd(size, x)
+                        x < Fx.iadd(tileSize, sprite._hitbox.right);
+                        x = Fx.iadd(tileSize, x)
                     ) {
                         const x0 = Fx.toIntShifted(
                             Fx.add(
@@ -232,7 +233,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                                 ),
                                 Fx.oneHalfFx8
                             ),
-                            scale
+                            tileScale
                         );
 
                         if (tm.isObstacle(x0, y0)) {
@@ -244,11 +245,11 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                                 -sprite._hitbox.oy,
                                 down ?
                                     Fx.sub(
-                                        Fx8(y0 << scale),
+                                        Fx8(y0 << tileScale),
                                         Fx8(sprite._hitbox.height)
                                     )
                                     :
-                                    Fx8((y0 + 1) << scale)
+                                    Fx8((y0 + 1) << tileScale)
                             );
 
                             sprite.registerObstacle(
