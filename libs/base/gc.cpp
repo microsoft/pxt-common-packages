@@ -323,6 +323,30 @@ static uint32_t getObjectSize(RefObject *o) {
     return r;
 }
 
+void gcPreAllocateBlock(uint32_t sz) {
+    auto curr = (GCBlock *)GC_ALLOC_BLOCK(sz);
+    curr->blockSize = sz - sizeof(GCBlock);
+    LOG("GC pre-alloc: %p", curr);
+    GC_CHECK((curr->blockSize & 3) == 0, 40);
+    curr->data[0].vtable = FREE_MASK | curr->blockSize;
+    ((RefBlock *)curr->data)[0].nextFree = firstFree;
+    firstFree = (RefBlock *)curr->data;  
+    // blocks need to be sorted by address for midPtr to work
+    if (!firstBlock || curr < firstBlock) {
+        curr->next = firstBlock;
+        firstBlock = curr;
+    } else {
+        for (auto p = firstBlock; p; p = p->next) {
+            if (!p->next || curr < p->next) {
+                curr->next = p->next;
+                p->next = curr;
+                break;
+            }
+        }
+    }
+    midPtr = (uint8_t *)curr->data + curr->blockSize / 4;
+}
+
 __attribute__((noinline)) static void allocateBlock() {
     auto sz = GC_BLOCK_SIZE;
     void *dummy = NULL;
