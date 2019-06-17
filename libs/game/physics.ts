@@ -36,7 +36,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
     private maxVelocity: Fx8;
     private maxNegativeVelocity: Fx8;
 
-    constructor(maxVelocity = 1000) {
+    constructor(maxVelocity = 150) {
         super();
         this.sprites = [];
         this.maxVelocity = Fx8(maxVelocity);
@@ -128,7 +128,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         for (const sprite of colliders) {
             const overSprites = this.overlaps(sprite);
 
-            applySpriteOverlapHandlers(sprite, overSprites);
+            applySpriteOverlapHandlers(sprite, overSprites, scene);
             sprite.clearObstacles();
 
             if (tm && tm.enabled) {
@@ -136,132 +136,21 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     sprite._x,
                     sprite._lastX
                 );
+
                 const yDiff = Fx.sub(
                     sprite._y,
                     sprite._lastY
                 );
 
                 let hitWall = false;
-                const bounce = sprite.flags & sprites.Flag.BounceOnWall;
+
 
                 if (xDiff !== Fx.zeroFx8) {
-                    const right = xDiff > Fx.zeroFx8;
-                    const x0 = Fx.toIntShifted(
-                        Fx.add(
-                            right ?
-                                Fx.iadd(1, sprite._hitbox.right)
-                                :
-                                sprite._hitbox.left,
-                            Fx.oneHalfFx8
-                        ),
-                        tileScale
-                    );
-
-                    for (
-                        let y = Fx.sub(sprite._hitbox.top, yDiff);
-                        y < Fx.iadd(tileSize, Fx.sub(sprite._hitbox.bottom, yDiff));
-                        y = Fx.iadd(tileSize, y)
-                    ) {
-                        const y0 = Fx.toIntShifted(
-                            Fx.add(
-                                Fx.min(
-                                    y,
-                                    Fx.sub(
-                                        sprite._hitbox.bottom,
-                                        yDiff
-                                    )
-                                ),
-                                Fx.oneHalfFx8
-                            ),
-                            tileScale
-                        );
-
-                        if (tm.isObstacle(x0, y0)) {
-                            hitWall = true;
-                            if (bounce) {
-                                sprite._vx = Fx.neg(sprite._vx);
-                            }
-                            sprite._x = Fx.iadd(
-                                -sprite._hitbox.ox,
-                                right ?
-                                    Fx.sub(
-                                        Fx8(x0 << tileScale),
-                                        Fx8(sprite._hitbox.width)
-                                    )
-                                    :
-                                    Fx8((x0 + 1) << tileScale)
-                            );
-
-                            sprite.registerObstacle(
-                                right ?
-                                    CollisionDirection.Right
-                                    :
-                                    CollisionDirection.Left,
-                                tm.getObstacle(x0, y0)
-                            );
-                            break;
-                        }
-                    }
+                    applyHorizontalTileMapMovement(sprite, xDiff, yDiff, tm, tileScale, tileSize);
                 }
 
                 if (yDiff !== Fx.zeroFx8) {
-                    const down = yDiff > Fx.zeroFx8;
-                    const y0 = Fx.toIntShifted(
-                        Fx.add(
-                            down ?
-                                Fx.iadd(
-                                    1,
-                                    sprite._hitbox.bottom
-                                )
-                                :
-                                sprite._hitbox.top,
-                            Fx.oneHalfFx8
-                        ),
-                        tileScale
-                    );
-
-                    for (
-                        let x = sprite._hitbox.left;
-                        x < Fx.iadd(tileSize, sprite._hitbox.right);
-                        x = Fx.iadd(tileSize, x)
-                    ) {
-                        const x0 = Fx.toIntShifted(
-                            Fx.add(
-                                Fx.min(
-                                    x,
-                                    sprite._hitbox.right
-                                ),
-                                Fx.oneHalfFx8
-                            ),
-                            tileScale
-                        );
-
-                        if (tm.isObstacle(x0, y0)) {
-                            hitWall = true;
-                            if (bounce) {
-                                sprite._vy = Fx.neg(sprite._vy);
-                            }
-                            sprite._y = Fx.iadd(
-                                -sprite._hitbox.oy,
-                                down ?
-                                    Fx.sub(
-                                        Fx8(y0 << tileScale),
-                                        Fx8(sprite._hitbox.height)
-                                    )
-                                    :
-                                    Fx8((y0 + 1) << tileScale)
-                            );
-
-                            sprite.registerObstacle(
-                                down ?
-                                    CollisionDirection.Bottom
-                                    :
-                                    CollisionDirection.Top,
-                                tm.getObstacle(x0, y0)
-                            );
-                            break;
-                        }
-                    }
+                    applyVerticalTileMapMovement(sprite, xDiff, yDiff, tm, tileScale, tileSize);
                 }
 
                 if (hitWall && (sprite.flags & sprites.Flag.DestroyOnWall)) {
@@ -270,7 +159,9 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             }
         }
 
-        function applySpriteOverlapHandlers(sprite: Sprite, overSprites: Sprite[]) {
+        function applySpriteOverlapHandlers(sprite: Sprite, overSprites: Sprite[]
+            // this last param should be unnecessary https://github.com/microsoft/pxt-arcade/issues/1062
+            , scene: scene.Scene): void {
             for (const overlapper of overSprites) {
                 // Maintaining invariant that the sprite with the higher ID has the other sprite as an overlapper
                 const higher = sprite.id > overlapper.id ? sprite : overlapper;
@@ -296,6 +187,132 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                         });
                 }
             }
+        }
+
+        // returns true if movement was blocked (by a tile)
+        function applyHorizontalTileMapMovement(sprite: Sprite, xDiff: Fx8, yDiff: Fx8
+            // these last three params should be unnecessary https://github.com/microsoft/pxt-arcade/issues/1062
+            , tm: tiles.TileMap, tileScale: number, tileSize: number): boolean {
+            const right = xDiff > Fx.zeroFx8;
+            const x0 = Fx.toIntShifted(
+                Fx.add(
+                    right ?
+                        Fx.iadd(1, sprite._hitbox.right)
+                        :
+                        sprite._hitbox.left,
+                    Fx.oneHalfFx8
+                ),
+                tileScale
+            );
+
+            for (
+                let y = Fx.sub(sprite._hitbox.top, yDiff);
+                y < Fx.iadd(tileSize, Fx.sub(sprite._hitbox.bottom, yDiff));
+                y = Fx.iadd(tileSize, y)
+            ) {
+                const y0 = Fx.toIntShifted(
+                    Fx.add(
+                        Fx.min(
+                            y,
+                            Fx.sub(
+                                sprite._hitbox.bottom,
+                                yDiff
+                            )
+                        ),
+                        Fx.oneHalfFx8
+                    ),
+                    tileScale
+                );
+
+                if (tm.isObstacle(x0, y0)) {
+                    if (sprite.flags & sprites.Flag.BounceOnWall) {
+                        sprite._vx = Fx.neg(sprite._vx);
+                    }
+                    sprite._x = Fx.iadd(
+                        -sprite._hitbox.ox,
+                        right ?
+                            Fx.sub(
+                                Fx8(x0 << tileScale),
+                                Fx8(sprite._hitbox.width)
+                            )
+                            :
+                            Fx8((x0 + 1) << tileScale)
+                    );
+
+                    sprite.registerObstacle(
+                        right ?
+                            CollisionDirection.Right
+                            :
+                            CollisionDirection.Left,
+                        tm.getObstacle(x0, y0)
+                    );
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // returns true if movement was blocked (by a tile)
+        function applyVerticalTileMapMovement(sprite: Sprite, xDiff: Fx8, yDiff: Fx8,
+            // these last three params should be unnecessary https://github.com/microsoft/pxt-arcade/issues/1062
+            tm: tiles.TileMap, tileScale: number, tileSize: number): boolean {
+            const down = yDiff > Fx.zeroFx8;
+            const y0 = Fx.toIntShifted(
+                Fx.add(
+                    down ?
+                        Fx.iadd(
+                            1,
+                            sprite._hitbox.bottom
+                        )
+                        :
+                        sprite._hitbox.top,
+                    Fx.oneHalfFx8
+                ),
+                tileScale
+            );
+
+            for (
+                let x = sprite._hitbox.left;
+                x < Fx.iadd(tileSize, sprite._hitbox.right);
+                x = Fx.iadd(tileSize, x)
+            ) {
+                const x0 = Fx.toIntShifted(
+                    Fx.add(
+                        Fx.min(
+                            x,
+                            sprite._hitbox.right
+                        ),
+                        Fx.oneHalfFx8
+                    ),
+                    tileScale
+                );
+
+                if (tm.isObstacle(x0, y0)) {
+                    if (sprite.flags & sprites.Flag.BounceOnWall) {
+                        sprite._vy = Fx.neg(sprite._vy);
+                    }
+                    sprite._y = Fx.iadd(
+                        -sprite._hitbox.oy,
+                        down ?
+                            Fx.sub(
+                                Fx8(y0 << tileScale),
+                                Fx8(sprite._hitbox.height)
+                            )
+                            :
+                            Fx8((y0 + 1) << tileScale)
+                    );
+
+                    sprite.registerObstacle(
+                        down ?
+                            CollisionDirection.Bottom
+                            :
+                            CollisionDirection.Top,
+                        tm.getObstacle(x0, y0)
+                    );
+                    return true;
+                }
+            }
+            return false;
         }
     }
 
