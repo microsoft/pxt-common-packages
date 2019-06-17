@@ -25,11 +25,7 @@ class PhysicsEngine {
     overlaps(sprite: Sprite): Sprite[] { return []; }
 }
 
-const MAX_DISTANCE = Fx8(15); // pixels
 const MAX_TIME_STEP = Fx8(100); // milliseconds
-const MAX_VELOCITY = Fx.div(MAX_DISTANCE, Fx.idiv(MAX_TIME_STEP, 1000));
-const NEG_MAX_VELOCITY = Fx.neg(MAX_VELOCITY)
-const GAP = Fx8(0.1);
 
 /**
  * A physics engine that does simple AABB bounding box check
@@ -37,10 +33,14 @@ const GAP = Fx8(0.1);
 class ArcadePhysicsEngine extends PhysicsEngine {
     protected sprites: Sprite[];
     protected map: sprites.SpriteMap;
+    private maxVelocity: Fx8;
+    private maxNegativeVelocity: Fx8;
 
-    constructor() {
+    constructor(maxVelocity = 1000) {
         super();
         this.sprites = [];
+        this.maxVelocity = Fx8(maxVelocity);
+        this.maxNegativeVelocity = Fx.neg(this.maxVelocity);
     }
 
     addSprite(sprite: Sprite) {
@@ -65,11 +65,11 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         const tm = game.currentScene().tileMap;
 
         for (let s of this.sprites) {
-            const ovx = constrain(s._vx);
-            const ovy = constrain(s._vy);
+            const ovx = this.constrain(s._vx);
+            const ovy = this.constrain(s._vy);
 
-            s._vx = constrain(Fx.add(s._vx, Fx.mul(s._ax, dtSec)))
-            s._vy = constrain(Fx.add(s._vy, Fx.mul(s._ay, dtSec)))
+            s._vx = this.constrain(Fx.add(s._vx, Fx.mul(s._ax, dtSec)))
+            s._vy = this.constrain(Fx.add(s._vy, Fx.mul(s._ay, dtSec)))
 
             this.moveSprite(s, tm,
                 Fx.idiv(Fx.mul(Fx.add(s._vx, ovx), dt2), 1000),
@@ -201,8 +201,14 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         s._x = Fx.add(s._x, dx);
         s._y = Fx.add(s._y, dy);
     }
-}
 
-function constrain(v: Fx8) {
-    return Fx.max(Fx.min(MAX_VELOCITY, v), NEG_MAX_VELOCITY)
+    private constrain(v: Fx8) {
+        return Fx.max(
+            Fx.min(
+                this.maxVelocity,
+                v
+            ),
+            this.maxNegativeVelocity
+        );
+    }
 }
