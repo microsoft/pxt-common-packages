@@ -155,8 +155,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             }
         }
 
-        // returns true if movement was blocked (by a tile)
-        function applyHorizontalTileMapMovement(sprite: Sprite, xDiff: Fx8, yDiff: Fx8): boolean {
+        function applyHorizontalTileMapMovement(sprite: Sprite, xDiff: Fx8, yDiff: Fx8) {
             const right = xDiff > Fx.zeroFx8;
             const x0 = Fx.toIntShifted(
                 Fx.add(
@@ -203,21 +202,13 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                             Fx8((x0 + 1) << tileScale)
                     );
 
-                    sprite.registerObstacle(
-                        right ?
-                            CollisionDirection.Right
-                            :
-                            CollisionDirection.Left,
-                        tm.getObstacle(x0, y0)
-                    );
-                    return true;
+                    spriteHitObstacle(sprite, right ? CollisionDirection.Right : CollisionDirection.Left, x0, y0);
+                    return;
                 }
             }
-            return false;
         }
 
-        // returns true if movement was blocked (by a tile)
-        function applyVerticalTileMapMovement(sprite: Sprite, xDiff: Fx8, yDiff: Fx8): boolean {
+        function applyVerticalTileMapMovement(sprite: Sprite, xDiff: Fx8, yDiff: Fx8) {
             const down = yDiff > Fx.zeroFx8;
             const y0 = Fx.toIntShifted(
                 Fx.add(
@@ -264,17 +255,17 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                             Fx8((y0 + 1) << tileScale)
                     );
 
-                    sprite.registerObstacle(
-                        down ?
-                            CollisionDirection.Bottom
-                            :
-                            CollisionDirection.Top,
-                        tm.getObstacle(x0, y0)
-                    );
-                    return true;
+                    spriteHitObstacle(sprite, down ? CollisionDirection.Bottom : CollisionDirection.Top, x0, y0);
+                    return;
                 }
             }
-            return false;
+        }
+
+        function spriteHitObstacle(sprite: Sprite, dir: CollisionDirection, x: number, y: number) {
+            sprite.registerObstacle(dir, tm.getObstacle(x, y));
+            if (sprite.flags & sprites.Flag.DestroyOnWall) {
+                sprite.destroy();
+            }
         }
 
         for (const sprite of colliders) {
@@ -294,18 +285,12 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     sprite._lastY
                 );
 
-                let hitWall = false;
-
                 if (xDiff !== Fx.zeroFx8) {
-                    hitWall = hitWall && applyHorizontalTileMapMovement(sprite, xDiff, yDiff);
+                    applyHorizontalTileMapMovement(sprite, xDiff, yDiff);
                 }
 
                 if (yDiff !== Fx.zeroFx8) {
-                    hitWall = hitWall && applyVerticalTileMapMovement(sprite, xDiff, yDiff);
-                }
-
-                if (hitWall && (sprite.flags & sprites.Flag.DestroyOnWall)) {
-                    sprite.destroy();
+                    applyVerticalTileMapMovement(sprite, xDiff, yDiff);
                 }
             }
         }
