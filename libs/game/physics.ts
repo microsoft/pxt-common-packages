@@ -128,6 +128,16 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         const tileSize = tm ? 1 << tileScale : 0;
 
         function applySpriteOverlapHandlers(sprite: Sprite, overSprites: Sprite[]): void {
+            const events: (() => void)[] = [];
+
+            function pushOverlapEvent(higher: Sprite, lower: Sprite, e: (() => void)) {
+                higher._overlappers.push(lower.id);
+                events.push(() => {
+                    e();
+                    higher._overlappers.removeElement(lower.id);
+                });
+            }
+
             for (const overlapper of overSprites) {
                 // Maintaining invariant that the sprite with the higher ID has the other sprite as an overlapper
                 const higher = sprite.id > overlapper.id ? sprite : overlapper;
@@ -135,24 +145,26 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
                 if (higher._overlappers.indexOf(lower.id) === -1) {
                     if (sprite.overlapHandler) {
-                        higher._overlappers.push(lower.id);
-                        control.runInParallel(() => {
-                            sprite.overlapHandler(overlapper);
-                            higher._overlappers.removeElement(lower.id);
-                        });
+                        pushOverlapEvent(
+                            higher,
+                            lower,
+                            () => sprite.overlapHandler(overlapper)
+                        );
                     }
 
                     scene.overlapHandlers
-                        .filter(h => h.kind == sprite.kind() && h.otherKind == overlapper.kind())
+                        .filter(h => h.kind === sprite.kind() && h.otherKind === overlapper.kind())
                         .forEach(h => {
-                            higher._overlappers.push(lower.id);
-                            control.runInParallel(() => {
-                                h.handler(sprite, overlapper);
-                                higher._overlappers.removeElement(lower.id);
-                            });
+                            pushOverlapEvent(
+                                higher,
+                                lower,
+                                () => h.handler(sprite, overlapper)
+                            );
                         });
                 }
             }
+
+            events.forEach(e => control.runInParallel(e));
         }
 
         function applyHorizontalTileMapMovement(sprite: Sprite, xDiff: Fx8, yDiff: Fx8) {
