@@ -161,7 +161,6 @@ class Sprite implements SpriteLike {
     flags: number
     id: number
 
-    overlapHandler: (other: Sprite) => void;
     collisionHandlers: (() => void)[][];
     private destroyHandler: () => void;
 
@@ -632,18 +631,6 @@ class Sprite implements SpriteLike {
         if (other.flags & sprites.Flag.Ghost)
             return false
         return other._image.overlapsWith(this._image, this.left - other.left, this.top - other.top)
-    }
-
-    /**
-     * Registers code when the sprite overlaps with another sprite
-     * @param spriteType sprite type to match
-     * @param handler
-     */
-    //% group="Overlaps"
-    //% afterOnStart=true
-    //% help=sprites/sprite/on-overlap
-    onOverlap(handler: (other: Sprite) => void) {
-        this.overlapHandler = handler;
     }
 
     /**

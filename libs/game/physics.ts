@@ -130,36 +130,20 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         function applySpriteOverlapHandlers(sprite: Sprite, overSprites: Sprite[]): void {
             const events: (() => void)[] = [];
 
-            function pushOverlapEvent(higher: Sprite, lower: Sprite, e: (() => void)) {
-                higher._overlappers.push(lower.id);
-                events.push(() => {
-                    e();
-                    higher._overlappers.removeElement(lower.id);
-                });
-            }
-
             for (const overlapper of overSprites) {
                 // Maintaining invariant that the sprite with the higher ID has the other sprite as an overlapper
                 const higher = sprite.id > overlapper.id ? sprite : overlapper;
                 const lower = higher === sprite ? overlapper : sprite;
 
                 if (higher._overlappers.indexOf(lower.id) === -1) {
-                    if (sprite.overlapHandler) {
-                        pushOverlapEvent(
-                            higher,
-                            lower,
-                            () => sprite.overlapHandler(overlapper)
-                        );
-                    }
-
                     scene.overlapHandlers
                         .filter(h => h.kind === sprite.kind() && h.otherKind === overlapper.kind())
                         .forEach(h => {
-                            pushOverlapEvent(
-                                higher,
-                                lower,
-                                () => h.handler(sprite, overlapper)
-                            );
+                            higher._overlappers.push(lower.id);
+                            events.push(() => {
+                                h.handler(sprite, overlapper);
+                                higher._overlappers.removeElement(lower.id);
+                            });
                         });
                 }
             }
