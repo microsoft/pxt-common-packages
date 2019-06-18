@@ -214,7 +214,10 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                             Fx8((x0 + 1) << tileScale)
                     );
 
-                    spriteHitObstacle(sprite, right ? CollisionDirection.Right : CollisionDirection.Left, x0, y0);
+                    sprite.registerObstacle(right ? CollisionDirection.Right : CollisionDirection.Left, tm.getObstacle(x0, y0));
+                    if (sprite.flags & sprites.Flag.DestroyOnWall) {
+                        sprite.destroy();
+                    }
                     return;
                 }
             }
@@ -267,16 +270,12 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                             Fx8((y0 + 1) << tileScale)
                     );
 
-                    spriteHitObstacle(sprite, down ? CollisionDirection.Bottom : CollisionDirection.Top, x0, y0);
+                    sprite.registerObstacle(down ? CollisionDirection.Bottom : CollisionDirection.Top, tm.getObstacle(x0, y0));
+                    if (sprite.flags & sprites.Flag.DestroyOnWall) {
+                        sprite.destroy();
+                    }
                     return;
                 }
-            }
-        }
-
-        function spriteHitObstacle(sprite: Sprite, dir: CollisionDirection, x: number, y: number) {
-            sprite.registerObstacle(dir, tm.getObstacle(x, y));
-            if (sprite.flags & sprites.Flag.DestroyOnWall) {
-                sprite.destroy();
             }
         }
 
