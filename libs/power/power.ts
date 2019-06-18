@@ -60,5 +60,9 @@ namespace power {
 
         // read default value
         _timeout = control.getConfigValue(DAL.CFG_POWER_DEEPSLEEP_TIMEOUT, -1) * 1000;
+        // ensure deepsleep is long enough
+        const minDeepSleepTimeout = 300000;
+        if (_timeout > 0 && _timeout < minDeepSleepTimeout)
+            _timeout = minDeepSleepTimeout;
     }
 }
