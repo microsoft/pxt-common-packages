@@ -51,7 +51,7 @@ namespace scene {
         tileMap: tiles.TileMap;
         allSprites: SpriteLike[];
         private spriteNextId: number;
-        spritesByKind: SpriteSet[];
+        spritesByKind: { [index: number]: SpriteSet };
         physicsEngine: PhysicsEngine;
         camera: scene.Camera;
         flags: number;
@@ -80,7 +80,7 @@ namespace scene {
             this.overlapHandlers = [];
             this.collisionHandlers = [];
             this.gameForeverHandlers = [];
-            this.spritesByKind = [];
+            this.spritesByKind = {};
             this.controlledSprites = [];
             this._data = {};
             this._millis = 0;

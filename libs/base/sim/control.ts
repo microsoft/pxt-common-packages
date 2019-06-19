@@ -132,6 +132,10 @@ namespace pxsim.control {
     export function heapDump() {
         // TODO something better
     }
+
+    export function isUSBInitialized() {
+        return false;
+    }
 }
 
 // keep in sync with pxtbase.h
