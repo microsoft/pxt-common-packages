@@ -39,7 +39,8 @@ namespace power {
         const p = _poked || 0;
         const to = _timeout || 0;
         if (to > 0 && 
-            control.millis() - p > to) {
+            control.millis() - p > to &&
+            !control.isUSBInitialized()) {
             // going to deep sleep
             deepSleep();
         }
@@ -59,5 +60,9 @@ namespace power {
 
         // read default value
         _timeout = control.getConfigValue(DAL.CFG_POWER_DEEPSLEEP_TIMEOUT, -1) * 1000;
+        // ensure deepsleep is long enough
+        const minDeepSleepTimeout = 300000;
+        if (_timeout > 0 && _timeout < minDeepSleepTimeout)
+            _timeout = minDeepSleepTimeout;
     }
 }
