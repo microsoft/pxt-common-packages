@@ -172,9 +172,26 @@ f3000c12130d0000 04010e05051e1000 05010609191f0800 06010c1213131200 07010c121313
 }
 
 interface Image {
+    /**
+     * Renders text to the image
+     * @param text the characters to print
+     * @param x the left corner coordinate
+     * @param y the upper corner coordinate
+     * @param color the color of the characters
+     * @param font the desired font
+     */
+    //% blockId=imagePrint block="print $text at x $x y $y $color"
     //% helper=imagePrint
     print(text: string, x: number, y: number, color?: number, font?: image.Font): void;
 
+    /**
+     * Renders text to the image from the center of the screen
+     * @param text the characters to print
+     * @param y the upper corner coordinate
+     * @param color the color of the characters
+     * @param font the desired font
+     */
+    //% blockId=imagePrintCenter block="print center $text at y $y $color"
     //% helper=imagePrintCenter
     printCenter(text: string, y: number, color?: number, font?: image.Font): void;
 }
