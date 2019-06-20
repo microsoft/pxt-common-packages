@@ -655,12 +655,19 @@ String substr(String s, int start, int length) {
 int indexOf(String s, String searchString, int start) {
     if (!s || !searchString)
         return -1;
-    auto lenA = s->getUTF8Size() - start;
-    auto lenB = searchString->getUTF8Size();
-    if (start < 0 || lenB > lenA)
-        return -1;
+
+    if (start < 0)
+        start = 0;
+
     auto dataA0 = s->getUTF8Data();
-    auto dataA = dataA0 + start;
+    auto dataA = s->getUTF8DataAt(start);
+    auto offset = dataA - dataA0;
+    auto lenA = s->getUTF8Size() - offset;
+    auto lenB = searchString->getUTF8Size();
+
+    if (dataA == NULL || lenB > lenA)
+        return -1;
+
     auto dataB = searchString->getUTF8Data();
     auto firstB = dataB[0];
     while (lenA >= lenB) {
