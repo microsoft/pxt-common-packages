@@ -1,4 +1,23 @@
 namespace jacdac {
+    // common logging level for jacdac services
+    export let consolePriority = ConsolePriority.Debug;
+
+    export function toHex(n: number): string {
+        const hexBuf = control.createBuffer(4);
+        hexBuf.setNumber(NumberFormat.UInt32LE, 0, n);
+        return hexBuf.toHex();
+    }
+    export function toHex16(n: number): string {
+        const hexBuf = control.createBuffer(2);
+        hexBuf.setNumber(NumberFormat.UInt16LE, 0, n);
+        return hexBuf.toHex();
+    }
+    export function toHex8(n: number): string {
+        const hexBuf = control.createBuffer(1);
+        hexBuf.setNumber(NumberFormat.UInt8LE, 0, n);
+        return hexBuf.toHex();
+    }
+
     // drivers
     export const JD_DEVICE_CLASS_MAKECODE_START = 2000;
     export const LOGGER_DEVICE_CLASS = 2001;
@@ -19,16 +38,22 @@ namespace jacdac {
     export const MUSIC_DEVICE_CLASS = 2016;
     export const SERVO_DEVICE_CLASS = 2017;
     export const CONTROLLER_DEVICE_CLASS = 2018;
+    export const LCD_DEVICE_CLASS = 2019;
+    export const MESSAGE_BUS_DEVICE_CLASS = 2020;
+    export const COLOR_SENSOR_DEVICE_CLASS = 2021;
+    export const LIGHT_SPECTRUM_SENSOR_DEVICE_CLASS = 2022;
+    export const PROXIMITY_DEVICE_CLASS = 2023;
+    export const TOUCH_BUTTONS_DEVICE_CLASS = 2024;
+    export const SERVOS_DEVICE_CLASS = 2025;
 
     // events
     export const JD_MESSAGE_BUS_ID = JD_DEVICE_CLASS_MAKECODE_START;
-    export const JD_DRIVER_EVT_FILL_CONTROL_PACKET = 2001;
 
-    export const BUTTON_EVENTS = [
+    export const BUTTON_EVENTS: number[] = [
         DAL.DEVICE_BUTTON_EVT_CLICK,
+        DAL.DEVICE_BUTTON_EVT_LONG_CLICK,
         DAL.DEVICE_BUTTON_EVT_DOWN,
-        DAL.DEVICE_BUTTON_EVT_UP,
-        DAL.DEVICE_BUTTON_EVT_LONG_CLICK
+        DAL.DEVICE_BUTTON_EVT_UP
     ];
 }
 
@@ -41,12 +66,12 @@ const enum JDLightCommand {
     ColorWipe,
     Comet,
     TheaterChase,
-    Sparkle    
+    Sparkle
 }
 
 enum JDLightAnimation {
     //% block="rainbow"
-    Rainbow =JDLightCommand.Rainbow,
+    Rainbow = JDLightCommand.Rainbow,
     //% block="running lights"
     RunningLights = JDLightCommand.RunningLights,
     //% block="color wipe"
@@ -86,7 +111,7 @@ const enum JDMusicCommand {
     PlayTone
 }
 
-enum JDGesture {
+const enum JDGesture {
     /**
      * Raised when shaken
      */
@@ -127,9 +152,29 @@ enum JDGesture {
      */
     //% block="free fall"
     FreeFall = DAL.ACCELEROMETER_EVT_FREEFALL,
+    /**
+     * Raised when a 3G shock is detected
+     */
+    //% block="3g"
+    ThreeG = DAL.ACCELEROMETER_EVT_3G,
+    /**
+     * Raised when a 6G shock is detected
+     */
+    //% block="6g"
+    SixG = DAL.ACCELEROMETER_EVT_6G,
+    /**
+     * Raised when a 8G shock is detected
+     */
+    //% block="8g"
+    EightG = DAL.ACCELEROMETER_EVT_8G,
+    /**
+     * Raised when a 2g move (or step) is detected
+     */
+    //% block="2g (step)"
+    TwoG = DAL.ACCELEROMETER_EVT_2G,
 }
 
-enum JDDimension {
+const enum JDDimension {
     //% block=x
     X = 0,
     //% block=y
@@ -140,7 +185,7 @@ enum JDDimension {
     Strength = 3
 }
 
-enum JDButtonEvent {
+const enum JDButtonEvent {
     //% block="click"
     Click = DAL.DEVICE_BUTTON_EVT_CLICK,
     //% block="long click"
@@ -151,20 +196,20 @@ enum JDButtonEvent {
     Down = DAL.DEVICE_BUTTON_EVT_DOWN
 }
 
-enum JDSwitchDirection {
+const enum JDSwitchDirection {
     //% block="left"
     Left = DAL.DEVICE_BUTTON_EVT_UP,
     //% block="right"
     Right = DAL.DEVICE_BUTTON_EVT_DOWN,
 }
 
-enum JDControllerCommand {
+const enum JDControllerCommand {
     ClientButtons = 1,
     ControlServer = 2,
     ControlClient = 3
 }
 
-enum JDControllerButton {
+const enum JDControllerButton {
     A = 5,
     B = 6,
     Left = 1,
@@ -172,4 +217,38 @@ enum JDControllerButton {
     Right = 3,
     Down = 4,
     Menu = 7
+}
+
+const enum JDLCDFlags {
+    None,
+    Display = 1 << 0,
+    Blink = 1 << 1,
+    Cursor = 1 << 2
+}
+
+const enum JDLightSpectrumRange {
+    Full = 10,
+    Infrared = 20,
+    Visible = 40
+}
+
+const enum JDLightCondition {
+    //% block="dark"
+    Dark = DAL.SENSOR_THRESHOLD_LOW,
+    //% block="bright"
+    Bright = DAL.SENSOR_THRESHOLD_HIGH
+}
+
+const enum JDLightSpectrumEvent {
+    FullBright = JDLightSpectrumRange.Full | DAL.LEVEL_THRESHOLD_HIGH,
+    FullDark = JDLightSpectrumRange.Full | DAL.LEVEL_THRESHOLD_LOW,
+    InfraredBright = JDLightSpectrumRange.Infrared | DAL.LEVEL_THRESHOLD_HIGH,
+    InfraredDark = JDLightSpectrumRange.Infrared | DAL.LEVEL_THRESHOLD_LOW,
+    VisibleBright = JDLightSpectrumRange.Visible | DAL.LEVEL_THRESHOLD_HIGH,
+    VisibleDark = JDLightSpectrumRange.Visible | DAL.LEVEL_THRESHOLD_LOW
+}
+
+const enum JDPromixityEvent {
+    Close = DAL.LEVEL_THRESHOLD_LOW,
+    Far = DAL.LEVEL_THRESHOLD_HIGH
 }

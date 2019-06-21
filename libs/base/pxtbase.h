@@ -24,6 +24,17 @@
 #define PXT_UTF8 0
 #endif
 
+#if defined(PXT_VM)
+#include <stdint.h>
+#if UINTPTR_MAX == 0xffffffff
+#define PXT32 1
+#elif UINTPTR_MAX == 0xffffffffffffffff
+#define PXT64 1
+#else
+#error "UINTPTR_MAX has invalid value"
+#endif
+#endif
+
 #define intcheck(...) check(__VA_ARGS__)
 //#define intcheck(...) do {} while (0)
 
@@ -47,6 +58,10 @@ void *operator new(size_t size);
 #include "platform.h"
 #include "pxtcore.h"
 
+#ifndef PXT_REGISTER_RESET
+#define PXT_REGISTER_RESET(fn) ((void)0)
+#endif
+
 #ifndef PXT_VTABLE_SHIFT
 #define PXT_VTABLE_SHIFT 2
 #endif
@@ -59,7 +74,7 @@ void *operator new(size_t size);
 
 #ifndef ramint_t
 // this type limits size of arrays
-#ifdef __linux__
+#if defined(__linux__) || defined(PXT_VM)
 // TODO fix the inline array accesses to take note of this!
 #define ramint_t uint32_t
 #else
@@ -140,36 +155,87 @@ void dumpDmesg();
 #define TAG_UNDEFINED (TValue)0
 #define TAG_NULL TAGGED_SPECIAL(1) // 6
 #define TAG_NAN TAGGED_SPECIAL(3)  // 14
-#define TAG_NUMBER(n) (TNumber)(void *)((n << 1) | 1)
+#define TAG_NUMBER(n) (TNumber)(void *)(((uintptr_t)(uint32_t)(n) << 1) | 1)
 
-inline bool isTagged(TValue v) {
-    return ((intptr_t)v & 3) || !v;
+#ifdef PXT_VM
+inline bool isEncodedDouble(uint64_t v) {
+    return (v >> 48) != 0;
+}
+#endif
+
+inline bool isDouble(TValue v) {
+#ifdef PXT64
+    return ((uintptr_t)v >> 48) != 0;
+#else
+    (void)v;
+    return false;
+#endif
 }
 
-inline bool isNumber(TValue v) {
-    return (intptr_t)v & 1;
+inline bool isPointer(TValue v) {
+    return !isDouble(v) && v != 0 && ((intptr_t)v & 3) == 0;
+}
+
+inline bool isTagged(TValue v) {
+    return (!isDouble(v) && ((intptr_t)v & 3)) || !v;
+}
+
+inline bool isInt(TValue v) {
+    return !isDouble(v) && ((intptr_t)v & 1);
 }
 
 inline bool isSpecial(TValue v) {
-    return (intptr_t)v & 2;
+    return !isDouble(v) && ((intptr_t)v & 2);
 }
 
 inline bool bothNumbers(TValue a, TValue b) {
-    return (intptr_t)a & (intptr_t)b & 1;
+    return !isDouble(a) && !isDouble(b) && ((intptr_t)a & (intptr_t)b & 1);
 }
 
 inline int numValue(TValue n) {
-    return (intptr_t)n >> 1;
+    return (int)((intptr_t)n >> 1);
 }
 
+inline bool canBeTagged(int v) {
+    (void)v;
 #ifdef PXT_BOX_DEBUG
-inline bool canBeTagged(int) {
     return false;
+#elif defined(PXT64)
+    return true;
+#else
+    return (v << 1) >> 1 == v;
+#endif
+}
+
+// see https://anniecherkaev.com/the-secret-life-of-nan
+
+#define NanBoxingOffset 0x1000000000000LL
+
+template <typename TO, typename FROM> TO bitwise_cast(FROM in) {
+    STATIC_ASSERT(sizeof(TO) == sizeof(FROM));
+    union {
+        FROM from;
+        TO to;
+    } u;
+    u.from = in;
+    return u.to;
+}
+
+inline double decodeDouble(uint64_t v) {
+    return bitwise_cast<double>(v - NanBoxingOffset);
+}
+
+#ifdef PXT64
+STATIC_ASSERT(sizeof(void *) == 8);
+inline double doubleVal(TValue v) {
+    return bitwise_cast<double>((uint64_t)v - NanBoxingOffset);
+}
+
+inline TValue tvalueFromDouble(double d) {
+    return (TValue)(bitwise_cast<uint64_t>(d) + NanBoxingOffset);
 }
 #else
-inline bool canBeTagged(int v) {
-    return (v << 1) >> 1 == v;
-}
+STATIC_ASSERT(sizeof(void *) == 4);
 #endif
 
 // keep in sym with sim/control.ts
@@ -197,6 +263,9 @@ typedef enum {
     PANIC_INVALID_IMAGE = 913,
     PANIC_CALLED_FROM_ISR = 914,
     PANIC_HEAP_DUMPED = 915,
+    PANIC_STACK_OVERFLOW = 916,
+    PANIC_BLOCKING_TO_STRING = 917,
+    PANIC_VM_ERROR = 918,
 
     PANIC_CAST_FIRST = 980,
     PANIC_CAST_FROM_UNDEFINED = 980,
@@ -209,7 +278,7 @@ typedef enum {
 
 } PXT_PANIC;
 
-extern const unsigned functionsAndBytecode[];
+extern const uintptr_t functionsAndBytecode[];
 extern TValue *globals;
 extern uint16_t *bytecode;
 class RefRecord;
@@ -217,8 +286,6 @@ class RefRecord;
 // Utility functions
 
 typedef TValue (*RunActionType)(Action a, TValue arg0, TValue arg1, TValue arg2);
-typedef TValue (*GetPropertyType)(TValue obj, unsigned key);
-typedef TValue (*SetPropertyType)(TValue obj, unsigned key, TValue v);
 
 #define asmRunAction3 ((RunActionType)(((uintptr_t *)bytecode)[12]))
 
@@ -298,6 +365,7 @@ struct HandlerBinding {
     Action action;
 };
 HandlerBinding *findBinding(int source, int value);
+HandlerBinding *nextBinding(HandlerBinding *curr, int source, int value);
 void setBinding(int source, int value, Action act);
 
 // The standard calling convention is:
@@ -335,7 +403,7 @@ inline void *ptrOfLiteral(int offset) {
 // TODO
 inline bool isRefCounted(TValue e) {
 #ifdef PXT_GC
-    return !isTagged(e);
+    return isPointer(e);
 #else
     return !isTagged(e) && (*((uint16_t *)e) & 1) == 1;
 #endif
@@ -388,10 +456,16 @@ struct VTable {
     uint16_t numbytes;
     ValType objectType;
     uint8_t magic;
+#ifdef PXT_VM
+    uint16_t ifaceHashEntries;
+    BuiltInType lastClassNo;
+#else
     PVoid *ifaceTable;
+#endif
     BuiltInType classNo;
     uint16_t reserved;
     uint32_t ifaceHashMult;
+
     // we only use the first few methods here; pxt will generate more
 #ifdef PXT_GC
     PVoid methods[8];
@@ -423,9 +497,23 @@ extern const VTable RefAction_vtable;
 #define PXT_VTABLE_TO_INT(vt) ((uintptr_t)(vt) >> PXT_VTABLE_SHIFT)
 #endif
 
+// allocate 1M of heap on iOS
+#define PXT_IOS_HEAP_ALLOC_BITS 20
+
 #ifdef PXT_GC
+#ifdef PXT_IOS
+extern uint8_t *gcBase;
+#endif
 inline bool isReadOnly(TValue v) {
-    return isTagged(v) || !((uint32_t)v >> 28);
+#ifdef PXT64
+#ifdef PXT_IOS
+    return !isPointer(v) || (((uintptr_t)v - (uintptr_t)gcBase) >> PXT_IOS_HEAP_ALLOC_BITS) != 0;
+#else
+    return !isPointer(v) || !((uintptr_t)v >> 37);
+#endif
+#else
+    return isTagged(v) || !((uintptr_t)v >> 28);
+#endif
 }
 #endif
 
@@ -439,9 +527,15 @@ inline bool isReadOnly(TValue v) {
 class RefObject {
   public:
 #ifdef PXT_GC
-    uint32_t vtable;
+    uintptr_t vtable;
 
-    RefObject(const VTable *vt) { vtable = PXT_VTABLE_TO_INT(vt); }
+    RefObject(const VTable *vt) {
+#if defined(PXT32) && defined(PXT_VM)
+        if ((uint32_t)vt & 0xf0000000)
+            target_panic(PANIC_INVALID_VTABLE);
+#endif
+        vtable = PXT_VTABLE_TO_INT(vt);
+    }
 #else
     uint16_t refcnt;
     uint16_t vtable;
@@ -621,8 +715,15 @@ typedef TValue (*ActionCB)(TValue *captured, TValue arg0, TValue arg1, TValue ar
 // Ref-counted function pointer.
 class RefAction : public RefObject {
   public:
+#if defined(PXT_VM) && defined(PXT32)
+    uint32_t _padding; // match binary format in .pxt64 files
+#endif
     uint16_t len;
+    uint16_t numArgs;
+#ifdef PXT_VM
+    uint16_t initialLen;
     uint16_t reserved;
+#endif
     ActionCB func; // The function pointer
     // fields[] contain captured locals
     TValue fields[];
@@ -688,15 +789,16 @@ class BoxedString : public RefObject {
     };
 
 #if PXT_UTF8
-    uint32_t runMethod(int idx) {
-        return ((uint32_t(*)(BoxedString *))((VTable *)this->vtable)->methods[idx])(this);
+    uintptr_t runMethod(int idx) {
+        return ((uintptr_t(*)(BoxedString *))((VTable *)this->vtable)->methods[idx])(this);
     }
     const char *getUTF8Data() { return (const char *)runMethod(4); }
-    uint32_t getUTF8Size() { return runMethod(5); }
+    uint32_t getUTF8Size() { return (uint32_t)runMethod(5); }
     // in characters
-    uint32_t getLength() { return runMethod(6); }
+    uint32_t getLength() { return (uint32_t)runMethod(6); }
     const char *getUTF8DataAt(uint32_t pos) {
-        auto meth = ((const char *(*)(BoxedString *, uint32_t))((VTable *)this->vtable)->methods[7]);
+        auto meth =
+            ((const char *(*)(BoxedString *, uint32_t))((VTable *)this->vtable)->methods[7]);
         return meth(this, pos);
     }
 #else
@@ -711,13 +813,41 @@ class BoxedString : public RefObject {
     BoxedString(const VTable *vt) : RefObject(vt) {}
 };
 
+// cross version compatible way of accessing string data
+#ifndef PXT_STRING_DATA
+#define PXT_STRING_DATA(str) str->getUTF8Data()
+#endif
+
+// cross version compatible way of accessing string length
+#ifndef PXT_STRING_DATA_LENGTH
+#define PXT_STRING_DATA_LENGTH(str) str->getUTF8Size()
+#endif
+
 class BoxedBuffer : public RefObject {
   public:
     // data needs to be word-aligned, so we use 32 bits for length
     int length;
+#ifdef PXT_VM
+    // VM can be 64 bit and it compiles as such
+    int32_t _padding;
+#endif
     uint8_t data[0];
     BoxedBuffer() : RefObject(&buffer_vt) {}
 };
+
+// cross version compatible way of access data field
+#ifndef PXT_BUFFER_DATA
+#define PXT_BUFFER_DATA(buffer) buffer->data
+#endif
+
+// cross version compatible way of access data length
+#ifndef PXT_BUFFER_LENGTH
+#define PXT_BUFFER_LENGTH(buffer) buffer->length
+#endif
+
+#ifndef PXT_CREATE_BUFFER
+#define PXT_CREATE_BUFFER(data, len) pxt::mkBuffer(data, len)
+#endif
 
 // the first byte of data indicates the format - currently 0xE1 or 0xE4 to 1 or 4 bit bitmaps
 // second byte indicates width in pixels
@@ -741,7 +871,7 @@ class RefImage : public RefObject {
     }
 
     uint8_t *data() { return hasBuffer() ? buffer()->data : _data; }
-    int length() { return hasBuffer() ? buffer()->length : (_buffer >> 2); }
+    int length() { return (int)(hasBuffer() ? buffer()->length : (_buffer >> 2)); }
     int pixLength() { return length() - 4; }
 
     int height();
@@ -854,6 +984,20 @@ void gcProcessStacks(int flags);
 
 void gcProcess(TValue v);
 void gcFreeze();
+#ifdef PXT_VM
+void gcStartup();
+void gcPreStartup();
+void *gcPrealloc(int numbytes);
+bool inGCPrealloc();
+#else
+static inline bool inGCPrealloc() {
+    return false;
+}
+#endif
+
+void coreReset();
+void gcReset();
+void systemReset();
 
 void *gcAllocate(int numbytes);
 void *gcAllocateArray(int numbytes);
@@ -864,6 +1008,18 @@ inline void *gcAllocate(int numbytes) {
     return xmalloc(numbytes);
 }
 #endif
+
+#ifdef PXT64
+#define TOWORDS(bytes) (((bytes) + 7) >> 3)
+#else
+#define TOWORDS(bytes) (((bytes) + 3) >> 2)
+#endif
+
+#ifndef PXT_VM
+#define soft_panic target_panic
+#endif
+
+extern int debugFlags;
 
 enum class PerfCounters {
     GC,
@@ -896,10 +1052,15 @@ inline void initPerfCounters() {}
 inline void dumpPerfCounters() {}
 #endif
 
-} // namespace pxt
-
+#ifdef PXT_VM
+String mkInternalString(const char *str);
+#define PXT_DEF_STRING(name, val) String name = mkInternalString(val);
+#else
 #define PXT_DEF_STRING(name, val)                                                                  \
     static const char name[] __attribute__((aligned(4))) = "@PXT@:" val;
+#endif
+
+} // namespace pxt
 
 using namespace pxt;
 
@@ -911,6 +1072,31 @@ int toBool(TValue v);
 //%
 int toBoolDecr(TValue v);
 } // namespace numops
+
+namespace pxt {
+inline bool toBoolQuick(TValue v) {
+    if (v == TAG_TRUE)
+        return true;
+    if (v == TAG_FALSE || v == TAG_UNDEFINED || v == TAG_NULL)
+        return false;
+    return numops::toBool(v);
+}
+} // namespace pxt
+
+namespace pxtrt {
+//%
+RefMap *mkMap();
+//%
+TValue mapGetByString(RefMap *map, String key);
+//%
+int lookupMapKey(String key);
+//%
+TValue mapGet(RefMap *map, unsigned key);
+//%
+void mapSetByString(RefMap *map, String key, TValue val);
+//%
+void mapSet(RefMap *map, unsigned key, TValue val);
+} // namespace pxtrt
 
 namespace pins {
 Buffer createBuffer(int size);
@@ -958,7 +1144,7 @@ bool removeElement(RefCollection *c, TValue x);
 //
 #define PXT_SHIMS_BEGIN                                                                            \
     namespace pxt {                                                                                \
-    const unsigned functionsAndBytecode[]                                                          \
+    const uintptr_t functionsAndBytecode[]                                                         \
         __attribute__((aligned(0x20))) = {0x08010801, 0x42424242, 0x08010801, 0x8de9d83e,
 
 #define PXT_SHIMS_END                                                                              \
@@ -966,28 +1152,35 @@ bool removeElement(RefCollection *c, TValue x);
     ;                                                                                              \
     }
 
-#ifndef X86_64
+#if !defined(X86_64) && !defined(PXT_VM)
 #pragma GCC diagnostic ignored "-Wpmf-conversions"
 #endif
 
+#ifdef PXT_VM
+#define DEF_VTABLE(name, tp, valtype, ...)                                                         \
+    const VTable name __attribute__((aligned(1 << PXT_VTABLE_SHIFT))) = {                          \
+        sizeof(tp), valtype, VTABLE_MAGIC, 0, BuiltInType::tp, BuiltInType::tp,                    \
+        0,          0,       {__VA_ARGS__}};
+#else
 #define DEF_VTABLE(name, tp, valtype, ...)                                                         \
     const VTable name __attribute__((aligned(1 << PXT_VTABLE_SHIFT))) = {                          \
         sizeof(tp), valtype, VTABLE_MAGIC, 0, BuiltInType::tp, 0, 0, {__VA_ARGS__}};
+#endif
 
 #ifdef PXT_GC
-#define PXT_VTABLE(classname)                                                                      \
-    DEF_VTABLE(classname##_vtable, classname, ValType::Object, (void *)&classname::destroy,        \
+#define PXT_VTABLE(classname, valtp)                                                               \
+    DEF_VTABLE(classname##_vtable, classname, valtp, (void *)&classname::destroy,                  \
                (void *)&classname::print, (void *)&classname::scan, (void *)&classname::gcsize)
 #else
-#define PXT_VTABLE(classname)                                                                      \
-    DEF_VTABLE(classname##_vtable, classname, ValType::Object, (void *)&classname::destroy,        \
+#define PXT_VTABLE(classname, valtp)                                                               \
+    DEF_VTABLE(classname##_vtable, classname, valtp, (void *)&classname::destroy,                  \
                (void *)&classname::print)
 #endif
 
 #define PXT_VTABLE_INIT(classname) RefObject(&classname##_vtable)
 
 #define PXT_VTABLE_CTOR(classname)                                                                 \
-    PXT_VTABLE(classname)                                                                          \
+    PXT_VTABLE(classname, ValType::Object)                                                         \
     classname::classname() : PXT_VTABLE_INIT(classname)
 
 #define PXT_MAIN                                                                                   \
@@ -996,7 +1189,7 @@ bool removeElement(RefCollection *c, TValue x);
         return 0;                                                                                  \
     }
 
-#define PXT_FNPTR(x) (unsigned)(void *)(x)
+#define PXT_FNPTR(x) (uintptr_t)(void *)(x)
 
 #define PXT_ABI(...)
 
@@ -1010,7 +1203,7 @@ bool removeElement(RefCollection *c, TValue x);
         return JOIN(inst, ClassName);                                                              \
     }
 
-/// Defines getClassName() function to fetch the singleton
+/// Defines getClassName() function to fetch the singleton if PIN present
 #define SINGLETON_IF_PIN(ClassName, pin)                                                           \
     static ClassName *JOIN(inst, ClassName);                                                       \
     ClassName *JOIN(get, ClassName)() {                                                            \
@@ -1018,5 +1211,9 @@ bool removeElement(RefCollection *c, TValue x);
             JOIN(inst, ClassName) = new ClassName();                                               \
         return JOIN(inst, ClassName);                                                              \
     }
+
+#ifdef PXT_VM
+#include "vm.h"
+#endif
 
 #endif

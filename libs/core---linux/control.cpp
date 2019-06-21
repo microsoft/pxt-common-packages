@@ -29,6 +29,25 @@ void dmesg(String s) {
     DMESG("# %s", s->getUTF8Data());
 }
 
+//%
+uint32_t _ramSize()
+{
+#ifdef POKY
+    return 128 * 1024;
+#else
+    // a lot! doesn't really matter how much
+    return 16 * 1024 * 1024;
+#endif
+}
+
+/**
+ * Determines if the USB has been enumerated.
+ */
+//%
+bool isUSBInitialized() {
+    return false;
+}
+
 }
 
 namespace serial {

@@ -57,7 +57,7 @@ class Sprite implements SpriteLike {
     _ay: Fx8
 
     //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine block="x"
+    //% blockCombine block="x" callInDebugger
     get x(): number {
         return Fx.toInt(this._x) + (this._image.width >> 1)
     }
@@ -69,7 +69,7 @@ class Sprite implements SpriteLike {
     }
 
     //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine block="y"
+    //% blockCombine block="y" callInDebugger
     get y(): number {
         return Fx.toInt(this._y) + (this._image.height >> 1)
     }
@@ -81,7 +81,7 @@ class Sprite implements SpriteLike {
     }
 
     //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine block="vx (velocity x)"
+    //% blockCombine block="vx (velocity x)" callInDebugger
     get vx(): number {
         return Fx.toFloat(this._vx)
     }
@@ -92,7 +92,7 @@ class Sprite implements SpriteLike {
     }
 
     //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine block="vy (velocity y)"
+    //% blockCombine block="vy (velocity y)" callInDebugger
     get vy(): number {
         return Fx.toFloat(this._vy)
     }
@@ -103,7 +103,7 @@ class Sprite implements SpriteLike {
     }
 
     //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine block="ax (acceleration x)"
+    //% blockCombine block="ax (acceleration x)" callInDebugger
     get ax(): number {
         return Fx.toFloat(this._ax)
     }
@@ -114,7 +114,7 @@ class Sprite implements SpriteLike {
     }
 
     //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine block="ay (acceleration y)"
+    //% blockCombine block="ay (acceleration y)" callInDebugger
     get ay(): number {
         return Fx.toFloat(this._ay)
     }
@@ -124,7 +124,7 @@ class Sprite implements SpriteLike {
         this._ay = Fx8(v)
     }
 
-    /** 
+    /**
      * Custom data
      */
     //%
@@ -182,7 +182,7 @@ class Sprite implements SpriteLike {
         this.lifespan = undefined;
         this._overlappers = [];
     }
-    
+
     __serialize(offset: number): Buffer {
         const buf = control.createBuffer(offset + 12);
         let k = offset;
@@ -198,7 +198,7 @@ class Sprite implements SpriteLike {
     /**
      * Gets the current image
      */
-    //% group="Lifecycle"
+    //% group="Image"
     //% blockId=spriteimage block="%sprite(mySprite) image"
     //% weight=8
     get image(): Image {
@@ -208,7 +208,7 @@ class Sprite implements SpriteLike {
     /**
      * Sets the image on the sprite
      */
-    //% group="Lifecycle"
+    //% group="Image"
     //% blockId=spritesetimage block="set %sprite(mySprite) image to %img=screen_image_picker"
     //% weight=7 help=sprites/sprite/set-image
     setImage(img: Image) {
@@ -333,7 +333,7 @@ class Sprite implements SpriteLike {
      */
     //% group="Overlaps"
     //% blockId="spritesetkind" block="set %sprite(mySprite) kind to %kind"
-    //% kind.shadow=spritetype
+    //% kind.shadow=spritekind
     //% weight=80 help=sprites/sprite/set-kind
     setKind(value: number) {
         if (value == undefined || this._kind === value) return;
@@ -367,8 +367,8 @@ class Sprite implements SpriteLike {
 
     /**
      * Sets the sprite velocity in pixel / sec
-     * @param vx 
-     * @param vy 
+     * @param vx
+     * @param vy
      */
     //% group="Physics"
     //% weight=100
@@ -517,6 +517,7 @@ class Sprite implements SpriteLike {
     //% group="Effects"
     //% weight=90
     //% blockId=startEffectOnSprite block="%sprite(mySprite) start %effect effect || for %duration=timePicker|ms"
+    //% help=sprites/sprite/start-effect
     startEffect(effect: effects.ParticleEffect, duration?: number) {
         effect.start(this, duration);
     }
@@ -725,7 +726,7 @@ class Sprite implements SpriteLike {
     destroy(effect?: effects.ParticleEffect, duration?: number) {
         if (this.flags & sprites.Flag.Destroyed)
             return;
-        
+
         if (effect) {
             effect.destroy(this, duration);
             return;

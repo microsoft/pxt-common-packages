@@ -9,8 +9,10 @@ namespace servos {
         private _minAngle: number;
         private _maxAngle: number;
         private _stopOnNeutral: boolean;
+        private _angle: number;
 
         constructor() {
+            this._angle = undefined;
             this._minAngle = 0;
             this._maxAngle = 180;
             this._stopOnNeutral = false;
@@ -36,11 +38,15 @@ namespace servos {
         //% group="Positional"
         setAngle(degrees: number) {
             degrees = this.clampDegrees(degrees);
-            this.internalSetAngle(degrees);
+            this._angle = this.internalSetAngle(degrees);
         }
 
-        protected internalSetAngle(angle: number): void {
+        get angle() {
+            return this._angle || 90;
+        }
 
+        protected internalSetAngle(angle: number): number {
+            return 0;
         }
 
         /**
@@ -103,7 +109,8 @@ namespace servos {
         //% group="Continuous"
         //% blockGap=8
         stop() {
-            this.internalStop();
+            if (this._angle !== undefined)
+                this.internalStop();
         }
 
         /**
@@ -145,16 +152,15 @@ namespace servos {
          * @param on true to enable this mode
          */
         //% help=servos/set-stop-on-neutral
-        //% blockId=servostoponneutral block="set %servo stop on neutral %on"
-        //% on.fieldEditor=toggleonoff
-        //% on.fieldOptions.decompileLiterals=true
+        //% blockId=servostoponneutral block="set %servo stop on neutral %enabled"
+        //% enabled.shadow=toggleOnOff
         //% group="Configuration"
         //% blockGap=8
         //% servo.fieldEditor="gridpicker"
         //% servo.fieldOptions.width=220
         //% servo.fieldOptions.columns=2
-        public setStopOnNeutral(on: boolean) {
-            this._stopOnNeutral = on;
+        public setStopOnNeutral(enabled: boolean) {
+            this._stopOnNeutral = enabled;
         }
 
         protected internalStop() { }
@@ -168,8 +174,9 @@ namespace servos {
             this._pin = pin;
         }
 
-        protected internalSetAngle(angle: number): void {
+        protected internalSetAngle(angle: number): number {
             this._pin.servoWrite(angle);
+            return angle;
         }
 
         protected internalSetPulse(micros: number): void {
@@ -177,7 +184,8 @@ namespace servos {
         }
 
         protected internalStop() {
-            this._pin.digitalWrite(false);
+            this._pin.digitalRead();
+            this._pin.setPull(PinPullMode.PullNone);
         }
     }
 }

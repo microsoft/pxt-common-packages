@@ -36,6 +36,7 @@ class HF2 : public CodalUSBInterface {
     HF2_Buffer &pkt;
 
     bool allocateEP;
+    bool useHID;
 
     int sendResponse(int size);
     int recv();
@@ -44,6 +45,7 @@ class HF2 : public CodalUSBInterface {
     HF2(HF2_Buffer &pkt);
     virtual int endpointRequest();
     virtual int classRequest(UsbEndpointIn &ctrl, USBSetup &setup);
+    virtual int stdRequest(UsbEndpointIn &ctrl, USBSetup &setup);
     virtual const InterfaceInfo *getInterfaceInfo();
     int sendSerial(const void *data, int size, int isError = 0);
 

@@ -41,7 +41,7 @@ struct F4_Settings {
         RTC->BKP0R = v ? APP_RTC_SIGNATURE : HF2_RTC_SIGNATURE;                                    \
     } while (0)
 #else
-
+#define QUICK_BOOT(v) ((void)0)
 #endif
 
 #define PAGE_SIZE 1024 // not really

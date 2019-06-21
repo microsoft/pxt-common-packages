@@ -6,37 +6,6 @@ namespace light {
     export const pixels = light.defaultStrip();
 
     /**
-     * Create a range of pixels.
-     * @param start offset in the NeoPixel strip to start the range
-     * @param length number of pixels in the range, eg: 4
-     */
-    //% blockId="lightstrip_range" block="range from %start|with %length|pixels"
-    //% weight=1
-    export function range(start: number, length: number): NeoPixelStrip {
-        return pixels.range(start, length);
-    }
-
-    /**
-     * Sets the number of LEDS on the default light strip
-     */
-    //% blockId=lightds_setlength block="set pixels length to %numleds pixels"
-    //% numleds.defl=30
-    //% numleds.shadow=lightLengthPicker
-    //% weight=0
-    export function setLength(numleds: number) {
-        light.pixels.setLength(numleds);
-    }
-
-    /**
-     * Sets the type of RGB light on the default strip
-     */
-    //% blockId=lightds_setmode block="set default strip mode to %mode"
-    //% weight=0
-    export function setMode(mode: NeoPixelMode) {
-        light.pixels.setMode(mode);
-    }
-
-    /**
      * Set all of the pixels on the strip to one RGB color.
      * @param rgb RGB color of the LED
      */
@@ -45,6 +14,17 @@ namespace light {
     //% weight=79 blockGap=8
     export function setAll(rgb: number) {
         light.pixels.setAll(rgb);
+    }
+
+    /**
+     * Sets a gradient between two colors
+     * @param startColor the start color
+     * @param endColor the end color
+     */
+    //% blockId="builtinlightsetgradient" block="set gradient from %startRgb=colorNumberPicker to %endRgb=colorNumberPicker"
+    //% weight=78 blockGap=8
+    export function setGradient(startRgb: number, endRgb: number, easing?: (t: number) => number) {
+        light.pixels.setGradient(startRgb, endRgb, easing);
     }
 
     /**

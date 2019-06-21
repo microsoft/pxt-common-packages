@@ -23,13 +23,18 @@ namespace scene {
         handler: (sprite: Sprite) => void
     }
 
+    export interface GameForeverHandlers {
+        lock: boolean;
+        handler: () => void;
+    }
+
     export const CONTROLLER_PRIORITY = 8;
     export const TILEMAP_PRIORITY = 9;
     export const PHYSICS_PRIORITY = 10;
     export const ANIMATION_UPDATE_PRIORITY = 15;
-    export const SPRITE_ANIMATION_UPDATE_PRIORITY = 16;
     export const UPDATE_INTERVAL_PRIORITY = 19;
     export const UPDATE_PRIORITY = 20;
+    export const UPDATE_CONTROLLER_PRIORITY = 19;
     export const CONTROLLER_SPRITES_PRIORITY = 19;
     export const OVERLAP_PRIORITY = 30;
     export const RENDER_BACKGROUND_PRIORITY = 60;
@@ -42,12 +47,11 @@ namespace scene {
 
     export class Scene {
         eventContext: control.EventContext;
-        menuState: menu.State;
         background: Background;
         tileMap: tiles.TileMap;
         allSprites: SpriteLike[];
         private spriteNextId: number;
-        spritesByKind: SpriteSet[];
+        spritesByKind: { [index: number]: SpriteSet };
         physicsEngine: PhysicsEngine;
         camera: scene.Camera;
         flags: number;
@@ -55,11 +59,15 @@ namespace scene {
         createdHandlers: SpriteHandler[];
         overlapHandlers: OverlapHandler[];
         collisionHandlers: CollisionHandler[];
+        gameForeverHandlers: GameForeverHandlers[];
         particleSources: particles.ParticleSource[];
         controlledSprites: controller.ControlledSprite[][];
 
         private _millis: number;
         private _data: any;
+
+        // a set of functions that need to be called when a scene is being initialized
+        static initializers: ((scene: Scene) => void)[] = [];
 
         constructor(eventContext: control.EventContext) {
             this.eventContext = eventContext;
@@ -71,7 +79,8 @@ namespace scene {
             this.createdHandlers = [];
             this.overlapHandlers = [];
             this.collisionHandlers = [];
-            this.spritesByKind = [];
+            this.gameForeverHandlers = [];
+            this.spritesByKind = {};
             this.controlledSprites = [];
             this._data = {};
             this._millis = 0;
@@ -146,8 +155,8 @@ namespace scene {
             });
             // update screen
             this.eventContext.registerFrameHandler(UPDATE_SCREEN_PRIORITY, control.__screen.update);
-            // register start menu
-            scene.systemMenu.register();
+            // register additional components
+            Scene.initializers.forEach(f => f(this));
         }
 
         get data() {
@@ -168,7 +177,6 @@ namespace scene {
 
         destroy() {
             this.eventContext = undefined;
-            this.menuState = undefined;
             this.background = undefined;
             this.tileMap = undefined;
             this.allSprites = undefined;
@@ -181,6 +189,7 @@ namespace scene {
             this.createdHandlers = undefined;
             this.overlapHandlers = undefined;
             this.collisionHandlers = undefined;
+            this.gameForeverHandlers = undefined;
             this._data = undefined;
         }
     }

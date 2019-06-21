@@ -11,7 +11,8 @@ namespace pxsim {
         send(buf: RefBuffer) {
             Runtime.postMessage(<SimulatorInfraredPacketMessage>{
                 type: "irpacket",
-                packet:  buf.data
+                packet:  buf.data,
+                broadcast: true
             })
         }
 
@@ -23,9 +24,9 @@ namespace pxsim {
             pxtcore.registerWithDal(this.IR_COMPONENT_ID, this.IR_PACKET_ERROR_EVENT, body);            
         }
 
-        receive(buf: RefBuffer) {
+        receive(buf: Uint8Array) {
             pxsim.decr(this.packet);
-            this.packet = buf;
+            this.packet = new RefBuffer(buf);
             pxsim.incr(this.packet);
             this.packetReceived = true;
             board().bus.queue(this.IR_COMPONENT_ID, this.IR_PACKET_EVENT);

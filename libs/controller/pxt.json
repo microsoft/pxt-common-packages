@@ -1,0 +1,23 @@
+{
+    "name": "controller",
+    "description": "Extra game controller functionalities",
+    "files": [
+        "README.md",
+        "state.ts",
+        "vibration.ts",
+        "accelerometer.ts",
+        "lightsensor.ts",
+        "thermometer.ts",
+        "controller.ts",
+        "light.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core",
+        "accelerometer": "file:../accelerometer",
+        "lightsensor": "file:../lightsensor",
+        "thermometer": "file:../thermometer",
+        "game": "file:../game",
+        "light": "file:../light"
+    }
+}

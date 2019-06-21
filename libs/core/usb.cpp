@@ -9,6 +9,9 @@ CodalUSB usb;
 // share the buffer; we will crash anyway if someone talks to us over both at the same time
 HF2_Buffer hf2buf;
 HF2 hf2(hf2buf);
+#ifdef HF2_HID
+HF2 hf2hid(hf2buf);
+#endif
 DummyIface dummyIface;
 
 #if CONFIG_ENABLED(DEVICE_MOUSE)
@@ -19,6 +22,9 @@ USBHIDKeyboard keyboard;
 #endif
 #if CONFIG_ENABLED(DEVICE_JOYSTICK)
 USBHIDJoystick joystick;
+#endif
+#if CONFIG_ENABLED(DEVICE_JACDAC_DEBUG)
+USBJACDAC jacdacDebug;
 #endif
 
 static const DeviceDescriptor device_desc = {
@@ -93,9 +99,15 @@ void usb_init() {
 #endif
     usb.add(hf2);
 
+#ifdef HF2_HID
+    hf2hid.useHID = true;
+    usb.add(hf2hid);
+#else
     // the WINUSB descriptors don't seem to work if there's only one interface
     // so we add a dummy interface
     usb.add(dummyIface);
+#endif
+
 
 #if CONFIG_ENABLED(DEVICE_MOUSE)
     usb.add(mouse);
@@ -105,6 +117,9 @@ void usb_init() {
 #endif
 #if CONFIG_ENABLED(DEVICE_JOYSTICK)
     usb.add(joystick);
+#endif
+#if CONFIG_ENABLED(DEVICE_JACDAC_DEBUG)
+    usb.add(jacdacDebug);
 #endif
 
     create_fiber(start_usb);
@@ -118,6 +133,20 @@ void usb_init() {}
 } // namespace pxt
 #endif
 
+namespace control {
+/**
+ * Determines if the USB has been enumerated.
+ */
+//%
+bool isUSBInitialized() {
+#if CONFIG_ENABLED(DEVICE_USB)
+    return pxt::usb.isInitialised();
+#else
+    return false;
+#endif
+}
+}
+
 namespace pxt {
 static void (*pSendToUART)(const char *data, int len) = NULL;
 void setSendToUART(void (*f)(const char *, int)) {
@@ -127,6 +156,9 @@ void setSendToUART(void (*f)(const char *, int)) {
 void sendSerial(const char *data, int len) {
 #if CONFIG_ENABLED(DEVICE_USB)
     hf2.sendSerial(data, len);
+#if HF2_HID
+    hf2hid.sendSerial(data, len);
+#endif
 #endif
     if (pSendToUART)
         pSendToUART(data, len);

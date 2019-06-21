@@ -45,10 +45,20 @@ for (let i = 0; i < 5; i++) {
 }
 ```
 
+## ~ hint
+
+How do servos run their motors to change the position of their arm or shaft? Find out in this MakeCode hardware video:
+
+https://www.youtube.com/watch?v=okxooamdAP4
+
+## ~
+
 ## See also
 
 [set pulse](/reference/servos/set-pulse),
 [run](/reference/servos/run)
+
+[Brief Guide to Servos](https://www.kitronik.co.uk/pdf/a-brief-guide-to-servos.pdf)
 
 ```package
 servo

@@ -129,27 +129,25 @@ namespace jacdac {
         }
 
         isActive(): boolean {
-            return !!this.serverAddress && this.isConnected;
+            return !!this.serverAddress && this.isConnected();
         }
 
-        handleControlPacket(pkt: Buffer): boolean {
-            const cp = new ControlPacket(pkt);
-            const data = cp.data;
-            return this.processPacket(cp.address, data);
+        handleServiceInformation(device: JDDevice, serviceInfo: JDServiceInformation): number {
+            const data = serviceInfo.data;
+            return this.processPacket(device.device_address, data);
         }
 
-        handlePacket(pkt: Buffer): boolean {
-            const packet = new JDPacket(pkt);
+        handlePacket(packet: JDPacket): number {
             const data = packet.data;
-            return this.processPacket(packet.address, data);
+            return this.processPacket(packet.device_address, data);
         }
 
-        private processPacket(packetAddress: number, data: Buffer): boolean {
+        private processPacket(packetAddress: number, data: Buffer): number {
             const cmd: JDControllerCommand = data[0];
             // received a packet from the server
             if (cmd == JDControllerCommand.ControlServer) {
                 this.log(`server ${toHex8(packetAddress)}`)
-                const address = this.device.address;
+                const address = this.deviceAddress;
                 for (let i = 1; i <= 4; ++i) {
                     if (data[i] == address) {
                         // check that we are still connected to the same server
@@ -161,7 +159,7 @@ namespace jacdac {
                         this.lastServerTime = control.millis();
                         // start streaming
                         this.startStreaming();
-                        return true;
+                        return jacdac.DEVICE_OK;
                     }
                 }
                 // did the server drop us
@@ -175,7 +173,7 @@ namespace jacdac {
                 // nope, doesn't seem to be our server
                 // do nothing
             }
-            return true;
+            return jacdac.DEVICE_OK;
         }
 
         start() {
