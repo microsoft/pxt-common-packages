@@ -1,7 +1,7 @@
 // Auto-generated. Do not edit.
 
 
-declare const enum Dimension {
+    declare const enum Dimension {
     //% block=x
     X = 0,
     //% block=y

@@ -7,7 +7,9 @@
         "vibration.ts",
         "accelerometer.ts",
         "lightsensor.ts",
-        "thermometer.ts"
+        "thermometer.ts",
+        "controller.ts",
+        "light.ts"
     ],
     "public": true,
     "dependencies": {
@@ -15,6 +17,7 @@
         "accelerometer": "file:../accelerometer",
         "lightsensor": "file:../lightsensor",
         "thermometer": "file:../thermometer",
-        "game": "file:../game"
+        "game": "file:../game",
+        "light": "file:../light"
     }
 }

@@ -235,38 +235,16 @@ namespace sensors {
 
             this.pauseSensorForIntegrationTime();
 
-            let sum = clearColorValue;
-            let r = 0;
-            let g = 0;
-            let b = 0;
-
             if (clearColorValue == 0)
                 return 0;
             else {
-                r = (redColorValue / sum * 255) & 0xff;
-                g = (greenColorValue / sum * 255) & 0xff;
-                b = (blueColorValue / sum * 255) & 0xff;
+                const sum = clearColorValue;
+                const r = ((redColorValue / sum) * 255) & 0xff;
+                const g = ((greenColorValue / sum) * 255) & 0xff;
+                const b = ((blueColorValue / sum) * 255) & 0xff;
 
                 return (r << 16) | (g << 8) | b;
             }
         }
     }
 }
-
-/*
-let strip: neopixel.Strip = null
-strip = neopixel.create(DigitalPin.P1, 30, NeoPixelMode.RGB)
-strip.setBrightness(255)
-
-TCS34725.start(TCS34725_ATIME.ATIME_2_4_MS, TCS34725_AGAIN.AGAIN_1X);
-
-basic.forever(function () {
-    basic.pause(2000);
-    serial.writeLine(TCS34725.isConnected + "");
-    let a = TCS34725.getSensorRGB();
-
-    strip.showColor(neopixel.rgb(a.red, a.green, a.blue));
-
-})
-
-*/

@@ -124,7 +124,7 @@ class Sprite implements SpriteLike {
         this._ay = Fx8(v)
     }
 
-    /** 
+    /**
      * Custom data
      */
     //%
@@ -333,7 +333,7 @@ class Sprite implements SpriteLike {
      */
     //% group="Overlaps"
     //% blockId="spritesetkind" block="set %sprite(mySprite) kind to %kind"
-    //% kind.shadow=spritetype
+    //% kind.shadow=spritekind
     //% weight=80 help=sprites/sprite/set-kind
     setKind(value: number) {
         if (value == undefined || this._kind === value) return;
@@ -367,8 +367,8 @@ class Sprite implements SpriteLike {
 
     /**
      * Sets the sprite velocity in pixel / sec
-     * @param vx 
-     * @param vy 
+     * @param vx
+     * @param vy
      */
     //% group="Physics"
     //% weight=100
@@ -517,6 +517,7 @@ class Sprite implements SpriteLike {
     //% group="Effects"
     //% weight=90
     //% blockId=startEffectOnSprite block="%sprite(mySprite) start %effect effect || for %duration=timePicker|ms"
+    //% help=sprites/sprite/start-effect
     startEffect(effect: effects.ParticleEffect, duration?: number) {
         effect.start(this, duration);
     }
