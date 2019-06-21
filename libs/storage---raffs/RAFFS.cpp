@@ -4,6 +4,9 @@
 #include "MessageBus.h"
 #include <stddef.h>
 
+#define RAFFS_MAGIC 0x6786208a
+#define M1 0xffffffffU
+
 using namespace codal;
 
 #define oops() target_panic(DEVICE_FLASH_ERROR)
@@ -117,10 +120,9 @@ void FS::writeBytes(void *dst, const void *src, uint32_t size) {
         src = (const uint8_t *)src + n;
         dst = (uint8_t *)dst + n;
     }
+    // TODO remove before merge
+            flushFlash();
 }
-
-#define RAFFS_MAGIC 0x67862089
-#define M1 0xffffffffU
 
 void FS::format() {
     if (files)
@@ -185,8 +187,10 @@ bool FS::tryMount() {
 }
 
 void FS::mount() {
-    if (tryMount())
+    // TODO remove before merge
+    if (basePtr)
         return;
+    //if (tryMount())        return;
     format();
     if (!tryMount())
         oops();
@@ -640,6 +644,8 @@ int File::append(const void *data, uint32_t len) {
 
     // and only at the end update the next link
     fs.flushFlash();
+    if (*pageDst != 0xffff)
+        oops();
     fs.writeBytes(pageDst, &thisPtr, sizeof(thisPtr));
 
     fs.unlock();

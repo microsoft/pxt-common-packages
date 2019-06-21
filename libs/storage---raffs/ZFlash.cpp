@@ -1,8 +1,8 @@
 #include "pxt.h"
 #include "Flash.h"
 
-//#define LOG DMESG
-#define LOG NOLOG
+#define LOG DMESG
+//#define LOG NOLOG
 
 #ifdef STM32F4
 namespace codal {
@@ -118,14 +118,18 @@ static void unlock() {
     // see errata 2.14.1
     NVMCTRL->CTRLA.bit.CACHEDIS0 = true;
     NVMCTRL->CTRLA.bit.CACHEDIS1 = true;
+
+    CMCC->CTRL.bit.CEN = 0;
+    while (CMCC->SR.bit.CSTS) {}
+    CMCC->MAINT0.bit.INVALL = 1;
 }
 
 static void lock() {
     // re-enable cache
-    //NVMCTRL->CTRLA.bit.CACHEDIS0 = false;
-    //NVMCTRL->CTRLA.bit.CACHEDIS1 = false;
-    // invalidate cortex-m cache - it's a separate one
-    CMCC->MAINT0.bit.INVALL = 1;
+    NVMCTRL->CTRLA.bit.CACHEDIS0 = false;
+    NVMCTRL->CTRLA.bit.CACHEDIS1 = false;
+    // re-enable cortex-m cache - it's a separate one
+    CMCC->CTRL.bit.CEN = 1;
 }
 
 int ZFlash::pageSize(uintptr_t address) {
@@ -136,6 +140,7 @@ int ZFlash::pageSize(uintptr_t address) {
 }
 
 int ZFlash::erasePage(uintptr_t address) {
+    NVMCTRL->CTRLA.bit.WMODE = NVMCTRL_CTRLA_WMODE_MAN;
     waitForLast();
     unlock();
     NVMCTRL->ADDR.reg = address;
@@ -146,17 +151,32 @@ int ZFlash::erasePage(uintptr_t address) {
 }
 
 int ZFlash::writeBytes(uintptr_t dst, const void *src, uint32_t len) {
-    LOG("WR flash at %p len=%d %x %x", (void *)dst, len, ((uint8_t*)src)[0], ((uint8_t*)src)[1]);
+    LOG("WR flash at %p len=%d %x %x %x", (void *)dst, len, ((uint8_t*)src)[0], ((uint8_t*)src)[1], NVMCTRL->CTRLA.reg);
+
+    for (unsigned i = 0; i < len; ++i) {
+        if (((uint8_t*)src)[i] != 0xff &&
+            ((uint8_t*)dst)[i] != 0xff)
+            target_panic(990);
+    }
+
+    volatile uint32_t *dp = (uint32_t*)dst;
+    uint32_t *sp = (uint32_t*)src;
+    uint32_t n = len >> 2;
 
     waitForLast();
     unlock();
 
+    __DMB();
+
     NVMCTRL->CTRLB.reg = NVMCTRL_CTRLB_CMDEX_KEY | NVMCTRL_CTRLB_CMD_PBC;
     waitForLast();
 
+    while (n--)
+        *dp++ = *sp++;
 
-        for (unsigned i = 0; i < len / 4; ++i)
-            ((volatile uint32_t *)dst)[i] = ((uint32_t*)src)[i];
+
+        //for (unsigned i = 0; i < len / 4; ++i)
+        //    ((volatile uint32_t *)dst)[i] = ((uint32_t*)src)[i];
 
         NVMCTRL->ADDR.reg = (uint32_t)dst; // not needed?
         NVMCTRL->CTRLB.reg = NVMCTRL_CTRLB_CMDEX_KEY | NVMCTRL_CTRLB_CMD_WP;
