@@ -31,4 +31,5 @@ if (game.ask("Ready to play?", "Next: advanced level")) {
 
 ## See also #seealso
 
-[ask for string](/reference/game/ask-for-string)
+[ask for string](/reference/game/ask-for-string),
+[ask for number](/reference/game/ask-for-number)
