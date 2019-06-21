@@ -7,7 +7,7 @@ namespace game {
      */
     //% group="Gameplay"
     //% weight=10 help=game/ask-for-string
-    //% blockId=gameaskfornumber block="ask for number with text %message || and max length %answerLength"
+    //% blockId=gameaskfornumber block="ask for number %message || and max length %answerLength"
     //% message.defl=""
     //% answerLength.defl="6"
     //% answerLength.min=1
