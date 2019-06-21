@@ -126,13 +126,16 @@ namespace music {
     /**
      * Play a melody from the melody editor.
      * @param melody
+     * @param tempo
      */
-    //% block="play melody from melody editor $melody" blockId=playMelodyFromEditor
+    //% block="play melody $melody at tempo %value|(bpm)" blockId=playMelodyFromEditor
     //% blockNamespace=music
     //% weight=75 blockGap=8
     //% group="Melody"
     //% melody.shadow="melody_editor"
-    export function playMelodyFromEditor(melody: Melody) {
+    //% tempo.min=40 tempo.max=500
+    //% tempo.defl=120
+    export function playMelodyFromEditor(melody: Melody, tempo: number) {
         melody.play();
     }
 
@@ -155,7 +158,10 @@ namespace music {
         // melodies[0] is name
         // melodies[1] is tempo
         // melodies[2] is the first melody
+        // moving tempo to the 
+        //melodies[2] = melodies[2].replace(' ', '-' + melodies[1] + ' ');
         const song = new Melody(melodies[2]);
+        //const song = new Melody(melodies[1]);
         return song
     }
     
