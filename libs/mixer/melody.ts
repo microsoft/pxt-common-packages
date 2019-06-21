@@ -365,7 +365,7 @@ namespace music {
             //   1 - triangle
             //   2 - sawtooth
             //   3 - sine
-            //   4 - noise
+            //   5 - noise
             //   11 - square 10%
             //   12 - square 20%
             //   ...
