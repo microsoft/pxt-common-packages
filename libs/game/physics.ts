@@ -272,8 +272,15 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 );
 
                 if (tm.isObstacle(x0, y0)) {
-                    if (sprite.flags & sprites.Flag.BounceOnWall) {
+                    if (sprite.flags & sprites.Flag.DestroyOnWall) {
+                        sprite.destroy();
+                    } else if (sprite.flags & sprites.Flag.BounceOnWall) {
                         sprite._vx = Fx.neg(sprite._vx);
+                        movingSprite.xStep = Fx.neg(movingSprite.xStep);
+                        movingSprite.dx = Fx.neg(movingSprite.dx);
+                    } else {
+                        sprite.registerObstacle(right ? CollisionDirection.Right : CollisionDirection.Left, tm.getObstacle(x0, y0));
+                        movingSprite.dx = Fx.zeroFx8;
                     }
                     sprite._x = Fx.iadd(
                         -sprite._hitbox.ox,
@@ -285,12 +292,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                             :
                             Fx8((x0 + 1) << tileScale)
                     );
-
-                    sprite.registerObstacle(right ? CollisionDirection.Right : CollisionDirection.Left, tm.getObstacle(x0, y0));
-                    movingSprite.dx = Fx.zeroFx8;
-                    if (sprite.flags & sprites.Flag.DestroyOnWall) {
-                        sprite.destroy();
-                    }
+                    break;
                 }
             }
         }
@@ -328,9 +330,17 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 );
 
                 if (tm.isObstacle(x0, y0)) {
-                    if (sprite.flags & sprites.Flag.BounceOnWall) {
+                    if (sprite.flags & sprites.Flag.DestroyOnWall) {
+                        sprite.destroy();
+                    } else if (sprite.flags & sprites.Flag.BounceOnWall) {
                         sprite._vy = Fx.neg(sprite._vy);
+                        movingSprite.yStep = Fx.neg(movingSprite.yStep);
+                        movingSprite.dy = Fx.neg(movingSprite.dy);
+                    } else {
+                        sprite.registerObstacle(down ? CollisionDirection.Bottom : CollisionDirection.Top, tm.getObstacle(x0, y0));
+                        movingSprite.dy = Fx.zeroFx8;
                     }
+
                     sprite._y = Fx.iadd(
                         -sprite._hitbox.oy,
                         down ?
@@ -342,11 +352,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                             Fx8((y0 + 1) << tileScale)
                     );
 
-                    sprite.registerObstacle(down ? CollisionDirection.Bottom : CollisionDirection.Top, tm.getObstacle(x0, y0));
-                    movingSprite.dy = Fx.zeroFx8;
-                    if (sprite.flags & sprites.Flag.DestroyOnWall) {
-                        sprite.destroy();
-                    }
+                    break;
                 }
             }
         }
