@@ -105,21 +105,20 @@ namespace scene {
                     this.tileMap.update(this.camera);
                 }
             })
-            // apply physics 10
-            this.eventContext.registerFrameHandler(PHYSICS_PRIORITY, () => {
-                control.enablePerfCounter("physics")
-                const dt = this.eventContext.deltaTime;
-                this.physicsEngine.move(dt);
-            })
             // controller update 19
             this.eventContext.registerFrameHandler(CONTROLLER_SPRITES_PRIORITY, controller._moveSprites);
             // user update 20
-            // apply collisions 30
+            // apply physics and collisions 30
             this.eventContext.registerFrameHandler(OVERLAP_PRIORITY, () => {
-                control.enablePerfCounter("collisions")
+                control.enablePerfCounter("physics and collisions")
                 const dt = this.eventContext.deltaTime;
-                this.physicsEngine.collisions();
+
+                this.physicsEngine.move(dt);
+                const collisions = this.physicsEngine.collisions();
+
+                collisions.forEach(e => control.runInParallel(e));
                 this.camera.update();
+
                 for (const s of this.allSprites)
                     s.__update(this.camera, dt);
             })

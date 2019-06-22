@@ -1,3 +1,5 @@
+type OverlapEvent = () => void;
+
 class PhysicsEngine {
     constructor() {
     }
@@ -20,7 +22,7 @@ class PhysicsEngine {
     /**
      * Apply collisions
      */
-    collisions() { }
+    collisions(): OverlapEvent[] { return [] }
 
     overlaps(sprite: Sprite): Sprite[] { return []; }
 }
@@ -127,8 +129,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         const tileScale = tm ? tm.scale : 0;
         const tileSize = tm ? 1 << tileScale : 0;
 
-        function applySpriteOverlapHandlers(sprite: Sprite, overSprites: Sprite[]): void {
-            const events: (() => void)[] = [];
+        function applySpriteOverlapHandlers(sprite: Sprite, overSprites: Sprite[]) {
+            const events: OverlapEvent[] = [];
 
             for (const overlapper of overSprites) {
                 // Maintaining invariant that the sprite with the higher ID has the other sprite as an overlapper
@@ -148,7 +150,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 }
             }
 
-            events.forEach(e => control.runInParallel(e));
+            return events;
         }
 
         function applyHorizontalTileMapMovement(sprite: Sprite, xDiff: Fx8, yDiff: Fx8) {
@@ -263,10 +265,14 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             }
         }
 
+        const allOverlapEvents: OverlapEvent[] = []
+
         for (const sprite of colliders) {
             const overSprites = this.overlaps(sprite);
 
-            applySpriteOverlapHandlers(sprite, overSprites);
+            const events = applySpriteOverlapHandlers(sprite, overSprites);
+            events.forEach(e => allOverlapEvents.push(e));
+
             sprite.clearObstacles();
 
             if (tm && tm.enabled) {
@@ -290,6 +296,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             }
         }
 
+        return allOverlapEvents;
     }
 
     private collidableSprites(): Sprite[] {
