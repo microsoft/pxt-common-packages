@@ -28,6 +28,19 @@ class PhysicsEngine {
 }
 
 const MAX_TIME_STEP = Fx8(100); // milliseconds
+const MAX_SINGLE_STEP = 4; // pixels
+
+interface SpriteStep {
+    sprite: Sprite;
+
+    // remaining x
+    dx: Fx8;
+    dy: Fx8;
+
+    // how much to move per step
+    xStep: Fx8;
+    yStep: Fx8;
+}
 
 /**
  * A physics engine that does simple AABB bounding box check
@@ -38,7 +51,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
     private maxVelocity: Fx8;
     private maxNegativeVelocity: Fx8;
 
-    constructor(maxVelocity = 150) {
+    constructor(maxVelocity = 500) {
         super();
         this.sprites = [];
         this.maxVelocity = Fx8(maxVelocity);
@@ -130,7 +143,10 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         const tileSize = tm ? 1 << tileScale : 0;
 
         function applySpriteOverlapHandlers(sprite: Sprite, overSprites: Sprite[]) {
+            const handlers = scene.overlapHandlers[sprite.kind()];
             const events: OverlapEvent[] = [];
+
+            if (!handlers || handlers.length == 0) return events;
 
             for (const overlapper of overSprites) {
                 // Maintaining invariant that the sprite with the higher ID has the other sprite as an overlapper
@@ -138,8 +154,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 const lower = higher === sprite ? overlapper : sprite;
 
                 if (higher._overlappers.indexOf(lower.id) === -1) {
-                    scene.overlapHandlers
-                        .filter(h => h.kind === sprite.kind() && h.otherKind === overlapper.kind())
+                    handlers
+                        .filter(h => h.otherKind === overlapper.kind())
                         .forEach(h => {
                             higher._overlappers.push(lower.id);
                             events.push(() => {

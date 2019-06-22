@@ -1,3 +1,7 @@
+interface SparseArray<T> {
+    [index: number]: T;
+}
+
 /**
  * Control the background, tiles and camera
  */
@@ -12,7 +16,6 @@ namespace scene {
     }
 
     export interface OverlapHandler {
-        kind: number;
         otherKind: number;
         handler: (sprite: Sprite, otherSprite: Sprite) => void;
     }
@@ -51,13 +54,13 @@ namespace scene {
         tileMap: tiles.TileMap;
         allSprites: SpriteLike[];
         private spriteNextId: number;
-        spritesByKind: { [index: number]: SpriteSet };
+        spritesByKind: SparseArray<SpriteSet>;
         physicsEngine: PhysicsEngine;
         camera: scene.Camera;
         flags: number;
         destroyedHandlers: SpriteHandler[];
         createdHandlers: SpriteHandler[];
-        overlapHandlers: OverlapHandler[];
+        overlapHandlers: SparseArray<OverlapHandler[]>;
         collisionHandlers: CollisionHandler[];
         gameForeverHandlers: GameForeverHandlers[];
         particleSources: particles.ParticleSource[];
@@ -77,7 +80,7 @@ namespace scene {
             this.background = new Background(this.camera);
             this.destroyedHandlers = [];
             this.createdHandlers = [];
-            this.overlapHandlers = [];
+            this.overlapHandlers = {};
             this.collisionHandlers = [];
             this.gameForeverHandlers = [];
             this.spritesByKind = {};

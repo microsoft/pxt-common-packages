@@ -47,12 +47,15 @@ namespace sprites {
     export function onOverlap(kind: number, otherKind: number, handler: (sprite: Sprite, otherSprite: Sprite) => void) {
         if (kind == undefined || otherKind == undefined || !handler) return;
 
-        const scene = game.currentScene();
-        scene.overlapHandlers.push({
-            kind: kind,
+        const overlapHandlers = game.currentScene().overlapHandlers;
+
+        if (overlapHandlers[kind])
+            overlapHandlers[kind] = [];
+
+        overlapHandlers[kind].push({
             otherKind: otherKind,
             handler: handler
-        })
+        });
     }
 }
 
