@@ -57,6 +57,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         this.sprites = [];
         this.maxVelocity = Fx8(maxVelocity);
         this.maxNegativeVelocity = Fx.neg(this.maxVelocity);
+        this.map = new sprites.SpriteMap();
     }
 
     addSprite(sprite: Sprite) {
@@ -362,7 +363,6 @@ class ArcadePhysicsEngine extends PhysicsEngine {
     private collidableSprites(): Sprite[] {
         const colliders = this.sprites.filter(sprite => !(sprite.flags & sprites.Flag.Ghost));
 
-        if (!this.map) this.map = new sprites.SpriteMap();
         this.map.update(colliders);
 
         return colliders;
