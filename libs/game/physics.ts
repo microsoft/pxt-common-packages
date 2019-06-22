@@ -23,7 +23,7 @@ class PhysicsEngine {
 }
 
 const MAX_TIME_STEP = Fx8(100); // milliseconds
-const MIN_SINGLE_STEP = Fx8(0.1); // pixels
+const MIN_SINGLE_STEP = Fx.oneFx8; // pixels
 
 interface MovingSprite {
     sprite: Sprite;
@@ -78,7 +78,6 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         const dt2 = Fx.idiv(dtf, 2);
 
         const movingSprites = this.sprites
-            .filter(s => s.vx !== 0 || s.vy !== 0)
             .map(sprite => this.createMovingSprite(sprite, dtSec, dt2));
 
         const tileMap = game.currentScene().tileMap;
@@ -274,10 +273,10 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                         sprite._vx = Fx.neg(sprite._vx);
                         movingSprite.xStep = Fx.neg(movingSprite.xStep);
                         movingSprite.dx = Fx.neg(movingSprite.dx);
-                    } else {
-                        sprite.registerObstacle(right ? CollisionDirection.Right : CollisionDirection.Left, tm.getObstacle(x0, y0));
-                        movingSprite.dx = Fx.zeroFx8;
                     }
+                    sprite.registerObstacle(right ? CollisionDirection.Right : CollisionDirection.Left, tm.getObstacle(x0, y0));
+                    movingSprite.dx = Fx.zeroFx8;
+
                     sprite._x = Fx.iadd(
                         -sprite._hitbox.ox,
                         right ?
@@ -332,10 +331,9 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                         sprite._vy = Fx.neg(sprite._vy);
                         movingSprite.yStep = Fx.neg(movingSprite.yStep);
                         movingSprite.dy = Fx.neg(movingSprite.dy);
-                    } else {
-                        sprite.registerObstacle(down ? CollisionDirection.Bottom : CollisionDirection.Top, tm.getObstacle(x0, y0));
-                        movingSprite.dy = Fx.zeroFx8;
                     }
+                    sprite.registerObstacle(down ? CollisionDirection.Bottom : CollisionDirection.Top, tm.getObstacle(x0, y0));
+                    movingSprite.dy = Fx.zeroFx8;
 
                     sprite._y = Fx.iadd(
                         -sprite._hitbox.oy,
