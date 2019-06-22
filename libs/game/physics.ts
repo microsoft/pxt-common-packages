@@ -68,71 +68,6 @@ class ArcadePhysicsEngine extends PhysicsEngine {
     }
 
     move(dt: number) {
-        function createMovingSprite(sprite: Sprite, dtSec: Fx8, dt2: Fx8): MovingSprite {
-            const ovx = this.constrain(sprite._vx);
-            const ovy = this.constrain(sprite._vy);
-
-            sprite._vx = this.constrain(
-                Fx.add(
-                    sprite._vx,
-                    Fx.mul(
-                        sprite._ax,
-                        dtSec
-                    )
-                )
-            );
-            sprite._vy = this.constrain(
-                Fx.add(
-                    sprite._vy,
-                    Fx.mul(
-                        sprite._ay,
-                        dtSec
-                    )
-                )
-            );
-
-            const dx = Fx.idiv(
-                Fx.mul(
-                    Fx.add(
-                        sprite._vx,
-                        ovx
-                    ),
-                    dt2
-                ),
-                1000
-            );
-
-            const dy = Fx.idiv(
-                Fx.mul(
-                    Fx.add(
-                        sprite._vy,
-                        ovy
-                    ),
-                    dt2
-                ),
-                1000
-            );
-
-            let xStep = dx;
-            let yStep = dy;
-            while (Fx.abs(xStep) > MAX_SINGLE_STEP || Fx.abs(yStep) > MAX_SINGLE_STEP) {
-                if (Fx.abs(xStep) > MIN_SINGLE_STEP) {
-                    xStep = Fx.idiv(xStep, 2);
-                }
-                if (Fx.abs(yStep) > MIN_SINGLE_STEP) {
-                    yStep = Fx.idiv(yStep, 2);
-                }
-            }
-
-            return {
-                sprite: sprite,
-                dx: dx,
-                dy: dy,
-                xStep: xStep,
-                yStep: yStep
-            };
-        }
-
         // Sprite movement logic is done in milliseconds to avoid rounding errors with Fx8 numbers
         const dtf = Fx.min(
             MAX_TIME_STEP,
@@ -142,9 +77,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         const dt2 = Fx.idiv(dtf, 2);
 
         const movingSprites = this.sprites
-            .filter(s => s.vx !== 0 && s.vy !== 0)
-            .map(sprite => createMovingSprite(sprite, dtSec, dt2));
-
+            .filter(s => s.vx !== 0 || s.vy !== 0)
+            .map(sprite => this.createMovingSprite(sprite, dtSec, dt2));
 
         const collisions: OverlapEvent[] = [];
         const collidable = this.sprites.filter(sprite => !(sprite.flags & sprites.Flag.Ghost));
@@ -164,9 +98,9 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     stepY
                 );
 
-                const hitTile = this.tilemapCollisions(s.sprite);
+                this.tilemapCollisions(s);
 
-                if (!hitTile && (s.dx !== Fx.zeroFx8 || s.dy !== Fx.zeroFx8)) {
+                if (s.dx !== Fx.zeroFx8 || s.dy !== Fx.zeroFx8) {
                     remainingMovers.push(s);
                 }
             }
@@ -181,15 +115,80 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         collisions.forEach(e => control.runInParallel(e));
     }
 
+    private createMovingSprite(sprite: Sprite, dtSec: Fx8, dt2: Fx8): MovingSprite {
+        sprite.clearObstacles();
+
+        const ovx = this.constrain(sprite._vx);
+        const ovy = this.constrain(sprite._vy);
+
+        sprite._vx = this.constrain(
+            Fx.add(
+                sprite._vx,
+                Fx.mul(
+                    sprite._ax,
+                    dtSec
+                )
+            )
+        );
+        sprite._vy = this.constrain(
+            Fx.add(
+                sprite._vy,
+                Fx.mul(
+                    sprite._ay,
+                    dtSec
+                )
+            )
+        );
+
+        const dx = Fx.idiv(
+            Fx.mul(
+                Fx.add(
+                    sprite._vx,
+                    ovx
+                ),
+                dt2
+            ),
+            1000
+        );
+
+        const dy = Fx.idiv(
+            Fx.mul(
+                Fx.add(
+                    sprite._vy,
+                    ovy
+                ),
+                dt2
+            ),
+            1000
+        );
+
+        let xStep = dx;
+        let yStep = dy;
+        while (Fx.abs(xStep) > MAX_SINGLE_STEP || Fx.abs(yStep) > MAX_SINGLE_STEP) {
+            if (Fx.abs(xStep) > MIN_SINGLE_STEP) {
+                xStep = Fx.idiv(xStep, 2);
+            }
+            if (Fx.abs(yStep) > MIN_SINGLE_STEP) {
+                yStep = Fx.idiv(yStep, 2);
+            }
+        }
+
+        return {
+            sprite: sprite,
+            dx: dx,
+            dy: dy,
+            xStep: xStep,
+            yStep: yStep
+        };
+    }
+
     private spriteCollisions(collidable: Sprite[]) {
         control.enablePerfCounter("phys_collisions");
         const colliders = this.collidableSprites(collidable);
 
-        function applySpriteOverlapHandlers(sprite: Sprite, overSprites: Sprite[]) {
+        function applySpriteOverlapHandlers(sprite: Sprite, overSprites: Sprite[], events: OverlapEvent[]) {
             const handlers = sprite._overlapHandlers;
-            const events: OverlapEvent[] = [];
-
-            if (!handlers || handlers.length == 0) return events;
+            if (!handlers || handlers.length == 0) return;
 
             for (const overlapper of overSprites) {
                 // Maintaining invariant that the sprite with the higher ID has the other sprite as an overlapper
@@ -208,32 +207,27 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                         });
                 }
             }
-
-            return events;
         }
 
         const allOverlapEvents: OverlapEvent[] = []
 
         for (const sprite of colliders) {
             const overSprites = this.overlaps(sprite);
-
-            const events = applySpriteOverlapHandlers(sprite, overSprites);
-            events.forEach(e => allOverlapEvents.push(e));
+            applySpriteOverlapHandlers(sprite, overSprites, allOverlapEvents);
         }
 
         return allOverlapEvents;
     }
 
-    private tilemapCollisions(sprite: Sprite) {
+    private tilemapCollisions(movingSprite: MovingSprite) {
+        const sprite = movingSprite.sprite;
         const scene = game.currentScene();
 
         const tm = scene.tileMap;
         const tileScale = tm ? tm.scale : 0;
         const tileSize = tm ? 1 << tileScale : 0;
 
-        sprite.clearObstacles();
-
-        if (!tm || !tm.enabled) return false;
+        if (!tm || !tm.enabled) return;
 
         const xDiff = Fx.sub(
             sprite._x,
@@ -245,7 +239,6 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             sprite._lastY
         );
 
-        let hitHorizontal: boolean;
         if (xDiff !== Fx.zeroFx8) {
             const right = xDiff > Fx.zeroFx8;
             const x0 = Fx.toIntShifted(
@@ -294,12 +287,14 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     );
 
                     sprite.registerObstacle(right ? CollisionDirection.Right : CollisionDirection.Left, tm.getObstacle(x0, y0));
-                    hitHorizontal = true;
+                    movingSprite.dx = Fx.zeroFx8;
+                    if (sprite.flags & sprites.Flag.DestroyOnWall) {
+                        sprite.destroy();
+                    }
                 }
             }
         }
 
-        let hitVertical: boolean;
         if (yDiff !== Fx.zeroFx8) {
             const down = yDiff > Fx.zeroFx8;
             const y0 = Fx.toIntShifted(
@@ -348,18 +343,12 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     );
 
                     sprite.registerObstacle(down ? CollisionDirection.Bottom : CollisionDirection.Top, tm.getObstacle(x0, y0));
-                    hitVertical = true;
+                    movingSprite.dy = Fx.zeroFx8;
+                    if (sprite.flags & sprites.Flag.DestroyOnWall) {
+                        sprite.destroy();
+                    }
                 }
             }
-        }
-
-        if (hitHorizontal || hitVertical) {
-            if (sprite.flags & sprites.Flag.DestroyOnWall) {
-                sprite.destroy();
-            }
-            return true;
-        } else {
-            return false;
         }
     }
 
