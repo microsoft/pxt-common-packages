@@ -16,13 +16,8 @@ class PhysicsEngine {
 
     draw() { }
 
-    /** Apply physics */
+    /** Apply physics and collisions */
     move(dt: number) { }
-
-    /**
-     * Apply collisions
-     */
-    collisions(): OverlapEvent[] { return [] }
 
     overlaps(sprite: Sprite): Sprite[] { return []; }
 }
@@ -147,6 +142,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         });
 
         const collisions: OverlapEvent[] = [];
+        const collidable = this.sprites.filter(sprite => !(sprite.flags & sprites.Flag.Ghost));
         let currMovers = movingSprites;
 
         while (currMovers.length) {
@@ -162,9 +158,13 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     stepX,
                     stepY
                 );
+
+                if (s.dx !== Fx.zeroFx8 || s.dy !== Fx.zeroFx8) {
+                    remainingMovers.push(s);
+                }
             }
 
-            this.collisions()
+            this.collisions(collidable)
                 .forEach(e => collisions.push(e));
 
             currMovers = remainingMovers;
@@ -174,11 +174,11 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         collisions.forEach(e => control.runInParallel(e));
     }
 
-    collisions() {
+    private collisions(collidable: Sprite[]) {
         control.enablePerfCounter("phys_collisions")
 
         // 1: refresh non-ghost collision map
-        const colliders = this.collidableSprites();
+        const colliders = this.collidableSprites(collidable);
 
         // 2: go through sprite and handle collisions
         const scene = game.currentScene();
@@ -360,11 +360,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         return allOverlapEvents;
     }
 
-    private collidableSprites(): Sprite[] {
-        const colliders = this.sprites.filter(sprite => !(sprite.flags & sprites.Flag.Ghost));
-
+    private collidableSprites(colliders: Sprite[]): Sprite[] {
         this.map.update(colliders);
-
         return colliders;
     }
 
