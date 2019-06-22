@@ -81,6 +81,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             .map(sprite => this.createMovingSprite(sprite, dtSec, dt2));
 
         const collisions: OverlapEvent[] = [];
+        const tileMap = game.currentScene().tileMap;
         const collidable = this.sprites.filter(sprite => !(sprite.flags & sprites.Flag.Ghost));
         let currMovers = movingSprites;
 
@@ -98,7 +99,9 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     stepY
                 );
 
-                this.tilemapCollisions(s);
+                if (tileMap && tileMap.enabled) {
+                    this.tilemapCollisions(s, tileMap);
+                }
 
                 if (s.dx !== Fx.zeroFx8 || s.dy !== Fx.zeroFx8) {
                     remainingMovers.push(s);
@@ -164,6 +167,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
         let xStep = dx;
         let yStep = dy;
+
         while (Fx.abs(xStep) > MAX_SINGLE_STEP || Fx.abs(yStep) > MAX_SINGLE_STEP) {
             if (Fx.abs(xStep) > MIN_SINGLE_STEP) {
                 xStep = Fx.idiv(xStep, 2);
@@ -219,15 +223,10 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         return allOverlapEvents;
     }
 
-    private tilemapCollisions(movingSprite: MovingSprite) {
+    private tilemapCollisions(movingSprite: MovingSprite, tm: tiles.TileMap) {
         const sprite = movingSprite.sprite;
-        const scene = game.currentScene();
-
-        const tm = scene.tileMap;
         const tileScale = tm ? tm.scale : 0;
         const tileSize = tm ? 1 << tileScale : 0;
-
-        if (!tm || !tm.enabled) return;
 
         const xDiff = Fx.sub(
             sprite._x,
@@ -351,7 +350,6 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                             :
                             Fx8((y0 + 1) << tileScale)
                     );
-
                     break;
                 }
             }
