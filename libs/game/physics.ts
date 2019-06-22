@@ -28,10 +28,12 @@ class PhysicsEngine {
 }
 
 const MAX_TIME_STEP = Fx8(100); // milliseconds
-const MAX_SINGLE_STEP = 4; // pixels
+const MAX_SINGLE_STEP = Fx8(4); // pixels
+const MIN_SINGLE_STEP = Fx8(0.1); // pixels
 
-interface SpriteStep {
+interface MovingSprite {
     sprite: Sprite;
+    handlers: scene.OverlapHandler[];
 
     // remaining x
     dx: Fx8;
@@ -79,52 +81,80 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         );
         const dtSec = Fx.idiv(dtf, 1000); 
         const dt2 = Fx.idiv(dtf, 2);
+        const overlapHandlers = game.currentScene().overlapHandlers;
 
-        for (let s of this.sprites) {
-            const ovx = this.constrain(s._vx);
-            const ovy = this.constrain(s._vy);
+        const movingSprites: MovingSprite[] = this.sprites.map(sprite => {
+            const handlers = overlapHandlers[sprite.kind()];
+            const ovx = this.constrain(sprite._vx);
+            const ovy = this.constrain(sprite._vy);
 
-            s._vx = this.constrain(
+            sprite._vx = this.constrain(
                 Fx.add(
-                    s._vx,
+                    sprite._vx,
                     Fx.mul(
-                        s._ax,
+                        sprite._ax,
                         dtSec
                     )
                 )
             );
-            s._vy = this.constrain(
+            sprite._vy = this.constrain(
                 Fx.add(
-                    s._vy,
+                    sprite._vy,
                     Fx.mul(
-                        s._ay,
+                        sprite._ay,
                         dtSec
                     )
                 )
             );
 
-            this.moveSprite(
-                s,
-                Fx.idiv(
-                    Fx.mul(
-                        Fx.add(
-                            s._vx,
-                            ovx
-                        ),
-                        dt2
+            const dx = Fx.idiv(
+                Fx.mul(
+                    Fx.add(
+                        sprite._vx,
+                        ovx
                     ),
-                    1000
+                    dt2
                 ),
-                Fx.idiv(
-                    Fx.mul(
-                        Fx.add(
-                            s._vy,
-                            ovy
-                        ),
-                        dt2
+                1000
+            );
+
+            const dy = Fx.idiv(
+                Fx.mul(
+                    Fx.add(
+                        sprite._vy,
+                        ovy
                     ),
-                    1000
-                )
+                    dt2
+                ),
+                1000
+            );
+
+            let xStep = dx;
+            let yStep = dy;
+            while (Fx.abs(xStep) > MAX_SINGLE_STEP || Fx.abs(yStep) > MAX_SINGLE_STEP) {
+                if (Fx.abs(xStep) > MIN_SINGLE_STEP) {
+                    xStep = Fx.idiv(xStep, 2);
+                }
+                if (Fx.abs(yStep) > MIN_SINGLE_STEP) {
+                    yStep = Fx.idiv(yStep, 2);
+                }
+            }
+
+            return {
+                sprite: sprite,
+                handlers: handlers,
+                dx: dx,
+                dy: dy,
+                xStep: xStep,
+                yStep: yStep
+            };
+        });
+
+        for (let s of movingSprites) {
+            this.moveSprite(
+                s.sprite,
+                s.dx,
+                s.dy
             );
         }
     }
