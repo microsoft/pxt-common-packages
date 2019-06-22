@@ -23,7 +23,6 @@ class PhysicsEngine {
 }
 
 const MAX_TIME_STEP = Fx8(100); // milliseconds
-// const MAX_SINGLE_STEP = Fx8(8); // pixels
 const MIN_SINGLE_STEP = Fx8(0.1); // pixels
 
 interface MovingSprite {
@@ -48,7 +47,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
     private maxNegativeVelocity: Fx8;
     private maxSingleStep: Fx8
 
-    constructor(maxVelocity = 500, maxSingleStep = 8) {
+    constructor(maxVelocity = 500, maxSingleStep = 4) {
         super();
         this.sprites = [];
         this.maxVelocity = Fx8(maxVelocity);
