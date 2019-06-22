@@ -23,7 +23,7 @@ class PhysicsEngine {
 }
 
 const MAX_TIME_STEP = Fx8(100); // milliseconds
-const MAX_SINGLE_STEP = Fx8(8); // pixels
+// const MAX_SINGLE_STEP = Fx8(8); // pixels
 const MIN_SINGLE_STEP = Fx8(0.1); // pixels
 
 interface MovingSprite {
@@ -46,13 +46,15 @@ class ArcadePhysicsEngine extends PhysicsEngine {
     protected map: sprites.SpriteMap;
     private maxVelocity: Fx8;
     private maxNegativeVelocity: Fx8;
+    private maxSingleStep: Fx8
 
-    constructor(maxVelocity = 500) {
+    constructor(maxVelocity = 500, maxSingleStep = 8) {
         super();
         this.sprites = [];
         this.maxVelocity = Fx8(maxVelocity);
         this.maxNegativeVelocity = Fx.neg(this.maxVelocity);
         this.map = new sprites.SpriteMap();
+        this.maxSingleStep = Fx8(maxSingleStep);
     }
 
     addSprite(sprite: Sprite) {
@@ -164,7 +166,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         let xStep = dx;
         let yStep = dy;
 
-        while (Fx.abs(xStep) > MAX_SINGLE_STEP || Fx.abs(yStep) > MAX_SINGLE_STEP) {
+        while (Fx.abs(xStep) > this.maxSingleStep || Fx.abs(yStep) > this.maxSingleStep) {
             if (Fx.abs(xStep) > MIN_SINGLE_STEP) {
                 xStep = Fx.idiv(xStep, 2);
             }
