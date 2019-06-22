@@ -68,8 +68,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
     }
 
     draw() {
-        if (this.map)
-            this.map.draw();
+        this.map.draw();
     }
 
     move(dt: number) {
@@ -363,13 +362,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
     private collidableSprites(): Sprite[] {
         const colliders = this.sprites.filter(sprite => !(sprite.flags & sprites.Flag.Ghost));
 
-        if (colliders.length < 10) {
-            // not enough sprite, just brute force it
-            this.map = undefined;
-        } else {
-            if (!this.map) this.map = new sprites.SpriteMap();
-            this.map.update(colliders);
-        }
+        if (!this.map) this.map = new sprites.SpriteMap();
+        this.map.update(colliders);
 
         return colliders;
     }
@@ -380,20 +374,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
      * @param layer
      */
     overlaps(sprite: Sprite): Sprite[] {
-        if (this.map)
-            return this.map.overlaps(sprite);
-        else {
-            // brute force
-            const layer = sprite.layer;
-            const r: Sprite[] = [];
-            const n = this.sprites.length;
-            for (let i = 0; i < n; ++i) {
-                if ((layer & this.sprites[i].layer)
-                    && sprite.overlapsWith(this.sprites[i]))
-                    r.push(this.sprites[i]);
-            }
-            return r;
-        }
+        return this.map.overlaps(sprite);
     }
 
     public moveSprite(s: Sprite, dx: Fx8, dy: Fx8) {
