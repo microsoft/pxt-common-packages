@@ -142,7 +142,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         const dt2 = Fx.idiv(dtf, 2);
 
         const movingSprites = this.sprites
-            .filter(s => s.vx != 0 && s.vy != 0)
+            .filter(s => s.vx !== 0 && s.vy !== 0)
             .map(sprite => createMovingSprite(sprite, dtSec, dt2));
 
 
@@ -231,7 +231,22 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         const tileScale = tm ? tm.scale : 0;
         const tileSize = tm ? 1 << tileScale : 0;
 
-        function applyHorizontalTileMapMovement(sprite: Sprite, xDiff: Fx8, yDiff: Fx8) {
+        sprite.clearObstacles();
+
+        if (!tm || !tm.enabled) return false;
+
+        const xDiff = Fx.sub(
+            sprite._x,
+            sprite._lastX
+        );
+
+        const yDiff = Fx.sub(
+            sprite._y,
+            sprite._lastY
+        );
+
+        let hitHorizontal: boolean;
+        if (xDiff !== Fx.zeroFx8) {
             const right = xDiff > Fx.zeroFx8;
             const x0 = Fx.toIntShifted(
                 Fx.add(
@@ -279,13 +294,13 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     );
 
                     sprite.registerObstacle(right ? CollisionDirection.Right : CollisionDirection.Left, tm.getObstacle(x0, y0));
-                    return true;
+                    hitHorizontal = true;
                 }
             }
-            return false;
         }
 
-        function applyVerticalTileMapMovement(sprite: Sprite, xDiff: Fx8, yDiff: Fx8) {
+        let hitVertical: boolean;
+        if (yDiff !== Fx.zeroFx8) {
             const down = yDiff > Fx.zeroFx8;
             const y0 = Fx.toIntShifted(
                 Fx.add(
@@ -333,35 +348,9 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     );
 
                     sprite.registerObstacle(down ? CollisionDirection.Bottom : CollisionDirection.Top, tm.getObstacle(x0, y0));
-                    return true;
+                    hitVertical = true;
                 }
             }
-
-            return false;
-        }
-
-        sprite.clearObstacles();
-
-        if (!tm || !tm.enabled) return false;
-
-        const xDiff = Fx.sub(
-            sprite._x,
-            sprite._lastX
-        );
-
-        const yDiff = Fx.sub(
-            sprite._y,
-            sprite._lastY
-        );
-
-        let hitHorizontal: boolean;
-        if (xDiff !== Fx.zeroFx8) {
-            hitHorizontal = applyHorizontalTileMapMovement(sprite, xDiff, yDiff);
-        }
-
-        let hitVertical: boolean;
-        if (yDiff !== Fx.zeroFx8) {
-            hitVertical = applyVerticalTileMapMovement(sprite, xDiff, yDiff);
         }
 
         if (hitHorizontal || hitVertical) {
