@@ -80,7 +80,6 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             .filter(s => s.vx !== 0 || s.vy !== 0)
             .map(sprite => this.createMovingSprite(sprite, dtSec, dt2));
 
-        const collisions: OverlapEvent[] = [];
         const tileMap = game.currentScene().tileMap;
         const collidable = this.sprites.filter(sprite => !(sprite.flags & sprites.Flag.Ghost));
         let currMovers = movingSprites;
@@ -109,13 +108,10 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             }
 
             this.spriteCollisions(collidable)
-                .forEach(e => collisions.push(e));
+                .forEach(e => control.runInParallel(e));
 
             currMovers = remainingMovers;
         }
-
-
-        collisions.forEach(e => control.runInParallel(e));
     }
 
     private createMovingSprite(sprite: Sprite, dtSec: Fx8, dt2: Fx8): MovingSprite {
