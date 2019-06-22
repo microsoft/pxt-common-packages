@@ -117,9 +117,6 @@ namespace scene {
                 const dt = this.eventContext.deltaTime;
 
                 this.physicsEngine.move(dt);
-                const collisions = this.physicsEngine.collisions();
-
-                collisions.forEach(e => control.runInParallel(e));
                 this.camera.update();
 
                 for (const s of this.allSprites)

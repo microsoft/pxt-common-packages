@@ -33,7 +33,6 @@ const MIN_SINGLE_STEP = Fx8(0.1); // pixels
 
 interface MovingSprite {
     sprite: Sprite;
-    handlers: scene.OverlapHandler[];
 
     // remaining x
     dx: Fx8;
@@ -81,10 +80,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         );
         const dtSec = Fx.idiv(dtf, 1000); 
         const dt2 = Fx.idiv(dtf, 2);
-        const overlapHandlers = game.currentScene().overlapHandlers;
 
         const movingSprites: MovingSprite[] = this.sprites.map(sprite => {
-            const handlers = overlapHandlers[sprite.kind()];
             const ovx = this.constrain(sprite._vx);
             const ovy = this.constrain(sprite._vy);
 
@@ -142,7 +139,6 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
             return {
                 sprite: sprite,
-                handlers: handlers,
                 dx: dx,
                 dy: dy,
                 xStep: xStep,
@@ -150,13 +146,32 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             };
         });
 
-        for (let s of movingSprites) {
-            this.moveSprite(
-                s.sprite,
-                s.dx,
-                s.dy
-            );
+        const collisions: OverlapEvent[] = [];
+        let currMovers = movingSprites;
+
+        while (currMovers.length) {
+            const remainingMovers: MovingSprite[] = [];
+
+            for (let s of currMovers) {
+                const stepX = Fx.abs(s.xStep) > Fx.abs(s.dx) ? s.dx : s.xStep;
+                const stepY = Fx.abs(s.yStep) > Fx.abs(s.dy) ? s.dy : s.yStep;
+                s.dx = Fx.sub(s.dx, stepX);
+                s.dy = Fx.sub(s.dy, stepY);
+                this.moveSprite(
+                    s.sprite,
+                    stepX,
+                    stepY
+                );
+            }
+
+            this.collisions()
+                .forEach(e => collisions.push(e));
+
+            currMovers = remainingMovers;
         }
+
+
+        collisions.forEach(e => control.runInParallel(e));
     }
 
     collisions() {
