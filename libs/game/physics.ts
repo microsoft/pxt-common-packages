@@ -28,7 +28,7 @@ class PhysicsEngine {
 }
 
 const MAX_TIME_STEP = Fx8(100); // milliseconds
-const MAX_SINGLE_STEP = Fx8(4); // pixels
+const MAX_SINGLE_STEP = Fx8(8); // pixels
 const MIN_SINGLE_STEP = Fx8(0.1); // pixels
 
 interface MovingSprite {
@@ -188,7 +188,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         const tileSize = tm ? 1 << tileScale : 0;
 
         function applySpriteOverlapHandlers(sprite: Sprite, overSprites: Sprite[]) {
-            const handlers = scene.overlapHandlers[sprite.kind()];
+            const handlers = sprite._overlapHandlers;
             const events: OverlapEvent[] = [];
 
             if (!handlers || handlers.length == 0) return events;
