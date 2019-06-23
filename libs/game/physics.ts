@@ -234,10 +234,11 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
         for (const ms of movedSprites) {
             const sprite = ms.sprite;
-            if (sprite.flags & sprites.Flag.Ghost) continue;
+            if ((sprite.flags & sprites.Flag.Ghost) || (sprite.flags & sprites.Flag.Destroyed)) continue;
             const overSprites = this.map.overlaps(ms.sprite);
 
             for (const overlapper of overSprites) {
+                if ((overlapper.flags & sprites.Flag.Destroyed) || (overlapper.flags & sprites.Flag.Ghost)) continue;
                 const thisKind = sprite.kind();
                 const otherKind = overlapper.kind();
 
