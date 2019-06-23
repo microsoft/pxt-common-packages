@@ -21,7 +21,6 @@ class PhysicsEngine {
 }
 
 const MAX_TIME_STEP = Fx8(100); // milliseconds
-const MIN_SINGLE_STEP = Fx.twoFx8; // pixels
 
 interface MovingSprite {
     sprite: Sprite;
@@ -43,14 +42,16 @@ class ArcadePhysicsEngine extends PhysicsEngine {
     protected map: sprites.SpriteMap;
     private maxVelocity: Fx8;
     private maxNegativeVelocity: Fx8;
-    private maxSingleStep: Fx8
+    private minSingleStep: Fx8;
+    private maxSingleStep: Fx8;
 
-    constructor(maxVelocity = 500, maxSingleStep = 4) {
+    constructor(maxVelocity = 500, minSingleStep = 2, maxSingleStep = 4) {
         super();
         this.sprites = [];
         this.maxVelocity = Fx8(maxVelocity);
         this.maxNegativeVelocity = Fx.neg(this.maxVelocity);
         this.map = new sprites.SpriteMap();
+        this.minSingleStep = Fx8(minSingleStep);
         this.maxSingleStep = Fx8(maxSingleStep);
     }
 
@@ -86,7 +87,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         let buffers = [movingSprites, []];
         while (buffers[selected].length) {
             const currMovers = buffers[selected];
-            const remainingMovers = buffers[selected ^ 1];
+            const remainingMovers = buffers[selected ^= 1];
 
             for (let s of currMovers) {
                 const stepX = Fx.abs(s.xStep) > Fx.abs(s.dx) ? s.dx : s.xStep;
@@ -111,10 +112,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 }
             }
 
-            this.spriteCollisions(buffers[selected]);
-
+            this.spriteCollisions(currMovers);
             while(currMovers.length) currMovers.pop();
-            selected ^= 1;
         }
     }
 
@@ -175,11 +174,11 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         let yStep = dy;
 
         while (Fx.abs(xStep) > this.maxSingleStep || Fx.abs(yStep) > this.maxSingleStep) {
-            if (Fx.abs(xStep) > MIN_SINGLE_STEP) {
-                xStep = Fx.div(xStep, Fx.twoFx8);
+            if (Fx.abs(xStep) > this.minSingleStep) {
+                xStep = Fx.idiv(xStep, 2);
             }
-            if (Fx.abs(yStep) > MIN_SINGLE_STEP) {
-                yStep = Fx.div(yStep, Fx.twoFx8);
+            if (Fx.abs(yStep) > this.minSingleStep) {
+                yStep = Fx.idiv(yStep, 2);
             }
         }
 
