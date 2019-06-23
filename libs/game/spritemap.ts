@@ -59,8 +59,6 @@ namespace sprites {
             let maxWidth = 0;
             let maxHeight = 0;
             for (const sprite of sprites) {
-                if (sprite.flags & SpriteFlag.Ghost) continue;
-
                 if (sprite.width > maxWidth) maxWidth = sprite.width;
                 if (sprite.height > maxHeight) maxHeight = sprite.height;
             }
@@ -78,6 +76,10 @@ namespace sprites {
 
             for (const sprite of sprites)
                 this.insertAABB(sprite);
+        }
+
+        clear() {
+            this.buckets = [];
         }
 
         private key(x: number, y: number): number {
@@ -103,8 +105,8 @@ namespace sprites {
             return sprite.right < 0 || sprite.left > areaWidth || sprite.bottom < 0 || sprite.top > areaHeight;
         }
 
-        private insertAABB(sprite: Sprite) {
-            // is object completely out of space?
+        insertAABB(sprite: Sprite) {
+            // is object not collidable?
             if (this.isOob(sprite) || (sprite.flags & sprites.Flag.Ghost))
                 return;
 

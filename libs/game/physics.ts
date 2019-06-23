@@ -81,10 +81,9 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         const movingSprites = this.sprites
             .map(sprite => this.createMovingSprite(sprite, dtSec, dt2));
 
-        const nonGhostSprites = this.sprites.filter(s => !(s.flags & sprites.Flag.Ghost));
-
         const tileMap = game.currentScene().tileMap;
         let currMovers = movingSprites;
+        this.map.clear();
 
         while (currMovers.length) {
             const remainingMovers: MovingSprite[] = [];
@@ -100,6 +99,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     stepY
                 );
 
+                this.map.insertAABB(s.sprite);
+
                 if (tileMap && tileMap.enabled && !(s.sprite.flags & sprites.Flag.Ghost)) {
                     this.tilemapCollisions(s, tileMap);
                 }
@@ -109,7 +110,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 }
             }
 
-            this.spriteCollisions(currMovers, nonGhostSprites)
+            this.spriteCollisions(currMovers)
                 .forEach(e => control.runInParallel(e));
 
             currMovers = remainingMovers;
@@ -117,9 +118,9 @@ class ArcadePhysicsEngine extends PhysicsEngine {
     }
 
     private createMovingSprite(sprite: Sprite, dtSec: Fx8, dt2: Fx8): MovingSprite {
-        if (sprite.vx !== 0 && sprite.vy !== 0) {
+        // if (sprite.vx !== 0 && sprite.vy !== 0) {
             sprite.clearObstacles();
-        }
+        // }
 
         const ovx = this.constrain(sprite._vx);
         const ovy = this.constrain(sprite._vy);
@@ -186,13 +187,11 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         };
     }
 
-    private spriteCollisions(movedSprites: MovingSprite[], nonGhostSprites: Sprite[]) {
+    private spriteCollisions(movedSprites: MovingSprite[]) {
         control.enablePerfCounter("phys_collisions");
         const handlers = game.currentScene().overlapHandlers;
         const allOverlapEvents: OverlapEvent[] = []
         if (!handlers.length) return allOverlapEvents;
-
-        this.map.update(nonGhostSprites);
 
         for (const ms of movedSprites) {
             const sprite = ms.sprite;
