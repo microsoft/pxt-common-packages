@@ -180,6 +180,7 @@ class Sprite implements SpriteLike {
         this.layer = 1; // by default, in layer 1
         this.lifespan = undefined;
         this._overlappers = [];
+        this._obstacles = [];
     }
 
     __serialize(offset: number): Buffer {
@@ -678,14 +679,14 @@ class Sprite implements SpriteLike {
 
     registerObstacle(direction: CollisionDirection, other: sprites.Obstacle) {
         if (other == undefined) return;
-        if (!this._obstacles)
-            this._obstacles = [];
         this._obstacles[direction] = other;
 
-        const scene = game.currentScene();
-        scene.collisionHandlers
-            .filter(h => h.kind == this.kind() && h.tile == other.tileIndex)
-            .forEach(h => h.handler(this));
+        const collisionHandlers = game.currentScene().collisionHandlers[other.tileIndex];
+        if (collisionHandlers) {
+            collisionHandlers
+                .filter(h => h.kind == this.kind())
+                .forEach(h => h.handler(this));
+        }
     }
 
     /**

@@ -81,13 +81,16 @@ namespace scene {
     //% blockId=spritesollisions block="on $sprite of kind $kind=spritekind hits wall $tile=colorindexpicker"
     //% help=scene/on-hit-tile
     export function onHitTile(kind: number, tile: number, handler: (sprite: Sprite) => void) {
-        if (kind == undefined || !handler) return;
+        if (kind == undefined || tile < 0 || tile > 0xF || !handler) return;
 
-        const scene = game.currentScene();
-        scene.collisionHandlers.push({
+        const collisionHandlers = game.currentScene().collisionHandlers;
+        if (!collisionHandlers[tile]) {
+            collisionHandlers[tile] = [];
+        }
+
+        collisionHandlers[tile].push({
             kind: kind,
-            tile: tile,
             handler: handler
-        })
+        });
     }
 }

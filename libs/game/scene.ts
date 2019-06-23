@@ -23,7 +23,6 @@ namespace scene {
 
     export interface CollisionHandler {
         kind: number;
-        tile: number;
         handler: (sprite: Sprite) => void
     }
 
@@ -63,7 +62,7 @@ namespace scene {
         createdHandlers: SpriteHandler[];
         overlapHandlers: OverlapHandler[];
         overlapMap: SparseArray<number[]>;
-        collisionHandlers: CollisionHandler[];
+        collisionHandlers: CollisionHandler[][];
         gameForeverHandlers: GameForeverHandlers[];
         particleSources: particles.ParticleSource[];
         controlledSprites: controller.ControlledSprite[][];
