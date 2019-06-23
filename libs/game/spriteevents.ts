@@ -49,11 +49,8 @@ namespace sprites {
 
         const overlapHandlers = game.currentScene().overlapHandlers;
 
-        if (!overlapHandlers[kind]) {
-            overlapHandlers[kind] = [];
-        }
-
-        overlapHandlers[kind].push({
+        overlapHandlers.push({
+            kind: kind,
             otherKind: otherKind,
             handler: handler
         });

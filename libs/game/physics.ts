@@ -82,7 +82,6 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             .map(sprite => this.createMovingSprite(sprite, dtSec, dt2));
 
         const tileMap = game.currentScene().tileMap;
-        const collidable = this.sprites.filter(sprite => !(sprite.flags & sprites.Flag.Ghost));
         let currMovers = movingSprites;
 
         while (currMovers.length) {
@@ -108,7 +107,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 }
             }
 
-            this.spriteCollisions(collidable)
+            this.spriteCollisions(remainingMovers)
                 .forEach(e => control.runInParallel(e));
 
             currMovers = remainingMovers;
@@ -183,38 +182,42 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         };
     }
 
-    private spriteCollisions(collidable: Sprite[]) {
+    private spriteCollisions(movedSprites: MovingSprite[]) {
         control.enablePerfCounter("phys_collisions");
-        const colliders = this.collidableSprites(collidable);
+        this.map.update(movedSprites.map(ms => ms.sprite));
 
-        function applySpriteOverlapHandlers(sprite: Sprite, overSprites: Sprite[], events: OverlapEvent[]) {
-            const handlers = sprite._overlapHandlers;
-            if (!handlers || handlers.length == 0) return;
+        const allOverlapEvents: OverlapEvent[] = []
+        const handlers = game.currentScene().overlapHandlers;
+        if (!handlers.length) return allOverlapEvents;
+
+        for (const ms of movedSprites) {
+            const sprite = ms.sprite
+            const overSprites = this.map.overlaps(ms.sprite);
+            if (sprite.flags & SpriteFlag.Ghost) continue;
 
             for (const overlapper of overSprites) {
                 // Maintaining invariant that the sprite with the higher ID has the other sprite as an overlapper
                 const higher = sprite.id > overlapper.id ? sprite : overlapper;
                 const lower = higher === sprite ? overlapper : sprite;
+                const thisKind = sprite.kind();
+                const otherKind = overlapper.kind();
 
                 if (higher._overlappers.indexOf(lower.id) === -1) {
                     handlers
-                        .filter(h => h.otherKind === overlapper.kind())
-                        .forEach(h => {
+                        .filter(h => (h.kind === thisKind && h.otherKind === otherKind)
+                                    || (h.kind === otherKind && h.otherKind === thisKind)
+                        ).forEach(h => {
                             higher._overlappers.push(lower.id);
-                            events.push(() => {
-                                h.handler(sprite, overlapper);
+                            allOverlapEvents.push(() => {
+                                h.handler(
+                                    thisKind === h.kind ? sprite : overlapper,
+                                    thisKind === h.kind ? overlapper : sprite
+                                );
                                 higher._overlappers.removeElement(lower.id);
                             });
                         });
                 }
             }
-        }
-
-        const allOverlapEvents: OverlapEvent[] = []
-
-        for (const sprite of colliders) {
-            const overSprites = this.overlaps(sprite);
-            applySpriteOverlapHandlers(sprite, overSprites, allOverlapEvents);
         }
 
         return allOverlapEvents;

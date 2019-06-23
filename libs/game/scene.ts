@@ -16,6 +16,7 @@ namespace scene {
     }
 
     export interface OverlapHandler {
+        kind: number;
         otherKind: number;
         handler: (sprite: Sprite, otherSprite: Sprite) => void;
     }
@@ -60,7 +61,7 @@ namespace scene {
         flags: number;
         destroyedHandlers: SpriteHandler[];
         createdHandlers: SpriteHandler[];
-        overlapHandlers: SparseArray<OverlapHandler[]>;
+        overlapHandlers: OverlapHandler[];
         collisionHandlers: CollisionHandler[];
         gameForeverHandlers: GameForeverHandlers[];
         particleSources: particles.ParticleSource[];
@@ -80,7 +81,7 @@ namespace scene {
             this.background = new Background(this.camera);
             this.destroyedHandlers = [];
             this.createdHandlers = [];
-            this.overlapHandlers = {};
+            this.overlapHandlers = [];
             this.collisionHandlers = [];
             this.gameForeverHandlers = [];
             this.spritesByKind = {};

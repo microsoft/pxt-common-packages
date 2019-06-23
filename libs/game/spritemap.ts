@@ -59,6 +59,8 @@ namespace sprites {
             let maxWidth = 0;
             let maxHeight = 0;
             for (const sprite of sprites) {
+                if (sprite.flags & SpriteFlag.Ghost) continue;
+
                 if (sprite.width > maxWidth) maxWidth = sprite.width;
                 if (sprite.height > maxHeight) maxHeight = sprite.height;
             }
