@@ -162,7 +162,6 @@ class Sprite implements SpriteLike {
     flags: number
     id: number
 
-    collisionHandlers: (() => void)[][];
     private destroyHandler: () => void;
 
     constructor(img: Image) {
@@ -642,24 +641,6 @@ class Sprite implements SpriteLike {
     }
 
     /**
-     * Registers code when the sprite collides with an obstacle
-     * @param direction
-     * @param handler
-     */
-    //% blockNamespace="scene" group="Collisions"
-    onCollision(direction: CollisionDirection, tileIndex: number, handler: () => void) {
-        if (!this.collisionHandlers)
-            this.collisionHandlers = [];
-
-        direction = Math.max(0, Math.min(3, direction | 0));
-
-        if (!this.collisionHandlers[direction])
-            this.collisionHandlers[direction] = [];
-
-        this.collisionHandlers[direction][tileIndex] = handler;
-    }
-
-    /**
      * Check if there is an obstacle in the given direction
      * @param direction
      */
@@ -701,8 +682,6 @@ class Sprite implements SpriteLike {
             this._obstacles = [];
         this._obstacles[direction] = other;
 
-        const handler = (this.collisionHandlers && this.collisionHandlers[direction]) ? this.collisionHandlers[direction][other.tileIndex] : undefined;
-        if (handler) handler();
         const scene = game.currentScene();
         scene.collisionHandlers
             .filter(h => h.kind == this.kind() && h.tile == other.tileIndex)
