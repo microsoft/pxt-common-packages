@@ -23,7 +23,11 @@ struct MetaEntry {
     uint16_t dataptr; // offset in words; 0xffff - empty file
 };
 
+#ifdef SAMD51
+#define FLASH_BUFFER_SIZE 16
+#else
 #define FLASH_BUFFER_SIZE 64
+#endif
 
 class FS {
     friend class File;
