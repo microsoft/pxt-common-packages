@@ -101,7 +101,7 @@ namespace sprites {
 
         insertAABB(sprite: Sprite) {
             // is object not collidable?
-            if (this.isOob(sprite) || (sprite.flags & sprites.Flag.Ghost))
+            if (this.isOob(sprite))
                 return;
 
             const left = sprite.left;

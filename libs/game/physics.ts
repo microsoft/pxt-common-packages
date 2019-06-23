@@ -25,7 +25,6 @@ class PhysicsEngine {
 const MAX_TIME_STEP = Fx8(100); // milliseconds
 const MIN_SINGLE_STEP = Fx.twoFx8; // pixels
 
-
 interface MovingSprite {
     sprite: Sprite;
 
@@ -101,10 +100,11 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     stepY
                 );
 
-                this.map.insertAABB(s.sprite);
-
-                if (tileMap && tileMap.enabled && !(s.sprite.flags & sprites.Flag.Ghost)) {
-                    this.tilemapCollisions(s, tileMap);
+                if (!(s.sprite.flags & sprites.Flag.Ghost)) {
+                    this.map.insertAABB(s.sprite);
+                    if (tileMap && tileMap.enabled) {
+                        this.tilemapCollisions(s, tileMap);
+                    }
                 }
 
                 if (s.dx !== Fx.zeroFx8 || s.dy !== Fx.zeroFx8) {

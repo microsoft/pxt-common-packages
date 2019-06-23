@@ -202,7 +202,6 @@ namespace tiles {
         }
 
         private generateTile(index: number): TileSet {
-            if (index == 0) return undefined;
             const size = 1 << this.scale
 
             const i = image.create(size, size);
@@ -290,15 +289,9 @@ namespace tiles {
         }
 
         public getObstacle(col: number, row: number) {
-            if (!this.enabled) return undefined;
-            if (this.isOutsideMap(col, row)) return undefined;
-
-            const index = this._map.getPixel(col, row);
+            const index = this.isOutsideMap(col, row) ? this._map.getPixel(col, row) : 0;
             const tile = this._tileSets[index] || this.generateTile(index);
-            if (tile.obstacle) {
-                return new sprites.StaticObstacle(tile.image, row << this.scale, col << this.scale, this.layer, index);
-            }
-            return undefined;
+            return new sprites.StaticObstacle(tile.image, row << this.scale, col << this.scale, this.layer, index);
         }
     }
 }
