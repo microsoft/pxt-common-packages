@@ -81,6 +81,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         const movingSprites = this.sprites
             .map(sprite => this.createMovingSprite(sprite, dtSec, dt2));
 
+        const nonGhostSprites = this.sprites.filter(s => !(s.flags & sprites.Flag.Ghost));
+
         const tileMap = game.currentScene().tileMap;
         let currMovers = movingSprites;
 
@@ -98,7 +100,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     stepY
                 );
 
-                if (tileMap && tileMap.enabled) {
+                if (tileMap && tileMap.enabled && !(s.sprite.flags & sprites.Flag.Ghost)) {
                     this.tilemapCollisions(s, tileMap);
                 }
 
@@ -107,7 +109,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 }
             }
 
-            this.spriteCollisions(remainingMovers)
+            this.spriteCollisions(currMovers, nonGhostSprites)
                 .forEach(e => control.runInParallel(e));
 
             currMovers = remainingMovers;
@@ -182,18 +184,18 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         };
     }
 
-    private spriteCollisions(movedSprites: MovingSprite[]) {
+    private spriteCollisions(movedSprites: MovingSprite[], nonGhostSprites: Sprite[]) {
         control.enablePerfCounter("phys_collisions");
-        this.map.update(movedSprites.map(ms => ms.sprite));
-
-        const allOverlapEvents: OverlapEvent[] = []
         const handlers = game.currentScene().overlapHandlers;
+        const allOverlapEvents: OverlapEvent[] = []
         if (!handlers.length) return allOverlapEvents;
 
+        this.map.update(nonGhostSprites);
+
         for (const ms of movedSprites) {
-            const sprite = ms.sprite
+            const sprite = ms.sprite;
             const overSprites = this.map.overlaps(ms.sprite);
-            if (sprite.flags & SpriteFlag.Ghost) continue;
+            if (sprite.flags & sprites.Flag.Ghost) continue;
 
             for (const overlapper of overSprites) {
                 // Maintaining invariant that the sprite with the higher ID has the other sprite as an overlapper
