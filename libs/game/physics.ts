@@ -117,7 +117,9 @@ class ArcadePhysicsEngine extends PhysicsEngine {
     }
 
     private createMovingSprite(sprite: Sprite, dtSec: Fx8, dt2: Fx8): MovingSprite {
-        sprite.clearObstacles();
+        if (sprite.vx !== 0 && sprite.vy !== 0) {
+            sprite.clearObstacles();
+        }
 
         const ovx = this.constrain(sprite._vx);
         const ovy = this.constrain(sprite._vy);
