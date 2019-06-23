@@ -79,15 +79,16 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
         const movingSprites = this.sprites
             .map(sprite => this.createMovingSprite(sprite, dtSec, dt2));
-
         const tileMap = game.currentScene().tileMap;
-        let currMovers = movingSprites;
 
         this.map.clear();
         this.map.resizeBuckets(this.sprites);
 
-        while (currMovers.length) {
-            const remainingMovers: MovingSprite[] = [];
+        let selected = 0;
+        let buffers = [movingSprites, []];
+        while (buffers[selected].length) {
+            const currMovers = buffers[selected];
+            const remainingMovers = buffers[selected ^ 1];
 
             for (let s of currMovers) {
                 const stepX = Fx.abs(s.xStep) > Fx.abs(s.dx) ? s.dx : s.xStep;
@@ -112,10 +113,11 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 }
             }
 
-            this.spriteCollisions(currMovers)
+            this.spriteCollisions(buffers[selected])
                 .forEach(e => control.runInParallel(e));
 
-            currMovers = remainingMovers;
+            while(currMovers.length) currMovers.pop();
+            selected ^= 1;
         }
     }
 
