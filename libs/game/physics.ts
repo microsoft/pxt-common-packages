@@ -23,7 +23,8 @@ class PhysicsEngine {
 }
 
 const MAX_TIME_STEP = Fx8(100); // milliseconds
-const MIN_SINGLE_STEP = Fx.oneFx8; // pixels
+const MIN_SINGLE_STEP = Fx.twoFx8; // pixels
+
 
 interface MovingSprite {
     sprite: Sprite;
@@ -273,9 +274,11 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                         sprite._vx = Fx.neg(sprite._vx);
                         movingSprite.xStep = Fx.neg(movingSprite.xStep);
                         movingSprite.dx = Fx.neg(movingSprite.dx);
+                    } else {
+                        movingSprite.dx = Fx.zeroFx8;
+                        sprite._vx = Fx.zeroFx8;
                     }
                     sprite.registerObstacle(right ? CollisionDirection.Right : CollisionDirection.Left, tm.getObstacle(x0, y0));
-                    movingSprite.dx = Fx.zeroFx8;
 
                     sprite._x = Fx.iadd(
                         -sprite._hitbox.ox,
@@ -331,9 +334,12 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                         sprite._vy = Fx.neg(sprite._vy);
                         movingSprite.yStep = Fx.neg(movingSprite.yStep);
                         movingSprite.dy = Fx.neg(movingSprite.dy);
+                    } else {
+                        movingSprite.dy = Fx.zeroFx8;
+                        sprite._vy = Fx.zeroFx8;
                     }
+
                     sprite.registerObstacle(down ? CollisionDirection.Bottom : CollisionDirection.Top, tm.getObstacle(x0, y0));
-                    movingSprite.dy = Fx.zeroFx8;
 
                     sprite._y = Fx.iadd(
                         -sprite._hitbox.oy,
