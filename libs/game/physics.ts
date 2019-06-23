@@ -1,5 +1,3 @@
-type OverlapEvent = () => void;
-
 class PhysicsEngine {
     constructor() {
     }
@@ -113,8 +111,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 }
             }
 
-            this.spriteCollisions(buffers[selected])
-                .forEach(e => control.runInParallel(e));
+            this.spriteCollisions(buffers[selected]);
 
             while(currMovers.length) currMovers.pop();
             selected ^= 1;
@@ -198,8 +195,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
     private spriteCollisions(movedSprites: MovingSprite[]) {
         control.enablePerfCounter("phys_collisions");
         const handlers = game.currentScene().overlapHandlers;
-        const allOverlapEvents: OverlapEvent[] = []
-        if (!handlers.length) return allOverlapEvents;
+        if (!handlers.length) return;
 
         for (const ms of movedSprites) {
             const sprite = ms.sprite;
@@ -223,7 +219,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                                     || (h.kind === otherKind && h.otherKind === thisKind)
                         ).forEach(h => {
                             higher._overlappers.push(lower.id);
-                            allOverlapEvents.push(() => {
+                            control.runInParallel(() => {
                                 h.handler(
                                     thisKind === h.kind ? sprite : overlapper,
                                     thisKind === h.kind ? overlapper : sprite
@@ -234,8 +230,6 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 }
             }
         }
-
-        return allOverlapEvents;
     }
 
     private tilemapCollisions(movingSprite: MovingSprite, tm: tiles.TileMap) {
