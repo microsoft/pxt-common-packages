@@ -120,7 +120,13 @@ class ArcadePhysicsEngine extends PhysicsEngine {
     }
 
     private createMovingSprite(sprite: Sprite, dtSec: Fx8, dt2: Fx8): MovingSprite {
-        sprite.clearObstacles();
+        // clear obstacles if moving on that axis
+        if (sprite.vx) {
+            sprite.clearHorizontalObstacles();
+        }
+        if (sprite.vy) {
+            sprite.clearVerticalObstacles();
+        }
 
         const ovx = this.constrain(sprite._vx);
         const ovy = this.constrain(sprite._vy);
@@ -195,8 +201,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
         for (const ms of movedSprites) {
             const sprite = ms.sprite;
-            const overSprites = this.map.overlaps(ms.sprite);
             if (sprite.flags & sprites.Flag.Ghost) continue;
+            const overSprites = this.map.overlaps(ms.sprite);
 
             for (const overlapper of overSprites) {
                 const thisKind = sprite.kind();

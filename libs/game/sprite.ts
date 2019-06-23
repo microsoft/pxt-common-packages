@@ -681,8 +681,18 @@ class Sprite implements SpriteLike {
         return (this._obstacles && this._obstacles[direction]) ? this._obstacles[direction].tileIndex : -1;
     }
 
-    clearObstacles() {
-        this._obstacles = undefined;
+    clearHorizontalObstacles() {
+        if (this._obstacles) {
+            this._obstacles[CollisionDirection.Left] = undefined;
+            this._obstacles[CollisionDirection.Right] = undefined;
+        }
+    }
+
+    clearVerticalObstacles() {
+        if (this._obstacles) {
+            this._obstacles[CollisionDirection.Top] = undefined;
+            this._obstacles[CollisionDirection.Bottom] = undefined;
+        }
     }
 
     registerObstacle(direction: CollisionDirection, other: sprites.Obstacle) {
