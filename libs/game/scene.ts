@@ -62,6 +62,7 @@ namespace scene {
         destroyedHandlers: SpriteHandler[];
         createdHandlers: SpriteHandler[];
         overlapHandlers: OverlapHandler[];
+        overlapMap: SparseArray<number[]>;
         collisionHandlers: CollisionHandler[];
         gameForeverHandlers: GameForeverHandlers[];
         particleSources: particles.ParticleSource[];
@@ -82,6 +83,7 @@ namespace scene {
             this.destroyedHandlers = [];
             this.createdHandlers = [];
             this.overlapHandlers = [];
+            this.overlapMap = {};
             this.collisionHandlers = [];
             this.gameForeverHandlers = [];
             this.spritesByKind = {};

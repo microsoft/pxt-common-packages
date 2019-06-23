@@ -199,11 +199,15 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             if (sprite.flags & sprites.Flag.Ghost) continue;
 
             for (const overlapper of overSprites) {
+                const thisKind = sprite.kind();
+                const otherKind = overlapper.kind();
+
+                // skip if no overlap event between these two kinds of sprites
+                if (sprite._kindsOverlappedWith.indexOf(otherKind) === -1) continue;
+
                 // Maintaining invariant that the sprite with the higher ID has the other sprite as an overlapper
                 const higher = sprite.id > overlapper.id ? sprite : overlapper;
                 const lower = higher === sprite ? overlapper : sprite;
-                const thisKind = sprite.kind();
-                const otherKind = overlapper.kind();
 
                 if (higher._overlappers.indexOf(lower.id) === -1) {
                     handlers

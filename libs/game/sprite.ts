@@ -157,6 +157,7 @@ class Sprite implements SpriteLike {
 
     _hitbox: game.Hitbox;
     _overlappers: number[];
+    _kindsOverlappedWith: number[];
 
     flags: number
     id: number
@@ -345,6 +346,13 @@ class Sprite implements SpriteLike {
             if (!spritesByKind[value]) spritesByKind[value] = new SpriteSet();
             spritesByKind[value].add(this);
         }
+
+        const overlapMap = game.currentScene().overlapMap;
+        if (!overlapMap[value]) {
+            overlapMap[value] = [];
+        }
+
+        this._kindsOverlappedWith = overlapMap[value];
 
         this._kind = value;
     }
