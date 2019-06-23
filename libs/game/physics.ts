@@ -25,6 +25,10 @@ const MAX_TIME_STEP = Fx8(100); // milliseconds
 interface MovingSprite {
     sprite: Sprite;
 
+    // vx and vy when last updated
+    cachedVx: Fx8;
+    cachedVy: Fx8;
+
     // remaining x
     dx: Fx8;
     dy: Fx8;
@@ -80,6 +84,12 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             .map(sprite => this.createMovingSprite(sprite, dtSec, dt2));
         const tileMap = game.currentScene().tileMap;
 
+        // clear obstacles if moving on that axis
+        this.sprites.forEach(s => {
+            if (s.vx) s.clearHorizontalObstacles();
+            if (s.vy) s.clearVerticalObstacles();
+        });
+
         this.map.clear();
         this.map.resizeBuckets(this.sprites);
 
@@ -87,28 +97,60 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         let buffers = [movingSprites, []];
         while (buffers[selected].length) {
             const currMovers = buffers[selected];
-            const remainingMovers = buffers[selected ^= 1];
+            selected ^= 1;
+            const remainingMovers = buffers[selected];
 
-            for (let s of currMovers) {
-                const stepX = Fx.abs(s.xStep) > Fx.abs(s.dx) ? s.dx : s.xStep;
-                const stepY = Fx.abs(s.yStep) > Fx.abs(s.dy) ? s.dy : s.yStep;
-                s.dx = Fx.sub(s.dx, stepX);
-                s.dy = Fx.sub(s.dy, stepY);
+            for (let ms of currMovers) {
+                const s = ms.sprite;
+                // if still moving and speed has changed from a collision or overlap;
+                // reverse direction if speed has reversed
+                if (ms.cachedVx !== s._vx) {
+                    let sign = Fx.oneFx8;
+                    if (s._vx == Fx.zeroFx8) {
+                        sign = Fx.zeroFx8;
+                    } else if (s._vx < Fx.zeroFx8 && ms.cachedVx > Fx.zeroFx8
+                            || s._vx > Fx.zeroFx8 && ms.cachedVx < Fx.zeroFx8) {
+                        sign = Fx.neg(sign);
+                    }
+
+                    ms.dx = Fx.mul(ms.dx, sign);
+                    ms.xStep = Fx.mul(ms.xStep, sign);
+                    ms.cachedVx = s._vx;
+                }
+                if (ms.cachedVy !== s._vy) {
+                    let sign = Fx.oneFx8;
+                    if (s._vy == Fx.zeroFx8) {
+                        sign = Fx.zeroFx8;
+                    } else if (s._vy < Fx.zeroFx8 && ms.cachedVy > Fx.zeroFx8
+                            || s._vy > Fx.zeroFx8 && ms.cachedVy < Fx.zeroFx8) {
+                        sign = Fx.neg(sign);
+                    }
+
+                    ms.dy = Fx.mul(ms.dy, sign);
+                    ms.yStep = Fx.mul(ms.yStep, sign);
+                    ms.cachedVy = s._vy;
+                }
+
+                const stepX = Fx.abs(ms.xStep) > Fx.abs(ms.dx) ? ms.dx : ms.xStep;
+                const stepY = Fx.abs(ms.yStep) > Fx.abs(ms.dy) ? ms.dy : ms.yStep;
+                ms.dx = Fx.sub(ms.dx, stepX);
+                ms.dy = Fx.sub(ms.dy, stepY);
+
                 this.moveSprite(
-                    s.sprite,
+                    s,
                     stepX,
                     stepY
                 );
 
-                if (!(s.sprite.flags & sprites.Flag.Ghost)) {
-                    this.map.insertAABB(s.sprite);
+                if (!(s.flags & sprites.Flag.Ghost)) {
+                    this.map.insertAABB(s);
                     if (tileMap && tileMap.enabled) {
-                        this.tilemapCollisions(s, tileMap);
+                        this.tilemapCollisions(ms, tileMap);
                     }
                 }
 
-                if (s.dx !== Fx.zeroFx8 || s.dy !== Fx.zeroFx8) {
-                    remainingMovers.push(s);
+                if (ms.dx !== Fx.zeroFx8 || ms.dy !== Fx.zeroFx8) {
+                    remainingMovers.push(ms);
                 }
             }
 
@@ -118,14 +160,6 @@ class ArcadePhysicsEngine extends PhysicsEngine {
     }
 
     private createMovingSprite(sprite: Sprite, dtSec: Fx8, dt2: Fx8): MovingSprite {
-        // clear obstacles if moving on that axis
-        if (sprite.vx) {
-            sprite.clearHorizontalObstacles();
-        }
-        if (sprite.vy) {
-            sprite.clearVerticalObstacles();
-        }
-
         const ovx = this.constrain(sprite._vx);
         const ovy = this.constrain(sprite._vy);
 
@@ -184,6 +218,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
         return {
             sprite: sprite,
+            cachedVx: sprite._vx,
+            cachedVy: sprite._vy,
             dx: dx,
             dy: dy,
             xStep: xStep,
