@@ -176,10 +176,10 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
         while (Fx.abs(xStep) > this.maxSingleStep || Fx.abs(yStep) > this.maxSingleStep) {
             if (Fx.abs(xStep) > MIN_SINGLE_STEP) {
-                xStep = Fx.idiv(xStep, 2);
+                xStep = Fx.div(xStep, Fx.twoFx8);
             }
             if (Fx.abs(yStep) > MIN_SINGLE_STEP) {
-                yStep = Fx.idiv(yStep, 2);
+                yStep = Fx.div(yStep, Fx.twoFx8);
             }
         }
 
