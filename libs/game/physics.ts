@@ -83,7 +83,9 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
         const tileMap = game.currentScene().tileMap;
         let currMovers = movingSprites;
+
         this.map.clear();
+        this.map.resizeBuckets(this.sprites);
 
         while (currMovers.length) {
             const remainingMovers: MovingSprite[] = [];
@@ -118,9 +120,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
     }
 
     private createMovingSprite(sprite: Sprite, dtSec: Fx8, dt2: Fx8): MovingSprite {
-        // if (sprite.vx !== 0 && sprite.vy !== 0) {
-            sprite.clearObstacles();
-        // }
+        sprite.clearObstacles();
 
         const ovx = this.constrain(sprite._vx);
         const ovy = this.constrain(sprite._vy);
@@ -361,11 +361,6 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 }
             }
         }
-    }
-
-    private collidableSprites(colliders: Sprite[]): Sprite[] {
-        this.map.update(colliders);
-        return colliders;
     }
 
     /**

@@ -52,9 +52,7 @@ namespace sprites {
         /**
          * Recompute hashes for all objects
          */
-        update(sprites: Sprite[]) {
-            this.buckets = [];
-
+        resizeBuckets(sprites: Sprite[]) {
             // rescale buckets
             let maxWidth = 0;
             let maxHeight = 0;
@@ -70,12 +68,8 @@ namespace sprites {
 
             this.cellWidth = Math.clamp(8, areaWidth >> 2, maxWidth * 2);
             this.cellHeight = Math.clamp(8, areaHeight >> 2, maxHeight * 2);
-            this.rowCount = Math.idiv(areaHeight, this.cellHeight)
-            this.columnCount = Math.idiv(areaWidth, this.cellWidth)
-
-
-            for (const sprite of sprites)
-                this.insertAABB(sprite);
+            this.rowCount = Math.idiv(areaHeight, this.cellHeight);
+            this.columnCount = Math.idiv(areaWidth, this.cellWidth);
         }
 
         clear() {
