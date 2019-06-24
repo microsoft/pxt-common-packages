@@ -231,7 +231,6 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
     private spriteCollisions(movedSprites: MovingSprite[], handlers: scene.OverlapHandler[]) {
         control.enablePerfCounter("phys_collisions");
-        // const handlers = game.currentScene().overlapHandlers;
         if (!handlers.length) return;
 
         for (const ms of movedSprites) {
