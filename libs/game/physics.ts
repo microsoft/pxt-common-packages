@@ -21,6 +21,7 @@ class PhysicsEngine {
 }
 
 const MAX_TIME_STEP = Fx8(100); // milliseconds
+const SPRITE_CANNOT_COLLIDE = sprites.Flag.Ghost | sprites.Flag.Destroyed;
 
 interface MovingSprite {
     sprite: Sprite;
@@ -93,9 +94,11 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         this.map.clear();
         this.map.resizeBuckets(this.sprites);
 
+        const MAX_STEP_COUNT = Fx.toInt(this.maxVelocity) / Fx.toInt(this.minSingleStep);
+
         let selected = 0;
         let buffers = [movingSprites, []];
-        while (buffers[selected].length) {
+        for (let count = 0; count < MAX_STEP_COUNT && buffers[selected].length !== 0; ++count) {
             const currMovers = buffers[selected];
             selected ^= 1;
             const remainingMovers = buffers[selected];
@@ -105,29 +108,25 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 // if still moving and speed has changed from a collision or overlap;
                 // reverse direction if speed has reversed
                 if (ms.cachedVx !== s._vx) {
-                    let sign = Fx.oneFx8;
                     if (s._vx == Fx.zeroFx8) {
-                        sign = Fx.zeroFx8;
+                        ms.dx = Fx.zeroFx8;
                     } else if (s._vx < Fx.zeroFx8 && ms.cachedVx > Fx.zeroFx8
                             || s._vx > Fx.zeroFx8 && ms.cachedVx < Fx.zeroFx8) {
-                        sign = Fx.neg(sign);
+                        ms.dx = Fx.neg(ms.dx);
+                        ms.xStep = Fx.neg(ms.xStep);
                     }
 
-                    ms.dx = Fx.mul(ms.dx, sign);
-                    ms.xStep = Fx.mul(ms.xStep, sign);
                     ms.cachedVx = s._vx;
                 }
                 if (ms.cachedVy !== s._vy) {
-                    let sign = Fx.oneFx8;
                     if (s._vy == Fx.zeroFx8) {
-                        sign = Fx.zeroFx8;
+                        ms.dy = Fx.zeroFx8;
                     } else if (s._vy < Fx.zeroFx8 && ms.cachedVy > Fx.zeroFx8
                             || s._vy > Fx.zeroFx8 && ms.cachedVy < Fx.zeroFx8) {
-                        sign = Fx.neg(sign);
+                        ms.dy = Fx.neg(ms.dy);
+                        ms.yStep = Fx.neg(ms.yStep);
                     }
 
-                    ms.dy = Fx.mul(ms.dy, sign);
-                    ms.yStep = Fx.mul(ms.yStep, sign);
                     ms.cachedVy = s._vy;
                 }
 
@@ -142,7 +141,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     stepY
                 );
 
-                if (!(s.flags & sprites.Flag.Ghost)) {
+                if (!(s.flags & SPRITE_CANNOT_COLLIDE)) {
                     this.map.insertAABB(s);
                     if (tileMap && tileMap.enabled) {
                         this.tilemapCollisions(ms, tileMap);
@@ -234,11 +233,11 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
         for (const ms of movedSprites) {
             const sprite = ms.sprite;
-            if ((sprite.flags & sprites.Flag.Ghost) || (sprite.flags & sprites.Flag.Destroyed)) continue;
+            if (sprite.flags & SPRITE_CANNOT_COLLIDE) continue;
             const overSprites = this.map.overlaps(ms.sprite);
 
             for (const overlapper of overSprites) {
-                if ((overlapper.flags & sprites.Flag.Destroyed) || (overlapper.flags & sprites.Flag.Ghost)) continue;
+                if (overlapper.flags & SPRITE_CANNOT_COLLIDE) continue;
                 const thisKind = sprite.kind();
                 const otherKind = overlapper.kind();
 
