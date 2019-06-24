@@ -81,9 +81,11 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         const dtSec = Fx.idiv(dtf, 1000);
         const dt2 = Fx.idiv(dtf, 2);
 
+        const scene = game.currentScene();
+
         const movingSprites = this.sprites
             .map(sprite => this.createMovingSprite(sprite, dtSec, dt2));
-        const tileMap = game.currentScene().tileMap;
+        const tileMap = scene.tileMap;
 
         // clear obstacles if moving on that axis
         this.sprites.forEach(s => {
@@ -95,6 +97,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         this.map.resizeBuckets(this.sprites);
 
         const MAX_STEP_COUNT = Fx.toInt(this.maxVelocity) / Fx.toInt(this.minSingleStep);
+        const overlapHandlers = scene.overlapHandlers.slice();
 
         let selected = 0;
         let buffers = [movingSprites, []];
@@ -153,7 +156,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 }
             }
 
-            this.spriteCollisions(currMovers);
+            this.spriteCollisions(currMovers, overlapHandlers);
             while(currMovers.length) currMovers.pop();
         }
     }
@@ -226,9 +229,9 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         };
     }
 
-    private spriteCollisions(movedSprites: MovingSprite[]) {
+    private spriteCollisions(movedSprites: MovingSprite[], handlers: scene.OverlapHandler[]) {
         control.enablePerfCounter("phys_collisions");
-        const handlers = game.currentScene().overlapHandlers;
+        // const handlers = game.currentScene().overlapHandlers;
         if (!handlers.length) return;
 
         for (const ms of movedSprites) {
@@ -261,6 +264,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                                 );
                                 higher._overlappers.removeElement(lower.id);
                             });
+                            // TODO: do we want this?
+                            pause(1);
                         });
                 }
             }
