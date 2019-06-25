@@ -89,8 +89,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
         // clear obstacles if moving on that axis
         this.sprites.forEach(s => {
-            if (s.vx) s.clearHorizontalObstacles();
-            if (s.vy) s.clearVerticalObstacles();
+            if (s.vx || s.vy) s.clearObstacles();
         });
 
         this.map.clear();
