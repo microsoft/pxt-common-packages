@@ -34,6 +34,26 @@ enum ControllerGesture {
      */
     //% block="screen down"
     ScreenDown = Gesture.FaceDown,  // ACCELEROMETER_EVT_FACE_DOWN
+    /**
+     * Raised when a 2G shock is detected
+     */
+    //% block="2g (step)"
+    TwoG = Gesture.TwoG,  // ACCELEROMETER_EVT_2G
+    /**
+     * Raised when a 3G shock is detected
+     */
+    //% block="3g"
+    ThreeG = Gesture.ThreeG,  // ACCELEROMETER_EVT_3G
+    /**
+     * Raised when a 6G shock is detected
+     */
+    //% block="6g"
+    SixG = Gesture.SixG,  // ACCELEROMETER_EVT_6G
+    /**
+     * Raised when a 8G shock is detected
+     */
+    //% block="8g"
+    EightG = Gesture.EightG,  // ACCELEROMETER_EVT_8G
 }
 
 enum ControllerDimension {
