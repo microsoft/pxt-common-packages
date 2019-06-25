@@ -83,11 +83,32 @@ namespace controller {
         const state = sceneState();
         if (!state.gestureHandlers) state.gestureHandlers = {};
         state.gestureHandlers[gesture] = handler;
-        
-        input.onGesture(<Gesture><number>gesture, function() {
+
+        input.onGesture(<Gesture><number>gesture, function () {
             const st = sceneState();
             st.lastGesture = gesture;
         })
+    }
+
+    /**
+     * Register a customer gesture for the controller
+     * @param id 
+     * @param handler 
+     */
+    export function onCustomGesture(id: number, update: () => boolean, handler: () => void) {
+        const state = sceneState();
+        if (!state.customGestureHandlers) state.customGestureHandlers = {};
+        state.customGestureHandlers[id] = <CustomGestureHandler>{ update, handler };
+
+        input.onCustomGesture(id,
+            function () {
+                const st = sceneState();
+                const h = st.customGestureHandlers && st.customGestureHandlers[id];
+                return h && h.update();
+            }, function () {
+                const st = sceneState();
+                st.lastCustomGesture = id;
+            })
     }
 
     /**
