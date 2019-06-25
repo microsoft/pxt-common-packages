@@ -263,8 +263,6 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                                 );
                                 higher._overlappers.removeElement(lower.id);
                             });
-                            // TODO: do we want this?
-                            pause(1);
                         });
                 }
             }
