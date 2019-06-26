@@ -93,7 +93,8 @@ namespace controller {
     /**
      * Register a customer gesture for the controller
      * @param id 
-     * @param handler 
+     * @param update
+     * @param handler
      */
     export function onCustomGesture(id: number, update: () => boolean, handler: () => void) {
         const state = sceneState();
