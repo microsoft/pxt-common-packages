@@ -210,10 +210,10 @@ namespace helpers {
             imgBuf[2] = dataH
         }
         while (cp < text.length) {
-            let x_offset = 0, y_offset = 0;
+            let xOffset = 0, yOffset = 0;
             if (offsets && cp < offsets.length) {
-                x_offset = offsets[cp].x_offset
-                y_offset = offsets[cp].y_offset
+                xOffset = offsets[cp].xOffset
+                yOffset = offsets[cp].yOffset
             }
 
             let ch = text.charCodeAt(cp++)
@@ -262,7 +262,7 @@ namespace helpers {
 
                 if (mult == 1) {
                     imgBuf.write(4, fontdata.slice(off + 2, charSize))
-                    img.drawIcon(imgBuf, x + x_offset, y + y_offset, color)
+                    img.drawIcon(imgBuf, x + xOffset, y + yOffset, color)
                     x += font.charWidth
                 } else {
                     off += 2
@@ -281,7 +281,7 @@ namespace helpers {
                                 mask <<= 1
                             }
                             if (n) {
-                                img.fillRect(x + x_offset * mult, y + (j + y_offset) * mult, mult, mult * n, color)
+                                img.fillRect(x + xOffset * mult, y + (j + yOffset) * mult, mult, mult * n, color)
                                 j += n
                             } else {
                                 mask <<= 1

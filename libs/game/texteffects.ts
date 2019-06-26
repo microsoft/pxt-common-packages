@@ -1,7 +1,7 @@
 namespace texteffects {
     export interface TextEffectState {
-        x_offset: number;
-        y_offset: number;
+        xOffset: number;
+        yOffset: number;
     }
 
     export enum TextEffectKind {
@@ -26,17 +26,17 @@ namespace texteffects {
  
     //% fixedInstances
     export class TextEffect {
-        public getState: (index?: number, state?: TextEffectState) => any;
+        public getState: (index?: number, state?: TextEffectState) => TextEffectState;
     
-        constructor(getState: (index?: number, state?: TextEffectState) => any) {
+        constructor(getState: (index?: number, state?: TextEffectState) => TextEffectState) {
             this.getState = getState;
         }
     }
 
     //% fixedInstance
     export const shake = new TextEffect(() => { 
-        return { x_offset: (Math.random() * 2 - 1),
-                 y_offset: (Math.random() * 2 - 1) }
+        return { xOffset: (Math.random() * 2 - 1),
+                 yOffset: (Math.random() * 2 - 1) }
     });
 
 
@@ -48,14 +48,14 @@ namespace texteffects {
     export const wave = new TextEffect((index?: number, state?: WaveEffectState) => {  // TODO cast state type
         if (!state) {
             state = {
-                x_offset: 0,
-                y_offset: Math.sin(index) * 2,
+                xOffset: 0,
+                yOffset: Math.sin(index) * 2,
                 up: Math.sign(Math.sin(index)) < 0
             };
         }
 
-        state.y_offset += (state.up ? 1 : -1) * 0.5;
-        state.up = Math.abs(state.y_offset) > 2 ? !state.up : state.up;
+        state.yOffset += (state.up ? 1 : -1) * 0.5;
+        state.up = Math.abs(state.yOffset) > 2 ? !state.up : state.up;
 
         return state
     });
