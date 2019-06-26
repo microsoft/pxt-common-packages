@@ -22,6 +22,7 @@ class PhysicsEngine {
 
 const MAX_TIME_STEP = Fx8(100); // milliseconds
 const SPRITE_CANNOT_COLLIDE = sprites.Flag.Ghost | sprites.Flag.Destroyed;
+const MIN_MOVE_GAP = Fx8(0.1);
 
 interface MovingSprite {
     sprite: Sprite;
@@ -150,7 +151,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     }
                 }
 
-                if (ms.dx !== Fx.zeroFx8 || ms.dy !== Fx.zeroFx8) {
+                if (Fx.abs(ms.dx) > MIN_MOVE_GAP || Fx.abs(ms.dy) > MIN_MOVE_GAP) {
                     remainingMovers.push(ms);
                 }
             }
