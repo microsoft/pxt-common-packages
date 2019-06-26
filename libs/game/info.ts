@@ -18,34 +18,51 @@ namespace info {
         UserHeartImage = 1 << 5
     }
 
-    let _players: PlayerInfo[];
-    let _visibilityFlag: number = Visibility.None;
+    interface PlayerState {
+        _score: number;
+        _life: number;
+        _player: number;
+    }
 
-    let _gameEnd: number = undefined;
-    let _heartImage: Image;
-    let _multiplierImage: Image;
-    let _bgColor: number;
-    let _borderColor: number;
-    let _fontColor: number;
-    let _countdownExpired: boolean;
+    interface InfoState {
+        // players: PlayerInfo[];
+        visibilityFlag : number;
 
-    let _countdownEndHandler: () => void;
+        gameEnd: number;
+        heartImage: Image;
+        multiplierImage: Image;
+        bgColor: number;
+        borderColor: number;
+        fontColor: number;
+        countdownExpired: boolean;
+        countdownEndHandler: () => void;
+    }
+
+    let players: PlayerInfo[];
+    let infoState: InfoState = undefined;
 
     function initHUD() {
-        if (_visibilityFlag & (Visibility.Hud | Visibility.Multi)) return;
+        if (infoState) return;
+        players = [];
 
-        _visibilityFlag |= Visibility.Hud;
-        // non of these images should have been set
-        _heartImage = defaultHeartImage();
-        _multiplierImage = defaultMultiplyImage();
-        _bgColor = screen.isMono ? 0 : 1;
-        _borderColor = screen.isMono ? 1 : 3;
-        _fontColor = screen.isMono ? 1 : 3;
+        infoState = {
+            visibilityFlag: Visibility.Hud,
+            heartImage: defaultHeartImage(),
+            multiplierImage: defaultMultiplyImage(),
+            bgColor: screen.isMono ? 0 : 1,
+            borderColor: screen.isMono ? 1 : 3,
+            fontColor: screen.isMono ? 1 : 3,
+            countdownExpired: undefined,
+            countdownEndHandler: undefined,
+            // players: [],
+            gameEnd: undefined
+        };
+
         game.eventContext().registerFrameHandler(scene.HUD_PRIORITY, () => {
             control.enablePerfCounter("info")
             // show score, lifes
-            if (_visibilityFlag & Visibility.Multi) {
-                const ps = _players.filter(p => !!p);
+            if (infoState.visibilityFlag & Visibility.Multi) {
+                const ps = players.filter(p => !!p);
                 // First draw players
                 ps.forEach(p => p.drawPlayer());
                 // Then run life over events
@@ -53,27 +70,27 @@ namespace info {
             } else { // single player
                 // show score
                 const p = player1;
-                if (p.hasScore() && (_visibilityFlag & Visibility.Score)) {
+                if (p.hasScore() && (infoState.visibilityFlag & Visibility.Score)) {
                     p.drawScore();
                 }
                 // show life
-                if (p.hasLife() && (_visibilityFlag & Visibility.Life)) {
+                if (p.hasLife() && (infoState.visibilityFlag & Visibility.Life)) {
                     p.drawLives();
                 }
                 p.raiseLifeZero(true);
             }
             // show countdown in both modes
-            if (_gameEnd !== undefined && _visibilityFlag & Visibility.Countdown) {
+            if (infoState.gameEnd !== undefined && infoState.visibilityFlag & Visibility.Countdown) {
                 const scene = game.currentScene();
-                const elapsed = _gameEnd - scene.millis();
+                const elapsed = infoState.gameEnd - scene.millis();
                 drawTimer(elapsed);
                 let t = elapsed / 1000;
                 if (t <= 0) {
                     t = 0;
-                    if (!_countdownExpired) {
-                        _countdownExpired = true;
-                        if (_countdownEndHandler) {
-                            _countdownEndHandler();
+                    if (!infoState.countdownExpired) {
+                        infoState.countdownExpired = true;
+                        if (infoState.countdownEndHandler) {
+                            infoState.countdownEndHandler();
                         }
                         else {
                             game.over();
@@ -85,16 +102,16 @@ namespace info {
     }
 
     function initMultiHUD() {
-        if (_visibilityFlag & Visibility.Multi) return;
+        if (infoState.visibilityFlag & Visibility.Multi) return;
 
-        _visibilityFlag |= Visibility.Multi;
-        if (!_heartImage || !(_visibilityFlag & Visibility.UserHeartImage))
-            _heartImage = defaultHeartImage();
-        _multiplierImage = defaultMultiplyImage();
+        infoState.visibilityFlag |= Visibility.Multi;
+        if (!(infoState.visibilityFlag & Visibility.UserHeartImage))
+            infoState.heartImage = defaultMultiplayerHeartImage();
+        infoState.multiplierImage = defaultMultiplyImage();
     }
 
     function defaultMultiplyImage() {
-        if (_visibilityFlag & Visibility.Multi)
+        if (infoState.visibilityFlag & Visibility.Multi)
             return img`
                 1 . 1
                 . 1 .
@@ -102,59 +119,60 @@ namespace info {
             `;
         else
             return img`
-        1 . . . 1
-        . 1 . 1 .
-        . . 1 . .
-        . 1 . 1 .
-        1 . . . 1
-        `;
+                1 . . . 1
+                . 1 . 1 .
+                . . 1 . .
+                . 1 . 1 .
+                1 . . . 1
+            `;
     }
 
     function defaultHeartImage() {
-        if (_visibilityFlag & Visibility.Multi)
-            return screen.isMono ?
-                img`
-                . . 1 . 1 . .
-                . 1 . 1 . 1 .
-                . 1 . . . 1 .
-                . . 1 . 1 . .
-                . . . 1 . . .
+        return screen.isMono ?
+            img`
+                . 1 1 . 1 1 . .
+                1 . . 1 . . 1 .
+                1 . . . . . 1 .
+                1 . . . . . 1 .
+                . 1 . . . 1 . .
+                . . 1 . 1 . . .
+                . . . 1 . . . .
             `
+            :
+            img`
+                . c 2 2 . 2 2 .
+                c 2 2 2 2 2 4 2
+                c 2 2 2 2 4 2 2
+                c 2 2 2 2 2 2 2
+                . c 2 2 2 2 2 .
+                . . c 2 2 2 . .
+                . . . c 2 . . .
+            `;
+    }
+
+    function defaultMultiplayerHeartImage() {
+        return screen.isMono ?
+                img`
+                    . . 1 . 1 . .
+                    . 1 . 1 . 1 .
+                    . 1 . . . 1 .
+                    . . 1 . 1 . .
+                    . . . 1 . . .
+                `
                 :
                 img`
-                . . 1 . 1 . .
-                . 1 2 1 4 1 .
-                . 1 2 4 2 1 .
-                . . 1 2 1 . .
-                . . . 1 . . .
-            `;
-        else
-            return screen.isMono ?
-                img`
-        . 1 1 . 1 1 . .
-        1 . . 1 . . 1 .
-        1 . . . . . 1 .
-        1 . . . . . 1 .
-        . 1 . . . 1 . .
-        . . 1 . 1 . . .
-        . . . 1 . . . .
-`         :
-                img`
-        . c 2 2 . 2 2 .
-        c 2 2 2 2 2 4 2
-        c 2 2 2 2 4 2 2
-        c 2 2 2 2 2 2 2
-        . c 2 2 2 2 2 .
-        . . c 2 2 2 . .
-        . . . c 2 . . .
-        `;
-
+                    . . 1 . 1 . .
+                    . 1 2 1 4 1 .
+                    . 1 2 4 2 1 .
+                    . . 1 2 1 . .
+                    . . . 1 . . .
+                `;
     }
 
     export function saveHighScore() {
-        if (_players) {
+        if (players) {
             let hs = 0;
-            _players.filter(p => p && p.hasScore()).forEach(p => hs = Math.max(hs, p._score));
+            players.filter(p => p && p.hasScore()).forEach(p => hs = Math.max(hs, p._score));
             updateHighScore(hs);
         }
     }
@@ -270,9 +288,9 @@ namespace info {
     //% help=info/start-countdown weight=79 blockGap=8
     //% group="Countdown"
     export function startCountdown(duration: number) {
-        _gameEnd = game.currentScene().millis() + duration * 1000;
         updateFlag(Visibility.Countdown, true);
-        _countdownExpired = false;
+        infoState.gameEnd = game.currentScene().millis() + duration * 1000;
+        infoState.countdownExpired = false;
     }
 
     /**
@@ -282,9 +300,9 @@ namespace info {
     //% help=info/stop-countdown
     //% group="Countdown"
     export function stopCountdown() {
-        _gameEnd = undefined;
         updateFlag(Visibility.Countdown, false);
-        _countdownExpired = true;
+        infoState.gameEnd = undefined;
+        infoState.countdownExpired = true;
     }
 
     /**
@@ -296,7 +314,7 @@ namespace info {
     //% group="Countdown"
     export function onCountdownEnd(handler: () => void) {
         initHUD();
-        _countdownEndHandler = handler;
+        infoState.countdownEndHandler = handler;
     }
 
     /**
@@ -305,9 +323,8 @@ namespace info {
      */
     //% group="Life"
     export function setLifeImage(image: Image) {
-        initHUD();
-        _heartImage = image;
         updateFlag(Visibility.UserHeartImage, true);
+        infoState.heartImage = image;
     }
 
     /**
@@ -338,9 +355,9 @@ namespace info {
     }
 
     function updateFlag(flag: Visibility, on: boolean) {
-        if (on) _visibilityFlag |= flag;
-        else _visibilityFlag = ~(~_visibilityFlag | flag);
         initHUD();
+        if (on) infoState.visibilityFlag |= flag;
+        else infoState.visibilityFlag = ~(~infoState.visibilityFlag | flag);
     }
 
     /**
@@ -350,7 +367,8 @@ namespace info {
      */
     //% group="Theme"
     export function setBorderColor(color: number) {
-        _borderColor = Math.min(Math.max(color, 0), 15) | 0;
+        initHUD();
+        infoState.borderColor = Math.min(Math.max(color, 0), 15) | 0;
     }
 
     /**
@@ -360,7 +378,8 @@ namespace info {
      */
     //% group="Theme"
     export function setBackgroundColor(color: number) {
-        _bgColor = Math.min(Math.max(color, 0), 15) | 0;
+        initHUD();
+        infoState.bgColor = Math.min(Math.max(color, 0), 15) | 0;
     }
 
     /**
@@ -370,7 +389,8 @@ namespace info {
      */
     //% group="Theme"
     export function setFontColor(color: number) {
-        _fontColor = Math.min(Math.max(color, 0), 15) | 0;
+        initHUD();
+        infoState.fontColor = Math.min(Math.max(color, 0), 15) | 0;
     }
 
     /**
@@ -379,7 +399,8 @@ namespace info {
      */
     //% group="Theme"
     export function borderColor(): number {
-        return _borderColor ? _borderColor : 3;
+        initHUD();
+        return infoState.borderColor ? infoState.borderColor : 3;
     }
 
     /**
@@ -388,7 +409,8 @@ namespace info {
      */
     //% group="Theme"
     export function backgroundColor(): number {
-        return _bgColor ? _bgColor : 1;
+        initHUD();
+        return infoState.bgColor ? infoState.bgColor : 1;
     }
 
     /**
@@ -397,7 +419,8 @@ namespace info {
      */
     //% group="Theme"
     export function fontColor(): number {
-        return _fontColor ? _fontColor : 3;
+        initHUD();
+        return infoState.fontColor ? infoState.fontColor : 3;
     }
 
     function drawTimer(millis: number) {
@@ -409,8 +432,8 @@ namespace info {
         const seconds = Math.idiv(millis, 1000);
         const width = font.charWidth * 5 - 2;
         let left = (screen.width >> 1) - (width >> 1) + 1;
-        let color1 = _fontColor;
-        let color2 = _bgColor;
+        let color1 = infoState.fontColor;
+        let color2 = infoState.bgColor;
 
         if (seconds < 10 && (seconds & 1) && !screen.isMono) {
             const temp = color1;
@@ -418,7 +441,7 @@ namespace info {
             color2 = temp;
         }
 
-        screen.fillRect(left - 3, 0, width + 6, font.charHeight + 3, _borderColor)
+        screen.fillRect(left - 3, 0, width + 6, font.charHeight + 3, infoState.borderColor)
         screen.fillRect(left - 2, 0, width + 4, font.charHeight + 2, color2)
 
 
@@ -493,10 +516,8 @@ namespace info {
                 this.up = true;
             }
 
-            // init hud
-            if (!_players)
-                _players = [];
-            _players[this._player - 1] = this;
+            initHUD();
+            players[this._player - 1] = this;
         }
 
         private init() {
@@ -646,8 +667,8 @@ namespace info {
 
             if (showLife) {
                 life = "" + this._life;
-                lifeWidth = _heartImage.width + _multiplierImage.width + life.length * font.charWidth + 3;
-                height += _heartImage.height;
+                lifeWidth = infoState.heartImage.width + infoState.multiplierImage.width + life.length * font.charWidth + 3;
+                height += infoState.heartImage.height;
             }
 
             const width = Math.max(scoreWidth, lifeWidth);
@@ -674,20 +695,26 @@ namespace info {
             if (showLife) {
                 const xLoc = x + offsetX + (this.left ? width - lifeWidth : 0);
 
-                let mult = _multiplierImage.clone();
+                let mult = infoState.multiplierImage.clone();
                 mult.replace(1, this.fc);
 
-                screen.drawTransparentImage(_heartImage,
+                screen.drawTransparentImage(
+                    infoState.heartImage,
                     xLoc,
-                    y + offsetY);
-                screen.drawTransparentImage(mult,
-                    xLoc + _heartImage.width,
-                    y + offsetY + font.charHeight - _multiplierImage.height - 1);
-                screen.print(life,
-                    xLoc + _heartImage.width + _multiplierImage.width + 1,
+                    y + offsetY
+                );
+                screen.drawTransparentImage(
+                    mult,
+                    xLoc + infoState.heartImage.width,
+                    y + offsetY + font.charHeight - infoState.multiplierImage.height - 1
+                );
+                screen.print(
+                    life,
+                    xLoc + infoState.heartImage.width + infoState.multiplierImage.width + 1,
                     y + offsetY,
                     this.fc,
-                    font);
+                    font
+                );
             }
 
             // print player icon
@@ -705,8 +732,20 @@ namespace info {
                     if (this.up) iconY -= 3;
                 }
 
-                screen.fillRect(iconX, iconY, iconWidth, iconHeight, this.border);
-                screen.print(pNum, iconX + 1, iconY + (iconHeight >> 1) - (font.charHeight >> 1), this.bg, font);
+                screen.fillRect(
+                    iconX,
+                    iconY,
+                    iconWidth,
+                    iconHeight,
+                    this.border
+                );
+                screen.print(
+                    pNum,
+                    iconX + 1,
+                    iconY + (iconHeight >> 1) - (font.charHeight >> 1),
+                    this.bg,
+                    font
+                );
             }
         }
 
@@ -727,33 +766,93 @@ namespace info {
             const num = s.toString();
             const width = num.length * font.charWidth;
 
-            screen.fillRect(screen.width - width - 2, 0, screen.width, image.font8.charHeight + 3, _borderColor)
-            screen.fillRect(screen.width - width - 1, 0, screen.width, image.font8.charHeight + 2, _bgColor)
-            screen.print(num, screen.width - width, offsetY, _fontColor, font);
+            screen.fillRect(
+                screen.width - width - 2,
+                0,
+                screen.width,
+                image.font8.charHeight + 3,
+                infoState.borderColor
+            );
+            screen.fillRect(
+                screen.width - width - 1,
+                0,
+                screen.width,
+                image.font8.charHeight + 2,
+                infoState.bgColor
+            );
+            screen.print(
+                num,
+                screen.width - width,
+                offsetY,
+                infoState.fontColor,
+                font
+            );
         }
 
         drawLives() {
             if (this._life < 0) return;
             const font = image.font8;
             if (this._life <= 4) {
-                screen.fillRect(0, 0, this._life * (_heartImage.width + 1) + 3, _heartImage.height + 4, _borderColor);
-                screen.fillRect(0, 0, this._life * (_heartImage.width + 1) + 2, _heartImage.height + 3, _bgColor);
+                screen.fillRect(
+                    0,
+                    0,
+                    this._life * (infoState.heartImage.width + 1) + 3,
+                    infoState.heartImage.height + 4,
+                    infoState.borderColor
+                );
+                screen.fillRect(
+                    0,
+                    0,
+                    this._life * (infoState.heartImage.width + 1) + 2,
+                    infoState.heartImage.height + 3,
+                    infoState.bgColor
+                );
                 for (let i = 0; i < this._life; i++) {
-                    screen.drawTransparentImage(_heartImage, 1 + i * (_heartImage.width + 1), 1);
+                    screen.drawTransparentImage(
+                        infoState.heartImage,
+                        1 + i * (infoState.heartImage.width + 1),
+                        1
+                    );
                 }
             }
             else {
                 const num = this._life.toString();
                 const textWidth = num.length * font.charWidth - 1;
-                screen.fillRect(0, 0, _heartImage.width + _multiplierImage.width + textWidth + 5, _heartImage.height + 4, _borderColor)
-                screen.fillRect(0, 0, _heartImage.width + _multiplierImage.width + textWidth + 4, _heartImage.height + 3, _bgColor)
-                screen.drawTransparentImage(_heartImage, 1, 1);
+                screen.fillRect(
+                    0,
+                    0,
+                    infoState.heartImage.width + infoState.multiplierImage.width + textWidth + 5,
+                    infoState.heartImage.height + 4,
+                    infoState.borderColor
+                );
+                screen.fillRect(
+                    0,
+                    0,
+                    infoState.heartImage.width + infoState.multiplierImage.width + textWidth + 4,
+                    infoState.heartImage.height + 3,
+                    infoState.bgColor
+                );
+                screen.drawTransparentImage(
+                    infoState.heartImage,
+                    1,
+                    1
+                );
 
-                let mult = _multiplierImage.clone();
-                mult.replace(1, _fontColor);
+                let mult = infoState.multiplierImage.clone();
+                mult.replace(1, infoState.fontColor);
 
-                screen.drawTransparentImage(mult, _heartImage.width + 2, font.charHeight - _multiplierImage.height - 1);
-                screen.print(num, _heartImage.width + 3 + _multiplierImage.width, 1, _fontColor, font);
+                screen.drawTransparentImage(
+                    mult,
+                    infoState.heartImage.width + 2,
+                    font.charHeight - infoState.multiplierImage.height - 1
+                );
+                screen.print(
+                    num,
+                    infoState.heartImage.width + 3 + infoState.multiplierImage.width,
+                    1,
+                    infoState.fontColor,
+                    font
+                );
             }
         }
 
