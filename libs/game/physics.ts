@@ -107,6 +107,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         );
         const overlapHandlers = scene.overlapHandlers.slice();
 
+        // buffers store the moving sprites on each step; switch back and forth between the two
         let selected = 0;
         let buffers = [movingSprites, []];
         for (let count = 0; count < MAX_STEP_COUNT && buffers[selected].length !== 0; ++count) {
@@ -141,6 +142,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     ms.cachedVy = s._vy;
                 }
 
+                // identify how much to move in this step
                 const stepX = Fx.abs(ms.xStep) > Fx.abs(ms.dx) ? ms.dx : ms.xStep;
                 const stepY = Fx.abs(ms.yStep) > Fx.abs(ms.dy) ? ms.dy : ms.yStep;
                 ms.dx = Fx.sub(ms.dx, stepX);
@@ -152,6 +154,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     stepY
                 );
 
+                // if the sprite can collide with things, check tile map
+                // and add to collision detection
                 if (!(s.flags & SPRITE_CANNOT_COLLIDE)) {
                     this.map.insertAABB(s);
                     if (tileMap && tileMap.enabled) {
@@ -159,12 +163,15 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     }
                 }
 
+                // if sprite still needs to move, add it to the next step of movements
                 if (Fx.abs(ms.dx) > MIN_MOVE_GAP || Fx.abs(ms.dy) > MIN_MOVE_GAP) {
                     remainingMovers.push(ms);
                 }
             }
 
+            // this step is done; check collisions between sprites
             this.spriteCollisions(currMovers, overlapHandlers);
+            // clear moving sprites buffer for next step
             while (currMovers.length) currMovers.pop();
         }
     }
@@ -217,6 +224,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         let xStep = dx;
         let yStep = dy;
 
+        // make step increments smaller until under max step size
         while (Fx.abs(xStep) > this.maxSingleStep || Fx.abs(yStep) > this.maxSingleStep) {
             if (Fx.abs(xStep) > this.minSingleStep) {
                 xStep = Fx.idiv(xStep, 2);
@@ -241,6 +249,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         control.enablePerfCounter("phys_collisions");
         if (!handlers.length) return;
 
+        // sprites that have moved this step
         for (const ms of movedSprites) {
             const sprite = ms.sprite;
             if (sprite.flags & SPRITE_CANNOT_COLLIDE) continue;
@@ -258,11 +267,14 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 const higher = sprite.id > overlapper.id ? sprite : overlapper;
                 const lower = higher === sprite ? overlapper : sprite;
 
+                // if the two sprites are not currently engaged in an overlap event,
+                // apply all matching overlap events
                 if (higher._overlappers.indexOf(lower.id) === -1) {
                     handlers
                         .filter(h => (h.kind === thisKind && h.otherKind === otherKind)
                                     || (h.kind === otherKind && h.otherKind === thisKind)
-                        ).forEach(h => {
+                        )
+                        .forEach(h => {
                             higher._overlappers.push(lower.id);
                             control.runInParallel(() => {
                                 h.handler(
@@ -305,6 +317,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 tileScale
             );
 
+            // check collisions with tiles sprite is moving towards horizontally
             for (
                 let y = Fx.sub(sprite._hitbox.top, yDiff);
                 y < Fx.iadd(tileSize, Fx.sub(sprite._hitbox.bottom, yDiff));
@@ -370,6 +383,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 tileScale
             );
 
+            // check collisions with tiles sprite is moving towards vertically
             for (
                 let x = sprite._hitbox.left;
                 x < Fx.iadd(tileSize, sprite._hitbox.right);
