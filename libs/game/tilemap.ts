@@ -260,7 +260,7 @@ namespace tiles {
         }
 
         public getObstacle(col: number, row: number) {
-            const index = this.isOutsideMap(col, row) ? this._map.getPixel(col, row) : 0;
+            const index = this.isOutsideMap(col, row) ? 0 : this._map.getPixel(col, row);
             const tile = this._tileSets[index] || this.generateTile(index);
             return new sprites.StaticObstacle(
                 tile.image,
