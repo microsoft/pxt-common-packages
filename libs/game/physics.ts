@@ -96,7 +96,15 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         this.map.clear();
         this.map.resizeBuckets(this.sprites);
 
-        const MAX_STEP_COUNT = Fx.toInt(this.maxVelocity) / Fx.toInt(this.minSingleStep);
+        const MAX_STEP_COUNT = Fx.toInt(
+            Fx.mul(
+                Fx.div(
+                    this.maxVelocity,
+                    this.minSingleStep
+                ),
+                dtSec
+            )
+        );
         const overlapHandlers = scene.overlapHandlers.slice();
 
         let selected = 0;
@@ -157,7 +165,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             }
 
             this.spriteCollisions(currMovers, overlapHandlers);
-            while(currMovers.length) currMovers.pop();
+            while (currMovers.length) currMovers.pop();
         }
     }
 
