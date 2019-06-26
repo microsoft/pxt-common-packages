@@ -36,7 +36,6 @@ namespace info {
         fontColor: number;
         countdownExpired: boolean;
         countdownEndHandler: () => void;
-        scene: scene.Scene;
     }
 
     let infoState: InfoState = undefined;
@@ -44,8 +43,56 @@ namespace info {
     let players: PlayerInfo[];
     let playerStates: PlayerState[];
 
-    let infoStateStack: InfoState[];
-    let playerStateStack: InfoState[];
+    let infoStateStack: {
+        state: InfoState,
+        scene: scene.Scene
+    }[];
+
+    let playerStateStack: {
+        state: PlayerState[],
+        scene: scene.Scene
+    }[];
+
+    game.addScenePushHandler(() => {
+        const scene = game.currentScene();
+        if (infoState) {
+            if (!infoStateStack) infoStateStack = [];
+            infoStateStack.push({
+                state: infoState,
+                scene: scene
+            });
+            infoState = undefined;
+        }
+        if (playerStates) {
+            if (!playerStateStack) playerStateStack = [];
+            playerStateStack.push({
+                state: playerStates,
+                scene: scene
+            });
+        }
+    });
+
+    game.addScenePopHandler(() => {
+        const scene = game.currentScene();
+        infoState = undefined;
+        if (infoStateStack && infoStateStack.length) {
+            const nextState = infoStateStack.pop();
+            if (nextState.scene == scene) {
+                infoState = nextState.state;
+            } else {
+                infoStateStack.push(nextState);
+            }
+        }
+        playerStates = undefined;
+        if (playerStateStack && playerStateStack.length) {
+            const nextState = playerStateStack.pop();
+            if (nextState.scene == scene) {
+                playerStates = nextState.state;
+            } else {
+                playerStateStack.push(nextState);
+            }
+        }
+    });
 
     function initHUD() {
         if (infoState) return;
@@ -66,8 +113,7 @@ namespace info {
             fontColor: screen.isMono ? 1 : 3,
             countdownExpired: undefined,
             countdownEndHandler: undefined,
-            gameEnd: undefined,
-            scene: game.currentScene()
+            gameEnd: undefined
         };
 
         game.eventContext().registerFrameHandler(scene.HUD_PRIORITY, () => {
