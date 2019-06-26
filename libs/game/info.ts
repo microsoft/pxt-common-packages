@@ -22,10 +22,10 @@ namespace info {
         _score: number;
         _life: number;
         _player: number;
+        scene: scene.Scene;
     }
 
     interface InfoState {
-        // players: PlayerInfo[];
         visibilityFlag : number;
 
         gameEnd: number;
@@ -36,10 +36,16 @@ namespace info {
         fontColor: number;
         countdownExpired: boolean;
         countdownEndHandler: () => void;
+        scene: scene.Scene;
     }
 
-    let players: PlayerInfo[];
     let infoState: InfoState = undefined;
+
+    let players: PlayerInfo[];
+    let playerStates: PlayerState[];
+
+    let infoStateStack: InfoState[];
+    let playerStateStack: InfoState[];
 
     function initHUD() {
         if (infoState) return;
@@ -48,14 +54,20 @@ namespace info {
         infoState = {
             visibilityFlag: Visibility.Hud,
             heartImage: defaultHeartImage(),
-            multiplierImage: defaultMultiplyImage(),
+            multiplierImage: img`
+                1 . . . 1
+                . 1 . 1 .
+                . . 1 . .
+                . 1 . 1 .
+                1 . . . 1
+            `,
             bgColor: screen.isMono ? 0 : 1,
             borderColor: screen.isMono ? 1 : 3,
             fontColor: screen.isMono ? 1 : 3,
             countdownExpired: undefined,
             countdownEndHandler: undefined,
-            // players: [],
-            gameEnd: undefined
+            gameEnd: undefined,
+            scene: game.currentScene()
         };
 
         game.eventContext().registerFrameHandler(scene.HUD_PRIORITY, () => {
@@ -91,6 +103,7 @@ namespace info {
                         infoState.countdownExpired = true;
                         if (infoState.countdownEndHandler) {
                             infoState.countdownEndHandler();
+                            infoState.gameEnd = undefined;
                         }
                         else {
                             game.over();
@@ -107,24 +120,11 @@ namespace info {
         infoState.visibilityFlag |= Visibility.Multi;
         if (!(infoState.visibilityFlag & Visibility.UserHeartImage))
             infoState.heartImage = defaultMultiplayerHeartImage();
-        infoState.multiplierImage = defaultMultiplyImage();
-    }
-
-    function defaultMultiplyImage() {
-        if (infoState.visibilityFlag & Visibility.Multi)
-            return img`
-                1 . 1
-                . 1 .
-                1 . 1
-            `;
-        else
-            return img`
-                1 . . . 1
-                . 1 . 1 .
-                . . 1 . .
-                . 1 . 1 .
-                1 . . . 1
-            `;
+        infoState.multiplierImage = img`
+            1 . 1
+            . 1 .
+            1 . 1
+        `;
     }
 
     function defaultHeartImage() {
@@ -516,7 +516,8 @@ namespace info {
                 this.up = true;
             }
 
-            initHUD();
+            if (players == undefined)
+                players = [];
             players[this._player - 1] = this;
         }
 
