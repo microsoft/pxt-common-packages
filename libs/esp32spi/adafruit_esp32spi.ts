@@ -8,10 +8,10 @@ namespace time {
 }
 
 namespace esp32spi {
-    export interface AccessPoint {
-        ssid: string;
+    export class AccessPoint {
         rssi: number;
         encryption: number;
+        constructor(public ssid: string) { }
     }
 
     // pylint: disable=bad-whitespace
@@ -299,15 +299,11 @@ namespace esp32spi {
             let APs = []
             let i = 0
             for (let name of names) {
-                let a_p = {
-                    ssid: name.toString(),
-                    rssi: 0,
-                    encryption: 0
-                }
+                let a_p = new AccessPoint(name.toString())
                 let rssi = this._send_command_get_response(_GET_IDX_RSSI_CMD, [buffer1(i)])[0]
-                a_p["rssi"] = pins.unpackBuffer("<i", rssi)[0]
+                a_p.rssi = pins.unpackBuffer("<i", rssi)[0]
                 let encr = this._send_command_get_response(_GET_IDX_ENCT_CMD, [buffer1(1)])[0]
-                a_p["encryption"] = encr[0]
+                a_p.encryption = encr[0]
                 APs.push(a_p)
                 i++
             }
