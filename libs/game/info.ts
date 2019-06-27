@@ -95,7 +95,6 @@ namespace info {
 
     function initHUD() {
         if (infoState) return;
-        players = [];
 
         infoState = new InfoState();
 
@@ -495,29 +494,29 @@ namespace info {
     //% fixedInstances
     //% blockGap=8
     export class PlayerInfo {
-        _player: number;
-        bg: number; // background color
-        border: number; // border color
-        fc: number; // font color
-        showScore?: boolean;
-        showLife?: boolean;
-        visilibity: Visibility;
-        showPlayer?: boolean;
-        x?: number;
-        y?: number;
-        left?: boolean; // if true banner goes from x to the left, else goes rightward
-        up?: boolean; // if true banner goes from y up, else goes downward
+        protected _player: number;
+        public bg: number; // background color
+        public border: number; // border color
+        public fc: number; // font color
+        public showScore?: boolean;
+        public showLife?: boolean;
+        public visilibity: Visibility;
+        public showPlayer?: boolean;
+        public x?: number;
+        public y?: number;
+        public left?: boolean; // if true banner goes from x to the left, else goes rightward
+        public up?: boolean; // if true banner goes from y up, else goes downward
 
         constructor(player: number) {
             this._player = player;
             this.border = 1;
             this.fc = 1;
             this.visilibity = Visibility.None;
-            this.showScore = null;
-            this.showLife = null;
-            this.showPlayer = null;
-            this.left = null;
-            this.up = null;
+            this.showScore = undefined;
+            this.showLife = undefined;
+            this.showPlayer = undefined;
+            this.left = undefined;
+            this.up = undefined;
             if (this._player === 1) {
                 // Top left, and banner is white on red
                 this.bg = screen.isMono ? 0 : 2;
@@ -543,8 +542,7 @@ namespace info {
                 this.up = true;
             }
 
-            if (players == undefined)
-                players = [];
+            if (!players) players = [];
             players[this._player - 1] = this;
         }
 
@@ -561,6 +559,11 @@ namespace info {
             return infoState.playerStates[this._player - 1];
         }
 
+        // the id numbera of the player
+        id(): number {
+            return this._player;
+        }
+
         /**
          * Get the player score
          */
@@ -568,14 +571,14 @@ namespace info {
         //% blockId=piscore block="%player score"
         //% help=info/score
         score(): number {
-            if (this.showScore === null) this.showScore = true;
-            if (this.showPlayer === null) this.showPlayer = true;
+            if (this.showScore === undefined) this.showScore = true;
+            if (this.showPlayer === undefined) this.showPlayer = true;
 
             const state = this.getState();
 
             if (!state.score) {
                 state.score = 0;
-                saveHighScore();
+                updateHighScore(0);
             }
             return state.score;
         }
@@ -609,7 +612,7 @@ namespace info {
 
         hasScore() {
             const state = this.getState();
-            return state.score !== null;
+            return state.score !== undefined;
         }
 
         /**
@@ -620,10 +623,10 @@ namespace info {
         //% help=info/life
         life(): number {
             const state = this.getState();
-            if (this.showLife === null) this.showLife = true;
-            if (this.showPlayer === null) this.showPlayer = true;
+            if (this.showLife === undefined) this.showLife = true;
+            if (this.showPlayer === undefined) this.showPlayer = true;
 
-            if (state.life === null) {
+            if (state.life === undefined) {
                 state.life = 3;
             }
             return state.life;
@@ -666,7 +669,7 @@ namespace info {
         //% help=info/has-life
         hasLife(): boolean {
             const state = this.getState();
-            return state.life !== null;
+            return state.life !== undefined;
         }
 
         /**
@@ -683,8 +686,8 @@ namespace info {
 
         raiseLifeZero(gameOver: boolean) {
             const state = this.getState();
-            if (state.life !== null && state.life <= 0) {
-                state.life = null;
+            if (state.life !== undefined && state.life <= 0) {
+                state.life = undefined;
                 if (state.lifeZeroHandler) {
                     state.lifeZeroHandler();
                 } else if (gameOver) {
@@ -704,8 +707,8 @@ namespace info {
             let lifeWidth = 0;
             const offsetX = 1;
             let offsetY = 2;
-            let showScore = this.showScore && state.score !== null;
-            let showLife = this.showLife && state.life !== null;
+            let showScore = this.showScore && state.score !== undefined;
+            let showLife = this.showLife && state.life !== undefined;
 
             if (showScore) {
                 score = "" + state.score;
