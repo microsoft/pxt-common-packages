@@ -24,20 +24,19 @@ const MAX_TIME_STEP = Fx8(100); // milliseconds
 const SPRITE_CANNOT_COLLIDE = sprites.Flag.Ghost | sprites.Flag.Destroyed;
 const MIN_MOVE_GAP = Fx8(0.1);
 
-interface MovingSprite {
-    sprite: Sprite;
-
-    // vx and vy when last updated
-    cachedVx: Fx8;
-    cachedVy: Fx8;
-
-    // remaining x
-    dx: Fx8;
-    dy: Fx8;
-
-    // how much to move per step
-    xStep: Fx8;
-    yStep: Fx8;
+class MovingSprite {
+    constructor(
+        public sprite: Sprite,
+        // vx and vy when last updated
+        public cachedVx: Fx8,
+        public cachedVy: Fx8,
+        // remaining x
+        public dx: Fx8,
+        public dy: Fx8,
+        // how much to move per step
+        public xStep: Fx8,
+        public yStep: Fx8
+    ) { }
 }
 
 /**
@@ -234,15 +233,15 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             }
         }
 
-        return {
-            sprite: sprite,
-            cachedVx: sprite._vx,
-            cachedVy: sprite._vy,
-            dx: dx,
-            dy: dy,
-            xStep: xStep,
-            yStep: yStep
-        };
+        return new MovingSprite(
+            sprite,
+            sprite._vx,
+            sprite._vy,
+            dx,
+            dy,
+            xStep,
+            yStep
+        );
     }
 
     private spriteCollisions(movedSprites: MovingSprite[], handlers: scene.OverlapHandler[]) {
