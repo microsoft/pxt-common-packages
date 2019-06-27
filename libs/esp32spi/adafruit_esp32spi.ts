@@ -1,8 +1,19 @@
 function print(msg: string) {
     console.log(msg);
 }
+namespace time {
+    export function monotonic(): number {
+        return control.millis();
+    }
+}
 
 namespace esp32spi {
+    export interface AccessPoint {
+        ssid: string;
+        rssi: number;
+        encryption: number;
+    }
+
     // pylint: disable=bad-whitespace
     const _SET_NET_CMD = 0x10
     const _SET_PASSPHRASE_CMD = 0x11
@@ -69,9 +80,11 @@ namespace esp32spi {
     export const WL_AP_FAILED = 9
 
     export class ESP_SPIcontrol {
-        _debug: boolean;
+        _spi: SPI;
+        _debug: number;
         _gpio0: DigitalInOutPin;
         _cs: DigitalInOutPin;
+        _ready: DigitalInOutPin;
         _reset: DigitalInOutPin;
         _pbuf: Buffer;
         _socknum_ll: any; /** TODO: type **/
@@ -81,6 +94,14 @@ namespace esp32spi {
         static TCP_MODE = 0
         static UDP_MODE = 1
         static TLS_MODE = 2
+
+        constructor() {
+            this._pbuf = control.createBuffer(1);
+        }
+
+        private log(priority: number, msg: string) {
+            console.log(msg);
+        }
 
         public reset(): void {
             /** Hard reset the ESP32 using the reset pin */
@@ -116,351 +137,363 @@ namespace esp32spi {
         // ok ready to send!
         // pylint: disable=no-member
         // pylint: disable=too-many-branches
-        private _read_byte(spi: any; /** TODO: type **/): any; /** TODO: type **/ {
-        /** Read one byte from SPI */
-        spi.readinto(this._pbuf)
-        if (this._debug >= 3) {
-            print("\t\tRead:", hex(this._pbuf[0]))
+        private _read_byte(): number {
+            this._spi.transfer(undefined, this._pbuf); // TODO
+            if (this._debug >= 3) {
+                print(`\t\tRead: ${this._pbuf[0]}`);
+            }
+            return this._pbuf[0]
         }
 
-        return this._pbuf[0]
-    }
-        
-        private _read_bytes(spi: any; /** TODO: type **/, buffer: any; /** TODO: type **/, start: number = 0, end: number = null): any; /** TODO: type **/ {
-        /** Read many bytes from SPI */
-        if (!end) {
-            end = buffer.length
-        }
-
-        spi.readinto(buffer, { start: start, end: end })
-        if (this._debug >= 3) {
-            print("\t\tRead:", { TODO: ListComp })
-        }
-
-    }
-        
-        private _wait_spi_char(spi: any; /** TODO: type **/, desired: any; /** TODO: type **/): boolean {
-        /** Read a byte with a time-out, and if we get it, check that its what we expect */
-        let times = time.monotonic()
-        while (time.monotonic() - times < 0.1) {
-            let r = this._read_byte(spi)
-            if (r == _ERR_CMD) {
-                control.fail("Error response to command")
+        /*
+        private _read_bytes(spi: SPI, buffer: Buffer, start: number = 0, end: number = null): void {
+            if (!end) {
+                end = buffer.length
             }
 
-            if (r == desired) {
-                return true
+            spi.transfer(undefined, buffer); // TODO
+            if (this._debug >= 3) {
+                print(`\t\tRead: ${buffer}`)
             }
+        }*/
 
-        }
-        control.fail("Timed out waiting for SPI char")
-    }
-        
-        private _check_data(spi: any; /** TODO: type **/, desired: any; /** TODO: type **/): any; /** TODO: type **/ {
-        /** Read a byte and verify its the value we want */
-        let r = this._read_byte(spi)
-        if (r != desired) {
-            control.fail(`Expected ${desired} but got ${r}`)
+        private checkData(desired: number): boolean {
+            const r = this._read_byte()
+            if (r != desired)
+                control.fail(`Expected ${desired} but got ${r}`)
+            return false;
         }
 
-    }
+        private wait_spi_char(desired: number): boolean {
+            /** Read a byte with a time-out, and if we get it, check that its what we expect */
+            let times = time.monotonic()
+            while (time.monotonic() - times < 0.1) {
+                let r = this._read_byte()
+                if (r == _ERR_CMD) {
+                    control.fail("Error response to command")
+                }
 
-
-    // wait up to 1000ms
-    // ok ready to send!
-    // %d length is %d" % (num, param_len))
-
-    get status(): any; /** TODO: type **/ {
-        /** The status of the ESP32 WiFi core. Can be WL_NO_SHIELD or WL_NO_MODULE
-    (not found), WL_IDLE_STATUS, WL_NO_SSID_AVAIL, WL_SCAN_COMPLETED,
-    WL_CONNECTED, WL_CONNECT_FAILED, WL_CONNECTION_LOST, WL_DISCONNECTED,
-    WL_AP_LISTENING, WL_AP_CONNECTED, WL_AP_FAILED
-*/
-        if (this._debug) {
-            print("Connection status")
+                if (r == desired) {
+                    return true
+                }
+            }
+            control.fail("Timed out waiting for SPI char")
+            return false;
         }
 
-        let resp = this._send_command_get_response(_GET_CONN_STATUS_CMD)
-        if (this._debug) {
-            print("Conn status:", resp[0][0])
+        private _wait_for_ready() {
+            pauseUntil(() => this._ready.digitalRead(), 10000);
         }
 
-        // one byte response
-        return resp[0][0]
-    }
+        private _send_command(cmd: number,
+            params: Buffer[] = undefined,
+            param_len_16 = false) {
 
-    get firmware_version(): any; /** TODO: type **/ {
+            params = params || [];
+
+            // compute buffer size
+            let n = 3; // START_CMD, cmd, length
+            params.forEach(param => {
+                n += 1 + (param_len_16 ? 1 : 0) + param.length;
+            })
+            n += 1; // END_CMD
+            // padding
+            while (n % 4) n++;
+
+            const packet = control.createBuffer(n);
+            let k = 0;
+            packet[k++] = _START_CMD;
+            packet[k++] = cmd & ~_REPLY_FLAG;
+            packet[k++] = params.length;
+
+            params.forEach(param => {
+                if (param_len_16)
+                    packet[k++] = (param.length >> 8) & 0xFF;
+                packet[k++] = param.length & 0xFF;
+                packet.write(k, param);
+                k += param.length;
+            })
+            packet[k++] = _END_CMD;
+            while (k < n)
+                packet[k++] = 0xff;
+
+            this._wait_for_ready();
+            this._spi.transfer(packet, undefined);
+        }
+
+        private _wait_response_cmd(cmd: number, num_responses: number = undefined, param_len_16 = false) {
+            this._wait_for_ready();
+
+            let responses: Buffer[] = []
+            this.wait_spi_char(_START_CMD);
+            this.checkData(cmd | _REPLY_FLAG)
+            if (num_responses !== undefined)
+                this.checkData(num_responses)
+            else
+                num_responses = this._read_byte();
+            for (let num = 0; num < num_responses; ++num) {
+                let param_len = this._read_byte()
+                if (param_len_16) {
+                    param_len <<= 8
+                    param_len |= this._read_byte()
+                }
+                this.log(1, `\tParameter #${num} length is ${param_len}`)
+                let response = control.createBuffer(param_len);
+                this._spi.transfer(undefined, response);
+                responses.push(response);
+            }
+            this.checkData(_END_CMD);
+            this.log(1, `responses ${responses.length}`);
+            return responses
+        }
+
+        private _send_command_get_response(cmd: number, params: Buffer[] = undefined,
+            reply_params = 1, sent_param_len_16 = false,
+            recv_param_len_16 = false) {
+            this._send_command(cmd, params, sent_param_len_16)
+            return this._wait_response_cmd(cmd, reply_params, recv_param_len_16)
+        }
+
+        get status(): number {
+            const resp = this._send_command_get_response(_GET_CONN_STATUS_CMD)
+            this.log(0, `Status: ${resp[0][0]}`);
+
+            // one byte response
+            return resp[0][0];
+        }
+
         /** A string of the firmware version on the ESP32 */
-        if (this._debug) {
-            print("Firmware version")
+        get firmware_version(): string {
+            if (this._debug) {
+                print("Firmware version")
+            }
+
+            let resp = this._send_command_get_response(_GET_FW_VERSION_CMD)
+            return resp[0].toString();
         }
 
-        let resp = this._send_command_get_response(_GET_FW_VERSION_CMD)
-        return resp[0]
-    }
-
-    get MAC_address(): any; /** TODO: type **/ {
-        // pylint: disable=invalid-name
         /** A bytearray containing the MAC address of the ESP32 */
-        if (this._debug) {
-            print("MAC address")
+        get MAC_address(): Buffer {
+            // pylint: disable=invalid-name
+            if (this._debug) {
+                print("MAC address")
+            }
+
+            let resp = this._send_command_get_response(_GET_MACADDR_CMD, [hex`ff`])
+            return resp[0]
         }
 
-        let resp = this._send_command_get_response(_GET_MACADDR_CMD, [hex`ff`])
-        return resp[0]
-    }
-        
-        public start_scan_networks(): any; /** TODO: type **/ {
         /** Begin a scan of visible access points. Follow up with a call
     to 'get_scan_networks' for response
 */
-        if (this._debug) {
-            print("Start scan")
+        private start_scan_networks(): void {
+            if (this._debug) {
+                print("Start scan")
+            }
+
+            let resp = this._send_command_get_response(_START_SCAN_NETWORKS)
+            if (resp[0][0] != 1) {
+                control.fail("Failed to start AP scan")
+            }
+
         }
 
-        let resp = this._send_command_get_response(_START_SCAN_NETWORKS)
-        if (resp[0][0] != 1) {
-            control.fail("Failed to start AP scan")
-        }
-
-    }
-        
-        public get_scan_networks(): any; /** TODO: type **/ {
         /** The results of the latest SSID scan. Returns a list of dictionaries with
     'ssid', 'rssi' and 'encryption' entries, one for each AP found
 */
-        this._send_command(_SCAN_NETWORKS)
-        let names = this._wait_response_cmd(_SCAN_NETWORKS)
-        // print("SSID names:", names)
-        // pylint: disable=invalid-name
-        let APs = []
-        for ([let i, let name] of enumerate(names)) {
-            let a_p = { TODO: Dict }
-            let rssi = this._send_command_get_response(_GET_IDX_RSSI_CMD, [[i]])[0]
-            a_p["rssi"] = struct.unpack("<i", rssi)[0]
-            let encr = this._send_command_get_response(_GET_IDX_ENCT_CMD, [[i]])[0]
-            a_p["encryption"] = encr[0]
-            APs.push(a_p)
-        }
-        return APs
-    }
-
-            /** Scan for visible access points, returns a list of access point details.
-         Returns a list of dictionaries with 'ssid', 'rssi' and 'encryption' entries,
-         one for each AP found
-        */
-        public scan_networks(): any; /** TODO: type **/ {
-        this.start_scan_networks()
-        // attempts
-        for (let _ = 0; _ < 10; ++_) {
-            pause(2000)
+        private get_scan_networks(): AccessPoint[] {
+            this._send_command(_SCAN_NETWORKS)
+            let names = this._wait_response_cmd(_SCAN_NETWORKS)
+            // print("SSID names:", names)
             // pylint: disable=invalid-name
-            let APs = this.get_scan_networks()
-            if (APs) {
-                return APs
+            let APs = []
+            for ([let i, let name] of enumerate(names)) {
+                let a_p = { TODO: Dict }
+                let rssi = this._send_command_get_response(_GET_IDX_RSSI_CMD, [[i]])[0]
+                a_p["rssi"] = struct.unpack("<i", rssi)[0]
+                let encr = this._send_command_get_response(_GET_IDX_ENCT_CMD, [[i]])[0]
+                a_p["encryption"] = encr[0]
+                APs.push(a_p)
+            }
+            return APs
+        }
+
+        /** Scan for visible access points, returns a list of access point details.
+     Returns a list of dictionaries with 'ssid', 'rssi' and 'encryption' entries,
+     one for each AP found
+    */
+        public scan_networks(): AccessPoint[] {
+            this.start_scan_networks()
+            // attempts
+            for (let _ = 0; _ < 10; ++_) {
+                pause(2000)
+                // pylint: disable=invalid-name
+                let APs = this.get_scan_networks()
+                if (APs) {
+                    return APs
+                }
+
+            }
+            return null
+        }
+
+        /** Tells the ESP32 to set the access point to the given ssid */
+        public wifi_set_network(ssid: string): void {
+            const ssidbuf = control.createBufferFromUTF8(ssid);
+            let resp = this._send_command_get_response(_SET_NET_CMD, [ssidbuf])
+            if (resp[0][0] != 1) {
+                control.fail("Failed to set network")
             }
 
         }
-        return null
-    }
-        
-        public wifi_set_network(ssid: Buffer): any; /** TODO: type **/ {
-        /** Tells the ESP32 to set the access point to the given ssid */
-        let resp = this._send_command_get_response(_SET_NET_CMD, [ssid])
-        if (resp[0][0] != 1) {
-            control.fail("Failed to set network")
-        }
 
-    }
-        
-        public wifi_set_passphrase(ssid: Buffer, passphrase: Buffer): any; /** TODO: type **/ {
         /** Sets the desired access point ssid and passphrase */
-        let resp = this._send_command_get_response(_SET_PASSPHRASE_CMD, [ssid, passphrase])
-        if (resp[0][0] != 1) {
-            control.fail("Failed to set passphrase")
+        public wifi_set_passphrase(ssid: string, passphrase: string): void {
+            const ssidbuf = control.createBufferFromUTF8(ssid);
+            const passphrasebuf = control.createBufferFromUTF8(passphrase);
+            let resp = this._send_command_get_response(_SET_PASSPHRASE_CMD, [ssidbuf, passphrasebuf])
+            if (resp[0][0] != 1) {
+                control.fail("Failed to set passphrase")
+            }
         }
 
-    }
-        
-        public wifi_set_entidentity(ident: any; /** TODO: type **/): any; /** TODO: type **/ {
         /** Sets the WPA2 Enterprise anonymous identity */
-        let resp = this._send_command_get_response(_SET_ENT_IDENT_CMD, [ident])
-        if (resp[0][0] != 1) {
-            control.fail("Failed to set enterprise anonymous identity")
+        public wifi_set_entidentity(ident: string): void {
+            const ssidbuf = control.createBufferFromUTF8(ident);
+            let resp = this._send_command_get_response(_SET_ENT_IDENT_CMD, [ssidbuf])
+            if (resp[0][0] != 1) {
+                control.fail("Failed to set enterprise anonymous identity")
+            }
+
         }
 
-    }
-        
-        public wifi_set_entusername(username: any; /** TODO: type **/): any; /** TODO: type **/ {
         /** Sets the desired WPA2 Enterprise username */
-        let resp = this._send_command_get_response(_SET_ENT_UNAME_CMD, [username])
-        if (resp[0][0] != 1) {
-            control.fail("Failed to set enterprise username")
+        public wifi_set_entusername(username: string): void {
+            const usernamebuf = control.createBufferFromUTF8(username);
+            let resp = this._send_command_get_response(_SET_ENT_UNAME_CMD, [usernamebuf])
+            if (resp[0][0] != 1) {
+                control.fail("Failed to set enterprise username")
+            }
+
         }
 
-    }
-        
-        public wifi_set_entpassword(password: any; /** TODO: type **/): any; /** TODO: type **/ {
         /** Sets the desired WPA2 Enterprise password */
-        let resp = this._send_command_get_response(_SET_ENT_PASSWD_CMD, [password])
-        if (resp[0][0] != 1) {
-            control.fail("Failed to set enterprise password")
+        public wifi_set_entpassword(password: string): void {
+            const passwordbuf = control.createBufferFromUTF8(password);
+            let resp = this._send_command_get_response(_SET_ENT_PASSWD_CMD, [passwordbuf])
+            if (resp[0][0] != 1) {
+                control.fail("Failed to set enterprise password")
+            }
+
         }
 
-    }
-        
-        public wifi_set_entenable(): any; /** TODO: type **/ {
         /** Enables WPA2 Enterprise mode */
-        let resp = this._send_command_get_response(_SET_ENT_ENABLE_CMD)
-        if (resp[0][0] != 1) {
-            control.fail("Failed to enable enterprise mode")
+        public wifi_set_entenable(): void {
+            let resp = this._send_command_get_response(_SET_ENT_ENABLE_CMD)
+            if (resp[0][0] != 1) {
+                control.fail("Failed to enable enterprise mode")
+            }
+
         }
 
-    }
 
-    get ssid(): any; /** TODO: type **/ {
-        /** The name of the access point we're connected to */
-        let resp = this._send_command_get_response(_GET_CURR_SSID_CMD, [hex`ff`])
-        return resp[0]
-    }
+        get ssid(): Buffer {
+            let resp = this._send_command_get_response(_GET_CURR_SSID_CMD, [hex`ff`])
+            return resp[0]
+        }
 
-    get rssi(): any; /** TODO: type **/ {
-        /** The receiving signal strength indicator for the access point we're
-    connected to
-*/
-        let resp = this._send_command_get_response(_GET_CURR_RSSI_CMD, [hex`ff`])
-        return struct.unpack("<i", resp[0])[0]
-    }
+        get rssi(): number {
+            let resp = this._send_command_get_response(_GET_CURR_RSSI_CMD, [hex`ff`])
+            return pins.unpackBuffer("<i", resp[0])[0]
+        }
 
-    get network_data(): any; /** TODO: type **/ {
-        /** A dictionary containing current connection details such as the 'ip_addr',
-    'netmask' and 'gateway'
-*/
-        let resp = this._send_command_get_response(_GET_IPADDR_CMD, [hex`ff`])
-        return { TODO: Dict }
-    }
+        get networkData(): any {
+            let resp = this._send_command_get_response(_GET_IPADDR_CMD, [hex`ff`])
+            return resp[0]; //?
+        }
 
-    get ip_address(): any; /** TODO: type **/ {
-        /** Our local IP address */
-        return this.network_data["ip_addr"]
-    }
+        get ipAddress(): string {
+            return this.networkData["ip_addr"]
+        }
 
-    get is_connected(): boolean {
-        /** Whether the ESP32 is connected to an access point */
-        try {
+        get isConnected(): boolean {
             return this.status == WL_CONNECTED
         }
-        catch (_/* instanceof RuntimeError */) {
-            this.reset()
-            return false
-        }
 
-    }
-        
-        public connect(secrets: any; /** TODO: type **/): any; /** TODO: type **/ {
         /** Connect to an access point using a secrets dictionary
     that contains a 'ssid' and 'password' entry
-*/
-        this.connect_AP(secrets["ssid"], secrets["password"])
-    }
+    */
+        public connect(secrets: any): void {
+            this.connect_AP(secrets["ssid"], secrets["password"])
+        }
 
-        // pylint: disable=invalid-name
-        public connect_AP(ssid: Buffer, password: Buffer): any; /** TODO: type **/ {
         /** Connect to an access point with given name and password.
     Will retry up to 10 times and return on success or raise
     an exception on failure
-*/
-        if (this._debug) {
-            print("Connect to AP", ssid, password)
-        }
-
-        if (isinstance(ssid, str)) {
-            ssid = pins.createBufferFromArray(ssid, "utf-8")
-        }
-
-        if (password) {
-            if (isinstance(password, str)) {
-                password = pins.createBufferFromArray(password, "utf-8")
+    */
+        public connect_AP(ssid: string, password: string): number {
+            if (this._debug) {
+                print(`Connect to AP ${ssid} ${password}`)
             }
 
-            this.wifi_set_passphrase(ssid, password)
-        } else {
-            this.wifi_set_network(ssid)
-        }
-
-        // retries
-        for (let _ = 0; _ < 10; ++_) {
-            let stat = this.status
-            if (stat == WL_CONNECTED) {
-                return stat
+            if (password) {
+                this.wifi_set_passphrase(ssid, password)
+            } else {
+                this.wifi_set_network(ssid)
             }
 
-            pause(1000)
+            // retries
+            let stat;
+            for (let _ = 0; _ < 10; ++_) {
+                stat = this.status
+                if (stat == WL_CONNECTED) {
+                    return stat;
+                }
+
+                pause(1000)
+            }
+            if ([WL_CONNECT_FAILED, WL_CONNECTION_LOST, WL_DISCONNECTED].indexOf(stat) >= 0) {
+                control.fail(`RuntimeError("Failed to connect to ssid", ssid)`)
+            }
+
+            if (stat == WL_NO_SSID_AVAIL) {
+                control.fail(`RuntimeError("No such ssid", ssid)`)
+            }
+
+            control.fail(`Unknown error ${stat}`)
+            return stat;
         }
-        if ([WL_CONNECT_FAILED, WL_CONNECTION_LOST, WL_DISCONNECTED].indexOf(stat) >= 0) {
-            control.fail(`RuntimeError("Failed to connect to ssid", ssid)`)
-        }
 
-        if (stat == WL_NO_SSID_AVAIL) {
-            control.fail(`RuntimeError("No such ssid", ssid)`)
-        }
-
-        control.fail("Unknown error 0x%02X" % stat)
-    }
-
-        // pylint: disable=no-self-use, invalid-name
-        public pretty_ip(ip: any; /** TODO: type **/): any; /** TODO: type **/ {
-        /** Converts a bytearray IP address to a dotted-quad string for printing */
-        return `${ip[0]}.${ip[1]}.${ip[2]}.${ip[3]}`
-    }
-
-        // pylint: disable=no-self-use, invalid-name
-        public unpretty_ip(ip: any; /** TODO: type **/): Buffer {
-        /** Converts a dotted-quad string to a bytearray IP address */
-        let octets = { TODO: ListComp }
-        return pins.createBufferFromArray(octets)
-    }
-        
-        public get_host_by_name(hostname: Buffer): Buffer {
         /** Convert a hostname to a packed 4-byte IP address. Returns
     a 4 bytearray
-*/
-        if (this._debug) {
-            print("*** Get host by name")
+    */
+        public get_host_by_name(hostname: string): Buffer {
+            let resp = this._send_command_get_response(_REQ_HOST_BY_NAME_CMD, [control.createBufferFromUTF8(hostname)])
+            if (resp[0][0] != 1) {
+                control.fail("Failed to request hostname")
+            }
+
+            resp = this._send_command_get_response(_GET_HOST_BY_NAME_CMD)
+            return resp[0];
         }
 
-        if (isinstance(hostname, str)) {
-            hostname = pins.createBufferFromArray(hostname, "utf-8")
-        }
-
-        let resp = this._send_command_get_response(_REQ_HOST_BY_NAME_CMD, [hostname])
-        if (resp[0][0] != 1) {
-            control.fail("Failed to request hostname")
-        }
-
-        resp = this._send_command_get_response(_GET_HOST_BY_NAME_CMD)
-        return resp[0]
-    }
-        
-        public ping(dest: Buffer, ttl: number = 250): any; /** TODO: type **/ {
         /** Ping a destination IP address or hostname, with a max time-to-live
     (ttl). Returns a millisecond timing value
-*/
-        // convert to IP address
-        if (isinstance(dest, str)) {
-            dest = this.get_host_by_name(dest)
+    */
+        public ping(dest: string, ttl: number = 250): number {
+            // convert to IP address
+            let ip = this.get_host_by_name(dest)
+
+            // ttl must be between 0 and 255
+            ttl = Math.max(0, Math.min(ttl | 0, 255))
+            let resp = this._send_command_get_response(_PING_CMD, [ip, [ttl]])
+            return struct.unpack("<H", resp[0])[0];
         }
 
-        // ttl must be between 0 and 255
-        ttl = Math.max(0, Math.min(ttl, 255))
-        let resp = this._send_command_get_response(_PING_CMD, [dest, [ttl]])
-        return struct.unpack("<H", resp[0])[0]
-    }
-        
         public get_socket(): any; /** TODO: type **/ {
         /** Request a socket from the ESP32, will allocate and return a number that
     can then be passed to the other socket commands
-*/
+    */
         if (this._debug) {
             print("*** Get socket")
         }
@@ -484,7 +517,7 @@ namespace esp32spi {
     using the ESP32's internal reference number. By default we use
     'conn_mode' TCP_MODE but can also use UDP_MODE or TLS_MODE
     (dest must be hostname for TLS_MODE!)
-*/
+    */
         this._socknum_ll[0][0] = socket_num
         if (this._debug) {
             print("*** Open socket")
@@ -511,7 +544,7 @@ namespace esp32spi {
     SOCKET_SYN_SENT, SOCKET_SYN_RCVD, SOCKET_ESTABLISHED, SOCKET_FIN_WAIT_1,
     SOCKET_FIN_WAIT_2, SOCKET_CLOSE_WAIT, SOCKET_CLOSING, SOCKET_LAST_ACK, or
     SOCKET_TIME_WAIT
-*/
+    */
         this._socknum_ll[0][0] = socket_num
         let resp = this._send_command_get_response(_GET_CLIENT_STATE_TCP_CMD, this._socknum_ll)
         return resp[0][0]
@@ -570,7 +603,7 @@ namespace esp32spi {
     using the ESP32's internal reference number. By default we use
     'conn_mode' TCP_MODE but can also use UDP_MODE or TLS_MODE (dest must
     be hostname for TLS_MODE!)
-*/
+    */
         if (this._debug) {
             print("*** Socket connect mode", conn_mode)
         }
@@ -606,7 +639,7 @@ namespace esp32spi {
         public set_esp_debug(enabled: any; /** TODO: type **/): any; /** TODO: type **/ {
         /** Enable/disable debug mode on the ESP32. Debug messages will be
     written to the ESP32's UART.
-*/
+    */
         let resp = this._send_command_get_response(_SET_DEBUG_CMD, [[!!(enabled)]])
         if (resp[0][0] != 1) {
             control.fail("Failed to set debug mode")
@@ -617,11 +650,11 @@ namespace esp32spi {
         public set_pin_mode(pin: any; /** TODO: type **/, mode: number): any; /** TODO: type **/ {
         /** 
     Set the io mode for a GPIO pin.
-
+    
     :param int pin: ESP32 GPIO pin to set.
     :param value: direction for pin, digitalio.Direction or integer (0=input, 1=output).
-    
-*/
+     
+    */
         if (mode == digitalio.Direction.OUTPUT) {
             let pin_mode = 1
         } else if (mode == digitalio.Direction.INPUT) {
@@ -640,11 +673,11 @@ namespace esp32spi {
         public set_digital_write(pin: any; /** TODO: type **/, value: any; /** TODO: type **/): any; /** TODO: type **/ {
         /** 
     Set the digital output value of pin.
-
+    
     :param int pin: ESP32 GPIO pin to write to.
     :param bool value: Value for the pin.
-    
-*/
+     
+    */
         let resp = this._send_command_get_response(_SET_DIGITAL_WRITE_CMD, [[pin], [value]])
         if (resp[0][0] != 1) {
             control.fail("Failed to write to pin")
@@ -655,11 +688,11 @@ namespace esp32spi {
         public set_analog_write(pin: any; /** TODO: type **/, analog_value: number): any; /** TODO: type **/ {
         /** 
     Set the analog output value of pin, using PWM.
-
+    
     :param int pin: ESP32 GPIO pin to write to.
     :param float value: 0=off 1.0=full on
-    
-*/
+     
+    */
         let value = Math.trunc(255 * analog_value)
         let resp = this._send_command_get_response(_SET_ANALOG_WRITE_CMD, [[pin], [value]])
         if (resp[0][0] != 1) {
