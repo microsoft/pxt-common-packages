@@ -24,10 +24,20 @@ struct MetaEntry {
 };
 
 #ifdef SAMD51
-#define FLASH_BUFFER_SIZE 16
+#define RAFFS_FLASH_BUFFER_SIZE 16
+// RAFFS64 only writes each 64 bit double word once; needed for SAMD51 ECC flash
+#define RAFFS_BLOCK 64
+#define RAFFS_DELETED 0x7ffe
+#define RAFFS_ROUND(x) (((x) + 7) >> 3) << 3
 #else
-#define FLASH_BUFFER_SIZE 64
+#define RAFFS_FLASH_BUFFER_SIZE 64
+#define RAFFS_BLOCK 16
+#define RAFFS_ROUND(x) (((x) + 3) >> 2) << 2
 #endif
+
+#define RAFFS_VALIDATE_NEXT(nextptr)                                                               \
+    if (nextptr == 0 || nextptr > bytes / 8)                                                       \
+    target_panic(DEVICE_FLASH_ERROR)
 
 class FS {
     friend class File;
@@ -43,7 +53,7 @@ class FS {
     uint32_t bytes;
     DirEntry dirEnt;
     uintptr_t flashBufAddr;
-    uint8_t flashBuf[FLASH_BUFFER_SIZE];
+    uint8_t flashBuf[RAFFS_FLASH_BUFFER_SIZE];
 
     void erasePages(uintptr_t addr, uint32_t len);
     void flushFlash();
@@ -54,9 +64,63 @@ class FS {
     void unlock();
     MetaEntry *findMetaEntry(const char *filename);
     MetaEntry *createMetaPage(const char *filename, MetaEntry *existing);
-    uint32_t getFileSize(uint16_t dataptr, uint16_t *lastptr = NULL);
+    int32_t getFileSize(uint16_t dataptr, uint16_t *lastptr = NULL);
     uintptr_t copyFile(uint16_t dataptr, uintptr_t dst);
     bool tryGC(int spaceNeeded);
+
+    uint16_t _rawsize(uint16_t dp) {
+        RAFFS_VALIDATE_NEXT(dp);
+        return basePtr[dp] & 0xffff;
+    }
+
+    uint16_t _size(uint16_t dp) {
+        uint16_t blsz = _rawsize(dp);
+#if RAFFS_BLOCK == 64
+        if (blsz == RAFFS_DELETED)
+            return 0;
+        return blsz & 0x7fff;
+#endif
+        return blsz;
+    }
+
+    uint16_t _nextptr(uint16_t dp) {
+        RAFFS_VALIDATE_NEXT(dp);
+        return basePtr[dp] >> 16;
+    }
+
+    uint16_t blnext(uint16_t dp) {
+        uint16_t np = _nextptr(dp);
+        if (np == 0xffff)
+            return 0;
+#if RAFFS_BLOCK == 64
+        int blsz = _size(dp);
+        np += RAFFS_ROUND(blsz - 4) >> 2;
+#endif
+        return np;
+    }
+
+    int blsize(uint16_t dp) {
+#if RAFFS_BLOCK == 64
+        if (blnext(dp) && (_rawsize(blnext(dp)) & 0x8000) == 0)
+            return 0;
+        if (_rawsize(dp) == RAFFS_DELETED)
+            return -1;
+        return _size(dp);
+#else
+        return _size(dp);
+#endif
+    }
+
+    uint32_t *data0(uint16_t dp) { return &basePtr[dp] + 1; }
+
+    uint32_t *data1(uint16_t dp) {
+#if RAFFS_BLOCK == 64
+        RAFFS_VALIDATE_NEXT(_nextptr(dp));
+        return &basePtr[_nextptr(dp)]
+#else
+        return &basePtr[dp] + 2;
+#endif
+    }
 
   public:
     FS(codal::Flash &flash, uintptr_t baseAddr, uint32_t bytes);
@@ -113,7 +177,7 @@ class File {
   public:
     int read(void *data, uint32_t len);
     void seek(uint32_t pos);
-    uint32_t size();
+    int32_t size();
     uint32_t tell() { return readOffset; }
     bool isDeleted() { return meta->dataptr == 0; }
     // thse two return negative value when out of space

@@ -4,12 +4,37 @@
 #include "MessageBus.h"
 #include <stddef.h>
 
-#define RAFFS_MAGIC 0x6786208a
+/*
+64 bit block structure
+
+uint16_t size;
+uint16_t nextptr;
+uint8_t data[4];
+
+nextptr points to where the rest of the data of the current block sits
+after the data there's another block; if it's all 1, then it's the end
+otherwise, if 0x8000&size==0 on that block, then the current block should be discarded
+
+ */
+
+#if RAFFS_BLOCK == 16
+#define RAFFS_MAGIC 0x6786e0da
+#elif RAFFS_BLOCK == 64
+#define RAFFS_MAGIC 0x83b48620
+#else
+#error "unsupported RAFFS_BLOCK size"
+#endif
+
 #define M1 0xffffffffU
 
 using namespace codal;
 
 #define oops() target_panic(DEVICE_FLASH_ERROR)
+#define ASSERT(cond)                                                                               \
+    do {                                                                                           \
+        if (!(cond))                                                                               \
+            oops();                                                                                \
+    } while (0)
 
 #define OFF2(v, basePtr) (int)((uint32_t *)v - (uint32_t *)basePtr)
 #define OFF(v) OFF2(v, basePtr)
@@ -167,10 +192,17 @@ bool FS::tryMount() {
         p -= 2;
     metaPtr = (MetaEntry *)(p + 2);
 
+#if RAFFS_BLOCK == 64
+    p = (uint32_t *)metaPtr - 1;
+    while (*p == M1)
+        p -= 2;
+    freeDataPtr = p + 3;
+#else
     p = (uint32_t *)metaPtr - 1;
     while (*p == M1)
         p--;
     freeDataPtr = p + 1;
+#endif
 
     LOG("mounted, end=%x meta=%x free=%x", OFF(endPtr), OFF(metaPtr), OFF(freeDataPtr));
 
@@ -218,6 +250,9 @@ bool FS::exists(const char *filename) {
     auto r = findMetaEntry(filename);
     if (r && r->dataptr)
         ex = true;
+#if RAFFS_BLOCK == 64
+    check size
+#endif
     unlock();
     return ex;
 }
@@ -258,19 +293,37 @@ MetaEntry *FS::findMetaEntry(const char *filename) {
     if (nextptr == 0 || nextptr > bytes / 8)                                                       \
     oops()
 
-uint32_t FS::getFileSize(uint16_t dataptr, uint16_t *lastptr) {
+int32_t FS::getFileSize(uint16_t dataptr, uint16_t *lastptr) {
+    if (dataptr == 0)
+        return -1;
+
     if (dataptr == 0xffff) {
+#if RAFFS_BLOCK == 64
+        oops();
+#else
         if (lastptr)
             *lastptr = 0;
         return 0;
+#endif
     }
-    uint32_t sz = 0;
+    int32_t sz = 0;
     for (;;) {
-        auto hd = basePtr[dataptr];
-        auto nextptr = hd >> 16;
-        auto blsz = hd & 0xffff;
+        auto nextptr = blnext(dataptr);
+        auto blsz = blsize(dataptr);
+
+#if RAFFS_BLOCK == 64
+        if (blsz == -1) {
+            ASSERT(sz <= 0);
+            sz = -1;
+        } else {
+            if (sz < 0)
+                sz = 0;
+            sz += blsz;
+        }
+#else
         sz += blsz;
-        if (nextptr == 0xffff) {
+#endif
+        if (!nextptr) {
             if (lastptr)
                 *lastptr = dataptr;
             return sz;
@@ -284,12 +337,17 @@ uintptr_t FS::copyFile(uint16_t dataptr, uintptr_t dst) {
     if (dataptr == 0xffff)
         return dst;
     for (;;) {
-        auto hd = basePtr[dataptr];
-        auto nextptr = hd >> 16;
-        auto blsz = hd & 0xffff;
-        writeBytes((void *)dst, basePtr + dataptr + 1, blsz);
+        auto nextptr = blnext(dataptr);
+        auto blsz = blsize(dataptr);
+#if RAFFS_BLOCK == 64
+        if (blsz > 4) {
+            writeBytes((void *)dst, data0(dataptr), 4);
+            writeBytes((void *)dst + 4, data1(dataptr), blsz - 4);
+        } else
+#endif
+            writeBytes((void *)dst, data0(dataptr), blsz);
         dst += blsz;
-        if (nextptr == 0xffff)
+        if (!nextptr)
             return dst;
         VALIDATE_NEXT(nextptr);
         dataptr = nextptr;
@@ -333,23 +391,31 @@ bool FS::tryGC(int spaceNeeded) {
 
     for (auto p = metaPtr; p < endPtr; p++) {
         MetaEntry m = *p;
-        if (m.dataptr == 0)
+        auto sz = getFileSize(m.dataptr);
+        if (sz < 0)
             continue;
+
         auto fnlen = strlen((char *)(basePtr + m.fnptr));
         writeBytes(dataDst, basePtr + m.fnptr, fnlen + 1);
         m.fnptr = dataDst - newBaseP;
-        dataDst += (fnlen + 3 + 1) / 4;
+        dataDst += RAFFS_ROUND(fnlen + 1);
 
-        auto sz = getFileSize(m.dataptr);
-        if (sz) {
-            uint32_t hd = 0xffff0000 | sz;
+#if RAFFS_BLOCK == 64
+        uint32_t highHD = (dataDst + 1 - newBaseP) << 16;
+#else
+        uint32_t highHD = 0xffff0000;
+        if (!sz)
+            m.dataptr = 0xffff;
+        else
+#else
+        {
+            uint32_t hd = highHD | sz;
+            m.dataptr = dataDst - newBaseP;
             writeBytes(dataDst++, &hd, sizeof(hd));
             auto newDst = copyFile(m.dataptr, (uintptr_t)dataDst);
-            m.dataptr = (dataDst - 1) - newBaseP;
-            dataDst = (uint32_t *)((newDst + 3) & ~3);
-        } else {
-            m.dataptr = 0xffff;
+            dataDst = (uint32_t *)RAFFS_ROUND(newDst);
         }
+#endif
 
         writeBytes(--metaDst, &m, sizeof(m));
         flushFlash();
@@ -401,7 +467,7 @@ bool FS::tryGC(int spaceNeeded) {
 }
 
 MetaEntry *FS::createMetaPage(const char *filename, MetaEntry *existing) {
-    auto buflen = strlen(filename) + 4;
+    auto buflen = RAFFS_ROUND(strlen(filename) + 1);
 
     auto prevBase = basePtr;
     if (!tryGC(sizeof(MetaEntry) + (existing ? 0 : buflen)))
@@ -418,16 +484,28 @@ MetaEntry *FS::createMetaPage(const char *filename, MetaEntry *existing) {
     MetaEntry m;
 
     if (existing) {
+#if RAFFS_BLOCK == 64
+        oops();
+#endif
         m = *existing;
     } else {
         m.fnhash = fnhash(filename);
         m.fnptr = freeDataPtr - basePtr;
-        writeBytes(freeDataPtr, filename, buflen - 3);
+        writeBytes(freeDataPtr, filename, strlen(filename) + 1);
         flushFlash();
         freeDataPtr += buflen / 4;
     }
-    m.dataptr = 0xffff;
+
     m.flags = 0xfffe;
+
+#if RAFFS_BLOCK == 64
+    // we allocate a free double-word for the data
+    // the previous double word is non-ff since it's the 0-terminated file name
+    m.dataptr = freeDataPtr - basePtr;
+    freeDataPtr += 2;
+#else
+    m.dataptr = 0xffff;
+#endif
 
     flushFlash();
 
@@ -480,13 +558,14 @@ DirEntry *FS::dirRead() {
 
     while (readDirPtr < endPtr) {
         auto p = readDirPtr++;
-        if (p->dataptr != 0) {
-            dirEnt.size = getFileSize(p->dataptr);
-            dirEnt.flags = p->flags;
-            dirEnt.name = (const char *)(basePtr + p->fnptr);
-            unlock();
-            return &dirEnt;
-        }
+        int sz = getFileSize(p->dataptr);
+        if (sz < 0)
+            continue;
+        dirEnt.size = sz;
+        dirEnt.flags = p->flags;
+        dirEnt.name = (const char *)(basePtr + p->fnptr);
+        unlock();
+        return &dirEnt;
     }
 
     readDirPtr = NULL;
@@ -494,7 +573,7 @@ DirEntry *FS::dirRead() {
     return NULL;
 }
 
-uint32_t File::size() {
+int32_t File::size() {
     fs.lock();
     auto r = fs.getFileSize(meta->dataptr);
     fs.unlock();
@@ -536,41 +615,61 @@ int File::read(void *data, uint32_t len) {
 
     int nread = 0;
     for (;;) {
-        auto hd = fs.basePtr[dataptr];
-        auto nextptr = hd >> 16;
-        auto blsz = hd & 0xffff;
-        auto srcptr0 = (uint8_t *)(fs.basePtr + dataptr + 1);
-        auto srcptr = srcptr0;
+        auto nextptr = fs.blnext(dataptr);
+        auto blsz = fs.blsize(dataptr);
+        auto srcptr = (uint8_t *)fs.data0(dataptr);
+        auto curroff = 0;
+
         if (readOffsetInPage) {
             LOGV("roff=%d", readOffsetInPage);
             if (readOffsetInPage > blsz)
                 oops();
+#if RAFFS_BLOCK == 64
+            if (readOffsetInPage >= 4) {
+                curroff = 4;
+                srcptr = (uint8_t *)fs.data1(dataptr);
+                readOffsetInPage -= 4;
+                blsz -= 4;
+            }
+#endif
             blsz -= readOffsetInPage;
             srcptr += readOffsetInPage;
+            curroff += readOffsetInPage;
             readOffsetInPage = 0;
         }
 
-        auto n = blsz;
+        int n = blsz;
         if (blsz > len) {
             n = len;
         }
 
         if (n && data) {
             LOGV("read: %x:%x:...", srcptr[0], srcptr[1]);
+#if RAFFS_BLOCK == 64
+            if (curroff < 4) {
+                int left = 4 - curroff;
+                if (left > n)
+                    left = n;
+                memcpy(data, srcptr, left);
+                data = (uint8_t *)data + left;
+                n -= left;
+                srcptr = (uint8_t *)fs.data1(dataptr);
+            }
+#endif
             memcpy(data, srcptr, n);
             data = (uint8_t *)data + n;
         }
 
+        curroff += n;
         nread += n;
         len -= n;
         readOffset += n;
 
-        if (len == 0 || nextptr == 0xffff) {
-            readOffsetInPage = (srcptr + n) - srcptr0;
+        if (len == 0 || nextptr == 0) {
+            readOffsetInPage = curroff;
             break;
         }
 
-        auto bytes = fs.bytes;
         VALIDATE_NEXT(nextptr);
         dataptr = nextptr;
     }
@@ -590,16 +689,19 @@ int File::append(const void *data, uint32_t len) {
 
     fs.lock();
 
-    if (!fs.tryGC(len + 4 + 4 + 3)) {
+    if (!fs.tryGC(RAFFS_ROUND(len + 4 + 8))) {
         fs.unlock();
         return -1;
     }
 
-    if (len > 0xfffe)
+    if (len >= 0x7ffe)
         oops();
 
     uint16_t *pageDst;
     if (meta->dataptr == 0xffff) {
+#if RAFFS_BLOCK == 64
+        oops();
+#endif
         pageDst = &meta->dataptr;
     } else {
         fs.getFileSize(lastPage ? lastPage : meta->dataptr, &lastPage);
@@ -610,6 +712,8 @@ int File::append(const void *data, uint32_t len) {
 
     if (*pageDst != 0xffff)
         oops();
+
+xxx
 
     uint16_t thisPtr = fs.freeDataPtr - fs.basePtr;
     lastPage = thisPtr; // cache it
