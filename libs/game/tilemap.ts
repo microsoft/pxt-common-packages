@@ -202,7 +202,6 @@ namespace tiles {
         }
 
         private generateTile(index: number): TileSet {
-            if (index == 0) return undefined;
             const size = 1 << this.scale
 
             const i = image.create(size, size);
@@ -250,36 +249,7 @@ namespace tiles {
             }
         }
 
-        public update(camera: scene.Camera) {
-        }
-
-        public collisions(s: Sprite): sprites.Obstacle[] {
-            let overlappers: sprites.StaticObstacle[] = [];
-
-            if (this.enabled && (s.layer & this.layer) && !(s.flags & sprites.Flag.Ghost)) {
-                const x0 = Math.max(0, s.left >> this.scale);
-                const xn = Math.min(this._map.width, (s.right >> this.scale) + 1);
-                const y0 = Math.max(0, s.top >> this.scale);
-                const yn = Math.min(this._map.height, (s.bottom >> this.scale) + 1);
-
-                // let res = `x: ${x0}-${xn} y: ${y0}-${yn} HIT:`;
-                for (let x = x0; x <= xn; ++x) {
-                    const left = x << this.scale;
-                    for (let y = y0; y <= yn; ++y) {
-                        const index = this._map.getPixel(x, y);
-                        const tile = this._tileSets[index] || this.generateTile(index);
-                        if (tile && tile.obstacle) {
-                            const top = y << this.scale;
-                            if (tile.image.overlapsWith(s.image, s.left - left, s.top - top)) {
-                                overlappers.push(new sprites.StaticObstacle(tile.image, top, left, this.layer, index));
-                            }
-                        }
-                    }
-                }
-            }
-
-            return overlappers;
-        }
+        public update(camera: scene.Camera) { }
 
         public isObstacle(col: number, row: number) {
             if (!this.enabled) return false;
@@ -290,15 +260,15 @@ namespace tiles {
         }
 
         public getObstacle(col: number, row: number) {
-            if (!this.enabled) return undefined;
-            if (this.isOutsideMap(col, row)) return undefined;
-
-            const index = this._map.getPixel(col, row);
+            const index = this.isOutsideMap(col, row) ? 0 : this._map.getPixel(col, row);
             const tile = this._tileSets[index] || this.generateTile(index);
-            if (tile.obstacle) {
-                return new sprites.StaticObstacle(tile.image, row << this.scale, col << this.scale, this.layer, index);
-            }
-            return undefined;
+            return new sprites.StaticObstacle(
+                tile.image,
+                row << this.scale,
+                col << this.scale,
+                this.layer,
+                index
+            );
         }
     }
 }

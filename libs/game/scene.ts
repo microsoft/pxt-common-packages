@@ -1,3 +1,7 @@
+interface SparseArray<T> {
+    [index: number]: T;
+}
+
 /**
  * Control the background, tiles and camera
  */
@@ -19,7 +23,6 @@ namespace scene {
 
     export interface CollisionHandler {
         kind: number;
-        tile: number;
         handler: (sprite: Sprite) => void
     }
 
@@ -32,11 +35,11 @@ namespace scene {
     export const TILEMAP_PRIORITY = 9;
     export const PHYSICS_PRIORITY = 10;
     export const ANIMATION_UPDATE_PRIORITY = 15;
+    export const UPDATE_CONTROLLER_PRIORITY = 13;
+    export const CONTROLLER_SPRITES_PRIORITY = 13;
+    export const OVERLAP_PRIORITY = 15;
     export const UPDATE_INTERVAL_PRIORITY = 19;
     export const UPDATE_PRIORITY = 20;
-    export const UPDATE_CONTROLLER_PRIORITY = 19;
-    export const CONTROLLER_SPRITES_PRIORITY = 19;
-    export const OVERLAP_PRIORITY = 30;
     export const RENDER_BACKGROUND_PRIORITY = 60;
     export const PAINT_PRIORITY = 75;
     export const RENDER_SPRITES_PRIORITY = 90;
@@ -51,14 +54,15 @@ namespace scene {
         tileMap: tiles.TileMap;
         allSprites: SpriteLike[];
         private spriteNextId: number;
-        spritesByKind: { [index: number]: SpriteSet };
+        spritesByKind: SparseArray<SpriteSet>;
         physicsEngine: PhysicsEngine;
         camera: scene.Camera;
         flags: number;
         destroyedHandlers: SpriteHandler[];
         createdHandlers: SpriteHandler[];
         overlapHandlers: OverlapHandler[];
-        collisionHandlers: CollisionHandler[];
+        overlapMap: SparseArray<number[]>;
+        collisionHandlers: CollisionHandler[][];
         gameForeverHandlers: GameForeverHandlers[];
         particleSources: particles.ParticleSource[];
         controlledSprites: controller.ControlledSprite[][];
@@ -78,6 +82,7 @@ namespace scene {
             this.destroyedHandlers = [];
             this.createdHandlers = [];
             this.overlapHandlers = [];
+            this.overlapMap = {};
             this.collisionHandlers = [];
             this.gameForeverHandlers = [];
             this.spritesByKind = {};
@@ -105,24 +110,20 @@ namespace scene {
                     this.tileMap.update(this.camera);
                 }
             })
-            // apply physics 10
-            this.eventContext.registerFrameHandler(PHYSICS_PRIORITY, () => {
-                control.enablePerfCounter("physics")
-                const dt = this.eventContext.deltaTime;
-                this.physicsEngine.move(dt);
-            })
-            // controller update 19
+            // controller update 13
             this.eventContext.registerFrameHandler(CONTROLLER_SPRITES_PRIORITY, controller._moveSprites);
-            // user update 20
-            // apply collisions 30
+            // apply physics and collisions 15
             this.eventContext.registerFrameHandler(OVERLAP_PRIORITY, () => {
-                control.enablePerfCounter("collisions")
+                control.enablePerfCounter("physics and collisions")
                 const dt = this.eventContext.deltaTime;
-                this.physicsEngine.collisions();
+
+                this.physicsEngine.move(dt);
                 this.camera.update();
+
                 for (const s of this.allSprites)
                     s.__update(this.camera, dt);
             })
+            // user update 20
             // render background 60
             this.eventContext.registerFrameHandler(RENDER_BACKGROUND_PRIORITY, () => {
                 control.enablePerfCounter("render background")
