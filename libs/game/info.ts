@@ -19,10 +19,9 @@ namespace info {
     }
 
     interface PlayerState {
-        _score: number;
-        _life: number;
-        _player: number;
-        scene: scene.Scene;
+        score: number;
+        life: number;
+        lifeZeroHandler: () => void; // onPlayerLifeOver handler
     }
 
     interface InfoState {
@@ -53,13 +52,12 @@ namespace info {
         scene: scene.Scene
     }[];
 
-    game.addScenePushHandler(() => {
-        const scene = game.currentScene();
+    game.addScenePushHandler(oldScene => {
         if (infoState) {
             if (!infoStateStack) infoStateStack = [];
             infoStateStack.push({
                 state: infoState,
-                scene: scene
+                scene: oldScene
             });
             infoState = undefined;
         }
@@ -67,8 +65,9 @@ namespace info {
             if (!playerStateStack) playerStateStack = [];
             playerStateStack.push({
                 state: playerStates,
-                scene: scene
+                scene: oldScene
             });
+            playerStates = undefined;
         }
     });
 
@@ -218,7 +217,9 @@ namespace info {
     export function saveHighScore() {
         if (players) {
             let hs = 0;
-            players.filter(p => p && p.hasScore()).forEach(p => hs = Math.max(hs, p._score));
+            players
+                .filter(p => p && p.hasScore())
+                .forEach(p => hs = Math.max(hs, p.score()));
             updateHighScore(hs);
         }
     }
@@ -509,28 +510,24 @@ namespace info {
     //% fixedInstances
     //% blockGap=8
     export class PlayerInfo {
-        _score: number;
-        _life: number;
         _player: number;
         bg: number; // background color
         border: number; // border color
         fc: number; // font color
-        visilibity: Visibility;
         showScore?: boolean;
         showLife?: boolean;
+        visilibity: Visibility;
         showPlayer?: boolean;
-        private _lifeZeroHandler?: () => void; // onPlayerLifeOver handler
         x?: number;
         y?: number;
         left?: boolean; // if true banner goes from x to the left, else goes rightward
         up?: boolean; // if true banner goes from y up, else goes downward
 
         constructor(player: number) {
+            if (!playerStates) playerStates = [];
             this._player = player;
             this.border = 1;
             this.fc = 1;
-            this._life = null;
-            this._score = null;
             this.visilibity = Visibility.None;
             this.showScore = null;
             this.showLife = null;
@@ -569,8 +566,20 @@ namespace info {
 
         private init() {
             initHUD();
-            if (this._player > 1)
-                initMultiHUD();
+            if (this._player > 1) initMultiHUD();
+            if (!playerStates) playerStates = [];
+            if (!playerStates[this._player - 1]) {
+                playerStates[this._player - 1] = {
+                    score: undefined,
+                    life: undefined,
+                    lifeZeroHandler: undefined
+                };
+            }
+        }
+
+        private getState() {
+            this.init();
+            return playerStates[this._player - 1];
         }
 
         /**
@@ -583,11 +592,13 @@ namespace info {
             if (this.showScore === null) this.showScore = true;
             if (this.showPlayer === null) this.showPlayer = true;
 
-            if (!this._score) {
-                this._score = 0;
+            const state = this.getState();
+
+            if (!state.score) {
+                state.score = 0;
                 saveHighScore();
             }
-            return this._score;
+            return state.score;
         }
 
         /**
@@ -598,10 +609,11 @@ namespace info {
         //% value.defl=0
         //% help=info/set-score
         setScore(value: number) {
-            this.init();
+            const state = this.getState();
             updateFlag(Visibility.Score, true);
-            const t = this.score();
-            this._score = (value | 0);
+
+            this.score(); // invoked for side effects
+            state.score = (value | 0);
         }
 
         /**
@@ -617,7 +629,8 @@ namespace info {
         }
 
         hasScore() {
-            return this._score !== null;
+            const state = this.getState();
+            return state.score !== null;
         }
 
         /**
@@ -627,13 +640,14 @@ namespace info {
         //% blockid=piflife block="%player life"
         //% help=info/life
         life(): number {
+            const state = this.getState();
             if (this.showLife === null) this.showLife = true;
             if (this.showPlayer === null) this.showPlayer = true;
 
-            if (this._life === null) {
-                this._life = 3;
+            if (state.life === null) {
+                state.life = 3;
             }
-            return this._life;
+            return state.life;
         }
 
         /**
@@ -644,10 +658,11 @@ namespace info {
         //% value.defl=3
         //% help=info/set-life
         setLife(value: number): void {
-            this.init();
+            const state = this.getState();
             updateFlag(Visibility.Life, true);
-            const t = this.life();
-            this._life = (value | 0);
+
+            this.life(); // invoked for side effects
+            state.life = (value | 0);
         }
 
         /**
@@ -671,7 +686,8 @@ namespace info {
         //% blockId=pihaslife block="%player has life"
         //% help=info/has-life
         hasLife(): boolean {
-            return this._life !== null;
+            const state = this.getState();
+            return state.life !== null;
         }
 
         /**
@@ -682,18 +698,25 @@ namespace info {
         //% blockId=playerinfoonlifezero block="on %player life zero"
         //% help=info/on-life-zero
         onLifeZero(handler: () => void) {
-            this._lifeZeroHandler = handler;
+            const state = this.getState();
+            state.lifeZeroHandler = handler;
         }
 
         raiseLifeZero(gameOver: boolean) {
-            if (this._life !== null && this._life <= 0) {
-                this._life = null;
-                if (this._lifeZeroHandler) this._lifeZeroHandler();
-                else if (gameOver) game.over();
+            const state = this.getState();
+            if (state.life !== null && state.life <= 0) {
+                state.life = null;
+                if (state.lifeZeroHandler) {
+                    state.lifeZeroHandler();
+                } else if (gameOver) {
+                    game.over();
+                }
             }
         }
 
         drawPlayer() {
+            const state = this.getState();
+
             const font = image.font5;
             let score: string;
             let life: string;
@@ -702,18 +725,18 @@ namespace info {
             let lifeWidth = 0;
             const offsetX = 1;
             let offsetY = 2;
-            let showScore = this.showScore && this._score !== null;
-            let showLife = this.showLife && this._life !== null;
+            let showScore = this.showScore && state.score !== null;
+            let showLife = this.showLife && state.life !== null;
 
             if (showScore) {
-                score = "" + this._score;
+                score = "" + state.score;
                 scoreWidth = score.length * font.charWidth + 3;
                 height += font.charHeight;
                 offsetY += font.charHeight + 1;
             }
 
             if (showLife) {
-                life = "" + this._life;
+                life = "" + state.life;
                 lifeWidth = infoState.heartImage.width + infoState.multiplierImage.width + life.length * font.charWidth + 3;
                 height += infoState.heartImage.height;
             }
@@ -837,24 +860,25 @@ namespace info {
         }
 
         drawLives() {
-            if (this._life < 0) return;
+            const state = this.getState();
+            if (state.life < 0) return;
             const font = image.font8;
-            if (this._life <= 4) {
+            if (state.life <= 4) {
                 screen.fillRect(
                     0,
                     0,
-                    this._life * (infoState.heartImage.width + 1) + 3,
+                    state.life * (infoState.heartImage.width + 1) + 3,
                     infoState.heartImage.height + 4,
                     infoState.borderColor
                 );
                 screen.fillRect(
                     0,
                     0,
-                    this._life * (infoState.heartImage.width + 1) + 2,
+                    state.life * (infoState.heartImage.width + 1) + 2,
                     infoState.heartImage.height + 3,
                     infoState.bgColor
                 );
-                for (let i = 0; i < this._life; i++) {
+                for (let i = 0; i < state.life; i++) {
                     screen.drawTransparentImage(
                         infoState.heartImage,
                         1 + i * (infoState.heartImage.width + 1),
@@ -863,7 +887,7 @@ namespace info {
                 }
             }
             else {
-                const num = this._life.toString();
+                const num = state.life + "";
                 const textWidth = num.length * font.charWidth - 1;
                 screen.fillRect(
                     0,
