@@ -1,8 +1,10 @@
 {
-    "name": "wifi",
-    "description": "WiFi",
+    "name": "esp32spi",
+    "description": "ESP32 over SPI",
     "files": [
-        "wifi.ts"
+        "esp32socket.ts",
+        "esp32spi.ts",
+        "esp32spirequest.ts"
     ],
     "testFiles": [
         "test.ts"

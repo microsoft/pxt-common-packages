@@ -41,6 +41,7 @@
         "libs/light-spectrum-sensor",
         "libs/edge-connector",
         "libs/proximity",
-        "libs/feather"
+        "libs/feather",
+        "libs/esp32spi"
     ]
 }
