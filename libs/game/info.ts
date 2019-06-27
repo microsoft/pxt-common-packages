@@ -18,24 +18,46 @@ namespace info {
         UserHeartImage = 1 << 5
     }
 
-    interface PlayerState {
-        score: number;
-        life: number;
-        lifeZeroHandler: () => void; // onPlayerLifeOver handler
+    class PlayerState {
+        public score: number;
+        public life: number;
+        public lifeZeroHandler: () => void;
+
+        constructor() { }
     }
 
-    interface InfoState {
-        visibilityFlag : number;
-        playerStates: PlayerState[];
+    class InfoState {
+        public playerStates: PlayerState[];
+        public visibilityFlag : number;
 
-        gameEnd: number;
-        heartImage: Image;
-        multiplierImage: Image;
-        bgColor: number;
-        borderColor: number;
-        fontColor: number;
-        countdownExpired: boolean;
-        countdownEndHandler: () => void;
+        public gameEnd: number;
+        public heartImage: Image;
+        public multiplierImage: Image;
+        public bgColor: number;
+        public borderColor: number;
+        public fontColor: number;
+        public countdownExpired: boolean;
+        public countdownEndHandler: () => void;
+
+        constructor() {
+            this.visibilityFlag = Visibility.Hud;
+            this.playerStates = [];
+            this.heartImage = defaultHeartImage();
+            this.multiplierImage = img`
+                1 . . . 1
+                . 1 . 1 .
+                . . 1 . .
+                . 1 . 1 .
+                1 . . . 1
+            `;
+            this.bgColor = screen.isMono ? 0 : 1;
+            this.borderColor = screen.isMono ? 1 : 3;
+            this.fontColor = screen.isMono ? 1 : 3;
+            this.countdownExpired = undefined;
+            this.countdownEndHandler = undefined;
+            this.gameEnd = undefined;
+            this.playerStates = [];
+        }
     }
 
     let infoState: InfoState = undefined;
@@ -75,24 +97,7 @@ namespace info {
         if (infoState) return;
         players = [];
 
-        infoState = {
-            visibilityFlag: Visibility.Hud,
-            playerStates: [],
-            heartImage: defaultHeartImage(),
-            multiplierImage: img`
-                1 . . . 1
-                . 1 . 1 .
-                . . 1 . .
-                . 1 . 1 .
-                1 . . . 1
-            `,
-            bgColor: screen.isMono ? 0 : 1,
-            borderColor: screen.isMono ? 1 : 3,
-            fontColor: screen.isMono ? 1 : 3,
-            countdownExpired: undefined,
-            countdownEndHandler: undefined,
-            gameEnd: undefined
-        };
+        infoState = new InfoState();
 
         game.eventContext().registerFrameHandler(scene.HUD_PRIORITY, () => {
             control.enablePerfCounter("info")
@@ -546,11 +551,7 @@ namespace info {
             initHUD();
             if (this._player > 1) initMultiHUD();
             if (!infoState.playerStates[this._player - 1]) {
-                infoState.playerStates[this._player - 1] = {
-                    score: undefined,
-                    life: undefined,
-                    lifeZeroHandler: undefined
-                };
+                infoState.playerStates[this._player - 1] = new PlayerState();
             }
         }
 
