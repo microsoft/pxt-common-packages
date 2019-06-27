@@ -3,7 +3,7 @@ function print(msg: string) {
 }
 namespace time {
     export function monotonic(): number {
-        return control.millis();
+        return control.millis() / 1000.0;
     }
 }
 
@@ -79,6 +79,12 @@ namespace esp32spi {
     export const WL_AP_CONNECTED = 8
     export const WL_AP_FAILED = 9
 
+    function buffer1(ch: number) {
+        const b = control.createBuffer(ch)
+        b[0] = ch
+        return b
+    }
+
     export class ESP_SPIcontrol {
         _spi: SPI;
         _debug: number;
@@ -86,7 +92,6 @@ namespace esp32spi {
         _cs: DigitalInOutPin;
         _ready: DigitalInOutPin;
         _reset: DigitalInOutPin;
-        _pbuf: Buffer;
         _socknum_ll: any; /** TODO: type **/
 
         static instance: ESP_SPIcontrol;
@@ -96,7 +101,6 @@ namespace esp32spi {
         static TLS_MODE = 2
 
         constructor() {
-            this._pbuf = control.createBuffer(1);
         }
 
         private log(priority: number, msg: string) {
@@ -138,24 +142,8 @@ namespace esp32spi {
         // pylint: disable=no-member
         // pylint: disable=too-many-branches
         private _read_byte(): number {
-            this._spi.transfer(undefined, this._pbuf); // TODO
-            if (this._debug >= 3) {
-                print(`\t\tRead: ${this._pbuf[0]}`);
-            }
-            return this._pbuf[0]
+            return this._spi.write(0)
         }
-
-        /*
-        private _read_bytes(spi: SPI, buffer: Buffer, start: number = 0, end: number = null): void {
-            if (!end) {
-                end = buffer.length
-            }
-
-            spi.transfer(undefined, buffer); // TODO
-            if (this._debug >= 3) {
-                print(`\t\tRead: ${buffer}`)
-            }
-        }*/
 
         private checkData(desired: number): boolean {
             const r = this._read_byte()
@@ -218,7 +206,8 @@ namespace esp32spi {
                 packet[k++] = 0xff;
 
             this._wait_for_ready();
-            this._spi.transfer(packet, undefined);
+            const dummy = control.createBuffer(packet.length)
+            this._spi.transfer(packet, dummy);
         }
 
         private _wait_response_cmd(cmd: number, num_responses: number = undefined, param_len_16 = false) {
@@ -238,8 +227,9 @@ namespace esp32spi {
                     param_len |= this._read_byte()
                 }
                 this.log(1, `\tParameter #${num} length is ${param_len}`)
-                let response = control.createBuffer(param_len);
-                this._spi.transfer(undefined, response);
+                const response = control.createBuffer(param_len);
+                const dummy = control.createBuffer(param_len);
+                this._spi.transfer(dummy, response);
                 responses.push(response);
             }
             this.checkData(_END_CMD);
@@ -307,13 +297,19 @@ namespace esp32spi {
             // print("SSID names:", names)
             // pylint: disable=invalid-name
             let APs = []
-            for ([let i, let name] of enumerate(names)) {
-                let a_p = { TODO: Dict }
-                let rssi = this._send_command_get_response(_GET_IDX_RSSI_CMD, [[i]])[0]
-                a_p["rssi"] = struct.unpack("<i", rssi)[0]
-                let encr = this._send_command_get_response(_GET_IDX_ENCT_CMD, [[i]])[0]
+            let i = 0
+            for (let name of names) {
+                let a_p = {
+                    ssid: name.toString(),
+                    rssi: 0,
+                    encryption: 0
+                }
+                let rssi = this._send_command_get_response(_GET_IDX_RSSI_CMD, [buffer1(i)])[0]
+                a_p["rssi"] = pins.unpackBuffer("<i", rssi)[0]
+                let encr = this._send_command_get_response(_GET_IDX_ENCT_CMD, [buffer1(1)])[0]
                 a_p["encryption"] = encr[0]
                 APs.push(a_p)
+                i++
             }
             return APs
         }
@@ -486,168 +482,168 @@ namespace esp32spi {
 
             // ttl must be between 0 and 255
             ttl = Math.max(0, Math.min(ttl | 0, 255))
-            let resp = this._send_command_get_response(_PING_CMD, [ip, [ttl]])
-            return struct.unpack("<H", resp[0])[0];
+            let resp = this._send_command_get_response(_PING_CMD, [ip, buffer1(ttl)])
+            return pins.unpackBuffer("<H", resp[0])[0];
         }
 
-        public get_socket(): any; /** TODO: type **/ {
-        /** Request a socket from the ESP32, will allocate and return a number that
-    can then be passed to the other socket commands
-    */
-        if (this._debug) {
-            print("*** Get socket")
+        public get_socket(): number {
+            /** Request a socket from the ESP32, will allocate and return a number that
+        can then be passed to the other socket commands
+        */
+            if (this._debug) {
+                print("*** Get socket")
+            }
+
+            let resp0 = this._send_command_get_response(_GET_SOCKET_CMD)
+            let resp = resp0[0][0]
+            if (resp == 255) {
+                control.fail("No sockets available")
+            }
+
+            if (this._debug) {
+                // %d" % resp)
+                print("Allocated socket #" + resp)
+            }
+
+            return resp
         }
 
-        let resp = this._send_command_get_response(_GET_SOCKET_CMD)
-        resp = resp[0][0]
-        if (resp == 255) {
-            control.fail("No sockets available")
-        }
-
-        if (this._debug) {
-            // %d" % resp)
-            print("Allocated socket #%d" % resp)
-        }
-
-        return resp
-    }
-        
-        public socket_open(socket_num: any; /** TODO: type **/, dest: Buffer, port: any; /** TODO: type **/, conn_mode: any; /** TODO: type **/ = TCP_MODE): any; /** TODO: type **/ {
         /** Open a socket to a destination IP address or hostname
     using the ESP32's internal reference number. By default we use
     'conn_mode' TCP_MODE but can also use UDP_MODE or TLS_MODE
     (dest must be hostname for TLS_MODE!)
     */
-        this._socknum_ll[0][0] = socket_num
-        if (this._debug) {
-            print("*** Open socket")
-        }
-
-        let port_param = struct.pack(">H", port)
-        // use the 5 arg version
-        if (isinstance(dest, str)) {
-            dest = pins.createBufferFromArray(dest, "utf-8")
-            let resp = this._send_command_get_response(_START_CLIENT_TCP_CMD, [dest, hex`00000000`, port_param, this._socknum_ll[0], [conn_mode]])
-        } else {
-            // ip address, use 4 arg vesion
-            resp = this._send_command_get_response(_START_CLIENT_TCP_CMD, [dest, port_param, this._socknum_ll[0], [conn_mode]])
-        }
-
-        if (resp[0][0] != 1) {
-            control.fail("Could not connect to remote server")
-        }
-
-    }
-        
-        public socket_status(socket_num: any; /** TODO: type **/): any; /** TODO: type **/ {
-        /** Get the socket connection status, can be SOCKET_CLOSED, SOCKET_LISTEN,
-    SOCKET_SYN_SENT, SOCKET_SYN_RCVD, SOCKET_ESTABLISHED, SOCKET_FIN_WAIT_1,
-    SOCKET_FIN_WAIT_2, SOCKET_CLOSE_WAIT, SOCKET_CLOSING, SOCKET_LAST_ACK, or
-    SOCKET_TIME_WAIT
-    */
-        this._socknum_ll[0][0] = socket_num
-        let resp = this._send_command_get_response(_GET_CLIENT_STATE_TCP_CMD, this._socknum_ll)
-        return resp[0][0]
-    }
-        
-        public socket_connected(socket_num: any; /** TODO: type **/): any; /** TODO: type **/ {
-        /** Test if a socket is connected to the destination, returns boolean true/false */
-        return this.socket_status(socket_num) == SOCKET_ESTABLISHED
-    }
-        
-        public socket_write(socket_num: any; /** TODO: type **/, buffer: any; /** TODO: type **/): any; /** TODO: type **/ {
-        /** Write the bytearray buffer to a socket */
-        if (this._debug) {
-            print("Writing:", buffer)
-        }
-
-        this._socknum_ll[0][0] = socket_num
-        let resp = this._send_command_get_response(_SEND_DATA_TCP_CMD, [this._socknum_ll[0], buffer])
-        let sent = resp[0][0]
-        if (sent != buffer.length) {
-            control.fail(`Failed to send ${buffer.length} bytes (sent ${sent})`)
-        }
-
-        resp = this._send_command_get_response(_DATA_SENT_TCP_CMD, this._socknum_ll)
-        if (resp[0][0] != 1) {
-            control.fail("Failed to verify data sent")
-        }
-
-    }
-        
-        public socket_available(socket_num: any; /** TODO: type **/): any; /** TODO: type **/ {
-        /** Determine how many bytes are waiting to be read on the socket */
-        this._socknum_ll[0][0] = socket_num
-        let resp = this._send_command_get_response(_AVAIL_DATA_TCP_CMD, this._socknum_ll)
-        let reply = struct.unpack("<H", resp[0])[0]
-        if (this._debug) {
-            print("ESPSocket: %d bytes available" % reply)
-        }
-
-        return reply
-    }
-        
-        public socket_read(socket_num: any; /** TODO: type **/, size: number): Buffer {
-        /** Read up to 'size' bytes from the socket number. Returns a bytearray */
-        if (this._debug) {
-            print(`Reading ${size} bytes from ESP socket with status ${this.socket_status(socket_num)}`)
-        }
-
-        this._socknum_ll[0][0] = socket_num
-        let resp = this._send_command_get_response(_GET_DATABUF_TCP_CMD, [this._socknum_ll[0], [size & 0xFF, size >> 8 & 0xFF]])
-        return pins.createBufferFromArray(resp[0])
-    }
-        
-        public socket_connect(socket_num: any; /** TODO: type **/, dest: Buffer, port: any; /** TODO: type **/, conn_mode: any; /** TODO: type **/ = TCP_MODE): boolean {
-        /** Open and verify we connected a socket to a destination IP address or hostname
-    using the ESP32's internal reference number. By default we use
-    'conn_mode' TCP_MODE but can also use UDP_MODE or TLS_MODE (dest must
-    be hostname for TLS_MODE!)
-    */
-        if (this._debug) {
-            print("*** Socket connect mode", conn_mode)
-        }
-
-        this.socket_open(socket_num, dest, port, conn_mode)
-        let times = time.monotonic()
-        // wait 3 seconds
-        while (time.monotonic() - times < 3) {
-            if (this.socket_connected(socket_num)) {
-                return true
+        public socket_open(socket_num: number, dest: Buffer | string, port: number, conn_mode = ESP_SPIcontrol.TCP_MODE): void {
+            this._socknum_ll[0][0] = socket_num
+            if (this._debug) {
+                print("*** Open socket")
             }
 
-            pause(10)
-        }
-        control.fail("Failed to establish connection")
-    }
-        
-        public socket_close(socket_num: any; /** TODO: type **/): any; /** TODO: type **/ {
-        /** Close a socket using the ESP32's internal reference number */
-        if (this._debug) {
-            // %d" % socket_num)
-            print("*** Closing socket #%d" % socket_num)
+            let port_param = pins.packBuffer(">H", [port])
+            let resp: Buffer[]
+            // use the 5 arg version
+            if (typeof dest == "string") {
+                const dest2 = control.createBufferFromUTF8(dest)
+                resp = this._send_command_get_response(_START_CLIENT_TCP_CMD, [dest2, hex`00000000`, port_param, this._socknum_ll[0], [conn_mode]])
+            } else {
+                // ip address, use 4 arg vesion
+                resp = this._send_command_get_response(_START_CLIENT_TCP_CMD, [dest, port_param, this._socknum_ll[0], [conn_mode]])
+            }
+
+            if (resp[0][0] != 1) {
+                control.fail("Could not connect to remote server")
+            }
+
         }
 
-        this._socknum_ll[0][0] = socket_num
-        let resp = this._send_command_get_response(_STOP_CLIENT_TCP_CMD, this._socknum_ll)
-        if (resp[0][0] != 1) {
-            control.fail("Failed to close socket")
+        public socket_status(socket_num: number): number {
+            /** Get the socket connection status, can be SOCKET_CLOSED, SOCKET_LISTEN,
+        SOCKET_SYN_SENT, SOCKET_SYN_RCVD, SOCKET_ESTABLISHED, SOCKET_FIN_WAIT_1,
+        SOCKET_FIN_WAIT_2, SOCKET_CLOSE_WAIT, SOCKET_CLOSING, SOCKET_LAST_ACK, or
+        SOCKET_TIME_WAIT
+        */
+            this._socknum_ll[0][0] = socket_num
+            let resp = this._send_command_get_response(_GET_CLIENT_STATE_TCP_CMD, this._socknum_ll)
+            return resp[0][0]
         }
 
-    }
-        
-        public set_esp_debug(enabled: any; /** TODO: type **/): any; /** TODO: type **/ {
-        /** Enable/disable debug mode on the ESP32. Debug messages will be
-    written to the ESP32's UART.
-    */
-        let resp = this._send_command_get_response(_SET_DEBUG_CMD, [[!!(enabled)]])
-        if (resp[0][0] != 1) {
-            control.fail("Failed to set debug mode")
+        public socket_connected(socket_num: number): boolean {
+            /** Test if a socket is connected to the destination, returns boolean true/false */
+            return this.socket_status(socket_num) == SOCKET_ESTABLISHED
         }
 
-    }
-        
-        public set_pin_mode(pin: any; /** TODO: type **/, mode: number): any; /** TODO: type **/ {
+        public socket_write(socket_num: number, buffer: Buffer): void {
+            /** Write the bytearray buffer to a socket */
+            if (this._debug) {
+                print("Writing:" + buffer.length)
+            }
+
+            this._socknum_ll[0][0] = socket_num
+            let resp = this._send_command_get_response(_SEND_DATA_TCP_CMD, [this._socknum_ll[0], buffer])
+            let sent = resp[0][0]
+            if (sent != buffer.length) {
+                control.fail(`Failed to send ${buffer.length} bytes (sent ${sent})`)
+            }
+
+            resp = this._send_command_get_response(_DATA_SENT_TCP_CMD, this._socknum_ll)
+            if (resp[0][0] != 1) {
+                control.fail("Failed to verify data sent")
+            }
+
+        }
+
+        public socket_available(socket_num: number): number {
+            /** Determine how many bytes are waiting to be read on the socket */
+            this._socknum_ll[0][0] = socket_num
+            let resp = this._send_command_get_response(_AVAIL_DATA_TCP_CMD, this._socknum_ll)
+            let reply = pins.unpackBuffer("<H", resp[0])[0]
+            if (this._debug) {
+                print(`ESPSocket: ${reply} bytes available`)
+            }
+
+            return reply
+        }
+
+        public socket_read(socket_num: number, size: number): Buffer {
+            /** Read up to 'size' bytes from the socket number. Returns a bytearray */
+            if (this._debug) {
+                print(`Reading ${size} bytes from ESP socket with status ${this.socket_status(socket_num)}`)
+            }
+
+            this._socknum_ll[0][0] = socket_num
+            let resp = this._send_command_get_response(_GET_DATABUF_TCP_CMD, [this._socknum_ll[0], [size & 0xFF, size >> 8 & 0xFF]])
+            return resp[0]
+        }
+
+        public socket_connect(socket_num: number, dest: Buffer, port: number, conn_mode = ESP_SPIcontrol.TCP_MODE): boolean {
+            /** Open and verify we connected a socket to a destination IP address or hostname
+        using the ESP32's internal reference number. By default we use
+        'conn_mode' TCP_MODE but can also use UDP_MODE or TLS_MODE (dest must
+        be hostname for TLS_MODE!)
+        */
+            if (this._debug) {
+                print("*** Socket connect mode " + conn_mode)
+            }
+
+            this.socket_open(socket_num, dest, port, conn_mode)
+            let times = time.monotonic()
+            // wait 3 seconds
+            while (time.monotonic() - times < 3) {
+                if (this.socket_connected(socket_num)) {
+                    return true
+                }
+
+                pause(10)
+            }
+            control.fail("Failed to establish connection")
+            return false
+        }
+
+        public socket_close(socket_num: number): void {
+            /** Close a socket using the ESP32's internal reference number */
+            if (this._debug) {
+                // %d" % socket_num)
+                print("*** Closing socket #" + socket_num)
+            }
+
+            this._socknum_ll[0][0] = socket_num
+            let resp = this._send_command_get_response(_STOP_CLIENT_TCP_CMD, this._socknum_ll)
+            if (resp[0][0] != 1) {
+                control.fail("Failed to close socket")
+            }
+
+        }
+
+        public set_esp_debug(enabled: boolean) {
+            /** Enable/disable debug mode on the ESP32. Debug messages will be
+        written to the ESP32's UART.
+        */
+            let resp = this._send_command_get_response(_SET_DEBUG_CMD, [buffer1(enabled ? 1 : 0)])
+            if (resp[0][0] != 1) {
+                control.fail("Failed to set debug mode")
+            }
+        }
+
         /** 
     Set the io mode for a GPIO pin.
     
@@ -655,50 +651,44 @@ namespace esp32spi {
     :param value: direction for pin, digitalio.Direction or integer (0=input, 1=output).
      
     */
-        if (mode == digitalio.Direction.OUTPUT) {
-            let pin_mode = 1
-        } else if (mode == digitalio.Direction.INPUT) {
-            pin_mode = 0
-        } else {
-            pin_mode = mode
+        public set_pin_mode(pin: number, pin_mode: number): void {
+
+            let resp = this._send_command_get_response(_SET_PIN_MODE_CMD, [buffer1(pin), buffer1(pin_mode)])
+            if (resp[0][0] != 1) {
+                control.fail("Failed to set pin mode")
+            }
+
         }
 
-        let resp = this._send_command_get_response(_SET_PIN_MODE_CMD, [[pin], [pin_mode]])
-        if (resp[0][0] != 1) {
-            control.fail("Failed to set pin mode")
-        }
-
-    }
+        public set_digital_write(pin: number, value: number): void {
+            /** 
+        Set the digital output value of pin.
         
-        public set_digital_write(pin: any; /** TODO: type **/, value: any; /** TODO: type **/): any; /** TODO: type **/ {
-        /** 
-    Set the digital output value of pin.
-    
-    :param int pin: ESP32 GPIO pin to write to.
-    :param bool value: Value for the pin.
-     
-    */
-        let resp = this._send_command_get_response(_SET_DIGITAL_WRITE_CMD, [[pin], [value]])
-        if (resp[0][0] != 1) {
-            control.fail("Failed to write to pin")
+        :param int pin: ESP32 GPIO pin to write to.
+        :param bool value: Value for the pin.
+         
+        */
+            let resp = this._send_command_get_response(_SET_DIGITAL_WRITE_CMD, [buffer1(pin), buffer1(value)])
+            if (resp[0][0] != 1) {
+                control.fail("Failed to write to pin")
+            }
+
         }
 
-    }
+        public set_analog_write(pin: number, analog_value: number) {
+            /** 
+        Set the analog output value of pin, using PWM.
         
-        public set_analog_write(pin: any; /** TODO: type **/, analog_value: number): any; /** TODO: type **/ {
-        /** 
-    Set the analog output value of pin, using PWM.
-    
-    :param int pin: ESP32 GPIO pin to write to.
-    :param float value: 0=off 1.0=full on
-     
-    */
-        let value = Math.trunc(255 * analog_value)
-        let resp = this._send_command_get_response(_SET_ANALOG_WRITE_CMD, [[pin], [value]])
-        if (resp[0][0] != 1) {
-            control.fail("Failed to write to pin")
+        :param int pin: ESP32 GPIO pin to write to.
+        :param float value: 0=off 1.0=full on
+         
+        */
+            let value = Math.trunc(255 * analog_value)
+            let resp = this._send_command_get_response(_SET_ANALOG_WRITE_CMD, [buffer1(pin), buffer1(value)])
+            if (resp[0][0] != 1) {
+                control.fail("Failed to write to pin")
+            }
+
         }
-
     }
-
 }
