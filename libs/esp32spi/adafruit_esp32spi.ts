@@ -86,21 +86,24 @@ namespace esp32spi {
     }
 
     export class ESP_SPIcontrol {
-        _spi: SPI;
-        _debug: number;
-        _gpio0: DigitalInOutPin;
-        _cs: DigitalInOutPin;
-        _ready: DigitalInOutPin;
-        _reset: DigitalInOutPin;
-        _socknum_ll: any; /** TODO: type **/
+        _socknum_ll: Buffer[];
 
         static instance: ESP_SPIcontrol;
 
-        static TCP_MODE = 0
-        static UDP_MODE = 1
-        static TLS_MODE = 2
+        static readonly TCP_MODE = 0
+        static readonly UDP_MODE = 1
+        static readonly TLS_MODE = 2
 
-        constructor() {
+        constructor(
+            public _spi: SPI,
+            public _cs: DigitalInOutPin,
+            public _ready: DigitalInOutPin,
+            public _reset: DigitalInOutPin,
+            public _gpio0: DigitalInOutPin = null,
+            public _debug = false
+        ) {
+            ESP_SPIcontrol.instance = this
+            this._socknum_ll = [buffer1(0)]
         }
 
         private log(priority: number, msg: string) {
@@ -520,10 +523,10 @@ namespace esp32spi {
             // use the 5 arg version
             if (typeof dest == "string") {
                 const dest2 = control.createBufferFromUTF8(dest)
-                resp = this._send_command_get_response(_START_CLIENT_TCP_CMD, [dest2, hex`00000000`, port_param, this._socknum_ll[0], [conn_mode]])
+                resp = this._send_command_get_response(_START_CLIENT_TCP_CMD, [dest2, hex`00000000`, port_param, this._socknum_ll[0], buffer1(conn_mode)])
             } else {
                 // ip address, use 4 arg vesion
-                resp = this._send_command_get_response(_START_CLIENT_TCP_CMD, [dest, port_param, this._socknum_ll[0], [conn_mode]])
+                resp = this._send_command_get_response(_START_CLIENT_TCP_CMD, [dest, port_param, this._socknum_ll[0], buffer1(conn_mode)])
             }
 
             if (resp[0][0] != 1) {
@@ -587,7 +590,7 @@ namespace esp32spi {
             }
 
             this._socknum_ll[0][0] = socket_num
-            let resp = this._send_command_get_response(_GET_DATABUF_TCP_CMD, [this._socknum_ll[0], [size & 0xFF, size >> 8 & 0xFF]])
+            let resp = this._send_command_get_response(_GET_DATABUF_TCP_CMD, [this._socknum_ll[0], pins.packBuffer("<H", [size])])
             return resp[0]
         }
 
