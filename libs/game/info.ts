@@ -26,6 +26,7 @@ namespace info {
 
     interface InfoState {
         visibilityFlag : number;
+        playerStates: PlayerState[];
 
         gameEnd: number;
         heartImage: Image;
@@ -40,15 +41,9 @@ namespace info {
     let infoState: InfoState = undefined;
 
     let players: PlayerInfo[];
-    let playerStates: PlayerState[];
 
     let infoStateStack: {
         state: InfoState,
-        scene: scene.Scene
-    }[];
-
-    let playerStateStack: {
-        state: PlayerState[],
         scene: scene.Scene
     }[];
 
@@ -60,14 +55,6 @@ namespace info {
                 scene: oldScene
             });
             infoState = undefined;
-        }
-        if (playerStates) {
-            if (!playerStateStack) playerStateStack = [];
-            playerStateStack.push({
-                state: playerStates,
-                scene: oldScene
-            });
-            playerStates = undefined;
         }
     });
 
@@ -82,15 +69,6 @@ namespace info {
                 infoStateStack.push(nextState);
             }
         }
-        playerStates = undefined;
-        if (playerStateStack && playerStateStack.length) {
-            const nextState = playerStateStack.pop();
-            if (nextState.scene == scene) {
-                playerStates = nextState.state;
-            } else {
-                playerStateStack.push(nextState);
-            }
-        }
     });
 
     function initHUD() {
@@ -99,6 +77,7 @@ namespace info {
 
         infoState = {
             visibilityFlag: Visibility.Hud,
+            playerStates: [],
             heartImage: defaultHeartImage(),
             multiplierImage: img`
                 1 . . . 1
@@ -524,7 +503,6 @@ namespace info {
         up?: boolean; // if true banner goes from y up, else goes downward
 
         constructor(player: number) {
-            if (!playerStates) playerStates = [];
             this._player = player;
             this.border = 1;
             this.fc = 1;
@@ -567,9 +545,8 @@ namespace info {
         private init() {
             initHUD();
             if (this._player > 1) initMultiHUD();
-            if (!playerStates) playerStates = [];
-            if (!playerStates[this._player - 1]) {
-                playerStates[this._player - 1] = {
+            if (!infoState.playerStates[this._player - 1]) {
+                infoState.playerStates[this._player - 1] = {
                     score: undefined,
                     life: undefined,
                     lifeZeroHandler: undefined
@@ -579,7 +556,7 @@ namespace info {
 
         private getState() {
             this.init();
-            return playerStates[this._player - 1];
+            return infoState.playerStates[this._player - 1];
         }
 
         /**
