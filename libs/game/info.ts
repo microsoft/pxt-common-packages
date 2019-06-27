@@ -100,6 +100,7 @@ namespace info {
         infoState = new InfoState();
 
         game.eventContext().registerFrameHandler(scene.HUD_PRIORITY, () => {
+            if (!infoState) return;
             control.enablePerfCounter("info")
             // show score, lifes
             if (infoState.visibilityFlag & Visibility.Multi) {
