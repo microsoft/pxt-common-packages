@@ -95,7 +95,7 @@ namespace effects {
         //% duration.shadow=timePicker
         //% blockNamespace=scene
         //% group="Effects" blockGap=8
-        //% weight=90
+        //% weight=90 help=effects/start-screen-effect
         startScreenEffect(duration?: number, particlesPerSecond?: number): void {
             if (!this.sourceFactory)
                 return;
@@ -120,7 +120,7 @@ namespace effects {
         //% blockId=particlesEndScreenAnimation block="end screen %effect effect"
         //% blockNamespace=scene
         //% group="Effects" blockGap=8
-        //% weight=80
+        //% weight=80 help=effects/end-screen-effect
         endScreenEffect(): void {
             if (this.source) {
                 this.source.destroy();
@@ -136,6 +136,7 @@ namespace effects {
     //% blockId=particlesclearparticles block="clear effects on %anchor=variables_get(mySprite)"
     //% blockNamespace=sprites
     //% group="Effects" weight=89
+    //% help=effects/clear-particles
     export function clearParticles(anchor: particles.ParticleAnchor) {
         const sources = game.currentScene().particleSources;
         if (!sources) return;
@@ -246,7 +247,7 @@ namespace effects {
     });
 
     //% fixedInstance whenUsed block="fire"
-    export const fire = new ParticleEffect(40, 5000, function (anchor: particles.ParticleAnchor, particlesPerSecond: number) {
+    export const fire = new ParticleEffect(50, 5000, function (anchor: particles.ParticleAnchor, particlesPerSecond: number) {
         const factory = new particles.FireFactory(5);
         const src = new particles.FireSource(anchor, particlesPerSecond, factory);
         src.setAcceleration(0, -20);
@@ -260,7 +261,7 @@ namespace effects {
     export const coolRadial = createEffect(30, 2000, function () { return new particles.RadialFactory(0, 30, 10, [0x6, 0x7, 0x8, 0x9, 0xA]) });
 
     //% fixedInstance whenUsed block="halo"
-    export const halo = createEffect(40, 3000, function () {
+    export const halo = createEffect(70, 3000, function () {
         class RingFactory extends particles.RadialFactory {
             createParticle(anchor: particles.ParticleAnchor) {
                 const p = super.createParticle(anchor);
@@ -326,5 +327,15 @@ namespace effects {
     export const starField = new ScreenEffect(2, 5, 5000, function (anchor: particles.ParticleAnchor, particlesPerSecond: number) {
         const factory = new particles.StarFactory([0x1, 0x3, 0x5, 0x9, 0xC]);
         return new particles.ParticleSource(anchor, particlesPerSecond, factory);
+    });
+
+    //% fixedInstance whenUsed block="clouds"
+    export const clouds = new ScreenEffect(.5, 1.5, 5000, function (anchor: particles.ParticleAnchor, particlesPerSecond: number) {
+        const factory = new particles.CloudFactory();
+        const source = new particles.ParticleSource(anchor, particlesPerSecond, factory);
+
+        // render behind tile map
+        source.z = -2;
+        return source;
     });
 }

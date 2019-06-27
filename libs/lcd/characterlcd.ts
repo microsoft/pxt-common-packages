@@ -84,7 +84,7 @@ namespace lcd {
             // Set entry mode
             this._write8(_LCD_ENTRYMODESET | this.displaymode)
             this.clear()
-            this._message = null
+            this._message = ""
             this._enable = null
         }
 
@@ -101,6 +101,7 @@ namespace lcd {
          **/
         public clear(): void {
             this._write8(_LCD_CLEARDISPLAY)
+            this._message = "";
             pause(3)
         }
 
@@ -128,6 +129,7 @@ namespace lcd {
             column = Math.max(0, Math.min(this.columns - 1, column | 0));
             row = Math.max(0, Math.min(this.lines - 1, row | 0));
 
+            //console.log(`cursor ${_LCD_SETDDRAMADDR | column + _LCD_ROW_OFFSETS[row]}`)
             this._write8(_LCD_SETDDRAMADDR | column + _LCD_ROW_OFFSETS[row])
         }
 
@@ -175,33 +177,46 @@ namespace lcd {
         }
 
         set message(message: string) {
+            if (message === undefined || message === null) message = "";
+            if (this._message === message) return; // nothing to do here
+
+            const oldMessage = this._message;
             this._message = message;
-            let line = 0
-            // Track times through iteration, to act on the initial character of the message
-            let initial_character = 0
-            // iterate through each character
-            for (const character of message) {
-                // If this is the first character in the string:
-                if (initial_character == 0) {
-                    // Start at (1, 1) unless direction is set right to left, in which case start
-                    // on the opposite side of the display.
-                    const col = (this.displaymode & _LCD_ENTRYLEFT) > 0 ? 0 : this.columns - 1
-                    this.setCursorPosition(col, line)
-                    initial_character += 1
-                }
+            //console.log(`'${oldMessage}' => '${message}'`);
 
-                // If character is \n, go to next line
-                if (character == "\n") {
-                    line += 1
-                    // Start the second line at (1, 1) unless direction is set right to left in which
-                    // case start on the opposite side of the display.
-                    const col = (this.displaymode & _LCD_ENTRYLEFT) > 0 ? 0 : this.columns - 1
-                    this.setCursorPosition(col, line)
-                } else {
-                    // Write string to display
-                    this._write8(character.charCodeAt(0), true)
-                }
+            const ltr = !!(this.displaymode & _LCD_ENTRYLEFT);
+            const oldLines = oldMessage.split('\n');
+            const lines = this._message.split('\n');
+            const rn = Math.min(this.lines, Math.max(oldLines.length, lines.length));
 
+            let cursorrow = -1;
+            let cursorcol = -1;
+            for (let row = 0; row < rn; ++row) {
+                let oldLine = oldLines[row];
+                if (oldLine === undefined) oldLine = "";
+                let line = lines[row];
+                if (line === undefined) line = "";
+                const cn = Math.min(this.columns, Math.max(oldLine.length, line.length));
+                for (let column = 0; column < cn; ++column) {
+                    const oc = oldLine.charCodeAt(column);
+                    const c = line.charCodeAt(column);
+                    if (oc !== c) {
+                        // letter is already shown, skip
+                        // move cursor if needed
+                        if (row != cursorrow || column != cursorcol) {
+                            //console.log(`set cursor pos ${column}, ${row}`);
+                            this.setCursorPosition(ltr ? column : this.columns - 1 - column, row);
+                            cursorrow = row;
+                            cursorcol = column;
+                        }
+                        //console.log(`write ${String.fromCharCode(c)} (${String.fromCharCode(oc)}) at ${cursorcol}, ${cursorrow}`);
+                        if (column >= line.length)
+                            this._write8(32 /* space */, true);
+                        else
+                            this._write8(c, true);
+                        cursorcol++;
+                    }
+                }
             }
         }
 

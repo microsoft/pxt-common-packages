@@ -39,25 +39,29 @@ namespace lcd {
     //% line.min=1 line.max=2 line.defl=1
     //% parts="lcd"
     //% group="Display"
-    export function showString(text: string, line: number) {
+    export function showString(text: string, line?: number) {
         const l = screen();
         if (!l) return;
+        if (line === undefined) line = 1;
 
         line = (line - 1) | 0;
         if (line < 0 || line >= l.lines) return; // out of range
 
         // insert text in line
-        const lines = (l.message || "").split('\n');
+        const lines = l.message.split('\n');
         // assign all lines within range
         text.split('\n')
             .filter((tl, i) => line + i < l.lines)
             .forEach((tl, i) => {
                 lines[line + i] = tl;
             })
+        // fill the holes
+        for(let i = 0; i < lines.length; ++i) {
+            if (lines[i] === undefined) lines[i] = "";
+        }
         // reassemble text
-        const message = lines.map(l => l || "").join('\n');
+        const message = lines.join('\n');
 
-        l.clear();
         l.message = message;
     }
 
@@ -69,8 +73,24 @@ namespace lcd {
     //% line.min=1 line.max=2 line.defl=1
     //% parts="lcd"
     //% group="Display"
-    export function showNumber(value: number, line: number) {
-        showString(value.toString(), line);
+    export function showNumber(value: number, line?: number) {
+        value = Math.round(value * 1000) / 1000;
+        showString(value + "", line);
+    }
+
+        /**
+     * Shows a name, value pair on the screen
+     * @param value the numeric value
+     * @param line the line number to print the text at (starting at 1), eg: 1
+     */
+    //% blockId=lcdshowvalue block="lcd show value %name: %text at line %line"
+    //% inlineInputMode="inline" blockGap=8
+    //% line.min=1 line.max=2 line.defl=1
+    //% parts="lcd"
+    //% group="Display"
+    export function showValue(name: string, value: number, line: number) {
+        value = Math.round(value * 1000) / 1000;
+        showString((name ? name + ": " : "") + value, line);
     }
 
     /**
@@ -83,7 +103,6 @@ namespace lcd {
         const l = screen();
         if (!l) return;
         l.clear();
-        l.message = "";
     }
 
     /**

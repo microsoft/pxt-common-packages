@@ -23,14 +23,15 @@ declare interface String {
 }
 
 declare namespace Math {
-    function clamp(a: number, b: number, c: number): number;
-    function ceil(n: number): number;
-    function floor(n: number): number;
+    function clamp(min: number, max: number, value: number): number;
+    function ceil(x: number): number;
+    function floor(x: number): number;
     function max(a: number, b: number): number;
     function min(a: number, b: number): number;
-    function abs(a: number): number;
-    function sqrt(a: number): number;
-    function randomRange(a: number, b: number): number;
+    function abs(x: number): number;
+    function sqrt(x: number): number;
+    function randomRange(min: number, max: number): number;
+    function roundWithPrecision(x: number, digits: number): number;
     function idiv(x: number, y: number): number;
     function sign(x: number): number;
 }

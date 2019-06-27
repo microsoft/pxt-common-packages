@@ -1,6 +1,8 @@
 #ifndef __PXT_PLATFORM_H
 #define __PXT_PLATFORM_H
 
+#define OUTPUT_BITS 12
+
 #define PAGE_SIZE 1024 // not really
 
 #define DEV_NUM_PINS 28

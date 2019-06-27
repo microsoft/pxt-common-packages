@@ -20,6 +20,7 @@ namespace pxsim {
         lastImageFlushTime = 0
         changed = true
         stats: string;
+        brightness = 255;
         onChange = () => { }
 
         constructor(paletteSrc: string[], w = 0, h = 0) {
@@ -34,6 +35,10 @@ namespace pxsim {
                 this.screen = new Uint32Array(this.width * this.height)
                 this.screen.fill(this.palette[0])
             }
+        }
+
+        setScreenBrightness(b: number) {
+            this.brightness = b | 0;
         }
 
         setPalette(buf: RefBuffer) {

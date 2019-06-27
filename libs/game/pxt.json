@@ -2,6 +2,7 @@
     "name": "game",
     "description": "The game and sprite library - beta",
     "files": [
+        "gameoverrides.ts",
         "constants.ts",
         "controlleroverrides.ts",
         "controller.ts",
@@ -11,6 +12,7 @@
         "spritemap.ts",
         "spriteevents.ts",
         "spriteset.ts",
+        "spritekind.ts",
         "metrics.ts",
         "obstacle.ts",
         "physics.ts",
@@ -27,14 +29,15 @@
         "targetoverrides.cpp",
         "targetoverrides.ts",
         "mathUtil.ts",
-        "menu.ts",
         "systemmenu.ts",
+        "systemmenuicons.ts",
         "console.ts",
         "fieldeditors.ts",
         "particles.ts",
         "particlefactories.ts",
         "particleeffects.ts",
-        "effects.ts"
+        "effects.ts",
+        "texteffects.ts"
     ],
     "public": true,
     "dependencies": {

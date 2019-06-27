@@ -1,6 +1,16 @@
 #ifndef __PXT_CONFIGKEYS_H
 #define __PXT_CONFIGKEYS_H
 
+// used by pins.cpp to mask off the pin name from any config
+// lower 16 pins of value are the pin name
+#define CFG_PIN_NAME_MSK 0x0000ffff
+// upper 16 bits of value is any configuration of the pin.
+#define CFG_PIN_CONFIG_MSK 0xffff0000
+
+// begin optional pin configurations
+#define CFG_PIN_CONFIG_ACTIVE_LO 0x10000
+
+
 #define CFG_MAGIC0 0x1e9e10f1
 #define CFG_MAGIC1 0x20227a79
 
@@ -83,12 +93,19 @@
 #define CFG_PIN_BATTSENSE 75
 #define CFG_PIN_VIBRATION 76
 #define CFG_PIN_PWREN 77
+#define CFG_DISPLAY_TYPE 78
 
+// default I2C address
 #define ACCELEROMETER_TYPE_LIS3DH 0x32
+#define ACCELEROMETER_TYPE_LIS3DH_ALT 0x30
 #define ACCELEROMETER_TYPE_MMA8453 0x38
 #define ACCELEROMETER_TYPE_FXOS8700 0x3C
 #define ACCELEROMETER_TYPE_MMA8653 0x3A
 #define ACCELEROMETER_TYPE_MSA300 0x4C
+#define ACCELEROMETER_TYPE_MPU6050 0x68
+
+#define DISPLAY_TYPE_ST7735 7735
+#define DISPLAY_TYPE_ILI9341 9341
 
 #define CFG_PIN_A0 100
 #define CFG_PIN_A1 101
@@ -169,6 +186,9 @@
 #define CFG_PINS_PORT_SIZE 210
 #define CFG_BOOTLOADER_PROTECTION 211
 #define CFG_POWER_DEEPSLEEP_TIMEOUT 212
+#define CFG_ANALOG_BUTTON_THRESHOLD 213
+#define CFG_CPU_MHZ 214
+#define CFG_CONTROLLER_LIGHT_MAX_BRIGHTNESS 215
 
 #define CFG_PIN_B0 300
 #define CFG_PIN_B1 301
@@ -235,6 +255,28 @@
 #define CFG_PIN_C29 379
 #define CFG_PIN_C30 380
 #define CFG_PIN_C31 381
+
+#define CFG_PIN_P0 400
+#define CFG_PIN_P1 401
+#define CFG_PIN_P2 402
+#define CFG_PIN_P3 403
+#define CFG_PIN_P4 404
+#define CFG_PIN_P5 405
+#define CFG_PIN_P6 406
+#define CFG_PIN_P7 407
+#define CFG_PIN_P8 408
+#define CFG_PIN_P9 409
+#define CFG_PIN_P10 410
+#define CFG_PIN_P11 411
+#define CFG_PIN_P12 412
+#define CFG_PIN_P13 413
+#define CFG_PIN_P14 414
+#define CFG_PIN_P15 415
+#define CFG_PIN_P16 416
+#define CFG_PIN_P17 417
+#define CFG_PIN_P18 418
+#define CFG_PIN_P19 419
+#define CFG_PIN_P20 420
 
 #define CFG_PIN_LORA_MISO 1001
 #define CFG_PIN_LORA_MOSI 1002

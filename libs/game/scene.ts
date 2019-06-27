@@ -1,3 +1,7 @@
+interface SparseArray<T> {
+    [index: number]: T;
+}
+
 /**
  * Control the background, tiles and camera
  */
@@ -19,18 +23,23 @@ namespace scene {
 
     export interface CollisionHandler {
         kind: number;
-        tile: number;
         handler: (sprite: Sprite) => void
+    }
+
+    export interface GameForeverHandlers {
+        lock: boolean;
+        handler: () => void;
     }
 
     export const CONTROLLER_PRIORITY = 8;
     export const TILEMAP_PRIORITY = 9;
     export const PHYSICS_PRIORITY = 10;
     export const ANIMATION_UPDATE_PRIORITY = 15;
+    export const UPDATE_CONTROLLER_PRIORITY = 13;
+    export const CONTROLLER_SPRITES_PRIORITY = 13;
+    export const OVERLAP_PRIORITY = 15;
     export const UPDATE_INTERVAL_PRIORITY = 19;
     export const UPDATE_PRIORITY = 20;
-    export const CONTROLLER_SPRITES_PRIORITY = 19;
-    export const OVERLAP_PRIORITY = 30;
     export const RENDER_BACKGROUND_PRIORITY = 60;
     export const PAINT_PRIORITY = 75;
     export const RENDER_SPRITES_PRIORITY = 90;
@@ -41,24 +50,28 @@ namespace scene {
 
     export class Scene {
         eventContext: control.EventContext;
-        menuState: menu.State;
         background: Background;
         tileMap: tiles.TileMap;
         allSprites: SpriteLike[];
         private spriteNextId: number;
-        spritesByKind: SpriteSet[];
+        spritesByKind: SparseArray<SpriteSet>;
         physicsEngine: PhysicsEngine;
         camera: scene.Camera;
         flags: number;
         destroyedHandlers: SpriteHandler[];
         createdHandlers: SpriteHandler[];
         overlapHandlers: OverlapHandler[];
-        collisionHandlers: CollisionHandler[];
+        overlapMap: SparseArray<number[]>;
+        collisionHandlers: CollisionHandler[][];
+        gameForeverHandlers: GameForeverHandlers[];
         particleSources: particles.ParticleSource[];
         controlledSprites: controller.ControlledSprite[][];
 
         private _millis: number;
         private _data: any;
+
+        // a set of functions that need to be called when a scene is being initialized
+        static initializers: ((scene: Scene) => void)[] = [];
 
         constructor(eventContext: control.EventContext) {
             this.eventContext = eventContext;
@@ -69,8 +82,10 @@ namespace scene {
             this.destroyedHandlers = [];
             this.createdHandlers = [];
             this.overlapHandlers = [];
+            this.overlapMap = {};
             this.collisionHandlers = [];
-            this.spritesByKind = [];
+            this.gameForeverHandlers = [];
+            this.spritesByKind = {};
             this.controlledSprites = [];
             this._data = {};
             this._millis = 0;
@@ -95,24 +110,20 @@ namespace scene {
                     this.tileMap.update(this.camera);
                 }
             })
-            // apply physics 10
-            this.eventContext.registerFrameHandler(PHYSICS_PRIORITY, () => {
-                control.enablePerfCounter("physics")
-                const dt = this.eventContext.deltaTime;
-                this.physicsEngine.move(dt);
-            })
-            // controller update 19
+            // controller update 13
             this.eventContext.registerFrameHandler(CONTROLLER_SPRITES_PRIORITY, controller._moveSprites);
-            // user update 20
-            // apply collisions 30
+            // apply physics and collisions 15
             this.eventContext.registerFrameHandler(OVERLAP_PRIORITY, () => {
-                control.enablePerfCounter("collisions")
+                control.enablePerfCounter("physics and collisions")
                 const dt = this.eventContext.deltaTime;
-                this.physicsEngine.collisions();
+
+                this.physicsEngine.move(dt);
                 this.camera.update();
+
                 for (const s of this.allSprites)
                     s.__update(this.camera, dt);
             })
+            // user update 20
             // render background 60
             this.eventContext.registerFrameHandler(RENDER_BACKGROUND_PRIORITY, () => {
                 control.enablePerfCounter("render background")
@@ -145,8 +156,8 @@ namespace scene {
             });
             // update screen
             this.eventContext.registerFrameHandler(UPDATE_SCREEN_PRIORITY, control.__screen.update);
-            // register start menu
-            scene.systemMenu.register();
+            // register additional components
+            Scene.initializers.forEach(f => f(this));
         }
 
         get data() {
@@ -167,7 +178,6 @@ namespace scene {
 
         destroy() {
             this.eventContext = undefined;
-            this.menuState = undefined;
             this.background = undefined;
             this.tileMap = undefined;
             this.allSprites = undefined;
@@ -180,6 +190,7 @@ namespace scene {
             this.createdHandlers = undefined;
             this.overlapHandlers = undefined;
             this.collisionHandlers = undefined;
+            this.gameForeverHandlers = undefined;
             this._data = undefined;
         }
     }

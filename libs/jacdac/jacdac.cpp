@@ -1,445 +1,197 @@
 
 
 #include "pxt.h"
-
-#define JD_DRIVER_EVT_FILL_CONTROL_PACKET 50
-#define JD_MIN_VERSION(VERSION) (defined CODAL_JACDAC_WIRE_SERIAL && defined JD_VERSION && JD_VERSION >= VERSION)
-
-#if JD_MIN_VERSION(1)
-#include "JDProtocol.h"
-#include "JackRouter.h"
-#endif
+#include "JACDAC.h"
+#include "JDPhysicalLayer.h"
 
 namespace jacdac {
 
-#if !JD_MIN_VERSION(1)
-class JDDriver {};
-#endif
-
-// Wrapper classes
-class WJacDac {
-#if JD_MIN_VERSION(1)
+class WJDPhysicalLayer {
+#ifdef CODAL_JACDAC_WIRE_SERIAL
     CODAL_JACDAC_WIRE_SERIAL sws;
-    codal::JACDAC jd;
-    codal::JDProtocol protocol; // note that this is different pins than io->i2c
-    codal::JackRouter *jr;
+    JDPhysicalLayer phys;
 #endif    
+
   public:
-    WJacDac()
-#if JD_MIN_VERSION(1)
+    WJDPhysicalLayer()
+#ifdef CODAL_JACDAC_WIRE_SERIAL
         : sws(*LOOKUP_PIN(JACK_TX))
-#if JD_MIN_VERSION(3)
-        , jd(sws, LOOKUP_PIN(JACK_BUSLED), LOOKUP_PIN(JACK_COMMLED))
+        , phys(sws, *pxt::getJACDACTimer(), LOOKUP_PIN(JACK_BUSLED), LOOKUP_PIN(JACK_COMMLED), (PIN(JACK_BUSLED) & CFG_PIN_CONFIG_ACTIVE_LO) > 0, (PIN(JACK_COMMLED) & CFG_PIN_CONFIG_ACTIVE_LO) > 0)
+#endif        
+    {
+#ifdef CODAL_JACDAC_WIRE_SERIAL
+        sws.setBaud(1000000);
+#if CONFIG_ENABLED(DEVICE_USB) && CONFIG_ENABLED(DEVICE_JACDAC_DEBUG)
+        pxt::jacdacDebug.setPhysicalLayer(phys);
+#endif
+#endif
+    }
+
+    void send(Buffer b) {
+#ifdef CODAL_JACDAC_WIRE_SERIAL
+        phys.send((JDPacket*)b->data,NULL,false);
+#endif        
+    }
+
+    bool isConnected() {
+#ifdef CODAL_JACDAC_WIRE_SERIAL
+        return phys.isConnected();
 #else
-        , jd(sws)
-#endif
-        , protocol(jd) 
-#endif
-        {
-#if JD_MIN_VERSION(1)
-        if (LOOKUP_PIN(JACK_HPEN)) {
-            jr = new codal::JackRouter(*LOOKUP_PIN(JACK_TX), *LOOKUP_PIN(JACK_SENSE),
-                                       *LOOKUP_PIN(JACK_HPEN), *LOOKUP_PIN(JACK_BZEN),
-                                       *LOOKUP_PIN(JACK_PWREN), jd);
-            jr->forceState(JackState::BuzzerAndSerial);
-        } else {
-            jr = NULL;
-        }
-        jd.start();
-#endif       
-    }
-
-    void start() {
-#if JD_MIN_VERSION(1)
-    if (!jd.isRunning())
-        jd.start();
-#endif
-    }
-
-    void stop() {
-#if JD_MIN_VERSION(1)
-    if (jd.isRunning())
-        jd.stop();
+        return false;
 #endif
     }
 
     bool isRunning() {
-#if JD_MIN_VERSION(1)
-        return jd.isRunning();
-#else   
-        return false;
-#endif
-    }
-
-    bool isConnected() {
-#if JD_MIN_VERSION(2)
-        return jd.isConnected();
+#ifdef CODAL_JACDAC_WIRE_SERIAL
+        return phys.isRunning();
 #else
         return false;
 #endif
     }
 
-    void setBridge(JDDriver* driver) {
-#if JD_MIN_VERSION(3)
-        protocol.setBridge(driver);
-#endif
-    }
-
-    void setJackRouterOutput(int output) {
-#if 0
-        if (!jr)
-            return;
-        if (output < 0)
-            return;
-        switch (output) {
-        case 0:
-            jr->forceState(JackState::None);
-            break;
-        case 1:
-            jr->forceState(JackState::BuzzerAndSerial);
-            break;
-        case 2:
-            jr->forceState(JackState::HeadPhones);
-            break;
-        }
-#endif
-    }
-
-    Buffer drivers() {
-#if JD_MIN_VERSION(1)
-        if (!JDProtocol::instance)
-            return mkBuffer(NULL, 0);
-
-        // determine the number of drivers
-        auto pDrivers = JDProtocol::instance->drivers;
-        int n = 0;
-        for(int i = 0; i < JD_PROTOCOL_DRIVER_ARRAY_SIZE; ++i) {
-            if (NULL != pDrivers[i])
-                n++;
-        }
-        // allocate n * sizeof(JDDevice)
-        auto buf = mkBuffer(NULL, n * sizeof(JDDevice));
-        // fill up
-        int k = 0;
-        for(int i = 0; i < JD_PROTOCOL_DRIVER_ARRAY_SIZE; ++i) {
-            auto pDriver = pDrivers[i];
-            if (NULL != pDriver) {
-                auto device = pDriver->getState();
-                memcpy(buf->data + k, &device, sizeof(JDDevice));
-                k += sizeof(JDDevice);
-            }
-        }
-        // we're done!
-        return buf;
+    int getId()
+    {
+#ifdef CODAL_JACDAC_WIRE_SERIAL
+        return phys.id;
 #else
-        return mkBuffer(NULL, 0);
+        return -1;
 #endif
     }
 
-    int id() {
-#if JD_MIN_VERSION(1)
-        return jd.id;
-#else
-        return 0;
+    JDPacket* getPacket()
+    {
+#ifdef CODAL_JACDAC_WIRE_SERIAL
+        auto pkt = phys.getPacket();
+#if CONFIG_ENABLED(DEVICE_USB) && CONFIG_ENABLED(DEVICE_JACDAC_DEBUG)
+        if (pkt)
+            pxt::jacdacDebug.handlePacket(pkt);
 #endif
+        return pkt;
+#else
+        return NULL;
+#endif        
     }
 
-    int logicId() {
-#if JD_MIN_VERSION(1)
-        auto pLogic = JDProtocol::instance->drivers[0];
-        return pLogic ? pLogic->id : 0;
-#else
-    return 0;
-#endif
+    void start()
+    {
+#ifdef CODAL_JACDAC_WIRE_SERIAL
+        phys.start();
+#endif        
     }
 
-    int state() {
-#if JD_MIN_VERSION(5)
-    return (int)jd.getState();
+    void stop()
+    {
+#ifdef CODAL_JACDAC_WIRE_SERIAL
+        phys.stop();
+#endif       
+    }
+
+    JDDiagnostics getDiagnostics()
+    {
+#ifdef CODAL_JACDAC_WIRE_SERIAL
+        return phys.getDiagnostics();
 #else
-    return -1;
-#endif
+        JDDiagnostics d;
+        return d;
+#endif       
     }
 };
-SINGLETON_IF_PIN(WJacDac, JACK_TX);
 
-void setJackRouterOutput(int output) {
-    auto service = getWJacDac();
-    if (!service) return;
-    service->setJackRouterOutput(output);
+SINGLETON_IF_PIN(WJDPhysicalLayer, JACK_TX);
+
+/**
+* Gets the physical layer component id
+**/
+//%
+int __physId() {
+    auto jd = getWJDPhysicalLayer();
+    return jd ? jd->getId() : -1;
 }
 
 /**
- * Starts the JacDac protocol
- */
-//% parts=jacdac
-void start() {
-    auto service = getWJacDac();
-    if (!service) return;
-    service->start();
+ * Write a buffer to the jacdac physical layer.
+ **/
+//%
+void __physSendPacket(Buffer buf) {
+    auto jd = getWJDPhysicalLayer();
+    if (jd)
+        jd->send(buf);
 }
 
 /**
-* Gets the bus state
-*/
-//% parts=jacdac
-int state() {
-    auto service = getWJacDac();
-    return service ? service->state() : -1;
-}
-/**
- * Starts the JacDac protocol
- */
-//% parts=jacdac
-void stop() {
-    auto service = getWJacDac();
-    if (!service) return;
-    service->stop();
-}
-
-/**
-* Indicates if JacDac is running
-*/
-//% parts=jacdac
-bool isRunning() {
-    auto service = getWJacDac();
-    return !!service && service->isRunning();
-}
-
-/**
-* true if connected, false if there's a bad bus condition.
-*/
-//% parts=jacdac
-bool isConnected() {
-    auto service = getWJacDac();
-    return !!service && service->isConnected();
-}
-
-/**
-* Gets the jacdac event id
-*/
-//% parts=jacdac
-int eventId() {
-    auto service = getWJacDac();
-    if (!service) return -1;
-    return service->id();
-}
-
-/**
-* Gets the jacdac logic driver event id
-*/
-//% parts=jacdac
-int logicEventId() {
-    auto service = getWJacDac();
-    if (!service) return -1;
-    return service->logicId();
-}
-
-/**
-* Clears any existing bridge
-*/
-//% parts=jacdac
-void clearBridge() {
-    auto service = getWJacDac();
-    if (!service) return;
-#if JD_MIN_VERSION(3)
-    service->setBridge(NULL);
-#endif    
-}
-
-/**
-* Gets a snapshot of the drivers registered on the bus. Array of JDDevice
-*/
-//% parts=jacdac
-Buffer __internalDrivers() {
-    auto service = getWJacDac();
-    if (!service) return mkBuffer(NULL, 0);
-    return service->drivers();
-}
-
-#if JD_MIN_VERSION(1)
-class JDProxyDriver : public JDDriver 
-{
-  public:
-    RefCollection *methods;
-    Buffer _controlData; // may be NULL
-
-    JDProxyDriver(JDDevice d, RefCollection *m, Buffer controlData) 
-        : JDDriver(d)
-        , methods(m)
-        , _controlData(controlData) {
-        incrRC(this->methods);
-        registerGCPtr((TValue)this->methods);
-        if (this->_controlData) {
-            incrRC(this->_controlData);
-            registerGCPtr((TValue)this->_controlData);
-        }
-    }
-
-    virtual int fillControlPacket(JDPkt* p) {
-        if (NULL != _controlData && _controlData->length) {
-            ControlPacket* cp = (ControlPacket*)p->data;
-            auto n = min(CONTROL_PACKET_PAYLOAD_SIZE, this->_controlData->length);
-            memcpy(cp->data, this->_controlData->data, n);
-            Event(this->id, JD_DRIVER_EVT_FILL_CONTROL_PACKET);
-        }
-        return DEVICE_OK;
-    }
-
-    virtual int handleControlPacket(JDPkt *p) {
-        ControlPacket* cp = (ControlPacket*)p->data;
-        if (this->device.isPairedDriver() && !this->device.isPaired())
+* Reads a packet from the queue. NULL if queue is empty
+**/
+//%
+Buffer __physGetPacket() {
+    auto jd = getWJDPhysicalLayer();
+    Buffer buf = NULL;
+    if (jd) {
+        auto pkt = jd->getPacket();
+        if (pkt)
         {
-            DMESG("NEED TO PAIR!");
-            if (cp->flags & CONTROL_JD_FLAGS_PAIRABLE)
-            {
-                DMESG("PAIR!");
-                sendPairingPacket(JDDevice(cp->address, JD_DEVICE_FLAGS_REMOTE | JD_DEVICE_FLAGS_INITIALISED | JD_DEVICE_FLAGS_CP_SEEN, cp->serial_number, cp->driver_class));
-            }
-        }
-
-        auto buf = pxt::mkBuffer((const uint8_t *)cp, sizeof(ControlPacket));
-        auto r = pxt::runAction1(methods->getAt(1), (TValue)buf);
-        auto retVal = numops::toBool(r) ? DEVICE_OK : DEVICE_CANCELLED;
-        decr(r);
-        decrRC(buf);        
-        return retVal;
-    }
-
-    virtual int handlePacket(JDPkt *p) {
-        auto buf = pxt::mkBuffer((const uint8_t *)&p->crc, p->size + 4);
-        auto r = pxt::runAction1(methods->getAt(0), (TValue)buf);
-        auto retVal = numops::toBool(r) ? DEVICE_OK : DEVICE_CANCELLED;
-        decr(r);
-        decrRC(buf);
-        return retVal;
-    }
-
-    bool isPairedInstanceAddress(uint8_t address) {
-        return NULL != this->pairedInstance && this->pairedInstance->getAddress() == address;
-    }
-
-    JDDevice *getDevice() { return &device; }
-
-    ~JDProxyDriver() {
-        decrRC(methods);
-        unregisterGCPtr((TValue)methods);
-        if (_controlData) {
-            decrRC(_controlData);
-            unregisterGCPtr((TValue)_controlData);
+            buf = mkBuffer((uint8_t*)pkt, sizeof(JDPacket));
+            free(pkt);
         }
     }
-};
 
-#else
-class JDProxyDriver {
-
-};
-#endif
-
-typedef JDProxyDriver* JacDacDriverStatus;
-typedef RefCollection* MethodCollection;
-/**
-Internal
-*/
-//% parts=jacdac
-JacDacDriverStatus __internalAddDriver(int driverType, int driverClass, MethodCollection methods, Buffer controlData) {
-    DMESG("jd: adding driver %d %d", driverType, driverClass);
-    getWJacDac();
-#if JD_MIN_VERSION(1)
-    return new JDProxyDriver(JDDevice((DriverType)driverType, driverClass), methods, controlData);
-#else
-    return new JDProxyDriver();
-#endif
+    return buf;
 }
 
 /**
-* Internal
-*/
-//% parts=jacdac
-void __internalRemoveDriver(JacDacDriverStatus d) {
-    DMESG("jd: deleting driver %p", d);
-    if (NULL == d) return;
-    delete d; // removes driver
-}
-
-/**
- * Internal
- */
-//% parts=jacdac
-int __internalSendPacket(Buffer buf, int deviceAddress) {
-    getWJacDac();
-#if JD_MIN_VERSION(1)
-    return JDProtocol::send(buf->data, buf->length, deviceAddress);
-#else 
-    return 0;
-#endif
-}
-
-} // namespace jacdac
-
-namespace JacDacDriverStatusMethods {
-
-/**
-* Returns the JDDevice instance
-*/
-//% property
-Buffer device(JacDacDriverStatus d) {
-#if JD_MIN_VERSION(1)
-    return pxt::mkBuffer((const uint8_t *)d->getDevice(), sizeof(JDDevice));
-#else
-    return NULL;
-#endif
-}
-
-/** Check if driver is connected. */
-//% property
-bool isConnected(JacDacDriverStatus d) {
-#if JD_MIN_VERSION(1)
-    return d->isConnected();
-#else
-    return false;
-#endif   
-}
-
-/**
-* Sets the error state on the device
-*/
+ * Returns the connection state of the JACDAC physical layer.
+ **/
 //%
-void setError(JacDacDriverStatus d, int error) {
-#if JD_MIN_VERSION(4)
-    d->getDevice()->setError((DriverErrorCode)error);
-#endif
-}
-
-/** Get device id for events. */
-//% property
-uint32_t id(JacDacDriverStatus d) {
-#if JD_MIN_VERSION(1)
-    return d->id;
-#else
-    return 999;
-#endif
-}
-
-/** If paired, paired instance address */
-//% property
-bool isPairedInstanceAddress(JacDacDriverStatus d, uint8_t address) {
-#if JD_MIN_VERSION(1)
-    return d->isPairedInstanceAddress(address);
-#else
-    return false;
-#endif
+bool __physIsConnected() {
+    auto jd = getWJDPhysicalLayer();
+    return jd && jd->isConnected();
 }
 
 /**
-* Set driver as bridge
-*/
+ * Indicates if the bus is running
+ **/
 //%
-void setBridge(JacDacDriverStatus d) {
-#if JD_MIN_VERSION(1)
-    jacdac::getWJacDac()->setBridge(d);
-#endif
+bool __physIsRunning() {
+    auto jd = getWJDPhysicalLayer();
+    return jd && jd->isRunning();
 }
 
-} // namespace JacDacDriverStatusMethods
+/**
+ * Starts the JACDAC physical layer.
+ **/
+//%
+void __physStart()
+{
+    auto jd = getWJDPhysicalLayer();
+    if (jd)
+        jd->start();
+}
+
+
+/**
+ * Reads the diagnostics struct provided by the physical layer. Returns a buffer or NULL.
+ **/
+//%
+Buffer __physGetDiagnostics() {
+    auto jd = getWJDPhysicalLayer();
+    Buffer buf = NULL;
+
+    if (jd) {
+        JDDiagnostics diagnostics = jd->getDiagnostics();
+        buf = mkBuffer((uint8_t*)&diagnostics, sizeof(JDDiagnostics));
+    }
+
+    return buf;
+}
+
+/**
+ * Stops the JACDAC physical layer.
+ **/
+//%
+void __physStop()
+{
+    auto jd = getWJDPhysicalLayer();
+    if (jd)
+        jd->stop();
+}
+
+}

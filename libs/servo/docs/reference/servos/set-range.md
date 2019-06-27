@@ -31,6 +31,8 @@ for (let i = 0; i < 5; i++) {
 
 [set angle](/reference/servos/set-angle)
 
+[Brief Guide to Servos](https://www.kitronik.co.uk/pdf/a-brief-guide-to-servos.pdf)
+
 ```package
 servo
 ```

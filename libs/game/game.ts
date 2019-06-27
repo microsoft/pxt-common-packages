@@ -17,8 +17,8 @@ namespace game {
     let _scene: scene.Scene;
     let _sceneStack: scene.Scene[];
 
-    let _scenePushHandlers: (() => void)[];
-    let _scenePopHandlers: (() => void)[];
+    let _scenePushHandlers: ((scene: scene.Scene) => void)[];
+    let _scenePopHandlers: ((scene: scene.Scene) => void)[];
 
     export function currentScene(): scene.Scene {
         init();
@@ -58,7 +58,7 @@ namespace game {
     }
 
     export function pushScene() {
-        init();
+        const oldScene = game.currentScene()
         particles.clearAll();
         particles.disableAll();
         if (!_sceneStack) _sceneStack = [];
@@ -67,11 +67,12 @@ namespace game {
         init();
 
         if (_scenePushHandlers) {
-            _scenePushHandlers.forEach(cb => cb());
+            _scenePushHandlers.forEach(cb => cb(oldScene));
         }
     }
 
     export function popScene() {
+        const oldScene = game.currentScene()
         if (_sceneStack && _sceneStack.length) {
             // pop scenes from the stack
             _scene = _sceneStack.pop();
@@ -81,11 +82,12 @@ namespace game {
             control.popEventContext();
             _scene = undefined;
         }
+
         if (_scene)
             particles.enableAll();
 
         if (_scenePopHandlers) {
-            _scenePopHandlers.forEach(cb => cb());
+            _scenePopHandlers.forEach(cb => cb(oldScene));
         }
     }
 
@@ -158,7 +160,7 @@ namespace game {
      * Finish the game and display the score
      */
     //% group="Gameplay"
-    //% blockId=gameOver block="game over || %win=toggleWinLose with %effect effect"
+    //% blockId=gameOver block="game over %win=toggleWinLose || with %effect effect"
     //% weight=80 help=game/over
     export function over(win: boolean = false, effect?: effects.BackgroundEffect) {
         init();
@@ -241,6 +243,40 @@ namespace game {
         });
     }
 
+    // Indicates whether the fiber needs to be created
+    let foreverRunning = false;
+
+    /**
+     * Repeats the code forever in the background for this scene.
+     * On each iteration, allows other codes to run.
+     * @param body code to execute
+     */
+    export function forever(action: () => void): void {
+        if (!foreverRunning) {
+            foreverRunning = true;
+            control.runInParallel(() => {
+                while (1) {
+                    const handlers = game.currentScene().gameForeverHandlers;
+                    handlers.forEach(h => {
+                        if (!h.lock) {
+                            h.lock = true;
+                            control.runInParallel(() => {
+                                h.handler();
+                                h.lock = false;
+                            });
+                        }
+                    });
+                    pause(30);
+                }
+            });
+        }
+
+        game.currentScene().gameForeverHandlers.push({
+            handler: action,
+            lock: false
+        });
+    }
+
     /**
      * Draw on screen before sprites, after background
      * @param body code to execute
@@ -283,7 +319,7 @@ namespace game {
      *
      * @param handler Code to run when a scene is pushed onto the stack
      */
-    export function addScenePushHandler(handler: () => void) {
+    export function addScenePushHandler(handler: (oldScene: scene.Scene) => void) {
         if (!_scenePushHandlers) _scenePushHandlers = [];
         _scenePushHandlers.push(handler);
     }
@@ -294,7 +330,7 @@ namespace game {
      *
      * @param handler The handler to remove
      */
-    export function removeScenePushHandler(handler: () => void) {
+    export function removeScenePushHandler(handler: (oldScene: scene.Scene) => void) {
         if (_scenePushHandlers) _scenePushHandlers.removeElement(handler);
     }
 
@@ -306,7 +342,7 @@ namespace game {
      *
      * @param handler Code to run when a scene is removed from the top of the stack
      */
-    export function addScenePopHandler(handler: () => void) {
+    export function addScenePopHandler(handler: (oldScene: scene.Scene) => void) {
         if (!_scenePopHandlers) _scenePopHandlers = [];
         _scenePopHandlers.push(handler);
     }
@@ -317,7 +353,7 @@ namespace game {
      *
      * @param handler The handler to remove
      */
-    export function removeScenePopHandler(handler: () => void) {
+    export function removeScenePopHandler(handler: (oldScene: scene.Scene) => void) {
         if (_scenePopHandlers) _scenePopHandlers.removeElement(handler);
     }
 }

@@ -7,7 +7,10 @@ static uint8_t pinPos[DEV_NUM_PINS];
 
 //%
 DevicePin *getPin(int id) {
-    if (id < 0 || id >= DEV_NUM_PINS)
+
+    id &= CFG_PIN_NAME_MSK;
+
+    if (id >= DEV_NUM_PINS)
         target_panic(PANIC_NO_SUCH_PIN);
 
     // we could use lookupComponent() here - it would be slightly slower
@@ -42,6 +45,7 @@ void linkPin(int from, int to) {
 DevicePin *lookupPin(int pinName) {
     if (pinName < 0 || pinName == 0xff)
         return NULL;
+    pinName &= CFG_PIN_NAME_MSK;
     return getPin(pinName);
 }
 

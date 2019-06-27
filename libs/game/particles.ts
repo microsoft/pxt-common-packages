@@ -4,7 +4,17 @@ namespace particles {
         destroyed = 1 << 1,
     }
 
-    const MAX_SOURCES = 7; // maximum count of sources before removing previous sources
+    // maximum count of sources before removing previous sources
+    const MAX_SOURCES = (() => {
+        const sz = control.ramSize();
+        if (sz <= 1024 * 100) {
+            return 8;
+        } else if (sz <= 1024 * 200) {
+            return 16;
+        } else {
+            return 50;
+        }
+    })();
     const TIME_PRECISION = 10; // time goes down to down to the 1<<10 seconds
     let lastUpdate: number;
 
@@ -93,8 +103,8 @@ namespace particles {
             const sources = particleSources();
 
             // remove and immediately destroy oldest source if over MAX_SOURCES
-            if (sources.length > MAX_SOURCES) {
-                sortSources();
+            if (sources.length >= MAX_SOURCES) {
+                sortSources(sources);
                 const removedSource = sources.shift();
                 removedSource.clear();
                 removedSource.destroy();
@@ -317,7 +327,8 @@ namespace particles {
 
     function updateParticles() {
         const sources = particleSources();
-        sortSources();
+        if (!sources) return;
+        sortSources(sources);
 
         const time = control.millis();
         const dt = time - lastUpdate;
@@ -330,12 +341,10 @@ namespace particles {
 
     function pruneParticles() {
         const sources = particleSources();
-        if (sources)
-            sources.slice(0, sources.length).forEach(s => s._prune());
+        if (sources) sources.slice(0, sources.length).forEach(s => s._prune());
     }
     
-    function sortSources() {
-        const sources = particleSources();
+    function sortSources(sources: ParticleSource[]) {
         sources.sort((a, b) => (a.priority - b.priority || a.id - b.id));
     }
 
@@ -368,15 +377,14 @@ namespace particles {
         protected maxState: number;
         protected galois: Math.FastRandom;
         stateChangePercentage: number;
-        oscilattionPercentage: number
-
+        oscillationPercentage: number
 
         constructor(anchor: ParticleAnchor, particlesPerSecond: number, maxState: number, factory?: ParticleFactory) {
             super(anchor, particlesPerSecond, factory);
             this.galois = new Math.FastRandom();
             this.maxState = maxState;
             this.stateChangePercentage = 3;
-            this.oscilattionPercentage = 4;
+            this.oscillationPercentage = 4;
         }
 
         updateParticle(p: Particle, fixedDt: Fx8) {
@@ -389,7 +397,7 @@ namespace particles {
                 }
             }
 
-            if (this.galois.percentChance(this.oscilattionPercentage)) {
+            if (this.galois.percentChance(this.oscillationPercentage)) {
                 p.vx = Fx.neg(p.vx);
             }
         }

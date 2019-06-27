@@ -1,5 +1,5 @@
 namespace jacdac {
-    export class AccelerometerService extends jacdac.SensorService {
+    export class AccelerometerService extends jacdac.SensorHost {
         constructor(name: string) {
             super("acc", jacdac.ACCELEROMETER_DEVICE_CLASS);
             // TODO: catch all event
@@ -11,6 +11,14 @@ namespace jacdac {
             input.onGesture(Gesture.FaceUp, () => this.raiseHostEvent(JDGesture.FaceUp));
             input.onGesture(Gesture.FaceDown, () => this.raiseHostEvent(JDGesture.FaceDown));
             input.onGesture(Gesture.FreeFall, () => this.raiseHostEvent(JDGesture.FreeFall));
+            input.onGesture(Gesture.ThreeG, () => this.raiseHostEvent(JDGesture.ThreeG));
+            input.onGesture(Gesture.SixG, () => this.raiseHostEvent(JDGesture.SixG));
+            input.onGesture(Gesture.EightG, () => this.raiseHostEvent(JDGesture.EightG));
+            input.onGesture(Gesture.TwoG, () => this.raiseHostEvent(JDGesture.TwoG));
+        }
+
+        raiseCustomGestureEvent(id: number) {
+            this.raiseHostEvent(JDGesture.TwoG + 1 + (id | 0));
         }
 
         protected serializeState(): Buffer {

@@ -9,7 +9,7 @@ namespace images {
     //% img.fieldEditor="sprite"
     //% img.fieldOptions.taggedTemplate="img"
     //% img.fieldOptions.decompileIndirectFixedInstances="true"
-    //% weight=100 group="Create"
+    //% weight=100 group="Create" duplicateShadowOnDrag
     export function _spriteImage(img: Image) {
         return img
     }
@@ -21,7 +21,7 @@ namespace images {
     //% img.fieldOptions.decompileIndirectFixedInstances="true"
     //% img.fieldOptions.sizes="-1,-1"
     //% weight=100 group="Create"
-    //% blockHidden=1
+    //% blockHidden=1 duplicateShadowOnDrag
     export function _screenImage(img: Image) {
         return img
     }
@@ -31,10 +31,22 @@ namespace images {
     //% img.fieldEditor="sprite"
     //% img.fieldOptions.taggedTemplate="img"
     //% img.fieldOptions.decompileIndirectFixedInstances="true"
-    //% img.fieldOptions.sizes="10,8;16,16;32,32;48,48;64,64;16,32;32,48;32,8;64,8"
+    //% img.fieldOptions.sizes="10,8;16,16;32,32;48,48;64,64;16,32;32,48;32,8;64,8;20,15;40,15"
     //% weight=100 group="Create"
-    //% blockHidden=1
+    //% blockHidden=1 duplicateShadowOnDrag
     export function _tileMapImage(img: Image) {
+        return img
+    }
+
+    //% blockId=tile_image_picker block="%img"
+    //% shim=TD_ID
+    //% img.fieldEditor="sprite"
+    //% img.fieldOptions.taggedTemplate="img"
+    //% img.fieldOptions.decompileIndirectFixedInstances="true"
+    //% img.fieldOptions.sizes="16,16;32,32;8,8"
+    //% weight=100 group="Create"
+    //% blockHidden=1 duplicateShadowOnDrag
+    export function _tileImage(img: Image) {
         return img
     }
 
