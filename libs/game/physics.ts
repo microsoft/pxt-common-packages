@@ -45,10 +45,10 @@ class MovingSprite {
 class ArcadePhysicsEngine extends PhysicsEngine {
     protected sprites: Sprite[];
     protected map: sprites.SpriteMap;
-    private maxVelocity: Fx8;
-    private maxNegativeVelocity: Fx8;
-    private minSingleStep: Fx8;
-    private maxSingleStep: Fx8;
+    protected maxVelocity: Fx8;
+    protected maxNegativeVelocity: Fx8;
+    protected minSingleStep: Fx8;
+    protected maxSingleStep: Fx8;
 
     constructor(maxVelocity = 500, minSingleStep = 2, maxSingleStep = 4) {
         super();
