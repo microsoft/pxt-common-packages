@@ -104,7 +104,7 @@ namespace particles {
 
             // remove and immediately destroy oldest source if over MAX_SOURCES
             if (sources.length >= MAX_SOURCES) {
-                sortSources();
+                sortSources(sources);
                 const removedSource = sources.shift();
                 removedSource.clear();
                 removedSource.destroy();
@@ -327,7 +327,8 @@ namespace particles {
 
     function updateParticles() {
         const sources = particleSources();
-        sortSources();
+        if (!sources) return;
+        sortSources(sources);
 
         const time = control.millis();
         const dt = time - lastUpdate;
@@ -340,12 +341,10 @@ namespace particles {
 
     function pruneParticles() {
         const sources = particleSources();
-        if (sources)
-            sources.slice(0, sources.length).forEach(s => s._prune());
+        if (sources) sources.slice(0, sources.length).forEach(s => s._prune());
     }
     
-    function sortSources() {
-        const sources = particleSources();
+    function sortSources(sources: ParticleSource[]) {
         sources.sort((a, b) => (a.priority - b.priority || a.id - b.id));
     }
 
