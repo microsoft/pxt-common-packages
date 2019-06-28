@@ -303,8 +303,8 @@ namespace mqtt {
 
         public opt: IConnectionOptions;
 
-        private net: Net;
-        private sct?: Socket;
+        private net: net.Net;
+        private sct?: net.Socket;
 
         private wdId: number = Constants.Uninitialized;
         private piId: number = Constants.Uninitialized;
@@ -312,7 +312,7 @@ namespace mqtt {
         public connected: boolean = false;
 
         // tslint:disable-next-line:no-unsafe-any
-        constructor(opt: IConnectionOptions, net: Net) {
+        constructor(opt: IConnectionOptions, net: net.Net) {
             opt.port = opt.port;
             opt.clientId = opt.clientId;
 

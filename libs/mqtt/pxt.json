@@ -1,12 +1,9 @@
 {
     "name": "mqtt",
-    "description": "Micro-MQTT for MakeCode",
+    "description": "MQTT for MakeCode",
     "files": [
         "README.md",
-        "net.ts",
-        "esp8266.ts",
-        "micro-mqtt.ts",
-        "azureiot.ts"
+        "mqtt.ts"
     ],
     "tests": [
         "test.ts"
