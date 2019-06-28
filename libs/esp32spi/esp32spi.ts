@@ -105,7 +105,9 @@ namespace esp32spi {
         ) {
             this._ready.digitalRead();
             this._socknum_ll = [buffer1(0)]
-            SPIController.instance = this
+            SPIController.instance = this;
+            this._spi.setFrequency(8000000);
+            this.reset();
         }
 
         private log(priority: number, msg: string) {
@@ -115,6 +117,8 @@ namespace esp32spi {
 
         private fail(msg: string) {
             console.log(`FAIL: ${msg}`)
+            screen.fill(0);
+            game.consoleOverlay.draw();
             pause(5000)
             control.fail(msg)
         }
@@ -134,6 +138,7 @@ namespace esp32spi {
             pause(750)
             if (this._gpio0)
                 this._gpio0.digitalRead();
+            this.log(0, 'reseted esp32')
         }
 
         private readByte(): number {
@@ -159,12 +164,15 @@ namespace esp32spi {
                 if (r == desired) {
                     return true
                 }
-                this.log(0, `read char ${r}, expected ${desired}`)
+                //this.log(0, `read char ${r}, expected ${desired}`)
             }
             this.fail("timed out waiting for SPI char")
             return false;
         }
 
+        /**
+         * Wait until the ready pin goes low
+         */
         private waitForReady() {
             this.log(0, `wait for ready ${this._ready.digitalRead()}`);
             if (this._ready.digitalRead()) {
