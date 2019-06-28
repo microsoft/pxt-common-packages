@@ -5,7 +5,7 @@ namespace net {
     }
 
     export interface Socket {
-        send(data: string): void;
+        send(data: string | Buffer): void;
         close(): void;
         onOpen(handler: () => void): void;
         onClose(handler: () => void): void;
@@ -13,7 +13,10 @@ namespace net {
         onMessage(handler: (data: string) => void): void;
     }
 
-    export interface Net {
-        connect(host: string, port: number): Socket;
+    export class Net {
+        constructor() {}
+        connect(host: string, port: number): Socket {
+            return undefined;
+        }
     }
 }

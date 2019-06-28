@@ -125,32 +125,32 @@ read only when requested
             sock.connect(ipaddr, port, conntype)
         }
 
-        sock.write(`${method} /${path} HTTP/1.0\r\n`)
+        sock.send(`${method} /${path} HTTP/1.0\r\n`)
 
         if (!options.headers["Host"])
-            sock.write(`Host: ${options.headers["host"]}\r\n`)
+            sock.send(`Host: ${options.headers["host"]}\r\n`)
 
         if (!options.headers["User-Agent"])
-            sock.write("User-Agent: MakeCode ESP32\r\n")
+            sock.send("User-Agent: MakeCode ESP32\r\n")
 
         // Iterate over keys to avoid tuple alloc
         for (let k of Object.keys(options.headers))
-            sock.write(`${k}: ${options.headers[k]}\r\n`)
+            sock.send(`${k}: ${options.headers[k]}\r\n`)
 
         if (options.json != null) {
             control.assert(options.data == null, 100)
             options.data = JSON.stringify(options.json)
-            sock.write("Content-Type: application/json\r\n")
+            sock.send("Content-Type: application/json\r\n")
         }
 
         let dataBuf = dataAsBuffer(options.data)
 
         if (dataBuf)
-            sock.write(`Content-Length: ${dataBuf.length}\r\n`)
+            sock.send(`Content-Length: ${dataBuf.length}\r\n`)
 
-        sock.write("\r\n")
+        sock.send("\r\n")
         if (dataBuf)
-            sock.write(dataBuf)
+            sock.send(dataBuf)
 
         let line = sock.readLine()
         // print(line)
