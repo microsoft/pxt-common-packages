@@ -14,7 +14,7 @@ namespace esp32spi {
         constructor() {
             this._buffer = hex``
             this._socknum = esp32spi.SPIController.instance.socket()
-            this.settimeout(0)
+            this.setTimeout(0)
         }
 
         public connect(host: string | Buffer, port: number, conntype: number = null) {
@@ -39,7 +39,7 @@ namespace esp32spi {
         }
 
         /** Attempt to return as many bytes as we can up to but not including '\r\n' */
-        public readline(): string {
+        public readLine(): string {
             // print("Socket readline")
             let stamp = time.monotonic()
             while (this._buffer.indexOf(hex`0d0a`) < 0) {
@@ -114,7 +114,7 @@ namespace esp32spi {
             return ret
         }
 
-        public settimeout(value: number) {
+        public setTimeout(value: number) {
             /** Set the read timeout for sockets, if value is 0 it will block */
             this._timeout = value
         }

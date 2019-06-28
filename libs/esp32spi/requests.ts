@@ -114,7 +114,7 @@ read only when requested
         // our response
         let resp = new Response(sock)
         // socket read timeout
-        sock.settimeout(options.timeout)
+        sock.setTimeout(options.timeout)
 
         let conntype = esp32spi.TCP_MODE
         if (proto == "https:") {
@@ -152,7 +152,7 @@ read only when requested
         if (dataBuf)
             sock.write(dataBuf)
 
-        let line = sock.readline()
+        let line = sock.readLine()
         // print(line)
         let line2 = line.split(" ", 2)
         let status = parseInt(line2[1])
@@ -162,7 +162,7 @@ read only when requested
         }
 
         while (true) {
-            line = sock.readline()
+            line = sock.readLine()
             if (!line || line == "\r\n") {
                 break
             }
