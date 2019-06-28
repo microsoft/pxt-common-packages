@@ -2,4 +2,5 @@
 
 ## ESP32 SPI
 
-Ported from https://github.com/adafruit/Adafruit_CircuitPython_ESP32SPI .
+Ported from Adafruit Circuit Python 
+https://github.com/adafruit/Adafruit_CircuitPython_ESP32SPI.

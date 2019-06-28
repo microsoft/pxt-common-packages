@@ -34,6 +34,7 @@
         "libs/jacdac-services",
         "libs/jacdac-game",
         "libs/datalogger",
+        "libs/mqtt",
         "libs/lora",
         "libs/power",
         "libs/controller",
@@ -43,6 +44,7 @@
         "libs/proximity",
         "libs/feather",
         "libs/esp32spi",
-        "libs/azureiot"
+        "libs/azureiot",
+        "libs/net"
     ]
 }

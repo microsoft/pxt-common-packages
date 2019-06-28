@@ -11,7 +11,8 @@
     "public": true,
     "dependencies": {
         "core": "file:../core",
-        "esp32spi": "file:../esp32spi"
+        "esp32spi": "file:../esp32spi",
+        "net": "file:../net"
     }
 
 }

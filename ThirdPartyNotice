@@ -22,8 +22,11 @@ All sections of code within this repository are licensed under an MIT License:
 =======
 1.   pxt-lora v0.2.2 (https://github.com/ElectronicCats/pxt-lora/archive/v0.2.2.tar.gz)
 2.   arduino-LoRa v0.5.0 (https://github.com/sandeepmistry/arduino-LoRa)
-3.   Adafruit_CircuitPython_CharLCD v3.1.2 (https://github.com/adafruit/Adafruit_CircuitPython_CharLCD)
-4.   @jacdac/jacdac-ts v.0.0.9 (https://github.com/jacdac/jacdac-ts)
+3.   micro-mqtt 1.0.0 (https://github.com/rovale/micro-mqtt/commit/d790a42bdd88a5514d93b683b6fb10edc2a2f873)
+4.   Adafruit_CircuitPython_CharLCD v3.1.2 (https://github.com/adafruit/Adafruit_CircuitPython_CharLCD)
+5.   @jacdac/jacdac-ts v.0.0.9 (https://github.com/jacdac/jacdac-ts)
+6.   Adafruit_CircuitPython_ESP32SPI v1.4.2 https://github.com/adafruit/adafruit_circuitpython_esp32spi
+7.   Adafruit_CircuitPython_AzureIoT v1.0.2 https://github.com/adafruit/Adafruit_CircuitPython_AzureIoT
 
 %% pxt-lora v0.2.2 NOTICES AND INFORMATION BEGIN HERE (https://github.com/ElectronicCats/pxt-lora/archive/v0.2.2.tar.gz)
 =========================================
@@ -76,6 +79,49 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 =========================================
 END OF arduino-LoRa NOTICES AND INFORMATION
+
+%% micro-mqtt v1.0.0 NOTICES AND INFORMATION BEGIN HERE (https://github.com/rovale/micro-mqtt/commit/d790a42bdd88a5514d93b683b6fb10edc2a2f873)
+=========================================
+
+    
+Copyright (c) 2016 Ronald van Leuwen, Rovale
+
+------------------------------------------------------------------------------
+
+All sections of code within this repository are licensed under an MIT License:
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+------------------------------------------------------------------------------
+
+All remaining work in this repository (apart from that in the datasheets directory)
+is licensed under the Creative Commons Attribution-ShareAlike 3.0 Unported License.
+
+To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/3.0/ 
+or send a letter to Creative Commons, 444 Castro Street, Suite 900, Mountain View, 
+California, 94041, USA.
+
+------------------------------------------------------------------------------
+
+=========================================
+END OF micro-mqtt v1.0.0 NOTICES AND INFORMATION
+
 
 %% Adafruit_CircuitPython_CharLCD v3.1.2 NOTICES AND INFORMATION BEGIN HERE (https://github.com/adafruit/Adafruit_CircuitPython_CharLCD/archive/3.1.2.tar.gz)
 =========================================
@@ -132,3 +178,59 @@ SOFTWARE.
 
 =========================================
 END OF @jacdac/jacdac-ts NOTICES AND INFORMATION
+
+%% Adafruit_CircuitPython_ESP32SPI v1.4.2 NOTICES AND INFORMATION BEGIN HERE (https://github.com/adafruit/Adafruit_CircuitPython_ESP32SPI/archive/1.4.2.tar.gz)
+=========================================
+
+The MIT License (MIT)
+
+Copyright (c) 2019 ladyada for Adafruit Industries
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+=========================================
+END OF Adafruit_CircuitPython_ESP32SPI v1.4.2 NOTICES AND INFORMATION
+
+%% Adafruit_CircuitPython_AzureIoT v1.0.2 NOTICES AND INFORMATION BEGIN HERE (https://github.com/adafruit/Adafruit_CircuitPython_AzureIoT/archive/1.0.2.tar.gz)
+=========================================
+
+The MIT License (MIT)
+
+Copyright (c) 2019 Brent Rubell for Adafruit Industries
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+=========================================
+END OF Adafruit_CircuitPython_AzureIoT v1.0.2 NOTICES AND INFORMATION
