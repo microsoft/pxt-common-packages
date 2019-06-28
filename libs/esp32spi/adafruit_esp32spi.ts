@@ -79,6 +79,11 @@ namespace esp32spi {
     export const WL_AP_CONNECTED = 8
     export const WL_AP_FAILED = 9
 
+    export const TCP_MODE = 0
+    export const UDP_MODE = 1
+    export const TLS_MODE = 2
+
+
     function buffer1(ch: number) {
         const b = control.createBuffer(ch)
         b[0] = ch
@@ -89,10 +94,6 @@ namespace esp32spi {
         _socknum_ll: Buffer[];
 
         static instance: ESP_SPIcontrol;
-
-        static readonly TCP_MODE = 0
-        static readonly UDP_MODE = 1
-        static readonly TLS_MODE = 2
 
         constructor(
             public _spi: SPI,
@@ -512,7 +513,7 @@ namespace esp32spi {
     'conn_mode' TCP_MODE but can also use UDP_MODE or TLS_MODE
     (dest must be hostname for TLS_MODE!)
     */
-        public socket_open(socket_num: number, dest: Buffer | string, port: number, conn_mode = ESP_SPIcontrol.TCP_MODE): void {
+        public socket_open(socket_num: number, dest: Buffer | string, port: number, conn_mode = TCP_MODE): void {
             this._socknum_ll[0][0] = socket_num
             if (this._debug) {
                 print("*** Open socket")
@@ -594,7 +595,7 @@ namespace esp32spi {
             return resp[0]
         }
 
-        public socket_connect(socket_num: number, dest: Buffer, port: number, conn_mode = ESP_SPIcontrol.TCP_MODE): boolean {
+        public socket_connect(socket_num: number, dest: string | Buffer, port: number, conn_mode = TCP_MODE): boolean {
             /** Open and verify we connected a socket to a destination IP address or hostname
         using the ESP32's internal reference number. By default we use
         'conn_mode' TCP_MODE but can also use UDP_MODE or TLS_MODE (dest must
