@@ -4,7 +4,7 @@
     "files": [
         "esp32spi.ts",
         "socket.ts",
-        "request.ts",
+        "requests.ts",
         "wifimanager.ts",
         "README.md"
     ],
