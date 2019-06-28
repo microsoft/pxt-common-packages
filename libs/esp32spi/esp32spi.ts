@@ -101,23 +101,20 @@ namespace esp32spi {
             public _ready: DigitalInOutPin,
             public _reset: DigitalInOutPin,
             public _gpio0: DigitalInOutPin = null,
-            public _debug = 0
+            public debug = 0
         ) {
             SPIController.instance = this
             this._socknum_ll = [buffer1(0)]
         }
 
         private log(priority: number, msg: string) {
-            if (priority > this._debug)
+            if (priority < this.debug)
                 console.log(msg);
         }
 
+        /** Hard reset the ESP32 using the reset pin */
         public reset(): void {
-            /** Hard reset the ESP32 using the reset pin */
-            if (this._debug) {
-                print("Reset ESP32")
-            }
-
+            this.log(0, "Reset ESP32")
             if (this._gpio0)
                 this._gpio0.digitalWrite(true);
             this._cs.digitalWrite(true)
@@ -178,10 +175,7 @@ namespace esp32spi {
             pauseUntil(() => this._ready.digitalRead(), 10000);
         }
 
-        private send_command(cmd: number,
-            params: Buffer[] = undefined,
-            param_len_16 = false) {
-
+        private sendCommand(cmd: number, params?: Buffer[], param_len_16?: boolean) {
             params = params || [];
 
             // compute buffer size
@@ -215,7 +209,7 @@ namespace esp32spi {
             this._spi.transfer(packet, dummy);
         }
 
-        private waitResponseCmd(cmd: number, num_responses: number = undefined, param_len_16 = false) {
+        private waitResponseCmd(cmd: number, num_responses?: number, param_len_16?: boolean) {
             this.waitForReady();
 
             let responses: Buffer[] = []
@@ -242,38 +236,32 @@ namespace esp32spi {
             return responses
         }
 
-        private sendCommandGetResponse(cmd: number, params: Buffer[] = undefined,
-            reply_params = 1, sent_param_len_16 = false,
-            recv_param_len_16 = false) {
-            this.send_command(cmd, params, sent_param_len_16)
+        private sendCommandGetResponse(cmd: number, params?: Buffer[])
+        //            reply_params = 1, sent_param_len_16 = false,
+        //           recv_param_len_16 = false) 
+        {
+            const reply_params = 1;
+            const sent_param_len_16 = false;
+            const recv_param_len_16 = false;
+            this.sendCommand(cmd, params, sent_param_len_16)
             return this.waitResponseCmd(cmd, reply_params, recv_param_len_16)
         }
 
         get status(): number {
             const resp = this.sendCommandGetResponse(_GET_CONN_STATUS_CMD)
             this.log(0, `Status: ${resp[0][0]}`);
-
             // one byte response
             return resp[0][0];
         }
 
         /** A string of the firmware version on the ESP32 */
         get firmwareVersion(): string {
-            if (this._debug) {
-                print("Firmware version")
-            }
-
             let resp = this.sendCommandGetResponse(_GET_FW_VERSION_CMD)
             return resp[0].toString();
         }
 
         /** A bytearray containing the MAC address of the ESP32 */
         get MACaddress(): Buffer {
-            // pylint: disable=invalid-name
-            if (this._debug) {
-                print("MAC address")
-            }
-
             let resp = this.sendCommandGetResponse(_GET_MACADDR_CMD, [hex`ff`])
             return resp[0]
         }
@@ -282,10 +270,6 @@ namespace esp32spi {
     to 'get_scan_networks' for response
 */
         private startScanNetworks(): void {
-            if (this._debug) {
-                print("Start scan")
-            }
-
             let resp = this.sendCommandGetResponse(_START_SCAN_NETWORKS)
             if (resp[0][0] != 1) {
                 control.fail("Failed to start AP scan")
@@ -297,7 +281,7 @@ namespace esp32spi {
     'ssid', 'rssi' and 'encryption' entries, one for each AP found
 */
         private getScanNetworks(): AccessPoint[] {
-            this.send_command(_SCAN_NETWORKS)
+            this.sendCommand(_SCAN_NETWORKS)
             let names = this.waitResponseCmd(_SCAN_NETWORKS)
             // print("SSID names:", names)
             // pylint: disable=invalid-name
@@ -429,7 +413,7 @@ namespace esp32spi {
     an exception on failure
     */
         public connectAP(ssid: string, password: string): number {
-            if (this._debug) {
+            if (this.debug) {
                 print(`Connect to AP ${ssid} ${password}`)
             }
 
@@ -492,7 +476,7 @@ namespace esp32spi {
     can then be passed to the other socket commands
     */
         public socket(): number {
-            if (this._debug) {
+            if (this.debug) {
                 print("*** Get socket")
             }
 
@@ -502,7 +486,7 @@ namespace esp32spi {
                 control.fail("No sockets available")
             }
 
-            if (this._debug) {
+            if (this.debug) {
                 // %d" % resp)
                 print("Allocated socket #" + resp)
             }
@@ -517,7 +501,7 @@ namespace esp32spi {
     */
         public socketOpen(socket_num: number, dest: Buffer | string, port: number, conn_mode = TCP_MODE): void {
             this._socknum_ll[0][0] = socket_num
-            if (this._debug) {
+            if (this.debug) {
                 print("*** Open socket")
             }
 
@@ -556,7 +540,7 @@ namespace esp32spi {
 
         /** Write the bytearray buffer to a socket */
         public socketWrite(socket_num: number, buffer: Buffer): void {
-            if (this._debug) {
+            if (this.debug) {
                 print("Writing:" + buffer.length)
             }
 
@@ -579,7 +563,7 @@ namespace esp32spi {
             this._socknum_ll[0][0] = socket_num
             let resp = this.sendCommandGetResponse(_AVAIL_DATA_TCP_CMD, this._socknum_ll)
             let reply = pins.unpackBuffer("<H", resp[0])[0]
-            if (this._debug) {
+            if (this.debug) {
                 print(`ESPSocket: ${reply} bytes available`)
             }
 
@@ -588,7 +572,7 @@ namespace esp32spi {
 
         /** Read up to 'size' bytes from the socket number. Returns a bytearray */
         public socketRead(socket_num: number, size: number): Buffer {
-            if (this._debug) {
+            if (this.debug) {
                 print(`Reading ${size} bytes from ESP socket with status ${this.socketStatus(socket_num)}`)
             }
 
@@ -603,7 +587,7 @@ namespace esp32spi {
     be hostname for TLS_MODE!)
     */
         public socketConnect(socket_num: number, dest: string | Buffer, port: number, conn_mode = TCP_MODE): boolean {
-            if (this._debug) {
+            if (this.debug) {
                 print("*** Socket connect mode " + conn_mode)
             }
 
@@ -623,7 +607,7 @@ namespace esp32spi {
 
         /** Close a socket using the ESP32's internal reference number */
         public socketClose(socket_num: number): void {
-            if (this._debug) {
+            if (this.debug) {
                 // %d" % socket_num)
                 print("*** Closing socket #" + socket_num)
             }
