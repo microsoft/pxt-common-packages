@@ -98,12 +98,12 @@ namespace esp32spi {
         constructor(
             private _spi: SPI,
             private _cs: DigitalInOutPin,
-            private _ready: DigitalInOutPin,
+            private _busy: DigitalInOutPin,
             private _reset: DigitalInOutPin,
             private _gpio0: DigitalInOutPin = null,
             public debug = 0
         ) {
-            this._ready.digitalRead();
+            this._busy.digitalRead();
             this._socknum_ll = [buffer1(0)]
             SPIController.instance = this;
             this._spi.setFrequency(8000000);
@@ -142,7 +142,9 @@ namespace esp32spi {
         }
 
         private readByte(): number {
-            return this._spi.write(0)
+            const r = buffer1(0)
+            this.spiTransfer(null, r)
+            return r[0]
         }
 
         private checkData(desired: number): boolean {
@@ -174,13 +176,13 @@ namespace esp32spi {
          * Wait until the ready pin goes low
          */
         private waitForReady() {
-            this.log(0, `wait for ready ${this._ready.digitalRead()}`);
-            if (this._ready.digitalRead()) {
-                pauseUntil(() => !this._ready.digitalRead(), 10000);
-                this.log(0, `ready ${this._ready.digitalRead()}`);
+            this.log(0, `wait for ready ${this._busy.digitalRead()}`);
+            if (this._busy.digitalRead()) {
+                pauseUntil(() => !this._busy.digitalRead(), 10000);
+                this.log(0, `busy = ${this._busy.digitalRead()}`);
                 pause(1000)
             }
-            if (this._ready.digitalRead()) {
+            if (this._busy.digitalRead()) {
                 this.fail("timed out")
             }
         }
@@ -217,9 +219,16 @@ namespace esp32spi {
             if (this.debug > 1)
                 console.log(`send cmd ${packet.toHex()}`)
             this.waitForReady();
-            const dummy = control.createBuffer(packet.length)
-            this._spi.transfer(packet, dummy);
+            this.spiTransfer(packet, null)
             this.log(1, `send done`);
+        }
+
+        private spiTransfer(tx: Buffer, rx: Buffer) {
+            if (!tx) tx = control.createBuffer(rx.length)
+            if (!rx) rx = control.createBuffer(tx.length)
+            this._cs.digitalWrite(false)
+            this._spi.transfer(tx, rx);
+            this._cs.digitalWrite(true)
         }
 
         private waitResponseCmd(cmd: number, num_responses?: number, param_len_16?: boolean) {
@@ -241,8 +250,7 @@ namespace esp32spi {
                 }
                 this.log(1, `\tParameter #${num} length is ${param_len}`)
                 const response = control.createBuffer(param_len);
-                const dummy = control.createBuffer(param_len);
-                this._spi.transfer(dummy, response);
+                this.spiTransfer(null, response)
                 responses.push(response);
             }
             this.checkData(_END_CMD);
