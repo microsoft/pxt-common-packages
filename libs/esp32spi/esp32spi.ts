@@ -85,26 +85,26 @@ namespace esp32spi {
 
 
     function buffer1(ch: number) {
-        const b = control.createBuffer(ch)
+        const b = control.createBuffer(1)
         b[0] = ch
         return b
     }
 
     export class SPIController {
-        _socknum_ll: Buffer[];
+        private _socknum_ll: Buffer[];
 
         static instance: SPIController;
 
         constructor(
-            public _spi: SPI,
-            public _cs: DigitalInOutPin,
-            public _ready: DigitalInOutPin,
-            public _reset: DigitalInOutPin,
-            public _gpio0: DigitalInOutPin = null,
+            private _spi: SPI,
+            private _cs: DigitalInOutPin,
+            private _ready: DigitalInOutPin,
+            private _reset: DigitalInOutPin,
+            private _gpio0: DigitalInOutPin = null,
             public debug = 0
         ) {
-            SPIController.instance = this
             this._socknum_ll = [buffer1(0)]
+            SPIController.instance = this
         }
 
         private log(priority: number, msg: string) {
