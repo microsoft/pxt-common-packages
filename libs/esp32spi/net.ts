@@ -4,9 +4,8 @@ namespace esp32spi {
             super();
         }
 
-        connect(host: string, port: number): net.Socket {
-            const socket = new Socket()
-            socket.connect(host, port);
+        createSocket(host: string, port: number): net.Socket {
+            const socket = new Socket(host, port);
             return socket;
         }
     }

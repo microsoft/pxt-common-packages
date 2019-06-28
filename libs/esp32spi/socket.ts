@@ -16,7 +16,10 @@ namespace esp32spi {
         /** A simplified implementation of the Python 'socket' class, for connecting
     through an interface to a remote device
  */
-        constructor() {
+        constructor(private host: string | Buffer, private port: number, private conntype: number = null) {
+            if (this.conntype === null) {
+                this.conntype = esp32spi.TCP_MODE
+            }
             this._buffer = hex``
             this._socknum = esp32spi.SPIController.instance.socket()
             this.setTimeout(0)
@@ -26,13 +29,9 @@ namespace esp32spi {
     a hostname string). 'conntype' is an extra that may indicate SSL or not,
     depending on the underlying interface
 */
-        public connect(host: string | Buffer, port: number, conntype: number = null) {
-            if (conntype === null) {
-                conntype = esp32spi.TCP_MODE
-            }
-
-            if (!esp32spi.SPIController.instance.socketConnect(this._socknum, host, port, conntype)) {
-                this.error(`failed to connect to ${host}`)
+        public connect() {
+            if (!esp32spi.SPIController.instance.socketConnect(this._socknum, this.host, this.port, this.conntype)) {
+                this.error(`failed to connect to ${this.host}`)
                 return;
             }
 
@@ -58,7 +57,7 @@ namespace esp32spi {
         onClose(handler: () => void): void {
             this._closeHandler = handler;
         }
-        onError(handler: () => void): void {
+        onError(handler: (msg: string) => void): void {
             this._errorHandler = handler;
         }
         onMessage(handler: (data: string) => void): void {
