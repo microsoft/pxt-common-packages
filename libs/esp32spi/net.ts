@@ -9,6 +9,4 @@ namespace esp32spi {
             return socket;
         }
     }
-
-    export const networkManager = new net.Net;
 }
