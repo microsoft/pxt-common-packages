@@ -115,7 +115,7 @@ namespace esp32spi {
 
         private fail(msg: string) {
             console.log(`FAIL: ${msg}`)
-            pause(3000)
+            pause(5000)
             control.fail(msg)
         }
 
