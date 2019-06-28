@@ -122,6 +122,19 @@ namespace pins {
         packUnpackCore(format, res, buf, false, offset)
         return res
     }
+
+    export function concatBuffers(bufs: Buffer[]) {
+        let len = 0
+        for (let b of bufs)
+            len += b.length
+        const r = control.createBuffer(len)
+        len = 0
+        for (let b of bufs) {
+            r.write(len, b)
+            len += b.length
+        }
+        return r
+    }
 }
 
 // see http://msgpack.org/ for the spec
@@ -218,7 +231,45 @@ namespace msgpack {
     }
 }
 
+namespace helpers {
+    export function bufferConcat(a: Buffer, b: Buffer) {
+        const r = control.createBuffer(a.length + b.length)
+        r.write(0, a)
+        r.write(a.length, b)
+        return r
+    }
+
+    export function bufferIndexOf(a: Buffer, b: Buffer) {
+        for (let i = 0; i < a.length - b.length; ++i) {
+            if (a[i] == b[0]) {
+                let j = 0
+                while (j < b.length) {
+                    if (a[i + j] != b[j])
+                        break
+                    j++
+                }
+                if (j >= b.length)
+                    return i
+            }
+        }
+        return -1
+    }
+}
+
 interface Buffer {
     [index: number]: number;
+
+    /**
+     * Return concatenation of current buffer and the given buffer
+     */
+    //% helper=bufferConcat
+    concat(other: Buffer): Buffer;
+
+    /**
+     * Return position of other buffer in current buffer
+     */
+    //% helper=bufferIndexOf
+    indexOf(other: Buffer): number;
+
     // rest defined in buffer.cpp
 }
