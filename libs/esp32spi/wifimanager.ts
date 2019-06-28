@@ -1,11 +1,12 @@
 namespace esp32spi {
-    export class ESPSPI_WiFiManager {
-        _esp: ESP_SPIcontrol; /** TODO: type **/
+
+    export class WiFiManager {
+        esp: SPIController;
         debug: boolean;
-        ssid: string; /** TODO: type **/
-        password: string; /** TODO: type **/
-        attempts: number
-        statuspix: DigitalInOutPin; /** TODO: type **/
+        ssid: string;
+        password: string;
+        attempts: number;
+        _statuspix: DigitalInOutPin;
         /** 
     :param ESP_SPIcontrol esp: The ESP object we are using
     :param dict secrets: The WiFi and Adafruit IO secrets dict (See examples)
@@ -13,75 +14,77 @@ namespace esp32spi {
         or RGB LED (default=None)
     :type status_pixel: NeoPixel, DotStar, or RGB LED
     :param int attempts: (Optional) Failed attempts before resetting the ESP32 (default=2)
-    
 */
         constructor(secrets: any, status_pixel: DigitalInOutPin = null, attempts: number = 2) {
             // Read the settings
-            this._esp = ESP_SPIcontrol.instance;
+            this.esp = SPIController.instance;
             this.debug = false
             this.ssid = secrets["ssid"]
             this.password = secrets["password"]
             this.attempts = attempts
-            this.statuspix = status_pixel
+            this._statuspix = status_pixel
             this.pixel_status(0)
         }
 
-        public reset(): void {
+        private pixel_status(color: number) {
+            // TODO handle neopixels
+        }
+
         /** Perform a hard reset on the ESP32 */
-        if (this.debug) {
-            print("Resetting ESP32")
+        public reset(): void {
+            if (this.debug) {
+                print("Resetting ESP32")
+            }
+
+            this.esp.reset()
         }
 
-        this._esp.reset()
-    }
-        
-        public connect(): void {
         /** Attempt to connect to WiFi using the current settings */
-        if (this.debug) {
-            if (this._esp.status == esp32spi.WL_IDLE_STATUS) {
-                print("ESP32 found and in idle mode")
-            }
-
-            print("Firmware vers.", this._esp.firmware_version)
-            print("MAC addr:", { TODO: ListComp })
-            for (let access_pt of this._esp.scan_networks()) {
-                print(`	${str(access_pt["ssid"], "utf-8")}		RSSI: ${access_pt["rssi"]}`)
-            }
-        }
-
-        let failure_count = 0
-        while (!this._esp.is_connected) {
-            try {
-                if (this.debug) {
-                    print("Connecting to AP...")
+        public connect(): void {
+            if (this.debug) {
+                if (this.esp.status == esp32spi.WL_IDLE_STATUS) {
+                    print("ESP32 found and in idle mode")
                 }
 
-                // TODO: (below) types not compatible: number[] and number; 
-                this.pixel_status([100, 0, 0])
-                this._esp.connect_AP(pins.createBufferFromArray(this.ssid, "utf-8"), pins.createBufferFromArray(this.password, "utf-8"))
-                failure_count = 0
-                // TODO: (below) types not compatible: number[] and number; 
-                this.pixel_status([0, 100, 0])
+                print(`Firmware vers. ${this.esp.firmware_version}`)
+                print(`MAC addr: ${this.esp.MAC_address}`)
+                for (let access_pt of this.esp.scan_networks()) {
+                    print(`	${access_pt["ssid"]}		RSSI: ${access_pt["rssi"]}`)
+                }
             }
-            catch (error/* instanceof [ValueError, RuntimeError] */) {
-                print(`Failed to connect, retrying
-`, error)
-                failure_count += 1
-                if (failure_count >= this.attempts) {
+
+            let failure_count = 0
+            while (!this.esp.isConnected) {
+                try {
+                    if (this.debug) {
+                        print("Connecting to AP...")
+                    }
+
+                    // TODO: (below) types not compatible: number[] and number; 
+                    this.pixel_status(0xe00000)
+                    this.esp.connect_AP(this.ssid, this.password)
                     failure_count = 0
-                    this.reset()
+                    // TODO: (below) types not compatible: number[] and number; 
+                    this.pixel_status(0x00e000)
+                }
+                catch (error/* instanceof [ValueError, RuntimeError] */) {
+                    print(`Failed to connect, retrying
+${error}`)
+                    failure_count += 1
+                    if (failure_count >= this.attempts) {
+                        failure_count = 0
+                        this.reset()
+                    }
+
+                    break
                 }
 
-                break
             }
-
         }
-    }
-        
-        public get(url: any; /** TODO: type **/, TODO ** kw): any; /** TODO: type **/ {
+
         /** 
     Pass the Get request to requests and update status LED
-
+ 
     :param str url: The URL to retrieve data from
     :param dict data: (Optional) Form data to submit
     :param dict json: (Optional) JSON data to submit. (Data must be None)
@@ -91,21 +94,21 @@ namespace esp32spi {
     :rtype: Response
     
 */
-        if (!this._esp.is_connected) {
-            this.connect()
+        public get(url: string, options?: RequestOptions): Response {
+            if (!this.esp.isConnected) {
+                this.connect()
+            }
+
+            // TODO: (below) types not compatible: number[] and number; 
+            this.pixel_status(0x0000e0)
+            let return_val = esp32spi.get(url, options)
+            this.pixel_status(0)
+            return return_val
         }
 
-        // TODO: (below) types not compatible: number[] and number; 
-        this.pixel_status([0, 0, 100])
-        let return_val = esp32spi_requests.get(url, { null: kw })
-        this.pixel_status(0)
-        return return_val
-    }
-        
-        public post(url: any; /** TODO: type **/, TODO ** kw): any; /** TODO: type **/ {
         /** 
     Pass the Post request to requests and update status LED
-
+ 
     :param str url: The URL to post data to
     :param dict data: (Optional) Form data to submit
     :param dict json: (Optional) JSON data to submit. (Data must be None)
@@ -115,20 +118,20 @@ namespace esp32spi {
     :rtype: Response
     
 */
-        if (!this._esp.is_connected) {
-            this.connect()
+        public post(url: string, options?: RequestOptions): Response {
+            if (!this.esp.isConnected) {
+                this.connect()
+            }
+
+            // TODO: (below) types not compatible: number[] and number; 
+            this.pixel_status(0x0000e0)
+            let return_val = esp32spi.post(url, options)
+            return return_val;
         }
 
-        // TODO: (below) types not compatible: number[] and number; 
-        this.pixel_status([0, 0, 100])
-        let return_val = esp32spi_requests.post(url, { null: kw })
-        return return_val
-    }
-        
-        public put(url: any; /** TODO: type **/, TODO ** kw): any; /** TODO: type **/ {
         /** 
     Pass the put request to requests and update status LED
-
+ 
     :param str url: The URL to PUT data to
     :param dict data: (Optional) Form data to submit
     :param dict json: (Optional) JSON data to submit. (Data must be None)
@@ -138,18 +141,17 @@ namespace esp32spi {
     :rtype: Response
     
 */
-        if (!this._esp.is_connected) {
-            this.connect()
+        public put(url: string, options?: RequestOptions): Response {
+            if (!this.esp.isConnected) {
+                this.connect()
+            }
+
+            this.pixel_status(0x0000e0)
+            let return_val = esp32spi.put(url, options)
+            this.pixel_status(0)
+            return return_val
         }
 
-        // TODO: (below) types not compatible: number[] and number; 
-        this.pixel_status([0, 0, 100])
-        let return_val = esp32spi_requests.put(url, { null: kw })
-        this.pixel_status(0)
-        return return_val
-    }
-        
-        public patch(url: any; /** TODO: type **/, TODO ** kw): any; /** TODO: type **/ {
         /** 
     Pass the patch request to requests and update status LED
 
@@ -162,21 +164,20 @@ namespace esp32spi {
     :rtype: Response
     
 */
-        if (!this._esp.is_connected) {
-            this.connect()
+        public patch(url: string, options?: RequestOptions): Response {
+            if (!this.esp.isConnected) {
+                this.connect()
+            }
+
+            this.pixel_status(0x0000e0)
+            let return_val = esp32spi.patch(url, options)
+            this.pixel_status(0)
+            return return_val
         }
 
-        // TODO: (below) types not compatible: number[] and number; 
-        this.pixel_status([0, 0, 100])
-        let return_val = esp32spi_requests.patch(url, { null: kw })
-        this.pixel_status(0)
-        return return_val
-    }
-        
-        public delete_(url: any; /** TODO: type **/, TODO ** kw): any; /** TODO: type **/ {
         /** 
     Pass the delete request to requests and update status LED
-
+ 
     :param str url: The URL to PUT data to
     :param dict data: (Optional) Form data to submit
     :param dict json: (Optional) JSON data to submit. (Data must be None)
@@ -186,18 +187,17 @@ namespace esp32spi {
     :rtype: Response
     
 */
-        if (!this._esp.is_connected) {
-            this.connect()
+        public delete(url: string, options?: RequestOptions): Response {
+            if (!this.esp.isConnected) {
+                this.connect()
+            }
+
+            this.pixel_status(0x0000e0)
+            let return_val = esp32spi.del(url, options)
+            this.pixel_status(0)
+            return return_val
         }
 
-        // TODO: (below) types not compatible: number[] and number; 
-        this.pixel_status([0, 0, 100])
-        let return_val = esp32spi_requests.delete_(url, { null: kw })
-        this.pixel_status(0)
-        return return_val
-    }
-        
-        public ping(host: any; /** TODO: type **/, ttl: number = 250): any; /** TODO: type **/ {
         /** 
     Pass the Ping request to the ESP32, update status LED, return response time
 
@@ -207,57 +207,35 @@ namespace esp32spi {
     :rtype: int
     
 */
-        if (!this._esp.is_connected) {
-            this.connect()
-        }
-
-        // TODO: (below) types not compatible: number[] and number; 
-        this.pixel_status([0, 0, 100])
-        let response_time = this._esp.ping(host, { ttl: ttl })
-        this.pixel_status(0)
-        return response_time
-    }
-        
-        public ip_address(): any; /** TODO: type **/ {
-        /** Returns a formatted local IP address, update status pixel. */
-        if (!this._esp.is_connected) {
-            this.connect()
-        }
-
-        // TODO: (below) types not compatible: number[] and number; 
-        this.pixel_status([0, 0, 100])
-        this.pixel_status(0)
-        return this._esp.pretty_ip(this._esp.ip_address)
-    }
-        
-        public pixel_status(value: number): any; /** TODO: type **/ {
-        /** 
-    Change Status Pixel if it was defined
-
-    :param value: The value to set the Board's status LED to
-    :type value: int or 3-value tuple
-    
-*/
-        if (this.statuspix) {
-            if (hasattr(this.statuspix, "color")) {
-                this.statuspix.color = value
-            } else {
-                this.statuspix.fill(value)
+        public ping(host: string, ttl = 250): number {
+            if (!this.esp.isConnected) {
+                this.connect()
             }
 
+            // TODO: (below) types not compatible: number[] and number; 
+            this.pixel_status(0x0000e0)
+            let response_time = this.esp.ping(host)
+            this.pixel_status(0)
+            return response_time
         }
 
-    }
-        
-        public signal_strength(): any; /** TODO: type **/ {
+        /** Returns a formatted local IP address, update status pixel. */
+        public get ip_address(): string {
+            if (!this.esp.isConnected) {
+                this.connect()
+            }
+
+            this.pixel_status(0x0000e0)
+            this.pixel_status(0)
+            return this.esp.ipAddress;
+        }
+
         /** Returns receiving signal strength indicator in dBm */
-        if (!this._esp.is_connected) {
-            this.connect()
+        public get signal_strength(): number {
+            if (!this.esp.isConnected) {
+                this.connect()
+            }
+            return this.esp.rssi;
         }
-
-        return this._esp.rssi()
     }
-
-}
-    
 }

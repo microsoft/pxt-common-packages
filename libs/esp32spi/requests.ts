@@ -72,15 +72,15 @@ namespace esp32spi {
     }
 
 
-    export function request(method: string, url: string, options: RequestOptions): Response {
-        /** Perform an HTTP request to the given url which we will parse to determine
-    whether to use SSL ('https://') or not. We can also send some provided 'data'
-    or a json dictionary which we will stringify. 'headers' is optional HTTP headers
-    sent along. 'stream' will determine if we buffer everything, or whether to only
-    read only when requested
-     
-    */
-        // pylint: disable=global-statement, invalid-name
+    /** Perform an HTTP request to the given url which we will parse to determine
+whether to use SSL ('https://') or not. We can also send some provided 'data'
+or a json dictionary which we will stringify. 'headers' is optional HTTP headers
+sent along. 'stream' will determine if we buffer everything, or whether to only
+read only when requested
+ 
+*/
+    export function request(method: string, url: string, options?: RequestOptions): Response {
+        if (!options) options = {};
         if (!options.headers) {
             options.headers = {}
         }
@@ -107,15 +107,13 @@ namespace esp32spi {
             port = parseInt(tmp[1])
         }
 
-        let ipaddr = esp32spi.ESP_SPIcontrol.instance.get_host_by_name(host)
+        let ipaddr = esp32spi.SPIController.instance.get_host_by_name(host)
 
         let sock = new Socket()
         // our response
         let resp = new Response(sock)
         // socket read timeout
         sock.settimeout(options.timeout)
-
-
 
         let conntype = esp32spi.TCP_MODE
         if (proto == "https:") {
@@ -194,27 +192,32 @@ raise NotImplementedError("Redirects not yet supported")
     }
 
     /** Send HTTP HEAD request */
-    export function head(url: string, options: RequestOptions) {
+    export function head(url: string, options?: RequestOptions) {
         return request("HEAD", url, options)
     }
 
     /** Send HTTP GET request */
-    export function get(url: string, options: RequestOptions) {
+    export function get(url: string, options?: RequestOptions) {
         return request("GET", url, options)
     }
 
     /** Send HTTP POST request */
-    export function post(url: string, options: RequestOptions) {
+    export function post(url: string, options?: RequestOptions) {
         return request("POST", url, options)
     }
 
+    /** Send HTTP PATCH request */
+    export function patch(url: string, options?: RequestOptions) {
+        return request("PATCH", url, options)
+    }
+
     /** Send HTTP PUT request */
-    export function put(url: string, options: RequestOptions) {
+    export function put(url: string, options?: RequestOptions) {
         return request("PUT", url, options)
     }
 
     /** Send HTTP DELETE request */
-    export function del(url: string, options: RequestOptions) {
+    export function del(url: string, options?: RequestOptions) {
         return request("DELETE", url, options)
     }
 

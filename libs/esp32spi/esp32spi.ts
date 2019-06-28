@@ -90,10 +90,10 @@ namespace esp32spi {
         return b
     }
 
-    export class ESP_SPIcontrol {
+    export class SPIController {
         _socknum_ll: Buffer[];
 
-        static instance: ESP_SPIcontrol;
+        static instance: SPIController;
 
         constructor(
             public _spi: SPI,
@@ -103,7 +103,7 @@ namespace esp32spi {
             public _gpio0: DigitalInOutPin = null,
             public _debug = false
         ) {
-            ESP_SPIcontrol.instance = this
+            SPIController.instance = this
             this._socknum_ll = [buffer1(0)]
         }
 
@@ -460,7 +460,8 @@ namespace esp32spi {
             return stat;
         }
 
-        /** Convert a hostname to a packed 4-byte IP address. Returns
+        /** 
+         * Convert a hostname to a packed 4-byte IP address. Returns
     a 4 bytearray
     */
         public get_host_by_name(hostname: string): Buffer {
@@ -486,10 +487,10 @@ namespace esp32spi {
             return pins.unpackBuffer("<H", resp[0])[0];
         }
 
+        /** Request a socket from the ESP32, will allocate and return a number that
+    can then be passed to the other socket commands
+    */
         public get_socket(): number {
-            /** Request a socket from the ESP32, will allocate and return a number that
-        can then be passed to the other socket commands
-        */
             if (this._debug) {
                 print("*** Get socket")
             }
@@ -536,24 +537,24 @@ namespace esp32spi {
 
         }
 
+        /** Get the socket connection status, can be SOCKET_CLOSED, SOCKET_LISTEN,
+    SOCKET_SYN_SENT, SOCKET_SYN_RCVD, SOCKET_ESTABLISHED, SOCKET_FIN_WAIT_1,
+    SOCKET_FIN_WAIT_2, SOCKET_CLOSE_WAIT, SOCKET_CLOSING, SOCKET_LAST_ACK, or
+    SOCKET_TIME_WAIT
+    */
         public socket_status(socket_num: number): number {
-            /** Get the socket connection status, can be SOCKET_CLOSED, SOCKET_LISTEN,
-        SOCKET_SYN_SENT, SOCKET_SYN_RCVD, SOCKET_ESTABLISHED, SOCKET_FIN_WAIT_1,
-        SOCKET_FIN_WAIT_2, SOCKET_CLOSE_WAIT, SOCKET_CLOSING, SOCKET_LAST_ACK, or
-        SOCKET_TIME_WAIT
-        */
             this._socknum_ll[0][0] = socket_num
             let resp = this._send_command_get_response(_GET_CLIENT_STATE_TCP_CMD, this._socknum_ll)
             return resp[0][0]
         }
 
+        /** Test if a socket is connected to the destination, returns boolean true/false */
         public socket_connected(socket_num: number): boolean {
-            /** Test if a socket is connected to the destination, returns boolean true/false */
             return this.socket_status(socket_num) == SOCKET_ESTABLISHED
         }
 
+        /** Write the bytearray buffer to a socket */
         public socket_write(socket_num: number, buffer: Buffer): void {
-            /** Write the bytearray buffer to a socket */
             if (this._debug) {
                 print("Writing:" + buffer.length)
             }
@@ -572,8 +573,8 @@ namespace esp32spi {
 
         }
 
+        /** Determine how many bytes are waiting to be read on the socket */
         public socket_available(socket_num: number): number {
-            /** Determine how many bytes are waiting to be read on the socket */
             this._socknum_ll[0][0] = socket_num
             let resp = this._send_command_get_response(_AVAIL_DATA_TCP_CMD, this._socknum_ll)
             let reply = pins.unpackBuffer("<H", resp[0])[0]
@@ -584,8 +585,8 @@ namespace esp32spi {
             return reply
         }
 
+        /** Read up to 'size' bytes from the socket number. Returns a bytearray */
         public socket_read(socket_num: number, size: number): Buffer {
-            /** Read up to 'size' bytes from the socket number. Returns a bytearray */
             if (this._debug) {
                 print(`Reading ${size} bytes from ESP socket with status ${this.socket_status(socket_num)}`)
             }
@@ -595,12 +596,12 @@ namespace esp32spi {
             return resp[0]
         }
 
+        /** Open and verify we connected a socket to a destination IP address or hostname
+    using the ESP32's internal reference number. By default we use
+    'conn_mode' TCP_MODE but can also use UDP_MODE or TLS_MODE (dest must
+    be hostname for TLS_MODE!)
+    */
         public socket_connect(socket_num: number, dest: string | Buffer, port: number, conn_mode = TCP_MODE): boolean {
-            /** Open and verify we connected a socket to a destination IP address or hostname
-        using the ESP32's internal reference number. By default we use
-        'conn_mode' TCP_MODE but can also use UDP_MODE or TLS_MODE (dest must
-        be hostname for TLS_MODE!)
-        */
             if (this._debug) {
                 print("*** Socket connect mode " + conn_mode)
             }
@@ -619,8 +620,8 @@ namespace esp32spi {
             return false
         }
 
+        /** Close a socket using the ESP32's internal reference number */
         public socket_close(socket_num: number): void {
-            /** Close a socket using the ESP32's internal reference number */
             if (this._debug) {
                 // %d" % socket_num)
                 print("*** Closing socket #" + socket_num)
@@ -634,10 +635,10 @@ namespace esp32spi {
 
         }
 
+        /** Enable/disable debug mode on the ESP32. Debug messages will be
+    written to the ESP32's UART.
+    */
         public set_esp_debug(enabled: boolean) {
-            /** Enable/disable debug mode on the ESP32. Debug messages will be
-        written to the ESP32's UART.
-        */
             let resp = this._send_command_get_response(_SET_DEBUG_CMD, [buffer1(enabled ? 1 : 0)])
             if (resp[0][0] != 1) {
                 control.fail("Failed to set debug mode")
@@ -660,14 +661,14 @@ namespace esp32spi {
 
         }
 
+        /** 
+    Set the digital output value of pin.
+    
+    :param int pin: ESP32 GPIO pin to write to.
+    :param bool value: Value for the pin.
+     
+    */
         public set_digital_write(pin: number, value: number): void {
-            /** 
-        Set the digital output value of pin.
-        
-        :param int pin: ESP32 GPIO pin to write to.
-        :param bool value: Value for the pin.
-         
-        */
             let resp = this._send_command_get_response(_SET_DIGITAL_WRITE_CMD, [buffer1(pin), buffer1(value)])
             if (resp[0][0] != 1) {
                 control.fail("Failed to write to pin")
@@ -675,14 +676,14 @@ namespace esp32spi {
 
         }
 
+        /** 
+    Set the analog output value of pin, using PWM.
+    
+    :param int pin: ESP32 GPIO pin to write to.
+    :param float value: 0=off 1.0=full on
+     
+    */
         public set_analog_write(pin: number, analog_value: number) {
-            /** 
-        Set the analog output value of pin, using PWM.
-        
-        :param int pin: ESP32 GPIO pin to write to.
-        :param float value: 0=off 1.0=full on
-         
-        */
             let value = Math.trunc(255 * analog_value)
             let resp = this._send_command_get_response(_SET_ANALOG_WRITE_CMD, [buffer1(pin), buffer1(value)])
             if (resp[0][0] != 1) {
