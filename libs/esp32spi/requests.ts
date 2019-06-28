@@ -90,7 +90,8 @@ read only when requested
         let host = tmp[2]
         let path = tmp[3] || ""
         // replace spaces in path
-        path = path.replace(" ", "%20")
+        // TODO
+        // path = path.replace(" ", "%20")
 
         let port = 0
         if (proto == "http:") {
@@ -171,8 +172,9 @@ read only when requested
             let title = tmp[0]
             let content = tmp[1]
             if (title && content) {
-                title = title.toLowerCase()
-                content = content.toLowerCase()
+                // TODO
+                // title = title.toLowerCase()
+                // content = content.toLowerCase()
                 resp.headers[title] = content
             }
         }
