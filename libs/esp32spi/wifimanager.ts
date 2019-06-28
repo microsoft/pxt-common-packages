@@ -51,7 +51,7 @@ namespace esp32spi {
                 }
 
                 print(`Firmware vers. ${this.esp.firmwareVersion}`)
-                print(`MAC addr: ${this.esp.MACaddress}`)
+                print(`MAC addr: ${this.esp.MACaddress.toHex()}`)
                 for (let access_pt of this.esp.scanNetworks()) {
                     print(`	${access_pt["ssid"]}		RSSI: ${access_pt["rssi"]}`)
                 }

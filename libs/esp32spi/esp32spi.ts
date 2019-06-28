@@ -176,11 +176,11 @@ namespace esp32spi {
          * Wait until the ready pin goes low
          */
         private waitForReady() {
-            this.log(0, `wait for ready ${this._busy.digitalRead()}`);
+            this.log(1, `wait for ready ${this._busy.digitalRead()}`);
             if (this._busy.digitalRead()) {
                 pauseUntil(() => !this._busy.digitalRead(), 10000);
-                this.log(0, `busy = ${this._busy.digitalRead()}`);
-                pause(1000)
+                this.log(1, `busy = ${this._busy.digitalRead()}`);
+                // pause(1000)
             }
             if (this._busy.digitalRead()) {
                 this.fail("timed out")
@@ -219,21 +219,23 @@ namespace esp32spi {
             if (this.debug > 1)
                 console.log(`send cmd ${packet.toHex()}`)
             this.waitForReady();
+            this._cs.digitalWrite(false)
             this.spiTransfer(packet, null)
+            this._cs.digitalWrite(true)
             this.log(1, `send done`);
         }
 
         private spiTransfer(tx: Buffer, rx: Buffer) {
             if (!tx) tx = control.createBuffer(rx.length)
             if (!rx) rx = control.createBuffer(tx.length)
-            this._cs.digitalWrite(false)
             this._spi.transfer(tx, rx);
-            this._cs.digitalWrite(true)
         }
 
         private waitResponseCmd(cmd: number, num_responses?: number, param_len_16?: boolean) {
-            this.log(0, `wait response cmd`);
+            this.log(1, `wait response cmd`);
             this.waitForReady();
+
+            this._cs.digitalWrite(false)
 
             let responses: Buffer[] = []
             this.waitSPIChar(_START_CMD);
@@ -254,17 +256,15 @@ namespace esp32spi {
                 responses.push(response);
             }
             this.checkData(_END_CMD);
+
+            this._cs.digitalWrite(true)
+
             this.log(1, `responses ${responses.length}`);
             return responses;
         }
 
-        private sendCommandGetResponse(cmd: number, params?: Buffer[])
-        //            reply_params = 1, sent_param_len_16 = false,
-        //           recv_param_len_16 = false) 
-        {
-            const reply_params = 1;
-            const sent_param_len_16 = false;
-            const recv_param_len_16 = false;
+        private sendCommandGetResponse(cmd: number, params?: Buffer[],
+            reply_params = 1, sent_param_len_16 = false, recv_param_len_16 = false) {
             this.sendCommand(cmd, params, sent_param_len_16)
             return this.waitResponseCmd(cmd, reply_params, recv_param_len_16)
         }
@@ -285,7 +285,11 @@ namespace esp32spi {
         /** A bytearray containing the MAC address of the ESP32 */
         get MACaddress(): Buffer {
             let resp = this.sendCommandGetResponse(_GET_MACADDR_CMD, [hex`ff`])
-            return resp[0]
+            // for whatever reason, the mac adderss is backwards
+            const res = control.createBuffer(6)
+            for (let i = 0; i < 6; ++i)
+                res[i] = resp[0][5 - i]
+            return res
         }
 
         /** Begin a scan of visible access points. Follow up with a call
@@ -435,7 +439,7 @@ namespace esp32spi {
     an exception on failure
     */
         public connectAP(ssid: string, password: string): number {
-            this.log(0, `Connect to AP ${ssid} ${password}`)
+            this.log(0, `Connect to AP ${ssid}`)
             if (password) {
                 this.wifiSetPassphrase(ssid, password)
             } else {
@@ -444,7 +448,7 @@ namespace esp32spi {
 
             // retries
             let stat;
-            for (let _ = 0; _ < 10; ++_) {
+            for (let _ = 0; _ < 30; ++_) {
                 stat = this.status
                 if (stat == WL_CONNECTED) {
                     return stat;
@@ -453,11 +457,11 @@ namespace esp32spi {
                 pause(1000)
             }
             if ([WL_CONNECT_FAILED, WL_CONNECTION_LOST, WL_DISCONNECTED].indexOf(stat) >= 0) {
-                this.fail(`RuntimeError("Failed to connect to ssid", ssid)`)
+                this.fail(`Failed to connect to "${ssid}" (${stat})`)
             }
 
             if (stat == WL_NO_SSID_AVAIL) {
-                this.fail(`RuntimeError("No such ssid", ssid)`)
+                this.fail(`No such ssid: "${ssid}"`)
             }
 
             this.fail(`Unknown error ${stat}`)
@@ -562,7 +566,7 @@ namespace esp32spi {
             }
 
             this._socknum_ll[0][0] = socket_num
-            let resp = this.sendCommandGetResponse(_SEND_DATA_TCP_CMD, [this._socknum_ll[0], buffer])
+            let resp = this.sendCommandGetResponse(_SEND_DATA_TCP_CMD, [this._socknum_ll[0], buffer], 1, true)
             let sent = resp[0][0]
             if (sent != buffer.length) {
                 this.fail(`Failed to send ${buffer.length} bytes (sent ${sent})`)
@@ -580,22 +584,20 @@ namespace esp32spi {
             this._socknum_ll[0][0] = socket_num
             let resp = this.sendCommandGetResponse(_AVAIL_DATA_TCP_CMD, this._socknum_ll)
             let reply = pins.unpackBuffer("<H", resp[0])[0]
-            if (this.debug) {
-                print(`ESPSocket: ${reply} bytes available`)
-            }
-
+            this.log(1, `ESPSocket: ${reply} bytes available`)
             return reply
         }
 
         /** Read up to 'size' bytes from the socket number. Returns a bytearray */
         public socketRead(socket_num: number, size: number): Buffer {
-            if (this.debug) {
-                print(`Reading ${size} bytes from ESP socket with status ${this.socketStatus(socket_num)}`)
-            }
-
+            this.log(1, `Reading ${size} bytes from ESP socket with status ${this.socketStatus(socket_num)}`)
             this._socknum_ll[0][0] = socket_num
-            let resp = this.sendCommandGetResponse(_GET_DATABUF_TCP_CMD, [this._socknum_ll[0], pins.packBuffer("<H", [size])])
-            return resp[0]
+            let resp = this.sendCommandGetResponse(_GET_DATABUF_TCP_CMD,
+                [this._socknum_ll[0], pins.packBuffer("<H", [size])],
+                1, true, true)
+                if (this.debug >= 2)
+                    this.log(2, `buf >>${resp[0].toString()}<<`)
+                return resp[0]
         }
 
         /** Open and verify we connected a socket to a destination IP address or hostname

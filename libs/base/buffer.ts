@@ -240,7 +240,7 @@ namespace helpers {
     }
 
     export function bufferIndexOf(a: Buffer, b: Buffer) {
-        for (let i = 0; i < a.length - b.length; ++i) {
+        for (let i = 0; i <= a.length - b.length; ++i) {
             if (a[i] == b[0]) {
                 let j = 0
                 while (j < b.length) {
