@@ -35,6 +35,7 @@ namespace esp32spi {
 
         /** Send some data to the socket */
         public write(data: string | Buffer) {
+            //console.log("sock wr: " + data)
             esp32spi.SPIController.instance.socketWrite(this._socknum, dataAsBuffer(data))
         }
 
@@ -57,6 +58,7 @@ namespace esp32spi {
             const pos = this._buffer.indexOf(hex`0d0a`)
             const pref = this._buffer.slice(0, pos)
             this._buffer = this._buffer.slice(pos + 2)
+            // print("rd: " + this._buffer.length + " / " + pref.length + " :" + pref.toString())
             return pref.toString()
         }
 

@@ -561,7 +561,7 @@ namespace esp32spi {
 
         /** Write the bytearray buffer to a socket */
         public socketWrite(socket_num: number, buffer: Buffer): void {
-            if (this.debug) {
+            if (this.debug > 1) {
                 print("Writing:" + buffer.length)
             }
 
