@@ -423,7 +423,7 @@ namespace music {
             //   1 - triangle
             //   2 - sawtooth
             //   3 - sine
-            //   4 - noise
+            //   5 - noise
             //   11 - square 10%
             //   12 - square 20%
             //   ...
@@ -591,4 +591,7 @@ namespace music {
 
     //% fixedInstance whenUsed block="siren"
     export const siren = new Melody('a4 d5 a4 d5 a4 d5')
+
+    //% fixedInstance whenUsed block="pew pew"
+    export const pewPew = new Melody('!1200,200^50')
 }

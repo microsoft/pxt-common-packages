@@ -6,6 +6,35 @@ namespace animation {
     //Handles all the updates
     let animations: Animation[];
 
+    let animationStateStack: {
+        state: Animation[],
+        scene: scene.Scene
+    }[];
+
+    game.addScenePushHandler(oldScene => {
+        if (animations) {
+            if (!animationStateStack) animationStateStack = [];
+            animationStateStack.push({
+                state: animations,
+                scene: oldScene
+            });
+            animations = undefined;
+        }
+    });
+
+    game.addScenePopHandler(() => {
+        const scene = game.currentScene();
+        animations = undefined;
+        if (animationStateStack && animationStateStack.length) {
+            const nextState = animationStateStack.pop();
+            if (nextState.scene == scene) {
+                animations = nextState.state;
+            } else {
+                animationStateStack.push(nextState);
+            }
+        }
+    });
+
     export class Animation {
 
         sprites: Sprite[];

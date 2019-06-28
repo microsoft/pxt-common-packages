@@ -17,8 +17,8 @@ namespace game {
     let _scene: scene.Scene;
     let _sceneStack: scene.Scene[];
 
-    let _scenePushHandlers: (() => void)[];
-    let _scenePopHandlers: (() => void)[];
+    let _scenePushHandlers: ((scene: scene.Scene) => void)[];
+    let _scenePopHandlers: ((scene: scene.Scene) => void)[];
 
     export function currentScene(): scene.Scene {
         init();
@@ -58,7 +58,7 @@ namespace game {
     }
 
     export function pushScene() {
-        init();
+        const oldScene = game.currentScene()
         particles.clearAll();
         particles.disableAll();
         if (!_sceneStack) _sceneStack = [];
@@ -67,11 +67,12 @@ namespace game {
         init();
 
         if (_scenePushHandlers) {
-            _scenePushHandlers.forEach(cb => cb());
+            _scenePushHandlers.forEach(cb => cb(oldScene));
         }
     }
 
     export function popScene() {
+        const oldScene = game.currentScene()
         if (_sceneStack && _sceneStack.length) {
             // pop scenes from the stack
             _scene = _sceneStack.pop();
@@ -81,11 +82,12 @@ namespace game {
             control.popEventContext();
             _scene = undefined;
         }
+
         if (_scene)
             particles.enableAll();
 
         if (_scenePopHandlers) {
-            _scenePopHandlers.forEach(cb => cb());
+            _scenePopHandlers.forEach(cb => cb(oldScene));
         }
     }
 
@@ -317,7 +319,7 @@ namespace game {
      *
      * @param handler Code to run when a scene is pushed onto the stack
      */
-    export function addScenePushHandler(handler: () => void) {
+    export function addScenePushHandler(handler: (oldScene: scene.Scene) => void) {
         if (!_scenePushHandlers) _scenePushHandlers = [];
         _scenePushHandlers.push(handler);
     }
@@ -328,7 +330,7 @@ namespace game {
      *
      * @param handler The handler to remove
      */
-    export function removeScenePushHandler(handler: () => void) {
+    export function removeScenePushHandler(handler: (oldScene: scene.Scene) => void) {
         if (_scenePushHandlers) _scenePushHandlers.removeElement(handler);
     }
 
@@ -340,7 +342,7 @@ namespace game {
      *
      * @param handler Code to run when a scene is removed from the top of the stack
      */
-    export function addScenePopHandler(handler: () => void) {
+    export function addScenePopHandler(handler: (oldScene: scene.Scene) => void) {
         if (!_scenePopHandlers) _scenePopHandlers = [];
         _scenePopHandlers.push(handler);
     }
@@ -351,7 +353,7 @@ namespace game {
      *
      * @param handler The handler to remove
      */
-    export function removeScenePopHandler(handler: () => void) {
+    export function removeScenePopHandler(handler: (oldScene: scene.Scene) => void) {
         if (_scenePopHandlers) _scenePopHandlers.removeElement(handler);
     }
 }

@@ -945,6 +945,8 @@ void registerGC(TValue *root, int numwords = 1);
 void unregisterGC(TValue *root, int numwords = 1);
 void registerGCPtr(TValue ptr);
 void unregisterGCPtr(TValue ptr);
+static inline void registerGCObj(RefObject *ptr) { registerGCPtr((TValue)ptr); }
+static inline void unregisterGCObj(RefObject *ptr) { unregisterGCPtr((TValue)ptr); }
 void gc(int flags);
 #else
 inline void registerGC(TValue *root, int numwords = 1) {}
