@@ -44,6 +44,7 @@
         "libs/proximity",
         "libs/feather",
         "libs/esp32spi",
-        "libs/azureiot"
+        "libs/azureiot",
+        "libs/net"
     ]
 }
