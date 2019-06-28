@@ -156,14 +156,16 @@ namespace music {
     //% melody.fieldOptions.decompileIndirectFixedInstances="true"
     //% melody.fieldOptions.onParentBlock="true"
     export function melodyEditor(melody: string): Melody {
-        let melodies: string[] = melody.split("-");
-        // melodies[0] is name
-        // melodies[1] is tempo
-        // melodies[2] is the first melody
-        // moving tempo to the 
-        //melodies[2] = melodies[2].replace(' ', '-' + melodies[1] + ' ');
-        const song = new Melody(melodies[2]);
-        //const song = new Melody(melodies[1]);
+        let notes: string[] = melody.split(" ");
+        let melodyString = "";
+        // build melody string, replace '-' with 'R'
+        for (let i = 0; i < notes.length-1; i++ ) {
+            if (notes[i] === "-") {
+                notes[i] = "R";
+            }
+            melodyString += notes[i] + " ";
+        }
+        const song = new Melody(melodyString);
         return song
     }
     
