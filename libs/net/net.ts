@@ -7,6 +7,7 @@ namespace net {
     export interface Socket {
         connect(): void;
         send(data: string | Buffer): void;
+        read(contentLength: number): Buffer;
         close(): void;
         onOpen(handler: () => void): void;
         onClose(handler: () => void): void;

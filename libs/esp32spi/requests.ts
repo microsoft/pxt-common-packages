@@ -143,21 +143,21 @@ read only when requested
 
         let ipaddr = esp32spi.SPIController.instance.hostbyName(host)
 
-        let sock = new Socket()
+        let sock: Socket;
+        let conntype = esp32spi.TCP_MODE
+        if (proto == "https:") {
+            conntype = esp32spi.TLS_MODE
+            // for SSL we need to know the host name
+            sock = new Socket(host, port, conntype)
+        } else {
+            sock = new Socket(ipaddr, port, conntype)
+        }
         // our response
         let resp = new Response(sock)
         // socket read timeout
         sock.setTimeout(options.timeout)
 
-        let conntype = esp32spi.TCP_MODE
-        if (proto == "https:") {
-            conntype = esp32spi.TLS_MODE
-            // for SSL we need to know the host name
-            sock.connect(host, port, conntype)
-        } else {
-            sock.connect(ipaddr, port, conntype)
-        }
-
+        sock.connect();
         sock.send(`${method} /${path} HTTP/1.0\r\n`)
 
         if (!options.headers["Host"])
