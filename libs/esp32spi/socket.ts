@@ -10,7 +10,7 @@ namespace esp32spi {
         _timeout: number;
         _openHandler: () => void;
         _closeHandler: () => void;
-        _errorHandler: () => void;
+        _errorHandler: (msg: string) => void;
         _messageHandler: (data: string) => void;
 
         /** A simplified implementation of the Python 'socket' class, for connecting
@@ -32,15 +32,24 @@ namespace esp32spi {
             }
 
             if (!esp32spi.SPIController.instance.socketConnect(this._socknum, host, port, conntype)) {
-                control.fail(`RuntimeError("Failed to connect to host", ${host})`)
+                this.error(`failed to connect to ${host}`)
+                return;
             }
 
             this._buffer = hex``
+
+            if(this._openHandler)
+                this._openHandler();
         }
 
         /** Send some data to the socket */
         public send(data: string | Buffer) {
             esp32spi.SPIController.instance.socketWrite(this._socknum, dataAsBuffer(data))
+        }
+
+        private error(msg: string) {
+            if (this._errorHandler)
+                this._errorHandler(msg)
         }
 
         onOpen(handler: () => void): void {
@@ -140,6 +149,8 @@ namespace esp32spi {
         /** Close the socket, after reading whatever remains */
         public close() {
             esp32spi.SPIController.instance.socketClose(this._socknum)
+            if (this._closeHandler)
+                this._closeHandler();
         }
     }
 }

@@ -291,15 +291,37 @@ namespace mqtt {
         }
     }
 
-    export class Client {
+    export type EventHandler = (arg?: string | IMessage) => void;
+
+    export class EventEmitter {
+        private handlers: { [index: string]: EventHandler[] } = {};
+
+        constructor() {
+            this.handlers = {};
+        }
+
+        public on(event: string, listener: EventHandler): void {
+            if (!event || !listener) return;
+
+            let listeners = this.handlers[event];
+            if (!listeners)
+                this.handlers[event] = listeners = [];
+            listeners.push(listener);
+        }
+        protected emit(event: string, arg?: string | IMessage): boolean {
+            let listeners = this.handlers[event];
+            if (listeners) {
+                listeners.forEach(listener => listener(arg));
+            }
+            return true;
+        }
+    }
+
+    export class Client extends EventEmitter {
         public logPriority = ConsolePriority.Silent;
         private log(msg: string) {
             console.add(this.logPriority, `mqtt: ${msg}`);
         }
-        // @ts-ignore
-        public on: (event: string, listener: (arg: string | IMessage) => void) => void;
-        // @ts-ignore
-        protected emit: (event: string, arg?: string | IMessage) => boolean;
 
         public opt: IConnectionOptions;
 
@@ -311,8 +333,9 @@ namespace mqtt {
 
         public connected: boolean = false;
 
-        // tslint:disable-next-line:no-unsafe-any
         constructor(opt: IConnectionOptions, net: net.Net) {
+            super();
+
             opt.port = opt.port;
             opt.clientId = opt.clientId;
 
@@ -382,7 +405,7 @@ namespace mqtt {
                 }, Constants.WatchDogInterval * 1000);
             }
 
-            this.sct = this.net.connect(this.opt.host, this.opt.port);
+            this.sct = this.net.createSocket(this.opt.host, this.opt.port);
             this.sct.onOpen(() => {
                 this.log('Network connection established.');
                 this.emit('connect');
@@ -398,6 +421,7 @@ namespace mqtt {
                 this.emit('disconnected');
                 this.connected = false;
             });
+            this.sct.connect();
         }
 
         // Publish a message

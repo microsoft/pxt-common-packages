@@ -5,17 +5,18 @@ namespace net {
     }
 
     export interface Socket {
+        connect(): void;
         send(data: string | Buffer): void;
         close(): void;
         onOpen(handler: () => void): void;
         onClose(handler: () => void): void;
-        onError(handler: () => void): void;
+        onError(handler: (msg: string) => void): void;
         onMessage(handler: (data: string) => void): void;
     }
 
     export class Net {
         constructor() {}
-        connect(host: string, port: number): Socket {
+        createSocket(host: string, port: number): Socket {
             return undefined;
         }
     }
