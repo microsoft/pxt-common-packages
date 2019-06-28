@@ -2,9 +2,11 @@
     "name": "esp32spi",
     "description": "ESP32 over SPI",
     "files": [
-        "esp32socket.ts",
         "esp32spi.ts",
-        "esp32spirequest.ts"
+        "socket.ts",
+        "request.ts",
+        "wifimanager.ts",
+        "README.md"
     ],
     "testFiles": [
         "test.ts"
