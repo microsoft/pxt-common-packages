@@ -219,21 +219,23 @@ namespace esp32spi {
             if (this.debug > 1)
                 console.log(`send cmd ${packet.toHex()}`)
             this.waitForReady();
+            this._cs.digitalWrite(false)
             this.spiTransfer(packet, null)
+            this._cs.digitalWrite(true)
             this.log(1, `send done`);
         }
 
         private spiTransfer(tx: Buffer, rx: Buffer) {
             if (!tx) tx = control.createBuffer(rx.length)
             if (!rx) rx = control.createBuffer(tx.length)
-            this._cs.digitalWrite(false)
             this._spi.transfer(tx, rx);
-            this._cs.digitalWrite(true)
         }
 
         private waitResponseCmd(cmd: number, num_responses?: number, param_len_16?: boolean) {
             this.log(0, `wait response cmd`);
             this.waitForReady();
+
+            this._cs.digitalWrite(false)
 
             let responses: Buffer[] = []
             this.waitSPIChar(_START_CMD);
@@ -254,6 +256,9 @@ namespace esp32spi {
                 responses.push(response);
             }
             this.checkData(_END_CMD);
+
+            this._cs.digitalWrite(true)
+
             this.log(1, `responses ${responses.length}`);
             return responses;
         }
