@@ -26,7 +26,6 @@ namespace esp32spi {
             if (this.debug) {
                 print("Resetting ESP32")
             }
-
             this.esp.reset()
         }
 
@@ -38,7 +37,6 @@ namespace esp32spi {
                 if (this.esp.status == esp32spi.WL_IDLE_STATUS) {
                     print("ESP32 found and in idle mode")
                 }
-
                 print(`Firmware vers. ${this.esp.firmwareVersion}`)
                 print(`MAC addr: ${this.esp.MACaddress.toHex()}`)
                 for (let access_pt of this.esp.scanNetworks()) {
@@ -53,11 +51,12 @@ namespace esp32spi {
                 }
                 this.pixelStatus(0xe00000)
                 const stat = this.esp.connectAP(this.ssid, this.password)
-                if (stat == esp32spi.WL_AP_CONNECTED) {
+                if (stat == esp32spi.WL_CONNECTED) {
                     failure_count = 0
                     this.pixelStatus(0x00e000)
                 } else {
-                    print(`Failed to connect ${stat}, retrying`)
+                    if (this.debug)
+                        print(`Failed to connect ${stat}, retrying`)
                     failure_count += 1
                     if (failure_count >= this.attempts) {
                         failure_count = 0
@@ -108,6 +107,8 @@ namespace esp32spi {
             }
 
             this.pixelStatus(0x0000e0)
+            if(this.debug)
+                print(`post ${url} ${JSON.stringify(options)}`);
             let return_val = esp32spi.post(url, options)
             this.pixelStatus(0)
             return return_val;

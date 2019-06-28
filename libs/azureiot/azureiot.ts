@@ -18,7 +18,12 @@ namespace azureiot {
     :param str device_id: Unique Azure IoT Device Identifier.
     
 */
-        constructor(private _wifi: esp32spi.WiFiManager, private _iot_hub_name: string, private _sas_token: string, public device_id: string) {
+        constructor(
+            private _wifi: esp32spi.WiFiManager, 
+            private _iot_hub_name: string, 
+            private _sas_token: string, 
+            public device_id: string
+        ) {
             this._iot_hub_url = `https://${this._iot_hub_name}.azure-devices.net`;
             this._azure_header = {
                 "Authorization": this._sas_token
@@ -112,7 +117,7 @@ namespace azureiot {
     :param str payload: JSON-formatted Data Payload.
     
 */
-        private post(path: string, payload: any, return_response: boolean = true): any {
+        private post(path: string, payload: any, return_response: boolean = true): string | any {
             let response = this._wifi.post(path, { json: payload, headers: this._azure_header })
             this.parseHttpStatus(response.status_code, response.reason)
             if (return_response) {
