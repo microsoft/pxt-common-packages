@@ -3,7 +3,8 @@
     "description": "Networking abstractions",
     "files": [
         "README.md",
-        "net.ts"
+        "net.ts",
+        "requests.ts"
     ],
     "public": true,
     "dependencies": {
