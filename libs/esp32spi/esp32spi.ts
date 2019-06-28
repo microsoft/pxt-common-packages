@@ -101,14 +101,15 @@ namespace esp32spi {
             public _ready: DigitalInOutPin,
             public _reset: DigitalInOutPin,
             public _gpio0: DigitalInOutPin = null,
-            public _debug = false
+            public _debug = 0
         ) {
             SPIController.instance = this
             this._socknum_ll = [buffer1(0)]
         }
 
         private log(priority: number, msg: string) {
-            console.log(msg);
+            if (priority > this._debug)
+                console.log(msg);
         }
 
         public reset(): void {
@@ -145,22 +146,22 @@ namespace esp32spi {
         // ok ready to send!
         // pylint: disable=no-member
         // pylint: disable=too-many-branches
-        private _read_byte(): number {
+        private readByte(): number {
             return this._spi.write(0)
         }
 
         private checkData(desired: number): boolean {
-            const r = this._read_byte()
+            const r = this.readByte()
             if (r != desired)
                 control.fail(`Expected ${desired} but got ${r}`)
             return false;
         }
 
-        private wait_spi_char(desired: number): boolean {
+        private waitSPIChar(desired: number): boolean {
             /** Read a byte with a time-out, and if we get it, check that its what we expect */
             let times = time.monotonic()
             while (time.monotonic() - times < 0.1) {
-                let r = this._read_byte()
+                let r = this.readByte()
                 if (r == _ERR_CMD) {
                     control.fail("Error response to command")
                 }
@@ -173,11 +174,11 @@ namespace esp32spi {
             return false;
         }
 
-        private _wait_for_ready() {
+        private waitForReady() {
             pauseUntil(() => this._ready.digitalRead(), 10000);
         }
 
-        private _send_command(cmd: number,
+        private send_command(cmd: number,
             params: Buffer[] = undefined,
             param_len_16 = false) {
 
@@ -209,26 +210,26 @@ namespace esp32spi {
             while (k < n)
                 packet[k++] = 0xff;
 
-            this._wait_for_ready();
+            this.waitForReady();
             const dummy = control.createBuffer(packet.length)
             this._spi.transfer(packet, dummy);
         }
 
-        private _wait_response_cmd(cmd: number, num_responses: number = undefined, param_len_16 = false) {
-            this._wait_for_ready();
+        private waitResponseCmd(cmd: number, num_responses: number = undefined, param_len_16 = false) {
+            this.waitForReady();
 
             let responses: Buffer[] = []
-            this.wait_spi_char(_START_CMD);
+            this.waitSPIChar(_START_CMD);
             this.checkData(cmd | _REPLY_FLAG)
             if (num_responses !== undefined)
                 this.checkData(num_responses)
             else
-                num_responses = this._read_byte();
+                num_responses = this.readByte();
             for (let num = 0; num < num_responses; ++num) {
-                let param_len = this._read_byte()
+                let param_len = this.readByte()
                 if (param_len_16) {
                     param_len <<= 8
-                    param_len |= this._read_byte()
+                    param_len |= this.readByte()
                 }
                 this.log(1, `\tParameter #${num} length is ${param_len}`)
                 const response = control.createBuffer(param_len);
@@ -241,15 +242,15 @@ namespace esp32spi {
             return responses
         }
 
-        private _send_command_get_response(cmd: number, params: Buffer[] = undefined,
+        private sendCommandGetResponse(cmd: number, params: Buffer[] = undefined,
             reply_params = 1, sent_param_len_16 = false,
             recv_param_len_16 = false) {
-            this._send_command(cmd, params, sent_param_len_16)
-            return this._wait_response_cmd(cmd, reply_params, recv_param_len_16)
+            this.send_command(cmd, params, sent_param_len_16)
+            return this.waitResponseCmd(cmd, reply_params, recv_param_len_16)
         }
 
         get status(): number {
-            const resp = this._send_command_get_response(_GET_CONN_STATUS_CMD)
+            const resp = this.sendCommandGetResponse(_GET_CONN_STATUS_CMD)
             this.log(0, `Status: ${resp[0][0]}`);
 
             // one byte response
@@ -257,35 +258,35 @@ namespace esp32spi {
         }
 
         /** A string of the firmware version on the ESP32 */
-        get firmware_version(): string {
+        get firmwareVersion(): string {
             if (this._debug) {
                 print("Firmware version")
             }
 
-            let resp = this._send_command_get_response(_GET_FW_VERSION_CMD)
+            let resp = this.sendCommandGetResponse(_GET_FW_VERSION_CMD)
             return resp[0].toString();
         }
 
         /** A bytearray containing the MAC address of the ESP32 */
-        get MAC_address(): Buffer {
+        get MACaddress(): Buffer {
             // pylint: disable=invalid-name
             if (this._debug) {
                 print("MAC address")
             }
 
-            let resp = this._send_command_get_response(_GET_MACADDR_CMD, [hex`ff`])
+            let resp = this.sendCommandGetResponse(_GET_MACADDR_CMD, [hex`ff`])
             return resp[0]
         }
 
         /** Begin a scan of visible access points. Follow up with a call
     to 'get_scan_networks' for response
 */
-        private start_scan_networks(): void {
+        private startScanNetworks(): void {
             if (this._debug) {
                 print("Start scan")
             }
 
-            let resp = this._send_command_get_response(_START_SCAN_NETWORKS)
+            let resp = this.sendCommandGetResponse(_START_SCAN_NETWORKS)
             if (resp[0][0] != 1) {
                 control.fail("Failed to start AP scan")
             }
@@ -295,18 +296,18 @@ namespace esp32spi {
         /** The results of the latest SSID scan. Returns a list of dictionaries with
     'ssid', 'rssi' and 'encryption' entries, one for each AP found
 */
-        private get_scan_networks(): AccessPoint[] {
-            this._send_command(_SCAN_NETWORKS)
-            let names = this._wait_response_cmd(_SCAN_NETWORKS)
+        private getScanNetworks(): AccessPoint[] {
+            this.send_command(_SCAN_NETWORKS)
+            let names = this.waitResponseCmd(_SCAN_NETWORKS)
             // print("SSID names:", names)
             // pylint: disable=invalid-name
             let APs = []
             let i = 0
             for (let name of names) {
                 let a_p = new AccessPoint(name.toString())
-                let rssi = this._send_command_get_response(_GET_IDX_RSSI_CMD, [buffer1(i)])[0]
+                let rssi = this.sendCommandGetResponse(_GET_IDX_RSSI_CMD, [buffer1(i)])[0]
                 a_p.rssi = pins.unpackBuffer("<i", rssi)[0]
-                let encr = this._send_command_get_response(_GET_IDX_ENCT_CMD, [buffer1(1)])[0]
+                let encr = this.sendCommandGetResponse(_GET_IDX_ENCT_CMD, [buffer1(1)])[0]
                 a_p.encryption = encr[0]
                 APs.push(a_p)
                 i++
@@ -318,13 +319,13 @@ namespace esp32spi {
      Returns a list of dictionaries with 'ssid', 'rssi' and 'encryption' entries,
      one for each AP found
     */
-        public scan_networks(): AccessPoint[] {
-            this.start_scan_networks()
+        public scanNetworks(): AccessPoint[] {
+            this.startScanNetworks()
             // attempts
             for (let _ = 0; _ < 10; ++_) {
                 pause(2000)
                 // pylint: disable=invalid-name
-                let APs = this.get_scan_networks()
+                let APs = this.getScanNetworks()
                 if (APs) {
                     return APs
                 }
@@ -334,9 +335,9 @@ namespace esp32spi {
         }
 
         /** Tells the ESP32 to set the access point to the given ssid */
-        public wifi_set_network(ssid: string): void {
+        public wifiSetNetwork(ssid: string): void {
             const ssidbuf = control.createBufferFromUTF8(ssid);
-            let resp = this._send_command_get_response(_SET_NET_CMD, [ssidbuf])
+            let resp = this.sendCommandGetResponse(_SET_NET_CMD, [ssidbuf])
             if (resp[0][0] != 1) {
                 control.fail("Failed to set network")
             }
@@ -344,19 +345,19 @@ namespace esp32spi {
         }
 
         /** Sets the desired access point ssid and passphrase */
-        public wifi_set_passphrase(ssid: string, passphrase: string): void {
+        public wifiSetPassphrase(ssid: string, passphrase: string): void {
             const ssidbuf = control.createBufferFromUTF8(ssid);
             const passphrasebuf = control.createBufferFromUTF8(passphrase);
-            let resp = this._send_command_get_response(_SET_PASSPHRASE_CMD, [ssidbuf, passphrasebuf])
+            let resp = this.sendCommandGetResponse(_SET_PASSPHRASE_CMD, [ssidbuf, passphrasebuf])
             if (resp[0][0] != 1) {
                 control.fail("Failed to set passphrase")
             }
         }
 
         /** Sets the WPA2 Enterprise anonymous identity */
-        public wifi_set_entidentity(ident: string): void {
+        public wifiSetEntidentity(ident: string): void {
             const ssidbuf = control.createBufferFromUTF8(ident);
-            let resp = this._send_command_get_response(_SET_ENT_IDENT_CMD, [ssidbuf])
+            let resp = this.sendCommandGetResponse(_SET_ENT_IDENT_CMD, [ssidbuf])
             if (resp[0][0] != 1) {
                 control.fail("Failed to set enterprise anonymous identity")
             }
@@ -364,9 +365,9 @@ namespace esp32spi {
         }
 
         /** Sets the desired WPA2 Enterprise username */
-        public wifi_set_entusername(username: string): void {
+        public wifiSetEntusername(username: string): void {
             const usernamebuf = control.createBufferFromUTF8(username);
-            let resp = this._send_command_get_response(_SET_ENT_UNAME_CMD, [usernamebuf])
+            let resp = this.sendCommandGetResponse(_SET_ENT_UNAME_CMD, [usernamebuf])
             if (resp[0][0] != 1) {
                 control.fail("Failed to set enterprise username")
             }
@@ -374,9 +375,9 @@ namespace esp32spi {
         }
 
         /** Sets the desired WPA2 Enterprise password */
-        public wifi_set_entpassword(password: string): void {
+        public wifiSetEntpassword(password: string): void {
             const passwordbuf = control.createBufferFromUTF8(password);
-            let resp = this._send_command_get_response(_SET_ENT_PASSWD_CMD, [passwordbuf])
+            let resp = this.sendCommandGetResponse(_SET_ENT_PASSWD_CMD, [passwordbuf])
             if (resp[0][0] != 1) {
                 control.fail("Failed to set enterprise password")
             }
@@ -384,8 +385,8 @@ namespace esp32spi {
         }
 
         /** Enables WPA2 Enterprise mode */
-        public wifi_set_entenable(): void {
-            let resp = this._send_command_get_response(_SET_ENT_ENABLE_CMD)
+        public wifiSetEntenable(): void {
+            let resp = this.sendCommandGetResponse(_SET_ENT_ENABLE_CMD)
             if (resp[0][0] != 1) {
                 control.fail("Failed to enable enterprise mode")
             }
@@ -394,17 +395,17 @@ namespace esp32spi {
 
 
         get ssid(): Buffer {
-            let resp = this._send_command_get_response(_GET_CURR_SSID_CMD, [hex`ff`])
+            let resp = this.sendCommandGetResponse(_GET_CURR_SSID_CMD, [hex`ff`])
             return resp[0]
         }
 
         get rssi(): number {
-            let resp = this._send_command_get_response(_GET_CURR_RSSI_CMD, [hex`ff`])
+            let resp = this.sendCommandGetResponse(_GET_CURR_RSSI_CMD, [hex`ff`])
             return pins.unpackBuffer("<i", resp[0])[0]
         }
 
         get networkData(): any {
-            let resp = this._send_command_get_response(_GET_IPADDR_CMD, [hex`ff`])
+            let resp = this.sendCommandGetResponse(_GET_IPADDR_CMD, [hex`ff`])
             return resp[0]; //?
         }
 
@@ -420,22 +421,22 @@ namespace esp32spi {
     that contains a 'ssid' and 'password' entry
     */
         public connect(secrets: any): void {
-            this.connect_AP(secrets["ssid"], secrets["password"])
+            this.connectAP(secrets["ssid"], secrets["password"])
         }
 
         /** Connect to an access point with given name and password.
     Will retry up to 10 times and return on success or raise
     an exception on failure
     */
-        public connect_AP(ssid: string, password: string): number {
+        public connectAP(ssid: string, password: string): number {
             if (this._debug) {
                 print(`Connect to AP ${ssid} ${password}`)
             }
 
             if (password) {
-                this.wifi_set_passphrase(ssid, password)
+                this.wifiSetPassphrase(ssid, password)
             } else {
-                this.wifi_set_network(ssid)
+                this.wifiSetNetwork(ssid)
             }
 
             // retries
@@ -464,13 +465,13 @@ namespace esp32spi {
          * Convert a hostname to a packed 4-byte IP address. Returns
     a 4 bytearray
     */
-        public get_host_by_name(hostname: string): Buffer {
-            let resp = this._send_command_get_response(_REQ_HOST_BY_NAME_CMD, [control.createBufferFromUTF8(hostname)])
+        public hostbyName(hostname: string): Buffer {
+            let resp = this.sendCommandGetResponse(_REQ_HOST_BY_NAME_CMD, [control.createBufferFromUTF8(hostname)])
             if (resp[0][0] != 1) {
                 control.fail("Failed to request hostname")
             }
 
-            resp = this._send_command_get_response(_GET_HOST_BY_NAME_CMD)
+            resp = this.sendCommandGetResponse(_GET_HOST_BY_NAME_CMD)
             return resp[0];
         }
 
@@ -479,23 +480,23 @@ namespace esp32spi {
     */
         public ping(dest: string, ttl: number = 250): number {
             // convert to IP address
-            let ip = this.get_host_by_name(dest)
+            let ip = this.hostbyName(dest)
 
             // ttl must be between 0 and 255
             ttl = Math.max(0, Math.min(ttl | 0, 255))
-            let resp = this._send_command_get_response(_PING_CMD, [ip, buffer1(ttl)])
+            let resp = this.sendCommandGetResponse(_PING_CMD, [ip, buffer1(ttl)])
             return pins.unpackBuffer("<H", resp[0])[0];
         }
 
         /** Request a socket from the ESP32, will allocate and return a number that
     can then be passed to the other socket commands
     */
-        public get_socket(): number {
+        public socket(): number {
             if (this._debug) {
                 print("*** Get socket")
             }
 
-            let resp0 = this._send_command_get_response(_GET_SOCKET_CMD)
+            let resp0 = this.sendCommandGetResponse(_GET_SOCKET_CMD)
             let resp = resp0[0][0]
             if (resp == 255) {
                 control.fail("No sockets available")
@@ -514,7 +515,7 @@ namespace esp32spi {
     'conn_mode' TCP_MODE but can also use UDP_MODE or TLS_MODE
     (dest must be hostname for TLS_MODE!)
     */
-        public socket_open(socket_num: number, dest: Buffer | string, port: number, conn_mode = TCP_MODE): void {
+        public socketOpen(socket_num: number, dest: Buffer | string, port: number, conn_mode = TCP_MODE): void {
             this._socknum_ll[0][0] = socket_num
             if (this._debug) {
                 print("*** Open socket")
@@ -525,10 +526,10 @@ namespace esp32spi {
             // use the 5 arg version
             if (typeof dest == "string") {
                 const dest2 = control.createBufferFromUTF8(dest)
-                resp = this._send_command_get_response(_START_CLIENT_TCP_CMD, [dest2, hex`00000000`, port_param, this._socknum_ll[0], buffer1(conn_mode)])
+                resp = this.sendCommandGetResponse(_START_CLIENT_TCP_CMD, [dest2, hex`00000000`, port_param, this._socknum_ll[0], buffer1(conn_mode)])
             } else {
                 // ip address, use 4 arg vesion
-                resp = this._send_command_get_response(_START_CLIENT_TCP_CMD, [dest, port_param, this._socknum_ll[0], buffer1(conn_mode)])
+                resp = this.sendCommandGetResponse(_START_CLIENT_TCP_CMD, [dest, port_param, this._socknum_ll[0], buffer1(conn_mode)])
             }
 
             if (resp[0][0] != 1) {
@@ -542,31 +543,31 @@ namespace esp32spi {
     SOCKET_FIN_WAIT_2, SOCKET_CLOSE_WAIT, SOCKET_CLOSING, SOCKET_LAST_ACK, or
     SOCKET_TIME_WAIT
     */
-        public socket_status(socket_num: number): number {
+        public socketStatus(socket_num: number): number {
             this._socknum_ll[0][0] = socket_num
-            let resp = this._send_command_get_response(_GET_CLIENT_STATE_TCP_CMD, this._socknum_ll)
+            let resp = this.sendCommandGetResponse(_GET_CLIENT_STATE_TCP_CMD, this._socknum_ll)
             return resp[0][0]
         }
 
         /** Test if a socket is connected to the destination, returns boolean true/false */
         public socket_connected(socket_num: number): boolean {
-            return this.socket_status(socket_num) == SOCKET_ESTABLISHED
+            return this.socketStatus(socket_num) == SOCKET_ESTABLISHED
         }
 
         /** Write the bytearray buffer to a socket */
-        public socket_write(socket_num: number, buffer: Buffer): void {
+        public socketWrite(socket_num: number, buffer: Buffer): void {
             if (this._debug) {
                 print("Writing:" + buffer.length)
             }
 
             this._socknum_ll[0][0] = socket_num
-            let resp = this._send_command_get_response(_SEND_DATA_TCP_CMD, [this._socknum_ll[0], buffer])
+            let resp = this.sendCommandGetResponse(_SEND_DATA_TCP_CMD, [this._socknum_ll[0], buffer])
             let sent = resp[0][0]
             if (sent != buffer.length) {
                 control.fail(`Failed to send ${buffer.length} bytes (sent ${sent})`)
             }
 
-            resp = this._send_command_get_response(_DATA_SENT_TCP_CMD, this._socknum_ll)
+            resp = this.sendCommandGetResponse(_DATA_SENT_TCP_CMD, this._socknum_ll)
             if (resp[0][0] != 1) {
                 control.fail("Failed to verify data sent")
             }
@@ -574,9 +575,9 @@ namespace esp32spi {
         }
 
         /** Determine how many bytes are waiting to be read on the socket */
-        public socket_available(socket_num: number): number {
+        public socketAvailable(socket_num: number): number {
             this._socknum_ll[0][0] = socket_num
-            let resp = this._send_command_get_response(_AVAIL_DATA_TCP_CMD, this._socknum_ll)
+            let resp = this.sendCommandGetResponse(_AVAIL_DATA_TCP_CMD, this._socknum_ll)
             let reply = pins.unpackBuffer("<H", resp[0])[0]
             if (this._debug) {
                 print(`ESPSocket: ${reply} bytes available`)
@@ -586,13 +587,13 @@ namespace esp32spi {
         }
 
         /** Read up to 'size' bytes from the socket number. Returns a bytearray */
-        public socket_read(socket_num: number, size: number): Buffer {
+        public socketRead(socket_num: number, size: number): Buffer {
             if (this._debug) {
-                print(`Reading ${size} bytes from ESP socket with status ${this.socket_status(socket_num)}`)
+                print(`Reading ${size} bytes from ESP socket with status ${this.socketStatus(socket_num)}`)
             }
 
             this._socknum_ll[0][0] = socket_num
-            let resp = this._send_command_get_response(_GET_DATABUF_TCP_CMD, [this._socknum_ll[0], pins.packBuffer("<H", [size])])
+            let resp = this.sendCommandGetResponse(_GET_DATABUF_TCP_CMD, [this._socknum_ll[0], pins.packBuffer("<H", [size])])
             return resp[0]
         }
 
@@ -601,12 +602,12 @@ namespace esp32spi {
     'conn_mode' TCP_MODE but can also use UDP_MODE or TLS_MODE (dest must
     be hostname for TLS_MODE!)
     */
-        public socket_connect(socket_num: number, dest: string | Buffer, port: number, conn_mode = TCP_MODE): boolean {
+        public socketConnect(socket_num: number, dest: string | Buffer, port: number, conn_mode = TCP_MODE): boolean {
             if (this._debug) {
                 print("*** Socket connect mode " + conn_mode)
             }
 
-            this.socket_open(socket_num, dest, port, conn_mode)
+            this.socketOpen(socket_num, dest, port, conn_mode)
             let times = time.monotonic()
             // wait 3 seconds
             while (time.monotonic() - times < 3) {
@@ -621,14 +622,14 @@ namespace esp32spi {
         }
 
         /** Close a socket using the ESP32's internal reference number */
-        public socket_close(socket_num: number): void {
+        public socketClose(socket_num: number): void {
             if (this._debug) {
                 // %d" % socket_num)
                 print("*** Closing socket #" + socket_num)
             }
 
             this._socknum_ll[0][0] = socket_num
-            let resp = this._send_command_get_response(_STOP_CLIENT_TCP_CMD, this._socknum_ll)
+            let resp = this.sendCommandGetResponse(_STOP_CLIENT_TCP_CMD, this._socknum_ll)
             if (resp[0][0] != 1) {
                 control.fail("Failed to close socket")
             }
@@ -638,8 +639,8 @@ namespace esp32spi {
         /** Enable/disable debug mode on the ESP32. Debug messages will be
     written to the ESP32's UART.
     */
-        public set_esp_debug(enabled: boolean) {
-            let resp = this._send_command_get_response(_SET_DEBUG_CMD, [buffer1(enabled ? 1 : 0)])
+        public setESPdebug(enabled: boolean) {
+            let resp = this.sendCommandGetResponse(_SET_DEBUG_CMD, [buffer1(enabled ? 1 : 0)])
             if (resp[0][0] != 1) {
                 control.fail("Failed to set debug mode")
             }
@@ -652,9 +653,9 @@ namespace esp32spi {
     :param value: direction for pin, digitalio.Direction or integer (0=input, 1=output).
      
     */
-        public set_pin_mode(pin: number, pin_mode: number): void {
+        public setPinMode(pin: number, pin_mode: number): void {
 
-            let resp = this._send_command_get_response(_SET_PIN_MODE_CMD, [buffer1(pin), buffer1(pin_mode)])
+            let resp = this.sendCommandGetResponse(_SET_PIN_MODE_CMD, [buffer1(pin), buffer1(pin_mode)])
             if (resp[0][0] != 1) {
                 control.fail("Failed to set pin mode")
             }
@@ -668,8 +669,8 @@ namespace esp32spi {
     :param bool value: Value for the pin.
      
     */
-        public set_digital_write(pin: number, value: number): void {
-            let resp = this._send_command_get_response(_SET_DIGITAL_WRITE_CMD, [buffer1(pin), buffer1(value)])
+        public setDigitalWrite(pin: number, value: number): void {
+            let resp = this.sendCommandGetResponse(_SET_DIGITAL_WRITE_CMD, [buffer1(pin), buffer1(value)])
             if (resp[0][0] != 1) {
                 control.fail("Failed to write to pin")
             }
@@ -683,9 +684,9 @@ namespace esp32spi {
     :param float value: 0=off 1.0=full on
      
     */
-        public set_analog_write(pin: number, analog_value: number) {
+        public setAnalogWrite(pin: number, analog_value: number) {
             let value = Math.trunc(255 * analog_value)
-            let resp = this._send_command_get_response(_SET_ANALOG_WRITE_CMD, [buffer1(pin), buffer1(value)])
+            let resp = this.sendCommandGetResponse(_SET_ANALOG_WRITE_CMD, [buffer1(pin), buffer1(value)])
             if (resp[0][0] != 1) {
                 control.fail("Failed to write to pin")
             }

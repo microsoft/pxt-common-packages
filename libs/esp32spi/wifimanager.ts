@@ -46,9 +46,9 @@ namespace esp32spi {
                     print("ESP32 found and in idle mode")
                 }
 
-                print(`Firmware vers. ${this.esp.firmware_version}`)
-                print(`MAC addr: ${this.esp.MAC_address}`)
-                for (let access_pt of this.esp.scan_networks()) {
+                print(`Firmware vers. ${this.esp.firmwareVersion}`)
+                print(`MAC addr: ${this.esp.MACaddress}`)
+                for (let access_pt of this.esp.scanNetworks()) {
                     print(`	${access_pt["ssid"]}		RSSI: ${access_pt["rssi"]}`)
                 }
             }
@@ -62,7 +62,7 @@ namespace esp32spi {
 
                     // TODO: (below) types not compatible: number[] and number; 
                     this.pixel_status(0xe00000)
-                    this.esp.connect_AP(this.ssid, this.password)
+                    this.esp.connectAP(this.ssid, this.password)
                     failure_count = 0
                     // TODO: (below) types not compatible: number[] and number; 
                     this.pixel_status(0x00e000)

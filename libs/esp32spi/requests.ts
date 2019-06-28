@@ -108,7 +108,7 @@ read only when requested
             port = parseInt(tmp[1])
         }
 
-        let ipaddr = esp32spi.SPIController.instance.get_host_by_name(host)
+        let ipaddr = esp32spi.SPIController.instance.hostbyName(host)
 
         let sock = new Socket()
         // our response
