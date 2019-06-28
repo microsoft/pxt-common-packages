@@ -1,3 +1,4 @@
+/*
 namespace pxsim {
     export class NetSocket {
         constructor(public ws: WebSocket) { }
@@ -75,4 +76,4 @@ namespace pxsim.SocketMethods {
     export function onMessage(ws: pxsim.NetSocket, handler: RefAction): void {
         ws.onMessage(handler);
     }
-}
+}*/
