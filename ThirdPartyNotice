@@ -26,6 +26,7 @@ All sections of code within this repository are licensed under an MIT License:
 4.   Adafruit_CircuitPython_CharLCD v3.1.2 (https://github.com/adafruit/Adafruit_CircuitPython_CharLCD)
 5.   @jacdac/jacdac-ts v.0.0.9 (https://github.com/jacdac/jacdac-ts)
 6.   Adafruit_CircuitPython_ESP32SPI v1.4.2 https://github.com/adafruit/adafruit_circuitpython_esp32spi
+7.   Adafruit_CircuitPython_AzureIoT v1.0.2 https://github.com/adafruit/Adafruit_CircuitPython_AzureIoT
 
 %% pxt-lora v0.2.2 NOTICES AND INFORMATION BEGIN HERE (https://github.com/ElectronicCats/pxt-lora/archive/v0.2.2.tar.gz)
 =========================================
@@ -161,4 +162,32 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 =========================================
-END OF Adafruit_CircuitPython_CharLCD v3.1.2 NOTICES AND INFORMATION
+END OF Adafruit_CircuitPython_ESP32SPI v1.4.2 NOTICES AND INFORMATION
+
+%% Adafruit_CircuitPython_AzureIoT v1.0.2 NOTICES AND INFORMATION BEGIN HERE (https://github.com/adafruit/Adafruit_CircuitPython_AzureIoT/archive/1.0.2.tar.gz)
+=========================================
+
+The MIT License (MIT)
+
+Copyright (c) 2019 Brent Rubell for Adafruit Industries
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+=========================================
+END OF Adafruit_CircuitPython_AzureIoT v1.0.2 NOTICES AND INFORMATION
