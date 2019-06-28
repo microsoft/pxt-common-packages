@@ -63,8 +63,6 @@ namespace esp32spi {
         timeout?: number; // in ms
     }
 
-    const _the_interface = esp32spi.ESP_SPIcontrol.instance
-
     export function dataAsBuffer(data: string | Buffer): Buffer {
         if (data == null)
             return null

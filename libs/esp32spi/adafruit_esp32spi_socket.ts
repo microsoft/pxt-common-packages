@@ -4,8 +4,6 @@ namespace esp32spi {
     export const AF_INET = 2
     export const MAX_PACKET = 4000
 
-    const _the_interface = esp32spi.ESP_SPIcontrol.instance
-
     export class Socket {
         _buffer: Buffer;
         _socknum: number
@@ -15,7 +13,7 @@ namespace esp32spi {
  */
         constructor() {
             this._buffer = hex``
-            this._socknum = _the_interface.get_socket()
+            this._socknum = esp32spi.ESP_SPIcontrol.instance.get_socket()
             this.settimeout(0)
         }
 
@@ -28,7 +26,7 @@ namespace esp32spi {
                 conntype = esp32spi.TCP_MODE
             }
 
-            if (!_the_interface.socket_connect(this._socknum, host, port, conntype)) {
+            if (!esp32spi.ESP_SPIcontrol.instance.socket_connect(this._socknum, host, port, conntype)) {
                 control.fail(`RuntimeError("Failed to connect to host", host)`)
             }
 
@@ -37,7 +35,7 @@ namespace esp32spi {
 
         /** Send some data to the socket */
         public write(data: string | Buffer) {
-            _the_interface.socket_write(this._socknum, dataAsBuffer(data))
+            esp32spi.ESP_SPIcontrol.instance.socket_write(this._socknum, dataAsBuffer(data))
         }
 
         /** Attempt to return as many bytes as we can up to but not including '\r\n' */
@@ -46,9 +44,9 @@ namespace esp32spi {
             let stamp = time.monotonic()
             while (this._buffer.indexOf(hex`0d0a`) < 0) {
                 // there's no line already in there, read some more
-                let avail = Math.min(_the_interface.socket_available(this._socknum), MAX_PACKET)
+                let avail = Math.min(esp32spi.ESP_SPIcontrol.instance.socket_available(this._socknum), MAX_PACKET)
                 if (avail) {
-                    this._buffer = this._buffer.concat(_the_interface.socket_read(this._socknum, avail))
+                    this._buffer = this._buffer.concat(esp32spi.ESP_SPIcontrol.instance.socket_read(this._socknum, avail))
                 } else if (this._timeout > 0 && time.monotonic() - stamp > this._timeout) {
                     // Make sure to close socket so that we don't exhaust sockets.
                     this.close()
@@ -70,9 +68,9 @@ namespace esp32spi {
             // read as much as we can at the moment
             if (size == 0) {
                 while (true) {
-                    let avail = Math.min(_the_interface.socket_available(this._socknum), MAX_PACKET)
+                    let avail = Math.min(esp32spi.ESP_SPIcontrol.instance.socket_available(this._socknum), MAX_PACKET)
                     if (avail) {
-                        this._buffer += _the_interface.socket_read(this._socknum, avail)
+                        this._buffer += esp32spi.ESP_SPIcontrol.instance.socket_read(this._socknum, avail)
                     } else {
                         break
                     }
@@ -88,10 +86,10 @@ namespace esp32spi {
             let received = []
             while (to_read > 0) {
                 // print("Bytes to read:", to_read)
-                let avail = Math.min(_the_interface.socket_available(this._socknum), MAX_PACKET)
+                let avail = Math.min(esp32spi.ESP_SPIcontrol.instance.socket_available(this._socknum), MAX_PACKET)
                 if (avail) {
                     stamp = time.monotonic()
-                    let recv = _the_interface.socket_read(this._socknum, Math.min(to_read, avail))
+                    let recv = esp32spi.ESP_SPIcontrol.instance.socket_read(this._socknum, Math.min(to_read, avail))
                     received.push(recv)
                     to_read -= recv.length
                 }
@@ -122,7 +120,7 @@ namespace esp32spi {
 
         public close() {
             /** Close the socket, after reading whatever remains */
-            _the_interface.socket_close(this._socknum)
+            esp32spi.ESP_SPIcontrol.instance.socket_close(this._socknum)
         }
     }
 }
