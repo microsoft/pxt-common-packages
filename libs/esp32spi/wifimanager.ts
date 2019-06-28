@@ -23,14 +23,16 @@ namespace esp32spi {
             this.password = secrets["password"]
             this.attempts = attempts
             this._statuspix = status_pixel
-            this.pixel_status(0)
+            this.pixelStatus(0)
         }
 
-        private pixel_status(color: number) {
+        private pixelStatus(color: number) {
             // TODO handle neopixels
         }
 
-        /** Perform a hard reset on the ESP32 */
+        /** 
+         * Perform a hard reset on the ESP32 
+        */
         public reset(): void {
             if (this.debug) {
                 print("Resetting ESP32")
@@ -39,7 +41,9 @@ namespace esp32spi {
             this.esp.reset()
         }
 
-        /** Attempt to connect to WiFi using the current settings */
+        /** 
+         * Attempt to connect to WiFi using the current settings 
+         **/
         public connect(): void {
             if (this.debug) {
                 if (this.esp.status == esp32spi.WL_IDLE_STATUS) {
@@ -60,12 +64,10 @@ namespace esp32spi {
                         print("Connecting to AP...")
                     }
 
-                    // TODO: (below) types not compatible: number[] and number; 
-                    this.pixel_status(0xe00000)
+                    this.pixelStatus(0xe00000)
                     this.esp.connectAP(this.ssid, this.password)
                     failure_count = 0
-                    // TODO: (below) types not compatible: number[] and number; 
-                    this.pixel_status(0x00e000)
+                    this.pixelStatus(0x00e000)
                 }
                 catch (error/* instanceof [ValueError, RuntimeError] */) {
                     print(`Failed to connect, retrying
@@ -99,10 +101,9 @@ ${error}`)
                 this.connect()
             }
 
-            // TODO: (below) types not compatible: number[] and number; 
-            this.pixel_status(0x0000e0)
+            this.pixelStatus(0x0000e0)
             let return_val = esp32spi.get(url, options)
-            this.pixel_status(0)
+            this.pixelStatus(0)
             return return_val
         }
 
@@ -123,9 +124,9 @@ ${error}`)
                 this.connect()
             }
 
-            // TODO: (below) types not compatible: number[] and number; 
-            this.pixel_status(0x0000e0)
+            this.pixelStatus(0x0000e0)
             let return_val = esp32spi.post(url, options)
+            this.pixelStatus(0)
             return return_val;
         }
 
@@ -146,9 +147,9 @@ ${error}`)
                 this.connect()
             }
 
-            this.pixel_status(0x0000e0)
+            this.pixelStatus(0x0000e0)
             let return_val = esp32spi.put(url, options)
-            this.pixel_status(0)
+            this.pixelStatus(0)
             return return_val
         }
 
@@ -169,9 +170,9 @@ ${error}`)
                 this.connect()
             }
 
-            this.pixel_status(0x0000e0)
+            this.pixelStatus(0x0000e0)
             let return_val = esp32spi.patch(url, options)
-            this.pixel_status(0)
+            this.pixelStatus(0)
             return return_val
         }
 
@@ -192,9 +193,9 @@ ${error}`)
                 this.connect()
             }
 
-            this.pixel_status(0x0000e0)
+            this.pixelStatus(0x0000e0)
             let return_val = esp32spi.del(url, options)
-            this.pixel_status(0)
+            this.pixelStatus(0)
             return return_val
         }
 
@@ -213,9 +214,9 @@ ${error}`)
             }
 
             // TODO: (below) types not compatible: number[] and number; 
-            this.pixel_status(0x0000e0)
+            this.pixelStatus(0x0000e0)
             let response_time = this.esp.ping(host)
-            this.pixel_status(0)
+            this.pixelStatus(0)
             return response_time
         }
 
@@ -225,13 +226,13 @@ ${error}`)
                 this.connect()
             }
 
-            this.pixel_status(0x0000e0)
-            this.pixel_status(0)
+            this.pixelStatus(0x0000e0)
+            this.pixelStatus(0)
             return this.esp.ipAddress;
         }
 
         /** Returns receiving signal strength indicator in dBm */
-        public get signal_strength(): number {
+        public get signalStrength(): number {
             if (!this.esp.isConnected) {
                 this.connect()
             }
