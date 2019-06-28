@@ -533,4 +533,7 @@ namespace music {
 
     //% fixedInstance whenUsed block="siren"
     export const siren = new Melody('a4 d5 a4 d5 a4 d5')
+
+    //% fixedInstance whenUsed block="pew pew"
+    export const pewPew = new Melody('!1200,200^50')
 }
