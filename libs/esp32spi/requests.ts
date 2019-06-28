@@ -51,6 +51,10 @@ namespace esp32spi {
         public json() {
             return JSON.parse(this.text)
         }
+
+        public toString() {
+            return `HTTP ${this.status_code}; ${Object.keys(this.headers).length} headers; ${this._cached ? this._cached.length : -1} bytes content`
+        }
     }
 
     export type StringMap = { [v: string]: string; };
@@ -71,6 +75,35 @@ namespace esp32spi {
         return data
     }
 
+    // TODO move to PXT
+    // also note this doesn't handle unicode, but neither does JS (there's toLocaleLowerCase())
+    export function toLowerCase(s: string) {
+        let r = ""
+        let prev = 0
+        for (let i = 0; i < s.length; i++) {
+            const c = s.charCodeAt(i)
+            if (65 <= c && c <= 90) {
+                r += s.slice(prev, i) + String.fromCharCode(c + 32)
+                prev = i + 1
+            }
+        }
+        r += s.slice(prev)
+        return r
+    }
+
+    /*
+    >>> "a,b,c,d,e".split(",", 2)
+    ['a', 'b', 'c,d,e']
+    */
+    function pysplit(str: string, sep:string, limit: number) {
+        const arr = str.split(sep)
+        if (arr.length >= limit) {
+            return arr.slice(0, limit).concat([arr.slice(limit).join(sep)])
+        } else {
+            return arr
+        }
+    }
+
 
     /** Perform an HTTP request to the given url which we will parse to determine
 whether to use SSL ('https://') or not. We can also send some provided 'data'
@@ -85,7 +118,7 @@ read only when requested
             options.headers = {}
         }
 
-        const tmp = url.split("/", 3)
+        const tmp = pysplit(url, "/", 3)
         let proto = tmp[0]
         let host = tmp[2]
         let path = tmp[3] || ""
@@ -103,7 +136,7 @@ read only when requested
         }
 
         if (host.indexOf(":") >= 0) {
-            const tmp = host.split(":", 1)
+            const tmp = host.split(":")
             host = tmp[0]
             port = parseInt(tmp[1])
         }
@@ -128,7 +161,7 @@ read only when requested
         sock.send(`${method} /${path} HTTP/1.0\r\n`)
 
         if (!options.headers["Host"])
-            sock.send(`Host: ${options.headers["host"]}\r\n`)
+            sock.send(`Host: ${host}\r\n`)
 
         if (!options.headers["User-Agent"])
             sock.send("User-Agent: MakeCode ESP32\r\n")
@@ -154,7 +187,7 @@ read only when requested
 
         let line = sock.readLine()
         // print(line)
-        let line2 = line.split(" ", 2)
+        let line2 = pysplit(line, " ", 2)
         let status = parseInt(line2[1])
         let reason = ""
         if (line2.length > 2) {
@@ -168,14 +201,11 @@ read only when requested
             }
 
             // print("**line: ", line)
-            const tmp = line.split(": ", 1)
+            const tmp = pysplit(line, ": ", 1)
             let title = tmp[0]
             let content = tmp[1]
             if (title && content) {
-                // TODO
-                // title = title.toLowerCase()
-                // content = content.toLowerCase()
-                resp.headers[title] = content
+                resp.headers[toLowerCase(title)] = toLowerCase(content)
             }
         }
 
