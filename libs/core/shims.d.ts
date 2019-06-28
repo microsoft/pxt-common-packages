@@ -1,4 +1,12 @@
 // Auto-generated. Do not edit.
+declare namespace control {
+
+    /**
+     * Determines if the USB has been enumerated.
+     */
+    //% shim=control::isUSBInitialized
+    function isUSBInitialized(): boolean;
+}
 declare namespace pins {
 
     /**
@@ -228,93 +236,107 @@ declare namespace control {
     //% shim=control::dmesgPtr
     function dmesgPtr(str: string, ptr: Object): void;
 }
-declare namespace pins {
 
+
+declare interface I2C {
     /**
      * Read `size` bytes from a 7-bit I2C `address`.
      */
-    //% repeat.defl=0 shim=pins::i2cReadBuffer
-    function i2cReadBuffer(address: int32, size: int32, repeat?: boolean): Buffer;
+    //% repeat.defl=0 shim=I2CMethods::readBuffer
+    readBuffer(address: int32, size: int32, repeat?: boolean): Buffer;
 
     /**
      * Write bytes to a 7-bit I2C `address`.
      */
-    //% repeat.defl=0 shim=pins::i2cWriteBuffer
-    function i2cWriteBuffer(address: int32, buf: Buffer, repeat?: boolean): int32;
+    //% repeat.defl=0 shim=I2CMethods::writeBuffer
+    writeBuffer(address: int32, buf: Buffer, repeat?: boolean): int32;
+}
+declare namespace pins {
+
+    /**
+     * Opens a Serial communication driver
+     */
+    //% help=pins/create-i2c
+    //% parts=i2c shim=pins::createI2C
+    function createI2C(sda: DigitalInOutPin, scl: DigitalInOutPin): I2C;
 }
 declare namespace pins {
 
     /**
      * Opens a SPI driver
      */
+    //% help=pins/create-spi
     //% parts=spi shim=pins::createSPI
-    function createSPI(mosiPin: DigitalInOutPin, misoPin: DigitalInOutPin, sckPin: DigitalInOutPin): SPIDevice;
+    function createSPI(mosiPin: DigitalInOutPin, misoPin: DigitalInOutPin, sckPin: DigitalInOutPin): SPI;
 }
 
 
-declare interface SPIDevice {
+declare interface SPI {
     /**
      * Write to the SPI bus
      */
-    //% shim=SPIDeviceMethods::write
+    //% shim=SPIMethods::write
     write(value: int32): int32;
 
     /**
      * Transfer buffers over the SPI bus
      */
-    //% shim=SPIDeviceMethods::transfer
+    //% shim=SPIMethods::transfer
     transfer(command: Buffer, response: Buffer): void;
 
     /**
      * Sets the SPI clock frequency
      */
-    //% shim=SPIDeviceMethods::setFrequency
+    //% shim=SPIMethods::setFrequency
     setFrequency(frequency: int32): void;
 
     /**
      * Sets the SPI bus mode
      */
-    //% shim=SPIDeviceMethods::setMode
+    //% shim=SPIMethods::setMode
     setMode(mode: int32): void;
 }
-declare namespace pins {
+declare namespace light {
 
     /**
-     * Gets the default SPI driver
+     * Send a programmable light buffer to the specified digital pin
+     * @param data The pin that the light are connected to
+     * @param clk the clock line if nay
+     * @param mode the color encoding mode
+     * @param buf The buffer to send to the pin
      */
-    //% shim=pins::spi
-    function spi(): SPIDevice;
+    //% shim=light::sendBuffer
+    function sendBuffer(data: DigitalInOutPin, clk: DigitalInOutPin, mode: int32, buf: Buffer): void;
+}
+declare namespace configStorage {
 
     /**
-     * Write to the SPI slave and return the response
-     * @param value Data to be sent to the SPI slave
+     * Puts an entry in the device storage. Key may have up to 16 characters (bytes).
+     * @param key the identifier (max 16 characters)
+     * @param value the data (max 32 characters)
      */
-    //% help=pins/spi-write weight=5 advanced=true
-    //% blockId=spi_write block="spi write %value" shim=pins::spiWrite
-    function spiWrite(value: int32): int32;
+    //% shim=configStorage::setBuffer
+    function setBuffer(key: string, value: Buffer): void;
 
     /**
-     * Writes a given command to SPI bus, and afterwards reads the response.
+     * Gets an entry from the device storage. Key may have up to 16 characters (bytes).
+     * @param key the identifier (max 16 characters)
      */
-    //% help=pins/spi-transfer weight=4 advanced=true
-    //% blockId=spi_transfer block="spi transfer %command into %response" shim=pins::spiTransfer
-    function spiTransfer(command: Buffer, response: Buffer): void;
+    //% shim=configStorage::getBuffer
+    function getBuffer(key: string): Buffer;
 
     /**
-     * Sets the SPI frequency
-     * @param frequency the clock frequency, eg: 1000000
+     * Removes the key from local storage
+     * @param key the identifier (max 16 characters)
      */
-    //% help=pins/spi-frequency weight=4 advanced=true
-    //% blockId=spi_frequency block="spi frequency %frequency" shim=pins::spiFrequency
-    function spiFrequency(frequency: int32): void;
+    //% shim=configStorage::removeItem
+    function removeItem(key: string): void;
 
     /**
-     * Sets the SPI mode and bits
-     * @param mode the mode, eg: 3
+     * Clears the local storage
      */
-    //% help=pins/spi-mode weight=3 advanced=true
-    //% blockId=spi_mode block="spi mode %mode" shim=pins::spiMode
-    function spiMode(mode: int32): void;
+    //% shim=configStorage::clear
+    function clear(): void;
 }
 
 // Auto-generated. Do not edit. Really.

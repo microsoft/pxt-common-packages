@@ -2,22 +2,35 @@
     "name": "jacdac",
     "description": "Plug and play single wire serial protocol - beta",
     "files": [
-        "config.ts",
-        "jacdac.cpp",
+        "configurationservice.ts",
+        "consoleservice.ts",
+        "consts.ts",
+        "control.ts",
+        "crc.ts",
+        "devicemanager.ts",
+        "diagnostics.ts",
+        "ifaces.ts",
         "jacdac.ts",
+        "rand.ts",
+        "rngservice.ts",
+        "service.ts",
+        "structs.ts",
+
+        "makecodeoptions.ts",
+        "makecodejacdac.ts",
+        "jacdac.cpp",
+        "shims.d.ts",
+        "config.ts",
         "driver.ts",
-        "packet.ts",
         "sensordriver.ts",
         "jacdac.svg",
         "pxtparts.json",
-        "shims.d.ts",
         "actuator.ts",
         "messagebus.ts",
-        "console.ts",
-        "bridge.ts",
+        "jacdacidentification.ts",
         "controllerclient.ts",
-        "debugviews.ts",
-        "ns.ts"
+        "ns.ts",
+        "README.md"
     ],
     "testFiles": [
         "test.ts"
@@ -25,5 +38,15 @@
     "public": true,
     "dependencies": {
         "core": "file:../core"
+    },
+    "yotta": {
+        "userConfigs": [
+            {
+                "description": "JACDAC WebUSB debugging.",
+                "config": {
+                    "DEVICE_JACDAC_DEBUG": 1
+                }
+            }
+        ]
     }
 }

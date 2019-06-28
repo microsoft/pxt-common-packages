@@ -21,7 +21,7 @@ namespace sprites {
      * @param img the image
      */
     //% group="Create"
-    //% blockId=spritescreate block="sprite %img=screen_image_picker of kind %kind=spritetype"
+    //% blockId=spritescreate block="sprite %img=screen_image_picker of kind %kind=spritekind"
     //% expandableArgumentMode=toggle
     //% blockSetVariable=mySprite
     //% weight=100 help=sprites/create
@@ -44,7 +44,7 @@ namespace sprites {
      * Return an array of all sprites of the given kind.
      * @param kind the target kind
      */
-    //% blockId=allOfKind block="array of sprites of kind %kind=spritetype"
+    //% blockId=allOfKind block="array of sprites of kind %kind=spritekind"
     //% blockNamespace="arrays" blockSetVariable="sprite list"
     //% weight=87
     export function allOfKind(kind: number): Sprite[] {
@@ -66,9 +66,9 @@ namespace sprites {
     //% inlineInputMode=inline
     //% vy.defl=100
     export function createProjectileFromSide(img: Image, vx: number, vy: number) {
-        return createProjectile(img, vx, vy, 1);
+        return createProjectile(img, vx, vy, SpriteKind.Projectile);
     }
-    
+
     /**
      * Create a new sprite with given speed, and place it at the edge of the screen so it moves towards the middle.
      * The sprite auto-destroys when it leaves the screen. You can modify position after it's created.
@@ -82,15 +82,15 @@ namespace sprites {
     //% inlineInputMode=inline
     //% vy.defl=100
     export function createProjectileFromSprite(img: Image, sprite: Sprite, vx: number, vy: number): Sprite {
-        return createProjectile(img, vx, vy, 1, sprite);
-    }    
+        return createProjectile(img, vx, vy, SpriteKind.Projectile, sprite);
+    }
 
     /**
      * Create a new sprite with given speed, and place it at the edge of the screen so it moves towards the middle.
      * The sprite auto-destroys when it leaves the screen. You can modify position after it's created.
      */
     //% group="Projectiles"
-    //% blockId=spritescreateprojectile block="projectile %img=screen_image_picker vx %vx vy %vy of kind %kind=spritetype||from sprite %sprite=variables_get(mySprite)"
+    //% blockId=spritescreateprojectile block="projectile %img=screen_image_picker vx %vx vy %vy of kind %kind=spritekind||from sprite %sprite=variables_get(mySprite)"
     //% weight=99 help=sprites/create-projectile
     //% blockSetVariable=projectile
     //% inlineInputMode=inline
@@ -98,7 +98,7 @@ namespace sprites {
     //% vy.defl=100
     //% deprecated=true blockHidden=true
     export function createProjectile(img: Image, vx: number, vy: number, kind?: number, sprite?: Sprite) {
-        const s = sprites.create(img, kind);
+        const s = sprites.create(img, kind || SpriteKind.Projectile);
         const sc = game.currentScene();
         s.vx = vx
         s.vy = vy

@@ -58,6 +58,7 @@ namespace serial {
      * @param rx 
      * @param id 
      */
+    //% help=serial/create-serial
     //% parts=serial
     export function createSerial(tx: DigitalInOutPin, rx: DigitalInOutPin, id?: number): Serial {
         const dev = serial.internalCreateSerialDevice(tx, rx, id || 0);
@@ -248,10 +249,11 @@ namespace serial {
 
 
     /**
-      Sends the console message through the TX, RX pins
+      Send console messages through the TX, RX pins
       **/
     //% blockId=serialsendtoconsole block="serial attach to console"
     //% group="Configuration"
+    //% help=serial/attach-to-console
     export function attachToConsole() {
         console.addListener(logListener)
     }
@@ -274,7 +276,7 @@ namespace serial {
     */
     //% weight=10
     //% help=serial/redirect
-    //% blockId=serial_redirect block="serial|redirect to|TX %tx|RX %rx"
+    //% blockId=serial_redirect block="serial|redirect to|TX %tx|RX %rx at rate %rate"
     //% tx.fieldEditor="gridpicker" tx.fieldOptions.columns=3
     //% tx.fieldOptions.tooltips="false"
     //% rx.fieldEditor="gridpicker" rx.fieldOptions.columns=3

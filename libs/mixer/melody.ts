@@ -13,26 +13,45 @@ namespace music {
         7d06e0064907b8072d08a9082d09b9094d0aea0a900b400cfa0cc00d910e6f0f5a1053115b1272139a14d4152017
         8018f519801b231dde1e`
 
-    //% promise shim=music::playInstructions
-    function playInstructions(buf: Buffer) { }
+    //% shim=music::queuePlayInstructions
+    function queuePlayInstructions(timeDelta: number, buf: Buffer) { }
+
+    //% shim=music::stopPlaying
+    function stopPlaying() { }
 
     //% shim=music::forceOutput
     export function forceOutput(buf: MusicOutput) { }
 
-    let globalVolume = 128
+    let globalVolume: number = null
+
+    const BUFFER_SIZE: number = 12;
+
+    //% shim=music::enableAmp
+    function enableAmp(en: number) {
+        return // for sim
+    }
+
+    function initVolume() {
+        if (globalVolume === null) {
+            globalVolume = 0
+            setVolume(control.getConfigValue(DAL.CFG_SPEAKER_VOLUME, 128))
+        }
+    }
 
     /**
      * Set the default output volume of the sound synthesizer.
-     * @param volume the volume 0...256, eg: 128
+     * @param volume the volume 0...255
      */
     //% blockId=synth_set_volume block="set volume %volume"
     //% parts="speaker"
-    //% volume.min=0 volume.max=256
+    //% volume.min=0 volume.max=255
+    //% volume.defl=20
     //% help=music/set-volume
     //% weight=70
     //% group="Volume"
     export function setVolume(volume: number): void {
         globalVolume = Math.clamp(0, 255, volume | 0)
+        enableAmp(globalVolume > 0 ? 1 : 0)
     }
 
     /**
@@ -41,12 +60,15 @@ namespace music {
     //% parts="speaker"
     //% weight=70
     export function volume(): number {
+        initVolume()
         return globalVolume;
     }
 
-    let playToneFreq: number
-    let playToneEnd: number
-    let playToneSeq = 0
+    function playNoteCore(when: number, frequency: number, ms: number) {
+        let buf = control.createBuffer(BUFFER_SIZE)
+        addNote(buf, 0, ms, 255, 255, 3, frequency, volume(), frequency)
+        queuePlayInstructions(when, buf)
+    }
 
     /**
      * Play a tone through the speaker for some amount of time.
@@ -60,19 +82,67 @@ namespace music {
     //% weight=76 blockGap=8
     //% group="Tone"
     export function playTone(frequency: number, ms: number): void {
-        let buf = control.createBuffer(10 + 1)
-        addNote(buf, 0, ms, 255, 255, 1, frequency, globalVolume)
-        playInstructions(buf)
+        if (ms == 0)
+            ms = 86400000 // 1 day
+
+        if (ms <= 2000) {
+            playNoteCore(0, frequency, ms)
+            pause(ms)
+        } else {
+            const id = ++playToneID
+            control.runInParallel(() => {
+                let pos = control.millis()
+                while (id == playToneID && ms > 0) {
+                    let now = control.millis()
+                    let d = pos - now
+                    let t = Math.min(ms, 500)
+                    ms -= t
+                    pos += t
+                    playNoteCore(d - 1, frequency, t)
+                    if (ms == 0)
+                        pause(d + t)
+                    else
+                        pause(d + t - 100)
+                }
+            })
+        }
     }
 
+    let playToneID = 0
+
+
+    /**
+     * Stop all sounds from playing.
+     */
+    //% help=music/stop-all-sounds
+    //% blockId=music_stop_all_sounds block="stop all sounds"
+    //% weight=10
+    //% group="Sounds"
+    export function stopAllSounds() {
+        Melody.stopAll();
+        stopPlaying();
+    }
 
     //% fixedInstances
     export class Melody {
         _text: string;
-        _player: MelodyPlayer;
+        private _player: MelodyPlayer;
+
+        private static playingMelodies: Melody[];
+
+        static stopAll() {
+            if (Melody.playingMelodies) {
+                const ms = Melody.playingMelodies.slice(0, Melody.playingMelodies.length);
+                ms.forEach(p => p.stop());
+            }
+        }
 
         constructor(text: string) {
             this._text = text
+        }
+
+        get text() {
+            return this._text;
         }
 
         /**
@@ -88,17 +158,39 @@ namespace music {
                 this._player.stop()
                 this._player = null
             }
+            this.unregisterMelody();
+        }
+
+        private registerMelody() {
+            // keep track of the active players
+            if (!Melody.playingMelodies) Melody.playingMelodies = [];
+            // stop and pop melodies if too many playing
+            if (Melody.playingMelodies.length > 4) {
+                // stop last player (also pops)
+                Melody.playingMelodies[Melody.playingMelodies.length - 1].stop();
+            }
+            // put back the melody on top of the melody stack
+            Melody.playingMelodies.removeElement(this);
+            Melody.playingMelodies.push(this);
+        }
+        private unregisterMelody() {
+            // remove from list
+            if (Melody.playingMelodies) {
+                Melody.playingMelodies.removeElement(this); // remove self
+            }
         }
 
         private playCore(volume: number, loop: boolean) {
             this.stop()
-            const p = new MelodyPlayer(this)
+            const p = this._player = new MelodyPlayer(this)
+            this.registerMelody();
             control.runInParallel(() => {
                 while (this._player == p) {
                     p.play(volume)
                     if (!loop)
                         break
                 }
+                this.unregisterMelody();
             })
         }
 
@@ -111,7 +203,7 @@ namespace music {
         //% parts="headphone"
         //% weight=93 blockGap=8
         //% group="Sounds"
-        loop(volume = 128) {
+        loop(volume = 255) {
             this.playCore(volume, true)
         }
 
@@ -124,7 +216,7 @@ namespace music {
         //% parts="headphone"
         //% weight=95 blockGap=8
         //% group="Sounds"
-        play(volume = 128) {
+        play(volume = 255) {
             this.playCore(volume, false)
         }
 
@@ -138,13 +230,23 @@ namespace music {
         //% parts="headphone"
         //% weight=94 blockGap=8
         //% group="Sounds"
-        playUntilDone(volume = 128) {
+        playUntilDone(volume = 255) {
             this.stop()
-            new MelodyPlayer(this).play(volume)
+            const p = this._player = new MelodyPlayer(this)
+            this._player.onPlayFinished = () => {
+                if (p == this._player)
+                    this.unregisterMelody();
+            }
+            this.registerMelody();
+            this._player.play(volume)
+        }
+
+        toString() {
+            return this._text;
         }
     }
 
-    function addNote(sndInstr: Buffer, sndInstrPtr: number, ms: number, beg: number, end: number, soundWave: number, hz: number, volume: number) {
+    function addNote(sndInstr: Buffer, sndInstrPtr: number, ms: number, beg: number, end: number, soundWave: number, hz: number, volume: number, endHz: number) {
         if (ms > 0) {
             sndInstr.setNumber(NumberFormat.UInt8LE, sndInstrPtr, soundWave)
             sndInstr.setNumber(NumberFormat.UInt8LE, sndInstrPtr + 1, 0)
@@ -152,7 +254,8 @@ namespace music {
             sndInstr.setNumber(NumberFormat.UInt16LE, sndInstrPtr + 4, ms)
             sndInstr.setNumber(NumberFormat.UInt16LE, sndInstrPtr + 6, (beg * volume) >> 6)
             sndInstr.setNumber(NumberFormat.UInt16LE, sndInstrPtr + 8, (end * volume) >> 6)
-            sndInstrPtr += 10
+            sndInstr.setNumber(NumberFormat.UInt16LE, sndInstrPtr + 10, endHz);
+            sndInstrPtr += BUFFER_SIZE;
         }
         sndInstr.setNumber(NumberFormat.UInt8LE, sndInstrPtr, 0) // terminate
         return sndInstrPtr
@@ -162,9 +265,10 @@ namespace music {
     class MelodyPlayer {
         melody: Melody;
 
+        onPlayFinished: () => void;
+
         constructor(m: Melody) {
             this.melody = m
-            m._player = this
         }
 
         stop() {
@@ -174,8 +278,7 @@ namespace music {
         play(volume: number) {
             if (!this.melody)
                 return
-
-            volume = Math.clamp(0, 255, (volume * globalVolume) >> 8)
+            volume = Math.clamp(0, 255, (volume * music.volume()) >> 8)
 
             let notes = this.melody._text
             let pos = 0;
@@ -184,18 +287,31 @@ namespace music {
             let tempo = 120; // default tempo
 
             let hz = 0
+            let endHz = -1
             let ms = 0
+            let timePos = 0
+            let startTime = control.millis()
+            let now = 0
 
             let envA = 0
             let envD = 0
             let envS = 255
             let envR = 0
             let soundWave = 1 // triangle
-            let sndInstr = control.createBuffer(5 * 10)
+            let sndInstr = control.createBuffer(5 * BUFFER_SIZE)
             let sndInstrPtr = 0
 
-            const addForm = (ms: number, beg: number, end: number) => {
-                sndInstrPtr = addNote(sndInstr, sndInstrPtr, ms, beg, end, soundWave, hz, volume)
+            const addForm = (formDuration: number, beg: number, end: number, msOff: number) => {
+                let freqStart = hz;
+                let freqEnd = endHz;
+
+                const envelopeWidth = ms > 0 ? ms : duration * Math.idiv(15000, tempo) + envR;
+                if (endHz != hz && envelopeWidth != 0) {
+                    const slope = (freqEnd - freqStart) / envelopeWidth;
+                    freqStart = hz + slope * msOff;
+                    freqEnd = hz + slope * (msOff + formDuration);
+                }
+                sndInstrPtr = addNote(sndInstr, sndInstrPtr, formDuration, beg, end, soundWave, freqStart, volume, freqEnd);
             }
 
             const scanNextWord = () => {
@@ -228,12 +344,13 @@ namespace music {
                 Beat,
                 Tempo,
                 Hz,
+                EndHz,
                 Ms,
                 WaveForm,
                 EnvelopeA,
                 EnvelopeD,
                 EnvelopeS,
-                EnvelopeR,
+                EnvelopeR
             }
 
             let token: string = "";
@@ -248,7 +365,7 @@ namespace music {
             //   1 - triangle
             //   2 - sawtooth
             //   3 - sine
-            //   4 - noise
+            //   5 - noise
             //   11 - square 10%
             //   12 - square 20%
             //   ...
@@ -272,6 +389,7 @@ namespace music {
                         case Token.EnvelopeD: envD = d; tokenKind = Token.EnvelopeS; break;
                         case Token.EnvelopeS: envS = Math.clamp(0, 255, d); tokenKind = Token.EnvelopeR; break;
                         case Token.EnvelopeR: envR = d; break;
+                        case Token.EndHz: endHz = d; break;
                     }
                     token = "";
                 }
@@ -279,8 +397,15 @@ namespace music {
 
             while (true) {
                 let currNote = scanNextWord();
-                if (!currNote)
+                let prevNote: boolean = false;
+                if (!currNote) {
+                    let timeLeft = timePos - now
+                    if (timeLeft > 0)
+                        pause(timeLeft)
+                    if (this.onPlayFinished)
+                        this.onPlayFinished();
                     return;
+                }
 
                 hz = -1;
 
@@ -291,42 +416,53 @@ namespace music {
                 for (let i = 0; i < currNote.length; i++) {
                     let noteChar = currNote.charAt(i);
                     switch (noteChar) {
-                        case 'c': case 'C': note = 1; break;
-                        case 'd': case 'D': note = 3; break;
-                        case 'e': case 'E': note = 5; break;
-                        case 'f': case 'F': note = 6; break;
-                        case 'g': case 'G': note = 8; break;
-                        case 'a': case 'A': note = 10; break;
-                        case 'b': case 'B': note = 12; break;
-                        case 'r': case 'R': hz = 0; break;
-                        case '#': note++; break;
-                        case 'b': note--; break; // doesn't do anything
+                        case 'c': case 'C': note = 1; prevNote = true; break;
+                        case 'd': case 'D': note = 3; prevNote = true; break;
+                        case 'e': case 'E': note = 5; prevNote = true; break;
+                        case 'f': case 'F': note = 6; prevNote = true; break;
+                        case 'g': case 'G': note = 8; prevNote = true; break;
+                        case 'a': case 'A': note = 10; prevNote = true; break;
+                        case 'B': note = 12; prevNote = true; break;
+                        case 'r': case 'R': hz = 0; prevNote = false; break;
+                        case '#': note++; prevNote = false; break;
+                        case 'b': if (prevNote) note--; else { note = 12; prevNote = true; } break;
                         case ',':
                             consumeToken();
+                            prevNote = false;
                             break;
                         case '!':
                             tokenKind = Token.Hz;
+                            prevNote = false;
                             break;
                         case '@':
                             consumeToken();
                             tokenKind = Token.EnvelopeA;
+                            prevNote = false;
                             break;
                         case '~':
                             consumeToken();
                             tokenKind = Token.WaveForm;
+                            prevNote = false;
                             break;
                         case ':':
                             consumeToken();
                             tokenKind = Token.Beat;
+                            prevNote = false;
                             break;
                         case '-':
                             consumeToken();
                             tokenKind = Token.Tempo;
+                            prevNote = false;
+                            break;
+                        case '^':
+                            consumeToken();
+                            tokenKind = Token.EndHz;
                             break;
                         default:
                             if (tokenKind == Token.Note)
                                 tokenKind = Token.Octave;
                             token += noteChar;
+                            prevNote = false;
                             break;
                     }
                 }
@@ -340,22 +476,34 @@ namespace music {
                 let currMs = ms
 
                 if (currMs <= 0) {
-                    const beat = 15000 / tempo;
+                    const beat = Math.idiv(15000, tempo);
                     currMs = duration * beat
                 }
 
                 if (hz < 0) {
                     // no frequency specified, so no duration
                 } else if (hz == 0) {
-                    pause(currMs)
+                    timePos += currMs
                 } else {
-                    sndInstrPtr = 0
-                    addForm(envA, 0, 255)
-                    addForm(envD, 255, envS)
-                    addForm(currMs - (envA + envD), envS, envS)
-                    addForm(envR, envS, 0)
+                    if (endHz < 0) {
+                        endHz = hz;
+                    }
 
-                    playInstructions(sndInstr)
+                    sndInstrPtr = 0
+                    addForm(envA, 0, 255, 0)
+                    addForm(envD, 255, envS, envA)
+                    addForm(currMs - (envA + envD), envS, envS, envD + envA)
+                    addForm(envR, envS, 0, currMs)
+
+                    queuePlayInstructions(timePos - now, sndInstr.slice(0, sndInstrPtr))
+                    endHz = -1;
+                    timePos += currMs // don't add envR - it's supposed overlap next sound
+                }
+
+                let timeLeft = timePos - now
+                if (timeLeft > 200) {
+                    pause(timeLeft - 100)
+                    now = control.millis() - startTime
                 }
             }
         }
@@ -385,4 +533,7 @@ namespace music {
 
     //% fixedInstance whenUsed block="siren"
     export const siren = new Melody('a4 d5 a4 d5 a4 d5')
+
+    //% fixedInstance whenUsed block="pew pew"
+    export const pewPew = new Melody('!1200,200^50')
 }

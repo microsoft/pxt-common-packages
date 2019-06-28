@@ -99,6 +99,15 @@ namespace control {
         target_panic(PANIC_HEAP_DUMPED);
     }
 
+
+    /**
+     * Set flags used when connecting an external debugger.
+     */
+    //%
+    void setDebugFlags(int flags) {
+        debugFlags = flags;
+    }
+
     /**
      * Return true if profiling is enabled in the current build.
      */

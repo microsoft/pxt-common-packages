@@ -1,21 +1,11 @@
 namespace sprites {
     /**
-     * Gets the sprite type
-     */
-    //% blockHidden=1 shim=ENUM_GET
-    //% blockId=spritetype block="$kind" enumInitialMembers="Player,Projectile,Food,Enemy"
-    //% enumName=SpriteKind enumMemberName=kind enumPromptHint="e.g. Coin, Fireball, Asteroid..."
-    export function _spriteType(kind: number): number {
-        return kind;
-    }
-
-    /**
      * Run code when a certain kind of sprite is created
      * @param kind
      * @param sprite
      */
     //% group="Lifecycle" draggableParameters="reporter" weight=97
-    //% blockId=spritesoncreated block="on created $sprite of kind $kind=spritetype"
+    //% blockId=spritesoncreated block="on created $sprite of kind $kind=spritekind"
     //% help=sprites/on-created
     export function onCreated(kind: number, handler: (sprite: Sprite) => void): void {
         if (!handler || kind == undefined) return;
@@ -34,7 +24,7 @@ namespace sprites {
      */
     //% group="Lifecycle"
     //% weight=96 draggableParameters="reporter"
-    //% blockId=spritesondestroyed block="on destroyed $sprite of kind $kind=spritetype "
+    //% blockId=spritesondestroyed block="on destroyed $sprite of kind $kind=spritekind "
     //% help=sprites/on-destroyed
     export function onDestroyed(kind: number, handler: (sprite: Sprite) => void) {
         if (!handler || kind == undefined) return;
@@ -51,18 +41,31 @@ namespace sprites {
      */
     //% group="Overlaps"
     //% weight=100 draggableParameters="reporter"
-    //% blockId=spritesoverlap block="on $sprite of kind $kind=spritetype overlaps $otherSprite of kind $otherKind=spritetype"
+    //% blockId=spritesoverlap block="on $sprite of kind $kind=spritekind overlaps $otherSprite of kind $otherKind=spritekind"
     //% help=sprites/on-overlap
     //% blockGap=8
     export function onOverlap(kind: number, otherKind: number, handler: (sprite: Sprite, otherSprite: Sprite) => void) {
         if (kind == undefined || otherKind == undefined || !handler) return;
-
         const scene = game.currentScene();
-        scene.overlapHandlers.push({
+        const overlapHandlers = scene.overlapHandlers;
+        const overlapMap = scene.overlapMap;
+
+        function associate(a: number, b: number) {
+            if (!overlapMap[a]) {
+                overlapMap[a] = [];
+            }
+
+            overlapMap[a].push(b);
+        }
+
+        associate(kind, otherKind);
+        associate(otherKind, kind);
+
+        overlapHandlers.push({
             kind: kind,
             otherKind: otherKind,
             handler: handler
-        })
+        });
     }
 }
 
@@ -75,16 +78,19 @@ namespace scene {
      */
     //% group="Collisions"
     //% weight=100 draggableParameters="reporter"
-    //% blockId=spritesollisions block="on $sprite of kind $kind=spritetype hits wall $tile=colorindexpicker"
+    //% blockId=spritesollisions block="on $sprite of kind $kind=spritekind hits wall $tile=colorindexpicker"
     //% help=scene/on-hit-tile
     export function onHitTile(kind: number, tile: number, handler: (sprite: Sprite) => void) {
-        if (kind == undefined || !handler) return;
+        if (kind == undefined || tile < 0 || tile > 0xF || !handler) return;
 
-        const scene = game.currentScene();
-        scene.collisionHandlers.push({
+        const collisionHandlers = game.currentScene().collisionHandlers;
+        if (!collisionHandlers[tile]) {
+            collisionHandlers[tile] = [];
+        }
+
+        collisionHandlers[tile].push({
             kind: kind,
-            tile: tile,
             handler: handler
-        })
+        });
     }
 }

@@ -39,10 +39,9 @@ using namespace codal;
 #if CONFIG_ENABLED(DEVICE_JOYSTICK)
 #include "HIDJoystick.h"
 #endif
+#if CONFIG_ENABLED(DEVICE_JACDAC_DEBUG)
+#include "USBJACDAC.h"
 #endif
-
-#ifndef NEOPIXEL_SPI
-#define NEOPIXEL_SPI 1
 #endif
 
 namespace pxt {
@@ -59,6 +58,9 @@ extern USBHIDKeyboard keyboard;
 #if CONFIG_ENABLED(DEVICE_JOYSTICK)
 extern USBHIDJoystick joystick;
 #endif
+#if CONFIG_ENABLED(DEVICE_JACDAC_DEBUG)
+extern USBJACDAC jacdacDebug;
+#endif
 #endif
 
 // Utility functions
@@ -67,20 +69,27 @@ extern CODAL_TIMER devTimer;
 extern MessageBus devMessageBus;
 extern codal::CodalDevice device;
 
-
-#if NEOPIXEL_SPI
-void spiNeopixelSendBuffer(DigitalInOutPin pin, const uint8_t *data, unsigned size);
-#endif
-
 void set_usb_strings(const char *uf2_info);
 
 } // namespace pxt
 
 namespace pins {
 class CodalSPIProxy;
+class CodalI2CProxy;
 } // namespace pins
 
-typedef pins::CodalSPIProxy* SPIDevice;
+typedef pins::CodalI2CProxy* I2C_;
+typedef pins::CodalSPIProxy* SPI_;
+
+namespace pxt {
+#ifdef CODAL_I2C
+CODAL_I2C* getI2C(DigitalInOutPin sda, DigitalInOutPin scl);
+#endif
+CODAL_SPI* getSPI(DigitalInOutPin mosi, DigitalInOutPin miso, DigitalInOutPin sck);
+#ifdef CODAL_JACDAC_WIRE_SERIAL
+LowLevelTimer* getJACDACTimer();
+#endif
+}
 
 namespace serial {
 class CodalSerialDeviceProxy;

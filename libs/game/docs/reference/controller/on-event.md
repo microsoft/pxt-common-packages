@@ -28,6 +28,7 @@ e e e e e e
 `)
 controller.player2.onEvent(ControllerEvent.Connected, function () {
     yellowBox.say("Player2 is on!")
+})
 ```
 
 ## See also #seealso

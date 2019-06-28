@@ -2,15 +2,33 @@
 
 #include "SAMDTCTimer.h"
 #include "SAMDTCCTimer.h"
+#include "light.h"
 
 namespace pxt {
 
+#ifdef CODAL_JACDAC_WIRE_SERIAL
 #ifdef SAMD21
-SAMDTCTimer lowTimer(TC4, TC4_IRQn);
+SAMDTCTimer jacdacTimer(TC4, TC4_IRQn);
+SAMDTCTimer lowTimer(TC3, TC3_IRQn);
+
+LowLevelTimer* getJACDACTimer()
+{
+    jacdacTimer.setIRQPriority(1);
+    return &jacdacTimer;
+}
+
 #endif
 #ifdef SAMD51
-SAMDTCTimer lowTimer(TC0, TC0_IRQn);
+SAMDTCTimer jacdacTimer(TC0, TC0_IRQn);
+SAMDTCTimer lowTimer(TC2, TC2_IRQn);
+
+LowLevelTimer* getJACDACTimer()
+{
+    jacdacTimer.setIRQPriority(1);
+    return &jacdacTimer;
+}
 #endif
+#endif // CODAL_JACDAC_WIRE_SERIAL
 
 __attribute__((used))
 CODAL_TIMER devTimer(lowTimer);
@@ -26,16 +44,7 @@ void platformSendSerial(const char *data, int len) {}
 void platform_init() {
     initRandomSeed();
     setSendToUART(platformSendSerial);
-
-    auto neopix = LOOKUP_PIN(NEOPIXEL);
-    if (neopix && ZSPI::isValidMOSIPin(*neopix)) {
-        auto num = getConfig(CFG_NUM_NEOPIXELS, 0);
-        if (num) {
-            uint8_t off[3 * num];
-            memset(off, 0, sizeof(off));
-            pxt::spiNeopixelSendBuffer(neopix, off, sizeof(off));
-        }
-    }
+    light::clear();
 
     /*
         if (*HF2_DBG_MAGIC_PTR == HF2_DBG_MAGIC_START) {

@@ -1,16 +1,14 @@
-#include "Synthesizer.h"
-#include "Mixer.h"
-
-using namespace codal;
-
 #define SAMPLE_RATE 44100
 
-class LinuxDAC : public DataSink {
+namespace music {
+class WSynthesizer;
+
+class LinuxDAC {
   public:
-    DataSource &src;
-    LinuxDAC(DataSource &data);
+    int16_t data[256];
+    WSynthesizer &src;
+    LinuxDAC(WSynthesizer &data);
     static void *play(void *);
-    virtual int pullRequest() { return 0; }
     int getSampleRate() { return SAMPLE_RATE; }
 };
 
@@ -18,7 +16,9 @@ class SoundOutput {
   public:
     LinuxDAC dac;
 
-    SoundOutput(DataSource &data) : dac(data) {}
+    SoundOutput(WSynthesizer &data) : dac(data) {}
 
     void setOutput(int) {}
 };
+
+} // namespace music

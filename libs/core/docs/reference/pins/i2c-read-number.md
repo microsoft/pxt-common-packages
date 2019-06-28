@@ -64,4 +64,5 @@ forever(() => {
 
 ## See also #seealso
 
-[i2c write number](/reference/pins/i2c-write-number)
+[i2c write number](/reference/pins/i2c-write-number),
+[create i2c](/reference/pins/create-i2c)

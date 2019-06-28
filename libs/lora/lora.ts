@@ -1,5 +1,5 @@
 // Adapted from https://github.com/ElectronicCats/pxt-lora/
-
+// https://www.mouser.com/ds/2/761/sx1276-944191.pdf
 
 
 /**
@@ -9,10 +9,30 @@
 //% blockGap=8
 //% groups='["Sender", "Receiver", "Packet", "Mode", "Configuration"]'
 namespace lora {
+    export const enum LoRaState {
+        None,
+        /**
+         * Started initialization
+         */
+        Initializing,
+        /**
+         * LoRa module initialized and ready to go.
+         */
+        Ready,
+        /**
+         * Firmware update is required on the LoRa module
+         */
+        LoRaIncorrectFirmwareVersion,
+        /**
+         * Pins are not configured properly
+         */
+        LoRaInvalidConfiguration
+    }
+
     /**
      * Priority of log messages
      */
-    export let consolePriority = ConsolePriority.Silent;
+    export let consolePriority = ConsolePriority.Log;
     function log(msg: string) {
         console.add(consolePriority, `lora: ${msg}`);
     }
@@ -21,10 +41,13 @@ namespace lora {
     // registers
     const REG_FIFO = 0x00;
     const REG_OP_MODE = 0x01;
+    // unused
     const REG_FRF_MSB = 0x06;
     const REG_FRF_MID = 0x07;
     const REG_FRF_LSB = 0x08;
     const REG_PA_CONFIG = 0x09;
+    const REG_PA_RAMP = 0x0a;
+    const REG_OCP = 0x0b;
     const REG_LNA = 0x0c;
     const REG_FIFO_ADDR_PTR = 0x0d;
     const REG_FIFO_TX_BASE_ADDR = 0x0e;
@@ -32,6 +55,11 @@ namespace lora {
     const REG_FIFO_RX_CURRENT_ADDR = 0x10;
     const REG_IRQ_FLAGS = 0x12;
     const REG_RX_NB_BYTES = 0x13;
+    const REG_RX_HEADER_COUNT_VALUE_MSB = 0x14;
+    const REG_RX_HEADER_COUNT_VALUE_LSB = 0x15;
+    const REG_RX_PACKET_COUNT_VALUE_MSB = 0x16;
+    const REG_RX_PACKET_COUNT_VALUE_LSB = 0x17;
+    const REG_MODEM_STAT = 0x18;
     const REG_PKT_SNR_VALUE = 0x19;
     const REG_PKT_RSSI_VALUE = 0x1a;
     const REG_MODEM_CONFIG_1 = 0x1d;
@@ -39,16 +67,32 @@ namespace lora {
     const REG_PREAMBLE_MSB = 0x20;
     const REG_PREAMBLE_LSB = 0x21;
     const REG_PAYLOAD_LENGTH = 0x22;
+    const REG_MAX_PAYLOAD_LENGTH = 0x23;
+    const REG_HOP_PERIOD = 0x24;
+    const REG_FIFO_RX_BYTE_AD = 0x25;
     const REG_MODEM_CONFIG_3 = 0x26;
+    // 0x27 reserved
     const REG_FREQ_ERROR_MSB = 0x28;
     const REG_FREQ_ERROR_MID = 0x29;
     const REG_FREQ_ERROR_LSB = 0x2a;
+    // 2b reserved
     const REG_RSSI_WIDEBAND = 0x2c;
+    // 2d-2f reserved
     const REG_DETECTION_OPTIMIZE = 0x31;
+    const REG_INVERT_IQ = 0x33;
     const REG_DETECTION_THRESHOLD = 0x37;
     const REG_SYNC_WORD = 0x39;
     const REG_DIO_MAPPING_1 = 0x40;
+    const REG_DIO_MAPPING_2 = 0x40;
     const REG_VERSION = 0x42;
+    const REG_TCXO = 0x4b;
+    const REG_PA_DAC = 0x4d;
+    const REG_FORMER_TEMP = 0x5b;
+    const REG_AGC_REF = 0x61;
+    const REG_AGC_THRESH_1 = 0x62;
+    const REG_AGC_THRESH_2 = 0x63;
+    const REG_AGC_THRESH_3 = 0x64;
+    const REG_PLL = 0x70;
 
     // modes
     const MODE_LONG_RANGE_MODE = 0x80;
@@ -84,20 +128,23 @@ namespace lora {
         return (bitvalue ? bitSet(value, bit) : bitClear(value, bit));
     }
 
-    let _state: number = 0;
+    /**
+     * State of the driver
+     */
+    export let state: LoRaState = LoRaState.None;
     let _version: number;
     let _frequency = 915E6;
     let _packetIndex = 0;
     let _implicitHeaderMode = 0;
     let _implicitHeader = false;
     let _outputPin = PA_OUTPUT_PA_BOOST_PIN;
-    let _spi: SPIDevice;
+    let _spi: SPI;
     let _cs: DigitalInOutPin;
     let _boot: DigitalInOutPin;
     let _rst: DigitalInOutPin;
 
 
-    export function setPins(spiDevice: SPIDevice,
+    export function setPins(spiDevice: SPI,
         csPin: DigitalInOutPin,
         bootPin: DigitalInOutPin,
         rstPin: DigitalInOutPin) {
@@ -106,22 +153,36 @@ namespace lora {
         _boot = bootPin;
         _rst = rstPin;
         // force reset
-        _state = 0;
+        state = LoRaState.None;
     }
 
     function init() {
-        if (_state > 0) return; // already inited
+        if (state != LoRaState.None) return; // already inited
 
-        _state = 1;
+        log(`init`);
+        state = LoRaState.Initializing;
         if (!_spi) {
             log(`init using builtin lora pins`);
             const mosi = pins.pinByCfg(DAL.CFG_PIN_LORA_MOSI);
             const miso = pins.pinByCfg(DAL.CFG_PIN_LORA_MISO);
             const sck = pins.pinByCfg(DAL.CFG_PIN_LORA_SCK);
+            // make sure pins are ok
+            if (!mosi || !miso || !sck) {
+                log(`missing SPI pins (MOSI ${!!mosi} MISO ${!!miso} SCK ${!!sck})`)
+                state = LoRaState.LoRaInvalidConfiguration;
+                return;
+            }
             _spi = pins.createSPI(mosi, miso, sck);
             _cs = pins.pinByCfg(DAL.CFG_PIN_LORA_CS);
             _boot = pins.pinByCfg(DAL.CFG_PIN_LORA_BOOT);
             _rst = pins.pinByCfg(DAL.CFG_PIN_LORA_RESET);
+        }
+
+        // final check for pins
+        if (!_cs || !_boot || !_rst) {
+            log(`missing pins (CS ${!!_cs} BOOT ${!!_boot} RST ${!!_rst})`)
+            state = LoRaState.LoRaInvalidConfiguration;
+            return;
         }
 
         _cs.digitalWrite(false);
@@ -144,11 +205,17 @@ namespace lora {
         _version = readRegister(REG_VERSION);
         log(`version v${version()}, required v${FIRMWARE_VERSION}`);
 
+        if (_version != FIRMWARE_VERSION) {
+            log(`firmware upgrade required`);
+            state = LoRaState.LoRaIncorrectFirmwareVersion;
+            return;
+        }
+
         //Sleep
-        sleep();
+        writeRegister(REG_OP_MODE, MODE_LONG_RANGE_MODE | MODE_SLEEP);
 
         // set frequency
-        setFrequency(_frequency);
+        setFrequencyRegisters(_frequency);
 
         // set base addresses
         writeRegister(REG_FIFO_TX_BASE_ADDR, 0);
@@ -161,13 +228,13 @@ namespace lora {
         writeRegister(REG_MODEM_CONFIG_3, 0x04);
 
         // set output power to 17 dBm
-        setTxPower(17);
+        setTxPowerRegisters(17);
 
         // put in standby mode
-        idle();
+        writeRegister(REG_OP_MODE, MODE_LONG_RANGE_MODE | MODE_STDBY);
 
-        _version = readRegister(REG_VERSION);
-        log(`version v${version()}, required v${FIRMWARE_VERSION}`);
+        state = LoRaState.Ready;
+        log(`ready`);
     }
 
     // Write Register of SX. 
@@ -203,6 +270,16 @@ namespace lora {
     }
 
     /**
+     * Indicates the LoRa module is correctly initialized
+     */
+    //% group="Configuration"
+    //% blockId=loraeady block="lora is ready"
+    export function isReady(): boolean {
+        init();
+        return state == LoRaState.Ready;
+    }
+
+    /**
     * Read Version of firmware
     **/
     //% parts="lora"
@@ -218,7 +295,8 @@ namespace lora {
     //% parts="lora"
     //% blockId=lorareadstring block="lora read string"
     export function readString(): string {
-        init();
+        if (!isReady()) return "";
+
         const buf = readBuffer();
         return buf.toString();
     }
@@ -230,7 +308,8 @@ namespace lora {
     //% parts="lora"
     //% blockId=lorareadbuffer block="lora read buffer"
     export function readBuffer(): Buffer {
-        init();
+        if (!isReady()) return control.createBuffer(0);
+
         let length = parsePacket(0);
         if (length <= 0)
             return control.createBuffer(0); // nothing to read
@@ -256,7 +335,8 @@ namespace lora {
     //% parts="lora"
     //% weight=45 blockGap=8 blockId=loraparsepacket block="lora parse packet %size"
     export function parsePacket(size: number): number {
-        init();
+        if (!isReady()) return 0;
+
         let packetLength = 0;
         let irqFlags = readRegister(REG_IRQ_FLAGS);
 
@@ -306,7 +386,8 @@ namespace lora {
     //% parts="lora"
     //% weight=45 blockGap=8 blockId=lorapacketRssi block="lora packet RSSI"
     export function packetRssi(): number {
-        init();
+        if (!isReady()) return -1;
+
         return (readRegister(REG_PKT_RSSI_VALUE) - (_frequency < 868E6 ? 164 : 157));
     }
 
@@ -317,7 +398,8 @@ namespace lora {
     //% parts="lora"
     //% blockId=lorapacketsnr block="lora packet SNR"
     export function packetSnr(): number {
-        init();
+        if (!isReady()) return -1;
+
         return (readRegister(REG_PKT_SNR_VALUE)) * 0.25;
     }
 
@@ -353,7 +435,7 @@ namespace lora {
             explicitHeaderMode();
         }
 
-        // reset FIFO address and paload length
+        // reset FIFO address and payload length
         writeRegister(REG_FIFO_ADDR_PTR, 0);
         writeRegister(REG_PAYLOAD_LENGTH, 0);
     }
@@ -364,9 +446,11 @@ namespace lora {
         writeRegister(REG_OP_MODE, MODE_LONG_RANGE_MODE | MODE_TX);
 
         // wait for TX done
+        // TODO interupts!
+        let k = 0;
         while ((readRegister(REG_IRQ_FLAGS) & IRQ_TX_DONE_MASK) == 0) {
-            //TO DO: yield();
-            log(`wait tx`)
+            if (k++ % 100 == 0)
+                log(`wait tx`)
             pause(10);
         }
 
@@ -383,8 +467,8 @@ namespace lora {
     //% group="Sender"
     //% blockId=lorasendstring block="lora send string $text"
     export function sendString(text: string) {
-        init();
         if (!text) return;
+        if (!isReady()) return;
         const buf = control.createBufferFromUTF8(text);
         sendBuffer(buf);
     }
@@ -396,8 +480,8 @@ namespace lora {
     //% group="Sender"
     //% blockId=lorasendbuffer block="lora send buffer $buffer"
     export function sendBuffer(buffer: Buffer) {
-        init();
         if (!buffer || buffer.length == 0) return;
+        if (!isReady()) return;
         log('send')
         beginPacket();
         log(`write payload (${buffer.length} bytes)`)
@@ -435,7 +519,7 @@ namespace lora {
     //% weight=45 blockGap=8 
     //% blockId=loraavailable block="lora available"
     export function available(): number {
-        init();
+        if (!isReady()) return 0;
         return readRegister(REG_RX_NB_BYTES) - _packetIndex;
     }
 
@@ -446,11 +530,9 @@ namespace lora {
     //% group="Packet"
     //% blockId=loraread block="lora read"
     export function read(): number {
-        init();
-        if (!available()) {
+        if (!isReady()) return -1;
+        if (!available())
             return -1;
-        }
-
         _packetIndex++;
 
         return readRegister(REG_FIFO);
@@ -463,10 +545,9 @@ namespace lora {
     //% group="Packet"
     //% blockId=lorapeek block="lora peek"
     export function peek(): number {
-        init();
-        if (!available()) {
+        if (!isReady()) return -1;
+        if (!available())
             return -1;
-        }
 
         // store current FIFO address
         const currentAddress = readRegister(REG_FIFO_ADDR_PTR);
@@ -491,7 +572,7 @@ namespace lora {
     //% group="Mode"
     //% blockId=loraidle block="lora idle"
     export function idle() {
-        init();
+        if (!isReady()) return;
         log('idle')
         writeRegister(REG_OP_MODE, MODE_LONG_RANGE_MODE | MODE_STDBY);
     }
@@ -503,18 +584,12 @@ namespace lora {
     //% group="Mode"
     //% blockId=lorasleep block="lora sleep"
     export function sleep() {
-        init();
+        if (!isReady()) return;
         writeRegister(REG_OP_MODE, MODE_LONG_RANGE_MODE | MODE_SLEEP);
     }
 
-    /**
-    * Set Tx Power
-    **/
-    //% parts="lora"
-    //% group="Configuration"
-    //% blockId=lorasettxpower block="lora set tx power to $level dBm"
-    export function setTxPower(level: number, rfo?: boolean) {
-        init();
+
+    function setTxPowerRegisters(level: number, rfo?: boolean) {
         level = level | 0;
         if (rfo) {
             // RFO
@@ -538,19 +613,35 @@ namespace lora {
     }
 
     /**
+    * Set Tx Power
+    **/
+    //% parts="lora"
+    //% group="Configuration"
+    //% blockId=lorasettxpower block="lora set tx power to $level dBm"
+    export function setTxPower(level: number, rfo?: boolean) {
+        if (!isReady()) return;
+        setTxPowerRegisters(level, rfo);
+    }
+
+    function setFrequencyRegisters(frequency: number) {
+        _frequency = frequency;
+        const frf = ((frequency * (1 << 19)) / 32000000) | 0;
+        log(`frequency ${_frequency} -> ${frf}`);
+
+        writeRegister(REG_FRF_MSB, (frf >> 16) & 0xff);
+        writeRegister(REG_FRF_MID, (frf >> 8) & 0xff);
+        writeRegister(REG_FRF_LSB, (frf >> 0) & 0xff);
+    }
+
+    /**
     * Set Frecuency of LoRa
     **/
     //% parts="lora"
     //% group="Configuration"
     //% blockId=lorasetsetfrequency block="lora set frequency to $frequency"
     export function setFrequency(frequency: number) {
-        init();
-        _frequency = frequency;
-        const frf = ((frequency*(1<<19))/32000000) | 0;
-
-        writeRegister(REG_FRF_MSB, (frf >> 16) & 0xff);
-        writeRegister(REG_FRF_MID, (frf >> 8) & 0xff);
-        writeRegister(REG_FRF_LSB, (frf >> 0) & 0xff);
+        if (!isReady()) return;
+        setFrequencyRegisters(_frequency);
     }
 
     /**
@@ -560,7 +651,7 @@ namespace lora {
     //% group="Configuration"
     //% blockId=loraspreadingfactor block="lora spreading factor"
     export function spreadingFactor(): number {
-        init();
+        if (!isReady()) return -1;
         return readRegister(REG_MODEM_CONFIG_2) >> 4;
     }
 
@@ -574,7 +665,7 @@ namespace lora {
     //% factor.defl=8
     //% group="Configuration"
     export function setSpreadingFactor(factor: number) {
-        init();
+        if (!isReady()) return;
         factor = factor | 0;
         if (factor < 6) {
             factor = 6;
@@ -601,7 +692,7 @@ namespace lora {
     //% group="Configuration"
     //% blockId=lorasignalbandwith block="signal bandwidth"
     export function signalBandwidth(): number {
-        init();
+        if (!isReady()) return 0;
         const bw = (readRegister(REG_MODEM_CONFIG_1) >> 4);
         switch (bw) {
             case 0: return 7.8E3;
@@ -626,7 +717,7 @@ namespace lora {
     //% group="Configuration"
     //% blockId=lorasetsignalbandwith block="set signal bandwidth to $value"
     export function setSignalBandwidth(value: number) {
-        init();
+        if (!isReady()) return;
         let bw;
 
         if (value <= 7.8E3) {
@@ -692,7 +783,7 @@ namespace lora {
     //% blockId=lorasetcrc block="lora set crc $on"
     //% on.shadow=toggleOnOff
     export function setCrc(on: boolean) {
-        init();
+        if (!isReady()) return;
         let v = readRegister(REG_MODEM_CONFIG_2);
         if (on) v = v | 0x04; else v = v & 0xfb;
         writeRegister(REG_MODEM_CONFIG_2, v);
@@ -700,16 +791,77 @@ namespace lora {
 
     export function dumpRegisters() {
         init();
+        log(`state: ${["none", "initializing", "ready", "incorrect firmware", "invalid config"][state]}`)
+        if (!isReady()) return;
         log(`registers:`)
         const buf = control.createBuffer(1);
+        const regNames: any = {};
+        regNames[REG_FIFO] = "REG_FIFO";
+        regNames[REG_OP_MODE] = "REG_OP_MODE";
+        // unused
+        regNames[REG_FRF_MSB] = "REG_FRF_MSB";
+        regNames[REG_FRF_MID] = "REG_FRF_MID";
+        regNames[REG_FRF_LSB] = "REG_FRF_LSB";
+        regNames[REG_PA_CONFIG] = "REG_PA_CONFIG";
+        regNames[REG_PA_RAMP] = "REG_PA_RAMP";
+        regNames[REG_OCP] = "REG_OCP";
+        regNames[REG_LNA] = "REG_LNA";
+        regNames[REG_FIFO_ADDR_PTR] = "REG_FIFO_ADDR_PTR";
+        regNames[REG_FIFO_TX_BASE_ADDR] = "REG_FIFO_TX_BASE_ADDR";
+        regNames[REG_FIFO_RX_BASE_ADDR] = "REG_FIFO_RX_BASE_ADDR";
+        regNames[REG_FIFO_RX_CURRENT_ADDR] = "REG_FIFO_RX_CURRENT_ADDR";
+        regNames[REG_IRQ_FLAGS] = "REG_IRQ_FLAGS";
+        regNames[REG_RX_NB_BYTES] = "REG_RX_NB_BYTES";
+        regNames[REG_RX_HEADER_COUNT_VALUE_MSB] = "REG_RX_HEADER_COUNT_VALUE_MSB";
+        regNames[REG_RX_HEADER_COUNT_VALUE_LSB] = "REG_RX_HEADER_COUNT_VALUE_LSB";
+        regNames[REG_RX_PACKET_COUNT_VALUE_MSB] = "REG_RX_PACKET_COUNT_VALUE_MSB";
+        regNames[REG_RX_PACKET_COUNT_VALUE_LSB] = "REG_RX_PACKET_COUNT_VALUE_LSB";
+        regNames[REG_MODEM_STAT] = "REG_MODEM_STAT";
+        regNames[REG_PKT_SNR_VALUE] = "REG_PKT_SNR_VALUE";
+        regNames[REG_PKT_RSSI_VALUE] = "REG_PKT_RSSI_VALUE";
+        regNames[REG_MODEM_CONFIG_1] = "REG_MODEM_CONFIG_1";
+        regNames[REG_MODEM_CONFIG_2] = "REG_MODEM_CONFIG_2";
+        regNames[REG_PREAMBLE_MSB] = "REG_PREAMBLE_MSB";
+        regNames[REG_PREAMBLE_LSB] = "REG_PREAMBLE_LSB";
+        regNames[REG_PAYLOAD_LENGTH] = "REG_PAYLOAD_LENGTH";
+        regNames[REG_MAX_PAYLOAD_LENGTH] = "REG_MAX_PAYLOAD_LENGTH";
+        regNames[REG_HOP_PERIOD] = "REG_HOP_PERIOD";
+        regNames[REG_FIFO_RX_BYTE_AD] = "REG_FIFO_RX_BYTE_AD";
+        regNames[REG_MODEM_CONFIG_3] = "REG_MODEM_CONFIG_3";
+        // 0x27 reserved
+        regNames[REG_FREQ_ERROR_MSB] = "REG_FREQ_ERROR_MSB";
+        regNames[REG_FREQ_ERROR_MID] = "REG_FREQ_ERROR_MID";
+        regNames[REG_FREQ_ERROR_LSB] = "REG_FREQ_ERROR_LSB";
+        // 2b reserved
+        regNames[REG_RSSI_WIDEBAND] = "REG_RSSI_WIDEBAND";
+        // 2d-2f reserved
+        regNames[REG_DETECTION_OPTIMIZE] = "REG_DETECTION_OPTIMIZE";
+        regNames[REG_INVERT_IQ] = "REG_INVERT_IQ";
+        regNames[REG_DETECTION_THRESHOLD] = "REG_DETECTION_THRESHOLD";
+        regNames[REG_SYNC_WORD] = "REG_SYNC_WORD";
+        regNames[REG_DIO_MAPPING_1] = "REG_DIO_MAPPING_1";
+        regNames[REG_DIO_MAPPING_2] = "REG_DIO_MAPPING_2";
+        regNames[REG_VERSION] = "REG_VERSION";
+        regNames[REG_TCXO] = "REG_TCXO";
+        regNames[REG_PA_DAC] = "REG_PA_DAC";
+        regNames[REG_FORMER_TEMP] = "REG_FORMER_TEMP";
+        regNames[REG_AGC_REF] = "REG_AGC_REF";
+        regNames[REG_AGC_THRESH_1] = "REG_AGC_THRESH_1";
+        regNames[REG_AGC_THRESH_2] = "REG_AGC_THRESH_2";
+        regNames[REG_AGC_THRESH_3] = "REG_AGC_THRESH_3";
+        regNames[REG_PLL] = "REG_PLL";
+
         for (let i = 0; i < 128; i++) {
-            let r = "0x";
-            buf[0] = i;
-            r += buf.toHex();
-            r += ": 0x";
-            buf[0] = readRegister(i);
-            r += buf.toHex();
-            log(r);
+            let r: string = regNames[i];
+            if (!!r) {
+                r += " (0x";
+                buf[0] = i;
+                r += buf.toHex();
+                r += "): 0x";
+                buf[0] = readRegister(i);
+                r += buf.toHex();
+                log(r);
+            }
         }
     }
 }
