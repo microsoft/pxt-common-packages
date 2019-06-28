@@ -435,8 +435,7 @@ namespace esp32spi {
         }
 
         /** Connect to an access point with given name and password.
-    Will retry up to 10 times and return on success or raise
-    an exception on failure
+    Will retry up to 10 times and return on success
     */
         public connectAP(ssid: string, password: string): number {
             this.log(0, `Connect to AP ${ssid}`)
@@ -453,18 +452,16 @@ namespace esp32spi {
                 if (stat == WL_CONNECTED) {
                     return stat;
                 }
-
                 pause(1000)
             }
             if ([WL_CONNECT_FAILED, WL_CONNECTION_LOST, WL_DISCONNECTED].indexOf(stat) >= 0) {
-                this.fail(`Failed to connect to "${ssid}" (${stat})`)
+                this.log(1, `Failed to connect to "${ssid}" (${stat})`)
             }
 
             if (stat == WL_NO_SSID_AVAIL) {
-                this.fail(`No such ssid: "${ssid}"`)
+                this.log(1, `No such ssid: "${ssid}"`)
             }
 
-            this.fail(`Unknown error ${stat}`)
             return stat;
         }
 

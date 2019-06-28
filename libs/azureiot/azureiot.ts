@@ -7,7 +7,7 @@ namespace azureiot {
     export const AZ_API_VER = "2018-06-30"
     // Azure HTTP Status Codes
     export const AZURE_HTTP_ERROR_CODES = [400, 401, 404, 403, 412, 429, 500]
-    export class IOT_Hub {
+    export class IotHub {
         private _iot_hub_url: string;
         private _azure_header: StringMap;
 
@@ -67,7 +67,7 @@ namespace azureiot {
         }
 
         /** Returns the device's device twin information in JSON format. */
-        public get_device_twin(): any {
+        public deviceTwin(): any {
             let path = `${this._iot_hub_url}/twins/${this.device_id}?api-version=${AZ_API_VER}`
             return this.get(path)
         }
@@ -116,7 +116,7 @@ namespace azureiot {
             let response = this._wifi.post(path, { json: payload, headers: this._azure_header })
             this.parseHttpStatus(response.status_code, response.reason)
             if (return_response) {
-                return response.json
+                return response.json;
             }
 
             return response.text
@@ -142,7 +142,7 @@ namespace azureiot {
                 return status_code
             }
 
-            let json = response.json()
+            let json = response.json
             response.close()
             return json
         }
@@ -174,7 +174,7 @@ namespace azureiot {
         private patch(path: string, payload: any): any {
             let response = this._wifi.patch(path, { json: payload, headers: this._azure_header })
             this.parseHttpStatus(response.status_code, response.reason)
-            let json_data = response.json()
+            let json_data = response.json
             response.close()
             return json_data
         }
@@ -187,7 +187,7 @@ namespace azureiot {
         private put(path: any, payload?: any): any {
             let response = this._wifi.put(path, { json: payload, headers: this._azure_header })
             this.parseHttpStatus(response.status_code, response.reason)
-            let json_data = response.json()
+            let json_data = response.json
             response.close()
             return json_data
         }

@@ -3,26 +3,15 @@ namespace esp32spi {
     export class WiFiManager {
         esp: SPIController;
         debug: boolean;
-        ssid: string;
-        password: string;
-        attempts: number;
-        _statuspix: DigitalInOutPin;
-        /** 
-    :param ESP_SPIcontrol esp: The ESP object we are using
-    :param dict secrets: The WiFi and Adafruit IO secrets dict (See examples)
-    :param status_pixel: (Optional) The pixel device - A NeoPixel, DotStar,
-        or RGB LED (default=None)
-    :type status_pixel: NeoPixel, DotStar, or RGB LED
-    :param int attempts: (Optional) Failed attempts before resetting the ESP32 (default=2)
-*/
-        constructor(secrets: any, status_pixel: DigitalInOutPin = null, attempts: number = 2) {
-            // Read the settings
+
+        constructor(
+            private ssid: string,
+            private password: string,
+            private statuspix: DigitalInOutPin = null,
+            private attempts: number = 2
+        ) {
             this.esp = SPIController.instance;
             this.debug = false
-            this.ssid = secrets["ssid"]
-            this.password = secrets["password"]
-            this.attempts = attempts
-            this._statuspix = status_pixel
             this.pixelStatus(0)
         }
 
@@ -59,28 +48,22 @@ namespace esp32spi {
 
             let failure_count = 0
             while (!this.esp.isConnected) {
-                try {
-                    if (this.debug) {
-                        print("Connecting to AP...")
-                    }
-
-                    this.pixelStatus(0xe00000)
-                    this.esp.connectAP(this.ssid, this.password)
+                if (this.debug) {
+                    print("Connecting to AP...")
+                }
+                this.pixelStatus(0xe00000)
+                const stat = this.esp.connectAP(this.ssid, this.password)
+                if (stat == esp32spi.WL_AP_CONNECTED) {
                     failure_count = 0
                     this.pixelStatus(0x00e000)
-                }
-                catch (error/* instanceof [ValueError, RuntimeError] */) {
-                    print(`Failed to connect, retrying
-${error}`)
+                } else {
+                    print(`Failed to connect ${stat}, retrying`)
                     failure_count += 1
                     if (failure_count >= this.attempts) {
                         failure_count = 0
                         this.reset()
                     }
-
-                    break
                 }
-
             }
         }
 

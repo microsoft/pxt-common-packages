@@ -48,7 +48,7 @@ namespace esp32spi {
             return this.content.toString()
         }
 
-        public json() {
+        get json() {
             return JSON.parse(this.text)
         }
 
