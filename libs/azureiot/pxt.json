@@ -1,0 +1,17 @@
+{
+    "name": "azureiot",
+    "description": "Azure IoT",
+    "files": [
+        "azureiot.ts",
+        "README.md"
+    ],
+    "testFiles": [
+        "test.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core",
+        "esp32spi": "file:../esp32spi"
+    }
+
+}
