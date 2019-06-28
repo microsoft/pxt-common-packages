@@ -103,6 +103,7 @@ namespace esp32spi {
             private _gpio0: DigitalInOutPin = null,
             public debug = 0
         ) {
+            this._ready.digitalRead();
             this._socknum_ll = [buffer1(0)]
             SPIController.instance = this
         }
@@ -112,9 +113,16 @@ namespace esp32spi {
                 console.log(msg);
         }
 
-        /** Hard reset the ESP32 using the reset pin */
+        private fail(msg: string) {
+            console.log(`FAIL: ${msg}`)
+            pause(3000)
+            control.fail(msg)
+        }
+
+        /** 
+         * Hard reset the ESP32 using the reset pin 
+        */
         public reset(): void {
-            this.log(0, "Reset ESP32")
             if (this._gpio0)
                 this._gpio0.digitalWrite(true);
             this._cs.digitalWrite(true)
@@ -128,21 +136,6 @@ namespace esp32spi {
                 this._gpio0.digitalRead();
         }
 
-
-        // we're ready!
-        // pylint: disable=too-many-branches
-
-        // header + end byte
-        // parameter
-        // size byte
-        // 2 of em here!
-        // we may need more space
-        // handle parameters here
-        // %d is %d bytes long" % (i, len(param)))
-        // wait up to 1000ms
-        // ok ready to send!
-        // pylint: disable=no-member
-        // pylint: disable=too-many-branches
         private readByte(): number {
             return this._spi.write(0)
         }
@@ -150,7 +143,7 @@ namespace esp32spi {
         private checkData(desired: number): boolean {
             const r = this.readByte()
             if (r != desired)
-                control.fail(`Expected ${desired} but got ${r}`)
+                this.fail(`Expected ${desired} but got ${r}`)
             return false;
         }
 
@@ -160,19 +153,28 @@ namespace esp32spi {
             while (time.monotonic() - times < 0.1) {
                 let r = this.readByte()
                 if (r == _ERR_CMD) {
-                    control.fail("Error response to command")
+                    this.fail("error response to command")
                 }
 
                 if (r == desired) {
                     return true
                 }
+                this.log(0, `read char ${r}, expected ${desired}`)
             }
-            control.fail("Timed out waiting for SPI char")
+            this.fail("timed out waiting for SPI char")
             return false;
         }
 
         private waitForReady() {
-            pauseUntil(() => this._ready.digitalRead(), 10000);
+            this.log(0, `wait for ready ${this._ready.digitalRead()}`);
+            if (this._ready.digitalRead()) {
+                pauseUntil(() => !this._ready.digitalRead(), 10000);
+                this.log(0, `ready ${this._ready.digitalRead()}`);
+                pause(1000)
+            }
+            if (this._ready.digitalRead()) {
+                this.fail("timed out")
+            }
         }
 
         private sendCommand(cmd: number, params?: Buffer[], param_len_16?: boolean) {
@@ -204,12 +206,16 @@ namespace esp32spi {
             while (k < n)
                 packet[k++] = 0xff;
 
+            if (this.debug > 1)
+                console.log(`send cmd ${packet.toHex()}`)
             this.waitForReady();
             const dummy = control.createBuffer(packet.length)
             this._spi.transfer(packet, dummy);
+            this.log(1, `send done`);
         }
 
         private waitResponseCmd(cmd: number, num_responses?: number, param_len_16?: boolean) {
+            this.log(0, `wait response cmd`);
             this.waitForReady();
 
             let responses: Buffer[] = []
@@ -233,7 +239,7 @@ namespace esp32spi {
             }
             this.checkData(_END_CMD);
             this.log(1, `responses ${responses.length}`);
-            return responses
+            return responses;
         }
 
         private sendCommandGetResponse(cmd: number, params?: Buffer[])
@@ -272,7 +278,7 @@ namespace esp32spi {
         private startScanNetworks(): void {
             let resp = this.sendCommandGetResponse(_START_SCAN_NETWORKS)
             if (resp[0][0] != 1) {
-                control.fail("Failed to start AP scan")
+                this.fail("Failed to start AP scan")
             }
 
         }
@@ -323,7 +329,7 @@ namespace esp32spi {
             const ssidbuf = control.createBufferFromUTF8(ssid);
             let resp = this.sendCommandGetResponse(_SET_NET_CMD, [ssidbuf])
             if (resp[0][0] != 1) {
-                control.fail("Failed to set network")
+                this.fail("Failed to set network")
             }
 
         }
@@ -334,7 +340,7 @@ namespace esp32spi {
             const passphrasebuf = control.createBufferFromUTF8(passphrase);
             let resp = this.sendCommandGetResponse(_SET_PASSPHRASE_CMD, [ssidbuf, passphrasebuf])
             if (resp[0][0] != 1) {
-                control.fail("Failed to set passphrase")
+                this.fail("Failed to set passphrase")
             }
         }
 
@@ -343,7 +349,7 @@ namespace esp32spi {
             const ssidbuf = control.createBufferFromUTF8(ident);
             let resp = this.sendCommandGetResponse(_SET_ENT_IDENT_CMD, [ssidbuf])
             if (resp[0][0] != 1) {
-                control.fail("Failed to set enterprise anonymous identity")
+                this.fail("Failed to set enterprise anonymous identity")
             }
 
         }
@@ -353,7 +359,7 @@ namespace esp32spi {
             const usernamebuf = control.createBufferFromUTF8(username);
             let resp = this.sendCommandGetResponse(_SET_ENT_UNAME_CMD, [usernamebuf])
             if (resp[0][0] != 1) {
-                control.fail("Failed to set enterprise username")
+                this.fail("Failed to set enterprise username")
             }
 
         }
@@ -363,7 +369,7 @@ namespace esp32spi {
             const passwordbuf = control.createBufferFromUTF8(password);
             let resp = this.sendCommandGetResponse(_SET_ENT_PASSWD_CMD, [passwordbuf])
             if (resp[0][0] != 1) {
-                control.fail("Failed to set enterprise password")
+                this.fail("Failed to set enterprise password")
             }
 
         }
@@ -372,7 +378,7 @@ namespace esp32spi {
         public wifiSetEntenable(): void {
             let resp = this.sendCommandGetResponse(_SET_ENT_ENABLE_CMD)
             if (resp[0][0] != 1) {
-                control.fail("Failed to enable enterprise mode")
+                this.fail("Failed to enable enterprise mode")
             }
 
         }
@@ -413,10 +419,7 @@ namespace esp32spi {
     an exception on failure
     */
         public connectAP(ssid: string, password: string): number {
-            if (this.debug) {
-                print(`Connect to AP ${ssid} ${password}`)
-            }
-
+            this.log(0, `Connect to AP ${ssid} ${password}`)
             if (password) {
                 this.wifiSetPassphrase(ssid, password)
             } else {
@@ -434,14 +437,14 @@ namespace esp32spi {
                 pause(1000)
             }
             if ([WL_CONNECT_FAILED, WL_CONNECTION_LOST, WL_DISCONNECTED].indexOf(stat) >= 0) {
-                control.fail(`RuntimeError("Failed to connect to ssid", ssid)`)
+                this.fail(`RuntimeError("Failed to connect to ssid", ssid)`)
             }
 
             if (stat == WL_NO_SSID_AVAIL) {
-                control.fail(`RuntimeError("No such ssid", ssid)`)
+                this.fail(`RuntimeError("No such ssid", ssid)`)
             }
 
-            control.fail(`Unknown error ${stat}`)
+            this.fail(`Unknown error ${stat}`)
             return stat;
         }
 
@@ -452,7 +455,7 @@ namespace esp32spi {
         public hostbyName(hostname: string): Buffer {
             let resp = this.sendCommandGetResponse(_REQ_HOST_BY_NAME_CMD, [control.createBufferFromUTF8(hostname)])
             if (resp[0][0] != 1) {
-                control.fail("Failed to request hostname")
+                this.fail("Failed to request hostname")
             }
 
             resp = this.sendCommandGetResponse(_GET_HOST_BY_NAME_CMD)
@@ -476,14 +479,12 @@ namespace esp32spi {
     can then be passed to the other socket commands
     */
         public socket(): number {
-            if (this.debug) {
-                print("*** Get socket")
-            }
+            this.log(0, "*** Get socket")
 
             let resp0 = this.sendCommandGetResponse(_GET_SOCKET_CMD)
             let resp = resp0[0][0]
             if (resp == 255) {
-                control.fail("No sockets available")
+                this.fail("No sockets available")
             }
 
             if (this.debug) {
@@ -517,7 +518,7 @@ namespace esp32spi {
             }
 
             if (resp[0][0] != 1) {
-                control.fail("Could not connect to remote server")
+                this.fail("Could not connect to remote server")
             }
 
         }
@@ -548,12 +549,12 @@ namespace esp32spi {
             let resp = this.sendCommandGetResponse(_SEND_DATA_TCP_CMD, [this._socknum_ll[0], buffer])
             let sent = resp[0][0]
             if (sent != buffer.length) {
-                control.fail(`Failed to send ${buffer.length} bytes (sent ${sent})`)
+                this.fail(`Failed to send ${buffer.length} bytes (sent ${sent})`)
             }
 
             resp = this.sendCommandGetResponse(_DATA_SENT_TCP_CMD, this._socknum_ll)
             if (resp[0][0] != 1) {
-                control.fail("Failed to verify data sent")
+                this.fail("Failed to verify data sent")
             }
 
         }
@@ -601,7 +602,7 @@ namespace esp32spi {
 
                 pause(10)
             }
-            control.fail("Failed to establish connection")
+            this.fail("Failed to establish connection")
             return false
         }
 
@@ -615,7 +616,7 @@ namespace esp32spi {
             this._socknum_ll[0][0] = socket_num
             let resp = this.sendCommandGetResponse(_STOP_CLIENT_TCP_CMD, this._socknum_ll)
             if (resp[0][0] != 1) {
-                control.fail("Failed to close socket")
+                this.fail("Failed to close socket")
             }
 
         }
@@ -626,7 +627,7 @@ namespace esp32spi {
         public setESPdebug(enabled: boolean) {
             let resp = this.sendCommandGetResponse(_SET_DEBUG_CMD, [buffer1(enabled ? 1 : 0)])
             if (resp[0][0] != 1) {
-                control.fail("Failed to set debug mode")
+                this.fail("Failed to set debug mode")
             }
         }
 
@@ -641,7 +642,7 @@ namespace esp32spi {
 
             let resp = this.sendCommandGetResponse(_SET_PIN_MODE_CMD, [buffer1(pin), buffer1(pin_mode)])
             if (resp[0][0] != 1) {
-                control.fail("Failed to set pin mode")
+                this.fail("Failed to set pin mode")
             }
 
         }
@@ -656,7 +657,7 @@ namespace esp32spi {
         public setDigitalWrite(pin: number, value: number): void {
             let resp = this.sendCommandGetResponse(_SET_DIGITAL_WRITE_CMD, [buffer1(pin), buffer1(value)])
             if (resp[0][0] != 1) {
-                control.fail("Failed to write to pin")
+                this.fail("Failed to write to pin")
             }
 
         }
@@ -672,7 +673,7 @@ namespace esp32spi {
             let value = Math.trunc(255 * analog_value)
             let resp = this.sendCommandGetResponse(_SET_ANALOG_WRITE_CMD, [buffer1(pin), buffer1(value)])
             if (resp[0][0] != 1) {
-                control.fail("Failed to write to pin")
+                this.fail("Failed to write to pin")
             }
 
         }
