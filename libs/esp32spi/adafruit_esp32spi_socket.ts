@@ -27,7 +27,7 @@ namespace esp32spi {
             }
 
             if (!esp32spi.ESP_SPIcontrol.instance.socket_connect(this._socknum, host, port, conntype)) {
-                control.fail(`RuntimeError("Failed to connect to host", host)`)
+                control.fail(`RuntimeError("Failed to connect to host", ${host})`)
             }
 
             this._buffer = hex``
@@ -54,10 +54,10 @@ namespace esp32spi {
                 }
 
             }
-            const tmp = this._buffer.split(hex`0d0a`, 1)
-            let firstline = tmp[0]
-            this._buffer = tmp[1]
-            return firstline
+            const pos = this._buffer.indexOf(hex`0d0a`)
+            const pref = this._buffer.slice(0, pos)
+            this._buffer = this._buffer.slice(pos + 2)
+            return pref.toString()
         }
 
         public read(size: number = 0): Buffer {
@@ -70,7 +70,7 @@ namespace esp32spi {
                 while (true) {
                     let avail = Math.min(esp32spi.ESP_SPIcontrol.instance.socket_available(this._socknum), MAX_PACKET)
                     if (avail) {
-                        this._buffer += esp32spi.ESP_SPIcontrol.instance.socket_read(this._socknum, avail)
+                        this._buffer = this._buffer.concat(esp32spi.ESP_SPIcontrol.instance.socket_read(this._socknum, avail))
                     } else {
                         break
                     }
@@ -100,8 +100,9 @@ namespace esp32spi {
 
             }
             // print(received)
-            this._buffer += hex``.join(received)
-            ret = null
+            received.unshift(this._buffer)
+            this._buffer = pins.concatBuffers(received)
+            let ret = null
             if (this._buffer.length == size) {
                 ret = this._buffer
                 this._buffer = hex``
