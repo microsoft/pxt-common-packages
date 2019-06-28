@@ -136,7 +136,7 @@ static bool nameExists(const char *name) {
 //%
 RefCollection *list() {
     auto res = Array_::mk();
-    registerGCPtr((TValue)res);
+    registerGCObj(res);
 
     auto dp = openCacheDir();
     FullHeader fh;
@@ -155,10 +155,12 @@ RefCollection *list() {
                  id, fh.header.publicationTime, fh.header.installationTime, fh.header.lastUsageTime,
                  fh.header.name);
         auto str = mkString(buf, -1);
+        registerGCObj(str);
         Array_::push(res, (TValue)str);
+        unregisterGCObj(str);
     }
 
-    unregisterGCPtr((TValue)res);
+    unregisterGCObj(res);
     return res;
 }
 
