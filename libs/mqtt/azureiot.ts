@@ -12,7 +12,7 @@ namespace azureiot {
     let _receiveHandler: (msg: any) => void;
 
     function log(msg: string) {
-        console.add(logPriority, msg);
+        console.add(logPriority, "azureiot: " + msg);
     }
 
     function mqttClient(): mqtt.Client {
@@ -21,31 +21,41 @@ namespace azureiot {
         return _mqttClient;
     }
 
-    //% shim=azureiot::createAzureNet
-    declare function createAzureNet(): Net;
+    export let network: net.Net
+    export let connString = ""
+    export let sasToken = ""
 
     function createMQTTClient() {
         _messageBusId = control.allocateNotifyEvent(); // TODO
 
-        const net = createAzureNet(); // TODO
-        const sasToken = "";// TODO get from config
-        const sasParts = parsePropertyBag(sasToken, ";");
-        const iotHubHostName = sasParts["HostName"];
-        const deviceId = sasParts["DeviceName"];
-        const sharedAccessSignature = sasParts["SharedAccessSignature"];
+        const connStringParts = parsePropertyBag(connString, ";");
+        const iotHubHostName = connStringParts["HostName"];
+        const deviceId = connStringParts["DeviceName"];
 
         const opts: mqtt.IConnectionOptions = {
             host: iotHubHostName,
             /* port: 8883, overriden based on platform */
             username: `${iotHubHostName}/${deviceId}/api-version=2018-06-30`,
-            password: sharedAccessSignature,
+            password: sasToken,
             clientId: deviceId
         }
-        const c = new mqtt.Client(opts, net);
-        c.on('connected', () => control.raiseEvent(_messageBusId, AzureIotEvent.Connected));
-        c.on('disconnected', () => control.raiseEvent(_messageBusId, AzureIotEvent.Disconnected));
-        c.on('error', () => control.raiseEvent(_messageBusId, AzureIotEvent.Error));
-        c.on('receive', (packet: mqtt.IMessage) => handleReceive(packet));
+        const c = new mqtt.Client(opts, network);
+        c.on('connected', () => {
+            log("connected")
+            control.raiseEvent(_messageBusId, AzureIotEvent.Connected)
+        });
+        c.on('disconnected', () => {
+            log("disconnected")
+            control.raiseEvent(_messageBusId, AzureIotEvent.Disconnected)
+        });
+        c.on('error', (msg) => {
+            log("error: " + msg)
+            control.raiseEvent(_messageBusId, AzureIotEvent.Error)
+        });
+        c.on('receive', (packet: mqtt.IMessage) => {
+            log("got data")
+            handleReceive(packet)
+        });
         c.connect();
         return c;
     }
@@ -63,7 +73,7 @@ namespace azureiot {
         if (i < 0)
             return [kv, ""];
         else
-            return [kv.substr(0, i), kv.substr(i + 1)];
+            return [kv.slice(0, i), kv.slice(i + 1)];
     }
 
     function parsePropertyBag(msg: string, separator?: string): any {
@@ -130,7 +140,7 @@ namespace azureiot {
         if (msg)
             topic += encodeQuery(msg);
         // qos, retained are not supported
-        c.publish(topic, "");
+        c.publish(topic, control.createBuffer(0));
     }
 
     /**
