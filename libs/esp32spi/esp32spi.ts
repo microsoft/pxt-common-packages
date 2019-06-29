@@ -92,6 +92,7 @@ namespace esp32spi {
 
     export class SPIController {
         private _socknum_ll: Buffer[];
+        private _locked = false;
 
         static instance: SPIController;
 
@@ -187,7 +188,7 @@ namespace esp32spi {
             }
         }
 
-        private sendCommand(cmd: number, params?: Buffer[], param_len_16?: boolean) {
+        private _sendCommand(cmd: number, params?: Buffer[], param_len_16?: boolean) {
             params = params || [];
 
             // compute buffer size
@@ -231,7 +232,7 @@ namespace esp32spi {
             this._spi.transfer(tx, rx);
         }
 
-        private waitResponseCmd(cmd: number, num_responses?: number, param_len_16?: boolean) {
+        private _waitResponseCmd(cmd: number, num_responses?: number, param_len_16?: boolean) {
             this.log(1, `wait response cmd`);
             this.waitForReady();
 
@@ -263,10 +264,27 @@ namespace esp32spi {
             return responses;
         }
 
+        private lock() {
+            while (this._locked) {
+                pauseUntil(() => !this._locked)
+            }
+            this._locked = true
+        }
+
+        private unlock() {
+            if (!this._locked)
+                this.fail("not locked!")
+            this._locked = false;
+        }
+
         private sendCommandGetResponse(cmd: number, params?: Buffer[],
             reply_params = 1, sent_param_len_16 = false, recv_param_len_16 = false) {
-            this.sendCommand(cmd, params, sent_param_len_16)
-            return this.waitResponseCmd(cmd, reply_params, recv_param_len_16)
+
+            this.lock()
+            this._sendCommand(cmd, params, sent_param_len_16)
+            const resp = this._waitResponseCmd(cmd, reply_params, recv_param_len_16)
+            this.unlock();
+            return resp
         }
 
         get status(): number {
@@ -307,8 +325,7 @@ namespace esp32spi {
     'ssid', 'rssi' and 'encryption' entries, one for each AP found
 */
         private getScanNetworks(): AccessPoint[] {
-            this.sendCommand(_SCAN_NETWORKS)
-            let names = this.waitResponseCmd(_SCAN_NETWORKS)
+            let names = this.sendCommandGetResponse(_SCAN_NETWORKS)
             // print("SSID names:", names)
             // pylint: disable=invalid-name
             let APs = []
@@ -520,7 +537,7 @@ namespace esp32spi {
         public socketOpen(socket_num: number, dest: Buffer | string, port: number, conn_mode = TCP_MODE): void {
             this._socknum_ll[0][0] = socket_num
             if (this.debug) {
-                print("*** Open socket")
+                print("*** Open socket: " + dest + ":" + port)
             }
 
             let port_param = pins.packBuffer(">H", [port])
@@ -592,9 +609,9 @@ namespace esp32spi {
             let resp = this.sendCommandGetResponse(_GET_DATABUF_TCP_CMD,
                 [this._socknum_ll[0], pins.packBuffer("<H", [size])],
                 1, true, true)
-                if (this.debug >= 2)
-                    this.log(2, `buf >>${resp[0].toString()}<<`)
-                return resp[0]
+            if (this.debug >= 2)
+                this.log(2, `buf >>${resp[0].toString()}<<`)
+            return resp[0]
         }
 
         /** Open and verify we connected a socket to a destination IP address or hostname
