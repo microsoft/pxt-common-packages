@@ -8,10 +8,11 @@ namespace esp32spi {
         _buffer: Buffer;
         _socknum: number;
         _timeout: number;
+        _closed: boolean;
         _openHandler: () => void;
         _closeHandler: () => void;
         _errorHandler: (msg: string) => void;
-        _messageHandler: (data: string) => void;
+        _messageHandler: (data: Buffer) => void;
 
         /** A simplified implementation of the Python 'socket' class, for connecting
     through an interface to a remote device
@@ -37,7 +38,7 @@ namespace esp32spi {
 
             this._buffer = hex``
 
-            if(this._openHandler)
+            if (this._openHandler)
                 this._openHandler();
         }
 
@@ -61,8 +62,21 @@ namespace esp32spi {
         onError(handler: (msg: string) => void): void {
             this._errorHandler = handler;
         }
-        onMessage(handler: (data: string) => void): void {
-            this._messageHandler = handler;
+        onMessage(handler: (data: Buffer) => void): void {
+            if (this._messageHandler === undefined) {
+                control.runInParallel(() => {
+                    while (!this._closed) {
+                        let buf = this.read()
+                        if (buf.length) {
+                            if (this._messageHandler)
+                                this._messageHandler(buf)
+                        } else {
+                            pause(200)
+                        }
+                    }
+                })
+            }
+            this._messageHandler = handler || null;
         }
 
         /** Attempt to return as many bytes as we can up to but not including '\r\n' */
@@ -88,21 +102,14 @@ namespace esp32spi {
             return pref.toString()
         }
 
-        /** Read up to 'size' bytes from the socket, this may be buffered internally!
-    If 'size' isnt specified, return everything in the buffer.
-*/
+        /** Read up to 'size' bytes from the socket, this may be buffered internally! If 'size' isnt specified, return everything in the buffer. */
         public read(size: number = 0): Buffer {
             // print("Socket read", size)
-            // read as much as we can at the moment
             if (size == 0) {
-                while (true) {
+                if (this._buffer.length == 0) {
                     let avail = Math.min(esp32spi.SPIController.instance.socketAvailable(this._socknum), MAX_PACKET)
-                    if (avail) {
+                    if (avail)
                         this._buffer = this._buffer.concat(esp32spi.SPIController.instance.socketRead(this._socknum, avail))
-                    } else {
-                        break
-                    }
-
                 }
                 let ret = this._buffer
                 this._buffer = hex``
@@ -149,6 +156,7 @@ namespace esp32spi {
 
         /** Close the socket, after reading whatever remains */
         public close() {
+            this._closed = true;
             esp32spi.SPIController.instance.socketClose(this._socknum)
             if (this._closeHandler)
                 this._closeHandler();
