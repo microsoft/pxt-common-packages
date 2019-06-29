@@ -406,7 +406,7 @@ namespace mqtt {
         }
 
         // Publish a message
-        public publish(topic: string, message: Buffer, qos: number = Constants.DefaultQos, retained: boolean = false): void {
+        public publish(topic: string, message?: Buffer, qos: number = Constants.DefaultQos, retained: boolean = false): void {
             this.send(Protocol.createPublish(topic, message, qos, retained));
         }
 

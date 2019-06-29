@@ -107,7 +107,7 @@ namespace esp32spi {
             }
 
             this.pixelStatus(0x0000e0)
-            if(this.debug)
+            if (this.debug)
                 print(`post ${url}`);
             let return_val = esp32spi.post(url, options)
             this.pixelStatus(0)

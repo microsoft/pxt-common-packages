@@ -63,9 +63,14 @@ namespace azureiot {
     function handleReceive(packet: mqtt.IMessage) {
         if (!_receiveHandler) return; // nobody's listening
         const topic = packet.topic;
-        const props = packet.topic.substr(`devices/${_mqttClient.opt.clientId}/messages/devicebound/`.length);
-        const msg = decodeQuery(props);
-        _receiveHandler(msg);
+        const pref = `devices/${_mqttClient.opt.clientId}/messages/devicebound/`
+        if (packet.topic.slice(0, pref.length) == pref) {
+            const props = packet.topic.slice(pref.length);
+            const msg = decodeQuery(props);
+            _receiveHandler(msg);
+        } else {
+            log("msg: " + packet.topic + " / " + packet.content.toString())
+        }
     }
 
     function splitPair(kv: string): string[] {
@@ -154,6 +159,9 @@ namespace azureiot {
             // subscribe as needed
             const topic = `devices/${c.opt.clientId}/messages/devicebound/#`;
             c.subscribe(topic);
+
+            c.subscribe("$iothub/twin/res/#")
+            c.publish("$iothub/twin/GET/?$rid=foobar")
         }
         _receiveHandler = handler;
     }
