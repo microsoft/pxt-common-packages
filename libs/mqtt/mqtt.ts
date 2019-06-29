@@ -33,10 +33,9 @@ namespace mqtt {
     export interface IMessage {
         pid?: number;
         topic: string;
-        content: string;
+        content: Buffer;
         qos: number;
         retain: number;
-        next?: number;
     }
 
     /**
@@ -65,7 +64,7 @@ namespace mqtt {
      */
     export const enum Constants {
         PingInterval = 40,
-        WatchDogInterval = 5,
+        WatchDogInterval = 50,
         DefaultQos = 0,
         Uninitialized = -123,
         FixedPackedId = 1,
@@ -95,8 +94,8 @@ namespace mqtt {
      * The specifics of the MQTT protocol.
      */
     export module Protocol {
-        function strChr(codes: number[]): string {
-            return codes.map(c => String.fromCharCode(c)).join('');
+        function strChr(codes: number[]): Buffer {
+            return pins.createBufferFromArray(codes)
         }
 
         /**
@@ -147,53 +146,56 @@ namespace mqtt {
          * Structure of UTF-8 encoded strings
          * http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html#_Figure_1.1_Structure
          */
-        function pack(s: string): string {
-            return strChr(getBytes(s.length)) + s;
+        function pack(s: string): Buffer {
+            const buf = control.createBufferFromUTF8(s);
+            return strChr(getBytes(buf.length)).concat(buf);
         }
 
         /**
          * Structure of an MQTT Control Packet
          * http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html#_Toc384800392
          */
-        function createPacket(byte1: number, variable: string, payload: string = ''): string {
+        function createPacket(byte1: number, variable: Buffer, payload?: Buffer): Buffer {
+            if (payload == null) payload = control.createBuffer(0);
             const byte2: number[] = encodeRemainingLength(variable.length + payload.length);
-
-            return String.fromCharCode(byte1) +
-                strChr(byte2) +
-                variable +
-                payload;
+            return strChr([byte1])
+                .concat(strChr(byte2))
+                .concat(variable)
+                .concat(payload)
         }
 
         /**
          * CONNECT - Client requests a connection to a Server
          * http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html#_Toc398718028
          */
-        export function createConnect(options: IConnectionOptions): string {
+        export function createConnect(options: IConnectionOptions): Buffer {
             const byte1: number = ControlPacketType.Connect << 4;
 
-            const protocolName: string = pack('MQTT');
-            const protocolLevel: string = String.fromCharCode(4);
-            const flags: string = String.fromCharCode(createConnectFlags(options));
+            const protocolName = pack('MQTT');
+            const nums = control.createBuffer(4)
+            nums[0] = 4; // protocol level
+            nums[1] = createConnectFlags(options)
+            nums[2] = 0
+            nums[3] = Constants.KeepAlive
 
-            const keepAlive: string = strChr(getBytes(Constants.KeepAlive));
-
-            let payload: string = pack(options.clientId);
+            let payload = pack(options.clientId);
 
             if (options.will) {
-                payload += pack(options.will.topic);
-                payload += pack(options.will.message);
+                payload = payload
+                    .concat(pack(options.will.topic)
+                        .concat(pack(options.will.message)));
             }
 
             if (options.username) {
-                payload += pack(options.username);
+                payload = payload.concat(pack(options.username));
                 if (options.password) {
-                    payload += pack(options.password);
+                    payload = payload.concat(pack(options.password));
                 }
             }
 
             return createPacket(
                 byte1,
-                protocolName + protocolLevel + flags + keepAlive,
+                protocolName.concat(nums),
                 payload
             );
         }
@@ -201,7 +203,7 @@ namespace mqtt {
         /** PINGREQ - PING request
          * http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html#_Toc384800454
          */
-        export function createPingReq(): string {
+        export function createPingReq() {
             return strChr([ControlPacketType.PingReq << 4, 0]);
         }
 
@@ -209,59 +211,34 @@ namespace mqtt {
          * PUBLISH - Publish message
          * http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html#_Toc384800410
          */
-        export function createPublish(topic: string, message: string, qos: number, retained: boolean): string {
+        export function createPublish(topic: string, message: Buffer, qos: number, retained: boolean) {
             let byte1: number = ControlPacketType.Publish << 4 | (qos << 1);
             byte1 |= (retained) ? 1 : 0;
 
-            const pid: string = strChr(getBytes(Constants.FixedPackedId));
-            const variable: string = (qos === 0) ? pack(topic) : pack(topic) + pid;
+            const pid = strChr(getBytes(Constants.FixedPackedId));
+            const variable = (qos === 0) ? pack(topic) : pack(topic).concat(pid);
 
             return createPacket(byte1, variable, message);
         }
 
-        export function parsePublish(data: string): IMessage {
-            const cmd: number = data.charCodeAt(0);
+        export function parsePublish(cmd: number, payload: Buffer): IMessage {
             const qos: number = (cmd & 0b00000110) >> 1;
 
-            /**
-             * Decode remaining length
-             * http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html#_Toc398718023
-             */
-            let multiplier: number = 1;
-            let remainingLength: number = 0;
-            let index: number = 0;
-            let encodedByte: number;
-            do {
-                index = index + 1;
-                encodedByte = data.charCodeAt(index);
-                remainingLength += (encodedByte & 127) * multiplier;
-                multiplier *= 128;
-            }
-            while ((encodedByte & 128) !== 0);
-
-            const topicLength: number = data.charCodeAt(index + 1) << 8 | data.charCodeAt(index + 2);
-            let variableLength: number = topicLength;
+            const topicLength = payload.getNumber(NumberFormat.UInt16BE, 0);
+            let variableLength: number = 2 + topicLength;
             if (qos > 0) {
                 variableLength += 2;
             }
 
-            const messageLength: number = (remainingLength - variableLength) - 2;
-
             const message: IMessage = {
-                topic: data.substr(index + 3, topicLength),
-                content: data.substr(index + variableLength + 3, messageLength),
+                topic: payload.slice(2, 2 + topicLength).toString(),
+                content: payload.slice(variableLength),
                 qos: qos,
                 retain: cmd & 1
             };
 
-            if (data.charCodeAt(remainingLength + 2) > 0) {
-                message.next = remainingLength + 2;
-            }
-
-            if (qos > 0) {
-                message.pid = data.charCodeAt(index + variableLength + 3 - 2) << 8 |
-                    data.charCodeAt(index + variableLength + 3 - 1);
-            }
+            if (qos > 0)
+                message.pid = payload.getNumber(NumberFormat.UInt16BE, variableLength - 2);
 
             return message;
         }
@@ -270,7 +247,7 @@ namespace mqtt {
          * PUBACK - Publish acknowledgement
          * http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html#_Toc384800416
          */
-        export function createPubAck(pid: number): string {
+        export function createPubAck(pid: number) {
             const byte1: number = ControlPacketType.PubAck << 4;
 
             return createPacket(byte1, strChr(getBytes(pid)));
@@ -280,14 +257,13 @@ namespace mqtt {
          * SUBSCRIBE - Subscribe to topics
          * http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html#_Toc384800436
          */
-        export function createSubscribe(topic: string, qos: number): string {
+        export function createSubscribe(topic: string, qos: number): Buffer {
             const byte1: number = ControlPacketType.Subscribe << 4 | 2;
-            const pid: string = strChr(getBytes(Constants.FixedPackedId));
+            const pid = strChr(getBytes(Constants.FixedPackedId));
 
             return createPacket(byte1,
                 pid,
-                pack(topic) +
-                String.fromCharCode(qos));
+                pack(topic).concat(strChr([qos])))
         }
     }
 
@@ -331,12 +307,14 @@ namespace mqtt {
         private wdId: number = Constants.Uninitialized;
         private piId: number = Constants.Uninitialized;
 
+        private buf: Buffer;
+
         public connected: boolean = false;
 
         constructor(opt: IConnectionOptions, net: net.Net) {
             super();
 
-            opt.port = opt.port;
+            opt.port = opt.port || 8883;
             opt.clientId = opt.clientId;
 
             if (opt.will) {
@@ -411,13 +389,16 @@ namespace mqtt {
                 this.emit('connect');
                 this.send(Protocol.createConnect(this.opt));
             });
-            this.sct.onMessage((msg: string) => {
+            this.sct.onMessage((msg: Buffer) => {
+                this.log("incoming " + msg.length + " bytes")
                 this.handleMessage(msg);
             });
             this.sct.onError(() => {
+                this.log('Error.');
                 this.emit('error');
             });
             this.sct.onClose(() => {
+                this.log('Close.');
                 this.emit('disconnected');
                 this.connected = false;
             });
@@ -425,7 +406,7 @@ namespace mqtt {
         }
 
         // Publish a message
-        public publish(topic: string, message: string, qos: number = Constants.DefaultQos, retained: boolean = false): void {
+        public publish(topic: string, message: Buffer, qos: number = Constants.DefaultQos, retained: boolean = false): void {
             this.send(Protocol.createPublish(topic, message, qos, retained));
         }
 
@@ -434,41 +415,65 @@ namespace mqtt {
             this.send(Protocol.createSubscribe(topic, qos));
         }
 
-        private send(data: string): void {
+        private send(data: Buffer): void {
             if (this.sct) {
+                this.log("send: " + data[0] + " / " + data.length + " bytes")
                 this.sct.send(data);
             }
         }
 
-        private handleMessage(data: string) {
-            const controlPacketType: ControlPacketType = data.charCodeAt(0) >> 4;
+        private handleMessage(data: Buffer) {
+            if (this.buf) {
+                data = this.buf.concat(data)
+                this.buf = null
+            }
+            if (data.length < 2)
+                return
+            let len = data[1]
+            let payloadOff = 2
+            if (len & 0x80) {
+                if (data.length < 3)
+                    return
+                if (data[2] & 0x80) {
+                    this.emit('error', `too large packet.`);
+                    this.buf = null
+                    return
+                }
+                len = (data[2] << 7) | (len & 0x7f)
+                payloadOff++
+            }
+
+            const payloadEnd = payloadOff + len
+            if (data.length < payloadEnd)
+                return // wait for the rest of data
+
+            const cmd = data[0]
+            const controlPacketType: ControlPacketType = cmd >> 4;
             // this.emit('debug', `Rcvd: ${controlPacketType}: '${data}'.`);
+
+            const payload = data.slice(payloadOff, payloadEnd)
 
             switch (controlPacketType) {
                 case ControlPacketType.ConnAck:
-                    const returnCode: number = data.charCodeAt(3);
+                    const returnCode: number = payload[0];
                     if (returnCode === ConnectReturnCode.Accepted) {
                         this.log('MQTT connection accepted.');
                         this.emit('connected');
                         this.connected = true;
-                        this.piId = setInterval(this.ping, Constants.PingInterval * 1000);
+                        this.piId = setInterval(() => this.ping(), Constants.PingInterval * 1000);
                     } else {
                         const connectionError: string = Client.describe(returnCode);
                         this.emit('error', connectionError);
                     }
                     break;
                 case ControlPacketType.Publish:
-                    const message: IMessage = Protocol.parsePublish(data);
+                    const message: IMessage = Protocol.parsePublish(cmd, payload);
                     this.emit('receive', message);
                     if (message.qos > 0) {
                         setTimeout(() => {
                             this.send(Protocol.createPubAck(message.pid || 0));
                         }, 0);
                     }
-                    if (message.next) {
-                        this.handleMessage(data.substr(message.next));
-                    }
-
                     break;
                 case ControlPacketType.PingResp:
                 case ControlPacketType.PubAck:
@@ -477,6 +482,9 @@ namespace mqtt {
                 default:
                     this.emit('error', `MQTT unexpected packet type: ${controlPacketType}.`);
             }
+
+            if (data.length > payloadEnd)
+                this.handleMessage(data.slice(payloadEnd))
         }
 
         private ping() {
