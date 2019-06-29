@@ -406,8 +406,9 @@ namespace mqtt {
         }
 
         // Publish a message
-        public publish(topic: string, message?: Buffer, qos: number = Constants.DefaultQos, retained: boolean = false): void {
-            this.send(Protocol.createPublish(topic, message, qos, retained));
+        public publish(topic: string, message?: string | Buffer, qos: number = Constants.DefaultQos, retained: boolean = false): void {
+            const buf = typeof message == "string" ? control.createBufferFromUTF8(message) : message
+            this.send(Protocol.createPublish(topic, buf, qos, retained));
         }
 
         // Subscribe to topic

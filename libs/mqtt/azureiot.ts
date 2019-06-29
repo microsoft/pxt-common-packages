@@ -15,7 +15,7 @@ namespace azureiot {
         console.add(logPriority, "azureiot: " + msg);
     }
 
-    function mqttClient(): mqtt.Client {
+    export function mqttClient(): mqtt.Client {
         if (!_mqttClient)
             _mqttClient = createMQTTClient();
         return _mqttClient;
@@ -67,6 +67,7 @@ namespace azureiot {
         if (packet.topic.slice(0, pref.length) == pref) {
             const props = packet.topic.slice(pref.length);
             const msg = decodeQuery(props);
+            log("recv: " + props + " / " + packet.content.length)
             _receiveHandler(msg);
         } else {
             log("msg: " + packet.topic + " / " + packet.content.toString())
@@ -139,13 +140,13 @@ namespace azureiot {
      * @param msg 
      */
     //%
-    export function publishMessage(msg: any) {
+    export function publishMessage(msg: any, sysProps?: any) {
         const c = mqttClient();
-        let topic = `devices/${c.opt.clientId}/events/`;
-        if (msg)
-            topic += encodeQuery(msg);
+        let topic = `devices/${c.opt.clientId}/messages/events/`;
+        if (sysProps)
+            topic += encodeQuery(sysProps);
         // qos, retained are not supported
-        c.publish(topic, control.createBuffer(0));
+        c.publish(topic, JSON.stringify(msg));
     }
 
     /**
@@ -157,9 +158,10 @@ namespace azureiot {
         const c = mqttClient();
         if (!_receiveHandler) {
             // subscribe as needed
-            const topic = `devices/${c.opt.clientId}/messages/devicebound/#`;
-            c.subscribe(topic);
-
+            c.subscribe(`devices/${c.opt.clientId}/messages/devicebound/#`);
+            c.subscribe(`devices/${c.opt.clientId}/messages/events/#`);
+            c.subscribe('$iothub/twin/PATCH/properties/desired/#')
+            c.subscribe('$iothub/methods/#')
             c.subscribe("$iothub/twin/res/#")
             c.publish("$iothub/twin/GET/?$rid=foobar")
         }

@@ -148,10 +148,10 @@ namespace esp32spi {
             return r[0]
         }
 
-        private checkData(desired: number): boolean {
+        private checkData(desired: number, msg?: string): boolean {
             const r = this.readByte()
             if (r != desired)
-                this.fail(`Expected ${desired} but got ${r}`)
+                this.fail(`Expected ${desired} but got ${r}; ` + (msg || ""))
             return false;
         }
 
@@ -242,7 +242,7 @@ namespace esp32spi {
             this.waitSPIChar(_START_CMD);
             this.checkData(cmd | _REPLY_FLAG)
             if (num_responses !== undefined)
-                this.checkData(num_responses)
+                this.checkData(num_responses, cmd + "")
             else
                 num_responses = this.readByte();
             for (let num = 0; num < num_responses; ++num) {
@@ -325,7 +325,7 @@ namespace esp32spi {
     'ssid', 'rssi' and 'encryption' entries, one for each AP found
 */
         private getScanNetworks(): AccessPoint[] {
-            let names = this.sendCommandGetResponse(_SCAN_NETWORKS)
+            let names = this.sendCommandGetResponse(_SCAN_NETWORKS, undefined, undefined)
             // print("SSID names:", names)
             // pylint: disable=invalid-name
             let APs = []
@@ -581,7 +581,7 @@ namespace esp32spi {
 
             this._socknum_ll[0][0] = socket_num
             let resp = this.sendCommandGetResponse(_SEND_DATA_TCP_CMD, [this._socknum_ll[0], buffer], 1, true)
-            let sent = resp[0][0]
+            let sent = resp[0].getNumber(NumberFormat.UInt16LE, 0)
             if (sent != buffer.length) {
                 this.fail(`Failed to send ${buffer.length} bytes (sent ${sent})`)
             }
