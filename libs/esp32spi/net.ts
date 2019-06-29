@@ -9,4 +9,15 @@ namespace esp32spi {
             return socket;
         }
     }
+
+    export class NetTLS extends net.Net {
+        constructor() {
+            super();
+        }
+
+        createSocket(host: string, port: number): net.Socket {
+            const socket = new Socket(host, port, TLS_MODE);
+            return socket;
+        }
+    }
 }
