@@ -177,6 +177,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
     private createMovingSprite(sprite: Sprite, dtSec: Fx8, dt2: Fx8): MovingSprite {
         const ovx = this.constrain(sprite._vx);
         const ovy = this.constrain(sprite._vy);
+        sprite._lastX = sprite._x;
+        sprite._lastY = sprite._y;
 
         sprite._vx = this.constrain(
             Fx.add(
@@ -336,7 +338,6 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 );
 
                 if (tm.isObstacle(x0, y0)) {
-                    sprite.registerObstacle(right ? CollisionDirection.Right : CollisionDirection.Left, tm.getObstacle(x0, y0));
                     if (sprite.flags & sprites.Flag.DestroyOnWall) {
                         sprite.destroy();
                     } else if (sprite.flags & sprites.Flag.BounceOnWall) {
@@ -360,6 +361,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                             :
                             Fx8((x0 + 1) << tileScale)
                     );
+                    sprite.registerObstacle(right ? CollisionDirection.Right : CollisionDirection.Left, tm.getObstacle(x0, y0));
                     break;
                 }
             }
@@ -399,7 +401,6 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 );
 
                 if (tm.isObstacle(x0, y0)) {
-                    sprite.registerObstacle(down ? CollisionDirection.Bottom : CollisionDirection.Top, tm.getObstacle(x0, y0));
                     if (sprite.flags & sprites.Flag.DestroyOnWall) {
                         sprite.destroy();
                     } else if (sprite.flags & sprites.Flag.BounceOnWall) {
@@ -423,6 +424,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                             :
                             Fx8((y0 + 1) << tileScale)
                     );
+                    sprite.registerObstacle(down ? CollisionDirection.Bottom : CollisionDirection.Top, tm.getObstacle(x0, y0));
                     break;
                 }
             }
