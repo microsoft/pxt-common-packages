@@ -56,74 +56,6 @@ class Sprite implements SpriteLike {
     _ax: Fx8
     _ay: Fx8
 
-    //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine block="x" callInDebugger
-    get x(): number {
-        return Fx.toInt(this._x) + (this._image.width >> 1)
-    }
-    //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine block="x"
-    set x(v: number) {
-        this._lastX = this._x;
-        this._x = Fx8(v - (this._image.width >> 1))
-    }
-
-    //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine block="y" callInDebugger
-    get y(): number {
-        return Fx.toInt(this._y) + (this._image.height >> 1)
-    }
-    //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine block="y"
-    set y(v: number) {
-        this._lastY = this._y;
-        this._y = Fx8(v - (this._image.height >> 1))
-    }
-
-    //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine block="vx (velocity x)" callInDebugger
-    get vx(): number {
-        return Fx.toFloat(this._vx)
-    }
-    //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine block="vx (velocity x)"
-    set vx(v: number) {
-        this._vx = Fx8(v)
-    }
-
-    //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine block="vy (velocity y)" callInDebugger
-    get vy(): number {
-        return Fx.toFloat(this._vy)
-    }
-    //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine block="vy (velocity y)"
-    set vy(v: number) {
-        this._vy = Fx8(v)
-    }
-
-    //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine block="ax (acceleration x)" callInDebugger
-    get ax(): number {
-        return Fx.toFloat(this._ax)
-    }
-    //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine block="ax (acceleration x)"
-    set ax(v: number) {
-        this._ax = Fx8(v)
-    }
-
-    //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine block="ay (acceleration y)" callInDebugger
-    get ay(): number {
-        return Fx.toFloat(this._ay)
-    }
-    //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine block="ay (acceleration y)"
-    set ay(v: number) {
-        this._ay = Fx8(v)
-    }
-
     /**
      * Custom data
      */
@@ -278,6 +210,7 @@ class Sprite implements SpriteLike {
     get height() {
         return this._image.height
     }
+
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="left"
     get left() {
@@ -286,7 +219,25 @@ class Sprite implements SpriteLike {
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="left"
     set left(value: number) {
-        this._x = Fx8(value)
+        const physics = game.currentScene().physicsEngine;
+        physics.moveSprite(
+            this,
+            Fx.sub(
+                Fx8(value),
+                this._x
+            ),
+            Fx.zeroFx8
+        );
+    }
+    //% group="Physics" blockSetVariable="mySprite"
+    //% blockCombine block="x" callInDebugger
+    get x(): number {
+        return Fx.toInt(this._x) + (this._image.width >> 1)
+    }
+    //% group="Physics" blockSetVariable="mySprite"
+    //% blockCombine block="x"
+    set x(v: number) {
+        this.left = v - (this._image.width >> 1)
     }
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="right"
@@ -306,7 +257,25 @@ class Sprite implements SpriteLike {
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine
     set top(value: number) {
-        this._y = Fx8(value);
+        const physics = game.currentScene().physicsEngine;
+        physics.moveSprite(
+            this,
+            Fx.zeroFx8,
+            Fx.sub(
+                Fx8(value),
+                this._y
+            )
+        );
+    }
+    //% group="Physics" blockSetVariable="mySprite"
+    //% blockCombine block="y" callInDebugger
+    get y(): number {
+        return Fx.toInt(this._y) + (this._image.height >> 1)
+    }
+    //% group="Physics" blockSetVariable="mySprite"
+    //% blockCombine block="y"
+    set y(v: number) {
+        this.top = v - (this._image.height >> 1)
     }
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="bottom"
@@ -317,6 +286,50 @@ class Sprite implements SpriteLike {
     //% blockCombine block="bottom"
     set bottom(value: number) {
         this.top = value - this.height;
+    }
+
+    //% group="Physics" blockSetVariable="mySprite"
+    //% blockCombine block="vx (velocity x)" callInDebugger
+    get vx(): number {
+        return Fx.toFloat(this._vx)
+    }
+    //% group="Physics" blockSetVariable="mySprite"
+    //% blockCombine block="vx (velocity x)"
+    set vx(v: number) {
+        this._vx = Fx8(v)
+    }
+
+    //% group="Physics" blockSetVariable="mySprite"
+    //% blockCombine block="vy (velocity y)" callInDebugger
+    get vy(): number {
+        return Fx.toFloat(this._vy)
+    }
+    //% group="Physics" blockSetVariable="mySprite"
+    //% blockCombine block="vy (velocity y)"
+    set vy(v: number) {
+        this._vy = Fx8(v)
+    }
+
+    //% group="Physics" blockSetVariable="mySprite"
+    //% blockCombine block="ax (acceleration x)" callInDebugger
+    get ax(): number {
+        return Fx.toFloat(this._ax)
+    }
+    //% group="Physics" blockSetVariable="mySprite"
+    //% blockCombine block="ax (acceleration x)"
+    set ax(v: number) {
+        this._ax = Fx8(v)
+    }
+
+    //% group="Physics" blockSetVariable="mySprite"
+    //% blockCombine block="ay (acceleration y)" callInDebugger
+    get ay(): number {
+        return Fx.toFloat(this._ay)
+    }
+    //% group="Physics" blockSetVariable="mySprite"
+    //% blockCombine block="ay (acceleration y)"
+    set ay(v: number) {
+        this._ay = Fx8(v)
     }
     /**
      * The type of sprite
@@ -368,8 +381,12 @@ class Sprite implements SpriteLike {
     //% help=sprites/sprite/set-position
     //% x.shadow="positionPicker" y.shadow="positionPicker"
     setPosition(x: number, y: number): void {
-        this.x = x;
-        this.y = y;
+        const physics = game.currentScene().physicsEngine;
+        physics.moveSprite(
+            this,
+            Fx8(x - this.x),
+            Fx8(y - this.y)
+        );
     }
 
     /**

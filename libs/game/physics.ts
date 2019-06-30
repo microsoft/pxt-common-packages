@@ -147,11 +147,10 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 ms.dx = Fx.sub(ms.dx, stepX);
                 ms.dy = Fx.sub(ms.dy, stepY);
 
-                this.moveSprite(
-                    s,
-                    stepX,
-                    stepY
-                );
+                s._lastX = s._x;
+                s._lastY = s._y;
+                s._x = Fx.add(s._x, stepX);
+                s._y = Fx.add(s._y, stepY);
 
                 // if the sprite can collide with things, check tile map
                 // and add to collision detection
@@ -444,6 +443,27 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         s._lastY = s._y;
         s._x = Fx.add(s._x, dx);
         s._y = Fx.add(s._y, dy);
+
+        // if the sprite can collide with things, check tile map
+        if (!(s.flags & SPRITE_CANNOT_COLLIDE)) {
+            const tm = game.currentScene().tileMap;
+            if (!(tm && tm.enabled)) return;
+
+            const tileSize = 1 << tm.scale;
+            // only check tile map if moving within a single tile
+            if (Math.abs(Fx.toInt(dx)) < tileSize && Fx.toInt(dy) < tileSize) {
+                const ms = new MovingSprite(
+                    s,
+                    s._vx,
+                    s._vy,
+                    dx,
+                    dy,
+                    dx,
+                    dy
+                );
+                this.tilemapCollisions(ms, tm);
+            }
+        }
     }
 
     private constrain(v: Fx8) {
