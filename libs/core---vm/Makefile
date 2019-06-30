@@ -13,12 +13,14 @@ CFLAGS = $(COMMON_FLAGS) -std=c99
 CXXFLAGS = $(COMMON_FLAGS) -std=c++11 -fno-rtti -fno-exceptions -fno-unwind-tables
 LDFLAGS = -g
 
+PREF = arm-linux-gnueabihf-
+
 CC = $(PREF)gcc
 LD = $(PREF)gcc
 LIBSTDCPP = 
 NPM_LIBS = $(wildcard node_modules/*/lib/*.a)
 NPM_INCLUDES = $(addprefix -I, $(wildcard node_modules/*/include))
-STRIP = strip
+STRIP = $(PREF)strip
 
 ifeq (i386,$(findstring i386,$(CROSS_TRIPLE)))
 X32 = -32
@@ -55,10 +57,10 @@ endif
 DEPS = $(PXT_HEADERS) package.json Makefile Makefile.inc
 
 all:
-	CROSS_TRIPLE=win64 crossbuild make -j8 build-one
-	CROSS_TRIPLE=linux crossbuild make -j8 build-one
-	CROSS_TRIPLE=osx crossbuild make -j8 build-one
-	CROSS_TRIPLE=win32 crossbuild make -j8 build-one
+	#CROSS_TRIPLE=win64 crossbuild make -j8 build-one
+	CROSS_TRIPLE=linux make -j8 build-one
+	#CROSS_TRIPLE=osx crossbuild make -j8 build-one
+	#CROSS_TRIPLE=win32 crossbuild make -j8 build-one
 	#CROSS_TRIPLE=osx32 crossbuild make -j8 build-one
 	rm -f bld/*.tgz bld/*.b64
 	tar zcf bld/all.tgz bld/*
