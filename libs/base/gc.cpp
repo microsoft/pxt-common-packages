@@ -613,8 +613,10 @@ void gcPreStartup() {
     xfree(preallocBlock);
     preallocBlock = (uint8_t *)xmalloc(PREALLOC_SIZE);
     preallocPointer = preallocBlock;
-    if (!isReadOnly((TValue)preallocBlock))
+    if (!isReadOnly((TValue)preallocBlock)) {
+        DMESG("prealloc not readonly: %p", preallocBlock);
         oops(40);
+    }
     inGC |= IN_GC_PREALLOC;
 }
 

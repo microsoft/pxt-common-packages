@@ -512,7 +512,11 @@ inline bool isReadOnly(TValue v) {
     return !isPointer(v) || !((uintptr_t)v >> 37);
 #endif
 #else
+#ifdef __linux__
+    return isTagged(v) || ((uintptr_t)v >> 28) != 2;
+#else
     return isTagged(v) || !((uintptr_t)v >> 28);
+#endif
 #endif
 }
 #endif
