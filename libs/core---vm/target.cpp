@@ -6,7 +6,7 @@
 #include <stdarg.h>
 #include <fcntl.h>
 
-//#define LOG_TO_STDERR 1
+#define LOG_TO_STDERR 1
 //#define LOG_TO_FILE 1
 
 namespace pxt {
