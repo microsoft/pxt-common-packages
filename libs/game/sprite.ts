@@ -83,7 +83,6 @@ class Sprite implements SpriteLike {
     lifespan: number;
     private _image: Image;
     private _obstacles: sprites.Obstacle[];
-    private ongoingObstacles: sprites.Obstacle[];
 
     private updateSay: (dt: number, camera: scene.Camera) => void;
     private sayBubbleSprite: Sprite;
@@ -691,21 +690,9 @@ class Sprite implements SpriteLike {
 
         const collisionHandlers = game.currentScene().collisionHandlers[other.tileIndex];
         if (collisionHandlers) {
-            if (!this.ongoingObstacles) this.ongoingObstacles = [];
-            const handlerOccuring = this.ongoingObstacles
-                .some(obs => obs.x === other.x && obs.y === other.y);
-
-            if (!handlerOccuring) {
-                collisionHandlers
-                    .filter(h => h.kind == this.kind())
-                    .forEach(h => {
-                        this.ongoingObstacles.push(other);
-                        control.runInParallel(() => {
-                            h.handler(this);
-                            this.ongoingObstacles.removeElement(other);
-                        });
-                    });
-            }
+            collisionHandlers
+                .filter(h => h.kind == this.kind())
+                .forEach(h => h.handler(this));
         }
     }
 
