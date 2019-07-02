@@ -485,11 +485,15 @@ namespace mqtt {
                     break;
                 case ControlPacketType.Publish:
                     const message: IMessage = Protocol.parsePublish(cmd, payload);
-                    this.emit('receive', message);
+                    let handled = false
                     if (this.mqttHandlers)
                         for (let h of this.mqttHandlers)
-                            if (message.topic.slice(0, h.topic.length) == h.topic)
+                            if (message.topic.slice(0, h.topic.length) == h.topic) {
                                 h.handler(message)
+                                handled = true
+                            }
+                    if (!handled)
+                        this.emit('receive', message);
                     if (message.qos > 0) {
                         setTimeout(() => {
                             this.send(Protocol.createPubAck(message.pid || 0));

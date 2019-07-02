@@ -57,25 +57,10 @@ namespace azureiot {
             control.raiseEvent(_messageBusId, AzureIotEvent.Error)
         });
         c.on('receive', (packet: mqtt.IMessage) => {
-            log("got data")
-            handleReceive(packet)
+            log("unhandled msg: " + packet.topic + " / " + packet.content.toString())
         });
         c.connect();
         return c;
-    }
-
-    function handleReceive(packet: mqtt.IMessage) {
-        if (!_receiveHandler) return; // nobody's listening
-        const topic = packet.topic;
-        const pref = `devices/${_mqttClient.opt.clientId}/messages/devicebound/`
-        if (packet.topic.slice(0, pref.length) == pref) {
-            const props = packet.topic.slice(pref.length);
-            const msg = decodeQuery(props);
-            log("recv: " + props + " / " + packet.content.length)
-            _receiveHandler(msg);
-        } else {
-            log("msg: " + packet.topic + " / " + packet.content.toString())
-        }
     }
 
     function splitPair(kv: string): string[] {
@@ -161,19 +146,35 @@ namespace azureiot {
     export function onMessageReceived(handler: (msg: any) => void) {
         const c = mqttClient();
         if (!_receiveHandler) {
-            // subscribe as needed
-            c.subscribe(`devices/${c.opt.clientId}/messages/devicebound/#`);
+            c.subscribe(`devices/${c.opt.clientId}/messages/devicebound/#`, handleDeviceBound);
+
+            /*
             c.subscribe(`devices/${c.opt.clientId}/messages/events/#`);
             c.subscribe('$iothub/twin/PATCH/properties/desired/#')
             c.subscribe("$iothub/twin/res/#")
             c.publish("$iothub/twin/GET/?$rid=foobar")
+            */
         }
         _receiveHandler = handler;
     }
 
+    function parseTopicArgs(topic: string) {
+        const qidx = topic.indexOf("?")
+        if (qidx >= 0)
+            return parsePropertyBag(topic.slice(qidx + 1))
+        return {}
+    }
+
+    function handleDeviceBound(packet: mqtt.IMessage) {
+        if (!_receiveHandler) return; // nobody's listening
+        // TODO this needs some testing
+        const props = parseTopicArgs(packet.topic)
+        _receiveHandler(props);
+    }
+
     function handleMethod(msg: mqtt.IMessage) {
+        const props = parseTopicArgs(msg.topic)
         const qidx = msg.topic.indexOf("/?")
-        const props = parsePropertyBag(msg.topic.slice(qidx + 2))
         const methodName = msg.topic.slice(21, qidx)
         log("method: '" + methodName + "'; " + JSON.stringify(props))
         let status = 200
