@@ -64,8 +64,7 @@ class Sprite implements SpriteLike {
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="x"
     set x(v: number) {
-        this._lastX = this._x;
-        this._x = Fx8(v - (this._image.width >> 1))
+        this.left = v - (this._image.width >> 1)
     }
 
     //% group="Physics" blockSetVariable="mySprite"
@@ -76,8 +75,7 @@ class Sprite implements SpriteLike {
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="y"
     set y(v: number) {
-        this._lastY = this._y;
-        this._y = Fx8(v - (this._image.height >> 1))
+        this.top = v - (this._image.height >> 1)
     }
 
     //% group="Physics" blockSetVariable="mySprite"
@@ -258,7 +256,6 @@ class Sprite implements SpriteLike {
     get z(): number {
         return this._z;
     }
-
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="z (depth)"
     set z(value: number) {
@@ -278,6 +275,7 @@ class Sprite implements SpriteLike {
     get height() {
         return this._image.height
     }
+
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="left"
     get left() {
@@ -286,8 +284,17 @@ class Sprite implements SpriteLike {
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="left"
     set left(value: number) {
-        this._x = Fx8(value)
+        const physics = game.currentScene().physicsEngine;
+        physics.moveSprite(
+            this,
+            Fx.sub(
+                Fx8(value),
+                this._x
+            ),
+            Fx.zeroFx8
+        );
     }
+
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="right"
     get right() {
@@ -298,6 +305,7 @@ class Sprite implements SpriteLike {
     set right(value: number) {
         this.left = value - this.width
     }
+
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine
     get top() {
@@ -306,8 +314,17 @@ class Sprite implements SpriteLike {
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine
     set top(value: number) {
-        this._y = Fx8(value);
+        const physics = game.currentScene().physicsEngine;
+        physics.moveSprite(
+            this,
+            Fx.zeroFx8,
+            Fx.sub(
+                Fx8(value),
+                this._y
+            )
+        );
     }
+
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="bottom"
     get bottom() {
@@ -318,6 +335,7 @@ class Sprite implements SpriteLike {
     set bottom(value: number) {
         this.top = value - this.height;
     }
+
     /**
      * The type of sprite
      */
@@ -368,8 +386,12 @@ class Sprite implements SpriteLike {
     //% help=sprites/sprite/set-position
     //% x.shadow="positionPicker" y.shadow="positionPicker"
     setPosition(x: number, y: number): void {
-        this.x = x;
-        this.y = y;
+        const physics = game.currentScene().physicsEngine;
+        physics.moveSprite(
+            this,
+            Fx8(x - this.x),
+            Fx8(y - this.y)
+        );
     }
 
     /**
