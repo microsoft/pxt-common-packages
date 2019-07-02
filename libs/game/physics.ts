@@ -455,7 +455,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
             const tileSize = 1 << tm.scale;
             // only check tile map if moving within a single tile
-            if (Math.abs(Fx.toInt(dx)) < tileSize && Fx.toInt(dy) < tileSize) {
+            if (Math.abs(Fx.toInt(dx)) < tileSize && Math.abs(Fx.toInt(dy)) < tileSize) {
                 const ms = new MovingSprite(
                     s,
                     s._vx,
