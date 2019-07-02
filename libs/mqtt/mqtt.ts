@@ -231,7 +231,7 @@ namespace mqtt {
             }
 
             const message: IMessage = {
-                topic: payload.slice(2, 2 + topicLength).toString(),
+                topic: payload.slice(2, topicLength).toString(),
                 content: payload.slice(variableLength),
                 qos: qos,
                 retain: cmd & 1
@@ -293,6 +293,13 @@ namespace mqtt {
         }
     }
 
+    class MQTTHandler {
+        constructor(
+            public topic: string,
+            public handler: (m: IMessage) => void
+        ) { }
+    }
+
     export class Client extends EventEmitter {
         public logPriority = ConsolePriority.Silent;
         private log(msg: string) {
@@ -310,6 +317,8 @@ namespace mqtt {
         private buf: Buffer;
 
         public connected: boolean = false;
+
+        private mqttHandlers: MQTTHandler[];
 
         constructor(opt: IConnectionOptions, net: net.Net) {
             super();
@@ -412,13 +421,20 @@ namespace mqtt {
         }
 
         // Subscribe to topic
-        public subscribe(topic: string, qos: number = Constants.DefaultQos): void {
+        public subscribe(topic: string, handler?: (msg: IMessage) => void, qos: number = Constants.DefaultQos): void {
             this.send(Protocol.createSubscribe(topic, qos));
+            if (handler) {
+                if (topic[topic.length - 1] == "#")
+                    topic = topic.slice(0, topic.length - 1)
+                if (!this.mqttHandlers) this.mqttHandlers = []
+                this.mqttHandlers.push(new MQTTHandler(topic, handler))
+            }
         }
 
         private send(data: Buffer): void {
             if (this.sct) {
-                this.log("send: " + data[0] + " / " + data.length + " bytes")
+                //this.log("send: " + data[0] + " / " + data.length + " bytes")
+                this.log("send: " + data[0] + " / " + data.length + " bytes: " + data.toString())
                 this.sct.send(data);
             }
         }
@@ -452,7 +468,7 @@ namespace mqtt {
             const controlPacketType: ControlPacketType = cmd >> 4;
             // this.emit('debug', `Rcvd: ${controlPacketType}: '${data}'.`);
 
-            const payload = data.slice(payloadOff, payloadEnd)
+            const payload = data.slice(payloadOff, payloadEnd - payloadOff)
 
             switch (controlPacketType) {
                 case ControlPacketType.ConnAck:
@@ -470,6 +486,10 @@ namespace mqtt {
                 case ControlPacketType.Publish:
                     const message: IMessage = Protocol.parsePublish(cmd, payload);
                     this.emit('receive', message);
+                    if (this.mqttHandlers)
+                        for (let h of this.mqttHandlers)
+                            if (message.topic.slice(0, h.topic.length) == h.topic)
+                                h.handler(message)
                     if (message.qos > 0) {
                         setTimeout(() => {
                             this.send(Protocol.createPubAck(message.pid || 0));
