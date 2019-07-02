@@ -21,7 +21,7 @@ namespace pxsim.visuals {
         let btng = <SVGGElement>svg.elt("g");
         //tabs
         const mkTab = (x: number, y: number) => {
-            svg.child(btng, "rect", { class: "sim-button-tab", x: x, y: y, width: tabSize, height: tabSize})
+            svg.child(btng, "rect", { class: "sim-button-tab", x: x, y: y, width: tabSize, height: tabSize })
         }
         mkTab(left, top);
         mkTab(left + 2 * PIN_DIST, top);
@@ -124,7 +124,7 @@ namespace pxsim.visuals {
             }
         }
 
-        public updateTheme() {}
+        public updateTheme() { }
 
         private mkBtns() {
             this.aBtn = mkBtnSvg([0, 0]).el;
@@ -144,7 +144,7 @@ namespace pxsim.visuals {
                 const txtYOff = PIN_DIST / 10;
 
                 let btng = <SVGGElement>svg.elt("g");
-                let btn = svg.child(btng, "rect", { class: "sim-button-virtual", x: x, y: y, rx: corner, ry: corner, width: w, height: w});
+                let btn = svg.child(btng, "rect", { class: "sim-button-virtual", x: x, y: y, rx: corner, ry: corner, width: w, height: w });
                 let btnTxt = mkTxt(cx + txtXOff, cy + txtYOff, txtSize, 0, "A+B");
 
                 pxsim.U.addClass(btnTxt, "sim-text")

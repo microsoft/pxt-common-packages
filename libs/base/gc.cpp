@@ -353,6 +353,30 @@ static uint32_t getObjectSize(RefObject *o) {
     return r;
 }
 
+void gcPreAllocateBlock(uint32_t sz) {
+    auto curr = (GCBlock *)GC_ALLOC_BLOCK(sz);
+    curr->blockSize = sz - sizeof(GCBlock);
+    LOG("GC pre-alloc: %p", curr);
+    GC_CHECK((curr->blockSize & 3) == 0, 40);
+    curr->data[0].vtable = FREE_MASK | curr->blockSize;
+    ((RefBlock *)curr->data)[0].nextFree = firstFree;
+    firstFree = (RefBlock *)curr->data;
+    // blocks need to be sorted by address for midPtr to work
+    if (!firstBlock || curr < firstBlock) {
+        curr->next = firstBlock;
+        firstBlock = curr;
+    } else {
+        for (auto p = firstBlock; p; p = p->next) {
+            if (!p->next || curr < p->next) {
+                curr->next = p->next;
+                p->next = curr;
+                break;
+            }
+        }
+    }
+    midPtr = (uint8_t *)curr->data + curr->blockSize / 4;
+}
+
 static void addFreeBlock(GCBlock *curr) {
     curr->data[0].vtable = FREE_MASK | (TOWORDS(curr->blockSize) << 2);
     ((RefBlock *)curr->data)[0].nextFree = firstFree;
@@ -362,29 +386,6 @@ static void addFreeBlock(GCBlock *curr) {
 
 static GCBlock *allocateBlockCore() {
     int sz = GC_BLOCK_SIZE;
-    void *dummy = NULL;
-#ifdef GC_GET_HEAP_SIZE
-    if (firstBlock) {
-#ifdef GC_STACK_BASE
-        if (!firstBlock->next) {
-            int memSize = getConfig(CFG_RAM_BYTES, 0);
-            int codalEnd = GC_STACK_BASE;
-            // round up to 1k - there is sometimes a few bytes below the stack
-            codalEnd = (codalEnd + 1024) & ~1023;
-            int codalSize = codalEnd & 0xffffff;
-            sz = memSize - codalSize - 4;
-            if (sz > 0) {
-                auto curr = (GCBlock *)codalEnd;
-                curr->blockSize = sz - sizeof(GCBlock);
-                return curr;
-            }
-        }
-#endif
-        gc(2); // dump roots
-        target_panic(PANIC_GC_OOM);
-    }
-    auto lowMem = getConfig(CFG_LOW_MEM_SIMULATION_KB, 0);
-    auto sysHeapSize = getConfig(CFG_SYSTEM_HEAP_BYTES, 4 * 1024);
     auto heapSize = GC_GET_HEAP_SIZE();
     sz = heapSize - sysHeapSize;
     if (lowMem) {
@@ -399,13 +400,13 @@ static GCBlock *allocateBlockCore() {
         }
     }
 #endif
-    auto curr = (GCBlock *)GC_ALLOC_BLOCK(sz);
-    curr->blockSize = sz - sizeof(GCBlock);
-    // make sure reference to allocated block is stored somewhere, otherwise
-    // GCC optimizes out the call to GC_ALLOC_BLOCK
-    curr->data[4].vtable = (uint32_t)(uintptr_t)dummy;
-    return curr;
-}
+auto curr = (GCBlock *)GC_ALLOC_BLOCK(sz);
+curr->blockSize = sz - sizeof(GCBlock);
+// make sure reference to allocated block is stored somewhere, otherwise
+// GCC optimizes out the call to GC_ALLOC_BLOCK
+curr->data[4].vtable = (uint32_t)(uintptr_t)dummy;
+return curr;
+} // namespace pxt
 
 __attribute__((noinline)) static void allocateBlock() {
     auto curr = allocateBlockCore();
