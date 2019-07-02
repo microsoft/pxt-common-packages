@@ -386,6 +386,29 @@ static void addFreeBlock(GCBlock *curr) {
 
 static GCBlock *allocateBlockCore() {
     int sz = GC_BLOCK_SIZE;
+    void *dummy = NULL;
+#ifdef GC_GET_HEAP_SIZE
+    if (firstBlock) {
+#ifdef GC_STACK_BASE
+        if (!firstBlock->next) {
+            int memSize = getConfig(CFG_RAM_BYTES, 0);
+            int codalEnd = GC_STACK_BASE;
+            // round up to 1k - there is sometimes a few bytes below the stack
+            codalEnd = (codalEnd + 1024) & ~1023;
+            int codalSize = codalEnd & 0xffffff;
+            sz = memSize - codalSize - 4;
+            if (sz > 0) {
+                auto curr = (GCBlock *)codalEnd;
+                curr->blockSize = sz - sizeof(GCBlock);
+                return curr;
+            }
+        }
+#endif
+        gc(2); // dump roots
+        target_panic(PANIC_GC_OOM);
+    }
+    auto lowMem = getConfig(CFG_LOW_MEM_SIMULATION_KB, 0);
+    auto sysHeapSize = getConfig(CFG_SYSTEM_HEAP_BYTES, 4 * 1024);
     auto heapSize = GC_GET_HEAP_SIZE();
     sz = heapSize - sysHeapSize;
     if (lowMem) {
@@ -400,13 +423,13 @@ static GCBlock *allocateBlockCore() {
         }
     }
 #endif
-auto curr = (GCBlock *)GC_ALLOC_BLOCK(sz);
-curr->blockSize = sz - sizeof(GCBlock);
-// make sure reference to allocated block is stored somewhere, otherwise
-// GCC optimizes out the call to GC_ALLOC_BLOCK
-curr->data[4].vtable = (uint32_t)(uintptr_t)dummy;
-return curr;
-} // namespace pxt
+    auto curr = (GCBlock *)GC_ALLOC_BLOCK(sz);
+    curr->blockSize = sz - sizeof(GCBlock);
+    // make sure reference to allocated block is stored somewhere, otherwise
+    // GCC optimizes out the call to GC_ALLOC_BLOCK
+    curr->data[4].vtable = (uint32_t)(uintptr_t)dummy;
+    return curr;
+}
 
 __attribute__((noinline)) static void allocateBlock() {
     auto curr = allocateBlockCore();
