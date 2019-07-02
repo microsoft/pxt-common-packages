@@ -18,6 +18,7 @@ namespace esp32spi {
     const _SET_NET_CMD = 0x10
     const _SET_PASSPHRASE_CMD = 0x11
     const _SET_DEBUG_CMD = 0x1A
+    const _GET_TEMP_CMD = 0x1B
     const _GET_CONN_STATUS_CMD = 0x20
     const _GET_IPADDR_CMD = 0x21
     const _GET_MACADDR_CMD = 0x22
@@ -661,6 +662,14 @@ namespace esp32spi {
             if (resp[0][0] != 1) {
                 this.fail("Failed to set debug mode")
             }
+        }
+
+        public getTemperature() {
+            let resp = this.sendCommandGetResponse(_GET_TEMP_CMD, [])
+            if (resp[0].length != 4) {
+                this.fail("Failed to get temp")
+            }
+            return resp[0].getNumber(NumberFormat.Float32LE, 0)
         }
 
         /** 
