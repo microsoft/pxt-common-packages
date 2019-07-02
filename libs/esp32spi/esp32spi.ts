@@ -97,6 +97,8 @@ namespace esp32spi {
 
         static instance: SPIController;
 
+        public wasConnected: boolean;
+
         constructor(
             private _spi: SPI,
             private _cs: DigitalInOutPin,
@@ -105,6 +107,9 @@ namespace esp32spi {
             private _gpio0: DigitalInOutPin = null,
             public debug = 0
         ) {
+            // if nothing connected, pretend the device is ready -
+            // we'll check for timeout waiting for response instead
+            this._busy.setPull(PinPullMode.PullDown);
             this._busy.digitalRead();
             this._socknum_ll = [buffer1(0)]
             SPIController.instance = this;
@@ -156,13 +161,14 @@ namespace esp32spi {
             return false;
         }
 
+        /** Read a byte with a time-out, and if we get it, check that its what we expect */
         private waitSPIChar(desired: number): boolean {
-            /** Read a byte with a time-out, and if we get it, check that its what we expect */
-            let times = time.monotonic()
-            while (time.monotonic() - times < 0.1) {
+            let times = control.millis()
+            while (control.millis() - times < 100) {
                 let r = this.readByte()
                 if (r == _ERR_CMD) {
-                    this.fail("error response to command")
+                    this.log(0, "error response to command")
+                    return false
                 }
 
                 if (r == desired) {
@@ -170,7 +176,7 @@ namespace esp32spi {
                 }
                 //this.log(0, `read char ${r}, expected ${desired}`)
             }
-            this.fail("timed out waiting for SPI char")
+            this.log(0, "timed out waiting for SPI char")
             return false;
         }
 
@@ -185,8 +191,11 @@ namespace esp32spi {
                 // pause(1000)
             }
             if (this._busy.digitalRead()) {
-                this.fail("timed out")
+                this.log(0, "timed out waiting for ready")
+                return false
             }
+
+            return true
         }
 
         private _sendCommand(cmd: number, params?: Buffer[], param_len_16?: boolean) {
@@ -220,11 +229,13 @@ namespace esp32spi {
 
             if (this.debug > 1)
                 console.log(`send cmd ${packet.toHex()}`)
-            this.waitForReady();
+            if (!this.waitForReady())
+                return false
             this._cs.digitalWrite(false)
             this.spiTransfer(packet, null)
             this._cs.digitalWrite(true)
             this.log(1, `send done`);
+            return true
         }
 
         private spiTransfer(tx: Buffer, rx: Buffer) {
@@ -235,12 +246,16 @@ namespace esp32spi {
 
         private _waitResponseCmd(cmd: number, num_responses?: number, param_len_16?: boolean) {
             this.log(1, `wait response cmd`);
-            this.waitForReady();
+            if (!this.waitForReady())
+                return null
 
             this._cs.digitalWrite(false)
 
             let responses: Buffer[] = []
-            this.waitSPIChar(_START_CMD);
+            if (!this.waitSPIChar(_START_CMD)) {
+                this._cs.digitalWrite(true)
+                return null
+            }
             this.checkData(cmd | _REPLY_FLAG)
             if (num_responses !== undefined)
                 this.checkData(num_responses, cmd + "")
@@ -290,6 +305,8 @@ namespace esp32spi {
 
         get status(): number {
             const resp = this.sendCommandGetResponse(_GET_CONN_STATUS_CMD)
+            if (!resp)
+                return WL_NO_SHIELD
             this.log(0, `Status: ${resp[0][0]}`);
             // one byte response
             return resp[0][0];
@@ -298,12 +315,16 @@ namespace esp32spi {
         /** A string of the firmware version on the ESP32 */
         get firmwareVersion(): string {
             let resp = this.sendCommandGetResponse(_GET_FW_VERSION_CMD)
+            if (!resp)
+                return "not connected"
             return resp[0].toString();
         }
 
         /** A bytearray containing the MAC address of the ESP32 */
         get MACaddress(): Buffer {
             let resp = this.sendCommandGetResponse(_GET_MACADDR_CMD, [hex`ff`])
+            if (!resp)
+                return null
             // for whatever reason, the mac adderss is backwards
             const res = control.createBuffer(6)
             for (let i = 0; i < 6; ++i)
@@ -465,9 +486,10 @@ namespace esp32spi {
 
             // retries
             let stat;
-            for (let _ = 0; _ < 30; ++_) {
+            for (let _ = 0; _ < 10; ++_) {
                 stat = this.status
                 if (stat == WL_CONNECTED) {
+                    this.wasConnected = true;
                     return stat;
                 }
                 pause(1000)
@@ -501,6 +523,9 @@ namespace esp32spi {
     (ttl). Returns a millisecond timing value
     */
         public ping(dest: string, ttl: number = 250): number {
+            if (!this.wasConnected)
+                return -1
+
             // convert to IP address
             let ip = this.hostbyName(dest)
 
