@@ -10,11 +10,12 @@ class PhysicsEngine {
 
     removeSprite(sprite: Sprite) { }
 
+    /** move a single sprite **/
     moveSprite(s: Sprite, dx: Fx8, dy: Fx8) { }
 
     draw() { }
 
-    /** Apply physics and collisions */
+    /** Apply physics and collisions to all sprites **/
     move(dt: number) { }
 
     overlaps(sprite: Sprite): Sprite[] { return []; }
@@ -440,6 +441,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         return this.map.overlaps(sprite);
     }
 
+    /** moves a sprite explicitly outside of the normal velocity changes **/
     public moveSprite(s: Sprite, dx: Fx8, dy: Fx8) {
         s._lastX = s._x;
         s._lastY = s._y;
