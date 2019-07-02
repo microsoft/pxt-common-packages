@@ -7,9 +7,13 @@ const enum AzureIotEvent {
 namespace azureiot {
     export let logPriority = ConsolePriority.Silent;
 
+    type SMap<T> = { [s: string]: T; }
+    export type Json = any;
+
     let _mqttClient: mqtt.Client;
     let _messageBusId: number;
-    let _receiveHandler: (msg: any) => void;
+    let _receiveHandler: (msg: Json) => void;
+    let _methodHandlers: SMap<(msg: Json) => Json>;
 
     function log(msg: string) {
         console.add(logPriority, "azureiot: " + msg);
@@ -23,7 +27,6 @@ namespace azureiot {
 
     export let network: net.Net
     export let connString = ""
-    export let sasToken = ""
 
     function createMQTTClient() {
         _messageBusId = control.allocateNotifyEvent(); // TODO
@@ -31,12 +34,13 @@ namespace azureiot {
         const connStringParts = parsePropertyBag(connString, ";");
         const iotHubHostName = connStringParts["HostName"];
         const deviceId = connStringParts["DeviceName"];
+        const sasToken = connStringParts["SharedAccessSignature"];
 
         const opts: mqtt.IConnectionOptions = {
             host: iotHubHostName,
             /* port: 8883, overriden based on platform */
             username: `${iotHubHostName}/${deviceId}/api-version=2018-06-30`,
-            password: sasToken,
+            password: "SharedAccessSignature " + sasToken,
             clientId: deviceId
         }
         const c = new mqtt.Client(opts, network);
@@ -161,10 +165,46 @@ namespace azureiot {
             c.subscribe(`devices/${c.opt.clientId}/messages/devicebound/#`);
             c.subscribe(`devices/${c.opt.clientId}/messages/events/#`);
             c.subscribe('$iothub/twin/PATCH/properties/desired/#')
-            c.subscribe('$iothub/methods/#')
             c.subscribe("$iothub/twin/res/#")
             c.publish("$iothub/twin/GET/?$rid=foobar")
         }
         _receiveHandler = handler;
+    }
+
+    function handleMethod(msg: mqtt.IMessage) {
+        const qidx = msg.topic.indexOf("/?")
+        const props = parsePropertyBag(msg.topic.slice(qidx + 2))
+        const methodName = msg.topic.slice(21, qidx)
+        log("method: '" + methodName + "'; " + JSON.stringify(props))
+        let status = 200
+        let resp: any = {}
+        if (!_methodHandlers[methodName]) {
+            log("method not found: '" + methodName + "'")
+            status = 404
+        } else {
+            const h = _methodHandlers[methodName]
+            const resp2 = h(JSON.parse(msg.content.toString()))
+            if (resp2)
+                resp = resp2
+            if (resp["_status"] != null) {
+                status = resp["_status"]
+                resp["_status"] = null
+            }
+            log("method: '" + methodName + "' status=" + status)
+        }
+
+        const c = mqttClient();
+        c.publish('$iothub/methods/res/' + status + "/?$rid=" + props["$rid"], JSON.stringify(resp))
+    }
+
+    export function onMethod(methodName: string, handler: (msg: Json) => Json) {
+        const c = mqttClient();
+        if (!_methodHandlers) {
+            if (!c.connected)
+                control.fail("not connected")
+            _methodHandlers = {}
+            c.subscribe('$iothub/methods/POST/#', handleMethod)
+        }
+        _methodHandlers[methodName] = handler
     }
 }
