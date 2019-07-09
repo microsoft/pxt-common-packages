@@ -10,11 +10,12 @@ class PhysicsEngine {
 
     removeSprite(sprite: Sprite) { }
 
+    /** move a single sprite **/
     moveSprite(s: Sprite, dx: Fx8, dy: Fx8) { }
 
     draw() { }
 
-    /** Apply physics and collisions */
+    /** Apply physics and collisions to all sprites **/
     move(dt: number) { }
 
     overlaps(sprite: Sprite): Sprite[] { return []; }
@@ -147,11 +148,10 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 ms.dx = Fx.sub(ms.dx, stepX);
                 ms.dy = Fx.sub(ms.dy, stepY);
 
-                this.moveSprite(
-                    s,
-                    stepX,
-                    stepY
-                );
+                s._lastX = s._x;
+                s._lastY = s._y;
+                s._x = Fx.add(s._x, stepX);
+                s._y = Fx.add(s._y, stepY);
 
                 // if the sprite can collide with things, check tile map
                 // and add to collision detection
@@ -178,6 +178,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
     private createMovingSprite(sprite: Sprite, dtSec: Fx8, dt2: Fx8): MovingSprite {
         const ovx = this.constrain(sprite._vx);
         const ovy = this.constrain(sprite._vy);
+        sprite._lastX = sprite._x;
+        sprite._lastY = sprite._y;
 
         sprite._vx = this.constrain(
             Fx.add(
@@ -337,7 +339,6 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 );
 
                 if (tm.isObstacle(x0, y0)) {
-                    sprite.registerObstacle(right ? CollisionDirection.Right : CollisionDirection.Left, tm.getObstacle(x0, y0));
                     if (sprite.flags & sprites.Flag.DestroyOnWall) {
                         sprite.destroy();
                     } else if (sprite.flags & sprites.Flag.BounceOnWall) {
@@ -361,6 +362,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                             :
                             Fx8((x0 + 1) << tileScale)
                     );
+                    sprite.registerObstacle(right ? CollisionDirection.Right : CollisionDirection.Left, tm.getObstacle(x0, y0));
                     break;
                 }
             }
@@ -400,7 +402,6 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 );
 
                 if (tm.isObstacle(x0, y0)) {
-                    sprite.registerObstacle(down ? CollisionDirection.Bottom : CollisionDirection.Top, tm.getObstacle(x0, y0));
                     if (sprite.flags & sprites.Flag.DestroyOnWall) {
                         sprite.destroy();
                     } else if (sprite.flags & sprites.Flag.BounceOnWall) {
@@ -424,6 +425,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                             :
                             Fx8((y0 + 1) << tileScale)
                     );
+                    sprite.registerObstacle(down ? CollisionDirection.Bottom : CollisionDirection.Top, tm.getObstacle(x0, y0));
                     break;
                 }
             }
@@ -439,11 +441,33 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         return this.map.overlaps(sprite);
     }
 
+    /** moves a sprite explicitly outside of the normal velocity changes **/
     public moveSprite(s: Sprite, dx: Fx8, dy: Fx8) {
         s._lastX = s._x;
         s._lastY = s._y;
         s._x = Fx.add(s._x, dx);
         s._y = Fx.add(s._y, dy);
+
+        // if the sprite can collide with things, check tile map
+        if (!(s.flags & SPRITE_CANNOT_COLLIDE)) {
+            const tm = game.currentScene().tileMap;
+            if (!(tm && tm.enabled)) return;
+
+            const tileSize = 1 << tm.scale;
+            // only check tile map if moving within a single tile
+            if (Math.abs(Fx.toInt(dx)) < tileSize && Math.abs(Fx.toInt(dy)) < tileSize) {
+                const ms = new MovingSprite(
+                    s,
+                    s._vx,
+                    s._vy,
+                    dx,
+                    dy,
+                    dx,
+                    dy
+                );
+                this.tilemapCollisions(ms, tm);
+            }
+        }
     }
 
     private constrain(v: Fx8) {
