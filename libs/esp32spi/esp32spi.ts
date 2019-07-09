@@ -93,7 +93,7 @@ namespace esp32spi {
 
     export class SPIController {
         private _socknum_ll: Buffer[];
-        private _locked = false;
+        private _locked: boolean;
 
         static instance: SPIController;
 
@@ -115,6 +115,7 @@ namespace esp32spi {
             SPIController.instance = this;
             this._spi.setFrequency(8000000);
             this.reset();
+            this._locked = false;
         }
 
         private log(priority: number, msg: string) {
@@ -743,5 +744,10 @@ namespace esp32spi {
             }
 
         }
+    }
+
+    //% shim=esp32spi::flashDevice
+    export function flashDevice(rst: DigitalInOutPin, boot: DigitalInOutPin) {
+        return
     }
 }
