@@ -540,6 +540,7 @@ int flashBlock(ESP_UF2_Block *block) {
         memset(&currRegion, 0, sizeof(currRegion));
         currUF2Block = 0;
         if (connectESP() != 0) {
+            LOG("failed to connect to ESP");
             mode = MODE_ERROR;
             return 1;
         }
@@ -547,6 +548,7 @@ int flashBlock(ESP_UF2_Block *block) {
     }
 
     if (block->blockNo != currUF2Block) {
+        LOG("block desync");
         mode = MODE_ERROR;
         return 1;
     }
@@ -557,6 +559,7 @@ int flashBlock(ESP_UF2_Block *block) {
         // need to recompute
         currRegion = block->region;
         if (matchesMD5(&currRegion)) {
+            LOG("region matches at %x/%d", currRegion.addr, currRegion.size);
             mode = MODE_SKIP;
         } else {
             if (flashBegin(currRegion.addr, currRegion.size) != 0) {
@@ -564,6 +567,7 @@ int flashBlock(ESP_UF2_Block *block) {
                 mode = MODE_ERROR;
                 return 1;
             } else {
+                LOG("writing region at %x/%d", currRegion.addr, currRegion.size);
                 flashSeq = 0;
                 mode = MODE_WRITE;
             }
@@ -580,6 +584,7 @@ int flashBlock(ESP_UF2_Block *block) {
 
     if (currUF2Block == block->numBlocks) {
         mode = MODE_PRE;
+        LOG("all done; reset ESP");
         cleanup();
         resetESP();
     }
