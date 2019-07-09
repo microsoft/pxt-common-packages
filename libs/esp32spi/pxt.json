@@ -6,6 +6,7 @@
         "socket.ts",
         "requests.ts",
         "wifimanager.ts",
+        "espflasher.cpp",
         "net.ts",
         "README.md"
     ],
