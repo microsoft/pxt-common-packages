@@ -4,6 +4,9 @@
 #define LOG DMESG
 #define LOGV NOLOG
 
+#define RST D12
+#define BOOT D10
+
 #define SYNC_TIMEOUT 100
 #define QUICK_TIMEOUT 500
 
@@ -21,31 +24,59 @@ SINGLETON_IF_PIN(WFlasher, RX);
 static uint8_t *recvBuffer;
 static uint32_t recvBufferPos;
 
+#define MODE_PRE 0
+#define MODE_SKIP 1
+#define MODE_WRITE 2
+#define MODE_ERROR 3
+
+static int mode;
+
+typedef struct RegionDescriptor {
+    uint32_t addr;
+    uint32_t size;
+    uint8_t md5[16];
+} RegionDescriptor;
+
+static uint32_t currUF2Block, flashSeq;
+static RegionDescriptor currRegion;
+
+typedef struct ESP_UF2_Block {
+    uint32_t magicStart0;
+    uint32_t magicStart1;
+    uint32_t flags;
+    uint32_t targetAddr;
+    uint32_t payloadSize;
+    uint32_t blockNo;
+    uint32_t numBlocks;
+    uint32_t familyID;
+    uint8_t data[256];
+    uint8_t padding[196];
+    RegionDescriptor region;
+    uint32_t magicEnd;
+} ESP_UF2_Block;
+
 static void startRead() {
     auto f = getWFlasher();
     if (!recvBuffer)
         recvBuffer = (uint8_t *)malloc(RECV_BUFFER_SIZE);
     recvBufferPos = 0;
-    *(uint32_t*)recvBuffer = 0xDBDBDBDB;
+    *(uint32_t *)recvBuffer = 0xDBDBDBDB;
     f->ser.abortDMA();
     f->ser.receiveDMA(recvBuffer, RECV_BUFFER_SIZE);
 }
-
-int lastCurr;
 
 static int readAtMost(void *dst, int size) {
     auto f = getWFlasher();
     int numb = f->ser.getBytesReceived();
     // hack - if DMA reports bytes, but nothing was actually written, pretend there
     // are no bytes coming from DMA
-    if (recvBufferPos == 0 && numb >= 2 && *(uint32_t*)recvBuffer == 0xDBDBDBDB)
+    if (recvBufferPos == 0 && numb >= 2 && *(uint32_t *)recvBuffer == 0xDBDBDBDB)
         numb = 0;
     int curr = numb - recvBufferPos;
     if (curr < 0)
         target_panic(112);
     if (recvBufferPos == 0 && numb && recvBuffer[0] == 0xDB)
         LOG("len=%d sz=%d ", numb, size);
-    // lastCurr = curr;
     // LOG("%d/%d/%d", recvBufferPos, curr, size);
     if (curr > size)
         curr = size;
@@ -279,6 +310,18 @@ static CmdHeader *sendAndRecv(EspCommand cmd, const void *data, uint16_t dataSiz
     return readResponse(cmd, timeout);
 }
 
+static CmdHeader *sendRecvAndCheck(EspCommand cmd, const void *data, uint16_t dataSize,
+                                   int timeout = QUICK_TIMEOUT) {
+    sendEspCmd(cmd, data, dataSize);
+    CmdHeader *res = readResponse(cmd, timeout);
+    if (res->data[res->size - 4] != 0) {
+        DMESG("command failed: %d, status=%x", cmd, res->data[res->size - 3]);
+        return NULL;
+    }
+    res->size -= 4;
+    return res;
+}
+
 static const char *syncPayload = "\x07\x07\x12\x20"
                                  "UUUUUUUU"
                                  "UUUUUUUU"
@@ -319,11 +362,119 @@ static void changeBaud(uint32_t baud) {
     flushInput();
 }
 
-//%
-void flashDevice(DigitalInOutPin rst, DigitalInOutPin boot) {
+static int connectFlash(uint32_t mode) {
+    uint32_t args[2] = {mode, 0};
+
+    if (!sendRecvAndCheck(ESP_SPI_ATTACH, args, sizeof(args)))
+        return -1;
+
+    uint32_t spiParams[] = {
+        0,               // fl_id
+        4 * 1024 * 1024, // size; assume 4M
+        64 * 1024,       // block size
+        4 * 1024,        // sector size
+        256,             // page size
+        0xffff,          // status mask
+    };
+
+    if (!sendRecvAndCheck(ESP_SPI_SET_PARAMS, spiParams, sizeof(spiParams)))
+        return -2;
+
+    return 0;
+}
+
+static int hexVal(uint8_t c) {
+    if ('0' <= c && c <= '9')
+        return c - '0';
+    if ('a' <= c && c <= 'f')
+        return 10 + c - 'a';
+    return -1;
+}
+
+static int matchesMD5(RegionDescriptor *desc) {
+    uint32_t args[] = {
+        desc->addr,
+        desc->size,
+        0,
+        0,
+    };
+
+    // assume 4ms per kb
+    int timeout = desc->size / 1024 * 4 + 100;
+    if (timeout < 500)
+        timeout = 500;
+
+    CmdHeader *res = sendRecvAndCheck(ESP_SPI_FLASH_MD5, args, sizeof(args), timeout);
+
+    if (!res)
+        return 0;
+
+    if (res->size == 16)
+        return memcmp(desc->md5, res->data, 16) == 0;
+    else if (res->size == 32)
+        for (int i = 0; i < 16; ++i) {
+            int a = hexVal(res->data[2 * i]);
+            int b = hexVal(res->data[2 * i + 1]);
+            if ((a << 4) + b != desc->md5[i])
+                return 0;
+        }
+    else
+        return 0;
+
+    return 1;
+}
+
+static int flashBegin(uint32_t addr, uint32_t size) {
+    uint32_t args[] = {
+        size,               // erase size
+        (size + 255) / 256, // num blocks
+        256,                // block size
+        addr,               // offset
+    };
+
+    // assume 6ms per page erase time
+    int timeout = size / 4096 * 6 + 100;
+    if (timeout < 500)
+        timeout = 500;
+
+    if (!sendRecvAndCheck(ESP_FLASH_BEGIN, args, sizeof(args), timeout))
+        return -3;
+
+    return 0;
+}
+
+static int flashData(const void *data, int size, int seq) {
+    uint32_t params[] = {(uint32_t)size, (uint32_t)seq, 0, 0};
+    uint8_t *d = (uint8_t *)malloc(sizeof(params) + size);
+    memcpy(d, params, sizeof(params));
+    memcpy(d + sizeof(params), data, size);
+    auto r = sendRecvAndCheck(ESP_FLASH_DATA, d, sizeof(params) + size, 1000);
+    free(d);
+    return r ? 0 : -1;
+}
+
+static void cleanup() {
+    auto f = getWFlasher();
+    f->ser.abortDMA();
+    free(lastResponse);
+    lastResponse = NULL;
+}
+static void resetESP() {
+    auto boot = LOOKUP_PIN(BOOT);
+    auto rst = LOOKUP_PIN(RST);
+    boot->getDigitalValue();
+    rst->setDigitalValue(0);
+    fiber_sleep(50);
+    rst->setDigitalValue(1);
+}
+
+static int connectESP() {
     LOG("resetting ESP");
 
     LOOKUP_PIN(TX)->setDigitalValue(1); // without this we get glitch on first character
+
+    auto boot = LOOKUP_PIN(BOOT);
+    auto rst = LOOKUP_PIN(RST);
 
     boot->setDigitalValue(1);
     rst->setDigitalValue(0);
@@ -336,37 +487,111 @@ void flashDevice(DigitalInOutPin rst, DigitalInOutPin boot) {
 
     LOG("syncing ESP");
 
-    for (int i = 0; i < 20000; ++i) {
-        if (sync())
+    int ok = 0;
+
+    for (int i = 0; i < 300; ++i) {
+        if (sync()) {
             break;
+            ok = 1;
+        }
         fiber_sleep(50);
     }
 
+    if (!ok)
+        return -1;
+
     fiber_sleep(50);
 
-    changeBaud(2000000);
+    changeBaud(500000);
 
     LOG("synced!");
 
     uint32_t w3 = readEFuse(3);
+    if (w3 == 0)
+        return -2;
     LOG("chip: %d rev %d %s %d core %d MHz", (w3 >> 9) & 7, (w3 >> 15) & 1, w3 & 2 ? "noBT" : "BT",
         w3 & 1 ? 1 : 2, w3 & (1 << 13) ? (w3 & (1 << 12) ? 160 : 240) : -1);
 
     uint32_t m0 = readEFuse(2);
     uint32_t m1 = readEFuse(1);
-    LOG("mac: %x %x", m0, m1);
+    if (m0 == 0 || m1 == 0)
+        return -3;
+    LOG("mac: %x %x", m0 & 0xffff, m1);
 
-    int iter = 0;
+    if (connectFlash(0) != 0)
+        return -4;
 
-    while (1) {
-        if (iter++ % 1000 == 0)
-        DMESG("i=%d", iter);
-        auto tmp = readEFuse(2);
-        if (tmp != m0)
-            target_panic(111);
+    return 0;
+}
+
+int flashBlock(ESP_UF2_Block *block) {
+    if (block->magicStart0 != 0x0A324655UL || block->magicStart1 != 0x9E5D5157UL ||
+        block->magicEnd != 0x0AB16F30UL)
+        return 0;
+    if (block->familyID != 0x1c5f21b0)
+        return 0;
+    if (!(block->flags & 0x4000) || !block->region.size)
+        return 1;
+
+    if (mode == MODE_ERROR && block->blockNo != 0)
+        return 1;
+
+    if (block->blockNo == 0) {
+        memset(&currRegion, 0, sizeof(currRegion));
+        currUF2Block = 0;
+        if (connectESP() != 0) {
+            mode = MODE_ERROR;
+            return 1;
+        }
+        mode = MODE_WRITE;
     }
 
-    free(lastResponse);
-    lastResponse = NULL;
+    if (block->blockNo != currUF2Block) {
+        mode = MODE_ERROR;
+        return 1;
+    }
+
+    currUF2Block++;
+
+    if (block->region.addr != currRegion.addr || block->region.size != currRegion.size) {
+        // need to recompute
+        currRegion = block->region;
+        if (matchesMD5(&currRegion)) {
+            mode = MODE_SKIP;
+        } else {
+            if (flashBegin(currRegion.addr, currRegion.size) != 0) {
+                LOG("failed to start write! %x/%d", currRegion.addr, currRegion.size);
+                mode = MODE_ERROR;
+                return 1;
+            } else {
+                flashSeq = 0;
+                mode = MODE_WRITE;
+            }
+        }
+    }
+
+    if (mode == MODE_WRITE) {
+        if (flashData(block->data, 256, flashSeq++) != 0) {
+            LOG("failed to write! seq=%d", flashSeq);
+            mode = MODE_ERROR;
+            return 1;
+        }
+    }
+
+    if (currUF2Block == block->numBlocks) {
+        mode = MODE_PRE;
+        cleanup();
+        resetESP();
+    }
+
+    return 2;
+}
+
+//%
+void flashDevice() {
+    if (connectESP() != 0)
+        return;
+
+    cleanup();
 }
 } // namespace esp32spi

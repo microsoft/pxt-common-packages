@@ -747,7 +747,7 @@ namespace esp32spi {
     }
 
     //% shim=esp32spi::flashDevice
-    export function flashDevice(rst: DigitalInOutPin, boot: DigitalInOutPin) {
+    export function flashDevice() {
         return
     }
 }
