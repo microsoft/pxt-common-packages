@@ -158,13 +158,21 @@ namespace music {
     export function melodyEditor(melody: string): Melody {
         let notes: string[] = melody.split(" ");
         let melodyString = "";
+        let newOctave = false;
+
         // build melody string, replace '-' with 'R'
         for (let i = 0; i < notes.length-1; i++ ) {
             if (notes[i] === "-") {
                 notes[i] = "R";
+            } else if (notes[i] === "C5") {
+                newOctave = true;
+            } else if (newOctave) { // change the octave if necesary
+                notes[i] += "4";
+                newOctave = false;
             }
             melodyString += notes[i] + " ";
         }
+
         const song = new Melody(melodyString);
         return song
     }
