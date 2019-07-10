@@ -137,8 +137,11 @@ namespace music {
     //% melody.shadow="melody_editor"
     //% tempo.min=40 tempo.max=500
     //% tempo.defl=120
-    export function playMelodyFromEditor(melody: Melody, tempo: number) {
-        melody.play();
+    export function playMelodyFromEditor(melody: string, tempo: number) {
+        // add tempo to string so it is reflected in simulation
+        let formattedMelody = melody.substr(0, melody.indexOf(' ')) + "-" + tempo + melody.substr(melody.indexOf(' '));
+        const song = new Melody(formattedMelody);
+        song.play();
     }
 
 
@@ -155,7 +158,7 @@ namespace music {
     //% melody.fieldOptions.decompileLiterals=true
     //% melody.fieldOptions.decompileIndirectFixedInstances="true"
     //% melody.fieldOptions.onParentBlock="true"
-    export function melodyEditor(melody: string): Melody {
+    export function melodyEditor(melody: string): string {
         let notes: string[] = melody.split(" ");
         let melodyString = "";
         let newOctave = false;
@@ -172,9 +175,8 @@ namespace music {
             }
             melodyString += notes[i] + " ";
         }
-
-        const song = new Melody(melodyString);
-        return song
+        
+        return melodyString;
     }
     
     /**
