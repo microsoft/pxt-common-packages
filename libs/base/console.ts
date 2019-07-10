@@ -53,10 +53,10 @@ namespace console {
      */
     //% weight=90
     //% help=console/log blockGap=8
-    //% blockId=console_log block="console|log %text"
-    //% text.shadowOptions.toString=true
-    export function log(text: string): void {
-        add(ConsolePriority.Log, text);
+    //% blockId=console_log block="console log $value"
+    //% value.shadow=text
+    export function log(value: any): void {
+        add(ConsolePriority.Log, value + "");
     }
 
     /**
