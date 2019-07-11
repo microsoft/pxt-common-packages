@@ -74,18 +74,19 @@ namespace console {
     /**
      * Convert any object or value to a string representation
      * @param obj value to be converted to a string
+     * @param maxElements [optional] max number values in an object to include in output
      */
-    export function inspect(obj: any): string {
+    export function inspect(obj: any, maxElements = 20): string {
         if (typeof obj == "string") {
             return obj;
         } else if (typeof obj == "number") {
             return "" + obj;
         } else if (Array.isArray(obj)) {
             const asArr = (obj as Array<string>);
-            if (asArr.length <= 20) {
+            if (asArr.length <= maxElements) {
                 return asArr.join(",");
             } else {
-                return `${asArr.slice(0, 20).join(",")}...`;
+                return `${asArr.slice(0, maxElements).join(",")}...`;
             }
         /** TODO: should handle objects with toString like this:
          * } else if (obj.toString) {
@@ -101,9 +102,9 @@ namespace console {
             }
 
             let keys = Object.keys(obj);
-            const snipped = keys.length >= 20;
+            const snipped = keys.length > maxElements;
             if (snipped) {
-                keys = keys.slice(0, 20);
+                keys = keys.slice(0, maxElements);
             }
 
             return`{
