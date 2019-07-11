@@ -88,13 +88,6 @@ namespace console {
             } else {
                 return `${asArr.slice(0, maxElements).join(",")}...`;
             }
-        /** TODO: should handle objects with toString like this:
-         * } else if (obj.toString) {
-         *    return obj.toString();
-         *
-         * instead of coercing it and checking against '[object Object]'
-         * but this is blocked by https://github.com/microsoft/pxt-arcade/issues/515 for now
-         */
         } else {
             const asString = obj + "";
             if (asString != "[object Object]"
@@ -108,13 +101,12 @@ namespace console {
                 keys = keys.slice(0, maxElements);
             }
 
-            return`{
-    ${
-        keys
-            .map(key => key + ": " + obj[key])
-            .join(",\n    ")
-        + (snipped ? "\n    ..." : "")
-    }
+            return `{${
+                keys.reduce(
+                    (prev, currKey) => prev + `\n    ${currKey}: ${obj[currKey]}`,
+                    ""
+                ) + (snipped ? "\n    ..." : "")
+            }
 }`;
         }
     }
