@@ -56,7 +56,7 @@ namespace console {
     //% blockId=console_log block="console log $value"
     //% value.shadow=text
     export function log(value: any): void {
-        add(ConsolePriority.Log, value + "");
+        add(ConsolePriority.Log, inspect(value));
     }
 
     /**
@@ -69,6 +69,41 @@ namespace console {
     //% blockId=console_log_value block="console|log value %name|= %value"
     export function logValue(name: string, value: number): void {
         log(name ? `${name}: ${value}` : `${value}`)
+    }
+
+    /**
+     * Convert any object or value to a string representation
+     * @param obj value to be converted to a string
+     */
+    export function inspect(obj: any): string {
+        if (typeof obj == "string") {
+            return obj;
+        } else if (typeof obj == "number") {
+            return "" + obj;
+        } else if (Array.isArray(obj)) {
+            return (obj as Array<string>).join(",");
+        /** TODO: should handle objects with toString like this:
+         * } else if (obj.toString) {
+         *    return obj.toString();
+         *
+         * instead of coercing it and checking against '[object Object]'
+         * but this is blocked by https://github.com/microsoft/pxt-arcade/issues/515 for now
+         */
+        } else {
+            const asString = obj + "";
+            if (asString != "[object Object]") {
+                return asString;
+            }
+
+            const keys = Object.keys(obj);
+            return`{
+    ${
+        keys
+            .map(key => key + ": " + obj[key])
+            .join(",\n\t")
+    }
+}`;
+        }
     }
 
     /**
