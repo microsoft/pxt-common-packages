@@ -4,7 +4,7 @@ namespace game.consoleOverlay {
     const marginx = 4;
     const marginy = 2;
     const consoleFont = image.font5;
-    const consoleLines = Math.floor(screen.height / (consoleFont.charHeight + marginy)) - 1;
+    const MAX_CONSOLE_LINES = Math.floor(screen.height / (consoleFont.charHeight + marginy)) - 1;
     console.addListener(listener);
 
     export function isVisible() {
@@ -15,31 +15,40 @@ namespace game.consoleOverlay {
         consoleStrings = [];
     }
 
-    export function setVisible(value: boolean) {
+    export function setVisible(value: boolean, col?: number) {
         if (value != !!consoleStrings)
             consoleStrings = value ? [] : undefined;
+        if (col !== undefined)
+            consoleColor = col;
     }
 
     function listener(priority: ConsolePriority, text: string) {
         if (!consoleStrings)
             return;
-        else if (consoleStrings.length < consoleLines)
+
+        let newLineIndex = text.indexOf("\n");
+        while (newLineIndex >= 0) {
+            consoleStrings.push(text.substr(0, newLineIndex))
+            text = text.substr(newLineIndex + 1, text.length);
+            newLineIndex = text.indexOf("\n");
+        }
+
+        if (!!text) {
             consoleStrings.push(text);
-        else {
-            for (let i = 1; i < consoleStrings.length; ++i) {
-                consoleStrings[i - 1] = consoleStrings[i];
-            }
-            consoleStrings[consoleStrings.length - 1] = text;
+        }
+
+        if (consoleStrings.length > MAX_CONSOLE_LINES) {
+            consoleStrings.splice(0, consoleStrings.length - MAX_CONSOLE_LINES);
         }
     }
 
     export function draw() {
         if (!consoleStrings || scene.systemMenu.isVisible()) return;
-        const height = consoleFont.charHeight + marginy ;
-        const top = 2 + (game.stats ? height : 0);
+        const lineHeight = consoleFont.charHeight + marginy;
+        const top = 2 + (game.stats ? lineHeight : 0);
         for (let i = 0; i < consoleStrings.length; ++i) {
             const t = consoleStrings[i];
-            screen.print(t, marginx, top + i * height, consoleColor, consoleFont);
+            screen.print(t, marginx, top + i * lineHeight, consoleColor, consoleFont);
         }
     }
 }
