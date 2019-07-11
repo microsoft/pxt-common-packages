@@ -112,8 +112,8 @@ namespace console {
     ${
         keys
             .map(key => key + ": " + obj[key])
-            .join(",\n\t")
-        + (snipped ? "\n\t..." : "")
+            .join(",\n    ")
+        + (snipped ? "\n    ..." : "")
     }
 }`;
         }
