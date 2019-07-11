@@ -81,7 +81,12 @@ namespace console {
         } else if (typeof obj == "number") {
             return "" + obj;
         } else if (Array.isArray(obj)) {
-            return (obj as Array<string>).join(",");
+            const asArr = (obj as Array<string>);
+            if (asArr.length <= 20) {
+                return asArr.join(",");
+            } else {
+                return `${asArr.slice(0, 20).join(",")}...`;
+            }
         /** TODO: should handle objects with toString like this:
          * } else if (obj.toString) {
          *    return obj.toString();
@@ -95,12 +100,18 @@ namespace console {
                 return asString;
             }
 
-            const keys = Object.keys(obj);
+            let keys = Object.keys(obj);
+            const snipped = keys.length >= 20;
+            if (snipped) {
+                keys = keys.slice(0, 20);
+            }
+
             return`{
     ${
         keys
             .map(key => key + ": " + obj[key])
             .join(",\n\t")
+        + (snipped ? "\n\t..." : "")
     }
 }`;
         }
