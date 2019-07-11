@@ -97,7 +97,8 @@ namespace console {
          */
         } else {
             const asString = obj + "";
-            if (asString != "[object Object]") {
+            if (asString != "[object Object]"
+                && asString != "[Object]") { // on arcade at least, default toString is [Object] on hardware instead of standard
                 return asString;
             }
 
