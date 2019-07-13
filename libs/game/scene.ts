@@ -134,13 +134,6 @@ namespace scene {
                 control.enablePerfCounter("controller_update")
                 controller.__update(this.eventContext.deltaTime);
             })
-            // update sprites in tilemap
-            this.eventContext.registerFrameHandler(TILEMAP_PRIORITY, () => {
-                control.enablePerfCounter("tilemap_update")
-                if (this.tileMap) {
-                    this.tileMap.update(this.camera);
-                }
-            })
             // controller update 13
             this.eventContext.registerFrameHandler(CONTROLLER_SPRITES_PRIORITY, controller._moveSprites);
             // apply physics and collisions 15

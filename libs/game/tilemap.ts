@@ -79,25 +79,23 @@ namespace tiles {
         }
     }
 
-    export class TileMap implements SpriteLike {
-        id: number;
-        z: number;
+    export class TileMap {
         scale: number
 
         private _layer: number;
-
         private _map: Image;
         private _tileSets: TileSet[];
 
         constructor(scale: TileScale = TileScale.Sixteen) {
             this._tileSets = [];
             this._layer = 1;
-            this.z = -1;
             this.scale = scale;
 
             const sc = game.currentScene();
-            sc.addSprite(this);
-            sc.flags |= scene.Flag.NeedsSorting;
+            sc.registerRenderable(
+                (t, c) => this.draw(c),
+                -1
+            );
         }
 
         get image(): Image {
@@ -167,14 +165,24 @@ namespace tiles {
             return output;
         }
 
-        __serialize(offset: number): Buffer { return undefined; }
+        private generateTile(index: number): TileSet {
+            const size = 1 << this.scale
 
-        __update(camera: scene.Camera, dt: number): void { }
+            const i = image.create(size, size);
+            i.fill(index);
+            return this._tileSets[index] = new TileSet(i, false, this);
+        }
 
-        /**
-         * Draws all visible
-         */
-        __draw(camera: scene.Camera): void {
+        private isOutsideMap(col: number, row: number): boolean {
+            return !this.enabled || col < 0 || col >= this._map.width
+                || row < 0 || row >= this._map.height;
+        }
+
+        private isInvalidIndex(index: number): boolean {
+            return index < 0 || index > 0xf;
+        }
+
+        draw(camera: scene.Camera) {
             if (!this.enabled) return;
 
             const bitmask = (0x1 << this.scale) - 1;
@@ -199,35 +207,8 @@ namespace tiles {
                     }
                 }
             }
-        }
-
-        private generateTile(index: number): TileSet {
-            const size = 1 << this.scale
-
-            const i = image.create(size, size);
-            i.fill(index);
-            return this._tileSets[index] = new TileSet(i, false, this);
-        }
-
-        private isOutsideMap(col: number, row: number): boolean {
-            return !this.enabled || col < 0 || col >= this._map.width
-                || row < 0 || row >= this._map.height;
-        }
-
-        private isInvalidIndex(index: number): boolean {
-            return index < 0 || index > 0xf;
-        }
-
-        draw(camera: scene.Camera) {
-            if (!this.enabled) return;
 
             if (game.debug) {
-                const offsetX = -camera.drawOffsetX;
-                const offsetY = -camera.drawOffsetY;
-                const x0 = Math.max(0, -(offsetX >> this.scale));
-                const xn = Math.min(this._map.width, (-offsetX + screen.width) >> this.scale);
-                const y0 = Math.max(0, -(offsetY >> this.scale));
-                const yn = Math.min(this._map.height, (-offsetY + screen.height) >> this.scale);
                 for (let x = x0; x <= xn; ++x) {
                     screen.drawLine(
                         (x << this.scale) + offsetX,
@@ -248,8 +229,6 @@ namespace tiles {
                 }
             }
         }
-
-        public update(camera: scene.Camera) { }
 
         public isObstacle(col: number, row: number) {
             if (!this.enabled) return false;
