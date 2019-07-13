@@ -587,7 +587,13 @@ class Sprite implements SpriteLike {
 
         // debug info
         if (game.debug) {
-            screen.drawRect(Fx.toInt(this._hitbox.left), Fx.toInt(this._hitbox.top), this._hitbox.width, this._hitbox.height, 1);
+            screen.drawRect(
+                Fx.toInt(this._hitbox.left) - camera.drawOffsetX,
+                Fx.toInt(this._hitbox.top) - camera.drawOffsetY,
+                this._hitbox.width,
+                this._hitbox.height,
+                1
+            );
         }
     }
 
