@@ -73,14 +73,7 @@ namespace control {
             return this.deltaTimeMillis / 1000;
         }
 
-        private runningCallbacks = false;
         private runCallbacks() {
-            if (this.runningCallbacks) {
-                // still invoking on this context in a different fiber;
-                // delay until that fiber ceases
-                return 1;
-            }
-            this.runningCallbacks = true;
             control.enablePerfCounter("all frame callbacks")
 
             let loopStart = control.millis()
@@ -107,23 +100,33 @@ namespace control {
             }
             let delay = Math.max(1, 20 - runtime)
 
-            this.runningCallbacks = false;
             return delay
         }
 
+        private runningCallbacks = false;
         private registerFrameCallbacks() {
             if (!this.frameCallbacks) return;
 
-            this.framesInSample = 0;
-            this.timeInSample = 0;
-            this.deltaTimeMillis = 0;
-            this.prevTimeMillis = control.millis();
-            const worker = this.frameWorker;
             control.runInParallel(() => {
+                if (this.runningCallbacks) {
+                    // this context is still being invoking in a different fiber;
+                    // delay until the other fiber doing so has ceased.
+                    pauseUntil(() => !this.runningCallbacks);
+                }
+                this.runningCallbacks = true;
+
+                this.framesInSample = 0;
+                this.timeInSample = 0;
+                this.deltaTimeMillis = 0;
+                this.prevTimeMillis = control.millis();
+                const worker = this.frameWorker;
+
                 while (worker == this.frameWorker) {
                     let delay = this.runCallbacks()
                     pause(delay)
                 }
+
+                this.runningCallbacks = false;
             })
         }
 
