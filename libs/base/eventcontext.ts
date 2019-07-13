@@ -73,7 +73,14 @@ namespace control {
             return this.deltaTimeMillis / 1000;
         }
 
+        private runningCallbacks = false;
         private runCallbacks() {
+            if (this.runningCallbacks) {
+                // still invoking on this context in a different fiber;
+                // delay until that fiber ceases
+                return 1;
+            }
+            this.runningCallbacks = true;
             control.enablePerfCounter("all frame callbacks")
 
             let loopStart = control.millis()
@@ -99,6 +106,8 @@ namespace control {
                 this.framesInSample = 0
             }
             let delay = Math.max(1, 20 - runtime)
+
+            this.runningCallbacks = false;
             return delay
         }
 
