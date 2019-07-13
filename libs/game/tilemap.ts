@@ -93,7 +93,7 @@ namespace tiles {
 
             const sc = game.currentScene();
             sc.registerRenderable(
-                (t, c) => this.draw(c),
+                (t, c) => this.draw(t, c),
                 -1
             );
         }
@@ -182,7 +182,7 @@ namespace tiles {
             return index < 0 || index > 0xf;
         }
 
-        draw(camera: scene.Camera) {
+        protected draw(target: Image, camera: scene.Camera) {
             if (!this.enabled) return;
 
             const bitmask = (0x1 << this.scale) - 1;
@@ -190,16 +190,16 @@ namespace tiles {
             const offsetY = camera.drawOffsetY & bitmask;
 
             const x0 = Math.max(0, camera.drawOffsetX >> this.scale);
-            const xn = Math.min(this._map.width, ((camera.drawOffsetX + screen.width) >> this.scale) + 1);
+            const xn = Math.min(this._map.width, ((camera.drawOffsetX + target.width) >> this.scale) + 1);
             const y0 = Math.max(0, camera.drawOffsetY >> this.scale);
-            const yn = Math.min(this._map.height, ((camera.drawOffsetY + screen.height) >> this.scale) + 1);
+            const yn = Math.min(this._map.height, ((camera.drawOffsetY + target.height) >> this.scale) + 1);
 
             for (let x = x0; x <= xn; ++x) {
                 for (let y = y0; y <= yn; ++y) {
                     const index = this._map.getPixel(x, y);
                     const tile = this._tileSets[index] || this.generateTile(index);
                     if (tile) {
-                        screen.drawTransparentImage(
+                        target.drawTransparentImage(
                             tile.image,
                             ((x - x0) << this.scale) - offsetX,
                             ((y - y0) << this.scale) - offsetY
@@ -210,7 +210,7 @@ namespace tiles {
 
             if (game.debug) {
                 for (let x = x0; x <= xn; ++x) {
-                    screen.drawLine(
+                    target.drawLine(
                         (x << this.scale) + offsetX,
                         offsetY,
                         (x << this.scale) + offsetX,
@@ -219,7 +219,7 @@ namespace tiles {
                     );
                 }
                 for (let y = y0; y <= yn; ++y) {
-                    screen.drawLine(
+                    target.drawLine(
                         offsetX,
                         (y << this.scale) + offsetY,
                         (this._map.width << this.scale) + offsetX,
