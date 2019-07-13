@@ -185,6 +185,7 @@ namespace tiles {
         protected draw(target: Image, camera: scene.Camera) {
             if (!this.enabled) return;
 
+            // render tile map
             const bitmask = (0x1 << this.scale) - 1;
             const offsetX = camera.drawOffsetX & bitmask;
             const offsetY = camera.drawOffsetY & bitmask;
@@ -209,23 +210,31 @@ namespace tiles {
             }
 
             if (game.debug) {
+                // render debug grid overlay
                 for (let x = x0; x <= xn; ++x) {
-                    target.drawLine(
-                        (x << this.scale) + offsetX,
-                        offsetY,
-                        (x << this.scale) + offsetX,
-                        (this._map.height << this.scale) + offsetY,
-                        1
-                    );
+                    const xLine = ((x - x0) << this.scale) - offsetX;
+                    if (xLine >= 0 && xLine <= screen.width) {
+                        target.drawLine(
+                            xLine,
+                            0,
+                            xLine,
+                            target.height,
+                            1
+                        );
+                    }
                 }
+
                 for (let y = y0; y <= yn; ++y) {
-                    target.drawLine(
-                        offsetX,
-                        (y << this.scale) + offsetY,
-                        (this._map.width << this.scale) + offsetX,
-                        (y << this.scale) + offsetY,
-                        1
-                    );
+                    const yLine = ((y - y0) << this.scale) - offsetY;
+                    if (yLine >= 0 && yLine <= screen.height) {
+                        target.drawLine(
+                            0,
+                            yLine,
+                            target.width,
+                            yLine,
+                            1
+                        );
+                    }
                 }
             }
         }
