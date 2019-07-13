@@ -220,8 +220,8 @@ namespace scene {
         }
 
         registerRenderable(
-            handler: (target: Image, camera: Camera) => void,
-            z = 100
+            z: number,
+            handler: (target: Image, camera: Camera) => void
         ): SpriteLike {
             const renderable = new Renderable(
                 handler,
@@ -230,6 +230,10 @@ namespace scene {
 
             this.allSprites.push(renderable);
             return renderable;
+        }
+
+        removeRenderable(renderable: Renderable) {
+            this.allSprites.removeElement(renderable);
         }
 
         /**

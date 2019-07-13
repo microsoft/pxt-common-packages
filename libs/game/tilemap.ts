@@ -93,8 +93,8 @@ namespace tiles {
 
             const sc = game.currentScene();
             sc.registerRenderable(
-                (t, c) => this.draw(t, c),
-                -1
+                -1,
+                (t, c) => this.draw(t, c)
             );
         }
 
