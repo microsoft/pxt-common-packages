@@ -30,6 +30,37 @@ namespace scene {
         lock: boolean;
         handler: () => void;
     }
+    
+    class Renderable implements SpriteLike {
+        protected _z: number;
+        public id: number
+        public constructor(
+            protected handler: (target: Image, camera: Camera) => void,
+            z: number
+        ) {
+            this.z = z;
+            game.currentScene().addSprite(this);
+        }
+
+        get z(): number {
+            return this._z;
+        }
+
+        set z(v: number) {
+            if (this._z !== v) {
+                this._z = v;
+                game.currentScene().flags |= Flag.NeedsSorting;
+            }
+        }
+        
+        __draw(camera: scene.Camera) {
+            this.handler(screen, camera);
+        }
+
+        __update() { }
+
+        __serialize(): Buffer { return undefined }
+    }
 
     export const CONTROLLER_PRIORITY = 8;
     export const TILEMAP_PRIORITY = 9;
@@ -132,9 +163,10 @@ namespace scene {
             // paint 75
             // render sprites 90
             this.eventContext.registerFrameHandler(RENDER_SPRITES_PRIORITY, () => {
+                this.cachedRender = undefined;
                 control.enablePerfCounter("sprite_draw")
                 if (this.flags & Flag.NeedsSorting)
-                    this.allSprites.sort(function (a, b) { return a.z - b.z || a.id - b.id; })
+                    this.allSprites.sort((a, b) => a.z - b.z || a.id - b.id)
                 for (const s of this.allSprites)
                     s.__draw(this.camera);
             })
@@ -193,5 +225,42 @@ namespace scene {
             this.gameForeverHandlers = undefined;
             this._data = undefined;
         }
+
+        registerRenderable(
+            handler: (target: Image, camera: Camera) => void,
+            z = 100
+        ): SpriteLike {
+            const renderable = new Renderable(
+                handler,
+                z
+            );
+
+            this.allSprites.push(renderable);
+            return renderable;
+        }
+
+        /**
+         * renders the current frame as an image
+         */
+        render(): Image {
+            if (this.cachedRender) {
+                return this.cachedRender;
+            }
+            // todo: un-dup this from init; either call this from the update, or split into
+            // a few helpers
+            this.background.draw();
+
+            if (this.flags & Flag.NeedsSorting)
+                this.allSprites.sort(function (a, b) { return a.z - b.z || a.id - b.id; })
+            for (const s of this.allSprites)
+                s.__draw(this.camera);
+
+            // TODO: render game.onShade here
+            // TODO: render info values here -- register that as a renderable.
+            // TODO: register tilemap as renderable
+            this.cachedRender = screen.clone();
+            return this.cachedRender;
+        }
+        cachedRender: Image;
     }
 }
