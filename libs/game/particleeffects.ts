@@ -51,11 +51,9 @@ namespace effects {
      */
     class SceneAnchor implements particles.ParticleAnchor {
         private camera: scene.Camera;
-        flags: number; //TODO: remove pending fix for https://github.com/Microsoft/pxt-arcade/issues/504
 
         constructor() {
             this.camera = game.currentScene().camera;
-            this.flags = 0;  //TODO: remove pending fix for https://github.com/Microsoft/pxt-arcade/issues/504
         }
 
         get x() {

@@ -136,6 +136,7 @@ namespace sprites {
     }
 
     export enum Flag {
+        None = 0, // no flags are set
         Ghost = 1 << 0, // doesn't collide with other sprites
         Destroyed = 1 << 1,
         AutoDestroy = 1 << 2, // remove the sprite when no longer visible
@@ -143,5 +144,6 @@ namespace sprites {
         DestroyOnWall = 1 << 4, // destroy sprite on contact with wall
         BounceOnWall = 1 << 5, // Bounce on walls
         ShowPhysics = 1 << 6, // display position, velocity, acc
+        Invisible = 1 << 7, // makes the sprite invisible, so it does not show up on the screen
     }
 }

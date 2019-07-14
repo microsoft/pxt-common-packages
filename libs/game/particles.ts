@@ -72,7 +72,7 @@ namespace particles {
          */
         lifespan: number;
 
-        protected flags: number;
+        protected pFlags: number;
         protected head: Particle;
         protected timer: number;
         protected period: number;
@@ -110,7 +110,7 @@ namespace particles {
                 removedSource.destroy();
             }
 
-            this.flags = 0;
+            this.pFlags = 0;
             this.setRate(particlesPerSecond);
             this.setAcceleration(0, 0);
             this.setAnchor(anchor);
@@ -192,7 +192,7 @@ namespace particles {
                 this.head = this.head.next;
             }
 
-            if ((this.flags & Flag.destroyed) && !this.head) {
+            if ((this.pFlags & Flag.destroyed) && !this.head) {
                 const scene = game.currentScene();
                 if (scene)
                     scene.allSprites.removeElement(this);
@@ -229,7 +229,7 @@ namespace particles {
         }
 
         get enabled() {
-            return !!(this.flags & Flag.enabled);
+            return !!(this.pFlags & Flag.enabled);
         }
 
         /**
@@ -237,7 +237,7 @@ namespace particles {
          */
         set enabled(v: boolean) {
             if (v !== this.enabled) {
-                this.flags = v ? (this.flags | Flag.enabled) : (this.flags ^ Flag.enabled);
+                this.pFlags = v ? (this.pFlags | Flag.enabled) : (this.pFlags ^ Flag.enabled);
                 this.timer = 0;
             }
         }
@@ -248,7 +248,7 @@ namespace particles {
         destroy() {
             // The `_prune` step will finishing destroying this Source once all emitted particles finish rendering
             this.enabled = false;
-            this.flags |= Flag.destroyed;
+            this.pFlags |= Flag.destroyed;
             this._prune();
         }
 

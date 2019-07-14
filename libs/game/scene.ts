@@ -34,11 +34,14 @@ namespace scene {
     class Renderable implements SpriteLike {
         protected _z: number;
         public id: number
+
         public constructor(
             protected handler: (target: Image, camera: Camera) => void,
-            z: number
+            protected shouldBeVisible: () => boolean,
+            z: number,
         ) {
             this.z = z;
+
             game.currentScene().addSprite(this);
         }
 
@@ -52,7 +55,11 @@ namespace scene {
                 game.currentScene().flags |= Flag.NeedsSorting;
             }
         }
-        
+
+        get flags(): number {
+            return this.shouldBeVisible() ? sprites.Flag.None : sprites.Flag.Invisible;
+        }
+
         __draw(camera: scene.Camera) {
             this.handler(screen, camera);
         }
@@ -158,10 +165,14 @@ namespace scene {
             this.eventContext.registerFrameHandler(RENDER_SPRITES_PRIORITY, () => {
                 this.cachedRender = undefined;
                 control.enablePerfCounter("sprite_draw")
-                if (this.flags & Flag.NeedsSorting)
-                    this.allSprites.sort((a, b) => a.z - b.z || a.id - b.id)
-                for (const s of this.allSprites)
-                    s.__draw(this.camera);
+                if (this.flags & Flag.NeedsSorting) {
+                    this.allSprites.sort((a, b) => a.z - b.z || a.id - b.id);
+                }
+                for (const s of this.allSprites) {
+                    if (!(s.flags & sprites.Flag.Invisible)) {
+                        s.__draw(this.camera);
+                    }
+                }
             })
             // render diagnostics
             this.eventContext.registerFrameHandler(RENDER_DIAGNOSTICS_PRIORITY, () => {
@@ -221,11 +232,13 @@ namespace scene {
 
         registerRenderable(
             z: number,
-            handler: (target: Image, camera: Camera) => void
+            handler: (target: Image, camera: Camera) => void,
+            shouldBeVisible?: () => boolean
         ): SpriteLike {
             const renderable = new Renderable(
                 handler,
-                z
+                shouldBeVisible || (() => true),
+                z,
             );
 
             this.allSprites.push(renderable);

@@ -10,7 +10,9 @@ enum SpriteFlag {
     //% block="bounce on wall"
     BounceOnWall = sprites.Flag.BounceOnWall,
     //% block="show physics"
-    ShowPhysics = sprites.Flag.ShowPhysics
+    ShowPhysics = sprites.Flag.ShowPhysics,
+    //% block="invisible"
+    Invisible = sprites.Flag.Invisible,
 }
 
 enum CollisionDirection {
@@ -27,6 +29,8 @@ enum CollisionDirection {
 interface SpriteLike {
     z: number;
     id: number;
+    flags?: number;
+
     __update(camera: scene.Camera, dt: number): void;
     __draw(camera: scene.Camera): void;
     __serialize(offset: number): Buffer;
