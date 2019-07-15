@@ -82,13 +82,13 @@ namespace esp32spi {
         /** Attempt to return as many bytes as we can up to but not including '\r\n' */
         public readLine(): string {
             // print("Socket readline")
-            let stamp = time.monotonic()
+            let stamp = monotonic()
             while (this._buffer.indexOf(hex`0d0a`) < 0) {
                 // there's no line already in there, read some more
                 let avail = Math.min(esp32spi.SPIController.instance.socketAvailable(this._socknum), MAX_PACKET)
                 if (avail) {
                     this._buffer = this._buffer.concat(esp32spi.SPIController.instance.socketRead(this._socknum, avail))
-                } else if (this._timeout > 0 && time.monotonic() - stamp > this._timeout) {
+                } else if (this._timeout > 0 && monotonic() - stamp > this._timeout) {
                     // Make sure to close socket so that we don't exhaust sockets.
                     this.close()
                     control.fail("Didn't receive full response, failing out")
@@ -116,20 +116,20 @@ namespace esp32spi {
                 return ret
             }
 
-            let stamp = time.monotonic()
+            let stamp = monotonic()
             let to_read = size - this._buffer.length
             let received = []
             while (to_read > 0) {
                 // print("Bytes to read:", to_read)
                 let avail = Math.min(esp32spi.SPIController.instance.socketAvailable(this._socknum), MAX_PACKET)
                 if (avail) {
-                    stamp = time.monotonic()
+                    stamp = monotonic()
                     let recv = esp32spi.SPIController.instance.socketRead(this._socknum, Math.min(to_read, avail))
                     received.push(recv)
                     to_read -= recv.length
                 }
 
-                if (this._timeout > 0 && time.monotonic() - stamp > this._timeout) {
+                if (this._timeout > 0 && monotonic() - stamp > this._timeout) {
                     break
                 }
 

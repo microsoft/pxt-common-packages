@@ -1,13 +1,12 @@
-function print(msg: string) {
-    console.log(msg);
-}
-namespace time {
+namespace esp32spi {
     export function monotonic(): number {
         return control.millis() / 1000.0;
     }
-}
 
-namespace esp32spi {
+    export function print(msg: string) {
+        console.log(msg);
+    }
+    
     export class AccessPoint {
         rssi: number;
         encryption: number;
@@ -648,9 +647,9 @@ namespace esp32spi {
             }
 
             this.socketOpen(socket_num, dest, port, conn_mode)
-            let times = time.monotonic()
+            let times = monotonic()
             // wait 3 seconds
-            while (time.monotonic() - times < 3) {
+            while (monotonic() - times < 3) {
                 if (this.socket_connected(socket_num)) {
                     return true
                 }
