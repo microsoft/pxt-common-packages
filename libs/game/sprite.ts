@@ -435,7 +435,7 @@ class Sprite implements SpriteLike {
         let holdTextSeconds = 1.5;
         let bubblePadding = 4;
         let maxTextWidth = 100;
-        let font = image.font8;
+        let font = image.getFontForText(text);
         let startX = 2;
         let startY = 2;
         let bubbleWidth = text.length * font.charWidth + bubblePadding;

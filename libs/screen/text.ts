@@ -126,6 +126,23 @@ a420a8fcaa828400 a720087e2a1c0800 ab200098a4a6bf02 ac20183c5a5a4200 af20627f2244
 
     }
 
+    // A unicode 12x12 pixel font based on https://github.com/adobe-fonts/source-han-sans
+    //% whenUsed jres
+    export const font12: Font = {
+        charWidth: 12,
+        charHeight: 12,
+        data: hex``
+    }
+
+    export function getFontForText(text: string) {
+        for (let i = 0; i < text.length; ++i) {
+            // this is quite approximate
+            if (text.charCodeAt(i) > 0x2000)
+                return image.font12
+        }
+        return image.font8
+    }
+
     //% deprecated=1 hidden=1
     export function doubledFont(f: Font): Font {
         return scaledFont(f, 2)
@@ -181,7 +198,7 @@ interface Image {
 
 namespace helpers {
     export function imagePrintCenter(img: Image, text: string, y: number, color?: number, font?: image.Font) {
-        if (!font) font = image.font8
+        if (!font) font = image.getFontForText(text)
         let w = text.length * font.charWidth
         let x = (img.width - w) / 2
         imagePrint(img, text, x, y, color, font)
@@ -190,7 +207,8 @@ namespace helpers {
     export function imagePrint(img: Image, text: string, x: number, y: number, color?: number, font?: image.Font, offsets?: texteffects.TextEffectState[]) {
         x |= 0
         y |= 0
-        if (!font) font = image.font8
+        if (!font)
+            font = image.getFontForText(text)
         if (!color) color = 1
         let x0 = x
         let cp = 0
@@ -225,72 +243,57 @@ namespace helpers {
             if (ch < 32)
                 continue // skip control chars
 
-            // decompose Korean characters
-            let arr = [ch]
-            if (44032 <= ch && ch <= 55203) {
-                ch -= 44032
-                arr = [
-                    Math.idiv(ch, 588) + 0x1100,
-                    (Math.idiv(ch, 28) % 21) + 0x1161,
-                ]
-                ch %= 28
-                if (ch)
-                    arr.push(ch % 28 + 0x11a7)
+            let l = 0
+            let r = lastchar
+            let off = 0 // this should be a space (0x0020)
+            let guess = (ch - 32) * dataSize
+            if (fontdata.getNumber(NumberFormat.UInt16LE, guess) == ch)
+                off = guess
+            else {
+                while (l <= r) {
+                    let m = l + ((r - l) >> 1);
+                    let v = fontdata.getNumber(NumberFormat.UInt16LE, m * dataSize)
+                    if (v == ch) {
+                        off = m * dataSize
+                        break
+                    }
+                    if (v < ch)
+                        l = m + 1
+                    else
+                        r = m - 1
+                }
             }
 
-            for (let cc of arr) {
-                let l = 0
-                let r = lastchar
-                let off = 0 // this should be a space (0x0020)
-                let guess = (cc - 32) * dataSize
-                if (fontdata.getNumber(NumberFormat.UInt16LE, guess) == cc)
-                    off = guess
-                else {
-                    while (l <= r) {
-                        let m = l + ((r - l) >> 1);
-                        let v = fontdata.getNumber(NumberFormat.UInt16LE, m * dataSize)
-                        if (v == cc) {
-                            off = m * dataSize
-                            break
+            if (mult == 1) {
+                imgBuf.write(4, fontdata.slice(off + 2, charSize))
+                img.drawIcon(imgBuf, x + xOffset, y + yOffset, color)
+                x += font.charWidth
+            } else {
+                off += 2
+                for (let i = 0; i < dataW; ++i) {
+                    let j = 0
+                    let mask = 0x01
+                    let c = fontdata[off++]
+                    while (j < dataH) {
+                        if (mask == 0x100) {
+                            c = fontdata[off++]
+                            mask = 0x01
                         }
-                        if (v < cc)
-                            l = m + 1
-                        else
-                            r = m - 1
+                        let n = 0
+                        while (c & mask) {
+                            n++
+                            mask <<= 1
+                        }
+                        if (n) {
+                            img.fillRect(x + xOffset * mult, y + (j + yOffset) * mult, mult, mult * n, color)
+                            j += n
+                        } else {
+                            mask <<= 1
+                            j++
+                        }
                     }
                 }
-
-                if (mult == 1) {
-                    imgBuf.write(4, fontdata.slice(off + 2, charSize))
-                    img.drawIcon(imgBuf, x + xOffset, y + yOffset, color)
-                    x += font.charWidth
-                } else {
-                    off += 2
-                    for (let i = 0; i < dataW; ++i) {
-                        let j = 0
-                        let mask = 0x01
-                        let c = fontdata[off++]
-                        while (j < dataH) {
-                            if (mask == 0x100) {
-                                c = fontdata[off++]
-                                mask = 0x01
-                            }
-                            let n = 0
-                            while (c & mask) {
-                                n++
-                                mask <<= 1
-                            }
-                            if (n) {
-                                img.fillRect(x + xOffset * mult, y + (j + yOffset) * mult, mult, mult * n, color)
-                                j += n
-                            } else {
-                                mask <<= 1
-                                j++
-                            }
-                        }
-                        x += mult
-                    }
-                }
+                x += mult
             }
         }
     }
