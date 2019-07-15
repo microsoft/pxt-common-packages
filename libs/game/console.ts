@@ -26,16 +26,9 @@ namespace game.consoleOverlay {
         if (!consoleStrings)
             return;
 
-        let newLineIndex = text.indexOf("\n");
-        while (newLineIndex >= 0) {
-            consoleStrings.push(text.substr(0, newLineIndex))
-            text = text.substr(newLineIndex + 1, text.length);
-            newLineIndex = text.indexOf("\n");
-        }
-
-        if (!!text) {
-            consoleStrings.push(text);
-        }
+        text.split("\n")
+            .filter(line => !!line)
+            .forEach(line => consoleStrings.push(line));
 
         if (consoleStrings.length > MAX_CONSOLE_LINES) {
             consoleStrings.splice(0, consoleStrings.length - MAX_CONSOLE_LINES);
@@ -44,11 +37,11 @@ namespace game.consoleOverlay {
 
     export function draw() {
         if (!consoleStrings || scene.systemMenu.isVisible()) return;
-        const lineHeight = consoleFont.charHeight + marginy;
-        const top = 2 + (game.stats ? lineHeight : 0);
+        const height = consoleFont.charHeight + marginy;
+        const top = 2 + (game.stats ? height : 0);
         for (let i = 0; i < consoleStrings.length; ++i) {
             const t = consoleStrings[i];
-            screen.print(t, marginx, top + i * lineHeight, consoleColor, consoleFont);
+            screen.print(t, marginx, top + i * height, consoleColor, consoleFont);
         }
     }
 }
