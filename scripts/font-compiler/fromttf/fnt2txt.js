@@ -126,4 +126,4 @@ charWidth=12
 charHeight=12
 jres=1
 ` + rr
-fs.writeFileSync("adobe-source-han-sans.txt", rr, "utf8")
+fs.writeFileSync("font12.txt", rr, "utf8")

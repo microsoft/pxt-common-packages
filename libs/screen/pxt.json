@@ -16,7 +16,7 @@
         "pxtparts.json",
         "imagesoverrides.jres",
         "imagesoverrides.ts",
-        "source-han-sans.jres"
+        "font12.jres"
     ],
     "public": true,
     "dependencies": {
