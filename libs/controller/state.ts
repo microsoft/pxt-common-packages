@@ -2,8 +2,15 @@ namespace controller {
     export interface ControllerSceneState {
         lastGesture?: ControllerGesture;
         gestureHandlers?: any;
+        lastCustomGesture?: number;
+        customGestureHandlers?: any;
         lastLightCondition?: ControllerLightCondition;
         lightHandlers?: any;
+    }
+
+    export interface CustomGestureHandler {
+        update: () => boolean;
+        handler: () => void;
     }
 
     export function sceneState(): ControllerSceneState {
@@ -20,17 +27,24 @@ namespace controller {
     function updateController() {
         const state = sceneState();
         // accelerometer
-        if (state.gestureHandlers 
-            && state.lastGesture !== undefined 
-            && state.gestureHandlers[state.lastGesture]) {
-            const handler = state.gestureHandlers[state.lastGesture];
-            state.lastGesture = undefined;
-            handler();
+        if (state.lastGesture !== undefined) {
+            const handler = state.gestureHandlers && state.gestureHandlers[state.lastGesture];
+            if (handler) {
+                state.lastGesture = undefined;
+                handler();
+            }
+        }
+        if (state.lastCustomGesture !== undefined) {
+            const customHandler = state.customGestureHandlers && state.customGestureHandlers[state.lastCustomGesture] as CustomGestureHandler;
+            if (customHandler) {
+                state.lastCustomGesture = undefined;
+                customHandler.handler();
+            }
         }
 
         // light sensor
-        if (state.lightHandlers 
-            && state.lastLightCondition !== undefined 
+        if (state.lightHandlers
+            && state.lastLightCondition !== undefined
             && state.lightHandlers[state.lastLightCondition]) {
             const handler = state.lightHandlers[state.lastLightCondition];
             state.lastLightCondition = undefined;
@@ -42,5 +56,5 @@ namespace controller {
         s.eventContext.registerFrameHandler(scene.UPDATE_CONTROLLER_PRIORITY, updateController);
     }
 
-    scene.Scene.initializers.push(initController);    
+    scene.Scene.initializers.push(initController);
 }

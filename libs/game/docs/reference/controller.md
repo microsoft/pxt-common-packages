@@ -23,6 +23,10 @@ controller.player2.dy()
 
 ## Configuration
 
+```cards
+controller.setRepeatDefault(0, 0)
+```
+
 * [Button Repeat Interval](/reference/controller/button/repeat-interval)
 * [Button Repeat Delay](/reference/controller/button/repeat-delay)
 
@@ -33,4 +37,5 @@ controller.player2.dy()
 [on button event](/reference/controller/button/on-buttonevent),
 [move sprite](/reference/controller/move-sprite),
 [dx](/reference/controller/dx),
-[dy](/reference/controller/dy)
+[dy](/reference/controller/dy),
+[set repeat default](/reference/controller/set-repeat-default)

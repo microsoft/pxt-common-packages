@@ -7,8 +7,7 @@
 #define SW_TRIANGLE 1
 #define SW_SAWTOOTH 2
 #define SW_SINE 3 // TODO remove it? it takes space
-#define SW_NOISE 4
-#define SW_REAL_NOISE 5
+#define SW_NOISE 5
 #define SW_SQUARE_10 11
 #define SW_SQUARE_50 15
 
@@ -19,6 +18,7 @@ struct SoundInstruction {
     uint16_t duration;   // ms
     int16_t startVolume; // 0-1023
     int16_t endVolume;   // 0-1023
+    uint16_t endFrequency;  // Hz
 };
 
 #ifdef DATASTREAM_MAXIMUM_BUFFERS
@@ -49,6 +49,8 @@ struct PlayingSound {
     uint32_t samplesLeftInCurr;
     uint32_t tonePosition;
     int32_t prevVolume;
+    uint32_t prevToneStep;
+    int32_t prevToneDelta;
     WaitingSound *sound;
     SoundInstruction *currInstr, *instrEnd;
 };
@@ -75,13 +77,7 @@ class WSynthesizer
     int fillSamples(int16_t *dst, int numsamples);
     int updateQueues();
 
-    WSynthesizer() : upstream(NULL), out(*this) {
-        currSample = 0;
-        active = false;
-        sampleRate = out.dac.getSampleRate();
-        memset(&playingSounds, 0, sizeof(playingSounds));
-        waiting = NULL;
-    }
+    WSynthesizer();
     virtual ~WSynthesizer() {}
 
     void pokeUpstream() {

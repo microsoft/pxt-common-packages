@@ -65,9 +65,15 @@ namespace controller {
             this.repeatDelay = undefined;
             this.repeatInterval = undefined;
             this._repeatCount = 0;
-            control.internalOnEvent(INTERNAL_KEY_UP, this.id, () => this.setPressed(false), 16)
-            control.internalOnEvent(INTERNAL_KEY_DOWN, this.id, () => this.setPressed(true), 16)
+            if (id > 0) {
+                // this is to deal with the "anyButton" hack, which creates a button that is not visible
+                // in the UI, but used in event-handler to simulate the wildcard ANY for matching. As 
+                // this button can't actually be pressed, we don't want it to propagate events
+                control.internalOnEvent(INTERNAL_KEY_UP, this.id, () => this.setPressed(false), 16)
+                control.internalOnEvent(INTERNAL_KEY_DOWN, this.id, () => this.setPressed(true), 16)
+            }
             if (buttonId > -1) {
+                // only add these events when running on real hardware
                 control.internalOnEvent(buttonId, DAL.DEVICE_BUTTON_EVT_UP, () => control.raiseEvent(INTERNAL_KEY_UP, this.id), 16)
                 control.internalOnEvent(buttonId, DAL.DEVICE_BUTTON_EVT_DOWN, () => control.raiseEvent(INTERNAL_KEY_DOWN, this.id), 16)
             }
@@ -165,9 +171,6 @@ namespace controller {
      * @param delay number of milliseconds from when the button is pressed to when the repeat event starts firing, eg: 500
      * @param interval minimum number of milliseconds between calls to the button repeat event, eg: 30
      */
-    //% blockId=repeatDefaultDelayInterval block="set button repeat delay $delay ms interval $interval ms"
-    //% weight=10
-    //% group="Single Player"
     export function setRepeatDefault(delay: number, interval: number) {
         defaultRepeatDelay = delay;
         defaultRepeatInterval = interval;

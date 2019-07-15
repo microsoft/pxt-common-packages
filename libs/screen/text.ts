@@ -189,7 +189,7 @@ f3000c12130d0000 04010e05051e1000 05010609191f0800 06010c1213131200 07010c121313
 
 interface Image {
     //% helper=imagePrint
-    print(text: string, x: number, y: number, color?: number, font?: image.Font): void;
+    print(text: string, x: number, y: number, color?: number, font?: image.Font, offsets?: texteffects.TextEffectState[]): void;
 
     //% helper=imagePrintCenter
     printCenter(text: string, y: number, color?: number, font?: image.Font): void;
@@ -203,7 +203,7 @@ namespace helpers {
         imagePrint(img, text, x, y, color, font)
     }
 
-    export function imagePrint(img: Image, text: string, x: number, y: number, color?: number, font?: image.Font) {
+    export function imagePrint(img: Image, text: string, x: number, y: number, color?: number, font?: image.Font, offsets?: texteffects.TextEffectState[]) {
         x |= 0
         y |= 0
         if (!font)
@@ -227,6 +227,12 @@ namespace helpers {
             imgBuf[2] = dataH
         }
         while (cp < text.length) {
+            let xOffset = 0, yOffset = 0;
+            if (offsets && cp < offsets.length) {
+                xOffset = offsets[cp].xOffset
+                yOffset = offsets[cp].yOffset
+            }
+
             let ch = text.charCodeAt(cp++)
             if (ch == 10) {
                 y += font.charHeight + 2
@@ -259,7 +265,7 @@ namespace helpers {
 
             if (mult == 1) {
                 imgBuf.write(4, fontdata.slice(off + 2, charSize))
-                img.drawIcon(imgBuf, x, y, color)
+                img.drawIcon(imgBuf, x + xOffset, y + yOffset, color)
                 x += font.charWidth
             } else {
                 off += 2
@@ -278,15 +284,15 @@ namespace helpers {
                             mask <<= 1
                         }
                         if (n) {
-                            img.fillRect(x, y + j * mult, mult, mult * n, color)
+                            img.fillRect(x + xOffset * mult, y + (j + yOffset) * mult, mult, mult * n, color)
                             j += n
                         } else {
                             mask <<= 1
                             j++
                         }
                     }
-                    x += mult
                 }
+                x += mult
             }
         }
     }

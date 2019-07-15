@@ -531,7 +531,7 @@ namespace game {
      */
     //% blockId=game_dialog_set_frame group="Dialogs"
     //% block="set dialog frame to %frame=screen_image_picker"
-    //% game/set-dialog-frame
+    //% help=game/set-dialog-frame
     export function setDialogFrame(frame: Image) {
         dialogFrame = frame;
     }

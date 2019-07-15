@@ -6,12 +6,29 @@
 
 namespace pxt {
 
+#ifdef CODAL_JACDAC_WIRE_SERIAL
 #ifdef SAMD21
-SAMDTCTimer lowTimer(TC4, TC4_IRQn);
+SAMDTCTimer jacdacTimer(TC4, TC4_IRQn);
+SAMDTCTimer lowTimer(TC3, TC3_IRQn);
+
+LowLevelTimer* getJACDACTimer()
+{
+    jacdacTimer.setIRQPriority(1);
+    return &jacdacTimer;
+}
+
 #endif
 #ifdef SAMD51
-SAMDTCTimer lowTimer(TC0, TC0_IRQn);
+SAMDTCTimer jacdacTimer(TC0, TC0_IRQn);
+SAMDTCTimer lowTimer(TC2, TC2_IRQn);
+
+LowLevelTimer* getJACDACTimer()
+{
+    jacdacTimer.setIRQPriority(1);
+    return &jacdacTimer;
+}
 #endif
+#endif // CODAL_JACDAC_WIRE_SERIAL
 
 __attribute__((used))
 CODAL_TIMER devTimer(lowTimer);

@@ -95,7 +95,7 @@ namespace effects {
         //% duration.shadow=timePicker
         //% blockNamespace=scene
         //% group="Effects" blockGap=8
-        //% weight=90
+        //% weight=90 help=effects/start-screen-effect
         startScreenEffect(duration?: number, particlesPerSecond?: number): void {
             if (!this.sourceFactory)
                 return;
@@ -120,7 +120,7 @@ namespace effects {
         //% blockId=particlesEndScreenAnimation block="end screen %effect effect"
         //% blockNamespace=scene
         //% group="Effects" blockGap=8
-        //% weight=80
+        //% weight=80 help=effects/end-screen-effect
         endScreenEffect(): void {
             if (this.source) {
                 this.source.destroy();
@@ -136,6 +136,7 @@ namespace effects {
     //% blockId=particlesclearparticles block="clear effects on %anchor=variables_get(mySprite)"
     //% blockNamespace=sprites
     //% group="Effects" weight=89
+    //% help=effects/clear-particles
     export function clearParticles(anchor: particles.ParticleAnchor) {
         const sources = game.currentScene().particleSources;
         if (!sources) return;

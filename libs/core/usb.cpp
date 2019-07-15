@@ -23,6 +23,9 @@ USBHIDKeyboard keyboard;
 #if CONFIG_ENABLED(DEVICE_JOYSTICK)
 USBHIDJoystick joystick;
 #endif
+#if CONFIG_ENABLED(DEVICE_JACDAC_DEBUG)
+USBJACDAC jacdacDebug;
+#endif
 
 static const DeviceDescriptor device_desc = {
     0x12,   // bLength
@@ -115,6 +118,9 @@ void usb_init() {
 #if CONFIG_ENABLED(DEVICE_JOYSTICK)
     usb.add(joystick);
 #endif
+#if CONFIG_ENABLED(DEVICE_JACDAC_DEBUG)
+    usb.add(jacdacDebug);
+#endif
 
     create_fiber(start_usb);
 }
@@ -126,6 +132,20 @@ namespace pxt {
 void usb_init() {}
 } // namespace pxt
 #endif
+
+namespace control {
+/**
+ * Determines if the USB has been enumerated.
+ */
+//%
+bool isUSBInitialized() {
+#if CONFIG_ENABLED(DEVICE_USB)
+    return pxt::usb.isInitialised();
+#else
+    return false;
+#endif
+}
+}
 
 namespace pxt {
 static void (*pSendToUART)(const char *data, int len) = NULL;
