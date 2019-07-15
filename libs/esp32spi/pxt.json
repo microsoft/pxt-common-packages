@@ -1,6 +1,6 @@
 {
     "name": "esp32spi",
-    "description": "ESP32 over SPI",
+    "description": "ESP32 over SPI - beta",
     "files": [
         "esp32spi.ts",
         "socket.ts",

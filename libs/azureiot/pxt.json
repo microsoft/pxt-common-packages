@@ -1,6 +1,6 @@
 {
     "name": "azureiot",
-    "description": "Azure IoT",
+    "description": "Azure IoT - beta",
     "files": [
         "azureiot.ts",
         "README.md"

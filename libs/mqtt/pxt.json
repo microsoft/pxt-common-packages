@@ -1,6 +1,6 @@
 {
     "name": "mqtt",
-    "description": "MQTT for MakeCode",
+    "description": "MQTT for MakeCode - beta",
     "files": [
         "README.md",
         "mqtt.ts"
