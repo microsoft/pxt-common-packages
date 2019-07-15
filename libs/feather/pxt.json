@@ -9,5 +9,5 @@
         "core": "file:../core"
     },
     "public": true,
-    "weight": 1
+    "hidden": true
 }

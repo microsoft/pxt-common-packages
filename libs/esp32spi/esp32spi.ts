@@ -124,10 +124,6 @@ namespace esp32spi {
         }
 
         private fail(msg: string) {
-            console.log(`FAIL: ${msg}`)
-            screen.fill(0);
-            game.consoleOverlay.draw();
-            pause(5000)
             control.fail(msg)
         }
 
