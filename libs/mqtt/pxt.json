@@ -3,7 +3,6 @@
     "description": "MQTT for MakeCode",
     "files": [
         "README.md",
-        "azureiot.ts",
         "mqtt.ts"
     ],
     "tests": [

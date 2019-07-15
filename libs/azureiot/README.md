@@ -1,5 +1,4 @@
-# Azure IoT support
+# Azure IoT support - beta
 
-## Acknowledgments
-
-Port of https://github.com/adafruit/Adafruit_CircuitPython_AzureIoT
+Azure MQTT communication layer. 
+A port of https://github.com/rovale/micro-mqtt for MakeCode.

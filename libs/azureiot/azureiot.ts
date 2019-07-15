@@ -1,206 +1,211 @@
-/** 
-Provides access to a Microsoft Azure IoT Hub.
-https://docs.microsoft.com/en-us/rest/api/iothub/ 
-*/
+const enum AzureIotEvent {
+    Connected = 1,
+    Disconnected = 2,
+    Error = 3
+}
+
 namespace azureiot {
-    // Azure URI API Version Identifier
-    export const AZ_API_VER = "2018-06-30"
-    // Azure HTTP Status Codes
-    export const AZURE_HTTP_ERROR_CODES = [400, 401, 404, 403, 412, 429, 500]
-    export class IotHub {
-        private _iot_hub_url: string;
-        private _azure_header: StringMap;
+    export let logPriority = ConsolePriority.Silent;
 
-        /**  Creates an instance of an Azure IoT Hub Client.
-    :param wifi_manager: WiFiManager object from ESPSPI_WiFiManager.
-    :param str iot_hub_name: Name of your IoT Hub.
-    :param str sas_token: Azure IoT Hub SAS Token Identifier.
-    :param str device_id: Unique Azure IoT Device Identifier.
-    
-*/
-        constructor(
-            private _wifi: esp32spi.WiFiManager, 
-            private _iot_hub_name: string, 
-            private _sas_token: string, 
-            public device_id: string
-        ) {
-            this._iot_hub_url = `https://${this._iot_hub_name}.azure-devices.net`;
-            this._azure_header = {
-                "Authorization": this._sas_token
-            };
+    type SMap<T> = { [s: string]: T; }
+    export type Json = any;
+
+    let _mqttClient: mqtt.Client;
+    let _messageBusId: number;
+    let _receiveHandler: (msg: Json) => void;
+    let _methodHandlers: SMap<(msg: Json) => Json>;
+
+    function log(msg: string) {
+        console.add(logPriority, "azureiot: " + msg);
+    }
+
+    export function mqttClient(): mqtt.Client {
+        if (!_mqttClient)
+            _mqttClient = createMQTTClient();
+        return _mqttClient;
+    }
+
+    export let network: net.Net
+    export let connString = ""
+
+    function createMQTTClient() {
+        _messageBusId = control.allocateNotifyEvent(); // TODO
+
+        const connStringParts = parsePropertyBag(connString, ";");
+        const iotHubHostName = connStringParts["HostName"];
+        const deviceId = connStringParts["DeviceName"];
+        const sasToken = connStringParts["SharedAccessSignature"];
+
+        const opts: mqtt.IConnectionOptions = {
+            host: iotHubHostName,
+            /* port: 8883, overriden based on platform */
+            username: `${iotHubHostName}/${deviceId}/api-version=2018-06-30`,
+            password: "SharedAccessSignature " + sasToken,
+            clientId: deviceId
         }
+        const c = new mqtt.Client(opts, network);
+        c.on('connected', () => {
+            log("connected")
+            control.raiseEvent(_messageBusId, AzureIotEvent.Connected)
+        });
+        c.on('disconnected', () => {
+            log("disconnected")
+            control.raiseEvent(_messageBusId, AzureIotEvent.Disconnected)
+        });
+        c.on('error', (msg) => {
+            log("error: " + msg)
+            control.raiseEvent(_messageBusId, AzureIotEvent.Error)
+        });
+        c.on('receive', (packet: mqtt.IMessage) => {
+            log("unhandled msg: " + packet.topic + " / " + packet.content.toString())
+        });
+        c.connect();
+        return c;
+    }
 
-        /** Returns a message from a Microsoft Azure IoT Hub (Cloud-to-Device).
-    Returns None if the message queue is empty.
-    NOTE: HTTP Cloud-to-Device messages are throttled. Poll every 25+ minutes.
-    
-*/
-        public hubMessage(): string {
-            let reject_message = true
-            // get a device-bound notification
-            const path = `${this._iot_hub_url}/devices/${this.device_id}/messages/deviceBound?api-version=${AZ_API_VER}`
-            let data = this.get(path, true)
-            // device's message queue is empty
-            if (data == 204) {
-                return null
+    function splitPair(kv: string): string[] {
+        let i = kv.indexOf('=');
+        if (i < 0)
+            return [kv, ""];
+        else
+            return [kv.slice(0, i), kv.slice(i + 1)];
+    }
+
+    function parsePropertyBag(msg: string, separator?: string): any {
+        let r: any = {};
+        msg.split(separator || "&")
+            .map(kv => splitPair(kv))
+            .forEach(parts => r[parts[0]] = parts[1]);
+        return r;
+    }
+
+    function decodeQuery(msg: string, separator?: string): any {
+        const r = parsePropertyBag(msg, separator);
+        // TODO uridecode
+        Object.keys(r).forEach(k => r[k] = JSON.parse(r[k]));
+        return r;
+    }
+
+    function encodeQuery(props: any): string {
+        // TODO uriencode
+        return Object.keys(props)
+            .map(k => `${k}=${JSON.stringify(props[k])}`)
+            .join('&');
+    }
+
+    /**
+     * Connects to the IoT hub
+     */
+    export function connect() {
+        const c = mqttClient();
+        // wait for connection
+        if (!c.connected)
+            control.waitForEvent(_messageBusId, AzureIotEvent.Connected);
+    }
+
+    /**
+     * Registers code when the mqtt client gets connector or disconnected
+     * @param event 
+     * @param handler 
+     */
+    export function onEvent(event: AzureIotEvent, handler: () => void) {
+        const c = mqttClient();
+        control.onEvent(_messageBusId, event, handler);
+        if (c.connected) // raise connected event by default
+            control.raiseEvent(_messageBusId, AzureIotEvent.Connected);
+    }
+
+    /**
+     * Indicates if the MQTT client is connected
+     */
+    //%
+    export function isConnected(): boolean {
+        const c = mqttClient();
+        return !!c.connected;
+    }
+
+    /**
+     * Send a message via mqtt
+     * @param msg 
+     */
+    //%
+    export function publishMessage(msg: any, sysProps?: any) {
+        const c = mqttClient();
+        let topic = `devices/${c.opt.clientId}/messages/events/`;
+        if (sysProps)
+            topic += encodeQuery(sysProps);
+        // qos, retained are not supported
+        c.publish(topic, JSON.stringify(msg));
+    }
+
+    /**
+     * Registers code to run when a message is received
+     * @param handler 
+     */
+    //%
+    export function onMessageReceived(handler: (msg: any) => void) {
+        const c = mqttClient();
+        if (!_receiveHandler) {
+            c.subscribe(`devices/${c.opt.clientId}/messages/devicebound/#`, handleDeviceBound);
+
+            /*
+            c.subscribe(`devices/${c.opt.clientId}/messages/events/#`);
+            c.subscribe('$iothub/twin/PATCH/properties/desired/#')
+            c.subscribe("$iothub/twin/res/#")
+            c.publish("$iothub/twin/GET/?$rid=foobar")
+            */
+        }
+        _receiveHandler = handler;
+    }
+
+    function parseTopicArgs(topic: string) {
+        const qidx = topic.indexOf("?")
+        if (qidx >= 0)
+            return parsePropertyBag(topic.slice(qidx + 1))
+        return {}
+    }
+
+    function handleDeviceBound(packet: mqtt.IMessage) {
+        if (!_receiveHandler) return; // nobody's listening
+        // TODO this needs some testing
+        const props = parseTopicArgs(packet.topic)
+        _receiveHandler(props);
+    }
+
+    function handleMethod(msg: mqtt.IMessage) {
+        const props = parseTopicArgs(msg.topic)
+        const qidx = msg.topic.indexOf("/?")
+        const methodName = msg.topic.slice(21, qidx)
+        log("method: '" + methodName + "'; " + JSON.stringify(props))
+        let status = 200
+        let resp: any = {}
+        if (!_methodHandlers[methodName]) {
+            log("method not found: '" + methodName + "'")
+            status = 404
+        } else {
+            const h = _methodHandlers[methodName]
+            const resp2 = h(JSON.parse(msg.content.toString()))
+            if (resp2)
+                resp = resp2
+            if (resp["_status"] != null) {
+                status = resp["_status"]
+                resp["_status"] = null
             }
-
-            let etag = data[1]["etag"]
-            // either complete or nack the message
-            if (etag) {
-                reject_message = false
-                let path_complete = `${this._iot_hub_url}/devices/${this.device_id}/messages/deviceBound/${etag.strip("'\"")}?api-version=${AZ_API_VER}`;
-                if (reject_message) {
-                    path_complete += "&reject"
-                }
-
-                let del_status = this.delete(path_complete)
-                if (del_status == 204) {
-                    return data[0]
-                }
-            }
-            return null
+            log("method: '" + methodName + "' status=" + status)
         }
 
-        /** Sends a device-to-cloud message.
-    :param string message: Message to send to Azure IoT.
-    
-*/
-        public sendDeviceMessage(message: any): void {
-            let path = `${this._iot_hub_url}/devices/${this.device_id}/messages/events?api-version=${AZ_API_VER}`
-            this.post(path, message, false)
+        const c = mqttClient();
+        c.publish('$iothub/methods/res/' + status + "/?$rid=" + props["$rid"], JSON.stringify(resp))
+    }
+
+    export function onMethod(methodName: string, handler: (msg: Json) => Json) {
+        const c = mqttClient();
+        if (!_methodHandlers) {
+            if (!c.connected)
+                control.fail("not connected")
+            _methodHandlers = {}
+            c.subscribe('$iothub/methods/POST/#', handleMethod)
         }
-
-        /** Returns the device's device twin information in JSON format. */
-        public deviceTwin(): any {
-            let path = `${this._iot_hub_url}/twins/${this.device_id}?api-version=${AZ_API_VER}`
-            return this.get(path)
-        }
-
-        /** Updates tags and desired properties of the device's device twin.
-    :param str properties: Device Twin Properties
-    (https://docs.microsoft.com/en-us/rest/api/iothub/service/updatetwin#twinproperties)
-    
-*/
-        public updateDeviceTwin(properties: any): any {
-            let path = `${this._iot_hub_url}/twins/${this.device_id}?api-version=${AZ_API_VER}`;
-            return this.patch(path, properties)
-        }
-
-        /** Replaces tags and desired properties of a device twin.
-    :param str properties: Device Twin Properties.
-    
-*/
-        public replaceDeviceTwin(properties: any): any {
-            let path = `${this._iot_hub_url}/twins/${this.device_id}?api-version-${AZ_API_VER}`
-            return this.put(path, properties)
-        }
-
-        // IoT Hub Service
-        /** Enumerate devices from the identity registry of the IoT Hub. */
-        public devices(): any {
-            let path = `${this._iot_hub_url}/devices/?api-version=${AZ_API_VER}`
-            return this.get(path)
-        }
-
-        /** Gets device information from the identity
-    registry of an IoT Hub.
-    
-*/
-        public device(): any {
-            let path = `${this._iot_hub_url}/devices/${this.device_id}?api-version=${AZ_API_VER}`;
-            return this.get(path)
-        }
-
-        /** HTTP POST
-    :param str path: Formatted Azure IOT Hub Path.
-    :param str payload: JSON-formatted Data Payload.
-    
-*/
-        private post(path: string, payload: any, return_response: boolean = true): string | any {
-            let response = this._wifi.post(path, { json: payload, headers: this._azure_header })
-            this.parseHttpStatus(response.status_code, response.reason)
-            if (return_response) {
-                return response.json;
-            }
-
-            return response.text
-        }
-
-        /** HTTP GET
-    :param str path: Formatted Azure IOT Hub Path.
-    :param bool is_c2d: Cloud-to-device get request.
-    
-*/
-        private get(path: string, is_c2d: boolean = false): any {
-            let response = this._wifi.get(path, { headers: this._azure_header })
-            let status_code = response.status_code
-            if (is_c2d) {
-                if (status_code == 200) {
-                    let data = response.text
-                    let headers = response.headers
-                    response.close()
-                    return [data, headers]
-                }
-
-                response.close()
-                return status_code
-            }
-
-            let json = response.json
-            response.close()
-            return json
-        }
-
-        /** HTTP DELETE
-    :param str path: Formatted Azure IOT Hub Path.
-    
-*/
-        private delete(path: string, etag?: string): number {
-            let data_headers: any;
-            if (etag) {
-                data_headers = { "Authorization": this._sas_token, "If-Match": `"${etag}"` }
-            } else {
-                data_headers = this._azure_header
-            }
-
-            let response = this._wifi.delete(path, { headers: data_headers })
-            this.parseHttpStatus(response.status_code, response.reason)
-            let status_code = response.status_code
-            response.close()
-            return status_code
-        }
-
-        /** HTTP PATCH
-    :param str path: Formatted Azure IOT Hub Path.
-    :param str payload: JSON-formatted payload.
-    
-*/
-        private patch(path: string, payload: any): any {
-            let response = this._wifi.patch(path, { json: payload, headers: this._azure_header })
-            this.parseHttpStatus(response.status_code, response.reason)
-            let json_data = response.json
-            response.close()
-            return json_data
-        }
-
-        /** HTTP PUT
-    :param str path: Formatted Azure IOT Hub Path.
-    :param str payload: JSON-formatted payload.
-    
-*/
-        private put(path: any, payload?: any): any {
-            let response = this._wifi.put(path, { json: payload, headers: this._azure_header })
-            this.parseHttpStatus(response.status_code, response.reason)
-            let json_data = response.json
-            response.close()
-            return json_data
-        }
-
-        // Parses status code, throws error based on Azure IoT Common Error Codes
-        private parseHttpStatus(status_code: number, status_reason: string) {
-            if (AZURE_HTTP_ERROR_CODES.indexOf(status_code) > -1)
-                console.log(`error ${status_code}: ${status_reason}`);
-        }
+        _methodHandlers[methodName] = handler
     }
 }
