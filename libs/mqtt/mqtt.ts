@@ -270,7 +270,7 @@ namespace mqtt {
     export type EventHandler = (arg?: string | IMessage) => void;
 
     export class EventEmitter {
-        private handlers: { [index: string]: EventHandler[] } = {};
+        private handlers: { [index: string]: EventHandler[] };
 
         constructor() {
             this.handlers = {};
@@ -301,7 +301,7 @@ namespace mqtt {
     }
 
     export class Client extends EventEmitter {
-        public logPriority = ConsolePriority.Silent;
+        public logPriority : ConsolePriority;
         private log(msg: string) {
             console.add(this.logPriority, `mqtt: ${msg}`);
         }
@@ -311,18 +311,22 @@ namespace mqtt {
         private net: net.Net;
         private sct?: net.Socket;
 
-        private wdId: number = Constants.Uninitialized;
-        private piId: number = Constants.Uninitialized;
+        private wdId: number;
+        private piId: number;
 
         private buf: Buffer;
 
-        public connected: boolean = false;
+        public connected: boolean;
 
         private mqttHandlers: MQTTHandler[];
 
         constructor(opt: IConnectionOptions, net: net.Net) {
             super();
 
+            this.wdId = Constants.Uninitialized;
+            this.piId = Constants.Uninitialized;
+            this.logPriority = ConsolePriority.Silent;
+            this.connected = false;
             opt.port = opt.port || 8883;
             opt.clientId = opt.clientId;
 
