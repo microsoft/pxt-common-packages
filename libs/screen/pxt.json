@@ -15,7 +15,8 @@
         "image.d.ts",
         "pxtparts.json",
         "imagesoverrides.jres",
-        "imagesoverrides.ts"
+        "imagesoverrides.ts",
+        "font12.jres"
     ],
     "public": true,
     "dependencies": {
