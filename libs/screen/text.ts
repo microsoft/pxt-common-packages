@@ -188,6 +188,13 @@ f3000c12130d0000 04010e05051e1000 05010609191f0800 06010c1213131200 07010c121313
     }
 }
 
+namespace texteffects {
+    export interface TextEffectState {
+        xOffset: number;
+        yOffset: number;
+    }
+}
+
 interface Image {
     //% helper=imagePrint
     print(text: string, x: number, y: number, color?: number, font?: image.Font, offsets?: texteffects.TextEffectState[]): void;
