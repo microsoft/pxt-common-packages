@@ -122,7 +122,7 @@ namespace music {
     //% melody.defl="D4:2 E4:2 F#4:2 G4:2 A4:2 B4:2 Db5:2 D5:2"
     export function playMelody(melody: string) {
         const song = new Melody(melody);
-        song.play();
+        song.playUntilDone();
     }
 
     /**
@@ -130,7 +130,7 @@ namespace music {
      * @param melody
      * @param tempo
      */
-    //% block="play melody $melody at tempo %value|(bpm)" blockId=playMelodyFromEditor
+    //% block="play melody $melody at tempo $tempo|(bpm)" blockId=playMelodyFromEditor
     //% blockNamespace=music
     //% weight=75 blockGap=8
     //% group="Melody"
@@ -141,7 +141,7 @@ namespace music {
         // add tempo to string so it is reflected in simulation
         let formattedMelody = melody.substr(0, melody.indexOf(' ')) + "-" + tempo + melody.substr(melody.indexOf(' '));
         const song = new Melody(formattedMelody);
-        song.play();
+        song.playUntilDone();
     }
 
 
@@ -175,7 +175,7 @@ namespace music {
             }
             melodyString += notes[i] + " ";
         }
-        
+
         return melodyString;
     }
     
