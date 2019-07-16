@@ -16,9 +16,11 @@ namespace game.consoleOverlay {
         consoleStrings = [];
     }
 
-    export function setVisible(value: boolean) {
+    export function setVisible(value: boolean, col?: number) {
         if (value != !!consoleStrings)
             consoleStrings = value ? [] : undefined;
+        if (col !== undefined)
+            consoleColor = col;
     }
 
     function listener(priority: ConsolePriority, text: string) {
@@ -27,15 +29,17 @@ namespace game.consoleOverlay {
 
         // split text into lines
         text = text || "";
-        for (let j = 0; j < text.length; j += consoleColumns) {
-            const line = text.substr(j, consoleColumns);
-            if (consoleStrings.length < consoleLines)
-                consoleStrings.push(line);
-            else {
-                for (let i = 1; i < consoleStrings.length; ++i)
-                    consoleStrings[i - 1] = consoleStrings[i];
-                consoleStrings[consoleStrings.length - 1] = line;
-            }
+
+        text.split("\n")
+            .filter(line => !!line)
+            .forEach(line => {
+                for (let j = 0; j < line.length; j += consoleColumns) {
+                    consoleStrings.push(line.slice(j, consoleColumns));
+                }
+            });
+
+        if (consoleStrings.length > consoleLines) {
+            consoleStrings.splice(0, consoleStrings.length - consoleLines);
         }
     }
 
