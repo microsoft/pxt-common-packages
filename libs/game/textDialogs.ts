@@ -590,7 +590,7 @@ namespace game {
         game.pushScene();
         scene.setBackgroundImage(temp);
 
-        const dialog = new SplashDialog(screen.width, subtitle ? 44 : 35);
+        const dialog = new SplashDialog(screen.width, subtitle ? 42 : 35);
         dialog.setText(title);
         if (subtitle) dialog.setSubtext(subtitle);
 
