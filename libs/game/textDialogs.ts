@@ -569,6 +569,11 @@ namespace game {
         dialogTextColor = Math.floor(Math.min(15, Math.max(0, color)));
     }
 
+    // this function is deprecated
+    //% deprecated blockHidden
+    export function setDialogFont(font: image.Font) {
+    }
+
     /**
      * Show a title and an optional subtitle menu
      * @param title
