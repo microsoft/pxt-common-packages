@@ -4,7 +4,8 @@ namespace game.consoleOverlay {
     const marginx = 4;
     const marginy = 2;
     const consoleFont = image.font5;
-    const MAX_CONSOLE_LINES = Math.floor(screen.height / (consoleFont.charHeight + marginy)) - 1;
+    const consoleLines = Math.floor(screen.height / (consoleFont.charHeight + marginy)) - 1;
+    const consoleColumns = Math.floor((screen.width - 2 * marginx) / consoleFont.charWidth);
     console.addListener(listener);
 
     export function isVisible() {
@@ -23,15 +24,20 @@ namespace game.consoleOverlay {
     }
 
     function listener(priority: ConsolePriority, text: string) {
-        if (!consoleStrings)
+        if (!consoleStrings || !text)
             return;
 
+        // split text into lines
         text.split("\n")
             .filter(line => !!line)
-            .forEach(line => consoleStrings.push(line));
+            .forEach(line => {
+                for (let j = 0; j < line.length; j += consoleColumns) {
+                    consoleStrings.push(line.slice(j, j + consoleColumns));
+                }
+            });
 
-        if (consoleStrings.length > MAX_CONSOLE_LINES) {
-            consoleStrings.splice(0, consoleStrings.length - MAX_CONSOLE_LINES);
+        if (consoleStrings.length > consoleLines) {
+            consoleStrings.splice(0, consoleStrings.length - consoleLines);
         }
     }
 

@@ -8,5 +8,6 @@
     "dependencies": {
         "core": "file:../core"
     },
-    "public": true
+    "public": true,
+    "hidden": true
 }
