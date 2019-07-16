@@ -332,21 +332,23 @@ namespace game {
                     this.timer = 2;
                 }
             }
+            const ytitle = 10;
             if (this.maxOffset < 0) {
                 const left = (this.image.width >> 1) - (this.text.length * this.font.charWidth >> 1)
-                this.image.print(this.text, left, 10, this.textColor, this.font)
+                this.image.print(this.text, left, ytitle, this.textColor, this.font)
             }
             else {
-                this.image.print(this.text, this.unit - this.offset, 10, this.textColor, this.font)
+                this.image.print(this.text, this.unit - this.offset, ytitle, this.textColor, this.font)
             }
 
             if (this.subtext) {
+                const ysub = ytitle + this.font.charHeight + 2;
                 if (this.maxSubOffset < 0) {
                     const left = (this.image.width >> 1) - (this.subtext.length * this.font.charWidth >> 1)
-                    this.image.print(this.subtext, left, 20, this.textColor, this.font);
+                    this.image.print(this.subtext, left, ysub, this.textColor, this.font);
                 }
                 else {
-                    this.image.print(this.subtext, this.unit - (Math.min(this.offset, this.maxSubOffset)), 20, this.textColor, this.font);
+                    this.image.print(this.subtext, this.unit - (Math.min(this.offset, this.maxSubOffset)), ysub, this.textColor, this.font);
                 }
             }
             this.drawBorder();
@@ -588,7 +590,7 @@ namespace game {
         game.pushScene();
         scene.setBackgroundImage(temp);
 
-        const dialog = new SplashDialog(screen.width, subtitle ? 42 : 35);
+        const dialog = new SplashDialog(screen.width, subtitle ? 44 : 35);
         dialog.setText(title);
         if (subtitle) dialog.setSubtext(subtitle);
 
