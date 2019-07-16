@@ -16,7 +16,6 @@ enum DialogLayout {
 namespace game {
     let dialogFrame: Image;
     let dialogCursor: Image;
-    let dialogFont: image.Font;
     let dialogTextColor: number;
 
     export class BaseDialog {
@@ -40,7 +39,7 @@ namespace game {
 
             this.frame = frame || dialogFrame || (dialogFrame = defaultFrame());
 
-            this.font = font || dialogFont || (dialogFont = image.font8); // FONT8-TODO
+            this.font = font || image.font8;
 
             this.cursor = cursor || dialogCursor || (dialogCursor = defaultCursorImage());
 
@@ -149,6 +148,10 @@ namespace game {
 
         protected textAreaHeight() {
             return this.image.height - ((this.innerTop + this.unit) << 1) - 1;
+        }
+
+        protected setFont(font: image.Font) {
+            this.font = font;
         }
     }
 
@@ -293,9 +296,13 @@ namespace game {
             this.textColor = 1;
         }
 
+        private updateFont() {
+            this.setFont(image.getFontForText((this.text || "") + (this.subtext || "")));
+        }
 
         setText(text: string) {
             this.text = text;
+            this.updateFont();
             this.offset = 0;
             this.maxOffset = text.length * this.font.charWidth - screen.width + (this.unit << 1);
             this.timer = 2;
@@ -303,7 +310,8 @@ namespace game {
 
         setSubtext(sub: string) {
             this.subtext = sub;
-            this.maxSubOffset = sub.length * (image.font5.charWidth) - screen.width + (this.unit << 1);
+            this.updateFont();
+            this.maxSubOffset = sub.length * (this.font.charWidth) - screen.width + (this.unit << 1);
         }
 
         drawTextCore() {
@@ -334,11 +342,11 @@ namespace game {
 
             if (this.subtext) {
                 if (this.maxSubOffset < 0) {
-                    const left = (this.image.width >> 1) - (this.subtext.length * image.font5.charWidth >> 1)
-                    this.image.print(this.subtext, left, 20, this.textColor, image.font5);
+                    const left = (this.image.width >> 1) - (this.subtext.length * this.font.charWidth >> 1)
+                    this.image.print(this.subtext, left, 20, this.textColor, this.font);
                 }
                 else {
-                    this.image.print(this.subtext, this.unit - (Math.min(this.offset, this.maxSubOffset)), 20, this.textColor, image.font5);
+                    this.image.print(this.subtext, this.unit - (Math.min(this.offset, this.maxSubOffset)), 20, this.textColor, this.font);
                 }
             }
             this.drawBorder();
@@ -559,10 +567,6 @@ namespace game {
     //% help=game/set-dialog-text-color
     export function setDialogTextColor(color: number) {
         dialogTextColor = Math.floor(Math.min(15, Math.max(0, color)));
-    }
-
-    export function setDialogFont(font: image.Font) {
-        dialogFont = font;
     }
 
     /**
