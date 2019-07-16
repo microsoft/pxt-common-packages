@@ -24,17 +24,15 @@ namespace game.consoleOverlay {
     }
 
     function listener(priority: ConsolePriority, text: string) {
-        if (!consoleStrings)
+        if (!consoleStrings || !text)
             return;
 
         // split text into lines
-        text = text || "";
-
         text.split("\n")
             .filter(line => !!line)
             .forEach(line => {
                 for (let j = 0; j < line.length; j += consoleColumns) {
-                    consoleStrings.push(line.slice(j, consoleColumns));
+                    consoleStrings.push(line.slice(j, j + consoleColumns));
                 }
             });
 
