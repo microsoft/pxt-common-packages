@@ -6,13 +6,17 @@ namespace jacdac{
     const JD_CONTROL_SERVICE_STATUS_ENUMERATED = 0x08
     const JD_CONTROL_SERVICE_STATUS_BUS_LO = 0x10
     const JD_CONTROL_SERVICE_STATUS_INITIALISED = 0x20
+    const JD_CONTROL_MAX_ALLOC_ADDRESS = 0xFE;
+    const JD_CONTROL_MIN_ALLOC_ADDRESS = 1;
+    export const JD_CONTROL_TRANSMIT_ONLY_ADDRESS = 0xFF
 
     export class JDControlService extends JDService {
         name: string
         deviceManager: JDDeviceManager;
         rngService: JDRNGService;
         configurationService: JDConfigurationService;
-        _intervalId: number;
+        _intervalId: any;
+        nextAddress: number;
 
         onChange: () => void;
 
@@ -22,6 +26,9 @@ namespace jacdac{
         }
 
         deviceDisconnected(device: JDDevice): void {
+            if (this.nextAddress == device.device_address)
+                this.nextAddress = JD_CONTROL_MAX_ALLOC_ADDRESS;
+
             // iterate over services on the device and provide connect / disconnect events.
             for (let current of JACDAC.instance.services) {
                 if (!current.device || current.mode == JDServiceMode.ControlLayerService || device.device_address != current.device.device_address)
@@ -142,21 +149,23 @@ namespace jacdac{
             }, 500);
         }
 
-        private initialise(): void{
-            if (this.status & JD_CONTROL_SERVICE_STATUS_INITIALISED)
-                return;
-
-            this.status |= JD_CONTROL_SERVICE_STATUS_INITIALISED;
-            JACDAC.instance.add(this.configurationService);
-            JACDAC.instance.add(this.rngService);
-
-            this.device = new JDDevice();
-
-            this.device.unique_device_identifier = generate_eui64(jacdac.options.getSerialNumber());
+        private initialise(device_address?: number): void{
+            if (!(this.status & JD_CONTROL_SERVICE_STATUS_INITIALISED))
+            {
+                this.status |= JD_CONTROL_SERVICE_STATUS_INITIALISED;
+                JACDAC.instance.add(this.configurationService);
+                JACDAC.instance.add(this.rngService);
+                this.device = new JDDevice();
+                this.device.unique_device_identifier = generate_eui64(jacdac.options.getSerialNumber());
+            }
 
             // naiive implementation for now... we can sniff the bus for a little before enumerating to
             // get a good first address in the future.
-            this.device.device_address = random(1,0xff);
+            if (device_address)
+                this.device.device_address = device_address;
+            else
+                this.device.device_address = random(JD_CONTROL_MIN_ALLOC_ADDRESS, JD_CONTROL_MAX_ALLOC_ADDRESS);
+
             jacdac.options.log(`device address: ${this.device.device_address}`)
 
             // set the device state for the control service.
@@ -165,13 +174,13 @@ namespace jacdac{
             this.device.rolling_counter = 0;
         }
 
-        enumerate(): void {
+        enumerate(device_address?: number): void {
             if (this.status & JD_CONTROL_SERVICE_STATUS_ENUMERATE) {
                 jacdac.options.log("already enumerating")
                 return;
             }
 
-            this.initialise();
+            this.initialise(device_address);
 
             let hostServiceCount = 0;
 
@@ -220,9 +229,9 @@ namespace jacdac{
         constructor() {
             super(JDServiceClass.CONTROL, JDServiceMode.ControlLayerService);
             this.deviceManager = new JDDeviceManager();
-
             this.rngService = new JDRNGService();
             this.configurationService = new JDConfigurationService();
+            this.nextAddress = JD_CONTROL_MAX_ALLOC_ADDRESS;
         }
 
         getRemoteDevice(device_address: number): JDDevice{
@@ -230,20 +239,26 @@ namespace jacdac{
         }
 
         routePacket(pkt: JDPacket) {
+            // transmit only
+            if (this.device.device_address == JD_CONTROL_TRANSMIT_ONLY_ADDRESS)
+                return;
+
             let device: JDDevice = null;
 
-            if (this.device && pkt.device_address == this.device.device_address)
+            if (pkt.device_address == JD_CONTROL_TRANSMIT_ONLY_ADDRESS)
+                device = this.deviceManager.getRemoteDeviceUnique(JD_CONTROL_TRANSMIT_ONLY_ADDRESS, pkt.udidh, pkt.udidl)
+            else if (this.device && pkt.device_address == this.device.device_address)
                 device = this.device;
             else
                 device = this.getRemoteDevice(pkt.device_address);
 
-            // jacdac.options.log("RP: a ",pkt.device_address, " sn ", pkt.service_number, " crc ", pkt.crc);
+            // jacdac.options.log("RP: a " + pkt.device_address +  " sn " + pkt.service_number +  " crc " + pkt.crc);
 
             const crc = jd_crc(pkt, device); // include size and address in the checksum.
 
             let crcCheck: boolean = (crc == pkt.crc);
 
-            // jacdac.options.log("crc check: computed ", crc, "  received: ", pkt.crc);
+            // console.log("crc check: computed ", crc, "  received: ", pkt.crc);
 
             if (crcCheck) {
                 if (!device)
@@ -295,7 +310,7 @@ namespace jacdac{
                             if (!service.device || service.mode == JDServiceMode.ControlLayerService)
                                 continue;
 
-                            // jacdac.options.log("ITER: "service);
+                            // jacdac.options.log("ITER: " + service.service_class.toString());
                             if (service.device && service.device.device_address == device.device_address && service.service_number == pkt.service_number)
                                 if (service.handlePacket(pkt) == DEVICE_OK)
                                     break;
@@ -318,38 +333,58 @@ namespace jacdac{
 
             let cp: JDControlPacket = new JDControlPacket(pkt);
 
+
             // jacdac.options.log("HP ControlPacket: ",cp, cp.getBuffer());
 
             // address collision check
-            if (this.status & (JD_CONTROL_SERVICE_STATUS_ENUMERATING | JD_CONTROL_SERVICE_STATUS_ENUMERATED) && this.device.device_address == cp.device_address) {
-                // a different device is using our address!!
-                if (!(this.device.udidl == cp.udidl && this.device.udidh == cp.udidh)) {
-                    // if the device is proposing, we can reject (as per the spec)
-                    if (cp.device_flags & JD_DEVICE_FLAGS_PROPOSING) {
-                        // if we're proposing too, the remote device has won the address
-                        if (this.device.device_flags & JD_DEVICE_FLAGS_PROPOSING) {
-                            this.device.rolling_counter = 0;
-                            this.device.device_address = 1 + (Math.random() % 254);
-                        }
-                        // if our address is established, reject the proposal
-                        else {
-                            let rejectCP = new JDControlPacket();
+            if (this.status & (JD_CONTROL_SERVICE_STATUS_ENUMERATING | JD_CONTROL_SERVICE_STATUS_ENUMERATED)) {
 
-                            rejectCP.device_address = cp.device_address;
-                            rejectCP.unique_device_identifier = cp.unique_device_identifier;
-                            rejectCP.device_flags = cp.device_flags | JD_DEVICE_FLAGS_REJECT;
-                            this.send(rejectCP.getBuffer())
-                            jacdac.options.log("ASK OTHER TO REASSIGN");
-                        }
+                // maintain a "pointer" to the next address
+                if (cp.device_address > this.device.device_address && cp.device_address < this.nextAddress)
+                    this.nextAddress = cp.device_address;
 
-                        return DEVICE_OK; // no further processing required.
+                if (this.device.device_address == cp.device_address) {
+                    // a different device is using our address!!
+                    if (!(this.device.udidl == cp.udidl && this.device.udidh == cp.udidh)) {
+                        // if the device is proposing, we can reject (as per the spec)
+                        if (cp.device_flags & JD_DEVICE_FLAGS_PROPOSING) {
+                            // if we're proposing too, the remote device has won the address
+                            if (this.device.device_flags & JD_DEVICE_FLAGS_PROPOSING) {
+                                this.device.rolling_counter = 0;
+                                this.device.device_address = random(JD_CONTROL_MIN_ALLOC_ADDRESS,JD_CONTROL_MAX_ALLOC_ADDRESS);
+                            }
+                            // if our address is established, reject the proposal
+                            else {
+                                let rejectCP = new JDControlPacket();
+
+                                rejectCP.device_address = cp.device_address;
+
+                                // propose a decent next address
+                                if (this.nextAddress != this.device.device_address)
+                                    rejectCP.device_address = this.device.device_address + random(1, (this.nextAddress - this.device.device_address));
+
+                                rejectCP.unique_device_identifier = cp.unique_device_identifier;
+                                rejectCP.device_flags = cp.device_flags | JD_DEVICE_FLAGS_REJECT;
+                                this.send(rejectCP.getBuffer())
+                                jacdac.options.log("ASK OTHER TO REASSIGN");
+                            }
+
+                            return DEVICE_OK; // no further processing required.
+                        }
                     }
-                }
-                // someone has flagged a conflict with our device address, re-enumerate
-                else if (cp.device_flags & JD_DEVICE_FLAGS_REJECT) {
-                    this.device.rolling_counter = 0;
-                    this.device.device_address = 1 + (Math.random() % 254);
-                    return DEVICE_OK;
+                    // someone has flagged a conflict with our device address, re-enumerate
+                    else if (cp.device_flags & JD_DEVICE_FLAGS_REJECT) {
+                        this.device.rolling_counter = 0;
+
+                        // we may receive a new recommended address in the rejection
+                        // detect and then subsequently use.
+                        if (cp.device_address != this.device.device_address)
+                            this.device.device_address = cp.device_address;
+                        else
+                            this.device.device_address = random(JD_CONTROL_MIN_ALLOC_ADDRESS, JD_CONTROL_MAX_ALLOC_ADDRESS);
+
+                        return DEVICE_OK;
+                    }
                 }
             }
 
@@ -358,7 +393,7 @@ namespace jacdac{
                 return DEVICE_OK;
 
             // if a service is relying on a remote device, the control service is maintaining the state.
-            let remoteDevice: JDDevice = this.deviceManager.getRemoteDeviceUnique(cp.device_address, cp);
+            let remoteDevice: JDDevice = this.deviceManager.getRemoteDeviceUnique(cp.device_address, cp.udidh, cp.udidl);
 
             if (remoteDevice)
             {
@@ -417,12 +452,12 @@ namespace jacdac{
                     else if (class_check && current.mode == JDServiceMode.ClientService) {
                         // this service instance is looking for a specific device (either a unique_device_identifier or name)
                         if (current.requiredDevice) {
-                            if (current.requiredDevice.unique_device_identifier 
-                                && current.requiredDevice.unique_device_identifier.length 
+                            if (current.requiredDevice.unique_device_identifier
+                                && current.requiredDevice.unique_device_identifier.length
                                 && !(current.requiredDevice.udidl == cp.udidl && current.requiredDevice.udidh == cp.udidh))
                                 continue;
 
-                            if (current.requiredDevice.device_name != cp.device_name)
+                            if (current.requiredDevice.device_name && current.requiredDevice.device_name != cp.device_name)
                                 continue;
                         }
 

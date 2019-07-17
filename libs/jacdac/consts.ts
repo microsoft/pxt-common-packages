@@ -17,6 +17,7 @@ namespace jacdac{
     export const JD_DEVICE_MAX_HOST_SERVICES = 16
 
     export const JD_SERIAL_HEADER_SIZE = 4;
+    export const JD_SERIAL_UDID_SIZE = 8;
     export const JD_SERIAL_CRC_HEADER_SIZE = 2;
     export const JD_SERIAL_MAX_PAYLOAD_SIZE = 255;
 

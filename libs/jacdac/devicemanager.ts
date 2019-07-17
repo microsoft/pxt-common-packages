@@ -14,14 +14,12 @@ namespace jacdac {
             return this.devices.find((dev) => { return dev.device_address == device_address });
         }
 
-        getRemoteDeviceUnique(device_address: number, cp: JDControlPacket): JDDevice {
-            const udidl = cp.udidl
-            const udidh = cp.udidh
+        getRemoteDeviceUnique(device_address: number, udidh: number, udidl: number): JDDevice {
             return this.devices.find((dev) => dev.device_address == device_address && dev.udidh == udidh && dev.udidl == udidl);
         }
 
         addDevice(controlPacket: JDControlPacket, communicationRate: number): JDDevice {
-            let dev = this.getRemoteDeviceUnique(controlPacket.device_address, controlPacket);
+            let dev = this.getRemoteDeviceUnique(controlPacket.device_address, controlPacket.udidh, controlPacket.udidl);
 
             if (dev)
                 return dev;
@@ -34,7 +32,7 @@ namespace jacdac {
         }
 
         updateDevice(controlPacket: JDControlPacket, communicationRate: number): void {
-            const dev = this.getRemoteDeviceUnique(controlPacket.device_address, controlPacket);
+            const dev = this.getRemoteDeviceUnique(controlPacket.device_address, controlPacket.udidh, controlPacket.udidl);
 
             if (dev)
                 dev.update(controlPacket);
