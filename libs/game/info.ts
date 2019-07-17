@@ -20,6 +20,8 @@ namespace info {
 
     class PlayerState {
         public score: number;
+        // undefined: not used
+        // null: reached 0 and callback was invoked
         public life: number;
         public lifeZeroHandler: () => void;
 
