@@ -629,7 +629,7 @@ namespace info {
             if (state.life === undefined) {
                 state.life = 3;
             }
-            return state.life;
+            return state.life || 0;
         }
 
         /**
@@ -669,7 +669,7 @@ namespace info {
         //% help=info/has-life
         hasLife(): boolean {
             const state = this.getState();
-            return state.life !== undefined;
+            return state.life !== undefined && state.life !== null;
         }
 
         /**
@@ -686,8 +686,8 @@ namespace info {
 
         raiseLifeZero(gameOver: boolean) {
             const state = this.getState();
-            if (state.life !== undefined && state.life <= 0) {
-                state.life = undefined;
+            if (state.life !== null && state.life <= 0) {
+                state.life = null;
                 if (state.lifeZeroHandler) {
                     state.lifeZeroHandler();
                 } else if (gameOver) {
@@ -718,7 +718,7 @@ namespace info {
             }
 
             if (showLife) {
-                life = "" + state.life;
+                life = "" + (state.life || 0);
                 lifeWidth = infoState.heartImage.width + infoState.multiplierImage.width + life.length * font.charWidth + 3;
                 height += infoState.heartImage.height;
             }
