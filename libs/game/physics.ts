@@ -339,19 +339,6 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 );
 
                 if (tm.isObstacle(x0, y0)) {
-                    if (sprite.flags & sprites.Flag.DestroyOnWall) {
-                        sprite.destroy();
-                    } else if (sprite.flags & sprites.Flag.BounceOnWall) {
-                        if ((!right && sprite.vx < 0) || (right && sprite.vx > 0)) {
-                            sprite._vx = Fx.neg(sprite._vx);
-                            movingSprite.xStep = Fx.neg(movingSprite.xStep);
-                            movingSprite.dx = Fx.neg(movingSprite.dx);
-                        }
-                    } else {
-                        movingSprite.dx = Fx.zeroFx8;
-                        sprite._vx = Fx.zeroFx8;
-                    }
-
                     sprite._x = Fx.iadd(
                         -sprite._hitbox.ox,
                         right ?
@@ -362,7 +349,31 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                             :
                             Fx8((x0 + 1) << tileScale)
                     );
+
+                    const currVx = sprite.vx;
                     sprite.registerObstacle(right ? CollisionDirection.Right : CollisionDirection.Left, tm.getObstacle(x0, y0));
+
+                    if (sprite.flags & sprites.Flag.DestroyOnWall) {
+                        sprite.destroy();
+                    } else if (sprite.vx === currVx){
+                        // sprite collision event didn't change velocity in this direction;
+                        // apply normal updates
+                        if (sprite.flags & sprites.Flag.BounceOnWall) {
+                            if ((!right && sprite.vx < 0) || (right && sprite.vx > 0)) {
+                                sprite._vx = Fx.neg(sprite._vx);
+                                movingSprite.xStep = Fx.neg(movingSprite.xStep);
+                                movingSprite.dx = Fx.neg(movingSprite.dx);
+                            }
+                        } else {
+                            movingSprite.dx = Fx.zeroFx8;
+                            sprite._vx = Fx.zeroFx8;
+                        }
+                    }
+                    else if (Math.sign(sprite.vx) === Math.sign(currVx)) {
+                        // sprite collision event changed velocity,
+                        // but still facing same direction; prevent further movement this update.
+                        movingSprite.dx = Fx.zeroFx8;
+                    }
                     break;
                 }
             }
@@ -399,19 +410,6 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 );
 
                 if (tm.isObstacle(x0, y0)) {
-                    if (sprite.flags & sprites.Flag.DestroyOnWall) {
-                        sprite.destroy();
-                    } else if (sprite.flags & sprites.Flag.BounceOnWall) {
-                        if ((!down && sprite.vy < 0) || (down && sprite.vy > 0)) {
-                            sprite._vy = Fx.neg(sprite._vy);
-                            movingSprite.yStep = Fx.neg(movingSprite.yStep);
-                            movingSprite.dy = Fx.neg(movingSprite.dy);
-                        }
-                    } else {
-                        movingSprite.dy = Fx.zeroFx8;
-                        sprite._vy = Fx.zeroFx8;
-                    }
-
                     sprite._y = Fx.iadd(
                         -sprite._hitbox.oy,
                         down ?
@@ -422,7 +420,30 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                             :
                             Fx8((y0 + 1) << tileScale)
                     );
+
+                    const currVy = sprite.vy;
                     sprite.registerObstacle(down ? CollisionDirection.Bottom : CollisionDirection.Top, tm.getObstacle(x0, y0));
+
+                    if (sprite.flags & sprites.Flag.DestroyOnWall) {
+                        sprite.destroy();
+                    } else if (sprite.vy === currVy) {
+                        // sprite collision event didn't change velocity in this direction;
+                        // apply normal updates
+                        if (sprite.flags & sprites.Flag.BounceOnWall) {
+                            if ((!down && sprite.vy < 0) || (down && sprite.vy > 0)) {
+                                sprite._vy = Fx.neg(sprite._vy);
+                                movingSprite.yStep = Fx.neg(movingSprite.yStep);
+                                movingSprite.dy = Fx.neg(movingSprite.dy);
+                            }
+                        } else {
+                            movingSprite.dy = Fx.zeroFx8;
+                            sprite._vy = Fx.zeroFx8;
+                        }
+                    } else if (Math.sign(sprite.vy) === Math.sign(currVy)) {
+                        // sprite collision event changed velocity,
+                        // but still facing same direction; prevent further movement this update.
+                        movingSprite.dy = Fx.zeroFx8;
+                    }
                     break;
                 }
             }
