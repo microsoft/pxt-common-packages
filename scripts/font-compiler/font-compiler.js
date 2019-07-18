@@ -306,6 +306,7 @@ let lines = process.argv.slice(2).map(s => fs.readFileSync(s, "utf8")).join("\n"
 let bmp = ""
 let charIdx = 0
 let compress = false
+let jres = false
 
 for (let line of lines) {
     line = line.trim()
@@ -326,6 +327,9 @@ for (let line of lines) {
     if (!mode && m && (m[1] == "charWidth" || m[1] == "charHeight")) {
         mode = m[2] == "=" ? 1 : 2
     }
+
+    if (/jres=1/.test(line))
+        jres = true;
 
     if (!mode && /^copyright = /.test(line))
         mode = 3;
@@ -512,7 +516,18 @@ if (mode == 2) {
 } else if (mode == 1) {
     unicodeBuf.sort((a, b) => a.readUInt16LE(0) - b.readUInt16LE(0))
     out += "data: "
-    fmt(unicodeBuf)
+    
+    if (jres) {
+        let outp = {
+            "image.font12": {
+                "mimeType": "font/x-mkcd-b" + unicodeBuf[0].length,
+                "data": Buffer.concat(unicodeBuf).toString("base64")
+            }
+        }
+        out = JSON.stringify(outp, null, 4)
+    } else {
+        fmt(unicodeBuf)    
+    }
 }
 
 console.log(out)

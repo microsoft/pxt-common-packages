@@ -1,0 +1,15 @@
+{
+    "name": "azureiot",
+    "description": "Azure IoT - beta",
+    "files": [
+        "azureiot.ts",
+        "README.md"
+    ],
+    "testFiles": [
+        "test.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "mqtt": "file:../mqtt"
+    }
+}

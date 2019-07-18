@@ -312,7 +312,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     right ?
                         Fx.iadd(1, sprite._hitbox.right)
                         :
-                        sprite._hitbox.left,
+                        Fx.iadd(-1, sprite._hitbox.left),
                     Fx.oneHalfFx8
                 ),
                 tileScale
@@ -373,12 +373,9 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             const y0 = Fx.toIntShifted(
                 Fx.add(
                     down ?
-                        Fx.iadd(
-                            1,
-                            sprite._hitbox.bottom
-                        )
+                        Fx.iadd(1, sprite._hitbox.bottom)
                         :
-                        sprite._hitbox.top,
+                        Fx.iadd(-1, sprite._hitbox.top),
                     Fx.oneHalfFx8
                 ),
                 tileScale

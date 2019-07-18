@@ -1,9 +1,4 @@
 namespace texteffects {
-    export interface TextEffectState {
-        xOffset: number;
-        yOffset: number;
-    }
-
     export enum TextEffectKind {
         //% block=none
         None,
