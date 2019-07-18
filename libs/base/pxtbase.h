@@ -1005,6 +1005,7 @@ void *gcAllocate(int numbytes);
 void *gcAllocateArray(int numbytes);
 extern "C" void *app_alloc(int numbytes);
 extern "C" void *app_free(void *ptr);
+void gcPreAllocateBlock(uint32_t sz);
 #ifndef PXT_GC
 inline void *gcAllocate(int numbytes) {
     return xmalloc(numbytes);

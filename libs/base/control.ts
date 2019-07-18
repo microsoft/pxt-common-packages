@@ -47,6 +47,7 @@ namespace control {
     export function fail(message: string) {
         console.log("Fatal failure: ")
         console.log(message)
+        dmesg(message)
         panic(108)
     }
 
