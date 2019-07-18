@@ -103,7 +103,7 @@ namespace control {
             return delay
         }
 
-        private runningCallbacks = false;
+        private runningCallbacks: boolean;
         private registerFrameCallbacks() {
             if (!this.frameCallbacks) return;
 
