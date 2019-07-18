@@ -350,12 +350,11 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                             Fx8((x0 + 1) << tileScale)
                     );
 
-                    const currVx = sprite.vx;
                     sprite.registerObstacle(right ? CollisionDirection.Right : CollisionDirection.Left, tm.getObstacle(x0, y0));
 
                     if (sprite.flags & sprites.Flag.DestroyOnWall) {
                         sprite.destroy();
-                    } else if (sprite.vx === currVx){
+                    } else if (sprite._vx === movingSprite.cachedVx){
                         // sprite collision event didn't change velocity in this direction;
                         // apply normal updates
                         if (sprite.flags & sprites.Flag.BounceOnWall) {
@@ -368,8 +367,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                             movingSprite.dx = Fx.zeroFx8;
                             sprite._vx = Fx.zeroFx8;
                         }
-                    }
-                    else if (Math.sign(sprite.vx) === Math.sign(currVx)) {
+                    } else if (Math.sign(Fx.toInt(sprite._vx)) === Math.sign(Fx.toInt(movingSprite.cachedVx))) {
                         // sprite collision event changed velocity,
                         // but still facing same direction; prevent further movement this update.
                         movingSprite.dx = Fx.zeroFx8;
@@ -421,12 +419,11 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                             Fx8((y0 + 1) << tileScale)
                     );
 
-                    const currVy = sprite.vy;
                     sprite.registerObstacle(down ? CollisionDirection.Bottom : CollisionDirection.Top, tm.getObstacle(x0, y0));
 
                     if (sprite.flags & sprites.Flag.DestroyOnWall) {
                         sprite.destroy();
-                    } else if (sprite.vy === currVy) {
+                    } else if (sprite._vy === movingSprite.cachedVy) {
                         // sprite collision event didn't change velocity in this direction;
                         // apply normal updates
                         if (sprite.flags & sprites.Flag.BounceOnWall) {
@@ -439,7 +436,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                             movingSprite.dy = Fx.zeroFx8;
                             sprite._vy = Fx.zeroFx8;
                         }
-                    } else if (Math.sign(sprite.vy) === Math.sign(currVy)) {
+                    } else if (Math.sign(Fx.toInt(sprite._vy)) === Math.sign(Fx.toInt(movingSprite.cachedVy))) {
                         // sprite collision event changed velocity,
                         // but still facing same direction; prevent further movement this update.
                         movingSprite.dy = Fx.zeroFx8;
