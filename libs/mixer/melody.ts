@@ -110,7 +110,75 @@ namespace music {
 
     let playToneID = 0
 
+    /**
+     * Play a melody from a string representation.
+     * Notes are expressed as a string of characters with this format: NOTE[octave][:duration]
+     * @param melody string
+     */
+    //% block="play melody from string $melody" blockId=playMelodyFromString
+    //% blockNamespace=music
+    //% weight=75 blockGap=8
+    //% group="Melody"
+    //% melody.defl="D4:2 E4:2 F#4:2 G4:2 A4:2 B4:2 Db5:2 D5:2"
+    export function playMelody(melody: string) {
+        const song = new Melody(melody);
+        song.playUntilDone();
+    }
 
+    /**
+     * Play a melody from the melody editor.
+     * @param melody
+     * @param tempo
+     */
+    //% block="play melody $melody at tempo $tempo|(bpm)" blockId=playMelodyFromEditor
+    //% blockNamespace=music
+    //% weight=75 blockGap=8
+    //% group="Melody"
+    //% melody.shadow="melody_editor"
+    //% tempo.min=40 tempo.max=500
+    //% tempo.defl=120
+    export function playMelodyFromEditor(melody: string, tempo: number) {
+        // add tempo to string so it is reflected in simulation
+        let formattedMelody = melody.substr(0, melody.indexOf(' ')) + "-" + tempo + melody.substr(melody.indexOf(' '));
+        const song = new Melody(formattedMelody);
+        song.playUntilDone();
+    }
+
+
+    /**
+     * Create a melody with the melody editor.
+     * @param melody
+     */
+    //% block="$melody" blockId=melody_editor
+    //% blockNamespace=music
+    //% blockHidden = true
+    //% weight=75 blockGap=8
+    //% group="Melody" duplicateShadowOnDrag
+    //% melody.fieldEditor="melody"
+    //% melody.fieldOptions.decompileLiterals=true
+    //% melody.fieldOptions.decompileIndirectFixedInstances="true"
+    //% melody.fieldOptions.onParentBlock="true"
+    export function melodyEditor(melody: string): string {
+        let notes: string[] = melody.split(" ");
+        let melodyString = "";
+        let newOctave = false;
+
+        // build melody string, replace '-' with 'R'
+        for (let i = 0; i < notes.length-1; i++ ) {
+            if (notes[i] === "-") {
+                notes[i] = "R";
+            } else if (notes[i] === "C5") {
+                newOctave = true;
+            } else if (newOctave) { // change the octave if necesary
+                notes[i] += "4";
+                newOctave = false;
+            }
+            melodyString += notes[i] + " ";
+        }
+
+        return melodyString;
+    }
+    
     /**
      * Stop all sounds from playing.
      */
