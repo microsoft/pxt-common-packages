@@ -71,17 +71,17 @@ class WAccel {
     WAccel() 
     : space(ACC_SYSTEM, ACC_UPSIDEDOWN, ACC_ROTATION)
     , acc(NULL) {
-        DMESG("ACCEL: mounting");
+        DMESG("acc: mounting");
         auto sda = LOOKUP_PIN(ACCELEROMETER_SDA);
         auto scl = LOOKUP_PIN(ACCELEROMETER_SCL);
         if (NULL == sda || NULL == scl) { // use default i2c instead
-            DMESG("accelerometer: using SDA, SCL");
+            DMESG("acc: using SDA, SCL");
             sda = LOOKUP_PIN(SDA);
             scl = LOOKUP_PIN(SCL);
         }
         codal::I2C* i2c = pxt::getI2C(sda, scl);
         if (NULL == i2c) {
-            DMESG("accelerometer: no i2c available");
+            DMESG("acc: no i2c available");
             return;
         }
 		
@@ -89,20 +89,28 @@ class WAccel {
         acc = instantiateAccelerometer(accType, i2c);
         if (NULL == acc) {
             int accDetect = detectAccelerometer(i2c);
-            DMESG("accelerometer: detected %d", accDetect);
-            acc = instantiateAccelerometer(accDetect, i2c);
+            if (accDetect < 0) {
+                DMESG("acc: not detected");
+            } else {
+                DMESG("acc: detected %d", accDetect);
+                acc = instantiateAccelerometer(accDetect, i2c);
+            }
         }
 
         if (NULL == acc) {
+            // the accelerometer might be damaged or incorrectly configured,
+            // in doubt, we just ignore it            
             if (LOOKUP_PIN(ACCELEROMETER_SDA))
-                target_panic(PANIC_CODAL_HARDWARE_CONFIGURATION_ERROR);
+                DMESG("acc: damaged accelereomter or invalid ACCELEROMETER_TYPE");
             else
                 DMESG("acc: invalid ACCELEROMETER_TYPE");
+            // acc is already NULL, do nothing
         }
         else {
             // acc->init(); - doesn't do anything
             acc->configure();
             acc->requestUpdate();
+            DMESG("acc: mounted");
         }
     }
 
@@ -116,6 +124,9 @@ private:
 		result = i2c->readRegister(ACCELEROMETER_TYPE_LIS3DH, LIS3DH_WHOAMI, &data, 1);
 		if (result ==0)
 			return ACCELEROMETER_TYPE_LIS3DH;
+		result = i2c->readRegister(ACCELEROMETER_TYPE_LIS3DH_ALT, LIS3DH_WHOAMI, &data, 1);
+		if (result ==0)
+			return ACCELEROMETER_TYPE_LIS3DH_ALT;
 #endif
 			
 #if PXT_SUPPORT_MMA8453
@@ -148,14 +159,15 @@ private:
 			return ACCELEROMETER_TYPE_MPU6050;	
 #endif 
 
-		return PXT_DEFAULT_ACCELEROMETER;
+		return -1;
 	}
 
     codal::Accelerometer* instantiateAccelerometer(int accType, codal::I2C* i2c) {
         switch (accType) {
 #if PXT_SUPPORT_LIS3DH
         case ACCELEROMETER_TYPE_LIS3DH:
-            return new LIS3DH(*i2c, *LOOKUP_PIN(ACCELEROMETER_INT), space);
+        case ACCELEROMETER_TYPE_LIS3DH_ALT:
+            return new LIS3DH(*i2c, *LOOKUP_PIN(ACCELEROMETER_INT), space, accType);
 #endif
 #if PXT_SUPPORT_MSA300
         case ACCELEROMETER_TYPE_MSA300:

@@ -30,6 +30,9 @@ namespace pxsim.control {
             ? b.id.slice(0, 4)
             : "abcd";
     }
+    export function _ramSize() {
+        return 32 * 1024 * 1024;
+    }
     export function deviceSerialNumber(): number {
         let b = board();
         if (!b) return 42;
@@ -83,6 +86,10 @@ namespace pxsim.control {
     export function dmesg(msg: string) {
         console.log(`DMESG: ${msg}`);
     }
+    export function setDebugFlags(flags: number): void {
+        console.log(`debug flags: ${flags}`);
+    }
+
     function toStr(v: any) {
         if (v instanceof RefRecord) {
             return `${v.vtable.name}@${v.id}`
@@ -128,6 +135,10 @@ namespace pxsim.control {
 
     export function heapDump() {
         // TODO something better
+    }
+
+    export function isUSBInitialized() {
+        return false;
     }
 }
 

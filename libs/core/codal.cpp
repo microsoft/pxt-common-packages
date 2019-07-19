@@ -43,7 +43,7 @@ static void commInit() {
         void *p = xmalloc(4);
         // assume 4 byte alloc header; if we're not hitting 8 byte alignment, try allocating 8
         // bytes, not 4 without the volatile, gcc assumes 8 byte alignment on malloc()
-        volatile unsigned hp = (unsigned)p;
+        volatile uintptr_t hp = (uintptr_t)p;
         if (hp & 4) {
             xfree(p);
             p = xmalloc(8);
@@ -108,12 +108,10 @@ void dispatchEvent(Event e) {
 
     auto curr = findBinding(e.source, e.value);
     auto value = fromInt(e.value);
-    if (curr)
+    while (curr) {
         runAction1(curr->action, value);
-
-    curr = findBinding(e.source, DEVICE_EVT_ANY);
-    if (curr)
-        runAction1(curr->action, value);
+        curr = nextBinding(curr->next, e.source, e.value);
+    }
 }
 
 void registerWithDal(int id, int event, Action a, int flags) {

@@ -13,7 +13,7 @@
 
 namespace pxt {
 
-PXT_VTABLE(RefImage)
+PXT_VTABLE(RefImage, ValType::Object)
 
 void RefImage::destroy(RefImage *t) {
     decrRC(t->buffer());
@@ -610,7 +610,9 @@ void replace(Image_ img, int from, int to) {
 //%
 Image_ doubled(Image_ img) {
     Image_ tmp = doubledX(img);
+    registerGCObj(tmp);
     Image_ r = doubledY(tmp);
+    unregisterGCObj(tmp);
     decrRC(tmp);
     return r;
 }

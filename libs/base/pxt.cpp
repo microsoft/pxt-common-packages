@@ -22,16 +22,24 @@ void decr(TValue e) {
 
 Action mkAction(int totallen, RefAction *act) {
     check(getVTable(act)->classNo == BuiltInType::RefAction, PANIC_INVALID_BINARY_HEADER, 1);
+#ifdef PXT_VM
+    check(act->initialLen == totallen, PANIC_INVALID_BINARY_HEADER, 13);
+#endif
 
     if (totallen == 0) {
         return (TValue)act; // no closure needed
     }
 
-    void *ptr = gcAllocate(sizeof(RefAction) + totallen * sizeof(unsigned));
+    void *ptr = gcAllocate(sizeof(RefAction) + totallen * sizeof(void *));
     RefAction *r = new (ptr) RefAction();
     r->len = totallen;
+#ifdef PXT_VM
+    r->numArgs = act->numArgs;
+    r->initialLen = act->initialLen;
+    r->reserved = act->reserved;
+#endif
     r->func = act->func;
-    memset(r->fields, 0, r->len * sizeof(unsigned));
+    memset(r->fields, 0, r->len * sizeof(void *));
 
     MEMDBG("mkAction: start=%p => %p", act, r);
 
@@ -232,7 +240,7 @@ void Segment::ensure(ramint_t newSize) {
 
 void Segment::setLength(unsigned newLength) {
     if (newLength > size) {
-        ensure(length);
+        ensure(newLength);
     }
     length = newLength;
     return;
@@ -265,7 +273,7 @@ TValue Segment::remove(unsigned i) {
         TValue ret = data[i];
         if (i + 1 < length) {
             // Move the rest of the elements to fill in the gap.
-            memmove(data + i, data + i + 1, (length - i - 1) * sizeof(unsigned));
+            memmove(data + i, data + i + 1, (length - i - 1) * sizeof(void *));
         }
         length--;
         data[length] = Segment::DefaultValue;
@@ -289,7 +297,7 @@ void Segment::insert(unsigned i, TValue value) {
         ensure(length + 1);
 
         // Move the rest of the elements to fill in the gap.
-        memmove(data + i + 1, data + i, (length - i) * sizeof(unsigned));
+        memmove(data + i + 1, data + i, (length - i) * sizeof(void *));
 
         data[i] = value;
         length++;
@@ -337,7 +345,8 @@ void RefCollection::print(RefCollection *t) {
     t->head.print();
 }
 
-PXT_VTABLE_CTOR(RefAction) {}
+PXT_VTABLE(RefAction, ValType::Function)
+RefAction::RefAction() : PXT_VTABLE_INIT(RefAction) {}
 
 // fields[] contain captured locals
 void RefAction::destroy(RefAction *t) {
@@ -350,8 +359,13 @@ void RefAction::destroy(RefAction *t) {
 }
 
 void RefAction::print(RefAction *t) {
+#ifdef PXT_VM
+    DMESG("RefAction %p pc=%X size=%d", t,
+          (const uint8_t *)t->func - (const uint8_t *)vmImg->dataStart, t->len);
+#else
     DMESG("RefAction %p r=%d pc=%X size=%d", t, REFCNT(t),
           (const uint8_t *)t->func - (const uint8_t *)bytecode, t->len);
+#endif
 }
 
 PXT_VTABLE_CTOR(RefRefLocal) {
@@ -418,7 +432,9 @@ void error(PXT_PANIC code, int subcode) {
     target_panic(code);
 }
 
+#ifndef PXT_VM
 uint16_t *bytecode;
+#endif
 TValue *globals;
 
 void checkStr(bool cond, const char *msg) {
@@ -430,6 +446,19 @@ void checkStr(bool cond, const char *msg) {
     }
 }
 
+#ifdef PXT_VM
+int templateHash() {
+    return (int)vmImg->infoHeader->hexHash;
+}
+
+int programHash() {
+    return (int)vmImg->infoHeader->programHash;
+}
+
+int getNumGlobals() {
+    return (int)vmImg->infoHeader->allocGlobals;
+}
+#else
 int templateHash() {
     return ((int *)bytecode)[4];
 }
@@ -441,8 +470,9 @@ int programHash() {
 int getNumGlobals() {
     return bytecode[16];
 }
+#endif
 
-#ifndef X86_64
+#ifndef PXT_VM
 void exec_binary(unsigned *pc) {
     // XXX re-enable once the calibration code is fixed and [editor/embedded.ts]
     // properly prepends a call to [internal_main].
@@ -505,11 +535,13 @@ RefCollection *keysOf(TValue v) {
     auto len = rm->keys.getLength();
     if (!len)
         return r;
+    registerGCObj(r);
     r->setLength(len);
     auto dst = r->getData();
     memcpy(dst, rm->keys.getData(), len * sizeof(TValue));
     for (unsigned i = 0; i < len; ++i)
         incr(dst[i]);
+    unregisterGCObj(r);
     return r;
 }
 } // namespace pxtrt

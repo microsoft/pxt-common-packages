@@ -1,6 +1,6 @@
 {
     "name": "lightsensor",
-    "description": "The lightsensor library",
+    "description": "Onboard light level sensor",
     "files": [
         "README.md",
         "lightsensor.cpp",

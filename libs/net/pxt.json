@@ -1,0 +1,13 @@
+{
+    "name": "net",
+    "description": "Networking abstractions",
+    "files": [
+        "README.md",
+        "net.ts",
+        "requests.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core"
+    }
+}

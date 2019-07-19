@@ -18,34 +18,94 @@ namespace info {
         UserHeartImage = 1 << 5
     }
 
-    let _players: PlayerInfo[];
-    let _visibilityFlag: number = Visibility.None;
+    class PlayerState {
+        public score: number;
+        // undefined: not used
+        // null: reached 0 and callback was invoked
+        public life: number;
+        public lifeZeroHandler: () => void;
 
-    let _gameEnd: number = undefined;
-    let _heartImage: Image;
-    let _multiplierImage: Image;
-    let _bgColor: number;
-    let _borderColor: number;
-    let _fontColor: number;
-    let _countdownExpired: boolean;
+        constructor() { }
+    }
 
-    let _countdownEndHandler: () => void;
+    class InfoState {
+        public playerStates: PlayerState[];
+        public visibilityFlag : number;
+
+        public gameEnd: number;
+        public heartImage: Image;
+        public multiplierImage: Image;
+        public bgColor: number;
+        public borderColor: number;
+        public fontColor: number;
+        public countdownExpired: boolean;
+        public countdownEndHandler: () => void;
+
+        constructor() {
+            this.visibilityFlag = Visibility.Hud;
+            this.playerStates = [];
+            this.heartImage = defaultHeartImage();
+            this.multiplierImage = img`
+                1 . . . 1
+                . 1 . 1 .
+                . . 1 . .
+                . 1 . 1 .
+                1 . . . 1
+            `;
+            this.bgColor = screen.isMono ? 0 : 1;
+            this.borderColor = screen.isMono ? 1 : 3;
+            this.fontColor = screen.isMono ? 1 : 3;
+            this.countdownExpired = undefined;
+            this.countdownEndHandler = undefined;
+            this.gameEnd = undefined;
+            this.playerStates = [];
+        }
+    }
+
+    let infoState: InfoState = undefined;
+
+    let players: PlayerInfo[];
+
+    let infoStateStack: {
+        state: InfoState,
+        scene: scene.Scene
+    }[];
+
+    game.addScenePushHandler(oldScene => {
+        if (infoState) {
+            if (!infoStateStack) infoStateStack = [];
+            infoStateStack.push({
+                state: infoState,
+                scene: oldScene
+            });
+            infoState = undefined;
+        }
+    });
+
+    game.addScenePopHandler(() => {
+        const scene = game.currentScene();
+        infoState = undefined;
+        if (infoStateStack && infoStateStack.length) {
+            const nextState = infoStateStack.pop();
+            if (nextState.scene == scene) {
+                infoState = nextState.state;
+            } else {
+                infoStateStack.push(nextState);
+            }
+        }
+    });
 
     function initHUD() {
-        if (_visibilityFlag & (Visibility.Hud | Visibility.Multi)) return;
+        if (infoState) return;
 
-        _visibilityFlag |= Visibility.Hud;
-        // non of these images should have been set
-        _heartImage = defaultHeartImage();
-        _multiplierImage = defaultMultiplyImage();
-        _bgColor = screen.isMono ? 0 : 1;
-        _borderColor = screen.isMono ? 1 : 3;
-        _fontColor = screen.isMono ? 1 : 3;
+        infoState = new InfoState();
+
         game.eventContext().registerFrameHandler(scene.HUD_PRIORITY, () => {
+            if (!infoState) return;
             control.enablePerfCounter("info")
             // show score, lifes
-            if (_visibilityFlag & Visibility.Multi) {
-                const ps = _players.filter(p => !!p);
+            if (infoState.visibilityFlag & Visibility.Multi) {
+                const ps = players.filter(p => !!p);
                 // First draw players
                 ps.forEach(p => p.drawPlayer());
                 // Then run life over events
@@ -53,27 +113,28 @@ namespace info {
             } else { // single player
                 // show score
                 const p = player1;
-                if (p.hasScore() && (_visibilityFlag & Visibility.Score)) {
+                if (p.hasScore() && (infoState.visibilityFlag & Visibility.Score)) {
                     p.drawScore();
                 }
                 // show life
-                if (p.hasLife() && (_visibilityFlag & Visibility.Life)) {
+                if (p.hasLife() && (infoState.visibilityFlag & Visibility.Life)) {
                     p.drawLives();
                 }
                 p.raiseLifeZero(true);
             }
             // show countdown in both modes
-            if (_gameEnd !== undefined && _visibilityFlag & Visibility.Countdown) {
+            if (infoState.gameEnd !== undefined && infoState.visibilityFlag & Visibility.Countdown) {
                 const scene = game.currentScene();
-                const elapsed = _gameEnd - scene.millis();
+                const elapsed = infoState.gameEnd - scene.millis();
                 drawTimer(elapsed);
                 let t = elapsed / 1000;
                 if (t <= 0) {
                     t = 0;
-                    if (!_countdownExpired) {
-                        _countdownExpired = true;
-                        if (_countdownEndHandler) {
-                            _countdownEndHandler();
+                    if (!infoState.countdownExpired) {
+                        infoState.countdownExpired = true;
+                        if (infoState.countdownEndHandler) {
+                            infoState.countdownEndHandler();
+                            infoState.gameEnd = undefined;
                         }
                         else {
                             game.over();
@@ -85,76 +146,66 @@ namespace info {
     }
 
     function initMultiHUD() {
-        if (_visibilityFlag & Visibility.Multi) return;
+        if (infoState.visibilityFlag & Visibility.Multi) return;
 
-        _visibilityFlag |= Visibility.Multi;
-        if (!_heartImage || !(_visibilityFlag & Visibility.UserHeartImage))
-            _heartImage = defaultHeartImage();
-        _multiplierImage = defaultMultiplyImage();
-    }
-
-    function defaultMultiplyImage() {
-        if (_visibilityFlag & Visibility.Multi)
-            return img`
-                1 . 1
-                . 1 .
-                1 . 1
-            `;
-        else
-            return img`
-        1 . . . 1
-        . 1 . 1 .
-        . . 1 . .
-        . 1 . 1 .
-        1 . . . 1
+        infoState.visibilityFlag |= Visibility.Multi;
+        if (!(infoState.visibilityFlag & Visibility.UserHeartImage))
+            infoState.heartImage = defaultMultiplayerHeartImage();
+        infoState.multiplierImage = img`
+            1 . 1
+            . 1 .
+            1 . 1
         `;
     }
 
     function defaultHeartImage() {
-        if (_visibilityFlag & Visibility.Multi)
-            return screen.isMono ?
-                img`
-                . . 1 . 1 . .
-                . 1 . 1 . 1 .
-                . 1 . . . 1 .
-                . . 1 . 1 . .
-                . . . 1 . . .
+        return screen.isMono ?
+            img`
+                . 1 1 . 1 1 . .
+                1 . . 1 . . 1 .
+                1 . . . . . 1 .
+                1 . . . . . 1 .
+                . 1 . . . 1 . .
+                . . 1 . 1 . . .
+                . . . 1 . . . .
             `
+            :
+            img`
+                . c 2 2 . 2 2 .
+                c 2 2 2 2 2 4 2
+                c 2 2 2 2 4 2 2
+                c 2 2 2 2 2 2 2
+                . c 2 2 2 2 2 .
+                . . c 2 2 2 . .
+                . . . c 2 . . .
+            `;
+    }
+
+    function defaultMultiplayerHeartImage() {
+        return screen.isMono ?
+                img`
+                    . . 1 . 1 . .
+                    . 1 . 1 . 1 .
+                    . 1 . . . 1 .
+                    . . 1 . 1 . .
+                    . . . 1 . . .
+                `
                 :
                 img`
-                . . 1 . 1 . .
-                . 1 2 1 4 1 .
-                . 1 2 4 2 1 .
-                . . 1 2 1 . .
-                . . . 1 . . .
-            `;
-        else
-            return screen.isMono ?
-                img`
-        . 1 1 . 1 1 . .
-        1 . . 1 . . 1 .
-        1 . . . . . 1 .
-        1 . . . . . 1 .
-        . 1 . . . 1 . .
-        . . 1 . 1 . . .
-        . . . 1 . . . .
-`         :
-                img`
-        . c 2 2 . 2 2 .
-        c 2 2 2 2 2 4 2
-        c 2 2 2 2 4 2 2
-        c 2 2 2 2 2 2 2
-        . c 2 2 2 2 2 .
-        . . c 2 2 2 . .
-        . . . c 2 . . .
-        `;
-
+                    . . 1 . 1 . .
+                    . 1 2 1 4 1 .
+                    . 1 2 4 2 1 .
+                    . . 1 2 1 . .
+                    . . . 1 . . .
+                `;
     }
 
     export function saveHighScore() {
-        if (_players) {
+        if (players) {
             let hs = 0;
-            _players.filter(p => p && p.hasScore()).forEach(p => hs = Math.max(hs, p._score));
+            players
+                .filter(p => p && p.hasScore())
+                .forEach(p => hs = Math.max(hs, p.score()));
             updateHighScore(hs);
         }
     }
@@ -270,9 +321,9 @@ namespace info {
     //% help=info/start-countdown weight=79 blockGap=8
     //% group="Countdown"
     export function startCountdown(duration: number) {
-        _gameEnd = game.currentScene().millis() + duration * 1000;
         updateFlag(Visibility.Countdown, true);
-        _countdownExpired = false;
+        infoState.gameEnd = game.currentScene().millis() + duration * 1000;
+        infoState.countdownExpired = false;
     }
 
     /**
@@ -282,9 +333,9 @@ namespace info {
     //% help=info/stop-countdown
     //% group="Countdown"
     export function stopCountdown() {
-        _gameEnd = undefined;
         updateFlag(Visibility.Countdown, false);
-        _countdownExpired = true;
+        infoState.gameEnd = undefined;
+        infoState.countdownExpired = true;
     }
 
     /**
@@ -296,7 +347,7 @@ namespace info {
     //% group="Countdown"
     export function onCountdownEnd(handler: () => void) {
         initHUD();
-        _countdownEndHandler = handler;
+        infoState.countdownEndHandler = handler;
     }
 
     /**
@@ -305,9 +356,8 @@ namespace info {
      */
     //% group="Life"
     export function setLifeImage(image: Image) {
-        initHUD();
-        _heartImage = image;
         updateFlag(Visibility.UserHeartImage, true);
+        infoState.heartImage = image;
     }
 
     /**
@@ -338,9 +388,9 @@ namespace info {
     }
 
     function updateFlag(flag: Visibility, on: boolean) {
-        if (on) _visibilityFlag |= flag;
-        else _visibilityFlag = ~(~_visibilityFlag | flag);
         initHUD();
+        if (on) infoState.visibilityFlag |= flag;
+        else infoState.visibilityFlag = ~(~infoState.visibilityFlag | flag);
     }
 
     /**
@@ -350,7 +400,8 @@ namespace info {
      */
     //% group="Theme"
     export function setBorderColor(color: number) {
-        _borderColor = Math.min(Math.max(color, 0), 15) | 0;
+        initHUD();
+        infoState.borderColor = Math.min(Math.max(color, 0), 15) | 0;
     }
 
     /**
@@ -360,7 +411,8 @@ namespace info {
      */
     //% group="Theme"
     export function setBackgroundColor(color: number) {
-        _bgColor = Math.min(Math.max(color, 0), 15) | 0;
+        initHUD();
+        infoState.bgColor = Math.min(Math.max(color, 0), 15) | 0;
     }
 
     /**
@@ -370,7 +422,8 @@ namespace info {
      */
     //% group="Theme"
     export function setFontColor(color: number) {
-        _fontColor = Math.min(Math.max(color, 0), 15) | 0;
+        initHUD();
+        infoState.fontColor = Math.min(Math.max(color, 0), 15) | 0;
     }
 
     /**
@@ -379,7 +432,8 @@ namespace info {
      */
     //% group="Theme"
     export function borderColor(): number {
-        return _borderColor ? _borderColor : 3;
+        initHUD();
+        return infoState.borderColor ? infoState.borderColor : 3;
     }
 
     /**
@@ -388,7 +442,8 @@ namespace info {
      */
     //% group="Theme"
     export function backgroundColor(): number {
-        return _bgColor ? _bgColor : 1;
+        initHUD();
+        return infoState.bgColor ? infoState.bgColor : 1;
     }
 
     /**
@@ -397,7 +452,8 @@ namespace info {
      */
     //% group="Theme"
     export function fontColor(): number {
-        return _fontColor ? _fontColor : 3;
+        initHUD();
+        return infoState.fontColor ? infoState.fontColor : 3;
     }
 
     function drawTimer(millis: number) {
@@ -409,8 +465,8 @@ namespace info {
         const seconds = Math.idiv(millis, 1000);
         const width = font.charWidth * 5 - 2;
         let left = (screen.width >> 1) - (width >> 1) + 1;
-        let color1 = _fontColor;
-        let color2 = _bgColor;
+        let color1 = infoState.fontColor;
+        let color2 = infoState.bgColor;
 
         if (seconds < 10 && (seconds & 1) && !screen.isMono) {
             const temp = color1;
@@ -418,7 +474,7 @@ namespace info {
             color2 = temp;
         }
 
-        screen.fillRect(left - 3, 0, width + 6, font.charHeight + 3, _borderColor)
+        screen.fillRect(left - 3, 0, width + 6, font.charHeight + 3, infoState.borderColor)
         screen.fillRect(left - 2, 0, width + 4, font.charHeight + 2, color2)
 
 
@@ -440,34 +496,29 @@ namespace info {
     //% fixedInstances
     //% blockGap=8
     export class PlayerInfo {
-        _score: number;
-        _life: number;
-        _player: number;
-        bg: number; // background color
-        border: number; // border color
-        fc: number; // font color
-        visilibity: Visibility;
-        showScore?: boolean;
-        showLife?: boolean;
-        showPlayer?: boolean;
-        private _lifeZeroHandler?: () => void; // onPlayerLifeOver handler
-        x?: number;
-        y?: number;
-        left?: boolean; // if true banner goes from x to the left, else goes rightward
-        up?: boolean; // if true banner goes from y up, else goes downward
+        protected _player: number;
+        public bg: number; // background color
+        public border: number; // border color
+        public fc: number; // font color
+        public showScore?: boolean;
+        public showLife?: boolean;
+        public visilibity: Visibility;
+        public showPlayer?: boolean;
+        public x?: number;
+        public y?: number;
+        public left?: boolean; // if true banner goes from x to the left, else goes rightward
+        public up?: boolean; // if true banner goes from y up, else goes downward
 
         constructor(player: number) {
             this._player = player;
             this.border = 1;
             this.fc = 1;
-            this._life = null;
-            this._score = null;
             this.visilibity = Visibility.None;
-            this.showScore = null;
-            this.showLife = null;
-            this.showPlayer = null;
-            this.left = null;
-            this.up = null;
+            this.showScore = undefined;
+            this.showLife = undefined;
+            this.showPlayer = undefined;
+            this.left = undefined;
+            this.up = undefined;
             if (this._player === 1) {
                 // Top left, and banner is white on red
                 this.bg = screen.isMono ? 0 : 2;
@@ -493,16 +544,26 @@ namespace info {
                 this.up = true;
             }
 
-            // init hud
-            if (!_players)
-                _players = [];
-            _players[this._player - 1] = this;
+            if (!players) players = [];
+            players[this._player - 1] = this;
         }
 
         private init() {
             initHUD();
-            if (this._player > 1)
-                initMultiHUD();
+            if (this._player > 1) initMultiHUD();
+            if (!infoState.playerStates[this._player - 1]) {
+                infoState.playerStates[this._player - 1] = new PlayerState();
+            }
+        }
+
+        private getState() {
+            this.init();
+            return infoState.playerStates[this._player - 1];
+        }
+
+        // the id numbera of the player
+        id(): number {
+            return this._player;
         }
 
         /**
@@ -512,14 +573,16 @@ namespace info {
         //% blockId=piscore block="%player score"
         //% help=info/score
         score(): number {
-            if (this.showScore === null) this.showScore = true;
-            if (this.showPlayer === null) this.showPlayer = true;
+            if (this.showScore === undefined) this.showScore = true;
+            if (this.showPlayer === undefined) this.showPlayer = true;
 
-            if (!this._score) {
-                this._score = 0;
-                saveHighScore();
+            const state = this.getState();
+
+            if (!state.score) {
+                state.score = 0;
+                updateHighScore(0);
             }
-            return this._score;
+            return state.score;
         }
 
         /**
@@ -530,10 +593,11 @@ namespace info {
         //% value.defl=0
         //% help=info/set-score
         setScore(value: number) {
-            this.init();
+            const state = this.getState();
             updateFlag(Visibility.Score, true);
-            const t = this.score();
-            this._score = (value | 0);
+
+            this.score(); // invoked for side effects
+            state.score = (value | 0);
         }
 
         /**
@@ -549,7 +613,8 @@ namespace info {
         }
 
         hasScore() {
-            return this._score !== null;
+            const state = this.getState();
+            return state.score !== undefined;
         }
 
         /**
@@ -559,13 +624,14 @@ namespace info {
         //% blockid=piflife block="%player life"
         //% help=info/life
         life(): number {
-            if (this.showLife === null) this.showLife = true;
-            if (this.showPlayer === null) this.showPlayer = true;
+            const state = this.getState();
+            if (this.showLife === undefined) this.showLife = true;
+            if (this.showPlayer === undefined) this.showPlayer = true;
 
-            if (this._life === null) {
-                this._life = 3;
+            if (state.life === undefined) {
+                state.life = 3;
             }
-            return this._life;
+            return state.life || 0;
         }
 
         /**
@@ -576,10 +642,11 @@ namespace info {
         //% value.defl=3
         //% help=info/set-life
         setLife(value: number): void {
-            this.init();
+            const state = this.getState();
             updateFlag(Visibility.Life, true);
-            const t = this.life();
-            this._life = (value | 0);
+
+            this.life(); // invoked for side effects
+            state.life = (value | 0);
         }
 
         /**
@@ -603,7 +670,8 @@ namespace info {
         //% blockId=pihaslife block="%player has life"
         //% help=info/has-life
         hasLife(): boolean {
-            return this._life !== null;
+            const state = this.getState();
+            return state.life !== undefined && state.life !== null;
         }
 
         /**
@@ -614,18 +682,25 @@ namespace info {
         //% blockId=playerinfoonlifezero block="on %player life zero"
         //% help=info/on-life-zero
         onLifeZero(handler: () => void) {
-            this._lifeZeroHandler = handler;
+            const state = this.getState();
+            state.lifeZeroHandler = handler;
         }
 
         raiseLifeZero(gameOver: boolean) {
-            if (this._life !== null && this._life <= 0) {
-                this._life = null;
-                if (this._lifeZeroHandler) this._lifeZeroHandler();
-                else if (gameOver) game.over();
+            const state = this.getState();
+            if (state.life !== null && state.life <= 0) {
+                state.life = null;
+                if (state.lifeZeroHandler) {
+                    state.lifeZeroHandler();
+                } else if (gameOver) {
+                    game.over();
+                }
             }
         }
 
         drawPlayer() {
+            const state = this.getState();
+
             const font = image.font5;
             let score: string;
             let life: string;
@@ -634,20 +709,20 @@ namespace info {
             let lifeWidth = 0;
             const offsetX = 1;
             let offsetY = 2;
-            let showScore = this.showScore && this._score !== null;
-            let showLife = this.showLife && this._life !== null;
+            let showScore = this.showScore && state.score !== undefined;
+            let showLife = this.showLife && state.life !== undefined;
 
             if (showScore) {
-                score = "" + this._score;
+                score = "" + state.score;
                 scoreWidth = score.length * font.charWidth + 3;
                 height += font.charHeight;
                 offsetY += font.charHeight + 1;
             }
 
             if (showLife) {
-                life = "" + this._life;
-                lifeWidth = _heartImage.width + _multiplierImage.width + life.length * font.charWidth + 3;
-                height += _heartImage.height;
+                life = "" + (state.life || 0);
+                lifeWidth = infoState.heartImage.width + infoState.multiplierImage.width + life.length * font.charWidth + 3;
+                height += infoState.heartImage.height;
             }
 
             const width = Math.max(scoreWidth, lifeWidth);
@@ -674,20 +749,26 @@ namespace info {
             if (showLife) {
                 const xLoc = x + offsetX + (this.left ? width - lifeWidth : 0);
 
-                let mult = _multiplierImage.clone();
+                let mult = infoState.multiplierImage.clone();
                 mult.replace(1, this.fc);
 
-                screen.drawTransparentImage(_heartImage,
+                screen.drawTransparentImage(
+                    infoState.heartImage,
                     xLoc,
-                    y + offsetY);
-                screen.drawTransparentImage(mult,
-                    xLoc + _heartImage.width,
-                    y + offsetY + font.charHeight - _multiplierImage.height - 1);
-                screen.print(life,
-                    xLoc + _heartImage.width + _multiplierImage.width + 1,
+                    y + offsetY
+                );
+                screen.drawTransparentImage(
+                    mult,
+                    xLoc + infoState.heartImage.width,
+                    y + offsetY + font.charHeight - infoState.multiplierImage.height - 1
+                );
+                screen.print(
+                    life,
+                    xLoc + infoState.heartImage.width + infoState.multiplierImage.width + 1,
                     y + offsetY,
                     this.fc,
-                    font);
+                    font
+                );
             }
 
             // print player icon
@@ -705,8 +786,20 @@ namespace info {
                     if (this.up) iconY -= 3;
                 }
 
-                screen.fillRect(iconX, iconY, iconWidth, iconHeight, this.border);
-                screen.print(pNum, iconX + 1, iconY + (iconHeight >> 1) - (font.charHeight >> 1), this.bg, font);
+                screen.fillRect(
+                    iconX,
+                    iconY,
+                    iconWidth,
+                    iconHeight,
+                    this.border
+                );
+                screen.print(
+                    pNum,
+                    iconX + 1,
+                    iconY + (iconHeight >> 1) - (font.charHeight >> 1),
+                    this.bg,
+                    font
+                );
             }
         }
 
@@ -727,33 +820,94 @@ namespace info {
             const num = s.toString();
             const width = num.length * font.charWidth;
 
-            screen.fillRect(screen.width - width - 2, 0, screen.width, image.font8.charHeight + 3, _borderColor)
-            screen.fillRect(screen.width - width - 1, 0, screen.width, image.font8.charHeight + 2, _bgColor)
-            screen.print(num, screen.width - width, offsetY, _fontColor, font);
+            screen.fillRect(
+                screen.width - width - 2,
+                0,
+                screen.width,
+                image.font8.charHeight + 3,
+                infoState.borderColor
+            );
+            screen.fillRect(
+                screen.width - width - 1,
+                0,
+                screen.width,
+                image.font8.charHeight + 2,
+                infoState.bgColor
+            );
+            screen.print(
+                num,
+                screen.width - width,
+                offsetY,
+                infoState.fontColor,
+                font
+            );
         }
 
         drawLives() {
-            if (this._life < 0) return;
+            const state = this.getState();
+            if (state.life < 0) return;
             const font = image.font8;
-            if (this._life <= 4) {
-                screen.fillRect(0, 0, this._life * (_heartImage.width + 1) + 3, _heartImage.height + 4, _borderColor);
-                screen.fillRect(0, 0, this._life * (_heartImage.width + 1) + 2, _heartImage.height + 3, _bgColor);
-                for (let i = 0; i < this._life; i++) {
-                    screen.drawTransparentImage(_heartImage, 1 + i * (_heartImage.width + 1), 1);
+            if (state.life <= 4) {
+                screen.fillRect(
+                    0,
+                    0,
+                    state.life * (infoState.heartImage.width + 1) + 3,
+                    infoState.heartImage.height + 4,
+                    infoState.borderColor
+                );
+                screen.fillRect(
+                    0,
+                    0,
+                    state.life * (infoState.heartImage.width + 1) + 2,
+                    infoState.heartImage.height + 3,
+                    infoState.bgColor
+                );
+                for (let i = 0; i < state.life; i++) {
+                    screen.drawTransparentImage(
+                        infoState.heartImage,
+                        1 + i * (infoState.heartImage.width + 1),
+                        1
+                    );
                 }
             }
             else {
-                const num = this._life.toString();
+                const num = state.life + "";
                 const textWidth = num.length * font.charWidth - 1;
-                screen.fillRect(0, 0, _heartImage.width + _multiplierImage.width + textWidth + 5, _heartImage.height + 4, _borderColor)
-                screen.fillRect(0, 0, _heartImage.width + _multiplierImage.width + textWidth + 4, _heartImage.height + 3, _bgColor)
-                screen.drawTransparentImage(_heartImage, 1, 1);
+                screen.fillRect(
+                    0,
+                    0,
+                    infoState.heartImage.width + infoState.multiplierImage.width + textWidth + 5,
+                    infoState.heartImage.height + 4,
+                    infoState.borderColor
+                );
+                screen.fillRect(
+                    0,
+                    0,
+                    infoState.heartImage.width + infoState.multiplierImage.width + textWidth + 4,
+                    infoState.heartImage.height + 3,
+                    infoState.bgColor
+                );
+                screen.drawTransparentImage(
+                    infoState.heartImage,
+                    1,
+                    1
+                );
 
-                let mult = _multiplierImage.clone();
-                mult.replace(1, _fontColor);
+                let mult = infoState.multiplierImage.clone();
+                mult.replace(1, infoState.fontColor);
 
-                screen.drawTransparentImage(mult, _heartImage.width + 2, font.charHeight - _multiplierImage.height - 1);
-                screen.print(num, _heartImage.width + 3 + _multiplierImage.width, 1, _fontColor, font);
+                screen.drawTransparentImage(
+                    mult,
+                    infoState.heartImage.width + 2,
+                    font.charHeight - infoState.multiplierImage.height - 1
+                );
+                screen.print(
+                    num,
+                    infoState.heartImage.width + 3 + infoState.multiplierImage.width,
+                    1,
+                    infoState.fontColor,
+                    font
+                );
             }
         }
 
