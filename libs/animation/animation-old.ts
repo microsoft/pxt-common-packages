@@ -4,10 +4,10 @@
 //% color="#03AA74" weight=78 icon="\uf021"
 namespace animation {
     //Handles all the updates
-    let animations: Animation[];
+    let animations: OldAnimation[];
 
     let animationStateStack: {
-        state: Animation[],
+        state: OldAnimation[],
         scene: scene.Scene
     }[];
 
@@ -35,7 +35,7 @@ namespace animation {
         }
     });
 
-    export class Animation {
+    export class OldAnimation {
 
         sprites: Sprite[];
         frames: Image[];
@@ -148,7 +148,7 @@ namespace animation {
     //% weight=50
     //% help=animation/create-animation
     export function createAnimation(action: number, interval: number) {
-        return new Animation(action, interval);
+        return new OldAnimation(action, interval);
     }
 
     /**
@@ -159,7 +159,7 @@ namespace animation {
     //% blockHidden=true deprecated
     //% weight=30
     //% help=animation/attach-animation
-    export function attachAnimation(sprite: Sprite, set: Animation) {
+    export function attachAnimation(sprite: Sprite, set: OldAnimation) {
         set.registerSprite(sprite);
     }
 

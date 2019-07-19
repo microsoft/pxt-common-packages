@@ -302,9 +302,9 @@ namespace animation {
      * @param wait whether or not the animation should be blocking
      */
     //% blockId=run_movement_animation
-    //% block="animate %animation on %sprite=variables_get(mySprite) with interval %nodeInterval=timePicker ms and wait %wait=toggleOnOff"
+    //% block="%sprite=variables_get(mySprite) follow path %animation with interval %nodeInterval=timePicker ms and wait %wait=toggleOnOff"
     //% wait.defl=1
-    export function runMovementAnimation(animation: MovementAnimations, sprite: Sprite, nodeInterval?: number, wait?: boolean): void {
+    export function runMovementAnimation(sprite: Sprite, animation: MovementAnimations, nodeInterval?: number, wait?: boolean): void {
         let nodes: PathNode[];
         switch (animation) {
             case MovementAnimations.Test:
