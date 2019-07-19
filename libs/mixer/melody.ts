@@ -111,21 +111,6 @@ namespace music {
     let playToneID = 0
 
     /**
-     * Play a melody from a string representation.
-     * Notes are expressed as a string of characters with this format: NOTE[octave][:duration]
-     * @param melody string
-     */
-    //% block="play melody from string $melody" blockId=playMelodyFromString
-    //% blockNamespace=music
-    //% weight=75 blockGap=8
-    //% group="Melody"
-    //% melody.defl="D4:2 E4:2 F#4:2 G4:2 A4:2 B4:2 Db5:2 D5:2"
-    export function playMelody(melody: string) {
-        const song = new Melody(melody);
-        song.playUntilDone();
-    }
-
-    /**
      * Play a melody from the melody editor.
      * @param melody
      * @param tempo
