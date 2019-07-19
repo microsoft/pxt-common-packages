@@ -1,11 +1,17 @@
+enum MovementAnimations {
+    //% block="test"
+    Test = 0
+}
+
 /*
     Animation library for sprites
 */
 //% color="#03AA74" weight=78 icon="\uf021"
 namespace animation {
-    //Handles all the updates
+    // Stores the animations for the current scene
     let animations: Animation[];
 
+    // Preserves animations when switching back and forth between scenes
     let animationStateStack: {
         state: Animation[],
         scene: scene.Scene
@@ -26,148 +32,301 @@ namespace animation {
         const scene = game.currentScene();
         animations = undefined;
         if (animationStateStack && animationStateStack.length) {
-            const nextState = animationStateStack.pop();
-            if (nextState.scene == scene) {
-                animations = nextState.state;
-            } else {
-                animationStateStack.push(nextState);
+            for (let nextState of animationStateStack) {
+                if (nextState.scene == scene) {
+                    animations = nextState.state;
+                    animationStateStack.removeElement(nextState);
+                    break;
+                }
             }
         }
     });
 
-    export class Animation {
+    const initializeAnimationHandler = () => {
+        // Register animation updates to fire when frames are rendered
+        if(!animations) {
+            animations = [];
 
-        sprites: Sprite[];
-        frames: Image[];
-        index: number;
-        interval: number;
-        action: number;
-        lastTime: number;
-
-        constructor(action: number, interval: number) {
-            this.interval = interval;
-            this.index = -1;
-            this.action = action;
-            this.frames = [];
-            this.sprites = [];
-            this.lastTime = control.millis();
-
-            this._init();
+            game.eventContext().registerFrameHandler(scene.ANIMATION_UPDATE_PRIORITY, () => {
+                animations.forEach(anim => anim.update());
+            });
         }
+    }
 
-        _init() {
-            if (!animations) {
-                animations = [];
-                game.eventContext().registerFrameHandler(scene.ANIMATION_UPDATE_PRIORITY, () => {
-                    animations.forEach(anim => anim.update());
-                });
-            }
+    export interface Point {
+        x: number;
+        y: number;
+    }
+
+    export interface PathNode {
+        command: string;
+        points: Point[];
+    }
+
+    export interface Animation {
+        sprite: Sprite;
+        isPlaying: boolean;
+
+        update(): void;
+    }
+
+    export class MovementAnimation implements Animation {
+        public sprite: Sprite;
+        public isPlaying: boolean;
+        private nodes: PathNode[];
+        private nodeIndex: number;
+        private nodeInterval: number;
+        private lastNode: number;
+        private lastState: Point;
+        
+        constructor(sprite: Sprite, nodes: PathNode[], nodeInterval: number) {
+            this.sprite = sprite;
+            this.lastState = {
+                x: this.sprite.x,
+                y: this.sprite.y
+            };
+            this.nodes = nodes;
+            this.nodeIndex = 0;
+            this.nodeInterval = nodeInterval;
+            this.lastNode = control.millis();
+
+            this.init();
+        }
+        
+        private init(): void {
+            initializeAnimationHandler();
+            
+            this.isPlaying = true;
             animations.push(this);
         }
 
-        update() {
-            let currentTime = control.millis();
-            let dt = currentTime - this.lastTime;
-            if (dt >= this.interval && this.frames.length) {
-                this.index = (this.index + 1) % this.frames.length;
-                this.lastTime = currentTime;
-            }
-            
-            this.sprites = this.sprites.filter(sprite => !(sprite.flags & sprites.Flag.Destroyed));
+        private done(): void {
+            this.isPlaying = false;
+            animations.removeElement(this);
+        }
 
-            this.sprites.forEach(sprite => {
-                if (sprite._action === this.action) {
-                    let newImage = this.getImage();
-                    //Update only if the image has changed
-                    if (sprite.image !== newImage) {
-                        sprite.setImage(newImage);
-                    }
+        private applyNode(node: PathNode, dt: number): void {
+            switch (node.command) {
+                case "M": { // moveto, absolute
+                    dt >= this.nodeInterval && this.sprite.setPosition(node.points[0].x, node.points[0].y);
+                    break;
                 }
-            });
-        }
+                case "m": { // moveto, relative
+                    dt >= this.nodeInterval && this.sprite.setPosition(this.lastState.x + node.points[0].x, this.lastState.y + node.points[0].y);
+                    break;
+                }
+                case "L": { // lineto, absolute
+                    const dx = Math.round(((node.points[0].x - this.lastState.x) / this.nodeInterval) * dt);
+                    const dy = Math.round(((node.points[0].y - this.lastState.y) / this.nodeInterval) * dt);
+                    this.sprite.setPosition(this.lastState.x + dx, this.lastState.y + dy);
+                    break;
+                }
+                case "l": { // lineto, relative
+                    const dx = Math.round((node.points[0].x / this.nodeInterval) * dt);
+                    const dy = Math.round((node.points[0].y / this.nodeInterval) * dt);
+                    this.sprite.setPosition(this.lastState.x + dx, this.lastState.y + dy);
+                    break;
+                }
+                case "H": { // horizontal lineto, absolute
+                    const dx = Math.round(((node.points[0].x - this.lastState.x) / this.nodeInterval) * dt);
+                    this.sprite.setPosition(this.lastState.x + dx, this.lastState.y);
+                    break;
+                }
+                case "h": { // horizontal lineto, relative
+                    const dx = Math.round((node.points[0].x / this.nodeInterval) * dt);
+                    this.sprite.setPosition(this.lastState.x + dx, this.lastState.y);
+                    break;
+                }
+                case "V": { // vertical lineto, absolute
+                    const dy = Math.round(((node.points[0].y - this.lastState.y) / this.nodeInterval) * dt);
+                    this.sprite.setPosition(this.lastState.x, this.lastState.y + dy);
+                    break;
+                }
+                case "v": { // vertical lineto, relative
+                    const dy = Math.round((node.points[0].y / this.nodeInterval) * dt);
+                    this.sprite.setPosition(this.lastState.x, this.lastState.y + dy);
+                    break;
+                }
+                case "Q": { // quadratic curveto, absolute
+                    const progress = dt / this.nodeInterval;
+                    const diff = 1 - progress;
+                    const a = Math.pow(diff, 2);
+                    const b = 2 * diff * progress;
+                    const c = Math.pow(progress, 2);
 
-        getImage() {
-            return this.frames[this.index];
-        }
+                    const x = Math.round(a * this.lastState.x + b * node.points[0].x + c * node.points[1].x);
+                    const y = Math.round(a * this.lastState.y + b * node.points[0].y + c * node.points[1].y);
 
-        getAction() {
-            return this.action;
-        }
-
-        getInterval() {
-            return this.interval;
-        }
-
-        setInterval(interval: number) {
-            this.interval = interval;
-        }
-
-        /**
-        * Add an image frame to an animation
-        */
-        //% blockId=addAnimationFrame
-        //% block="add frame $frame=screen_image_picker to $this=variables_get(anim)"
-        //% weight=40
-        //% help=animation/add-animation
-        addAnimationFrame(frame: Image) {
-            this.frames[++this.index] = frame;
-        }
-
-        registerSprite(sprite: Sprite) {
-            if (this.sprites.indexOf(sprite) === -1) {
-                this.sprites.push(sprite);
+                    this.sprite.setPosition(x, y);
+                    break;
+                }
+                case "q": { // quadratic curveto, relative
+                    const progress = dt / this.nodeInterval;
+                    const diff = 1 - progress;
+                    const b = 2 * diff * progress;
+                    const c = Math.pow(progress, 2);
+        
+                    const dx = Math.round(b * node.points[0].x + c * node.points[1].x);
+                    const dy = Math.round(b * node.points[0].y + c * node.points[1].y);
+        
+                    this.sprite.setPosition(this.lastState.x + dx, this.lastState.y + dy);
+                    break;
+                }
+                case "C": { // cubic curveto, absolute
+                    const progress = dt / this.nodeInterval;
+                    const diff = 1 - progress;
+                    const a = Math.pow(diff, 3);
+                    const b = 3 * Math.pow(diff, 2) * progress;
+                    const c = 3 * diff * Math.pow(progress, 2);
+                    const d = Math.pow(progress, 3);
+        
+                    const x = Math.round(a * this.lastState.x + b * node.points[0].x + c * node.points[1].x + d * node.points[2].x);
+                    const y = Math.round(a * this.lastState.y + b * node.points[0].y + c * node.points[1].y + d * node.points[2].y);
+        
+                    this.sprite.setPosition(x, y);
+                    break;
+                }
+                case "c": { // cubic curveto, relative
+                    const progress = dt / this.nodeInterval;
+                    const diff = 1 - progress;
+                    const b = 3 * Math.pow(diff, 2) * progress;
+                    const c = 3 * diff * Math.pow(progress, 2);
+                    const d = Math.pow(progress, 3);
+        
+                    const dx = Math.round(b * node.points[0].x + c * node.points[1].x + d * node.points[2].x);
+                    const dy = Math.round(b * node.points[0].y + c * node.points[1].y + d * node.points[2].y);
+        
+                    this.sprite.setPosition(this.lastState.x + dx, this.lastState.y + dy);
+                    break;
+                }
             }
         }
 
+        update(): void {
+            const currentTime: number = control.millis();
+            const dt: number = currentTime - this.lastNode;
+            
+            if(this.nodeIndex < this.nodes.length) {
+                let node: PathNode = this.nodes[this.nodeIndex];
+
+                // If the next node should have been reached
+                if (dt >= this.nodeInterval) {
+                    this.applyNode(node, this.nodeInterval);
+                    this.lastState = { // Records the last state of the sprite for later reference
+                        x: this.sprite.x,
+                        y: this.sprite.y
+                    };
+                    this.nodeIndex++;
+                    this.lastNode = currentTime;
+                } else {
+                    this.applyNode(node, dt);
+                }
+            } else {
+                this.done();
+            }
+        }
     }
 
-    //% shim=ENUM_GET
-    //% blockId=action_enum_shim
-    //% block="%arg"
-    //% enumName="ActionKind"
-    //% enumMemberName="action"
-    //% enumPromptHint="e.g. Walking, Idle, Jumping, ..."
-    //% enumInitialMembers="Walking, Idle, Jumping"
-    //% weight=10
-    export function _actionEnumShim(arg: number) {
-        // This function should do nothing, but must take in a single
-        // argument of type number and return a number value.
-        return arg;
+    export class ImageAnimation implements Animation {
+        public sprite: Sprite;
+        public isPlaying: boolean;
+        private frames: Image[];
+        private frameInterval: number;
+        private frameIndex: number;
+        private lastFrame: number;
+
+        constructor(sprite: Sprite, frames: Image[], frameInterval: number) {
+            this.sprite = sprite;
+            this.frames = frames;
+            this.frameInterval = frameInterval;
+            this.frameIndex = 0;
+            this.lastFrame = control.millis();
+
+            this.init();
+        }
+        
+        public init(): void {
+            initializeAnimationHandler();
+
+            this.isPlaying = true;
+            animations.push(this);
+        }
+
+        private done(): void {
+            this.isPlaying = false;
+            animations.removeElement(this);
+        }
+
+        update(): void {
+            const currentTime = control.millis();
+            
+            if (this.frameIndex < this.frames.length) {
+                // If the next frame should be shown by now
+                if(currentTime - this.lastFrame >= this.frameInterval) {
+                    let newImage = this.frames[this.frameIndex];
+                    
+                    // Only update the image if it's different from the old one
+                    if (this.sprite.image !== newImage) {
+                        this.sprite.setImage(newImage);
+                    }
+                    
+                    this.frameIndex ++;
+                    this.lastFrame = currentTime;
+                }
+            } else {
+                this.done();
+            }
+        }
     }
 
     /**
-     * Create an animation
+     * Create and run an image animation on a sprite
+     * @param frames the frames to animate through
+     * @param sprite the sprite to animate on
+     * @param frameInterval the time between changes, eg: 500
+     * @param wait whether or not the animation should be blocking
      */
-    //% blockId=createAnimation
-    //% block="create animation of $action=action_enum_shim with interval $interval ms"
-    //% interval.defl=1000
-    //% blockSetVariable="anim"
-    //% weight=50
-    //% help=animation/create-animation
-    export function createAnimation(action: number, interval: number) {
-        return new Animation(action, interval);
+    //% blockId=run_image_animation
+    //% block="animate %frames=lists_create_with on %sprite=variables_get(mySprite) with interval %frameInterval=timePicker ms and wait %wait=toggleOnOff"
+    //% wait.defl=1
+    export function runImageAnimation(frames: Image[], sprite: Sprite, frameInterval?: number, wait?: boolean): void {
+        let anim = new ImageAnimation(sprite, frames, frameInterval || 500);
+        (wait == null || wait) && pauseUntil(() => anim.isPlaying === false);
     }
 
     /**
-     * Attach an animation to a sprite
+     * Create and run a movement animation on a sprite
+     * @param animation the movement preset to animate
+     * @param sprite the sprite to move
+     * @param nodeInterval the time between nodes during which to animate, eg: 500
+     * @param wait whether or not the animation should be blocking
      */
-    //% blockId=attachAnimation
-    //% block="attach animation $set=variables_get(anim) to sprite $sprite=variables_get(mySprite)"
-    //% weight=30
-    //% help=animation/attach-animation
-    export function attachAnimation(sprite: Sprite, set: Animation) {
-        set.registerSprite(sprite);
-    }
+    //% blockId=run_movement_animation
+    //% block="animate %animation on %sprite=variables_get(mySprite) with interval %nodeInterval=timePicker ms and wait %wait=toggleOnOff"
+    //% wait.defl=1
+    export function runMovementAnimation(animation: MovementAnimations, sprite: Sprite, nodeInterval?: number, wait?: boolean): void {
+        let nodes: PathNode[];
+        switch (animation) {
+            case MovementAnimations.Test:
+                nodes = [
+                    {
+                        command: "M",
+                        points: [
+                            { x: 50, y: 50 }
+                        ]
+                    },
+                    {
+                        command: "c",
+                        points: [
+                            { x: 40, y: 0 },
+                            { x: 0, y: 40 },
+                            { x: 60, y: 60 }
+                        ]
+                    }
+                ];
+        }
 
-    /**
-     * Set an animation action to a sprite
-     */
-    //% blockId=setAction
-    //% block="activate animation $action=action_enum_shim on $sprite=variables_get(mySprite)"
-    //% weight=20
-    //% help=animation/set-action
-    export function setAction(sprite: Sprite, action: number) {
-        sprite._action = action;
+        let anim = new MovementAnimation(sprite, nodes, nodeInterval || 500);
+        (wait == null || wait) && pauseUntil(() => anim.isPlaying === false);
     }
-
 }

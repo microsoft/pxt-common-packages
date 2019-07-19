@@ -4,6 +4,7 @@
     "files": [
         "README.md",
         "animation.ts",
+        "animation-old.ts",
         "targetoverrides.ts"
     ],
     "public": true,
