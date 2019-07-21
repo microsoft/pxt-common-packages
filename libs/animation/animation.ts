@@ -53,14 +53,19 @@ namespace animation {
         }
     }
 
-    export interface Point {
-        x: number,
-        y: number
+    export class Point {
+        public x: number;
+        public y: number;
+        
+        constructor(x: number, y: number) {
+            this.x = x;
+            this.y = y;
+        }
     }
 
     export interface PathNode {
         command: string;
-        args: number[];
+        args?: number[];
     }
 
     export interface Animation {
@@ -77,14 +82,13 @@ namespace animation {
         private nodeIndex: number;
         private nodeInterval: number;
         private lastNode: number;
+        private pathStart: Point;
         private lastState: Point;
         
         constructor(sprite: Sprite, nodes: PathNode[], nodeInterval: number) {
             this.sprite = sprite;
-            this.lastState = {
-                x: this.sprite.x,
-                y: this.sprite.y
-            };
+            this.pathStart = new Point(this.sprite.x, this.sprite.y);
+            this.lastState = this.pathStart;
             this.nodes = nodes;
             this.nodeIndex = 0;
             this.nodeInterval = nodeInterval;
@@ -109,10 +113,12 @@ namespace animation {
             switch (node.command) {
                 case "M": { // M x y
                     dt >= this.nodeInterval && this.sprite.setPosition(node.args[0], node.args[1]);
+                    this.pathStart = new Point(node.args[0], node.args[1]);
                     break;
                 }
                 case "m": { // M dx dy
                     dt >= this.nodeInterval && this.sprite.setPosition(this.lastState.x + node.args[0], this.lastState.y + node.args[1]);
+                    this.pathStart = new Point(node.args[0], node.args[1]);
                     break;
                 }
                 case "L": { // L x y
@@ -199,6 +205,11 @@ namespace animation {
                     this.sprite.setPosition(this.lastState.x + dx, this.lastState.y + dy);
                     break;
                 }
+                case "Z": // Z
+                case "z": { // z
+                    this.applyNode({ command: "L", args: [ this.pathStart.x, this.pathStart.y ] }, dt);
+                    break;
+                }
             }
         }
 
@@ -212,10 +223,7 @@ namespace animation {
                 // If the next node should have been reached
                 if (dt >= this.nodeInterval) {
                     this.applyNode(node, this.nodeInterval);
-                    this.lastState = { // Records the last state of the sprite for later reference
-                        x: this.sprite.x,
-                        y: this.sprite.y
-                    };
+                    this.lastState = new Point(this.sprite.x, this.sprite.y) // Records the last state of the sprite for later reference
                     this.nodeIndex++;
                     this.lastNode = currentTime;
                 } else {
@@ -326,6 +334,9 @@ namespace animation {
                             60,
                             60
                         ]
+                    },
+                    {
+                        command: "z"
                     }
                 ];
         }
