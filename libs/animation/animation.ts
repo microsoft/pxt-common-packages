@@ -54,13 +54,13 @@ namespace animation {
     }
 
     export interface Point {
-        x: number;
-        y: number;
+        x: number,
+        y: number
     }
 
     export interface PathNode {
         command: string;
-        points: Point[];
+        args: number[];
     }
 
     export interface Animation {
@@ -107,72 +107,72 @@ namespace animation {
 
         private applyNode(node: PathNode, dt: number): void {
             switch (node.command) {
-                case "M": { // moveto, absolute
-                    dt >= this.nodeInterval && this.sprite.setPosition(node.points[0].x, node.points[0].y);
+                case "M": { // M x y
+                    dt >= this.nodeInterval && this.sprite.setPosition(node.args[0], node.args[1]);
                     break;
                 }
-                case "m": { // moveto, relative
-                    dt >= this.nodeInterval && this.sprite.setPosition(this.lastState.x + node.points[0].x, this.lastState.y + node.points[0].y);
+                case "m": { // M dx dy
+                    dt >= this.nodeInterval && this.sprite.setPosition(this.lastState.x + node.args[0], this.lastState.y + node.args[1]);
                     break;
                 }
-                case "L": { // lineto, absolute
-                    const dx = Math.round(((node.points[0].x - this.lastState.x) / this.nodeInterval) * dt);
-                    const dy = Math.round(((node.points[0].y - this.lastState.y) / this.nodeInterval) * dt);
+                case "L": { // L x y
+                    const dx = Math.round(((node.args[0] - this.lastState.x) / this.nodeInterval) * dt);
+                    const dy = Math.round(((node.args[1] - this.lastState.y) / this.nodeInterval) * dt);
                     this.sprite.setPosition(this.lastState.x + dx, this.lastState.y + dy);
                     break;
                 }
-                case "l": { // lineto, relative
-                    const dx = Math.round((node.points[0].x / this.nodeInterval) * dt);
-                    const dy = Math.round((node.points[0].y / this.nodeInterval) * dt);
+                case "l": { // l dx dy
+                    const dx = Math.round((node.args[0] / this.nodeInterval) * dt);
+                    const dy = Math.round((node.args[1] / this.nodeInterval) * dt);
                     this.sprite.setPosition(this.lastState.x + dx, this.lastState.y + dy);
                     break;
                 }
-                case "H": { // horizontal lineto, absolute
-                    const dx = Math.round(((node.points[0].x - this.lastState.x) / this.nodeInterval) * dt);
+                case "H": { // H x
+                    const dx = Math.round(((node.args[0] - this.lastState.x) / this.nodeInterval) * dt);
                     this.sprite.setPosition(this.lastState.x + dx, this.lastState.y);
                     break;
                 }
-                case "h": { // horizontal lineto, relative
-                    const dx = Math.round((node.points[0].x / this.nodeInterval) * dt);
+                case "h": { // h dx
+                    const dx = Math.round((node.args[0] / this.nodeInterval) * dt);
                     this.sprite.setPosition(this.lastState.x + dx, this.lastState.y);
                     break;
                 }
-                case "V": { // vertical lineto, absolute
-                    const dy = Math.round(((node.points[0].y - this.lastState.y) / this.nodeInterval) * dt);
+                case "V": { // V y
+                    const dy = Math.round(((node.args[0] - this.lastState.y) / this.nodeInterval) * dt);
                     this.sprite.setPosition(this.lastState.x, this.lastState.y + dy);
                     break;
                 }
-                case "v": { // vertical lineto, relative
-                    const dy = Math.round((node.points[0].y / this.nodeInterval) * dt);
+                case "v": { // v dy
+                    const dy = Math.round((node.args[0] / this.nodeInterval) * dt);
                     this.sprite.setPosition(this.lastState.x, this.lastState.y + dy);
                     break;
                 }
-                case "Q": { // quadratic curveto, absolute
+                case "Q": { // Q x1 y1 x y
                     const progress = dt / this.nodeInterval;
                     const diff = 1 - progress;
                     const a = Math.pow(diff, 2);
                     const b = 2 * diff * progress;
                     const c = Math.pow(progress, 2);
 
-                    const x = Math.round(a * this.lastState.x + b * node.points[0].x + c * node.points[1].x);
-                    const y = Math.round(a * this.lastState.y + b * node.points[0].y + c * node.points[1].y);
+                    const x = Math.round(a * this.lastState.x + b * node.args[0] + c * node.args[2]);
+                    const y = Math.round(a * this.lastState.y + b * node.args[1] + c * node.args[3]);
 
                     this.sprite.setPosition(x, y);
                     break;
                 }
-                case "q": { // quadratic curveto, relative
+                case "q": { // q dx1 dy1 dx dy
                     const progress = dt / this.nodeInterval;
                     const diff = 1 - progress;
                     const b = 2 * diff * progress;
                     const c = Math.pow(progress, 2);
         
-                    const dx = Math.round(b * node.points[0].x + c * node.points[1].x);
-                    const dy = Math.round(b * node.points[0].y + c * node.points[1].y);
+                    const dx = Math.round(b * node.args[0] + c * node.args[2]);
+                    const dy = Math.round(b * node.args[1] + c * node.args[3]);
         
                     this.sprite.setPosition(this.lastState.x + dx, this.lastState.y + dy);
                     break;
                 }
-                case "C": { // cubic curveto, absolute
+                case "C": { // C x1 y1 x2 y2 x y
                     const progress = dt / this.nodeInterval;
                     const diff = 1 - progress;
                     const a = Math.pow(diff, 3);
@@ -180,21 +180,21 @@ namespace animation {
                     const c = 3 * diff * Math.pow(progress, 2);
                     const d = Math.pow(progress, 3);
         
-                    const x = Math.round(a * this.lastState.x + b * node.points[0].x + c * node.points[1].x + d * node.points[2].x);
-                    const y = Math.round(a * this.lastState.y + b * node.points[0].y + c * node.points[1].y + d * node.points[2].y);
+                    const x = Math.round(a * this.lastState.x + b * node.args[0] + c * node.args[2] + d * node.args[4]);
+                    const y = Math.round(a * this.lastState.y + b * node.args[1] + c * node.args[3] + d * node.args[5]);
         
                     this.sprite.setPosition(x, y);
                     break;
                 }
-                case "c": { // cubic curveto, relative
+                case "c": { // c dx1 dy1 dx2 dy2 dx dy
                     const progress = dt / this.nodeInterval;
                     const diff = 1 - progress;
                     const b = 3 * Math.pow(diff, 2) * progress;
                     const c = 3 * diff * Math.pow(progress, 2);
                     const d = Math.pow(progress, 3);
         
-                    const dx = Math.round(b * node.points[0].x + c * node.points[1].x + d * node.points[2].x);
-                    const dy = Math.round(b * node.points[0].y + c * node.points[1].y + d * node.points[2].y);
+                    const dx = Math.round(b * node.args[0] + c * node.args[2] + d * node.args[4]);
+                    const dy = Math.round(b * node.args[1] + c * node.args[3] + d * node.args[5]);
         
                     this.sprite.setPosition(this.lastState.x + dx, this.lastState.y + dy);
                     break;
@@ -311,16 +311,20 @@ namespace animation {
                 nodes = [
                     {
                         command: "M",
-                        points: [
-                            { x: 50, y: 50 }
+                        args: [
+                            50,
+                            50
                         ]
                     },
                     {
                         command: "c",
-                        points: [
-                            { x: 40, y: 0 },
-                            { x: 0, y: 40 },
-                            { x: 60, y: 60 }
+                        args: [
+                            40,
+                            0,
+                            0,
+                            40,
+                            60,
+                            60
                         ]
                     }
                 ];
