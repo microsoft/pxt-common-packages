@@ -15,6 +15,10 @@ nextptr points to where the rest of the data of the current block sits
 after the data there's another block; if it's all 1, then it's the end
 otherwise, if 0x8000&size==0 on that block, then the current block should be discarded
 
+block is always allocated with a FF double-word at the end; new block, when added, starts
+at this FF double-word, and after the gap; the new block then also has a FF double-word
+appended in the after-gap area
+
  */
 
 #if RAFFS_BLOCK == 16
