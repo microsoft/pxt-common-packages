@@ -2,9 +2,6 @@
 
 #include "pxt.h"
 
-        HID_MOUSE_LEFT = 0x01,
-        HID_MOUSE_RIGHT = 0x02,
-        HID_MOUSE_MIDDLE = 0x04,
 enum class MouseButton {
     //% block="right" enumval=2
     Right = 0x02,
