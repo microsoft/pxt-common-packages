@@ -143,9 +143,9 @@ namespace light {
         //% advanced=true
         setAll(rgb: number) {
             rgb = rgb | 0;
-            const red = colors.unpackR(rgb);
-            const green = colors.unpackG(rgb);
-            const blue = colors.unpackB(rgb);
+            const red = color.unpackR(rgb);
+            const green = color.unpackG(rgb);
+            const blue = color.unpackB(rgb);
 
             const end = this._start + this._length;
             const stride = this.stride();
@@ -164,12 +164,12 @@ namespace light {
         //% weight=79 blockGap=8
         //% group="More" advanced=true blockHidden=true
         setGradient(startColor: number, endColor: number, easing?: (t: number) => number) {
-            const sr = colors.unpackR(startColor);
-            const sg = colors.unpackG(startColor);
-            const sb = colors.unpackB(startColor);
-            const er = colors.unpackR(endColor);
-            const eg = colors.unpackG(endColor);
-            const eb = colors.unpackB(endColor);
+            const sr = color.unpackR(startColor);
+            const sg = color.unpackG(startColor);
+            const sb = color.unpackB(startColor);
+            const er = color.unpackR(endColor);
+            const eg = color.unpackG(endColor);
+            const eb = color.unpackB(endColor);
 
             const end = this._start + this._length;
             const n1 = this._length - 1;
@@ -257,9 +257,9 @@ namespace light {
 
             const stride = this.stride();
             pixeloffset = (pixeloffset + this._start) * stride;
-            const red = colors.unpackR(color);
-            const green = colors.unpackG(color);
-            const blue = colors.unpackB(color);
+            const red = color.unpackR(color);
+            const green = color.unpackG(color);
+            const blue = color.unpackB(color);
             this.setBufferRGB(pixeloffset, red, green, blue)
             this.autoShow();
         }
@@ -301,7 +301,7 @@ namespace light {
                     break;
             }
 
-            return colors.rgb(red, green, blue);
+            return color.rgb(red, green, blue);
         }
 
         /**
@@ -611,7 +611,7 @@ namespace light {
         //% group="Photon" advanced=true
         setPhotonPenHue(hue: number) {
             hue = hue | 0;
-            this.setPhotonPenColor(colors.hsv(hue, 0xff, 0xff));
+            this.setPhotonPenColor(color.hsv(hue, 0xff, 0xff));
         }
 
         //% deprecated=1 blockHidden=1
@@ -769,7 +769,7 @@ namespace light {
                         tempColor += currChar;
 
                     if ((isSpace || i == leds.length) && tempColor) {
-                        this.setPixelColor(pi++, colors.parseColor(tempColor))
+                        this.setPixelColor(pi++, color.parseColor(tempColor))
                         tempColor = "";
                         if (pi == n) {
                             this.show();
@@ -1186,7 +1186,7 @@ namespace light {
     //% help="light/rgb"
     //% group="Color" weight=19 blockGap=8
     export function rgb(red: number, green: number, blue: number): number {
-        return colors.rgb(red, green, blue);
+        return color.rgb(red, green, blue);
     }
 
     /**
@@ -1212,7 +1212,7 @@ namespace light {
     //% help="light/hsv"
     //% group="Color" weight=17
     export function hsv(hue: number, sat: number = 255, val: number = 255): number {
-        return colors.hsv(hue, sat, val);
+        return color.hsv(hue, sat, val);
     }
 
     /**
@@ -1226,7 +1226,7 @@ namespace light {
     //% group="Color" weight=18 blockGap=8
     //% blockHidden=true
     export function fade(color: number, brightness: number): number {
-        return colors.fade(color, brightness);
+        return color.fade(color, brightness);
     }
 
     /**
@@ -1257,7 +1257,7 @@ namespace light {
             let hueOffset = 0;
             return () => {
                 for (let i = 0; i < n; i++) {
-                    strip.setPixelColor(i, colors.hsv(((i * 256) / (n - 1) + hueOffset) % 0xff, 0xff, 0xff));
+                    strip.setPixelColor(i, color.hsv(((i * 256) / (n - 1) + hueOffset) % 0xff, 0xff, 0xff));
                 }
                 hueOffset += Math.ceil(128 / n);
                 if (hueOffset >= 0xff) {
@@ -1297,7 +1297,7 @@ namespace light {
                     step++;
                     for (let i = 0; i < l; i++) {
                         const level = (Math.isin(i + step) * 127) + 128;
-                        strip.setPixelColor(i, colors.rgb(level * this.red / 255, level * this.green / 255, level * this.blue / 255));
+                        strip.setPixelColor(i, color.rgb(level * this.red / 255, level * this.green / 255, level * this.blue / 255));
                     }
                     iteration++;
                     return true;
@@ -1339,7 +1339,7 @@ namespace light {
             return () => {
                 for (let i = 0; i < l; i++) {
                     offsets[i] = (offsets[i] + (step * 2)) % 255
-                    strip.setPixelColor(i, colors.rgb(255 - offsets[i], this.green, this.blue));
+                    strip.setPixelColor(i, color.rgb(255 - offsets[i], this.green, this.blue));
                 }
                 step++;
                 if (step * 2 > 0xff) {
@@ -1360,7 +1360,7 @@ namespace light {
 
         constructor(red: number, green: number, blue: number, delay: number) {
             super();
-            this.rgb = colors.rgb(red, green, blue);
+            this.rgb = color.rgb(red, green, blue);
             this.delay = delay;
         }
 
@@ -1437,7 +1437,7 @@ namespace light {
 
         constructor(red: number, green: number, blue: number, delay: number) {
             super();
-            this.rgb = colors.rgb(red, green, blue);
+            this.rgb = color.rgb(red, green, blue);
             this.delay = delay;
         }
 
