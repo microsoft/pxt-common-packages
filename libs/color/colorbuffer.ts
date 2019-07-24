@@ -1,4 +1,4 @@
-namespace colors {
+namespace color {
     export enum ColorBufferLayout {
         /**
          * 24bit RGB color

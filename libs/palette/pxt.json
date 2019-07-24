@@ -11,7 +11,7 @@
     "public": true,
     "weight": 10,
     "dependencies": {
-        "colors": "file:../colors",
+        "color": "file:../color",
         "game": "file:../game"
     }
 }

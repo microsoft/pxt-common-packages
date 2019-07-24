@@ -54,7 +54,7 @@ const enum ColorHues {
  * Color manipulation
  */
 //% advanced=1
-namespace colors {
+namespace color {
     /**
  * Converts red, green, blue channels into a RGB color
  * @param red value of the red channel between 0 and 255. eg: 255

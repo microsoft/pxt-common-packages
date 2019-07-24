@@ -1,5 +1,5 @@
 {
-    "name": "colors",
+    "name": "color",
     "description": "Color manipulation",
     "files": [
         "colors.ts",
