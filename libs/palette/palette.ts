@@ -6,7 +6,14 @@ namespace palette {
      * The default palette buffer for the project
      */
     //% whenUsed
-    export const defaultPalette = new colors.ColorBuffer(hex`__palette`);
+    const defaultPaletteBuffer = hex`__palette`
+
+    /**
+     * Returns a clone of the default palette
+     */
+    export function defaultPalette(): colors.ColorBuffer {
+        return new colors.ColorBuffer(defaultPaletteBuffer.slice());
+    }
 
     /**
      * Dynamically set all or part of the game's current palette
@@ -18,7 +25,7 @@ namespace palette {
         const scene = game.currentScene();
         let userPalette = scene.data["__palette"] as colors.ColorBuffer;
         if (!userPalette)
-            userPalette = scene.data["__palette"] = defaultPalette.slice();
+            userPalette = scene.data["__palette"] = defaultPalette();
         userPalette.write(pOffset, palette);
         image.setPalette(userPalette.buf);
     }
@@ -29,6 +36,6 @@ namespace palette {
     export function reset() {
         const scene = game.currentScene();
         scene.data["__palette"] = undefined;
-        image.setPalette(defaultPalette.buf);
+        image.setPalette(defaultPaletteBuffer);
     }
 }
