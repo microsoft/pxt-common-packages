@@ -4,7 +4,9 @@
 //% icon="\uf009"
 //% weight=87 color="#401255"
 namespace storyboard {
-    let _scenes: pxt.Map<() => void>;
+    let _scenes: { 
+        [index: string]: () => void
+    };
     let _current: string;
 
     /**
