@@ -55,12 +55,12 @@ const enum ColorHues {
  */
 //% advanced=1
 namespace colors {
-        /**
-     * Converts red, green, blue channels into a RGB color
-     * @param red value of the red channel between 0 and 255. eg: 255
-     * @param green value of the green channel between 0 and 255. eg: 255
-     * @param blue value of the blue channel between 0 and 255. eg: 255
-     */
+    /**
+ * Converts red, green, blue channels into a RGB color
+ * @param red value of the red channel between 0 and 255. eg: 255
+ * @param green value of the green channel between 0 and 255. eg: 255
+ * @param blue value of the blue channel between 0 and 255. eg: 255
+ */
     //% blockId="colorsrgb" block="red %red|green %green|blue %blue"
     //% red.min=0 red.max=255 green.min=0 green.max=255 blue.min=0 blue.max=255
     //% help="colors/rgb"
@@ -70,9 +70,13 @@ namespace colors {
         return ((red & 0xFF) << 16) | ((green & 0xFF) << 8) | (blue & 0xFF);
     }
 
-        /**
-     * Get the RGB value of a known color
-    */
+    export function argb(alpha: number, red: number, green: number, blue: number): number {
+        return ((alpha & 0xFF) << 24) | ((red & 0xFF) << 16) | ((green & 0xFF) << 8) | (blue & 0xFF);
+    }
+
+    /**
+ * Get the RGB value of a known color
+*/
     //% blockId=colorscolors block="%color"
     //% help="colors/colors"
     //% shim=TD_ID
@@ -207,40 +211,64 @@ namespace colors {
         }
     }
 
+    export enum ColorBufferLayout {
+        /**
+         * 24bit RGB color
+         */
+        RGB,
+        /**
+         * 32bit RGB color with alpha
+         */
+        ARGB
+    }
+
     /**
-     * A buffer of 24bit RGB colors
+     * A buffer of colors
      */
     export class ColorBuffer {
+        layout: ColorBufferLayout;
         buf: Buffer;
 
-        constructor(buf: Buffer) {
+        constructor(buf: Buffer, layout?: ColorBufferLayout) {
             this.buf = buf;
+            this.layout = layout || ColorBufferLayout.RGB;
+        }
+
+        get stride() {
+            return this.layout == ColorBufferLayout.RGB ? 3 : 4;
         }
 
         get length() {
-            return (this.buf.length / 3) | 0;
+            return (this.buf.length / this.stride) | 0;
         }
 
         color(index: number): number {
             index = index | 0;
             if (index < 0 || index >= this.length) return -1;
 
-            const start = index * 3;
-            return colors.rgb(this.buf[start], this.buf[start + 1], this.buf[start + 2]);
+            const s = this.stride;
+            const start = index * s;
+            let c = 0;
+            for (let i = 0; i < s; ++i)
+                c = (c << 8) | (this.buf[start + i] & 0xff);
+            return c;
         }
 
         setColor(index: number, color: number) {
             index = index | 0;
             if (index < 0 || index >= this.length) return;
 
-            const start = index * 3;
-            this.buf[start] = (color >> 16) & 0xff;
-            this.buf[start + 1] = (color >> 8) & 0xff;
-            this.buf[start + 2] = color & 0xff;
+            const s = this.stride;
+            const start = index * s;
+            for (let i = s - 1; i >= 0; --i) {
+                this.buf[start + i] = color & 0xff;
+                color = color >> 8;
+            }
         }
 
         slice(start?: number, length?: number): ColorBuffer {
-            return new ColorBuffer(this.buf.slice(start ? start * 3 : start, length ? length * 3 : length));
+            const s = this.stride;
+            return new ColorBuffer(this.buf.slice(start ? start * s : start, length ? length * s : length));
         }
 
         /**
@@ -249,24 +277,34 @@ namespace colors {
          * @param src 
          */
         write(dstOffset: number, src: ColorBuffer): void {
-            const d = (dstOffset | 0) * 3;
-            this.buf.write(d, src.buf);
+            if (this.layout == src.layout) {
+                const d = (dstOffset | 0) * this.stride;
+                this.buf.write(d, src.buf);
+            } else {
+                // different color layout
+                for (let i = 0; i < src.length; ++i)
+                    this.setColor(dstOffset + i, src.color(i));
+            }
         }
     }
 
     /**
      * Converts an array of colors into a color buffer
      */
-    export function createBuffer(colors: number[]): colors.ColorBuffer {
+    export function createBuffer(colors: number[], layout: ColorBufferLayout): colors.ColorBuffer {
         const n = colors.length;
-        const buf = control.createBuffer(n * 3);
+        layout = layout || ColorBufferLayout.RGB;
+        const stride = layout == ColorBufferLayout.RGB ? 3 : 4;
+        const buf = control.createBuffer(n * stride);
         const p = new ColorBuffer(buf);
         let k = 0;
         for (let i = 0; i < n; i++) {
-            const color = colors[i];
-            this.buf[k++] = (color >> 16) & 0xff;
-            this.buf[k++] = (color >> 8) & 0xff;
-            this.buf[k++] = color & 0xff;
+            let color = colors[i];
+            for (let j = stride - 1; j >= 0; --j) {
+                this.buf[k + j] = color & 0xff;
+                color = color >> 8;
+            }
+            k += stride;
         }
         return p;
     }
