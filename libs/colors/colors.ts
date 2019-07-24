@@ -75,14 +75,14 @@ namespace colors {
     }
 
     /**
- * Get the RGB value of a known color
-*/
+    * Get the RGB value of a known color
+    */
     //% blockId=colorscolors block="%color"
-    //% help="colors/colors"
+    //% help="colors/well-known"
     //% shim=TD_ID
     //% weight=20 blockGap=8
     //% blockHidden=true
-    export function colors(color: Colors): number {
+    export function wellKnown(color: Colors): number {
         return color;
     }
 

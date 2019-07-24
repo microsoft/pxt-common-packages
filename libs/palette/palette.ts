@@ -35,8 +35,8 @@ namespace palette {
     /**
      * Converts an array of colors into a palette buffer
      */
-    export function create(colors: number[]): colors.ColorBuffer {
-        const p = colors.createBuffer(colors);
+    export function create(cols: number[]): colors.ColorBuffer {
+        const p = colors.createBuffer(cols);
         return p.slice(0, defaultPalette.length);
     }
 }
