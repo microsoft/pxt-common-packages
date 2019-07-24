@@ -247,9 +247,9 @@ namespace light {
         //% help="light/neopixelstrip/set-pixel-color"
         //% weight=79 blockGap=8
         //% group="More" advanced=true
-        setPixelColor(pixeloffset: number, color: number): void {
+        setPixelColor(pixeloffset: number, c: number): void {
             pixeloffset = pixeloffset | 0;
-            color = color | 0;
+            c = c | 0;
 
             if (pixeloffset < 0
                 || pixeloffset >= this._length)
@@ -257,9 +257,9 @@ namespace light {
 
             const stride = this.stride();
             pixeloffset = (pixeloffset + this._start) * stride;
-            const red = color.unpackR(color);
-            const green = color.unpackG(color);
-            const blue = color.unpackB(color);
+            const red = color.unpackR(c);
+            const green = color.unpackG(c);
+            const blue = color.unpackB(c);
             this.setBufferRGB(pixeloffset, red, green, blue)
             this.autoShow();
         }
@@ -1225,8 +1225,8 @@ namespace light {
     //% help="light/fade"
     //% group="Color" weight=18 blockGap=8
     //% blockHidden=true deprecated
-    export function fade(color: number, brightness: number): number {
-        return color.fade(color, brightness);
+    export function fade(c: number, brightness: number): number {
+        return color.fade(c, brightness);
     }
 
     /**
