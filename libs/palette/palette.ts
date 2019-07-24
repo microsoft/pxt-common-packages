@@ -31,12 +31,4 @@ namespace palette {
         scene.data["__palette"] = undefined;
         image.setPalette(defaultPalette.buf);
     }
-
-    /**
-     * Converts an array of colors into a palette buffer
-     */
-    export function create(cols: number[]): colors.ColorBuffer {
-        const p = colors.createBuffer(cols);
-        return p.slice(0, defaultPalette.length);
-    }
 }

@@ -70,7 +70,8 @@ namespace colors {
                 this.buf.write(d, src.buf);
             } else {
                 // different color layout
-                for (let i = 0; i < src.length; ++i)
+                const n = Math.min(src.length, this.length - dstOffset);
+                for (let i = 0; i < n; ++i)
                     this.setColor(dstOffset + i, src.color(i));
             }
         }
