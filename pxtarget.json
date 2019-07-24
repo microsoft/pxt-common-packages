@@ -47,6 +47,7 @@
         "libs/mqtt",
         "libs/azureiot",
         "libs/colors",
-        "libs/game"
+        "libs/game",
+        "libs/storyboard"
     ]
 }
