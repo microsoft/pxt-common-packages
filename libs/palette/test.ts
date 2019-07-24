@@ -16,10 +16,6 @@ controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
 })
 
 controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
-    const p = palette.defaultPalette();
-    for (let i = 0; i < p.length; ++i) {
-        p.setColor(i, colors.rgb(i * 16, i * 16, 255 - i * 16));
-    }
-    p.setColor(0, 0)
-    palette.setColors(p)
+    palette.reset()
 })
+
