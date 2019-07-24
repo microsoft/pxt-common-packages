@@ -37,8 +37,7 @@
         "particlefactories.ts",
         "particleeffects.ts",
         "effects.ts",
-        "texteffects.ts",
-        "palette.ts"
+        "texteffects.ts"
     ],
     "public": true,
     "dependencies": {
