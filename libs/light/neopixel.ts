@@ -1216,7 +1216,7 @@ namespace light {
     }
 
     /**
-     * Fade the color by the brightness
+     * Use color.fade instead
      * @param color color to fade
      * @param brightness the amount of brightness to apply to the color, eg: 128
      */
@@ -1224,7 +1224,7 @@ namespace light {
     //% brightness.min=0 brightness.max=255
     //% help="light/fade"
     //% group="Color" weight=18 blockGap=8
-    //% blockHidden=true
+    //% blockHidden=true deprecated
     export function fade(color: number, brightness: number): number {
         return color.fade(color, brightness);
     }
