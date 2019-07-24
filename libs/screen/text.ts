@@ -299,8 +299,8 @@ namespace helpers {
                             j++
                         }
                     }
+                    x += mult
                 }
-                x += mult
             }
         }
     }

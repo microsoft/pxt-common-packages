@@ -102,28 +102,35 @@ namespace game {
 
     export function showDialog(title: string, subtitle: string, footer?: string) {
         init();
-        const font = image.getFontForText(title + subtitle + (footer || ""));
+        const titleFont = image.getFontForText(title || "");
+        const subFont = image.getFontForText(subtitle || "")
+        const footerFont = image.getFontForText(footer || "");
         let h = 8;
         if (title)
-            h += font.charHeight;
+            h += titleFont.charHeight;
         if (subtitle)
-            h += 2 + font.charHeight
+            h += 2 + subFont.charHeight
         h += 8;
         const top = showDialogBackground(h, 9)
-        if (title)
-            screen.print(title, 8, top + 8, screen.isMono ? 1 : 7, font);
-        if (subtitle)
-            screen.print(subtitle, 8, top + 8 + font.charHeight + 2, screen.isMono ? 1 : 6, font);
+        let y = top + 8;
+        if (title) {
+            screen.print(title, 8, y, screen.isMono ? 1 : 7, titleFont);
+            y += titleFont.charHeight + 2;
+        }
+        if (subtitle) {
+            screen.print(subtitle, 8, y, screen.isMono ? 1 : 6, subFont);
+            y += subFont.charHeight + 2;
+        }
         if (footer) {
-            const footerTop = screen.height - font.charHeight - 4;
-            screen.fillRect(0, footerTop, screen.width, font.charHeight + 4, 0);
+            const footerTop = screen.height - footerFont.charHeight - 4;
+            screen.fillRect(0, footerTop, screen.width, footerFont.charHeight + 4, 0);
             screen.drawLine(0, footerTop, screen.width, footerTop, 1);
             screen.print(
                 footer,
-                screen.width - footer.length * font.charWidth - 8,
-                screen.height - font.charHeight - 2,
+                screen.width - footer.length * footerFont.charWidth - 8,
+                screen.height - footerFont.charHeight - 2,
                 1,
-                font
+                footerFont
             )
         }
     }
