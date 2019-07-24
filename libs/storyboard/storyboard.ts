@@ -1,6 +1,8 @@
 /**
  * A manager of scenes
  */
+//% icon="\uf009"
+//% weight=87 color="#401255"
 namespace storyboard {
     let _scenes: pxt.Map<() => void>;
     let _current: string;
@@ -10,7 +12,6 @@ namespace storyboard {
      * @param name 
      * @param scene 
      */
-    //% blockId=storyboardregister block="register scene $name"
     export function registerScene(name: string, scene: () => void) {
         if (!name) return;
         if (!_scenes) {
@@ -23,7 +24,6 @@ namespace storyboard {
      * Transition to a registered scene
      * @param name 
      */
-    //% blockId=storyboardtransiation block="transition to scene $name"
     export function transitionToScene(name: string) {
         if (name == _current) return;
         const scene = name && _scenes && _scenes[name];
