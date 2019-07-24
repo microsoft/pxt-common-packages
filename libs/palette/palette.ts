@@ -12,22 +12,14 @@ namespace palette {
      * Dynamically set all or part of the game's current palette
      *
      * @param palette The colors to set
-     * @param start The index to start setting colors at
-     * @param length The number of colors to copy
      * @param pOffset The offset to start copying from the palette
      */
-    export function setColors(palette: colors.ColorBuffer, start = 0, length = 0, pOffset = 0) {
+    export function setColors(palette: colors.ColorBuffer, pOffset = 0) {
         const scene = game.currentScene();
         let userPalette = scene.data["__palette"] as colors.ColorBuffer;
         if (!userPalette)
-            userPalette = scene.data["__palette"] = userPalette.slice();
-        start = start | 0;
-        length = length | 0;
-        pOffset = pOffset | 0;
-        if (!length) length = palette.length;
-
-        const pal =  palette.buf.slice(start, length);
-        userPalette.write(pOffset, pal);
+            userPalette = scene.data["__palette"] = defaultPalette.slice();
+        userPalette.write(pOffset, palette);
         image.setPalette(userPalette.buf);
     }
 

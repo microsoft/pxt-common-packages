@@ -242,6 +242,16 @@ namespace colors {
         slice(start?: number, length?: number): ColorBuffer {
             return new ColorBuffer(this.buf.slice(start ? start * 3 : start, length ? length * 3 : length));
         }
+
+        /**
+         * Writes the content of the src color buffer starting at the start dstOffset in the current buffer
+         * @param dstOffset 
+         * @param src 
+         */
+        write(dstOffset: number, src: ColorBuffer): void {
+            const d = (dstOffset | 0) * 3;
+            this.buf.write(d, src.buf);
+        }
     }
 
     /**
