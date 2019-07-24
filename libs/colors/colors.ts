@@ -50,6 +50,10 @@ const enum ColorHues {
     Pink = 234
 }
 
+/**
+ * Color manipulation
+ */
+//% advanced=1
 namespace colors {
         /**
      * Converts red, green, blue channels into a RGB color
@@ -61,6 +65,7 @@ namespace colors {
     //% red.min=0 red.max=255 green.min=0 green.max=255 blue.min=0 blue.max=255
     //% help="colors/rgb"
     //% weight=19 blockGap=8
+    //% blockHidden=true
     export function rgb(red: number, green: number, blue: number): number {
         return ((red & 0xFF) << 16) | ((green & 0xFF) << 8) | (blue & 0xFF);
     }
@@ -72,6 +77,7 @@ namespace colors {
     //% help="colors/colors"
     //% shim=TD_ID
     //% weight=20 blockGap=8
+    //% blockHidden=true
     export function colors(color: Colors): number {
         return color;
     }
@@ -87,6 +93,7 @@ namespace colors {
     //% hue.min=0 hue.max=255 sat.min=0 sat.max=255 val.min=0 val.max=255
     //% help="colors/hsv"
     //% weight=17
+    //% blockHidden=true
     export function hsv(hue: number, sat: number = 255, val: number = 255): number {
         let h = (hue % 255) >> 0;
         if (h < 0) h += 255;
