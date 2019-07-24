@@ -3,6 +3,7 @@
     "description": "Scene manager",
     "files": [
         "storyboard.ts",
+        "microsoft.ts",
         "README.md"
     ],
     "testFiles": [
@@ -11,6 +12,7 @@
     "public": true,
     "weight": 10,
     "dependencies": {
-        "game": "file:../game"
+        "game": "file:../game",
+        "palette": "file:../palette"
     }
 }

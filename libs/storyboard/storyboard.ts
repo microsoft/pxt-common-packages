@@ -4,36 +4,115 @@
 //% icon="\uf009"
 //% weight=87 color="#401255"
 namespace storyboard {
-    let _scenes: { 
-        [index: string]: () => void
+    export interface FrameOptions {
+        background?: number;
+    }
+
+    export class Frame {
+        start: () => void;
+        options: FrameOptions;
+
+        constructor(start: () => void, options: FrameOptions) {
+            this.start = start;
+            this.options = options || {};
+        }
+    }
+
+    //% fixedInstances
+    export class BootSequence {
+        start: (done: () => void) => void;
+        background: number;
+        constructor(start: (done: () => void) => void, background: number) {
+            this.start = start;
+            this.background = background;
+        }
+
+        /**
+         * Registers the boot sequence
+         */
+        //% block="storyboard register %boot| boot sequence" blockId=storyboardregister
+        register() {
+            registerBootSequence(this);
+        }
+    }
+
+    let _boots: BootSequence[];
+    let _scenes: {
+        [index: string]: Frame
     };
-    let _current: string;
+    let _nav: Frame[];
+
+    function registerBootSequence(boot: BootSequence) {
+        if (!_boots)
+            _boots = [];
+        if (_boots.indexOf(boot) < 0)
+            _boots.push(boot);
+    }
 
     /**
      * Registers a scene
      * @param name 
      * @param scene 
      */
-    export function registerScene(name: string, scene: () => void) {
+    export function registerScene(name: string, start: () => void, options?: FrameOptions) {
         if (!name) return;
         if (!_scenes) {
             _scenes = {};
         }
-        _scenes[name] = scene;
+        _scenes[name] = new Frame(start, options);
+    }
+
+    function consumeBootSequence() {
+        // run boot sequences if any
+        let boot: BootSequence;
+        while (boot = _boots && _boots.shift()) {
+            game.pushScene();
+            let isDone = false;
+            boot.start(() => isDone = true);
+            pauseUntil(() => isDone);
+            game.popScene();
+        }
+    }
+
+    function transition(scene: Frame) {
+        game.popScene();
+
+        if (!scene) return;
+        game.pushScene();
+        scene.start();
+    }
+
+    /**
+     * Starts the story board by running boot sequences then entering a scene
+     * @param name 
+     */
+    //% block="start storyboard $name" blockId=storyboardstart
+    export function start(name?: string) {
+        consumeBootSequence();
+        // grab the first frame
+        push(name || _scenes && Object.keys(_scenes)[0]);
     }
 
     /**
      * Transition to a registered scene
      * @param name 
      */
-    export function transitionToScene(name: string) {
-        if (name == _current) return;
+    //% block="storyboard push $name" blockId=storyboardpush
+    export function push(name: string) {
         const scene = name && _scenes && _scenes[name];
-        if (!scene) return; // not found
+        if (!scene || (_nav && _nav.length && _nav[_nav.length - 1] == scene)) return; // not found
 
-        _current = name;
-        game.popScene();
-        game.pushScene();
-        scene();
+        if (!_nav) _nav = [];
+        _nav.push(scene);
+        transition(scene);
+    }
+
+    /**
+     * Stops the current scene and restart the previous scene
+     */
+    //% block="storyboard pop" blockId=storyboardpop
+    export function pop() {
+        const n = _nav && _nav.pop();
+        transition(n);
     }
 }

@@ -90,7 +90,7 @@ namespace color {
         for (let i = 0; i < n; i++) {
             let color = colors[i];
             for (let j = stride - 1; j >= 0; --j) {
-                this.buf[k + j] = color & 0xff;
+                p.buf[k + j] = color & 0xff;
                 color = color >> 8;
             }
             k += stride;

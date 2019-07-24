@@ -11,8 +11,8 @@ namespace palette {
     /**
      * Returns a clone of the default palette
      */
-    export function defaultPalette(): colors.ColorBuffer {
-        return new colors.ColorBuffer(defaultPaletteBuffer.slice());
+    export function defaultPalette(): color.ColorBuffer {
+        return new color.ColorBuffer(defaultPaletteBuffer.slice());
     }
 
     /**
@@ -21,9 +21,9 @@ namespace palette {
      * @param palette The colors to set
      * @param pOffset The offset to start copying from the palette
      */
-    export function setColors(palette: colors.ColorBuffer, pOffset = 0) {
+    export function setColors(palette: color.ColorBuffer, pOffset = 0) {
         const scene = game.currentScene();
-        let userPalette = scene.data["__palette"] as colors.ColorBuffer;
+        let userPalette = scene.data["__palette"] as color.ColorBuffer;
         if (!userPalette)
             userPalette = scene.data["__palette"] = defaultPalette();
         userPalette.write(pOffset, palette);
