@@ -3,6 +3,7 @@
     "description": "Color manipulation",
     "files": [
         "colors.ts",
+        "colorbuffer.ts",
         "README.md"
     ],
     "public": true,
