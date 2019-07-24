@@ -5,6 +5,9 @@
         "palette.ts",
         "README.md"
     ],
+    "testFiles": [
+        "test.ts"
+    ],
     "public": true,
     "weight": 10,
     "dependencies": {
