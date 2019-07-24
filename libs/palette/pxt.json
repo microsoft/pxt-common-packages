@@ -1,0 +1,13 @@
+{
+    "name": "palette",
+    "description": "Palette manipulations",
+    "files": [
+        "palette.ts",
+        "README.md"
+    ],
+    "public": true,
+    "dependencies": {
+        "colors": "file:../colors",
+        "game": "file:../game"
+    }
+}

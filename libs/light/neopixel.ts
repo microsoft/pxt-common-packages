@@ -1,56 +1,4 @@
 /**
- * Well known colors
- */
-const enum Colors {
-    //% block=red
-    Red = 0xFF0000,
-    //% block=orange
-    Orange = 0xFF7F00,
-    //% block=yellow
-    Yellow = 0xFFFF00,
-    //% block=green
-    Green = 0x00FF00,
-    //% block=blue
-    Blue = 0x0000FF,
-    //% block=indigo
-    Indigo = 0x4b0082,
-    //% block=violet
-    Violet = 0x8a2be2,
-    //% block=purple
-    Purple = 0xA033E5,
-    //% block=pink
-    Pink = 0xFF007F,
-    //% block=white
-    White = 0xFFFFFF,
-    //% block=black
-    Black = 0x000000
-}
-
-/**
- * Well known color hues
- */
-const enum ColorHues {
-    //% block=red
-    Red = 0,
-    //% block=orange
-    Orange = 29,
-    //% block=yellow
-    Yellow = 43,
-    //% block=green
-    Green = 86,
-    //% block=aqua
-    Aqua = 125,
-    //% block=blue
-    Blue = 170,
-    //% block=purple
-    Purple = 191,
-    //% block=magenta
-    Magenta = 213,
-    //% block=pink
-    Pink = 234
-}
-
-/**
  * Different modes for RGB or RGB+W NeoPixel strips
  */
 const enum NeoPixelMode {
@@ -195,9 +143,9 @@ namespace light {
         //% advanced=true
         setAll(rgb: number) {
             rgb = rgb | 0;
-            const red = unpackR(rgb);
-            const green = unpackG(rgb);
-            const blue = unpackB(rgb);
+            const red = colors.unpackR(rgb);
+            const green = colors.unpackG(rgb);
+            const blue = colors.unpackB(rgb);
 
             const end = this._start + this._length;
             const stride = this.stride();
@@ -216,12 +164,12 @@ namespace light {
         //% weight=79 blockGap=8
         //% group="More" advanced=true blockHidden=true
         setGradient(startColor: number, endColor: number, easing?: (t: number) => number) {
-            const sr = unpackR(startColor);
-            const sg = unpackG(startColor);
-            const sb = unpackB(startColor);
-            const er = unpackR(endColor);
-            const eg = unpackG(endColor);
-            const eb = unpackB(endColor);
+            const sr = colors.unpackR(startColor);
+            const sg = colors.unpackG(startColor);
+            const sb = colors.unpackB(startColor);
+            const er = colors.unpackR(endColor);
+            const eg = colors.unpackG(endColor);
+            const eb = colors.unpackB(endColor);
 
             const end = this._start + this._length;
             const n1 = this._length - 1;
@@ -309,9 +257,9 @@ namespace light {
 
             const stride = this.stride();
             pixeloffset = (pixeloffset + this._start) * stride;
-            const red = unpackR(color);
-            const green = unpackG(color);
-            const blue = unpackB(color);
+            const red = colors.unpackR(color);
+            const green = colors.unpackG(color);
+            const blue = colors.unpackB(color);
             this.setBufferRGB(pixeloffset, red, green, blue)
             this.autoShow();
         }
@@ -353,7 +301,7 @@ namespace light {
                     break;
             }
 
-            return rgb(red, green, blue);
+            return colors.rgb(red, green, blue);
         }
 
         /**
@@ -663,7 +611,7 @@ namespace light {
         //% group="Photon" advanced=true
         setPhotonPenHue(hue: number) {
             hue = hue | 0;
-            this.setPhotonPenColor(hsv(hue, 0xff, 0xff));
+            this.setPhotonPenColor(colors.hsv(hue, 0xff, 0xff));
         }
 
         //% deprecated=1 blockHidden=1
@@ -821,7 +769,7 @@ namespace light {
                         tempColor += currChar;
 
                     if ((isSpace || i == leds.length) && tempColor) {
-                        this.setPixelColor(pi++, parseColor(tempColor))
+                        this.setPixelColor(pi++, colors.parseColor(tempColor))
                         tempColor = "";
                         if (pi == n) {
                             this.show();
@@ -1238,7 +1186,7 @@ namespace light {
     //% help="light/rgb"
     //% group="Color" weight=19 blockGap=8
     export function rgb(red: number, green: number, blue: number): number {
-        return ((red & 0xFF) << 16) | ((green & 0xFF) << 8) | (blue & 0xFF);
+        return colors.rgb(red, green, blue);
     }
 
     /**
@@ -1250,19 +1198,6 @@ namespace light {
     //% group="Color" weight=20 blockGap=8
     export function colors(color: Colors): number {
         return color;
-    }
-
-    function unpackR(rgb: number): number {
-        let r = (rgb >> 16) & 0xFF;
-        return r;
-    }
-    function unpackG(rgb: number): number {
-        let g = (rgb >> 8) & 0xFF;
-        return g;
-    }
-    function unpackB(rgb: number): number {
-        let b = (rgb >> 0) & 0xFF;
-        return b;
     }
 
     /**
@@ -1277,49 +1212,7 @@ namespace light {
     //% help="light/hsv"
     //% group="Color" weight=17
     export function hsv(hue: number, sat: number = 255, val: number = 255): number {
-        let h = (hue % 255) >> 0;
-        if (h < 0) h += 255;
-        // scale down to 0..192
-        h = (h * 192 / 255) >> 0;
-
-        //reference: based on FastLED's hsv2rgb rainbow algorithm [https://github.com/FastLED/FastLED](MIT)
-        let invsat = 255 - sat;
-        let brightness_floor = ((val * invsat) / 255) >> 0;
-        let color_amplitude = val - brightness_floor;
-        let section = (h / 0x40) >> 0; // [0..2]
-        let offset = (h % 0x40) >> 0; // [0..63]
-
-        let rampup = offset;
-        let rampdown = (0x40 - 1) - offset;
-
-        let rampup_amp_adj = ((rampup * color_amplitude) / (255 / 4)) >> 0;
-        let rampdown_amp_adj = ((rampdown * color_amplitude) / (255 / 4)) >> 0;
-
-        let rampup_adj_with_floor = (rampup_amp_adj + brightness_floor);
-        let rampdown_adj_with_floor = (rampdown_amp_adj + brightness_floor);
-
-        let r: number;
-        let g: number;
-        let b: number;
-        if (section) {
-            if (section == 1) {
-                // section 1: 0x40..0x7F
-                r = brightness_floor;
-                g = rampdown_adj_with_floor;
-                b = rampup_adj_with_floor;
-            } else {
-                // section 2; 0x80..0xBF
-                r = rampup_adj_with_floor;
-                g = brightness_floor;
-                b = rampdown_adj_with_floor;
-            }
-        } else {
-            // section 0: 0x00..0x3F
-            r = rampdown_adj_with_floor;
-            g = rampup_adj_with_floor;
-            b = brightness_floor;
-        }
-        return rgb(r, g, b);
+        return colors.hsv(hue, sat, val);
     }
 
     /**
@@ -1333,50 +1226,7 @@ namespace light {
     //% group="Color" weight=18 blockGap=8
     //% blockHidden=true
     export function fade(color: number, brightness: number): number {
-        brightness = Math.max(0, Math.min(255, brightness >> 0));
-        if (brightness < 255) {
-            let red = unpackR(color);
-            let green = unpackG(color);
-            let blue = unpackB(color);
-
-            red = (red * brightness) >> 8;
-            green = (green * brightness) >> 8;
-            blue = (blue * brightness) >> 8;
-
-            color = rgb(red, green, blue);
-        }
-        return color;
-    }
-
-    function parseColor(color: string) {
-        switch (color) {
-            case "RED":
-            case "red":
-                return Colors.Red;
-            case "GREEN":
-            case "green":
-                return Colors.Green;
-            case "BLUE":
-            case "blue":
-                return Colors.Blue;
-            case "WHITE":
-            case "white":
-                return Colors.White;
-            case "ORANGE":
-            case "orange":
-                return Colors.Orange;
-            case "PURPLE":
-            case "purple":
-                return Colors.Purple;
-            case "YELLOW":
-            case "yellow":
-                return Colors.Yellow;
-            case "PINK":
-            case "pink":
-                return Colors.Pink;
-            default:
-                return parseInt(color) || 0;
-        }
+        return colors.fade(color, brightness);
     }
 
     /**
@@ -1407,7 +1257,7 @@ namespace light {
             let hueOffset = 0;
             return () => {
                 for (let i = 0; i < n; i++) {
-                    strip.setPixelColor(i, hsv(((i * 256) / (n - 1) + hueOffset) % 0xff, 0xff, 0xff));
+                    strip.setPixelColor(i, colors.hsv(((i * 256) / (n - 1) + hueOffset) % 0xff, 0xff, 0xff));
                 }
                 hueOffset += Math.ceil(128 / n);
                 if (hueOffset >= 0xff) {
@@ -1447,7 +1297,7 @@ namespace light {
                     step++;
                     for (let i = 0; i < l; i++) {
                         const level = (Math.isin(i + step) * 127) + 128;
-                        strip.setPixelColor(i, rgb(level * this.red / 255, level * this.green / 255, level * this.blue / 255));
+                        strip.setPixelColor(i, colors.rgb(level * this.red / 255, level * this.green / 255, level * this.blue / 255));
                     }
                     iteration++;
                     return true;
@@ -1489,7 +1339,7 @@ namespace light {
             return () => {
                 for (let i = 0; i < l; i++) {
                     offsets[i] = (offsets[i] + (step * 2)) % 255
-                    strip.setPixelColor(i, rgb(255 - offsets[i], this.green, this.blue));
+                    strip.setPixelColor(i, colors.rgb(255 - offsets[i], this.green, this.blue));
                 }
                 step++;
                 if (step * 2 > 0xff) {
@@ -1510,7 +1360,7 @@ namespace light {
 
         constructor(red: number, green: number, blue: number, delay: number) {
             super();
-            this.rgb = rgb(red, green, blue);
+            this.rgb = colors.rgb(red, green, blue);
             this.delay = delay;
         }
 
@@ -1587,7 +1437,7 @@ namespace light {
 
         constructor(red: number, green: number, blue: number, delay: number) {
             super();
-            this.rgb = rgb(red, green, blue);
+            this.rgb = colors.rgb(red, green, blue);
             this.delay = delay;
         }
 

@@ -1,0 +1,12 @@
+{
+    "name": "colors",
+    "description": "Color manipulation",
+    "files": [
+        "colors.ts",
+        "README.md"
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../*"
+    }
+}

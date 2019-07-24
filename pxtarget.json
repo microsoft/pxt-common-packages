@@ -45,6 +45,8 @@
         "libs/esp32spi",
         "libs/net",
         "libs/mqtt",
-        "libs/azureiot"
+        "libs/azureiot",
+        "libs/colors",
+        "libs/game"
     ]
 }

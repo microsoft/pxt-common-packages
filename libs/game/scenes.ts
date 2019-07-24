@@ -223,4 +223,32 @@ namespace scene {
         scene.camera.offsetX = x - (screen.width >> 1);
         scene.camera.offsetY = y - (screen.height >> 1);
     }
+
+    let _scenes: pxt.Map<() => void>;
+    /**
+     * Registers a new scene
+     * @param name 
+     * @param handler 
+     */
+    export function registerScene(name: string, handler: () => void) {
+        if (!_scenes)
+            _scenes = {};
+        _scenes[name] = handler;
+    }
+
+    /**
+     * Removes the current scene and starts a new one
+     * @param name 
+     */
+    export function transitionToScene(name: string) {
+        if (!_scenes) return;
+        const sc = _scenes[name];
+        if (!sc) return;
+
+        game.popScene();
+        // wait till most call backs are gone
+        pause(50);
+        game.pushScene();
+        sc();
+    }
 }
