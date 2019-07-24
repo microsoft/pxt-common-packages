@@ -35,13 +35,6 @@ namespace jacdac{
             jacdac.JACDAC.instance.bridge = this;
             this.running = true;
             this.deviceManager = new jacdac.JDDeviceManager();
-        }
-
-        start() {
-            if (this.running)
-                return;
-
-            this.running = true;
 
             this._intervalId = setInterval(()=>{
                 const devices = this.deviceManager.getDeviceList();
@@ -59,16 +52,6 @@ namespace jacdac{
                     }
                 }
             },500)
-        }
-
-        stop()
-        {
-            if (!this.running)
-                return;
-
-            this.running = false;
-
-            clearInterval(this._intervalId);
         }
 
         handlePacket(pkt : jacdac.JDPacket) : number
