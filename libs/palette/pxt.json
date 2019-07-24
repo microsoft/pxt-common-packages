@@ -6,6 +6,7 @@
         "README.md"
     ],
     "public": true,
+    "weight": 10,
     "dependencies": {
         "colors": "file:../colors",
         "game": "file:../game"
