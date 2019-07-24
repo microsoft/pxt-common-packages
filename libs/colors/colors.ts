@@ -206,4 +206,59 @@ namespace colors {
                 return parseInt(color) || 0;
         }
     }
+
+    /**
+     * A buffer of 24bit RGB colors
+     */
+    export class ColorBuffer {
+        buf: Buffer;
+
+        constructor(buf: Buffer) {
+            this.buf = buf;
+        }
+
+        get length() {
+            return (this.buf.length / 3) | 0;
+        }
+
+        color(index: number): number {
+            index = index | 0;
+            if (index < 0 || index >= this.length) return -1;
+
+            const start = index * 3;
+            return colors.rgb(this.buf[start], this.buf[start + 1], this.buf[start + 2]);
+        }
+
+        setColor(index: number, color: number) {
+            index = index | 0;
+            if (index < 0 || index >= this.length) return;
+
+            const start = index * 3;
+            this.buf[start] = (color >> 16) & 0xff;
+            this.buf[start + 1] = (color >> 8) & 0xff;
+            this.buf[start + 2] = color & 0xff;
+        }
+
+        slice(start?: number, length?: number): ColorBuffer {
+            return new ColorBuffer(this.buf.slice(start ? start * 3 : start, length ? length * 3 : length));
+        }
+    }
+
+    /**
+     * Converts an array of colors into a color buffer
+     */
+    export function createBuffer(colors: number[]): colors.ColorBuffer {
+        const n = colors.length;
+        const buf = control.createBuffer(n * 3);
+        const p = new ColorBuffer(buf);
+        let k = 0;
+        for (let i = 0; i < n; i++) {
+            const color = colors[i];
+            this.buf[k++] = (color >> 16) & 0xff;
+            this.buf[k++] = (color >> 8) & 0xff;
+            this.buf[k++] = color & 0xff;
+        }
+        return p;
+    }
+
 }
