@@ -80,7 +80,7 @@ namespace color {
     /**
      * Converts an array of colors into a color buffer
      */
-    export function createBuffer(colors: number[], layout?: ColorBufferLayout): colors.ColorBuffer {
+    export function createBuffer(colors: number[], layout?: ColorBufferLayout): color.ColorBuffer {
         const n = colors.length;
         layout = layout || ColorBufferLayout.RGB;
         const stride = layout == ColorBufferLayout.RGB ? 3 : 4;
