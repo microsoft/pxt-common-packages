@@ -9,7 +9,7 @@ c d e f
 controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
     const p = palette.defaultPalette();
     for (let i = 0; i < p.length; ++i) {
-        p.setColor(i, colors.rgb(i * 16, 0, 255 - i * 16));
+        p.setColor(i, color.rgb(i * 16, 0, 255 - i * 16));
     }
     p.setColor(0, 0)
     palette.setColors(p)
