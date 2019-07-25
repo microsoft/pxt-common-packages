@@ -86,7 +86,7 @@ namespace storyboard {
      * Starts the story board by running boot sequences then entering a scene
      * @param name 
      */
-    //% block="start storyboard $name" blockId=storyboardstart
+    //% block="storyboard start at $name" blockId=storyboardstart
     export function start(name?: string) {
         consumeBootSequence();
         // grab the first frame
@@ -97,7 +97,7 @@ namespace storyboard {
      * Transition to a registered scene
      * @param name 
      */
-    //% block="storyboard push $name" blockId=storyboardpush
+    //% block="storyboard push frame $name" blockId=storyboardpush
     export function push(name: string) {
         const scene = name && _scenes && _scenes[name];
         if (!scene || (_nav && _nav.length && _nav[_nav.length - 1] == scene)) return; // not found
@@ -110,7 +110,7 @@ namespace storyboard {
     /**
      * Stops the current scene and restart the previous scene
      */
-    //% block="storyboard pop" blockId=storyboardpop
+    //% block="storyboard pop frame" blockId=storyboardpop
     export function pop() {
         const n = _nav && _nav.pop();
         transition(n);
