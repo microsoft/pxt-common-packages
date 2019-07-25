@@ -74,14 +74,6 @@ namespace storyboard {
         }
     }
 
-    function transition(scene: Frame) {
-        game.popScene();
-
-        if (!scene) return;
-        game.pushScene();
-        scene.start();
-    }
-
     /**
      * Starts the story board by running boot sequences then entering a scene
      * @param name 
@@ -90,21 +82,57 @@ namespace storyboard {
     export function start(name?: string) {
         consumeBootSequence();
         // grab the first frame
-        push(name || _scenes && Object.keys(_scenes)[0]);
+        push(name || (_scenes && Object.keys(_scenes)[0]));
+    }
+
+    function isActive(name: string): boolean {
+        const scene = name && _scenes && _scenes[name];
+        return scene && (_nav && _nav.length && _nav[_nav.length - 1] == scene);
+    }
+
+    /**
+     * Replace the current scene with the given scene
+     * @param name 
+     */
+    //% block="storyboard replace scene $name" blockId=storyboardreplace
+    export function replace(name: string) {
+        if (isActive(name)) return;
+
+        const scene = name && _scenes && _scenes[name];
+        if (!scene) return; // not found
+        
+        if (!_nav) _nav = [];
+        if (_nav.length) {
+            console.log('drop current scene')
+            _nav.pop();
+            game.popScene();
+        }
+        console.log('replace scene')
+        _nav.push(scene);
+        game.pushScene();
+        scene.start();
     }
 
     /**
      * Transition to a registered scene
      * @param name 
      */
-    //% block="storyboard push frame $name" blockId=storyboardpush
+    //% block="storyboard push scene $name" blockId=storyboardpush
     export function push(name: string) {
-        const scene = name && _scenes && _scenes[name];
-        if (!scene || (_nav && _nav.length && _nav[_nav.length - 1] == scene)) return; // not found
+        if (isActive(name)) return;
 
-        if (!_nav) _nav = [];
+        const scene = name && _scenes && _scenes[name];
+        if (!scene) return; // not found
+
+        if (!_nav) _nav = [];        
+        if (_nav.length) {
+            console.log('drop scene')
+            game.popScene();
+        }
+        console.log(`push ${name}`)
         _nav.push(scene);
-        transition(scene);
+        game.pushScene();
+        scene.start();
     }
 
     /**
@@ -113,6 +141,15 @@ namespace storyboard {
     //% block="storyboard pop frame" blockId=storyboardpop
     export function pop() {
         const n = _nav && _nav.pop();
-        transition(n);
+        if (n) {
+            console.log('pop scene')
+            game.popScene();
+        }
+        // restart previous
+        if (_nav && _nav.length) {
+            console.log('restart scene')
+            const sc = _nav[_nav.length - 1];
+            sc.start();
+        }
     }
 }
