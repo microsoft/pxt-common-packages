@@ -149,6 +149,7 @@ namespace storyboard {
         if (_nav && _nav.length) {
             console.log('restart scene')
             const sc = _nav[_nav.length - 1];
+            game.pushScene();
             sc.start();
         }
     }
