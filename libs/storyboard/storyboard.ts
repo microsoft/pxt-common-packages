@@ -67,7 +67,6 @@ namespace storyboard {
         let boot: BootSequence;
         while (boot = _boots && _boots.shift()) {
             game.pushScene();
-            palette.reset();
             let isDone = false;
             boot.start(() => isDone = true);
             pauseUntil(() => isDone);
@@ -80,7 +79,6 @@ namespace storyboard {
 
         if (!scene) return;
         game.pushScene();
-        palette.reset();
         scene.start();
     }
 

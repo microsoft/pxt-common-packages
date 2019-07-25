@@ -15,6 +15,7 @@ namespace palette {
         return new color.ColorBuffer(defaultPaletteBuffer.slice());
     }
 
+    const FIELD = "__palette";
     /**
      * Dynamically set all or part of the game's current palette
      *
@@ -23,11 +24,21 @@ namespace palette {
      */
     export function setColors(palette: color.ColorBuffer, pOffset = 0) {
         const scene = game.currentScene();
-        let userPalette = scene.data["__palette"] as color.ColorBuffer;
+        let userPalette = scene.data[FIELD] as color.ColorBuffer;
         if (!userPalette)
-            userPalette = scene.data["__palette"] = defaultPalette();
+            userPalette = scene.data[FIELD] = defaultPalette();
         userPalette.write(pOffset, palette);
         image.setPalette(userPalette.buf);
+
+        // make sure to clean up
+        game.addScenePopHandler(sceneCleaner);
+    }
+
+    function sceneCleaner(scene: scene.Scene) {
+        if (scene.data[FIELD]) {
+            scene.data[FIELD] = undefined;
+            image.setPalette(defaultPaletteBuffer);
+        }
     }
 
     /**
@@ -35,7 +46,7 @@ namespace palette {
      */
     export function reset() {
         const scene = game.currentScene();
-        scene.data["__palette"] = undefined;
+        scene.data[FIELD] = undefined;
         image.setPalette(defaultPaletteBuffer);
     }
 }
