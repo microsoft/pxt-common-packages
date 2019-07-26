@@ -297,10 +297,6 @@ MetaEntry *FS::findMetaEntry(const char *filename) {
     return NULL;
 }
 
-#define VALIDATE_NEXT(nextptr)                                                                     \
-    if (nextptr == 0 || nextptr > bytes / 8)                                                       \
-    oops()
-
 int32_t FS::getFileSize(uint16_t dataptr, uint16_t *lastptr) {
     if (dataptr == 0)
         return -1;
@@ -336,7 +332,7 @@ int32_t FS::getFileSize(uint16_t dataptr, uint16_t *lastptr) {
                 *lastptr = dataptr;
             return sz;
         }
-        VALIDATE_NEXT(nextptr);
+        RAFFS_VALIDATE_NEXT(nextptr);
         dataptr = nextptr;
     }
 }
@@ -359,7 +355,7 @@ uintptr_t FS::copyFile(uint16_t dataptr, uintptr_t dst) {
         dst += blsz;
         if (!nextptr)
             return dst;
-        VALIDATE_NEXT(nextptr);
+        RAFFS_VALIDATE_NEXT(nextptr);
         dataptr = nextptr;
     }
 }
@@ -701,7 +697,7 @@ int File::read(void *data, uint32_t len) {
         }
 
         auto bytes = fs.bytes;
-        VALIDATE_NEXT(nextptr);
+        RAFFS_VALIDATE_NEXT(nextptr);
         dataptr = nextptr;
     }
     readPage = dataptr;
@@ -855,7 +851,7 @@ int File::overwrite(const void *data, uint32_t len) {
             if (nextptr == 0xffff)
                 break;
             auto bytes = fs.bytes;
-            VALIDATE_NEXT(nextptr);
+            RAFFS_VALIDATE_NEXT(nextptr);
             dataptr = nextptr;
         }
     }
