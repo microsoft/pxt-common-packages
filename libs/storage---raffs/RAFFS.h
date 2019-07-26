@@ -74,6 +74,13 @@ class FS {
     void writePadded(const void *data, uint32_t len);
     uint16_t findBeginning(uint16_t dataptr);
 
+    uint32_t *altBasePtr() {
+        if ((uintptr_t)basePtr == baseAddr)
+            return (uint32_t *)(baseAddr + bytes / 2);
+        else
+            return (uint32_t *)baseAddr;
+    }
+
     uint16_t _rawsize(uint16_t dp) {
         RAFFS_VALIDATE_NEXT(dp);
         return basePtr[dp] & 0xffff;
@@ -95,13 +102,16 @@ class FS {
     }
 
     uint16_t blnext(uint16_t dp) {
-        uint16_t np = _nextptr(dp);
+        uint32_t np = _nextptr(dp);
         if (np == 0xffff)
             return 0;
+        if (np <= dp)
+            target_panic(DEVICE_FLASH_ERROR);
 #if RAFFS_BLOCK == 64
         int blsz = _size(dp);
         np <<= 2;
-        if (blsz > 4) np += blsz - 4;
+        if (blsz > 4)
+            np += blsz - 4;
         np = RAFFS_ROUND(np) >> 2;
 #endif
         return np;

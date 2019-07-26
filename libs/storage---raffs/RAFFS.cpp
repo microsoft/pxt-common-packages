@@ -41,19 +41,23 @@ using namespace codal;
             oops();                                                                                \
     } while (0)
 
-#define OFF2(v, basePtr) (int)((uint32_t *)v - (uint32_t *)basePtr)
+#define OFF2(v, basePtr) (uint32_t)((uint32_t *)v - (uint32_t *)basePtr)
 #define OFF(v) OFF2(v, basePtr)
 
-#ifndef RAFFS_TEST
+#undef NOLOG
+#define NOLOG(...) ((void)0)
 #define LOG DMESG
-#define LOGV(...)                                                                                  \
-    do {                                                                                           \
-    } while (0)
-#endif
+#define LOGV NOLOG
+#define LOGVV NOLOG
 
 #if 0
 #undef LOGV
 #define LOGV DMESG
+#endif
+
+#if 0
+#undef LOGVV
+#define LOGVV DMESG
 #endif
 
 using namespace pxt::raffs;
@@ -123,8 +127,11 @@ void FS::flushFlash() {
 }
 
 void FS::writeBytes(void *dst, const void *src, uint32_t size) {
-    LOGV("write %x %d %x:%x:%x:%x", OFF(dst), size, ((const uint8_t *)src)[0],
+    LOGV("write %x%s %d %x:%x:%x:%x",
+         OFF(dst) <= OFF2(dst, altBasePtr()) ? OFF(dst) : OFF2(dst, altBasePtr()),
+         OFF(dst) <= OFF2(dst, altBasePtr()) ? "" : "*", size, ((const uint8_t *)src)[0],
          ((const uint8_t *)src)[1], ((const uint8_t *)src)[2], ((const uint8_t *)src)[3]);
+
     while (size > 0) {
         uint32_t off = (uintptr_t)dst & (sizeof(flashBuf) - 1);
         uintptr_t newaddr = (uintptr_t)dst - off;
@@ -302,6 +309,8 @@ uint16_t FS::findBeginning(uint16_t dataptr) {
 #if RAFFS_BLOCK == 64
     uint16_t beg = dataptr;
     for (;;) {
+        LOGVV("fb %x sz=%x nx=%x", dataptr, _rawsize(dataptr), _nextptr(dataptr));
+
         auto nextptr = blnext(dataptr);
         if (!nextptr)
             return beg;
@@ -309,6 +318,8 @@ uint16_t FS::findBeginning(uint16_t dataptr) {
         auto blsz = _rawsize(dataptr);
         if ((blsz & 0x8000) == 0) // this includes RAFFS_DELETED case
             beg = dataptr;
+
+        // LOGV("fb %x sz=%x ->%x [%x]", dataptr, blsz, nextptr, _nextptr(dataptr));
 
         RAFFS_VALIDATE_NEXT(nextptr);
         dataptr = nextptr;
@@ -339,7 +350,7 @@ int32_t FS::getFileSize(uint16_t dataptr, uint16_t *lastptr) {
         auto nextptr = blnext(dataptr);
         auto blsz = _rawsize(dataptr);
 
-        LOGV("sz dp=%x np=%x sz=%x", dataptr, nextptr, blsz);
+        LOGVV("sz dp=%x np=%x sz=%x", dataptr, nextptr, blsz);
 
 #if RAFFS_BLOCK == 64
         if (blsz == RAFFS_DELETED) {
@@ -372,6 +383,9 @@ uintptr_t FS::copyFile(uint16_t dataptr, uintptr_t dst) {
     if (dataptr == 0xffff)
         return dst;
     LOGV("start copy");
+#if RAFFS_BLOCK == 64
+    auto dst0 = dst;
+#endif
     for (;;) {
         auto nextptr = blnext(dataptr);
         auto blsz = blsize(dataptr);
@@ -384,8 +398,13 @@ uintptr_t FS::copyFile(uint16_t dataptr, uintptr_t dst) {
 #endif
             writeBytes((void *)dst, data0(dataptr), blsz);
         dst += blsz;
-        if (!nextptr)
+        if (!nextptr) {
+#if RAFFS_BLOCK == 64
+            if (dst0 == dst)
+                dst++;
+#endif
             return dst;
+        }
         RAFFS_VALIDATE_NEXT(nextptr);
         dataptr = nextptr;
     }
@@ -766,8 +785,8 @@ int File::append(const void *data, uint32_t len) {
     if ((!fs.overwritingFile && len == 0) || meta->dataptr == 0)
         return 0;
 
-    LOGV("append %s len=%d meta=%x free=%x", filename(), len, OFF2(fs.metaPtr, fs.basePtr),
-         OFF2(fs.freeDataPtr, fs.basePtr));
+    LOGV("append %s len=%d meta=%x free=%x dp=%x lp=%x", filename(), len,
+         OFF2(fs.metaPtr, fs.basePtr), OFF2(fs.freeDataPtr, fs.basePtr), meta->dataptr, lastPage);
 
     fs.lock();
 
@@ -775,6 +794,8 @@ int File::append(const void *data, uint32_t len) {
         fs.unlock();
         return -1;
     }
+
+    LOGV("append2 dp=%x lp=%x", meta->dataptr, lastPage);
 
     if (len >= 0x7ffe)
         oops();
@@ -786,10 +807,10 @@ int File::append(const void *data, uint32_t len) {
 #endif
         pageDst = &meta->dataptr;
     } else {
-        int sz = fs.getFileSize(lastPage ? lastPage : meta->dataptr, &lastPage);
+        fs.getFileSize(lastPage ? lastPage : meta->dataptr, &lastPage);
         if (lastPage == 0)
             oops();
-        LOGV("append - sz=%d lastPage=%x", sz, lastPage);
+        //LOGV("append - sz=%d lastPage=%x", sz, lastPage);
         pageDst = (uint16_t *)(fs.basePtr + lastPage) + 1;
     }
 

@@ -12,7 +12,10 @@ endif
 
 INC = -I. -I$(STORAGE_PATH)
 
-all:
+all: build run
+
+build:
 	g++ $(INC) $(DEFS) -include SNORFS-test.h -g -W -Wall -std=c++11 -o stest \
 		SNORFS-test.cpp $(SFILE) -ferror-limit=5
+run:
 	./stest
