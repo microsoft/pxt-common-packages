@@ -55,6 +55,8 @@ class FS {
     uintptr_t flashBufAddr;
     uint8_t flashBuf[RAFFS_FLASH_BUFFER_SIZE];
 
+    File *overwritingFile;
+
     void erasePages(uintptr_t addr, uint32_t len);
     void flushFlash();
     void writeBytes(void *dst, const void *src, uint32_t size);
@@ -67,6 +69,9 @@ class FS {
     int32_t getFileSize(uint16_t dataptr, uint16_t *lastptr = NULL);
     uintptr_t copyFile(uint16_t dataptr, uintptr_t dst);
     bool tryGC(int spaceNeeded);
+
+    uint32_t *markEnd(uint32_t *freePtr);
+    void writePadded(const void *data, uint32_t len);
 
     uint16_t _rawsize(uint16_t dp) {
         RAFFS_VALIDATE_NEXT(dp);
@@ -94,7 +99,8 @@ class FS {
             return 0;
 #if RAFFS_BLOCK == 64
         int blsz = _size(dp);
-        np += RAFFS_ROUND(blsz - 4) >> 2;
+        if (blsz > 4)
+            np += RAFFS_ROUND(blsz - 4) >> 2;
 #endif
         return np;
     }

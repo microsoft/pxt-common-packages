@@ -83,6 +83,7 @@ FS::FS(Flash &flash, uintptr_t baseAddr, uint32_t bytes)
     metaPtr = NULL;
     readDirPtr = NULL;
     flashBufAddr = 0;
+    overwritingFile = NULL;
 
     if (bytes > 0xffff * 4 * 2)
         oops();
@@ -140,8 +141,6 @@ void FS::writeBytes(void *dst, const void *src, uint32_t size) {
         src = (const uint8_t *)src + n;
         dst = (uint8_t *)dst + n;
     }
-    // TODO remove before merge
-    flushFlash();
 }
 
 void FS::format() {
@@ -201,12 +200,16 @@ bool FS::tryMount() {
     while (*p == M1)
         p -= 2;
     freeDataPtr = p + 3;
+    if (freeDataPtr[-1] != M1 || freeDataPtr[-2] != M1)
+        oops();
 #else
     p = (uint32_t *)metaPtr - 1;
     while (*p == M1)
         p--;
     freeDataPtr = p + 1;
 #endif
+    if (freeDataPtr[0] != M1 || freeDataPtr[1] != M1)
+        oops();
 
     LOG("mounted, end=%x meta=%x free=%x", OFF(endPtr), OFF(metaPtr), OFF(freeDataPtr));
 
@@ -252,10 +255,12 @@ bool FS::exists(const char *filename) {
     lock();
     auto ex = false;
     auto r = findMetaEntry(filename);
+#if RAFFS_BLOCK == 64
+    if (r && getFileSize(r->dataptr, NULL) != -1)
+        ex = true;
+#else
     if (r && r->dataptr)
         ex = true;
-#if RAFFS_BLOCK == 64
-    check size
 #endif
     unlock();
     return ex;
@@ -364,6 +369,25 @@ void FS::forceGC() {
     unlock();
 }
 
+uint32_t *FS::markEnd(uint32_t *freePtr) {
+#if RAFFS_BLOCK == 64
+    if ((uintptr_t)freePtr & 7)
+        oops();
+    if (freePtr[-3] == M1) {
+        uint64_t eofMark = 0;
+        writeBytes(freePtr, &eofMark, 8);
+        freePtr += 2;
+    }
+#else
+    if (freePtr[-1] == M1) {
+        uint32_t eofMark = 0;
+        writeBytes(freePtr++, &eofMark, 4);
+    }
+#endif
+
+    return freePtr;
+}
+
 bool FS::tryGC(int spaceNeeded) {
     int spaceLeft = (intptr_t)metaPtr - (intptr_t)freeDataPtr;
 
@@ -389,9 +413,9 @@ bool FS::tryGC(int spaceNeeded) {
 
     erasePages(newBase, bytes / 2);
 
-    auto metaDst = (MetaEntry *)(newBase + bytes / 2);
-    auto newBaseP = (uint32_t *)newBase;
-    auto dataDst = newBaseP + sizeof(FSHeader) / 4;
+    MetaEntry *metaDst = (MetaEntry *)(newBase + bytes / 2);
+    uint32_t *newBaseP = (uint32_t *)newBase;
+    uint32_t *dataDst = newBaseP + sizeof(FSHeader) / 4;
 
     for (auto p = metaPtr; p < endPtr; p++) {
         MetaEntry m = *p;
@@ -402,7 +426,7 @@ bool FS::tryGC(int spaceNeeded) {
         auto fnlen = strlen((char *)(basePtr + m.fnptr));
         writeBytes(dataDst, basePtr + m.fnptr, fnlen + 1);
         m.fnptr = dataDst - newBaseP;
-        dataDst += RAFFS_ROUND(fnlen + 1);
+        dataDst += RAFFS_ROUND(fnlen + 1) >> 2;
 
 #if RAFFS_BLOCK == 64
         uint32_t highHD = (dataDst + 1 - newBaseP) << 16;
@@ -411,15 +435,17 @@ bool FS::tryGC(int spaceNeeded) {
         if (!sz)
             m.dataptr = 0xffff;
         else
-#else
+#endif
         {
             uint32_t hd = highHD | sz;
             m.dataptr = dataDst - newBaseP;
             writeBytes(dataDst++, &hd, sizeof(hd));
             auto newDst = copyFile(m.dataptr, (uintptr_t)dataDst);
             dataDst = (uint32_t *)RAFFS_ROUND(newDst);
-        }
+#if RAFFS_BLOCK == 64
+            dataDst += 2;
 #endif
+        }
 
         writeBytes(--metaDst, &m, sizeof(m));
         flushFlash();
@@ -432,10 +458,7 @@ bool FS::tryGC(int spaceNeeded) {
         }
     }
 
-    if (dataDst[-1] == M1) {
-        uint32_t eofMark = 0;
-        writeBytes(dataDst++, &eofMark, 4);
-    }
+    dataDst = markEnd(dataDst);
 
     if ((intptr_t)metaDst - (intptr_t)dataDst <= spaceNeeded + 32) {
 #ifdef SNORFS_TEST
@@ -684,8 +707,18 @@ int File::read(void *data, uint32_t len) {
     return nread;
 }
 
+void FS::writePadded(const void *data, uint32_t len) {
+    writeBytes(freeDataPtr, data, len);
+    uint32_t tail = len & (RAFFS_ROUND(1) - 1);
+    if (tail) {
+        uint64_t zero = 0;
+        writeBytes((uint8_t *)freeDataPtr + len, &zero, RAFFS_ROUND(1) - tail);
+    }
+    freeDataPtr += RAFFS_ROUND(len) >> 2;
+}
+
 int File::append(const void *data, uint32_t len) {
-    if (len == 0 || meta->dataptr == 0)
+    if ((!overwritingFile && len == 0) || meta->dataptr == 0)
         return 0;
 
     LOGV("append len=%d meta=%x free=%x", len, OFF2(fs.metaPtr, fs.basePtr),
@@ -717,35 +750,36 @@ int File::append(const void *data, uint32_t len) {
     if (*pageDst != 0xffff)
         oops();
 
-xxx
-
     uint16_t thisPtr = fs.freeDataPtr - fs.basePtr;
+#if RAFFS_BLOCK == 64
+    uint32_t newHd = (thisPtr << 16) | len;
+    if (overwritingFile)
+        newHd |= 0x8000;
+    fs.writeBytes(pageDst - 1, &newHd, sizeof(newHd));
+    uint8_t tmp[4] = {0};
+    memcpy(tmp, data, len < 4 ? len : 4);
+    fs.writeBytes(pageDst + 1, tmp, 4);
+    if (len > 4)
+        fs.writePadded((uint8_t *)data + 4, len - 4);
+    fs.freeDataPtr += 2;
+#else
     lastPage = thisPtr; // cache it
 
     uint32_t newHd = 0xffff0000 | len;
-    fs.writeBytes(fs.freeDataPtr++, &newHd, sizeof(newHd));
-    fs.writeBytes(fs.freeDataPtr, data, len);
+    fs.writePadded(&newHd, sizeof(newHd));
+    fs.writePadded(data, len);
+#endif
 
-    uint32_t zero = 0;
-    if (len & 3) {
-        // align with 0s
-        fs.writeBytes((uint8_t *)fs.freeDataPtr + len, &zero, 4 - (len & 3));
-    } else {
-        // check if data ends with M1
-        if (*(uint32_t *)((uint8_t *)data + len - 4) == M1) {
-            // if so, write some 0s
-            fs.writeBytes((uint8_t *)fs.freeDataPtr + len, &zero, 4);
-            len += 4;
-        }
-    }
-
-    fs.freeDataPtr += (len + 3) >> 2;
+    fs.freeDataPtr = fs.markEnd(fs.freeDataPtr);
 
     // and only at the end update the next link
     fs.flushFlash();
+
+#if RAFFS_BLOCK != 64
     if (*pageDst != 0xffff)
         oops();
     fs.writeBytes(pageDst, &thisPtr, sizeof(thisPtr));
+#endif
 
     fs.unlock();
 
@@ -771,10 +805,21 @@ void File::del() {
 }
 
 int File::overwrite(const void *data, uint32_t len) {
+    LOGV("overwrite len=%d dp=%x f=%x", len, meta->dataptr, OFF2(fs.freeDataPtr, fs.basePtr));
+
+#if RAFFS_BLOCK == 64
+    overwritingFile = this;
+    int r = append(data, len);
+    if (r == -1 && len > 4) {
+        append(data, 0); // this will mark file as empty
+        r = append(data, len); // and this will trigger another GC
+    }
+    overwritingFile = NULL;
+    rewind();
+    return r;
+#else
     fs.lock();
     resetAllCaches();
-
-    LOGV("overwrite len=%d dp=%x f=%x", len, meta->dataptr, OFF2(fs.freeDataPtr, fs.basePtr));
 
     // Try to allocate space before deleting anything to avoid losing the file
     // when we lose the power. We try again later (in case we failed first, but then
@@ -834,6 +879,7 @@ int File::overwrite(const void *data, uint32_t len) {
     fs.unlock();
 
     return append(data, len);
+#endif
 }
 
 int FS::readFlashBytes(uintptr_t addr, void *buffer, uint32_t len) {
