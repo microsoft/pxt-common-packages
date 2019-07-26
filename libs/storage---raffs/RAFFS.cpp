@@ -217,10 +217,9 @@ bool FS::tryMount() {
 }
 
 void FS::mount() {
-    // TODO remove before merge
-    if (basePtr)
+    //if (basePtr) return;
+    if (tryMount())        
         return;
-    // if (tryMount())        return;
     format();
     if (!tryMount())
         oops();
@@ -345,9 +344,11 @@ int32_t FS::getFileSize(uint16_t dataptr, uint16_t *lastptr) {
 uintptr_t FS::copyFile(uint16_t dataptr, uintptr_t dst) {
     if (dataptr == 0xffff)
         return dst;
+    LOGV("start copy");
     for (;;) {
         auto nextptr = blnext(dataptr);
         auto blsz = blsize(dataptr);
+        LOGV("copy nxt=%d sz=%d", nextptr, blsz);
 #if RAFFS_BLOCK == 64
         if (blsz > 4) {
             writeBytes((void *)dst, data0(dataptr), 4);
@@ -420,6 +421,7 @@ bool FS::tryGC(int spaceNeeded) {
     for (auto p = metaPtr; p < endPtr; p++) {
         MetaEntry m = *p;
         auto sz = getFileSize(m.dataptr);
+        LOGV("GC %s sz=%d", (char *)(basePtr + m.fnptr), sz);
         if (sz < 0)
             continue;
 
@@ -438,10 +440,11 @@ bool FS::tryGC(int spaceNeeded) {
 #endif
         {
             uint32_t hd = highHD | sz;
-            m.dataptr = dataDst - newBaseP;
+            auto newdataptr = dataDst - newBaseP;
             writeBytes(dataDst++, &hd, sizeof(hd));
             auto newDst = copyFile(m.dataptr, (uintptr_t)dataDst);
             dataDst = (uint32_t *)RAFFS_ROUND(newDst);
+            m.dataptr = newdataptr;
 #if RAFFS_BLOCK == 64
             dataDst += 2;
 #endif
@@ -798,10 +801,14 @@ void File::resetAllCaches() {
 void File::del() {
     fs.lock();
     resetAllCaches();
+#if RAFFS_BLOCK == 64
+    ToDo
+#else
     if (meta->dataptr) {
         uint16_t zero = 0;
         fs.writeBytes(&meta->dataptr, &zero, sizeof(zero));
     }
+#endif
     fs.unlock();
 }
 

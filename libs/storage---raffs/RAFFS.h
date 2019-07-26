@@ -113,7 +113,10 @@ class FS {
             return -1;
         return _size(dp);
 #else
-        return _size(dp);
+        auto sz = _size(dp);
+        if (sz == 0xffff)
+            return 0;
+        return sz;
 #endif
     }
 
