@@ -27,7 +27,7 @@ namespace color {
         }
 
         get length() {
-            return (this.buf.length / this.stride) | 0;
+            return Math.idiv(this.buf.length, this.stride);
         }
 
         color(index: number): number {
