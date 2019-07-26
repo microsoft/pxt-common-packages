@@ -100,8 +100,9 @@ class FS {
             return 0;
 #if RAFFS_BLOCK == 64
         int blsz = _size(dp);
-        if (blsz > 4)
-            np += RAFFS_ROUND(blsz - 4) >> 2;
+        np <<= 2;
+        if (blsz > 4) np += blsz - 4;
+        np = RAFFS_ROUND(np) >> 2;
 #endif
         return np;
     }

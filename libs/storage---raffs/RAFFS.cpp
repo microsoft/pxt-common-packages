@@ -51,7 +51,7 @@ using namespace codal;
     } while (0)
 #endif
 
-#if 1
+#if 0
 #undef LOGV
 #define LOGV DMESG
 #endif
@@ -451,7 +451,7 @@ bool FS::tryGC(int spaceNeeded) {
     uint32_t *newBaseP = (uint32_t *)newBase;
     uint32_t *dataDst = newBaseP + sizeof(FSHeader) / 4;
 
-    for (auto p = metaPtr; p < endPtr; p++) {
+    for (auto p = endPtr - 1; p >= metaPtr; p--) {
         MetaEntry m = *p;
         auto sz = getFileSize(m.dataptr);
         LOGV("GC %s sz=%d", (char *)(basePtr + m.fnptr), sz);
@@ -461,10 +461,10 @@ bool FS::tryGC(int spaceNeeded) {
         auto fnlen = strlen((char *)(basePtr + m.fnptr));
         writeBytes(dataDst, basePtr + m.fnptr, fnlen + 1);
         m.fnptr = dataDst - newBaseP;
-        dataDst += RAFFS_ROUND(fnlen + 1) >> 2;
+        dataDst += (fnlen + 1 + 3) >> 2;
 
 #if RAFFS_BLOCK == 64
-        uint32_t highHD = (dataDst + 1 - newBaseP) << 16;
+        uint32_t highHD = (dataDst + 2 - newBaseP) << 16;
 #else
         uint32_t highHD = 0xffff0000;
         if (!sz)

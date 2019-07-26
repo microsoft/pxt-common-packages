@@ -19,8 +19,8 @@ inline int max(int a, int b)
 
 //#define LOG NOLOG
 #define LOG DMESG
-//#define LOGV NOLOG
-#define LOGV DMESG
+#define LOGV NOLOG
+//#define LOGV DMESG
 
 #define target_panic(...) assert(false)
 #define fiber_wait_for_event(...) assert(false)
