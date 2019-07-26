@@ -13,11 +13,12 @@ uint8_t data[4];
 
 nextptr points to where the rest of the data of the current block sits
 after the data there's another block; if it's all 1, then it's the end
-otherwise, if 0x8000&size==0 on that block, then the current block should be discarded
+otherwise, if 0x8000&size==0 on that block, then the current block, and
+all previous blocks should be discarded
 
 block is always allocated with a FF double-word at the end; new block, when added, starts
-at this FF double-word, and after the gap; the new block then also has a FF double-word
-appended in the after-gap area
+at this FF double-word, and continues somewhere further down in flash; the new block then also has a
+FF double-word appended in the after-gap area
 
  */
 
@@ -297,6 +298,26 @@ MetaEntry *FS::findMetaEntry(const char *filename) {
     return NULL;
 }
 
+uint16_t FS::findBeginning(uint16_t dataptr) {
+#if RAFFS_BLOCK == 64
+    uint16_t beg = dataptr;
+    for (;;) {
+        auto nextptr = blnext(dataptr);
+        if (!nextptr)
+            return beg;
+
+        auto blsz = _rawsize(dataptr);
+        if ((blsz & 0x8000) == 0) // this includes RAFFS_DELETED case
+            beg = dataptr;
+
+        RAFFS_VALIDATE_NEXT(nextptr);
+        dataptr = nextptr;
+    }
+#else
+    return dataptr;
+#endif
+}
+
 int32_t FS::getFileSize(uint16_t dataptr, uint16_t *lastptr) {
     if (dataptr == 0)
         return -1;
@@ -310,22 +331,31 @@ int32_t FS::getFileSize(uint16_t dataptr, uint16_t *lastptr) {
         return 0;
 #endif
     }
+
+    dataptr = findBeginning(dataptr);
+
     int32_t sz = 0;
     for (;;) {
         auto nextptr = blnext(dataptr);
-        auto blsz = blsize(dataptr);
+        auto blsz = _rawsize(dataptr);
+
+        LOGV("sz dp=%x np=%x sz=%x", dataptr, nextptr, blsz);
 
 #if RAFFS_BLOCK == 64
-        if (blsz == -1) {
+        if (blsz == RAFFS_DELETED) {
             ASSERT(sz <= 0);
             sz = -1;
+        } else if (blsz == 0xffff) {
+            ASSERT(!nextptr);
         } else {
-            if (sz < 0)
-                sz = 0;
+            ASSERT(sz != -1);
+            ASSERT((blsz & 0x8000) || sz == 0);
+            blsz &= ~0x8000;
             sz += blsz;
         }
 #else
-        sz += blsz;
+        if (blsz != 0xffff)
+            sz += blsz;
 #endif
         if (!nextptr) {
             if (lastptr)
@@ -338,13 +368,14 @@ int32_t FS::getFileSize(uint16_t dataptr, uint16_t *lastptr) {
 }
 
 uintptr_t FS::copyFile(uint16_t dataptr, uintptr_t dst) {
+    dataptr = findBeginning(dataptr);
     if (dataptr == 0xffff)
         return dst;
     LOGV("start copy");
     for (;;) {
         auto nextptr = blnext(dataptr);
         auto blsz = blsize(dataptr);
-        LOGV("copy nxt=%d sz=%d", nextptr, blsz);
+        LOGV("copy dp=%x nxt=%x sz=%d", dataptr, nextptr, blsz);
 #if RAFFS_BLOCK == 64
         if (blsz > 4) {
             writeBytes((void *)dst, data0(dataptr), 4);
@@ -372,7 +403,7 @@ uint32_t *FS::markEnd(uint32_t *freePtr) {
 #if RAFFS_BLOCK == 64
     if ((uintptr_t)freePtr & 7)
         oops();
-    //LOGV("fp=%d [-3]= %x", OFF(freePtr), freePtr[-3]);
+    // LOGV("fp=%d [-3]= %x", OFF(freePtr), freePtr[-3]);
     if (freePtr[-3] == M1) {
         uint64_t eofMark = 0;
         writeBytes(freePtr, &eofMark, 8);
@@ -644,7 +675,7 @@ int File::read(void *data, uint32_t len) {
     if (len > 0x7fffffffU)
         len = 0x7fffffffU;
 
-    uint16_t dataptr = readPage ? readPage : meta->dataptr;
+    uint16_t dataptr = readPage ? readPage : fs.findBeginning(meta->dataptr);
 
     int nread = 0;
     for (;;) {
@@ -689,10 +720,10 @@ int File::read(void *data, uint32_t len) {
                 memcpy(data, srcptr, left);
                 if (n - left > 0) {
                     srcptr = (uint8_t *)fs.data1(dataptr);
-                    memcpy((uint8_t*)data + left, srcptr, n - left);
+                    memcpy((uint8_t *)data + left, srcptr, n - left);
                 }
             } else {
-                memcpy(data, srcptr, n);    
+                memcpy(data, srcptr, n);
             }
 #else
             memcpy(data, srcptr, n);
@@ -735,7 +766,7 @@ int File::append(const void *data, uint32_t len) {
     if ((!fs.overwritingFile && len == 0) || meta->dataptr == 0)
         return 0;
 
-    LOGV("append len=%d meta=%x free=%x", len, OFF2(fs.metaPtr, fs.basePtr),
+    LOGV("append %s len=%d meta=%x free=%x", filename(), len, OFF2(fs.metaPtr, fs.basePtr),
          OFF2(fs.freeDataPtr, fs.basePtr));
 
     fs.lock();
@@ -768,7 +799,7 @@ int File::append(const void *data, uint32_t len) {
     uint16_t thisPtr = fs.freeDataPtr - fs.basePtr;
 #if RAFFS_BLOCK == 64
     uint32_t newHd = thisPtr << 16;
-    
+
     if (fs.overwritingFile) {
         if ((uintptr_t)data == RAFFS_DELETED)
             newHd |= RAFFS_DELETED;
@@ -819,8 +850,16 @@ void File::resetAllCaches() {
 
 void File::del() {
 #if RAFFS_BLOCK == 64
-    if (fs.getFileSize(meta->dataptr) >= 0)
+    int sz = fs.getFileSize(meta->dataptr);
+    LOGV("del, sz=%d", sz);
+    if (sz >= 0) {
+        fs.overwritingFile = this;
         append((void *)RAFFS_DELETED, 0);
+        fs.overwritingFile = NULL;
+        sz = fs.getFileSize(meta->dataptr);
+        if (sz != -1)
+            oops();
+    }
 #else
     fs.lock();
     resetAllCaches();

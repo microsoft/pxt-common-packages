@@ -375,7 +375,7 @@ int main() {
     for (uint32_t i = 0; i < sizeof(randomData); ++i)
         randomData[i] = rand();
 #ifdef CODAL_RAFFS_H
-    MemFlash flash(250 * 1024 / SNORFS_PAGE_SIZE);
+    MemFlash flash(256 * 1024 / SNORFS_PAGE_SIZE);
 #else
     MemFlash flash(2 * 1024 * 1024 / SNORFS_PAGE_SIZE);
 #endif
@@ -403,6 +403,7 @@ int main() {
     auto bufFree = fs->freeSize();
     testBuf();
     fs->forceGC();
+    LOG("%d/%d", bufFree, fs->freeSize());
     assert(bufFree == fs->freeSize());
 
     simpleTest(NULL, 3000 * SZMULT);

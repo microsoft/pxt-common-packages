@@ -72,6 +72,7 @@ class FS {
 
     uint32_t *markEnd(uint32_t *freePtr);
     void writePadded(const void *data, uint32_t len);
+    uint16_t findBeginning(uint16_t dataptr);
 
     uint16_t _rawsize(uint16_t dp) {
         RAFFS_VALIDATE_NEXT(dp);
@@ -81,7 +82,7 @@ class FS {
     uint16_t _size(uint16_t dp) {
         uint16_t blsz = _rawsize(dp);
 #if RAFFS_BLOCK == 64
-        if (blsz == RAFFS_DELETED)
+        if (blsz == RAFFS_DELETED || blsz == 0xffff)
             return 0;
         return blsz & 0x7fff;
 #endif
@@ -106,17 +107,10 @@ class FS {
     }
 
     int blsize(uint16_t dp) {
-#if RAFFS_BLOCK == 64
-        auto bln = blnext(dp);
-        if (!bln || (_rawsize(bln) & 0x8000) == 0)
-            return 0;
-        return _size(dp);
-#else
         auto sz = _size(dp);
         if (sz == 0xffff)
             return 0;
         return sz;
-#endif
     }
 
     uint32_t *data0(uint16_t dp) { return &basePtr[dp] + 1; }
@@ -193,6 +187,7 @@ class File {
     int overwrite(const void *data, uint32_t len);
     void del();
     void truncate() { overwrite(NULL, 0); }
+    const char *filename() { return (const char *)(fs.basePtr + meta->fnptr); }
     ~File();
 #ifdef RAFFS_TEST
     void debugDump();
