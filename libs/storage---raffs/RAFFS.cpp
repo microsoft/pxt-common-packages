@@ -217,8 +217,8 @@ bool FS::tryMount() {
 }
 
 void FS::mount() {
-    //if (basePtr) return;
-    if (tryMount())        
+    // if (basePtr) return;
+    if (tryMount())
         return;
     format();
     if (!tryMount())
@@ -352,7 +352,7 @@ uintptr_t FS::copyFile(uint16_t dataptr, uintptr_t dst) {
 #if RAFFS_BLOCK == 64
         if (blsz > 4) {
             writeBytes((void *)dst, data0(dataptr), 4);
-            writeBytes((void *)dst + 4, data1(dataptr), blsz - 4);
+            writeBytes((uint8_t *)dst + 4, data1(dataptr), blsz - 4);
         } else
 #endif
             writeBytes((void *)dst, data0(dataptr), blsz);
@@ -757,8 +757,13 @@ int File::append(const void *data, uint32_t len) {
     uint16_t thisPtr = fs.freeDataPtr - fs.basePtr;
 #if RAFFS_BLOCK == 64
     uint32_t newHd = (thisPtr << 16) | len;
-    if (overwritingFile)
-        newHd |= 0x8000;
+    if (fs.overwritingFile) {
+        if ((uintptr_t)data == RAFFS_DELETED)
+            newHd = (thisPtr << 16) | RAFFS_DELETED;
+        else
+            newHd |= 0x8000;
+    }
+
     fs.writeBytes(pageDst - 1, &newHd, sizeof(newHd));
     uint8_t tmp[4] = {0};
     memcpy(tmp, data, len < 4 ? len : 4);
@@ -799,30 +804,31 @@ void File::resetAllCaches() {
 }
 
 void File::del() {
+#if RAFFS_BLOCK == 64
+    if (fs.getFileSize(meta->dataptr) >= 0)
+        append((void *)RAFFS_DELETED, 0);
+#else
     fs.lock();
     resetAllCaches();
-#if RAFFS_BLOCK == 64
-    ToDo
-#else
     if (meta->dataptr) {
         uint16_t zero = 0;
         fs.writeBytes(&meta->dataptr, &zero, sizeof(zero));
     }
-#endif
     fs.unlock();
+#endif
 }
 
 int File::overwrite(const void *data, uint32_t len) {
     LOGV("overwrite len=%d dp=%x f=%x", len, meta->dataptr, OFF2(fs.freeDataPtr, fs.basePtr));
 
 #if RAFFS_BLOCK == 64
-    overwritingFile = this;
+    fs.overwritingFile = this;
     int r = append(data, len);
     if (r == -1 && len > 4) {
-        append(data, 0); // this will mark file as empty
+        append(data, 0);       // this will mark file as empty
         r = append(data, len); // and this will trigger another GC
     }
-    overwritingFile = NULL;
+    fs.overwritingFile = NULL;
     rewind();
     return r;
 #else

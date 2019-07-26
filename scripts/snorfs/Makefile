@@ -2,7 +2,7 @@ RAFFS = 1
 
 ifeq ($(RAFFS),1)
 STORAGE_PATH = ../../libs/storage---raffs
-DEFS = -DRAFFS_TEST=1
+DEFS = -DRAFFS_TEST=1 -DSAMD51
 SFILE = $(STORAGE_PATH)/RAFFS.cpp
 else
 STORAGE_PATH = ../../libs/storage---snorfs

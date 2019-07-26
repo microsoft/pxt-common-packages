@@ -125,7 +125,7 @@ class FS {
     uint32_t *data1(uint16_t dp) {
 #if RAFFS_BLOCK == 64
         RAFFS_VALIDATE_NEXT(_nextptr(dp));
-        return &basePtr[_nextptr(dp)]
+        return &basePtr[_nextptr(dp)];
 #else
         return &basePtr[dp] + 2;
 #endif
