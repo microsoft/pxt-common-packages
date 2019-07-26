@@ -135,6 +135,15 @@ class MemFlash :
         bytesWritten += len;
         numWrites++;
         uint8_t *ptr = (uint8_t *)buffer;
+
+#ifdef SAMD51
+        assert(len == 16);
+        if (((uint64_t*)buffer)[0] != 0xffffffffffffffff)
+            assert(((uint64_t*)(data + addr))[0] == 0xffffffffffffffff);
+        if (((uint64_t*)buffer)[1] != 0xffffffffffffffff)
+            assert(((uint64_t*)(data + addr))[1] == 0xffffffffffffffff);
+#endif
+
         for (uint32_t i = 0; i < len; ++i) {
 #ifdef CODAL_RAFFS_H
             if (*ptr != 0xff && (data[addr + i] & *ptr) != *ptr)

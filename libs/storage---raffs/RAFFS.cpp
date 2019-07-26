@@ -536,6 +536,9 @@ bool FS::tryGC(int spaceNeeded) {
     // clear old magic
     hd.magic = 0;
     hd.bytes = 0;
+#if RAFFS_BLOCK == 64
+    erasePages((uintptr_t)basePtr, flash.pageSize((uintptr_t)basePtr));
+#endif
     writeBytes(basePtr, &hd, sizeof(hd));
 
     flushFlash();
@@ -810,7 +813,7 @@ int File::append(const void *data, uint32_t len) {
         fs.getFileSize(lastPage ? lastPage : meta->dataptr, &lastPage);
         if (lastPage == 0)
             oops();
-        //LOGV("append - sz=%d lastPage=%x", sz, lastPage);
+        // LOGV("append - sz=%d lastPage=%x", sz, lastPage);
         pageDst = (uint16_t *)(fs.basePtr + lastPage) + 1;
     }
 
