@@ -31,10 +31,18 @@ namespace palette {
         image.setPalette(userPalette.buf);
 
         // make sure to clean up
-        game.addScenePopHandler(sceneCleaner);
+        game.addScenePushHandler(scenePush);
+        game.addScenePopHandler(scenePop);
     }
 
-    function sceneCleaner(scene: scene.Scene) {
+    function scenePush(scene: scene.Scene) {
+        if (scene.data[FIELD]) {
+            const userPalette = scene.data[FIELD] as color.ColorBuffer;
+            image.setPalette(userPalette.buf);
+        }
+    }
+
+    function scenePop(scene: scene.Scene) {
         if (scene.data[FIELD]) {
             scene.data[FIELD] = undefined;
             image.setPalette(defaultPaletteBuffer);
