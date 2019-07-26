@@ -328,7 +328,8 @@ namespace game {
      */
     export function addScenePushHandler(handler: (oldScene: scene.Scene) => void) {
         if (!_scenePushHandlers) _scenePushHandlers = [];
-        _scenePushHandlers.push(handler);
+        if (_scenePushHandlers.indexOf(handler) < 0)
+            _scenePushHandlers.push(handler);
     }
 
     /**
@@ -351,7 +352,8 @@ namespace game {
      */
     export function addScenePopHandler(handler: (oldScene: scene.Scene) => void) {
         if (!_scenePopHandlers) _scenePopHandlers = [];
-        _scenePopHandlers.push(handler);
+        if (_scenePopHandlers.indexOf(handler) < 0)
+            _scenePopHandlers.push(handler);
     }
 
     /**
