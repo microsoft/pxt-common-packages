@@ -1,6 +1,18 @@
+RAFFS = 1
+
+ifeq ($(RAFFS),1)
 STORAGE_PATH = ../../libs/storage---raffs
+DEFS = -DRAFFS_TEST=1
+SFILE = $(STORAGE_PATH)/RAFFS.cpp
+else
+STORAGE_PATH = ../../libs/storage---snorfs
+DEFS = -DSNORFS_TEST=1
+SFILE = $(STORAGE_PATH)/SNORFS.cpp
+endif
+
 INC = -I. -I$(STORAGE_PATH)
+
 all:
-	g++ $(INC) -DSNORFS_TEST=1 -include SNORFS-test.h -g -W -Wall -std=c++11 -o stest \
-		SNORFS-test.cpp $(STORAGE_PATH)/SNORFS.cpp -ferror-limit=5
+	g++ $(INC) $(DEFS) -include SNORFS-test.h -g -W -Wall -std=c++11 -o stest \
+		SNORFS-test.cpp $(SFILE) -ferror-limit=5
 	./stest

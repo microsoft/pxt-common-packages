@@ -28,11 +28,11 @@ struct MetaEntry {
 // RAFFS64 only writes each 64 bit double word once; needed for SAMD51 ECC flash
 #define RAFFS_BLOCK 64
 #define RAFFS_DELETED 0x7ffe
-#define RAFFS_ROUND(x) (((x) + 7) >> 3) << 3
+#define RAFFS_ROUND(x) ((((uintptr_t)(x) + 7) >> 3) << 3)
 #else
 #define RAFFS_FLASH_BUFFER_SIZE 64
 #define RAFFS_BLOCK 16
-#define RAFFS_ROUND(x) (((x) + 3) >> 2) << 2
+#define RAFFS_ROUND(x) ((((uintptr_t)(x) + 3) >> 2) << 2)
 #endif
 
 #define RAFFS_VALIDATE_NEXT(nextptr)                                                               \
@@ -146,7 +146,7 @@ class FS {
     void dirRewind() { readDirPtr = NULL; }
     DirEntry *dirRead(); // data is only valid until next call to to any of File or FS function
 
-#ifdef SNORFS_TEST
+#ifdef RAFFS_TEST
     void debugDump();
     void dump();
 #else
@@ -192,7 +192,7 @@ class File {
     void del();
     void truncate() { overwrite(NULL, 0); }
     ~File();
-#ifdef SNORFS_TEST
+#ifdef RAFFS_TEST
     void debugDump();
 #endif
 };

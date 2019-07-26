@@ -1,4 +1,10 @@
+#ifdef SNORFS_TEST
 #include "SNORFS.h"
+#define NS codal::snorfs
+#else
+#include "RAFFS.h"
+#define NS pxt::raffs
+#endif
 
 #include <string.h>
 #include <stdio.h>
@@ -16,8 +22,8 @@ using namespace std;
 #define SZMULT 100
 #endif
 
-typedef codal::snorfs::File File;
-codal::snorfs::FS *fs;
+typedef NS::File File;
+NS::FS *fs;
 
 class FileCache {
   public:
@@ -357,11 +363,11 @@ void testAll() {
     }
 }
 
-codal::snorfs::FS *mkFS(MemFlash &flash) {
+NS::FS *mkFS(MemFlash &flash) {
 #ifdef CODAL_RAFFS_H
-    return new codal::snorfs::FS(flash, flash.dataBase(), flash.chipSize());
+    return new NS::FS(flash, flash.dataBase(), flash.chipSize());
 #else
-    return new codal::snorfs::FS(flash);
+    return new NS::FS(flash);
 #endif
 }
 
@@ -448,7 +454,7 @@ int main() {
     testAll();
 
     fs->dirRewind();
-    codal::snorfs::DirEntry *ent;
+    NS::DirEntry *ent;
     while ((ent = fs->dirRead()) != NULL) {
         auto fc = lookupFile(ent->name, false);
         if (!fc)

@@ -43,7 +43,7 @@ using namespace codal;
 #define OFF2(v, basePtr) (int)((uint32_t *)v - (uint32_t *)basePtr)
 #define OFF(v) OFF2(v, basePtr)
 
-#ifndef SNORFS_TEST
+#ifndef RAFFS_TEST
 #define LOG DMESG
 #define LOGV(...)                                                                                  \
     do {                                                                                           \
@@ -278,7 +278,7 @@ void FS::unlock() {
         oops();
     flushFlash();
     locked = false;
-#ifndef SNORFS_TEST
+#ifndef RAFFS_TEST
     Event(DEVICE_ID_NOTIFY, raffs_unlocked_event);
 #endif
 }
@@ -391,7 +391,7 @@ uint32_t *FS::markEnd(uint32_t *freePtr) {
 bool FS::tryGC(int spaceNeeded) {
     int spaceLeft = (intptr_t)metaPtr - (intptr_t)freeDataPtr;
 
-#ifdef SNORFS_TEST
+#ifdef RAFFS_TEST
     for (auto p = freeDataPtr; p < (uint32_t *)metaPtr; p++) {
         if (*p != M1) {
             LOG("value at %x = %x", OFF(p), *p);
@@ -461,7 +461,7 @@ bool FS::tryGC(int spaceNeeded) {
     dataDst = markEnd(dataDst);
 
     if ((intptr_t)metaDst - (intptr_t)dataDst <= spaceNeeded + 32) {
-#ifdef SNORFS_TEST
+#ifdef RAFFS_TEST
         if (spaceNeeded != 0x7fff0000)
             oops();
 #else
@@ -666,7 +666,7 @@ int File::read(void *data, uint32_t len) {
         }
 
         int n = blsz;
-        if (blsz > len) {
+        if (blsz > (int)len) {
             n = len;
         }
 
@@ -697,6 +697,7 @@ int File::read(void *data, uint32_t len) {
             break;
         }
 
+        auto bytes = fs.bytes;
         VALIDATE_NEXT(nextptr);
         dataptr = nextptr;
     }
@@ -718,7 +719,7 @@ void FS::writePadded(const void *data, uint32_t len) {
 }
 
 int File::append(const void *data, uint32_t len) {
-    if ((!overwritingFile && len == 0) || meta->dataptr == 0)
+    if ((!fs.overwritingFile && len == 0) || meta->dataptr == 0)
         return 0;
 
     LOGV("append len=%d meta=%x free=%x", len, OFF2(fs.metaPtr, fs.basePtr),
@@ -889,7 +890,7 @@ int FS::readFlashBytes(uintptr_t addr, void *buffer, uint32_t len) {
     return len;
 }
 
-#ifdef SNORFS_TEST
+#ifdef RAFFS_TEST
 void FS::dump() {}
 
 void FS::debugDump() {
