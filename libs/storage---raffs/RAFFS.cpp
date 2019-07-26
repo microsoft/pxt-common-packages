@@ -50,7 +50,7 @@ using namespace codal;
     } while (0)
 #endif
 
-#if 0
+#if 1
 #undef LOGV
 #define LOGV DMESG
 #endif
@@ -367,21 +367,27 @@ void FS::forceGC() {
 }
 
 uint32_t *FS::markEnd(uint32_t *freePtr) {
+    flushFlash();
+    int active = 0;
 #if RAFFS_BLOCK == 64
     if ((uintptr_t)freePtr & 7)
         oops();
+    //LOGV("fp=%d [-3]= %x", OFF(freePtr), freePtr[-3]);
     if (freePtr[-3] == M1) {
         uint64_t eofMark = 0;
         writeBytes(freePtr, &eofMark, 8);
         freePtr += 2;
+        active = 1;
     }
 #else
     if (freePtr[-1] == M1) {
         uint32_t eofMark = 0;
         writeBytes(freePtr++, &eofMark, 4);
+        active = 1;
     }
 #endif
 
+    LOGV("mark end at=%x a=%d", OFF(freePtr), active);
     return freePtr;
 }
 
@@ -517,9 +523,8 @@ MetaEntry *FS::createMetaPage(const char *filename, MetaEntry *existing) {
     } else {
         m.fnhash = fnhash(filename);
         m.fnptr = freeDataPtr - basePtr;
-        writeBytes(freeDataPtr, filename, strlen(filename) + 1);
+        writePadded(filename, strlen(filename) + 1);
         flushFlash();
-        freeDataPtr += buflen / 4;
     }
 
     m.flags = 0xfffe;
@@ -536,6 +541,7 @@ MetaEntry *FS::createMetaPage(const char *filename, MetaEntry *existing) {
     flushFlash();
 
     auto r = --metaPtr;
+    LOGV("write meta @%x: h=%x fn=%x fl=%x dp=%x", OFF(r), m.fnhash, m.fnptr, m.flags, m.dataptr);
     writeBytes(r, &m, sizeof(m));
     flushFlash();
 
@@ -615,6 +621,7 @@ File *File::primary() {
 }
 
 int File::read(void *data, uint32_t len) {
+    LOGV("read(%d)", len);
     if (!len)
         return 0;
 
@@ -647,7 +654,7 @@ int File::read(void *data, uint32_t len) {
         auto curroff = 0;
 
         if (readOffsetInPage) {
-            LOGV("roff=%d", readOffsetInPage);
+            LOGV("roff=%d blsz=%d", readOffsetInPage, blsz);
             if (readOffsetInPage > blsz)
                 oops();
 #if RAFFS_BLOCK == 64
@@ -669,20 +676,27 @@ int File::read(void *data, uint32_t len) {
             n = len;
         }
 
+        LOGV("n=%d len=%d np=%x blsz=%d [%d]", n, len, nextptr, blsz, fs._rawsize(dataptr));
+
         if (n && data) {
             LOGV("read: %x:%x:...", srcptr[0], srcptr[1]);
 #if RAFFS_BLOCK == 64
+            int left = 0;
             if (curroff < 4) {
-                int left = 4 - curroff;
+                left = 4 - curroff;
                 if (left > n)
                     left = n;
                 memcpy(data, srcptr, left);
-                data = (uint8_t *)data + left;
-                n -= left;
-                srcptr = (uint8_t *)fs.data1(dataptr);
+                if (n - left > 0) {
+                    srcptr = (uint8_t *)fs.data1(dataptr);
+                    memcpy((uint8_t*)data + left, srcptr, n - left);
+                }
+            } else {
+                memcpy(data, srcptr, n);    
             }
-#endif
+#else
             memcpy(data, srcptr, n);
+#endif
             data = (uint8_t *)data + n;
         }
 
@@ -741,9 +755,10 @@ int File::append(const void *data, uint32_t len) {
 #endif
         pageDst = &meta->dataptr;
     } else {
-        fs.getFileSize(lastPage ? lastPage : meta->dataptr, &lastPage);
+        int sz = fs.getFileSize(lastPage ? lastPage : meta->dataptr, &lastPage);
         if (lastPage == 0)
             oops();
+        LOGV("append - sz=%d lastPage=%x", sz, lastPage);
         pageDst = (uint16_t *)(fs.basePtr + lastPage) + 1;
     }
 
@@ -752,12 +767,15 @@ int File::append(const void *data, uint32_t len) {
 
     uint16_t thisPtr = fs.freeDataPtr - fs.basePtr;
 #if RAFFS_BLOCK == 64
-    uint32_t newHd = (thisPtr << 16) | len;
+    uint32_t newHd = thisPtr << 16;
+    
     if (fs.overwritingFile) {
         if ((uintptr_t)data == RAFFS_DELETED)
-            newHd = (thisPtr << 16) | RAFFS_DELETED;
+            newHd |= RAFFS_DELETED;
         else
-            newHd |= 0x8000;
+            newHd |= len;
+    } else {
+        newHd |= 0x8000 | len;
     }
 
     fs.writeBytes(pageDst - 1, &newHd, sizeof(newHd));

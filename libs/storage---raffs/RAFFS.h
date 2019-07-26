@@ -107,10 +107,9 @@ class FS {
 
     int blsize(uint16_t dp) {
 #if RAFFS_BLOCK == 64
-        if (blnext(dp) && (_rawsize(blnext(dp)) & 0x8000) == 0)
+        auto bln = blnext(dp);
+        if (!bln || (_rawsize(bln) & 0x8000) == 0)
             return 0;
-        if (_rawsize(dp) == RAFFS_DELETED)
-            return -1;
         return _size(dp);
 #else
         auto sz = _size(dp);
