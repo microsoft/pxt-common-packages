@@ -63,7 +63,7 @@ void PXTMSC::addFiles() {
     fs.dirRewind();
     auto d = fs.dirRead();
     while (d) {
-        if (!strstr(d->name, "$"))
+        if (!strchr(d->name, '$') && !strchr(d->name, '#'))
             addFile(readFile, this, d->name, d->size, 20);
         d = fs.dirRead();
     }
