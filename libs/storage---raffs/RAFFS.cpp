@@ -50,12 +50,12 @@ using namespace codal;
 #define LOGV NOLOG
 #define LOGVV NOLOG
 
-#if 0
+#if 1
 #undef LOGV
 #define LOGV DMESG
 #endif
 
-#if 0
+#if 1
 #undef LOGVV
 #define LOGVV DMESG
 #endif
@@ -514,19 +514,9 @@ bool FS::tryGC(int spaceNeeded) {
     }
 
     dataDst = markEnd(dataDst);
-
-    if ((intptr_t)metaDst - (intptr_t)dataDst <= spaceNeeded + 32) {
-#ifdef RAFFS_TEST
-        if (spaceNeeded != 0x7fff0000)
-            oops();
-#else
-        return false;
-#endif
-    }
+    flushFlash();
 
     LOG("GC done: %d free", (int)((intptr_t)metaDst - (intptr_t)dataDst));
-
-    flushFlash();
 
     FSHeader hd;
     hd.magic = RAFFS_MAGIC;
@@ -547,6 +537,16 @@ bool FS::tryGC(int spaceNeeded) {
     endPtr = (MetaEntry *)(newBase + bytes / 2);
     metaPtr = metaDst;
     freeDataPtr = dataDst;
+
+    if ((intptr_t)metaDst - (intptr_t)dataDst <= spaceNeeded + 32) {
+#ifdef RAFFS_TEST
+        if (spaceNeeded != 0x7fff0000)
+            oops();
+#else
+        LOG("out of space! needed=%d", spaceNeeded);
+        return false;
+#endif
+    }
 
     return true;
 }

@@ -128,7 +128,7 @@ static void unlock() {
 }
 
 static void lock() {
-#if 0
+#if 1
     // re-enable cache
     NVMCTRL->CTRLA.bit.CACHEDIS0 = false;
     NVMCTRL->CTRLA.bit.CACHEDIS1 = false;
@@ -138,7 +138,7 @@ static void lock() {
     while (CMCC->SR.bit.CSTS) {
     }
     CMCC->MAINT0.bit.INVALL = 1;
-    // CMCC->CTRL.bit.CEN = 1;
+    CMCC->CTRL.bit.CEN = 1;
 }
 
 int ZFlash::pageSize(uintptr_t address) {
@@ -149,25 +149,17 @@ int ZFlash::pageSize(uintptr_t address) {
 }
 
 #define FLASH_BASE (512 * 1024 - 32 * 1024)
-static uint8_t flashCopy[32 * 1024];
+//static uint8_t flashCopy[32 * 1024];
 
 int ZFlash::erasePage(uintptr_t address) {
     LOG("Erase %x", address);
     NVMCTRL->CTRLA.bit.WMODE = NVMCTRL_CTRLA_WMODE_MAN_Val;
     waitForLast();
-    NVMCTRL->CTRLA.bit.RWS = 6;
-    waitForLast();
-    NVMCTRL->CTRLA.bit.AUTOWS = 0;
-    waitForLast();
-    NVMCTRL->CTRLA.bit.AHBNS1 = 1;
-    waitForLast();
-    NVMCTRL->CTRLA.bit.AHBNS0 = 1;
-    waitForLast();
     unlock();
     NVMCTRL->ADDR.reg = address;
     NVMCTRL->CTRLB.reg = NVMCTRL_CTRLB_CMDEX_KEY | NVMCTRL_CTRLB_CMD_EB;
     waitForLast();
-    memset(flashCopy + address - FLASH_BASE, 0xff, NVMCTRL_BLOCK_SIZE);
+    //memset(flashCopy + address - FLASH_BASE, 0xff, NVMCTRL_BLOCK_SIZE);
     lock();
     return 0;
 }
@@ -183,25 +175,34 @@ int ZFlash::writeBytes(uintptr_t dst, const void *src, uint32_t len) {
             break;
         idx++;
     }
-    LOG("WR flash %d at %x+%x %x:%x", numWR++, (void *)dst, idx, ((uint8_t *)src)[idx],
-        ((uint8_t *)src)[idx + 1]);
+    //LOG("WR flash %d at %x+%x %x:%x", numWR++, (void *)dst, idx, ((uint8_t *)src)[idx],
+    //    ((uint8_t *)src)[idx + 1]);
 
-    volatile uint8_t *dpp = (uint8_t *)dst;
+    //volatile uint8_t *dpp = (uint8_t *)dst;
 
-    if (memcmp((void *)dpp, &flashCopy[dst - FLASH_BASE], len) != 0)
-        target_panic(993);
+    if (len != 16)
+        target_panic(990);
+    for (int i = 0; i < 2; ++i)
+        if (((uint64_t*)dst)[i] != 0xffffffffffffffff &&
+            ((uint64_t*)src)[i] != 0xffffffffffffffff)
+            target_panic(990);
+
+#if 0
+    //if (memcmp((void *)dpp, &flashCopy[dst - FLASH_BASE], len) != 0)
+    //    target_panic(993);
 
     for (unsigned i = 0; i < len; ++i) {
         if (((uint8_t *)src)[i] != 0xff) {
             if (dpp[i] != 0xff)
                 target_panic(990);
-            flashCopy[dst - FLASH_BASE + i] = ((uint8_t *)src)[i];
+            //flashCopy[dst - FLASH_BASE + i] = ((uint8_t *)src)[i];
         } else {
-            if (dpp[i] != flashCopy[dst - FLASH_BASE + i])
-                target_panic(991);
+            //if (dpp[i] != flashCopy[dst - FLASH_BASE + i])
+            //    target_panic(991);
             // ((uint8_t *)src)[i] = dpp[i];
         }
     }
+#endif
 
     volatile uint32_t *dp = (uint32_t *)dst;
     uint32_t *sp = (uint32_t *)src;
@@ -236,13 +237,13 @@ int ZFlash::writeBytes(uintptr_t dst, const void *src, uint32_t len) {
 
     lock();
 
-    if (memcmp((void *)dpp, &flashCopy[dst - FLASH_BASE], len) != 0)
-        target_panic(992);
+    //if (memcmp((void *)dpp, &flashCopy[dst - FLASH_BASE], len) != 0)
+    //    target_panic(992);
 
     if (NVMCTRL->INTFLAG.bit.ECCSE || NVMCTRL->INTFLAG.bit.ECCDE)
         target_panic(996);
         
-    LOG("WOK");
+    //LOG("WOK");
 
     return 0;
 }
