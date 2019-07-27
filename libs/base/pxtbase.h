@@ -137,6 +137,7 @@ void initRuntime();
 void sendSerial(const char *data, int len);
 void setSendToUART(void (*f)(const char *, int));
 int getSerialNumber();
+uint64_t getLongSerialNumber();
 void registerWithDal(int id, int event, Action a, int flags = 16); // EVENT_LISTENER_DEFAULT_FLAGS
 void runInParallel(Action a);
 void runForever(Action a);

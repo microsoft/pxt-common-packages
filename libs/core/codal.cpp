@@ -183,6 +183,10 @@ int getSerialNumber() {
     return device.getSerialNumber();
 }
 
+uint64_t getLongSerialNumber() {
+    return device.getSerialNumber();
+}
+
 int current_time_ms() {
     return system_timer_current_time();
 }
