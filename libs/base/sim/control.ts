@@ -51,23 +51,10 @@ namespace pxsim.control {
         if (!n) n = 42;
         return n;
     }
-    export function deviceLongSerialNumber(): number {
-        let b = board();
-        if (!b) return 42;
-        let n = 0;
-        if (b.id) {
-            n = parseInt(b.id.slice(1));
-            if (isNaN(n)) {
-                n = 0;
-                for (let i = 0; i < b.id.length; ++i) {
-                    n = ((n << 5) - n) + b.id.charCodeAt(i);
-                    n |= 0;
-                }
-                n = Math.abs(n);
-            }
-        }
-        if (!n) n = 42;
-        return n;
+    export function deviceLongSerialNumber(): Buffer {
+        let b = control.createBuffer(8);
+        b.setNumber(NumberFormat.UInt32LE, deviceSerialNumber())
+        return b;
     }
     export function deviceDalVersion(): string {
         return "0.0.0";
