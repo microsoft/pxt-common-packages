@@ -64,8 +64,7 @@ class Sprite implements SpriteLike {
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="x"
     set x(v: number) {
-        this._lastX = this._x;
-        this._x = Fx8(v - (this._image.width >> 1))
+        this.left = v - (this._image.width >> 1)
     }
 
     //% group="Physics" blockSetVariable="mySprite"
@@ -76,8 +75,7 @@ class Sprite implements SpriteLike {
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="y"
     set y(v: number) {
-        this._lastY = this._y;
-        this._y = Fx8(v - (this._image.height >> 1))
+        this.top = v - (this._image.height >> 1)
     }
 
     //% group="Physics" blockSetVariable="mySprite"
@@ -157,18 +155,17 @@ class Sprite implements SpriteLike {
 
     _hitbox: game.Hitbox;
     _overlappers: number[];
+    _kindsOverlappedWith: number[];
 
     flags: number
     id: number
 
-    overlapHandler: (other: Sprite) => void;
-    collisionHandlers: (() => void)[][];
     private destroyHandler: () => void;
 
     constructor(img: Image) {
         this._x = Fx8(screen.width - img.width >> 1);
         this._y = Fx8(screen.height - img.height >> 1);
-        this._z = 0
+        this.z = 0
         this._lastX = this._x;
         this._lastY = this._y;
         this.vx = 0
@@ -181,6 +178,7 @@ class Sprite implements SpriteLike {
         this.layer = 1; // by default, in layer 1
         this.lifespan = undefined;
         this._overlappers = [];
+        this._obstacles = [];
     }
 
     __serialize(offset: number): Buffer {
@@ -258,7 +256,6 @@ class Sprite implements SpriteLike {
     get z(): number {
         return this._z;
     }
-
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="z (depth)"
     set z(value: number) {
@@ -278,6 +275,7 @@ class Sprite implements SpriteLike {
     get height() {
         return this._image.height
     }
+
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="left"
     get left() {
@@ -286,8 +284,17 @@ class Sprite implements SpriteLike {
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="left"
     set left(value: number) {
-        this._x = Fx8(value)
+        const physics = game.currentScene().physicsEngine;
+        physics.moveSprite(
+            this,
+            Fx.sub(
+                Fx8(value),
+                this._x
+            ),
+            Fx.zeroFx8
+        );
     }
+
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="right"
     get right() {
@@ -298,6 +305,7 @@ class Sprite implements SpriteLike {
     set right(value: number) {
         this.left = value - this.width
     }
+
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine
     get top() {
@@ -306,8 +314,17 @@ class Sprite implements SpriteLike {
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine
     set top(value: number) {
-        this._y = Fx8(value);
+        const physics = game.currentScene().physicsEngine;
+        physics.moveSprite(
+            this,
+            Fx.zeroFx8,
+            Fx.sub(
+                Fx8(value),
+                this._y
+            )
+        );
     }
+
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="bottom"
     get bottom() {
@@ -318,6 +335,7 @@ class Sprite implements SpriteLike {
     set bottom(value: number) {
         this.top = value - this.height;
     }
+
     /**
      * The type of sprite
      */
@@ -347,6 +365,13 @@ class Sprite implements SpriteLike {
             spritesByKind[value].add(this);
         }
 
+        const overlapMap = game.currentScene().overlapMap;
+        if (!overlapMap[value]) {
+            overlapMap[value] = [];
+        }
+
+        this._kindsOverlappedWith = overlapMap[value];
+
         this._kind = value;
     }
 
@@ -361,8 +386,12 @@ class Sprite implements SpriteLike {
     //% help=sprites/sprite/set-position
     //% x.shadow="positionPicker" y.shadow="positionPicker"
     setPosition(x: number, y: number): void {
-        this.x = x;
-        this.y = y;
+        const physics = game.currentScene().physicsEngine;
+        physics.moveSprite(
+            this,
+            Fx8(x - this.x),
+            Fx8(y - this.y)
+        );
     }
 
     /**
@@ -406,7 +435,7 @@ class Sprite implements SpriteLike {
         let holdTextSeconds = 1.5;
         let bubblePadding = 4;
         let maxTextWidth = 100;
-        let font = image.font8;
+        let font = image.getFontForText(text);
         let startX = 2;
         let startY = 2;
         let bubbleWidth = text.length * font.charWidth + bubblePadding;
@@ -635,36 +664,6 @@ class Sprite implements SpriteLike {
     }
 
     /**
-     * Registers code when the sprite overlaps with another sprite
-     * @param spriteType sprite type to match
-     * @param handler
-     */
-    //% group="Overlaps"
-    //% afterOnStart=true
-    //% help=sprites/sprite/on-overlap
-    onOverlap(handler: (other: Sprite) => void) {
-        this.overlapHandler = handler;
-    }
-
-    /**
-     * Registers code when the sprite collides with an obstacle
-     * @param direction
-     * @param handler
-     */
-    //% blockNamespace="scene" group="Collisions"
-    onCollision(direction: CollisionDirection, tileIndex: number, handler: () => void) {
-        if (!this.collisionHandlers)
-            this.collisionHandlers = [];
-
-        direction = Math.max(0, Math.min(3, direction | 0));
-
-        if (!this.collisionHandlers[direction])
-            this.collisionHandlers[direction] = [];
-
-        this.collisionHandlers[direction][tileIndex] = handler;
-    }
-
-    /**
      * Check if there is an obstacle in the given direction
      * @param direction
      */
@@ -687,21 +686,19 @@ class Sprite implements SpriteLike {
     }
 
     clearObstacles() {
-        this._obstacles = undefined;
+        this._obstacles = [];
     }
 
     registerObstacle(direction: CollisionDirection, other: sprites.Obstacle) {
         if (other == undefined) return;
-        if (!this._obstacles)
-            this._obstacles = [];
         this._obstacles[direction] = other;
 
-        const handler = (this.collisionHandlers && this.collisionHandlers[direction]) ? this.collisionHandlers[direction][other.tileIndex] : undefined;
-        if (handler) handler();
-        const scene = game.currentScene();
-        scene.collisionHandlers
-            .filter(h => h.kind == this.kind() && h.tile == other.tileIndex)
-            .forEach(h => h.handler(this));
+        const collisionHandlers = game.currentScene().collisionHandlers[other.tileIndex];
+        if (collisionHandlers) {
+            collisionHandlers
+                .filter(h => h.kind == this.kind())
+                .forEach(h => h.handler(this));
+        }
     }
 
     /**

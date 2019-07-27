@@ -124,6 +124,9 @@ private:
 		result = i2c->readRegister(ACCELEROMETER_TYPE_LIS3DH, LIS3DH_WHOAMI, &data, 1);
 		if (result ==0)
 			return ACCELEROMETER_TYPE_LIS3DH;
+		result = i2c->readRegister(ACCELEROMETER_TYPE_LIS3DH_ALT, LIS3DH_WHOAMI, &data, 1);
+		if (result ==0)
+			return ACCELEROMETER_TYPE_LIS3DH_ALT;
 #endif
 			
 #if PXT_SUPPORT_MMA8453
@@ -163,7 +166,8 @@ private:
         switch (accType) {
 #if PXT_SUPPORT_LIS3DH
         case ACCELEROMETER_TYPE_LIS3DH:
-            return new LIS3DH(*i2c, *LOOKUP_PIN(ACCELEROMETER_INT), space);
+        case ACCELEROMETER_TYPE_LIS3DH_ALT:
+            return new LIS3DH(*i2c, *LOOKUP_PIN(ACCELEROMETER_INT), space, accType);
 #endif
 #if PXT_SUPPORT_MSA300
         case ACCELEROMETER_TYPE_MSA300:

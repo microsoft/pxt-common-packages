@@ -353,11 +353,36 @@ static uint32_t getObjectSize(RefObject *o) {
     return r;
 }
 
-static void addFreeBlock(GCBlock *curr) {
+static void setupFreeBlock(GCBlock *curr) {
     curr->data[0].vtable = FREE_MASK | (TOWORDS(curr->blockSize) << 2);
     ((RefBlock *)curr->data)[0].nextFree = firstFree;
     firstFree = (RefBlock *)curr->data;
     midPtr = (uint8_t *)curr->data + curr->blockSize / 4;
+}
+
+static void linkFreeBlock(GCBlock *curr) {
+    // blocks need to be sorted by address for midPtr to work
+    if (!firstBlock || curr < firstBlock) {
+        curr->next = firstBlock;
+        firstBlock = curr;
+    } else {
+        for (auto p = firstBlock; p; p = p->next) {
+            if (!p->next || curr < p->next) {
+                curr->next = p->next;
+                p->next = curr;
+                break;
+            }
+        }
+    }
+}
+
+void gcPreAllocateBlock(uint32_t sz) {
+    auto curr = (GCBlock *)GC_ALLOC_BLOCK(sz);
+    curr->blockSize = sz - sizeof(GCBlock);
+    LOG("GC pre-alloc: %p", curr);
+    GC_CHECK((curr->blockSize & 3) == 0, 40);
+    setupFreeBlock(curr);
+    linkFreeBlock(curr);
 }
 
 static GCBlock *allocateBlockCore() {
@@ -411,20 +436,8 @@ __attribute__((noinline)) static void allocateBlock() {
     auto curr = allocateBlockCore();
     LOG("GC alloc: %p", curr);
     GC_CHECK((curr->blockSize & 3) == 0, 40);
-    addFreeBlock(curr);
-    // blocks need to be sorted by address for midPtr to work
-    if (!firstBlock || curr < firstBlock) {
-        curr->next = firstBlock;
-        firstBlock = curr;
-    } else {
-        for (auto p = firstBlock; p; p = p->next) {
-            if (!p->next || curr < p->next) {
-                curr->next = p->next;
-                p->next = curr;
-                break;
-            }
-        }
-    }
+    setupFreeBlock(curr);
+    linkFreeBlock(curr);
 }
 
 static void sweep(int flags) {
@@ -599,7 +612,7 @@ void gcReset() {
 
     firstFree = NULL;
     for (auto h = firstBlock; h; h = h->next) {
-        addFreeBlock(h);
+        setupFreeBlock(h);
     }
 }
 

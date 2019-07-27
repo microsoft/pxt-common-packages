@@ -1,6 +1,6 @@
 #include "light.h"
 
-#if defined(SAMD21) || defined(SAMD51)
+#if defined(SAMD21) || defined(SAMD51) || defined(STM32F4)
 #include "neopixel.h"
 #endif
 
@@ -65,7 +65,7 @@ void spiNeopixelSendBuffer(DevicePin* pin, const uint8_t *data, unsigned size) {
 void neopixelSendData(DevicePin* pin, int mode, const uint8_t* data, unsigned length) {
     if (!pin || !length) return;
 
-#if defined(SAMD21) || defined(SAMD51)
+#if defined(SAMD21) || defined(SAMD51) || defined(STM32F4)
     if (length > NEOPIXEL_MIN_LENGTH_FOR_SPI && isValidMOSIPin(pin))
         spiNeopixelSendBuffer(pin, data, length);
     else

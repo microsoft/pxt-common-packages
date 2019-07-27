@@ -240,7 +240,7 @@ void Segment::ensure(ramint_t newSize) {
 
 void Segment::setLength(unsigned newLength) {
     if (newLength > size) {
-        ensure(length);
+        ensure(newLength);
     }
     length = newLength;
     return;

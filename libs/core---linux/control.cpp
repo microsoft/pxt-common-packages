@@ -40,6 +40,14 @@ uint32_t _ramSize()
 #endif
 }
 
+/**
+ * Determines if the USB has been enumerated.
+ */
+//%
+bool isUSBInitialized() {
+    return false;
+}
+
 }
 
 namespace serial {

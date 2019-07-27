@@ -41,6 +41,13 @@
         "libs/light-spectrum-sensor",
         "libs/edge-connector",
         "libs/proximity",
-        "libs/feather"
+        "libs/feather",
+        "libs/esp32spi",
+        "libs/net",
+        "libs/mqtt",
+        "libs/azureiot",
+        "libs/color",
+        "libs/game",
+        "libs/storyboard"
     ]
 }

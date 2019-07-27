@@ -657,13 +657,20 @@ String substr(String s, int start, int length) {
 int indexOf(String s, String searchString, int start) {
     if (!s || !searchString)
         return -1;
-    auto lenA = s->getUTF8Size();
+
+    if (start < 0)
+        start = 0;
+
+    auto dataA0 = s->getUTF8Data();
+    auto dataA = s->getUTF8DataAt(start);
+    auto offset = dataA - dataA0;
+    auto lenA = s->getUTF8Size() - offset;
     auto lenB = searchString->getUTF8Size();
-    if (start < 0 || start + lenB > lenA)
+
+    if (dataA == NULL || lenB > lenA)
         return -1;
-    auto dataA = s->getUTF8Data();
+
     auto dataB = searchString->getUTF8Data();
-    auto dataA0 = dataA;
     auto firstB = dataB[0];
     while (lenA >= lenB) {
         if (*dataA == firstB && !memcmp(dataA, dataB, lenB))

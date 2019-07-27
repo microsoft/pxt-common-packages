@@ -17,8 +17,8 @@ namespace game {
     let _scene: scene.Scene;
     let _sceneStack: scene.Scene[];
 
-    let _scenePushHandlers: (() => void)[];
-    let _scenePopHandlers: (() => void)[];
+    let _scenePushHandlers: ((scene: scene.Scene) => void)[];
+    let _scenePopHandlers: ((scene: scene.Scene) => void)[];
 
     export function currentScene(): scene.Scene {
         init();
@@ -58,7 +58,7 @@ namespace game {
     }
 
     export function pushScene() {
-        init();
+        const oldScene = game.currentScene()
         particles.clearAll();
         particles.disableAll();
         if (!_sceneStack) _sceneStack = [];
@@ -67,11 +67,12 @@ namespace game {
         init();
 
         if (_scenePushHandlers) {
-            _scenePushHandlers.forEach(cb => cb());
+            _scenePushHandlers.forEach(cb => cb(oldScene));
         }
     }
 
     export function popScene() {
+        const oldScene = game.currentScene()
         if (_sceneStack && _sceneStack.length) {
             // pop scenes from the stack
             _scene = _sceneStack.pop();
@@ -81,11 +82,12 @@ namespace game {
             control.popEventContext();
             _scene = undefined;
         }
+
         if (_scene)
             particles.enableAll();
 
         if (_scenePopHandlers) {
-            _scenePopHandlers.forEach(cb => cb());
+            _scenePopHandlers.forEach(cb => cb(oldScene));
         }
     }
 
@@ -100,28 +102,35 @@ namespace game {
 
     export function showDialog(title: string, subtitle: string, footer?: string) {
         init();
-        const font = image.font8;
+        const titleFont = image.getFontForText(title || "");
+        const subFont = image.getFontForText(subtitle || "")
+        const footerFont = image.getFontForText(footer || "");
         let h = 8;
         if (title)
-            h += font.charHeight;
+            h += titleFont.charHeight;
         if (subtitle)
-            h += 2 + font.charHeight
+            h += 2 + subFont.charHeight
         h += 8;
         const top = showDialogBackground(h, 9)
-        if (title)
-            screen.print(title, 8, top + 8, screen.isMono ? 1 : 7, font);
-        if (subtitle)
-            screen.print(subtitle, 8, top + 8 + font.charHeight + 2, screen.isMono ? 1 : 6, font);
+        let y = top + 8;
+        if (title) {
+            screen.print(title, 8, y, screen.isMono ? 1 : 7, titleFont);
+            y += titleFont.charHeight + 2;
+        }
+        if (subtitle) {
+            screen.print(subtitle, 8, y, screen.isMono ? 1 : 6, subFont);
+            y += subFont.charHeight + 2;
+        }
         if (footer) {
-            const footerTop = screen.height - font.charHeight - 4;
-            screen.fillRect(0, footerTop, screen.width, font.charHeight + 4, 0);
+            const footerTop = screen.height - footerFont.charHeight - 4;
+            screen.fillRect(0, footerTop, screen.width, footerFont.charHeight + 4, 0);
             screen.drawLine(0, footerTop, screen.width, footerTop, 1);
             screen.print(
                 footer,
-                screen.width - footer.length * font.charWidth - 8,
-                screen.height - font.charHeight - 2,
+                screen.width - footer.length * footerFont.charWidth - 8,
+                screen.height - footerFont.charHeight - 2,
                 1,
-                font
+                footerFont
             )
         }
     }
@@ -317,9 +326,10 @@ namespace game {
      *
      * @param handler Code to run when a scene is pushed onto the stack
      */
-    export function addScenePushHandler(handler: () => void) {
+    export function addScenePushHandler(handler: (oldScene: scene.Scene) => void) {
         if (!_scenePushHandlers) _scenePushHandlers = [];
-        _scenePushHandlers.push(handler);
+        if (_scenePushHandlers.indexOf(handler) < 0)
+            _scenePushHandlers.push(handler);
     }
 
     /**
@@ -328,7 +338,7 @@ namespace game {
      *
      * @param handler The handler to remove
      */
-    export function removeScenePushHandler(handler: () => void) {
+    export function removeScenePushHandler(handler: (oldScene: scene.Scene) => void) {
         if (_scenePushHandlers) _scenePushHandlers.removeElement(handler);
     }
 
@@ -340,9 +350,10 @@ namespace game {
      *
      * @param handler Code to run when a scene is removed from the top of the stack
      */
-    export function addScenePopHandler(handler: () => void) {
+    export function addScenePopHandler(handler: (oldScene: scene.Scene) => void) {
         if (!_scenePopHandlers) _scenePopHandlers = [];
-        _scenePopHandlers.push(handler);
+        if (_scenePopHandlers.indexOf(handler) < 0)
+            _scenePopHandlers.push(handler);
     }
 
     /**
@@ -351,7 +362,7 @@ namespace game {
      *
      * @param handler The handler to remove
      */
-    export function removeScenePopHandler(handler: () => void) {
+    export function removeScenePopHandler(handler: (oldScene: scene.Scene) => void) {
         if (_scenePopHandlers) _scenePopHandlers.removeElement(handler);
     }
 }
