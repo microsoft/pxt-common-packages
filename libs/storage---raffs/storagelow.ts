@@ -52,6 +52,16 @@ namespace storage {
     }
 
     /** 
+     * Delete all non-system files.
+     */
+    //% parts="storage"
+    export function clear(): void {
+        for (let fn of storage.list()) {
+            storage.remove(fn)
+        }
+    }
+
+    /** 
      * Append a buffer to a new or existing file. 
      * @param filename name of the file, eg: "log.txt"
      */

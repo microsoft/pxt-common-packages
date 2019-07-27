@@ -50,12 +50,12 @@ using namespace codal;
 #define LOGV NOLOG
 #define LOGVV NOLOG
 
-#if 1
+#if 0
 #undef LOGV
 #define LOGV DMESG
 #endif
 
-#if 1
+#if 0
 #undef LOGVV
 #define LOGVV DMESG
 #endif
@@ -638,11 +638,11 @@ DirEntry *FS::dirRead() {
     lock();
 
     if (readDirPtr == NULL) {
-        readDirPtr = metaPtr;
+        readDirPtr = endPtr - 1;
     }
 
-    while (readDirPtr < endPtr) {
-        auto p = readDirPtr++;
+    while (readDirPtr >= metaPtr) {
+        auto p = readDirPtr--;
         int sz = getFileSize(p->dataptr);
         if (sz < 0)
             continue;

@@ -133,7 +133,6 @@ raffs::File *getFile(String filename) {
     }
     st->currFilename = filename;
     incrRC(st->currFilename);
-    // TODO: fix UTF8 encoding
     st->currFile = filename == NULL ? NULL : st->fs.open(filename->getUTF8Data());
     return st->currFile;
 }
