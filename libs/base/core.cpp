@@ -1983,4 +1983,58 @@ void stopPerfCounter(PerfCounters n) {
 }
 #endif
 
+// Exceptions
+
+//%
+TryFrame *beginTry() {
+    auto ctx = getThreadContext();
+    auto frame = (TryFrame *)app_alloc(sizeof(TryFrame));
+    frame->parent = ctx->tryFrame;
+    ctx->tryFrame = frame;
+    return frame;
+}
+
+//%
+void endTry() {
+    auto ctx = getThreadContext();
+    auto f = ctx->tryFrame;
+    if (!f) oops(51);
+    ctx->tryFrame = f->parent;
+    app_free(f);
+}
+
+typedef void (*RestoreStateType)(TryFrame *, ThreadContext *);
+#define pxt_restore_exception_state ((RestoreStateType)(((uintptr_t *)bytecode)[14]))
+
+//%
+void throwValue(TValue v) {
+    auto ctx = getThreadContext();
+    auto f = ctx->tryFrame;
+    if (!f) target_panic(PANIC_UNHANDLED_EXCEPTION);
+    ctx->tryFrame = f->parent;
+    TryFrame copy = *f;
+    app_free(f);
+    ctx->thrownValue = v;
+    pxt_restore_exception_state(&copy, ctx);
+}
+
+//%
+TValue getThrownValue() {
+    auto ctx = getThreadContext();
+    auto v = ctx->thrownValue;
+    ctx->thrownValue = TAG_NON_VALUE;
+    if (v == TAG_NON_VALUE)
+        oops(51);
+    return v;
+}
+
+//%
+void endFinally() {
+    auto ctx = getThreadContext();
+    if (ctx->thrownValue == TAG_NON_VALUE)
+        return;
+    throwValue(getThrownValue());
+}
+
+
 } // namespace pxt

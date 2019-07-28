@@ -225,6 +225,7 @@ void gcProcessStacks(int flags) {
         auto ctx = (ThreadContext *)fib->user_data;
         if (!ctx)
             continue;
+        gcProcess(ctx->thrownValue);
         for (auto seg = &ctx->stack; seg; seg = seg->next) {
             auto ptr = (TValue *)threadAddressFor(fib, seg->top);
             auto end = (TValue *)threadAddressFor(fib, seg->bottom);
