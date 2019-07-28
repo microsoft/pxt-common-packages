@@ -525,7 +525,7 @@ bool isArray(TValue arr) {
 } // namespace Array_
 
 namespace pxtrt {
-//%
+//% expose
 RefCollection *keysOf(TValue v) {
     auto r = NEW_GC(RefCollection);
     MEMDBG("mkColl[keys]: => %p", r);

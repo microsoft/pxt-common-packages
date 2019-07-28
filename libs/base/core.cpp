@@ -1745,7 +1745,7 @@ PXT_DEF_STRING(sNumberTp, "number")
 PXT_DEF_STRING(sFunctionTp, "function")
 PXT_DEF_STRING(sUndefinedTp, "undefined")
 
-//%
+//% expose
 String typeOf(TValue v) {
     switch (valType(v)) {
     case ValType::Undefined:
@@ -2003,7 +2003,7 @@ TryFrame *beginTry() {
     return frame;
 }
 
-//%
+//% expose
 void endTry() {
     auto ctx = PXT_EXN_CTX();
     auto f = ctx->tryFrame;
@@ -2012,7 +2012,7 @@ void endTry() {
     app_free(f);
 }
 
-//%
+//% expose
 void throwValue(TValue v) {
     auto ctx = PXT_EXN_CTX();
     auto f = ctx->tryFrame;
@@ -2024,7 +2024,7 @@ void throwValue(TValue v) {
     pxt_restore_exception_state(&copy, ctx);
 }
 
-//%
+//% expose
 TValue getThrownValue() {
     auto ctx = PXT_EXN_CTX();
     auto v = ctx->thrownValue;
@@ -2034,7 +2034,7 @@ TValue getThrownValue() {
     return v;
 }
 
-//%
+//% expose
 void endFinally() {
     auto ctx = PXT_EXN_CTX();
     if (ctx->thrownValue == TAG_NON_VALUE)
