@@ -1985,9 +1985,18 @@ void stopPerfCounter(PerfCounters n) {
 
 // Exceptions
 
+#ifndef PXT_EXN_CTX
+#define PXT_EXN_CTX() getThreadContext()
+#endif
+
+typedef void (*RestoreStateType)(TryFrame *, ThreadContext *);
+#ifndef pxt_restore_exception_state
+#define pxt_restore_exception_state ((RestoreStateType)(((uintptr_t *)bytecode)[14]))
+#endif
+
 //%
 TryFrame *beginTry() {
-    auto ctx = getThreadContext();
+    auto ctx = PXT_EXN_CTX();
     auto frame = (TryFrame *)app_alloc(sizeof(TryFrame));
     frame->parent = ctx->tryFrame;
     ctx->tryFrame = frame;
@@ -1996,19 +2005,16 @@ TryFrame *beginTry() {
 
 //%
 void endTry() {
-    auto ctx = getThreadContext();
+    auto ctx = PXT_EXN_CTX();
     auto f = ctx->tryFrame;
     if (!f) oops(51);
     ctx->tryFrame = f->parent;
     app_free(f);
 }
 
-typedef void (*RestoreStateType)(TryFrame *, ThreadContext *);
-#define pxt_restore_exception_state ((RestoreStateType)(((uintptr_t *)bytecode)[14]))
-
 //%
 void throwValue(TValue v) {
-    auto ctx = getThreadContext();
+    auto ctx = PXT_EXN_CTX();
     auto f = ctx->tryFrame;
     if (!f) target_panic(PANIC_UNHANDLED_EXCEPTION);
     ctx->tryFrame = f->parent;
@@ -2020,7 +2026,7 @@ void throwValue(TValue v) {
 
 //%
 TValue getThrownValue() {
-    auto ctx = getThreadContext();
+    auto ctx = PXT_EXN_CTX();
     auto v = ctx->thrownValue;
     ctx->thrownValue = TAG_NON_VALUE;
     if (v == TAG_NON_VALUE)
@@ -2030,7 +2036,7 @@ TValue getThrownValue() {
 
 //%
 void endFinally() {
-    auto ctx = getThreadContext();
+    auto ctx = PXT_EXN_CTX();
     if (ctx->thrownValue == TAG_NON_VALUE)
         return;
     throwValue(getThrownValue());

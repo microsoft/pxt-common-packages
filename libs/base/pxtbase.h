@@ -943,6 +943,11 @@ unsigned getRandom(unsigned max);
 
 ValType valType(TValue v);
 
+// this is equivalent to JS `throw v`; it will leave
+// the current function(s), all the way until the nearest try block and
+// ignore all destructors (think longjmp())
+void throwValue(TValue v);
+
 #ifdef PXT_GC
 void registerGC(TValue *root, int numwords = 1);
 void unregisterGC(TValue *root, int numwords = 1);

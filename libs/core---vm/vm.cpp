@@ -160,6 +160,11 @@ void op_callind(FiberContext *ctx, unsigned arg) {
 void op_ret(FiberContext *ctx, unsigned arg) {
     SPLIT_ARG(retNumArgs, numTmps);
 
+    // check if we're leaving a function that still has open try blocks
+    // (this results from invalid code generation)
+    if (ctx->tryFrame && ctx->tryFrame->registers[0] == (uintptr_t)ctx->currAction)
+        target_panic(PANIC_VM_ERROR);
+
     POP(numTmps);
     auto retaddr = (intptr_t)POPVAL();
     ctx->currAction = (RefAction *)POPVAL();
@@ -207,6 +212,25 @@ void op_ldint(FiberContext *ctx, unsigned arg) {
 //%
 void op_ldintneg(FiberContext *ctx, unsigned arg) {
     ctx->r0 = TAG_NUMBER(-(int)arg);
+}
+
+TryFrame *beginTry();
+
+//%
+void op_try(FiberContext *ctx, unsigned arg) {
+    auto f = pxt::beginTry();
+    f->registers[0] = (uintptr_t)ctx->currAction;
+    f->registers[1] = (uintptr_t)(ctx->pc + (int)arg);
+    f->registers[2] = (uintptr_t)ctx->sp;
+}
+
+void restoreVMExceptionState(TryFrame *tf, FiberContext *ctx)
+{
+    // TODO verification
+    ctx->currAction = (RefAction*)tf->registers[0];
+    ctx->pc = (uint16_t*)tf->registers[1];
+    ctx->sp = (TValue*)tf->registers[2];
+    longjmp(ctx->loopjmp, 1);
 }
 
 static TValue lookupIfaceMember(TValue obj, VTable *vt, unsigned ifaceIdx) {
@@ -428,6 +452,7 @@ void exec_loop(FiberContext *ctx) {
         target_panic(PANIC_VM_ERROR);
     ctx->img->execLock = 1;
     auto opcodes = ctx->img->opcodes;
+    setjmp(ctx->loopjmp);
     while (ctx->pc) {
         if (panicCode)
             break;
@@ -461,7 +486,7 @@ void exec_loop(FiberContext *ctx) {
 
 namespace pxt {
 
-// 1248
+// 1251
 #define FNERR(errcode)                                                                             \
     do {                                                                                           \
         setVMImgError(img, errcode, &code[pc]);                                                    \
@@ -682,6 +707,13 @@ void validateFunction(VMImage *img, VMImageSection *sect, int debug) {
                     FNERR(1203);
                 atEnd = true;
             }
+        } else if (fn == op_try) {
+            unsigned newPC = pc + arg; // will overflow for backjump, but this is fine
+            if (newPC >= lastPC)
+                FNERR(1248);
+            if (currStack != baseStack)
+                FNERR(1249);
+            FORCE_STACK(currStack, 1250, newPC);
         } else {
             FNERR(1225);
         }
