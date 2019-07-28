@@ -162,8 +162,10 @@ void op_ret(FiberContext *ctx, unsigned arg) {
 
     // check if we're leaving a function that still has open try blocks
     // (this results from invalid code generation)
-    if (ctx->tryFrame && ctx->tryFrame->registers[0] == (uintptr_t)ctx->currAction)
+    if (ctx->tryFrame && ctx->tryFrame->registers[0] == (uintptr_t)ctx->currAction) {
+        DMESG("try frame %p left on return", ctx->tryFrame);
         target_panic(PANIC_VM_ERROR);
+    }
 
     POP(numTmps);
     auto retaddr = (intptr_t)POPVAL();
@@ -224,12 +226,11 @@ void op_try(FiberContext *ctx, unsigned arg) {
     f->registers[2] = (uintptr_t)ctx->sp;
 }
 
-void restoreVMExceptionState(TryFrame *tf, FiberContext *ctx)
-{
+void restoreVMExceptionState(TryFrame *tf, FiberContext *ctx) {
     // TODO verification
-    ctx->currAction = (RefAction*)tf->registers[0];
-    ctx->pc = (uint16_t*)tf->registers[1];
-    ctx->sp = (TValue*)tf->registers[2];
+    ctx->currAction = (RefAction *)tf->registers[0];
+    ctx->pc = (uint16_t *)tf->registers[1];
+    ctx->sp = (TValue *)tf->registers[2];
     longjmp(ctx->loopjmp, 1);
 }
 
@@ -448,8 +449,10 @@ String convertToString(FiberContext *ctx, TValue v) {
 }
 
 void exec_loop(FiberContext *ctx) {
-    if(ctx->img->execLock)
+    if (ctx->img->execLock) {
+        DMESG("image locked!");
         target_panic(PANIC_VM_ERROR);
+    }
     ctx->img->execLock = 1;
     auto opcodes = ctx->img->opcodes;
     setjmp(ctx->loopjmp);
