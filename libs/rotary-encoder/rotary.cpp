@@ -50,8 +50,8 @@ namespace encoders {
 //% weight=99
 RotaryEncoder createRotaryEncoder(DigitalInOutPin pinA, DigitalInOutPin pinB) {
     if (!pinA && !pinB) {
-        pinA = pxt::lookupPinByCfg(CFG_ROTARY_ENCODER_PIN_A);
-        pinB = pxt::lookupPinByCfg(CFG_ROTARY_ENCODER_PIN_B);
+        pinA = LOOKUP_PIN(ROTARY_ENCODER_A);
+        pinB = LOOKUP_PIN(ROTARY_ENCODER_B);
     }
 
     if (!pinA || !pinB)
