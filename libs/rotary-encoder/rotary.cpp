@@ -47,9 +47,16 @@ namespace encoders {
 /**
  * Create a new rotary encoder connected to given pins
  */
-//% blockId=inputCreateRotaryEncoder block="create rotary encoder with pins $pinA and B $pinB"
 //% weight=99
 RotaryEncoder createRotaryEncoder(DigitalInOutPin pinA, DigitalInOutPin pinB) {
+    if (!pinA && !pinB) {
+        pinA = pxt::lookupPinByCfg(CFG_ROTARY_ENCODER_PIN_A);
+        pinB = pxt::lookupPinByCfg(CFG_ROTARY_ENCODER_PIN_B);
+    }
+
+    if (!pinA || !pinB)
+        target_panic(PANIC_CODAL_HARDWARE_CONFIGURATION_ERROR);
+
     return new RotaryEncoder_(*pinA, *pinB);
 }
 } // namespace pins
@@ -70,8 +77,7 @@ void onChanged(RotaryEncoder encoder, Action body) {
  * Get current encoder position.
  */
 //% blockNamespace="encoders"
-//% blockId=rotaryencoderposition
-//% property
+//% blockId=rotaryencoderposition block="position"
 //% weight=79 blockGap=8
 int position(RotaryEncoder encoder) {
     // the position always changes by 4 per tick
