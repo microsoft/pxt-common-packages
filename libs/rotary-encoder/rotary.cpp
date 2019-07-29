@@ -77,7 +77,7 @@ void onChanged(RotaryEncoder encoder, Action body) {
  * Get current encoder position.
  */
 //% blockNamespace="encoders"
-//% blockId=rotaryencoderposition block="position"
+//% blockId=rotaryencoderposition block="%this position"
 //% weight=79 blockGap=8
 int position(RotaryEncoder encoder) {
     // the position always changes by 4 per tick
