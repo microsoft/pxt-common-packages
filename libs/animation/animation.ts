@@ -1,8 +1,3 @@
-enum MovementAnimations {
-    //% block="test"
-    Test = 0
-}
-
 /*
     Animation library for sprites
 */
@@ -177,7 +172,7 @@ namespace animation {
             let path = new Path();
             let p0 = pathStart;
 
-            // This implementation of SVG parsing does not support the B/b command, nor does it support exponents in arguments
+            // This implementation of SVG parsing does not support the T/t/S/s/A/a commands, nor does it support exponents in arguments
             const digits = "0123456789";
             const separators = ", \t\n\r\f\v";
             const commands: {
@@ -280,19 +275,16 @@ namespace animation {
         public run(interval: number, target: Sprite): boolean {
             this.startedAt == null && (this.startedAt = control.millis());
             
-            const runningTime = control.millis() - this.startedAt; // The time since the start of the path
+            const runningTime: number = control.millis() - this.startedAt; // The time since the start of the path
             const nodeIndex: number = Math.floor(runningTime / interval); // The current node
             const nodeTime: number = runningTime % interval; // The time the current node has been animating
             
             if(this.lastNode > -1 && this.lastNode < nodeIndex && this.nodes.length) { // If the last node hasn't been completed yet
                 this.nodes[nodeIndex - 1].apply(target, interval, interval); // Applies the last state of the previous node in case it was missed (this makes sure all moveTos fire)
+
+                if(nodeIndex >= this.nodes.length) return true; // Once the nodeIndex is past the last item of the array, only then end the animation
             }
             this.lastNode = nodeIndex;
-
-            if(runningTime >= this.nodes.length * interval && this.nodes.length) {
-                this.nodes[this.nodes.length - 1].apply(target, interval, interval); // Apply the last node
-                return true;
-            }
 
             this.nodes[nodeIndex].apply(target, nodeTime, interval);
             return false;
@@ -306,8 +298,9 @@ namespace animation {
     }
 
     export class MoveTo implements PathNode {
-        public setStart: boolean = true;
+        public setStart: boolean;
         constructor(private p1: Point) {
+            this.setStart = true;
         }
 
         apply(target: Sprite, nodeTime: number, interval: number): void {
@@ -320,8 +313,9 @@ namespace animation {
     }
 
     export class LineTo implements PathNode {
-        public setStart: boolean = false;
+        public setStart: boolean;
         constructor(private p0: Point, private p1: Point) {
+            this.setStart = false;
         }
 
         apply(target: Sprite, nodeTime: number, interval: number): void {
@@ -336,8 +330,9 @@ namespace animation {
     }
 
     export class QuadraticCurveTo implements PathNode {
-        public setStart: boolean = false;
+        public setStart: boolean;
         constructor(private p0: Point, private p1: Point, private p2: Point) {
+            this.setStart = false;
         }
 
         apply(target: Sprite, nodeTime: number, interval: number): void {
@@ -359,8 +354,9 @@ namespace animation {
     }
 
     export class CubicCurveTo implements PathNode {
-        public setStart: boolean = false;
+        public setStart: boolean;
         constructor(private p0: Point, private p1: Point, private p2: Point, private p3: Point) {
+            this.setStart = false;
         }
 
         apply(target: Sprite, nodeTime: number, interval: number): void {
@@ -390,16 +386,9 @@ namespace animation {
     }
 
     export class MovementAnimation implements Animation {
-        public sprite: Sprite;
         public isPlaying: boolean;
-        private path: Path;
-        private nodeInterval: number;
         
-        constructor(sprite: Sprite, path: Path, nodeInterval: number) {
-            this.sprite = sprite;
-            this.path = path; // TODO Change this
-            this.nodeInterval = nodeInterval;
-
+        constructor(public sprite: Sprite, private path: Path, private nodeInterval: number) {
             this.init();
         }
         
