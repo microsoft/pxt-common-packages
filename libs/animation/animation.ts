@@ -414,15 +414,14 @@ namespace animation {
         public isPlaying: boolean;
         private frames: Image[];
         private frameInterval: number;
-        private frameIndex: number;
         private lastFrame: number;
+        private startedAt: number;
 
         constructor(sprite: Sprite, frames: Image[], frameInterval: number) {
             this.sprite = sprite;
             this.frames = frames;
             this.frameInterval = frameInterval;
-            this.frameIndex = 0;
-            this.lastFrame = control.millis();
+            this.lastFrame = -1;
 
             this.init();
         }
@@ -440,24 +439,19 @@ namespace animation {
         }
 
         update(): void {
-            const currentTime = control.millis();
-            
-            if (this.frameIndex < this.frames.length) {
-                // If the next frame should be shown by now
-                if(currentTime - this.lastFrame >= this.frameInterval) {
-                    let newImage = this.frames[this.frameIndex];
-                    
-                    // Only update the image if it's different from the old one
-                    if (this.sprite.image !== newImage) {
-                        this.sprite.setImage(newImage);
-                    }
-                    
-                    this.frameIndex ++;
-                    this.lastFrame = currentTime;
+            if(this.startedAt == null) this.startedAt = control.millis();
+            const runningTime: number = control.millis() - this.startedAt;
+            const frameIndex: number = Math.floor(runningTime / this.frameInterval);
+
+            if(this.lastFrame > -1 && this.lastFrame < frameIndex && this.frames.length) { // Applies the first frame after the first interval has passed
+                const newImage: Image = this.frames[frameIndex - 1];
+                if(this.sprite.image !== newImage) {
+                    this.sprite.setImage(newImage);
                 }
-            } else {
-                this.done();
+
+                if(frameIndex >= this.frames.length) this.done();
             }
+            this.lastFrame = frameIndex;
         }
     }
 
