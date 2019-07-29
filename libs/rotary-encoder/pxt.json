@@ -3,7 +3,10 @@
     "description": "Driver for rotary encoder",
     "files": [
         "rotary.cpp",
-        "shims.d.ts"
+        "enums.d.ts",
+        "shims.d.ts",
+        "ns.ts",
+        "targetoverrides.ts"
     ],
     "public": true,
     "dependencies": {

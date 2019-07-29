@@ -1,5 +1,6 @@
 #include "pxt.h"
 
+// update sim if modifying these
 #define ROT_EV_TIMER 0x1233
 #define ROT_EV_CHANGED 0x2233
 
@@ -39,11 +40,15 @@ class RotaryEncoder_ {
 
 typedef class RotaryEncoder_ *RotaryEncoder;
 
-namespace pins {
+/**
+ * Rotary and other encoders
+ */
+namespace encoders {
 /**
  * Create a new rotary encoder connected to given pins
  */
-//%
+//% blockId=inputCreateRotaryEncoder block="create rotary encoder $pinA $pinB"
+//% weight=99
 RotaryEncoder createRotaryEncoder(DigitalInOutPin pinA, DigitalInOutPin pinB) {
     return new RotaryEncoder_(*pinA, *pinB);
 }
@@ -54,7 +59,9 @@ namespace RotaryEncoderMethods {
 /**
  * Do something when a rotary encoder changes position
  */
-//%
+//% blockNamespace="encoders"
+//% blockId=rotaryencoderonchaned block="on %this changed"
+//% weight=80 blockGap=8
 void onChanged(RotaryEncoder encoder, Action body) {
     registerWithDal(encoder->id, ROT_EV_CHANGED, body);
 }
@@ -62,7 +69,10 @@ void onChanged(RotaryEncoder encoder, Action body) {
 /**
  * Get current encoder position.
  */
+//% blockNamespace="encoders"
+//% blockId=rotaryencoderposition
 //% property
+//% weight=79 blockGap=8
 int position(RotaryEncoder encoder) {
     // the position always changes by 4 per tick
     return encoder->position >> 2;
