@@ -140,12 +140,6 @@ namespace animation {
                     node = new CubicCurveTo(p0, p1, p2, p3);
                     break;
                 }
-                case "A": {
-
-                }
-                case "a": {
-
-                }
                 case "Z": // Z
                 case "z": { // z
                     node = new LineTo(p0, pathStart);
@@ -171,10 +165,10 @@ namespace animation {
                 "H": 1, "h": 1, // horizontalLineTo
                 "V": 1, "v": 1, // verticalLineTo
                 "Q": 4, "q": 4, // quadraticCurveTo
-                "T": 2, "t": 2, // smoothQuadraticCurveTo
+                // "T": 2, "t": 2, // smoothQuadraticCurveTo
                 "C": 6, "c": 6, // cubicCurveTo
-                "S": 4, "s": 4, // smoothCubicCurveTo
-                "A": 7, "a": 7, // arcTo
+                // "S": 4, "s": 4, // smoothCubicCurveTo
+                // "A": 7, "a": 7, // arcTo
                 "Z": 0, "z": 0 // closePath
             };
             const signs = "+-";
