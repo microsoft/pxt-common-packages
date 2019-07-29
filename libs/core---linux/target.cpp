@@ -103,11 +103,11 @@ void dmesg(const char *format, ...) {
     va_end(arg);
 }
 
-int getSerialNumber() {
-    static int serial;
+uint64_t readSerialNumber() {
+    static uint64_t bigSerialNumber;
 
-    if (serial)
-        return serial;
+    if (bigSerialNumber)
+        return bigSerialNumber;
 
     char buf[1024];
     int fd = open("/proc/cpuinfo", O_RDONLY);
@@ -124,13 +124,29 @@ int getSerialNumber() {
             p++;
         uint64_t s = 0;
         sscanf(p, "%llu", &s);
-        serial = (s >> 32) ^ (s);
+        bigSerialNumber = s;
     }
 
-    if (!serial)
-        serial = 0xf00d0042;
+    if (!bigSerialNumber)
+        bigSerialNumber = 0xf00d0042f00d0042;
+
+    return bigSerialNumber;
+}
+
+int getSerialNumber() {
+    static int serial;
+
+    if (serial)
+        return serial;
+
+    uint64_t fullSerial = readSerialNumber();
+    serial = (fullSerial >> 32) ^ (fullSerial);
 
     return serial;
+}
+
+uint64_t getLongSerialNumber() {
+    return readSerialNumber();
 }
 
 } // namespace pxt
