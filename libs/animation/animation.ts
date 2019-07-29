@@ -197,7 +197,7 @@ namespace animation {
                     float = false;
                     currentArg = "";
                 } else if(Object.keys(commands).indexOf(char) > -1) { // Parses command arguments
-                    if(currentArg) {
+                    if(command && currentArg) {
                         args.push(parseFloat(currentArg));
                         
                         // Try to finish up this node, otherwise just toss it out
@@ -228,9 +228,8 @@ namespace animation {
                         args.push(parseFloat(currentArg));
                         float = false;
                         currentArg = "";
-                    } else {
-                        currentArg += char;
                     }
+                    currentArg = char;
                 }
 
                 // If the end of the path has been reached, cleans up the last argument before continuing parsing
