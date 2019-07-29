@@ -53,7 +53,7 @@ namespace pxsim.control {
     }
     export function deviceLongSerialNumber(): RefBuffer {
         let b = control.createBuffer(8);
-        b.setNumber(NumberFormat.UInt32LE, deviceSerialNumber())
+        BufferMethods.setNumber(b, BufferMethods.NumberFormat.UInt32LE, 0, deviceSerialNumber())
         return b;
     }
     export function deviceDalVersion(): string {
