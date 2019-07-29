@@ -1,9 +1,9 @@
-export interface Secrets {
+interface Secrets {
     connString: string;
     wifi: pxt.StringMap;
 }
 // this is to be overridden in a separate file
-export let secrets: Secrets;
+let secrets: Secrets;
 function test() {
 
     const log = console.log;
