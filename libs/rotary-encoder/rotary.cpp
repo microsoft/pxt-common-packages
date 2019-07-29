@@ -47,7 +47,7 @@ namespace encoders {
 /**
  * Create a new rotary encoder connected to given pins
  */
-//% blockId=inputCreateRotaryEncoder block="create rotary encoder $pinA $pinB"
+//% blockId=inputCreateRotaryEncoder block="create rotary encoder with pins $pinA and B $pinB"
 //% weight=99
 RotaryEncoder createRotaryEncoder(DigitalInOutPin pinA, DigitalInOutPin pinB) {
     return new RotaryEncoder_(*pinA, *pinB);
