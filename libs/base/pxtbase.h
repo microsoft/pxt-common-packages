@@ -156,6 +156,7 @@ void dumpDmesg();
 #define TAG_NULL TAGGED_SPECIAL(1) // 6
 #define TAG_NAN TAGGED_SPECIAL(3)  // 14
 #define TAG_NUMBER(n) (TNumber)(void *)(((uintptr_t)(uint32_t)(n) << 1) | 1)
+#define TAG_NON_VALUE TAGGED_SPECIAL(4) // 18; doesn't represent any JS value
 
 #ifdef PXT_VM
 inline bool isEncodedDouble(uint64_t v) {
@@ -275,6 +276,8 @@ typedef enum {
     PANIC_CAST_FROM_OBJECT = 984,
     PANIC_CAST_FROM_FUNCTION = 985,
     PANIC_CAST_FROM_NULL = 989,
+
+    PANIC_UNHANDLED_EXCEPTION = 999,
 
 } PXT_PANIC;
 
@@ -940,6 +943,11 @@ unsigned getRandom(unsigned max);
 
 ValType valType(TValue v);
 
+// this is equivalent to JS `throw v`; it will leave
+// the current function(s), all the way until the nearest try block and
+// ignore all destructors (think longjmp())
+void throwValue(TValue v);
+
 #ifdef PXT_GC
 void registerGC(TValue *root, int numwords = 1);
 void unregisterGC(TValue *root, int numwords = 1);
@@ -962,9 +970,17 @@ struct StackSegment {
     StackSegment *next;
 };
 
+#define NUM_TRY_FRAME_REGS 3
+struct TryFrame {
+    TryFrame *parent;
+    uintptr_t registers[NUM_TRY_FRAME_REGS];
+};
+
 struct ThreadContext {
     TValue *globals;
     StackSegment stack;
+    TryFrame *tryFrame;
+    TValue thrownValue;
 #ifdef PXT_GC_THREAD_LIST
     ThreadContext *next;
     ThreadContext *prev;
