@@ -124,7 +124,8 @@ namespace music {
     //% tempo.defl=120
     export function playMelodyFromEditor(melody: string, tempo: number) {
         // add tempo to string so it is reflected in simulation
-        let formattedMelody = melody.substr(0, melody.indexOf(' ')) + "-" + tempo + melody.substr(melody.indexOf(' '));
+        // creates format like "C5-174 B4 A G F E D C "
+        let formattedMelody = melody.substr(0, melody.indexOf(' ')) + "-" + tempo + melody.substr(melody.indexOf(' '), melody.length);
         const song = new Melody(formattedMelody);
         song.playUntilDone();
     }
@@ -149,7 +150,7 @@ namespace music {
         let newOctave = false;
 
         // build melody string, replace '-' with 'R'
-        for (let i = 0; i < notes.length-1; i++ ) {
+        for (let i = 0; i < notes.length - 1; i++) {
             if (notes[i] === "-") {
                 notes[i] = "R";
             } else if (notes[i] === "C5") {
@@ -163,7 +164,7 @@ namespace music {
 
         return melodyString;
     }
-    
+
     /**
      * Stop all sounds from playing.
      */
