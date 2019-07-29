@@ -181,6 +181,15 @@ namespace animation {
             for (let i = 0; i < pathString.length; i++) {
                 const char: string = pathString.charAt(i);
                 
+                // This is an SVG path parser. It's kinda complicated. For each character, evaluate the following conditions:
+                // - if it's a digit, add it to the current argument
+                // - else if it's whitespace or newline, finish the current argument and prepare for the next one
+                // - else if it's a command, complete the previous argument, and prepare for the next one
+                //   - if there's sufficient data to make a node during this step, create it, and continue
+                // - else if it's a period, include it in the argument (so long as there isn't already one), to enable use of floats
+                // - else if it's a plus/minus sign, and if it's the start of a new argument, add it to allow for positive/negative numbers
+                // - if it's the end of the string, complete the current argument before proceeding to the next step
+                // - if there's sufficient data to make a node after all of these steps, create it
                 if(digits.indexOf(char) > -1) { // Parses number arguments
                     currentArg += char;
                 } else if(separators.indexOf(char) > -1 && currentArg) { // Terminates number arguments
