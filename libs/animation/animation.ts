@@ -126,12 +126,6 @@ namespace animation {
                     node = new QuadraticCurveTo(p0, p1, p2);
                     break;
                 }
-                case "T": {
-                    
-                }
-                case "t": {
-                    
-                }
                 case "C": { // C x1 y1 x2 y2 x3 y3
                     const p1: Point = new Point(args[0], args[1]);
                     const p2: Point = new Point(args[2], args[3]);
@@ -145,12 +139,6 @@ namespace animation {
                     const p3: Point = new Point(p0.x + args[4], p0.y + args[5]);
                     node = new CubicCurveTo(p0, p1, p2, p3);
                     break;
-                }
-                case "S": {
-
-                }
-                case "s": {
-
                 }
                 case "A": {
 
@@ -319,8 +307,8 @@ namespace animation {
         }
 
         apply(target: Sprite, nodeTime: number, interval: number): void {
-            const x = Math.round(((this.p1.x - this.p0.x) / interval) * nodeTime) + this.p0.x;
-            const y = Math.round(((this.p1.y - this.p0.y) / interval) * nodeTime) + this.p0.y;
+            const x: number = Math.round(((this.p1.x - this.p0.x) / interval) * nodeTime) + this.p0.x;
+            const y: number = Math.round(((this.p1.y - this.p0.y) / interval) * nodeTime) + this.p0.y;
             target.setPosition(x, y);
         }
 
@@ -336,14 +324,14 @@ namespace animation {
         }
 
         apply(target: Sprite, nodeTime: number, interval: number): void {
-            const progress = nodeTime / interval;
-            const diff = 1 - progress;
-            const a = Math.pow(diff, 2);
-            const b = 2 * diff * progress;
-            const c = Math.pow(progress, 2);
+            const progress: number = nodeTime / interval;
+            const diff: number = 1 - progress;
+            const a: number = Math.pow(diff, 2);
+            const b: number = 2 * diff * progress;
+            const c: number = Math.pow(progress, 2);
 
-            const x = Math.round(a * this.p0.x + b * this.p1.x + c * this.p2.x);
-            const y = Math.round(a * this.p0.y + b * this.p1.y + c * this.p2.y);
+            const x: number = Math.round(a * this.p0.x + b * this.p1.x + c * this.p2.x);
+            const y: number = Math.round(a * this.p0.y + b * this.p1.y + c * this.p2.y);
 
             target.setPosition(x, y);
         }
@@ -360,15 +348,15 @@ namespace animation {
         }
 
         apply(target: Sprite, nodeTime: number, interval: number): void {
-            const progress = nodeTime / interval;
-            const diff = 1 - progress;
-            const a = Math.pow(diff, 3);
-            const b = 3 * Math.pow(diff, 2) * progress;
-            const c = 3 * diff * Math.pow(progress, 2);
-            const d = Math.pow(progress, 3);
+            const progress: number = nodeTime / interval;
+            const diff: number = 1 - progress;
+            const a: number = Math.pow(diff, 3);
+            const b: number = 3 * Math.pow(diff, 2) * progress;
+            const c: number = 3 * diff * Math.pow(progress, 2);
+            const d: number = Math.pow(progress, 3);
 
-            const x = Math.round(a * this.p0.x + b * this.p1.x + c * this.p2.x + d * this.p3.x);
-            const y = Math.round(a * this.p0.y + b * this.p1.y + c * this.p2.y + d * this.p3.y);
+            const x: number = Math.round(a * this.p0.x + b * this.p1.x + c * this.p2.x + d * this.p3.x);
+            const y: number = Math.round(a * this.p0.y + b * this.p1.y + c * this.p2.y + d * this.p3.y);
 
             target.setPosition(x, y);
         }
