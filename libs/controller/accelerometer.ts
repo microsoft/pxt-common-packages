@@ -34,6 +34,26 @@ enum ControllerGesture {
      */
     //% block="screen down"
     ScreenDown = Gesture.FaceDown,  // ACCELEROMETER_EVT_FACE_DOWN
+    /**
+     * Raised when a 2G shock is detected
+     */
+    //% block="2g (step)"
+    TwoG = Gesture.TwoG,  // ACCELEROMETER_EVT_2G
+    /**
+     * Raised when a 3G shock is detected
+     */
+    //% block="3g"
+    ThreeG = Gesture.ThreeG,  // ACCELEROMETER_EVT_3G
+    /**
+     * Raised when a 6G shock is detected
+     */
+    //% block="6g"
+    SixG = Gesture.SixG,  // ACCELEROMETER_EVT_6G
+    /**
+     * Raised when a 8G shock is detected
+     */
+    //% block="8g"
+    EightG = Gesture.EightG,  // ACCELEROMETER_EVT_8G
 }
 
 enum ControllerDimension {
@@ -63,11 +83,33 @@ namespace controller {
         const state = sceneState();
         if (!state.gestureHandlers) state.gestureHandlers = {};
         state.gestureHandlers[gesture] = handler;
-        
-        input.onGesture(<Gesture><number>gesture, function() {
+
+        input.onGesture(<Gesture><number>gesture, function () {
             const st = sceneState();
             st.lastGesture = gesture;
         })
+    }
+
+    /**
+     * Register a customer gesture for the controller
+     * @param id 
+     * @param update
+     * @param handler
+     */
+    export function onCustomGesture(id: number, update: () => boolean, handler: () => void) {
+        const state = sceneState();
+        if (!state.customGestureHandlers) state.customGestureHandlers = {};
+        state.customGestureHandlers[id] = <CustomGestureHandler>{ update, handler };
+
+        input.onCustomGesture(id,
+            function () {
+                const st = sceneState();
+                const h = st.customGestureHandlers && st.customGestureHandlers[id];
+                return h && h.update();
+            }, function () {
+                const st = sceneState();
+                st.lastCustomGesture = id;
+            })
     }
 
     /**

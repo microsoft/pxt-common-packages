@@ -241,7 +241,7 @@ String mkInternalString(const char *str) {
 String mkStringCore(const char *data, int len) {
     if (len < 0)
         len = (int)strlen(data);
-    if (len == 0)
+    if (len == 0 && !inGCPrealloc())
         return (String)emptyString;
 
     auto vt = &string_inline_ascii_vt;
@@ -280,7 +280,7 @@ String mkString(const char *data, int len) {
 #if PXT_UTF8
     if (len < 0)
         len = (int)strlen(data);
-    if (len == 0)
+    if (len == 0 && !inGCPrealloc())
         return (String)emptyString;
 
     int sz = utf8canon(NULL, data, len);
@@ -332,7 +332,7 @@ uint32_t toRealUTF8(String str, uint8_t *dst) {
 #endif
 
 Buffer mkBuffer(const uint8_t *data, int len) {
-    if (len <= 0)
+    if (len <= 0 && !inGCPrealloc())
         return (Buffer)emptyBuffer;
     Buffer r = new (gcAllocate(sizeof(BoxedBuffer) + len)) BoxedBuffer();
     r->length = len;
@@ -655,13 +655,20 @@ String substr(String s, int start, int length) {
 int indexOf(String s, String searchString, int start) {
     if (!s || !searchString)
         return -1;
-    auto lenA = s->getUTF8Size();
+
+    if (start < 0)
+        start = 0;
+
+    auto dataA0 = s->getUTF8Data();
+    auto dataA = s->getUTF8DataAt(start);
+    auto offset = dataA - dataA0;
+    auto lenA = s->getUTF8Size() - offset;
     auto lenB = searchString->getUTF8Size();
-    if (start < 0 || start + lenB > lenA)
+
+    if (dataA == NULL || lenB > lenA)
         return -1;
-    auto dataA = s->getUTF8Data();
+
     auto dataB = searchString->getUTF8Data();
-    auto dataA0 = dataA;
     auto firstB = dataB[0];
     while (lenA >= lenB) {
         if (*dataA == firstB && !memcmp(dataA, dataB, lenB))
@@ -1148,6 +1155,33 @@ TNumber neqq(TNumber a, TNumber b) {
     return !pxt::eqq_bool(a, b) ? TAG_TRUE : TAG_FALSE;
 }
 
+
+// How many significant digits mycvt() should output.
+// This cannot be more than 15, as this is the most that can be accurately represented
+// in 64 bit double. Otherwise this code may crash.
+#define DIGITS 15
+
+static const uint64_t pows[] = {
+    1LL,
+    10LL,
+    100LL,
+    1000LL,
+    10000LL,
+    100000LL,
+    1000000LL,
+    10000000LL,
+    100000000LL,
+    1000000000LL,
+    10000000000LL,    
+    100000000000LL,
+    1000000000000LL,
+    10000000000000LL,
+    100000000000000LL,
+};
+
+// The basic idea is we convert d to a 64 bit integer with DIGITS
+// digits, and then print it out, putting dot in the right place.
+
 void mycvt(NUMBER d, char *buf) {
     if (d < 0) {
         *buf++ = '-';
@@ -1162,39 +1196,69 @@ void mycvt(NUMBER d, char *buf) {
 
     int pw = (int)log10(d);
     int e = 1;
-    int beforeDot = 1;
 
-    if (0.000001 <= d && d < 1e21) {
-        if (pw > 0) {
+    // if outside 1e-6 -- 1e21 range, we use the e-notation
+    if (d < 1e-6 || d > 1e21) {
+        // normalize number to 1.XYZ, save e, and reset pw
+        if (pw < 0)
+            d *= p10(-pw);
+        else
             d /= p10(pw);
-            beforeDot = 1 + pw;
-        }
-    } else {
-        d /= p10(pw);
         e = pw;
+        pw = 0;
     }
 
-    int sig = 0;
-    while (sig < 17 || beforeDot > 0) {
-        // printf("%f sig=%d bd=%d\n", d, sig, beforeDot);
-        int c = (int)d;
-        *buf++ = '0' + c;
-        d = (d - c) * 10;
-        if (--beforeDot == 0)
+    int trailingZ = 0;
+    int dotAfter = pw + 1; // at which position the dot should be in the number
+
+    uint64_t dd;
+
+    // normalize number to be integer with exactly DIGITS digits
+    if (pw >= DIGITS) {
+        // if the number is larger than DIGITS, we need trailing zeroes
+        trailingZ = pw - DIGITS + 1;
+        dd = (uint64_t)(d / p10(trailingZ) + 0.5);
+    } else {
+        dd = (uint64_t)(d * p10(DIGITS - pw - 1) + 0.5);
+    }
+
+    // if number is less than 1, we need 0.00...00 at the beginning
+    if (dotAfter < 1) {
+        *buf++ = '0';
+        *buf++ = '.';
+        int n = -dotAfter;
+        while (n--)
+            *buf++ = '0';
+    }
+
+    // now print out the actual number
+    for (int i = DIGITS - 1; i >= 0; i--) {
+        uint64_t q = pows[i];
+        // this may be faster than fp-division and fmod(); or maybe not
+        // anyways, it works
+        int k = '0';
+        while (dd >= q) {
+            dd -= q;
+            k++;
+        }
+        *buf++ = k;
+        // if we're after dot, and what's left is zeroes, stop
+        if (dd == 0 && (DIGITS - i) >= dotAfter)
+            break;
+        // print the dot, if we arrived at it
+        if ((DIGITS - i) == dotAfter)
             *buf++ = '.';
-        if (sig || c)
-            sig++;
     }
 
-    buf--;
-    while (*buf == '0')
-        buf--;
-    if (*buf == '.')
-        buf--;
-    buf++;
+    // print out remaining trailing zeroes if any
+    while (trailingZ-- > 0)
+        *buf++ = '0';
 
+    // if we used e-notation, handle that
     if (e != 1) {
         *buf++ = 'e';
+        if (e > 0)
+            *buf++ = '+';
         itoa(e, buf);
     } else {
         *buf = 0;
@@ -1569,7 +1633,6 @@ int lookupMapKey(String key) {
     auto len = *arr++;
     int l = 1U; // skip index 0 - it's invalid
     int r = (int)len - 1;
-#ifndef PXT_VM
     auto ikey = (uintptr_t)key;
     if (arr[l] <= ikey && ikey <= arr[r]) {
         while (l <= r) {
@@ -1582,7 +1645,6 @@ int lookupMapKey(String key) {
                 r = m - 1;
         }
     } else
-#endif
     {
         while (l <= r) {
             int m = (l + r) >> 1;

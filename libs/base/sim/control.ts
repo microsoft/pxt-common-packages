@@ -86,6 +86,10 @@ namespace pxsim.control {
     export function dmesg(msg: string) {
         console.log(`DMESG: ${msg}`);
     }
+    export function setDebugFlags(flags: number): void {
+        console.log(`debug flags: ${flags}`);
+    }
+
     function toStr(v: any) {
         if (v instanceof RefRecord) {
             return `${v.vtable.name}@${v.id}`
@@ -131,6 +135,10 @@ namespace pxsim.control {
 
     export function heapDump() {
         // TODO something better
+    }
+
+    export function isUSBInitialized() {
+        return false;
     }
 }
 

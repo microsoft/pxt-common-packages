@@ -93,15 +93,18 @@ namespace scene {
     /**
      * Set the map for placing tiles in the scene
      * @param map
+     * @param scale
      */
-    //% blockId=gamesettilemap block="set tile map to %map=tilemap_image_picker"
+    //% blockId=gamesettilemap block="set tile map to %map=tilemap_image_picker || with %scale pixel tiles"
+    //% scale.defl=TileScale.Sixteen
     //% group="Tiles"
     //% help=scene/set-tile-map
-    export function setTileMap(map: Image) {
+    export function setTileMap(map: Image, scale = TileScale.Sixteen) {
         const scene = game.currentScene();
         if (!scene.tileMap)
             scene.tileMap = new tiles.TileMap();
         scene.tileMap.setMap(map);
+        scene.tileMap.scale = scale;
     }
 
     /**
@@ -117,7 +120,8 @@ namespace scene {
         const scene = game.currentScene();
         if (!scene.tileMap)
             scene.tileMap = new tiles.TileMap();
-        scene.tileMap.setTileAt(tile.x >> 4, tile.y >> 4, index);
+        const scale = scene.tileMap.scale;
+        scene.tileMap.setTileAt(tile.x >> scale, tile.y >> scale, index);
     }
 
     /**
@@ -125,7 +129,7 @@ namespace scene {
      * @param index
      * @param img
      */
-    //% blockId=gamesettile block="set tile %index=colorindexpicker to %img=screen_image_picker with wall %wall=toggleOnOff"
+    //% blockId=gamesettile block="set tile %index=colorindexpicker to %img=tile_image_picker with wall %wall=toggleOnOff"
     //% group="Tiles"
     //% help=scene/set-tile
     export function setTile(index: number, img: Image, wall?: boolean) {

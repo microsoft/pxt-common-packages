@@ -1,6 +1,5 @@
 #include "pxtbase.h"
 
-
 #ifndef GC_BLOCK_SIZE
 #define GC_BLOCK_SIZE (1024 * 16)
 #endif
@@ -46,7 +45,6 @@
 #define PXT_GC_CHECKS 1
 #endif
 //#define PXT_GC_STRESS 1
-
 
 //#define PXT_GC_CHECKS 1
 
@@ -351,15 +349,40 @@ static uint32_t getObjectSize(RefObject *o) {
         // GC_CHECK(0x2000 <= (intptr_t)sz && (intptr_t)sz <= 0x100000, 47);
         r = sz(o);
     }
-    GC_CHECK(1 <= r && (r <= BYTES_TO_WORDS(GC_MAX_ALLOC_SIZE) || IS_FREE(vt)), 48);
+    GC_CHECK(1 <= r && (r <= BYTES_TO_WORDS(GC_MAX_ALLOC_SIZE) || IS_FREE(vt)), 41);
     return r;
 }
 
-static void addFreeBlock(GCBlock *curr) {
+static void setupFreeBlock(GCBlock *curr) {
     curr->data[0].vtable = FREE_MASK | (TOWORDS(curr->blockSize) << 2);
     ((RefBlock *)curr->data)[0].nextFree = firstFree;
     firstFree = (RefBlock *)curr->data;
     midPtr = (uint8_t *)curr->data + curr->blockSize / 4;
+}
+
+static void linkFreeBlock(GCBlock *curr) {
+    // blocks need to be sorted by address for midPtr to work
+    if (!firstBlock || curr < firstBlock) {
+        curr->next = firstBlock;
+        firstBlock = curr;
+    } else {
+        for (auto p = firstBlock; p; p = p->next) {
+            if (!p->next || curr < p->next) {
+                curr->next = p->next;
+                p->next = curr;
+                break;
+            }
+        }
+    }
+}
+
+void gcPreAllocateBlock(uint32_t sz) {
+    auto curr = (GCBlock *)GC_ALLOC_BLOCK(sz);
+    curr->blockSize = sz - sizeof(GCBlock);
+    LOG("GC pre-alloc: %p", curr);
+    GC_CHECK((curr->blockSize & 3) == 0, 40);
+    setupFreeBlock(curr);
+    linkFreeBlock(curr);
 }
 
 static GCBlock *allocateBlockCore() {
@@ -413,20 +436,8 @@ __attribute__((noinline)) static void allocateBlock() {
     auto curr = allocateBlockCore();
     LOG("GC alloc: %p", curr);
     GC_CHECK((curr->blockSize & 3) == 0, 40);
-    addFreeBlock(curr);
-    // blocks need to be sorted by address for midPtr to work
-    if (!firstBlock || curr < firstBlock) {
-        curr->next = firstBlock;
-        firstBlock = curr;
-    } else {
-        for (auto p = firstBlock; p; p = p->next) {
-            if (!p->next || curr < p->next) {
-                curr->next = p->next;
-                p->next = curr;
-                break;
-            }
-        }
-    }
+    setupFreeBlock(curr);
+    linkFreeBlock(curr);
 }
 
 static void sweep(int flags) {
@@ -588,10 +599,6 @@ void gcFreeze() {
     inGC |= IN_GC_FREEZE;
 }
 
-void gcStartup() {
-    inGC &= ~IN_GC_PREALLOC;
-}
-
 void gcReset() {
     inGC &= ~IN_GC_FREEZE;
 
@@ -605,13 +612,47 @@ void gcReset() {
 
     firstFree = NULL;
     for (auto h = firstBlock; h; h = h->next) {
-        addFreeBlock(h);
+        setupFreeBlock(h);
     }
 }
 
+#ifdef PXT_VM
+static uint8_t *preallocBlock;
+static uint8_t *preallocPointer;
+
+#define PREALLOC_SIZE (1024 * 1024)
+
 void gcPreStartup() {
+    xfree(preallocBlock);
+    preallocBlock = (uint8_t *)xmalloc(PREALLOC_SIZE);
+    preallocPointer = preallocBlock;
+    if (!isReadOnly((TValue)preallocBlock))
+        oops(40);
     inGC |= IN_GC_PREALLOC;
 }
+
+void gcStartup() {
+    inGC &= ~IN_GC_PREALLOC;
+    preallocPointer = NULL;
+}
+
+void *gcPrealloc(int numbytes) {
+    if (!preallocPointer)
+        oops(49);
+    void *r = preallocPointer;
+    preallocPointer += ALIGN_TO_WORD(numbytes);
+    if (preallocPointer > preallocBlock + PREALLOC_SIZE) {
+        DMESG("pre-alloc size exceeded! block=%p ptr=%p sz=%d", preallocBlock, preallocPointer,
+              (int)PREALLOC_SIZE);
+        oops(48);
+    }
+    return r;
+}
+
+bool inGCPrealloc() {
+    return (inGC & IN_GC_PREALLOC) != 0;
+}
+#endif
 
 void *gcAllocate(int numbytes) {
     size_t numwords = BYTES_TO_WORDS(ALIGN_TO_WORD(numbytes));
@@ -624,8 +665,8 @@ void *gcAllocate(int numbytes) {
         target_panic(PANIC_CALLED_FROM_ISR);
 
 #ifdef PXT_VM
-    if (inGC & IN_GC_PREALLOC)
-        return xmalloc(numbytes);
+    if (inGCPrealloc())
+        return gcPrealloc(numbytes);
 #endif
 
     inGC |= IN_GC_ALLOC;
@@ -655,7 +696,7 @@ void *gcAllocate(int numbytes) {
             if (!IS_FREE(vt))
                 oops(43);
             int left = (int)(VAR_BLOCK_WORDS(vt) - numwords);
-            VVLOG("%p %d - %d = %d", (void*)vt, (int)VAR_BLOCK_WORDS(vt), (int)numwords, left);
+            VVLOG("%p %d - %d = %d", (void *)vt, (int)VAR_BLOCK_WORDS(vt), (int)numwords, left);
             if (left >= 0) {
                 auto nf = (RefBlock *)((void **)p + numwords);
                 auto nextFree = p->nextFree; // p and nf can overlap when allocating 4 bytes

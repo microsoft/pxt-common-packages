@@ -22,7 +22,7 @@ void decr(TValue e) {
 
 Action mkAction(int totallen, RefAction *act) {
     check(getVTable(act)->classNo == BuiltInType::RefAction, PANIC_INVALID_BINARY_HEADER, 1);
-#ifdef PXT64
+#ifdef PXT_VM
     check(act->initialLen == totallen, PANIC_INVALID_BINARY_HEADER, 13);
 #endif
 
@@ -33,7 +33,7 @@ Action mkAction(int totallen, RefAction *act) {
     void *ptr = gcAllocate(sizeof(RefAction) + totallen * sizeof(void *));
     RefAction *r = new (ptr) RefAction();
     r->len = totallen;
-#ifdef PXT64
+#ifdef PXT_VM
     r->numArgs = act->numArgs;
     r->initialLen = act->initialLen;
     r->reserved = act->reserved;
@@ -240,7 +240,7 @@ void Segment::ensure(ramint_t newSize) {
 
 void Segment::setLength(unsigned newLength) {
     if (newLength > size) {
-        ensure(length);
+        ensure(newLength);
     }
     length = newLength;
     return;
@@ -472,7 +472,7 @@ int getNumGlobals() {
 }
 #endif
 
-#ifndef PXT64
+#ifndef PXT_VM
 void exec_binary(unsigned *pc) {
     // XXX re-enable once the calibration code is fixed and [editor/embedded.ts]
     // properly prepends a call to [internal_main].
@@ -535,11 +535,13 @@ RefCollection *keysOf(TValue v) {
     auto len = rm->keys.getLength();
     if (!len)
         return r;
+    registerGCObj(r);
     r->setLength(len);
     auto dst = r->getData();
     memcpy(dst, rm->keys.getData(), len * sizeof(TValue));
     for (unsigned i = 0; i < len; ++i)
         incr(dst[i]);
+    unregisterGCObj(r);
     return r;
 }
 } // namespace pxtrt

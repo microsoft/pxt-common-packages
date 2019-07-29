@@ -25,9 +25,7 @@ namespace pxsim {
         }
 
         receive(buf: Uint8Array) {
-            pxsim.decr(this.packet);
             this.packet = new RefBuffer(buf);
-            pxsim.incr(this.packet);
             this.packetReceived = true;
             board().bus.queue(this.IR_COMPONENT_ID, this.IR_PACKET_EVENT);
         }

@@ -17,7 +17,7 @@
 #endif
 
 // should this be something like CXX11 or whatever?
-#ifdef PXT64
+#ifdef PXT_VM
 #define THROW throw()
 #else
 #define THROW /* nothing */

@@ -24,7 +24,7 @@ namespace SpriteKind {
     let nextKind: number;
 
     export function create() {
-        if (nextKind === undefined) nextKind = 1;
+        if (nextKind === undefined) nextKind = 1000;
         return nextKind++;
     }
 
@@ -32,7 +32,7 @@ namespace SpriteKind {
     export const Player = create();
 
     //% isKind
-    export const Projectile = create();
+    export const Projectile = 1;
 
     //% isKind
     export const Food = create();

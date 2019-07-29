@@ -24,6 +24,17 @@
 #define PXT_UTF8 0
 #endif
 
+#if defined(PXT_VM)
+#include <stdint.h>
+#if UINTPTR_MAX == 0xffffffff
+#define PXT32 1
+#elif UINTPTR_MAX == 0xffffffffffffffff
+#define PXT64 1
+#else
+#error "UINTPTR_MAX has invalid value"
+#endif
+#endif
+
 #define intcheck(...) check(__VA_ARGS__)
 //#define intcheck(...) do {} while (0)
 
@@ -63,7 +74,7 @@ void *operator new(size_t size);
 
 #ifndef ramint_t
 // this type limits size of arrays
-#if defined(__linux__) || defined(PXT64)
+#if defined(__linux__) || defined(PXT_VM)
 // TODO fix the inline array accesses to take note of this!
 #define ramint_t uint32_t
 #else
@@ -146,6 +157,12 @@ void dumpDmesg();
 #define TAG_NAN TAGGED_SPECIAL(3)  // 14
 #define TAG_NUMBER(n) (TNumber)(void *)(((uintptr_t)(uint32_t)(n) << 1) | 1)
 
+#ifdef PXT_VM
+inline bool isEncodedDouble(uint64_t v) {
+    return (v >> 48) != 0;
+}
+#endif
+
 inline bool isDouble(TValue v) {
 #ifdef PXT64
     return ((uintptr_t)v >> 48) != 0;
@@ -190,9 +207,6 @@ inline bool canBeTagged(int v) {
 #endif
 }
 
-#ifdef PXT64
-STATIC_ASSERT(sizeof(void*) == 8);
-
 // see https://anniecherkaev.com/the-secret-life-of-nan
 
 #define NanBoxingOffset 0x1000000000000LL
@@ -207,6 +221,12 @@ template <typename TO, typename FROM> TO bitwise_cast(FROM in) {
     return u.to;
 }
 
+inline double decodeDouble(uint64_t v) {
+    return bitwise_cast<double>(v - NanBoxingOffset);
+}
+
+#ifdef PXT64
+STATIC_ASSERT(sizeof(void *) == 8);
 inline double doubleVal(TValue v) {
     return bitwise_cast<double>((uint64_t)v - NanBoxingOffset);
 }
@@ -215,7 +235,7 @@ inline TValue tvalueFromDouble(double d) {
     return (TValue)(bitwise_cast<uint64_t>(d) + NanBoxingOffset);
 }
 #else
-STATIC_ASSERT(sizeof(void*) == 4);
+STATIC_ASSERT(sizeof(void *) == 4);
 #endif
 
 // keep in sym with sim/control.ts
@@ -245,6 +265,7 @@ typedef enum {
     PANIC_HEAP_DUMPED = 915,
     PANIC_STACK_OVERFLOW = 916,
     PANIC_BLOCKING_TO_STRING = 917,
+    PANIC_VM_ERROR = 918,
 
     PANIC_CAST_FIRST = 980,
     PANIC_CAST_FROM_UNDEFINED = 980,
@@ -435,7 +456,7 @@ struct VTable {
     uint16_t numbytes;
     ValType objectType;
     uint8_t magic;
-#ifdef PXT64
+#ifdef PXT_VM
     uint16_t ifaceHashEntries;
     BuiltInType lastClassNo;
 #else
@@ -476,6 +497,9 @@ extern const VTable RefAction_vtable;
 #define PXT_VTABLE_TO_INT(vt) ((uintptr_t)(vt) >> PXT_VTABLE_SHIFT)
 #endif
 
+// allocate 1M of heap on iOS
+#define PXT_IOS_HEAP_ALLOC_BITS 20
+
 #ifdef PXT_GC
 #ifdef PXT_IOS
 extern uint8_t *gcBase;
@@ -483,7 +507,7 @@ extern uint8_t *gcBase;
 inline bool isReadOnly(TValue v) {
 #ifdef PXT64
 #ifdef PXT_IOS
-    return !isPointer(v) || (((uintptr_t)v - (uintptr_t)gcBase) >> 26) != 0;
+    return !isPointer(v) || (((uintptr_t)v - (uintptr_t)gcBase) >> PXT_IOS_HEAP_ALLOC_BITS) != 0;
 #else
     return !isPointer(v) || !((uintptr_t)v >> 37);
 #endif
@@ -505,7 +529,13 @@ class RefObject {
 #ifdef PXT_GC
     uintptr_t vtable;
 
-    RefObject(const VTable *vt) { vtable = PXT_VTABLE_TO_INT(vt); }
+    RefObject(const VTable *vt) {
+#if defined(PXT32) && defined(PXT_VM)
+        if ((uint32_t)vt & 0xf0000000)
+            target_panic(PANIC_INVALID_VTABLE);
+#endif
+        vtable = PXT_VTABLE_TO_INT(vt);
+    }
 #else
     uint16_t refcnt;
     uint16_t vtable;
@@ -685,6 +715,9 @@ typedef TValue (*ActionCB)(TValue *captured, TValue arg0, TValue arg1, TValue ar
 // Ref-counted function pointer.
 class RefAction : public RefObject {
   public:
+#if defined(PXT_VM) && defined(PXT32)
+    uint32_t _padding; // match binary format in .pxt64 files
+#endif
     uint16_t len;
     uint16_t numArgs;
 #ifdef PXT_VM
@@ -794,7 +827,8 @@ class BoxedBuffer : public RefObject {
   public:
     // data needs to be word-aligned, so we use 32 bits for length
     int length;
-#ifdef PXT64
+#ifdef PXT_VM
+    // VM can be 64 bit and it compiles as such
     int32_t _padding;
 #endif
     uint8_t data[0];
@@ -911,6 +945,8 @@ void registerGC(TValue *root, int numwords = 1);
 void unregisterGC(TValue *root, int numwords = 1);
 void registerGCPtr(TValue ptr);
 void unregisterGCPtr(TValue ptr);
+static inline void registerGCObj(RefObject *ptr) { registerGCPtr((TValue)ptr); }
+static inline void unregisterGCObj(RefObject *ptr) { unregisterGCPtr((TValue)ptr); }
 void gc(int flags);
 #else
 inline void registerGC(TValue *root, int numwords = 1) {}
@@ -953,6 +989,12 @@ void gcFreeze();
 #ifdef PXT_VM
 void gcStartup();
 void gcPreStartup();
+void *gcPrealloc(int numbytes);
+bool inGCPrealloc();
+#else
+static inline bool inGCPrealloc() {
+    return false;
+}
 #endif
 
 void coreReset();
@@ -963,6 +1005,7 @@ void *gcAllocate(int numbytes);
 void *gcAllocateArray(int numbytes);
 extern "C" void *app_alloc(int numbytes);
 extern "C" void *app_free(void *ptr);
+void gcPreAllocateBlock(uint32_t sz);
 #ifndef PXT_GC
 inline void *gcAllocate(int numbytes) {
     return xmalloc(numbytes);
@@ -1112,11 +1155,11 @@ bool removeElement(RefCollection *c, TValue x);
     ;                                                                                              \
     }
 
-#if !defined(X86_64) && !defined(PXT64)
+#if !defined(X86_64) && !defined(PXT_VM)
 #pragma GCC diagnostic ignored "-Wpmf-conversions"
 #endif
 
-#ifdef PXT64
+#ifdef PXT_VM
 #define DEF_VTABLE(name, tp, valtype, ...)                                                         \
     const VTable name __attribute__((aligned(1 << PXT_VTABLE_SHIFT))) = {                          \
         sizeof(tp), valtype, VTABLE_MAGIC, 0, BuiltInType::tp, BuiltInType::tp,                    \

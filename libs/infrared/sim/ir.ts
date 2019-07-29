@@ -6,7 +6,7 @@ namespace pxsim.network {
 
     export function infraredPacket() : RefBuffer {
         const state = getInfraredState();
-        return pxsim.incr(state.packet);
+        return state.packet;
     }
 
     export function onInfraredPacket(body: RefAction): void {

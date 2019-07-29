@@ -23,6 +23,7 @@
         "vm.cpp",
         "vmload.cpp",
         "vm.h",
+        "vmcache.cpp",
         "verify.cpp",
         "pxtparts.json"
     ],
