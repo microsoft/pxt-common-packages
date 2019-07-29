@@ -63,9 +63,321 @@ namespace animation {
         }
     }
 
+    export class Path {
+        protected nodes: PathNode[];
+        protected startedAt: number;
+        protected lastNode: number; // The index of the last node to fire
+
+        constructor() {
+            this.nodes = [];
+            this.lastNode = -1;
+        }
+
+        private static generateNode(pathStart: Point, p0: Point, command: string, args: number[]): PathNode {
+            // Sets the start point for the path (that can be changed using moveTo)
+            let node: PathNode;
+            switch (command) {
+                case "M": { // M x y
+                    let p1: Point = new Point(args[0], args[1]);
+                    node = new MoveTo(p1);
+                    break;
+                }
+                case "m": { // m dx dy
+                    const p1: Point = new Point(p0.x + args[0], p0.y + args[1]);
+                    node = new MoveTo(p1);
+                    break;
+                }
+                case "L": { // L x y
+                    const p1: Point = new Point(args[0], args[1]);
+                    node = new LineTo(p0, p1);
+                    break;
+                }
+                case "l": { // l dx dy
+                    const p1: Point = new Point(p0.x + args[0], p0.y + args[1]);
+                    node = new LineTo(p0, p1);
+                    break;
+                }
+                case "H": { // H x
+                    const p1: Point = new Point(args[0], p0.y);
+                    node = new LineTo(p0, p1);
+                    break;
+                }
+                case "h": { // h dx
+                    const p1: Point = new Point(p0.x + args[0], p0.y);
+                    node = new LineTo(p0, p1);
+                    break;
+                }
+                case "V": { // V y
+                    const p1: Point = new Point(p0.x, args[0]);
+                    node = new LineTo(p0, p1);
+                    break;
+                }
+                case "v": { // v dy
+                    const p1: Point = new Point(p0.x, p0.y + args[0]);
+                    node = new LineTo(p0, p1);
+                    break;
+                }
+                case "Q": { // Q x1 y1 x2 y2
+                    const p1: Point = new Point(args[0], args[1]);
+                    const p2: Point = new Point(args[2], args[3]);
+                    node = new QuadraticCurveTo(p0, p1, p2);
+                    break;
+                }
+                case "q": { // q dx1 dy1 dx2 dy2
+                    const p1: Point = new Point(p0.x + args[0], p0.y + args[1]);
+                    const p2: Point = new Point(p0.x + args[2], p0.y + args[3]);
+                    node = new QuadraticCurveTo(p0, p1, p2);
+                    break;
+                }
+                case "T": {
+                    
+                }
+                case "t": {
+                    
+                }
+                case "C": { // C x1 y1 x2 y2 x3 y3
+                    const p1: Point = new Point(args[0], args[1]);
+                    const p2: Point = new Point(args[2], args[3]);
+                    const p3: Point = new Point(args[4], args[5]);
+                    node = new CubicCurveTo(p0, p1, p2, p3);
+                    break;
+                }
+                case "c": { // c dx1 dy1 dx2 dy2 dx3 dy3
+                    const p1: Point = new Point(p0.x + args[0], p0.y + args[1]);
+                    const p2: Point = new Point(p0.x + args[2], p0.y + args[3]);
+                    const p3: Point = new Point(p0.x + args[4], p0.y + args[5]);
+                    node = new CubicCurveTo(p0, p1, p2, p3);
+                    break;
+                }
+                case "S": {
+
+                }
+                case "s": {
+
+                }
+                case "A": {
+
+                }
+                case "a": {
+
+                }
+                case "Z": // Z
+                case "z": { // z
+                    node = new LineTo(p0, pathStart);
+                    break;
+                }
+            }
+
+            return node;
+        }
+
+        public static parse(pathStart: Point, pathString: string): Path {
+            let path = new Path();
+            let p0 = pathStart;
+
+            // This implementation of SVG parsing does not support the B/b command, nor does it support exponents in arguments
+            const digits = "0123456789";
+            const separators = ", \t\n\r\f\v";
+            const commands: {
+                [ command: string ]: number
+            } = {
+                "M": 2, "m": 2, // moveTo
+                "L": 2, "l": 2, // lineTo
+                "H": 1, "h": 1, // horizontalLineTo
+                "V": 1, "v": 1, // verticalLineTo
+                "Q": 4, "q": 4, // quadraticCurveTo
+                "T": 2, "t": 2, // smoothQuadraticCurveTo
+                "C": 6, "c": 6, // cubicCurveTo
+                "S": 4, "s": 4, // smoothCubicCurveTo
+                "A": 7, "a": 7, // arcTo
+                "Z": 0, "z": 0 // closePath
+            };
+            const signs = "+-";
+
+            let float = false;
+            let currentArg: string = "";
+            let command: string = null;
+            let args: number[] = [];
+
+            for (let i = 0; i < pathString.length; i++) {
+                const char: string = pathString.charAt(i);
+                
+                if(digits.indexOf(char) > -1) { // Parses number arguments
+                    currentArg += char;
+                } else if(separators.indexOf(char) > -1 && currentArg) { // Terminates number arguments
+                    args.push(parseFloat(currentArg));
+                    float = false;
+                    currentArg = "";
+                } else if(Object.keys(commands).indexOf(char) > -1) { // Parses command arguments
+                    if(currentArg) {
+                        args.push(parseFloat(currentArg));
+                        
+                        // Try to finish up this node, otherwise just toss it out
+                        if (command && args.length >= commands[command]) {
+                            let node = this.generateNode(pathStart, p0, command, args);
+                            path.add(node);
+                            p0 = node.getEndPoint(); // Set the start for the next node to the end of this node
+                            if(node.setStart) pathStart = p0; // If this is a move command, then this sets the new start of the path (for the Z/z command)
+                        }
+                        
+                        // Clean up before continuing
+                        command = "";
+                        float = false;
+                        args = [];
+                        currentArg = "";
+                    }
+                    command = char;
+                } else if(char === ".") { // Enables use of floats
+                    if(float) {
+                        args.push(parseFloat(currentArg));
+                        currentArg = ".";
+                    } else {
+                        currentArg += char;
+                        float = true;
+                    }
+                } else if(signs.indexOf(char) > -1) { // Allows for positive/negative values
+                    if(currentArg) {
+                        args.push(parseFloat(currentArg));
+                        float = false;
+                        currentArg = "";
+                    } else {
+                        currentArg += char;
+                    }
+                }
+
+                // If the end of the path has been reached, cleans up the last argument before continuing parsing
+                if(i === pathString.length - 1) {
+                    if(currentArg) {
+                        args.push(parseFloat(currentArg));
+                    }
+                }
+                
+                // If the command has a sufficient amount of arguments, then create a node for it
+                if (command && args.length >= commands[command]) {
+                    // Generate the node
+                    let node = this.generateNode(pathStart, p0, command, args);
+                    path.add(node);
+                    p0 = node.getEndPoint();
+                    if(node.setStart) pathStart = p0;
+                    
+                    // Reset and prepare for the next command
+                    command = "";
+                    float = false;
+                    args = [];
+                    currentArg = "";
+                }
+            }
+
+            return path;
+        }
+
+        public add(node: PathNode) {
+            this.nodes.push(node);
+        }
+
+        public run(interval: number, target: Sprite): boolean {
+            this.startedAt == null && (this.startedAt = control.millis());
+            
+            const runningTime = control.millis() - this.startedAt; // The time since the start of the path
+            const nodeIndex: number = Math.floor(runningTime / interval); // The current node
+            const nodeTime: number = runningTime % interval; // The time the current node has been animating
+            
+            if(this.lastNode > -1 && this.lastNode < nodeIndex && this.nodes.length) { // If the last node hasn't been completed yet
+                this.nodes[nodeIndex - 1].apply(target, interval, interval); // Applies the last state of the previous node in case it was missed (this makes sure all moveTos fire)
+            }
+            this.lastNode = nodeIndex;
+
+            if(runningTime >= this.nodes.length * interval && this.nodes.length) {
+                this.nodes[this.nodes.length - 1].apply(target, interval, interval); // Apply the last node
+                return true;
+            }
+
+            this.nodes[nodeIndex].apply(target, nodeTime, interval);
+            return false;
+        }
+    }
+
     export interface PathNode {
-        command: string;
-        args?: number[];
+        setStart: boolean;
+        apply(target: Sprite, nodeTime: number, interval: number): void;
+        getEndPoint(): Point;
+    }
+
+    export class MoveTo implements PathNode {
+        public setStart: boolean = true;
+        constructor(private p1: Point) {
+        }
+
+        apply(target: Sprite, nodeTime: number, interval: number): void {
+            nodeTime >= interval && target.setPosition(this.p1.x, this.p1.y);
+        }
+
+        getEndPoint(): Point {
+            return this.p1;
+        }
+    }
+
+    export class LineTo implements PathNode {
+        public setStart: boolean = false;
+        constructor(private p0: Point, private p1: Point) {
+        }
+
+        apply(target: Sprite, nodeTime: number, interval: number): void {
+            const x = Math.round(((this.p1.x - this.p0.x) / interval) * nodeTime) + this.p0.x;
+            const y = Math.round(((this.p1.y - this.p0.y) / interval) * nodeTime) + this.p0.y;
+            target.setPosition(x, y);
+        }
+
+        getEndPoint(): Point {
+            return this.p1;
+        }
+    }
+
+    export class QuadraticCurveTo implements PathNode {
+        public setStart: boolean = false;
+        constructor(private p0: Point, private p1: Point, private p2: Point) {
+        }
+
+        apply(target: Sprite, nodeTime: number, interval: number): void {
+            const progress = nodeTime / interval;
+            const diff = 1 - progress;
+            const a = Math.pow(diff, 2);
+            const b = 2 * diff * progress;
+            const c = Math.pow(progress, 2);
+
+            const x = Math.round(a * this.p0.x + b * this.p1.x + c * this.p2.x);
+            const y = Math.round(a * this.p0.y + b * this.p1.y + c * this.p2.y);
+
+            target.setPosition(x, y);
+        }
+
+        getEndPoint(): Point {
+            return this.p2;
+        }
+    }
+
+    export class CubicCurveTo implements PathNode {
+        public setStart: boolean = false;
+        constructor(private p0: Point, private p1: Point, private p2: Point, private p3: Point) {
+        }
+
+        apply(target: Sprite, nodeTime: number, interval: number): void {
+            const progress = nodeTime / interval;
+            const diff = 1 - progress;
+            const a = Math.pow(diff, 3);
+            const b = 3 * Math.pow(diff, 2) * progress;
+            const c = 3 * diff * Math.pow(progress, 2);
+            const d = Math.pow(progress, 3);
+
+            const x = Math.round(a * this.p0.x + b * this.p1.x + c * this.p2.x + d * this.p3.x);
+            const y = Math.round(a * this.p0.y + b * this.p1.y + c * this.p2.y + d * this.p3.y);
+
+            target.setPosition(x, y);
+        }
+
+        getEndPoint(): Point {
+            return this.p3;
+        }
     }
 
     export interface Animation {
@@ -78,21 +390,13 @@ namespace animation {
     export class MovementAnimation implements Animation {
         public sprite: Sprite;
         public isPlaying: boolean;
-        private nodes: PathNode[];
-        private nodeIndex: number;
+        private path: Path;
         private nodeInterval: number;
-        private lastNode: number;
-        private pathStart: Point;
-        private lastState: Point;
         
-        constructor(sprite: Sprite, nodes: PathNode[], nodeInterval: number) {
+        constructor(sprite: Sprite, path: Path, nodeInterval: number) {
             this.sprite = sprite;
-            this.pathStart = new Point(this.sprite.x, this.sprite.y);
-            this.lastState = this.pathStart;
-            this.nodes = nodes;
-            this.nodeIndex = 0;
+            this.path = path; // TODO Change this
             this.nodeInterval = nodeInterval;
-            this.lastNode = control.millis();
 
             this.init();
         }
@@ -109,129 +413,8 @@ namespace animation {
             animations.removeElement(this);
         }
 
-        private applyNode(node: PathNode, dt: number): void {
-            switch (node.command) {
-                case "M": { // M x y
-                    dt >= this.nodeInterval && this.sprite.setPosition(node.args[0], node.args[1]);
-                    this.pathStart = new Point(node.args[0], node.args[1]);
-                    break;
-                }
-                case "m": { // M dx dy
-                    dt >= this.nodeInterval && this.sprite.setPosition(this.lastState.x + node.args[0], this.lastState.y + node.args[1]);
-                    this.pathStart = new Point(node.args[0], node.args[1]);
-                    break;
-                }
-                case "L": { // L x y
-                    const dx = Math.round(((node.args[0] - this.lastState.x) / this.nodeInterval) * dt);
-                    const dy = Math.round(((node.args[1] - this.lastState.y) / this.nodeInterval) * dt);
-                    this.sprite.setPosition(this.lastState.x + dx, this.lastState.y + dy);
-                    break;
-                }
-                case "l": { // l dx dy
-                    const dx = Math.round((node.args[0] / this.nodeInterval) * dt);
-                    const dy = Math.round((node.args[1] / this.nodeInterval) * dt);
-                    this.sprite.setPosition(this.lastState.x + dx, this.lastState.y + dy);
-                    break;
-                }
-                case "H": { // H x
-                    const dx = Math.round(((node.args[0] - this.lastState.x) / this.nodeInterval) * dt);
-                    this.sprite.setPosition(this.lastState.x + dx, this.lastState.y);
-                    break;
-                }
-                case "h": { // h dx
-                    const dx = Math.round((node.args[0] / this.nodeInterval) * dt);
-                    this.sprite.setPosition(this.lastState.x + dx, this.lastState.y);
-                    break;
-                }
-                case "V": { // V y
-                    const dy = Math.round(((node.args[0] - this.lastState.y) / this.nodeInterval) * dt);
-                    this.sprite.setPosition(this.lastState.x, this.lastState.y + dy);
-                    break;
-                }
-                case "v": { // v dy
-                    const dy = Math.round((node.args[0] / this.nodeInterval) * dt);
-                    this.sprite.setPosition(this.lastState.x, this.lastState.y + dy);
-                    break;
-                }
-                case "Q": { // Q x1 y1 x y
-                    const progress = dt / this.nodeInterval;
-                    const diff = 1 - progress;
-                    const a = Math.pow(diff, 2);
-                    const b = 2 * diff * progress;
-                    const c = Math.pow(progress, 2);
-
-                    const x = Math.round(a * this.lastState.x + b * node.args[0] + c * node.args[2]);
-                    const y = Math.round(a * this.lastState.y + b * node.args[1] + c * node.args[3]);
-
-                    this.sprite.setPosition(x, y);
-                    break;
-                }
-                case "q": { // q dx1 dy1 dx dy
-                    const progress = dt / this.nodeInterval;
-                    const diff = 1 - progress;
-                    const b = 2 * diff * progress;
-                    const c = Math.pow(progress, 2);
-        
-                    const dx = Math.round(b * node.args[0] + c * node.args[2]);
-                    const dy = Math.round(b * node.args[1] + c * node.args[3]);
-        
-                    this.sprite.setPosition(this.lastState.x + dx, this.lastState.y + dy);
-                    break;
-                }
-                case "C": { // C x1 y1 x2 y2 x y
-                    const progress = dt / this.nodeInterval;
-                    const diff = 1 - progress;
-                    const a = Math.pow(diff, 3);
-                    const b = 3 * Math.pow(diff, 2) * progress;
-                    const c = 3 * diff * Math.pow(progress, 2);
-                    const d = Math.pow(progress, 3);
-        
-                    const x = Math.round(a * this.lastState.x + b * node.args[0] + c * node.args[2] + d * node.args[4]);
-                    const y = Math.round(a * this.lastState.y + b * node.args[1] + c * node.args[3] + d * node.args[5]);
-        
-                    this.sprite.setPosition(x, y);
-                    break;
-                }
-                case "c": { // c dx1 dy1 dx2 dy2 dx dy
-                    const progress = dt / this.nodeInterval;
-                    const diff = 1 - progress;
-                    const b = 3 * Math.pow(diff, 2) * progress;
-                    const c = 3 * diff * Math.pow(progress, 2);
-                    const d = Math.pow(progress, 3);
-        
-                    const dx = Math.round(b * node.args[0] + c * node.args[2] + d * node.args[4]);
-                    const dy = Math.round(b * node.args[1] + c * node.args[3] + d * node.args[5]);
-        
-                    this.sprite.setPosition(this.lastState.x + dx, this.lastState.y + dy);
-                    break;
-                }
-                case "Z": // Z
-                case "z": { // z
-                    this.applyNode({ command: "L", args: [ this.pathStart.x, this.pathStart.y ] }, dt);
-                    break;
-                }
-            }
-        }
-
         update(): void {
-            const currentTime: number = control.millis();
-            const dt: number = currentTime - this.lastNode;
-            
-            if(this.nodeIndex < this.nodes.length) {
-                let node: PathNode = this.nodes[this.nodeIndex];
-
-                // If the next node should have been reached
-                if (dt >= this.nodeInterval) {
-                    this.applyNode(node, this.nodeInterval);
-                    this.lastState = new Point(this.sprite.x, this.sprite.y) // Records the last state of the sprite for later reference
-                    this.nodeIndex++;
-                    this.lastNode = currentTime;
-                } else {
-                    this.applyNode(node, dt);
-                }
-            } else {
-                this.done();
-            }
+            this.path.run(this.nodeInterval, this.sprite) && this.done();
         }
     }
 
@@ -304,44 +487,17 @@ namespace animation {
 
     /**
      * Create and run a movement animation on a sprite
-     * @param animation the movement preset to animate
      * @param sprite the sprite to move
+     * @param pathString the SVG path to animate
      * @param nodeInterval the time between nodes during which to animate, eg: 500
      * @param wait whether or not the animation should be blocking
      */
     //% blockId=run_movement_animation
-    //% block="%sprite=variables_get(mySprite) follow path %animation with interval %nodeInterval=timePicker ms and wait %wait=toggleOnOff"
+    //% block="%sprite=variables_get(mySprite) follow path %pathString with interval %nodeInterval=timePicker ms and wait %wait=toggleOnOff"
     //% wait.defl=1
-    export function runMovementAnimation(sprite: Sprite, animation: MovementAnimations, nodeInterval?: number, wait?: boolean): void {
-        let nodes: PathNode[];
-        switch (animation) {
-            case MovementAnimations.Test:
-                nodes = [
-                    {
-                        command: "M",
-                        args: [
-                            50,
-                            50
-                        ]
-                    },
-                    {
-                        command: "c",
-                        args: [
-                            40,
-                            0,
-                            0,
-                            40,
-                            60,
-                            60
-                        ]
-                    },
-                    {
-                        command: "z"
-                    }
-                ];
-        }
-
-        let anim = new MovementAnimation(sprite, nodes, nodeInterval || 500);
+    export function runMovementAnimation(sprite: Sprite, pathString: string, nodeInterval?: number, wait?: boolean): void {
+        let path = Path.parse(new Point(sprite.x, sprite.y), pathString);
+        let anim = new MovementAnimation(sprite, path, nodeInterval || 500);
         (wait == null || wait) && pauseUntil(() => anim.isPlaying === false);
     }
 }
