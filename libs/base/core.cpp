@@ -1745,7 +1745,7 @@ PXT_DEF_STRING(sNumberTp, "number")
 PXT_DEF_STRING(sFunctionTp, "function")
 PXT_DEF_STRING(sUndefinedTp, "undefined")
 
-//%
+//% expose
 String typeOf(TValue v) {
     switch (valType(v)) {
     case ValType::Undefined:
@@ -1982,5 +1982,65 @@ void stopPerfCounter(PerfCounters n) {
     c->numstops++;
 }
 #endif
+
+// Exceptions
+
+#ifndef PXT_EXN_CTX
+#define PXT_EXN_CTX() getThreadContext()
+#endif
+
+typedef void (*RestoreStateType)(TryFrame *, ThreadContext *);
+#ifndef pxt_restore_exception_state
+#define pxt_restore_exception_state ((RestoreStateType)(((uintptr_t *)bytecode)[14]))
+#endif
+
+//%
+TryFrame *beginTry() {
+    auto ctx = PXT_EXN_CTX();
+    auto frame = (TryFrame *)app_alloc(sizeof(TryFrame));
+    frame->parent = ctx->tryFrame;
+    ctx->tryFrame = frame;
+    return frame;
+}
+
+//% expose
+void endTry() {
+    auto ctx = PXT_EXN_CTX();
+    auto f = ctx->tryFrame;
+    if (!f) oops(51);
+    ctx->tryFrame = f->parent;
+    app_free(f);
+}
+
+//% expose
+void throwValue(TValue v) {
+    auto ctx = PXT_EXN_CTX();
+    auto f = ctx->tryFrame;
+    if (!f) target_panic(PANIC_UNHANDLED_EXCEPTION);
+    ctx->tryFrame = f->parent;
+    TryFrame copy = *f;
+    app_free(f);
+    ctx->thrownValue = v;
+    pxt_restore_exception_state(&copy, ctx);
+}
+
+//% expose
+TValue getThrownValue() {
+    auto ctx = PXT_EXN_CTX();
+    auto v = ctx->thrownValue;
+    ctx->thrownValue = TAG_NON_VALUE;
+    if (v == TAG_NON_VALUE)
+        oops(51);
+    return v;
+}
+
+//% expose
+void endFinally() {
+    auto ctx = PXT_EXN_CTX();
+    if (ctx->thrownValue == TAG_NON_VALUE)
+        return;
+    throwValue(getThrownValue());
+}
+
 
 } // namespace pxt
