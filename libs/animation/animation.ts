@@ -48,7 +48,9 @@ namespace animation {
             animations = [];
 
             game.eventContext().registerFrameHandler(scene.ANIMATION_UPDATE_PRIORITY, () => {
-                animations.forEach(anim => anim.update());
+                animations.forEach(anim => {
+                    if(anim) anim.update(); // The check is necessary as sometimes anim will be undefined
+                });
             });
         }
     }
