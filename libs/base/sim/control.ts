@@ -51,7 +51,7 @@ namespace pxsim.control {
         if (!n) n = 42;
         return n;
     }
-    export function deviceLongSerialNumber(): Buffer {
+    export function deviceLongSerialNumber(): RefBuffer {
         let b = control.createBuffer(8);
         b.setNumber(NumberFormat.UInt32LE, deviceSerialNumber())
         return b;
