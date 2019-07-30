@@ -50,7 +50,7 @@ namespace animation {
             this.action = action;
             this.frames = [];
             this.sprites = [];
-            this.lastTime = control.millis();
+            this.lastTime = control.animationMillis();
 
             this._init();
         }
@@ -66,7 +66,7 @@ namespace animation {
         }
 
         update() {
-            let currentTime = control.millis();
+            let currentTime = control.animationMillis();
             let dt = currentTime - this.lastTime;
             if (dt >= this.interval && this.frames.length) {
                 this.index = (this.index + 1) % this.frames.length;

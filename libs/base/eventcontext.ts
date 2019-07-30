@@ -46,6 +46,12 @@ namespace control {
     function doNothing() { }
 
 
+    let _animationTime: number = 1; // TODO remove before merge
+    export function animationMillis() {
+        if (_animationTime)
+            return _animationTime
+        return millis()
+    }
 
     export class EventContext {
         private handlers: EventHandler[];
@@ -77,7 +83,12 @@ namespace control {
             control.enablePerfCounter("all frame callbacks")
 
             let loopStart = control.millis()
-            this.deltaTimeMillis = loopStart - this.prevTimeMillis;
+            if (_animationTime) {
+                this.deltaTimeMillis = 30;
+                _animationTime += 30;
+            } else {
+                this.deltaTimeMillis = loopStart - this.prevTimeMillis;
+            }
             this.prevTimeMillis = loopStart;
             for (let f of this.frameCallbacks) {
                 f.handler()
