@@ -182,7 +182,6 @@ namespace animation {
             };
             const signs = "+-";
 
-            let float = false;
             let currentArg: string = "";
             let command: string = null;
             let args: number[] = [];
@@ -194,20 +193,18 @@ namespace animation {
                 // - if it's a digit, add it to the current argument
                 // - else if it's whitespace or newline, finish the current argument and prepare for the next one
                 // - else if it's a command, complete the previous argument, and prepare for the next one
-                //   - if there's sufficient data to make a node during this step, create it, and continue
-                // - else if it's a period, include it in the argument (so long as there isn't already one), to enable use of floats
+                //   - if there's sufficient data to make a node during this step, create it and continue
                 // - else if it's a plus/minus sign, and if it's the start of a new argument, add it to allow for positive/negative numbers
                 // - if it's the end of the string, complete the current argument before proceeding to the next step
                 // - if there's sufficient data to make a node after all of these steps, create it
                 if(digits.indexOf(char) > -1) { // Parses number arguments
                     currentArg += char;
                 } else if(separators.indexOf(char) > -1 && currentArg) { // Terminates number arguments
-                    args.push(parseFloat(currentArg));
-                    float = false;
+                    args.push(parseInt(currentArg));
                     currentArg = "";
                 } else if(Object.keys(commands).indexOf(char) > -1) { // Parses command arguments
                     if(command && currentArg) {
-                        args.push(parseFloat(currentArg));
+                        args.push(parseInt(currentArg));
                         
                         // Try to finish up this node, otherwise just toss it out
                         if (command && args.length >= commands[command]) {
@@ -219,23 +216,13 @@ namespace animation {
                         
                         // Clean up before continuing
                         command = "";
-                        float = false;
                         args = [];
                         currentArg = "";
                     }
                     command = char;
-                } else if(char === ".") { // Enables use of floats
-                    if(float) {
-                        args.push(parseFloat(currentArg));
-                        currentArg = ".";
-                    } else {
-                        currentArg += char;
-                        float = true;
-                    }
                 } else if(signs.indexOf(char) > -1) { // Allows for positive/negative values
                     if(currentArg) {
-                        args.push(parseFloat(currentArg));
-                        float = false;
+                        args.push(parseInt(currentArg));
                         currentArg = "";
                     }
                     currentArg = char;
@@ -244,7 +231,7 @@ namespace animation {
                 // If the end of the path has been reached, cleans up the last argument before continuing parsing
                 if(i === pathString.length - 1) {
                     if(currentArg) {
-                        args.push(parseFloat(currentArg));
+                        args.push(parseInt(currentArg));
                     }
                 }
                 
@@ -258,7 +245,6 @@ namespace animation {
                     
                     // Reset and prepare for the next command
                     command = "";
-                    float = false;
                     args = [];
                     currentArg = "";
                 }
@@ -496,7 +482,7 @@ namespace animation {
             case AnimationPath.Shake:
                 return "m 4 -1 m 1 2 m -6 2 m -4 -8 m 8 8 m 2 -4 m -8 0 m 6 3 m -3 -2";
             case AnimationPath.Bounce:
-                return "q 10 -100 20 0 q 8 -60 16 0 q 4 -20 8 0 q 2 -10 4 0 q 1 -5 2 0 q 0.5 -2.5 1 0";
+                return "q 10 -100 20 0 q 8 -60 16 0 q 4 -20 8 0 q 2 -10 4 0 q 1 -5 2 0 q 0 -2 1 0";
         }
     }
 }
