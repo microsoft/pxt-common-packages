@@ -2,6 +2,7 @@
 #define _PXT_VM_H
 
 #include <pthread.h>
+#include <setjmp.h>
 
 #define VM_MAGIC0 0x000a34365458500aULL // \nPXT64\n\0
 #define VM_MAGIC1 0x6837215e2bfe7154ULL
@@ -149,6 +150,10 @@ struct FiberContext {
     TValue r0;
     RefAction *currAction;
 
+    TryFrame *tryFrame;
+    TValue thrownValue;
+    jmp_buf loopjmp;
+
     TValue *stackBase;
     TValue *stackLimit;
 
@@ -159,6 +164,12 @@ struct FiberContext {
     // for sleep
     uint64_t wakeTime;
 };
+
+
+#define PXT_EXN_CTX() currentFiber
+
+void restoreVMExceptionState(TryFrame *tf, FiberContext *ctx);
+#define pxt_restore_exception_state restoreVMExceptionState
 
 extern VMImage *vmImg;
 extern FiberContext *currentFiber;

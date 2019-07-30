@@ -1,6 +1,7 @@
 namespace game.consoleOverlay {
     let consoleColor = 1;
     let consoleStrings: string[];
+    let tabSize = 8;
     const marginx = 4;
     const marginy = 2;
     const consoleFont = image.font5;
@@ -46,8 +47,17 @@ namespace game.consoleOverlay {
         const height = consoleFont.charHeight + marginy;
         const top = 2 + (game.stats ? height : 0);
         for (let i = 0; i < consoleStrings.length; ++i) {
-            const t = consoleStrings[i];
-            screen.print(t, marginx, top + i * height, consoleColor, consoleFont);
+            if (consoleStrings[i].indexOf("\t") >= 0) {
+                const t = consoleStrings[i].split("\t");
+                let tOff = 0;
+                for (let tab of t) {
+                    let padding = tabSize - ((tOff + tab.length) % tabSize)
+                    screen.print(tab, marginx + (tOff * consoleFont.charWidth), top + i * height, consoleColor, consoleFont);
+                    tOff += tab.length + padding;
+                }
+            }
+            else
+                screen.print(consoleStrings[i], marginx, top + i * height, consoleColor, consoleFont);
         }
     }
 }

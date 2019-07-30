@@ -179,6 +179,8 @@ ThreadContext *pushThreadContext(void *sp, void *endSP) {
         LOG("push: %p", curr);
         curr->globals = globals;
         curr->stack.next = NULL;
+        curr->thrownValue = TAG_NON_VALUE;
+        curr->tryFrame = NULL;
 
 #ifdef PXT_GC_THREAD_LIST
         curr->next = threadContexts;
@@ -300,6 +302,7 @@ static void mark(int flags) {
 
 #ifdef PXT_GC_THREAD_LIST
     for (auto ctx = threadContexts; ctx; ctx = ctx->next) {
+        gcProcess(ctx->thrownValue);
         for (auto seg = &ctx->stack; seg; seg = seg->next) {
             auto ptr = (TValue *)threadAddressFor(ctx, seg->top);
             auto end = (TValue *)threadAddressFor(ctx, seg->bottom);
