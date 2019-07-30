@@ -28,6 +28,13 @@ namespace jacdac {
             this._buffer.setUint8(2, address & 0xff);
         }
 
+        get udidh() : number {
+            return (this.device_address == JD_CONTROL_TRANSMIT_ONLY_ADDRESS) ? this._buffer.getNumber(NumberFormat.UInt32LE, JD_SERIAL_HEADER_SIZE + 4) : 0;
+        }
+        get udidl() : number {
+            return (this.device_address == JD_CONTROL_TRANSMIT_ONLY_ADDRESS) ? this._buffer.getNumber(NumberFormat.UInt32LE, JD_SERIAL_HEADER_SIZE) : 0;
+        }
+
         get size(): number {
             return this._buffer.getUint8(3);
         }
@@ -43,13 +50,16 @@ namespace jacdac {
         }
 
         get data(): Buffer {
-            return this._buffer.slice(JD_SERIAL_HEADER_SIZE, this.size)
+            if (this.device_address != JD_CONTROL_TRANSMIT_ONLY_ADDRESS)
+                return this._buffer.slice(JD_SERIAL_HEADER_SIZE, this.size)
+
+            return this._buffer.slice(JD_SERIAL_HEADER_SIZE + JD_SERIAL_UDID_SIZE, this.size - JD_SERIAL_UDID_SIZE);
         }
 
         set data(buf: Buffer) {
             this.size = buf.length;
 
-            for (let i = 0; i < buf.length; i++)
+            for (let i = 0; i < Math.min(buf.length, this._buffer.length - 1); i++)
                 this._buffer.setUint8(JD_SERIAL_HEADER_SIZE + i, buf.getUint8(i));
         }
 
@@ -249,7 +259,11 @@ namespace jacdac {
         }
 
         toString(): string {
-            return `${this.udid.toHex()}:${this.device_address}:${this.device_name || "--"}`;
+            let service_numbers = ""
+            for (let s of this.services)
+                service_numbers += s.service_class.toString() + " ";
+
+            return `${this.device_name || this.udid.toHex()} [${this.device_address}]: ${service_numbers}`;
         }
     }
 
