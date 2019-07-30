@@ -3,8 +3,14 @@ enum AnimationPath {
     FlyToCenter,
     //% block="shake"
     Shake,
-    //% block="bounce"
-    Bounce
+    //% block="bounce (right)"
+    BounceRight,
+    //% block="bounce (left)"
+    BounceLeft,
+    //% block="parachute"
+    Parachute,
+    //% block="parachute (reverse)"
+    ParachuteReverse
 }
 
 /*
@@ -481,8 +487,14 @@ namespace animation {
                 return "L 80 60";
             case AnimationPath.Shake:
                 return "m 4 -1 m 1 2 m -6 2 m -4 -8 m 8 8 m 2 -4 m -8 0 m 6 3 m -3 -2";
-            case AnimationPath.Bounce:
-                return "q 10 -100 20 0 q 8 -60 16 0 q 4 -20 8 0 q 2 -10 4 0 q 1 -5 2 0 q 0 -2 1 0";
+            case AnimationPath.BounceRight:
+                return "q 7 0 15 40 q 10 -30 15 -25 q 10 5 15 25 q 5 -25 10 0 q 4 -15 8 0 q 2 -10 4 0 q 1 -5 1 0 q 0 -2 1 0";
+            case AnimationPath.BounceLeft:
+                return "q -7 0 -15 40 q -10 -30 -15 -25 q -10 5 -15 25 q -5 -25 -10 0 q -4 -15 -8 0 q -2 -10 -4 0 q -1 -5 -1 0 q 0 -2 -1 0";
+            case AnimationPath.Parachute:
+                return "q 20 10 40 5 q 2 -2 0 0 q -15 10 -30 5 q -2 -2 0 0 q 10 10 20 5 q 2 -2 0 0 q -5 5 -10 3 q -1 -1 0 0 q 2 2 5 1 l 0 2 l 0 2 l 0 2";
+            case AnimationPath.ParachuteReverse:
+                return "q -20 10 -40 5 q -2 -2 0 0 q 15 10 30 5 q 2 -2 0 0 q -10 10 -20 5 q -2 -2 0 0 q 5 5 10 3 q 1 -1 0 0 q -2 2 -5 1 l 0 2 l 0 2 l 0 2";
         }
     }
 }
