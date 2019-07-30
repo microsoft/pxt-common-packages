@@ -112,8 +112,9 @@ namespace music {
 
     /**
      * Play a melody from the melody editor.
-     * @param melody
-     * @param tempo
+     * @param melody - string of up to eight notes [C D E F G A B C5] separated by spaces, 
+     * which will be played one at a time, eg: "E D G F B A C5 B "
+     * @param tempo - number in beats per minute (bpm), dictating how long each note will play for
      */
     //% block="play melody $melody at tempo $tempo|(bpm)" blockId=playMelody
     //% blockNamespace=music
@@ -123,9 +124,29 @@ namespace music {
     //% tempo.min=40 tempo.max=500
     //% tempo.defl=120
     export function playMelody(melody: string, tempo: number) {
-        // add tempo to string so it is reflected in simulation
+        let notes: string[] = melody.split(" ");
+        let formattedMelody = "";
+        let newOctave = false;
+
+        // build melody string, replace '-' with 'R' and add tempo
         // creates format like "C5-174 B4 A G F E D C "
-        let formattedMelody = melody.substr(0, melody.indexOf(' ')) + "-" + tempo + melody.substr(melody.indexOf(' '), melody.length);
+        for (let i = 0; i < notes.length - 1; i++) {
+            if (notes[i] === "-") {
+                notes[i] = "R";
+            } else if (notes[i] === "C5") {
+                newOctave = true;
+            } else if (newOctave) { // change the octave if necesary
+                notes[i] += "4";
+                newOctave = false;
+            }
+            // add tempo after first note
+            if (i == 0) {
+                formattedMelody += notes[i] + "-" + tempo + " ";
+            } else {
+                formattedMelody += notes[i] + " ";
+            }
+        }
+
         const song = new Melody(formattedMelody);
         song.playUntilDone();
     }
@@ -144,25 +165,9 @@ namespace music {
     //% melody.fieldOptions.decompileLiterals=true
     //% melody.fieldOptions.decompileIndirectFixedInstances="true"
     //% melody.fieldOptions.onParentBlock="true"
+    //% shim=TD_ID
     export function melodyEditor(melody: string): string {
-        let notes: string[] = melody.split(" ");
-        let melodyString = "";
-        let newOctave = false;
-
-        // build melody string, replace '-' with 'R'
-        for (let i = 0; i < notes.length - 1; i++) {
-            if (notes[i] === "-") {
-                notes[i] = "R";
-            } else if (notes[i] === "C5") {
-                newOctave = true;
-            } else if (newOctave) { // change the octave if necesary
-                notes[i] += "4";
-                newOctave = false;
-            }
-            melodyString += notes[i] + " ";
-        }
-
-        return melodyString;
+        return melody;
     }
 
     /**
