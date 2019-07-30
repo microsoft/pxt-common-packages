@@ -478,7 +478,7 @@ namespace animation {
     export function path(path: AnimationPath): string {
         switch(path) {
             case AnimationPath.FlyToCenter:
-                return "M 80 60";
+                return "L 80 60";
             case AnimationPath.Shake:
                 return "m 4 -1 m 1 2 m -6 2 m -4 -8 m 8 8 m 2 -4 m -8 0 m 6 3 m -3 -2";
             case AnimationPath.Bounce:
