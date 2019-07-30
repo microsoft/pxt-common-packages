@@ -347,7 +347,11 @@ Buffer mkBuffer(const uint8_t *data, int len) {
 static unsigned random_value = 0xC0DA1;
 
 void seedRandom(unsigned seed) {
-    random_value = seed;
+    int explicitSeed = getConfig(CFG_RANDOM_SEED, 0);
+    if (explicitSeed != 0)
+        random_value = explicitSeed;
+    else
+        random_value = seed;
 }
 
 void seedAddRandom(unsigned seed) {
