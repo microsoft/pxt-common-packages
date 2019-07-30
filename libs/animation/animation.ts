@@ -1,3 +1,12 @@
+enum AnimationPath {
+    //% block="fly to center of screen"
+    FlyToCenter,
+    //% block="shake"
+    Shake,
+    //% block="bounce"
+    Bounce
+}
+
 /*
     Animation library for sprites
 */
@@ -468,11 +477,26 @@ namespace animation {
      * @param wait whether or not the animation should be blocking
      */
     //% blockId=run_movement_animation
-    //% block="%sprite=variables_get(mySprite) follow path %pathString with interval %nodeInterval=timePicker ms and wait %wait=toggleOnOff"
+    //% block="%sprite=variables_get(mySprite) follow path %pathString=animation_path with interval %nodeInterval=timePicker ms and wait %wait=toggleOnOff"
     //% wait.defl=1
     export function runMovementAnimation(sprite: Sprite, pathString: string, nodeInterval?: number, wait?: boolean): void {
         let path = Path.parse(new Point(sprite.x, sprite.y), pathString);
         let anim = new MovementAnimation(sprite, path, nodeInterval || 500);
         (wait == null || wait) && pauseUntil(() => anim.isPlaying === false);
+    }
+
+    /**
+     * Default paths available for animations
+     */
+    //% blockId=animation_path block="%path"
+    export function path(path: AnimationPath): string {
+        switch(path) {
+            case AnimationPath.FlyToCenter:
+                return "M 80 60";
+            case AnimationPath.Shake:
+                return "m 4 -1 m 1 2 m -6 2 m -4 -8 m 8 8 m 2 -4 m -8 0 m 6 3 m -3 -2";
+            case AnimationPath.Bounce:
+                return "q 10 -100 20 0 q 8 -60 16 0 q 4 -20 8 0 q 2 -10 4 0 q 1 -5 2 0 q 0.5 -2.5 1 0";
+        }
     }
 }
