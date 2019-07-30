@@ -115,14 +115,14 @@ namespace music {
      * @param melody
      * @param tempo
      */
-    //% block="play melody $melody at tempo $tempo|(bpm)" blockId=playMelodyFromEditor
+    //% block="play melody $melody at tempo $tempo|(bpm)" blockId=playMelody
     //% blockNamespace=music
-    //% weight=75 blockGap=8
+    //% weight=85 blockGap=8
     //% group="Melody"
     //% melody.shadow="melody_editor"
     //% tempo.min=40 tempo.max=500
     //% tempo.defl=120
-    export function playMelodyFromEditor(melody: string, tempo: number) {
+    export function playMelody(melody: string, tempo: number) {
         // add tempo to string so it is reflected in simulation
         // creates format like "C5-174 B4 A G F E D C "
         let formattedMelody = melody.substr(0, melody.indexOf(' ')) + "-" + tempo + melody.substr(melody.indexOf(' '), melody.length);
@@ -138,7 +138,7 @@ namespace music {
     //% block="$melody" blockId=melody_editor
     //% blockNamespace=music
     //% blockHidden = true
-    //% weight=75 blockGap=8
+    //% weight=85 blockGap=8
     //% group="Melody" duplicateShadowOnDrag
     //% melody.fieldEditor="melody"
     //% melody.fieldOptions.decompileLiterals=true
