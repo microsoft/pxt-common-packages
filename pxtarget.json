@@ -48,6 +48,7 @@
         "libs/azureiot",
         "libs/color",
         "libs/game",
-        "libs/storyboard"
+        "libs/storyboard",
+        "libs/rotary-encoder"
     ]
 }

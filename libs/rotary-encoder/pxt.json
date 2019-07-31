@@ -1,0 +1,15 @@
+{
+    "name": "rotary-encoder",
+    "description": "Driver for rotary encoder",
+    "files": [
+        "rotary.cpp",
+        "enums.d.ts",
+        "shims.d.ts",
+        "ns.ts",
+        "targetoverrides.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core"
+    }
+}
