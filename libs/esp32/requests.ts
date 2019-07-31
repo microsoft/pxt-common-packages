@@ -16,22 +16,6 @@ namespace esp32spi {
         return data
     }
 
-    // TODO move to PXT
-    // also note this doesn't handle unicode, but neither does JS (there's toLocaleLowerCase())
-    export function toLowerCase(s: string) {
-        let r = ""
-        let prev = 0
-        for (let i = 0; i < s.length; i++) {
-            const c = s.charCodeAt(i)
-            if (65 <= c && c <= 90) {
-                r += s.slice(prev, i) + String.fromCharCode(c + 32)
-                prev = i + 1
-            }
-        }
-        r += s.slice(prev)
-        return r
-    }
-
     /*
     >>> "a,b,c,d,e".split(",", 2)
     ['a', 'b', 'c,d,e']
@@ -147,7 +131,7 @@ read only when requested
             let title = tmp[0]
             let content = tmp[1]
             if (title && content) {
-                resp.headers[toLowerCase(title)] = toLowerCase(content)
+                resp.headers[title.toLowerCase()] = content.toLowerCase()
             }
         }
 
