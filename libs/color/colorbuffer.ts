@@ -17,9 +17,15 @@ namespace color {
         layout: ColorBufferLayout;
         buf: Buffer;
 
-        constructor(buf: Buffer, layout?: ColorBufferLayout) {
-            this.buf = buf;
+        constructor(length: number, layout?: ColorBufferLayout) {
             this.layout = layout || ColorBufferLayout.RGB;
+            this.buf = control.createBuffer((length | 0) * this.stride);
+        }
+
+        static fromBuffer(buffer: Buffer, layout: ColorBufferLayout) {
+            const b = new ColorBuffer(0, layout);
+            b.buf = buffer;
+            return b;
         }
 
         get stride() {
@@ -56,7 +62,21 @@ namespace color {
 
         slice(start?: number, length?: number): ColorBuffer {
             const s = this.stride;
-            return new ColorBuffer(this.buf.slice(start ? start * s : start, length ? length * s : length));
+            if (start === undefined)
+                start = 0;
+            start = start | 0;
+            if (start < 0)
+                start = this.length - start;
+            if (length === undefined)
+                length = this.length;
+            else if (length < 0)
+                length = this.length - length;
+            length = Math.min(length | 0, this.length - length - start);
+            const b = new ColorBuffer(length, this.layout);
+            for (let i = 0; i < length; ++i) {
+                b.setColor(i, this.color(start + i));
+            }
+            return b;
         }
 
         /**
@@ -81,19 +101,10 @@ namespace color {
      * Converts an array of colors into a color buffer
      */
     export function createBuffer(colors: number[], layout?: ColorBufferLayout): color.ColorBuffer {
+        const p = new ColorBuffer(colors.length, layout);
         const n = colors.length;
-        layout = layout || ColorBufferLayout.RGB;
-        const stride = layout == ColorBufferLayout.RGB ? 3 : 4;
-        const buf = control.createBuffer(n * stride);
-        const p = new ColorBuffer(buf);
-        let k = 0;
         for (let i = 0; i < n; i++) {
-            let color = colors[i];
-            for (let j = stride - 1; j >= 0; --j) {
-                p.buf[k + j] = color & 0xff;
-                color = color >> 8;
-            }
-            k += stride;
+            p.setColor(i, colors[i]);
         }
         return p;
     }
