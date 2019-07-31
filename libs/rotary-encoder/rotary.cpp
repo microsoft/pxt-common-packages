@@ -23,8 +23,11 @@ class RotaryEncoder_ {
 
         state = (s >> 2);
         if (posMap[s]) {
+            int lastPosition = position;
             position += posMap[s];
-            Event ev(id, ROT_EV_CHANGED);
+            if ((lastPosition >> 2) != (position >> 2)) {
+                Event ev(id, ROT_EV_CHANGED);
+            }
         }
     }
 
