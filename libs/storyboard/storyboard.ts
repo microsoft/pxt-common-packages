@@ -103,11 +103,9 @@ namespace storyboard {
         
         if (!_nav) _nav = [];
         if (_nav.length) {
-            console.log('drop current scene')
             _nav.pop();
             game.popScene();
         }
-        console.log('replace scene')
         _nav.push(scene);
         game.pushScene();
         scene.start();
@@ -126,10 +124,8 @@ namespace storyboard {
 
         if (!_nav) _nav = [];        
         if (_nav.length) {
-            console.log('drop scene')
             game.popScene();
         }
-        console.log(`push ${name}`)
         _nav.push(scene);
         game.pushScene();
         scene.start();
@@ -142,12 +138,10 @@ namespace storyboard {
     export function pop() {
         const n = _nav && _nav.pop();
         if (n) {
-            console.log('pop scene')
             game.popScene();
         }
         // restart previous
         if (_nav && _nav.length) {
-            console.log('restart scene')
             const sc = _nav[_nav.length - 1];
             game.pushScene();
             sc.start();
