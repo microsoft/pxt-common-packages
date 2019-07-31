@@ -85,7 +85,7 @@ namespace animation {
             this.lastNode = -1;
         }
 
-        private static generateNode(pathStart: Point, p0: Point, command: string, args: number[]): PathNode {
+        private static generateNode(p0: Point, command: string, args: number[], metadata: { pathStart: Point, lastNode: PathNode }): PathNode {
             // Sets the start point for the path (that can be changed using moveTo)
             let node: PathNode;
             switch (command) {
@@ -157,7 +157,7 @@ namespace animation {
                 }
                 case "Z": // Z
                 case "z": { // z
-                    node = new LineTo(p0, pathStart);
+                    node = new LineTo(p0, metadata.pathStart);
                     break;
                 }
             }
@@ -194,6 +194,7 @@ namespace animation {
 
             for (let i = 0; i < pathString.length; i++) {
                 const char: string = pathString.charAt(i);
+                const lastNode: PathNode = path.nodes[path.nodes.length - 1];
                 
                 // This is an SVG path parser. It's kinda complicated. For each character, evaluate the following conditions:
                 // - if it's a digit, add it to the current argument
@@ -214,7 +215,10 @@ namespace animation {
                         
                         // Try to finish up this node, otherwise just toss it out
                         if (command && args.length >= commands[command]) {
-                            let node = this.generateNode(pathStart, p0, command, args);
+                            let node = this.generateNode(p0, command, args, {
+                                pathStart: pathStart,
+                                lastNode: lastNode
+                            });
                             path.add(node);
                             p0 = node.getEndPoint(); // Set the start for the next node to the end of this node
                             if(node.setStart) pathStart = p0; // If this is a move command, then this sets the new start of the path (for the Z/z command)
@@ -244,7 +248,10 @@ namespace animation {
                 // If the command has a sufficient amount of arguments, then create a node for it
                 if (command && args.length >= commands[command]) {
                     // Generate the node
-                    let node = this.generateNode(pathStart, p0, command, args);
+                    let node = this.generateNode(p0, command, args, {
+                        pathStart: pathStart,
+                        lastNode: lastNode
+                    });
                     path.add(node);
                     p0 = node.getEndPoint();
                     if(node.setStart) pathStart = p0;
