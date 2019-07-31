@@ -65,6 +65,7 @@ namespace esp32spi {
         headers?: StringMap;
         stream?: boolean;
         timeout?: number; // in ms
+        controller?: Controller;
     }
 
     export function dataAsBuffer(data: string | Buffer): Buffer {
@@ -141,16 +142,17 @@ read only when requested
             port = parseInt(tmp[1])
         }
 
-        let ipaddr = esp32spi.SPIController.instance.hostbyName(host)
+        const controller = options.controller || esp32spi.defaultController();
+        let ipaddr = controller.hostbyName(host)
 
         let sock: Socket;
         let conntype = esp32spi.TCP_MODE
         if (proto == "https:") {
             conntype = esp32spi.TLS_MODE
             // for SSL we need to know the host name
-            sock = new Socket(host, port, conntype)
+            sock = new Socket(controller, host, port, conntype)
         } else {
-            sock = new Socket(ipaddr, port, conntype)
+            sock = new Socket(controller, ipaddr, port, conntype)
         }
         // our response
         let resp = new Response(sock)
