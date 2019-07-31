@@ -13,11 +13,16 @@ namespace net {
         onClose(handler: () => void): void;
         onError(handler: (msg: string) => void): void;
         onMessage(handler: (data: Buffer) => void): void;
+        setTimeout(millis: number): void;
+        readLine(): string;
     }
 
     export class Net {
         constructor() {}
-        createSocket(host: string, port: number): Socket {
+        createSocket(host: string, port: number, secure: boolean): Socket {
+            return undefined;
+        }
+        hostByName(host: string): string {
             return undefined;
         }
     }
