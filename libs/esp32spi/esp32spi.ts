@@ -90,11 +90,9 @@ namespace esp32spi {
         return b
     }
 
-    export class SPIController {
+    export class SPIController extends Controller {
         private _socknum_ll: Buffer[];
         private _locked: boolean;
-
-        static instance: SPIController;
 
         public wasConnected: boolean;
 
@@ -106,12 +104,12 @@ namespace esp32spi {
             private _gpio0: DigitalInOutPin = null,
             public debug = 0
         ) {
+            super();
             // if nothing connected, pretend the device is ready -
             // we'll check for timeout waiting for response instead
             this._busy.setPull(PinPullMode.PullDown);
             this._busy.digitalRead();
             this._socknum_ll = [buffer1(0)]
-            SPIController.instance = this;
             this._spi.setFrequency(8000000);
             this.reset();
             this._locked = false;

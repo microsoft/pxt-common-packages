@@ -17,12 +17,12 @@ namespace esp32spi {
         /** A simplified implementation of the Python 'socket' class, for connecting
     through an interface to a remote device
  */
-        constructor(private host: string | Buffer, private port: number, private conntype: number = null) {
+        constructor(private controller: Controller, private host: string | Buffer, private port: number, private conntype: number = null) {
             if (this.conntype === null) {
                 this.conntype = esp32spi.TCP_MODE
             }
             this._buffer = hex``
-            this._socknum = esp32spi.SPIController.instance.socket()
+            this._socknum = this.controller.socket()
             this.setTimeout(0)
         }
 
@@ -31,7 +31,7 @@ namespace esp32spi {
     depending on the underlying interface
 */
         public connect() {
-            if (!esp32spi.SPIController.instance.socketConnect(this._socknum, this.host, this.port, this.conntype)) {
+            if (!this.controller.socketConnect(this._socknum, this.host, this.port, this.conntype)) {
                 this.error(`failed to connect to ${this.host}`)
                 return;
             }
@@ -45,7 +45,7 @@ namespace esp32spi {
         /** Send some data to the socket */
         public send(data: string | Buffer) {
             //console.log("sock wr: " + data)
-            esp32spi.SPIController.instance.socketWrite(this._socknum, dataAsBuffer(data))
+            this.controller.socketWrite(this._socknum, dataAsBuffer(data))
         }
 
         private error(msg: string) {
@@ -85,9 +85,9 @@ namespace esp32spi {
             let stamp = monotonic()
             while (this._buffer.indexOf(hex`0d0a`) < 0) {
                 // there's no line already in there, read some more
-                let avail = Math.min(esp32spi.SPIController.instance.socketAvailable(this._socknum), MAX_PACKET)
+                let avail = Math.min(this.controller.socketAvailable(this._socknum), MAX_PACKET)
                 if (avail) {
-                    this._buffer = this._buffer.concat(esp32spi.SPIController.instance.socketRead(this._socknum, avail))
+                    this._buffer = this._buffer.concat(this.controller.socketRead(this._socknum, avail))
                 } else if (this._timeout > 0 && monotonic() - stamp > this._timeout) {
                     // Make sure to close socket so that we don't exhaust sockets.
                     this.close()
@@ -107,9 +107,9 @@ namespace esp32spi {
             // print("Socket read", size)
             if (size == 0) {
                 if (this._buffer.length == 0) {
-                    let avail = Math.min(esp32spi.SPIController.instance.socketAvailable(this._socknum), MAX_PACKET)
+                    let avail = Math.min(this.controller.socketAvailable(this._socknum), MAX_PACKET)
                     if (avail)
-                        this._buffer = this._buffer.concat(esp32spi.SPIController.instance.socketRead(this._socknum, avail))
+                        this._buffer = this._buffer.concat(this.controller.socketRead(this._socknum, avail))
                 }
                 let ret = this._buffer
                 this._buffer = hex``
@@ -121,10 +121,10 @@ namespace esp32spi {
             let received = []
             while (to_read > 0) {
                 // print("Bytes to read:", to_read)
-                let avail = Math.min(esp32spi.SPIController.instance.socketAvailable(this._socknum), MAX_PACKET)
+                let avail = Math.min(this.controller.socketAvailable(this._socknum), MAX_PACKET)
                 if (avail) {
                     stamp = monotonic()
-                    let recv = esp32spi.SPIController.instance.socketRead(this._socknum, Math.min(to_read, avail))
+                    let recv = this.controller.socketRead(this._socknum, Math.min(to_read, avail))
                     received.push(recv)
                     to_read -= recv.length
                 }
@@ -157,7 +157,7 @@ namespace esp32spi {
         /** Close the socket, after reading whatever remains */
         public close() {
             this._closed = true;
-            esp32spi.SPIController.instance.socketClose(this._socknum)
+            this.controller.socketClose(this._socknum)
             if (this._closeHandler)
                 this._closeHandler();
         }
