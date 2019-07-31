@@ -20,7 +20,8 @@
         "lcdclient.ts",
         "colorsensorclient.ts",
         "proximityclient.ts",
-        "lightspectrumsensorclient.ts"
+        "lightspectrumsensorclient.ts",
+        "rotaryencoderclient.ts"
     ],
     "testFiles": [
         "test.ts"
