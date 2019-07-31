@@ -69,7 +69,7 @@ namespace net {
         timeout?: number; // in ms
     }
 
-    function dataAsBuffer(data: string | Buffer): Buffer {
+    export function dataAsBuffer(data: string | Buffer): Buffer {
         if (data == null)
             return null
         if (typeof data == "string")
@@ -130,7 +130,6 @@ read only when requested
         let ipaddr = net.hostbyName(host)
 
         let sock: Socket;
-        const secure = ;
         if (proto == "https:") {
             // for SSL we need to know the host name
             sock = net.createSocket(host, port, true)

@@ -45,7 +45,7 @@ namespace esp32spi {
         /** Send some data to the socket */
         public send(data: string | Buffer) {
             //console.log("sock wr: " + data)
-            this.controller.socketWrite(this._socknum, dataAsBuffer(data))
+            this.controller.socketWrite(this._socknum, net.dataAsBuffer(data))
         }
 
         private error(msg: string) {
