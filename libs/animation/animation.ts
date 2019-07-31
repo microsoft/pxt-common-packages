@@ -36,12 +36,17 @@ enum AnimationPath {
 */
 //% color="#03AA74" weight=78 icon="\uf021"
 namespace animation {
+    export interface AnimationState {
+        movementAnimation?: MovementAnimation,
+        imageAnimation?: ImageAnimation
+    }
+
     // Stores the animations for the current scene
-    let animations: Animation[];
+    let animations: AnimationState;
 
     // Preserves animations when switching back and forth between scenes
     let animationStateStack: {
-        state: Animation[],
+        state: AnimationState,
         scene: scene.Scene
     }[];
 
@@ -73,12 +78,11 @@ namespace animation {
     const initializeAnimationHandler = () => {
         // Register animation updates to fire when frames are rendered
         if(!animations) {
-            animations = [];
+            animations = {};
 
             game.eventContext().registerFrameHandler(scene.ANIMATION_UPDATE_PRIORITY, () => {
-                animations.forEach(anim => {
-                    if(anim) anim.update(); // The check is necessary as sometimes anim will be undefined
-                });
+                animations.movementAnimation && animations.movementAnimation.update();
+                animations.imageAnimation && animations.imageAnimation.update();
             });
         }
     }
@@ -412,12 +416,12 @@ namespace animation {
             initializeAnimationHandler();
             
             this.isPlaying = true;
-            animations.push(this);
+            animations.movementAnimation = this;
         }
 
         private done(): void {
             this.isPlaying = false;
-            animations.removeElement(this);
+            animations.movementAnimation = undefined;
         }
 
         update(): void {
@@ -446,12 +450,12 @@ namespace animation {
             initializeAnimationHandler();
 
             this.isPlaying = true;
-            animations.push(this);
+            animations.imageAnimation = this;
         }
 
         private done(): void {
             this.isPlaying = false;
-            animations.removeElement(this);
+            animations.imageAnimation = undefined;
         }
 
         update(): void {
