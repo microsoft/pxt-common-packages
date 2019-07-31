@@ -65,7 +65,7 @@ namespace storyboard {
     function fadeBackground(last: BootSequence, next: BootSequence) {
         if (last.background == next.background) return;
 
-        const fadeLength = 10;
+        const fadeLength = palette.defaultPalette().length;
         const fadeGradient = color.gradient(
             last.background,
             next.background,
