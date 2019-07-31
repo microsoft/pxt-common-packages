@@ -12,7 +12,7 @@ namespace palette {
      * Returns a clone of the default palette
      */
     export function defaultPalette(): color.ColorBuffer {
-        return color.ColorBuffer.fromBuffer(defaultPaletteBuffer, color.ColorBufferLayout.RGB);
+        return color.ColorBuffer.fromBuffer(defaultPaletteBuffer.slice(), color.ColorBufferLayout.RGB);
     }
 
     const FIELD = "__palette";
