@@ -1,5 +1,5 @@
 {
-    "name": "esp32spi",
+    "name": "esp32",
     "description": "ESP32 over SPI - beta",
     "files": [
         "esp32spi.ts",

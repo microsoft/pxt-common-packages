@@ -42,7 +42,7 @@
         "libs/edge-connector",
         "libs/proximity",
         "libs/feather",
-        "libs/esp32spi",
+        "libs/esp32",
         "libs/net",
         "libs/mqtt",
         "libs/azureiot",

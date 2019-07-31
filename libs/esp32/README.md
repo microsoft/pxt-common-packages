@@ -1,4 +1,4 @@
-# WiFi
+# ESP32
 
 ## ESP32 SPI
 
