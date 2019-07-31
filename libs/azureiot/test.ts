@@ -7,8 +7,8 @@ let secrets: Secrets;
 function test() {
 
     const log = console.log;
-    const esp = new esp32spi.SPIController(pins.spi(),
-        pins.D13, pins.D11, pins.D12, pins.D10, 1)
+    const esp = new esp32spi.Esp32Net(new esp32spi.SPIController(pins.spi(),
+        pins.D13, pins.D11, pins.D12, pins.D10, 1))
 
     if (esp.status != esp32spi.WL_IDLE_STATUS)
         return
@@ -39,7 +39,6 @@ function test() {
 
     log("ping: " + esp.ping("bing.com"))
 
-    azureiot.network = new esp32spi.NetTLS()
     azureiot.connString = secrets.connString
     azureiot.connect()
     log("mqtt connected")

@@ -25,7 +25,6 @@ namespace azureiot {
         return _mqttClient;
     }
 
-    export let network: net.Net
     export let connString = ""
 
     function createMQTTClient() {
@@ -43,7 +42,7 @@ namespace azureiot {
             password: "SharedAccessSignature " + sasToken,
             clientId: deviceId
         }
-        const c = new mqtt.Client(opts, network);
+        const c = new mqtt.Client(opts);
         c.on('connected', () => {
             log("connected")
             control.raiseEvent(_messageBusId, AzureIotEvent.Connected)
