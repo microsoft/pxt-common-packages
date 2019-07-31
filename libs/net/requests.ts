@@ -98,7 +98,7 @@ sent along. 'stream' will determine if we buffer everything, or whether to only
 read only when requested
  
 */
-    export function request(net: net.Net, method: string, url: string, options?: RequestOptions): net.Response {
+    export function request(method: string, url: string, options?: RequestOptions): net.Response {
         if (!options) options = {};
         if (!options.headers) {
             options.headers = {}
@@ -127,14 +127,14 @@ read only when requested
             port = parseInt(tmp[1])
         }
 
-        let ipaddr = net.hostbyName(host)
+        let ipaddr = net.Net.instance.hostByName(host)
 
         let sock: Socket;
         if (proto == "https:") {
             // for SSL we need to know the host name
-            sock = net.createSocket(host, port, true)
+            sock = net.Net.instance.createSocket(host, port, true)
         } else {
-            sock = net.createSocket(ipaddr, port, true)
+            sock = net.Net.instance.createSocket(ipaddr, port, false)
         }
         // our response
         let resp = new Response(sock)
@@ -208,32 +208,32 @@ read only when requested
     }
 
     /** Send HTTP HEAD request */
-    export function head(net: net.Net, url: string, options?: RequestOptions) {
-        return request(net, "HEAD", url, options)
+    export function head(url: string, options?: RequestOptions) {
+        return request("HEAD", url, options)
     }
 
     /** Send HTTP GET request */
-    export function get(net: net.Net, url: string, options?: RequestOptions) {
-        return request(net, "GET", url, options)
+    export function get(url: string, options?: RequestOptions) {
+        return request("GET", url, options)
     }
 
     /** Send HTTP POST request */
-    export function post(net: net.Net, url: string, options?: RequestOptions) {
-        return request(net, "POST", url, options)
+    export function post(url: string, options?: RequestOptions) {
+        return request("POST", url, options)
     }
 
     /** Send HTTP PATCH request */
-    export function patch(net: net.Net, url: string, options?: RequestOptions) {
-        return request(net, "PATCH", url, options)
+    export function patch(url: string, options?: RequestOptions) {
+        return request("PATCH", url, options)
     }
 
     /** Send HTTP PUT request */
-    export function put(net: net.Net, url: string, options?: RequestOptions) {
-        return request(net, "PUT", url, options)
+    export function put(url: string, options?: RequestOptions) {
+        return request("PUT", url, options)
     }
 
     /** Send HTTP DELETE request */
-    export function del(net: net.Net, url: string, options?: RequestOptions) {
-        return request(net, "DELETE", url, options)
+    export function del(url: string, options?: RequestOptions) {
+        return request("DELETE", url, options)
     }
 }

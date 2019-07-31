@@ -18,7 +18,12 @@ namespace net {
     }
 
     export class Net {
-        constructor() {}
+        constructor() {
+            Net.instance = this;
+        }
+
+        static instance: Net;
+
         createSocket(host: string, port: number, secure: boolean): Socket {
             return undefined;
         }
