@@ -6,7 +6,7 @@ namespace esp32spi {
     export function print(msg: string) {
         console.log(msg);
     }
-    
+
     export class AccessPoint {
         rssi: number;
         encryption: number;
@@ -739,6 +739,29 @@ namespace esp32spi {
             }
 
         }
+    }
+
+    let _defaultController: SPIController;
+    export function defaultController(): SPIController {
+        if (_defaultController) return _defaultController;
+
+        const cs = pins.pinByCfg(DAL.CFG_PIN_ESP32_CS)
+        const busy = pins.pinByCfg(DAL.CFG_PIN_ESP32_BUSY);
+        const reset = pins.pinByCfg(DAL.CFG_PIN_ESP32_RESET);
+        const gpio0 = pins.pinByCfg(DAL.CFG_PIN_ESP32_GPIO0);
+        if (!cs || !busy || !reset)
+            return undefined;
+
+        const mosi = pins.pinByCfg(DAL.CFG_PIN_ESP32_MOSI);
+        const miso = pins.pinByCfg(DAL.CFG_PIN_ESP32_MISO);
+        const sck = pins.pinByCfg(DAL.CFG_PIN_ESP32_SCK);
+        if (mosi && miso && sck) {
+            const spi = pins.createSPI(mosi, miso, sck);
+            if (!spi)
+                control.panic(DAL.PANIC_CODAL_HARDWARE_CONFIGURATION_ERROR);
+            return _defaultController = new SPIController(spi, cs, busy, reset, gpio0);
+        }
+        return undefined;
     }
 
     //% shim=esp32spi::flashDevice
