@@ -5,7 +5,6 @@
         "esp32spi.ts",
         "socket.ts",
         "requests.ts",
-        "wifimanager.ts",
         "net.ts",
         "README.md"
     ],

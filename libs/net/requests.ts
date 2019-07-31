@@ -6,7 +6,9 @@ namespace net {
         _read_so_far: number
         headers: StringMap;
 
-        /** The response from a request, contains all the headers/content */
+        /** 
+         * The response from a request, contains all the headers/content 
+         */
         constructor(private socket: Socket) {
             this._cached = null
             this.status_code = null
@@ -15,7 +17,9 @@ namespace net {
             this.headers = {}
         }
 
-        /** Close, delete and collect the response data */
+        /** 
+         * Close, delete and collect the response data 
+         */
         public close() {
             if (this.socket) {
                 this.socket.close()
@@ -24,7 +28,9 @@ namespace net {
             this._cached = null
         }
 
-        /** The HTTP content direct from the socket, as bytes */
+        /** 
+         * The HTTP content direct from the socket, as bytes 
+         */
         get content() {
             let content_length = parseInt(this.headers["content-length"]) || 0
 
@@ -46,8 +52,12 @@ namespace net {
             return this.content.toString()
         }
 
-        public json() {
+        get json() {
             return JSON.parse(this.text)
+        }
+
+        public toString() {
+            return `HTTP ${this.status_code}; ${Object.keys(this.headers).length} headers; ${this._cached ? this._cached.length : -1} bytes content`
         }
     }
 

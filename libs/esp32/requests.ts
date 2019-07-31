@@ -1,64 +1,4 @@
 namespace esp32spi {
-    export class Response {
-        socket: Socket
-        _cached: Buffer
-        status_code: number
-        reason: string
-        _read_so_far: number
-        headers: StringMap
-
-        /** The response from a request, contains all the headers/content */
-        constructor(sock: Socket) {
-            this.socket = sock
-            this._cached = null
-            this.status_code = null
-            this.reason = null
-            this._read_so_far = 0
-            this.headers = {}
-        }
-
-        public close() {
-            /** Close, delete and collect the response data */
-            if (this.socket) {
-                this.socket.close()
-                this.socket = null
-            }
-            this._cached = null
-        }
-
-        get content() {
-            /** The HTTP content direct from the socket, as bytes */
-            let content_length = parseInt(this.headers["content-length"]) || 0
-
-            // print("Content length:", content_length)
-            if (this._cached === null) {
-                this._cached = this.socket.read(content_length)
-                this.socket.close()
-                this.socket = null
-            }
-
-            // print("Buffer length:", len(self._cached))
-            return this._cached
-        }
-
-        /** The HTTP content, encoded into a string according to the HTTP
-    header encoding
-*/
-        get text() {
-            return this.content.toString()
-        }
-
-        get json() {
-            return JSON.parse(this.text)
-        }
-
-        public toString() {
-            return `HTTP ${this.status_code}; ${Object.keys(this.headers).length} headers; ${this._cached ? this._cached.length : -1} bytes content`
-        }
-    }
-
-    export type StringMap = { [v: string]: string; };
-
     export interface RequestOptions {
         data?: string | Buffer;
         json?: any; // will call JSON.stringify()
@@ -113,7 +53,7 @@ sent along. 'stream' will determine if we buffer everything, or whether to only
 read only when requested
  
 */
-    export function request(method: string, url: string, options?: RequestOptions): Response {
+    export function request(method: string, url: string, options?: RequestOptions): net.Response {
         if (!options) options = {};
         if (!options.headers) {
             options.headers = {}
@@ -155,7 +95,7 @@ read only when requested
             sock = new Socket(controller, ipaddr, port, conntype)
         }
         // our response
-        let resp = new Response(sock)
+        let resp = new net.Response(sock)
         // socket read timeout
         sock.setTimeout(options.timeout)
 
