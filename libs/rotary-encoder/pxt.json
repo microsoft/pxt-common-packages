@@ -6,10 +6,13 @@
         "enums.d.ts",
         "shims.d.ts",
         "ns.ts",
-        "targetoverrides.ts"
+        "targetoverrides.ts",
+        "jacdac.ts",
+        "README.md"
     ],
     "public": true,
     "dependencies": {
-        "core": "file:../core"
+        "core": "file:../core",
+        "jacdac": "file:../jacdac"
     }
 }
