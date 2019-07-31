@@ -112,8 +112,8 @@ namespace music {
 
     /**
      * Play a melody from the melody editor.
-     * @param melody - string of up to eight notes [C D E F G A B C5] separated by spaces, 
-     * which will be played one at a time, eg: "E D G F B A C5 B "
+     * @param melody - string of up to eight notes [C D E F G A B C5] or rests [-] separated by spaces, 
+     * which will be played one at a time, ex: "E D G F B A C5 B "
      * @param tempo - number in beats per minute (bpm), dictating how long each note will play for
      */
     //% block="play melody $melody at tempo $tempo|(bpm)" blockId=playMelody
@@ -124,13 +124,13 @@ namespace music {
     //% tempo.min=40 tempo.max=500
     //% tempo.defl=120
     export function playMelody(melody: string, tempo: number) {
-        let notes: string[] = melody.split(" ");
+        let notes: string[] = melody.split(" ").filter(n => !!n);
         let formattedMelody = "";
         let newOctave = false;
 
         // build melody string, replace '-' with 'R' and add tempo
         // creates format like "C5-174 B4 A G F E D C "
-        for (let i = 0; i < notes.length - 1; i++) {
+        for (let i = 0; i < notes.length; i++) {
             if (notes[i] === "-") {
                 notes[i] = "R";
             } else if (notes[i] === "C5") {
