@@ -373,29 +373,44 @@ namespace animation {
         }
     }
 
-    export interface Animation {
-        sprite: Sprite;
-        isPlaying: boolean;
+    export class Animation {
+        public isPlaying: boolean;
 
-        update(): void;
+        constructor(protected sprite: Sprite) {
+        }
+
+        protected init(): void {
+            initializeAnimationHandler();
+
+            this.isPlaying = true;
+        }
+
+        protected done(): void {
+            this.isPlaying = false;
+        }
+
+        protected update(): void {
+            // This should be implemented by subclasses
+            this.done();
+        }
     }
 
-    export class MovementAnimation implements Animation {
-        public isPlaying: boolean;
-        
-        constructor(public sprite: Sprite, private path: Path, private nodeInterval: number) {
+    export class MovementAnimation extends Animation {
+        constructor(sprite: Sprite, private path: Path, private nodeInterval: number) {
+            super(sprite);
+
             this.init();
         }
         
-        private init(): void {
-            initializeAnimationHandler();
-            
-            this.isPlaying = true;
+        protected init(): void {
+            super.init();
+
             animations.movementAnimation = this;
         }
 
-        private done(): void {
-            this.isPlaying = false;
+        protected done(): void {
+            super.done();
+
             animations.movementAnimation = undefined;
         }
 
@@ -406,16 +421,15 @@ namespace animation {
         }
     }
 
-    export class ImageAnimation implements Animation {
-        public sprite: Sprite;
-        public isPlaying: boolean;
+    export class ImageAnimation extends Animation {
         private frames: Image[];
         private frameInterval: number;
         private lastFrame: number;
         private startedAt: number;
 
         constructor(sprite: Sprite, frames: Image[], frameInterval: number) {
-            this.sprite = sprite;
+            super(sprite);
+
             this.frames = frames;
             this.frameInterval = frameInterval;
             this.lastFrame = -1;
@@ -423,15 +437,15 @@ namespace animation {
             this.init();
         }
         
-        public init(): void {
-            initializeAnimationHandler();
+        protected init(): void {
+            super.init();
 
-            this.isPlaying = true;
             animations.imageAnimation = this;
         }
 
-        private done(): void {
-            this.isPlaying = false;
+        protected done(): void {
+            super.done();
+
             animations.imageAnimation = undefined;
         }
 
