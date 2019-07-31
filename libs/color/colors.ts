@@ -170,6 +170,28 @@ namespace color {
         return color;
     }
 
+    export function blend(color: number, alpha: number, otherColor: number) {
+        alpha = Math.max(0, Math.min(0xff, alpha | 0));
+        const malpha = 0xff - alpha;
+        const r = (unpackR(color) * malpha + unpackR(otherColor) * alpha) >> 8;
+        const g = (unpackG(color) * malpha + unpackG(otherColor) * alpha) >> 8;
+        const b = (unpackB(color) * malpha + unpackB(otherColor) * alpha) >> 8;
+        return rgb(r, g, b);
+    }
+
+    export function gradient(startColor: number, endColor: number, steps: number): ColorBuffer {
+        steps = Math.max(2, steps | 0);
+        const b = new ColorBuffer(steps);
+        b.setColor(0, startColor);
+        b.setColor(b.length - 1, endColor);
+        for (let i = 1; i < steps - 1; ++i) {
+            const alpha = Math.idiv(0xff * i, steps);
+            const c = blend(startColor, alpha, endColor);
+            b.setColor(i, c);
+        }
+        return b;
+    }
+
     export function unpackR(rgb: number): number {
         return (rgb >> 16) & 0xFF;
     }

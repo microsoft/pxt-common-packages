@@ -12,6 +12,8 @@
     "public": true,
     "weight": 10,
     "dependencies": {
-        "game": "file:../game"
+        "game": "file:../game",
+        "color": "file:../color",
+        "palette": "file:../storyboard"
     }
 }
