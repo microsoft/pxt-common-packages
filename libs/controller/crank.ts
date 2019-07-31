@@ -1,8 +1,6 @@
 namespace controller {
     /**
-     * Shows an animation on the controller lights
-     * @param animation 
-     * @param duration 
+     * Gets the current position of the crank.
      */
     //% blockId=controller_crank_position block="crank position"
     //% weight=29 blockGap=8
