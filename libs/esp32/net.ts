@@ -29,13 +29,13 @@ namespace esp32spi {
         }
     }
 
-    export class NetTLS extends net.Net {
+    export class Esp32Net extends net.Net {
         constructor(public controller: Controller) {
             super();
         }
 
-        createSocket(host: string, port: number): net.Socket {
-            const socket = new Socket(this.controller, host, port, TLS_MODE);
+        createSocket(host: string, port: number, secure: boolean): net.Socket {
+            const socket = new Socket(this.controller, host, port, secure ? TLS_MODE : TCP_MODE);
             return socket;
         }
     }
