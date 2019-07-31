@@ -10,7 +10,25 @@ enum AnimationPath {
     //% block="parachute (right)"
     ParachuteRight,
     //% block="parachute (left)"
-    ParachuteLeft
+    ParachuteLeft,
+    //% block="ease (right)"
+    EaseRight,
+    //% block="ease (left)"
+    EaseLeft,
+    //% block="ease (down)"
+    EaseDown,
+    //% block="ease (up)"
+    EaseUp,
+    //% block="wave (right)"
+    WaveRight,
+    //% block="wave (left)"
+    WaveLeft,
+    //% block="bobbing (in place)"
+    Bobbing,
+    //% block="bobbing (right)"
+    BobbingRight,
+    //% block="bobbing (left)"
+    BobbingLeft
 }
 
 /*
@@ -502,6 +520,24 @@ namespace animation {
                 return "q 20 10 40 5 q 2 -2 0 0 q -15 10 -30 5 q -2 -2 0 0 q 10 10 20 5 q 2 -2 0 0 q -5 5 -10 3 q -1 -1 0 0 q 2 2 5 1 l 0 2 l 0 2 l 0 2";
             case AnimationPath.ParachuteLeft:
                 return "q -20 10 -40 5 q -2 -2 0 0 q 15 10 30 5 q 2 -2 0 0 q -10 10 -20 5 q -2 -2 0 0 q 5 5 10 3 q 1 -1 0 0 q -2 2 -5 1 l 0 2 l 0 2 l 0 2";
+            case AnimationPath.EaseRight:
+                return "h 5 h 10 h 20 h 30 h 20 h 10 h 5";
+            case AnimationPath.EaseLeft:
+                return "h -5 h -10 h -20 h -30 h -20 h -10 h -5";
+            case AnimationPath.EaseDown:
+                return "v 5 v 10 v 20 v 30 v 20 v 10 v 5";
+            case AnimationPath.EaseUp:
+                return "v -5 v -10 v -20 v -30 v -20 v -10 v -5";
+            case AnimationPath.WaveRight:
+                return "c 25 -15 15 -5 20 0";
+            case AnimationPath.WaveLeft:
+                return "c -25 -15 -15 -5 -20 0";
+            case AnimationPath.Bobbing:
+                return "c 0 -20 0 20 0 0";
+            case AnimationPath.BobbingRight:
+                return "c 5 -20 15 20 20 0";
+            case AnimationPath.BobbingLeft:
+                return "c -5 -20 -15 20 -20 0";
         }
     }
 }
