@@ -1,35 +1,4 @@
-enum AnimationPath {
-    //% block="fly to center of screen"
-    FlyToCenter,
-    //% block="shake"
-    Shake,
-    //% block="bounce (right)"
-    BounceRight,
-    //% block="bounce (left)"
-    BounceLeft,
-    //% block="parachute (right)"
-    ParachuteRight,
-    //% block="parachute (left)"
-    ParachuteLeft,
-    //% block="ease (right)"
-    EaseRight,
-    //% block="ease (left)"
-    EaseLeft,
-    //% block="ease (down)"
-    EaseDown,
-    //% block="ease (up)"
-    EaseUp,
-    //% block="wave (right)"
-    WaveRight,
-    //% block="wave (left)"
-    WaveLeft,
-    //% block="bobbing (in place)"
-    Bobbing,
-    //% block="bobbing (right)"
-    BobbingRight,
-    //% block="bobbing (left)"
-    BobbingLeft
-}
+
 
 /*
     Animation library for sprites
@@ -94,6 +63,12 @@ namespace animation {
         constructor(x: number, y: number) {
             this.x = x;
             this.y = y;
+        }
+    }
+
+    //% fixedInstances blockId=animation_path block="path %pathString"
+    export class PathPreset {
+        constructor(public pathString: string) {
         }
     }
 
@@ -510,42 +485,59 @@ namespace animation {
         (wait == null || wait) && pauseUntil(() => anim.isPlaying === false);
     }
 
+    //% fixedInstance whenUsed block="fly to center"
+    export const flyToCenter = new PathPreset("L 80 60");
+    
+    //% fixedInstance whenUsed block="shake"
+    export const shake = new PathPreset("m 4 -1 m 1 2 m -6 2 m -4 -8 m 8 8 m 2 -4 m -8 0 m 6 3 m -3 -2");
+
+    //% fixedInstance whenUsed block="bounce (right)"
+    export const bounceRight = new PathPreset("q 7 0 15 40 q 10 -30 15 -25 q 10 5 15 25 q 5 -25 10 0 q 4 -15 8 0 q 2 -10 4 0 q 1 -5 1 0 q 0 -2 1 0");
+
+    //% fixedInstance whenUsed block="bounce (left)"
+    export const bounceLeft = new PathPreset("q -7 0 -15 40 q -10 -30 -15 -25 q -10 5 -15 25 q -5 -25 -10 0 q -4 -15 -8 0 q -2 -10 -4 0 q -1 -5 -1 0 q 0 -2 -1 0");
+
+    //% fixedInstance whenUsed block="parachute (right)"
+    export const parachuteRight = new PathPreset("q 20 10 40 5 q 2 -2 0 0 q -15 10 -30 5 q -2 -2 0 0 q 10 10 20 5 q 2 -2 0 0 q -5 5 -10 3 q -1 -1 0 0 q 2 2 5 1 l 0 2 l 0 2 l 0 2");
+
+    //% fixedInstance whenUsed block="parachute (left)"
+    export const parachuteLeft = new PathPreset("q -20 10 -40 5 q -2 -2 0 0 q 15 10 30 5 q 2 -2 0 0 q -10 10 -20 5 q -2 -2 0 0 q 5 5 10 3 q 1 -1 0 0 q -2 2 -5 1 l 0 2 l 0 2 l 0 2");
+
+    //% fixedInstance whenUsed block="ease (right)"
+    export const easeRight = new PathPreset("h 5 h 10 h 20 h 30 h 20 h 10 h 5");
+
+    //% fixedInstance whenUsed block="ease (left)"
+    export const easeLeft = new PathPreset("h -5 h -10 h -20 h -30 h -20 h -10 h -5");
+
+    //% fixedInstance whenUsed block="ease (down)"
+    export const easeDown = new PathPreset("v 5 v 10 v 20 v 30 v 20 v 10 v 5");
+
+    //% fixedInstance whenUsed block="ease (up)"
+    export const easeUp = new PathPreset("v -5 v -10 v -20 v -30 v -20 v -10 v -5");
+
+    //% fixedInstance whenUsed block="wave (right)"
+    export const waveRight = new PathPreset("c 25 -15 15 -5 20 0");
+
+    //% fixedInstance whenUsed block="wave (left)"
+    export const waveLeft = new PathPreset("c -25 -15 -15 -5 -20 0");
+
+    //% fixedInstance whenUsed block="bobbing (in place)"
+    export const bobbing = new PathPreset("c 0 -20 0 20 0 0");
+
+    //% fixedInstance whenUsed block="bobbing (right)"
+    export const bobbingRight = new PathPreset("c 5 -20 15 20 20 0");
+
+    //% fixedInstance whenUsed block="bobbing (left)"
+    export const bobbingLeft = new PathPreset("c -5 -20 -15 20 -20 0");
+
     /**
-     * Default paths available for animations
+     * Generates a path string for preset animation
+     * @param animationPath The preset path
      */
-    //% blockId=animation_path block="%path"
-    export function path(path: AnimationPath): string {
-        switch(path) {
-            case AnimationPath.FlyToCenter:
-                return "L 80 60";
-            case AnimationPath.Shake:
-                return "m 4 -1 m 1 2 m -6 2 m -4 -8 m 8 8 m 2 -4 m -8 0 m 6 3 m -3 -2";
-            case AnimationPath.BounceRight:
-                return "q 7 0 15 40 q 10 -30 15 -25 q 10 5 15 25 q 5 -25 10 0 q 4 -15 8 0 q 2 -10 4 0 q 1 -5 1 0 q 0 -2 1 0";
-            case AnimationPath.BounceLeft:
-                return "q -7 0 -15 40 q -10 -30 -15 -25 q -10 5 -15 25 q -5 -25 -10 0 q -4 -15 -8 0 q -2 -10 -4 0 q -1 -5 -1 0 q 0 -2 -1 0";
-            case AnimationPath.ParachuteRight:
-                return "q 20 10 40 5 q 2 -2 0 0 q -15 10 -30 5 q -2 -2 0 0 q 10 10 20 5 q 2 -2 0 0 q -5 5 -10 3 q -1 -1 0 0 q 2 2 5 1 l 0 2 l 0 2 l 0 2";
-            case AnimationPath.ParachuteLeft:
-                return "q -20 10 -40 5 q -2 -2 0 0 q 15 10 30 5 q 2 -2 0 0 q -10 10 -20 5 q -2 -2 0 0 q 5 5 10 3 q 1 -1 0 0 q -2 2 -5 1 l 0 2 l 0 2 l 0 2";
-            case AnimationPath.EaseRight:
-                return "h 5 h 10 h 20 h 30 h 20 h 10 h 5";
-            case AnimationPath.EaseLeft:
-                return "h -5 h -10 h -20 h -30 h -20 h -10 h -5";
-            case AnimationPath.EaseDown:
-                return "v 5 v 10 v 20 v 30 v 20 v 10 v 5";
-            case AnimationPath.EaseUp:
-                return "v -5 v -10 v -20 v -30 v -20 v -10 v -5";
-            case AnimationPath.WaveRight:
-                return "c 25 -15 15 -5 20 0";
-            case AnimationPath.WaveLeft:
-                return "c -25 -15 -15 -5 -20 0";
-            case AnimationPath.Bobbing:
-                return "c 0 -20 0 20 0 0";
-            case AnimationPath.BobbingRight:
-                return "c 5 -20 15 20 20 0";
-            case AnimationPath.BobbingLeft:
-                return "c -5 -20 -15 20 -20 0";
-        }
+    //% blockId=animation_path
+    //% block="%animationPath"
+    //% blockHidden=1
+    export function animationPresets(animationPath: PathPreset) {
+        return animationPath.pathString;
     }
 }
