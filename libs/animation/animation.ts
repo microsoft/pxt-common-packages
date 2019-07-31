@@ -425,6 +425,8 @@ namespace animation {
         }
 
         update(): void {
+            if(this.sprite.flags & sprites.Flag.Destroyed) return this.done();
+            
             this.path.run(this.nodeInterval, this.sprite) && this.done();
         }
     }
@@ -459,6 +461,8 @@ namespace animation {
         }
 
         update(): void {
+            if(this.sprite.flags & sprites.Flag.Destroyed) return this.done();
+
             if(this.startedAt == null) this.startedAt = control.millis();
             const runningTime: number = control.millis() - this.startedAt;
             const frameIndex: number = Math.floor(runningTime / this.frameInterval);
