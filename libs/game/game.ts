@@ -178,6 +178,12 @@ namespace game {
             effect = win ? winEffect : loseEffect;
         }
 
+        // collect the scores before poping the scenes
+        const scoreInfo = info.player1.getState();
+        const highScore = info.highScore();
+        if (scoreInfo.score > highScore)
+            info.saveHighScore();
+
         // releasing memory and clear fibers. Do not add anything that releases the fiber until background is set below,
         // or screen will be cleared on the new frame and will not appear as background in the game over screen.
         while (_sceneStack && _sceneStack.length) {
@@ -199,13 +205,12 @@ namespace game {
         game.eventContext().registerFrameHandler(scene.HUD_PRIORITY, () => {
             let top = showDialogBackground(46, 4);
             screen.printCenter(win ? "YOU WIN!" : "GAME OVER!", top + 8, screen.isMono ? 1 : 5, image.font8);
-            if (info.hasScore()) {
-                screen.printCenter("Score:" + info.score(), top + 23, screen.isMono ? 1 : 2, image.font8);
-                if (info.score() > info.highScore()) {
-                    info.saveHighScore();
+            if (scoreInfo.score !== undefined) {
+                screen.printCenter("Score:" + scoreInfo.score, top + 23, screen.isMono ? 1 : 2, image.font8);
+                if (scoreInfo.score > highScore) {
                     screen.printCenter("New High Score!", top + 34, screen.isMono ? 1 : 2, image.font5);
                 } else {
-                    screen.printCenter("HI" + info.highScore(), top + 34, screen.isMono ? 1 : 2, image.font8);
+                    screen.printCenter("HI" + highScore, top + 34, screen.isMono ? 1 : 2, image.font8);
                 }
             }
         });
