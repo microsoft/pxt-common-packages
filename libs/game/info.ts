@@ -556,7 +556,7 @@ namespace info {
             }
         }
 
-        private getState() {
+        getState(): PlayerState {
             this.init();
             return infoState.playerStates[this._player - 1];
         }
@@ -910,15 +910,6 @@ namespace info {
                 );
             }
         }
-
-        serialize(): { id: number, score?: number; life?: number } {
-            return {
-                id: this.id(),
-                score: this.hasScore() ? this.score() : undefined,
-                life: this.hasLife() ? this.life() : undefined
-            }
-        }
-
     }
 
     function formatDecimal(val: number) {

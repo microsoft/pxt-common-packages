@@ -179,7 +179,7 @@ namespace game {
         }
 
         // collect the scores before poping the scenes
-        const scoreInfo = info.player1.serialize();
+        const scoreInfo = info.player1.getState();
         const highScore = info.highScore();
         if (scoreInfo.score > highScore) {
             info.saveHighScore();
