@@ -551,14 +551,16 @@ Image_ doubledY(Image_ img) {
         return NULL;
 
     Image_ r = mkImage(img->width(), img->height() * 2, img->bpp());
-    auto src = img->pix();
+    auto src0 = img->pix();
     auto dst = r->pix();
 
     auto w = img->width();
+    auto sbh = img->byteHeight();
     auto bh = r->byteHeight();
     auto dbl = img->bpp() == 1 ? bitdouble : nibdouble;
 
     for (int i = 0; i < w; ++i) {
+        auto src = src0 + i * sbh;
         for (int j = 0; j < bh; j += 2) {
             *dst++ = dbl[*src & 0xf];
             if (j != bh - 1)
