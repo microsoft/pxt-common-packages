@@ -9,5 +9,6 @@
     "dependencies": {
         "core": "file:../core"
     },
-    "public": true
+    "public": true,
+    "weight": 2
 }
