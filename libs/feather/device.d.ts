@@ -16,20 +16,17 @@ declare namespace pins {
     const D0: PwmOnlyPin;
     //% fixedInstance shim=pxt::getPinCfg(CFG_PIN_D1)
     const D1: PwmOnlyPin;
-    //% fixedInstance shim=pxt::getPinCfg(CFG_PIN_D2)
-    const D2: PwmOnlyPin;
-    //% fixedInstance shim=pxt::getPinCfg(CFG_PIN_D3)
-    const D3: PwmOnlyPin;
+
+
     //% fixedInstance shim=pxt::getPinCfg(CFG_PIN_D4)
     const D4: PwmOnlyPin;
     //% fixedInstance shim=pxt::getPinCfg(CFG_PIN_D5)
     const D5: PwmOnlyPin;
     //% fixedInstance shim=pxt::getPinCfg(CFG_PIN_D6)
     const D6: PwmOnlyPin;
-    //% fixedInstance shim=pxt::getPinCfg(CFG_PIN_D7)
-    const D7: PwmOnlyPin;
-    //% fixedInstance shim=pxt::getPinCfg(CFG_PIN_D8)
-    const D8: PwmOnlyPin;
+
+
+
     //% fixedInstance shim=pxt::getPinCfg(CFG_PIN_D9)
     const D9: PwmOnlyPin;
     //% fixedInstance shim=pxt::getPinCfg(CFG_PIN_D10)
