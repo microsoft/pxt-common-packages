@@ -11,4 +11,3 @@ animation.runMovementAnimation(
     500,
     false
 )
-animation.animationPresets(animation.shake)
