@@ -450,9 +450,9 @@ namespace animation {
      * @param wait whether or not the animation should be blocking
      */
     //% blockId=run_image_animation
-    //% block="animate %frames=lists_create_with on %sprite=variables_get(mySprite) with interval %frameInterval=timePicker ms and wait %wait=toggleOnOff"
+    //% block="%sprite=variables_get(mySprite) animate frames %frames=lists_create_with with interval %frameInterval=timePicker ms and wait %wait=toggleOnOff"
     //% wait.defl=1
-    export function runImageAnimation(frames: Image[], sprite: Sprite, frameInterval?: number, wait?: boolean): void {
+    export function runImageAnimation(sprite: Sprite, frames: Image[], frameInterval?: number, wait?: boolean): void {
         let anim = new ImageAnimation(sprite, frames, frameInterval || 500);
         (wait == null || wait) && pauseUntil(() => anim.isPlaying === false);
     }
