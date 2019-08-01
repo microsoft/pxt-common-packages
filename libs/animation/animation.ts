@@ -5,53 +5,25 @@
 */
 //% color="#03AA74" weight=78 icon="\uf021"
 namespace animation {
-    export interface AnimationState {
-        movementAnimation?: MovementAnimation,
-        imageAnimation?: ImageAnimation
+    const stateNamespace = "__animation";
+
+    interface AnimationState {
+        animations: Animation[];
     }
 
-    // Stores the animations for the current scene
-    let animations: AnimationState;
-
-    // Preserves animations when switching back and forth between scenes
-    let animationStateStack: {
-        state: AnimationState,
-        scene: scene.Scene
-    }[];
-
-    game.addScenePushHandler(oldScene => {
-        if (animations) {
-            if (!animationStateStack) animationStateStack = [];
-            animationStateStack.push({
-                state: animations,
-                scene: oldScene
-            });
-            animations = undefined;
-        }
-    });
-
-    game.addScenePopHandler(() => {
-        const scene = game.currentScene();
-        animations = undefined;
-        if (animationStateStack && animationStateStack.length) {
-            for (let nextState of animationStateStack) {
-                if (nextState.scene == scene) {
-                    animations = nextState.state;
-                    animationStateStack.removeElement(nextState);
-                    break;
-                }
-            }
-        }
-    });
-
     const initializeAnimationHandler = () => {
+        let state: AnimationState = game.currentScene().data[stateNamespace];
+
         // Register animation updates to fire when frames are rendered
-        if(!animations) {
-            animations = {};
+        if(!state) {
+            state = game.currentScene().data[stateNamespace] = {
+                animations: []
+            } as AnimationState;
 
             game.eventContext().registerFrameHandler(scene.ANIMATION_UPDATE_PRIORITY, () => {
-                animations.movementAnimation && animations.movementAnimation.update();
-                animations.imageAnimation && animations.imageAnimation.update();
+                state.animations.forEach((anim: Animation) => {
+                    if(anim) anim.update();
+                });
             });
         }
     }
@@ -389,7 +361,7 @@ namespace animation {
             this.isPlaying = false;
         }
 
-        protected update(): void {
+        public update(): void {
             // This should be implemented by subclasses
             this.done();
         }
@@ -405,16 +377,18 @@ namespace animation {
         protected init(): void {
             super.init();
 
-            animations.movementAnimation = this;
+            const state: AnimationState = game.currentScene().data[stateNamespace];
+            state.animations.push(this);
         }
 
         protected done(): void {
             super.done();
 
-            animations.movementAnimation = undefined;
+            const state: AnimationState = game.currentScene().data[stateNamespace];
+            state.animations.removeElement(this);
         }
 
-        update(): void {
+        public update(): void {
             if(this.sprite.flags & sprites.Flag.Destroyed) return this.done();
             
             this.path.run(this.nodeInterval, this.sprite) && this.done();
@@ -440,16 +414,18 @@ namespace animation {
         protected init(): void {
             super.init();
 
-            animations.imageAnimation = this;
+            const state: AnimationState = game.currentScene().data[stateNamespace];
+            state.animations.push(this);
         }
 
         protected done(): void {
             super.done();
 
-            animations.imageAnimation = undefined;
+            const state: AnimationState = game.currentScene().data[stateNamespace];
+            state.animations.removeElement(this);
         }
 
-        update(): void {
+        public update(): void {
             if(this.sprite.flags & sprites.Flag.Destroyed) return this.done();
 
             if(this.startedAt == null) this.startedAt = control.millis();
