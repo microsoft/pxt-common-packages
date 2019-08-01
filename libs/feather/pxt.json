@@ -3,11 +3,11 @@
     "description": "Adafruit Feather pinout",
     "files": [
         "README.md",
-        "device.d.ts"
+        "device.d.ts",
+        "targetoverrides.d.ts"
     ],
     "dependencies": {
         "core": "file:../core"
     },
-    "public": true,
-    "hidden": true
+    "public": true
 }
