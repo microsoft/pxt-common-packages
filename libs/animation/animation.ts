@@ -1,5 +1,3 @@
-
-
 /*
     Animation library for sprites
 */
