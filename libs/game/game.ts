@@ -181,7 +181,7 @@ namespace game {
         // collect the scores before poping the scenes
         const scoreInfo = info.player1.getState();
         const highScore = info.highScore();
-        if (scoreInfo.score > highScore) {
+        if (scoreInfo.score > highScore)
             info.saveHighScore();
 
         // releasing memory and clear fibers. Do not add anything that releases the fiber until background is set below,
