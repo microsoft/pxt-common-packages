@@ -131,6 +131,10 @@ class Sprite implements SpriteLike {
         if (!this._data) this._data = {};
         return this._data;
     }
+    
+    set data(value: any) {
+        this._data = value;
+    }
     _kind: number;
 
     /**
