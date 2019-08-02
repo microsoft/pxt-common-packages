@@ -556,8 +556,9 @@ class Sprite implements SpriteLike {
                 this.sayBubbleSprite.image.setPixel(bubbleWidth - 1, font.charHeight + bubblePadding - 1, 0);
             } else {
                 // If can't update because of timeOnScreen then destroy the sayBubbleSprite and reset updateSay
-                this.sayBubbleSprite.destroy();
                 this.updateSay = undefined;
+                this.sayBubbleSprite.destroy();
+                this.sayBubbleSprite = undefined;
             }
         }
     }
