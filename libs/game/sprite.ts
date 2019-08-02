@@ -488,13 +488,18 @@ class Sprite implements SpriteLike {
             maxOffset = -1;
         }
 
-        // Destroy previous sayBubbleSprite to prevent leaking
-        const sayImg = image.create(bubbleWidth, font.charHeight + bubblePadding);
-        if (this.sayBubbleSprite)
-            this.sayBubbleSprite.setImage(sayImg);
-        else {
-            this.sayBubbleSprite = sprites.create(sayImg, -1);
-            this.sayBubbleSprite.setFlag(SpriteFlag.Ghost, true);
+        // reuse previous sprite if possible
+        const imgh = font.charHeight + bubblePadding;
+        if (!this.sayBubbleSprite
+            || this.sayBubbleSprite.image.width != bubbleWidth
+            || this.sayBubbleSprite.image.height != imgh) {
+            const sayImg = image.create(bubbleWidth, imgh);
+            if (this.sayBubbleSprite) // sprite with same image size, we can reuse it
+                this.sayBubbleSprite.setImage(sayImg);
+            else { // needs a new sprite
+                this.sayBubbleSprite = sprites.create(sayImg, -1);
+                this.sayBubbleSprite.setFlag(SpriteFlag.Ghost, true);
+            }
         }
         this.sayBubbleSprite.data[SAYKEY] = key;
         this.updateSay = (dt, camera) => {
