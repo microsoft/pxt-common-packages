@@ -6,7 +6,7 @@ namespace jacdac {
         constructor(encoder: RotaryEncoder) {
             super("crank", jacdac.ROTARY_ENCODER_DEVICE_CLASS);
             this.encoder = encoder;
-            this.encoder.onChanged(() => this.raiseHostEvent(jacdac.JDRotaryEncoderEvent.Changed))
+            this.encoder.onChanged(() => this.raiseHostEvent(JDRotaryEncoderEvent.Changed))
         }
 
         serializeState(): Buffer {
