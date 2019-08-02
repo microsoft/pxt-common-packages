@@ -131,7 +131,7 @@ class Sprite implements SpriteLike {
         if (!this._data) this._data = {};
         return this._data;
     }
-    
+
     set data(value: any) {
         this._data = value;
     }
@@ -442,12 +442,12 @@ class Sprite implements SpriteLike {
 
         // same text, color, time, etc...
         const SAYKEY = "__saykey";
-        const key = JSON.stringify({ 
-            text: text, 
-            textColor: textColor, 
-            textBoxColor: textBoxColor 
+        const key = JSON.stringify({
+            text: text,
+            textColor: textColor,
+            textBoxColor: textBoxColor
         })
-        if (timeOnScreen === undefined 
+        if (timeOnScreen === undefined
             && this.sayBubbleSprite
             && this.sayBubbleSprite.data[SAYKEY] == key) {
             // do nothing!
@@ -464,6 +464,8 @@ class Sprite implements SpriteLike {
         let bubbleWidth = text.length * font.charWidth + bubblePadding;
         let maxOffset = text.length * font.charWidth - maxTextWidth;
         let bubbleOffset: number = this._hitbox.oy;
+        let needsRedraw = true;
+
         // sets the defaut scroll speed in pixels per second
         let speed = 45;
         const currentScene = game.currentScene();
@@ -487,22 +489,18 @@ class Sprite implements SpriteLike {
         }
 
         // Destroy previous sayBubbleSprite to prevent leaking
-        if (this.sayBubbleSprite) {
-            this.sayBubbleSprite.destroy();
-            this.sayBubbleSprite = undefined;
+        const sayImg = image.create(bubbleWidth, font.charHeight + bubblePadding);
+        if (this.sayBubbleSprite)
+            this.sayBubbleSprite.setImage(sayImg);
+        else {
+            this.sayBubbleSprite = sprites.create(sayImg, -1);
+            this.sayBubbleSprite.setFlag(SpriteFlag.Ghost, true);
         }
-
-        this.sayBubbleSprite = sprites.create(image.create(bubbleWidth, font.charHeight + bubblePadding), -1);
         this.sayBubbleSprite.data[SAYKEY] = key;
-        this.sayBubbleSprite.setFlag(SpriteFlag.Ghost, true);
         this.updateSay = (dt, camera) => {
             // Update box stuff as long as timeOnScreen doesn't exist or it can still be on the screen
             if (!timeOnScreen || timeOnScreen > currentScene.millis()) {
-                this.sayBubbleSprite.image.fill(textBoxColor);
-                // The minus 2 is how much transparent padding there is under the sayBubbleSprite
-                this.sayBubbleSprite.y = this.top + bubbleOffset - ((font.charHeight + bubblePadding) >> 1) - 2;
-                this.sayBubbleSprite.x = this.x;
-
+                // move bubble
                 if (!this.isOutOfScreen(camera)) {
                     const ox = camera.offsetX;
                     const oy = camera.offsetY;
@@ -528,9 +526,11 @@ class Sprite implements SpriteLike {
                     if (holdTextSeconds <= 0 && pixelsOffset > 0) {
                         pixelsOffset = 0;
                         holdTextSeconds = maxTextWidth / speed;
+                        needsRedraw = true;
                     }
                 } else {
                     pixelsOffset += dt * speed;
+                    needsRedraw = true;
 
                     // Pause at end of text for holdTextSeconds length
                     if (pixelsOffset >= maxOffset) {
@@ -538,22 +538,31 @@ class Sprite implements SpriteLike {
                         holdTextSeconds = maxTextWidth / speed;
                     }
                 }
-                // If maxOffset is negative it won't scroll
-                if (maxOffset < 0) {
-                    this.sayBubbleSprite.image.print(text, startX, startY, textColor, font);
-                } else {
-                    this.sayBubbleSprite.image.print(text, startX - pixelsOffset, startY, textColor, font);
-                }
 
-                // Left side padding
-                this.sayBubbleSprite.image.fillRect(0, 0, bubblePadding >> 1, font.charHeight + bubblePadding, textBoxColor);
-                // Right side padding
-                this.sayBubbleSprite.image.fillRect(bubbleWidth - (bubblePadding >> 1), 0, bubblePadding >> 1, font.charHeight + bubblePadding, textBoxColor);
-                // Corners removed
-                this.sayBubbleSprite.image.setPixel(0, 0, 0);
-                this.sayBubbleSprite.image.setPixel(bubbleWidth - 1, 0, 0);
-                this.sayBubbleSprite.image.setPixel(0, font.charHeight + bubblePadding - 1, 0);
-                this.sayBubbleSprite.image.setPixel(bubbleWidth - 1, font.charHeight + bubblePadding - 1, 0);
+                if (needsRedraw) {
+                    needsRedraw = false;
+                    this.sayBubbleSprite.image.fill(textBoxColor);
+                    // The minus 2 is how much transparent padding there is under the sayBubbleSprite
+                    this.sayBubbleSprite.y = this.top + bubbleOffset - ((font.charHeight + bubblePadding) >> 1) - 2;
+                    this.sayBubbleSprite.x = this.x;
+                    // If maxOffset is negative it won't scroll
+                    if (maxOffset < 0) {
+                        this.sayBubbleSprite.image.print(text, startX, startY, textColor, font);
+
+                    } else {
+                        this.sayBubbleSprite.image.print(text, startX - pixelsOffset, startY, textColor, font);
+                    }
+
+                    // Left side padding
+                    this.sayBubbleSprite.image.fillRect(0, 0, bubblePadding >> 1, font.charHeight + bubblePadding, textBoxColor);
+                    // Right side padding
+                    this.sayBubbleSprite.image.fillRect(bubbleWidth - (bubblePadding >> 1), 0, bubblePadding >> 1, font.charHeight + bubblePadding, textBoxColor);
+                    // Corners removed
+                    this.sayBubbleSprite.image.setPixel(0, 0, 0);
+                    this.sayBubbleSprite.image.setPixel(bubbleWidth - 1, 0, 0);
+                    this.sayBubbleSprite.image.setPixel(0, font.charHeight + bubblePadding - 1, 0);
+                    this.sayBubbleSprite.image.setPixel(bubbleWidth - 1, font.charHeight + bubblePadding - 1, 0);
+                }
             } else {
                 // If can't update because of timeOnScreen then destroy the sayBubbleSprite and reset updateSay
                 this.updateSay = undefined;
@@ -561,6 +570,7 @@ class Sprite implements SpriteLike {
                 this.sayBubbleSprite = undefined;
             }
         }
+        this.updateSay(0, currentScene.camera);
     }
 
     /**
