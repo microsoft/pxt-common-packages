@@ -34,6 +34,10 @@ class RotaryEncoder_ {
     RotaryEncoder_(Pin &pinA, Pin &pinB) : pinA(pinA), pinB(pinB) {
         position = 0;
         id = pinA.id;
+
+        pinA.setPull(codal::PullMode::Up);
+        pinB.setPull(codal::PullMode::Up);
+
         // don't do exactly 1000us, so that it doesn't occur exactly at scheduler ticks
         system_timer_event_every_us(973, id, ROT_EV_TIMER);
         EventModel::defaultEventBus->listen(id, ROT_EV_TIMER, this, &RotaryEncoder_::process,
@@ -55,6 +59,9 @@ RotaryEncoder createRotaryEncoder(DigitalInOutPin pinA, DigitalInOutPin pinB) {
     if (!pinA && !pinB) {
         pinA = LOOKUP_PIN(ROTARY_ENCODER_A);
         pinB = LOOKUP_PIN(ROTARY_ENCODER_B);
+        // not configured?
+        if (!pinA && !pinB)
+            return NULL;
     }
 
     if (!pinA || !pinB)
