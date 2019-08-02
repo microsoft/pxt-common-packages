@@ -122,11 +122,15 @@ class Sprite implements SpriteLike {
         this._ay = Fx8(v)
     }
 
+    private _data: any;
     /**
      * Custom data
      */
     //%
-    data: any;
+    get data(): any {
+        if (!this._data) this._data = {};
+        return this._data;
+    }
     _kind: number;
 
     /**
@@ -422,12 +426,27 @@ class Sprite implements SpriteLike {
     //% inlineInputMode=inline
     //% help=sprites/sprite/say
     say(text: string, timeOnScreen?: number, textColor = 15, textBoxColor = 1) {
+        // clear say
         if (!text) {
             this.updateSay = undefined;
             if (this.sayBubbleSprite) {
                 this.sayBubbleSprite.destroy();
                 this.sayBubbleSprite = undefined;
             }
+            return;
+        }
+
+        // same text, color, time, etc...
+        const SAYKEY = "__saykey";
+        const key = JSON.stringify({ 
+            text: text, 
+            textColor: textColor, 
+            textBoxColor: textBoxColor 
+        })
+        if (timeOnScreen === undefined 
+            && this.sayBubbleSprite
+            && this.sayBubbleSprite.data[SAYKEY] == key) {
+            // do nothing!
             return;
         }
 
@@ -470,7 +489,7 @@ class Sprite implements SpriteLike {
         }
 
         this.sayBubbleSprite = sprites.create(image.create(bubbleWidth, font.charHeight + bubblePadding), -1);
-
+        this.sayBubbleSprite.data[SAYKEY] = key;
         this.sayBubbleSprite.setFlag(SpriteFlag.Ghost, true);
         this.updateSay = (dt, camera) => {
             // Update box stuff as long as timeOnScreen doesn't exist or it can still be on the screen
