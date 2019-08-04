@@ -249,7 +249,7 @@ namespace animation {
             const nodeTime: number = runningTime % interval; // The time the current node has been animating
             
             if(this.lastNode > -1 && this.lastNode < nodeIndex && this.nodes.length) { // If the last node hasn't been completed yet
-                this.nodes[nodeIndex - 1].apply(target, interval, interval); // Applies the last state of the previous node in case it was missed (this makes sure all moveTos fire)
+                this.nodes[this.lastNode].apply(target, interval, interval); // Applies the last state of the previous node in case it was missed (this makes sure all moveTos fire)
 
                 if(nodeIndex >= this.nodes.length) return true; // Once the nodeIndex is past the last item of the array, only then end the animation
             }
