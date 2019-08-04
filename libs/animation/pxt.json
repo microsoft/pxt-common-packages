@@ -7,6 +7,9 @@
         "animation-old.ts",
         "targetoverrides.ts"
     ],
+    "testFiles": [
+        "test.ts"
+    ],
     "public": true,
     "dependencies": {
         "game": "file:../game"        
