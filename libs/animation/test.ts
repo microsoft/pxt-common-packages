@@ -1,5 +1,6 @@
 let mySprite: Sprite = null
 animation.runImageAnimation(
+    mySprite,
     [img`
     . . . . . . . . . . . . . . . .
     . . . . . . f f f f . . . . . .
@@ -18,7 +19,6 @@ animation.runImageAnimation(
     . . . . . f f f f f f f . f f .
     . . . . . . . . . f f f . . . .
     `],
-    mySprite,
     500
 )
 animation.runMovementAnimation(
