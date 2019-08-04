@@ -237,6 +237,10 @@ namespace animation {
             this.nodes.push(node);
         }
 
+        get length(): number {
+            return this.nodes.length;
+        }
+
         public run(interval: number, target: Sprite): boolean {
             this.startedAt == null && (this.startedAt = control.millis());
             
@@ -344,19 +348,19 @@ namespace animation {
     }
 
     export class Animation {
-        public isPlaying: boolean;
-
         constructor(protected sprite: Sprite) {
         }
 
         protected init(): void {
             initializeAnimationHandler();
 
-            this.isPlaying = true;
+            const state: AnimationState = game.currentScene().data[stateNamespace];
+            state.animations.push(this);
         }
 
         protected done(): void {
-            this.isPlaying = false;
+            const state: AnimationState = game.currentScene().data[stateNamespace];
+            state.animations.removeElement(this);
         }
 
         public update(): void {
@@ -374,16 +378,10 @@ namespace animation {
         
         protected init(): void {
             super.init();
-
-            const state: AnimationState = game.currentScene().data[stateNamespace];
-            state.animations.push(this);
         }
 
         protected done(): void {
             super.done();
-
-            const state: AnimationState = game.currentScene().data[stateNamespace];
-            state.animations.removeElement(this);
         }
 
         public update(): void {
@@ -411,16 +409,10 @@ namespace animation {
         
         protected init(): void {
             super.init();
-
-            const state: AnimationState = game.currentScene().data[stateNamespace];
-            state.animations.push(this);
         }
 
         protected done(): void {
             super.done();
-
-            const state: AnimationState = game.currentScene().data[stateNamespace];
-            state.animations.removeElement(this);
         }
 
         public update(): void {
@@ -450,11 +442,10 @@ namespace animation {
      * @param wait whether or not the animation should be blocking
      */
     //% blockId=run_image_animation
-    //% block="%sprite=variables_get(mySprite) animate frames %frames=lists_create_with with interval %frameInterval=timePicker ms and wait %wait=toggleOnOff"
+    //% block="%sprite=variables_get(mySprite) animate frames %frames=lists_create_with with interval %frameInterval=timePicker ms"
     //% wait.defl=1
-    export function runImageAnimation(sprite: Sprite, frames: Image[], frameInterval?: number, wait?: boolean): void {
-        let anim = new ImageAnimation(sprite, frames, frameInterval || 500);
-        (wait == null || wait) && pauseUntil(() => anim.isPlaying === false);
+    export function runImageAnimation(sprite: Sprite, frames: Image[], frameInterval?: number): void {
+        let test = new ImageAnimation(sprite, frames, frameInterval || 500);
     }
 
     /**
@@ -465,12 +456,11 @@ namespace animation {
      * @param wait whether or not the animation should be blocking
      */
     //% blockId=run_movement_animation
-    //% block="%sprite=variables_get(mySprite) follow path %pathString=animation_path with interval %nodeInterval=timePicker ms and wait %wait=toggleOnOff"
+    //% block="%sprite=variables_get(mySprite) follow path %pathString=animation_path for %duration=timePicker ms"
     //% wait.defl=1
-    export function runMovementAnimation(sprite: Sprite, pathString: string, nodeInterval?: number, wait?: boolean): void {
+    export function runMovementAnimation(sprite: Sprite, pathString: string, duration?: number): void {
         let path = Path.parse(new Point(sprite.x, sprite.y), pathString);
-        let anim = new MovementAnimation(sprite, path, nodeInterval || 500);
-        (wait == null || wait) && pauseUntil(() => anim.isPlaying === false);
+        let test = new MovementAnimation(sprite, path, duration / path.length);
     }
 
     //% fixedInstance whenUsed block="fly to center"
