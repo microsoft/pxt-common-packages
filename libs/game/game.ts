@@ -163,6 +163,73 @@ namespace game {
             loseSound = sound;
     }
 
+    class GameOverDialog extends game.BaseDialog {
+        protected cursorOn: boolean;
+        protected isNewHighScore: boolean;
+
+        constructor(
+            protected win: boolean,
+            protected score?: number,
+            protected highScore?: number
+        ) {
+            super(screen.width(), 46, game.defaultSplashFrame());
+            this.cursorOn = false;
+            this.isNewHighScore = this.score > this.highScore;
+        }
+
+        displayCursor() {
+            this.cursorOn = true;
+        }
+
+        update() {
+            this.clearInterior();
+            this.drawTextCore();
+
+            if (this.cursorOn) {
+                this.drawCursorRow();
+            }
+        }
+
+        drawTextCore() {
+            const titleHeight = 8;
+            this.image.printCenter(
+                this.win ? "YOU WIN!" : "GAME OVER!",
+                titleHeight,
+                screen.isMono ? 1 : 5,
+                image.font8
+            );
+
+            if (this.score !== undefined) {
+                const scoreHeight = 23;
+                const highScoreHeight = 34;
+                const scoreColor = screen.isMono ? 1 : 2;
+
+                this.image.printCenter(
+                    "Score:" + this.score,
+                    scoreHeight,
+                    scoreColor,
+                    image.font8
+                );
+
+                if (this.isNewHighScore) {
+                    this.image.printCenter(
+                        "New High Score!",
+                        highScoreHeight,
+                        scoreColor,
+                        image.font5
+                    );
+                } else {
+                    this.image.printCenter(
+                        "HI" + this.highScore,
+                        highScoreHeight,
+                        scoreColor,
+                        image.font8
+                    );
+                }
+            }
+        }
+    }
+
     /**
      * Finish the game and display the score
      */
@@ -200,22 +267,20 @@ namespace game {
 
         effect.startScreenEffect();
 
-        pause(500);
+        pause(400);
 
-        game.eventContext().registerFrameHandler(scene.HUD_PRIORITY, () => {
-            let top = showDialogBackground(46, 4);
-            screen.printCenter(win ? "YOU WIN!" : "GAME OVER!", top + 8, screen.isMono ? 1 : 5, image.font8);
-            if (scoreInfo.score !== undefined) {
-                screen.printCenter("Score:" + scoreInfo.score, top + 23, screen.isMono ? 1 : 2, image.font8);
-                if (scoreInfo.score > highScore) {
-                    screen.printCenter("New High Score!", top + 34, screen.isMono ? 1 : 2, image.font5);
-                } else {
-                    screen.printCenter("HI" + highScore, top + 34, screen.isMono ? 1 : 2, image.font8);
-                }
-            }
+        const overDialog = new GameOverDialog(win, scoreInfo.score, highScore);
+        game.currentScene().registerRenderable(100, target => {
+            overDialog.update();
+            target.drawTransparentImage(
+                overDialog.image,
+                0,
+                (screen.height - overDialog.image.height()) >> 1
+            );
         });
 
-        pause(2000); // wait for users to stop pressing keys
+        pause(500); // wait for users to stop pressing keys
+        overDialog.displayCursor();
         waitAnyButton();
         control.reset();
     }

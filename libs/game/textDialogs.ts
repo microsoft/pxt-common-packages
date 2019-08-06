@@ -493,7 +493,7 @@ namespace game {
         `
     }
 
-    function defaultSplashFrame() {
+    export function defaultSplashFrame() {
         return screen.isMono ?
             img`
         1 1 1
