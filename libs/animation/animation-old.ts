@@ -106,7 +106,7 @@ namespace animation {
         */
         //% blockId=addAnimationFrame
         //% block="add frame $frame=screen_image_picker to $this=variables_get(anim)"
-        //% group="Old blocks (DEPRECATED)"
+        //% group="Legacy"
         //% weight=40
         //% help=animation/add-animation
         addAnimationFrame(frame: Image) {
@@ -124,7 +124,7 @@ namespace animation {
     //% shim=ENUM_GET
     //% blockId=action_enum_shim
     //% block="%arg"
-    //% group="Old blocks (DEPRECATED)"
+    //% group="Legacy"
     //% blockHidden=1
     //% enumName="ActionKind"
     //% enumMemberName="action"
@@ -142,7 +142,7 @@ namespace animation {
      */
     //% blockId=createAnimation
     //% block="create animation of $action=action_enum_shim with interval $interval ms"
-    //% group="Old blocks (DEPRECATED)"
+    //% group="Legacy"
     //% interval.defl=1000
     //% blockSetVariable="anim"
     //% weight=50
@@ -156,7 +156,7 @@ namespace animation {
      */
     //% blockId=attachAnimation
     //% block="attach animation $set=variables_get(anim) to sprite $sprite=variables_get(mySprite)"
-    //% group="Old blocks (DEPRECATED)"
+    //% group="Legacy"
     //% weight=30
     //% help=animation/attach-animation
     export function attachAnimation(sprite: Sprite, set: Animation) {
@@ -168,7 +168,7 @@ namespace animation {
      */
     //% blockId=setAction
     //% block="activate animation $action=action_enum_shim on $sprite=variables_get(mySprite)"
-    //% group="Old blocks (DEPRECATED)"
+    //% group="Legacy"
     //% weight=20
     //% help=animation/set-action
     export function setAction(sprite: Sprite, action: number) {

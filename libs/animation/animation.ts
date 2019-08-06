@@ -2,7 +2,7 @@
     Animation library for sprites
 */
 //% color="#03AA74" weight=78 icon="\uf021" block="Animation"
-//% groups='["Sprite Animations","Old blocks (DEPRECATED)"]'
+//% groups='["Animate", "Legacy"]'
 namespace animation {
     const stateNamespace = "__animation";
 
@@ -444,8 +444,7 @@ namespace animation {
      */
     //% blockId=run_image_animation
     //% block="%sprite=variables_get(mySprite) animate frames %frames=lists_create_with with interval %frameInterval=timePicker ms"
-    //% group="Sprite Animations"
-    //% wait.defl=1
+    //% group="Animate"
     export function runImageAnimation(sprite: Sprite, frames: Image[], frameInterval?: number): void {
         let test = new ImageAnimation(sprite, frames, frameInterval || 500);
     }
@@ -459,8 +458,7 @@ namespace animation {
      */
     //% blockId=run_movement_animation
     //% block="%sprite=variables_get(mySprite) follow path %pathString=animation_path for %duration=timePicker ms"
-    //% group="Sprite Animations"
-    //% wait.defl=1
+    //% group="Animate"
     export function runMovementAnimation(sprite: Sprite, pathString: string, duration?: number): void {
         let path = Path.parse(new Point(sprite.x, sprite.y), pathString);
         let test = new MovementAnimation(sprite, path, duration / path.length);
@@ -517,7 +515,7 @@ namespace animation {
      */
     //% blockId=animation_path
     //% block="%animationPath"
-    //% group="Sprite Animations"
+    //% group="Animate"
     //% blockHidden=1
     export function animationPresets(animationPath: PathPreset) {
         return animationPath.pathString;
