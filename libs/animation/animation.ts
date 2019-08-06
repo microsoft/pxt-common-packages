@@ -109,6 +109,32 @@ namespace animation {
                     node = new QuadraticCurveTo(p0, p1, p2);
                     break;
                 }
+                case "T": { // T x2 y2
+                    let lastControlPoint: Point;
+                    if(metadata.lastNode instanceof QuadraticCurveTo) {
+                        lastControlPoint = (<QuadraticCurveTo>metadata.lastNode).p1;
+                    } else if(metadata.lastNode instanceof CubicCurveTo) {
+                        lastControlPoint = (<CubicCurveTo>metadata.lastNode).p2;
+                    } else break;
+
+                    const p1: Point = new Point(p0.x + (p0.x - lastControlPoint.x), p0.y + (p0.y - lastControlPoint.y));
+                    const p2: Point = new Point(args[0], args[1]);
+                    node = new QuadraticCurveTo(p0, p1, p2);
+                    break;
+                }
+                case "t": { // t dx2 dy2
+                    let lastControlPoint: Point;
+                    if(metadata.lastNode instanceof QuadraticCurveTo) {
+                        lastControlPoint = (<QuadraticCurveTo>metadata.lastNode).p1;
+                    } else if(metadata.lastNode instanceof CubicCurveTo) {
+                        lastControlPoint = (<CubicCurveTo>metadata.lastNode).p2;
+                    } else break;
+
+                    const p1: Point = new Point(p0.x + (p0.x - lastControlPoint.x), p0.y + (p0.y - lastControlPoint.y));
+                    const p2: Point = new Point(p0.x + args[0], p0.y + args[1]);
+                    node = new QuadraticCurveTo(p0, p1, p2);
+                    break;
+                }
                 case "C": { // C x1 y1 x2 y2 x3 y3
                     const p1: Point = new Point(args[0], args[1]);
                     const p2: Point = new Point(args[2], args[3]);
@@ -120,6 +146,34 @@ namespace animation {
                     const p1: Point = new Point(p0.x + args[0], p0.y + args[1]);
                     const p2: Point = new Point(p0.x + args[2], p0.y + args[3]);
                     const p3: Point = new Point(p0.x + args[4], p0.y + args[5]);
+                    node = new CubicCurveTo(p0, p1, p2, p3);
+                    break;
+                }
+                case "S": { // S x2 y2 x3 y3
+                    let lastControlPoint: Point;
+                    if(metadata.lastNode instanceof QuadraticCurveTo) {
+                        lastControlPoint = (<QuadraticCurveTo>metadata.lastNode).p1;
+                    } else if(metadata.lastNode instanceof CubicCurveTo) {
+                        lastControlPoint = (<CubicCurveTo>metadata.lastNode).p2;
+                    } else break;
+
+                    const p1: Point = new Point(p0.x + (p0.x - lastControlPoint.x), p0.y + (p0.y - lastControlPoint.y));
+                    const p2: Point = new Point(args[0], args[1]);
+                    const p3: Point = new Point(args[2], args[3]);
+                    node = new CubicCurveTo(p0, p1, p2, p3);
+                    break;
+                }
+                case "s": { // s dx2 dy2 dx3 dy3
+                    let lastControlPoint: Point;
+                    if(metadata.lastNode instanceof QuadraticCurveTo) {
+                        lastControlPoint = (<QuadraticCurveTo>metadata.lastNode).p1;
+                    } else if(metadata.lastNode instanceof CubicCurveTo) {
+                        lastControlPoint = (<CubicCurveTo>metadata.lastNode).p2;
+                    } else break;
+
+                    const p1: Point = new Point(p0.x + (p0.x - lastControlPoint.x), p0.y + (p0.y - lastControlPoint.y));
+                    const p2: Point = new Point(p0.x + args[0], p0.y + args[1]);
+                    const p3: Point = new Point(p0.x + args[2], p0.y + args[3]);
                     node = new CubicCurveTo(p0, p1, p2, p3);
                     break;
                 }
@@ -148,9 +202,9 @@ namespace animation {
                 "H": 1, "h": 1, // horizontalLineTo
                 "V": 1, "v": 1, // verticalLineTo
                 "Q": 4, "q": 4, // quadraticCurveTo
-                // "T": 2, "t": 2, // smoothQuadraticCurveTo
+                "T": 2, "t": 2, // smoothQuadraticCurveTo
                 "C": 6, "c": 6, // cubicCurveTo
-                // "S": 4, "s": 4, // smoothCubicCurveTo
+                "S": 4, "s": 4, // smoothCubicCurveTo
                 // "A": 7, "a": 7, // arcTo
                 "Z": 0, "z": 0 // closePath
             };
@@ -269,7 +323,7 @@ namespace animation {
 
     export class MoveTo implements PathNode {
         public setStart: boolean;
-        constructor(private p1: Point) {
+        constructor(public p1: Point) {
             this.setStart = true;
         }
 
@@ -284,7 +338,7 @@ namespace animation {
 
     export class LineTo implements PathNode {
         public setStart: boolean;
-        constructor(private p0: Point, private p1: Point) {
+        constructor(public p0: Point, public p1: Point) {
             this.setStart = false;
         }
 
@@ -301,7 +355,7 @@ namespace animation {
 
     export class QuadraticCurveTo implements PathNode {
         public setStart: boolean;
-        constructor(private p0: Point, private p1: Point, private p2: Point) {
+        constructor(public p0: Point, public p1: Point, public p2: Point) {
             this.setStart = false;
         }
 
@@ -325,7 +379,7 @@ namespace animation {
 
     export class CubicCurveTo implements PathNode {
         public setStart: boolean;
-        constructor(private p0: Point, private p1: Point, private p2: Point, private p3: Point) {
+        constructor(public p0: Point, public p1: Point, public p2: Point, public p3: Point) {
             this.setStart = false;
         }
 
