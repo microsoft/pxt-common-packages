@@ -165,7 +165,7 @@ namespace scene {
             this.eventContext.registerFrameHandler(RENDER_SPRITES_PRIORITY, () => {
                 control.enablePerfCounter("sprite_draw")
                 this.cachedRender = undefined;
-                this.render();
+                this.renderCore();
             });
             // render diagnostics
             this.eventContext.registerFrameHandler(RENDER_DIAGNOSTICS_PRIORITY, () => {
@@ -242,14 +242,22 @@ namespace scene {
             this.allSprites.removeElement(renderable);
         }
 
+        protected cachedRender: Image;
         /**
-         * renders the current frame as an image
+         * Renders the current frame as an image
          */
         render(): Image {
             if (this.cachedRender) {
                 return this.cachedRender;
             }
 
+            this.renderCore();
+
+            this.cachedRender = screen.clone();
+            return this.cachedRender;
+        }
+
+        private renderCore() {
             this.background.draw();
 
             if (this.flags & Flag.NeedsSorting) {
@@ -261,9 +269,6 @@ namespace scene {
                     s.__draw(this.camera);
                 }
             }
-            this.cachedRender = screen.clone();
-            return this.cachedRender;
         }
-        cachedRender: Image;
     }
 }
