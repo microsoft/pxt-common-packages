@@ -234,7 +234,7 @@ namespace scene {
             z: number,
             handler: (target: Image, camera: Camera) => void,
             shouldBeVisible?: () => boolean
-        ): SpriteLike {
+        ): Renderable {
             const renderable = new Renderable(
                 handler,
                 shouldBeVisible || (() => true),
