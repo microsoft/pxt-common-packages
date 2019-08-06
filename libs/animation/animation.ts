@@ -1,12 +1,12 @@
 /*
     Animation library for sprites
 */
-//% color="#03AA74" weight=78 icon="\uf021"
+//% color="#03AA74" weight=78 icon="\uf021" block="Animation"
 namespace animation {
     const stateNamespace = "__animation";
 
     interface AnimationState {
-        animations: Animation[];
+        animations: SpriteAnimation[];
     }
 
     const initializeAnimationHandler = () => {
@@ -19,7 +19,7 @@ namespace animation {
             } as AnimationState;
 
             game.eventContext().registerFrameHandler(scene.ANIMATION_UPDATE_PRIORITY, () => {
-                state.animations.forEach((anim: Animation) => {
+                state.animations.forEach((anim: SpriteAnimation) => {
                     if(anim) anim.update();
                 });
             });
@@ -347,7 +347,7 @@ namespace animation {
         }
     }
 
-    export class Animation {
+    export class SpriteAnimation {
         constructor(protected sprite: Sprite) {
         }
 
@@ -369,7 +369,7 @@ namespace animation {
         }
     }
 
-    export class MovementAnimation extends Animation {
+    export class MovementAnimation extends SpriteAnimation {
         constructor(sprite: Sprite, private path: Path, private nodeInterval: number) {
             super(sprite);
 
@@ -391,7 +391,7 @@ namespace animation {
         }
     }
 
-    export class ImageAnimation extends Animation {
+    export class ImageAnimation extends SpriteAnimation {
         private frames: Image[];
         private frameInterval: number;
         private lastFrame: number;
