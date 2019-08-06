@@ -163,17 +163,10 @@ namespace scene {
             // paint 75
             // render sprites 90
             this.eventContext.registerFrameHandler(RENDER_SPRITES_PRIORITY, () => {
-                this.cachedRender = undefined;
                 control.enablePerfCounter("sprite_draw")
-                if (this.flags & Flag.NeedsSorting) {
-                    this.allSprites.sort((a, b) => a.z - b.z || a.id - b.id);
-                }
-                for (const s of this.allSprites) {
-                    if (!(s.flags & sprites.Flag.Invisible)) {
-                        s.__draw(this.camera);
-                    }
-                }
-            })
+                this.cachedRender = undefined;
+                this.render();
+            });
             // render diagnostics
             this.eventContext.registerFrameHandler(RENDER_DIAGNOSTICS_PRIORITY, () => {
                 if (game.stats && control.EventContext.onStats) {
@@ -256,18 +249,18 @@ namespace scene {
             if (this.cachedRender) {
                 return this.cachedRender;
             }
-            // todo: un-dup this from init; either call this from the update, or split into
-            // a few helpers
+
             this.background.draw();
 
-            if (this.flags & Flag.NeedsSorting)
+            if (this.flags & Flag.NeedsSorting) {
                 this.allSprites.sort(function (a, b) { return a.z - b.z || a.id - b.id; })
-            for (const s of this.allSprites)
-                s.__draw(this.camera);
+            }
 
-            // TODO: render game.onShade here
-            // TODO: render info values here -- register that as a renderable.
-            // TODO: register tilemap as renderable
+            for (const s of this.allSprites) {
+                if (!(s.flags & sprites.Flag.Invisible)) {
+                    s.__draw(this.camera);
+                }
+            }
             this.cachedRender = screen.clone();
             return this.cachedRender;
         }
