@@ -23,9 +23,7 @@ namespace jacdac.options
 
     export function getSerialNumber ()  {
         if (!sn) {
-            sn = control.createBuffer(8);
-            sn.setNumber(NumberFormat.UInt32LE, 0, control.deviceSerialNumber());
-            log(`sn: ${sn.toHex()}`)
+            sn = control.deviceLongSerialNumber();
         }
         return sn;
     }

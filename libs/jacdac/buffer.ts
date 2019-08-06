@@ -71,8 +71,7 @@ namespace jacdac {
                 this.buffer = new Uint8Array(0);
         }
 
-        get length() : number
-        {
+        get length() : number {
             return this.buffer.length;
         }
 
@@ -266,6 +265,14 @@ namespace jacdac {
                 return;
 
             Buffer.memmove(this.buffer, dstOffset, src.buffer, srcOffset, length)
+        }
+
+        static join(b1: Buffer, b2: Buffer) : Buffer {
+            const size = b1.buffer.length + b2.buffer.length;
+            const newBuf = new Uint8Array(size);
+            newBuf.set(b1.buffer);
+            newBuf.set(b2.buffer, b1.buffer.length);
+            return Buffer.createBufferFromUint8(newBuf);
         }
     }
 }
