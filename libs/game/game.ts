@@ -270,7 +270,7 @@ namespace game {
         pause(400);
 
         const overDialog = new GameOverDialog(win, scoreInfo.score, highScore);
-        game.currentScene().registerRenderable(100, target => {
+        game.currentScene().createRenderable(100, target => {
             overDialog.update();
             target.drawTransparentImage(
                 overDialog.image,

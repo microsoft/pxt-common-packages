@@ -92,7 +92,7 @@ namespace tiles {
             this.scale = scale;
 
             const sc = game.currentScene();
-            sc.registerRenderable(
+            sc.createRenderable(
                 -1,
                 (t, c) => this.draw(t, c)
             );

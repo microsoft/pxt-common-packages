@@ -223,7 +223,7 @@ namespace scene {
             this._data = undefined;
         }
 
-        registerRenderable(
+        createRenderable(
             z: number,
             handler: (target: Image, camera: Camera) => void,
             shouldBeVisible?: () => boolean

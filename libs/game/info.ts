@@ -100,7 +100,7 @@ namespace info {
 
         infoState = new InfoState();
 
-        game.currentScene().registerRenderable(
+        game.currentScene().createRenderable(
             100,
             () => {
                 if (!infoState) return;
