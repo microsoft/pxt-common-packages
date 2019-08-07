@@ -1,64 +1,56 @@
 namespace game {
-    export interface PromptTheme {
-        colorPrompt: number;
-        colorInput: number;
-        colorInputHighlighted: number;
-        colorInputText: number;
-        colorAlphabet: number;
-        colorCursor: number;
-        colorBackground: number;
-        colorBottomBackground: number;
-        colorBottomText: number;
-    }
 
     /**
-     * Ask the player for a string value.
+     * Ask the player for a number value.
      * @param message The message to display on the text-entry screen
-     * @param answerLength The maximum number of characters the user can enter (1 - 24)
+     * @param answerLength The maximum number of digits the user can enter (1 - 10)
      */
     //% group="Gameplay"
-    //% weight=10 help=game/ask-for-string
-    //% blockId=gameaskforstring block="ask for string %message || and max length %answerLength"
+    //% weight=10 help=game/ask-for-number
+    //% blockId=gameaskfornumber block="ask for number %message || and max length %answerLength"
     //% message.defl=""
-    //% answerLength.defl="12"
+    //% answerLength.defl="6"
     //% answerLength.min=1
-    //% answerLength.max=24
+    //% answerLength.max=10
     //% group="Prompt"
-    export function askForString(message: string, answerLength = 12) {
-        let p = new game.Prompt();
+    export function askForNumber(message: string, answerLength = 6) {
+        answerLength = Math.max(0, Math.min(10, answerLength));
+        let p = new game.NumberPrompt();
         const result = p.show(message, answerLength);
         return result;
     }
 
 
     //% whenUsed=true
-    const font = image.font8; // FONT8-TODO
+    const font = image.font8;
     //% whenUsed=true
-    const PADDING = 4;
+    const PADDING_HORIZONTAL = 40;
+    //% whenUsed=true
+    const PADDING_VERTICAL = 4;
     //% whenUsed=true
     const PROMPT_LINE_SPACING = 2;
 
     //% whenUsed=true
-    const NUM_LETTERS = 26;
+    const NUM_LETTERS = 12;
     //% whenUsed=true
-    const ALPHABET_ROW_LENGTH = 12;
+    const NUMPAD_ROW_LENGTH = 3;
     //% whenUsed=true
-    const NUM_ROWS = Math.ceil(NUM_LETTERS / ALPHABET_ROW_LENGTH);
+    const NUM_ROWS = Math.ceil(NUM_LETTERS / NUMPAD_ROW_LENGTH);
     //% whenUsed=true
-    const INPUT_ROWS = 2;
+    const INPUT_ROWS = 1;
 
     //% whenUsed=true
-    const CONTENT_WIDTH = screen.width - PADDING * 2;
+    const CONTENT_WIDTH = screen.width - PADDING_HORIZONTAL * 2;
     //% whenUsed=true
-    const CONTENT_HEIGHT = screen.height - PADDING * 2;
+    const CONTENT_HEIGHT = screen.height - PADDING_VERTICAL * 2;
     //% whenUsed=true
-    const CONTENT_TOP = PADDING;
+    const CONTENT_TOP = PADDING_VERTICAL;
 
     // Dimensions of a "cell" that contains a letter
     //% whenUsed=true
-    const CELL_WIDTH = Math.floor(CONTENT_WIDTH / ALPHABET_ROW_LENGTH);
+    const CELL_HEIGHT = Math.floor(CONTENT_HEIGHT / (NUM_ROWS + 4));
     //% whenUsed=true
-    const CELL_HEIGHT = CELL_WIDTH;
+    const CELL_WIDTH = CELL_HEIGHT//Math.floor(CONTENT_WIDTH / NUMPAD_ROW_LENGTH);
     //% whenUsed=true
     const LETTER_OFFSET_X = Math.floor((CELL_WIDTH - font.charWidth) / 2);
     //% whenUsed=true
@@ -66,55 +58,45 @@ namespace game {
     //% whenUsed=true
     const BLANK_PADDING = 1;
     //% whenUsed=true
-    const ROW_LEFT = PADDING + CELL_WIDTH / 2 + Math.floor((CONTENT_WIDTH - (CELL_WIDTH * ALPHABET_ROW_LENGTH)) / 2);
+    const ROW_LEFT = PADDING_HORIZONTAL + CELL_WIDTH / 2 + Math.floor((CONTENT_WIDTH - (CELL_WIDTH * NUMPAD_ROW_LENGTH)) / 2);
 
     // Dimensions of the bottom bar
     //% whenUsed=true
-    const BOTTOM_BAR_ALPHABET_MARGIN = 4;
+    const BOTTOM_BAR_NUMPAD_MARGIN = 4;
     //% whenUsed=true
-    const BOTTOM_BAR_HEIGHT = PADDING + BOTTOM_BAR_ALPHABET_MARGIN + CELL_HEIGHT;
+    const BOTTOM_BAR_HEIGHT = PADDING_VERTICAL + BOTTOM_BAR_NUMPAD_MARGIN + CELL_HEIGHT;
     //% whenUsed=true
     const BOTTOM_BAR_TOP = screen.height - BOTTOM_BAR_HEIGHT;
     //% whenUsed=true
-    const BOTTOM_BAR_BUTTON_WIDTH = PADDING * 2 + font.charWidth * 3;
+    const BOTTOM_BAR_BUTTON_WIDTH = PADDING_HORIZONTAL * 2 + font.charWidth * 3;
     //% whenUsed=true
     const BOTTOM_BAR_TEXT_Y = (BOTTOM_BAR_HEIGHT - font.charHeight) / 2;
     //% whenUsed=true
-    const BOTTOM_BAR_SHIFT_X = (BOTTOM_BAR_BUTTON_WIDTH - font.charWidth * 3) / 2;
-    //% whenUsed=true
     const BOTTOM_BAR_CONFIRM_X = (BOTTOM_BAR_BUTTON_WIDTH - font.charWidth * 2) / 2;
-    //% whenUsed=true
-    const CONFIRM_BUTTON_LEFT = screen.width - BOTTOM_BAR_BUTTON_WIDTH;
 
-    // Dimensions of the alphabet area
+    // Dimensions of the numpad area
     //% whenUsed=true
-    const ALPHABET_HEIGHT = NUM_ROWS * CELL_HEIGHT;
+    const NUMPAD_HEIGHT = NUM_ROWS * CELL_HEIGHT;
     //% whenUsed=true
-    const ALPHABET_TOP = CONTENT_TOP + CONTENT_HEIGHT - ALPHABET_HEIGHT - BOTTOM_BAR_HEIGHT;
+    const NUMPAD_TOP = screen.height - NUMPAD_HEIGHT - BOTTOM_BAR_HEIGHT;
     //% whenUsed=true
-    const ALPHABET_INPUT_MARGIN = 10;
+    const NUMPAD_INPUT_MARGIN = 4;
 
     // Dimensions of area where text is input
     //% whenUsed=true
     const INPUT_HEIGHT = INPUT_ROWS * CELL_HEIGHT;
     //% whenUsed=true
-    const INPUT_TOP = ALPHABET_TOP - INPUT_HEIGHT - ALPHABET_INPUT_MARGIN;
+    const INPUT_TOP = NUMPAD_TOP - INPUT_HEIGHT - NUMPAD_INPUT_MARGIN;
 
     // Dimensions of prompt message area
     //% whenUsed=true
     const PROMPT_HEIGHT = INPUT_TOP - CONTENT_TOP;
 
     //% whenUsed=true
-    const lowerShiftText = "ABC";
-    //% whenUsed=true
-    const upperShiftText = "abc";
-    //% whenUsed=true
-    const digitsUpper = [" ", ",", ".", "?", "!", ":", ";", "\"", "(", ")"];
-    //% whenUsed=true
     const confirmText = "OK";
 
 
-    export class Prompt {
+    export class NumberPrompt {
         theme: PromptTheme;
 
         message: string;
@@ -122,16 +104,15 @@ namespace game {
         result: string;
 
         private cursor: Sprite;
-        private shiftButton: Sprite;
         private confirmButton: Sprite;
 
-        private letters: Sprite[];
+        private numbers: Sprite[];
         private inputs: Sprite[];
 
         private confirmPressed: boolean;
         private cursorRow: number;
         private cursorColumn: number;
-        private upper: boolean;
+        private hasDecimal: boolean;
         private inputIndex: number;
         private blink: boolean;
         private frameCount: number;
@@ -155,11 +136,11 @@ namespace game {
             }
             this.cursorRow = 0;
             this.cursorColumn = 0;
-            this.upper = false;
+            this.hasDecimal = false;
             this.inputIndex = 0;
         }
 
-        show(message: string, answerLength: number) {
+        show(message: string, answerLength: number) : number {
             this.message = message;
             this.answerLength = answerLength;
             this.inputIndex = 0;
@@ -176,12 +157,12 @@ namespace game {
             game.popScene();
             controller._setUserEventsEnabled(true);
 
-            return this.result;
+            return parseFloat(this.result);
         }
 
         private draw() {
             this.drawPromptText();
-            this.drawKeyboard();
+            this.drawNumpad();
             this.drawInputarea();
             this.drawBottomBar();
         }
@@ -193,44 +174,39 @@ namespace game {
         }
 
         private drawInputarea() {
-            const answerLeft = ROW_LEFT + Math.floor(
-                ((CELL_WIDTH * ALPHABET_ROW_LENGTH) -
-                    CELL_WIDTH * Math.min(this.answerLength, ALPHABET_ROW_LENGTH)) / 2);
+            const answerLeft = (screen.width - this.answerLength * CELL_WIDTH) / 2
 
             this.inputs = [];
             for (let i = 0; i < this.answerLength; i++) {
                 const blank = image.create(CELL_WIDTH, CELL_HEIGHT);
                 this.drawInput(blank, "", this.theme.colorInput);
 
-                const col = i % ALPHABET_ROW_LENGTH;
-                const row = Math.floor(i / ALPHABET_ROW_LENGTH);
-
                 const s = sprites.create(blank, -1);
-                s.x = answerLeft + col * CELL_WIDTH;
-                s.y = INPUT_TOP + row * CELL_HEIGHT;
+                s.left = answerLeft + i * CELL_WIDTH;
+                s.y = INPUT_TOP;
                 this.inputs.push(s);
             }
         }
 
-        private drawKeyboard() {
+        private drawNumpad() {
             const cursorImage = image.create(CELL_WIDTH, CELL_HEIGHT);
             cursorImage.fill(this.theme.colorCursor);
             this.cursor = sprites.create(cursorImage, -1);
             this.cursor.z = -1;
             this.updateCursor();
 
-            this.letters = [];
-            for (let j = 0; j < 36; j++) {
+            this.numbers = [];
+            for (let j = 0; j < NUM_LETTERS; j++) {
                 const letter = image.create(CELL_WIDTH, CELL_HEIGHT);
 
-                const col2 = j % ALPHABET_ROW_LENGTH;
-                const row2 = Math.floor(j / ALPHABET_ROW_LENGTH);
+                const col2 = j % NUMPAD_ROW_LENGTH;
+                const row2 = Math.floor(j / NUMPAD_ROW_LENGTH);
 
                 const t = sprites.create(letter, -1);
                 t.x = ROW_LEFT + col2 * CELL_WIDTH;
-                t.y = ALPHABET_TOP + row2 * CELL_HEIGHT;
+                t.y = NUMPAD_TOP + row2 * CELL_HEIGHT;
 
-                this.letters.push(t);
+                this.numbers.push(t);
             }
             this.updateKeyboard();
         }
@@ -244,34 +220,15 @@ namespace game {
             bgSprite.y = BOTTOM_BAR_TOP + BOTTOM_BAR_HEIGHT / 2;
             bgSprite.z = -1;
 
-            this.shiftButton = sprites.create(image.create(BOTTOM_BAR_BUTTON_WIDTH, BOTTOM_BAR_HEIGHT), -1);
-            this.shiftButton.x = Math.floor(BOTTOM_BAR_BUTTON_WIDTH / 2);
-            this.shiftButton.y = BOTTOM_BAR_TOP + Math.ceil(BOTTOM_BAR_HEIGHT / 2);
-
             this.confirmButton = sprites.create(image.create(BOTTOM_BAR_BUTTON_WIDTH, BOTTOM_BAR_HEIGHT), -1);
-            this.confirmButton.x = CONFIRM_BUTTON_LEFT + Math.floor(BOTTOM_BAR_BUTTON_WIDTH / 2);
+            this.confirmButton.right = screen.width;
             this.confirmButton.y = BOTTOM_BAR_TOP + Math.ceil(BOTTOM_BAR_HEIGHT / 2);
 
             this.updateButtons();
         }
 
         private updateButtons() {
-            if (this.cursorRow === 3 && this.cursorColumn % 2 !== 1) {
-                this.shiftButton.image.fill(this.theme.colorCursor);
-            }
-            else {
-                this.shiftButton.image.fill(this.theme.colorBottomBackground);
-            }
-
-            if (this.upper) {
-                this.shiftButton.image.print(upperShiftText, BOTTOM_BAR_SHIFT_X, BOTTOM_BAR_TEXT_Y);
-            }
-            else {
-                this.shiftButton.image.print(lowerShiftText, BOTTOM_BAR_SHIFT_X, BOTTOM_BAR_TEXT_Y);
-            }
-
-
-            if (this.cursorRow === 3 && this.cursorColumn % 2) {
+            if (this.cursorRow === 4) {
                 this.confirmButton.image.fill(this.theme.colorCursor);
             }
             else {
@@ -282,13 +239,13 @@ namespace game {
         }
 
         private updateCursor() {
-            if (this.cursorRow === 3) {
+            if (this.cursorRow === 4) {
                 this.cursor.image.fill(0);
                 this.updateButtons();
             }
             else {
                 this.cursor.x = ROW_LEFT + this.cursorColumn * CELL_WIDTH;
-                this.cursor.y = ALPHABET_TOP + this.cursorRow * CELL_HEIGHT;
+                this.cursor.y = NUMPAD_TOP + this.cursorRow * CELL_HEIGHT;
             }
         }
 
@@ -305,11 +262,11 @@ namespace game {
         }
 
         private updateKeyboard() {
-            const len = this.letters.length;
+            const len = this.numbers.length;
             for (let k = 0; k < len; k++) {
-                const img = this.letters[k].image;
+                const img = this.numbers[k].image;
                 img.fill(0);
-                img.print(getCharForIndex(k, this.upper), LETTER_OFFSET_X, LETTER_OFFSET_Y);
+                img.print(getSymbolFromIndex(k), LETTER_OFFSET_X, LETTER_OFFSET_Y);
             }
         }
 
@@ -364,16 +321,9 @@ namespace game {
 
         private moveVertical(up: boolean) {
             if (up) {
-                if (this.cursorRow === 3) {
+                if (this.cursorRow === 4) {
                     this.cursor.image.fill(this.theme.colorCursor);
-                    this.cursorRow = 2;
-
-                    if (this.cursorColumn % 2) {
-                        this.cursorColumn = ALPHABET_ROW_LENGTH - 1;
-                    }
-                    else {
-                        this.cursorColumn = 0;
-                    }
+                    this.cursorRow = 3;
 
                     this.updateButtons();
                 }
@@ -382,12 +332,7 @@ namespace game {
                 }
             }
             else {
-                this.cursorRow = Math.min(3, this.cursorRow + 1);
-
-                if (this.cursorRow === 3) {
-                    // Go to closest button
-                    this.cursorColumn = this.cursorColumn > 5 ? 1 : 0;
-                }
+                this.cursorRow = Math.min(4, this.cursorRow + 1);
             }
 
             this.updateCursor();
@@ -395,31 +340,35 @@ namespace game {
 
         private moveHorizontal(right: boolean) {
             if (right) {
-                this.cursorColumn = (this.cursorColumn + 1) % ALPHABET_ROW_LENGTH;
+                this.cursorColumn = (this.cursorColumn + 1) % NUMPAD_ROW_LENGTH;
             }
             else {
-                this.cursorColumn = (this.cursorColumn + (ALPHABET_ROW_LENGTH - 1)) % ALPHABET_ROW_LENGTH;
+                this.cursorColumn = (this.cursorColumn + (NUMPAD_ROW_LENGTH - 1)) % NUMPAD_ROW_LENGTH;
             }
 
             this.updateCursor();
         }
 
         private confirm() {
-            if (this.cursorRow === 3) {
-                if (this.cursorColumn % 2) {
-                    this.confirmPressed = true;
-                }
-                else {
-                    this.upper = !this.upper;
-                    this.updateKeyboard();
-                    this.updateButtons();
-                }
-            }
-            else {
+            if (this.cursorRow === 4) {
+                this.confirmPressed = true;
+            } else {
                 if (this.inputIndex >= this.answerLength) return;
 
-                const index = this.cursorColumn + this.cursorRow * ALPHABET_ROW_LENGTH
-                const letter = getCharForIndex(index, this.upper);
+                const index = this.cursorColumn + this.cursorRow * NUMPAD_ROW_LENGTH
+                const letter = getSymbolFromIndex(index);
+
+                if (letter === ".") {
+                    if(this.hasDecimal) {
+                        return;
+                    } else {
+                        this.hasDecimal = true;
+                    }
+                }
+
+                if (letter === "-" && (this.result && this.result.length > 0)) {
+                    return;
+                }
 
                 if (!this.result) {
                     this.result = letter;
@@ -439,6 +388,10 @@ namespace game {
 
             if (this.inputIndex < this.answerLength) {
                 this.drawInput(this.inputs[this.inputIndex].image, "", this.theme.colorInput);
+            }
+
+            if (this.result.charAt(this.result.length - 1) === ".") {
+                this.hasDecimal = false;
             }
 
             this.result = this.result.substr(0, this.result.length - 1);
@@ -526,17 +479,19 @@ namespace game {
         return res;
     }
 
-    function getCharForIndex(index: number, upper: boolean) {
-        if (index < 26) {
-            return String.fromCharCode(index + (upper ? 65 : 97));
-        }
-        else {
-            if (upper) {
-                return digitsUpper[index - 26];
-            }
-            else {
-                return "" + (index - 26);
-            }
+    function getSymbolFromIndex(index: number) {
+        if (index < 9) {
+            // Calculator Layout
+            return "" + (3 * Math.idiv(9 - index - 1, 3) + index % 3 + 1);
+        } else if (index == 9) {
+            return "-";
+        } else if (index == 10) {
+            return "0";
+        } else if (index == 11) {
+            return ".";
+        } else {
+            return "";
         }
     }
+
 }
