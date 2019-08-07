@@ -20,6 +20,7 @@
         "background.ts",
         "tilemap.ts",
         "camera.ts",
+        "renderable.ts",
         "scene.ts",
         "scenes.ts",
         "textDialogs.ts",
