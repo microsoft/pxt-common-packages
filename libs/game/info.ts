@@ -101,7 +101,7 @@ namespace info {
         infoState = new InfoState();
 
         scene.createRenderable(
-            100,
+            scene.HUD_Z,
             () => {
                 if (!infoState) return;
                 control.enablePerfCounter("info")

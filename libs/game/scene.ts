@@ -31,22 +31,25 @@ namespace scene {
         handler: () => void;
     }
 
+    // frame handler priorities
     export const CONTROLLER_PRIORITY = 8;
-    export const TILEMAP_PRIORITY = 9;
-    export const PHYSICS_PRIORITY = 10;
+    export const PHYSICS_PRIORITY = 15;
     export const ANIMATION_UPDATE_PRIORITY = 15;
     export const UPDATE_CONTROLLER_PRIORITY = 13;
     export const CONTROLLER_SPRITES_PRIORITY = 13;
-    export const OVERLAP_PRIORITY = 15;
     export const UPDATE_INTERVAL_PRIORITY = 19;
     export const UPDATE_PRIORITY = 20;
     export const RENDER_BACKGROUND_PRIORITY = 60;
-    export const PAINT_PRIORITY = 75;
     export const RENDER_SPRITES_PRIORITY = 90;
-    export const SHADE_PRIORITY = 94;
-    export const HUD_PRIORITY = 95;
     export const RENDER_DIAGNOSTICS_PRIORITY = 150;
     export const UPDATE_SCREEN_PRIORITY = 200;
+
+    // default rendering z indices
+    export const ON_PAINT_Z = -20;
+    export const TILE_MAP_Z = -1;
+    export const SPRITE_Z = 0;
+    export const ON_SHADE_Z = 80;
+    export const HUD_Z = 100;
 
     export class Scene {
         eventContext: control.EventContext;
@@ -106,7 +109,7 @@ namespace scene {
             // controller update 13
             this.eventContext.registerFrameHandler(CONTROLLER_SPRITES_PRIORITY, controller._moveSprites);
             // apply physics and collisions 15
-            this.eventContext.registerFrameHandler(OVERLAP_PRIORITY, () => {
+            this.eventContext.registerFrameHandler(PHYSICS_PRIORITY, () => {
                 control.enablePerfCounter("physics and collisions")
                 const dt = this.eventContext.deltaTime;
 
@@ -116,14 +119,11 @@ namespace scene {
                 for (const s of this.allSprites)
                     s.__update(this.camera, dt);
             })
+            // user update interval 19s
+
             // user update 20
-            // render background 60
-            this.eventContext.registerFrameHandler(RENDER_BACKGROUND_PRIORITY, () => {
-                control.enablePerfCounter("render background")
-                this.background.draw();
-            })
-            // paint 75
-            // render sprites 90
+
+            // render 90
             this.eventContext.registerFrameHandler(RENDER_SPRITES_PRIORITY, () => {
                 control.enablePerfCounter("sprite_draw")
                 this.cachedRender = undefined;
@@ -201,12 +201,15 @@ namespace scene {
         }
 
         private renderCore() {
+            control.enablePerfCounter("render background")
             this.background.draw();
 
+            control.enablePerfCounter("sprite sort")
             if (this.flags & Flag.NeedsSorting) {
                 this.allSprites.sort(function (a, b) { return a.z - b.z || a.id - b.id; })
             }
 
+            control.enablePerfCounter("sprite draw")
             for (const s of this.allSprites) {
                 if (!(s.flags & sprites.Flag.Invisible)) {
                     s.__draw(this.camera);

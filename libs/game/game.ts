@@ -270,7 +270,7 @@ namespace game {
         pause(400);
 
         const overDialog = new GameOverDialog(win, scoreInfo.score, highScore);
-        scene.createRenderable(100, target => {
+        scene.createRenderable(scene.HUD_Z, target => {
             overDialog.update();
             target.drawTransparentImage(
                 overDialog.image,
@@ -363,7 +363,7 @@ namespace game {
     export function onPaint(a: () => void): void {
         init();
         if (!a) return;
-        game.eventContext().registerFrameHandler(scene.PAINT_PRIORITY, a);
+        scene.createRenderable(scene.ON_PAINT_Z, a);
     }
 
     /**
@@ -375,7 +375,7 @@ namespace game {
     export function onShade(a: () => void): void {
         init();
         if (!a) return;
-        game.eventContext().registerFrameHandler(scene.SHADE_PRIORITY, a);
+        scene.createRenderable(scene.ON_SHADE_Z, a);
     }
 
     /**

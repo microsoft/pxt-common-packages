@@ -92,7 +92,7 @@ namespace tiles {
             this.scale = scale;
 
             scene.createRenderable(
-                -1,
+                scene.TILE_MAP_Z,
                 (t, c) => this.draw(t, c)
             );
         }

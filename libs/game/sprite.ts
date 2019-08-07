@@ -177,7 +177,7 @@ class Sprite implements SpriteLike {
     constructor(img: Image) {
         this._x = Fx8(screen.width - img.width >> 1);
         this._y = Fx8(screen.height - img.height >> 1);
-        this.z = 0
+        this.z = scene.SPRITE_Z;
         this._lastX = this._x;
         this._lastY = this._y;
         this.vx = 0
