@@ -8,8 +8,12 @@ namespace scene {
             super(z);
         }
 
-        get flags(): number {
-            return this.shouldBeVisible() ? sprites.Flag.None : sprites.Flag.Invisible;
+        __visible(): boolean {
+            return this.shouldBeVisible();
+        }
+
+        __drawCore(camera: scene.Camera) {
+            this.handler(screen, camera);
         }
 
         destroy() {

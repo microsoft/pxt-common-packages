@@ -211,9 +211,7 @@ namespace scene {
 
             control.enablePerfCounter("sprite draw")
             for (const s of this.allSprites) {
-                if (!(s.flags & sprites.Flag.Invisible)) {
-                    s.__draw(this.camera);
-                }
+                s.__draw(this.camera);
             }
         }
     }

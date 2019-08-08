@@ -266,6 +266,10 @@ class Sprite extends sprite.BaseSprite {
         }
     }
 
+    __visible() {
+        return !(this.flags & SpriteFlag.Invisible);
+    }
+
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="width"
     get width() {
@@ -593,7 +597,7 @@ class Sprite extends sprite.BaseSprite {
         return this.right - ox < 0 || this.bottom - oy < 0 || this.left - ox > screen.width || this.top - oy > screen.height;
     }
 
-    __draw(camera: scene.Camera) {
+    __drawCore(camera: scene.Camera) {
         if (this.isOutOfScreen(camera)) return;
 
         const l = this.left - camera.drawOffsetX;

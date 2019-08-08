@@ -20,6 +20,10 @@ namespace sprite {
             game.currentScene().addSprite(this);
         }
 
+        __visible(): boolean {
+            return true;
+        }
+
         get z(): number {
             return this._z;
         }
@@ -31,7 +35,13 @@ namespace sprite {
             }
         }
 
-        __draw(camera: scene.Camera) { }
+        __draw(camera: scene.Camera) {
+            if (this.__visible()) {
+                this.__drawCore(camera);
+            }
+        }
+
+        __drawCore(camera: scene.Camera) { }
 
         __update(camera: scene.Camera, dt: number) { }
 
