@@ -29,7 +29,6 @@ namespace sprites {
         const scene = game.currentScene();
         const sprite = new Sprite(img)
         sprite.setKind(kind);
-        scene.addSprite(sprite);
         scene.physicsEngine.addSprite(sprite);
 
         // run on created handlers

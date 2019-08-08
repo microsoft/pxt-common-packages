@@ -26,16 +26,6 @@ enum CollisionDirection {
     Bottom = 3
 }
 
-interface SpriteLike {
-    z: number;
-    id: number;
-    flags?: number;
-
-    __update(camera: scene.Camera, dt: number): void;
-    __draw(camera: scene.Camera): void;
-    __serialize(offset: number): Buffer;
-}
-
 enum FlipOption {
     //% block=none
     None,
@@ -51,10 +41,9 @@ enum FlipOption {
  * A sprite on the screen
  **/
 //% blockNamespace=sprites color="#4B7BEC" blockGap=8
-class Sprite implements SpriteLike {
+class Sprite extends sprite.BaseSprite {
     _x: Fx8
     _y: Fx8
-    private _z: number
     _vx: Fx8
     _vy: Fx8
     _ax: Fx8
@@ -170,14 +159,14 @@ class Sprite implements SpriteLike {
     _kindsOverlappedWith: number[];
 
     flags: number
-    id: number
 
     private destroyHandler: () => void;
 
     constructor(img: Image) {
+        super(scene.SPRITE_Z);
+
         this._x = Fx8(screen.width - img.width >> 1);
         this._y = Fx8(screen.height - img.height >> 1);
-        this.z = scene.SPRITE_Z;
         this._lastX = this._x;
         this._lastY = this._y;
         this.vx = 0
