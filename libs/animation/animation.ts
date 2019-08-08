@@ -489,6 +489,7 @@ namespace animation {
      */
     //% blockId=run_image_animation
     //% block="%sprite=variables_get(mySprite) animate frames %frames=lists_create_with with interval %frameInterval=timePicker ms"
+    //% frames.defl=screen_image_picker
     //% group="Animate"
     export function runImageAnimation(sprite: Sprite, frames: Image[], frameInterval?: number): void {
         const anim: SpriteAnimation = new ImageAnimation(sprite, frames, frameInterval || 500);
@@ -518,6 +519,7 @@ namespace animation {
      */
     //% blockId=loop_image_animation
     //% block="loop %sprite=variables_get(mySprite) animate frames %frames=lists_create_with with interval %frameInterval=timePicker ms"
+    //% frames.defl=screen_image_picker
     //% group="Animate"
     export function loopImageAnimation(sprite: Sprite, frames: Image[], frameInterval?: number): void {
         const anim: SpriteAnimation = new ImageAnimation(sprite, frames, frameInterval || 500, true);
