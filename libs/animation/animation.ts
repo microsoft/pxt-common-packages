@@ -112,9 +112,9 @@ namespace animation {
                 case "T": { // T x2 y2
                     let lastControlPoint: Point;
                     if(metadata.lastNode instanceof QuadraticCurveTo) {
-                        lastControlPoint = (<QuadraticCurveTo>metadata.lastNode).p1;
+                        lastControlPoint = (metadata.lastNode as QuadraticCurveTo).p1;
                     } else if(metadata.lastNode instanceof CubicCurveTo) {
-                        lastControlPoint = (<CubicCurveTo>metadata.lastNode).p2;
+                        lastControlPoint = (metadata.lastNode as CubicCurveTo).p2;
                     } else break;
 
                     const p1: Point = new Point(p0.x + (p0.x - lastControlPoint.x), p0.y + (p0.y - lastControlPoint.y));
@@ -125,9 +125,9 @@ namespace animation {
                 case "t": { // t dx2 dy2
                     let lastControlPoint: Point;
                     if(metadata.lastNode instanceof QuadraticCurveTo) {
-                        lastControlPoint = (<QuadraticCurveTo>metadata.lastNode).p1;
+                        lastControlPoint = (metadata.lastNode as QuadraticCurveTo).p1;
                     } else if(metadata.lastNode instanceof CubicCurveTo) {
-                        lastControlPoint = (<CubicCurveTo>metadata.lastNode).p2;
+                        lastControlPoint = (metadata.lastNode as CubicCurveTo).p2;
                     } else break;
 
                     const p1: Point = new Point(p0.x + (p0.x - lastControlPoint.x), p0.y + (p0.y - lastControlPoint.y));
@@ -152,9 +152,9 @@ namespace animation {
                 case "S": { // S x2 y2 x3 y3
                     let lastControlPoint: Point;
                     if(metadata.lastNode instanceof QuadraticCurveTo) {
-                        lastControlPoint = (<QuadraticCurveTo>metadata.lastNode).p1;
+                        lastControlPoint = (metadata.lastNode as QuadraticCurveTo).p1;
                     } else if(metadata.lastNode instanceof CubicCurveTo) {
-                        lastControlPoint = (<CubicCurveTo>metadata.lastNode).p2;
+                        lastControlPoint = (metadata.lastNode as CubicCurveTo).p2;
                     } else break;
 
                     const p1: Point = new Point(p0.x + (p0.x - lastControlPoint.x), p0.y + (p0.y - lastControlPoint.y));
@@ -166,9 +166,9 @@ namespace animation {
                 case "s": { // s dx2 dy2 dx3 dy3
                     let lastControlPoint: Point;
                     if(metadata.lastNode instanceof QuadraticCurveTo) {
-                        lastControlPoint = (<QuadraticCurveTo>metadata.lastNode).p1;
+                        lastControlPoint = (metadata.lastNode as QuadraticCurveTo).p1;
                     } else if(metadata.lastNode instanceof CubicCurveTo) {
-                        lastControlPoint = (<CubicCurveTo>metadata.lastNode).p2;
+                        lastControlPoint = (metadata.lastNode as CubicCurveTo).p2;
                     } else break;
 
                     const p1: Point = new Point(p0.x + (p0.x - lastControlPoint.x), p0.y + (p0.y - lastControlPoint.y));
