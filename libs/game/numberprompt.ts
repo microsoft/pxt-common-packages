@@ -88,9 +88,14 @@ namespace game {
     //% whenUsed=true
     const INPUT_TOP = NUMPAD_TOP - INPUT_HEIGHT - NUMPAD_INPUT_MARGIN;
 
+    // Pixels kept blank on left and right sides of prompt
+    //% whenUsed=true
+    const PROMPT_MARGIN_HORIZ = 3;
+
     // Dimensions of prompt message area
     //% whenUsed=true
     const PROMPT_HEIGHT = INPUT_TOP - CONTENT_TOP;
+    const PROMPT_WIDTH = screen.width - PROMPT_MARGIN_HORIZ * 2;
 
     //% whenUsed=true
     const confirmText = "OK";
@@ -168,7 +173,7 @@ namespace game {
         }
 
         private drawPromptText() {
-            const prompt = sprites.create(layoutText(this.message, CONTENT_WIDTH, PROMPT_HEIGHT, this.theme.colorPrompt), -1);
+            const prompt = sprites.create(layoutText(this.message, PROMPT_WIDTH, PROMPT_HEIGHT, this.theme.colorPrompt), -1);
             prompt.x = screen.width / 2
             prompt.y = CONTENT_TOP + Math.floor((PROMPT_HEIGHT - prompt.height) / 2) + Math.floor(prompt.height / 2);
         }
