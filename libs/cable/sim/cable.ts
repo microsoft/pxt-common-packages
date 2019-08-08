@@ -6,7 +6,7 @@ namespace pxsim.network {
 
     export function cablePacket() : RefBuffer {
         const state = getCableState();
-        return pxsim.incr(state.packet);
+        return (state.packet);
     }
 
     export function onCablePacket(body: RefAction): void {

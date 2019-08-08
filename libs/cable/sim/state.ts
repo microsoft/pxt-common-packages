@@ -25,9 +25,7 @@ namespace pxsim {
         }
 
         receive(buf: RefBuffer) {
-            pxsim.decr(this.packet);
             this.packet = buf;
-            pxsim.incr(this.packet);
             this.packetReceived = true;
             board().bus.queue(this.PULSE_CABLE_COMPONENT_ID, this.PULSE_PACKET_EVENT);
         }
