@@ -20,8 +20,8 @@ namespace animation {
             } as AnimationState;
 
             game.eventContext().registerFrameHandler(scene.ANIMATION_UPDATE_PRIORITY, () => {
-                state.animations.forEach((anim: SpriteAnimation) => {
-                    if(anim) anim.update();
+                state.animations = state.animations.filter((anim: SpriteAnimation) => {
+                    return !anim.update(); // If update returns true, the animation is done and will be removed
                 });
             });
         }
@@ -45,7 +45,6 @@ namespace animation {
 
     export class Path {
         protected nodes: PathNode[];
-        protected startedAt: number;
         protected lastNode: number; // The index of the last node to fire
 
         constructor() {
@@ -296,10 +295,8 @@ namespace animation {
             return this.nodes.length;
         }
 
-        public run(interval: number, target: Sprite): boolean {
-            this.startedAt == null && (this.startedAt = control.millis());
-            
-            const runningTime: number = control.millis() - this.startedAt; // The time since the start of the path
+        public run(interval: number, target: Sprite, startedAt: number): boolean {
+            const runningTime: number = control.millis() - startedAt; // The time since the start of the path
             const nodeIndex: number = Math.floor(runningTime / interval); // The current node
             const nodeTime: number = runningTime % interval; // The time the current node has been animating
             
@@ -403,75 +400,39 @@ namespace animation {
     }
 
     export class SpriteAnimation {
-        constructor(protected sprite: Sprite) {
+        protected startedAt: number;
+
+        constructor(public sprite: Sprite, protected loop: boolean) {
         }
 
-        protected init(): void {
+        public init(): void {
             initializeAnimationHandler();
 
             const state: AnimationState = game.currentScene().data[stateNamespace];
             state.animations.push(this);
         }
 
-        protected done(): void {
-            const state: AnimationState = game.currentScene().data[stateNamespace];
-            state.animations.removeElement(this);
-        }
-
-        public update(): void {
+        public update(): boolean {
             // This should be implemented by subclasses
-            this.done();
-        }
-    }
-
-    export class MovementAnimation extends SpriteAnimation {
-        constructor(sprite: Sprite, private path: Path, private nodeInterval: number) {
-            super(sprite);
-
-            this.init();
-        }
-        
-        protected init(): void {
-            super.init();
-        }
-
-        protected done(): void {
-            super.done();
-        }
-
-        public update(): void {
-            if(this.sprite.flags & sprites.Flag.Destroyed) return this.done();
-            
-            this.path.run(this.nodeInterval, this.sprite) && this.done();
+            return false;
         }
     }
 
     export class ImageAnimation extends SpriteAnimation {
-        private frames: Image[];
-        private frameInterval: number;
         private lastFrame: number;
-        private startedAt: number;
 
-        constructor(sprite: Sprite, frames: Image[], frameInterval: number) {
-            super(sprite);
+        constructor(sprite: Sprite, private frames: Image[], private frameInterval: number, loop?: boolean) {
+            super(sprite, loop);
 
-            this.frames = frames;
-            this.frameInterval = frameInterval;
             this.lastFrame = -1;
-
-            this.init();
         }
         
-        protected init(): void {
+        public init(): void {
             super.init();
         }
 
-        protected done(): void {
-            super.done();
-        }
-
-        public update(): void {
-            if(this.sprite.flags & sprites.Flag.Destroyed) return this.done();
+        public update(): boolean {
+            if(this.sprite.flags & sprites.Flag.Destroyed) return true;
 
             if(this.startedAt == null) this.startedAt = control.millis();
             const runningTime: number = control.millis() - this.startedAt;
@@ -483,9 +444,40 @@ namespace animation {
                     this.sprite.setImage(newImage);
                 }
 
-                if(frameIndex >= this.frames.length) this.done();
+                if(frameIndex >= this.frames.length) {
+                    if(!this.loop) return true;
+                    this.startedAt = control.millis();
+                }
             }
             this.lastFrame = frameIndex;
+            return false;
+        }
+    }
+
+    export class MovementAnimation extends SpriteAnimation {
+        constructor(sprite: Sprite, private path: Path, private nodeInterval: number, loop?: boolean) {
+            super(sprite, loop);
+
+            this.loop = loop;
+
+            this.init();
+        }
+        
+        public init(): void {
+            super.init();
+        }
+        
+        public update(): boolean {
+            if(this.sprite.flags & sprites.Flag.Destroyed) return true;
+            
+            if(this.startedAt == null) this.startedAt = control.millis();
+            
+            let result = this.path.run(this.nodeInterval, this.sprite, this.startedAt);
+            if(result) {
+                if(!this.loop) return true;
+                this.startedAt = control.millis();
+            }
+            return false;
         }
     }
 
@@ -494,28 +486,95 @@ namespace animation {
      * @param frames the frames to animate through
      * @param sprite the sprite to animate on
      * @param frameInterval the time between changes, eg: 500
-     * @param wait whether or not the animation should be blocking
      */
     //% blockId=run_image_animation
     //% block="%sprite=variables_get(mySprite) animate frames %frames=lists_create_with with interval %frameInterval=timePicker ms"
     //% group="Animate"
     export function runImageAnimation(sprite: Sprite, frames: Image[], frameInterval?: number): void {
-        let test = new ImageAnimation(sprite, frames, frameInterval || 500);
+        const anim: SpriteAnimation = new ImageAnimation(sprite, frames, frameInterval || 500);
+        anim.init();
     }
 
     /**
      * Create and run a movement animation on a sprite
      * @param sprite the sprite to move
      * @param pathString the SVG path to animate
-     * @param nodeInterval the time between nodes during which to animate, eg: 500
-     * @param wait whether or not the animation should be blocking
+     * @param duration how long the animation should play for, eg: 500
      */
     //% blockId=run_movement_animation
     //% block="%sprite=variables_get(mySprite) follow path %pathString=animation_path for %duration=timePicker ms"
     //% group="Animate"
     export function runMovementAnimation(sprite: Sprite, pathString: string, duration?: number): void {
-        let path = Path.parse(new Point(sprite.x, sprite.y), pathString);
-        let test = new MovementAnimation(sprite, path, duration / path.length);
+        const path: Path = Path.parse(new Point(sprite.x, sprite.y), pathString);
+        const anim: SpriteAnimation = new MovementAnimation(sprite, path, duration / path.length);
+        anim.init();
+    }
+
+    /**
+     * Create and run an image animation on a sprite
+     * @param frames the frames to animate through
+     * @param sprite the sprite to animate on
+     * @param frameInterval the time between changes, eg: 500
+     */
+    //% blockId=loop_image_animation
+    //% block="loop %sprite=variables_get(mySprite) animate frames %frames=lists_create_with with interval %frameInterval=timePicker ms"
+    //% group="Animate"
+    export function loopImageAnimation(sprite: Sprite, frames: Image[], frameInterval?: number): void {
+        const anim: SpriteAnimation = new ImageAnimation(sprite, frames, frameInterval || 500, true);
+        anim.init();
+    }
+
+    /**
+     * Create and loop a movement animation on a sprite
+     * @param sprite the sprite to move
+     * @param pathString the SVG path to animate
+     * @param duration how long the animation should play for, eg: 500
+     */
+    //% blockId=loop_movement_animation
+    //% block="loop %sprite=variables_get(mySprite) follow path %pathString=animation_path for %duration=timePicker ms"
+    //% group="Animate"
+    export function loopMovementAnimation(sprite: Sprite, pathString: string, duration?: number): void {
+        const path: Path = Path.parse(new Point(sprite.x, sprite.y), pathString);
+        const anim: SpriteAnimation = new MovementAnimation(sprite, path, duration / path.length, true);
+        anim.init();
+    }
+    
+    export enum AnimationTypes {
+        //% block="frame"
+        ImageAnimation,
+        //% block="path"
+        MovementAnimation,
+        //% block="all"
+        All
+    }
+    
+    /**
+     * Stops all animations (simple and looping) of the specified type on a sprite
+     * @param type the animation type to stop
+     * @param sprite the sprite to filter animations by
+     */
+    //% blockId=stop_animations
+    //% block="stop %type animations on %sprite=variables_get(mySprite)"
+    //% group="Animate"
+    export function stopAnimation(type: AnimationTypes, sprite: Sprite): void {
+        let state: AnimationState = game.currentScene().data[stateNamespace];
+        if(state && state.animations) {
+            state.animations = state.animations.filter((anim: SpriteAnimation) => {
+                if(anim.sprite === sprite) {
+                    switch(type) {
+                        case AnimationTypes.ImageAnimation:
+                            if(anim instanceof ImageAnimation) return false;
+                            break;
+                        case AnimationTypes.MovementAnimation:
+                            if(anim instanceof MovementAnimation) return false;
+                            break;
+                        case AnimationTypes.All:
+                            return false;
+                    }
+                }
+                return true;
+            });
+        }
     }
 
     //% fixedInstance whenUsed block="fly to center"
