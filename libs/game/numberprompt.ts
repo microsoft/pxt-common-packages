@@ -95,6 +95,7 @@ namespace game {
     // Dimensions of prompt message area
     //% whenUsed=true
     const PROMPT_HEIGHT = INPUT_TOP - CONTENT_TOP;
+    //% whenUsed=true
     const PROMPT_WIDTH = screen.width - PROMPT_MARGIN_HORIZ * 2;
 
     //% whenUsed=true
