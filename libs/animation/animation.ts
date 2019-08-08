@@ -190,7 +190,7 @@ namespace animation {
             let path = new Path();
             let p0 = pathStart;
 
-            // This implementation of SVG parsing does not support the T/t/S/s/A/a commands, nor does it support exponents in arguments
+            // This implementation of SVG parsing does not support the A/a commands, nor does it support exponents in arguments
             const digits = "0123456789";
             const separators = ", \t\n\r\f\v";
             const commands: {
