@@ -40,122 +40,122 @@ namespace animation {
             let node: PathNode;
             switch (command) {
                 case "M": { // M x y
-                    let p1: Point = new Point(args[0], args[1]);
+                    const p1 = new Point(args[0], args[1]);
                     node = new MoveTo(p1);
                     break;
                 }
                 case "m": { // m dx dy
-                    const p1: Point = new Point(p0.x + args[0], p0.y + args[1]);
+                    const p1 = new Point(p0.x + args[0], p0.y + args[1]);
                     node = new MoveTo(p1);
                     break;
                 }
                 case "L": { // L x y
-                    const p1: Point = new Point(args[0], args[1]);
+                    const p1 = new Point(args[0], args[1]);
                     node = new LineTo(p0, p1);
                     break;
                 }
                 case "l": { // l dx dy
-                    const p1: Point = new Point(p0.x + args[0], p0.y + args[1]);
+                    const p1 = new Point(p0.x + args[0], p0.y + args[1]);
                     node = new LineTo(p0, p1);
                     break;
                 }
                 case "H": { // H x
-                    const p1: Point = new Point(args[0], p0.y);
+                    const p1 = new Point(args[0], p0.y);
                     node = new LineTo(p0, p1);
                     break;
                 }
                 case "h": { // h dx
-                    const p1: Point = new Point(p0.x + args[0], p0.y);
+                    const p1 = new Point(p0.x + args[0], p0.y);
                     node = new LineTo(p0, p1);
                     break;
                 }
                 case "V": { // V y
-                    const p1: Point = new Point(p0.x, args[0]);
+                    const p1 = new Point(p0.x, args[0]);
                     node = new LineTo(p0, p1);
                     break;
                 }
                 case "v": { // v dy
-                    const p1: Point = new Point(p0.x, p0.y + args[0]);
+                    const p1 = new Point(p0.x, p0.y + args[0]);
                     node = new LineTo(p0, p1);
                     break;
                 }
                 case "Q": { // Q x1 y1 x2 y2
-                    const p1: Point = new Point(args[0], args[1]);
-                    const p2: Point = new Point(args[2], args[3]);
+                    const p1 = new Point(args[0], args[1]);
+                    const p2 = new Point(args[2], args[3]);
                     node = new QuadraticCurveTo(p0, p1, p2);
                     break;
                 }
                 case "q": { // q dx1 dy1 dx2 dy2
-                    const p1: Point = new Point(p0.x + args[0], p0.y + args[1]);
-                    const p2: Point = new Point(p0.x + args[2], p0.y + args[3]);
+                    const p1 = new Point(p0.x + args[0], p0.y + args[1]);
+                    const p2 = new Point(p0.x + args[2], p0.y + args[3]);
                     node = new QuadraticCurveTo(p0, p1, p2);
                     break;
                 }
                 case "T": { // T x2 y2
                     let lastControlPoint: Point;
-                    if(metadata.lastNode instanceof QuadraticCurveTo) {
+                    if (metadata.lastNode instanceof QuadraticCurveTo) {
                         lastControlPoint = (metadata.lastNode as QuadraticCurveTo).p1;
-                    } else if(metadata.lastNode instanceof CubicCurveTo) {
+                    } else if (metadata.lastNode instanceof CubicCurveTo) {
                         lastControlPoint = (metadata.lastNode as CubicCurveTo).p2;
                     } else break;
 
-                    const p1: Point = new Point(p0.x + (p0.x - lastControlPoint.x), p0.y + (p0.y - lastControlPoint.y));
-                    const p2: Point = new Point(args[0], args[1]);
+                    const p1 = new Point(p0.x + (p0.x - lastControlPoint.x), p0.y + (p0.y - lastControlPoint.y));
+                    const p2 = new Point(args[0], args[1]);
                     node = new QuadraticCurveTo(p0, p1, p2);
                     break;
                 }
                 case "t": { // t dx2 dy2
                     let lastControlPoint: Point;
-                    if(metadata.lastNode instanceof QuadraticCurveTo) {
+                    if (metadata.lastNode instanceof QuadraticCurveTo) {
                         lastControlPoint = (metadata.lastNode as QuadraticCurveTo).p1;
-                    } else if(metadata.lastNode instanceof CubicCurveTo) {
+                    } else if (metadata.lastNode instanceof CubicCurveTo) {
                         lastControlPoint = (metadata.lastNode as CubicCurveTo).p2;
                     } else break;
 
-                    const p1: Point = new Point(p0.x + (p0.x - lastControlPoint.x), p0.y + (p0.y - lastControlPoint.y));
-                    const p2: Point = new Point(p0.x + args[0], p0.y + args[1]);
+                    const p1 = new Point(p0.x + (p0.x - lastControlPoint.x), p0.y + (p0.y - lastControlPoint.y));
+                    const p2 = new Point(p0.x + args[0], p0.y + args[1]);
                     node = new QuadraticCurveTo(p0, p1, p2);
                     break;
                 }
                 case "C": { // C x1 y1 x2 y2 x3 y3
-                    const p1: Point = new Point(args[0], args[1]);
-                    const p2: Point = new Point(args[2], args[3]);
-                    const p3: Point = new Point(args[4], args[5]);
+                    const p1 = new Point(args[0], args[1]);
+                    const p2 = new Point(args[2], args[3]);
+                    const p3 = new Point(args[4], args[5]);
                     node = new CubicCurveTo(p0, p1, p2, p3);
                     break;
                 }
                 case "c": { // c dx1 dy1 dx2 dy2 dx3 dy3
-                    const p1: Point = new Point(p0.x + args[0], p0.y + args[1]);
-                    const p2: Point = new Point(p0.x + args[2], p0.y + args[3]);
-                    const p3: Point = new Point(p0.x + args[4], p0.y + args[5]);
+                    const p1 = new Point(p0.x + args[0], p0.y + args[1]);
+                    const p2 = new Point(p0.x + args[2], p0.y + args[3]);
+                    const p3 = new Point(p0.x + args[4], p0.y + args[5]);
                     node = new CubicCurveTo(p0, p1, p2, p3);
                     break;
                 }
                 case "S": { // S x2 y2 x3 y3
                     let lastControlPoint: Point;
-                    if(metadata.lastNode instanceof QuadraticCurveTo) {
+                    if (metadata.lastNode instanceof QuadraticCurveTo) {
                         lastControlPoint = (metadata.lastNode as QuadraticCurveTo).p1;
-                    } else if(metadata.lastNode instanceof CubicCurveTo) {
+                    } else if (metadata.lastNode instanceof CubicCurveTo) {
                         lastControlPoint = (metadata.lastNode as CubicCurveTo).p2;
                     } else break;
 
-                    const p1: Point = new Point(p0.x + (p0.x - lastControlPoint.x), p0.y + (p0.y - lastControlPoint.y));
-                    const p2: Point = new Point(args[0], args[1]);
-                    const p3: Point = new Point(args[2], args[3]);
+                    const p1 = new Point(p0.x + (p0.x - lastControlPoint.x), p0.y + (p0.y - lastControlPoint.y));
+                    const p2 = new Point(args[0], args[1]);
+                    const p3 = new Point(args[2], args[3]);
                     node = new CubicCurveTo(p0, p1, p2, p3);
                     break;
                 }
                 case "s": { // s dx2 dy2 dx3 dy3
                     let lastControlPoint: Point;
-                    if(metadata.lastNode instanceof QuadraticCurveTo) {
+                    if (metadata.lastNode instanceof QuadraticCurveTo) {
                         lastControlPoint = (metadata.lastNode as QuadraticCurveTo).p1;
-                    } else if(metadata.lastNode instanceof CubicCurveTo) {
+                    } else if (metadata.lastNode instanceof CubicCurveTo) {
                         lastControlPoint = (metadata.lastNode as CubicCurveTo).p2;
                     } else break;
 
-                    const p1: Point = new Point(p0.x + (p0.x - lastControlPoint.x), p0.y + (p0.y - lastControlPoint.y));
-                    const p2: Point = new Point(p0.x + args[0], p0.y + args[1]);
-                    const p3: Point = new Point(p0.x + args[2], p0.y + args[3]);
+                    const p1 = new Point(p0.x + (p0.x - lastControlPoint.x), p0.y + (p0.y - lastControlPoint.y));
+                    const p2 = new Point(p0.x + args[0], p0.y + args[1]);
+                    const p3 = new Point(p0.x + args[2], p0.y + args[3]);
                     node = new CubicCurveTo(p0, p1, p2, p3);
                     break;
                 }
@@ -170,8 +170,8 @@ namespace animation {
         }
 
         public static parse(pathStart: Point, pathString: string): Path {
-            let path = new Path();
-            let p0 = pathStart;
+            let path: Path = new Path();
+            let p0: Point = pathStart;
 
             // This implementation of SVG parsing does not support the A/a commands, nor does it support exponents in arguments
             const digits = "0123456789";
@@ -197,8 +197,8 @@ namespace animation {
             let args: number[] = [];
 
             for (let i = 0; i < pathString.length; i++) {
-                const char: string = pathString.charAt(i);
-                const lastNode: PathNode = path.nodes[path.nodes.length - 1];
+                const char = pathString.charAt(i);
+                const lastNode = path.nodes[path.nodes.length - 1];
                 
                 // This is an SVG path parser. It's kinda complicated. For each character, evaluate the following conditions:
                 // - if it's a digit, add it to the current argument
@@ -208,24 +208,24 @@ namespace animation {
                 // - else if it's a plus/minus sign, and if it's the start of a new argument, add it to allow for positive/negative numbers
                 // - if it's the end of the string, complete the current argument before proceeding to the next step
                 // - if there's sufficient data to make a node after all of these steps, create it
-                if(digits.indexOf(char) > -1) { // Parses number arguments
+                if (digits.indexOf(char) > -1) { // Parses number arguments
                     currentArg += char;
-                } else if(separators.indexOf(char) > -1 && currentArg) { // Terminates number arguments
+                } else if (separators.indexOf(char) > -1 && currentArg) { // Terminates number arguments
                     args.push(parseInt(currentArg));
                     currentArg = "";
-                } else if(Object.keys(commands).indexOf(char) > -1) { // Parses command arguments
-                    if(command && currentArg) {
+                } else if (Object.keys(commands).indexOf(char) > -1) { // Parses command arguments
+                    if (command && currentArg) {
                         args.push(parseInt(currentArg));
                         
                         // Try to finish up this node, otherwise just toss it out
                         if (command && args.length >= commands[command]) {
-                            let node = this.generateNode(p0, command, args, {
+                            let node: PathNode = this.generateNode(p0, command, args, {
                                 pathStart: pathStart,
                                 lastNode: lastNode
                             });
                             path.add(node);
                             p0 = node.getEndPoint(); // Set the start for the next node to the end of this node
-                            if(node.setStart) pathStart = p0; // If this is a move command, then this sets the new start of the path (for the Z/z command)
+                            if (node.setStart) pathStart = p0; // If this is a move command, then this sets the new start of the path (for the Z/z command)
                         }
                         
                         // Clean up before continuing
@@ -234,8 +234,8 @@ namespace animation {
                         currentArg = "";
                     }
                     command = char;
-                } else if(signs.indexOf(char) > -1) { // Allows for positive/negative values
-                    if(currentArg) {
+                } else if (signs.indexOf(char) > -1) { // Allows for positive/negative values
+                    if (currentArg) {
                         args.push(parseInt(currentArg));
                         currentArg = "";
                     }
@@ -243,8 +243,8 @@ namespace animation {
                 }
 
                 // If the end of the path has been reached, cleans up the last argument before continuing parsing
-                if(i === pathString.length - 1) {
-                    if(currentArg) {
+                if (i === pathString.length - 1) {
+                    if (currentArg) {
                         args.push(parseInt(currentArg));
                     }
                 }
@@ -252,13 +252,13 @@ namespace animation {
                 // If the command has a sufficient amount of arguments, then create a node for it
                 if (command && args.length >= commands[command]) {
                     // Generate the node
-                    let node = this.generateNode(p0, command, args, {
+                    let node: PathNode = this.generateNode(p0, command, args, {
                         pathStart: pathStart,
                         lastNode: lastNode
                     });
                     path.add(node);
                     p0 = node.getEndPoint();
-                    if(node.setStart) pathStart = p0;
+                    if (node.setStart) pathStart = p0;
                     
                     // Reset and prepare for the next command
                     command = "";
@@ -279,14 +279,14 @@ namespace animation {
         }
 
         public run(interval: number, target: Sprite, startedAt: number): boolean {
-            const runningTime: number = control.millis() - startedAt; // The time since the start of the path
-            const nodeIndex: number = Math.floor(runningTime / interval); // The current node
-            const nodeTime: number = runningTime % interval; // The time the current node has been animating
+            const runningTime = control.millis() - startedAt; // The time since the start of the path
+            const nodeIndex = Math.floor(runningTime / interval); // The current node
+            const nodeTime = runningTime % interval; // The time the current node has been animating
             
-            if(this.lastNode > -1 && this.lastNode < nodeIndex && this.nodes.length) { // If the last node hasn't been completed yet
+            if (this.lastNode > -1 && this.lastNode < nodeIndex && this.nodes.length) { // If the last node hasn't been completed yet
                 this.nodes[this.lastNode].apply(target, interval, interval); // Applies the last state of the previous node in case it was missed (this makes sure all moveTos fire)
 
-                if(nodeIndex >= this.nodes.length) return true; // Once the nodeIndex is past the last item of the array, only then end the animation
+                if (nodeIndex >= this.nodes.length) return true; // Once the nodeIndex is past the last item of the array, only then end the animation
             }
             this.lastNode = nodeIndex;
 
@@ -307,7 +307,7 @@ namespace animation {
             this.setStart = true;
         }
 
-        apply(target: Sprite, nodeTime: number, interval: number): void {
+        apply(target: Sprite, nodeTime: number, interval: number) {
             nodeTime >= interval && target.setPosition(this.p1.x, this.p1.y);
         }
 
@@ -322,9 +322,10 @@ namespace animation {
             this.setStart = false;
         }
 
-        apply(target: Sprite, nodeTime: number, interval: number): void {
-            const x: number = Math.round(((this.p1.x - this.p0.x) / interval) * nodeTime) + this.p0.x;
-            const y: number = Math.round(((this.p1.y - this.p0.y) / interval) * nodeTime) + this.p0.y;
+        apply(target: Sprite, nodeTime: number, interval: number) {
+            const x = Math.round(((this.p1.x - this.p0.x) / interval) * nodeTime) + this.p0.x;
+            const y = Math.round(((this.p1.y - this.p0.y) / interval) * nodeTime) + this.p0.y;
+
             target.setPosition(x, y);
         }
 
@@ -339,15 +340,15 @@ namespace animation {
             this.setStart = false;
         }
 
-        apply(target: Sprite, nodeTime: number, interval: number): void {
-            const progress: number = nodeTime / interval;
-            const diff: number = 1 - progress;
-            const a: number = Math.pow(diff, 2);
-            const b: number = 2 * diff * progress;
-            const c: number = Math.pow(progress, 2);
+        apply(target: Sprite, nodeTime: number, interval: number) {
+            const progress = nodeTime / interval;
+            const diff = 1 - progress;
+            const a = Math.pow(diff, 2);
+            const b = 2 * diff * progress;
+            const c = Math.pow(progress, 2);
 
-            const x: number = Math.round(a * this.p0.x + b * this.p1.x + c * this.p2.x);
-            const y: number = Math.round(a * this.p0.y + b * this.p1.y + c * this.p2.y);
+            const x = Math.round(a * this.p0.x + b * this.p1.x + c * this.p2.x);
+            const y = Math.round(a * this.p0.y + b * this.p1.y + c * this.p2.y);
 
             target.setPosition(x, y);
         }
@@ -363,16 +364,16 @@ namespace animation {
             this.setStart = false;
         }
 
-        apply(target: Sprite, nodeTime: number, interval: number): void {
-            const progress: number = nodeTime / interval;
-            const diff: number = 1 - progress;
-            const a: number = Math.pow(diff, 3);
-            const b: number = 3 * Math.pow(diff, 2) * progress;
-            const c: number = 3 * diff * Math.pow(progress, 2);
-            const d: number = Math.pow(progress, 3);
+        apply(target: Sprite, nodeTime: number, interval: number) {
+            const progress = nodeTime / interval;
+            const diff = 1 - progress;
+            const a = Math.pow(diff, 3);
+            const b = 3 * Math.pow(diff, 2) * progress;
+            const c = 3 * diff * Math.pow(progress, 2);
+            const d = Math.pow(progress, 3);
 
-            const x: number = Math.round(a * this.p0.x + b * this.p1.x + c * this.p2.x + d * this.p3.x);
-            const y: number = Math.round(a * this.p0.y + b * this.p1.y + c * this.p2.y + d * this.p3.y);
+            const x = Math.round(a * this.p0.x + b * this.p1.x + c * this.p2.x + d * this.p3.x);
+            const y = Math.round(a * this.p0.y + b * this.p1.y + c * this.p2.y + d * this.p3.y);
 
             target.setPosition(x, y);
         }
@@ -423,20 +424,20 @@ namespace animation {
         }
 
         public update(): boolean {
-            if(this.sprite.flags & sprites.Flag.Destroyed) return true;
+            if (this.sprite.flags & sprites.Flag.Destroyed) return true;
 
-            if(this.startedAt == null) this.startedAt = control.millis();
-            const runningTime: number = control.millis() - this.startedAt;
-            const frameIndex: number = Math.floor(runningTime / this.frameInterval);
+            if (this.startedAt == null) this.startedAt = control.millis();
+            const runningTime = control.millis() - this.startedAt;
+            const frameIndex = Math.floor(runningTime / this.frameInterval);
 
-            if(this.lastFrame > -1 && this.lastFrame < frameIndex && this.frames.length) { // Applies the first frame after the first interval has passed
-                const newImage: Image = this.frames[frameIndex - 1];
-                if(this.sprite.image !== newImage) {
+            if (this.lastFrame > -1 && this.lastFrame < frameIndex && this.frames.length) { // Applies the first frame after the first interval has passed
+                const newImage = this.frames[frameIndex - 1];
+                if (this.sprite.image !== newImage) {
                     this.sprite.setImage(newImage);
                 }
 
-                if(frameIndex >= this.frames.length) {
-                    if(!this.loop) return true;
+                if (frameIndex >= this.frames.length) {
+                    if (!this.loop) return true;
                     this.startedAt = control.millis();
                 }
             }
@@ -453,13 +454,13 @@ namespace animation {
         }
         
         public update(): boolean {
-            if(this.sprite.flags & sprites.Flag.Destroyed) return true;
+            if (this.sprite.flags & sprites.Flag.Destroyed) return true;
             
-            if(this.startedAt == null) this.startedAt = control.millis();
+            if (this.startedAt == null) this.startedAt = control.millis();
             
             let result = this.path.run(this.nodeInterval, this.sprite, this.startedAt);
-            if(result) {
-                if(!this.loop) return true;
+            if (result) {
+                if (!this.loop) return true;
                 this.startedAt = control.millis();
             }
             return false;
@@ -476,8 +477,8 @@ namespace animation {
     //% block="%sprite=variables_get(mySprite) animate frames %frames=lists_create_with with interval %frameInterval=timePicker ms"
     //% frames.defl=screen_image_picker
     //% group="Animate"
-    export function runImageAnimation(sprite: Sprite, frames: Image[], frameInterval?: number): void {
-        const anim: SpriteAnimation = new ImageAnimation(sprite, frames, frameInterval || 500);
+    export function runImageAnimation(sprite: Sprite, frames: Image[], frameInterval?: number) {
+        const anim = new ImageAnimation(sprite, frames, frameInterval || 500);
         anim.init();
     }
 
@@ -490,9 +491,9 @@ namespace animation {
     //% blockId=run_movement_animation
     //% block="%sprite=variables_get(mySprite) follow path %pathString=animation_path for %duration=timePicker ms"
     //% group="Animate"
-    export function runMovementAnimation(sprite: Sprite, pathString: string, duration?: number): void {
-        const path: Path = Path.parse(new Point(sprite.x, sprite.y), pathString);
-        const anim: SpriteAnimation = new MovementAnimation(sprite, path, duration / path.length);
+    export function runMovementAnimation(sprite: Sprite, pathString: string, duration?: number) {
+        const path = Path.parse(new Point(sprite.x, sprite.y), pathString);
+        const anim = new MovementAnimation(sprite, path, duration / path.length);
         anim.init();
     }
 
@@ -506,8 +507,8 @@ namespace animation {
     //% block="loop %sprite=variables_get(mySprite) animate frames %frames=lists_create_with with interval %frameInterval=timePicker ms"
     //% frames.defl=screen_image_picker
     //% group="Animate"
-    export function loopImageAnimation(sprite: Sprite, frames: Image[], frameInterval?: number): void {
-        const anim: SpriteAnimation = new ImageAnimation(sprite, frames, frameInterval || 500, true);
+    export function loopImageAnimation(sprite: Sprite, frames: Image[], frameInterval?: number) {
+        const anim = new ImageAnimation(sprite, frames, frameInterval || 500, true);
         anim.init();
     }
 
@@ -520,9 +521,9 @@ namespace animation {
     //% blockId=loop_movement_animation
     //% block="loop %sprite=variables_get(mySprite) follow path %pathString=animation_path for %duration=timePicker ms"
     //% group="Animate"
-    export function loopMovementAnimation(sprite: Sprite, pathString: string, duration?: number): void {
-        const path: Path = Path.parse(new Point(sprite.x, sprite.y), pathString);
-        const anim: SpriteAnimation = new MovementAnimation(sprite, path, duration / path.length, true);
+    export function loopMovementAnimation(sprite: Sprite, pathString: string, duration?: number) {
+        const path = Path.parse(new Point(sprite.x, sprite.y), pathString);
+        const anim = new MovementAnimation(sprite, path, duration / path.length, true);
         anim.init();
     }
     
@@ -543,17 +544,17 @@ namespace animation {
     //% blockId=stop_animations
     //% block="stop %type animations on %sprite=variables_get(mySprite)"
     //% group="Animate"
-    export function stopAnimation(type: AnimationTypes, sprite: Sprite): void {
+    export function stopAnimation(type: AnimationTypes, sprite: Sprite) {
         let state: AnimationState = game.currentScene().data[stateNamespace];
-        if(state && state.animations) {
+        if (state && state.animations) {
             state.animations = state.animations.filter((anim: SpriteAnimation) => {
-                if(anim.sprite === sprite) {
-                    switch(type) {
+                if (anim.sprite === sprite) {
+                    switch (type) {
                         case AnimationTypes.ImageAnimation:
-                            if(anim instanceof ImageAnimation) return false;
+                            if (anim instanceof ImageAnimation) return false;
                             break;
                         case AnimationTypes.MovementAnimation:
-                            if(anim instanceof MovementAnimation) return false;
+                            if (anim instanceof MovementAnimation) return false;
                             break;
                         case AnimationTypes.All:
                             return false;
