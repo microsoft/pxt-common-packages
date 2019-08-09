@@ -41,7 +41,7 @@ enum FlipOption {
  * A sprite on the screen
  **/
 //% blockNamespace=sprites color="#4B7BEC" blockGap=8
-class Sprite extends sprite.BaseSprite {
+class Sprite extends sprites.BaseSprite {
     _x: Fx8
     _y: Fx8
     _vx: Fx8
