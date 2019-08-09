@@ -729,10 +729,9 @@ class Sprite implements SpriteLike {
     }
 
     registerObstacle(direction: CollisionDirection, other: sprites.Obstacle) {
-        if (other == undefined) return;
         this._obstacles[direction] = other;
-
         const collisionHandlers = game.currentScene().collisionHandlers[other.tileIndex];
+
         if (collisionHandlers) {
             collisionHandlers
                 .filter(h => h.kind == this.kind())
