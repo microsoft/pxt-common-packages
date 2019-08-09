@@ -6,7 +6,7 @@ Ask the player for a string value.
 game.askForString("")
 ```
 
-The player is prompted to input a string. Your message is displayed and the player chooses from character selections below it to make a response. Each character of the response string is selected with the **A** button. You can limit the number of characters they player can type in the response.
+The player is prompted to input a string. Your message is displayed and the player chooses from character selections below it to make a response. Each character of the response string is selected with the **A** button. You can limit the number of characters the player can type in the response.
 
 The player selects **OK** and presses the **A** button to finish typing the response. The response string is then returned to your program.
 
@@ -32,4 +32,5 @@ if (game.askForString("unlock code:", 5) != unlock) {
 
 ## See also #seealso
 
-[ask](/reference/game/ask)
+[ask](/reference/game/ask),
+[ask for number](/reference/game/ask-for-number)

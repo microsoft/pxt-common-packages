@@ -50,9 +50,7 @@ namespace particles {
     /**
      * A source of particles
      */
-    export class ParticleSource implements SpriteLike {
-        private _z: number;
-
+    export class ParticleSource extends sprite.BaseSprite {
         /**
          * A relative ranking of this sources priority
          * When necessary, a source with a lower priority will
@@ -72,7 +70,7 @@ namespace particles {
          */
         lifespan: number;
 
-        protected flags: number;
+        protected pFlags: number;
         protected head: Particle;
         protected timer: number;
         protected period: number;
@@ -81,25 +79,14 @@ namespace particles {
         protected ax: Fx8;
         protected ay: Fx8;
 
-        get z() {
-            return this._z;
-        }
-
-        set z(v: number) {
-            if (v != this._z) {
-                this._z = v;
-                game.currentScene().flags |= scene.Flag.NeedsSorting;
-            }
-        }
-
         /**
          * @param anchor to emit particles from
          * @param particlesPerSecond rate at which particles are emitted
          * @param factory [optional] factory to generate particles with; otherwise, 
          */
         constructor(anchor: ParticleAnchor, particlesPerSecond: number, factory?: ParticleFactory) {
+            super(scene.SPRITE_Z)
             init();
-            const scene = game.currentScene();
             const sources = particleSources();
 
             // remove and immediately destroy oldest source if over MAX_SOURCES
@@ -110,26 +97,16 @@ namespace particles {
                 removedSource.destroy();
             }
 
-            this.flags = 0;
+            this.pFlags = 0;
             this.setRate(particlesPerSecond);
             this.setAcceleration(0, 0);
             this.setAnchor(anchor);
             this.lifespan = undefined;
             this._dt = 0;
-            this.z = 0;
             this.priority = 0;
             this.setFactory(factory || particles.defaultFactory);
             sources.push(this);
-            scene.addSprite(this);
             this.enabled = true;
-        }
-
-        __serialize(offset: number): Buffer {
-            return undefined;
-        }
-
-        __update(camera: scene.Camera, dt: number) {
-            // see _update()
         }
 
         __draw(camera: scene.Camera) {
@@ -147,7 +124,6 @@ namespace particles {
         _update(dt: number) {
             this.timer -= dt;
 
-            const anchor: ParticleAnchor = this.anchor;
             if (this.lifespan !== undefined) {
                 this.lifespan -= dt;
                 if (this.lifespan <= 0) {
@@ -192,7 +168,7 @@ namespace particles {
                 this.head = this.head.next;
             }
 
-            if ((this.flags & Flag.destroyed) && !this.head) {
+            if ((this.pFlags & Flag.destroyed) && !this.head) {
                 const scene = game.currentScene();
                 if (scene)
                     scene.allSprites.removeElement(this);
@@ -229,7 +205,7 @@ namespace particles {
         }
 
         get enabled() {
-            return !!(this.flags & Flag.enabled);
+            return !!(this.pFlags & Flag.enabled);
         }
 
         /**
@@ -237,7 +213,7 @@ namespace particles {
          */
         set enabled(v: boolean) {
             if (v !== this.enabled) {
-                this.flags = v ? (this.flags | Flag.enabled) : (this.flags ^ Flag.enabled);
+                this.pFlags = v ? (this.pFlags | Flag.enabled) : (this.pFlags ^ Flag.enabled);
                 this.timer = 0;
             }
         }
@@ -248,7 +224,7 @@ namespace particles {
         destroy() {
             // The `_prune` step will finishing destroying this Source once all emitted particles finish rendering
             this.enabled = false;
-            this.flags |= Flag.destroyed;
+            this.pFlags |= Flag.destroyed;
             this._prune();
         }
 

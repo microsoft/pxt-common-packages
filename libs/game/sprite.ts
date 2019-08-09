@@ -10,7 +10,9 @@ enum SpriteFlag {
     //% block="bounce on wall"
     BounceOnWall = sprites.Flag.BounceOnWall,
     //% block="show physics"
-    ShowPhysics = sprites.Flag.ShowPhysics
+    ShowPhysics = sprites.Flag.ShowPhysics,
+    //% block="invisible"
+    Invisible = sprites.Flag.Invisible,
 }
 
 enum CollisionDirection {
@@ -22,14 +24,6 @@ enum CollisionDirection {
     Right = 2,
     //% block="bottom"
     Bottom = 3
-}
-
-interface SpriteLike {
-    z: number;
-    id: number;
-    __update(camera: scene.Camera, dt: number): void;
-    __draw(camera: scene.Camera): void;
-    __serialize(offset: number): Buffer;
 }
 
 enum FlipOption {
@@ -47,10 +41,9 @@ enum FlipOption {
  * A sprite on the screen
  **/
 //% blockNamespace=sprites color="#4B7BEC" blockGap=8
-class Sprite implements SpriteLike {
+class Sprite extends sprite.BaseSprite {
     _x: Fx8
     _y: Fx8
-    private _z: number
     _vx: Fx8
     _vy: Fx8
     _ax: Fx8
@@ -166,14 +159,14 @@ class Sprite implements SpriteLike {
     _kindsOverlappedWith: number[];
 
     flags: number
-    id: number
 
     private destroyHandler: () => void;
 
     constructor(img: Image) {
+        super(scene.SPRITE_Z);
+
         this._x = Fx8(screen.width - img.width >> 1);
         this._y = Fx8(screen.height - img.height >> 1);
-        this.z = 0
         this._lastX = this._x;
         this._lastY = this._y;
         this.vx = 0
@@ -271,6 +264,10 @@ class Sprite implements SpriteLike {
             this._z = value;
             game.currentScene().flags |= scene.Flag.NeedsSorting;
         }
+    }
+
+    __visible() {
+        return !(this.flags & SpriteFlag.Invisible);
     }
 
     //% group="Physics" blockSetVariable="mySprite"
@@ -600,7 +597,7 @@ class Sprite implements SpriteLike {
         return this.right - ox < 0 || this.bottom - oy < 0 || this.left - ox > screen.width || this.top - oy > screen.height;
     }
 
-    __draw(camera: scene.Camera) {
+    __drawCore(camera: scene.Camera) {
         if (this.isOutOfScreen(camera)) return;
 
         const l = this.left - camera.drawOffsetX;
@@ -626,7 +623,13 @@ class Sprite implements SpriteLike {
 
         // debug info
         if (game.debug) {
-            screen.drawRect(Fx.toInt(this._hitbox.left), Fx.toInt(this._hitbox.top), this._hitbox.width, this._hitbox.height, 1);
+            screen.drawRect(
+                Fx.toInt(this._hitbox.left) - camera.drawOffsetX,
+                Fx.toInt(this._hitbox.top) - camera.drawOffsetY,
+                this._hitbox.width,
+                this._hitbox.height,
+                1
+            );
         }
     }
 

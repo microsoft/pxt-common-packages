@@ -100,49 +100,52 @@ namespace info {
 
         infoState = new InfoState();
 
-        game.eventContext().registerFrameHandler(scene.HUD_PRIORITY, () => {
-            if (!infoState) return;
-            control.enablePerfCounter("info")
-            // show score, lifes
-            if (infoState.visibilityFlag & Visibility.Multi) {
-                const ps = players.filter(p => !!p);
-                // First draw players
-                ps.forEach(p => p.drawPlayer());
-                // Then run life over events
-                ps.forEach(p => p.raiseLifeZero(false));
-            } else { // single player
-                // show score
-                const p = player1;
-                if (p.hasScore() && (infoState.visibilityFlag & Visibility.Score)) {
-                    p.drawScore();
+        scene.createRenderable(
+            scene.HUD_Z,
+            () => {
+                if (!infoState) return;
+                control.enablePerfCounter("info")
+                // show score, lifes
+                if (infoState.visibilityFlag & Visibility.Multi) {
+                    const ps = players.filter(p => !!p);
+                    // First draw players
+                    ps.forEach(p => p.drawPlayer());
+                    // Then run life over events
+                    ps.forEach(p => p.raiseLifeZero(false));
+                } else { // single player
+                    // show score
+                    const p = player1;
+                    if (p.hasScore() && (infoState.visibilityFlag & Visibility.Score)) {
+                        p.drawScore();
+                    }
+                    // show life
+                    if (p.hasLife() && (infoState.visibilityFlag & Visibility.Life)) {
+                        p.drawLives();
+                    }
+                    p.raiseLifeZero(true);
                 }
-                // show life
-                if (p.hasLife() && (infoState.visibilityFlag & Visibility.Life)) {
-                    p.drawLives();
-                }
-                p.raiseLifeZero(true);
-            }
-            // show countdown in both modes
-            if (infoState.gameEnd !== undefined && infoState.visibilityFlag & Visibility.Countdown) {
-                const scene = game.currentScene();
-                const elapsed = infoState.gameEnd - scene.millis();
-                drawTimer(elapsed);
-                let t = elapsed / 1000;
-                if (t <= 0) {
-                    t = 0;
-                    if (!infoState.countdownExpired) {
-                        infoState.countdownExpired = true;
-                        if (infoState.countdownEndHandler) {
-                            infoState.countdownEndHandler();
-                            infoState.gameEnd = undefined;
-                        }
-                        else {
-                            game.over();
+                // show countdown in both modes
+                if (infoState.gameEnd !== undefined && infoState.visibilityFlag & Visibility.Countdown) {
+                    const scene = game.currentScene();
+                    const elapsed = infoState.gameEnd - scene.millis();
+                    drawTimer(elapsed);
+                    let t = elapsed / 1000;
+                    if (t <= 0) {
+                        t = 0;
+                        if (!infoState.countdownExpired) {
+                            infoState.countdownExpired = true;
+                            if (infoState.countdownEndHandler) {
+                                infoState.countdownEndHandler();
+                                infoState.gameEnd = undefined;
+                            }
+                            else {
+                                game.over();
+                            }
                         }
                     }
                 }
             }
-        })
+        );
     }
 
     function initMultiHUD() {
