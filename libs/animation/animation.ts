@@ -10,23 +10,6 @@ namespace animation {
         animations: SpriteAnimation[];
     }
 
-    function initializeAnimationHandler() {
-        let state: AnimationState = game.currentScene().data[stateNamespace];
-
-        // Register animation updates to fire when frames are rendered
-        if(!state) {
-            state = game.currentScene().data[stateNamespace] = {
-                animations: []
-            } as AnimationState;
-
-            game.eventContext().registerFrameHandler(scene.ANIMATION_UPDATE_PRIORITY, () => {
-                state.animations = state.animations.filter((anim: SpriteAnimation) => {
-                    return !anim.update(); // If update returns true, the animation is done and will be removed
-                });
-            });
-        }
-    }
-
     export class Point {
         public x: number;
         public y: number;
@@ -405,10 +388,22 @@ namespace animation {
         constructor(public sprite: Sprite, protected loop: boolean) {
         }
 
-        public init(): void {
-            initializeAnimationHandler();
+        public init() {
+            let state: AnimationState = game.currentScene().data[stateNamespace];
 
-            const state: AnimationState = game.currentScene().data[stateNamespace];
+            // Register animation updates to fire when frames are rendered
+            if (!state) {
+                state = game.currentScene().data[stateNamespace] = {
+                    animations: []
+                } as AnimationState;
+
+                game.eventContext().registerFrameHandler(scene.ANIMATION_UPDATE_PRIORITY, () => {
+                    state.animations = state.animations.filter((anim: SpriteAnimation) => {
+                        return !anim.update(); // If update returns true, the animation is done and will be removed
+                    });
+                });
+            }
+
             state.animations.push(this);
         }
 
@@ -425,10 +420,6 @@ namespace animation {
             super(sprite, loop);
 
             this.lastFrame = -1;
-        }
-        
-        public init(): void {
-            super.init();
         }
 
         public update(): boolean {
@@ -459,12 +450,6 @@ namespace animation {
             super(sprite, loop);
 
             this.loop = loop;
-
-            this.init();
-        }
-        
-        public init(): void {
-            super.init();
         }
         
         public update(): boolean {
