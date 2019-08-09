@@ -10,7 +10,7 @@ namespace animation {
         animations: SpriteAnimation[];
     }
 
-    const initializeAnimationHandler = () => {
+    function initializeAnimationHandler() {
         let state: AnimationState = game.currentScene().data[stateNamespace];
 
         // Register animation updates to fire when frames are rendered
