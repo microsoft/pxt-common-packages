@@ -50,7 +50,7 @@ namespace particles {
     /**
      * A source of particles
      */
-    export class ParticleSource extends sprite.BaseSprite {
+    export class ParticleSource extends sprites.BaseSprite {
         /**
          * A relative ranking of this sources priority
          * When necessary, a source with a lower priority will
