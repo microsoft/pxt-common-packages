@@ -34,7 +34,7 @@ namespace pxsim.settings {
         currSize = sz
     }
 
-    export function _set(key: string, buf: RefBuffer): int32 {
+    export function _set(key: string, buf: RefBuffer) {
         key = encodeKey(key)
         const prev = storage[key]
         const newSize = prev == null
@@ -47,7 +47,7 @@ namespace pxsim.settings {
         return 0;
     }
 
-    export function _remove(key: string): int32 {
+    export function _remove(key: string) {
         key = encodeKey(key)
         if (storage[key] == null)
             return -1
