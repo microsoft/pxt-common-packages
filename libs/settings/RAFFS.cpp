@@ -62,6 +62,7 @@ FS::FS(Flash &flash, uintptr_t baseAddr, uint32_t bytes)
     freeDataPtr = NULL;
     metaPtr = NULL;
     readDirPtr = NULL;
+    cachedMeta = NULL;
     flashBufAddr = 0;
 
     if (bytes > 0x20000)
@@ -150,6 +151,43 @@ void FS::format() {
     flushFlash();
 }
 
+#define NUMBLOCKED (sizeof(blocked->fnptr) / sizeof(uint16_t))
+
+bool FS::checkBlocked(MetaEntry *m) {
+    auto fnptr = m->fnptr;
+    for (auto p = blocked; p; p = p->next) {
+        for (int i = 0; i < NUMBLOCKED; ++i)
+            if (p->fnptrs[i] == fnptr) {
+                if (m.isFirst())
+                    p->fnptrs[i] = 0;
+                return true;
+            }
+    }
+    if (!m.isFirst()) {
+        for (auto p = blocked; p; p = p->next) {
+            for (int i = 0; i < NUMBLOCKED; ++i)
+                if (p->fnptrs[i] == 0) {
+                    p->fnptr[i] = fnptr;
+                    return;
+                }
+        }
+        auto p = new BlockedEntries;
+        memset(p, 0, sizeof(*p));
+        p->next = blocked;
+        blocked = p;
+        p->fnptrs[0] = fnptr;
+    }
+    return false;
+}
+
+void FS::clearBlocked() {
+    while (blocked) {
+        auto p = blocked;
+        blocked = p->next;
+        delete p;
+    }
+}
+
 bool FS::tryMount() {
     if (basePtr)
         return true;
@@ -169,7 +207,7 @@ bool FS::tryMount() {
         }
     }
 
-    basePtr = (uint32_t *)addr;
+    basePtr = (uint8_t *)addr;
     endPtr = (MetaEntry *)(addr + bytes / 2);
 
     auto p = (uint32_t *)endPtr - 2;
@@ -182,7 +220,8 @@ bool FS::tryMount() {
         p--;
     freeDataPtr = RAFFS_ROUND(p + 1);
 
-    if (freeDataPtr[0] != M1 || freeDataPtr[1] != M1)
+    auto fp = (uint32_t *)freeDataPtr;
+    if (fp[0] != M1 || fp[1] != M1)
         oops();
 
     LOG("mounted, end=%x meta=%x free=%x", OFF(endPtr), OFF(metaPtr), OFF(freeDataPtr));
@@ -202,77 +241,73 @@ void FS::mount() {
 FS::~FS() {}
 
 int FS::write(const char *keyName, const uint8_t *data, uint32_t bytes) {
+    auto isDel = data == NULL && bytes == M1;
+    if (!isDel && !data && bytes)
+        oops();
+
     lock();
     uint32_t szneeded = bytes;
     auto existing = findMetaEntry(keyName);
-    
-    if (!existing)
+    auto prevBase = basePtr;
+
+    cachedMeta = NULL;
+
+    if (!existing) {
+        if (isDel) {
+            unlock();
+            return -1;
+        }
         szneeded += strlen(keyName) + 1;
-    
+    }
+
     if (!tryGC(sizeof(MetaEntry) + RAFFS_ROUND(szneeded))) {
         unlock();
         return -1;
     }
 
+    // if the GC happened, find the relocated meta entry
+    if (prevBase != basePtr)
+        existing = findMetaEntry(keyName);
+
     MetaEntry newMeta;
     if (existing) {
-        newMeta = *existing;
+        newMeta.fnhash = existing->fnhash;
+        newMeta.fnptr = existing->fnptr;
     } else {
         newMeta.fnhash = fnhash(keyName);
-        newMeta.fnptr = 
+        newMeta.fnptr = writeData(keyName, strlen(keyName) + 1);
     }
-
-        newMeta._datasize = bytes;
-        if (existing) 
+    newMeta.dataptr = isDel ? 0 : writeData(data, bytes);
+    newMeta._datasize = bytes;
+    if (existing)
         newMeta._datasize |= RAFFS_FOLLOWING_MASK;
+    finishWrite();
 
-    int size = -1;
-    if (meta != NULL) {
-        r = meta->datasize();
-        if (data) {
-            if (bytes > r) bytes = r;
-            memcpy(data, dataptr(meta), bytes);
-        }
-    }
+    writeBytes(--metaPtr, &newMeta, sizeof(newMeta));
+    flushFlash();
+
     unlock();
-    return r;
-
+    return 0;
 }
 
 int FS::read(const char *keyName, uint8_t *data, uint32_t bytes) {
     lock();
     int r = -1;
-    auto meta = findMetaEntry(keyName);
-    if (meta != NULL) {
+    auto meta = keyName ? findMetaEntry(keyName) : cachedMeta;
+    if (meta != NULL && meta->dataptr) {
         r = meta->datasize();
         if (data) {
-            if (bytes > r) bytes = r;
-            memcpy(data, dataptr(meta), bytes);
+            if (bytes > r)
+                bytes = r;
+            memcpy(data, basePtr + meta->dataptr, bytes);
         }
     }
     unlock();
     return r;
 }
 
-int remove(const char *keyName) {
-    write(keyName, NULL, M1);
-}
-
-int FS::get(const char *filename, bool create) {
-    lock();
-    auto meta = findMetaEntry(filename);
-    if (meta == NULL) {
-        if (create)
-            meta = createMetaPage(filename, NULL);
-    } else if (meta->dataptr == 0) {
-        if (create)
-            meta = createMetaPage(filename, meta);
-        else
-            meta = NULL;
-    }
-    auto r = meta ? new File(*this, meta) : NULL;
-    unlock();
-    return r;
+int FS::remove(const char *keyName) {
+    return write(keyName, NULL, M1);
 }
 
 void FS::lock() {
@@ -307,42 +342,17 @@ MetaEntry *FS::findMetaEntry(const char *filename) {
     return NULL;
 }
 
-void FS::forceGC() {
+void FS::forceGC(filename_filter filter) {
     lock();
-    tryGC(0x7fff0000);
+    tryGC(0x7fff0000, filter);
     unlock();
 }
 
-uint32_t *FS::markEnd(uint32_t *freePtr) {
-    flushFlash();
-    int active = 0;
-#if RAFFS_BLOCK == 64
-    if ((uintptr_t)freePtr & 7)
-        oops();
-    // LOGV("fp=%d [-3]= %x", OFF(freePtr), freePtr[-3]);
-    if (freePtr[-3] == M1) {
-        uint64_t eofMark = 0;
-        writeBytes(freePtr, &eofMark, 8);
-        freePtr += 2;
-        active = 1;
-    }
-#else
-    if (freePtr[-1] == M1) {
-        uint32_t eofMark = 0;
-        writeBytes(freePtr++, &eofMark, 4);
-        active = 1;
-    }
-#endif
-
-    LOGV("mark end at=%x a=%d", OFF(freePtr), active);
-    return freePtr;
-}
-
-bool FS::tryGC(int spaceNeeded) {
+bool FS::tryGC(int spaceNeeded, filename_filter filter) {
     int spaceLeft = (intptr_t)metaPtr - (intptr_t)freeDataPtr;
 
 #ifdef RAFFS_TEST
-    for (auto p = freeDataPtr; p < (uint32_t *)metaPtr; p++) {
+    for (auto p = (uint32_t *)freeDataPtr; p < (uint32_t *)metaPtr; p++) {
         if (*p != M1) {
             LOG("value at %x = %x", OFF(p), *p);
             oops();
@@ -356,61 +366,53 @@ bool FS::tryGC(int spaceNeeded) {
     LOG("running flash FS GC; needed %d, left %d", spaceNeeded, spaceLeft);
 
     readDirPtr = NULL;
+    cachedMeta = NULL;
 
-    auto newBase = (uintptr_t)basePtr == baseAddr ? baseAddr + bytes / 2 : baseAddr;
+    auto newBase = (uintptr_t)altBasePtr();
 
     flushFlash();
 
     erasePages(newBase, bytes / 2);
 
-    MetaEntry *metaDst = (MetaEntry *)(newBase + bytes / 2);
-    uint32_t *newBaseP = (uint32_t *)newBase;
-    uint32_t *dataDst = newBaseP + sizeof(FSHeader) / 4;
+    auto metaDst = (MetaEntry *)(newBase + bytes / 2);
+    auto newBaseP = (uint8_t *)newBase;
+    freeDataPtr = newBaseP + sizeof(FSHeader);
 
-    for (auto p = endPtr - 1; p >= metaPtr; p--) {
-        MetaEntry m = *p;
-        auto sz = getFileSize(m.dataptr);
-        LOGV("GC %s sz=%d", (char *)(basePtr + m.fnptr), sz);
-        if (sz < 0)
-            continue;
+    for (int iter = 0; iter < 2; ++iter) {
+        clearBlocked();
+        auto offset = sizeof(FSHeader);
+        for (auto p = endPtr - 1; p >= metaPtr; p--) {
+            MetaEntry m = *p;
+            const char *fn = basePtr + m.fnptr;
 
-        auto fnlen = strlen((char *)(basePtr + m.fnptr));
-        writeBytes(dataDst, basePtr + m.fnptr, fnlen + 1);
-        m.fnptr = dataDst - newBaseP;
-        dataDst += (fnlen + 1 + 3) >> 2;
+            if (filter && !filter(fn))
+                continue;
 
-#if RAFFS_BLOCK == 64
-        uint32_t highHD = (dataDst + 2 - newBaseP) << 16;
-#else
-        uint32_t highHD = 0xffff0000;
-        if (!sz)
-            m.dataptr = 0xffff;
-        else
-#endif
-        {
-            uint32_t hd = highHD | sz;
-            auto newdataptr = dataDst - newBaseP;
-            writeBytes(dataDst++, &hd, sizeof(hd));
-            auto newDst = copyFile(m.dataptr, (uintptr_t)dataDst);
-            dataDst = (uint32_t *)RAFFS_ROUND(newDst);
-            m.dataptr = newdataptr;
-#if RAFFS_BLOCK == 64
-            dataDst += 2;
-#endif
-        }
+            if (checkBlocked(&m) || m.dataptr == 0)
+                continue;
 
-        writeBytes(--metaDst, &m, sizeof(m));
-        flushFlash();
+            auto fnlen = strlen(fn) + 1;
+            auto sz = fnlen + m.datasize();
 
-        for (auto f = files; f; f = f->next) {
-            if (f->meta == p) {
-                f->resetCaches();
-                f->meta = metaDst;
+            if (iter == 0) {
+                auto fd = freeDataPtr;
+                writeData(fn, fnlen);
+                writeData(basePtr + m.dataptr, m.datasize());
+                if (freeDataPtr - fd != sz)
+                    oops();
+            } else {
+                m.fnptr = offset;
+                m.dataptr = offset + fnlen;
+                m._datasize &= ~RAFFS_FOLLOWING_MASK;
+                offset += sz;
+                writeBytes(--metaDst, &m, sizeof(m));
             }
         }
+        if (iter == 0)
+            finishWrite();
     }
 
-    dataDst = markEnd(dataDst);
+    clearBlocked();
     flushFlash();
 
     LOG("GC done: %d free", (int)((intptr_t)metaDst - (intptr_t)dataDst));
@@ -423,7 +425,7 @@ bool FS::tryGC(int spaceNeeded) {
     // clear old magic
     hd.magic = 0;
     hd.bytes = 0;
-#if RAFFS_BLOCK == 64
+#ifdef SAMD51
     erasePages((uintptr_t)basePtr, flash.pageSize((uintptr_t)basePtr));
 #endif
     writeBytes(basePtr, &hd, sizeof(hd));
@@ -433,16 +435,15 @@ bool FS::tryGC(int spaceNeeded) {
     basePtr = newBaseP;
     endPtr = (MetaEntry *)(newBase + bytes / 2);
     metaPtr = metaDst;
-    freeDataPtr = dataDst;
 
     if ((intptr_t)metaDst - (intptr_t)dataDst <= spaceNeeded + 32) {
+        if (filter != NULL && spaceNeeded != 0x7fff0000) {
+            LOG("out of space! needed=%d", spaceNeeded);
 #ifdef RAFFS_TEST
-        if (spaceNeeded != 0x7fff0000)
             oops();
-#else
-        LOG("out of space! needed=%d", spaceNeeded);
-        return false;
 #endif
+        }
+        return false;
     }
 
     return true;
@@ -453,33 +454,44 @@ DirEntry *FS::dirRead() {
 
     if (readDirPtr == NULL) {
         readDirPtr = endPtr - 1;
+        clearBlocked();
     }
 
     while (readDirPtr >= metaPtr) {
-        auto p = readDirPtr--;
-        int sz = getFileSize(p->dataptr);
-        if (sz < 0)
+        auto m = *readDirPtr--;
+        if (checkBlocked(&m) || m.dataptr == 0)
             continue;
-        dirEnt.size = sz;
-        dirEnt.flags = p->flags;
+        dirEnt.size = m.datasize();
+        dirEnt.flags = 0;
         dirEnt.name = (const char *)(basePtr + p->fnptr);
         unlock();
         return &dirEnt;
     }
 
     readDirPtr = NULL;
+    clearBlocked();
     unlock();
     return NULL;
 }
 
-void FS::writePadded(const void *data, uint32_t len) {
+uint16_t FS::writeData(const void *data, uint32_t len) {
     writeBytes(freeDataPtr, data, len);
-    uint32_t tail = len & (RAFFS_ROUND(1) - 1);
-    if (tail) {
-        uint64_t zero = 0;
-        writeBytes((uint8_t *)freeDataPtr + len, &zero, RAFFS_ROUND(1) - tail);
+    auto r = freeDataPtr - basePtr;
+    freeDataPtr += len;
+    return r;
+}
+
+void FS::finishWrite() {
+    auto nfp = RAFFS_ROUND(freeDataPtr);
+    int tailSz = nfp - freeDataPtr;
+    uint64_t z = 0;
+    if (tailSz) {
+        writeData(&z, tailSz);
+    } else {
+        if (((uint32_t *)nfp)[-1] == M1)
+            writeData(&z, 8);
     }
-    freeDataPtr += RAFFS_ROUND(len) >> 2;
+    flushFlash();
 }
 
 int FS::readFlashBytes(uintptr_t addr, void *buffer, uint32_t len) {
