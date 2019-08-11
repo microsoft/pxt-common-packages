@@ -20,15 +20,15 @@ namespace settings {
     //% shim=settings::_list
     declare function _list(prefix: string): string[];
 
+    //% shim=settings::_setScope
+    declare function _setScope(scope: string): void;
+
     export function runNumber() {
         let runBuf = _get("#run")
         if (runBuf)
             return runBuf.getNumber(NumberFormat.UInt32LE, 0)
         return 0
     }
-
-    let flashScope: string
-    let currScope: string
 
     function initScopes() {
         let runBuf = _get("#run")
@@ -41,9 +41,8 @@ namespace settings {
         seedAddRandom(control.deviceSerialNumber() & 0x7fffffff)
         seedAddRandom(rn)
 
-        flashScope = readString("#scope")
         // TODO change this to program name
-        currScope = "H-" + control.programHash()
+        _setScope("H-" + control.programHash())
     }
 
     initScopes()
@@ -55,19 +54,10 @@ namespace settings {
         _userClean()
     }
 
-    function wrongScope(key: string) {
-        return currScope != flashScope && key.charCodeAt(0) != 35;
-    }
-
     /**
      * Set named setting to a given buffer.
      */
     export function writeBuffer(key: string, value: Buffer) {
-        if (wrongScope(key)) {
-            _userClean()
-            writeString("#scope", currScope)
-            flashScope = currScope
-        }
         if (_set(key, value)) {
             // if we're out of space, clear user storage
             _userClean()
@@ -94,8 +84,6 @@ namespace settings {
      * Read named setting as a buffer. Returns undefined when setting not found.
      */
     export function readBuffer(key: string) {
-        if (wrongScope(key))
-            return undefined
         return _get(key)
     }
 
@@ -130,8 +118,6 @@ namespace settings {
      * Return a list of settings starting with a given prefix.
      */
     export function list(prefix: string = "") {
-        if (wrongScope(prefix))
-            return []
         return _list(prefix)
     }
 
@@ -146,8 +132,6 @@ namespace settings {
      * Check if a named setting exists.
      */
     export function exists(key: string) {
-        if (wrongScope(key))
-            return false
         return _exists(key)
     }
 }

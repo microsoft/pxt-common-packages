@@ -57,7 +57,7 @@ bool _exists(String key) {
 //%
 Buffer _get(String key) {
     auto s = mountedStorage();
-    auto sz = s->fs.read(key->getUTF8Data());
+    auto sz = s->fs.read(key->getUTF8Data(), NULL, 0);
     if (sz < 0)
         return NULL;
     auto ret = mkBuffer(NULL, sz);
@@ -75,6 +75,20 @@ static bool isSystem(const char *fn) {
 void _userClean() {
     auto s = mountedStorage();
     s->fs.forceGC(isSystem);
+}
+
+//%
+int _setScope(String scope) {
+    auto sz = scope->getUTF8Size();
+    uint8_t tmp[sz];
+
+    auto s = mountedStorage();
+    auto sz2 = s->fs.read("#scope", tmp, sz);
+
+    if (sz != sz2 || memcmp(tmp, scope->getUTF8Data(), sz) != 0) {
+        s->fs.write("#scope", scope->getUTF8Data(), sz);
+        _userClean();
+    }
 }
 
 //%
