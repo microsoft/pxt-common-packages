@@ -16,13 +16,18 @@ using namespace codal;
             oops();                                                                                \
     } while (0)
 
-#define OFF2(v, basePtr) (uint32_t)((uint32_t *)v - (uint32_t *)basePtr)
+#define OFF2(v, basePtr) (uint32_t)((uint8_t *)v - (uint8_t *)basePtr)
 #define OFF(v) OFF2(v, basePtr)
+
+#define REAL_OFF(dst) (OFF(dst) <= OFF2(dst, altBasePtr()) ? OFF(dst) : OFF2(dst, altBasePtr()))
 
 #undef NOLOG
 #define NOLOG(...) ((void)0)
+#ifndef RAFFS_TEST
 #define LOG DMESG
 #define LOGV NOLOG
+#endif
+
 #define LOGVV NOLOG
 
 #if 0
@@ -63,6 +68,7 @@ FS::FS(Flash &flash, uintptr_t baseAddr, uint32_t bytes)
     readDirPtr = NULL;
     cachedMeta = NULL;
     flashBufAddr = 0;
+    blocked = NULL;
 
     if (bytes > 0x20000)
         oops();
@@ -101,10 +107,9 @@ void FS::flushFlash() {
 }
 
 void FS::writeBytes(void *dst, const void *src, uint32_t size) {
-    LOGV("write %x%s %d %x:%x:%x:%x",
-         OFF(dst) <= OFF2(dst, altBasePtr()) ? OFF(dst) : OFF2(dst, altBasePtr()),
-         OFF(dst) <= OFF2(dst, altBasePtr()) ? "" : "*", size, ((const uint8_t *)src)[0],
-         ((const uint8_t *)src)[1], ((const uint8_t *)src)[2], ((const uint8_t *)src)[3]);
+    LOGVV("write %x%s %d %x:%x:%x:%x", REAL_OFF(dst), OFF(dst) == REAL_OFF(dst) ? "" : "*", size,
+          ((const uint8_t *)src)[0], ((const uint8_t *)src)[1], ((const uint8_t *)src)[2],
+          ((const uint8_t *)src)[3]);
 
     while (size > 0) {
         uint32_t off = (uintptr_t)dst & (sizeof(flashBuf) - 1);
@@ -218,7 +223,7 @@ bool FS::tryMount() {
     p = (uint32_t *)metaPtr - 1;
     while (*p == M1)
         p--;
-    freeDataPtr = (uint8_t*)RAFFS_ROUND(p + 1);
+    freeDataPtr = (uint8_t *)RAFFS_ROUND(p + 1);
 
     auto fp = (uint32_t *)freeDataPtr;
     if (fp[0] != M1 || fp[1] != M1)
@@ -244,6 +249,11 @@ int FS::write(const char *keyName, const uint8_t *data, uint32_t bytes) {
     auto isDel = data == NULL && bytes == M1;
     if (!isDel && !data && bytes)
         oops();
+
+    if (isDel)
+        LOGV("del: %s", keyName);
+    else
+        LOGV("write: %s sz=%d", keyName, bytes);
 
     lock();
     uint32_t szneeded = bytes;
@@ -293,7 +303,12 @@ int FS::write(const char *keyName, const uint8_t *data, uint32_t bytes) {
 int FS::read(const char *keyName, uint8_t *data, uint32_t bytes) {
     lock();
     int r = -1;
-    auto meta = keyName ? findMetaEntry(keyName) : cachedMeta;
+    MetaEntry *meta;
+    if (keyName) {
+        cachedMeta = meta = findMetaEntry(keyName);
+    } else {
+        meta = cachedMeta;
+    }
     if (meta != NULL && meta->dataptr) {
         r = meta->datasize();
         if (data) {
@@ -381,7 +396,7 @@ bool FS::tryGC(int spaceNeeded, filename_filter filter) {
     for (int iter = 0; iter < 2; ++iter) {
         clearBlocked();
         auto offset = sizeof(FSHeader);
-        for (auto p = endPtr - 1; p >= metaPtr; p--) {
+        for (auto p = metaPtr; p < endPtr; p++) {
             MetaEntry m = *p;
             const char *fn = fnptr(&m);
 
@@ -391,6 +406,7 @@ bool FS::tryGC(int spaceNeeded, filename_filter filter) {
             if (checkBlocked(&m) || m.dataptr == 0)
                 continue;
 
+            LOGV("GC %s sz=%d @%x", fn, m.datasize(), m.dataptr);
             auto fnlen = strlen(fn) + 1;
             auto sz = fnlen + m.datasize();
 
@@ -404,9 +420,9 @@ bool FS::tryGC(int spaceNeeded, filename_filter filter) {
                 m.fnptr = offset;
                 m.dataptr = offset + fnlen;
                 m._datasize &= ~RAFFS_FOLLOWING_MASK;
-                offset += sz;
                 writeBytes(--metaDst, &m, sizeof(m));
             }
+            offset += sz;
         }
         if (iter == 0)
             finishWrite();
@@ -453,12 +469,12 @@ DirEntry *FS::dirRead() {
     lock();
 
     if (readDirPtr == NULL) {
-        readDirPtr = endPtr - 1;
+        readDirPtr = metaPtr;
         clearBlocked();
     }
 
-    while (readDirPtr >= metaPtr) {
-        auto m = *readDirPtr--;
+    while (readDirPtr < endPtr) {
+        auto m = *readDirPtr++;
         if (checkBlocked(&m) || m.dataptr == 0)
             continue;
         dirEnt.size = m.datasize();
@@ -475,6 +491,8 @@ DirEntry *FS::dirRead() {
 }
 
 uint16_t FS::writeData(const void *data, uint32_t len) {
+    LOGVV("writeData: @%x %x:%x sz=%d", REAL_OFF(freeDataPtr), ((const uint8_t *)data)[0],
+         ((const uint8_t *)data)[1], len);
     writeBytes(freeDataPtr, data, len);
     auto r = freeDataPtr - basePtr;
     freeDataPtr += len;

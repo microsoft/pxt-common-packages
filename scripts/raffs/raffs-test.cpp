@@ -46,6 +46,8 @@ class FileCache {
         int sz2 = fs->read(NULL, buf, sz);
         assert(sz == sz2);
 
+        LOGV("validate: %s sz=%d %x:%x", name, sz, buf[0], buf[1]);
+
         for (int i = 0; i < sz; ++i) {
             if (buf[i] != data[i]) {
                 LOG("failure: %d != %d at %d/%d", buf[i], data[i], i, sz);
@@ -226,6 +228,7 @@ void multiTest(int nfiles, int blockSize, int reps) {
     auto fcs = new FileCache *[nfiles];
     for (int i = 0; i < nfiles; ++i) {
         fcs[i] = lookupFile(getFileName(++fileSeqNo));
+        fs->write(fcs[i]->name, NULL, 0);
     }
     reps *= nfiles;
     while (reps--) {
@@ -258,13 +261,18 @@ int main() {
     fs = mkFS(flash);
     assert(!fs->tryMount());
 
-    flash.eraseChip();
+    fs->exists("foobar");
+
     assert(fs->tryMount());
 
     for (int i = 0; i < 5; ++i) {
         simpleTest("data.txt", 2);
         fs = mkFS(flash);
         testAll();
+        if (i == 2) {
+            fs->forceGC();
+            testAll();
+        }
     }
 
     fs->debugDump();
@@ -275,7 +283,13 @@ int main() {
 
     LOG("one");
 
+    LOG("before gc");
+    testAll();
+
     fs->forceGC();
+    LOG("after gc");
+    testAll();
+
     auto bufFree = fs->freeSize();
     multiTest(50, 500, SZMULT);
     fs->forceGC();
@@ -325,12 +339,25 @@ int main() {
 
     fs->dirRewind();
     NS::DirEntry *ent;
+    for (auto f : files) {
+        f->visited = false;
+    }
     while ((ent = fs->dirRead()) != NULL) {
         auto fc = lookupFile(ent->name, false);
         if (!fc)
             oops();
-        if (fc->data.size() != ent->size)
+        if (fc->del) {
+            LOG("should be deleted: %s", fc->name);
             oops();
+        }
+        if (fc->visited) {
+            LOG("already visited: %s", fc->name);
+            oops();
+        }
+        if (fc->data.size() != ent->size) {
+            LOG("size fail: %s exp %d got %d", fc->name, (int)fc->data.size(), ent->size);
+            oops();
+        }
         fc->visited = true;
         LOG("%8d %s", ent->size, ent->name);
     }
