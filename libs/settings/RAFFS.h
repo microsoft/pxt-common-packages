@@ -20,6 +20,7 @@ struct BlockedEntries {
 };
 
 #define RAFFS_FOLLOWING_MASK 0x8000
+#define RAFFS_FLASH_BUFFER_SIZE 16
 
 struct MetaEntry {
     uint16_t fnhash;    // hash of file name
@@ -59,11 +60,12 @@ class FS {
     MetaEntry *findMetaEntry(const char *filename);
     bool tryGC(int spaceNeeded, filename_filter filter = NULL);
 
-    bool FS::checkBlocked(MetaEntry *m);
+    bool checkBlocked(MetaEntry *m);
     void clearBlocked();
 
-    void writeData(const void *data, uint32_t len);
+    uint16_t writeData(const void *data, uint32_t len);
     void finishWrite();
+    const char *fnptr(MetaEntry *m) { return (const char *)(basePtr + m->fnptr); }
 
     uint32_t *altBasePtr() {
         if ((uintptr_t)basePtr == baseAddr)

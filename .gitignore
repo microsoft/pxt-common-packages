@@ -23,4 +23,5 @@ _locales/
 libpxt.a
 test
 scripts/snorfs/stest*
+scripts/raffs/stest*
 package-lock.json

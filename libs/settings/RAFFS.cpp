@@ -54,7 +54,6 @@ static uint16_t fnhash(const char *fn) {
 
 FS::FS(Flash &flash, uintptr_t baseAddr, uint32_t bytes)
     : flash(flash), baseAddr(baseAddr), bytes(bytes) {
-    files = NULL;
     locked = false;
 
     basePtr = NULL;
@@ -127,8 +126,9 @@ void FS::writeBytes(void *dst, const void *src, uint32_t size) {
 }
 
 void FS::format() {
-    if (files)
-        oops();
+    cachedMeta = NULL;
+    readDirPtr = NULL;
+    clearBlocked();
 
     LOG("formatting...");
 
@@ -151,24 +151,24 @@ void FS::format() {
     flushFlash();
 }
 
-#define NUMBLOCKED (sizeof(blocked->fnptr) / sizeof(uint16_t))
+#define NUMBLOCKED (int)(sizeof(blocked->fnptrs) / sizeof(uint16_t))
 
 bool FS::checkBlocked(MetaEntry *m) {
     auto fnptr = m->fnptr;
     for (auto p = blocked; p; p = p->next) {
         for (int i = 0; i < NUMBLOCKED; ++i)
             if (p->fnptrs[i] == fnptr) {
-                if (m.isFirst())
+                if (m->isFirst())
                     p->fnptrs[i] = 0;
                 return true;
             }
     }
-    if (!m.isFirst()) {
+    if (!m->isFirst()) {
         for (auto p = blocked; p; p = p->next) {
             for (int i = 0; i < NUMBLOCKED; ++i)
                 if (p->fnptrs[i] == 0) {
-                    p->fnptr[i] = fnptr;
-                    return;
+                    p->fnptrs[i] = fnptr;
+                    return false;
                 }
         }
         auto p = new BlockedEntries;
@@ -218,7 +218,7 @@ bool FS::tryMount() {
     p = (uint32_t *)metaPtr - 1;
     while (*p == M1)
         p--;
-    freeDataPtr = RAFFS_ROUND(p + 1);
+    freeDataPtr = (uint8_t*)RAFFS_ROUND(p + 1);
 
     auto fp = (uint32_t *)freeDataPtr;
     if (fp[0] != M1 || fp[1] != M1)
@@ -297,7 +297,7 @@ int FS::read(const char *keyName, uint8_t *data, uint32_t bytes) {
     if (meta != NULL && meta->dataptr) {
         r = meta->datasize();
         if (data) {
-            if (bytes > r)
+            if (bytes > (unsigned)r)
                 bytes = r;
             memcpy(data, basePtr + meta->dataptr, bytes);
         }
@@ -333,7 +333,7 @@ MetaEntry *FS::findMetaEntry(const char *filename) {
 
     for (auto p = metaPtr; p < endPtr; p++) {
         // LOGV("check at %x %x %x", OFF(p),p->fnhash,h);
-        if (p->fnhash == h && memcmp(basePtr + p->fnptr, filename, buflen) == 0)
+        if (p->fnhash == h && memcmp(fnptr(p), filename, buflen) == 0)
             return p;
     }
 
@@ -383,7 +383,7 @@ bool FS::tryGC(int spaceNeeded, filename_filter filter) {
         auto offset = sizeof(FSHeader);
         for (auto p = endPtr - 1; p >= metaPtr; p--) {
             MetaEntry m = *p;
-            const char *fn = basePtr + m.fnptr;
+            const char *fn = fnptr(&m);
 
             if (filter && !filter(fn))
                 continue;
@@ -398,7 +398,7 @@ bool FS::tryGC(int spaceNeeded, filename_filter filter) {
                 auto fd = freeDataPtr;
                 writeData(fn, fnlen);
                 writeData(basePtr + m.dataptr, m.datasize());
-                if (freeDataPtr - fd != sz)
+                if (freeDataPtr - fd != (int)sz)
                     oops();
             } else {
                 m.fnptr = offset;
@@ -415,7 +415,7 @@ bool FS::tryGC(int spaceNeeded, filename_filter filter) {
     clearBlocked();
     flushFlash();
 
-    LOG("GC done: %d free", (int)((intptr_t)metaDst - (intptr_t)dataDst));
+    LOG("GC done: %d free", (int)((intptr_t)metaDst - (intptr_t)freeDataPtr));
 
     FSHeader hd;
     hd.magic = RAFFS_MAGIC;
@@ -436,7 +436,7 @@ bool FS::tryGC(int spaceNeeded, filename_filter filter) {
     endPtr = (MetaEntry *)(newBase + bytes / 2);
     metaPtr = metaDst;
 
-    if ((intptr_t)metaDst - (intptr_t)dataDst <= spaceNeeded + 32) {
+    if ((intptr_t)metaDst - (intptr_t)freeDataPtr <= spaceNeeded + 32) {
         if (filter != NULL && spaceNeeded != 0x7fff0000) {
             LOG("out of space! needed=%d", spaceNeeded);
 #ifdef RAFFS_TEST
@@ -463,7 +463,7 @@ DirEntry *FS::dirRead() {
             continue;
         dirEnt.size = m.datasize();
         dirEnt.flags = 0;
-        dirEnt.name = (const char *)(basePtr + p->fnptr);
+        dirEnt.name = fnptr(&m);
         unlock();
         return &dirEnt;
     }
@@ -483,7 +483,7 @@ uint16_t FS::writeData(const void *data, uint32_t len) {
 
 void FS::finishWrite() {
     auto nfp = RAFFS_ROUND(freeDataPtr);
-    int tailSz = nfp - freeDataPtr;
+    int tailSz = nfp - (uintptr_t)freeDataPtr;
     uint64_t z = 0;
     if (tailSz) {
         writeData(&z, tailSz);
