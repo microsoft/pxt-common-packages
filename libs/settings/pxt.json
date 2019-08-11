@@ -6,9 +6,8 @@
         "RAFFS.h",
         "Flash.h",
         "ZFlash.cpp",
-        "storage.cpp",
-        "storage.ts",
-        "storagelow.ts",
+        "settings.cpp",
+        "settings.ts",
         "shims.d.ts"
     ],
     "public": true,

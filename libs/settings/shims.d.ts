@@ -1,50 +1,29 @@
 // Auto-generated. Do not edit.
-declare namespace storage {
+declare namespace settings {
 
-    /**
-     * Append a buffer to a new or existing file.
-     * @param filename name of the file, eg: "log.txt"
-     */
-    //% parts="storage" shim=storage::_appendBuffer
-    function _appendBuffer(filename: string, data: Buffer): int32;
+    /** H */
+    //% shim=settings::_set
+    function _set(filename: string, data: Buffer): int32;
 
-    /**
-     * Overwrite file with a buffer.
-     * @param filename name of the file, eg: "log.txt"
-     */
-    //% parts="storage" shim=storage::_overwriteWithBuffer
-    function _overwriteWithBuffer(filename: string, data: Buffer): int32;
+    /** H */
+    //% shim=settings::_remove
+    function _remove(filename: string): int32;
 
-    /**
-     * Return true if the file already exists.
-     * @param filename name of the file, eg: "log.txt"
-     */
-    //% parts="storage"
-    //% blockId="storage_exists" block="file $filename exists" shim=storage::exists
-    function exists(filename: string): boolean;
+    /** H */
+    //% shim=settings::_exists
+    function _exists(filename: string): boolean;
 
-    /**
-     * Delete a file, or do nothing if it doesn't exist.
-     * @param filename name of the file, eg: "log.txt"
-     */
-    //% parts="storage"
-    //% blockId="storage_remove" block="remove file $filename" shim=storage::remove
-    function remove(filename: string): void;
+    /** H */
+    //% shim=settings::_get
+    function _get(filename: string): Buffer;
 
-    /**
-     * Return the size of the file, or -1 if it doesn't exists.
-     * @param filename name of the file, eg: "log.txt"
-     */
-    //% parts="storage"
-    //% blockId="storage_size" block="size of file $filename" shim=storage::size
-    function size(filename: string): int32;
+    /** H */
+    //% shim=settings::_userClean
+    function _userClean(): void;
 
-    /**
-     * Read contents of file as a buffer.
-     * @param filename name of the file, eg: "log.txt"
-     */
-    //% parts="storage" shim=storage::readAsBuffer
-    function readAsBuffer(filename: string): Buffer;
+    /** H */
+    //% shim=settings::_list
+    function _list(prefix: string): RefCollection;
 }
 
 // Auto-generated. Do not edit. Really.
