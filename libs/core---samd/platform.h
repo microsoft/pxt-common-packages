@@ -33,6 +33,8 @@ typedef int PinName;
 
 #define PAGE_SIZE 512
 
+#define BOOTLOADER_START 0x0
+
 #ifdef SAMD21
 #define BOOTLOADER_END 0x2000
 #endif
