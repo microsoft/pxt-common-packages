@@ -167,6 +167,7 @@ class MemFlash : public codal::Flash {
     int eraseChip() { return erase(0, chipSize()); }
 };
 
+MemFlash flash(128 * 1024 / SNORFS_PAGE_SIZE);
 uint8_t randomData[1024 * 1024 * 16];
 uint32_t fileSeqNo;
 
@@ -196,6 +197,42 @@ uint8_t *getRandomData() {
     return randomData + rand() % (sizeof(randomData) - MAX_WR);
 }
 
+
+void remount() {
+    delete fs;
+    fs = new NS::FS(flash, flash.dataBase(), flash.chipSize());
+}
+
+void testAll() {
+    for (auto fc : files) {
+        if (fc->del) {
+            assert(!fs->exists(fc->name));
+        } else {
+            fc->validate();
+        }
+    }
+}
+
+void testFF(int len, int rep) {
+    auto fn = getFileName(++fileSeqNo);
+
+    auto fc = lookupFile(fn);
+
+    uint8_t buf[len];
+    memset(buf, 0xff, len);
+
+    while (rep--) {
+        auto ll = rand() % len;
+        fs->write(fn, buf, ll);
+        fc->write(buf, ll);
+        testAll();
+        remount();
+        testAll();
+        if (rand() % 20 == 0)
+            fs->forceGC();
+    }
+}
+
 void simpleTest(const char *fn, int len, int rep = 1) {
     if (fn == NULL)
         fn = getFileName(++fileSeqNo);
@@ -212,15 +249,6 @@ void simpleTest(const char *fn, int len, int rep = 1) {
     }
 }
 
-void testAll() {
-    for (auto fc : files) {
-        if (fc->del) {
-            assert(!fs->exists(fc->name));
-        } else {
-            fc->validate();
-        }
-    }
-}
 
 void multiTest(int nfiles, int blockSize, int reps) {
     LOGV("multi(%d,%d,%d)", nfiles, blockSize, reps);
@@ -249,16 +277,12 @@ void multiTest(int nfiles, int blockSize, int reps) {
     }
 }
 
-NS::FS *mkFS(MemFlash &flash) {
-    return new NS::FS(flash, flash.dataBase(), flash.chipSize());
-}
 
 int main() {
     for (uint32_t i = 0; i < sizeof(randomData); ++i)
         randomData[i] = rand();
-    MemFlash flash(128 * 1024 / SNORFS_PAGE_SIZE);
 
-    fs = mkFS(flash);
+    remount();
     assert(!fs->tryMount());
 
     fs->exists("foobar");
@@ -267,7 +291,7 @@ int main() {
 
     for (int i = 0; i < 5; ++i) {
         simpleTest("data.txt", 2);
-        fs = mkFS(flash);
+        remount();
         testAll();
         if (i == 2) {
             fs->forceGC();
@@ -282,6 +306,8 @@ int main() {
     simpleTest(NULL, 2000);
 
     LOG("one");
+
+    testFF(17, 1000);
 
     LOG("before gc");
     testAll();
@@ -323,7 +349,7 @@ int main() {
 
     // re-mount
     flash.snapshotBeforeErase = true;
-    fs = mkFS(flash);
+    remount();
     fs->dump();
     testAll();
 
@@ -332,7 +358,7 @@ int main() {
     flash.useSnapshot();
 #endif
 
-    fs = mkFS(flash);
+    remount();
     fs->dump();
     multiTest(30, 30 * SZMULT, iters);
     testAll();
