@@ -8,42 +8,28 @@
 namespace pxt {
 namespace raffs {
 
-class File;
-
 struct DirEntry {
     uint32_t size;
     uint16_t flags;
     const char *name;
 };
 
+#define RAFFS_FOLLOWING_MASK 0x8000
+
 struct MetaEntry {
-    uint16_t fnhash;  // hash of file name
-    uint16_t fnptr;   // offset in words; can't be 0xffff
-    uint16_t flags;   // can't be 0xffff - to avoid M1 word
-    uint16_t dataptr; // offset in words; 0xffff - empty file
+    uint16_t fnhash;   // hash of file name
+    uint16_t fnptr;    // offset in bytes; can't be 0xffff
+    uint16_t _datasize; // size in bytes; highest bit is set if this isn't first block
+    uint16_t dataptr;  // offset in bytes; 0x0 - deleted
+
+    uint16_t datasize() { return _datasize & 0x7fff; }
+    bool isFirst() { return (_datasize & RAFFS_FOLLOWING_MASK) == 0; }
 };
 
-#ifdef SAMD51
-#define RAFFS_FLASH_BUFFER_SIZE 16
-// RAFFS64 only writes each 64 bit double word once; needed for SAMD51 ECC flash
-#define RAFFS_BLOCK 64
-#define RAFFS_DELETED 0x7ffe
 #define RAFFS_ROUND(x) ((((uintptr_t)(x) + 7) >> 3) << 3)
-#else
-#define RAFFS_FLASH_BUFFER_SIZE 64
-#define RAFFS_BLOCK 16
-#define RAFFS_ROUND(x) ((((uintptr_t)(x) + 3) >> 2) << 2)
-#endif
-
-#define RAFFS_VALIDATE_NEXT(nextptr)                                                               \
-    if (nextptr == 0 || nextptr > bytes / 8)                                                       \
-    target_panic(DEVICE_FLASH_ERROR)
 
 class FS {
-    friend class File;
-
     codal::Flash &flash;
-    File *files;
 
     volatile bool locked;
 
@@ -54,8 +40,6 @@ class FS {
     DirEntry dirEnt;
     uintptr_t flashBufAddr;
     uint8_t flashBuf[RAFFS_FLASH_BUFFER_SIZE];
-
-    File *overwritingFile;
 
     void erasePages(uintptr_t addr, uint32_t len);
     void flushFlash();
@@ -81,66 +65,24 @@ class FS {
             return (uint32_t *)baseAddr;
     }
 
-    uint16_t _rawsize(uint16_t dp) {
-        RAFFS_VALIDATE_NEXT(dp);
-        return basePtr[dp] & 0xffff;
-    }
-
-    uint16_t _size(uint16_t dp) {
-        uint16_t blsz = _rawsize(dp);
-#if RAFFS_BLOCK == 64
-        if (blsz == RAFFS_DELETED || blsz == 0xffff)
-            return 0;
-        return blsz & 0x7fff;
-#endif
-        return blsz;
-    }
-
-    uint16_t _nextptr(uint16_t dp) {
-        RAFFS_VALIDATE_NEXT(dp);
-        return basePtr[dp] >> 16;
-    }
-
-    uint16_t blnext(uint16_t dp) {
-        uint32_t np = _nextptr(dp);
-        if (np == 0xffff)
-            return 0;
-        if (np <= dp)
-            target_panic(DEVICE_FLASH_ERROR);
-#if RAFFS_BLOCK == 64
-        int blsz = _size(dp);
-        np <<= 2;
-        if (blsz > 4)
-            np += blsz - 4;
-        np = RAFFS_ROUND(np) >> 2;
-#endif
-        return np;
-    }
-
-    int blsize(uint16_t dp) {
-        auto sz = _size(dp);
-        if (sz == 0xffff)
-            return 0;
-        return sz;
-    }
-
-    uint32_t *data0(uint16_t dp) { return &basePtr[dp] + 1; }
-
-    uint32_t *data1(uint16_t dp) {
-#if RAFFS_BLOCK == 64
-        RAFFS_VALIDATE_NEXT(_nextptr(dp));
-        return &basePtr[_nextptr(dp)];
-#else
-        return &basePtr[dp] + 2;
-#endif
-    }
+    uint8_t *dataptr(MetaEntry *m) { return (uint8_t*)basePtr + m->dataptr; }
+    uint8_t *fnptr(MetaEntry *m) { return (uint8_t*)basePtr + m->fnptr; }
 
   public:
     FS(codal::Flash &flash, uintptr_t baseAddr, uint32_t bytes);
     ~FS();
-    // returns NULL if file doesn't exists and create==false or when there's no space to create it
-    File *open(const char *filename, bool create = true);
-    bool exists(const char *filename);
+
+    // returns 0 for success, negative for error
+    int write(const char *keyName, const uint8_t *data, uint32_t bytes);
+    // returns total number of bytes in key's value or -1 when file doesn't exists
+    // if keyName==NULL it will re-use last keyName
+    int read(const char *keyName, uint8_t *data, uint32_t bytes);
+    // deletes given key if it exists
+    int remove(const char *keyName);
+
+
+
+    bool exists(const char *keyName) { return read(keyName, NULL, 0) >= 0; }
     uint32_t rawSize() { return bytes / 2; }
     uint32_t totalSize() { return bytes / 2; }
     uint32_t freeSize() { return (uintptr_t)endPtr - (uintptr_t)freeDataPtr; }
@@ -161,49 +103,6 @@ class FS {
 #endif
 };
 
-class File {
-    friend class FS;
-
-    FS &fs;
-    File *next;
-
-    MetaEntry *meta;
-
-    // reading
-    uint16_t readPage;
-    uint16_t readOffset;
-    uint16_t readOffsetInPage;
-
-    // for writing
-    uint16_t lastPage;
-
-    void rewind();
-    File(FS &f, MetaEntry *existing);
-    File *primary();
-    void resetAllCaches();
-    void resetCaches() {
-        lastPage = 0;
-        readPage = 0;
-        readOffsetInPage = 0;
-    }
-
-  public:
-    int read(void *data, uint32_t len);
-    void seek(uint32_t pos);
-    int32_t size();
-    uint32_t tell() { return readOffset; }
-    bool isDeleted() { return meta->dataptr == 0; }
-    // thse two return negative value when out of space
-    int append(const void *data, uint32_t len);
-    int overwrite(const void *data, uint32_t len);
-    void del();
-    void truncate() { overwrite(NULL, 0); }
-    const char *filename() { return (const char *)(fs.basePtr + meta->fnptr); }
-    ~File();
-#ifdef RAFFS_TEST
-    void debugDump();
-#endif
-};
 } // namespace raffs
 } // namespace pxt
 
