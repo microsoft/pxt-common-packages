@@ -458,6 +458,10 @@ int programHash() {
 int getNumGlobals() {
     return (int)vmImg->infoHeader->allocGlobals;
 }
+
+String programName() {
+    return mkString(vmImg->infoHeader->name);
+}
 #else
 int templateHash() {
     return ((int *)bytecode)[4];
@@ -469,6 +473,10 @@ int programHash() {
 
 int getNumGlobals() {
     return bytecode[16];
+}
+
+String programName() {
+    return ((String *)bytecode)[15];
 }
 #endif
 

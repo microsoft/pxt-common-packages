@@ -308,15 +308,18 @@ static inline TValue runAction0(Action a) {
 }
 
 class RefAction;
+class BoxedString;
 struct VTable;
 
 //%
 Action mkAction(int totallen, RefAction *act);
-//%
+//% expose
 int templateHash();
-//%
+//% expose
 int programHash();
-//%
+//% expose
+BoxedString *programName();
+//% expose
 unsigned programSize();
 //%
 int getNumGlobals();
@@ -660,7 +663,6 @@ class RefCollection : public RefObject {
     TValue *getData() { return head.getData(); }
 };
 
-class BoxedString;
 class RefMap : public RefObject {
   public:
     Segment keys;

@@ -42,8 +42,7 @@ namespace settings {
         seedAddRandom(control.deviceSerialNumber() & 0x7fffffff)
         seedAddRandom(rn)
 
-        // TODO change this to program name
-        setScope("H-" + control.programHash())
+        setScope(control.programName())
     }
 
     initScopes()
