@@ -93,7 +93,7 @@ namespace animation {
                 }
                 case "T": { // T x2 y2
                     let lastControlPoint: Point = lastNode.getLastControlPoint();
-                    if(!lastControlPoint) break;
+                    if (!lastControlPoint) break;
 
                     const p1 = new Point(p0.x + (p0.x - lastControlPoint.x), p0.y + (p0.y - lastControlPoint.y));
                     const p2 = new Point(args[0], args[1]);
@@ -102,7 +102,7 @@ namespace animation {
                 }
                 case "t": { // t dx2 dy2
                     let lastControlPoint: Point = lastNode.getLastControlPoint();
-                    if(!lastControlPoint) break;
+                    if (!lastControlPoint) break;
 
                     const p1 = new Point(p0.x + (p0.x - lastControlPoint.x), p0.y + (p0.y - lastControlPoint.y));
                     const p2 = new Point(p0.x + args[0], p0.y + args[1]);
@@ -125,7 +125,7 @@ namespace animation {
                 }
                 case "S": { // S x2 y2 x3 y3
                     let lastControlPoint: Point = lastNode.getLastControlPoint();
-                    if(!lastControlPoint) break;
+                    if (!lastControlPoint) break;
 
                     const p1 = new Point(p0.x + (p0.x - lastControlPoint.x), p0.y + (p0.y - lastControlPoint.y));
                     const p2 = new Point(args[0], args[1]);
@@ -135,7 +135,7 @@ namespace animation {
                 }
                 case "s": { // s dx2 dy2 dx3 dy3
                     let lastControlPoint: Point = lastNode.getLastControlPoint();
-                    if(!lastControlPoint) break;
+                    if (!lastControlPoint) break;
 
                     const p1 = new Point(p0.x + (p0.x - lastControlPoint.x), p0.y + (p0.y - lastControlPoint.y));
                     const p2 = new Point(p0.x + args[0], p0.y + args[1]);
