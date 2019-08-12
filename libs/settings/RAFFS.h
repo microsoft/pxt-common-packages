@@ -79,10 +79,10 @@ class FS {
     ~FS();
 
     // returns 0 for success, negative for error
-    int write(const char *keyName, const uint8_t *data, uint32_t bytes);
+    int write(const char *keyName, const void *data, uint32_t bytes);
     // returns total number of bytes in key's value or -1 when file doesn't exists
     // if keyName==NULL it will re-use last keyName
-    int read(const char *keyName, uint8_t *data, uint32_t bytes);
+    int read(const char *keyName, void *data, uint32_t bytes);
     // deletes given key if it exists
     int remove(const char *keyName);
 

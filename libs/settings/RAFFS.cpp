@@ -245,7 +245,7 @@ void FS::mount() {
 
 FS::~FS() {}
 
-int FS::write(const char *keyName, const uint8_t *data, uint32_t bytes) {
+int FS::write(const char *keyName, const void *data, uint32_t bytes) {
     auto isDel = data == NULL && bytes == M1;
     if (!isDel && !data && bytes)
         oops();
@@ -300,7 +300,7 @@ int FS::write(const char *keyName, const uint8_t *data, uint32_t bytes) {
     return 0;
 }
 
-int FS::read(const char *keyName, uint8_t *data, uint32_t bytes) {
+int FS::read(const char *keyName, void *data, uint32_t bytes) {
     lock();
     int r = -1;
     MetaEntry *meta;

@@ -78,8 +78,8 @@ void _userClean() {
 }
 
 //%
-int _setScope(String scope) {
-    auto sz = scope->getUTF8Size();
+void _setScope(String scope) {
+    auto sz = (int)scope->getUTF8Size();
     uint8_t tmp[sz];
 
     auto s = mountedStorage();
