@@ -1,5 +1,5 @@
 namespace scene {
-    export class Renderable extends sprite.BaseSprite {
+    export class Renderable extends sprites.BaseSprite {
         public constructor(
             protected handler: (target: Image, camera: Camera) => void,
             protected shouldBeVisible: () => boolean,

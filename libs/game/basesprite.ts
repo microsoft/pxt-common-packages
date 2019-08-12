@@ -8,7 +8,7 @@ interface SpriteLike {
     __serialize(offset: number): Buffer;
 }
 
-namespace sprite {
+namespace sprites {
     export class BaseSprite implements SpriteLike {
         protected _z: number;
         id: number;
