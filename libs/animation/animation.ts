@@ -153,6 +153,43 @@ namespace animation {
             return node;
         }
 
+        private static commandToArgCount(command: string): number {
+            switch (command) {
+                case "M": // moveTo
+                case "m":
+                    return 2;
+                case "L": // lineTo
+                case "l":
+                    return 2;
+                case "H": // horizontalLineTo
+                case "h":
+                    return 1;
+                case "V": // verticalLineTo
+                case "v":
+                    return 1;
+                case "Q": // quadraticCurveTo
+                case "q":
+                    return 4;
+                case "T": // smoothQuadraticCurveTo
+                case "t":
+                    return 2;
+                case "C": // cubicCurveTo
+                case "c":
+                    return 6;
+                case "S": // smoothCubicCurveTo
+                case "s":
+                    return 4;
+                case "A": // arcTo
+                case "a":
+                    return 7;
+                case "Z": // closePath
+                case "z":
+                    return 0;
+                default:
+                    return -1;
+            }
+        }
+
         public static parse(pathStart: Point, pathString: string): Path {
             let path: Path = new Path();
             let p0: Point = pathStart;
@@ -160,20 +197,6 @@ namespace animation {
             // This implementation of SVG parsing does not support the A/a commands, nor does it support exponents in arguments
             const digits = "0123456789";
             const separators = ", \t\n\r\f\v";
-            const commands: {
-                [ command: string ]: number
-            } = {
-                "M": 2, "m": 2, // moveTo
-                "L": 2, "l": 2, // lineTo
-                "H": 1, "h": 1, // horizontalLineTo
-                "V": 1, "v": 1, // verticalLineTo
-                "Q": 4, "q": 4, // quadraticCurveTo
-                "T": 2, "t": 2, // smoothQuadraticCurveTo
-                "C": 6, "c": 6, // cubicCurveTo
-                "S": 4, "s": 4, // smoothCubicCurveTo
-                // "A": 7, "a": 7, // arcTo
-                "Z": 0, "z": 0 // closePath
-            };
             const signs = "+-";
 
             let currentArg: string = "";
@@ -197,12 +220,12 @@ namespace animation {
                 } else if (separators.indexOf(char) > -1 && currentArg) { // Terminates number arguments
                     args.push(parseInt(currentArg));
                     currentArg = "";
-                } else if (Object.keys(commands).indexOf(char) > -1) { // Parses command arguments
+                } else if (this.commandToArgCount(char) > -1) { // Parses command arguments
                     if (command && currentArg) {
                         args.push(parseInt(currentArg));
                         
                         // Try to finish up this node, otherwise just toss it out
-                        if (command && args.length >= commands[command]) {
+                        if (command && args.length >= this.commandToArgCount(command)) {
                             let node: PathNode = this.generateNode(p0, command, args, [
                                 pathStart,
                                 lastNode
@@ -234,7 +257,7 @@ namespace animation {
                 }
                 
                 // If the command has a sufficient amount of arguments, then create a node for it
-                if (command && args.length >= commands[command]) {
+                if (command && args.length >= this.commandToArgCount(command)) {
                     // Generate the node
                     let node: PathNode = this.generateNode(p0, command, args, [
                         pathStart,
