@@ -1,6 +1,6 @@
 namespace pxsim.settings {
     let currSize = 0
-    const MAX_SIZE = 32 * 1024
+    const MAX_SIZE = 16 * 1024
 
     function encodeKey(key: string) {
         return "S/" + key
