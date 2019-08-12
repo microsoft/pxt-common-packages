@@ -30,7 +30,7 @@ namespace info {
 
     class InfoState {
         public playerStates: PlayerState[];
-        public visibilityFlag : number;
+        public visibilityFlag: number;
 
         public gameEnd: number;
         public heartImage: Image;
@@ -186,15 +186,15 @@ namespace info {
 
     function defaultMultiplayerHeartImage() {
         return screen.isMono ?
-                img`
+            img`
                     . . 1 . 1 . .
                     . 1 . 1 . 1 .
                     . 1 . . . 1 .
                     . . 1 . 1 . .
                     . . . 1 . . .
                 `
-                :
-                img`
+            :
+            img`
                     . . 1 . 1 . .
                     . 1 2 1 4 1 .
                     . 1 2 4 2 1 .
@@ -209,7 +209,9 @@ namespace info {
             players
                 .filter(p => p && p.hasScore())
                 .forEach(p => hs = Math.max(hs, p.score()));
-            updateHighScore(hs);
+            const curr = settings.readNumber("high-score")
+            if (curr == null || hs > curr)
+                settings.writeNumber("high-score", hs);
         }
     }
 
@@ -238,7 +240,7 @@ namespace info {
     //% help=info/high-score
     //% group="Score"
     export function highScore(): number {
-        return updateHighScore(0) || 0;
+        return settings.readNumber("high-score") || 0;
     }
 
     /**
@@ -581,10 +583,8 @@ namespace info {
 
             const state = this.getState();
 
-            if (!state.score) {
+            if (state.score == null)
                 state.score = 0;
-                updateHighScore(0);
-            }
             return state.score;
         }
 
@@ -931,12 +931,4 @@ namespace info {
     export const player4 = new PlayerInfo(4);
     //% fixedInstance whenUsed block="player 1"
     export const player1 = new PlayerInfo(1);
-}
-
-declare namespace info {
-    /**
-     * Sends the current score and the new high score
-     */
-    //% shim=info::updateHighScore
-    function updateHighScore(score: number): number;
 }
