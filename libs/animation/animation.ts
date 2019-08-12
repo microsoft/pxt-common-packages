@@ -92,12 +92,8 @@ namespace animation {
                     break;
                 }
                 case "T": { // T x2 y2
-                    let lastControlPoint: Point;
-                    if (metadata.lastNode instanceof QuadraticCurveTo) {
-                        lastControlPoint = (metadata.lastNode as QuadraticCurveTo).p1;
-                    } else if (metadata.lastNode instanceof CubicCurveTo) {
-                        lastControlPoint = (metadata.lastNode as CubicCurveTo).p2;
-                    } else break;
+                    let lastControlPoint: Point = metadata.lastNode.getLastControlPoint();
+                    if(!lastControlPoint) break;
 
                     const p1 = new Point(p0.x + (p0.x - lastControlPoint.x), p0.y + (p0.y - lastControlPoint.y));
                     const p2 = new Point(args[0], args[1]);
@@ -105,12 +101,8 @@ namespace animation {
                     break;
                 }
                 case "t": { // t dx2 dy2
-                    let lastControlPoint: Point;
-                    if (metadata.lastNode instanceof QuadraticCurveTo) {
-                        lastControlPoint = (metadata.lastNode as QuadraticCurveTo).p1;
-                    } else if (metadata.lastNode instanceof CubicCurveTo) {
-                        lastControlPoint = (metadata.lastNode as CubicCurveTo).p2;
-                    } else break;
+                    let lastControlPoint: Point = metadata.lastNode.getLastControlPoint();
+                    if(!lastControlPoint) break;
 
                     const p1 = new Point(p0.x + (p0.x - lastControlPoint.x), p0.y + (p0.y - lastControlPoint.y));
                     const p2 = new Point(p0.x + args[0], p0.y + args[1]);
@@ -132,12 +124,8 @@ namespace animation {
                     break;
                 }
                 case "S": { // S x2 y2 x3 y3
-                    let lastControlPoint: Point;
-                    if (metadata.lastNode instanceof QuadraticCurveTo) {
-                        lastControlPoint = (metadata.lastNode as QuadraticCurveTo).p1;
-                    } else if (metadata.lastNode instanceof CubicCurveTo) {
-                        lastControlPoint = (metadata.lastNode as CubicCurveTo).p2;
-                    } else break;
+                    let lastControlPoint: Point = metadata.lastNode.getLastControlPoint();
+                    if(!lastControlPoint) break;
 
                     const p1 = new Point(p0.x + (p0.x - lastControlPoint.x), p0.y + (p0.y - lastControlPoint.y));
                     const p2 = new Point(args[0], args[1]);
@@ -146,12 +134,8 @@ namespace animation {
                     break;
                 }
                 case "s": { // s dx2 dy2 dx3 dy3
-                    let lastControlPoint: Point;
-                    if (metadata.lastNode instanceof QuadraticCurveTo) {
-                        lastControlPoint = (metadata.lastNode as QuadraticCurveTo).p1;
-                    } else if (metadata.lastNode instanceof CubicCurveTo) {
-                        lastControlPoint = (metadata.lastNode as CubicCurveTo).p2;
-                    } else break;
+                    let lastControlPoint: Point = metadata.lastNode.getLastControlPoint();
+                    if(!lastControlPoint) break;
 
                     const p1 = new Point(p0.x + (p0.x - lastControlPoint.x), p0.y + (p0.y - lastControlPoint.y));
                     const p2 = new Point(p0.x + args[0], p0.y + args[1]);
@@ -295,15 +279,27 @@ namespace animation {
         }
     }
 
-    export interface PathNode {
+    export abstract class PathNode {
         setStart: boolean;
-        apply(target: Sprite, nodeTime: number, interval: number): void;
-        getEndPoint(): Point;
+        constructor() {
+            this.setStart = false;
+        }
+
+        apply(target: Sprite, nodeTime: number, interval: number) {};
+        
+        getLastControlPoint(): Point {
+            return null;
+        };
+
+        getEndPoint(): Point {
+            return null;
+        };
     }
 
-    export class MoveTo implements PathNode {
-        public setStart: boolean;
+    export class MoveTo extends PathNode {
         constructor(public p1: Point) {
+            super();
+
             this.setStart = true;
         }
 
@@ -316,10 +312,9 @@ namespace animation {
         }
     }
 
-    export class LineTo implements PathNode {
-        public setStart: boolean;
+    export class LineTo extends PathNode {
         constructor(public p0: Point, public p1: Point) {
-            this.setStart = false;
+            super();
         }
 
         apply(target: Sprite, nodeTime: number, interval: number) {
@@ -334,10 +329,9 @@ namespace animation {
         }
     }
 
-    export class QuadraticCurveTo implements PathNode {
-        public setStart: boolean;
+    export class QuadraticCurveTo extends PathNode {
         constructor(public p0: Point, public p1: Point, public p2: Point) {
-            this.setStart = false;
+            super();
         }
 
         apply(target: Sprite, nodeTime: number, interval: number) {
@@ -353,15 +347,18 @@ namespace animation {
             target.setPosition(x, y);
         }
 
+        getLastControlPoint(): Point {
+            return this.p1;
+        }
+
         getEndPoint(): Point {
             return this.p2;
         }
     }
 
-    export class CubicCurveTo implements PathNode {
-        public setStart: boolean;
+    export class CubicCurveTo extends PathNode {
         constructor(public p0: Point, public p1: Point, public p2: Point, public p3: Point) {
-            this.setStart = false;
+            super();
         }
 
         apply(target: Sprite, nodeTime: number, interval: number) {
@@ -378,12 +375,16 @@ namespace animation {
             target.setPosition(x, y);
         }
 
+        getLastControlPoint(): Point {
+            return this.p2;
+        }
+
         getEndPoint(): Point {
             return this.p3;
         }
     }
 
-    export class SpriteAnimation {
+    export abstract class SpriteAnimation {
         protected startedAt: number;
 
         constructor(public sprite: Sprite, protected loop: boolean) {
