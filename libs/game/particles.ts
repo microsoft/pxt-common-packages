@@ -57,8 +57,6 @@ namespace particles {
          * be culled before a source with a higher priority.
          */
         priority: number;
-
-        id: number;
         _dt: number;
         /**
          * The anchor this source is currently attached to
