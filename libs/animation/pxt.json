@@ -12,6 +12,6 @@
     ],
     "public": true,
     "dependencies": {
-        "game": "file:../game"        
+        "game": "file:../game"
     }
 }
