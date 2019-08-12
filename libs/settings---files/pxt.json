@@ -1,0 +1,13 @@
+{
+    "name": "settings",
+    "description": "Settings storage in files",
+    "files": [
+        "settings.cpp",
+        "settings.ts"
+    ],
+   "additionalFilePath": "../settings",
+    "public": true,
+    "dependencies": {
+        "core": "file:../core"
+    }
+}
