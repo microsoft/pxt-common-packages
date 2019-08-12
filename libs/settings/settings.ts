@@ -81,6 +81,13 @@ namespace settings {
     }
 
     /**
+     * Set named settings to a given array of numbers.
+     */
+    export function writeNumberArray(key: string, value: number[]) {
+        writeBuffer(key, msgpack.packNumberArray(value))
+    }
+
+    /**
      * Read named setting as a buffer. Returns undefined when setting not found.
      */
     export function readBuffer(key: string) {
@@ -113,6 +120,16 @@ namespace settings {
         }
     }
 
+    /**
+     * Read named setting as a number.
+     */
+    export function readNumberArray(key: string) {
+        const buf = readBuffer(key)
+        if (!buf)
+            return undefined
+        else
+            return msgpack.unpackNumberArray(buf)
+    }
 
     /**
      * Return a list of settings starting with a given prefix.
