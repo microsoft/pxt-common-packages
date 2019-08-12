@@ -29,12 +29,13 @@ namespace pxsim.settings {
         key = encodeKey(key)
         const storage = board().storedState
         const prev = storage[key]
+        const val = btoa(U.uint8ArrayToString(buf.data)) as string
         const newSize = prev == null
-            ? currSize + key.length + buf.data.length
-            : currSize + buf.data.length - prev.length
+            ? currSize + key.length + val.length
+            : currSize + val.length - prev.length
         if (newSize > MAX_SIZE)
             return -1
-        board().setStoredState(key, U.uint8ArrayToString(buf.data))
+        board().setStoredState(key, val)
         currSize = newSize
         return 0;
     }
@@ -59,7 +60,7 @@ namespace pxsim.settings {
         const val = storage[key] as string
         if (val == null)
             return undefined
-        return new RefBuffer(U.stringToUint8Array(val))
+        return new RefBuffer(U.stringToUint8Array(atob(val)))
     }
 
     export function _userClean(): void {
