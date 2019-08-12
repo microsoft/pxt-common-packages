@@ -20,14 +20,21 @@ namespace settings {
     //% shim=settings::_list
     declare function _list(prefix: string): string[];
 
-    //% shim=settings::_setScope
-    declare function _setScope(scope: string): void;
-
     export function runNumber() {
         let runBuf = _get("#run")
         if (runBuf)
             return runBuf.getNumber(NumberFormat.UInt32LE, 0)
         return 0
+    }
+
+    function setScope(scope: string) {
+        if (!scope || scope.length > 100)
+            control.panic(950)
+        const currScope = readString("#scope")        
+        if (currScope != scope) {
+            _userClean()
+            writeString("#scope", scope)
+        }
     }
 
     function initScopes() {
@@ -42,7 +49,7 @@ namespace settings {
         seedAddRandom(rn)
 
         // TODO change this to program name
-        _setScope("H-" + control.programHash())
+        setScope("H-" + control.programHash())
     }
 
     initScopes()

@@ -2,18 +2,6 @@ namespace pxsim.settings {
     let currSize = 0
     const MAX_SIZE = 32 * 1024
 
-    export function _setScope(newScope: string): void {
-        if (!newScope || newScope.length > 100)
-            U.userError("invalid scope: " + newScope)
-        const st = board().storedState
-        const key = encodeKey("#scope")
-        if (newScope != st[key]) {
-            _userClean()
-            board().setStoredState(key, newScope)
-            computeSize()
-        }
-    }
-
     function encodeKey(key: string) {
         return "S/" + key
     }

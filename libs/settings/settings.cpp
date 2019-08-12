@@ -78,20 +78,6 @@ void _userClean() {
 }
 
 //%
-void _setScope(String scope) {
-    auto sz = (int)scope->getUTF8Size();
-    uint8_t tmp[sz];
-
-    auto s = mountedStorage();
-    auto sz2 = s->fs.read("#scope", tmp, sz);
-
-    if (sz != sz2 || memcmp(tmp, scope->getUTF8Data(), sz) != 0) {
-        s->fs.write("#scope", scope->getUTF8Data(), sz);
-        _userClean();
-    }
-}
-
-//%
 RefCollection *_list(String prefix) {
     auto st = mountedStorage();
     st->fs.dirRewind();
