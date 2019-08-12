@@ -21,16 +21,13 @@ namespace settings {
     declare function _list(prefix: string): string[];
 
     export function runNumber() {
-        let runBuf = _get("#run")
-        if (runBuf)
-            return runBuf.getNumber(NumberFormat.UInt32LE, 0)
-        return 0
+        return readNumber("#run") || 0
     }
 
     function setScope(scope: string) {
         if (!scope || scope.length > 100)
             control.panic(950)
-        const currScope = readString("#scope")        
+        const currScope = readString("#scope")
         if (currScope != scope) {
             _userClean()
             writeString("#scope", scope)
@@ -38,12 +35,9 @@ namespace settings {
     }
 
     function initScopes() {
-        let runBuf = _get("#run")
-        if (!runBuf || !runBuf.length) runBuf = control.createBuffer(4)
-        let rn = runBuf.getNumber(NumberFormat.UInt32LE, 0)
-        runBuf.setNumber(NumberFormat.UInt32LE, 0, rn + 1)
+        const rn = runNumber() + 1
+        writeNumber("#run", rn)
         control.dmesg("rn: " + rn)
-        writeBuffer("#run", runBuf)
 
         seedAddRandom(control.deviceSerialNumber() & 0x7fffffff)
         seedAddRandom(rn)
@@ -124,7 +118,8 @@ namespace settings {
     /**
      * Return a list of settings starting with a given prefix.
      */
-    export function list(prefix: string = "") {
+    export function list(prefix?: string) {
+        if (!prefix) prefix = ""
         return _list(prefix)
     }
 
