@@ -35,8 +35,8 @@ namespace animation {
             this.lastNode = -1;
         }
 
-        private static generateNode(p0: Point, command: string, args: number[], metadata: { pathStart: Point, lastNode: PathNode }): PathNode {
-            // Sets the start point for the path (that can be changed using moveTo)
+        private static generateNode(p0: Point, command: string, args: number[], metadata: [ Point, PathNode ]): PathNode {
+            const [ pathStart, lastNode ] = metadata;
             let node: PathNode;
             switch (command) {
                 case "M": { // M x y
@@ -92,7 +92,7 @@ namespace animation {
                     break;
                 }
                 case "T": { // T x2 y2
-                    let lastControlPoint: Point = metadata.lastNode.getLastControlPoint();
+                    let lastControlPoint: Point = lastNode.getLastControlPoint();
                     if(!lastControlPoint) break;
 
                     const p1 = new Point(p0.x + (p0.x - lastControlPoint.x), p0.y + (p0.y - lastControlPoint.y));
@@ -101,7 +101,7 @@ namespace animation {
                     break;
                 }
                 case "t": { // t dx2 dy2
-                    let lastControlPoint: Point = metadata.lastNode.getLastControlPoint();
+                    let lastControlPoint: Point = lastNode.getLastControlPoint();
                     if(!lastControlPoint) break;
 
                     const p1 = new Point(p0.x + (p0.x - lastControlPoint.x), p0.y + (p0.y - lastControlPoint.y));
@@ -124,7 +124,7 @@ namespace animation {
                     break;
                 }
                 case "S": { // S x2 y2 x3 y3
-                    let lastControlPoint: Point = metadata.lastNode.getLastControlPoint();
+                    let lastControlPoint: Point = lastNode.getLastControlPoint();
                     if(!lastControlPoint) break;
 
                     const p1 = new Point(p0.x + (p0.x - lastControlPoint.x), p0.y + (p0.y - lastControlPoint.y));
@@ -134,7 +134,7 @@ namespace animation {
                     break;
                 }
                 case "s": { // s dx2 dy2 dx3 dy3
-                    let lastControlPoint: Point = metadata.lastNode.getLastControlPoint();
+                    let lastControlPoint: Point = lastNode.getLastControlPoint();
                     if(!lastControlPoint) break;
 
                     const p1 = new Point(p0.x + (p0.x - lastControlPoint.x), p0.y + (p0.y - lastControlPoint.y));
@@ -145,7 +145,7 @@ namespace animation {
                 }
                 case "Z": // Z
                 case "z": { // z
-                    node = new LineTo(p0, metadata.pathStart);
+                    node = new LineTo(p0, pathStart);
                     break;
                 }
             }
@@ -203,10 +203,10 @@ namespace animation {
                         
                         // Try to finish up this node, otherwise just toss it out
                         if (command && args.length >= commands[command]) {
-                            let node: PathNode = this.generateNode(p0, command, args, {
-                                pathStart: pathStart,
-                                lastNode: lastNode
-                            });
+                            let node: PathNode = this.generateNode(p0, command, args, [
+                                pathStart,
+                                lastNode
+                            ]);
                             path.add(node);
                             p0 = node.getEndPoint(); // Set the start for the next node to the end of this node
                             if (node.setStart) pathStart = p0; // If this is a move command, then this sets the new start of the path (for the Z/z command)
@@ -236,10 +236,10 @@ namespace animation {
                 // If the command has a sufficient amount of arguments, then create a node for it
                 if (command && args.length >= commands[command]) {
                     // Generate the node
-                    let node: PathNode = this.generateNode(p0, command, args, {
-                        pathStart: pathStart,
-                        lastNode: lastNode
-                    });
+                    let node: PathNode = this.generateNode(p0, command, args, [
+                        pathStart,
+                        lastNode
+                    ]);
                     path.add(node);
                     p0 = node.getEndPoint();
                     if (node.setStart) pathStart = p0;
