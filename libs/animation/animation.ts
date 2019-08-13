@@ -429,6 +429,13 @@ namespace animation {
                 });
             }
 
+            // Remove any other animations of this type and attached to this sprite
+            state.animations = state.animations.filter((anim: SpriteAnimation) => {
+                return !(anim.sprite === this.sprite &&
+                    ((anim instanceof ImageAnimation && this instanceof ImageAnimation) ||
+                    (anim instanceof MovementAnimation && this instanceof MovementAnimation)));
+            });
+
             state.animations.push(this);
         }
 
