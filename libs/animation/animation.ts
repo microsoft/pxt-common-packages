@@ -559,12 +559,12 @@ namespace animation {
     }
     
     export enum AnimationTypes {
+        //% block="all"
+        All,
         //% block="frame"
         ImageAnimation,
         //% block="path"
-        MovementAnimation,
-        //% block="all"
-        All
+        MovementAnimation
     }
     
     /**
