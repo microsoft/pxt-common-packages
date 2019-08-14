@@ -37,7 +37,6 @@ namespace settings {
     function initScopes() {
         const rn = runNumber() + 1
         writeNumber("#run", rn)
-        control.dmesg("rn: " + rn)
 
         seedAddRandom(control.deviceSerialNumber() & 0x7fffffff)
         seedAddRandom(rn)
