@@ -414,20 +414,11 @@ void _mapRect(Image_ img, int xy, int wh, Buffer c) {
 
 //%
 bool _equals(Image_ img, Image_ other) {
-    auto imgData = img->data();
-    auto otherData = other->data();
     auto len = img->length();
-
     if (len != other->length()) {
         return false;
     }
-
-    for (int i = 0; i < len; i++) {
-        if (imgData[i] != otherData[i]) {
-            return false;
-        }
-    }
-    return true;
+    return 0 == memcmp(img->data(), other->data(), len);
 }
 
 /**

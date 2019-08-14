@@ -116,9 +116,6 @@ namespace helpers {
     //% shim=ImageMethods::_fillCircle
     function _fillCircle(img: Image, cxy: number, r: number, c: color): void { }
 
-    //% shim=ImageMethods::_equals
-    function _equals(img: Image, other: Image): boolean { return undefined }
-
     function pack(x: number, y: number) {
         return (Math.clamp(-30000, 30000, x | 0) & 0xffff) | (Math.clamp(-30000, 30000, y | 0) << 16)
     }
@@ -143,6 +140,11 @@ namespace helpers {
         imageDrawLine(img, x, y, x, y + h, c)
         imageDrawLine(img, x + w, y + h, x + w, y, c)
         imageDrawLine(img, x + w, y + h, x, y + h, c)
+    }
+
+    export function imageEquals(img: Image, other: Image) {
+        if (!other) return false;
+        return image._equals(img, other);
     }
 
     export function imageDrawCircle(img: Image, cx: number, cy: number, r: number, col: number) {
@@ -205,11 +207,6 @@ namespace helpers {
     }
     export function imageFillCircle(img: Image, cx: number, cy: number, r: number, col: number) {
         _fillCircle(img, pack(cx, cy), r, col);
-    }
-
-    export function imageEquals(img: Image, other: Image) {
-        if (!other) return false;
-        return _equals(img, other);
     }
 
     /**

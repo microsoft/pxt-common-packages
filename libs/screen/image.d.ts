@@ -99,4 +99,7 @@ declare namespace image {
     //% block="create image width %width height %height" group="Create"
     //% help=images/create
     function create(width: number, height: number): Image;
+
+    //% shim=ImageMethods::_equals
+    function _equals(img: Image, other: Image): boolean;
 }
