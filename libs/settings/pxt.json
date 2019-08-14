@@ -6,7 +6,7 @@
         "RAFFS.h",
         "Flash.h",
         "STM32Flash.cpp",
-        "SAMD51Flash.cpp",
+        "SAMDFlash.cpp",
         "settings.cpp",
         "settings.ts",
         "shims.d.ts"
