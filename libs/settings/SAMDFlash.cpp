@@ -126,10 +126,11 @@ int ZFlash::writeBytes(uintptr_t dst, const void *src, uint32_t len) {
         uint32_t n = WRITE_SIZE - off;
         if (n > len - idx)
             n = len - idx;
-        volatile uint32_t *sp, *dp;
+        uint32_t *sp;
+        volatile uint32_t *dp;
         if (n != WRITE_SIZE) {
             memset(writeBuf, 0xff, WRITE_SIZE);
-            memcpy((uint8_t*)writeBuf + off, src, n);
+            memcpy((uint8_t *)writeBuf + off, src, n);
             sp = writeBuf;
             dp = (uint32_t *)(dst - off);
         } else {
@@ -137,21 +138,30 @@ int ZFlash::writeBytes(uintptr_t dst, const void *src, uint32_t len) {
             dp = (uint32_t *)dst;
         }
 
-        CMD(NVMCTRL_CTRLA_CMD_PBC, NVMCTRL_CTRLB_CMD_PBC);
-        waitForLast();
+        bool need = false;
+        for (unsigned i = 0; i < (WRITE_SIZE >> 2); ++i)
+            if (sp[i] != 0xffffffff) {
+                need = true;
+                break;
+            }
 
-        uint32_t q = WRITE_SIZE >> 2;
+        if (need) {
+            CMD(NVMCTRL_CTRLA_CMD_PBC, NVMCTRL_CTRLB_CMD_PBC);
+            waitForLast();
 
-        target_disable_irq();
-        while (q--) {
-            auto v = *sp++;
-            *dp = v;
-            dp++;
+            uint32_t q = WRITE_SIZE >> 2;
+
+            target_disable_irq();
+            while (q--) {
+                auto v = *sp++;
+                *dp = v;
+                dp++;
+            }
+
+            CMD(NVMCTRL_CTRLA_CMD_WP, NVMCTRL_CTRLB_CMD_WQW);
+            target_enable_irq();
+            waitForLast();
         }
-
-        CMD(NVMCTRL_CTRLA_CMD_WP, NVMCTRL_CTRLB_CMD_WQW);
-        target_enable_irq();
-        waitForLast();
 
         src = (uint8_t *)src + n;
         dst += n;

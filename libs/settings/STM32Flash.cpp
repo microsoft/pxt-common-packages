@@ -83,8 +83,13 @@ int ZFlash::writeBytes(uintptr_t dst, const void *src, uint32_t len) {
     len >>= 2;
 
     while (len-- > 0) {
-        *dp++ = *sp++;
-        waitForLast();
+        uint32_t v = *sp++;
+        if (v != 0xffffffff) {
+            *dp++ = v;
+            waitForLast();
+        } else {
+            dp++;
+        }
     }
 
     FLASH->CR = FLASH_CR_PSIZE_1;
