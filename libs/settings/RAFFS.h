@@ -3,8 +3,6 @@
 
 #include "Flash.h"
 
-#define DEVICE_FLASH_ERROR 950
-
 namespace pxt {
 namespace raffs {
 

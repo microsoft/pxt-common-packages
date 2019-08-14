@@ -30,6 +30,7 @@ class ZFlash : public Flash {
 };
 
 #define CODAL_FLASH codal::ZFlash
+#define DEVICE_FLASH_ERROR 950
 
 
 } // namespace codal

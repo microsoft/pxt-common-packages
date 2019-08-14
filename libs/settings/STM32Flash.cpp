@@ -1,8 +1,8 @@
 #include "pxt.h"
 #include "Flash.h"
 
-#define LOG DMESG
-//#define LOG NOLOG
+//#define LOG DMESG
+#define LOG NOLOG
 
 #ifdef STM32F4
 namespace codal {
@@ -29,7 +29,7 @@ int ZFlash::pageSize(uintptr_t address) {
         return 64 * 1024;
     if (address < 0x08100000)
         return 128 * 1024;
-    target_panic(950);
+    target_panic(DEVICE_FLASH_ERROR);
     return 0;
 }
 
@@ -67,6 +67,10 @@ int ZFlash::erasePage(uintptr_t address) {
 
 int ZFlash::writeBytes(uintptr_t dst, const void *src, uint32_t len) {
     LOG("WR flash at %p len=%d", (void *)dst, len);
+
+    if ((dst & 3) || ((uintptr_t)src & 3) || (len & 3))
+        target_panic(DEVICE_FLASH_ERROR);
+
     waitForLast();
     unlock();
 
@@ -74,27 +78,12 @@ int ZFlash::writeBytes(uintptr_t dst, const void *src, uint32_t len) {
 
     FLASH->CR = FLASH_CR_PSIZE_1 | FLASH_CR_PG;
 
-    union {
-        uint8_t buf[4];
-        uint32_t asuint;
-    } data;
+    volatile uint32_t *sp = (uint32_t *)src;
+    volatile uint32_t *dp = (uint32_t *)dst;
+    len >>= 2;
 
-    while (len > 0) {
-        int off = dst & 3;
-        int n = 4 - off;
-        if (n > (int)len)
-            n = len;
-        if (n != 4)
-            memset(data.buf, 0xff, 4);
-
-        memcpy(data.buf + off, src, n);
-
-        *((volatile uint32_t *)dst) = data.asuint;
-
-        dst += n;
-        src = (const uint8_t *)src + n;
-        len -= n;
-
+    while (len-- > 0) {
+        *dp++ = *sp++;
         waitForLast();
     }
 
@@ -107,4 +96,3 @@ int ZFlash::writeBytes(uintptr_t dst, const void *src, uint32_t len) {
 }
 } // namespace codal
 #endif
-

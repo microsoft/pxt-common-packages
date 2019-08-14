@@ -101,7 +101,7 @@ void FS::flushFlash() {
         flash.writeBytes(flashBufAddr, flashBuf, sizeof(flashBuf));
         for (unsigned i = 0; i < sizeof(flashBuf); ++i)
             if (flashBuf[i] != 0xff && flashBuf[i] != ((uint8_t *)flashBufAddr)[i])
-                target_panic(999);
+                oops();
         flashBufAddr = 0;
     }
 }

@@ -1,17 +1,24 @@
 #include "pxt.h"
 #include "Flash.h"
 
-#define LOG DMESG
-//#define LOG NOLOG
+//#define LOG DMESG
+#define LOG NOLOG
+
+#if defined(SAMD51) || defined(SAMD21)
+namespace codal {
 
 #ifdef SAMD51
-namespace codal {
 #define waitForLast()                                                                              \
     while (NVMCTRL->STATUS.bit.READY == 0)                                                         \
         ;
+#else
+#define waitForLast()                                                                              \
+    while (NVMCTRL->INTFLAG.bit.READY == 0)                                                         \
+        ;
+#endif
 
 static void unlock() {
-#if 1
+    #ifdef SAMD51
     // see errata 2.14.1
     NVMCTRL->CTRLA.bit.CACHEDIS0 = true;
     NVMCTRL->CTRLA.bit.CACHEDIS1 = true;
@@ -20,84 +27,83 @@ static void unlock() {
     while (CMCC->SR.bit.CSTS) {
     }
     CMCC->MAINT0.bit.INVALL = 1;
-#endif
+    #endif
 }
 
 static void lock() {
-#if 1
+    #ifdef SAMD51
     // re-enable cache
     NVMCTRL->CTRLA.bit.CACHEDIS0 = false;
     NVMCTRL->CTRLA.bit.CACHEDIS1 = false;
-#endif
+
     // re-enable cortex-m cache - it's a separate one
     CMCC->CTRL.bit.CEN = 0;
     while (CMCC->SR.bit.CSTS) {
     }
     CMCC->MAINT0.bit.INVALL = 1;
     CMCC->CTRL.bit.CEN = 1;
+    #endif
 }
 
 int ZFlash::pageSize(uintptr_t address) {
+#ifdef SAMD51
     if (address < 1024 * 1024)
         return NVMCTRL_BLOCK_SIZE; // 8k
-    target_panic(950);
+#else
+    if (address < 256 * 1024)
+        return 256;
+#endif
+    target_panic(DEVICE_FLASH_ERROR);
     return 0;
 }
 
-#define FLASH_BASE (512 * 1024 - 32 * 1024)
-//static uint8_t flashCopy[32 * 1024];
-
 int ZFlash::erasePage(uintptr_t address) {
     LOG("Erase %x", address);
+#ifdef SAMD51
     NVMCTRL->CTRLA.bit.WMODE = NVMCTRL_CTRLA_WMODE_MAN_Val;
+#else
+    NVMCTRL->CTRLB.bit.MANW = 1;
+#endif
     waitForLast();
     unlock();
     NVMCTRL->ADDR.reg = address;
+    #ifdef SAMD51
     NVMCTRL->CTRLB.reg = NVMCTRL_CTRLB_CMDEX_KEY | NVMCTRL_CTRLB_CMD_EB;
+    #else
+    NVMCTRL->CTRLA.reg = NVMCTRL_CTRLA_CMDEX_KEY | NVMCTRL_CTRLA_CMD_ER;
+    #endif
     waitForLast();
-    //memset(flashCopy + address - FLASH_BASE, 0xff, NVMCTRL_BLOCK_SIZE);
     lock();
     return 0;
 }
 
-static int numWR;
+#if 0
+#define CHECK_ECC() \
+    if (NVMCTRL->INTFLAG.bit.ECCSE || NVMCTRL->INTFLAG.bit.ECCDE) \
+        target_panic(DEVICE_FLASH_ERROR)
+#else
+#define CHECK_ECC() ((void)0)
+#endif
+
+
 
 int ZFlash::writeBytes(uintptr_t dst, const void *src, uint32_t len) {
-    if (NVMCTRL->INTFLAG.bit.ECCSE || NVMCTRL->INTFLAG.bit.ECCDE)
-        target_panic(997);
-    unsigned idx = 0;
-    while (idx < len) {
-        if (((uint8_t *)src)[idx] != 0xff)
-            break;
-        idx++;
-    }
-    //LOG("WR flash %d at %x+%x %x:%x", numWR++, (void *)dst, idx, ((uint8_t *)src)[idx],
-    //    ((uint8_t *)src)[idx + 1]);
+#ifdef SAMD51
+    CHECK_ECC();
 
-    //volatile uint8_t *dpp = (uint8_t *)dst;
+    // only allow writing double word at a time
+    if (len & 7)
+        target_panic(DEVICE_FLASH_ERROR);
+    if (dst & 7)
+        target_panic(DEVICE_FLASH_ERROR);
 
-    if (len != 16)
-        target_panic(990);
-    for (int i = 0; i < 2; ++i)
+    // every double-word can only be written once, otherwise we get ECC errors
+    // and no, ECC cannot be disabled
+    for (int i = 0; i < (len >> 3); ++i)
         if (((uint64_t*)dst)[i] != 0xffffffffffffffff &&
             ((uint64_t*)src)[i] != 0xffffffffffffffff)
-            target_panic(990);
-
-#if 0
-    //if (memcmp((void *)dpp, &flashCopy[dst - FLASH_BASE], len) != 0)
-    //    target_panic(993);
-
-    for (unsigned i = 0; i < len; ++i) {
-        if (((uint8_t *)src)[i] != 0xff) {
-            if (dpp[i] != 0xff)
-                target_panic(990);
-            //flashCopy[dst - FLASH_BASE + i] = ((uint8_t *)src)[i];
-        } else {
-            //if (dpp[i] != flashCopy[dst - FLASH_BASE + i])
-            //    target_panic(991);
-            // ((uint8_t *)src)[i] = dpp[i];
-        }
-    }
+            target_panic(DEVICE_FLASH_ERROR);
+#else
 #endif
 
     volatile uint32_t *dp = (uint32_t *)dst;
@@ -106,7 +112,6 @@ int ZFlash::writeBytes(uintptr_t dst, const void *src, uint32_t len) {
 
     waitForLast();
     unlock();
-
     __DMB();
 
     target_disable_irq();
@@ -116,16 +121,10 @@ int ZFlash::writeBytes(uintptr_t dst, const void *src, uint32_t len) {
 
     while (n--) {
         auto v = *sp++;
-        // if (v != 0xffffffff)
         *dp = v;
         dp++;
-        // waitForLast();
     }
 
-    // for (unsigned i = 0; i < len / 4; ++i)
-    //    ((volatile uint32_t *)dst)[i] = ((uint32_t*)src)[i];
-
-    // NVMCTRL->ADDR.reg = (uint32_t)dst; // not needed?
     NVMCTRL->CTRLB.reg = NVMCTRL_CTRLB_CMDEX_KEY | NVMCTRL_CTRLB_CMD_WQW;
     waitForLast();
 
@@ -133,13 +132,7 @@ int ZFlash::writeBytes(uintptr_t dst, const void *src, uint32_t len) {
 
     lock();
 
-    //if (memcmp((void *)dpp, &flashCopy[dst - FLASH_BASE], len) != 0)
-    //    target_panic(992);
-
-    if (NVMCTRL->INTFLAG.bit.ECCSE || NVMCTRL->INTFLAG.bit.ECCDE)
-        target_panic(996);
-        
-    //LOG("WOK");
+    CHECK_ECC();
 
     return 0;
 }
