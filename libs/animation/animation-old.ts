@@ -124,7 +124,7 @@ namespace animation {
     //% shim=ENUM_GET
     //% blockId=action_enum_shim
     //% block="%arg"
-    //% group="Legacy
+    //% group="Legacy"
     //% enumName="ActionKind"
     //% enumMemberName="action"
     //% enumPromptHint="e.g. Walking, Idle, Jumping, ..."
