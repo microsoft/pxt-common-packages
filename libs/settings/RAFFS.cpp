@@ -7,6 +7,9 @@
 #define RAFFS_MAGIC 0x6776e0da
 #define M1 0xffffffffU
 
+#define CHECK
+//#undef CHECK
+
 using namespace codal;
 
 #define oops() target_panic(DEVICE_FLASH_ERROR)
@@ -92,6 +95,11 @@ void FS::erasePages(uintptr_t addr, uint32_t len) {
         if (flash.pageSize(addr) != page)
             oops();
         flash.erasePage(addr);
+#ifdef CHECK
+        for (int i = 0; i < page; ++i)
+            if (((uint8_t*)addr)[i] != 0xff)
+                oops();
+#endif
         addr += page;
     }
 }
@@ -99,9 +107,11 @@ void FS::erasePages(uintptr_t addr, uint32_t len) {
 void FS::flushFlash() {
     if (flashBufAddr) {
         flash.writeBytes(flashBufAddr, flashBuf, sizeof(flashBuf));
+#ifdef CHECK
         for (unsigned i = 0; i < sizeof(flashBuf); ++i)
             if (flashBuf[i] != 0xff && flashBuf[i] != ((uint8_t *)flashBufAddr)[i])
                 oops();
+#endif
         flashBufAddr = 0;
     }
 }
@@ -439,12 +449,10 @@ bool FS::tryGC(int spaceNeeded, filename_filter filter) {
     writeBytes(newBaseP, &hd, sizeof(hd));
 
     // clear old magic
-    hd.magic = 0;
-    hd.bytes = 0;
-#ifdef SAMD51
+//    hd.magic = 0;
+//    hd.bytes = 0;
     erasePages((uintptr_t)basePtr, flash.pageSize((uintptr_t)basePtr));
-#endif
-    writeBytes(basePtr, &hd, sizeof(hd));
+//    writeBytes(basePtr, &hd, sizeof(hd));
 
     flushFlash();
 
