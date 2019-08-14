@@ -18,7 +18,7 @@ struct BlockedEntries {
 };
 
 #define RAFFS_FOLLOWING_MASK 0x8000
-#define RAFFS_FLASH_BUFFER_SIZE 16
+#define RAFFS_FLASH_BUFFER_SIZE 64
 
 struct MetaEntry {
     uint16_t fnhash;    // hash of file name
