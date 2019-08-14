@@ -412,6 +412,24 @@ void _mapRect(Image_ img, int xy, int wh, Buffer c) {
     mapRect(img, XX(xy), YY(xy), XX(wh), YY(wh), c);
 }
 
+//%
+bool _equals(Image_ img, Image_ other) {
+    auto imgData = img->data();
+    auto otherData = other->data();
+    auto len = img->length();
+
+    if (len != other->length()) {
+        return false;
+    }
+
+    for (int i = 0; i < len; i++) {
+        if (imgData[i] != otherData[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
 /**
  * Return a copy of the current image
  */

@@ -122,6 +122,21 @@ namespace pxsim.ImageMethods {
         mapRect(img, XX(xy), YY(xy), XX(wh), YY(wh), c)
     }
 
+    export function _equals(img: RefImage, other: RefImage) {
+        if (img._bpp != other._bpp || img._width != other._width || img._height != other._height) {
+            return false;
+        }
+        let imgData = img.data;
+        let otherData = other.data;
+        let len = imgData.length;
+        for (let i = 0; i < len; i++) {
+            if (imgData[i] != otherData[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     export function getRows(img: RefImage, x: number, dst: RefBuffer) {
         x |= 0
         if (!img.inRange(x, 0))

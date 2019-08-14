@@ -72,6 +72,13 @@ interface Image {
      */
     //% helper=imageRotated
     rotated(deg: number): Image;
+
+    /**
+     * Returns true if the provided image is the same as this image,
+     * otherwise returns false.
+     */
+    //% helper=imageEquals
+    equals(other: Image): boolean;
 }
 
 interface ScreenImage extends Image {
@@ -108,6 +115,9 @@ namespace helpers {
 
     //% shim=ImageMethods::_fillCircle
     function _fillCircle(img: Image, cxy: number, r: number, c: color): void { }
+
+    //% shim=ImageMethods::_equals
+    function _equals(img: Image, other: Image): boolean { return undefined }
 
     function pack(x: number, y: number) {
         return (Math.clamp(-30000, 30000, x | 0) & 0xffff) | (Math.clamp(-30000, 30000, y | 0) << 16)
@@ -195,6 +205,11 @@ namespace helpers {
     }
     export function imageFillCircle(img: Image, cx: number, cy: number, r: number, col: number) {
         _fillCircle(img, pack(cx, cy), r, col);
+    }
+
+    export function imageEquals(img: Image, other: Image) {
+        if (!other) return false;
+        return _equals(img, other);
     }
 
     /**
