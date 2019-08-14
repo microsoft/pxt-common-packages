@@ -85,10 +85,8 @@ class FS {
     int remove(const char *keyName);
 
     bool exists(const char *keyName) { return read(keyName, NULL, 0) >= 0; }
-    uint32_t rawSize() { return bytes / 2; }
     uint32_t totalSize() { return bytes / 2; }
     uint32_t freeSize() { return (uintptr_t)endPtr - (uintptr_t)freeDataPtr; }
-    void busy(bool isBusy = true);
     void forceGC(filename_filter filter = NULL);
     // this allow raw r/o access; will lock the instance as needed
     int readFlashBytes(uintptr_t addr, void *buffer, uint32_t len);
