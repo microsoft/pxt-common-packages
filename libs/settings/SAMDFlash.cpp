@@ -72,7 +72,12 @@ int ZFlash::erasePage(uintptr_t address) {
 #endif
     waitForLast();
     unlock();
+#ifdef SAMD51
     NVMCTRL->ADDR.reg = address;
+#else
+    // yeah... /2
+    NVMCTRL->ADDR.reg = address / 2;
+#endif
     CMD(NVMCTRL_CTRLA_CMD_ER, NVMCTRL_CTRLB_CMD_EB);
     waitForLast();
     lock();
