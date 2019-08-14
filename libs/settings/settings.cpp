@@ -19,6 +19,8 @@ class WStorage {
     fs(flash, 0x8008000, 32 * 1024),
 #elif defined(SAMD51)
     fs(flash, 512*1024 - 32*1024, 32 * 1024),
+#elif defined(SAMD21)
+    fs(flash, 256*1024 - 2*1024, 2 * 1024),
 #else
     fs(flash),
 #endif

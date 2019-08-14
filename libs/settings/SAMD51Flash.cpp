@@ -13,12 +13,12 @@ namespace codal {
         ;
 #else
 #define waitForLast()                                                                              \
-    while (NVMCTRL->INTFLAG.bit.READY == 0)                                                         \
+    while (NVMCTRL->INTFLAG.bit.READY == 0)                                                        \
         ;
 #endif
 
 static void unlock() {
-    #ifdef SAMD51
+#ifdef SAMD51
     // see errata 2.14.1
     NVMCTRL->CTRLA.bit.CACHEDIS0 = true;
     NVMCTRL->CTRLA.bit.CACHEDIS1 = true;
@@ -27,11 +27,11 @@ static void unlock() {
     while (CMCC->SR.bit.CSTS) {
     }
     CMCC->MAINT0.bit.INVALL = 1;
-    #endif
+#endif
 }
 
 static void lock() {
-    #ifdef SAMD51
+#ifdef SAMD51
     // re-enable cache
     NVMCTRL->CTRLA.bit.CACHEDIS0 = false;
     NVMCTRL->CTRLA.bit.CACHEDIS1 = false;
@@ -42,7 +42,7 @@ static void lock() {
     }
     CMCC->MAINT0.bit.INVALL = 1;
     CMCC->CTRL.bit.CEN = 1;
-    #endif
+#endif
 }
 
 int ZFlash::pageSize(uintptr_t address) {
@@ -57,6 +57,12 @@ int ZFlash::pageSize(uintptr_t address) {
     return 0;
 }
 
+#ifdef SAMD51
+#define CMD(D21, D51) NVMCTRL->CTRLB.reg = NVMCTRL_CTRLB_CMDEX_KEY | D51
+#else
+#define CMD(D21, D51) NVMCTRL->CTRLA.reg = NVMCTRL_CTRLA_CMDEX_KEY | D21
+#endif
+
 int ZFlash::erasePage(uintptr_t address) {
     LOG("Erase %x", address);
 #ifdef SAMD51
@@ -67,25 +73,19 @@ int ZFlash::erasePage(uintptr_t address) {
     waitForLast();
     unlock();
     NVMCTRL->ADDR.reg = address;
-    #ifdef SAMD51
-    NVMCTRL->CTRLB.reg = NVMCTRL_CTRLB_CMDEX_KEY | NVMCTRL_CTRLB_CMD_EB;
-    #else
-    NVMCTRL->CTRLA.reg = NVMCTRL_CTRLA_CMDEX_KEY | NVMCTRL_CTRLA_CMD_ER;
-    #endif
+    CMD(NVMCTRL_CTRLA_CMD_ER, NVMCTRL_CTRLB_CMD_EB);
     waitForLast();
     lock();
     return 0;
 }
 
 #if 0
-#define CHECK_ECC() \
-    if (NVMCTRL->INTFLAG.bit.ECCSE || NVMCTRL->INTFLAG.bit.ECCDE) \
-        target_panic(DEVICE_FLASH_ERROR)
+#define CHECK_ECC()                                                                                \
+    if (NVMCTRL->INTFLAG.bit.ECCSE || NVMCTRL->INTFLAG.bit.ECCDE)                                  \
+    target_panic(DEVICE_FLASH_ERROR)
 #else
 #define CHECK_ECC() ((void)0)
 #endif
-
-
 
 int ZFlash::writeBytes(uintptr_t dst, const void *src, uint32_t len) {
 #ifdef SAMD51
@@ -99,38 +99,64 @@ int ZFlash::writeBytes(uintptr_t dst, const void *src, uint32_t len) {
 
     // every double-word can only be written once, otherwise we get ECC errors
     // and no, ECC cannot be disabled
-    for (int i = 0; i < (len >> 3); ++i)
-        if (((uint64_t*)dst)[i] != 0xffffffffffffffff &&
-            ((uint64_t*)src)[i] != 0xffffffffffffffff)
+    for (unsigned i = 0; i < (len >> 3); ++i)
+        if (((uint64_t *)dst)[i] != 0xffffffffffffffff &&
+            ((uint64_t *)src)[i] != 0xffffffffffffffff)
             target_panic(DEVICE_FLASH_ERROR);
+#define WRITE_SIZE 16
 #else
+    if ((dst & 3) || (len & 3))
+        target_panic(DEVICE_FLASH_ERROR);
+
+    for (unsigned i = 0; i < len; ++i)
+        if (((uint8_t *)dst)[i] != 0xff && ((uint8_t *)src)[i] != 0xff)
+            target_panic(DEVICE_FLASH_ERROR);
+#define WRITE_SIZE 64
 #endif
 
-    volatile uint32_t *dp = (uint32_t *)dst;
-    uint32_t *sp = (uint32_t *)src;
-    uint32_t n = len >> 2;
+    uint32_t writeBuf[WRITE_SIZE >> 2];
+    uint32_t idx = 0;
 
     waitForLast();
     unlock();
     __DMB();
 
-    target_disable_irq();
+    while (idx < len) {
+        uint32_t off = dst & (WRITE_SIZE - 1);
+        uint32_t n = WRITE_SIZE - off;
+        if (n > len - idx)
+            n = len - idx;
+        volatile uint32_t *sp, *dp;
+        if (n != WRITE_SIZE) {
+            memset(writeBuf, 0xff, WRITE_SIZE);
+            memcpy((uint8_t*)writeBuf + off, src, n);
+            sp = writeBuf;
+            dp = (uint32_t *)(dst - off);
+        } else {
+            sp = (uint32_t *)src;
+            dp = (uint32_t *)dst;
+        }
 
-    NVMCTRL->CTRLB.reg = NVMCTRL_CTRLB_CMDEX_KEY | NVMCTRL_CTRLB_CMD_PBC;
-    waitForLast();
+        CMD(NVMCTRL_CTRLA_CMD_PBC, NVMCTRL_CTRLB_CMD_PBC);
+        waitForLast();
 
-    while (n--) {
-        auto v = *sp++;
-        *dp = v;
-        dp++;
+        uint32_t q = WRITE_SIZE >> 2;
+
+        target_disable_irq();
+        while (q--) {
+            auto v = *sp++;
+            *dp = v;
+            dp++;
+        }
+
+        CMD(NVMCTRL_CTRLA_CMD_WP, NVMCTRL_CTRLB_CMD_WQW);
+        target_enable_irq();
+        waitForLast();
+
+        src = (uint8_t *)src + n;
+        dst += n;
+        idx += n;
     }
-
-    NVMCTRL->CTRLB.reg = NVMCTRL_CTRLB_CMDEX_KEY | NVMCTRL_CTRLB_CMD_WQW;
-    waitForLast();
-
-    target_enable_irq();
-
-    lock();
 
     CHECK_ECC();
 
