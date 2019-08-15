@@ -2,6 +2,7 @@
     "name": "settings",
     "description": "Settings storage in internal flash",
     "files": [
+        "README.md",
         "RAFFS.cpp",
         "RAFFS.h",
         "Flash.h",
