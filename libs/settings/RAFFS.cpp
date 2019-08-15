@@ -4,7 +4,7 @@
 #include "MessageBus.h"
 #include <stddef.h>
 
-#define RAFFS_MAGIC 0x6776e0da
+#define RAFFS_MAGIC 0x7776e0da
 #define M1 0xffffffffU
 
 #define CHECK
@@ -50,6 +50,8 @@ static uint16_t raffs_unlocked_event;
 struct FSHeader {
     uint32_t magic;
     uint32_t bytes;
+    uint32_t numgc;
+    uint32_t reserved;
 };
 
 // https://tools.ietf.org/html/draft-eastlake-fnv-14#section-3
@@ -97,7 +99,7 @@ void FS::erasePages(uintptr_t addr, uint32_t len) {
         flash.erasePage(addr);
 #ifdef CHECK
         for (int i = 0; i < page; ++i)
-            if (((uint8_t*)addr)[i] != 0xff)
+            if (((uint8_t *)addr)[i] != 0xff)
                 oops();
 #endif
         addr += page;
@@ -140,6 +142,8 @@ void FS::writeBytes(void *dst, const void *src, uint32_t size) {
     }
 }
 
+#define IS_VALID(hd) ((hd)->magic == RAFFS_MAGIC && (hd)->bytes == bytes)
+
 void FS::format() {
     cachedMeta = NULL;
     readDirPtr = NULL;
@@ -148,13 +152,13 @@ void FS::format() {
     LOG("formatting...");
 
     FSHeader hd;
+    hd.reserved = M1;
+    hd.numgc = 1;
 
-    // in case the secondary header is valid, clear it
+    // in case the secondary header is valid, copy #gc
     auto hd2 = (FSHeader *)(baseAddr + bytes / 2);
-    if (hd2->magic == RAFFS_MAGIC) {
-        hd.magic = 0;
-        hd.bytes = 0;
-        writeBytes(hd2, &hd, sizeof(hd));
+    if (IS_VALID(hd2)) {
+        hd.numgc = hd2->numgc + 1;
     }
 
     // write the primary header
@@ -207,20 +211,31 @@ bool FS::tryMount() {
     if (basePtr)
         return true;
 
-    auto addr = baseAddr + bytes / 2;
+    auto hd0 = (FSHeader *)baseAddr;
+    auto hd1 = (FSHeader *)(baseAddr + bytes / 2);
 
-    auto hd = (FSHeader *)addr;
-    if (hd->magic == RAFFS_MAGIC && hd->bytes == bytes) {
-        // OK
-    } else {
-        addr = baseAddr;
-        hd = (FSHeader *)addr;
-        if (hd->magic == RAFFS_MAGIC && hd->bytes == bytes) {
-            // OK
-        } else {
-            return false;
-        }
+    auto v0 = IS_VALID(hd0);
+    auto v1 = IS_VALID(hd1);
+
+    if (v0 && v1) {
+        // we account for overflows
+        // they should not occur in normal operation though
+        if (hd0->numgc + 1 == hd1->numgc)
+            v0 = false;
+        else if (hd1->numgc + 1 == hd0->numgc || hd1->numgc < hd0->numgc)
+            v1 = false;
+        else
+            v0 = false;
     }
+
+    uintptr_t addr;
+
+    if (v0)
+        addr = baseAddr;
+    else if (v1)
+        addr = baseAddr + bytes / 2;
+    else
+        return false;
 
     basePtr = (uint8_t *)addr;
     endPtr = (MetaEntry *)(addr + bytes / 2);
@@ -446,14 +461,9 @@ bool FS::tryGC(int spaceNeeded, filename_filter filter) {
     FSHeader hd;
     hd.magic = RAFFS_MAGIC;
     hd.bytes = bytes;
+    hd.numgc = ((FSHeader*)basePtr)->numgc + 1;
+    hd.reserved = M1;
     writeBytes(newBaseP, &hd, sizeof(hd));
-
-    // clear old magic
-//    hd.magic = 0;
-//    hd.bytes = 0;
-    erasePages((uintptr_t)basePtr, flash.pageSize((uintptr_t)basePtr));
-//    writeBytes(basePtr, &hd, sizeof(hd));
-
     flushFlash();
 
     basePtr = newBaseP;
@@ -500,7 +510,7 @@ DirEntry *FS::dirRead() {
 
 uint16_t FS::writeData(const void *data, uint32_t len) {
     LOGVV("writeData: @%x %x:%x sz=%d", REAL_OFF(freeDataPtr), ((const uint8_t *)data)[0],
-         ((const uint8_t *)data)[1], len);
+          ((const uint8_t *)data)[1], len);
     writeBytes(freeDataPtr, data, len);
     auto r = freeDataPtr - basePtr;
     freeDataPtr += len;
