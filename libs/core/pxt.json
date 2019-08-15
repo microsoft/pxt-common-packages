@@ -35,8 +35,6 @@
         "timer.ts",
         "light.cpp",
         "light.h",
-        "keyvaluestorage.cpp",
-        "keyvaluestorage.ts",
         "leveldetector.ts",
         "pxtparts.json"
     ],
