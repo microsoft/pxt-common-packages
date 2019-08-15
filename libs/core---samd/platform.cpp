@@ -41,7 +41,30 @@ static void initRandomSeed() {
 
 void platformSendSerial(const char *data, int len) {}
 
+
+#ifdef SAMD21
+static void remapSwdPin(int pinCfg, int fallback) {
+    int pinName = getConfig(pinCfg);
+    if (pinName == PA30 || pinName == PA31) {
+        if (getConfig(CFG_SWD_ENABLED, 0)) {
+            linkPin(pinName, fallback);
+        } else {
+            PORT->Group[pinName / 32].PINCFG[pinName % 32].reg = (uint8_t)PORT_PINCFG_INEN;
+        }
+    }
+}
+
+static void initSwdPins() {
+    remapSwdPin(CFG_PIN_NEOPIXEL, PIN(D0));
+    remapSwdPin(CFG_PIN_RXLED, PIN(D1));
+    remapSwdPin(CFG_PIN_SPEAKER_AMP, PIN(A2));
+}
+#else
+static void initSwdPins() {}
+#endif
+
 void platform_init() {
+    initSwdPins();
     initRandomSeed();
     setSendToUART(platformSendSerial);
     light::clear();
