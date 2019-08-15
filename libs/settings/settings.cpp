@@ -77,7 +77,13 @@ static bool isSystem(const char *fn) {
 //%
 void _userClean() {
     auto s = mountedStorage();
+    DMESG("clearing user files");
     s->fs.forceGC(isSystem);
+    // if system files take more than 25% of storage size, we reformat
+    // it likely means user code has written some 'system' files
+    if (s->fs.freeSize() < 3 * s->fs.totalSize() / 4) {
+        s->fs.format();
+    }
 }
 
 //%

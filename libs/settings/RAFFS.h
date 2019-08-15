@@ -51,7 +51,6 @@ class FS {
     void erasePages(uintptr_t addr, uint32_t len);
     void flushFlash();
     void writeBytes(void *dst, const void *src, uint32_t size);
-    void format();
     void mount();
     void lock();
     void unlock();
@@ -92,6 +91,7 @@ class FS {
     // deletes given key if it exists
     int remove(const char *keyName);
 
+    void format();
     bool exists(const char *keyName) { return read(keyName, NULL, 0) >= 0; }
     uint32_t totalSize() { return bytes / 2; }
     uint32_t freeSize() { return (uintptr_t)endPtr - (uintptr_t)freeDataPtr; }
