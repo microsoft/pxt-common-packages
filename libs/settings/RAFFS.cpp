@@ -487,7 +487,7 @@ bool FS::tryGC(int spaceNeeded, filename_filter filter) {
     endPtr = (MetaEntry *)(newBase + bytes / 2);
     metaPtr = metaDst;
 
-    if ((intptr_t)metaDst - (intptr_t)freeDataPtr <= spaceNeeded + 32) {
+    if ((intptr_t)metaDst - (intptr_t)freeDataPtr <= spaceNeeded + 64) {
         if (filter != NULL && spaceNeeded != 0x7fff0000) {
             LOG("out of space! needed=%d", spaceNeeded);
 #ifdef RAFFS_TEST
