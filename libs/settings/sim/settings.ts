@@ -67,6 +67,12 @@ namespace pxsim.settings {
         for (let k of userKeys())
             board().setStoredState(k, null)
         computeSize()
+        // if system keys take more than 25% of space, delete everything
+        if (currSize > MAX_SIZE / 4) {
+            for (let k of allKeys())
+                board().setStoredState(k, null)
+            computeSize()
+        }
     }
 
     export function _list(prefix: string): RefCollection {
