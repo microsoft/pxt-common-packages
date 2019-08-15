@@ -2,6 +2,8 @@
 #include "CodalDmesg.h"
 #include "NotifyEvents.h"
 #include "MessageBus.h"
+#include "Timer.h"
+
 #include <stddef.h>
 
 #define RAFFS_MAGIC 0x7776e0da
@@ -69,6 +71,8 @@ FS::FS(Flash &flash, uintptr_t baseAddr, uint32_t bytes)
     cachedMeta = NULL;
     flashBufAddr = 0;
     blocked = NULL;
+    gcHorizon = -10000000;
+    minGCSpacing = 0;
 
     if (bytes > 0x20000)
         oops();
@@ -404,6 +408,17 @@ bool FS::tryGC(int spaceNeeded, filename_filter filter) {
 
     if (spaceLeft > spaceNeeded + 32)
         return true;
+    
+    int now = (int)system_timer_current_time();
+    if (minGCSpacing) {
+        gcHorizon += minGCSpacing;
+        int nextGC = now - minGCSpacing * 2;
+        // LOG("now=%d n=%d gch=%d", now, nextGC, gcHorizon);
+        if (nextGC > gcHorizon)
+            gcHorizon = nextGC;
+        if (gcHorizon > now)
+            target_panic(920);
+    }
 
     LOG("running flash FS GC; needed %d, left %d", spaceNeeded, spaceLeft);
 

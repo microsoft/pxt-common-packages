@@ -26,6 +26,7 @@ class WStorage {
 #endif
     isMounted(false)
     {
+        fs.minGCSpacing = 10000;
     }
 };
 SINGLETON(WStorage);

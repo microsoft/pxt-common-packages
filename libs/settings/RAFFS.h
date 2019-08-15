@@ -37,16 +37,16 @@ typedef bool (*filename_filter)(const char *);
 class FS {
     codal::Flash &flash;
 
-    volatile bool locked;
-
     uint8_t *basePtr, *freeDataPtr;
     MetaEntry *endPtr, *metaPtr, *readDirPtr, *cachedMeta;
     uintptr_t baseAddr;
     uint32_t bytes;
+    int32_t gcHorizon;
     DirEntry dirEnt;
     uintptr_t flashBufAddr;
     uint8_t flashBuf[RAFFS_FLASH_BUFFER_SIZE];
     BlockedEntries *blocked;
+    volatile bool locked;
 
     void erasePages(uintptr_t addr, uint32_t len);
     void flushFlash();
@@ -74,6 +74,13 @@ class FS {
     }
 
   public:
+    // Minimum time in ms that has to pass between two GCs; we shall panic 920 if GCs happen more often
+    // (avareged over 3x this time).
+    // This is usually set to around 10s (10000), so that if user writes a program that writes to flash in
+    // a loop, it doesn't wear out flash completely.
+    uint16_t minGCSpacing;
+    
+
     FS(codal::Flash &flash, uintptr_t baseAddr, uint32_t bytes);
     ~FS();
 
