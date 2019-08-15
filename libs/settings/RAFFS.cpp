@@ -13,11 +13,6 @@
 using namespace codal;
 
 #define oops() target_panic(DEVICE_FLASH_ERROR)
-#define ASSERT(cond)                                                                               \
-    do {                                                                                           \
-        if (!(cond))                                                                               \
-            oops();                                                                                \
-    } while (0)
 
 #define OFF2(v, basePtr) (uint32_t)((uint8_t *)v - (uint8_t *)basePtr)
 #define OFF(v) OFF2(v, basePtr)
@@ -106,13 +101,20 @@ void FS::erasePages(uintptr_t addr, uint32_t len) {
     }
 }
 
+void FS::oopsAndClear() {
+    erasePages(baseAddr, bytes);
+    oops();
+}
+
 void FS::flushFlash() {
     if (flashBufAddr) {
-        flash.writeBytes(flashBufAddr, flashBuf, sizeof(flashBuf));
+        int r = flash.writeBytes(flashBufAddr, flashBuf, sizeof(flashBuf));
+        if (r)
+            oopsAndClear();
 #ifdef CHECK
         for (unsigned i = 0; i < sizeof(flashBuf); ++i)
             if (flashBuf[i] != 0xff && flashBuf[i] != ((uint8_t *)flashBufAddr)[i])
-                oops();
+                oopsAndClear();
 #endif
         flashBufAddr = 0;
     }
@@ -252,7 +254,7 @@ bool FS::tryMount() {
 
     auto fp = (uint32_t *)freeDataPtr;
     if (fp[0] != M1 || fp[1] != M1)
-        oops();
+        oopsAndClear();
 
     LOG("mounted, end=%x meta=%x free=%x", OFF(endPtr), OFF(metaPtr), OFF(freeDataPtr));
 
@@ -265,7 +267,7 @@ void FS::mount() {
         return;
     format();
     if (!tryMount())
-        oops();
+        oopsAndClear();
 }
 
 FS::~FS() {}
@@ -395,7 +397,7 @@ bool FS::tryGC(int spaceNeeded, filename_filter filter) {
     for (auto p = (uint32_t *)freeDataPtr; p < (uint32_t *)metaPtr; p++) {
         if (*p != M1) {
             LOG("value at %x = %x", OFF(p), *p);
-            oops();
+            oopsAndClear();
         }
     }
 #endif

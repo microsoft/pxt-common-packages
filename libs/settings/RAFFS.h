@@ -60,6 +60,7 @@ class FS {
 
     bool checkBlocked(MetaEntry *m);
     void clearBlocked();
+    void oopsAndClear();
 
     uint16_t writeData(const void *data, uint32_t len);
     void finishWrite();

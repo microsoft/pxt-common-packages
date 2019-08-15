@@ -87,7 +87,7 @@ int ZFlash::erasePage(uintptr_t address) {
 #if 0
 #define CHECK_ECC()                                                                                \
     if (NVMCTRL->INTFLAG.bit.ECCSE || NVMCTRL->INTFLAG.bit.ECCDE)                                  \
-    target_panic(DEVICE_FLASH_ERROR)
+    return -10
 #else
 #define CHECK_ECC() ((void)0)
 #endif
@@ -98,24 +98,24 @@ int ZFlash::writeBytes(uintptr_t dst, const void *src, uint32_t len) {
 
     // only allow writing double word at a time
     if (len & 7)
-        target_panic(DEVICE_FLASH_ERROR);
+        return -1;
     if (dst & 7)
-        target_panic(DEVICE_FLASH_ERROR);
+        return -2;
 
     // every double-word can only be written once, otherwise we get ECC errors
     // and no, ECC cannot be disabled
     for (unsigned i = 0; i < (len >> 3); ++i)
         if (((uint64_t *)dst)[i] != 0xffffffffffffffff &&
             ((uint64_t *)src)[i] != 0xffffffffffffffff)
-            target_panic(DEVICE_FLASH_ERROR);
+            return -3;
 #define WRITE_SIZE 16
 #else
     if ((dst & 3) || (len & 3))
-        target_panic(DEVICE_FLASH_ERROR);
+        return -1;
 
     for (unsigned i = 0; i < len; ++i)
         if (((uint8_t *)dst)[i] != 0xff && ((uint8_t *)src)[i] != 0xff)
-            target_panic(DEVICE_FLASH_ERROR);
+            return -3;
 #define WRITE_SIZE 64
 #endif
 

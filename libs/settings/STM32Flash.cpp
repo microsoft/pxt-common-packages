@@ -69,7 +69,11 @@ int ZFlash::writeBytes(uintptr_t dst, const void *src, uint32_t len) {
     LOG("WR flash at %p len=%d", (void *)dst, len);
 
     if ((dst & 3) || ((uintptr_t)src & 3) || (len & 3))
-        target_panic(DEVICE_FLASH_ERROR);
+        return -1;
+
+    for (unsigned i = 0; i < len; ++i)
+        if (((uint8_t *)dst)[i] != 0xff && ((uint8_t *)src)[i] != 0xff)
+            return -3;
 
     waitForLast();
     unlock();
