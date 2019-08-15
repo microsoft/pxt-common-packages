@@ -26,7 +26,7 @@ namespace settings {
 
     function setScope(scope: string) {
         if (!scope || scope.length > 100)
-            control.panic(950)
+            control.panic(922)
         const currScope = readString("#scope")
         if (currScope != scope) {
             _userClean()
@@ -61,7 +61,7 @@ namespace settings {
             // if we're out of space, clear user storage
             _userClean()
             // and panic - reset should hopefully recreate needed files
-            control.panic(919)
+            control.panic(920)
         }
     }
 

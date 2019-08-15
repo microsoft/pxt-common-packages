@@ -417,7 +417,7 @@ bool FS::tryGC(int spaceNeeded, filename_filter filter) {
         if (nextGC > gcHorizon)
             gcHorizon = nextGC;
         if (gcHorizon > now)
-            target_panic(920);
+            target_panic(921);
     }
 
     LOG("running flash FS GC; needed %d, left %d", spaceNeeded, spaceLeft);
