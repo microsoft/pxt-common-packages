@@ -8,9 +8,11 @@ namespace pxt {
 
 #ifdef CODAL_JACDAC_WIRE_SERIAL
 // TC3 is used by DAC on both D21 and D51
+// TCC0 is used by IR
+// TCC0, TCC1, TC4 is used by PWM on CPX
 #ifdef SAMD21
-SAMDTCTimer jacdacTimer(TC4, TC4_IRQn);
-SAMDTCCTimer lowTimer(TCC0, TCC0_IRQn);
+SAMDTCCTimer jacdacTimer(TCC2, TCC2_IRQn);
+SAMDTCTimer lowTimer(TC5, TC5_IRQn);
 
 LowLevelTimer* getJACDACTimer()
 {
