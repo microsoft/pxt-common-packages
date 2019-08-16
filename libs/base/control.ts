@@ -181,7 +181,10 @@ namespace control {
     export declare function getConfigValue(key: int32, defl: int32): number;
 
     //% shim=pxt::programHash
-    export function programHash(): number { return 0 }
+    export declare function programHash(): number;
+
+    //% shim=pxt::programName
+    export declare function programName(): string;
 
     export enum IntervalMode {
         Interval,

@@ -36,4 +36,9 @@ namespace pxt
 
 #define PXT_IN_ISR() false
 
+#define PROGDIR "/sd/prj"
+#undef SETTINGSDIR
+
+// #define SETTINGSDIR "/sd/cfg"
+
 #endif

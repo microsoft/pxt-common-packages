@@ -268,6 +268,8 @@ typedef enum {
     PANIC_STACK_OVERFLOW = 916,
     PANIC_BLOCKING_TO_STRING = 917,
     PANIC_VM_ERROR = 918,
+    PANIC_SETTINGS_CLEARED = 920,
+    PANIC_SETTINGS_OVERLOAD = 921,
 
     PANIC_CAST_FIRST = 980,
     PANIC_CAST_FROM_UNDEFINED = 980,
@@ -307,15 +309,18 @@ static inline TValue runAction0(Action a) {
 }
 
 class RefAction;
+class BoxedString;
 struct VTable;
 
 //%
 Action mkAction(int totallen, RefAction *act);
-//%
+//% expose
 int templateHash();
-//%
+//% expose
 int programHash();
-//%
+//% expose
+BoxedString *programName();
+//% expose
 unsigned programSize();
 //%
 int getNumGlobals();
@@ -659,7 +664,6 @@ class RefCollection : public RefObject {
     TValue *getData() { return head.getData(); }
 };
 
-class BoxedString;
 class RefMap : public RefObject {
   public:
     Segment keys;

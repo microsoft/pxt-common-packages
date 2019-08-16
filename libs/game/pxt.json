@@ -44,8 +44,9 @@
     ],
     "public": true,
     "dependencies": {
+        "settings": "file:../settings",
         "screen": "file:../screen",
-       "mixer": "file:../mixer",
-       "power": "file:../power"
+        "mixer": "file:../mixer",
+        "power": "file:../power"
     }
 }

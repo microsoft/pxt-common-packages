@@ -67,7 +67,7 @@ void WDisplay::updateLoop() {
 
     offx &= ~1;
 
-    memset(fbuf, 0x33, screensize * 2);
+    memset(fbuf, 0x00, screensize * 2);
 
     dirty = true;
 
