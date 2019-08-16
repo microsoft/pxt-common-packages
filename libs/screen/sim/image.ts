@@ -122,8 +122,8 @@ namespace pxsim.ImageMethods {
         mapRect(img, XX(xy), YY(xy), XX(wh), YY(wh), c)
     }
 
-    export function _equals(img: RefImage, other: RefImage) {
-        if (img._bpp != other._bpp || img._width != other._width || img._height != other._height) {
+    export function equals(img: RefImage, other: RefImage) {
+        if (!other || img._bpp != other._bpp || img._width != other._width || img._height != other._height) {
             return false;
         }
         let imgData = img.data;

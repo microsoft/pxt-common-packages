@@ -92,6 +92,13 @@ interface Image {
     //% block="change color in %picture=variables_get from %from=colorindexpicker to %to=colorindexpicker"
     //% help=images/image/replace
     replace(from: int32, to: int32): void;
+
+    /**
+     * Returns true if the provided image is the same as this image,
+     * otherwise returns false.
+     */
+    //% shim=ImageMethods::equals
+    equals(other: Image): boolean;
 }
 
 declare namespace image {
@@ -99,7 +106,4 @@ declare namespace image {
     //% block="create image width %width height %height" group="Create"
     //% help=images/create
     function create(width: number, height: number): Image;
-
-    //% shim=ImageMethods::_equals
-    function _equals(img: Image, other: Image): boolean;
 }

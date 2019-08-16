@@ -72,13 +72,6 @@ interface Image {
      */
     //% helper=imageRotated
     rotated(deg: number): Image;
-
-    /**
-     * Returns true if the provided image is the same as this image,
-     * otherwise returns false.
-     */
-    //% helper=imageEquals
-    equals(other: Image): boolean;
 }
 
 interface ScreenImage extends Image {
@@ -140,11 +133,6 @@ namespace helpers {
         imageDrawLine(img, x, y, x, y + h, c)
         imageDrawLine(img, x + w, y + h, x + w, y, c)
         imageDrawLine(img, x + w, y + h, x, y + h, c)
-    }
-
-    export function imageEquals(img: Image, other: Image) {
-        if (!other) return false;
-        return image._equals(img, other);
     }
 
     export function imageDrawCircle(img: Image, cx: number, cy: number, r: number, col: number) {

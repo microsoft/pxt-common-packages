@@ -412,8 +412,11 @@ void _mapRect(Image_ img, int xy, int wh, Buffer c) {
     mapRect(img, XX(xy), YY(xy), XX(wh), YY(wh), c);
 }
 
-//%
-bool _equals(Image_ img, Image_ other) {
+//% argsNullable
+bool equals(Image_ img, Image_ other) {
+    if (!other) {
+        return false;
+    }
     auto len = img->length();
     if (len != other->length()) {
         return false;
