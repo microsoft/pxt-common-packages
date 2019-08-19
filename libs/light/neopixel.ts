@@ -162,8 +162,8 @@ namespace light {
          */
         //% blockId=lightsetgradient block="set %strip gradient from %startColor=colorNumberPicker to %endColor=colorNumberPicker"
         //% weight=79 blockGap=8
-        //% group="More" advanced=true blockHidden=true
-        setGradient(startColor: number, endColor: number, easing?: (t: number) => number) {
+        //% group="More" advanced=true
+        setGradient(startColor: number, endColor: number) {
             const sr = color.unpackR(startColor);
             const sg = color.unpackG(startColor);
             const sb = color.unpackB(startColor);
@@ -176,7 +176,6 @@ namespace light {
             const stride = this.stride();
             for (let i = this._start; i < end; ++i) {
                 let x = (i - this._start) / n1;
-                if (easing) x = easing(x);
                 const ox = 1 - x;
                 const r = (sr * ox + er * x) | 0;
                 const g = (sg * ox + eg * x) | 0;
