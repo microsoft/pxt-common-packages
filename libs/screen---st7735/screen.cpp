@@ -183,12 +183,11 @@ void updateScreen(Image_ img) {
 
     auto mult = display->doubleSize ? 2 : 1;
 
-    if (img && img->isDirty()) {
+    if (img) {
         if (img->bpp() != 4 || img->width() * mult != display->width ||
             img->height() * mult != display->displayHeight)
             target_panic(PANIC_SCREEN_ERROR);
 
-        img->clearDirty();
         // DMESG("wait for done");
         display->lcd->waitForSendDone();
 
