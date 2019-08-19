@@ -191,6 +191,10 @@ int current_time_ms() {
     return system_timer_current_time();
 }
 
+uint64_t current_time_us() {
+    return system_timer_current_time_us();
+}
+
 #ifdef PXT_GC
 ThreadContext *getThreadContext() {
     if (!currentFiber)

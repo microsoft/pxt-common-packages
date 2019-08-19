@@ -12,6 +12,14 @@ namespace control {
     }
 
     /**
+    * Gets current time in microseconds. Overflows every ~18 minutes.
+    */
+    //%
+    int micros() {
+        return current_time_us() & 0x3fffffff;
+    }
+
+    /**
     * Used internally
     */
     //%

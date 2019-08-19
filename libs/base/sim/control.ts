@@ -81,6 +81,10 @@ namespace pxsim.control {
         return runtime.runningTime();
     }
 
+    export function micros(): number {
+        return runtime.runningTimeUs() & 0x3fffffff;
+    }
+
     export function delayMicroseconds(us: number) {
         delay(us / 0.001);
     }
