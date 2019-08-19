@@ -857,40 +857,52 @@ class BoxedBuffer : public RefObject {
 #define PXT_CREATE_BUFFER(data, len) pxt::mkBuffer(data, len)
 #endif
 
+// Legacy format:
 // the first byte of data indicates the format - currently 0xE1 or 0xE4 to 1 or 4 bit bitmaps
 // second byte indicates width in pixels
 // third byte indicates the height (which should also match the size of the buffer)
 // just like ordinary buffers, these can be layed out in flash
-class RefImage : public RefObject {
-    uintptr_t _buffer;
-    uint8_t _data[0];
 
+// Current format:
+// 87 BB WW WW HH HH 00 00 DATA
+// that is: 0x87, 0x01 or 0x04 - bpp, width in little endian, height, 0x00, 0x00 followed by data
+// for 4 bpp images, rows are word-aligned (as in legacy)
+
+#define IMAGE_HEADER_MAGIC 0x87
+
+struct ImageHeader {
+    uint8_t magic;
+    uint8_t bpp;
+    uint16_t width;
+    uint16_t height;
+    uint16_t padding;
+    uint8_t pixels[0];
+};
+
+class RefImage : public RefObject {
   public:
+    BoxedBuffer *buffer;
+
     RefImage(BoxedBuffer *buf);
     RefImage(uint32_t sz);
 
-    bool hasBuffer() { return !(_buffer & 1); }
-    BoxedBuffer *buffer() { return hasBuffer() ? (BoxedBuffer *)_buffer : NULL; }
     void setBuffer(BoxedBuffer *b);
-    bool isDirty() { return (_buffer & 3) == 3; }
-    void clearDirty() {
-        if (isDirty())
-            _buffer &= ~2;
-    }
 
-    uint8_t *data() { return hasBuffer() ? buffer()->data : _data; }
-    int length() { return (int)(hasBuffer() ? buffer()->length : (_buffer >> 2)); }
-    int pixLength() { return length() - 4; }
+    uint8_t *data() { return buffer->data; }
+    int length() { return (int)buffer->length; }
 
-    int height();
-    int width();
+    ImageHeader *header() { return (ImageHeader*)buffer->data; }
+    int pixLength() { return length() - sizeof(ImageHeader); }
+
+    int width() { return header()->width; }
+    int height() { return header()->height; }
     int byteHeight();
     int wordHeight();
-    int bpp();
+    int bpp() { return header()->bpp; }
 
-    bool hasPadding() { return (height() & 0x1f) != 0; }
+    bool hasPadding() { return (height() & 0x7) != 0; }
 
-    uint8_t *pix() { return data() + 4; }
+    uint8_t *pix() { return header()->pixels; }
     uint8_t *pix(int x, int y);
     uint8_t fillMask(color c);
     bool inRange(int x, int y);

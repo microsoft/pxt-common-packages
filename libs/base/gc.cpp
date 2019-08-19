@@ -824,7 +824,7 @@ void unregisterGCPtr(TValue ptr) {
 }
 
 void RefImage::scan(RefImage *t) {
-    gcScan((TValue)t->buffer());
+    gcScan((TValue)t->buffer);
 }
 
 void RefCollection::scan(RefCollection *t) {
@@ -852,9 +852,7 @@ void RefRecord_scan(RefRecord *r) {
 #define SIZE(off) TOWORDS(sizeof(*t) + (off))
 
 unsigned RefImage::gcsize(RefImage *t) {
-    if (t->hasBuffer())
-        return SIZE(0);
-    return SIZE(t->length());
+    return SIZE(0);
 }
 
 unsigned RefCollection::gcsize(RefCollection *t) {
