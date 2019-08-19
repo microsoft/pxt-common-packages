@@ -866,6 +866,8 @@ Image_ convertAndWrap(Buffer buf) {
     if (isValidImage(buf))
         return NEW_GC(RefImage, buf);
 
+    // What follows in this function is mostly dead code, except if people construct image buffers by hand.
+    // Probably safe to remove in a year (middle of 2020) or so. When removing, also remove from sim.
     if (!isLegacyImage(buf))
         return NULL;
 
