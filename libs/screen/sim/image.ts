@@ -491,12 +491,14 @@ namespace pxsim.ImageMethods {
     }
 
     export function drawIcon(img: RefImage, icon: RefBuffer, x: number, y: number, color: number) {
-        const img2 = icon.data
-        if (!img2 || img2.length < 5 || img2[0] != 0xe1)
+        const img2: Uint8Array = icon.data
+        if (!image.isValidImage(icon))
             return
-        let w = img2[1]
-        let h = img2[2]
-        let byteH = (h + 7) >> 3
+        if (img2[1] != 1)
+            return // only mono
+        let w = image.bufW(img2)        
+        let h = image.bufH(img2)
+        let byteH = image.byteHeight(h, 1)
 
         x |= 0
         y |= 0
@@ -510,7 +512,7 @@ namespace pxsim.ImageMethods {
 
         img.makeWritable()
 
-        let p = 4
+        let p = 8
         color = img.color(color)
         const screen = img.data
 
@@ -579,7 +581,7 @@ namespace pxsim.ImageMethods {
 
 
 namespace pxsim.image {
-    function byteHeight(h: number, bpp: number) {
+    export function byteHeight(h: number, bpp: number) {
         if (bpp == 1)
             return h * bpp + 7 >> 3
         else
@@ -601,15 +603,15 @@ namespace pxsim.image {
         return true;
     }
 
-    function bufW(data: Uint8Array) {
+    export function bufW(data: Uint8Array) {
         return data[2] | (data[3] << 8)
     }
 
-    function bufH(data: Uint8Array) {
+    export function bufH(data: Uint8Array) {
         return data[4] | (data[5] << 8)
     }
 
-    function isValidImage(buf: RefBuffer) {
+    export function isValidImage(buf: RefBuffer) {
         if (!buf || buf.data.length < 5)
             return false;
 
