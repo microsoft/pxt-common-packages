@@ -46,7 +46,7 @@ namespace pxsim {
         }
 
         toDebugString() {
-            return this._width + "x" + this._height 
+            return this._width + "x" + this._height
         }
     }
 }
@@ -571,7 +571,7 @@ namespace pxsim.ImageMethods {
             }
         }
     }
-    
+
     export function _fillCircle(img: RefImage, cxy: number, r: number, c: number) {
         fillCircle(img, XX(cxy), YY(cxy), r, c);
     }
@@ -579,23 +579,49 @@ namespace pxsim.ImageMethods {
 
 
 namespace pxsim.image {
-    function byteWidth(h: number, bpp: number) {
+    function byteHeight(h: number, bpp: number) {
         if (bpp == 1)
             return h * bpp + 7 >> 3
         else
             return ((h * bpp + 31) >> 5) << 2
     }
 
-    function isValidImage(buf: RefBuffer) {
-        if (!buf || buf.data.length < 4)
+    function isLegacyImage(buf: RefBuffer) {
+        if (!buf || buf.data.length < 5)
             return false;
 
         if (buf.data[0] != 0xe1 && buf.data[0] != 0xe4)
             return false;
 
         const bpp = buf.data[0] & 0xf;
-        const sz = buf.data[1] * byteWidth(buf.data[2], bpp)
+        const sz = buf.data[1] * byteHeight(buf.data[2], bpp)
         if (4 + sz != buf.data.length)
+            return false;
+
+        return true;
+    }
+
+    function bufW(data: Uint8Array) {
+        return data[2] | (data[3] << 8)
+    }
+
+    function bufH(data: Uint8Array) {
+        return data[4] | (data[5] << 8)
+    }
+
+    function isValidImage(buf: RefBuffer) {
+        if (!buf || buf.data.length < 5)
+            return false;
+
+        if (buf.data[0] != 0x87)
+            return false
+
+        if (buf.data[1] != 1 && buf.data[1] != 4)
+            return false;
+
+        const bpp = buf.data[1];
+        const sz = bufW(buf.data) * byteHeight(bufH(buf.data), bpp)
+        if (8 + sz != buf.data.length)
             return false;
 
         return true;
@@ -607,18 +633,27 @@ namespace pxsim.image {
     }
 
     export function ofBuffer(buf: RefBuffer): RefImage {
-        if (!isValidImage(buf))
-            return null
         const src: Uint8Array = buf.data
-        const w = src[1]
-        const h = src[2]
-        if (w == 0 || h == 0)
-            return null
-        const bpp = src[0] & 0xf;
-        const r = new RefImage(w, h, bpp)
-        const dst = r.data
 
         let srcP = 4
+        let w = 0, h = 0, bpp = 0
+
+        if (isLegacyImage(buf)) {
+            w = src[1]
+            h = src[2]
+            bpp = src[0] & 0xf;
+            // console.log("using legacy image")
+        } else if (isValidImage(buf)) {
+            srcP = 8
+            w = bufW(src)
+            h = bufH(src)
+            bpp = src[1]
+        }
+
+        if (w == 0 || h == 0)
+            return null
+        const r = new RefImage(w, h, bpp)
+        const dst = r.data
 
         if (bpp == 1) {
             for (let i = 0; i < w; ++i) {
@@ -655,15 +690,17 @@ namespace pxsim.image {
         return r
     }
 
-
     export function toBuffer(img: RefImage): RefBuffer {
-        let col = byteWidth(img._height, img._bpp)
-        let sz = 4 + img._width * col
+        let col = byteHeight(img._height, img._bpp)
+        let sz = 8 + img._width * col
         let r = new Uint8Array(sz)
-        r[0] = 0xe0 | img._bpp
-        r[1] = img._width
-        r[2] = img._height
-        let dstP = 4
+        r[0] = 0x87
+        r[1] = img._bpp
+        r[2] = img._width & 0xff
+        r[3] = img._width >> 8
+        r[4] = img._height & 0xff
+        r[5] = img._height >> 8
+        let dstP = 8
         const w = img._width
         const h = img._height
         const data = img.data
