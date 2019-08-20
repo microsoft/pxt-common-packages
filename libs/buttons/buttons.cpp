@@ -26,6 +26,18 @@ enum class ButtonEvent {
     Down = DEVICE_BUTTON_EVT_DOWN
 };
 
+namespace pxt {
+
+class PressureButton : public codal::Button {
+  public:
+    PressureButton(Pin &pin, uint16_t id,
+                   ButtonEventConfiguration eventConfiguration = DEVICE_BUTTON_ALL_EVENTS,
+                   ButtonPolarity polarity = ACTIVE_LOW, PullMode mode = PullMode::None)
+        : Button(pin, id, eventConfiguration, polarity, mode) {}
+
+    virtual int pressureLevel() { return isPressed() ? 512 : 0; }
+};
+
 #ifdef PXT_74HC165
 static void waitABit() {
     for (int i = 0; i < 10; ++i)
@@ -47,7 +59,7 @@ class ButtonMultiplexer : public CodalComponent {
         this->status |= DEVICE_COMPONENT_STATUS_SYSTEM_TICK;
     }
 
-    virtual void periodicCallback() {
+    virtual void periodicCallback() override {
         latch.setDigitalValue(0);
         waitABit();
         latch.setDigitalValue(1);
@@ -66,12 +78,12 @@ class ButtonMultiplexer : public CodalComponent {
         }
     }
 };
-class MultiplexedButton : public Button {
+class MultiplexedButton : public PressureButton {
   public:
     ButtonMultiplexer *parent;
     uint8_t shift;
     MultiplexedButton(uint16_t id, uint8_t shift, ButtonMultiplexer *parent)
-        : Button(parent->data, id), parent(parent), shift(shift) {}
+        : PressureButton(parent->data, id), parent(parent), shift(shift) {}
 
   protected:
     virtual int buttonActive() { return (parent->state & (1 << shift)) != 0; }
@@ -84,17 +96,51 @@ MultiplexedButton *ButtonMultiplexer::createButton(uint16_t id, uint8_t shift) {
 static ButtonMultiplexer *buttonMultiplexer;
 #endif
 
-class AnalogButton : public Button {
+struct AnalogCache {
+    AnalogCache *next;
+    Pin *pin;
+    uint32_t lastMeasureMS;
+    uint16_t lastMeasure;
+    AnalogCache(Pin *pin) : pin(pin) {
+        next = NULL;
+        lastMeasureMS = 0;
+        lastMeasure = pin->getAnalogValue();
+    }
+    uint16_t read();
+};
+
+uint16_t AnalogCache::read() {
+    uint32_t now = current_time_ms();
+    if (now - lastMeasureMS < 50)
+        return lastMeasure;
+    lastMeasureMS = now;
+    lastMeasure = pin->getAnalogValue();
+    return lastMeasure;
+}
+
+static AnalogCache *analogCache;
+
+class AnalogButton : public PressureButton {
   public:
+    AnalogCache *cache;
     int16_t threshold;
     bool state;
 
-    AnalogButton(Pin &pin, uint16_t id, int threshold)
-        : Button(pin, id), threshold(threshold), state(false) {}
+    AnalogButton(AnalogCache *cache, uint16_t id, int threshold)
+        : PressureButton(*cache->pin, id), cache(cache), threshold(threshold), state(false) {}
 
   protected:
-    virtual int buttonActive() {
-        int v = _pin.getAnalogValue() - 512;
+    virtual int pressureLevel() override {
+        int v = cache->read() - 512;
+        if (threshold < 0)
+            v = -v;
+        if (v < 0)
+            v = 0;
+        return v;
+    }
+
+    virtual int buttonActive() override {
+        int v = cache->read() - 512;
         int thr = threshold;
 
         if (thr < 0) {
@@ -113,9 +159,18 @@ class AnalogButton : public Button {
     }
 };
 
-namespace pxt {
+AnalogCache *lookupAnalogCache(Pin *pin) {
+    for (auto c = analogCache; c; c = c->next)
+        if (c->pin == pin)
+            return c;
+    auto c = new AnalogCache(pin);
+    c->next = analogCache;
+    analogCache = c;
+    return c;
+}
+
 //%
-Button *getButtonByPin(int pin, int flags) {
+PressureButton *getButtonByPin(int pin, int flags) {
     pin &= 0xffff;
 
     unsigned highflags = (unsigned)pin >> 16;
@@ -123,7 +178,7 @@ Button *getButtonByPin(int pin, int flags) {
         flags = highflags & 0xff;
 
     auto cpid = DEVICE_ID_FIRST_BUTTON + pin;
-    auto btn = (Button *)lookupComponent(cpid);
+    auto btn = (PressureButton *)lookupComponent(cpid);
     if (btn == NULL) {
 #ifdef PXT_74HC165
         if (1000 <= pin && pin < 1100) {
@@ -139,7 +194,7 @@ Button *getButtonByPin(int pin, int flags) {
                 thr = -thr;
                 pin -= 100;
             }
-            return new AnalogButton(*lookupPin(pin), cpid, thr);
+            return new AnalogButton(lookupAnalogCache(lookupPin(pin)), cpid, thr);
         }
 
         auto pull = PullMode::None;
@@ -152,36 +207,18 @@ Button *getButtonByPin(int pin, int flags) {
         else
             oops(3);
         // GCTODO
-        btn = new Button(*lookupPin(pin), cpid, DEVICE_BUTTON_ALL_EVENTS,
-                         (ButtonPolarity)(flags & 0xf), pull);
+        btn = new PressureButton(*lookupPin(pin), cpid, DEVICE_BUTTON_ALL_EVENTS,
+                                 (ButtonPolarity)(flags & 0xf), pull);
     }
     return btn;
 }
 
 //%
-Button *getButtonByPinCfg(int key, int flags) {
+PressureButton *getButtonByPinCfg(int key, int flags) {
     int pin = getConfig(key);
     if (pin == -1)
         target_panic(PANIC_NO_SUCH_CONFIG);
     return getButtonByPin(pin, flags);
-}
-
-// This is for A, B, and AB
-//%
-AbstractButton *getButton(int id) {
-    int pa = getConfig(CFG_PIN_BTN_A);
-    int pb = getConfig(CFG_PIN_BTN_B);
-    int flags = getConfig(CFG_DEFAULT_BUTTON_MODE, BUTTON_ACTIVE_LOW_PULL_UP);
-    if (id == 0)
-        return getButtonByPin(pa, flags);
-    else if (id == 1)
-        return getButtonByPin(pb, flags);
-    else if (id == 2)
-        return getMultiButton(DEVICE_ID_BUTTON_AB, pa, pb, flags);
-    else {
-        target_panic(PANIC_INVALID_ARGUMENT);
-        return NULL;
-    }
 }
 
 MultiButton *getMultiButton(int id, int pinA, int pinB, int flags) {
@@ -205,6 +242,25 @@ MultiButton *getMultiButton(int id, int pinA, int pinB, int flags) {
     }
     return btn;
 }
+
+// This is for A, B, and AB
+//%
+AbstractButton *getButton(int id) {
+    int pa = getConfig(CFG_PIN_BTN_A);
+    int pb = getConfig(CFG_PIN_BTN_B);
+    int flags = getConfig(CFG_DEFAULT_BUTTON_MODE, BUTTON_ACTIVE_LOW_PULL_UP);
+    if (id == 0)
+        return getButtonByPin(pa, flags);
+    else if (id == 1)
+        return getButtonByPin(pb, flags);
+    else if (id == 2)
+        return getMultiButton(DEVICE_ID_BUTTON_AB, pa, pb, flags);
+    else {
+        target_panic(PANIC_INVALID_ARGUMENT);
+        return NULL;
+    }
+}
+
 } // namespace pxt
 
 namespace DigitalInOutPinMethods {
@@ -279,6 +335,14 @@ bool wasPressed(Button_ button) {
 //%
 int id(Button_ button) {
     return button->id;
+}
+
+/**
+ * Gets the pressure level on the button 0 to 512.
+ */
+//%
+int pressureLevel(Button_ button) {
+    return ((PressureButton*)button)->pressureLevel();
 }
 
 } // namespace ButtonMethods
