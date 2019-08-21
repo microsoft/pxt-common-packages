@@ -62,6 +62,33 @@
 
 namespace pxt {
 
+    /*
+RAW,                            0x000000
+SIMPLE_CARTESIAN,               0x000001
+NORTH_EAST_DOWN,                0x000002
+NORTH_EAST_UP                   0x000003
+
+COORDINATE_SPACE_ROTATED_0      0x000000
+COORDINATE_SPACE_ROTATED_90     0x000010
+COORDINATE_SPACE_ROTATED_180    0x000020
+COORDINATE_SPACE_ROTATED_270    0x000030
+
+NOT_UPSIDE_DOWN                 0x000000
+UPSIDE_DOWN                     0x000100
+    */
+
+static CoordinateSpace boardCoordinateSpace() {
+    int defaultSpace = ((int)ACC_SYSTEM) | ((int)ACC_ROTATION << 4) | (ACC_UPSIDEDOWN ? 0x100 : 0x000);
+#if defined(STM32F4) && PXT_SUPPORT_MPU6050
+    // meowbit
+    if (getConfig(CFG_ACCELEROMETER_TYPE, -1) == ACCELEROMETER_TYPE_MPU6050)
+        defaultSpace = 0x33;
+#endif
+    int space = getConfig(CFG_ACCELEROMETER_SPACE, defaultSpace);
+    DMESG("coordinate space: %d / %d, %s", space & 0xf, (space >> 4) & 0xf, space & 0x100 ? "upside" : "normal");
+    return CoordinateSpace((CoordinateSystem)(space & 0xf), !!(space & 0x100), (space >> 4) & 0xf);
+}
+
 // Wrapper classes
 class WAccel {
     CoordinateSpace space;
@@ -69,7 +96,7 @@ class WAccel {
   public:
     Accelerometer *acc;
     WAccel() 
-    : space(ACC_SYSTEM, ACC_UPSIDEDOWN, ACC_ROTATION)
+    : space(boardCoordinateSpace())
     , acc(NULL) {
         DMESG("acc: mounting");
         auto sda = LOOKUP_PIN(ACCELEROMETER_SDA);
