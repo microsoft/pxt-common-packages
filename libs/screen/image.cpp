@@ -27,32 +27,11 @@ int RefImage::wordHeight() {
     return ((height() * 4 + 31) >> 5);
 }
 
-int RefImage::byteHeight() {
-    if (bpp() == 1)
-        return (height() + 7) >> 3;
-    else if (bpp() == 4)
-        return ((height() * 4 + 31) >> 5) << 2;
-    else {
-        oops(21);
-        return -1;
-    }
-}
 
 void RefImage::makeWritable() {
     if (buffer->isReadOnly()) {
         buffer = mkBuffer(data(), length());
     }
-}
-
-uint8_t *RefImage::pix(int x, int y) {
-    uint8_t *d = &pix()[byteHeight() * x];
-    if (y) {
-        if (bpp() == 1)
-            d += y >> 3;
-        else if (bpp() == 4)
-            d += y >> 1;
-    }
-    return d;
 }
 
 uint8_t RefImage::fillMask(color c) {
@@ -175,32 +154,32 @@ void copyFrom(Image_ img, Image_ from) {
     memcpy(img->pix(), from->pix(), from->pixLength());
 }
 
-static inline void setCore(Image_ img, int x, int y, int c) {
+static void setCore(Image_ img, int x, int y, int c) {
     auto ptr = img->pix(x, y);
-    if (img->bpp() == 1) {
+    if (img->bpp() == 4) {
+        if (y & 1)
+            *ptr = (*ptr & 0x0f) | (c << 4);
+        else
+            *ptr = (*ptr & 0xf0) | (c & 0xf);
+    } else if (img->bpp() == 1) {
         uint8_t mask = 0x01 << (y & 7);
         if (c)
             *ptr |= mask;
         else
             *ptr &= ~mask;
-    } else if (img->bpp() == 4) {
-        if (y & 1)
-            *ptr = (*ptr & 0x0f) | (c << 4);
-        else
-            *ptr = (*ptr & 0xf0) | (c & 0xf);
     }
 }
 
-static inline int getCore(Image_ img, int x, int y) {
+static int getCore(Image_ img, int x, int y) {
     auto ptr = img->pix(x, y);
-    if (img->bpp() == 1) {
-        uint8_t mask = 0x01 << (y & 7);
-        return (*ptr & mask) ? 1 : 0;
-    } else if (img->bpp() == 4) {
+    if (img->bpp() == 4) {
         if (y & 1)
             return *ptr >> 4;
         else
             return *ptr & 0x0f;
+    } else if (img->bpp() == 1) {
+        uint8_t mask = 0x01 << (y & 7);
+        return (*ptr & mask) ? 1 : 0;
     }
     return 0;
 }

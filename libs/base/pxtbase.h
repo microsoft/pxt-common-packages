@@ -891,19 +891,40 @@ class RefImage : public RefObject {
     uint8_t *data() { return buffer->data; }
     int length() { return (int)buffer->length; }
 
-    ImageHeader *header() { return (ImageHeader*)buffer->data; }
+    ImageHeader *header() { return (ImageHeader *)buffer->data; }
     int pixLength() { return length() - sizeof(ImageHeader); }
 
     int width() { return header()->width; }
     int height() { return header()->height; }
-    int byteHeight();
     int wordHeight();
     int bpp() { return header()->bpp; }
 
     bool hasPadding() { return (height() & 0x7) != 0; }
 
     uint8_t *pix() { return header()->pixels; }
-    uint8_t *pix(int x, int y);
+
+    int byteHeight() {
+        if (bpp() == 1)
+            return (height() + 7) >> 3;
+        else if (bpp() == 4)
+            return ((height() * 4 + 31) >> 5) << 2;
+        else {
+            oops(21);
+            return -1;
+        }
+    }
+
+    uint8_t *pix(int x, int y) {
+        uint8_t *d = &pix()[byteHeight() * x];
+        if (y) {
+            if (bpp() == 1)
+                d += y >> 3;
+            else if (bpp() == 4)
+                d += y >> 1;
+        }
+        return d;
+    }
+
     uint8_t fillMask(color c);
     bool inRange(int x, int y);
     void clamp(int *x, int *y);
@@ -970,8 +991,12 @@ void registerGC(TValue *root, int numwords = 1);
 void unregisterGC(TValue *root, int numwords = 1);
 void registerGCPtr(TValue ptr);
 void unregisterGCPtr(TValue ptr);
-static inline void registerGCObj(RefObject *ptr) { registerGCPtr((TValue)ptr); }
-static inline void unregisterGCObj(RefObject *ptr) { unregisterGCPtr((TValue)ptr); }
+static inline void registerGCObj(RefObject *ptr) {
+    registerGCPtr((TValue)ptr);
+}
+static inline void unregisterGCObj(RefObject *ptr) {
+    unregisterGCPtr((TValue)ptr);
+}
 void gc(int flags);
 #else
 inline void registerGC(TValue *root, int numwords = 1) {}
