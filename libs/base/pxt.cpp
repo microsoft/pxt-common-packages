@@ -460,7 +460,7 @@ int getNumGlobals() {
 }
 
 String programName() {
-    return mkString(vmImg->infoHeader->name);
+    return mkString((char*)vmImg->infoHeader->name);
 }
 #else
 int templateHash() {

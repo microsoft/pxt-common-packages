@@ -1502,7 +1502,11 @@ int debugFlags;
 //%
 void *ptrOfLiteral(int offset);
 
-#ifndef PXT_VM
+#ifdef PXT_VM
+unsigned programSize() {
+    return 0;
+}
+#else
 //%
 unsigned programSize() {
     return bytecode[17] * 8;
