@@ -266,6 +266,16 @@ namespace control {
     export function ramSize() {
         return getConfigValue(DAL.CFG_RAM_BYTES, 0) || _ramSize();
     }
+
+    /** Runs the function and returns run time in microseconds. */
+    export function benchmark(f: () => void) {
+        const t0 = micros()
+        f()
+        let t = micros() - t0
+        if (t < 0)
+            t += 0x3fffffff
+        return t
+    }
 }
 
 /**
