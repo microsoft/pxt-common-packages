@@ -1,3 +1,5 @@
+#define _GNU_SOURCE 1
+
 #include "pxt.h"
 
 #include <sys/stat.h>
@@ -88,7 +90,11 @@ static const char *settingsDirectory() {
 #else
     asprintf(&name, "%s.data", initialArgv[0]);
 #endif
+#ifdef __WIN32__
+    mkdir(name);
+#else
     mkdir(name, 0777);
+#endif
     return name;
 }
 
