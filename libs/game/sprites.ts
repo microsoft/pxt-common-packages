@@ -15,6 +15,13 @@ Frame handlers:
 //% weight=99 color="#4B7BEC" icon="\uf1d8"
 //% groups='["Create", "Physics", "Effects", "Projectiles", "Overlaps", "Lifecycle"]'
 namespace sprites {
+    export class FollowingSprite {
+        constructor(
+            public self: Sprite,
+            public target: Sprite,
+            public rate: Fx8
+        ) { }
+    }
 
     /**
      * Create a new sprite from an image

@@ -787,6 +787,81 @@ class Sprite extends sprites.BaseSprite {
             .forEach(h => h.handler(this));
     }
 
+    /**
+     * Make this sprite follow the target sprite.
+     *
+     * @param target the sprite this one should follow
+     * @param rate The rate at which this sprite should move, eg: 100
+     */
+    //% group="Physics" weight=10
+    //% blockId=spriteFollowOOtherSprite block="make %sprite(mySprite) follow %target(otherSprite) || with rate %rate"
+    follow(target: Sprite, rate = 100) {
+        if (target === this) return;
+
+        const scene = game.currentScene();
+        if (!scene.followingSprites) {
+            scene.followingSprites = [];
+            game.currentScene().eventContext.registerFrameHandler(14, function () {
+                let deadSprites = false;
+                scene.followingSprites.forEach(fs => {
+                    if ((fs.self.flags | fs.target.flags) & sprites.Flag.Destroyed) {
+                        deadSprites = true;
+                        return;
+                    }
+
+                    let dx = Fx.sub(fs.target._x, fs.self._x);
+                    let dy = Fx.sub(fs.target._y, fs.self._y);
+
+                    if (Fx.toInt(Fx.abs(dx)) < 1 && Fx.toInt(Fx.abs(dy)) < 1) {
+                        fs.self.vx = 0;
+                        fs.self.vy = 0;
+                        return;
+                    }
+
+                    let dist: number = Math.sqrt(
+                        Fx.toInt(
+                            Fx.add(
+                                Fx.mul(dx, dx),
+                                Fx.mul(dy, dy)
+                            )
+                        )
+                    );
+
+                    fs.self._vx = Fx.idiv(
+                        Fx.mul(fs.rate, dx),
+                        dist
+                    );
+
+                    fs.self._vy = Fx.idiv(
+                        Fx.mul(fs.rate, dy),
+                        dist
+                    );
+                });
+
+                if (deadSprites) {
+                    scene.followingSprites = scene.followingSprites
+                        .filter(fs => !((fs.self.flags | fs.target.flags) & sprites.Flag.Destroyed));
+                }
+            })
+        }
+
+        if (target == undefined || rate == 0) {
+            scene.followingSprites = scene.followingSprites.filter(fs => fs.self.id === this.id);
+        }
+
+        const fs = scene.followingSprites.find(fs => fs.self.id == this.id);
+        if (!fs) {
+            scene.followingSprites.push(new sprites.FollowingSprite(
+                this,
+                target,
+                Fx8(rate)
+            ));
+        } else {
+            fs.target = target;
+            fs.rate = Fx8(rate);
+        }
+    }
+
     toString() {
         return `${this.id}(${this.x},${this.y})->(${this.vx},${this.vy})`;
     }
