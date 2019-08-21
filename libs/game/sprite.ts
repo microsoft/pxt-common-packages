@@ -638,7 +638,7 @@ class Sprite extends sprites.BaseSprite {
             this.lifespan -= dt * 1000;
             if (this.lifespan <= 0) {
                 this.lifespan = undefined;
-                this.destroy();
+                this._destroyCore();
             }
         }
         if ((this.flags & sprites.Flag.AutoDestroy)
@@ -764,13 +764,16 @@ class Sprite extends sprites.BaseSprite {
     destroy(effect?: effects.ParticleEffect, duration?: number) {
         if (this.flags & sprites.Flag.Destroyed)
             return;
+        this.flags |= sprites.Flag.Destroyed;
 
-        if (effect) {
+        if (effect)
             effect.destroy(this, duration);
-            return;
-        }
+        else
+            this._destroyCore();
+    }
 
-        this.flags |= sprites.Flag.Destroyed
+    _destroyCore() {
+        this.flags |= sprites.Flag.Destroyed;
         const scene = game.currentScene();
         // When current sprite is destroyed, destroys sayBubbleSprite if defined
         if (this.sayBubbleSprite) {
