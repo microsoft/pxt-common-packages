@@ -10,25 +10,26 @@ namespace scene {
         NeedsSorting = 1 << 1,
     }
 
-    export interface SpriteHandler {
-        kind: number;
-        handler: (sprite: Sprite) => void;
+    export class SpriteHandler {
+        constructor(
+            public kind: number,
+            public handler: (sprite: Sprite) => void
+        ) { }
     }
 
-    export interface OverlapHandler {
-        kind: number;
-        otherKind: number;
-        handler: (sprite: Sprite, otherSprite: Sprite) => void;
+    export class OverlapHandler {
+        constructor(
+            public kind: number,
+            public otherKind: number,
+            public handler: (sprite: Sprite, otherSprite: Sprite) => void
+        ) { }
     }
 
-    export interface CollisionHandler {
-        kind: number;
-        handler: (sprite: Sprite) => void
-    }
-
-    export interface GameForeverHandlers {
-        lock: boolean;
-        handler: () => void;
+    export class GameForeverHandler {
+        public lock: boolean;
+        constructor(
+            public handler: () => void
+        ) { }
     }
 
     // frame handler priorities
@@ -65,8 +66,8 @@ namespace scene {
         createdHandlers: SpriteHandler[];
         overlapHandlers: OverlapHandler[];
         overlapMap: SparseArray<number[]>;
-        collisionHandlers: CollisionHandler[][];
-        gameForeverHandlers: GameForeverHandlers[];
+        collisionHandlers: SpriteHandler[][];
+        gameForeverHandlers: GameForeverHandler[];
         particleSources: particles.ParticleSource[];
         controlledSprites: controller.ControlledSprite[][];
 

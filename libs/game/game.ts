@@ -281,10 +281,9 @@ namespace game {
             });
         }
 
-        game.currentScene().gameForeverHandlers.push({
-            handler: action,
-            lock: false
-        });
+        game.currentScene().gameForeverHandlers.push(
+            new scene.GameForeverHandler(action)
+        );
     }
 
     /**

@@ -196,11 +196,13 @@ namespace controller {
         return _players.filter(ctrl => !!ctrl);
     }
 
-    export interface ControlledSprite {
-        s: Sprite;
-        vx: number;
-        vy: number;
-        _inputLastFrame: boolean;
+    export class ControlledSprite {
+        public _inputLastFrame: boolean;
+        constructor(
+            public s: Sprite,
+            public vx: number,
+            public vy: number
+        ) { }
     }
 
     export function _moveSprites() {
@@ -327,7 +329,7 @@ namespace controller {
             if (!this._controlledSprites) this._controlledSprites = [];
             let cp = this._controlledSprites.find(cp => cp.s.id == sprite.id);
             if (!cp) {
-                cp = { s: sprite, vx: vx, vy: vy, _inputLastFrame: false }
+                cp = new ControlledSprite(sprite, vx, vy);
                 this._controlledSprites.push(cp);
             }
             if (cp.vx && vx == 0) {
