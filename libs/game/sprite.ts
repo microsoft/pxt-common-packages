@@ -830,7 +830,7 @@ class Sprite extends sprites.BaseSprite {
                     }
 
                     const distance = Math.sqrt(dx * dx + dy * dy);
-                    const turnPercentage = Math.min(fs.turnRate * timeDiff, 1);
+                    const turnPercentage = Math.clamp(0, 1, fs.turnRate * timeDiff);
 
                     fs.self.vx += (fs.rate * dx / distance - fs.self.vx) * turnPercentage;
                     fs.self.vy += (fs.rate * dy / distance - fs.self.vy) * turnPercentage;
