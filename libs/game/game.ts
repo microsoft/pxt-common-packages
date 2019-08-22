@@ -282,10 +282,7 @@ namespace game {
         }
 
         game.currentScene().gameForeverHandlers.push(
-            new scene.GameForeverHandlers(
-                action,
-                false
-            )
+            new scene.GameForeverHandler(action)
         );
     }
 

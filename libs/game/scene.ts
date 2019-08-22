@@ -25,10 +25,10 @@ namespace scene {
         ) { }
     }
 
-    export class GameForeverHandlers {
+    export class GameForeverHandler {
+        public lock: boolean;
         constructor(
-            public handler: () => void,
-            public lock: boolean
+            public handler: () => void
         ) { }
     }
 
@@ -67,7 +67,7 @@ namespace scene {
         overlapHandlers: OverlapHandler[];
         overlapMap: SparseArray<number[]>;
         collisionHandlers: SpriteHandler[][];
-        gameForeverHandlers: GameForeverHandlers[];
+        gameForeverHandlers: GameForeverHandler[];
         particleSources: particles.ParticleSource[];
         controlledSprites: controller.ControlledSprite[][];
 
