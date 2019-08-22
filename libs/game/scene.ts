@@ -34,9 +34,10 @@ namespace scene {
 
     // frame handler priorities
     export const CONTROLLER_PRIORITY = 8;
+    export const UPDATE_CONTROLLER_PRIORITY = 13;
+    export const FOLLOW_SPRITE_PRIORITY = 14;
     export const PHYSICS_PRIORITY = 15;
     export const ANIMATION_UPDATE_PRIORITY = 15;
-    export const UPDATE_CONTROLLER_PRIORITY = 13;
     export const CONTROLLER_SPRITES_PRIORITY = 13;
     export const UPDATE_INTERVAL_PRIORITY = 19;
     export const UPDATE_PRIORITY = 20;
@@ -70,6 +71,7 @@ namespace scene {
         gameForeverHandlers: GameForeverHandler[];
         particleSources: particles.ParticleSource[];
         controlledSprites: controller.ControlledSprite[][];
+        followingSprites: sprites.FollowingSprite[]
 
         private _millis: number;
         private _data: any;
@@ -109,6 +111,7 @@ namespace scene {
             })
             // controller update 13
             this.eventContext.registerFrameHandler(CONTROLLER_SPRITES_PRIORITY, controller._moveSprites);
+            // sprite following 14
             // apply physics and collisions 15
             this.eventContext.registerFrameHandler(PHYSICS_PRIORITY, () => {
                 control.enablePerfCounter("physics and collisions")
