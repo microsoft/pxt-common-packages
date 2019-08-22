@@ -605,7 +605,7 @@ namespace pxsim.ImageMethods {
         if (!img.inRange(x, 0) || !img.inRange(fromX, 0) || fromH <= 0)
             return
         let fy = 0
-        let stepFY = from._width / fromH
+        let stepFY = ((from._width << 16) / fromH) | 0
         let endY = y + fromH
         if (endY > img._height)
             endY = img._height
@@ -614,7 +614,7 @@ namespace pxsim.ImageMethods {
             y = 0
         }
         while (y < endY) {
-            img.data[img.pix(x, y)] = from.data[from.pix(fromX, fy | 0)]
+            img.data[img.pix(x, y)] = from.data[from.pix(fromX, fy >> 16)]
             y++
             fy += stepFY
         }
