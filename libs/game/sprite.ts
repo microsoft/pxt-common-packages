@@ -823,21 +823,17 @@ class Sprite extends sprites.BaseSprite {
                     const dy = fs.target.y - fs.self.y;
 
                     // already right on top of target; stop moving
-                    if (Math.abs(dx) < 1 && Math.abs(dy) < 1) {
+                    if (Math.abs(dx) < 2 && Math.abs(dy) < 2) {
                         fs.self.vx = 0;
                         fs.self.vy = 0;
                         return;
                     }
 
                     const distance = Math.sqrt(dx * dx + dy * dy);
-
                     const turnPercentage = Math.min(fs.turnRate * timeDiff, 1);
-                    
-                    const targetVx = fs.rate * dx / distance;
-                    const targetVy = fs.rate * dy / distance;
 
-                    fs.self.vx += (targetVx - fs.self.vx) * turnPercentage;
-                    fs.self.vy += (targetVy - fs.self.vy) * turnPercentage;
+                    fs.self.vx += (fs.rate * dx / distance - fs.self.vx) * turnPercentage;
+                    fs.self.vy += (fs.rate * dy / distance - fs.self.vy) * turnPercentage;
                 });
 
                 lastTime = currTime;
