@@ -794,57 +794,56 @@ class Sprite extends sprites.BaseSprite {
      * Make this sprite follow the target sprite.
      *
      * @param target the sprite this one should follow
-     * @param rate The rate at which this sprite should move, eg: 100
+     * @param speed the rate at which this sprite should move, eg: 100
+     * @param turnRate how quickly the sprite should turn while following, eg: 3
      */
     //% group="Physics" weight=10
     //% blockId=spriteFollowOtherSprite
-    //% block="make %sprite(myEnemy) follow %target=variables_get(mySprite) || with rate %rate"
-    follow(target: Sprite, rate = 100) {
+    //% block="set %sprite(myEnemy) follow %target=variables_get(mySprite) || with speed %speed turn rate %turnRate"
+    follow(target: Sprite, speed = 100, turnRate = 3) {
         if (target === this) return;
 
         const sc = game.currentScene();
         if (!sc.followingSprites) {
             sc.followingSprites = [];
-            sc.eventContext.registerFrameHandler(scene.FOLLOW_SPRITE_PRIORITY, function () {
-                let deadSprites = false;
+            let lastTime = game.runtime();
+            sc.eventContext.registerFrameHandler(scene.FOLLOW_SPRITE_PRIORITY, () => {
+                const currTime = game.runtime();
+                const timeDiff = (currTime - lastTime) / 1000;
+                let destroyedSprites = false;
+
                 sc.followingSprites.forEach(fs => {
                     // one of the involved sprites has been destroyed, so exit and remove that later
                     if ((fs.self.flags | fs.target.flags) & sprites.Flag.Destroyed) {
-                        deadSprites = true;
+                        destroyedSprites = true;
                         return;
                     }
 
-                    let dx = Fx.sub(Fx8(fs.target.x), Fx8(fs.self.x));
-                    let dy = Fx.sub(Fx8(fs.target.y), Fx8(fs.self.y));
+                    const dx = fs.target.x - fs.self.x;
+                    const dy = fs.target.y - fs.self.y;
 
                     // already right on top of target; stop moving
-                    if (Fx.toInt(Fx.abs(dx)) < 1 && Fx.toInt(Fx.abs(dy)) < 1) {
+                    if (Math.abs(dx) < 1 && Math.abs(dy) < 1) {
                         fs.self.vx = 0;
                         fs.self.vy = 0;
                         return;
                     }
 
-                    let distance: number = Math.sqrt(
-                        Fx.toInt(
-                            Fx.add(
-                                Fx.mul(dx, dx),
-                                Fx.mul(dy, dy)
-                            )
-                        )
-                    );
+                    const distance = Math.sqrt(dx * dx + dy * dy);
 
-                    fs.self._vx = Fx.idiv(
-                        Fx.mul(fs.rate, dx),
-                        distance
-                    );
+                    const turnPercentage = Math.min(fs.turnRate * timeDiff, 1);
+                    
+                    const targetVx = fs.rate * dx / distance;
+                    const targetVy = fs.rate * dy / distance;
 
-                    fs.self._vy = Fx.idiv(
-                        Fx.mul(fs.rate, dy),
-                        distance
-                    );
+                    fs.self.vx += (targetVx - fs.self.vx) * turnPercentage;
+                    fs.self.vy += (targetVy - fs.self.vy) * turnPercentage;
                 });
 
-                if (deadSprites) {
+                lastTime = currTime;
+
+                // remove followers where one has been destroyed
+                if (destroyedSprites) {
                     sc.followingSprites = sc.followingSprites
                         .filter(fs => !((fs.self.flags | fs.target.flags) & sprites.Flag.Destroyed));
                 }
@@ -853,7 +852,7 @@ class Sprite extends sprites.BaseSprite {
 
         const fs = sc.followingSprites.find(fs => fs.self.id == this.id);
 
-        if (!target || !rate) {
+        if (!target || !speed) {
             if (fs) {
                 sc.followingSprites.removeElement(fs);
             }
@@ -861,11 +860,13 @@ class Sprite extends sprites.BaseSprite {
             sc.followingSprites.push(new sprites.FollowingSprite(
                 this,
                 target,
-                Fx8(rate)
+                speed,
+                turnRate
             ));
         } else {
             fs.target = target;
-            fs.rate = Fx8(rate);
+            fs.rate = speed;
+            fs.turnRate = turnRate;
         }
     }
 

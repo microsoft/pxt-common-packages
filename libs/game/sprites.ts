@@ -19,7 +19,8 @@ namespace sprites {
         constructor(
             public self: Sprite,
             public target: Sprite,
-            public rate: Fx8
+            public rate: number,
+            public turnRate: number
         ) { }
     }
 
