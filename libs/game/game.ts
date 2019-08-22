@@ -276,7 +276,7 @@ namespace game {
                             });
                         }
                     });
-                    pause(30);
+                    pause(20);
                 }
             });
         }
