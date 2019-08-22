@@ -137,6 +137,7 @@ void initRuntime();
 void sendSerial(const char *data, int len);
 void setSendToUART(void (*f)(const char *, int));
 int getSerialNumber();
+uint64_t getLongSerialNumber();
 void registerWithDal(int id, int event, Action a, int flags = 16); // EVENT_LISTENER_DEFAULT_FLAGS
 void runInParallel(Action a);
 void runForever(Action a);
@@ -156,6 +157,7 @@ void dumpDmesg();
 #define TAG_NULL TAGGED_SPECIAL(1) // 6
 #define TAG_NAN TAGGED_SPECIAL(3)  // 14
 #define TAG_NUMBER(n) (TNumber)(void *)(((uintptr_t)(uint32_t)(n) << 1) | 1)
+#define TAG_NON_VALUE TAGGED_SPECIAL(4) // 18; doesn't represent any JS value
 
 #ifdef PXT_VM
 inline bool isEncodedDouble(uint64_t v) {
@@ -266,6 +268,8 @@ typedef enum {
     PANIC_STACK_OVERFLOW = 916,
     PANIC_BLOCKING_TO_STRING = 917,
     PANIC_VM_ERROR = 918,
+    PANIC_SETTINGS_CLEARED = 920,
+    PANIC_SETTINGS_OVERLOAD = 921,
 
     PANIC_CAST_FIRST = 980,
     PANIC_CAST_FROM_UNDEFINED = 980,
@@ -275,6 +279,8 @@ typedef enum {
     PANIC_CAST_FROM_OBJECT = 984,
     PANIC_CAST_FROM_FUNCTION = 985,
     PANIC_CAST_FROM_NULL = 989,
+
+    PANIC_UNHANDLED_EXCEPTION = 999,
 
 } PXT_PANIC;
 
@@ -303,15 +309,18 @@ static inline TValue runAction0(Action a) {
 }
 
 class RefAction;
+class BoxedString;
 struct VTable;
 
 //%
 Action mkAction(int totallen, RefAction *act);
-//%
+//% expose
 int templateHash();
-//%
+//% expose
 int programHash();
-//%
+//% expose
+BoxedString *programName();
+//% expose
 unsigned programSize();
 //%
 int getNumGlobals();
@@ -655,7 +664,6 @@ class RefCollection : public RefObject {
     TValue *getData() { return head.getData(); }
 };
 
-class BoxedString;
 class RefMap : public RefObject {
   public:
     Segment keys;
@@ -849,41 +857,74 @@ class BoxedBuffer : public RefObject {
 #define PXT_CREATE_BUFFER(data, len) pxt::mkBuffer(data, len)
 #endif
 
+// Legacy format:
 // the first byte of data indicates the format - currently 0xE1 or 0xE4 to 1 or 4 bit bitmaps
 // second byte indicates width in pixels
 // third byte indicates the height (which should also match the size of the buffer)
 // just like ordinary buffers, these can be layed out in flash
-class RefImage : public RefObject {
-    uintptr_t _buffer;
-    uint8_t _data[0];
 
+// Current format:
+// 87 BB WW WW HH HH 00 00 DATA
+// that is: 0x87, 0x01 or 0x04 - bpp, width in little endian, height, 0x00, 0x00 followed by data
+// for 4 bpp images, rows are word-aligned (as in legacy)
+
+#define IMAGE_HEADER_MAGIC 0x87
+
+struct ImageHeader {
+    uint8_t magic;
+    uint8_t bpp;
+    uint16_t width;
+    uint16_t height;
+    uint16_t padding;
+    uint8_t pixels[0];
+};
+
+class RefImage : public RefObject {
   public:
+    BoxedBuffer *buffer;
+
     RefImage(BoxedBuffer *buf);
     RefImage(uint32_t sz);
 
-    bool hasBuffer() { return !(_buffer & 1); }
-    BoxedBuffer *buffer() { return hasBuffer() ? (BoxedBuffer *)_buffer : NULL; }
     void setBuffer(BoxedBuffer *b);
-    bool isDirty() { return (_buffer & 3) == 3; }
-    void clearDirty() {
-        if (isDirty())
-            _buffer &= ~2;
+
+    uint8_t *data() { return buffer->data; }
+    int length() { return (int)buffer->length; }
+
+    ImageHeader *header() { return (ImageHeader *)buffer->data; }
+    int pixLength() { return length() - sizeof(ImageHeader); }
+
+    int width() { return header()->width; }
+    int height() { return header()->height; }
+    int wordHeight();
+    int bpp() { return header()->bpp; }
+
+    bool hasPadding() { return (height() & 0x7) != 0; }
+
+    uint8_t *pix() { return header()->pixels; }
+
+    int byteHeight() {
+        if (bpp() == 1)
+            return (height() + 7) >> 3;
+        else if (bpp() == 4)
+            return ((height() * 4 + 31) >> 5) << 2;
+        else {
+            oops(21);
+            return -1;
+        }
     }
 
-    uint8_t *data() { return hasBuffer() ? buffer()->data : _data; }
-    int length() { return (int)(hasBuffer() ? buffer()->length : (_buffer >> 2)); }
-    int pixLength() { return length() - 4; }
+    uint8_t *pix(int x, int y) {
+        uint8_t *d = &pix()[byteHeight() * x];
+        if (y) {
+            if (bpp() == 1)
+                d += y >> 3;
+            else if (bpp() == 4)
+                d += y >> 1;
+        }
+        return d;
+    }
 
-    int height();
-    int width();
-    int byteHeight();
-    int wordHeight();
-    int bpp();
-
-    bool hasPadding() { return (height() & 0x1f) != 0; }
-
-    uint8_t *pix() { return data() + 4; }
-    uint8_t *pix(int x, int y);
     uint8_t fillMask(color c);
     bool inRange(int x, int y);
     void clamp(int *x, int *y);
@@ -940,13 +981,22 @@ unsigned getRandom(unsigned max);
 
 ValType valType(TValue v);
 
+// this is equivalent to JS `throw v`; it will leave
+// the current function(s), all the way until the nearest try block and
+// ignore all destructors (think longjmp())
+void throwValue(TValue v);
+
 #ifdef PXT_GC
 void registerGC(TValue *root, int numwords = 1);
 void unregisterGC(TValue *root, int numwords = 1);
 void registerGCPtr(TValue ptr);
 void unregisterGCPtr(TValue ptr);
-static inline void registerGCObj(RefObject *ptr) { registerGCPtr((TValue)ptr); }
-static inline void unregisterGCObj(RefObject *ptr) { unregisterGCPtr((TValue)ptr); }
+static inline void registerGCObj(RefObject *ptr) {
+    registerGCPtr((TValue)ptr);
+}
+static inline void unregisterGCObj(RefObject *ptr) {
+    unregisterGCPtr((TValue)ptr);
+}
 void gc(int flags);
 #else
 inline void registerGC(TValue *root, int numwords = 1) {}
@@ -962,9 +1012,17 @@ struct StackSegment {
     StackSegment *next;
 };
 
+#define NUM_TRY_FRAME_REGS 3
+struct TryFrame {
+    TryFrame *parent;
+    uintptr_t registers[NUM_TRY_FRAME_REGS];
+};
+
 struct ThreadContext {
     TValue *globals;
     StackSegment stack;
+    TryFrame *tryFrame;
+    TValue thrownValue;
 #ifdef PXT_GC_THREAD_LIST
     ThreadContext *next;
     ThreadContext *prev;

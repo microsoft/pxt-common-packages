@@ -12,6 +12,14 @@ namespace control {
     }
 
     /**
+    * Gets current time in microseconds. Overflows every ~18 minutes.
+    */
+    //%
+    int micros() {
+        return current_time_us() & 0x3fffffff;
+    }
+
+    /**
     * Used internally
     */
     //%
@@ -63,6 +71,16 @@ namespace control {
     //% help=control/device-serial-number
     int deviceSerialNumber() {
         return pxt::getSerialNumber();
+    }
+
+    /**
+    * Derive a unique, consistent 64-bit serial number of this device from internal data.
+    */
+    //% blockId="control_device_long_serial_number" block="device long serial number" weight=9
+    //% help=control/device-long-serial-number
+    Buffer deviceLongSerialNumber() {
+        uint64_t serial_num = pxt::getLongSerialNumber();
+        return mkBuffer((uint8_t*)&serial_num, sizeof(uint64_t));
     }
 
     /**

@@ -183,8 +183,16 @@ int getSerialNumber() {
     return device.getSerialNumber();
 }
 
+uint64_t getLongSerialNumber() {
+    return device.getSerialNumber();
+}
+
 int current_time_ms() {
     return system_timer_current_time();
+}
+
+uint64_t current_time_us() {
+    return system_timer_current_time_us();
 }
 
 #ifdef PXT_GC
@@ -225,6 +233,7 @@ void gcProcessStacks(int flags) {
         auto ctx = (ThreadContext *)fib->user_data;
         if (!ctx)
             continue;
+        gcProcess(ctx->thrownValue);
         for (auto seg = &ctx->stack; seg; seg = seg->next) {
             auto ptr = (TValue *)threadAddressFor(fib, seg->top);
             auto end = (TValue *)threadAddressFor(fib, seg->bottom);

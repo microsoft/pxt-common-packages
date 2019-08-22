@@ -39,8 +39,8 @@ namespace jacdac.dbg {
         `;
 
     enum Mode {
-        None,
-        Services,
+        Diagnostics,
+        Packets,
         Devices
     }
 
@@ -51,29 +51,44 @@ namespace jacdac.dbg {
         private debugFont: image.Font;
         private marginx: number;
         private marginy: number;
+        private debuggerService: jacdac.DebuggerService;
+        private hideControl: boolean
 
         constructor() {
             this.debugFont = image.font5;
             this.marginy = 2;
             this.marginx = 4;
-            this.mode = Mode.None;
+            this.mode = Mode.Diagnostics;
+            this.hideControl = false;
             this.consoleVisible = game.consoleOverlay.isVisible();
-        }
+            jacdac.registerDebugViews();
+            this.debuggerService = new jacdac.DebuggerService();
+            this.debuggerService.paintPacket = (packet: DebuggerStruct) => {
+                if (packet.pkt.device_address == 0 && this.hideControl)
+                    return;
 
-        showServices() {
-            this.renderServices();
-        }
+                if (this.mode == Mode.Packets)
+                    console.log(`${packet.pkt.device_address}[${(packet.view) ? packet.view.name : "??"}]: ${(packet.view) ? packet.view.renderPacket(packet.pkt) : packet.pkt.data.toHex()}`)
+            }
 
-        renderServices() {
-            const devices = jacdac.devices();
-            console.log(`${devices.length} devices (${jacdac.isConnected() ? "connected" : "disconnected"})`)
-            devices.forEach(device => {
-                const services = device.services;
-                services.forEach(service => {
-                    const serviceClass = service.service_class;
-                })
-            })
-            console.log("");
+            this.debuggerService.paintDevices = (devices: JDDevice[]) => {
+                if (this.mode == Mode.Devices) {
+                    game.consoleOverlay.clear();
+                    console.log(`${devices.length} device(s)`)
+                    console.log(`-----------------------`);
+                    devices.forEach(d => {
+                        let serviceString = ""
+                        for (let s of d.services) {
+                            const view = DebugView.find(s.service_class);
+                            serviceString += ((view) ? view.name : s.service_class.toString()) + " ";
+                        }
+
+                        console.log(`id: ${d.device_name || d.udid.toHex()}\r\naddress: ${d.device_address}\r\n\tServices\r\n\t----\r\n\t${serviceString}`)
+                        console.log(`-----------------------`);
+                    });
+                    console.log("");
+                }
+            }
         }
 
         makeDiagnostic(label:string, value:string, horizontalOffset: number, color: number, barHeight: number)
@@ -91,6 +106,8 @@ namespace jacdac.dbg {
         }
 
         paintDiagnosticsBar(){
+            if (this.mode != Mode.Diagnostics)
+                return 0;
             const diag = jacdac.diagnostics();
             let background = 1
             if (diag.bus_state)
@@ -108,23 +125,6 @@ namespace jacdac.dbg {
             return height
         }
 
-        showDevices() {
-            const devices = jacdac.devices();
-            console.log(`${devices.length} devices`)
-            devices.forEach(d => console.log(d.toString()));
-            console.log("");
-        }
-
-        refresh() {
-            let verticalOffset = this.paintDiagnosticsBar()
-            if (!jacdac.isConnected())
-                screen.print("disconnected", this.marginx, verticalOffset, 4, this.debugFont);
-            switch (this.mode) {
-                case Mode.Services: this.showServices(); break;
-                case Mode.Devices: this.showDevices(); break;
-            }
-        }
-
         stop() {
             if (!this.started) return;
             this.started = false;
@@ -132,24 +132,33 @@ namespace jacdac.dbg {
             game.popScene();
             game.consoleOverlay.setVisible(false);
 
-            // controller._setUserEventsEnabled(true);
+            controller._setUserEventsEnabled(true);
         }
 
         start() {
             game.pushScene();
-            // controller._setUserEventsEnabled(false);
+            controller._setUserEventsEnabled(false);
             game.onShade(() => {
                 this.paintDiagnosticsBar();
             });
             controller.left.onEvent(SYSTEM_KEY_DOWN, () => {
-                this.mode = Mode.Services;
+                this.mode = Mode.Packets;
                 game.consoleOverlay.clear();
-                this.refresh();
             })
             controller.right.onEvent(SYSTEM_KEY_DOWN, () => {
                 this.mode = Mode.Devices;
                 game.consoleOverlay.clear();
-                this.refresh();
+            })
+            controller.up.onEvent(SYSTEM_KEY_DOWN, () => {
+                this.mode = Mode.Diagnostics;
+                game.consoleOverlay.clear();
+                console.log(`jacdac dashboard`);
+                console.log(` LEFT for packets`)
+                console.log(` RIGHT for devices`)
+                console.log(` B for exit`)
+            })
+            controller.down.onEvent(SYSTEM_KEY_DOWN, () => {
+                this.hideControl = !this.hideControl;
             })
             controller.B.onEvent(SYSTEM_KEY_DOWN, () => {
                 // done
@@ -160,12 +169,12 @@ namespace jacdac.dbg {
             })
 
             game.consoleOverlay.setVisible(true);
-            // console.log(`jacdac dashboard`);
-            // console.log(` LEFT for services`)
-            // console.log(` RIGHT for devices`)
-            // console.log(` A console on/off`)
-            // console.log(` B for exit`)
-            this.refresh();
+            console.log(`jacdac dashboard`);
+            console.log(` LEFT for packets`)
+            console.log(` RIGHT for devices`)
+            console.log(` UP for diagnostics`)
+            console.log(` DOWN to hide control packets`)
+            console.log(` B for exit`)
         }
     }
 

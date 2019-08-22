@@ -115,7 +115,7 @@ enum EspCommand {
 #define XASSERT(cond)                                                                              \
     do {                                                                                           \
         if (!(cond))                                                                               \
-            target_panic(920);                                                                     \
+            target_panic(950);                                                                     \
     } while (0)
 
 struct CmdHeader {

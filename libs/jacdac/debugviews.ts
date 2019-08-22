@@ -4,8 +4,8 @@ namespace jacdac {
             super(name, driverClass);
         }
 
-        renderControlPacket(packet: JDControlPacket): string {
-            const data = packet.data;
+        renderControlPacket(device: JDDevice, service_information: JDServiceInformation): string {
+            const data = service_information.data;
             const state = data[0];
             switch (state) {
                 case SensorState.Stopping: return "stopping";
@@ -14,7 +14,7 @@ namespace jacdac {
             }
         }
 
-        renderPacket(device: JDDevice, packet: JDPacket): string {
+        renderPacket(packet: JDPacket): string {
             const data = packet.data;
             const cmd = data[0];
             switch (cmd) {
@@ -54,7 +54,7 @@ namespace jacdac {
             super("light", jacdac.LIGHT_DEVICE_CLASS);
         }
 
-        renderPacket(device: JDDevice, packet: JDPacket) {
+        renderPacket(packet: JDPacket) {
             const data = packet.data;
             const cmd = data[0];
             const payload = data.slice(1, data.length - 1);
@@ -78,7 +78,7 @@ namespace jacdac {
             super("music", jacdac.MUSIC_DEVICE_CLASS);
         }
 
-        renderPacket(device: JDDevice, packet: JDPacket) {
+        renderPacket(packet: JDPacket) {
             const data = packet.data;
             const cmd = data[0];
             switch (cmd) {
@@ -94,18 +94,16 @@ namespace jacdac {
         constructor() {
             super("log", jacdac.LOGGER_DEVICE_CLASS);
         }
-
-        renderControlPacket(cp: JDControlPacket): string {
-            const data = cp.data;
+        renderControlPacket(device: JDDevice, service_information: JDServiceInformation): string {
+            const data = service_information.data;
             return `${["off", "broad", "listen"][data[0]]} ${data[1]}`;
         }
 
-        renderPacket(device: JDDevice, packet: JDPacket) {
+        renderPacket(packet: JDPacket) {
             const data = packet.data;
             const pri = data[0];
             const str = bufferToString(data, 1);
-            const name = device.device_name || "?";
-            return `${pri}:${str} ${name}`;
+            return `${pri}:${str}`;
         }
     }
 
@@ -114,7 +112,7 @@ namespace jacdac {
             super(MessageBusService.NAME, jacdac.MESSAGE_BUS_DEVICE_CLASS);
         }
 
-        renderPacket(device: JDDevice, packet: JDPacket): string {
+        renderPacket(packet: JDPacket): string {
             const data = packet.data;
             return `${data.getNumber(NumberFormat.UInt16LE, 0)} ${data.getNumber(NumberFormat.UInt16LE, 2)}`;
         }
@@ -227,23 +225,23 @@ namespace jacdac {
         }
     }
 
-    class PixelDebugView extends ActuatorDebugView {
-        constructor() {
-            super("pixel", jacdac.PIXEL_DEVICE_CLASS);
-        }
-    }
+    // class PixelDebugView extends ActuatorDebugView {
+    //     constructor() {
+    //         super("pixel", jacdac.PIXEL_DEVICE_CLASS);
+    //     }
+    // }
 
     class ControllerDebugView extends DebugView {
         constructor() {
             super("ctrl", jacdac.CONTROLLER_DEVICE_CLASS);
         }
 
-        renderControlPacket(cp: JDControlPacket): string {
-            const data = cp.data;
+        renderControlPacket(device: JDDevice, service_information: JDServiceInformation): string {
+            const data = service_information.data;
             return this.renderData(data);
         }
 
-        renderPacket(device: JDDevice, packet: JDPacket): string {
+        renderPacket(packet: JDPacket): string {
             const data = packet.data;
             return this.renderData(data);
         }
@@ -282,7 +280,7 @@ namespace jacdac {
         new SwitchDebugView();
         new ThermometerDebugView();
         new TouchDebugView();
-        new PixelDebugView();
+        // new PixelDebugView();
         new ControllerDebugView();
     }
 }

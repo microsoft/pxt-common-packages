@@ -19,8 +19,7 @@ namespace storage {
     //% parts="storage" 
     //% blockId="storage_append_line" block="append file $filename with line $data"
     export function appendLine(filename: string, data: string): void {
-        append(filename, data);
-        append(filename, NEW_LINE);
+        append(filename, data + NEW_LINE);
     }
 
     /** 
@@ -50,6 +49,9 @@ namespace storage {
     //% parts="storage"
     //% blockId="storage_read" block="read file $filename"
     export function read(filename: string) {
-        return readAsBuffer(filename).toString();
+        const buf = readAsBuffer(filename);
+        if (!buf)
+            return null;
+        return buf.toString();
     }
 }

@@ -45,6 +45,10 @@
         "libs/esp32spi",
         "libs/net",
         "libs/mqtt",
-        "libs/azureiot"
+        "libs/azureiot",
+        "libs/color",
+        "libs/game",
+        "libs/storyboard",
+        "libs/rotary-encoder"
     ]
 }

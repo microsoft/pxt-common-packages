@@ -22,6 +22,7 @@
     "public": true,
     "dependencies": {
         "core": "file:../core",
+        "color": "file:../color",
         "jacdac": "file:../jacdac"
     }
 }

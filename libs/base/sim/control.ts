@@ -51,6 +51,11 @@ namespace pxsim.control {
         if (!n) n = 42;
         return n;
     }
+    export function deviceLongSerialNumber(): RefBuffer {
+        let b = control.createBuffer(8);
+        BufferMethods.setNumber(b, BufferMethods.NumberFormat.UInt32LE, 0, deviceSerialNumber())
+        return b;
+    }
     export function deviceDalVersion(): string {
         return "0.0.0";
     }
@@ -74,6 +79,10 @@ namespace pxsim.control {
 
     export function millis(): number {
         return runtime.runningTime();
+    }
+
+    export function micros(): number {
+        return runtime.runningTimeUs() & 0x3fffffff;
     }
 
     export function delayMicroseconds(us: number) {

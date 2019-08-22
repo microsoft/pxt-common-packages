@@ -254,13 +254,13 @@ String mkStringCore(const char *data, int len) {
     if (vt == &string_skiplist16_vt) {
         r = new (gcAllocate(sizeof(void *) + sizeof(r->skip))) BoxedString(vt);
         r->skip.list = NULL;
-        registerGCPtr((TValue)r);
+        registerGCObj(r);
         r->skip.size = len;
         r->skip.length = utf8Len(data, len);
         r->skip.list = NULL; // in case gc triggers below
         r->skip.list = (uint16_t *)gcAllocateArray(NUM_SKIP_ENTRIES(r) * 2 + len + 1);
         setupSkipList(r, data);
-        unregisterGCPtr((TValue)r);
+        unregisterGCObj(r);
     } else
 #endif
     {
@@ -346,12 +346,14 @@ Buffer mkBuffer(const uint8_t *data, int len) {
 
 static unsigned random_value = 0xC0DA1;
 
+//%
 void seedRandom(unsigned seed) {
     random_value = seed;
 }
 
+//%
 void seedAddRandom(unsigned seed) {
-    random_value = (random_value * 0x1000193) ^ seed;
+    random_value ^= 0xCA2557CB * seed;
 }
 
 unsigned getRandom(unsigned max) {
@@ -498,11 +500,11 @@ String concat(String s, String other) {
 
         // allocate [r] first, and keep it alive
         String r = new (gcAllocate(3 * sizeof(void *))) BoxedString(&string_cons_vt);
-        registerGCPtr((TValue)r);
+        registerGCObj(r);
         r->cons.left = s->cons.left;
         // this concat() might trigger GC
         r->cons.right = concat(s->cons.right, other);
-        unregisterGCPtr((TValue)r);
+        unregisterGCObj(r);
         return r;
     }
 #endif
@@ -1500,7 +1502,11 @@ int debugFlags;
 //%
 void *ptrOfLiteral(int offset);
 
-#ifndef PXT_VM
+#ifdef PXT_VM
+unsigned programSize() {
+    return 0;
+}
+#else
 //%
 unsigned programSize() {
     return bytecode[17] * 8;
@@ -1745,7 +1751,7 @@ PXT_DEF_STRING(sNumberTp, "number")
 PXT_DEF_STRING(sFunctionTp, "function")
 PXT_DEF_STRING(sUndefinedTp, "undefined")
 
-//%
+//% expose
 String typeOf(TValue v) {
     switch (valType(v)) {
     case ValType::Undefined:
@@ -1982,5 +1988,65 @@ void stopPerfCounter(PerfCounters n) {
     c->numstops++;
 }
 #endif
+
+// Exceptions
+
+#ifndef PXT_EXN_CTX
+#define PXT_EXN_CTX() getThreadContext()
+#endif
+
+typedef void (*RestoreStateType)(TryFrame *, ThreadContext *);
+#ifndef pxt_restore_exception_state
+#define pxt_restore_exception_state ((RestoreStateType)(((uintptr_t *)bytecode)[14]))
+#endif
+
+//%
+TryFrame *beginTry() {
+    auto ctx = PXT_EXN_CTX();
+    auto frame = (TryFrame *)app_alloc(sizeof(TryFrame));
+    frame->parent = ctx->tryFrame;
+    ctx->tryFrame = frame;
+    return frame;
+}
+
+//% expose
+void endTry() {
+    auto ctx = PXT_EXN_CTX();
+    auto f = ctx->tryFrame;
+    if (!f) oops(51);
+    ctx->tryFrame = f->parent;
+    app_free(f);
+}
+
+//% expose
+void throwValue(TValue v) {
+    auto ctx = PXT_EXN_CTX();
+    auto f = ctx->tryFrame;
+    if (!f) target_panic(PANIC_UNHANDLED_EXCEPTION);
+    ctx->tryFrame = f->parent;
+    TryFrame copy = *f;
+    app_free(f);
+    ctx->thrownValue = v;
+    pxt_restore_exception_state(&copy, ctx);
+}
+
+//% expose
+TValue getThrownValue() {
+    auto ctx = PXT_EXN_CTX();
+    auto v = ctx->thrownValue;
+    ctx->thrownValue = TAG_NON_VALUE;
+    if (v == TAG_NON_VALUE)
+        oops(51);
+    return v;
+}
+
+//% expose
+void endFinally() {
+    auto ctx = PXT_EXN_CTX();
+    if (ctx->thrownValue == TAG_NON_VALUE)
+        return;
+    throwValue(getThrownValue());
+}
+
 
 } // namespace pxt

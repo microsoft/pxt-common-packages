@@ -96,8 +96,12 @@ int write(SPI_ device, int value) {
 /**
 * Transfer buffers over the SPI bus
 */
-//% 
+//% argsNullable
 void transfer(SPI_ device, Buffer command, Buffer response) {
+    if (!device)
+        target_panic(PANIC_CAST_FROM_NULL);
+    if (!command && !response)
+        return;
     device->transfer(command, response);
 }
 

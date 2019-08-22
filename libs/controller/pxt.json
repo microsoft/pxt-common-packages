@@ -9,7 +9,8 @@
         "lightsensor.ts",
         "thermometer.ts",
         "controller.ts",
-        "light.ts"
+        "light.ts",
+        "crank.ts"
     ],
     "public": true,
     "dependencies": {
@@ -18,6 +19,7 @@
         "lightsensor": "file:../lightsensor",
         "thermometer": "file:../thermometer",
         "game": "file:../game",
-        "light": "file:../light"
+        "light": "file:../light",
+        "rotary-encoder": "file:../rotary-encoder"
     }
 }
