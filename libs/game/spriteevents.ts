@@ -10,11 +10,13 @@ namespace sprites {
     export function onCreated(kind: number, handler: (sprite: Sprite) => void): void {
         if (!handler || kind == undefined) return;
 
-        const scene = game.currentScene();
-        scene.createdHandlers.push({
-            kind: kind,
-            handler: handler
-        })
+        const sc = game.currentScene();
+        sc.createdHandlers.push(
+            new scene.SpriteHandler(
+                kind,
+                handler
+            )
+        )
     }
 
     /**
@@ -29,11 +31,13 @@ namespace sprites {
     export function onDestroyed(kind: number, handler: (sprite: Sprite) => void) {
         if (!handler || kind == undefined) return;
 
-        const scene = game.currentScene();
-        scene.destroyedHandlers.push({
-            kind: kind,
-            handler: handler
-        })
+        const sc = game.currentScene();
+        sc.destroyedHandlers.push(
+            new scene.SpriteHandler(
+                kind,
+                handler
+            )
+        );
     }
 
     /**
@@ -61,11 +65,13 @@ namespace sprites {
         associate(kind, otherKind);
         associate(otherKind, kind);
 
-        overlapHandlers.push(new scene.OverlapHandler(
-            kind,
-            otherKind,
-            handler
-        ));
+        overlapHandlers.push(
+            new scene.OverlapHandler(
+                kind,
+                otherKind,
+                handler
+            )
+        );
     }
 }
 
@@ -88,9 +94,11 @@ namespace scene {
             collisionHandlers[tile] = [];
         }
 
-        collisionHandlers[tile].push({
-            kind: kind,
-            handler: handler
-        });
+        collisionHandlers[tile].push(
+            new scene.SpriteHandler(
+                kind,
+                handler
+            )
+        );
     }
 }
