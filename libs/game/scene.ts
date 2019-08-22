@@ -15,10 +15,12 @@ namespace scene {
         handler: (sprite: Sprite) => void;
     }
 
-    export interface OverlapHandler {
-        kind: number;
-        otherKind: number;
-        handler: (sprite: Sprite, otherSprite: Sprite) => void;
+    export class OverlapHandler {
+        constructor(
+            public kind: number,
+            public otherKind: number,
+            public handler: (sprite: Sprite, otherSprite: Sprite) => void
+        ) { }
     }
 
     export interface CollisionHandler {

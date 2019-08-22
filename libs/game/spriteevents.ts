@@ -46,9 +46,9 @@ namespace sprites {
     //% blockGap=8
     export function onOverlap(kind: number, otherKind: number, handler: (sprite: Sprite, otherSprite: Sprite) => void) {
         if (kind == undefined || otherKind == undefined || !handler) return;
-        const scene = game.currentScene();
-        const overlapHandlers = scene.overlapHandlers;
-        const overlapMap = scene.overlapMap;
+        const sc = game.currentScene();
+        const overlapHandlers = sc.overlapHandlers;
+        const overlapMap = sc.overlapMap;
 
         function associate(a: number, b: number) {
             if (!overlapMap[a]) {
@@ -61,11 +61,11 @@ namespace sprites {
         associate(kind, otherKind);
         associate(otherKind, kind);
 
-        overlapHandlers.push({
-            kind: kind,
-            otherKind: otherKind,
-            handler: handler
-        });
+        overlapHandlers.push(new scene.OverlapHandler(
+            kind,
+            otherKind,
+            handler
+        ));
     }
 }
 
