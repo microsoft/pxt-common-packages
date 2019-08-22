@@ -496,7 +496,7 @@ namespace pxsim.ImageMethods {
             return
         if (img2[1] != 1)
             return // only mono
-        let w = image.bufW(img2)        
+        let w = image.bufW(img2)
         let h = image.bufH(img2)
         let byteH = image.byteHeight(h, 1)
 
@@ -576,6 +576,33 @@ namespace pxsim.ImageMethods {
 
     export function _fillCircle(img: RefImage, cxy: number, r: number, c: number) {
         fillCircle(img, XX(cxy), YY(cxy), r, c);
+    }
+
+    export function _blitRow(img: RefImage, xy: number, from: RefImage, xh: number) {
+        blitRow(img, XX(xy), YY(xy), from, XX(xh), YY(xh))
+    }
+
+    export function blitRow(img: RefImage, x: number, y: number, from: RefImage, fromX: number, fromH: number) {
+        x |= 0
+        y |= 0
+        fromX |= 0
+        fromH |= 0
+        if (!img.inRange(x, 0) || !img.inRange(fromX, 0) || fromH <= 0)
+            return
+        let fy = 0
+        let stepFY = from._width / fromH
+        let endY = y + fromH
+        if (endY > img._height)
+            endY = img._height
+        if (y < 0) {
+            fy += -y * stepFY
+            y = 0
+        }
+        while (y < endY) {
+            img.data[img.pix(x, y)] = from.data[from.pix(fromX, fy | 0)]
+            y++
+            fy += stepFY
+        }
     }
 }
 

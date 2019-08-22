@@ -27,7 +27,6 @@ int RefImage::wordHeight() {
     return ((height() * 4 + 31) >> 5);
 }
 
-
 void RefImage::makeWritable() {
     if (buffer->isReadOnly()) {
         buffer = mkBuffer(data(), length());
@@ -845,8 +844,9 @@ Image_ convertAndWrap(Buffer buf) {
     if (isValidImage(buf))
         return NEW_GC(RefImage, buf);
 
-    // What follows in this function is mostly dead code, except if people construct image buffers by hand.
-    // Probably safe to remove in a year (middle of 2020) or so. When removing, also remove from sim.
+    // What follows in this function is mostly dead code, except if people construct image buffers
+    // by hand. Probably safe to remove in a year (middle of 2020) or so. When removing, also remove
+    // from sim.
     if (!isLegacyImage(buf))
         return NULL;
 
@@ -1002,6 +1002,48 @@ void drawLine(Image_ img, int x0, int y0, int x1, int y1, int c) {
 //%
 void _drawLine(Image_ img, int xy, int wh, int c) {
     drawLine(img, XX(xy), YY(xy), XX(wh), YY(wh), c);
+}
+
+void blitRow(Image_ img, int x, int y, Image_ from, int fromX, int fromH) {
+    if (!img->inRange(x, 0) || !img->inRange(fromX, 0) || fromH <= 0)
+        return;
+
+    if (img->bpp() != 4 || from->bpp() != 4)
+        return;
+
+    int fy = 0;
+    int stepFY = (from->width() << 16) / fromH;
+    int endY = y + fromH;
+    if (endY > img->height())
+        endY = img->height();
+    if (y < 0) {
+        fy += -y * stepFY;
+        y = 0;
+    }
+
+    auto dp = img->pix(x, y);
+    auto sp = from->pix(fromX, 0);
+
+    while (y < endY) {
+        int p = fy >> 16, c;
+        if (p & 1)
+            c = sp[p >> 1] >> 4;
+        else
+            c = sp[p >> 1] & 0xf;
+        if (y & 1) {
+            *dp = (*dp & 0x0f) | (c << 4);
+            dp++;
+        } else {
+            *dp = (*dp & 0xf0) | (c & 0xf);
+        }
+        y++;
+        fy += stepFY;
+    }
+}
+
+//%
+void _blitRow(Image_ img, int xy, Image_ from, int xh) {
+    blitRow(img, XX(xy), YY(xy), from, XX(xh), YY(xh));
 }
 
 void fillCircle(Image_ img, int cx, int cy, int r, int c) {
