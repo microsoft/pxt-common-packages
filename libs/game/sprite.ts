@@ -799,7 +799,7 @@ class Sprite extends sprites.BaseSprite {
      */
     //% group="Physics" weight=10
     //% blockId=spriteFollowOtherSprite
-    //% block="set %sprite(myEnemy) follow %target=variables_get(mySprite) || with speed %speed turn rate %turnRate"
+    //% block="set %sprite(myEnemy) follow %target=variables_get(mySprite) || with speed %speed"
     follow(target: Sprite, speed = 100, turnRate = 3) {
         if (target === this) return;
 
