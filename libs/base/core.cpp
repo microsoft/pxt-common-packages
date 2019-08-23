@@ -1052,15 +1052,19 @@ TNumber mod(TNumber a, TNumber b) {
 }
 
 //%
-TNumber lsls(TNumber a, TNumber b){BITOP(<<)}
-
-//%
-TNumber lsrs(TNumber a, TNumber b) {
-    return fromUInt(toUInt(a) >> toUInt(b));
+TNumber lsls(TNumber a, TNumber b){
+    return fromInt(toInt(a) << (toInt(b) & 0x1f));
 }
 
 //%
-TNumber asrs(TNumber a, TNumber b){BITOP(>>)}
+TNumber lsrs(TNumber a, TNumber b) {
+    return fromUInt(toUInt(a) >> (toUInt(b) & 0x1f));
+}
+
+//%
+TNumber asrs(TNumber a, TNumber b){
+    return fromInt(toInt(a) >> (toInt(b) & 0x1f));
+}
 
 //%
 TNumber eors(TNumber a, TNumber b){BITOP (^)}
