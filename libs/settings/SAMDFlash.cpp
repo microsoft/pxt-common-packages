@@ -175,6 +175,8 @@ int ZFlash::writeBytes(uintptr_t dst, const void *src, uint32_t len) {
 
     CHECK_ECC();
 
+    lock();
+
     return 0;
 }
 } // namespace codal
