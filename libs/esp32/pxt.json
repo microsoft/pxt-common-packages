@@ -13,7 +13,8 @@
     "public": true,
     "dependencies": {
         "core": "file:../core",
-        "net": "file:../net"
+        "net": "file:../net",
+        "settings": "file:../settings"
     }
 
 }

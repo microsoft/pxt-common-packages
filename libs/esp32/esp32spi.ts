@@ -460,16 +460,10 @@ namespace esp32spi {
             return this.status == WL_CONNECTED
         }
 
-        /** Connect to an access point using a secrets dictionary
-    that contains a 'ssid' and 'password' entry
-    */
-        public connect(secrets: any): void {
-            this.connectAP(secrets["ssid"], secrets["password"])
-        }
-
-        /** Connect to an access point with given name and password.
-    Will retry up to 10 times and return on success
-    */
+        /** 
+         * Connect to an access point with given name and password.
+         * Will retry up to 10 times and return on success
+        */
         public connectAP(ssid: string, password: string): number {
             this.log(0, `Connect to AP ${ssid}`)
             if (password) {

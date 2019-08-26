@@ -151,4 +151,16 @@ namespace settings {
     export function exists(key: string) {
         return _exists(key)
     }
+
+    /**
+     * Reads a map of global secrets.
+     */
+    export function readSecrets(): any {
+        try {
+            const src = readString("#secrets") || "{}";
+            return JSON.parse(src);
+        } catch {
+            return {};
+        }
+    }
 }
