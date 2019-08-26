@@ -129,8 +129,8 @@ namespace controller.__internal {
 }
 
 namespace controller.__internal {
-    export function temperature(unit: TemperatureUnit): number {
-        return input.temperature(unit);
+    export function temperature(unit: ControllerTemperatureUnit): number {
+        return input.temperature(<TemperatureUnit><number>unit);
     }
 }
 

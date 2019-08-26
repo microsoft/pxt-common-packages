@@ -58,13 +58,13 @@ enum ControllerGesture {
 
 enum ControllerDimension {
     //% block=x
-    X = Dimension.X,
+    X = 0,
     //% block=y
-    Y = Dimension.Y,
+    Y = 1,
     //% block=z
-    Z = Dimension.Z,
+    Z = 2,
     //% block=strength
-    Strength = Dimension.Strength
+    Strength = 3,
 }
 
 namespace controller {

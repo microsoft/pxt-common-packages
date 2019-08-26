@@ -15,6 +15,6 @@ namespace controller {
     //% weight=26
     //% group="Extras"
     export function temperature(unit: ControllerTemperatureUnit): number {
-        return controller.__internal.temperature(<TemperatureUnit><number>unit);
+        return controller.__internal.temperature(unit);
     }
 }
