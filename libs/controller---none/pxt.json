@@ -1,0 +1,8 @@
+{
+    "name": "controller---none",
+    "additionalFilePath": "../controller",
+    "dependencies": {
+        "core": "file:../core",
+        "game": "file:../game"
+    }
+}
