@@ -1,8 +1,8 @@
 enum ControllerLightCondition {
-    //% block="bright"
-    Bright = LightCondition.Bright,
     //% block="dark"
-    Dark = LightCondition.Dark
+    Dark = 1,  // SENSOR_THRESHOLD_LOW
+    //% block="bright"
+    Bright = 2,  // SENSOR_THRESHOLD_HIGH
 }
 
 namespace controller {

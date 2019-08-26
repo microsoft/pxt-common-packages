@@ -1,3 +1,11 @@
+const enum ControllerTemperatureUnit {
+    //% block="°C"
+    Celsius = 0,
+    //% block="°F"
+    Fahrenheit = 1,
+}
+
+
 namespace controller {
     /**
      * Get the temperature in Celsius or Fahrenheit degrees.
@@ -6,7 +14,7 @@ namespace controller {
     //% parts="thermometer"
     //% weight=26
     //% group="Extras"
-    export function temperature(unit: TemperatureUnit): number {
-        return controller.__internal.temperature(unit);
+    export function temperature(unit: ControllerTemperatureUnit): number {
+        return controller.__internal.temperature(<TemperatureUnit><number>unit);
     }
 }

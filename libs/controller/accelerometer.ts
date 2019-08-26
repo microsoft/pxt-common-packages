@@ -3,57 +3,57 @@ enum ControllerGesture {
      * Shake gesture
      */
     //% block="shake"
-    Shake = Gesture.Shake,
+    Shake = 11,  // ACCELEROMETER_EVT_SHAKE
     /**
      * Raised when the device tilts up
      */
     //% block="tilt up"
-    TiltUp = Gesture.TiltUp,  // ACCELEROMETER_EVT_TILT_UP
+    TiltUp = 1,  // ACCELEROMETER_EVT_TILT_UP
     /**
      * Raised when the device tilts down
      */
     //% block="tilt down"
-    TiltDown = Gesture.TiltDown,  // ACCELEROMETER_EVT_TILT_DOWN
+    TiltDown = 2,  // ACCELEROMETER_EVT_TILT_DOWN
     /**
      * Raised when the screen is pointing left
      */
     //% block="tilt left"
-    TiltLeft = Gesture.TiltLeft,  // ACCELEROMETER_EVT_TILT_LEFT
+    TiltLeft = 3,  // ACCELEROMETER_EVT_TILT_LEFT
     /**
      * Raised when the screen is pointing right
      */
     //% block="tilt right"
-    TiltRight = Gesture.TiltRight,  // ACCELEROMETER_EVT_TILT_RIGHT
+    TiltRight = 4,  // ACCELEROMETER_EVT_TILT_RIGHT
     /**
      * Raised when the screen faces up
      */
     //% block="screen up"
-    ScreenUp = Gesture.FaceUp,  // ACCELEROMETER_EVT_FACE_UP
+    ScreenUp = 5,  // ACCELEROMETER_EVT_FACE_UP
     /**
      * Raised when the screen is pointing up and the board is horizontal
      */
     //% block="screen down"
-    ScreenDown = Gesture.FaceDown,  // ACCELEROMETER_EVT_FACE_DOWN
+    ScreenDown = 6,  // ACCELEROMETER_EVT_FACE_DOWN
     /**
      * Raised when a 2G shock is detected
      */
     //% block="2g (step)"
-    TwoG = Gesture.TwoG,  // ACCELEROMETER_EVT_2G
+    TwoG = 12,  // ACCELEROMETER_EVT_2G
     /**
      * Raised when a 3G shock is detected
      */
     //% block="3g"
-    ThreeG = Gesture.ThreeG,  // ACCELEROMETER_EVT_3G
+    ThreeG = 8,  // ACCELEROMETER_EVT_3G
     /**
      * Raised when a 6G shock is detected
      */
     //% block="6g"
-    SixG = Gesture.SixG,  // ACCELEROMETER_EVT_6G
+    SixG = 9,  // ACCELEROMETER_EVT_6G
     /**
      * Raised when a 8G shock is detected
      */
     //% block="8g"
-    EightG = Gesture.EightG,  // ACCELEROMETER_EVT_8G
+    EightG = 10,  // ACCELEROMETER_EVT_8G
 }
 
 enum ControllerDimension {

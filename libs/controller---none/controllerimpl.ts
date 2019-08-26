@@ -15,13 +15,13 @@ namespace controller.__internal {
         return 0;
     }
 
-    export function setCrankPins(pinA: DigitalInOutPin, pinB: DigitalInOutPin) {
-    }
+    //export function setCrankPins(pinA: DigitalInOutPin, pinB: DigitalInOutPin) {
+    //}
 }
 
 namespace controller.__internal {
-    export function startLightAnimation(animation: light.NeoPixelAnimation, duration: number) {
-    }
+    //export function startLightAnimation(animation: light.NeoPixelAnimation, duration: number) {
+    //}
 
     export function startLightPulse(rgb: number, duration: number) {
     }
@@ -38,7 +38,7 @@ namespace controller.__internal {
 }
 
 namespace controller.__internal {
-    export function temperature(unit: TemperatureUnit): number {
+    export function temperature(unit: ControllerTemperatureUnit): number {
         return 0;
     }
 }
