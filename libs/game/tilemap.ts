@@ -79,25 +79,22 @@ namespace tiles {
         }
     }
 
-    export class TileMap implements SpriteLike {
-        id: number;
-        z: number;
+    export class TileMap {
         scale: number
 
         private _layer: number;
-
         private _map: Image;
         private _tileSets: TileSet[];
 
         constructor(scale: TileScale = TileScale.Sixteen) {
             this._tileSets = [];
             this._layer = 1;
-            this.z = -1;
             this.scale = scale;
 
-            const sc = game.currentScene();
-            sc.addSprite(this);
-            sc.flags |= scene.Flag.NeedsSorting;
+            scene.createRenderable(
+                scene.TILE_MAP_Z,
+                (t, c) => this.draw(t, c)
+            );
         }
 
         get image(): Image {
@@ -167,40 +164,6 @@ namespace tiles {
             return output;
         }
 
-        __serialize(offset: number): Buffer { return undefined; }
-
-        __update(camera: scene.Camera, dt: number): void { }
-
-        /**
-         * Draws all visible
-         */
-        __draw(camera: scene.Camera): void {
-            if (!this.enabled) return;
-
-            const bitmask = (0x1 << this.scale) - 1;
-            const offsetX = camera.drawOffsetX & bitmask;
-            const offsetY = camera.drawOffsetY & bitmask;
-
-            const x0 = Math.max(0, camera.drawOffsetX >> this.scale);
-            const xn = Math.min(this._map.width, ((camera.drawOffsetX + screen.width) >> this.scale) + 1);
-            const y0 = Math.max(0, camera.drawOffsetY >> this.scale);
-            const yn = Math.min(this._map.height, ((camera.drawOffsetY + screen.height) >> this.scale) + 1);
-
-            for (let x = x0; x <= xn; ++x) {
-                for (let y = y0; y <= yn; ++y) {
-                    const index = this._map.getPixel(x, y);
-                    const tile = this._tileSets[index] || this.generateTile(index);
-                    if (tile) {
-                        screen.drawTransparentImage(
-                            tile.image,
-                            ((x - x0) << this.scale) - offsetX,
-                            ((y - y0) << this.scale) - offsetY
-                        );
-                    }
-                }
-            }
-        }
-
         private generateTile(index: number): TileSet {
             const size = 1 << this.scale
 
@@ -218,38 +181,62 @@ namespace tiles {
             return index < 0 || index > 0xf;
         }
 
-        draw(camera: scene.Camera) {
+        protected draw(target: Image, camera: scene.Camera) {
             if (!this.enabled) return;
 
-            if (game.debug) {
-                const offsetX = -camera.drawOffsetX;
-                const offsetY = -camera.drawOffsetY;
-                const x0 = Math.max(0, -(offsetX >> this.scale));
-                const xn = Math.min(this._map.width, (-offsetX + screen.width) >> this.scale);
-                const y0 = Math.max(0, -(offsetY >> this.scale));
-                const yn = Math.min(this._map.height, (-offsetY + screen.height) >> this.scale);
-                for (let x = x0; x <= xn; ++x) {
-                    screen.drawLine(
-                        (x << this.scale) + offsetX,
-                        offsetY,
-                        (x << this.scale) + offsetX,
-                        (this._map.height << this.scale) + offsetY,
-                        1
-                    );
-                }
+            // render tile map
+            const bitmask = (0x1 << this.scale) - 1;
+            const offsetX = camera.drawOffsetX & bitmask;
+            const offsetY = camera.drawOffsetY & bitmask;
+
+            const x0 = Math.max(0, camera.drawOffsetX >> this.scale);
+            const xn = Math.min(this._map.width, ((camera.drawOffsetX + target.width) >> this.scale) + 1);
+            const y0 = Math.max(0, camera.drawOffsetY >> this.scale);
+            const yn = Math.min(this._map.height, ((camera.drawOffsetY + target.height) >> this.scale) + 1);
+
+            for (let x = x0; x <= xn; ++x) {
                 for (let y = y0; y <= yn; ++y) {
-                    screen.drawLine(
-                        offsetX,
-                        (y << this.scale) + offsetY,
-                        (this._map.width << this.scale) + offsetX,
-                        (y << this.scale) + offsetY,
-                        1
-                    );
+                    const index = this._map.getPixel(x, y);
+                    const tile = this._tileSets[index] || this.generateTile(index);
+                    if (tile) {
+                        target.drawTransparentImage(
+                            tile.image,
+                            ((x - x0) << this.scale) - offsetX,
+                            ((y - y0) << this.scale) - offsetY
+                        );
+                    }
+                }
+            }
+
+            if (game.debug) {
+                // render debug grid overlay
+                for (let x = x0; x <= xn; ++x) {
+                    const xLine = ((x - x0) << this.scale) - offsetX;
+                    if (xLine >= 0 && xLine <= screen.width) {
+                        target.drawLine(
+                            xLine,
+                            0,
+                            xLine,
+                            target.height,
+                            1
+                        );
+                    }
+                }
+
+                for (let y = y0; y <= yn; ++y) {
+                    const yLine = ((y - y0) << this.scale) - offsetY;
+                    if (yLine >= 0 && yLine <= screen.height) {
+                        target.drawLine(
+                            0,
+                            yLine,
+                            target.width,
+                            yLine,
+                            1
+                        );
+                    }
                 }
             }
         }
-
-        public update(camera: scene.Camera) { }
 
         public isObstacle(col: number, row: number) {
             if (!this.enabled) return false;

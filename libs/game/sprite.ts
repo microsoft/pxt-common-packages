@@ -10,7 +10,9 @@ enum SpriteFlag {
     //% block="bounce on wall"
     BounceOnWall = sprites.Flag.BounceOnWall,
     //% block="show physics"
-    ShowPhysics = sprites.Flag.ShowPhysics
+    ShowPhysics = sprites.Flag.ShowPhysics,
+    //% block="invisible"
+    Invisible = sprites.Flag.Invisible,
 }
 
 enum CollisionDirection {
@@ -22,14 +24,6 @@ enum CollisionDirection {
     Right = 2,
     //% block="bottom"
     Bottom = 3
-}
-
-interface SpriteLike {
-    z: number;
-    id: number;
-    __update(camera: scene.Camera, dt: number): void;
-    __draw(camera: scene.Camera): void;
-    __serialize(offset: number): Buffer;
 }
 
 enum FlipOption {
@@ -47,10 +41,9 @@ enum FlipOption {
  * A sprite on the screen
  **/
 //% blockNamespace=sprites color="#4B7BEC" blockGap=8
-class Sprite implements SpriteLike {
+class Sprite extends sprites.BaseSprite {
     _x: Fx8
     _y: Fx8
-    private _z: number
     _vx: Fx8
     _vy: Fx8
     _ax: Fx8
@@ -122,11 +115,19 @@ class Sprite implements SpriteLike {
         this._ay = Fx8(v)
     }
 
+    private _data: any;
     /**
      * Custom data
      */
     //%
-    data: any;
+    get data(): any {
+        if (!this._data) this._data = {};
+        return this._data;
+    }
+
+    set data(value: any) {
+        this._data = value;
+    }
     _kind: number;
 
     /**
@@ -158,14 +159,14 @@ class Sprite implements SpriteLike {
     _kindsOverlappedWith: number[];
 
     flags: number
-    id: number
 
     private destroyHandler: () => void;
 
     constructor(img: Image) {
+        super(scene.SPRITE_Z);
+
         this._x = Fx8(screen.width - img.width >> 1);
         this._y = Fx8(screen.height - img.height >> 1);
-        this.z = 0
         this._lastX = this._x;
         this._lastY = this._y;
         this.vx = 0
@@ -263,6 +264,10 @@ class Sprite implements SpriteLike {
             this._z = value;
             game.currentScene().flags |= scene.Flag.NeedsSorting;
         }
+    }
+
+    __visible() {
+        return !(this.flags & SpriteFlag.Invisible);
     }
 
     //% group="Physics" blockSetVariable="mySprite"
@@ -422,12 +427,27 @@ class Sprite implements SpriteLike {
     //% inlineInputMode=inline
     //% help=sprites/sprite/say
     say(text: string, timeOnScreen?: number, textColor = 15, textBoxColor = 1) {
+        // clear say
         if (!text) {
             this.updateSay = undefined;
             if (this.sayBubbleSprite) {
                 this.sayBubbleSprite.destroy();
                 this.sayBubbleSprite = undefined;
             }
+            return;
+        }
+
+        // same text, color, time, etc...
+        const SAYKEY = "__saykey";
+        const key = JSON.stringify({
+            text: text,
+            textColor: textColor,
+            textBoxColor: textBoxColor
+        })
+        if (timeOnScreen === undefined
+            && this.sayBubbleSprite
+            && this.sayBubbleSprite.data[SAYKEY] == key) {
+            // do nothing!
             return;
         }
 
@@ -441,6 +461,8 @@ class Sprite implements SpriteLike {
         let bubbleWidth = text.length * font.charWidth + bubblePadding;
         let maxOffset = text.length * font.charWidth - maxTextWidth;
         let bubbleOffset: number = this._hitbox.oy;
+        let needsRedraw = true;
+
         // sets the defaut scroll speed in pixels per second
         let speed = 45;
         const currentScene = game.currentScene();
@@ -463,23 +485,24 @@ class Sprite implements SpriteLike {
             maxOffset = -1;
         }
 
-        // Destroy previous sayBubbleSprite to prevent leaking
-        if (this.sayBubbleSprite) {
-            this.sayBubbleSprite.destroy();
-            this.sayBubbleSprite = undefined;
+        // reuse previous sprite if possible
+        const imgh = font.charHeight + bubblePadding;
+        if (!this.sayBubbleSprite
+            || this.sayBubbleSprite.image.width != bubbleWidth
+            || this.sayBubbleSprite.image.height != imgh) {
+            const sayImg = image.create(bubbleWidth, imgh);
+            if (this.sayBubbleSprite) // sprite with same image size, we can reuse it
+                this.sayBubbleSprite.setImage(sayImg);
+            else { // needs a new sprite
+                this.sayBubbleSprite = sprites.create(sayImg, -1);
+                this.sayBubbleSprite.setFlag(SpriteFlag.Ghost, true);
+            }
         }
-
-        this.sayBubbleSprite = sprites.create(image.create(bubbleWidth, font.charHeight + bubblePadding), -1);
-
-        this.sayBubbleSprite.setFlag(SpriteFlag.Ghost, true);
+        this.sayBubbleSprite.data[SAYKEY] = key;
         this.updateSay = (dt, camera) => {
             // Update box stuff as long as timeOnScreen doesn't exist or it can still be on the screen
             if (!timeOnScreen || timeOnScreen > currentScene.millis()) {
-                this.sayBubbleSprite.image.fill(textBoxColor);
-                // The minus 2 is how much transparent padding there is under the sayBubbleSprite
-                this.sayBubbleSprite.y = this.top + bubbleOffset - ((font.charHeight + bubblePadding) >> 1) - 2;
-                this.sayBubbleSprite.x = this.x;
-
+                // move bubble
                 if (!this.isOutOfScreen(camera)) {
                     const ox = camera.offsetX;
                     const oy = camera.offsetY;
@@ -505,9 +528,11 @@ class Sprite implements SpriteLike {
                     if (holdTextSeconds <= 0 && pixelsOffset > 0) {
                         pixelsOffset = 0;
                         holdTextSeconds = maxTextWidth / speed;
+                        needsRedraw = true;
                     }
                 } else {
                     pixelsOffset += dt * speed;
+                    needsRedraw = true;
 
                     // Pause at end of text for holdTextSeconds length
                     if (pixelsOffset >= maxOffset) {
@@ -515,28 +540,39 @@ class Sprite implements SpriteLike {
                         holdTextSeconds = maxTextWidth / speed;
                     }
                 }
-                // If maxOffset is negative it won't scroll
-                if (maxOffset < 0) {
-                    this.sayBubbleSprite.image.print(text, startX, startY, textColor, font);
-                } else {
-                    this.sayBubbleSprite.image.print(text, startX - pixelsOffset, startY, textColor, font);
-                }
 
-                // Left side padding
-                this.sayBubbleSprite.image.fillRect(0, 0, bubblePadding >> 1, font.charHeight + bubblePadding, textBoxColor);
-                // Right side padding
-                this.sayBubbleSprite.image.fillRect(bubbleWidth - (bubblePadding >> 1), 0, bubblePadding >> 1, font.charHeight + bubblePadding, textBoxColor);
-                // Corners removed
-                this.sayBubbleSprite.image.setPixel(0, 0, 0);
-                this.sayBubbleSprite.image.setPixel(bubbleWidth - 1, 0, 0);
-                this.sayBubbleSprite.image.setPixel(0, font.charHeight + bubblePadding - 1, 0);
-                this.sayBubbleSprite.image.setPixel(bubbleWidth - 1, font.charHeight + bubblePadding - 1, 0);
+                if (needsRedraw) {
+                    needsRedraw = false;
+                    this.sayBubbleSprite.image.fill(textBoxColor);
+                    // The minus 2 is how much transparent padding there is under the sayBubbleSprite
+                    this.sayBubbleSprite.y = this.top + bubbleOffset - ((font.charHeight + bubblePadding) >> 1) - 2;
+                    this.sayBubbleSprite.x = this.x;
+                    // If maxOffset is negative it won't scroll
+                    if (maxOffset < 0) {
+                        this.sayBubbleSprite.image.print(text, startX, startY, textColor, font);
+
+                    } else {
+                        this.sayBubbleSprite.image.print(text, startX - pixelsOffset, startY, textColor, font);
+                    }
+
+                    // Left side padding
+                    this.sayBubbleSprite.image.fillRect(0, 0, bubblePadding >> 1, font.charHeight + bubblePadding, textBoxColor);
+                    // Right side padding
+                    this.sayBubbleSprite.image.fillRect(bubbleWidth - (bubblePadding >> 1), 0, bubblePadding >> 1, font.charHeight + bubblePadding, textBoxColor);
+                    // Corners removed
+                    this.sayBubbleSprite.image.setPixel(0, 0, 0);
+                    this.sayBubbleSprite.image.setPixel(bubbleWidth - 1, 0, 0);
+                    this.sayBubbleSprite.image.setPixel(0, font.charHeight + bubblePadding - 1, 0);
+                    this.sayBubbleSprite.image.setPixel(bubbleWidth - 1, font.charHeight + bubblePadding - 1, 0);
+                }
             } else {
                 // If can't update because of timeOnScreen then destroy the sayBubbleSprite and reset updateSay
-                this.sayBubbleSprite.destroy();
                 this.updateSay = undefined;
+                this.sayBubbleSprite.destroy();
+                this.sayBubbleSprite = undefined;
             }
         }
+        this.updateSay(0, currentScene.camera);
     }
 
     /**
@@ -561,7 +597,7 @@ class Sprite implements SpriteLike {
         return this.right - ox < 0 || this.bottom - oy < 0 || this.left - ox > screen.width || this.top - oy > screen.height;
     }
 
-    __draw(camera: scene.Camera) {
+    __drawCore(camera: scene.Camera) {
         if (this.isOutOfScreen(camera)) return;
 
         const l = this.left - camera.drawOffsetX;
@@ -587,7 +623,13 @@ class Sprite implements SpriteLike {
 
         // debug info
         if (game.debug) {
-            screen.drawRect(Fx.toInt(this._hitbox.left), Fx.toInt(this._hitbox.top), this._hitbox.width, this._hitbox.height, 1);
+            screen.drawRect(
+                Fx.toInt(this._hitbox.left) - camera.drawOffsetX,
+                Fx.toInt(this._hitbox.top) - camera.drawOffsetY,
+                this._hitbox.width,
+                this._hitbox.height,
+                1
+            );
         }
     }
 
@@ -596,7 +638,7 @@ class Sprite implements SpriteLike {
             this.lifespan -= dt * 1000;
             if (this.lifespan <= 0) {
                 this.lifespan = undefined;
-                this.destroy();
+                this._destroyCore();
             }
         }
         if ((this.flags & sprites.Flag.AutoDestroy)
@@ -690,10 +732,9 @@ class Sprite implements SpriteLike {
     }
 
     registerObstacle(direction: CollisionDirection, other: sprites.Obstacle) {
-        if (other == undefined) return;
         this._obstacles[direction] = other;
-
         const collisionHandlers = game.currentScene().collisionHandlers[other.tileIndex];
+
         if (collisionHandlers) {
             collisionHandlers
                 .filter(h => h.kind == this.kind())
@@ -723,13 +764,16 @@ class Sprite implements SpriteLike {
     destroy(effect?: effects.ParticleEffect, duration?: number) {
         if (this.flags & sprites.Flag.Destroyed)
             return;
+        this.flags |= sprites.Flag.Destroyed;
 
-        if (effect) {
+        if (effect)
             effect.destroy(this, duration);
-            return;
-        }
+        else
+            this._destroyCore();
+    }
 
-        this.flags |= sprites.Flag.Destroyed
+    _destroyCore() {
+        this.flags |= sprites.Flag.Destroyed;
         const scene = game.currentScene();
         // When current sprite is destroyed, destroys sayBubbleSprite if defined
         if (this.sayBubbleSprite) {
@@ -744,6 +788,82 @@ class Sprite implements SpriteLike {
         scene.destroyedHandlers
             .filter(h => h.kind == this.kind())
             .forEach(h => h.handler(this));
+    }
+
+    /**
+     * Make this sprite follow the target sprite.
+     *
+     * @param target the sprite this one should follow
+     * @param speed the rate at which this sprite should move, eg: 100
+     * @param turnRate how quickly the sprite should turn while following, eg: 3
+     */
+    //% group="Physics" weight=10
+    //% blockId=spriteFollowOtherSprite
+    //% block="set %sprite(myEnemy) follow %target=variables_get(mySprite) || with speed %speed"
+    follow(target: Sprite, speed = 100, turnRate = 3) {
+        if (target === this) return;
+
+        const sc = game.currentScene();
+        if (!sc.followingSprites) {
+            sc.followingSprites = [];
+            let lastTime = game.runtime();
+            sc.eventContext.registerFrameHandler(scene.FOLLOW_SPRITE_PRIORITY, () => {
+                const currTime = game.runtime();
+                const timeDiff = (currTime - lastTime) / 1000;
+                let destroyedSprites = false;
+
+                sc.followingSprites.forEach(fs => {
+                    // one of the involved sprites has been destroyed, so exit and remove that later
+                    if ((fs.self.flags | fs.target.flags) & sprites.Flag.Destroyed) {
+                        destroyedSprites = true;
+                        return;
+                    }
+
+                    const dx = fs.target.x - fs.self.x;
+                    const dy = fs.target.y - fs.self.y;
+
+                    // already right on top of target; stop moving
+                    if (Math.abs(dx) < 2 && Math.abs(dy) < 2) {
+                        fs.self.vx = 0;
+                        fs.self.vy = 0;
+                        return;
+                    }
+
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    const turnPercentage = Math.clamp(0, 1, fs.turnRate * timeDiff);
+
+                    fs.self.vx += (fs.rate * dx / distance - fs.self.vx) * turnPercentage;
+                    fs.self.vy += (fs.rate * dy / distance - fs.self.vy) * turnPercentage;
+                });
+
+                lastTime = currTime;
+
+                // remove followers where one has been destroyed
+                if (destroyedSprites) {
+                    sc.followingSprites = sc.followingSprites
+                        .filter(fs => !((fs.self.flags | fs.target.flags) & sprites.Flag.Destroyed));
+                }
+            });
+        }
+
+        const fs = sc.followingSprites.find(fs => fs.self.id == this.id);
+
+        if (!target || !speed) {
+            if (fs) {
+                sc.followingSprites.removeElement(fs);
+            }
+        } else if (!fs) {
+            sc.followingSprites.push(new sprites.FollowingSprite(
+                this,
+                target,
+                speed,
+                turnRate
+            ));
+        } else {
+            fs.target = target;
+            fs.rate = speed;
+            fs.turnRate = turnRate;
+        }
     }
 
     toString() {

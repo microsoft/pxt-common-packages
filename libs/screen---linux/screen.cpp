@@ -67,7 +67,7 @@ void WDisplay::updateLoop() {
 
     offx &= ~1;
 
-    memset(fbuf, 0x33, screensize * 2);
+    memset(fbuf, 0x00, screensize * 2);
 
     dirty = true;
 
@@ -231,11 +231,9 @@ void WDisplay::update(Image_ img) {
     }
     img = lastImg;
 
-    if (img && img->isDirty()) {
+    if (img) {
         if (img->bpp() != 4 || img->width() != width || img->height() != height)
             target_panic(PANIC_SCREEN_ERROR);
-
-        img->clearDirty();
 
         if (!painted) {
             // race is possible (though very unlikely), but in such case we just

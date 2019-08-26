@@ -22,9 +22,9 @@ namespace light {
      * @param endColor the end color
      */
     //% blockId="builtinlightsetgradient" block="set gradient from %startRgb=colorNumberPicker to %endRgb=colorNumberPicker"
-    //% weight=78 blockGap=8
-    export function setGradient(startRgb: number, endRgb: number, easing?: (t: number) => number) {
-        light.pixels.setGradient(startRgb, endRgb, easing);
+    //% weight=78 blockGap=8 blockHidden=true
+    export function setGradient(startRgb: number, endRgb: number) {
+        light.pixels.setGradient(startRgb, endRgb);
     }
 
     /**

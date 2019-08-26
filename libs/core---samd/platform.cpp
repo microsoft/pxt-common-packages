@@ -7,12 +7,14 @@
 namespace pxt {
 
 #ifdef CODAL_JACDAC_WIRE_SERIAL
+// TC3 is used by DAC on both D21 and D51
+// TCC0 and TC4 is used by IR
+// TCC0, TCC1, TC4 is used by PWM on CPX
 #ifdef SAMD21
-SAMDTCTimer jacdacTimer(TC4, TC4_IRQn);
-SAMDTCTimer lowTimer(TC3, TC3_IRQn);
+SAMDTCCTimer jacdacTimer(TCC2, TCC2_IRQn);
+SAMDTCTimer lowTimer(TC5, TC5_IRQn);
 
-LowLevelTimer* getJACDACTimer()
-{
+LowLevelTimer *getJACDACTimer() {
     jacdacTimer.setIRQPriority(1);
     return &jacdacTimer;
 }
@@ -22,16 +24,14 @@ LowLevelTimer* getJACDACTimer()
 SAMDTCTimer jacdacTimer(TC0, TC0_IRQn);
 SAMDTCTimer lowTimer(TC2, TC2_IRQn);
 
-LowLevelTimer* getJACDACTimer()
-{
+LowLevelTimer *getJACDACTimer() {
     jacdacTimer.setIRQPriority(1);
     return &jacdacTimer;
 }
 #endif
 #endif // CODAL_JACDAC_WIRE_SERIAL
 
-__attribute__((used))
-CODAL_TIMER devTimer(lowTimer);
+__attribute__((used)) CODAL_TIMER devTimer(lowTimer);
 
 static void initRandomSeed() {
     int seed = 0xC0DA1;
@@ -41,7 +41,29 @@ static void initRandomSeed() {
 
 void platformSendSerial(const char *data, int len) {}
 
+#ifdef SAMD21
+static void remapSwdPin(int pinCfg, int fallback) {
+    int pinName = getConfig(pinCfg);
+    if (pinName == PA30 || pinName == PA31) {
+        if (getConfig(CFG_SWD_ENABLED, 0)) {
+            linkPin(pinName, fallback);
+        } else {
+            PORT->Group[pinName / 32].PINCFG[pinName % 32].reg = (uint8_t)PORT_PINCFG_INEN;
+        }
+    }
+}
+
+static void initSwdPins() {
+    remapSwdPin(CFG_PIN_NEOPIXEL, PIN(D0));
+    remapSwdPin(CFG_PIN_RXLED, PIN(D1));
+    remapSwdPin(CFG_PIN_SPEAKER_AMP, PIN(A2));
+}
+#else
+static void initSwdPins() {}
+#endif
+
 void platform_init() {
+    initSwdPins();
     initRandomSeed();
     setSendToUART(platformSendSerial);
     light::clear();

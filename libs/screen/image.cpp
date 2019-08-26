@@ -15,64 +15,22 @@ namespace pxt {
 
 PXT_VTABLE(RefImage, ValType::Object)
 
-void RefImage::destroy(RefImage *t) {
-    decrRC(t->buffer());
-}
+void RefImage::destroy(RefImage *t) {}
 
 void RefImage::print(RefImage *t) {
-    DMESG("RefImage %p r=%d size=%d x %d", t, REFCNT(t), t->width(), t->height());
-}
-
-int RefImage::width() {
-    return data()[1];
+    DMESG("RefImage %p size=%d x %d", t, t->width(), t->height());
 }
 
 int RefImage::wordHeight() {
     if (bpp() == 1)
         oops(20);
-    return ((data()[2] * bpp() + 31) >> 5);
-}
-
-int RefImage::byteHeight() {
-    if (bpp() == 1)
-        return (data()[2] + 7) >> 3;
-    else if (bpp() == 4)
-        return ((data()[2] * 4 + 31) >> 5) << 2;
-    else {
-        oops(21);
-        return -1;
-    }
-}
-
-int RefImage::bpp() {
-    return data()[0] & 0xf;
-}
-
-int RefImage::height() {
-    return data()[2];
+    return ((height() * 4 + 31) >> 5);
 }
 
 void RefImage::makeWritable() {
-    if (hasBuffer()) {
-        if (buffer()->isReadOnly()) {
-            auto b = mkBuffer(data(), length());
-            decrRC(buffer());
-            _buffer = (uintptr_t)b;
-        }
-    } else {
-        _buffer |= 2;
+    if (buffer->isReadOnly()) {
+        buffer = mkBuffer(data(), length());
     }
-}
-
-uint8_t *RefImage::pix(int x, int y) {
-    uint8_t *d = &data()[4 + byteHeight() * x];
-    if (y) {
-        if (bpp() == 1)
-            d += y >> 3;
-        else if (bpp() == 4)
-            d += y >> 1;
-    }
-    return d;
 }
 
 uint8_t RefImage::fillMask(color c) {
@@ -88,44 +46,66 @@ void RefImage::clamp(int *x, int *y) {
     *y = min(max(*y, 0), height() - 1);
 }
 
-RefImage::RefImage(BoxedBuffer *buf) : PXT_VTABLE_INIT(RefImage), _buffer((uintptr_t)buf) {
+RefImage::RefImage(BoxedBuffer *buf) : PXT_VTABLE_INIT(RefImage), buffer(buf) {
     if (!buf)
         oops(21);
-    incrRC(buf);
 }
-RefImage::RefImage(uint32_t sz) : PXT_VTABLE_INIT(RefImage), _buffer((sz << 2) | 3) {}
 
 static inline int byteSize(int w, int h, int bpp) {
     if (bpp == 1)
-        return 4 + ((h + 7) >> 3) * w;
+        return sizeof(ImageHeader) + ((h + 7) >> 3) * w;
     else
-        return 4 + (((h * 4 + 31) / 32) * 4) * w;
+        return sizeof(ImageHeader) + (((h * 4 + 31) / 32) * 4) * w;
+}
+
+Image_ allocImage(const uint8_t *data, uint32_t sz) {
+    auto buf = mkBuffer(data, sz);
+    registerGCObj(buf);
+    Image_ r = NEW_GC(RefImage, buf);
+    unregisterGCObj(buf);
+    return r;
 }
 
 Image_ mkImage(int width, int height, int bpp) {
-    if (width < 0 || height < 0 || width > 255 || height > 255)
+    if (width < 0 || height < 0 || width > 2000 || height > 2000)
         return NULL;
     if (bpp != 1 && bpp != 4)
         return NULL;
     uint32_t sz = byteSize(width, height, bpp);
-    Image_ r = new (gcAllocate(sizeof(RefImage) + sz)) RefImage(sz);
-    auto d = r->data();
-    d[0] = 0xe0 | bpp;
-    d[1] = width;
-    d[2] = height;
-    d[3] = 0;
+    Image_ r = allocImage(NULL, sz);
+    auto hd = r->header();
+    hd->magic = IMAGE_HEADER_MAGIC;
+    hd->bpp = bpp;
+    hd->width = width;
+    hd->height = height;
+    hd->padding = 0;
     MEMDBG("mkImage: %d X %d => %p", width, height, r);
     return r;
 }
 
 bool isValidImage(Buffer buf) {
+    if (!buf || buf->length < 9)
+        return false;
+
+    auto hd = (ImageHeader *)(buf->data);
+    if (hd->magic != IMAGE_HEADER_MAGIC || (hd->bpp != 1 && hd->bpp != 4))
+        return false;
+
+    int sz = byteSize(hd->width, hd->height, hd->bpp);
+    if (sz != (int)buf->length)
+        return false;
+
+    return true;
+}
+
+bool isLegacyImage(Buffer buf) {
     if (!buf || buf->length < 5)
         return false;
 
     if (buf->data[0] != 0xe1 && buf->data[0] != 0xe4)
         return false;
 
-    int sz = byteSize(buf->data[1], buf->data[2], buf->data[0] & 0xf);
+    int sz = byteSize(buf->data[1], buf->data[2], buf->data[0] & 0xf) - 4;
     if (sz != (int)buf->length)
         return false;
 
@@ -173,32 +153,32 @@ void copyFrom(Image_ img, Image_ from) {
     memcpy(img->pix(), from->pix(), from->pixLength());
 }
 
-static inline void setCore(Image_ img, int x, int y, int c) {
+static void setCore(Image_ img, int x, int y, int c) {
     auto ptr = img->pix(x, y);
-    if (img->bpp() == 1) {
+    if (img->bpp() == 4) {
+        if (y & 1)
+            *ptr = (*ptr & 0x0f) | (c << 4);
+        else
+            *ptr = (*ptr & 0xf0) | (c & 0xf);
+    } else if (img->bpp() == 1) {
         uint8_t mask = 0x01 << (y & 7);
         if (c)
             *ptr |= mask;
         else
             *ptr &= ~mask;
-    } else if (img->bpp() == 4) {
-        if (y & 1)
-            *ptr = (*ptr & 0x0f) | (c << 4);
-        else
-            *ptr = (*ptr & 0xf0) | (c & 0xf);
     }
 }
 
-static inline int getCore(Image_ img, int x, int y) {
+static int getCore(Image_ img, int x, int y) {
     auto ptr = img->pix(x, y);
-    if (img->bpp() == 1) {
-        uint8_t mask = 0x01 << (y & 7);
-        return (*ptr & mask) ? 1 : 0;
-    } else if (img->bpp() == 4) {
+    if (img->bpp() == 4) {
         if (y & 1)
             return *ptr >> 4;
         else
             return *ptr & 0x0f;
+    } else if (img->bpp() == 1) {
+        uint8_t mask = 0x01 << (y & 7);
+        return (*ptr & mask) ? 1 : 0;
     }
     return 0;
 }
@@ -412,14 +392,24 @@ void _mapRect(Image_ img, int xy, int wh, Buffer c) {
     mapRect(img, XX(xy), YY(xy), XX(wh), YY(wh), c);
 }
 
+//% argsNullable
+bool equals(Image_ img, Image_ other) {
+    if (!other) {
+        return false;
+    }
+    auto len = img->length();
+    if (len != other->length()) {
+        return false;
+    }
+    return 0 == memcmp(img->data(), other->data(), len);
+}
+
 /**
  * Return a copy of the current image
  */
 //%
 Image_ clone(Image_ img) {
-    uint32_t sz = img->length();
-    Image_ r = new (gcAllocate(sizeof(RefImage) + sz)) RefImage(sz);
-    memcpy(r->data(), img->data(), img->length());
+    auto r = allocImage(img->data(), img->length());
     MEMDBG("mkImageClone: %d X %d => %p", img->width(), img->height(), r);
     return r;
 }
@@ -473,7 +463,6 @@ void flipY(Image_ img) {
  */
 //%
 Image_ transposed(Image_ img) {
-    img->makeWritable();
     Image_ r = mkImage(img->height(), img->width(), img->bpp());
 
     // this is quite slow
@@ -551,14 +540,16 @@ Image_ doubledY(Image_ img) {
         return NULL;
 
     Image_ r = mkImage(img->width(), img->height() * 2, img->bpp());
-    auto src = img->pix();
+    auto src0 = img->pix();
     auto dst = r->pix();
 
     auto w = img->width();
+    auto sbh = img->byteHeight();
     auto bh = r->byteHeight();
     auto dbl = img->bpp() == 1 ? bitdouble : nibdouble;
 
     for (int i = 0; i < w; ++i) {
+        auto src = src0 + i * sbh;
         for (int j = 0; j < bh; j += 2) {
             *dst++ = dbl[*src & 0xf];
             if (j != bh - 1)
@@ -853,7 +844,7 @@ bool overlapsWith(Image_ img, Image_ other, int x, int y) {
     return drawImageCore(img, other, x, y, -1);
 }
 
-// Image_ format:
+// Image_ format (legacy)
 //  byte 0: magic 0xe4 - 4 bit color; 0xe1 is monochromatic
 //  byte 1: width in pixels
 //  byte 2: height in pixels
@@ -861,15 +852,41 @@ bool overlapsWith(Image_ img, Image_ other, int x, int y) {
 //  byte 4...N: data 4 bits per pixels, high order nibble printed first, lines aligned to 32 bit
 //  words byte 4...N: data 1 bit per pixels, high order bit printed first, lines aligned to byte
 
+Image_ convertAndWrap(Buffer buf) {
+    if (isValidImage(buf))
+        return NEW_GC(RefImage, buf);
+
+    // What follows in this function is mostly dead code, except if people construct image buffers
+    // by hand. Probably safe to remove in a year (middle of 2020) or so. When removing, also remove
+    // from sim.
+    if (!isLegacyImage(buf))
+        return NULL;
+
+    auto tmp = mkBuffer(NULL, buf->length + 4);
+    auto hd = (ImageHeader *)tmp->data;
+    auto src = buf->data;
+    hd->magic = IMAGE_HEADER_MAGIC;
+    hd->bpp = src[0] & 0xf;
+    hd->width = src[1];
+    hd->height = src[2];
+    hd->padding = 0;
+    memcpy(hd->pixels, src + 4, buf->length - 4);
+
+    registerGCObj(tmp);
+    auto r = NEW_GC(RefImage, tmp);
+    unregisterGCObj(tmp);
+    return r;
+}
+
 //%
 void _drawIcon(Image_ img, Buffer icon, int xy, int c) {
-    if (!isValidImage(icon) || icon->data[0] != 0xe1)
+    img->makeWritable();
+
+    auto iconImg = convertAndWrap(icon);
+    if (!iconImg || iconImg->bpp() != 1)
         return;
 
-    img->makeWritable();
-    auto ii = NEW_GC(RefImage, icon);
-    drawImageCore(img, ii, XX(xy), YY(xy), c);
-    decrRC(ii);
+    drawImageCore(img, iconImg, XX(xy), YY(xy), c);
 }
 
 static void drawLineLow(Image_ img, int x0, int y0, int x1, int y1, int c) {
@@ -921,7 +938,6 @@ void drawLine(Image_ img, int x0, int y0, int x1, int y1, int c) {
         drawLine(img, x1, y1, x0, y0, c);
         return;
     }
-
     int w = x1 - x0;
     int h = y1 - y0;
 
@@ -1000,6 +1016,48 @@ void _drawLine(Image_ img, int xy, int wh, int c) {
     drawLine(img, XX(xy), YY(xy), XX(wh), YY(wh), c);
 }
 
+void blitRow(Image_ img, int x, int y, Image_ from, int fromX, int fromH) {
+    if (!img->inRange(x, 0) || !img->inRange(fromX, 0) || fromH <= 0)
+        return;
+
+    if (img->bpp() != 4 || from->bpp() != 4)
+        return;
+
+    int fy = 0;
+    int stepFY = (from->width() << 16) / fromH;
+    int endY = y + fromH;
+    if (endY > img->height())
+        endY = img->height();
+    if (y < 0) {
+        fy += -y * stepFY;
+        y = 0;
+    }
+
+    auto dp = img->pix(x, y);
+    auto sp = from->pix(fromX, 0);
+
+    while (y < endY) {
+        int p = fy >> 16, c;
+        if (p & 1)
+            c = sp[p >> 1] >> 4;
+        else
+            c = sp[p >> 1] & 0xf;
+        if (y & 1) {
+            *dp = (*dp & 0x0f) | (c << 4);
+            dp++;
+        } else {
+            *dp = (*dp & 0xf0) | (c & 0xf);
+        }
+        y++;
+        fy += stepFY;
+    }
+}
+
+//%
+void _blitRow(Image_ img, int xy, Image_ from, int xh) {
+    blitRow(img, XX(xy), YY(xy), from, XX(xh), YY(xh));
+}
+
 void fillCircle(Image_ img, int cx, int cy, int r, int c) {
     int x = r - 1;
     int y = 0;
@@ -1016,8 +1074,7 @@ void fillCircle(Image_ img, int cx, int cy, int r, int c) {
             ++y;
             err += dy;
             dy += 2;
-        }
-        else {
+        } else {
             --x;
             dx += 2;
             err += dx - (r << 1);
@@ -1051,9 +1108,7 @@ Image_ create(int width, int height) {
  */
 //%
 Image_ ofBuffer(Buffer buf) {
-    if (!isValidImage(buf))
-        return NULL;
-    return NEW_GC(RefImage, buf);
+    return ImageMethods::convertAndWrap(buf);
 }
 
 /**
@@ -1065,12 +1120,10 @@ Buffer doubledIcon(Buffer icon) {
         return NULL;
 
     auto r = NEW_GC(RefImage, icon);
+    registerGCObj(r);
     auto t = ImageMethods::doubled(r);
-    auto res = mkBuffer(t->data(), t->length());
-    decrRC(r);
-    decrRC(t);
-
-    return res;
+    unregisterGCObj(r);
+    return t->buffer;
 }
 
 } // namespace image

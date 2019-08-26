@@ -75,7 +75,7 @@ namespace storyboard {
         palette.setColors(fadeGradient);
         for (let i = 0; i < fadeLength; i++) {
             scene.setBackgroundColor(i);
-            pause(100);
+            pause(50);
         }
         scene.setBackgroundColor(0xf);
         palette.reset();

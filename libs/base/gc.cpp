@@ -209,6 +209,15 @@ struct GCBlock {
     RefObject data[0];
 };
 
+struct PendingArray {
+    PendingArray *next;
+    TValue *data;
+    unsigned len;
+};
+
+#define PENDING_ARRAY_THR 100
+
+static PendingArray *pendingArrays;
 static LLSegment gcRoots;
 LLSegment workQueue; // (ab)used by consString making
 static GCBlock *firstBlock;
@@ -250,6 +259,16 @@ void gcScanMany(TValue *data, unsigned len) {
             continue;
         MARK(v);
         workQueue.push(v);
+        if (workQueue.getLength() > PENDING_ARRAY_THR) {
+            i++;
+            // store rest of the work for later, when we have cleared the queue
+            auto pa = (PendingArray *)xmalloc(sizeof(PendingArray));
+            pa->next = pendingArrays;
+            pa->data = data + i;
+            pa->len = len - i;
+            pendingArrays = pa;
+            break;
+        }
     }
 }
 
@@ -273,12 +292,24 @@ void gcProcess(TValue v) {
     auto scan = getScanMethod(VT(v) & ~ANY_MARKED_MASK);
     if (scan)
         scan((RefObject *)v);
-    while (workQueue.getLength()) {
-        auto curr = (RefObject *)workQueue.pop();
-        VVLOG(" - %p", curr);
-        scan = getScanMethod(curr->vtable & ~ANY_MARKED_MASK);
-        if (scan)
-            scan(curr);
+    for (;;) {
+        while (workQueue.getLength()) {
+            auto curr = (RefObject *)workQueue.pop();
+            VVLOG(" - %p", curr);
+            scan = getScanMethod(curr->vtable & ~ANY_MARKED_MASK);
+            if (scan)
+                scan(curr);
+        }
+        if (pendingArrays) {
+            auto pa = pendingArrays;
+            pendingArrays = pa->next;
+            auto data = pa->data;
+            auto len = pa->len;
+            xfree(pa);
+            gcScanMany(data, len);
+        } else {
+            break;
+        }
     }
 }
 
@@ -793,7 +824,7 @@ void unregisterGCPtr(TValue ptr) {
 }
 
 void RefImage::scan(RefImage *t) {
-    gcScan((TValue)t->buffer());
+    gcScan((TValue)t->buffer);
 }
 
 void RefCollection::scan(RefCollection *t) {
@@ -821,9 +852,7 @@ void RefRecord_scan(RefRecord *r) {
 #define SIZE(off) TOWORDS(sizeof(*t) + (off))
 
 unsigned RefImage::gcsize(RefImage *t) {
-    if (t->hasBuffer())
-        return SIZE(0);
-    return SIZE(t->length());
+    return SIZE(0);
 }
 
 unsigned RefCollection::gcsize(RefCollection *t) {

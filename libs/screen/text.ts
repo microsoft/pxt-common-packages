@@ -229,10 +229,11 @@ namespace helpers {
         let lastchar = Math.idiv(fontdata.length, dataSize) - 1
         let imgBuf: Buffer
         if (mult == 1) {
-            imgBuf = control.createBuffer(4 + charSize)
-            imgBuf[0] = 0xe1
-            imgBuf[1] = dataW
-            imgBuf[2] = dataH
+            imgBuf = control.createBuffer(8 + charSize)
+            imgBuf[0] = 0x87
+            imgBuf[1] = 1
+            imgBuf[2] = dataW
+            imgBuf[4] = dataH
         }
         while (cp < text.length) {
             let xOffset = 0, yOffset = 0;
@@ -272,7 +273,7 @@ namespace helpers {
             }
 
             if (mult == 1) {
-                imgBuf.write(4, fontdata.slice(off + 2, charSize))
+                imgBuf.write(8, fontdata.slice(off + 2, charSize))
                 img.drawIcon(imgBuf, x + xOffset, y + yOffset, color)
                 x += font.charWidth
             } else {

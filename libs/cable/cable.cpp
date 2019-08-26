@@ -22,7 +22,10 @@ class CableWrap : public PulseBase {
         inpin->eventOn(DEVICE_PIN_EVENT_ON_PULSE);
     }
 
-    CableWrap() : PulseBase(PULSE_CABLE_COMPONENT_ID, PIN(TX), PIN(TX),new SAMDTCCTimer(TCC2, TCC2_IRQn)) { setupGapEvents(); }
+    CableWrap()
+        : PulseBase(PULSE_CABLE_COMPONENT_ID, PIN(TX), PIN(TX), new SAMDTCTimer(TC4, TC4_IRQn)) {
+        setupGapEvents();
+    }
 };
 SINGLETON(CableWrap);
 
@@ -62,4 +65,4 @@ void onCableError(Action body) {
     registerWithDal(PULSE_CABLE_COMPONENT_ID, PULSE_PACKET_ERROR_EVENT, body);
 }
 
-}
+} // namespace network

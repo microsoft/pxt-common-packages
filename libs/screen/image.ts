@@ -72,6 +72,12 @@ interface Image {
      */
     //% helper=imageRotated
     rotated(deg: number): Image;
+
+    /**
+     * Scale and copy a row of pixels from a texture.
+     */
+    //% helper=imageBlitRow
+    blitRow(dstX: number, dstY: number, from: Image, fromX: number, fromH: number): void;
 }
 
 interface ScreenImage extends Image {
@@ -107,10 +113,17 @@ namespace helpers {
     function _drawIcon(img: Image, icon: Buffer, xy: number, c: color): void { }
 
     //% shim=ImageMethods::_fillCircle
-    function _fillCircle(img: Image, cxy: number, r: number, c: color): void { }
+    declare function _fillCircle(img: Image, cxy: number, r: number, c: color): void;
+
+    //% shim=ImageMethods::_blitRow
+    declare function _blitRow(img:Image, xy: number, from: Image, xh: number): void;
 
     function pack(x: number, y: number) {
         return (Math.clamp(-30000, 30000, x | 0) & 0xffff) | (Math.clamp(-30000, 30000, y | 0) << 16)
+    }
+
+    export function imageBlitRow(img:Image, dstX: number, dstY: number, from: Image, fromX: number, fromH: number): void {
+        _blitRow(img, pack(dstX, dstY), from, pack(fromX, fromH))
     }
 
     export function imageDrawIcon(img: Image, icon: Buffer, x: number, y: number, c: color): void {

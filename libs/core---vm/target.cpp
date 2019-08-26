@@ -193,4 +193,8 @@ int getSerialNumber() {
     return 0;
 }
 
+uint64_t getLongSerialNumber() {
+    return 0;
+}
+
 } // namespace pxt

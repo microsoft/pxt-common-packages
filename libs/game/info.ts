@@ -30,7 +30,7 @@ namespace info {
 
     class InfoState {
         public playerStates: PlayerState[];
-        public visibilityFlag : number;
+        public visibilityFlag: number;
 
         public gameEnd: number;
         public heartImage: Image;
@@ -100,49 +100,52 @@ namespace info {
 
         infoState = new InfoState();
 
-        game.eventContext().registerFrameHandler(scene.HUD_PRIORITY, () => {
-            if (!infoState) return;
-            control.enablePerfCounter("info")
-            // show score, lifes
-            if (infoState.visibilityFlag & Visibility.Multi) {
-                const ps = players.filter(p => !!p);
-                // First draw players
-                ps.forEach(p => p.drawPlayer());
-                // Then run life over events
-                ps.forEach(p => p.raiseLifeZero(false));
-            } else { // single player
-                // show score
-                const p = player1;
-                if (p.hasScore() && (infoState.visibilityFlag & Visibility.Score)) {
-                    p.drawScore();
+        scene.createRenderable(
+            scene.HUD_Z,
+            () => {
+                if (!infoState) return;
+                control.enablePerfCounter("info")
+                // show score, lifes
+                if (infoState.visibilityFlag & Visibility.Multi) {
+                    const ps = players.filter(p => !!p);
+                    // First draw players
+                    ps.forEach(p => p.drawPlayer());
+                    // Then run life over events
+                    ps.forEach(p => p.raiseLifeZero(false));
+                } else { // single player
+                    // show score
+                    const p = player1;
+                    if (p.hasScore() && (infoState.visibilityFlag & Visibility.Score)) {
+                        p.drawScore();
+                    }
+                    // show life
+                    if (p.hasLife() && (infoState.visibilityFlag & Visibility.Life)) {
+                        p.drawLives();
+                    }
+                    p.raiseLifeZero(true);
                 }
-                // show life
-                if (p.hasLife() && (infoState.visibilityFlag & Visibility.Life)) {
-                    p.drawLives();
-                }
-                p.raiseLifeZero(true);
-            }
-            // show countdown in both modes
-            if (infoState.gameEnd !== undefined && infoState.visibilityFlag & Visibility.Countdown) {
-                const scene = game.currentScene();
-                const elapsed = infoState.gameEnd - scene.millis();
-                drawTimer(elapsed);
-                let t = elapsed / 1000;
-                if (t <= 0) {
-                    t = 0;
-                    if (!infoState.countdownExpired) {
-                        infoState.countdownExpired = true;
-                        if (infoState.countdownEndHandler) {
-                            infoState.countdownEndHandler();
-                            infoState.gameEnd = undefined;
-                        }
-                        else {
-                            game.over();
+                // show countdown in both modes
+                if (infoState.gameEnd !== undefined && infoState.visibilityFlag & Visibility.Countdown) {
+                    const scene = game.currentScene();
+                    const elapsed = infoState.gameEnd - scene.millis();
+                    drawTimer(elapsed);
+                    let t = elapsed / 1000;
+                    if (t <= 0) {
+                        t = 0;
+                        if (!infoState.countdownExpired) {
+                            infoState.countdownExpired = true;
+                            if (infoState.countdownEndHandler) {
+                                infoState.countdownEndHandler();
+                                infoState.gameEnd = undefined;
+                            }
+                            else {
+                                game.over();
+                            }
                         }
                     }
                 }
             }
-        })
+        );
     }
 
     function initMultiHUD() {
@@ -183,15 +186,15 @@ namespace info {
 
     function defaultMultiplayerHeartImage() {
         return screen.isMono ?
-                img`
+            img`
                     . . 1 . 1 . .
                     . 1 . 1 . 1 .
                     . 1 . . . 1 .
                     . . 1 . 1 . .
                     . . . 1 . . .
                 `
-                :
-                img`
+            :
+            img`
                     . . 1 . 1 . .
                     . 1 2 1 4 1 .
                     . 1 2 4 2 1 .
@@ -206,7 +209,9 @@ namespace info {
             players
                 .filter(p => p && p.hasScore())
                 .forEach(p => hs = Math.max(hs, p.score()));
-            updateHighScore(hs);
+            const curr = settings.readNumber("high-score")
+            if (curr == null || hs > curr)
+                settings.writeNumber("high-score", hs);
         }
     }
 
@@ -235,7 +240,7 @@ namespace info {
     //% help=info/high-score
     //% group="Score"
     export function highScore(): number {
-        return updateHighScore(0) || 0;
+        return settings.readNumber("high-score") || 0;
     }
 
     /**
@@ -556,7 +561,7 @@ namespace info {
             }
         }
 
-        private getState() {
+        getState(): PlayerState {
             this.init();
             return infoState.playerStates[this._player - 1];
         }
@@ -578,10 +583,8 @@ namespace info {
 
             const state = this.getState();
 
-            if (!state.score) {
+            if (state.score == null)
                 state.score = 0;
-                updateHighScore(0);
-            }
             return state.score;
         }
 
@@ -910,7 +913,6 @@ namespace info {
                 );
             }
         }
-
     }
 
     function formatDecimal(val: number) {
@@ -929,12 +931,4 @@ namespace info {
     export const player4 = new PlayerInfo(4);
     //% fixedInstance whenUsed block="player 1"
     export const player1 = new PlayerInfo(1);
-}
-
-declare namespace info {
-    /**
-     * Sends the current score and the new high score
-     */
-    //% shim=info::updateHighScore
-    function updateHighScore(score: number): number;
 }
