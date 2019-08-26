@@ -31,6 +31,20 @@ namespace controller.__internal {
     }
 }
 
+namespace controller {
+    /**
+     * Configures the pins used by the crank
+     * @param pinA 
+     * @param pinB 
+     */
+    //% blockId=controller_crank_setpins block="set crank pinA $pinA pin B $pinB"
+    //% weight=28 blockGap=8
+    //% group="Extras"
+    export function setCrankPins(pinA: DigitalInOutPin, pinB: DigitalInOutPin) {
+        controller.__internal.setCrankPins(pinA, pinB);
+    }
+}
+
 namespace controller.__internal {
     let crankEncoder: RotaryEncoder;
     export function crankPosition(): number {
@@ -40,6 +54,20 @@ namespace controller.__internal {
 
     export function setCrankPins(pinA: DigitalInOutPin, pinB: DigitalInOutPin) {
         crankEncoder = encoders.createRotaryEncoder(pinA, pinB);
+    }
+}
+
+namespace controller {
+    /**
+     * Shows an animation on the controller lights
+     * @param animation 
+     * @param duration 
+     */
+    //% blockId=controller_show_animation block="start light animation %animation=light_animation_picker|for %duration=timePicker|ms"
+    //% weight=30 blockGap=8
+    //% group="Extras"
+    export function startLightAnimation(animation: light.NeoPixelAnimation, duration: number) {
+        controller.__internal.startLightAnimation(animation, duration);
     }
 }
 
