@@ -14,7 +14,7 @@ namespace controller {
     //% weight=30 blockGap=8
     //% group="Extras"
     export function lightLevel(): number {
-        return input.lightLevel();
+        return controller.__internal.lightLevel();
     }
 
 
@@ -27,12 +27,6 @@ namespace controller {
     //% weight=84 blockGap=12
     //% group="Extras"
     export function onLightConditionChanged(condition: ControllerLightCondition, handler: () => void): void {
-        const state = sceneState();
-        if (!state.lightHandlers) state.lightHandlers = {};
-        state.lightHandlers[condition] = handler;
-        input.onLightConditionChanged(<LightCondition><number>condition, function() {
-            const st = sceneState();
-            st.lastLightCondition = condition;
-        })
+        controller.__internal.onLightConditionChanged(condition, handler);
     } 
 }

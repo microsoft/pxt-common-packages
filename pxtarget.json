@@ -37,6 +37,7 @@
         "libs/lora",
         "libs/power",
         "libs/controller",
+        "libs/controller---none",
         "libs/color-sensor",
         "libs/light-spectrum-sensor",
         "libs/edge-connector",

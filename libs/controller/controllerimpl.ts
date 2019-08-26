@@ -110,3 +110,58 @@ namespace controller.__internal {
         strip.show();
     }
 }
+
+namespace controller.__internal {
+    export function lightLevel(): number {
+        return input.lightLevel();
+    }
+
+
+    export function onLightConditionChanged(condition: ControllerLightCondition, handler: () => void): void {
+        const state = sceneState();
+        if (!state.lightHandlers) state.lightHandlers = {};
+        state.lightHandlers[condition] = handler;
+        input.onLightConditionChanged(<LightCondition><number>condition, function () {
+            const st = sceneState();
+            st.lastLightCondition = condition;
+        })
+    }
+}
+
+namespace controller.__internal {
+    export function temperature(unit: TemperatureUnit): number {
+        return input.temperature(unit);
+    }
+}
+
+namespace controller.__internal {
+    let vibrationPin: DigitalInOutPin;
+    let vibrationEnd: number;
+
+    function updateVibration() {
+        // turn off vibration if needed
+        if (vibrationEnd > 0 && vibrationEnd < control.millis()) {
+            if (vibrationPin)
+                vibrationPin.digitalWrite(false);
+            vibrationEnd = -1;
+        }
+    }
+
+    function initVibration(s: scene.Scene) {
+        if (!vibrationPin)
+            vibrationPin = pins.pinByCfg(DAL.CFG_PIN_VIBRATION);
+        vibrationEnd = -1;
+        s.eventContext.registerFrameHandler(scene.UPDATE_PRIORITY, updateVibration);
+    }
+
+    export function vibrate(millis: number) {
+        const off = vibrationEnd <= 0;
+        vibrationEnd = millis <= 0 ? -1 : (control.millis() + Math.min(3000, millis));
+        if (off) {
+            if (vibrationPin)
+                vibrationPin.digitalWrite(true);
+        }
+    }
+
+    scene.Scene.initializers.push(initVibration);
+}
