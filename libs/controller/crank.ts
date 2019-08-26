@@ -1,5 +1,4 @@
 namespace controller {
-    let crankEncoder: RotaryEncoder;
     /**
      * Gets the current position of the crank.
      */
@@ -7,8 +6,7 @@ namespace controller {
     //% weight=29 blockGap=8
     //% group="Extras"
     export function crankPosition(): number {
-        const crank = crankEncoder || encoders.defaultEncoder;
-        return crank ? crank.position() : 0;
+        return controller.__internal.crankPosition();
     }
 
     /**
@@ -20,6 +18,6 @@ namespace controller {
     //% weight=28 blockGap=8
     //% group="Extras"
     export function setCrankPins(pinA: DigitalInOutPin, pinB: DigitalInOutPin) {
-        crankEncoder = encoders.createRotaryEncoder(pinA, pinB);
+        controller.__internal.setCrankPins(pinA, pinB);
     }
 }

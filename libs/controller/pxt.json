@@ -10,7 +10,8 @@
         "thermometer.ts",
         "controller.ts",
         "light.ts",
-        "crank.ts"
+        "crank.ts",
+        "controllerimpl.ts"
     ],
     "public": true,
     "dependencies": {

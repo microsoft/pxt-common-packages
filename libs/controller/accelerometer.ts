@@ -80,14 +80,7 @@ namespace controller {
     //% gesture.fieldOptions.columns=3
     //% group="Extras"
     export function onGesture(gesture: ControllerGesture, handler: () => void) {
-        const state = sceneState();
-        if (!state.gestureHandlers) state.gestureHandlers = {};
-        state.gestureHandlers[gesture] = handler;
-
-        input.onGesture(<Gesture><number>gesture, function () {
-            const st = sceneState();
-            st.lastGesture = gesture;
-        })
+        controller.__internal.onGesture(gesture, handler);
     }
 
     /**
@@ -97,19 +90,7 @@ namespace controller {
      * @param handler
      */
     export function onCustomGesture(id: number, update: () => boolean, handler: () => void) {
-        const state = sceneState();
-        if (!state.customGestureHandlers) state.customGestureHandlers = {};
-        state.customGestureHandlers[id] = <CustomGestureHandler>{ update, handler };
-
-        input.onCustomGesture(id,
-            function () {
-                const st = sceneState();
-                const h = st.customGestureHandlers && st.customGestureHandlers[id];
-                return h && h.update();
-            }, function () {
-                const st = sceneState();
-                st.lastCustomGesture = id;
-            })
+        controller.__internal.onCustomGesture(id, update, handler);
     }
 
     /**
@@ -124,6 +105,6 @@ namespace controller {
     //% dimension.fieldOptions.columns=2
     //% group="Extras"
     export function acceleration(dimension: ControllerDimension): number {
-        return input.acceleration(<Dimension><number>dimension);
+        return controller.__internal.acceleration(dimension);
     }
 }
