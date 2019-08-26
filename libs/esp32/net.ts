@@ -1,6 +1,10 @@
 namespace esp32spi {
     export class Controller {
-        constructor() {}        
+        constructor() {}
+
+        public scanNetworks(): net.AccessPoint[] {
+            return [];
+        }
 
         public socket(): number {
             return -1;

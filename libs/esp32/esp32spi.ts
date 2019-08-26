@@ -7,12 +7,6 @@ namespace esp32spi {
         console.log(msg);
     }
 
-    export class AccessPoint {
-        rssi: number;
-        encryption: number;
-        constructor(public ssid: string) { }
-    }
-
     // pylint: disable=bad-whitespace
     const _SET_NET_CMD = 0x10
     const _SET_PASSPHRASE_CMD = 0x11
@@ -340,14 +334,14 @@ namespace esp32spi {
         /** The results of the latest SSID scan. Returns a list of dictionaries with
     'ssid', 'rssi' and 'encryption' entries, one for each AP found
 */
-        private getScanNetworks(): AccessPoint[] {
+        private getScanNetworks(): net.AccessPoint[] {
             let names = this.sendCommandGetResponse(_SCAN_NETWORKS, undefined, undefined)
             // print("SSID names:", names)
             // pylint: disable=invalid-name
             let APs = []
             let i = 0
             for (let name of names) {
-                let a_p = new AccessPoint(name.toString())
+                let a_p = new net.AccessPoint(name.toString())
                 let rssi = this.sendCommandGetResponse(_GET_IDX_RSSI_CMD, [buffer1(i)])[0]
                 a_p.rssi = pins.unpackBuffer("<i", rssi)[0]
                 let encr = this.sendCommandGetResponse(_GET_IDX_ENCT_CMD, [buffer1(1)])[0]
@@ -362,7 +356,7 @@ namespace esp32spi {
      Returns a list of dictionaries with 'ssid', 'rssi' and 'encryption' entries,
      one for each AP found
     */
-        public scanNetworks(): AccessPoint[] {
+        public scanNetworks(): net.AccessPoint[] {
             this.startScanNetworks()
             // attempts
             for (let _ = 0; _ < 10; ++_) {

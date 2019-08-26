@@ -4,6 +4,12 @@ namespace net {
         console.add(logPriority, `net: ` + msg);
     }
 
+    export class AccessPoint {
+        rssi: number;
+        encryption: number;
+        constructor(public ssid: string) { }
+    }
+
     export interface Socket {
         connect(): void;
         send(data: string | Buffer): void;
