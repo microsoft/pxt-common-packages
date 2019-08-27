@@ -1,4 +1,8 @@
 namespace settings {
+    const RUN_KEY = "#run";
+    const SCOPE_KEY = "#scope";
+    const SECRETS_KEY = "#secrets";
+
     //% shim=pxt::seedAddRandom
     declare function seedAddRandom(n: number): void;
 
@@ -21,22 +25,22 @@ namespace settings {
     declare function _list(prefix: string): string[];
 
     export function runNumber() {
-        return readNumber("#run") || 0
+        return readNumber(RUN_KEY) || 0
     }
 
     function setScope(scope: string) {
         if (!scope || scope.length > 100)
             control.panic(922)
-        const currScope = readString("#scope")
+        const currScope = readString(SCOPE_KEY)
         if (currScope != scope) {
             _userClean()
-            writeString("#scope", scope)
+            writeString(SCOPE_KEY, scope)
         }
     }
 
     function initScopes() {
         const rn = runNumber() + 1
-        writeNumber("#run", rn)
+        writeNumber(RUN_KEY, rn)
 
         seedAddRandom(control.deviceSerialNumber() & 0x7fffffff)
         seedAddRandom(rn)
@@ -152,12 +156,25 @@ namespace settings {
         return _exists(key)
     }
 
-    /**
-     * Reads a map of global secrets.
-     */
-    export function readSecrets(): any {
+
+    export function writeSecret(name: string, value: any) {
+        const secrets = readSecrets();
+        secrets[name] = value;
+        writeString(SECRETS_KEY, JSON.stringify(secrets));
+    }
+
+    export function readSecret(name: string): any {
+        const secrets = readSecrets();
+        return secrets[name];
+    }
+
+    export function clearSecrets() {
+        writeString(SECRETS_KEY, "{}");
+    }
+
+    function readSecrets(): any {
         try {
-            const src = readString("#secrets") || "{}";
+            const src = readString(SECRETS_KEY) || "{}";
             return JSON.parse(src);
         } catch {
             return {};

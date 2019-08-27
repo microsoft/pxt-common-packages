@@ -364,6 +364,10 @@ namespace esp32spi {
                 // pylint: disable=invalid-name
                 let APs = this.getScanNetworks()
                 if (APs) {
+                    if(this.debug) {
+                        for(const ap of APs)
+                            this.log(0, `  ${ap.ssid} => RSSI ${ap.rssi}`)
+                    }
                     return APs
                 }
 
@@ -454,11 +458,33 @@ namespace esp32spi {
             return this.status == WL_CONNECTED
         }
 
+        get isIdle(): boolean {
+            return this.status == WL_IDLE_STATUS;
+        }
+
+        /**
+         * Uses RSSID and password in settings to connect to a compatible AP
+         */
+        public connect(): boolean {
+            if (this.isConnected) return true;
+
+            const wifis = settings.readSecret("wifi");
+            const ssids = Object.keys(wifis);
+            const networks = this.scanNetworks()
+                .filter(network => ssids.indexOf(network.ssid) > -1);
+            const network = networks[0];
+            if (network)
+                return this.connectAP(network.ssid, wifis[network.ssid]) == WL_CONNECTED;
+
+            // no compatible SSID
+            return false;
+        }
+
         /** 
          * Connect to an access point with given name and password.
          * Will retry up to 10 times and return on success
         */
-        public connectAP(ssid: string, password: string): number {
+        private connectAP(ssid: string, password: string): number {
             this.log(0, `Connect to AP ${ssid}`)
             if (password) {
                 this.wifiSetPassphrase(ssid, password)
@@ -492,7 +518,10 @@ namespace esp32spi {
     a 4 bytearray
     */
         public hostbyName(hostname: string): Buffer {
-            let resp = this.sendCommandGetResponse(_REQ_HOST_BY_NAME_CMD, [control.createBufferFromUTF8(hostname)])
+            if(!this.connect())
+                return undefined;
+
+                let resp = this.sendCommandGetResponse(_REQ_HOST_BY_NAME_CMD, [control.createBufferFromUTF8(hostname)])
             if (resp[0][0] != 1) {
                 this.fail("Failed to request hostname")
             }
@@ -505,8 +534,8 @@ namespace esp32spi {
     (ttl). Returns a millisecond timing value
     */
         public ping(dest: string, ttl: number = 250): number {
-            if (!this.wasConnected)
-                return -1
+            if(!this.connect())
+                return -1;
 
             // convert to IP address
             let ip = this.hostbyName(dest)
@@ -521,6 +550,9 @@ namespace esp32spi {
     can then be passed to the other socket commands
     */
         public socket(): number {
+            if (!this.connect())
+                this.fail("can't connect");
+
             this.log(0, "*** Get socket")
 
             let resp0 = this.sendCommandGetResponse(_GET_SOCKET_CMD)
