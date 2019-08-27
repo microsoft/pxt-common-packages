@@ -32,7 +32,7 @@ namespace azureiot {
 
         const connString = settings.readSecret(SECRETS_KEY);
         if (!connString)
-            throw new Error(`missing Azure IoT Hub connection string '${SECRETS_KEY}' secret`)
+            throw `missing Azure IoT Hub connection string '${SECRETS_KEY}' secret`;
         const connStringParts = parsePropertyBag(connString, ";");
         const iotHubHostName = connStringParts["HostName"];
         const deviceId = connStringParts["DeviceName"];
