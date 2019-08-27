@@ -175,8 +175,10 @@ void ST7735::sendCmdSeq(const uint8_t *buf) {
 }
 
 void ST7735::setAddrWindow(int x, int y, int w, int h) {
-    uint8_t cmd0[] = {ST7735_RASET, 0, (uint8_t)x, 0, (uint8_t)(x + w - 1)};
-    uint8_t cmd1[] = {ST7735_CASET, 0, (uint8_t)y, 0, (uint8_t)(y + h - 1)};
+    w += x - 1;
+    h += y - 1;
+    uint8_t cmd0[] = {ST7735_RASET, 0, (uint8_t)x, (uint8_t)(w >> 8), (uint8_t)w};
+    uint8_t cmd1[] = {ST7735_CASET, 0, (uint8_t)y, (uint8_t)(h >> 8), (uint8_t)h};
     sendCmd(cmd1, sizeof(cmd1));
     sendCmd(cmd0, sizeof(cmd0));
 }
