@@ -11,9 +11,7 @@ function test() {
     log(`MAC addr: ${esp.MACaddress.toHex()}`)
     log("Temp: " + esp.getTemperature())
 
-    esp.connect();
-
-    if (!esp.isConnected) {
+    if (!esp.connect()) {
         log("can't connect")
         return
     }
