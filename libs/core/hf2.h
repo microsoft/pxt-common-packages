@@ -49,7 +49,7 @@ class HF2 : public CodalUSBInterface {
     virtual const InterfaceInfo *getInterfaceInfo();
     int sendSerial(const void *data, int size, int isError = 0);
 
-    virtual bool enableWebUSB() { return true; }
+    virtual bool enableWebUSB() { return !useHID; }
 };
 
 class DummyIface : public CodalUSBInterface {
