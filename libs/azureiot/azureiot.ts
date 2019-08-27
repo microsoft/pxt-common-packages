@@ -5,6 +5,8 @@ const enum AzureIotEvent {
 }
 
 namespace azureiot {
+    export const SECRETS_KEY = "azureiot"
+
     export let logPriority = ConsolePriority.Silent;
 
     type SMap<T> = { [s: string]: T; }
@@ -24,15 +26,13 @@ namespace azureiot {
             _mqttClient = createMQTTClient();
         return _mqttClient;
     }
-    
-    export const CONNECTION_STRING_KEY = "azureiot_connstring"
 
     function createMQTTClient() {
         _messageBusId = control.allocateNotifyEvent(); // TODO
 
-        const connString = settings.readSecret(CONNECTION_STRING_KEY);
+        const connString = settings.readSecret(SECRETS_KEY);
         if (!connString)
-            throw new Error(`missing Azure IoT Hub connection string '${CONNECTION_STRING_KEY}' secret`)
+            throw new Error(`missing Azure IoT Hub connection string '${SECRETS_KEY}' secret`)
         const connStringParts = parsePropertyBag(connString, ";");
         const iotHubHostName = connStringParts["HostName"];
         const deviceId = connStringParts["DeviceName"];
