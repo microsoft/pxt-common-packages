@@ -78,7 +78,7 @@ class WDisplay {
         offX = (cfg0 >> 8) & 0xff;
         offY = (cfg0 >> 16) & 0xff;
 
-        DMESG("configure screen: FRMCTR1=%p MADCTL=%p", frmctr1, madctl);
+        DMESG("configure screen: FRMCTR1=%p MADCTL=%p type=%d", frmctr1, madctl, dispTp);
 
         if (spi) {
             auto freq = (cfg2 & 0xff);
