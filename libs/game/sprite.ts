@@ -327,6 +327,9 @@ class Sprite extends sprites.BaseSprite {
         this.top = value - this.height;
     }
 
+    // The z field (``get z()`` / ``set z()``) is declared in sprite.d.ts
+    // as it is defnied in the superclass
+
     /**
      * The type of sprite
      */
