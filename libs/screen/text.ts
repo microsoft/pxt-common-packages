@@ -113,7 +113,7 @@ namespace helpers {
         x |= 0
         y |= 0
         if (!font) font = image.font8
-        if (!color) color = 1
+        if (color === undefined) color = 1
         let x0 = x
         let cp = 0
         let byteHeight = (font.charHeight + 7) >> 3
