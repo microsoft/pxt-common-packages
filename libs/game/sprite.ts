@@ -252,20 +252,6 @@ class Sprite extends sprites.BaseSprite {
         }
     }
 
-    //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine block="z (depth)"
-    get z(): number {
-        return this._z;
-    }
-    //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine block="z (depth)"
-    set z(value: number) {
-        if (value != this._z) {
-            this._z = value;
-            game.currentScene().flags |= scene.Flag.NeedsSorting;
-        }
-    }
-
     __visible() {
         return !(this.flags & SpriteFlag.Invisible);
     }
@@ -340,6 +326,9 @@ class Sprite extends sprites.BaseSprite {
     set bottom(value: number) {
         this.top = value - this.height;
     }
+
+    // The z field (``get z()`` / ``set z()``) is declared in sprite.d.ts
+    // as it is defnied in the superclass
 
     /**
      * The type of sprite

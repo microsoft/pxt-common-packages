@@ -10,6 +10,7 @@
         "hitbox.ts",
         "sprites.ts",
         "sprite.ts",
+        "sprite.d.ts",
         "spritemap.ts",
         "spriteevents.ts",
         "spriteset.ts",
