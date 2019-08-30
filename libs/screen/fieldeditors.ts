@@ -9,6 +9,7 @@ namespace images {
     //% img.fieldEditor="sprite"
     //% img.fieldOptions.taggedTemplate="img"
     //% img.fieldOptions.decompileIndirectFixedInstances="true"
+    //% img.fieldOptions.filter="!tile !dialog"
     //% weight=100 group="Create" duplicateShadowOnDrag
     export function _spriteImage(img: Image) {
         return img
@@ -44,9 +45,23 @@ namespace images {
     //% img.fieldOptions.taggedTemplate="img"
     //% img.fieldOptions.decompileIndirectFixedInstances="true"
     //% img.fieldOptions.sizes="16,16;32,32;8,8"
+    //% img.fieldOptions.filter="tile"
     //% weight=100 group="Create"
     //% blockHidden=1 duplicateShadowOnDrag
     export function _tileImage(img: Image) {
+        return img
+    }
+
+    //% blockId=dialog_image_picker block="%img"
+    //% shim=TD_ID
+    //% img.fieldEditor="sprite"
+    //% img.fieldOptions.taggedTemplate="img"
+    //% img.fieldOptions.decompileIndirectFixedInstances="true"
+    //% img.fieldOptions.sizes="15,15;18,18;6,6;9,9;12,12"
+    //% img.fieldOptions.filter="dialog"
+    //% weight=100 group="Create"
+    //% blockHidden=1 duplicateShadowOnDrag
+    export function _dialogImage(img: Image) {
         return img
     }
 
