@@ -17,7 +17,8 @@ namespace pxsim.control {
     export function reset() {
         pxsim.Runtime.postMessage(<pxsim.SimulatorCommandMessage>{
             type: "simulator",
-            command: "restart"
+            command: "restart",
+            controlReset: true
         })
         const cb = getResume();
     }
