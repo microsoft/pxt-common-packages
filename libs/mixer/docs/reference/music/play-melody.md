@@ -16,7 +16,7 @@ The melody is shown in the ``||music:play melody||`` block as note symbols which
 music.playMelody("E B C5 A B G A F ", 120);
 ```
 
-The medlodies are most often created in the Melody Editor from the block so that valid notes are chosen and the correct melody length is set.
+The melodies are most often created in the Melody Editor from the block so that valid notes are chosen and the correct melody length is set.
 
 ## Parameters
 
