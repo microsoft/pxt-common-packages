@@ -596,8 +596,8 @@ class Sprite extends sprites.BaseSprite {
         if (this.flags & SpriteFlag.ShowPhysics) {
             const font = image.font5;
             const margin = 2;
-            let tx = this.left;
-            let ty = this.bottom + margin;
+            let tx = l;
+            let ty = this.bottom + margin - camera.drawOffsetY;
             screen.print(`${this.x >> 0},${this.y >> 0}`, tx, ty, 1, font);
             tx -= font.charWidth;
             if (this.vx || this.vy) {
