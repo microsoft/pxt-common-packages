@@ -57,7 +57,7 @@ namespace images {
     //% img.fieldEditor="sprite"
     //% img.fieldOptions.taggedTemplate="img"
     //% img.fieldOptions.decompileIndirectFixedInstances="true"
-    //% img.fieldOptions.sizes="15,15;18,18;6,6;9,9;12,12"
+    //% img.fieldOptions.sizes="15,15;18,18;21,21;24,24;9,9;12,12"
     //% img.fieldOptions.filter="dialog"
     //% weight=100 group="Create"
     //% blockHidden=1 duplicateShadowOnDrag
