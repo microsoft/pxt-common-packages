@@ -196,9 +196,26 @@ namespace texteffects {
 }
 
 interface Image {
+    /**
+     * Renders text to the image
+     * @param text the characters to print
+     * @param x the left corner coordinate
+     * @param y the upper corner coordinate
+     * @param color the color of the characters
+     * @param font the desired font
+     */
+    //% blockId=imagePrint block="print $text at x $x y $y $color"
     //% helper=imagePrint
     print(text: string, x: number, y: number, color?: number, font?: image.Font, offsets?: texteffects.TextEffectState[]): void;
 
+    /**
+     * Renders text to the image from the center of the screen
+     * @param text the characters to print
+     * @param y the upper corner coordinate
+     * @param color the color of the characters
+     * @param font the desired font
+     */
+    //% blockId=imagePrintCenter block="print center $text at y $y $color"
     //% helper=imagePrintCenter
     printCenter(text: string, y: number, color?: number, font?: image.Font): void;
 }
