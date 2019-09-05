@@ -30,7 +30,7 @@ namespace azureiot {
     function createMQTTClient() {
         _messageBusId = control.allocateNotifyEvent(); // TODO
 
-        const connString = settings.readSecret(SECRETS_KEY);
+        const connString = settings.programSecrets.readSecret(SECRETS_KEY);
         if (!connString)
             control.panic(control.PXT_PANIC.PANIC_SETTINGS_MISSING);
         const connStringParts = parsePropertyBag(connString, ";");

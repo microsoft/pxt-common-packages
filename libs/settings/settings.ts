@@ -1,7 +1,8 @@
 namespace settings {
     const RUN_KEY = "#run";
     const SCOPE_KEY = "#scope";
-    const SECRETS_KEY = "#secrets";
+    const DEVICE_SECRETS_KEY = "#secrets";
+    const SECRETS_KEY = "__secrets";
 
     //% shim=pxt::seedAddRandom
     declare function seedAddRandom(n: number): void;
@@ -156,28 +157,68 @@ namespace settings {
         return _exists(key)
     }
 
-
-    export function writeSecret(name: string, value: any) {
-        const secrets = readSecrets();
-        secrets[name] = value;
-        writeString(SECRETS_KEY, JSON.stringify(secrets));
+    function clone(v: any): any {
+        if (v == null) return null
+        return JSON.parse(JSON.stringify(v))
     }
 
-    export function readSecret(name: string): any {
-        const secrets = readSecrets();
-        return secrets[name];
+    function isKV(v: any) {
+        return !!v && typeof v === "object" && !Array.isArray(v)
     }
 
-    export function clearSecrets() {
-        writeString(SECRETS_KEY, "{}");
+    function jsonMergeFrom(trg: any, src: any) {
+        if (!src) return;
+        Object.keys(src).forEach(k => {
+            if (isKV(trg[k]) && isKV(src[k]))
+                jsonMergeFrom(trg[k], src[k]);
+            else trg[k] = clone(src[k]);
+        });
     }
 
-    function readSecrets(): any {
-        try {
-            const src = readString(SECRETS_KEY) || "{}";
-            return JSON.parse(src);
-        } catch {
-            return {};
+    //% fixedInstances
+    export class SecretStore {
+        constructor(private key: string) { }
+        
+        setSecret(name: string, value: any) {
+            const secrets = this.readSecrets();
+            secrets[name] = value;
+            writeString(SECRETS_KEY, JSON.stringify(secrets));
+        }
+
+        updateSecret(name: string, value: any) {
+            const secrets = this.readSecrets();
+            secrets[name] = jsonMergeFrom(secrets[name], value);
+            writeString(SECRETS_KEY, JSON.stringify(secrets));
+        }
+
+        readSecret(name: string): any {
+            const secrets = this.readSecrets();
+            return secrets[name];
+        }
+
+        clearSecrets() {
+            writeString(this.key, "{}");
+        }
+
+        readSecrets(): any {
+            try {
+                const src = readString(this.key) || "{}";
+                return JSON.parse(src);
+            } catch {
+                return {};
+            }
         }
     }
+
+    /**
+     * Secrets shared by any program on the device
+     */
+    //% fixedInstance whenUsed block="device secrets"
+    export const deviceSecrets = new SecretStore(DEVICE_SECRETS_KEY);
+
+    /**
+     * Program secrets
+     */
+    //% fixedInstance whenUsed block="program secrets"
+    export const programSecrets = new SecretStore(SECRETS_KEY);
 }

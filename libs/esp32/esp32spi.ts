@@ -470,7 +470,7 @@ namespace esp32spi {
         public connect(): boolean {
             if (this.isConnected) return true;
 
-            const wifis = settings.readSecret(SECRETS_KEY);
+            const wifis = settings.programSecrets.readSecret(SECRETS_KEY);
             const ssids = Object.keys(wifis);
             const networks = this.scanNetworks()
                 .filter(network => ssids.indexOf(network.ssid) > -1);
