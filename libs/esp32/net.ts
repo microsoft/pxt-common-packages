@@ -44,8 +44,8 @@ namespace esp32spi {
         }
     }
 
-    let _defaultController: Controller;
-    export function defaultController(): Controller {
+    let _defaultController: SPIController;
+    export function defaultController(): SPIController {
         if (_defaultController) return _defaultController;
 
         const cs = pins.pinByCfg(DAL.CFG_PIN_ESP32_CS)

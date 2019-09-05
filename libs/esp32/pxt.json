@@ -16,5 +16,4 @@
         "net": "file:../net",
         "settings": "file:../settings"
     }
-
 }
