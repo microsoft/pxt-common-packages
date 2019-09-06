@@ -4,7 +4,7 @@
     "files": [
         "README.md",
         "animation.ts",
-        "animation-old.ts",
+        "legacy.ts",
         "targetoverrides.ts"
     ],
     "testFiles": [
