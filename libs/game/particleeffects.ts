@@ -135,7 +135,7 @@ namespace effects {
     //% blockNamespace=sprites
     //% group="Effects" weight=89
     //% help=effects/clear-particles
-    export function clearParticles(anchor: Sprite | particles.ParticleAnchor) {
+    export function clearParticles(anchor: particles.ParticleAnchor) {
         const sources = game.currentScene().particleSources;
         if (!sources) return;
         sources
