@@ -340,7 +340,10 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 );
 
                 if (tm.isObstacle(x0, y0)) {
-                    collidedTiles.push(tm.getObstacle(x0, y0));
+                    const obstacle = tm.getObstacle(x0, y0);
+                    if (!collidedTiles.some(o => o.tileIndex === obstacle.tileIndex)) {
+                        collidedTiles.push(obstacle);
+                    }
                 }
             }
 
@@ -416,7 +419,10 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 );
 
                 if (tm.isObstacle(x0, y0)) {
-                    collidedTiles.push(tm.getObstacle(x0, y0));
+                    const obstacle = tm.getObstacle(x0, y0);
+                    if (!collidedTiles.some(o => o.tileIndex === obstacle.tileIndex)) {
+                        collidedTiles.push(obstacle);
+                    }
                 }
             }
 
