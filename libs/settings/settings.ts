@@ -191,8 +191,13 @@ namespace settings {
             writeString(SECRETS_KEY, JSON.stringify(secrets));
         }
 
-        readSecret(name: string): any {
+        readSecret(name: string, ensure: boolean = false): any {
             const secrets = this.readSecrets();
+            const secret = secrets[name];
+            if (ensure && !secret) {
+                control.dmesg("missing secret " + name);
+                control.panic(control.PXT_PANIC.PANIC_SETTINGS_SECRET_MISSING);
+            }
             return secrets[name];
         }
 

@@ -30,9 +30,7 @@ namespace azureiot {
     function createMQTTClient() {
         _messageBusId = control.allocateNotifyEvent(); // TODO
 
-        const connString = settings.programSecrets.readSecret(SECRETS_KEY);
-        if (!connString)
-            control.panic(control.PXT_PANIC.PANIC_SETTINGS_SECRET_MISSING);
+        const connString = settings.programSecrets.readSecret(SECRETS_KEY, true);
         const connStringParts = parsePropertyBag(connString, ";");
         const iotHubHostName = connStringParts["HostName"];
         const deviceId = connStringParts["DeviceName"];
