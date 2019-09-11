@@ -1,10 +1,12 @@
 
 function wifiSystemMenu() {
-
+    const wifi = esp32spi.defaultController();
+    if (!wifi) {
+        game.splash("wifi not configured");
+        return;        
+    }
 
     game.pushScene();
-
-    const wifi = esp32spi.defaultController();
     wifi.connect();
 
     let accessPoints: net.AccessPoint[];
@@ -20,6 +22,7 @@ function wifiSystemMenu() {
         }
     }
     controller.A.onEvent(ControllerButtonEvent.Pressed, scan);
+    controller.B.onEvent(ControllerButtonEvent.Pressed, () => game.popScene());
     game.onPaint(() => {
         screen.print(wifi.isConnected ? "connected" : "disconnected", 4, 12);
         if (accessPoints) {
@@ -29,7 +32,6 @@ function wifiSystemMenu() {
             }
         }
     })
-    controller.B.pauseUntil(ControllerButtonEvent.Pressed);
 }
 
 scene.systemMenu.addEntry(
@@ -37,19 +39,19 @@ scene.systemMenu.addEntry(
     wifiSystemMenu,
     img`
     . . . . . . . . . . . . . . . .
-    . . . . . . 1 1 1 1 . . . . . .
-    . . . . 1 1 1 1 1 1 1 1 . . . .
-    . . . 1 1 1 1 1 1 1 1 1 1 . . .
-    . . 1 1 1 . . . . . . 1 1 1 . .
-    . 1 1 1 . . . . . . . . 1 1 1 .
-    1 1 1 . . . 1 1 1 1 . . . 1 1 1
-    . 1 . . . 1 1 1 1 1 1 . . . 1 .
-    . . . . 1 1 1 1 1 1 1 1 . . . .
-    . . . 1 1 1 . . . . 1 1 1 . . .
-    . . . . 1 . . . . . . 1 . . . .
-    . . . . . . . 1 1 . . . . . . .
-    . . . . . . 1 1 1 1 . . . . . .
-    . . . . . . 1 1 1 1 . . . . . .
-    . . . . . . . 1 1 . . . . . . .
+    . . . . . . 8 8 8 8 . . . . . .
+    . . . . 8 8 8 6 6 6 8 8 . . . .
+    . . . 8 6 6 6 6 6 6 6 6 8 . . .
+    . . 8 6 6 . . . . . . 6 6 8 . .
+    . 8 6 6 . . . . . . . . 6 6 8 .
+    8 6 6 . . . 8 8 8 8 . . . 6 6 8
+    . 6 . . . 8 6 6 6 6 8 . . . 6 .
+    . . . . 8 6 6 6 6 6 6 8 . . . .
+    . . . 8 6 6 . . . . 6 6 8 . . .
+    . . . . 6 . . . . . . 6 . . . .
+    . . . . . . . 8 8 . . . . . . .
+    . . . . . . 8 6 6 8 . . . . . .
+    . . . . . . 6 6 6 6 . . . . . .
+    . . . . . . . 6 6 . . . . . . .
     . . . . . . . . . . . . . . . .
 `);
