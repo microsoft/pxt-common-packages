@@ -1,12 +1,13 @@
 
 function wifiSystemMenu() {
+    game.pushScene();
     const wifi = esp32spi.defaultController();
     if (!wifi) {
         game.splash("wifi not configured");
+        game.popScene();
         return;        
     }
 
-    game.pushScene();
     wifi.connect();
 
     let accessPoints: net.AccessPoint[];

@@ -52,8 +52,10 @@ namespace esp32spi {
         const busy = pins.pinByCfg(DAL.CFG_PIN_WIFI_BUSY);
         const reset = pins.pinByCfg(DAL.CFG_PIN_WIFI_RESET);
         const gpio0 = pins.pinByCfg(DAL.CFG_PIN_WIFI_GPIO0);
-        if (!cs || !busy || !reset)
+        if (!cs || !busy || !reset) {
+            control.dmesg(`cs ${!!cs} busy ${!!busy} reset ${!!reset}`)
             return undefined;
+        }
 
         const mosi = pins.pinByCfg(DAL.CFG_PIN_WIFI_MOSI);
         const miso = pins.pinByCfg(DAL.CFG_PIN_WIFI_MISO);
