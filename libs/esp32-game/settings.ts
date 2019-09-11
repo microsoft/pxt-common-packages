@@ -3,7 +3,7 @@ function wifiSystemMenu() {
     game.pushScene();
     const wifi = esp32spi.defaultController();
     if (!wifi) {
-        game.splash("wifi not configured");
+        game.splash("WiFi module not configured");
         game.popScene();
         return;        
     }
