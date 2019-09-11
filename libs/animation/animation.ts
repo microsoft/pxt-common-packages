@@ -505,11 +505,11 @@ namespace animation {
      * @param frameInterval the time between changes, eg: 500
      */
     //% blockId=run_image_animation
-    //% block="%sprite=variables_get(mySprite) animate frames %frames=lists_create_with with interval %frameInterval=timePicker ms"
+    //% block="animate $sprite=variables_get(mySprite) frames $frames=lists_create_with interval (ms) $frameInterval=timePicker loop $loop=toggleOnOff"
     //% frames.defl=screen_image_picker
     //% group="Animate"
-    export function runImageAnimation(sprite: Sprite, frames: Image[], frameInterval?: number) {
-        const anim = new ImageAnimation(sprite, frames, frameInterval || 500);
+    export function runImageAnimation(sprite: Sprite, frames: Image[], frameInterval?: number, loop?: boolean) {
+        const anim = new ImageAnimation(sprite, frames, frameInterval || 500, !!loop);
         anim.init();
     }
 
@@ -520,41 +520,12 @@ namespace animation {
      * @param duration how long the animation should play for, eg: 500
      */
     //% blockId=run_movement_animation
-    //% block="%sprite=variables_get(mySprite) follow path %pathString=animation_path for %duration=timePicker ms"
+    //% block="animate $sprite=variables_get(mySprite) with $pathString=animation_path for (ms) $duration=timePicker loop $loop=toggleOnOff"
+    //% duration.defl=2000
     //% group="Animate"
-    export function runMovementAnimation(sprite: Sprite, pathString: string, duration?: number) {
+    export function runMovementAnimation(sprite: Sprite, pathString: string, duration?: number, loop?: boolean) {
         const path = Path.parse(new Point(sprite.x, sprite.y), pathString);
-        const anim = new MovementAnimation(sprite, path, duration / path.length);
-        anim.init();
-    }
-
-    /**
-     * Create and run an image animation on a sprite
-     * @param frames the frames to animate through
-     * @param sprite the sprite to animate on
-     * @param frameInterval the time between changes, eg: 500
-     */
-    //% blockId=loop_image_animation
-    //% block="loop %sprite=variables_get(mySprite) animate frames %frames=lists_create_with with interval %frameInterval=timePicker ms"
-    //% frames.defl=screen_image_picker
-    //% group="Animate"
-    export function loopImageAnimation(sprite: Sprite, frames: Image[], frameInterval?: number) {
-        const anim = new ImageAnimation(sprite, frames, frameInterval || 500, true);
-        anim.init();
-    }
-
-    /**
-     * Create and loop a movement animation on a sprite
-     * @param sprite the sprite to move
-     * @param pathString the SVG path to animate
-     * @param duration how long the animation should play for, eg: 500
-     */
-    //% blockId=loop_movement_animation
-    //% block="loop %sprite=variables_get(mySprite) follow path %pathString=animation_path for %duration=timePicker ms"
-    //% group="Animate"
-    export function loopMovementAnimation(sprite: Sprite, pathString: string, duration?: number) {
-        const path = Path.parse(new Point(sprite.x, sprite.y), pathString);
-        const anim = new MovementAnimation(sprite, path, duration / path.length, true);
+        const anim = new MovementAnimation(sprite, path, duration / path.length, !!loop);
         anim.init();
     }
     
