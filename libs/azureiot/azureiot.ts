@@ -32,7 +32,7 @@ namespace azureiot {
 
         const connString = settings.programSecrets.readSecret(SECRETS_KEY);
         if (!connString)
-            control.panic(control.PXT_PANIC.PANIC_SETTINGS_MISSING);
+            control.panic(control.PXT_PANIC.PANIC_SETTINGS_SECRET_MISSING);
         const connStringParts = parsePropertyBag(connString, ";");
         const iotHubHostName = connStringParts["HostName"];
         const deviceId = connStringParts["DeviceName"];
