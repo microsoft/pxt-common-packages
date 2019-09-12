@@ -308,7 +308,7 @@ namespace scene.systemMenu {
         power.deepSleep();
     }
 
-    function closeMenu() {
+    export function closeMenu() {
         if (instance) {
             instance.dispose();
             instance = undefined;
