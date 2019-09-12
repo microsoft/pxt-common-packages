@@ -1,8 +1,11 @@
-# Net
+# ESP32
 
-Networking abstractions and drivers
+## ESP32 SPI
 
-## WiFi module configuration
+Ported from Adafruit Circuit Python 
+https://github.com/adafruit/Adafruit_CircuitPython_ESP32SPI.
+
+## Configuration
 
 * ``PIN_WIFI_CS``, ESP32 CS pin mapping
 * ``PIN_WIFI_BUSY``, ESP32 CS pin mapping

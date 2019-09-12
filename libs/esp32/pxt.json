@@ -1,11 +1,8 @@
 {
-    "name": "esp32spi",
+    "name": "esp32",
     "description": "ESP32 over SPI - beta",
     "files": [
         "esp32spi.ts",
-        "socket.ts",
-        "requests.ts",
-        "wifimanager.ts",
         "net.ts",
         "README.md"
     ],
@@ -15,7 +12,7 @@
     "public": true,
     "dependencies": {
         "core": "file:../core",
-        "net": "file:../net"
+        "net": "file:../net",
+        "settings": "file:../settings"
     }
-
 }

@@ -3,11 +3,14 @@
     "description": "Networking abstractions",
     "files": [
         "README.md",
+        "controller.ts",
+        "controllersocket.ts",
         "net.ts",
         "requests.ts"
     ],
     "public": true,
     "dependencies": {
-        "core": "file:../core"
+        "core": "file:../core",
+        "settings": "file:../settings"
     }
 }

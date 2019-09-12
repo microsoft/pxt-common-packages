@@ -1,4 +1,9 @@
 namespace settings {
+    const RUN_KEY = "#run";
+    const SCOPE_KEY = "#scope";
+    const DEVICE_SECRETS_KEY = "#secrets";
+    const SECRETS_KEY = "__secrets";
+
     //% shim=pxt::seedAddRandom
     declare function seedAddRandom(n: number): void;
 
@@ -21,22 +26,22 @@ namespace settings {
     declare function _list(prefix: string): string[];
 
     export function runNumber() {
-        return readNumber("#run") || 0
+        return readNumber(RUN_KEY) || 0
     }
 
     function setScope(scope: string) {
         if (!scope || scope.length > 100)
             control.panic(922)
-        const currScope = readString("#scope")
+        const currScope = readString(SCOPE_KEY)
         if (currScope != scope) {
             _userClean()
-            writeString("#scope", scope)
+            writeString(SCOPE_KEY, scope)
         }
     }
 
     function initScopes() {
         const rn = runNumber() + 1
-        writeNumber("#run", rn)
+        writeNumber(RUN_KEY, rn)
 
         seedAddRandom(control.deviceSerialNumber() & 0x7fffffff)
         seedAddRandom(rn)
@@ -151,4 +156,82 @@ namespace settings {
     export function exists(key: string) {
         return _exists(key)
     }
+
+    function clone(v: any): any {
+        if (v == null) return null
+        return JSON.parse(JSON.stringify(v))
+    }
+
+    function isKV(v: any) {
+        return !!v && typeof v === "object" && !Array.isArray(v)
+    }
+
+    function jsonMergeFrom(trg: any, src: any) {
+        if (!src) return;
+        const keys = Object.keys(src)
+        keys.forEach(k => {
+            const srck = src[k];
+            if (isKV(trg[k]) && isKV(srck))
+                jsonMergeFrom(trg[k], srck);
+            else
+                trg[k] = clone(srck);
+        });
+    }
+
+    //% fixedInstances
+    export class SecretStore {
+        constructor(private key: string) { }
+        
+        setSecret(name: string, value: any) {
+            const secrets = this.readSecrets();
+            secrets[name] = value;
+            writeString(this.key, JSON.stringify(secrets));
+        }
+
+        updateSecret(name: string, value: any) {
+            const secrets = this.readSecrets();
+            const secret = secrets[name];
+            if (secret === undefined)
+                secrets[name] = value; 
+            else jsonMergeFrom(secret, value);
+            const v = JSON.stringify(secrets);
+            writeString(this.key, v);
+        }
+
+        readSecret(name: string, ensure: boolean = false): any {
+            const secrets = this.readSecrets();
+            const secret = secrets[name];
+            if (ensure && !secret) {
+                control.dmesg("missing secret " + name);
+                control.panic(control.PXT_PANIC.SETTINGS_SECRET_MISSING);
+            }
+            return secret;
+        }
+
+        clearSecrets() {
+            writeString(this.key, "{}");
+        }
+
+        readSecrets(): any {
+            try {
+                const src = readString(this.key) || "{}";
+                return JSON.parse(src) || {};
+            } catch {
+                control.dmesg("invalid secret format")
+                return {};
+            }
+        }
+    }
+
+    /**
+     * Secrets shared by any program on the device
+     */
+    //% fixedInstance whenUsed block="device secrets"
+    export const deviceSecrets = new SecretStore(DEVICE_SECRETS_KEY);
+
+    /**
+     * Program secrets
+     */
+    //% fixedInstance whenUsed block="program secrets"
+    export const programSecrets = new SecretStore(SECRETS_KEY);
 }
