@@ -47,7 +47,7 @@ namespace net {
     }
 
     export function updateAccessPoint(ssid: string, password: string) {
-        let k: StringMap = {};
+        const k: StringMap = {};
         k[ssid] = password;
         settings.deviceSecrets.updateSecret(AP_SECRETS_KEY, k);
     }

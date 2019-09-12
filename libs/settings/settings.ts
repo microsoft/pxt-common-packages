@@ -172,7 +172,9 @@ namespace settings {
         keys.forEach(k => {
             if (isKV(trg[k]) && isKV(src[k]))
                 jsonMergeFrom(trg[k], src[k]);
-            else trg[k] = clone(src[k]);
+            else {
+                trg[k] = clone(src[k]);
+            }
         });
     }
 
@@ -189,8 +191,11 @@ namespace settings {
         updateSecret(name: string, value: any) {
             const secrets = this.readSecrets();
             const secret = secrets[name];
-            secrets[name] = secret === undefined ? value : jsonMergeFrom(secret, value);
-            writeString(this.key, JSON.stringify(secrets));
+            if (secret === undefined)
+                secrets[name] = value; 
+            else jsonMergeFrom(secret, value);
+            const v = JSON.stringify(secrets);
+            writeString(this.key, v);
         }
 
         readSecret(name: string, ensure: boolean = false): any {
@@ -212,6 +217,7 @@ namespace settings {
                 const src = readString(this.key) || "{}";
                 return JSON.parse(src) || {};
             } catch {
+                control.dmesg("invalid secret format")
                 return {};
             }
         }

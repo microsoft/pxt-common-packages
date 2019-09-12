@@ -434,10 +434,14 @@ namespace esp32spi {
 
         }
 
-
-        get ssid(): Buffer {
+        get ssidBuffer(): Buffer {
             let resp = this.sendCommandGetResponse(_GET_CURR_SSID_CMD, [hex`ff`])
             return resp[0]
+        }
+
+        get ssid(): string {
+            const b = this.ssidBuffer;
+            return b ? b.toString() : "";
         }
 
         get rssi(): number {
