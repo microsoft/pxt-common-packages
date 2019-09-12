@@ -1,31 +1,4 @@
 namespace esp32spi {
-    export class Esp32Net extends net.Net {
-        constructor() {
-            super();
-        }
-
-        get controller(): SPIController {
-            return defaultController();
-        }
-
-        createSocket(host: string, port: number, secure: boolean): net.Socket {
-            const c = this.controller;
-            if (!c) return undefined;
-            const socket = new net.ControllerSocket(c, host, port, secure ? net.TLS_MODE : net.TCP_MODE);
-            return socket;
-        }
-        hostByName(host: string): string {
-            const c= this.controller;
-            if (c) {
-                const b = c.hostbyName(host);
-                if (b) 
-                    return b.toString();
-            }
-
-            return undefined;
-        }
-    }
-
     let _defaultController: SPIController;
     function defaultController(): SPIController {
         if (_defaultController) return _defaultController;
@@ -54,5 +27,5 @@ namespace esp32spi {
     }
 
     // initialize net
-    new Esp32Net();
+    new net.Net(defaultController);
 }

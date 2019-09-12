@@ -31,5 +31,9 @@ namespace net {
         public hostbyName(hostname: string): Buffer {
             return undefined;
         }
+        get isConnected(): boolean { return false; }
+        connect(): void { }
+        ssid(): string { return undefined; }
+        MACAddress(): Buffer { return undefined; }
     }
 }

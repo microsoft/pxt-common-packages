@@ -31,17 +31,24 @@ namespace net {
     }
 
     export class Net {
-        constructor() {
+        private _controller: Controller;
+        constructor(private factory: () => Controller) {
             Net.instance = this;
         }
 
         static instance: Net;
 
-        createSocket(host: string, port: number, secure: boolean): Socket {
-            return undefined;
+        get controller(): net.Controller {
+            if (!this._controller)
+                this._controller = this.factory();
+            return this._controller;
         }
-        hostByName(host: string): string {
-            return undefined;
+
+        createSocket(host: string, port: number, secure: boolean): net.Socket {
+            const c = this.controller;
+            if (!c) return undefined;
+            const socket = new net.ControllerSocket(c, host, port, secure ? net.TLS_MODE : net.TCP_MODE);
+            return socket;
         }
     }
 
