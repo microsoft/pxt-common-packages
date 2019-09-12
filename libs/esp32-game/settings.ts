@@ -1,43 +1,107 @@
+class Configurator {
+    private accessPoints: net.AccessPoint[];
+    private apIndex: number;
+    private scanning: boolean;
+    private wifi: esp32spi.SPIController;
+
+    constructor() {
+        this.scanning = false;
+        this.apIndex = 0;
+    }
+
+    private select() {
+        const ap = this.accessPoints && this.accessPoints[this.apIndex];
+        if (ap)
+            console.log(`>> ${ap.ssid}`)
+    }
+
+    private connect() {
+        console.log("connecting...")
+        this.wifi.connect();
+        console.log(this.wifi.isConnected ? `connected to ${this.wifi.ssid}` : `disconnected`);
+        if (this.wifi.isConnected) {
+            for (let i = 0; i < 3; ++i) {
+                const ping = this.wifi.ping("bing.com")
+                console.log(`bing.com ping ${ping}ms`);
+            }
+        }
+    }
+
+    private scan() {
+        if (this.scanning) return;
+
+        this.scanning = true;
+        console.log("WiFi configuration")
+        console.log("scanning...")
+        control.runInBackground(() => {
+            this.accessPoints = this.wifi.scanNetworks()
+            if (this.accessPoints && this.accessPoints.length) {
+                const wifis = net.knownAccessPoints();
+                for (let i = 0; i < this.accessPoints.length; ++i) {
+                    const ap = this.accessPoints[i];
+                    const known = wifis[ap.ssid] !== undefined ? "*" : " ";
+                    console.log(`${known}${ap.ssid}`);
+                }
+                console.log(" ");
+                this.apIndex = 0;
+                console.log("up/down: select SSID")
+                console.log("left: erase password")
+                console.log("right: enter password")
+                console.log("A: connect")
+                console.log(" ");
+                this.select();
+            }
+            this.scanning = false;
+        });
+    }
+
+    main() {
+        game.consoleOverlay.setVisible(true);
+        this.wifi = esp32spi.defaultController();
+        if (!this.wifi) {
+            console.log("WiFi module not configured");
+            return;
+        }
+        controller.up.onEvent(ControllerButtonEvent.Pressed, () => {
+            this.apIndex = this.apIndex + 1;
+            if (this.accessPoints)
+                this.apIndex = this.apIndex % this.accessPoints.length;
+            this.select();
+        })
+        controller.down.onEvent(ControllerButtonEvent.Pressed, () => {
+            this.apIndex = this.apIndex - 1;
+            this.apIndex = (this.apIndex + this.accessPoints.length) % this.accessPoints.length;
+            this.select();
+        })
+        controller.left.onEvent(ControllerButtonEvent.Pressed, () => {
+            const ap = this.accessPoints && this.accessPoints[this.apIndex];
+            if (!ap) return;
+            net.updateAccessPoint(ap.ssid, undefined);
+            console.log(`password erased`)
+        })
+        controller.right.onEvent(ControllerButtonEvent.Pressed, () => {
+            const ap = this.accessPoints && this.accessPoints[this.apIndex];
+            if (!ap) return;
+            game.consoleOverlay.setVisible(false);
+            const pwd = game.askForString(`password for ${ap.ssid}`, 24);
+            game.consoleOverlay.setVisible(true);
+            net.updateAccessPoint(ap.ssid, pwd);
+            console.log(`password ${pwd} saved`)
+            this.scan();
+        })
+        controller.A.onEvent(ControllerButtonEvent.Pressed, () => {
+            this.connect();
+        })
+        controller.A.onEvent(ControllerButtonEvent.Pressed, () => {
+            game.popScene();
+        });
+        this.scan();
+    }
+}
 
 function wifiSystemMenu() {
     game.pushScene();
-    const wifi = esp32spi.defaultController();
-    if (!wifi) {
-        game.splash("WiFi module not configured");
-        game.popScene();
-        return;        
-    }
-
-    screen.print("connecting...", 4, 12);
-    wifi.connect();
-
-    let accessPoints: net.AccessPoint[];
-    let scanning = false;
-
-    function scan() {
-        if (!scanning) {
-            scanning = true;
-            control.runInBackground(() => {                
-                accessPoints = wifi.scanNetworks()
-                scanning = false;
-            });
-        }
-    }
-    controller.A.onEvent(ControllerButtonEvent.Pressed, scan);
-    controller.B.onEvent(ControllerButtonEvent.Pressed, () => game.popScene());
-    game.onPaint(() => {
-        screen.print(wifi.isConnected ? "connected" : "disconnected", 4, 12);
-        if (accessPoints) {
-            for(let i = 0; i < accessPoints.length; ++i) {
-                const ap = accessPoints[i];
-                screen.print(`${ap.ssid} ${ap.rssi}`, 4, 12 * (i + 2));
-            }
-        } else if (scanning) {
-            screen.print(`scanning...`, 4, 12 * 2);
-        }
-    })
-
-    scan();
+    new Configurator().main()
 }
 
 scene.systemMenu.addEntry(

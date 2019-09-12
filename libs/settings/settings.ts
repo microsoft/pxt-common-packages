@@ -170,11 +170,11 @@ namespace settings {
         if (!src) return;
         const keys = Object.keys(src)
         keys.forEach(k => {
-            if (isKV(trg[k]) && isKV(src[k]))
-                jsonMergeFrom(trg[k], src[k]);
-            else {
-                trg[k] = clone(src[k]);
-            }
+            const srck = src[k];
+            if (isKV(trg[k]) && isKV(srck))
+                jsonMergeFrom(trg[k], srck);
+            else
+                trg[k] = clone(srck);
         });
     }
 
