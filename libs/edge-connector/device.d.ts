@@ -112,4 +112,70 @@ declare namespace pins {
      */
     //% fixedInstance shim=pxt::lookupPinCfg(CFG_PIN_P20)
     const P20: DigitalInOutPin;
+
+    /**
+     * Pin P21 on the edge connector
+     */
+    //% fixedInstance shim=pxt::lookupPinCfg(CFG_PIN_P21)
+    const P21: PwmPin;
+
+    /**
+     * Pin P22 on the edge connector
+     */
+    //% fixedInstance shim=pxt::lookupPinCfg(CFG_PIN_P22)
+    const P22: PwmPin;
+
+    /**
+     * Pin P23 on the edge connector
+     */
+    //% fixedInstance shim=pxt::lookupPinCfg(CFG_PIN_P23)
+    const P23: PwmPin;
+
+    /**
+     * Pin P24 on the edge connector
+     */
+    //% fixedInstance shim=pxt::lookupPinCfg(CFG_PIN_P24)
+    const P24: PwmPin;
+
+    /**
+     * Pin P25 on the edge connector
+     */
+    //% fixedInstance shim=pxt::lookupPinCfg(CFG_PIN_P25)
+    const P25: PwmPin;
+
+    /**
+     * Pin P26 on the edge connector
+     */
+    //% fixedInstance shim=pxt::lookupPinCfg(CFG_PIN_P26)
+    const P26: PwmPin;
+
+    /**
+     * Pin P27 on the edge connector
+     */
+    //% fixedInstance shim=pxt::lookupPinCfg(CFG_PIN_P27)
+    const P27: PwmPin;
+
+    /**
+     * Pin P28 on the edge connector
+     */
+    //% fixedInstance shim=pxt::lookupPinCfg(CFG_PIN_P28)
+    const P28: PwmPin;
+
+    /**
+     * Pin P29 on the edge connector
+     */
+    //% fixedInstance shim=pxt::lookupPinCfg(CFG_PIN_P29)
+    const P29: PwmPin;
+
+    /**
+     * Pin P30 on the edge connector
+     */
+    //% fixedInstance shim=pxt::lookupPinCfg(CFG_PIN_P30)
+    const P30: PwmPin;
+
+    /**
+     * Pin P31 on the edge connector
+     */
+    //% fixedInstance shim=pxt::lookupPinCfg(CFG_PIN_P31)
+    const P31: PwmPin;
 }
