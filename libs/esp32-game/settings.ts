@@ -92,8 +92,9 @@ namespace net {
             controller.A.onEvent(ControllerButtonEvent.Pressed, () => {
                 this.connect();
             })
-            controller.A.onEvent(ControllerButtonEvent.Pressed, () => {
+            controller.B.onEvent(ControllerButtonEvent.Pressed, () => {
                 game.popScene();
+                game.consoleOverlay.setVisible(false);
             });
             this.scan();
         }
