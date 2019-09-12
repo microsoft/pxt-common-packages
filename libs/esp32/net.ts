@@ -1,51 +1,33 @@
 namespace esp32spi {
-    export class Controller {
-        constructor() { }
-
-        public scanNetworks(): net.AccessPoint[] {
-            return [];
-        }
-
-        public socket(): number {
-            return -1;
-        }
-
-        public socketConnect(socket_num: number, dest: string | Buffer, port: number, conn_mode = TCP_MODE): boolean {
-            return false;
-        }
-
-        public socketWrite(socket_num: number, buffer: Buffer): void {
-        }
-
-        public socketAvailable(socket_num: number): number {
-            return -1;
-        }
-
-        public socketRead(socket_num: number, size: number): Buffer {
-            return undefined;
-        }
-
-        public socketClose(socket_num: number): void {
-        }
-
-        public hostbyName(hostname: string): Buffer {
-            return undefined;
-        }
-    }
-
     export class Esp32Net extends net.Net {
-        constructor(public controller: Controller) {
+        constructor() {
             super();
         }
 
+        get controller(): SPIController {
+            return defaultController();
+        }
+
         createSocket(host: string, port: number, secure: boolean): net.Socket {
-            const socket = new Socket(this.controller, host, port, secure ? TLS_MODE : TCP_MODE);
+            const c = this.controller;
+            if (!c) return undefined;
+            const socket = new net.ControllerSocket(c, host, port, secure ? net.TLS_MODE : net.TCP_MODE);
             return socket;
+        }
+        hostByName(host: string): string {
+            const c= this.controller;
+            if (c) {
+                const b = c.hostbyName(host);
+                if (b) 
+                    return b.toString();
+            }
+
+            return undefined;
         }
     }
 
     let _defaultController: SPIController;
-    export function defaultController(): SPIController {
+    function defaultController(): SPIController {
         if (_defaultController) return _defaultController;
 
         const cs = pins.pinByCfg(DAL.CFG_PIN_WIFI_CS)
@@ -70,4 +52,7 @@ namespace esp32spi {
             control.panic(control.PXT_PANIC.CODAL_HARDWARE_CONFIGURATION_ERROR);
         return _defaultController = new SPIController(spi, cs, busy, reset, gpio0);
     }
+
+    // initialize net
+    new Esp32Net();
 }

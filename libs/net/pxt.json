@@ -3,6 +3,8 @@
     "description": "Networking abstractions",
     "files": [
         "README.md",
+        "controller.ts",
+        "controllersocket.ts",
         "net.ts",
         "requests.ts"
     ],

@@ -3,7 +3,6 @@
     "description": "ESP32 over SPI - beta",
     "files": [
         "esp32spi.ts",
-        "socket.ts",
         "net.ts",
         "README.md"
     ],

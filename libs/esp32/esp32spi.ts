@@ -1,12 +1,4 @@
 namespace esp32spi {
-    export function monotonic(): number {
-        return control.millis() / 1000.0;
-    }
-
-    export function print(msg: string) {
-        console.log(msg);
-    }
-
     // pylint: disable=bad-whitespace
     const _SET_NET_CMD = 0x10
     const _SET_PASSPHRASE_CMD = 0x11
@@ -73,10 +65,6 @@ namespace esp32spi {
     export const WL_AP_CONNECTED = 8
     export const WL_AP_FAILED = 9
 
-    export const TCP_MODE = 0
-    export const UDP_MODE = 1
-    export const TLS_MODE = 2
-
 
     function buffer1(ch: number) {
         const b = control.createBuffer(1)
@@ -84,7 +72,7 @@ namespace esp32spi {
         return b
     }
 
-    export class SPIController extends Controller {
+    export class SPIController extends net.Controller {
         private _socknum_ll: Buffer[];
         private _locked: boolean;
 
@@ -567,7 +555,7 @@ namespace esp32spi {
 
             if (this.debug) {
                 // %d" % resp)
-                print("Allocated socket #" + resp)
+                net.debug("Allocated socket #" + resp)
             }
 
             return resp
@@ -578,10 +566,10 @@ namespace esp32spi {
     'conn_mode' TCP_MODE but can also use UDP_MODE or TLS_MODE
     (dest must be hostname for TLS_MODE!)
     */
-        public socketOpen(socket_num: number, dest: Buffer | string, port: number, conn_mode = TCP_MODE): void {
+        public socketOpen(socket_num: number, dest: Buffer | string, port: number, conn_mode = net.TCP_MODE): void {
             this._socknum_ll[0][0] = socket_num
             if (this.debug) {
-                print("*** Open socket: " + dest + ":" + port)
+                net.debug("*** Open socket: " + dest + ":" + port)
             }
 
             let port_param = pins.packBuffer(">H", [port])
@@ -620,7 +608,7 @@ namespace esp32spi {
         /** Write the bytearray buffer to a socket */
         public socketWrite(socket_num: number, buffer: Buffer): void {
             if (this.debug > 1) {
-                print("Writing:" + buffer.length)
+                net.debug("Writing:" + buffer.length)
             }
 
             this._socknum_ll[0][0] = socket_num
@@ -663,15 +651,15 @@ namespace esp32spi {
     'conn_mode' TCP_MODE but can also use UDP_MODE or TLS_MODE (dest must
     be hostname for TLS_MODE!)
     */
-        public socketConnect(socket_num: number, dest: string | Buffer, port: number, conn_mode = TCP_MODE): boolean {
+        public socketConnect(socket_num: number, dest: string | Buffer, port: number, conn_mode = net.TCP_MODE): boolean {
             if (this.debug) {
-                print("*** Socket connect mode " + conn_mode)
+                net.debug("*** Socket connect mode " + conn_mode)
             }
 
             this.socketOpen(socket_num, dest, port, conn_mode)
-            let times = monotonic()
+            let times = net.monotonic()
             // wait 3 seconds
-            while (monotonic() - times < 3) {
+            while (net.monotonic() - times < 3) {
                 if (this.socket_connected(socket_num)) {
                     return true
                 }
@@ -686,7 +674,7 @@ namespace esp32spi {
         public socketClose(socket_num: number): void {
             if (this.debug) {
                 // %d" % socket_num)
-                print("*** Closing socket #" + socket_num)
+                net.debug("*** Closing socket #" + socket_num)
             }
 
             this._socknum_ll[0][0] = socket_num

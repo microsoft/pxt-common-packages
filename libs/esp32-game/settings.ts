@@ -3,7 +3,7 @@ namespace net {
         private accessPoints: net.AccessPoint[];
         private apIndex: number;
         private scanning: boolean;
-        private wifi: esp32spi.SPIController;
+        private wifi: net.Controller;
 
         constructor() {
             this.scanning = false;

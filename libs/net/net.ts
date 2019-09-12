@@ -1,7 +1,14 @@
 namespace net {
     export let logPriority = ConsolePriority.Silent;
     export function log(msg: string) {
-        console.add(logPriority, `net: ` + msg);
+        console.add(logPriority, "net:" + msg);
+    }
+    export function debug(msg: string) {
+        console.add(ConsolePriority.Debug, "net:" + msg);
+    }
+
+    export function monotonic(): number {
+        return control.millis() / 1000.0;
     }
 
     export class AccessPoint {

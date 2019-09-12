@@ -1,10 +1,13 @@
-namespace esp32spi {
+namespace net {
 
     export const SOCK_STREAM = 1
     export const AF_INET = 2
     export const MAX_PACKET = 4000
+    export const TCP_MODE = 0
+    export const UDP_MODE = 1
+    export const TLS_MODE = 2
 
-    export class Socket implements net.Socket {
+    export class ControllerSocket implements net.Socket {
         _buffer: Buffer;
         _socknum: number;
         _timeout: number;
@@ -19,7 +22,7 @@ namespace esp32spi {
  */
         constructor(private controller: Controller, private host: string | Buffer, private port: number, private conntype: number = null) {
             if (this.conntype === null) {
-                this.conntype = esp32spi.TCP_MODE
+                this.conntype = net.TCP_MODE
             }
             this._buffer = hex``
             this._socknum = this.controller.socket()
