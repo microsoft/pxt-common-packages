@@ -301,8 +301,8 @@
 #define CFG_PIN_P27 427
 #define CFG_PIN_P28 428
 #define CFG_PIN_P29 429
-#define CFG_PIN_P30 420
-#define CFG_PIN_P31 421
+#define CFG_PIN_P30 430
+#define CFG_PIN_P31 431
 
 #define CFG_PIN_LORA_MISO 1001
 #define CFG_PIN_LORA_MOSI 1002
