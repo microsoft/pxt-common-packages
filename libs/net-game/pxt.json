@@ -1,13 +1,12 @@
 {
-    "name": "esp32-game",
-    "description": "ESP32 support in Arcade - beta",
+    "name": "net-game",
+    "description": "WiFi support in Arcade - beta",
     "files": [
         "settings.ts"
     ],
     "public": true,
     "dependencies": {
         "core": "file:../core",
-        "esp32": "file:../esp32",
         "settings": "file:../settings",
         "game": "file:../game"
     }

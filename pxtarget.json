@@ -45,6 +45,7 @@
         "libs/feather",
         "libs/esp32",
         "libs/net",
+        "libs/net-game",
         "libs/mqtt",
         "libs/azureiot",
         "libs/color",
