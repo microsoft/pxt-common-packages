@@ -12,8 +12,11 @@ namespace net {
 
         private select() {
             const ap = this.accessPoints && this.accessPoints[this.apIndex];
-            if (ap)
-                console.log(`>> ${ap.ssid}`)
+            if (ap) {
+                const wifis = net.knownAccessPoints();
+                const known = wifis[ap.ssid] !== undefined ? "*" : "?";
+                console.log(`${known} ${ap.ssid}`);
+            }
         }
 
         private connect() {
@@ -39,8 +42,8 @@ namespace net {
                     const wifis = net.knownAccessPoints();
                     for (let i = 0; i < this.accessPoints.length; ++i) {
                         const ap = this.accessPoints[i];
-                        const known = wifis[ap.ssid] !== undefined ? "*" : " ";
-                        console.log(`${known}${ap.ssid}`);
+                        const known = wifis[ap.ssid] !== undefined ? "*" : "?";
+                        console.log(` ${known} ${ap.ssid}`);
                     }
                     console.log(" ");
                     this.apIndex = 0;
