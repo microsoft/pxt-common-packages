@@ -35,7 +35,7 @@ namespace net {
         get isConnected(): boolean { return false; }
         connect(): void { }
         get ssid(): string { return undefined; }
-        get MACAddress(): Buffer { return undefined; }
+        get MACaddress(): Buffer { return undefined; }
         public ping(dest: string, ttl: number = 250): number { return -1; }
     }
 }

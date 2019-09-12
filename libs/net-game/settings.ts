@@ -35,6 +35,8 @@ namespace net {
             if (this.scanning) return;
 
             this.scanning = true;
+            const mac = this.wifi.MACaddress;
+            console.log(`MAC: ${mac ? mac.toHex() : "???"}`)
             console.log("scanning...")
             control.runInBackground(() => {
                 this.accessPoints = this.wifi.scanNetworks()
@@ -70,8 +72,6 @@ namespace net {
                 console.log("WiFi module not responding")
                 return;
             }
-            const mac = this.wifi.MACAddress;
-            if (mac) console.log(`MAC: ${mac.toHex()}`)
             controller.up.onEvent(ControllerButtonEvent.Pressed, () => {
                 this.apIndex = this.apIndex + 1;
                 if (this.accessPoints)
