@@ -8,6 +8,7 @@ function wifiSystemMenu() {
         return;        
     }
 
+    screen.print("connecting...", 4, 12);
     wifi.connect();
 
     let accessPoints: net.AccessPoint[];
@@ -31,8 +32,12 @@ function wifiSystemMenu() {
                 const ap = accessPoints[i];
                 screen.print(`${ap.ssid} ${ap.rssi}`, 4, 12 * (i + 2));
             }
+        } else if (scanning) {
+            screen.print(`scanning...`, 4, 12 * 2);
         }
     })
+
+    scan();
 }
 
 scene.systemMenu.addEntry(

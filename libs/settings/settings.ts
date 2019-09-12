@@ -168,7 +168,8 @@ namespace settings {
 
     function jsonMergeFrom(trg: any, src: any) {
         if (!src) return;
-        Object.keys(src).forEach(k => {
+        const keys = Object.keys(src)
+        keys.forEach(k => {
             if (isKV(trg[k]) && isKV(src[k]))
                 jsonMergeFrom(trg[k], src[k]);
             else trg[k] = clone(src[k]);
@@ -182,13 +183,14 @@ namespace settings {
         setSecret(name: string, value: any) {
             const secrets = this.readSecrets();
             secrets[name] = value;
-            writeString(SECRETS_KEY, JSON.stringify(secrets));
+            writeString(this.key, JSON.stringify(secrets));
         }
 
         updateSecret(name: string, value: any) {
             const secrets = this.readSecrets();
-            secrets[name] = jsonMergeFrom(secrets[name], value);
-            writeString(SECRETS_KEY, JSON.stringify(secrets));
+            const secret = secrets[name];
+            secrets[name] = secret === undefined ? value : jsonMergeFrom(secret, value);
+            writeString(this.key, JSON.stringify(secrets));
         }
 
         readSecret(name: string, ensure: boolean = false): any {
@@ -198,7 +200,7 @@ namespace settings {
                 control.dmesg("missing secret " + name);
                 control.panic(control.PXT_PANIC.PANIC_SETTINGS_SECRET_MISSING);
             }
-            return secrets[name];
+            return secret;
         }
 
         clearSecrets() {
@@ -208,7 +210,7 @@ namespace settings {
         readSecrets(): any {
             try {
                 const src = readString(this.key) || "{}";
-                return JSON.parse(src);
+                return JSON.parse(src) || {};
             } catch {
                 return {};
             }

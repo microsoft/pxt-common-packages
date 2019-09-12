@@ -1,6 +1,4 @@
 namespace esp32spi {
-    export const SECRETS_KEY = "wifi";
-
     export function monotonic(): number {
         return control.millis() / 1000.0;
     }
@@ -470,7 +468,7 @@ namespace esp32spi {
         public connect(): boolean {
             if (this.isConnected) return true;
 
-            const wifis = settings.deviceSecrets.readSecret(SECRETS_KEY);
+            const wifis = net.knownAccessPoints();
             const ssids = Object.keys(wifis);
             const networks = this.scanNetworks()
                 .filter(network => ssids.indexOf(network.ssid) > -1);

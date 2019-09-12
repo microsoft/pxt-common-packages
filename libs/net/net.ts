@@ -37,4 +37,18 @@ namespace net {
             return undefined;
         }
     }
+
+    const AP_SECRETS_KEY = "wifi";
+    /**
+     * Gets the map of SSID -> password pairs
+     */
+    export function knownAccessPoints(): StringMap {
+        return settings.deviceSecrets.readSecret(AP_SECRETS_KEY) || {};
+    }
+
+    export function updateAccessPoint(ssid: string, password: string) {
+        let k: StringMap = {};
+        k[ssid] = password;
+        settings.deviceSecrets.updateSecret(AP_SECRETS_KEY, k);
+    }
 }
