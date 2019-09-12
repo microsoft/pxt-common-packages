@@ -203,7 +203,7 @@ namespace settings {
             const secret = secrets[name];
             if (ensure && !secret) {
                 control.dmesg("missing secret " + name);
-                control.panic(control.PXT_PANIC.PANIC_SETTINGS_SECRET_MISSING);
+                control.panic(control.PXT_PANIC.SETTINGS_SECRET_MISSING);
             }
             return secret;
         }

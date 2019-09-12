@@ -67,7 +67,7 @@ namespace esp32spi {
             spi = pins.createSPI(mosi, miso, sck);
         }
         if (!spi)
-            control.panic(control.PXT_PANIC.PANIC_CODAL_HARDWARE_CONFIGURATION_ERROR);
+            control.panic(control.PXT_PANIC.CODAL_HARDWARE_CONFIGURATION_ERROR);
         return _defaultController = new SPIController(spi, cs, busy, reset, gpio0);
     }
 }
