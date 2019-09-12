@@ -50,6 +50,14 @@ namespace net {
             const socket = new net.ControllerSocket(c, host, port, secure ? net.TLS_MODE : net.TCP_MODE);
             return socket;
         }
+
+        hostByName(host: string): string {
+            const c= this.controller;
+            if (!c) return undefined;
+            const b = this.controller.hostbyName(host);
+            if (b) return b.toString();
+            return undefined;
+        }
     }
 
     const AP_SECRETS_KEY = "wifi";

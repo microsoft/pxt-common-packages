@@ -56,11 +56,18 @@ namespace net {
         }
 
         main() {
-            this.wifi = esp32spi.defaultController();
+            this.wifi = net.Net.instance.controller;
             if (!this.wifi) {
                 console.log("WiFi module not configured");
                 return;
             }
+            pauseUntil(() => this.wifi.isIdle, 5000);
+            if (!this.wifi.ssid) {
+                console.log("WiFi module not responding")
+                return;
+            }
+            const mac = this.wifi.MACAddress;
+            if (mac) console.log(`MAC: ${mac.toHex()}`)
             controller.up.onEvent(ControllerButtonEvent.Pressed, () => {
                 this.apIndex = this.apIndex + 1;
                 if (this.accessPoints)

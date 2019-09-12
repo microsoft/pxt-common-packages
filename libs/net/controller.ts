@@ -31,9 +31,11 @@ namespace net {
         public hostbyName(hostname: string): Buffer {
             return undefined;
         }
+        get isIdle(): boolean { return false; }
         get isConnected(): boolean { return false; }
         connect(): void { }
-        ssid(): string { return undefined; }
-        MACAddress(): Buffer { return undefined; }
+        get ssid(): string { return undefined; }
+        get MACAddress(): Buffer { return undefined; }
+        public ping(dest: string, ttl: number = 250): number { return -1; }
     }
 }
