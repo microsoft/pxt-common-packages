@@ -44,9 +44,10 @@ namespace net {
                     }
                     console.log(" ");
                     this.apIndex = 0;
-                    console.log("up/down: select SSID")
-                    console.log("left: erase password")
-                    console.log("right: enter password")
+                    console.log("*: AP known")
+                    console.log("up/down: select AP")
+                    console.log("left: erase AP info")
+                    console.log("right: enter AP password")
                     console.log("A: connect")
                     console.log(" ");
                     this.select();
@@ -61,8 +62,8 @@ namespace net {
                 console.log("WiFi module not configured");
                 return;
             }
-            pauseUntil(() => this.wifi.isIdle, 5000);
-            if (!this.wifi.ssid) {
+            pauseUntil(() => this.wifi.isIdle, 30000);
+            if (!this.wifi.isIdle) {
                 console.log("WiFi module not responding")
                 return;
             }
