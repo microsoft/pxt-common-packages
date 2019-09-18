@@ -1619,17 +1619,6 @@ TValue mapGetByString(RefMap *map, String key) {
     return r;
 }
 
-TValue mapDeleteByString(RefMap *map, String key) {
-    if (getAnyVTable(v) != &RefMap_vtable)
-        target_panic(PANIC_DELETE_ON_CLASS);
-    int i = map->findIdx(key);
-    if (i >= 0) {
-        map->keys.remove(i);
-        map->values.remove(i);
-    }
-    return TAG_TRUE;
-}
-
 #ifdef PXT_VM
 #define IFACE_MEMBER_NAMES vmImg->ifaceMemberNames
 #else
