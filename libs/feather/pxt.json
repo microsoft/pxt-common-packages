@@ -7,7 +7,8 @@
         "targetoverrides.d.ts"
     ],
     "dependencies": {
-        "core": "file:../core"
+        "core": "file:../core",
+        "serial": "file:../serial"
     },
     "public": true,
     "weight": 2
