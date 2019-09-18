@@ -460,7 +460,7 @@ int getNumGlobals() {
 }
 
 String programName() {
-    return mkString((char*)vmImg->infoHeader->name);
+    return mkString((char *)vmImg->infoHeader->name);
 }
 #else
 int templateHash() {
@@ -552,4 +552,16 @@ RefCollection *keysOf(TValue v) {
     unregisterGCObj(r);
     return r;
 }
+//% expose
+TValue mapDeleteByString(RefMap *map, String key) {
+    if (getAnyVTable((TValue)map) != &RefMap_vtable)
+        target_panic(PANIC_DELETE_ON_CLASS);
+    int i = map->findIdx(key);
+    if (i >= 0) {
+        map->keys.remove(i);
+        map->values.remove(i);
+    }
+    return TAG_TRUE;
+}
+
 } // namespace pxtrt

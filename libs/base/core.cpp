@@ -1052,7 +1052,7 @@ TNumber mod(TNumber a, TNumber b) {
 }
 
 //%
-TNumber lsls(TNumber a, TNumber b){
+TNumber lsls(TNumber a, TNumber b) {
     return fromInt(toInt(a) << (toInt(b) & 0x1f));
 }
 
@@ -1062,7 +1062,7 @@ TNumber lsrs(TNumber a, TNumber b) {
 }
 
 //%
-TNumber asrs(TNumber a, TNumber b){
+TNumber asrs(TNumber a, TNumber b) {
     return fromInt(toInt(a) >> (toInt(b) & 0x1f));
 }
 
@@ -1161,28 +1161,15 @@ TNumber neqq(TNumber a, TNumber b) {
     return !pxt::eqq_bool(a, b) ? TAG_TRUE : TAG_FALSE;
 }
 
-
 // How many significant digits mycvt() should output.
 // This cannot be more than 15, as this is the most that can be accurately represented
 // in 64 bit double. Otherwise this code may crash.
 #define DIGITS 15
 
 static const uint64_t pows[] = {
-    1LL,
-    10LL,
-    100LL,
-    1000LL,
-    10000LL,
-    100000LL,
-    1000000LL,
-    10000000LL,
-    100000000LL,
-    1000000000LL,
-    10000000000LL,    
-    100000000000LL,
-    1000000000000LL,
-    10000000000000LL,
-    100000000000000LL,
+    1LL,           10LL,           100LL,           1000LL,           10000LL,
+    100000LL,      1000000LL,      10000000LL,      100000000LL,      1000000000LL,
+    10000000000LL, 100000000000LL, 1000000000000LL, 10000000000000LL, 100000000000000LL,
 };
 
 // The basic idea is we convert d to a 64 bit integer with DIGITS
@@ -1654,8 +1641,7 @@ int lookupMapKey(String key) {
             else
                 r = m - 1;
         }
-    } else
-    {
+    } else {
         while (l <= r) {
             int m = (l + r) >> 1;
             auto cmp = String_::compare((String)arr[m], key);
@@ -2017,7 +2003,8 @@ TryFrame *beginTry() {
 void endTry() {
     auto ctx = PXT_EXN_CTX();
     auto f = ctx->tryFrame;
-    if (!f) oops(51);
+    if (!f)
+        oops(51);
     ctx->tryFrame = f->parent;
     app_free(f);
 }
@@ -2026,7 +2013,8 @@ void endTry() {
 void throwValue(TValue v) {
     auto ctx = PXT_EXN_CTX();
     auto f = ctx->tryFrame;
-    if (!f) target_panic(PANIC_UNHANDLED_EXCEPTION);
+    if (!f)
+        target_panic(PANIC_UNHANDLED_EXCEPTION);
     ctx->tryFrame = f->parent;
     TryFrame copy = *f;
     app_free(f);
@@ -2051,6 +2039,5 @@ void endFinally() {
         return;
     throwValue(getThrownValue());
 }
-
 
 } // namespace pxt

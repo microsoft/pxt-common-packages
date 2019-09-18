@@ -42,6 +42,7 @@ namespace control {
         SETTINGS_CLEARED = 920,
         SETTINGS_OVERLOAD = 921,
         SETTINGS_SECRET_MISSING = 922,
+        DELETE_ON_CLASS = 923,
         
         CAST_FIRST = 980,
         CAST_FROM_UNDEFINED = 980,
