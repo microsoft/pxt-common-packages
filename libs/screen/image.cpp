@@ -475,6 +475,8 @@ Image_ transposed(Image_ img) {
     return r;
 }
 
+void drawImage(Image_ img, Image_ from, int x, int y);
+
 /**
  * Every pixel in image is moved by (dx,dy)
  */
@@ -483,7 +485,12 @@ void scroll(Image_ img, int dx, int dy) {
     img->makeWritable();
     auto bh = img->byteHeight();
     auto w = img->width();
-    if (dx < 0) {
+    if (dy != 0) {
+        // TODO one day we may want a more memory-efficient implementation
+        auto img2 = clone(img);
+        fill(img, 0);
+        drawImage(img, img2, dx, dy);
+    } else if (dx < 0) {
         dx = -dx;
         if (dx < w)
             memmove(img->pix(), img->pix(dx, 0), (w - dx) * bh);
@@ -497,7 +504,6 @@ void scroll(Image_ img, int dx, int dy) {
             dx = w;
         memset(img->pix(), 0, dx * bh);
     }
-    // TODO implement dy
 }
 
 const uint8_t bitdouble[] = {0x00, 0x03, 0x0c, 0x0f, 0x30, 0x33, 0x3c, 0x3f,

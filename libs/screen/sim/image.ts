@@ -239,7 +239,11 @@ namespace pxsim.ImageMethods {
         img.makeWritable()
         dx |= 0
         dy |= 0
-        if (dy < 0) {
+        if (dx != 0) {
+            const img2 = clone(img)
+            img.data.fill(0)
+            drawTransparentImage(img, img2, dx, dy)
+        } else if (dy < 0) {
             dy = -dy
             if (dy < img._height)
                 img.data.copyWithin(0, dy * img._width)
