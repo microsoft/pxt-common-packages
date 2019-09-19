@@ -7,6 +7,11 @@ https://github.com/adafruit/Adafruit_CircuitPython_ESP32SPI.
 
 ## Configuration
 
+
+### Nina-FW over SPI
+
+For nina-fw firmware (https://github.com/adafruit/nina-fw) over SPI
+
 * ``PIN_WIFI_CS``, ESP32 CS pin mapping
 * ``PIN_WIFI_BUSY``, ESP32 CS pin mapping
 * ``PIN_WIFI_RESET``, ESP32 RESET pin mapping
@@ -17,6 +22,11 @@ The driver uses the default SPI pins. You can override this behavior by specifyi
 * ``PIN_WIFI_MOSI`` (optional), dedicated SPI MOSI pin
 * ``PIN_WIFI_MISO`` (optional), dedicated SPI MISO pin
 * ``PIN_WIFI_SCK`` (optional), dedicated SPI SCK pin
+
+### Expressif AT commands over serial
+
+* ``PIN_WIFI_RX``, ESP32 RX pin mapping
+* ``PIN_WIFI_TX``, ESP32 TX pin mapping
 
 ## Access Points and passwords
 
