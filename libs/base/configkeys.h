@@ -109,8 +109,8 @@
 #define CFG_PIN_WIFI_BUSY 88
 #define CFG_PIN_WIFI_RESET 89
 #define CFG_PIN_WIFI_GPIO0 90
-#define CFG_PIN_WIFI_RX 91
-#define CFG_PIN_WIFI_TX 92
+#define CFG_PIN_WIFI_AT_TX 85
+#define CFG_PIN_WIFI_AT_RX 86
 
 // default I2C address
 #define ACCELEROMETER_TYPE_LIS3DH 0x32

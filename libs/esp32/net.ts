@@ -4,6 +4,14 @@ namespace esp32 {
         // cached
         if (_defaultController) return _defaultController;
 
+        // look for ESP32 over serial pins
+        const rx = pins.pinByCfg(DAL.CFG_PIN_WIFI_AT_RX);
+        const tx = pins.pinByCfg(DAL.CFG_PIN_WIFI_AT_TX);
+        if (rx && tx) {
+            const dev = serial.createSerial(rx, tx);
+            return _defaultController = new ATController(dev);
+        }
+
         // look for ESP32 over SPI pins
         const cs = pins.pinByCfg(DAL.CFG_PIN_WIFI_CS)
         const busy = pins.pinByCfg(DAL.CFG_PIN_WIFI_BUSY);
@@ -28,15 +36,7 @@ namespace esp32 {
         } else // cs,busy,reset misconfigured
             control.panic(control.PXT_PANIC.CODAL_HARDWARE_CONFIGURATION_ERROR);
 
-        // look for ESP32 over serial pins
-        const rx = pins.pinByCfg(DAL.CFG_PIN_WIFI_RX);
-        const tx = pins.pinByCfg(DAL.CFG_PIN_WIFI_TX);
-        if (rx && tx) {
-            const dev = serial.createSerial(rx, tx);
-            return _defaultController = new ATController(dev);
-        }
-
-        // no option
+            // no option
         control.panic(control.PXT_PANIC.CODAL_HARDWARE_CONFIGURATION_ERROR);
         return undefined;
     }
