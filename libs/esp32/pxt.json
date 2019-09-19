@@ -2,8 +2,9 @@
     "name": "esp32",
     "description": "ESP32 over SPI - beta",
     "files": [
-        "esp32spi.ts",
         "net.ts",
+        "ninacontroller.ts",
+        "atcontroller.ts",
         "README.md"
     ],
     "testFiles": [

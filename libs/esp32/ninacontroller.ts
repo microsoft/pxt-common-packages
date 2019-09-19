@@ -1,4 +1,4 @@
-namespace esp32spi {
+namespace esp32 {
     // pylint: disable=bad-whitespace
     const _SET_NET_CMD = 0x10
     const _SET_PASSPHRASE_CMD = 0x11
@@ -72,7 +72,7 @@ namespace esp32spi {
         return b
     }
 
-    export class SPIController extends net.Controller {
+    export class NinaController extends net.Controller {
         private _socknum_ll: Buffer[];
         private _locked: boolean;
 

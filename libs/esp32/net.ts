@@ -1,29 +1,44 @@
-namespace esp32spi {
-    let _defaultController: SPIController;
-    function defaultController(): SPIController {
+namespace esp32 {
+    let _defaultController: net.Controller;
+    function defaultController(): net.Controller {
+        // cached
         if (_defaultController) return _defaultController;
 
+        // look for ESP32 over SPI pins
         const cs = pins.pinByCfg(DAL.CFG_PIN_WIFI_CS)
         const busy = pins.pinByCfg(DAL.CFG_PIN_WIFI_BUSY);
         const reset = pins.pinByCfg(DAL.CFG_PIN_WIFI_RESET);
-        const gpio0 = pins.pinByCfg(DAL.CFG_PIN_WIFI_GPIO0);
-        if (!cs || !busy || !reset) {
-            control.dmesg(`cs ${!!cs} busy ${!!busy} reset ${!!reset}`)
-            return undefined;
+        const gpio0 = pins.pinByCfg(DAL.CFG_PIN_WIFI_GPIO0); // optional
+        if (!!cs && !!busy && !!reset) {
+            // grab SPI pins and go
+            const mosi = pins.pinByCfg(DAL.CFG_PIN_WIFI_MOSI);
+            const miso = pins.pinByCfg(DAL.CFG_PIN_WIFI_MISO);
+            const sck = pins.pinByCfg(DAL.CFG_PIN_WIFI_SCK);
+            let spi: SPI;
+            if (!mosi && !miso && !sck) {
+                spi = pins.spi();
+            } else if (mosi && miso && sck) {
+                spi = pins.createSPI(mosi, miso, sck);
+            } else // SPI misconfigured
+                control.panic(control.PXT_PANIC.CODAL_HARDWARE_CONFIGURATION_ERROR);
+
+            if (!spi)
+                return _defaultController = new NinaController(spi, cs, busy, reset, gpio0);
+        } else if (!cs && !busy && !reset) {
+        } else // cs,busy,reset misconfigured
+            control.panic(control.PXT_PANIC.CODAL_HARDWARE_CONFIGURATION_ERROR);
+
+        // look for ESP32 over serial pins
+        const rx = pins.pinByCfg(DAL.CFG_PIN_WIFI_RX);
+        const tx = pins.pinByCfg(DAL.CFG_PIN_WIFI_TX);
+        if (rx && tx) {
+            const dev = serial.createSerial(rx, tx);
+            return _defaultController = new ATController(dev);
         }
 
-        const mosi = pins.pinByCfg(DAL.CFG_PIN_WIFI_MOSI);
-        const miso = pins.pinByCfg(DAL.CFG_PIN_WIFI_MISO);
-        const sck = pins.pinByCfg(DAL.CFG_PIN_WIFI_SCK);
-        let spi: SPI;
-        if (!mosi && !miso && !sck) {
-            spi = pins.spi();
-        } else if (mosi && miso && sck) {
-            spi = pins.createSPI(mosi, miso, sck);
-        }
-        if (!spi)
-            control.panic(control.PXT_PANIC.CODAL_HARDWARE_CONFIGURATION_ERROR);
-        return _defaultController = new SPIController(spi, cs, busy, reset, gpio0);
+        // no option
+        control.panic(control.PXT_PANIC.CODAL_HARDWARE_CONFIGURATION_ERROR);
+        return undefined;
     }
 
     // initialize net
