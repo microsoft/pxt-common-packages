@@ -7,6 +7,7 @@ namespace esp32 {
 
     export interface ATResponse {
         status: ATStatus;
+        errorCode?: number;
         lines: string[];
     }
 
@@ -44,6 +45,7 @@ namespace esp32 {
             this.ser.writeString(txt);
             // read output
             let status = ATStatus.None;
+            let errorCode: number = 0;
             let line = "";
             const lines: string[] = [];
             do {
@@ -52,11 +54,13 @@ namespace esp32 {
                     status = ATStatus.Ok;
                 else if (line == "ERROR")
                     status = ATStatus.Error;
+                else if (line.substr(0, "ERR CODE:".length) == "ERR CODE:")
+                errorCode = parseInt(line.substr("ERR CODE:".length + 2), 16)
                 else if (!line.length) continue; // keep reading
                 else lines.push(line);
             } while (status == ATStatus.None);
 
-            return { status: status, lines: lines };
+            return { status: status, errorCode: errorCode, lines: lines };
         }
 
         private parseNumber(r : ATResponse): number {
