@@ -18,6 +18,8 @@ class PhysicsEngine {
     /** Apply physics and collisions to all sprites **/
     move(dt: number) { }
 
+    setMaxSpeed(speed: number) { }
+
     overlaps(sprite: Sprite): Sprite[] { return []; }
 }
 
@@ -54,11 +56,39 @@ class ArcadePhysicsEngine extends PhysicsEngine {
     constructor(maxVelocity = 500, minSingleStep = 2, maxSingleStep = 4) {
         super();
         this.sprites = [];
-        this.maxVelocity = Fx8(maxVelocity);
-        this.maxNegativeVelocity = Fx.neg(this.maxVelocity);
         this.map = new sprites.SpriteMap();
-        this.minSingleStep = Fx8(minSingleStep);
-        this.maxSingleStep = Fx8(maxSingleStep);
+        this.maxSpeed = maxVelocity;
+        this.maxStep = maxSingleStep;
+        this.minStep = minSingleStep;
+    }
+
+    get maxSpeed(): number {
+        return Fx.toInt(this.maxVelocity);
+    }
+
+    set maxSpeed(v: number) {
+        this.maxVelocity = Fx8(v);
+        this.maxNegativeVelocity = Fx.neg(this.maxVelocity);
+    }
+
+    get minStep(): number {
+        return Fx.toInt(this.minSingleStep);
+    }
+
+    set minStep(v: number) {
+        this.minSingleStep = Fx8(v);
+    }
+
+    get maxStep(): number {
+        return Fx.toInt(this.maxSingleStep);
+    }
+
+    set maxStep(v: number) {
+        this.maxSingleStep = Fx8(v);
+    }
+
+    setMaxSpeed(v: number) {
+        this.maxSpeed = v;
     }
 
     addSprite(sprite: Sprite) {
