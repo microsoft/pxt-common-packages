@@ -56,11 +56,10 @@ class ArcadePhysicsEngine extends PhysicsEngine {
     constructor(maxVelocity = 500, minSingleStep = 2, maxSingleStep = 4) {
         super();
         this.sprites = [];
-        this.maxVelocity = Fx8(maxVelocity);
-        this.maxNegativeVelocity = Fx.neg(this.maxVelocity);
         this.map = new sprites.SpriteMap();
-        this.minSingleStep = Fx8(minSingleStep);
-        this.maxSingleStep = Fx8(maxSingleStep);
+        this.maxSpeed = maxVelocity;
+        this.maxStep = maxSingleStep;
+        this.minStep = minSingleStep;
     }
 
     get maxSpeed(): number {
