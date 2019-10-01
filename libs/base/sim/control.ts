@@ -118,6 +118,10 @@ namespace pxsim.control {
             return r
         }
 
+        if (typeof v == "function") {
+            return (v + "").slice(0, 60) + "..."
+        }
+
         return v + ""
     }
     export function dmesgPtr(msg: string, ptr: any) {
