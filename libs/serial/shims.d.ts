@@ -45,13 +45,6 @@ declare namespace serial {
     //% rx.fieldOptions.tooltips="false"
     //% blockGap=8 inlineInputMode=inline shim=serial::redirect
     function redirect(tx: DigitalPin, rx: DigitalPin, rate: BaudRate): void;
-
-    /**
-     * Direct the serial input and output to use the USB connection.
-     */
-    //% weight=9 help=serial/redirect-to-usb
-    //% blockId=serial_redirect_to_usb block="serial|redirect to USB" shim=serial::redirectToUSB
-    function redirectToUSB(): void;
 }
 
 // Auto-generated. Do not edit. Really.

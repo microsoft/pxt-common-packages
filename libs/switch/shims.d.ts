@@ -11,6 +11,14 @@ declare namespace input {
     //% parts="switch"
     //% weight=80 shim=input::onSwitchMoved
     function onSwitchMoved(direction: SwitchDirection, handler: () => void): void;
+
+    /**
+     * Gets a value indicating if the switch is positioned to the right
+     */
+    //% blockId=device_switch_direction block="switch right"
+    //% parts="switch"
+    //% group="Switch" weight=10 blockGap=8 shim=input::switchRight
+    function switchRight(): boolean;
 }
 
 // Auto-generated. Do not edit. Really.
