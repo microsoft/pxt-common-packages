@@ -337,39 +337,6 @@ void registerWithDal(int id, int event, Action a, int flags) {
     setBinding(id, event, a);
 }
 
-static void runPoller(Thread *thr) {
-    Action query = thr->data0;
-    auto us = (uint64_t)toInt(thr->data1) * 1000;
-
-    // note that this is run without the user mutex held - it should not modify any state!
-    TValue prev = pxt::runAction0(query);
-    if (!isTagged(prev))
-        oops(30);
-
-    startUser();
-    pxt::runAction2(thr->act, prev, prev);
-    stopUser();
-
-    while (true) {
-        sleep_core_us(us);
-        if (paniced)
-            break;
-        TValue curr = pxt::runAction0(query);
-        if (!isTagged(curr))
-            oops(30);
-        if (curr != prev) {
-            startUser();
-            pxt::runAction2(thr->act, prev, curr);
-            stopUser();
-            if (paniced)
-                break;
-            decr(prev);
-            prev = curr;
-        }
-    }
-    //    disposeThread(thr);
-}
-
 uint32_t afterProgramPage() {
     return 0;
 }

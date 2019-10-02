@@ -29,17 +29,6 @@ typedef Button *Button_;
 
 extern "C" void target_init();
 
-class MMap : public RefObject {
-  public:
-    int length;
-    int fd;
-    uint8_t *data;
-
-    MMap();
-    void destroy();
-    void print();
-};
-
 extern volatile bool paniced;
 extern char **initialArgv;
 void target_exit();
