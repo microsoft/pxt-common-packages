@@ -370,11 +370,6 @@ static void runPoller(Thread *thr) {
     //    disposeThread(thr);
 }
 
-//%
-void unsafePollForChanges(int ms, Action query, Action handler) {
-    setupThread(handler, 0, runPoller, query, fromInt(ms));
-}
-
 uint32_t afterProgramPage() {
     return 0;
 }
