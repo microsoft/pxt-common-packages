@@ -40,4 +40,41 @@ void target_startup() {
     fclose(pf);
 }
 
+uint64_t readSerialNumber() {
+    static uint64_t bigSerialNumber;
+
+    if (bigSerialNumber)
+        return bigSerialNumber;
+
+    char buf[1024];
+    int fd = open("/proc/cpuinfo", O_RDONLY);
+    int len = read(fd, buf, sizeof(buf) - 1);
+    close(fd);
+
+    if (len < 0)
+        len = 0;
+    buf[len] = 0;
+    auto p = strstr(buf, "Serial\t");
+    if (p) {
+        p += 6;
+        while (*p && strchr(" \t:", *p))
+            p++;
+        uint64_t s = 0;
+        sscanf(p, "%llu", &s);
+        bigSerialNumber = s;
+    }
+
+    if (!bigSerialNumber)
+        bigSerialNumber = 0xf00d0042f00d0042;
+
+    return bigSerialNumber;
+}
+
+uint64_t getLongSerialNumber() {
+    static uint64_t serial;
+    if (serial == 0)
+        serial = readSerialNumber();
+    return serial;
+}
+
 } // namespace pxt
