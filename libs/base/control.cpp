@@ -70,7 +70,8 @@ namespace control {
     //% blockId="control_device_serial_number" block="device serial number" weight=9
     //% help=control/device-serial-number
     int deviceSerialNumber() {
-        return pxt::getSerialNumber();
+        uint64_t serial_num = pxt::getLongSerialNumber();
+        return hash_fnv1a(&serial_num, sizeof(serial_num)) & 0x3fffffff;
     }
 
     /**
