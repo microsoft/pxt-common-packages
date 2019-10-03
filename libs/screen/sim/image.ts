@@ -1,5 +1,5 @@
 namespace pxsim {
-    export class RefImage {
+    export class RefImage extends RefObject {
         _width: number;
         _height: number;
         _bpp: number;
@@ -7,11 +7,16 @@ namespace pxsim {
         dirty = true
 
         constructor(w: number, h: number, bpp: number) {
+            super();
             this.data = new Uint8Array(w * h)
             this._width = w
             this._height = h
             this._bpp = bpp
         }
+
+        scan(mark: (path: string, v: any) => void) { }
+        gcKey() { return "Image" }
+        gcSize() { return 4 + (this.data.length + 3 >> 3) }
 
         pix(x: number, y: number) {
             return (x | 0) + (y | 0) * this._width
