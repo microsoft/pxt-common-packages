@@ -28,7 +28,7 @@ static HandlerBinding *handlerBindings;
 HandlerBinding *nextBinding(HandlerBinding *curr, int source, int value) {
     for (auto p = curr; p; p = p->next) {
         // DEVICE_ID_ANY == DEVICE_EXT_ANY == 0
-        if ((p->source == source || p->source == 0) && (p->value == value || p->value == 0)) {
+        if ((p->source == source || p->source == 0) && (value == -1 || p->value == value || p->value == 0)) {
             return p;
         }
     }
