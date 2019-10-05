@@ -99,6 +99,10 @@ namespace pxsim.control {
     export function setDebugFlags(flags: number): void {
         console.log(`debug flags: ${flags}`);
     }
+    export function heapSnapshot(): void {
+        const msg = runtime.threadInfo() + "\n" + runtime.traceObjects()
+        console.log(msg)
+    }
 
     function toStr(v: any) {
         if (v instanceof RefRecord) {
