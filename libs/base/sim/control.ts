@@ -100,8 +100,7 @@ namespace pxsim.control {
         console.log(`debug flags: ${flags}`);
     }
     export function heapSnapshot(): void {
-        const msg = runtime.threadInfo() + "\n" + runtime.traceObjects()
-        console.log(msg)
+        console.log(runtime.traceObjects())
     }
 
     function toStr(v: any) {
