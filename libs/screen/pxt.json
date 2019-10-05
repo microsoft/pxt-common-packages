@@ -4,22 +4,13 @@
     "files": [
         "screen.cpp",
         "panic.cpp",
-        "image.cpp",
-        "image.ts",
-        "text.ts",
-        "frame.ts",
         "shims.d.ts",
-        "fieldeditors.ts",
         "targetoverrides.ts",
-        "ns.ts",
-        "image.d.ts",
-        "pxtparts.json",
-        "imagesoverrides.jres",
-        "imagesoverrides.ts",
-        "font12.jres"
+        "pxtparts.json"
     ],
     "public": true,
     "dependencies": {
-        "core": "file:../core"
+        "core": "file:../core",
+        "image": "file:../image"
     }
 }

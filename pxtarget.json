@@ -26,6 +26,7 @@
         "libs/storage",
         "libs/game",
         "libs/lcd",
+        "libs/image",
         "libs/screen",
         "libs/servo",
         "libs/serial",

@@ -1,0 +1,22 @@
+{
+    "name": "image",
+    "description": "The image library",
+    "files": [
+        "image.cpp",
+        "image.ts",
+        "text.ts",
+        "frame.ts",
+        "shims.d.ts",
+        "fieldeditors.ts",
+        "ns.ts",
+        "image.d.ts",
+        "pxtparts.json",
+        "imagesoverrides.jres",
+        "imagesoverrides.ts",
+        "font12.jres"
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core"
+    }
+}
