@@ -127,6 +127,14 @@ namespace control {
     }
 
     /**
+     * Record a heap snapshot to debug memory leaks.
+     */
+    //%
+    void heapSnapshot() {
+        // only in JS backend for now
+    }
+
+    /**
      * Return true if profiling is enabled in the current build.
      */
     //%
