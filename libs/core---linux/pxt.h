@@ -15,6 +15,7 @@ int allocateNotifyEvent();
 void sleep_core_us(uint64_t us);
 void startUser();
 void stopUser();
+void tryLockUser();
 
 void target_disable_irq();
 void target_enable_irq();
