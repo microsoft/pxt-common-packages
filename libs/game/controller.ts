@@ -9,9 +9,9 @@ enum ControllerButtonEvent {
 
 
 enum ControllerButton {
-    //% block="A"
+    //% block="{id:controller}A"
     A = 5,
-    //% block="B"
+    //% block="{id:controller}B"
     B = 6,
     //% block="left"
     Left = 1,
