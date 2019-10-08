@@ -116,8 +116,18 @@ void dispatchEvent(Event e) {
 
 void registerWithDal(int id, int event, Action a, int flags) {
     // first time?
-    if (!findBinding(id, event))
+    if (!findBinding(id, event)) {
         devMessageBus.listen(id, event, dispatchEvent, flags);
+        if (event == 0) {
+            // we're registering for all events on given ID
+            // need to remove old listeners for specific events
+            auto curr = findBinding(id, -1);
+            while (curr) {
+                devMessageBus.ignore(id, curr->value, dispatchEvent);
+                curr = nextBinding(curr->next, id, -1);
+            }
+        }
+    }
     setBinding(id, event, a);
 }
 
@@ -212,7 +222,7 @@ void gcProcessStacks(int flags) {
     // check scheduler is initialized
     if (!currentFiber) {
         // make sure we allocate something to at least initalize the memory allocator
-        void * volatile p = xmalloc(1);
+        void *volatile p = xmalloc(1);
         xfree(p);
         return;
     }
