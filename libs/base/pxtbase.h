@@ -136,7 +136,6 @@ int current_time_ms();
 void initRuntime();
 void sendSerial(const char *data, int len);
 void setSendToUART(void (*f)(const char *, int));
-int getSerialNumber();
 uint64_t getLongSerialNumber();
 void registerWithDal(int id, int event, Action a, int flags = 16); // EVENT_LISTENER_DEFAULT_FLAGS
 void runInParallel(Action a);
@@ -146,6 +145,7 @@ void waitForEvent(int id, int event);
 unsigned afterProgramPage();
 //%
 void dumpDmesg();
+uint32_t hash_fnv1a(const void *data, unsigned len);
 
 // also defined DMESG macro
 // end
@@ -460,6 +460,7 @@ enum class BuiltInType : uint16_t {
     RefRefLocal = 7,
     RefMap = 8,
     RefMImage = 9,
+    MMap = 10, // linux, mostly ev3
     User0 = 16,
 };
 

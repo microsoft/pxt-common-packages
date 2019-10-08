@@ -2040,4 +2040,13 @@ void endFinally() {
     throwValue(getThrownValue());
 }
 
+// https://tools.ietf.org/html/draft-eastlake-fnv-14#section-3
+uint32_t hash_fnv1a(const void *data, unsigned len) {
+    const uint8_t *d = (const uint8_t *)data;
+    uint32_t h = 0x811c9dc5;
+    while (len--)
+        h = (h * 0x1000193) ^ *d++;
+    return h;
+}
+
 } // namespace pxt

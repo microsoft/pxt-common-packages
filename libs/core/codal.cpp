@@ -189,10 +189,6 @@ unsigned afterProgramPage() {
     return ptr;
 }
 
-int getSerialNumber() {
-    return device.getSerialNumber();
-}
-
 uint64_t getLongSerialNumber() {
     return device.getSerialNumber();
 }
