@@ -102,8 +102,8 @@ Event *mkEvent(int source, int value) {
 volatile bool paniced;
 extern "C" void drawPanic(int code);
 
-void tryLockUser() {
-    pthread_mutex_trylock(&execMutex);
+int tryLockUser() {
+    return pthread_mutex_trylock(&execMutex);
 }
 
 extern "C" void target_panic(int error_code) {
