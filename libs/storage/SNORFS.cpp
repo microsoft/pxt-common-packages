@@ -2,7 +2,7 @@
 #include "CodalDmesg.h"
 #include "NotifyEvents.h"
 #include "MessageBus.h"
-#incluce "pxtbase.h"
+#include "pxtbase.h"
 #include <stddef.h>
 
 #define oops() target_panic(DEVICE_FLASH_ERROR)
