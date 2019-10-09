@@ -3,6 +3,7 @@
 #include "NotifyEvents.h"
 #include "MessageBus.h"
 #include "Timer.h"
+#include "pxtbase.h"
 
 #include <stddef.h>
 
