@@ -629,7 +629,7 @@ namespace animation {
     //% frames.fieldEditor="animation"
     //% frames.fieldOptions.decompileLiterals="true"
     //% frames.fieldOptions.filter="!tile !dialog"
-    //% weight=100 duplicateShadowOnDrag
+    //% group="Animate" duplicateShadowOnDrag
     export function _animationFrames(frames: Image[]) {
         return frames
     }
