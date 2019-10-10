@@ -1,3 +1,9 @@
+/**
+ * Networking, WiFi, web requests
+ */
+//% weight=1
+//% advanced=true
+//% icon="\uf1eb" color="#8446cf"
 namespace net {
     export let logPriority = ConsolePriority.Silent;
     export function log(msg: string) {

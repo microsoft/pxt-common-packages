@@ -1,4 +1,17 @@
 namespace net {
+    /**
+     * Pings a web site
+     * @param dest 
+     * @param ttl 
+     */
+    //% blockId=netping block="net ping $dest"
+    export function ping(dest: string, ttl: number = 250): number {
+        net.log(`ping ${dest}`);
+        const c = net.instance().controller;
+        if (!c) return Infinity;
+        return c.ping(dest, ttl);
+    }
+
     export class Response {
         _cached: Buffer
         status_code: number
@@ -217,22 +230,37 @@ read only when requested
         return resp
     }
 
-    /** Send HTTP HEAD request */
+    /** 
+     * Send HTTP HEAD request 
+     **/
     export function head(url: string, options?: RequestOptions) {
         return request("HEAD", url, options)
     }
 
-    /** Send HTTP GET request */
+    /** 
+     * Send HTTP GET request 
+     **/
     export function get(url: string, options?: RequestOptions) {
         return request("GET", url, options)
     }
 
-    /** Send HTTP GET request and return JSON */
-    export function getJSON(url: string, options?: RequestOptions) {
+    /** 
+     * Send HTTP GET request and return text 
+     **/
+    //% blockId=netgetstring block="get string $url"
+    export function getString(url: string, options?: RequestOptions): string {
+        return get(url, options).text;
+    }
+
+    /** 
+     * Send HTTP GET request and return JSON 
+     **/
+    //% blockId=netgetjson block="get json $url"
+    export function getJSON(url: string, options?: RequestOptions): any {
         options = options || {};
         options.headers = options.headers || {};
         options.headers["accept"] = options.headers["accept"] || "application/json";
-        return get(url, options);
+        return get(url, options).json;
     }
 
     /** Send HTTP POST request */
