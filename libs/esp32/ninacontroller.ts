@@ -83,8 +83,7 @@ namespace esp32 {
             private _cs: DigitalInOutPin,
             private _busy: DigitalInOutPin,
             private _reset: DigitalInOutPin,
-            private _gpio0: DigitalInOutPin = null,
-            public debug = 0
+            private _gpio0: DigitalInOutPin = null
         ) {
             super();
             // if nothing connected, pretend the device is ready -
@@ -95,11 +94,6 @@ namespace esp32 {
             this._spi.setFrequency(8000000);
             this.reset();
             this._locked = false;
-        }
-
-        private log(priority: number, msg: string) {
-            if (priority < this.debug)
-                console.log(msg);
         }
 
         private fail(msg: string) {
@@ -121,7 +115,7 @@ namespace esp32 {
             pause(750)
             if (this._gpio0)
                 this._gpio0.digitalRead();
-            this.log(0, 'reseted esp32')
+            net.log('reseted esp32')
         }
 
         private readByte(): number {
@@ -143,16 +137,16 @@ namespace esp32 {
             while (control.millis() - times < 100) {
                 let r = this.readByte()
                 if (r == _ERR_CMD) {
-                    this.log(0, "error response to command")
+                    net.log("error response to command")
                     return false
                 }
 
                 if (r == desired) {
                     return true
                 }
-                //this.log(0, `read char ${r}, expected ${desired}`)
+                //net.log(`read char ${r}, expected ${desired}`)
             }
-            this.log(0, "timed out waiting for SPI char")
+            net.log("timed out waiting for SPI char")
             return false;
         }
 
@@ -160,14 +154,14 @@ namespace esp32 {
          * Wait until the ready pin goes low
          */
         private waitForReady() {
-            this.log(1, `wait for ready ${this._busy.digitalRead()}`);
+            net.debug(`wait for ready ${this._busy.digitalRead()}`);
             if (this._busy.digitalRead()) {
                 pauseUntil(() => !this._busy.digitalRead(), 10000);
-                this.log(1, `busy = ${this._busy.digitalRead()}`);
+                net.debug(`busy = ${this._busy.digitalRead()}`);
                 // pause(1000)
             }
             if (this._busy.digitalRead()) {
-                this.log(0, "timed out waiting for ready")
+                net.log("timed out waiting for ready")
                 return false
             }
 
@@ -203,14 +197,13 @@ namespace esp32 {
             while (k < n)
                 packet[k++] = 0xff;
 
-            if (this.debug > 1)
-                console.log(`send cmd ${packet.toHex()}`)
+            net.debug(`send cmd ${packet.toHex()}`)
             if (!this.waitForReady())
                 return false
             this._cs.digitalWrite(false)
             this.spiTransfer(packet, null)
             this._cs.digitalWrite(true)
-            this.log(1, `send done`);
+            net.debug(`send done`);
             return true
         }
 
@@ -221,7 +214,7 @@ namespace esp32 {
         }
 
         private _waitResponseCmd(cmd: number, num_responses?: number, param_len_16?: boolean) {
-            this.log(1, `wait response cmd`);
+            net.debug(`wait response cmd`);
             if (!this.waitForReady())
                 return null
 
@@ -243,7 +236,7 @@ namespace esp32 {
                     param_len <<= 8
                     param_len |= this.readByte()
                 }
-                this.log(1, `\tParameter #${num} length is ${param_len}`)
+                net.debug(`\tParameter #${num} length is ${param_len}`)
                 const response = control.createBuffer(param_len);
                 this.spiTransfer(null, response)
                 responses.push(response);
@@ -252,7 +245,7 @@ namespace esp32 {
 
             this._cs.digitalWrite(true)
 
-            this.log(1, `responses ${responses.length}`);
+            net.debug(`responses ${responses.length}`);
             return responses;
         }
 
@@ -283,7 +276,7 @@ namespace esp32 {
             const resp = this.sendCommandGetResponse(_GET_CONN_STATUS_CMD)
             if (!resp)
                 return WL_NO_SHIELD
-            this.log(0, `Status: ${resp[0][0]}`);
+            net.log(`Status: ${resp[0][0]}`);
             // one byte response
             return resp[0][0];
         }
@@ -352,10 +345,8 @@ namespace esp32 {
                 // pylint: disable=invalid-name
                 let APs = this.getScanNetworks()
                 if (APs) {
-                    if(this.debug) {
-                        for(const ap of APs)
-                            this.log(0, `  ${ap.ssid} => RSSI ${ap.rssi}`)
-                    }
+                    for (const ap of APs)
+                        net.debug(`  ${ap.ssid} => RSSI ${ap.rssi}`)
                     return APs
                 }
 
@@ -477,7 +468,7 @@ namespace esp32 {
          * Will retry up to 10 times and return on success
         */
         private connectAP(ssid: string, password: string): number {
-            this.log(0, `Connect to AP ${ssid}`)
+            net.log(`Connect to AP ${ssid}`)
             if (password) {
                 this.wifiSetPassphrase(ssid, password)
             } else {
@@ -495,11 +486,11 @@ namespace esp32 {
                 pause(1000)
             }
             if ([WL_CONNECT_FAILED, WL_CONNECTION_LOST, WL_DISCONNECTED].indexOf(stat) >= 0) {
-                this.log(1, `Failed to connect to "${ssid}" (${stat})`)
+                net.debug(`Failed to connect to "${ssid}" (${stat})`)
             }
 
             if (stat == WL_NO_SSID_AVAIL) {
-                this.log(1, `No such ssid: "${ssid}"`)
+                net.debug(`No such ssid: "${ssid}"`)
             }
 
             return stat;
@@ -510,10 +501,10 @@ namespace esp32 {
     a 4 bytearray
     */
         public hostbyName(hostname: string): Buffer {
-            if(!this.connect())
+            if (!this.connect())
                 return undefined;
 
-                let resp = this.sendCommandGetResponse(_REQ_HOST_BY_NAME_CMD, [control.createBufferFromUTF8(hostname)])
+            let resp = this.sendCommandGetResponse(_REQ_HOST_BY_NAME_CMD, [control.createBufferFromUTF8(hostname)])
             if (resp[0][0] != 1) {
                 this.fail("Failed to request hostname")
             }
@@ -526,7 +517,7 @@ namespace esp32 {
     (ttl). Returns a millisecond timing value
     */
         public ping(dest: string, ttl: number = 250): number {
-            if(!this.connect())
+            if (!this.connect())
                 return -1;
 
             // convert to IP address
@@ -545,19 +536,13 @@ namespace esp32 {
             if (!this.connect())
                 this.fail("can't connect");
 
-            this.log(0, "*** Get socket")
-
+            net.log("*** Get socket")
             let resp0 = this.sendCommandGetResponse(_GET_SOCKET_CMD)
             let resp = resp0[0][0]
             if (resp == 255) {
                 this.fail("No sockets available")
             }
-
-            if (this.debug) {
-                // %d" % resp)
-                net.debug("Allocated socket #" + resp)
-            }
-
+            net.debug("Allocated socket #" + resp)
             return resp
         }
 
@@ -568,9 +553,7 @@ namespace esp32 {
     */
         public socketOpen(socket_num: number, dest: Buffer | string, port: number, conn_mode = net.TCP_MODE): void {
             this._socknum_ll[0][0] = socket_num
-            if (this.debug) {
-                net.debug("*** Open socket: " + dest + ":" + port)
-            }
+            net.debug("*** Open socket: " + dest + ":" + port)
 
             let port_param = pins.packBuffer(">H", [port])
             let resp: Buffer[]
@@ -607,10 +590,7 @@ namespace esp32 {
 
         /** Write the bytearray buffer to a socket */
         public socketWrite(socket_num: number, buffer: Buffer): void {
-            if (this.debug > 1) {
-                net.debug("Writing:" + buffer.length)
-            }
-
+            net.debug("Writing:" + buffer.length)
             this._socknum_ll[0][0] = socket_num
             let resp = this.sendCommandGetResponse(_SEND_DATA_TCP_CMD, [this._socknum_ll[0], buffer], 1, true)
             let sent = resp[0].getNumber(NumberFormat.UInt16LE, 0)
@@ -630,19 +610,18 @@ namespace esp32 {
             this._socknum_ll[0][0] = socket_num
             let resp = this.sendCommandGetResponse(_AVAIL_DATA_TCP_CMD, this._socknum_ll)
             let reply = pins.unpackBuffer("<H", resp[0])[0]
-            this.log(1, `ESPSocket: ${reply} bytes available`)
+            net.debug(`ESPSocket: ${reply} bytes available`)
             return reply
         }
 
         /** Read up to 'size' bytes from the socket number. Returns a bytearray */
         public socketRead(socket_num: number, size: number): Buffer {
-            this.log(1, `Reading ${size} bytes from ESP socket with status ${this.socketStatus(socket_num)}`)
+            net.debug(`Reading ${size} bytes from ESP socket with status ${this.socketStatus(socket_num)}`)
             this._socknum_ll[0][0] = socket_num
             let resp = this.sendCommandGetResponse(_GET_DATABUF_TCP_CMD,
                 [this._socknum_ll[0], pins.packBuffer("<H", [size])],
                 1, true, true)
-            if (this.debug >= 2)
-                this.log(2, `buf >>${resp[0].toString()}<<`)
+            net.debug(`buf >>${resp[0].toString()}<<`)
             return resp[0]
         }
 
@@ -652,10 +631,7 @@ namespace esp32 {
     be hostname for TLS_MODE!)
     */
         public socketConnect(socket_num: number, dest: string | Buffer, port: number, conn_mode = net.TCP_MODE): boolean {
-            if (this.debug) {
-                net.debug("*** Socket connect mode " + conn_mode)
-            }
-
+            net.debug("*** Socket connect mode " + conn_mode)
             this.socketOpen(socket_num, dest, port, conn_mode)
             let times = net.monotonic()
             // wait 3 seconds
@@ -672,10 +648,7 @@ namespace esp32 {
 
         /** Close a socket using the ESP32's internal reference number */
         public socketClose(socket_num: number): void {
-            if (this.debug) {
-                // %d" % socket_num)
-                net.debug("*** Closing socket #" + socket_num)
-            }
+            net.debug("*** Closing socket #" + socket_num)
 
             this._socknum_ll[0][0] = socket_num
             let resp = this.sendCommandGetResponse(_STOP_CLIENT_TCP_CMD, this._socknum_ll)

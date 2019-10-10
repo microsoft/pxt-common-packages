@@ -60,6 +60,13 @@ namespace net {
         }
     }
 
+    /**
+     * Gets the current Net instance
+     */
+    export function instance(): Net {
+        return net.Net.instance;
+    }
+
     const AP_SECRETS_KEY = "wifi";
     /**
      * Gets the map of SSID -> password pairs

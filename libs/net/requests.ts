@@ -217,6 +217,14 @@ read only when requested
         return request("GET", url, options)
     }
 
+    /** Send HTTP GET request and return JSON */
+    export function getJSON(url: string, options?: RequestOptions) {
+        options = options || {};
+        options.headers = options.headers || {};
+        options.headers["accept"] = options.headers["accept"] || "application/json";
+        return get(url, options);
+    }
+
     /** Send HTTP POST request */
     export function post(url: string, options?: RequestOptions) {
         return request("POST", url, options)
