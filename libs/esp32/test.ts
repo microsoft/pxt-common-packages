@@ -1,8 +1,7 @@
 function test() {
 
     const log = console.log;
-    const esp = new esp32spi.SPIController(pins.spi(),
-        pins.D13, pins.D11, pins.D12, pins.D10, 1)
+    const esp = net.instance().controller()
 
     if (!esp.isIdle)
         return

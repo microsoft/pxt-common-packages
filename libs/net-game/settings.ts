@@ -62,7 +62,7 @@ namespace net {
         }
 
         main() {
-            this.wifi = net.Net.instance.controller;
+            this.wifi = net.instance().controller;
             if (!this.wifi) {
                 console.log("WiFi module not configured");
                 return;

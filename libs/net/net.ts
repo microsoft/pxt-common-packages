@@ -1,10 +1,20 @@
+/**
+ * Networking, WiFi, web requests
+ */
+//% weight=1
+//% advanced=true
+//% icon="\uf1eb" color="#8446cf"
 namespace net {
-    export let logPriority = ConsolePriority.Silent;
+    /**
+     * Default priority of net log messages
+     **/
+    export let logPriority: ConsolePriority = -1;
     export function log(msg: string) {
         console.add(logPriority, "net:" + msg);
     }
     export function debug(msg: string) {
-        console.add(ConsolePriority.Debug, "net:" + msg);
+        if (logPriority > ConsolePriority.Debug)
+            console.add(ConsolePriority.Debug, "net:" + msg);
     }
 
     export function monotonic(): number {
@@ -34,14 +44,29 @@ namespace net {
         private _controller: Controller;
         constructor(private factory: () => Controller) {
             Net.instance = this;
+            this._controller = undefined; // null failed to initialize
         }
 
         static instance: Net;
 
         get controller(): net.Controller {
-            if (!this._controller)
+            if (this._controller === undefined) {
+                net.log(`init controller`)
                 this._controller = this.factory();
+                if (!this._controller) {
+                    net.log(`controller not found`)
+                    this._controller = null;
+                }
+            }
             return this._controller;
+        }
+
+        /**
+         * Scan for APs
+         */
+        scanNetworks(): net.AccessPoint[] {
+            const c = this.controller;
+            return c ? c.scanNetworks() : [];
         }
 
         createSocket(host: string, port: number, secure: boolean): net.Socket {
@@ -52,12 +77,19 @@ namespace net {
         }
 
         hostByName(host: string): string {
-            const c= this.controller;
+            const c = this.controller;
             if (!c) return undefined;
             const b = this.controller.hostbyName(host);
             if (b) return b.toString();
             return undefined;
         }
+    }
+
+    /**
+     * Gets the current Net instance
+     */
+    export function instance(): Net {
+        return net.Net.instance;
     }
 
     const AP_SECRETS_KEY = "wifi";
@@ -72,5 +104,9 @@ namespace net {
         const k: StringMap = {};
         k[ssid] = password;
         settings.deviceSecrets.updateSecret(AP_SECRETS_KEY, k);
+    }
+
+    export function clearAccessPoints() {
+        settings.deviceSecrets.setSecret(AP_SECRETS_KEY, undefined);
     }
 }

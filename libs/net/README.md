@@ -20,3 +20,32 @@ The driver uses the default SPI pins. You can override this behavior by specifyi
 The module uses access points and password information stored in the device secrets. These secrets can be set programmatically using ``net.updateAccessPoint`` or via the menu items in Arcade (added via the ``net-game`` extension).
 
 > *Friendly reminder:* Do not share .uf2 files or programs with secrets!!
+
+## Example
+
+```
+//
+// to configure your access point password,
+// open the menu and go to the WiFi option (loaded from net-game lib)
+//
+game.consoleOverlay.setVisible(true)
+net.logPriority = ConsolePriority.Log;
+
+console.log(`connecting...`)
+const wifi = net.instance();
+// list aps
+const aps = wifi.scanNetworks();
+const pwds = net.knownAccessPoints();
+console.log(`APs (${aps.length})`)
+for (const ap of aps) {
+    console.log(` ${ap.ssid} ${pwds[ap.ssid] !== undefined ? "(known)" : ""}`)
+}
+
+// ping
+for (let i = 0; i < 4; ++i)
+    console.log(`ping: ${net.ping("bing.com")}ms`)
+
+// curl
+const r = net.get("https://makecode.com/api/md/arcade/about")
+console.log(r.text)
+```
