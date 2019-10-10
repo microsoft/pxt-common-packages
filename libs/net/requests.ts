@@ -99,6 +99,8 @@ read only when requested
  
 */
     export function request(method: string, url: string, options?: RequestOptions): net.Response {
+        net.log(`${method} ${url}`);
+
         if (!net.instance().controller) {
             // no controller
             const r = new net.Response(null);

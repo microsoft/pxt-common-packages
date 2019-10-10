@@ -468,7 +468,7 @@ namespace esp32 {
          * Will retry up to 10 times and return on success
         */
         private connectAP(ssid: string, password: string): number {
-            net.log(`Connect to AP ${ssid}`)
+            net.log(`connect to AP ${ssid}`)
             if (password) {
                 this.wifiSetPassphrase(ssid, password)
             } else {
@@ -486,11 +486,11 @@ namespace esp32 {
                 pause(1000)
             }
             if ([WL_CONNECT_FAILED, WL_CONNECTION_LOST, WL_DISCONNECTED].indexOf(stat) >= 0) {
-                net.debug(`Failed to connect to "${ssid}" (${stat})`)
+                net.log(`failed to connect to "${ssid}" (${stat})`)
             }
 
             if (stat == WL_NO_SSID_AVAIL) {
-                net.debug(`No such ssid: "${ssid}"`)
+                net.log(`no such ssid: "${ssid}"`)
             }
 
             return stat;
