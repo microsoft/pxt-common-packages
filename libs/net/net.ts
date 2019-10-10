@@ -5,12 +5,15 @@
 //% advanced=true
 //% icon="\uf1eb" color="#8446cf"
 namespace net {
-    export let logPriority = ConsolePriority.Silent;
+    /**
+     * Default priority of net log messages
+     **/
+    export let logPriority: ConsolePriority = -1;
     export function log(msg: string) {
         console.add(logPriority, "net:" + msg);
     }
     export function debug(msg: string) {
-        if (logPriority >= ConsolePriority.Debug)
+        if (logPriority > ConsolePriority.Debug)
             console.add(ConsolePriority.Debug, "net:" + msg);
     }
 

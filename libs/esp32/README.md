@@ -37,26 +37,4 @@ The module uses access points and password information stored in the device secr
 
 ## Example
 
-```
-//
-// in arcade to configure your access point password,
-// open the menu and go to the WiFi option (loaded from net-game lib)
-// otherwise use net.updateAccessPoint(...)
-//
-
-// comment this outside of arcade
-game.consoleOverlay.setVisible(true)
-
-const wifi = net.instance();
-// list aps
-const aps = wifi.scanNetworks();
-const pwds = net.knownAccessPoints();
-console.log(`APs (${aps.length}`)
-for(const ap of aps) {
-    console.log(` ${ap.ssid} ${pwds[ap.ssid] !== undefined ? "(known)" : ""}`)
-}
-
-// connect and request
-const r = net.get("https://makecode.com/api/md/arcade/about")
-console.log(r.text)
-```
+See net package readme.
