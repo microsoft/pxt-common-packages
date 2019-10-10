@@ -27,6 +27,8 @@ The driver uses the default SPI pins. You can override this behavior by specifyi
 
 ### Expressif AT commands over serial
 
+Not supported yet.
+
 * ``PIN_WIFI_AT_RX``, ESP32 RX pin mapping
 * ``PIN_WIFI_AT_TX``, ESP32 TX pin mapping
 

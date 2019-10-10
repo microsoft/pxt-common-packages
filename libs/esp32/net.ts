@@ -4,6 +4,7 @@ namespace esp32 {
         // cached
         if (_defaultController) return _defaultController;
 
+        /*
         // look for ESP32 over serial pins
         const rx = pins.pinByCfg(DAL.CFG_PIN_WIFI_AT_RX);
         const tx = pins.pinByCfg(DAL.CFG_PIN_WIFI_AT_TX);
@@ -11,6 +12,7 @@ namespace esp32 {
             const dev = serial.createSerial(rx, tx);
             return _defaultController = new ATController(dev);
         }
+        */
 
         // look for ESP32 over SPI pins
         const cs = pins.pinByCfg(DAL.CFG_PIN_WIFI_CS)
@@ -33,6 +35,7 @@ namespace esp32 {
             if (!spi)
                 return _defaultController = new NinaController(spi, cs, busy, reset, gpio0);
         } else if (!cs && !busy && !reset) {
+            // do nothing, panic later
         } else // cs,busy,reset misconfigured
             control.panic(control.PXT_PANIC.CODAL_HARDWARE_CONFIGURATION_ERROR);
 

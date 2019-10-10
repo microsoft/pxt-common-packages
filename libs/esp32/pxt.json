@@ -4,7 +4,6 @@
     "files": [
         "net.ts",
         "ninacontroller.ts",
-        "atcontroller.ts",
         "README.md"
     ],
     "testFiles": [
