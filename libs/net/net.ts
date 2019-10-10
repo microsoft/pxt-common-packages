@@ -16,6 +16,10 @@ namespace net {
         if (logPriority > ConsolePriority.Debug)
             console.add(ConsolePriority.Debug, "net:" + msg);
     }
+    export function fail(reason: string) {
+        net.log(`error: ${reason}`);
+        throw reason;
+    }
 
     export function monotonic(): number {
         return control.millis() / 1000.0;

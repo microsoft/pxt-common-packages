@@ -96,10 +96,6 @@ namespace esp32 {
             this._locked = false;
         }
 
-        private fail(msg: string) {
-            control.fail(msg)
-        }
-
         /** 
          * Hard reset the ESP32 using the reset pin 
         */
@@ -127,7 +123,7 @@ namespace esp32 {
         private checkData(desired: number, msg?: string): boolean {
             const r = this.readByte()
             if (r != desired)
-                this.fail(`Expected ${desired} but got ${r}; ` + (msg || ""))
+                net.fail(`Expected ${desired} but got ${r}; ` + (msg || ""))
             return false;
         }
 
@@ -258,7 +254,7 @@ namespace esp32 {
 
         private unlock() {
             if (!this._locked)
-                this.fail("not locked!")
+                net.fail("not locked!")
             this._locked = false;
         }
 
@@ -307,7 +303,7 @@ namespace esp32 {
         private startScanNetworks(): void {
             let resp = this.sendCommandGetResponse(_START_SCAN_NETWORKS)
             if (resp[0][0] != 1) {
-                this.fail("Failed to start AP scan")
+                net.fail("failed to start AP scan")
             }
 
         }
@@ -359,7 +355,7 @@ namespace esp32 {
             const ssidbuf = control.createBufferFromUTF8(ssid);
             let resp = this.sendCommandGetResponse(_SET_NET_CMD, [ssidbuf])
             if (resp[0][0] != 1) {
-                this.fail("Failed to set network")
+                net.fail("failed to set network")
             }
 
         }
@@ -370,7 +366,7 @@ namespace esp32 {
             const passphrasebuf = control.createBufferFromUTF8(passphrase);
             let resp = this.sendCommandGetResponse(_SET_PASSPHRASE_CMD, [ssidbuf, passphrasebuf])
             if (resp[0][0] != 1) {
-                this.fail("Failed to set passphrase")
+                net.fail("failed to set passphrase")
             }
         }
 
@@ -379,7 +375,7 @@ namespace esp32 {
             const ssidbuf = control.createBufferFromUTF8(ident);
             let resp = this.sendCommandGetResponse(_SET_ENT_IDENT_CMD, [ssidbuf])
             if (resp[0][0] != 1) {
-                this.fail("Failed to set enterprise anonymous identity")
+                net.fail("failed to set enterprise anonymous identity")
             }
 
         }
@@ -389,7 +385,7 @@ namespace esp32 {
             const usernamebuf = control.createBufferFromUTF8(username);
             let resp = this.sendCommandGetResponse(_SET_ENT_UNAME_CMD, [usernamebuf])
             if (resp[0][0] != 1) {
-                this.fail("Failed to set enterprise username")
+                net.fail("failed to set enterprise username")
             }
 
         }
@@ -399,7 +395,7 @@ namespace esp32 {
             const passwordbuf = control.createBufferFromUTF8(password);
             let resp = this.sendCommandGetResponse(_SET_ENT_PASSWD_CMD, [passwordbuf])
             if (resp[0][0] != 1) {
-                this.fail("Failed to set enterprise password")
+                net.fail("failed to set enterprise password")
             }
 
         }
@@ -408,7 +404,7 @@ namespace esp32 {
         public wifiSetEntenable(): void {
             let resp = this.sendCommandGetResponse(_SET_ENT_ENABLE_CMD)
             if (resp[0][0] != 1) {
-                this.fail("Failed to enable enterprise mode")
+                net.fail("failed to enable enterprise mode")
             }
 
         }
@@ -510,7 +506,7 @@ namespace esp32 {
 
             let resp = this.sendCommandGetResponse(_REQ_HOST_BY_NAME_CMD, [control.createBufferFromUTF8(hostname)])
             if (resp[0][0] != 1) {
-                this.fail("failed to request hostname")
+                net.fail("failed to request hostname")
             }
 
             resp = this.sendCommandGetResponse(_GET_HOST_BY_NAME_CMD)
@@ -538,13 +534,13 @@ namespace esp32 {
     */
         public socket(): number {
             if (!this.connect())
-                this.fail("can't connect");
+                net.fail("can't connect");
 
             net.debug("*** Get socket")
             let resp0 = this.sendCommandGetResponse(_GET_SOCKET_CMD)
             let resp = resp0[0][0]
             if (resp == 255) {
-                this.fail("no sockets available")
+                net.fail("no sockets available")
             }
             net.debug("Allocated socket #" + resp)
             return resp
@@ -571,7 +567,7 @@ namespace esp32 {
             }
 
             if (resp[0][0] != 1) {
-                this.fail("Could not connect to remote server")
+                net.fail("could not connect to remote server")
             }
 
         }
@@ -599,12 +595,12 @@ namespace esp32 {
             let resp = this.sendCommandGetResponse(_SEND_DATA_TCP_CMD, [this._socknum_ll[0], buffer], 1, true)
             let sent = resp[0].getNumber(NumberFormat.UInt16LE, 0)
             if (sent != buffer.length) {
-                this.fail(`failed to send ${buffer.length} bytes (sent ${sent})`)
+                net.fail(`failed to send ${buffer.length} bytes (sent ${sent})`)
             }
 
             resp = this.sendCommandGetResponse(_DATA_SENT_TCP_CMD, this._socknum_ll)
             if (resp[0][0] != 1) {
-                this.fail("failed to verify data sent")
+                net.fail("failed to verify data sent")
             }
 
         }
@@ -646,7 +642,7 @@ namespace esp32 {
 
                 pause(10)
             }
-            this.fail("failed to establish connection")
+            net.fail("failed to establish connection")
             return false
         }
 
@@ -657,7 +653,7 @@ namespace esp32 {
             this._socknum_ll[0][0] = socket_num
             let resp = this.sendCommandGetResponse(_STOP_CLIENT_TCP_CMD, this._socknum_ll)
             if (resp[0][0] != 1) {
-                this.fail("failed to close socket")
+                net.fail("failed to close socket")
             }
 
         }
@@ -668,14 +664,14 @@ namespace esp32 {
         public setESPdebug(enabled: boolean) {
             let resp = this.sendCommandGetResponse(_SET_DEBUG_CMD, [buffer1(enabled ? 1 : 0)])
             if (resp[0][0] != 1) {
-                this.fail("failed to set debug mode")
+                net.fail("failed to set debug mode")
             }
         }
 
         public getTemperature() {
             let resp = this.sendCommandGetResponse(_GET_TEMP_CMD, [])
             if (resp[0].length != 4) {
-                this.fail("failed to get temp")
+                net.fail("failed to get temp")
             }
             return resp[0].getNumber(NumberFormat.Float32LE, 0)
         }
@@ -691,7 +687,7 @@ namespace esp32 {
 
             let resp = this.sendCommandGetResponse(_SET_PIN_MODE_CMD, [buffer1(pin), buffer1(pin_mode)])
             if (resp[0][0] != 1) {
-                this.fail("failed to set pin mode")
+                net.fail("failed to set pin mode")
             }
 
         }
@@ -706,7 +702,7 @@ namespace esp32 {
         public setDigitalWrite(pin: number, value: number): void {
             let resp = this.sendCommandGetResponse(_SET_DIGITAL_WRITE_CMD, [buffer1(pin), buffer1(value)])
             if (resp[0][0] != 1) {
-                this.fail("failed to write to pin")
+                net.fail("failed to write to pin")
             }
 
         }
@@ -722,7 +718,7 @@ namespace esp32 {
             let value = Math.trunc(255 * analog_value)
             let resp = this.sendCommandGetResponse(_SET_ANALOG_WRITE_CMD, [buffer1(pin), buffer1(value)])
             if (resp[0][0] != 1) {
-                this.fail("failed to write to pin")
+                net.fail("failed to write to pin")
             }
 
         }

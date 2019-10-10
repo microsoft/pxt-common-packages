@@ -122,6 +122,17 @@ read only when requested
             return r;
         }
 
+        try {
+            return internalRequest(method, url, options);
+        } catch(e) {
+            const r = new net.Response(null);
+            r.status_code = 418; // teapot
+            r.reason = "" + e;
+            return r;
+        }
+    }
+
+    function internalRequest(method: string, url: string, options?: RequestOptions): net.Response {
         if (!options) options = {};
         if (!options.headers) {
             options.headers = {}
