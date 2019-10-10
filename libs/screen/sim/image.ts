@@ -1,17 +1,24 @@
 namespace pxsim {
-    export class RefImage {
+    export class RefImage extends RefObject {
         _width: number;
         _height: number;
         _bpp: number;
         data: Uint8Array;
         dirty = true
+        isStatic = false
 
         constructor(w: number, h: number, bpp: number) {
+            super();
             this.data = new Uint8Array(w * h)
             this._width = w
             this._height = h
             this._bpp = bpp
         }
+
+        scan(mark: (path: string, v: any) => void) { }
+        gcKey() { return "Image" }
+        gcSize() { return 4 + (this.data.length + 3 >> 3) }
+        gcIsStatic() { return this.isStatic }
 
         pix(x: number, y: number) {
             return (x | 0) + (y | 0) * this._width
@@ -702,6 +709,8 @@ namespace pxsim.image {
             return null
         const r = new RefImage(w, h, bpp)
         const dst = r.data
+
+        r.isStatic = buf.isStatic
 
         if (bpp == 1) {
             for (let i = 0; i < w; ++i) {

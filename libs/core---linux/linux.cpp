@@ -102,12 +102,16 @@ Event *mkEvent(int source, int value) {
 volatile bool paniced;
 extern "C" void drawPanic(int code);
 
+int tryLockUser() {
+    return pthread_mutex_trylock(&execMutex);
+}
+
 extern "C" void target_panic(int error_code) {
     char buf[50];
     int prevErr = errno;
 
     paniced = true;
-    pthread_mutex_trylock(&execMutex);
+    tryLockUser();
 
     snprintf(buf, sizeof(buf), "\nPANIC %d\n", error_code);
 
@@ -335,44 +339,6 @@ void raiseEvent(int id, int event) {
 void registerWithDal(int id, int event, Action a, int flags) {
     // TODO support flags
     setBinding(id, event, a);
-}
-
-static void runPoller(Thread *thr) {
-    Action query = thr->data0;
-    auto us = (uint64_t)toInt(thr->data1) * 1000;
-
-    // note that this is run without the user mutex held - it should not modify any state!
-    TValue prev = pxt::runAction0(query);
-    if (!isTagged(prev))
-        oops(30);
-
-    startUser();
-    pxt::runAction2(thr->act, prev, prev);
-    stopUser();
-
-    while (true) {
-        sleep_core_us(us);
-        if (paniced)
-            break;
-        TValue curr = pxt::runAction0(query);
-        if (!isTagged(curr))
-            oops(30);
-        if (curr != prev) {
-            startUser();
-            pxt::runAction2(thr->act, prev, curr);
-            stopUser();
-            if (paniced)
-                break;
-            decr(prev);
-            prev = curr;
-        }
-    }
-    //    disposeThread(thr);
-}
-
-//%
-void unsafePollForChanges(int ms, Action query, Action handler) {
-    setupThread(handler, 0, runPoller, query, fromInt(ms));
 }
 
 uint32_t afterProgramPage() {

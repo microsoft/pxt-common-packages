@@ -21,16 +21,12 @@ namespace control {
     }
 
     class EventHandler {
-        src: number;
-        value: number;
-        handler: () => void;
-        flags: number;
-
-        constructor(src: number, value: number, handler: () => void, flags: number) {
-            this.src = src;
-            this.value = value;
-            this.handler = handler;
-        }
+        constructor(
+            public src: number,
+            public value: number,
+            public handler: () => void,
+            public flags: number
+        ) { }
 
         register() {
             control.internalOnEvent(this.src, this.value, () => {
@@ -181,7 +177,7 @@ namespace control {
                 const ics = this.idleCallbacks.slice(0);
                 ics.forEach(ic => ic());
             }
-        }    
+        }
     }
     let eventContexts: EventContext[];
 
@@ -240,8 +236,8 @@ namespace control {
         else {
             if (!_idleCallbacks) {
                 _idleCallbacks = [];
-                control.runInBackground(function() {
-                    while(_idleCallbacks) {
+                control.runInBackground(function () {
+                    while (_idleCallbacks) {
                         _idleCallbacks.slice(0).forEach(cb => cb());
                         pause(20);
                     }

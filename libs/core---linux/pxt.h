@@ -15,6 +15,7 @@ int allocateNotifyEvent();
 void sleep_core_us(uint64_t us);
 void startUser();
 void stopUser();
+int tryLockUser();
 
 void target_disable_irq();
 void target_enable_irq();
@@ -28,17 +29,6 @@ class Button;
 typedef Button *Button_;
 
 extern "C" void target_init();
-
-class MMap : public RefObject {
-  public:
-    int length;
-    int fd;
-    uint8_t *data;
-
-    MMap();
-    void destroy();
-    void print();
-};
 
 extern volatile bool paniced;
 extern char **initialArgv;

@@ -28,7 +28,7 @@ static HandlerBinding *handlerBindings;
 HandlerBinding *nextBinding(HandlerBinding *curr, int source, int value) {
     for (auto p = curr; p; p = p->next) {
         // DEVICE_ID_ANY == DEVICE_EXT_ANY == 0
-        if ((p->source == source || p->source == 0) && (p->value == value || p->value == 0)) {
+        if ((p->source == source || p->source == 0) && (value == -1 || p->value == value || p->value == 0)) {
             return p;
         }
     }
@@ -2038,6 +2038,15 @@ void endFinally() {
     if (ctx->thrownValue == TAG_NON_VALUE)
         return;
     throwValue(getThrownValue());
+}
+
+// https://tools.ietf.org/html/draft-eastlake-fnv-14#section-3
+uint32_t hash_fnv1a(const void *data, unsigned len) {
+    const uint8_t *d = (const uint8_t *)data;
+    uint32_t h = 0x811c9dc5;
+    while (len--)
+        h = (h * 0x1000193) ^ *d++;
+    return h;
 }
 
 } // namespace pxt
