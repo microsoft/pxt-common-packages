@@ -4,7 +4,7 @@ namespace net {
         console.add(logPriority, "net:" + msg);
     }
     export function debug(msg: string) {
-        if(logPriority >= ConsolePriority.Debug)
+        if (logPriority >= ConsolePriority.Debug)
             console.add(ConsolePriority.Debug, "net:" + msg);
     }
 
@@ -42,7 +42,7 @@ namespace net {
 
         get controller(): net.Controller {
             if (this._controller === undefined) {
-                net.log(`initializing controller`)
+                net.log(`init controller`)
                 this._controller = this.factory();
                 if (!this._controller) {
                     net.log(`controller not found`)
@@ -50,6 +50,14 @@ namespace net {
                 }
             }
             return this._controller;
+        }
+
+        /**
+         * Scan for APs
+         */
+        scanNetworks(): net.AccessPoint[] {
+            const c = this.controller;
+            return c ? c.scanNetworks() : [];
         }
 
         createSocket(host: string, port: number, secure: boolean): net.Socket {
@@ -60,7 +68,7 @@ namespace net {
         }
 
         hostByName(host: string): string {
-            const c= this.controller;
+            const c = this.controller;
             if (!c) return undefined;
             const b = this.controller.hostbyName(host);
             if (b) return b.toString();
@@ -87,5 +95,9 @@ namespace net {
         const k: StringMap = {};
         k[ssid] = password;
         settings.deviceSecrets.updateSecret(AP_SECRETS_KEY, k);
+    }
+
+    export function clearAccessPoints() {
+        settings.deviceSecrets.setSecret(AP_SECRETS_KEY, undefined);
     }
 }
