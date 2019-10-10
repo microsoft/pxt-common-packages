@@ -1,18 +1,15 @@
 # ESP32
 
-Communication layer to a accessory ESP32 chip using SPI pins.
+Communication layer to a accessory ESP32 chip.
 
-Ported from Adafruit Circuit Python 
+> Ported from Adafruit Circuit Python 
 https://github.com/adafruit/Adafruit_CircuitPython_ESP32SPI.
-
-The companion firmware is https://github.com/adafruit/nina-fw.
 
 ## Configuration
 
-
 ### Nina-FW over SPI
 
-For nina-fw firmware (https://github.com/adafruit/nina-fw) over SPI
+The companion firmware is https://github.com/adafruit/nina-fw over SPI.
 
 * ``PIN_WIFI_CS``, ESP32 CS pin mapping
 * ``PIN_WIFI_BUSY``, ESP32 BUSY pin mapping
