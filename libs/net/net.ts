@@ -4,7 +4,8 @@ namespace net {
         console.add(logPriority, "net:" + msg);
     }
     export function debug(msg: string) {
-        console.add(ConsolePriority.Debug, "net:" + msg);
+        if(logPriority >= ConsolePriority.Debug)
+            console.add(ConsolePriority.Debug, "net:" + msg);
     }
 
     export function monotonic(): number {

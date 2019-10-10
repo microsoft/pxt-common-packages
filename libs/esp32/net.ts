@@ -29,18 +29,22 @@ namespace esp32 {
                 spi = pins.spi();
             } else if (mosi && miso && sck) {
                 spi = pins.createSPI(mosi, miso, sck);
-            } else // SPI misconfigured
+            } else {// SPI misconfigured
+                net.log("esp32 spi configuration error");
                 control.panic(control.PXT_PANIC.CODAL_HARDWARE_CONFIGURATION_ERROR);
-
-            if (!spi)
+            }
+            if (spi)
                 return _defaultController = new NinaController(spi, cs, busy, reset, gpio0);
         } else if (!cs && !busy && !reset) {
             return undefined;
             // do nothing, panic later
-        } else // cs,busy,reset misconfigured
+        } else { // cs,busy,reset misconfigured
+            net.log("esp32 partially configured");
             control.panic(control.PXT_PANIC.CODAL_HARDWARE_CONFIGURATION_ERROR);
+        }
 
-            // no option
+        // no option
+        net.log("esp32 configuration error");
         control.panic(control.PXT_PANIC.CODAL_HARDWARE_CONFIGURATION_ERROR);
         return undefined;
     }

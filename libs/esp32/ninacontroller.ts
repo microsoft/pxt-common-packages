@@ -276,7 +276,7 @@ namespace esp32 {
             const resp = this.sendCommandGetResponse(_GET_CONN_STATUS_CMD)
             if (!resp)
                 return WL_NO_SHIELD
-            net.log(`Status: ${resp[0][0]}`);
+            net.debug(`status: ${resp[0][0]}`);
             // one byte response
             return resp[0][0];
         }
@@ -536,7 +536,7 @@ namespace esp32 {
             if (!this.connect())
                 this.fail("can't connect");
 
-            net.log("*** Get socket")
+            net.debug("*** Get socket")
             let resp0 = this.sendCommandGetResponse(_GET_SOCKET_CMD)
             let resp = resp0[0][0]
             if (resp == 255) {
