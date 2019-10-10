@@ -32,10 +32,9 @@ namespace net {
          * The HTTP content direct from the socket, as bytes 
          */
         get content() {
-            let content_length = parseInt(this.headers["content-length"]) || 0
-
             // print("Content length:", content_length)
-            if (this._cached === null) {
+            if (this._cached === null && this.socket) {
+                const content_length = parseInt(this.headers["content-length"]) || 0
                 this._cached = this.socket.read(content_length)
                 this.socket.close()
                 this.socket = null
@@ -49,7 +48,8 @@ namespace net {
          * The HTTP content, encoded into a string according to the HTTP header encoding
         */
         get text() {
-            return this.content.toString()
+            const b = this.content;
+            return b ? b.toString() : undefined;
         }
 
         get json() {
@@ -99,6 +99,14 @@ read only when requested
  
 */
     export function request(method: string, url: string, options?: RequestOptions): net.Response {
+        if (!net.instance().controller) {
+            // no controller
+            const r = new net.Response(null);
+            r.status_code = 418; // teapot
+            r.reason = "net controller not configured";
+            return r;
+        }
+
         if (!options) options = {};
         if (!options.headers) {
             options.headers = {}
@@ -127,14 +135,14 @@ read only when requested
             port = parseInt(tmp[1])
         }
 
-        let ipaddr = net.Net.instance.hostByName(host)
+        let ipaddr = net.instance().hostByName(host)
 
         let sock: Socket;
         if (proto == "https:") {
             // for SSL we need to know the host name
-            sock = net.Net.instance.createSocket(host, port, true)
+            sock = net.instance().createSocket(host, port, true)
         } else {
-            sock = net.Net.instance.createSocket(ipaddr, port, false)
+            sock = net.instance().createSocket(ipaddr, port, false)
         }
         // our response
         let resp = new Response(sock)

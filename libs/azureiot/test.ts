@@ -1,7 +1,7 @@
 function test() {
 
     const log = console.log;
-    const esp = net.Net.instance.controller();
+    const esp = net.instance().controller();
 
     if (!esp.connect()) {
         log("can't connect")

@@ -35,6 +35,7 @@ namespace esp32 {
             if (!spi)
                 return _defaultController = new NinaController(spi, cs, busy, reset, gpio0);
         } else if (!cs && !busy && !reset) {
+            return undefined;
             // do nothing, panic later
         } else // cs,busy,reset misconfigured
             control.panic(control.PXT_PANIC.CODAL_HARDWARE_CONFIGURATION_ERROR);

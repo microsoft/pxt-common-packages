@@ -34,13 +34,20 @@ namespace net {
         private _controller: Controller;
         constructor(private factory: () => Controller) {
             Net.instance = this;
+            this._controller = undefined; // null failed to initialize
         }
 
         static instance: Net;
 
         get controller(): net.Controller {
-            if (!this._controller)
+            if (this._controller === undefined) {
+                net.log(`initializing controller`)
                 this._controller = this.factory();
+                if (!this._controller) {
+                    net.log(`controller not found`)
+                    this._controller = null;
+                }
+            }
             return this._controller;
         }
 

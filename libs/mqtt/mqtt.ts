@@ -336,7 +336,7 @@ namespace mqtt {
             }
 
             this.opt = opt;
-            this.net = net.Net.instance;
+            this.net = net.instance();
         }
 
         private static describe(code: ConnectReturnCode): string {
