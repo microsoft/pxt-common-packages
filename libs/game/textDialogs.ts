@@ -637,6 +637,7 @@ namespace game {
      */
     //% blockId=game_dialog_set_text_color group="Dialogs"
     //% block="set dialog text color to %color=colorindexpicker"
+    //% color.defl=2
     //% help=game/set-dialog-text-color
     export function setDialogTextColor(color: number) {
         dialogTextColor = Math.floor(Math.min(15, Math.max(0, color)));

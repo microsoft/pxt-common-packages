@@ -5,6 +5,9 @@ interface Image {
      */
     //% helper=imageFillRect blockNamespace="images" inlineInputMode="inline" group="Drawing"
     //% block="fill rectangle in %picture=variables_get at x %x y %y width %w height %h %c=colorindexpicker"
+    //% w.defl=50
+    //% h.defl=50
+    //% c.defl=9
     //% help=images/image/fill-rect
     fillRect(x: number, y: number, w: number, h: number, c: color): void;
 
@@ -19,6 +22,9 @@ interface Image {
      */
     //% helper=imageDrawLine blockNamespace="images" inlineInputMode="inline" group="Drawing"
     //% block="draw line in %picture=variables_get from x %x0 y %y0 to x %x1 y %y1 %c=colorindexpicker"
+    //% x1.defl=50
+    //% y1.defl=50
+    //% c.defl=9
     //% help=images/image/draw-line
     drawLine(x0: number, y0: number, x1: number, y1: number, c: color): void;
 
@@ -27,6 +33,9 @@ interface Image {
      */
     //% helper=imageDrawRect blockNamespace="images" inlineInputMode="inline" group="Drawing"
     //% block="draw rectangle in %picture=variables_get at x %x y %y width %w height %h %c=colorindexpicker"
+    //% w.defl=50
+    //% h.defl=50
+    //% c.defl=9
     //% help=images/image/draw-rect
     drawRect(x: number, y: number, w: number, h: number, c: color): void;
 
@@ -35,6 +44,7 @@ interface Image {
      */
     //% shim=ImageMethods::setPixel blockNamespace="images" group="Drawing"
     //% block="set %picture=variables_get color at x %x y %y to %c=colorindexpicker"
+    //% c.defl=9
     //% help=images/image/set-pixel
     setPixel(x: int32, y: int32, c: int32): void;
 
@@ -51,6 +61,7 @@ interface Image {
      */
     //% shim=ImageMethods::fill blockNamespace="images" group="Drawing"
     //% block="fill %picture=variables_get with %c=colorindexpicker"
+    //% c.defl=9
     //% help=images/image/fill
     fill(c: int32): void;
 
@@ -90,6 +101,8 @@ interface Image {
      */
     //% shim=ImageMethods::replace blockNamespace="images" group="Transformations"
     //% block="change color in %picture=variables_get from %from=colorindexpicker to %to=colorindexpicker"
+    //% from.defl=2
+    //% to.defl=9
     //% help=images/image/replace
     replace(from: int32, to: int32): void;
 

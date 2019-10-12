@@ -34,6 +34,7 @@ namespace scene {
     //% group="Screen"
     //% weight=25
     //% blockId=gamesetbackgroundcolor block="set background color to %color=colorindexpicker"
+    //% color.defl=13
     //% help=scene/set-background-color
     export function setBackgroundColor(color: number) {
         const scene = game.currentScene();

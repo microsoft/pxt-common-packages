@@ -670,6 +670,7 @@ class Sprite extends sprites.BaseSprite {
     //% weight=30
     //% blockId=spritesetsetflag block="set %sprite(mySprite) %flag %on=toggleOnOff"
     //% flag.defl=SpriteFlag.StayInScreen
+    //% on.defl=true
     //% help=sprites/sprite/set-flag
     setFlag(flag: SpriteFlag, on: boolean) {
         if (on) this.flags |= flag
