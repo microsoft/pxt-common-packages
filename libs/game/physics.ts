@@ -372,6 +372,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             return;
         }
         const sprite = movingSprite.sprite;
+        const hbox = sprite._hitbox;
         const tileScale = tm.scale;
         const tileSize = 1 << tileScale;
 
@@ -390,9 +391,9 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             const x0 = Fx.toIntShifted(
                 Fx.add(
                     right ?
-                        Fx.iadd(1, sprite._hitbox.right)
+                        Fx.iadd(1, hbox.right)
                         :
-                        Fx.iadd(-1, sprite._hitbox.left),
+                        Fx.iadd(-1, hbox.left),
                     Fx.oneHalfFx8
                 ),
                 tileScale
@@ -401,8 +402,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
             // check collisions with tiles sprite is moving towards horizontally
             for (
-                let y = Fx.sub(sprite._hitbox.top, yDiff);
-                y < Fx.iadd(tileSize, Fx.sub(sprite._hitbox.bottom, yDiff));
+                let y = Fx.sub(hbox.top, yDiff);
+                y < Fx.iadd(tileSize, Fx.sub(hbox.bottom, yDiff));
                 y = Fx.iadd(tileSize, y)
             ) {
                 const y0 = Fx.toIntShifted(
@@ -410,7 +411,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                         Fx.min(
                             y,
                             Fx.sub(
-                                sprite._hitbox.bottom,
+                                hbox.bottom,
                                 yDiff
                             )
                         ),
@@ -430,11 +431,11 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             if (collidedTiles.length) {
                 const collisionDirection = right ? CollisionDirection.Right : CollisionDirection.Left;
                 sprite._x = Fx.iadd(
-                    -sprite._hitbox.ox,
+                    -hbox.ox,
                     right ?
                         Fx.sub(
                             Fx8(x0 << tileScale),
-                            Fx8(sprite._hitbox.width)
+                            Fx8(hbox.width)
                         )
                         :
                         Fx8((x0 + 1) << tileScale)
@@ -472,9 +473,9 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             const y0 = Fx.toIntShifted(
                 Fx.add(
                     down ?
-                        Fx.iadd(1, sprite._hitbox.bottom)
+                        Fx.iadd(1, hbox.bottom)
                         :
-                        Fx.iadd(-1, sprite._hitbox.top),
+                        Fx.iadd(-1, hbox.top),
                     Fx.oneHalfFx8
                 ),
                 tileScale
@@ -483,15 +484,15 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
             // check collisions with tiles sprite is moving towards vertically
             for (
-                let x = sprite._hitbox.left;
-                x < Fx.iadd(tileSize, sprite._hitbox.right);
+                let x = hbox.left;
+                x < Fx.iadd(tileSize, hbox.right);
                 x = Fx.iadd(tileSize, x)
             ) {
                 const x0 = Fx.toIntShifted(
                     Fx.add(
                         Fx.min(
                             x,
-                            sprite._hitbox.right
+                            hbox.right
                         ),
                         Fx.oneHalfFx8
                     ),
@@ -509,11 +510,11 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             if (collidedTiles.length) {
                 const collisionDirection = down ? CollisionDirection.Bottom : CollisionDirection.Top;
                 sprite._y = Fx.iadd(
-                    -sprite._hitbox.oy,
+                    -hbox.oy,
                     down ?
                         Fx.sub(
                             Fx8(y0 << tileScale),
-                            Fx8(sprite._hitbox.height)
+                            Fx8(hbox.height)
                         )
                         :
                         Fx8((y0 + 1) << tileScale)
