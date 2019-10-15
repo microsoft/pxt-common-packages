@@ -73,9 +73,7 @@ namespace tiles {
         //% help=scene/place
         place(mySprite: Sprite): void {
             if (!mySprite) return;
-
-            mySprite.x = this.x;
-            mySprite.y = this.y;
+            mySprite.setPosition(this.x, this.y);
         }
     }
 
