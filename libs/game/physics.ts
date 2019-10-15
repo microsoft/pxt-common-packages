@@ -38,8 +38,52 @@ class MovingSprite {
         public dy: Fx8,
         // how much to move per step
         public xStep: Fx8,
-        public yStep: Fx8
-    ) { }
+        public yStep: Fx8,
+        protected tm: tiles.TileMap
+    ) {
+        if (tm) {
+            this.nextClipRecalculation = 0;
+        }
+    }
+
+    protected nextClipRecalculation: number;
+    protected _isClippingTile: boolean;
+    // This value will be recalculated after a certain number of invocations
+    // to keep it up to date; only use where necessary to avoid perf regressions.
+    isClippingTile(): boolean {
+        if (this.tm && (this.nextClipRecalculation-- <= 0)) {
+            const sz = 1 << this.tm.scale;
+            this._isClippingTile = this.wasOnTile();
+            const maxStep = Fx.toInt(
+                Fx.max(
+                    this.xStep,
+                    this.yStep
+                )
+            );
+            this.nextClipRecalculation = Math.floor(maxStep / sz);
+        }
+
+        return this._isClippingTile;
+    }
+
+    protected wasOnTile() {
+        const tm = this.tm;
+        const scale = tm.scale;
+        const sz = Fx8(1 << scale);
+        const x1 = Fx.iadd(this.sprite.width, this.sprite._lastX);
+        const y1 = Fx.iadd(this.sprite.height, this.sprite._lastY);
+
+        for (let x = this.sprite._lastX; Fx.compare(x, x1) > 0; x = Fx.add(x, sz)) {
+            const col = Fx.toIntShifted(x, scale);
+            for (let y = this.sprite._lastY; Fx.compare(y, y1) > 0; y = Fx.add(y, sz)) {
+                if (tm.isObstacle(col, Fx.toIntShifted(y, scale))) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
 }
 
 /**
@@ -114,9 +158,9 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
         const scene = game.currentScene();
 
-        const movingSprites = this.sprites
-            .map(sprite => this.createMovingSprite(sprite, dtSec, dt2));
         const tileMap = scene.tileMap;
+        const movingSprites = this.sprites
+            .map(sprite => this.createMovingSprite(sprite, dtSec, dt2, tileMap));
 
         // clear obstacles if moving on that axis
         this.sprites.forEach(s => {
@@ -205,7 +249,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         }
     }
 
-    private createMovingSprite(sprite: Sprite, dtSec: Fx8, dt2: Fx8): MovingSprite {
+    private createMovingSprite(sprite: Sprite, dtSec: Fx8, dt2: Fx8, tm: tiles.TileMap): MovingSprite {
         const ovx = this.constrain(sprite._vx);
         const ovy = this.constrain(sprite._vy);
         sprite._lastX = sprite._x;
@@ -272,7 +316,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             dx,
             dy,
             xStep,
-            yStep
+            yStep,
+            tm
         );
     }
 
@@ -321,9 +366,14 @@ class ArcadePhysicsEngine extends PhysicsEngine {
     }
 
     private tilemapCollisions(movingSprite: MovingSprite, tm: tiles.TileMap) {
+        // if the sprite is already clipping into a wall,
+        // allow free movement rather than randomly 'fixing' it
+        if (movingSprite.isClippingTile()) {
+            return;
+        }
         const sprite = movingSprite.sprite;
-        const tileScale = tm ? tm.scale : 0;
-        const tileSize = tm ? 1 << tileScale : 0;
+        const tileScale = tm.scale;
+        const tileSize = 1 << tileScale;
 
         const xDiff = Fx.sub(
             sprite._x,
@@ -528,7 +578,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     dx,
                     dy,
                     dx,
-                    dy
+                    dy,
+                    tm
                 );
                 this.tilemapCollisions(ms, tm);
             }
