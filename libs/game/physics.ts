@@ -277,7 +277,6 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             dy,
             xStep,
             yStep,
-
         );
     }
 
