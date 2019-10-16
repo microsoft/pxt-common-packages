@@ -120,7 +120,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
         const tileMap = scene.tileMap;
         const movingSprites = this.sprites
-            .map(sprite => this.createMovingSprite(sprite, dtSec, dt2, tileMap));
+            .map(sprite => this.createMovingSprite(sprite, dtSec, dt2));
 
         // clear obstacles if moving on that axis
         this.sprites.forEach(s => {
@@ -209,7 +209,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         }
     }
 
-    private createMovingSprite(sprite: Sprite, dtSec: Fx8, dt2: Fx8, tm: tiles.TileMap): MovingSprite {
+    private createMovingSprite(sprite: Sprite, dtSec: Fx8, dt2: Fx8): MovingSprite {
         const ovx = this.constrain(sprite._vx);
         const ovy = this.constrain(sprite._vy);
         sprite._lastX = sprite._x;
