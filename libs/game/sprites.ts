@@ -141,7 +141,6 @@ namespace sprites {
             }
 
             s.setPosition(initialX, initialY);
-
         }
 
         s.flags |= sprites.Flag.AutoDestroy | sprites.Flag.DestroyOnWall;
@@ -152,12 +151,13 @@ namespace sprites {
     export enum Flag {
         None = 0, // no flags are set
         Ghost = 1 << 0, // doesn't collide with other sprites
-        Destroyed = 1 << 1,
+        Destroyed = 1 << 1, // whether the sprite has been destroyed or not
         AutoDestroy = 1 << 2, // remove the sprite when no longer visible
         StayInScreen = 1 << 3, // sprite cannot move outside the camera region
         DestroyOnWall = 1 << 4, // destroy sprite on contact with wall
         BounceOnWall = 1 << 5, // Bounce on walls
         ShowPhysics = 1 << 6, // display position, velocity, acc
         Invisible = 1 << 7, // makes the sprite invisible, so it does not show up on the screen
+        IsClipping = 1 << 8, // whether the sprite is currently clipping into a wall. This can happen when a sprite is created or moved explicitly.
     }
 }
