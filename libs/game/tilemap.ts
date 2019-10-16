@@ -255,5 +255,24 @@ namespace tiles {
                 index
             );
         }
+
+        public isOnWall(s: Sprite) {
+            const hbox = s._hitbox
+
+            const left = Fx.toIntShifted(hbox.left, this.scale);
+            const right = Fx.toIntShifted(hbox.right, this.scale);
+            const top = Fx.toIntShifted(hbox.top, this.scale);
+            const bottom = Fx.toIntShifted(hbox.bottom, this.scale);
+
+            for (let col = left; col <= right; ++col) {
+                for (let row = top; row <= bottom; ++row) {
+                    if (this.isObstacle(col, row)) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
     }
 }
