@@ -532,9 +532,9 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             const tm = game.currentScene().tileMap;
             if (!(tm && tm.enabled)) return;
 
-            const tileSize = 1 << tm.scale;
-            // only check tile map if moving within a single tile
-            if (Math.abs(Fx.toInt(dx)) < tileSize && Math.abs(Fx.toInt(dy)) < tileSize) {
+            const maxDist = Fx.toInt(this.maxSingleStep);
+            // only check tile map if moving within a single step
+            if (Math.abs(Fx.toInt(dx)) < maxDist && Math.abs(Fx.toInt(dy)) < maxDist) {
                 const ms = new MovingSprite(
                     s,
                     s._vx,
@@ -545,9 +545,11 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     dy
                 );
                 this.tilemapCollisions(ms, tm);
+            // otherwise, accept movement...
             } else if (tm.isOnWall(s)) {
-                // otherwise, accept movement and flag if now clipping into a wall.
+            // and flag if now clipping into a wall
                 s.flags |= sprites.Flag.IsClipping;
+            // and clear clipping if not
             } else {
                 s.flags &= ~sprites.Flag.IsClipping;
             }
