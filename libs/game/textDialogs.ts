@@ -656,7 +656,7 @@ namespace game {
     //% blockId=gameSplash block="splash %title||%subtitle"
     //% group="Prompt"
     export function splash(title: string, subtitle?: string) {
-        const temp = screen.clone();
+        const temp = game.currentScene().render();
         controller._setUserEventsEnabled(false);
         game.pushScene();
         scene.setBackgroundImage(temp);
@@ -684,6 +684,7 @@ namespace game {
         })
 
         pauseUntil(() => done);
+        screen.drawImage(temp, 0, 0);
         controller._setUserEventsEnabled(true);
     }
 }
