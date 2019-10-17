@@ -2,6 +2,7 @@
 #include "CodalDmesg.h"
 #include "NotifyEvents.h"
 #include "MessageBus.h"
+#include "pxtbase.h"
 #include <stddef.h>
 
 #define oops() target_panic(DEVICE_FLASH_ERROR)
@@ -40,9 +41,7 @@ struct BlockHeader
 
 static uint8_t fnhash(const char *fn)
 {
-    uint32_t h = 0x811c9dc5;
-    while (*fn)
-        h = (h * 0x1000193) ^ (uint8_t)*fn++;
+    uint32_t h = hash_fnv1a(fn, strlen(fn));
     h &= 0xff;
     if (h <= 0x02 || h == 0xff)
         return h + 0xf0;

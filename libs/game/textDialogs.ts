@@ -589,14 +589,17 @@ namespace game {
         `
             :
             img`
-        7 7 7 7 7 7 7 . . .
-        7 7 7 1 7 7 7 7 . .
-        7 7 1 7 1 7 7 7 7 .
-        7 7 1 1 1 7 7 7 7 7
-        7 7 1 7 1 7 7 7 7 6
-        7 7 1 7 1 7 7 7 6 .
-        7 7 7 7 7 7 7 6 . .
-        . 6 6 6 6 6 6 . . .
+        0 0 0 6 6 6 6 6 0 0 0
+        0 6 6 7 7 7 7 7 6 6 0
+        0 6 7 7 1 1 1 7 7 6 0
+        6 7 7 1 7 7 7 1 7 7 6
+        6 7 7 1 7 7 7 1 7 7 6
+        6 7 7 1 1 1 1 1 7 7 6
+        6 6 7 1 7 7 7 1 7 6 6
+        8 6 6 1 7 7 7 1 6 6 8
+        8 6 6 7 6 6 6 7 6 6 8
+        0 8 6 6 6 6 6 6 6 8 0
+        0 0 8 8 8 8 8 8 8 0 0
         `
     }
 
@@ -608,7 +611,7 @@ namespace game {
      * @param frame A square image with a width and height divisible by three
      */
     //% blockId=game_dialog_set_frame group="Dialogs"
-    //% block="set dialog frame to %frame=screen_image_picker"
+    //% block="set dialog frame to %frame=dialog_image_picker"
     //% help=game/set-dialog-frame
     export function setDialogFrame(frame: Image) {
         dialogFrame = frame;

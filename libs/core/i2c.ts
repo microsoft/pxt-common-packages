@@ -52,7 +52,7 @@ namespace pins {
      */
     //% weight=3 group="i2c"
     //% help=pins/i2c-read-register
-    //% blockId=i2c_readreg block="i2c read register|at address $addfress|at register $register"
+    //% blockId=i2c_readreg block="i2c read register|at address $address|at register $register"
     export function i2cReadRegister(address: number, register: number, valueFormat?: NumberFormat): number {
         if (valueFormat === undefined)
             valueFormat = NumberFormat.UInt8LE;

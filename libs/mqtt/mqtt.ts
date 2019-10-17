@@ -320,7 +320,7 @@ namespace mqtt {
 
         private mqttHandlers: MQTTHandler[];
 
-        constructor(opt: IConnectionOptions, net: net.Net) {
+        constructor(opt: IConnectionOptions) {
             super();
 
             this.wdId = Constants.Uninitialized;
@@ -336,7 +336,7 @@ namespace mqtt {
             }
 
             this.opt = opt;
-            this.net = net;
+            this.net = net.instance();
         }
 
         private static describe(code: ConnectReturnCode): string {
@@ -396,7 +396,7 @@ namespace mqtt {
                 }, Constants.WatchDogInterval * 1000);
             }
 
-            this.sct = this.net.createSocket(this.opt.host, this.opt.port);
+            this.sct = this.net.createSocket(this.opt.host, this.opt.port, true);
             this.sct.onOpen(() => {
                 this.log('Network connection established.');
                 this.emit('connect');

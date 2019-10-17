@@ -1,23 +1,47 @@
 namespace scene {
     export class Camera {
         // coordinate used for all physics computation
-        offsetX: number;
-        offsetY: number;
+        protected _offsetX: number;
+        protected _offsetY: number;
+
         // coordinate used for draw sprites, may including shaking
         drawOffsetX: number;
         drawOffsetY: number;
         sprite: Sprite;
 
-        private shakeStartTime: number;
-        private shakeDuration: number;
-        private shakeAmplitude: number;
+        protected shakeStartTime: number;
+        protected shakeDuration: number;
+        protected shakeAmplitude: number;
 
         constructor() {
-            this.offsetX = 0;
-            this.offsetY = 0;
+            this._offsetX = 0;
+            this._offsetY = 0;
 
             this.drawOffsetX = 0;
             this.drawOffsetY = 0;
+        }
+
+        get offsetX() {
+            return this._offsetX;
+        }
+        set offsetX(v: number) {
+            const scene = game.currentScene();
+            if (scene.tileMap && scene.tileMap.enabled) {
+                this._offsetX = scene.tileMap.offsetX(v);
+            } else {
+                this._offsetX = v;
+            }
+        }
+        get offsetY() {
+            return this._offsetY;
+        }
+        set offsetY(v: number) {
+            const scene = game.currentScene();
+            if (scene.tileMap && scene.tileMap.enabled) {
+                this._offsetY = scene.tileMap.offsetY(v);
+            } else {
+                this._offsetY = v;
+            }
         }
 
         shake(amplitude: number = 4, duration: number = 1000) {
@@ -33,18 +57,10 @@ namespace scene {
         }
 
         update() {
-            const scene = game.currentScene();
-
             // if sprite, follow sprite
             if (this.sprite) {
                 this.offsetX = this.sprite.x - (screen.width >> 1);
                 this.offsetY = this.sprite.y - (screen.height >> 1);
-            }
-
-            // don't escape tile map
-            if (scene.tileMap && scene.tileMap.enabled) {
-                this.offsetX = scene.tileMap.offsetX(this.offsetX);
-                this.offsetY = scene.tileMap.offsetY(this.offsetY);
             }
 
             // normalize offset

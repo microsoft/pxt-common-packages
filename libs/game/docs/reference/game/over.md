@@ -24,7 +24,7 @@ Check every second to see if the player has any lives left. If not, end the game
 ```blocks
 game.onUpdateInterval(1000, function () {
 	if (info.life() < 1) {
-        game.over()
+        game.over(false)
     }
 })
 ```

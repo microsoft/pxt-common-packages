@@ -13,7 +13,7 @@ namespace animation {
     export class Point {
         public x: number;
         public y: number;
-        
+
         constructor(x: number, y: number) {
             this.x = x;
             this.y = y;
@@ -206,7 +206,7 @@ namespace animation {
             for (let i = 0; i < pathString.length; i++) {
                 const char = pathString.charAt(i);
                 const lastNode = path.nodes[path.nodes.length - 1];
-                
+
                 // This is an SVG path parser. It's kinda complicated. For each character, evaluate the following conditions:
                 // - if it's a digit, add it to the current argument
                 // - else if it's whitespace or newline, finish the current argument and prepare for the next one
@@ -223,7 +223,7 @@ namespace animation {
                 } else if (this.commandToArgCount(char) > -1) { // Parses command arguments
                     if (command && currentArg) {
                         args.push(parseInt(currentArg));
-                        
+
                         // Try to finish up this node, otherwise just toss it out
                         if (command && args.length >= this.commandToArgCount(command)) {
                             let node: PathNode = this.generateNode(p0, command, args, [
@@ -234,7 +234,7 @@ namespace animation {
                             p0 = node.getEndPoint(); // Set the start for the next node to the end of this node
                             if (node.setStart) pathStart = p0; // If this is a move command, then this sets the new start of the path (for the Z/z command)
                         }
-                        
+
                         // Clean up before continuing
                         command = "";
                         args = [];
@@ -255,7 +255,7 @@ namespace animation {
                         args.push(parseInt(currentArg));
                     }
                 }
-                
+
                 // If the command has a sufficient amount of arguments, then create a node for it
                 if (command && args.length >= this.commandToArgCount(command)) {
                     // Generate the node
@@ -266,7 +266,7 @@ namespace animation {
                     path.add(node);
                     p0 = node.getEndPoint();
                     if (node.setStart) pathStart = p0;
-                    
+
                     // Reset and prepare for the next command
                     command = "";
                     args = [];
@@ -289,7 +289,7 @@ namespace animation {
             const runningTime = control.millis() - startedAt; // The time since the start of the path
             const nodeIndex = Math.floor(runningTime / interval); // The current node
             const nodeTime = runningTime % interval; // The time the current node has been animating
-            
+
             if (this.lastNode > -1 && this.lastNode < nodeIndex && this.nodes.length) { // If the last node hasn't been completed yet
                 this.nodes[this.lastNode].apply(target, interval, interval); // Applies the last state of the previous node in case it was missed (this makes sure all moveTos fire)
 
@@ -309,7 +309,7 @@ namespace animation {
         }
 
         apply(target: Sprite, nodeTime: number, interval: number) {};
-        
+
         getLastControlPoint(): Point {
             return null;
         };
@@ -483,12 +483,12 @@ namespace animation {
 
             this.loop = loop;
         }
-        
+
         public update(): boolean {
             if (this.sprite.flags & sprites.Flag.Destroyed) return true;
-            
+
             if (this.startedAt == null) this.startedAt = control.millis();
-            
+
             let result = this.path.run(this.nodeInterval, this.sprite, this.startedAt);
             if (result) {
                 if (!this.loop) return true;
@@ -505,11 +505,10 @@ namespace animation {
      * @param frameInterval the time between changes, eg: 500
      */
     //% blockId=run_image_animation
-    //% block="%sprite=variables_get(mySprite) animate frames %frames=lists_create_with with interval %frameInterval=timePicker ms"
-    //% frames.defl=screen_image_picker
+    //% block="animate $sprite=variables_get(mySprite) frames $frames=animation_editor interval (ms) $frameInterval=timePicker loop $loop=toggleOnOff"
     //% group="Animate"
-    export function runImageAnimation(sprite: Sprite, frames: Image[], frameInterval?: number) {
-        const anim = new ImageAnimation(sprite, frames, frameInterval || 500);
+    export function runImageAnimation(sprite: Sprite, frames: Image[], frameInterval?: number, loop?: boolean) {
+        const anim = new ImageAnimation(sprite, frames, frameInterval || 500, !!loop);
         anim.init();
     }
 
@@ -520,44 +519,15 @@ namespace animation {
      * @param duration how long the animation should play for, eg: 500
      */
     //% blockId=run_movement_animation
-    //% block="%sprite=variables_get(mySprite) follow path %pathString=animation_path for %duration=timePicker ms"
+    //% block="animate $sprite=variables_get(mySprite) with $pathString=animation_path for (ms) $duration=timePicker loop $loop=toggleOnOff"
+    //% duration.defl=2000
     //% group="Animate"
-    export function runMovementAnimation(sprite: Sprite, pathString: string, duration?: number) {
+    export function runMovementAnimation(sprite: Sprite, pathString: string, duration?: number, loop?: boolean) {
         const path = Path.parse(new Point(sprite.x, sprite.y), pathString);
-        const anim = new MovementAnimation(sprite, path, duration / path.length);
+        const anim = new MovementAnimation(sprite, path, duration / path.length, !!loop);
         anim.init();
     }
 
-    /**
-     * Create and run an image animation on a sprite
-     * @param frames the frames to animate through
-     * @param sprite the sprite to animate on
-     * @param frameInterval the time between changes, eg: 500
-     */
-    //% blockId=loop_image_animation
-    //% block="loop %sprite=variables_get(mySprite) animate frames %frames=lists_create_with with interval %frameInterval=timePicker ms"
-    //% frames.defl=screen_image_picker
-    //% group="Animate"
-    export function loopImageAnimation(sprite: Sprite, frames: Image[], frameInterval?: number) {
-        const anim = new ImageAnimation(sprite, frames, frameInterval || 500, true);
-        anim.init();
-    }
-
-    /**
-     * Create and loop a movement animation on a sprite
-     * @param sprite the sprite to move
-     * @param pathString the SVG path to animate
-     * @param duration how long the animation should play for, eg: 500
-     */
-    //% blockId=loop_movement_animation
-    //% block="loop %sprite=variables_get(mySprite) follow path %pathString=animation_path for %duration=timePicker ms"
-    //% group="Animate"
-    export function loopMovementAnimation(sprite: Sprite, pathString: string, duration?: number) {
-        const path = Path.parse(new Point(sprite.x, sprite.y), pathString);
-        const anim = new MovementAnimation(sprite, path, duration / path.length, true);
-        anim.init();
-    }
-    
     export enum AnimationTypes {
         //% block="all"
         All,
@@ -566,7 +536,7 @@ namespace animation {
         //% block="path"
         MovementAnimation
     }
-    
+
     /**
      * Stops all animations (simple and looping) of the specified type on a sprite
      * @param type the animation type to stop
@@ -598,7 +568,7 @@ namespace animation {
 
     //% fixedInstance whenUsed block="fly to center"
     export const flyToCenter = new PathPreset("L 80 60");
-    
+
     //% fixedInstance whenUsed block="shake"
     export const shake = new PathPreset("m 4 -1 m 1 2 m -6 2 m -4 -8 m 8 8 m 2 -4 m -8 0 m 6 3 m -3 -2");
 
@@ -651,5 +621,16 @@ namespace animation {
     //% blockHidden=1
     export function animationPresets(animationPath: PathPreset) {
         return animationPath.pathString;
+    }
+
+
+    //% blockId=animation_editor block="%frames"
+    //% shim=TD_ID
+    //% frames.fieldEditor="animation"
+    //% frames.fieldOptions.decompileLiterals="true"
+    //% frames.fieldOptions.filter="!tile !dialog"
+    //% group="Animate" duplicateShadowOnDrag
+    export function _animationFrames(frames: Image[]) {
+        return frames
     }
 }

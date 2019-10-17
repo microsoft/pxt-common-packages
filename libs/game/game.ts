@@ -25,7 +25,8 @@ namespace game {
         return _scene;
     }
 
-    let __waitAnyButton: () => void
+    let __waitAnyButton: () => void;
+    let __gameOverHandler: (win: boolean) => void;
     let __isOver = false;
 
     export function setWaitAnyButton(f: () => void) {
@@ -162,6 +163,14 @@ namespace game {
         else
             loseSound = sound;
     }
+    /**
+     * Set the function to call on game over. The 'win' boolean is
+     * passed to the handler.
+     * @param handler
+     */
+    export function onGameOver(handler: (win: boolean) => void) {
+        __gameOverHandler = handler;
+    }
 
     /**
      * Finish the game and display the score
@@ -174,48 +183,52 @@ namespace game {
         if (__isOver) return;
         __isOver = true;
 
-        if (!effect) {
-            effect = win ? winEffect : loseEffect;
+        if (__gameOverHandler) {
+            __gameOverHandler(win);
+        } else {
+            if (!effect) {
+                effect = win ? winEffect : loseEffect;
+            }
+
+            // collect the scores before poping the scenes
+            const scoreInfo = info.player1.getState();
+            const highScore = info.highScore();
+            if (scoreInfo.score > highScore)
+                info.saveHighScore();
+
+            // releasing memory and clear fibers. Do not add anything that releases the fiber until background is set below,
+            // or screen will be cleared on the new frame and will not appear as background in the game over screen.
+            while (_sceneStack && _sceneStack.length) {
+                _scene.destroy();
+                popScene();
+            }
+            pushScene();
+            scene.setBackgroundImage(screen.clone());
+
+            if (win)
+                winSound.play();
+            else
+                loseSound.play();
+
+            effect.startScreenEffect();
+
+            pause(400);
+
+            const overDialog = new GameOverDialog(win, scoreInfo.score, highScore);
+            scene.createRenderable(scene.HUD_Z, target => {
+                overDialog.update();
+                target.drawTransparentImage(
+                    overDialog.image,
+                    0,
+                    (screen.height - overDialog.image.height()) >> 1
+                );
+            });
+
+            pause(500); // wait for users to stop pressing keys
+            overDialog.displayCursor();
+            waitAnyButton();
+            control.reset();
         }
-
-        // collect the scores before poping the scenes
-        const scoreInfo = info.player1.getState();
-        const highScore = info.highScore();
-        if (scoreInfo.score > highScore)
-            info.saveHighScore();
-
-        // releasing memory and clear fibers. Do not add anything that releases the fiber until background is set below,
-        // or screen will be cleared on the new frame and will not appear as background in the game over screen.
-        while (_sceneStack && _sceneStack.length) {
-            _scene.destroy();
-            popScene();
-        }
-        pushScene();
-        scene.setBackgroundImage(screen.clone());
-
-        if (win)
-            winSound.play();
-        else
-            loseSound.play();
-
-        effect.startScreenEffect();
-
-        pause(400);
-
-        const overDialog = new GameOverDialog(win, scoreInfo.score, highScore);
-        scene.createRenderable(scene.HUD_Z, target => {
-            overDialog.update();
-            target.drawTransparentImage(
-                overDialog.image,
-                0,
-                (screen.height - overDialog.image.height()) >> 1
-            );
-        });
-
-        pause(500); // wait for users to stop pressing keys
-        overDialog.displayCursor();
-        waitAnyButton();
-        control.reset();
     }
 
     /**
@@ -276,7 +289,7 @@ namespace game {
                             });
                         }
                     });
-                    pause(30);
+                    pause(20);
                 }
             });
         }

@@ -6,6 +6,7 @@
         "panic.cpp",
         "image.cpp",
         "image.ts",
+        "screenimage.ts",
         "text.ts",
         "frame.ts",
         "shims.d.ts",

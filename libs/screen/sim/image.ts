@@ -1,17 +1,24 @@
 namespace pxsim {
-    export class RefImage {
+    export class RefImage extends RefObject {
         _width: number;
         _height: number;
         _bpp: number;
         data: Uint8Array;
         dirty = true
+        isStatic = false
 
         constructor(w: number, h: number, bpp: number) {
+            super();
             this.data = new Uint8Array(w * h)
             this._width = w
             this._height = h
             this._bpp = bpp
         }
+
+        scan(mark: (path: string, v: any) => void) { }
+        gcKey() { return "Image" }
+        gcSize() { return 4 + (this.data.length + 3 >> 3) }
+        gcIsStatic() { return this.isStatic }
 
         pix(x: number, y: number) {
             return (x | 0) + (y | 0) * this._width
@@ -239,7 +246,11 @@ namespace pxsim.ImageMethods {
         img.makeWritable()
         dx |= 0
         dy |= 0
-        if (dy < 0) {
+        if (dx != 0) {
+            const img2 = clone(img)
+            img.data.fill(0)
+            drawTransparentImage(img, img2, dx, dy)
+        } else if (dy < 0) {
             dy = -dy
             if (dy < img._height)
                 img.data.copyWithin(0, dy * img._width)
@@ -605,7 +616,7 @@ namespace pxsim.ImageMethods {
         if (!img.inRange(x, 0) || !img.inRange(fromX, 0) || fromH <= 0)
             return
         let fy = 0
-        let stepFY = from._width / fromH
+        let stepFY = ((from._width << 16) / fromH) | 0
         let endY = y + fromH
         if (endY > img._height)
             endY = img._height
@@ -614,7 +625,7 @@ namespace pxsim.ImageMethods {
             y = 0
         }
         while (y < endY) {
-            img.data[img.pix(x, y)] = from.data[from.pix(fromX, fy | 0)]
+            img.data[img.pix(x, y)] = from.data[from.pix(fromX, fy >> 16)]
             y++
             fy += stepFY
         }
@@ -698,6 +709,8 @@ namespace pxsim.image {
             return null
         const r = new RefImage(w, h, bpp)
         const dst = r.data
+
+        r.isStatic = buf.isStatic
 
         if (bpp == 1) {
             for (let i = 0; i < w; ++i) {

@@ -40,7 +40,7 @@ enum FlipOption {
 /**
  * A sprite on the screen
  **/
-//% blockNamespace=sprites color="#4B7BEC" blockGap=8
+//% blockNamespace=sprites color="#3B6FEA" blockGap=8
 class Sprite extends sprites.BaseSprite {
     _x: Fx8
     _y: Fx8
@@ -252,20 +252,6 @@ class Sprite extends sprites.BaseSprite {
         }
     }
 
-    //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine block="z (depth)"
-    get z(): number {
-        return this._z;
-    }
-    //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine block="z (depth)"
-    set z(value: number) {
-        if (value != this._z) {
-            this._z = value;
-            game.currentScene().flags |= scene.Flag.NeedsSorting;
-        }
-    }
-
     __visible() {
         return !(this.flags & SpriteFlag.Invisible);
     }
@@ -340,6 +326,9 @@ class Sprite extends sprites.BaseSprite {
     set bottom(value: number) {
         this.top = value - this.height;
     }
+
+    // The z field (``get z()`` / ``set z()``) is declared in sprite.d.ts
+    // as it is defnied in the superclass
 
     /**
      * The type of sprite
@@ -607,8 +596,8 @@ class Sprite extends sprites.BaseSprite {
         if (this.flags & SpriteFlag.ShowPhysics) {
             const font = image.font5;
             const margin = 2;
-            let tx = this.left;
-            let ty = this.bottom + margin;
+            let tx = l;
+            let ty = this.bottom + margin - camera.drawOffsetY;
             screen.print(`${this.x >> 0},${this.y >> 0}`, tx, ty, 1, font);
             tx -= font.charWidth;
             if (this.vx || this.vy) {
@@ -638,7 +627,7 @@ class Sprite extends sprites.BaseSprite {
             this.lifespan -= dt * 1000;
             if (this.lifespan <= 0) {
                 this.lifespan = undefined;
-                this.destroy();
+                this._destroyCore();
             }
         }
         if ((this.flags & sprites.Flag.AutoDestroy)
@@ -764,13 +753,16 @@ class Sprite extends sprites.BaseSprite {
     destroy(effect?: effects.ParticleEffect, duration?: number) {
         if (this.flags & sprites.Flag.Destroyed)
             return;
+        this.flags |= sprites.Flag.Destroyed;
 
-        if (effect) {
+        if (effect)
             effect.destroy(this, duration);
-            return;
-        }
+        else
+            this._destroyCore();
+    }
 
-        this.flags |= sprites.Flag.Destroyed
+    _destroyCore() {
+        this.flags |= sprites.Flag.Destroyed;
         const scene = game.currentScene();
         // When current sprite is destroyed, destroys sayBubbleSprite if defined
         if (this.sayBubbleSprite) {
@@ -785,6 +777,82 @@ class Sprite extends sprites.BaseSprite {
         scene.destroyedHandlers
             .filter(h => h.kind == this.kind())
             .forEach(h => h.handler(this));
+    }
+
+    /**
+     * Make this sprite follow the target sprite.
+     *
+     * @param target the sprite this one should follow
+     * @param speed the rate at which this sprite should move, eg: 100
+     * @param turnRate how quickly the sprite should turn while following, eg: 3
+     */
+    //% group="Physics" weight=10
+    //% blockId=spriteFollowOtherSprite
+    //% block="set %sprite(myEnemy) follow %target=variables_get(mySprite) || with speed %speed"
+    follow(target: Sprite, speed = 100, turnRate = 3) {
+        if (target === this) return;
+
+        const sc = game.currentScene();
+        if (!sc.followingSprites) {
+            sc.followingSprites = [];
+            let lastTime = game.runtime();
+            sc.eventContext.registerFrameHandler(scene.FOLLOW_SPRITE_PRIORITY, () => {
+                const currTime = game.runtime();
+                const timeDiff = (currTime - lastTime) / 1000;
+                let destroyedSprites = false;
+
+                sc.followingSprites.forEach(fs => {
+                    // one of the involved sprites has been destroyed, so exit and remove that later
+                    if ((fs.self.flags | fs.target.flags) & sprites.Flag.Destroyed) {
+                        destroyedSprites = true;
+                        return;
+                    }
+
+                    const dx = fs.target.x - fs.self.x;
+                    const dy = fs.target.y - fs.self.y;
+
+                    // already right on top of target; stop moving
+                    if (Math.abs(dx) < 2 && Math.abs(dy) < 2) {
+                        fs.self.vx = 0;
+                        fs.self.vy = 0;
+                        return;
+                    }
+
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    const turnPercentage = Math.clamp(0, 1, fs.turnRate * timeDiff);
+
+                    fs.self.vx += (fs.rate * dx / distance - fs.self.vx) * turnPercentage;
+                    fs.self.vy += (fs.rate * dy / distance - fs.self.vy) * turnPercentage;
+                });
+
+                lastTime = currTime;
+
+                // remove followers where one has been destroyed
+                if (destroyedSprites) {
+                    sc.followingSprites = sc.followingSprites
+                        .filter(fs => !((fs.self.flags | fs.target.flags) & sprites.Flag.Destroyed));
+                }
+            });
+        }
+
+        const fs = sc.followingSprites.find(fs => fs.self.id == this.id);
+
+        if (!target || !speed) {
+            if (fs) {
+                sc.followingSprites.removeElement(fs);
+            }
+        } else if (!fs) {
+            sc.followingSprites.push(new sprites.FollowingSprite(
+                this,
+                target,
+                speed,
+                turnRate
+            ));
+        } else {
+            fs.target = target;
+            fs.rate = speed;
+            fs.turnRate = turnRate;
+        }
     }
 
     toString() {

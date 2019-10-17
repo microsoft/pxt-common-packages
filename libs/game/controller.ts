@@ -9,9 +9,9 @@ enum ControllerButtonEvent {
 
 
 enum ControllerButton {
-    //% block="A"
+    //% block="{id:controller}A"
     A = 5,
-    //% block="B"
+    //% block="{id:controller}B"
     B = 6,
     //% block="left"
     Left = 1,
@@ -33,7 +33,7 @@ enum ControllerEvent {
 /**
  * Access to game controls
  */
-//% weight=98 color="#e15f41" icon="\uf11b"
+//% weight=98 color="#D54322" icon="\uf11b"
 //% groups='["Single Player", "Multiplayer"]'
 //% blockGap=8
 namespace controller {

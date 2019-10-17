@@ -3,6 +3,7 @@
 #include "NotifyEvents.h"
 #include "MessageBus.h"
 #include "Timer.h"
+#include "pxtbase.h"
 
 #include <stddef.h>
 
@@ -51,11 +52,8 @@ struct FSHeader {
     uint32_t reserved;
 };
 
-// https://tools.ietf.org/html/draft-eastlake-fnv-14#section-3
 static uint16_t fnhash(const char *fn) {
-    uint32_t h = 0x811c9dc5;
-    while (*fn)
-        h = (h * 0x1000193) ^ (uint8_t)*fn++;
+    uint32_t h = hash_fnv1a(fn, strlen(fn));
     return h ^ (h >> 16);
 }
 

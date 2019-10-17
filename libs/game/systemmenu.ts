@@ -115,7 +115,7 @@ namespace scene.systemMenu {
         protected scrollOffset: number;
 
         constructor(protected generator: () => MenuOption[], theme?: MenuTheme) {
-            this.theme = theme || buildMenuTheme(CARD_NORMAL.width, 6);
+            this.theme = theme || buildMenuTheme(CARD_NORMAL.width, 3);
             this.scrollRow = 0;
             this.scrollOffset = 0;
             this.scrollTarget = 0;
@@ -308,7 +308,7 @@ namespace scene.systemMenu {
         power.deepSleep();
     }
 
-    function closeMenu() {
+    export function closeMenu() {
         if (instance) {
             instance.dispose();
             instance = undefined;

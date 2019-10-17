@@ -14,8 +14,6 @@ namespace sprites {
          * Returns a potential list of neighbors
          */
         neighbors(sprite: Sprite): Sprite[] {
-            if (this.isOob(sprite)) return [];
-
             const n: Sprite[] = [];
             const layer = sprite.layer;
             this.mergeAtKey(sprite.left, sprite.top, layer, n)
@@ -91,19 +89,7 @@ namespace sprites {
                 bucket.push(sprite);
         }
 
-        private isOob(sprite: Sprite): boolean {
-            const tMap = game.currentScene().tileMap;
-
-            const areaWidth = tMap ? tMap.areaWidth() : screen.width;
-            const areaHeight = tMap ? tMap.areaHeight() : screen.height;
-            return sprite.right < 0 || sprite.left > areaWidth || sprite.bottom < 0 || sprite.top > areaHeight;
-        }
-
         insertAABB(sprite: Sprite) {
-            // is object not collidable?
-            if (this.isOob(sprite))
-                return;
-
             const left = sprite.left;
             const top = sprite.top;
             const xn = Math.idiv(sprite.width + this.cellWidth - 1, this.cellWidth);

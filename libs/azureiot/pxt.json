@@ -10,6 +10,10 @@
     ],
     "public": true,
     "dependencies": {
-        "mqtt": "file:../mqtt"
+        "mqtt": "file:../mqtt",
+        "settings": "file:../settings"
+    },
+    "testDependencies": {
+        "esp32": "file:../esp32"
     }
 }

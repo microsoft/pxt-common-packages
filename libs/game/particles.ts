@@ -21,6 +21,7 @@ namespace particles {
     /**
      * A single particle
      */
+    //% maxBgInstances=200
     export class Particle {
         _x: Fx8;
         _y: Fx8;

@@ -28,7 +28,7 @@ static HandlerBinding *handlerBindings;
 HandlerBinding *nextBinding(HandlerBinding *curr, int source, int value) {
     for (auto p = curr; p; p = p->next) {
         // DEVICE_ID_ANY == DEVICE_EXT_ANY == 0
-        if ((p->source == source || p->source == 0) && (p->value == value || p->value == 0)) {
+        if ((p->source == source || p->source == 0) && (value == -1 || p->value == value || p->value == 0)) {
             return p;
         }
     }
@@ -1052,15 +1052,19 @@ TNumber mod(TNumber a, TNumber b) {
 }
 
 //%
-TNumber lsls(TNumber a, TNumber b){BITOP(<<)}
-
-//%
-TNumber lsrs(TNumber a, TNumber b) {
-    return fromUInt(toUInt(a) >> toUInt(b));
+TNumber lsls(TNumber a, TNumber b) {
+    return fromInt(toInt(a) << (toInt(b) & 0x1f));
 }
 
 //%
-TNumber asrs(TNumber a, TNumber b){BITOP(>>)}
+TNumber lsrs(TNumber a, TNumber b) {
+    return fromUInt(toUInt(a) >> (toUInt(b) & 0x1f));
+}
+
+//%
+TNumber asrs(TNumber a, TNumber b) {
+    return fromInt(toInt(a) >> (toInt(b) & 0x1f));
+}
 
 //%
 TNumber eors(TNumber a, TNumber b){BITOP (^)}
@@ -1157,28 +1161,15 @@ TNumber neqq(TNumber a, TNumber b) {
     return !pxt::eqq_bool(a, b) ? TAG_TRUE : TAG_FALSE;
 }
 
-
 // How many significant digits mycvt() should output.
 // This cannot be more than 15, as this is the most that can be accurately represented
 // in 64 bit double. Otherwise this code may crash.
 #define DIGITS 15
 
 static const uint64_t pows[] = {
-    1LL,
-    10LL,
-    100LL,
-    1000LL,
-    10000LL,
-    100000LL,
-    1000000LL,
-    10000000LL,
-    100000000LL,
-    1000000000LL,
-    10000000000LL,    
-    100000000000LL,
-    1000000000000LL,
-    10000000000000LL,
-    100000000000000LL,
+    1LL,           10LL,           100LL,           1000LL,           10000LL,
+    100000LL,      1000000LL,      10000000LL,      100000000LL,      1000000000LL,
+    10000000000LL, 100000000000LL, 1000000000000LL, 10000000000000LL, 100000000000000LL,
 };
 
 // The basic idea is we convert d to a 64 bit integer with DIGITS
@@ -1650,8 +1641,7 @@ int lookupMapKey(String key) {
             else
                 r = m - 1;
         }
-    } else
-    {
+    } else {
         while (l <= r) {
             int m = (l + r) >> 1;
             auto cmp = String_::compare((String)arr[m], key);
@@ -2013,7 +2003,8 @@ TryFrame *beginTry() {
 void endTry() {
     auto ctx = PXT_EXN_CTX();
     auto f = ctx->tryFrame;
-    if (!f) oops(51);
+    if (!f)
+        oops(51);
     ctx->tryFrame = f->parent;
     app_free(f);
 }
@@ -2022,7 +2013,8 @@ void endTry() {
 void throwValue(TValue v) {
     auto ctx = PXT_EXN_CTX();
     auto f = ctx->tryFrame;
-    if (!f) target_panic(PANIC_UNHANDLED_EXCEPTION);
+    if (!f)
+        target_panic(PANIC_UNHANDLED_EXCEPTION);
     ctx->tryFrame = f->parent;
     TryFrame copy = *f;
     app_free(f);
@@ -2048,5 +2040,13 @@ void endFinally() {
     throwValue(getThrownValue());
 }
 
+// https://tools.ietf.org/html/draft-eastlake-fnv-14#section-3
+uint32_t hash_fnv1a(const void *data, unsigned len) {
+    const uint8_t *d = (const uint8_t *)data;
+    uint32_t h = 0x811c9dc5;
+    while (len--)
+        h = (h * 0x1000193) ^ *d++;
+    return h;
+}
 
 } // namespace pxt
