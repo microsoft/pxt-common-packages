@@ -548,6 +548,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             } else if (tm.isOnWall(s)) {
                 // otherwise, accept movement and flag if now clipping into a wall.
                 s.flags |= sprites.Flag.IsClipping;
+            } else {
+                s.flags &= ~sprites.Flag.IsClipping;
             }
         }
     }
