@@ -165,8 +165,8 @@ class Sprite extends sprites.BaseSprite {
     constructor(img: Image) {
         super(scene.SPRITE_Z);
 
-        this._x = Fx8(screen.width - img.width >> 1);
-        this._y = Fx8(screen.height - img.height >> 1);
+        this._x = Fx.zeroFx8;
+        this._y = Fx.zeroFx8;
         this._lastX = this._x;
         this._lastY = this._y;
         this.vx = 0
