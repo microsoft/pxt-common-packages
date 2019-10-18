@@ -1,7 +1,7 @@
 namespace net {
     /**
      * Pings a web site
-     * @param dest 
+     * @param dest host name
      * @param ttl 
      */
     //% blockId=netping block="net ping $dest"
@@ -9,7 +9,13 @@ namespace net {
         net.log(`ping ${dest}`);
         const c = net.instance().controller;
         if (!c) return Infinity;
-        return c.ping(dest, ttl);
+        // don't crash.
+        try {
+            return c.ping(dest, ttl);
+        } catch (e) {
+            console.error("" + e)
+            return Infinity;
+        }
     }
 
     export class Response {
@@ -122,6 +128,17 @@ read only when requested
             return r;
         }
 
+        try {
+            return internalRequest(method, url, options);
+        } catch (e) {
+            const r = new net.Response(null);
+            r.status_code = 418; // teapot
+            r.reason = "" + e;
+            return r;
+        }
+    }
+
+    function internalRequest(method: string, url: string, options?: RequestOptions): net.Response {
         if (!options) options = {};
         if (!options.headers) {
             options.headers = {}
