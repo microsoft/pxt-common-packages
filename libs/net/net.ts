@@ -16,6 +16,10 @@ namespace net {
         if (logPriority > ConsolePriority.Debug)
             console.add(ConsolePriority.Debug, "net:" + msg);
     }
+    export function fail(reason: string) {
+        net.log(`error: ${reason}`);
+        throw reason;
+    }
 
     export function monotonic(): number {
         return control.millis() / 1000.0;
@@ -66,7 +70,12 @@ namespace net {
          */
         scanNetworks(): net.AccessPoint[] {
             const c = this.controller;
-            return c ? c.scanNetworks() : [];
+            try {
+                return c ? c.scanNetworks() : [];
+            } catch (e) {
+                console.error("" + e)
+                return [];
+            }
         }
 
         createSocket(host: string, port: number, secure: boolean): net.Socket {
