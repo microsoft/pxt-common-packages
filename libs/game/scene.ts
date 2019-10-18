@@ -130,9 +130,8 @@ namespace scene {
 
             // render 90
             this.eventContext.registerFrameHandler(RENDER_SPRITES_PRIORITY, () => {
-                control.enablePerfCounter("sprite_draw")
-                this.cachedRender = undefined;
-                this.renderCore();
+                control.enablePerfCounter("scene_draw");
+                this.render();
             });
             // render diagnostics
             this.eventContext.registerFrameHandler(RENDER_DIAGNOSTICS_PRIORITY, () => {
@@ -188,22 +187,10 @@ namespace scene {
             this._data = undefined;
         }
 
-        protected cachedRender: Image;
         /**
          * Renders the current frame as an image
          */
-        render(): Image {
-            if (this.cachedRender) {
-                return this.cachedRender;
-            }
-
-            this.renderCore();
-
-            this.cachedRender = screen.clone();
-            return this.cachedRender;
-        }
-
-        private renderCore() {
+        render() {
             control.enablePerfCounter("render background")
             if (this.flags & scene.Flag.SeeThrough && this.previousScene) {
                 this.previousScene.render();
