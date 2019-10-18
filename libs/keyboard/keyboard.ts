@@ -8,7 +8,11 @@ namespace keyboard {
         private _keysDown: number[];
         private _mediasDown: number[];
         private _functionsDown: number[];
-        constructor() { }
+        constructor() { 
+            this._keysDown = undefined;
+            this._mediasDown = undefined;
+            this._functionsDown = undefined;
+        }
 
         type(text: string) {
             if (!text) return;
