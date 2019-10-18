@@ -103,6 +103,7 @@ namespace control {
         private registerFrameCallbacks() {
             if (!this.frameCallbacks) return;
 
+            const worker = this.frameWorker;
             control.runInParallel(() => {
                 if (this.runningCallbacks) {
                     // this context is still being invoking in a different fiber;
@@ -115,7 +116,6 @@ namespace control {
                 this.timeInSample = 0;
                 this.deltaTimeMillis = 0;
                 this.prevTimeMillis = control.millis();
-                const worker = this.frameWorker;
 
                 while (worker == this.frameWorker) {
                     let delay = this.runCallbacks()
@@ -238,7 +238,7 @@ namespace control {
     let _idleCallbacks: (() => void)[];
     /**
      * Registers a function to run when the device is idling
-     * @param handler 
+     * @param handler
     */
     export function onIdle(handler: () => void) {
         if (!handler) return;
