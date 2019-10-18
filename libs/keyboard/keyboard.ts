@@ -40,18 +40,18 @@ namespace keyboard {
                 __functionKey(key, event);
         }
 
-        private static updateState(keys: number[], c: number, event: KeyboardKeyEvent): boolean {
-            let i = keys.indexOf(c);
+        private static updateState(downKeys: number[], c: number, event: KeyboardKeyEvent): boolean {
+            let i = downKeys.indexOf(c);
             switch (event) {
                 // clear down
                 case KeyboardKeyEvent.Press:
                     if (i > -1)
-                        keys.splice(i, 1);
+                        downKeys.splice(i, 1);
                     return true;
                 // must be down
                 case KeyboardKeyEvent.Up:
                     if (i > -1) {
-                        keys.splice(i, 1);
+                        downKeys.splice(i, 1);
                         return true;
                     } else {
                         return false;
@@ -61,8 +61,8 @@ namespace keyboard {
                     if (i > -1) {
                         return false;
                     } else {
-                        keys.push(c)
-                        return false;
+                        downKeys.push(c)
+                        return true;
                     }
             }
 
