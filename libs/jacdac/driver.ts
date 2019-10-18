@@ -66,7 +66,7 @@ namespace jacdac {
          * Registers and starts the driver
          */
         //% blockId=jacdachoststart block="start %service"
-        //% group="Services"
+        //% group="Services" blockGap=8
         start() {
             jacdac.start();
             if (jacdac.JACDAC.instance.add(this)) {
@@ -78,7 +78,7 @@ namespace jacdac {
          * Unregister and stops the driver
          */
         //% blockId=jacdachoststop block="stop %service"
-        //% group="Services"
+        //% group="Services" blockGap=8
         stop() {
             if (jacdac.JACDAC.instance.remove(this)) {
                 this.log("stop")
