@@ -15,6 +15,14 @@ Frame handlers:
 //% weight=99 color="#4B7BEC" icon="\uf1d8"
 //% groups='["Create", "Physics", "Effects", "Projectiles", "Overlaps", "Lifecycle"]'
 namespace sprites {
+    export class FollowingSprite {
+        constructor(
+            public self: Sprite,
+            public target: Sprite,
+            public rate: number,
+            public turnRate: number
+        ) { }
+    }
 
     /**
      * Create a new sprite from an image
@@ -29,7 +37,6 @@ namespace sprites {
         const scene = game.currentScene();
         const sprite = new Sprite(img)
         sprite.setKind(kind);
-        scene.addSprite(sprite);
         scene.physicsEngine.addSprite(sprite);
 
         // run on created handlers
@@ -108,6 +115,9 @@ namespace sprites {
 
         const xOff = sc.tileMap ? -(s.width >> 1) : (s.width >> 1) - 1;
         const yOff = sc.tileMap ? -(s.height >> 1) : (s.height >> 1) - 1;
+        const cam = game.currentScene().camera;
+        s.x = cam.offsetX;
+        s.y = cam.offsetY;
 
         while(vx == 0 && vy == 0) {
             vx = Math.randomRange(-100, 100);
@@ -115,14 +125,14 @@ namespace sprites {
         }
 
         if (vx < 0)
-            s.x = screen.width + xOff
+            s.x += screen.width + xOff
         else if (vx > 0)
-            s.x = -xOff
+            s.x += -xOff
 
         if (vy < 0)
-            s.y = screen.height + yOff
+            s.y += screen.height + yOff
         else if (vy > 0)
-            s.y = -yOff
+            s.y += -yOff
 
         s.flags |= sprites.Flag.AutoDestroy;
         s.flags |= sprites.Flag.DestroyOnWall;
@@ -136,6 +146,7 @@ namespace sprites {
     }
 
     export enum Flag {
+        None = 0, // no flags are set
         Ghost = 1 << 0, // doesn't collide with other sprites
         Destroyed = 1 << 1,
         AutoDestroy = 1 << 2, // remove the sprite when no longer visible
@@ -143,5 +154,6 @@ namespace sprites {
         DestroyOnWall = 1 << 4, // destroy sprite on contact with wall
         BounceOnWall = 1 << 5, // Bounce on walls
         ShowPhysics = 1 << 6, // display position, velocity, acc
+        Invisible = 1 << 7, // makes the sprite invisible, so it does not show up on the screen
     }
 }

@@ -37,9 +37,20 @@
         "libs/lora",
         "libs/power",
         "libs/controller",
+        "libs/controller---none",
         "libs/color-sensor",
         "libs/light-spectrum-sensor",
         "libs/edge-connector",
-        "libs/proximity"
+        "libs/proximity",
+        "libs/feather",
+        "libs/esp32",
+        "libs/net",
+        "libs/net-game",
+        "libs/mqtt",
+        "libs/azureiot",
+        "libs/color",
+        "libs/game",
+        "libs/storyboard",
+        "libs/rotary-encoder"
     ]
 }

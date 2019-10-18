@@ -12,6 +12,14 @@ namespace control {
     }
 
     /**
+    * Gets current time in microseconds. Overflows every ~18 minutes.
+    */
+    //%
+    int micros() {
+        return current_time_us() & 0x3fffffff;
+    }
+
+    /**
     * Used internally
     */
     //%
@@ -62,7 +70,18 @@ namespace control {
     //% blockId="control_device_serial_number" block="device serial number" weight=9
     //% help=control/device-serial-number
     int deviceSerialNumber() {
-        return pxt::getSerialNumber();
+        uint64_t serial_num = pxt::getLongSerialNumber();
+        return hash_fnv1a(&serial_num, sizeof(serial_num)) & 0x3fffffff;
+    }
+
+    /**
+    * Derive a unique, consistent 64-bit serial number of this device from internal data.
+    */
+    //% blockId="control_device_long_serial_number" block="device long serial number" weight=9
+    //% help=control/device-long-serial-number
+    Buffer deviceLongSerialNumber() {
+        uint64_t serial_num = pxt::getLongSerialNumber();
+        return mkBuffer((uint8_t*)&serial_num, sizeof(uint64_t));
     }
 
     /**
@@ -106,6 +125,14 @@ namespace control {
     //%
     void setDebugFlags(int flags) {
         debugFlags = flags;
+    }
+
+    /**
+     * Record a heap snapshot to debug memory leaks.
+     */
+    //%
+    void heapSnapshot() {
+        // only in JS backend for now
     }
 
     /**

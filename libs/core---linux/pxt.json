@@ -13,6 +13,7 @@
         "pxtcore.h",
         "pins.h",
         "control.cpp",
+        "dmesg.cpp",
         "shims.d.ts",
         "enums.d.ts",
         "ns.ts",

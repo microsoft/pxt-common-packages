@@ -51,11 +51,9 @@ namespace effects {
      */
     class SceneAnchor implements particles.ParticleAnchor {
         private camera: scene.Camera;
-        flags: number; //TODO: remove pending fix for https://github.com/Microsoft/pxt-arcade/issues/504
 
         constructor() {
             this.camera = game.currentScene().camera;
-            this.flags = 0;  //TODO: remove pending fix for https://github.com/Microsoft/pxt-arcade/issues/504
         }
 
         get x() {
@@ -95,7 +93,7 @@ namespace effects {
         //% duration.shadow=timePicker
         //% blockNamespace=scene
         //% group="Effects" blockGap=8
-        //% weight=90
+        //% weight=90 help=effects/start-screen-effect
         startScreenEffect(duration?: number, particlesPerSecond?: number): void {
             if (!this.sourceFactory)
                 return;
@@ -120,7 +118,7 @@ namespace effects {
         //% blockId=particlesEndScreenAnimation block="end screen %effect effect"
         //% blockNamespace=scene
         //% group="Effects" blockGap=8
-        //% weight=80
+        //% weight=80 help=effects/end-screen-effect
         endScreenEffect(): void {
             if (this.source) {
                 this.source.destroy();
@@ -130,17 +128,18 @@ namespace effects {
     }
 
     /**
-     * Removes all effects at anchor's location
+     * Removes all effects attached to the given anchor
      * @param anchor the anchor to remove effects from
      */
     //% blockId=particlesclearparticles block="clear effects on %anchor=variables_get(mySprite)"
     //% blockNamespace=sprites
     //% group="Effects" weight=89
+    //% help=effects/clear-particles
     export function clearParticles(anchor: particles.ParticleAnchor) {
         const sources = game.currentScene().particleSources;
         if (!sources) return;
         sources
-            .filter(ps => ps.anchor == anchor || ps.anchor.x == anchor.x && ps.anchor.y == anchor.y)
+            .filter(ps => ps.anchor === anchor)
             .forEach(ps => ps.destroy());
     }
 

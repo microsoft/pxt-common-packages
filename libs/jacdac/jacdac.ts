@@ -68,6 +68,11 @@ namespace jacdac {
             this._controlService = new JDControlService();
         }
 
+        setDeviceAddress(device_address: number) {
+            this._controlService.disconnect();
+            this._controlService.enumerate(device_address)
+        }
+
         //packet received instead?
         routePacket(pkt: JDPacket): void {
             this._controlService.routePacket(pkt);
@@ -77,12 +82,12 @@ namespace jacdac {
                 this._bridge.handlePacket(pkt);
         }
 
-        start(): void {
+        start(device_address?:number): void {
             if (this.state)
                 return;
 
             this.state = true;
-            this._controlService.enumerate();
+            this._controlService.enumerate(device_address);
         }
 
         stop(): void {
@@ -164,7 +169,11 @@ namespace jacdac {
 
         write(buf: Buffer, service_number: number, device_address: number, device: JDDevice) {
             let packet = new JDPacket();
-            packet.data = buf
+
+            if (device_address == jacdac.JD_CONTROL_TRANSMIT_ONLY_ADDRESS)
+                packet.data = device.udid.concat(buf);
+            else
+                packet.data = buf;
 
             packet.device_address = device_address;
             packet.service_number = service_number;

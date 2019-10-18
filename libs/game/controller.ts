@@ -9,9 +9,9 @@ enum ControllerButtonEvent {
 
 
 enum ControllerButton {
-    //% block="A"
+    //% block="{id:controller}A"
     A = 5,
-    //% block="B"
+    //% block="{id:controller}B"
     B = 6,
     //% block="left"
     Left = 1,
@@ -33,7 +33,7 @@ enum ControllerEvent {
 /**
  * Access to game controls
  */
-//% weight=98 color="#e15f41" icon="\uf11b"
+//% weight=98 color="#D54322" icon="\uf11b"
 //% groups='["Single Player", "Multiplayer"]'
 //% blockGap=8
 namespace controller {
@@ -171,9 +171,6 @@ namespace controller {
      * @param delay number of milliseconds from when the button is pressed to when the repeat event starts firing, eg: 500
      * @param interval minimum number of milliseconds between calls to the button repeat event, eg: 30
      */
-    //% blockId=repeatDefaultDelayInterval block="set button repeat delay $delay ms interval $interval ms"
-    //% weight=10
-    //% group="Single Player"
     export function setRepeatDefault(delay: number, interval: number) {
         defaultRepeatDelay = delay;
         defaultRepeatInterval = interval;
@@ -199,11 +196,13 @@ namespace controller {
         return _players.filter(ctrl => !!ctrl);
     }
 
-    export interface ControlledSprite {
-        s: Sprite;
-        vx: number;
-        vy: number;
-        _inputLastFrame: boolean;
+    export class ControlledSprite {
+        public _inputLastFrame: boolean;
+        constructor(
+            public s: Sprite,
+            public vx: number,
+            public vy: number
+        ) { }
     }
 
     export function _moveSprites() {
@@ -330,7 +329,7 @@ namespace controller {
             if (!this._controlledSprites) this._controlledSprites = [];
             let cp = this._controlledSprites.find(cp => cp.s.id == sprite.id);
             if (!cp) {
-                cp = { s: sprite, vx: vx, vy: vy, _inputLastFrame: false }
+                cp = new ControlledSprite(sprite, vx, vy);
                 this._controlledSprites.push(cp);
             }
             if (cp.vx && vx == 0) {

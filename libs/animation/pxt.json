@@ -4,10 +4,14 @@
     "files": [
         "README.md",
         "animation.ts",
+        "legacy.ts",
         "targetoverrides.ts"
+    ],
+    "testFiles": [
+        "test.ts"
     ],
     "public": true,
     "dependencies": {
-        "game": "file:../game"        
+        "game": "file:../game"
     }
 }

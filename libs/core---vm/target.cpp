@@ -16,7 +16,7 @@ void target_exit() {
 }
 
 extern "C" void target_reset() {
-    systemReset();
+    vmStartFromUser(NULL);
 }
 
 void target_startup() {}
@@ -189,7 +189,7 @@ void dmesg(const char *format, ...) {
     va_end(arg);
 }
 
-int getSerialNumber() {
+uint64_t getLongSerialNumber() {
     return 0;
 }
 

@@ -6,10 +6,10 @@
 namespace network {
 
 class IrWrap : public PulseBase {
-public:
+  public:
     IrWrap()
-    : PulseBase(PULSE_IR_COMPONENT_ID, PIN(IR_OUT), PIN(IR_IN),
-        new SAMDTCCTimer(TCC2, TCC2_IRQn)) {
+        : PulseBase(PULSE_IR_COMPONENT_ID, PIN(IR_OUT), PIN(IR_IN),
+                    new SAMDTCTimer(TC4, TC4_IRQn)) {
         setupGapEvents();
     }
 };
@@ -49,4 +49,4 @@ void onInfraredError(Action body) {
     getIrWrap();
     registerWithDal(PULSE_IR_COMPONENT_ID, PULSE_PACKET_ERROR_EVENT, body);
 }
-}
+} // namespace network

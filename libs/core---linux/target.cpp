@@ -40,74 +40,11 @@ void target_startup() {
     fclose(pf);
 }
 
-static FILE *dmesgFile;
+uint64_t readSerialNumber() {
+    static uint64_t bigSerialNumber;
 
-static int dmesgPtr;
-static int dmesgSerialPtr;
-static char dmesgBuf[4096];
-
-void dumpDmesg() {
-    auto len = dmesgPtr - dmesgSerialPtr;
-    if (len == 0)
-        return;
-    sendSerial(dmesgBuf + dmesgSerialPtr, len);
-    dmesgSerialPtr = dmesgPtr;
-}
-
-
-static void dmesgRaw(const char *buf, uint32_t len) {
-    if (!dmesgFile) {
-        dmesgFile = fopen("/tmp/dmesg.txt", "w");
-        if (!dmesgFile)
-            dmesgFile = stderr;
-    }
-
-    if (len > sizeof(dmesgBuf) / 2)
-        return;
-    if (dmesgPtr + len > sizeof(dmesgBuf)) {
-        dmesgPtr = 0;
-        dmesgSerialPtr = 0;
-    }
-    memcpy(dmesgBuf + dmesgPtr, buf, len);
-    dmesgPtr += len;
-    fwrite(buf, 1, len, dmesgFile);
-
-    fwrite(buf, 1, len, stderr);
-}
-
-static void dmesgFlushRaw() {
-    fflush(dmesgFile);
-#ifdef __linux__
-    fdatasync(fileno(dmesgFile));
-#else
-    fsync(fileno(dmesgFile));
-#endif
-}
-
-void vdmesg(const char *format, va_list arg) {
-    char buf[500];
-
-    snprintf(buf, sizeof(buf), "[%8d] ", current_time_ms());
-    dmesgRaw(buf, strlen(buf));
-    vsnprintf(buf, sizeof(buf), format, arg);
-    dmesgRaw(buf, strlen(buf));
-    dmesgRaw("\n", 1);
-
-    dmesgFlushRaw();
-}
-
-void dmesg(const char *format, ...) {
-    va_list arg;
-    va_start(arg, format);
-    vdmesg(format, arg);
-    va_end(arg);
-}
-
-int getSerialNumber() {
-    static int serial;
-
-    if (serial)
-        return serial;
+    if (bigSerialNumber)
+        return bigSerialNumber;
 
     char buf[1024];
     int fd = open("/proc/cpuinfo", O_RDONLY);
@@ -124,12 +61,19 @@ int getSerialNumber() {
             p++;
         uint64_t s = 0;
         sscanf(p, "%llu", &s);
-        serial = (s >> 32) ^ (s);
+        bigSerialNumber = s;
     }
 
-    if (!serial)
-        serial = 0xf00d0042;
+    if (!bigSerialNumber)
+        bigSerialNumber = 0xf00d0042f00d0042;
 
+    return bigSerialNumber;
+}
+
+uint64_t getLongSerialNumber() {
+    static uint64_t serial;
+    if (serial == 0)
+        serial = readSerialNumber();
     return serial;
 }
 

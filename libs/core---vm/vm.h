@@ -2,6 +2,7 @@
 #define _PXT_VM_H
 
 #include <pthread.h>
+#include <setjmp.h>
 
 #define VM_MAGIC0 0x000a34365458500aULL // \nPXT64\n\0
 #define VM_MAGIC1 0x6837215e2bfe7154ULL
@@ -15,7 +16,12 @@
 
 #define VM_FUNCTION_CODE_OFFSET 24
 
+// The binary has space for 4 64 bit pointers, so on 32 bit machines we pretend there is 8 of them
+#ifdef PXT32
+#define VM_NUM_CPP_METHODS 8
+#else
 #define VM_NUM_CPP_METHODS 4
+#endif
 
 // maximum size (in words) of stack in a single function
 #define VM_MAX_FUNCTION_STACK 200
@@ -63,6 +69,10 @@ struct VMImageSection {
     uint8_t data[0];
 };
 
+static inline VMImageSection * vmNextSection(VMImageSection *sect) {
+    return (VMImageSection *)((uint8_t *)sect + sect->size);
+}
+
 STATIC_ASSERT(sizeof(VMImageSection) == 8);
 
 struct OpcodeDesc {
@@ -87,6 +97,12 @@ struct VMImageHeader {
 
     uint32_t allocGlobals;
     uint32_t nonPointerGlobals;
+
+    uint64_t lastUsageTime;
+    uint64_t installationTime;
+    uint64_t publicationTime;
+    uint8_t reserved[64];
+    uint8_t name[128];
 };
 
 struct VMImage {
@@ -110,6 +126,8 @@ struct VMImage {
     uint32_t errorCode;
     uint32_t errorOffset;
     int toStringKey;
+
+    int execLock;
 };
 
 // not doing this, likely
@@ -132,6 +150,10 @@ struct FiberContext {
     TValue r0;
     RefAction *currAction;
 
+    TryFrame *tryFrame;
+    TValue thrownValue;
+    jmp_buf loopjmp;
+
     TValue *stackBase;
     TValue *stackLimit;
 
@@ -143,14 +165,22 @@ struct FiberContext {
     uint64_t wakeTime;
 };
 
+
+#define PXT_EXN_CTX() currentFiber
+
+void restoreVMExceptionState(TryFrame *tf, FiberContext *ctx);
+#define pxt_restore_exception_state restoreVMExceptionState
+
 extern VMImage *vmImg;
 extern FiberContext *currentFiber;
+extern volatile int panicCode;
 
 void vmStart();
 VMImage *loadVMImage(void *data, unsigned length);
 void unloadVMImage(VMImage *img);
 VMImage *setVMImgError(VMImage *img, int code, void *pos);
 void exec_loop(FiberContext *ctx);
+void vmStartFromUser(const char *fn);
 
 #define DEF_CONVERSION(retp, tp, btp)                                                              \
     static inline retp tp(TValue v) {                                                              \

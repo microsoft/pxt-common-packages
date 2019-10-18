@@ -11,9 +11,10 @@
 #include "ZSingleWireSerial.h"
 #include "SAMDNVM.h"
 
+#include "SAMDSerial.h"
+
 // cap touch not available on 51 yet
 #ifdef SAMD21
-#include "SAMDSerial.h"
 #include "CapTouchButton.h"
 #endif
 
@@ -31,6 +32,8 @@
 typedef int PinName;
 
 #define PAGE_SIZE 512
+
+#define BOOTLOADER_START 0x0
 
 #ifdef SAMD21
 #define BOOTLOADER_END 0x2000

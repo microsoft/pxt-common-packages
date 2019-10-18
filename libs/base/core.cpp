@@ -28,7 +28,7 @@ static HandlerBinding *handlerBindings;
 HandlerBinding *nextBinding(HandlerBinding *curr, int source, int value) {
     for (auto p = curr; p; p = p->next) {
         // DEVICE_ID_ANY == DEVICE_EXT_ANY == 0
-        if ((p->source == source || p->source == 0) && (p->value == value || p->value == 0)) {
+        if ((p->source == source || p->source == 0) && (value == -1 || p->value == value || p->value == 0)) {
             return p;
         }
     }
@@ -241,7 +241,7 @@ String mkInternalString(const char *str) {
 String mkStringCore(const char *data, int len) {
     if (len < 0)
         len = (int)strlen(data);
-    if (len == 0)
+    if (len == 0 && !inGCPrealloc())
         return (String)emptyString;
 
     auto vt = &string_inline_ascii_vt;
@@ -254,13 +254,13 @@ String mkStringCore(const char *data, int len) {
     if (vt == &string_skiplist16_vt) {
         r = new (gcAllocate(sizeof(void *) + sizeof(r->skip))) BoxedString(vt);
         r->skip.list = NULL;
-        registerGCPtr((TValue)r);
+        registerGCObj(r);
         r->skip.size = len;
         r->skip.length = utf8Len(data, len);
         r->skip.list = NULL; // in case gc triggers below
         r->skip.list = (uint16_t *)gcAllocateArray(NUM_SKIP_ENTRIES(r) * 2 + len + 1);
         setupSkipList(r, data);
-        unregisterGCPtr((TValue)r);
+        unregisterGCObj(r);
     } else
 #endif
     {
@@ -280,7 +280,7 @@ String mkString(const char *data, int len) {
 #if PXT_UTF8
     if (len < 0)
         len = (int)strlen(data);
-    if (len == 0)
+    if (len == 0 && !inGCPrealloc())
         return (String)emptyString;
 
     int sz = utf8canon(NULL, data, len);
@@ -332,7 +332,7 @@ uint32_t toRealUTF8(String str, uint8_t *dst) {
 #endif
 
 Buffer mkBuffer(const uint8_t *data, int len) {
-    if (len <= 0)
+    if (len <= 0 && !inGCPrealloc())
         return (Buffer)emptyBuffer;
     Buffer r = new (gcAllocate(sizeof(BoxedBuffer) + len)) BoxedBuffer();
     r->length = len;
@@ -346,12 +346,14 @@ Buffer mkBuffer(const uint8_t *data, int len) {
 
 static unsigned random_value = 0xC0DA1;
 
+//%
 void seedRandom(unsigned seed) {
     random_value = seed;
 }
 
+//%
 void seedAddRandom(unsigned seed) {
-    random_value = (random_value * 0x1000193) ^ seed;
+    random_value ^= 0xCA2557CB * seed;
 }
 
 unsigned getRandom(unsigned max) {
@@ -498,11 +500,11 @@ String concat(String s, String other) {
 
         // allocate [r] first, and keep it alive
         String r = new (gcAllocate(3 * sizeof(void *))) BoxedString(&string_cons_vt);
-        registerGCPtr((TValue)r);
+        registerGCObj(r);
         r->cons.left = s->cons.left;
         // this concat() might trigger GC
         r->cons.right = concat(s->cons.right, other);
-        unregisterGCPtr((TValue)r);
+        unregisterGCObj(r);
         return r;
     }
 #endif
@@ -655,13 +657,20 @@ String substr(String s, int start, int length) {
 int indexOf(String s, String searchString, int start) {
     if (!s || !searchString)
         return -1;
-    auto lenA = s->getUTF8Size();
+
+    if (start < 0)
+        start = 0;
+
+    auto dataA0 = s->getUTF8Data();
+    auto dataA = s->getUTF8DataAt(start);
+    auto offset = dataA - dataA0;
+    auto lenA = s->getUTF8Size() - offset;
     auto lenB = searchString->getUTF8Size();
-    if (start < 0 || start + lenB > lenA)
+
+    if (dataA == NULL || lenB > lenA)
         return -1;
-    auto dataA = s->getUTF8Data();
+
     auto dataB = searchString->getUTF8Data();
-    auto dataA0 = dataA;
     auto firstB = dataB[0];
     while (lenA >= lenB) {
         if (*dataA == firstB && !memcmp(dataA, dataB, lenB))
@@ -1043,15 +1052,19 @@ TNumber mod(TNumber a, TNumber b) {
 }
 
 //%
-TNumber lsls(TNumber a, TNumber b){BITOP(<<)}
-
-//%
-TNumber lsrs(TNumber a, TNumber b) {
-    return fromUInt(toUInt(a) >> toUInt(b));
+TNumber lsls(TNumber a, TNumber b) {
+    return fromInt(toInt(a) << (toInt(b) & 0x1f));
 }
 
 //%
-TNumber asrs(TNumber a, TNumber b){BITOP(>>)}
+TNumber lsrs(TNumber a, TNumber b) {
+    return fromUInt(toUInt(a) >> (toUInt(b) & 0x1f));
+}
+
+//%
+TNumber asrs(TNumber a, TNumber b) {
+    return fromInt(toInt(a) >> (toInt(b) & 0x1f));
+}
 
 //%
 TNumber eors(TNumber a, TNumber b){BITOP (^)}
@@ -1148,6 +1161,20 @@ TNumber neqq(TNumber a, TNumber b) {
     return !pxt::eqq_bool(a, b) ? TAG_TRUE : TAG_FALSE;
 }
 
+// How many significant digits mycvt() should output.
+// This cannot be more than 15, as this is the most that can be accurately represented
+// in 64 bit double. Otherwise this code may crash.
+#define DIGITS 15
+
+static const uint64_t pows[] = {
+    1LL,           10LL,           100LL,           1000LL,           10000LL,
+    100000LL,      1000000LL,      10000000LL,      100000000LL,      1000000000LL,
+    10000000000LL, 100000000000LL, 1000000000000LL, 10000000000000LL, 100000000000000LL,
+};
+
+// The basic idea is we convert d to a 64 bit integer with DIGITS
+// digits, and then print it out, putting dot in the right place.
+
 void mycvt(NUMBER d, char *buf) {
     if (d < 0) {
         *buf++ = '-';
@@ -1162,39 +1189,69 @@ void mycvt(NUMBER d, char *buf) {
 
     int pw = (int)log10(d);
     int e = 1;
-    int beforeDot = 1;
 
-    if (0.000001 <= d && d < 1e21) {
-        if (pw > 0) {
+    // if outside 1e-6 -- 1e21 range, we use the e-notation
+    if (d < 1e-6 || d > 1e21) {
+        // normalize number to 1.XYZ, save e, and reset pw
+        if (pw < 0)
+            d *= p10(-pw);
+        else
             d /= p10(pw);
-            beforeDot = 1 + pw;
-        }
-    } else {
-        d /= p10(pw);
         e = pw;
+        pw = 0;
     }
 
-    int sig = 0;
-    while (sig < 17 || beforeDot > 0) {
-        // printf("%f sig=%d bd=%d\n", d, sig, beforeDot);
-        int c = (int)d;
-        *buf++ = '0' + c;
-        d = (d - c) * 10;
-        if (--beforeDot == 0)
+    int trailingZ = 0;
+    int dotAfter = pw + 1; // at which position the dot should be in the number
+
+    uint64_t dd;
+
+    // normalize number to be integer with exactly DIGITS digits
+    if (pw >= DIGITS) {
+        // if the number is larger than DIGITS, we need trailing zeroes
+        trailingZ = pw - DIGITS + 1;
+        dd = (uint64_t)(d / p10(trailingZ) + 0.5);
+    } else {
+        dd = (uint64_t)(d * p10(DIGITS - pw - 1) + 0.5);
+    }
+
+    // if number is less than 1, we need 0.00...00 at the beginning
+    if (dotAfter < 1) {
+        *buf++ = '0';
+        *buf++ = '.';
+        int n = -dotAfter;
+        while (n--)
+            *buf++ = '0';
+    }
+
+    // now print out the actual number
+    for (int i = DIGITS - 1; i >= 0; i--) {
+        uint64_t q = pows[i];
+        // this may be faster than fp-division and fmod(); or maybe not
+        // anyways, it works
+        int k = '0';
+        while (dd >= q) {
+            dd -= q;
+            k++;
+        }
+        *buf++ = k;
+        // if we're after dot, and what's left is zeroes, stop
+        if (dd == 0 && (DIGITS - i) >= dotAfter)
+            break;
+        // print the dot, if we arrived at it
+        if ((DIGITS - i) == dotAfter)
             *buf++ = '.';
-        if (sig || c)
-            sig++;
     }
 
-    buf--;
-    while (*buf == '0')
-        buf--;
-    if (*buf == '.')
-        buf--;
-    buf++;
+    // print out remaining trailing zeroes if any
+    while (trailingZ-- > 0)
+        *buf++ = '0';
 
+    // if we used e-notation, handle that
     if (e != 1) {
         *buf++ = 'e';
+        if (e > 0)
+            *buf++ = '+';
         itoa(e, buf);
     } else {
         *buf = 0;
@@ -1436,7 +1493,11 @@ int debugFlags;
 //%
 void *ptrOfLiteral(int offset);
 
-#ifndef PXT_VM
+#ifdef PXT_VM
+unsigned programSize() {
+    return 0;
+}
+#else
 //%
 unsigned programSize() {
     return bytecode[17] * 8;
@@ -1569,7 +1630,6 @@ int lookupMapKey(String key) {
     auto len = *arr++;
     int l = 1U; // skip index 0 - it's invalid
     int r = (int)len - 1;
-#ifndef PXT_VM
     auto ikey = (uintptr_t)key;
     if (arr[l] <= ikey && ikey <= arr[r]) {
         while (l <= r) {
@@ -1581,9 +1641,7 @@ int lookupMapKey(String key) {
             else
                 r = m - 1;
         }
-    } else
-#endif
-    {
+    } else {
         while (l <= r) {
             int m = (l + r) >> 1;
             auto cmp = String_::compare((String)arr[m], key);
@@ -1683,7 +1741,7 @@ PXT_DEF_STRING(sNumberTp, "number")
 PXT_DEF_STRING(sFunctionTp, "function")
 PXT_DEF_STRING(sUndefinedTp, "undefined")
 
-//%
+//% expose
 String typeOf(TValue v) {
     switch (valType(v)) {
     case ValType::Undefined:
@@ -1920,5 +1978,75 @@ void stopPerfCounter(PerfCounters n) {
     c->numstops++;
 }
 #endif
+
+// Exceptions
+
+#ifndef PXT_EXN_CTX
+#define PXT_EXN_CTX() getThreadContext()
+#endif
+
+typedef void (*RestoreStateType)(TryFrame *, ThreadContext *);
+#ifndef pxt_restore_exception_state
+#define pxt_restore_exception_state ((RestoreStateType)(((uintptr_t *)bytecode)[14]))
+#endif
+
+//%
+TryFrame *beginTry() {
+    auto ctx = PXT_EXN_CTX();
+    auto frame = (TryFrame *)app_alloc(sizeof(TryFrame));
+    frame->parent = ctx->tryFrame;
+    ctx->tryFrame = frame;
+    return frame;
+}
+
+//% expose
+void endTry() {
+    auto ctx = PXT_EXN_CTX();
+    auto f = ctx->tryFrame;
+    if (!f)
+        oops(51);
+    ctx->tryFrame = f->parent;
+    app_free(f);
+}
+
+//% expose
+void throwValue(TValue v) {
+    auto ctx = PXT_EXN_CTX();
+    auto f = ctx->tryFrame;
+    if (!f)
+        target_panic(PANIC_UNHANDLED_EXCEPTION);
+    ctx->tryFrame = f->parent;
+    TryFrame copy = *f;
+    app_free(f);
+    ctx->thrownValue = v;
+    pxt_restore_exception_state(&copy, ctx);
+}
+
+//% expose
+TValue getThrownValue() {
+    auto ctx = PXT_EXN_CTX();
+    auto v = ctx->thrownValue;
+    ctx->thrownValue = TAG_NON_VALUE;
+    if (v == TAG_NON_VALUE)
+        oops(51);
+    return v;
+}
+
+//% expose
+void endFinally() {
+    auto ctx = PXT_EXN_CTX();
+    if (ctx->thrownValue == TAG_NON_VALUE)
+        return;
+    throwValue(getThrownValue());
+}
+
+// https://tools.ietf.org/html/draft-eastlake-fnv-14#section-3
+uint32_t hash_fnv1a(const void *data, unsigned len) {
+    const uint8_t *d = (const uint8_t *)data;
+    uint32_t h = 0x811c9dc5;
+    while (len--)
+        h = (h * 0x1000193) ^ *d++;
+    return h;
+}
 
 } // namespace pxt

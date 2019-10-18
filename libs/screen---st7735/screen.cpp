@@ -78,7 +78,7 @@ class WDisplay {
         offX = (cfg0 >> 8) & 0xff;
         offY = (cfg0 >> 16) & 0xff;
 
-        DMESG("configure screen: FRMCTR1=%p MADCTL=%p", frmctr1, madctl);
+        DMESG("configure screen: FRMCTR1=%p MADCTL=%p type=%d", frmctr1, madctl, dispTp);
 
         if (spi) {
             auto freq = (cfg2 & 0xff);
@@ -183,12 +183,11 @@ void updateScreen(Image_ img) {
 
     auto mult = display->doubleSize ? 2 : 1;
 
-    if (img && img->isDirty()) {
+    if (img) {
         if (img->bpp() != 4 || img->width() * mult != display->width ||
             img->height() * mult != display->displayHeight)
             target_panic(PANIC_SCREEN_ERROR);
 
-        img->clearDirty();
         // DMESG("wait for done");
         display->lcd->waitForSendDone();
 

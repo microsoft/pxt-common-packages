@@ -6,6 +6,7 @@
         "panic.cpp",
         "image.cpp",
         "image.ts",
+        "screenimage.ts",
         "text.ts",
         "frame.ts",
         "shims.d.ts",
@@ -15,7 +16,8 @@
         "image.d.ts",
         "pxtparts.json",
         "imagesoverrides.jres",
-        "imagesoverrides.ts"
+        "imagesoverrides.ts",
+        "font12.jres"
     ],
     "public": true,
     "dependencies": {

@@ -18,7 +18,7 @@ namespace game {
      */
     //% group="Gameplay"
     //% weight=10 help=game/ask-for-string
-    //% blockId=gameaskforstring block="ask for string with text %message || and max length %answerLength"
+    //% blockId=gameaskforstring block="ask for string %message || and max length %answerLength"
     //% message.defl=""
     //% answerLength.defl="12"
     //% answerLength.min=1
@@ -32,7 +32,7 @@ namespace game {
 
 
     //% whenUsed=true
-    const font = image.font8;
+    const font = image.font8; // FONT8-TODO
     //% whenUsed=true
     const PADDING = 4;
     //% whenUsed=true

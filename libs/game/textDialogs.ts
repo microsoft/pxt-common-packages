@@ -16,7 +16,6 @@ enum DialogLayout {
 namespace game {
     let dialogFrame: Image;
     let dialogCursor: Image;
-    let dialogFont: image.Font;
     let dialogTextColor: number;
 
     export class BaseDialog {
@@ -40,7 +39,7 @@ namespace game {
 
             this.frame = frame || dialogFrame || (dialogFrame = defaultFrame());
 
-            this.font = font || dialogFont || (dialogFont = image.font8);
+            this.font = font || image.font8;
 
             this.cursor = cursor || dialogCursor || (dialogCursor = defaultCursorImage());
 
@@ -150,6 +149,10 @@ namespace game {
         protected textAreaHeight() {
             return this.image.height - ((this.innerTop + this.unit) << 1) - 1;
         }
+
+        protected setFont(font: image.Font) {
+            this.font = font;
+        }
     }
 
     export class Dialog extends BaseDialog {
@@ -245,6 +248,7 @@ namespace game {
         setText(rawString: string) {
             this.chunks = this.chunkText(rawString);
             this.chunkIndex = 0;
+            this.setFont(image.getFontForText(rawString));
         }
 
         drawTextCore() {
@@ -287,15 +291,19 @@ namespace game {
         maxSubOffset: number;
 
         constructor(width: number, height: number) {
-            super(width, height, defaultSplashFrame(), image.font8)
+            super(width, height, defaultSplashFrame())
             this.maxOffset = -1;
             this.maxSubOffset = -1;
             this.textColor = 1;
         }
 
+        private updateFont() {
+            this.setFont(image.getFontForText((this.text || "") + (this.subtext || "")));
+        }
 
         setText(text: string) {
             this.text = text;
+            this.updateFont();
             this.offset = 0;
             this.maxOffset = text.length * this.font.charWidth - screen.width + (this.unit << 1);
             this.timer = 2;
@@ -303,7 +311,8 @@ namespace game {
 
         setSubtext(sub: string) {
             this.subtext = sub;
-            this.maxSubOffset = sub.length * (image.font5.charWidth) - screen.width + (this.unit << 1);
+            this.updateFont();
+            this.maxSubOffset = sub.length * (this.font.charWidth) - screen.width + (this.unit << 1);
         }
 
         drawTextCore() {
@@ -324,24 +333,93 @@ namespace game {
                     this.timer = 2;
                 }
             }
+            const ytitle = 10;
             if (this.maxOffset < 0) {
                 const left = (this.image.width >> 1) - (this.text.length * this.font.charWidth >> 1)
-                this.image.print(this.text, left, 10, this.textColor, this.font)
+                this.image.print(this.text, left, ytitle, this.textColor, this.font)
             }
             else {
-                this.image.print(this.text, this.unit - this.offset, 10, this.textColor, this.font)
+                this.image.print(this.text, this.unit - this.offset, ytitle, this.textColor, this.font)
             }
 
             if (this.subtext) {
+                const ysub = ytitle + this.font.charHeight + 2;
                 if (this.maxSubOffset < 0) {
-                    const left = (this.image.width >> 1) - (this.subtext.length * image.font5.charWidth >> 1)
-                    this.image.print(this.subtext, left, 20, this.textColor, image.font5);
+                    const left = (this.image.width >> 1) - (this.subtext.length * this.font.charWidth >> 1)
+                    this.image.print(this.subtext, left, ysub, this.textColor, this.font);
                 }
                 else {
-                    this.image.print(this.subtext, this.unit - (Math.min(this.offset, this.maxSubOffset)), 20, this.textColor, image.font5);
+                    this.image.print(this.subtext, this.unit - (Math.min(this.offset, this.maxSubOffset)), ysub, this.textColor, this.font);
                 }
             }
             this.drawBorder();
+        }
+    }
+
+    export class GameOverDialog extends game.BaseDialog {
+        protected cursorOn: boolean;
+        protected isNewHighScore: boolean;
+
+        constructor(
+            protected win: boolean,
+            protected score?: number,
+            protected highScore?: number
+        ) {
+            super(screen.width(), 46, defaultSplashFrame());
+            this.cursorOn = false;
+            this.isNewHighScore = this.score > this.highScore;
+        }
+
+        displayCursor() {
+            this.cursorOn = true;
+        }
+
+        update() {
+            this.clearInterior();
+            this.drawTextCore();
+
+            if (this.cursorOn) {
+                this.drawCursorRow();
+            }
+        }
+
+        drawTextCore() {
+            const titleHeight = 8;
+            this.image.printCenter(
+                this.win ? "YOU WIN!" : "GAME OVER!",
+                titleHeight,
+                screen.isMono ? 1 : 5,
+                image.font8
+            );
+
+            if (this.score !== undefined) {
+                const scoreHeight = 23;
+                const highScoreHeight = 34;
+                const scoreColor = screen.isMono ? 1 : 2;
+
+                this.image.printCenter(
+                    "Score:" + this.score,
+                    scoreHeight,
+                    scoreColor,
+                    image.font8
+                );
+
+                if (this.isNewHighScore) {
+                    this.image.printCenter(
+                        "New High Score!",
+                        highScoreHeight,
+                        scoreColor,
+                        image.font5
+                    );
+                } else {
+                    this.image.printCenter(
+                        "HI" + this.highScore,
+                        highScoreHeight,
+                        scoreColor,
+                        image.font8
+                    );
+                }
+            }
         }
     }
 
@@ -511,14 +589,17 @@ namespace game {
         `
             :
             img`
-        7 7 7 7 7 7 7 . . .
-        7 7 7 1 7 7 7 7 . .
-        7 7 1 7 1 7 7 7 7 .
-        7 7 1 1 1 7 7 7 7 7
-        7 7 1 7 1 7 7 7 7 6
-        7 7 1 7 1 7 7 7 6 .
-        7 7 7 7 7 7 7 6 . .
-        . 6 6 6 6 6 6 . . .
+        0 0 0 6 6 6 6 6 0 0 0
+        0 6 6 7 7 7 7 7 6 6 0
+        0 6 7 7 1 1 1 7 7 6 0
+        6 7 7 1 7 7 7 1 7 7 6
+        6 7 7 1 7 7 7 1 7 7 6
+        6 7 7 1 1 1 1 1 7 7 6
+        6 6 7 1 7 7 7 1 7 6 6
+        8 6 6 1 7 7 7 1 6 6 8
+        8 6 6 7 6 6 6 7 6 6 8
+        0 8 6 6 6 6 6 6 6 8 0
+        0 0 8 8 8 8 8 8 8 0 0
         `
     }
 
@@ -530,8 +611,8 @@ namespace game {
      * @param frame A square image with a width and height divisible by three
      */
     //% blockId=game_dialog_set_frame group="Dialogs"
-    //% block="set dialog frame to %frame=screen_image_picker"
-    //% game/set-dialog-frame
+    //% block="set dialog frame to %frame=dialog_image_picker"
+    //% help=game/set-dialog-frame
     export function setDialogFrame(frame: Image) {
         dialogFrame = frame;
     }
@@ -561,8 +642,9 @@ namespace game {
         dialogTextColor = Math.floor(Math.min(15, Math.max(0, color)));
     }
 
+    // this function is deprecated
+    //% deprecated blockHidden
     export function setDialogFont(font: image.Font) {
-        dialogFont = font;
     }
 
     /**

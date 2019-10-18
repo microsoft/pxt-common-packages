@@ -17,7 +17,8 @@ namespace pxsim.control {
     export function reset() {
         pxsim.Runtime.postMessage(<pxsim.SimulatorCommandMessage>{
             type: "simulator",
-            command: "restart"
+            command: "restart",
+            controlReset: true
         })
         const cb = getResume();
     }
@@ -51,6 +52,11 @@ namespace pxsim.control {
         if (!n) n = 42;
         return n;
     }
+    export function deviceLongSerialNumber(): RefBuffer {
+        let b = control.createBuffer(8);
+        BufferMethods.setNumber(b, BufferMethods.NumberFormat.UInt32LE, 0, deviceSerialNumber())
+        return b;
+    }
     export function deviceDalVersion(): string {
         return "0.0.0";
     }
@@ -76,6 +82,10 @@ namespace pxsim.control {
         return runtime.runningTime();
     }
 
+    export function micros(): number {
+        return runtime.runningTimeUs() & 0x3fffffff;
+    }
+
     export function delayMicroseconds(us: number) {
         delay(us / 0.001);
     }
@@ -86,6 +96,13 @@ namespace pxsim.control {
     export function dmesg(msg: string) {
         console.log(`DMESG: ${msg}`);
     }
+    export function setDebugFlags(flags: number): void {
+        console.log(`debug flags: ${flags}`);
+    }
+    export function heapSnapshot(): void {
+        console.log(runtime.traceObjects())
+    }
+
     function toStr(v: any) {
         if (v instanceof RefRecord) {
             return `${v.vtable.name}@${v.id}`
@@ -102,6 +119,10 @@ namespace pxsim.control {
             }
             r += "]"
             return r
+        }
+
+        if (typeof v == "function") {
+            return (v + "").slice(0, 60) + "..."
         }
 
         return v + ""
@@ -131,6 +152,10 @@ namespace pxsim.control {
 
     export function heapDump() {
         // TODO something better
+    }
+
+    export function isUSBInitialized() {
+        return false;
     }
 }
 

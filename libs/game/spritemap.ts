@@ -14,8 +14,6 @@ namespace sprites {
          * Returns a potential list of neighbors
          */
         neighbors(sprite: Sprite): Sprite[] {
-            if (this.isOob(sprite)) return [];
-
             const n: Sprite[] = [];
             const layer = sprite.layer;
             this.mergeAtKey(sprite.left, sprite.top, layer, n)
@@ -52,9 +50,7 @@ namespace sprites {
         /**
          * Recompute hashes for all objects
          */
-        update(sprites: Sprite[]) {
-            this.buckets = [];
-
+        resizeBuckets(sprites: Sprite[]) {
             // rescale buckets
             let maxWidth = 0;
             let maxHeight = 0;
@@ -70,12 +66,12 @@ namespace sprites {
 
             this.cellWidth = Math.clamp(8, areaWidth >> 2, maxWidth * 2);
             this.cellHeight = Math.clamp(8, areaHeight >> 2, maxHeight * 2);
-            this.rowCount = Math.idiv(areaHeight, this.cellHeight)
-            this.columnCount = Math.idiv(areaWidth, this.cellWidth)
+            this.rowCount = Math.idiv(areaHeight, this.cellHeight);
+            this.columnCount = Math.idiv(areaWidth, this.cellWidth);
+        }
 
-
-            for (const sprite of sprites)
-                this.insertAABB(sprite);
+        clear() {
+            this.buckets = [];
         }
 
         private key(x: number, y: number): number {
@@ -93,19 +89,7 @@ namespace sprites {
                 bucket.push(sprite);
         }
 
-        private isOob(sprite: Sprite): boolean {
-            const tMap = game.currentScene().tileMap;
-
-            const areaWidth = tMap ? tMap.areaWidth() : screen.width;
-            const areaHeight = tMap ? tMap.areaHeight() : screen.height;
-            return sprite.right < 0 || sprite.left > areaWidth || sprite.bottom < 0 || sprite.top > areaHeight;
-        }
-
-        private insertAABB(sprite: Sprite) {
-            // is object completely out of space?
-            if (this.isOob(sprite) || (sprite.flags & sprites.Flag.Ghost))
-                return;
-
+        insertAABB(sprite: Sprite) {
             const left = sprite.left;
             const top = sprite.top;
             const xn = Math.idiv(sprite.width + this.cellWidth - 1, this.cellWidth);

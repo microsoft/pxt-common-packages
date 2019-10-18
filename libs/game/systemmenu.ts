@@ -115,7 +115,7 @@ namespace scene.systemMenu {
         protected scrollOffset: number;
 
         constructor(protected generator: () => MenuOption[], theme?: MenuTheme) {
-            this.theme = theme || buildMenuTheme(CARD_NORMAL.width, 6);
+            this.theme = theme || buildMenuTheme(CARD_NORMAL.width, 3);
             this.scrollRow = 0;
             this.scrollOffset = 0;
             this.scrollTarget = 0;
@@ -261,22 +261,26 @@ namespace scene.systemMenu {
         }
     }
 
+    // we intentionally only save volume when the user explicitly adjusts it
+    // we don't want to save it when adjusted programatically, because it could for example changing in a loop
+    function setVolume(newVolume: number) {
+        music.setVolume(newVolume);
+        music.playTone(440, 500);
+        settings.writeNumber("#volume", newVolume)
+    }
+
     function volumeUp() {
         const v = music.volume();
         const remainder = v % 32;
         const newVolume = v + 32 - remainder;
-
-        music.setVolume(newVolume);
-        music.playTone(440, 500);
+        setVolume(newVolume);
     }
 
     function volumeDown() {
         const v = music.volume();
         const remainder = v % 32;
         const newVolume = v - (remainder ? remainder : 32);
-
-        music.setVolume(newVolume);
-        music.playTone(440, 500);
+        setVolume(newVolume);
     }
 
     function brightnessUp() {
@@ -304,7 +308,7 @@ namespace scene.systemMenu {
         power.deepSleep();
     }
 
-    function closeMenu() {
+    export function closeMenu() {
         if (instance) {
             instance.dispose();
             instance = undefined;
@@ -367,7 +371,7 @@ namespace scene.systemMenu {
 
     export function showSystemMenu() {
         if (instance) return;
-                game.pushScene();
+        game.pushScene();
         instance = new PauseMenu(buildOptionList);
         instance.show();
     }
@@ -376,5 +380,12 @@ namespace scene.systemMenu {
         return !!instance;
     }
 
+    function initVolume() {
+        const vol = settings.readNumber("#volume")
+        if (vol != null)
+            music.setVolume(vol)
+    }
+
+    initVolume()
     scene.Scene.initializers.push(register);
 }

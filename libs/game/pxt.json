@@ -3,12 +3,14 @@
     "description": "The game and sprite library - beta",
     "files": [
         "gameoverrides.ts",
+        "basesprite.ts",
         "constants.ts",
         "controlleroverrides.ts",
         "controller.ts",
         "hitbox.ts",
         "sprites.ts",
         "sprite.ts",
+        "sprite.d.ts",
         "spritemap.ts",
         "spriteevents.ts",
         "spriteset.ts",
@@ -20,11 +22,13 @@
         "background.ts",
         "tilemap.ts",
         "camera.ts",
+        "renderable.ts",
         "scene.ts",
         "scenes.ts",
         "textDialogs.ts",
         "game.ts",
         "prompt.ts",
+        "numberprompt.ts",
         "ask.ts",
         "targetoverrides.cpp",
         "targetoverrides.ts",
@@ -36,12 +40,14 @@
         "particles.ts",
         "particlefactories.ts",
         "particleeffects.ts",
-        "effects.ts"
+        "effects.ts",
+        "texteffects.ts"
     ],
     "public": true,
     "dependencies": {
+        "settings": "file:../settings",
         "screen": "file:../screen",
-       "mixer": "file:../mixer",
-       "power": "file:../power"
+        "mixer": "file:../mixer",
+        "power": "file:../power"
     }
 }

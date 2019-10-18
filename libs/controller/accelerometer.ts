@@ -3,48 +3,68 @@ enum ControllerGesture {
      * Shake gesture
      */
     //% block="shake"
-    Shake = Gesture.Shake,
+    Shake = 11,  // ACCELEROMETER_EVT_SHAKE
     /**
      * Raised when the device tilts up
      */
     //% block="tilt up"
-    TiltUp = Gesture.TiltUp,  // ACCELEROMETER_EVT_TILT_UP
+    TiltUp = 1,  // ACCELEROMETER_EVT_TILT_UP
     /**
      * Raised when the device tilts down
      */
     //% block="tilt down"
-    TiltDown = Gesture.TiltDown,  // ACCELEROMETER_EVT_TILT_DOWN
+    TiltDown = 2,  // ACCELEROMETER_EVT_TILT_DOWN
     /**
      * Raised when the screen is pointing left
      */
     //% block="tilt left"
-    TiltLeft = Gesture.TiltLeft,  // ACCELEROMETER_EVT_TILT_LEFT
+    TiltLeft = 3,  // ACCELEROMETER_EVT_TILT_LEFT
     /**
      * Raised when the screen is pointing right
      */
     //% block="tilt right"
-    TiltRight = Gesture.TiltRight,  // ACCELEROMETER_EVT_TILT_RIGHT
+    TiltRight = 4,  // ACCELEROMETER_EVT_TILT_RIGHT
     /**
      * Raised when the screen faces up
      */
     //% block="screen up"
-    ScreenUp = Gesture.FaceUp,  // ACCELEROMETER_EVT_FACE_UP
+    ScreenUp = 5,  // ACCELEROMETER_EVT_FACE_UP
     /**
      * Raised when the screen is pointing up and the board is horizontal
      */
     //% block="screen down"
-    ScreenDown = Gesture.FaceDown,  // ACCELEROMETER_EVT_FACE_DOWN
+    ScreenDown = 6,  // ACCELEROMETER_EVT_FACE_DOWN
+    /**
+     * Raised when a 2G shock is detected
+     */
+    //% block="2g (step)"
+    TwoG = 12,  // ACCELEROMETER_EVT_2G
+    /**
+     * Raised when a 3G shock is detected
+     */
+    //% block="3g"
+    ThreeG = 8,  // ACCELEROMETER_EVT_3G
+    /**
+     * Raised when a 6G shock is detected
+     */
+    //% block="6g"
+    SixG = 9,  // ACCELEROMETER_EVT_6G
+    /**
+     * Raised when a 8G shock is detected
+     */
+    //% block="8g"
+    EightG = 10,  // ACCELEROMETER_EVT_8G
 }
 
 enum ControllerDimension {
     //% block=x
-    X = Dimension.X,
+    X = 0,
     //% block=y
-    Y = Dimension.Y,
+    Y = 1,
     //% block=z
-    Z = Dimension.Z,
+    Z = 2,
     //% block=strength
-    Strength = Dimension.Strength
+    Strength = 3,
 }
 
 namespace controller {
@@ -60,14 +80,17 @@ namespace controller {
     //% gesture.fieldOptions.columns=3
     //% group="Extras"
     export function onGesture(gesture: ControllerGesture, handler: () => void) {
-        const state = sceneState();
-        if (!state.gestureHandlers) state.gestureHandlers = {};
-        state.gestureHandlers[gesture] = handler;
-        
-        input.onGesture(<Gesture><number>gesture, function() {
-            const st = sceneState();
-            st.lastGesture = gesture;
-        })
+        controller.__internal.onGesture(gesture, handler);
+    }
+
+    /**
+     * Register a customer gesture for the controller
+     * @param id 
+     * @param update
+     * @param handler
+     */
+    export function onCustomGesture(id: number, update: () => boolean, handler: () => void) {
+        controller.__internal.onCustomGesture(id, update, handler);
     }
 
     /**
@@ -82,6 +105,6 @@ namespace controller {
     //% dimension.fieldOptions.columns=2
     //% group="Extras"
     export function acceleration(dimension: ControllerDimension): number {
-        return input.acceleration(<Dimension><number>dimension);
+        return controller.__internal.acceleration(dimension);
     }
 }

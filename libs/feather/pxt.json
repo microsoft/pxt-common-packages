@@ -1,0 +1,15 @@
+{
+    "name": "feather",
+    "description": "Adafruit Feather pinout",
+    "files": [
+        "README.md",
+        "device.d.ts",
+        "targetoverrides.d.ts"
+    ],
+    "dependencies": {
+        "core": "file:../core",
+        "serial": "file:../serial"
+    },
+    "public": true,
+    "weight": 2
+}

@@ -33,7 +33,7 @@ static const int16_t sinQ[256] = {
 
 typedef int (*gentone_t)(uintptr_t userData, uint32_t position);
 
-static int realNoiseTone(uintptr_t userData, uint32_t position) {
+static int noiseTone(uintptr_t userData, uint32_t position) {
     (void)userData;
     (void)position;
     // see https://en.wikipedia.org/wiki/Xorshift
@@ -66,11 +66,6 @@ static int triangleTone(uintptr_t userData, uint32_t position) {
     return position < 512 ? (position << 7) - 0x7fff : ((1023 - position) << 7) - 0x7fff;
 }
 
-static int fakeNoiseTone(uintptr_t userData, uint32_t position) {
-    // deterministic, semi-random noise
-    return (((position * 7919) & 1023) << 6) - 0x7fff;
-}
-
 static int squareWaveTone(uintptr_t wave, uint32_t position) {
     return position < (102 * (wave - SW_SQUARE_10 + 1)) ? -0x7fff : 0x7fff;
 }
@@ -88,9 +83,7 @@ static gentone_t getWaveFn(uint8_t wave) {
     case SW_SAWTOOTH:
         return sawtoothTone;
     case SW_NOISE:
-        return fakeNoiseTone;
-    case SW_REAL_NOISE:
-        return realNoiseTone;
+        return noiseTone;
     case SW_SINE:
         return sineTone;
     default:
@@ -296,7 +289,7 @@ void forceOutput(int outp) {
 void queuePlayInstructions(int when, Buffer buf) {
     auto snd = getWSynthesizer();
 
-    registerGCPtr((TValue)buf);
+    registerGCObj(buf);
 
     auto p = new WaitingSound;
     p->state = SoundState::Waiting;
@@ -315,7 +308,7 @@ void queuePlayInstructions(int when, Buffer buf) {
         while (p->next && p->next->state == SoundState::Done) {
             auto todel = p->next;
             p->next = todel->next;
-            unregisterGCPtr((TValue)todel->instructions);
+            unregisterGCObj(todel->instructions);
             delete todel;
         }
         p = p->next;
@@ -339,7 +332,7 @@ void stopPlaying() {
     }
     while (p) {
         auto n = p->next;
-        unregisterGCPtr((TValue)p->instructions);
+        unregisterGCObj(p->instructions);
         delete p;
         p = n;
     }

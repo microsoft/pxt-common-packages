@@ -116,8 +116,18 @@ void dispatchEvent(Event e) {
 
 void registerWithDal(int id, int event, Action a, int flags) {
     // first time?
-    if (!findBinding(id, event))
+    if (!findBinding(id, event)) {
         devMessageBus.listen(id, event, dispatchEvent, flags);
+        if (event == 0) {
+            // we're registering for all events on given ID
+            // need to remove old listeners for specific events
+            auto curr = findBinding(id, -1);
+            while (curr) {
+                devMessageBus.ignore(id, curr->value, dispatchEvent);
+                curr = nextBinding(curr->next, id, -1);
+            }
+        }
+    }
     setBinding(id, event, a);
 }
 
@@ -179,12 +189,16 @@ unsigned afterProgramPage() {
     return ptr;
 }
 
-int getSerialNumber() {
+uint64_t getLongSerialNumber() {
     return device.getSerialNumber();
 }
 
 int current_time_ms() {
     return system_timer_current_time();
+}
+
+uint64_t current_time_us() {
+    return system_timer_current_time_us();
 }
 
 #ifdef PXT_GC
@@ -208,7 +222,7 @@ void gcProcessStacks(int flags) {
     // check scheduler is initialized
     if (!currentFiber) {
         // make sure we allocate something to at least initalize the memory allocator
-        void * volatile p = xmalloc(1);
+        void *volatile p = xmalloc(1);
         xfree(p);
         return;
     }
@@ -225,6 +239,7 @@ void gcProcessStacks(int flags) {
         auto ctx = (ThreadContext *)fib->user_data;
         if (!ctx)
             continue;
+        gcProcess(ctx->thrownValue);
         for (auto seg = &ctx->stack; seg; seg = seg->next) {
             auto ptr = (TValue *)threadAddressFor(fib, seg->top);
             auto end = (TValue *)threadAddressFor(fib, seg->bottom);
