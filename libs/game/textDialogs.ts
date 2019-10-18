@@ -436,16 +436,9 @@ namespace game {
     //% block="show long text %str %layout"
     //% help=game/show-long-text
     export function showLongText(str: string, layout: DialogLayout) {
-        // Pause to cede control from this fiber just in case the user code created
-        // sprites and they haven't had a chance to render yet.
-        pause(1);
-
-        // Clone the current screen so that it shows up behind the dialog
-        let temp = screen.clone();
         controller._setUserEventsEnabled(false);
         game.pushScene();
-        scene.setBackgroundImage(temp);
-        temp = null;
+        game.currentScene().flags |= scene.Flag.SeeThrough;
 
         let width: number;
         let height: number;
@@ -656,10 +649,9 @@ namespace game {
     //% blockId=gameSplash block="splash %title||%subtitle"
     //% group="Prompt"
     export function splash(title: string, subtitle?: string) {
-        const temp = screen.clone();
         controller._setUserEventsEnabled(false);
         game.pushScene();
-        scene.setBackgroundImage(temp);
+        game.currentScene().flags |= scene.Flag.SeeThrough;
 
         const dialog = new SplashDialog(screen.width, subtitle ? 42 : 35);
         dialog.setText(title);

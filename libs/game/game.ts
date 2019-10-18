@@ -43,8 +43,10 @@ namespace game {
         return _scene.eventContext;
     }
 
-    function init() {
-        if (!_scene) _scene = new scene.Scene(control.pushEventContext());
+    function init(forceNewScene ?: boolean) {
+        if (!_scene || forceNewScene) {
+            _scene = new scene.Scene(control.pushEventContext(), _scene);
+        }
         _scene.init();
 
         if (!winEffect)
@@ -64,8 +66,7 @@ namespace game {
         particles.disableAll();
         if (!_sceneStack) _sceneStack = [];
         _sceneStack.push(_scene);
-        _scene = undefined;
-        init();
+        init(/** forceNewScene **/ true);
 
         if (_scenePushHandlers) {
             _scenePushHandlers.forEach(cb => cb(oldScene));
