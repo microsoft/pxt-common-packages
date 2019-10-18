@@ -106,7 +106,7 @@ namespace control {
             const worker = this.frameWorker;
             control.runInParallel(() => {
                 if (this.runningCallbacks) {
-                    // this context is still being invoking in a different fiber;
+                    // this context is still running in a different fiber;
                     // delay until the other fiber doing so has ceased.
                     pauseUntil(() => !this.runningCallbacks);
                 }
