@@ -8,7 +8,7 @@ namespace keyboard {
         private _keysDown: number[];
         private _mediasDown: number[];
         private _functionsDown: number[];
-        constructor() { 
+        constructor() {
             this._keysDown = undefined;
             this._mediasDown = undefined;
             this._functionsDown = undefined;
@@ -80,17 +80,17 @@ namespace keyboard {
 
         clear() {
             // send up command for all down keys and clear
-            if (this._keysDown) {
-                this._keysDown.forEach(c => __key(c, KeyboardKeyEvent.Up));
-                this._keysDown = undefined;
+            while (this._keysDown && this._keysDown.length) {
+                const c = this._keysDown.pop();
+                __key(c, KeyboardKeyEvent.Up);
             }
-            if (this._mediasDown) {
-                this._mediasDown.forEach(c => __key(c, KeyboardKeyEvent.Up));
-                this._mediasDown = undefined;
+            while (this._mediasDown && this._mediasDown.length) {
+                const c = this._mediasDown.pop();
+                __mediaKey(c, KeyboardKeyEvent.Up);
             }
-            if (this._functionsDown) {
-                this._functionsDown.forEach(c => __key(c, KeyboardKeyEvent.Up));
-                this._functionsDown = undefined;
+            while (this._functionsDown && this._functionsDown.length) {
+                const c = this._functionsDown.pop();
+                __functionKey(c, KeyboardKeyEvent.Up);
             }
         }
     }
