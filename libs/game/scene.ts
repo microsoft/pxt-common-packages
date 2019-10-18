@@ -9,6 +9,7 @@ namespace scene {
     export enum Flag {
         NeedsSorting = 1 << 0, // indicates the sprites in the scene need to be sorted before rendering
         SeeThrough = 1 << 1, // if set, render the previous scene 'below' this one as the background
+        IsRendering = 1 << 2, // if set, the scene is currently being rendered to the screen
     }
 
     export class SpriteHandler {
@@ -191,6 +192,10 @@ namespace scene {
          * Renders the current frame as an image
          */
         render() {
+            // bail out from recursive or parallel call.
+            if (this.flags & scene.Flag.IsRendering) return;
+            this.flags |= scene.Flag.IsRendering;
+
             control.enablePerfCounter("render background")
             if (this.flags & scene.Flag.SeeThrough && this.previousScene) {
                 this.previousScene.render();
@@ -208,6 +213,8 @@ namespace scene {
             for (const s of this.allSprites) {
                 s.__draw(this.camera);
             }
+
+            this.flags &= ~scene.Flag.IsRendering;
         }
     }
 }
