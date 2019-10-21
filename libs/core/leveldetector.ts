@@ -42,9 +42,6 @@ namespace pins {
         }
 
         set level(level: number) {
-            control.dmesg("LEVEL: ");
-            control.dmesg(level.toString());
-
             this._level = this.clampValue(level);
 
             if (this._level >= this.highThreshold) {
