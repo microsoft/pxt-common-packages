@@ -26,15 +26,21 @@ namespace pins {
             this.max = max;
             this.lowThreshold = lowThreshold;
             this.highThreshold = highThreshold;
-            this._level = Math.ceil((max - min) / 2);
-            this._state = LevelDetector.LEVEL_THRESHOLD_NEUTRAL;
             this.transitionWindow = 4;
-            this.transition = 0;
-            this.transitionMs = 0;
             this.transitionInterval = 0;
 
             this.onHigh = () => control.raiseEvent(this.id, DAL.LEVEL_THRESHOLD_HIGH);
             this.onLow = () => control.raiseEvent(this.id, DAL.LEVEL_THRESHOLD_LOW);
+            this.onNeutral = undefined;
+
+            this.reset();
+        }
+
+        reset() {
+            this.transition = 0;
+            this.transitionMs = 0;
+            this._level = Math.ceil((this.highThreshold - this.lowThreshold) / 2);
+            this._state = LevelDetector.LEVEL_THRESHOLD_NEUTRAL;
         }
 
         get level(): number {
@@ -57,12 +63,12 @@ namespace pins {
 
         public setLowThreshold(value: number) {
             this.lowThreshold = this.clampValue(value);
-            this.highThreshold = Math.max(this.lowThreshold + 1, this.highThreshold);
+            this.reset();
         }
 
         public setHighThreshold(value: number) {
             this.highThreshold = this.clampValue(value);
-            this.lowThreshold = Math.min(this.highThreshold - 1, this.lowThreshold);
+            this.reset();
         }
 
         private clampValue(value: number) {
