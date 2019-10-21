@@ -26,15 +26,21 @@ namespace pins {
             this.max = max;
             this.lowThreshold = lowThreshold;
             this.highThreshold = highThreshold;
-            this._level = Math.ceil((max - min) / 2);
-            this._state = LevelDetector.LEVEL_THRESHOLD_NEUTRAL;
             this.transitionWindow = 4;
-            this.transition = 0;
-            this.transitionMs = 0;
             this.transitionInterval = 0;
 
             this.onHigh = () => control.raiseEvent(this.id, DAL.LEVEL_THRESHOLD_HIGH);
             this.onLow = () => control.raiseEvent(this.id, DAL.LEVEL_THRESHOLD_LOW);
+            this.onNeutral = undefined;
+
+            this.reset();
+        }
+
+        reset() {
+            this.transition = 0;
+            this.transitionMs = 0;
+            this._level = Math.ceil((this.highThreshold - this.lowThreshold) / 2);
+            this._state = LevelDetector.LEVEL_THRESHOLD_NEUTRAL;
         }
 
         get level(): number {
