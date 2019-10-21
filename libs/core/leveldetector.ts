@@ -63,12 +63,12 @@ namespace pins {
 
         public setLowThreshold(value: number) {
             this.lowThreshold = this.clampValue(value);
-            this.highThreshold = Math.max(this.lowThreshold + 1, this.highThreshold);
+            this.reset();
         }
 
         public setHighThreshold(value: number) {
             this.highThreshold = this.clampValue(value);
-            this.lowThreshold = Math.min(this.highThreshold - 1, this.lowThreshold);
+            this.reset();
         }
 
         private clampValue(value: number) {
