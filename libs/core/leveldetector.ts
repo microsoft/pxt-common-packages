@@ -10,7 +10,10 @@ namespace pins {
         private _state: number;
         public onHigh: () => void;
         public onLow: () => void;
+        public onNeutral: () => void;
         public transitionWindow: number;
+
+        static LEVEL_THRESHOLD_NEUTRAL = 0;
 
         constructor(id: number,
             min: number, max: number,
@@ -21,7 +24,7 @@ namespace pins {
             this.lowThreshold = lowThreshold;
             this.highThreshold = highThreshold;
             this._level = Math.ceil((max - min) / 2);
-            this._state = 0;
+            this._state = LevelDetector.LEVEL_THRESHOLD_NEUTRAL;
             this.transitionWindow = 4;
             this.transition = 0;
 
@@ -46,7 +49,7 @@ namespace pins {
                 this.setState(DAL.LEVEL_THRESHOLD_LOW);
             }
             else {
-                this.setState(0);
+                this.setState(LevelDetector.LEVEL_THRESHOLD_NEUTRAL);
             }
         }
 
@@ -71,8 +74,9 @@ namespace pins {
         }
 
         private setState(state: number) {
-                                        // not enough samples to change
-            if (this._state === state || this.transition++ < this.transitionWindow) {
+            // not enough samples to change
+            if (this._state === state 
+                || this.transition++ < this.transitionWindow) {
                 return;
             }
 
@@ -84,6 +88,9 @@ namespace pins {
                     break;
                 case DAL.LEVEL_THRESHOLD_LOW:
                     if (this.onLow) this.onLow();
+                    break;
+                case LevelDetector.LEVEL_THRESHOLD_NEUTRAL:
+                    if (this.onNeutral) this.onNeutral();
                     break;
             }
         }
