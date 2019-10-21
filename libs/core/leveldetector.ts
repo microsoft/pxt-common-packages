@@ -6,12 +6,15 @@ namespace pins {
         public lowThreshold: number;
         public highThreshold: number;
         private transition: number;
+        private transitionMs: number;
         private _level: number;
         private _state: number;
         public onHigh: () => void;
         public onLow: () => void;
         public onNeutral: () => void;
         public transitionWindow: number;
+        // minimum duration (ms) between events
+        public transitionInterval: number;
 
         static LEVEL_THRESHOLD_NEUTRAL = 0;
 
@@ -27,6 +30,8 @@ namespace pins {
             this._state = LevelDetector.LEVEL_THRESHOLD_NEUTRAL;
             this.transitionWindow = 4;
             this.transition = 0;
+            this.transitionMs = 0;
+            this.transitionInterval = 0;
 
             this.onHigh = () => control.raiseEvent(this.id, DAL.LEVEL_THRESHOLD_HIGH);
             this.onLow = () => control.raiseEvent(this.id, DAL.LEVEL_THRESHOLD_LOW);
@@ -76,11 +81,13 @@ namespace pins {
         private setState(state: number) {
             // not enough samples to change
             if (this._state === state 
-                || this.transition++ < this.transitionWindow) {
+                || (this.transition++ < this.transitionWindow)
+                || (control.millis() - this.transitionMs) < this.transitionInterval) {
                 return;
             }
 
             this.transition = 0;
+            this.transitionMs = control.millis();
             this._state = state;
             switch (state) {
                 case DAL.LEVEL_THRESHOLD_HIGH:
