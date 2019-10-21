@@ -6,11 +6,17 @@ namespace pins {
         public lowThreshold: number;
         public highThreshold: number;
         private transition: number;
+        private transitionMs: number;
         private _level: number;
         private _state: number;
         public onHigh: () => void;
         public onLow: () => void;
+        public onNeutral: () => void;
         public transitionWindow: number;
+        // minimum duration (ms) between events
+        public transitionInterval: number;
+
+        static LEVEL_THRESHOLD_NEUTRAL = 0;
 
         constructor(id: number,
             min: number, max: number,
@@ -21,9 +27,11 @@ namespace pins {
             this.lowThreshold = lowThreshold;
             this.highThreshold = highThreshold;
             this._level = Math.ceil((max - min) / 2);
-            this._state = 0;
+            this._state = LevelDetector.LEVEL_THRESHOLD_NEUTRAL;
             this.transitionWindow = 4;
             this.transition = 0;
+            this.transitionMs = 0;
+            this.transitionInterval = 0;
 
             this.onHigh = () => control.raiseEvent(this.id, DAL.LEVEL_THRESHOLD_HIGH);
             this.onLow = () => control.raiseEvent(this.id, DAL.LEVEL_THRESHOLD_LOW);
@@ -34,9 +42,6 @@ namespace pins {
         }
 
         set level(level: number) {
-            control.dmesg("LEVEL: ");
-            control.dmesg(level.toString());
-
             this._level = this.clampValue(level);
 
             if (this._level >= this.highThreshold) {
@@ -46,7 +51,7 @@ namespace pins {
                 this.setState(DAL.LEVEL_THRESHOLD_LOW);
             }
             else {
-                this.setState(0);
+                this.setState(LevelDetector.LEVEL_THRESHOLD_NEUTRAL);
             }
         }
 
@@ -71,12 +76,15 @@ namespace pins {
         }
 
         private setState(state: number) {
-                                        // not enough samples to change
-            if (this._state === state || this.transition++ < this.transitionWindow) {
+            // not enough samples to change
+            if (this._state === state 
+                || (this.transition++ < this.transitionWindow)
+                || (control.millis() - this.transitionMs) < this.transitionInterval) {
                 return;
             }
 
             this.transition = 0;
+            this.transitionMs = control.millis();
             this._state = state;
             switch (state) {
                 case DAL.LEVEL_THRESHOLD_HIGH:
@@ -84,6 +92,9 @@ namespace pins {
                     break;
                 case DAL.LEVEL_THRESHOLD_LOW:
                     if (this.onLow) this.onLow();
+                    break;
+                case LevelDetector.LEVEL_THRESHOLD_NEUTRAL:
+                    if (this.onNeutral) this.onNeutral();
                     break;
             }
         }
