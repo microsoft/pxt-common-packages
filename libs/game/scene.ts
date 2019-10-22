@@ -197,7 +197,7 @@ namespace scene {
             this.flags |= scene.Flag.IsRendering;
 
             control.enablePerfCounter("render background")
-            if (this.flags & scene.Flag.SeeThrough && this.previousScene) {
+            if ((this.flags & scene.Flag.SeeThrough) && this.previousScene) {
                 this.previousScene.render();
             } else {
                 this.background.draw();
