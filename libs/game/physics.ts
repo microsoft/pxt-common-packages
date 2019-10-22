@@ -534,7 +534,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
             const maxDist = Fx.toInt(this.maxSingleStep);
             // only check tile map if moving within a single step
-            if (Math.abs(Fx.toInt(dx)) < maxDist && Math.abs(Fx.toInt(dy)) < maxDist) {
+            if (Math.abs(Fx.toInt(dx)) <= maxDist && Math.abs(Fx.toInt(dy)) <= maxDist) {
                 const ms = new MovingSprite(
                     s,
                     s._vx,
