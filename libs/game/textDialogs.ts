@@ -649,6 +649,10 @@ namespace game {
     //% blockId=gameSplash block="splash %title||%subtitle"
     //% group="Prompt"
     export function splash(title: string, subtitle?: string) {
+<<<<<<< HEAD
+=======
+        const temp = game.currentScene().render();
+>>>>>>> bbbd462874f8c832cb9fd6e18e2b9d70917fef1f
         controller._setUserEventsEnabled(false);
         game.pushScene();
         game.currentScene().flags |= scene.Flag.SeeThrough;
