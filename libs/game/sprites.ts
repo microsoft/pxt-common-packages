@@ -37,7 +37,6 @@ namespace sprites {
         const scene = game.currentScene();
         const sprite = new Sprite(img)
         sprite.setKind(kind);
-        sprite.setPosition(screen.width >> 1, screen.height >> 1);
         scene.physicsEngine.addSprite(sprite);
 
         // run on created handlers
