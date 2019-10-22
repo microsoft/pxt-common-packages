@@ -103,4 +103,14 @@ namespace jacdac {
             bus.stop();
         }
     }
+
+    /**
+     * Sets the name of the current device on the JACDAC bus
+     * @param name name of the device
+     */
+    //% blockId=jdsetdevicename block="jacdac set device name to $name"
+    //% group="Services" blockGap=8
+    export function setDeviceName(name: string) {
+        jacdac.JACDAC.instance.setDeviceName(name);        
+    }
 }

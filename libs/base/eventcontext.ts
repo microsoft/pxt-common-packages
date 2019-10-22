@@ -95,22 +95,34 @@ namespace control {
                 this.framesInSample = 0
             }
             let delay = Math.max(1, 20 - runtime)
+
             return delay
         }
 
+        private runningCallbacks: boolean;
         private registerFrameCallbacks() {
             if (!this.frameCallbacks) return;
 
-            this.framesInSample = 0;
-            this.timeInSample = 0;
-            this.deltaTimeMillis = 0;
-            this.prevTimeMillis = control.millis();
             const worker = this.frameWorker;
             control.runInParallel(() => {
+                if (this.runningCallbacks) {
+                    // this context is still running in a different fiber;
+                    // delay until the other fiber doing so has ceased.
+                    pauseUntil(() => !this.runningCallbacks);
+                }
+                this.runningCallbacks = true;
+
+                this.framesInSample = 0;
+                this.timeInSample = 0;
+                this.deltaTimeMillis = 0;
+                this.prevTimeMillis = control.millis();
+
                 while (worker == this.frameWorker) {
                     let delay = this.runCallbacks()
                     pause(delay)
                 }
+
+                this.runningCallbacks = false;
             })
         }
 
@@ -226,7 +238,7 @@ namespace control {
     let _idleCallbacks: (() => void)[];
     /**
      * Registers a function to run when the device is idling
-     * @param handler 
+     * @param handler
     */
     export function onIdle(handler: () => void) {
         if (!handler) return;

@@ -628,7 +628,7 @@ namespace animation {
     //% shim=TD_ID
     //% frames.fieldEditor="animation"
     //% frames.fieldOptions.decompileLiterals="true"
-    //% frames.fieldOptions.filter="!tile !dialog"
+    //% frames.fieldOptions.filter="!tile !dialog !background"
     //% group="Animate" duplicateShadowOnDrag
     export function _animationFrames(frames: Image[]) {
         return frames

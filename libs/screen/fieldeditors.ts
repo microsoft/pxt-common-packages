@@ -9,7 +9,7 @@ namespace images {
     //% img.fieldEditor="sprite"
     //% img.fieldOptions.taggedTemplate="img"
     //% img.fieldOptions.decompileIndirectFixedInstances="true"
-    //% img.fieldOptions.filter="!tile !dialog"
+    //% img.fieldOptions.filter="!tile !dialog !background"
     //% weight=100 group="Create" duplicateShadowOnDrag
     export function _spriteImage(img: Image) {
         return img
@@ -21,6 +21,7 @@ namespace images {
     //% img.fieldOptions.taggedTemplate="img"
     //% img.fieldOptions.decompileIndirectFixedInstances="true"
     //% img.fieldOptions.sizes="-1,-1"
+    //% img.fieldOptions.filter="background"
     //% weight=100 group="Create"
     //% blockHidden=1 duplicateShadowOnDrag
     export function _screenImage(img: Image) {
