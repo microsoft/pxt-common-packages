@@ -7,7 +7,9 @@ interface SparseArray<T> {
  */
 namespace scene {
     export enum Flag {
-        NeedsSorting = 1 << 1,
+        NeedsSorting = 1 << 0, // indicates the sprites in the scene need to be sorted before rendering
+        SeeThrough = 1 << 1, // if set, render the previous scene 'below' this one as the background
+        IsRendering = 1 << 2, // if set, the scene is currently being rendered to the screen
     }
 
     export class SpriteHandler {
@@ -71,7 +73,7 @@ namespace scene {
         gameForeverHandlers: GameForeverHandler[];
         particleSources: particles.ParticleSource[];
         controlledSprites: controller.ControlledSprite[][];
-        followingSprites: sprites.FollowingSprite[]
+        followingSprites: sprites.FollowingSprite[];
 
         private _millis: number;
         private _data: any;
@@ -79,7 +81,7 @@ namespace scene {
         // a set of functions that need to be called when a scene is being initialized
         static initializers: ((scene: Scene) => void)[] = [];
 
-        constructor(eventContext: control.EventContext) {
+        constructor(eventContext: control.EventContext, protected previousScene?: Scene) {
             this.eventContext = eventContext;
             this.flags = 0;
             this.physicsEngine = new ArcadePhysicsEngine();
@@ -129,9 +131,8 @@ namespace scene {
 
             // render 90
             this.eventContext.registerFrameHandler(RENDER_SPRITES_PRIORITY, () => {
-                control.enablePerfCounter("sprite_draw")
-                this.cachedRender = undefined;
-                this.renderCore();
+                control.enablePerfCounter("scene_draw");
+                this.render();
             });
             // render diagnostics
             this.eventContext.registerFrameHandler(RENDER_DIAGNOSTICS_PRIORITY, () => {
@@ -144,8 +145,6 @@ namespace scene {
                 if (game.debug)
                     this.physicsEngine.draw();
                 game.consoleOverlay.draw();
-                // clear flags
-                this.flags = 0;
                 // check for power deep sleep
                 power.checkDeepSleep();
             });
@@ -189,34 +188,33 @@ namespace scene {
             this._data = undefined;
         }
 
-        protected cachedRender: Image;
         /**
          * Renders the current frame as an image
          */
-        render(): Image {
-            if (this.cachedRender) {
-                return this.cachedRender;
-            }
+        render() {
+            // bail out from recursive or parallel call.
+            if (this.flags & scene.Flag.IsRendering) return;
+            this.flags |= scene.Flag.IsRendering;
 
-            this.renderCore();
-
-            this.cachedRender = screen.clone();
-            return this.cachedRender;
-        }
-
-        private renderCore() {
             control.enablePerfCounter("render background")
-            this.background.draw();
+            if ((this.flags & scene.Flag.SeeThrough) && this.previousScene) {
+                this.previousScene.render();
+            } else {
+                this.background.draw();
+            }
 
             control.enablePerfCounter("sprite sort")
             if (this.flags & Flag.NeedsSorting) {
                 this.allSprites.sort(function (a, b) { return a.z - b.z || a.id - b.id; })
+                this.flags &= ~scene.Flag.NeedsSorting;
             }
 
             control.enablePerfCounter("sprite draw")
             for (const s of this.allSprites) {
                 s.__draw(this.camera);
             }
+
+            this.flags &= ~scene.Flag.IsRendering;
         }
     }
 }
