@@ -67,7 +67,7 @@ namespace controller {
             this._repeatCount = 0;
             if (id > 0) {
                 // this is to deal with the "anyButton" hack, which creates a button that is not visible
-                // in the UI, but used in event-handler to simulate the wildcard ANY for matching. As 
+                // in the UI, but used in event-handler to simulate the wildcard ANY for matching. As
                 // this button can't actually be pressed, we don't want it to propagate events
                 control.internalOnEvent(INTERNAL_KEY_UP, this.id, () => this.setPressed(false), 16)
                 control.internalOnEvent(INTERNAL_KEY_DOWN, this.id, () => this.setPressed(true), 16)
@@ -163,6 +163,17 @@ namespace controller {
                 this.raiseButtonRepeat();
                 this._repeatCount = count;
             }
+        }
+    }
+
+    class AnyButton extends Button {
+        isPressed(): boolean {
+            const ctrl = player1();
+
+            for (const b of ctrl.buttons) {
+                if (b.isPressed()) return true;
+            }
+            return false;
         }
     }
 
@@ -569,5 +580,5 @@ namespace controller {
 
 
     //% fixedInstance block="any"
-    export const anyButton = new Button(0, -1);
+    export const anyButton: Button = new AnyButton(0, -1);
 }
