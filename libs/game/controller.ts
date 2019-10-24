@@ -67,7 +67,7 @@ namespace controller {
             this._repeatCount = 0;
             if (id > 0) {
                 // this is to deal with the "anyButton" hack, which creates a button that is not visible
-                // in the UI, but used in event-handler to simulate the wildcard ANY for matching. As 
+                // in the UI, but used in event-handler to simulate the wildcard ANY for matching. As
                 // this button can't actually be pressed, we don't want it to propagate events
                 control.internalOnEvent(INTERNAL_KEY_UP, this.id, () => this.setPressed(false), 16)
                 control.internalOnEvent(INTERNAL_KEY_DOWN, this.id, () => this.setPressed(true), 16)
@@ -435,33 +435,28 @@ namespace controller {
             if (!this._controlledSprites) return;
 
             let deadSprites = false;
-            let svx: number;
-            let svy: number;
+            const corner =  Math.sqrt(2) / 2;
             this._controlledSprites.forEach(sprite => {
                 if (sprite.s.flags & sprites.Flag.Destroyed) {
                     deadSprites = true;
                     return;
                 }
 
-                svx = 0;
-                svy = 0;
+                let svx = 0;
+                let svy = 0;
 
                 if (sprite.vx) {
-                    if (this.right.isPressed()) {
+                    if (this.right.isPressed())
                         svx += sprite.vx;
-                    }
-                    if (this.left.isPressed()) {
-                        svx -=sprite.vx;
-                    }
+                    if (this.left.isPressed())
+                        svx -= sprite.vx;
                 }
 
                 if (sprite.vy) {
-                    if (this.down.isPressed()) {
+                    if (this.down.isPressed())
                         svy += sprite.vy;
-                    }
-                    if (this.up.isPressed()) {
+                    if (this.up.isPressed())
                         svy -= sprite.vy;
-                    }
                 }
 
                 if (sprite._inputLastFrame) {
@@ -470,8 +465,15 @@ namespace controller {
                 }
 
                 if (svx || svy) {
-                    if (sprite.vx) sprite.s.vx = svx;
-                    if (sprite.vy) sprite.s.vy = svy;
+                    if (sprite.vx && sprite.vy) {
+                        sprite.s.vx = svx * (svy ? corner : 1);
+                        sprite.s.vy = svy * (svx ? corner : 1);
+                    } else if (sprite.vx) {
+                        sprite.s.vx = svx;
+                    } else if (sprite.vy) {
+                        sprite.s.vy = svy;
+                    }
+
                     sprite._inputLastFrame = true;
                 }
                 else {
