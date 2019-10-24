@@ -823,7 +823,7 @@ class Sprite extends sprites.BaseSprite {
                         return;
                     }
 
-                    const maxMomentumDiff = rate * turnRate * timeDiff;
+                    const maxMomentumDiff = timeDiff * turnRate * (speed / 50);
                     const angleToTarget = Math.atan2(dy, dx);
 
                     // to move directly towards target, use this...
@@ -849,8 +849,6 @@ class Sprite extends sprites.BaseSprite {
         }
 
         const fs = sc.followingSprites.find(fs => fs.self.id == this.id);
-
-        turnRate = turnRate * Math.PI / 180;
 
         if (!target || !speed) {
             if (fs) {
