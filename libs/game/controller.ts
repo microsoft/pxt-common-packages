@@ -435,7 +435,7 @@ namespace controller {
             if (!this._controlledSprites) return;
 
             let deadSprites = false;
-            const corner =  Math.sqrt(2) / 2;
+            const corner =  Math.SQRT2 / 2;
             this._controlledSprites.forEach(sprite => {
                 if (sprite.s.flags & sprites.Flag.Destroyed) {
                     deadSprites = true;
