@@ -784,7 +784,9 @@ class Sprite extends sprites.BaseSprite {
      *
      * @param target the sprite this one should follow
      * @param speed the rate at which this sprite should move, eg: 100
-     * @param turnRate how quickly the sprite should turn while following, eg: 3
+     * @param turnRate how quickly the sprite should turn while following.
+     *      The default (100) will cause the sprite to reach max speed after approximately 500 ms when standing still,
+     *      and turn around 180 degrees when at max speed after approximately 1000 ms.
      */
     //% group="Physics" weight=10
     //% blockId=spriteFollowOtherSprite
@@ -796,6 +798,7 @@ class Sprite extends sprites.BaseSprite {
         if (!sc.followingSprites) {
             sc.followingSprites = [];
             let lastTime = game.runtime();
+
             sc.eventContext.registerFrameHandler(scene.FOLLOW_SPRITE_PRIORITY, () => {
                 const currTime = game.runtime();
                 const timeDiff = (currTime - lastTime) / 1000;
@@ -803,7 +806,8 @@ class Sprite extends sprites.BaseSprite {
 
                 sc.followingSprites.forEach(fs => {
                     const {target, self, turnRate, rate} = fs;
-                    // one of the involved sprites has been destroyed, so exit and remove that later
+                    // one of the involved sprites has been destroyed,
+                    // so exit and remove that in the cleanup step
                     if ((self.flags | target.flags) & sprites.Flag.Destroyed) {
                         destroyedSprites = true;
                         return;
@@ -819,22 +823,24 @@ class Sprite extends sprites.BaseSprite {
                         return;
                     }
 
-                    const maxAngleDiff = turnRate * timeDiff;
+                    const maxMomentumDiff = rate * turnRate * timeDiff;
                     const angleToTarget = Math.atan2(dy, dx);
 
+                    // to move directly towards target, use this...
                     const targetTrajectoryVx = Math.cos(angleToTarget) * rate;
                     const targetTrajectoryVy = Math.sin(angleToTarget) * rate;
 
+                    // ... but to keep momentum, calculate the diff in velocities and maintain some of the velocity
                     const diffVx = targetTrajectoryVx - self.vx;
                     const diffVy = targetTrajectoryVy - self.vy;
 
-                    self.vx += Math.clamp(-maxAngleDiff, maxAngleDiff, diffVx);
-                    self.vy += Math.clamp(-maxAngleDiff, maxAngleDiff, diffVy);
+                    self.vx += Math.clamp(-maxMomentumDiff, maxMomentumDiff, diffVx);
+                    self.vy += Math.clamp(-maxMomentumDiff, maxMomentumDiff, diffVy);
                 });
 
                 lastTime = currTime;
 
-                // remove followers where one has been destroyed
+                // cleanup: remove followers where one has been destroyed
                 if (destroyedSprites) {
                     sc.followingSprites = sc.followingSprites
                         .filter(fs => !((fs.self.flags | fs.target.flags) & sprites.Flag.Destroyed));
