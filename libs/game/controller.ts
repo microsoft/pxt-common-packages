@@ -435,7 +435,7 @@ namespace controller {
             if (!this._controlledSprites) return;
 
             let deadSprites = false;
-            const corner =  Math.SQRT2 / 2;
+            const corner = Math.SQRT2 / 2;
             this._controlledSprites.forEach(controlledSprite => {
                 const {s, vx, vy} = controlledSprite;
                 if (s.flags & sprites.Flag.Destroyed) {
@@ -471,7 +471,7 @@ namespace controller {
                         s.vy = svy * (svx ? corner : 1);
                     } else if (vx) {
                         s.vx = svx;
-                    } else if (controlledSprite.vy) {
+                    } else if (vy) {
                         s.vy = svy;
                     }
 
