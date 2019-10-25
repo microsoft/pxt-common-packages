@@ -507,6 +507,7 @@ namespace animation {
     //% blockId=run_image_animation
     //% block="animate $sprite=variables_get(mySprite) frames $frames=animation_editor interval (ms) $frameInterval=timePicker loop $loop=toggleOnOff"
     //% group="Animate"
+    //% help=animation/run-image-animation
     export function runImageAnimation(sprite: Sprite, frames: Image[], frameInterval?: number, loop?: boolean) {
         const anim = new ImageAnimation(sprite, frames, frameInterval || 500, !!loop);
         anim.init();
@@ -522,6 +523,7 @@ namespace animation {
     //% block="animate $sprite=variables_get(mySprite) with $pathString=animation_path for (ms) $duration=timePicker loop $loop=toggleOnOff"
     //% duration.defl=2000
     //% group="Animate"
+    //% help=animation/run-movement-animation
     export function runMovementAnimation(sprite: Sprite, pathString: string, duration?: number, loop?: boolean) {
         const path = Path.parse(new Point(sprite.x, sprite.y), pathString);
         const anim = new MovementAnimation(sprite, path, duration / path.length, !!loop);
@@ -538,13 +540,14 @@ namespace animation {
     }
 
     /**
-     * Stops all animations (simple and looping) of the specified type on a sprite
+     * Stop one type or all animations (simple and looping) on a sprite
      * @param type the animation type to stop
      * @param sprite the sprite to filter animations by
      */
     //% blockId=stop_animations
     //% block="stop %type animations on %sprite=variables_get(mySprite)"
     //% group="Animate"
+    //% help=animation/stop-animation
     export function stopAnimation(type: AnimationTypes, sprite: Sprite) {
         let state: AnimationState = game.currentScene().data[stateNamespace];
         if (state && state.animations) {
