@@ -446,47 +446,57 @@ namespace controller {
             if (!this._controlledSprites) return;
 
             let deadSprites = false;
-            let svx: number;
-            let svy: number;
-            this._controlledSprites.forEach(sprite => {
-                if (sprite.s.flags & sprites.Flag.Destroyed) {
+            const corner = Fx.rightShift(Fx8(Math.SQRT2), 1);
+            const side = Fx8(1);
+            this._controlledSprites.forEach(controlledSprite => {
+                const {s, vx, vy} = controlledSprite;
+                if (s.flags & sprites.Flag.Destroyed) {
                     deadSprites = true;
                     return;
                 }
 
-                svx = 0;
-                svy = 0;
+                let svx = 0;
+                let svy = 0;
 
-                if (sprite.vx) {
-                    if (this.right.isPressed()) {
-                        svx += sprite.vx;
-                    }
-                    if (this.left.isPressed()) {
-                        svx -=sprite.vx;
-                    }
+                if (vx) {
+                    if (this.right.isPressed())
+                        svx += vx;
+                    if (this.left.isPressed())
+                        svx -= vx;
                 }
 
-                if (sprite.vy) {
-                    if (this.down.isPressed()) {
-                        svy += sprite.vy;
-                    }
-                    if (this.up.isPressed()) {
-                        svy -= sprite.vy;
-                    }
+                if (vy) {
+                    if (this.down.isPressed())
+                        svy += vy;
+                    if (this.up.isPressed())
+                        svy -= vy;
                 }
 
-                if (sprite._inputLastFrame) {
-                    if (sprite.vx) sprite.s.vx = 0;
-                    if (sprite.vy) sprite.s.vy = 0;
+                if (controlledSprite._inputLastFrame) {
+                    if (vx) s.vx = 0;
+                    if (vy) s.vy = 0;
                 }
 
                 if (svx || svy) {
-                    if (sprite.vx) sprite.s.vx = svx;
-                    if (sprite.vy) sprite.s.vy = svy;
-                    sprite._inputLastFrame = true;
+                    if (vx && vy) {
+                        s._vx = Fx.mul(
+                            Fx8(svx),
+                            svy ? corner : side
+                        );
+                        s._vy = Fx.mul(
+                            Fx8(svy),
+                            svx ? corner : side
+                        );
+                    } else if (vx) {
+                        s.vx = svx;
+                    } else if (vy) {
+                        s.vy = svy;
+                    }
+
+                    controlledSprite._inputLastFrame = true;
                 }
                 else {
-                    sprite._inputLastFrame = false;
+                    controlledSprite._inputLastFrame = false;
                 }
             });
 
