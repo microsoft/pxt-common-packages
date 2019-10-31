@@ -6,6 +6,50 @@
 
 namespace pxt {
 
+struct TimerConfig {
+    uint8_t id;
+    uint8_t irq;
+    uint8_t dmaovf;
+    uint32_t addr;
+};
+
+#define DEF_TC(n)                                                                                  \
+    { n, TC##n##_IRQn, TC##n##_DMAC_ID_OVF, (uint32_t)TC##n }
+#define DEF_TCC(n)                                                                                 \
+    { 100 + n, TCC##n##_0_IRQn, TCC##n##_DMAC_ID_OVF, (uint32_t)TCC##n }
+
+static const TimerConfig timers[] = {
+#ifdef TC0
+    DEF_TC(0),
+#endif
+#ifdef TC1
+    DEF_TC(1),
+#endif
+#ifdef TC2
+    DEF_TC(2),
+#endif
+#ifdef TC3
+    DEF_TC(3),
+#endif
+#ifdef TC4
+    DEF_TC(4),
+#endif
+#ifdef TC5
+    DEF_TC(5),
+#endif
+
+#ifdef TCC0
+    DEF_TCC(0),
+#endif
+#ifdef TCC1
+    DEF_TCC(1),
+#endif
+#ifdef TCC2
+    DEF_TCC(2),
+#endif
+
+    {0, 0, 0, 0}};
+
 #ifdef CODAL_JACDAC_WIRE_SERIAL
 // TC3 is used by DAC on both D21 and D51
 // TCC0 and TC4 is used by IR
