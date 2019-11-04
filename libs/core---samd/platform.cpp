@@ -50,6 +50,10 @@ static const TimerConfig timers[] = {
 
     {0, 0, 0, 0}};
 
+// Backlight:
+// Kitronik: PA6 TC1 (ch 0)
+// Adafruit: PA1 TC2 (ch 1)
+
 #ifdef CODAL_JACDAC_WIRE_SERIAL
 // TC3 is used by DAC on both D21 and D51
 // TCC0 and TC4 is used by IR
