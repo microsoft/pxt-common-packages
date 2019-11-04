@@ -275,4 +275,15 @@ namespace tiles {
             return false;
         }
     }
+
+
+    //% blockId=tilemap_editor block="%tilemap"
+    //% shim=TD_ID
+    //% tilemap.fieldEditor="tilemap"
+    //% tilemap.fieldOptions.decompileLiterals="true"
+    //% tilemap.fieldOptions.filter="tile"
+    //% group="Animate" duplicateShadowOnDrag
+    export function _tilemap(tilemap: Buffer) {
+        return tilemap
+    }
 }
