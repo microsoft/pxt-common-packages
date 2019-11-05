@@ -111,6 +111,8 @@ namespace esp32 {
             pause(750)
             if (this._gpio0)
                 this._gpio0.digitalRead();
+            // make sure SPI gets initialized while the CS is up
+            this.spiTransfer(control.createBuffer(1), null)
             net.log('reseted esp32')
         }
 
