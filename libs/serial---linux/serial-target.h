@@ -1,12 +1,16 @@
 #pragma once
 #include "pxt.h"
-#include "serial-common.h"
 
+#include <pthread.h>
 
 #define CODAL_SERIAL_EVT_DELIM_MATCH      1
 #define CODAL_SERIAL_EVT_HEAD_MATCH       2
 #define CODAL_SERIAL_EVT_RX_FULL          3
 #define CODAL_SERIAL_EVT_DATA_RECEIVED    4
+
+enum class SerialEvent;
+enum class BaudRate;
+enum class Delimiters;
 
 namespace serial {
 
@@ -34,7 +38,7 @@ class LinuxSerialDevice {
         init();
     }
 
-    void setBaudRate(BaudRate rate);
+    void setBaudRate(int rate);
     void setRxBufferSize(unsigned size);
 
     void setTxBufferSize(unsigned size) {}
@@ -47,7 +51,7 @@ class LinuxSerialDevice {
 
     void onDelimiterReceived(Delimiters delimiter, Action handler) {
         registerWithDal(id, CODAL_SERIAL_EVT_DELIM_MATCH, handler);
-        delim = delimeter;
+        delim = (int)delimiter;
     }
 
   private:
@@ -59,6 +63,9 @@ class LinuxSerialDevice {
     }
 
     int readBuf(void *buf, int sz);
+
+    static void *readLoop(void*);
+    void readLoopInner();
 };
 
 typedef LinuxSerialDevice *SerialDevice;

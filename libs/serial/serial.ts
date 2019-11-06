@@ -245,27 +245,6 @@ namespace serial {
 
 
     /**
-    * Set the serial input and output to use pins instead of the USB connection.
-    * @param tx the new transmission pin
-    * @param rx the new reception pin
-    * @param rate the new baud rate
-    */
-    //% weight=10
-    //% help=serial/redirect
-    //% blockId=serial_redirect block="serial|redirect to|TX %tx|RX %rx at rate %rate"
-    //% tx.fieldEditor="gridpicker" tx.fieldOptions.columns=3
-    //% tx.fieldOptions.tooltips="false"
-    //% rx.fieldEditor="gridpicker" rx.fieldOptions.columns=3
-    //% rx.fieldOptions.tooltips="false"
-    //% blockGap=8 inlineInputMode=inline
-    //% group="Configuration"
-    export function redirect(tx: DigitalInOutPin, rx: DigitalInOutPin, rate: BaudRate) {
-        const ser = device();
-        if (ser)
-            ser.serialDevice.redirect(tx, rx, rate);
-    }
-
-    /**
     * Registers code when serial events happen
     **/
     //% weight=9

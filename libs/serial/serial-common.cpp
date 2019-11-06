@@ -23,7 +23,7 @@ Set the baud rate of the serial port
 */
 //%
 void setBaudRate(SerialDevice device, BaudRate rate) {
-    device->setBaudRate(rate);
+    device->setBaudRate((int)rate);
 }
 
 /**

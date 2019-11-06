@@ -1,5 +1,6 @@
 #pragma once
 #include "pxt.h"
+#include "serial-target.h"
 
 enum class BaudRate {
   //% block=115200

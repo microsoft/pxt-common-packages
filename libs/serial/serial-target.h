@@ -1,7 +1,10 @@
 #pragma once
 #include "pxt.h"
 #include "Serial.h"
-#include "serial-common.h"
+
+enum class SerialEvent;
+enum class BaudRate;
+enum class Delimiters;
 
 namespace serial {
 
@@ -19,7 +22,7 @@ class CodalSerialDeviceProxy {
         if (id <= 0)
             id = allocateNotifyEvent();
         ser.id = id;
-        ser.setBaud((int)BaudRate::BaudRate115200);
+        ser.setBaud(115200);
     }
 
     bool matchPins(DevicePin *_tx, DevicePin *_rx) { return this->tx == _tx && this->rx == _rx; }
@@ -28,7 +31,7 @@ class CodalSerialDeviceProxy {
 
     void setTxBufferSize(uint8_t size) { ser.setTxBufferSize(size); }
 
-    void setBaudRate(BaudRate rate) { ser.setBaud((int)rate); }
+    void setBaudRate(int rate) { ser.setBaud(rate); }
 
     int read() {
         uint8_t buf[1];
@@ -73,7 +76,7 @@ class CodalSerialDeviceProxy {
         this->tx = tx;
         this->rx = rx;
         this->ser.redirect(*tx, *rx);
-        this->setBaudRate(rate);
+        this->setBaudRate((int)rate);
     }
 
     void onEvent(SerialEvent event, Action handler) {
