@@ -54,7 +54,9 @@ class CodalSerialDeviceProxy {
             return mkBuffer(NULL, 0);
         }
         if (buf->length != read) {
+            registerGCObj(buf);
             auto buf2 = mkBuffer(buf->data, read);
+            unregisterGCObj(buf);
             decrRC(buf);
             buf = buf2;
         }
