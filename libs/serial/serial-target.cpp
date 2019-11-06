@@ -24,3 +24,14 @@ SerialDevice internalCreateSerialDevice(DigitalInOutPin tx, DigitalInOutPin rx, 
 }
 
 } // namespace serial
+
+namespace SerialDeviceMethods {
+
+/**
+ */
+//%
+void redirect(SerialDevice device, DigitalInOutPin tx, DigitalInOutPin rx, BaudRate rate) {
+    device->redirect(tx, rx, rate);
+}
+
+} // namespace SerialDeviceMethods

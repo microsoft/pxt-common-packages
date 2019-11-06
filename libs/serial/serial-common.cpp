@@ -51,13 +51,6 @@ void writeBuffer(SerialDevice device, Buffer buffer) {
 }
 
 /**
- */
-//%
-void redirect(SerialDevice device, DigitalInOutPin tx, DigitalInOutPin rx, BaudRate rate) {
-    device->redirect(tx, rx, rate);
-}
-
-/**
  * Register code when a serial event occurs
  */
 //%
