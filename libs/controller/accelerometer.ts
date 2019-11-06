@@ -84,7 +84,7 @@ namespace controller {
     }
 
     /**
-     * Register a customer gesture for the controller
+     * Register a custom gesture for the controller
      * @param id 
      * @param update
      * @param handler
