@@ -8,6 +8,7 @@
 #include <sys/signal.h>
 #include <sys/types.h>
 #include <termios.h>
+#include <errno.h>
 
 #ifndef SERIAL_DEVICE
 #define SERIAL_DEVICE "/dev/ttyAMA0"
@@ -112,24 +113,27 @@ void LinuxSerialDevice::setBaudRate(int rate) {
     for (int i = sizeof(serialSpeeds) / sizeof(serialSpeeds[0]); i >= 0; i--) {
         if (serialSpeeds[i].speed <= rate) {
             speedCode = serialSpeeds[i].code;
+            DMESG("Xset speed: %d->%d", rate, serialSpeeds[i].speed);
             break;
         }
     }
 
-    cfsetospeed(&tio, speedCode);
-    cfsetispeed(&tio, speedCode);
-
-    tio.c_cflag = CS8 | CLOCAL | CREAD; // 8n1, no control flow
-    tio.c_iflag = 0;
+    tio.c_cflag = speedCode | CS8 | CLOCAL | CREAD; // 8n1, no control flow
+    tio.c_iflag = IGNPAR;
     tio.c_lflag = 0;
     tio.c_oflag = 0;
     tio.c_cc[VMIN] = 1;  // read blocks
     tio.c_cc[VTIME] = 0; // no intra-character timeout
 
+    tcflush(fd, TCIFLUSH);
+
     if (tcsetattr(fd, TCSANOW, &tio) != 0) {
         target_panic(PANIC_CODAL_HARDWARE_CONFIGURATION_ERROR);
         return;
     }
+
+   // cfsetospeed(&tio, speedCode);
+   // cfsetispeed(&tio, speedCode);
 }
 
 void LinuxSerialDevice::setRxBufferSize(unsigned size) {
@@ -181,6 +185,7 @@ void LinuxSerialDevice::writeBuffer(Buffer buffer) {
             len -= r;
             p += r;
         } else {
+            DMESG("serial write error: %d / %d", r, errno);
             break;
         }
     }
