@@ -2,10 +2,10 @@
     "name": "serial",
     "description": "UART communicatoin",
     "files": [
-        "serial-target.cpp",
         "serial-target.h",
-        "serial-common.cpp",
         "serial-common.h",
+        "serial-target.cpp",
+        "serial-common.cpp",
         "serial-target.ts",
         "serial.ts",
         "enums.d.ts",
