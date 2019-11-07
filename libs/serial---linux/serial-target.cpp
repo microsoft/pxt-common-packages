@@ -10,8 +10,9 @@
 #include <termios.h>
 #include <errno.h>
 
+
 #ifndef SERIAL_DEVICE
-#define SERIAL_DEVICE "/dev/ttyAMA0"
+#define SERIAL_DEVICE "/dev/ttyS0"
 #endif
 
 namespace serial {
@@ -118,22 +119,24 @@ void LinuxSerialDevice::setBaudRate(int rate) {
         }
     }
 
-    tio.c_cflag = speedCode | CS8 | CLOCAL | CREAD; // 8n1, no control flow
-    tio.c_iflag = IGNPAR;
-    tio.c_lflag = 0;
-    tio.c_oflag = 0;
+    cfmakeraw(&tio);
+    cfsetispeed(&tio, speedCode);
+    cfsetospeed(&tio, speedCode);
+
+    tio.c_cflag |= CLOCAL | CREAD;
+    tio.c_cflag &= ~(PARENB | CSTOPB | CSIZE);
+    tio.c_cflag |= CS8;
+    tio.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
+    tio.c_oflag &= ~OPOST;
+
     tio.c_cc[VMIN] = 1;  // read blocks
     tio.c_cc[VTIME] = 0; // no intra-character timeout
-
-    tcflush(fd, TCIFLUSH);
 
     if (tcsetattr(fd, TCSANOW, &tio) != 0) {
         target_panic(PANIC_CODAL_HARDWARE_CONFIGURATION_ERROR);
         return;
     }
 
-   // cfsetospeed(&tio, speedCode);
-   // cfsetispeed(&tio, speedCode);
 }
 
 void LinuxSerialDevice::setRxBufferSize(unsigned size) {
