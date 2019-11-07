@@ -10,7 +10,6 @@
 #include <termios.h>
 #include <errno.h>
 
-
 #ifndef SERIAL_DEVICE
 #define SERIAL_DEVICE "/dev/ttyS0"
 #endif
@@ -41,8 +40,30 @@ static const SerialSpeed serialSpeeds[] = {
 
 void LinuxSerialDevice::init() {
     auto serialDev = getConfigString("SERIAL_DEVICE");
+    if (!serialDev) {
+        char buf[40];
+        int fd = open("/proc/device-tree/model", O_RDONLY);
+        if (fd >= 0) {
+            int len = ::read(fd, buf, sizeof(buf) - 1);
+            DMESG("device model: %s", buf);
+            if (len > 0) {
+                buf[len] = 0;
+                if (strstr(buf, "Raspberry Pi")) {
+                    if (strstr(buf, "Raspberry Pi 3 Model") || strstr(buf, "Raspberry Pi Zero W"))
+                        serialDev = "/dev/ttyS0";
+                    else
+                        serialDev = "/dev/ttyAMA0";
+                }
+            }
+            close(fd);
+        }
+    }
+
     if (!serialDev)
         serialDev = SERIAL_DEVICE;
+
+    DMESG("serial device: %s", serialDev);
+
     fd = open(serialDev, O_RDWR | O_NOCTTY);
     if (fd < 0)
         target_panic(PANIC_CODAL_HARDWARE_CONFIGURATION_ERROR);
@@ -114,7 +135,7 @@ void LinuxSerialDevice::setBaudRate(int rate) {
     for (int i = sizeof(serialSpeeds) / sizeof(serialSpeeds[0]); i >= 0; i--) {
         if (serialSpeeds[i].speed <= rate) {
             speedCode = serialSpeeds[i].code;
-            DMESG("Xset speed: %d->%d", rate, serialSpeeds[i].speed);
+            DMESG("set serial speed: %d->%d", rate, serialSpeeds[i].speed);
             break;
         }
     }
@@ -136,7 +157,6 @@ void LinuxSerialDevice::setBaudRate(int rate) {
         target_panic(PANIC_CODAL_HARDWARE_CONFIGURATION_ERROR);
         return;
     }
-
 }
 
 void LinuxSerialDevice::setRxBufferSize(unsigned size) {
