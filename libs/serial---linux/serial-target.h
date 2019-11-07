@@ -33,8 +33,6 @@ class LinuxSerialDevice {
         delim = -1;
         fd = -1;
         pthread_mutex_init(&lock, NULL);
-        if (id <= 0)
-            id = allocateNotifyEvent();
         init();
     }
 
