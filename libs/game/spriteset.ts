@@ -2,7 +2,7 @@ namespace sprite {
     /* 
     * A set of sprites 
     */
-    class SpriteSet {
+    export class SpriteSet {
         private _sprites: Sprite[];
 
         /**
