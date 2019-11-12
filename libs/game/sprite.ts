@@ -355,7 +355,7 @@ class Sprite extends sprites.BaseSprite {
             spritesByKind[this._kind].remove(this);
 
         if (value >= 0) {
-            if (!spritesByKind[value]) spritesByKind[value] = new sprite.SpriteSet();
+            if (!spritesByKind[value]) spritesByKind[value] = new sprites.SpriteSet();
             spritesByKind[value].add(this);
         }
 

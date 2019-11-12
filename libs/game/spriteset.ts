@@ -1,4 +1,4 @@
-namespace sprite {
+namespace sprites {
     /* 
     * A set of sprites 
     */

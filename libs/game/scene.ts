@@ -61,7 +61,7 @@ namespace scene {
         tileMap: tiles.TileMap;
         allSprites: SpriteLike[];
         private spriteNextId: number;
-        spritesByKind: SparseArray<sprite.SpriteSet>;
+        spritesByKind: SparseArray<sprites.SpriteSet>;
         physicsEngine: PhysicsEngine;
         camera: scene.Camera;
         flags: number;
