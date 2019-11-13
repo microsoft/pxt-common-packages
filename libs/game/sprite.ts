@@ -355,7 +355,7 @@ class Sprite extends sprites.BaseSprite {
             spritesByKind[this._kind].remove(this);
 
         if (value >= 0) {
-            if (!spritesByKind[value]) spritesByKind[value] = new SpriteSet();
+            if (!spritesByKind[value]) spritesByKind[value] = new sprites.SpriteSet();
             spritesByKind[value].add(this);
         }
 
@@ -805,7 +805,7 @@ class Sprite extends sprites.BaseSprite {
                 let destroyedSprites = false;
 
                 sc.followingSprites.forEach(fs => {
-                    const {target, self, turnRate, rate} = fs;
+                    const { target, self, turnRate, rate } = fs;
                     // one of the involved sprites has been destroyed,
                     // so exit and remove that in the cleanup step
                     if ((self.flags | target.flags) & sprites.Flag.Destroyed) {
