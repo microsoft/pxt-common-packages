@@ -8,40 +8,40 @@ enum TileScale {
 }
 namespace tiles {
 
-    class TileSet {
-        obstacle: boolean;
-        private map: TileMap;
-        private originalImage: Image;
-        private cachedImage: Image;
+    // class TileSet {
+    //     obstacle: boolean;
+    //     private map: TileMap;
+    //     private originalImage: Image;
+    //     private cachedImage: Image;
 
-        constructor(image: Image, collisions: boolean, map: TileMap) {
-            this.originalImage = image;
-            this.obstacle = collisions;
-            this.map = map;
-        }
+    //     constructor(image: Image, collisions: boolean, map: TileMap) {
+    //         this.originalImage = image;
+    //         this.obstacle = collisions;
+    //         this.map = map;
+    //     }
 
-        get image(): Image {
-            const size = 1 << this.map.scale;
-            if (!this.cachedImage || this.cachedImage.width != size || this.cachedImage.height != size) {
-                if (this.originalImage.width == size && this.originalImage.height == size) {
-                    this.cachedImage = this.originalImage;
-                } else {
-                    this.cachedImage = image.create(size, size);
-                    this.cachedImage.drawImage(this.originalImage, 0, 0);
-                }
-            }
-            return this.cachedImage;
-        }
-    }
+    //     get image(): Image {
+    //         const size = 1 << this.map.scale;
+    //         if (!this.cachedImage || this.cachedImage.width != size || this.cachedImage.height != size) {
+    //             if (this.originalImage.width == size && this.originalImage.height == size) {
+    //                 this.cachedImage = this.originalImage;
+    //             } else {
+    //                 this.cachedImage = image.create(size, size);
+    //                 this.cachedImage.drawImage(this.originalImage, 0, 0);
+    //             }
+    //         }
+    //         return this.cachedImage;
+    //     }
+    // }
 
     /**
      * A tile in the tilemap
      **/
     //% blockNamespace=scene color="#401255" blockGap=8
     export class Tile {
-        private _row: number;
-        private _col: number;
-        private tileMap: TileMap;
+        protected _row: number;
+        protected _col: number;
+        protected tileMap: TileMap;
 
         constructor(col: number, row: number, map: TileMap) {
             this._col = col;
@@ -60,7 +60,7 @@ namespace tiles {
         }
 
         get tileSet(): number {
-            return this.tileMap.image.getPixel(this._col, this._row) | 0;
+            return this.tileMap.data.getTile(this._col, this._row);
         }
 
         /**
@@ -77,15 +77,61 @@ namespace tiles {
         }
     }
 
+    const TM_DATA_PREFIX_LENGTH = 4;
+
+    export class TileMapData {
+        // The tile data for the map (indices into tileset)
+        protected data: Buffer;
+
+        // The metadata layers for the map. Currently only 1 is used for walls
+        protected layers: Image;
+
+        protected tileset: Image[];
+
+        readonly width: number;
+        readonly height: number;
+
+        constructor(data: Buffer, layers: Image, tileset: Image[], scale: TileScale) {
+            this.data = data;
+            this.layers = layers;
+            this.tileset = tileset;
+
+            this.width = data.getNumber(NumberFormat.UInt16LE, 0);
+            this.height = data.getNumber(NumberFormat.UInt16LE, 2);
+        }
+
+        getTile(col: number, row: number) {
+            if (this.isOutsideMap(col, row)) return 0;
+
+            return this.data.getUint8(TM_DATA_PREFIX_LENGTH + (col | 0) + (row | 0) * this.width);
+        }
+
+        setTile(col: number, row: number, tile: number) {
+            if (this.isOutsideMap(col, row)) return;
+
+            this.data.setUint8(TM_DATA_PREFIX_LENGTH + (col | 0) + (row | 0) * this.width, tile);
+        }
+
+        getTileImage(index: number) {
+            return this.tileset[index];
+        }
+
+        isWall(col: number, row: number) {
+            return this.layers.getPixel(col, row) === 2;
+        }
+
+        isOutsideMap(col: number, row: number) {
+            return col < 0 || col >= this.width || row < 0 || row >= this.height;
+        }
+    }
+
     export class TileMap {
         scale: number
 
-        private _layer: number;
-        private _map: Image;
-        private _tileSets: TileSet[];
+        protected _layer: number;
+        protected _map: TileMapData;
 
         constructor(scale: TileScale = TileScale.Sixteen) {
-            this._tileSets = [];
             this._layer = 1;
             this.scale = scale;
 
@@ -95,7 +141,7 @@ namespace tiles {
             );
         }
 
-        get image(): Image {
+        get data(): TileMapData {
             return this._map;
         }
 
@@ -130,11 +176,15 @@ namespace tiles {
         }
 
         setTile(index: number, img: Image, collisions?: boolean) {
-            if (this.isInvalidIndex(index)) return;
-            this._tileSets[index] = new TileSet(img, collisions, this);
+            // if (this.isInvalidIndex(index)) return;
+            // this._tileSets[index] = new TileSet(img, collisions, this);
         }
 
         setMap(map: Image) {
+            // this._map = map;
+        }
+
+        setData(map: TileMapData) {
             this._map = map;
         }
 
@@ -143,8 +193,8 @@ namespace tiles {
         }
 
         public setTileAt(col: number, row: number, index: number): void {
-            if (!this.isOutsideMap(col, row) && !this.isInvalidIndex(index))
-                this._map.setPixel(col, row, index);
+            if (!this._map.isOutsideMap(col, row) && !this.isInvalidIndex(index))
+                this._map.setTile(col, row, index);
         }
 
         public getTilesByType(index: number): Tile[] {
@@ -153,7 +203,7 @@ namespace tiles {
             let output: Tile[] = [];
             for (let col = 0; col < this._map.width; ++col) {
                 for (let row = 0; row < this._map.height; ++row) {
-                    let currTile = this._map.getPixel(col, row);
+                    let currTile = this._map.getTile(col, row);
                     if (currTile === index) {
                         output.push(new Tile(col, row, this));
                     }
@@ -162,21 +212,16 @@ namespace tiles {
             return output;
         }
 
-        private generateTile(index: number): TileSet {
-            const size = 1 << this.scale
+        // protected generateTile(index: number): TileSet {
+        //     const size = 1 << this.scale
 
-            const i = image.create(size, size);
-            i.fill(index);
-            return this._tileSets[index] = new TileSet(i, false, this);
-        }
+        //     const i = image.create(size, size);
+        //     i.fill(index);
+        //     return this._tileSets[index] = new TileSet(i, false, this);
+        // }
 
-        private isOutsideMap(col: number, row: number): boolean {
-            return !this.enabled || col < 0 || col >= this._map.width
-                || row < 0 || row >= this._map.height;
-        }
-
-        private isInvalidIndex(index: number): boolean {
-            return index < 0 || index > 0xf;
+        protected isInvalidIndex(index: number): boolean {
+            return index < 0 || index > 0xff;
         }
 
         protected draw(target: Image, camera: scene.Camera) {
@@ -194,11 +239,11 @@ namespace tiles {
 
             for (let x = x0; x <= xn; ++x) {
                 for (let y = y0; y <= yn; ++y) {
-                    const index = this._map.getPixel(x, y);
-                    const tile = this._tileSets[index] || this.generateTile(index);
+                    const index = this._map.getTile(x, y);
+                    const tile = this._map.getTileImage(index);
                     if (tile) {
                         target.drawTransparentImage(
-                            tile.image,
+                            tile,
                             ((x - x0) << this.scale) - offsetX,
                             ((y - y0) << this.scale) - offsetY
                         );
@@ -238,17 +283,16 @@ namespace tiles {
 
         public isObstacle(col: number, row: number) {
             if (!this.enabled) return false;
-            if (this.isOutsideMap(col, row)) return true;
+            if (this._map.isOutsideMap(col, row)) return true;
 
-            let t = this._tileSets[this._map.getPixel(col, row)];
-            return t && t.obstacle;
+            return this._map.isWall(col, row);
         }
 
         public getObstacle(col: number, row: number) {
-            const index = this.isOutsideMap(col, row) ? 0 : this._map.getPixel(col, row);
-            const tile = this._tileSets[index] || this.generateTile(index);
+            const index = this._map.isOutsideMap(col, row) ? 0 : this._map.getTile(col, row);
+            const tile = this._map.getTileImage(index);
             return new sprites.StaticObstacle(
-                tile.image,
+                tile,
                 row << this.scale,
                 col << this.scale,
                 this.layer,
@@ -275,6 +319,17 @@ namespace tiles {
             return false;
         }
     }
+
+    export function mkTile(image: Image, id: number, tags: string[]) {
+        return image;
+    }
+
+    export function createTilemap(data: Buffer, layer: Image, tiles: Image[], scale: TileScale): Buffer {
+        scene.setTileMapLevel(new TileMapData(data, layer, tiles, scale))
+        return null;
+    }
+
+    // tiles.mkTilemap(hex``, img``, TileScale.Eight, [tiles.mkTile(img``, 1, ["tile"])])
 
 
     //% blockId=tilemap_editor block="%tilemap"
