@@ -530,13 +530,13 @@ class Sprite extends sprites.BaseSprite {
                     }
                 }
 
+                // The minus 2 is how much transparent padding there is under the sayBubbleSprite
                 this.sayBubbleSprite.y = this.top + bubbleOffset - ((font.charHeight + bubblePadding) >> 1) - 2;
                 this.sayBubbleSprite.x = this.x;
 
                 if (needsRedraw) {
                     needsRedraw = false;
                     this.sayBubbleSprite.image.fill(textBoxColor);
-                    // The minus 2 is how much transparent padding there is under the sayBubbleSprite
                     // If maxOffset is negative it won't scroll
                     if (maxOffset < 0) {
                         this.sayBubbleSprite.image.print(text, startX, startY, textColor, font);
