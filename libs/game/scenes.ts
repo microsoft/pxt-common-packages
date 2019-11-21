@@ -223,4 +223,26 @@ namespace scene {
         scene.camera.offsetX = x - (screen.width >> 1);
         scene.camera.offsetY = y - (screen.height >> 1);
     }
+
+    /**
+     * Returns the x coordinate of the camera (the left of the screen)
+     */
+    //% blockId=cameraleft block="camera left"
+    //% group="Camera"
+    //% help=scene/camera-left
+    export function cameraLeft() {
+        const scene = game.currentScene();
+        return scene.camera.drawOffsetX;
+    }
+
+    /**
+     * Returns the y coordinate of the camera (the top of the screen)
+     */
+    //% blockId=cameratop block="camera top"
+    //% group="Camera"
+    //% help=scene/camera-top
+    export function cameraTop() {
+        const scene = game.currentScene();
+        return scene.camera.drawOffsetY;
+    }
 }

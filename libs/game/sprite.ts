@@ -13,6 +13,8 @@ enum SpriteFlag {
     ShowPhysics = sprites.Flag.ShowPhysics,
     //% block="invisible"
     Invisible = sprites.Flag.Invisible,
+    //% block="relative to camera"
+    RelativeToCamera = sprites.Flag.RelativeToCamera
 }
 
 enum CollisionDirection {
@@ -582,23 +584,27 @@ class Sprite extends sprites.BaseSprite {
      */
     //%
     isOutOfScreen(camera: scene.Camera): boolean {
-        const ox = camera.offsetX;
-        const oy = camera.offsetY;
+        const ox = (this.flags & sprites.Flag.RelativeToCamera) ? 0 : camera.drawOffsetX;
+        const oy = (this.flags & sprites.Flag.RelativeToCamera) ? 0 : camera.drawOffsetY;
         return this.right - ox < 0 || this.bottom - oy < 0 || this.left - ox > screen.width || this.top - oy > screen.height;
     }
 
     __drawCore(camera: scene.Camera) {
         if (this.isOutOfScreen(camera)) return;
 
-        const l = this.left - camera.drawOffsetX;
-        const t = this.top - camera.drawOffsetY;
+        const ox = (this.flags & sprites.Flag.RelativeToCamera) ? 0 : camera.drawOffsetX;
+        const oy = (this.flags & sprites.Flag.RelativeToCamera) ? 0 : camera.drawOffsetY;
+
+        const l = this.left - ox;
+        const t = this.top - oy;
+
         screen.drawTransparentImage(this._image, l, t)
 
         if (this.flags & SpriteFlag.ShowPhysics) {
             const font = image.font5;
             const margin = 2;
             let tx = l;
-            let ty = this.bottom + margin - camera.drawOffsetY;
+            let ty = t + this.height + margin;
             screen.print(`${this.x >> 0},${this.y >> 0}`, tx, ty, 1, font);
             tx -= font.charWidth;
             if (this.vx || this.vy) {
@@ -614,8 +620,8 @@ class Sprite extends sprites.BaseSprite {
         // debug info
         if (game.debug) {
             screen.drawRect(
-                Fx.toInt(this._hitbox.left) - camera.drawOffsetX,
-                Fx.toInt(this._hitbox.top) - camera.drawOffsetY,
+                Fx.toInt(this._hitbox.left) - ox,
+                Fx.toInt(this._hitbox.top) - oy,
                 this._hitbox.width,
                 this._hitbox.height,
                 1
