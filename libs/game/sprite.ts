@@ -694,9 +694,9 @@ class Sprite extends sprites.BaseSprite {
     overlapsWith(other: Sprite) {
         control.enablePerfCounter("overlapsCPP")
         if (other == this) return false;
-        if (this.flags & sprites.Flag.Ghost)
+        if (this.flags & (sprites.Flag.Ghost | sprites.Flag.RelativeToCamera))
             return false
-        if (other.flags & sprites.Flag.Ghost)
+        if (other.flags & (sprites.Flag.Ghost | sprites.Flag.RelativeToCamera))
             return false
         return other._image.overlapsWith(this._image, this.left - other.left, this.top - other.top)
     }
