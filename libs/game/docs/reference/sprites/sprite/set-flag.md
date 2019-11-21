@@ -1,4 +1,4 @@
-# set Flag 
+# set Flag
 
 Set a sprite flag to ``on`` or ``off``.
 
@@ -14,6 +14,11 @@ Sprite flags are settings that change the way a sprite reacts on the screen. Whe
 >* ``stay in screen``: the sprite is forced to stay on the screen when it reaches a screen edge
 >* ``ghost``: the sprite never overlaps other sprites and won't collide with obstacles
 >* ``auto destroy``: the sprite is automatically destroyed when it moves off the screen
+>* ``destroy on wall``: the sprite is automatically destroyed when it collides with a wall tile
+>* ``bounce on wall``: the sprite will deflect when it collides with a wall tile
+>* ``show physics``: the sprite will display its position, velocity, and acceleration below it
+>* ``invisible``: the sprite will not be drawn to the screen
+>* ``relative to camera``: the sprite is drawn relative to the camera rather than relative to the world and the sprite never overlaps other sprites or collide with obstacles. This is useful for drawing static elements to the screen (scores, dialog boxes, etc.) that shouldn't move when the camera pans
 
 ## ~hint
 
@@ -35,22 +40,22 @@ enum SpriteKind {
 }
 let ghost: Sprite = null
 ghost = sprites.create(img`
-. . . . . . d d d d d . . . . . 
-. . . d d d d 1 1 1 d d d . . . 
-. . d d 1 1 1 1 1 1 1 1 d d . . 
-. . d 1 1 1 1 1 1 1 1 1 1 d . . 
-. . d 1 1 1 1 1 1 1 1 1 1 d d . 
-. d d 1 1 1 f 1 1 1 f 1 1 1 d . 
-. d 1 1 1 1 1 1 1 1 1 1 1 1 d d 
-. d 1 1 1 1 1 1 1 1 1 1 1 1 1 d 
-. d 1 1 1 1 1 1 1 1 1 1 1 1 1 d 
-d d 1 1 1 1 1 1 f f 1 1 1 1 1 d 
-d 1 1 1 1 1 1 1 f f 1 1 1 1 1 d 
-d 1 1 1 1 1 1 1 1 1 1 1 1 1 1 d 
-d 1 1 1 1 1 1 1 d 1 1 1 1 1 1 d 
-d 1 d d d 1 1 d d d d 1 d 1 1 d 
-d d d . d d d d . . d d d d d d 
-d d . . . d d . . . . d . . d d 
+. . . . . . d d d d d . . . . .
+. . . d d d d 1 1 1 d d d . . .
+. . d d 1 1 1 1 1 1 1 1 d d . .
+. . d 1 1 1 1 1 1 1 1 1 1 d . .
+. . d 1 1 1 1 1 1 1 1 1 1 d d .
+. d d 1 1 1 f 1 1 1 f 1 1 1 d .
+. d 1 1 1 1 1 1 1 1 1 1 1 1 d d
+. d 1 1 1 1 1 1 1 1 1 1 1 1 1 d
+. d 1 1 1 1 1 1 1 1 1 1 1 1 1 d
+d d 1 1 1 1 1 1 f f 1 1 1 1 1 d
+d 1 1 1 1 1 1 1 f f 1 1 1 1 1 d
+d 1 1 1 1 1 1 1 1 1 1 1 1 1 1 d
+d 1 1 1 1 1 1 1 d 1 1 1 1 1 1 d
+d 1 d d d 1 1 d d d d 1 d 1 1 d
+d d d . d d d d . . d d d d d d
+d d . . . d d . . . . d . . d d
 `, SpriteKind.Example)
 let tileMap: Image = null
 let orangeBlock: Image = null
