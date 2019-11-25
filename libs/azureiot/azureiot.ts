@@ -104,7 +104,7 @@ namespace azureiot {
     }
 
     /**
-     * Registers code when the mqtt client gets connector or disconnected
+     * Registers code when the MQTT client gets connected or disconnected
      * @param event 
      * @param handler 
      */
