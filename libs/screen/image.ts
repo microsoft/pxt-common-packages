@@ -116,13 +116,13 @@ namespace helpers {
     declare function _fillCircle(img: Image, cxy: number, r: number, c: color): void;
 
     //% shim=ImageMethods::_blitRow
-    declare function _blitRow(img:Image, xy: number, from: Image, xh: number): void;
+    declare function _blitRow(img: Image, xy: number, from: Image, xh: number): void;
 
     function pack(x: number, y: number) {
         return (Math.clamp(-30000, 30000, x | 0) & 0xffff) | (Math.clamp(-30000, 30000, y | 0) << 16)
     }
 
-    export function imageBlitRow(img:Image, dstX: number, dstY: number, from: Image, fromX: number, fromH: number): void {
+    export function imageBlitRow(img: Image, dstX: number, dstY: number, from: Image, fromX: number, fromH: number): void {
         _blitRow(img, pack(dstX, dstY), from, pack(fromX, fromH))
     }
 
@@ -153,59 +153,33 @@ namespace helpers {
         cy = cy | 0;
         r = r | 0;
         // short cuts
-        if (r < 0) 
+        if (r < 0)
             return;
-        else if (r == 0) {
-            img.setPixel(cx, cy, col);
-            return;
-        } else if (r == 1) {
-            img.setPixel(cx + 1, cy, col);
-            img.setPixel(cx, cy + 1, col);
-            img.setPixel(cx - 1, cy, col);
-            img.setPixel(cx, cy - 1, col);
-            return;
-        }
 
-        const fcx = Fx8(cx);
-        const fcy = Fx8(cy);
-        const fr = Fx8(r);
-        const fr2 = Fx.leftShift(fr, 1);
+        // Bresenham's algorithm
+        let x = 0
+        let y = r
+        let d = 3 - 2 * r
 
-        let x = Fx.sub(fr, Fx.oneFx8)
-        let y = Fx.zeroFx8;
-        let dx = Fx.oneFx8;
-        let dy = Fx.oneFx8;
-        let err = Fx.sub(dx, fr2);
-        while (Fx.compare(x, y) >= 0) {
-            const cxpx = Fx.toInt(Fx.add(fcx, x));
-            const cxpy = Fx.toInt(Fx.add(fcx, y));
-            const cxmx = Fx.toInt(Fx.sub(fcx, x));
-            const cxmy = Fx.toInt(Fx.sub(fcx, y));
-            const cypy = Fx.toInt(Fx.add(fcy, y));
-            const cymy = Fx.toInt(Fx.sub(fcy, y));
-            const cypx = Fx.toInt(Fx.add(fcy, x));
-            const cymx = Fx.toInt(Fx.sub(fcy, x));
-
-            img.setPixel(cxpx, cypy, col);
-            img.setPixel(cxmx, cypy, col);
-            img.setPixel(cxmx, cymy, col);
-            img.setPixel(cxpx, cymy, col);
-            img.setPixel(cxpy, cypx, col);
-            img.setPixel(cxpy, cymx, col);
-            img.setPixel(cxmy, cymx, col);
-            img.setPixel(cxmy, cypx, col);
-
-            if (Fx.compare(err, Fx.zeroFx8) <= 0) {
-                y = Fx.add(y, Fx.oneFx8);
-                err = Fx.add(err, dy);
-                dy = Fx.add(dy, Fx.twoFx8);
+        while (y >= x) {
+            img.setPixel(cx + x, cy + y, col)
+            img.setPixel(cx - x, cy + y, col)
+            img.setPixel(cx + x, cy - y, col)
+            img.setPixel(cx - x, cy - y, col)
+            img.setPixel(cx + y, cy + x, col)
+            img.setPixel(cx - y, cy + x, col)
+            img.setPixel(cx + y, cy - x, col)
+            img.setPixel(cx - y, cy - x, col)
+            x++
+            if (d > 0) {
+                y--
+                d += 4 * (x - y) + 10
             } else {
-                x = Fx.sub(x, Fx.oneFx8);
-                dx = Fx.add(dx, Fx.twoFx8);
-                err = Fx.add(err, Fx.sub(dx, fr2));
+                d += 4 * x + 6
             }
         }
     }
+
     export function imageFillCircle(img: Image, cx: number, cy: number, r: number, col: number) {
         _fillCircle(img, pack(cx, cy), r, col);
     }
