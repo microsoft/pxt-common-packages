@@ -114,7 +114,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             Fx8(dt * 1000)
         );
         const dtSec = Fx.idiv(dtf, 1000);
-        const dt2 = Fx.div(dtf, Fx.twoFx8);
+        const dt2 = Fx.idiv(dtf, 2);
 
         const scene = game.currentScene();
 
@@ -262,10 +262,10 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         // make step increments smaller until under max step size
         while (Fx.abs(xStep) > this.maxSingleStep || Fx.abs(yStep) > this.maxSingleStep) {
             if (Fx.abs(xStep) > this.minSingleStep) {
-                xStep = Fx.div(xStep, Fx.twoFx8);
+                xStep = Fx.idiv(xStep, 2);
             }
             if (Fx.abs(yStep) > this.minSingleStep) {
-                yStep = Fx.div(yStep, Fx.twoFx8);
+                yStep = Fx.idiv(yStep, 2);
             }
         }
 
@@ -393,15 +393,15 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
             if (collidedTiles.length) {
                 const collisionDirection = right ? CollisionDirection.Right : CollisionDirection.Left;
-                s._x = Fx.add(
-                    Fx.neg(hbox.ox),
+                s._x = Fx.sub(
                     right ?
                         Fx.sub(
                             Fx8(x0 << tileScale),
                             hbox.width
                         )
                         :
-                        Fx8((x0 + 1) << tileScale)
+                        Fx8((x0 + 1) << tileScale),
+                    hbox.ox,
                 );
 
                 for (const tile of collidedTiles) {
@@ -472,15 +472,15 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
             if (collidedTiles.length) {
                 const collisionDirection = down ? CollisionDirection.Bottom : CollisionDirection.Top;
-                s._y = Fx.add(
-                    Fx.neg(hbox.oy),
+                s._y = Fx.sub(
                     down ?
                         Fx.sub(
                             Fx8(y0 << tileScale),
                             hbox.height
                         )
                         :
-                        Fx8((y0 + 1) << tileScale)
+                        Fx8((y0 + 1) << tileScale),
+                    hbox.oy
                 );
 
                 for (const tile of collidedTiles) {
