@@ -393,12 +393,12 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
             if (collidedTiles.length) {
                 const collisionDirection = right ? CollisionDirection.Right : CollisionDirection.Left;
-                s._x = Fx.iadd(
-                    -hbox.ox,
+                s._x = Fx.add(
+                    Fx.neg(hbox.ox),
                     right ?
                         Fx.sub(
                             Fx8(x0 << tileScale),
-                            Fx8(hbox.width)
+                            hbox.width
                         )
                         :
                         Fx8((x0 + 1) << tileScale)
@@ -472,12 +472,12 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
             if (collidedTiles.length) {
                 const collisionDirection = down ? CollisionDirection.Bottom : CollisionDirection.Top;
-                s._y = Fx.iadd(
-                    -hbox.oy,
+                s._y = Fx.add(
+                    Fx.neg(hbox.oy),
                     down ?
                         Fx.sub(
                             Fx8(y0 << tileScale),
-                            Fx8(hbox.height)
+                            hbox.height
                         )
                         :
                         Fx8((y0 + 1) << tileScale)
