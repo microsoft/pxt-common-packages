@@ -214,43 +214,44 @@ class Sprite extends sprites.BaseSprite {
     //% weight=7 help=sprites/sprite/set-image
     setImage(img: Image) {
         if (!img) return; // don't break the sprite
-
-        let oMinX = 0;
-        let oMinY = 0;
-        let oMaxX = 0;
-        let oMaxY = 0;
-
-        // Identify old upper left corner
-        if (this._hitbox) {
-            oMinX = this._hitbox.ox;
-            oMinY = this._hitbox.oy;
-            oMaxX = this._hitbox.ox + this._hitbox.width;
-            oMaxY = this._hitbox.oy + this._hitbox.height;
-        }
-
         this._image = img;
-        this._hitbox = game.calculateHitBox(this);
+        const newHitBox = game.calculateHitBox(this);
 
-        // Identify new upper left corner
-        let nMinX = this._hitbox.ox;
-        let nMinY = this._hitbox.oy;
-        let nMaxX = this._hitbox.ox + this._hitbox.width;
-        let nMaxY = this._hitbox.oy + this._hitbox.height;
-
-        const minXDiff = oMinX - nMinX;
-        const minYDiff = oMinY - nMinY;
-        const maxXDiff = oMaxX - nMaxX;
-        const maxYDiff = oMaxY - nMaxY;
-
-        // If just a small change to the hitbox, don't change the hitbox
-        // Used for things like walking animations
-        if (oMaxX != oMinX && Math.abs(minXDiff) + Math.abs(maxXDiff) <= 2) {
-            this._hitbox.ox = oMinX;
-            this._hitbox.width = oMaxX - oMinX;
+        if (!this._hitbox) {
+            this._hitbox = newHitBox;
+            return;
         }
-        if (oMaxY != oMinY && Math.abs(minYDiff) + Math.abs(maxYDiff) <= 2) {
+
+        const oMinX = this._hitbox.ox;
+        const oMinY = this._hitbox.oy;
+        const oMaxX = Fx.add(oMinX, this._hitbox.width);
+        const oMaxY = Fx.add(oMinY, this._hitbox.height);
+
+        const nMinX = newHitBox.ox;
+        const nMinY = newHitBox.oy;
+        const nMaxX = Fx.add(nMinX, newHitBox.width);
+        const nMaxY = Fx.add(nMinY, newHitBox.height);
+
+        // total difference in x / y positions of hitboxes
+        const xDiff = Fx.add(
+            Fx.abs(Fx.sub(oMinX, nMinX)),
+            Fx.abs(Fx.sub(oMaxX, nMaxX))
+        );
+        const yDiff = Fx.add(
+            Fx.abs(Fx.sub(oMinY, nMinY)),
+            Fx.abs(Fx.sub(oMaxY, nMaxY))
+        );
+
+        // If it's just a small change to the hitbox,
+        // don't change the dimensions to avoid random clipping
+        this._hitbox = newHitBox;
+        if (xDiff <= Fx.twoFx8) {
+            this._hitbox.ox = oMinX;
+            this._hitbox.width = Fx.sub(oMaxX, oMinX);
+        }
+        if (yDiff <= Fx.twoFx8) {
             this._hitbox.oy = oMinY;
-            this._hitbox.height = oMaxY - oMinY;
+            this._hitbox.height = Fx.sub(oMaxY, oMinY);
         }
     }
 
@@ -451,7 +452,7 @@ class Sprite extends sprites.BaseSprite {
         let startY = 2;
         let bubbleWidth = text.length * font.charWidth + bubblePadding;
         let maxOffset = text.length * font.charWidth - maxTextWidth;
-        let bubbleOffset: number = this._hitbox.oy;
+        let bubbleOffset: number = Fx.toInt(this._hitbox.oy);
         let needsRedraw = true;
 
         // sets the defaut scroll speed in pixels per second
@@ -622,8 +623,8 @@ class Sprite extends sprites.BaseSprite {
             screen.drawRect(
                 Fx.toInt(this._hitbox.left) - ox,
                 Fx.toInt(this._hitbox.top) - oy,
-                this._hitbox.width,
-                this._hitbox.height,
+                Fx.toInt(this._hitbox.width),
+                Fx.toInt(this._hitbox.height),
                 1
             );
         }
