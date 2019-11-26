@@ -16,7 +16,7 @@ The following pins must be configured ``config.ts`` for JACDAC to work on a boar
 
 * ``PIN_JACK_TX``: pin with EINT, SERCOM[0]. To determine if the pin is compatible with JACDAC, consult the MCU schematics.
 * (optional) ``PIN_JACK_COMMLED``: LED pin, blinks when packet is received or transmitted
-* (optiona;) ``JACK_BUSLED``: LED pin, turns on when JACDAC is connected
+* (optional) ``JACK_BUSLED``: LED pin, turns on when JACDAC is connected
 
 ### Simulator configuration
 
