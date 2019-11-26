@@ -8,9 +8,9 @@ function Fx8(v: number) {
 
 namespace Fx {
     export const zeroFx8 = 0 as any as Fx8
-    export const oneHalfFx8 = Fx8(0.5)
-    export const oneFx8 = 1 as any as Fx8
-    export const twoFx8 = 2 as any as Fx8
+    export const oneHalfFx8 = 128 as any as Fx8
+    export const oneFx8 = 256 as any as Fx8
+    export const twoFx8 = 512 as any as Fx8
 
     export function neg(a: Fx8) {
         return (-(a as any as number)) as any as Fx8
