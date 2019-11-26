@@ -401,7 +401,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                         )
                         :
                         Fx8((x0 + 1) << tileScale),
-                    hbox.ox,
+                    hbox.ox
                 );
 
                 for (const tile of collidedTiles) {
