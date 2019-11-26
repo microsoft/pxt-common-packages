@@ -17,7 +17,8 @@ namespace pxsim.control {
     export function reset() {
         pxsim.Runtime.postMessage(<pxsim.SimulatorCommandMessage>{
             type: "simulator",
-            command: "restart"
+            command: "restart",
+            controlReset: true
         })
         const cb = getResume();
     }
@@ -81,6 +82,10 @@ namespace pxsim.control {
         return runtime.runningTime();
     }
 
+    export function micros(): number {
+        return runtime.runningTimeUs() & 0x3fffffff;
+    }
+
     export function delayMicroseconds(us: number) {
         delay(us / 0.001);
     }
@@ -93,6 +98,9 @@ namespace pxsim.control {
     }
     export function setDebugFlags(flags: number): void {
         console.log(`debug flags: ${flags}`);
+    }
+    export function heapSnapshot(): void {
+        console.log(runtime.traceObjects())
     }
 
     function toStr(v: any) {
@@ -111,6 +119,10 @@ namespace pxsim.control {
             }
             r += "]"
             return r
+        }
+
+        if (typeof v == "function") {
+            return (v + "").slice(0, 60) + "..."
         }
 
         return v + ""

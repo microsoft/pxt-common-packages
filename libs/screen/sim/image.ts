@@ -1,17 +1,24 @@
 namespace pxsim {
-    export class RefImage {
+    export class RefImage extends RefObject {
         _width: number;
         _height: number;
         _bpp: number;
         data: Uint8Array;
         dirty = true
+        isStatic = false
 
         constructor(w: number, h: number, bpp: number) {
+            super();
             this.data = new Uint8Array(w * h)
             this._width = w
             this._height = h
             this._bpp = bpp
         }
+
+        scan(mark: (path: string, v: any) => void) { }
+        gcKey() { return "Image" }
+        gcSize() { return 4 + (this.data.length + 3 >> 3) }
+        gcIsStatic() { return this.isStatic }
 
         pix(x: number, y: number) {
             return (x | 0) + (y | 0) * this._width
@@ -122,6 +129,21 @@ namespace pxsim.ImageMethods {
         mapRect(img, XX(xy), YY(xy), XX(wh), YY(wh), c)
     }
 
+    export function equals(img: RefImage, other: RefImage) {
+        if (!other || img._bpp != other._bpp || img._width != other._width || img._height != other._height) {
+            return false;
+        }
+        let imgData = img.data;
+        let otherData = other.data;
+        let len = imgData.length;
+        for (let i = 0; i < len; i++) {
+            if (imgData[i] != otherData[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     export function getRows(img: RefImage, x: number, dst: RefBuffer) {
         x |= 0
         if (!img.inRange(x, 0))
@@ -224,7 +246,11 @@ namespace pxsim.ImageMethods {
         img.makeWritable()
         dx |= 0
         dy |= 0
-        if (dy < 0) {
+        if (dx != 0) {
+            const img2 = clone(img)
+            img.data.fill(0)
+            drawTransparentImage(img, img2, dx, dy)
+        } else if (dy < 0) {
             dy = -dy
             if (dy < img._height)
                 img.data.copyWithin(0, dy * img._width)
@@ -496,7 +522,7 @@ namespace pxsim.ImageMethods {
             return
         if (img2[1] != 1)
             return // only mono
-        let w = image.bufW(img2)        
+        let w = image.bufW(img2)
         let h = image.bufH(img2)
         let byteH = image.byteHeight(h, 1)
 
@@ -577,6 +603,33 @@ namespace pxsim.ImageMethods {
     export function _fillCircle(img: RefImage, cxy: number, r: number, c: number) {
         fillCircle(img, XX(cxy), YY(cxy), r, c);
     }
+
+    export function _blitRow(img: RefImage, xy: number, from: RefImage, xh: number) {
+        blitRow(img, XX(xy), YY(xy), from, XX(xh), YY(xh))
+    }
+
+    export function blitRow(img: RefImage, x: number, y: number, from: RefImage, fromX: number, fromH: number) {
+        x |= 0
+        y |= 0
+        fromX |= 0
+        fromH |= 0
+        if (!img.inRange(x, 0) || !img.inRange(fromX, 0) || fromH <= 0)
+            return
+        let fy = 0
+        let stepFY = ((from._width << 16) / fromH) | 0
+        let endY = y + fromH
+        if (endY > img._height)
+            endY = img._height
+        if (y < 0) {
+            fy += -y * stepFY
+            y = 0
+        }
+        while (y < endY) {
+            img.data[img.pix(x, y)] = from.data[from.pix(fromX, fy >> 16)]
+            y++
+            fy += stepFY
+        }
+    }
 }
 
 
@@ -656,6 +709,8 @@ namespace pxsim.image {
             return null
         const r = new RefImage(w, h, bpp)
         const dst = r.data
+
+        r.isStatic = buf.isStatic
 
         if (bpp == 1) {
             for (let i = 0; i < w; ++i) {

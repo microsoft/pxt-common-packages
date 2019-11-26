@@ -5,6 +5,8 @@ const enum AzureIotEvent {
 }
 
 namespace azureiot {
+    export const SECRETS_KEY = "azureiot"
+
     export let logPriority = ConsolePriority.Silent;
 
     type SMap<T> = { [s: string]: T; }
@@ -25,12 +27,10 @@ namespace azureiot {
         return _mqttClient;
     }
 
-    export let network: net.Net
-    export let connString = ""
-
     function createMQTTClient() {
         _messageBusId = control.allocateNotifyEvent(); // TODO
 
+        const connString = settings.programSecrets.readSecret(SECRETS_KEY, true);
         const connStringParts = parsePropertyBag(connString, ";");
         const iotHubHostName = connStringParts["HostName"];
         const deviceId = connStringParts["DeviceName"];
@@ -43,7 +43,7 @@ namespace azureiot {
             password: "SharedAccessSignature " + sasToken,
             clientId: deviceId
         }
-        const c = new mqtt.Client(opts, network);
+        const c = new mqtt.Client(opts);
         c.on('connected', () => {
             log("connected")
             control.raiseEvent(_messageBusId, AzureIotEvent.Connected)
@@ -104,7 +104,7 @@ namespace azureiot {
     }
 
     /**
-     * Registers code when the mqtt client gets connector or disconnected
+     * Registers code when the MQTT client gets connected or disconnected
      * @param event 
      * @param handler 
      */

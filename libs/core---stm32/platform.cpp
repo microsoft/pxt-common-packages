@@ -80,8 +80,12 @@ extern "C" void apply_clock_init(RCC_OscInitTypeDef *oscInit, RCC_ClkInitTypeDef
 }
 #endif
 
+// Disable seeding random from accelerometer. We now store random
+// seed in internal flash, so it's different on every reset, and
+// accelerometer sometimes have bugs, so better not enable them unless
+// requested.
 static void initRandomSeed() {
-#ifdef STM32F4
+#if 0
     if (getConfig(CFG_ACCELEROMETER_TYPE, -1) != -1) {
         initAccelRandom();
     }

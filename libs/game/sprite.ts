@@ -13,6 +13,8 @@ enum SpriteFlag {
     ShowPhysics = sprites.Flag.ShowPhysics,
     //% block="invisible"
     Invisible = sprites.Flag.Invisible,
+    //% block="relative to camera"
+    RelativeToCamera = sprites.Flag.RelativeToCamera
 }
 
 enum CollisionDirection {
@@ -40,7 +42,7 @@ enum FlipOption {
 /**
  * A sprite on the screen
  **/
-//% blockNamespace=sprites color="#4B7BEC" blockGap=8
+//% blockNamespace=sprites color="#3B6FEA" blockGap=8
 class Sprite extends sprites.BaseSprite {
     _x: Fx8
     _y: Fx8
@@ -252,20 +254,6 @@ class Sprite extends sprites.BaseSprite {
         }
     }
 
-    //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine block="z (depth)"
-    get z(): number {
-        return this._z;
-    }
-    //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine block="z (depth)"
-    set z(value: number) {
-        if (value != this._z) {
-            this._z = value;
-            game.currentScene().flags |= scene.Flag.NeedsSorting;
-        }
-    }
-
     __visible() {
         return !(this.flags & SpriteFlag.Invisible);
     }
@@ -341,6 +329,9 @@ class Sprite extends sprites.BaseSprite {
         this.top = value - this.height;
     }
 
+    // The z field (``get z()`` / ``set z()``) is declared in sprite.d.ts
+    // as it is defnied in the superclass
+
     /**
      * The type of sprite
      */
@@ -366,7 +357,7 @@ class Sprite extends sprites.BaseSprite {
             spritesByKind[this._kind].remove(this);
 
         if (value >= 0) {
-            if (!spritesByKind[value]) spritesByKind[value] = new SpriteSet();
+            if (!spritesByKind[value]) spritesByKind[value] = new sprites.SpriteSet();
             spritesByKind[value].add(this);
         }
 
@@ -541,12 +532,13 @@ class Sprite extends sprites.BaseSprite {
                     }
                 }
 
+                // The minus 2 is how much transparent padding there is under the sayBubbleSprite
+                this.sayBubbleSprite.y = this.top + bubbleOffset - ((font.charHeight + bubblePadding) >> 1) - 2;
+                this.sayBubbleSprite.x = this.x;
+
                 if (needsRedraw) {
                     needsRedraw = false;
                     this.sayBubbleSprite.image.fill(textBoxColor);
-                    // The minus 2 is how much transparent padding there is under the sayBubbleSprite
-                    this.sayBubbleSprite.y = this.top + bubbleOffset - ((font.charHeight + bubblePadding) >> 1) - 2;
-                    this.sayBubbleSprite.x = this.x;
                     // If maxOffset is negative it won't scroll
                     if (maxOffset < 0) {
                         this.sayBubbleSprite.image.print(text, startX, startY, textColor, font);
@@ -592,23 +584,27 @@ class Sprite extends sprites.BaseSprite {
      */
     //%
     isOutOfScreen(camera: scene.Camera): boolean {
-        const ox = camera.offsetX;
-        const oy = camera.offsetY;
+        const ox = (this.flags & sprites.Flag.RelativeToCamera) ? 0 : camera.drawOffsetX;
+        const oy = (this.flags & sprites.Flag.RelativeToCamera) ? 0 : camera.drawOffsetY;
         return this.right - ox < 0 || this.bottom - oy < 0 || this.left - ox > screen.width || this.top - oy > screen.height;
     }
 
     __drawCore(camera: scene.Camera) {
         if (this.isOutOfScreen(camera)) return;
 
-        const l = this.left - camera.drawOffsetX;
-        const t = this.top - camera.drawOffsetY;
+        const ox = (this.flags & sprites.Flag.RelativeToCamera) ? 0 : camera.drawOffsetX;
+        const oy = (this.flags & sprites.Flag.RelativeToCamera) ? 0 : camera.drawOffsetY;
+
+        const l = this.left - ox;
+        const t = this.top - oy;
+
         screen.drawTransparentImage(this._image, l, t)
 
         if (this.flags & SpriteFlag.ShowPhysics) {
             const font = image.font5;
             const margin = 2;
-            let tx = this.left;
-            let ty = this.bottom + margin;
+            let tx = l;
+            let ty = t + this.height + margin;
             screen.print(`${this.x >> 0},${this.y >> 0}`, tx, ty, 1, font);
             tx -= font.charWidth;
             if (this.vx || this.vy) {
@@ -624,8 +620,8 @@ class Sprite extends sprites.BaseSprite {
         // debug info
         if (game.debug) {
             screen.drawRect(
-                Fx.toInt(this._hitbox.left) - camera.drawOffsetX,
-                Fx.toInt(this._hitbox.top) - camera.drawOffsetY,
+                Fx.toInt(this._hitbox.left) - ox,
+                Fx.toInt(this._hitbox.top) - oy,
                 this._hitbox.width,
                 this._hitbox.height,
                 1
@@ -638,7 +634,7 @@ class Sprite extends sprites.BaseSprite {
             this.lifespan -= dt * 1000;
             if (this.lifespan <= 0) {
                 this.lifespan = undefined;
-                this.destroy();
+                this._destroyCore();
             }
         }
         if ((this.flags & sprites.Flag.AutoDestroy)
@@ -698,9 +694,9 @@ class Sprite extends sprites.BaseSprite {
     overlapsWith(other: Sprite) {
         control.enablePerfCounter("overlapsCPP")
         if (other == this) return false;
-        if (this.flags & sprites.Flag.Ghost)
+        if (this.flags & (sprites.Flag.Ghost | sprites.Flag.RelativeToCamera))
             return false
-        if (other.flags & sprites.Flag.Ghost)
+        if (other.flags & (sprites.Flag.Ghost | sprites.Flag.RelativeToCamera))
             return false
         return other._image.overlapsWith(this._image, this.left - other.left, this.top - other.top)
     }
@@ -764,13 +760,16 @@ class Sprite extends sprites.BaseSprite {
     destroy(effect?: effects.ParticleEffect, duration?: number) {
         if (this.flags & sprites.Flag.Destroyed)
             return;
+        this.flags |= sprites.Flag.Destroyed;
 
-        if (effect) {
+        if (effect)
             effect.destroy(this, duration);
-            return;
-        }
+        else
+            this._destroyCore();
+    }
 
-        this.flags |= sprites.Flag.Destroyed
+    _destroyCore() {
+        this.flags |= sprites.Flag.Destroyed;
         const scene = game.currentScene();
         // When current sprite is destroyed, destroys sayBubbleSprite if defined
         if (this.sayBubbleSprite) {
@@ -785,6 +784,95 @@ class Sprite extends sprites.BaseSprite {
         scene.destroyedHandlers
             .filter(h => h.kind == this.kind())
             .forEach(h => h.handler(this));
+    }
+
+    /**
+     * Make this sprite follow the target sprite.
+     *
+     * @param target the sprite this one should follow
+     * @param speed the rate at which this sprite should move, eg: 100
+     * @param turnRate how quickly the sprite should turn while following.
+     *      The default (100) will cause the sprite to reach max speed after approximately 500 ms when standing still,
+     *      and turn around 180 degrees when at max speed after approximately 1000 ms.
+     */
+    //% group="Physics" weight=10
+    //% blockId=spriteFollowOtherSprite
+    //% block="set %sprite(myEnemy) follow %target=variables_get(mySprite) || with speed %speed"
+    follow(target: Sprite, speed = 100, turnRate = 100) {
+        if (target === this) return;
+
+        const sc = game.currentScene();
+        if (!sc.followingSprites) {
+            sc.followingSprites = [];
+            let lastTime = game.runtime();
+
+            sc.eventContext.registerFrameHandler(scene.FOLLOW_SPRITE_PRIORITY, () => {
+                const currTime = game.runtime();
+                const timeDiff = (currTime - lastTime) / 1000;
+                let destroyedSprites = false;
+
+                sc.followingSprites.forEach(fs => {
+                    const { target, self, turnRate, rate } = fs;
+                    // one of the involved sprites has been destroyed,
+                    // so exit and remove that in the cleanup step
+                    if ((self.flags | target.flags) & sprites.Flag.Destroyed) {
+                        destroyedSprites = true;
+                        return;
+                    }
+
+                    const dx = target.x - self.x;
+                    const dy = target.y - self.y;
+
+                    // already right on top of target; stop moving
+                    if (Math.abs(dx) < 2 && Math.abs(dy) < 2) {
+                        self.vx = 0;
+                        self.vy = 0;
+                        return;
+                    }
+
+                    const maxMomentumDiff = timeDiff * turnRate * (speed / 50);
+                    const angleToTarget = Math.atan2(dy, dx);
+
+                    // to move directly towards target, use this...
+                    const targetTrajectoryVx = Math.cos(angleToTarget) * rate;
+                    const targetTrajectoryVy = Math.sin(angleToTarget) * rate;
+
+                    // ... but to keep momentum, calculate the diff in velocities and maintain some of the velocity
+                    const diffVx = targetTrajectoryVx - self.vx;
+                    const diffVy = targetTrajectoryVy - self.vy;
+
+                    self.vx += Math.clamp(-maxMomentumDiff, maxMomentumDiff, diffVx);
+                    self.vy += Math.clamp(-maxMomentumDiff, maxMomentumDiff, diffVy);
+                });
+
+                lastTime = currTime;
+
+                // cleanup: remove followers where one has been destroyed
+                if (destroyedSprites) {
+                    sc.followingSprites = sc.followingSprites
+                        .filter(fs => !((fs.self.flags | fs.target.flags) & sprites.Flag.Destroyed));
+                }
+            });
+        }
+
+        const fs = sc.followingSprites.find(fs => fs.self.id == this.id);
+
+        if (!target || !speed) {
+            if (fs) {
+                sc.followingSprites.removeElement(fs);
+            }
+        } else if (!fs) {
+            sc.followingSprites.push(new sprites.FollowingSprite(
+                this,
+                target,
+                speed,
+                turnRate
+            ));
+        } else {
+            fs.target = target;
+            fs.rate = speed;
+            fs.turnRate = turnRate;
+        }
     }
 
     toString() {

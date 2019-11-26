@@ -61,7 +61,7 @@ animation.runMovementAnimation(
     animation.animationPresets(animation.flyToCenter),
     500
 )
-animation.loopImageAnimation(
+animation.runImageAnimation(
     mySprite,
     [img`
     1 . . . . . . . . . . . . . . .
@@ -99,9 +99,10 @@ animation.loopImageAnimation(
     . . . . . . . . . . . . . . . .
     . . . . . . . . . . . . . . . .
     `],
-    500
+    500,
+    true
 )
-animation.loopMovementAnimation(
+animation.runMovementAnimation(
     mySprite,
     animation.animationPresets(animation.flyToCenter),
     500

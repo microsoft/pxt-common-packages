@@ -99,8 +99,6 @@ void WDisplay::update(Image_ img) {
     if (img->bpp() != 4 || img->width() != width || img->height() != height)
         target_panic(PANIC_SCREEN_ERROR);
 
-    img->clearDirty();
-
     pthread_mutex_lock(&screenMutex);
     // if the data have not been picked up, but it had been in the past, wait
     if (dataWaiting && numGetPixels)

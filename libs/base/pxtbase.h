@@ -70,7 +70,10 @@ void *operator new(size_t size);
 
 #define CONCAT_1(a, b) a##b
 #define CONCAT_0(a, b) CONCAT_1(a, b)
+// already provided in some platforms, like mbedos
+#ifndef STATIC_ASSERT
 #define STATIC_ASSERT(e) enum { CONCAT_0(_static_assert_, __LINE__) = 1 / ((e) ? 1 : 0) };
+#endif
 
 #ifndef ramint_t
 // this type limits size of arrays
@@ -136,7 +139,6 @@ int current_time_ms();
 void initRuntime();
 void sendSerial(const char *data, int len);
 void setSendToUART(void (*f)(const char *, int));
-int getSerialNumber();
 uint64_t getLongSerialNumber();
 void registerWithDal(int id, int event, Action a, int flags = 16); // EVENT_LISTENER_DEFAULT_FLAGS
 void runInParallel(Action a);
@@ -146,6 +148,7 @@ void waitForEvent(int id, int event);
 unsigned afterProgramPage();
 //%
 void dumpDmesg();
+uint32_t hash_fnv1a(const void *data, unsigned len);
 
 // also defined DMESG macro
 // end
@@ -270,6 +273,8 @@ typedef enum {
     PANIC_VM_ERROR = 918,
     PANIC_SETTINGS_CLEARED = 920,
     PANIC_SETTINGS_OVERLOAD = 921,
+    PANIC_SETTINGS_SECRET_MISSING = 922,
+    PANIC_DELETE_ON_CLASS = 923,
 
     PANIC_CAST_FIRST = 980,
     PANIC_CAST_FROM_UNDEFINED = 980,
@@ -458,6 +463,7 @@ enum class BuiltInType : uint16_t {
     RefRefLocal = 7,
     RefMap = 8,
     RefMImage = 9,
+    MMap = 10, // linux, mostly ev3
     User0 = 16,
 };
 
@@ -891,19 +897,40 @@ class RefImage : public RefObject {
     uint8_t *data() { return buffer->data; }
     int length() { return (int)buffer->length; }
 
-    ImageHeader *header() { return (ImageHeader*)buffer->data; }
+    ImageHeader *header() { return (ImageHeader *)buffer->data; }
     int pixLength() { return length() - sizeof(ImageHeader); }
 
     int width() { return header()->width; }
     int height() { return header()->height; }
-    int byteHeight();
     int wordHeight();
     int bpp() { return header()->bpp; }
 
     bool hasPadding() { return (height() & 0x7) != 0; }
 
     uint8_t *pix() { return header()->pixels; }
-    uint8_t *pix(int x, int y);
+
+    int byteHeight() {
+        if (bpp() == 1)
+            return (height() + 7) >> 3;
+        else if (bpp() == 4)
+            return ((height() * 4 + 31) >> 5) << 2;
+        else {
+            oops(21);
+            return -1;
+        }
+    }
+
+    uint8_t *pix(int x, int y) {
+        uint8_t *d = &pix()[byteHeight() * x];
+        if (y) {
+            if (bpp() == 1)
+                d += y >> 3;
+            else if (bpp() == 4)
+                d += y >> 1;
+        }
+        return d;
+    }
+
     uint8_t fillMask(color c);
     bool inRange(int x, int y);
     void clamp(int *x, int *y);
@@ -970,8 +997,12 @@ void registerGC(TValue *root, int numwords = 1);
 void unregisterGC(TValue *root, int numwords = 1);
 void registerGCPtr(TValue ptr);
 void unregisterGCPtr(TValue ptr);
-static inline void registerGCObj(RefObject *ptr) { registerGCPtr((TValue)ptr); }
-static inline void unregisterGCObj(RefObject *ptr) { unregisterGCPtr((TValue)ptr); }
+static inline void registerGCObj(RefObject *ptr) {
+    registerGCPtr((TValue)ptr);
+}
+static inline void unregisterGCObj(RefObject *ptr) {
+    unregisterGCPtr((TValue)ptr);
+}
 void gc(int flags);
 #else
 inline void registerGC(TValue *root, int numwords = 1) {}

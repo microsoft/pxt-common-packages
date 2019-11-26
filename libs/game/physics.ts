@@ -18,11 +18,13 @@ class PhysicsEngine {
     /** Apply physics and collisions to all sprites **/
     move(dt: number) { }
 
+    setMaxSpeed(speed: number) { }
+
     overlaps(sprite: Sprite): Sprite[] { return []; }
 }
 
 const MAX_TIME_STEP = Fx8(100); // milliseconds
-const SPRITE_CANNOT_COLLIDE = sprites.Flag.Ghost | sprites.Flag.Destroyed;
+const SPRITE_CANNOT_COLLIDE = sprites.Flag.Ghost | sprites.Flag.Destroyed | sprites.Flag.RelativeToCamera;
 const MIN_MOVE_GAP = Fx8(0.1);
 
 class MovingSprite {
@@ -54,15 +56,47 @@ class ArcadePhysicsEngine extends PhysicsEngine {
     constructor(maxVelocity = 500, minSingleStep = 2, maxSingleStep = 4) {
         super();
         this.sprites = [];
-        this.maxVelocity = Fx8(maxVelocity);
-        this.maxNegativeVelocity = Fx.neg(this.maxVelocity);
         this.map = new sprites.SpriteMap();
-        this.minSingleStep = Fx8(minSingleStep);
-        this.maxSingleStep = Fx8(maxSingleStep);
+        this.maxSpeed = maxVelocity;
+        this.maxStep = maxSingleStep;
+        this.minStep = minSingleStep;
+    }
+
+    get maxSpeed(): number {
+        return Fx.toInt(this.maxVelocity);
+    }
+
+    set maxSpeed(v: number) {
+        this.maxVelocity = Fx8(v);
+        this.maxNegativeVelocity = Fx.neg(this.maxVelocity);
+    }
+
+    get minStep(): number {
+        return Fx.toInt(this.minSingleStep);
+    }
+
+    set minStep(v: number) {
+        this.minSingleStep = Fx8(v);
+    }
+
+    get maxStep(): number {
+        return Fx.toInt(this.maxSingleStep);
+    }
+
+    set maxStep(v: number) {
+        this.maxSingleStep = Fx8(v);
+    }
+
+    setMaxSpeed(v: number) {
+        this.maxSpeed = v;
     }
 
     addSprite(sprite: Sprite) {
         this.sprites.push(sprite);
+        const tm = game.currentScene().tileMap;
+        if (tm && tm.isOnWall(sprite)) {
+            sprite.flags |= sprites.Flag.IsClipping;
+        }
     }
 
     removeSprite(sprite: Sprite) {
@@ -84,9 +118,9 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
         const scene = game.currentScene();
 
+        const tileMap = scene.tileMap;
         const movingSprites = this.sprites
             .map(sprite => this.createMovingSprite(sprite, dtSec, dt2));
-        const tileMap = scene.tileMap;
 
         // clear obstacles if moving on that axis
         this.sprites.forEach(s => {
@@ -291,18 +325,28 @@ class ArcadePhysicsEngine extends PhysicsEngine {
     }
 
     private tilemapCollisions(movingSprite: MovingSprite, tm: tiles.TileMap) {
-        const sprite = movingSprite.sprite;
-        const tileScale = tm ? tm.scale : 0;
-        const tileSize = tm ? 1 << tileScale : 0;
+        const s = movingSprite.sprite;
+        // if the sprite is already clipping into a wall,
+        // allow free movement rather than randomly 'fixing' it
+        if (s.flags & sprites.Flag.IsClipping) {
+            if (tm.isOnWall(s)) {
+                return;
+            } else {
+                s.flags &= ~sprites.Flag.IsClipping;
+            }
+        }
+        const hbox = s._hitbox;
+        const tileScale = tm.scale;
+        const tileSize = 1 << tileScale;
 
         const xDiff = Fx.sub(
-            sprite._x,
-            sprite._lastX
+            s._x,
+            s._lastX
         );
 
         const yDiff = Fx.sub(
-            sprite._y,
-            sprite._lastY
+            s._y,
+            s._lastY
         );
 
         if (xDiff !== Fx.zeroFx8) {
@@ -310,9 +354,9 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             const x0 = Fx.toIntShifted(
                 Fx.add(
                     right ?
-                        Fx.iadd(1, sprite._hitbox.right)
+                        Fx.iadd(1, hbox.right)
                         :
-                        Fx.iadd(-1, sprite._hitbox.left),
+                        Fx.iadd(-1, hbox.left),
                     Fx.oneHalfFx8
                 ),
                 tileScale
@@ -321,8 +365,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
             // check collisions with tiles sprite is moving towards horizontally
             for (
-                let y = Fx.sub(sprite._hitbox.top, yDiff);
-                y < Fx.iadd(tileSize, Fx.sub(sprite._hitbox.bottom, yDiff));
+                let y = Fx.sub(hbox.top, yDiff);
+                y < Fx.iadd(tileSize, Fx.sub(hbox.bottom, yDiff));
                 y = Fx.iadd(tileSize, y)
             ) {
                 const y0 = Fx.toIntShifted(
@@ -330,7 +374,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                         Fx.min(
                             y,
                             Fx.sub(
-                                sprite._hitbox.bottom,
+                                hbox.bottom,
                                 yDiff
                             )
                         ),
@@ -340,43 +384,46 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 );
 
                 if (tm.isObstacle(x0, y0)) {
-                    collidedTiles.push(tm.getObstacle(x0, y0));
+                    const obstacle = tm.getObstacle(x0, y0);
+                    if (!collidedTiles.some(o => o.tileIndex === obstacle.tileIndex)) {
+                        collidedTiles.push(obstacle);
+                    }
                 }
             }
 
             if (collidedTiles.length) {
                 const collisionDirection = right ? CollisionDirection.Right : CollisionDirection.Left;
-                sprite._x = Fx.iadd(
-                    -sprite._hitbox.ox,
+                s._x = Fx.iadd(
+                    -hbox.ox,
                     right ?
                         Fx.sub(
                             Fx8(x0 << tileScale),
-                            Fx8(sprite._hitbox.width)
+                            Fx8(hbox.width)
                         )
                         :
                         Fx8((x0 + 1) << tileScale)
                 );
 
                 for (const tile of collidedTiles) {
-                    sprite.registerObstacle(collisionDirection, tile);
+                    s.registerObstacle(collisionDirection, tile);
                 }
 
-                if (sprite.flags & sprites.Flag.DestroyOnWall) {
-                    sprite.destroy();
-                } else if (sprite._vx === movingSprite.cachedVx){
+                if (s.flags & sprites.Flag.DestroyOnWall) {
+                    s.destroy();
+                } else if (s._vx === movingSprite.cachedVx){
                     // sprite collision event didn't change velocity in this direction;
                     // apply normal updates
-                    if (sprite.flags & sprites.Flag.BounceOnWall) {
-                        if ((!right && sprite.vx < 0) || (right && sprite.vx > 0)) {
-                            sprite._vx = Fx.neg(sprite._vx);
+                    if (s.flags & sprites.Flag.BounceOnWall) {
+                        if ((!right && s.vx < 0) || (right && s.vx > 0)) {
+                            s._vx = Fx.neg(s._vx);
                             movingSprite.xStep = Fx.neg(movingSprite.xStep);
                             movingSprite.dx = Fx.neg(movingSprite.dx);
                         }
                     } else {
                         movingSprite.dx = Fx.zeroFx8;
-                        sprite._vx = Fx.zeroFx8;
+                        s._vx = Fx.zeroFx8;
                     }
-                } else if (Math.sign(Fx.toInt(sprite._vx)) === Math.sign(Fx.toInt(movingSprite.cachedVx))) {
+                } else if (Math.sign(Fx.toInt(s._vx)) === Math.sign(Fx.toInt(movingSprite.cachedVx))) {
                     // sprite collision event changed velocity,
                     // but still facing same direction; prevent further movement this update.
                     movingSprite.dx = Fx.zeroFx8;
@@ -389,9 +436,9 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             const y0 = Fx.toIntShifted(
                 Fx.add(
                     down ?
-                        Fx.iadd(1, sprite._hitbox.bottom)
+                        Fx.iadd(1, hbox.bottom)
                         :
-                        Fx.iadd(-1, sprite._hitbox.top),
+                        Fx.iadd(-1, hbox.top),
                     Fx.oneHalfFx8
                 ),
                 tileScale
@@ -400,15 +447,15 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
             // check collisions with tiles sprite is moving towards vertically
             for (
-                let x = sprite._hitbox.left;
-                x < Fx.iadd(tileSize, sprite._hitbox.right);
+                let x = hbox.left;
+                x < Fx.iadd(tileSize, hbox.right);
                 x = Fx.iadd(tileSize, x)
             ) {
                 const x0 = Fx.toIntShifted(
                     Fx.add(
                         Fx.min(
                             x,
-                            sprite._hitbox.right
+                            hbox.right
                         ),
                         Fx.oneHalfFx8
                     ),
@@ -416,43 +463,46 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 );
 
                 if (tm.isObstacle(x0, y0)) {
-                    collidedTiles.push(tm.getObstacle(x0, y0));
+                    const obstacle = tm.getObstacle(x0, y0);
+                    if (!collidedTiles.some(o => o.tileIndex === obstacle.tileIndex)) {
+                        collidedTiles.push(obstacle);
+                    }
                 }
             }
 
             if (collidedTiles.length) {
                 const collisionDirection = down ? CollisionDirection.Bottom : CollisionDirection.Top;
-                sprite._y = Fx.iadd(
-                    -sprite._hitbox.oy,
+                s._y = Fx.iadd(
+                    -hbox.oy,
                     down ?
                         Fx.sub(
                             Fx8(y0 << tileScale),
-                            Fx8(sprite._hitbox.height)
+                            Fx8(hbox.height)
                         )
                         :
                         Fx8((y0 + 1) << tileScale)
                 );
 
                 for (const tile of collidedTiles) {
-                    sprite.registerObstacle(collisionDirection, tile);
+                    s.registerObstacle(collisionDirection, tile);
                 }
 
-                if (sprite.flags & sprites.Flag.DestroyOnWall) {
-                    sprite.destroy();
-                } else if (sprite._vy === movingSprite.cachedVy) {
+                if (s.flags & sprites.Flag.DestroyOnWall) {
+                    s.destroy();
+                } else if (s._vy === movingSprite.cachedVy) {
                     // sprite collision event didn't change velocity in this direction;
                     // apply normal updates
-                    if (sprite.flags & sprites.Flag.BounceOnWall) {
-                        if ((!down && sprite.vy < 0) || (down && sprite.vy > 0)) {
-                            sprite._vy = Fx.neg(sprite._vy);
+                    if (s.flags & sprites.Flag.BounceOnWall) {
+                        if ((!down && s.vy < 0) || (down && s.vy > 0)) {
+                            s._vy = Fx.neg(s._vy);
                             movingSprite.yStep = Fx.neg(movingSprite.yStep);
                             movingSprite.dy = Fx.neg(movingSprite.dy);
                         }
                     } else {
                         movingSprite.dy = Fx.zeroFx8;
-                        sprite._vy = Fx.zeroFx8;
+                        s._vy = Fx.zeroFx8;
                     }
-                } else if (Math.sign(Fx.toInt(sprite._vy)) === Math.sign(Fx.toInt(movingSprite.cachedVy))) {
+                } else if (Math.sign(Fx.toInt(s._vy)) === Math.sign(Fx.toInt(movingSprite.cachedVy))) {
                     // sprite collision event changed velocity,
                     // but still facing same direction; prevent further movement this update.
                     movingSprite.dy = Fx.zeroFx8;
@@ -482,9 +532,9 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             const tm = game.currentScene().tileMap;
             if (!(tm && tm.enabled)) return;
 
-            const tileSize = 1 << tm.scale;
-            // only check tile map if moving within a single tile
-            if (Math.abs(Fx.toInt(dx)) < tileSize && Math.abs(Fx.toInt(dy)) < tileSize) {
+            const maxDist = Fx.toInt(this.maxSingleStep);
+            // only check tile map if moving within a single step
+            if (Math.abs(Fx.toInt(dx)) <= maxDist && Math.abs(Fx.toInt(dy)) <= maxDist) {
                 const ms = new MovingSprite(
                     s,
                     s._vx,
@@ -495,6 +545,13 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     dy
                 );
                 this.tilemapCollisions(ms, tm);
+            // otherwise, accept movement...
+            } else if (tm.isOnWall(s)) {
+            // and flag if now clipping into a wall
+                s.flags |= sprites.Flag.IsClipping;
+            // and clear clipping if not
+            } else {
+                s.flags &= ~sprites.Flag.IsClipping;
             }
         }
     }

@@ -12,6 +12,49 @@ namespace control {
         control.runInParallel(a);
     }
 
+    export const enum PXT_PANIC {
+        CODAL_OOM = 20,
+        GC_OOM = 21,
+        GC_TOO_BIG_ALLOCATION = 22,
+        CODAL_HEAP_ERROR = 30,
+        CODAL_NULL_DEREFERENCE = 40,
+        CODAL_USB_ERROR = 50,
+        CODAL_HARDWARE_CONFIGURATION_ERROR = 90,
+    
+        INVALID_BINARY_HEADER = 901,
+        OUT_OF_BOUNDS = 902,
+        REF_DELETED = 903,
+        SIZE = 904,
+        INVALID_VTABLE = 905,
+        INTERNAL_ERROR = 906,
+        NO_SUCH_CONFIG = 907,
+        NO_SUCH_PIN = 908,
+        INVALID_ARGUMENT = 909,
+        MEMORY_LIMIT_EXCEEDED = 910,
+        SCREEN_ERROR = 911,
+        MISSING_PROPERTY = 912,
+        INVALID_IMAGE = 913,
+        CALLED_FROM_ISR = 914,
+        HEAP_DUMPED = 915,
+        STACK_OVERFLOW = 916,
+        BLOCKING_TO_STRING = 917,
+        VM_ERROR = 918,
+        SETTINGS_CLEARED = 920,
+        SETTINGS_OVERLOAD = 921,
+        SETTINGS_SECRET_MISSING = 922,
+        DELETE_ON_CLASS = 923,
+        
+        CAST_FIRST = 980,
+        CAST_FROM_UNDEFINED = 980,
+        CAST_FROM_BOOLEAN = 981,
+        CAST_FROM_NUMBER = 982,
+        CAST_FROM_STRING = 983,
+        CAST_FROM_OBJECT = 984,
+        CAST_FROM_FUNCTION = 985,
+        CAST_FROM_NULL = 989,
+    
+        UNHANDLED_EXCEPTION = 999,
+    }    
     /**
      * Display an error code and stop the program.
      * @param code an error number to display. eg: 5
@@ -265,6 +308,16 @@ namespace control {
     /** Returns estimated size of memory in bytes. */
     export function ramSize() {
         return getConfigValue(DAL.CFG_RAM_BYTES, 0) || _ramSize();
+    }
+
+    /** Runs the function and returns run time in microseconds. */
+    export function benchmark(f: () => void) {
+        const t0 = micros()
+        f()
+        let t = micros() - t0
+        if (t < 0)
+            t += 0x3fffffff
+        return t
     }
 }
 

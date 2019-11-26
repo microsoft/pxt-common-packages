@@ -128,18 +128,18 @@ namespace effects {
     }
 
     /**
-     * Removes all effects at anchor's location
+     * Removes all effects attached to the given anchor
      * @param anchor the anchor to remove effects from
      */
     //% blockId=particlesclearparticles block="clear effects on %anchor=variables_get(mySprite)"
     //% blockNamespace=sprites
     //% group="Effects" weight=89
     //% help=effects/clear-particles
-    export function clearParticles(anchor: particles.ParticleAnchor) {
+    export function clearParticles(anchor: Sprite | particles.ParticleAnchor) {
         const sources = game.currentScene().particleSources;
         if (!sources) return;
         sources
-            .filter(ps => ps.anchor == anchor || ps.anchor.x == anchor.x && ps.anchor.y == anchor.y)
+            .filter(ps => ps.anchor === anchor)
             .forEach(ps => ps.destroy());
     }
 

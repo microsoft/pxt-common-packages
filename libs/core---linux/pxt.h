@@ -9,12 +9,19 @@
 #define DEVICE_ID_NOTIFY_ONE 1022
 #define DEVICE_ID_NOTIFY 1023
 
+namespace serial {
+class LinuxSerialDevice;
+}
+
+typedef serial::LinuxSerialDevice *SerialDevice;
+
 namespace pxt {
 void raiseEvent(int id, int event);
 int allocateNotifyEvent();
 void sleep_core_us(uint64_t us);
 void startUser();
 void stopUser();
+int tryLockUser();
 
 void target_disable_irq();
 void target_enable_irq();
@@ -29,17 +36,6 @@ typedef Button *Button_;
 
 extern "C" void target_init();
 
-class MMap : public RefObject {
-  public:
-    int length;
-    int fd;
-    uint8_t *data;
-
-    MMap();
-    void destroy();
-    void print();
-};
-
 extern volatile bool paniced;
 extern char **initialArgv;
 void target_exit();
@@ -52,7 +48,7 @@ typedef Buffer Sound;
 
 #undef PXT_MAIN
 #define PXT_MAIN                                                                                   \
-    int main(int argc, char **argv) {                                                        \
+    int main(int argc, char **argv) {                                                              \
         pxt::initialArgv = argv;                                                                   \
         pxt::start();                                                                              \
         return 0;                                                                                  \

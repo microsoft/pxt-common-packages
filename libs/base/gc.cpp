@@ -763,7 +763,8 @@ void *gcAllocate(int numbytes) {
         else if (i == 1)
             allocateBlock();
         else
-            oops(44);
+            // the block allocated was apparently too small
+            target_panic(PANIC_GC_OOM);
     }
 }
 

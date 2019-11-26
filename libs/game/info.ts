@@ -18,7 +18,7 @@ namespace info {
         UserHeartImage = 1 << 5
     }
 
-    class PlayerState {
+    export class PlayerState {
         public score: number;
         // undefined: not used
         // null: reached 0 and callback was invoked

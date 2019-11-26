@@ -436,16 +436,9 @@ namespace game {
     //% block="show long text %str %layout"
     //% help=game/show-long-text
     export function showLongText(str: string, layout: DialogLayout) {
-        // Pause to cede control from this fiber just in case the user code created
-        // sprites and they haven't had a chance to render yet.
-        pause(1);
-
-        // Clone the current screen so that it shows up behind the dialog
-        let temp = screen.clone();
         controller._setUserEventsEnabled(false);
         game.pushScene();
-        scene.setBackgroundImage(temp);
-        temp = null;
+        game.currentScene().flags |= scene.Flag.SeeThrough;
 
         let width: number;
         let height: number;
@@ -589,14 +582,17 @@ namespace game {
         `
             :
             img`
-        7 7 7 7 7 7 7 . . .
-        7 7 7 1 7 7 7 7 . .
-        7 7 1 7 1 7 7 7 7 .
-        7 7 1 1 1 7 7 7 7 7
-        7 7 1 7 1 7 7 7 7 6
-        7 7 1 7 1 7 7 7 6 .
-        7 7 7 7 7 7 7 6 . .
-        . 6 6 6 6 6 6 . . .
+        0 0 0 6 6 6 6 6 0 0 0
+        0 6 6 7 7 7 7 7 6 6 0
+        0 6 7 7 1 1 1 7 7 6 0
+        6 7 7 1 7 7 7 1 7 7 6
+        6 7 7 1 7 7 7 1 7 7 6
+        6 7 7 1 1 1 1 1 7 7 6
+        6 6 7 1 7 7 7 1 7 6 6
+        8 6 6 1 7 7 7 1 6 6 8
+        8 6 6 7 6 6 6 7 6 6 8
+        0 8 6 6 6 6 6 6 6 8 0
+        0 0 8 8 8 8 8 8 8 0 0
         `
     }
 
@@ -608,7 +604,7 @@ namespace game {
      * @param frame A square image with a width and height divisible by three
      */
     //% blockId=game_dialog_set_frame group="Dialogs"
-    //% block="set dialog frame to %frame=screen_image_picker"
+    //% block="set dialog frame to %frame=dialog_image_picker"
     //% help=game/set-dialog-frame
     export function setDialogFrame(frame: Image) {
         dialogFrame = frame;
@@ -653,10 +649,9 @@ namespace game {
     //% blockId=gameSplash block="splash %title||%subtitle"
     //% group="Prompt"
     export function splash(title: string, subtitle?: string) {
-        const temp = screen.clone();
         controller._setUserEventsEnabled(false);
         game.pushScene();
-        scene.setBackgroundImage(temp);
+        game.currentScene().flags |= scene.Flag.SeeThrough;
 
         const dialog = new SplashDialog(screen.width, subtitle ? 42 : 35);
         dialog.setText(title);

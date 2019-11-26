@@ -21,16 +21,12 @@ namespace control {
     }
 
     class EventHandler {
-        src: number;
-        value: number;
-        handler: () => void;
-        flags: number;
-
-        constructor(src: number, value: number, handler: () => void, flags: number) {
-            this.src = src;
-            this.value = value;
-            this.handler = handler;
-        }
+        constructor(
+            public src: number,
+            public value: number,
+            public handler: () => void,
+            public flags: number
+        ) { }
 
         register() {
             control.internalOnEvent(this.src, this.value, () => {
@@ -99,22 +95,34 @@ namespace control {
                 this.framesInSample = 0
             }
             let delay = Math.max(1, 20 - runtime)
+
             return delay
         }
 
+        private runningCallbacks: boolean;
         private registerFrameCallbacks() {
             if (!this.frameCallbacks) return;
 
-            this.framesInSample = 0;
-            this.timeInSample = 0;
-            this.deltaTimeMillis = 0;
-            this.prevTimeMillis = control.millis();
             const worker = this.frameWorker;
             control.runInParallel(() => {
+                if (this.runningCallbacks) {
+                    // this context is still running in a different fiber;
+                    // delay until the other fiber doing so has ceased.
+                    pauseUntil(() => !this.runningCallbacks);
+                }
+                this.runningCallbacks = true;
+
+                this.framesInSample = 0;
+                this.timeInSample = 0;
+                this.deltaTimeMillis = 0;
+                this.prevTimeMillis = control.millis();
+
                 while (worker == this.frameWorker) {
                     let delay = this.runCallbacks()
                     pause(delay)
                 }
+
+                this.runningCallbacks = false;
             })
         }
 
@@ -181,7 +189,7 @@ namespace control {
                 const ics = this.idleCallbacks.slice(0);
                 ics.forEach(ic => ic());
             }
-        }    
+        }
     }
     let eventContexts: EventContext[];
 
@@ -230,7 +238,7 @@ namespace control {
     let _idleCallbacks: (() => void)[];
     /**
      * Registers a function to run when the device is idling
-     * @param handler 
+     * @param handler
     */
     export function onIdle(handler: () => void) {
         if (!handler) return;
@@ -240,8 +248,8 @@ namespace control {
         else {
             if (!_idleCallbacks) {
                 _idleCallbacks = [];
-                control.runInBackground(function() {
-                    while(_idleCallbacks) {
+                control.runInBackground(function () {
+                    while (_idleCallbacks) {
                         _idleCallbacks.slice(0).forEach(cb => cb());
                         pause(20);
                     }

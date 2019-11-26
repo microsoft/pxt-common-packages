@@ -118,7 +118,7 @@ namespace music {
      */
     //% block="play melody $melody at tempo $tempo|(bpm)" blockId=playMelody
     //% blockNamespace=music
-    //% weight=85 blockGap=8
+    //% weight=85 blockGap=8 help=music/play-melody
     //% group="Melody"
     //% melody.shadow="melody_editor"
     //% tempo.min=40 tempo.max=500

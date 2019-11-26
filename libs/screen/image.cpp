@@ -27,32 +27,10 @@ int RefImage::wordHeight() {
     return ((height() * 4 + 31) >> 5);
 }
 
-int RefImage::byteHeight() {
-    if (bpp() == 1)
-        return (height() + 7) >> 3;
-    else if (bpp() == 4)
-        return ((height() * 4 + 31) >> 5) << 2;
-    else {
-        oops(21);
-        return -1;
-    }
-}
-
 void RefImage::makeWritable() {
     if (buffer->isReadOnly()) {
         buffer = mkBuffer(data(), length());
     }
-}
-
-uint8_t *RefImage::pix(int x, int y) {
-    uint8_t *d = &pix()[byteHeight() * x];
-    if (y) {
-        if (bpp() == 1)
-            d += y >> 3;
-        else if (bpp() == 4)
-            d += y >> 1;
-    }
-    return d;
 }
 
 uint8_t RefImage::fillMask(color c) {
@@ -175,32 +153,32 @@ void copyFrom(Image_ img, Image_ from) {
     memcpy(img->pix(), from->pix(), from->pixLength());
 }
 
-static inline void setCore(Image_ img, int x, int y, int c) {
+static void setCore(Image_ img, int x, int y, int c) {
     auto ptr = img->pix(x, y);
-    if (img->bpp() == 1) {
+    if (img->bpp() == 4) {
+        if (y & 1)
+            *ptr = (*ptr & 0x0f) | (c << 4);
+        else
+            *ptr = (*ptr & 0xf0) | (c & 0xf);
+    } else if (img->bpp() == 1) {
         uint8_t mask = 0x01 << (y & 7);
         if (c)
             *ptr |= mask;
         else
             *ptr &= ~mask;
-    } else if (img->bpp() == 4) {
-        if (y & 1)
-            *ptr = (*ptr & 0x0f) | (c << 4);
-        else
-            *ptr = (*ptr & 0xf0) | (c & 0xf);
     }
 }
 
-static inline int getCore(Image_ img, int x, int y) {
+static int getCore(Image_ img, int x, int y) {
     auto ptr = img->pix(x, y);
-    if (img->bpp() == 1) {
-        uint8_t mask = 0x01 << (y & 7);
-        return (*ptr & mask) ? 1 : 0;
-    } else if (img->bpp() == 4) {
+    if (img->bpp() == 4) {
         if (y & 1)
             return *ptr >> 4;
         else
             return *ptr & 0x0f;
+    } else if (img->bpp() == 1) {
+        uint8_t mask = 0x01 << (y & 7);
+        return (*ptr & mask) ? 1 : 0;
     }
     return 0;
 }
@@ -414,6 +392,18 @@ void _mapRect(Image_ img, int xy, int wh, Buffer c) {
     mapRect(img, XX(xy), YY(xy), XX(wh), YY(wh), c);
 }
 
+//% argsNullable
+bool equals(Image_ img, Image_ other) {
+    if (!other) {
+        return false;
+    }
+    auto len = img->length();
+    if (len != other->length()) {
+        return false;
+    }
+    return 0 == memcmp(img->data(), other->data(), len);
+}
+
 /**
  * Return a copy of the current image
  */
@@ -485,6 +475,8 @@ Image_ transposed(Image_ img) {
     return r;
 }
 
+void drawImage(Image_ img, Image_ from, int x, int y);
+
 /**
  * Every pixel in image is moved by (dx,dy)
  */
@@ -493,7 +485,12 @@ void scroll(Image_ img, int dx, int dy) {
     img->makeWritable();
     auto bh = img->byteHeight();
     auto w = img->width();
-    if (dx < 0) {
+    if (dy != 0) {
+        // TODO one day we may want a more memory-efficient implementation
+        auto img2 = clone(img);
+        fill(img, 0);
+        drawImage(img, img2, dx, dy);
+    } else if (dx < 0) {
         dx = -dx;
         if (dx < w)
             memmove(img->pix(), img->pix(dx, 0), (w - dx) * bh);
@@ -507,7 +504,6 @@ void scroll(Image_ img, int dx, int dy) {
             dx = w;
         memset(img->pix(), 0, dx * bh);
     }
-    // TODO implement dy
 }
 
 const uint8_t bitdouble[] = {0x00, 0x03, 0x0c, 0x0f, 0x30, 0x33, 0x3c, 0x3f,
@@ -866,8 +862,9 @@ Image_ convertAndWrap(Buffer buf) {
     if (isValidImage(buf))
         return NEW_GC(RefImage, buf);
 
-    // What follows in this function is mostly dead code, except if people construct image buffers by hand.
-    // Probably safe to remove in a year (middle of 2020) or so. When removing, also remove from sim.
+    // What follows in this function is mostly dead code, except if people construct image buffers
+    // by hand. Probably safe to remove in a year (middle of 2020) or so. When removing, also remove
+    // from sim.
     if (!isLegacyImage(buf))
         return NULL;
 
@@ -1023,6 +1020,48 @@ void drawLine(Image_ img, int x0, int y0, int x1, int y1, int c) {
 //%
 void _drawLine(Image_ img, int xy, int wh, int c) {
     drawLine(img, XX(xy), YY(xy), XX(wh), YY(wh), c);
+}
+
+void blitRow(Image_ img, int x, int y, Image_ from, int fromX, int fromH) {
+    if (!img->inRange(x, 0) || !img->inRange(fromX, 0) || fromH <= 0)
+        return;
+
+    if (img->bpp() != 4 || from->bpp() != 4)
+        return;
+
+    int fy = 0;
+    int stepFY = (from->width() << 16) / fromH;
+    int endY = y + fromH;
+    if (endY > img->height())
+        endY = img->height();
+    if (y < 0) {
+        fy += -y * stepFY;
+        y = 0;
+    }
+
+    auto dp = img->pix(x, y);
+    auto sp = from->pix(fromX, 0);
+
+    while (y < endY) {
+        int p = fy >> 16, c;
+        if (p & 1)
+            c = sp[p >> 1] >> 4;
+        else
+            c = sp[p >> 1] & 0xf;
+        if (y & 1) {
+            *dp = (*dp & 0x0f) | (c << 4);
+            dp++;
+        } else {
+            *dp = (*dp & 0xf0) | (c & 0xf);
+        }
+        y++;
+        fy += stepFY;
+    }
+}
+
+//%
+void _blitRow(Image_ img, int xy, Image_ from, int xh) {
+    blitRow(img, XX(xy), YY(xy), from, XX(xh), YY(xh));
 }
 
 void fillCircle(Image_ img, int cx, int cy, int r, int c) {

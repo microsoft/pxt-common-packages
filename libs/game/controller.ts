@@ -9,9 +9,9 @@ enum ControllerButtonEvent {
 
 
 enum ControllerButton {
-    //% block="A"
+    //% block="{id:controller}A"
     A = 5,
-    //% block="B"
+    //% block="{id:controller}B"
     B = 6,
     //% block="left"
     Left = 1,
@@ -33,7 +33,7 @@ enum ControllerEvent {
 /**
  * Access to game controls
  */
-//% weight=98 color="#e15f41" icon="\uf11b"
+//% weight=98 color="#D54322" icon="\uf11b"
 //% groups='["Single Player", "Multiplayer"]'
 //% blockGap=8
 namespace controller {
@@ -67,7 +67,7 @@ namespace controller {
             this._repeatCount = 0;
             if (id > 0) {
                 // this is to deal with the "anyButton" hack, which creates a button that is not visible
-                // in the UI, but used in event-handler to simulate the wildcard ANY for matching. As 
+                // in the UI, but used in event-handler to simulate the wildcard ANY for matching. As
                 // this button can't actually be pressed, we don't want it to propagate events
                 control.internalOnEvent(INTERNAL_KEY_UP, this.id, () => this.setPressed(false), 16)
                 control.internalOnEvent(INTERNAL_KEY_DOWN, this.id, () => this.setPressed(true), 16)
@@ -166,6 +166,17 @@ namespace controller {
         }
     }
 
+    class AnyButton extends Button {
+        isPressed(): boolean {
+            const ctrl = player1();
+
+            for (const b of ctrl.buttons) {
+                if (b.isPressed()) return true;
+            }
+            return false;
+        }
+    }
+
     /**
      * Configures the timing of the on button repeat event for all of the controller buttons
      * @param delay number of milliseconds from when the button is pressed to when the repeat event starts firing, eg: 500
@@ -196,11 +207,13 @@ namespace controller {
         return _players.filter(ctrl => !!ctrl);
     }
 
-    export interface ControlledSprite {
-        s: Sprite;
-        vx: number;
-        vy: number;
-        _inputLastFrame: boolean;
+    export class ControlledSprite {
+        public _inputLastFrame: boolean;
+        constructor(
+            public s: Sprite,
+            public vx: number,
+            public vy: number
+        ) { }
     }
 
     export function _moveSprites() {
@@ -327,7 +340,7 @@ namespace controller {
             if (!this._controlledSprites) this._controlledSprites = [];
             let cp = this._controlledSprites.find(cp => cp.s.id == sprite.id);
             if (!cp) {
-                cp = { s: sprite, vx: vx, vy: vy, _inputLastFrame: false }
+                cp = new ControlledSprite(sprite, vx, vy);
                 this._controlledSprites.push(cp);
             }
             if (cp.vx && vx == 0) {
@@ -433,47 +446,57 @@ namespace controller {
             if (!this._controlledSprites) return;
 
             let deadSprites = false;
-            let svx: number;
-            let svy: number;
-            this._controlledSprites.forEach(sprite => {
-                if (sprite.s.flags & sprites.Flag.Destroyed) {
+            const corner = Fx.rightShift(Fx8(Math.SQRT2), 1);
+            const side = Fx8(1);
+            this._controlledSprites.forEach(controlledSprite => {
+                const {s, vx, vy} = controlledSprite;
+                if (s.flags & sprites.Flag.Destroyed) {
                     deadSprites = true;
                     return;
                 }
 
-                svx = 0;
-                svy = 0;
+                let svx = 0;
+                let svy = 0;
 
-                if (sprite.vx) {
-                    if (this.right.isPressed()) {
-                        svx += sprite.vx;
-                    }
-                    if (this.left.isPressed()) {
-                        svx -=sprite.vx;
-                    }
+                if (vx) {
+                    if (this.right.isPressed())
+                        svx += vx;
+                    if (this.left.isPressed())
+                        svx -= vx;
                 }
 
-                if (sprite.vy) {
-                    if (this.down.isPressed()) {
-                        svy += sprite.vy;
-                    }
-                    if (this.up.isPressed()) {
-                        svy -= sprite.vy;
-                    }
+                if (vy) {
+                    if (this.down.isPressed())
+                        svy += vy;
+                    if (this.up.isPressed())
+                        svy -= vy;
                 }
 
-                if (sprite._inputLastFrame) {
-                    if (sprite.vx) sprite.s.vx = 0;
-                    if (sprite.vy) sprite.s.vy = 0;
+                if (controlledSprite._inputLastFrame) {
+                    if (vx) s.vx = 0;
+                    if (vy) s.vy = 0;
                 }
 
                 if (svx || svy) {
-                    if (sprite.vx) sprite.s.vx = svx;
-                    if (sprite.vy) sprite.s.vy = svy;
-                    sprite._inputLastFrame = true;
+                    if (vx && vy) {
+                        s._vx = Fx.mul(
+                            Fx8(svx),
+                            svy ? corner : side
+                        );
+                        s._vy = Fx.mul(
+                            Fx8(svy),
+                            svx ? corner : side
+                        );
+                    } else if (vx) {
+                        s.vx = svx;
+                    } else if (vy) {
+                        s.vy = svy;
+                    }
+
+                    controlledSprite._inputLastFrame = true;
                 }
                 else {
-                    sprite._inputLastFrame = false;
+                    controlledSprite._inputLastFrame = false;
                 }
             });
 
@@ -567,5 +590,5 @@ namespace controller {
 
 
     //% fixedInstance block="any"
-    export const anyButton = new Button(0, -1);
+    export const anyButton: Button = new AnyButton(0, -1);
 }

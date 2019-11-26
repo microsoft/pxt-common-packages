@@ -364,7 +364,7 @@ for (let line of lines) {
                     if (m[2]) currChar = parseInt(m[2])
                     else currChar = m[3].charCodeAt(0)
                     currCharLine = 0
-                    unicodeBuf.push(currCharBuf = new Buffer(2 + sz))
+                    unicodeBuf.push(currCharBuf = Buffer.alloc(2 + sz))
                     currCharBuf.fill(0)
                     currCharBuf.writeUInt16LE(currChar, 0)
                 } else {
@@ -398,7 +398,7 @@ for (let line of lines) {
                 continue
             }
             let ch = parseInt(hexM[1], 16)
-            let b = new Buffer(hexM[2], "hex")
+            let b = Buffer.from(hexM[2], "hex")
 
             if (shouldSkip(ch))
                 continue
@@ -449,7 +449,7 @@ for (let line of lines) {
                             }
                         }
                     }
-                    showChar(new Buffer(bmp, "hex"), 0, charIdx, h)
+                    showChar(Buffer.from(bmp, "hex"), 0, charIdx, h)
                 }
                 bmp = ""
                 charIdx = 0
@@ -509,7 +509,7 @@ function showChar(buf, ptr, ch, hh) {
 if (mode == 2) {
     let w = (prop.charWidth + 7) >> 3
     let sz = w * prop.charHeight
-    let buf = new Buffer(dataBuf, "hex")
+    let buf = Buffer.from(dataBuf, "hex")
     for (let ptr = 0; ptr < buf.length; ptr += sz + 2) {
         showChar(buf, ptr + 2, buf.readUInt16LE(ptr))
     }

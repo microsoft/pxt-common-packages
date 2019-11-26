@@ -7,35 +7,39 @@ interface SparseArray<T> {
  */
 namespace scene {
     export enum Flag {
-        NeedsSorting = 1 << 1,
+        NeedsSorting = 1 << 0, // indicates the sprites in the scene need to be sorted before rendering
+        SeeThrough = 1 << 1, // if set, render the previous scene 'below' this one as the background
+        IsRendering = 1 << 2, // if set, the scene is currently being rendered to the screen
     }
 
-    export interface SpriteHandler {
-        kind: number;
-        handler: (sprite: Sprite) => void;
+    export class SpriteHandler {
+        constructor(
+            public kind: number,
+            public handler: (sprite: Sprite) => void
+        ) { }
     }
 
-    export interface OverlapHandler {
-        kind: number;
-        otherKind: number;
-        handler: (sprite: Sprite, otherSprite: Sprite) => void;
+    export class OverlapHandler {
+        constructor(
+            public kind: number,
+            public otherKind: number,
+            public handler: (sprite: Sprite, otherSprite: Sprite) => void
+        ) { }
     }
 
-    export interface CollisionHandler {
-        kind: number;
-        handler: (sprite: Sprite) => void
-    }
-
-    export interface GameForeverHandlers {
-        lock: boolean;
-        handler: () => void;
+    export class GameForeverHandler {
+        public lock: boolean;
+        constructor(
+            public handler: () => void
+        ) { }
     }
 
     // frame handler priorities
     export const CONTROLLER_PRIORITY = 8;
+    export const UPDATE_CONTROLLER_PRIORITY = 13;
+    export const FOLLOW_SPRITE_PRIORITY = 14;
     export const PHYSICS_PRIORITY = 15;
     export const ANIMATION_UPDATE_PRIORITY = 15;
-    export const UPDATE_CONTROLLER_PRIORITY = 13;
     export const CONTROLLER_SPRITES_PRIORITY = 13;
     export const UPDATE_INTERVAL_PRIORITY = 19;
     export const UPDATE_PRIORITY = 20;
@@ -57,7 +61,7 @@ namespace scene {
         tileMap: tiles.TileMap;
         allSprites: SpriteLike[];
         private spriteNextId: number;
-        spritesByKind: SparseArray<SpriteSet>;
+        spritesByKind: SparseArray<sprites.SpriteSet>;
         physicsEngine: PhysicsEngine;
         camera: scene.Camera;
         flags: number;
@@ -65,10 +69,11 @@ namespace scene {
         createdHandlers: SpriteHandler[];
         overlapHandlers: OverlapHandler[];
         overlapMap: SparseArray<number[]>;
-        collisionHandlers: CollisionHandler[][];
-        gameForeverHandlers: GameForeverHandlers[];
+        collisionHandlers: SpriteHandler[][];
+        gameForeverHandlers: GameForeverHandler[];
         particleSources: particles.ParticleSource[];
         controlledSprites: controller.ControlledSprite[][];
+        followingSprites: sprites.FollowingSprite[];
 
         private _millis: number;
         private _data: any;
@@ -76,7 +81,7 @@ namespace scene {
         // a set of functions that need to be called when a scene is being initialized
         static initializers: ((scene: Scene) => void)[] = [];
 
-        constructor(eventContext: control.EventContext) {
+        constructor(eventContext: control.EventContext, protected previousScene?: Scene) {
             this.eventContext = eventContext;
             this.flags = 0;
             this.physicsEngine = new ArcadePhysicsEngine();
@@ -108,6 +113,7 @@ namespace scene {
             })
             // controller update 13
             this.eventContext.registerFrameHandler(CONTROLLER_SPRITES_PRIORITY, controller._moveSprites);
+            // sprite following 14
             // apply physics and collisions 15
             this.eventContext.registerFrameHandler(PHYSICS_PRIORITY, () => {
                 control.enablePerfCounter("physics and collisions")
@@ -125,9 +131,8 @@ namespace scene {
 
             // render 90
             this.eventContext.registerFrameHandler(RENDER_SPRITES_PRIORITY, () => {
-                control.enablePerfCounter("sprite_draw")
-                this.cachedRender = undefined;
-                this.renderCore();
+                control.enablePerfCounter("scene_draw");
+                this.render();
             });
             // render diagnostics
             this.eventContext.registerFrameHandler(RENDER_DIAGNOSTICS_PRIORITY, () => {
@@ -140,8 +145,6 @@ namespace scene {
                 if (game.debug)
                     this.physicsEngine.draw();
                 game.consoleOverlay.draw();
-                // clear flags
-                this.flags = 0;
                 // check for power deep sleep
                 power.checkDeepSleep();
             });
@@ -185,34 +188,33 @@ namespace scene {
             this._data = undefined;
         }
 
-        protected cachedRender: Image;
         /**
          * Renders the current frame as an image
          */
-        render(): Image {
-            if (this.cachedRender) {
-                return this.cachedRender;
-            }
+        render() {
+            // bail out from recursive or parallel call.
+            if (this.flags & scene.Flag.IsRendering) return;
+            this.flags |= scene.Flag.IsRendering;
 
-            this.renderCore();
-
-            this.cachedRender = screen.clone();
-            return this.cachedRender;
-        }
-
-        private renderCore() {
             control.enablePerfCounter("render background")
-            this.background.draw();
+            if ((this.flags & scene.Flag.SeeThrough) && this.previousScene) {
+                this.previousScene.render();
+            } else {
+                this.background.draw();
+            }
 
             control.enablePerfCounter("sprite sort")
             if (this.flags & Flag.NeedsSorting) {
                 this.allSprites.sort(function (a, b) { return a.z - b.z || a.id - b.id; })
+                this.flags &= ~scene.Flag.NeedsSorting;
             }
 
             control.enablePerfCounter("sprite draw")
             for (const s of this.allSprites) {
                 s.__draw(this.camera);
             }
+
+            this.flags &= ~scene.Flag.IsRendering;
         }
     }
 }
