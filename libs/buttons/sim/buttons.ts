@@ -47,6 +47,11 @@ namespace pxsim {
             return temp;
         }
 
+        public pressureLevel() {
+            // digital for now
+            return this.isPressed() ? 512 : 0
+        }
+
         public isPressed() {
             return this.pressed;
         }
@@ -98,12 +103,15 @@ namespace pxsim.pxtcore {
 namespace pxsim.ButtonMethods {
     export function onEvent(button: pxsim.Button, ev: number, body: pxsim.RefAction): void {
         pxsim.pxtcore.registerWithDal(button.id, ev, body);
-    }   
-    
+    }
+
     export function isPressed(button: pxsim.Button): boolean {
         return button.pressed;
     }
 
+    export function pressureLevel(button: pxsim.Button): number {
+        return (<CommonButton>button).pressureLevel();
+    }
     export function wasPressed(button: pxsim.Button): boolean {
         return (<CommonButton>button).wasPressed();
     }
