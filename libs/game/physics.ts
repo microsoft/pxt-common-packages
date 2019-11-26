@@ -114,7 +114,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             Fx8(dt * 1000)
         );
         const dtSec = Fx.idiv(dtf, 1000);
-        const dt2 = Fx.idiv(dtf, 2);
+        const dt2 = Fx.div(dtf, Fx.twoFx8);
 
         const scene = game.currentScene();
 
@@ -262,10 +262,10 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         // make step increments smaller until under max step size
         while (Fx.abs(xStep) > this.maxSingleStep || Fx.abs(yStep) > this.maxSingleStep) {
             if (Fx.abs(xStep) > this.minSingleStep) {
-                xStep = Fx.idiv(xStep, 2);
+                xStep = Fx.div(xStep, Fx.twoFx8);
             }
             if (Fx.abs(yStep) > this.minSingleStep) {
-                yStep = Fx.idiv(yStep, 2);
+                yStep = Fx.div(yStep, Fx.twoFx8);
             }
         }
 
@@ -354,9 +354,9 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             const x0 = Fx.toIntShifted(
                 Fx.add(
                     right ?
-                        Fx.iadd(1, hbox.right)
+                        Fx.add(hbox.right, Fx.oneFx8)
                         :
-                        Fx.iadd(-1, hbox.left),
+                        Fx.sub(hbox.left, Fx.oneFx8),
                     Fx.oneHalfFx8
                 ),
                 tileScale
@@ -436,9 +436,9 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             const y0 = Fx.toIntShifted(
                 Fx.add(
                     down ?
-                        Fx.iadd(1, hbox.bottom)
+                        Fx.add(hbox.bottom, Fx.oneFx8)
                         :
-                        Fx.iadd(-1, hbox.top),
+                        Fx.sub(hbox.top, Fx.oneFx8),
                     Fx.oneHalfFx8
                 ),
                 tileScale
