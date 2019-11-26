@@ -232,7 +232,7 @@ class Sprite extends sprites.BaseSprite {
         const nMaxX = Fx.add(nMinX, newHitBox.width);
         const nMaxY = Fx.add(nMinY, newHitBox.height);
 
-        // total difference in x / y positions of hitboxes
+        // total diff in x / y corners between the two hitboxes
         const xDiff = Fx.add(
             Fx.abs(Fx.sub(oMinX, nMinX)),
             Fx.abs(Fx.sub(oMaxX, nMaxX))
@@ -242,7 +242,7 @@ class Sprite extends sprites.BaseSprite {
             Fx.abs(Fx.sub(oMaxY, nMaxY))
         );
 
-        // If it's just a small change to the hitbox,
+        // If it's just a small change to the hitbox on one axis,
         // don't change the dimensions to avoid random clipping
         this._hitbox = newHitBox;
         if (xDiff <= Fx.twoFx8) {
