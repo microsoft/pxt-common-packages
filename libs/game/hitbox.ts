@@ -1,33 +1,39 @@
 namespace game {
     export class Hitbox {
         parent: Sprite;
-        ox: number;
-        oy: number;
-        width: number;
-        height: number;
+        ox: Fx8;
+        oy: Fx8;
+        width: Fx8;
+        height: Fx8;
 
         constructor(parent: Sprite, width: number, height: number, ox: number, oy: number) {
-            this.width = width;
-            this.height = height;
             this.parent = parent;
-            this.ox = ox;
-            this.oy = oy;
+            this.width = Fx8(width);
+            this.height = Fx8(height);
+            this.ox = Fx8(ox);
+            this.oy = Fx8(oy);
         }
 
         get left() {
-            return Fx.iadd(this.ox, this.parent._x)
+            return Fx.add(this.ox, this.parent._x);
         }
 
         get top() {
-            return Fx.iadd(this.oy, this.parent._y)
+            return Fx.add(this.oy, this.parent._y);
         }
 
         get right() {
-            return Fx.iadd(this.width - 1, this.left)
+            return Fx.sub(
+                Fx.add(this.width, this.left),
+                Fx.oneFx8
+            );
         }
 
         get bottom() {
-            return Fx.iadd(this.height - 1, this.top)
+            return Fx.sub(
+                Fx.add(this.height, this.top),
+                Fx.oneFx8
+            );
         }
     }
 
@@ -52,7 +58,7 @@ namespace game {
 
         const width = maxX - minX + 1;
         const height = maxY - minY + 1;
-        
+
         return new Hitbox(s, width, height, minX, minY);
     }
 }
