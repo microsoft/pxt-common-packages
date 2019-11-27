@@ -23,6 +23,20 @@ int allocateNotifyEvent() {
     return pxt::allocateNotifyEvent();
 }
 
+/**
+* Determine the version of system software currently running.
+*/
+//% blockId="control_device_dal_version" block="device dal version"
+//% help=control/device-dal-version
+String deviceDalVersion() {
+#ifdef PXT_VM
+    return mkString("vm");
+#else
+    return mkString("linux");
+#endif
+}
+
+
 /** Write data to DMESG debugging buffer. */
 //%
 void dmesg(String s) {
