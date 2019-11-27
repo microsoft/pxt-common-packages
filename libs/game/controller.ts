@@ -485,9 +485,13 @@ namespace controller {
             let ssvx = svx
             let ssvy = svy
 
+            // here svx/y are -256 to 256 range
             const sq = svx * svx + svy * svy
+            // we want to limit svx/y to be within circle of 256 radius
             const max = 256 * 256
+            // is it outside the circle?
             if (sq > max) {
+                // if so, store the vector scaled down to fit in the circle in ssvx/y
                 const scale = Math.sqrt(max / sq)
                 ssvx = scale * svx | 0
                 ssvy = scale * svy | 0
@@ -507,9 +511,11 @@ namespace controller {
 
                 if (svx || svy) {
                     if (vx && vy) {
+                        // if moving in both vx/vy use speed vector constrained to be within circle
                         s._vx = Fx.imul(ssvx as any as Fx8, vx)
                         s._vy = Fx.imul(ssvy as any as Fx8, vy)
                     } else if (vx) {
+                        // otherwise don't bother
                         s._vx = Fx.imul(svx as any as Fx8, vx)
                     } else if (vy) {
                         s._vy = Fx.imul(svy as any as Fx8, vy)
