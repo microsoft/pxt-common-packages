@@ -137,6 +137,7 @@ void releaseFiber();
 uint64_t current_time_us();
 int current_time_ms();
 void initRuntime();
+void initSystemTimer();
 void sendSerial(const char *data, int len);
 void setSendToUART(void (*f)(const char *, int));
 uint64_t getLongSerialNumber();

@@ -54,7 +54,22 @@ static const TimerConfig timers[] = {
 // Kitronik: PA6 TC1 (ch 0)
 // Adafruit: PA1 TC2 (ch 1)
 
-#ifdef CODAL_JACDAC_WIRE_SERIAL
+static int8_t useTimers[] = {
+#ifdef SAMD21
+5, 102, 100, 101, 4, 3,
+#endif
+#ifdef SAMD51
+0, 1, 2, 102, 100, 101, 3,
+#endif
+-1
+};
+
+LowLevelTimer *allocateTimer() {
+
+}
+
+// TCC1,2 TC5
+
 // TC3 is used by DAC on both D21 and D51
 // TCC0 and TC4 is used by IR
 // TCC0, TCC1, TC4 is used by PWM on CPX
@@ -69,17 +84,19 @@ LowLevelTimer *getJACDACTimer() {
 
 #endif
 #ifdef SAMD51
-SAMDTCTimer jacdacTimer(TC0, TC0_IRQn);
-SAMDTCTimer lowTimer(TC2, TC2_IRQn);
-
 LowLevelTimer *getJACDACTimer() {
-    jacdacTimer.setIRQPriority(1);
-    return &jacdacTimer;
+    static SAMDTCTimer *jacdacTimer;
+    if (!jacdacTimer) {
+        jacdacTimer = new SAMDTCTimer(TC0, TC0_IRQn);
+        jacdacTimer->setIRQPriority(1);
+    }
+    return jacdacTimer;
+}
+
+void initSystemTimer() {
+    new CODAL_TIMER(*new SAMDTCTimer(TC2, TC2_IRQn));
 }
 #endif
-#endif // CODAL_JACDAC_WIRE_SERIAL
-
-__attribute__((used)) CODAL_TIMER devTimer(lowTimer);
 
 static void initRandomSeed() {
     int seed = 0xC0DA1;

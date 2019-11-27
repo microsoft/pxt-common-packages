@@ -59,7 +59,7 @@ extern USBHIDKeyboard keyboard;
 extern USBHIDJoystick joystick;
 #endif
 #if CONFIG_ENABLED(DEVICE_JACDAC_DEBUG)
-extern USBJACDAC jacdacDebug;
+extern USBJACDAC *jacdacDebug;
 #endif
 #endif
 
