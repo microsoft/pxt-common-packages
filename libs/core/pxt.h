@@ -89,6 +89,7 @@ CODAL_SPI* getSPI(DigitalInOutPin mosi, DigitalInOutPin miso, DigitalInOutPin sc
 #ifdef CODAL_JACDAC_WIRE_SERIAL
 LowLevelTimer* getJACDACTimer();
 #endif
+class PressureButton;
 }
 
 namespace serial {
