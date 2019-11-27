@@ -109,20 +109,8 @@ LowLevelTimer *allocateTimer() {
         return res;
     }
 
-    target_panic(91);
+    target_panic(PANIC_OUT_OF_TIMERS);
     return NULL;
-}
-LowLevelTimer *getJACDACTimer() {
-    static LowLevelTimer *jacdacTimer;
-    if (!jacdacTimer) {
-        jacdacTimer = allocateTimer();
-        jacdacTimer->setIRQPriority(1);
-    }
-    return jacdacTimer;
-}
-
-void initSystemTimer() {
-    new CODAL_TIMER(*allocateTimer());
 }
 
 static void initRandomSeed() {

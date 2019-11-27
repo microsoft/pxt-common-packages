@@ -5,17 +5,103 @@
 
 namespace pxt {
 
-#ifdef STM32F1
-STMLowLevelTimer lowTimer(TIM4, TIM4_IRQn);
-#else
-STMLowLevelTimer lowTimer(TIM5, TIM5_IRQn);
+struct TimerConfig {
+    uint8_t id;
+    uint8_t irqn;
+    TIM_TypeDef *addr;
+};
+
+#define TIM1_IRQn TIM1_CC_IRQn
+#ifdef STM32F4
+#define TIM9_IRQn TIM1_BRK_TIM9_IRQn
+#define TIM10_IRQn TIM1_UP_TIM10_IRQn
+#define TIM11_IRQn TIM1_TRG_COM_TIM11_IRQn
 #endif
-STMLowLevelTimer jacdacTimer(TIM2, TIM2_IRQn);
-LowLevelTimer* getJACDACTimer()
-{
-    return &jacdacTimer;
+
+#define DEF_TIM(n)                                                                                 \
+    { 0x10 + n, TIM##n##_IRQn, TIM##n }
+
+static const TimerConfig timers[] = {
+#ifdef TIM1
+    DEF_TIM(1),
+#endif
+#ifdef TIM2
+    DEF_TIM(2),
+#endif
+#ifdef TIM3
+    DEF_TIM(3),
+#endif
+#ifdef TIM4
+    DEF_TIM(4),
+#endif
+#ifdef TIM5
+    DEF_TIM(5),
+#endif
+#ifdef TIM6
+    DEF_TIM(6),
+#endif
+#ifdef TIM7
+    DEF_TIM(7),
+#endif
+#ifdef TIM8
+    DEF_TIM(8),
+#endif
+#ifdef TIM9
+    DEF_TIM(9),
+#endif
+#ifdef TIM10
+    DEF_TIM(10),
+#endif
+#ifdef TIM11
+    DEF_TIM(11),
+#endif
+#ifdef TIM12
+    DEF_TIM(12),
+#endif
+#ifdef TIM13
+    DEF_TIM(13),
+#endif
+#ifdef TIM14
+    DEF_TIM(14),
+#endif
+#ifdef TIM15
+    DEF_TIM(15),
+#endif
+{0,0,0}
+};
+
+#ifdef STM32F1
+#define DEF_TIMERS 0x14120000 // TIM4 TIM2
+#else
+#define DEF_TIMERS 0x15120000 // TIM5 TIM2
+#endif
+
+static uint32_t usedTimers;
+static int timerIdx(uint8_t id) {
+    for (unsigned i = 0; timers[i].id; i++) {
+        if (id == timers[i].id)
+            return i;
+    }
+    return -1;
 }
-CODAL_TIMER devTimer(lowTimer);
+LowLevelTimer *allocateTimer() {
+    uint32_t timersToUse = getConfig(CFG_TIMERS_TO_USE, DEF_TIMERS);
+    for (int shift = 24; shift >= 0; shift -= 8) {
+        uint8_t tcId = (timersToUse >> shift) & 0xff;
+        int idx = timerIdx(tcId);
+        if (idx < 0 || (usedTimers & (1 << idx)))
+            continue;
+        auto dev = timers[idx].addr;
+        if (dev->CR1 & TIM_CR1_CEN)
+            continue;
+        usedTimers |= 1 << idx;
+        return new STMLowLevelTimer(dev, timers[idx].irqn);
+    }
+
+    target_panic(PANIC_OUT_OF_TIMERS);
+    return NULL;
+}
+
 
 void initAccelRandom();
 #ifdef STM32F4
