@@ -41,6 +41,9 @@ namespace controller {
     let defaultRepeatDelay = 500;
     let defaultRepeatInterval = 30;
 
+    //% shim=pxt::pressureLevelByButtonId
+    declare function pressureLevelByButtonId(btnId: number, codalId: number): number;
+
     //% fixedInstances
     export class Button {
         _owner: Controller;
@@ -122,12 +125,27 @@ namespace controller {
 
         /**
          * Indicates if the button is currently pressed
-        */
+         */
         //% weight=96 blockGap=8 help=controller/button/is-pressed
         //% blockId=keyispressed block="is %button **button** pressed"
         //% group="Single Player"
         isPressed() {
             return this._pressed;
+        }
+
+        /**
+         * Indicates how hard the button is pressed, 0-512
+         */
+        //% weight=99 blockGap=8 help=controller/button/pressure-level
+        //% blockId=key_pressure_level block="%button **button** pressure level"
+        //% group="Single Player"
+        pressureLevel() {
+            if (control.deviceDalVersion() == "sim") {
+                return this.isPressed() ? 512 : 0
+                // once implemented in sim, this could be similar to the one below
+            } else {
+                return pressureLevelByButtonId(this.id, this._buttonId);
+            }
         }
 
         setPressed(pressed: boolean) {
@@ -226,6 +244,7 @@ namespace controller {
     export class Controller {
         playerIndex: number;
         buttons: Button[];
+        analog: boolean;
         private _id: number;
         private _connected: boolean;
 
@@ -234,6 +253,7 @@ namespace controller {
             this._id = control.allocateNotifyEvent();
             this._connected = false;
             this.playerIndex = playerIndex;
+            this.analog = false;
             if (buttons)
                 this.buttons = buttons;
             else {
@@ -414,6 +434,8 @@ namespace controller {
             const ctx = control.eventContext();
             if (!ctx) return 0;
 
+            if (this.analog)
+                return (this.right.pressureLevel() - this.left.pressureLevel()) / 512 * ctx.deltaTime * step
             if (this.left.isPressed()) {
                 if (this.right.isPressed()) return 0
                 else return -step * ctx.deltaTime;
@@ -434,6 +456,8 @@ namespace controller {
             const ctx = control.eventContext();
             if (!ctx) return 0;
 
+            if (this.analog)
+                return (this.down.pressureLevel() - this.up.pressureLevel()) / 512 * ctx.deltaTime * step
             if (this.up.isPressed()) {
                 if (this.down.isPressed()) return 0
                 else return -step * ctx.deltaTime;
@@ -446,53 +470,50 @@ namespace controller {
             if (!this._controlledSprites) return;
 
             let deadSprites = false;
-            const corner = Fx.rightShift(Fx8(Math.SQRT2), 1);
-            const side = Fx8(1);
+
+            let svx = 0
+            let svy = 0
+
+            if (this.analog) {
+                svx = (this.right.pressureLevel() - this.left.pressureLevel()) >> 1
+                svy = (this.down.pressureLevel() - this.up.pressureLevel()) >> 1
+            } else {
+                svx = (this.right.isPressed() ? 256 : 0) - (this.left.isPressed() ? 256 : 0)
+                svy = (this.down.isPressed() ? 256 : 0) - (this.up.isPressed() ? 256 : 0)
+            }
+
+            let ssvx = svx
+            let ssvy = svy
+
+            const sq = svx * svx + svy * svy
+            const max = 256 * 256
+            if (sq > max) {
+                const scale = Math.sqrt(max / sq)
+                ssvx = scale * svx | 0
+                ssvy = scale * svy | 0
+            }
+
             this._controlledSprites.forEach(controlledSprite => {
-                const {s, vx, vy} = controlledSprite;
+                const { s, vx, vy } = controlledSprite;
                 if (s.flags & sprites.Flag.Destroyed) {
                     deadSprites = true;
                     return;
                 }
 
-                let svx = 0;
-                let svy = 0;
-
-                if (vx) {
-                    if (this.right.isPressed())
-                        svx += vx;
-                    if (this.left.isPressed())
-                        svx -= vx;
-                }
-
-                if (vy) {
-                    if (this.down.isPressed())
-                        svy += vy;
-                    if (this.up.isPressed())
-                        svy -= vy;
-                }
-
                 if (controlledSprite._inputLastFrame) {
-                    if (vx) s.vx = 0;
-                    if (vy) s.vy = 0;
+                    if (vx) s._vx = Fx.zeroFx8;
+                    if (vy) s._vy = Fx.zeroFx8;
                 }
 
                 if (svx || svy) {
                     if (vx && vy) {
-                        s._vx = Fx.mul(
-                            Fx8(svx),
-                            svy ? corner : side
-                        );
-                        s._vy = Fx.mul(
-                            Fx8(svy),
-                            svx ? corner : side
-                        );
+                        s._vx = Fx.imul(ssvx as any as Fx8, vx)
+                        s._vy = Fx.imul(ssvy as any as Fx8, vy)
                     } else if (vx) {
-                        s.vx = svx;
+                        s._vx = Fx.imul(svx as any as Fx8, vx)
                     } else if (vy) {
-                        s.vy = svy;
+                        s._vy = Fx.imul(svy as any as Fx8, vy)
                     }
-
                     controlledSprite._inputLastFrame = true;
                 }
                 else {

@@ -134,8 +134,13 @@ class AnalogButton : public PressureButton {
         int v = cache->read() - 512;
         if (threshold < 0)
             v = -v;
+        int vmin = getConfig(CFG_ANALOG_JOYSTICK_MIN, 50);
+        int vmax = getConfig(CFG_ANALOG_JOYSTICK_MAX, 500);
+        v = (v - vmin) * 512 / (vmax - vmin);
         if (v < 0)
             v = 0;
+        if (v > 512)
+            v = 512;
         return v;
     }
 
@@ -167,6 +172,15 @@ AnalogCache *lookupAnalogCache(Pin *pin) {
     c->next = analogCache;
     analogCache = c;
     return c;
+}
+
+//% expose
+int pressureLevelByButtonId(int btnId, int codalId) {
+    (void)btnId;
+    auto btn = (PressureButton *)lookupComponent(codalId);
+    if (!btn)
+        return 0;
+    return btn->pressureLevel();
 }
 
 //%
@@ -342,7 +356,7 @@ int id(Button_ button) {
  */
 //%
 int pressureLevel(Button_ button) {
-    return ((PressureButton*)button)->pressureLevel();
+    return ((PressureButton *)button)->pressureLevel();
 }
 
 } // namespace ButtonMethods

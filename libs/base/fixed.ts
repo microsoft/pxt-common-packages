@@ -30,6 +30,9 @@ namespace Fx {
     export function mul(a: Fx8, b: Fx8) {
         return (Math.imul((a as any as number), (b as any as number)) >> 8) as any as Fx8
     }
+    export function imul(a: Fx8, b: number) {
+        return Math.imul((a as any as number), (b as any as number)) as any as Fx8
+    }
     export function div(a: Fx8, b: Fx8) {
         return Math.idiv((a as any as number) << 8, b as any as number) as any as Fx8
     }
