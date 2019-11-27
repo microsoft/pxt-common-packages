@@ -14,9 +14,9 @@ struct TimerConfig {
 };
 
 #define DEF_TC(n)                                                                                  \
-    { n, TC##n##_IRQn, TC##n##_DMAC_ID_OVF, (uint32_t)TC##n }
+    { 0x10 + n, TC##n##_IRQn, TC##n##_DMAC_ID_OVF, (uint32_t)TC##n }
 #define DEF_TCC(n)                                                                                 \
-    { 100 + n, TCC##n##_0_IRQn, TCC##n##_DMAC_ID_OVF, (uint32_t)TCC##n }
+    { 0x20 + n, TCC##n##_0_IRQn, TCC##n##_DMAC_ID_OVF, (uint32_t)TCC##n }
 
 static const TimerConfig timers[] = {
 #ifdef TC0
@@ -54,49 +54,76 @@ static const TimerConfig timers[] = {
 // Kitronik: PA6 TC1 (ch 0)
 // Adafruit: PA1 TC2 (ch 1)
 
-static int8_t useTimers[] = {
-#ifdef SAMD21
-5, 102, 100, 101, 4, 3,
-#endif
-#ifdef SAMD51
-0, 1, 2, 102, 100, 101, 3,
-#endif
--1
-};
-
-LowLevelTimer *allocateTimer() {
-
-}
-
-// TCC1,2 TC5
-
 // TC3 is used by DAC on both D21 and D51
 // TCC0 and TC4 is used by IR
 // TCC0, TCC1, TC4 is used by PWM on CPX
+
 #ifdef SAMD21
-SAMDTCCTimer jacdacTimer(TCC2, TCC2_IRQn);
-SAMDTCTimer lowTimer(TC5, TC5_IRQn);
-
-LowLevelTimer *getJACDACTimer() {
-    jacdacTimer.setIRQPriority(1);
-    return &jacdacTimer;
-}
-
+#define DEF_TIMERS 0x15222021 // TC5 TCC2 TCC0 TCC1
+#else
+#define DEF_TIMERS 0x10111200 // TC0 TC1 TC2
 #endif
-#ifdef SAMD51
+
+static uint32_t usedTimers;
+static int timerIdx(uint8_t id) {
+    for (unsigned i = 0; timers[i].id; i++) {
+        if (id == timers[i].id)
+            return i;
+    }
+    return -1;
+}
+LowLevelTimer *allocateTimer() {
+    uint32_t timersToUse = getConfig(CFG_TIMERS_TO_USE, DEF_TIMERS);
+    uint8_t blTC = 0;
+    // DAC hard-wired to TC3 right now
+    uint8_t dacTC = 0x13;
+
+    // if BL is on a known pin, don't use its PWM TC
+    // this is a hack for legacy boards that don't have CFG_TIMERS_TO_USE
+    auto blPin = PIN(DISPLAY_BL);
+    if (blPin == PA06)
+        blTC = 0x11;
+    else if (blPin == PA01)
+        blTC = 0x12;
+
+    for (int shift = 24; shift >= 0; shift -= 8) {
+        uint8_t tcId = (timersToUse >> shift) & 0xff;
+        if (tcId == 0 || tcId == blTC || tcId == dacTC)
+            continue;
+        int idx = timerIdx(tcId);
+        if (idx < 0 || (usedTimers & (1 << idx)))
+            continue;
+        LowLevelTimer *res;
+        if (idx < 0x20) {
+            Tc *tc = (Tc *)timers[idx].addr;
+            if (tc->COUNT16.CTRLA.bit.ENABLE)
+                continue;
+            res = new SAMDTCTimer(tc, timers[idx].irq);
+        } else {
+            Tcc *tcc = (Tcc *)timers[idx].addr;
+            if (tcc->CTRLA.bit.ENABLE)
+                continue;
+            res = new SAMDTCCTimer(tcc, timers[idx].irq);
+        }
+        usedTimers |= 1 << idx;
+        return res;
+    }
+
+    target_panic(91);
+    return NULL;
+}
 LowLevelTimer *getJACDACTimer() {
-    static SAMDTCTimer *jacdacTimer;
+    static LowLevelTimer *jacdacTimer;
     if (!jacdacTimer) {
-        jacdacTimer = new SAMDTCTimer(TC0, TC0_IRQn);
+        jacdacTimer = allocateTimer();
         jacdacTimer->setIRQPriority(1);
     }
     return jacdacTimer;
 }
 
 void initSystemTimer() {
-    new CODAL_TIMER(*new SAMDTCTimer(TC2, TC2_IRQn));
+    new CODAL_TIMER(*allocateTimer());
 }
-#endif
 
 static void initRandomSeed() {
     int seed = 0xC0DA1;
