@@ -13,6 +13,8 @@ enum SpriteFlag {
     ShowPhysics = sprites.Flag.ShowPhysics,
     //% block="invisible"
     Invisible = sprites.Flag.Invisible,
+    //% block="relative to camera"
+    RelativeToCamera = sprites.Flag.RelativeToCamera
 }
 
 enum CollisionDirection {
@@ -355,7 +357,7 @@ class Sprite extends sprites.BaseSprite {
             spritesByKind[this._kind].remove(this);
 
         if (value >= 0) {
-            if (!spritesByKind[value]) spritesByKind[value] = new SpriteSet();
+            if (!spritesByKind[value]) spritesByKind[value] = new sprites.SpriteSet();
             spritesByKind[value].add(this);
         }
 
@@ -530,12 +532,13 @@ class Sprite extends sprites.BaseSprite {
                     }
                 }
 
+                // The minus 2 is how much transparent padding there is under the sayBubbleSprite
+                this.sayBubbleSprite.y = this.top + bubbleOffset - ((font.charHeight + bubblePadding) >> 1) - 2;
+                this.sayBubbleSprite.x = this.x;
+
                 if (needsRedraw) {
                     needsRedraw = false;
                     this.sayBubbleSprite.image.fill(textBoxColor);
-                    // The minus 2 is how much transparent padding there is under the sayBubbleSprite
-                    this.sayBubbleSprite.y = this.top + bubbleOffset - ((font.charHeight + bubblePadding) >> 1) - 2;
-                    this.sayBubbleSprite.x = this.x;
                     // If maxOffset is negative it won't scroll
                     if (maxOffset < 0) {
                         this.sayBubbleSprite.image.print(text, startX, startY, textColor, font);
@@ -581,23 +584,27 @@ class Sprite extends sprites.BaseSprite {
      */
     //%
     isOutOfScreen(camera: scene.Camera): boolean {
-        const ox = camera.offsetX;
-        const oy = camera.offsetY;
+        const ox = (this.flags & sprites.Flag.RelativeToCamera) ? 0 : camera.drawOffsetX;
+        const oy = (this.flags & sprites.Flag.RelativeToCamera) ? 0 : camera.drawOffsetY;
         return this.right - ox < 0 || this.bottom - oy < 0 || this.left - ox > screen.width || this.top - oy > screen.height;
     }
 
     __drawCore(camera: scene.Camera) {
         if (this.isOutOfScreen(camera)) return;
 
-        const l = this.left - camera.drawOffsetX;
-        const t = this.top - camera.drawOffsetY;
+        const ox = (this.flags & sprites.Flag.RelativeToCamera) ? 0 : camera.drawOffsetX;
+        const oy = (this.flags & sprites.Flag.RelativeToCamera) ? 0 : camera.drawOffsetY;
+
+        const l = this.left - ox;
+        const t = this.top - oy;
+
         screen.drawTransparentImage(this._image, l, t)
 
         if (this.flags & SpriteFlag.ShowPhysics) {
             const font = image.font5;
             const margin = 2;
             let tx = l;
-            let ty = this.bottom + margin - camera.drawOffsetY;
+            let ty = t + this.height + margin;
             screen.print(`${this.x >> 0},${this.y >> 0}`, tx, ty, 1, font);
             tx -= font.charWidth;
             if (this.vx || this.vy) {
@@ -613,8 +620,8 @@ class Sprite extends sprites.BaseSprite {
         // debug info
         if (game.debug) {
             screen.drawRect(
-                Fx.toInt(this._hitbox.left) - camera.drawOffsetX,
-                Fx.toInt(this._hitbox.top) - camera.drawOffsetY,
+                Fx.toInt(this._hitbox.left) - ox,
+                Fx.toInt(this._hitbox.top) - oy,
                 this._hitbox.width,
                 this._hitbox.height,
                 1
@@ -687,9 +694,9 @@ class Sprite extends sprites.BaseSprite {
     overlapsWith(other: Sprite) {
         control.enablePerfCounter("overlapsCPP")
         if (other == this) return false;
-        if (this.flags & sprites.Flag.Ghost)
+        if (this.flags & (sprites.Flag.Ghost | sprites.Flag.RelativeToCamera))
             return false
-        if (other.flags & sprites.Flag.Ghost)
+        if (other.flags & (sprites.Flag.Ghost | sprites.Flag.RelativeToCamera))
             return false
         return other._image.overlapsWith(this._image, this.left - other.left, this.top - other.top)
     }
@@ -805,7 +812,7 @@ class Sprite extends sprites.BaseSprite {
                 let destroyedSprites = false;
 
                 sc.followingSprites.forEach(fs => {
-                    const {target, self, turnRate, rate} = fs;
+                    const { target, self, turnRate, rate } = fs;
                     // one of the involved sprites has been destroyed,
                     // so exit and remove that in the cleanup step
                     if ((self.flags | target.flags) & sprites.Flag.Destroyed) {

@@ -9,6 +9,12 @@
 #define DEVICE_ID_NOTIFY_ONE 1022
 #define DEVICE_ID_NOTIFY 1023
 
+namespace serial {
+class LinuxSerialDevice;
+}
+
+typedef serial::LinuxSerialDevice *SerialDevice;
+
 namespace pxt {
 void raiseEvent(int id, int event);
 int allocateNotifyEvent();
@@ -42,7 +48,7 @@ typedef Buffer Sound;
 
 #undef PXT_MAIN
 #define PXT_MAIN                                                                                   \
-    int main(int argc, char **argv) {                                                        \
+    int main(int argc, char **argv) {                                                              \
         pxt::initialArgv = argv;                                                                   \
         pxt::start();                                                                              \
         return 0;                                                                                  \

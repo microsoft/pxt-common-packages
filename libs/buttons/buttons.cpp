@@ -274,7 +274,7 @@ bool wasPressed(Button_ button) {
 }
 
 /**
- * Gets the component identifier for the buton
+ * Gets the component identifier for the button
  */
 //%
 int id(Button_ button) {

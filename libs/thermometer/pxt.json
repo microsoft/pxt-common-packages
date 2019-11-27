@@ -1,6 +1,6 @@
 {
     "name": "thermometer",
-    "description": "A thermometer cdriver",
+    "description": "A thermometer driver",
     "files": [
         "README.md",
         "temperature.cpp",

@@ -22,7 +22,7 @@ namespace configStorage {
     }
 
     /**
-     * Stores the value at the key entry
+     * Retrieves the value at the key entry
      * @param key identifier of the key (max 16 characters)
      */
     export function getItem(key: string): string {

@@ -70,7 +70,10 @@ void *operator new(size_t size);
 
 #define CONCAT_1(a, b) a##b
 #define CONCAT_0(a, b) CONCAT_1(a, b)
+// already provided in some platforms, like mbedos
+#ifndef STATIC_ASSERT
 #define STATIC_ASSERT(e) enum { CONCAT_0(_static_assert_, __LINE__) = 1 / ((e) ? 1 : 0) };
+#endif
 
 #ifndef ramint_t
 // this type limits size of arrays
