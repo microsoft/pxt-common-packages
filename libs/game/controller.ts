@@ -136,9 +136,6 @@ namespace controller {
         /**
          * Indicates how hard the button is pressed, 0-512
          */
-        //% weight=99 blockGap=8 help=controller/button/pressure-level
-        //% blockId=key_pressure_level block="%button **button** pressure level"
-        //% group="Single Player"
         pressureLevel() {
             if (control.deviceDalVersion() == "sim") {
                 return this.isPressed() ? 512 : 0
