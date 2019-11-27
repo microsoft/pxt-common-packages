@@ -186,7 +186,7 @@ namespace controller {
 
     class AnyButton extends Button {
         isPressed(): boolean {
-            const ctrl = player1();
+            const ctrl = _player1();
 
             for (const b of ctrl.buttons) {
                 if (b.isPressed()) return true;
@@ -214,14 +214,14 @@ namespace controller {
         _players[ctrl.playerIndex - 1] = ctrl;
     }
 
-    function player1(): Controller {
+    export function _player1(): Controller {
         if (!_players || !_players[0])
             new Controller(1, [controller.left, controller.up, controller.right, controller.down, controller.A, controller.B, controller.menu]);
         return _players[0];
     }
 
     export function players(): Controller[] {
-        player1(); // ensure player1 is present
+        _player1(); // ensure player1 is present
         return _players.filter(ctrl => !!ctrl);
     }
 
@@ -550,7 +550,7 @@ namespace controller {
     }
 
     export function serialize(offset: number): Buffer {
-        return player1().serialize(offset);
+        return _player1().serialize(offset);
     }
 
     /**
@@ -569,7 +569,7 @@ namespace controller {
     //% help=controller/move-sprite
     //% group="Single Player"
     export function moveSprite(sprite: Sprite, vx: number = 100, vy: number = 100) {
-        player1().moveSprite(sprite, vx, vy);
+        _player1().moveSprite(sprite, vx, vy);
     }
 
 
@@ -594,7 +594,7 @@ namespace controller {
     //% step.defl=100
     //% group="Single Player"
     export function dx(step: number = 100) {
-        return player1().dx(step);
+        return _player1().dx(step);
     }
 
     /**
@@ -606,7 +606,7 @@ namespace controller {
     //% step.defl=100
     //% group="Single Player"
     export function dy(step: number = 100) {
-        return player1().dy(step);
+        return _player1().dy(step);
     }
 
 
