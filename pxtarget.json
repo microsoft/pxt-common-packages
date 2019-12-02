@@ -51,6 +51,7 @@
         "libs/color",
         "libs/game",
         "libs/storyboard",
-        "libs/rotary-encoder"
+        "libs/rotary-encoder",
+        "libs/palette"
     ]
 }
