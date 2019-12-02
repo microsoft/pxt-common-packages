@@ -14,6 +14,6 @@
     "dependencies": {
         "game": "file:../game",
         "color": "file:../color",
-        "palette": "file:../storyboard"
+        "palette": "file:../palette"
     }
 }
