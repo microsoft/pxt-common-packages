@@ -101,8 +101,10 @@ namespace scene {
     //% help=scene/set-tile-map
     export function setTileMap(map: Image, scale = TileScale.Sixteen) {
         const scene = game.currentScene();
-        if (!scene.tileMap)
+        if (!scene.tileMap) {
             scene.tileMap = new tiles.TileMap();
+            scene.tileMap._legacyInit();
+        }
         scene.tileMap.setMap(map);
         scene.tileMap.scale = scale;
     }
@@ -112,10 +114,6 @@ namespace scene {
      * @param map
      * @param scale
      */
-    //% blockId=gamesettilemap block="set tile map to %map=tilemap_image_picker || with %scale pixel tiles"
-    //% scale.defl=TileScale.Sixteen
-    //% group="Tiles"
-    //% help=scene/set-tile-map
     export function setTileMapLevel(map: tiles.TileMapData, scale = TileScale.Sixteen) {
         const scene = game.currentScene();
         if (!scene.tileMap)
@@ -135,8 +133,10 @@ namespace scene {
     //% help=scene/set-tile-at
     export function setTileAt(tile: tiles.Tile, index: number) {
         const scene = game.currentScene();
-        if (!scene.tileMap)
+        if (!scene.tileMap) {
             scene.tileMap = new tiles.TileMap();
+            scene.tileMap._legacyInit();
+        }
         const scale = scene.tileMap.scale;
         scene.tileMap.setTileAt(tile.x >> scale, tile.y >> scale, index);
     }
@@ -151,8 +151,10 @@ namespace scene {
     //% help=scene/set-tile
     export function setTile(index: number, img: Image, wall?: boolean) {
         const scene = game.currentScene();
-        if (!scene.tileMap)
+        if (!scene.tileMap) {
             scene.tileMap = new tiles.TileMap();
+            scene.tileMap._legacyInit();
+        }
         scene.tileMap.setTile(index, img, !!wall);
     }
 
@@ -166,8 +168,10 @@ namespace scene {
     //% help=scene/get-tile
     export function getTile(col: number, row: number): tiles.Tile {
         const scene = game.currentScene();
-        if (!scene.tileMap)
+        if (!scene.tileMap) {
             scene.tileMap = new tiles.TileMap();
+            scene.tileMap._legacyInit();
+        }
         return scene.tileMap.getTile(col, row);
     }
 
@@ -180,8 +184,10 @@ namespace scene {
     //% help=scene/get-tiles-by-type
     export function getTilesByType(index: number): tiles.Tile[] {
         const scene = game.currentScene();
-        if (!scene.tileMap)
+        if (!scene.tileMap) {
             scene.tileMap = new tiles.TileMap();
+            scene.tileMap._legacyInit();
+        }
         return scene.tileMap.getTilesByType(index);
     }
 
