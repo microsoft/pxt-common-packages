@@ -38,7 +38,8 @@ class WDisplay {
             io = new SPIScreenIO(*spi);
         } else if (conn == 1) {
 #ifdef CODAL_CREATE_PARALLEL_SCREEN_IO
-            io = CODAL_CREATE_PARALLEL_SCREEN_IO(cfg2 & 0xffffff, PIN(DISPLAY_MOSI), PIN(DISPLAY_MISO));
+            io = CODAL_CREATE_PARALLEL_SCREEN_IO(cfg2 & 0xffffff, PIN(DISPLAY_MOSI),
+                                                 PIN(DISPLAY_MISO));
 #else
             target_panic(PANIC_SCREEN_ERROR);
 #endif
@@ -58,19 +59,6 @@ class WDisplay {
         } else
             target_panic(PANIC_SCREEN_ERROR);
 
-        auto rst = LOOKUP_PIN(DISPLAY_RST);
-        if (rst) {
-            rst->setDigitalValue(0);
-            fiber_sleep(20);
-            rst->setDigitalValue(1);
-            fiber_sleep(20);
-        }
-
-        auto bl = LOOKUP_PIN(DISPLAY_BL);
-        if (bl) {
-            bl->setDigitalValue(1);
-        }
-
         uint32_t cfg0 = getConfig(CFG_DISPLAY_CFG0, 0x40);
         uint32_t frmctr1 = getConfig(CFG_DISPLAY_CFG1, 0x000603);
         palXOR = (cfg0 & 0x1000000) ? 0xffffff : 0x000000;
@@ -86,6 +74,21 @@ class WDisplay {
                 freq = 15;
             spi->setFrequency(freq * 1000000);
             spi->setMode(0);
+            // make sure the SPI peripheral is initialized before toggling reset
+            spi->write(0);
+        }
+
+        auto rst = LOOKUP_PIN(DISPLAY_RST);
+        if (rst) {
+            rst->setDigitalValue(0);
+            fiber_sleep(20);
+            rst->setDigitalValue(1);
+            fiber_sleep(20);
+        }
+
+        auto bl = LOOKUP_PIN(DISPLAY_BL);
+        if (bl) {
+            bl->setDigitalValue(1);
         }
 
         lcd->init();
