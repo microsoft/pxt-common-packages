@@ -78,6 +78,7 @@ namespace tiles {
     }
 
     const TM_DATA_PREFIX_LENGTH = 4;
+    const TM_WALL = 2;
 
     export class TileMapData {
         // The tile data for the map (indices into tileset)
@@ -88,16 +89,30 @@ namespace tiles {
 
         protected tileset: Image[];
 
-        readonly width: number;
-        readonly height: number;
+        protected _width: number;
+        protected _height: number;
+
+        // ## LEGACY: DO NOT USE ##
+        protected _walls: boolean[];
 
         constructor(data: Buffer, layers: Image, tileset: Image[], scale: TileScale) {
             this.data = data;
             this.layers = layers;
             this.tileset = tileset;
 
-            this.width = data.getNumber(NumberFormat.UInt16LE, 0);
-            this.height = data.getNumber(NumberFormat.UInt16LE, 2);
+            this._width = data.getNumber(NumberFormat.UInt16LE, 0);
+            this._height = data.getNumber(NumberFormat.UInt16LE, 2);
+
+            // ## LEGACY: DO NOT USE ##
+            this._walls = tileset.map(t => false);
+        }
+
+        get width(): number {
+            return this._width;
+        }
+
+        get height(): number {
+            return this._height;
         }
 
         getTile(col: number, row: number) {
@@ -117,11 +132,47 @@ namespace tiles {
         }
 
         isWall(col: number, row: number) {
-            return this.layers.getPixel(col, row) === 2;
+            return this.layers.getPixel(col, row) === TM_WALL;
         }
 
         isOutsideMap(col: number, row: number) {
             return col < 0 || col >= this.width || row < 0 || row >= this.height;
+        }
+
+        /*
+         *  ##########################################
+         *  ##         LEGACY: DO NOT USE           ##
+         *  ##    Functions below are to support    ##
+         *  ##        old tilemap blocks only       ##
+         *  ##########################################
+         */
+        _setTileImage(index: number, img: Image, collisions: boolean) {
+            this.tileset[index] = img;
+            this._walls[index] = collisions;
+            for (let col = 0; col < this.width; ++col) {
+                for (let row = 0; row < this.height; ++row) {
+                    let currTile = this.getTile(col, row);
+                    if (currTile === index) {
+                        this.layers.setPixel(col, row, collisions ? TM_WALL : 0);
+                    }
+                }
+            }
+        }
+
+        _setWall(index: number, collisions: boolean) {
+            this._walls[index] = collisions;
+        }
+
+        _isWall(index: number) {
+            return this._walls[index];
+        }
+
+        _setMap(data: Buffer, layers: Image) {
+            this.data = data;
+            this.layers = layers;
+
+            this._width = data.getNumber(NumberFormat.UInt16LE, 0);
+            this._height = data.getNumber(NumberFormat.UInt16LE, 2);
         }
     }
 
@@ -139,6 +190,18 @@ namespace tiles {
                 scene.TILE_MAP_Z,
                 (t, c) => this.draw(t, c)
             );
+        }
+
+        // ## LEGACY: DO NOT USE ##
+        _legacyInit() {
+            let buffer = control.createBuffer(TM_DATA_PREFIX_LENGTH);
+            let layer = image.create(2, 2);
+            let tiles = [];
+            for (let i = 0; i < 16; ++i) {
+                tiles.push(mkColorTile(i, this.scale))
+            }
+
+            this._map = new TileMapData(buffer, layer, tiles, this.scale);
         }
 
         get data(): TileMapData {
@@ -175,13 +238,27 @@ namespace tiles {
             return !!this._map;
         }
 
+        // ## LEGACY: DO NOT USE ##
         setTile(index: number, img: Image, collisions?: boolean) {
-            // if (this.isInvalidIndex(index)) return;
-            // this._tileSets[index] = new TileSet(img, collisions, this);
+            this._map._setTileImage(index, img, collisions);
         }
 
+        // ## LEGACY: DO NOT USE ##
         setMap(map: Image) {
-            // this._map = map;
+            let buffer = control.createBuffer(TM_DATA_PREFIX_LENGTH + (map.width * map.height));
+            let layer = image.create(map.width, map.height);
+
+            buffer.setNumber(NumberFormat.UInt16LE, 0, map.width);
+            buffer.setNumber(NumberFormat.UInt16LE, TM_DATA_PREFIX_LENGTH / 2, map.height);
+            for (let i = 0; i < map.width; i++) {
+                for (let j = 0; j < map.height; j++) {
+                    let p = map.getPixel(i, j);
+                    if (this._map._isWall(p)) layer.setPixel(i, j, TM_WALL);
+                    buffer.setUint8(TM_DATA_PREFIX_LENGTH + (i | 0) + (j | 0) * map.width, p);
+                }
+            }
+
+            this._map._setMap(buffer, layer);
         }
 
         setData(map: TileMapData) {
@@ -211,14 +288,6 @@ namespace tiles {
             }
             return output;
         }
-
-        // protected generateTile(index: number): TileSet {
-        //     const size = 1 << this.scale
-
-        //     const i = image.create(size, size);
-        //     i.fill(index);
-        //     return this._tileSets[index] = new TileSet(i, false, this);
-        // }
 
         protected isInvalidIndex(index: number): boolean {
             return index < 0 || index > 0xff;
@@ -318,6 +387,14 @@ namespace tiles {
 
             return false;
         }
+    }
+
+    function mkColorTile(index: number, scale: TileScale): Image {
+        const size = 1 << scale
+
+        const i = image.create(size, size);
+        i.fill(index);
+        return i;
     }
 
     export function mkTile(image: Image, id: number, tags: string[]) {
