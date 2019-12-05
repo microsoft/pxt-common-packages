@@ -61,7 +61,7 @@ namespace sprites {
     }
 
     /**
-     * Create a new sprite with given speed, and place it at the edge of the screen so it moves towards the middle.
+     * Create a new sprite with a given speed, and place it at the edge of the screen so it moves towards the middle.
      * The sprite auto-destroys when it leaves the screen. You can modify position after it's created.
      */
     //% group="Projectiles"
@@ -77,7 +77,7 @@ namespace sprites {
     }
 
     /**
-     * Create a new sprite with given speed, and place it at the edge of the screen so it moves towards the middle.
+     * Create a new sprite with a given speed that starts from the location of another sprite.
      * The sprite auto-destroys when it leaves the screen. You can modify position after it's created.
      */
     //% group="Projectiles"
