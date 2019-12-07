@@ -177,6 +177,7 @@ void waitForEvent(int id, int event) {
 }
 
 void initRuntime() {
+    initSystemTimer();
     initCodal();
     platform_init();
 }

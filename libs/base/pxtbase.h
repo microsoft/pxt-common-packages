@@ -137,6 +137,7 @@ void releaseFiber();
 uint64_t current_time_us();
 int current_time_ms();
 void initRuntime();
+void initSystemTimer();
 void sendSerial(const char *data, int len);
 void setSendToUART(void (*f)(const char *, int));
 uint64_t getLongSerialNumber();
@@ -275,6 +276,7 @@ typedef enum {
     PANIC_SETTINGS_OVERLOAD = 921,
     PANIC_SETTINGS_SECRET_MISSING = 922,
     PANIC_DELETE_ON_CLASS = 923,
+    PANIC_OUT_OF_TIMERS = 924,
 
     PANIC_CAST_FIRST = 980,
     PANIC_CAST_FROM_UNDEFINED = 980,
@@ -1074,6 +1076,10 @@ void gcPreAllocateBlock(uint32_t sz);
 inline void *gcAllocate(int numbytes) {
     return xmalloc(numbytes);
 }
+#endif
+
+#ifdef CODAL_JACDAC_WIRE_SERIAL
+codal::LowLevelTimer *allocateTimer();
 #endif
 
 #ifdef PXT64

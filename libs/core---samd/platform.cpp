@@ -6,32 +6,114 @@
 
 namespace pxt {
 
-#ifdef CODAL_JACDAC_WIRE_SERIAL
+struct TimerConfig {
+    uint8_t id;
+    uint8_t irq;
+    uint8_t dmaovf;
+    uint32_t addr;
+};
+
+#define DEF_TC(n)                                                                                  \
+    { 0x10 + n, TC##n##_IRQn, TC##n##_DMAC_ID_OVF, (uint32_t)TC##n }
+#define DEF_TCC(n)                                                                                 \
+    { 0x20 + n, TCC##n##_0_IRQn, TCC##n##_DMAC_ID_OVF, (uint32_t)TCC##n }
+
+static const TimerConfig timers[] = {
+#ifdef TC0
+    DEF_TC(0),
+#endif
+#ifdef TC1
+    DEF_TC(1),
+#endif
+#ifdef TC2
+    DEF_TC(2),
+#endif
+#ifdef TC3
+    DEF_TC(3),
+#endif
+#ifdef TC4
+    DEF_TC(4),
+#endif
+#ifdef TC5
+    DEF_TC(5),
+#endif
+
+#ifdef TCC0
+    DEF_TCC(0),
+#endif
+#ifdef TCC1
+    DEF_TCC(1),
+#endif
+#ifdef TCC2
+    DEF_TCC(2),
+#endif
+
+    {0, 0, 0, 0}};
+
+// Backlight:
+// Kitronik: PA6 TC1 (ch 0)
+// Adafruit: PA1 TC2 (ch 1)
+
 // TC3 is used by DAC on both D21 and D51
 // TCC0 and TC4 is used by IR
 // TCC0, TCC1, TC4 is used by PWM on CPX
+
 #ifdef SAMD21
-SAMDTCCTimer jacdacTimer(TCC2, TCC2_IRQn);
-SAMDTCTimer lowTimer(TC5, TC5_IRQn);
-
-LowLevelTimer *getJACDACTimer() {
-    jacdacTimer.setIRQPriority(1);
-    return &jacdacTimer;
-}
-
+#define DEF_TIMERS 0x15222021 // TC5 TCC2 TCC0 TCC1
+#else
+#define DEF_TIMERS 0x10111200 // TC0 TC1 TC2
 #endif
-#ifdef SAMD51
-SAMDTCTimer jacdacTimer(TC0, TC0_IRQn);
-SAMDTCTimer lowTimer(TC2, TC2_IRQn);
 
-LowLevelTimer *getJACDACTimer() {
-    jacdacTimer.setIRQPriority(1);
-    return &jacdacTimer;
+static uint32_t usedTimers;
+static int timerIdx(uint8_t id) {
+    for (unsigned i = 0; timers[i].id; i++) {
+        if (id == timers[i].id)
+            return i;
+    }
+    return -1;
 }
-#endif
-#endif // CODAL_JACDAC_WIRE_SERIAL
+LowLevelTimer *allocateTimer() {
+    uint32_t timersToUse = getConfig(CFG_TIMERS_TO_USE, DEF_TIMERS);
+    uint8_t blTC = 0;
+    // DAC hard-wired to TC3 right now
+    uint8_t dacTC = 0x13;
 
-__attribute__((used)) CODAL_TIMER devTimer(lowTimer);
+    // if BL is on a known pin, don't use its PWM TC
+    // this is a hack for legacy boards that don't have CFG_TIMERS_TO_USE
+    auto blPin = PIN(DISPLAY_BL);
+    if (blPin == PA06)
+        blTC = 0x11;
+    else if (blPin == PA01)
+        blTC = 0x12;
+
+    for (int shift = 24; shift >= 0; shift -= 8) {
+        uint8_t tcId = (timersToUse >> shift) & 0xff;
+        if (tcId == 0 || tcId == blTC || tcId == dacTC)
+            continue;
+        int idx = timerIdx(tcId);
+        if (idx < 0 || (usedTimers & (1 << idx)))
+            continue;
+        LowLevelTimer *res;
+        if (idx < 0x20) {
+            Tc *tc = (Tc *)timers[idx].addr;
+            if (tc->COUNT16.CTRLA.bit.ENABLE)
+                continue;
+            DMESG("allocate TC%d", tcId & 0xf);
+            res = new SAMDTCTimer(tc, timers[idx].irq);
+        } else {
+            Tcc *tcc = (Tcc *)timers[idx].addr;
+            if (tcc->CTRLA.bit.ENABLE)
+                continue;
+            DMESG("allocate TCC%d", tcId & 0xf);
+            res = new SAMDTCCTimer(tcc, timers[idx].irq);
+        }
+        usedTimers |= 1 << idx;
+        return res;
+    }
+
+    target_panic(PANIC_OUT_OF_TIMERS);
+    return NULL;
+}
 
 static void initRandomSeed() {
     int seed = 0xC0DA1;
