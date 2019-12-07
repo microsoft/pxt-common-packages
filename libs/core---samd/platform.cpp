@@ -98,11 +98,13 @@ LowLevelTimer *allocateTimer() {
             Tc *tc = (Tc *)timers[idx].addr;
             if (tc->COUNT16.CTRLA.bit.ENABLE)
                 continue;
+            DMESG("allocate TC%d", tcId & 0xf);
             res = new SAMDTCTimer(tc, timers[idx].irq);
         } else {
             Tcc *tcc = (Tcc *)timers[idx].addr;
             if (tcc->CTRLA.bit.ENABLE)
                 continue;
+            DMESG("allocate TCC%d", tcId & 0xf);
             res = new SAMDTCCTimer(tcc, timers[idx].irq);
         }
         usedTimers |= 1 << idx;

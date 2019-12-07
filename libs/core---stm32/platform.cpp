@@ -95,6 +95,7 @@ LowLevelTimer *allocateTimer() {
         if (dev->CR1 & TIM_CR1_CEN)
             continue;
         usedTimers |= 1 << idx;
+        DMESG("allocate TIM%d", tcId - 0x10);
         return new STMLowLevelTimer(dev, timers[idx].irqn);
     }
 
