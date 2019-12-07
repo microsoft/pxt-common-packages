@@ -35,6 +35,7 @@
         "test.ts"
     ],
     "public": true,
+    "partial": true,
     "dependencies": {},
     "yotta": {
         "optionalConfig": {
