@@ -1,7 +1,7 @@
 namespace controller {
-    //% fixedInstance whenUsed block="A"
+    //% fixedInstance whenUsed block="{id:controller}A"
     export const A = new Button(ControllerButton.A, -1);
-    //% fixedInstance whenUsed block="B"
+    //% fixedInstance whenUsed block="{id:controller}B"
     export const B = new Button(ControllerButton.B, -1);
     //% fixedInstance whenUsed block="left"
     export const left = new Button(ControllerButton.Left, -1);
