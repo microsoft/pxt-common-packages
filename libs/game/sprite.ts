@@ -793,7 +793,7 @@ class Sprite extends sprites.BaseSprite {
      * @param target the sprite this one should follow
      * @param speed the rate at which this sprite should move, eg: 100
      * @param turnRate how quickly the sprite should turn while following.
-     *      The default (100) will cause the sprite to reach max speed after approximately 125 ms when standing still,
+     *      The default (400) will cause the sprite to reach max speed after approximately 125 ms when standing still,
      *      and turn around 180 degrees when at max speed after approximately 250 ms.
      */
     //% group="Physics" weight=10
