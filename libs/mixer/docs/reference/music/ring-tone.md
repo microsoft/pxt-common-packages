@@ -9,7 +9,11 @@ music.ringTone(0);
 
 ## #simnote
 ### ~hint
-**Simulator**: ``||music:ring tone||`` works on the @boardname@. It might not work in the simulator on every browser.
+
+#### Simulator
+
+``||music:ring tone||`` works on the @boardname@. It might not work in the simulator on every browser.
+
 ### ~
 
 The tone will keep playing until you stop it with [``||music:stop all sounds||``](/reference/music/stop-all-sounds).

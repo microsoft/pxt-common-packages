@@ -46,17 +46,19 @@ The notes are placed one after the other with a _space_ between them, like ``"B:
 a note to play for **4** beats, you don't need to use any duration number (a note with 4 beats is called a _whole_ note).
 Just say something like ``"E"`` with no colon (leave out the ``':'``) and no duration number.
 
-You might notice that the sound string has an ``R:1`` in it. The `**R**` means _rest_ and to rest for one beat.
+You might notice that the sound string has an ``R:1`` in it. The '**R**' means _rest_ and to rest for one beat.
 A rest is a pause, or a time of silence, in the sound.
 
 
-#### ~hint
-**Duration**
+### ~hint
+
+#### Duration
 
 The amount of time a note is played (duration) is measured as _beats_. The standard number
 _beats per minute_ (bpm) in music is 120 bpm which is one-half of a second of time. A _whole_ note lasts
 for 4 beats and a _quarter_ note takes just one beat.
-#### ~
+
+### ~
 
 ## Example
 

@@ -7,9 +7,13 @@ music.playTone(Note.C, 10)
 ```
 
 ## #simnote
-#### ~hint
-**Simulator**: ``||music:play tone||`` works on the @boardname@. It might not work in the simulator on every browser.
-#### ~
+### ~hint
+
+#### Simulator
+
+``||music:play tone||`` works on the @boardname@. It might not work in the simulator on every browser.
+
+### ~
 
 ## Parameters
 

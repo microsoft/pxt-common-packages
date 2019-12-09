@@ -10,9 +10,13 @@ music.setVolume(128)
 ```
 
 ## #simnote
-#### ~hint
-**Simulator**: ``||music:set volume||`` works on the @boardname@. It might not work in the simulator on every browser.
-#### ~
+### ~hint
+
+#### Simulator
+
+``||music:set volume||`` works on the @boardname@. It might not work in the simulator on every browser.
+
+### ~
 
 ## Parameters
 

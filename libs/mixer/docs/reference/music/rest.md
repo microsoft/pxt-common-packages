@@ -9,7 +9,9 @@ music.rest(400);
 ## #simnote
 ### ~hint
 
-**Simulator**: ``||music:rest||`` works on the @boardname@. It might not work in the simulator on every browser.
+#### Simulator
+
+``||music:rest||`` works on the @boardname@. It might not work in the simulator on every browser.
 
 ### ~
 
