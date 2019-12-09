@@ -236,7 +236,7 @@ namespace scene {
     //% group="Tiles" blockSetVariable="myTile"
     //% help=scene/get-tile
     //% deprecated=1
-    export function getTile(col: number, row: number): tiles.Tile {
+    export function getTile(col: number, row: number): tiles.Location {
         const scene = game.currentScene();
         if (!scene.tileMap) {
             scene.tileMap = new tiles.TileMap();
@@ -253,7 +253,7 @@ namespace scene {
     //% group="Tiles" blockSetVariable="tile list"
     //% help=scene/get-tiles-by-type
     //% deprecated=1
-    export function getTilesByType(index: number): tiles.Tile[] {
+    export function getTilesByType(index: number): tiles.Location[] {
         const scene = game.currentScene();
         if (!scene.tileMap) {
             scene.tileMap = new tiles.TileMap();

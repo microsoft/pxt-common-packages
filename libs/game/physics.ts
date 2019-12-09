@@ -362,7 +362,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 tileScale
             );
             const collidedTiles: sprites.StaticObstacle[] = [];
-            const overlappedTiles: tiles.Tile[] = [];
+            const overlappedTiles: tiles.Location[] = [];
 
             // check collisions with tiles sprite is moving towards horizontally
             for (
@@ -449,7 +449,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 tileScale
             );
             const collidedTiles: sprites.StaticObstacle[] = [];
-            const overlappedTiles: tiles.Tile[] = [];
+            const overlappedTiles: tiles.Location[] = [];
 
             // check collisions with tiles sprite is moving towards vertically
             for (
@@ -527,7 +527,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
      * @param sprite the sprite
      * @param overlappedTiles the list of tiles the sprite is overlapping
      */
-    private tilemapOverlaps(sprite: Sprite, overlappedTiles: tiles.Tile[]) {
+    private tilemapOverlaps(sprite: Sprite, overlappedTiles: tiles.Location[]) {
         for (const tile of overlappedTiles) {
             const tileOverlapHandlers = game.currentScene().tileOverlapHandlers;
             if (tileOverlapHandlers) {

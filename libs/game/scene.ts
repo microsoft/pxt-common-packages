@@ -31,7 +31,7 @@ namespace scene {
         constructor(
             public spriteKind: number,
             public tileKind: Image,
-            public handler: (sprite: Sprite, tile: tiles.Tile) => void
+            public handler: (sprite: Sprite, location: tiles.Location) => void
         ) { }
     }
 
