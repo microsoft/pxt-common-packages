@@ -107,14 +107,14 @@ namespace jacdac {
         }
 
         /**
-         * Gest the required device names
+         * Get the required device names
          */
         get requiredDeviceName() {
             return this.requiredDevice && this.requiredDevice.device_name;
         }
 
         /** 
-         * Sets the required device name
+         * Set the required device name
         */
         set requiredDeviceName(name: string) {
             const dev = new jacdac.JDRequiredDevice();

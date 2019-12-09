@@ -61,7 +61,7 @@ namespace sprites {
     }
 
     /**
-     * Create a new sprite with given speed, and place it at the edge of the screen so it moves towards the middle.
+     * Create a new sprite with a given speed, and place it at the edge of the screen so it moves towards the middle.
      * The sprite auto-destroys when it leaves the screen. You can modify position after it's created.
      */
     //% group="Projectiles"
@@ -77,7 +77,7 @@ namespace sprites {
     }
 
     /**
-     * Create a new sprite with given speed, and place it at the edge of the screen so it moves towards the middle.
+     * Create a new sprite with a given speed that starts from the location of another sprite.
      * The sprite auto-destroys when it leaves the screen. You can modify position after it's created.
      */
     //% group="Projectiles"
@@ -159,5 +159,6 @@ namespace sprites {
         ShowPhysics = 1 << 6, // display position, velocity, acc
         Invisible = 1 << 7, // makes the sprite invisible, so it does not show up on the screen
         IsClipping = 1 << 8, // whether the sprite is currently clipping into a wall. This can happen when a sprite is created or moved explicitly.
+        RelativeToCamera = 1 << 9 // draw relative to the camera, not the world (e.g. HUD elements)
     }
 }

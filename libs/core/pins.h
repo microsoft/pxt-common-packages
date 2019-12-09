@@ -48,9 +48,6 @@ DevicePin *getPinCfg(int key);
 DevicePin *lookupPin(int pinName);
 DevicePin *lookupPinCfg(int key);
 void linkPin(int from, int to);
-Button *getButtonByPin(int pin, int flags);
-AbstractButton *getButton(int id);
-MultiButton *getMultiButton(int id, int pinA, int pinB, int flags);
 CodalComponent *lookupComponent(int id);
 }
 

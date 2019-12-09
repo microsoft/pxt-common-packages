@@ -1,6 +1,6 @@
 {
     "name": "serial",
-    "description": "UART communicatoin",
+    "description": "UART communication",
     "files": [
         "serial-target.h",
         "serial-common.h",

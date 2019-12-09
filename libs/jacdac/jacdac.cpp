@@ -22,7 +22,8 @@ class WJDPhysicalLayer {
 #ifdef CODAL_JACDAC_WIRE_SERIAL
         sws.setBaud(1000000);
 #if CONFIG_ENABLED(DEVICE_USB) && CONFIG_ENABLED(DEVICE_JACDAC_DEBUG)
-        pxt::jacdacDebug.setPhysicalLayer(phys);
+        if (pxt::jacdacDebug)
+            pxt::jacdacDebug->setPhysicalLayer(phys);
 #endif
 #endif
     }
@@ -63,8 +64,8 @@ class WJDPhysicalLayer {
 #ifdef CODAL_JACDAC_WIRE_SERIAL
         auto pkt = phys.getPacket();
 #if CONFIG_ENABLED(DEVICE_USB) && CONFIG_ENABLED(DEVICE_JACDAC_DEBUG)
-        if (pkt)
-            pxt::jacdacDebug.handlePacket(pkt);
+        if (pkt && pxt::jacdacDebug)
+            pxt::jacdacDebug->handlePacket(pkt);
 #endif
         return pkt;
 #else

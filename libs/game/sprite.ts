@@ -13,6 +13,8 @@ enum SpriteFlag {
     ShowPhysics = sprites.Flag.ShowPhysics,
     //% block="invisible"
     Invisible = sprites.Flag.Invisible,
+    //% block="relative to camera"
+    RelativeToCamera = sprites.Flag.RelativeToCamera
 }
 
 enum CollisionDirection {
@@ -212,43 +214,44 @@ class Sprite extends sprites.BaseSprite {
     //% weight=7 help=sprites/sprite/set-image
     setImage(img: Image) {
         if (!img) return; // don't break the sprite
-
-        let oMinX = 0;
-        let oMinY = 0;
-        let oMaxX = 0;
-        let oMaxY = 0;
-
-        // Identify old upper left corner
-        if (this._hitbox) {
-            oMinX = this._hitbox.ox;
-            oMinY = this._hitbox.oy;
-            oMaxX = this._hitbox.ox + this._hitbox.width;
-            oMaxY = this._hitbox.oy + this._hitbox.height;
-        }
-
         this._image = img;
-        this._hitbox = game.calculateHitBox(this);
+        const newHitBox = game.calculateHitBox(this);
 
-        // Identify new upper left corner
-        let nMinX = this._hitbox.ox;
-        let nMinY = this._hitbox.oy;
-        let nMaxX = this._hitbox.ox + this._hitbox.width;
-        let nMaxY = this._hitbox.oy + this._hitbox.height;
-
-        const minXDiff = oMinX - nMinX;
-        const minYDiff = oMinY - nMinY;
-        const maxXDiff = oMaxX - nMaxX;
-        const maxYDiff = oMaxY - nMaxY;
-
-        // If just a small change to the hitbox, don't change the hitbox
-        // Used for things like walking animations
-        if (oMaxX != oMinX && Math.abs(minXDiff) + Math.abs(maxXDiff) <= 2) {
-            this._hitbox.ox = oMinX;
-            this._hitbox.width = oMaxX - oMinX;
+        if (!this._hitbox) {
+            this._hitbox = newHitBox;
+            return;
         }
-        if (oMaxY != oMinY && Math.abs(minYDiff) + Math.abs(maxYDiff) <= 2) {
+
+        const oMinX = this._hitbox.ox;
+        const oMinY = this._hitbox.oy;
+        const oMaxX = Fx.add(oMinX, this._hitbox.width);
+        const oMaxY = Fx.add(oMinY, this._hitbox.height);
+
+        const nMinX = newHitBox.ox;
+        const nMinY = newHitBox.oy;
+        const nMaxX = Fx.add(nMinX, newHitBox.width);
+        const nMaxY = Fx.add(nMinY, newHitBox.height);
+
+        // total diff in x / y corners between the two hitboxes
+        const xDiff = Fx.add(
+            Fx.abs(Fx.sub(oMinX, nMinX)),
+            Fx.abs(Fx.sub(oMaxX, nMaxX))
+        );
+        const yDiff = Fx.add(
+            Fx.abs(Fx.sub(oMinY, nMinY)),
+            Fx.abs(Fx.sub(oMaxY, nMaxY))
+        );
+
+        // If it's just a small change to the hitbox on one axis,
+        // don't change the dimensions to avoid random clipping
+        this._hitbox = newHitBox;
+        if (xDiff <= Fx.twoFx8) {
+            this._hitbox.ox = oMinX;
+            this._hitbox.width = Fx.sub(oMaxX, oMinX);
+        }
+        if (yDiff <= Fx.twoFx8) {
             this._hitbox.oy = oMinY;
-            this._hitbox.height = oMaxY - oMinY;
+            this._hitbox.height = Fx.sub(oMaxY, oMinY);
         }
     }
 
@@ -355,7 +358,7 @@ class Sprite extends sprites.BaseSprite {
             spritesByKind[this._kind].remove(this);
 
         if (value >= 0) {
-            if (!spritesByKind[value]) spritesByKind[value] = new SpriteSet();
+            if (!spritesByKind[value]) spritesByKind[value] = new sprites.SpriteSet();
             spritesByKind[value].add(this);
         }
 
@@ -449,7 +452,7 @@ class Sprite extends sprites.BaseSprite {
         let startY = 2;
         let bubbleWidth = text.length * font.charWidth + bubblePadding;
         let maxOffset = text.length * font.charWidth - maxTextWidth;
-        let bubbleOffset: number = this._hitbox.oy;
+        let bubbleOffset: number = Fx.toInt(this._hitbox.oy);
         let needsRedraw = true;
 
         // sets the defaut scroll speed in pixels per second
@@ -530,12 +533,13 @@ class Sprite extends sprites.BaseSprite {
                     }
                 }
 
+                // The minus 2 is how much transparent padding there is under the sayBubbleSprite
+                this.sayBubbleSprite.y = this.top + bubbleOffset - ((font.charHeight + bubblePadding) >> 1) - 2;
+                this.sayBubbleSprite.x = this.x;
+
                 if (needsRedraw) {
                     needsRedraw = false;
                     this.sayBubbleSprite.image.fill(textBoxColor);
-                    // The minus 2 is how much transparent padding there is under the sayBubbleSprite
-                    this.sayBubbleSprite.y = this.top + bubbleOffset - ((font.charHeight + bubblePadding) >> 1) - 2;
-                    this.sayBubbleSprite.x = this.x;
                     // If maxOffset is negative it won't scroll
                     if (maxOffset < 0) {
                         this.sayBubbleSprite.image.print(text, startX, startY, textColor, font);
@@ -581,23 +585,27 @@ class Sprite extends sprites.BaseSprite {
      */
     //%
     isOutOfScreen(camera: scene.Camera): boolean {
-        const ox = camera.offsetX;
-        const oy = camera.offsetY;
+        const ox = (this.flags & sprites.Flag.RelativeToCamera) ? 0 : camera.drawOffsetX;
+        const oy = (this.flags & sprites.Flag.RelativeToCamera) ? 0 : camera.drawOffsetY;
         return this.right - ox < 0 || this.bottom - oy < 0 || this.left - ox > screen.width || this.top - oy > screen.height;
     }
 
     __drawCore(camera: scene.Camera) {
         if (this.isOutOfScreen(camera)) return;
 
-        const l = this.left - camera.drawOffsetX;
-        const t = this.top - camera.drawOffsetY;
+        const ox = (this.flags & sprites.Flag.RelativeToCamera) ? 0 : camera.drawOffsetX;
+        const oy = (this.flags & sprites.Flag.RelativeToCamera) ? 0 : camera.drawOffsetY;
+
+        const l = this.left - ox;
+        const t = this.top - oy;
+
         screen.drawTransparentImage(this._image, l, t)
 
         if (this.flags & SpriteFlag.ShowPhysics) {
             const font = image.font5;
             const margin = 2;
             let tx = l;
-            let ty = this.bottom + margin - camera.drawOffsetY;
+            let ty = t + this.height + margin;
             screen.print(`${this.x >> 0},${this.y >> 0}`, tx, ty, 1, font);
             tx -= font.charWidth;
             if (this.vx || this.vy) {
@@ -613,10 +621,10 @@ class Sprite extends sprites.BaseSprite {
         // debug info
         if (game.debug) {
             screen.drawRect(
-                Fx.toInt(this._hitbox.left) - camera.drawOffsetX,
-                Fx.toInt(this._hitbox.top) - camera.drawOffsetY,
-                this._hitbox.width,
-                this._hitbox.height,
+                Fx.toInt(this._hitbox.left) - ox,
+                Fx.toInt(this._hitbox.top) - oy,
+                Fx.toInt(this._hitbox.width),
+                Fx.toInt(this._hitbox.height),
                 1
             );
         }
@@ -687,9 +695,9 @@ class Sprite extends sprites.BaseSprite {
     overlapsWith(other: Sprite) {
         control.enablePerfCounter("overlapsCPP")
         if (other == this) return false;
-        if (this.flags & sprites.Flag.Ghost)
+        if (this.flags & (sprites.Flag.Ghost | sprites.Flag.RelativeToCamera))
             return false
-        if (other.flags & sprites.Flag.Ghost)
+        if (other.flags & (sprites.Flag.Ghost | sprites.Flag.RelativeToCamera))
             return false
         return other._image.overlapsWith(this._image, this.left - other.left, this.top - other.top)
     }
@@ -785,13 +793,13 @@ class Sprite extends sprites.BaseSprite {
      * @param target the sprite this one should follow
      * @param speed the rate at which this sprite should move, eg: 100
      * @param turnRate how quickly the sprite should turn while following.
-     *      The default (100) will cause the sprite to reach max speed after approximately 500 ms when standing still,
-     *      and turn around 180 degrees when at max speed after approximately 1000 ms.
+     *      The default (400) will cause the sprite to reach max speed after approximately 125 ms when standing still,
+     *      and turn around 180 degrees when at max speed after approximately 250 ms.
      */
     //% group="Physics" weight=10
     //% blockId=spriteFollowOtherSprite
     //% block="set %sprite(myEnemy) follow %target=variables_get(mySprite) || with speed %speed"
-    follow(target: Sprite, speed = 100, turnRate = 100) {
+    follow(target: Sprite, speed = 100, turnRate = 400) {
         if (target === this) return;
 
         const sc = game.currentScene();
@@ -805,7 +813,7 @@ class Sprite extends sprites.BaseSprite {
                 let destroyedSprites = false;
 
                 sc.followingSprites.forEach(fs => {
-                    const {target, self, turnRate, rate} = fs;
+                    const { target, self, turnRate, rate } = fs;
                     // one of the involved sprites has been destroyed,
                     // so exit and remove that in the cleanup step
                     if ((self.flags | target.flags) & sprites.Flag.Destroyed) {

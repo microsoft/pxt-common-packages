@@ -24,7 +24,7 @@ class PhysicsEngine {
 }
 
 const MAX_TIME_STEP = Fx8(100); // milliseconds
-const SPRITE_CANNOT_COLLIDE = sprites.Flag.Ghost | sprites.Flag.Destroyed;
+const SPRITE_CANNOT_COLLIDE = sprites.Flag.Ghost | sprites.Flag.Destroyed | sprites.Flag.RelativeToCamera;
 const MIN_MOVE_GAP = Fx8(0.1);
 
 class MovingSprite {
@@ -354,9 +354,9 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             const x0 = Fx.toIntShifted(
                 Fx.add(
                     right ?
-                        Fx.iadd(1, hbox.right)
+                        Fx.add(hbox.right, Fx.oneFx8)
                         :
-                        Fx.iadd(-1, hbox.left),
+                        Fx.sub(hbox.left, Fx.oneFx8),
                     Fx.oneHalfFx8
                 ),
                 tileScale
@@ -393,15 +393,15 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
             if (collidedTiles.length) {
                 const collisionDirection = right ? CollisionDirection.Right : CollisionDirection.Left;
-                s._x = Fx.iadd(
-                    -hbox.ox,
+                s._x = Fx.sub(
                     right ?
                         Fx.sub(
                             Fx8(x0 << tileScale),
-                            Fx8(hbox.width)
+                            hbox.width
                         )
                         :
-                        Fx8((x0 + 1) << tileScale)
+                        Fx8((x0 + 1) << tileScale),
+                    hbox.ox
                 );
 
                 for (const tile of collidedTiles) {
@@ -436,9 +436,9 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             const y0 = Fx.toIntShifted(
                 Fx.add(
                     down ?
-                        Fx.iadd(1, hbox.bottom)
+                        Fx.add(hbox.bottom, Fx.oneFx8)
                         :
-                        Fx.iadd(-1, hbox.top),
+                        Fx.sub(hbox.top, Fx.oneFx8),
                     Fx.oneHalfFx8
                 ),
                 tileScale
@@ -472,15 +472,15 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
             if (collidedTiles.length) {
                 const collisionDirection = down ? CollisionDirection.Bottom : CollisionDirection.Top;
-                s._y = Fx.iadd(
-                    -hbox.oy,
+                s._y = Fx.sub(
                     down ?
                         Fx.sub(
                             Fx8(y0 << tileScale),
-                            Fx8(hbox.height)
+                            hbox.height
                         )
                         :
-                        Fx8((y0 + 1) << tileScale)
+                        Fx8((y0 + 1) << tileScale),
+                    hbox.oy
                 );
 
                 for (const tile of collidedTiles) {

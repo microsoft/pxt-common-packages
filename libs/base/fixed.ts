@@ -8,9 +8,9 @@ function Fx8(v: number) {
 
 namespace Fx {
     export const zeroFx8 = 0 as any as Fx8
-    export const oneHalfFx8 = Fx8(0.5)
-    export const oneFx8 = 1 as any as Fx8
-    export const twoFx8 = 2 as any as Fx8
+    export const oneHalfFx8 = 128 as any as Fx8
+    export const oneFx8 = 256 as any as Fx8
+    export const twoFx8 = 512 as any as Fx8
 
     export function neg(a: Fx8) {
         return (-(a as any as number)) as any as Fx8
@@ -29,6 +29,9 @@ namespace Fx {
     }
     export function mul(a: Fx8, b: Fx8) {
         return (Math.imul((a as any as number), (b as any as number)) >> 8) as any as Fx8
+    }
+    export function imul(a: Fx8, b: number) {
+        return Math.imul((a as any as number), (b as any as number)) as any as Fx8
     }
     export function div(a: Fx8, b: Fx8) {
         return Math.idiv((a as any as number) << 8, b as any as number) as any as Fx8

@@ -10,6 +10,8 @@ control.deviceDalVersion()
 
 * a [string](/types/string) that represents the version of the system software (DAL) on the board.
 
+Returns `"sim"` when running the simulator, and `"linux"` when running on Raspberry Pi.
+
 ## Example #example
 
 Write the system software version to the serial port.

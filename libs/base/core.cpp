@@ -1509,9 +1509,16 @@ void deepSleep() __attribute__((weak));
 void deepSleep() {}
 
 #ifdef CODAL_JACDAC_WIRE_SERIAL
-LowLevelTimer *getJACDACTimer() __attribute__((weak));
 LowLevelTimer *getJACDACTimer() {
-    return NULL;
+    static LowLevelTimer *jacdacTimer;
+    if (!jacdacTimer) {
+        jacdacTimer = allocateTimer();
+        jacdacTimer->setIRQPriority(1);
+    }
+    return jacdacTimer;
+}
+void initSystemTimer() {
+    new CODAL_TIMER(*allocateTimer());
 }
 #endif
 
