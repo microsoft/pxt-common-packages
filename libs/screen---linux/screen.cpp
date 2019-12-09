@@ -67,7 +67,8 @@ void WDisplay::updateLoop() {
     int screensize = finfo.line_length * vinfo.yres;
     uint32_t skip = offx;
 
-    offx &= ~1;
+    if (sx > 1)
+        offx &= ~1;
 
     DMESG("sx=%d sy=%d ox=%d oy=%d 32=%d", sx, sy, offx, offy, is32Bit);
     DMESG("fbuf=%p sz:%d", fbuf, screensize);
@@ -96,6 +97,7 @@ void WDisplay::updateLoop() {
             uint16_t *dst =
                 (uint16_t *)fbuf + cur_page * screensize / 2 + offx + offy * finfo.line_length / 2;
             if (sx == 1 && sy == 1) {
+                skip = vinfo.xres - width * sx;
                 for (int yy = 0; yy < height; yy++) {
                     auto shift = yy & 1 ? 4 : 0;
                     auto src = screenBuf + yy / 2;
@@ -104,7 +106,7 @@ void WDisplay::updateLoop() {
                         src += height / 2;
                         *dst++ = c;
                     }
-                    //dst += skip;
+                    dst += skip;
                 }
             } else {
                 uint32_t *d2 = (uint32_t *)dst;
