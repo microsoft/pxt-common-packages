@@ -114,7 +114,7 @@ namespace scene {
     //% blockId=spriteshittile block="on $sprite of kind $kind=spritekind overlaps $tile $tilekind=tile_image_picker"
     //% help=tiles/on-overlap-tile
     export function onOverlapTile(kind: number, tilekind: Image, handler: (sprite: Sprite, tile: tiles.Tile) => void) {
-        if (kind == undefined || !handler) return;
+        if (kind == undefined || !tilekind || !handler) return;
 
         const tileOverlapHandlers = game.currentScene().tileOverlapHandlers;
         tileOverlapHandlers.push(
