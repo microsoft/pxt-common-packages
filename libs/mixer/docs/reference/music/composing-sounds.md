@@ -46,7 +46,7 @@ The notes are placed one after the other with a _space_ between them, like ``"B:
 a note to play for **4** beats, you don't need to use any duration number (a note with 4 beats is called a _whole_ note).
 Just say something like ``"E"`` with no colon (leave out the ``':'``) and no duration number.
 
-You might notice that the sound string has an ``R:1`` in it. The '**R**` means _rest_ and to rest for one beat.
+You might notice that the sound string has an ``R:1`` in it. The `**R**` means _rest_ and to rest for one beat.
 A rest is a pause, or a time of silence, in the sound.
 
 
