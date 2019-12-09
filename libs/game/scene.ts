@@ -27,6 +27,15 @@ namespace scene {
         ) { }
     }
 
+    export class TileOverlapHandler {
+        constructor(
+            public spriteKind: number,
+            public tileKind: Image,
+            public handler: (sprite: Sprite, tile: tiles.Tile) => void
+        ) { }
+    }
+
+
     export class GameForeverHandler {
         public lock: boolean;
         constructor(
@@ -69,7 +78,9 @@ namespace scene {
         createdHandlers: SpriteHandler[];
         overlapHandlers: OverlapHandler[];
         overlapMap: SparseArray<number[]>;
+        tileOverlapHandlers: TileOverlapHandler[];
         collisionHandlers: SpriteHandler[][];
+        wallCollisionHandlers: SpriteHandler[];
         gameForeverHandlers: GameForeverHandler[];
         particleSources: particles.ParticleSource[];
         controlledSprites: controller.ControlledSprite[][];
@@ -91,7 +102,9 @@ namespace scene {
             this.createdHandlers = [];
             this.overlapHandlers = [];
             this.overlapMap = {};
+            this.tileOverlapHandlers = [];
             this.collisionHandlers = [];
+            this.wallCollisionHandlers = [];
             this.gameForeverHandlers = [];
             this.spritesByKind = {};
             this.controlledSprites = [];
@@ -183,7 +196,9 @@ namespace scene {
             this.destroyedHandlers = undefined;
             this.createdHandlers = undefined;
             this.overlapHandlers = undefined;
+            this.tileOverlapHandlers = undefined;
             this.collisionHandlers = undefined;
+            this.wallCollisionHandlers = undefined;
             this.gameForeverHandlers = undefined;
             this._data = undefined;
         }

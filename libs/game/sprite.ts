@@ -15,6 +15,19 @@ enum SpriteFlag {
     Invisible = sprites.Flag.Invisible,
 }
 
+enum Direction {
+    //% block="left"
+    Left = 0,
+    //% block="top"
+    Top = 1,
+    //% block="right"
+    Right = 2,
+    //% block="bottom"
+    Bottom = 3,
+    //% block="center"
+    Center = 4
+}
+
 enum CollisionDirection {
     //% block="left"
     Left = 0,
@@ -706,12 +719,44 @@ class Sprite extends sprites.BaseSprite {
     }
 
     /**
+     * Get the tile kind in a given direction if any
+     * @param direction
+     */
+    //% blockId=spritetileat block="tile to $direction of $this(mySprite) is $tile=tile_image_picker"
+    //% blockNamespace="scene" group="Collisions"
+    //% help=sprites/sprite/tile-kind-at
+    tileKindAt(direction: Direction, tile: Image): boolean {
+        const tilemap = game.currentScene().tileMap;
+        let x = this.x >> tilemap.scale;
+        let y = this.y >> tilemap.scale;
+        switch (direction) {
+            case Direction.Top:
+                y = y - 1;
+                break;
+            case Direction.Bottom:
+                y = y + 1;
+                break;
+            case Direction.Left:
+                x = x - 1;
+                break;
+            case Direction.Right:
+                x = x + 1;
+                break;
+            case Direction.Center:
+            default:
+                break;
+        }
+        return tiles.getTileImage(tilemap.getTile(x, y)).equals(tile);
+    }
+
+    /**
      * Get the obstacle sprite in a given direction if any
      * @param direction
      */
     //% blockId=spriteobstacle block="%sprite(mySprite) wall hit on %direction"
     //% blockNamespace="scene" group="Collisions"
     //% help=sprites/sprite/tile-hit-from
+    //% deprecated=1
     tileHitFrom(direction: CollisionDirection): number {
         return (this._obstacles && this._obstacles[direction]) ? this._obstacles[direction].tileIndex : -1;
     }
@@ -723,9 +768,15 @@ class Sprite extends sprites.BaseSprite {
     registerObstacle(direction: CollisionDirection, other: sprites.Obstacle) {
         this._obstacles[direction] = other;
         const collisionHandlers = game.currentScene().collisionHandlers[other.tileIndex];
+        const wallCollisionHandlers = game.currentScene().wallCollisionHandlers;
 
         if (collisionHandlers) {
             collisionHandlers
+                .filter(h => h.kind == this.kind())
+                .forEach(h => h.handler(this));
+        }
+        if (wallCollisionHandlers) {
+            wallCollisionHandlers
                 .filter(h => h.kind == this.kind())
                 .forEach(h => h.handler(this));
         }

@@ -85,6 +85,7 @@ namespace scene {
     //% group="Collisions"
     //% weight=100 draggableParameters="reporter"
     //% blockId=spritesollisions block="on $sprite of kind $kind=spritekind hits wall $tile=colorindexpicker"
+    //% deprecated=1
     //% help=scene/on-hit-tile
     export function onHitTile(kind: number, tile: number, handler: (sprite: Sprite) => void) {
         if (kind == undefined || tile < 0 || tile > 0xF || !handler) return;
@@ -95,6 +96,50 @@ namespace scene {
         }
 
         collisionHandlers[tile].push(
+            new scene.SpriteHandler(
+                kind,
+                handler
+            )
+        );
+    }
+
+    /**
+     * Run code when a certain kind of sprite overlaps a tile
+     * @param kind
+     * @param tile
+     * @param handler
+     */
+    //% group="Collisions"
+    //% weight=100 draggableParameters="reporter"
+    //% blockId=spriteshittile block="on $sprite of kind $kind=spritekind overlaps $tile $tilekind=tile_image_picker"
+    //% help=tiles/on-overlap-tile
+    export function onOverlapTile(kind: number, tilekind: Image, handler: (sprite: Sprite, tile: tiles.Tile) => void) {
+        if (kind == undefined || !handler) return;
+
+        const tileOverlapHandlers = game.currentScene().tileOverlapHandlers;
+        tileOverlapHandlers.push(
+            new scene.TileOverlapHandler(
+                kind,
+                tilekind,
+                handler
+            )
+        );
+    }
+
+    /**
+     * Run code when a certain kind of sprite hits a wall
+     * @param kind
+     * @param handler
+     */
+    //% group="Collisions"
+    //% weight=100 draggableParameters="reporter"
+    //% blockId=spriteshitwall block="on $sprite of kind $kind=spritekind hits wall"
+    //% help=tiles/on-hit-wall
+    export function onHitWall(kind: number, handler: (sprite: Sprite) => void) {
+        if (kind == undefined || !handler) return;
+
+        const wallCollisionHandlers = game.currentScene().wallCollisionHandlers;
+        wallCollisionHandlers.push(
             new scene.SpriteHandler(
                 kind,
                 handler
