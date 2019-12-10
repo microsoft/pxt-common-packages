@@ -180,6 +180,10 @@ namespace tiles {
             return this.tileset[index];
         }
 
+        setWall(col: number, row: number, on: boolean) {
+            return this.layers.setPixel(col, row, on ? TM_WALL : 0);
+        }
+
         isWall(col: number, row: number) {
             return this.layers.getPixel(col, row) === TM_WALL;
         }
@@ -328,6 +332,11 @@ namespace tiles {
             for (let i = 0; i < tileset.length; i++)
                 if (tileset[i].equals(im)) return i;
             return -1;
+        }
+
+        public setWallAt(col: number, row: number, on: boolean): void {
+            if (!this._map.isOutsideMap(col, row))
+                this._map.setWall(col, row, on);
         }
 
         public getTilesByType(index: number): Location[] {
@@ -483,15 +492,28 @@ namespace tiles {
     //% blockId=mapsettileat block="set %loc=mapgettile to %tile=tile_image_picker"
     //% blockNamespace="scene" group="Tiles"
     //% help=tiles/set-tile-at
-    export function setTileAt(loc: Location, tile: Image) {
+    export function setTileAt(loc: Location, tile: Image): void {
         const scene = game.currentScene();
-        if (!scene.tileMap) {
-            scene.tileMap = new TileMap();
-            scene.tileMap._legacyInit();
-        }
+        if (!loc || !tile || !scene.tileMap) return null;
         const scale = scene.tileMap.scale;
         const index = scene.tileMap.getImageType(tile);
         scene.tileMap.setTileAt(loc.x >> scale, loc.y >> scale, index);
+    }
+
+    /**
+     * Set or unset a wall at a location in the map (column, row)
+     * @param loc
+     * @param on
+     */
+    //% blockId=mapsetwallat block="set wall $on at $loc"
+    //% on.shadow=toggleOnOff loc.shadow=mapgettile
+    //% blockNamespace="scene" group="Tiles"
+    //% help=tiles/set-wall-at
+    export function setWallAt(loc: Location, on: boolean): void {
+        const scene = game.currentScene();
+        if (!loc || !scene.tileMap) return null;
+        const scale = scene.tileMap.scale;
+        scene.tileMap.setWallAt(loc.x >> scale, loc.y >> scale, on);
     }
 
     /**
@@ -505,9 +527,7 @@ namespace tiles {
     //% help=tiles/get-tile
     export function getTile(col: number, row: number): Location {
         const scene = game.currentScene();
-        if (!scene.tileMap) {
-            scene.tileMap = new TileMap();
-        }
+        if (col == undefined || row == undefined || !scene.tileMap) return null;
         return scene.tileMap.getTile(col, row);
     }
 
@@ -517,9 +537,7 @@ namespace tiles {
      */
     export function getTileImage(loc: Location): Image {
         const scene = game.currentScene();
-        if (!scene.tileMap) {
-            scene.tileMap = new TileMap();
-        }
+        if (!loc || !scene.tileMap) return img``;
         return scene.tileMap.data.getTileImage(loc.tileSet);
     }
 
@@ -532,10 +550,7 @@ namespace tiles {
     //% help=tiles/get-tiles-by-type
     export function getTilesByType(tile: Image): Location[] {
         const scene = game.currentScene();
-        if (!scene.tileMap) {
-            scene.tileMap = new TileMap();
-            scene.tileMap._legacyInit();
-        }
+        if (!tile || !scene.tileMap) return [];
         const index = scene.tileMap.getImageType(tile);
         return scene.tileMap.getTilesByType(index);
     }
@@ -550,6 +565,7 @@ namespace tiles {
     //% blockNamespace="scene" group="Tiles"
     //% help=tiles/place
     export function placeOnTile(sprite: Sprite, loc: Location): void {
+        if (!sprite || !loc || !game.currentScene().tileMap) return;
         loc.place(sprite);
     }
 
