@@ -489,7 +489,8 @@ namespace tiles {
      * @param loc
      * @param tile
      */
-    //% blockId=mapsettileat block="set %loc=mapgettile to %tile=tile_image_picker"
+    //% blockId=mapsettileat block="set %loc=mapgettile to %tile"
+    //% tile.fieldEditor="tileset"
     //% blockNamespace="scene" group="Tiles"
     //% help=tiles/set-tile-at
     export function setTileAt(loc: Location, tile: Image): void {
@@ -545,7 +546,8 @@ namespace tiles {
      * Get all tiles in the tile map with the given type (image).
      * @param tile
      */
-    //% blockId=mapgettilestype block="array of all %tile=tile_image_picker locations"
+    //% blockId=mapgettilestype block="array of all %tile locations"
+    //% tile.fieldEditor="tileset"
     //% blockNamespace="scene" group="Tiles" blockSetVariable="location list"
     //% help=tiles/get-tiles-by-type
     export function getTilesByType(tile: Image): Location[] {
@@ -574,7 +576,8 @@ namespace tiles {
      * @param sprite
      * @param tile
      */
-    //% blockId=mapplaceonrandomtile block="place %sprite=variables_get(mySprite) on top of random %tile=tile_image_picker"
+    //% blockId=mapplaceonrandomtile block="place %sprite=variables_get(mySprite) on top of random %tile"
+    //% tile.fieldEditor="tileset"
     //% blockNamespace="scene" group="Tiles"
     //% help=tiles/place-on-random-tile
     export function placeOnRandomTile(sprite: Sprite, tile: Image): void {

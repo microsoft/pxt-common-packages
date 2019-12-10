@@ -111,7 +111,8 @@ namespace scene {
      */
     //% group="Tiles"
     //% weight=100 draggableParameters="reporter"
-    //% blockId=spriteshittile block="on $sprite of kind $kind=spritekind overlaps $tile=tile_image_picker at $location"
+    //% blockId=spriteshittile block="on $sprite of kind $kind=spritekind overlaps $tile at $location"
+    //% tile.fieldEditor="tileset"
     //% help=tiles/on-overlap-tile
     export function onOverlapTile(kind: number, tile: Image, handler: (sprite: Sprite, location: tiles.Location) => void) {
         if (kind == undefined || !tile || !handler) return;
