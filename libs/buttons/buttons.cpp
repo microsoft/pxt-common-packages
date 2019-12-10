@@ -212,9 +212,10 @@ PressureButton *getButtonByPin(int pin, int flags) {
         }
 
         auto pull = PullMode::None;
-        if ((flags & 0xf0) == 0x10)
+        //硬件按钮从低电平改为高电平后，需要修改此处的条件判断。
+        if ((flags & 0xf0) == 0x20)
             pull = PullMode::Down;
-        else if ((flags & 0xf0) == 0x20)
+        else if ((flags & 0xf0) == 0x10)
             pull = PullMode::Up;
         else if ((flags & 0xf0) == 0x30)
             pull = PullMode::None;
