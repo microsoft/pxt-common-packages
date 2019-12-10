@@ -521,7 +521,7 @@ namespace tiles {
      * @param col
      * @param row
      */
-    //% blockId=mapgettile block="map col %col row %row"
+    //% blockId=mapgettile block="tile map col %col row %row"
     //% blockNamespace="scene" group="Tiles"
     //% weight=25
     //% help=tiles/get-tile
@@ -574,7 +574,7 @@ namespace tiles {
      * @param sprite
      * @param tile
      */
-    //% blockId=mapplaceonrandomtile block="place %sprite=variables_get(mySprite) on top of random tile %tile=tile_image_picker"
+    //% blockId=mapplaceonrandomtile block="place %sprite=variables_get(mySprite) on top of random %tile=tile_image_picker"
     //% blockNamespace="scene" group="Tiles"
     //% help=tiles/place-on-random-tile
     export function placeOnRandomTile(sprite: Sprite, tile: Image): void {
