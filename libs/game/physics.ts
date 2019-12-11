@@ -362,6 +362,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 tileScale
             );
             const collidedTiles: sprites.StaticObstacle[] = [];
+            const overlappedTiles: tiles.Location[] = [];
 
             // check collisions with tiles sprite is moving towards horizontally
             for (
@@ -388,6 +389,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     if (!collidedTiles.some(o => o.tileIndex === obstacle.tileIndex)) {
                         collidedTiles.push(obstacle);
                     }
+                } else {
+                    overlappedTiles.push(tm.getTile(x0, y0));
                 }
             }
 
@@ -428,6 +431,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     // but still facing same direction; prevent further movement this update.
                     movingSprite.dx = Fx.zeroFx8;
                 }
+            } else if (overlappedTiles.length) {
+                this.tilemapOverlaps(s, overlappedTiles);
             }
         }
 
@@ -444,6 +449,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 tileScale
             );
             const collidedTiles: sprites.StaticObstacle[] = [];
+            const overlappedTiles: tiles.Location[] = [];
 
             // check collisions with tiles sprite is moving towards vertically
             for (
@@ -467,6 +473,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     if (!collidedTiles.some(o => o.tileIndex === obstacle.tileIndex)) {
                         collidedTiles.push(obstacle);
                     }
+                } else {
+                    overlappedTiles.push(tm.getTile(x0, y0));
                 }
             }
 
@@ -507,6 +515,25 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     // but still facing same direction; prevent further movement this update.
                     movingSprite.dy = Fx.zeroFx8;
                 }
+            } else if (overlappedTiles.length) {
+                this.tilemapOverlaps(s, overlappedTiles);
+            }
+        }
+    }
+
+    /**
+     * Given a sprite and a list of overlapped tiles, checks the overlap handlers and calls
+     * the ones appropriate to the sprite and tile kind.
+     * @param sprite the sprite
+     * @param overlappedTiles the list of tiles the sprite is overlapping
+     */
+    private tilemapOverlaps(sprite: Sprite, overlappedTiles: tiles.Location[]) {
+        for (const tile of overlappedTiles) {
+            const tileOverlapHandlers = game.currentScene().tileOverlapHandlers;
+            if (tileOverlapHandlers) {
+                tileOverlapHandlers
+                    .filter(h => h.spriteKind == sprite.kind() && h.tileKind.equals(tiles.getTileImage(tile)))
+                    .forEach(h => h.handler(sprite, tile));
             }
         }
     }

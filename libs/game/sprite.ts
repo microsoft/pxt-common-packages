@@ -17,6 +17,19 @@ enum SpriteFlag {
     RelativeToCamera = sprites.Flag.RelativeToCamera
 }
 
+enum Direction {
+    //% block="left"
+    Left = 0,
+    //% block="top"
+    Top = 1,
+    //% block="right"
+    Right = 2,
+    //% block="bottom"
+    Bottom = 3,
+    //% block="center"
+    Center = 4
+}
+
 enum CollisionDirection {
     //% block="left"
     Left = 0,
@@ -707,10 +720,42 @@ class Sprite extends sprites.BaseSprite {
      * @param direction
      */
     //% blockId=spritehasobstacle block="is %sprite(mySprite) hitting wall %direction"
-    //% blockNamespace="scene" group="Collisions"
+    //% blockNamespace="scene" group="Collisions" blockGap=8
     //% help=sprites/sprite/is-hitting-tile
     isHittingTile(direction: CollisionDirection): boolean {
         return this._obstacles && !!this._obstacles[direction];
+    }
+
+    /**
+     * Get the tile kind in a given direction if any
+     * @param direction
+     */
+    //% blockId=spritetileat block="tile to $direction of $this(mySprite) is $tile"
+    //% tile.shadow=tileset_tile_picker
+    //% blockNamespace="scene" group="Collisions" blockGap=8
+    //% help=sprites/sprite/tile-kind-at
+    tileKindAt(direction: Direction, tile: Image): boolean {
+        const tilemap = game.currentScene().tileMap;
+        let x = this.x >> tilemap.scale;
+        let y = this.y >> tilemap.scale;
+        switch (direction) {
+            case Direction.Top:
+                y = y - 1;
+                break;
+            case Direction.Bottom:
+                y = y + 1;
+                break;
+            case Direction.Left:
+                x = x - 1;
+                break;
+            case Direction.Right:
+                x = x + 1;
+                break;
+            case Direction.Center:
+            default:
+                break;
+        }
+        return tiles.getTileImage(tilemap.getTile(x, y)).equals(tile);
     }
 
     /**
@@ -720,6 +765,7 @@ class Sprite extends sprites.BaseSprite {
     //% blockId=spriteobstacle block="%sprite(mySprite) wall hit on %direction"
     //% blockNamespace="scene" group="Collisions"
     //% help=sprites/sprite/tile-hit-from
+    //% deprecated=1
     tileHitFrom(direction: CollisionDirection): number {
         return (this._obstacles && this._obstacles[direction]) ? this._obstacles[direction].tileIndex : -1;
     }
@@ -731,9 +777,15 @@ class Sprite extends sprites.BaseSprite {
     registerObstacle(direction: CollisionDirection, other: sprites.Obstacle) {
         this._obstacles[direction] = other;
         const collisionHandlers = game.currentScene().collisionHandlers[other.tileIndex];
+        const wallCollisionHandlers = game.currentScene().wallCollisionHandlers;
 
         if (collisionHandlers) {
             collisionHandlers
+                .filter(h => h.kind == this.kind())
+                .forEach(h => h.handler(this));
+        }
+        if (wallCollisionHandlers) {
+            wallCollisionHandlers
                 .filter(h => h.kind == this.kind())
                 .forEach(h => h.handler(this));
         }

@@ -35,7 +35,46 @@ namespace tiles {
     // }
 
     /**
-     * A tile in the tilemap
+     * A (col, row) location in the tilemap
+     **/
+    //% blockNamespace=scene color="#401255" blockGap=8
+    export class Location {
+        protected _row: number;
+        protected _col: number;
+        protected tileMap: TileMap;
+
+        constructor(col: number, row: number, map: TileMap) {
+            this._col = col;
+            this._row = row;
+            this.tileMap = map;
+        }
+
+        get x(): number {
+            const scale = this.tileMap.scale;
+            return (this._col << scale) + (1 << (scale - 1));
+        }
+
+        get y(): number {
+            const scale = this.tileMap.scale;
+            return (this._row << scale) + (1 << (scale - 1));
+        }
+
+        get tileSet(): number {
+            return this.tileMap.data.getTile(this._col, this._row);
+        }
+
+        /**
+         * Center the given sprite on this tile
+         * @param sprite
+         */
+        place(mySprite: Sprite): void {
+            if (!mySprite) return;
+            mySprite.setPosition(this.x, this.y);
+        }
+    }
+
+    /**
+     * DEPRECATED: a tile in the tilemap
      **/
     //% blockNamespace=scene color="#401255" blockGap=8
     export class Tile {
@@ -70,7 +109,8 @@ namespace tiles {
         //% blockId=gameplaceontile block="on top of %tile(myTile) place %sprite=variables_get(mySprite)"
         //% blockNamespace="scene" group="Tiles"
         //% weight=25
-        //% help=scene/place
+        //% help=tiles/place
+        //% deprecated=1
         place(mySprite: Sprite): void {
             if (!mySprite) return;
             mySprite.setPosition(this.x, this.y);
@@ -127,8 +167,16 @@ namespace tiles {
             this.data.setUint8(TM_DATA_PREFIX_LENGTH + (col | 0) + (row | 0) * this.width, tile);
         }
 
+        getTileset() {
+            return this.tileset;
+        }
+
         getTileImage(index: number) {
             return this.tileset[index];
+        }
+
+        setWall(col: number, row: number, on: boolean) {
+            return this.layers.setPixel(col, row, on ? TM_WALL : 0);
         }
 
         isWall(col: number, row: number) {
@@ -265,8 +313,8 @@ namespace tiles {
             this._map = map;
         }
 
-        public getTile(col: number, row: number): Tile {
-            return new Tile(col, row, this);
+        public getTile(col: number, row: number): Location {
+            return new Location(col, row, this);
         }
 
         public setTileAt(col: number, row: number, index: number): void {
@@ -274,15 +322,27 @@ namespace tiles {
                 this._map.setTile(col, row, index);
         }
 
-        public getTilesByType(index: number): Tile[] {
+        public getImageType(im: Image): number {
+            const tileset = this._map.getTileset();
+            for (let i = 0; i < tileset.length; i++)
+                if (tileset[i].equals(im)) return i;
+            return -1;
+        }
+
+        public setWallAt(col: number, row: number, on: boolean): void {
+            if (!this._map.isOutsideMap(col, row))
+                this._map.setWall(col, row, on);
+        }
+
+        public getTilesByType(index: number): Location[] {
             if (this.isInvalidIndex(index) || !this.enabled) return [];
 
-            let output: Tile[] = [];
+            let output: Location[] = [];
             for (let col = 0; col < this._map.width; ++col) {
                 for (let row = 0; row < this._map.height; ++row) {
                     let currTile = this._map.getTile(col, row);
                     if (currTile === index) {
-                        output.push(new Tile(col, row, this));
+                        output.push(new Location(col, row, this));
                     }
                 }
             }
@@ -408,14 +468,117 @@ namespace tiles {
 
     // tiles.mkTilemap(hex``, img``, TileScale.Eight, [tiles.mkTile(img``, 1, ["tile"])])
 
-
-    //% blockId=tilemap_editor block="%tilemap"
-    //% shim=TD_ID
+    //% blockId=tilemap_editor block="set tilemap to %tilemap"
+    //% weight=200 blockGap=8 shim=TD_ID
     //% tilemap.fieldEditor="tilemap"
-    //% tilemap.fieldOptions.decompileLiterals="true"
+    //% tilemap.fieldOptions.decompileArgumentAsString="true"
     //% tilemap.fieldOptions.filter="tile"
-    //% group="Animate" duplicateShadowOnDrag
-    export function _tilemap(tilemap: Buffer) {
-        return tilemap
+    //% blockNamespace="scene" group="Tiles" duplicateShadowOnDrag
+    //% help=tiles/set-tile-map
+    export function setTilemap(tilemap: TileMapData) {
+        scene.setTileMapLevel(tilemap);
+    }
+
+    /**
+     * Set a location in the map (column, row) to a tile
+     * @param loc
+     * @param tile
+     */
+    //% blockId=mapsettileat block="set %loc=mapgettile to %tile"
+    //% tile.shadow=tileset_tile_picker
+    //% blockNamespace="scene" group="Tiles" blockGap=8
+    //% help=tiles/set-tile-at
+    export function setTileAt(loc: Location, tile: Image): void {
+        const scene = game.currentScene();
+        if (!loc || !tile || !scene.tileMap) return null;
+        const scale = scene.tileMap.scale;
+        const index = scene.tileMap.getImageType(tile);
+        scene.tileMap.setTileAt(loc.x >> scale, loc.y >> scale, index);
+    }
+
+    /**
+     * Set or unset a wall at a location in the map (column, row)
+     * @param loc
+     * @param on
+     */
+    //% blockId=mapsetwallat block="set wall $on at $loc"
+    //% on.shadow=toggleOnOff loc.shadow=mapgettile
+    //% blockNamespace="scene" group="Tiles" blockGap=8
+    //% help=tiles/set-wall-at
+    export function setWallAt(loc: Location, on: boolean): void {
+        const scene = game.currentScene();
+        if (!loc || !scene.tileMap) return null;
+        const scale = scene.tileMap.scale;
+        scene.tileMap.setWallAt(loc.x >> scale, loc.y >> scale, on);
+    }
+
+    /**
+     * Get the tile position given a column and row in the tilemap
+     * @param col
+     * @param row
+     */
+    //% blockId=mapgettile block="tilemap col %col row %row"
+    //% blockNamespace="scene" group="Tiles"
+    //% weight=25 blockGap=8
+    //% help=tiles/get-tile
+    export function getTile(col: number, row: number): Location {
+        const scene = game.currentScene();
+        if (col == undefined || row == undefined || !scene.tileMap) return null;
+        return scene.tileMap.getTile(col, row);
+    }
+
+    /**
+     * Get the image of a tile, given a location in the tilemap
+     * @param loc
+     */
+    export function getTileImage(loc: Location): Image {
+        const scene = game.currentScene();
+        if (!loc || !scene.tileMap) return img``;
+        return scene.tileMap.data.getTileImage(loc.tileSet);
+    }
+
+    /**
+     * Get all tiles in the tilemap with the given type (image).
+     * @param tile
+     */
+    //% blockId=mapgettilestype block="array of all %tile locations"
+    //% tile.shadow=tileset_tile_picker
+    //% blockNamespace="scene" group="Tiles" blockGap=8 blockSetVariable="location list"
+    //% help=tiles/get-tiles-by-type
+    export function getTilesByType(tile: Image): Location[] {
+        const scene = game.currentScene();
+        if (!tile || !scene.tileMap) return [];
+        const index = scene.tileMap.getImageType(tile);
+        return scene.tileMap.getTilesByType(index);
+    }
+
+    /**
+     * Center the given sprite on a given location
+     * @param sprite
+     * @param loc
+     */
+    //% blockId=mapplaceontile block="place $sprite=variables_get(mySprite) on top of $loc"
+    //% loc.shadow=mapgettile
+    //% blockNamespace="scene" group="Tiles" blockGap=8
+    //% help=tiles/place
+    export function placeOnTile(sprite: Sprite, loc: Location): void {
+        if (!sprite || !loc || !game.currentScene().tileMap) return;
+        loc.place(sprite);
+    }
+
+    /**
+     * Center the given sprite on a random location that is the given type (image)
+     * @param sprite
+     * @param tile
+     */
+    //% blockId=mapplaceonrandomtile block="place %sprite=variables_get(mySprite) on top of random %tile"
+    //% tile.shadow=tileset_tile_picker
+    //% blockNamespace="scene" group="Tiles" blockGap=8
+    //% help=tiles/place-on-random-tile
+    export function placeOnRandomTile(sprite: Sprite, tile: Image): void {
+        if (!sprite || !game.currentScene().tileMap) return;
+        const tiles = getTilesByType(tile);
+        if (tiles.length > 0)
+            Math.pickRandom(tiles).place(sprite);
     }
 }
