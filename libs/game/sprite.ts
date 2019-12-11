@@ -712,7 +712,7 @@ class Sprite extends sprites.BaseSprite {
      * @param direction
      */
     //% blockId=spritehasobstacle block="is %sprite(mySprite) hitting wall %direction"
-    //% blockNamespace="scene" group="Collisions"
+    //% blockNamespace="scene" group="Collisions" blockGap=8
     //% help=sprites/sprite/is-hitting-tile
     isHittingTile(direction: CollisionDirection): boolean {
         return this._obstacles && !!this._obstacles[direction];
@@ -724,7 +724,7 @@ class Sprite extends sprites.BaseSprite {
      */
     //% blockId=spritetileat block="tile to $direction of $this(mySprite) is $tile"
     //% tile.shadow=tileset_tile_picker
-    //% blockNamespace="scene" group="Collisions"
+    //% blockNamespace="scene" group="Collisions" blockGap=8
     //% help=sprites/sprite/tile-kind-at
     tileKindAt(direction: Direction, tile: Image): boolean {
         const tilemap = game.currentScene().tileMap;

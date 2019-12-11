@@ -110,7 +110,7 @@ namespace scene {
      * @param handler
      */
     //% group="Tiles"
-    //% weight=100 draggableParameters="reporter"
+    //% weight=100 draggableParameters="reporter" blockGap=8
     //% blockId=spriteshittile block="on $sprite of kind $kind=spritekind overlaps $tile at $location"
     //% tile.shadow=tileset_tile_picker
     //% help=tiles/on-overlap-tile
@@ -133,7 +133,7 @@ namespace scene {
      * @param handler
      */
     //% group="Tiles"
-    //% weight=120 draggableParameters="reporter"
+    //% weight=120 draggableParameters="reporter" blockGap=8
     //% blockId=spriteshitwall block="on $sprite of kind $kind=spritekind hits wall"
     //% help=tiles/on-hit-wall
     export function onHitWall(kind: number, handler: (sprite: Sprite) => void) {
