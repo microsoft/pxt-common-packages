@@ -723,7 +723,7 @@ class Sprite extends sprites.BaseSprite {
      * @param direction
      */
     //% blockId=spritetileat block="tile to $direction of $this(mySprite) is $tile"
-    //% tile.fieldEditor="tileset"
+    //% tile.shadow=tileset_tile_picker
     //% blockNamespace="scene" group="Collisions"
     //% help=sprites/sprite/tile-kind-at
     tileKindAt(direction: Direction, tile: Image): boolean {

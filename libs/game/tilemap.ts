@@ -67,7 +67,7 @@ namespace tiles {
          * Center the given sprite on this tile
          * @param sprite
          */
-        //% blockId=gameplaceontile block="on top of %tile(myTile) place %sprite=variables_get(mySprite)"
+        //% blockId=mapplaceontile block="on top of %tile(myTile) place %sprite=variables_get(mySprite)"
         //% blockNamespace="scene" group="Tiles"
         //% weight=25
         //% help=tiles/place
@@ -490,7 +490,7 @@ namespace tiles {
      * @param tile
      */
     //% blockId=mapsettileat block="set %loc=mapgettile to %tile"
-    //% tile.fieldEditor="tileset"
+    //% tile.shadow=tileset_tile_picker
     //% blockNamespace="scene" group="Tiles"
     //% help=tiles/set-tile-at
     export function setTileAt(loc: Location, tile: Image): void {
@@ -547,7 +547,7 @@ namespace tiles {
      * @param tile
      */
     //% blockId=mapgettilestype block="array of all %tile locations"
-    //% tile.fieldEditor="tileset"
+    //% tile.shadow=tileset_tile_picker
     //% blockNamespace="scene" group="Tiles" blockSetVariable="location list"
     //% help=tiles/get-tiles-by-type
     export function getTilesByType(tile: Image): Location[] {
@@ -577,7 +577,7 @@ namespace tiles {
      * @param tile
      */
     //% blockId=mapplaceonrandomtile block="place %sprite=variables_get(mySprite) on top of random %tile"
-    //% tile.fieldEditor="tileset"
+    //% tile.shadow=tileset_tile_picker
     //% blockNamespace="scene" group="Tiles"
     //% help=tiles/place-on-random-tile
     export function placeOnRandomTile(sprite: Sprite, tile: Image): void {
