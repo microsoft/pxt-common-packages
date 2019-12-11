@@ -8,6 +8,6 @@
     "dependencies": {
         "core": "file:../core",
         "settings": "file:../settings",
-        "game": "file:../game"
+        "device": "file:../device"
     }
 }

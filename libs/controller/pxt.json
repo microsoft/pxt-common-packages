@@ -19,7 +19,7 @@
         "accelerometer": "file:../accelerometer",
         "lightsensor": "file:../lightsensor",
         "thermometer": "file:../thermometer",
-        "game": "file:../game",
+        "device": "file:../device",
         "light": "file:../light",
         "rotary-encoder": "file:../rotary-encoder"
     }

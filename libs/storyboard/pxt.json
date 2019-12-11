@@ -12,7 +12,7 @@
     "public": true,
     "weight": 10,
     "dependencies": {
-        "game": "file:../game",
+        "device": "file:../device",
         "color": "file:../color",
         "palette": "file:../storyboard"
     }

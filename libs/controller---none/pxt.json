@@ -3,6 +3,6 @@
     "additionalFilePath": "../controller",
     "dependencies": {
         "core": "file:../core",
-        "game": "file:../game"
+        "device": "file:../device"
     }
 }

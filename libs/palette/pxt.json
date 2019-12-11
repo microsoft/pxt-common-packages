@@ -12,6 +12,6 @@
     "weight": 10,
     "dependencies": {
         "color": "file:../color",
-        "game": "file:../game"
+        "device": "file:../device"
     }
 }
