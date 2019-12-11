@@ -50,6 +50,7 @@ static void *updateDisplay(void *wd) {
 void WDisplay::updateLoop() {
     int cur_page = 1;
     int frameNo = 0;
+    int numPages = vinfo.yres_virtual / vinfo.yres;
 
     int sx = vinfo.xres / width;
     int sy = vinfo.yres / height;
@@ -58,20 +59,27 @@ void WDisplay::updateLoop() {
     else
         sy = sx;
 
-    sx &= ~1;
+    if (sx > 1)
+        sx &= ~1;
 
     int offx = (vinfo.xres - width * sx) / 2;
     int offy = (vinfo.yres - height * sy) / 2;
     int screensize = finfo.line_length * vinfo.yres;
     uint32_t skip = offx;
 
-    offx &= ~1;
+    if (sx > 1)
+        offx &= ~1;
 
-    memset(fbuf, 0x00, screensize * 2);
+    DMESG("sx=%d sy=%d ox=%d oy=%d 32=%d", sx, sy, offx, offy, is32Bit);
+    DMESG("fbuf=%p sz:%d", fbuf, screensize);
+    memset(fbuf, 0x00, screensize * numPages);
+
+    if (numPages == 1)
+        cur_page = 0;
 
     dirty = true;
 
-    DMESG("sx=%d sy=%d ox=%d oy=%d 32=%d", sx,sy,offx,offy,is32Bit);
+    DMESG("loop");
 
     for (;;) {
         auto start0 = current_time_us();
@@ -80,6 +88,7 @@ void WDisplay::updateLoop() {
             sleep_core_us(2000);
 
         // auto start = current_time_us();
+        // DMESG("update");
 
         pthread_mutex_lock(&mutex);
         dirty = false;
@@ -87,18 +96,32 @@ void WDisplay::updateLoop() {
         if (!is32Bit) {
             uint16_t *dst =
                 (uint16_t *)fbuf + cur_page * screensize / 2 + offx + offy * finfo.line_length / 2;
-            uint32_t *d2 = (uint32_t *)dst;
-            for (int yy = 0; yy < height; yy++) {
-                auto shift = yy & 1 ? 4 : 0;
-                for (int i = 0; i < sy; ++i) {
+            if (sx == 1 && sy == 1) {
+                skip = vinfo.xres - width * sx;
+                for (int yy = 0; yy < height; yy++) {
+                    auto shift = yy & 1 ? 4 : 0;
                     auto src = screenBuf + yy / 2;
                     for (int xx = 0; xx < width; ++xx) {
                         int c = this->currPalette[(*src >> shift) & 0xf];
                         src += height / 2;
-                        for (int j = 0; j < sx / 2; ++j)
-                            *d2++ = c;
+                        *dst++ = c;
                     }
-                    d2 += skip;
+                    dst += skip;
+                }
+            } else {
+                uint32_t *d2 = (uint32_t *)dst;
+                for (int yy = 0; yy < height; yy++) {
+                    auto shift = yy & 1 ? 4 : 0;
+                    for (int i = 0; i < sy; ++i) {
+                        auto src = screenBuf + yy / 2;
+                        for (int xx = 0; xx < width; ++xx) {
+                            int c = this->currPalette[(*src >> shift) & 0xf];
+                            src += height / 2;
+                            for (int j = 0; j < sx / 2; ++j)
+                                *d2++ = c;
+                        }
+                        d2 += skip;
+                    }
                 }
             }
         } else {
@@ -129,7 +152,8 @@ void WDisplay::updateLoop() {
         vinfo.yoffset = cur_page * vinfo.yres;
         ioctl(fb_fd, FBIOPAN_DISPLAY, &vinfo);
         ioctl(fb_fd, FBIO_WAITFORVSYNC, 0);
-        cur_page = !cur_page;
+        if (numPages > 1)
+            cur_page = !cur_page;
         frameNo++;
 
         auto fulllen = current_time_us() - start0;
@@ -198,7 +222,7 @@ WDisplay::WDisplay() {
 
 //%
 void setScreenBrightness(int level) {
- // TODO
+    // TODO
 }
 
 //%
