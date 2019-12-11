@@ -985,7 +985,7 @@ void drawLine(Image_ img, int x0, int y0, int x1, int y1, int c) {
         if (y1 >= img->height()) {
             int d = (img->height() - 1) - y1;
             x1 += (w * d / h);
-            y1 = img->height();
+            y1 = img->height() - 1;
         }
     } else {
         if (y1 >= img->height() || y0 < 0)
@@ -997,7 +997,7 @@ void drawLine(Image_ img, int x0, int y0, int x1, int y1, int c) {
         if (y0 >= img->height()) {
             int d = (img->height() - 1) - y0;
             x0 += (w * d / h);
-            y0 = img->height();
+            y0 = img->height() - 1;
         }
     }
 
