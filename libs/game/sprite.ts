@@ -414,11 +414,12 @@ class Sprite extends sprites.BaseSprite {
      */
     //% group="Effects"
     //% weight=60
-    //% blockId=spritesay block="%sprite(mySprite) say %text||for %millis ms"
+    //% blockId=spritesay block="$this(mySprite) say $text||for $millis ms"
+    //% text.shadow=text
     //% millis.shadow=timePicker
     //% inlineInputMode=inline
     //% help=sprites/sprite/say
-    say(text: string, timeOnScreen?: number, textColor = 15, textBoxColor = 1) {
+    say(text: any, timeOnScreen?: number, textColor = 15, textBoxColor = 1) {
         // clear say
         if (!text) {
             this.updateSay = undefined;
@@ -428,7 +429,11 @@ class Sprite extends sprites.BaseSprite {
             }
             return;
         }
-
+        const textString = console.toPrettyString(text);
+        this.updateSayText(textString, timeOnScreen, textColor, textBoxColor);
+    }
+    
+    private updateSayText(text: string, timeOnScreen: number, textColor: number, textBoxColor: number) {
         // same text, color, time, etc...
         const SAYKEY = "__saykey";
         const key = JSON.stringify({

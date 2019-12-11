@@ -56,7 +56,7 @@ namespace console {
     //% blockId=console_log block="console log $value"
     //% value.shadow=text
     export function log(value: any): void {
-        add(ConsolePriority.Log, inspect(value));
+        add(ConsolePriority.Log, toPrettyString(value));
     }
 
     /**
@@ -76,7 +76,7 @@ namespace console {
      * @param obj value to be converted to a string
      * @param maxElements [optional] max number values in an object to include in output
      */
-    export function inspect(obj: any, maxElements = 20): string {
+    export function toPrettyString(obj: any, maxElements = 20): string {
         if (typeof obj == "string") {
             return obj;
         } else if (typeof obj == "number") {
