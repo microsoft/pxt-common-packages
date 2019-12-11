@@ -1,7 +1,7 @@
 /**
  * Control the background, tiles and camera
  */
-//% weight=88 color="#401255" icon="\uf1bb"
+//% weight=88 color="#4b6584" icon="\uf1bb"
 //% groups='["Screen", "Effects", "Tiles", "Collisions", "Camera"]'
 //% blockGap=8
 namespace scene {

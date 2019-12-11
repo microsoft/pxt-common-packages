@@ -3,7 +3,7 @@
  * Head-up display
  *
 */
-//% color=#AA5585 weight=80 icon="\uf2bb" blockGap=8
+//% color=#cf6a87 weight=80 icon="\uf2bb" blockGap=8
 //% groups='["Score", "Life", "Countdown", "Multiplayer"]'
 //% blockGap=8
 namespace info {
