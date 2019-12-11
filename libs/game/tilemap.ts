@@ -257,7 +257,7 @@ namespace tiles {
         }
 
         public isOnWall(s: Sprite) {
-            const hbox = s._hitbox
+            const hbox = s._hitbox;
 
             const left = Fx.toIntShifted(hbox.left, this.scale);
             const right = Fx.toIntShifted(hbox.right, this.scale);

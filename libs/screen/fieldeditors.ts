@@ -1,7 +1,7 @@
 /**
  * Image manipulation blocks
  */
-//% weight=70 icon="\uf03e" color="#0E563B"
+//% weight=70 icon="\uf03e" color="#a5b1c2"
 //% advanced=true
 namespace images {
     //% blockId=screen_image_picker block="%img"

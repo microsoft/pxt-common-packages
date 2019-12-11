@@ -82,7 +82,7 @@ static CoordinateSpace boardCoordinateSpace() {
 #if defined(STM32F4) && PXT_SUPPORT_MPU6050
     // meowbit
     if (getConfig(CFG_ACCELEROMETER_TYPE, -1) == ACCELEROMETER_TYPE_MPU6050)
-        defaultSpace = 0x33;
+        defaultSpace = 0x33 | 0x100; // ACC_UPSIDEDOWN
 #endif
     int space = getConfig(CFG_ACCELEROMETER_SPACE, defaultSpace);
     DMESG("coordinate space: %d / %d, %s", space & 0xf, (space >> 4) & 0xf, space & 0x100 ? "upside" : "normal");

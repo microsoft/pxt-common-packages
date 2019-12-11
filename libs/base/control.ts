@@ -1,7 +1,7 @@
 /**
 * Program controls and events.
 */
-//% weight=10 color="#31bca3" icon="\uf110" advanced=true
+//% weight=90 color="#FF5722" icon="\uf110" advanced=true
 namespace control {
     /**
      * Deprecated, use ``control.runInParallel`` instead.
@@ -20,7 +20,7 @@ namespace control {
         CODAL_NULL_DEREFERENCE = 40,
         CODAL_USB_ERROR = 50,
         CODAL_HARDWARE_CONFIGURATION_ERROR = 90,
-    
+
         INVALID_BINARY_HEADER = 901,
         OUT_OF_BOUNDS = 902,
         REF_DELETED = 903,
@@ -43,7 +43,7 @@ namespace control {
         SETTINGS_OVERLOAD = 921,
         SETTINGS_SECRET_MISSING = 922,
         DELETE_ON_CLASS = 923,
-        
+
         CAST_FIRST = 980,
         CAST_FROM_UNDEFINED = 980,
         CAST_FROM_BOOLEAN = 981,
@@ -52,9 +52,9 @@ namespace control {
         CAST_FROM_OBJECT = 984,
         CAST_FROM_FUNCTION = 985,
         CAST_FROM_NULL = 989,
-    
+
         UNHANDLED_EXCEPTION = 999,
-    }    
+    }
     /**
      * Display an error code and stop the program.
      * @param code an error number to display. eg: 5
