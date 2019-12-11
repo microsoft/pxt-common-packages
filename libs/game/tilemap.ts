@@ -8,32 +8,6 @@ enum TileScale {
 }
 namespace tiles {
 
-    // class TileSet {
-    //     obstacle: boolean;
-    //     private map: TileMap;
-    //     private originalImage: Image;
-    //     private cachedImage: Image;
-
-    //     constructor(image: Image, collisions: boolean, map: TileMap) {
-    //         this.originalImage = image;
-    //         this.obstacle = collisions;
-    //         this.map = map;
-    //     }
-
-    //     get image(): Image {
-    //         const size = 1 << this.map.scale;
-    //         if (!this.cachedImage || this.cachedImage.width != size || this.cachedImage.height != size) {
-    //             if (this.originalImage.width == size && this.originalImage.height == size) {
-    //                 this.cachedImage = this.originalImage;
-    //             } else {
-    //                 this.cachedImage = image.create(size, size);
-    //                 this.cachedImage.drawImage(this.originalImage, 0, 0);
-    //             }
-    //         }
-    //         return this.cachedImage;
-    //     }
-    // }
-
     /**
      * A (col, row) location in the tilemap
      **/
@@ -457,19 +431,12 @@ namespace tiles {
         return i;
     }
 
-    export function mkTile(image: Image, id: number, tags: string[]) {
-        return image;
+    export function createTilemap(data: Buffer, layer: Image, tiles: Image[], scale: TileScale): TileMapData {
+        return new TileMapData(data, layer, tiles, scale)
     }
-
-    export function createTilemap(data: Buffer, layer: Image, tiles: Image[], scale: TileScale): Buffer {
-        scene.setTileMapLevel(new TileMapData(data, layer, tiles, scale))
-        return null;
-    }
-
-    // tiles.mkTilemap(hex``, img``, TileScale.Eight, [tiles.mkTile(img``, 1, ["tile"])])
 
     //% blockId=tilemap_editor block="set tilemap to %tilemap"
-    //% weight=200 blockGap=8 shim=TD_ID
+    //% weight=200 blockGap=8
     //% tilemap.fieldEditor="tilemap"
     //% tilemap.fieldOptions.decompileArgumentAsString="true"
     //% tilemap.fieldOptions.filter="tile"
