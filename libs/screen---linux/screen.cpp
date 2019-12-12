@@ -221,6 +221,11 @@ WDisplay::WDisplay() {
 }
 
 //%
+int setScreenBrightnessSupported() {
+    return 0;
+}
+
+//%
 void setScreenBrightness(int level) {
     // TODO
 }
