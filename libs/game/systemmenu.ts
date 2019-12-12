@@ -317,13 +317,20 @@ namespace scene.systemMenu {
         }
     }
 
+    //% shim=pxt::setScreenBrightnessSupported
+    function setScreenBrightnessSupported() {
+        return 0 // default to no, in simulator
+    }
+
     export function buildOptionList(): MenuOption[] {
         let options: MenuOption[] = [];
 
         options.push(new MenuOption(VOLUME_DOWN_ICON, () => `VOLUME DOWN (${music.volume()})`, volumeDown));
         options.push(new MenuOption(VOLUME_UP_ICON, () => `VOLUME UP (${music.volume()})`, volumeUp));
-        options.push(new MenuOption(BRIGHTNESS_DOWN_ICON, () => `BRIGHTNESS DOWN (${screen.brightness()})`, brightnessDown));
-        options.push(new MenuOption(BRIGHTNESS_UP_ICON, () => `BRIGHTNESS UP (${screen.brightness()})`, brightnessUp));
+        if (setScreenBrightnessSupported()) {
+            options.push(new MenuOption(BRIGHTNESS_DOWN_ICON, () => `BRIGHTNESS DOWN (${screen.brightness()})`, brightnessDown));
+            options.push(new MenuOption(BRIGHTNESS_UP_ICON, () => `BRIGHTNESS UP (${screen.brightness()})`, brightnessUp));
+        }
         options.push(new MenuOption(STATS_ICON, () => game.stats ? "HIDE STATS" : "SHOW STATS", toggleStats));
         options.push(new MenuOption(CONSOLE_ICON, () => game.consoleOverlay.isVisible() ? "HIDE CONSOLE" : "SHOW CONSOLE", toggleConsole));
         options.push(new MenuOption(SLEEP_ICON, () => "SLEEP", sleep));

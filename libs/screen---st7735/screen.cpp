@@ -115,6 +115,18 @@ class WDisplay {
 SINGLETON_IF_PIN(WDisplay, DISPLAY_MOSI);
 
 //%
+int setScreenBrightnessSupported() {
+    auto bl = LOOKUP_PIN(DISPLAY_BL);
+    if (!bl)
+        return 0;
+#ifdef SAMD51
+    if (bl->name == PA06)
+        return 0;
+#endif
+    return 1;
+}
+
+//%
 void setScreenBrightness(int level) {
     auto bl = LOOKUP_PIN(DISPLAY_BL);
     if (!bl)
@@ -130,8 +142,10 @@ void setScreenBrightness(int level) {
     else if (level == 100)
         bl->setDigitalValue(1);
     else {
-        bl->setAnalogPeriodUs(1000);
-        bl->setAnalogValue(level * level * 1023 / 10000);
+        if (setScreenBrightnessSupported()) {
+            bl->setAnalogPeriodUs(1000);
+            bl->setAnalogValue(level * level * 1023 / 10000);
+        }
     }
 }
 
