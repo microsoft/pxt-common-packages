@@ -45,6 +45,11 @@ namespace tiles {
             if (!mySprite) return;
             mySprite.setPosition(this.x, this.y);
         }
+
+        // ## LEGACY: DO NOT USE ##
+        _toTile(): Tile {
+            return new Tile(this._col, this._row, this.tileMap);
+        }
     }
 
     /**
@@ -321,6 +326,16 @@ namespace tiles {
                 }
             }
             return output;
+        }
+
+        // ## LEGACY: DO NOT USE ##
+        public _getTile(col: number, row: number): Tile {
+            return new Tile(col, row, this);
+        }
+
+        // ## LEGACY: DO NOT USE ##
+        public _getTilesByType(index: number): Tile[] {
+            return this.getTilesByType(index).map(loc => loc._toTile());
         }
 
         protected isInvalidIndex(index: number): boolean {

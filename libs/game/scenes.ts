@@ -236,13 +236,13 @@ namespace scene {
     //% group="Tiles" blockSetVariable="myTile"
     //% help=scene/get-tile
     //% deprecated=1
-    export function getTile(col: number, row: number): tiles.Location {
+    export function getTile(col: number, row: number): tiles.Tile {
         const scene = game.currentScene();
         if (!scene.tileMap) {
             scene.tileMap = new tiles.TileMap();
             scene.tileMap._legacyInit();
         }
-        return scene.tileMap.getTile(col, row);
+        return scene.tileMap._getTile(col, row);
     }
 
     /**
@@ -253,13 +253,13 @@ namespace scene {
     //% group="Tiles" blockSetVariable="tile list"
     //% help=scene/get-tiles-by-type
     //% deprecated=1
-    export function getTilesByType(index: number): tiles.Location[] {
+    export function getTilesByType(index: number): tiles.Tile[] {
         const scene = game.currentScene();
         if (!scene.tileMap) {
             scene.tileMap = new tiles.TileMap();
             scene.tileMap._legacyInit();
         }
-        return scene.tileMap.getTilesByType(index);
+        return scene.tileMap._getTilesByType(index);
     }
 
     /**
