@@ -25,6 +25,11 @@ WDisplay::WDisplay() {
 }
 
 //% expose
+int setScreenBrightnessSupported() {
+    return 0;
+}
+
+//% expose
 void setScreenBrightness(int level) {
     // TODO
 }
