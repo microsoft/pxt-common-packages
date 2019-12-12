@@ -17,7 +17,7 @@ enum SpriteFlag {
     RelativeToCamera = sprites.Flag.RelativeToCamera
 }
 
-enum Direction {
+enum TileDirection {
     //% block="left"
     Left = 0,
     //% block="top"
@@ -734,24 +734,24 @@ class Sprite extends sprites.BaseSprite {
     //% tile.shadow=tileset_tile_picker
     //% blockNamespace="scene" group="Collisions" blockGap=8
     //% help=sprites/sprite/tile-kind-at
-    tileKindAt(direction: Direction, tile: Image): boolean {
+    tileKindAt(direction: TileDirection, tile: Image): boolean {
         const tilemap = game.currentScene().tileMap;
         let x = this.x >> tilemap.scale;
         let y = this.y >> tilemap.scale;
         switch (direction) {
-            case Direction.Top:
+            case TileDirection.Top:
                 y = y - 1;
                 break;
-            case Direction.Bottom:
+            case TileDirection.Bottom:
                 y = y + 1;
                 break;
-            case Direction.Left:
+            case TileDirection.Left:
                 x = x - 1;
                 break;
-            case Direction.Right:
+            case TileDirection.Right:
                 x = x + 1;
                 break;
-            case Direction.Center:
+            case TileDirection.Center:
             default:
                 break;
         }
