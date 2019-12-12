@@ -81,9 +81,7 @@ LowLevelTimer *allocateTimer() {
     // if BL is on a known pin, don't use its PWM TC
     // this is a hack for legacy boards that don't have CFG_TIMERS_TO_USE
     auto blPin = PIN(DISPLAY_BL);
-    if (blPin == PA06)
-        blTC = 0x11;
-    else if (blPin == PA01)
+    if (blPin == PA01)
         blTC = 0x12;
 
     for (int shift = 24; shift >= 0; shift -= 8) {
