@@ -15,8 +15,13 @@ struct TimerConfig {
 
 #define DEF_TC(n)                                                                                  \
     { 0x10 + n, TC##n##_IRQn, TC##n##_DMAC_ID_OVF, (uint32_t)TC##n }
+#ifdef SAMD21
+#define DEF_TCC(n)                                                                                 \
+    { 0x20 + n, TCC##n##_IRQn, TCC##n##_DMAC_ID_OVF, (uint32_t)TCC##n }
+#else
 #define DEF_TCC(n)                                                                                 \
     { 0x20 + n, TCC##n##_0_IRQn, TCC##n##_DMAC_ID_OVF, (uint32_t)TCC##n }
+#endif
 
 static const TimerConfig timers[] = {
 #ifdef TC0
