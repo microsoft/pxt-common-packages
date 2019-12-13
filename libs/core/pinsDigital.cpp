@@ -102,6 +102,27 @@ void onEvent(DigitalInOutPin pin, PinEvent event, Action body) {
 }
 
 /**
+ * Measure pin capacitance (via discharge time).
+ */
+//%
+int readCapacitance(DigitalInOutPin pin) {
+    pin->setDigitalValue(1);
+    pin->getAnalogValue();
+    sleep_us(5);
+    return pin->getAnalogValue();
+    
+    /*
+    sleep_us(50);
+    auto t0 = current_time_us();
+    int n = 0;
+    while (current_time_us() - t0 < 3000 && pin->getDigitalValue())
+        n++;
+    int diff = current_time_us() - t0;
+    return diff;    
+    */
+}
+
+/**
 * Return the duration of a pulse in microseconds
 * @param name the pin which measures the pulse
 * @param value the value of the pulse (default high)
