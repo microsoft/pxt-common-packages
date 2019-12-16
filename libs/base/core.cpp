@@ -1,8 +1,4 @@
 #include "pxtbase.h"
-#ifdef CODAL_JACDAC_WIRE_SERIAL
-#include "LowLevelTimer.h"
-using namespace codal;
-#endif
 #include <limits.h>
 #include <stdlib.h>
 
@@ -1507,20 +1503,6 @@ unsigned programSize() {
 void deepSleep() __attribute__((weak));
 //%
 void deepSleep() {}
-
-#ifdef CODAL_JACDAC_WIRE_SERIAL
-LowLevelTimer *getJACDACTimer() {
-    static LowLevelTimer *jacdacTimer;
-    if (!jacdacTimer) {
-        jacdacTimer = allocateTimer();
-        jacdacTimer->setIRQPriority(1);
-    }
-    return jacdacTimer;
-}
-void initSystemTimer() {
-    new CODAL_TIMER(*allocateTimer());
-}
-#endif
 
 int *getBootloaderConfigData() __attribute__((weak));
 int *getBootloaderConfigData() {

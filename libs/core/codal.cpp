@@ -1,4 +1,6 @@
 #include "pxt.h"
+#include "LowLevelTimer.h"
+using namespace codal;
 
 void cpu_clock_init(void);
 
@@ -255,5 +257,17 @@ void gcProcessStacks(int flags) {
     xfree(fibers);
 }
 #endif
+
+LowLevelTimer *getJACDACTimer() {
+    static LowLevelTimer *jacdacTimer;
+    if (!jacdacTimer) {
+        jacdacTimer = allocateTimer();
+        jacdacTimer->setIRQPriority(1);
+    }
+    return jacdacTimer;
+}
+void initSystemTimer() {
+    new CODAL_TIMER(*allocateTimer());
+}
 
 } // namespace pxt

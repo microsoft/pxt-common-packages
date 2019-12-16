@@ -1078,10 +1078,6 @@ inline void *gcAllocate(int numbytes) {
 }
 #endif
 
-#ifdef CODAL_JACDAC_WIRE_SERIAL
-codal::LowLevelTimer *allocateTimer();
-#endif
-
 #ifdef PXT64
 #define TOWORDS(bytes) (((bytes) + 7) >> 3)
 #else
