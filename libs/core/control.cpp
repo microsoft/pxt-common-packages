@@ -1,6 +1,6 @@
 #include "pxt.h"
 
-#ifdef NRF52 
+#if defined(NRF52) || defined(NRF52840)
 #define _estack __StackTop 
 #endif
 extern uint32_t _estack;
