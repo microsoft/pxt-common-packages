@@ -502,8 +502,8 @@ namespace tiles {
     //% blockId=mapgettile block="tilemap col $col row $row"
     //% blockNamespace="scene" group="Tiles"
     //% weight=25 blockGap=8
-    //% help=tiles/get-tile
-    export function getTile(col: number, row: number): Location {
+    //% help=tiles/get-tile-location
+    export function getTileLocation(col: number, row: number): Location {
         const scene = game.currentScene();
         if (col == undefined || row == undefined || !scene.tileMap) return null;
         return scene.tileMap.getTile(col, row);
@@ -517,6 +517,16 @@ namespace tiles {
         const scene = game.currentScene();
         if (!loc || !scene.tileMap) return img``;
         return scene.tileMap.data.getTileImage(loc.tileSet);
+    }
+
+    /**
+     * Get the image of a tile, given a (column, row) in the tilemap
+     * @param loc
+     */
+    export function getTileAt(col: number, row: number): Image {
+        const scene = game.currentScene();
+        if (col == undefined || row == undefined || !scene.tileMap) return img``;
+        return scene.tileMap.data.getTileImage(tiles.getTileLocation(col, row).tileSet);
     }
 
     /**

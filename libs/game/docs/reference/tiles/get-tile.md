@@ -1,9 +1,9 @@
-# get Tile
+# get Tile Location
 
 Get a tile location from the tilemap.
 
 ```sig
-tiles.getTile(0, 0)
+tiles.getTileLocation(0, 0)
 ```
 
 ## Parameters
@@ -40,9 +40,9 @@ a a a a a a a a a a a a a a a a
 `;
 // TODO tiles.setTilemap(tiles.createTilemap(null, 0, 8 ** 8, 9)); 
 pause(1000)
-tiles.setTileAt(tiles.getTile(4, 3), image)
+tiles.setTileAt(tiles.getTileLocation(4, 3), image)
 pause(1000)
-tiles.setTileAt(tiles.getTile(5, 3), image)
+tiles.setTileAt(tiles.getTileLocation(5, 3), image)
 ```
 
 ## See also #seealso

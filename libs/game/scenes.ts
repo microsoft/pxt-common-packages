@@ -207,6 +207,7 @@ namespace scene {
         }
         const scale = scene.tileMap.scale;
         scene.tileMap.setTileAt(tile.x >> scale, tile.y >> scale, index);
+        scene.tileMap.setWallAt(tile.x >> scale, tile.y >> scale, scene.tileMap.data._isWall(index));
     }
 
     /**
