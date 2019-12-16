@@ -450,7 +450,7 @@ namespace tiles {
         return new TileMapData(data, layer, tiles, scale)
     }
 
-    //% blockId=tilemap_editor block="set tilemap to %tilemap"
+    //% blockId=tilemap_editor block="set tilemap to $tilemap"
     //% weight=200 blockGap=8
     //% tilemap.fieldEditor="tilemap"
     //% tilemap.fieldOptions.decompileArgumentAsString="true"
@@ -466,7 +466,7 @@ namespace tiles {
      * @param loc
      * @param tile
      */
-    //% blockId=mapsettileat block="set %loc=mapgettile to %tile"
+    //% blockId=mapsettileat block="set $tile at $loc=mapgettile"
     //% tile.shadow=tileset_tile_picker
     //% tile.decompileIndirectFixedInstances=true
     //% blockNamespace="scene" group="Tiles" blockGap=8
@@ -500,7 +500,7 @@ namespace tiles {
      * @param col
      * @param row
      */
-    //% blockId=mapgettile block="tilemap col %col row %row"
+    //% blockId=mapgettile block="tilemap col $col row $row"
     //% blockNamespace="scene" group="Tiles"
     //% weight=25 blockGap=8
     //% help=tiles/get-tile
@@ -518,22 +518,6 @@ namespace tiles {
         const scene = game.currentScene();
         if (!loc || !scene.tileMap) return img``;
         return scene.tileMap.data.getTileImage(loc.tileSet);
-    }
-
-    /**
-     * Get all tiles in the tilemap with the given type (image).
-     * @param tile
-     */
-    //% blockId=mapgettilestype block="array of all %tile locations"
-    //% tile.shadow=tileset_tile_picker
-    //% tile.decompileIndirectFixedInstances=true
-    //% blockNamespace="scene" group="Tiles" blockGap=8 blockSetVariable="location list"
-    //% help=tiles/get-tiles-by-type
-    export function getTilesByType(tile: Image): Location[] {
-        const scene = game.currentScene();
-        if (!tile || !scene.tileMap) return [];
-        const index = scene.tileMap.getImageType(tile);
-        return scene.tileMap.getTilesByType(index);
     }
 
     /**
@@ -555,7 +539,7 @@ namespace tiles {
      * @param sprite
      * @param tile
      */
-    //% blockId=mapplaceonrandomtile block="place %sprite=variables_get(mySprite) on top of random %tile"
+    //% blockId=mapplaceonrandomtile block="place $sprite=variables_get(mySprite) on top of random $tile"
     //% tile.shadow=tileset_tile_picker
     //% tile.decompileIndirectFixedInstances=true
     //% blockNamespace="scene" group="Tiles" blockGap=8
@@ -565,5 +549,21 @@ namespace tiles {
         const tiles = getTilesByType(tile);
         if (tiles.length > 0)
             Math.pickRandom(tiles).place(sprite);
+    }
+
+    /**
+     * Get all tiles in the tilemap with the given type (image).
+     * @param tile
+     */
+    //% blockId=mapgettilestype block="array of all $tile locations"
+    //% tile.shadow=tileset_tile_picker
+    //% tile.decompileIndirectFixedInstances=true  
+    //% blockNamespace="scene" group="Tiles" blockGap=8
+    //% help=tiles/get-tiles-by-type
+    export function getTilesByType(tile: Image): Location[] {
+        const scene = game.currentScene();
+        if (!tile || !scene.tileMap) return [];
+        const index = scene.tileMap.getImageType(tile);
+        return scene.tileMap.getTilesByType(index);
     }
 }
