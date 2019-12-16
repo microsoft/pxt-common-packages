@@ -468,6 +468,7 @@ namespace tiles {
      */
     //% blockId=mapsettileat block="set $tile at $loc=mapgettile"
     //% tile.shadow=tileset_tile_picker
+    //% tile.decompileIndirectFixedInstances=true
     //% blockNamespace="scene" group="Tiles" blockGap=8
     //% help=tiles/set-tile-at
     export function setTileAt(loc: Location, tile: Image): void {
@@ -540,6 +541,7 @@ namespace tiles {
      */
     //% blockId=mapplaceonrandomtile block="place $sprite=variables_get(mySprite) on top of random $tile"
     //% tile.shadow=tileset_tile_picker
+    //% tile.decompileIndirectFixedInstances=true
     //% blockNamespace="scene" group="Tiles" blockGap=8
     //% help=tiles/place-on-random-tile
     export function placeOnRandomTile(sprite: Sprite, tile: Image): void {
@@ -555,6 +557,7 @@ namespace tiles {
      */
     //% blockId=mapgettilestype block="array of all $tile locations"
     //% tile.shadow=tileset_tile_picker
+    //% tile.decompileIndirectFixedInstances=true  
     //% blockNamespace="scene" group="Tiles" blockGap=8
     //% help=tiles/get-tiles-by-type
     export function getTilesByType(tile: Image): Location[] {

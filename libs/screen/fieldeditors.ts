@@ -56,6 +56,7 @@ namespace images {
     //% blockId=tileset_tile_picker block="%tile"
     //% shim=TD_ID
     //% tile.fieldEditor="tileset"
+    //% tile.fieldOptions.decompileIndirectFixedInstances="true"
     //% weight=10 blockNamespace="scene" group="Tiles"
     //% blockHidden=1 duplicateShadowOnDrag
     export function _tile(tile: Image) {
