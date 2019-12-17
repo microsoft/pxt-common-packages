@@ -1,7 +1,7 @@
 //% blockGap=8
 namespace scene {
     /**
-     *  LEGACY: package for old tilemap blocks, to support existing curriculum.
+     *  Package for color-coded tilemap blocks, to support existing curriculum.
      */
 
     /**

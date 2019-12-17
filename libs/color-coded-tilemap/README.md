@@ -1,3 +1,3 @@
-# LEGACY Tilemap
+# Color-coded Tilemap
 
-Legacy tilemap blocks.
+Blocks for the color-coded tilemap.
