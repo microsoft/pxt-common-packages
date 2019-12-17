@@ -58,3 +58,7 @@ tileDock.place(mySprite)
 ## See also #seealso
 
 [get tile](/reference/scene/get-tile)
+
+```package
+color-coded-tilemap
+```

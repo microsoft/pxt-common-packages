@@ -3,7 +3,7 @@
 Move a sprite to the center of a selected tile.
 
 ```sig
-tiles.getTile(0, 0).place(null)
+tiles.getTileLocation(0, 0).place(null)
 ```
 
 You a can place a sprite directly on a tile. If you have a [tile](/types/tile) location from the tilemap, just use **place** to put a sprite on top of it.
@@ -42,10 +42,10 @@ mySprite = sprites.create(img`
 . . . . . . . . . . . . . . . . 
 `, SpriteKind.Player)
 pause(1000)
-let tileDock = tiles.getTile(1, 1)
+let tileDock = tiles.getTileLocation(1, 1)
 tileDock.place(mySprite)
 ```
 
 ## See also #seealso
 
-[get tile](/reference/tiles/get-tile)
+[get tile location](/reference/tiles/get-tile-location)
