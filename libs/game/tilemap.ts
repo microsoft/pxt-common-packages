@@ -120,7 +120,6 @@ namespace tiles {
             this.data = data;
             this.layers = layers;
             this.tileset = tileset;
-            this.cachedTileView = [];
             this.scale = scale;
 
             this._width = data.getNumber(NumberFormat.UInt16LE, 0);
@@ -166,7 +165,7 @@ namespace tiles {
         getTileImage(index: number) {
             const size = 1 << this.scale;
             let cachedImage = this.cachedTileView[index];
-            if (!cachedImage || cachedImage.width > size || cachedImage.height > size) {
+            if (!cachedImage) {
                 const originalImage = this.tileset[index];
                 if (originalImage.width <= size && originalImage.height <= size) {
                     cachedImage = originalImage;
