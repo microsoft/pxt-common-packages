@@ -236,15 +236,15 @@ namespace tiles {
             );
         }
 
+        get scale() {
+            return this._scale;
+        }
+
         set scale(s: TileScale) {
             this._scale = s;
             if (this._map) {
                 this._map.scale = s;
             }
-        }
-
-        get scale() {
-            return this._scale;
         }
 
         // ## LEGACY: DO NOT USE ##
