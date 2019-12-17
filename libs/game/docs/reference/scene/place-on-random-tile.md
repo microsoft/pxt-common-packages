@@ -59,3 +59,7 @@ scene.placeOnRandomTile(mySprite, 8)
 ## See also #seealso
 
 [get tile](/reference/scene/get-tile)
+
+```package
+color-coded-tilemap
+```
