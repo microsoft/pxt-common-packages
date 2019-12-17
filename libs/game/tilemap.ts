@@ -109,7 +109,7 @@ namespace tiles {
         protected tileset: Image[];
         protected cachedTileView: Image[];
 
-        scale: TileScale;
+        protected _scale: TileScale;
         protected _width: number;
         protected _height: number;
 
@@ -138,6 +138,15 @@ namespace tiles {
             return this._height;
         }
 
+        get scale(): TileScale {
+            return this._scale;
+        }
+
+        set scale(s: TileScale) {
+            this._scale = s;
+            this.cachedTileView = [];
+        }
+
         getTile(col: number, row: number) {
             if (this.isOutsideMap(col, row)) return 0;
 
@@ -157,9 +166,9 @@ namespace tiles {
         getTileImage(index: number) {
             const size = 1 << this.scale;
             let cachedImage = this.cachedTileView[index];
-            if (!cachedImage || cachedImage.width != size || cachedImage.height != size) {
+            if (!cachedImage || cachedImage.width > size || cachedImage.height > size) {
                 const originalImage = this.tileset[index];
-                if (originalImage.width == size && originalImage.height == size) {
+                if (originalImage.width <= size && originalImage.height <= size) {
                     cachedImage = originalImage;
                 } else {
                     cachedImage = image.create(size, size);
