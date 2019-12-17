@@ -16,7 +16,7 @@ namespace scene {
     export function setTileMap(map: Image, scale = TileScale.Sixteen) {
         const scene = game.currentScene();
         if (!scene.tileMap) {
-            scene.tileMap = new tiles.TileMap();
+            scene.tileMap = new tiles.TileMap(scale);
             scene.tileMap._legacyInit();
         }
         scene.tileMap.setMap(map);

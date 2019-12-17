@@ -107,7 +107,9 @@ namespace tiles {
         protected layers: Image;
 
         protected tileset: Image[];
+        protected cachedTileView: Image[];
 
+        scale: TileScale;
         protected _width: number;
         protected _height: number;
 
@@ -118,6 +120,8 @@ namespace tiles {
             this.data = data;
             this.layers = layers;
             this.tileset = tileset;
+            this.cachedTileView = [];
+            this.scale = scale;
 
             this._width = data.getNumber(NumberFormat.UInt16LE, 0);
             this._height = data.getNumber(NumberFormat.UInt16LE, 2);
@@ -151,7 +155,19 @@ namespace tiles {
         }
 
         getTileImage(index: number) {
-            return this.tileset[index];
+            const size = 1 << this.scale;
+            let cachedImage = this.cachedTileView[index];
+            if (!cachedImage || cachedImage.width != size || cachedImage.height != size) {
+                const originalImage = this.tileset[index];
+                if (originalImage.width == size && originalImage.height == size) {
+                    cachedImage = originalImage;
+                } else {
+                    cachedImage = image.create(size, size);
+                    cachedImage.drawImage(originalImage, 0, 0);
+                }
+                this.cachedTileView[index] = cachedImage;
+            }
+            return cachedImage;
         }
 
         setWall(col: number, row: number, on: boolean) {
@@ -175,6 +191,7 @@ namespace tiles {
          */
         _setTileImage(index: number, img: Image, collisions: boolean) {
             this.tileset[index] = img;
+            this.cachedTileView[index] = undefined;
             this._walls[index] = collisions;
             for (let col = 0; col < this.width; ++col) {
                 for (let row = 0; row < this.height; ++row) {
@@ -204,7 +221,7 @@ namespace tiles {
     }
 
     export class TileMap {
-        scale: number
+        protected _scale: TileScale;
 
         protected _layer: number;
         protected _map: TileMapData;
@@ -217,6 +234,17 @@ namespace tiles {
                 scene.TILE_MAP_Z,
                 (t, c) => this.draw(t, c)
             );
+        }
+
+        set scale(s: TileScale) {
+            this._scale = s;
+            if (this._map) {
+                this._map.scale = s;
+            }
+        }
+
+        get scale() {
+            return this._scale;
         }
 
         // ## LEGACY: DO NOT USE ##
@@ -567,7 +595,7 @@ namespace tiles {
      */
     //% blockId=mapgettilestype block="array of all $tile locations"
     //% tile.shadow=tileset_tile_picker
-    //% tile.decompileIndirectFixedInstances=true  
+    //% tile.decompileIndirectFixedInstances=true
     //% blockNamespace="scene" group="Tiles" blockGap=8
     //% help=tiles/get-tiles-by-type
     export function getTilesByType(tile: Image): Location[] {
