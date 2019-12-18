@@ -49,4 +49,4 @@ tiles.placeOnRandomTile(mySprite, 8)
 
 ## See also #seealso
 
-[get tile](/reference/tiles/get-tile)
+[get tile location](/reference/tiles/get-tile-location)

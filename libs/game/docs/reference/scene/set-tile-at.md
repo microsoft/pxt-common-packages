@@ -55,3 +55,7 @@ scene.setTileAt(scene.getTile(5, 3), 2)
 ## See also #seealso
 
 [set tile](/reference/scene/set-tile), [get tile](/reference/scene/get-tile)
+
+```package
+color-coded-tilemap
+```

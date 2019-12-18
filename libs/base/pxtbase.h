@@ -62,10 +62,6 @@ void *operator new(size_t size);
 #define PXT_REGISTER_RESET(fn) ((void)0)
 #endif
 
-#ifndef PXT_VTABLE_SHIFT
-#define PXT_VTABLE_SHIFT 2
-#endif
-
 #define PXT_REFCNT_FLASH 0xfffe
 
 #define CONCAT_1(a, b) a##b
@@ -384,31 +380,23 @@ HandlerBinding *findBinding(int source, int value);
 HandlerBinding *nextBinding(HandlerBinding *curr, int source, int value);
 void setBinding(int source, int value, Action act);
 
-// The standard calling convention is:
-//   - when a pointer is loaded from a local/global/field etc, and incr()ed
-//     (in other words, its presence on stack counts as a reference)
-//   - after a function call, all pointers are popped off the stack and decr()ed
-// This does not apply to the RefRecord and st/ld(ref) methods - they unref()
-// the RefRecord* this.
+// Legacy stuff; should no longer be used
 //%
 TValue incr(TValue e);
 //%
 void decr(TValue e);
 
-#ifdef PXT_GC
 inline TValue incr(TValue e) {
     return e;
 }
 inline void decr(TValue e) {}
-#endif
 
 class RefObject;
 
 static inline RefObject *incrRC(RefObject *r) {
-    return (RefObject *)incr((TValue)r);
+    return r;
 }
-static inline void decrRC(RefObject *r) {
-    decr((TValue)r);
+static inline void decrRC(RefObject *) {
 }
 
 inline void *ptrOfLiteral(int offset) {
@@ -418,11 +406,7 @@ inline void *ptrOfLiteral(int offset) {
 // Checks if object is ref-counted, and has a custom PXT vtable in front
 // TODO
 inline bool isRefCounted(TValue e) {
-#ifdef PXT_GC
     return isPointer(e);
-#else
-    return !isTagged(e) && (*((uint16_t *)e) & 1) == 1;
-#endif
 }
 
 inline void check(int cond, PXT_PANIC code, int subcode = 0) {
@@ -484,11 +468,7 @@ struct VTable {
     uint32_t ifaceHashMult;
 
     // we only use the first few methods here; pxt will generate more
-#ifdef PXT_GC
     PVoid methods[8];
-#else
-    PVoid methods[3];
-#endif
 };
 
 //%
@@ -508,19 +488,15 @@ extern const VTable number_vt;
 //%
 extern const VTable RefAction_vtable;
 
-#ifdef PXT_GC
 #define PXT_VTABLE_TO_INT(vt) ((uintptr_t)(vt))
-#else
-#define PXT_VTABLE_TO_INT(vt) ((uintptr_t)(vt) >> PXT_VTABLE_SHIFT)
-#endif
 
 // allocate 1M of heap on iOS
 #define PXT_IOS_HEAP_ALLOC_BITS 20
 
-#ifdef PXT_GC
 #ifdef PXT_IOS
 extern uint8_t *gcBase;
 #endif
+
 inline bool isReadOnly(TValue v) {
 #ifdef PXT64
 #ifdef PXT_IOS
@@ -532,18 +508,10 @@ inline bool isReadOnly(TValue v) {
     return isTagged(v) || !((uintptr_t)v >> 28);
 #endif
 }
-#endif
-
-#ifdef PXT_GC
-#define REFCNT(x) 0
-#else
-#define REFCNT(x) ((x)->refcnt)
-#endif
 
 // A base abstract class for ref-counted objects.
 class RefObject {
   public:
-#ifdef PXT_GC
     uintptr_t vtable;
 
     RefObject(const VTable *vt) {
@@ -553,48 +521,13 @@ class RefObject {
 #endif
         vtable = PXT_VTABLE_TO_INT(vt);
     }
-#else
-    uint16_t refcnt;
-    uint16_t vtable;
-
-    RefObject(const VTable *vt) {
-        refcnt = 3;
-        vtable = PXT_VTABLE_TO_INT(vt);
-    }
-#endif
 
     void destroyVT();
     void printVT();
 
-#ifdef PXT_GC
     inline void ref() {}
     inline void unref() {}
     inline bool isReadOnly() { return pxt::isReadOnly((TValue)this); }
-#else
-    inline bool isReadOnly() { return refcnt == PXT_REFCNT_FLASH; }
-
-    // Increment/decrement the ref-count. Decrementing to zero deletes the current object.
-    inline void ref() {
-        if (isReadOnly())
-            return;
-        MEMDBG2("INCR: %p refs=%d", this, this->refcnt);
-        check(refcnt > 1, PANIC_REF_DELETED);
-        refcnt += 2;
-    }
-
-    inline void unref() {
-        if (isReadOnly())
-            return;
-        MEMDBG2("DECR: %p refs=%d", this, this->refcnt);
-        check(refcnt > 1, PANIC_REF_DELETED);
-        check((refcnt & 1), PANIC_REF_DELETED);
-        refcnt -= 2;
-        if (refcnt == 1) {
-            MEMDBG("DEL: %p", this);
-            destroyVT();
-        }
-    }
-#endif
 };
 
 class Segment {
@@ -700,11 +633,7 @@ class RefRecord : public RefObject {
 };
 
 static inline VTable *getVTable(RefObject *r) {
-#ifdef PXT_GC
     return (VTable *)(r->vtable & ~1);
-#else
-    return (VTable *)((uintptr_t)r->vtable << PXT_VTABLE_SHIFT);
-#endif
 }
 
 static inline VTable *getAnyVTable(TValue v) {
@@ -994,7 +923,6 @@ ValType valType(TValue v);
 // ignore all destructors (think longjmp())
 void throwValue(TValue v);
 
-#ifdef PXT_GC
 void registerGC(TValue *root, int numwords = 1);
 void unregisterGC(TValue *root, int numwords = 1);
 void registerGCPtr(TValue ptr);
@@ -1006,13 +934,6 @@ static inline void unregisterGCObj(RefObject *ptr) {
     unregisterGCPtr((TValue)ptr);
 }
 void gc(int flags);
-#else
-inline void registerGC(TValue *root, int numwords = 1) {}
-inline void unregisterGC(TValue *root, int numwords = 1) {}
-inline void registerGCPtr(TValue ptr) {}
-inline void unregisterGCPtr(TValue ptr) {}
-inline void gc(int) {}
-#endif
 
 struct StackSegment {
     void *top;
@@ -1072,11 +993,6 @@ void *gcAllocateArray(int numbytes);
 extern "C" void *app_alloc(int numbytes);
 extern "C" void *app_free(void *ptr);
 void gcPreAllocateBlock(uint32_t sz);
-#ifndef PXT_GC
-inline void *gcAllocate(int numbytes) {
-    return xmalloc(numbytes);
-}
-#endif
 
 #ifdef PXT64
 #define TOWORDS(bytes) (((bytes) + 7) >> 3)
@@ -1227,24 +1143,17 @@ bool removeElement(RefCollection *c, TValue x);
 
 #ifdef PXT_VM
 #define DEF_VTABLE(name, tp, valtype, ...)                                                         \
-    const VTable name __attribute__((aligned(1 << PXT_VTABLE_SHIFT))) = {                          \
-        sizeof(tp), valtype, VTABLE_MAGIC, 0, BuiltInType::tp, BuiltInType::tp,                    \
-        0,          0,       {__VA_ARGS__}};
+    const VTable name = {sizeof(tp), valtype, VTABLE_MAGIC, 0, BuiltInType::tp, BuiltInType::tp,   \
+                         0,          0,       {__VA_ARGS__}};
 #else
 #define DEF_VTABLE(name, tp, valtype, ...)                                                         \
-    const VTable name __attribute__((aligned(1 << PXT_VTABLE_SHIFT))) = {                          \
-        sizeof(tp), valtype, VTABLE_MAGIC, 0, BuiltInType::tp, 0, 0, {__VA_ARGS__}};
+    const VTable name = {sizeof(tp), valtype, VTABLE_MAGIC, 0, BuiltInType::tp,                    \
+                         0,          0,       {__VA_ARGS__}};
 #endif
 
-#ifdef PXT_GC
 #define PXT_VTABLE(classname, valtp)                                                               \
     DEF_VTABLE(classname##_vtable, classname, valtp, (void *)&classname::destroy,                  \
                (void *)&classname::print, (void *)&classname::scan, (void *)&classname::gcsize)
-#else
-#define PXT_VTABLE(classname, valtp)                                                               \
-    DEF_VTABLE(classname##_vtable, classname, valtp, (void *)&classname::destroy,                  \
-               (void *)&classname::print)
-#endif
 
 #define PXT_VTABLE_INIT(classname) RefObject(&classname##_vtable)
 

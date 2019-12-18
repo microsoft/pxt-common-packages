@@ -79,3 +79,7 @@ scene.setTileMap(img`
 
 [tile map](/reference/scene/tile-map),
 [set tile](/reference/scene/set-tile)
+
+```package
+color-coded-tilemap
+```

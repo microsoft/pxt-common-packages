@@ -37,7 +37,6 @@ public:
     Buffer buf = mkBuffer(NULL, size);
     int status = this->i2c.read(address << 1, buf->data, size, repeat);
     if (status != ErrorCode::DEVICE_OK) {
-      decrRC(buf);
       buf = 0;
     }
     return buf;

@@ -169,3 +169,7 @@ scene.setTileMap(img`
 
 [set tile](/reference/scene/set-tile),
 [set tile map](/reference/scene/set-tile-map)
+
+```package
+color-coded-tilemap
+```

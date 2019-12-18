@@ -610,7 +610,6 @@ Image_ doubled(Image_ img) {
     registerGCObj(tmp);
     Image_ r = doubledY(tmp);
     unregisterGCObj(tmp);
-    decrRC(tmp);
     return r;
 }
 

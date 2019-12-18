@@ -38,11 +38,11 @@ a a a a a a a a a a a a a a a a
 `;
 // TODO tiles.setTilemap(tiles.createTilemap(null, 0, 8 ** 8, 9));
 pause(1000)
-tiles.setTileAt(tiles.getTile(4, 3), image)
+tiles.setTileAt(tiles.getTileLocation(4, 3), image)
 pause(1000)
-tiles.setTileAt(tiles.getTile(5, 3), image)
+tiles.setTileAt(tiles.getTileLocation(5, 3), image)
 ```
 
 ## See also #seealso
 
-[set tile](/reference/tiles/set-tile), [get tile](/reference/tiles/get-tile)
+[set tile](/reference/tiles/set-tile), [get tile location](/reference/tiles/get-tile-location)
