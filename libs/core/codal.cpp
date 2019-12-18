@@ -132,7 +132,6 @@ void registerWithDal(int id, int event, Action a, int flags) {
 }
 
 void fiberDone(void *a) {
-    decr((Action)a);
     unregisterGCPtr((Action)a);
     release_fiber();
 }
@@ -158,7 +157,6 @@ void forever_stub(void *a) {
 
 void runForever(Action a) {
     if (a != 0) {
-        incr(a);
         registerGCPtr(a);
         create_fiber(forever_stub, (void *)a);
     }
@@ -166,7 +164,6 @@ void runForever(Action a) {
 
 void runInParallel(Action a) {
     if (a != 0) {
-        incr(a);
         registerGCPtr(a);
         create_fiber((void (*)(void *))runAction0, (void *)a, fiberDone);
     }

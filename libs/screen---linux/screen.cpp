@@ -254,8 +254,6 @@ void setPalette(Buffer buf) {
 
 void WDisplay::update(Image_ img) {
     if (img && img != lastImg) {
-        decrRC(lastImg);
-        incrRC(img);
         lastImg = img;
     }
     img = lastImg;

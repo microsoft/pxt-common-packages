@@ -50,9 +50,7 @@ TValue RefRecord::ld(int idx) {
 TValue RefRecord::ldref(int idx) {
     // DMESG("LD %p len=%d reflen=%d idx=%d", this, len, reflen, idx);
     // intcheck(0 <= idx && idx < reflen, PANIC_OUT_OF_BOUNDS, 2);
-    TValue tmp = fields[idx];
-    incr(tmp);
-    return tmp;
+    return fields[idx];
 }
 
 void RefRecord::st(int idx, TValue v) {
@@ -63,7 +61,6 @@ void RefRecord::st(int idx, TValue v) {
 void RefRecord::stref(int idx, TValue v) {
     // DMESG("ST %p len=%d reflen=%d idx=%d", this, len, reflen, idx);
     // intcheck(0 <= idx && idx < reflen, PANIC_OUT_OF_BOUNDS, 4);
-    decr(fields[idx]);
     fields[idx] = v;
 }
 
@@ -496,8 +493,6 @@ RefCollection *keysOf(TValue v) {
     r->setLength(len);
     auto dst = r->getData();
     memcpy(dst, rm->keys.getData(), len * sizeof(TValue));
-    for (unsigned i = 0; i < len; ++i)
-        incr(dst[i]);
     unregisterGCObj(r);
     return r;
 }

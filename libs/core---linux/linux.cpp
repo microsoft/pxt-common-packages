@@ -183,10 +183,6 @@ void disposeThread(Thread *t) {
         }
     }
     unregisterGC(&t->act, 4);
-    decr(t->act);
-    decr(t->arg0);
-    decr(t->data0);
-    decr(t->data1);
     pthread_cond_destroy(&t->waitCond);
     delete t;
 }
@@ -209,10 +205,10 @@ void setupThread(Action a, TValue arg = 0, void (*runner)(Thread *) = NULL, TVal
     thr->next = allThreads;
     allThreads = thr;
     registerGC(&thr->act, 4);
-    thr->act = incr(a);
-    thr->arg0 = incr(arg);
-    thr->data0 = incr(d0);
-    thr->data1 = incr(d1);
+    thr->act = a;
+    thr->arg0 = arg;
+    thr->data0 = d0;
+    thr->data1 = d1;
     pthread_cond_init(&thr->waitCond, NULL);
     if (runner == mainThread) {
         thr->pid = pthread_self();

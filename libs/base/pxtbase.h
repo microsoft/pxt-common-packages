@@ -394,10 +394,9 @@ inline void decr(TValue e) {}
 class RefObject;
 
 static inline RefObject *incrRC(RefObject *r) {
-    return (RefObject *)incr((TValue)r);
+    return r;
 }
-static inline void decrRC(RefObject *r) {
-    decr((TValue)r);
+static inline void decrRC(RefObject *) {
 }
 
 inline void *ptrOfLiteral(int offset) {
