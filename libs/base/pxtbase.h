@@ -62,6 +62,10 @@ void *operator new(size_t size);
 #define PXT_REGISTER_RESET(fn) ((void)0)
 #endif
 
+#ifndef PXT_VTABLE_SHIFT
+#define PXT_VTABLE_SHIFT 2
+#endif
+
 #define PXT_REFCNT_FLASH 0xfffe
 
 #define CONCAT_1(a, b) a##b
@@ -504,7 +508,11 @@ extern const VTable number_vt;
 //%
 extern const VTable RefAction_vtable;
 
+#ifdef PXT_GC
 #define PXT_VTABLE_TO_INT(vt) ((uintptr_t)(vt))
+#else
+#define PXT_VTABLE_TO_INT(vt) ((uintptr_t)(vt) >> PXT_VTABLE_SHIFT)
+#endif
 
 // allocate 1M of heap on iOS
 #define PXT_IOS_HEAP_ALLOC_BITS 20
@@ -692,7 +700,11 @@ class RefRecord : public RefObject {
 };
 
 static inline VTable *getVTable(RefObject *r) {
+#ifdef PXT_GC
     return (VTable *)(r->vtable & ~1);
+#else
+    return (VTable *)((uintptr_t)r->vtable << PXT_VTABLE_SHIFT);
+#endif
 }
 
 static inline VTable *getAnyVTable(TValue v) {
@@ -1215,12 +1227,13 @@ bool removeElement(RefCollection *c, TValue x);
 
 #ifdef PXT_VM
 #define DEF_VTABLE(name, tp, valtype, ...)                                                         \
-    const VTable name = {sizeof(tp), valtype, VTABLE_MAGIC, 0, BuiltInType::tp, BuiltInType::tp,   \
-                         0,          0,       {__VA_ARGS__}};
+    const VTable name __attribute__((aligned(1 << PXT_VTABLE_SHIFT))) = {                          \
+        sizeof(tp), valtype, VTABLE_MAGIC, 0, BuiltInType::tp, BuiltInType::tp,                    \
+        0,          0,       {__VA_ARGS__}};
 #else
 #define DEF_VTABLE(name, tp, valtype, ...)                                                         \
-    const VTable name = {sizeof(tp), valtype, VTABLE_MAGIC, 0, BuiltInType::tp,                    \
-                         0,          0,       {__VA_ARGS__}};
+    const VTable name __attribute__((aligned(1 << PXT_VTABLE_SHIFT))) = {                          \
+        sizeof(tp), valtype, VTABLE_MAGIC, 0, BuiltInType::tp, 0, 0, {__VA_ARGS__}};
 #endif
 
 #ifdef PXT_GC
