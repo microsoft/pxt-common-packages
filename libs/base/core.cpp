@@ -1777,7 +1777,7 @@ void anyPrint(TValue v) {
             auto vt = getVTable(o);
             auto meth = ((RefObjectMethod)vt->methods[1]);
             if ((void *)meth == (void *)&anyPrint)
-                DMESG("[RefObject refs=%d vt=%p cl=%d sz=%d]", REFCNT(o), o->vtable, vt->classNo,
+                DMESG("[RefObject vt=%p cl=%d sz=%d]", o->vtable, vt->classNo,
                       vt->numbytes);
             else
                 meth(o);
@@ -1795,15 +1795,10 @@ void anyPrint(TValue v) {
 
 static void dtorDoNothing() {}
 
-#ifdef PXT_GC
 #define PRIM_VTABLE(name, objectTp, tp, szexpr)                                                    \
     static uint32_t name##_size(tp *p) { return TOWORDS(sizeof(tp) + szexpr); }                    \
     DEF_VTABLE(name##_vt, tp, objectTp, (void *)&dtorDoNothing, (void *)&anyPrint, 0,              \
                (void *)&name##_size)
-#else
-#define PRIM_VTABLE(name, objectTp, tp, szexpr)                                                    \
-    DEF_VTABLE(name##_vt, tp, objectTp, (void *)&dtorDoNothing, (void *)&anyPrint)
-#endif
 
 #define NOOP ((void)0)
 

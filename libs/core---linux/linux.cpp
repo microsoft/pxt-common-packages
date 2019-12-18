@@ -367,7 +367,6 @@ void initRuntime() {
     startUser();
 }
 
-#ifdef PXT_GC
 #define GC_BASE 0x20000000
 #define GC_PAGE_SIZE 4096
 void *gcAllocBlock(size_t sz) {
@@ -385,7 +384,6 @@ void *gcAllocBlock(size_t sz) {
     }
     return r;
 }
-#endif
 
 static __thread ThreadContext *threadCtx;
 

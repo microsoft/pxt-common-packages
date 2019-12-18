@@ -202,7 +202,6 @@ uint64_t current_time_us() {
     return system_timer_current_time_us();
 }
 
-#ifdef PXT_GC
 ThreadContext *getThreadContext() {
     if (!currentFiber)
         return NULL;
@@ -254,6 +253,5 @@ void gcProcessStacks(int flags) {
     }
     xfree(fibers);
 }
-#endif
 
 } // namespace pxt
