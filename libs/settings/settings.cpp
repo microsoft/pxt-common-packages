@@ -14,18 +14,21 @@ class WStorage {
     FS fs;
     bool isMounted;
 
-    WStorage() : flash(), 
+    WStorage()
+        : flash(),
 #if defined(STM32F4)
-    fs(flash, 0x8008000, 32 * 1024),
+          fs(flash, 0x8008000, 32 * 1024),
 #elif defined(SAMD51)
-    fs(flash, 512*1024 - 32*1024, 32 * 1024),
+          fs(flash, 512 * 1024 - 32 * 1024, 32 * 1024),
 #elif defined(SAMD21)
-    fs(flash, 256*1024 - 2*1024, 2 * 1024),
+          fs(flash, 256 * 1024 - 2 * 1024, 2 * 1024),
+#elif defined(NRF52_SERIES)
+#define NRF_BOOTLOADER_START *(uint32_t *)0x10001014
+          fs(flash, NRF_BOOTLOADER_START - 32 * 1024, 32 * 1024),
 #else
-    fs(flash),
+          fs(flash),
 #endif
-    isMounted(false)
-    {
+          isMounted(false) {
         fs.minGCSpacing = 10000;
     }
 };
@@ -113,6 +116,5 @@ RefCollection *_list(String prefix) {
     unregisterGCObj(res);
     return res;
 }
-
 
 } // namespace settings
