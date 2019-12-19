@@ -155,6 +155,10 @@ namespace tiles {
         setTile(col: number, row: number, tile: number) {
             if (this.isOutsideMap(col, row)) return;
 
+            if (this.data.isReadOnly()) {
+                this.data = this.data.slice();
+            }
+
             this.data.setUint8(TM_DATA_PREFIX_LENGTH + (col | 0) + (row | 0) * this.width, tile);
         }
 
@@ -483,9 +487,7 @@ namespace tiles {
     }
 
     export function createTilemap(data: Buffer, layer: Image, tiles: Image[], scale: TileScale): TileMapData {
-        const b = control.createBuffer(data.length);
-        b.write(0, data);
-        return new TileMapData(b, layer, tiles, scale)
+        return new TileMapData(data, layer, tiles, scale)
     }
 
     //% blockId=tilemap_editor block="set tilemap to $tilemap"
