@@ -544,11 +544,12 @@ static void sweep(int flags) {
 
     if (midPtr) {
         uint32_t currFree = 0;
-        auto limit = freeSize >> 2;
+        auto limit = freeSize * 1 / 2;
         for (auto p = firstFree; p; p = p->nextFree) {
-            currFree += VAR_BLOCK_WORDS(p->vtable);
+            auto len = VAR_BLOCK_WORDS(p->vtable);
+            currFree += len;
             if (currFree > limit) {
-                midPtr = (uint8_t *)p + ((currFree - limit) << 2);
+                midPtr = (uint8_t *)p + ((limit - currFree + len) << 2);
                 break;
             }
         }
