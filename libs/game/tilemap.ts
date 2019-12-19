@@ -165,13 +165,16 @@ namespace tiles {
             let cachedImage = this.cachedTileView[index];
             if (!cachedImage) {
                 const originalImage = this.tileset[index];
-                if (originalImage.width <= size && originalImage.height <= size) {
-                    cachedImage = originalImage;
-                } else {
-                    cachedImage = image.create(size, size);
-                    cachedImage.drawImage(originalImage, 0, 0);
+
+                if (originalImage) {
+                    if (originalImage.width <= size && originalImage.height <= size) {
+                        cachedImage = originalImage;
+                    } else {
+                        cachedImage = image.create(size, size);
+                        cachedImage.drawImage(originalImage, 0, 0);
+                    }
+                    this.cachedTileView[index] = cachedImage;
                 }
-                this.cachedTileView[index] = cachedImage;
             }
             return cachedImage;
         }
