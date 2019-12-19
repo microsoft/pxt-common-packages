@@ -483,7 +483,9 @@ namespace tiles {
     }
 
     export function createTilemap(data: Buffer, layer: Image, tiles: Image[], scale: TileScale): TileMapData {
-        return new TileMapData(data, layer, tiles, scale)
+        const b = control.createBuffer(data.length);
+        b.write(0, data);
+        return new TileMapData(b, layer, tiles, scale)
     }
 
     //% blockId=tilemap_editor block="set tilemap to $tilemap"
