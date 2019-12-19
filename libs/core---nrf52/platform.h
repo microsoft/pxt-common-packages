@@ -29,7 +29,7 @@
 #define CODAL_I2C NRF52I2C
 #define CODAL_TIMER Timer
 
-#define IMAGE_BITS 1
+#define IMAGE_BITS 4
 
 typedef uint8_t PinName;
 
