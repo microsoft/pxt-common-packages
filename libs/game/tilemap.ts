@@ -155,6 +155,10 @@ namespace tiles {
         setTile(col: number, row: number, tile: number) {
             if (this.isOutsideMap(col, row)) return;
 
+            if (this.data.isReadOnly()) {
+                this.data = this.data.slice();
+            }
+
             this.data.setUint8(TM_DATA_PREFIX_LENGTH + (col | 0) + (row | 0) * this.width, tile);
         }
 
