@@ -70,9 +70,7 @@ void setTone(Buffer buffer) {
 
     if (!tone)
         registerGC((TValue*)&tone);
-    decrRC(tone);
     tone = buffer; // keep a reference to the buffer
-    incrRC(tone);
 
     auto synth = &getWSynthesizer()->synth;
     synth->setTone((const uint16_t*)tone->data);
