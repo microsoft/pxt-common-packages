@@ -74,6 +74,23 @@
 
 namespace pxt {
 
+// keep in sync with base/control.ts, function gcStats()
+struct GCStats {
+    uint32_t numGC;
+    uint32_t numBlocks;
+    uint32_t totalBytes;
+    uint32_t lastFreeBytes;
+    uint32_t lastMaxBlockBytes;
+    uint32_t minFreeBytes;
+};
+
+static GCStats gcStats;
+
+//% expose
+Buffer getGCStats() {
+    return mkBuffer((uint8_t*)&gcStats, sizeof(gcStats));
+}
+
 //%
 void popThreadContext(ThreadContext *ctx);
 //%
@@ -388,6 +405,8 @@ static uint32_t getObjectSize(RefObject *o) {
 }
 
 static void setupFreeBlock(GCBlock *curr) {
+    gcStats.numBlocks++;
+    gcStats.totalBytes += curr->blockSize;
     curr->data[0].vtable = FREE_MASK | (TOWORDS(curr->blockSize) << 2);
     ((RefBlock *)curr->data)[0].nextFree = firstFree;
     firstFree = (RefBlock *)curr->data;
@@ -478,7 +497,10 @@ static void sweep(int flags) {
     RefBlock *prevFreePtr = NULL;
     uint32_t freeSize = 0;
     uint32_t totalSize = 0;
+    uint32_t maxFreeBlock = 0;
     firstFree = NULL;
+
+    gcStats.numGC++;
 
     for (auto h = firstBlock; h; h = h->next) {
         auto d = h->data;
@@ -510,6 +532,8 @@ static void sweep(int flags) {
                 }
                 auto sz = d - (RefObject *)start;
                 freeSize += sz;
+                if (sz > (int)maxFreeBlock)
+                    maxFreeBlock = sz;
 #ifdef PXT_GC_CHECKS
                 memset(start, 0xff, WORDS_TO_BYTES(sz));
 #endif
@@ -529,11 +553,12 @@ static void sweep(int flags) {
 
     if (midPtr) {
         uint32_t currFree = 0;
-        auto limit = freeSize >> 2;
+        auto limit = freeSize * 1 / 2;
         for (auto p = firstFree; p; p = p->nextFree) {
-            currFree += VAR_BLOCK_WORDS(p->vtable);
+            auto len = VAR_BLOCK_WORDS(p->vtable);
+            currFree += len;
             if (currFree > limit) {
-                midPtr = (uint8_t *)p + ((currFree - limit) << 2);
+                midPtr = (uint8_t *)p + ((limit - currFree + len) << 2);
                 break;
             }
         }
@@ -541,11 +566,18 @@ static void sweep(int flags) {
 
     freeSize = WORDS_TO_BYTES(freeSize);
     totalSize = WORDS_TO_BYTES(totalSize);
+    maxFreeBlock = WORDS_TO_BYTES(maxFreeBlock);
+
+    gcStats.lastFreeBytes = freeSize;
+    gcStats.lastMaxBlockBytes = maxFreeBlock;
+
+    if (gcStats.minFreeBytes == 0 || gcStats.minFreeBytes > freeSize)
+        gcStats.minFreeBytes = freeSize;
 
     if (flags & 1)
-        DMESG("GC %d/%d free", freeSize, totalSize);
+        DMESG("GC %d/%d free; %d maxBlock", freeSize, totalSize, maxFreeBlock);
     else
-        LOG("GC %d/%d free", freeSize, totalSize);
+        LOG("GC %d/%d free; %d maxBlock", freeSize, totalSize, maxFreeBlock);
 
 #ifndef GC_GET_HEAP_SIZE
     // if the heap is 90% full, allocate a new block
@@ -644,6 +676,7 @@ void gcReset() {
     if (workQueue.getLength())
         oops(41);
 
+    memset(&gcStats, 0, sizeof(gcStats));
     firstFree = NULL;
     for (auto h = firstBlock; h; h = h->next) {
         setupFreeBlock(h);
