@@ -81,7 +81,7 @@ static void initRandomSeed() {
     seedRandom(seed);
 }
 
-#ifdef NRF52840
+#if defined(NRF52840) || defined(NRF52833)
 #define IS_3_3_V() ((NRF_UICR->REGOUT0 & 7) == 5)
 #else
 #define IS_3_3_V() 1
@@ -100,7 +100,7 @@ static void disableNFConPins() {
         if (NRF_UICR->NFCPINS)
             NRF_UICR->NFCPINS = 0;
 
-#ifdef NRF52840
+#if defined(NRF52840) || defined(NRF52833)
         // Set VDD to 3.3V
         if ((NRF_UICR->REGOUT0 & 7) != 5)
             NRF_UICR->REGOUT0 = (NRF_UICR->REGOUT0 & ~7) | 5;

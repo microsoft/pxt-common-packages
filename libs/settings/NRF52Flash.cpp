@@ -4,7 +4,7 @@
 //#define LOG DMESG
 #define LOG NOLOG
 
-#if defined(NRF52832) || defined(NRF52840) || defined(NRF52833)
+#if defined(NRF52_SERIES)
 namespace codal {
 
 #define waitForLast() while ((NRF_NVMC->READY & NVMC_READY_READY_Msk) == 0);

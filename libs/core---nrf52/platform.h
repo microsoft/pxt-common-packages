@@ -12,7 +12,7 @@
 
 #define PAGE_SIZE 4096
 
-#ifdef NRF52840
+#if defined(NRF52840) || defined(NRF52833)
 #define DEV_NUM_PINS 48
 #else
 #define DEV_NUM_PINS 32

@@ -8,6 +8,12 @@ using namespace codal;
 
 namespace settings {
 
+#if defined(SAMD51)
+#define SETTINGS_SIZE (2 * 1024)
+#else
+#define SETTINGS_SIZE (32 * 1024)
+#endif
+
 class WStorage {
   public:
     CODAL_FLASH flash;
@@ -17,14 +23,18 @@ class WStorage {
     WStorage()
         : flash(),
 #if defined(STM32F4)
-          fs(flash, 0x8008000, 32 * 1024),
+          fs(flash, 0x8008000, SETTINGS_SIZE),
 #elif defined(SAMD51)
-          fs(flash, 512 * 1024 - 32 * 1024, 32 * 1024),
+          fs(flash, 512 * 1024 - SETTINGS_SIZE, SETTINGS_SIZE),
 #elif defined(SAMD21)
-          fs(flash, 256 * 1024 - 2 * 1024, 2 * 1024),
+          fs(flash, 256 * 1024 - SETTINGS_SIZE, SETTINGS_SIZE),
 #elif defined(NRF52_SERIES)
 #define NRF_BOOTLOADER_START *(uint32_t *)0x10001014
-          fs(flash, NRF_BOOTLOADER_START - 32 * 1024, 32 * 1024),
+          fs(flash,
+             128 * 1024 < NRF_BOOTLOADER_START && NRF_BOOTLOADER_START < (uint32_t)flash.totalSize()
+                 ? NRF_BOOTLOADER_START - SETTINGS_SIZE
+                 : flash.totalSize() - SETTINGS_SIZE,
+             SETTINGS_SIZE),
 #else
           fs(flash),
 #endif
