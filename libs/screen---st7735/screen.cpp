@@ -123,7 +123,12 @@ int setScreenBrightnessSupported() {
     if (bl->name == PA06)
         return 0;
 #endif
+#ifdef NRF52_SERIES
+    // PWM not implemented yet
+    return 0;
+#else
     return 1;
+#endif
 }
 
 //%
