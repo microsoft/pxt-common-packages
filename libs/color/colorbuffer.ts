@@ -24,7 +24,7 @@ namespace color {
 
         static fromBuffer(buffer: Buffer, layout: ColorBufferLayout) {
             const b = new ColorBuffer(0, layout);
-            b.buf = buffer;
+            b.buf = buffer.slice();
             return b;
         }
 
@@ -81,8 +81,8 @@ namespace color {
 
         /**
          * Writes the content of the src color buffer starting at the start dstOffset in the current buffer
-         * @param dstOffset 
-         * @param src 
+         * @param dstOffset
+         * @param src
          */
         write(dstOffset: number, src: ColorBuffer): void {
             if (this.layout == src.layout) {
