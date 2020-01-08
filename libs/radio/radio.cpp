@@ -6,6 +6,22 @@ using namespace pxt;
 #define CODAL_RADIO MicroBitRadio*
 #endif
 
+#ifndef DEVICE_OK
+#define DEVICE_OK MICROBIT_OK
+#endif
+
+#ifndef DEVICE_RADIO_MAX_PACKET_SIZE
+#define DEVICE_RADIO_MAX_PACKET_SIZE MICROBIT_RADIO_MAX_PACKET_SIZE
+#endif
+
+#ifndef DEVICE_ID_RADIO
+#define DEVICE_ID_RADIO MICROBIT_ID_RADIO
+#endif
+
+#ifndef DEVICE_RADIO_EVT_DATAGRAM
+#define DEVICE_RADIO_EVT_DATAGRAM MICROBIT_RADIO_EVT_DATAGRAM
+#endif
+
 //% color=#E3008C weight=96 icon="\uf012"
 namespace radio {
     
@@ -17,7 +33,7 @@ namespace radio {
 
     int radioEnable() {
         int r = getRadio()->enable();
-        if (r != MICROBIT_OK) {
+        if (r != DEVICE_OK) {
             uBit.panic(43);
             return r;
         }
@@ -38,7 +54,7 @@ namespace radio {
     //% weight=1
     //% help=radio/raise-event
     void raiseEvent(int src, int value) {
-        if (radioEnable() != MICROBIT_OK) return;
+        if (radioEnable() != DEVICE_OK) return;
 
         getRadio()->event.eventReceived(MicroBitEvent(src, value, CREATE_ONLY));
     }
@@ -48,17 +64,17 @@ namespace radio {
      */
     //%
     Buffer readRawPacket() {
-        if (radioEnable() != MICROBIT_OK) return mkBuffer(NULL, 0);
+        if (radioEnable() != DEVICE_OK) return mkBuffer(NULL, 0);
 
         PacketBuffer p = getRadio()->datagram.recv();
         if (p == PacketBuffer::EmptyPacket)
             return mkBuffer(NULL, 0);
 
         int rssi = p.getRSSI();
-        uint8_t buf[MICROBIT_RADIO_MAX_PACKET_SIZE + sizeof(int)]; // packet length + rssi
+        uint8_t buf[DEVICE_RADIO_MAX_PACKET_SIZE + sizeof(int)]; // packet length + rssi
         memset(buf, 0, sizeof(buf));
         memcpy(buf, p.getBytes(), p.length()); // data
-        memcpy(buf + MICROBIT_RADIO_MAX_PACKET_SIZE, &rssi, sizeof(int)); // RSSi - assumes Int32LE layout
+        memcpy(buf + DEVICE_RADIO_MAX_PACKET_SIZE, &rssi, sizeof(int)); // RSSi - assumes Int32LE layout
         return mkBuffer(buf, sizeof(buf));
     }
 
@@ -67,7 +83,7 @@ namespace radio {
      */
     //% async
     void sendRawPacket(Buffer msg) {
-        if (radioEnable() != MICROBIT_OK || NULL == msg) return;
+        if (radioEnable() != DEVICE_OK || NULL == msg) return;
 
         // don't send RSSI data; and make sure no buffer underflow
         int len = msg->length - sizeof(int);
@@ -83,9 +99,9 @@ namespace radio {
     //% blockId=radio_datagram_received_event block="radio on data received" blockGap=8
     //% deprecated=true
     void onDataReceived(Action body) {
-        if (radioEnable() != MICROBIT_OK) return;
+        if (radioEnable() != DEVICE_OK) return;
 
-        registerWithDal(MICROBIT_ID_RADIO, MICROBIT_RADIO_EVT_DATAGRAM, body);
+        registerWithDal(DEVICE_ID_RADIO, DEVICE_RADIO_EVT_DATAGRAM, body);
         getRadio()->datagram.recv(); // wake up read code
     }
 
@@ -98,7 +114,7 @@ namespace radio {
     //% blockId=radio_set_group block="radio set group %ID"
     //% id.min=0 id.max=255
     void setGroup(int id) {
-        if (radioEnable() != MICROBIT_OK) return;
+        if (radioEnable() != DEVICE_OK) return;
 
         getRadio()->setGroup(id);
     }
@@ -113,7 +129,7 @@ namespace radio {
     //% power.min=0 power.max=7
     //% advanced=true
     void setTransmitPower(int power) {
-        if (radioEnable() != MICROBIT_OK) return;
+        if (radioEnable() != DEVICE_OK) return;
 
         getRadio()->setTransmitPower(power);
     }
@@ -128,7 +144,7 @@ namespace radio {
     //% band.min=0 band.max=83
     //% advanced=true
     void setFrequencyBand(int band) {
-        if (radioEnable() != MICROBIT_OK) return;
+        if (radioEnable() != DEVICE_OK) return;
         getRadio()->setFrequencyBand(band);
     }
 }
