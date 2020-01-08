@@ -1,4 +1,6 @@
 namespace radio {
+    const BROADCAST_GENERAL_ID = 2000;
+
     /**
      * Gets the message code
      */
@@ -21,7 +23,7 @@ namespace radio {
     //% help=radio/send-message
     export function sendMessage(msg: number): void {
         // 0 is MICROBIT_EVT_ANY, shifting by 1
-        radio.raiseEvent(DAL.MES_BROADCAST_GENERAL_ID, msg + 1);
+        radio.raiseEvent(BROADCAST_GENERAL_ID, msg + 1);
     }
 
     /**
@@ -34,6 +36,6 @@ namespace radio {
     //% weight=199
     //% help=radio/on-received-message
     export function onReceivedMessage(msg: number, handler: () => void) {
-        control.onEvent(DAL.MES_BROADCAST_GENERAL_ID, msg + 1, handler);
+        control.onEvent(BROADCAST_GENERAL_ID, msg + 1, handler);
     }
 }
