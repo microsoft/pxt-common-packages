@@ -31,7 +31,7 @@ Some panic codes are for general errors that might occur while your program runs
 * **914** (`PANIC_CALLED_FROM_ISR`): the current code isn't allowed to run in an interrupt service routine (ISR)
 * **915** (`PANIC_HEAP_DUMPED`): the contents of memory was output to a debug port
 * **916** (`PANIC_STACK_OVERFLOW`): stack size limit for the fiber was exceeded
-* **917** (`PANIC_BLOCKING_TO_STRING`): inline execution blocked due to existing a resume context
+* **917** (`PANIC_BLOCKING_TO_STRING`): inline execution blocked due to an existing resume context
 * **918** (`PANIC_VM_ERROR`): VM execution context error
 * **920** (`PANIC_SETTINGS_CLEARED`): storage required for system settings, user settings were cleared
 * **921** (`PANIC_SETTINGS_OVERLOAD`): frequency of writes to settings storage is too high
