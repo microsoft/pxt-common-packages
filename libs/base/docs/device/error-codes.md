@@ -30,6 +30,14 @@ Some panic codes are for general errors that might occur while your program runs
 * **913** (`PANIC_INVALID_IMAGE`): the data for a screen image data is invalid or formatted incorrectly
 * **914** (`PANIC_CALLED_FROM_ISR`): the current code isn't allowed to run in an interrupt service routine (ISR)
 * **915** (`PANIC_HEAP_DUMPED`): the contents of memory was output to a debug port
+* **916** (`PANIC_STACK_OVERFLOW`): stack size limit for the fiber was exceeded
+* **917** (`PANIC_BLOCKING_TO_STRING`): inline execution blocked due to existing a resume context
+* **918** (`PANIC_VM_ERROR`): VM execution context error
+* **920** (`PANIC_SETTINGS_CLEARED`): storage required for system settings, user settings were cleared
+* **921** (`PANIC_SETTINGS_OVERLOAD`): frequency of writes to settings storage is too high
+* **922** (`PANIC_SETTINGS_SECRET_MISSING`): settings storage in flash memory is inconsistent
+* **923** (`PANIC_DELETE_ON_CLASS`): a settings key delete was attempted on a class
+* **924** (`PANIC_OUT_OF_TIMERS`): no more timers are available
 * **980** (`PANIC_CAST_FROM_UNDEFINED`): attempted cast from an `undefined` value to another type
 * **981** (`PANIC_CAST_FROM_BOOLEAN`): attempted cast from a [boolean](/types/boolean) value to an incompatible type
 * **982** (`PANIC_CAST_FROM_NUMBER`): attempted cast from a [number](/types) value to an incompatible type or no conversion is available
