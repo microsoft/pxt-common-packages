@@ -17,6 +17,8 @@ enum RadioPacketProperty {
 //% color=#E3008C weight=96 icon="\uf012"
 namespace radio {
 
+    // keep in sync with CODAL
+    const RADIO_MAX_PACKET_SIZE = ??;
     const MAX_FIELD_DOUBLE_NAME_LENGTH = 8;
     const MAX_PAYLOAD_LENGTH = 20;
     const PACKET_PREFIX_LENGTH = 9;
@@ -400,7 +402,7 @@ namespace radio {
     }
 
     function sendPacket(packet: RadioPacket) {
-        packet.time = input.runningTime();
+        packet.time = control.millis();
         packet.serial = transmittingSerial ? control.deviceSerialNumber() : 0;
         radio.sendRawPacket(packet.data);
     }
