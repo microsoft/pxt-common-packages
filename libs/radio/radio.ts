@@ -18,7 +18,7 @@ enum RadioPacketProperty {
 namespace radio {
 
     // keep in sync with CODAL
-    const RADIO_MAX_PACKET_SIZE = ??;
+    const RADIO_MAX_PACKET_SIZE = 32;
     const MAX_FIELD_DOUBLE_NAME_LENGTH = 8;
     const MAX_PAYLOAD_LENGTH = 20;
     const PACKET_PREFIX_LENGTH = 9;
@@ -175,7 +175,7 @@ namespace radio {
         }
 
         private constructor(public readonly data?: Buffer) {
-            if (!data) this.data = control.createBuffer(DAL.MICROBIT_RADIO_MAX_PACKET_SIZE + 4);
+            if (!data) this.data = control.createBuffer(RADIO_MAX_PACKET_SIZE + 4);
         }
 
         get signal() {
