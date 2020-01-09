@@ -4,7 +4,7 @@ namespace pxsim {
     }
 
     export function getRadioState() {
-        return (board() as RadioBoard).radioState;
+        return (board() as any as RadioBoard).radioState;
     }
 
     export interface PacketBuffer {
