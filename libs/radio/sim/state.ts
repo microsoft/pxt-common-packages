@@ -1,5 +1,5 @@
 namespace pxsim {
-    export interface RadioBoard extends CommonBoard {
+    export interface RadioBoard extends EventBusBoard {
         radioState: RadioState;
     }
 
@@ -35,7 +35,7 @@ namespace pxsim {
             const state = getRadioState();  
             if (this.datagram.length < 4)
                 this.datagram.push(packet);
-            (<CommonBoard>runtime.board).bus.queue(this.dal.ID_RADIO, this.dal.RADIO_EVT_DATAGRAM);
+            (<EventBusBoard>runtime.board).bus.queue(this.dal.ID_RADIO, this.dal.RADIO_EVT_DATAGRAM);
         }
 
         send(payload: SimulatorRadioPacketPayload) {
