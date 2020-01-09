@@ -92,12 +92,12 @@ namespace radio {
     }
 
     /**
-     * Registers code to run when a packet is received over radio.
+     * Used internally by the library.
      */
     //% help=radio/on-data-received
-    //% weight=50
+    //% weight=0
     //% blockId=radio_datagram_received_event block="radio on data received" blockGap=8
-    //% deprecated=true
+    //% deprecated=true blockHidden=1
     void onDataReceived(Action body) {
         if (radioEnable() != DEVICE_OK) return;
 
