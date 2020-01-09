@@ -33,17 +33,17 @@ namespace radio {
     // Serial number defaults to 0 unless enabled by user
 
     // payload: number (9 ... 12)
-    const PACKET_TYPE_NUMBER = 0;
+    export const PACKET_TYPE_NUMBER = 0;
     // payload: number (9 ... 12), name length (13), name (14 ... 26)
-    const PACKET_TYPE_VALUE = 1;
+    export const PACKET_TYPE_VALUE = 1;
     // payload: string length (9), string (10 ... 28)
-    const PACKET_TYPE_STRING = 2;
+    export const PACKET_TYPE_STRING = 2;
     // payload: buffer length (9), buffer (10 ... 28)
-    const PACKET_TYPE_BUFFER = 3;
+    export const PACKET_TYPE_BUFFER = 3;
     // payload: number (9 ... 16)
-    const PACKET_TYPE_DOUBLE = 4;
+    export const PACKET_TYPE_DOUBLE = 4;
     // payload: number (9 ... 16), name length (17), name (18 ... 26)
-    const PACKET_TYPE_DOUBLE_VALUE = 5;
+    export const PACKET_TYPE_DOUBLE_VALUE = 5;
 
     let transmittingSerial: boolean;
     let initialized = false;
