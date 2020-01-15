@@ -35,7 +35,7 @@ class SmartDisplay {
     void step();
     void sendDone(Event);
     static void stepStatic(void *);
-    void onFlowLow(Event);
+    void onFlowHi(Event);
 
   public:
     SmartDisplay(SPI *spi, Pin *cs, Pin *flow);
@@ -294,7 +294,9 @@ void updateScreen(Image_ img) {
         if (display->newPalette) {
             display->newPalette = false;
         } else {
-            palette = NULL;
+            // smart mode always sends palette
+            if (!display->smart)
+                palette = NULL;
         }
 
         memcpy(display->screenBuf, img->pix(), img->pixLength());
@@ -328,8 +330,10 @@ void updateStats(String msg) {
 struct JDSPIHeader {
     uint8_t size;
     uint8_t service_number;
-    uint16_t reserved;
+    uint16_t magic;
 };
+
+#define JD_MAGIC 0x3c5e
 
 #define SMART_SET_ADDR 0x01
 #define SMART_SET_PALETTE 0x02
@@ -351,11 +355,11 @@ SmartDisplay::SmartDisplay(SPI *spi, Pin *cs, Pin *flow) : spi(spi), cs(cs), flo
     inProgress = false;
     stepWaiting = false;
     EventModel::defaultEventBus->listen(DEVICE_ID_DISPLAY, 4243, this, &SmartDisplay::sendDone);
-    if (flow) {
-        EventModel::defaultEventBus->listen(flow->id, DEVICE_PIN_EVT_FALL, onFlowLow,
-                                            MESSAGE_BUS_LISTENER_IMMEDIATE);
-        flow->eventOn(DEVICE_PIN_EVT_FALL);
-    }
+
+    flow->getDigitalValue(PullMode::Down);
+    EventModel::defaultEventBus->listen(flow->id, DEVICE_PIN_EVENT_ON_EDGE, this,
+                                        &SmartDisplay::onFlowHi, MESSAGE_BUS_LISTENER_IMMEDIATE);
+    flow->eventOn(DEVICE_PIN_EVT_RISE);
 }
 
 void SmartDisplay::sendDone(Event) {
@@ -371,7 +375,7 @@ void SmartDisplay::sendPkt(uint32_t command, uint32_t size) {
     auto hd = (JDSPIHeader *)pktBuffer;
     hd->size = size - sizeof(JDSPIHeader);
     hd->service_number = 1;
-    hd->reserved = 0;
+    hd->magic = JD_MAGIC;
     auto cmd = (CmdSetAddr *)pktBuffer;
     cmd->command = command;
     size = sizeof(pktBuffer);
@@ -384,7 +388,7 @@ void SmartDisplay::stepStatic(void *p) {
 
 // We assume EIC IRQ pre-empts SPI/DMA IRQ (that is the numerical priority value of EIC is lower)
 // This is true for codal STM32, SAMD, and NRF52
-void SmartDisplay::onFlowLow(Event) {
+void SmartDisplay::onFlowHi(Event) {
     if (stepWaiting)
         step();
 }
@@ -394,7 +398,7 @@ void SmartDisplay::step() {
         cs->setDigitalValue(1);
 
     target_disable_irq();
-    if (flow && flow->getDigitalValue()) {
+    if (!flow->getDigitalValue()) {
         stepWaiting = true;
         target_enable_irq();
         return;
@@ -453,6 +457,8 @@ int SmartDisplay::sendIndexedImage(const uint8_t *src, unsigned width, unsigned 
     dataPtr = src;
 
     this->palette = palette;
+
+    memset(pktBuffer, 0, sizeof(pktBuffer));
 
     step();
 
