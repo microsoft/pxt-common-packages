@@ -9,10 +9,55 @@
 
 namespace pxt {
 
+struct Rect {
+    uint16_t x;
+    uint16_t y;
+    uint16_t width;
+    uint16_t height;
+};
+
+class SmartDisplay {
+    Rect addr;
+    SPI *spi;
+    Pin *cs;
+    Pin *flow;
+    uint32_t dataLeft;
+    const uint8_t *dataPtr;
+    uint32_t *palette;
+    uint8_t pktBuffer[252];
+    uint8_t recvBuffer[252];
+    uint8_t bytesPerTransfer;
+    bool inProgress;
+    bool addrSent;
+    volatile bool stepWaiting;
+
+    void sendPkt(uint32_t command, uint32_t size);
+    void step();
+    void sendDone(Event);
+    static void stepStatic(void *);
+    void onFlowLow(Event);
+
+  public:
+    SmartDisplay(SPI *spi, Pin *cs, Pin *flow);
+    void setAddrWindow(int x, int y, int w, int h) {
+        addr.x = x;
+        addr.y = y;
+        addr.width = w;
+        addr.height = h;
+    }
+    void waitForSendDone() {
+        if (inProgress)
+            fiber_wait_for_event(DEVICE_ID_DISPLAY, 4242);
+    }
+
+    int sendIndexedImage(const uint8_t *src, unsigned width, unsigned height, uint32_t *palette);
+};
+
 class WDisplay {
   public:
     ScreenIO *io;
     ST7735 *lcd;
+    SmartDisplay *smart;
 
     uint32_t currPalette[16];
     bool newPalette;
@@ -50,12 +95,16 @@ class WDisplay {
         int dispTp = getConfig(CFG_DISPLAY_TYPE, DISPLAY_TYPE_ST7735);
 
         doubleSize = false;
+        smart = NULL;
 
         if (dispTp == DISPLAY_TYPE_ST7735)
             lcd = new ST7735(*io, *LOOKUP_PIN(DISPLAY_CS), *LOOKUP_PIN(DISPLAY_DC));
         else if (dispTp == DISPLAY_TYPE_ILI9341) {
             lcd = new ILI9341(*io, *LOOKUP_PIN(DISPLAY_CS), *LOOKUP_PIN(DISPLAY_DC));
             doubleSize = true;
+        } else if (dispTp == DISPLAY_TYPE_SMART) {
+            lcd = NULL;
+            smart = new SmartDisplay(spi, LOOKUP_PIN(DISPLAY_CS), LOOKUP_PIN(DISPLAY_DC));
         } else
             target_panic(PANIC_SCREEN_ERROR);
 
@@ -74,6 +123,10 @@ class WDisplay {
                 freq = 15;
             spi->setFrequency(freq * 1000000);
             spi->setMode(0);
+            auto cs = LOOKUP_PIN(DISPLAY_CS);
+            if (cs)
+                cs->setDigitalValue(1);
+
             // make sure the SPI peripheral is initialized before toggling reset
             spi->write(0);
         }
@@ -91,8 +144,11 @@ class WDisplay {
             bl->setDigitalValue(1);
         }
 
-        lcd->init();
-        lcd->configure(madctl, frmctr1);
+        if (lcd) {
+            lcd->init();
+            lcd->configure(madctl, frmctr1);
+        }
+
         width = getConfig(CFG_DISPLAY_WIDTH, 160);
         height = getConfig(CFG_DISPLAY_HEIGHT, 128);
         displayHeight = height;
@@ -107,9 +163,29 @@ class WDisplay {
     }
 
     void setAddrStatus() {
-        lcd->setAddrWindow(offX, offY + displayHeight, width, height - displayHeight);
+        if (lcd)
+            lcd->setAddrWindow(offX, offY + displayHeight, width, height - displayHeight);
+        else
+            smart->setAddrWindow(offX, offY + displayHeight, width, height - displayHeight);
     }
-    void setAddrMain() { lcd->setAddrWindow(offX, offY, width, displayHeight); }
+    void setAddrMain() {
+        if (lcd)
+            lcd->setAddrWindow(offX, offY, width, displayHeight);
+        else
+            smart->setAddrWindow(offX, offY, width, displayHeight);
+    }
+    void waitForSendDone() {
+        if (lcd)
+            lcd->waitForSendDone();
+        else
+            smart->waitForSendDone();
+    }
+    int sendIndexedImage(const uint8_t *src, unsigned width, unsigned height, uint32_t *palette) {
+        if (lcd)
+            return lcd->sendIndexedImage(src, width, height, palette);
+        else
+            return smart->sendIndexedImage(src, width, height, palette);
+    }
 };
 
 SINGLETON_IF_PIN(WDisplay, DISPLAY_MOSI);
@@ -211,7 +287,7 @@ void updateScreen(Image_ img) {
             target_panic(PANIC_SCREEN_ERROR);
 
         // DMESG("wait for done");
-        display->lcd->waitForSendDone();
+        display->waitForSendDone();
 
         auto palette = display->currPalette;
 
@@ -224,19 +300,19 @@ void updateScreen(Image_ img) {
         memcpy(display->screenBuf, img->pix(), img->pixLength());
 
         // DMESG("send");
-        display->lcd->sendIndexedImage(display->screenBuf, img->width(), img->height(), palette);
+        display->sendIndexedImage(display->screenBuf, img->width(), img->height(), palette);
     }
 
     if (display->lastStatus && !display->doubleSize) {
-        display->lcd->waitForSendDone();
+        display->waitForSendDone();
         img = display->lastStatus;
         auto barHeight = display->height - display->displayHeight;
         if (img->bpp() != 4 || barHeight != img->height() || img->width() != display->width)
             target_panic(PANIC_SCREEN_ERROR);
         memcpy(display->screenBuf, img->pix(), img->pixLength());
         display->setAddrStatus();
-        display->lcd->sendIndexedImage(display->screenBuf, img->width(), img->height(), NULL);
-        display->lcd->waitForSendDone();
+        display->sendIndexedImage(display->screenBuf, img->width(), img->height(), NULL);
+        display->waitForSendDone();
         display->setAddrMain();
         display->lastStatus = NULL;
     }
@@ -248,4 +324,139 @@ void updateScreen(Image_ img) {
 void updateStats(String msg) {
     // ignore...
 }
+
+struct JDSPIHeader {
+    uint8_t size;
+    uint8_t service_number;
+    uint16_t reserved;
+};
+
+#define SMART_SET_ADDR 0x01
+#define SMART_SET_PALETTE 0x02
+#define SMART_SET_PIXELS 0x03
+
+struct CmdSetAddr {
+    JDSPIHeader hd;
+    uint32_t command; // SMART_SET_ADDR
+    Rect rect;
+};
+
+struct CmdSetPalette {
+    JDSPIHeader hd;
+    uint32_t command; // SMART_SET_PALETTE
+    uint32_t palette[16];
+};
+
+SmartDisplay::SmartDisplay(SPI *spi, Pin *cs, Pin *flow) : spi(spi), cs(cs), flow(flow) {
+    inProgress = false;
+    stepWaiting = false;
+    EventModel::defaultEventBus->listen(DEVICE_ID_DISPLAY, 4243, this, &SmartDisplay::sendDone);
+    if (flow) {
+        EventModel::defaultEventBus->listen(flow->id, DEVICE_PIN_EVT_FALL, onFlowLow,
+                                            MESSAGE_BUS_LISTENER_IMMEDIATE);
+        flow->eventOn(DEVICE_PIN_EVT_FALL);
+    }
+}
+
+void SmartDisplay::sendDone(Event) {
+    inProgress = false;
+    Event(DEVICE_ID_DISPLAY, 4242);
+}
+
+void SmartDisplay::sendPkt(uint32_t command, uint32_t size) {
+    if (size > sizeof(pktBuffer))
+        target_panic(PANIC_SCREEN_ERROR);
+    if (cs)
+        cs->setDigitalValue(0);
+    auto hd = (JDSPIHeader *)pktBuffer;
+    hd->size = size - sizeof(JDSPIHeader);
+    hd->service_number = 1;
+    hd->reserved = 0;
+    auto cmd = (CmdSetAddr *)pktBuffer;
+    cmd->command = command;
+    size = sizeof(pktBuffer);
+    spi->startTransfer(pktBuffer, size, recvBuffer, size, &SmartDisplay::stepStatic, this);
+}
+
+void SmartDisplay::stepStatic(void *p) {
+    ((SmartDisplay *)p)->step();
+}
+
+// We assume EIC IRQ pre-empts SPI/DMA IRQ (that is the numerical priority value of EIC is lower)
+// This is true for codal STM32, SAMD, and NRF52
+void SmartDisplay::onFlowLow(Event) {
+    if (stepWaiting)
+        step();
+}
+
+void SmartDisplay::step() {
+    if (cs)
+        cs->setDigitalValue(1);
+
+    target_disable_irq();
+    if (flow && flow->getDigitalValue()) {
+        stepWaiting = true;
+        target_enable_irq();
+        return;
+    } else {
+        stepWaiting = false;
+    }
+    target_enable_irq();
+
+    if (palette) {
+        auto pal = (CmdSetPalette *)pktBuffer;
+        memcpy(pal->palette, palette, 16 * sizeof(uint32_t));
+        palette = NULL;
+        sendPkt(SMART_SET_PALETTE, sizeof(CmdSetPalette));
+        return;
+    }
+
+    if (!addrSent) {
+        addrSent = true;
+        auto addr = (CmdSetAddr *)pktBuffer;
+        addr->rect = this->addr;
+        sendPkt(SMART_SET_ADDR, sizeof(CmdSetAddr));
+        return;
+    }
+
+    if (dataLeft > 0) {
+        uint32_t transfer = bytesPerTransfer;
+        if (dataLeft < transfer)
+            transfer = dataLeft;
+        memcpy(pktBuffer + sizeof(JDSPIHeader) + 4, dataPtr, transfer);
+        dataPtr += transfer;
+        dataLeft -= transfer;
+        sendPkt(SMART_SET_PIXELS, transfer + sizeof(JDSPIHeader) + 4);
+    } else {
+        // trigger sendDone(), which executes outside of IRQ context, so there
+        // is no reace with waitForSendDone
+        Event(DEVICE_ID_DISPLAY, 4243);
+    }
+}
+
+int SmartDisplay::sendIndexedImage(const uint8_t *src, unsigned width, unsigned height,
+                                   uint32_t *palette) {
+    if (height & 1 || !height || !width)
+        target_panic(PANIC_SCREEN_ERROR);
+    if (width != addr.width || height != addr.height)
+        target_panic(PANIC_SCREEN_ERROR);
+    if (inProgress)
+        target_panic(PANIC_SCREEN_ERROR);
+
+    inProgress = true;
+    addrSent = false;
+
+    int numcols = (sizeof(pktBuffer) - 16) / (height / 2);
+
+    bytesPerTransfer = numcols * (height / 2);
+    dataLeft = (height / 2) * width;
+    dataPtr = src;
+
+    this->palette = palette;
+
+    step();
+
+    return 0;
+}
+
 } // namespace pxt
