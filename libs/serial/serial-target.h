@@ -53,14 +53,12 @@ class CodalSerialDeviceProxy {
         auto buf = mkBuffer(NULL, n);
         auto read = ser.read(buf->data, buf->length, SerialMode::ASYNC);
         if (read == DEVICE_SERIAL_IN_USE || read == 0) { // someone else is reading
-            decrRC(buf);
             return mkBuffer(NULL, 0);
         }
         if (buf->length != read) {
             registerGCObj(buf);
             auto buf2 = mkBuffer(buf->data, read);
             unregisterGCObj(buf);
-            decrRC(buf);
             buf = buf2;
         }
         return buf;

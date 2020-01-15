@@ -48,5 +48,5 @@ for (let tile of tiles.getTilesByType(image)) {
 
 ## See also #seealso
 
-[get tile](/reference/tiles/get-tile),
+[get tile location](/reference/tiles/get-tile-location),
 [set tile at](/reference/tiles/set-tile-at)

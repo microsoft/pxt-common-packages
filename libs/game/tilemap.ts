@@ -34,7 +34,7 @@ namespace tiles {
         }
 
         get tileSet(): number {
-            return this.tileMap.data.getTile(this._col, this._row);
+            return this.tileMap.getTileIndex(this._col, this._row);
         }
 
         /**
@@ -78,7 +78,7 @@ namespace tiles {
         }
 
         get tileSet(): number {
-            return this.tileMap.data.getTile(this._col, this._row);
+            return this.tileMap.getTileIndex(this._col, this._row);
         }
 
         /**
@@ -107,23 +107,20 @@ namespace tiles {
         protected layers: Image;
 
         protected tileset: Image[];
+        protected cachedTileView: Image[];
 
+        protected _scale: TileScale;
         protected _width: number;
         protected _height: number;
-
-        // ## LEGACY: DO NOT USE ##
-        protected _walls: boolean[];
 
         constructor(data: Buffer, layers: Image, tileset: Image[], scale: TileScale) {
             this.data = data;
             this.layers = layers;
             this.tileset = tileset;
+            this.scale = scale;
 
             this._width = data.getNumber(NumberFormat.UInt16LE, 0);
             this._height = data.getNumber(NumberFormat.UInt16LE, 2);
-
-            // ## LEGACY: DO NOT USE ##
-            this._walls = tileset.map(t => false);
         }
 
         get width(): number {
@@ -132,6 +129,15 @@ namespace tiles {
 
         get height(): number {
             return this._height;
+        }
+
+        get scale(): TileScale {
+            return this._scale;
+        }
+
+        set scale(s: TileScale) {
+            this._scale = s;
+            this.cachedTileView = [];
         }
 
         getTile(col: number, row: number) {
@@ -143,6 +149,10 @@ namespace tiles {
         setTile(col: number, row: number, tile: number) {
             if (this.isOutsideMap(col, row)) return;
 
+            if (this.data.isReadOnly()) {
+                this.data = this.data.slice();
+            }
+
             this.data.setUint8(TM_DATA_PREFIX_LENGTH + (col | 0) + (row | 0) * this.width, tile);
         }
 
@@ -151,7 +161,22 @@ namespace tiles {
         }
 
         getTileImage(index: number) {
-            return this.tileset[index];
+            const size = 1 << this.scale;
+            let cachedImage = this.cachedTileView[index];
+            if (!cachedImage) {
+                const originalImage = this.tileset[index];
+
+                if (originalImage) {
+                    if (originalImage.width <= size && originalImage.height <= size) {
+                        cachedImage = originalImage;
+                    } else {
+                        cachedImage = image.create(size, size);
+                        cachedImage.drawImage(originalImage, 0, 0);
+                    }
+                    this.cachedTileView[index] = cachedImage;
+                }
+            }
+            return cachedImage;
         }
 
         setWall(col: number, row: number, on: boolean) {
@@ -165,46 +190,10 @@ namespace tiles {
         isOutsideMap(col: number, row: number) {
             return col < 0 || col >= this.width || row < 0 || row >= this.height;
         }
-
-        /*
-         *  ##########################################
-         *  ##         LEGACY: DO NOT USE           ##
-         *  ##    Functions below are to support    ##
-         *  ##        old tilemap blocks only       ##
-         *  ##########################################
-         */
-        _setTileImage(index: number, img: Image, collisions: boolean) {
-            this.tileset[index] = img;
-            this._walls[index] = collisions;
-            for (let col = 0; col < this.width; ++col) {
-                for (let row = 0; row < this.height; ++row) {
-                    let currTile = this.getTile(col, row);
-                    if (currTile === index) {
-                        this.layers.setPixel(col, row, collisions ? TM_WALL : 0);
-                    }
-                }
-            }
-        }
-
-        _setWall(index: number, collisions: boolean) {
-            this._walls[index] = collisions;
-        }
-
-        _isWall(index: number) {
-            return this._walls[index];
-        }
-
-        _setMap(data: Buffer, layers: Image) {
-            this.data = data;
-            this.layers = layers;
-
-            this._width = data.getNumber(NumberFormat.UInt16LE, 0);
-            this._height = data.getNumber(NumberFormat.UInt16LE, 2);
-        }
     }
 
     export class TileMap {
-        scale: number
+        protected _scale: TileScale;
 
         protected _layer: number;
         protected _map: TileMapData;
@@ -219,19 +208,18 @@ namespace tiles {
             );
         }
 
-        // ## LEGACY: DO NOT USE ##
-        _legacyInit() {
-            let buffer = control.createBuffer(TM_DATA_PREFIX_LENGTH);
-            let layer = image.create(2, 2);
-            let tiles = [];
-            for (let i = 0; i < 16; ++i) {
-                tiles.push(mkColorTile(i, this.scale))
-            }
-
-            this._map = new TileMapData(buffer, layer, tiles, this.scale);
+        get scale() {
+            return this._scale;
         }
 
-        get data(): TileMapData {
+        set scale(s: TileScale) {
+            this._scale = s;
+            if (this._map) {
+                this._map.scale = s;
+            }
+        }
+
+        protected get data(): TileMapData {
             return this._map;
         }
 
@@ -265,35 +253,16 @@ namespace tiles {
             return !!this._map;
         }
 
-        // ## LEGACY: DO NOT USE ##
-        setTile(index: number, img: Image, collisions?: boolean) {
-            this._map._setTileImage(index, img, collisions);
-        }
-
-        // ## LEGACY: DO NOT USE ##
-        setMap(map: Image) {
-            let buffer = control.createBuffer(TM_DATA_PREFIX_LENGTH + (map.width * map.height));
-            let layer = image.create(map.width, map.height);
-
-            buffer.setNumber(NumberFormat.UInt16LE, 0, map.width);
-            buffer.setNumber(NumberFormat.UInt16LE, TM_DATA_PREFIX_LENGTH / 2, map.height);
-            for (let i = 0; i < map.width; i++) {
-                for (let j = 0; j < map.height; j++) {
-                    let p = map.getPixel(i, j);
-                    if (this._map._isWall(p)) layer.setPixel(i, j, TM_WALL);
-                    buffer.setUint8(TM_DATA_PREFIX_LENGTH + (i | 0) + (j | 0) * map.width, p);
-                }
-            }
-
-            this._map._setMap(buffer, layer);
-        }
-
         setData(map: TileMapData) {
             this._map = map;
         }
 
         public getTile(col: number, row: number): Location {
             return new Location(col, row, this);
+        }
+
+        public getTileIndex(col: number, row: number) {
+            return this.data.getTile(col, row);
         }
 
         public setTileAt(col: number, row: number, index: number): void {
@@ -326,16 +295,6 @@ namespace tiles {
                 }
             }
             return output;
-        }
-
-        // ## LEGACY: DO NOT USE ##
-        public _getTile(col: number, row: number): Tile {
-            return new Tile(col, row, this);
-        }
-
-        // ## LEGACY: DO NOT USE ##
-        public _getTilesByType(index: number): Tile[] {
-            return this.getTilesByType(index).map(loc => loc._toTile());
         }
 
         protected isInvalidIndex(index: number): boolean {
@@ -436,6 +395,10 @@ namespace tiles {
 
             return false;
         }
+
+        public getTileImage(index: number) {
+            return this.data.getTileImage(index);
+        }
     }
 
     function mkColorTile(index: number, scale: TileScale): Image {
@@ -450,7 +413,7 @@ namespace tiles {
         return new TileMapData(data, layer, tiles, scale)
     }
 
-    //% blockId=tilemap_editor block="set tilemap to %tilemap"
+    //% blockId=tilemap_editor block="set tilemap to $tilemap"
     //% weight=200 blockGap=8
     //% tilemap.fieldEditor="tilemap"
     //% tilemap.fieldOptions.decompileArgumentAsString="true"
@@ -466,8 +429,9 @@ namespace tiles {
      * @param loc
      * @param tile
      */
-    //% blockId=mapsettileat block="set %loc=mapgettile to %tile"
+    //% blockId=mapsettileat block="set $tile at $loc=mapgettile"
     //% tile.shadow=tileset_tile_picker
+    //% tile.decompileIndirectFixedInstances=true
     //% blockNamespace="scene" group="Tiles" blockGap=8
     //% help=tiles/set-tile-at
     export function setTileAt(loc: Location, tile: Image): void {
@@ -499,11 +463,11 @@ namespace tiles {
      * @param col
      * @param row
      */
-    //% blockId=mapgettile block="tilemap col %col row %row"
+    //% blockId=mapgettile block="tilemap col $col row $row"
     //% blockNamespace="scene" group="Tiles"
     //% weight=25 blockGap=8
-    //% help=tiles/get-tile
-    export function getTile(col: number, row: number): Location {
+    //% help=tiles/get-tile-location
+    export function getTileLocation(col: number, row: number): Location {
         const scene = game.currentScene();
         if (col == undefined || row == undefined || !scene.tileMap) return null;
         return scene.tileMap.getTile(col, row);
@@ -516,22 +480,17 @@ namespace tiles {
     export function getTileImage(loc: Location): Image {
         const scene = game.currentScene();
         if (!loc || !scene.tileMap) return img``;
-        return scene.tileMap.data.getTileImage(loc.tileSet);
+        return scene.tileMap.getTileImage(loc.tileSet);
     }
 
     /**
-     * Get all tiles in the tilemap with the given type (image).
-     * @param tile
+     * Get the image of a tile, given a (column, row) in the tilemap
+     * @param loc
      */
-    //% blockId=mapgettilestype block="array of all %tile locations"
-    //% tile.shadow=tileset_tile_picker
-    //% blockNamespace="scene" group="Tiles" blockGap=8 blockSetVariable="location list"
-    //% help=tiles/get-tiles-by-type
-    export function getTilesByType(tile: Image): Location[] {
+    export function getTileAt(col: number, row: number): Image {
         const scene = game.currentScene();
-        if (!tile || !scene.tileMap) return [];
-        const index = scene.tileMap.getImageType(tile);
-        return scene.tileMap.getTilesByType(index);
+        if (col == undefined || row == undefined || !scene.tileMap) return img``;
+        return scene.tileMap.getTileImage(tiles.getTileLocation(col, row).tileSet);
     }
 
     /**
@@ -553,8 +512,9 @@ namespace tiles {
      * @param sprite
      * @param tile
      */
-    //% blockId=mapplaceonrandomtile block="place %sprite=variables_get(mySprite) on top of random %tile"
+    //% blockId=mapplaceonrandomtile block="place $sprite=variables_get(mySprite) on top of random $tile"
     //% tile.shadow=tileset_tile_picker
+    //% tile.decompileIndirectFixedInstances=true
     //% blockNamespace="scene" group="Tiles" blockGap=8
     //% help=tiles/place-on-random-tile
     export function placeOnRandomTile(sprite: Sprite, tile: Image): void {
@@ -562,5 +522,21 @@ namespace tiles {
         const tiles = getTilesByType(tile);
         if (tiles.length > 0)
             Math.pickRandom(tiles).place(sprite);
+    }
+
+    /**
+     * Get all tiles in the tilemap with the given type (image).
+     * @param tile
+     */
+    //% blockId=mapgettilestype block="array of all $tile locations"
+    //% tile.shadow=tileset_tile_picker
+    //% tile.decompileIndirectFixedInstances=true
+    //% blockNamespace="scene" group="Tiles" blockGap=8
+    //% help=tiles/get-tiles-by-type
+    export function getTilesByType(tile: Image): Location[] {
+        const scene = game.currentScene();
+        if (!tile || !scene.tileMap) return [];
+        const index = scene.tileMap.getImageType(tile);
+        return scene.tileMap.getTilesByType(index);
     }
 }

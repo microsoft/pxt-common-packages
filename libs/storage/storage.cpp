@@ -83,11 +83,9 @@ snorfs::File *getFile(String filename) {
     } else {
         if (filename && String_::compare(currFilename, filename) == 0)
             return currFile;
-        decrRC(currFilename);
         delete currFile;
     }
     currFilename = filename;
-    incrRC(currFilename);
     // TODO: fix UTF8 encoding
     currFile = filename == NULL ? NULL : st->fs.open(filename->getUTF8Data());
     return currFile;

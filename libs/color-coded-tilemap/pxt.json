@@ -1,0 +1,12 @@
+{
+    "name": "color-coded-tilemap",
+    "description": "Blocks for the color-coded tilemap",
+    "files": [
+        "README.md",
+        "tilemap.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "game": "file:../game"
+    }
+}

@@ -32,6 +32,14 @@ int getUint8(Buffer buf, int off) {
 }
 
 /**
+ * Returns false when the buffer can be written to.
+ */
+//%
+bool isReadOnly(Buffer buf) {
+    return buf->isReadOnly();
+}
+
+/**
 * Writes an unsigned byte at a particular location
 */
 //%

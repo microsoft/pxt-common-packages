@@ -59,3 +59,7 @@ for (let tile of scene.getTilesByType(8)) {
 
 [get tile](/reference/scene/get-tile),
 [set tile at](/reference/scene/set-tile-at)
+
+```package
+color-coded-tilemap
+```

@@ -47,9 +47,7 @@ void setBinding(int source, int value, Action act) {
             break;
         }
     }
-    incr(act);
     if (curr) {
-        decr(curr->action);
         curr->action = act;
         return;
     }
@@ -478,9 +476,9 @@ String concat(String s, String other) {
     if (!other)
         other = (String)sNull;
     if (IS_EMPTY(s))
-        return (String)incrRC(other);
+        return other;
     if (IS_EMPTY(other))
-        return (String)incrRC(s);
+        return s;
 
     uint32_t lenA, lenB;
 
@@ -754,7 +752,6 @@ NUMBER toDouble(TNumber v) {
         // TODO avoid allocation
         auto tmp = String_::toNumber((String)v);
         auto r = toDouble(tmp);
-        decr(tmp);
         return r;
     } else {
         return NAN;
@@ -954,7 +951,6 @@ bool eq_bool(TValue a, TValue b) {
 //%
 bool switch_eq(TValue a, TValue b) {
     if (eq_bool(a, b)) {
-        decr(b);
         return true;
     }
     return false;
@@ -996,9 +992,7 @@ int toBoolDecr(TValue v) {
         return 1;
     if (v == TAG_FALSE)
         return 0;
-    int r = toBool(v);
-    decr(v);
-    return r;
+    return toBool(v);
 }
 
 // The integer, non-overflow case for add/sub/bit opts is handled in assembly
@@ -1299,7 +1293,7 @@ String toString(TValue v) {
     ValType t = valType(v);
 
     if (t == ValType::String) {
-        return (String)(void *)incr(v);
+        return (String)v;
     } else if (t == ValType::Number) {
         char buf[64];
 
@@ -1563,14 +1557,11 @@ int getConfig(int key, int defl) {
 namespace pxtrt {
 //%
 TValue ldlocRef(RefRefLocal *r) {
-    TValue tmp = r->v;
-    incr(tmp);
-    return tmp;
+    return r->v;
 }
 
 //%
 void stlocRef(RefRefLocal *r, TValue v) {
-    decr(r->v);
     r->v = v;
 }
 
@@ -1622,8 +1613,7 @@ TValue mapGetByString(RefMap *map, String key) {
     if (i < 0) {
         return 0;
     }
-    TValue r = incr(map->values.get(i));
-    return r;
+    return map->values.get(i);
 }
 
 #ifdef PXT_VM
@@ -1673,13 +1663,11 @@ TValue mapGet(RefMap *map, unsigned key) {
 void mapSetByString(RefMap *map, String key, TValue val) {
     int i = map->findIdx(key);
     if (i < 0) {
-        incrRC(key);
         map->keys.push((TValue)key);
         map->values.push(val);
     } else {
         map->values.set(i, val);
     }
-    incr(val);
 }
 
 void mapSet(RefMap *map, unsigned key, TValue val) {
@@ -1777,7 +1765,7 @@ void anyPrint(TValue v) {
             auto vt = getVTable(o);
             auto meth = ((RefObjectMethod)vt->methods[1]);
             if ((void *)meth == (void *)&anyPrint)
-                DMESG("[RefObject refs=%d vt=%p cl=%d sz=%d]", REFCNT(o), o->vtable, vt->classNo,
+                DMESG("[RefObject vt=%p cl=%d sz=%d]", o->vtable, vt->classNo,
                       vt->numbytes);
             else
                 meth(o);
@@ -1795,15 +1783,10 @@ void anyPrint(TValue v) {
 
 static void dtorDoNothing() {}
 
-#ifdef PXT_GC
 #define PRIM_VTABLE(name, objectTp, tp, szexpr)                                                    \
     static uint32_t name##_size(tp *p) { return TOWORDS(sizeof(tp) + szexpr); }                    \
     DEF_VTABLE(name##_vt, tp, objectTp, (void *)&dtorDoNothing, (void *)&anyPrint, 0,              \
                (void *)&name##_size)
-#else
-#define PRIM_VTABLE(name, objectTp, tp, szexpr)                                                    \
-    DEF_VTABLE(name##_vt, tp, objectTp, (void *)&dtorDoNothing, (void *)&anyPrint)
-#endif
 
 #define NOOP ((void)0)
 

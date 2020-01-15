@@ -77,33 +77,6 @@ namespace sprites {
 
 namespace scene {
     /**
-     * Run code when a certain kind of sprite hits a tile
-     * @param direction
-     * @param tile
-     * @param handler
-     */
-    //% group="Collisions"
-    //% weight=100 draggableParameters="reporter"
-    //% blockId=spritesollisions block="on $sprite of kind $kind=spritekind hits wall $tile=colorindexpicker"
-    //% deprecated=1
-    //% help=scene/on-hit-tile
-    export function onHitTile(kind: number, tile: number, handler: (sprite: Sprite) => void) {
-        if (kind == undefined || tile < 0 || tile > 0xF || !handler) return;
-
-        const collisionHandlers = game.currentScene().collisionHandlers;
-        if (!collisionHandlers[tile]) {
-            collisionHandlers[tile] = [];
-        }
-
-        collisionHandlers[tile].push(
-            new scene.SpriteHandler(
-                kind,
-                handler
-            )
-        );
-    }
-
-    /**
      * Run code when a certain kind of sprite overlaps a tile
      * @param kind
      * @param tile

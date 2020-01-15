@@ -501,6 +501,7 @@ class Sprite extends sprites.BaseSprite {
             else { // needs a new sprite
                 this.sayBubbleSprite = sprites.create(sayImg, -1);
                 this.sayBubbleSprite.setFlag(SpriteFlag.Ghost, true);
+                this.sayBubbleSprite.setFlag(SpriteFlag.RelativeToCamera, !!(this.flags & sprites.Flag.RelativeToCamera))
             }
         }
         this.sayBubbleSprite.data[SAYKEY] = key;
@@ -590,7 +591,7 @@ class Sprite extends sprites.BaseSprite {
     //% blockId=startEffectOnSprite block="%sprite(mySprite) start %effect effect || for %duration=timePicker|ms"
     //% help=sprites/sprite/start-effect
     startEffect(effect: effects.ParticleEffect, duration?: number) {
-        effect.start(this, duration);
+        effect.start(this, duration, null, !!(this.flags & sprites.Flag.RelativeToCamera));
     }
 
     /**
@@ -695,6 +696,10 @@ class Sprite extends sprites.BaseSprite {
     setFlag(flag: SpriteFlag, on: boolean) {
         if (on) this.flags |= flag
         else this.flags = ~(~this.flags | flag);
+
+        if (flag === SpriteFlag.RelativeToCamera && this.sayBubbleSprite) {
+            this.sayBubbleSprite.setFlag(SpriteFlag.RelativeToCamera, on);
+        }
     }
 
     /**
