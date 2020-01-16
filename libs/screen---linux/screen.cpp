@@ -51,9 +51,14 @@ void WDisplay::updateLoop() {
     int cur_page = 1;
     int frameNo = 0;
     int numPages = vinfo.yres_virtual / vinfo.yres;
+    int ledScreen = getConfigInt("LED_SCREEN", 0);
 
     int sx = vinfo.xres / width;
     int sy = vinfo.yres / height;
+
+    if (ledScreen)
+        sx = ledScreen;
+
     if (sx > sy)
         sx = sy;
     else
@@ -64,6 +69,10 @@ void WDisplay::updateLoop() {
 
     int offx = (vinfo.xres - width * sx) / 2;
     int offy = (vinfo.yres - height * sy) / 2;
+
+    if (ledScreen)
+        offx = offy = 0;
+
     int screensize = finfo.line_length * vinfo.yres;
     uint32_t skip = offx;
 
@@ -127,6 +136,7 @@ void WDisplay::updateLoop() {
         } else {
             uint32_t *d2 =
                 (uint32_t *)fbuf + cur_page * screensize / 4 + offx + offy * finfo.line_length / 4;
+            skip = vinfo.xres - width * sx;
             for (int yy = 0; yy < height; yy++) {
                 auto shift = yy & 1 ? 4 : 0;
                 for (int i = 0; i < sy; ++i) {
@@ -137,7 +147,7 @@ void WDisplay::updateLoop() {
                         for (int j = 0; j < sx; ++j)
                             *d2++ = c;
                     }
-                    d2 += skip << 1;
+                    d2 += skip;
                 }
             }
         }
