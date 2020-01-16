@@ -337,20 +337,20 @@ struct JDSPIHeader {
 
 #define JD_MAGIC 0x3c5e
 
-#define SMART_SET_ADDR 0x01
-#define SMART_SET_PALETTE 0x02
-#define SMART_SET_PIXELS 0x03
+#define SMART_SETUP 0x01
+#define SMART_PIXELS 0x02
 
-struct CmdSetAddr {
-    JDSPIHeader hd;
-    uint32_t command; // SMART_SET_ADDR
-    Rect rect;
+struct CmdSetup {
+    struct JDSPIHeader hd;
+    uint32_t command; // SMART_SETUP
+    uint32_t palette[16];
+    struct Rect rect;
 };
 
-struct CmdSetPalette {
-    JDSPIHeader hd;
-    uint32_t command; // SMART_SET_PALETTE
-    uint32_t palette[16];
+struct CmdPixels {
+    struct JDSPIHeader hd;
+    uint32_t command; // SMART_PIXELS
+    uint32_t data[0];
 };
 
 SmartDisplay::SmartDisplay(SPI *spi, Pin *cs, Pin *flow) : spi(spi), cs(cs), flow(flow) {
@@ -379,7 +379,7 @@ void SmartDisplay::sendPkt(uint32_t command, uint32_t size) {
     hd->size = size - sizeof(JDSPIHeader);
     hd->service_number = 1;
     hd->magic = JD_MAGIC;
-    auto cmd = (CmdSetAddr *)pktBuffer;
+    auto cmd = (CmdSetup *)pktBuffer;
     cmd->command = command;
     size = sizeof(pktBuffer);
     spi->startTransfer(pktBuffer, size, recvBuffer, size, &SmartDisplay::stepStatic, this);
@@ -424,19 +424,12 @@ void SmartDisplay::step() {
     }
     target_enable_irq();
 
-    if (palette) {
-        auto pal = (CmdSetPalette *)pktBuffer;
-        memcpy(pal->palette, palette, 16 * sizeof(uint32_t));
-        palette = NULL;
-        sendPkt(SMART_SET_PALETTE, sizeof(CmdSetPalette));
-        return;
-    }
-
     if (!addrSent) {
         addrSent = true;
-        auto addr = (CmdSetAddr *)pktBuffer;
+        auto addr = (CmdSetup *)pktBuffer;
         addr->rect = this->addr;
-        sendPkt(SMART_SET_ADDR, sizeof(CmdSetAddr));
+        memcpy(addr->palette, palette, 16 * sizeof(uint32_t));
+        sendPkt(SMART_SETUP, sizeof(CmdSetup));
         return;
     }
 
@@ -447,7 +440,7 @@ void SmartDisplay::step() {
         memcpy(pktBuffer + sizeof(JDSPIHeader) + 4, dataPtr, transfer);
         dataPtr += transfer;
         dataLeft -= transfer;
-        sendPkt(SMART_SET_PIXELS, transfer + sizeof(JDSPIHeader) + 4);
+        sendPkt(SMART_PIXELS, transfer + sizeof(JDSPIHeader) + 4);
     } else {
         // trigger sendDone(), which executes outside of IRQ context, so there
         // is no reace with waitForSendDone
