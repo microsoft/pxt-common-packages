@@ -95,12 +95,12 @@ namespace scene {
      * @param map
      * @param scale
      */
-    export function setTileMapLevel(map: tiles.TileMapData, scale = TileScale.Sixteen) {
+    export function setTileMapLevel(map: tiles.TileMapData) {
         const scene = game.currentScene();
         if (!scene.tileMap)
             scene.tileMap = new tiles.TileMap();
         scene.tileMap.setData(map);
-        scene.tileMap.scale = scale;
+        scene.tileMap.scale = map.scale;
     }
 
      /**

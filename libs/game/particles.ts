@@ -2,6 +2,7 @@ namespace particles {
     enum Flag {
         enabled = 1 << 0,
         destroyed = 1 << 1,
+        relativeToCamera = 1 << 2
     }
 
     // maximum count of sources before removing previous sources
@@ -81,7 +82,7 @@ namespace particles {
         /**
          * @param anchor to emit particles from
          * @param particlesPerSecond rate at which particles are emitted
-         * @param factory [optional] factory to generate particles with; otherwise, 
+         * @param factory [optional] factory to generate particles with; otherwise,
          */
         constructor(anchor: ParticleAnchor, particlesPerSecond: number, factory?: ParticleFactory) {
             super(scene.SPRITE_Z)
@@ -110,8 +111,8 @@ namespace particles {
 
         __draw(camera: scene.Camera) {
             let current = this.head;
-            const left = Fx8(camera.drawOffsetX);
-            const top = Fx8(camera.drawOffsetY);
+            const left = (this.pFlags & Flag.relativeToCamera) ? Fx.zeroFx8 : Fx8(camera.drawOffsetX);
+            const top = (this.pFlags & Flag.relativeToCamera) ? Fx.zeroFx8 : Fx8(camera.drawOffsetY);
 
             while (current) {
                 if (current.lifespan > 0)
@@ -197,10 +198,19 @@ namespace particles {
 
         /**
          * Enables or disables particles
-         * @param on 
+         * @param on
          */
         setEnabled(on: boolean) {
             this.enabled = on;
+        }
+
+        /**
+         * Sets whether the particle source is drawn relative to the camera or not
+         * @param on
+         */
+        setRelativeToCamera(on: boolean) {
+            if (on) this.pFlags |= Flag.relativeToCamera
+            else this.pFlags = ~(~this.pFlags | Flag.relativeToCamera);
         }
 
         get enabled() {
@@ -244,7 +254,7 @@ namespace particles {
 
         /**
          * Sets the number of particle created per second
-         * @param particlesPerSecond 
+         * @param particlesPerSecond
          */
         setRate(particlesPerSecond: number) {
             this.period = Math.ceil(1000 / particlesPerSecond);
@@ -257,7 +267,7 @@ namespace particles {
 
         /**
          * Sets the particle factor
-         * @param factory 
+         * @param factory
          */
         setFactory(factory: ParticleFactory) {
             if (factory)
@@ -284,7 +294,7 @@ namespace particles {
 
     /**
      * Creates a new source of particles attached to a sprite
-     * @param sprite 
+     * @param sprite
      * @param particlesPerSecond number of particles created per second
      */
     export function createParticleSource(sprite: Sprite, particlesPerSecond: number): ParticleSource {
@@ -318,7 +328,7 @@ namespace particles {
         const sources = particleSources();
         if (sources) sources.slice(0, sources.length).forEach(s => s._prune());
     }
-    
+
     function sortSources(sources: ParticleSource[]) {
         sources.sort((a, b) => (a.priority - b.priority || a.id - b.id));
     }
