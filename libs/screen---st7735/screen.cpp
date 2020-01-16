@@ -25,10 +25,12 @@ class SmartDisplay {
     const uint8_t *dataPtr;
     uint32_t *palette;
     uint8_t pktBuffer[252];
+    // this needs to be right after pktBuffer - see pendingSpiFlush processing
     uint8_t recvBuffer[252];
     uint8_t bytesPerTransfer;
     bool inProgress;
     bool addrSent;
+    bool pendingSpiFlush;
     volatile bool stepWaiting;
 
     void sendPkt(uint32_t command, uint32_t size);
@@ -354,6 +356,7 @@ struct CmdSetPalette {
 SmartDisplay::SmartDisplay(SPI *spi, Pin *cs, Pin *flow) : spi(spi), cs(cs), flow(flow) {
     inProgress = false;
     stepWaiting = false;
+    pendingSpiFlush = true;
     EventModel::defaultEventBus->listen(DEVICE_ID_DISPLAY, 4243, this, &SmartDisplay::sendDone);
 
     flow->getDigitalValue(PullMode::Down);
@@ -396,6 +399,20 @@ void SmartDisplay::onFlowHi(Event) {
 void SmartDisplay::step() {
     if (cs)
         cs->setDigitalValue(1);
+
+    // it's likely we're coming out of reset, and there is some pending data on the display
+    // we need to flush it out and make sure DMA restarts on the display
+    // we do it regardless of the flow pin, since it would be low if we were already towards the end
+    // of the packet
+    if (pendingSpiFlush) {
+        pendingSpiFlush = false;
+        memset(pktBuffer, 0, sizeof(pktBuffer));
+        memset(recvBuffer, 0, sizeof(recvBuffer));
+        if (cs)
+            cs->setDigitalValue(0);
+        spi->startTransfer(pktBuffer, sizeof(pktBuffer) * 2, NULL, 0, &SmartDisplay::stepStatic, this);
+        return;
+    }
 
     target_disable_irq();
     if (!flow->getDigitalValue()) {
