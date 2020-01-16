@@ -70,8 +70,10 @@ void WDisplay::updateLoop() {
     int offx = (vinfo.xres - width * sx) / 2;
     int offy = (vinfo.yres - height * sy) / 2;
 
-    if (ledScreen)
-        offx = offy = 0;
+    if (ledScreen) {
+        offx = getConfigInt("LED_SCREEN_X", 0);
+        offy = getConfigInt("LED_SCREEN_Y", 0);
+    }
 
     int screensize = finfo.line_length * vinfo.yres;
     uint32_t skip = offx;
