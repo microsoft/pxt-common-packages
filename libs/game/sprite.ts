@@ -442,7 +442,7 @@ class Sprite extends sprites.BaseSprite {
             }
             return;
         }
-        const textToDisplay = console.inspect(text);
+        const textToDisplay = console.inspect(text).split("\n").join(" ");
 
         // same text, color, time, etc...
         const SAYKEY = "__saykey";
