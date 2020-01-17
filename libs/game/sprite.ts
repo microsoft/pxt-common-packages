@@ -429,9 +429,10 @@ class Sprite extends sprites.BaseSprite {
     //% weight=60
     //% blockId=spritesay block="%sprite(mySprite) say %text||for %millis ms"
     //% millis.shadow=timePicker
+    //% text.shadow=text
     //% inlineInputMode=inline
     //% help=sprites/sprite/say
-    say(text: string, timeOnScreen?: number, textColor = 15, textBoxColor = 1) {
+    say(text: any, timeOnScreen?: number, textColor = 15, textBoxColor = 1) {
         // clear say
         if (!text) {
             this.updateSay = undefined;
@@ -441,11 +442,12 @@ class Sprite extends sprites.BaseSprite {
             }
             return;
         }
+        const textToDisplay = console.inspect(text).split("\n").join(" ");
 
         // same text, color, time, etc...
         const SAYKEY = "__saykey";
         const key = JSON.stringify({
-            text: text,
+            text: textToDisplay,
             textColor: textColor,
             textBoxColor: textBoxColor
         })
@@ -460,11 +462,11 @@ class Sprite extends sprites.BaseSprite {
         let holdTextSeconds = 1.5;
         let bubblePadding = 4;
         let maxTextWidth = 100;
-        let font = image.getFontForText(text);
+        let font = image.getFontForText(textToDisplay);
         let startX = 2;
         let startY = 2;
-        let bubbleWidth = text.length * font.charWidth + bubblePadding;
-        let maxOffset = text.length * font.charWidth - maxTextWidth;
+        let bubbleWidth = textToDisplay.length * font.charWidth + bubblePadding;
+        let maxOffset = textToDisplay.length * font.charWidth - maxTextWidth;
         let bubbleOffset: number = Fx.toInt(this._hitbox.oy);
         let needsRedraw = true;
 
@@ -556,10 +558,10 @@ class Sprite extends sprites.BaseSprite {
                     this.sayBubbleSprite.image.fill(textBoxColor);
                     // If maxOffset is negative it won't scroll
                     if (maxOffset < 0) {
-                        this.sayBubbleSprite.image.print(text, startX, startY, textColor, font);
+                        this.sayBubbleSprite.image.print(textToDisplay, startX, startY, textColor, font);
 
                     } else {
-                        this.sayBubbleSprite.image.print(text, startX - pixelsOffset, startY, textColor, font);
+                        this.sayBubbleSprite.image.print(textToDisplay, startX - pixelsOffset, startY, textColor, font);
                     }
 
                     // Left side padding
