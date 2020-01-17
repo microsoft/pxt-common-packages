@@ -429,9 +429,10 @@ class Sprite extends sprites.BaseSprite {
     //% weight=60
     //% blockId=spritesay block="%sprite(mySprite) say %text||for %millis ms"
     //% millis.shadow=timePicker
+    //% text.shadow=text
     //% inlineInputMode=inline
     //% help=sprites/sprite/say
-    say(text: string, timeOnScreen?: number, textColor = 15, textBoxColor = 1) {
+    say(text: any, timeOnScreen?: number, textColor = 15, textBoxColor = 1) {
         // clear say
         if (!text) {
             this.updateSay = undefined;
@@ -441,6 +442,8 @@ class Sprite extends sprites.BaseSprite {
             }
             return;
         }
+
+        text = console.inspect(text);
 
         // same text, color, time, etc...
         const SAYKEY = "__saykey";
@@ -463,6 +466,9 @@ class Sprite extends sprites.BaseSprite {
         let font = image.getFontForText(text);
         let startX = 2;
         let startY = 2;
+        console.log(`${text} --- ${typeof text}`);
+        // fails here; text === "abc" but text.length throws `backend.js:6 Cannot read property 'iface' of undefined`
+        console.log("" + text.length);
         let bubbleWidth = text.length * font.charWidth + bubblePadding;
         let maxOffset = text.length * font.charWidth - maxTextWidth;
         let bubbleOffset: number = Fx.toInt(this._hitbox.oy);
