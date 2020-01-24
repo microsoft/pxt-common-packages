@@ -384,8 +384,8 @@ namespace info {
     }
 
     /**
-     * Set whether score should be displayed
-     * @param on if true, score is shown; otherwise, score is hidden
+     * Set whether countdown should be displayed
+     * @param on if true, countdown is shown; otherwise, countdown is hidden
      */
     //% group="Countdown"
     export function showCountdown(on: boolean) {

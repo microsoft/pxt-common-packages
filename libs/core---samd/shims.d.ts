@@ -301,7 +301,7 @@ declare namespace light {
     /**
      * Send a programmable light buffer to the specified digital pin
      * @param data The pin that the light are connected to
-     * @param clk the clock line if nay
+     * @param clk the clock line if any
      * @param mode the color encoding mode
      * @param buf The buffer to send to the pin
      */

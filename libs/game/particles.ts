@@ -266,7 +266,7 @@ namespace particles {
         }
 
         /**
-         * Sets the particle factor
+         * Sets the particle factory
          * @param factory
          */
         setFactory(factory: ParticleFactory) {

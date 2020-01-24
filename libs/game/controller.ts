@@ -283,7 +283,7 @@ namespace controller {
         }
 
         /**
-         * Gets the left button
+         * Get the 'Left' button
          */
         //%
         get left() {
@@ -291,7 +291,7 @@ namespace controller {
         }
 
         /**
-         * Gets the right button
+         * Get the 'Right' button
          */
         //%
         get right() {
@@ -299,7 +299,7 @@ namespace controller {
         }
 
         /**
-         * Gets the right button
+         * Get the 'Up' button
          */
         //%
         get up() {
@@ -307,7 +307,7 @@ namespace controller {
         }
 
         /**
-         * Gets the right button
+         * Get the 'Down' button
          */
         //%
         get down() {
@@ -315,7 +315,7 @@ namespace controller {
         }
 
         /**
-         * Gets the right button
+         * Get the 'A' button
          */
         //%
         get A() {
@@ -323,7 +323,7 @@ namespace controller {
         }
 
         /**
-         * Gets the right button
+         * Get the 'B' button
          */
         //%
         get B() {
@@ -331,7 +331,7 @@ namespace controller {
         }
 
         /**
-         * Gets the right button
+         * Get the 'Menu' button
          */
         //%
         get menu() {
