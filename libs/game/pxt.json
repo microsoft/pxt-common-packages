@@ -32,6 +32,7 @@
         "ask.ts",
         "targetoverrides.cpp",
         "targetoverrides.ts",
+        "controllerbuttons.cpp",
         "mathUtil.ts",
         "systemmenu.ts",
         "systemmenuicons.ts",

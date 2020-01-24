@@ -90,6 +90,7 @@ CODAL_SPI* getSPI(DigitalInOutPin mosi, DigitalInOutPin miso, DigitalInOutPin sc
 LowLevelTimer* getJACDACTimer();
 #endif
 class PressureButton;
+uint32_t readButtonMultiplexer(int bits);
 }
 
 namespace serial {

@@ -44,6 +44,11 @@ namespace controller {
     //% shim=pxt::pressureLevelByButtonId
     declare function pressureLevelByButtonId(btnId: number, codalId: number): number;
 
+    //% shim=pxt::setupButton
+    function setupButton(buttonId: number, key: number) {
+        return // missing in sim
+     }
+
     //% fixedInstances
     export class Button {
         _owner: Controller;
@@ -55,15 +60,13 @@ namespace controller {
         private _pressed: boolean;
         private _pressedElasped: number;
         private _repeatCount: number;
-        private _buttonId: number;
 
         toString(): string {
-            return `btn ${this.id} ${this._buttonId} ${this._pressed ? "down" : "up"}`;
+            return `btn ${this.id} ${this._pressed ? "down" : "up"}`;
         }
 
-        constructor(id: number, buttonId: number) {
+        constructor(id: number, configKey: number) {
             this.id = id;
-            this._buttonId = buttonId;
             this._pressed = false;
             this.repeatDelay = undefined;
             this.repeatInterval = undefined;
@@ -74,11 +77,9 @@ namespace controller {
                 // this button can't actually be pressed, we don't want it to propagate events
                 control.internalOnEvent(INTERNAL_KEY_UP, this.id, () => this.setPressed(false), 16)
                 control.internalOnEvent(INTERNAL_KEY_DOWN, this.id, () => this.setPressed(true), 16)
-            }
-            if (buttonId > -1) {
-                // only add these events when running on real hardware
-                control.internalOnEvent(buttonId, DAL.DEVICE_BUTTON_EVT_UP, () => control.raiseEvent(INTERNAL_KEY_UP, this.id), 16)
-                control.internalOnEvent(buttonId, DAL.DEVICE_BUTTON_EVT_DOWN, () => control.raiseEvent(INTERNAL_KEY_DOWN, this.id), 16)
+
+                if (configKey > 0)
+                    setupButton(id, configKey)
             }
         }
 
@@ -141,7 +142,7 @@ namespace controller {
                 return this.isPressed() ? 512 : 0
                 // once implemented in sim, this could be similar to the one below
             } else {
-                return pressureLevelByButtonId(this.id, this._buttonId);
+                return pressureLevelByButtonId(this.id, -1);
             }
         }
 
