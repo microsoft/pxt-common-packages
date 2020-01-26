@@ -314,12 +314,12 @@ class Sprite extends sprites.BaseSprite {
     }
 
     //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine
+    //% blockCombine block="top"
     get top() {
         return Fx.toInt(this._y);
     }
     //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine
+    //% blockCombine block="top"
     set top(value: number) {
         const physics = game.currentScene().physicsEngine;
         physics.moveSprite(
