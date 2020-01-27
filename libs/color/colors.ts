@@ -56,11 +56,11 @@ const enum ColorHues {
 //% advanced=1
 namespace color {
     /**
- * Converts red, green, blue channels into a RGB color
- * @param red value of the red channel between 0 and 255. eg: 255
- * @param green value of the green channel between 0 and 255. eg: 255
- * @param blue value of the blue channel between 0 and 255. eg: 255
- */
+     * Converts red, green, blue channels into a RGB color
+     * @param red value of the red channel between 0 and 255. eg: 255
+     * @param green value of the green channel between 0 and 255. eg: 255
+     * @param blue value of the blue channel between 0 and 255. eg: 255
+     */
     //% blockId="colorsrgb" block="red %red|green %green|blue %blue"
     //% red.min=0 red.max=255 green.min=0 green.max=255 blue.min=0 blue.max=255
     //% help="colors/rgb"
