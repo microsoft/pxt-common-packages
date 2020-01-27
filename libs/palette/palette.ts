@@ -33,7 +33,7 @@ namespace palette {
     }
 
     /**
-     * Get the current palette used for the games colors
+     * Get the palette that is currently being used
      */
     export function getCurrentColors() {
         const scene = game.currentScene();

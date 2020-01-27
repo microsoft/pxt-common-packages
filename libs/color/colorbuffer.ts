@@ -68,8 +68,7 @@ namespace color {
 
             if (length == undefined)
                 length = this.length;
-            else
-                length = Math.min(length, this.length - start);
+            length = Math.min(length, this.length - start);
 
             const output = new ColorBuffer(length, this.layout);
             for (let i = 0; i < length; ++i) {
