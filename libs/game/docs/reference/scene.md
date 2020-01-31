@@ -16,14 +16,15 @@ scene.backgroundImage()
 ## Tiles and Tilemaps
 
 ```cards
-scene.setTile(0, null)
-scene.setTileMap(null)
-scene.setTileAt(null, 0)
-scene.getTile(0, 0)
-scene.getTilesByType(0)
-scene.getTile(0, 0).place(null)
-scene.placeOnRandomTile(null, 0)
-scene.onHitTile(0, 0, function (sprite) {})
+tiles.setTilemap(tiles.createTilemap(null, null, [], TileScale.Sixteen))
+scene.onHitWall(0, function (sprite) {})
+scene.onOverlapTile(0, null, function (sprite, location) {})
+tiles.setTileAt(tiles.getTileLocation(0, 0), null)
+tiles.setWallAt(tiles.getTileLocation(0, 0), false)
+tiles.placeOnTile(null, tiles.getTileLocation(0, 0))
+tiles.placeOnRandomTile(null, null)
+tiles.getTilesByType(null)
+tiles.getTileLocation(0, 0)
 sprites.create(null).isHittingTile(CollisionDirection.Left)
 sprites.create(null).tileHitFrom(CollisionDirection.Left)
 ```

@@ -413,6 +413,11 @@ namespace tiles {
         return new TileMapData(data, layer, tiles, scale)
     }
 
+    /**
+     * Arrange image tiles as a pattern in the scene.
+     * @param tilemap
+     */
+
     //% blockId=tilemap_editor block="set tilemap to $tilemap"
     //% weight=200 blockGap=8
     //% tilemap.fieldEditor="tilemap"
