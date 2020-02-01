@@ -23,16 +23,24 @@ namespace palette {
      * @param pOffset The offset to start copying from the palette
      */
     export function setColors(palette: color.ColorBuffer, pOffset = 0) {
-        const scene = game.currentScene();
-        let userPalette = scene.data[FIELD] as color.ColorBuffer;
-        if (!userPalette)
-            userPalette = scene.data[FIELD] = defaultPalette();
+        const userPalette = getCurrentColors();
         userPalette.write(pOffset, palette);
         image.setPalette(userPalette.buf);
 
         // make sure to clean up
         game.addScenePushHandler(scenePush);
         game.addScenePopHandler(scenePop);
+    }
+
+    /**
+     * Get the palette that is currently being used
+     */
+    export function getCurrentColors() {
+        const scene = game.currentScene();
+        let userPalette = scene.data[FIELD] as color.ColorBuffer;
+        if (!userPalette)
+            userPalette = scene.data[FIELD] = defaultPalette();
+        return userPalette;
     }
 
     function scenePush(scene: scene.Scene) {
