@@ -1,21 +1,40 @@
 #include "pxt.h"
 
-using namespace pxt;
+#if defined(NRF52_SERIES)
 
-#ifndef CODAL_RADIO
+#include "NRF52Radio.h"
+
+#define CODAL_RADIO codal::NRF52Radio*
+#define CODAL_EVENT codal::Event
+
+#elif
+
 #define CODAL_RADIO MicroBitRadio*
+#define DEVICE_OK MICROBIT_OK
+#define CODAL_EVENT MicroBitEvent
+
 #endif
 
-#ifndef DEVICE_OK
-#define DEVICE_OK MICROBIT_OK
+using namespace pxt;
+
+#ifndef MICROBIT_RADIO_MAX_PACKET_SIZE
+#define MICROBIT_RADIO_MAX_PACKET_SIZE          32
 #endif
 
 #ifndef DEVICE_RADIO_MAX_PACKET_SIZE
 #define DEVICE_RADIO_MAX_PACKET_SIZE MICROBIT_RADIO_MAX_PACKET_SIZE
 #endif
 
+#ifndef MICROBIT_ID_RADIO
+#define MICROBIT_ID_RADIO               29
+#endif
+
 #ifndef DEVICE_ID_RADIO
 #define DEVICE_ID_RADIO MICROBIT_ID_RADIO
+#endif
+
+#ifndef MICROBIT_RADIO_EVT_DATAGRAM
+#define MICROBIT_RADIO_EVT_DATAGRAM             1       // Event to signal that a new datagram has been received.
 #endif
 
 #ifndef DEVICE_RADIO_EVT_DATAGRAM
@@ -34,7 +53,7 @@ namespace radio {
     int radioEnable() {
         int r = getRadio()->enable();
         if (r != DEVICE_OK) {
-            uBit.panic(43);
+            target_panic(43);
             return r;
         }
         if (!radioEnabled) {
@@ -56,7 +75,7 @@ namespace radio {
     void raiseEvent(int src, int value) {
         if (radioEnable() != DEVICE_OK) return;
 
-        getRadio()->event.eventReceived(MicroBitEvent(src, value, CREATE_ONLY));
+        getRadio()->event.eventReceived(CODAL_EVENT(src, value, CREATE_ONLY));
     }
 
     /**
