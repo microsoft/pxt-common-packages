@@ -85,7 +85,7 @@ namespace radio {
     Buffer readRawPacket() {
         if (radioEnable() != DEVICE_OK) return mkBuffer(NULL, 0);
 
-        PacketBuffer p = getRadio()->datagram.recv();
+        auto p = getRadio()->datagram.recv();
         if (p == PacketBuffer::EmptyPacket)
             return mkBuffer(NULL, 0);
 
