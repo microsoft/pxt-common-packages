@@ -1,6 +1,17 @@
-# Radio
+# Bit Radio
 
-Send and receive data using radio packets.
+Send and receive data using the Bit Radio protocol.
+
+### ~ hint
+
+#### Bit Radio
+
+The Bit Radio protocol was originally developped by [Lancaster University](https://github.com/lancaster-university/microbit-dal/commit/d9d2343ab63a707ac9d0167545261ab57b996430#diff-4f1efa652dafc9c738aae3a4bc5c3dad) for the BBC micro:bit project.
+
+This protocol does not contain any form of encryption, authentication or authorization. It's purpose is solely for use as a teaching aid to demonstrate how simple communications operates, and to provide a sandpit through which learning can take place.
+
+### ~
+
 
 ```cards
 radio.sendNumber(0);
