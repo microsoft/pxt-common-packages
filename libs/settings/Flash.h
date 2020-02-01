@@ -20,11 +20,17 @@ class Flash {
      * Write given number of bytes within one page. Flash has to be erased first.
      */
     virtual int writeBytes(uintptr_t dst, const void *src, uint32_t len) = 0;
+
+    /**
+     * Return the total size of flash.
+     */
+    virtual int totalSize();
 };
 
 class ZFlash : public Flash {
   public:
     virtual int pageSize(uintptr_t address);
+    virtual int totalSize();
     virtual int erasePage(uintptr_t address);
     virtual int writeBytes(uintptr_t dst, const void *src, uint32_t len);
 };
