@@ -11,4 +11,5 @@ radio.raiseEvent(control.eventSourceId(EventBusSource.MICROBIT_ID_BUTTON_A), con
 
 ## See Also
 
+[Bit Radio](/reference/radio)
 [control raise event](/reference/control/raise-event)

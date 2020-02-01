@@ -62,6 +62,7 @@ The radio set group might need to be set, synchronized, before the radio events 
 
 ## See also
 
+[Bit Radio](/reference/radio)
 [on received string](/reference/radio/on-received-string),
 [received packet](/reference/radio/received-packet),
 [send number](/reference/radio/send-number),

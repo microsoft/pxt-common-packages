@@ -24,6 +24,7 @@ radio.setFrequencyBand(50)
 
 ## See also
 
+[Bit Radio](/reference/radio)
 [received packet](/reference/radio/received-packet),
 [send number](/reference/radio/send-number),
 [send value](/reference/radio/send-value),

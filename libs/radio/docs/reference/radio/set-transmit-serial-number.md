@@ -20,6 +20,7 @@ radio.setTransmitSerialNumber(true);
 
 ## See also
 
+[Bit Radio](/reference/radio)
 [received packet property](/reference/radio/received-packet),
 [send number](/reference/radio/send-number),
 [send value](/reference/radio/send-value),

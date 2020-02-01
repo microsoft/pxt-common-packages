@@ -47,6 +47,7 @@ radio.onReceivedValue(function (name, value) {
 
 ## See also
 
+[Bit Radio](/reference/radio)
 [on received value](/reference/radio/on-received-value)
 
 ```package

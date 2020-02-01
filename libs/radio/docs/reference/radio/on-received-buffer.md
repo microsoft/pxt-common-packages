@@ -53,6 +53,7 @@ A radio that can both transmit and receive is called a _transceiver_.
 
 ## See also
 
+[Bit Radio](/reference/radio)
 [send buffer](/reference/radio/send-buffer),
 [number formats](/types/buffer/number-format)
 

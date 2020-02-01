@@ -48,6 +48,7 @@ basic.forever(() => {
 
 ## See also
 
+[Bit Radio](/reference/radio)
 [on received number](/reference/radio/on-received-number)
 
 ```package
