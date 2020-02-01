@@ -33,6 +33,10 @@ int ZFlash::pageSize(uintptr_t address) {
     return 0;
 }
 
+int ZFlash::totalSize() {
+    return *((uint16_t *)0x1FFF7A22) * 1024;
+}
+
 int ZFlash::erasePage(uintptr_t address) {
     waitForLast();
     unlock();

@@ -82,6 +82,8 @@ typedef pins::CodalI2CProxy* I2C_;
 typedef pins::CodalSPIProxy* SPI_;
 
 namespace pxt {
+codal::LowLevelTimer *allocateTimer();
+
 #ifdef CODAL_I2C
 CODAL_I2C* getI2C(DigitalInOutPin sda, DigitalInOutPin scl);
 #endif

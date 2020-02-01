@@ -8,6 +8,7 @@
         "Flash.h",
         "STM32Flash.cpp",
         "SAMDFlash.cpp",
+        "NRF52Flash.cpp",
         "settings.cpp",
         "settings.ts",
         "shims.d.ts"
