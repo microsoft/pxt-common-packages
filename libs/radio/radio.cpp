@@ -4,12 +4,12 @@
 
 #include "NRF52Radio.h"
 
-#define CODAL_RADIO codal::NRF52Radio*
+#define CODAL_RADIO codal::NRF52Radio
 #define CODAL_EVENT codal::Event
 
 #elif
 
-#define CODAL_RADIO MicroBitRadio*
+#define CODAL_RADIO MicroBitRadio
 #define DEVICE_OK MICROBIT_OK
 #define CODAL_EVENT MicroBitEvent
 
@@ -44,14 +44,40 @@ using namespace pxt;
 //% color=#E3008C weight=96 icon="\uf012"
 namespace radio {
     
-    CODAL_RADIO getRadio() {
+#if defined(NRF52_SERIES)
+class RadioWrap {
+    CODAL_RADIO radio;
+    public:
+        RadioWrap() 
+            : radio()
+        {}
+
+        CODAL_RADIO* getRadio() {
+            return &radio;
+        }
+};
+SINGLETON(RadioWrap);
+
+CODAL_RADIO* getRadio() {
+    auto wrap = getRadioWrap();
+    if (NULL != wrap)
+        return wrap->getRadio();    
+    return NULL;
+}
+
+#else // NRF51/micro:bit dal
+    CODAL_RADIO* getRadio() {
         return &uBit.radio;
     }
-
+#endif
     bool radioEnabled = false;
 
     int radioEnable() {
-        int r = getRadio()->enable();
+        auto radio = getRadio();
+        if (NULL == radio) 
+            return DEVICE_NOT_SUPPORTED;
+
+        int r = radio->enable();
         if (r != DEVICE_OK) {
             target_panic(43);
             return r;
