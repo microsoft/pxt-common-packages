@@ -6,12 +6,15 @@
 
 #define CODAL_RADIO codal::NRF52Radio
 #define CODAL_EVENT codal::Event
+#define CODAL_RADIO_MICROBIT_DAL 0
 
-#elif
+#else // micro:bit dal
 
 #define CODAL_RADIO MicroBitRadio
 #define DEVICE_OK MICROBIT_OK
+#define DEVICE_NOT_SUPPORTED MICROBIT_NOT_SUPPORTED
 #define CODAL_EVENT MicroBitEvent
+#define CODAL_RADIO_MICROBIT_DAL 1
 
 #endif
 
@@ -44,7 +47,11 @@ using namespace pxt;
 //% color=#E3008C weight=96 icon="\uf012"
 namespace radio {
     
-#if defined(NRF52_SERIES)
+#if CODAL_RADIO_MICROBIT_DAL
+    CODAL_RADIO* getRadio() {
+        return &uBit.radio;
+    }
+#else
 class RadioWrap {
     CODAL_RADIO radio;
     public:
@@ -64,11 +71,6 @@ CODAL_RADIO* getRadio() {
         return wrap->getRadio();    
     return NULL;
 }
-
-#else // NRF51/micro:bit dal
-    CODAL_RADIO* getRadio() {
-        return &uBit.radio;
-    }
 #endif
     bool radioEnabled = false;
 
@@ -111,16 +113,20 @@ CODAL_RADIO* getRadio() {
     Buffer readRawPacket() {
         if (radioEnable() != DEVICE_OK) return mkBuffer(NULL, 0);
 
+#if CODAL_RADIO_MICROBIT_DAL
         auto p = getRadio()->datagram.recv();
         if (p == PacketBuffer::EmptyPacket)
             return mkBuffer(NULL, 0);
-
         int rssi = p.getRSSI();
         uint8_t buf[DEVICE_RADIO_MAX_PACKET_SIZE + sizeof(int)]; // packet length + rssi
         memset(buf, 0, sizeof(buf));
         memcpy(buf, p.getBytes(), p.length()); // data
         memcpy(buf + DEVICE_RADIO_MAX_PACKET_SIZE, &rssi, sizeof(int)); // RSSi - assumes Int32LE layout
         return mkBuffer(buf, sizeof(buf));
+#else
+        // TODO
+        return NULL;
+#endif        
     }
 
     /**
