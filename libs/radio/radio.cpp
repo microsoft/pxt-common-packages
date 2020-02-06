@@ -8,7 +8,7 @@
 #define CODAL_EVENT codal::Event
 #define CODAL_RADIO_MICROBIT_DAL 0
 
-#elif defined(MICROBIT_OK) // micro:bit dal
+#elif defined(MICROBIT_H) // micro:bit dal
 
 #define CODAL_RADIO MicroBitRadio
 #define DEVICE_OK MICROBIT_OK
@@ -70,7 +70,7 @@ CODAL_RADIO* getRadio() {
         return wrap->getRadio();    
     return NULL;
 }
-#elif // not supported
+#else // not supported
     #define CODAL_RADIO codal::Radio
     CODAL_RADIO* getRadio() {
         return NULL;
