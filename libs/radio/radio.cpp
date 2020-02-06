@@ -141,7 +141,7 @@ CODAL_RADIO* getRadio() {
         memcpy(buf + DEVICE_RADIO_MAX_PACKET_SIZE, &rssi, sizeof(int)); // RSSi - assumes Int32LE layout
         return mkBuffer(buf, sizeof(buf));
 #else
-        return mkBuffer(buf, sizeof(buf));
+        return mkBuffer(NULL, sizeof(buf));
 #endif        
     }
 
