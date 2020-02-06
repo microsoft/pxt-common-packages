@@ -70,15 +70,11 @@ CODAL_RADIO* getRadio() {
         return wrap->getRadio();    
     return NULL;
 }
-#else // not supported
-    #define CODAL_RADIO codal::Radio
-    CODAL_RADIO* getRadio() {
-        return NULL;
-    }
 #endif // #else
 
     bool radioEnabled = false;
     int radioEnable() {
+#ifdef CODAL_RADIO        
         auto radio = getRadio();
         if (NULL == radio) 
             return DEVICE_NOT_SUPPORTED;
@@ -94,6 +90,9 @@ CODAL_RADIO* getRadio() {
             radioEnabled = true;
         }
         return r;
+#else
+        return DEVICE_NOT_SUPPORTED;
+#endif
     }
 
     /**
@@ -105,9 +104,11 @@ CODAL_RADIO* getRadio() {
     //% weight=1
     //% help=radio/raise-event
     void raiseEvent(int src, int value) {
+#ifdef CODAL_RADIO        
         if (radioEnable() != DEVICE_OK) return;
 
         getRadio()->event.eventReceived(CODAL_EVENT(src, value, CREATE_ONLY));
+#endif        
     }
 
     /**
@@ -115,6 +116,7 @@ CODAL_RADIO* getRadio() {
      */
     //%
     Buffer readRawPacket() {
+#ifdef CODAL_RADIO        
         if (radioEnable() != DEVICE_OK) return mkBuffer(NULL, 0);
 
         auto p = getRadio()->datagram.recv();
@@ -138,6 +140,9 @@ CODAL_RADIO* getRadio() {
         memcpy(buf, bytes, length); // data
         memcpy(buf + DEVICE_RADIO_MAX_PACKET_SIZE, &rssi, sizeof(int)); // RSSi - assumes Int32LE layout
         return mkBuffer(buf, sizeof(buf));
+#else
+        return mkBuffer(buf, sizeof(buf));
+#endif        
     }
 
     /**
@@ -145,12 +150,14 @@ CODAL_RADIO* getRadio() {
      */
     //% async
     void sendRawPacket(Buffer msg) {
+#ifdef CODAL_RADIO        
         if (radioEnable() != DEVICE_OK || NULL == msg) return;
 
         // don't send RSSI data; and make sure no buffer underflow
         int len = msg->length - sizeof(int);
         if (len > 0)
             getRadio()->datagram.send(msg->data, len);
+#endif            
     }
 
     /**
@@ -161,10 +168,12 @@ CODAL_RADIO* getRadio() {
     //% blockId=radio_datagram_received_event block="radio on data received" blockGap=8
     //% deprecated=true blockHidden=1
     void onDataReceived(Action body) {
+#ifdef CODAL_RADIO        
         if (radioEnable() != DEVICE_OK) return;
 
         registerWithDal(DEVICE_ID_RADIO, DEVICE_RADIO_EVT_DATAGRAM, body);
         getRadio()->datagram.recv(); // wake up read code
+#endif       
     }
 
     /**
@@ -176,9 +185,11 @@ CODAL_RADIO* getRadio() {
     //% blockId=radio_set_group block="radio set group %ID"
     //% id.min=0 id.max=255
     void setGroup(int id) {
+#ifdef CODAL_RADIO        
         if (radioEnable() != DEVICE_OK) return;
 
         getRadio()->setGroup(id);
+#endif       
     }
 
     /**
@@ -191,9 +202,11 @@ CODAL_RADIO* getRadio() {
     //% power.min=0 power.max=7
     //% advanced=true
     void setTransmitPower(int power) {
+#ifdef CODAL_RADIO        
         if (radioEnable() != DEVICE_OK) return;
 
         getRadio()->setTransmitPower(power);
+#endif        
     }
 
     /**
@@ -206,7 +219,9 @@ CODAL_RADIO* getRadio() {
     //% band.min=0 band.max=83
     //% advanced=true
     void setFrequencyBand(int band) {
+#ifdef CODAL_RADIO        
         if (radioEnable() != DEVICE_OK) return;
         getRadio()->setFrequencyBand(band);
+#endif        
     }
 }
