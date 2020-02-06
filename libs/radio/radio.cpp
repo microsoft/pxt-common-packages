@@ -8,7 +8,7 @@
 #define CODAL_EVENT codal::Event
 #define CODAL_RADIO_MICROBIT_DAL 0
 
-#else // micro:bit dal
+#elif defined(MICROBIT_OK) // micro:bit dal
 
 #define CODAL_RADIO MicroBitRadio
 #define DEVICE_OK MICROBIT_OK
@@ -51,7 +51,7 @@ namespace radio {
     CODAL_RADIO* getRadio() {
         return &uBit.radio;
     }
-#else
+#elif defined(CODAL_RADIO)
 class RadioWrap {
     CODAL_RADIO radio;
     public:
@@ -59,21 +59,25 @@ class RadioWrap {
             : radio()
         {}
 
-        CODAL_RADIO* getRadio() {
-            return &radio;
-        }
+    CODAL_RADIO* getRadio() {
+        return &radio;
+    }
 };
 SINGLETON(RadioWrap);
-
 CODAL_RADIO* getRadio() {
     auto wrap = getRadioWrap();
     if (NULL != wrap)
         return wrap->getRadio();    
     return NULL;
 }
-#endif
-    bool radioEnabled = false;
+#elif // not supported
+    #define CODAL_RADIO codal::Radio
+    CODAL_RADIO* getRadio() {
+        return NULL;
+    }
+#endif // #else
 
+    bool radioEnabled = false;
     int radioEnable() {
         auto radio = getRadio();
         if (NULL == radio) 
@@ -113,20 +117,20 @@ CODAL_RADIO* getRadio() {
     Buffer readRawPacket() {
         if (radioEnable() != DEVICE_OK) return mkBuffer(NULL, 0);
 
-#if CODAL_RADIO_MICROBIT_DAL
         auto p = getRadio()->datagram.recv();
+#if CODAL_RADIO_MICROBIT_DAL
         if (p == PacketBuffer::EmptyPacket)
             return mkBuffer(NULL, 0);
         int rssi = p.getRSSI();
+#else
+        // TODO
+        int rssi = -73;        
+#endif        
         uint8_t buf[DEVICE_RADIO_MAX_PACKET_SIZE + sizeof(int)]; // packet length + rssi
         memset(buf, 0, sizeof(buf));
         memcpy(buf, p.getBytes(), p.length()); // data
         memcpy(buf + DEVICE_RADIO_MAX_PACKET_SIZE, &rssi, sizeof(int)); // RSSi - assumes Int32LE layout
         return mkBuffer(buf, sizeof(buf));
-#else
-        // TODO
-        return NULL;
-#endif        
     }
 
     /**
